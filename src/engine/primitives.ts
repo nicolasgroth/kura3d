@@ -1,0 +1,670 @@
+/**
+ * @file src/engine/primitives.ts
+ * @description Generadores paramétricos de primitivas 3D watertight sobre Manifold-3D,
+ * utilidades de transformación, normalización a cama (Y=0), cálculo de estadísticas
+ * y conversión optimizada a THREE.BufferGeometry con soporte de pintado por cara.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import * as THREE from 'three';
+import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';
+import type {
+  MeshData,
+  PrimitiveParams,
+  PrimitiveType,
+  SceneObject,
+  Vec3,
+} from '../types/kura';
+import {
+  computeVertexNormals,
+  initManifoldEngine,
+  manifoldToMeshData,
+} from './manifoldKernel';
+
+/**
+ * Normaliza una malla para que quede centrada horizontalmente en (X=0, Z=0)
+ * y apoyada exactamente sobre la cama de impresión en Y=0 (minY = 0).
+ *
+ * @param mesh Malla de entrada en milímetros (Y-up).
+ * @returns Nueva instancia `MeshData` desplazada a la cama.
+ */
+export function normalizeMeshToBed(mesh: MeshData): MeshData {
+  const vertCount = Math.floor(mesh.positions.length / 3);
+  if (vertCount === 0) {
+    return {
+      positions: new Float32Array(0),
+      indices: new Uint32Array(0),
+      ...(mesh.normals ? { normals: new Float32Array(0) } : {}),
+      ...(mesh.faceColors ? { faceColors: [...mesh.faceColors] } : {}),
+    };
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let maxZ = -Infinity;
+
+  for (let i = 0; i < vertCount; i++) {
+    const x = mesh.positions[i * 3];
+    const y = mesh.positions[i * 3 + 1];
+    const z = mesh.positions[i * 3 + 2];
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (z < minZ) minZ = z;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+    if (z > maxZ) maxZ = z;
+  }
+
+  const offsetX = -(minX + maxX) * 0.5;
+  const offsetY = -minY;
+  const offsetZ = -(minZ + maxZ) * 0.5;
+
+  const positions = new Float32Array(mesh.positions.length);
+  for (let i = 0; i < vertCount; i++) {
+    positions[i * 3] = mesh.positions[i * 3] + offsetX;
+    positions[i * 3 + 1] = mesh.positions[i * 3 + 1] + offsetY;
+    positions[i * 3 + 2] = mesh.positions[i * 3 + 2] + offsetZ;
+  }
+
+  return {
+    positions,
+    indices: new Uint32Array(mesh.indices),
+    ...(mesh.normals ? { normals: new Float32Array(mesh.normals) } : {}),
+    ...(mesh.faceColors ? { faceColors: [...mesh.faceColors] } : {}),
+  };
+}
+
+/**
+ * Aplica una transformación afín TRS (Traslación, Rotación Euler XYZ en radianes, Escala)
+ * directamente sobre los vértices de una malla, invirtiendo el orden de devanado (winding)
+ * si la escala tiene determinante negativo para mantener normales salientes.
+ *
+ * @param mesh Malla local origen.
+ * @param position Traslación [x, y, z] en mm.
+ * @param rotation Rotación Euler [rx, ry, rz] en radianes.
+ * @param scale Escala [sx, sy, sz].
+ * @returns Malla transformada al espacio destino con normales recalculadas.
+ */
+export function applyTransformToMesh(
+  mesh: MeshData,
+  position: Vec3,
+  rotation: Vec3,
+  scale: Vec3
+): MeshData {
+  const mat = new THREE.Matrix4().compose(
+    new THREE.Vector3(position[0], position[1], position[2]),
+    new THREE.Quaternion().setFromEuler(
+      new THREE.Euler(rotation[0], rotation[1], rotation[2], 'XYZ')
+    ),
+    new THREE.Vector3(scale[0], scale[1], scale[2])
+  );
+
+  const e = mat.elements;
+  const vertCount = Math.floor(mesh.positions.length / 3);
+  const positions = new Float32Array(mesh.positions.length);
+
+  for (let i = 0; i < vertCount; i++) {
+    const x = mesh.positions[i * 3];
+    const y = mesh.positions[i * 3 + 1];
+    const z = mesh.positions[i * 3 + 2];
+
+    positions[i * 3] = e[0] * x + e[4] * y + e[8] * z + e[12];
+    positions[i * 3 + 1] = e[1] * x + e[5] * y + e[9] * z + e[13];
+    positions[i * 3 + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
+  }
+
+  const indices = new Uint32Array(mesh.indices);
+  // Si la reflexión invierte la orientación (determinante < 0), volteamos los triángulos
+  const det = scale[0] * scale[1] * scale[2];
+  if (det < 0) {
+    const triCount = Math.floor(indices.length / 3);
+    for (let t = 0; t < triCount; t++) {
+      const tmp = indices[t * 3 + 1];
+      indices[t * 3 + 1] = indices[t * 3 + 2];
+      indices[t * 3 + 2] = tmp;
+    }
+  }
+
+  const normals = computeVertexNormals(positions, indices);
+
+  return {
+    positions,
+    indices,
+    normals,
+    ...(mesh.faceColors ? { faceColors: [...mesh.faceColors] } : {}),
+  };
+}
+
+/**
+ * Calcula estadísticas geométricas exactas de una malla:
+ * conteo de triángulos/vértices, dimensiones AABB en mm, volumen con signo en mm³
+ * y verificación topológica de cierre 2-manifold mediante emparejamiento de semi-aristas.
+ *
+ * @param mesh Malla a analizar.
+ * @returns Estadísticas compatibles con `SceneObject['stats']`.
+ */
+export function computeMeshStats(mesh: MeshData): SceneObject['stats'] {
+  const vertCount = Math.floor(mesh.positions.length / 3);
+  const triCount = Math.floor(mesh.indices.length / 3);
+
+  if (vertCount === 0 || triCount === 0) {
+    return {
+      triangles: 0,
+      vertices: 0,
+      isManifold: false,
+      volumeMm3: 0,
+      dimensionsMm: [0, 0, 0],
+    };
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let maxZ = -Infinity;
+
+  // Mapeo espacial para detectar si la malla es cerrada incluso si tiene vértices duplicados en costuras
+  const invTol = 1e4; // 0.0001 mm
+  const posKeyMap = new Map<string, number>();
+  const weldedId = new Uint32Array(vertCount);
+
+  for (let i = 0; i < vertCount; i++) {
+    const x = mesh.positions[i * 3];
+    const y = mesh.positions[i * 3 + 1];
+    const z = mesh.positions[i * 3 + 2];
+
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (z < minZ) minZ = z;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+    if (z > maxZ) maxZ = z;
+
+    const key = `${Math.round(x * invTol)},${Math.round(y * invTol)},${Math.round(z * invTol)}`;
+    let id = posKeyMap.get(key);
+    if (id === undefined) {
+      id = posKeyMap.size;
+      posKeyMap.set(key, id);
+    }
+    weldedId[i] = id;
+  }
+
+  // Volumen por teorema de divergencia: sum( v0 · (v1 x v2) ) / 6
+  let signedVolume6 = 0;
+  // Mapa de semi-aristas dirigidas (u -> v) para verificar que toda arista tenga exactamente
+  // 1 semi-arista directa y 1 semi-arista opuesta (condición necesaria de 2-manifold cerrado).
+  const halfEdges = new Map<string, number>();
+  let topologyValid = triCount >= 4;
+
+  for (let t = 0; t < triCount; t++) {
+    const i0 = mesh.indices[t * 3];
+    const i1 = mesh.indices[t * 3 + 1];
+    const i2 = mesh.indices[t * 3 + 2];
+
+    const x0 = mesh.positions[i0 * 3];
+    const y0 = mesh.positions[i0 * 3 + 1];
+    const z0 = mesh.positions[i0 * 3 + 2];
+
+    const x1 = mesh.positions[i1 * 3];
+    const y1 = mesh.positions[i1 * 3 + 1];
+    const z1 = mesh.positions[i1 * 3 + 2];
+
+    const x2 = mesh.positions[i2 * 3];
+    const y2 = mesh.positions[i2 * 3 + 1];
+    const z2 = mesh.positions[i2 * 3 + 2];
+
+    const cx = y1 * z2 - z1 * y2;
+    const cy = z1 * x2 - x1 * z2;
+    const cz = x1 * y2 - y1 * x2;
+    signedVolume6 += x0 * cx + y0 * cy + z0 * cz;
+
+    if (topologyValid) {
+      const a = weldedId[i0];
+      const b = weldedId[i1];
+      const c = weldedId[i2];
+
+      if (a === b || b === c || c === a) {
+        topologyValid = false;
+        continue;
+      }
+
+      const edges: [number, number][] = [
+        [a, b],
+        [b, c],
+        [c, a],
+      ];
+      for (const [u, v] of edges) {
+        const edgeKey = `${u}->${v}`;
+        const count = (halfEdges.get(edgeKey) ?? 0) + 1;
+        if (count > 1) {
+          topologyValid = false;
+        }
+        halfEdges.set(edgeKey, count);
+      }
+    }
+  }
+
+  if (topologyValid) {
+    for (const [edgeKey] of halfEdges) {
+      const sep = edgeKey.indexOf('->');
+      const u = edgeKey.slice(0, sep);
+      const v = edgeKey.slice(sep + 2);
+      if (halfEdges.get(`${v}->${u}`) !== 1) {
+        topologyValid = false;
+        break;
+      }
+    }
+  }
+
+  return {
+    triangles: triCount,
+    vertices: vertCount,
+    isManifold: topologyValid,
+    volumeMm3: Math.abs(signedVolume6 / 6),
+    dimensionsMm: [
+      Math.max(0, maxX - minX),
+      Math.max(0, maxY - minY),
+      Math.max(0, maxZ - minZ),
+    ],
+  };
+}
+
+/**
+ * Construye una `THREE.BufferGeometry` lista para renderizar en Three.js.
+ * Cuando `mesh.faceColors` está presente, convierte la geometría a formato no-indexado
+ * con atributo `color` por vértice para mostrar el pintado por triángulo con bordes nítidos.
+ *
+ * @param mesh Malla origen en formato Kura3D.
+ * @param baseColorHex Color base opcional en hex si no se usa `faceColors`.
+ * @returns Geometría Three.js lista para GPU.
+ */
+export function createBufferGeometryFromMeshData(
+  mesh: MeshData,
+  baseColorHex?: string
+): THREE.BufferGeometry {
+  const geometry = new THREE.BufferGeometry();
+  const triCount = Math.floor(mesh.indices.length / 3);
+
+  if (mesh.faceColors && mesh.faceColors.length === triCount && triCount > 0) {
+    const posOut = new Float32Array(triCount * 9);
+    const normOut = new Float32Array(triCount * 9);
+    const colOut = new Float32Array(triCount * 9);
+    const colorCache = new Map<string, [number, number, number]>();
+    const tmpColor = new THREE.Color();
+    const defaultHex = (baseColorHex ?? '#38bdf8').toLowerCase();
+
+    for (let t = 0; t < triCount; t++) {
+      const hex = (mesh.faceColors[t] ?? defaultHex).toLowerCase();
+      let rgb = colorCache.get(hex);
+      if (!rgb) {
+        tmpColor.set(hex);
+        rgb = [tmpColor.r, tmpColor.g, tmpColor.b];
+        colorCache.set(hex, rgb);
+      }
+
+      const i0 = mesh.indices[t * 3] * 3;
+      const i1 = mesh.indices[t * 3 + 1] * 3;
+      const i2 = mesh.indices[t * 3 + 2] * 3;
+
+      const ax = mesh.positions[i0];
+      const ay = mesh.positions[i0 + 1];
+      const az = mesh.positions[i0 + 2];
+      const bx = mesh.positions[i1];
+      const by = mesh.positions[i1 + 1];
+      const bz = mesh.positions[i1 + 2];
+      const cx = mesh.positions[i2];
+      const cy = mesh.positions[i2 + 1];
+      const cz = mesh.positions[i2 + 2];
+
+      const base = t * 9;
+      posOut[base] = ax;
+      posOut[base + 1] = ay;
+      posOut[base + 2] = az;
+      posOut[base + 3] = bx;
+      posOut[base + 4] = by;
+      posOut[base + 5] = bz;
+      posOut[base + 6] = cx;
+      posOut[base + 7] = cy;
+      posOut[base + 8] = cz;
+
+      // Normal plana por triángulo para que el pintado por caras se vea definido y limpio
+      const e1x = bx - ax;
+      const e1y = by - ay;
+      const e1z = bz - az;
+      const e2x = cx - ax;
+      const e2y = cy - ay;
+      const e2z = cz - az;
+      let nx = e1y * e2z - e1z * e2y;
+      let ny = e1z * e2x - e1x * e2z;
+      let nz = e1x * e2y - e1y * e2x;
+      const len = Math.hypot(nx, ny, nz) || 1;
+      nx /= len;
+      ny /= len;
+      nz /= len;
+
+      for (let k = 0; k < 3; k++) {
+        normOut[base + k * 3] = nx;
+        normOut[base + k * 3 + 1] = ny;
+        normOut[base + k * 3 + 2] = nz;
+        colOut[base + k * 3] = rgb[0];
+        colOut[base + k * 3 + 1] = rgb[1];
+        colOut[base + k * 3 + 2] = rgb[2];
+      }
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(posOut, 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(normOut, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colOut, 3));
+    geometry.computeBoundingBox();
+    geometry.computeBoundingSphere();
+    return geometry;
+  }
+
+  geometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(new Float32Array(mesh.positions), 3)
+  );
+  geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(mesh.indices), 1));
+
+  if (mesh.normals && mesh.normals.length === mesh.positions.length) {
+    geometry.setAttribute(
+      'normal',
+      new THREE.BufferAttribute(new Float32Array(mesh.normals), 3)
+    );
+  } else {
+    geometry.computeVertexNormals();
+  }
+
+  geometry.computeBoundingBox();
+  geometry.computeBoundingSphere();
+  return geometry;
+}
+
+// ============================================================================
+// Generación determinista de glifos vectoriales 2D para la primitiva 'text'
+// ============================================================================
+
+/** Segmento vectorial en grilla normalizada [0..4] x [0..6] (origen abajo-izquierda). */
+type StrokeSegment = [number, number, number, number];
+
+/**
+ * Definición geométrica por trazos vectoriales (en grilla 4x6) para caracteres ASCII
+ * imprimibles. Garantiza funcionamiento 100% offline en Node y navegador sin archivos de fuente.
+ */
+const VECTOR_FONT_GLYPHS: Record<string, StrokeSegment[]> = {
+  A: [[0, 0, 2, 6], [2, 6, 4, 0], [0.8, 2.2, 3.2, 2.2]],
+  B: [[0, 0, 0, 6], [0, 6, 3, 6], [3, 6, 3.8, 5], [3.8, 5, 3, 3.2], [0, 3.2, 3, 3.2], [3, 3.2, 4, 2], [4, 2, 3, 0], [3, 0, 0, 0]],
+  C: [[4, 5, 3, 6], [3, 6, 1, 6], [1, 6, 0, 5], [0, 5, 0, 1], [0, 1, 1, 0], [1, 0, 3, 0], [3, 0, 4, 1]],
+  D: [[0, 0, 0, 6], [0, 6, 2.8, 6], [2.8, 6, 4, 4.5], [4, 4.5, 4, 1.5], [4, 1.5, 2.8, 0], [2.8, 0, 0, 0]],
+  E: [[0, 0, 0, 6], [0, 6, 4, 6], [0, 3.1, 3.2, 3.1], [0, 0, 4, 0]],
+  F: [[0, 0, 0, 6], [0, 6, 4, 6], [0, 3.1, 3.2, 3.1]],
+  G: [[4, 5, 3, 6], [3, 6, 1, 6], [1, 6, 0, 5], [0, 5, 0, 1], [0, 1, 1, 0], [1, 0, 3.2, 0], [3.2, 0, 4, 1], [4, 1, 4, 2.8], [4, 2.8, 2.2, 2.8]],
+  H: [[0, 0, 0, 6], [4, 0, 4, 6], [0, 3.1, 4, 3.1]],
+  I: [[0.8, 6, 3.2, 6], [2, 0, 2, 6], [0.8, 0, 3.2, 0]],
+  J: [[1, 6, 4, 6], [3.5, 6, 3.5, 1], [3.5, 1, 2.5, 0], [2.5, 0, 1, 0], [1, 0, 0, 1.2]],
+  K: [[0, 0, 0, 6], [3.8, 6, 0.2, 2.8], [1.4, 3.8, 4, 0]],
+  L: [[0, 6, 0, 0], [0, 0, 4, 0]],
+  M: [[0, 0, 0, 6], [0, 6, 2, 2.5], [2, 2.5, 4, 6], [4, 6, 4, 0]],
+  N: [[0, 0, 0, 6], [0, 6, 4, 0], [4, 0, 4, 6]],
+  O: [[1, 0, 3, 0], [3, 0, 4, 1.2], [4, 1.2, 4, 4.8], [4, 4.8, 3, 6], [3, 6, 1, 6], [1, 6, 0, 4.8], [0, 4.8, 0, 1.2], [0, 1.2, 1, 0]],
+  P: [[0, 0, 0, 6], [0, 6, 3, 6], [3, 6, 4, 5], [4, 5, 4, 4], [4, 4, 3, 3], [3, 3, 0, 3]],
+  Q: [[1, 0, 3, 0], [3, 0, 4, 1.2], [4, 1.2, 4, 4.8], [4, 4.8, 3, 6], [3, 6, 1, 6], [1, 6, 0, 4.8], [0, 4.8, 0, 1.2], [0, 1.2, 1, 0], [2.4, 1.6, 4.2, -0.4]],
+  R: [[0, 0, 0, 6], [0, 6, 3, 6], [3, 6, 4, 5], [4, 5, 4, 4], [4, 4, 3, 3], [3, 3, 0, 3], [2, 3, 4, 0]],
+  S: [[4, 5, 3, 6], [3, 6, 1, 6], [1, 6, 0, 5], [0, 5, 0, 4], [0, 4, 1, 3.1], [1, 3.1, 3, 3.1], [3, 3.1, 4, 2.1], [4, 2.1, 4, 1], [4, 1, 3, 0], [3, 0, 1, 0], [1, 0, 0, 1]],
+  T: [[0, 6, 4, 6], [2, 0, 2, 6]],
+  U: [[0, 6, 0, 1], [0, 1, 1, 0], [1, 0, 3, 0], [3, 0, 4, 1], [4, 1, 4, 6]],
+  V: [[0, 6, 2, 0], [2, 0, 4, 6]],
+  W: [[0, 6, 1, 0], [1, 0, 2, 3.2], [2, 3.2, 3, 0], [3, 0, 4, 6]],
+  X: [[0, 0, 4, 6], [0, 6, 4, 0]],
+  Y: [[0, 6, 2, 3], [4, 6, 2, 3], [2, 3, 2, 0]],
+  Z: [[0, 6, 4, 6], [4, 6, 0, 0], [0, 0, 4, 0]],
+  '0': [[1, 0, 3, 0], [3, 0, 4, 1.2], [4, 1.2, 4, 4.8], [4, 4.8, 3, 6], [3, 6, 1, 6], [1, 6, 0, 4.8], [0, 4.8, 0, 1.2], [0, 1.2, 1, 0], [0.6, 1, 3.4, 5]],
+  '1': [[0.8, 4.5, 2.2, 6], [2.2, 6, 2.2, 0], [0.8, 0, 3.6, 0]],
+  '2': [[0, 4.8, 1, 6], [1, 6, 3, 6], [3, 6, 4, 4.8], [4, 4.8, 4, 3.6], [4, 3.6, 0, 0], [0, 0, 4, 0]],
+  '3': [[0, 5, 1, 6], [1, 6, 3, 6], [3, 6, 4, 5], [4, 5, 4, 4], [4, 4, 3, 3.1], [1.5, 3.1, 3, 3.1], [3, 3.1, 4, 2.1], [4, 2.1, 4, 1], [4, 1, 3, 0], [3, 0, 1, 0], [1, 0, 0, 1]],
+  '4': [[3.2, 0, 3.2, 6], [3.2, 6, 0, 2], [0, 2, 4, 2]],
+  '5': [[4, 6, 0, 6], [0, 6, 0, 3.3], [0, 3.3, 3, 3.3], [3, 3.3, 4, 2.2], [4, 2.2, 4, 1], [4, 1, 3, 0], [3, 0, 1, 0], [1, 0, 0, 1]],
+  '6': [[3.6, 5.2, 2.8, 6], [2.8, 6, 1, 6], [1, 6, 0, 4.8], [0, 4.8, 0, 1], [0, 1, 1, 0], [1, 0, 3, 0], [3, 0, 4, 1], [4, 1, 4, 2.2], [4, 2.2, 3, 3.2], [3, 3.2, 0, 3.2]],
+  '7': [[0, 6, 4, 6], [4, 6, 1.4, 0]],
+  '8': [[1, 3.1, 3, 3.1], [3, 3.1, 4, 4.2], [4, 4.2, 4, 5], [4, 5, 3, 6], [3, 6, 1, 6], [1, 6, 0, 5], [0, 5, 0, 4.2], [0, 4.2, 1, 3.1], [0, 2, 0, 1], [0, 1, 1, 0], [1, 0, 3, 0], [3, 0, 4, 1], [4, 1, 4, 2], [4, 2, 3, 3.1], [1, 3.1, 0, 2]],
+  '9': [[4, 2.8, 1, 2.8], [1, 2.8, 0, 3.8], [0, 3.8, 0, 5], [0, 5, 1, 6], [1, 6, 3, 6], [3, 6, 4, 5], [4, 5, 4, 1.2], [4, 1.2, 3, 0], [3, 0, 1, 0], [1, 0, 0.4, 0.8]],
+  '-': [[0.6, 3, 3.4, 3]],
+  '_': [[0, 0, 4, 0]],
+  '.': [[1.8, 0, 2.2, 0]],
+  '+': [[0.5, 3, 3.5, 3], [2, 1.5, 2, 4.5]],
+  '!': [[2, 2, 2, 6], [2, 0, 2, 0.4]],
+  ':': [[2, 4, 2, 4.4], [2, 1, 2, 1.4]],
+};
+
+/**
+ * Genera un polígono rectangular CCW con tapas extendidas alrededor de un segmento 2D
+ * para que los trazos se superpongan limpiamente en las esquinas sin vértices "pinch".
+ */
+function buildStrokeQuad(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  thickness: number
+): [number, number][] {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy);
+  const hw = thickness * 0.5;
+
+  if (len < 1e-6) {
+    return [
+      [x1 - hw, y1 - hw],
+      [x1 + hw, y1 - hw],
+      [x1 + hw, y1 + hw],
+      [x1 - hw, y1 + hw],
+    ];
+  }
+
+  const ux = dx / len;
+  const uy = dy / len;
+  const px = -uy;
+  const py = ux;
+  const ext = hw * 0.9;
+
+  const sx = x1 - ux * ext;
+  const sy = y1 - uy * ext;
+  const ex = x2 + ux * ext;
+  const ey = y2 + uy * ext;
+
+  return [
+    [sx - px * hw, sy - py * hw],
+    [ex - px * hw, ey - py * hw],
+    [ex + px * hw, ey + py * hw],
+    [sx + px * hw, sy + py * hw],
+  ];
+}
+
+/**
+ * Construye una `CrossSection` 2D para un texto dado combinando trazos vectoriales
+ * deterministas sin depender de tipografías externas.
+ */
+function buildTextCrossSection(
+  wasm: ManifoldToplevel,
+  rawText: string,
+  fontSize: number
+): CrossSection {
+  const text = (rawText || 'KURA').toUpperCase();
+  const scale = Math.max(1, fontSize) / 6;
+  const strokeThickness = 1.05 * scale;
+  const charWidth = 4 * scale;
+  const spacing = 2.0 * scale;
+  const quads: [number, number][][] = [];
+
+  let cursorX = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === ' ') {
+      cursorX += charWidth * 0.8 + spacing;
+      continue;
+    }
+
+    const segments = VECTOR_FONT_GLYPHS[ch] ?? VECTOR_FONT_GLYPHS['-'];
+    for (const [x1, y1, x2, y2] of segments) {
+      quads.push(
+        buildStrokeQuad(
+          cursorX + x1 * scale,
+          y1 * scale,
+          cursorX + x2 * scale,
+          y2 * scale,
+          strokeThickness
+        )
+      );
+    }
+    cursorX += charWidth + spacing;
+  }
+
+  if (quads.length === 0) {
+    return wasm.CrossSection.square([fontSize, fontSize * 0.4], true);
+  }
+
+  return wasm.CrossSection.ofPolygons(quads, 'Positive');
+}
+
+/**
+ * Crea una primitiva paramétrica 3D cerrada (2-manifold watertight) centrada en X=0, Z=0
+ * y apoyada sobre la cama en Y=0.
+ *
+ * @param type Tipo de primitiva ('box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text').
+ * @param params Parámetros geométricos en milímetros.
+ * @returns Malla `MeshData` lista para escena, CSG o exportación.
+ */
+export async function createPrimitiveMesh(
+  type: PrimitiveType,
+  params: PrimitiveParams = {}
+): Promise<MeshData> {
+  const wasm = await initManifoldEngine();
+  let manifold: Manifold | null = null;
+  // Registro de manejadores WASM intermedios para garantizar su liberación en finally
+  const tempHandles: Array<{ delete: () => void }> = [];
+
+  try {
+    switch (type) {
+      case 'box': {
+        const w = Math.max(0.5, params.width ?? 20);
+        const h = Math.max(0.5, params.height ?? 20);
+        const d = Math.max(0.5, params.depth ?? 20);
+        manifold = wasm.Manifold.cube([w, h, d], true);
+        break;
+      }
+
+      case 'cylinder': {
+        const r = Math.max(0.25, params.radius ?? 10);
+        const h = Math.max(0.5, params.height ?? 20);
+        const seg = Math.max(8, Math.round(params.segments ?? 32));
+        // Manifold.cylinder extruye a lo largo de Z; rotamos -90° en X para alinear con Y-up
+        const raw = wasm.Manifold.cylinder(h, r, r, seg, false);
+        tempHandles.push(raw);
+        manifold = raw.rotate([-90, 0, 0]);
+        break;
+      }
+
+      case 'tube': {
+        const outerR = Math.max(1, params.outerRadius ?? params.radius ?? 12);
+        const innerR = Math.max(
+          0.2,
+          Math.min(params.innerRadius ?? outerR * 0.58, outerR - 0.3)
+        );
+        const h = Math.max(0.5, params.height ?? 20);
+        const seg = Math.max(12, Math.round(params.segments ?? 36));
+
+        const outer = wasm.Manifold.cylinder(h, outerR, outerR, seg, false);
+        tempHandles.push(outer);
+        // El cilindro interno sobresale 1 mm por ambos extremos para evitar coplanaridad
+        const innerRaw = wasm.Manifold.cylinder(h + 2, innerR, innerR, seg, false);
+        tempHandles.push(innerRaw);
+        const inner = innerRaw.translate([0, 0, -1]);
+        tempHandles.push(inner);
+        const tubeZ = outer.subtract(inner);
+        tempHandles.push(tubeZ);
+        manifold = tubeZ.rotate([-90, 0, 0]);
+        break;
+      }
+
+      case 'sphere': {
+        const r = Math.max(0.5, params.radius ?? 12);
+        const seg = Math.max(12, Math.round(params.segments ?? 32));
+        manifold = wasm.Manifold.sphere(r, seg);
+        break;
+      }
+
+      case 'cone': {
+        const r = Math.max(0.5, params.radius ?? 12);
+        const h = Math.max(0.5, params.height ?? 24);
+        const seg = Math.max(8, Math.round(params.segments ?? 32));
+        const raw = wasm.Manifold.cylinder(h, r, 0, seg, false);
+        tempHandles.push(raw);
+        manifold = raw.rotate([-90, 0, 0]);
+        break;
+      }
+
+      case 'torus': {
+        const majorR = Math.max(1.5, params.outerRadius ?? params.radius ?? 14);
+        const tubeR = Math.max(
+          0.3,
+          Math.min(params.tubeRadius ?? 4, majorR - 0.2)
+        );
+        const seg = Math.max(12, Math.round(params.segments ?? 32));
+        // Revolucionamos un círculo desplazado sobre +X alrededor del eje Y (Manifold lo asigna a Z)
+        const circle = wasm.CrossSection.circle(tubeR, Math.max(12, Math.round(seg * 0.75)));
+        tempHandles.push(circle);
+        const shifted = circle.translate([majorR, 0]);
+        tempHandles.push(shifted);
+        const revolved = shifted.revolve(seg, 360);
+        tempHandles.push(revolved);
+        // Rotamos -90° en X para que el toro repose plano sobre la cama XZ (eje de simetría = Y)
+        manifold = revolved.rotate([-90, 0, 0]);
+        break;
+      }
+
+      case 'prism': {
+        const sides = Math.max(3, Math.round(params.sides ?? 6));
+        const r = Math.max(0.5, params.radius ?? 12);
+        const h = Math.max(0.5, params.height ?? 20);
+        const raw = wasm.Manifold.cylinder(h, r, r, sides, false);
+        tempHandles.push(raw);
+        manifold = raw.rotate([-90, 0, 0]);
+        break;
+      }
+
+      case 'text': {
+        const text = params.text ?? 'KURA';
+        const fontSize = Math.max(4, params.fontSize ?? 16);
+        const extrudeDepth = Math.max(0.8, params.height ?? params.depth ?? 4);
+        const cs = buildTextCrossSection(wasm, text, fontSize);
+        tempHandles.push(cs);
+        const extruded = cs.extrude(extrudeDepth, 0, 0, [1, 1], false);
+        tempHandles.push(extruded);
+        // Rotamos -90° en X: el texto queda acostado sobre la cama XZ y extruido hacia +Y
+        manifold = extruded.rotate([-90, 0, 0]);
+        break;
+      }
+
+      default: {
+        const exhaustive: never = type;
+        throw new Error(`Tipo de primitiva no soportado: ${String(exhaustive)}`);
+      }
+    }
+
+    const mesh = manifoldToMeshData(manifold);
+    return normalizeMeshToBed(mesh);
+  } finally {
+    for (const handle of tempHandles) {
+      handle.delete();
+    }
+    if (manifold) {
+      manifold.delete();
+    }
+  }
+}

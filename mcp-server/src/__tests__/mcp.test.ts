@@ -1,0 +1,313 @@
+/**
+ * @file mcp-server/src/__tests__/mcp.test.ts
+ * @description Pruebas unitarias y de integración MCP para Kura3D con Vitest.
+ * Verifica el registro completo de herramientas, la generación headless de primitivas
+ * con exportación STL binaria/3MF válida y el intercambio bidireccional vía WebSocket Live Bridge.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { afterEach, describe, expect, it } from 'vitest';
+import { WebSocket } from 'ws';
+import { isAllowedLocalOrigin } from '../bridge.js';
+import { createKuraMcpServer } from '../index.js';
+import type { KuraCommandRequest, KuraCommandResponse } from '../types.js';
+
+const EXPECTED_TOOLS = [
+  'kura_get_scene_state',
+  'kura_create_primitive',
+  'kura_transform_object',
+  'kura_delete_object',
+  'kura_boolean_operation',
+  'kura_hollow_object',
+  'kura_plane_cut',
+  'kura_split_disconnected',
+  'kura_split_by_color',
+  'kura_apply_texture',
+  'kura_paint_object',
+  'kura_import_svg',
+  'kura_set_units',
+  'kura_set_printer_profile',
+  'kura_export_stl',
+  'kura_export_3mf',
+  'kura_capture_viewport',
+];
+
+async function setupInMemoryPair(bridgePort = 0) {
+  const { server, bridge, headless } = createKuraMcpServer({ bridgePort });
+  const client = new Client({ name: 'kura3d-test-client', version: '1.0.0' });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+
+  await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
+  return { server, bridge, headless, client };
+}
+
+describe('Kura3D MCP Server', () => {
+  const cleanupTasks: Array<() => Promise<void>> = [];
+
+  afterEach(async () => {
+    while (cleanupTasks.length > 0) {
+      const fn = cleanupTasks.pop();
+      if (fn) await fn();
+    }
+  });
+
+  it('registra todas las herramientas y recursos MCP de Kura3D', async () => {
+    const { client, server, bridge } = await setupInMemoryPair();
+    cleanupTasks.push(async () => {
+      await client.close();
+      await server.close();
+      await bridge.close();
+    });
+
+    const toolList = await client.listTools();
+    const toolNames = toolList.tools.map((t) => t.name);
+
+    for (const expected of EXPECTED_TOOLS) {
+      expect(toolNames).toContain(expected);
+    }
+
+    const resourceList = await client.listResources();
+    const uris = resourceList.resources.map((r) => r.uri);
+    expect(uris).toContain('kura://scene/state');
+    expect(uris).toContain('kura://info/about');
+  });
+
+  it('crea primitivas en modo headless, transforma, ahueca y exporta STL binario y 3MF válidos', async () => {
+    const { client, server, bridge } = await setupInMemoryPair();
+    const tempDir = await mkdtemp(join(tmpdir(), 'kura3d-mcp-test-'));
+    cleanupTasks.push(async () => {
+      await client.close();
+      await server.close();
+      await bridge.close();
+      await rm(tempDir, { recursive: true, force: true });
+    });
+
+    // 1. Crear caja base
+    const boxRes = await client.callTool({
+      name: 'kura_create_primitive',
+      arguments: {
+        primitiveType: 'box',
+        name: 'BaseSoporte',
+        params: { width: 40, height: 10, depth: 30 },
+        position: [0, 0, 0],
+      },
+    });
+    const boxJson = JSON.parse((boxRes.content[0] as { text: string }).text);
+    expect(boxJson.name).toBe('BaseSoporte');
+    expect(boxJson.stats.triangles).toBe(12);
+
+    // 2. Crear tubo y transformarlo
+    const tubeRes = await client.callTool({
+      name: 'kura_create_primitive',
+      arguments: {
+        primitiveType: 'tube',
+        name: 'Anillo',
+        params: { outerRadius: 15, innerRadius: 10, height: 20, segments: 24 },
+      },
+    });
+    const tubeJson = JSON.parse((tubeRes.content[0] as { text: string }).text);
+    expect(tubeJson.stats.triangles).toBe(24 * 8);
+
+    await client.callTool({
+      name: 'kura_transform_object',
+      arguments: {
+        objectId: tubeJson.id,
+        position: [0, 10, 0],
+        scale: [1, 1.5, 1],
+      },
+    });
+
+    // 3. Ahuecar la caja y validar aumento de triángulos por cavidad interior
+    const hollowRes = await client.callTool({
+      name: 'kura_hollow_object',
+      arguments: {
+        objectId: boxJson.id,
+        wallThickness: 2,
+        drainHole: true,
+      },
+    });
+    const hollowJson = JSON.parse((hollowRes.content[0] as { text: string }).text);
+    expect(hollowJson.hollow.enabled).toBe(true);
+    expect(hollowJson.stats.triangles).toBe(24);
+
+    // 4. Configurar unidades y perfil de impresora
+    await client.callTool({ name: 'kura_set_units', arguments: { units: 'cm' } });
+    await client.callTool({
+      name: 'kura_set_printer_profile',
+      arguments: { profileId: 'elegoo-centauri-carbon-2' },
+    });
+
+    const stateRes = await client.callTool({ name: 'kura_get_scene_state', arguments: {} });
+    const stateJson = JSON.parse((stateRes.content[0] as { text: string }).text);
+    expect(stateJson.mode).toBe('headless');
+    expect(stateJson.units).toBe('cm');
+    expect(stateJson.objectCount).toBe(2);
+
+    // 5. Exportar STL binario y validar cabecera de 80 bytes + conteo de triángulos + tamaño exacto
+    const stlPath = join(tempDir, 'modelo_prueba.stl');
+    const exportStlRes = await client.callTool({
+      name: 'kura_export_stl',
+      arguments: { outputPath: stlPath, binary: true },
+    });
+    const exportStlJson = JSON.parse((exportStlRes.content[0] as { text: string }).text);
+    expect(exportStlJson.format).toBe('stl-binary');
+
+    const stlBytes = await readFile(stlPath);
+    const triCount = stlBytes.readUInt32LE(80);
+    expect(triCount).toBe(24 + 24 * 8);
+    expect(stlBytes.byteLength).toBe(84 + triCount * 50);
+
+    // Verifica conversión Y-up -> Z-up en los vértices STL (el tubo escalado Y*1.5 en y=10..40 pasa a Z=10..40)
+    let maxStlZ = -Infinity;
+    for (let t = 0; t < triCount; t++) {
+      const base = 84 + t * 50;
+      for (let v = 0; v < 3; v++) {
+        const z = stlBytes.readFloatLE(base + 12 + v * 12 + 8);
+        if (z > maxStlZ) maxStlZ = z;
+      }
+    }
+    expect(maxStlZ).toBeCloseTo(40, 3);
+
+    // 6. Exportar 3MF y validar contenedor ZIP/OPC
+    const threeMfPath = join(tempDir, 'modelo_prueba.3mf');
+    await client.callTool({
+      name: 'kura_export_3mf',
+      arguments: { outputPath: threeMfPath },
+    });
+    const mfBytes = await readFile(threeMfPath);
+    expect(mfBytes.subarray(0, 4).toString('binary')).toBe('PK\x03\x04');
+    expect(mfBytes.toString('utf8')).toContain('3D/3dmodel.model');
+  });
+
+  it('valida orígenes locales permitidos y rechaza orígenes remotos en el puente WebSocket', async () => {
+    expect(isAllowedLocalOrigin(undefined)).toBe(true);
+    expect(isAllowedLocalOrigin('http://localhost:5173')).toBe(true);
+    expect(isAllowedLocalOrigin('http://127.0.0.1:4173')).toBe(true);
+    expect(isAllowedLocalOrigin('tauri://localhost')).toBe(true);
+    expect(isAllowedLocalOrigin('https://tauri.localhost')).toBe(true);
+    expect(isAllowedLocalOrigin('https://evil.example')).toBe(false);
+
+    const { client, server, bridge } = await setupInMemoryPair(0);
+    await bridge.start();
+    cleanupTasks.push(async () => {
+      await client.close();
+      await server.close();
+      await bridge.close();
+    });
+
+    const rejected = await new Promise<boolean>((resolve) => {
+      const evilWs = new WebSocket(`ws://127.0.0.1:${bridge.getPort()}`, {
+        headers: { origin: 'https://evil.example' },
+      });
+      evilWs.once('unexpected-response', (_req, res) => {
+        resolve(res.statusCode === 403);
+      });
+      evilWs.once('open', () => {
+        evilWs.close();
+        resolve(false);
+      });
+      evilWs.once('error', () => {
+        resolve(true);
+      });
+    });
+
+    expect(rejected).toBe(true);
+  });
+
+  it('reenvía comandos, alias de parámetros y captura PNG en vivo cuando la UI de Kura3D está conectada vía WebSocket', async () => {
+    const { client, server, bridge } = await setupInMemoryPair(0);
+    const started = await bridge.start();
+    expect(started).toBe(true);
+
+    const ws = new WebSocket(`ws://127.0.0.1:${bridge.getPort()}`, {
+      headers: { origin: 'http://localhost:5173' },
+    });
+    cleanupTasks.push(async () => {
+      ws.close();
+      await client.close();
+      await server.close();
+      await bridge.close();
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      ws.once('open', () => resolve());
+      ws.once('error', reject);
+    });
+
+    // Mock de la interfaz viva de Kura3D respondiendo al Command Bus
+    const receivedRequests: KuraCommandRequest[] = [];
+    ws.on('message', (raw) => {
+      const req = JSON.parse(raw.toString('utf8')) as KuraCommandRequest;
+      receivedRequests.push(req);
+
+      let resp: KuraCommandResponse;
+      if (req.command === 'capture_viewport') {
+        // PNG mínimo 1x1 válido en base64
+        const tinyPng =
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+        resp = {
+          id: req.id,
+          ok: true,
+          result: { imageBase64: `data:image/png;base64,${tinyPng}`, mimeType: 'image/png' },
+        };
+      } else {
+        resp = {
+          id: req.id,
+          ok: true,
+          result: { id: 'live-obj-1', primitiveType: req.params.primitiveType },
+        };
+      }
+      ws.send(JSON.stringify(resp));
+    });
+
+    const createRes = await client.callTool({
+      name: 'kura_create_primitive',
+      arguments: { primitiveType: 'cylinder', params: { radius: 12, height: 30 } },
+    });
+    const createJson = JSON.parse((createRes.content[0] as { text: string }).text);
+    expect(createJson.mode).toBe('live-bridge');
+    expect(createJson.result.id).toBe('live-obj-1');
+
+    await client.callTool({
+      name: 'kura_transform_object',
+      arguments: { objectId: 'live-obj-1', position: [10, 0, 5] },
+    });
+    await client.callTool({ name: 'kura_set_units', arguments: { units: 'mm' } });
+    await client.callTool({
+      name: 'kura_export_stl',
+      arguments: { outputPath: 'unused.stl', binary: true },
+    });
+
+    const captureRes = await client.callTool({
+      name: 'kura_capture_viewport',
+      arguments: { width: 800, height: 600 },
+    });
+    const imageBlock = captureRes.content.find((c) => c.type === 'image') as
+      | { type: 'image'; data: string; mimeType: string }
+      | undefined;
+    expect(imageBlock).toBeDefined();
+    expect(imageBlock?.mimeType).toBe('image/png');
+
+    expect(receivedRequests.map((r) => r.command)).toEqual([
+      'create_primitive',
+      'transform_object',
+      'set_unit_system',
+      'export_stl',
+      'capture_viewport',
+    ]);
+    expect(receivedRequests[0].params.type).toBe('cylinder');
+    expect(receivedRequests[0].params.primitiveType).toBe('cylinder');
+    expect(receivedRequests[1].params.id).toBe('live-obj-1');
+    expect(receivedRequests[1].params.objectId).toBe('live-obj-1');
+    expect(receivedRequests[2].params.unit).toBe('mm');
+    expect(receivedRequests[2].params.unitSystem).toBe('mm');
+    expect(receivedRequests[3].params.returnBytes).toBe(true);
+  });
+});

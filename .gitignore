@@ -1,0 +1,44 @@
+# Kura3D — ISGROTH (Innovación y Soluciones GROTH)
+# Autor: Nicolás Groth <ngroth@gmail.com>
+
+# Dependencias
+node_modules/
+mcp-server/node_modules/
+
+# Compilaciones y artefactos generados
+dist/
+mcp-server/dist/
+src-tauri/target/
+src-tauri/gen/
+*.tsbuildinfo
+
+# Secretos, variables de entorno y certificados (NUNCA subir al repositorio)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+secrets/
+credentials*.json
+
+# Logs y caches locales
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+.vite/
+coverage/
+.vitest/
+
+# Archivos de sistema operativo y editores
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+.idea/
+.vscode/*
+!.vscode/extensions.json

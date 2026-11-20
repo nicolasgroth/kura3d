@@ -1,0 +1,55 @@
+{
+  "name": "kura3d",
+  "version": "1.0.0",
+  "description": "Kura3D — Modelador 3D nativo y web de alto rendimiento para creación e impresión 3D, con motor Manifold CSG, servidor MCP nativo y chat IA multi-proveedor. Desarrollado para ISGROTH (Innovación y Soluciones GROTH).",
+  "author": "Nicolás Groth <ngroth@gmail.com> (ISGROTH — Innovación y Soluciones GROTH)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nicolasgroth/kura3d.git"
+  },
+  "homepage": "https://github.com/nicolasgroth/kura3d#readme",
+  "bugs": {
+    "url": "https://github.com/nicolasgroth/kura3d/issues"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --port 4173",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "mcp:build": "npm --prefix mcp-server run build",
+    "mcp:start": "npm --prefix mcp-server run start",
+    "mcp:test": "npm --prefix mcp-server run test"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.0.8",
+    "@react-three/fiber": "^9.1.2",
+    "@tauri-apps/api": "^2.5.0",
+    "@tauri-apps/plugin-dialog": "^2.2.1",
+    "@tauri-apps/plugin-fs": "^2.2.1",
+    "fflate": "^0.8.2",
+    "lucide-react": "^0.511.0",
+    "manifold-3d": "^3.1.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "three": "^0.176.0",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.5.0",
+    "@types/react": "^19.1.1",
+    "@types/react-dom": "^19.1.1",
+    "@types/three": "^0.176.0",
+    "@vitejs/plugin-react": "^4.4.1",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.1.3"
+  }
+}

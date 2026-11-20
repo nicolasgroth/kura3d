@@ -1,0 +1,34 @@
+<!-- Autor: Nicolás Groth <ngroth@gmail.com> | Licencia: MIT -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="topFace" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="leftFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="rightFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+  </defs>
+  <!-- Fondo redondeado Kura3D -->
+  <rect x="12" y="12" width="232" height="232" rx="48" fill="url(#bg)" stroke="#38bdf8" stroke-opacity="0.35" stroke-width="4"/>
+  <!-- Cubo/roca facetada isométrica Kura3D -->
+  <!-- Cara superior biselada -->
+  <polygon points="128,46 196,84 128,122 60,84" fill="url(#topFace)"/>
+  <!-- Faceta izquierda -->
+  <polygon points="60,84 128,122 128,204 60,166" fill="url(#leftFace)"/>
+  <!-- Faceta derecha -->
+  <polygon points="196,84 196,166 128,204 128,122" fill="url(#rightFace)"/>
+  <!-- Bisel / arista interior de cristal facetado -->
+  <polygon points="128,62 174,88 128,114 82,88" fill="#e0f2fe" fill-opacity="0.32"/>
+  <polyline points="60,84 128,122 196,84" fill="none" stroke="#e0f2fe" stroke-width="3" stroke-linejoin="round"/>
+  <line x1="128" y1="122" x2="128" y2="204" stroke="#bae6fd" stroke-width="3" stroke-linecap="round"/>
+</svg>
