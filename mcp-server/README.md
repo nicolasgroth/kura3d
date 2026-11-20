@@ -33,6 +33,19 @@ npm test
 
 ---
 
+## Seguridad y Variables de Entorno
+
+El servidor MCP de Kura3D está ligado estrictamente a `127.0.0.1` y valida orígenes locales (`localhost`, `127.0.0.1`, `tauri://localhost`, `https://tauri.localhost`). Adicionalmente puedes activar controles de seguridad mediante variables de entorno:
+
+| Variable | Por defecto | Descripción |
+| :--- | :--- | :--- |
+| `KURA_BRIDGE_PORT` | `17432` | Puerto TCP local del puente WebSocket en `127.0.0.1`. |
+| `KURA_BRIDGE_TOKEN` | *(vacío)* | Token secreto compartido. Si se define, exige `Authorization: Bearer <token>` o `?token=<token>` en el handshake WebSocket (comparación en tiempo constante, rechazando con HTTP `401`). |
+| `KURA_BRIDGE_READ_ONLY` | `false` | Si es `true`, habilita el **modo Solo Lectura**: solo permite `kura_get_scene_state` y `kura_capture_viewport`, bloqueando cualquier modificación o exportación. |
+| `KURA_BRIDGE_RATE_LIMIT` | `120` | Máximo de comandos permitidos por minuto en ventana deslizante de 60 segundos. |
+
+---
+
 ## Configuración en Clientes MCP
 
 > Reemplaza `RUTA_ABSOLUTA_AL_PROYECTO` por la ruta real en tu equipo (por ejemplo `G:/OneDrive/proyectos/creador_modelos_3d_impresion`).
@@ -50,7 +63,10 @@ Agrega el servidor en tu archivo de configuración MCP de Antigravity (`mcp_conf
         "RUTA_ABSOLUTA_AL_PROYECTO/mcp-server/dist/index.js"
       ],
       "env": {
-        "KURA_BRIDGE_PORT": "17432"
+        "KURA_BRIDGE_PORT": "17432",
+        "KURA_BRIDGE_TOKEN": "",
+        "KURA_BRIDGE_READ_ONLY": "false",
+        "KURA_BRIDGE_RATE_LIMIT": "120"
       }
     }
   }
@@ -70,7 +86,10 @@ Edita `%APPDATA%\Claude\claude_desktop_config.json` (Windows) o `~/Library/Appli
         "RUTA_ABSOLUTA_AL_PROYECTO/mcp-server/dist/index.js"
       ],
       "env": {
-        "KURA_BRIDGE_PORT": "17432"
+        "KURA_BRIDGE_PORT": "17432",
+        "KURA_BRIDGE_TOKEN": "",
+        "KURA_BRIDGE_READ_ONLY": "false",
+        "KURA_BRIDGE_RATE_LIMIT": "120"
       }
     }
   }
@@ -88,6 +107,9 @@ args = ["RUTA_ABSOLUTA_AL_PROYECTO/mcp-server/dist/index.js"]
 
 [mcp_servers.kura3d.env]
 KURA_BRIDGE_PORT = "17432"
+KURA_BRIDGE_TOKEN = ""
+KURA_BRIDGE_READ_ONLY = "false"
+KURA_BRIDGE_RATE_LIMIT = "120"
 ```
 
 ---

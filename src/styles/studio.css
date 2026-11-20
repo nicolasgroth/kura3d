@@ -122,11 +122,28 @@ body,
 }
 
 .kura-app {
+  --tool-accent: var(--accent-cyan);
+  --tool-accent-fg: var(--accent-cyan-fg);
   display: grid;
   grid-template-rows: 52px minmax(0, 1fr) 28px;
   width: 100%;
   height: 100%;
   background: var(--bg-canvas);
+}
+
+.kura-app[data-tool="cut"] {
+  --tool-accent: var(--accent-amber);
+  --tool-accent-fg: #ffffff;
+}
+
+.kura-app[data-tool="paint"] {
+  --tool-accent: light-dark(#7c3aed, #a855f7);
+  --tool-accent-fg: #ffffff;
+}
+
+.kura-app[data-tool="erase"] {
+  --tool-accent: light-dark(#e11d48, #f43f5e);
+  --tool-accent-fg: #ffffff;
 }
 
 .kura-workspace {
@@ -314,9 +331,9 @@ body,
 }
 
 .kura-btn.is-active {
-  background: color-mix(in srgb, var(--accent-cyan) 18%, var(--bg-elevated));
-  border-color: var(--accent-cyan);
-  color: var(--accent-cyan);
+  background: color-mix(in srgb, var(--tool-accent) 18%, var(--bg-elevated));
+  border-color: var(--tool-accent);
+  color: var(--tool-accent);
 }
 
 .kura-segmented {
@@ -337,8 +354,9 @@ body,
 }
 
 .kura-segmented .kura-btn.is-active {
-  background: var(--accent-cyan);
-  color: var(--accent-cyan-fg);
+  background: var(--tool-accent);
+  color: var(--tool-accent-fg);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--tool-accent) 32%, transparent);
 }
 
 .kura-select,
@@ -365,11 +383,11 @@ body,
   border-color: var(--border-strong);
 }
 
-/* Pill de estado MCP */
+/* Pill de estado MCP y badges Local vs IA Externa */
 .kura-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   height: 28px;
   padding: 0 9px;
   border-radius: 999px;
@@ -378,12 +396,110 @@ body,
   border: 1px solid var(--border-subtle);
   background: var(--bg-elevated);
   color: var(--text-secondary);
+  cursor: pointer;
 }
 
 .kura-pill.is-online {
-  border-color: color-mix(in srgb, var(--accent-green) 45%, transparent);
+  border-color: color-mix(in srgb, var(--accent-green) 48%, transparent);
   background: color-mix(in srgb, var(--accent-green) 14%, transparent);
   color: var(--accent-green);
+}
+
+.kura-pill.is-off {
+  opacity: 0.72;
+}
+
+.kura-source-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.kura-source-pill.is-local {
+  background: color-mix(in srgb, var(--accent-green) 15%, transparent);
+  color: var(--accent-green);
+  border: 1px solid color-mix(in srgb, var(--accent-green) 36%, transparent);
+}
+
+.kura-source-pill.is-ai {
+  background: color-mix(in srgb, var(--accent-amber) 16%, transparent);
+  color: var(--accent-amber);
+  border: 1px solid color-mix(in srgb, var(--accent-amber) 40%, transparent);
+}
+
+.kura-ai-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.kura-ai-status-pill.tone-emerald {
+  background: color-mix(in srgb, var(--accent-green) 16%, transparent);
+  color: var(--accent-green);
+}
+
+.kura-ai-status-pill.tone-amber {
+  background: color-mix(in srgb, var(--accent-amber) 18%, transparent);
+  color: var(--accent-amber);
+}
+
+.kura-ai-status-pill.tone-cyan {
+  background: color-mix(in srgb, var(--accent-cyan) 16%, transparent);
+  color: var(--accent-cyan);
+}
+
+.kura-privacy-strip {
+  padding: 6px 12px;
+  font-size: 10.5px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  background: var(--bg-canvas);
+}
+
+.kura-privacy-strip.tone-amber {
+  color: var(--accent-amber);
+}
+
+.kura-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.kura-callout.is-warning {
+  background: color-mix(in srgb, var(--accent-amber) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-amber) 40%, transparent);
+  color: var(--text-primary);
+}
+
+.kura-callout.is-local {
+  background: color-mix(in srgb, var(--accent-green) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-green) 36%, transparent);
+  color: var(--text-primary);
+}
+
+.kura-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .kura-dot {
@@ -641,6 +757,14 @@ body,
   width: 100%;
 }
 
+.kura-hud-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .kura-hud-bottom {
   position: absolute;
   bottom: 12px;
@@ -663,9 +787,31 @@ body,
   padding: 5px 8px;
   border-radius: var(--radius-md);
   background: var(--hud-glass);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-hud);
+}
+
+.kura-boolean-fab {
+  align-self: flex-start;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-amber) 92%, #ffffff 8%),
+    color-mix(in srgb, var(--accent-amber) 76%, #000000 24%)
+  );
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-amber) 38%, transparent);
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+
+.kura-boolean-fab:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
 }
 
 .kura-hud-pill-nowrap {
@@ -673,6 +819,7 @@ body,
   flex-wrap: nowrap;
   max-width: 100%;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .kura-dims-badge {
@@ -681,6 +828,76 @@ body,
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Menú contextual clic derecho sobre objeto 3D */
+.kura-context-menu {
+  position: absolute;
+  z-index: 35;
+  width: 244px;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  background: var(--hud-glass);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kura-context-header {
+  padding: 4px 8px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tool-accent);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-context-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kura-context-item:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tool-accent) 16%, transparent);
+}
+
+.kura-context-item.is-accent {
+  color: var(--accent-amber);
+  font-weight: 700;
+}
+
+.kura-context-item.is-danger {
+  color: var(--accent-red);
+}
+
+.kura-context-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kura-context-sep {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 3px 4px;
 }
 
 /* ============================================================================
@@ -771,13 +988,32 @@ body,
   align-items: center;
 }
 
+.kura-swatch-row {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 5px;
+  align-items: center;
+}
+
 .kura-swatch {
-  width: 22px;
+  width: 100%;
+  min-width: 20px;
   height: 22px;
   border-radius: 6px;
   border: 2px solid transparent;
   cursor: pointer;
   transition: transform 0.1s ease;
+}
+
+.kura-swatch-custom {
+  width: 100%;
+  min-width: 22px;
+  height: 22px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
 }
 
 .kura-swatch:hover {
@@ -921,7 +1157,7 @@ body,
 }
 
 /* ============================================================================
- * 8. Diálogos Modales Nativos (<dialog>) — Modern Web Guidance
+ * 8. Diálogos Modales Nativos (<dialog>) y Paleta Ctrl+K — Modern Web Guidance
  * ============================================================================ */
 dialog.kura-dialog {
   border: 1px solid var(--border-subtle);
@@ -931,23 +1167,173 @@ dialog.kura-dialog {
   padding: 0;
   width: min(560px, calc(100vw - 24px));
   max-height: calc(100dvh - 32px);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition-property: opacity, transform, display, overlay;
+  transition-duration: 0.24s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: scale(0.94);
+  }
 }
 
-dialog.kura-dialog[open] {
+:is(dialog.kura-dialog[open]):where(:not([data-closing])) {
   display: flex;
   flex-direction: column;
+  opacity: 1;
+
+  @starting-style {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: scale(1);
+
+    @starting-style {
+      transform: scale(0.94);
+    }
+  }
+
+  &::backdrop {
+    background-color: rgba(6, 10, 16, 0.68);
+
+    @starting-style {
+      background-color: rgba(6, 10, 16, 0);
+    }
+  }
 }
 
 dialog:modal {
   overscroll-behavior: contain;
 }
 
-dialog::backdrop {
+dialog.kura-dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
-  background: rgba(6, 10, 16, 0.66);
-  backdrop-filter: blur(4px);
+  background-color: rgba(6, 10, 16, 0);
+  backdrop-filter: blur(5px);
+  transition-property: background-color, display, overlay;
+  transition-duration: 0.24s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.kura-dialog,
+  dialog.kura-dialog::backdrop {
+    transition-duration: 0.1s;
+  }
+}
+
+/* Paleta de comandos Ctrl+K */
+dialog.kura-palette-dialog {
+  width: min(580px, calc(100vw - 24px));
+  margin-top: min(12vh, 96px);
+}
+
+.kura-palette-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.kura-palette-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+}
+
+.kura-palette-list {
+  max-height: min(56vh, 420px);
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.kura-palette-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.kura-palette-item.is-active {
+  background: color-mix(in srgb, var(--tool-accent) 14%, var(--bg-elevated));
+  border-color: color-mix(in srgb, var(--tool-accent) 45%, transparent);
+}
+
+.kura-palette-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.kura-palette-icon {
+  color: var(--tool-accent);
+  display: inline-flex;
+}
+
+.kura-palette-texts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.kura-palette-label {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.kura-palette-cat {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+}
+
+.kura-palette-item-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.kura-palette-empty {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
+
+.kura-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .kura-dialog-header {
@@ -1023,16 +1409,17 @@ dialog::backdrop {
 }
 
 .kura-toast-stack {
-  position: fixed;
-  top: 58px;
+  position: absolute;
+  bottom: 52px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 60;
+  z-index: 30;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   pointer-events: none;
+  max-width: calc(100% - 24px);
 }
 
 .kura-toast {
@@ -1075,4 +1462,22 @@ dialog::backdrop {
   .kura-ai-drawer {
     width: 280px;
   }
+}
+
+/* Modal lateral no obstructivo para Vista Previa Láser 3D en Corte por Plano */
+dialog.kura-dialog-side {
+  width: min(370px, 92vw);
+  margin: auto auto auto clamp(16px, 236px, 20vw);
+}
+
+dialog.kura-dialog-side[open]:where(:not([data-closing]))::backdrop {
+  background-color: rgba(2, 6, 23, 0.14);
+  backdrop-filter: none;
+}
+
+/* Mantener select de impresora en una sola línea limpia dentro del TopBar */
+.kura-topbar .kura-select {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

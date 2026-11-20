@@ -10,13 +10,21 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { KuraBridgeServer } from './bridge.js';
+import { KuraBridgeServer, type KuraBridgeOptions } from './bridge.js';
 import { KuraHeadlessEngine } from './headlessEngine.js';
 import { registerKuraTools } from './tools.js';
 
 /** Crea e inicializa una instancia configurada del servidor MCP de Kura3D. */
-export function createKuraMcpServer(options?: { bridgePort?: number }) {
-  const bridge = new KuraBridgeServer({ port: options?.bridgePort });
+export function createKuraMcpServer(
+  options?: { bridgePort?: number } & Omit<KuraBridgeOptions, 'port'>
+) {
+  const bridge = new KuraBridgeServer({
+    port: options?.bridgePort,
+    authToken: options?.authToken,
+    readOnly: options?.readOnly,
+    rateLimitPerMin: options?.rateLimitPerMin,
+    defaultTimeoutMs: options?.defaultTimeoutMs,
+  });
   const headless = new KuraHeadlessEngine();
 
   const server = new McpServer(

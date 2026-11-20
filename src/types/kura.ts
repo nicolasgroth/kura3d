@@ -235,6 +235,32 @@ export interface AiConfig {
   temperature: number;
 }
 
+/** Configuración activable, configurable y segura del servidor/puente MCP local. */
+export interface McpConfig {
+  /** Activa o desactiva la conexión al puente MCP local a voluntad del usuario. */
+  enabled: boolean;
+  /** Puerto local en 127.0.0.1 (por defecto 17432). */
+  port: number;
+  /** Si es true, exige token compartido (Bearer / query) para autorizar comandos MCP. */
+  requireAuth: boolean;
+  /** Token aleatorio local generado en el equipo (nunca hardcodeado en el código). */
+  authToken: string;
+  /** Si es true, restringe el servidor MCP a operaciones de solo lectura (inspección/capturas). */
+  readOnly: boolean;
+}
+
+/** Estado de vista previa 3D interactiva del plano de corte y conectores fantasma. */
+export interface CutPreviewState {
+  active: boolean;
+  objectId: string | null;
+  axis: 'x' | 'y' | 'z';
+  offset: number;
+  connectorType: CutConnectorType;
+  connectorSize: number;
+  connectorDepth: number;
+  connectorCount: number;
+}
+
 /** Mensaje en el historial del Chat IA integrado. */
 export interface AiChatMessage {
   id: string;

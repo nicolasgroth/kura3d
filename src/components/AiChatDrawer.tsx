@@ -8,10 +8,11 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Bot, Send, Settings, Trash2, X } from 'lucide-react';
+import { Bot, Cloud, Send, Settings, Trash2, X, Zap } from 'lucide-react';
 import { sendAiPrompt } from '../ai/aiClient';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import { getAiBadgeDescriptor } from '../utils/aiBadges';
 
 export const AiChatDrawer: React.FC = () => {
   const [input, setInput] = useState('');
@@ -27,7 +28,7 @@ export const AiChatDrawer: React.FC = () => {
   const clearAiMessages = useKuraStore((s) => s.clearAiMessages);
   const setAiBusy = useKuraStore((s) => s.setAiBusy);
   const executeCommand = useKuraStore((s) => s.executeCommand);
-  const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
+  const openSettings = useKuraStore((s) => s.openSettings);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -37,12 +38,7 @@ export const AiChatDrawer: React.FC = () => {
     return null;
   }
 
-  const hasRemoteKey =
-    aiConfig.provider === 'ollama' || Boolean(aiConfig.apiKey.trim());
-
-  const providerBadgeText = hasRemoteKey
-    ? `${aiConfig.provider.toUpperCase()} · ${aiConfig.model || 'auto'}`
-    : t(language, 'ai.providerOffline');
+  const aiBadge = getAiBadgeDescriptor(aiConfig, language);
 
   const submitPrompt = async (textToSend: string) => {
     const trimmed = textToSend.trim();
@@ -108,13 +104,23 @@ export const AiChatDrawer: React.FC = () => {
   return (
     <aside className="kura-ai-drawer" aria-label={t(language, 'ai.title')}>
       <div className="kura-panel-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Bot size={16} style={{ color: 'var(--accent-cyan)' }} />
-          <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <Bot size={16} style={{ color: 'var(--tool-accent)', flexShrink: 0 }} />
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 700 }}>{t(language, 'ai.title')}</div>
-            <div style={{ fontSize: 10.5, color: 'var(--text-secondary)' }}>
-              {providerBadgeText}
-            </div>
+            <span
+              className={`kura-ai-status-pill tone-${aiBadge.cssTone}`}
+              title={aiBadge.tooltip}
+            >
+              {aiBadge.mode === 'external' ? (
+                <Cloud size={11} />
+              ) : aiBadge.mode === 'ollama' ? (
+                <Bot size={11} />
+              ) : (
+                <Zap size={11} />
+              )}
+              <span>{aiBadge.label}</span>
+            </span>
           </div>
         </div>
 
@@ -122,7 +128,7 @@ export const AiChatDrawer: React.FC = () => {
           <button
             type="button"
             className="kura-mini-icon-btn"
-            onClick={() => setActiveDialog('settings')}
+            onClick={() => openSettings('ai')}
             title={t(language, 'ai.configureKey')}
           >
             <Settings size={14} />
@@ -144,6 +150,10 @@ export const AiChatDrawer: React.FC = () => {
             <X size={15} />
           </button>
         </div>
+      </div>
+
+      <div className={`kura-privacy-strip tone-${aiBadge.cssTone}`}>
+        {aiBadge.tooltip}
       </div>
 
       <div className="kura-chat-messages">

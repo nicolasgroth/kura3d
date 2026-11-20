@@ -21,11 +21,13 @@ import {
   type AiProviderType,
   type BooleanOpType,
   type ColorSchemePreference,
+  type CutPreviewState,
   type HollowOptions,
   type ImageTo3DOptions,
   type KuraCommandRequest,
   type KuraCommandResponse,
   type LanguageCode,
+  type McpConfig,
   type MeshData,
   type ObjectSourceType,
   type PlaneCutOptions,
@@ -44,12 +46,15 @@ import { openLocalFile, saveBinaryFile } from '../utils/platformBridge';
 
 const MAX_UNDO_HISTORY = 40;
 const STORAGE_AI_CONFIG_KEY = 'kura3d-ai-config';
+const STORAGE_MCP_CONFIG_KEY = 'kura3d-mcp-config';
 const STORAGE_COLOR_SCHEME_KEY = 'kura3d-color-scheme';
 const STORAGE_LANGUAGE_KEY = 'kura3d-language';
 const STORAGE_UNIT_KEY = 'kura3d-unit-system';
 const STORAGE_PRINTER_KEY = 'kura3d-printer-id';
 
 export type ActiveDialogType = 'svg' | 'image' | 'cut' | 'settings' | null;
+export type SettingsTabType = 'ai' | 'mcp' | 'about';
+export type CommandSourceType = 'ui' | 'mcp' | 'ai';
 export type PaintBrushMode = 'brush' | 'smart_fill' | 'whole';
 export type CameraPresetType = 'iso' | 'top' | 'front' | 'right' | 'fit';
 
@@ -95,13 +100,18 @@ export interface KuraStoreState {
 
   // Puente MCP & Chat IA
   mcpConnected: boolean;
+  mcpConfig: McpConfig;
   aiDrawerOpen: boolean;
   aiConfig: AiConfig;
   aiMessages: AiChatMessage[];
   aiBusy: boolean;
 
-  // UI auxiliar
+  // UI auxiliar, vista previa de corte y animaciones de creación
   activeDialog: ActiveDialogType;
+  settingsTab: SettingsTabType;
+  commandPaletteOpen: boolean;
+  cutPreview: CutPreviewState;
+  spawnedAtById: Record<string, number>;
   toasts: ToastMessage[];
 
   // Acciones de inicialización y preferencias
@@ -120,8 +130,14 @@ export interface KuraStoreState {
   setEraseRadiusMm: (radiusMm: number) => void;
   requestCameraPreset: (preset: CameraPresetType) => void;
   setActiveDialog: (dialog: ActiveDialogType) => void;
+  setSettingsTab: (tab: SettingsTabType) => void;
+  openSettings: (tab?: SettingsTabType) => void;
+  setCommandPaletteOpen: (open: boolean) => void;
+  setCutPreview: (patch: Partial<CutPreviewState>) => void;
   setAiDrawerOpen: (open: boolean) => void;
   setAiConfig: (patch: Partial<AiConfig>) => void;
+  setMcpConfig: (patch: Partial<McpConfig>) => void;
+  regenerateMcpToken: () => void;
   addAiMessage: (msg: Omit<AiChatMessage, 'id' | 'timestamp'>) => void;
   clearAiMessages: () => void;
   setAiBusy: (busy: boolean) => void;
@@ -141,6 +157,10 @@ export interface KuraStoreState {
     type: PrimitiveType,
     params?: PrimitiveParams,
     options?: { name?: string; color?: string; position?: Vec3; isHole?: boolean },
+  ) => Promise<SceneObject | null>;
+  addSubtractHelperPrimitive: (
+    type: 'sphere' | 'cylinder' | 'box',
+    targetId?: string,
   ) => Promise<SceneObject | null>;
   createStarterCube: () => Promise<void>;
   clearScene: () => void;
@@ -185,7 +205,10 @@ export interface KuraStoreState {
   exportSelectedObj: () => Promise<boolean>;
 
   // Command Bus Unificado (UI, MCP y Chat IA)
-  executeCommand: (req: KuraCommandRequest) => Promise<KuraCommandResponse>;
+  executeCommand: (
+    req: KuraCommandRequest,
+    source?: CommandSourceType,
+  ) => Promise<KuraCommandResponse>;
 }
 
 /** Generador de IDs cortos y únicos sin dependencias externas. */
@@ -325,6 +348,83 @@ function applyMetaColorScheme(scheme: ColorSchemePreference): void {
   meta.setAttribute('content', scheme === 'system' ? 'light dark' : scheme);
 }
 
+/** Genera un token hexadecimal aleatorio seguro usando crypto.getRandomValues con fallback. */
+export function generateRandomTokenHex(length = 32): string {
+  const byteCount = Math.max(8, Math.ceil(length / 2));
+  const bytes = new Uint8Array(byteCount);
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < byteCount; i++) {
+      bytes[i] = Math.floor(Math.random() * 256);
+    }
+  }
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0'))
+    .join('')
+    .slice(0, length);
+}
+
+/** Carga configuración MCP local persistida (desactivada y protegida por defecto). */
+function loadInitialMcpConfig(): McpConfig {
+  const defaults: McpConfig = {
+    enabled: false,
+    port: 17432,
+    requireAuth: true,
+    authToken: generateRandomTokenHex(32),
+    readOnly: false,
+  };
+  const raw = readStorage(STORAGE_MCP_CONFIG_KEY);
+  if (!raw) {
+    writeStorage(STORAGE_MCP_CONFIG_KEY, JSON.stringify(defaults));
+    return defaults;
+  }
+  try {
+    const parsed = JSON.parse(raw) as Partial<McpConfig>;
+    const port =
+      typeof parsed.port === 'number' && parsed.port >= 1024 && parsed.port <= 65535
+        ? Math.round(parsed.port)
+        : defaults.port;
+    const token =
+      typeof parsed.authToken === 'string' && parsed.authToken.trim().length >= 8
+        ? parsed.authToken.trim()
+        : defaults.authToken;
+    return {
+      enabled: typeof parsed.enabled === 'boolean' ? parsed.enabled : defaults.enabled,
+      port,
+      requireAuth:
+        typeof parsed.requireAuth === 'boolean' ? parsed.requireAuth : defaults.requireAuth,
+      authToken: token,
+      readOnly: typeof parsed.readOnly === 'boolean' ? parsed.readOnly : defaults.readOnly,
+    };
+  } catch {
+    return defaults;
+  }
+}
+
+/** Calcula el centro geométrico local [cx, cy, cz] de una malla. */
+function computeLocalMeshCenter(mesh: MeshData): Vec3 {
+  const pos = mesh.positions;
+  if (pos.length < 3) return [0, 0, 0];
+  let minX = Infinity;
+  let minY = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let maxZ = -Infinity;
+  for (let i = 0; i < pos.length; i += 3) {
+    const x = pos[i];
+    const y = pos[i + 1];
+    const z = pos[i + 2];
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (z < minZ) minZ = z;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+    if (z > maxZ) maxZ = z;
+  }
+  return [(minX + maxX) * 0.5, (minY + maxY) * 0.5, (minZ + maxZ) * 0.5];
+}
+
 /** Carga configuración IA persistida localmente (nunca incluye claves precargadas). */
 function loadInitialAiConfig(): AiConfig {
   const defaults: AiConfig = {
@@ -426,6 +526,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     customBedDimensions: null,
 
     mcpConnected: false,
+    mcpConfig: loadInitialMcpConfig(),
     aiDrawerOpen: false,
     aiConfig: loadInitialAiConfig(),
     aiMessages: [
@@ -439,6 +540,19 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     aiBusy: false,
 
     activeDialog: null,
+    settingsTab: 'ai',
+    commandPaletteOpen: false,
+    cutPreview: {
+      active: false,
+      objectId: null,
+      axis: 'y',
+      offset: 0,
+      connectorType: 'dowel',
+      connectorSize: 4,
+      connectorDepth: 6,
+      connectorCount: 2,
+    },
+    spawnedAtById: {},
     toasts: [],
 
     initEngine: async () => {
@@ -521,6 +635,13 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       })),
 
     setActiveDialog: (activeDialog) => set({ activeDialog }),
+    setSettingsTab: (settingsTab) => set({ settingsTab }),
+    openSettings: (tab = 'ai') => set({ settingsTab: tab, activeDialog: 'settings' }),
+    setCommandPaletteOpen: (commandPaletteOpen) => set({ commandPaletteOpen }),
+    setCutPreview: (patch) =>
+      set((state) => ({
+        cutPreview: { ...state.cutPreview, ...patch },
+      })),
     setAiDrawerOpen: (aiDrawerOpen) => set({ aiDrawerOpen }),
 
     setAiConfig: (patch) =>
@@ -528,6 +649,31 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         const next: AiConfig = { ...state.aiConfig, ...patch };
         writeStorage(STORAGE_AI_CONFIG_KEY, JSON.stringify(next));
         return { aiConfig: next };
+      }),
+
+    setMcpConfig: (patch) =>
+      set((state) => {
+        const nextPort =
+          typeof patch.port === 'number' && Number.isFinite(patch.port)
+            ? Math.min(65535, Math.max(1024, Math.round(patch.port)))
+            : state.mcpConfig.port;
+        const next: McpConfig = {
+          ...state.mcpConfig,
+          ...patch,
+          port: nextPort,
+        };
+        writeStorage(STORAGE_MCP_CONFIG_KEY, JSON.stringify(next));
+        return { mcpConfig: next };
+      }),
+
+    regenerateMcpToken: () =>
+      set((state) => {
+        const next: McpConfig = {
+          ...state.mcpConfig,
+          authToken: generateRandomTokenHex(32),
+        };
+        writeStorage(STORAGE_MCP_CONFIG_KEY, JSON.stringify(next));
+        return { mcpConfig: next };
       }),
 
     addAiMessage: (msg) =>
@@ -644,13 +790,115 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         });
 
         pushHistory();
+        const now = Date.now();
         set((state) => ({
           objects: [...state.objects, obj],
           selectedIds: [obj.id],
+          spawnedAtById: { ...state.spawnedAtById, [obj.id]: now },
         }));
 
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
         return obj;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return null;
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
+    addSubtractHelperPrimitive: async (type, targetId) => {
+      const state = get();
+      const targetObj =
+        state.objects.find((o) => o.id === targetId) ??
+        state.objects.find((o) => state.selectedIds.includes(o.id) && !o.isHole) ??
+        state.objects.find((o) => !o.isHole) ??
+        state.objects[0];
+
+      if (!targetObj) {
+        return get().createPrimitive(type, undefined, { isHole: true });
+      }
+
+      set({ busyOperation: `subtract_${type}` });
+      try {
+        await get().initEngine();
+        const scaledX = Math.max(4, targetObj.stats.dimensionsMm[0] * targetObj.scale[0]);
+        const scaledY = Math.max(4, targetObj.stats.dimensionsMm[1] * targetObj.scale[1]);
+        const scaledZ = Math.max(4, targetObj.stats.dimensionsMm[2] * targetObj.scale[2]);
+
+        let params: PrimitiveParams;
+        if (type === 'sphere') {
+          const diameter = Math.max(4, Math.min(scaledX, scaledY, scaledZ) * 0.65);
+          params = { radius: diameter * 0.5, segments: 28 };
+        } else if (type === 'cylinder') {
+          const diameter = Math.max(4, Math.min(scaledX, scaledZ) * 0.65);
+          params = {
+            radius: diameter * 0.5,
+            height: Math.max(4, scaledY * 0.65),
+            segments: 32,
+          };
+        } else {
+          params = {
+            width: Math.max(4, scaledX * 0.65),
+            height: Math.max(4, scaledY * 0.65),
+            depth: Math.max(4, scaledZ * 0.65),
+          };
+        }
+
+        const rawMesh = await engine.createPrimitiveMesh(type, params);
+        const normalized = engine.normalizeMeshToBed(rawMesh);
+
+        // Calcula el centro mundial real del sólido objetivo aplicando su rotación/escala
+        const targetLocalCenter = computeLocalMeshCenter(targetObj.mesh);
+        const targetVec = new THREE.Vector3(
+          targetLocalCenter[0] * targetObj.scale[0],
+          targetLocalCenter[1] * targetObj.scale[1],
+          targetLocalCenter[2] * targetObj.scale[2],
+        );
+        const euler = new THREE.Euler(
+          targetObj.rotation[0],
+          targetObj.rotation[1],
+          targetObj.rotation[2],
+          'XYZ',
+        );
+        targetVec.applyEuler(euler);
+        const worldCenter: Vec3 = [
+          targetObj.position[0] + targetVec.x,
+          targetObj.position[1] + targetVec.y,
+          targetObj.position[2] + targetVec.z,
+        ];
+
+        // Alinea el centro geométrico del volumen negativo con el centro mundial del sólido
+        const helperLocalCenter = computeLocalMeshCenter(normalized);
+        const helperPos: Vec3 = [
+          worldCenter[0] - helperLocalCenter[0],
+          worldCenter[1] - helperLocalCenter[1],
+          worldCenter[2] - helperLocalCenter[2],
+        ];
+
+        const labelBase = tr(`sidebar.primitive.${type}` as TranslationKey);
+        const holeObj = buildSceneObject({
+          name: `− ${labelBase}`,
+          source: 'primitive',
+          mesh: normalized,
+          position: helperPos,
+          color: '#f97316',
+          isHole: true,
+          primitiveType: type,
+          primitiveParams: params,
+        });
+
+        pushHistory();
+        const now = Date.now();
+        set((prev) => ({
+          objects: [...prev.objects, holeObj],
+          selectedIds: [holeObj.id],
+          spawnedAtById: { ...prev.spawnedAtById, [holeObj.id]: now },
+        }));
+
+        get().addToast(tr('toast.subtractHelperCreated'), 'info');
+        return holeObj;
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         get().addToast(tr('toast.errorPrefix', { message }), 'error');
@@ -1394,7 +1642,19 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       return saved;
     },
 
-    executeCommand: async (req): Promise<KuraCommandResponse> => {
+    executeCommand: async (req, source = 'ui'): Promise<KuraCommandResponse> => {
+      if (
+        source === 'mcp' &&
+        get().mcpConfig.readOnly &&
+        req.command !== 'get_scene_state' &&
+        req.command !== 'capture_viewport'
+      ) {
+        return {
+          id: req.id,
+          ok: false,
+          error: 'MCP en modo solo lectura.',
+        };
+      }
       const p = req.params ?? {};
       try {
         switch (req.command) {

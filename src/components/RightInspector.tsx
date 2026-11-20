@@ -14,11 +14,13 @@ import {
   ArrowDownToLine,
   Combine,
   Crosshair,
+  MinusCircle,
+  Palette,
   RotateCcw,
   Scissors,
-  Split,
-  Palette,
   Sparkles,
+  Split,
+  Zap,
 } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
@@ -49,6 +51,7 @@ export const RightInspector: React.FC = () => {
   const centerObjectOnBed = useKuraStore((s) => s.centerObjectOnBed);
   const resetObjectOrientation = useKuraStore((s) => s.resetObjectOrientation);
   const hollowObject = useKuraStore((s) => s.hollowObject);
+  const addSubtractHelperPrimitive = useKuraStore((s) => s.addSubtractHelperPrimitive);
   const runBooleanOnSelection = useKuraStore((s) => s.runBooleanOnSelection);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const splitDisconnectedObject = useKuraStore((s) => s.splitDisconnectedObject);
@@ -67,7 +70,9 @@ export const RightInspector: React.FC = () => {
 
   const selectedObjects = objects.filter((o) => selectedIds.includes(o.id));
   const primary = selectedObjects[0] ?? null;
-  const hasAnyHoles = objects.some((o) => o.isHole && o.visible);
+  const holeCount = objects.filter((o) => o.isHole && o.visible).length;
+  const solidCount = objects.filter((o) => !o.isHole && o.visible).length;
+  const hasAnyHoles = holeCount > 0;
   const isBusy = Boolean(busyOperation);
 
   if (selectedObjects.length === 0) {
@@ -247,7 +252,7 @@ export const RightInspector: React.FC = () => {
 
           <div className="kura-form-field">
             <label>{t(language, 'inspector.field.color')}</label>
-            <div className="kura-palette">
+            <div className="kura-swatch-row">
               {PRINT_COLOR_PALETTE.map((hex) => (
                 <button
                   key={hex}
@@ -256,13 +261,16 @@ export const RightInspector: React.FC = () => {
                   style={{ backgroundColor: hex }}
                   onClick={() => updateObjectMeta(primary.id, { color: hex })}
                   aria-label={hex}
+                  title={hex}
                 />
               ))}
               <input
                 type="color"
+                className="kura-swatch-custom"
                 value={primary.color}
                 onChange={(e) => updateObjectMeta(primary.id, { color: e.target.value })}
-                style={{ width: 24, height: 24, border: 'none', background: 'none', padding: 0 }}
+                aria-label={t(language, 'inspector.field.color')}
+                title={t(language, 'inspector.field.color')}
               />
             </div>
           </div>
@@ -401,7 +409,58 @@ export const RightInspector: React.FC = () => {
 
         {/* 4. Operaciones 3D determinísticas (Manifold) */}
         <section className="kura-card">
-          <h3 className="kura-section-label">{t(language, 'inspector.section.operations')}</h3>
+          <div className="kura-field-row" style={{ marginBottom: 2 }}>
+            <h3 className="kura-section-label" style={{ margin: 0 }}>
+              {t(language, 'inspector.section.operations')}
+            </h3>
+            <span
+              className="kura-source-pill is-local"
+              title={t(language, 'badge.local100Tip')}
+            >
+              <Zap size={10} />
+              <span>{t(language, 'badge.local100')}</span>
+            </span>
+          </div>
+
+          {/* Estructura rápida de resta en 1 clic */}
+          <div className="kura-form-field">
+            <label>{t(language, 'inspector.op.quickSubtractTitle')}</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+              <button
+                type="button"
+                className="kura-btn kura-btn-sm"
+                disabled={isBusy}
+                title={t(language, 'inspector.op.subtractSphereTip')}
+                onClick={() => void addSubtractHelperPrimitive('sphere', primary.id)}
+              >
+                <MinusCircle size={13} />
+                <span>{t(language, 'inspector.op.subtractSphere')}</span>
+              </button>
+              <button
+                type="button"
+                className="kura-btn kura-btn-sm"
+                disabled={isBusy}
+                title={t(language, 'inspector.op.subtractCylinderTip')}
+                onClick={() => void addSubtractHelperPrimitive('cylinder', primary.id)}
+              >
+                <MinusCircle size={13} />
+                <span>{t(language, 'inspector.op.subtractCylinder')}</span>
+              </button>
+            </div>
+            {hasAnyHoles && solidCount > 0 && (
+              <button
+                type="button"
+                className="kura-btn kura-btn-sm kura-btn-amber"
+                disabled={isBusy}
+                onClick={() => void applyHolesOnSolids()}
+              >
+                <Combine size={13} />
+                <span>{t(language, 'inspector.op.applyBooleansN', { count: holeCount })}</span>
+              </button>
+            )}
+          </div>
+
+          <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', width: '100%' }} />
 
           {/* Ahuecar (Hollow) */}
           <div className="kura-form-field">

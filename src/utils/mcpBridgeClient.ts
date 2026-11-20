@@ -1,15 +1,19 @@
 /**
  * @file src/utils/mcpBridgeClient.ts
- * @description Cliente WebSocket ligero para conectar Kura3D con el servidor MCP local (ws://127.0.0.1:17432).
- * Permite que agentes externos (Antigravity, Claude, Codex) ejecuten comandos en tiempo real sobre
- * el store Zustand y capturen capturas PNG del viewport 3D.
+ * @description Cliente WebSocket controlado por el usuario para conectar Kura3D con el servidor MCP local.
+ * Cuando `mcpConfig.enabled` es false, no realiza ningún intento de conexión ni reconexión.
+ * Cuando está activo, usa `ws://127.0.0.1:${port}` y token opcional `?token=...`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import { useEffect } from 'react';
-import type { KuraCommandRequest, KuraCommandResponse } from '../types/kura';
+import type {
+  KuraCommandRequest,
+  KuraCommandResponse,
+  McpConfig,
+} from '../types/kura';
 
 /** Callback registrado por Viewport3D para capturar el canvas WebGL en PNG base64. */
 type ViewportCaptureFn = () => string | null;
@@ -39,20 +43,39 @@ export function captureViewportPng(): string | null {
 
 export interface McpBridgeOptions {
   url?: string;
-  executeCommand: (req: KuraCommandRequest) => Promise<KuraCommandResponse>;
+  config?: McpConfig;
+  executeCommand: (
+    req: KuraCommandRequest,
+    source?: 'ui' | 'mcp' | 'ai',
+  ) => Promise<KuraCommandResponse>;
   onStatusChange?: (connected: boolean) => void;
 }
 
-const DEFAULT_MCP_WS_URL = 'ws://127.0.0.1:17432';
 const MIN_RECONNECT_MS = 3000;
 const MAX_RECONNECT_MS = 20000;
 
+/** Construye la URL local del puente WebSocket MCP respetando puerto y autenticación Bearer. */
+export function buildMcpWsUrl(config?: McpConfig, explicitUrl?: string): string {
+  if (explicitUrl) return explicitUrl;
+  const port = config?.port ?? 17432;
+  const base = `ws://127.0.0.1:${port}`;
+  if (config?.requireAuth && config.authToken.trim()) {
+    return `${base}?token=${encodeURIComponent(config.authToken.trim())}`;
+  }
+  return base;
+}
+
 /**
  * Inicia una conexión WebSocket resiliente hacia el puente MCP local con backoff silencioso.
- * Retorna una función de limpieza para detener reconexiones al desmontar.
+ * Si `config.enabled === false`, permanece completamente inactivo sin intentos de red.
  */
 export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
-  const targetUrl = options.url ?? DEFAULT_MCP_WS_URL;
+  if (options.config && !options.config.enabled) {
+    options.onStatusChange?.(false);
+    return () => {};
+  }
+
+  const targetUrl = buildMcpWsUrl(options.config, options.url);
   let socket: WebSocket | null = null;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   let backoffMs = MIN_RECONNECT_MS;
@@ -114,7 +137,6 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
         return;
       }
 
-      // Soporte opcional de heartbeat ping/pong del servidor puente.
       if (parsed.type === 'ping') {
         if (socket?.readyState === WebSocket.OPEN) {
           socket.send(JSON.stringify({ type: 'pong', ts: Date.now() }));
@@ -137,7 +159,7 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
 
       let response: KuraCommandResponse;
       try {
-        response = await options.executeCommand(req);
+        response = await options.executeCommand(req, 'mcp');
       } catch (err) {
         response = {
           id: req.id,
@@ -158,7 +180,6 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
     });
 
     socket.addEventListener('error', () => {
-      // Silencioso intencionalmente: no saturar consola cuando el servidor MCP está apagado.
       if (socket && socket.readyState === WebSocket.OPEN) {
         socket.close();
       }
@@ -185,16 +206,29 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
 }
 
 /**
- * Hook React para mantener sincronizado el cliente puente MCP durante el ciclo de vida de la app.
+ * Hook React que observa `mcpConfig` y mantiene conectado/desconectado el puente MCP
+ * según la preferencia del usuario.
  */
 export function useMcpBridgeClient(
-  executeCommand: (req: KuraCommandRequest) => Promise<KuraCommandResponse>,
+  mcpConfig: McpConfig,
+  executeCommand: (
+    req: KuraCommandRequest,
+    source?: 'ui' | 'mcp' | 'ai',
+  ) => Promise<KuraCommandResponse>,
   onStatusChange: (connected: boolean) => void,
 ): void {
+  const { enabled, port, requireAuth, authToken } = mcpConfig;
+
   useEffect(() => {
+    if (!enabled) {
+      onStatusChange(false);
+      return;
+    }
+
     return startMcpBridgeClient({
+      config: { enabled, port, requireAuth, authToken, readOnly: mcpConfig.readOnly },
       executeCommand,
       onStatusChange,
     });
-  }, [executeCommand, onStatusChange]);
+  }, [enabled, port, requireAuth, authToken, mcpConfig.readOnly, executeCommand, onStatusChange]);
 }

@@ -7,13 +7,20 @@
  * @license MIT
  */
 
-import { randomUUID } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
+import type { IncomingMessage } from 'node:http';
 import { WebSocket, WebSocketServer } from 'ws';
 import type {
   KuraCommandName,
   KuraCommandRequest,
   KuraCommandResponse,
 } from './types.js';
+
+/** Comandos permitidos cuando el servidor MCP opera en modo Solo Lectura (`KURA_BRIDGE_READ_ONLY=true`). */
+export const READ_ONLY_COMMANDS = new Set<KuraCommandName>([
+  'get_scene_state',
+  'capture_viewport',
+]);
 
 /** Entrada de petición pendiente de respuesta desde el cliente Kura3D conectado. */
 interface PendingRequest {
@@ -22,10 +29,16 @@ interface PendingRequest {
   timer: NodeJS.Timeout;
 }
 
-/** Opciones de configuración para el puente WebSocket local. */
+/** Opciones de configuración y seguridad para el puente WebSocket local. */
 export interface KuraBridgeOptions {
   /** Puerto TCP local donde escuchar. Por defecto `process.env.KURA_BRIDGE_PORT || 17432`. */
   port?: number;
+  /** Token secreto compartido para autenticar conexiones entrantes (`KURA_BRIDGE_TOKEN`). */
+  authToken?: string;
+  /** Si es true, restringe el servidor a comandos de solo lectura (`KURA_BRIDGE_READ_ONLY=true`). */
+  readOnly?: boolean;
+  /** Límite máximo de comandos por minuto en ventana deslizante (`KURA_BRIDGE_RATE_LIMIT || 120`). */
+  rateLimitPerMin?: number;
   /** Tiempo máximo de espera por comando en milisegundos. */
   defaultTimeoutMs?: number;
 }
@@ -55,15 +68,25 @@ export function isAllowedLocalOrigin(origin: string | undefined): boolean {
 export class KuraBridgeServer {
   private readonly host = '127.0.0.1';
   private port: number;
+  private readonly authToken: string;
+  private readonly readOnly: boolean;
+  private readonly rateLimitPerMin: number;
   private readonly defaultTimeoutMs: number;
   private wss: WebSocketServer | null = null;
   private activeClient: WebSocket | null = null;
   private readonly pending = new Map<string, PendingRequest>();
+  private commandTimestamps: number[] = [];
   private listening = false;
 
   constructor(options: KuraBridgeOptions = {}) {
     const envPort = Number(process.env.KURA_BRIDGE_PORT || 17432);
+    const envRate = Number(process.env.KURA_BRIDGE_RATE_LIMIT || 120);
+
     this.port = options.port ?? (Number.isFinite(envPort) && envPort >= 0 ? envPort : 17432);
+    this.authToken = (options.authToken ?? process.env.KURA_BRIDGE_TOKEN ?? '').trim();
+    this.readOnly = options.readOnly ?? process.env.KURA_BRIDGE_READ_ONLY === 'true';
+    this.rateLimitPerMin =
+      options.rateLimitPerMin ?? (Number.isFinite(envRate) && envRate > 0 ? envRate : 120);
     this.defaultTimeoutMs = options.defaultTimeoutMs ?? 15_000;
   }
 
@@ -87,6 +110,15 @@ export class KuraBridgeServer {
             done(false, 403, 'Origen no permitido en el puente local de Kura3D');
             return;
           }
+
+          if (!this.verifyRequestToken(info.req)) {
+            console.error(
+              '[Kura3D-MCP] Conexión WebSocket rechazada (401): token de autenticación ausente o inválido.'
+            );
+            done(false, 401, 'Unauthorized: token Bearer o query ?token inválido o ausente');
+            return;
+          }
+
           done(true);
         },
       });
@@ -178,12 +210,56 @@ export class KuraBridgeServer {
     return this.port;
   }
 
+  /** Indica si el servidor MCP está restringido al modo de seguridad Solo Lectura. */
+  isReadOnly(): boolean {
+    return this.readOnly;
+  }
+
+  /** Indica si la autenticación por token Bearer/query está habilitada. */
+  hasAuthToken(): boolean {
+    return this.authToken.length > 0;
+  }
+
+  /** Devuelve el límite máximo configurado de comandos por minuto. */
+  getRateLimitPerMin(): number {
+    return this.rateLimitPerMin;
+  }
+
+  /**
+   * Registra y valida una ejecución de comando dentro de una ventana deslizante de 60 segundos.
+   * Lanza un error descriptivo en español si se supera `rateLimitPerMin`.
+   */
+  consumeRateLimit(): void {
+    const now = Date.now();
+    const windowStart = now - 60_000;
+    this.commandTimestamps = this.commandTimestamps.filter((ts) => ts > windowStart);
+
+    if (this.commandTimestamps.length >= this.rateLimitPerMin) {
+      throw new Error(
+        `Límite de tasa MCP excedido (${this.rateLimitPerMin} comandos/minuto). Espere unos segundos antes de reintentar.`
+      );
+    }
+
+    this.commandTimestamps.push(now);
+  }
+
   /** Envía un comando al frontend de Kura3D y espera su respuesta JSON correlacionada por `id`. */
   async sendCommand(
     command: KuraCommandName,
     params: Record<string, unknown> = {},
-    timeoutMs: number = this.defaultTimeoutMs
+    timeoutMs: number = this.defaultTimeoutMs,
+    options?: { skipRateLimit?: boolean }
   ): Promise<KuraCommandResponse> {
+    if (this.readOnly && !READ_ONLY_COMMANDS.has(command)) {
+      throw new Error(
+        `Operación bloqueada: Kura3D MCP se encuentra en modo Solo Lectura (KURA_BRIDGE_READ_ONLY=true).`
+      );
+    }
+
+    if (!options?.skipRateLimit) {
+      this.consumeRateLimit();
+    }
+
     const client = this.activeClient;
     if (!client || client.readyState !== WebSocket.OPEN) {
       throw new Error('No hay ninguna instancia de Kura3D conectada al puente WebSocket.');
@@ -277,5 +353,45 @@ export class KuraBridgeServer {
       entry.reject(error);
       this.pending.delete(id);
     }
+  }
+
+  /**
+   * Extrae y valida en tiempo constante (`timingSafeEqual`) el token desde
+   * `Authorization: Bearer <token>` o el parámetro query `?token=<token>`.
+   */
+  private verifyRequestToken(req: IncomingMessage): boolean {
+    if (!this.authToken) {
+      return true;
+    }
+
+    let candidate = '';
+    const authHeader = req.headers.authorization;
+    if (typeof authHeader === 'string') {
+      const match = /^Bearer\s+(.+)$/i.exec(authHeader.trim());
+      if (match) {
+        candidate = match[1].trim();
+      }
+    }
+
+    if (!candidate && req.url) {
+      try {
+        const parsedUrl = new URL(req.url, `http://${this.host}`);
+        candidate = (parsedUrl.searchParams.get('token') ?? '').trim();
+      } catch {
+        return false;
+      }
+    }
+
+    if (!candidate) {
+      return false;
+    }
+
+    const expectedBuf = Buffer.from(this.authToken, 'utf8');
+    const receivedBuf = Buffer.from(candidate, 'utf8');
+    if (expectedBuf.length !== receivedBuf.length) {
+      return false;
+    }
+
+    return timingSafeEqual(expectedBuf, receivedBuf);
   }
 }

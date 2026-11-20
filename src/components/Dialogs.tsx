@@ -9,7 +9,17 @@
  */
 
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { Check, Copy, FileUp, Scissors, Sparkles, X } from 'lucide-react';
+import {
+  Check,
+  Cloud,
+  Copy,
+  FileUp,
+  RefreshCw,
+  Scissors,
+  ShieldCheck,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { t } from '../i18n';
 import { type ActiveDialogType, useKuraStore } from '../store/useKuraStore';
 import type {
@@ -18,6 +28,7 @@ import type {
   CutConnectorType,
   PlaneCutOptions,
 } from '../types/kura';
+import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
 import { openLocalFile } from '../utils/platformBridge';
 
 /** Presets SVG vectoriales incorporados para probar extrusión 3D al instante. */
@@ -43,7 +54,8 @@ const NativeModal: React.FC<{
   title: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
-}> = ({ open, onClose, title, children, footer }) => {
+  className?: string;
+}> = ({ open, onClose, title, children, footer, className }) => {
   const language = useKuraStore((s) => s.language);
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const titleId = useId();
@@ -55,7 +67,7 @@ const NativeModal: React.FC<{
     if (open && !dialog.open) {
       dialog.showModal();
     } else if (!open && dialog.open) {
-      dialog.close();
+      void closeDialogWithMotion(dialog);
     }
   }, [open]);
 
@@ -69,47 +81,18 @@ const NativeModal: React.FC<{
     };
 
     dialog.addEventListener('close', handleClose);
-
-    // Fallback obligatorio para light-dismiss en navegadores sin closedby nativo (ej. Safari/WebKit)
-    let cleanupFallback: (() => void) | undefined;
-    if (!('closedBy' in HTMLDialogElement.prototype)) {
-      let pressedOutside = false;
-      const isOutside = (e: PointerEvent) => {
-        const rect = dialog.getBoundingClientRect();
-        return (
-          e.clientX < rect.left ||
-          e.clientX > rect.right ||
-          e.clientY < rect.top ||
-          e.clientY > rect.bottom
-        );
-      };
-      const onPointerDown = (e: PointerEvent) => {
-        pressedOutside = isOutside(e);
-      };
-      const onPointerUp = (e: PointerEvent) => {
-        if (pressedOutside && isOutside(e) && dialog.open) {
-          dialog.close();
-        }
-        pressedOutside = false;
-      };
-      dialog.addEventListener('pointerdown', onPointerDown);
-      dialog.addEventListener('pointerup', onPointerUp);
-      cleanupFallback = () => {
-        dialog.removeEventListener('pointerdown', onPointerDown);
-        dialog.removeEventListener('pointerup', onPointerUp);
-      };
-    }
+    const detachDismiss = attachDialogDismissHandlers(dialog);
 
     return () => {
       dialog.removeEventListener('close', handleClose);
-      cleanupFallback?.();
+      detachDismiss();
     };
   }, [onClose]);
 
   return (
     <dialog
       ref={dialogRef}
-      className="kura-dialog"
+      className={className ? `kura-dialog ${className}` : 'kura-dialog'}
       aria-labelledby={titleId}
       {...({ closedby: 'any' } as Record<string, string>)}
     >
@@ -120,7 +103,7 @@ const NativeModal: React.FC<{
         <button
           type="button"
           className="kura-mini-icon-btn"
-          onClick={() => dialogRef.current?.close()}
+          onClick={() => dialogRef.current && void closeDialogWithMotion(dialogRef.current)}
           aria-label={t(language, 'common.close')}
         >
           <X size={16} />
@@ -564,6 +547,7 @@ const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const objects = useKuraStore((s) => s.objects);
   const planeCutObject = useKuraStore((s) => s.planeCutObject);
+  const setCutPreview = useKuraStore((s) => s.setCutPreview);
 
   const [axis, setAxis] = useState<'x' | 'y' | 'z'>('y');
   const [offset, setOffset] = useState(0);
@@ -575,6 +559,40 @@ const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const [keepMode, setKeepMode] = useState<PlaneCutOptions['keepMode']>('both');
 
   const targetId = selectedIds[0] ?? objects[0]?.id;
+
+  // Sincroniza en tiempo real el plano láser y los conectores fantasma 3D en el viewport
+  useEffect(() => {
+    if (!open || !targetId) {
+      setCutPreview({ active: false, objectId: null });
+      return;
+    }
+    setCutPreview({
+      active: true,
+      objectId: targetId,
+      axis,
+      offset,
+      connectorType,
+      connectorSize,
+      connectorDepth,
+      connectorCount,
+    });
+  }, [
+    open,
+    targetId,
+    axis,
+    offset,
+    connectorType,
+    connectorSize,
+    connectorDepth,
+    connectorCount,
+    setCutPreview,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      setCutPreview({ active: false, objectId: null });
+    };
+  }, [setCutPreview]);
 
   const handleExecute = async () => {
     if (!targetId) return;
@@ -596,6 +614,7 @@ const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({
       open={open}
       onClose={onClose}
       title={t(language, 'dialog.cut.title')}
+      className="kura-dialog-side"
       footer={
         <>
           <button type="button" className="kura-btn" onClick={onClose}>
@@ -741,9 +760,13 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const setColorScheme = useKuraStore((s) => s.setColorScheme);
   const mcpConnected = useKuraStore((s) => s.mcpConnected);
+  const mcpConfig = useKuraStore((s) => s.mcpConfig);
+  const setMcpConfig = useKuraStore((s) => s.setMcpConfig);
+  const regenerateMcpToken = useKuraStore((s) => s.regenerateMcpToken);
+  const tab = useKuraStore((s) => s.settingsTab);
+  const setTab = useKuraStore((s) => s.setSettingsTab);
   const addToast = useKuraStore((s) => s.addToast);
 
-  const [tab, setTab] = useState<'ai' | 'mcp' | 'about'>('ai');
   const [provider, setProvider] = useState<AiProviderType>(aiConfig.provider);
   const [apiKey, setApiKey] = useState(aiConfig.apiKey);
   const [model, setModel] = useState(aiConfig.model);
@@ -782,21 +805,39 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     onClose();
   };
 
+  const mcpEnv: Record<string, string> = {
+    KURA_BRIDGE_PORT: String(mcpConfig.port),
+  };
+  if (mcpConfig.requireAuth && mcpConfig.authToken) {
+    mcpEnv.KURA_BRIDGE_TOKEN = mcpConfig.authToken;
+  }
+  if (mcpConfig.readOnly) {
+    mcpEnv.KURA_BRIDGE_READ_ONLY = '1';
+  }
+
   const mcpSnippet = JSON.stringify(
     {
       mcpServers: {
         kura3d: {
           command: 'node',
           args: ['mcp-server/dist/index.js'],
-          env: {
-            KURA_BRIDGE_PORT: '17432',
-          },
+          env: mcpEnv,
         },
       },
     },
     null,
     2,
   );
+
+  const isExternalConfigured = provider !== 'ollama' && apiKey.trim().length > 0;
+  const providerDisplay =
+    provider === 'gemini'
+      ? 'Google Gemini'
+      : provider === 'openai'
+        ? 'OpenAI'
+        : provider === 'anthropic'
+          ? 'Anthropic Claude'
+          : 'Ollama';
 
   const handleCopyMcp = async () => {
     try {
@@ -931,6 +972,19 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
               onChange={(e) => setBaseUrl(e.target.value)}
             />
           </div>
+
+          <div
+            className={`kura-callout ${isExternalConfigured ? 'is-warning' : 'is-local'}`}
+          >
+            {isExternalConfigured ? <Cloud size={15} /> : <ShieldCheck size={15} />}
+            <span>
+              {isExternalConfigured
+                ? t(language, 'dialog.settings.aiPrivacyExternal', {
+                    provider: providerDisplay,
+                  })
+                : t(language, 'dialog.settings.aiPrivacyLocal')}
+            </span>
+          </div>
         </div>
       )}
 
@@ -940,14 +994,90 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
           <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
             {t(language, 'dialog.settings.mcpDesc')}
           </p>
+
+          <div className="kura-card" style={{ gap: 10 }}>
+            <label className="kura-switch-row">
+              <span>{t(language, 'dialog.settings.mcpEnable')}</span>
+              <input
+                type="checkbox"
+                checked={mcpConfig.enabled}
+                onChange={(e) => setMcpConfig({ enabled: e.target.checked })}
+              />
+            </label>
+
+            <div className="kura-field-row">
+              <label className="kura-field-label" htmlFor="mcp-port">
+                {t(language, 'dialog.settings.mcpPort')}
+              </label>
+              <input
+                id="mcp-port"
+                type="number"
+                className="kura-input"
+                style={{ width: 96 }}
+                min={1024}
+                max={65535}
+                value={mcpConfig.port}
+                onChange={(e) => setMcpConfig({ port: Number(e.target.value) })}
+              />
+            </div>
+
+            <label className="kura-switch-row">
+              <span>{t(language, 'dialog.settings.mcpRequireAuth')}</span>
+              <input
+                type="checkbox"
+                checked={mcpConfig.requireAuth}
+                onChange={(e) => setMcpConfig({ requireAuth: e.target.checked })}
+              />
+            </label>
+
+            {mcpConfig.requireAuth && (
+              <div className="kura-form-field">
+                <label htmlFor="mcp-token">{t(language, 'dialog.settings.mcpToken')}</label>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <input
+                    id="mcp-token"
+                    className="kura-input"
+                    style={{ flex: 1, fontFamily: 'monospace' }}
+                    value={mcpConfig.authToken}
+                    onChange={(e) => setMcpConfig({ authToken: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    className="kura-btn kura-btn-sm"
+                    onClick={regenerateMcpToken}
+                    title={t(language, 'dialog.settings.mcpRegenerate')}
+                  >
+                    <RefreshCw size={13} />
+                    <span>{t(language, 'dialog.settings.mcpRegenerate')}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <label className="kura-switch-row">
+              <span>{t(language, 'dialog.settings.mcpReadOnly')}</span>
+              <input
+                type="checkbox"
+                checked={mcpConfig.readOnly}
+                onChange={(e) => setMcpConfig({ readOnly: e.target.checked })}
+              />
+            </label>
+          </div>
+
           <div className="kura-field-row">
             <span className="kura-field-label">{t(language, 'dialog.settings.mcpStatus')}</span>
-            <span className={`kura-pill ${mcpConnected ? 'is-online' : ''}`}>
+            <span
+              className={`kura-pill ${
+                !mcpConfig.enabled ? 'is-off' : mcpConnected ? 'is-online' : ''
+              }`}
+            >
               <span className="kura-dot" />
               <span>
-                {mcpConnected
-                  ? t(language, 'topbar.mcpConnected')
-                  : t(language, 'topbar.mcpOffline')}
+                {!mcpConfig.enabled
+                  ? t(language, 'topbar.mcpOff')
+                  : mcpConnected
+                    ? t(language, 'topbar.mcpConnected')
+                    : t(language, 'topbar.mcpLocal')}
               </span>
             </span>
           </div>

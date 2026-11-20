@@ -1,0 +1,7 @@
+# Propietario de código — Kura3D (ISGROTH — Innovación y Soluciones GROTH)
+# Toda Pull Request externa requiere revisión obligatoria del mantenedor principal.
+* @nicolasgroth
+/.github/ @nicolasgroth
+/src-tauri/capabilities/ @nicolasgroth
+/mcp-server/ @nicolasgroth
+/SECURITY.md @nicolasgroth

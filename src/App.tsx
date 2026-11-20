@@ -8,8 +8,8 @@
  */
 
 import React, { useEffect } from 'react';
-import { X } from 'lucide-react';
 import { AiChatDrawer } from './components/AiChatDrawer';
+import { CommandPalette } from './components/CommandPalette';
 import { Dialogs } from './components/Dialogs';
 import { LeftSidebar } from './components/LeftSidebar';
 import { RightInspector } from './components/RightInspector';
@@ -22,12 +22,12 @@ import { useMcpBridgeClient } from './utils/mcpBridgeClient';
 
 export const App: React.FC = () => {
   const language = useKuraStore((s) => s.language);
+  const activeTool = useKuraStore((s) => s.activeTool);
+  const mcpConfig = useKuraStore((s) => s.mcpConfig);
   const initEngine = useKuraStore((s) => s.initEngine);
   const executeCommand = useKuraStore((s) => s.executeCommand);
   const setMcpConnected = useKuraStore((s) => s.setMcpConnected);
   const syncColorSchemeFromDom = useKuraStore((s) => s.syncColorSchemeFromDom);
-  const toasts = useKuraStore((s) => s.toasts);
-  const dismissToast = useKuraStore((s) => s.dismissToast);
 
   // Sincroniza título del documento e idioma del elemento <html>
   useEffect(() => {
@@ -40,8 +40,8 @@ export const App: React.FC = () => {
     void initEngine();
   }, [initEngine]);
 
-  // Conecta silenciosamente con el puente MCP local (ws://127.0.0.1:17432)
-  useMcpBridgeClient(executeCommand, setMcpConnected);
+  // Conecta al puente MCP local únicamente cuando el usuario lo activa en Ajustes
+  useMcpBridgeClient(mcpConfig, executeCommand, setMcpConnected);
 
   // Mantiene sincronizado el tema si el usuario lo cambia desde otra pestaña
   useEffect(() => {
@@ -69,12 +69,26 @@ export const App: React.FC = () => {
       }
 
       const state = useKuraStore.getState();
-      if (state.activeDialog !== null) {
+      const mod = e.ctrlKey || e.metaKey;
+      const key = e.key.toLowerCase();
+
+      if (mod && key === 'k') {
+        e.preventDefault();
+        if (state.activeDialog === null) {
+          state.setCommandPaletteOpen(!state.commandPaletteOpen);
+        }
         return;
       }
 
-      const mod = e.ctrlKey || e.metaKey;
-      const key = e.key.toLowerCase();
+      if (mod && e.key === ',') {
+        e.preventDefault();
+        state.openSettings('ai');
+        return;
+      }
+
+      if (state.activeDialog !== null || state.commandPaletteOpen) {
+        return;
+      }
 
       if (mod && key === 'z') {
         e.preventDefault();
@@ -139,7 +153,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="kura-app">
+    <div className="kura-app" data-tool={activeTool}>
       <TopBar />
 
       <div className="kura-workspace">
@@ -151,25 +165,7 @@ export const App: React.FC = () => {
 
       <StatusBar />
       <Dialogs />
-
-      {/* Notificaciones Toast centradas arriba para no tapar Inspector ni Chat IA */}
-      {toasts.length > 0 && (
-        <div className="kura-toast-stack" aria-live="polite">
-          {toasts.map((toast) => (
-            <div key={toast.id} className={`kura-toast ${toast.kind}`}>
-              <span>{toast.text}</span>
-              <button
-                type="button"
-                className="kura-mini-icon-btn"
-                onClick={() => dismissToast(toast.id)}
-                aria-label={t(language, 'common.close')}
-              >
-                <X size={13} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+      <CommandPalette />
     </div>
   );
 };

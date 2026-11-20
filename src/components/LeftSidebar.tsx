@@ -122,6 +122,7 @@ export const LeftSidebar: React.FC = () => {
                   key={item.type}
                   type="button"
                   className="kura-primitive-card"
+                  title={`${t(language, `sidebar.primitive.${item.type}`)} (+)`}
                   onClick={() => void handlePrimitiveClick(item.type, item.defaultParams)}
                 >
                   <span className="kura-primitive-icon">{item.icon}</span>
@@ -161,6 +162,7 @@ export const LeftSidebar: React.FC = () => {
                 type="button"
                 className="kura-btn"
                 style={{ justifyContent: 'flex-start' }}
+                title={t(language, 'topbar.importSvgTip')}
                 onClick={() => setActiveDialog('svg')}
               >
                 <FileCode2 size={15} />
@@ -170,6 +172,7 @@ export const LeftSidebar: React.FC = () => {
                 type="button"
                 className="kura-btn"
                 style={{ justifyContent: 'flex-start' }}
+                title={t(language, 'topbar.imageTo3dTip')}
                 onClick={() => setActiveDialog('image')}
               >
                 <ImageIcon size={15} />

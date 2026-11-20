@@ -13,9 +13,11 @@ import { dirname, resolve } from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
-import type { KuraBridgeServer } from './bridge.js';
+import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
 import type { KuraHeadlessEngine } from './headlessEngine.js';
 import type { KuraCommandName } from './types.js';
+
+export { READ_ONLY_COMMANDS };
 
 /** Dependencias inyectadas al registrar herramientas y recursos MCP. */
 export interface KuraToolContext {
@@ -43,6 +45,19 @@ function failText(message: string): CallToolResult {
 }
 
 /**
+ * Valida las políticas de seguridad activas (modo Solo Lectura y Rate Limiting)
+ * antes de despachar cualquier herramienta tanto en modo Live Bridge como Headless.
+ */
+function enforceSecurityPolicy(ctx: KuraToolContext, command: KuraCommandName): void {
+  if (ctx.bridge.isReadOnly() && !READ_ONLY_COMMANDS.has(command)) {
+    throw new Error(
+      `Operación denegada: Kura3D MCP está ejecutándose en modo de seguridad Solo Lectura (KURA_BRIDGE_READ_ONLY=true). Solo se permiten comandos de inspección (${Array.from(READ_ONLY_COMMANDS).join(', ')}).`
+    );
+  }
+  ctx.bridge.consumeRateLimit();
+}
+
+/**
  * Ejecuta un comando priorizando el puente WebSocket vivo de Kura3D y cayendo
  * automáticamente al motor Headless cuando la interfaz gráfica no está conectada.
  */
@@ -53,8 +68,12 @@ async function dispatchWithFallback(
   headlessHandler: () => Promise<unknown> | unknown
 ): Promise<CallToolResult> {
   try {
+    enforceSecurityPolicy(ctx, command);
+
     if (ctx.bridge.isConnected()) {
-      const response = await ctx.bridge.sendCommand(command, params);
+      const response = await ctx.bridge.sendCommand(command, params, undefined, {
+        skipRateLimit: true,
+      });
       if (!response.ok) {
         return failText(response.error ?? `El comando '${command}' falló en la UI de Kura3D.`);
       }
@@ -462,11 +481,18 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
     },
     async (args) => {
       try {
+        enforceSecurityPolicy(ctx, 'export_stl');
+
         if (ctx.bridge.isConnected()) {
-          const response = await ctx.bridge.sendCommand('export_stl', {
-            ...args,
-            returnBytes: true,
-          });
+          const response = await ctx.bridge.sendCommand(
+            'export_stl',
+            {
+              ...args,
+              returnBytes: true,
+            },
+            undefined,
+            { skipRateLimit: true }
+          );
           if (!response.ok) {
             return failText(response.error ?? 'Error al exportar STL desde la UI de Kura3D.');
           }
@@ -513,11 +539,18 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
     },
     async (args) => {
       try {
+        enforceSecurityPolicy(ctx, 'export_3mf');
+
         if (ctx.bridge.isConnected()) {
-          const response = await ctx.bridge.sendCommand('export_3mf', {
-            ...args,
-            returnBytes: true,
-          });
+          const response = await ctx.bridge.sendCommand(
+            'export_3mf',
+            {
+              ...args,
+              returnBytes: true,
+            },
+            undefined,
+            { skipRateLimit: true }
+          );
           if (!response.ok) {
             return failText(response.error ?? 'Error al exportar 3MF desde la UI de Kura3D.');
           }
@@ -561,6 +594,8 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
     },
     async (args) => {
       try {
+        enforceSecurityPolicy(ctx, 'capture_viewport');
+
         if (!ctx.bridge.isConnected()) {
           return okJson({
             mode: 'headless',
@@ -570,7 +605,9 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
           });
         }
 
-        const response = await ctx.bridge.sendCommand('capture_viewport', args);
+        const response = await ctx.bridge.sendCommand('capture_viewport', args, undefined, {
+          skipRateLimit: true,
+        });
         if (!response.ok) {
           return failText(response.error ?? 'No se pudo capturar el viewport de Kura3D.');
         }
@@ -661,10 +698,15 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
               name: 'Kura3D MCP Server',
               version: '1.0.0',
               author: 'Nicolás Groth <ngroth@gmail.com>',
+              organization: 'ISGROTH — Innovación y Soluciones GROTH',
               license: 'MIT',
+              port: ctx.bridge.getPort(),
               bridgePort: ctx.bridge.getPort(),
               bridgeListening: ctx.bridge.isListening(),
               liveUiConnected: ctx.bridge.isConnected(),
+              authEnabled: ctx.bridge.hasAuthToken(),
+              readOnly: ctx.bridge.isReadOnly(),
+              rateLimitPerMin: ctx.bridge.getRateLimitPerMin(),
             },
             null,
             2

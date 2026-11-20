@@ -39,8 +39,11 @@ const EXPECTED_TOOLS = [
   'kura_capture_viewport',
 ];
 
-async function setupInMemoryPair(bridgePort = 0) {
-  const { server, bridge, headless } = createKuraMcpServer({ bridgePort });
+async function setupInMemoryPair(
+  options: number | Parameters<typeof createKuraMcpServer>[0] = 0
+) {
+  const resolvedOptions = typeof options === 'number' ? { bridgePort: options } : options;
+  const { server, bridge, headless } = createKuraMcpServer(resolvedOptions);
   const client = new Client({ name: 'kura3d-test-client', version: '1.0.0' });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 
@@ -309,5 +312,123 @@ describe('Kura3D MCP Server', () => {
     expect(receivedRequests[2].params.unit).toBe('mm');
     expect(receivedRequests[2].params.unitSystem).toBe('mm');
     expect(receivedRequests[3].params.returnBytes).toBe(true);
+  });
+
+  it('exige token Bearer o ?token= cuando KURA_BRIDGE_TOKEN está configurado y rechaza con 401', async () => {
+    const secret = 'kura-secret-token-2026';
+    const { client, server, bridge } = await setupInMemoryPair({
+      bridgePort: 0,
+      authToken: secret,
+    });
+    await bridge.start();
+    expect(bridge.hasAuthToken()).toBe(true);
+
+    cleanupTasks.push(async () => {
+      await client.close();
+      await server.close();
+      await bridge.close();
+    });
+
+    const connectAttempt = (url: string, headers?: Record<string, string>) =>
+      new Promise<{ ok: boolean; statusCode?: number }>((resolve) => {
+        const ws = new WebSocket(url, headers ? { headers } : undefined);
+        ws.once('open', () => {
+          ws.close();
+          resolve({ ok: true });
+        });
+        ws.once('unexpected-response', (_req, res) => {
+          resolve({ ok: false, statusCode: res.statusCode });
+        });
+        ws.once('error', () => {
+          resolve({ ok: false });
+        });
+      });
+
+    // Sin token -> 401
+    const missing = await connectAttempt(`ws://127.0.0.1:${bridge.getPort()}`);
+    expect(missing).toEqual({ ok: false, statusCode: 401 });
+
+    // Token incorrecto -> 401
+    const wrong = await connectAttempt(
+      `ws://127.0.0.1:${bridge.getPort()}/?token=wrong-token`
+    );
+    expect(wrong).toEqual({ ok: false, statusCode: 401 });
+
+    // Token correcto vía query ?token= -> aceptado
+    const validQuery = await connectAttempt(
+      `ws://127.0.0.1:${bridge.getPort()}/?token=${secret}`
+    );
+    expect(validQuery.ok).toBe(true);
+
+    // Token correcto vía Authorization: Bearer -> aceptado
+    const validBearer = await connectAttempt(`ws://127.0.0.1:${bridge.getPort()}`, {
+      Authorization: `Bearer ${secret}`,
+    });
+    expect(validBearer.ok).toBe(true);
+  });
+
+  it('bloquea mutaciones en modo Solo Lectura y expone postura de seguridad en kura://info/about', async () => {
+    const { client, server, bridge } = await setupInMemoryPair({
+      bridgePort: 0,
+      authToken: 'token-ro',
+      readOnly: true,
+    });
+    await bridge.start();
+    expect(bridge.isReadOnly()).toBe(true);
+
+    cleanupTasks.push(async () => {
+      await client.close();
+      await server.close();
+      await bridge.close();
+    });
+
+    // Lectura permitida
+    const stateRes = await client.callTool({ name: 'kura_get_scene_state', arguments: {} });
+    expect(stateRes.isError).not.toBe(true);
+
+    // Mutación bloqueada
+    const createRes = await client.callTool({
+      name: 'kura_create_primitive',
+      arguments: { primitiveType: 'box' },
+    });
+    expect(createRes.isError).toBe(true);
+    expect((createRes.content[0] as { text: string }).text).toContain('Solo Lectura');
+
+    // Exportación también bloqueada en modo Solo Lectura
+    const exportRes = await client.callTool({
+      name: 'kura_export_stl',
+      arguments: { outputPath: 'blocked.stl' },
+    });
+    expect(exportRes.isError).toBe(true);
+
+    // Recurso kura://info/about refleja organización y postura de seguridad
+    const aboutRes = await client.readResource({ uri: 'kura://info/about' });
+    const aboutJson = JSON.parse((aboutRes.contents[0] as { text: string }).text);
+    expect(aboutJson.organization).toBe('ISGROTH — Innovación y Soluciones GROTH');
+    expect(aboutJson.authEnabled).toBe(true);
+    expect(aboutJson.readOnly).toBe(true);
+    expect(aboutJson.port).toBe(bridge.getPort());
+  });
+
+  it('aplica rate limiting por minuto rechazando llamadas sobre el umbral configurado', async () => {
+    const { client, server, bridge } = await setupInMemoryPair({
+      bridgePort: 0,
+      rateLimitPerMin: 2,
+    });
+
+    cleanupTasks.push(async () => {
+      await client.close();
+      await server.close();
+      await bridge.close();
+    });
+
+    const r1 = await client.callTool({ name: 'kura_get_scene_state', arguments: {} });
+    const r2 = await client.callTool({ name: 'kura_get_scene_state', arguments: {} });
+    const r3 = await client.callTool({ name: 'kura_get_scene_state', arguments: {} });
+
+    expect(r1.isError).not.toBe(true);
+    expect(r2.isError).not.toBe(true);
+    expect(r3.isError).toBe(true);
+    expect((r3.content[0] as { text: string }).text).toContain('Límite de tasa MCP excedido');
   });
 });

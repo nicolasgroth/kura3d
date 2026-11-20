@@ -1,8 +1,8 @@
 /**
  * @file src/components/TopBar.tsx
  * @description Barra superior principal de Kura3D: marca geométrica, importación/exportación rápida,
- * Undo/Redo, selector de herramientas, perfil de impresora, unidades, idioma, tema, MCP y Chat IA.
- * Optimizada para caber íntegramente sin desbordamiento horizontal en 1280px y 1440px.
+ * Undo/Redo, selector de herramientas, perfil de impresora, unidades, paleta Ctrl+K, estado MCP
+ * configurable/seguro, indicador explícito IA Externa vs Local y tema visual.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -11,17 +11,21 @@
 import React, { useEffect, useState } from 'react';
 import {
   Bot,
+  Cloud,
   Download,
   Eraser,
   FileUp,
+  Lock,
   Moon,
   MousePointer,
   Paintbrush,
   Redo2,
   Scissors,
+  Search,
   Settings,
   Sun,
   Undo2,
+  Zap,
 } from 'lucide-react';
 import { getLocalizedPrinterName, t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
@@ -30,6 +34,7 @@ import {
   type ActiveTool,
   type UnitSystem,
 } from '../types/kura';
+import { getAiBadgeDescriptor } from '../utils/aiBadges';
 
 const UNIT_OPTIONS: UnitSystem[] = ['mm', 'cm', 'm', 'in', 'ft'];
 
@@ -69,14 +74,19 @@ export const TopBar: React.FC = () => {
   const importMeshFromDialog = useKuraStore((s) => s.importMeshFromDialog);
   const exportSceneStl = useKuraStore((s) => s.exportSceneStl);
   const exportScene3mf = useKuraStore((s) => s.exportScene3mf);
-  const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
+  const openSettings = useKuraStore((s) => s.openSettings);
+  const setCommandPaletteOpen = useKuraStore((s) => s.setCommandPaletteOpen);
   const mcpConnected = useKuraStore((s) => s.mcpConnected);
+  const mcpConfig = useKuraStore((s) => s.mcpConfig);
+  const aiConfig = useKuraStore((s) => s.aiConfig);
   const aiDrawerOpen = useKuraStore((s) => s.aiDrawerOpen);
   const setAiDrawerOpen = useKuraStore((s) => s.setAiDrawerOpen);
 
   const systemDark = useSystemPrefersDark();
   const isRenderedDark =
     colorScheme === 'dark' || (colorScheme === 'system' && systemDark);
+
+  const aiBadge = getAiBadgeDescriptor(aiConfig, language);
 
   /**
    * Toggle inteligente de 2 estados en barra superior:
@@ -104,6 +114,18 @@ export const TopBar: React.FC = () => {
     { id: 'erase', icon: <Eraser size={13} />, labelKey: 'erase' },
   ];
 
+  const mcpLabel = !mcpConfig.enabled
+    ? t(language, 'topbar.mcpOff')
+    : mcpConnected
+      ? t(language, 'topbar.mcpConnected')
+      : t(language, 'topbar.mcpLocal');
+
+  const mcpTooltip = !mcpConfig.enabled
+    ? t(language, 'topbar.mcpDisabledTip')
+    : `${mcpLabel} (127.0.0.1:${mcpConfig.port})${
+        mcpConfig.requireAuth ? ` · ${t(language, 'topbar.mcpAuthTip')}` : ''
+      }`;
+
   return (
     <header className="kura-topbar">
       {/* Marca Kura3D + Archivo rápido + Undo/Redo */}
@@ -118,13 +140,13 @@ export const TopBar: React.FC = () => {
           >
             <polygon
               points="12,2 21,7 21,17 12,22 3,17 3,7"
-              stroke="var(--accent-cyan)"
+              stroke="var(--tool-accent)"
               strokeWidth="2"
-              fill="color-mix(in srgb, var(--accent-cyan) 18%, transparent)"
+              fill="color-mix(in srgb, var(--tool-accent) 18%, transparent)"
             />
             <polyline
               points="3,7 12,12 21,7"
-              stroke="var(--accent-cyan)"
+              stroke="var(--tool-accent)"
               strokeWidth="1.8"
             />
             <line
@@ -243,6 +265,16 @@ export const TopBar: React.FC = () => {
       <div className="kura-topbar-group kura-topbar-right">
         <button
           type="button"
+          className="kura-btn kura-btn-icon kura-btn-sm"
+          onClick={() => setCommandPaletteOpen(true)}
+          title={t(language, 'topbar.cmdPaletteTip')}
+          aria-label={t(language, 'topbar.cmdPalette')}
+        >
+          <Search size={13} />
+        </button>
+
+        <button
+          type="button"
           className="kura-btn kura-btn-sm"
           onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
           title={t(language, 'topbar.languageToggle')}
@@ -270,33 +302,42 @@ export const TopBar: React.FC = () => {
 
         <button
           type="button"
-          className={`kura-pill ${mcpConnected ? 'is-online' : ''}`}
-          onClick={() => setActiveDialog('settings')}
-          title={
-            mcpConnected
-              ? `${t(language, 'topbar.mcpConnected')} — ${t(language, 'topbar.mcpTip')}`
-              : `${t(language, 'topbar.mcpOffline')} — ${t(language, 'topbar.mcpTip')}`
-          }
-          aria-label={t(language, 'topbar.mcpTip')}
+          className={`kura-pill ${
+            !mcpConfig.enabled ? 'is-off' : mcpConnected ? 'is-online' : ''
+          }`}
+          onClick={() => openSettings('mcp')}
+          title={mcpTooltip}
+          aria-label={mcpTooltip}
         >
           <span className="kura-dot" />
-          <span className="kura-mcp-label">MCP</span>
+          <span className="kura-mcp-label">{mcpLabel}</span>
+          {mcpConfig.enabled && mcpConfig.requireAuth && (
+            <Lock size={10} aria-hidden="true" />
+          )}
         </button>
 
         <button
           type="button"
-          className={`kura-btn kura-btn-sm ${aiDrawerOpen ? 'is-active' : ''}`}
+          className={`kura-btn kura-btn-sm kura-ai-toggle-btn tone-${aiBadge.cssTone} ${
+            aiDrawerOpen ? 'is-active' : ''
+          }`}
           onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
-          title={t(language, 'topbar.aiChatTip')}
+          title={`${t(language, 'topbar.aiChatTip')} — ${aiBadge.label}: ${aiBadge.tooltip}`}
         >
-          <Bot size={13} />
+          {aiBadge.mode === 'external' ? (
+            <Cloud size={13} />
+          ) : aiBadge.mode === 'ollama' ? (
+            <Bot size={13} />
+          ) : (
+            <Zap size={13} />
+          )}
           <span>{language === 'es' ? 'IA' : 'AI'}</span>
         </button>
 
         <button
           type="button"
           className="kura-btn kura-btn-icon kura-btn-sm"
-          onClick={() => setActiveDialog('settings')}
+          onClick={() => openSettings('ai')}
           title={t(language, 'topbar.settingsTip')}
           aria-label={t(language, 'topbar.settings')}
         >
