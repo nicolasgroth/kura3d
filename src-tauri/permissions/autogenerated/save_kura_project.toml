@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-kura-project"
+description = "Enables the save_kura_project command without any pre-configured scope."
+commands.allow = ["save_kura_project"]
+
+[[permission]]
+identifier = "deny-save-kura-project"
+description = "Denies the save_kura_project command without any pre-configured scope."
+commands.deny = ["save_kura_project"]

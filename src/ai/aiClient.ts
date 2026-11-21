@@ -15,152 +15,11 @@ import type {
   KuraCommandResponse,
   LanguageCode,
 } from '../types/kura';
-
-/** Definición neutral de herramienta compartida entre proveedores LLM. */
-interface KuraToolSchema {
-  name: KuraCommandRequest['command'];
-  description: string;
-  parameters: {
-    type: 'object';
-    properties: Record<string, Record<string, unknown>>;
-    required?: string[];
-  };
-}
-
-/** Catálogo compacto de herramientas de modelado 3D expuestas al modelo de lenguaje. */
-const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
-  {
-    name: 'get_scene_state',
-    description: 'Obtiene el listado de objetos actuales en la escena, dimensiones en mm, selección y unidad activa.',
-    parameters: { type: 'object', properties: {} },
-  },
-  {
-    name: 'create_primitive',
-    description: 'Crea una nueva primitiva 3D paramétrica apoyada sobre la cama de impresión (en mm).',
-    parameters: {
-      type: 'object',
-      properties: {
-        type: {
-          type: 'string',
-          enum: ['box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text'],
-          description: 'Tipo de primitiva geométrica.',
-        },
-        width: { type: 'number', description: 'Ancho en mm (para box/prism).' },
-        height: { type: 'number', description: 'Altura en mm.' },
-        depth: { type: 'number', description: 'Profundidad en mm.' },
-        radius: { type: 'number', description: 'Radio en mm (sphere/cylinder/cone).' },
-        outerRadius: { type: 'number', description: 'Radio exterior en mm (tube/torus).' },
-        innerRadius: { type: 'number', description: 'Radio interior en mm (tube).' },
-        text: { type: 'string', description: 'Texto a extruir si type=text.' },
-        name: { type: 'string', description: 'Nombre descriptivo opcional.' },
-        color: { type: 'string', description: 'Color hexadecimal #rrggbb opcional.' },
-      },
-      required: ['type'],
-    },
-  },
-  {
-    name: 'transform_object',
-    description: 'Mueve, rota, escala, centra o apoya un objeto en la cama (Y=0).',
-    parameters: {
-      type: 'object',
-      properties: {
-        id: { type: 'string', description: 'ID del objeto (si se omite usa el seleccionado).' },
-        position: { type: 'array', items: { type: 'number' }, description: '[x, y, z] en mm.' },
-        rotation: { type: 'array', items: { type: 'number' }, description: '[rx, ry, rz] en radianes.' },
-        scale: { type: 'array', items: { type: 'number' }, description: '[sx, sy, sz].' },
-        dropToBed: { type: 'boolean', description: 'Si es true, apoya la base del objeto en Y=0.' },
-        centerOnBed: { type: 'boolean', description: 'Si es true, centra el objeto en X=0, Z=0 sobre la cama.' },
-      },
-    },
-  },
-  {
-    name: 'hollow_object',
-    description: 'Ahueca un sólido creando una cáscara cerrada (shell) con grosor de pared en mm.',
-    parameters: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        wallThickness: { type: 'number', description: 'Grosor de pared en mm (ej. 2.0).' },
-        drainHole: { type: 'boolean', description: 'Agregar agujero inferior de drenaje.' },
-      },
-      required: ['wallThickness'],
-    },
-  },
-  {
-    name: 'boolean_operation',
-    description: 'Ejecuta una operación booleana CSG Manifold entre dos objetos.',
-    parameters: {
-      type: 'object',
-      properties: {
-        op: { type: 'string', enum: ['union', 'subtract', 'intersect'] },
-        targetId: { type: 'string' },
-        toolId: { type: 'string' },
-      },
-      required: ['op'],
-    },
-  },
-  {
-    name: 'plane_cut',
-    description: 'Corta un objeto por un plano X/Y/Z agregando conectores mecánicos automáticos.',
-    parameters: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        axis: { type: 'string', enum: ['x', 'y', 'z'] },
-        offset: { type: 'number' },
-        connectorType: { type: 'string', enum: ['none', 'dowel', 'peg', 'dovetail'] },
-        connectorCount: { type: 'number' },
-        tolerance: { type: 'number' },
-      },
-    },
-  },
-  {
-    name: 'apply_texture',
-    description: 'Aplica una textura superficial procedural (fuzzy skin, knurling, waves, honeycomb, grid).',
-    parameters: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        pattern: { type: 'string', enum: ['fuzzy', 'knurling', 'waves', 'honeycomb', 'grid'] },
-        depth: { type: 'number', description: 'Profundidad del relieve en mm.' },
-        scale: { type: 'number', description: 'Escala del patrón en mm.' },
-      },
-      required: ['pattern'],
-    },
-  },
-  {
-    name: 'duplicate_object',
-    description: 'Duplica el objeto especificado o seleccionado.',
-    parameters: {
-      type: 'object',
-      properties: { id: { type: 'string' } },
-    },
-  },
-  {
-    name: 'delete_object',
-    description: 'Elimina el objeto especificado o seleccionado.',
-    parameters: {
-      type: 'object',
-      properties: { id: { type: 'string' } },
-    },
-  },
-  {
-    name: 'export_stl',
-    description: 'Exporta la escena o selección actual a un archivo STL binario listo para imprimir.',
-    parameters: {
-      type: 'object',
-      properties: { onlySelected: { type: 'boolean' } },
-    },
-  },
-  {
-    name: 'export_3mf',
-    description: 'Exporta la escena multicolor en formato 3MF.',
-    parameters: {
-      type: 'object',
-      properties: { onlySelected: { type: 'boolean' } },
-    },
-  },
-];
+import { t } from '../i18n';
+import { isTauriRuntime } from '../utils/platformBridge';
+import { isAllowedProviderUrl, redactSecrets } from './providerSecurity';
+import { KURA_TOOL_SCHEMAS } from './toolSchemas';
+import { MAX_TOOL_CALLS_PER_TURN, validateToolCall } from './toolValidation';
 
 export interface AiTurnOutput {
   assistantText: string;
@@ -169,6 +28,44 @@ export interface AiTurnOutput {
 }
 
 type CommandExecutor = (req: KuraCommandRequest) => Promise<KuraCommandResponse>;
+
+/**
+ * Ejecuta una llamada de herramienta pedida por un proveedor solo si pasa la lista permitida y el
+ * tope por turno. Las rechazadas se informan al modelo como error y nunca llegan a la escena.
+ */
+async function runProviderTool(
+  id: string,
+  name: unknown,
+  rawArgs: unknown,
+  executeCommand: CommandExecutor,
+  executedTools: AiTurnOutput['executedTools'],
+): Promise<{ response: KuraCommandResponse; summary: string }> {
+  const label = typeof name === 'string' ? name.slice(0, 64) : 'unknown';
+  const checked = executedTools.length >= MAX_TOOL_CALLS_PER_TURN
+    ? { ok: false as const, error: `Tool call limit (${MAX_TOOL_CALLS_PER_TURN}) reached for this turn` }
+    : validateToolCall(name, rawArgs);
+  const response: KuraCommandResponse = checked.ok
+    ? await executeCommand({ id, ...checked.request })
+    : { id, ok: false, error: checked.error };
+  const summary = response.ok
+    ? JSON.stringify(response.result ?? { ok: true })
+    : `Error: ${response.error}`;
+  executedTools.push({ name: label, result: summary });
+  return { response, summary };
+}
+
+function providerBaseUrl(config: AiConfig, fallback: string, lang: LanguageCode): string {
+  const baseUrl = (config.baseUrl.trim() || fallback).replace(/\/+$/, '');
+  if (!isAllowedProviderUrl(baseUrl, isTauriRuntime())) {
+    throw new Error(t(lang, 'ai.error.endpointBlocked'));
+  }
+  return baseUrl;
+}
+
+async function providerHttpError(provider: string, resp: Response, config: AiConfig): Promise<Error> {
+  const errText = await resp.text().catch(() => '');
+  return new Error(redactSecrets(`${provider} HTTP ${resp.status}: ${errText.slice(0, 220)}`, config.apiKey));
+}
 
 function buildSystemPrompt(lang: LanguageCode): string {
   if (lang === 'en') {
@@ -481,9 +378,10 @@ async function callGeminiProvider(
   executeCommand: CommandExecutor,
 ): Promise<AiTurnOutput> {
   const model = config.model || 'gemini-2.5-flash';
+  // La clave viaja solo en la cabecera `x-goog-api-key`, nunca en la URL (historial, logs, proxies).
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
     model,
-  )}:generateContent?key=${encodeURIComponent(config.apiKey)}`;
+  )}:generateContent`;
 
   const contents: Array<Record<string, unknown>> = history
     .filter((m) => m.role === 'user' || m.role === 'assistant')
@@ -510,7 +408,7 @@ async function callGeminiProvider(
   for (let step = 0; step < 4; step++) {
     const resp = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': config.apiKey },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: buildSystemPrompt(lang) }] },
         contents,
@@ -519,10 +417,7 @@ async function callGeminiProvider(
       }),
     });
 
-    if (!resp.ok) {
-      const errText = await resp.text();
-      throw new Error(`Gemini HTTP ${resp.status}: ${errText.slice(0, 220)}`);
-    }
+    if (!resp.ok) throw await providerHttpError('Gemini', resp, config);
 
     const data = (await resp.json()) as {
       candidates?: Array<{
@@ -546,16 +441,13 @@ async function callGeminiProvider(
     }
 
     const { name, args } = fnCallPart.functionCall;
-    const cmdRes = await executeCommand({
-      id: `gem_${Date.now()}_${step}`,
-      command: name as KuraCommandRequest['command'],
-      params: args ?? {},
-    });
-
-    const summary = cmdRes.ok
-      ? JSON.stringify(cmdRes.result ?? { ok: true })
-      : `Error: ${cmdRes.error}`;
-    executedTools.push({ name, result: summary });
+    const { response: cmdRes } = await runProviderTool(
+      `gem_${Date.now()}_${step}`,
+      name,
+      args,
+      executeCommand,
+      executedTools,
+    );
 
     contents.push({ role: 'model', parts });
     contents.push({
@@ -586,7 +478,7 @@ async function callOpenAiProvider(
   lang: LanguageCode,
   executeCommand: CommandExecutor,
 ): Promise<AiTurnOutput> {
-  const baseUrl = (config.baseUrl || 'https://api.openai.com/v1').replace(/\/$/, '');
+  const baseUrl = providerBaseUrl(config, 'https://api.openai.com/v1', lang);
   const model = config.model || 'gpt-4o-mini';
 
   const messages: Array<Record<string, unknown>> = [
@@ -624,10 +516,7 @@ async function callOpenAiProvider(
       }),
     });
 
-    if (!resp.ok) {
-      const errText = await resp.text();
-      throw new Error(`OpenAI HTTP ${resp.status}: ${errText.slice(0, 220)}`);
-    }
+    if (!resp.ok) throw await providerHttpError('OpenAI', resp, config);
 
     const data = (await resp.json()) as {
       choices?: Array<{
@@ -655,23 +544,14 @@ async function callOpenAiProvider(
     messages.push(msg);
 
     for (const tc of msg.tool_calls) {
-      let parsedArgs: Record<string, unknown> = {};
-      try {
-        parsedArgs = JSON.parse(tc.function.arguments || '{}') as Record<string, unknown>;
-      } catch {
-        parsedArgs = {};
-      }
-
-      const cmdRes = await executeCommand({
-        id: `oai_${Date.now()}_${tc.id}`,
-        command: tc.function.name as KuraCommandRequest['command'],
-        params: parsedArgs,
-      });
-
-      const summary = cmdRes.ok
-        ? JSON.stringify(cmdRes.result ?? { ok: true })
-        : `Error: ${cmdRes.error}`;
-      executedTools.push({ name: tc.function.name, result: summary });
+      // Los argumentos llegan como cadena JSON; validateToolCall rechaza JSON inválido.
+      const { summary } = await runProviderTool(
+        `oai_${Date.now()}_${tc.id}`,
+        tc.function?.name,
+        tc.function?.arguments,
+        executeCommand,
+        executedTools,
+      );
 
       messages.push({
         role: 'tool',
@@ -696,7 +576,7 @@ async function callAnthropicProvider(
   lang: LanguageCode,
   executeCommand: CommandExecutor,
 ): Promise<AiTurnOutput> {
-  const baseUrl = (config.baseUrl || 'https://api.anthropic.com').replace(/\/$/, '');
+  const baseUrl = providerBaseUrl(config, 'https://api.anthropic.com', lang);
   const model = config.model || 'claude-3-5-sonnet-latest';
 
   const messages: Array<Record<string, unknown>> = [
@@ -734,10 +614,7 @@ async function callAnthropicProvider(
       }),
     });
 
-    if (!resp.ok) {
-      const errText = await resp.text();
-      throw new Error(`Anthropic HTTP ${resp.status}: ${errText.slice(0, 220)}`);
-    }
+    if (!resp.ok) throw await providerHttpError('Anthropic', resp, config);
 
     const data = (await resp.json()) as {
       content?: Array<{
@@ -769,15 +646,13 @@ async function callAnthropicProvider(
 
     const toolResults: Array<Record<string, unknown>> = [];
     for (const tu of toolUses) {
-      const cmdRes = await executeCommand({
-        id: `ant_${Date.now()}_${tu.id}`,
-        command: tu.name as KuraCommandRequest['command'],
-        params: tu.input ?? {},
-      });
-      const summary = cmdRes.ok
-        ? JSON.stringify(cmdRes.result ?? { ok: true })
-        : `Error: ${cmdRes.error}`;
-      executedTools.push({ name: tu.name!, result: summary });
+      const { summary } = await runProviderTool(
+        `ant_${Date.now()}_${tu.id}`,
+        tu.name,
+        tu.input,
+        executeCommand,
+        executedTools,
+      );
       toolResults.push({
         type: 'tool_result',
         tool_use_id: tu.id,
@@ -803,7 +678,7 @@ async function callOllamaProvider(
   lang: LanguageCode,
   executeCommand: CommandExecutor,
 ): Promise<AiTurnOutput> {
-  const baseUrl = (config.baseUrl || 'http://127.0.0.1:11434').replace(/\/$/, '');
+  const baseUrl = providerBaseUrl(config, 'http://127.0.0.1:11434', lang);
   const model = config.model || 'llama3.1';
 
   const messages: Array<Record<string, unknown>> = [
@@ -839,10 +714,7 @@ async function callOllamaProvider(
       }),
     });
 
-    if (!resp.ok) {
-      const errText = await resp.text();
-      throw new Error(`Ollama HTTP ${resp.status}: ${errText.slice(0, 220)}`);
-    }
+    if (!resp.ok) throw await providerHttpError('Ollama', resp, config);
 
     const data = (await resp.json()) as {
       message?: {
@@ -865,15 +737,13 @@ async function callOllamaProvider(
     messages.push(msg);
 
     for (const tc of msg.tool_calls) {
-      const cmdRes = await executeCommand({
-        id: `oll_${Date.now()}_${step}`,
-        command: tc.function.name as KuraCommandRequest['command'],
-        params: tc.function.arguments ?? {},
-      });
-      const summary = cmdRes.ok
-        ? JSON.stringify(cmdRes.result ?? { ok: true })
-        : `Error: ${cmdRes.error}`;
-      executedTools.push({ name: tc.function.name, result: summary });
+      const { summary } = await runProviderTool(
+        `oll_${Date.now()}_${step}`,
+        tc.function?.name,
+        tc.function?.arguments,
+        executeCommand,
+        executedTools,
+      );
       messages.push({ role: 'tool', content: summary });
     }
   }
@@ -901,16 +771,22 @@ export async function sendAiPrompt(
     return runLocalDeterministicAssistant(prompt, lang, executeCommand);
   }
 
-  switch (config.provider) {
-    case 'gemini':
-      return callGeminiProvider(prompt, history, config, lang, executeCommand);
-    case 'openai':
-      return callOpenAiProvider(prompt, history, config, lang, executeCommand);
-    case 'anthropic':
-      return callAnthropicProvider(prompt, history, config, lang, executeCommand);
-    case 'ollama':
-      return callOllamaProvider(prompt, history, config, lang, executeCommand);
-    default:
-      return runLocalDeterministicAssistant(prompt, lang, executeCommand);
+  try {
+    switch (config.provider) {
+      case 'gemini':
+        return await callGeminiProvider(prompt, history, config, lang, executeCommand);
+      case 'openai':
+        return await callOpenAiProvider(prompt, history, config, lang, executeCommand);
+      case 'anthropic':
+        return await callAnthropicProvider(prompt, history, config, lang, executeCommand);
+      case 'ollama':
+        return await callOllamaProvider(prompt, history, config, lang, executeCommand);
+      default:
+        return await runLocalDeterministicAssistant(prompt, lang, executeCommand);
+    }
+  } catch (error) {
+    // Ningún error que llegue a la interfaz o a la consola puede contener la clave.
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(redactSecrets(message, config.apiKey));
   }
 }

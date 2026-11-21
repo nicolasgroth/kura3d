@@ -1,10 +1,24 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
-//! Organización: ISGROTH — Innovación y Soluciones GROTH
+// Organización: ISGROTH — Innovación y Soluciones GROTH
 // Licencia: MIT
 // Descripción: Script de compilación de Tauri v2 encargado de generar metadatos,
-// recursos de Windows (icono y manifiesto) y permisos de capacidades.
+// recursos de Windows (icono y manifiesto) y permisos de capacidades. Declara los
+// comandos propios para que solo los listados en `capabilities/` sean invocables.
+
+const COMMANDS: &[&str] = &[
+    "get_app_info",
+    "get_mcp_bridge_status",
+    "open_kura_project",
+    "save_kura_project",
+    "ai_key_get",
+    "ai_key_set",
+    "ai_key_delete",
+];
 
 fn main() {
-    // Ejecuta la macro de construcción oficial de Tauri v2
-    tauri_build::build()
+    tauri_build::try_build(
+        tauri_build::Attributes::new()
+            .app_manifest(tauri_build::AppManifest::new().commands(COMMANDS)),
+    )
+    .expect("Error al generar el contexto de compilación de Tauri");
 }

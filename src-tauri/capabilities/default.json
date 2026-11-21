@@ -1,17 +1,26 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capacidades predeterminadas de escritorio para Kura3D (ventanas, diálogos nativos y acceso al sistema de archivos).",
+  "description": "Capacidades mínimas de la ventana principal de Kura3D: diálogos de abrir/guardar/confirmar, lectura y escritura solo de rutas elegidas por el usuario y comandos propios declarados en build.rs.",
   "windows": [
     "main"
   ],
   "permissions": [
     "core:default",
     "core:window:allow-destroy",
-    "dialog:default",
-    "fs:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "dialog:allow-message",
+    "fs:deny-default",
     "fs:allow-read-file",
     "fs:allow-stat",
-    "fs:allow-write-file"
+    "fs:allow-write-file",
+    "allow-get-app-info",
+    "allow-get-mcp-bridge-status",
+    "allow-open-kura-project",
+    "allow-save-kura-project",
+    "allow-ai-key-get",
+    "allow-ai-key-set",
+    "allow-ai-key-delete"
   ]
 }
