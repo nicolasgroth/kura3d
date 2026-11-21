@@ -42,3 +42,6 @@ desktop.ini
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Archivos temporales de evaluadores y QA
+.eval-tmp/
