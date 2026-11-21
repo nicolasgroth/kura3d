@@ -60,6 +60,7 @@ import {
 } from '../types/kura';
 import { captureViewportPng } from '../utils/mcpBridgeClient';
 import { openLocalFile, saveBinaryFile } from '../utils/platformBridge';
+import { browserLocalStorage, getApiKeyStore, migrateLegacyApiKey } from '../ai/apiKeyStore';
 
 const MAX_UNDO_HISTORY = 40;
 const STORAGE_AI_CONFIG_KEY = 'kura3d-ai-config';
@@ -686,11 +687,14 @@ function loadInitialMcpConfig(): McpConfig {
   }
 }
 
-/** Carga configuración IA persistida localmente (nunca incluye claves precargadas). */
+/** Clave antigua retirada de localStorage al iniciar (TRUST-03); null si no había. */
+const legacyAiKey = migrateLegacyApiKey(browserLocalStorage(), STORAGE_AI_CONFIG_KEY, getApiKeyStore());
+
+/** Carga configuración IA persistida localmente. La clave API vive en `ai/apiKeyStore`, nunca aquí. */
 function loadInitialAiConfig(): AiConfig {
   const defaults: AiConfig = {
     provider: 'gemini',
-    apiKey: '',
+    apiKey: legacyAiKey?.apiKey ?? '',
     model: 'gemini-2.5-flash',
     baseUrl: '',
     temperature: 0.2,
@@ -701,7 +705,7 @@ function loadInitialAiConfig(): AiConfig {
     const parsed = JSON.parse(raw) as Partial<AiConfig>;
     return {
       provider: parsed.provider ?? defaults.provider,
-      apiKey: typeof parsed.apiKey === 'string' ? parsed.apiKey : '',
+      apiKey: defaults.apiKey,
       model: typeof parsed.model === 'string' && parsed.model ? parsed.model : defaults.model,
       baseUrl: typeof parsed.baseUrl === 'string' ? parsed.baseUrl : '',
       temperature: typeof parsed.temperature === 'number' ? parsed.temperature : defaults.temperature,
@@ -1153,7 +1157,12 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     setAiConfig: (patch) =>
       set((state) => {
         const next: AiConfig = { ...state.aiConfig, ...patch };
-        writeStorage(STORAGE_AI_CONFIG_KEY, JSON.stringify(next));
+        const { apiKey, ...persisted } = next;
+        writeStorage(STORAGE_AI_CONFIG_KEY, JSON.stringify(persisted));
+        if ('apiKey' in patch) {
+          void getApiKeyStore().save(next.provider, apiKey).catch(() =>
+            get().addToast(t(get().language, 'ai.error.keySaveFailed'), 'error'));
+        }
         return { aiConfig: next };
       }),
 
@@ -3466,3 +3475,18 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     },
   };
 });
+
+/** Carga la clave del proveedor activo desde el almacén seguro y avisa si la migración no pudo guardarla. */
+void (async () => {
+  if (legacyAiKey && !(await legacyAiKey.saved)) {
+    const { addToast, language } = useKuraStore.getState();
+    addToast(t(language, 'ai.error.keySaveFailed'), 'error');
+  }
+  const { provider, apiKey } = useKuraStore.getState().aiConfig;
+  if (apiKey) return;
+  const stored = await getApiKeyStore().load(provider).catch(() => '');
+  const current = useKuraStore.getState().aiConfig;
+  if (stored && !current.apiKey && current.provider === provider) {
+    useKuraStore.setState({ aiConfig: { ...current, apiKey: stored } });
+  }
+})();

@@ -75,6 +75,19 @@ fn is_project_path(path: &Path) -> bool {
         .is_some_and(|ext| ext.eq_ignore_ascii_case("kura"))
 }
 
+/// The suggested name may only be a bare `*.kura` file name: no directories,
+/// drive prefixes or traversal components.
+fn validate_new_project_name(name: &str) -> Result<(), String> {
+    let path = Path::new(name);
+    if !matches!(path.components().next(), Some(Component::Normal(_)))
+        || path.file_name() != Some(path.as_os_str())
+        || !is_project_path(path)
+    {
+        return Err("El nombre del proyecto debe tener extensión .kura.".into());
+    }
+    Ok(())
+}
+
 fn selected_path(selected: FilePath) -> Result<PathBuf, String> {
     let path = selected.into_path().map_err(|err| err.to_string())?;
     if !is_project_path(&path) {
@@ -178,13 +191,7 @@ pub async fn save_kura_project(
     let target = if let Some(location) = request.location {
         locations.resolve(&location)?
     } else {
-        let name = Path::new(&request.name);
-        if !matches!(name.components().next(), Some(Component::Normal(_)))
-            || name.file_name() != Some(name.as_os_str())
-            || !is_project_path(name)
-        {
-            return Err("El nombre del proyecto debe tener extensión .kura.".into());
-        }
+        validate_new_project_name(&request.name)?;
         let Some(selected) = dialog.set_file_name(request.name).blocking_save_file() else {
             return Ok(None);
         };
@@ -248,6 +255,61 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(fs::read(&project).unwrap(), b"original");
         assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn suggested_project_names_cannot_escape_the_dialog() {
+        for valid in ["modelo.kura", "Modelo Final.KURA", "pieza-2.kura"] {
+            assert!(validate_new_project_name(valid).is_ok(), "{valid}");
+        }
+        let mut invalid_names = vec![
+            "",
+            "modelo",
+            "modelo.stl",
+            "modelo.kura.exe",
+            "../modelo.kura",
+            "..",
+            "carpeta/modelo.kura",
+            "/tmp/modelo.kura",
+        ];
+        if cfg!(windows) {
+            invalid_names.extend(["carpeta\\modelo.kura", "C:\\modelo.kura", "C:modelo.kura"]);
+        }
+        for invalid in invalid_names {
+            assert!(validate_new_project_name(invalid).is_err(), "{invalid}");
+        }
+    }
+
+    #[test]
+    fn selected_paths_must_be_kura_files_in_an_existing_directory() {
+        let directory = tempfile::tempdir().unwrap();
+        let chosen = directory.path().join("modelo.kura");
+        let resolved = selected_path(FilePath::Path(chosen)).unwrap();
+        assert!(resolved.is_absolute());
+        assert_eq!(resolved.file_name().unwrap(), "modelo.kura");
+
+        let wrong_extension = directory.path().join("modelo.stl");
+        assert!(selected_path(FilePath::Path(wrong_extension)).is_err());
+        let missing_parent = directory.path().join("no-existe").join("modelo.kura");
+        assert!(selected_path(FilePath::Path(missing_parent)).is_err());
+    }
+
+    #[test]
+    fn oversized_or_malformed_save_requests_are_rejected() {
+        let metadata = br#"{"name":"modelo.kura","location":null}"#;
+        let mut body = (metadata.len() as u32).to_le_bytes().to_vec();
+        body.extend_from_slice(metadata);
+        body.extend_from_slice(b"bytes");
+        let body = InvokeBody::Raw(body);
+        let (request, bytes) = read_save_request(&body).unwrap();
+        assert_eq!(request.name, "modelo.kura");
+        assert_eq!(bytes, b"bytes");
+
+        let mut lying_length = (u32::MAX).to_le_bytes().to_vec();
+        lying_length.extend_from_slice(metadata);
+        assert!(read_save_request(&InvokeBody::Raw(lying_length)).is_err());
+        assert!(read_save_request(&InvokeBody::Raw(vec![1, 0])).is_err());
+        assert!(read_save_request(&InvokeBody::Json(serde_json::json!({}))).is_err());
     }
 
     #[test]

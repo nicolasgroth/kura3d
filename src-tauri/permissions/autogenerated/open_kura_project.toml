@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-open-kura-project"
+description = "Enables the open_kura_project command without any pre-configured scope."
+commands.allow = ["open_kura_project"]
+
+[[permission]]
+identifier = "deny-open-kura-project"
+description = "Denies the open_kura_project command without any pre-configured scope."
+commands.deny = ["open_kura_project"]

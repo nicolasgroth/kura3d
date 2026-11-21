@@ -6,6 +6,8 @@
  * @license MIT
  */
 
+import { MAX_PROJECT_BYTES } from '../project/projectSchema';
+
 /** Filtro de extensión compatible con diálogos nativos y web. */
 export interface FileDialogFilter {
   name: string;
@@ -16,6 +18,25 @@ export interface FileDialogFilter {
 export interface OpenedLocalFile {
   name: string;
   buffer: ArrayBuffer;
+}
+
+/** Tope de lectura de archivos locales elegidos por el usuario (mismo límite que el arrastre). */
+export const MAX_LOCAL_FILE_BYTES = MAX_PROJECT_BYTES;
+
+/** Extensiones (sin punto, en minúsculas) aceptadas por un conjunto de filtros de diálogo. */
+export function filterExtensions(filters: FileDialogFilter[]): string[] {
+  return filters.flatMap((filter) => filter.extensions.map((ext) => ext.toLowerCase()));
+}
+
+/**
+ * Comprueba que una ruta devuelta por el diálogo nativo termine en una extensión permitida.
+ * Una lista vacía no restringe (selector de imágenes sin filtro explícito).
+ */
+export function hasAllowedExtension(path: string, extensions: string[]): boolean {
+  if (extensions.length === 0) return true;
+  const name = path.split(/[\\/]/).pop() ?? '';
+  const dot = name.lastIndexOf('.');
+  return dot > 0 && extensions.includes(name.slice(dot + 1).toLowerCase());
 }
 
 /**
@@ -49,6 +70,10 @@ export async function saveBinaryFile(
       });
 
       if (!targetPath) {
+        return false;
+      }
+      if (!hasAllowedExtension(targetPath, filterExtensions(filters))) {
+        console.warn('[Kura3D] Destino rechazado: extensión no permitida.');
         return false;
       }
 
@@ -114,6 +139,16 @@ export async function openLocalFile(accept: string): Promise<OpenedLocalFile | n
       });
 
       if (!selected || Array.isArray(selected)) {
+        return null;
+      }
+      const allowed = filters.length > 0 ? filterExtensions(filters) : [];
+      if (!hasAllowedExtension(selected, allowed)) {
+        console.warn('[Kura3D] Archivo rechazado: extensión no permitida.');
+        return null;
+      }
+      const info = await fsMod.stat(selected);
+      if (!info.isFile || info.size > MAX_LOCAL_FILE_BYTES) {
+        console.warn('[Kura3D] Archivo rechazado: no es un archivo normal o supera el tamaño máximo.');
         return null;
       }
 

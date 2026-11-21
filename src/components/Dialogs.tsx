@@ -51,6 +51,8 @@ import {
 } from '../types/kura';
 import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
 import { openLocalFile } from '../utils/platformBridge';
+import { getApiKeyStore } from '../ai/apiKeyStore';
+import { isAllowedProviderUrl } from '../ai/providerSecurity';
 
 /** Presets SVG vectoriales incorporados para probar extrusión y proyección 3D al instante. */
 const SVG_PRESETS: Record<'star' | 'badge' | 'gear', string> = {
@@ -1566,6 +1568,8 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const [model, setModel] = useState(aiConfig.model);
   const [baseUrl, setBaseUrl] = useState(aiConfig.baseUrl);
   const [temperature, setTemperature] = useState(aiConfig.temperature);
+  const keyStore = getApiKeyStore();
+  const [rememberKey, setRememberKey] = useState(() => keyStore.rememberInSession());
   const [copied, setCopied] = useState(false);
 
   // Garantiza que cualquier vista previa en vivo se revierta al cerrar o desmontar el modal
@@ -1593,6 +1597,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
       setModel(aiConfig.model);
       setBaseUrl(aiConfig.baseUrl);
       setTemperature(aiConfig.temperature);
+      setRememberKey(getApiKeyStore().rememberInSession());
     }
   }, [open, aiConfig]);
 
@@ -1609,9 +1614,17 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     if (next === 'ollama' && !baseUrl) {
       setBaseUrl('http://127.0.0.1:11434');
     }
+    // Cada proveedor tiene su propia clave: nunca se reenvía la de otro proveedor.
+    setApiKey('');
+    void keyStore.load(next).then(setApiKey, () => setApiKey(''));
   };
 
   const handleSaveAi = () => {
+    if (baseUrl.trim() && !isAllowedProviderUrl(baseUrl.trim(), keyStore.desktop)) {
+      addToast(t(language, 'ai.error.endpointBlocked'), 'error');
+      return;
+    }
+    keyStore.setRememberInSession(rememberKey);
     setAiConfig({ provider, apiKey, model, baseUrl, temperature });
     addToast(t(language, 'toast.settingsSaved'), 'success');
     handleClose();
@@ -1935,8 +1948,25 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
                 className="kura-input"
                 placeholder={t(language, 'dialog.settings.apiKeyPlaceholder')}
                 value={apiKey}
+                autoComplete="off"
+                aria-describedby="ai-key-storage"
                 onChange={(e) => setApiKey(e.target.value)}
               />
+              <small id="ai-key-storage" style={{ fontSize: 11, opacity: 0.8 }}>
+                {t(language, keyStore.desktop
+                  ? 'dialog.settings.apiKeyStorageDesktop'
+                  : 'dialog.settings.apiKeyStorageWeb')}
+              </small>
+              {!keyStore.desktop && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                  <input
+                    type="checkbox"
+                    checked={rememberKey}
+                    onChange={(e) => setRememberKey(e.target.checked)}
+                  />
+                  <span>{t(language, 'dialog.settings.apiKeyRememberSession')}</span>
+                </label>
+              )}
             </div>
           )}
 
