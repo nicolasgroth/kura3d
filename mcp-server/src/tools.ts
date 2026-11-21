@@ -14,7 +14,7 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
 import { resolveExportPath } from './exportPaths.js';
-import type { KuraHeadlessEngine } from './headlessEngine.js';
+import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
 import {
   exportPayloadSchema,
   hexColorSchema,
@@ -481,6 +481,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           name: args.name,
           depth: args.depth,
           targetWidth: args.targetWidth,
+          curveSegments: args.curveSegments,
         })
       )
   );
@@ -639,12 +640,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         enforceSecurityPolicy(ctx, 'capture_viewport');
 
         if (!ctx.bridge.isConnected()) {
-          return okJson({
-            mode: 'headless',
-            captured: false,
-            message:
-              'La captura visual requiere la interfaz gráfica de Kura3D abierta y conectada al puente WebSocket.',
-          });
+          throw new HeadlessUnsupportedError(
+            'capture_viewport',
+            'la captura del viewport necesita el renderizador WebGL de la UI, que no existe en Node.'
+          );
         }
 
         const response = await ctx.bridge.sendCommand('capture_viewport', args, undefined, {
@@ -977,7 +976,9 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           .number()
           .min(0)
           .optional()
-          .describe('Separación en mm entre piezas cuando mode === "arrange_grid".'),
+          .describe(
+            'Separación en mm entre piezas cuando mode === "arrange_grid". El motor usa 8 mm fijos; en modo headless otro valor se rechaza.'
+          ),
       },
     },
     async (args) =>

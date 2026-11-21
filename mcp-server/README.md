@@ -13,7 +13,9 @@ Servidor oficial **Model Context Protocol (MCP)** para **Kura3D**. Permite que a
    Al iniciarse, el servidor abre un puente WebSocket local seguro en `ws://127.0.0.1:17432` (configurable con `KURA_BRIDGE_PORT`). Cuando la app de escritorio/web **Kura3D** está abierta, cada herramienta ejecutada por la IA actualiza el viewport 3D en vivo e incluso permite capturar vistas PNG (`kura_capture_viewport`).
 
 2. **Modo Headless Standalone (Sin UI abierta):**  
-   Si la interfaz gráfica de Kura3D no está abierta, el servidor MCP utiliza un motor paramétrico autónomo en memoria (`KuraHeadlessEngine`) capaz de crear primitivas watertight, transformarlas, ahuecarlas y exportar archivos **STL binarios/ASCII** y **3MF** directamente a disco.
+   Si la interfaz gráfica de Kura3D no está abierta, el servidor MCP mantiene la escena en memoria (`KuraHeadlessEngine`) y ejecuta **toda la geometría con el mismo motor de la app** (`src/engine`, Manifold WASM): CSG exacto, corte con conectores, ahuecado, moldes, roscas, proyección, simplificación, segmentación y exportación **STL binario/ASCII** y **3MF con materiales y colores**. Lo que necesita el navegador (captura del viewport con WebGL) responde con un error explícito "no soportada en headless"; nunca se devuelve geometría aproximada.
+
+   `npm run build` comprueba tipos con `tsc` y empaqueta servidor + motor en `dist/index.js` con esbuild; `manifold-3d`, `three` y `fflate` se resuelven desde `mcp-server/node_modules`.
 
 ---
 
