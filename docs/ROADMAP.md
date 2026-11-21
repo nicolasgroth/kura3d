@@ -58,6 +58,31 @@ Se evalúan antes de escribir código propio. Solo licencias permisivas.
 | Exportar GLB | GLTFExporter de three.js | MIT |
 | Claves en el sistema operativo | keyring (crate Rust) | MIT/Apache-2.0 |
 
+## Pedidos del autor del 21 de noviembre de 2026
+
+Recogidos de la conversación; cada uno tiene ticket y aparece en el [tablero](TABLERO.md).
+
+| Pedido | Ticket |
+|---|---|
+| Arrastrar la pieza seleccionada sobre la bandeja; la cámara solo se mueve al arrastrar fuera de la pieza | UX-10 (nuevo) |
+| Entrada numérica flotante al pulsar M, R o S, además del panel lateral | UX-11 (nuevo), PREC-01 |
+| Paneles móviles, minimizables y que se agregan o quitan; opción minimalista | UX-03 |
+| Clic derecho para mostrar, ocultar, agregar, quitar y operar | UX-07 |
+| Uso completo por teclado y atajos editables | UX-02 |
+| Línea de comandos, también como canal acotado para la IA | CMD-01 |
+| Pestañas de proyecto | UX-04 |
+| Marcas en piezas divididas, guía de uniones, holgura configurable por conector | FIT-01, GUIDE-01, GEO-05 |
+| Tutorial de uso y tutorial de armado de las piezas divididas | TUT-01, ASSY-01 |
+| Agregar y restar piezas de forma didáctica; modificadores como texto con profundidad | UX-07, GEO-01, HIST-01 |
+| Multilenguaje que pueda crecer con aportes de terceros | I18N-01 (nuevo) |
+| Extensiones de terceros | EXT-01 |
+| MCP, API y toda conexión externa muy bien aseguradas | TRUST-02, API-01/02/03, SEC-05 |
+| Capturas y visor sin abrir la ventana, para que una IA use la herramienta | CAP-01 |
+| Evaluador externo (Codex, Gemini) | Pospuesto por decisión del autor |
+| Usos derivados, como modelos para videojuegos | Idea |
+
+Principios que salen de estos pedidos: la interfaz debe ser **didáctica** (cada operación se entiende y se previsualiza antes de aplicar), **operable por teclado**, y la arquitectura debe ser **extensible** (núcleo independiente de la interfaz, un solo contrato de operaciones para interfaz, comandos, MCP, API y extensiones).
+
 ## Cobertura de la especificación maestra
 
 El 21 de noviembre de 2026 se cruzó `KURA_3D_ESPECIFICACION_MAESTRA.md` (secciones F01–F16, E01–E15, US-001 a US-020) y las dos revisiones contra el backlog. Todo requisito tiene ticket salvo estas brechas, que se agregan aquí con identificador nuevo:

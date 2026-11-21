@@ -121,6 +121,7 @@ npm run mcp:test
 ---
 
 ## Documentación Adicional
+- [Tablero de funcionalidades](docs/TABLERO.md)
 - [Roadmap y prioridades](docs/ROADMAP.md)
 - [Registro de funcionalidades](docs/FUNCIONALIDADES.md)
 - [Continuidad del proyecto y próximos pasos](docs/CONTINUAR_KURA3D.md)
