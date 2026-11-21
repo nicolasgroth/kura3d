@@ -321,7 +321,6 @@ export const CommandPalette: React.FC = () => {
         label: t(language, 'cmd.pro.mirrorX'),
         category: catOps,
         keywords: 'espejar simetria reflejar mirror x axis',
-        shortcut: 'M',
         kind: 'local',
         icon: <FlipHorizontal2 size={15} />,
         run: () => {
@@ -518,7 +517,7 @@ export const CommandPalette: React.FC = () => {
         label: t(language, 'cmd.view.zen'),
         category: catView,
         keywords: 'zen pantalla completa canvas hide panels',
-        shortcut: 'Tab',
+        shortcut: 'Ctrl/⌘+Shift+Enter',
         kind: 'local',
         icon: <Minimize2 size={15} />,
         run: () => toggleZenMode(),
@@ -688,7 +687,14 @@ export const CommandPalette: React.FC = () => {
       setActiveIndex((prev) =>
         filtered.length === 0 ? 0 : (prev - 1 + filtered.length) % filtered.length,
       );
-    } else if (e.key === 'Enter' && filtered[activeIndex]) {
+    } else if (
+      e.key === 'Enter' &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.shiftKey &&
+      !e.altKey &&
+      filtered[activeIndex]
+    ) {
       e.preventDefault();
       executeItem(filtered[activeIndex]);
     }

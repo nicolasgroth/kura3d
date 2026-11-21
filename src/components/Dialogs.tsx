@@ -2165,6 +2165,7 @@ const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     {
       title: t(language, 'dialog.shortcuts.secTransform'),
       items: [
+        { keys: ['M'], label: t(language, 'precision.moveInspectorHelp') },
         { keys: ['G', 'W'], label: t(language, 'dialog.shortcuts.moveGizmo') },
         { keys: ['R'], label: t(language, 'dialog.shortcuts.rotateGizmo') },
         { keys: ['S'], label: t(language, 'dialog.shortcuts.scaleGizmo') },
@@ -2191,7 +2192,7 @@ const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
       items: [
         { keys: ['1', '2', '3', '7'], label: t(language, 'dialog.shortcuts.camPresets') },
         { keys: ['F'], label: t(language, 'dialog.shortcuts.camFit') },
-        { keys: ['Tab'], label: t(language, 'dialog.shortcuts.zenMode') },
+        { keys: ['Ctrl/⌘+Shift+Enter'], label: t(language, 'dialog.shortcuts.zenMode') },
       ],
     },
     {
@@ -2199,7 +2200,6 @@ const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
       items: [
         { keys: ['Ctrl+G'], label: t(language, 'dialog.shortcuts.smartGroup') },
         { keys: ['Ctrl+Shift+G'], label: t(language, 'dialog.shortcuts.splitIslands') },
-        { keys: ['M'], label: t(language, 'dialog.shortcuts.mirrorX') },
         { keys: ['Shift+M'], label: t(language, 'dialog.shortcuts.openMold') },
         { keys: ['X'], label: t(language, 'dialog.shortcuts.toggleXray') },
         { keys: ['P'], label: t(language, 'dialog.shortcuts.togglePaint') },

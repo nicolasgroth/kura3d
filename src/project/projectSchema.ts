@@ -1,0 +1,100 @@
+import { MATERIAL_PRESETS, type PrinterProfile, type SceneObject, type UnitSystem } from '../types/kura';
+
+export const MAX_PROJECT_BYTES = 128 * 1024 * 1024;
+
+export interface ProjectSceneSnapshot {
+  objects: SceneObject[];
+  selectedIds: string[];
+}
+
+export interface ProjectDocument extends ProjectSceneSnapshot {
+  past: ProjectSceneSnapshot[];
+  future: ProjectSceneSnapshot[];
+  unitSystem: UnitSystem;
+  printerProfile: PrinterProfile;
+  customBedDimensions: { width: number; depth: number; height: number } | null;
+  sectionPlane: { enabled: boolean; heightMm: number };
+  snapGridMm: number;
+}
+
+export class ProjectCodecError extends Error {
+  constructor(public readonly code: 'invalid' | 'unsupported' | 'too-large') {
+    super({
+      invalid: 'Invalid or damaged Kura3D project.',
+      unsupported: 'Unsupported Kura3D project version.',
+      'too-large': 'Kura3D project exceeds the supported size.',
+    }[code]);
+    this.name = 'ProjectCodecError';
+  }
+}
+
+export function check(condition: unknown): asserts condition {
+  if (!condition) throw new ProjectCodecError('invalid');
+}
+
+export function limit(condition: boolean) {
+  if (!condition) throw new ProjectCodecError('too-large');
+}
+
+type Rule = (value: unknown) => boolean;
+const optional = (rule: Rule): Rule => (value) => value === undefined || rule(value);
+export const nat = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0;
+const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+const positive = (v: unknown) => finite(v) && v > 0;
+const nonnegative = (v: unknown) => finite(v) && v >= 0;
+const bool = (v: unknown) => typeof v === 'boolean';
+const str = (v: unknown): v is string => typeof v === 'string' && v.length <= 65536;
+export const id = (v: unknown): v is string => str(v) && v.length > 0 && v.length <= 1024;
+export const color = (v: unknown): v is string => typeof v === 'string' && /^#[\da-f]{6}$/i.test(v);
+const vec3 = (v: unknown) => Array.isArray(v) && v.length === 3 && finite(v[0]) && finite(v[1]) && finite(v[2]);
+const oneOf = (...values: string[]): Rule => (v) => typeof v === 'string' && values.includes(v);
+
+// Only plain records with explicitly declared own properties enter the runtime document.
+export function record(v: unknown): v is Record<string, unknown> {
+  return v !== null && typeof v === 'object' && Object.getPrototypeOf(v) === Object.prototype;
+}
+
+export function shape(fields: Record<string, Rule>): Rule {
+  return (v) => record(v)
+    && Object.keys(v).every(key => Object.hasOwn(fields, key))
+    && Object.entries(fields).every(([k, rule]) => rule(Object.hasOwn(v, k) ? v[k] : undefined));
+}
+
+const numberOption = optional(finite);
+const params = shape({
+  width: numberOption, height: numberOption, depth: numberOption, radius: numberOption,
+  outerRadius: numberOption, innerRadius: numberOption, tubeRadius: numberOption,
+  segments: numberOption, sides: numberOption, text: optional(str), fontSize: numberOption, bevel: numberOption,
+});
+
+export type ObjectMetadata = Omit<SceneObject, 'mesh' | 'stats'>;
+const metadataFields = {
+  id, name: str,
+  source: oneOf('primitive', 'imported', 'boolean', 'svg', 'image', 'cut_part', 'color_split',
+    'mold', 'thread', 'hull', 'projected', 'segmented_part'),
+  primitiveType: optional(oneOf('box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text')),
+  primitiveParams: optional(params),
+  position: vec3, rotation: vec3, scale: vec3, color,
+  materialPreset: optional(oneOf(...Object.keys(MATERIAL_PRESETS))),
+  isHole: bool, visible: bool, locked: bool,
+  hollow: optional(shape({ enabled: bool, wallThickness: finite, drainHole: optional(bool), drainHoleRadius: numberOption })),
+  texture: optional(shape({ pattern: oneOf('none', 'fuzzy', 'knurling', 'waves', 'honeycomb', 'grid'), depth: finite, scale: finite })),
+} satisfies Record<keyof ObjectMetadata, Rule>;
+
+export const validStoredObject = shape({ ...metadataFields, mesh: nat }) as
+  (v: unknown) => v is ObjectMetadata & { mesh: number };
+
+export type ProjectSettings = Omit<ProjectDocument, keyof ProjectSceneSnapshot | 'past' | 'future'>;
+const settingsFields = {
+  unitSystem: oneOf('mm', 'cm', 'm', 'in', 'ft'),
+  printerProfile: shape({
+    id, name: str, brand: oneOf('generic', 'elegoo', 'bambu', 'snapmaker', 'flashforge'),
+    bedWidthMm: positive, bedDepthMm: positive, maxHeightMm: positive, showPrintVolume: bool,
+    colorSlots: (v) => nat(v) && v > 0, purgeZoneMm: optional(nonnegative),
+  } satisfies Record<keyof PrinterProfile, Rule>),
+  customBedDimensions: (v) => v === null || shape({ width: positive, depth: positive, height: positive })(v),
+  sectionPlane: shape({ enabled: bool, heightMm: finite }),
+  snapGridMm: nonnegative,
+} satisfies Record<keyof ProjectSettings, Rule>;
+
+export const validSettings = shape(settingsFields) as (v: unknown) => v is ProjectSettings;

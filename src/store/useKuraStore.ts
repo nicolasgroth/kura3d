@@ -14,6 +14,10 @@ import * as THREE from 'three';
 import { create } from 'zustand';
 import * as engine from '../engine';
 import { t, type TranslationKey } from '../i18n';
+import { decodeProjectAsync, encodeProjectAsync } from '../project/projectCodecClient';
+import { openProjectFile, saveProjectFile } from '../project/projectFiles';
+import { moveRecoveryDraft, readRecoveryDraft, type RecoveryDraftInfo } from '../project/projectRecoveryStorage';
+import { ProjectCodecError, type ProjectDocument, type ProjectSceneSnapshot } from '../project/projectSchema';
 import {
   DEFAULT_PRINTER_PROFILES,
   PRINT_COLOR_PALETTE,
@@ -89,9 +93,25 @@ export interface ToastMessage {
   kind: 'info' | 'success' | 'error';
 }
 
-interface SceneSnapshot {
-  objects: SceneObject[];
-  selectedIds: string[];
+type SceneSnapshot = ProjectSceneSnapshot;
+interface ModelImportSource {
+  name: string;
+  read: () => Promise<ArrayBuffer>;
+}
+const sceneRevisions = new WeakMap<SceneObject[], symbol>();
+
+function sceneRevision(objects: SceneObject[]): symbol {
+  const current = sceneRevisions.get(objects);
+  if (current) return current;
+  const revision = Symbol();
+  sceneRevisions.set(objects, revision);
+  return revision;
+}
+
+function sameHistory(a: SceneSnapshot[], b: SceneSnapshot[]): boolean {
+  return a === b || (a.length === b.length && a.every((snapshot, i) =>
+    sceneRevision(snapshot.objects) === sceneRevision(b[i].objects),
+  ));
 }
 
 export interface KuraStoreState {
@@ -105,6 +125,16 @@ export interface KuraStoreState {
   selectedIds: string[];
   past: SceneSnapshot[];
   future: SceneSnapshot[];
+  projectName: string | null;
+  projectLocation?: string;
+  projectDraftId: string;
+  projectRecovered: boolean;
+  savedProject: ProjectDocument | null;
+  projectBusy: boolean;
+  newProject: () => boolean;
+  openProject: (loadFile?: typeof openProjectFile) => Promise<boolean>;
+  recoverProject: (draft: RecoveryDraftInfo) => Promise<boolean>;
+  saveProject: (saveAs?: boolean) => Promise<boolean>;
 
   // Densidad adaptativa de interfaz y visibilidad de paneles
   uiDensity: UiDensityMode;
@@ -318,6 +348,7 @@ export interface KuraStoreState {
   importSvgModel: (options: SvgImportOptions) => Promise<SceneObject | null>;
   generateImageRelief: (options: ImageTo3DOptions) => Promise<SceneObject | null>;
   importMeshFromDialog: () => Promise<void>;
+  importModelFiles: (files: ModelImportSource[]) => Promise<boolean>;
   exportSceneStl: (onlySelected?: boolean) => Promise<boolean>;
   exportScene3mf: (onlySelected?: boolean, slicerTarget?: SlicerTarget) => Promise<boolean>;
   export3MFForSlicer: (slicerTarget?: SlicerTarget, onlySelected?: boolean) => Promise<boolean>;
@@ -330,6 +361,34 @@ export interface KuraStoreState {
   ) => Promise<KuraCommandResponse>;
 }
 
+export function captureProject(state: KuraStoreState): ProjectDocument {
+  return {
+    objects: state.objects,
+    selectedIds: state.selectedIds,
+    past: state.past,
+    future: state.future,
+    unitSystem: state.unitSystem,
+    printerProfile: state.printerProfile,
+    customBedDimensions: state.customBedDimensions,
+    sectionPlane: state.sectionPlane,
+    snapGridMm: state.snapGridMm,
+  };
+}
+
+function hasProjectChanged(saved: ProjectDocument, state: KuraStoreState): boolean {
+  // Selection is written with a save, but moving focus around the scene does not require one.
+  return sceneRevision(saved.objects) !== sceneRevision(state.objects) ||
+    !sameHistory(saved.past, state.past) || !sameHistory(saved.future, state.future) ||
+    saved.unitSystem !== state.unitSystem || saved.printerProfile !== state.printerProfile ||
+    saved.customBedDimensions !== state.customBedDimensions || saved.sectionPlane !== state.sectionPlane ||
+    saved.snapGridMm !== state.snapGridMm;
+}
+
+export function isProjectDirty(state: KuraStoreState): boolean {
+  if (state.projectRecovered) return true;
+  return state.savedProject ? hasProjectChanged(state.savedProject, state) : state.objects.length > 0;
+}
+
 /** Generador de IDs cortos y únicos sin dependencias externas. */
 function makeId(prefix = 'obj'): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -338,23 +397,27 @@ function makeId(prefix = 'obj'): string {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
+function makeProjectDraftId(): string {
+  return globalThis.crypto?.randomUUID?.() ?? makeId('draft');
+}
+
 /** Clona un arreglo de objetos para instantáneas Undo/Redo compartiendo referencias inmutables de MeshData. */
 function cloneSnapshot(objects: SceneObject[], selectedIds: string[]): SceneSnapshot {
-  return {
-    objects: objects.map((obj) => ({
-      ...obj,
-      position: [...obj.position] as Vec3,
-      rotation: [...obj.rotation] as Vec3,
-      scale: [...obj.scale] as Vec3,
-      hollow: obj.hollow ? { ...obj.hollow } : undefined,
-      texture: obj.texture ? { ...obj.texture } : undefined,
-      stats: {
-        ...obj.stats,
-        dimensionsMm: [...obj.stats.dimensionsMm] as Vec3,
-      },
-    })),
-    selectedIds: [...selectedIds],
-  };
+  const copies = objects.map((obj) => ({
+    ...obj,
+    position: [...obj.position] as Vec3,
+    rotation: [...obj.rotation] as Vec3,
+    scale: [...obj.scale] as Vec3,
+    hollow: obj.hollow ? { ...obj.hollow } : undefined,
+    texture: obj.texture ? { ...obj.texture } : undefined,
+    stats: {
+      ...obj.stats,
+      dimensionsMm: [...obj.stats.dimensionsMm] as Vec3,
+    },
+  }));
+  // Undo and redo copy the immutable scene layout without creating a new revision.
+  sceneRevisions.set(copies, sceneRevision(objects));
+  return { objects: copies, selectedIds: [...selectedIds] };
 }
 
 /** Calcula la altura mínima (minY) real de una malla en espacio de mundo aplicando rotación y escala. */
@@ -488,16 +551,30 @@ function computeObjectWorldCenter(targetObj: SceneObject): Vec3 {
 }
 
 /** Parsea un archivo STL, 3MF u OBJ en mallas normalizadas listas para insertar en la escena. */
-function parseModelBufferToMeshes(file: {
-  name: string;
-  buffer: ArrayBuffer;
-}): Array<{ name: string; mesh: MeshData; color?: string }> {
+function parseModelBufferToMeshes(
+  file: { name: string; buffer: ArrayBuffer },
+  invalidGeometryMessage: string,
+): Array<{ name: string; mesh: MeshData; color?: string }> {
+  const normalize = (mesh: MeshData) => {
+    const normalized = engine.normalizeMeshToBed(mesh);
+    const vertexCount = normalized.positions.length / 3;
+    if (!Number.isInteger(vertexCount) || vertexCount < 3 ||
+        normalized.indices.length < 3 || normalized.indices.length % 3 !== 0 ||
+        normalized.indices.some((index) => index >= vertexCount) ||
+        !normalized.positions.every(Number.isFinite) ||
+        (normalized.normals && (normalized.normals.length !== normalized.positions.length ||
+          !normalized.normals.every(Number.isFinite)))) {
+      throw new Error(invalidGeometryMessage);
+    }
+    return normalized;
+  };
+
   const lower = file.name.toLowerCase();
   if (lower.endsWith('.3mf')) {
     const parts = engine.import3MFBuffer(file.buffer);
     return parts.map((part) => ({
       name: part.name || file.name.replace(/\.3mf$/i, ''),
-      mesh: engine.normalizeMeshToBed(part.mesh),
+      mesh: normalize(part.mesh),
       color: part.color,
     }));
   }
@@ -507,7 +584,7 @@ function parseModelBufferToMeshes(file: {
     return [
       {
         name: file.name.replace(/\.obj$/i, ''),
-        mesh: engine.normalizeMeshToBed(mesh),
+        mesh: normalize(mesh),
       },
     ];
   }
@@ -515,7 +592,7 @@ function parseModelBufferToMeshes(file: {
   return [
     {
       name: file.name.replace(/\.stl$/i, ''),
-      mesh: engine.normalizeMeshToBed(mesh),
+      mesh: normalize(mesh),
     },
   ];
 }
@@ -714,6 +791,48 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
   const tr = (key: TranslationKey, params?: Record<string, string | number>) =>
     t(get().language, key, params);
 
+  const projectErrorMessage = (error: unknown) => {
+    if (error instanceof ProjectCodecError) {
+      return tr(error.code === 'too-large' ? 'fileProject.tooLarge' : `fileProject.${error.code}`);
+    }
+    return error instanceof Error ? error.message : String(error);
+  };
+
+  const canChangeDocument = () => {
+    const state = get();
+    return state.engineReady && !state.busyOperation && !state.aiBusy && !transformSnapshotBeforeDrag;
+  };
+
+  const confirmReplacement = () =>
+    !isProjectDirty(get()) ||
+    (typeof window !== 'undefined' && window.confirm(tr('fileProject.discard')));
+
+  const replaceProject = (
+    document: ProjectDocument,
+    name: string | null,
+    { location, recoveredDraftId }: { location?: string; recoveredDraftId?: string } = {},
+  ) => {
+    lastPaintSnapshotAt = 0;
+    set((state) => ({
+      ...document,
+      projectName: name,
+      projectLocation: location,
+      projectDraftId: recoveredDraftId ?? makeProjectDraftId(),
+      projectRecovered: Boolean(recoveredDraftId),
+      savedProject: document,
+      activeTool: 'select',
+      transformMode: 'translate',
+      activePrintReport: null,
+      showOverhangs: false,
+      activeSegmentation: null,
+      activeDialog: null,
+      commandPaletteOpen: false,
+      cutPreview: { ...state.cutPreview, active: false, objectId: null },
+      spawnedAtById: {},
+      cameraRequest: { preset: 'fit', nonce: (state.cameraRequest?.nonce ?? 0) + 1 },
+    }));
+  };
+
   return {
     engineReady: false,
     engineError: null,
@@ -723,6 +842,107 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     selectedIds: [],
     past: [],
     future: [],
+    projectName: null,
+    projectDraftId: makeProjectDraftId(),
+    projectRecovered: false,
+    savedProject: null,
+    projectBusy: false,
+
+    newProject: () => {
+      if (get().projectBusy || !canChangeDocument() || !confirmReplacement()) return false;
+      replaceProject({
+        ...captureProject(get()),
+        objects: [],
+        selectedIds: [],
+        past: [],
+        future: [],
+        sectionPlane: { enabled: false, heightMm: 25 },
+      }, null);
+      return true;
+    },
+
+    openProject: async (loadFile = openProjectFile) => {
+      if (get().projectBusy || !canChangeDocument()) return false;
+      set({ projectBusy: true });
+      try {
+        const file = await loadFile();
+        if (!file) return false;
+        const document = await decodeProjectAsync(file.bytes);
+        if (!canChangeDocument()) throw new Error(tr('fileProject.busy'));
+        if (!confirmReplacement()) return false;
+        replaceProject(document, file.name, { location: file.location });
+        get().addToast(tr('fileProject.opened', { name: file.name }), 'success');
+        return true;
+      } catch (error) {
+        get().addToast(tr('fileProject.openError', { message: projectErrorMessage(error) }), 'error');
+        return false;
+      } finally {
+        set({ projectBusy: false });
+      }
+    },
+
+    recoverProject: async (draft) => {
+      if (get().projectBusy || !canChangeDocument()) return false;
+      set({ projectBusy: true });
+      try {
+        const stored = await readRecoveryDraft(draft.id);
+        if (!stored || stored.updatedAt !== draft.updatedAt) {
+          throw new Error(tr('recovery.status.changedElsewhere'));
+        }
+        const document = await decodeProjectAsync(stored.bytes);
+        if (!canChangeDocument()) throw new Error(tr('fileProject.busy'));
+        if (!confirmReplacement()) return false;
+
+        const previousState = get();
+        const previousDocument = captureProject(previousState);
+        const recoveredDraftId = makeProjectDraftId();
+        if (!(await moveRecoveryDraft(draft, recoveredDraftId))) {
+          throw new Error(tr('recovery.status.changedElsewhere'));
+        }
+        const state = get();
+        if (state.projectDraftId !== previousState.projectDraftId ||
+            hasProjectChanged(previousDocument, state) || !canChangeDocument()) {
+          // The moved draft retains its bytes if the scene received a concurrent edit.
+          throw new Error(tr('recovery.status.sceneChanged'));
+        }
+        replaceProject(document, stored.name, { recoveredDraftId });
+        get().addToast(tr('recovery.status.restored'), 'success');
+        return true;
+      } catch (error) {
+        get().addToast(tr('recovery.status.restoreFailed', { message: projectErrorMessage(error) }), 'error');
+        return false;
+      } finally {
+        set({ projectBusy: false });
+      }
+    },
+
+    saveProject: async (saveAs = false) => {
+      if (get().projectBusy || !canChangeDocument()) return false;
+      set({ projectBusy: true });
+      try {
+        const state = get();
+        const document = captureProject(state);
+        const name = state.projectName ?? `${tr('app.untitled')}.kura`;
+        const saved = await saveProjectFile(
+          name,
+          () => encodeProjectAsync(document),
+          saveAs ? undefined : state.projectLocation,
+        );
+        if (!saved) return false;
+        if (saved.viaDownload) {
+          get().addToast(tr('fileProject.downloadRequested', { name: saved.name }), 'info');
+          return true;
+        }
+        set({ projectName: saved.name, projectLocation: saved.location, savedProject: document, projectRecovered: false });
+        get().addToast(tr('fileProject.saved', { name: saved.name }), 'success');
+        return true;
+      } catch (error) {
+        get().addToast(tr('fileProject.saveError', { message: projectErrorMessage(error) }), 'error');
+        return false;
+      } finally {
+        set({ projectBusy: false });
+      }
+    },
 
     uiDensity: initialDensity,
     lastNonZenDensity: initialDensity === 'compact' ? 'compact' : 'full',
@@ -790,12 +1010,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       engineInitPromise = (async () => {
         try {
           await engine.initManifoldEngine();
-          set({ engineReady: true, engineError: null });
-
-          // Cargar un cubo de calibración Kura3D de 30×30×30 mm al iniciar si la escena está vacía
-          if (get().objects.length === 0) {
-            await get().createStarterCube();
-          }
+          set({ engineReady: true, engineError: null, savedProject: captureProject(get()) });
           get().addToast(tr('toast.engineReady'), 'success');
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
@@ -1215,7 +1430,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       set({ busyOperation: `import_module_${mode}` });
       try {
         await get().initEngine();
-        const parsedParts = parseModelBufferToMeshes(file);
+        const parsedParts = parseModelBufferToMeshes(file, tr('dropProject.invalidGeometry', { name: file.name }));
         if (parsedParts.length === 0) return null;
 
         const state = get();
@@ -1289,35 +1504,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     },
 
     createStarterCube: async () => {
-      try {
-        const rawMesh = await engine.createPrimitiveMesh('box', {
-          width: 30,
-          height: 30,
-          depth: 30,
-        });
-        const normalized = engine.normalizeMeshToBed(rawMesh);
-        const cube = buildSceneObject({
-          name: 'Cubo Kura3D 30mm',
-          source: 'primitive',
-          primitiveType: 'box',
-          primitiveParams: { width: 30, height: 30, depth: 30 },
-          mesh: normalized,
-          color: PRINT_COLOR_PALETTE[0],
-          materialPreset: 'pla_matte',
-        });
-        set({
-          objects: [cube],
-          selectedIds: [cube.id],
-          past: [],
-          future: [],
-          activePrintReport: null,
-          showOverhangs: false,
-          activeSegmentation: null,
-        });
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        set({ engineError: message });
-      }
+      if (get().busyOperation || get().projectBusy) return;
+      const wasEmpty = get().objects.length === 0;
+      const cube = await get().createPrimitive('box', { width: 30, height: 30, depth: 30 }, {
+        name: `${tr('sidebar.primitive.box')} Kura3D 30 mm`,
+        color: PRINT_COLOR_PALETTE[0],
+        materialPreset: 'pla_matte',
+      });
+      if (cube && wasEmpty) get().requestCameraPreset('fit');
     },
 
     clearScene: () => {
@@ -2506,31 +2700,45 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     importMeshFromDialog: async () => {
       const file = await openLocalFile('.stl,.3mf,.obj');
       if (!file) return;
+      await get().importModelFiles([{ name: file.name, read: async () => file.buffer }]);
+    },
 
+    importModelFiles: async (files) => {
+      if (files.length === 0) return false;
+      const state = get();
+      if (state.projectBusy || state.busyOperation || state.aiBusy || transformSnapshotBeforeDrag) {
+        state.addToast(tr('fileProject.busy'), 'info');
+        return false;
+      }
       set({ busyOperation: 'import_mesh' });
       try {
         await get().initEngine();
-        const parsedParts = parseModelBufferToMeshes(file);
-        const created = parsedParts.map((part) =>
-          buildSceneObject({
+        const created: SceneObject[] = [];
+        for (const file of files) {
+          const invalidGeometry = tr('dropProject.invalidGeometry', { name: file.name });
+          const parts = parseModelBufferToMeshes({ name: file.name, buffer: await file.read() }, invalidGeometry);
+          if (!parts.length) throw new Error(invalidGeometry);
+          for (const part of parts) created.push(buildSceneObject({
             name: part.name,
             source: 'imported',
             mesh: part.mesh,
             color: part.color || PRINT_COLOR_PALETTE[0],
-          }),
-        );
-
-        if (created.length > 0) {
-          pushHistory();
-          set((state) => ({
-            objects: [...state.objects, ...created],
-            selectedIds: created.map((c) => c.id),
           }));
-          get().addToast(tr('toast.imported', { name: file.name }), 'success');
         }
+        const wasEmpty = get().objects.length === 0;
+        pushHistory();
+        set((state) => ({
+          objects: [...state.objects, ...created],
+          selectedIds: created.map((object) => object.id),
+        }));
+        if (wasEmpty) get().requestCameraPreset('fit');
+        get().addToast(files.length === 1
+          ? tr('toast.imported', { name: files[0].name })
+          : tr('dropProject.importedMany', { count: files.length }), 'success');
+        return true;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        get().addToast(tr('toast.errorPrefix', { message: projectErrorMessage(err) }), 'error');
+        return false;
       } finally {
         set({ busyOperation: null });
       }

@@ -10,14 +10,16 @@
 import React, { useMemo } from 'react';
 import { HelpCircle } from 'lucide-react';
 import { getLocalizedPrinterName, t } from '../i18n';
+import type { RecoveryStatus } from '../project/projectRecoveryAutosave';
 import { useKuraStore } from '../store/useKuraStore';
 import { isTauriRuntime } from '../utils/platformBridge';
 
-export const StatusBar: React.FC = () => {
+export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recoveryStatus = 'idle' }) => {
   const language = useKuraStore((s) => s.language);
   const engineReady = useKuraStore((s) => s.engineReady);
   const engineError = useKuraStore((s) => s.engineError);
   const busyOperation = useKuraStore((s) => s.busyOperation);
+  const projectBusy = useKuraStore((s) => s.projectBusy);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const unitSystem = useKuraStore((s) => s.unitSystem);
   const objects = useKuraStore((s) => s.objects);
@@ -35,6 +37,12 @@ export const StatusBar: React.FC = () => {
       ? t(language, 'status.engine.ready')
       : t(language, 'status.engine.loading');
 
+  const recoveryLabel = recoveryStatus === 'ready'
+    ? t(language, 'recovery.status.ready')
+    : recoveryStatus === 'unavailable'
+      ? t(language, 'recovery.status.unavailable')
+      : recoveryStatus === 'idle' ? null : t(language, 'recovery.status.working');
+
   return (
     <footer className="kura-statusbar">
       <div className="kura-statusbar-group">
@@ -45,6 +53,7 @@ export const StatusBar: React.FC = () => {
         </span>
 
         <span
+          role="status"
           style={{
             color: engineError
               ? 'var(--accent-red)'
@@ -54,7 +63,9 @@ export const StatusBar: React.FC = () => {
             fontWeight: 600,
           }}
         >
-          ● {busyOperation ? `${engineLabel} (${busyOperation})` : engineLabel}
+          ● {projectBusy
+            ? t(language, 'fileProject.working')
+            : busyOperation ? `${engineLabel} (${busyOperation})` : engineLabel}
         </span>
 
         <span>{getLocalizedPrinterName(language, printerProfile)}</span>
@@ -66,6 +77,7 @@ export const StatusBar: React.FC = () => {
       </div>
 
       <div className="kura-statusbar-group">
+        {recoveryLabel && <span role="status">{recoveryLabel}</span>}
         <span className="kura-statusbar-hint" style={{ opacity: 0.78 }}>
           {t(language, 'status.shortcuts')}
         </span>

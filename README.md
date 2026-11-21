@@ -62,9 +62,13 @@ Generador automático de moldes para velas/silicona (4 modos), pernos/tuercas he
   - **Escritorio Nativo (Tauri v2 + Rust):** Splash Screen animada, instaladores nativos de ~6 MiB para **Windows (`.exe` NSIS / `.msi`)**, **Linux (`.AppImage` / `.deb`)** y **macOS (`.dmg`)** vía [`.github/workflows/release.yml`](.github/workflows/release.yml).
   - **Web Estática (Vite + WASM):** *code-splitting* por proveedor (`three`, `react`, `manifold-3d`) con carga optimizada.
 - **6 Idiomas Internacionales (`src/i18n/`):** **Español (`es`)**, **English (`en`)**, **Deutsch (`de`)**, **Français (`fr`)**, **हिन्दी (`hi`)** y **中文 (`zh`)** con 100 % de paridad de claves y placeholders verificada por tests.
+- **Proyectos locales `.kura`:** Nuevo, Abrir, Guardar y Guardar como desde el menú Proyecto. El archivo conserva geometría, transformaciones, materiales, selección, unidades e historial de Deshacer/Rehacer. Importar añade geometría al proyecto abierto. El escritorio vuelve a guardar en el destino elegido. En navegadores compatibles se usa el selector de guardado. Cuando el navegador solo admite descargas, Kura mantiene el aviso de cambios pendientes hasta que haya una escritura confirmada o se vuelva a abrir el archivo.
+- **Escena vacía al arrancar.** Importa geometría, abre un `.kura` o agrega el cubo de ejemplo. Puedes soltar modelos STL, 3MF u OBJ juntos y deshacer todo el lote en un paso.
+- **Recuperación local.** El editor guarda borradores de los cambios pendientes. Al volver a abrirlo, puedes recuperar su última copia con la escena, las unidades y el historial de Deshacer/Rehacer.
 - **6 Temas de Color WCAG AA/AAA con Vista Previa en Vivo:** **Obsidian Cyan** *(por defecto)*, **Kura Prism**, **Carbon Pro**, **Nordic Slate**, **Forge Amber** y **Alto Contraste AAA (≥10:1)** conmutables en caliente en modo Claro, Oscuro o Sistema.
 - **Interfaz Adaptativa, Precisión CAD y Atajos Profesionales:**
-  - 3 modos de densidad: **Expandido**, **Compacto** (rail `56px` + tooltips) y **Zen** (100 % viewport con `Tab`) + plegado individual de barras laterales.
+  - 3 modos de densidad: **Expandido**, **Compacto** (rail `56px` + tooltips) y **Zen** (100 % viewport con `Ctrl/⌘+Shift+Enter`) + plegado individual de barras laterales.
+  - **Inspector de transformación.** `M` enfoca Mover, `R` Rotar y `S` Escalar. Mueve y rota con valores absolutos o deltas por eje. Escala por factor o por tamaño local, con bloqueo proporcional opcional. `Shift+M` abre Molde.
   - **`PrecisionNumberInput`:** flechas `↑/↓`, `Shift+↑/↓` (10×), `Alt/Ctrl+↑/↓` (0.1×), rueda del ratón y *drag-scrub* horizontal a 60fps con 1 solo paso Undo.
   - **Modificadores en gizmo:** `Alt + arrastrar` clona al vuelo, `Shift` (o candado `🔗`) escala proporcional, `Ctrl` activa *snap* de rejilla/15°, flechas `↑↓←→` / `RePág`/`AvPág` empujan con precisión, **ViewCube 3D**, **Paleta `Ctrl+K`** y hoja de atajos (`?` / `F1`).
 - **Motor Geométrico Determinístico Manifold-3D (100 % Local — Sin IA Externa):**
@@ -104,7 +108,7 @@ npm run tauri:build
 npm run mcp:build
 npm run mcp:start
 
-# 5. Ejecutar suite completa de pruebas (77 pruebas automatizadas)
+# 5. Ejecutar las pruebas del frontend y del servidor MCP
 npm test
 npm run mcp:test
 ```
@@ -117,6 +121,8 @@ npm run mcp:test
 ---
 
 ## Documentación Adicional
+- [Continuidad del proyecto y próximos pasos](docs/CONTINUAR_KURA3D.md)
+- [Plan de Desarrollo y Seguimiento (`docs/PLAN_DESARROLLO.md`)](docs/PLAN_DESARROLLO.md)
 - [Historial de Versiones (`CHANGELOG.md`)](CHANGELOG.md)
 - [Configuración Segura del Servidor MCP (`mcp-server/README.md`)](mcp-server/README.md)
 - [Política de Seguridad (`SECURITY.md`)](SECURITY.md)

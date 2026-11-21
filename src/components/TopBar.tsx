@@ -44,6 +44,7 @@ import {
   type UnitSystem,
 } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
+import { ProjectMenu } from './ProjectMenu';
 
 const UNIT_OPTIONS: UnitSystem[] = ['mm', 'cm', 'm', 'in', 'ft'];
 
@@ -197,6 +198,7 @@ export const TopBar: React.FC = () => {
         >
           <Redo2 size={13} />
         </button>
+        <ProjectMenu />
       </div>
 
       {/* Herramientas principales del estudio */}

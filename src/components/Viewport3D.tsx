@@ -30,6 +30,7 @@ import {
   Copy,
   FileUp,
   FlipHorizontal2,
+  FolderOpen,
   HelpCircle,
   Layers,
   Lightbulb,
@@ -1213,6 +1214,12 @@ export const Viewport3D: React.FC = () => {
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const addSubtractHelperPrimitive = useKuraStore((s) => s.addSubtractHelperPrimitive);
   const importModelAsModuleFromDialog = useKuraStore((s) => s.importModelAsModuleFromDialog);
+  const importMeshFromDialog = useKuraStore((s) => s.importMeshFromDialog);
+  const openProject = useKuraStore((s) => s.openProject);
+  const createStarterCube = useKuraStore((s) => s.createStarterCube);
+  const emptyActionsBlocked = useKuraStore((s) =>
+    !s.engineReady || s.projectBusy || Boolean(s.busyOperation) || s.aiBusy,
+  );
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const runBooleanOnSelection = useKuraStore((s) => s.runBooleanOnSelection);
   const hollowObject = useKuraStore((s) => s.hollowObject);
@@ -1319,20 +1326,54 @@ export const Viewport3D: React.FC = () => {
         />
       </Canvas>
 
-      {/* Píldora flotante para salir de Modo Zen (Tab) */}
-      {uiDensity === 'zen' && (
-        <button
-          type="button"
-          className="kura-zen-exit-pill"
-          onClick={() => useKuraStore.getState().setUiDensity('full')}
-        >
-          <Minimize2 size={13} style={{ color: 'var(--accent-cyan)' }} />
-          <span>{t(language, 'ui.zen.exit')}</span>
-        </button>
+      {objects.length === 0 && (
+        <section className="kura-empty-stage" aria-labelledby="kura-empty-stage-title">
+          <h2 id="kura-empty-stage-title">{t(language, 'emptyStage.title')}</h2>
+          <div className="kura-empty-stage-actions">
+            <button
+              type="button"
+              className="kura-btn kura-btn-primary"
+              disabled={emptyActionsBlocked}
+              onClick={() => void importMeshFromDialog()}
+            >
+              <FileUp size={15} aria-hidden="true" />
+              {t(language, 'topbar.importModel')}
+            </button>
+            <button
+              type="button"
+              className="kura-btn"
+              disabled={emptyActionsBlocked}
+              onClick={() => void openProject()}
+            >
+              <FolderOpen size={15} aria-hidden="true" />
+              {t(language, 'fileProject.open')}
+            </button>
+          </div>
+          <button
+            type="button"
+            className="kura-btn kura-btn-sm"
+            disabled={emptyActionsBlocked}
+            onClick={() => void createStarterCube()}
+          >
+            <Box size={14} aria-hidden="true" />
+            {t(language, 'emptyStage.example')}
+          </button>
+        </section>
       )}
 
       {/* Stack superior del HUD: evita colisiones cuando se envuelven controles */}
       <div className="kura-hud-top-stack">
+        {uiDensity === 'zen' && (
+          <button
+            type="button"
+            className="kura-zen-exit-pill"
+            onClick={() => useKuraStore.getState().setUiDensity('full')}
+          >
+            <Minimize2 size={13} style={{ color: 'var(--accent-cyan)' }} />
+            <span>{t(language, 'ui.zen.exit')}</span>
+          </button>
+        )}
+
         <div className="kura-hud-top-bar">
           <div className="kura-hud-bar">
             <div className="kura-hud-card">
@@ -1542,6 +1583,24 @@ export const Viewport3D: React.FC = () => {
               <Scissors size={13} />
               <span>{t(language, 'viewport.cut.openDialog')}</span>
             </button>
+          </div>
+        )}
+
+        {toasts.length > 0 && (
+          <div className="kura-toast-stack" aria-live="polite">
+            {toasts.map((toast) => (
+              <div key={toast.id} className={`kura-toast ${toast.kind}`}>
+                <span>{toast.text}</span>
+                <button
+                  type="button"
+                  className="kura-mini-icon-btn"
+                  onClick={() => dismissToast(toast.id)}
+                  aria-label={t(language, 'common.close')}
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -1820,25 +1879,6 @@ export const Viewport3D: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Toasts anclados dentro del visor para no tapar HUD superior, Inspector ni Chat IA */}
-      {toasts.length > 0 && (
-        <div className="kura-toast-stack" aria-live="polite">
-          {toasts.map((toast) => (
-            <div key={toast.id} className={`kura-toast ${toast.kind}`}>
-              <span>{toast.text}</span>
-              <button
-                type="button"
-                className="kura-mini-icon-btn"
-                onClick={() => dismissToast(toast.id)}
-                aria-label={t(language, 'common.close')}
-              >
-                <X size={13} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* HUD Inferior: Dimensiones en vivo, alerta de límites y cama en una sola línea */}
       <div className="kura-hud-bottom">

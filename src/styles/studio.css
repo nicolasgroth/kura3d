@@ -404,6 +404,10 @@ body,
   position: relative;
 }
 
+.kura-narrow-panel-actions {
+  display: none;
+}
+
 /* Foco accesible visible en toda la interfaz */
 :focus-visible {
   outline: 2px solid var(--accent-cyan);
@@ -435,7 +439,8 @@ body,
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-subtle);
   z-index: 20;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .kura-topbar-group {
@@ -446,14 +451,61 @@ body,
 }
 
 .kura-topbar-center {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 0 auto;
+  min-width: max-content;
   justify-content: center;
 }
 
 .kura-topbar-left,
 .kura-topbar-right {
   flex-shrink: 0;
+}
+
+.kura-project-name {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-project-dirty {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent-amber);
+}
+
+.kura-project-popover {
+  position: fixed;
+  inset: 58px auto auto 10px;
+  margin: 0;
+  width: min(320px, calc(100vw - 20px));
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-hud);
+}
+
+.kura-project-popover:popover-open {
+  display: grid;
+  gap: 5px;
+}
+
+.kura-project-popover strong {
+  overflow-wrap: anywhere;
+}
+
+.kura-project-popover .kura-btn {
+  justify-content: flex-start;
+}
+
+.kura-project-unsaved {
+  color: var(--text-secondary);
+  font-size: 12px;
 }
 
 .kura-printer-select {
@@ -856,9 +908,11 @@ body,
   overflow: visible;
 }
 
-.kura-sidebar-left.is-collapsed > *:not(.kura-panel-edge-btn),
-.kura-sidebar-right.is-collapsed > *:not(.kura-panel-edge-btn) {
-  display: none;
+@media (width > 900px) {
+  .kura-sidebar-left.is-collapsed > *:not(.kura-panel-edge-btn),
+  .kura-sidebar-right.is-collapsed > *:not(.kura-panel-edge-btn) {
+    display: none;
+  }
 }
 
 /* Botón delgado ‹ / › en el borde interior de cada panel lateral */
@@ -920,13 +974,9 @@ body,
   flex-shrink: 0;
 }
 
-/* Píldora flotante para salir de Modo Zen */
+/* Píldora para salir de Modo Zen en la primera fila del HUD */
 .kura-zen-exit-pill {
-  position: absolute;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 32;
+  align-self: flex-end;
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -939,13 +989,14 @@ body,
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  pointer-events: auto;
   box-shadow: var(--shadow-hud);
   transition: border-color 0.14s ease, transform 0.14s ease;
 }
 
 .kura-zen-exit-pill:hover {
   border-color: var(--accent-cyan);
-  transform: translateX(-50%) translateY(-1px);
+  transform: translateY(-1px);
 }
 
 .kura-slider-header {
@@ -1152,6 +1203,38 @@ body,
   overflow: hidden;
 }
 
+.kura-empty-stage {
+  position: absolute;
+  inset: 20% 12px 14%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.kura-empty-stage h2 {
+  margin: 0 0 2px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-size: 16px;
+  text-align: center;
+}
+
+.kura-empty-stage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.kura-empty-stage .kura-btn {
+  pointer-events: auto;
+}
+
 .kura-hud-top-stack {
   position: absolute;
   top: 12px;
@@ -1356,6 +1439,37 @@ body,
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
+}
+
+.kura-transform-group {
+  padding: 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.kura-transform-mode {
+  min-width: 0;
+  max-width: 65%;
+}
+
+.kura-transform-scale-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kura-transform-scale-actions .kura-transform-mode {
+  max-width: 100%;
+}
+
+.kura-transform-note {
+  margin: 0 0 3px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.kura-precision-apply {
+  align-self: flex-end;
 }
 
 .kura-axis-input {
@@ -1826,17 +1940,14 @@ dialog.kura-palette-dialog {
 }
 
 .kura-toast-stack {
-  position: absolute;
-  bottom: 52px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 30;
   display: flex;
   flex-direction: column;
   align-items: center;
+  align-self: center;
   gap: 8px;
-  pointer-events: none;
-  max-width: calc(100% - 24px);
+  max-width: 100%;
+  max-height: min(24vh, 10rem);
+  overflow-y: auto;
 }
 
 .kura-toast {
@@ -1845,8 +1956,8 @@ dialog.kura-palette-dialog {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  min-width: 240px;
-  max-width: 380px;
+  flex-shrink: 0;
+  width: min(100%, 380px);
   padding: 9px 12px;
   border-radius: var(--radius-md);
   background: var(--bg-panel);
@@ -1854,6 +1965,10 @@ dialog.kura-palette-dialog {
   box-shadow: var(--shadow-hud);
   font-size: 12px;
   font-weight: 600;
+}
+
+.kura-toast > span {
+  overflow-wrap: anywhere;
 }
 
 .kura-toast.success {
@@ -1889,6 +2004,67 @@ dialog.kura-palette-dialog {
   }
   .kura-ai-drawer {
     width: 280px;
+  }
+}
+
+@media (900px < width <= 1240px) {
+  .kura-workspace[data-narrow-panel="ai"] > .kura-sidebar-right {
+    display: none;
+  }
+}
+
+@media (max-width: 950px) {
+  .kura-topbar {
+    justify-content: flex-start;
+  }
+
+  .kura-topbar-center {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .kura-app:not([data-density="zen"]) .kura-workspace {
+    flex-direction: column;
+  }
+
+  .kura-app:not([data-density="zen"]) .kura-narrow-panel-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 6px;
+    padding: 4px 10px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-panel);
+  }
+
+  .kura-workspace > :is(.kura-sidebar-left, .kura-sidebar-right, .kura-ai-drawer),
+  .kura-workspace .kura-panel-edge-btn {
+    display: none;
+  }
+
+  .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-panel="left"] > .kura-sidebar-left,
+  .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-panel="right"] > .kura-sidebar-right,
+  .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-panel="ai"] > .kura-ai-drawer {
+    display: flex;
+    order: 1;
+    flex: 0 0 38%;
+    width: 100%;
+    border-inline: 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .kura-hud-bar > .kura-hud-card {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  .kura-statusbar-group:first-child {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .kura-statusbar-group:last-child > span:last-child {
+    display: none;
   }
 }
 
@@ -2320,21 +2496,8 @@ dialog.kura-dialog-wide {
 }
 
 /* ============================================================================
- * 10. Pulido Final v4.0 Ultra Pro (Zen pill, Pro Tips, Toasts, Inputs & Select)
+ * 10. Pulido Final v4.0 Ultra Pro (Pro Tips, Inputs & Select)
  * ============================================================================ */
-
-/* Posicionar píldora de salida de Modo Zen en esquina inferior derecha (sin colisión con Rayos X) */
-.kura-zen-exit-pill {
-  top: auto;
-  left: auto;
-  bottom: 14px;
-  right: 16px;
-  transform: none;
-}
-
-.kura-zen-exit-pill:hover {
-  transform: translateY(-1px);
-}
 
 /* Pro Tips posicionado sobre Tamaño/Cama a la izquierda sin salirse de <main> ni tapar controles */
 .kura-protip-wrap {
@@ -2346,14 +2509,6 @@ dialog.kura-dialog-wide {
 
 .kura-protip-pill {
   max-width: 100%;
-}
-
-/* Toasts arriba-centro dentro del viewport (despejados de HUD superior, Pro Tips y Tamaño/Cama) */
-.kura-toast-stack {
-  top: 108px;
-  bottom: auto;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 /* Espaciado optimizado en PrecisionNumberInput para mostrar decimales completos (ej. 10.9) */

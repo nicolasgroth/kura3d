@@ -12,7 +12,7 @@
  * @license MIT
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import {
   AlignCenter,
@@ -56,6 +56,7 @@ import {
   type MaterialPresetId,
   type PrimitiveType,
   type TexturePatternType,
+  type TransformMode,
   type Vec3,
 } from '../types/kura';
 import {
@@ -89,7 +90,64 @@ const MODULAR_PRIMITIVES: PrimitiveType[] = [
   'text',
 ];
 
-export const RightInspector: React.FC = () => {
+const AXES = ['x', 'y', 'z'] as const;
+const MIN_SCALE = 0.05;
+
+function RelativeTransformFields({
+  label,
+  applyLabel,
+  step,
+  precision,
+  disabled,
+  onApply,
+}: {
+  label: string;
+  applyLabel: string;
+  step: number;
+  precision: number;
+  disabled: boolean;
+  onApply: (delta: Vec3) => void;
+}) {
+  const [delta, setDelta] = useState<Vec3>([0, 0, 0]);
+
+  return (
+    <>
+      <div className="kura-vec3-grid">
+        {AXES.map((axis, index) => (
+          <PrecisionNumberInput
+            key={axis}
+            prefix={`Δ${axis.toUpperCase()}`}
+            axisTone={axis}
+            step={step}
+            precision={precision}
+            defaultValue={0}
+            disabled={disabled}
+            value={delta[index]}
+            onChange={(value) => setDelta((previous) => {
+              const next: Vec3 = [...previous];
+              next[index] = value;
+              return next;
+            })}
+            ariaLabel={`${label} Δ${axis.toUpperCase()}`}
+          />
+        ))}
+      </div>
+      <button
+        type="button"
+        className="kura-btn kura-btn-sm kura-precision-apply"
+        disabled={disabled || delta.every((value) => value === 0)}
+        onClick={() => {
+          onApply(delta);
+          setDelta([0, 0, 0]);
+        }}
+      >
+        {applyLabel}
+      </button>
+    </>
+  );
+}
+
+export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode } | null }> = ({ precisionRequest }) => {
   const language = useKuraStore((s) => s.language);
   const unitSystem = useKuraStore((s) => s.unitSystem);
   const rightCollapsed = useKuraStore((s) => s.rightCollapsed);
@@ -143,6 +201,16 @@ export const RightInspector: React.FC = () => {
   const [texturePattern, setTexturePattern] = useState<TexturePatternType>('fuzzy');
   const [textureDepthMm, setTextureDepthMm] = useState(0.45);
   const [textureScaleMm, setTextureScaleMm] = useState(4);
+  const [positionRelative, setPositionRelative] = useState(false);
+  const [rotationRelative, setRotationRelative] = useState(false);
+  const [scaleBySize, setScaleBySize] = useState(false);
+
+  useLayoutEffect(() => {
+    if (!precisionRequest) return;
+    const group = document.getElementById(`kura-precision-${precisionRequest.mode}`);
+    group?.focus({ preventScroll: true });
+    group?.scrollIntoView({ block: 'nearest' });
+  }, [precisionRequest]);
 
   const [modularShape, setModularShape] = useState<PrimitiveType>('cylinder');
   const [simplifyTolMm, setSimplifyTolMm] = useState(0.15);
@@ -232,6 +300,7 @@ export const RightInspector: React.FC = () => {
   if (selectedObjects.length === 0) {
     return (
       <aside
+        id="kura-inspector-panel"
         className={`kura-sidebar-right ${rightCollapsed ? 'is-collapsed' : ''}`}
         aria-label={t(language, 'inspector.title')}
       >
@@ -284,6 +353,7 @@ export const RightInspector: React.FC = () => {
   if (selectedObjects.length >= 2) {
     return (
       <aside
+        id="kura-inspector-panel"
         className={`kura-sidebar-right ${rightCollapsed ? 'is-collapsed' : ''}`}
         aria-label={t(language, 'inspector.title')}
       >
@@ -387,6 +457,13 @@ export const RightInspector: React.FC = () => {
 
   const stepUnit = getUnitStep(unitSystem);
   const unitLabel = getUnitLabel(unitSystem);
+  const unitPrecision = unitSystem === 'in' ? 3 : unitSystem === 'm' || unitSystem === 'ft' ? 4 : 2;
+  const positionLabel = `${t(language, 'inspector.field.position')} (${unitLabel})`;
+  const rotationLabel = t(language, 'inspector.field.rotation');
+  const scaleLabel = scaleBySize
+    ? `${t(language, 'precision.localSize')} (${unitLabel})`
+    : t(language, 'inspector.field.scale');
+  const transformDisabled = primary.locked || isBusy;
   const currentMaterial = primary.materialPreset ?? 'pla_matte';
   const currentReport =
     activePrintReport && activePrintReport.objectId === primary.id
@@ -394,41 +471,46 @@ export const RightInspector: React.FC = () => {
       : null;
 
   const handlePosChange = (axisIdx: 0 | 1 | 2, num: number, modifiers?: PrecisionModifierState) => {
-    if (!Number.isFinite(num)) return;
+    const millimeters = toMm(num, unitSystem);
+    if (!Number.isFinite(millimeters) || millimeters === primary.position[axisIdx]) return;
     const nextPos: Vec3 = [...primary.position] as Vec3;
-    nextPos[axisIdx] = toMm(num, unitSystem);
+    nextPos[axisIdx] = millimeters;
     setObjectTransform(primary.id, { position: nextPos }, !modifiers?.isScrubbing);
   };
 
   const handleRotChange = (axisIdx: 0 | 1 | 2, deg: number, modifiers?: PrecisionModifierState) => {
-    if (!Number.isFinite(deg)) return;
+    const radians = THREE.MathUtils.degToRad(deg);
+    if (!Number.isFinite(radians) || radians === primary.rotation[axisIdx]) return;
     const nextRot: Vec3 = [...primary.rotation] as Vec3;
-    nextRot[axisIdx] = THREE.MathUtils.degToRad(deg);
+    nextRot[axisIdx] = radians;
     setObjectTransform(primary.id, { rotation: nextRot }, !modifiers?.isScrubbing);
   };
 
+  const smallestScale = Math.min(...primary.scale);
   const handleScaleChange = (
     axisIdx: 0 | 1 | 2,
     factor: number,
     modifiers?: PrecisionModifierState,
   ) => {
-    if (!Number.isFinite(factor) || factor < 0.05) return;
+    if (!Number.isFinite(factor)) return;
     const recordHistory = !modifiers?.isScrubbing;
     const isUniform = proportionalScale || Boolean(modifiers?.shiftKey);
     if (isUniform) {
-      const prevAxis = primary.scale[axisIdx];
-      const ratio = prevAxis > 1e-6 ? factor / prevAxis : 1;
-      const nextScale: Vec3 = [
-        Math.max(0.05, Number((primary.scale[0] * ratio).toFixed(4))),
-        Math.max(0.05, Number((primary.scale[1] * ratio).toFixed(4))),
-        Math.max(0.05, Number((primary.scale[2] * ratio).toFixed(4))),
-      ];
-      nextScale[axisIdx] = Math.max(0.05, factor);
+      if (smallestScale <= 0) return;
+      const requestedRatio = factor / primary.scale[axisIdx];
+      const nextSmallest = Math.max(MIN_SCALE, smallestScale * requestedRatio);
+      if (nextSmallest === smallestScale) return;
+      const nextScale = primary.scale.map(
+        (value) => nextSmallest * (value / smallestScale),
+      ) as Vec3;
+      if (!nextScale.every(Number.isFinite)) return;
       setObjectTransform(primary.id, { scale: nextScale }, recordHistory);
       return;
     }
+    const nextFactor = Math.max(MIN_SCALE, factor);
+    if (nextFactor === primary.scale[axisIdx]) return;
     const nextScale: Vec3 = [...primary.scale] as Vec3;
-    nextScale[axisIdx] = Math.max(0.05, factor);
+    nextScale[axisIdx] = nextFactor;
     setObjectTransform(primary.id, { scale: nextScale }, recordHistory);
   };
 
@@ -442,6 +524,7 @@ export const RightInspector: React.FC = () => {
 
   return (
     <aside
+      id="kura-inspector-panel"
       className={`kura-sidebar-right ${rightCollapsed ? 'is-collapsed' : ''}`}
       aria-label={t(language, 'inspector.title')}
     >
@@ -542,79 +625,181 @@ export const RightInspector: React.FC = () => {
             {t(language, 'inspector.section.transform', { unit: unitLabel })}
           </h3>
 
-          <div className="kura-form-field">
-            <label>{t(language, 'inspector.field.position')}</label>
-            <div className="kura-vec3-grid">
-              {(['x', 'y', 'z'] as const).map((axis, idx) => (
-                <PrecisionNumberInput
-                  key={axis}
-                  prefix={axis.toUpperCase()}
-                  axisTone={axis}
-                  step={stepUnit}
-                  precision={2}
-                  defaultValue={0}
-                  disabled={primary.locked}
-                  value={Number(fromMm(primary.position[idx], unitSystem).toFixed(2))}
-                  onChange={(val, mods) => handlePosChange(idx as 0 | 1 | 2, val, mods)}
-                  onCommit={() => commitTransformSnapshot()}
-                  ariaLabel={`${t(language, 'inspector.field.position')} ${axis.toUpperCase()}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="kura-form-field">
-            <label>{t(language, 'inspector.field.rotation')}</label>
-            <div className="kura-vec3-grid">
-              {(['x', 'y', 'z'] as const).map((axis, idx) => (
-                <PrecisionNumberInput
-                  key={axis}
-                  prefix={axis.toUpperCase()}
-                  axisTone={axis}
-                  step={5}
-                  precision={1}
-                  defaultValue={0}
-                  disabled={primary.locked}
-                  value={Number(THREE.MathUtils.radToDeg(primary.rotation[idx]).toFixed(1))}
-                  onChange={(val, mods) => handleRotChange(idx as 0 | 1 | 2, val, mods)}
-                  onCommit={() => commitTransformSnapshot()}
-                  ariaLabel={`${t(language, 'inspector.field.rotation')} ${axis.toUpperCase()}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="kura-form-field">
+          <div
+            className="kura-form-field kura-transform-group"
+            id="kura-precision-translate"
+            role="group"
+            tabIndex={-1}
+            aria-labelledby="kura-precision-translate-label"
+          >
             <div className="kura-field-row">
-              <label>{t(language, 'inspector.field.scale')}</label>
-              <button
-                type="button"
-                className={`kura-lock-btn ${proportionalScale ? 'is-active' : ''}`}
-                onClick={toggleProportionalScale}
-                title={t(language, 'inspector.scale.lockTip')}
-                aria-label={t(language, 'inspector.scale.lockTip')}
-                aria-pressed={proportionalScale}
+              <span className="kura-field-label" id="kura-precision-translate-label">{positionLabel}</span>
+              <select
+                className="kura-select kura-transform-mode"
+                value={positionRelative ? 'relative' : 'absolute'}
+                onChange={(event) => setPositionRelative(event.target.value === 'relative')}
+                aria-label={`${positionLabel} · ${t(language, 'precision.coordinateMode')}`}
               >
-                {proportionalScale ? <Link2 size={12} /> : <Unlink2 size={12} />}
-              </button>
+                <option value="absolute">{t(language, 'precision.absolute')}</option>
+                <option value="relative">{t(language, 'precision.relative')}</option>
+              </select>
+            </div>
+            {positionRelative ? (
+              <RelativeTransformFields
+                key={`${primary.id}:${unitSystem}`}
+                label={positionLabel}
+                applyLabel={t(language, 'precision.applyDelta')}
+                step={stepUnit}
+                precision={unitPrecision}
+                disabled={transformDisabled}
+                onApply={(delta) => {
+                  const position = primary.position.map(
+                    (value, index) => value + toMm(delta[index], unitSystem),
+                  ) as Vec3;
+                  if (position.every(Number.isFinite)) setObjectTransform(primary.id, { position }, true);
+                }}
+              />
+            ) : (
+              <div className="kura-vec3-grid">
+                {AXES.map((axis, idx) => (
+                  <PrecisionNumberInput
+                    key={`${primary.id}:${unitSystem}:${axis}`}
+                    prefix={axis.toUpperCase()}
+                    axisTone={axis}
+                    step={stepUnit}
+                    precision={unitPrecision}
+                    commitOnBlur
+                    defaultValue={0}
+                    disabled={transformDisabled}
+                    value={Number(fromMm(primary.position[idx], unitSystem).toFixed(unitPrecision))}
+                    onChange={(val, mods) => handlePosChange(idx as 0 | 1 | 2, val, mods)}
+                    onCommit={commitTransformSnapshot}
+                    ariaLabel={`${positionLabel} ${axis.toUpperCase()}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div
+            className="kura-form-field kura-transform-group"
+            id="kura-precision-rotate"
+            role="group"
+            tabIndex={-1}
+            aria-labelledby="kura-precision-rotate-label"
+          >
+            <div className="kura-field-row">
+              <span className="kura-field-label" id="kura-precision-rotate-label">{rotationLabel}</span>
+              <select
+                className="kura-select kura-transform-mode"
+                value={rotationRelative ? 'relative' : 'absolute'}
+                onChange={(event) => setRotationRelative(event.target.value === 'relative')}
+                aria-label={`${rotationLabel} · ${t(language, 'precision.coordinateMode')}`}
+              >
+                <option value="absolute">{t(language, 'precision.absolute')}</option>
+                <option value="relative">{t(language, 'precision.relative')}</option>
+              </select>
+            </div>
+            {rotationRelative ? (
+              <>
+                <p className="kura-transform-note">{t(language, 'precision.relativeRotation')}</p>
+                <RelativeTransformFields
+                  key={primary.id}
+                  label={rotationLabel}
+                  applyLabel={t(language, 'precision.applyDelta')}
+                  step={5}
+                  precision={2}
+                  disabled={transformDisabled}
+                  onApply={(delta) => {
+                    const rotation = primary.rotation.map(
+                      (value, index) => value + THREE.MathUtils.degToRad(delta[index]),
+                    ) as Vec3;
+                    if (rotation.every(Number.isFinite)) setObjectTransform(primary.id, { rotation }, true);
+                  }}
+                />
+              </>
+            ) : (
+              <div className="kura-vec3-grid">
+                {AXES.map((axis, idx) => (
+                  <PrecisionNumberInput
+                    key={`${primary.id}:${axis}`}
+                    prefix={axis.toUpperCase()}
+                    axisTone={axis}
+                    step={5}
+                    precision={2}
+                    commitOnBlur
+                    defaultValue={0}
+                    disabled={transformDisabled}
+                    value={Number(THREE.MathUtils.radToDeg(primary.rotation[idx]).toFixed(2))}
+                    onChange={(val, mods) => handleRotChange(idx as 0 | 1 | 2, val, mods)}
+                    onCommit={commitTransformSnapshot}
+                    ariaLabel={`${rotationLabel} ${axis.toUpperCase()}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div
+            className="kura-form-field kura-transform-group"
+            id="kura-precision-scale"
+            role="group"
+            tabIndex={-1}
+            aria-labelledby="kura-precision-scale-label"
+          >
+            <div className="kura-field-row">
+              <span className="kura-field-label" id="kura-precision-scale-label">{scaleLabel}</span>
+              <div className="kura-transform-scale-actions">
+                <select
+                  className="kura-select kura-transform-mode"
+                  value={scaleBySize ? 'size' : 'factor'}
+                  onChange={(event) => setScaleBySize(event.target.value === 'size')}
+                  aria-label={`${scaleLabel} · ${t(language, 'precision.coordinateMode')}`}
+                >
+                  <option value="factor">{t(language, 'precision.factor')}</option>
+                  <option value="size">{t(language, 'precision.localSize')}</option>
+                </select>
+                <button
+                  type="button"
+                  className={`kura-lock-btn ${proportionalScale ? 'is-active' : ''}`}
+                  onClick={toggleProportionalScale}
+                  title={t(language, 'inspector.scale.lockTip')}
+                  aria-label={t(language, 'inspector.scale.lockTip')}
+                  aria-pressed={proportionalScale}
+                >
+                  {proportionalScale ? <Link2 size={12} /> : <Unlink2 size={12} />}
+                </button>
+              </div>
             </div>
             <div className="kura-vec3-grid">
-              {(['x', 'y', 'z'] as const).map((axis, idx) => (
-                <PrecisionNumberInput
-                  key={axis}
-                  prefix={axis.toUpperCase()}
-                  axisTone={axis}
-                  step={0.1}
-                  min={0.05}
-                  precision={2}
-                  defaultValue={1}
-                  disabled={primary.locked}
-                  value={Number(primary.scale[idx].toFixed(2))}
-                  onChange={(val, mods) => handleScaleChange(idx as 0 | 1 | 2, val, mods)}
-                  onCommit={() => commitTransformSnapshot()}
-                  ariaLabel={`${t(language, 'inspector.field.scale')} ${axis.toUpperCase()}`}
-                />
-              ))}
+              {AXES.map((axis, idx) => {
+                const baseSize = fromMm(primary.stats.dimensionsMm[idx], unitSystem);
+                const precision = scaleBySize ? unitPrecision : 4;
+                const value = scaleBySize ? baseSize * primary.scale[idx] : primary.scale[idx];
+                const minimumFactor = proportionalScale && smallestScale > 0
+                  ? MIN_SCALE * (primary.scale[idx] / smallestScale)
+                  : MIN_SCALE;
+                return (
+                  <PrecisionNumberInput
+                    key={`${primary.id}:${scaleBySize ? unitSystem : 'factor'}:${axis}`}
+                    prefix={axis.toUpperCase()}
+                    axisTone={axis}
+                    step={scaleBySize ? stepUnit : 0.1}
+                    min={scaleBySize ? baseSize * minimumFactor : minimumFactor}
+                    precision={precision}
+                    commitOnBlur
+                    defaultValue={scaleBySize ? baseSize : 1}
+                    disabled={transformDisabled || (scaleBySize && baseSize <= 0)}
+                    value={value}
+                    onChange={(val, mods) => {
+                      const factor = scaleBySize ? val / baseSize : val;
+                      handleScaleChange(idx as 0 | 1 | 2, factor, mods);
+                    }}
+                    onCommit={commitTransformSnapshot}
+                    ariaLabel={`${scaleLabel} ${axis.toUpperCase()}`}
+                  />
+                );
+              })}
             </div>
           </div>
 

@@ -11,6 +11,8 @@ use std::net::{SocketAddr, TcpStream};
 use std::path::Path;
 use std::time::Duration;
 
+mod project_files;
+
 /// Metadatos nativos de la aplicación devueltos al frontend web/Tauri.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -118,12 +120,15 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         // Acceso seguro al sistema de archivos según capacidades declaradas
         .plugin(tauri_plugin_fs::init())
+        .manage(project_files::ProjectLocations::default())
         // Comandos nativos expuestos vía IPC (`invoke`)
         .invoke_handler(tauri::generate_handler![
             get_app_info,
             write_binary_file_native,
             read_binary_file_native,
             get_mcp_bridge_status,
+            project_files::open_kura_project,
+            project_files::save_kura_project,
         ])
         .run(tauri::generate_context!())
         .expect("Error crítico al iniciar el runtime nativo de Kura3D");

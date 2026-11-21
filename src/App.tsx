@@ -2,44 +2,132 @@
  * @file src/App.tsx
  * @description Shell principal de la aplicación Kura3D v0.5.0: inicialización del motor Manifold,
  * pantalla de bienvenida animada (SplashScreen), densidad adaptativa (Expandido / Compacto / Zen
- * con tecla Tab), atajos de teclado CAD globales, puente MCP WebSocket, sincronización de tema y
+ * con Ctrl/⌘+Shift+Enter), atajos de teclado CAD globales, puente MCP WebSocket, sincronización de tema y
  * esquema de color, y stack de notificaciones toast.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AiChatDrawer } from './components/AiChatDrawer';
 import { CommandPalette } from './components/CommandPalette';
 import { Dialogs } from './components/Dialogs';
 import { LeftSidebar } from './components/LeftSidebar';
+import { ProjectDropTarget } from './components/ProjectDropTarget';
+import { ProjectRecoveryBanner } from './components/ProjectRecoveryBanner';
 import { RightInspector } from './components/RightInspector';
 import { SplashScreen } from './components/SplashScreen';
 import { StatusBar } from './components/StatusBar';
 import { TopBar } from './components/TopBar';
 import { Viewport3D } from './components/Viewport3D';
 import { t } from './i18n';
-import { useKuraStore } from './store/useKuraStore';
+import { useProjectRecovery } from './project/useProjectRecovery';
+import { isProjectDirty, useKuraStore } from './store/useKuraStore';
+import type { TransformMode } from './types/kura';
 import { useMcpBridgeClient } from './utils/mcpBridgeClient';
+import { isTauriRuntime } from './utils/platformBridge';
+
+const TRANSFORM_SHORTCUTS = new Map<string, TransformMode>([
+  ['m', 'translate'],
+  ['g', 'translate'],
+  ['w', 'translate'],
+  ['r', 'rotate'],
+  ['s', 'scale'],
+]);
 
 export const App: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const activeTool = useKuraStore((s) => s.activeTool);
   const uiDensity = useKuraStore((s) => s.uiDensity);
+  const projectName = useKuraStore((s) => s.projectName);
+  const projectDirty = useKuraStore(isProjectDirty);
+  const aiDrawerOpen = useKuraStore((s) => s.aiDrawerOpen);
+  const setAiDrawerOpen = useKuraStore((s) => s.setAiDrawerOpen);
   const mcpConfig = useKuraStore((s) => s.mcpConfig);
   const initEngine = useKuraStore((s) => s.initEngine);
   const executeCommand = useKuraStore((s) => s.executeCommand);
   const setMcpConnected = useKuraStore((s) => s.setMcpConnected);
   const syncColorSchemeFromDom = useKuraStore((s) => s.syncColorSchemeFromDom);
+  const [narrowPanel, setNarrowPanel] = useState<'left' | 'right' | null>(null);
+  const [precisionRequest, setPrecisionRequest] = useState<{ mode: TransformMode } | null>(null);
+  const visibleNarrowPanel = aiDrawerOpen ? 'ai' : narrowPanel;
+  const recovery = useProjectRecovery();
+  const discardRecoveryOnClose = recovery.discardOnClose;
+
+  function toggleNarrowPanel(panel: 'left' | 'right') {
+    if (aiDrawerOpen) setAiDrawerOpen(false);
+    setNarrowPanel(visibleNarrowPanel === panel ? null : panel);
+  }
 
   // Sincroniza título del documento e idioma del elemento <html>
   useEffect(() => {
     document.documentElement.lang = language;
-    document.title = t(language, 'app.docTitle');
-  }, [language]);
+    const appTitle = t(language, 'app.docTitle');
+    const name = projectName ?? t(language, 'app.untitled');
+    document.title = projectName || projectDirty
+      ? `${projectDirty ? '* ' : ''}${name} — ${appTitle}`
+      : appTitle;
+  }, [language, projectName, projectDirty]);
 
-  // Inicializa Manifold WASM y crea el cubo inicial de calibración
+  useEffect(() => {
+    if (!projectDirty || isTauriRuntime()) return;
+    const protectProject = (event: BeforeUnloadEvent) => {
+      if (!isProjectDirty(useKuraStore.getState())) return;
+      event.preventDefault();
+      event.returnValue = true;
+    };
+    window.addEventListener('beforeunload', protectProject);
+    return () => window.removeEventListener('beforeunload', protectProject);
+  }, [projectDirty]);
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return;
+    let disposed = false;
+    let stopListening: (() => void) | undefined;
+    let confirming = false;
+
+    const register = async () => {
+      const [{ getCurrentWindow }, { ask }] = await Promise.all([
+        import('@tauri-apps/api/window'),
+        import('@tauri-apps/plugin-dialog'),
+      ]);
+      if (disposed) return;
+      const unlisten = await getCurrentWindow().onCloseRequested(async (event) => {
+        const state = useKuraStore.getState();
+        if (confirming || state.projectBusy) {
+          event.preventDefault();
+          if (state.projectBusy) state.addToast(t(state.language, 'fileProject.busy'), 'info');
+          return;
+        }
+        confirming = true;
+        try {
+          if (isProjectDirty(state) && !(await ask(t(state.language, 'fileProject.discard'), {
+            title: t(state.language, 'fileProject.menu'), kind: 'warning',
+          }))) {
+            event.preventDefault();
+            return;
+          }
+          await discardRecoveryOnClose();
+        } catch (error) {
+          event.preventDefault();
+          state.addToast(t(state.language, 'toast.errorPrefix', { message: String(error) }), 'error');
+        } finally {
+          confirming = false;
+        }
+      });
+      if (disposed) unlisten();
+      else stopListening = unlisten;
+    };
+
+    void register().catch((error) => console.error('[Kura3D] Project close protection:', error));
+    return () => {
+      disposed = true;
+      stopListening?.();
+    };
+  }, [discardRecoveryOnClose]);
+
+  // Inicializa Manifold WASM para la primera operación.
   useEffect(() => {
     void initEngine();
   }, [initEngine]);
@@ -61,6 +149,25 @@ export const App: React.FC = () => {
   // Atajos de teclado globales del estudio CAD
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.isComposing) return;
+      const state = useKuraStore.getState();
+      const mod = e.ctrlKey || e.metaKey;
+      const key = e.key.toLowerCase();
+      if (mod && !e.altKey && (key === 's' || (!e.shiftKey && (key === 'n' || key === 'o')))) {
+        if (state.activeDialog !== null || state.commandPaletteOpen) return;
+        e.preventDefault();
+        if (e.repeat) return;
+        if (key === 's') {
+          const field = e.target;
+          if (field instanceof HTMLInputElement && field.hasAttribute('data-commit-on-blur')) {
+            field.blur();
+          }
+          void state.saveProject(e.shiftKey);
+        }
+        else if (key === 'o') void state.openProject();
+        else state.newProject();
+        return;
+      }
       const target = e.target as HTMLElement | null;
       const tag = target?.tagName;
       if (
@@ -71,10 +178,6 @@ export const App: React.FC = () => {
       ) {
         return;
       }
-
-      const state = useKuraStore.getState();
-      const mod = e.ctrlKey || e.metaKey;
-      const key = e.key.toLowerCase();
 
       if (mod && key === 'k') {
         e.preventDefault();
@@ -94,10 +197,9 @@ export const App: React.FC = () => {
         return;
       }
 
-      // Tecla Tab alterna Modo Zen (100% viewport) sin capturar foco de inputs
-      if (e.key === 'Tab' && !mod && !e.altKey) {
+      if (mod && e.shiftKey && !e.altKey && key === 'enter') {
         e.preventDefault();
-        state.toggleZenMode();
+        if (!e.repeat) state.toggleZenMode();
         return;
       }
 
@@ -197,6 +299,25 @@ export const App: React.FC = () => {
         return;
       }
 
+      const transformMode = TRANSFORM_SHORTCUTS.get(key);
+      if (transformMode && !(key === 'm' && e.shiftKey)) {
+        e.preventDefault();
+        state.setActiveTool('select');
+        state.setTransformMode(transformMode);
+        const opensInspector = key === 'm' || key === 'r' || key === 's';
+        if (opensInspector && !e.shiftKey && !e.repeat && state.selectedIds.length === 1) {
+          const narrow = window.matchMedia('(max-width: 900px)').matches;
+          if (state.uiDensity === 'zen') state.toggleZenMode();
+          if (state.aiDrawerOpen && window.matchMedia('(max-width: 1240px)').matches) {
+            state.setAiDrawerOpen(false);
+          }
+          if (narrow) setNarrowPanel('right');
+          else if (state.rightCollapsed) state.toggleRightInspector();
+          setPrecisionRequest({ mode: transformMode });
+        }
+        return;
+      }
+
       if (key === '1') {
         state.requestCameraPreset('front');
       } else if (key === '2') {
@@ -205,15 +326,6 @@ export const App: React.FC = () => {
         state.requestCameraPreset('iso');
       } else if (key === '7') {
         state.requestCameraPreset('top');
-      } else if (key === 'g' || key === 'w') {
-        state.setActiveTool('select');
-        state.setTransformMode('translate');
-      } else if (key === 'r') {
-        state.setActiveTool('select');
-        state.setTransformMode('rotate');
-      } else if (key === 's') {
-        state.setActiveTool('select');
-        state.setTransformMode('scale');
       } else if (key === 'v') {
         state.setActiveTool('select');
       } else if (key === 'f') {
@@ -225,20 +337,8 @@ export const App: React.FC = () => {
             state.updateObjectMeta(id, { isHole: !obj.isHole });
           }
         }
-      } else if (key === 'm') {
-        if (e.shiftKey) {
-          if (state.objects.length > 0) state.setActiveDialog('mold');
-        } else {
-          const mirrorIds =
-            state.selectedIds.length > 0
-              ? state.selectedIds
-              : state.objects.length === 1
-                ? [state.objects[0].id]
-                : [];
-          for (const id of mirrorIds) {
-            state.mirrorObject(id, 'x');
-          }
-        }
+      } else if (key === 'm' && e.shiftKey) {
+        if (state.objects.length > 0) state.setActiveDialog('mold');
       } else if (key === 'x') {
         state.setSectionPlane({ enabled: !state.sectionPlane.enabled });
       } else if (key === 'p') {
@@ -264,15 +364,42 @@ export const App: React.FC = () => {
   return (
     <div className="kura-app" data-tool={activeTool} data-density={uiDensity}>
       <TopBar />
+      <ProjectRecoveryBanner
+        drafts={recovery.drafts}
+        busy={recovery.busy}
+        onRestore={recovery.restore}
+        onDiscard={recovery.discard}
+      />
 
-      <div className="kura-workspace">
+      <div className="kura-workspace" data-narrow-panel={visibleNarrowPanel ?? undefined}>
+        <div className="kura-narrow-panel-actions">
+          <button
+            type="button"
+            className={`kura-btn kura-btn-sm ${visibleNarrowPanel === 'left' ? 'is-active' : ''}`}
+            aria-controls="kura-shapes-panel"
+            aria-expanded={visibleNarrowPanel === 'left'}
+            onClick={() => toggleNarrowPanel('left')}
+          >
+            {t(language, 'sidebar.tab.shapes')}
+          </button>
+          <button
+            type="button"
+            className={`kura-btn kura-btn-sm ${visibleNarrowPanel === 'right' ? 'is-active' : ''}`}
+            aria-controls="kura-inspector-panel"
+            aria-expanded={visibleNarrowPanel === 'right'}
+            onClick={() => toggleNarrowPanel('right')}
+          >
+            {t(language, 'inspector.title')}
+          </button>
+        </div>
         <LeftSidebar />
         <Viewport3D />
-        <RightInspector />
+        <RightInspector precisionRequest={precisionRequest} />
         <AiChatDrawer />
+        <ProjectDropTarget />
       </div>
 
-      <StatusBar />
+      <StatusBar recoveryStatus={recovery.status} />
       <Dialogs />
       <CommandPalette />
       <SplashScreen />

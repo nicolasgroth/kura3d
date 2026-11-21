@@ -49,6 +49,8 @@ export interface PrecisionNumberInputProps {
   title?: string;
   className?: string;
   style?: React.CSSProperties;
+  /** Aplica el texto editado al confirmar con Enter o al salir del campo. */
+  commitOnBlur?: boolean;
   /** Callback opcional al confirmar edición o soltar scrub/stepper. */
   onCommit?: (finalValue: number) => void;
 }
@@ -105,6 +107,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   title,
   className,
   style,
+  commitOnBlur = false,
   onCommit,
 }) => {
   const language = useKuraStore((s) => s.language);
@@ -115,6 +118,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [draft, setDraft] = useState<string>(() => formatDisplayValue(value, precision));
   const initialFocusValueRef = useRef<number>(value);
+  const draftEditedRef = useRef(false);
 
   // Referencias para el arrastre horizontal a 60fps sin re-renderizar listeners
   const scrubRef = useRef<{
@@ -125,8 +129,8 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   }>({ active: false, lastX: 0, accum: 0, moved: false });
 
   // Mantener refs actualizadas para el listener nativo de rueda (no pasivo)
-  const latestRef = useRef({ value, step, min, max, precision, disabled, onChange, onCommit });
-  latestRef.current = { value, step, min, max, precision, disabled, onChange, onCommit };
+  const latestRef = useRef({ value, step, min, max, precision, disabled, commitOnBlur, onChange });
+  latestRef.current = { value, step, min, max, precision, disabled, commitOnBlur, onChange };
 
   // Sincroniza el texto mostrado cuando el valor cambia externamente (gizmos, Undo/Redo, escala proporcional)
   useEffect(() => {
@@ -142,6 +146,16 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
       if (cur.disabled) return;
       const mult = getModifierScale(modSource);
       const delta = direction * cur.step * mult;
+      if (cur.commitOnBlur && draftEditedRef.current) {
+        setDraft((text) => {
+          const normalized = text.trim().replace(',', '.');
+          const parsed = Number(normalized);
+          const base = normalized && Number.isFinite(parsed) ? parsed : cur.value;
+          const next = clampAndClean(base + delta, cur.min, cur.max, cur.precision);
+          return formatDisplayValue(next, cur.precision);
+        });
+        return;
+      }
       const next = clampAndClean(cur.value + delta, cur.min, cur.max, cur.precision);
       setDraft(formatDisplayValue(next, cur.precision));
       cur.onChange(next, {
@@ -178,6 +192,8 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   /** Confirma el borrador numérico si es válido, o revierte al valor actual. */
   const commitDraft = useCallback(
     (modifiers?: PrecisionModifierState) => {
+      if (commitOnBlur && (!draftEditedRef.current || disabled)) return;
+      draftEditedRef.current = false;
       const normalized = draft.trim().replace(',', '.');
       const parsed = Number(normalized);
       if (normalized !== '' && Number.isFinite(parsed)) {
@@ -191,12 +207,13 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
         setDraft(formatDisplayValue(value, precision));
       }
     },
-    [draft, min, max, precision, value, onChange, onCommit],
+    [commitOnBlur, disabled, draft, min, max, precision, value, onChange, onCommit],
   );
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
     initialFocusValueRef.current = value;
+    draftEditedRef.current = false;
     setDraft(formatDisplayValue(value, precision));
     e.currentTarget.select();
   };
@@ -234,6 +251,11 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
     if (e.key === 'Escape') {
       e.preventDefault();
       e.stopPropagation();
+      if (commitOnBlur) {
+        draftEditedRef.current = false;
+        inputRef.current?.blur();
+        return;
+      }
       const prev = clampAndClean(initialFocusValueRef.current, min, max, precision);
       setDraft(formatDisplayValue(prev, precision));
       if (prev !== value) {
@@ -277,6 +299,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
           ? max
           : rawNext;
 
+    draftEditedRef.current = false;
     setDraft(formatDisplayValue(clamped, precision));
     onChange(clamped, {
       shiftKey: e.shiftKey,
@@ -301,6 +324,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   const handlePrefixDoubleClick = () => {
     if (disabled || defaultValue === undefined) return;
     const clamped = clampAndClean(defaultValue, min, max, precision);
+    draftEditedRef.current = false;
     setDraft(formatDisplayValue(clamped, precision));
     onChange(clamped);
     onCommit?.(clamped);
@@ -352,6 +376,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
         inputMode="decimal"
         className="kura-precision-field"
         disabled={disabled}
+        data-commit-on-blur={commitOnBlur || undefined}
         value={isFocused ? draft : formatDisplayValue(value, precision)}
         aria-label={ariaLabel ?? prefix}
         onFocus={handleFocus}
@@ -360,6 +385,10 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
         onChange={(e) => {
           const val = e.target.value;
           setDraft(val);
+          if (commitOnBlur) {
+            draftEditedRef.current = true;
+            return;
+          }
           // Permitir actualización en vivo mientras se escribe un número válido completo
           const normalized = val.trim().replace(',', '.');
           if (

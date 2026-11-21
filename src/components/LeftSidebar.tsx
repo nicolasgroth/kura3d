@@ -111,10 +111,11 @@ export const LeftSidebar: React.FC = () => {
     setShowTextBox(false);
   };
 
-  const isCompactRail = uiDensity === 'compact' && !leftCollapsed;
+  const isCompactRail = uiDensity === 'compact';
 
   return (
     <aside
+      id="kura-shapes-panel"
       className={`kura-sidebar-left ${leftCollapsed ? 'is-collapsed' : ''}`}
       aria-label={t(language, 'sidebar.tab.shapes')}
     >

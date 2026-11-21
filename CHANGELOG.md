@@ -8,6 +8,14 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ---
 
+## [Sin publicar]
+
+- Proyecto local `.kura` v1 con escena, unidades, selección, materiales e historial de Deshacer/Rehacer. Guardado atómico en Windows, aviso de cambios al cerrar y procesamiento del archivo en un Worker. Una descarga web conserva el aviso de cambios hasta una escritura confirmada o hasta reabrir el archivo.
+- Navegación por `Tab` y `Shift+Tab`, modo Zen con `Ctrl/⌘+Shift+Enter` y visor adaptable con controles accesibles en ventanas estrechas.
+- Arranque con escena vacía y acciones para importar, abrir proyecto o crear un cubo de ejemplo. Arrastrar modelos STL, 3MF u OBJ los importa como un lote reversible. Un `.kura` abre un proyecto con aviso de descarte si corresponde. Los lotes con mallas inválidas se rechazan antes de cambiar la escena. El recorrido web está verificado y queda pendiente el gesto físico en Tauri. La distribución por placas y la preservación de alturas siguen en el plan de importación.
+- `M`, `R` y `S` enfocan Mover, Rotar y Escalar en el inspector. Mover y Rotar ofrecen campos absolutos y deltas X/Y/Z. Confirmar una edición crea un solo paso de Deshacer. Escalar acepta un factor o tamaño local y conserva proporciones al alcanzar el mínimo con el vínculo activo. `G/W` mantienen el gizmo, `Shift+M` abre Molde y Espejo se usa desde el inspector o la paleta.
+- Autoguardado de borradores locales con la escena y su historial. Tras recargar, se pueden recuperar, posponer o descartar borradores con nombre, fecha e identificación. El guardado confirmado retira la copia del editor y una descarga no confirmada la conserva. Flujo verificado en Edge, con validación de la aplicación Tauri instalada pendiente.
+
 ## [0.5.0] — 2026-11-21
 ### Identidad Oficial, 6 Idiomas, Temas WCAG con Preview y Distribución Nativa
 - **Identidad visual oficial Kura3D:** integrados logotipo hero, ícono de app (`icon.ico` multi-resolución y PNGs), lockup horizontal y variante monocroma + **Splash Screen animada** de arranque.
