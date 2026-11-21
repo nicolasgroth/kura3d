@@ -82,3 +82,19 @@ export {
   mirrorMeshAxis,
   splitAllDetectedStructures,
 } from './structuralSegmentation';
+
+export {
+  ENGINE_ERROR_CODES,
+  ENGINE_WARNING_CODES,
+  EngineError,
+  isEngineError,
+  localizeEngineError,
+  localizeEngineWarning,
+  type EngineErrorCode,
+  type EngineWarning,
+  type EngineWarningCode,
+} from './engineErrors';
+
+export { hollowMeshDetailed, type HollowResult } from './hollow';
+
+export { refineMeshDetailed, type RefineResult } from './refine';

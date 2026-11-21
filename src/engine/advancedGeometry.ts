@@ -27,6 +27,7 @@ import {
   manifoldToMeshData,
 } from './manifoldKernel';
 import { normalizeMeshToBed } from './primitives';
+import { validateImageBuffer } from './imageInput';
 
 // ============================================================================
 // 1. Extrusión de SVG a malla 3D watertight
@@ -614,8 +615,8 @@ export async function extrudeSvgToMesh(options: SvgImportOptions): Promise<MeshD
  * @returns Malla sólida `MeshData` con base plana y paredes laterales cosidas.
  */
 export function generateReliefFromImage(options: ImageTo3DOptions): MeshData {
-  const srcW = Math.max(1, Math.floor(options.pixelWidth));
-  const srcH = Math.max(1, Math.floor(options.pixelHeight));
+  // Rechaza buffers incoherentes (antes se leían ceros fuera de rango sin aviso)
+  const { w: srcW, h: srcH } = validateImageBuffer(options);
   const maxGrid = 220;
 
   const cols = Math.max(2, Math.min(srcW, maxGrid));

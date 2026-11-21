@@ -511,8 +511,11 @@ describe('Kura3D — Extensiones del Núcleo Geométrico', () => {
       const cutStats = computeMeshStats(cutter);
       expect(cutStats.isManifold).toBe(true);
       expect(cutStats.dimensionsMm[1]).toBeCloseTo(12, 2);
-      // El cortador tiene centro abierto y pestaña exterior -> diámetro mayor que la silueta interior
-      expect(cutStats.dimensionsMm[0]).toBeGreaterThan(silStats.dimensionsMm[0] + 4);
+      // Ambos respetan el tamaño pedido (la pestaña del cortador está incluida en los 40 mm)
+      expect(silStats.dimensionsMm[0]).toBeCloseTo(40, 1);
+      expect(cutStats.dimensionsMm[0]).toBeCloseTo(40, 1);
+      // El cortador tiene centro abierto: mucho menos volumen que una silueta extruida a su altura
+      expect(cutStats.volumeMm3).toBeLessThan(silStats.volumeMm3 * (12 / 5));
     });
   });
 

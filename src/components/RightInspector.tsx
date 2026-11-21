@@ -215,7 +215,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
   const [modularShape, setModularShape] = useState<PrimitiveType>('cylinder');
   const [simplifyTolMm, setSimplifyTolMm] = useState(0.15);
   const [refineEdgeMm, setRefineEdgeMm] = useState(1.5);
-  const [refineSmooth, setRefineSmooth] = useState(true);
+  const [refineSmooth, setRefineSmooth] = useState(false);
 
   const selectedObjects = objects.filter((o) => selectedIds.includes(o.id));
   const primary = selectedObjects[0] ?? null;

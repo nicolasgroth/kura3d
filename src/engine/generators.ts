@@ -1,236 +1,37 @@
 /**
  * @file src/engine/generators.ts
  * @description Generadores paramétricos especializados de Kura3D:
- * 1) Roscas métricas ISO helicoidales de 60° (`bolt`, `nut`, `hole`) con cabeza hexagonal
- *    biselada y tolerancia de impresión 3D.
+ * 1) Roscas métricas ISO (reexportadas desde `threads.ts`).
  * 2) Litofanías cilíndricas curvas completamente cerradas (watertight, 90°..360°).
  * 3) Siluetas y cortadores de galletas/sellos (`silhouette` / `cutter`) extraídos de
- *    imágenes RGBA mediante umbralización y operaciones 2D `CrossSection` de Manifold.
+ *    imágenes RGBA con detección automática del fondo y tamaño final exacto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';
-import type { ImageTo3DOptions, MeshData, ThreadOptions } from '../types/kura';
+import type { Manifold } from 'manifold-3d';
+import type { ImageTo3DOptions, MeshData } from '../types/kura';
 import {
   computeVertexNormals,
   initManifoldEngine,
   manifoldToMeshData,
 } from './manifoldKernel';
+import { EngineError, requireNumberInRange } from './engineErrors';
+import { detectForeground, validateImageBuffer } from './imageInput';
 import { normalizeMeshToBed } from './primitives';
 
 // ============================================================================
-// 1. Generador de roscas métricas ISO helicoidales (60°)
+// 1. Roscas métricas ISO: implementadas en `threads.ts` (tabla ISO 261, malla helicoidal exacta)
 // ============================================================================
 
-/**
- * Evalúa el radio normalizado `r(phi)` de un perfil métrico ISO de 60°
- * para la fase `phi in [0, 1)`:
- * - `[0, 0.25]`: valle plano (`rMinor`)
- * - `[0.25, 0.5625]`: flanco ascendente de 60°
- * - `[0.5625, 0.6875]`: cresta truncada (`rMajor`)
- * - `[0.6875, 1.0]`: flanco descendente de 60°
- */
-function evalIsoThreadRadius(
-  phi: number,
-  rMinor: number,
-  rMajor: number
-): number {
-  const p = ((phi % 1) + 1) % 1;
-  if (p <= 0.25) {
-    return rMinor;
-  }
-  if (p <= 0.5625) {
-    return rMinor + (rMajor - rMinor) * ((p - 0.25) / 0.3125);
-  }
-  if (p <= 0.6875) {
-    return rMajor;
-  }
-  return rMajor - (rMajor - rMinor) * ((p - 0.6875) / 0.3125);
-}
-
-/**
- * Construye un cilindro roscado helicoidal cerrado (watertight) a lo largo del eje +Z
- * mediante extrusión torsionada de una sección transversal polar ISO de 60°.
- * Al usar `CrossSection.extrude(height, nDivisions, twistDegrees)`, Manifold-3D
- * garantiza tapas planas perfectas y ausencia total de auto-intersecciones.
- */
-function buildHelicalThreadSolidZ(
-  wasm: ManifoldToplevel,
-  rMinor: number,
-  rMajor: number,
-  pitchMm: number,
-  lengthMm: number
-): Manifold {
-  // Muestreamos densamente los 4 tramos del perfil + puntos intermedios en los flancos
-  const samplesPerRev = 64;
-  const poly: [number, number][] = [];
-  for (let i = 0; i < samplesPerRev; i++) {
-    const phi = i / samplesPerRev;
-    const theta = phi * Math.PI * 2;
-    const r = evalIsoThreadRadius(phi, rMinor, rMajor);
-    poly.push([r * Math.cos(theta), r * Math.sin(theta)]);
-  }
-
-  const turns = Math.max(0.25, lengthMm / pitchMm);
-  // Giro negativo para hélice derecha (rosca estándar ISO que aprieta en sentido horario)
-  const twistDegrees = -360 * turns;
-  const nDivisions = Math.min(600, Math.max(24, Math.ceil(turns * 24)));
-
-  const cs = wasm.CrossSection.ofPolygons([poly], 'Positive');
-  try {
-    return cs.extrude(lengthMm, nDivisions, twistDegrees, [1, 1], false);
-  } finally {
-    cs.delete();
-  }
-}
-
-/**
- * Construye una cabeza o cuerpo hexagonal con bisel cónico mecanizado en eje Z (`[0..height]`).
- */
-function buildChamferedHexPrismZ(
-  wasm: ManifoldToplevel,
-  radius: number,
-  height: number,
-  chamferBothEnds: boolean
-): Manifold {
-  const handles: Manifold[] = [];
-  try {
-    const hex = wasm.Manifold.cylinder(height, radius, radius, 6, false);
-    handles.push(hex);
-
-    const chamferH = Math.min(height * 0.22, radius * 0.28);
-    const outerR = radius * 1.12;
-    const innerR = radius * 0.84;
-
-    let envelope: Manifold;
-    if (chamferBothEnds && height > chamferH * 2.5) {
-      const midH = height - chamferH * 2;
-      const botCone = wasm.Manifold.cylinder(chamferH, innerR, outerR, 36, false);
-      const midCyl = wasm.Manifold.cylinder(midH, outerR, outerR, 36, false).translate([
-        0,
-        0,
-        chamferH,
-      ]);
-      const topCone = wasm.Manifold.cylinder(chamferH, outerR, innerR, 36, false).translate([
-        0,
-        0,
-        chamferH + midH,
-      ]);
-      handles.push(botCone, midCyl, topCone);
-      envelope = wasm.Manifold.union([botCone, midCyl, topCone]);
-    } else {
-      const bodyH = Math.max(0.2, height - chamferH);
-      const botCyl = wasm.Manifold.cylinder(bodyH, outerR, outerR, 36, false);
-      const topCone = wasm.Manifold.cylinder(chamferH, outerR, innerR, 36, false).translate([
-        0,
-        0,
-        bodyH,
-      ]);
-      handles.push(botCyl, topCone);
-      envelope = botCyl.add(topCone);
-    }
-    handles.push(envelope);
-
-    return hex.intersect(envelope);
-  } finally {
-    for (const h of handles) {
-      h.delete();
-    }
-  }
-}
-
-/**
- * Genera una pieza roscada métrica ISO paramétrica de 60° (perno hexagonal `'bolt'`,
- * tuerca hexagonal `'nut'` o macho negativo `'hole'` para roscar otros sólidos),
- * apoyada sobre Y=0 y 100 % cerrada (watertight).
- *
- * @param options Parámetros métricos ISO de diámetro, paso, longitud y holgura.
- * @returns Malla `MeshData` lista para escena o booleana.
- */
-export async function createMetricThread(
-  options: ThreadOptions
-): Promise<MeshData> {
-  const wasm = await initManifoldEngine();
-
-  const diameterMm = Math.max(2.0, options.diameterMm || 8);
-  const pitchMm = Math.max(0.4, Math.min(options.pitchMm || 1.25, diameterMm * 0.45));
-  const lengthMm = Math.max(2.0, options.lengthMm || 16);
-  const clearance =
-    options.kind === 'bolt' ? 0 : Math.max(0, options.clearanceMm ?? 0.25);
-
-  // Profundidad normalizada del triángulo fundamental ISO de 60°: 5/8 * H
-  const fundamentalH = (Math.sqrt(3) / 2) * pitchMm;
-  const threadDepth = (5 / 8) * fundamentalH;
-
-  const rMajor = diameterMm * 0.5 + clearance;
-  const rMinor = Math.max(0.4, diameterMm * 0.5 - threadDepth + clearance);
-  const hexRadius = (1.55 * diameterMm) / Math.sqrt(3);
-
-  const handles: Manifold[] = [];
-
-  try {
-    let resultZ: Manifold;
-
-    if (options.kind === 'hole') {
-      resultZ = buildHelicalThreadSolidZ(wasm, rMinor, rMajor, pitchMm, lengthMm);
-      handles.push(resultZ);
-    } else if (options.kind === 'nut') {
-      const hexBody = buildChamferedHexPrismZ(wasm, hexRadius, lengthMm, true);
-      handles.push(hexBody);
-
-      // Extendemos el cilindro roscado ±1 mm para perforar limpiamente ambas caras de la tuerca
-      const threadTapRaw = buildHelicalThreadSolidZ(
-        wasm,
-        rMinor,
-        rMajor,
-        pitchMm,
-        lengthMm + 2
-      );
-      handles.push(threadTapRaw);
-      const threadTap = threadTapRaw.translate([0, 0, -1]);
-      handles.push(threadTap);
-
-      resultZ = hexBody.subtract(threadTap);
-      handles.push(resultZ);
-    } else {
-      // 'bolt': vástago roscado con cabeza hexagonal opcional en la base
-      const includeHead = options.includeHead !== false;
-      if (!includeHead) {
-        resultZ = buildHelicalThreadSolidZ(wasm, rMinor, rMajor, pitchMm, lengthMm);
-        handles.push(resultZ);
-      } else {
-        const headH = Math.max(2.2, 0.65 * diameterMm);
-        const hexHead = buildChamferedHexPrismZ(wasm, hexRadius, headH, false);
-        handles.push(hexHead);
-
-        const shaftRaw = buildHelicalThreadSolidZ(
-          wasm,
-          rMinor,
-          rMajor,
-          pitchMm,
-          lengthMm + 0.5
-        );
-        handles.push(shaftRaw);
-        const shaft = shaftRaw.translate([0, 0, headH - 0.5]);
-        handles.push(shaft);
-
-        resultZ = hexHead.add(shaft);
-        handles.push(resultZ);
-      }
-    }
-
-    const rotatedY = resultZ.rotate([-90, 0, 0]);
-    handles.push(rotatedY);
-    const mesh = manifoldToMeshData(rotatedY);
-    return normalizeMeshToBed(mesh);
-  } finally {
-    for (const h of handles) {
-      h.delete();
-    }
-  }
-}
+export {
+  ISO_COARSE_THREADS,
+  createMetricThread,
+  isoCoarsePitch,
+  resolveThreadOptions,
+  type ThreadRequest,
+} from './threads';
 
 // ============================================================================
 // 2. Litofanía cilíndrica curva cerrada (watertight)
@@ -302,7 +103,8 @@ function sampleLuminanceGrid(
 export function generateCylindricalLithophane(
   options: ImageTo3DOptions
 ): MeshData {
-  const { grid, cols, rows } = sampleLuminanceGrid(options, 128);
+  validateImageBuffer(options);
+  const { grid, cols, rows } = sampleLuminanceGrid(options, 256);
 
   const arcDeg = Math.max(30, Math.min(360, options.arcDegrees ?? 180));
   const isFullCircle = arcDeg >= 359.9;
@@ -411,89 +213,65 @@ export function generateCylindricalLithophane(
 // 3. Siluetas sólidas y cortadores de galletas/sellos desde imagen RGBA
 // ============================================================================
 
+/** Resolución máxima de la grilla de muestreo de siluetas y cortadores (celdas por lado). */
+export const CUTTER_MAX_GRID = 256;
+
 /**
  * Extrae una silueta sólida (`silhouette`) o un cortador de galletas/arcilla con
  * pestaña de apoyo y cuchilla perimetral (`cutter`) a partir de una imagen RGBA.
  *
- * Convención de umbralización:
- * - Los píxeles transparentes (`alpha < 32`) siempre se consideran fondo vacío.
- * - Si `invert === false`, son sólidos los píxeles luminosos (`luminance >= threshold`).
- * - Si `invert === true`, son sólidos los píxeles oscuros (`luminance <= threshold`).
+ * - El fondo se detecta automáticamente por el borde de la imagen (transparente, claro u
+ *   oscuro): un logo oscuro sobre blanco se extrae como logo. `invert` invierte esa decisión.
+ * - La pieza final mide exactamente lo pedido en la dimensión limitante (`widthMm` × `depthMm`
+ *   incluye la pestaña del cortador) y nunca lo excede en la otra, conservando la proporción.
  *
- * @param options Parámetros de imagen RGBA, umbral, espesor base, altura y pared del cortador.
- * @returns Malla 3D cerrada (watertight) apoyada en Y=0.
+ * @throws EngineError `IMAGE_BUFFER_INVALID`, `IMAGE_NO_FOREGROUND`, `IMAGE_SIZE_TOO_SMALL`.
  */
 export async function generateSilhouetteOrCutterFromImage(
   options: ImageTo3DOptions
 ): Promise<MeshData> {
+  const { w: srcW, h: srcH } = validateImageBuffer(options);
+  const threshold = requireNumberInRange('threshold', options.threshold, 0, 255, 128);
+  const widthMm = requireNumberInRange('widthMm', options.widthMm, 2, 2000, 50);
+  const depthMm = requireNumberInRange('depthMm', options.depthMm, 2, 2000, 50);
+  const mode = options.shapeMode === 'cutter' ? 'cutter' : 'silhouette';
+  const wallW = mode === 'cutter' ? requireNumberInRange('cutterWallMm', options.cutterWallMm, 0.4, 20, 1.2) : 0;
+  const flangeExtra = 3.0;
+  const margin = mode === 'cutter' ? wallW + flangeExtra : 0;
+  const foreground = detectForeground(options, threshold);
+
   const wasm = await initManifoldEngine();
-  const srcW = Math.max(1, Math.floor(options.pixelWidth));
-  const srcH = Math.max(1, Math.floor(options.pixelHeight));
-  const maxGrid = 96;
-
-  const cols = Math.max(2, Math.min(srcW, maxGrid));
-  const rows = Math.max(2, Math.min(srcH, maxGrid));
-  const threshold = Math.max(0, Math.min(255, options.threshold ?? 128));
-
-  const widthMm = Math.max(2, options.widthMm || 50);
-  const depthMm = Math.max(2, options.depthMm || 50);
+  const cols = Math.max(2, Math.min(srcW, CUTTER_MAX_GRID));
+  const rows = Math.max(2, Math.min(srcH, CUTTER_MAX_GRID));
+  // Grilla en mm provisorios (la imagen ocupa widthMm × depthMm); luego se ajusta al tamaño final
   const pxW = widthMm / cols;
   const pxH = depthMm / rows;
   const overlap = Math.min(pxW, pxH) * 0.005;
 
-  const rowRects: CrossSection[] = [];
-  let rawUnion: CrossSection | null = null;
-  let baseCs: CrossSection | null = null;
-  let outerWallCs: CrossSection | null = null;
-  let wallCs: CrossSection | null = null;
-  let flangeOuterCs: CrossSection | null = null;
-  let flangeCs: CrossSection | null = null;
-  let wallManifold: Manifold | null = null;
-  let flangeManifold: Manifold | null = null;
-  let combinedZ: Manifold | null = null;
-  let rotatedY: Manifold | null = null;
+  const handles: Array<{ delete: () => void }> = [];
+  const own = <T extends { delete: () => void }>(m: T): T => {
+    handles.push(m);
+    return m;
+  };
 
   try {
-    // Agrupamos corridas horizontales (RLE) de píxeles activos en rectángulos 2D
+    // Corridas horizontales (RLE) de píxeles de primer plano como rectángulos 2D
+    const quads: [number, number][][] = [];
     for (let r = 0; r < rows; r++) {
-      const sy = Math.min(srcH - 1, Math.floor((r / (rows - 1)) * (srcH - 1)));
+      const sy = Math.min(srcH - 1, Math.floor(((r + 0.5) / rows) * srcH));
       let runStart = -1;
-
       const flushRun = (endCol: number): void => {
         if (runStart < 0) return;
         const x0 = runStart * pxW - overlap;
         const x1 = (endCol + 1) * pxW + overlap;
         const y0 = (rows - 1 - r) * pxH - overlap;
         const y1 = (rows - r) * pxH + overlap;
-        rowRects.push(
-          wasm.CrossSection.ofPolygons(
-            [
-              [
-                [x0, y0],
-                [x1, y0],
-                [x1, y1],
-                [x0, y1],
-              ],
-            ],
-            'Positive'
-          )
-        );
+        quads.push([[x0, y0], [x1, y0], [x1, y1], [x0, y1]]);
         runStart = -1;
       };
-
       for (let c = 0; c < cols; c++) {
-        const sx = Math.min(srcW - 1, Math.floor((c / (cols - 1)) * (srcW - 1)));
-        const pIdx = (sy * srcW + sx) * 4;
-        const red = options.rgba[pIdx] ?? 0;
-        const green = options.rgba[pIdx + 1] ?? 0;
-        const blue = options.rgba[pIdx + 2] ?? 0;
-        const alpha = options.rgba[pIdx + 3] ?? 255;
-
-        const lum = 0.299 * red + 0.587 * green + 0.114 * blue;
-        const active =
-          alpha >= 32 && (options.invert ? lum <= threshold : lum >= threshold);
-
-        if (active) {
+        const sx = Math.min(srcW - 1, Math.floor(((c + 0.5) / cols) * srcW));
+        if (foreground.isForeground(sx, sy)) {
           if (runStart < 0) runStart = c;
         } else {
           flushRun(c - 1);
@@ -502,62 +280,53 @@ export async function generateSilhouetteOrCutterFromImage(
       flushRun(cols - 1);
     }
 
-    if (rowRects.length === 0) {
-      throw new Error(
-        'No se detectaron píxeles activos en la imagen con el umbral especificado.'
-      );
+    if (quads.length === 0) {
+      throw new EngineError('IMAGE_NO_FOREGROUND', { threshold });
     }
 
-    rawUnion =
-      rowRects.length === 1 ? rowRects[0] : wasm.CrossSection.union(rowRects);
-    baseCs = rawUnion.simplify(Math.min(pxW, pxH) * 0.25);
-
-    if (baseCs.isEmpty()) {
-      throw new Error('La silueta extraída de la imagen tiene área nula.');
+    const rawUnion = own(wasm.CrossSection.ofPolygons(quads, 'Positive'));
+    const simplified = own(rawUnion.simplify(Math.min(pxW, pxH) * 0.25));
+    if (simplified.isEmpty()) {
+      throw new EngineError('IMAGE_NO_FOREGROUND', { threshold });
     }
 
-    const mode = options.shapeMode === 'cutter' ? 'cutter' : 'silhouette';
+    // Ajuste al tamaño pedido: s·b + 2·margen = tamaño en la dimensión limitante
+    const b = simplified.bounds();
+    const bw = b.max[0] - b.min[0];
+    const bd = b.max[1] - b.min[1];
+    const availW = widthMm - 2 * margin;
+    const availD = depthMm - 2 * margin;
+    if (availW < 1 || availD < 1 || bw <= 0 || bd <= 0) {
+      throw new EngineError('IMAGE_SIZE_TOO_SMALL', { width: widthMm, depth: depthMm, margin });
+    }
+    const s = Math.min(availW / bw, availD / bd);
+    const baseCs = own(simplified.scale([s, s]));
+
+    let combinedZ: Manifold;
     if (mode === 'silhouette') {
-      const totalH = Math.max(
-        0.6,
-        (options.baseThicknessMm || 2) + (options.reliefHeightMm || 2)
+      const totalH = requireNumberInRange(
+        'height',
+        (options.baseThicknessMm ?? 2) + (options.reliefHeightMm ?? 2),
+        0.2,
+        500
       );
-      combinedZ = baseCs.extrude(totalH, 0, 0, [1, 1], false);
+      combinedZ = own(baseCs.extrude(totalH, 0, 0, [1, 1], false));
     } else {
-      // Cortador de galletas / arcilla: pestaña exterior de agarre + cuchilla perimetral
-      const wallW = Math.max(0.6, options.cutterWallMm ?? 1.2);
-      const baseH = Math.max(0.6, options.baseThicknessMm || 2.0);
-      const bladeH = Math.max(2.0, options.reliefHeightMm || 12.0);
-
-      outerWallCs = baseCs.offset(wallW, 'Round');
-      wallCs = outerWallCs.subtract(baseCs);
-
-      flangeOuterCs = baseCs.offset(wallW + 3.0, 'Round');
-      flangeCs = flangeOuterCs.subtract(baseCs);
-
-      flangeManifold = flangeCs.extrude(baseH, 0, 0, [1, 1], false);
-      wallManifold = wallCs.extrude(baseH + bladeH, 0, 0, [1, 1], false);
-      combinedZ = flangeManifold.add(wallManifold);
+      // Cortador: pestaña exterior de agarre + cuchilla perimetral
+      const baseH = requireNumberInRange('baseThicknessMm', options.baseThicknessMm, 0.4, 50, 2);
+      const bladeH = requireNumberInRange('reliefHeightMm', options.reliefHeightMm, 1, 200, 12);
+      const outerWallCs = own(baseCs.offset(wallW, 'Round'));
+      const wallCs = own(outerWallCs.subtract(baseCs));
+      const flangeOuterCs = own(baseCs.offset(margin, 'Round'));
+      const flangeCs = own(flangeOuterCs.subtract(baseCs));
+      const flange = own(flangeCs.extrude(baseH, 0, 0, [1, 1], false));
+      const wall = own(wallCs.extrude(baseH + bladeH, 0, 0, [1, 1], false));
+      combinedZ = own(flange.add(wall));
     }
 
-    rotatedY = combinedZ.rotate([-90, 0, 0]);
-    const mesh = manifoldToMeshData(rotatedY);
-    return normalizeMeshToBed(mesh);
+    const rotatedY = own(combinedZ.rotate([-90, 0, 0]));
+    return normalizeMeshToBed(manifoldToMeshData(rotatedY));
   } finally {
-    for (const r of rowRects) {
-      r.delete();
-    }
-    if (rawUnion && !rowRects.includes(rawUnion)) {
-      rawUnion.delete();
-    }
-    baseCs?.delete();
-    outerWallCs?.delete();
-    wallCs?.delete();
-    flangeOuterCs?.delete();
-    flangeCs?.delete();
-    wallManifold?.delete();
-    flangeManifold?.delete();
-    combinedZ?.delete();
-    rotatedY?.delete();
+    for (const h of handles) h.delete();
   }
 }

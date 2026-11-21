@@ -25,6 +25,7 @@ import {
   manifoldToMeshData,
   meshDataToManifold,
 } from './manifoldKernel';
+import { refineMeshDetailed } from './refine';
 import {
   applyTransformToMesh,
   computeMeshStats,
@@ -65,34 +66,6 @@ function extractPositionAndNormalize(mesh: MeshData): {
     mesh: normalizeMeshToBed(mesh),
     position: [(minX + maxX) * 0.5, minY, (minZ + maxZ) * 0.5],
   };
-}
-
-/**
- * Calcula el área superficial total (en mm²) de una malla triangular para acotar
- * con seguridad la densidad máxima durante el refinamiento adaptativo.
- */
-function computeMeshSurfaceArea(mesh: MeshData): number {
-  const triCount = Math.floor(mesh.indices.length / 3);
-  let area = 0;
-  for (let t = 0; t < triCount; t++) {
-    const i0 = mesh.indices[t * 3] * 3;
-    const i1 = mesh.indices[t * 3 + 1] * 3;
-    const i2 = mesh.indices[t * 3 + 2] * 3;
-
-    const e1x = mesh.positions[i1] - mesh.positions[i0];
-    const e1y = mesh.positions[i1 + 1] - mesh.positions[i0 + 1];
-    const e1z = mesh.positions[i1 + 2] - mesh.positions[i0 + 2];
-
-    const e2x = mesh.positions[i2] - mesh.positions[i0];
-    const e2y = mesh.positions[i2 + 1] - mesh.positions[i0 + 1];
-    const e2z = mesh.positions[i2 + 2] - mesh.positions[i0 + 2];
-
-    const cx = e1y * e2z - e1z * e2y;
-    const cy = e1z * e2x - e1x * e2z;
-    const cz = e1x * e2y - e1y * e2x;
-    area += 0.5 * Math.hypot(cx, cy, cz);
-  }
-  return area;
 }
 
 /**
@@ -329,53 +302,21 @@ export async function simplifyMesh(
 }
 
 /**
- * Refina y opcionalmente suaviza una malla usando interpolación cúbica de tangentes
- * (`Manifold.smooth`) combinada con subdivisión por longitud de arista (`refineToLength`),
- * acotando automáticamente la longitud mínima para evitar explosiones por encima de ~80k triángulos.
+ * Refina y opcionalmente suaviza una malla sin deformar sus dimensiones exteriores
+ * (API compatible: solo la malla). La longitud se interpreta en mm de mundo; ver
+ * `refineMeshDetailed` para la longitud efectiva y los avisos tipados.
  *
  * @param obj Objeto de escena origen (opera sobre su malla local).
- * @param targetEdgeLengthMm Longitud objetivo de arista en milímetros.
- * @param smooth Si es true (por defecto), suaviza tangentes antes de subdividir.
+ * @param targetEdgeLengthMm Longitud objetivo de arista en milímetros de mundo.
+ * @param smooth Si es true, suaviza conservando aristas vivas y caras planas (por defecto false).
  * @returns Malla refinada watertight normalizada a cama.
  */
 export async function refineMesh(
   obj: SceneObject,
   targetEdgeLengthMm: number,
-  smooth = true
+  smooth = false
 ): Promise<MeshData> {
-  const wasm = await initManifoldEngine();
-  const area = computeMeshSurfaceArea(obj.mesh);
-  // Límite seguro para que triCount ~ area / (0.433 * L²) no supere ~80 000 triángulos
-  const safeMinLength = Math.sqrt(Math.max(1, area) / 30000);
-  const edgeLen = Math.max(0.5, targetEdgeLengthMm, safeMinLength);
-
-  const registry = obj.mesh.faceColors?.length
-    ? createColorRegistry(wasm, [
-        { color: obj.color, faceColors: obj.mesh.faceColors },
-      ])
-    : null;
-
-  let base: Manifold | null = null;
-  let smoothed: Manifold | null = null;
-  let refined: Manifold | null = null;
-
-  try {
-    base = meshDataToManifold(wasm, obj.mesh, registry?.colorToId, obj.color);
-    if (smooth) {
-      const rawMesh = base.getMesh();
-      smoothed = wasm.Manifold.smooth(rawMesh);
-      refined = smoothed.refineToLength(edgeLen);
-    } else {
-      refined = base.refineToLength(edgeLen);
-    }
-
-    const outMesh = manifoldToMeshData(refined, registry?.idToColor);
-    return normalizeMeshToBed(outMesh);
-  } finally {
-    base?.delete();
-    smoothed?.delete();
-    refined?.delete();
-  }
+  return (await refineMeshDetailed(obj, targetEdgeLengthMm, smooth)).mesh;
 }
 
 /**
