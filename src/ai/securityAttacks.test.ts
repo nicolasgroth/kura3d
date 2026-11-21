@@ -123,7 +123,7 @@ describe('validateToolCall: prototype pollution y argumentos hostiles', () => {
     expect(validateToolCall('delete_object', { id: 'x'.repeat(201) }).ok).toBe(false);
   });
 
-  it.fails('GAP (menor): rechaza caracteres de control en parámetros de texto/ID/nombre', () => {
+  it('rechaza caracteres de control en parámetros de texto/ID/nombre', () => {
     // Hoy "\u0000" y "\u001b[31m" pasan en `text` y `id`; el puente MCP ya los rechaza en `name`.
     expect(validateToolCall('create_primitive', { type: 'text', text: 'a\u0000b\u001b[31m' }).ok).toBe(false);
   });
@@ -201,7 +201,7 @@ describe('cliente IA: la clave no se filtra a través de errores HTTP', () => {
     expect(msg).not.toContain(KEY);
   });
 
-  it.fails('GAP (mayor): una clave que cruza el límite de 220 caracteres del error queda parcialmente expuesta', async () => {
+  it('una clave que cruza el límite de 220 caracteres del error no queda expuesta', async () => {
     // errText.slice(0, 220) se aplica ANTES de redactSecrets: la clave partida por el corte ya no coincide
     // con el literal y los formatos no estándar (sin prefijo sk-/AIza) se filtran casi enteros.
     const padding = 'x'.repeat(220 - 'openai HTTP 401: '.length > 0 ? 200 : 0);

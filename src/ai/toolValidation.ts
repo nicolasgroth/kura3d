@@ -54,6 +54,8 @@ function checkValue(key: string, spec: Record<string, unknown>, value: unknown):
       if (typeof value !== 'string') return `"${key}" must be a string`;
       const limit = key === 'text' ? MAX_TEXT_LENGTH : MAX_STRING_LENGTH;
       if (value.length > limit) return `"${key}" exceeds ${limit} characters`;
+      // Mismo criterio que el puente MCP: sin caracteres de control en textos, IDs ni nombres.
+      if (/[\u0000-\u001f\u007f]/.test(value)) return `"${key}" contains control characters`;
       if (Array.isArray(spec.enum) && !spec.enum.includes(value)) {
         return `"${key}" must be one of: ${spec.enum.join(', ')}`;
       }

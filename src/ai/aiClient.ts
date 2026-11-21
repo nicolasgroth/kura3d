@@ -64,7 +64,8 @@ function providerBaseUrl(config: AiConfig, fallback: string, lang: LanguageCode)
 
 async function providerHttpError(provider: string, resp: Response, config: AiConfig): Promise<Error> {
   const errText = await resp.text().catch(() => '');
-  return new Error(redactSecrets(`${provider} HTTP ${resp.status}: ${errText.slice(0, 220)}`, config.apiKey));
+  // Se redacta antes de truncar: una clave cortada por el límite ya no coincidiría con el literal.
+  return new Error(`${provider} HTTP ${resp.status}: ${redactSecrets(errText, config.apiKey).slice(0, 220)}`);
 }
 
 function buildSystemPrompt(lang: LanguageCode): string {
