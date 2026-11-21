@@ -227,7 +227,7 @@ describe('Kura3D MCP Server', () => {
     // El 3MF del motor declara materiales y asigna el color base por objeto
     const modelXml = strFromU8(archive['3D/3dmodel.model']);
     expect(modelXml).toContain('<basematerials id="1">');
-    expect(modelXml).toMatch(/<object [^>]*pid="1" pindex="d+"/);
+    expect(modelXml).toMatch(/<object [^>]*pid="1" pindex="\d+"/);
   });
 
   it('valida orígenes locales permitidos y rechaza orígenes remotos en el puente WebSocket', async () => {

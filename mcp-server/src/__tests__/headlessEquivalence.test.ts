@@ -304,7 +304,7 @@ describe('Equivalencia headless ↔ src/engine', () => {
     expect(model).toContain('displaycolor="#38BDF8FF"');
     expect(model).toContain('displaycolor="#22C55EFF"');
     // El exportador declara el color base por objeto (pindex) y solo marca p1 en caras pintadas distinto.
-    expect(new Set([...model.matchAll(/(?:pindex|p1)="(d+)"/g)].map((m) => m[1])).size).toBe(2);
+    expect(new Set([...model.matchAll(/(?:pindex|p1)="(\d+)"/g)].map((m) => m[1])).size).toBe(2);
 
     const refBytes = engine.exportSceneTo3MF([h.getObject(a.id), h.getObject(b.id)], 'mm', 'bambu');
     expect(model).toBe(strFromU8(unzipSync(refBytes)['3D/3dmodel.model']));
