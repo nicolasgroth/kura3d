@@ -715,6 +715,14 @@ export const CommandPalette: React.FC = () => {
         <input
           ref={inputRef}
           className="kura-palette-input"
+          role="combobox"
+          aria-label={t(language, 'cmd.inputLabel')}
+          aria-expanded={filtered.length > 0}
+          aria-controls={`${titleId}-list`}
+          aria-autocomplete="list"
+          aria-activedescendant={filtered[activeIndex] ? `${titleId}-opt-${activeIndex}` : undefined}
+          autoComplete="off"
+          spellCheck={false}
           placeholder={t(language, 'cmd.placeholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -731,15 +739,22 @@ export const CommandPalette: React.FC = () => {
         </button>
       </div>
 
-      <div className="kura-palette-list" role="listbox">
+      <div
+        className="kura-palette-list"
+        role="listbox"
+        id={`${titleId}-list`}
+        aria-label={t(language, 'cmd.resultsLabel')}
+      >
         {filtered.length === 0 ? (
-          <div className="kura-palette-empty">{t(language, 'cmd.empty')}</div>
+          <div className="kura-palette-empty" role="status">{t(language, 'cmd.empty')}</div>
         ) : (
           filtered.map((item, idx) => (
             <button
               key={item.id}
+              id={`${titleId}-opt-${idx}`}
               type="button"
               role="option"
+              tabIndex={-1}
               aria-selected={idx === activeIndex}
               className={`kura-palette-item ${idx === activeIndex ? 'is-active' : ''}`}
               onMouseEnter={() => setActiveIndex(idx)}

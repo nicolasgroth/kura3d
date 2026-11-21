@@ -15,7 +15,6 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import {
   Bolt,
   Check,
-  Cloud,
   Copy,
   Download,
   FileUp,
@@ -26,7 +25,6 @@ import {
   Palette,
   RefreshCw,
   Scissors,
-  ShieldCheck,
   Sparkles,
   Sun,
   Type,
@@ -39,7 +37,6 @@ import { PrecisionNumberInput } from './PrecisionNumberInput';
 import {
   PRINT_COLOR_PALETTE,
   THEME_PRESETS,
-  type AiProviderType,
   type ColorSchemePreference,
   type CutConnectorType,
   type ImageTo3DOptions,
@@ -52,8 +49,8 @@ import {
 } from '../types/kura';
 import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
 import { openLocalFile } from '../utils/platformBridge';
-import { getApiKeyStore } from '../ai/apiKeyStore';
-import { isAllowedProviderUrl } from '../ai/providerSecurity';
+import { AiSettingsPanel } from './settings/AiSettingsPanel';
+import { SettingsTabs } from './settings/SettingsTabs';
 
 /** Presets SVG vectoriales incorporados para probar extrusión y proyección 3D al instante. */
 const SVG_PRESETS: Record<'star' | 'badge' | 'gear', string> = {
@@ -1546,8 +1543,6 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   onClose,
 }) => {
   const language = useKuraStore((s) => s.language);
-  const aiConfig = useKuraStore((s) => s.aiConfig);
-  const setAiConfig = useKuraStore((s) => s.setAiConfig);
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const setColorScheme = useKuraStore((s) => s.setColorScheme);
   const themePreset = useKuraStore((s) => s.themePreset);
@@ -1564,13 +1559,6 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
   const isRenderedDark = useResolvedDarkScheme(colorScheme);
 
-  const [provider, setProvider] = useState<AiProviderType>(aiConfig.provider);
-  const [apiKey, setApiKey] = useState(aiConfig.apiKey);
-  const [model, setModel] = useState(aiConfig.model);
-  const [baseUrl, setBaseUrl] = useState(aiConfig.baseUrl);
-  const [temperature, setTemperature] = useState(aiConfig.temperature);
-  const keyStore = getApiKeyStore();
-  const [rememberKey, setRememberKey] = useState(() => keyStore.rememberInSession());
   const [copied, setCopied] = useState(false);
 
   // Garantiza que cualquier vista previa en vivo se revierta al cerrar o desmontar el modal
@@ -1589,46 +1577,6 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const handleClose = () => {
     setPreviewThemePreset(null);
     onClose();
-  };
-
-  useEffect(() => {
-    if (open) {
-      setProvider(aiConfig.provider);
-      setApiKey(aiConfig.apiKey);
-      setModel(aiConfig.model);
-      setBaseUrl(aiConfig.baseUrl);
-      setTemperature(aiConfig.temperature);
-      setRememberKey(getApiKeyStore().rememberInSession());
-    }
-  }, [open, aiConfig]);
-
-  const defaultModels: Record<AiProviderType, string> = {
-    gemini: 'gemini-2.5-flash',
-    openai: 'gpt-4o-mini',
-    anthropic: 'claude-3-5-sonnet-latest',
-    ollama: 'llama3.1',
-  };
-
-  const handleProviderChange = (next: AiProviderType) => {
-    setProvider(next);
-    setModel(defaultModels[next]);
-    if (next === 'ollama' && !baseUrl) {
-      setBaseUrl('http://127.0.0.1:11434');
-    }
-    // Cada proveedor tiene su propia clave: nunca se reenvía la de otro proveedor.
-    setApiKey('');
-    void keyStore.load(next).then(setApiKey, () => setApiKey(''));
-  };
-
-  const handleSaveAi = () => {
-    if (baseUrl.trim() && !isAllowedProviderUrl(baseUrl.trim(), keyStore.desktop)) {
-      addToast(t(language, 'ai.error.endpointBlocked'), 'error');
-      return;
-    }
-    keyStore.setRememberInSession(rememberKey);
-    setAiConfig({ provider, apiKey, model, baseUrl, temperature });
-    addToast(t(language, 'toast.settingsSaved'), 'success');
-    handleClose();
   };
 
   // Rotación efectiva: el servidor revoca el token viejo antes de guardar el nuevo en Ajustes.
@@ -1681,16 +1629,6 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     2,
   );
 
-  const isExternalConfigured = provider !== 'ollama' && apiKey.trim().length > 0;
-  const providerDisplay =
-    provider === 'gemini'
-      ? 'Google Gemini'
-      : provider === 'openai'
-        ? 'OpenAI'
-        : provider === 'anthropic'
-          ? 'Anthropic Claude'
-          : 'Ollama';
-
   const handleCopyMcp = async () => {
     try {
       await navigator.clipboard.writeText(mcpSnippet);
@@ -1722,51 +1660,23 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
           <button type="button" className="kura-btn" onClick={handleClose}>
             {t(language, 'dialog.close')}
           </button>
-          {tab === 'ai' && (
-            <button type="button" className="kura-btn kura-btn-primary" onClick={handleSaveAi}>
-              {t(language, 'dialog.settings.saveAi')}
-            </button>
-          )}
         </>
       }
     >
-      <div
-        className="kura-segmented"
-        style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}
-      >
-        <button
-          type="button"
-          className={`kura-btn ${tab === 'appearance' ? 'is-active' : ''}`}
-          onClick={() => setTab('appearance')}
-        >
-          <Palette size={13} />
-          <span>{t(language, 'dialog.settings.tab.appearance')}</span>
-        </button>
-        <button
-          type="button"
-          className={`kura-btn ${tab === 'ai' ? 'is-active' : ''}`}
-          onClick={() => setTab('ai')}
-        >
-          {t(language, 'dialog.settings.tab.ai')}
-        </button>
-        <button
-          type="button"
-          className={`kura-btn ${tab === 'mcp' ? 'is-active' : ''}`}
-          onClick={() => setTab('mcp')}
-        >
-          {t(language, 'dialog.settings.tab.mcp')}
-        </button>
-        <button
-          type="button"
-          className={`kura-btn ${tab === 'about' ? 'is-active' : ''}`}
-          onClick={() => setTab('about')}
-        >
-          {t(language, 'dialog.settings.tab.about')}
-        </button>
-      </div>
+      <SettingsTabs
+        tab={tab}
+        onChange={setTab}
+        label={t(language, 'dialog.settings.tabsLabel')}
+        tabs={[
+          { id: 'appearance', label: t(language, 'dialog.settings.tab.appearance'), icon: <Palette size={13} /> },
+          { id: 'ai', label: t(language, 'dialog.settings.tab.ai') },
+          { id: 'mcp', label: t(language, 'dialog.settings.tab.mcp') },
+          { id: 'about', label: t(language, 'dialog.settings.tab.about') },
+        ]}
+      />
 
       {tab === 'appearance' && (
-        <div className="kura-appearance-panel">
+        <div className="kura-appearance-panel" role="tabpanel" id="settings-panel-appearance" aria-labelledby="settings-tab-appearance">
           <div className="kura-form-field">
             <label htmlFor="settings-scheme-group">{t(language, 'topbar.themeToggle')}</label>
             <div
@@ -1949,110 +1859,13 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
       )}
 
       {tab === 'ai' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-
-          <div className="kura-form-field">
-            <label htmlFor="ai-provider">{t(language, 'dialog.settings.aiProvider')}</label>
-            <select
-              id="ai-provider"
-              className="kura-select"
-              value={provider}
-              onChange={(e) => handleProviderChange(e.target.value as AiProviderType)}
-            >
-              <option value="gemini">Google Gemini</option>
-              <option value="openai">OpenAI / Compatible</option>
-              <option value="anthropic">Anthropic Claude</option>
-              <option value="ollama">Ollama (Local)</option>
-            </select>
-          </div>
-
-          {provider !== 'ollama' && (
-            <div className="kura-form-field">
-              <label htmlFor="ai-key">{t(language, 'dialog.settings.apiKey')}</label>
-              <input
-                id="ai-key"
-                type="password"
-                className="kura-input"
-                placeholder={t(language, 'dialog.settings.apiKeyPlaceholder')}
-                value={apiKey}
-                autoComplete="off"
-                aria-describedby="ai-key-storage"
-                onChange={(e) => setApiKey(e.target.value)}
-              />
-              <small id="ai-key-storage" style={{ fontSize: 11, opacity: 0.8 }}>
-                {t(language, keyStore.desktop
-                  ? 'dialog.settings.apiKeyStorageDesktop'
-                  : 'dialog.settings.apiKeyStorageWeb')}
-              </small>
-              {!keyStore.desktop && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-                  <input
-                    type="checkbox"
-                    checked={rememberKey}
-                    onChange={(e) => setRememberKey(e.target.checked)}
-                  />
-                  <span>{t(language, 'dialog.settings.apiKeyRememberSession')}</span>
-                </label>
-              )}
-            </div>
-          )}
-
-          <div className="kura-form-grid">
-            <div className="kura-form-field">
-              <label htmlFor="ai-model">{t(language, 'dialog.settings.model')}</label>
-              <input
-                id="ai-model"
-                className="kura-input"
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-              />
-            </div>
-            <div className="kura-form-field">
-              <label htmlFor="ai-temp">
-                {t(language, 'dialog.settings.temperature')} ({temperature})
-              </label>
-              <input
-                id="ai-temp"
-                type="range"
-                min={0}
-                max={1}
-                step={0.1}
-                value={temperature}
-                title={t(language, 'ui.sliderResetTip')}
-                onDoubleClick={() => setTemperature(0.2)}
-                onChange={(e) => setTemperature(Number(e.target.value))}
-              />
-            </div>
-          </div>
-
-          <div className="kura-form-field">
-            <label htmlFor="ai-url">{t(language, 'dialog.settings.baseUrl')}</label>
-            <input
-              id="ai-url"
-              className="kura-input"
-              placeholder={provider === 'ollama' ? 'http://127.0.0.1:11434' : 'Opcional'}
-              value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
-            />
-          </div>
-
-          <div
-            className={`kura-callout ${isExternalConfigured ? 'is-warning' : 'is-local'}`}
-          >
-            {isExternalConfigured ? <Cloud size={15} /> : <ShieldCheck size={15} />}
-            <span>
-              {isExternalConfigured
-                ? t(language, 'dialog.settings.aiPrivacyExternal', {
-                    provider: providerDisplay,
-                  })
-                : t(language, 'dialog.settings.aiPrivacyLocal')}
-            </span>
-          </div>
+        <div role="tabpanel" id="settings-panel-ai" aria-labelledby="settings-tab-ai">
+          <AiSettingsPanel open={open} onSaved={handleClose} />
         </div>
       )}
 
       {tab === 'mcp' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} role="tabpanel" id="settings-panel-mcp" aria-labelledby="settings-tab-mcp">
           <strong style={{ fontSize: 13 }}>{t(language, 'dialog.settings.mcpTitle')}</strong>
           <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
             {t(language, 'dialog.settings.mcpDesc')}
@@ -2165,7 +1978,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
       )}
 
       {tab === 'about' && (
-        <div className="kura-about-stack">
+        <div className="kura-about-stack" role="tabpanel" id="settings-panel-about" aria-labelledby="settings-tab-about">
           <div className="kura-card">
             <div className="kura-about-header">
               <strong>Kura3D Studio v0.5.0</strong>

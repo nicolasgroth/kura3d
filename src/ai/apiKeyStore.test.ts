@@ -72,13 +72,13 @@ describe('web key store', () => {
 });
 
 describe('desktop key store', () => {
-  it('uses only the get/set/delete native commands and never touches sessionStorage', async () => {
+  it('uses only set/delete/status native commands, never reads the key back and never touches sessionStorage', async () => {
     const native = new Map<string, string>();
     const invoke = vi.fn(async (command: string, args: Record<string, unknown>) => {
       const provider = String(args.provider);
       if (command === 'ai_key_set') native.set(provider, String(args.secret));
       else if (command === 'ai_key_delete') native.delete(provider);
-      else if (command === 'ai_key_get') return native.get(provider) ?? null;
+      else if (command === 'ai_key_status') return native.has(provider);
       else throw new Error(`unexpected ${command}`);
       return null;
     }) as never;
@@ -86,14 +86,18 @@ describe('desktop key store', () => {
     const store = createApiKeyStore({ desktop: true, invoke, session });
     store.setRememberInSession(true);
 
-    await store.save('openai', FAKE_KEY);
-    expect(native.get('openai')).toBe(FAKE_KEY);
-    expect(await createApiKeyStore({ desktop: true, invoke }).load('openai')).toBe(FAKE_KEY);
-    await store.save('openai', '');
-    expect(native.has('openai')).toBe(false);
+    await store.save('deepseek', FAKE_KEY);
+    expect(native.get('deepseek')).toBe(FAKE_KEY);
+    const reloaded = createApiKeyStore({ desktop: true, invoke });
+    expect(await reloaded.has('deepseek')).toBe(true);
+    expect(await reloaded.load('deepseek')).toBe('');
+    expect(await store.load('deepseek')).toBe('');
+    await store.save('deepseek', '');
+    expect(native.has('deepseek')).toBe(false);
+    expect(await reloaded.has('deepseek')).toBe(false);
     expect(session.data.size).toBe(0);
     const commands = (invoke as unknown as ReturnType<typeof vi.fn>).mock.calls.map(([name]) => name);
-    expect(new Set(commands)).toEqual(new Set(['ai_key_set', 'ai_key_get', 'ai_key_delete']));
+    expect(new Set(commands)).toEqual(new Set(['ai_key_set', 'ai_key_status', 'ai_key_delete']));
   });
 });
 

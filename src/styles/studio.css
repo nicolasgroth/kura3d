@@ -57,11 +57,11 @@
   --accent-cyan-fg-light: #ffffff;
   --accent-cyan-fg-dark: #07131e;
 
-  --accent-amber-light: #ea580c;
+  --accent-amber-light: #c2410c;
   --accent-amber-dark: #f97316;
 
   --accent-amber-fg-light: #ffffff;
-  --accent-amber-fg-dark: #ffffff;
+  --accent-amber-fg-dark: #1c0a00;
 
   --accent-green-light: #16a34a;
   --accent-green-dark: #22c55e;
@@ -153,7 +153,7 @@
   --accent-amber-light: #7e22ce;
   --accent-amber-dark: #a855f7;
   --accent-amber-fg-light: #ffffff;
-  --accent-amber-fg-dark: #ffffff;
+  --accent-amber-fg-dark: #14052b;
   --hud-glass-light: rgba(250, 249, 255, 0.88);
   --hud-glass-dark: rgba(21, 16, 38, 0.86);
   --viewport-bg-center-light: #faf9ff;
@@ -383,17 +383,18 @@ body,
 
 .kura-app[data-tool="cut"] {
   --tool-accent: var(--accent-amber);
-  --tool-accent-fg: #ffffff;
+  --tool-accent-fg: var(--accent-amber-fg);
 }
 
 .kura-app[data-tool="paint"] {
   --tool-accent: light-dark(#7c3aed, #a855f7);
-  --tool-accent-fg: #ffffff;
+  /* Texto oscuro sobre el violeta claro del modo oscuro: >= 4.5:1 (blanco daba 3.96:1). */
+  --tool-accent-fg: light-dark(#ffffff, #14052b);
 }
 
 .kura-app[data-tool="erase"] {
   --tool-accent: light-dark(#e11d48, #f43f5e);
-  --tool-accent-fg: #ffffff;
+  --tool-accent-fg: light-dark(#ffffff, #2b060e);
 }
 
 .kura-workspace {
@@ -677,8 +678,9 @@ body,
   border-color: transparent;
 }
 
+/* El hover se aleja del color del texto para no bajar del contraste 4.5:1. */
 .kura-btn-amber:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent-amber) 88%, white);
+  background: color-mix(in srgb, var(--accent-amber) 88%, light-dark(black, white));
 }
 
 .kura-btn-danger {

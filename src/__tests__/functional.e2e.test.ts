@@ -870,7 +870,7 @@ describe('Evaluación Funcional E2E de Kura3D (13 áreas funcionales)', () => {
 
       // 2. Ahuecar 2.5mm
       const turn2 = await sendAiPrompt(
-        'Hollow 2.5mm with drain hole',
+        'Hollow the selected object 2.5mm with drain hole',
         [],
         localAiConfig,
         'en',
@@ -882,7 +882,7 @@ describe('Evaluación Funcional E2E de Kura3D (13 áreas funcionales)', () => {
 
       // 3. Textura knurling
       const turn3 = await sendAiPrompt(
-        'Aplicar textura knurling',
+        'Aplicar textura knurling al objeto seleccionado',
         [],
         localAiConfig,
         'es',
@@ -903,7 +903,7 @@ describe('Evaluación Funcional E2E de Kura3D (13 áreas funcionales)', () => {
       expect(useKuraStore.getState().objects).toHaveLength(2);
 
       const turn5 = await sendAiPrompt(
-        'Cortar modelo',
+        'Cortar el modelo seleccionado',
         [],
         localAiConfig,
         'es',

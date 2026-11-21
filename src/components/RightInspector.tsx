@@ -532,8 +532,11 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
 
       <div className="kura-panel-header">
         <span>{t(language, 'inspector.title')}</span>
-        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-          {primary.source.toUpperCase()}
+        <span
+          style={{ fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase' }}
+          title={t(language, 'inspector.sourceLabel', { source: t(language, `inspector.source.${primary.source}` as TranslationKey) })}
+        >
+          {t(language, `inspector.source.${primary.source}` as TranslationKey)}
         </span>
       </div>
 
@@ -1057,6 +1060,8 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
               max={65}
               step={1}
               value={segmentationCreaseDeg}
+              aria-label={t(language, 'inspector.struct.sensitivity')}
+              aria-valuetext={`${segmentationCreaseDeg}°`}
               title={t(language, 'ui.sliderResetTip')}
               onDoubleClick={() => setSegmentationCreaseDeg(28)}
               onChange={(e) => setSegmentationCreaseDeg(Number(e.target.value))}
@@ -1369,6 +1374,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
               max={12}
               step={0.2}
               value={wallThicknessMm}
+              aria-label={t(language, 'inspector.op.wallThickness')}
               title={t(language, 'ui.sliderResetTip')}
               onDoubleClick={() => setWallThicknessMm(2.2)}
               onChange={(e) => setWallThicknessMm(Number(e.target.value))}
@@ -1492,6 +1498,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
               max={2.5}
               step={0.05}
               value={textureDepthMm}
+              aria-label={t(language, 'inspector.op.textureDepth')}
               title={t(language, 'ui.sliderResetTip')}
               onDoubleClick={() => setTextureDepthMm(0.45)}
               onChange={(e) => setTextureDepthMm(Number(e.target.value))}
@@ -1520,6 +1527,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
               max={16}
               step={0.5}
               value={textureScaleMm}
+              aria-label={t(language, 'inspector.op.textureScale')}
               title={t(language, 'ui.sliderResetTip')}
               onDoubleClick={() => setTextureScaleMm(4)}
               onChange={(e) => setTextureScaleMm(Number(e.target.value))}

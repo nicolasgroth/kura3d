@@ -2,12 +2,16 @@
 // Organización: ISGROTH — Innovación y Soluciones GROTH
 // Licencia: MIT
 // Descripción: Claves API de proveedores IA guardadas en el almacén de credenciales
-// del sistema operativo (crate `keyring`). Solo expone leer, guardar y borrar por
-// proveedor permitido; no existe un comando para listar. Los errores nunca incluyen
+// del sistema operativo (crate `keyring`). El webview solo puede guardar, borrar y
+// preguntar si existe una clave por ranura permitida: el valor nunca vuelve al
+// webview; solo lo lee el proxy nativo (`ai_proxy.rs`). Los errores nunca incluyen
 // el valor de la clave.
 
 const SERVICE: &str = "com.nicolasgroth.kura3d.ai";
-const PROVIDERS: [&str; 4] = ["gemini", "openai", "anthropic", "ollama"];
+/// Ranuras de clave: proveedores nativos y presets del proveedor compatible con OpenAI.
+pub const PROVIDERS: [&str; 9] = [
+    "gemini", "openai", "anthropic", "ollama", "deepseek", "qwen", "openrouter", "lmstudio", "custom",
+];
 const MAX_SECRET_BYTES: usize = 4096;
 
 /// Almacén mínimo de secretos. Permite probar la validación sin tocar el sistema.
@@ -79,9 +83,10 @@ pub fn delete_key(store: &impl SecretStore, provider: &str) -> Result<(), String
     store.delete(&account_for(provider)?)
 }
 
+/// Indica si hay una clave guardada para la ranura, sin devolver su valor.
 #[tauri::command]
-pub fn ai_key_get(provider: String) -> Result<Option<String>, String> {
-    get_key(&OsSecretStore, &provider)
+pub fn ai_key_status(provider: String) -> Result<bool, String> {
+    Ok(get_key(&OsSecretStore, &provider)?.is_some())
 }
 
 #[tauri::command]

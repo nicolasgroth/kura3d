@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, type ThreeEvent, useFrame, useThree } from '@react-three/fiber';
 import {
   ContactShadows,
@@ -53,18 +53,19 @@ import * as engine from '../engine';
 import { getLocalizedPrinterName, t } from '../i18n';
 import {
   type CameraPresetType,
-  type PaintBrushMode,
   useKuraStore,
 } from '../store/useKuraStore';
 import {
   MATERIAL_PRESETS,
-  PRINT_COLOR_PALETTE,
   type PrinterProfile,
   type SceneObject,
   type SlicerTarget,
   type Vec3,
 } from '../types/kura';
 import { registerViewportCapture } from '../utils/mcpBridgeClient';
+import { updateGeometryFaceColors } from '../engine/paintColorAttribute';
+import { hidePaintCursor, PaintBrushCursor, updatePaintCursor } from './viewport/PaintBrushCursor';
+import { PaintToolbar } from './viewport/PaintToolbar';
 import { formatDimension } from '../utils/units';
 
 interface ContextMenuState {
@@ -624,6 +625,7 @@ const SceneMeshItem: React.FC<{
     const spawnedAt = useKuraStore((s) => s.spawnedAtById[obj.id]);
     const selectObject = useKuraStore((s) => s.selectObject);
     const paintObjectSurface = useKuraStore((s) => s.paintObjectSurface);
+    const beginPaintStroke = useKuraStore((s) => s.beginPaintStroke);
     const eraseSphereOnObject = useKuraStore((s) => s.eraseSphereOnObject);
 
     // Animación elástica de aparición (0.78 -> 1.0 en ~240ms; cero costo tras finalizar)
@@ -645,17 +647,20 @@ const SceneMeshItem: React.FC<{
       );
     });
 
-    // Evita reconstruir BufferGeometry al cambiar color uniforme cuando no existen faceColors
+    // La geometría depende solo de posiciones/índices/normales (inmutables y compartidas al pintar).
+    // Pintar cambia `faceColors`: se reescribe en sitio el atributo `color`, sin reconstruir nada.
     const hasFaceColors = Boolean(obj.mesh.faceColors && obj.mesh.faceColors.length > 0);
-    const colorDep = hasFaceColors ? (obj.isHole ? '#f97316' : obj.color) : '__uniform__';
+    const baseColor = obj.isHole ? '#f97316' : obj.color;
 
     const geometry = useMemo(() => {
-      return engine.createBufferGeometryFromMeshData(
-        obj.mesh,
-        hasFaceColors ? (obj.isHole ? '#f97316' : obj.color) : undefined,
-      );
+      return engine.createBufferGeometryFromMeshData(obj.mesh, hasFaceColors ? baseColor : undefined);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [obj.mesh, colorDep]);
+    }, [obj.mesh.positions, obj.mesh.indices, obj.mesh.normals, hasFaceColors]);
+
+    useLayoutEffect(() => {
+      if (!hasFaceColors || !obj.mesh.faceColors) return;
+      updateGeometryFaceColors(geometry, obj.mesh.faceColors, baseColor);
+    }, [geometry, hasFaceColors, obj.mesh.faceColors, baseColor]);
 
     useEffect(() => {
       return () => {
@@ -751,6 +756,7 @@ const SceneMeshItem: React.FC<{
       if (activeTool === 'paint') {
         if (obj.locked) return;
         onStartPaintDrag();
+        beginPaintStroke();
         lastPaintMoveAtRef.current = performance.now();
         const localPt = meshRef.current
           ? meshRef.current.worldToLocal(e.point.clone())
@@ -775,6 +781,7 @@ const SceneMeshItem: React.FC<{
 
     const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
       if (activeTool !== 'paint' || paintMode !== 'brush' || obj.locked) return;
+      updatePaintCursor(e);
       if ((e.buttons & 1) === 0) return;
       e.stopPropagation();
 
@@ -813,6 +820,7 @@ const SceneMeshItem: React.FC<{
           renderOrder={obj.isHole ? 8 : 0}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
+          onPointerOut={hidePaintCursor}
           onContextMenu={handleContextMenu}
         >
           {obj.isHole ? (
@@ -983,7 +991,10 @@ const SceneContent: React.FC<{
   }, [primaryId]);
 
   useEffect(() => {
-    const onGlobalPointerUp = () => setIsPaintingDrag(false);
+    const onGlobalPointerUp = () => {
+      setIsPaintingDrag(false);
+      useKuraStore.getState().endPaintStroke();
+    };
     window.addEventListener('pointerup', onGlobalPointerUp);
     return () => window.removeEventListener('pointerup', onGlobalPointerUp);
   }, []);
@@ -1067,6 +1078,8 @@ const SceneContent: React.FC<{
       )}
 
       <LaserCutPreview />
+
+      {activeTool === 'paint' && <PaintBrushCursor />}
 
       {showGizmo && primaryObj && activeTargetGroup && (
         <TransformControls
@@ -1205,10 +1218,6 @@ export const Viewport3D: React.FC = () => {
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const printerProfile = useKuraStore((s) => s.printerProfile);
-  const paintColor = useKuraStore((s) => s.paintColor);
-  const paintRadiusMm = useKuraStore((s) => s.paintRadiusMm);
-  const paintMode = useKuraStore((s) => s.paintMode);
-  const setPaintSettings = useKuraStore((s) => s.setPaintSettings);
   const eraseRadiusMm = useKuraStore((s) => s.eraseRadiusMm);
   const setEraseRadiusMm = useKuraStore((s) => s.setEraseRadiusMm);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
@@ -1309,6 +1318,7 @@ export const Viewport3D: React.FC = () => {
   return (
     <main ref={viewportRef} className="kura-viewport-wrap">
       <Canvas
+        className={activeTool === 'paint' ? 'kura-viewport-canvas is-painting' : 'kura-viewport-canvas'}
         shadows
         dpr={[1, 2]}
         camera={{ position: [115, 95, 130], fov: 42, near: 0.5, far: 4000 }}
@@ -1449,6 +1459,8 @@ export const Viewport3D: React.FC = () => {
             </div>
           </div>
 
+          {/* El gizmo de transformación no aplica mientras se pinta: se oculta para no confundir. */}
+          {activeTool !== 'paint' && (
           <div className="kura-hud-card">
             <div className="kura-segmented">
               <button
@@ -1480,6 +1492,7 @@ export const Viewport3D: React.FC = () => {
               </button>
             </div>
           </div>
+          )}
         </div>
 
         {/* Píldora booleana inteligente: aparece cuando existen huecos + sólidos */}
@@ -1497,60 +1510,7 @@ export const Viewport3D: React.FC = () => {
         )}
 
         {/* Barra contextual de herramientas (Pintar / Tallar / Cortar) */}
-        {activeTool === 'paint' && (
-          <div className="kura-hud-card" style={{ flexWrap: 'wrap', gap: 8, alignSelf: 'flex-start' }}>
-            <select
-              className="kura-select"
-              style={{ height: 26 }}
-              value={paintMode}
-              onChange={(e) => setPaintSettings({ paintMode: e.target.value as PaintBrushMode })}
-              aria-label={t(language, 'viewport.paint.mode')}
-            >
-              <option value="brush">{t(language, 'viewport.paint.brush')}</option>
-              <option value="smart_fill">{t(language, 'viewport.paint.smartFill')}</option>
-              <option value="whole">{t(language, 'viewport.paint.whole')}</option>
-            </select>
-
-            {paintMode === 'brush' && (
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11.5 }}>
-                <span>{t(language, 'viewport.paint.radius')}: {paintRadiusMm} mm</span>
-                <input
-                  type="range"
-                  min={1}
-                  max={25}
-                  step={0.5}
-                  value={paintRadiusMm}
-                  onChange={(e) => setPaintSettings({ paintRadiusMm: Number(e.target.value) })}
-                />
-              </label>
-            )}
-
-            <div className="kura-swatch-row">
-              {PRINT_COLOR_PALETTE.map((hex) => (
-                <button
-                  key={hex}
-                  type="button"
-                  className={`kura-swatch ${paintColor === hex ? 'is-active' : ''}`}
-                  style={{ backgroundColor: hex }}
-                  onClick={() => setPaintSettings({ paintColor: hex })}
-                  aria-label={hex}
-                  title={hex}
-                />
-              ))}
-              <input
-                type="color"
-                className="kura-swatch-custom"
-                value={paintColor}
-                onChange={(e) => setPaintSettings({ paintColor: e.target.value })}
-                aria-label={t(language, 'viewport.paint.color')}
-                title={t(language, 'viewport.paint.color')}
-              />
-            </div>
-            <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-              {t(language, 'viewport.paint.hint')}
-            </span>
-          </div>
-        )}
+        {activeTool === 'paint' && <PaintToolbar />}
 
         {activeTool === 'erase' && (
           <div className="kura-hud-card" style={{ gap: 10, alignSelf: 'flex-start' }}>

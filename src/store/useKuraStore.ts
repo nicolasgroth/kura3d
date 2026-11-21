@@ -61,6 +61,9 @@ import {
 import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { openLocalFile, saveBinaryFile } from '../utils/platformBridge';
 import { browserLocalStorage, getApiKeyStore, migrateLegacyApiKey } from '../ai/apiKeyStore';
+import { loadKeyState, parseStoredAiConfig, persistableAiConfig } from '../ai/aiConfigState';
+import { loadAllowedHosts } from '../ai/allowedHosts';
+import { keySlotFor } from '../ai/providerCatalog';
 
 const MAX_UNDO_HISTORY = 40;
 const STORAGE_AI_CONFIG_KEY = 'kura3d-ai-config';
@@ -233,6 +236,8 @@ export interface KuraStoreState {
 
   // Selección e historial
   selectObject: (id: string, additive?: boolean) => void;
+  /** Reemplaza la selección (lista de escena con Shift/Ctrl); ignora IDs que no existen. */
+  setSelection: (ids: string[]) => void;
   selectAll: () => void;
   clearSelection: () => void;
   undo: () => void;
@@ -310,6 +315,9 @@ export interface KuraStoreState {
     faceIndex: number | null,
     modeOverride?: PaintBrushMode,
   ) => void;
+  /** Abre un trazo de pincel: las muestras siguientes comparten un único paso de historial. */
+  beginPaintStroke: () => void;
+  endPaintStroke: () => void;
   eraseSphereOnObject: (id: string, worldCenter: Vec3, radiusMm?: number) => Promise<void>;
 
   // Nuevas capacidades
@@ -690,29 +698,13 @@ function loadInitialMcpConfig(): McpConfig {
 /** Clave antigua retirada de localStorage al iniciar (TRUST-03); null si no había. */
 const legacyAiKey = migrateLegacyApiKey(browserLocalStorage(), STORAGE_AI_CONFIG_KEY, getApiKeyStore());
 
-/** Carga configuración IA persistida localmente. La clave API vive en `ai/apiKeyStore`, nunca aquí. */
+/**
+ * Carga configuración IA persistida localmente. La clave API vive en `ai/apiKeyStore`, nunca aquí; en
+ * escritorio ni siquiera llega al webview (la adjunta el proxy nativo).
+ */
 function loadInitialAiConfig(): AiConfig {
-  const defaults: AiConfig = {
-    provider: 'gemini',
-    apiKey: legacyAiKey?.apiKey ?? '',
-    model: 'gemini-2.5-flash',
-    baseUrl: '',
-    temperature: 0.2,
-  };
-  const raw = readStorage(STORAGE_AI_CONFIG_KEY);
-  if (!raw) return defaults;
-  try {
-    const parsed = JSON.parse(raw) as Partial<AiConfig>;
-    return {
-      provider: parsed.provider ?? defaults.provider,
-      apiKey: defaults.apiKey,
-      model: typeof parsed.model === 'string' && parsed.model ? parsed.model : defaults.model,
-      baseUrl: typeof parsed.baseUrl === 'string' ? parsed.baseUrl : '',
-      temperature: typeof parsed.temperature === 'number' ? parsed.temperature : defaults.temperature,
-    };
-  } catch {
-    return defaults;
-  }
+  const legacy = getApiKeyStore().desktop ? '' : legacyAiKey?.apiKey ?? '';
+  return parseStoredAiConfig(readStorage(STORAGE_AI_CONFIG_KEY), legacy);
 }
 
 function loadInitialColorScheme(): ColorSchemePreference {
@@ -771,8 +763,11 @@ function loadInitialUiDensity(): UiDensityMode {
 
 /** Bandera para evitar doble inicialización concurrente del módulo WASM en React StrictMode. */
 let engineInitPromise: Promise<void> | null = null;
-/** Marca temporal para evitar guardar decenas de snapshots por segundo al pintar con arrastre. */
-let lastPaintSnapshotAt = 0;
+/**
+ * Trazo de pincel en curso: el historial guarda un solo snapshot por trazo (al primer cambio),
+ * no uno por muestra. Fuera de un trazo (clic suelto, IA, MCP) cada pintado es un paso de historial.
+ */
+let paintStroke: { open: boolean; recorded: boolean } = { open: false, recorded: false };
 let transformSnapshotBeforeDrag: SceneSnapshot | null = null;
 
 export const useKuraStore = create<KuraStoreState>((set, get) => {
@@ -816,7 +811,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     name: string | null,
     { location, recoveredDraftId }: { location?: string; recoveredDraftId?: string } = {},
   ) => {
-    lastPaintSnapshotAt = 0;
+    paintStroke = { open: false, recorded: false };
     set((state) => ({
       ...document,
       projectName: name,
@@ -1156,12 +1151,17 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
     setAiConfig: (patch) =>
       set((state) => {
-        const next: AiConfig = { ...state.aiConfig, ...patch };
-        const { apiKey, ...persisted } = next;
-        writeStorage(STORAGE_AI_CONFIG_KEY, JSON.stringify(persisted));
+        let next: AiConfig = { ...state.aiConfig, ...patch };
+        writeStorage(STORAGE_AI_CONFIG_KEY, JSON.stringify(persistableAiConfig(next)));
         if ('apiKey' in patch) {
-          void getApiKeyStore().save(next.provider, apiKey).catch(() =>
-            get().addToast(t(get().language, 'ai.error.keySaveFailed'), 'error'));
+          const keyStore = getApiKeyStore();
+          const value = next.apiKey.trim();
+          void keyStore.save(keySlotFor(next), value).catch(() => {
+            if (keyStore.desktop) set((s) => ({ aiConfig: { ...s.aiConfig, keyStored: false } }));
+            get().addToast(t(get().language, 'ai.error.keySaveFailed'), 'error');
+          });
+          // En escritorio la clave pasa al llavero y no queda en el webview.
+          if (keyStore.desktop) next = { ...next, apiKey: '', keyStored: Boolean(value) };
         }
         return { aiConfig: next };
       }),
@@ -1233,6 +1233,12 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       set((state) => ({
         toasts: state.toasts.filter((toast) => toast.id !== id),
       })),
+
+    setSelection: (ids) =>
+      set((state) => {
+        const known = new Set(state.objects.map((o) => o.id));
+        return { selectedIds: [...new Set(ids)].filter((id) => known.has(id)) };
+      }),
 
     selectObject: (id, additive = false) =>
       set((state) => {
@@ -2104,6 +2110,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           faceIndex,
           state.paintColor,
           35,
+          obj.color,
         );
       } else if (localPoint) {
         nextMesh = engine.paintMeshFacesInSphere(
@@ -2116,10 +2123,11 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         return;
       }
 
-      const now = Date.now();
-      if (now - lastPaintSnapshotAt > 600) {
-        lastPaintSnapshotAt = now;
+      // Sin cambios de color (pasar el pincel sobre caras ya pintadas): ni historial ni render.
+      if (nextMesh === obj.mesh) return;
+      if (!paintStroke.open || !paintStroke.recorded) {
         pushHistory();
+        paintStroke.recorded = true;
       }
 
       set((prev) => ({
@@ -2127,6 +2135,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           item.id === id ? { ...item, mesh: nextMesh } : item,
         ),
       }));
+    },
+
+    beginPaintStroke: () => {
+      paintStroke = { open: true, recorded: false };
+    },
+
+    endPaintStroke: () => {
+      paintStroke = { open: false, recorded: false };
     },
 
     eraseSphereOnObject: async (id, worldCenter, radiusMm) => {
@@ -3477,11 +3493,13 @@ void (async () => {
     const { addToast, language } = useKuraStore.getState();
     addToast(t(language, 'ai.error.keySaveFailed'), 'error');
   }
-  const { provider, apiKey } = useKuraStore.getState().aiConfig;
-  if (apiKey) return;
-  const stored = await getApiKeyStore().load(provider).catch(() => '');
+  const keyStore = getApiKeyStore();
+  if (keyStore.desktop) void loadAllowedHosts().catch(() => undefined);
+  const initial = useKuraStore.getState().aiConfig;
+  if (initial.apiKey) return;
+  const keyState = await loadKeyState(initial, keyStore);
   const current = useKuraStore.getState().aiConfig;
-  if (stored && !current.apiKey && current.provider === provider) {
-    useKuraStore.setState({ aiConfig: { ...current, apiKey: stored } });
+  if (keySlotFor(current) === keySlotFor(initial) && !current.apiKey) {
+    useKuraStore.setState({ aiConfig: { ...current, ...keyState } });
   }
 })();

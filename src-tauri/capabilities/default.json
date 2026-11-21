@@ -19,8 +19,12 @@
     "allow-get-mcp-bridge-status",
     "allow-open-kura-project",
     "allow-save-kura-project",
-    "allow-ai-key-get",
+    "allow-ai-key-status",
     "allow-ai-key-set",
-    "allow-ai-key-delete"
+    "allow-ai-key-delete",
+    "allow-ai-http-request",
+    "allow-ai-http-cancel",
+    "allow-ai-allowed-hosts-get",
+    "allow-ai-allowed-hosts-set"
   ]
 }

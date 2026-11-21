@@ -8,7 +8,8 @@
  */
 
 import { t } from '../i18n';
-import type { AiConfig, AiProviderType, LanguageCode } from '../types/kura';
+import { hasUsableCredentials, providerLabel as labelFor, specFor } from '../ai/providerCatalog';
+import type { AiConfig, LanguageCode } from '../types/kura';
 
 export type AiExecutionMode = 'ollama' | 'external' | 'local';
 
@@ -20,13 +21,6 @@ export interface AiBadgeDescriptor {
   cssTone: 'emerald' | 'amber' | 'cyan';
 }
 
-const PROVIDER_DISPLAY_NAMES: Record<AiProviderType, string> = {
-  gemini: 'Gemini',
-  openai: 'OpenAI',
-  anthropic: 'Anthropic',
-  ollama: 'Ollama',
-};
-
 /**
  * Calcula la etiqueta de privacidad/origen de IA a partir de la configuración activa.
  */
@@ -34,9 +28,12 @@ export function getAiBadgeDescriptor(
   aiConfig: AiConfig,
   lang: LanguageCode,
 ): AiBadgeDescriptor {
-  const providerLabel = PROVIDER_DISPLAY_NAMES[aiConfig.provider] ?? aiConfig.provider;
+  const providerLabel = labelFor(aiConfig);
+  // Servidores locales sin clave (Ollama, LM Studio): los prompts no salen del equipo.
+  const local = aiConfig.provider === 'ollama' || (aiConfig.provider === 'openai_compatible' && !specFor(aiConfig).needsKey
+    && /^http:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/i.test(aiConfig.baseUrl.trim() || specFor(aiConfig).defaultBaseUrl));
 
-  if (aiConfig.provider === 'ollama') {
+  if (local) {
     return {
       mode: 'ollama',
       providerLabel,
@@ -46,7 +43,7 @@ export function getAiBadgeDescriptor(
     };
   }
 
-  if (aiConfig.apiKey.trim().length > 0) {
+  if (hasUsableCredentials(aiConfig)) {
     return {
       mode: 'external',
       providerLabel,
