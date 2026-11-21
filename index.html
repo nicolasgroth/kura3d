@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Esquema de color adaptable al sistema y sobreescribible sin FOUC -->
+    <link rel="icon" type="image/png" href="/branding/kura3d-icon.png" />
+    <!-- Esquema de color y tema de acento sincronizados antes del primer pintado sin FOUC -->
     <meta name="color-scheme" content="light dark" />
     <script>
       try {
@@ -11,11 +12,15 @@
         if (storedScheme === 'light' || storedScheme === 'dark') {
           document.querySelector('meta[name="color-scheme"]').content = storedScheme;
         }
+        const storedTheme = localStorage.getItem('kura3d-theme-preset');
+        if (storedTheme) {
+          document.documentElement.dataset.theme = storedTheme;
+        }
       } catch (_err) {
         // Si el almacenamiento local está bloqueado, se mantiene la preferencia del sistema.
       }
     </script>
-    <title>Kura3D — Estudio de Modelado 3D Nativo</title>
+    <title>Kura3D v0.5.0 — Estudio de Modelado 3D Nativo</title>
   </head>
   <body>
     <div id="root"></div>

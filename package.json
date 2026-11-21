@@ -1,6 +1,6 @@
 {
   "name": "kura3d",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "description": "Kura3D — Modelador 3D nativo y web de alto rendimiento para creación e impresión 3D, con motor Manifold CSG, servidor MCP nativo y chat IA multi-proveedor. Desarrollado para ISGROTH (Innovación y Soluciones GROTH).",
   "author": "Nicolás Groth <ngroth@gmail.com> (ISGROTH — Innovación y Soluciones GROTH)",
   "license": "MIT",

@@ -44,14 +44,13 @@ import {
   Wand2,
   Zap,
 } from 'lucide-react';
-import { t } from '../i18n';
+import { t, type TranslationKey } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import {
   PrecisionNumberInput,
   type PrecisionModifierState,
 } from './PrecisionNumberInput';
 import {
-  MATERIAL_PRESETS,
   PRINT_COLOR_PALETTE,
   type AlignMode,
   type MaterialPresetId,
@@ -503,9 +502,7 @@ export const RightInspector: React.FC = () => {
             >
               {MATERIAL_IDS.map((matId) => (
                 <option key={matId} value={matId}>
-                  {language === 'en'
-                    ? MATERIAL_PRESETS[matId].labelEn
-                    : MATERIAL_PRESETS[matId].labelEs}
+                  {t(language, `material.${matId}` as TranslationKey)}
                 </option>
               ))}
             </select>
@@ -931,7 +928,7 @@ export const RightInspector: React.FC = () => {
 
                     <div className="kura-struct-list">
                       {activeSegmentation.regions.map((region) => {
-                        const label = language === 'en' ? region.labelEn : region.labelEs;
+                        const label = language === 'es' ? region.labelEs : region.labelEn;
                         return (
                           <div key={region.id} className="kura-struct-item">
                             <div className="kura-struct-item-head">

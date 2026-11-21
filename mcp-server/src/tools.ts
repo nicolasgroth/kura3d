@@ -1159,7 +1159,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
           text: JSON.stringify(
             {
               name: 'Kura3D MCP Server',
-              version: '1.0.0',
+              version: '0.5.0',
               author: 'Nicolás Groth <ngroth@gmail.com>',
               organization: 'ISGROTH — Innovación y Soluciones GROTH',
               license: 'MIT',

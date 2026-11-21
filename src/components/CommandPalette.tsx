@@ -1,8 +1,9 @@
 /**
  * @file src/components/CommandPalette.tsx
- * @description Paleta rápida de comandos (Ctrl+K) de Kura3D Pro v3.0 sobre <dialog> nativo
- * con filtrado en vivo, navegación por teclado (↑/↓/Enter), comandos Maker Pro, modos de
- * densidad (Compacto/Zen), plano de sección Rayos X y badges explícitos Local vs IA.
+ * @description Paleta rápida de comandos (Ctrl+K) de Kura3D v0.5.0 sobre <dialog> nativo
+ * con filtrado en vivo, navegación por teclado (↑/↓/Enter), comandos Maker Pro, selector de
+ * apariencia y temas WCAG AA/AAA, ciclo de 6 idiomas, modos de densidad (Compacto/Zen),
+ * plano de sección Rayos X y badges explícitos Local vs IA.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -51,6 +52,7 @@ import {
 } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import { SUPPORTED_LANGUAGES } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
 import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
 
@@ -542,12 +544,24 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'view-lang',
-        label: `${t(language, 'topbar.languageToggle')} (${language === 'es' ? 'EN' : 'ES'})`,
+        label: (() => {
+          const nextIdx =
+            (SUPPORTED_LANGUAGES.findIndex((l) => l.code === language) + 1) %
+            SUPPORTED_LANGUAGES.length;
+          const nextLang = SUPPORTED_LANGUAGES[nextIdx];
+          return `${t(language, 'topbar.languageToggle')} (${nextLang.shortLabel} · ${nextLang.nativeName})`;
+        })(),
         category: catView,
-        keywords: 'idioma language spanish english español ingles',
+        keywords:
+          'idioma language sprache langue spanish english deutsch francais hindi chinese español ingles aleman frances',
         kind: 'local',
         icon: <Languages size={15} />,
-        run: () => setLanguage(language === 'es' ? 'en' : 'es'),
+        run: () => {
+          const nextIdx =
+            (SUPPORTED_LANGUAGES.findIndex((l) => l.code === language) + 1) %
+            SUPPORTED_LANGUAGES.length;
+          setLanguage(SUPPORTED_LANGUAGES[nextIdx].code);
+        },
       },
       {
         id: 'view-theme',
@@ -557,6 +571,16 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <Moon size={15} />,
         run: () => setColorScheme(colorScheme === 'light' ? 'dark' : 'light'),
+      },
+      {
+        id: 'set-appearance',
+        label: t(language, 'palette.cmd.appearance'),
+        category: catSet,
+        keywords:
+          'apariencia colores tema wcag obsidian prism carbon nordic amber contrast theme appearance',
+        kind: 'local',
+        icon: <Palette size={15} />,
+        run: () => openSettings('appearance'),
       },
       {
         id: 'view-shortcuts',

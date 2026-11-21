@@ -1,9 +1,10 @@
 /**
  * @file src/components/TopBar.tsx
- * @description Barra superior principal de Kura3D Pro v3.0: marca geométrica, importación/exportación
- * Multi-Slicer (STL/3MF), Undo/Redo, selector de herramientas, perfil de impresora multi-marca,
- * unidades, toggle de densidad adaptativa (Expandido / Compacto / Zen), paleta Ctrl+K, estado MCP
- * configurable/seguro, indicador explícito IA Externa vs Local y tema visual.
+ * @description Barra superior principal de Kura3D v0.5.0: marca oficial con ícono y versión,
+ * importación/exportación Multi-Slicer (STL/3MF), Undo/Redo, selector de herramientas, perfil de
+ * impresora multi-marca, unidades, selector compacto de 6 idiomas, acceso directo a temas WCAG,
+ * toggle de densidad adaptativa (Expandido / Compacto / Zen), paleta Ctrl+K, estado MCP seguro
+ * y acceso al Asistente IA.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,6 +13,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Bot,
+  ChevronDown,
   Cloud,
   Columns2,
   Download,
@@ -23,6 +25,7 @@ import {
   Moon,
   MousePointer,
   Paintbrush,
+  Palette,
   Redo2,
   Scissors,
   Search,
@@ -35,7 +38,9 @@ import { getLocalizedPrinterName, t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import {
   DEFAULT_PRINTER_PROFILES,
+  SUPPORTED_LANGUAGES,
   type ActiveTool,
+  type LanguageCode,
   type UnitSystem,
 } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
@@ -93,6 +98,8 @@ export const TopBar: React.FC = () => {
     colorScheme === 'dark' || (colorScheme === 'system' && systemDark);
 
   const aiBadge = getAiBadgeDescriptor(aiConfig, language);
+  const currentLangSpec =
+    SUPPORTED_LANGUAGES.find((spec) => spec.code === language) ?? SUPPORTED_LANGUAGES[0];
 
   /**
    * Toggle inteligente de 2 estados en barra superior:
@@ -145,37 +152,18 @@ export const TopBar: React.FC = () => {
 
   return (
     <header className="kura-topbar">
-      {/* Marca Kura3D + Archivo rápido + Undo/Redo */}
+      {/* Marca oficial Kura3D v0.5.0 + Archivo rápido + Undo/Redo */}
       <div className="kura-topbar-group kura-topbar-left">
         <div className="kura-brand" title={t(language, 'app.tagline')}>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <polygon
-              points="12,2 21,7 21,17 12,22 3,17 3,7"
-              stroke="var(--tool-accent)"
-              strokeWidth="2"
-              fill="color-mix(in srgb, var(--tool-accent) 18%, transparent)"
-            />
-            <polyline
-              points="3,7 12,12 21,7"
-              stroke="var(--tool-accent)"
-              strokeWidth="1.8"
-            />
-            <line
-              x1="12"
-              y1="12"
-              x2="12"
-              y2="22"
-              stroke="var(--accent-amber)"
-              strokeWidth="2"
-            />
-          </svg>
+          <img
+            src="/branding/kura3d-icon.png"
+            alt="Kura3D"
+            className="kura-brand-icon-img"
+            width={26}
+            height={26}
+          />
           <span className="kura-brand-title">Kura3D</span>
+          <span className="kura-brand-badge">0.5</span>
         </div>
 
         <button
@@ -305,13 +293,36 @@ export const TopBar: React.FC = () => {
           <Search size={13} />
         </button>
 
+        <div
+          className="kura-lang-select-wrap"
+          title={`${t(language, 'topbar.languageSelect')}: ${currentLangSpec.nativeName}`}
+        >
+          <span className="kura-lang-select-face" aria-hidden="true">
+            <span>{currentLangSpec.shortLabel}</span>
+            <ChevronDown size={11} />
+          </span>
+          <select
+            className="kura-lang-select-native"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as LanguageCode)}
+            aria-label={t(language, 'topbar.languageSelect')}
+          >
+            {SUPPORTED_LANGUAGES.map((spec) => (
+              <option key={spec.code} value={spec.code}>
+                {spec.shortLabel} — {spec.nativeName}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <button
           type="button"
-          className="kura-btn kura-btn-sm"
-          onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-          title={t(language, 'topbar.languageToggle')}
+          className="kura-btn kura-btn-icon kura-btn-sm"
+          onClick={() => openSettings('appearance')}
+          title={t(language, 'topbar.themesShortcut')}
+          aria-label={t(language, 'topbar.themesShortcut')}
         >
-          {language.toUpperCase()}
+          <Palette size={13} />
         </button>
 
         <button
@@ -364,7 +375,9 @@ export const TopBar: React.FC = () => {
           ) : (
             <Zap size={13} />
           )}
-          <span className="kura-btn-label">{language === 'es' ? 'IA' : 'AI'}</span>
+          <span className="kura-btn-label">
+            {language === 'es' || language === 'fr' ? 'IA' : 'AI'}
+          </span>
         </button>
 
         <button

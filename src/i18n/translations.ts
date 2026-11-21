@@ -1,26 +1,37 @@
 /**
  * @file src/i18n/translations.ts
- * @description Diccionario bilingüe completo (Español por defecto e Inglés) para toda la interfaz de Kura3D Pro v3.0.
- * Mantiene paridad estricta 1:1 de claves entre ES y EN verificada en tiempo de compilación y tests.
+ * @description Diccionario multilingüe completo (6 idiomas internacionales: ES por defecto, EN, DE, FR, HI, ZH)
+ * para toda la interfaz de Kura3D v0.5.0. Mantiene paridad estricta 1:1 de claves entre los 6 idiomas
+ * verificada en tiempo de compilación TypeScript y tests automatizados.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import type { LanguageCode } from '../types/kura';
+import { TRANSLATIONS_DE } from './locales/de';
+import { TRANSLATIONS_FR } from './locales/fr';
+import { TRANSLATIONS_HI } from './locales/hi';
+import { TRANSLATIONS_ZH } from './locales/zh';
 
 /**
  * Diccionario maestro de cadenas traducibles.
  * Se define en español primero para derivar el tipo estricto `TranslationKey`
- * y garantizar paridad 1:1 en inglés durante la compilación TypeScript.
+ * y garantizar paridad 1:1 en todos los idiomas durante la compilación TypeScript.
  */
 export const TRANSLATIONS_ES = {
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
-  'app.docTitle': 'Kura3D Pro v4.0 — Estudio de Modelado 3D Nativo',
+  'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
   'app.untitled': 'Escena sin título',
   'common.close': 'Cerrar',
+
+  // Pantalla de carga inicial (Splash)
+  'splash.subtitle': 'Estudio de Modelado 3D Nativo & Impresión 3D',
+  'splash.loadingEngine': 'Inicializando motor geométrico Manifold WASM...',
+  'splash.ready': 'Motor listo · Preparando estudio 3D',
+  'splash.skip': 'Clic para continuar',
 
   // Perfiles de impresora localizables
   'printer.generic-220': 'Genérica 220 × 220 × 250 mm',
@@ -72,7 +83,9 @@ export const TRANSLATIONS_ES = {
   'topbar.printerProfile': 'Perfil de impresora',
   'topbar.unitLabel': 'Unidades',
   'topbar.languageToggle': 'Idioma',
+  'topbar.languageSelect': 'Idioma de interfaz',
   'topbar.themeToggle': 'Tema visual',
+  'topbar.themesShortcut': 'Temas de color y apariencia',
   'topbar.theme.system': 'Sistema',
   'topbar.theme.light': 'Claro',
   'topbar.theme.dark': 'Oscuro',
@@ -341,6 +354,7 @@ export const TRANSLATIONS_ES = {
   'cmd.view.zen': 'Alternar Modo Zen (100% Canvas)',
   'cmd.view.xray': 'Alternar Rayos X / Sección en Vivo',
   'cmd.view.shortcuts': 'Ver Atajos de Teclado y Pro Tips',
+  'palette.cmd.appearance': 'Cambiar tema de color (Apariencia)',
   'cmd.export.3mfModal': 'Exportar 3MF Multi-Slicer Pro...',
 
   // Panel de Chat IA (AiChatDrawer)
@@ -487,7 +501,26 @@ export const TRANSLATIONS_ES = {
   'dialog.settings.title': 'Ajustes de Kura3D y Puente MCP',
   'dialog.settings.tab.ai': 'Proveedor IA',
   'dialog.settings.tab.mcp': 'Servidor MCP',
+  'dialog.settings.tab.appearance': 'Apariencia y Temas',
   'dialog.settings.tab.about': 'Acerca de',
+  'dialog.settings.themesTitle': 'Temas de color (WCAG AA/AAA)',
+  'dialog.settings.themesHint': 'Pasa el cursor sobre un tema para previsualizarlo en vivo; haz clic para aplicarlo en caliente.',
+  'dialog.settings.themeDefaultBadge': 'Por defecto',
+  'dialog.settings.themeActiveBadge': 'Activo',
+  'dialog.settings.themePreviewBadge': 'Vista previa en vivo',
+  'dialog.settings.brandVariants': 'Identidad visual Kura3D',
+  'theme.obsidian.name': 'Obsidian Cyan',
+  'theme.obsidian.desc': 'Estudio pizarra profundo con cian técnico (tema por defecto).',
+  'theme.kura_prism.name': 'Kura Prism',
+  'theme.kura_prism.desc': 'Inspirado en el logo oficial: violeta profundo y menta turquesa.',
+  'theme.studio_pro.name': 'Carbon Pro',
+  'theme.studio_pro.desc': 'Grafito industrial neutro con azul acero para sesiones largas.',
+  'theme.nordic_frost.name': 'Nordic Slate',
+  'theme.nordic_frost.desc': 'Azules nórdicos suaves con baja fatiga visual nocturna.',
+  'theme.solar_amber.name': 'Forge Amber',
+  'theme.solar_amber.desc': 'Taller cálido de alto contraste con acentos ámbar dorado.',
+  'theme.high_contrast.name': 'Alto Contraste AAA',
+  'theme.high_contrast.desc': 'Contraste máximo WCAG AAA (≥10:1) para máxima legibilidad.',
   'dialog.settings.aiProvider': 'Proveedor de IA',
   'dialog.settings.apiKey': 'Clave API (guardada solo localmente en este navegador/equipo)',
   'dialog.settings.apiKeyPlaceholder': 'Pega tu API key aquí (opcional para Ollama)',
@@ -594,6 +627,7 @@ export const TRANSLATIONS_ES = {
   'toast.structureExtracted': 'Sub-parte extraída: {name}',
   'toast.structuresSplitAll': 'Separado en {count} sub-partes editables',
   'toast.mirrored': 'Objeto espejado en eje {axis}',
+  'toast.themeApplied': 'Tema aplicado: {name}',
   'toast.errorPrefix': 'Error: {message}',
 } as const;
 
@@ -606,9 +640,14 @@ export type TranslationKey = keyof typeof TRANSLATIONS_ES;
 export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'app.name': 'Kura3D',
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
-  'app.docTitle': 'Kura3D Pro v4.0 — Native 3D Modeling Studio',
+  'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
   'common.close': 'Close',
+
+  'splash.subtitle': 'Native 3D Modeling & 3D Printing Studio',
+  'splash.loadingEngine': 'Initializing Manifold WASM geometry kernel...',
+  'splash.ready': 'Kernel ready · Preparing 3D studio',
+  'splash.skip': 'Click to continue',
 
   'printer.generic-220': 'Generic 220 × 220 × 250 mm',
   'printer.generic-300': 'Large Format 300 × 300 × 350 mm',
@@ -656,7 +695,9 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'topbar.printerProfile': 'Printer profile',
   'topbar.unitLabel': 'Units',
   'topbar.languageToggle': 'Language',
+  'topbar.languageSelect': 'Interface language',
   'topbar.themeToggle': 'Color theme',
+  'topbar.themesShortcut': 'Color themes & appearance',
   'topbar.theme.system': 'System',
   'topbar.theme.light': 'Light',
   'topbar.theme.dark': 'Dark',
@@ -916,6 +957,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'cmd.view.zen': 'Toggle Zen Mode (100% Canvas)',
   'cmd.view.xray': 'Toggle Live X-Ray / Section Plane',
   'cmd.view.shortcuts': 'View Keyboard Shortcuts & Pro Tips',
+  'palette.cmd.appearance': 'Change color theme (Appearance)',
   'cmd.export.3mfModal': 'Export Multi-Slicer 3MF Pro...',
 
   'ai.title': 'Kura3D AI Assistant',
@@ -1052,7 +1094,26 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.settings.title': 'Kura3D Settings & MCP Bridge',
   'dialog.settings.tab.ai': 'AI Provider',
   'dialog.settings.tab.mcp': 'MCP Server',
+  'dialog.settings.tab.appearance': 'Appearance & Themes',
   'dialog.settings.tab.about': 'About',
+  'dialog.settings.themesTitle': 'Color Themes (WCAG AA/AAA)',
+  'dialog.settings.themesHint': 'Hover over a theme to preview it live; click to apply it immediately.',
+  'dialog.settings.themeDefaultBadge': 'Default',
+  'dialog.settings.themeActiveBadge': 'Active',
+  'dialog.settings.themePreviewBadge': 'Live preview',
+  'dialog.settings.brandVariants': 'Kura3D Visual Identity',
+  'theme.obsidian.name': 'Obsidian Cyan',
+  'theme.obsidian.desc': 'Deep slate studio with technical cyan (default theme).',
+  'theme.kura_prism.name': 'Kura Prism',
+  'theme.kura_prism.desc': 'Inspired by the official logo: deep violet and turquoise mint.',
+  'theme.studio_pro.name': 'Carbon Pro',
+  'theme.studio_pro.desc': 'Neutral industrial graphite with steel blue for long sessions.',
+  'theme.nordic_frost.name': 'Nordic Slate',
+  'theme.nordic_frost.desc': 'Soft Nordic blues with low nighttime eye strain.',
+  'theme.solar_amber.name': 'Forge Amber',
+  'theme.solar_amber.desc': 'Warm high-contrast workshop with golden amber accents.',
+  'theme.high_contrast.name': 'High Contrast AAA',
+  'theme.high_contrast.desc': 'Maximum WCAG AAA contrast (≥10:1) for peak legibility.',
   'dialog.settings.aiProvider': 'AI Provider',
   'dialog.settings.apiKey': 'API Key (stored locally in browser/app only)',
   'dialog.settings.apiKeyPlaceholder': 'Paste your API key here (optional for Ollama)',
@@ -1156,11 +1217,18 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'toast.structureExtracted': 'Extracted sub-part: {name}',
   'toast.structuresSplitAll': 'Split into {count} editable sub-parts',
   'toast.mirrored': 'Mirrored object on {axis} axis',
+  'toast.themeApplied': 'Theme applied: {name}',
   'toast.errorPrefix': 'Error: {message}',
 };
 
-/** Mapa de diccionarios indexado por código de idioma. */
+export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };
+
+/** Mapa completo de los 6 diccionarios internacionales indexados por código de idioma. */
 export const TRANSLATIONS: Record<LanguageCode, Record<TranslationKey, string>> = {
   es: TRANSLATIONS_ES,
   en: TRANSLATIONS_EN,
+  de: TRANSLATIONS_DE,
+  fr: TRANSLATIONS_FR,
+  hi: TRANSLATIONS_HI,
+  zh: TRANSLATIONS_ZH,
 };

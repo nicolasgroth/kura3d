@@ -1,8 +1,9 @@
 /**
  * @file src/store/useKuraStore.ts
- * @description Store central Zustand de Kura3D Pro v3.0: escena 3D, historial Undo/Redo (40 pasos),
- * densidad adaptativa (Full/Compact/Zen), herramientas activas, materiales PBR, moldes, proyección
- * en superficies, roscas ISO, validador estructural, plano de sección en vivo, perfil de impresora
+ * @description Store central Zustand de Kura3D v0.5.0: escena 3D, historial Undo/Redo (40 pasos),
+ * densidad adaptativa (Full/Compact/Zen), temas WCAG AA/AAA con previsualización en caliente,
+ * soporte nativo de 6 idiomas, herramientas activas, materiales PBR, moldes, proyección en
+ * superficies, roscas ISO, validador estructural, plano de sección en vivo, perfil de impresora
  * multi-marca, preferencias persistentes y Command Bus unificado para UI, Servidor MCP y Chat IA.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -16,6 +17,7 @@ import { t, type TranslationKey } from '../i18n';
 import {
   DEFAULT_PRINTER_PROFILES,
   PRINT_COLOR_PALETTE,
+  THEME_PRESETS,
   type ActiveTool,
   type AiChatMessage,
   type AiConfig,
@@ -45,6 +47,7 @@ import {
   type SurfaceProjectionOptions,
   type SvgImportOptions,
   type TextureOptions,
+  type ThemePresetId,
   type ThreadOptions,
   type TransformMode,
   type UiDensityMode,
@@ -58,6 +61,7 @@ const MAX_UNDO_HISTORY = 40;
 const STORAGE_AI_CONFIG_KEY = 'kura3d-ai-config';
 const STORAGE_MCP_CONFIG_KEY = 'kura3d-mcp-config';
 const STORAGE_COLOR_SCHEME_KEY = 'kura3d-color-scheme';
+const STORAGE_THEME_PRESET_KEY = 'kura3d-theme-preset';
 const STORAGE_LANGUAGE_KEY = 'kura3d-language';
 const STORAGE_UNIT_KEY = 'kura3d-unit-system';
 const STORAGE_PRINTER_KEY = 'kura3d-printer-id';
@@ -74,7 +78,7 @@ export type ActiveDialogType =
   | 'settings'
   | 'shortcuts'
   | null;
-export type SettingsTabType = 'ai' | 'mcp' | 'about';
+export type SettingsTabType = 'appearance' | 'ai' | 'mcp' | 'about';
 export type CommandSourceType = 'ui' | 'mcp' | 'ai';
 export type PaintBrushMode = 'brush' | 'smart_fill' | 'whole';
 export type CameraPresetType = 'iso' | 'top' | 'front' | 'right' | 'fit';
@@ -130,6 +134,8 @@ export interface KuraStoreState {
   unitSystem: UnitSystem;
   language: LanguageCode;
   colorScheme: ColorSchemePreference;
+  themePreset: ThemePresetId;
+  previewThemePreset: ThemePresetId | null;
   printerProfile: PrinterProfile;
   customBedDimensions: { width: number; depth: number; height: number } | null;
 
@@ -162,6 +168,8 @@ export interface KuraStoreState {
   setLanguage: (lang: LanguageCode) => void;
   setUnitSystem: (unit: UnitSystem) => void;
   setColorScheme: (scheme: ColorSchemePreference) => void;
+  setThemePreset: (preset: ThemePresetId) => void;
+  setPreviewThemePreset: (preset: ThemePresetId | null) => void;
   syncColorSchemeFromDom: () => void;
   setPrinterProfile: (profileId: string) => void;
   setActiveTool: (tool: ActiveTool) => void;
@@ -542,6 +550,12 @@ function applyMetaColorScheme(scheme: ColorSchemePreference): void {
   meta.setAttribute('content', scheme === 'system' ? 'light dark' : scheme);
 }
 
+/** Sincroniza el atributo `data-theme` en `<html>` para conmutar paletas WCAG AA/AAA en caliente. */
+function applyThemePresetToDom(preset: ThemePresetId): void {
+  if (typeof document === 'undefined') return;
+  document.documentElement.dataset.theme = preset;
+}
+
 /** Genera un token hexadecimal aleatorio seguro usando crypto.getRandomValues con fallback. */
 export function generateRandomTokenHex(length = 32): string {
   const byteCount = Math.max(8, Math.ceil(length / 2));
@@ -630,7 +644,25 @@ function loadInitialColorScheme(): ColorSchemePreference {
 
 function loadInitialLanguage(): LanguageCode {
   const stored = readStorage(STORAGE_LANGUAGE_KEY);
-  return stored === 'en' ? 'en' : 'es';
+  if (
+    stored === 'es' ||
+    stored === 'en' ||
+    stored === 'de' ||
+    stored === 'fr' ||
+    stored === 'hi' ||
+    stored === 'zh'
+  ) {
+    return stored;
+  }
+  return 'es';
+}
+
+function loadInitialThemePreset(): ThemePresetId {
+  const stored = readStorage(STORAGE_THEME_PRESET_KEY);
+  if (stored && THEME_PRESETS.some((preset) => preset.id === stored)) {
+    return stored as ThemePresetId;
+  }
+  return 'obsidian';
 }
 
 function loadInitialUnits(): UnitSystem {
@@ -665,8 +697,10 @@ let transformSnapshotBeforeDrag: SceneSnapshot | null = null;
 export const useKuraStore = create<KuraStoreState>((set, get) => {
   const initialLang = loadInitialLanguage();
   const initialScheme = loadInitialColorScheme();
+  const initialThemePreset = loadInitialThemePreset();
   const initialDensity = loadInitialUiDensity();
   applyMetaColorScheme(initialScheme);
+  applyThemePresetToDom(initialThemePreset);
 
   /** Helper interno para registrar un paso Undo antes de mutar `objects`. */
   const pushHistory = () => {
@@ -714,6 +748,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     unitSystem: loadInitialUnits(),
     language: initialLang,
     colorScheme: initialScheme,
+    themePreset: initialThemePreset,
+    previewThemePreset: null,
     printerProfile: loadInitialPrinterProfile(),
     customBedDimensions: null,
 
@@ -831,10 +867,27 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       set({ colorScheme });
     },
 
+    setThemePreset: (preset) => {
+      if (!THEME_PRESETS.some((item) => item.id === preset)) return;
+      writeStorage(STORAGE_THEME_PRESET_KEY, preset);
+      applyThemePresetToDom(preset);
+      set({ themePreset: preset, previewThemePreset: null });
+      const themeName = tr(`theme.${preset}.name` as TranslationKey);
+      get().addToast(tr('toast.themeApplied', { name: themeName }), 'success');
+    },
+
+    setPreviewThemePreset: (preset) => {
+      const effective = preset ?? get().themePreset;
+      applyThemePresetToDom(effective);
+      set({ previewThemePreset: preset });
+    },
+
     syncColorSchemeFromDom: () => {
       const scheme = loadInitialColorScheme();
+      const themePreset = loadInitialThemePreset();
       applyMetaColorScheme(scheme);
-      set({ colorScheme: scheme });
+      applyThemePresetToDom(themePreset);
+      set({ colorScheme: scheme, themePreset, previewThemePreset: null });
     },
 
     setPrinterProfile: (profileId) => {

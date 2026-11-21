@@ -8,14 +8,187 @@
  * @license MIT
  */
 
-/** Idiomas soportados nativamente en Kura3D (arquitectura extensible). */
-export type LanguageCode = 'es' | 'en';
+/** Idiomas soportados nativamente en Kura3D (6 idiomas internacionales). */
+export type LanguageCode = 'es' | 'en' | 'de' | 'fr' | 'hi' | 'zh';
+
+/** Metadatos de idioma para selector compacto con nombre nativo. */
+export interface LanguageSpec {
+  code: LanguageCode;
+  shortLabel: string;
+  nativeName: string;
+}
+
+/** Catálogo oficial de los 6 idiomas de Kura3D v0.5.0. */
+export const SUPPORTED_LANGUAGES: LanguageSpec[] = [
+  { code: 'es', shortLabel: 'ES', nativeName: 'Español' },
+  { code: 'en', shortLabel: 'EN', nativeName: 'English' },
+  { code: 'de', shortLabel: 'DE', nativeName: 'Deutsch' },
+  { code: 'fr', shortLabel: 'FR', nativeName: 'Français' },
+  { code: 'hi', shortLabel: 'HI', nativeName: 'हिन्दी (Hindi)' },
+  { code: 'zh', shortLabel: 'ZH', nativeName: '中文 (简体)' },
+];
 
 /** Unidades de medida soportadas. Internamente Kura3D siempre almacena geometría en milímetros (mm). */
 export type UnitSystem = 'mm' | 'cm' | 'm' | 'in' | 'ft';
 
 /** Esquema de color visual de la interfaz. */
 export type ColorSchemePreference = 'system' | 'dark' | 'light';
+
+/** Temas de color WCAG AA/AAA conmutables en caliente (valor por defecto: 'obsidian'). */
+export type ThemePresetId =
+  | 'obsidian'
+  | 'kura_prism'
+  | 'studio_pro'
+  | 'nordic_frost'
+  | 'solar_amber'
+  | 'high_contrast';
+
+/** Definición visual y de accesibilidad de un tema de color de Kura3D. */
+export interface ThemePresetSpec {
+  id: ThemePresetId;
+  wcagLevel: 'AA' | 'AAA';
+  /** Colores de muestra para la tarjeta de vista previa en tiempo real (oscuro / claro). */
+  previewDark: {
+    canvas: string;
+    panel: string;
+    accent: string;
+    secondary: string;
+    text: string;
+    border: string;
+  };
+  previewLight: {
+    canvas: string;
+    panel: string;
+    accent: string;
+    secondary: string;
+    text: string;
+    border: string;
+  };
+}
+
+/** Catálogo oficial de temas de color accesibles (WCAG AA/AAA) con Obsidian Cyan por defecto. */
+export const THEME_PRESETS: ThemePresetSpec[] = [
+  {
+    id: 'obsidian',
+    wcagLevel: 'AA',
+    previewDark: {
+      canvas: '#090d14',
+      panel: '#121826',
+      accent: '#38bdf8',
+      secondary: '#f97316',
+      text: '#f1f5f9',
+      border: '#243044',
+    },
+    previewLight: {
+      canvas: '#e9eef6',
+      panel: '#f8fafc',
+      accent: '#0284c7',
+      secondary: '#ea580c',
+      text: '#0f172a',
+      border: '#cbd5e1',
+    },
+  },
+  {
+    id: 'kura_prism',
+    wcagLevel: 'AA',
+    previewDark: {
+      canvas: '#0d0919',
+      panel: '#17112b',
+      accent: '#2dd4bf',
+      secondary: '#a855f7',
+      text: '#f5f3ff',
+      border: '#2e2252',
+    },
+    previewLight: {
+      canvas: '#f1eefb',
+      panel: '#faf9ff',
+      accent: '#0d9488',
+      secondary: '#7e22ce',
+      text: '#1e1038',
+      border: '#d4c9f5',
+    },
+  },
+  {
+    id: 'studio_pro',
+    wcagLevel: 'AA',
+    previewDark: {
+      canvas: '#111214',
+      panel: '#1b1d21',
+      accent: '#60a5fa',
+      secondary: '#f59e0b',
+      text: '#f4f4f5',
+      border: '#2d3139',
+    },
+    previewLight: {
+      canvas: '#eceef1',
+      panel: '#fafafa',
+      accent: '#2563eb',
+      secondary: '#d97706',
+      text: '#18181b',
+      border: '#d4d4d8',
+    },
+  },
+  {
+    id: 'nordic_frost',
+    wcagLevel: 'AA',
+    previewDark: {
+      canvas: '#141923',
+      panel: '#1e2533',
+      accent: '#7dd3fc',
+      secondary: '#34d399',
+      text: '#eceff4',
+      border: '#323d52',
+    },
+    previewLight: {
+      canvas: '#e6edf5',
+      panel: '#f4f8fc',
+      accent: '#0369a1',
+      secondary: '#047857',
+      text: '#1b2432',
+      border: '#c2d1e0',
+    },
+  },
+  {
+    id: 'solar_amber',
+    wcagLevel: 'AA',
+    previewDark: {
+      canvas: '#14100c',
+      panel: '#1f1812',
+      accent: '#fbbf24',
+      secondary: '#fb7185',
+      text: '#fef3c7',
+      border: '#3b2e22',
+    },
+    previewLight: {
+      canvas: '#f7f1e8',
+      panel: '#fffdf9',
+      accent: '#b45309',
+      secondary: '#be123c',
+      text: '#271a0c',
+      border: '#e5d4be',
+    },
+  },
+  {
+    id: 'high_contrast',
+    wcagLevel: 'AAA',
+    previewDark: {
+      canvas: '#000000',
+      panel: '#0a0a0a',
+      accent: '#38f2ff',
+      secondary: '#ffd60a',
+      text: '#ffffff',
+      border: '#6b7280',
+    },
+    previewLight: {
+      canvas: '#ffffff',
+      panel: '#ffffff',
+      accent: '#0047ab',
+      secondary: '#b45309',
+      text: '#000000',
+      border: '#1f2937',
+    },
+  },
+];
 
 /** Modos de densidad dinámica de la interfaz (Expandido, Compacto solo íconos, Zen 100% canvas). */
 export type UiDensityMode = 'full' | 'compact' | 'zen';

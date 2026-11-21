@@ -39,6 +39,26 @@ export default defineConfig({
   build: {
     target: 'esnext',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        // Divide el bundle web por proveedor para mejorar la carga inicial
+        manualChunks(id) {
+          if (id.includes('node_modules/three') || id.includes('node_modules/@react-three')) {
+            return 'three-vendor';
+          }
+          if (id.includes('node_modules/react') || id.includes('node_modules/zustand')) {
+            return 'react-vendor';
+          }
+          if (id.includes('node_modules/manifold-3d') || id.includes('node_modules/fflate')) {
+            return 'geometry-vendor';
+          }
+          if (id.includes('node_modules/lucide-react')) {
+            return 'icons-vendor';
+          }
+          return undefined;
+        },
+      },
+    },
   },
 
   // Configuración para pruebas unitarias con Vitest

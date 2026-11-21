@@ -1,10 +1,11 @@
 /**
  * @file src/components/Dialogs.tsx
- * @description Modales nativos <dialog> de Kura3D Pro v3.0 abiertos con showModal() y soporte
+ * @description Modales nativos <dialog> de Kura3D v0.5.0 abiertos con showModal() y soporte
  * de light-dismiss (`closedby="any"` + fallback pointer para WebKit/Safari):
  * Importar SVG, Imagen→3D (Plana, Cilíndrica, Silueta y Cortador), Corte por Plano,
  * Generador de Moldes/Silicona, Proyección Conformal en Superficies, Roscas Métricas ISO,
- * Exportador 3MF Multi-Slicer Pro y Ajustes/MCP.
+ * Exportador 3MF Multi-Slicer Pro, Ajustes (Apariencia con Temas WCAG en vivo, IA, MCP, Acerca de)
+ * y Guía de Atajos CAD.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -19,19 +20,24 @@ import {
   Download,
   FileUp,
   Keyboard,
+  Monitor,
+  Moon,
   PaintBucket,
+  Palette,
   RefreshCw,
   Scissors,
   ShieldCheck,
   Sparkles,
+  Sun,
   Type,
   X,
 } from 'lucide-react';
-import { t } from '../i18n';
+import { t, type TranslationKey } from '../i18n';
 import { type ActiveDialogType, useKuraStore } from '../store/useKuraStore';
 import { PrecisionNumberInput } from './PrecisionNumberInput';
 import {
   PRINT_COLOR_PALETTE,
+  THEME_PRESETS,
   type AiProviderType,
   type ColorSchemePreference,
   type CutConnectorType,
@@ -1513,7 +1519,25 @@ const Export3mfModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   );
 };
 
-/** Modal 8: Ajustes globales (IA, Esquema de Color tri-estado, MCP y Acerca de). */
+/** Resuelve si la interfaz se renderiza actualmente en esquema oscuro (para tarjetas de tema). */
+function useResolvedDarkScheme(scheme: ColorSchemePreference): boolean {
+  const [systemDark, setSystemDark] = useState<boolean>(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return true;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  return scheme === 'dark' || (scheme === 'system' && systemDark);
+}
+
+/** Modal 8: Ajustes globales (Apariencia/Temas WCAG, IA, MCP y Acerca de). */
 const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
   onClose,
@@ -1523,6 +1547,10 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const setAiConfig = useKuraStore((s) => s.setAiConfig);
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const setColorScheme = useKuraStore((s) => s.setColorScheme);
+  const themePreset = useKuraStore((s) => s.themePreset);
+  const previewThemePreset = useKuraStore((s) => s.previewThemePreset);
+  const setThemePreset = useKuraStore((s) => s.setThemePreset);
+  const setPreviewThemePreset = useKuraStore((s) => s.setPreviewThemePreset);
   const mcpConnected = useKuraStore((s) => s.mcpConnected);
   const mcpConfig = useKuraStore((s) => s.mcpConfig);
   const setMcpConfig = useKuraStore((s) => s.setMcpConfig);
@@ -1531,12 +1559,32 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const setTab = useKuraStore((s) => s.setSettingsTab);
   const addToast = useKuraStore((s) => s.addToast);
 
+  const isRenderedDark = useResolvedDarkScheme(colorScheme);
+
   const [provider, setProvider] = useState<AiProviderType>(aiConfig.provider);
   const [apiKey, setApiKey] = useState(aiConfig.apiKey);
   const [model, setModel] = useState(aiConfig.model);
   const [baseUrl, setBaseUrl] = useState(aiConfig.baseUrl);
   const [temperature, setTemperature] = useState(aiConfig.temperature);
   const [copied, setCopied] = useState(false);
+
+  // Garantiza que cualquier vista previa en vivo se revierta al cerrar o desmontar el modal
+  useEffect(() => {
+    if (!open) {
+      setPreviewThemePreset(null);
+    }
+  }, [open, setPreviewThemePreset]);
+
+  useEffect(() => {
+    return () => {
+      setPreviewThemePreset(null);
+    };
+  }, [setPreviewThemePreset]);
+
+  const handleClose = () => {
+    setPreviewThemePreset(null);
+    onClose();
+  };
 
   useEffect(() => {
     if (open) {
@@ -1566,7 +1614,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const handleSaveAi = () => {
     setAiConfig({ provider, apiKey, model, baseUrl, temperature });
     addToast(t(language, 'toast.settingsSaved'), 'success');
-    onClose();
+    handleClose();
   };
 
   const mcpEnv: Record<string, string> = {
@@ -1613,14 +1661,25 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     }
   };
 
+  const schemeOptions: Array<{
+    value: ColorSchemePreference;
+    label: string;
+    icon: React.ReactNode;
+  }> = [
+    { value: 'system', label: t(language, 'topbar.theme.system'), icon: <Monitor size={13} /> },
+    { value: 'dark', label: t(language, 'topbar.theme.dark'), icon: <Moon size={13} /> },
+    { value: 'light', label: t(language, 'topbar.theme.light'), icon: <Sun size={13} /> },
+  ];
+
   return (
     <NativeModal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title={t(language, 'dialog.settings.title')}
+      className="kura-dialog-settings"
       footer={
         <>
-          <button type="button" className="kura-btn" onClick={onClose}>
+          <button type="button" className="kura-btn" onClick={handleClose}>
             {t(language, 'dialog.close')}
           </button>
           {tab === 'ai' && (
@@ -1631,7 +1690,18 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         </>
       }
     >
-      <div className="kura-segmented" style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+      <div
+        className="kura-segmented"
+        style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}
+      >
+        <button
+          type="button"
+          className={`kura-btn ${tab === 'appearance' ? 'is-active' : ''}`}
+          onClick={() => setTab('appearance')}
+        >
+          <Palette size={13} />
+          <span>{t(language, 'dialog.settings.tab.appearance')}</span>
+        </button>
         <button
           type="button"
           className={`kura-btn ${tab === 'ai' ? 'is-active' : ''}`}
@@ -1655,21 +1725,191 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         </button>
       </div>
 
+      {tab === 'appearance' && (
+        <div className="kura-appearance-panel">
+          <div className="kura-form-field">
+            <label htmlFor="settings-scheme-group">{t(language, 'topbar.themeToggle')}</label>
+            <div
+              id="settings-scheme-group"
+              className="kura-segmented"
+              role="group"
+              aria-label={t(language, 'topbar.themeToggle')}
+              style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}
+            >
+              {schemeOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={`kura-btn ${colorScheme === opt.value ? 'is-active' : ''}`}
+                  aria-pressed={colorScheme === opt.value}
+                  onClick={() => setColorScheme(opt.value)}
+                >
+                  {opt.icon}
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="kura-themes-header">
+            <div>
+              <h3 className="kura-themes-title">{t(language, 'dialog.settings.themesTitle')}</h3>
+              <p className="kura-themes-hint">{t(language, 'dialog.settings.themesHint')}</p>
+            </div>
+            {previewThemePreset && (
+              <span className="kura-theme-preview-pill">
+                {t(language, 'dialog.settings.themePreviewBadge')}
+              </span>
+            )}
+          </div>
+
+          <div className="kura-theme-grid">
+            {THEME_PRESETS.map((preset) => {
+              const colors = isRenderedDark ? preset.previewDark : preset.previewLight;
+              const isActive = themePreset === preset.id;
+              const isPreviewing = previewThemePreset === preset.id;
+              const name = t(language, `theme.${preset.id}.name` as TranslationKey);
+              const desc = t(language, `theme.${preset.id}.desc` as TranslationKey);
+
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className={`kura-theme-card ${isActive ? 'is-active' : ''} ${
+                    isPreviewing ? 'is-previewing' : ''
+                  }`}
+                  aria-pressed={isActive}
+                  onMouseEnter={() => setPreviewThemePreset(preset.id)}
+                  onMouseLeave={() => setPreviewThemePreset(null)}
+                  onFocus={() => setPreviewThemePreset(preset.id)}
+                  onBlur={() => setPreviewThemePreset(null)}
+                  onClick={() => setThemePreset(preset.id)}
+                >
+                  {/* Maqueta en miniatura del estudio Kura3D pintada con la paleta exacta del tema */}
+                  <div
+                    className="kura-theme-mockup"
+                    aria-hidden="true"
+                    style={{
+                      backgroundColor: colors.canvas,
+                      borderColor: colors.border,
+                    }}
+                  >
+                    <div
+                      className="kura-theme-mockup-topbar"
+                      style={{
+                        backgroundColor: colors.panel,
+                        borderBottomColor: colors.border,
+                      }}
+                    >
+                      <span className="kura-theme-mockup-dots">
+                        <i style={{ backgroundColor: colors.secondary }} />
+                        <i style={{ backgroundColor: colors.accent }} />
+                        <i style={{ backgroundColor: colors.border }} />
+                      </span>
+                      <span
+                        className="kura-theme-mockup-pill"
+                        style={{ backgroundColor: colors.accent }}
+                      />
+                    </div>
+
+                    <div className="kura-theme-mockup-body">
+                      <div
+                        className="kura-theme-mockup-sidebar"
+                        style={{
+                          backgroundColor: colors.panel,
+                          borderRightColor: colors.border,
+                        }}
+                      >
+                        <span style={{ backgroundColor: colors.border }} />
+                        <span style={{ backgroundColor: colors.accent }} />
+                        <span style={{ backgroundColor: colors.border }} />
+                      </div>
+
+                      <div className="kura-theme-mockup-viewport">
+                        <svg
+                          viewBox="0 0 40 36"
+                          width="34"
+                          height="30"
+                          className="kura-theme-mockup-cube"
+                        >
+                          <polygon
+                            points="20,4 34,11 20,18 6,11"
+                            fill={colors.accent}
+                            fillOpacity="0.88"
+                            stroke={colors.text}
+                            strokeOpacity="0.35"
+                            strokeWidth="1"
+                          />
+                          <polygon
+                            points="6,11 20,18 20,32 6,25"
+                            fill={colors.panel}
+                            stroke={colors.accent}
+                            strokeWidth="1.2"
+                          />
+                          <polygon
+                            points="34,11 20,18 20,32 34,25"
+                            fill={colors.secondary}
+                            fillOpacity="0.85"
+                            stroke={colors.text}
+                            strokeOpacity="0.35"
+                            strokeWidth="1"
+                          />
+                        </svg>
+                      </div>
+
+                      <div
+                        className="kura-theme-mockup-inspector"
+                        style={{
+                          backgroundColor: colors.panel,
+                          borderLeftColor: colors.border,
+                        }}
+                      >
+                        <span style={{ backgroundColor: colors.text, opacity: 0.45 }} />
+                        <span style={{ backgroundColor: colors.border }} />
+                        <span
+                          className="kura-theme-mockup-cta"
+                          style={{ backgroundColor: colors.secondary }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="kura-theme-card-meta">
+                    <div className="kura-theme-card-head">
+                      <span className="kura-theme-card-name">{name}</span>
+                      <span
+                        className={`kura-wcag-badge ${
+                          preset.wcagLevel === 'AAA' ? 'is-aaa' : 'is-aa'
+                        }`}
+                      >
+                        WCAG {preset.wcagLevel}
+                      </span>
+                    </div>
+
+                    <p className="kura-theme-card-desc">{desc}</p>
+
+                    <div className="kura-theme-card-badges">
+                      {isActive ? (
+                        <span className="kura-theme-status-badge is-active">
+                          <Check size={11} />
+                          <span>{t(language, 'dialog.settings.themeActiveBadge')}</span>
+                        </span>
+                      ) : preset.id === 'obsidian' ? (
+                        <span className="kura-theme-status-badge">
+                          {t(language, 'dialog.settings.themeDefaultBadge')}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {tab === 'ai' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div className="kura-form-field">
-            <label htmlFor="settings-scheme">{t(language, 'topbar.themeToggle')}</label>
-            <select
-              id="settings-scheme"
-              className="kura-select"
-              value={colorScheme}
-              onChange={(e) => setColorScheme(e.target.value as ColorSchemePreference)}
-            >
-              <option value="system">{t(language, 'topbar.theme.system')}</option>
-              <option value="dark">{t(language, 'topbar.theme.dark')}</option>
-              <option value="light">{t(language, 'topbar.theme.light')}</option>
-            </select>
-          </div>
 
           <div className="kura-form-field">
             <label htmlFor="ai-provider">{t(language, 'dialog.settings.aiProvider')}</label>
@@ -1872,12 +2112,39 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
       )}
 
       {tab === 'about' && (
-        <div className="kura-card">
-          <strong>Kura3D Pro Studio v4.0</strong>
-          <p style={{ margin: 0, fontSize: 12 }}>{t(language, 'dialog.settings.aboutAuthor')}</p>
-          <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
-            {t(language, 'dialog.settings.aboutStack')}
-          </p>
+        <div className="kura-about-stack">
+          <div className="kura-card">
+            <div className="kura-about-header">
+              <strong>Kura3D Studio v0.5.0</strong>
+              <span className="kura-brand-badge">v0.5.0</span>
+            </div>
+            <p style={{ margin: 0, fontSize: 12 }}>{t(language, 'dialog.settings.aboutAuthor')}</p>
+            <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
+              {t(language, 'dialog.settings.aboutStack')}
+            </p>
+          </div>
+
+          <div className="kura-card">
+            <span className="kura-section-label" style={{ margin: 0 }}>
+              {t(language, 'dialog.settings.brandVariants')}
+            </span>
+            <div className="kura-brand-showcase">
+              <div className="kura-brand-variant-card">
+                <img
+                  src="/branding/kura3d-lockup.png"
+                  alt="Kura3D Official Lockup"
+                  className="kura-brand-lockup-img"
+                />
+              </div>
+              <div className="kura-brand-variant-card is-mono">
+                <img
+                  src="/branding/kura3d-mono.png"
+                  alt="Kura3D Monochrome Emblem"
+                  className="kura-brand-mono-img"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </NativeModal>

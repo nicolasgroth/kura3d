@@ -1,8 +1,9 @@
 /**
  * @file src/App.tsx
- * @description Shell principal de la aplicación Kura3D Pro v3.0: inicialización del motor Manifold,
- * densidad adaptativa (Expandido / Compacto / Zen con tecla Tab), atajos de teclado CAD globales,
- * puente MCP WebSocket, sincronización de tema y stack de toasts.
+ * @description Shell principal de la aplicación Kura3D v0.5.0: inicialización del motor Manifold,
+ * pantalla de bienvenida animada (SplashScreen), densidad adaptativa (Expandido / Compacto / Zen
+ * con tecla Tab), atajos de teclado CAD globales, puente MCP WebSocket, sincronización de tema y
+ * esquema de color, y stack de notificaciones toast.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,6 +15,7 @@ import { CommandPalette } from './components/CommandPalette';
 import { Dialogs } from './components/Dialogs';
 import { LeftSidebar } from './components/LeftSidebar';
 import { RightInspector } from './components/RightInspector';
+import { SplashScreen } from './components/SplashScreen';
 import { StatusBar } from './components/StatusBar';
 import { TopBar } from './components/TopBar';
 import { Viewport3D } from './components/Viewport3D';
@@ -45,10 +47,10 @@ export const App: React.FC = () => {
   // Conecta al puente MCP local únicamente cuando el usuario lo activa en Ajustes
   useMcpBridgeClient(mcpConfig, executeCommand, setMcpConnected);
 
-  // Mantiene sincronizado el tema si el usuario lo cambia desde otra pestaña
+  // Mantiene sincronizado el esquema de color y el tema WCAG si cambian desde otra pestaña
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
-      if (e.key === 'kura3d-color-scheme') {
+      if (e.key === 'kura3d-color-scheme' || e.key === 'kura3d-theme-preset') {
         syncColorSchemeFromDom();
       }
     };
@@ -273,6 +275,7 @@ export const App: React.FC = () => {
       <StatusBar />
       <Dialogs />
       <CommandPalette />
+      <SplashScreen />
     </div>
   );
 };

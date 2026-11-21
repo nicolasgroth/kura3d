@@ -1,7 +1,9 @@
 /**
  * @file src/styles/studio.css
- * @description Hoja de estilos principal de Kura3D: diseño AAA CAD / Slicer con tokens
- * adaptativos light-dark(), color-scheme sincronizado con <meta>, y reglas nativas <dialog>.
+ * @description Hoja de estilos principal de Kura3D v0.5.0: diseño AAA CAD / Slicer con tokens
+ * adaptativos light-dark(), color-scheme sincronizado con <meta>, 6 temas WCAG AA/AAA conmutables
+ * en caliente, pantalla de bienvenida animada, selector multilingüe (con soporte CJK/Devanagari)
+ * y reglas nativas <dialog>.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -21,7 +23,7 @@
     color-scheme: light;
   }
 
-  /* Colores base por tema */
+  /* Colores base por tema (Por defecto: Obsidian Cyan) */
   --bg-canvas-light: #eef2f6;
   --bg-canvas-dark: #0b0f16;
 
@@ -58,6 +60,9 @@
   --accent-amber-light: #ea580c;
   --accent-amber-dark: #f97316;
 
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #ffffff;
+
   --accent-green-light: #16a34a;
   --accent-green-dark: #22c55e;
 
@@ -66,6 +71,11 @@
 
   --hud-glass-light: rgba(255, 255, 255, 0.86);
   --hud-glass-dark: rgba(15, 20, 28, 0.82);
+
+  --viewport-bg-center-light: #f8fafc;
+  --viewport-bg-center-dark: #182232;
+  --viewport-bg-edge-light: #dbe4ef;
+  --viewport-bg-edge-dark: #0a0e15;
 
   /* Tokens semánticos automáticos light-dark() */
   --bg-canvas: light-dark(var(--bg-canvas-light), var(--bg-canvas-dark));
@@ -81,9 +91,12 @@
   --accent-cyan: light-dark(var(--accent-cyan-light), var(--accent-cyan-dark));
   --accent-cyan-fg: light-dark(var(--accent-cyan-fg-light), var(--accent-cyan-fg-dark));
   --accent-amber: light-dark(var(--accent-amber-light), var(--accent-amber-dark));
+  --accent-amber-fg: light-dark(var(--accent-amber-fg-light), var(--accent-amber-fg-dark));
   --accent-green: light-dark(var(--accent-green-light), var(--accent-green-dark));
   --accent-red: light-dark(var(--accent-red-light), var(--accent-red-dark));
   --hud-glass: light-dark(var(--hud-glass-light), var(--hud-glass-dark));
+  --viewport-bg-center: light-dark(var(--viewport-bg-center-light), var(--viewport-bg-center-dark));
+  --viewport-bg-edge: light-dark(var(--viewport-bg-edge-light), var(--viewport-bg-edge-dark));
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -95,9 +108,216 @@
 
   accent-color: var(--accent-cyan);
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family:
+    'Inter',
+    'Segoe UI',
+    'Noto Sans',
+    'Noto Sans Devanagari',
+    'Noto Sans SC',
+    'Microsoft YaHei',
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-size: 13px;
   line-height: 1.4;
+}
+
+/* ============================================================================
+ * 1b. Paletas Conmutables en Caliente (WCAG AA / AAA en Claro y Oscuro)
+ * ============================================================================ */
+
+/* Kura Prism: inspirado en el isotipo oficial (violeta profundo + menta turquesa) */
+:root[data-theme="kura_prism"] {
+  --bg-canvas-light: #f1eefb;
+  --bg-canvas-dark: #0d0919;
+  --bg-panel-light: #faf9ff;
+  --bg-panel-dark: #151026;
+  --bg-elevated-light: #f3effe;
+  --bg-elevated-dark: #1d1634;
+  --bg-hover-light: #e6defc;
+  --bg-hover-dark: #281f47;
+  --border-subtle-light: #c4b5f0;
+  --border-subtle-dark: #372a61;
+  --border-strong-light: #8f77d6;
+  --border-strong-dark: #54418f;
+  --text-primary-light: #1e1038;
+  --text-primary-dark: #f5f3ff;
+  --text-secondary-light: #4c3575;
+  --text-secondary-dark: #c4b5fd;
+  --text-muted-light: #624a8c;
+  --text-muted-dark: #a799d8;
+  --accent-cyan-light: #0f766e;
+  --accent-cyan-dark: #2dd4bf;
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #042f2e;
+  --accent-amber-light: #7e22ce;
+  --accent-amber-dark: #a855f7;
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #ffffff;
+  --hud-glass-light: rgba(250, 249, 255, 0.88);
+  --hud-glass-dark: rgba(21, 16, 38, 0.86);
+  --viewport-bg-center-light: #faf9ff;
+  --viewport-bg-center-dark: #221940;
+  --viewport-bg-edge-light: #ddd6f3;
+  --viewport-bg-edge-dark: #090613;
+  --scrollbar-track: light-dark(#e6defc, #110c21);
+  --scrollbar-thumb: light-dark(#8f77d6, #4b3882);
+}
+
+/* Carbon Pro: grafito industrial neutro + azul acero */
+:root[data-theme="studio_pro"] {
+  --bg-canvas-light: #eceef1;
+  --bg-canvas-dark: #111214;
+  --bg-panel-light: #fafafa;
+  --bg-panel-dark: #191b1f;
+  --bg-elevated-light: #f2f4f7;
+  --bg-elevated-dark: #22252b;
+  --bg-hover-light: #e2e5ea;
+  --bg-hover-dark: #2c3038;
+  --border-subtle-light: #c6cbd4;
+  --border-subtle-dark: #363b45;
+  --border-strong-light: #8d95a5;
+  --border-strong-dark: #525968;
+  --text-primary-light: #18181b;
+  --text-primary-dark: #f4f4f5;
+  --text-secondary-light: #4b505c;
+  --text-secondary-dark: #b4b9c2;
+  --text-muted-light: #5f6673;
+  --text-muted-dark: #8e95a2;
+  --accent-cyan-light: #1d4ed8;
+  --accent-cyan-dark: #60a5fa;
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #071936;
+  --accent-amber-light: #b45309;
+  --accent-amber-dark: #f59e0b;
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #1f1302;
+  --hud-glass-light: rgba(250, 250, 250, 0.88);
+  --hud-glass-dark: rgba(25, 27, 31, 0.86);
+  --viewport-bg-center-light: #fafafa;
+  --viewport-bg-center-dark: #262930;
+  --viewport-bg-edge-light: #d8dce3;
+  --viewport-bg-edge-dark: #0d0e10;
+  --scrollbar-track: light-dark(#e2e5ea, #14161a);
+  --scrollbar-thumb: light-dark(#8d95a5, #3f4552);
+}
+
+/* Nordic Slate: azules nórdicos suaves con baja fatiga visual */
+:root[data-theme="nordic_frost"] {
+  --bg-canvas-light: #e6edf5;
+  --bg-canvas-dark: #141923;
+  --bg-panel-light: #f4f8fc;
+  --bg-panel-dark: #1b2230;
+  --bg-elevated-light: #eaf1f8;
+  --bg-elevated-dark: #232c3d;
+  --bg-hover-light: #d9e4f0;
+  --bg-hover-dark: #2d384d;
+  --border-subtle-light: #b7c8db;
+  --border-subtle-dark: #384661;
+  --border-strong-light: #7c97b5;
+  --border-strong-dark: #506387;
+  --text-primary-light: #1b2432;
+  --text-primary-dark: #eceff4;
+  --text-secondary-light: #415269;
+  --text-secondary-dark: #b6c2d6;
+  --text-muted-light: #52647d;
+  --text-muted-dark: #8fa0bc;
+  --accent-cyan-light: #0369a1;
+  --accent-cyan-dark: #7dd3fc;
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #082436;
+  --accent-amber-light: #047857;
+  --accent-amber-dark: #34d399;
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #03261a;
+  --hud-glass-light: rgba(244, 248, 252, 0.88);
+  --hud-glass-dark: rgba(27, 34, 48, 0.86);
+  --viewport-bg-center-light: #f4f8fc;
+  --viewport-bg-center-dark: #263145;
+  --viewport-bg-edge-light: #d3e0ee;
+  --viewport-bg-edge-dark: #10151e;
+  --scrollbar-track: light-dark(#d9e4f0, #161c28);
+  --scrollbar-thumb: light-dark(#7c97b5, #41516e);
+}
+
+/* Forge Amber: taller cálido con acentos ámbar dorado */
+:root[data-theme="solar_amber"] {
+  --bg-canvas-light: #f7f1e8;
+  --bg-canvas-dark: #14100c;
+  --bg-panel-light: #fffdf9;
+  --bg-panel-dark: #1e1711;
+  --bg-elevated-light: #f9f3e9;
+  --bg-elevated-dark: #281f16;
+  --bg-hover-light: #efe3d0;
+  --bg-hover-dark: #35291d;
+  --border-subtle-light: #d6c0a3;
+  --border-subtle-dark: #4a3a29;
+  --border-strong-light: #9e7e56;
+  --border-strong-dark: #6b543b;
+  --text-primary-light: #271a0c;
+  --text-primary-dark: #fef3c7;
+  --text-secondary-light: #5c4328;
+  --text-secondary-dark: #d9c3a3;
+  --text-muted-light: #6e5334;
+  --text-muted-dark: #b39874;
+  --accent-cyan-light: #b45309;
+  --accent-cyan-dark: #fbbf24;
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #271502;
+  --accent-amber-light: #be123c;
+  --accent-amber-dark: #fb7185;
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #2b060e;
+  --hud-glass-light: rgba(255, 253, 249, 0.88);
+  --hud-glass-dark: rgba(30, 23, 17, 0.86);
+  --viewport-bg-center-light: #fffdf9;
+  --viewport-bg-center-dark: #2c2218;
+  --viewport-bg-edge-light: #eadbc5;
+  --viewport-bg-edge-dark: #0f0b08;
+  --scrollbar-track: light-dark(#efe3d0, #19130e);
+  --scrollbar-thumb: light-dark(#9e7e56, #5c4731);
+}
+
+/* Alto Contraste AAA: ≥ 10:1 en texto principal, secundario y bordes definidos */
+:root[data-theme="high_contrast"] {
+  --bg-canvas-light: #ffffff;
+  --bg-canvas-dark: #000000;
+  --bg-panel-light: #ffffff;
+  --bg-panel-dark: #080808;
+  --bg-elevated-light: #f3f4f6;
+  --bg-elevated-dark: #121212;
+  --bg-hover-light: #e5e7eb;
+  --bg-hover-dark: #1e1e1e;
+  --border-subtle-light: #374151;
+  --border-subtle-dark: #7a8494;
+  --border-strong-light: #000000;
+  --border-strong-dark: #d1d5db;
+  --text-primary-light: #000000;
+  --text-primary-dark: #ffffff;
+  --text-secondary-light: #111827;
+  --text-secondary-dark: #e5e7eb;
+  --text-muted-light: #1f2937;
+  --text-muted-dark: #d1d5db;
+  --accent-cyan-light: #003d99;
+  --accent-cyan-dark: #38f2ff;
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #000000;
+  --accent-amber-light: #7c2d12;
+  --accent-amber-dark: #ffd60a;
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #000000;
+  --accent-green-light: #14532d;
+  --accent-green-dark: #4ade80;
+  --accent-red-light: #7f1d1d;
+  --accent-red-dark: #ff6b6b;
+  --hud-glass-light: rgba(255, 255, 255, 0.96);
+  --hud-glass-dark: rgba(8, 8, 8, 0.94);
+  --viewport-bg-center-light: #ffffff;
+  --viewport-bg-center-dark: #141414;
+  --viewport-bg-edge-light: #e5e7eb;
+  --viewport-bg-edge-dark: #000000;
+  --scrollbar-track: light-dark(#e5e7eb, #0a0a0a);
+  --scrollbar-thumb: light-dark(#1f2937, #9ca3af);
 }
 
 /* ============================================================================
@@ -255,10 +475,19 @@ body,
 .kura-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   padding-right: 10px;
   border-right: 1px solid var(--border-subtle);
   user-select: none;
+}
+
+.kura-brand-icon-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
 }
 
 .kura-brand-title {
@@ -276,6 +505,55 @@ body,
   background: color-mix(in srgb, var(--accent-cyan) 16%, transparent);
   color: var(--accent-cyan);
   border: 1px solid color-mix(in srgb, var(--accent-cyan) 35%, transparent);
+}
+
+/* Selector compacto de 6 idiomas en TopBar (muestra sigla ES/EN/DE/FR/HI/ZH y despliega nombres nativos) */
+.kura-lang-select-wrap {
+  position: relative;
+  width: 56px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.kura-lang-select-face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  padding: 0 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 700;
+  pointer-events: none;
+  transition: background-color 0.14s ease, border-color 0.14s ease;
+}
+
+.kura-lang-select-wrap:hover .kura-lang-select-face {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.kura-lang-select-wrap:focus-within .kura-lang-select-face {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-lang-select-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
 }
 
 .kura-divider-v {
@@ -343,7 +621,7 @@ body,
 
 .kura-btn-amber {
   background: var(--accent-amber);
-  color: #ffffff;
+  color: var(--accent-amber-fg);
   border-color: transparent;
 }
 
@@ -868,8 +1146,8 @@ body,
   min-height: 0;
   background: radial-gradient(
     circle at 50% 35%,
-    light-dark(#f8fafc, #182232) 0%,
-    light-dark(#dbe4ef, #0a0e15) 100%
+    var(--viewport-bg-center) 0%,
+    var(--viewport-bg-edge) 100%
   );
   overflow: hidden;
 }
@@ -937,7 +1215,7 @@ body,
     color-mix(in srgb, var(--accent-amber) 92%, #ffffff 8%),
     color-mix(in srgb, var(--accent-amber) 76%, #000000 24%)
   );
-  color: #ffffff;
+  color: var(--accent-amber-fg);
   border: 1px solid rgba(255, 255, 255, 0.25);
   font-size: 12px;
   font-weight: 700;
@@ -1536,7 +1814,7 @@ dialog.kura-palette-dialog {
   background: var(--bg-panel);
   border-top: 1px solid var(--border-subtle);
   font-size: 11px;
-  color: light-dark(#334155, #cbd5e1);
+  color: var(--text-secondary);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -2098,4 +2376,503 @@ dialog.kura-dialog-wide {
   .kura-topbar .kura-select {
     max-width: 196px;
   }
+}
+
+/* ============================================================================
+ * 12. Kura3D v0.5.0: Splash Screen, Temas Interactivos WCAG y Brand Showcase
+ * ============================================================================ */
+
+/* Pantalla de bienvenida animada */
+.kura-splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(
+    circle at 50% 40%,
+    light-dark(#eef2ff, #140f29) 0%,
+    light-dark(#e2e8f0, #070a12) 72%
+  );
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 0.28s ease-out, transform 0.28s ease-out;
+}
+
+.kura-splash-overlay.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.015);
+}
+
+.kura-splash-glow {
+  position: absolute;
+  width: min(460px, 82vw);
+  height: min(460px, 82vw);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(139, 92, 246, 0.28) 0%,
+    rgba(45, 212, 191, 0.16) 45%,
+    transparent 72%
+  );
+  filter: blur(36px);
+  pointer-events: none;
+}
+
+.kura-splash-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  width: min(420px, 92vw);
+  padding: 32px 28px 24px;
+  border-radius: 20px;
+  background: light-dark(rgba(255, 255, 255, 0.86), rgba(15, 19, 32, 0.84));
+  border: 1px solid light-dark(rgba(124, 58, 237, 0.22), rgba(167, 139, 250, 0.26));
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.42);
+}
+
+.kura-splash-emblem-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 124px;
+  height: 124px;
+  margin-bottom: 4px;
+  border-radius: 28px;
+  background: radial-gradient(
+    circle,
+    rgba(139, 92, 246, 0.22) 0%,
+    rgba(45, 212, 191, 0.1) 58%,
+    transparent 76%
+  );
+}
+
+.kura-splash-emblem {
+  width: 108px;
+  height: 108px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 24px rgba(109, 40, 217, 0.35));
+  animation: kura-splash-float 3s ease-in-out infinite;
+}
+
+@keyframes kura-splash-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.kura-splash-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.kura-splash-wordmark {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  background: linear-gradient(125deg, #8b5cf6 0%, #38bdf8 55%, #2dd4bf 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.kura-splash-version {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-cyan) 16%, transparent);
+  color: var(--accent-cyan);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 40%, transparent);
+}
+
+.kura-splash-subtitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.kura-splash-org {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary);
+}
+
+.kura-splash-progress-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.kura-splash-progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.kura-splash-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8b5cf6 0%, #38bdf8 55%, #2dd4bf 100%);
+  transition: width 0.35s ease;
+}
+
+.kura-splash-progress-bar.is-loading {
+  width: 62%;
+  animation: kura-splash-pulse 1.3s ease-in-out infinite;
+}
+
+.kura-splash-progress-bar.is-ready {
+  width: 100%;
+}
+
+@keyframes kura-splash-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.kura-splash-status-text {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.kura-splash-skip {
+  margin-top: 6px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-splash-overlay {
+    transition-duration: 0.1s;
+  }
+  .kura-splash-emblem,
+  .kura-splash-progress-bar.is-loading {
+    animation: none;
+  }
+}
+
+/* Modal de Ajustes amplio con pestaña Apariencia y rejilla 2×3 de temas */
+dialog.kura-dialog-settings {
+  width: min(680px, calc(100vw - 24px));
+}
+
+.kura-appearance-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kura-themes-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.kura-themes-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.kura-themes-hint {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.kura-theme-preview-pill {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-cyan) 16%, transparent);
+  color: var(--accent-cyan);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 42%, transparent);
+}
+
+.kura-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .kura-theme-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .kura-theme-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kura-theme-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.14s ease, transform 0.12s ease, box-shadow 0.14s ease;
+}
+
+.kura-theme-card:hover,
+.kura-theme-card:focus-visible {
+  border-color: var(--accent-cyan);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+.kura-theme-card.is-active {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-cyan) 32%, transparent);
+  background: color-mix(in srgb, var(--accent-cyan) 8%, var(--bg-elevated));
+}
+
+/* Maqueta miniatura del estudio Kura3D dentro de cada tarjeta de tema */
+.kura-theme-mockup {
+  width: 100%;
+  height: 76px;
+  border-radius: 7px;
+  border: 1px solid;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.kura-theme-mockup-topbar {
+  height: 13px;
+  padding: 0 6px;
+  border-bottom: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kura-theme-mockup-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.kura-theme-mockup-dots i {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.kura-theme-mockup-pill {
+  width: 18px;
+  height: 5px;
+  border-radius: 999px;
+}
+
+.kura-theme-mockup-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 20% 1fr 24%;
+}
+
+.kura-theme-mockup-sidebar {
+  padding: 5px 4px;
+  border-right: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-theme-mockup-sidebar span {
+  height: 5px;
+  border-radius: 2px;
+  opacity: 0.85;
+}
+
+.kura-theme-mockup-viewport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kura-theme-mockup-cube {
+  display: block;
+}
+
+.kura-theme-mockup-inspector {
+  padding: 5px 4px;
+  border-left: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-theme-mockup-inspector span {
+  height: 4px;
+  border-radius: 2px;
+}
+
+.kura-theme-mockup-cta {
+  margin-top: auto;
+  height: 7px !important;
+  border-radius: 3px;
+}
+
+.kura-theme-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.kura-theme-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.kura-theme-card-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.kura-wcag-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.kura-wcag-badge.is-aaa {
+  border-color: color-mix(in srgb, var(--accent-green) 50%, transparent);
+  color: var(--accent-green);
+}
+
+.kura-theme-card-desc {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.32;
+  color: var(--text-secondary);
+}
+
+.kura-theme-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 2px;
+}
+
+.kura-theme-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+}
+
+.kura-theme-status-badge.is-active {
+  background: var(--accent-cyan);
+  color: var(--accent-cyan-fg);
+  border-color: transparent;
+}
+
+/* Brand Identity Showcase en pestaña Acerca de */
+.kura-about-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kura-about-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kura-brand-showcase {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 520px) {
+  .kura-brand-showcase {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kura-brand-variant-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  min-height: 84px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #0d0919;
+}
+
+.kura-brand-variant-card.is-mono {
+  background: #141923;
+}
+
+.kura-brand-lockup-img {
+  max-width: 100%;
+  max-height: 54px;
+  object-fit: contain;
+}
+
+.kura-brand-mono-img {
+  max-width: 100%;
+  max-height: 54px;
+  object-fit: contain;
 }

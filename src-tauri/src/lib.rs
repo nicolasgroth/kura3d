@@ -38,7 +38,7 @@ pub struct McpBridgeStatus {
 fn get_app_info() -> AppInfo {
     AppInfo {
         name: "Kura3D",
-        version: "1.0.0",
+        version: "0.5.0",
         author: "Nicolás Groth",
         organization: "ISGROTH — Innovación y Soluciones GROTH",
         email: "ngroth@gmail.com",
