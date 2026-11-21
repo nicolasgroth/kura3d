@@ -198,6 +198,8 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
       useKuraStore.getState().setObjectTransform(importedNeg!.id, {
         position: [8, importedNeg!.position[1], 0],
       });
+      // Fin del arrastre (mouseup): sin esto el arrastre queda abierto y bloquea historial y operaciones.
+      useKuraStore.getState().commitTransformSnapshot();
 
       // Ejecutamos applyHolesOnSolids() sobre toda la escena (selección limpia para abarcar sólidos y huecos)
       useKuraStore.getState().clearSelection();

@@ -58,11 +58,14 @@ import {
   type UnitSystem,
   type Vec3,
 } from '../types/kura';
-import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { openLocalFile, saveBinaryFile } from '../utils/platformBridge';
 import { browserLocalStorage, getApiKeyStore, migrateLegacyApiKey } from '../ai/apiKeyStore';
+import { MAX_UNDO_HISTORY } from '../project/projectCodec';
+import { createCommandBus } from './commandBus';
+import { computeArrangeLayout } from '../engine/alignment';
+import { assertInputsCurrent, subtractOrEmpty } from './sceneOperationGuards';
+import { sanitizeTransformPatch } from './transformLimits';
 
-const MAX_UNDO_HISTORY = 40;
 const STORAGE_AI_CONFIG_KEY = 'kura3d-ai-config';
 const STORAGE_MCP_CONFIG_KEY = 'kura3d-mcp-config';
 const STORAGE_COLOR_SCHEME_KEY = 'kura3d-color-scheme';
@@ -296,7 +299,7 @@ export interface KuraStoreState {
   runBooleanOnSelection: (
     op: BooleanOpType,
     targetId?: string,
-    toolId?: string,
+    toolId?: string | string[],
   ) => Promise<SceneObject | null>;
   applyHolesOnSolids: () => Promise<void>;
   hollowObject: (id: string, options: HollowOptions) => Promise<boolean>;
@@ -331,7 +334,7 @@ export interface KuraStoreState {
   ) => Promise<boolean>;
   runConvexHull: (ids?: string[]) => Promise<SceneObject | null>;
   createThreadObject: (options: ThreadOptions) => Promise<SceneObject | null>;
-  alignSelectedObjects: (mode: AlignMode) => void;
+  alignSelectedObjects: (mode: AlignMode) => { moved: number; fitsBed: boolean } | null;
 
   // Detección estructural local y separación de sub-partes
   detectObjectStructures: (
@@ -795,6 +798,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
   const tr = (key: TranslationKey, params?: Record<string, string | number>) =>
     t(get().language, key, params);
 
+  /** Historial y borrado quedan bloqueados durante una operación asíncrona o un arrastre sin confirmar. */
+  const isHistoryLocked = () => Boolean(get().busyOperation) || transformSnapshotBeforeDrag !== null;
+  const rejectWhileLocked = () => {
+    if (!isHistoryLocked()) return false;
+    get().addToast(tr('store.error.busy'), 'info');
+    return true;
+  };
+
   const projectErrorMessage = (error: unknown) => {
     if (error instanceof ProjectCodecError) {
       return tr(error.code === 'too-large' ? 'fileProject.tooLarge' : `fileProject.${error.code}`);
@@ -1018,6 +1029,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           get().addToast(tr('toast.engineReady'), 'success');
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
+          // Libera la promesa para que la próxima llamada reintente en vez de reutilizar el fallo.
+          engineInitPromise = null;
           set({ engineReady: false, engineError: message });
           get().addToast(tr('toast.errorPrefix', { message }), 'error');
         }
@@ -1255,6 +1268,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     clearSelection: () => set({ selectedIds: [] }),
 
     undo: () =>
+      rejectWhileLocked() ||
       set((state) => {
         if (state.past.length === 0) return state;
         const previous = state.past[state.past.length - 1];
@@ -1268,6 +1282,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       }),
 
     redo: () =>
+      rejectWhileLocked() ||
       set((state) => {
         if (state.future.length === 0) return state;
         const next = state.future[0];
@@ -1552,7 +1567,11 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       }));
     },
 
-    setObjectTransform: (id, patch, recordHistory = false) => {
+    setObjectTransform: (id, rawPatch, recordHistory = false) => {
+      // Ni NaN ni vectores mal formados llegan a la escena; durante una operación no se edita.
+      const patch = sanitizeTransformPatch(rawPatch);
+      const target = get().objects.find((o) => o.id === id);
+      if (!patch || !target || target.locked || get().busyOperation) return;
       if (recordHistory) {
         pushHistory();
       } else if (!transformSnapshotBeforeDrag) {
@@ -1633,13 +1652,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     duplicateObjects: (ids) => {
       const targetIds = ids && ids.length > 0 ? ids : get().selectedIds;
       const sourceObjs = get().objects.filter((o) => targetIds.includes(o.id));
-      if (sourceObjs.length === 0) return [];
+      if (sourceObjs.length === 0 || rejectWhileLocked()) return [];
 
       pushHistory();
+      const copySuffix = tr('store.copySuffix');
       const created: SceneObject[] = sourceObjs.map((src) => ({
         ...src,
         id: makeId('mesh'),
-        name: `${src.name} (copia)`,
+        name: `${src.name} ${copySuffix}`,
         position: [src.position[0] + 15, src.position[1], src.position[2] + 15],
         rotation: [...src.rotation] as Vec3,
         scale: [...src.scale] as Vec3,
@@ -1659,7 +1679,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
     deleteObjects: (ids) => {
       const targetIds = ids && ids.length > 0 ? ids : get().selectedIds;
-      if (targetIds.length === 0) return;
+      if (targetIds.length === 0 || rejectWhileLocked()) return;
 
       const removableIds = new Set(
         get()
@@ -1730,7 +1750,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         },
       };
 
-      const cloneLabel = s.language === 'en' ? '(copy)' : '(copia)';
+      const cloneLabel = tr('store.copySuffix');
       const now = Date.now();
       set((state) => ({
         objects: [
@@ -1771,17 +1791,26 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
     runBooleanOnSelection: async (op, explicitTargetId, explicitToolId) => {
       const { objects, selectedIds } = get();
+      const explicitTools =
+        explicitToolId === undefined ? [] : Array.isArray(explicitToolId) ? explicitToolId : [explicitToolId];
       const firstId = explicitTargetId ?? selectedIds[0];
-      const secondId = explicitToolId ?? selectedIds[1];
+      const secondId = explicitTools[0] ?? selectedIds[1];
 
       const targetObj = objects.find((o) => o.id === firstId);
       const toolObj = objects.find((o) => o.id === secondId);
-      if (!targetObj || !toolObj) return null;
+      if (!targetObj || !toolObj || targetObj.id === toolObj.id || rejectWhileLocked()) return null;
+
+      const extraIds =
+        !explicitTargetId && explicitTools.length === 0 ? selectedIds.slice(2) : explicitTools.slice(1);
+      const inputs = [targetObj, toolObj, ...objects.filter((o) => extraIds.includes(o.id))];
+      // Los objetos bloqueados no se consumen ni se modifican.
+      if (inputs.some((o) => o.locked)) {
+        get().addToast(tr('store.error.locked'), 'error');
+        return null;
+      }
 
       set({ busyOperation: `boolean:${op}` });
       try {
-        const extraIds =
-          !explicitTargetId && !explicitToolId ? selectedIds.slice(2) : [];
 
         let currentTarget: SceneObject = targetObj;
         const firstRes = await engine.runBooleanOperation(currentTarget, toolObj, op);
@@ -1810,6 +1839,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           consumedIds.add(nextTool.id);
         }
 
+        assertInputsCurrent(get().objects, inputs, tr);
         pushHistory();
         set((state) => ({
           objects: [...state.objects.filter((o) => !consumedIds.has(o.id)), currentTarget],
@@ -1834,9 +1864,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           ? objects.filter((o) => selectedIds.includes(o.id))
           : objects;
 
-      const solids = scope.filter((o) => !o.isHole && o.visible);
-      const holes = scope.filter((o) => o.isHole && o.visible);
-      if (solids.length === 0 || holes.length === 0) return;
+      // Los objetos bloqueados ni se recortan ni se consumen.
+      const solids = scope.filter((o) => !o.isHole && o.visible && !o.locked);
+      const holes = scope.filter((o) => o.isHole && o.visible && !o.locked);
+      if (solids.length === 0 || holes.length === 0 || rejectWhileLocked()) return;
 
       set({ busyOperation: 'apply_holes' });
       try {
@@ -1845,27 +1876,18 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           let current: SceneObject | null = solid;
           for (const hole of holes) {
             if (!current) break;
-            try {
-              const res = await engine.runBooleanOperation(current, hole, 'subtract');
-              current = buildSceneObject({
-                id: solid.id,
-                name: solid.name,
-                source: 'boolean',
-                mesh: res.mesh,
-                position: res.position,
-                color: solid.color,
-                materialPreset: solid.materialPreset,
-              });
-            } catch (subErr) {
-              // Si un sólido queda totalmente contenido dentro de un hueco (malla vacía),
-              // se elimina limpiamente sin abortar el resto del lote de sólidos.
-              const msg = subErr instanceof Error ? subErr.message : String(subErr);
-              if (/vac[ií]a|empty/i.test(msg)) {
-                current = null;
-                break;
-              }
-              throw subErr;
-            }
+            // Un sólido totalmente contenido en un hueco (resultado vacío, detectado por geometría
+            // y no por el texto del error) se elimina sin abortar el resto del lote.
+            const res = await subtractOrEmpty(current, hole);
+            current = res && buildSceneObject({
+              id: solid.id,
+              name: solid.name,
+              source: 'boolean',
+              mesh: res.mesh,
+              position: res.position,
+              color: solid.color,
+              materialPreset: solid.materialPreset,
+            });
           }
           if (current) {
             updatedSolids.push(current);
@@ -1875,6 +1897,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         const solidIds = new Set(solids.map((s) => s.id));
         const holeIds = new Set(holes.map((h) => h.id));
 
+        assertInputsCurrent(get().objects, [...solids, ...holes], tr);
         pushHistory();
         set((state) => ({
           objects: [
@@ -1901,6 +1924,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         const nextMesh = await engine.hollowMesh(obj, options);
         const stats = engine.computeMeshStats(nextMesh);
 
+        assertInputsCurrent(get().objects, [obj], tr);
         pushHistory();
         set((state) => ({
           objects: state.objects.map((item) =>
@@ -1967,6 +1991,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           return [];
         }
 
+        assertInputsCurrent(get().objects, [obj], tr);
         pushHistory();
         set((state) => ({
           objects: [...state.objects.filter((o) => o.id !== id), ...created],
@@ -2006,6 +2031,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           }),
         );
 
+        assertInputsCurrent(get().objects, [obj], tr);
         pushHistory();
         set((state) => ({
           objects: [...state.objects.filter((o) => o.id !== id), ...created],
@@ -2139,6 +2165,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         const result = await engine.eraseRegionWithSphere(obj, worldCenter, radius);
         const stats = engine.computeMeshStats(result.mesh);
 
+        assertInputsCurrent(get().objects, [obj], tr);
         pushHistory();
         set((state) => ({
           objects: state.objects.map((item) =>
@@ -2213,6 +2240,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         const res = await engine.projectGraphicOntoSurface(obj, options);
         const stats = engine.computeMeshStats(res.mesh);
 
+        assertInputsCurrent(get().objects, [obj], tr);
         pushHistory();
         const updated: SceneObject = {
           ...obj,
@@ -2279,6 +2307,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         const nextMesh = await engine.simplifyMesh(obj, toleranceMm);
         const stats = engine.computeMeshStats(nextMesh);
 
+        assertInputsCurrent(get().objects, [obj], tr);
         pushHistory();
         set((state) => ({
           objects: state.objects.map((item) =>
@@ -2309,6 +2338,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         const nextMesh = await engine.refineMesh(obj, targetEdgeLengthMm, smooth);
         const stats = engine.computeMeshStats(nextMesh);
 
+        assertInputsCurrent(get().objects, [obj], tr);
         pushHistory();
         set((state) => ({
           objects: state.objects.map((item) =>
@@ -2348,6 +2378,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           materialPreset: targetObjs[0].materialPreset,
         });
 
+        assertInputsCurrent(get().objects, [...targetObjs], tr);
         pushHistory();
         const now = Date.now();
         set((state) => ({
@@ -2373,8 +2404,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         const rawMesh = await engine.createMetricThread(options);
         const normalized = engine.normalizeMeshToBed(rawMesh);
         const isHole = options.kind === 'hole';
-        const kindLabel =
-          options.kind === 'bolt' ? 'Perno' : options.kind === 'nut' ? 'Tuerca' : '− Rosca';
+        const kindLabel = tr(`store.thread.${options.kind}`);
 
         const existingCount = get().objects.length;
         const spawnX = existingCount > 0 ? Math.min(90, existingCount * 28) : 0;
@@ -2408,18 +2438,26 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
     alignSelectedObjects: (mode) => {
       const { objects, selectedIds, printerProfile } = get();
+      if (rejectWhileLocked()) return null;
       const targetObjs =
         mode === 'arrange_grid' && selectedIds.length < 2
           ? objects.filter((o) => o.visible && !o.locked)
           : objects.filter((o) => selectedIds.includes(o.id) && !o.locked);
 
-      if (targetObjs.length === 0) return;
+      if (targetObjs.length === 0) return null;
 
-      const positions = engine.computeAlignmentPositions(
-        targetObjs,
-        mode,
-        printerProfile,
-      );
+      let positions: Record<string, Vec3>;
+      let fitsBed = true;
+      if (mode === 'arrange_grid') {
+        // Los huecos viajan con el sólido que perforan, aunque no estén seleccionados.
+        const targetIds = new Set(targetObjs.map((o) => o.id));
+        const companions = objects.filter((o) => o.isHole && o.visible && !o.locked && !targetIds.has(o.id));
+        const layout = computeArrangeLayout(targetObjs, printerProfile, companions);
+        positions = layout.positions;
+        fitsBed = layout.fitsBed;
+      } else {
+        positions = engine.computeAlignmentPositions(targetObjs, mode, printerProfile);
+      }
       pushHistory();
       set((state) => ({
         objects: state.objects.map((item) =>
@@ -2427,6 +2465,13 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         ),
       }));
       get().addToast(tr('toast.alignedDone', { mode }), 'success');
+      if (!fitsBed) {
+        get().addToast(
+          tr('store.align.overflow', { width: printerProfile.bedWidthMm, depth: printerProfile.bedDepthMm }),
+          'error',
+        );
+      }
+      return { moved: Object.keys(positions).length, fitsBed };
     },
 
     detectObjectStructures: async (id, creaseAngleDeg) => {
@@ -2833,641 +2878,13 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       return saved;
     },
 
-    executeCommand: async (req, source = 'ui'): Promise<KuraCommandResponse> => {
-      // Política lectura/escritura compartida con el servidor MCP (mcp-server/src/toolPolicy.ts)
-      if (source === 'mcp' && !isMcpCommandAllowed(req.command, get().mcpConfig.readOnly)) {
-        return {
-          id: req.id,
-          ok: false,
-          error: 'MCP en modo solo lectura.',
-        };
-      }
-      const p = req.params ?? {};
-      try {
-        switch (req.command) {
-          case 'get_scene_state': {
-            const s = get();
-            return {
-              id: req.id,
-              ok: true,
-              result: {
-                engineReady: s.engineReady,
-                uiDensity: s.uiDensity,
-                unitSystem: s.unitSystem,
-                language: s.language,
-                printerProfile: s.printerProfile,
-                selectedIds: s.selectedIds,
-                objects: s.objects.map((o) => ({
-                  id: o.id,
-                  name: o.name,
-                  source: o.source,
-                  primitiveType: o.primitiveType,
-                  position: o.position,
-                  rotation: o.rotation,
-                  scale: o.scale,
-                  color: o.color,
-                  materialPreset: o.materialPreset ?? 'pla_matte',
-                  isHole: o.isHole,
-                  visible: o.visible,
-                  locked: o.locked,
-                  stats: o.stats,
-                })),
-              },
-            };
-          }
-
-          case 'create_primitive': {
-            const type = (p.type ?? p.primitiveType ?? 'box') as PrimitiveType;
-            const nestedParams =
-              p.params && typeof p.params === 'object'
-                ? (p.params as PrimitiveParams)
-                : {};
-            const flatParams: PrimitiveParams = {
-              ...(typeof p.width === 'number' ? { width: p.width } : {}),
-              ...(typeof p.height === 'number' ? { height: p.height } : {}),
-              ...(typeof p.depth === 'number' ? { depth: p.depth } : {}),
-              ...(typeof p.radius === 'number' ? { radius: p.radius } : {}),
-              ...(typeof p.outerRadius === 'number' ? { outerRadius: p.outerRadius } : {}),
-              ...(typeof p.innerRadius === 'number' ? { innerRadius: p.innerRadius } : {}),
-              ...(typeof p.tubeRadius === 'number' ? { tubeRadius: p.tubeRadius } : {}),
-              ...(typeof p.segments === 'number' ? { segments: p.segments } : {}),
-              ...(typeof p.sides === 'number' ? { sides: p.sides } : {}),
-              ...(typeof p.text === 'string' ? { text: p.text } : {}),
-              ...(typeof p.fontSize === 'number' ? { fontSize: p.fontSize } : {}),
-              ...(typeof p.bevel === 'number' ? { bevel: p.bevel } : {}),
-            };
-            const params: PrimitiveParams = { ...nestedParams, ...flatParams };
-            const created = await get().createPrimitive(type, params, {
-              name: typeof p.name === 'string' ? p.name : undefined,
-              color: typeof p.color === 'string' ? p.color : undefined,
-              position: Array.isArray(p.position) ? (p.position as Vec3) : undefined,
-              isHole: typeof p.isHole === 'boolean' ? p.isHole : undefined,
-              materialPreset:
-                typeof p.materialPreset === 'string'
-                  ? (p.materialPreset as MaterialPresetId)
-                  : undefined,
-            });
-            return {
-              id: req.id,
-              ok: Boolean(created),
-              result: created ? { id: created.id, name: created.name, stats: created.stats } : null,
-              error: created ? undefined : 'No se pudo crear la primitiva.',
-            };
-          }
-
-          case 'transform_object': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto objetivo para transformar.' };
-            }
-            if (p.dropToBed === true) {
-              get().dropObjectToBed(targetId);
-            } else if (p.centerOnBed === true) {
-              get().centerObjectOnBed(targetId);
-            } else {
-              get().setObjectTransform(
-                targetId,
-                {
-                  position: Array.isArray(p.position) ? (p.position as Vec3) : undefined,
-                  rotation: Array.isArray(p.rotation) ? (p.rotation as Vec3) : undefined,
-                  scale: Array.isArray(p.scale) ? (p.scale as Vec3) : undefined,
-                },
-                true,
-              );
-            }
-            const updated = get().objects.find((o) => o.id === targetId);
-            return {
-              id: req.id,
-              ok: Boolean(updated),
-              result: updated
-                ? { id: updated.id, position: updated.position, rotation: updated.rotation, scale: updated.scale }
-                : null,
-            };
-          }
-
-          case 'delete_object': {
-            const rawId = p.id ?? p.objectId;
-            const ids = Array.isArray(p.ids)
-              ? (p.ids as string[])
-              : typeof rawId === 'string' && rawId
-                ? [rawId]
-                : undefined;
-            get().deleteObjects(ids);
-            return { id: req.id, ok: true, result: { deleted: ids ?? get().selectedIds } };
-          }
-
-          case 'duplicate_object': {
-            const rawId = p.id ?? p.objectId;
-            const ids = typeof rawId === 'string' && rawId ? [rawId] : undefined;
-            const created = get().duplicateObjects(ids);
-            return {
-              id: req.id,
-              ok: created.length > 0,
-              result: created.map((c) => ({ id: c.id, name: c.name })),
-            };
-          }
-
-          case 'boolean_operation': {
-            const op = (p.op ?? p.operation ?? 'union') as BooleanOpType;
-            const rawTarget = p.targetId ?? p.id ?? p.objectId;
-            const targetId = typeof rawTarget === 'string' && rawTarget ? rawTarget : undefined;
-            const toolId =
-              typeof p.toolId === 'string' && p.toolId
-                ? p.toolId
-                : Array.isArray(p.toolIds) && typeof p.toolIds[0] === 'string'
-                  ? p.toolIds[0]
-                  : undefined;
-            const res = await get().runBooleanOnSelection(op, targetId, toolId);
-            return {
-              id: req.id,
-              ok: Boolean(res),
-              result: res ? { id: res.id, name: res.name, stats: res.stats } : null,
-              error: res ? undefined : 'Se requieren al menos 2 objetos válidos para operación booleana.',
-            };
-          }
-
-          case 'hollow_object': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'Selecciona o especifica un objeto para ahuecar.' };
-            }
-            const ok = await get().hollowObject(targetId, {
-              enabled: true,
-              wallThickness: typeof p.wallThickness === 'number' ? p.wallThickness : 2,
-              drainHole: typeof p.drainHole === 'boolean' ? p.drainHole : false,
-              drainHoleRadius: typeof p.drainHoleRadius === 'number' ? p.drainHoleRadius : 4,
-            });
-            return { id: req.id, ok, result: { id: targetId } };
-          }
-
-          case 'plane_cut': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para cortar.' };
-            }
-            const parts = await get().planeCutObject(targetId, {
-              axis: (p.axis as 'x' | 'y' | 'z') || 'y',
-              offset: typeof p.offset === 'number' ? p.offset : 0,
-              connectorType: (p.connectorType as PlaneCutOptions['connectorType']) || 'dowel',
-              connectorSize: typeof p.connectorSize === 'number' ? p.connectorSize : 4,
-              connectorDepth: typeof p.connectorDepth === 'number' ? p.connectorDepth : 6,
-              tolerance: typeof p.tolerance === 'number' ? p.tolerance : 0.25,
-              connectorCount: typeof p.connectorCount === 'number' ? p.connectorCount : 2,
-              keepMode: (p.keepMode as PlaneCutOptions['keepMode']) || 'both',
-            });
-            return {
-              id: req.id,
-              ok: parts.length > 0,
-              result: parts.map((item) => ({ id: item.id, name: item.name })),
-            };
-          }
-
-          case 'split_disconnected': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para separar.' };
-            }
-            const parts = await get().splitDisconnectedObject(targetId);
-            return {
-              id: req.id,
-              ok: parts.length > 0,
-              result: parts.map((item) => ({ id: item.id, name: item.name })),
-            };
-          }
-
-          case 'split_by_color': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para separar por colores.' };
-            }
-            const parts = get().splitObjectByColor(targetId);
-            return {
-              id: req.id,
-              ok: parts.length > 0,
-              result: parts.map((item) => ({ id: item.id, name: item.name, color: item.color })),
-            };
-          }
-
-          case 'apply_texture': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para texturizar.' };
-            }
-            const ok = get().applyTextureToObject(targetId, {
-              pattern: (p.pattern as TextureOptions['pattern']) || 'fuzzy',
-              depth: typeof p.depth === 'number' ? p.depth : 0.4,
-              scale: typeof p.scale === 'number' ? p.scale : 4,
-            });
-            return { id: req.id, ok, result: { id: targetId } };
-          }
-
-          case 'paint_object': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para pintar.' };
-            }
-            const color = typeof p.color === 'string' ? p.color : get().paintColor;
-            get().setPaintSettings({ paintColor: color });
-            if (Array.isArray(p.localPoint)) {
-              get().paintObjectSurface(targetId, p.localPoint as Vec3, null, 'brush');
-            } else {
-              get().paintObjectSurface(targetId, null, null, 'whole');
-            }
-            return { id: req.id, ok: true, result: { id: targetId, color } };
-          }
-
-          case 'import_svg': {
-            const svgContent = typeof p.svgContent === 'string' ? p.svgContent : '';
-            if (!svgContent.trim()) {
-              return { id: req.id, ok: false, error: 'Falta svgContent.' };
-            }
-            const created = await get().importSvgModel({
-              svgContent,
-              name: typeof p.name === 'string' ? p.name : 'SVG',
-              depth: typeof p.depth === 'number' ? p.depth : 6,
-              targetWidth: typeof p.targetWidth === 'number' ? p.targetWidth : 60,
-              curveSegments: typeof p.curveSegments === 'number' ? p.curveSegments : 12,
-            });
-            return {
-              id: req.id,
-              ok: Boolean(created),
-              result: created ? { id: created.id, name: created.name } : null,
-            };
-          }
-
-          case 'set_printer_profile': {
-            const profileId = typeof p.profileId === 'string' ? p.profileId : '';
-            get().setPrinterProfile(profileId);
-            return { id: req.id, ok: true, result: get().printerProfile };
-          }
-
-          case 'set_unit_system': {
-            const unit = (p.unit ?? p.unitSystem ?? p.units) as UnitSystem;
-            if (unit === 'mm' || unit === 'cm' || unit === 'm' || unit === 'in' || unit === 'ft') {
-              get().setUnitSystem(unit);
-              return { id: req.id, ok: true, result: { unit } };
-            }
-            return { id: req.id, ok: false, error: 'Unidad inválida.' };
-          }
-
-          case 'set_material': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para asignar material.' };
-            }
-            const materialPreset = (p.materialPreset ?? p.material ?? 'pla_matte') as MaterialPresetId;
-            get().setObjectMaterial(targetId, materialPreset);
-            return { id: req.id, ok: true, result: { id: targetId, materialPreset } };
-          }
-
-          case 'generate_mold': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para generar molde.' };
-            }
-            const created = await get().generateMoldForObject(targetId, {
-              mode: (p.mode as MoldOptions['mode']) || 'silicone_master',
-              wallMarginMm: typeof p.wallMarginMm === 'number' ? p.wallMarginMm : 6,
-              boxWallMm: typeof p.boxWallMm === 'number' ? p.boxWallMm : 3,
-              splitAxis: p.splitAxis === 'z' ? 'z' : 'x',
-              pourSpout: typeof p.pourSpout === 'boolean' ? p.pourSpout : true,
-              pourSpoutRadiusMm: typeof p.pourSpoutRadiusMm === 'number' ? p.pourSpoutRadiusMm : 5,
-              keyToleranceMm: typeof p.keyToleranceMm === 'number' ? p.keyToleranceMm : 0.25,
-              cavityWallMm: typeof p.cavityWallMm === 'number' ? p.cavityWallMm : 3,
-            });
-            return {
-              id: req.id,
-              ok: created.length > 0,
-              result: created.map((c) => ({ id: c.id, name: c.name })),
-            };
-          }
-
-          case 'project_on_surface': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para proyectar.' };
-            }
-            const updated = await get().projectOnObjectSurface(targetId, {
-              kind: p.kind === 'svg' ? 'svg' : 'text',
-              text: typeof p.text === 'string' ? p.text : 'KURA3D',
-              svgContent: typeof p.svgContent === 'string' ? p.svgContent : undefined,
-              mode: (p.mode as SurfaceProjectionOptions['mode']) || 'emboss',
-              axis: (p.axis as SurfaceProjectionOptions['axis']) || '+z',
-              widthMm: typeof p.widthMm === 'number' ? p.widthMm : 18,
-              depthMm: typeof p.depthMm === 'number' ? p.depthMm : 1.2,
-              colorHex: typeof p.colorHex === 'string' ? p.colorHex : '#f97316',
-              offsetU: typeof p.offsetU === 'number' ? p.offsetU : 0,
-              offsetV: typeof p.offsetV === 'number' ? p.offsetV : 0,
-            });
-            return {
-              id: req.id,
-              ok: Boolean(updated),
-              result: updated ? { id: updated.id, name: updated.name, stats: updated.stats } : null,
-            };
-          }
-
-          case 'analyze_printability': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para analizar.' };
-            }
-            const report = get().runPrintabilityCheck(
-              targetId,
-              typeof p.infillPercent === 'number' ? p.infillPercent : 18,
-              typeof p.overhangAngleDeg === 'number' ? p.overhangAngleDeg : 45,
-            );
-            return {
-              id: req.id,
-              ok: Boolean(report),
-              result: report,
-            };
-          }
-
-          case 'simplify_mesh': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para simplificar.' };
-            }
-            const ok = await get().simplifySelectedMesh(
-              targetId,
-              typeof p.toleranceMm === 'number' ? p.toleranceMm : 0.15,
-            );
-            const updated = get().objects.find((o) => o.id === targetId);
-            return { id: req.id, ok, result: updated ? updated.stats : null };
-          }
-
-          case 'refine_mesh': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para refinar.' };
-            }
-            const ok = await get().refineSelectedMesh(
-              targetId,
-              typeof p.targetEdgeLengthMm === 'number' ? p.targetEdgeLengthMm : 1.5,
-              Boolean(p.smooth),
-            );
-            const updated = get().objects.find((o) => o.id === targetId);
-            return { id: req.id, ok, result: updated ? updated.stats : null };
-          }
-
-          case 'create_thread': {
-            const created = await get().createThreadObject({
-              kind: (p.kind as ThreadOptions['kind']) || 'bolt',
-              diameterMm: typeof p.diameterMm === 'number' ? p.diameterMm : 8,
-              pitchMm: typeof p.pitchMm === 'number' ? p.pitchMm : 1.25,
-              lengthMm: typeof p.lengthMm === 'number' ? p.lengthMm : 20,
-              clearanceMm: typeof p.clearanceMm === 'number' ? p.clearanceMm : 0.25,
-              includeHead: typeof p.includeHead === 'boolean' ? p.includeHead : true,
-            });
-            return {
-              id: req.id,
-              ok: Boolean(created),
-              result: created ? { id: created.id, name: created.name, stats: created.stats } : null,
-            };
-          }
-
-          case 'convex_hull': {
-            const ids = Array.isArray(p.ids) ? (p.ids as string[]) : undefined;
-            const created = await get().runConvexHull(ids);
-            return {
-              id: req.id,
-              ok: Boolean(created),
-              result: created ? { id: created.id, name: created.name, stats: created.stats } : null,
-            };
-          }
-
-          case 'align_objects': {
-            const mode = (p.mode as AlignMode) || 'arrange_grid';
-            get().alignSelectedObjects(mode);
-            return { id: req.id, ok: true, result: { mode } };
-          }
-
-          case 'detect_structures': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para analizar.' };
-            }
-            const creaseAngleDeg =
-              typeof p.creaseAngleDeg === 'number' ? p.creaseAngleDeg : undefined;
-            const seg = await get().detectObjectStructures(targetId, creaseAngleDeg);
-            return {
-              id: req.id,
-              ok: Boolean(seg),
-              result: seg
-                ? {
-                    objectId: seg.objectId,
-                    method: seg.method,
-                    totalTriangles: seg.totalTriangles,
-                    regions: seg.regions.map((r) => ({
-                      id: r.id,
-                      labelEs: r.labelEs,
-                      labelEn: r.labelEn,
-                      archetype: r.archetype,
-                      color: r.color,
-                      triangleCount: r.triangleCount,
-                      percentOfModel: r.percentOfModel,
-                      dimensionsMm: r.dimensionsMm,
-                      centerMm: r.centerMm,
-                      confidence: r.confidence,
-                      isDisconnectedShell: r.isDisconnectedShell,
-                    })),
-                  }
-                : null,
-            };
-          }
-
-          case 'colorize_structures': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) ||
-              get().activeSegmentation?.objectId ||
-              get().selectedIds[0] ||
-              get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para colorear.' };
-            }
-            const ok = await get().colorizeDetectedStructures(targetId);
-            return {
-              id: req.id,
-              ok,
-              result: {
-                objectId: targetId,
-                regionsCount: get().activeSegmentation?.regions.length ?? 0,
-              },
-            };
-          }
-
-          case 'extract_structure': {
-            const rawObjId = p.objectId;
-            const regionId =
-              typeof p.regionId === 'string'
-                ? p.regionId
-                : typeof p.id === 'string'
-                  ? p.id
-                  : '';
-            if (typeof rawObjId === 'string' && rawObjId) {
-              const curSeg = get().activeSegmentation;
-              if (!curSeg || curSeg.objectId !== rawObjId) {
-                await get().detectObjectStructures(rawObjId);
-              }
-            }
-            const seg = get().activeSegmentation;
-            if (!seg) {
-              return { id: req.id, ok: false, error: 'Ejecuta detect_structures primero.' };
-            }
-            const resolvedRegion =
-              seg.regions.find((r) => r.id === regionId) ??
-              (typeof p.regionIndex === 'number' ? seg.regions[p.regionIndex] : undefined);
-            if (!resolvedRegion) {
-              return { id: req.id, ok: false, error: 'Sub-estructura no encontrada.' };
-            }
-            const created = await get().extractDetectedStructure(
-              resolvedRegion.id,
-              Boolean(p.removeFromSource),
-            );
-            return {
-              id: req.id,
-              ok: Boolean(created),
-              result: created ? { id: created.id, name: created.name, stats: created.stats } : null,
-            };
-          }
-
-          case 'mirror_object': {
-            const rawId = p.id ?? p.objectId;
-            const targetId =
-              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
-            if (!targetId) {
-              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para espejar.' };
-            }
-            const axis: 'x' | 'y' | 'z' =
-              p.axis === 'y' || p.axis === 'z' ? p.axis : 'x';
-            const ok = get().mirrorObject(targetId, axis);
-            return { id: req.id, ok, result: { id: targetId, axis } };
-          }
-
-          case 'export_stl': {
-            const onlySelected = Boolean(p.onlySelected);
-            if (p.returnBytes || p.outputPath || typeof document === 'undefined') {
-              const { objects, selectedIds } = get();
-              const targetObjs =
-                onlySelected && selectedIds.length > 0
-                  ? objects.filter((o) => selectedIds.includes(o.id) && o.visible)
-                  : objects.filter((o) => o.visible && !o.isHole);
-              if (targetObjs.length === 0) {
-                return { id: req.id, ok: false, error: tr('toast.nothingToExport') };
-              }
-              const bytes = engine.exportSceneToBinarySTL(targetObjs);
-              const triangleCount = targetObjs.reduce((acc, o) => acc + o.stats.triangles, 0);
-              return {
-                id: req.id,
-                ok: true,
-                result: {
-                  format: 'stl',
-                  bytesBase64: uint8ToBase64(bytes),
-                  triangleCount,
-                },
-              };
-            }
-            const ok = await get().exportSceneStl(onlySelected);
-            return { id: req.id, ok, result: { format: 'stl' } };
-          }
-
-          case 'export_3mf': {
-            const onlySelected = Boolean(p.onlySelected);
-            const slicerTarget =
-              typeof p.slicerTarget === 'string'
-                ? (p.slicerTarget as SlicerTarget)
-                : get().printerProfile.brand;
-            if (p.returnBytes || p.outputPath || typeof document === 'undefined') {
-              const { objects, selectedIds, unitSystem } = get();
-              const targetObjs =
-                onlySelected && selectedIds.length > 0
-                  ? objects.filter((o) => selectedIds.includes(o.id) && o.visible)
-                  : objects.filter((o) => o.visible && !o.isHole);
-              if (targetObjs.length === 0) {
-                return { id: req.id, ok: false, error: tr('toast.nothingToExport') };
-              }
-              const bytes = engine.exportSceneTo3MF(targetObjs, unitSystem, slicerTarget);
-              const triangleCount = targetObjs.reduce((acc, o) => acc + o.stats.triangles, 0);
-              return {
-                id: req.id,
-                ok: true,
-                result: {
-                  format: '3mf',
-                  slicerTarget,
-                  bytesBase64: uint8ToBase64(bytes),
-                  triangleCount,
-                },
-              };
-            }
-            const ok = await get().exportScene3mf(onlySelected, slicerTarget);
-            return { id: req.id, ok, result: { format: '3mf', slicerTarget } };
-          }
-
-          case 'capture_viewport': {
-            const dataUrl = captureViewportPng();
-            if (!dataUrl) {
-              return {
-                id: req.id,
-                ok: false,
-                error: 'El visor WebGL aún no está listo para capturar.',
-              };
-            }
-            const base64 = dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
-            return {
-              id: req.id,
-              ok: true,
-              result: {
-                mimeType: 'image/png',
-                base64,
-                dataUrl,
-              },
-            };
-          }
-
-          default:
-            return {
-              id: req.id,
-              ok: false,
-              error: `Comando no soportado: ${String(req.command)}`,
-            };
-        }
-      } catch (err) {
-        return {
-          id: req.id,
-          ok: false,
-          error: err instanceof Error ? err.message : String(err),
-        };
-      }
-    },
+    executeCommand: createCommandBus({
+      get,
+      setSelectedIds: (ids) => set({ selectedIds: ids }),
+      isInteractionLocked: () => isHistoryLocked(),
+      tr,
+      toBase64: uint8ToBase64,
+    }),
   };
 });
 
