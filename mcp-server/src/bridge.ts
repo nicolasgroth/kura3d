@@ -366,19 +366,13 @@ export class KuraBridgeServer {
     origin: string | undefined,
     done: (result: boolean, code?: number, message?: string) => void
   ): void {
-    const now = Date.now();
-    this.authFailureTimestamps = this.authFailureTimestamps.filter((ts) => ts > now - 60_000);
-    if (this.authFailureTimestamps.length >= this.config.authFailureLimitPerMin) {
-      done(false, 429, 'Demasiados intentos fallidos; espera un minuto.');
-      return;
-    }
-
     const reject = (code: number, message: string) => {
-      this.authFailureTimestamps.push(now);
       console.error(`[Kura3D-MCP] Conexión WebSocket rechazada (${code}): ${message}`);
       done(false, code, message);
     };
 
+    // Los rechazos por Host/Origin no cuentan para el throttle: una página ajena
+    // no debe poder bloquear al cliente legítimo provocando fallos en masa.
     if (!isAllowedLocalHost(req.headers.host, this.port)) {
       reject(403, 'Host no permitido (solo 127.0.0.1/localhost).');
       return;
@@ -387,11 +381,19 @@ export class KuraBridgeServer {
       reject(403, 'Origen no permitido en el puente local de Kura3D.');
       return;
     }
-    if (!this.verifyRequestToken(req)) {
-      reject(401, 'Token de autenticación ausente o inválido.');
+    // Un token válido siempre pasa; el throttle solo frena intentos con token inválido.
+    if (this.verifyRequestToken(req)) {
+      done(true);
       return;
     }
-    done(true);
+    const now = Date.now();
+    this.authFailureTimestamps = this.authFailureTimestamps.filter((ts) => ts > now - 60_000);
+    if (this.authFailureTimestamps.length >= this.config.authFailureLimitPerMin) {
+      done(false, 429, 'Demasiados intentos fallidos; espera un minuto.');
+      return;
+    }
+    this.authFailureTimestamps.push(now);
+    reject(401, 'Token de autenticación ausente o inválido.');
   }
 
   /** Registra la sesión de la UI, aplica la preferencia de solo lectura y envía el saludo. */
