@@ -45,3 +45,6 @@ desktop.ini
 
 # Archivos temporales de evaluadores y QA
 .eval-tmp/
+.playwright-mcp/
+.playwright-cli/
+.claude/worktrees/
