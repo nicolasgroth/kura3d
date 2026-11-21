@@ -46,13 +46,37 @@ export {
 } from './advancedGeometry';
 
 export {
+  DEFAULT_IMPORT_LIMITS,
+  MODEL_IMPORT_ACCEPT,
+  MODEL_IMPORT_EXTENSIONS,
+  ModelImportError,
+  detectModelFormat,
   exportMeshToBinarySTL,
   exportMeshToOBJ,
   exportSceneTo3MF,
   exportSceneToBinarySTL,
+  exportSceneToGLB,
+  exportSceneToOBJ,
+  exportSceneToPLY,
   import3MFBuffer,
   importOBJText,
   importSTLBuffer,
+  objMaterialLibraries,
+  parseModelFile,
+  parseModelFileAsync,
+  placeImportedModels,
+  read3MF,
+  readOBJ,
+  readPLY,
+  readSTL,
+  type FootprintXZ,
+  type ImportPlacementMode,
+  type ImportedModel,
+  type ImportedPart,
+  type MeshImportOptions,
+  type ModelImportErrorCode,
+  type ModelParseOptions,
+  type PlacedPart,
 } from './ioFormats';
 
 export { generateMold, type GeneratedMoldPart } from './molds';

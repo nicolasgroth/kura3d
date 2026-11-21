@@ -51,17 +51,30 @@ describe('local project workspace', () => {
     expect(get().objects).toEqual([]);
   });
 
-  it('imports multiple model files together and leaves no partial result after a file error', async () => {
+  it('imports the valid files of a batch in one undo step and names the files that failed', async () => {
     const bytes = new Uint8Array(exportSceneToBinarySTL(baseline.objects));
     const model = (name: string) => ({ name, read: async () => bytes.buffer });
     useKuraStore.setState(emptyBaseline, true);
 
     expect(await get().importModelFiles([
-      model('base.stl'), { name: 'roto.stl', read: async () => { throw new Error('No legible'); } },
-    ])).toBe(false);
+      model('base.stl'),
+      { name: 'roto.stl', read: async () => { throw new Error('No legible'); } },
+      model('plano.step'),
+    ])).toBe(true);
+    expect(get().objects.map((object) => object.name)).toEqual(['base']);
+    expect(get().past).toHaveLength(1);
+    const errors = get().toasts.filter((toast) => toast.kind === 'error').map((toast) => toast.text).join(' ');
+    expect(errors).toContain('roto.stl');
+    expect(errors).toContain('plano.step');
+    get().undo();
     expect(get().objects).toEqual([]);
-    expect(get().past).toEqual([]);
+
+    useKuraStore.setState(emptyBaseline, true);
     expect(await get().importModelFiles([model('base.stl'), model('tapa.STL')])).toBe(true);
+    // Piezas sueltas sin posición: se reparten sin solaparse y apoyadas en la cama.
+    const [first, second] = get().objects;
+    expect(first.position[1]).toBe(0);
+    expect(Math.max(Math.abs(first.position[0] - second.position[0]), Math.abs(first.position[2] - second.position[2]))).toBeGreaterThanOrEqual(30);
     expect(get().objects).toHaveLength(2);
     expect(get().selectedIds).toHaveLength(2);
     expect(get().past).toHaveLength(1);
@@ -69,17 +82,16 @@ describe('local project workspace', () => {
     expect(get().objects).toEqual([]);
   });
 
-  it('keeps objects, selection and history intact when a batch includes unusable geometry', async () => {
-    const valid = new Uint8Array(exportSceneToBinarySTL(baseline.objects));
-    const nonFinite = valid.slice();
+  it('keeps objects, selection and history intact when every file of a batch is unusable', async () => {
+    const nonFinite = new Uint8Array(exportSceneToBinarySTL(baseline.objects));
     new DataView(nonFinite.buffer).setFloat32(96, Number.NaN, true);
     const degenerate = new Uint8Array(134);
     new DataView(degenerate.buffer).setUint32(80, 1, true);
 
     for (const malformed of [nonFinite, degenerate]) {
       expect(await get().importModelFiles([
-        { name: 'base.stl', read: async () => valid.buffer },
         { name: 'roto.stl', read: async () => malformed.buffer },
+        { name: 'otro.stl', read: async () => malformed.buffer },
       ])).toBe(false);
       expect(get().objects).toBe(baseline.objects);
       expect(get().selectedIds).toBe(baseline.selectedIds);

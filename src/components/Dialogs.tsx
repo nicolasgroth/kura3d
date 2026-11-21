@@ -4,20 +4,19 @@
  * de light-dismiss (`closedby="any"` + fallback pointer para WebKit/Safari):
  * Importar SVG, Imagen→3D (Plana, Cilíndrica, Silueta y Cortador), Corte por Plano,
  * Generador de Moldes/Silicona, Proyección Conformal en Superficies, Roscas Métricas ISO,
- * Exportador 3MF Multi-Slicer, Ajustes (Apariencia con Temas WCAG en vivo, IA, MCP, Acerca de)
+ * Exportación (ExportDialog), Ajustes (Apariencia con Temas WCAG en vivo, IA, MCP, Acerca de)
  * y Guía de Atajos CAD.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Bolt,
   Check,
   Cloud,
   Copy,
-  Download,
   FileUp,
   Keyboard,
   Monitor,
@@ -30,12 +29,13 @@ import {
   Sparkles,
   Sun,
   Type,
-  X,
 } from 'lucide-react';
 import { t, type TranslationKey } from '../i18n';
 import { type ActiveDialogType, generateRandomTokenHex, useKuraStore } from '../store/useKuraStore';
 import { rotateMcpBridgeToken, useMcpBridgeStatus } from '../utils/mcpBridgeClient';
 import { PrecisionNumberInput } from './PrecisionNumberInput';
+import { ExportDialog } from './ExportDialog';
+import { NativeModal } from './NativeModal';
 import {
   PRINT_COLOR_PALETTE,
   THEME_PRESETS,
@@ -45,12 +45,10 @@ import {
   type ImageTo3DOptions,
   type MoldMode,
   type PlaneCutOptions,
-  type SlicerTarget,
   type SurfaceProjectionAxis,
   type SurfaceProjectionMode,
   type ThreadOptions,
 } from '../types/kura';
-import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
 import { openLocalFile } from '../utils/platformBridge';
 import { getApiKeyStore } from '../ai/apiKeyStore';
 import { isAllowedProviderUrl } from '../ai/providerSecurity';
@@ -78,79 +76,6 @@ const ISO_THREAD_PRESETS: Array<{ label: string; diameterMm: number; pitchMm: nu
   { label: 'M16', diameterMm: 16, pitchMm: 2.0 },
   { label: 'M20', diameterMm: 20, pitchMm: 2.5 },
 ];
-
-/**
- * Wrapper reutilizable sobre <dialog> nativo con showModal(), `closedby="any"`
- * y fallback pointerdown/pointerup para navegadores sin `HTMLDialogElement.prototype.closedBy`.
- */
-const NativeModal: React.FC<{
-  open: boolean;
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-  footer?: React.ReactNode;
-  className?: string;
-}> = ({ open, onClose, title, children, footer, className }) => {
-  const language = useKuraStore((s) => s.language);
-  const dialogRef = useRef<HTMLDialogElement | null>(null);
-  const titleId = useId();
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    if (open && !dialog.open) {
-      dialog.showModal();
-    } else if (!open && dialog.open) {
-      void closeDialogWithMotion(dialog);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    const handleClose = () => {
-      dialog.returnValue = '';
-      onClose();
-    };
-
-    dialog.addEventListener('close', handleClose);
-    const detachDismiss = attachDialogDismissHandlers(dialog);
-
-    return () => {
-      dialog.removeEventListener('close', handleClose);
-      detachDismiss();
-    };
-  }, [onClose]);
-
-  return (
-    <dialog
-      ref={dialogRef}
-      className={className ? `kura-dialog ${className}` : 'kura-dialog'}
-      aria-labelledby={titleId}
-      {...({ closedby: 'any' } as Record<string, string>)}
-    >
-      <div className="kura-dialog-header">
-        <h2 id={titleId} className="kura-dialog-title">
-          {title}
-        </h2>
-        <button
-          type="button"
-          className="kura-mini-icon-btn"
-          onClick={() => dialogRef.current && void closeDialogWithMotion(dialogRef.current)}
-          aria-label={t(language, 'common.close')}
-        >
-          <X size={16} />
-        </button>
-      </div>
-
-      <div className="kura-dialog-body">{children}</div>
-
-      {footer && <div className="kura-dialog-footer">{footer}</div>}
-    </dialog>
-  );
-};
 
 /** Modal 1: Importar y Extruir SVG a sólido 3D. */
 const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = ({
@@ -1442,86 +1367,6 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
   );
 };
 
-/** Modal 7: Exportar 3MF Multi-Slicer (Elegoo, Bambu, Snapmaker, FlashForge, Generic). */
-const Export3mfModal: React.FC<{ open: boolean; onClose: () => void }> = ({
-  open,
-  onClose,
-}) => {
-  const language = useKuraStore((s) => s.language);
-  const printerProfile = useKuraStore((s) => s.printerProfile);
-  const selectedIds = useKuraStore((s) => s.selectedIds);
-  const export3MFForSlicer = useKuraStore((s) => s.export3MFForSlicer);
-
-  const [slicerTarget, setSlicerTarget] = useState<SlicerTarget>(printerProfile.brand);
-  const [onlySelected, setOnlySelected] = useState(false);
-
-  useEffect(() => {
-    if (open) {
-      setSlicerTarget(printerProfile.brand);
-      setOnlySelected(false);
-    }
-  }, [open, printerProfile.brand]);
-
-  const handleExport = async () => {
-    const ok = await export3MFForSlicer(slicerTarget, onlySelected);
-    if (ok) onClose();
-  };
-
-  return (
-    <NativeModal
-      open={open}
-      onClose={onClose}
-      title={t(language, 'dialog.export3mf.title')}
-      footer={
-        <>
-          <button type="button" className="kura-btn" onClick={onClose}>
-            {t(language, 'dialog.cancel')}
-          </button>
-          <button
-            type="button"
-            className="kura-btn kura-btn-amber"
-            onClick={() => void handleExport()}
-          >
-            <Download size={14} />
-            <span>{t(language, 'dialog.export3mf.execute')}</span>
-          </button>
-        </>
-      }
-    >
-      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
-        {t(language, 'dialog.export3mf.desc')}
-      </p>
-
-      <div className="kura-form-field">
-        <label htmlFor="export-slicer-target">{t(language, 'dialog.export3mf.slicer')}</label>
-        <select
-          id="export-slicer-target"
-          className="kura-select"
-          value={slicerTarget}
-          onChange={(e) => setSlicerTarget(e.target.value as SlicerTarget)}
-        >
-          <option value="elegoo">{t(language, 'dialog.export3mf.elegoo')}</option>
-          <option value="bambu">{t(language, 'dialog.export3mf.bambu')}</option>
-          <option value="snapmaker">{t(language, 'dialog.export3mf.snapmaker')}</option>
-          <option value="flashforge">{t(language, 'dialog.export3mf.flashforge')}</option>
-          <option value="generic">{t(language, 'dialog.export3mf.generic')}</option>
-        </select>
-      </div>
-
-      {selectedIds.length > 0 && (
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-          <input
-            type="checkbox"
-            checked={onlySelected}
-            onChange={(e) => setOnlySelected(e.target.checked)}
-          />
-          <span>{t(language, 'dialog.export3mf.onlySelected')}</span>
-        </label>
-      )}
-    </NativeModal>
-  );
-};
-
 /** Resuelve si la interfaz se renderiza actualmente en esquema oscuro (para tarjetas de tema). */
 function useResolvedDarkScheme(scheme: ColorSchemePreference): boolean {
   const [systemDark, setSystemDark] = useState<boolean>(() => {
@@ -2336,9 +2181,13 @@ export const Dialogs: React.FC = () => {
         onClose={() => closeDialog('project')}
       />
       <ThreadModal open={activeDialog === 'thread'} onClose={() => closeDialog('thread')} />
-      <Export3mfModal
-        open={activeDialog === 'export3mf'}
-        onClose={() => closeDialog('export3mf')}
+      <ExportDialog
+        open={activeDialog === 'export' || activeDialog === 'export3mf'}
+        initialFormat={activeDialog === 'export3mf' ? '3mf' : undefined}
+        onClose={() => {
+          closeDialog('export');
+          closeDialog('export3mf');
+        }}
       />
       <SettingsModal
         open={activeDialog === 'settings'}
