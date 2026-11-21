@@ -58,7 +58,7 @@ import {
   type UnitSystem,
   type Vec3,
 } from '../types/kura';
-import { captureViewportPng } from '../utils/mcpBridgeClient';
+import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { openLocalFile, saveBinaryFile } from '../utils/platformBridge';
 
 const MAX_UNDO_HISTORY = 40;
@@ -676,8 +676,8 @@ function loadInitialMcpConfig(): McpConfig {
     return {
       enabled: typeof parsed.enabled === 'boolean' ? parsed.enabled : defaults.enabled,
       port,
-      requireAuth:
-        typeof parsed.requireAuth === 'boolean' ? parsed.requireAuth : defaults.requireAuth,
+      // El puente exige token siempre (TRUST-02): se ignora cualquier `requireAuth: false` heredado.
+      requireAuth: true,
       authToken: token,
       readOnly: typeof parsed.readOnly === 'boolean' ? parsed.readOnly : defaults.readOnly,
     };
@@ -1167,6 +1167,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           ...state.mcpConfig,
           ...patch,
           port: nextPort,
+          requireAuth: true,
         };
         writeStorage(STORAGE_MCP_CONFIG_KEY, JSON.stringify(next));
         return { mcpConfig: next };
@@ -2824,14 +2825,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     },
 
     executeCommand: async (req, source = 'ui'): Promise<KuraCommandResponse> => {
-      if (
-        source === 'mcp' &&
-        get().mcpConfig.readOnly &&
-        req.command !== 'get_scene_state' &&
-        req.command !== 'capture_viewport' &&
-        req.command !== 'analyze_printability' &&
-        req.command !== 'detect_structures'
-      ) {
+      // Política lectura/escritura compartida con el servidor MCP (mcp-server/src/toolPolicy.ts)
+      if (source === 'mcp' && !isMcpCommandAllowed(req.command, get().mcpConfig.readOnly)) {
         return {
           id: req.id,
           ok: false,

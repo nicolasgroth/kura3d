@@ -13,7 +13,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { WebSocket } from 'ws';
 import { isAllowedLocalOrigin } from '../bridge.js';
 import { createKuraMcpServer } from '../index.js';
@@ -52,10 +52,23 @@ const EXPECTED_TOOLS = [
   'kura_mirror_object',
 ];
 
+/** Token de prueba con longitud suficiente para habilitar el puente (mínimo 16). */
+const TEST_TOKEN = 'kura-test-token-0123456789abcdef';
+let defaultExportDir = '';
+
+beforeAll(async () => {
+  defaultExportDir = await mkdtemp(join(tmpdir(), 'kura3d-mcp-exports-'));
+});
+
+afterAll(async () => {
+  await rm(defaultExportDir, { recursive: true, force: true });
+});
+
 async function setupInMemoryPair(
   options: number | Parameters<typeof createKuraMcpServer>[0] = 0
 ) {
-  const resolvedOptions = typeof options === 'number' ? { bridgePort: options } : options;
+  const base = typeof options === 'number' ? { bridgePort: options } : options;
+  const resolvedOptions = { authToken: TEST_TOKEN, exportDir: defaultExportDir, ...base };
   const { server, bridge, headless } = createKuraMcpServer(resolvedOptions);
   const client = new Client({ name: 'kura3d-test-client', version: '1.0.0' });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
@@ -98,8 +111,8 @@ describe('Kura3D MCP Server', () => {
   });
 
   it('crea primitivas en modo headless, transforma, ahueca y exporta STL binario y 3MF válidos', async () => {
-    const { client, server, bridge } = await setupInMemoryPair();
     const tempDir = await mkdtemp(join(tmpdir(), 'kura3d-mcp-test-'));
+    const { client, server, bridge } = await setupInMemoryPair({ bridgePort: 0, exportDir: tempDir });
     cleanupTasks.push(async () => {
       await client.close();
       await server.close();
@@ -227,7 +240,7 @@ describe('Kura3D MCP Server', () => {
     });
 
     const rejected = await new Promise<boolean>((resolve) => {
-      const evilWs = new WebSocket(`ws://127.0.0.1:${bridge.getPort()}`, {
+      const evilWs = new WebSocket(`ws://127.0.0.1:${bridge.getPort()}/?token=${TEST_TOKEN}`, {
         headers: { origin: 'https://evil.example' },
       });
       evilWs.once('unexpected-response', (_req, res) => {
@@ -250,7 +263,7 @@ describe('Kura3D MCP Server', () => {
     const started = await bridge.start();
     expect(started).toBe(true);
 
-    const ws = new WebSocket(`ws://127.0.0.1:${bridge.getPort()}`, {
+    const ws = new WebSocket(`ws://127.0.0.1:${bridge.getPort()}/?token=${TEST_TOKEN}`, {
       headers: { origin: 'http://localhost:5173' },
     });
     cleanupTasks.push(async () => {
@@ -269,6 +282,8 @@ describe('Kura3D MCP Server', () => {
     const receivedRequests: KuraCommandRequest[] = [];
     ws.on('message', (raw) => {
       const req = JSON.parse(raw.toString('utf8')) as KuraCommandRequest;
+      // Ignora mensajes de control del puente (hello, token_rotated, …)
+      if ('type' in req) return;
       receivedRequests.push(req);
 
       let resp: KuraCommandResponse;
@@ -391,7 +406,7 @@ describe('Kura3D MCP Server', () => {
   it('bloquea mutaciones en modo Solo Lectura, permite analyze_printability y expone postura de seguridad en kura://info/about', async () => {
     const { client, server, bridge, headless } = await setupInMemoryPair({
       bridgePort: 0,
-      authToken: 'token-ro',
+      authToken: 'token-ro-0123456789abcdef',
       readOnly: true,
     });
     await bridge.start();

@@ -35,14 +35,46 @@ npm test
 
 ## Seguridad y Variables de Entorno
 
-El servidor MCP de Kura3D está ligado estrictamente a `127.0.0.1` y valida orígenes locales (`localhost`, `127.0.0.1`, `tauri://localhost`, `https://tauri.localhost`). Adicionalmente puedes activar controles de seguridad mediante variables de entorno:
+El puente WebSocket escucha solo en `127.0.0.1` y aplica, en este orden, a cada handshake:
 
-| Variable | Por defecto | Descripción |
-| :--- | :--- | :--- |
-| `KURA_BRIDGE_PORT` | `17432` | Puerto TCP local del puente WebSocket en `127.0.0.1`. |
-| `KURA_BRIDGE_TOKEN` | *(vacío)* | Token secreto compartido. Si se define, exige `Authorization: Bearer <token>` o `?token=<token>` en el handshake WebSocket (comparación en tiempo constante, rechazando con HTTP `401`). |
-| `KURA_BRIDGE_READ_ONLY` | `false` | Si es `true`, habilita el **modo Solo Lectura**: solo permite `kura_get_scene_state`, `kura_capture_viewport`, `kura_analyze_printability` y `kura_detect_structures`, bloqueando cualquier modificación o exportación. |
-| `KURA_BRIDGE_RATE_LIMIT` | `120` | Máximo de comandos permitidos por minuto en ventana deslizante de 60 segundos. |
+1. **Throttle de fallos**: tras 30 intentos fallidos en 60 s responde `429` durante el resto de la ventana.
+2. **Host** (anti DNS rebinding): solo `127.0.0.1:<puerto>` o `localhost:<puerto>`; otro valor → `403`.
+3. **Origin**: sin Origin (clientes nativos), `http://localhost[:p]`, `http://127.0.0.1[:p]`, `tauri://localhost` o `http(s)://tauri.localhost`; otro valor → `403`.
+4. **Token obligatorio**: `Authorization: Bearer <token>` o `?token=<token>`, comparado en tiempo constante (SHA-256 + `timingSafeEqual`); ausente o inválido → `401`.
+
+**Sin token (o con menos de 16 caracteres) el puente no se habilita**: el servidor sigue funcionando en modo Headless por stdio y `kura://info/about` informa el motivo en `bridgeStartupError`. Los mensajes entrantes mayores que el límite se cortan con el código WebSocket `1009`.
+
+| Variable | CLI | Por defecto | Descripción |
+| :--- | :--- | :--- | :--- |
+| `KURA_BRIDGE_PORT` | `--port` | `17432` | Puerto TCP local del puente en `127.0.0.1`. |
+| `KURA_BRIDGE_TOKEN` | — | *(vacío → puente deshabilitado)* | Token compartido con la UI (Ajustes → MCP lo genera y lo incluye en el JSON copiable). |
+| `KURA_BRIDGE_TOKEN_FILE` | `--token-file` | *(ninguno)* | Archivo con el token. Tiene prioridad sobre `KURA_BRIDGE_TOKEN` y es donde se **persisten las rotaciones** (escritura atómica, permisos `0600`). |
+| `KURA_BRIDGE_READ_ONLY` | `--read-only` | `false` | Acepta `true/1/yes/on`. Impone **Solo Lectura** en el servidor; la UI no puede desactivarlo. |
+| `KURA_EXPORT_DIR` | `--export-dir` | `~/Kura3D/exports` | Único directorio donde `kura_export_stl` / `kura_export_3mf` pueden escribir. |
+| `KURA_BRIDGE_RATE_LIMIT` | `--rate-limit` | `120` | Máximo de comandos por minuto (ventana deslizante de 60 s). |
+| `KURA_BRIDGE_MAX_MESSAGE_BYTES` | `--max-message-bytes` | `67108864` (64 MiB) | Tamaño máximo por mensaje WebSocket entrante (cubre STL grandes en base64). |
+
+Prioridad: argumentos CLI > variables de entorno > valores por defecto.
+
+### Solo Lectura: una sola fuente de verdad
+
+`src/toolPolicy.ts` declara cada comando como `read` o `write`. De ahí salen el rechazo en servidor (herramientas MCP y puente), la anotación `readOnlyHint` de cada herramienta en `tools/list` y la validación del cliente del puente en la UI (que importa el mismo módulo). Solo son de lectura `kura_get_scene_state`, `kura_capture_viewport`, `kura_analyze_printability` y `kura_detect_structures`; las exportaciones cuentan como escritura.
+
+Solo Lectura efectivo = impuesto por el servidor (CLI/env) **o** pedido por la UI en el handshake (`readOnly=1`, el interruptor de Ajustes). La petición de la UI se conserva aunque la UI se desconecte. Las herramientas de escritura siguen listadas, pero el servidor las **rechaza** con un error que menciona "Solo Lectura" y nunca las reenvía a la UI.
+
+### Rotación de token
+
+El botón **Regenerar token** de Ajustes envía `{"type":"rotate_token"}` por la sesión ya autenticada. El servidor adopta el token nuevo, revoca el anterior (todo handshake con él recibe `401`), cierra las sesiones abiertas con el código `4001` y la UI se reconecta con el token nuevo mostrando "Reconectando…". Si el servidor tiene `--token-file`, la rotación se persiste; si solo usa `KURA_BRIDGE_TOKEN`, dura hasta reiniciar el servidor, y la UI pide actualizar la configuración del cliente MCP. Si la UI no está conectada, el token nuevo solo se guarda en Ajustes y hay que configurarlo en el servidor.
+
+**Límite conocido:** la UI web guarda el token del puente en `localStorage` (hace falta para reconectar tras reiniciar la app). Es una credencial aleatoria de 128 bits válida solo en loopback, pero no está cifrada en reposo. La alternativa correcta es el llavero del sistema operativo vía Tauri, fuera del alcance de este servidor.
+
+### Exportaciones confinadas
+
+`outputPath` se resuelve dentro de `KURA_EXPORT_DIR`: se aceptan rutas relativas (también en subcarpetas) y rutas absolutas solo si caen dentro. Se rechazan `..`, rutas fuera de la raíz, caracteres de control, una extensión distinta de `.stl` / `.3mf`, y cualquier symlink o junction que saque la ruta real fuera de la raíz.
+
+### Datos de entrada
+
+Nombres (1–128 caracteres, sin caracteres de control), IDs, textos, SVG (hasta 2 MB), colores `#rrggbb` e IDs de perfil se validan con esquemas Zod. Las respuestas de la UI y los mensajes de control también pasan por esquema; lo que no calza se descarta. Ningún valor recibido se evalúa ni se interpola en comandos del sistema.
 
 ---
 
@@ -64,8 +96,9 @@ Agrega el servidor en tu archivo de configuración MCP de Antigravity (`mcp_conf
       ],
       "env": {
         "KURA_BRIDGE_PORT": "17432",
-        "KURA_BRIDGE_TOKEN": "",
+        "KURA_BRIDGE_TOKEN": "PEGA_AQUI_EL_TOKEN_DE_AJUSTES",
         "KURA_BRIDGE_READ_ONLY": "false",
+        "KURA_EXPORT_DIR": "RUTA_ABSOLUTA_A_TU_CARPETA_DE_EXPORTACION",
         "KURA_BRIDGE_RATE_LIMIT": "120"
       }
     }
@@ -87,8 +120,9 @@ Edita `%APPDATA%\Claude\claude_desktop_config.json` (Windows) o `~/Library/Appli
       ],
       "env": {
         "KURA_BRIDGE_PORT": "17432",
-        "KURA_BRIDGE_TOKEN": "",
+        "KURA_BRIDGE_TOKEN": "PEGA_AQUI_EL_TOKEN_DE_AJUSTES",
         "KURA_BRIDGE_READ_ONLY": "false",
+        "KURA_EXPORT_DIR": "RUTA_ABSOLUTA_A_TU_CARPETA_DE_EXPORTACION",
         "KURA_BRIDGE_RATE_LIMIT": "120"
       }
     }
@@ -107,8 +141,9 @@ args = ["RUTA_ABSOLUTA_AL_PROYECTO/mcp-server/dist/index.js"]
 
 [mcp_servers.kura3d.env]
 KURA_BRIDGE_PORT = "17432"
-KURA_BRIDGE_TOKEN = ""
+KURA_BRIDGE_TOKEN = "PEGA_AQUI_EL_TOKEN_DE_AJUSTES"
 KURA_BRIDGE_READ_ONLY = "false"
+KURA_EXPORT_DIR = "RUTA_ABSOLUTA_A_TU_CARPETA_DE_EXPORTACION"
 KURA_BRIDGE_RATE_LIMIT = "120"
 ```
 

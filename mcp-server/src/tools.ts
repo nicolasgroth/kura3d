@@ -8,13 +8,24 @@
  * @license MIT
  */
 
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { writeFile } from 'node:fs/promises';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
+import { resolveExportPath } from './exportPaths.js';
 import type { KuraHeadlessEngine } from './headlessEngine.js';
+import {
+  exportPayloadSchema,
+  hexColorSchema,
+  idSchema,
+  nameSchema,
+  outputPathSchema,
+  profileIdSchema,
+  shortTextSchema,
+  svgContentSchema,
+} from './schemas.js';
+import { READ_COMMANDS, isReadCommand, toolAccess } from './toolPolicy.js';
 import type { KuraCommandName } from './types.js';
 
 export { READ_ONLY_COMMANDS };
@@ -49,12 +60,54 @@ function failText(message: string): CallToolResult {
  * antes de despachar cualquier herramienta tanto en modo Live Bridge como Headless.
  */
 function enforceSecurityPolicy(ctx: KuraToolContext, command: KuraCommandName): void {
-  if (ctx.bridge.isReadOnly() && !READ_ONLY_COMMANDS.has(command)) {
+  if (ctx.bridge.isReadOnly() && !isReadCommand(command)) {
     throw new Error(
-      `Operación denegada: Kura3D MCP está ejecutándose en modo de seguridad Solo Lectura (KURA_BRIDGE_READ_ONLY=true). Solo se permiten comandos de inspección (${Array.from(READ_ONLY_COMMANDS).join(', ')}).`
+      `Operación denegada: Kura3D MCP está en modo de seguridad Solo Lectura. Solo se permiten comandos de inspección (${READ_COMMANDS.join(', ')}).`
     );
   }
   ctx.bridge.consumeRateLimit();
+}
+
+/**
+ * Escribe en disco los bytes de exportación devueltos por la UI viva, confinados al directorio
+ * permitido. La carga útil se valida con esquema antes de decodificarla.
+ */
+async function writeLiveExport(
+  targetPath: string,
+  result: unknown
+): Promise<{ path: string; bytesWritten: number } | null> {
+  const payload = exportPayloadSchema.safeParse(result ?? {});
+  if (!payload.success) {
+    throw new Error('La UI de Kura3D devolvió una carga de exportación con formato inválido.');
+  }
+  const { bytesBase64, text } = payload.data;
+  if (!bytesBase64 && !text) {
+    return null;
+  }
+  const buffer = bytesBase64 ? Buffer.from(bytesBase64, 'base64') : Buffer.from(text ?? '', 'utf8');
+  await writeFile(targetPath, buffer);
+  return { path: targetPath, bytesWritten: buffer.byteLength };
+}
+
+/**
+ * Envuelve `server.registerTool` para anotar cada herramienta con `readOnlyHint` desde
+ * `toolPolicy.ts` (misma fuente de verdad que aplica el rechazo en servidor).
+ */
+function createAccessAwareRegistrar(server: McpServer): McpServer['registerTool'] {
+  const register = (name: string, config: { annotations?: Record<string, unknown> }, cb: unknown) => {
+    const readOnly = toolAccess(name) === 'read';
+    const annotated = {
+      ...config,
+      annotations: { ...config.annotations, readOnlyHint: readOnly, destructiveHint: !readOnly },
+    };
+    return (server.registerTool as unknown as (...args: unknown[]) => unknown).call(
+      server,
+      name,
+      annotated,
+      cb
+    );
+  };
+  return register as unknown as McpServer['registerTool'];
 }
 
 /**
@@ -96,7 +149,9 @@ async function dispatchWithFallback(
  * Registra el catálogo completo de herramientas MCP (`kura_*`) y recursos (`kura://*`)
  * sobre la instancia `McpServer` proporcionada.
  */
-export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void {
+export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): void {
+  const server = { registerTool: createAccessAwareRegistrar(mcpServer) };
+
   // 1. Estado actual de la escena
   server.registerTool(
     'kura_get_scene_state',
@@ -121,7 +176,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
         primitiveType: z
           .enum(['box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text'])
           .describe('Tipo de primitiva paramétrica a crear.'),
-        name: z.string().optional().describe('Nombre legible del objeto.'),
+        name: nameSchema.optional().describe('Nombre legible del objeto.'),
         params: z
           .object({
             width: z.number().positive().optional(),
@@ -133,7 +188,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
             tubeRadius: z.number().positive().optional(),
             segments: z.number().int().min(3).max(128).optional(),
             sides: z.number().int().min(3).max(64).optional(),
-            text: z.string().optional(),
+            text: shortTextSchema.optional(),
             fontSize: z.number().positive().optional(),
             bevel: z.number().min(0).optional(),
           })
@@ -142,7 +197,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
         position: vec3Schema.optional(),
         rotation: vec3Schema.optional(),
         scale: vec3Schema.optional(),
-        color: z.string().optional().describe('Color hexadecimal, por ejemplo #38bdf8.'),
+        color: hexColorSchema.optional().describe('Color hexadecimal, por ejemplo #38bdf8.'),
         isHole: z.boolean().optional().describe('Si es true, marca la pieza como volumen de resta.'),
       },
     },
@@ -173,11 +228,11 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Actualiza posición [x, y, z] en mm, rotación Euler [rx, ry, rz] en radianes, escala [sx, sy, sz] o metadatos de un objeto.',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto a modificar.'),
+        objectId: idSchema.describe('ID del objeto a modificar.'),
         position: vec3Schema.optional(),
         rotation: vec3Schema.optional(),
         scale: vec3Schema.optional(),
-        name: z.string().optional(),
+        name: nameSchema.optional(),
         isHole: z.boolean().optional(),
         visible: z.boolean().optional(),
         locked: z.boolean().optional(),
@@ -208,7 +263,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       title: 'Eliminar objeto 3D',
       description: 'Elimina permanentemente un objeto de la escena por su identificador.',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto a eliminar.'),
+        objectId: idSchema.describe('ID del objeto a eliminar.'),
       },
     },
     async (args) =>
@@ -229,13 +284,13 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
         'Ejecuta unión, resta o intersección entre un objeto objetivo y uno o más objetos herramienta.',
       inputSchema: {
         targetId: z.string().describe('ID del objeto base sobre el que se aplica la operación.'),
-        toolIds: z.array(z.string()).min(1).describe('Lista de IDs de objetos herramienta.'),
+        toolIds: z.array(idSchema).max(256).min(1).describe('Lista de IDs de objetos herramienta.'),
         operation: z.enum(['union', 'subtract', 'intersect']).describe('Tipo de operación CSG.'),
         keepTools: z
           .boolean()
           .optional()
           .describe('Si es true, conserva los objetos originales en la escena.'),
-        resultName: z.string().optional().describe('Nombre opcional del objeto resultante.'),
+        resultName: nameSchema.optional().describe('Nombre opcional del objeto resultante.'),
       },
     },
     async (args) =>
@@ -258,7 +313,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Convierte un sólido en una carcasa hueca con grosor de pared en milímetros y orificio de drenaje opcional.',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto a ahuecar.'),
+        objectId: idSchema.describe('ID del objeto a ahuecar.'),
         wallThickness: z.number().positive().describe('Espesor de pared en milímetros.'),
         drainHole: z.boolean().optional().describe('Agrega orificio inferior de drenaje (resina).'),
         drainHoleRadius: z.number().positive().optional().describe('Radio del orificio de drenaje en mm.'),
@@ -286,7 +341,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Divide un objeto mediante un plano en el eje X, Y o Z generando conectores mecánicos opcionales (dowel, peg, dovetail).',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto a cortar.'),
+        objectId: idSchema.describe('ID del objeto a cortar.'),
         axis: z.enum(['x', 'y', 'z']).describe('Eje normal del plano de corte.'),
         offset: z.number().default(0).describe('Desplazamiento del plano en mm respecto al centro.'),
         connectorType: z
@@ -326,7 +381,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       title: 'Separar islas desconectadas',
       description: 'Divide una malla compuesta por múltiples cuerpos separados en objetos independientes.',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto a analizar y separar.'),
+        objectId: idSchema.describe('ID del objeto a analizar y separar.'),
       },
     },
     async (args) =>
@@ -345,7 +400,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       title: 'Separar por color',
       description: 'Separa un modelo pintado multicolor en piezas individuales por cada color para impresión multimaterial.',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto multicolor a separar.'),
+        objectId: idSchema.describe('ID del objeto multicolor a separar.'),
       },
     },
     async (args) =>
@@ -365,7 +420,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Aplica desplazamiento superficial procedural (fuzzy skin, knurling, waves, honeycomb, grid o none).',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto.'),
+        objectId: idSchema.describe('ID del objeto.'),
         pattern: z.enum(['none', 'fuzzy', 'knurling', 'waves', 'honeycomb', 'grid']),
         depth: z.number().min(0).default(0.4).describe('Profundidad del relieve en mm.'),
         scale: z.number().positive().default(3).describe('Escala/frecuencia del patrón en mm.'),
@@ -392,8 +447,8 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       title: 'Pintar objeto 3D',
       description: 'Asigna un color hexadecimal (#rrggbb) al material del objeto seleccionado.',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto.'),
-        color: z.string().regex(/^#[0-9a-fA-F]{6}$/).describe('Color hex en formato #rrggbb.'),
+        objectId: idSchema.describe('ID del objeto.'),
+        color: hexColorSchema.describe('Color hex en formato #rrggbb.'),
       },
     },
     async (args) =>
@@ -412,8 +467,8 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       title: 'Importar y extruir SVG a 3D',
       description: 'Convierte trazos vectoriales SVG en un sólido 3D extruido.',
       inputSchema: {
-        svgContent: z.string().min(1).describe('Contenido XML completo del archivo SVG.'),
-        name: z.string().optional().describe('Nombre del objeto generado.'),
+        svgContent: svgContentSchema.describe('Contenido XML completo del archivo SVG.'),
+        name: nameSchema.optional().describe('Nombre del objeto generado.'),
         depth: z.number().positive().default(4).describe('Altura de extrusión en mm.'),
         targetWidth: z.number().positive().default(50).describe('Ancho objetivo en mm.'),
         curveSegments: z.number().int().min(4).max(64).default(16),
@@ -457,7 +512,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Establece el volumen de cama y perfil activo entre los 12 presets multi-marca (elegoo-centauri-carbon-2, elegoo-centauri-carbon-1, bambu-p1s-x1c-a1, bambu-a1-mini, bambu-h2d, snapmaker-artisan, snapmaker-j1s, flashforge-ad5m, flashforge-ad5x, generic-220, generic-300 o free-studio).',
       inputSchema: {
-        profileId: z.string().describe('ID del perfil de impresora a activar.'),
+        profileId: profileIdSchema.describe('ID del perfil de impresora a activar.'),
       },
     },
     async (args) =>
@@ -474,47 +529,35 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Exporta los objetos indicados (o toda la escena visible) en formato STL binario o ASCII directamente en disco.',
       inputSchema: {
-        outputPath: z.string().describe('Ruta destino del archivo .stl en disco.'),
-        objectIds: z.array(z.string()).optional().describe('IDs específicos a exportar (opcional).'),
+        outputPath: outputPathSchema.describe('Ruta destino del archivo .stl en disco.'),
+        objectIds: z.array(idSchema).max(256).optional().describe('IDs específicos a exportar (opcional).'),
         binary: z.boolean().default(true).describe('true para STL binario (recomendado), false para ASCII.'),
       },
     },
     async (args) => {
       try {
         enforceSecurityPolicy(ctx, 'export_stl');
+        const targetPath = await resolveExportPath(ctx.bridge.getExportDir(), args.outputPath, '.stl');
 
         if (ctx.bridge.isConnected()) {
           const response = await ctx.bridge.sendCommand(
             'export_stl',
-            {
-              ...args,
-              returnBytes: true,
-            },
+            { objectIds: args.objectIds, binary: args.binary, returnBytes: true },
             undefined,
             { skipRateLimit: true }
           );
           if (!response.ok) {
             return failText(response.error ?? 'Error al exportar STL desde la UI de Kura3D.');
           }
-          const payload = (response.result ?? {}) as { bytesBase64?: string; text?: string };
-          if (payload.bytesBase64 || payload.text) {
-            const resolved = resolve(args.outputPath);
-            await mkdir(dirname(resolved), { recursive: true });
-            const buffer = payload.bytesBase64
-              ? Buffer.from(payload.bytesBase64, 'base64')
-              : Buffer.from(payload.text ?? '', 'utf8');
-            await writeFile(resolved, buffer);
-            return okJson({
-              mode: 'live-bridge',
-              path: resolved,
-              bytesWritten: buffer.byteLength,
-            });
+          const written = await writeLiveExport(targetPath, response.result);
+          if (written) {
+            return okJson({ mode: 'live-bridge', ...written });
           }
           return okJson({ mode: 'live-bridge', result: response.result });
         }
 
         const result = await ctx.headless.exportStl({
-          outputPath: args.outputPath,
+          outputPath: targetPath,
           objectIds: args.objectIds,
           binary: args.binary,
         });
@@ -533,8 +576,8 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Exporta los objetos indicados (o toda la escena visible) en formato estándar 3MF con Metadata/model_settings.config para el laminador destino (generic, elegoo, bambu, snapmaker, flashforge).',
       inputSchema: {
-        outputPath: z.string().describe('Ruta destino del archivo .3mf en disco.'),
-        objectIds: z.array(z.string()).optional().describe('IDs específicos a exportar (opcional).'),
+        outputPath: outputPathSchema.describe('Ruta destino del archivo .3mf en disco.'),
+        objectIds: z.array(idSchema).max(256).optional().describe('IDs específicos a exportar (opcional).'),
         slicerTarget: z
           .enum(['generic', 'elegoo', 'bambu', 'snapmaker', 'flashforge'])
           .optional()
@@ -544,38 +587,31 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
     async (args) => {
       try {
         enforceSecurityPolicy(ctx, 'export_3mf');
+        const targetPath = await resolveExportPath(ctx.bridge.getExportDir(), args.outputPath, '.3mf');
 
         if (ctx.bridge.isConnected()) {
           const response = await ctx.bridge.sendCommand(
             'export_3mf',
-            {
-              ...args,
-              returnBytes: true,
-            },
+            { objectIds: args.objectIds, slicerTarget: args.slicerTarget, returnBytes: true },
             undefined,
             { skipRateLimit: true }
           );
           if (!response.ok) {
             return failText(response.error ?? 'Error al exportar 3MF desde la UI de Kura3D.');
           }
-          const payload = (response.result ?? {}) as { bytesBase64?: string };
-          if (payload.bytesBase64) {
-            const resolved = resolve(args.outputPath);
-            await mkdir(dirname(resolved), { recursive: true });
-            const buffer = Buffer.from(payload.bytesBase64, 'base64');
-            await writeFile(resolved, buffer);
+          const written = await writeLiveExport(targetPath, response.result);
+          if (written) {
             return okJson({
               mode: 'live-bridge',
-              path: resolved,
+              ...written,
               slicerTarget: args.slicerTarget ?? 'generic',
-              bytesWritten: buffer.byteLength,
             });
           }
           return okJson({ mode: 'live-bridge', result: response.result });
         }
 
         const result = await ctx.headless.export3mf({
-          outputPath: args.outputPath,
+          outputPath: targetPath,
           objectIds: args.objectIds,
           slicerTarget: args.slicerTarget,
         });
@@ -657,7 +693,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Genera automáticamente un molde o contra-molde de 1 parte, 2 partes con llaves, caja maestra para silicona o núcleo-cavidad a partir de un objeto maestro.',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto maestro a partir del cual se genera el molde.'),
+        objectId: idSchema.describe('ID del objeto maestro a partir del cual se genera el molde.'),
         mode: z
           .enum(['direct_1part', 'direct_2part', 'silicone_master', 'core_cavity'])
           .describe('Modo de generación del molde.'),
@@ -724,10 +760,10 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Proyecta texto o gráficos SVG sobre una cara o cilindro del objeto en modo relieve (emboss), grabado (deboss) o incrustación multicolor a ras (flush_inlay).',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto objetivo.'),
+        objectId: idSchema.describe('ID del objeto objetivo.'),
         kind: z.enum(['text', 'svg']).describe('Tipo de gráfico a proyectar.'),
-        text: z.string().optional().describe('Texto a proyectar cuando kind === "text".'),
-        svgContent: z.string().optional().describe('Contenido XML SVG cuando kind === "svg".'),
+        text: shortTextSchema.optional().describe('Texto a proyectar cuando kind === "text".'),
+        svgContent: svgContentSchema.optional().describe('Contenido XML SVG cuando kind === "svg".'),
         mode: z
           .enum(['emboss', 'deboss', 'flush_inlay'])
           .describe('Modo de aplicación superficial.'),
@@ -775,7 +811,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Evalúa encaje en la cama activa, contacto con el plano Y=0, voladizos críticos, volumen, peso estimado y advertencias de impresión. Seguro en modo Solo Lectura.',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto a inspeccionar.'),
+        objectId: idSchema.describe('ID del objeto a inspeccionar.'),
         materialPreset: z
           .enum([
             'pla_matte',
@@ -824,7 +860,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       title: 'Simplificar malla 3D',
       description: 'Reduce la densidad de triángulos respetando la tolerancia geométrica en mm.',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto a simplificar.'),
+        objectId: idSchema.describe('ID del objeto a simplificar.'),
         toleranceMm: z
           .number()
           .positive()
@@ -848,7 +884,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       title: 'Refinar malla 3D',
       description: 'Subdivide y suaviza opcionalmente la malla hasta la longitud de arista objetivo en mm.',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto a refinar.'),
+        objectId: idSchema.describe('ID del objeto a refinar.'),
         targetEdgeLengthMm: z
           .number()
           .positive()
@@ -880,7 +916,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
         lengthMm: z.number().min(2).max(300).default(20).describe('Longitud roscada en mm.'),
         clearanceMm: z.number().min(0).max(2).default(0.25).describe('Holgura radial de impresión en mm.'),
         includeHead: z.boolean().optional().describe('Incluir cabeza hexagonal cuando kind === "bolt".'),
-        name: z.string().optional().describe('Nombre opcional de la pieza generada.'),
+        name: nameSchema.optional().describe('Nombre opcional de la pieza generada.'),
       },
     },
     async (args) =>
@@ -904,8 +940,8 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       title: 'Generar envolvente convexa (Convex Hull)',
       description: 'Crea un sólido cerrado que envuelve convexamente a uno o varios objetos seleccionados.',
       inputSchema: {
-        objectIds: z.array(z.string()).min(1).describe('Lista de IDs de objetos a envolver.'),
-        name: z.string().optional().describe('Nombre opcional del objeto resultante.'),
+        objectIds: z.array(idSchema).max(256).min(1).describe('Lista de IDs de objetos a envolver.'),
+        name: nameSchema.optional().describe('Nombre opcional del objeto resultante.'),
       },
     },
     async (args) =>
@@ -922,7 +958,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Alinea múltiples objetos según bordes o centros (min/center/max en X/Y/Z) o los distribuye automáticamente en grilla sobre la cama.',
       inputSchema: {
-        objectIds: z.array(z.string()).min(1).describe('IDs de los objetos a alinear o distribuir.'),
+        objectIds: z.array(idSchema).max(256).min(1).describe('IDs de los objetos a alinear o distribuir.'),
         mode: z
           .enum([
             'minX',
@@ -958,7 +994,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Establece el preset de material físico/visual del objeto (pla_matte, pla_silk, petg_clear, abs, carbon_fiber, silicone, wax_candle, metallic).',
       inputSchema: {
-        objectId: z.string().describe('ID del objeto.'),
+        objectId: idSchema.describe('ID del objeto.'),
         materialPreset: z
           .enum([
             'pla_matte',
@@ -990,7 +1026,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Analiza islas desconectadas, pliegues diedros y proporciones del objeto para detectar sub-estructuras geométricas (tanques, tubos, cúpulas, bloques, cuerpo principal). Seguro en modo Solo Lectura.',
       inputSchema: {
-        objectId: z.string().min(1).describe('ID del objeto 3D a analizar.'),
+        objectId: idSchema.describe('ID del objeto 3D a analizar.'),
         creaseAngleDeg: z
           .number()
           .min(5)
@@ -1034,7 +1070,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Detecta las regiones estructurales del modelo y asigna colores diferenciados por sub-estructura para inspección visual o impresión multicolor.',
       inputSchema: {
-        objectId: z.string().min(1).describe('ID del objeto 3D a colorear por estructuras.'),
+        objectId: idSchema.describe('ID del objeto 3D a colorear por estructuras.'),
         creaseAngleDeg: z
           .number()
           .min(5)
@@ -1063,8 +1099,8 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Extrae una región estructural previamente detectada (`regionId`) como un nuevo objeto 3D independiente, con opción de remover esas caras del objeto origen.',
       inputSchema: {
-        objectId: z.string().min(1).describe('ID del objeto origen.'),
-        regionId: z.string().min(1).describe('ID de la región estructural devuelta por kura_detect_structures.'),
+        objectId: idSchema.describe('ID del objeto origen.'),
+        regionId: idSchema.describe('ID de la región estructural devuelta por kura_detect_structures.'),
         removeFromSource: z
           .boolean()
           .optional()
@@ -1093,7 +1129,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       description:
         'Genera un reflejo especular exacto de la malla a lo largo del eje X, Y o Z invirtiendo coordenadas y orientación (winding) de triángulos para mantener normales salientes válidas.',
       inputSchema: {
-        objectId: z.string().min(1).describe('ID del objeto 3D a reflejar.'),
+        objectId: idSchema.describe('ID del objeto 3D a reflejar.'),
         axis: z.enum(['x', 'y', 'z']).describe('Eje de simetría especular (x, y o z).'),
       },
     },
@@ -1110,7 +1146,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
   /* Recursos MCP de solo lectura (`kura://scene/state` y `kura://info/about`)*/
   /* ------------------------------------------------------------------------ */
 
-  server.registerResource(
+  mcpServer.registerResource(
     'scene-state',
     'kura://scene/state',
     {
@@ -1143,7 +1179,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
     }
   );
 
-  server.registerResource(
+  mcpServer.registerResource(
     'about-kura3d',
     'kura://info/about',
     {
@@ -1168,7 +1204,13 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
               bridgeListening: ctx.bridge.isListening(),
               liveUiConnected: ctx.bridge.isConnected(),
               authEnabled: ctx.bridge.hasAuthToken(),
+              bridgeStartupError: ctx.bridge.getStartupError(),
               readOnly: ctx.bridge.isReadOnly(),
+              serverReadOnly: ctx.bridge.isServerReadOnly(),
+              readCommands: READ_COMMANDS,
+              rotationPersistent: ctx.bridge.isRotationPersistent(),
+              exportDir: ctx.bridge.getExportDir(),
+              maxMessageBytes: ctx.bridge.getMaxMessageBytes(),
               rateLimitPerMin: ctx.bridge.getRateLimitPerMin(),
             },
             null,

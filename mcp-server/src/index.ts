@@ -18,13 +18,8 @@ import { registerKuraTools } from './tools.js';
 export function createKuraMcpServer(
   options?: { bridgePort?: number } & Omit<KuraBridgeOptions, 'port'>
 ) {
-  const bridge = new KuraBridgeServer({
-    port: options?.bridgePort,
-    authToken: options?.authToken,
-    readOnly: options?.readOnly,
-    rateLimitPerMin: options?.rateLimitPerMin,
-    defaultTimeoutMs: options?.defaultTimeoutMs,
-  });
+  const { bridgePort, ...rest } = options ?? {};
+  const bridge = new KuraBridgeServer({ ...rest, port: bridgePort });
   const headless = new KuraHeadlessEngine();
 
   const server = new McpServer(
@@ -45,7 +40,8 @@ export function createKuraMcpServer(
 }
 
 async function main(): Promise<void> {
-  const { server, bridge } = createKuraMcpServer();
+  // CLI (`--read-only`, `--token-file`, `--export-dir`, …) tiene prioridad sobre las variables KURA_*
+  const { server, bridge } = createKuraMcpServer({ argv: process.argv.slice(2) });
 
   // Inicia el puente WebSocket sin bloquear ni abortar si otro proceso ya ocupa el puerto
   await bridge.start();

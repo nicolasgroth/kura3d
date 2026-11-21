@@ -2,27 +2,37 @@
  * @file mcp-server/src/bridge.ts
  * @description Servidor WebSocket local (`127.0.0.1`) que actúa como puente en tiempo real
  * entre el servidor MCP de Kura3D y la interfaz gráfica (escritorio Tauri o navegador web).
+ * Seguridad: token obligatorio (sin token el puente no se habilita), validación de Host y Origin
+ * contra DNS rebinding, límite de tamaño de mensaje, rate-limit de comandos y de autenticaciones
+ * fallidas, rotación de token con revocación inmediata y modo Solo Lectura aplicado en servidor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage } from 'node:http';
 import { WebSocket, WebSocketServer } from 'ws';
-import type {
-  KuraCommandName,
-  KuraCommandRequest,
-  KuraCommandResponse,
-} from './types.js';
+import {
+  MIN_TOKEN_LENGTH,
+  ROTATION_TOKEN_PATTERN,
+  parseBooleanFlag,
+  resolveBridgeConfig,
+  writeTokenFile,
+  type BridgeConfigOverrides,
+  type ResolvedBridgeConfig,
+} from './config.js';
+import { uiCommandResponseSchema, uiControlMessageSchema } from './schemas.js';
+import { READ_COMMANDS, isReadCommand } from './toolPolicy.js';
+import type { KuraCommandName, KuraCommandRequest, KuraCommandResponse } from './types.js';
 
-/** Comandos permitidos cuando el servidor MCP opera en modo Solo Lectura (`KURA_BRIDGE_READ_ONLY=true`). */
-export const READ_ONLY_COMMANDS = new Set<KuraCommandName>([
-  'get_scene_state',
-  'capture_viewport',
-  'analyze_printability',
-  'detect_structures',
-]);
+/** Comandos permitidos en modo Solo Lectura (derivado de `toolPolicy.ts`). */
+export const READ_ONLY_COMMANDS: ReadonlySet<KuraCommandName> = new Set(READ_COMMANDS);
+
+/** Versión del protocolo de control del puente (mensajes `type`). */
+export const BRIDGE_PROTOCOL_VERSION = 1;
+/** Código de cierre WebSocket enviado a las sesiones cuyo token fue revocado por rotación. */
+export const CLOSE_TOKEN_ROTATED = 4001;
 
 /** Entrada de petición pendiente de respuesta desde el cliente Kura3D conectado. */
 interface PendingRequest {
@@ -32,23 +42,23 @@ interface PendingRequest {
 }
 
 /** Opciones de configuración y seguridad para el puente WebSocket local. */
-export interface KuraBridgeOptions {
-  /** Puerto TCP local donde escuchar. Por defecto `process.env.KURA_BRIDGE_PORT || 17432`. */
-  port?: number;
-  /** Token secreto compartido para autenticar conexiones entrantes (`KURA_BRIDGE_TOKEN`). */
-  authToken?: string;
-  /** Si es true, restringe el servidor a comandos de solo lectura (`KURA_BRIDGE_READ_ONLY=true`). */
-  readOnly?: boolean;
-  /** Límite máximo de comandos por minuto en ventana deslizante (`KURA_BRIDGE_RATE_LIMIT || 120`). */
-  rateLimitPerMin?: number;
+export interface KuraBridgeOptions extends BridgeConfigOverrides {
   /** Tiempo máximo de espera por comando en milisegundos. */
   defaultTimeoutMs?: number;
+  /** Argumentos CLI a considerar (por defecto ninguno; `index.ts` pasa `process.argv`). */
+  argv?: readonly string[];
+}
+
+/** Resultado de una rotación de token. */
+export interface TokenRotationResult {
+  ok: boolean;
+  persistent: boolean;
+  reason?: string;
 }
 
 /**
- * Valida que el encabezado `Origin` de una conexión WebSocket entrante corresponda
- * únicamente a orígenes locales autorizados (clientes nativos sin Origin, localhost,
- * 127.0.0.1 o webview de Tauri), bloqueando conexiones de sitios web externos.
+ * Valida que el encabezado `Origin` corresponda a orígenes locales autorizados (clientes nativos
+ * sin Origin, localhost, 127.0.0.1 o webview de Tauri), bloqueando páginas web ajenas.
  */
 export function isAllowedLocalOrigin(origin: string | undefined): boolean {
   if (!origin || origin.trim() === '') {
@@ -59,8 +69,24 @@ export function isAllowedLocalOrigin(origin: string | undefined): boolean {
     /^http:\/\/localhost(:\d+)?$/i.test(normalized) ||
     /^http:\/\/127\.0\.0\.1(:\d+)?$/i.test(normalized) ||
     /^tauri:\/\/localhost$/i.test(normalized) ||
-    /^https:\/\/tauri\.localhost$/i.test(normalized)
+    /^https?:\/\/tauri\.localhost$/i.test(normalized)
   );
+}
+
+/**
+ * Valida el encabezado `Host` contra DNS rebinding: solo `127.0.0.1:<puerto>` o `localhost:<puerto>`.
+ */
+export function isAllowedLocalHost(host: string | undefined, port: number): boolean {
+  if (!host) return false;
+  const h = host.trim().toLowerCase();
+  return h === `127.0.0.1:${port}` || h === `localhost:${port}`;
+}
+
+/** Compara dos secretos en tiempo constante (hash SHA-256 para no filtrar la longitud). */
+export function constantTimeEquals(expected: string, received: string): boolean {
+  const a = createHash('sha256').update(expected, 'utf8').digest();
+  const b = createHash('sha256').update(received, 'utf8').digest();
+  return timingSafeEqual(a, b) && expected.length === received.length;
 }
 
 /**
@@ -69,60 +95,54 @@ export function isAllowedLocalOrigin(origin: string | undefined): boolean {
  */
 export class KuraBridgeServer {
   private readonly host = '127.0.0.1';
+  private readonly config: ResolvedBridgeConfig;
   private port: number;
-  private readonly authToken: string;
-  private readonly readOnly: boolean;
-  private readonly rateLimitPerMin: number;
+  private authToken: string;
+  private uiReadOnly = false;
   private readonly defaultTimeoutMs: number;
   private wss: WebSocketServer | null = null;
   private activeClient: WebSocket | null = null;
   private readonly pending = new Map<string, PendingRequest>();
   private commandTimestamps: number[] = [];
+  private authFailureTimestamps: number[] = [];
   private listening = false;
+  private startupError: string | null = null;
 
   constructor(options: KuraBridgeOptions = {}) {
-    const envPort = Number(process.env.KURA_BRIDGE_PORT || 17432);
-    const envRate = Number(process.env.KURA_BRIDGE_RATE_LIMIT || 120);
-
-    this.port = options.port ?? (Number.isFinite(envPort) && envPort >= 0 ? envPort : 17432);
-    this.authToken = (options.authToken ?? process.env.KURA_BRIDGE_TOKEN ?? '').trim();
-    this.readOnly = options.readOnly ?? process.env.KURA_BRIDGE_READ_ONLY === 'true';
-    this.rateLimitPerMin =
-      options.rateLimitPerMin ?? (Number.isFinite(envRate) && envRate > 0 ? envRate : 120);
+    this.config = resolveBridgeConfig(options, process.env, options.argv ?? []);
+    this.port = this.config.port;
+    this.authToken = this.config.authToken;
     this.defaultTimeoutMs = options.defaultTimeoutMs ?? 15_000;
   }
 
-  /** Inicia el servidor WebSocket local sin abortar el proceso si el puerto ya está ocupado. */
+  /**
+   * Inicia el servidor WebSocket local. Devuelve `false` sin abrir el puerto si no hay token
+   * válido configurado (el puente nunca se habilita sin autenticación) o si el puerto está ocupado.
+   */
   async start(): Promise<boolean> {
     if (this.wss) {
       return this.listening;
     }
+
+    if (this.authToken.length < MIN_TOKEN_LENGTH) {
+      this.startupError =
+        this.authToken.length === 0
+          ? 'Puente WebSocket deshabilitado: falta KURA_BRIDGE_TOKEN (o --token-file). Modo Headless disponible.'
+          : `Puente WebSocket deshabilitado: el token debe tener al menos ${MIN_TOKEN_LENGTH} caracteres.`;
+      console.error(`[Kura3D-MCP] ${this.startupError}`);
+      this.listening = false;
+      return false;
+    }
+    this.startupError = null;
 
     return new Promise<boolean>((resolve) => {
       let settled = false;
       const wss = new WebSocketServer({
         host: this.host,
         port: this.port,
-        verifyClient: (info, done) => {
-          const origin = info.origin ?? info.req.headers.origin;
-          if (!isAllowedLocalOrigin(origin)) {
-            console.error(
-              `[Kura3D-MCP] Conexión WebSocket rechazada por origen no permitido: ${String(origin)}`
-            );
-            done(false, 403, 'Origen no permitido en el puente local de Kura3D');
-            return;
-          }
-
-          if (!this.verifyRequestToken(info.req)) {
-            console.error(
-              '[Kura3D-MCP] Conexión WebSocket rechazada (401): token de autenticación ausente o inválido.'
-            );
-            done(false, 401, 'Unauthorized: token Bearer o query ?token inválido o ausente');
-            return;
-          }
-
-          done(true);
-        },
+        maxPayload: this.config.maxMessageBytes,
+        perMessageDeflate: false,
+        verifyClient: (info, done) => this.verifyClient(info.req, info.origin, done),
       });
 
       this.wss = wss;
@@ -133,46 +153,14 @@ export class KuraBridgeServer {
           this.port = address.port;
         }
         this.listening = true;
-        console.error(
-          `[Kura3D-MCP] Puente WebSocket escuchando en ws://${this.host}:${this.port}`
-        );
+        console.error(`[Kura3D-MCP] Puente WebSocket escuchando en ws://${this.host}:${this.port}`);
         if (!settled) {
           settled = true;
           resolve(true);
         }
       });
 
-      wss.on('connection', (socket) => {
-        // Mantiene la conexión más reciente de la UI de Kura3D como cliente activo
-        if (this.activeClient && this.activeClient !== socket) {
-          try {
-            this.activeClient.close(1000, 'Reemplazado por nueva instancia de Kura3D');
-          } catch {
-            // Ignora errores al cerrar conexiones previas obsoletas
-          }
-        }
-
-        this.activeClient = socket;
-        console.error('[Kura3D-MCP] UI de Kura3D conectada en modo Live Bridge.');
-
-        socket.on('message', (raw) => {
-          this.handleMessage(raw.toString('utf8'));
-        });
-
-        socket.on('close', () => {
-          if (this.activeClient === socket) {
-            this.activeClient = null;
-            this.rejectAllPending(
-              new Error('La conexión con la UI de Kura3D se cerró antes de completar el comando.')
-            );
-            console.error('[Kura3D-MCP] UI de Kura3D desconectada. Modo Headless disponible.');
-          }
-        });
-
-        socket.on('error', (err) => {
-          console.error(`[Kura3D-MCP] Error en socket cliente: ${err.message}`);
-        });
-      });
+      wss.on('connection', (socket, req) => this.handleConnection(socket, req));
 
       wss.on('error', (err: NodeJS.ErrnoException) => {
         if (err.code === 'EADDRINUSE') {
@@ -207,24 +195,52 @@ export class KuraBridgeServer {
     return this.listening;
   }
 
+  /** Motivo por el que el puente no se habilitó (o `null`). */
+  getStartupError(): string | null {
+    return this.startupError;
+  }
+
   /** Devuelve el puerto actual asignado al puente WebSocket. */
   getPort(): number {
     return this.port;
   }
 
-  /** Indica si el servidor MCP está restringido al modo de seguridad Solo Lectura. */
+  /**
+   * Modo Solo Lectura efectivo: impuesto por el servidor (CLI/env/opciones) o solicitado por la UI
+   * en el handshake (`readOnly=1`). La solicitud de la UI se conserva tras desconectarse.
+   */
   isReadOnly(): boolean {
-    return this.readOnly;
+    return this.config.readOnly || this.uiReadOnly;
   }
 
-  /** Indica si la autenticación por token Bearer/query está habilitada. */
+  /** Solo lectura impuesto por el operador del servidor (no lo puede desactivar la UI). */
+  isServerReadOnly(): boolean {
+    return this.config.readOnly;
+  }
+
+  /** Indica si hay un token válido configurado (requisito para habilitar el puente). */
   hasAuthToken(): boolean {
-    return this.authToken.length > 0;
+    return this.authToken.length >= MIN_TOKEN_LENGTH;
+  }
+
+  /** Indica si las rotaciones de token sobreviven a un reinicio (hay archivo de token). */
+  isRotationPersistent(): boolean {
+    return this.config.tokenFile !== null;
+  }
+
+  /** Directorio raíz permitido para exportaciones a disco. */
+  getExportDir(): string {
+    return this.config.exportDir;
+  }
+
+  /** Tamaño máximo aceptado por mensaje WebSocket entrante, en bytes. */
+  getMaxMessageBytes(): number {
+    return this.config.maxMessageBytes;
   }
 
   /** Devuelve el límite máximo configurado de comandos por minuto. */
   getRateLimitPerMin(): number {
-    return this.rateLimitPerMin;
+    return this.config.rateLimitPerMin;
   }
 
   /**
@@ -233,16 +249,43 @@ export class KuraBridgeServer {
    */
   consumeRateLimit(): void {
     const now = Date.now();
-    const windowStart = now - 60_000;
-    this.commandTimestamps = this.commandTimestamps.filter((ts) => ts > windowStart);
-
-    if (this.commandTimestamps.length >= this.rateLimitPerMin) {
+    this.commandTimestamps = this.commandTimestamps.filter((ts) => ts > now - 60_000);
+    if (this.commandTimestamps.length >= this.config.rateLimitPerMin) {
       throw new Error(
-        `Límite de tasa MCP excedido (${this.rateLimitPerMin} comandos/minuto). Espere unos segundos antes de reintentar.`
+        `Límite de tasa MCP excedido (${this.config.rateLimitPerMin} comandos/minuto). Espere unos segundos antes de reintentar.`
       );
     }
-
     this.commandTimestamps.push(now);
+  }
+
+  /**
+   * Rota el token: el anterior queda revocado de inmediato, se persiste si hay archivo de token
+   * y se cierran todas las sesiones autenticadas con el token viejo (código 4001).
+   */
+  async rotateToken(newToken: string): Promise<TokenRotationResult> {
+    if (!ROTATION_TOKEN_PATTERN.test(newToken)) {
+      return { ok: false, persistent: false, reason: 'Formato de token inválido (32–256 caracteres URL-safe).' };
+    }
+    if (constantTimeEquals(this.authToken, newToken)) {
+      return { ok: false, persistent: false, reason: 'El token nuevo es igual al vigente.' };
+    }
+
+    this.authToken = newToken;
+    let persistent = false;
+    if (this.config.tokenFile) {
+      try {
+        await writeTokenFile(this.config.tokenFile, newToken);
+        persistent = true;
+      } catch (err) {
+        console.error(
+          `[Kura3D-MCP] No se pudo persistir el token rotado: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    }
+    console.error(
+      `[Kura3D-MCP] Token del puente rotado (${persistent ? 'persistente' : 'solo en memoria hasta reiniciar'}).`
+    );
+    return { ok: true, persistent };
   }
 
   /** Envía un comando al frontend de Kura3D y espera su respuesta JSON correlacionada por `id`. */
@@ -252,10 +295,8 @@ export class KuraBridgeServer {
     timeoutMs: number = this.defaultTimeoutMs,
     options?: { skipRateLimit?: boolean }
   ): Promise<KuraCommandResponse> {
-    if (this.readOnly && !READ_ONLY_COMMANDS.has(command)) {
-      throw new Error(
-        `Operación bloqueada: Kura3D MCP se encuentra en modo Solo Lectura (KURA_BRIDGE_READ_ONLY=true).`
-      );
+    if (this.isReadOnly() && !isReadCommand(command)) {
+      throw new Error('Operación bloqueada: Kura3D MCP se encuentra en modo Solo Lectura.');
     }
 
     if (!options?.skipRateLimit) {
@@ -274,9 +315,7 @@ export class KuraBridgeServer {
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(
-          new Error(
-            `Tiempo de espera agotado (${timeoutMs} ms) ejecutando el comando '${command}' en Kura3D.`
-          )
+          new Error(`Tiempo de espera agotado (${timeoutMs} ms) ejecutando el comando '${command}' en Kura3D.`)
         );
       }, timeoutMs);
 
@@ -313,14 +352,94 @@ export class KuraBridgeServer {
     const server = this.wss;
     this.wss = null;
     this.listening = false;
-
+    for (const client of server.clients) {
+      client.terminate();
+    }
     await new Promise<void>((resolve) => {
       server.close(() => resolve());
     });
   }
 
-  /** Procesa mensajes entrantes y resuelve la promesa correspondiente al `id`. */
-  private handleMessage(rawText: string): void {
+  /** Valida throttle de fallos, Host, Origin y token antes de aceptar el upgrade WebSocket. */
+  private verifyClient(
+    req: IncomingMessage,
+    origin: string | undefined,
+    done: (result: boolean, code?: number, message?: string) => void
+  ): void {
+    const now = Date.now();
+    this.authFailureTimestamps = this.authFailureTimestamps.filter((ts) => ts > now - 60_000);
+    if (this.authFailureTimestamps.length >= this.config.authFailureLimitPerMin) {
+      done(false, 429, 'Demasiados intentos fallidos; espera un minuto.');
+      return;
+    }
+
+    const reject = (code: number, message: string) => {
+      this.authFailureTimestamps.push(now);
+      console.error(`[Kura3D-MCP] Conexión WebSocket rechazada (${code}): ${message}`);
+      done(false, code, message);
+    };
+
+    if (!isAllowedLocalHost(req.headers.host, this.port)) {
+      reject(403, 'Host no permitido (solo 127.0.0.1/localhost).');
+      return;
+    }
+    if (!isAllowedLocalOrigin(origin ?? req.headers.origin)) {
+      reject(403, 'Origen no permitido en el puente local de Kura3D.');
+      return;
+    }
+    if (!this.verifyRequestToken(req)) {
+      reject(401, 'Token de autenticación ausente o inválido.');
+      return;
+    }
+    done(true);
+  }
+
+  /** Registra la sesión de la UI, aplica la preferencia de solo lectura y envía el saludo. */
+  private handleConnection(socket: WebSocket, req: IncomingMessage): void {
+    if (this.activeClient && this.activeClient !== socket) {
+      try {
+        this.activeClient.close(1000, 'Reemplazado por nueva instancia de Kura3D');
+      } catch {
+        // Ignora errores al cerrar conexiones previas obsoletas
+      }
+    }
+
+    this.activeClient = socket;
+    this.uiReadOnly = this.parseUiReadOnly(req);
+    console.error('[Kura3D-MCP] UI de Kura3D conectada en modo Live Bridge.');
+
+    this.sendControl(socket, {
+      type: 'hello',
+      protocol: BRIDGE_PROTOCOL_VERSION,
+      readOnly: this.isReadOnly(),
+      serverReadOnly: this.config.readOnly,
+      readCommands: READ_COMMANDS,
+      rotationPersistent: this.isRotationPersistent(),
+      maxMessageBytes: this.config.maxMessageBytes,
+    });
+
+    socket.on('message', (raw, isBinary) => {
+      if (isBinary) return;
+      void this.handleMessage(socket, raw.toString());
+    });
+
+    socket.on('close', () => {
+      if (this.activeClient === socket) {
+        this.activeClient = null;
+        this.rejectAllPending(
+          new Error('La conexión con la UI de Kura3D se cerró antes de completar el comando.')
+        );
+        console.error('[Kura3D-MCP] UI de Kura3D desconectada. Modo Headless disponible.');
+      }
+    });
+
+    socket.on('error', (err) => {
+      console.error(`[Kura3D-MCP] Error en socket cliente: ${err.message}`);
+    });
+  }
+
+  /** Procesa respuestas a comandos y mensajes de control (rotación de token). */
+  private async handleMessage(socket: WebSocket, rawText: string): Promise<void> {
     let parsed: unknown;
     try {
       parsed = JSON.parse(rawText);
@@ -329,23 +448,58 @@ export class KuraBridgeServer {
       return;
     }
 
-    if (
-      typeof parsed !== 'object' ||
-      parsed === null ||
-      typeof (parsed as KuraCommandResponse).id !== 'string'
-    ) {
+    if (typeof parsed === 'object' && parsed !== null && 'type' in parsed) {
+      const control = uiControlMessageSchema.safeParse(parsed);
+      if (control.success && control.data.type === 'rotate_token') {
+        const result = await this.rotateToken(control.data.token);
+        if (!result.ok) {
+          this.sendControl(socket, { type: 'token_rotation_failed', reason: result.reason });
+          return;
+        }
+        this.sendControl(socket, { type: 'token_rotated', persistent: result.persistent });
+        this.revokeAllSessions();
+      }
       return;
     }
 
-    const response = parsed as KuraCommandResponse;
-    const entry = this.pending.get(response.id);
+    const response = uiCommandResponseSchema.safeParse(parsed);
+    if (!response.success) {
+      return;
+    }
+    const entry = this.pending.get(response.data.id);
     if (!entry) {
       return;
     }
-
     clearTimeout(entry.timer);
-    this.pending.delete(response.id);
-    entry.resolve(response);
+    this.pending.delete(response.data.id);
+    entry.resolve(response.data as KuraCommandResponse);
+  }
+
+  /** Cierra todas las sesiones abiertas (token revocado); la UI se reconecta con el token nuevo. */
+  private revokeAllSessions(): void {
+    if (!this.wss) return;
+    for (const client of this.wss.clients) {
+      try {
+        client.close(CLOSE_TOKEN_ROTATED, 'Token rotado');
+      } catch {
+        client.terminate();
+      }
+    }
+  }
+
+  private sendControl(socket: WebSocket, message: Record<string, unknown>): void {
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify(message));
+    }
+  }
+
+  private parseUiReadOnly(req: IncomingMessage): boolean {
+    try {
+      const url = new URL(req.url ?? '/', `http://${this.host}`);
+      return parseBooleanFlag(url.searchParams.get('readOnly') ?? undefined) ?? false;
+    } catch {
+      return false;
+    }
   }
 
   /** Rechaza todas las peticiones en vuelo ante desconexión o apagado del servidor. */
@@ -358,12 +512,12 @@ export class KuraBridgeServer {
   }
 
   /**
-   * Extrae y valida en tiempo constante (`timingSafeEqual`) el token desde
-   * `Authorization: Bearer <token>` o el parámetro query `?token=<token>`.
+   * Extrae el token de `Authorization: Bearer <token>` o del query `?token=<token>` y lo compara
+   * en tiempo constante con el token vigente. Sin token vigente, rechaza siempre.
    */
   private verifyRequestToken(req: IncomingMessage): boolean {
-    if (!this.authToken) {
-      return true;
+    if (!this.hasAuthToken()) {
+      return false;
     }
 
     let candidate = '';
@@ -384,16 +538,9 @@ export class KuraBridgeServer {
       }
     }
 
-    if (!candidate) {
+    if (!candidate || candidate.length > 512) {
       return false;
     }
-
-    const expectedBuf = Buffer.from(this.authToken, 'utf8');
-    const receivedBuf = Buffer.from(candidate, 'utf8');
-    if (expectedBuf.length !== receivedBuf.length) {
-      return false;
-    }
-
-    return timingSafeEqual(expectedBuf, receivedBuf);
+    return constantTimeEquals(this.authToken, candidate);
   }
 }
