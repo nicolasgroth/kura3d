@@ -26,8 +26,10 @@ import {
   manifoldToMeshData,
   meshDataToManifold,
 } from './manifoldKernel';
+import { EngineError, requireNumberInRange } from './engineErrors';
 import {
   applyTransformToMesh,
+  computeMeshStats,
   createPrimitiveMesh,
   normalizeMeshToBed,
 } from './primitives';
@@ -478,8 +480,8 @@ export async function projectGraphicOntoSurface(
 ): Promise<{ mesh: MeshData; position: Vec3 }> {
   const wasm = await initManifoldEngine();
 
-  const widthMm = Math.max(2, options.widthMm || 20);
-  const depthMm = Math.max(0.2, options.depthMm || 1.2);
+  const widthMm = requireNumberInRange('widthMm', options.widthMm, 1, 1000, 20);
+  const depthMm = requireNumberInRange('depthMm', options.depthMm, 0.1, 100, 1.2);
   const offsetU = options.offsetU ?? 0;
   const offsetV = options.offsetV ?? 0;
   const stampColor = (options.colorHex || '#f97316').toLowerCase();
@@ -499,8 +501,12 @@ export async function projectGraphicOntoSurface(
       curveSegments: 10,
     });
   } else {
+    const text = options.text?.trim() ?? '';
+    if (!text) {
+      throw new EngineError('PROJECTION_EMPTY_TEXT');
+    }
     rawGraphic = await createPrimitiveMesh('text', {
-      text: options.text?.trim() || 'KURA',
+      text,
       fontSize: 16,
       height: 1,
     });
@@ -526,6 +532,9 @@ export async function projectGraphicOntoSurface(
   const sampleCache = new Map<string, SurfaceHitSample>();
   const vertCount = Math.floor(uvGraphic.coords.length / 3);
   const vertexSamples: SurfaceHitSample[] = new Array(vertCount);
+  let missedSamples = 0;
+  // Espesor mínimo de la pieza bajo el gráfico (distancia entre la 1.ª y 2.ª intersección del rayo)
+  let minThickness = Infinity;
 
   try {
     for (let i = 0; i < vertCount; i++) {
@@ -546,6 +555,10 @@ export async function projectGraphicOntoSurface(
 
         if (hits.length > 0) {
           const hit = hits[0];
+          const exit = hits.find((h) => h.distance > hit.distance + 1e-4);
+          if (exit) {
+            minThickness = Math.min(minThickness, exit.distance - hit.distance);
+          }
           let nx = -dir.x;
           let ny = -dir.y;
           let nz = -dir.z;
@@ -573,6 +586,7 @@ export async function projectGraphicOntoSurface(
             normal: [nx / nLen, ny / nLen, nz / nLen],
           };
         } else {
+          missedSamples++;
           // Respaldo seguro si un vértice periférico cae fuera de la silueta del objetivo:
           // buscamos el vértice más cercano al punto proyectado sobre la envolvente para evitar NaN.
           let bestDistSq = Infinity;
@@ -607,6 +621,24 @@ export async function projectGraphicOntoSurface(
   } finally {
     raySetup.geometry.dispose();
     raySetup.material.dispose();
+  }
+
+  // El gráfico debe caer completo sobre la pieza: si algún rayo no la toca, se saldría de la cara
+  if (missedSamples > 0) {
+    throw new EngineError('PROJECTION_OUT_OF_BOUNDS', {
+      width: widthMm,
+      missed: missedSamples,
+      total: vertCount,
+    });
+  }
+  // Grabado o incrustación más profundos que la pieza la atravesarían
+  const MIN_FLOOR_MM = 0.4;
+  if (options.mode !== 'emboss' && Number.isFinite(minThickness) && depthMm > minThickness - MIN_FLOOR_MM) {
+    throw new EngineError('PROJECTION_TOO_DEEP', {
+      depth: depthMm,
+      thickness: minThickness,
+      floor: MIN_FLOOR_MM,
+    });
   }
 
   // 3) Construir el sello Manifold y ejecutar el modo booleano correspondiente
@@ -689,12 +721,28 @@ export async function projectGraphicOntoSurface(
     }
 
     if (resultManifold.isEmpty() || resultManifold.numTri() === 0) {
-      throw new Error(
-        'La proyección sobre superficie produjo una geometría vacía.'
-      );
+      throw new EngineError('PROJECTION_NO_EFFECT', { change: 0 });
+    }
+
+    // El resultado debe cambiar de verdad la pieza (no solo agregar triángulos sueltos)
+    const stampVolume = Math.max(
+      1e-9,
+      (options.mode === 'flush_inlay' ? pocketManifold : stampManifold)?.volume() ?? 0
+    );
+    const before = targetManifold.volume();
+    const after = resultManifold.volume();
+    const effect =
+      options.mode === 'flush_inlay'
+        ? (inlayIntersectManifold?.volume() ?? 0) / stampVolume
+        : Math.abs(after - before) / stampVolume;
+    if (effect < 0.05) {
+      throw new EngineError('PROJECTION_NO_EFFECT', { change: effect * 100 });
     }
 
     const outMesh = manifoldToMeshData(resultManifold, registry.idToColor);
+    if (!computeMeshStats(outMesh).isManifold) {
+      throw new EngineError('PROJECTION_NON_MANIFOLD');
+    }
     return extractPositionAndNormalize(outMesh);
   } finally {
     targetManifold?.delete();

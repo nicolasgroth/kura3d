@@ -12,7 +12,6 @@ import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';
 import type {
   BooleanOpType,
   CutConnectorType,
-  HollowOptions,
   MeshData,
   PlaneCutOptions,
   SceneObject,
@@ -24,6 +23,12 @@ import {
   manifoldToMeshData,
   meshDataToManifold,
 } from './manifoldKernel';
+import {
+  assertConnectorsFit,
+  CONNECTOR_MIN_WALL_MM,
+  validateConnectorParams,
+} from './cutConnectorChecks';
+import { EngineError } from './engineErrors';
 import {
   applyTransformToMesh,
   computeMeshStats,
@@ -149,110 +154,7 @@ export async function runBooleanOperation(
   }
 }
 
-/**
- * Crea una carcasa hueca watertight (hollow shell) con un grosor de pared específico
- * restando un volumen interior escalado respecto al centro de la caja envolvente,
- * con opción de perforar un orificio de drenaje inferior para impresión en resina/FDM.
- *
- * @param obj Objeto de escena origen (opera sobre su malla local).
- * @param options Parámetros de ahuecado en milímetros.
- * @returns Malla hueca watertight en espacio local.
- */
-export async function hollowMesh(
-  obj: SceneObject,
-  options: HollowOptions
-): Promise<MeshData> {
-  if (!options.enabled || options.wallThickness <= 0) {
-    return {
-      positions: new Float32Array(obj.mesh.positions),
-      indices: new Uint32Array(obj.mesh.indices),
-      ...(obj.mesh.normals ? { normals: new Float32Array(obj.mesh.normals) } : {}),
-      ...(obj.mesh.faceColors ? { faceColors: [...obj.mesh.faceColors] } : {}),
-    };
-  }
-
-  const wasm = await initManifoldEngine();
-  const registry = obj.mesh.faceColors?.length
-    ? createColorRegistry(wasm, [
-        { color: obj.color, faceColors: obj.mesh.faceColors },
-      ])
-    : null;
-
-  let outer: Manifold | null = null;
-  let shifted: Manifold | null = null;
-  let scaled: Manifold | null = null;
-  let inner: Manifold | null = null;
-  let hollowed: Manifold | null = null;
-  let drainCylRaw: Manifold | null = null;
-  let drainCylRot: Manifold | null = null;
-  let drainCyl: Manifold | null = null;
-  let finalManifold: Manifold | null = null;
-
-  try {
-    outer = meshDataToManifold(
-      wasm,
-      obj.mesh,
-      registry?.colorToId,
-      obj.color
-    );
-    const bbox = outer.boundingBox();
-    const dx = bbox.max[0] - bbox.min[0];
-    const dy = bbox.max[1] - bbox.min[1];
-    const dz = bbox.max[2] - bbox.min[2];
-    const minDim = Math.min(dx, dy, dz);
-    const t = options.wallThickness;
-
-    if (t * 2 >= minDim - 0.1) {
-      throw new Error(
-        `El grosor de pared (${t} mm) es demasiado grande para la dimensión mínima del objeto (${minDim.toFixed(2)} mm).`
-      );
-    }
-
-    const cx = (bbox.min[0] + bbox.max[0]) * 0.5;
-    const cy = (bbox.min[1] + bbox.max[1]) * 0.5;
-    const cz = (bbox.min[2] + bbox.max[2]) * 0.5;
-
-    const sx = (dx - 2 * t) / dx;
-    const sy = (dy - 2 * t) / dy;
-    const sz = (dz - 2 * t) / dz;
-
-    shifted = outer.translate([-cx, -cy, -cz]);
-    scaled = shifted.scale([sx, sy, sz]);
-    inner = scaled.translate([cx, cy, cz]);
-
-    hollowed = outer.subtract(inner);
-    finalManifold = hollowed;
-
-    if (options.drainHole) {
-      const maxHoleR = Math.max(0.6, Math.min(dx, dz) * 0.45);
-      const holeR = Math.max(
-        0.5,
-        Math.min(options.drainHoleRadius ?? Math.min(dx, dz) * 0.15, maxHoleR)
-      );
-      const holeHeight = t * 2 + 2;
-      // Cilindro vertical (Y-up) centrado en el fondo para perforar únicamente la pared inferior
-      drainCylRaw = wasm.Manifold.cylinder(holeHeight, holeR, holeR, 24, true);
-      drainCylRot = drainCylRaw.rotate([-90, 0, 0]);
-      drainCyl = drainCylRot.translate([cx, bbox.min[1] + t * 0.5, cz]);
-      finalManifold = hollowed.subtract(drainCyl);
-    }
-
-    const resultMesh = manifoldToMeshData(finalManifold, registry?.idToColor);
-    return normalizeMeshToBed(resultMesh);
-  } finally {
-    outer?.delete();
-    shifted?.delete();
-    scaled?.delete();
-    inner?.delete();
-    if (finalManifold && finalManifold !== hollowed) {
-      finalManifold.delete();
-    }
-    hollowed?.delete();
-    drainCylRaw?.delete();
-    drainCylRot?.delete();
-    drainCyl?.delete();
-  }
-}
+export { hollowMesh, hollowMeshDetailed, type HollowResult } from './hollow';
 
 /**
  * Construye una pieza conectora individual orientada según el eje de corte.
@@ -345,8 +247,8 @@ function computeConnectorPositionsOnPlane(
   cutCoord: number,
   connectorCount: number,
   margin: number
-): Vec3[] {
-  const count = Math.max(1, Math.min(4, Math.round(connectorCount)));
+): { centers: Vec3[]; fits: boolean } {
+  const count = connectorCount;
   let oriented: Manifold | null = null;
   let sliceCs: CrossSection | null = null;
   let safeCs: CrossSection | null = null;
@@ -364,12 +266,15 @@ function computeConnectorPositionsOnPlane(
 
     sliceCs = oriented.slice(cutCoord);
     if (sliceCs.isEmpty()) {
-      return [];
+      return { centers: [], fits: false };
     }
 
+    // La zona segura (cara contraída por el radio del conector + holgura + pared) debe existir
     safeCs = sliceCs.offset(-margin, 'Round');
-    const targetCs = safeCs.isEmpty() ? sliceCs : safeCs;
-    const bounds = targetCs.bounds();
+    if (safeCs.isEmpty()) {
+      return { centers: [], fits: false };
+    }
+    const bounds = safeCs.bounds();
 
     const uMin = bounds.min[0];
     const uMax = bounds.max[0];
@@ -380,32 +285,33 @@ function computeConnectorPositionsOnPlane(
     const uSpan = uMax - uMin;
     const vSpan = vMax - vMin;
 
+    // Máxima separación dentro de la zona segura (los extremos de un círculo inscrito siguen dentro)
     const uvCandidates: [number, number][] = [];
     if (count === 1) {
       uvCandidates.push([uMid, vMid]);
     } else if (count === 2) {
       if (uSpan >= vSpan) {
-        uvCandidates.push([uMin + 0.28 * uSpan, vMid], [uMin + 0.72 * uSpan, vMid]);
+        uvCandidates.push([uMid - 0.49 * uSpan, vMid], [uMid + 0.49 * uSpan, vMid]);
       } else {
-        uvCandidates.push([uMid, vMin + 0.28 * vSpan], [uMid, vMin + 0.72 * vSpan]);
+        uvCandidates.push([uMid, vMid - 0.49 * vSpan], [uMid, vMid + 0.49 * vSpan]);
       }
     } else if (count === 3) {
       uvCandidates.push(
-        [uMid, vMid + 0.25 * vSpan],
-        [uMid - 0.25 * uSpan, vMid - 0.22 * vSpan],
-        [uMid + 0.25 * uSpan, vMid - 0.22 * vSpan]
+        [uMid, vMid + 0.48 * vSpan],
+        [uMid - 0.41 * uSpan, vMid - 0.24 * vSpan],
+        [uMid + 0.41 * uSpan, vMid - 0.24 * vSpan]
       );
     } else {
       uvCandidates.push(
-        [uMid - 0.24 * uSpan, vMid - 0.24 * vSpan],
-        [uMid + 0.24 * uSpan, vMid - 0.24 * vSpan],
-        [uMid - 0.24 * uSpan, vMid + 0.24 * vSpan],
-        [uMid + 0.24 * uSpan, vMid + 0.24 * vSpan]
+        [uMid - 0.34 * uSpan, vMid - 0.34 * vSpan],
+        [uMid + 0.34 * uSpan, vMid - 0.34 * vSpan],
+        [uMid - 0.34 * uSpan, vMid + 0.34 * vSpan],
+        [uMid + 0.34 * uSpan, vMid + 0.34 * vSpan]
       );
     }
 
     // Convertir coordenadas 2D (u, v) del corte de vuelta al espacio mundial 3D
-    return uvCandidates.map(([u, v]): Vec3 => {
+    const centers = uvCandidates.map(([u, v]): Vec3 => {
       if (axis === 'z') {
         return [u, v, cutCoord];
       }
@@ -414,6 +320,7 @@ function computeConnectorPositionsOnPlane(
       }
       return [cutCoord, v, -u];
     });
+    return { centers, fits: true };
   } finally {
     if (oriented && oriented !== manifold) {
       oriented.delete();
@@ -485,19 +392,24 @@ export async function planeCutWithConnectors(
       negHalf.numTri() > 0;
 
     if (options.connectorType !== 'none' && bothNonEmpty) {
-      const tol = Math.max(0, options.tolerance);
-      const size = Math.max(0.5, options.connectorSize);
-      const depth = Math.max(1.0, options.connectorDepth);
-      const margin = size + tol + 0.5;
+      const { size, depth, tolerance: tol, count } = validateConnectorParams(options);
+      const margin = size + tol + CONNECTOR_MIN_WALL_MM;
 
-      const centers = computeConnectorPositionsOnPlane(
+      const { centers, fits } = computeConnectorPositionsOnPlane(
         wasm,
         manifold,
         options.axis,
         cutCoord,
-        options.connectorCount,
+        count,
         margin
       );
+      if (!fits) {
+        throw new EngineError('CUT_CONNECTOR_TOO_LARGE', {
+          size,
+          count,
+          wall: CONNECTOR_MIN_WALL_MM,
+        });
+      }
 
       if (centers.length > 0) {
         const males: Manifold[] = [];
@@ -526,6 +438,41 @@ export async function planeCutWithConnectors(
           females.push(female);
           cleanupHandles.push(male, female);
         }
+
+        // Alojamiento + pared mínima: debe caber en la mitad que lo recibe y no solaparse
+        const shells = centers.map((center) =>
+          buildConnectorSolid(
+            wasm,
+            options.connectorType as Exclude<CutConnectorType, 'none'>,
+            options.axis,
+            center,
+            size,
+            depth,
+            tol + CONNECTOR_MIN_WALL_MM
+          )
+        );
+        // Para el solape basta media pared por lado: entre alojamientos quedan ≥ CONNECTOR_MIN_WALL_MM
+        const spacers = centers.map((center) =>
+          buildConnectorSolid(
+            wasm,
+            options.connectorType as Exclude<CutConnectorType, 'none'>,
+            options.axis,
+            center,
+            size,
+            depth,
+            tol + CONNECTOR_MIN_WALL_MM * 0.5
+          )
+        );
+        cleanupHandles.push(...shells, ...spacers);
+        assertConnectorsFit(
+          posHalf,
+          shells,
+          spacers,
+          normal,
+          cutCoord,
+          Math.max(0.8, depth + tol) + CONNECTOR_MIN_WALL_MM,
+          size
+        );
 
         const maleUnion = wasm.Manifold.union(males);
         const femaleUnion = wasm.Manifold.union(females);

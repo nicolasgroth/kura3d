@@ -9,6 +9,7 @@
  */
 
 import * as THREE from 'three';
+import { EngineError } from './engineErrors';
 import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';
 import type {
   MeshData,
@@ -22,6 +23,16 @@ import {
   initManifoldEngine,
   manifoldToMeshData,
 } from './manifoldKernel';
+import {
+  resolveBox,
+  resolveCone,
+  resolveCylinder,
+  resolvePrism,
+  resolveSphere,
+  resolveText,
+  resolveTorus,
+  resolveTube,
+} from './primitiveParams';
 
 /**
  * Normaliza una malla para que quede centrada horizontalmente en (X=0, Z=0)
@@ -503,7 +514,7 @@ function buildTextCrossSection(
   rawText: string,
   fontSize: number
 ): CrossSection {
-  const text = (rawText || 'KURA').toUpperCase();
+  const text = rawText.toUpperCase();
   const scale = Math.max(1, fontSize) / 6;
   const strokeThickness = 1.05 * scale;
   const charWidth = 4 * scale;
@@ -560,17 +571,13 @@ export async function createPrimitiveMesh(
   try {
     switch (type) {
       case 'box': {
-        const w = Math.max(0.5, params.width ?? 20);
-        const h = Math.max(0.5, params.height ?? 20);
-        const d = Math.max(0.5, params.depth ?? 20);
+        const { w, h, d } = resolveBox(params);
         manifold = wasm.Manifold.cube([w, h, d], true);
         break;
       }
 
       case 'cylinder': {
-        const r = Math.max(0.25, params.radius ?? 10);
-        const h = Math.max(0.5, params.height ?? 20);
-        const seg = Math.max(8, Math.round(params.segments ?? 32));
+        const { r, h, seg } = resolveCylinder(params);
         // Manifold.cylinder extruye a lo largo de Z; rotamos -90° en X para alinear con Y-up
         const raw = wasm.Manifold.cylinder(h, r, r, seg, false);
         tempHandles.push(raw);
@@ -579,13 +586,7 @@ export async function createPrimitiveMesh(
       }
 
       case 'tube': {
-        const outerR = Math.max(1, params.outerRadius ?? params.radius ?? 12);
-        const innerR = Math.max(
-          0.2,
-          Math.min(params.innerRadius ?? outerR * 0.58, outerR - 0.3)
-        );
-        const h = Math.max(0.5, params.height ?? 20);
-        const seg = Math.max(12, Math.round(params.segments ?? 36));
+        const { outerR, innerR, h, seg } = resolveTube(params);
 
         const outer = wasm.Manifold.cylinder(h, outerR, outerR, seg, false);
         tempHandles.push(outer);
@@ -601,16 +602,13 @@ export async function createPrimitiveMesh(
       }
 
       case 'sphere': {
-        const r = Math.max(0.5, params.radius ?? 12);
-        const seg = Math.max(12, Math.round(params.segments ?? 32));
+        const { r, seg } = resolveSphere(params);
         manifold = wasm.Manifold.sphere(r, seg);
         break;
       }
 
       case 'cone': {
-        const r = Math.max(0.5, params.radius ?? 12);
-        const h = Math.max(0.5, params.height ?? 24);
-        const seg = Math.max(8, Math.round(params.segments ?? 32));
+        const { r, h, seg } = resolveCone(params);
         const raw = wasm.Manifold.cylinder(h, r, 0, seg, false);
         tempHandles.push(raw);
         manifold = raw.rotate([-90, 0, 0]);
@@ -618,12 +616,7 @@ export async function createPrimitiveMesh(
       }
 
       case 'torus': {
-        const majorR = Math.max(1.5, params.outerRadius ?? params.radius ?? 14);
-        const tubeR = Math.max(
-          0.3,
-          Math.min(params.tubeRadius ?? 4, majorR - 0.2)
-        );
-        const seg = Math.max(12, Math.round(params.segments ?? 32));
+        const { majorR, tubeR, seg } = resolveTorus(params);
         // Revolucionamos un círculo desplazado sobre +X alrededor del eje Y (Manifold lo asigna a Z)
         const circle = wasm.CrossSection.circle(tubeR, Math.max(12, Math.round(seg * 0.75)));
         tempHandles.push(circle);
@@ -637,9 +630,7 @@ export async function createPrimitiveMesh(
       }
 
       case 'prism': {
-        const sides = Math.max(3, Math.round(params.sides ?? 6));
-        const r = Math.max(0.5, params.radius ?? 12);
-        const h = Math.max(0.5, params.height ?? 20);
+        const { sides, r, h } = resolvePrism(params);
         const raw = wasm.Manifold.cylinder(h, r, r, sides, false);
         tempHandles.push(raw);
         manifold = raw.rotate([-90, 0, 0]);
@@ -647,9 +638,7 @@ export async function createPrimitiveMesh(
       }
 
       case 'text': {
-        const text = params.text ?? 'KURA';
-        const fontSize = Math.max(4, params.fontSize ?? 16);
-        const extrudeDepth = Math.max(0.8, params.height ?? params.depth ?? 4);
+        const { text, fontSize, depth: extrudeDepth } = resolveText(params);
         const cs = buildTextCrossSection(wasm, text, fontSize);
         tempHandles.push(cs);
         const extruded = cs.extrude(extrudeDepth, 0, 0, [1, 1], false);
@@ -665,6 +654,9 @@ export async function createPrimitiveMesh(
       }
     }
 
+    if (manifold.status() !== 'NoError' || manifold.isEmpty()) {
+      throw new EngineError('INVALID_PARAMETER', { name: type, value: manifold.status(), min: 0, max: 0 });
+    }
     const mesh = manifoldToMeshData(manifold);
     return normalizeMeshToBed(mesh);
   } finally {

@@ -60,14 +60,14 @@ describe('parser', () => {
 });
 
 describe('local assistant on the real store', () => {
-  it('placeholder example: creates the tube and hollows only the new tube, never the selection', async () => {
+  it('placeholder example: creates the cylinder and hollows only the new cylinder, never the selection', async () => {
     await addBoxes(3);
     const before = objects().map((o) => ({ id: o.id, volume: o.stats.volumeMm3 }));
 
-    const out = await ask('Crea un tubo de 40mm de alto y ahueca a 2mm');
+    const out = await ask('Crea un cilindro de 40mm de alto y ahueca a 2mm');
 
     expect(out.executedTools.map((t) => t.name)).toEqual(['create_primitive', 'hollow_object']);
-    const tube = objects().find((o) => o.primitiveType === 'tube')!;
+    const tube = objects().find((o) => o.primitiveType === 'cylinder')!;
     expect(tube.stats.dimensionsMm[1]).toBeCloseTo(40, 0);
     expect(tube.hollow?.wallThickness).toBe(2);
     for (const { id, volume } of before) {
@@ -75,7 +75,7 @@ describe('local assistant on the real store', () => {
       expect(objects().find((o) => o.id === id)!.hollow?.enabled ?? false).toBe(false);
     }
     expect(out.assistantText).toContain(tube.name);
-    expect(out.assistantText).toMatch(/30 × 40 × 30 mm/);
+    expect(out.assistantText).toMatch(/24 × 40 × 24 mm/);
   });
 
   it('creates a sphere and moves the new sphere 30 mm', async () => {

@@ -4,7 +4,7 @@
  * para colado de silicona, velas, resinas y termoconformado en Kura3D.
  * Soporta cuatro modos deterministas: molde directo de 1 parte, molde bivalvo de 2 partes
  * con llaves de registro y tolerancia, caja madre contenedora + positivo maestro,
- * y sistema núcleo/cavidad para piezas huecas.
+ * y sistema núcleo/cavidad para piezas huecas (núcleo por offset interior real).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -23,7 +23,10 @@ import {
   manifoldToMeshData,
   meshDataToManifold,
 } from './manifoldKernel';
+import { EngineError } from './engineErrors';
+import { buildPourChannels, countSealedVoids, type AxisBox } from './moldChannels';
 import { applyTransformToMesh, normalizeMeshToBed } from './primitives';
+import { inwardOffset } from './solidOffset';
 
 /** Resultado individual de cada pieza generada por el generador de moldes. */
 export interface GeneratedMoldPart {
@@ -94,9 +97,25 @@ function createBoxBounds(
   }
 }
 
+/** Lanza `MOLD_SEALED_CAVITY` si el molde deja cavidades sin salida al exterior. */
+function assertMoldFillable(
+  wasm: ManifoldToplevel,
+  mold: Manifold,
+  box: AxisBox
+): void {
+  const sealed = countSealedVoids(wasm, mold, box);
+  if (sealed.count > 0) {
+    throw new EngineError('MOLD_SEALED_CAVITY', {
+      count: sealed.count,
+      volume: sealed.volumeMm3,
+    });
+  }
+}
+
 /**
  * Construye un bloque de molde directo restando el sólido maestro `master` (y
- * opcionalmente un embudo/canal de vertido cónico en la cara superior +Y).
+ * opcionalmente un embudo cónico por cuerpo del maestro, sobre su cara superior real).
+ * Verifica que no queden cavidades selladas imposibles de llenar.
  */
 function buildDirectMoldSolid(
   wasm: ManifoldToplevel,
@@ -114,14 +133,20 @@ function buildDirectMoldSolid(
   pourSpoutRadius: number
 ): Manifold {
   const { minX, minY, minZ, maxX, maxY, maxZ } = bounds;
-  const cx = (minX + maxX) * 0.5;
-  const cz = (minZ + maxZ) * 0.5;
   const dx = maxX - minX;
   const dz = maxZ - minZ;
 
   // Si hay embudo superior, expandimos también la tapa +Y; si no, queda abierto arriba.
   const boxMaxY = pourSpout ? maxY + wallMargin : maxY;
   const handles: Manifold[] = [];
+  const moldBox: AxisBox = {
+    minX: minX - wallMargin,
+    minY: minY - wallMargin,
+    minZ: minZ - wallMargin,
+    maxX: maxX + wallMargin,
+    maxY: boxMaxY,
+    maxZ: maxZ + wallMargin,
+  };
 
   try {
     const outerBox = createBoxBounds(
@@ -135,26 +160,33 @@ function buildDirectMoldSolid(
     );
     handles.push(outerBox);
 
+    // Devuelve el molde solo si no deja cavidades selladas (si no, lo libera y lanza)
+    const verified = (mold: Manifold): Manifold => {
+      try {
+        assertMoldFillable(wasm, mold, moldBox);
+        return mold;
+      } catch (err) {
+        mold.delete();
+        throw err;
+      }
+    };
+
     const cavity = outerBox.subtract(master);
     if (!pourSpout) {
-      return cavity;
+      return verified(cavity);
     }
     handles.push(cavity);
 
-    // Canal/embudo cónico que atraviesa la pared superior desde maxY - 0.5 hasta maxY + wallMargin + 1
+    // Un embudo por cuerpo del maestro, sobre su cara superior real (no el centro del bbox)
     const maxSafeR = Math.max(1.5, Math.min(dx, dz) * 0.45);
-    const bottomR = Math.max(1.5, Math.min(pourSpoutRadius, maxSafeR));
-    const topR = Math.min(bottomR * 1.45, Math.max(bottomR + 1, Math.min(dx, dz) * 0.5 + wallMargin * 0.4));
-    const spoutH = wallMargin + 1.5;
-
-    const cylZ = wasm.Manifold.cylinder(spoutH, bottomR, topR, 32, false);
-    handles.push(cylZ);
-    const cylY = cylZ.rotate([-90, 0, 0]);
-    handles.push(cylY);
-    const spout = cylY.translate([cx, maxY - 0.5, cz]);
-    handles.push(spout);
-
-    return cavity.subtract(spout);
+    const spoutR = Math.max(1.5, Math.min(pourSpoutRadius, maxSafeR));
+    const channels = buildPourChannels(wasm, master, boxMaxY, spoutR);
+    if (!channels) {
+      handles.pop();
+      return verified(cavity);
+    }
+    handles.push(channels);
+    return verified(cavity.subtract(channels));
   } finally {
     for (const h of handles) {
       h.delete();
@@ -211,7 +243,7 @@ function buildRegistrationKey(
  *   macho/hembra con holgura `keyToleranceMm` y separación visual de ±8 mm.
  * - `'silicone_master'`: caja madre abierta arriba con espesor `boxWallMm` y holgura
  *   `wallMarginMm` para colado de silicona + positivo maestro centrado en su interior.
- * - `'core_cavity'`: molde exterior + núcleo interior escalado para colado de piezas huecas.
+ * - `'core_cavity'`: molde exterior + núcleo interior (offset real con pared uniforme `cavityWallMm`).
  *
  * @param obj Objeto maestro origen en la escena.
  * @param options Parámetros geométricos del molde en milímetros.
@@ -248,11 +280,7 @@ export async function generateMold(
     const maxY = bbox.max[1];
     const maxZ = bbox.max[2];
 
-    const dx = maxX - minX;
-    const dy = maxY - minY;
-    const dz = maxZ - minZ;
     const cx = (minX + maxX) * 0.5;
-    const cy = (minY + maxY) * 0.5;
     const cz = (minZ + maxZ) * 0.5;
 
     const bounds = { minX, minY, minZ, maxX, maxY, maxZ };
@@ -493,17 +521,17 @@ export async function generateMold(
     );
     handles.push(outerMold);
 
-    // Factor de escala seguro por eje para dejar un espesor de pared `cavityWall` uniforme
-    const sx = Math.max(0.15, (dx - 2 * cavityWall) / Math.max(dx, 0.5));
-    const sy = Math.max(0.15, (dy - 2 * cavityWall) / Math.max(dy, 0.5));
-    const sz = Math.max(0.15, (dz - 2 * cavityWall) / Math.max(dz, 0.5));
-
-    const centered = master.translate([-cx, -cy, -cz]);
-    handles.push(centered);
-    const scaled = centered.scale([sx, sy, sz]);
-    handles.push(scaled);
-    const core = scaled.translate([cx, cy, cz]);
+    // Núcleo = offset interior real del maestro: la pieza colada queda con pared uniforme
+    const core = inwardOffset(wasm, master, cavityWall).inner;
     handles.push(core);
+    if (core.isEmpty() || core.volume() < 1e-6) {
+      throw new EngineError('MOLD_CORE_EMPTY', { wall: cavityWall });
+    }
+    const escaped = core.subtract(master);
+    handles.push(escaped);
+    if (escaped.volume() > 1e-6 * Math.max(1, master.volume())) {
+      throw new EngineError('MOLD_CORE_OUTSIDE', { volume: escaped.volume() });
+    }
 
     const normOuter = extractPositionAndNormalize(manifoldToMeshData(outerMold));
     const normCore = extractPositionAndNormalize(manifoldToMeshData(core));

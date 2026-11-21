@@ -49,6 +49,7 @@ import {
 import { openLocalFile } from '../utils/platformBridge';
 import { AiSettingsPanel } from './settings/AiSettingsPanel';
 import { SettingsTabs } from './settings/SettingsTabs';
+import { ISO_COARSE_THREADS, isoCoarsePitch } from '../engine/threads';
 
 /** Presets SVG vectoriales incorporados para probar extrusión y proyección 3D al instante. */
 const SVG_PRESETS: Record<'star' | 'badge' | 'gear', string> = {
@@ -64,15 +65,10 @@ const SVG_PRESETS: Record<'star' | 'badge' | 'gear', string> = {
 };
 
 /** Presets métricos ISO estándar (diámetro mm y paso grueso estándar en mm). */
-const ISO_THREAD_PRESETS: Array<{ label: string; diameterMm: number; pitchMm: number }> = [
-  { label: 'M4', diameterMm: 4, pitchMm: 0.7 },
-  { label: 'M6', diameterMm: 6, pitchMm: 1.0 },
-  { label: 'M8', diameterMm: 8, pitchMm: 1.25 },
-  { label: 'M10', diameterMm: 10, pitchMm: 1.5 },
-  { label: 'M12', diameterMm: 12, pitchMm: 1.75 },
-  { label: 'M16', diameterMm: 16, pitchMm: 2.0 },
-  { label: 'M20', diameterMm: 20, pitchMm: 2.5 },
-];
+const ISO_THREAD_PRESETS: Array<{ label: string; diameterMm: number; pitchMm: number }> =
+  ISO_COARSE_THREADS.filter(
+    (row) => row.diameterMm >= 3 && row.diameterMm <= 20 && Number.isInteger(row.diameterMm) && row.diameterMm !== 7,
+  ).map((row) => ({ label: `M${row.diameterMm}`, ...row }));
 
 /** Modal 1: Importar y Extruir SVG a sólido 3D. */
 const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = ({
@@ -1297,13 +1293,17 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
           <label htmlFor="thread-diam">{t(language, 'dialog.thread.diameter')}</label>
           <PrecisionNumberInput
             id="thread-diam"
-            min={3}
-            max={40}
+            min={2}
+            max={64}
             step={0.5}
             precision={1}
             defaultValue={8}
             value={diameterMm}
-            onChange={setDiameterMm}
+            onChange={(value) => {
+              // Paso ISO 261 grueso automático al cambiar el diámetro (editable después)
+              setDiameterMm(value);
+              setPitchMm(isoCoarsePitch(value));
+            }}
           />
         </div>
 
@@ -1311,7 +1311,7 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
           <label htmlFor="thread-pitch">{t(language, 'dialog.thread.pitch')}</label>
           <PrecisionNumberInput
             id="thread-pitch"
-            min={0.5}
+            min={0.2}
             max={4}
             step={0.05}
             precision={2}
