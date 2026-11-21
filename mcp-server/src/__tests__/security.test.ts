@@ -124,7 +124,7 @@ describe('TRUST-02 · autenticación obligatoria del puente', () => {
     expect(isAllowedLocalHost(`127.0.0.1:1`, bridge.getPort())).toBe(false);
   });
 
-  it('responde 429 a tokens inválidos tras el límite, sin bloquear al token válido', async () => {
+  it('responde 429 tras el límite de tokens inválidos; un Origin ajeno no consume el cupo', async () => {
     const { bridge } = await setup({ authFailureLimitPerMin: 2 });
     await bridge.start();
     const base = `ws://127.0.0.1:${bridge.getPort()}`;
@@ -134,8 +134,8 @@ describe('TRUST-02 · autenticación obligatoria del puente', () => {
     }
     expect((await attempt(base)).status).toBe(401);
     expect((await attempt(base)).status).toBe(401);
-    expect((await attempt(`${base}/?token=${TOKEN_B}`)).status).toBe(429);
-    expect((await attempt(`${base}/?token=${TOKEN_A}`)).ws).toBeDefined();
+    // Durante el bloqueo ni siquiera el token correcto pasa (no hay oráculo de fuerza bruta).
+    expect((await attempt(`${base}/?token=${TOKEN_A}`)).status).toBe(429);
   });
 
   it('compara tokens en tiempo constante sin depender de la longitud', () => {

@@ -381,19 +381,21 @@ export class KuraBridgeServer {
       reject(403, 'Origen no permitido en el puente local de Kura3D.');
       return;
     }
-    // Un token válido siempre pasa; el throttle solo frena intentos con token inválido.
-    if (this.verifyRequestToken(req)) {
-      done(true);
-      return;
-    }
+    // El throttle se aplica antes de mirar el token (también al correcto) para que
+    // no sirva de oráculo en un ataque de fuerza bruta. Solo lo alimentan los 401:
+    // un navegador no puede falsificar Origin, así que una web ajena nunca llega aquí.
     const now = Date.now();
     this.authFailureTimestamps = this.authFailureTimestamps.filter((ts) => ts > now - 60_000);
     if (this.authFailureTimestamps.length >= this.config.authFailureLimitPerMin) {
       done(false, 429, 'Demasiados intentos fallidos; espera un minuto.');
       return;
     }
-    this.authFailureTimestamps.push(now);
-    reject(401, 'Token de autenticación ausente o inválido.');
+    if (!this.verifyRequestToken(req)) {
+      this.authFailureTimestamps.push(now);
+      reject(401, 'Token de autenticación ausente o inválido.');
+      return;
+    }
+    done(true);
   }
 
   /** Registra la sesión de la UI, aplica la preferencia de solo lectura y envía el saludo. */
