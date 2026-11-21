@@ -54,6 +54,7 @@ import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { SUPPORTED_LANGUAGES } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
+import { openExportDialog } from './ExportDialog';
 import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
 
 interface PaletteActionItem {
@@ -104,9 +105,6 @@ export const CommandPalette: React.FC = () => {
   const openSettings = useKuraStore((s) => s.openSettings);
   const setAiDrawerOpen = useKuraStore((s) => s.setAiDrawerOpen);
   const importMeshFromDialog = useKuraStore((s) => s.importMeshFromDialog);
-  const exportSceneStl = useKuraStore((s) => s.exportSceneStl);
-  const exportScene3mf = useKuraStore((s) => s.exportScene3mf);
-  const exportSelectedObj = useKuraStore((s) => s.exportSelectedObj);
   const requestCameraPreset = useKuraStore((s) => s.requestCameraPreset);
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const setColorScheme = useKuraStore((s) => s.setColorScheme);
@@ -468,40 +466,76 @@ export const CommandPalette: React.FC = () => {
         run: () => void importMeshFromDialog(),
       },
       {
+        id: 'io-import-original',
+        label: t(language, 'cmd.import.original'),
+        category: catExp,
+        keywords: 'importar posicion original altura conservar 3mf ensamblaje import keep original position',
+        kind: 'local',
+        icon: <FileUp size={15} />,
+        run: () => void importMeshFromDialog('original'),
+      },
+      {
+        id: 'io-import-bed',
+        label: t(language, 'cmd.import.bed'),
+        category: catExp,
+        keywords: 'importar cama apoyar centrar import bed place',
+        kind: 'local',
+        icon: <FileUp size={15} />,
+        run: () => void importMeshFromDialog('bed'),
+      },
+      {
+        id: 'io-export',
+        label: t(language, 'cmd.export.dialog'),
+        category: catExp,
+        keywords: 'exportar export stl 3mf obj mtl glb gltf ply guardar',
+        kind: 'local',
+        icon: <Download size={15} />,
+        run: () => openExportDialog(),
+      },
+      {
         id: 'io-stl',
         label: t(language, 'topbar.exportStl'),
         category: catExp,
         keywords: 'exportar stl imprimir slicer',
         kind: 'local',
         icon: <Download size={15} />,
-        run: () => void exportSceneStl(false),
+        run: () => openExportDialog('stl'),
       },
       {
         id: 'io-3mf-modal',
         label: t(language, 'cmd.export.3mfModal'),
         category: catExp,
-        keywords: 'exportar 3mf multi slicer elegoo bambu snapmaker flashforge',
+        keywords: 'exportar 3mf multi slicer elegoo bambu snapmaker flashforge multicolor',
         kind: 'local',
         icon: <Download size={15} />,
-        run: () => setActiveDialog('export3mf'),
-      },
-      {
-        id: 'io-3mf',
-        label: t(language, 'topbar.export3mf'),
-        category: catExp,
-        keywords: 'exportar 3mf rapido multicolor',
-        kind: 'local',
-        icon: <Download size={15} />,
-        run: () => void exportScene3mf(false),
+        run: () => openExportDialog('3mf'),
       },
       {
         id: 'io-obj',
         label: t(language, 'topbar.exportObj'),
         category: catExp,
-        keywords: 'exportar obj wavefront',
+        keywords: 'exportar obj mtl wavefront colores',
         kind: 'local',
         icon: <Download size={15} />,
-        run: () => void exportSelectedObj(),
+        run: () => openExportDialog('obj'),
+      },
+      {
+        id: 'io-glb',
+        label: t(language, 'cmd.export.glb'),
+        category: catExp,
+        keywords: 'exportar glb gltf web visor',
+        kind: 'local',
+        icon: <Download size={15} />,
+        run: () => openExportDialog('glb'),
+      },
+      {
+        id: 'io-ply',
+        label: t(language, 'cmd.export.ply'),
+        category: catExp,
+        keywords: 'exportar ply stanford colores vertice',
+        kind: 'local',
+        icon: <Download size={15} />,
+        run: () => openExportDialog('ply'),
       },
       {
         id: 'view-compact',
@@ -641,9 +675,6 @@ export const CommandPalette: React.FC = () => {
     alignSelectedObjects,
     setActiveDialog,
     importMeshFromDialog,
-    exportSceneStl,
-    exportScene3mf,
-    exportSelectedObj,
     setUiDensity,
     toggleZenMode,
     setSectionPlane,

@@ -58,7 +58,14 @@ import {
   type UnitSystem,
   type Vec3,
 } from '../types/kura';
-import { openLocalFile, saveBinaryFile } from '../utils/platformBridge';
+import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
+import { openLocalFile, openLocalFiles } from '../utils/platformBridge';
+import {
+  createModelIoActions,
+  type ExportRequest,
+  type ModelImportOptions,
+  type ModelImportSource,
+} from './modelIoActions';
 import { browserLocalStorage, getApiKeyStore, migrateLegacyApiKey } from '../ai/apiKeyStore';
 import { MAX_UNDO_HISTORY } from '../project/projectCodec';
 import { createCommandBus } from './commandBus';
@@ -74,6 +81,7 @@ const STORAGE_LANGUAGE_KEY = 'kura3d-language';
 const STORAGE_UNIT_KEY = 'kura3d-unit-system';
 const STORAGE_PRINTER_KEY = 'kura3d-printer-id';
 const STORAGE_UI_DENSITY_KEY = 'kura3d-ui-density';
+const STORAGE_IMPORT_PLACEMENT_KEY = 'kura3d-import-placement';
 
 export type ActiveDialogType =
   | 'svg'
@@ -83,6 +91,7 @@ export type ActiveDialogType =
   | 'project'
   | 'thread'
   | 'export3mf'
+  | 'export'
   | 'settings'
   | 'shortcuts'
   | null;
@@ -98,10 +107,6 @@ export interface ToastMessage {
 }
 
 type SceneSnapshot = ProjectSceneSnapshot;
-interface ModelImportSource {
-  name: string;
-  read: () => Promise<ArrayBuffer>;
-}
 const sceneRevisions = new WeakMap<SceneObject[], symbol>();
 
 function sceneRevision(objects: SceneObject[]): symbol {
@@ -351,8 +356,13 @@ export interface KuraStoreState {
   // Importación / Exportación
   importSvgModel: (options: SvgImportOptions) => Promise<SceneObject | null>;
   generateImageRelief: (options: ImageTo3DOptions) => Promise<SceneObject | null>;
-  importMeshFromDialog: () => Promise<void>;
-  importModelFiles: (files: ModelImportSource[]) => Promise<boolean>;
+  /** Colocación de importaciones: conjunto apoyado en la cama o posición original del archivo. */
+  importPlacementMode: engine.ImportPlacementMode;
+  setImportPlacementMode: (mode: engine.ImportPlacementMode) => void;
+  importMeshFromDialog: (placement?: engine.ImportPlacementMode) => Promise<void>;
+  importModelFiles: (files: ModelImportSource[], options?: ModelImportOptions) => Promise<boolean>;
+  /** Exportación única (STL, 3MF, OBJ+MTL, GLB, PLY) de la selección o la escena. */
+  exportModel: (request: ExportRequest) => Promise<boolean>;
   exportSceneStl: (onlySelected?: boolean) => Promise<boolean>;
   exportScene3mf: (onlySelected?: boolean, slicerTarget?: SlicerTarget) => Promise<boolean>;
   export3MFForSlicer: (slicerTarget?: SlicerTarget, onlySelected?: boolean) => Promise<boolean>;
@@ -573,32 +583,12 @@ function parseModelBufferToMeshes(
     return normalized;
   };
 
-  const lower = file.name.toLowerCase();
-  if (lower.endsWith('.3mf')) {
-    const parts = engine.import3MFBuffer(file.buffer);
-    return parts.map((part) => ({
-      name: part.name || file.name.replace(/\.3mf$/i, ''),
-      mesh: normalize(part.mesh),
-      color: part.color,
-    }));
-  }
-  if (lower.endsWith('.obj')) {
-    const text = new TextDecoder('utf-8').decode(file.buffer);
-    const mesh = engine.importOBJText(text);
-    return [
-      {
-        name: file.name.replace(/\.obj$/i, ''),
-        mesh: normalize(mesh),
-      },
-    ];
-  }
-  const mesh = engine.importSTLBuffer(file.buffer);
-  return [
-    {
-      name: file.name.replace(/\.stl$/i, ''),
-      mesh: normalize(mesh),
-    },
-  ];
+  // Lectores validados (índices, NaN, límites); cada pieza se centra para anclarla al objetivo.
+  return engine.parseModelFile(file.name, file.buffer).parts.map((part) => ({
+    name: part.name || file.name.replace(/\.[^.]+$/, ''),
+    mesh: normalize(part.mesh),
+    color: part.color,
+  }));
 }
 
 /** Lee de forma segura preferencias desde localStorage sin lanzar errores en entornos restringidos. */
@@ -763,6 +753,10 @@ function loadInitialPrinterProfile(): PrinterProfile {
   return found ?? DEFAULT_PRINTER_PROFILES[0];
 }
 
+function loadInitialImportPlacement(): engine.ImportPlacementMode {
+  return readStorage(STORAGE_IMPORT_PLACEMENT_KEY) === 'original' ? 'original' : 'bed';
+}
+
 function loadInitialUiDensity(): UiDensityMode {
   const stored = readStorage(STORAGE_UI_DENSITY_KEY);
   // Nunca restaurar en Zen tras recargar la página para que la interfaz sea siempre visible al abrir
@@ -812,6 +806,22 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     }
     return error instanceof Error ? error.message : String(error);
   };
+
+  const modelIo = createModelIoActions({
+    get: () => get(),
+    set: (updater) => set((state) => updater(state) as Partial<KuraStoreState>),
+    tr,
+    pushHistory: () => pushHistory(),
+    buildObject: ({ name, mesh, position, color, isHole }) =>
+      buildSceneObject({
+        name,
+        source: 'imported',
+        mesh,
+        position,
+        color: color || PRINT_COLOR_PALETTE[0],
+        isHole,
+      }),
+  });
 
   const canChangeDocument = () => {
     const state = get();
@@ -1523,7 +1533,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     },
 
     importModelAsModuleFromDialog: async (mode, targetId) => {
-      const file = await openLocalFile('.stl,.3mf,.obj');
+      const file = await openLocalFile('.stl,.3mf,.obj,.ply');
       if (!file) return null;
       return get().importModelAsModule(file, mode, targetId);
     },
@@ -2752,13 +2762,24 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       }
     },
 
-    importMeshFromDialog: async () => {
-      const file = await openLocalFile('.stl,.3mf,.obj');
-      if (!file) return;
-      await get().importModelFiles([{ name: file.name, read: async () => file.buffer }]);
+    importPlacementMode: loadInitialImportPlacement(),
+    setImportPlacementMode: (mode) => {
+      writeStorage(STORAGE_IMPORT_PLACEMENT_KEY, mode);
+      set({ importPlacementMode: mode });
     },
 
-    importModelFiles: async (files) => {
+    importMeshFromDialog: async (placement) => {
+      let files: ModelImportSource[];
+      try {
+        files = await openLocalFiles(engine.MODEL_IMPORT_ACCEPT);
+      } catch (err) {
+        get().addToast(tr('toast.errorPrefix', { message: projectErrorMessage(err) }), 'error');
+        return;
+      }
+      if (files.length > 0) await get().importModelFiles(files, { placement });
+    },
+
+    importModelFiles: async (files, options) => {
       if (files.length === 0) return false;
       const state = get();
       if (state.projectBusy || state.busyOperation || state.aiBusy || transformSnapshotBeforeDrag) {
@@ -2768,29 +2789,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       set({ busyOperation: 'import_mesh' });
       try {
         await get().initEngine();
-        const created: SceneObject[] = [];
-        for (const file of files) {
-          const invalidGeometry = tr('dropProject.invalidGeometry', { name: file.name });
-          const parts = parseModelBufferToMeshes({ name: file.name, buffer: await file.read() }, invalidGeometry);
-          if (!parts.length) throw new Error(invalidGeometry);
-          for (const part of parts) created.push(buildSceneObject({
-            name: part.name,
-            source: 'imported',
-            mesh: part.mesh,
-            color: part.color || PRINT_COLOR_PALETTE[0],
-          }));
-        }
-        const wasEmpty = get().objects.length === 0;
-        pushHistory();
-        set((state) => ({
-          objects: [...state.objects, ...created],
-          selectedIds: created.map((object) => object.id),
-        }));
-        if (wasEmpty) get().requestCameraPreset('fit');
-        get().addToast(files.length === 1
-          ? tr('toast.imported', { name: files[0].name })
-          : tr('dropProject.importedMany', { count: files.length }), 'success');
-        return true;
+        return await modelIo.importModelFiles(files, options);
       } catch (err) {
         get().addToast(tr('toast.errorPrefix', { message: projectErrorMessage(err) }), 'error');
         return false;
@@ -2799,84 +2798,20 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       }
     },
 
-    exportSceneStl: async (onlySelected = false) => {
-      const { objects, selectedIds } = get();
-      const targetObjs =
-        onlySelected && selectedIds.length > 0
-          ? objects.filter((o) => selectedIds.includes(o.id) && o.visible)
-          : objects.filter((o) => o.visible && !o.isHole);
+    exportModel: (request) => modelIo.exportModel(request),
 
-      if (targetObjs.length === 0) {
-        get().addToast(tr('toast.nothingToExport'), 'error');
-        return false;
-      }
+    exportSceneStl: async (onlySelected = false) =>
+      modelIo.exportModel({ format: 'stl', scope: onlySelected ? 'selection' : 'scene' }),
 
-      const bytes = engine.exportSceneToBinarySTL(targetObjs);
-      const fileName =
-        targetObjs.length === 1
-          ? `${targetObjs[0].name.replace(/[^\w\-]+/g, '_')}.stl`
-          : 'kura3d_escena.stl';
-
-      const saved = await saveBinaryFile(fileName, bytes, [
-        { name: 'STL Binary', extensions: ['stl'] },
-      ]);
-      if (saved) {
-        get().addToast(tr('toast.exported', { name: fileName }), 'success');
-      }
-      return saved;
-    },
-
-    exportScene3mf: async (onlySelected = false, slicerTarget) => {
-      const { objects, selectedIds, unitSystem, printerProfile } = get();
-      const targetObjs =
-        onlySelected && selectedIds.length > 0
-          ? objects.filter((o) => selectedIds.includes(o.id) && o.visible)
-          : objects.filter((o) => o.visible && !o.isHole);
-
-      if (targetObjs.length === 0) {
-        get().addToast(tr('toast.nothingToExport'), 'error');
-        return false;
-      }
-
-      const resolvedSlicer = slicerTarget ?? printerProfile.brand;
-      const bytes = engine.exportSceneTo3MF(targetObjs, unitSystem, resolvedSlicer);
-      const fileName =
-        targetObjs.length === 1
-          ? `${targetObjs[0].name.replace(/[^\w\-]+/g, '_')}_${resolvedSlicer}.3mf`
-          : `kura3d_escena_${resolvedSlicer}.3mf`;
-
-      const saved = await saveBinaryFile(fileName, bytes, [
-        { name: '3D Manufacturing Format', extensions: ['3mf'] },
-      ]);
-      if (saved) {
-        get().addToast(tr('toast.exported', { name: fileName }), 'success');
-      }
-      return saved;
-    },
+    exportScene3mf: async (onlySelected = false, slicerTarget) =>
+      modelIo.exportModel({ format: '3mf', scope: onlySelected ? 'selection' : 'scene', slicerTarget }),
 
     export3MFForSlicer: async (slicerTarget, onlySelected = false) => {
       return get().exportScene3mf(onlySelected, slicerTarget);
     },
 
-    exportSelectedObj: async () => {
-      const { objects, selectedIds } = get();
-      const obj = objects.find((o) => o.id === selectedIds[0]) ?? objects[0];
-      if (!obj) {
-        get().addToast(tr('toast.nothingToExport'), 'error');
-        return false;
-      }
-      const text = engine.exportMeshToOBJ(obj.mesh, obj.name);
-      const bytes = new TextEncoder().encode(text);
-      const fileName = `${obj.name.replace(/[^\w\-]+/g, '_')}.obj`;
-
-      const saved = await saveBinaryFile(fileName, bytes, [
-        { name: 'Wavefront OBJ', extensions: ['obj'] },
-      ]);
-      if (saved) {
-        get().addToast(tr('toast.exported', { name: fileName }), 'success');
-      }
-      return saved;
-    },
+    exportSelectedObj: async () =>
+      modelIo.exportModel({ format: 'obj', scope: get().selectedIds.length > 0 ? 'selection' : 'scene' }),
 
     executeCommand: createCommandBus({
       get,

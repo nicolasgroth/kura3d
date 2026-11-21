@@ -224,10 +224,10 @@ describe('Kura3D MCP Server', () => {
     const archive = unzipSync(new Uint8Array(mfBytes));
     expect(Object.keys(archive)).toContain('3D/3dmodel.model');
     expect(strFromU8(archive['Metadata/model_settings.config'])).toContain('value="bambu"');
-    // El 3MF del motor declara materiales y asigna color por triángulo
+    // El 3MF del motor declara materiales y asigna el color base por objeto
     const modelXml = strFromU8(archive['3D/3dmodel.model']);
     expect(modelXml).toContain('<basematerials id="1">');
-    expect(modelXml).toMatch(/<triangle [^>]*pid="1" p1="\d+"/);
+    expect(modelXml).toMatch(/<object [^>]*pid="1" pindex="d+"/);
   });
 
   it('valida orígenes locales permitidos y rechaza orígenes remotos en el puente WebSocket', async () => {

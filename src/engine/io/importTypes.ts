@@ -1,0 +1,50 @@
+/**
+ * @file src/engine/io/importTypes.ts
+ * @description Tipos comunes del resultado de importación de modelos: piezas en coordenadas de
+ * archivo (mm, Y-up de Kura3D), procedencia de la posición y diagnóstico de cierre.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import type { MeshData } from '../../types/kura';
+import type { ModelImportLimits } from './importErrors';
+
+/** Formatos de modelo que Kura3D sabe leer. */
+export type ModelImportFormat = 'stl' | 'obj' | '3mf' | 'ply';
+
+/** Pieza importada en coordenadas de escena del archivo (mm, Y-up), sin recentrar. */
+export interface ImportedPart {
+  name: string;
+  /** Color base '#rrggbb' si el archivo lo declara. */
+  color?: string;
+  mesh: MeshData;
+  /** Volumen negativo (p. ej. `negative_part` de Bambu/Orca): se importa como hueco. */
+  isHole?: boolean;
+  /**
+   * Bloque rígido de colocación: piezas con el mismo grupo conservan sus posiciones relativas
+   * al acomodarse en la cama (un ítem de build 3MF con sus componentes, o un archivo completo).
+   */
+  group: number;
+  /** Aristas no compartidas por exactamente dos triángulos (0 = cerrada, -1 = sin analizar). */
+  openEdges: number;
+}
+
+/** Resultado de leer un archivo de modelo. */
+export interface ImportedModel {
+  fileName: string;
+  format: ModelImportFormat;
+  parts: ImportedPart[];
+  /**
+   * true si el archivo trae posiciones con significado entre grupos (ítems de build 3MF con
+   * transformación). Si es false, los grupos se colocan sin solaparse.
+   */
+  hasPlacement: boolean;
+}
+
+/** Opciones comunes de lectura. */
+export interface ModelParseOptions {
+  limits?: Partial<ModelImportLimits>;
+  /** Texto MTL asociado a un OBJ (colores `Kd` por material). */
+  mtlText?: string;
+}

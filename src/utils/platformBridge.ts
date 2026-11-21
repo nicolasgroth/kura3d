@@ -50,41 +50,104 @@ export function isTauriRuntime(): boolean {
   return Boolean(win.__TAURI_INTERNALS__ || win.__TAURI__);
 }
 
+/** Carga los plugins nativos de diálogo y sistema de archivos; null si no están disponibles. */
+async function loadTauriFilePlugins() {
+  try {
+    const [dialogMod, fsMod] = await Promise.all([
+      import('@tauri-apps/plugin-dialog'),
+      import('@tauri-apps/plugin-fs'),
+    ]);
+    return { dialogMod, fsMod };
+  } catch (err) {
+    console.warn('[Kura3D] Plugins nativos no disponibles; se usa la ruta web:', err);
+    return null;
+  }
+}
+
+/** Error al escribir en disco desde el contenedor nativo (no se oculta tras una descarga web). */
+export class FileSaveError extends Error {
+  constructor(readonly fileName: string, cause: unknown) {
+    super(cause instanceof Error ? cause.message : String(cause));
+    this.name = 'FileSaveError';
+  }
+}
+
 /**
  * Guarda un buffer binario (STL, 3MF, etc.) o de texto UTF-8 (OBJ) en disco.
  * En Tauri abre el diálogo nativo del sistema operativo; en Web dispara una descarga Blob instantánea.
+ * Devuelve false si el usuario cancela. Si la escritura nativa falla lanza `FileSaveError`
+ * (no recurre a la descarga web, que ocultaría el fallo).
  */
 export async function saveBinaryFile(
   defaultName: string,
   data: Uint8Array,
   filters: FileDialogFilter[],
 ): Promise<boolean> {
+  return (await saveFileWithDialog(defaultName, data, filters)) !== null;
+}
+
+/**
+ * Igual que `saveBinaryFile`, pero devuelve la ruta elegida en Tauri (o el nombre en Web),
+ * o null si el usuario canceló.
+ */
+export async function saveFileWithDialog(
+  defaultName: string,
+  data: Uint8Array,
+  filters: FileDialogFilter[],
+): Promise<string | null> {
   if (isTauriRuntime()) {
-    try {
-      const dialogMod = await import('@tauri-apps/plugin-dialog');
-      const fsMod = await import('@tauri-apps/plugin-fs');
-
-      const targetPath = await dialogMod.save({
-        defaultPath: defaultName,
-        filters,
-      });
-
-      if (!targetPath) {
-        return false;
+    const plugins = await loadTauriFilePlugins();
+    if (plugins) {
+      let targetPath: string | null;
+      try {
+        targetPath = await plugins.dialogMod.save({ defaultPath: defaultName, filters });
+      } catch (err) {
+        throw new FileSaveError(defaultName, err);
       }
+      if (!targetPath) return null;
       if (!hasAllowedExtension(targetPath, filterExtensions(filters))) {
         console.warn('[Kura3D] Destino rechazado: extensión no permitida.');
-        return false;
+        return null;
       }
-
-      await fsMod.writeFile(targetPath, data);
-      return true;
-    } catch (err) {
-      // Si falla el plugin nativo por permisos o entorno, recurrimos al fallback web.
-      console.warn('[Kura3D] Fallback a descarga web tras error Tauri:', err);
+      try {
+        await plugins.fsMod.writeFile(targetPath, data);
+      } catch (err) {
+        throw new FileSaveError(targetPath.split(/[\\/]/).pop() || defaultName, err);
+      }
+      return targetPath;
     }
   }
+  return downloadInBrowser(defaultName, data) ? defaultName : null;
+}
 
+/** Archivo de un conjunto a guardar (p. ej. OBJ + MTL). */
+export interface SaveSetEntry {
+  name: string;
+  data: Uint8Array;
+  filters: FileDialogFilter[];
+}
+
+/**
+ * Guarda un archivo principal y sus acompañantes (MTL de un OBJ). En Tauri pide un destino para
+ * cada uno, proponiendo la carpeta del principal; en Web descarga todos. Devuelve false si se
+ * canceló el principal.
+ */
+export async function saveFileSet(entries: SaveSetEntry[]): Promise<boolean> {
+  const [primary, ...companions] = entries;
+  if (!primary) return false;
+  const primaryPath = await saveFileWithDialog(primary.name, primary.data, primary.filters);
+  if (primaryPath === null) return false;
+  const folder = primaryPath.includes('/') || primaryPath.includes('\\')
+    ? primaryPath.slice(0, Math.max(primaryPath.lastIndexOf('/'), primaryPath.lastIndexOf('\\')) + 1)
+    : '';
+  for (const companion of companions) {
+    await saveFileWithDialog(`${folder}${companion.name}`, companion.data, companion.filters);
+  }
+  return true;
+}
+
+/** Descarga un archivo vía Blob; false si no hay DOM (Node / Vitest). */
+function downloadInBrowser(defaultName: string, data: Uint8Array): boolean {
   // Guardia para entornos headless (Node / Vitest) sin DOM disponible
   if (typeof document === 'undefined' || typeof URL === 'undefined') {
     return false;
@@ -109,6 +172,88 @@ export async function saveBinaryFile(
     // Liberar ObjectURL tras iniciar la descarga en el navegador.
     setTimeout(() => URL.revokeObjectURL(url), 1500);
   }
+}
+
+/** Archivo elegido por el usuario, leído bajo demanda (permite reportar fallos por archivo). */
+export interface LocalFileHandle {
+  name: string;
+  read: () => Promise<ArrayBuffer>;
+}
+
+/** Error de lectura de un archivo local concreto (tamaño excesivo o no es un archivo normal). */
+export class LocalFileError extends Error {
+  constructor(readonly fileName: string, readonly reason: 'too-large' | 'not-file' | 'unreadable') {
+    super(reason);
+    this.name = 'LocalFileError';
+  }
+}
+
+/**
+ * Abre un selector de varios archivos (Web o Tauri v2). Cada archivo se lee al llamar a `read()`
+ * y falla por separado con `LocalFileError`, para que un lote pueda importarse parcialmente.
+ */
+export async function openLocalFiles(accept: string): Promise<LocalFileHandle[]> {
+  const extensions = accept
+    .split(',')
+    .map((ext) => ext.trim().replace(/^\./, '').toLowerCase())
+    .filter((ext) => ext.length > 0 && !ext.includes('*') && !ext.includes('/'));
+
+  if (isTauriRuntime()) {
+    const plugins = await loadTauriFilePlugins();
+    if (plugins) {
+      const selected = await plugins.dialogMod.open({
+        multiple: true,
+        directory: false,
+        filters: extensions.length > 0 ? [{ name: 'Archivos soportados', extensions }] : undefined,
+      });
+      const paths = selected === null ? [] : Array.isArray(selected) ? selected : [selected];
+      return paths
+        .filter((path) => hasAllowedExtension(path, extensions))
+        .map((path) => {
+          const name = path.split(/[\\/]/).pop() || 'model';
+          return {
+            name,
+            async read() {
+              const info = await plugins.fsMod.stat(path);
+              if (!info.isFile) throw new LocalFileError(name, 'not-file');
+              if (info.size > MAX_LOCAL_FILE_BYTES) throw new LocalFileError(name, 'too-large');
+              const bytes = await plugins.fsMod.readFile(path);
+              return new Uint8Array(bytes).buffer;
+            },
+          };
+        });
+    }
+  }
+
+  if (typeof document === 'undefined') return [];
+  return new Promise<LocalFileHandle[]>((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = accept;
+    input.multiple = true;
+    input.style.display = 'none';
+    let settled = false;
+    const finish = (files: File[]) => {
+      if (settled) return;
+      settled = true;
+      input.remove();
+      resolve(files.map((file) => ({
+        name: file.name,
+        async read() {
+          if (file.size > MAX_LOCAL_FILE_BYTES) throw new LocalFileError(file.name, 'too-large');
+          try {
+            return await file.arrayBuffer();
+          } catch {
+            throw new LocalFileError(file.name, 'unreadable');
+          }
+        },
+      })));
+    };
+    input.addEventListener('change', () => finish(Array.from(input.files ?? [])), { once: true });
+    input.addEventListener('cancel', () => finish([]), { once: true });
+    document.body.appendChild(input);
+    input.click();
+  });
 }
 
 /**

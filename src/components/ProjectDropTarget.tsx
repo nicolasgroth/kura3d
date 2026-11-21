@@ -1,7 +1,7 @@
 /**
  * @file src/components/ProjectDropTarget.tsx
- * @description Zona de arrastrar y soltar archivos .kura sobre la ventana, con validación de tamaño
- * y apertura del proyecto en navegador y en Tauri.
+ * @description Zona de arrastrar y soltar sobre la ventana: abre un proyecto .kura o importa un lote
+ * de modelos (STL, 3MF, OBJ+MTL, PLY) de forma parcial, con validación de tamaño, en navegador y en Tauri.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -43,7 +43,8 @@ async function acceptDrop(files: DroppedFile[]) {
     }));
     return;
   }
-  if (!files.every((file) => /\.(stl|3mf|obj)$/i.test(file.name))) {
+  // Lote parcial: los archivos no soportados o dañados se informan por nombre y el resto se importa.
+  if (!files.some((file) => /\.(stl|3mf|obj|ply)$/i.test(file.name))) {
     state.addToast(t(state.language, 'dropProject.unsupported'), 'error');
     return;
   }

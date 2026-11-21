@@ -88,47 +88,85 @@ export function weldVertices(
   positions: Float32Array,
   indices: Uint32Array,
   tolerance = 1e-5
-): { positions: Float32Array; indices: Uint32Array } {
+): { positions: Float32Array; indices: Uint32Array; triangleSource: Uint32Array } {
   const invTol = tolerance > 0 ? 1 / tolerance : 1e5;
-  const map = new Map<string, number>();
-  const newPositions: number[] = [];
-  const vertRemap = new Uint32Array(Math.floor(positions.length / 3));
-
   const vertCount = Math.floor(positions.length / 3);
+  const vertRemap = new Uint32Array(vertCount);
+  const outPositions = new Float32Array(vertCount * 3);
+  // Coordenadas cuantizadas de cada vértice único, para comparar sin claves string.
+  const quantized = new Float64Array(vertCount * 3);
+
+  // Tabla hash de direccionamiento abierto (potencia de 2, carga <= 0.5) con índices + 1.
+  let capacity = 16;
+  while (capacity < vertCount * 2) capacity *= 2;
+  const mask = capacity - 1;
+  const table = new Int32Array(capacity);
+  let unique = 0;
+
   for (let i = 0; i < vertCount; i++) {
     const x = positions[i * 3];
     const y = positions[i * 3 + 1];
     const z = positions[i * 3 + 2];
-
     const qx = Math.round(x * invTol);
     const qy = Math.round(y * invTol);
     const qz = Math.round(z * invTol);
-    const key = `${qx},${qy},${qz}`;
 
-    let mapped = map.get(key);
-    if (mapped === undefined) {
-      mapped = newPositions.length / 3;
-      map.set(key, mapped);
-      newPositions.push(x, y, z);
+    // Hash entero de 32 bits estable para valores cuantizados (incluso fuera del rango int32).
+    let h = Math.imul((qx | 0) ^ Math.floor(qx / 4294967296), 0x9e3779b1);
+    h ^= Math.imul((qy | 0) ^ Math.floor(qy / 4294967296), 0x85ebca77);
+    h ^= Math.imul((qz | 0) ^ Math.floor(qz / 4294967296), 0xc2b2ae3d);
+    h ^= h >>> 15;
+    let slot = h & mask;
+
+    let mapped = -1;
+    while (table[slot] !== 0) {
+      const candidate = table[slot] - 1;
+      if (
+        quantized[candidate * 3] === qx &&
+        quantized[candidate * 3 + 1] === qy &&
+        quantized[candidate * 3 + 2] === qz
+      ) {
+        mapped = candidate;
+        break;
+      }
+      slot = (slot + 1) & mask;
+    }
+    if (mapped < 0) {
+      mapped = unique++;
+      table[slot] = mapped + 1;
+      quantized[mapped * 3] = qx;
+      quantized[mapped * 3 + 1] = qy;
+      quantized[mapped * 3 + 2] = qz;
+      outPositions[mapped * 3] = x;
+      outPositions[mapped * 3 + 1] = y;
+      outPositions[mapped * 3 + 2] = z;
     }
     vertRemap[i] = mapped;
   }
 
-  const newIndices: number[] = [];
   const triCount = Math.floor(indices.length / 3);
+  const outIndices = new Uint32Array(triCount * 3);
+  const triangleSource = new Uint32Array(triCount);
+  let kept = 0;
   for (let t = 0; t < triCount; t++) {
     const a = vertRemap[indices[t * 3]];
     const b = vertRemap[indices[t * 3 + 1]];
     const c = vertRemap[indices[t * 3 + 2]];
     // Descartar triángulos degenerados donde dos vértices colapsaron al mismo punto
     if (a !== b && b !== c && c !== a) {
-      newIndices.push(a, b, c);
+      outIndices[kept * 3] = a;
+      outIndices[kept * 3 + 1] = b;
+      outIndices[kept * 3 + 2] = c;
+      triangleSource[kept] = t;
+      kept++;
     }
   }
 
   return {
-    positions: new Float32Array(newPositions),
-    indices: new Uint32Array(newIndices),
+    positions: outPositions.slice(0, unique * 3),
+    indices: outIndices.slice(0, kept * 3),
+    // Índice del triángulo original de cada triángulo conservado (para reasignar colores por cara).
+    triangleSource: triangleSource.slice(0, kept),
   };
 }
 

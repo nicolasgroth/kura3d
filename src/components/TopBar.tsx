@@ -18,7 +18,6 @@ import {
   Columns2,
   Download,
   Eraser,
-  FileUp,
   LayoutGrid,
   Lock,
   Maximize2,
@@ -44,6 +43,8 @@ import {
   type UnitSystem,
 } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
+import { openExportDialog } from './ExportDialog';
+import { ImportMenuButton } from './ImportMenuButton';
 import { ProjectMenu } from './ProjectMenu';
 
 const UNIT_OPTIONS: UnitSystem[] = ['mm', 'cm', 'm', 'in', 'ft'];
@@ -83,9 +84,6 @@ export const TopBar: React.FC = () => {
   const futureCount = useKuraStore((s) => s.future.length);
   const undo = useKuraStore((s) => s.undo);
   const redo = useKuraStore((s) => s.redo);
-  const importMeshFromDialog = useKuraStore((s) => s.importMeshFromDialog);
-  const exportSceneStl = useKuraStore((s) => s.exportSceneStl);
-  const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const openSettings = useKuraStore((s) => s.openSettings);
   const setCommandPaletteOpen = useKuraStore((s) => s.setCommandPaletteOpen);
   const mcpConnected = useKuraStore((s) => s.mcpConnected);
@@ -167,16 +165,7 @@ export const TopBar: React.FC = () => {
           <span className="kura-brand-badge">0.5</span>
         </div>
 
-        <button
-          type="button"
-          className="kura-btn kura-btn-sm"
-          onClick={() => void importMeshFromDialog()}
-          title={t(language, 'topbar.importModelTip')}
-          aria-label={t(language, 'topbar.importModel')}
-        >
-          <FileUp size={13} />
-          <span className="kura-btn-label">{t(language, 'topbar.importShort')}</span>
-        </button>
+        <ImportMenuButton />
 
         <button
           type="button"
@@ -252,23 +241,12 @@ export const TopBar: React.FC = () => {
         <button
           type="button"
           className="kura-btn kura-btn-sm kura-btn-primary"
-          onClick={() => void exportSceneStl(false)}
-          title={t(language, 'topbar.exportStlTip')}
-          aria-label={t(language, 'topbar.exportStl')}
+          onClick={() => openExportDialog()}
+          title={t(language, 'topbar.exportTip')}
+          aria-label={t(language, 'topbar.export')}
         >
-          <Download size={13} />
-          <span className="kura-btn-label">STL</span>
-        </button>
-
-        <button
-          type="button"
-          className="kura-btn kura-btn-sm kura-btn-amber"
-          onClick={() => setActiveDialog('export3mf')}
-          title={t(language, 'topbar.export3mfTip')}
-          aria-label={t(language, 'topbar.export3mf')}
-        >
-          <Download size={13} />
-          <span className="kura-btn-label">3MF</span>
+          <Download size={13} aria-hidden="true" />
+          <span className="kura-btn-label">{t(language, 'topbar.export')}</span>
         </button>
       </div>
 
