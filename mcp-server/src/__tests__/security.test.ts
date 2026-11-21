@@ -245,7 +245,7 @@ describe('TRUST-02 · solo lectura como fuente única', () => {
 describe('TRUST-02 · destinos de exportación', () => {
   async function seeded(options: Options = {}) {
     const ctx = await setup(options);
-    ctx.headless.createPrimitive({ primitiveType: 'box', params: { width: 10, height: 10, depth: 10 } });
+    await ctx.headless.createPrimitive({ primitiveType: 'box', params: { width: 10, height: 10, depth: 10 } });
     return ctx;
   }
 

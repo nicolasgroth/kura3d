@@ -12,6 +12,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { strFromU8, unzipSync } from 'fflate';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { WebSocket } from 'ws';
@@ -155,7 +156,7 @@ describe('Kura3D MCP Server', () => {
       },
     });
 
-    // 3. Ahuecar la caja y validar aumento de triángulos por cavidad interior
+    // 3. Ahuecar la caja: cavidad real 36×6×26 mm (pared 2 mm) restada por el motor Manifold
     const hollowRes = await client.callTool({
       name: 'kura_hollow_object',
       arguments: {
@@ -166,7 +167,10 @@ describe('Kura3D MCP Server', () => {
     });
     const hollowJson = JSON.parse((hollowRes.content[0] as { text: string }).text);
     expect(hollowJson.hollow.enabled).toBe(true);
-    expect(hollowJson.stats.triangles).toBe(24);
+    expect(hollowJson.stats.isManifold).toBe(true);
+    // Sólido 40×10×30 = 12000 mm³ menos la cavidad (5616 mm³) y el canal de drenaje
+    expect(hollowJson.stats.volumeMm3).toBeLessThan(12000 - 5616 + 1);
+    expect(hollowJson.stats.volumeMm3).toBeGreaterThan(12000 - 5616 - 100);
 
     // 4. Configurar unidades y perfil de impresora
     await client.callTool({ name: 'kura_set_units', arguments: { units: 'cm' } });
@@ -192,7 +196,7 @@ describe('Kura3D MCP Server', () => {
 
     const stlBytes = await readFile(stlPath);
     const triCount = stlBytes.readUInt32LE(80);
-    expect(triCount).toBe(24 + 24 * 8);
+    expect(triCount).toBe(hollowJson.stats.triangles + tubeJson.stats.triangles);
     expect(stlBytes.byteLength).toBe(84 + triCount * 50);
 
     // Verifica conversión Y-up -> Z-up en los vértices STL (el tubo escalado Y*1.5 en y=10..40 pasa a Z=10..40)
@@ -216,11 +220,14 @@ describe('Kura3D MCP Server', () => {
     expect(exportMfJson.slicerTarget).toBe('bambu');
 
     const mfBytes = await readFile(threeMfPath);
-    const mfText = mfBytes.toString('utf8');
     expect(mfBytes.subarray(0, 4).toString('binary')).toBe('PK\x03\x04');
-    expect(mfText).toContain('3D/3dmodel.model');
-    expect(mfText).toContain('Metadata/model_settings.config');
-    expect(mfText).toContain('value="bambu"');
+    const archive = unzipSync(new Uint8Array(mfBytes));
+    expect(Object.keys(archive)).toContain('3D/3dmodel.model');
+    expect(strFromU8(archive['Metadata/model_settings.config'])).toContain('value="bambu"');
+    // El 3MF del motor declara materiales y asigna color por triángulo
+    const modelXml = strFromU8(archive['3D/3dmodel.model']);
+    expect(modelXml).toContain('<basematerials id="1">');
+    expect(modelXml).toMatch(/<triangle [^>]*pid="1" p1="\d+"/);
   });
 
   it('valida orígenes locales permitidos y rechaza orígenes remotos en el puente WebSocket', async () => {
@@ -412,7 +419,7 @@ describe('Kura3D MCP Server', () => {
     await bridge.start();
     expect(bridge.isReadOnly()).toBe(true);
 
-    const seeded = headless.createPrimitive({
+    const seeded = await headless.createPrimitive({
       primitiveType: 'box',
       name: 'PiezaInspeccion',
       params: { width: 30, height: 15, depth: 20 },
@@ -684,7 +691,7 @@ describe('Kura3D MCP Server', () => {
     const extractedId = extractJson.extractedObject.id as string;
     const beforeState = headless.getSceneState();
     const beforeObj = beforeState.objects.find((o) => o.id === extractedId)!;
-    const beforeDetect = headless.detectStructures(extractedId);
+    const beforeDetect = await headless.detectStructures(extractedId);
     const beforeCenterX = beforeDetect.regions[0].centerMm[0];
 
     const mirrorRes = await client.callTool({
@@ -696,7 +703,7 @@ describe('Kura3D MCP Server', () => {
     expect(mirrorJson.stats.triangles).toBe(beforeObj.stats.triangles);
     expect(mirrorJson.stats.volumeMm3).toBeCloseTo(beforeObj.stats.volumeMm3, 2);
 
-    const afterDetect = headless.detectStructures(extractedId);
+    const afterDetect = await headless.detectStructures(extractedId);
     expect(afterDetect.regions[0].centerMm[0]).toBeCloseTo(-beforeCenterX, 2);
   });
 

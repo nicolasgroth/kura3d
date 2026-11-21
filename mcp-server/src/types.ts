@@ -495,39 +495,3 @@ export interface KuraCommandResponse {
   result?: unknown;
   error?: string;
 }
-
-/** Malla indexada utilizada por el motor headless para construir y exportar STL/3MF. */
-export interface HeadlessMeshData {
-  positions: Float32Array;
-  indices: Uint32Array;
-}
-
-/** Estadísticas calculadas de una malla 3D. */
-export interface ObjectStats {
-  triangles: number;
-  vertices: number;
-  isManifold: boolean;
-  volumeMm3: number;
-  dimensionsMm: Vec3;
-}
-
-/** Objeto 3D mantenido en memoria por el motor headless. */
-export interface HeadlessSceneObject {
-  id: string;
-  name: string;
-  source: ObjectSourceType;
-  primitiveType?: PrimitiveType;
-  primitiveParams?: PrimitiveParams;
-  position: Vec3;
-  rotation: Vec3;
-  scale: Vec3;
-  color: string;
-  materialPreset?: MaterialPresetId;
-  isHole: boolean;
-  visible: boolean;
-  locked: boolean;
-  hollow?: HollowOptions;
-  texture?: TextureOptions;
-  mesh: HeadlessMeshData;
-  stats: ObjectStats;
-}

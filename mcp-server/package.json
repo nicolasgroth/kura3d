@@ -1,8 +1,8 @@
 {
   "name": "kura3d-mcp-server",
   "version": "0.5.0",
-  "description": "Servidor MCP open-source nativo para Kura3D (stdio + WebSocket bridge). Desarrollado para ISGROTH (Innovación y Soluciones GROTH).",
-  "author": "Nicolás Groth <ngroth@gmail.com> (ISGROTH — Innovación y Soluciones GROTH)",
+  "description": "Servidor MCP open-source nativo para Kura3D (stdio + WebSocket bridge). Desarrollado para ISGROTH (InnovaciÃ³n y Soluciones GROTH).",
+  "author": "NicolÃ¡s Groth <ngroth@gmail.com> (ISGROTH â€” InnovaciÃ³n y Soluciones GROTH)",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,19 +13,25 @@
     "kura3d-mcp": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json && node scripts/build.mjs",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
+    "fflate": "^0.8.3",
+    "manifold-3d": "^3.5.5",
+    "three": "^0.176.0",
     "ws": "^8.18.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",
+    "@types/three": "^0.176.0",
     "@types/ws": "^8.18.1",
+    "esbuild": "^0.25.12",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "vitest": "^5.1.1"
