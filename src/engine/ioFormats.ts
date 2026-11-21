@@ -10,7 +10,12 @@
  */
 
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
-import type { MeshData, SceneObject, UnitSystem } from '../types/kura';
+import type {
+  MeshData,
+  SceneObject,
+  SlicerTarget,
+  UnitSystem,
+} from '../types/kura';
 import { computeVertexNormals, weldVertices } from './manifoldKernel';
 import { applyTransformToMesh, normalizeMeshToBed } from './primitives';
 
@@ -195,17 +200,20 @@ export function exportSceneToBinarySTL(objects: SceneObject[]): Uint8Array {
 // ============================================================================
 
 /**
- * Genera un paquete `.3mf` válido (archivo ZIP con `[Content_Types].xml`, `_rels/.rels`
- * y `3D/3dmodel.model`) incluyendo `<basematerials>` y atributos `pid`/`p1` por triángulo
- * para compatibilidad multicolor nativa con Elegoo Slicer, OrcaSlicer y Bambu Studio.
+ * Genera un paquete `.3mf` Multi-Slicer Pro válido (archivo ZIP con `[Content_Types].xml`,
+ * `_rels/.rels`, `3D/3dmodel.model` y `Metadata/model_settings.config`) incluyendo
+ * `<basematerials>` y atributos `pid`/`p1` por triángulo para compatibilidad multicolor
+ * nativa con Bambu Studio, Elegoo Slicer, Snapmaker Orca, FlashForge Orca y PrusaSlicer.
  *
  * @param objects Objetos de la escena a exportar.
  * @param unit Unidad del modelo declarada en la cabecera 3MF (por defecto 'mm').
+ * @param slicerTarget Slicer destino ('generic' | 'elegoo' | 'bambu' | 'snapmaker' | 'flashforge').
  * @returns Archivo `.3mf` comprimido en `Uint8Array`.
  */
 export function exportSceneTo3MF(
   objects: SceneObject[],
-  unit: UnitSystem = 'mm'
+  unit: UnitSystem = 'mm',
+  slicerTarget: SlicerTarget = 'generic'
 ): Uint8Array {
   const solidObjects = objects.filter((o) => o.visible && !o.isHole);
   const unitSpec = UNIT_TO_3MF[unit] ?? UNIT_TO_3MF.mm;
@@ -247,6 +255,8 @@ export function exportSceneTo3MF(
 
   const objectsXml: string[] = [];
   const buildItemsXml: string[] = [];
+  const configObjectsXml: string[] = [];
+  const configPlateInstancesXml: string[] = [];
 
   solidObjects.forEach((obj, objIdx) => {
     const objId = objIdx + 2;
@@ -271,6 +281,7 @@ export function exportSceneTo3MF(
     }
 
     const triLines = new Array<string>(triCount);
+    const objectColorSlots = new Set<number>();
     for (let t = 0; t < triCount; t++) {
       const v1 = world.indices[t * 3];
       const v2 = world.indices[t * 3 + 1];
@@ -278,6 +289,7 @@ export function exportSceneTo3MF(
       const p1 = world.faceColors?.[t]
         ? registerColor(world.faceColors[t])
         : defaultColorIdx;
+      objectColorSlots.add(p1);
       triLines[t] =
         `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" pid="1" p1="${p1}" />`;
     }
@@ -292,12 +304,40 @@ export function exportSceneTo3MF(
     );
 
     buildItemsXml.push(`    <item objectid="${objId}" />`);
+
+    // Mapeo de extrusores (base 1..N) en Metadata/model_settings.config para Bambu/Orca/Elegoo/FlashForge/Snapmaker
+    const extruderSlot = defaultColorIdx + 1;
+    const escapedName = escapeXml(obj.name);
+    const slotList = Array.from(objectColorSlots).map((idx) => idx + 1);
+    const paletteComment =
+      slotList.length > 1
+        ? `\n    <metadata key="filament_slots" value="${slotList.join(',')}"/>`
+        : '';
+
+    configObjectsXml.push(
+      `  <object id="${objId}">\n` +
+        `    <metadata key="name" value="${escapedName}"/>\n` +
+        `    <metadata key="extruder" value="${extruderSlot}"/>${paletteComment}\n` +
+        `    <part id="${objId}" subtype="normal_part">\n` +
+        `      <metadata key="name" value="${escapedName}"/>\n` +
+        `      <metadata key="extruder" value="${extruderSlot}"/>\n` +
+        `    </part>\n` +
+        `  </object>`
+    );
+    configPlateInstancesXml.push(
+      `    <model_instance>\n` +
+        `      <metadata key="object_id" value="${objId}"/>\n` +
+        `      <metadata key="instance_id" value="0"/>\n` +
+        `    </model_instance>`
+    );
   });
 
   const modelXml =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<model unit="${unitSpec.xmlName}" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n` +
     `  <metadata name="Application">Kura3D by Nicolás Groth</metadata>\n` +
+    `  <metadata name="Organization">ISGROTH — Innovación y Soluciones GROTH</metadata>\n` +
+    `  <metadata name="SlicerTarget">${escapeXml(slicerTarget)}</metadata>\n` +
     `  <resources>\n` +
     `    <basematerials id="1">\n${baseMaterialsXml}\n    </basematerials>\n` +
     `${objectsXml.join('\n')}\n` +
@@ -305,11 +345,26 @@ export function exportSceneTo3MF(
     `  <build>\n${buildItemsXml.join('\n')}\n  </build>\n` +
     `</model>\n`;
 
+  // Configuración estándar de objetos/extrusores compatible con Bambu Studio y derivados de OrcaSlicer
+  const modelSettingsConfigXml =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<config>\n` +
+    `  <metadata key="slicer_target" value="${escapeXml(slicerTarget)}"/>\n` +
+    `  <metadata key="filament_count" value="${palette.length}"/>\n` +
+    `${configObjectsXml.join('\n')}\n` +
+    `  <plate>\n` +
+    `    <metadata key="plater_id" value="1"/>\n` +
+    `    <metadata key="plater_name" value="Kura3D_Bed"/>\n` +
+    `${configPlateInstancesXml.join('\n')}\n` +
+    `  </plate>\n` +
+    `</config>\n`;
+
   const contentTypesXml =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n` +
     `  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />\n` +
     `  <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml" />\n` +
+    `  <Default Extension="config" ContentType="text/xml" />\n` +
     `</Types>\n`;
 
   const relsXml =
@@ -322,6 +377,7 @@ export function exportSceneTo3MF(
     '[Content_Types].xml': strToU8(contentTypesXml),
     '_rels/.rels': strToU8(relsXml),
     '3D/3dmodel.model': strToU8(modelXml),
+    'Metadata/model_settings.config': strToU8(modelSettingsConfigXml),
   });
 }
 

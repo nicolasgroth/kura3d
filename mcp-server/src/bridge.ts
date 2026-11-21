@@ -20,6 +20,7 @@ import type {
 export const READ_ONLY_COMMANDS = new Set<KuraCommandName>([
   'get_scene_state',
   'capture_viewport',
+  'analyze_printability',
 ]);
 
 /** Entrada de petición pendiente de respuesta desde el cliente Kura3D conectado. */

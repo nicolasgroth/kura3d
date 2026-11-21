@@ -1,6 +1,8 @@
 /**
  * @file src/types/kura.ts
- * @description Contratos y tipos compartidos para Kura3D (Escena, Geometría, Unidades, i18n, Impresoras, MCP y Chat IA).
+ * @description Contratos y tipos compartidos para Kura3D Pro v3.0 (Escena, Geometría, Moldes,
+ * Proyección en Superficies, Validador Estructural, Materiales PBR, Impresoras Multi-Marca,
+ * Unidades, i18n, MCP y Chat IA).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -15,15 +17,14 @@ export type UnitSystem = 'mm' | 'cm' | 'm' | 'in' | 'ft';
 /** Esquema de color visual de la interfaz. */
 export type ColorSchemePreference = 'system' | 'dark' | 'light';
 
+/** Modos de densidad dinámica de la interfaz (Expandido, Compacto solo íconos, Zen 100% canvas). */
+export type UiDensityMode = 'full' | 'compact' | 'zen';
+
 /** Modos del gizmo de transformación en el viewport 3D. */
 export type TransformMode = 'translate' | 'rotate' | 'scale';
 
 /** Herramientas activas en la barra superior/lateral. */
-export type ActiveTool =
-  | 'select'
-  | 'paint'
-  | 'cut'
-  | 'erase';
+export type ActiveTool = 'select' | 'paint' | 'cut' | 'erase';
 
 /** Tipos de primitivas paramétricas nativas. */
 export type PrimitiveType =
@@ -35,6 +36,117 @@ export type PrimitiveType =
   | 'torus'
   | 'prism'
   | 'text';
+
+/** Presets de material físico/visual PBR para proyección realista y cálculo de peso. */
+export type MaterialPresetId =
+  | 'pla_matte'
+  | 'pla_silk'
+  | 'petg_clear'
+  | 'abs'
+  | 'carbon_fiber'
+  | 'silicone'
+  | 'wax_candle'
+  | 'metallic';
+
+/** Propiedades físicas y visuales de cada material PBR. */
+export interface MaterialPresetSpec {
+  id: MaterialPresetId;
+  labelEs: string;
+  labelEn: string;
+  roughness: number;
+  metalness: number;
+  opacity: number;
+  transparent: boolean;
+  /** Densidad en g/cm³ para estimación realista de peso de impresión. */
+  densityGCm3: number;
+}
+
+/** Catálogo oficial de materiales PBR de Kura3D. */
+export const MATERIAL_PRESETS: Record<MaterialPresetId, MaterialPresetSpec> = {
+  pla_matte: {
+    id: 'pla_matte',
+    labelEs: 'PLA Mate',
+    labelEn: 'Matte PLA',
+    roughness: 0.58,
+    metalness: 0.04,
+    opacity: 1,
+    transparent: false,
+    densityGCm3: 1.24,
+  },
+  pla_silk: {
+    id: 'pla_silk',
+    labelEs: 'PLA Silk (Brillante)',
+    labelEn: 'Silk PLA',
+    roughness: 0.22,
+    metalness: 0.48,
+    opacity: 1,
+    transparent: false,
+    densityGCm3: 1.24,
+  },
+  petg_clear: {
+    id: 'petg_clear',
+    labelEs: 'PETG Translúcido',
+    labelEn: 'Translucent PETG',
+    roughness: 0.16,
+    metalness: 0.05,
+    opacity: 0.72,
+    transparent: true,
+    densityGCm3: 1.27,
+  },
+  abs: {
+    id: 'abs',
+    labelEs: 'ABS Técnico',
+    labelEn: 'Technical ABS',
+    roughness: 0.36,
+    metalness: 0.08,
+    opacity: 1,
+    transparent: false,
+    densityGCm3: 1.04,
+  },
+  carbon_fiber: {
+    id: 'carbon_fiber',
+    labelEs: 'Fibra de Carbono (CF)',
+    labelEn: 'Carbon Fiber (CF)',
+    roughness: 0.72,
+    metalness: 0.22,
+    opacity: 1,
+    transparent: false,
+    densityGCm3: 1.3,
+  },
+  silicone: {
+    id: 'silicone',
+    labelEs: 'Silicona (Moldes)',
+    labelEn: 'Silicone (Molds)',
+    roughness: 0.45,
+    metalness: 0.0,
+    opacity: 0.78,
+    transparent: true,
+    densityGCm3: 1.1,
+  },
+  wax_candle: {
+    id: 'wax_candle',
+    labelEs: 'Cera / Vela',
+    labelEn: 'Candle Wax',
+    roughness: 0.65,
+    metalness: 0.0,
+    opacity: 0.94,
+    transparent: true,
+    densityGCm3: 0.9,
+  },
+  metallic: {
+    id: 'metallic',
+    labelEs: 'Metálico / Aluminio',
+    labelEn: 'Metallic / Aluminum',
+    roughness: 0.24,
+    metalness: 0.85,
+    opacity: 1,
+    transparent: false,
+    densityGCm3: 2.7,
+  },
+};
+
+/** Slicers destino soportados en el exportador 3MF Multi-Slicer Pro. */
+export type SlicerTarget = 'generic' | 'elegoo' | 'bambu' | 'snapmaker' | 'flashforge';
 
 /** Tipos de textura superficial procedural aplicable sobre mallas. */
 export type TexturePatternType =
@@ -50,6 +162,28 @@ export type CutConnectorType = 'none' | 'dowel' | 'peg' | 'dovetail';
 
 /** Operaciones booleanas CSG garantizadas watertight vía Manifold. */
 export type BooleanOpType = 'union' | 'subtract' | 'intersect';
+
+/** Modos del generador automático de moldes y contra-moldes para silicona/velas. */
+export type MoldMode = 'direct_1part' | 'direct_2part' | 'silicone_master' | 'core_cavity';
+
+/** Modos de proyección conformal de texto o SVG sobre cualquier superficie 3D. */
+export type SurfaceProjectionMode = 'emboss' | 'deboss' | 'flush_inlay';
+
+/** Dirección de proyección conformal sobre una superficie 3D. */
+export type SurfaceProjectionAxis = '+z' | '-z' | '+x' | '-x' | '+y' | '-y' | 'cylindrical';
+
+/** Modos de alineación inteligente para selección múltiple o distribución en cama. */
+export type AlignMode =
+  | 'minX'
+  | 'centerX'
+  | 'maxX'
+  | 'minY'
+  | 'centerY'
+  | 'maxY'
+  | 'minZ'
+  | 'centerZ'
+  | 'maxZ'
+  | 'arrange_grid';
 
 /** Vector 3D [X, Y, Z] en milímetros (o radianes en rotación / factor en escala). */
 export type Vec3 = [number, number, number];
@@ -124,6 +258,62 @@ export interface PlaneCutOptions {
   keepMode: 'both' | 'positive' | 'negative';
 }
 
+/** Opciones del generador automático de moldes y contra-moldes (velas, silicona, resina). */
+export interface MoldOptions {
+  mode: MoldMode;
+  /** Margen de pared exterior del molde en mm (o espesor de silicona en modo silicone_master). */
+  wallMarginMm: number;
+  /** Grosor de pared de la caja madre contenedora en modo silicone_master (mm). */
+  boxWallMm: number;
+  /** Eje de partición para moldes de 2 mitades ('x' o 'z'). */
+  splitAxis: 'x' | 'z';
+  /** Agregar canal/embudo de vertido superior. */
+  pourSpout: boolean;
+  /** Radio del embudo/canal de vertido en mm. */
+  pourSpoutRadiusMm: number;
+  /** Holgura de encaje de llaves de registro en mm (ej. 0.25 mm). */
+  keyToleranceMm: number;
+  /** Espesor de pared deseado de la pieza colada en modo core_cavity (mm). */
+  cavityWallMm: number;
+}
+
+/** Opciones de proyección conformal de texto o SVG sobre cualquier superficie 3D. */
+export interface SurfaceProjectionOptions {
+  /** Fuente gráfica: texto paramétrico o código SVG. */
+  kind: 'text' | 'svg';
+  text?: string;
+  svgContent?: string;
+  /** Modo de aplicación sobre la superficie: relieve, grabado negativo o incrustación a ras multicolor. */
+  mode: SurfaceProjectionMode;
+  /** Dirección o envoltura cilíndrica de proyección. */
+  axis: SurfaceProjectionAxis;
+  /** Ancho proyectado objetivo en mm. */
+  widthMm: number;
+  /** Profundidad de relieve / grabado / incrustación en mm. */
+  depthMm: number;
+  /** Color de la región proyectada (fundamental para flush_inlay multicolor 3MF). */
+  colorHex: string;
+  /** Desplazamiento horizontal/vertical (U, V) en mm sobre la cara objetivo. */
+  offsetU?: number;
+  offsetV?: number;
+}
+
+/** Opciones del generador paramétrico de roscas métricas ISO (M3 a M20). */
+export interface ThreadOptions {
+  /** Tipo de pieza roscada: perno exterior, tuerca hexagonal o cilindro roscado negativo. */
+  kind: 'bolt' | 'nut' | 'hole';
+  /** Diámetro nominal métrico ISO en mm (ej. 6 para M6, 8 para M8, 10 para M10). */
+  diameterMm: number;
+  /** Paso de rosca en mm (ej. 1.0, 1.25, 1.5). */
+  pitchMm: number;
+  /** Longitud roscada en mm. */
+  lengthMm: number;
+  /** Holgura radial para impresión 3D (mm, típico 0.20–0.30 mm). */
+  clearanceMm: number;
+  /** Incluir cabeza hexagonal en el perno. */
+  includeHead?: boolean;
+}
+
 /** Opciones de importación y extrusión de SVG. */
 export interface SvgImportOptions {
   /** Contenido textual del SVG. */
@@ -160,6 +350,37 @@ export interface ImageTo3DOptions {
   invert: boolean;
   /** Nivel de suavizado (0 = ninguno, 1-3 = pasadas de promedio). */
   smoothing: number;
+  /** Modo geométrico: plano, litofanía cilíndrica curva o silueta/cortador. */
+  shapeMode?: 'flat' | 'cylindrical' | 'silhouette' | 'cutter';
+  /** Radio del cilindro en mm (cuando shapeMode === 'cylindrical'). */
+  cylinderRadiusMm?: number;
+  /** Ángulo de arco en grados (90..360, cuando shapeMode === 'cylindrical'). */
+  arcDegrees?: number;
+  /** Umbral de silueta 0..255 (cuando shapeMode === 'silhouette' | 'cutter'). */
+  threshold?: number;
+  /** Grosor de pared del cortador en mm (cuando shapeMode === 'cutter'). */
+  cutterWallMm?: number;
+}
+
+/** Informe completo del Validador Estructural de Imprimibilidad 3D. */
+export interface PrintabilityReport {
+  objectId: string;
+  isManifold: boolean;
+  fitsInBed: boolean;
+  isFloating: boolean;
+  minYWorldMm: number;
+  overhangFaceCount: number;
+  overhangPercent: number;
+  /** Índices de triángulos con voladizo crítico (> overhangAngleDeg) para resaltar en rojo en el viewport 3D. */
+  overhangFaceIndices: number[];
+  overhangAngleDeg: number;
+  volumeCm3: number;
+  estimatedWeightGrams: number;
+  estimatedFilamentMeters: number;
+  triangleCount: number;
+  densityQuality: 'low' | 'optimal' | 'high';
+  warnings: string[];
+  score: number;
 }
 
 /** Origen de creación de un objeto en la escena. */
@@ -170,7 +391,11 @@ export type ObjectSourceType =
   | 'svg'
   | 'image'
   | 'cut_part'
-  | 'color_split';
+  | 'color_split'
+  | 'mold'
+  | 'thread'
+  | 'hull'
+  | 'projected';
 
 /** Nodo de objeto 3D en la escena de Kura3D. */
 export interface SceneObject {
@@ -187,6 +412,8 @@ export interface SceneObject {
   scale: Vec3;
   /** Color base del material en formato hex '#rrggbb'. */
   color: string;
+  /** Preset de material físico/visual PBR (por defecto 'pla_matte'). */
+  materialPreset?: MaterialPresetId;
   /** Si es true, se comporta como volumen "hueco / resta" estilo Tinkercad. */
   isHole: boolean;
   /** Visibilidad en el viewport. */
@@ -213,14 +440,18 @@ export interface SceneObject {
 export interface PrinterProfile {
   id: string;
   name: string;
+  /** Marca o familia para el exportador 3MF Multi-Slicer y la silueta de cama. */
+  brand: SlicerTarget;
   /** Dimensiones de la cama [X, Z, Y_altura] en milímetros. */
   bedWidthMm: number;
   bedDepthMm: number;
   maxHeightMm: number;
-  /** Si es true, muestra volumen de construcción estilo laminador; si es false, modo estudio 3D genérico. */
+  /** Si es true, muestra silueta y volumen de construcción estilo laminador; si es false, modo estudio 3D libre. */
   showPrintVolume: boolean;
   /** Cantidad de extrusores / ranuras de color sugeridas. */
   colorSlots: number;
+  /** Zona de purga frontal en mm (referencia visual sobre la placa). */
+  purgeZoneMm?: number;
 }
 
 /** Proveedores de IA soportados por el chat nativo integrado. */
@@ -292,7 +523,16 @@ export interface KuraCommandRequest {
     | 'set_unit_system'
     | 'export_stl'
     | 'export_3mf'
-    | 'capture_viewport';
+    | 'capture_viewport'
+    | 'generate_mold'
+    | 'project_on_surface'
+    | 'analyze_printability'
+    | 'simplify_mesh'
+    | 'refine_mesh'
+    | 'create_thread'
+    | 'convex_hull'
+    | 'align_objects'
+    | 'set_material';
   params: Record<string, unknown>;
 }
 
@@ -304,20 +544,114 @@ export interface KuraCommandResponse {
   error?: string;
 }
 
-/** Presets de impresoras integrados (incluye Elegoo Centauri Carbon 2 y modos genéricos). */
+/**
+ * Presets oficiales de impresoras 3D integrados en Kura3D Pro:
+ * Elegoo Centauri Carbon 1 & 2, Bambu Lab, Snapmaker, FlashForge y modos genéricos.
+ */
 export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
   {
     id: 'elegoo-centauri-carbon-2',
     name: 'Elegoo Centauri Carbon 2',
+    brand: 'elegoo',
     bedWidthMm: 256,
     bedDepthMm: 256,
     maxHeightMm: 256,
     showPrintVolume: true,
     colorSlots: 4,
+    purgeZoneMm: 14,
+  },
+  {
+    id: 'elegoo-centauri-carbon-1',
+    name: 'Elegoo Centauri Carbon 1',
+    brand: 'elegoo',
+    bedWidthMm: 256,
+    bedDepthMm: 256,
+    maxHeightMm: 256,
+    showPrintVolume: true,
+    colorSlots: 1,
+    purgeZoneMm: 12,
+  },
+  {
+    id: 'bambu-p1s-x1c-a1',
+    name: 'Bambu Lab A1 / P1S / X1C',
+    brand: 'bambu',
+    bedWidthMm: 256,
+    bedDepthMm: 256,
+    maxHeightMm: 256,
+    showPrintVolume: true,
+    colorSlots: 4,
+    purgeZoneMm: 18,
+  },
+  {
+    id: 'bambu-a1-mini',
+    name: 'Bambu Lab A1 Mini',
+    brand: 'bambu',
+    bedWidthMm: 180,
+    bedDepthMm: 180,
+    maxHeightMm: 180,
+    showPrintVolume: true,
+    colorSlots: 4,
+    purgeZoneMm: 14,
+  },
+  {
+    id: 'bambu-h2d',
+    name: 'Bambu Lab H2D',
+    brand: 'bambu',
+    bedWidthMm: 350,
+    bedDepthMm: 320,
+    maxHeightMm: 325,
+    showPrintVolume: true,
+    colorSlots: 8,
+    purgeZoneMm: 18,
+  },
+  {
+    id: 'snapmaker-artisan',
+    name: 'Snapmaker Artisan',
+    brand: 'snapmaker',
+    bedWidthMm: 400,
+    bedDepthMm: 400,
+    maxHeightMm: 400,
+    showPrintVolume: true,
+    colorSlots: 2,
+    purgeZoneMm: 15,
+  },
+  {
+    id: 'snapmaker-j1s',
+    name: 'Snapmaker J1s (IDEX)',
+    brand: 'snapmaker',
+    bedWidthMm: 300,
+    bedDepthMm: 200,
+    maxHeightMm: 200,
+    showPrintVolume: true,
+    colorSlots: 2,
+    purgeZoneMm: 12,
+  },
+  {
+    id: 'flashforge-ad5m',
+    name: 'FlashForge Adventurer 5M / Pro',
+    brand: 'flashforge',
+    bedWidthMm: 220,
+    bedDepthMm: 220,
+    maxHeightMm: 220,
+    showPrintVolume: true,
+    colorSlots: 1,
+    purgeZoneMm: 10,
+  },
+  {
+    id: 'flashforge-ad5x',
+    name: 'FlashForge AD5X (Multicolor)',
+    brand: 'flashforge',
+    bedWidthMm: 220,
+    bedDepthMm: 220,
+    maxHeightMm: 220,
+    showPrintVolume: true,
+    colorSlots: 4,
+    purgeZoneMm: 14,
   },
   {
     id: 'generic-220',
     name: 'Genérica 220 × 220 × 250 mm',
+    brand: 'generic',
     bedWidthMm: 220,
     bedDepthMm: 220,
     maxHeightMm: 250,
@@ -327,6 +661,7 @@ export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
   {
     id: 'generic-300',
     name: 'Gran Formato 300 × 300 × 350 mm',
+    brand: 'generic',
     bedWidthMm: 300,
     bedDepthMm: 300,
     maxHeightMm: 350,
@@ -336,6 +671,7 @@ export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
   {
     id: 'free-studio',
     name: 'Estudio 3D Libre (Sin límites de cama)',
+    brand: 'generic',
     bedWidthMm: 400,
     bedDepthMm: 400,
     maxHeightMm: 400,

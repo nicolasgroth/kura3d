@@ -1,7 +1,8 @@
 /**
  * @file src/components/CommandPalette.tsx
- * @description Paleta rápida de comandos (Ctrl+K) sobre <dialog> nativo con filtrado en vivo,
- * navegación por teclado (↑/↓/Enter), atajos visibles y badges explícitos Local vs IA.
+ * @description Paleta rápida de comandos (Ctrl+K) de Kura3D Pro v3.0 sobre <dialog> nativo
+ * con filtrado en vivo, navegación por teclado (↑/↓/Enter), comandos Maker Pro, modos de
+ * densidad (Compacto/Zen), plano de sección Rayos X y badges explícitos Local vs IA.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -10,10 +11,12 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   ArrowDownToLine,
+  Bolt,
   Bot,
   Box,
   Circle,
   Cloud,
+  Columns2,
   Combine,
   Cone,
   Cylinder,
@@ -21,18 +24,24 @@ import {
   Download,
   FileCode2,
   FileUp,
+  Grid,
   Hexagon,
   Image as ImageIcon,
   Languages,
+  Layers,
   Maximize2,
+  Minimize2,
   MinusCircle,
   Moon,
+  PaintBucket,
   Scissors,
   Search,
   Settings,
+  ShieldCheck,
   Sparkles,
   Split,
   Type,
+  Wand2,
   X,
   Zap,
 } from 'lucide-react';
@@ -64,6 +73,11 @@ export const CommandPalette: React.FC = () => {
   const setCommandPaletteOpen = useKuraStore((s) => s.setCommandPaletteOpen);
   const language = useKuraStore((s) => s.language);
   const setLanguage = useKuraStore((s) => s.setLanguage);
+  const uiDensity = useKuraStore((s) => s.uiDensity);
+  const setUiDensity = useKuraStore((s) => s.setUiDensity);
+  const toggleZenMode = useKuraStore((s) => s.toggleZenMode);
+  const sectionPlane = useKuraStore((s) => s.sectionPlane);
+  const setSectionPlane = useKuraStore((s) => s.setSectionPlane);
   const aiConfig = useKuraStore((s) => s.aiConfig);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const objects = useKuraStore((s) => s.objects);
@@ -75,6 +89,11 @@ export const CommandPalette: React.FC = () => {
   const splitDisconnectedObject = useKuraStore((s) => s.splitDisconnectedObject);
   const splitObjectByColor = useKuraStore((s) => s.splitObjectByColor);
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
+  const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
+  const simplifySelectedMesh = useKuraStore((s) => s.simplifySelectedMesh);
+  const refineSelectedMesh = useKuraStore((s) => s.refineSelectedMesh);
+  const runConvexHull = useKuraStore((s) => s.runConvexHull);
+  const alignSelectedObjects = useKuraStore((s) => s.alignSelectedObjects);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const openSettings = useKuraStore((s) => s.openSettings);
   const setAiDrawerOpen = useKuraStore((s) => s.setAiDrawerOpen);
@@ -211,6 +230,15 @@ export const CommandPalette: React.FC = () => {
         run: () => void createPrimitive('text', { text: 'KURA3D', fontSize: 18, height: 6 }),
       },
       {
+        id: 'gen-thread',
+        label: t(language, 'cmd.pro.thread'),
+        category: catPrim,
+        keywords: 'rosca tornillo perno tuerca iso thread bolt nut m4 m6 m8 m10',
+        kind: 'local',
+        icon: <Bolt size={15} />,
+        run: () => setActiveDialog('thread'),
+      },
+      {
         id: 'gen-svg',
         label: t(language, 'topbar.importSvg'),
         category: catPrim,
@@ -223,10 +251,79 @@ export const CommandPalette: React.FC = () => {
         id: 'gen-img',
         label: t(language, 'topbar.imageTo3d'),
         category: catPrim,
-        keywords: 'imagen relieve litofania image lithophane',
+        keywords: 'imagen relieve litofania cilindrica silueta cortador image lithophane cutter',
         kind: 'local',
         icon: <ImageIcon size={15} />,
         run: () => setActiveDialog('image'),
+      },
+      {
+        id: 'op-mold',
+        label: t(language, 'cmd.pro.mold'),
+        category: catOps,
+        keywords: 'molde silicona vela resina contramolde mold silicone candle',
+        kind: 'local',
+        icon: <PaintBucket size={15} />,
+        run: () => setActiveDialog('mold'),
+      },
+      {
+        id: 'op-project',
+        label: t(language, 'cmd.pro.project'),
+        category: catOps,
+        keywords: 'proyectar texto svg superficie relieve grabado incrustacion project surface',
+        kind: 'local',
+        icon: <Type size={15} />,
+        run: () => setActiveDialog('project'),
+      },
+      {
+        id: 'op-validate',
+        label: t(language, 'cmd.pro.validate'),
+        category: catOps,
+        keywords: 'validar imprimibilidad voladizos peso filamento overhangs printability check',
+        kind: 'local',
+        icon: <ShieldCheck size={15} />,
+        run: () => {
+          if (primaryId) runPrintabilityCheck(primaryId);
+        },
+      },
+      {
+        id: 'op-simplify',
+        label: t(language, 'cmd.pro.simplify'),
+        category: catOps,
+        keywords: 'simplificar reducir triangulos malla decimate simplify mesh',
+        kind: 'local',
+        icon: <Sparkles size={15} />,
+        run: () => {
+          if (primaryId) void simplifySelectedMesh(primaryId, 0.15);
+        },
+      },
+      {
+        id: 'op-refine',
+        label: t(language, 'cmd.pro.refine'),
+        category: catOps,
+        keywords: 'refinar subdividir suavizar malla refine smooth mesh',
+        kind: 'local',
+        icon: <Wand2 size={15} />,
+        run: () => {
+          if (primaryId) void refineSelectedMesh(primaryId, 1.5, true);
+        },
+      },
+      {
+        id: 'op-hull',
+        label: t(language, 'cmd.pro.hull'),
+        category: catOps,
+        keywords: 'envolvente convexa convex hull unir',
+        kind: 'local',
+        icon: <Box size={15} />,
+        run: () => void runConvexHull(),
+      },
+      {
+        id: 'op-arrange',
+        label: t(language, 'cmd.pro.arrangeGrid'),
+        category: catOps,
+        keywords: 'distribuir cama alinear rejilla arrange grid bed',
+        kind: 'local',
+        icon: <Grid size={15} />,
+        run: () => alignSelectedObjects('arrange_grid'),
       },
       {
         id: 'op-sub-sphere',
@@ -338,10 +435,19 @@ export const CommandPalette: React.FC = () => {
         run: () => void exportSceneStl(false),
       },
       {
+        id: 'io-3mf-modal',
+        label: t(language, 'cmd.export.3mfModal'),
+        category: catExp,
+        keywords: 'exportar 3mf multi slicer elegoo bambu snapmaker flashforge',
+        kind: 'local',
+        icon: <Download size={15} />,
+        run: () => setActiveDialog('export3mf'),
+      },
+      {
         id: 'io-3mf',
         label: t(language, 'topbar.export3mf'),
         category: catExp,
-        keywords: 'exportar 3mf multicolor bambu orca',
+        keywords: 'exportar 3mf rapido multicolor',
         kind: 'local',
         icon: <Download size={15} />,
         run: () => void exportScene3mf(false),
@@ -354,6 +460,34 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <Download size={15} />,
         run: () => void exportSelectedObj(),
+      },
+      {
+        id: 'view-compact',
+        label: t(language, 'cmd.view.compact'),
+        category: catView,
+        keywords: 'compacto densidad laptop rail sidebar compact',
+        kind: 'local',
+        icon: <Columns2 size={15} />,
+        run: () => setUiDensity(uiDensity === 'compact' ? 'full' : 'compact'),
+      },
+      {
+        id: 'view-zen',
+        label: t(language, 'cmd.view.zen'),
+        category: catView,
+        keywords: 'zen pantalla completa canvas hide panels',
+        shortcut: 'Tab',
+        kind: 'local',
+        icon: <Minimize2 size={15} />,
+        run: () => toggleZenMode(),
+      },
+      {
+        id: 'view-xray',
+        label: t(language, 'cmd.view.xray'),
+        category: catView,
+        keywords: 'rayos x seccion corte visual clipping xray section',
+        kind: 'local',
+        icon: <Layers size={15} />,
+        run: () => setSectionPlane({ enabled: !sectionPlane.enabled }),
       },
       {
         id: 'view-fit',
@@ -416,6 +550,8 @@ export const CommandPalette: React.FC = () => {
     aiBadge,
     primaryId,
     colorScheme,
+    uiDensity,
+    sectionPlane.enabled,
     createPrimitive,
     addSubtractHelperPrimitive,
     applyHolesOnSolids,
@@ -424,11 +560,19 @@ export const CommandPalette: React.FC = () => {
     splitDisconnectedObject,
     splitObjectByColor,
     dropObjectToBed,
+    runPrintabilityCheck,
+    simplifySelectedMesh,
+    refineSelectedMesh,
+    runConvexHull,
+    alignSelectedObjects,
     setActiveDialog,
     importMeshFromDialog,
     exportSceneStl,
     exportScene3mf,
     exportSelectedObj,
+    setUiDensity,
+    toggleZenMode,
+    setSectionPlane,
     requestCameraPreset,
     setLanguage,
     setColorScheme,

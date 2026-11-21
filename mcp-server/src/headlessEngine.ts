@@ -1,9 +1,9 @@
 /**
  * @file mcp-server/src/headlessEngine.ts
- * @description Motor geométrico autónomo (modo Headless) para el servidor MCP de Kura3D.
- * Permite crear primitivas paramétricas watertight, transformar objetos, aplicar
- * ahuecado, configurar unidades/impresoras y exportar archivos STL binarios/ASCII y 3MF
- * directamente en disco aunque la UI de Kura3D no esté abierta.
+ * @description Motor geométrico autónomo (modo Headless) para el servidor MCP de Kura3D Pro v3.0.
+ * Permite crear primitivas paramétricas watertight, roscas ISO, moldes, alinear objetos,
+ * analizar imprimibilidad, asignar materiales PBR, y exportar archivos STL binarios/ASCII
+ * y 3MF Multi-Slicer directamente en disco aunque la UI de Kura3D no esté abierta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,16 +14,24 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import {
   DEFAULT_PRINTER_PROFILES,
+  MATERIAL_PRESETS,
+  type AlignMode,
   type BooleanOpType,
   type HeadlessMeshData,
   type HeadlessSceneObject,
   type HollowOptions,
+  type MaterialPresetId,
+  type MoldOptions,
   type ObjectStats,
   type PlaneCutOptions,
   type PrimitiveParams,
   type PrimitiveType,
+  type PrintabilityReport,
   type PrinterProfile,
+  type SlicerTarget,
+  type SurfaceProjectionOptions,
   type TextureOptions,
+  type ThreadOptions,
   type UnitSystem,
   type Vec3,
 } from './types.js';
@@ -38,6 +46,7 @@ export interface SceneObjectSummary {
   rotation: Vec3;
   scale: Vec3;
   color: string;
+  materialPreset: MaterialPresetId;
   isHole: boolean;
   visible: boolean;
   locked: boolean;
@@ -60,6 +69,7 @@ export interface ExportFileResult {
   mode: 'headless';
   path: string;
   format: 'stl-binary' | 'stl-ascii' | '3mf';
+  slicerTarget?: SlicerTarget;
   objectCount: number;
   triangles: number;
   bytesWritten: number;
@@ -96,6 +106,7 @@ export class KuraHeadlessEngine {
     rotation?: Vec3;
     scale?: Vec3;
     color?: string;
+    materialPreset?: MaterialPresetId;
     isHole?: boolean;
   }): SceneObjectSummary {
     const id = `kura_${++this.counter}_${randomUUID().slice(0, 6)}`;
@@ -115,6 +126,7 @@ export class KuraHeadlessEngine {
       rotation: [...rotation],
       scale: [...scale],
       color: input.color ?? '#38bdf8',
+      materialPreset: input.materialPreset ?? 'pla_matte',
       isHole: Boolean(input.isHole),
       visible: true,
       locked: false,
@@ -224,6 +236,7 @@ export class KuraHeadlessEngine {
       rotation: [0, 0, 0],
       scale: [1, 1, 1],
       color: target.color,
+      materialPreset: target.materialPreset ?? 'pla_matte',
       isHole: false,
       visible: true,
       locked: false,
@@ -274,6 +287,7 @@ export class KuraHeadlessEngine {
         rotation: [...obj.rotation],
         scale,
         color: obj.color,
+        materialPreset: obj.materialPreset ?? 'pla_matte',
         isHole: false,
         visible: true,
         locked: false,
@@ -330,6 +344,18 @@ export class KuraHeadlessEngine {
     return this.summarizeObject(obj);
   }
 
+  /** Asigna un preset de material físico/visual PBR (PLA, PETG, ABS, CF, Silicona, Cera, Metálico). */
+  setMaterial(objectId: string, materialPreset: MaterialPresetId): SceneObjectSummary {
+    if (!Object.prototype.hasOwnProperty.call(MATERIAL_PRESETS, materialPreset)) {
+      throw new Error(
+        `Preset de material desconocido '${materialPreset}'. Disponibles: ${Object.keys(MATERIAL_PRESETS).join(', ')}`
+      );
+    }
+    const obj = this.requireObject(objectId);
+    obj.materialPreset = materialPreset;
+    return this.summarizeObject(obj);
+  }
+
   /** Crea una extrusión simplificada en modo headless a partir de un SVG. */
   importSvg(input: {
     svgContent: string;
@@ -364,6 +390,515 @@ export class KuraHeadlessEngine {
     return { printerProfile: { ...this.printerProfile } };
   }
 
+  /* ------------------------------------------------------------------------ */
+  /* Herramientas Pro v3.0 en modo Headless                                   */
+  /* ------------------------------------------------------------------------ */
+
+  /** Analiza imprimibilidad real (bounding box, volumen, encaje en cama, voladizos, peso y advertencias). */
+  analyzePrintability(
+    objectId: string,
+    options: {
+      materialPreset?: MaterialPresetId;
+      infillPercent?: number;
+      overhangAngleDeg?: number;
+    } = {}
+  ): PrintabilityReport {
+    const obj = this.requireObject(objectId);
+    const baked = bakeObjectTransform(obj);
+    const [min, max] = computeBounds(baked);
+    const bakedStats = computeMeshStats(baked, [1, 1, 1]);
+
+    const dimX = Math.max(0, max[0] - min[0]);
+    const dimY = Math.max(0, max[1] - min[1]);
+    const dimZ = Math.max(0, max[2] - min[2]);
+    const minYWorldMm = Math.round(min[1] * 100) / 100;
+    const isFloating = min[1] > 0.25 || min[1] < -0.25;
+
+    const halfW = this.printerProfile.bedWidthMm * 0.5;
+    const halfD = this.printerProfile.bedDepthMm * 0.5;
+    const fitsInBed =
+      !this.printerProfile.showPrintVolume ||
+      (dimX <= this.printerProfile.bedWidthMm + 0.1 &&
+        dimZ <= this.printerProfile.bedDepthMm + 0.1 &&
+        dimY <= this.printerProfile.maxHeightMm + 0.1 &&
+        min[0] >= -halfW - 0.1 &&
+        max[0] <= halfW + 0.1 &&
+        min[2] >= -halfD - 0.1 &&
+        max[2] <= halfD + 0.1 &&
+        min[1] >= -0.25 &&
+        max[1] <= this.printerProfile.maxHeightMm + 0.1);
+
+    const overhangAngleDeg = options.overhangAngleDeg ?? 45;
+    const p = baked.positions;
+    const idx = baked.indices;
+    const triCount = idx.length / 3;
+    let overhangFaceCount = 0;
+
+    for (let t = 0; t < triCount; t++) {
+      const i0 = idx[t * 3] * 3;
+      const i1 = idx[t * 3 + 1] * 3;
+      const i2 = idx[t * 3 + 2] * 3;
+
+      const ax = p[i0], ay = p[i0 + 1], az = p[i0 + 2];
+      const bx = p[i1], by = p[i1 + 1], bz = p[i1 + 2];
+      const cx = p[i2], cy = p[i2 + 1], cz = p[i2 + 2];
+
+      const ux = bx - ax, uy = by - ay, uz = bz - az;
+      const vx = cx - ax, vy = cy - ay, vz = cz - az;
+      const nx = uy * vz - uz * vy;
+      const ny = uz * vx - ux * vz;
+      const nz = ux * vy - uy * vx;
+      const len = Math.hypot(nx, ny, nz);
+      if (len <= 1e-9) continue;
+
+      const unitNy = ny / len;
+      if (unitNy >= -1e-4) continue;
+
+      // Excluye caras inferiores apoyadas directamente sobre la cama de impresión
+      const onBed =
+        min[1] <= 0.25 &&
+        ay <= min[1] + 0.05 &&
+        by <= min[1] + 0.05 &&
+        cy <= min[1] + 0.05;
+      if (onBed) continue;
+
+      const angleFromVertical = Math.asin(Math.min(1, -unitNy)) * (180 / Math.PI);
+      if (angleFromVertical > overhangAngleDeg) {
+        overhangFaceCount++;
+      }
+    }
+
+    const overhangPercent =
+      triCount > 0 ? Math.round((overhangFaceCount / triCount) * 10000) / 100 : 0;
+
+    const materialPreset: MaterialPresetId =
+      options.materialPreset ?? obj.materialPreset ?? 'pla_matte';
+    const infillPercent = Math.max(0, Math.min(100, options.infillPercent ?? 20));
+    const densityGCm3 = MATERIAL_PRESETS[materialPreset].densityGCm3;
+    const volumeCm3 = Math.round((bakedStats.volumeMm3 / 1000) * 1000) / 1000;
+
+    const effectiveFill = obj.hollow?.enabled ? 1 : 0.2 + 0.8 * (infillPercent / 100);
+    const estimatedWeightGrams = Math.round(volumeCm3 * densityGCm3 * effectiveFill * 100) / 100;
+    const filamentAreaMm2 = Math.PI * 0.875 * 0.875; // Filamento estándar 1.75 mm
+    const estimatedFilamentMeters =
+      Math.round(((bakedStats.volumeMm3 * effectiveFill) / filamentAreaMm2 / 1000) * 100) / 100;
+
+    const densityQuality: PrintabilityReport['densityQuality'] =
+      triCount < 50 ? 'low' : triCount <= 50000 ? 'optimal' : 'high';
+
+    const warnings: string[] = [];
+    if (!fitsInBed) {
+      warnings.push(
+        `El modelo (${bakedStats.dimensionsMm.join(' × ')} mm) excede el volumen de la cama '${this.printerProfile.name}' (${this.printerProfile.bedWidthMm} × ${this.printerProfile.bedDepthMm} × ${this.printerProfile.maxHeightMm} mm).`
+      );
+    }
+    if (min[1] > 0.25) {
+      warnings.push(`El objeto está flotando a ${minYWorldMm} mm sobre la cama (Y=0); conviene apoyarlo antes de laminar.`);
+    } else if (min[1] < -0.25) {
+      warnings.push(`El objeto sobresale por debajo de la cama (minY=${minYWorldMm} mm).`);
+    }
+    if (overhangPercent > 5) {
+      warnings.push(
+        `Se detectaron ${overhangFaceCount} caras con voladizo > ${overhangAngleDeg}° (${overhangPercent}%). Considere activar soportes.`
+      );
+    }
+    if (obj.isHole) {
+      warnings.push('El objeto está marcado como volumen de resta (isHole=true) y no se exportará como sólido.');
+    }
+
+    let score = 100;
+    if (!fitsInBed) score -= 35;
+    if (isFloating) score -= 25;
+    if (overhangPercent > 15) score -= 20;
+    else if (overhangPercent > 5) score -= 10;
+    if (obj.isHole) score -= 15;
+    score = Math.max(0, Math.min(100, score));
+
+    return {
+      objectId: obj.id,
+      isManifold: bakedStats.isManifold,
+      fitsInBed,
+      isFloating,
+      minYWorldMm,
+      dimensionsMm: bakedStats.dimensionsMm,
+      overhangFaceCount,
+      overhangPercent,
+      overhangAngleDeg,
+      volumeCm3,
+      estimatedWeightGrams,
+      estimatedFilamentMeters,
+      triangleCount: triCount,
+      densityQuality,
+      materialPreset,
+      infillPercent,
+      printerProfileId: this.printerProfile.id,
+      warnings,
+      score,
+    };
+  }
+
+  /** Alinea o distribuye en grilla sobre la cama uno o más objetos de la escena. */
+  alignObjects(
+    objectIds: string[],
+    mode: AlignMode,
+    spacingMm: number = 10
+  ): { objects: SceneObjectSummary[]; mode: AlignMode } {
+    if (objectIds.length === 0) {
+      throw new Error('Se requiere al menos un objeto en `objectIds` para alinear.');
+    }
+    const targets = objectIds.map((id) => this.requireObject(id));
+
+    const boundsList = targets.map((obj) => {
+      const [min, max] = computeBounds(bakeObjectTransform(obj));
+      return { obj, min, max };
+    });
+
+    if (mode === 'arrange_grid') {
+      const gap = Math.max(1, spacingMm);
+      const cols = Math.ceil(Math.sqrt(boundsList.length));
+      const rows = Math.ceil(boundsList.length / cols);
+
+      let maxCellW = 0;
+      let maxCellD = 0;
+      for (const item of boundsList) {
+        maxCellW = Math.max(maxCellW, item.max[0] - item.min[0]);
+        maxCellD = Math.max(maxCellD, item.max[2] - item.min[2]);
+      }
+
+      const stepX = maxCellW + gap;
+      const stepZ = maxCellD + gap;
+      const startX = -((cols - 1) * stepX) * 0.5;
+      const startZ = -((rows - 1) * stepZ) * 0.5;
+
+      boundsList.forEach((item, index) => {
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+        const targetCenterX = startX + col * stepX;
+        const targetCenterZ = startZ + row * stepZ;
+        const curCenterX = (item.min[0] + item.max[0]) * 0.5;
+        const curCenterZ = (item.min[2] + item.max[2]) * 0.5;
+
+        item.obj.position = [
+          round2(item.obj.position[0] + (targetCenterX - curCenterX)),
+          round2(item.obj.position[1] - item.min[1]),
+          round2(item.obj.position[2] + (targetCenterZ - curCenterZ)),
+        ];
+      });
+    } else {
+      const globalMinX = Math.min(...boundsList.map((b) => b.min[0]));
+      const globalMaxX = Math.max(...boundsList.map((b) => b.max[0]));
+      const globalMinY = Math.min(...boundsList.map((b) => b.min[1]));
+      const globalMaxY = Math.max(...boundsList.map((b) => b.max[1]));
+      const globalMinZ = Math.min(...boundsList.map((b) => b.min[2]));
+      const globalMaxZ = Math.max(...boundsList.map((b) => b.max[2]));
+
+      for (const item of boundsList) {
+        const cx = (item.min[0] + item.max[0]) * 0.5;
+        const cy = (item.min[1] + item.max[1]) * 0.5;
+        const cz = (item.min[2] + item.max[2]) * 0.5;
+        const pos: Vec3 = [...item.obj.position];
+
+        switch (mode) {
+          case 'minX':
+            pos[0] += globalMinX - item.min[0];
+            break;
+          case 'centerX':
+            pos[0] += (globalMinX + globalMaxX) * 0.5 - cx;
+            break;
+          case 'maxX':
+            pos[0] += globalMaxX - item.max[0];
+            break;
+          case 'minY':
+            pos[1] += globalMinY - item.min[1];
+            break;
+          case 'centerY':
+            pos[1] += (globalMinY + globalMaxY) * 0.5 - cy;
+            break;
+          case 'maxY':
+            pos[1] += globalMaxY - item.max[1];
+            break;
+          case 'minZ':
+            pos[2] += globalMinZ - item.min[2];
+            break;
+          case 'centerZ':
+            pos[2] += (globalMinZ + globalMaxZ) * 0.5 - cz;
+            break;
+          case 'maxZ':
+            pos[2] += globalMaxZ - item.max[2];
+            break;
+        }
+        item.obj.position = [round2(pos[0]), round2(pos[1]), round2(pos[2])];
+      }
+    }
+
+    return {
+      mode,
+      objects: targets.map((o) => this.summarizeObject(o)),
+    };
+  }
+
+  /** Crea una pieza roscada métrica ISO proxy watertight (`bolt`, `nut` o `hole`) en modo headless. */
+  createThread(options: ThreadOptions): SceneObjectSummary {
+    const id = `kura_${++this.counter}_${randomUUID().slice(0, 6)}`;
+    const diameter = Math.max(2, options.diameterMm);
+    const length = Math.max(2, options.lengthMm);
+    const clearance = Math.max(0, options.clearanceMm);
+    const pitch = Math.max(0.3, options.pitchMm);
+
+    let mesh: HeadlessMeshData;
+    let defaultName: string;
+    let isHole = false;
+
+    if (options.kind === 'nut') {
+      const outerR = diameter * 0.88;
+      const innerR = Math.max(0.5, diameter * 0.5 + clearance * 0.5);
+      const nutHeight = Math.max(3, Math.min(length, diameter * 0.8));
+      mesh = createHexNutMesh(outerR, innerR, nutHeight);
+      defaultName = `M${diameter}x${pitch} Tuerca`;
+    } else if (options.kind === 'hole') {
+      const r = diameter * 0.5 + clearance * 0.5;
+      mesh = createCylinderMesh(r, length, 24);
+      defaultName = `M${diameter}x${pitch} Cavidad`;
+      isHole = true;
+    } else {
+      const shaftR = Math.max(0.8, diameter * 0.5 - clearance * 0.5);
+      const shaft = createCylinderMesh(shaftR, length, 24);
+      if (options.includeHead !== false) {
+        const headH = Math.max(2.5, diameter * 0.65);
+        const head = createCylinderMesh(diameter * 0.86, headH, 6);
+        const shiftedShaft = translateMesh(shaft, 0, headH, 0);
+        mesh = mergeMeshes(head, shiftedShaft);
+      } else {
+        mesh = shaft;
+      }
+      defaultName = `M${diameter}x${pitch} Perno`;
+    }
+
+    const obj: HeadlessSceneObject = {
+      id,
+      name: options.name ?? defaultName,
+      source: 'thread',
+      position: [0, 0, 0],
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+      color: isHole ? '#ef4444' : '#94a3b8',
+      materialPreset: 'metallic',
+      isHole,
+      visible: true,
+      locked: false,
+      mesh,
+      stats: computeMeshStats(mesh, [1, 1, 1]),
+    };
+
+    this.objects.set(id, obj);
+    return this.summarizeObject(obj);
+  }
+
+  /** Genera moldes o contra-moldes proxy alrededor del objeto maestro en modo headless. */
+  generateMold(
+    objectId: string,
+    options: MoldOptions
+  ): { parts: SceneObjectSummary[]; mode: MoldOptions['mode']; note: string } {
+    const master = this.requireObject(objectId);
+    const [min, max] = computeBounds(bakeObjectTransform(master));
+    const dimX = Math.max(1, max[0] - min[0]);
+    const dimY = Math.max(1, max[1] - min[1]);
+    const dimZ = Math.max(1, max[2] - min[2]);
+    const margin = Math.max(1, options.wallMarginMm);
+    const cx = (min[0] + max[0]) * 0.5;
+    const cz = (min[2] + max[2]) * 0.5;
+
+    const moldW = dimX + margin * 2;
+    const moldH = dimY + margin;
+    const moldD = dimZ + margin * 2;
+
+    const parts: SceneObjectSummary[] = [];
+    const spawnPart = (suffix: string, w: number, h: number, d: number, px: number, pz: number) => {
+      const id = `kura_${++this.counter}_${randomUUID().slice(0, 6)}`;
+      const mesh = createBoxMesh(w, h, d);
+      const part: HeadlessSceneObject = {
+        id,
+        name: `${master.name}_Molde_${suffix}`,
+        source: 'mold',
+        position: [round2(px), 0, round2(pz)],
+        rotation: [0, 0, 0],
+        scale: [1, 1, 1],
+        color: '#22c55e',
+        materialPreset: options.mode === 'silicone_master' ? 'silicone' : 'pla_matte',
+        isHole: false,
+        visible: true,
+        locked: false,
+        mesh,
+        stats: computeMeshStats(mesh, [1, 1, 1]),
+      };
+      this.objects.set(id, part);
+      parts.push(this.summarizeObject(part));
+    };
+
+    if (options.mode === 'direct_2part' || options.mode === 'core_cavity') {
+      if (options.splitAxis === 'z') {
+        spawnPart('A', moldW, moldH, moldD * 0.5, cx, cz - moldD * 0.25 - 2);
+        spawnPart('B', moldW, moldH, moldD * 0.5, cx, cz + moldD * 0.25 + 2);
+      } else {
+        spawnPart('A', moldW * 0.5, moldH, moldD, cx - moldW * 0.25 - 2, cz);
+        spawnPart('B', moldW * 0.5, moldH, moldD, cx + moldW * 0.25 + 2, cz);
+      }
+    } else {
+      const extra = options.mode === 'silicone_master' ? options.boxWallMm * 2 : 0;
+      spawnPart('Unico', moldW + extra, moldH + extra * 0.5, moldD + extra, cx, cz);
+    }
+
+    return {
+      parts,
+      mode: options.mode,
+      note: `Molde '${options.mode}' generado en modo Headless (conecte la UI Kura3D para cavidad booleana exacta con Manifold).`,
+    };
+  }
+
+  /** Proyecta texto o SVG sobre una cara de un objeto en modo headless. */
+  projectOnSurface(
+    objectId: string,
+    options: SurfaceProjectionOptions
+  ): { object: SceneObjectSummary; mode: SurfaceProjectionOptions['mode']; note: string } {
+    const target = this.requireObject(objectId);
+    const [min, max] = computeBounds(bakeObjectTransform(target));
+    const cx = (min[0] + max[0]) * 0.5;
+    const cy = (min[1] + max[1]) * 0.5;
+    const cz = (min[2] + max[2]) * 0.5;
+
+    const w = Math.max(2, options.widthMm);
+    const d = Math.max(0.2, options.depthMm);
+    const h = Math.max(2, w * 0.35);
+
+    let pos: Vec3 = [cx, cy, max[2]];
+    let boxDims: [number, number, number] = [w, h, d];
+    if (options.axis === '-z') {
+      pos = [cx, cy, min[2] - d];
+    } else if (options.axis === '+x') {
+      pos = [max[0], cy, cz];
+      boxDims = [d, h, w];
+    } else if (options.axis === '-x') {
+      pos = [min[0] - d, cy, cz];
+      boxDims = [d, h, w];
+    } else if (options.axis === '+y') {
+      pos = [cx, max[1], cz];
+      boxDims = [w, d, h];
+    } else if (options.axis === '-y') {
+      pos = [cx, min[1] - d, cz];
+      boxDims = [w, d, h];
+    }
+
+    const id = `kura_${++this.counter}_${randomUUID().slice(0, 6)}`;
+    const mesh = createBoxMesh(boxDims[0], boxDims[1], boxDims[2]);
+    const projected: HeadlessSceneObject = {
+      id,
+      name: `${target.name}_Proj_${options.kind}`,
+      source: 'projected',
+      position: [round2(pos[0]), round2(pos[1]), round2(pos[2])],
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+      color: options.colorHex,
+      materialPreset: target.materialPreset ?? 'pla_matte',
+      isHole: options.mode === 'deboss',
+      visible: true,
+      locked: false,
+      mesh,
+      stats: computeMeshStats(mesh, [1, 1, 1]),
+    };
+
+    this.objects.set(id, projected);
+    return {
+      object: this.summarizeObject(projected),
+      mode: options.mode,
+      note: `Proyección '${options.mode}' sobre eje '${options.axis}' creada en modo Headless.`,
+    };
+  }
+
+  /** Simplifica una malla en modo headless conservando su geometría base válida. */
+  simplifyMesh(
+    objectId: string,
+    toleranceMm: number
+  ): { object: SceneObjectSummary; toleranceMm: number; note: string } {
+    const obj = this.requireObject(objectId);
+    return {
+      object: this.summarizeObject(obj),
+      toleranceMm,
+      note: 'En modo Headless se conserva la malla paramétrica compacta; la decimación adaptativa QEM completa se ejecuta en la UI de Kura3D.',
+    };
+  }
+
+  /** Refina una malla por subdivisión de aristas en modo headless. */
+  refineMesh(
+    objectId: string,
+    targetEdgeLengthMm: number,
+    smooth: boolean
+  ): { object: SceneObjectSummary; targetEdgeLengthMm: number; smooth: boolean } {
+    const obj = this.requireObject(objectId);
+    const maxTris = 20_000;
+    if (obj.mesh.indices.length / 3 < maxTris) {
+      obj.mesh = subdivideMeshEdges(obj.mesh, Math.max(0.2, targetEdgeLengthMm));
+      obj.stats = computeMeshStats(obj.mesh, obj.scale);
+    }
+    return {
+      object: this.summarizeObject(obj),
+      targetEdgeLengthMm,
+      smooth,
+    };
+  }
+
+  /** Genera la envolvente convexa (Convex Hull proxy AABB) que envuelve a los objetos dados. */
+  convexHull(
+    objectIds: string[],
+    name?: string
+  ): { object: SceneObjectSummary; sourceObjectIds: string[] } {
+    if (objectIds.length === 0) {
+      throw new Error('Se requiere al menos un objeto en `objectIds` para generar la envolvente.');
+    }
+    const targets = objectIds.map((id) => this.requireObject(id));
+
+    let minX = Infinity, minY = Infinity, minZ = Infinity;
+    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+    for (const t of targets) {
+      const [bMin, bMax] = computeBounds(bakeObjectTransform(t));
+      if (bMin[0] < minX) minX = bMin[0];
+      if (bMin[1] < minY) minY = bMin[1];
+      if (bMin[2] < minZ) minZ = bMin[2];
+      if (bMax[0] > maxX) maxX = bMax[0];
+      if (bMax[1] > maxY) maxY = bMax[1];
+      if (bMax[2] > maxZ) maxZ = bMax[2];
+    }
+
+    const w = Math.max(0.5, maxX - minX);
+    const h = Math.max(0.5, maxY - minY);
+    const d = Math.max(0.5, maxZ - minZ);
+    const cx = (minX + maxX) * 0.5;
+    const cz = (minZ + maxZ) * 0.5;
+
+    const id = `kura_${++this.counter}_${randomUUID().slice(0, 6)}`;
+    const mesh = createBoxMesh(w, h, d);
+    const hullObj: HeadlessSceneObject = {
+      id,
+      name: name ?? `ConvexHull_${this.counter}`,
+      source: 'hull',
+      position: [round2(cx), round2(minY), round2(cz)],
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+      color: '#a855f7',
+      materialPreset: 'pla_matte',
+      isHole: false,
+      visible: true,
+      locked: false,
+      mesh,
+      stats: computeMeshStats(mesh, [1, 1, 1]),
+    };
+
+    this.objects.set(id, hullObj);
+    return {
+      object: this.summarizeObject(hullObj),
+      sourceObjectIds: objectIds,
+    };
+  }
+
   /** Exporta los objetos seleccionados (o toda la escena) a un archivo STL binario o ASCII. */
   async exportStl(input: {
     outputPath: string;
@@ -390,22 +925,29 @@ export class KuraHeadlessEngine {
     };
   }
 
-  /** Exporta los objetos seleccionados a un contenedor 3MF (ZIP sin compresión con XML 3D). */
+  /** Exporta los objetos seleccionados a un contenedor 3MF Multi-Slicer Pro (con `Metadata/model_settings.config`). */
   async export3mf(input: {
     outputPath: string;
     objectIds?: string[];
+    slicerTarget?: SlicerTarget;
   }): Promise<ExportFileResult> {
     const targets = this.resolveExportTargets(input.objectIds);
     const resolvedPath = resolve(input.outputPath);
+    const slicerTarget: SlicerTarget = input.slicerTarget ?? this.printerProfile.brand ?? 'generic';
     await mkdir(dirname(resolvedPath), { recursive: true });
 
-    const { buffer, totalTriangles } = encode3mfArchive(targets);
+    const { buffer, totalTriangles } = encode3mfArchive(
+      targets,
+      slicerTarget,
+      this.printerProfile
+    );
     await writeFile(resolvedPath, buffer);
 
     return {
       mode: 'headless',
       path: resolvedPath,
       format: '3mf',
+      slicerTarget,
       objectCount: targets.length,
       triangles: totalTriangles,
       bytesWritten: buffer.byteLength,
@@ -441,6 +983,7 @@ export class KuraHeadlessEngine {
       rotation: [...obj.rotation],
       scale: [...obj.scale],
       color: obj.color,
+      materialPreset: obj.materialPreset ?? 'pla_matte',
       isHole: obj.isHole,
       visible: obj.visible,
       locked: obj.locked,
@@ -512,31 +1055,23 @@ function createBoxMesh(w: number, h: number, d: number): HeadlessMeshData {
   const hy = Math.max(0.1, h);
   const hz = Math.max(0.1, d) * 0.5;
 
-  // 8 vértices de la caja
   const positions = new Float32Array([
-    -hx, 0, -hz, // 0: atrás izq abajo
-     hx, 0, -hz, // 1: atrás der abajo
-     hx, 0,  hz, // 2: frente der abajo
-    -hx, 0,  hz, // 3: frente izq abajo
-    -hx, hy, -hz, // 4: atrás izq arriba
-     hx, hy, -hz, // 5: atrás der arriba
-     hx, hy,  hz, // 6: frente der arriba
-    -hx, hy,  hz, // 7: frente izq arriba
+    -hx, 0, -hz,
+     hx, 0, -hz,
+     hx, 0,  hz,
+    -hx, 0,  hz,
+    -hx, hy, -hz,
+     hx, hy, -hz,
+     hx, hy,  hz,
+    -hx, hy,  hz,
   ]);
 
-  // 12 triángulos con orden antihorario (CCW) mirando hacia el exterior
   const indices = new Uint32Array([
-    // Abajo (-Y)
     0, 1, 2, 0, 2, 3,
-    // Arriba (+Y)
     4, 6, 5, 4, 7, 6,
-    // Frente (+Z)
     3, 2, 6, 3, 6, 7,
-    // Atrás (-Z)
     1, 0, 4, 1, 4, 5,
-    // Derecha (+X)
     2, 1, 5, 2, 5, 6,
-    // Izquierda (-X)
     0, 3, 7, 0, 7, 4,
   ]);
 
@@ -550,7 +1085,6 @@ function createCylinderMesh(radius: number, height: number, segments: number): H
   const pos: number[] = [];
   const idx: number[] = [];
 
-  // Centros de tapas: 0 = inferior, 1 = superior
   pos.push(0, 0, 0);
   pos.push(0, h, 0);
 
@@ -559,8 +1093,8 @@ function createCylinderMesh(radius: number, height: number, segments: number): H
     const theta = (i / segments) * Math.PI * 2;
     const x = r * Math.cos(theta);
     const z = r * Math.sin(theta);
-    pos.push(x, 0, z); // anillo inferior: ringStart + i * 2
-    pos.push(x, h, z); // anillo superior: ringStart + i * 2 + 1
+    pos.push(x, 0, z);
+    pos.push(x, h, z);
   }
 
   for (let i = 0; i < segments; i++) {
@@ -570,13 +1104,54 @@ function createCylinderMesh(radius: number, height: number, segments: number): H
     const b2 = ringStart + next * 2;
     const t2 = b2 + 1;
 
-    // Tapa inferior (-Y)
     idx.push(0, b1, b2);
-    // Tapa superior (+Y)
     idx.push(1, t2, t1);
-    // Pared lateral exterior
     idx.push(b1, t1, b2);
     idx.push(b2, t1, t2);
+  }
+
+  return { positions: new Float32Array(pos), indices: new Uint32Array(idx) };
+}
+
+/** Tuerca hexagonal cerrada con orificio circular interior para roscas métricas ISO. */
+function createHexNutMesh(outerR: number, innerR: number, height: number): HeadlessMeshData {
+  const rOut = Math.max(1, outerR);
+  const rIn = Math.max(0.3, Math.min(rOut - 0.3, innerR));
+  const h = Math.max(0.5, height);
+  const segments = 24;
+  const pos: number[] = [];
+  const idx: number[] = [];
+
+  for (let i = 0; i < segments; i++) {
+    const theta = (i / segments) * Math.PI * 2;
+    // Proyecta el ángulo sobre un hexágono regular para el perfil exterior
+    const sector = Math.PI / 3;
+    const localAngle = ((theta % sector) + sector) % sector - sector * 0.5;
+    const hexR = (rOut * Math.cos(sector * 0.5)) / Math.cos(localAngle);
+    const c = Math.cos(theta);
+    const s = Math.sin(theta);
+    pos.push(hexR * c, 0, hexR * s);
+    pos.push(hexR * c, h, hexR * s);
+    pos.push(rIn * c, 0, rIn * s);
+    pos.push(rIn * c, h, rIn * s);
+  }
+
+  for (let i = 0; i < segments; i++) {
+    const next = (i + 1) % segments;
+    const ob1 = i * 4;
+    const ot1 = ob1 + 1;
+    const ib1 = ob1 + 2;
+    const it1 = ob1 + 3;
+
+    const ob2 = next * 4;
+    const ot2 = ob2 + 1;
+    const ib2 = ob2 + 2;
+    const it2 = ob2 + 3;
+
+    idx.push(ob1, ot1, ob2, ob2, ot1, ot2);
+    idx.push(ib1, ib2, it1, ib2, it2, it1);
+    idx.push(ot1, it1, ot2, ot2, it1, it2);
+    idx.push(ob1, ob2, ib1, ob2, ib2, ib1);
   }
 
   return { positions: new Float32Array(pos), indices: new Uint32Array(idx) };
@@ -595,7 +1170,6 @@ function createTubeMesh(
   const pos: number[] = [];
   const idx: number[] = [];
 
-  // Por cada segmento: [outBottom, outTop, inBottom, inTop]
   for (let i = 0; i < segments; i++) {
     const theta = (i / segments) * Math.PI * 2;
     const c = Math.cos(theta);
@@ -618,13 +1192,9 @@ function createTubeMesh(
     const ib2 = ob2 + 2;
     const it2 = ob2 + 3;
 
-    // Pared exterior
     idx.push(ob1, ot1, ob2, ob2, ot1, ot2);
-    // Pared interior (normal hacia el centro del hueco)
     idx.push(ib1, ib2, it1, ib2, it2, it1);
-    // Corona superior (+Y)
     idx.push(ot1, it1, ot2, ot2, it1, it2);
-    // Corona inferior (-Y)
     idx.push(ob1, ob2, ib1, ob2, ib2, ib1);
   }
 
@@ -635,7 +1205,7 @@ function createTubeMesh(
 function createConeMesh(radius: number, height: number, segments: number): HeadlessMeshData {
   const r = Math.max(0.1, radius);
   const h = Math.max(0.1, height);
-  const pos: number[] = [0, 0, 0, 0, h, 0]; // 0 = base centro, 1 = ápice
+  const pos: number[] = [0, 0, 0, 0, h, 0];
   const idx: number[] = [];
 
   for (let i = 0; i < segments; i++) {
@@ -647,8 +1217,8 @@ function createConeMesh(radius: number, height: number, segments: number): Headl
     const next = (i + 1) % segments;
     const b1 = 2 + i;
     const b2 = 2 + next;
-    idx.push(0, b1, b2); // Base (-Y)
-    idx.push(b1, 1, b2); // Lateral cónico
+    idx.push(0, b1, b2);
+    idx.push(b1, 1, b2);
   }
 
   return { positions: new Float32Array(pos), indices: new Uint32Array(idx) };
@@ -661,12 +1231,11 @@ function createSphereMesh(radius: number, segments: number): HeadlessMeshData {
   const pos: number[] = [];
   const idx: number[] = [];
 
-  // Polo sur (0) y polo norte (1)
   pos.push(0, 0, 0);
   pos.push(0, r * 2, 0);
 
   for (let lat = 1; lat < rings; lat++) {
-    const phi = (lat / rings) * Math.PI; // 0 en polo sur -> PI en polo norte
+    const phi = (lat / rings) * Math.PI;
     const y = r - r * Math.cos(phi);
     const ringR = r * Math.sin(phi);
     for (let lon = 0; lon < segments; lon++) {
@@ -678,11 +1247,9 @@ function createSphereMesh(radius: number, segments: number): HeadlessMeshData {
   const ringVertex = (latIdx: number, lonIdx: number) =>
     2 + latIdx * segments + (lonIdx % segments);
 
-  // Casquete sur
   for (let lon = 0; lon < segments; lon++) {
     idx.push(0, ringVertex(0, lon), ringVertex(0, lon + 1));
   }
-  // Bandas intermedias
   for (let lat = 0; lat < rings - 2; lat++) {
     for (let lon = 0; lon < segments; lon++) {
       const a = ringVertex(lat, lon);
@@ -692,7 +1259,6 @@ function createSphereMesh(radius: number, segments: number): HeadlessMeshData {
       idx.push(a, c, b, b, c, d);
     }
   }
-  // Casquete norte
   const lastLat = rings - 2;
   for (let lon = 0; lon < segments; lon++) {
     idx.push(1, ringVertex(lastLat, lon + 1), ringVertex(lastLat, lon));
@@ -739,8 +1305,73 @@ function createTorusMesh(majorR: number, tubeR: number, segments: number): Headl
 }
 
 /* -------------------------------------------------------------------------- */
-/* Transformaciones, estadísticas, ahuecado y exportación STL / 3MF           */
+/* Transformaciones, subdivisión, estadísticas, ahuecado y exportación STL/3MF*/
 /* -------------------------------------------------------------------------- */
+
+function translateMesh(mesh: HeadlessMeshData, dx: number, dy: number, dz: number): HeadlessMeshData {
+  const positions = new Float32Array(mesh.positions.length);
+  for (let i = 0; i < mesh.positions.length; i += 3) {
+    positions[i] = mesh.positions[i] + dx;
+    positions[i + 1] = mesh.positions[i + 1] + dy;
+    positions[i + 2] = mesh.positions[i + 2] + dz;
+  }
+  return { positions, indices: new Uint32Array(mesh.indices) };
+}
+
+function subdivideMeshEdges(mesh: HeadlessMeshData, targetEdgeLengthMm: number): HeadlessMeshData {
+  const pos: number[] = Array.from(mesh.positions);
+  const idx: number[] = [];
+  const midpointCache = new Map<string, number>();
+
+  const getMidpoint = (iA: number, iB: number): number => {
+    const key = iA < iB ? `${iA}_${iB}` : `${iB}_${iA}`;
+    const existing = midpointCache.get(key);
+    if (existing !== undefined) return existing;
+    const a = iA * 3;
+    const b = iB * 3;
+    const newIdx = pos.length / 3;
+    pos.push(
+      (pos[a] + pos[b]) * 0.5,
+      (pos[a + 1] + pos[b + 1]) * 0.5,
+      (pos[a + 2] + pos[b + 2]) * 0.5
+    );
+    midpointCache.set(key, newIdx);
+    return newIdx;
+  };
+
+  for (let t = 0; t < mesh.indices.length; t += 3) {
+    const i0 = mesh.indices[t];
+    const i1 = mesh.indices[t + 1];
+    const i2 = mesh.indices[t + 2];
+
+    const e01 = Math.hypot(
+      pos[i0 * 3] - pos[i1 * 3],
+      pos[i0 * 3 + 1] - pos[i1 * 3 + 1],
+      pos[i0 * 3 + 2] - pos[i1 * 3 + 2]
+    );
+    const e12 = Math.hypot(
+      pos[i1 * 3] - pos[i2 * 3],
+      pos[i1 * 3 + 1] - pos[i2 * 3 + 1],
+      pos[i1 * 3 + 2] - pos[i2 * 3 + 2]
+    );
+    const e20 = Math.hypot(
+      pos[i2 * 3] - pos[i0 * 3],
+      pos[i2 * 3 + 1] - pos[i0 * 3 + 1],
+      pos[i2 * 3 + 2] - pos[i0 * 3 + 2]
+    );
+
+    if (Math.max(e01, e12, e20) > targetEdgeLengthMm) {
+      const m01 = getMidpoint(i0, i1);
+      const m12 = getMidpoint(i1, i2);
+      const m20 = getMidpoint(i2, i0);
+      idx.push(i0, m01, m20, m01, i1, m12, m20, m12, i2, m01, m12, m20);
+    } else {
+      idx.push(i0, i1, i2);
+    }
+  }
+
+  return { positions: new Float32Array(pos), indices: new Uint32Array(idx) };
+}
 
 function buildHollowShellMesh(mesh: HeadlessMeshData, wallThickness: number): HeadlessMeshData {
   const [min, max] = computeBounds(mesh);
@@ -886,9 +1517,9 @@ function computeMeshStats(mesh: HeadlessMeshData, scale: Vec3): ObjectStats {
     isManifold: true,
     volumeMm3: Math.round(Math.abs(signedVol) * 100) / 100,
     dimensionsMm: [
-      Math.round(dimX * 100) / 100,
-      Math.round(dimY * 100) / 100,
-      Math.round(dimZ * 100) / 100,
+      round2(dimX),
+      round2(dimY),
+      round2(dimZ),
     ],
   };
 }
@@ -898,7 +1529,6 @@ function encodeBinaryStl(mesh: HeadlessMeshData): Buffer {
   const triCount = mesh.indices.length / 3;
   const buffer = Buffer.alloc(84 + triCount * 50);
 
-  // Encabezado ASCII de 80 bytes
   const header = 'Kura3D Binary STL - Autor: Nicolas Groth <ngroth@gmail.com>';
   buffer.write(header.slice(0, 80), 0, 'ascii');
   buffer.writeUInt32LE(triCount, 80);
@@ -912,7 +1542,6 @@ function encodeBinaryStl(mesh: HeadlessMeshData): Buffer {
     const i1 = idx[t * 3 + 1] * 3;
     const i2 = idx[t * 3 + 2] * 3;
 
-    // Conversión Y-up -> Z-up para laminadores de impresión 3D: (x, y, z) -> (x, -z, y)
     const ax = p[i0], ay = -p[i0 + 2], az = p[i0 + 1];
     const bx = p[i1], by = -p[i1 + 2], bz = p[i1 + 1];
     const cx = p[i2], cy = -p[i2 + 2], cz = p[i2 + 1];
@@ -963,7 +1592,6 @@ function encodeAsciiStl(mesh: HeadlessMeshData): string {
     const b = idx[i + 1] * 3;
     const c = idx[i + 2] * 3;
 
-    // Conversión Y-up -> Z-up: (x, y, z) -> (x, -z, y)
     const ax = p[a], ay = -p[a + 2], az = p[a + 1];
     const bx = p[b], by = -p[b + 2], bz = p[b + 1];
     const cx = p[c], cy = -p[c + 2], cz = p[c + 1];
@@ -993,8 +1621,16 @@ function encodeAsciiStl(mesh: HeadlessMeshData): string {
   return lines.join('\n');
 }
 
-/** Empaqueta objetos en un archivo 3MF válido (especificación OPC/ZIP sin compresión). */
-function encode3mfArchive(objects: HeadlessSceneObject[]): {
+/**
+ * Empaqueta objetos en un archivo 3MF Multi-Slicer Pro válido (OPC/ZIP sin compresión),
+ * incluyendo `Metadata/model_settings.config` compatible con Bambu Studio, ElegooSlicer,
+ * OrcaSlicer, Snapmaker Luban y FlashPrint.
+ */
+function encode3mfArchive(
+  objects: HeadlessSceneObject[],
+  slicerTarget: SlicerTarget = 'generic',
+  printerProfile?: PrinterProfile
+): {
   buffer: Buffer;
   totalTriangles: number;
 } {
@@ -1002,9 +1638,12 @@ function encode3mfArchive(objects: HeadlessSceneObject[]): {
 
   const resourcesXml: string[] = [];
   const buildItemsXml: string[] = [];
+  const configObjectsXml: string[] = [];
+  const plateInstancesXml: string[] = [];
 
   objects.forEach((obj, index) => {
     const resourceId = index + 1;
+    const extruderSlot = (index % Math.max(1, printerProfile?.colorSlots ?? 4)) + 1;
     const baked = bakeObjectTransform(obj);
     totalTriangles += baked.indices.length / 3;
 
@@ -1033,22 +1672,55 @@ function encode3mfArchive(objects: HeadlessSceneObject[]): {
         `    </object>`
     );
     buildItemsXml.push(`    <item objectid="${resourceId}" />`);
+
+    configObjectsXml.push(
+      `  <object id="${resourceId}">\n` +
+        `    <metadata key="name" value="${escapeXml(obj.name)}" />\n` +
+        `    <metadata key="extruder" value="${extruderSlot}" />\n` +
+        `    <metadata key="kura_material" value="${escapeXml(obj.materialPreset ?? 'pla_matte')}" />\n` +
+        `    <part id="1" subtype="normal_part">\n` +
+        `      <metadata key="name" value="${escapeXml(obj.name)}" />\n` +
+        `      <metadata key="extruder" value="${extruderSlot}" />\n` +
+        `    </part>\n` +
+        `  </object>`
+    );
+    plateInstancesXml.push(
+      `    <model_instance>\n` +
+        `      <metadata key="object_id" value="${resourceId}" />\n` +
+        `      <metadata key="instance_id" value="0" />\n` +
+        `    </model_instance>`
+    );
   });
 
   const modelXml =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<model unit="millimeter" xml:lang="es" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n` +
-    `  <metadata name="Application">Kura3D MCP</metadata>\n` +
+    `  <metadata name="Application">Kura3D Pro MCP</metadata>\n` +
     `  <metadata name="Designer">Nicolás Groth</metadata>\n` +
+    `  <metadata name="Kura3D:SlicerTarget">${escapeXml(slicerTarget)}</metadata>\n` +
     `  <resources>\n${resourcesXml.join('\n')}\n  </resources>\n` +
     `  <build>\n${buildItemsXml.join('\n')}\n  </build>\n` +
     `</model>\n`;
+
+  const modelSettingsXml =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<config>\n` +
+    `  <metadata key="slicer_target" value="${escapeXml(slicerTarget)}" />\n` +
+    `  <metadata key="printer_profile" value="${escapeXml(printerProfile?.id ?? 'generic-220')}" />\n` +
+    `${configObjectsXml.join('\n')}\n` +
+    `  <plate>\n` +
+    `    <metadata key="plater_id" value="1" />\n` +
+    `    <metadata key="plater_name" value="Kura3D Plate 1" />\n` +
+    `${plateInstancesXml.join('\n')}\n` +
+    `  </plate>\n` +
+    `</config>\n`;
 
   const contentTypesXml =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n` +
     `  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />\n` +
     `  <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml" />\n` +
+    `  <Default Extension="config" ContentType="application/xml" />\n` +
     `</Types>\n`;
 
   const relsXml =
@@ -1061,6 +1733,7 @@ function encode3mfArchive(objects: HeadlessSceneObject[]): {
     { name: '[Content_Types].xml', data: Buffer.from(contentTypesXml, 'utf8') },
     { name: '_rels/.rels', data: Buffer.from(relsXml, 'utf8') },
     { name: '3D/3dmodel.model', data: Buffer.from(modelXml, 'utf8') },
+    { name: 'Metadata/model_settings.config', data: Buffer.from(modelSettingsXml, 'utf8') },
   ]);
 
   return { buffer, totalTriangles };
@@ -1079,9 +1752,9 @@ function createStoreZip(entries: Array<{ name: string; data: Buffer }>): Buffer 
 
     const localHeader = Buffer.alloc(30);
     localHeader.writeUInt32LE(0x04034b50, 0);
-    localHeader.writeUInt16LE(20, 4); // versión
-    localHeader.writeUInt16LE(0, 6); // flags
-    localHeader.writeUInt16LE(0, 8); // compresión 0 = STORE
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt16LE(0, 6);
+    localHeader.writeUInt16LE(0, 8);
     localHeader.writeUInt16LE(0, 10);
     localHeader.writeUInt16LE(0, 12);
     localHeader.writeUInt32LE(crc, 14);
@@ -1147,6 +1820,10 @@ function escapeXml(value: string): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&apos;');
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 function capitalize(value: string): string {

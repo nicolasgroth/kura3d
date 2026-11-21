@@ -1,10 +1,10 @@
 /**
  * @file src/components/Viewport3D.tsx
- * @description Visor 3D de alto rendimiento con React Three Fiber y Three.js.
- * Incluye iluminación CAD de 3 puntos, volumen de impresora (Elegoo Centauri Carbon 2 / genéricos),
- * gizmos TransformControls sin race conditions, pintado multicolor 3MF con throttling,
- * animación elástica de creación, vista previa láser de corte 3D, menú contextual clic derecho,
- * píldora booleana inteligente y captura PNG para el puente MCP.
+ * @description Visor 3D de alto rendimiento Kura3D Pro v3.0 con React Three Fiber y Three.js.
+ * Incluye silueta realista de impresora multi-marca (Elegoo, Bambu Lab, Snapmaker, FlashForge),
+ * detección de desbordamiento de volumen, materiales PBR realistas, plano de corte Rayos X en vivo,
+ * resaltado de voladizos (>45°), gizmos TransformControls sin race conditions, pintado multicolor 3MF,
+ * menú contextual clic derecho, píldora de salida de Modo Zen y captura PNG para MCP.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -16,19 +16,26 @@ import { ContactShadows, OrbitControls, TransformControls } from '@react-three/d
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import {
+  AlertTriangle,
   ArrowDownToLine,
   Box,
   Camera,
   Combine,
   Copy,
+  FileUp,
+  Layers,
   Maximize2,
+  Minimize2,
   MinusCircle,
   Move,
+  PaintBucket,
   RotateCw,
   Scale3d,
   Scissors,
+  ShieldCheck,
   ToggleLeft,
   Trash2,
+  Type,
   X,
 } from 'lucide-react';
 import * as engine from '../engine';
@@ -38,7 +45,14 @@ import {
   type PaintBrushMode,
   useKuraStore,
 } from '../store/useKuraStore';
-import { PRINT_COLOR_PALETTE, type SceneObject, type Vec3 } from '../types/kura';
+import {
+  MATERIAL_PRESETS,
+  PRINT_COLOR_PALETTE,
+  type PrinterProfile,
+  type SceneObject,
+  type SlicerTarget,
+  type Vec3,
+} from '../types/kura';
 import { registerViewportCapture } from '../utils/mcpBridgeClient';
 import { formatDimension } from '../utils/units';
 
@@ -46,6 +60,87 @@ interface ContextMenuState {
   objectId: string;
   x: number;
   y: number;
+}
+
+/** Color de acento característico por marca de impresora para la silueta de cama. */
+const BRAND_ACCENTS: Record<SlicerTarget, string> = {
+  elegoo: '#38bdf8',
+  bambu: '#22c55e',
+  snapmaker: '#a855f7',
+  flashforge: '#f97316',
+  generic: '#38bdf8',
+};
+
+/** Calcula la caja envolvente mundial [minX, minY, minZ, maxX, maxY, maxZ] de un SceneObject. */
+function computeWorldBounds(obj: SceneObject): {
+  minX: number;
+  minY: number;
+  minZ: number;
+  maxX: number;
+  maxY: number;
+  maxZ: number;
+} {
+  const pos = obj.mesh.positions;
+  if (pos.length < 3) {
+    return { minX: 0, minY: 0, minZ: 0, maxX: 0, maxY: 0, maxZ: 0 };
+  }
+  const euler = new THREE.Euler(obj.rotation[0], obj.rotation[1], obj.rotation[2], 'XYZ');
+  const quat = new THREE.Quaternion().setFromEuler(euler);
+  const v = new THREE.Vector3();
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let maxZ = -Infinity;
+
+  for (let i = 0; i < pos.length; i += 3) {
+    v.set(
+      pos[i] * obj.scale[0],
+      pos[i + 1] * obj.scale[1],
+      pos[i + 2] * obj.scale[2],
+    );
+    v.applyQuaternion(quat);
+    const wx = v.x + obj.position[0];
+    const wy = v.y + obj.position[1];
+    const wz = v.z + obj.position[2];
+    if (wx < minX) minX = wx;
+    if (wy < minY) minY = wy;
+    if (wz < minZ) minZ = wz;
+    if (wx > maxX) maxX = wx;
+    if (wy > maxY) maxY = wy;
+    if (wz > maxZ) maxZ = wz;
+  }
+
+  return { minX, minY, minZ, maxX, maxY, maxZ };
+}
+
+/** Verifica si algún sólido visible excede los límites X, Z o altura máxima Y de la impresora activa. */
+function checkObjectsOutOfBounds(
+  objects: SceneObject[],
+  profile: PrinterProfile,
+): boolean {
+  if (!profile.showPrintVolume) return false;
+  const halfW = profile.bedWidthMm * 0.5 + 0.05;
+  const halfD = profile.bedDepthMm * 0.5 + 0.05;
+  const maxH = profile.maxHeightMm + 0.05;
+
+  for (const obj of objects) {
+    if (!obj.visible || obj.isHole) continue;
+    const b = computeWorldBounds(obj);
+    if (
+      b.minX < -halfW ||
+      b.maxX > halfW ||
+      b.minZ < -halfD ||
+      b.maxZ > halfD ||
+      b.maxY > maxH ||
+      b.minY < -0.5
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /** Registra el callback de captura PNG del canvas WebGL para el servidor MCP. */
@@ -157,43 +252,52 @@ const CameraController: React.FC<{
   return null;
 };
 
-/** Placa base y volumen de impresión estilo laminador (100% offline usando CanvasTexture). */
-const PrinterBedOverlay: React.FC = () => {
+/**
+ * Silueta 3D de cama e impresora multi-marca:
+ * - Marco exterior de placa PEI + escuadras L en esquinas con acento por marca
+ * - Zona frontal de purga (`purgeZoneMm`)
+ * - Placa identificativa con marca, modelo y dimensiones exactas
+ * - Jaula de volumen con borde rojo de alerta cuando algún sólido excede los límites
+ */
+const PrinterBedOverlay: React.FC<{ isOutOfBounds: boolean }> = ({ isOutOfBounds }) => {
   const language = useKuraStore((s) => s.language);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const width = printerProfile.bedWidthMm;
   const depth = printerProfile.bedDepthMm;
   const height = printerProfile.maxHeightMm;
   const showVolume = printerProfile.showPrintVolume;
+  const purgeZoneMm = printerProfile.purgeZoneMm ?? 0;
   const displayName = getLocalizedPrinterName(language, printerProfile);
+  const brandColor = BRAND_ACCENTS[printerProfile.brand] ?? '#38bdf8';
+  const cageColor = isOutOfBounds ? '#ef4444' : brandColor;
 
   const plateTexture = useMemo(() => {
     if (typeof document === 'undefined') return null;
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 64;
+    canvas.width = 640;
+    canvas.height = 72;
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#0b1220';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = '#38bdf8';
+    ctx.strokeStyle = isOutOfBounds ? '#ef4444' : brandColor;
     ctx.lineWidth = 3;
     ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
 
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = isOutOfBounds ? '#fca5a5' : '#e2e8f0';
     ctx.font = 'bold 21px Inter, Segoe UI, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const label = showVolume
-      ? `${displayName} (${width}×${depth}×${height} mm)`
+      ? `${displayName} · ${width} × ${depth} × ${height} mm`
       : displayName;
     ctx.fillText(label, canvas.width / 2, canvas.height / 2);
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     return tex;
-  }, [displayName, width, depth, height, showVolume]);
+  }, [displayName, width, depth, height, showVolume, brandColor, isOutOfBounds]);
 
   useEffect(() => {
     return () => {
@@ -208,50 +312,116 @@ const PrinterBedOverlay: React.FC = () => {
     return edges;
   }, [width, depth, height]);
 
+  const bedBorderGeo = useMemo(() => {
+    const box = new THREE.BoxGeometry(width + 8, 2.8, depth + 8);
+    const edges = new THREE.EdgesGeometry(box);
+    box.dispose();
+    return edges;
+  }, [width, depth]);
+
   useEffect(() => {
     return () => {
       volumeBoxGeo.dispose();
+      bedBorderGeo.dispose();
     };
-  }, [volumeBoxGeo]);
+  }, [volumeBoxGeo, bedBorderGeo]);
 
   const gridSize = showVolume ? Math.max(width, depth) : 400;
   const gridDivisions = Math.max(10, Math.round(gridSize / 10));
+  const cornerLen = Math.min(24, width * 0.12);
+  const cornerThick = 2.4;
+  const halfW = width * 0.5;
+  const halfD = depth * 0.5;
+
+  const corners: Array<{ x: number; z: number; sx: number; sz: number }> = [
+    { x: -halfW, z: -halfD, sx: 1, sz: 1 },
+    { x: halfW, z: -halfD, sx: -1, sz: 1 },
+    { x: -halfW, z: halfD, sx: 1, sz: -1 },
+    { x: halfW, z: halfD, sx: -1, sz: -1 },
+  ];
 
   return (
     <group>
-      <mesh position={[0, -1.2, 0]} receiveShadow>
-        <boxGeometry args={[width, 2.2, depth]} />
+      {/* Chasis exterior de la placa calefactada */}
+      <mesh position={[0, -2.0, 0]} receiveShadow>
+        <boxGeometry args={[width + 10, 1.4, depth + 10]} />
+        <meshStandardMaterial color="#0b1019" roughness={0.85} metalness={0.35} />
+      </mesh>
+
+      {/* Placa PEI principal */}
+      <mesh position={[0, -1.1, 0]} receiveShadow>
+        <boxGeometry args={[width, 2.0, depth]} />
         <meshStandardMaterial
           color={showVolume ? '#161f2d' : '#1b2434'}
-          roughness={0.78}
-          metalness={0.18}
+          roughness={0.72}
+          metalness={0.22}
         />
       </mesh>
 
+      {/* Marco exterior de alerta o marca */}
+      <lineSegments geometry={bedBorderGeo} position={[0, -1.4, 0]}>
+        <lineBasicMaterial color={cageColor} transparent opacity={isOutOfBounds ? 0.85 : 0.45} />
+      </lineSegments>
+
+      {/* Escuadras L luminosas en las 4 esquinas */}
+      {corners.map((c, idx) => (
+        <group key={idx}>
+          <mesh position={[c.x + c.sx * (cornerLen * 0.5), 0.08, c.z]}>
+            <boxGeometry args={[cornerLen, 0.25, cornerThick]} />
+            <meshBasicMaterial color={cageColor} transparent opacity={0.88} />
+          </mesh>
+          <mesh position={[c.x, 0.08, c.z + c.sz * (cornerLen * 0.5)]}>
+            <boxGeometry args={[cornerThick, 0.25, cornerLen]} />
+            <meshBasicMaterial color={cageColor} transparent opacity={0.88} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* Zona frontal de línea de purga */}
+      {showVolume && purgeZoneMm > 0 && (
+        <group position={[0, 0.05, halfD - purgeZoneMm * 0.5]}>
+          <mesh rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[width - 8, purgeZoneMm]} />
+            <meshBasicMaterial color="#f97316" transparent opacity={0.14} depthWrite={false} />
+          </mesh>
+          <mesh position={[0, 0.03, 0]}>
+            <boxGeometry args={[width * 0.68, 0.14, 0.85]} />
+            <meshBasicMaterial color="#f97316" transparent opacity={0.65} />
+          </mesh>
+        </group>
+      )}
+
       <gridHelper
-        args={[gridSize, gridDivisions, '#38bdf8', '#2a384f']}
+        args={[gridSize, gridDivisions, brandColor, '#263449']}
         position={[0, 0.02, 0]}
       />
 
+      {/* Ejes centrales X / Z */}
       <mesh position={[0, 0.04, 0]}>
         <boxGeometry args={[width, 0.08, 0.45]} />
-        <meshBasicMaterial color="#ef4444" transparent opacity={0.55} />
+        <meshBasicMaterial color="#ef4444" transparent opacity={0.48} />
       </mesh>
       <mesh position={[0, 0.04, 0]}>
         <boxGeometry args={[0.45, 0.08, depth]} />
-        <meshBasicMaterial color="#38bdf8" transparent opacity={0.55} />
+        <meshBasicMaterial color="#38bdf8" transparent opacity={0.48} />
       </mesh>
 
+      {/* Volumen de impresión translúcido */}
       {showVolume && (
         <lineSegments geometry={volumeBoxGeo} position={[0, height / 2, 0]}>
-          <lineBasicMaterial color="#38bdf8" transparent opacity={0.22} />
+          <lineBasicMaterial
+            color={cageColor}
+            transparent
+            opacity={isOutOfBounds ? 0.78 : 0.24}
+          />
         </lineSegments>
       )}
 
+      {/* Placa de identificación frontal */}
       {plateTexture && (
-        <mesh position={[0, 0.06, depth / 2 + 12]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[Math.min(180, width * 0.72), 20]} />
-          <meshBasicMaterial map={plateTexture} transparent opacity={0.92} />
+        <mesh position={[0, 0.06, halfD + 16]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[Math.min(220, width * 0.84), 22]} />
+          <meshBasicMaterial map={plateTexture} transparent opacity={0.94} />
         </mesh>
       )}
     </group>
@@ -412,11 +582,13 @@ const LaserCutPreview: React.FC = () => {
   );
 };
 
-/** Renderiza un SceneObject con caché de BufferGeometry, pop elástico al crear y menú clic derecho. */
+/** Renderiza un SceneObject con caché de BufferGeometry, materiales PBR, sección Rayos X y voladizos. */
 const SceneMeshItem: React.FC<{
   obj: SceneObject;
   isSelected: boolean;
   isPrimarySelected: boolean;
+  clipPlane: THREE.Plane | null;
+  overhangFaces: number[] | null;
   onStartPaintDrag: () => void;
   onObjectContextMenu: (id: string, clientX: number, clientY: number) => void;
   registerGroupRef: (id: string, group: THREE.Group | null) => void;
@@ -425,6 +597,8 @@ const SceneMeshItem: React.FC<{
     obj,
     isSelected,
     isPrimarySelected,
+    clipPlane,
+    overhangFaces,
     onStartPaintDrag,
     onObjectContextMenu,
     registerGroupRef,
@@ -478,6 +652,43 @@ const SceneMeshItem: React.FC<{
       };
     }, [geometry]);
 
+    // Malla superpuesta liviana para resaltar en rojo los triángulos en voladizo (> 45°)
+    const overhangGeo = useMemo(() => {
+      if (!overhangFaces || overhangFaces.length === 0) return null;
+      const positions = obj.mesh.positions;
+      const indices = obj.mesh.indices;
+      const buf = new Float32Array(overhangFaces.length * 9);
+      let cursor = 0;
+
+      for (const faceIdx of overhangFaces) {
+        const base = faceIdx * 3;
+        if (base + 2 >= indices.length) continue;
+        const i0 = indices[base] * 3;
+        const i1 = indices[base + 1] * 3;
+        const i2 = indices[base + 2] * 3;
+        buf[cursor++] = positions[i0];
+        buf[cursor++] = positions[i0 + 1];
+        buf[cursor++] = positions[i0 + 2];
+        buf[cursor++] = positions[i1];
+        buf[cursor++] = positions[i1 + 1];
+        buf[cursor++] = positions[i1 + 2];
+        buf[cursor++] = positions[i2];
+        buf[cursor++] = positions[i2 + 1];
+        buf[cursor++] = positions[i2 + 2];
+      }
+
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(buf.subarray(0, cursor), 3));
+      g.computeVertexNormals();
+      return g;
+    }, [obj.mesh.positions, obj.mesh.indices, overhangFaces]);
+
+    useEffect(() => {
+      return () => {
+        overhangGeo?.dispose();
+      };
+    }, [overhangGeo]);
+
     const selectionBoxGeo = useMemo(() => {
       if (!isSelected) return null;
       geometry.computeBoundingBox();
@@ -519,6 +730,8 @@ const SceneMeshItem: React.FC<{
     }
 
     const hasVertexColors = geometry.hasAttribute('color');
+    const matPreset = MATERIAL_PRESETS[obj.materialPreset ?? 'pla_matte'] ?? MATERIAL_PRESETS.pla_matte;
+    const activeClipPlanes = clipPlane ? [clipPlane] : [];
 
     const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
@@ -593,22 +806,45 @@ const SceneMeshItem: React.FC<{
         >
           {obj.isHole ? (
             <meshStandardMaterial
+              key={`hole_${clipPlane ? 'clip' : 'full'}`}
               color="#f97316"
               transparent
               opacity={0.44}
               roughness={0.45}
               depthWrite={false}
+              side={clipPlane ? THREE.DoubleSide : THREE.FrontSide}
+              clippingPlanes={activeClipPlanes}
             />
           ) : (
             <meshStandardMaterial
-              key={hasVertexColors ? 'vc' : 'solid'}
+              key={`${hasVertexColors ? 'vc' : 'solid'}_${matPreset.id}_${clipPlane ? 'clip' : 'full'}`}
               color={hasVertexColors ? '#ffffff' : obj.color}
               vertexColors={hasVertexColors}
-              roughness={0.42}
-              metalness={0.08}
+              roughness={matPreset.roughness}
+              metalness={matPreset.metalness}
+              opacity={matPreset.opacity}
+              transparent={matPreset.transparent}
+              depthWrite={!matPreset.transparent || matPreset.opacity >= 0.99}
+              side={clipPlane ? THREE.DoubleSide : THREE.FrontSide}
+              clippingPlanes={activeClipPlanes}
             />
           )}
         </mesh>
+
+        {/* Resaltado rojo de triángulos en voladizo (> 45°) del Validador Estructural */}
+        {overhangGeo && (
+          <mesh geometry={overhangGeo} renderOrder={7}>
+            <meshBasicMaterial
+              color="#ef4444"
+              transparent
+              opacity={0.78}
+              side={THREE.DoubleSide}
+              polygonOffset
+              polygonOffsetFactor={-1}
+              clippingPlanes={activeClipPlanes}
+            />
+          </mesh>
+        )}
 
         {/* Contorno rayos-X sutil para que volúmenes negativos internos siempre se distingan */}
         {obj.isHole && (
@@ -619,6 +855,7 @@ const SceneMeshItem: React.FC<{
               transparent
               opacity={0.28}
               depthTest={false}
+              clippingPlanes={activeClipPlanes}
             />
           </mesh>
         )}
@@ -637,10 +874,11 @@ const SceneMeshItem: React.FC<{
   },
 );
 
-/** Contenido interno del Canvas 3D: luces, objetos, vista previa láser, OrbitControls y TransformControls. */
+/** Contenido interno del Canvas 3D: luces, objetos, plano sección, vista previa láser, OrbitControls y gizmos. */
 const SceneContent: React.FC<{
+  isOutOfBounds: boolean;
   onObjectContextMenu: (id: string, clientX: number, clientY: number) => void;
-}> = ({ onObjectContextMenu }) => {
+}> = ({ isOutOfBounds, onObjectContextMenu }) => {
   const orbitRef = useRef<OrbitControlsImpl | null>(null);
   const groupRefs = useRef<Map<string, THREE.Group>>(new Map());
 
@@ -655,8 +893,19 @@ const SceneContent: React.FC<{
   const activeTool = useKuraStore((s) => s.activeTool);
   const transformMode = useKuraStore((s) => s.transformMode);
   const snapGridMm = useKuraStore((s) => s.snapGridMm);
+  const sectionPlane = useKuraStore((s) => s.sectionPlane);
+  const activePrintReport = useKuraStore((s) => s.activePrintReport);
+  const showOverhangs = useKuraStore((s) => s.showOverhangs);
   const setObjectTransform = useKuraStore((s) => s.setObjectTransform);
   const commitTransformSnapshot = useKuraStore((s) => s.commitTransformSnapshot);
+
+  // Plano de corte visual Rayos X reutilizado sin recrear materiales en cada cambio de altura
+  const clipPlaneRef = useRef<THREE.Plane>(new THREE.Plane(new THREE.Vector3(0, -1, 0), 25));
+  useEffect(() => {
+    clipPlaneRef.current.constant = sectionPlane.heightMm;
+  }, [sectionPlane.heightMm]);
+
+  const activeClipPlane = sectionPlane.enabled ? clipPlaneRef.current : null;
 
   const primaryId = selectedIds.length === 1 ? selectedIds[0] : null;
   const primaryIdRef = useRef<string | null>(primaryId);
@@ -713,7 +962,7 @@ const SceneContent: React.FC<{
       <directionalLight position={[-120, 80, -100]} intensity={0.52} color="#bae6fd" />
       <directionalLight position={[0, -80, 90]} intensity={0.25} color="#fed7aa" />
 
-      <PrinterBedOverlay />
+      <PrinterBedOverlay isOutOfBounds={isOutOfBounds} />
 
       <ContactShadows
         key={shadowsKey}
@@ -731,11 +980,35 @@ const SceneContent: React.FC<{
           obj={obj}
           isSelected={selectedIds.includes(obj.id)}
           isPrimarySelected={selectedIds[0] === obj.id}
+          clipPlane={activeClipPlane}
+          overhangFaces={
+            showOverhangs && activePrintReport?.objectId === obj.id
+              ? activePrintReport.overhangFaceIndices
+              : null
+          }
           onStartPaintDrag={() => setIsPaintingDrag(true)}
           onObjectContextMenu={onObjectContextMenu}
           registerGroupRef={registerGroupRef}
         />
       ))}
+
+      {/* Indicador visual translúcido del plano de sección Rayos X */}
+      {sectionPlane.enabled && (
+        <mesh
+          position={[0, sectionPlane.heightMm, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          renderOrder={15}
+        >
+          <planeGeometry args={[printerProfile.bedWidthMm, printerProfile.bedDepthMm]} />
+          <meshBasicMaterial
+            color="#38bdf8"
+            transparent
+            opacity={0.12}
+            side={THREE.DoubleSide}
+            depthWrite={false}
+          />
+        </mesh>
+      )}
 
       <LaserCutPreview />
 
@@ -792,11 +1065,15 @@ export const Viewport3D: React.FC = () => {
 
   const language = useKuraStore((s) => s.language);
   const unitSystem = useKuraStore((s) => s.unitSystem);
+  const uiDensity = useKuraStore((s) => s.uiDensity);
+  const toggleZenMode = useKuraStore((s) => s.toggleZenMode);
   const activeTool = useKuraStore((s) => s.activeTool);
   const transformMode = useKuraStore((s) => s.transformMode);
   const setTransformMode = useKuraStore((s) => s.setTransformMode);
   const snapGridMm = useKuraStore((s) => s.snapGridMm);
   const setSnapGridMm = useKuraStore((s) => s.setSnapGridMm);
+  const sectionPlane = useKuraStore((s) => s.sectionPlane);
+  const setSectionPlane = useKuraStore((s) => s.setSectionPlane);
   const requestCameraPreset = useKuraStore((s) => s.requestCameraPreset);
   const clearSelection = useKuraStore((s) => s.clearSelection);
   const selectObject = useKuraStore((s) => s.selectObject);
@@ -812,9 +1089,11 @@ export const Viewport3D: React.FC = () => {
   const setEraseRadiusMm = useKuraStore((s) => s.setEraseRadiusMm);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const addSubtractHelperPrimitive = useKuraStore((s) => s.addSubtractHelperPrimitive);
+  const importModelAsModuleFromDialog = useKuraStore((s) => s.importModelAsModuleFromDialog);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const runBooleanOnSelection = useKuraStore((s) => s.runBooleanOnSelection);
   const hollowObject = useKuraStore((s) => s.hollowObject);
+  const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
   const updateObjectMeta = useKuraStore((s) => s.updateObjectMeta);
   const duplicateObjects = useKuraStore((s) => s.duplicateObjects);
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
@@ -828,6 +1107,20 @@ export const Viewport3D: React.FC = () => {
   const holeCount = objects.filter((o) => o.isHole && o.visible).length;
   const solidCount = objects.filter((o) => !o.isHole && o.visible).length;
 
+  const isOutOfBounds = useMemo(
+    () => checkObjectsOutOfBounds(objects, printerProfile),
+    [objects, printerProfile],
+  );
+
+  const maxSceneHeight = useMemo(() => {
+    let maxH = printerProfile.maxHeightMm;
+    for (const obj of objects) {
+      const top = obj.position[1] + obj.stats.dimensionsMm[1] * obj.scale[1];
+      if (top > maxH) maxH = Math.ceil(top);
+    }
+    return Math.max(40, maxH);
+  }, [objects, printerProfile.maxHeightMm]);
+
   const handleObjectContextMenu = useCallback(
     (objectId: string, clientX: number, clientY: number) => {
       if (!useKuraStore.getState().selectedIds.includes(objectId)) {
@@ -839,7 +1132,7 @@ export const Viewport3D: React.FC = () => {
       const rawX = clientX - rect.left;
       const rawY = clientY - rect.top;
       const clampedX = Math.max(8, Math.min(rawX, Math.max(8, rect.width - 252)));
-      const clampedY = Math.max(8, Math.min(rawY, Math.max(8, rect.height - 320)));
+      const clampedY = Math.max(8, Math.min(rawY, Math.max(8, rect.height - 420)));
       setContextMenu({ objectId, x: clampedX, y: clampedY });
     },
     [selectObject],
@@ -887,7 +1180,7 @@ export const Viewport3D: React.FC = () => {
         shadows
         dpr={[1, 2]}
         camera={{ position: [115, 95, 130], fov: 42, near: 0.5, far: 4000 }}
-        gl={{ preserveDrawingBuffer: true, antialias: true }}
+        gl={{ preserveDrawingBuffer: true, antialias: true, localClippingEnabled: true }}
         onPointerMissed={(e) => {
           setContextMenu(null);
           if (e.button === 0 && activeTool === 'select') {
@@ -895,8 +1188,23 @@ export const Viewport3D: React.FC = () => {
           }
         }}
       >
-        <SceneContent onObjectContextMenu={handleObjectContextMenu} />
+        <SceneContent
+          isOutOfBounds={isOutOfBounds}
+          onObjectContextMenu={handleObjectContextMenu}
+        />
       </Canvas>
+
+      {/* Píldora flotante para salir de Modo Zen (Tab) */}
+      {uiDensity === 'zen' && (
+        <button
+          type="button"
+          className="kura-zen-exit-pill"
+          onClick={() => useKuraStore.getState().setUiDensity('full')}
+        >
+          <Minimize2 size={13} style={{ color: 'var(--accent-cyan)' }} />
+          <span>{t(language, 'ui.zen.exit')}</span>
+        </button>
+      )}
 
       {/* Stack superior del HUD: evita colisiones cuando se envuelven controles */}
       <div className="kura-hud-top-stack">
@@ -941,6 +1249,35 @@ export const Viewport3D: React.FC = () => {
                 <option value={5}>5 mm</option>
                 <option value={10}>10 mm</option>
               </select>
+            </div>
+
+            {/* Control en vivo de Rayos X / Plano de Sección */}
+            <div className="kura-hud-card">
+              <button
+                type="button"
+                className={`kura-btn kura-btn-sm ${sectionPlane.enabled ? 'is-active' : ''}`}
+                onClick={() => setSectionPlane({ enabled: !sectionPlane.enabled })}
+                title={t(language, 'viewport.section.toggleTip')}
+              >
+                <Layers size={13} />
+                <span>{t(language, 'viewport.section.toggle')}</span>
+              </button>
+              {sectionPlane.enabled && (
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+                  <input
+                    type="range"
+                    min={0}
+                    max={maxSceneHeight}
+                    step={0.5}
+                    value={sectionPlane.heightMm}
+                    onChange={(e) => setSectionPlane({ heightMm: Number(e.target.value) })}
+                    aria-label={t(language, 'viewport.section.height')}
+                  />
+                  <span style={{ fontFamily: 'monospace', minWidth: 46 }}>
+                    {formatDimension(sectionPlane.heightMm, unitSystem, 1)}
+                  </span>
+                </label>
+              )}
             </div>
           </div>
 
@@ -1122,6 +1459,18 @@ export const Viewport3D: React.FC = () => {
             className="kura-context-item"
             onClick={() => {
               setContextMenu(null);
+              void importModelAsModuleFromDialog('negative', ctxTarget.id);
+            }}
+          >
+            <FileUp size={14} style={{ color: 'var(--accent-amber)' }} />
+            <span>{t(language, 'ctx.importModuleSub')}</span>
+          </button>
+
+          <button
+            type="button"
+            className="kura-context-item"
+            onClick={() => {
+              setContextMenu(null);
               updateObjectMeta(ctxTarget.id, { isHole: !ctxTarget.isHole });
             }}
           >
@@ -1185,6 +1534,43 @@ export const Viewport3D: React.FC = () => {
             <span>{t(language, 'ctx.planeCut')}</span>
           </button>
 
+          <button
+            type="button"
+            className="kura-context-item"
+            onClick={() => {
+              setContextMenu(null);
+              setActiveDialog('mold');
+            }}
+          >
+            <PaintBucket size={14} style={{ color: 'var(--accent-cyan)' }} />
+            <span>{t(language, 'ctx.generateMold')}</span>
+          </button>
+
+          <button
+            type="button"
+            className="kura-context-item"
+            disabled={ctxTarget.locked}
+            onClick={() => {
+              setContextMenu(null);
+              setActiveDialog('project');
+            }}
+          >
+            <Type size={14} style={{ color: 'var(--accent-cyan)' }} />
+            <span>{t(language, 'ctx.projectSurface')}</span>
+          </button>
+
+          <button
+            type="button"
+            className="kura-context-item"
+            onClick={() => {
+              setContextMenu(null);
+              runPrintabilityCheck(ctxTarget.id);
+            }}
+          >
+            <ShieldCheck size={14} style={{ color: 'var(--accent-green)' }} />
+            <span>{t(language, 'ctx.validatePrint')}</span>
+          </button>
+
           <div className="kura-context-sep" />
 
           <button
@@ -1246,7 +1632,7 @@ export const Viewport3D: React.FC = () => {
         </div>
       )}
 
-      {/* HUD Inferior: Dimensiones en vivo y cama en una sola línea limpia */}
+      {/* HUD Inferior: Dimensiones en vivo, alerta de límites y cama en una sola línea */}
       <div className="kura-hud-bottom">
         <div className="kura-hud-card kura-hud-pill-nowrap">
           <span className="kura-field-label">
@@ -1270,6 +1656,12 @@ export const Viewport3D: React.FC = () => {
                 )})`
               : localizedPrinterName}
           </span>
+          {isOutOfBounds && (
+            <span className="kura-oob-badge">
+              <AlertTriangle size={11} />
+              <span>{t(language, 'viewport.bed.outOfBounds')}</span>
+            </span>
+          )}
         </div>
       </div>
     </main>

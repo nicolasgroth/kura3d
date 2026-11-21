@@ -1,7 +1,8 @@
 /**
  * @file src/components/TopBar.tsx
- * @description Barra superior principal de Kura3D: marca geométrica, importación/exportación rápida,
- * Undo/Redo, selector de herramientas, perfil de impresora, unidades, paleta Ctrl+K, estado MCP
+ * @description Barra superior principal de Kura3D Pro v3.0: marca geométrica, importación/exportación
+ * Multi-Slicer (STL/3MF), Undo/Redo, selector de herramientas, perfil de impresora multi-marca,
+ * unidades, toggle de densidad adaptativa (Expandido / Compacto / Zen), paleta Ctrl+K, estado MCP
  * configurable/seguro, indicador explícito IA Externa vs Local y tema visual.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -12,10 +13,13 @@ import React, { useEffect, useState } from 'react';
 import {
   Bot,
   Cloud,
+  Columns2,
   Download,
   Eraser,
   FileUp,
+  LayoutGrid,
   Lock,
+  Maximize2,
   Moon,
   MousePointer,
   Paintbrush,
@@ -63,6 +67,8 @@ export const TopBar: React.FC = () => {
   const setUnitSystem = useKuraStore((s) => s.setUnitSystem);
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const setColorScheme = useKuraStore((s) => s.setColorScheme);
+  const uiDensity = useKuraStore((s) => s.uiDensity);
+  const cycleUiDensity = useKuraStore((s) => s.cycleUiDensity);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const setPrinterProfile = useKuraStore((s) => s.setPrinterProfile);
   const activeTool = useKuraStore((s) => s.activeTool);
@@ -73,7 +79,7 @@ export const TopBar: React.FC = () => {
   const redo = useKuraStore((s) => s.redo);
   const importMeshFromDialog = useKuraStore((s) => s.importMeshFromDialog);
   const exportSceneStl = useKuraStore((s) => s.exportSceneStl);
-  const exportScene3mf = useKuraStore((s) => s.exportScene3mf);
+  const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const openSettings = useKuraStore((s) => s.openSettings);
   const setCommandPaletteOpen = useKuraStore((s) => s.setCommandPaletteOpen);
   const mcpConnected = useKuraStore((s) => s.mcpConnected);
@@ -126,6 +132,17 @@ export const TopBar: React.FC = () => {
         mcpConfig.requireAuth ? ` · ${t(language, 'topbar.mcpAuthTip')}` : ''
       }`;
 
+  const densityIcon =
+    uiDensity === 'full' ? (
+      <LayoutGrid size={13} />
+    ) : uiDensity === 'compact' ? (
+      <Columns2 size={13} />
+    ) : (
+      <Maximize2 size={13} />
+    );
+
+  const densityLabel = t(language, `ui.density.${uiDensity}`);
+
   return (
     <header className="kura-topbar">
       {/* Marca Kura3D + Archivo rápido + Undo/Redo */}
@@ -166,9 +183,10 @@ export const TopBar: React.FC = () => {
           className="kura-btn kura-btn-sm"
           onClick={() => void importMeshFromDialog()}
           title={t(language, 'topbar.importModelTip')}
+          aria-label={t(language, 'topbar.importModel')}
         >
           <FileUp size={13} />
-          <span>{t(language, 'topbar.importShort')}</span>
+          <span className="kura-btn-label">{t(language, 'topbar.importShort')}</span>
         </button>
 
         <button
@@ -203,6 +221,7 @@ export const TopBar: React.FC = () => {
               className={`kura-btn ${activeTool === tool.id ? 'is-active' : ''}`}
               onClick={() => setActiveTool(tool.id)}
               title={t(language, `topbar.tool.${tool.labelKey}Tip`)}
+              aria-label={t(language, `topbar.tool.${tool.labelKey}`)}
             >
               {tool.icon}
               <span className="kura-tool-label">
@@ -217,7 +236,7 @@ export const TopBar: React.FC = () => {
           value={printerProfile.id}
           onChange={(e) => setPrinterProfile(e.target.value)}
           aria-label={t(language, 'topbar.printerProfile')}
-          title={t(language, 'topbar.printerProfile')}
+          title={getLocalizedPrinterName(language, printerProfile)}
         >
           {DEFAULT_PRINTER_PROFILES.map((profile) => (
             <option key={profile.id} value={profile.id}>
@@ -245,24 +264,37 @@ export const TopBar: React.FC = () => {
           className="kura-btn kura-btn-sm kura-btn-primary"
           onClick={() => void exportSceneStl(false)}
           title={t(language, 'topbar.exportStlTip')}
+          aria-label={t(language, 'topbar.exportStl')}
         >
           <Download size={13} />
-          <span>STL</span>
+          <span className="kura-btn-label">STL</span>
         </button>
 
         <button
           type="button"
           className="kura-btn kura-btn-sm kura-btn-amber"
-          onClick={() => void exportScene3mf(false)}
+          onClick={() => setActiveDialog('export3mf')}
           title={t(language, 'topbar.export3mfTip')}
+          aria-label={t(language, 'topbar.export3mf')}
         >
           <Download size={13} />
-          <span>3MF</span>
+          <span className="kura-btn-label">3MF</span>
         </button>
       </div>
 
       {/* Grupo de utilidades fijado a la derecha */}
       <div className="kura-topbar-group kura-topbar-right">
+        <button
+          type="button"
+          className={`kura-btn kura-btn-sm ${uiDensity !== 'full' ? 'is-active' : ''}`}
+          onClick={cycleUiDensity}
+          title={`${t(language, 'ui.density.cycleTip')} (${densityLabel})`}
+          aria-label={t(language, 'ui.density.cycleTip')}
+        >
+          {densityIcon}
+          <span className="kura-btn-label">{densityLabel}</span>
+        </button>
+
         <button
           type="button"
           className="kura-btn kura-btn-icon kura-btn-sm"
@@ -323,6 +355,7 @@ export const TopBar: React.FC = () => {
           }`}
           onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
           title={`${t(language, 'topbar.aiChatTip')} — ${aiBadge.label}: ${aiBadge.tooltip}`}
+          aria-label={t(language, 'topbar.aiChat')}
         >
           {aiBadge.mode === 'external' ? (
             <Cloud size={13} />
@@ -331,7 +364,7 @@ export const TopBar: React.FC = () => {
           ) : (
             <Zap size={13} />
           )}
-          <span>{language === 'es' ? 'IA' : 'AI'}</span>
+          <span className="kura-btn-label">{language === 'es' ? 'IA' : 'AI'}</span>
         </button>
 
         <button

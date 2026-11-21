@@ -129,6 +129,36 @@ body,
   width: 100%;
   height: 100%;
   background: var(--bg-canvas);
+  transition: grid-template-rows 0.2s ease;
+}
+
+/* Modo Zen: 100% viewport canvas ocultando barras superior, inferior y paneles laterales */
+.kura-app[data-density="zen"] {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.kura-app[data-density="zen"] .kura-topbar,
+.kura-app[data-density="zen"] .kura-statusbar,
+.kura-app[data-density="zen"] .kura-sidebar-left,
+.kura-app[data-density="zen"] .kura-sidebar-right,
+.kura-app[data-density="zen"] .kura-ai-drawer,
+.kura-app[data-density="zen"] .kura-panel-edge-btn {
+  display: none;
+}
+
+/* Modo Compacto: ideal para laptops y pantallas medianas (solo íconos + rail 56px) */
+.kura-app[data-density="compact"] .kura-btn-label,
+.kura-app[data-density="compact"] .kura-tool-label,
+.kura-app[data-density="compact"] .kura-mcp-label {
+  display: none;
+}
+
+.kura-app[data-density="compact"] .kura-sidebar-left:not(.is-collapsed) {
+  width: 56px;
+}
+
+.kura-app[data-density="compact"] .kura-sidebar-right:not(.is-collapsed) {
+  width: 264px;
 }
 
 .kura-app[data-tool="cut"] {
@@ -513,6 +543,7 @@ body,
  * 4. Sidebars (Izquierda: Primitivas/Escena, Derecha: Inspector & Chat IA)
  * ============================================================================ */
 .kura-sidebar-left {
+  position: relative;
   width: 268px;
   flex-shrink: 0;
   background: var(--bg-panel);
@@ -520,16 +551,123 @@ body,
   display: flex;
   flex-direction: column;
   min-height: 0;
+  transition: width 0.18s ease;
+}
+
+.kura-sidebar-left.is-collapsed {
+  width: 0;
+  border-right: none;
+  overflow: visible;
 }
 
 .kura-sidebar-right {
-  width: 288px;
+  position: relative;
+  width: 296px;
   flex-shrink: 0;
   background: var(--bg-panel);
   border-left: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   min-height: 0;
+  transition: width 0.18s ease;
+}
+
+.kura-sidebar-right.is-collapsed {
+  width: 0;
+  border-left: none;
+  overflow: visible;
+}
+
+.kura-sidebar-left.is-collapsed > *:not(.kura-panel-edge-btn),
+.kura-sidebar-right.is-collapsed > *:not(.kura-panel-edge-btn) {
+  display: none;
+}
+
+/* Botón delgado ‹ / › en el borde interior de cada panel lateral */
+.kura-panel-edge-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
+  width: 18px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+
+.kura-panel-edge-btn:hover {
+  background: var(--bg-hover);
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+}
+
+.kura-panel-edge-btn.is-left {
+  right: -18px;
+  border-left: none;
+  border-radius: 0 7px 7px 0;
+}
+
+.kura-panel-edge-btn.is-right {
+  left: -18px;
+  border-right: none;
+  border-radius: 7px 0 0 7px;
+}
+
+/* Rail vertical compacto (56px) para LeftSidebar en modo Compacto */
+.kura-compact-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  scrollbar-width: none;
+}
+
+.kura-compact-rail-sep {
+  width: 28px;
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 2px 0;
+  flex-shrink: 0;
+}
+
+/* Píldora flotante para salir de Modo Zen */
+.kura-zen-exit-pill {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 32;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--hud-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-hud);
+  transition: border-color 0.14s ease, transform 0.14s ease;
+}
+
+.kura-zen-exit-pill:hover {
+  border-color: var(--accent-cyan);
+  transform: translateX(-50%) translateY(-1px);
 }
 
 .kura-slider-header {
@@ -1160,6 +1298,7 @@ body,
  * 8. Diálogos Modales Nativos (<dialog>) y Paleta Ctrl+K — Modern Web Guidance
  * ============================================================================ */
 dialog.kura-dialog {
+  flex-direction: column;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   background: var(--bg-panel);
@@ -1452,6 +1591,17 @@ dialog.kura-palette-dialog {
 }
 
 /* Adaptación en ventanas compactas */
+@media (max-width: 1240px) {
+  .kura-topbar .kura-btn-label,
+  .kura-topbar .kura-tool-label,
+  .kura-topbar .kura-mcp-label {
+    display: none;
+  }
+  .kura-topbar .kura-select {
+    max-width: 145px;
+  }
+}
+
 @media (max-width: 1100px) {
   .kura-sidebar-left {
     width: 230px;
@@ -1480,4 +1630,98 @@ dialog.kura-dialog-side[open]:where(:not([data-closing]))::backdrop {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ============================================================================
+ * 10. Componentes Kura3D Pro v3.0 (Leyenda de Filamentos, Validador, Módulos)
+ * ============================================================================ */
+.kura-filament-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.kura-filament-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-canvas);
+  font-size: 10.5px;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+}
+
+.kura-report-card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 9px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+}
+
+.kura-score-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.kura-score-pill.is-good {
+  background: color-mix(in srgb, var(--accent-green) 18%, transparent);
+  color: var(--accent-green);
+}
+
+.kura-score-pill.is-warn {
+  background: color-mix(in srgb, var(--accent-amber) 18%, transparent);
+  color: var(--accent-amber);
+}
+
+.kura-score-pill.is-bad {
+  background: color-mix(in srgb, var(--accent-red) 18%, transparent);
+  color: var(--accent-red);
+}
+
+.kura-warning-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 11px;
+  color: var(--accent-amber);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.kura-align-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.kura-modular-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 5px;
+  align-items: center;
+}
+
+.kura-oob-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-red) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 55%, transparent);
+  color: var(--accent-red);
+  font-size: 10.5px;
+  font-weight: 700;
 }

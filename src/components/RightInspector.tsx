@@ -1,31 +1,53 @@
 /**
  * @file src/components/RightInspector.tsx
- * @description Inspector paramétrico derecho de Kura3D: identidad, colores, transformaciones
- * en la unidad activa, métricas Manifold en vivo y operaciones 3D determinísticas (ahuecado,
- * booleanas CSG, corte con conectores, separación por islas/colores y texturas procedurales).
+ * @description Inspector paramétrico derecho de Kura3D Pro v3.0:
+ * - Colapsable independientemente y adaptable a modo Compacto (264px).
+ * - Identidad, Materiales PBR realistas, Paleta & Leyenda de Filamentos en escena.
+ * - Transformaciones en la unidad activa y métricas Manifold en vivo.
+ * - Módulos dinámicos (+ / −) para cualquier primitiva o modelo STL/3MF/OBJ importado.
+ * - Herramientas Maker Pro: Moldes/Silicona, Proyección Texto/SVG, Roscas ISO, Validador
+ *   Estructural (Voladizos + Peso), Simplificar/Refinar Malla, Convex Hull y Alineación Inteligente.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import * as THREE from 'three';
 import {
+  AlignCenter,
   ArrowDownToLine,
+  Bolt,
+  Box,
+  ChevronLeft,
+  ChevronRight,
   Combine,
   Crosshair,
+  Eye,
+  EyeOff,
+  FileUp,
+  Grid,
   MinusCircle,
+  PaintBucket,
   Palette,
+  PlusCircle,
   RotateCcw,
   Scissors,
+  ShieldCheck,
   Sparkles,
   Split,
+  Type,
+  Wand2,
   Zap,
 } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import {
+  MATERIAL_PRESETS,
   PRINT_COLOR_PALETTE,
+  type AlignMode,
+  type MaterialPresetId,
+  type PrimitiveType,
   type TexturePatternType,
   type Vec3,
 } from '../types/kura';
@@ -38,28 +60,62 @@ import {
   toMm,
 } from '../utils/units';
 
+const MATERIAL_IDS: MaterialPresetId[] = [
+  'pla_matte',
+  'pla_silk',
+  'petg_clear',
+  'abs',
+  'carbon_fiber',
+  'silicone',
+  'wax_candle',
+  'metallic',
+];
+
+const MODULAR_PRIMITIVES: PrimitiveType[] = [
+  'sphere',
+  'cylinder',
+  'box',
+  'tube',
+  'cone',
+  'torus',
+  'prism',
+  'text',
+];
+
 export const RightInspector: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const unitSystem = useKuraStore((s) => s.unitSystem);
+  const rightCollapsed = useKuraStore((s) => s.rightCollapsed);
+  const toggleRightInspector = useKuraStore((s) => s.toggleRightInspector);
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const busyOperation = useKuraStore((s) => s.busyOperation);
+  const activePrintReport = useKuraStore((s) => s.activePrintReport);
+  const showOverhangs = useKuraStore((s) => s.showOverhangs);
+  const setShowOverhangs = useKuraStore((s) => s.setShowOverhangs);
 
   const updateObjectMeta = useKuraStore((s) => s.updateObjectMeta);
+  const setObjectMaterial = useKuraStore((s) => s.setObjectMaterial);
   const setObjectTransform = useKuraStore((s) => s.setObjectTransform);
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
   const centerObjectOnBed = useKuraStore((s) => s.centerObjectOnBed);
   const resetObjectOrientation = useKuraStore((s) => s.resetObjectOrientation);
   const hollowObject = useKuraStore((s) => s.hollowObject);
-  const addSubtractHelperPrimitive = useKuraStore((s) => s.addSubtractHelperPrimitive);
+  const addModularPrimitive = useKuraStore((s) => s.addModularPrimitive);
+  const importModelAsModuleFromDialog = useKuraStore((s) => s.importModelAsModuleFromDialog);
   const runBooleanOnSelection = useKuraStore((s) => s.runBooleanOnSelection);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const splitDisconnectedObject = useKuraStore((s) => s.splitDisconnectedObject);
   const splitObjectByColor = useKuraStore((s) => s.splitObjectByColor);
   const applyTextureToObject = useKuraStore((s) => s.applyTextureToObject);
+  const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
+  const simplifySelectedMesh = useKuraStore((s) => s.simplifySelectedMesh);
+  const refineSelectedMesh = useKuraStore((s) => s.refineSelectedMesh);
+  const runConvexHull = useKuraStore((s) => s.runConvexHull);
+  const alignSelectedObjects = useKuraStore((s) => s.alignSelectedObjects);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
 
-  // Estados locales para parámetros de operaciones Manifold
+  // Estados locales para parámetros de operaciones Manifold & Pro
   const [wallThicknessMm, setWallThicknessMm] = useState(2.2);
   const [drainHole, setDrainHole] = useState(false);
   const [drainRadiusMm, setDrainRadiusMm] = useState(4);
@@ -68,6 +124,11 @@ export const RightInspector: React.FC = () => {
   const [textureDepthMm, setTextureDepthMm] = useState(0.45);
   const [textureScaleMm, setTextureScaleMm] = useState(4);
 
+  const [modularShape, setModularShape] = useState<PrimitiveType>('cylinder');
+  const [simplifyTolMm, setSimplifyTolMm] = useState(0.15);
+  const [refineEdgeMm, setRefineEdgeMm] = useState(1.5);
+  const [refineSmooth, setRefineSmooth] = useState(true);
+
   const selectedObjects = objects.filter((o) => selectedIds.includes(o.id));
   const primary = selectedObjects[0] ?? null;
   const holeCount = objects.filter((o) => o.isHole && o.visible).length;
@@ -75,9 +136,86 @@ export const RightInspector: React.FC = () => {
   const hasAnyHoles = holeCount > 0;
   const isBusy = Boolean(busyOperation);
 
+  // Leyenda global de colores / filamentos distintos en la escena
+  const sceneColors = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const obj of objects) {
+      if (obj.isHole) continue;
+      if (obj.mesh.faceColors && obj.mesh.faceColors.length > 0) {
+        const distinct = new Set(obj.mesh.faceColors.map((c) => c.toLowerCase()));
+        for (const c of distinct) {
+          map.set(c, (map.get(c) ?? 0) + 1);
+        }
+      } else {
+        const c = obj.color.toLowerCase();
+        map.set(c, (map.get(c) ?? 0) + 1);
+      }
+    }
+    return Array.from(map.entries());
+  }, [objects]);
+
+  const edgeToggleBtn = (
+    <button
+      type="button"
+      className="kura-panel-edge-btn is-right"
+      onClick={toggleRightInspector}
+      title={
+        rightCollapsed
+          ? t(language, 'ui.panel.expandRight')
+          : t(language, 'ui.panel.collapseRight')
+      }
+      aria-label={
+        rightCollapsed
+          ? t(language, 'ui.panel.expandRight')
+          : t(language, 'ui.panel.collapseRight')
+      }
+    >
+      {rightCollapsed ? <ChevronLeft size={13} /> : <ChevronRight size={13} />}
+    </button>
+  );
+
+  const filamentLegendCard = sceneColors.length > 0 && (
+    <section className="kura-card">
+      <div className="kura-field-row">
+        <span className="kura-section-label" style={{ margin: 0 }}>
+          {t(language, 'scene.filamentLegend')}
+        </span>
+        <span style={{ fontSize: 10.5, color: 'var(--text-secondary)' }}>
+          {t(language, 'scene.colorsCount', { count: sceneColors.length })}
+        </span>
+      </div>
+      <div className="kura-filament-legend">
+        {sceneColors.map(([hex, count]) => (
+          <span key={hex} className="kura-filament-chip">
+            <span className="kura-color-dot" style={{ backgroundColor: hex }} />
+            <span>{hex.toUpperCase()}</span>
+            <span style={{ color: 'var(--text-muted)' }}>×{count}</span>
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+
+  const alignButtons: Array<{ mode: AlignMode; label: string }> = [
+    { mode: 'minX', label: 'Min X' },
+    { mode: 'centerX', label: 'Cen X' },
+    { mode: 'maxX', label: 'Max X' },
+    { mode: 'minY', label: 'Min Y' },
+    { mode: 'centerY', label: 'Cen Y' },
+    { mode: 'maxY', label: 'Max Y' },
+    { mode: 'minZ', label: 'Min Z' },
+    { mode: 'centerZ', label: 'Cen Z' },
+    { mode: 'maxZ', label: 'Max Z' },
+  ];
+
+  // Sin selección
   if (selectedObjects.length === 0) {
     return (
-      <aside className="kura-sidebar-right" aria-label={t(language, 'inspector.title')}>
+      <aside
+        className={`kura-sidebar-right ${rightCollapsed ? 'is-collapsed' : ''}`}
+        aria-label={t(language, 'inspector.title')}
+      >
+        {edgeToggleBtn}
         <div className="kura-panel-header">{t(language, 'inspector.title')}</div>
         <div className="kura-scroll-area">
           <div className="kura-card">
@@ -86,6 +224,22 @@ export const RightInspector: React.FC = () => {
               {t(language, 'inspector.emptyDesc')}
             </p>
           </div>
+
+          {filamentLegendCard}
+
+          {objects.length > 0 && (
+            <div className="kura-card">
+              <h3 className="kura-section-label">{t(language, 'inspector.pro.alignTitle')}</h3>
+              <button
+                type="button"
+                className="kura-btn kura-btn-sm"
+                onClick={() => alignSelectedObjects('arrange_grid')}
+              >
+                <Grid size={13} />
+                <span>{t(language, 'inspector.pro.arrangeGrid')}</span>
+              </button>
+            </div>
+          )}
 
           {hasAnyHoles && (
             <div className="kura-card">
@@ -106,10 +260,14 @@ export const RightInspector: React.FC = () => {
     );
   }
 
-  // Multi-selección (2+ objetos): enfocada en Booleanas CSG
+  // Multi-selección (2+ objetos): Booleanas CSG, Convex Hull y Alineación
   if (selectedObjects.length >= 2) {
     return (
-      <aside className="kura-sidebar-right" aria-label={t(language, 'inspector.title')}>
+      <aside
+        className={`kura-sidebar-right ${rightCollapsed ? 'is-collapsed' : ''}`}
+        aria-label={t(language, 'inspector.title')}
+      >
+        {edgeToggleBtn}
         <div className="kura-panel-header">{t(language, 'inspector.title')}</div>
         <div className="kura-scroll-area">
           <div className="kura-card">
@@ -120,6 +278,8 @@ export const RightInspector: React.FC = () => {
               {t(language, 'inspector.multiDesc')}
             </p>
           </div>
+
+          {filamentLegendCard}
 
           <div className="kura-card">
             <h3 className="kura-section-label">{t(language, 'inspector.op.booleanTitle')}</h3>
@@ -150,6 +310,16 @@ export const RightInspector: React.FC = () => {
               </button>
             </div>
 
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm"
+              disabled={isBusy}
+              onClick={() => void runConvexHull()}
+            >
+              <Box size={13} />
+              <span>{t(language, 'inspector.pro.hull')}</span>
+            </button>
+
             {hasAnyHoles && (
               <button
                 type="button"
@@ -162,6 +332,31 @@ export const RightInspector: React.FC = () => {
               </button>
             )}
           </div>
+
+          <div className="kura-card">
+            <h3 className="kura-section-label">{t(language, 'inspector.pro.alignTitle')}</h3>
+            <div className="kura-align-grid">
+              {alignButtons.map((btn) => (
+                <button
+                  key={btn.mode}
+                  type="button"
+                  className="kura-btn kura-btn-sm"
+                  onClick={() => alignSelectedObjects(btn.mode)}
+                >
+                  <AlignCenter size={11} />
+                  <span>{btn.label}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm kura-btn-primary"
+              onClick={() => alignSelectedObjects('arrange_grid')}
+            >
+              <Grid size={13} />
+              <span>{t(language, 'inspector.pro.arrangeGrid')}</span>
+            </button>
+          </div>
         </div>
       </aside>
     );
@@ -172,6 +367,11 @@ export const RightInspector: React.FC = () => {
 
   const stepUnit = getUnitStep(unitSystem);
   const unitLabel = getUnitLabel(unitSystem);
+  const currentMaterial = primary.materialPreset ?? 'pla_matte';
+  const currentReport =
+    activePrintReport && activePrintReport.objectId === primary.id
+      ? activePrintReport
+      : null;
 
   const handlePosChange = (axisIdx: 0 | 1 | 2, rawValue: string) => {
     const num = Number(rawValue);
@@ -206,7 +406,12 @@ export const RightInspector: React.FC = () => {
     primary.stats.volumeMm3 * primary.scale[0] * primary.scale[1] * primary.scale[2];
 
   return (
-    <aside className="kura-sidebar-right" aria-label={t(language, 'inspector.title')}>
+    <aside
+      className={`kura-sidebar-right ${rightCollapsed ? 'is-collapsed' : ''}`}
+      aria-label={t(language, 'inspector.title')}
+    >
+      {edgeToggleBtn}
+
       <div className="kura-panel-header">
         <span>{t(language, 'inspector.title')}</span>
         <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
@@ -215,7 +420,7 @@ export const RightInspector: React.FC = () => {
       </div>
 
       <div className="kura-scroll-area">
-        {/* 1. Identidad y Material */}
+        {/* 1. Identidad, Material PBR y Color */}
         <section className="kura-card">
           <h3 className="kura-section-label">{t(language, 'inspector.section.identity')}</h3>
 
@@ -251,6 +456,26 @@ export const RightInspector: React.FC = () => {
           </div>
 
           <div className="kura-form-field">
+            <label htmlFor="kura-obj-material">{t(language, 'material.title')}</label>
+            <select
+              id="kura-obj-material"
+              className="kura-select"
+              value={currentMaterial}
+              onChange={(e) =>
+                setObjectMaterial(primary.id, e.target.value as MaterialPresetId)
+              }
+            >
+              {MATERIAL_IDS.map((matId) => (
+                <option key={matId} value={matId}>
+                  {language === 'en'
+                    ? MATERIAL_PRESETS[matId].labelEn
+                    : MATERIAL_PRESETS[matId].labelEs}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="kura-form-field">
             <label>{t(language, 'inspector.field.color')}</label>
             <div className="kura-swatch-row">
               {PRINT_COLOR_PALETTE.map((hex) => (
@@ -275,6 +500,8 @@ export const RightInspector: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {filamentLegendCard}
 
         {/* 2. Transformación en la unidad activa */}
         <section className="kura-card">
@@ -407,7 +634,214 @@ export const RightInspector: React.FC = () => {
           </div>
         </section>
 
-        {/* 4. Operaciones 3D determinísticas (Manifold) */}
+        {/* 4. Herramientas Maker Pro v3.0 */}
+        <section className="kura-card">
+          <h3 className="kura-section-label">{t(language, 'inspector.pro.title')}</h3>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm kura-btn-primary"
+              disabled={isBusy}
+              onClick={() => setActiveDialog('mold')}
+            >
+              <PaintBucket size={13} />
+              <span>{t(language, 'inspector.pro.mold')}</span>
+            </button>
+
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm"
+              disabled={isBusy || primary.locked}
+              onClick={() => setActiveDialog('project')}
+            >
+              <Type size={13} />
+              <span>{t(language, 'inspector.pro.project')}</span>
+            </button>
+
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm"
+              disabled={isBusy}
+              onClick={() => setActiveDialog('thread')}
+            >
+              <Bolt size={13} />
+              <span>{t(language, 'inspector.pro.thread')}</span>
+            </button>
+
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm"
+              disabled={isBusy}
+              onClick={() => runPrintabilityCheck(primary.id)}
+            >
+              <ShieldCheck size={13} style={{ color: 'var(--accent-green)' }} />
+              <span>{t(language, 'inspector.pro.validate')}</span>
+            </button>
+          </div>
+
+          {/* Tarjeta de resultados del Validador Estructural */}
+          {currentReport && (
+            <div className="kura-report-card">
+              <div className="kura-field-row">
+                <span className="kura-field-label">{t(language, 'inspector.pro.score')}</span>
+                <span
+                  className={`kura-score-pill ${
+                    currentReport.score >= 80
+                      ? 'is-good'
+                      : currentReport.score >= 55
+                        ? 'is-warn'
+                        : 'is-bad'
+                  }`}
+                >
+                  {currentReport.score}/100
+                </span>
+              </div>
+
+              <div className="kura-stats-grid">
+                <div className="kura-stat-box">
+                  <div className="kura-stat-title">{t(language, 'inspector.pro.weight')}</div>
+                  <div className="kura-stat-val">
+                    {currentReport.estimatedWeightGrams.toFixed(1)} g
+                  </div>
+                </div>
+                <div className="kura-stat-box">
+                  <div className="kura-stat-title">{t(language, 'inspector.pro.filament')}</div>
+                  <div className="kura-stat-val">
+                    {currentReport.estimatedFilamentMeters.toFixed(2)} m
+                  </div>
+                </div>
+                <div className="kura-stat-box">
+                  <div className="kura-stat-title">{t(language, 'inspector.pro.overhangs')}</div>
+                  <div className="kura-stat-val">
+                    {currentReport.overhangPercent.toFixed(1)}%
+                  </div>
+                </div>
+                <div className="kura-stat-box">
+                  <div className="kura-stat-title">{t(language, 'viewport.bedLabel')}</div>
+                  <div
+                    className={`kura-stat-val ${
+                      currentReport.fitsInBed && !currentReport.isFloating
+                        ? 'kura-badge-ok'
+                        : 'kura-badge-warn'
+                    }`}
+                  >
+                    {!currentReport.fitsInBed
+                      ? t(language, 'inspector.pro.outOfBed')
+                      : currentReport.isFloating
+                        ? t(language, 'inspector.pro.floating', {
+                            mm: currentReport.minYWorldMm.toFixed(1),
+                          })
+                        : t(language, 'inspector.pro.grounded')}
+                  </div>
+                </div>
+              </div>
+
+              {currentReport.overhangFaceCount > 0 && (
+                <button
+                  type="button"
+                  className={`kura-btn kura-btn-sm ${showOverhangs ? 'is-active' : ''}`}
+                  onClick={() => setShowOverhangs(!showOverhangs)}
+                >
+                  {showOverhangs ? <EyeOff size={13} /> : <Eye size={13} />}
+                  <span>
+                    {showOverhangs
+                      ? t(language, 'inspector.pro.hideOverhangs')
+                      : t(language, 'inspector.pro.showOverhangs')}
+                  </span>
+                </button>
+              )}
+
+              {currentReport.warnings.length > 0 ? (
+                <ul className="kura-warning-list">
+                  {currentReport.warnings.map((w, idx) => (
+                    <li key={idx}>{w}</li>
+                  ))}
+                </ul>
+              ) : (
+                <span style={{ fontSize: 11, color: 'var(--accent-green)' }}>
+                  {t(language, 'inspector.pro.noWarnings')}
+                </span>
+              )}
+            </div>
+          )}
+
+          <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', width: '100%' }} />
+
+          {/* Simplificar / Refinar Malla */}
+          <div className="kura-form-field">
+            <label>{t(language, 'inspector.pro.meshTitle')}</label>
+            <div className="kura-field-row">
+              <span className="kura-field-label">{t(language, 'inspector.pro.simplifyTol')}</span>
+              <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                <input
+                  type="number"
+                  className="kura-input"
+                  style={{ width: 68 }}
+                  min={0.01}
+                  max={5}
+                  step={0.05}
+                  value={simplifyTolMm}
+                  onChange={(e) => setSimplifyTolMm(Number(e.target.value))}
+                />
+                <button
+                  type="button"
+                  className="kura-btn kura-btn-sm"
+                  disabled={isBusy || primary.locked}
+                  onClick={() => void simplifySelectedMesh(primary.id, simplifyTolMm)}
+                >
+                  {t(language, 'inspector.pro.simplifyBtn')}
+                </button>
+              </div>
+            </div>
+
+            <div className="kura-field-row">
+              <span className="kura-field-label">{t(language, 'inspector.pro.refineEdge')}</span>
+              <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                <input
+                  type="number"
+                  className="kura-input"
+                  style={{ width: 68 }}
+                  min={0.2}
+                  max={10}
+                  step={0.2}
+                  value={refineEdgeMm}
+                  onChange={(e) => setRefineEdgeMm(Number(e.target.value))}
+                />
+                <button
+                  type="button"
+                  className="kura-btn kura-btn-sm"
+                  disabled={isBusy || primary.locked}
+                  onClick={() => void refineSelectedMesh(primary.id, refineEdgeMm, refineSmooth)}
+                >
+                  <Wand2 size={12} />
+                  <span>{t(language, 'inspector.pro.refineBtn')}</span>
+                </button>
+              </div>
+            </div>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5 }}>
+              <input
+                type="checkbox"
+                checked={refineSmooth}
+                onChange={(e) => setRefineSmooth(e.target.checked)}
+              />
+              <span>{t(language, 'inspector.pro.refineSmooth')}</span>
+            </label>
+
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm"
+              disabled={isBusy}
+              onClick={() => void runConvexHull([primary.id])}
+            >
+              <Box size={13} />
+              <span>{t(language, 'inspector.pro.hull')}</span>
+            </button>
+          </div>
+        </section>
+
+        {/* 5. Operaciones 3D determinísticas (Manifold) + Módulos Dinámicos */}
         <section className="kura-card">
           <div className="kura-field-row" style={{ marginBottom: 2 }}>
             <h3 className="kura-section-label" style={{ margin: 0 }}>
@@ -422,31 +856,65 @@ export const RightInspector: React.FC = () => {
             </span>
           </div>
 
-          {/* Estructura rápida de resta en 1 clic */}
+          {/* Módulos dinámicos (+ / −) para cualquier forma o STL/3MF importado */}
           <div className="kura-form-field">
-            <label>{t(language, 'inspector.op.quickSubtractTitle')}</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            <label htmlFor="kura-modular-shape">{t(language, 'inspector.op.modularTitle')}</label>
+            <div className="kura-modular-picker">
+              <select
+                id="kura-modular-shape"
+                className="kura-select"
+                value={modularShape}
+                onChange={(e) => setModularShape(e.target.value as PrimitiveType)}
+              >
+                {MODULAR_PRIMITIVES.map((shape) => (
+                  <option key={shape} value={shape}>
+                    {t(language, `sidebar.primitive.${shape}`)}
+                  </option>
+                ))}
+              </select>
               <button
                 type="button"
-                className="kura-btn kura-btn-sm"
+                className="kura-btn kura-btn-sm kura-btn-primary"
                 disabled={isBusy}
-                title={t(language, 'inspector.op.subtractSphereTip')}
-                onClick={() => void addSubtractHelperPrimitive('sphere', primary.id)}
+                onClick={() => void addModularPrimitive(modularShape, 'positive', primary.id)}
+                title={t(language, 'inspector.op.modularAdd')}
               >
-                <MinusCircle size={13} />
-                <span>{t(language, 'inspector.op.subtractSphere')}</span>
+                <PlusCircle size={13} />
+                <span>+</span>
               </button>
               <button
                 type="button"
-                className="kura-btn kura-btn-sm"
+                className="kura-btn kura-btn-sm kura-btn-amber"
                 disabled={isBusy}
-                title={t(language, 'inspector.op.subtractCylinderTip')}
-                onClick={() => void addSubtractHelperPrimitive('cylinder', primary.id)}
+                onClick={() => void addModularPrimitive(modularShape, 'negative', primary.id)}
+                title={t(language, 'inspector.op.modularSub')}
               >
                 <MinusCircle size={13} />
-                <span>{t(language, 'inspector.op.subtractCylinder')}</span>
+                <span>−</span>
               </button>
             </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 4 }}>
+              <button
+                type="button"
+                className="kura-btn kura-btn-sm"
+                disabled={isBusy}
+                onClick={() => void importModelAsModuleFromDialog('positive', primary.id)}
+              >
+                <FileUp size={12} />
+                <span>{t(language, 'inspector.op.importModuleAdd')}</span>
+              </button>
+              <button
+                type="button"
+                className="kura-btn kura-btn-sm"
+                disabled={isBusy}
+                onClick={() => void importModelAsModuleFromDialog('negative', primary.id)}
+              >
+                <FileUp size={12} style={{ color: 'var(--accent-amber)' }} />
+                <span>{t(language, 'inspector.op.importModuleSub')}</span>
+              </button>
+            </div>
+
             {hasAnyHoles && solidCount > 0 && (
               <button
                 type="button"
@@ -622,22 +1090,6 @@ export const RightInspector: React.FC = () => {
               <span>{t(language, 'inspector.op.applyTexture')}</span>
             </button>
           </div>
-
-          {hasAnyHoles ? (
-            <button
-              type="button"
-              className="kura-btn kura-btn-sm kura-btn-amber"
-              disabled={isBusy}
-              onClick={() => void applyHolesOnSolids()}
-            >
-              <Combine size={13} />
-              <span>{t(language, 'inspector.op.applyHoles')}</span>
-            </button>
-          ) : (
-            <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>
-              {t(language, 'inspector.op.needTwoObjects')}
-            </p>
-          )}
         </section>
       </div>
     </aside>

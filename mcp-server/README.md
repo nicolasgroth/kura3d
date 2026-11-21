@@ -41,7 +41,7 @@ El servidor MCP de Kura3D está ligado estrictamente a `127.0.0.1` y valida orí
 | :--- | :--- | :--- |
 | `KURA_BRIDGE_PORT` | `17432` | Puerto TCP local del puente WebSocket en `127.0.0.1`. |
 | `KURA_BRIDGE_TOKEN` | *(vacío)* | Token secreto compartido. Si se define, exige `Authorization: Bearer <token>` o `?token=<token>` en el handshake WebSocket (comparación en tiempo constante, rechazando con HTTP `401`). |
-| `KURA_BRIDGE_READ_ONLY` | `false` | Si es `true`, habilita el **modo Solo Lectura**: solo permite `kura_get_scene_state` y `kura_capture_viewport`, bloqueando cualquier modificación o exportación. |
+| `KURA_BRIDGE_READ_ONLY` | `false` | Si es `true`, habilita el **modo Solo Lectura**: solo permite `kura_get_scene_state`, `kura_capture_viewport` y `kura_analyze_printability`, bloqueando cualquier modificación o exportación. |
 | `KURA_BRIDGE_RATE_LIMIT` | `120` | Máximo de comandos permitidos por minuto en ventana deslizante de 60 segundos. |
 
 ---
@@ -114,7 +114,7 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 
 ---
 
-## Catálogo de Herramientas MCP (`kura_*`)
+## Catálogo de Herramientas MCP (`kura_*` — 26 herramientas)
 
 | Herramienta | Descripción |
 | :--- | :--- |
@@ -131,10 +131,19 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 | `kura_paint_object` | Pinta un objeto con un color hexadecimal (`#rrggbb`). |
 | `kura_import_svg` | Extruye contenido vectorial SVG a un sólido 3D. |
 | `kura_set_units` | Cambia unidades de visualización (`mm`, `cm`, `m`, `in`, `ft`). |
-| `kura_set_printer_profile` | Activa un perfil de cama (`elegoo-centauri-carbon-2`, `generic-220`, `generic-300`, `free-studio`). |
+| `kura_set_printer_profile` | Activa uno de los 12 perfiles multi-marca (`elegoo-centauri-carbon-2`, `elegoo-centauri-carbon-1`, `bambu-p1s-x1c-a1`, `bambu-a1-mini`, `bambu-h2d`, `snapmaker-artisan`, `snapmaker-j1s`, `flashforge-ad5m`, `flashforge-ad5x`, `generic-220`, `generic-300`, `free-studio`). |
 | `kura_export_stl` | Exporta un archivo `.stl` binario o ASCII directamente en disco. |
-| `kura_export_3mf` | Exporta un paquete `.3mf` estándar directamente en disco. |
+| `kura_export_3mf` | Exporta un paquete `.3mf` Multi-Slicer Pro con `Metadata/model_settings.config` (`generic`, `elegoo`, `bambu`, `snapmaker`, `flashforge`). |
 | `kura_capture_viewport` | Captura una imagen PNG del viewport 3D en modo Live Bridge. |
+| `kura_generate_mold` | *(Pro)* Genera moldes/contra-moldes (`direct_1part`, `direct_2part`, `silicone_master`, `core_cavity`) con llaves y embudo. |
+| `kura_project_on_surface` | *(Pro)* Proyecta texto o SVG sobre una superficie o cilindro (`emboss`, `deboss`, `flush_inlay`). |
+| `kura_analyze_printability` | *(Pro · Solo Lectura)* Analiza encaje en cama, contacto `Y=0`, voladizos, volumen, peso en gramos y advertencias. |
+| `kura_simplify_mesh` | *(Pro)* Simplifica la densidad de triángulos según tolerancia geométrica en mm. |
+| `kura_refine_mesh` | *(Pro)* Refina/subdivide aristas de la malla con suavizado opcional. |
+| `kura_create_thread` | *(Pro)* Crea roscas métricas ISO (`bolt`, `nut`, `hole`) con diámetro, paso, longitud y holgura. |
+| `kura_convex_hull` | *(Pro)* Genera la envolvente convexa cerrada de uno o más objetos. |
+| `kura_align_objects` | *(Pro)* Alinea objetos (`minX`..`maxZ`) o los distribuye en grilla sobre la cama (`arrange_grid`). |
+| `kura_set_material` | *(Pro)* Asigna un preset de material físico/visual PBR (`pla_matte`, `pla_silk`, `petg_clear`, `abs`, `carbon_fiber`, `silicone`, `wax_candle`, `metallic`). |
 
 ### Recursos MCP expuestos
 

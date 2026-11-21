@@ -455,7 +455,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
     {
       title: 'Seleccionar perfil de impresora 3D',
       description:
-        'Establece el volumen de cama y perfil activo (elegoo-centauri-carbon-2, generic-220, generic-300 o free-studio).',
+        'Establece el volumen de cama y perfil activo entre los 12 presets multi-marca (elegoo-centauri-carbon-2, elegoo-centauri-carbon-1, bambu-p1s-x1c-a1, bambu-a1-mini, bambu-h2d, snapmaker-artisan, snapmaker-j1s, flashforge-ad5m, flashforge-ad5x, generic-220, generic-300 o free-studio).',
       inputSchema: {
         profileId: z.string().describe('ID del perfil de impresora a activar.'),
       },
@@ -525,16 +525,20 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
     }
   );
 
-  // 16. Exportar 3MF
+  // 16. Exportar 3MF Multi-Slicer Pro
   server.registerTool(
     'kura_export_3mf',
     {
-      title: 'Exportar escena a archivo 3MF',
+      title: 'Exportar escena a archivo 3MF Multi-Slicer',
       description:
-        'Exporta los objetos indicados (o toda la escena visible) en formato estándar 3MF para laminadores modernos.',
+        'Exporta los objetos indicados (o toda la escena visible) en formato estándar 3MF con Metadata/model_settings.config para el laminador destino (generic, elegoo, bambu, snapmaker, flashforge).',
       inputSchema: {
         outputPath: z.string().describe('Ruta destino del archivo .3mf en disco.'),
         objectIds: z.array(z.string()).optional().describe('IDs específicos a exportar (opcional).'),
+        slicerTarget: z
+          .enum(['generic', 'elegoo', 'bambu', 'snapmaker', 'flashforge'])
+          .optional()
+          .describe('Laminador destino para metadatos 3MF (generic, elegoo, bambu, snapmaker, flashforge).'),
       },
     },
     async (args) => {
@@ -563,6 +567,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
             return okJson({
               mode: 'live-bridge',
               path: resolved,
+              slicerTarget: args.slicerTarget ?? 'generic',
               bytesWritten: buffer.byteLength,
             });
           }
@@ -572,6 +577,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
         const result = await ctx.headless.export3mf({
           outputPath: args.outputPath,
           objectIds: args.objectIds,
+          slicerTarget: args.slicerTarget,
         });
         return okJson(result);
       } catch (err) {
@@ -641,6 +647,339 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
         return failText(err instanceof Error ? err.message : String(err));
       }
     }
+  );
+
+  // 18. Generador automático de moldes y contra-moldes
+  server.registerTool(
+    'kura_generate_mold',
+    {
+      title: 'Generar molde o contra-molde 3D',
+      description:
+        'Genera automáticamente un molde o contra-molde de 1 parte, 2 partes con llaves, caja maestra para silicona o núcleo-cavidad a partir de un objeto maestro.',
+      inputSchema: {
+        objectId: z.string().describe('ID del objeto maestro a partir del cual se genera el molde.'),
+        mode: z
+          .enum(['direct_1part', 'direct_2part', 'silicone_master', 'core_cavity'])
+          .describe('Modo de generación del molde.'),
+        wallMarginMm: z
+          .number()
+          .positive()
+          .default(6)
+          .describe('Margen de pared exterior del molde en mm (o espesor de silicona).'),
+        boxWallMm: z
+          .number()
+          .positive()
+          .default(3)
+          .describe('Grosor de pared de la caja madre contenedora en mm.'),
+        splitAxis: z
+          .enum(['x', 'z'])
+          .default('x')
+          .describe('Eje de partición para moldes de dos mitades.'),
+        pourSpout: z
+          .boolean()
+          .default(true)
+          .describe('Si es true, agrega embudo/canal de vertido superior.'),
+        pourSpoutRadiusMm: z
+          .number()
+          .positive()
+          .default(5)
+          .optional()
+          .describe('Radio del embudo de vertido en mm.'),
+        keyToleranceMm: z
+          .number()
+          .min(0)
+          .default(0.25)
+          .describe('Holgura de encaje para llaves de registro en mm.'),
+        cavityWallMm: z
+          .number()
+          .positive()
+          .default(3)
+          .describe('Espesor de pared de la pieza colada en modo core_cavity (mm).'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(
+        ctx,
+        'generate_mold',
+        { ...args, id: args.objectId },
+        () =>
+          ctx.headless.generateMold(args.objectId, {
+            mode: args.mode,
+            wallMarginMm: args.wallMarginMm,
+            boxWallMm: args.boxWallMm,
+            splitAxis: args.splitAxis,
+            pourSpout: args.pourSpout,
+            pourSpoutRadiusMm: args.pourSpoutRadiusMm,
+            keyToleranceMm: args.keyToleranceMm,
+            cavityWallMm: args.cavityWallMm,
+          })
+      )
+  );
+
+  // 19. Proyección conformal de texto o SVG sobre superficie 3D
+  server.registerTool(
+    'kura_project_on_surface',
+    {
+      title: 'Proyectar texto o SVG sobre superficie 3D',
+      description:
+        'Proyecta texto o gráficos SVG sobre una cara o cilindro del objeto en modo relieve (emboss), grabado (deboss) o incrustación multicolor a ras (flush_inlay).',
+      inputSchema: {
+        objectId: z.string().describe('ID del objeto objetivo.'),
+        kind: z.enum(['text', 'svg']).describe('Tipo de gráfico a proyectar.'),
+        text: z.string().optional().describe('Texto a proyectar cuando kind === "text".'),
+        svgContent: z.string().optional().describe('Contenido XML SVG cuando kind === "svg".'),
+        mode: z
+          .enum(['emboss', 'deboss', 'flush_inlay'])
+          .describe('Modo de aplicación superficial.'),
+        axis: z
+          .enum(['+z', '-z', '+x', '-x', '+y', '-y', 'cylindrical'])
+          .default('+z')
+          .describe('Dirección o envoltura cilíndrica de proyección.'),
+        widthMm: z.number().positive().default(24).describe('Ancho proyectado en mm.'),
+        depthMm: z.number().positive().default(1.2).describe('Profundidad de relieve/grabado en mm.'),
+        colorHex: z
+          .string()
+          .regex(/^#[0-9a-fA-F]{6}$/)
+          .default('#f97316')
+          .describe('Color hexadecimal (#rrggbb) para la proyección o incrustación.'),
+        offsetU: z.number().optional().describe('Desplazamiento horizontal local en mm.'),
+        offsetV: z.number().optional().describe('Desplazamiento vertical local en mm.'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(
+        ctx,
+        'project_on_surface',
+        { ...args, id: args.objectId },
+        () =>
+          ctx.headless.projectOnSurface(args.objectId, {
+            kind: args.kind,
+            text: args.text,
+            svgContent: args.svgContent,
+            mode: args.mode,
+            axis: args.axis,
+            widthMm: args.widthMm,
+            depthMm: args.depthMm,
+            colorHex: args.colorHex,
+            offsetU: args.offsetU,
+            offsetV: args.offsetV,
+          })
+      )
+  );
+
+  // 20. Validador estructural de imprimibilidad 3D (permitido en modo Solo Lectura)
+  server.registerTool(
+    'kura_analyze_printability',
+    {
+      title: 'Analizar imprimibilidad 3D',
+      description:
+        'Evalúa encaje en la cama activa, contacto con el plano Y=0, voladizos críticos, volumen, peso estimado y advertencias de impresión. Seguro en modo Solo Lectura.',
+      inputSchema: {
+        objectId: z.string().describe('ID del objeto a inspeccionar.'),
+        materialPreset: z
+          .enum([
+            'pla_matte',
+            'pla_silk',
+            'petg_clear',
+            'abs',
+            'carbon_fiber',
+            'silicone',
+            'wax_candle',
+            'metallic',
+          ])
+          .optional()
+          .describe('Material para el cálculo de peso (por defecto el asignado al objeto o pla_matte).'),
+        infillPercent: z
+          .number()
+          .min(0)
+          .max(100)
+          .default(20)
+          .describe('Porcentaje de relleno estimado (0 a 100).'),
+        overhangAngleDeg: z
+          .number()
+          .min(10)
+          .max(85)
+          .default(45)
+          .describe('Ángulo máximo de voladizo sin soporte en grados.'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(
+        ctx,
+        'analyze_printability',
+        { ...args, id: args.objectId },
+        () =>
+          ctx.headless.analyzePrintability(args.objectId, {
+            materialPreset: args.materialPreset,
+            infillPercent: args.infillPercent,
+            overhangAngleDeg: args.overhangAngleDeg,
+          })
+      )
+  );
+
+  // 21. Simplificación adaptativa de malla
+  server.registerTool(
+    'kura_simplify_mesh',
+    {
+      title: 'Simplificar malla 3D',
+      description: 'Reduce la densidad de triángulos respetando la tolerancia geométrica en mm.',
+      inputSchema: {
+        objectId: z.string().describe('ID del objeto a simplificar.'),
+        toleranceMm: z
+          .number()
+          .positive()
+          .default(0.1)
+          .describe('Tolerancia máxima de desviación geométrica en mm.'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(
+        ctx,
+        'simplify_mesh',
+        { ...args, id: args.objectId },
+        () => ctx.headless.simplifyMesh(args.objectId, args.toleranceMm)
+      )
+  );
+
+  // 22. Refinamiento / subdivisión de malla
+  server.registerTool(
+    'kura_refine_mesh',
+    {
+      title: 'Refinar malla 3D',
+      description: 'Subdivide y suaviza opcionalmente la malla hasta la longitud de arista objetivo en mm.',
+      inputSchema: {
+        objectId: z.string().describe('ID del objeto a refinar.'),
+        targetEdgeLengthMm: z
+          .number()
+          .positive()
+          .default(1.5)
+          .describe('Longitud máxima de arista objetivo en milímetros.'),
+        smooth: z.boolean().default(true).describe('Activa suavizado superficial durante el refinado.'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(
+        ctx,
+        'refine_mesh',
+        { ...args, id: args.objectId },
+        () => ctx.headless.refineMesh(args.objectId, args.targetEdgeLengthMm, args.smooth)
+      )
+  );
+
+  // 23. Generador paramétrico de roscas métricas ISO
+  server.registerTool(
+    'kura_create_thread',
+    {
+      title: 'Crear rosca métrica ISO 3D',
+      description:
+        'Genera un perno roscado, tuerca hexagonal o cavidad roscada negativa con holgura calibrada para impresión 3D.',
+      inputSchema: {
+        kind: z.enum(['bolt', 'nut', 'hole']).describe('Tipo de elemento roscado.'),
+        diameterMm: z.number().min(2).max(100).default(8).describe('Diámetro nominal métrico en mm (ej. 8 para M8).'),
+        pitchMm: z.number().min(0.3).max(10).default(1.25).describe('Paso de rosca en mm.'),
+        lengthMm: z.number().min(2).max(300).default(20).describe('Longitud roscada en mm.'),
+        clearanceMm: z.number().min(0).max(2).default(0.25).describe('Holgura radial de impresión en mm.'),
+        includeHead: z.boolean().optional().describe('Incluir cabeza hexagonal cuando kind === "bolt".'),
+        name: z.string().optional().describe('Nombre opcional de la pieza generada.'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(ctx, 'create_thread', args, () =>
+        ctx.headless.createThread({
+          kind: args.kind,
+          diameterMm: args.diameterMm,
+          pitchMm: args.pitchMm,
+          lengthMm: args.lengthMm,
+          clearanceMm: args.clearanceMm,
+          includeHead: args.includeHead,
+          name: args.name,
+        })
+      )
+  );
+
+  // 24. Envolvente convexa (Convex Hull)
+  server.registerTool(
+    'kura_convex_hull',
+    {
+      title: 'Generar envolvente convexa (Convex Hull)',
+      description: 'Crea un sólido cerrado que envuelve convexamente a uno o varios objetos seleccionados.',
+      inputSchema: {
+        objectIds: z.array(z.string()).min(1).describe('Lista de IDs de objetos a envolver.'),
+        name: z.string().optional().describe('Nombre opcional del objeto resultante.'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(ctx, 'convex_hull', args, () =>
+        ctx.headless.convexHull(args.objectIds, args.name)
+      )
+  );
+
+  // 25. Alineación inteligente y distribución en cama
+  server.registerTool(
+    'kura_align_objects',
+    {
+      title: 'Alinear o distribuir objetos en cama',
+      description:
+        'Alinea múltiples objetos según bordes o centros (min/center/max en X/Y/Z) o los distribuye automáticamente en grilla sobre la cama.',
+      inputSchema: {
+        objectIds: z.array(z.string()).min(1).describe('IDs de los objetos a alinear o distribuir.'),
+        mode: z
+          .enum([
+            'minX',
+            'centerX',
+            'maxX',
+            'minY',
+            'centerY',
+            'maxY',
+            'minZ',
+            'centerZ',
+            'maxZ',
+            'arrange_grid',
+          ])
+          .describe('Modo de alineación o distribución en grilla.'),
+        spacingMm: z
+          .number()
+          .min(0)
+          .optional()
+          .describe('Separación en mm entre piezas cuando mode === "arrange_grid".'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(ctx, 'align_objects', args, () =>
+        ctx.headless.alignObjects(args.objectIds, args.mode, args.spacingMm)
+      )
+  );
+
+  // 26. Asignación de preset de material PBR físico/visual
+  server.registerTool(
+    'kura_set_material',
+    {
+      title: 'Asignar material PBR al objeto',
+      description:
+        'Establece el preset de material físico/visual del objeto (pla_matte, pla_silk, petg_clear, abs, carbon_fiber, silicone, wax_candle, metallic).',
+      inputSchema: {
+        objectId: z.string().describe('ID del objeto.'),
+        materialPreset: z
+          .enum([
+            'pla_matte',
+            'pla_silk',
+            'petg_clear',
+            'abs',
+            'carbon_fiber',
+            'silicone',
+            'wax_candle',
+            'metallic',
+          ])
+          .describe('Identificador del preset de material PBR.'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(
+        ctx,
+        'set_material',
+        { ...args, id: args.objectId },
+        () => ctx.headless.setMaterial(args.objectId, args.materialPreset)
+      )
   );
 
   /* ------------------------------------------------------------------------ */

@@ -54,3 +54,22 @@ export {
   importOBJText,
   importSTLBuffer,
 } from './ioFormats';
+
+export { generateMold, type GeneratedMoldPart } from './molds';
+
+export { projectGraphicOntoSurface } from './surfaceProjection';
+
+export {
+  analyzePrintability,
+  computeConvexHull,
+  refineMesh,
+  simplifyMesh,
+} from './analysis';
+
+export {
+  createMetricThread,
+  generateCylindricalLithophane,
+  generateSilhouetteOrCutterFromImage,
+} from './generators';
+
+export { computeAlignmentPositions } from './alignment';

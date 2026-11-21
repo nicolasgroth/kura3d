@@ -37,6 +37,15 @@ const EXPECTED_TOOLS = [
   'kura_export_stl',
   'kura_export_3mf',
   'kura_capture_viewport',
+  'kura_generate_mold',
+  'kura_project_on_surface',
+  'kura_analyze_printability',
+  'kura_simplify_mesh',
+  'kura_refine_mesh',
+  'kura_create_thread',
+  'kura_convex_hull',
+  'kura_align_objects',
+  'kura_set_material',
 ];
 
 async function setupInMemoryPair(
@@ -72,6 +81,8 @@ describe('Kura3D MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
+    expect(EXPECTED_TOOLS).toHaveLength(26);
+    expect(toolNames).toHaveLength(26);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }
@@ -178,15 +189,21 @@ describe('Kura3D MCP Server', () => {
     }
     expect(maxStlZ).toBeCloseTo(40, 3);
 
-    // 6. Exportar 3MF y validar contenedor ZIP/OPC
+    // 6. Exportar 3MF Multi-Slicer para Bambu Studio y validar contenedor ZIP/OPC + Metadata/model_settings.config
     const threeMfPath = join(tempDir, 'modelo_prueba.3mf');
-    await client.callTool({
+    const exportMfRes = await client.callTool({
       name: 'kura_export_3mf',
-      arguments: { outputPath: threeMfPath },
+      arguments: { outputPath: threeMfPath, slicerTarget: 'bambu' },
     });
+    const exportMfJson = JSON.parse((exportMfRes.content[0] as { text: string }).text);
+    expect(exportMfJson.slicerTarget).toBe('bambu');
+
     const mfBytes = await readFile(threeMfPath);
+    const mfText = mfBytes.toString('utf8');
     expect(mfBytes.subarray(0, 4).toString('binary')).toBe('PK\x03\x04');
-    expect(mfBytes.toString('utf8')).toContain('3D/3dmodel.model');
+    expect(mfText).toContain('3D/3dmodel.model');
+    expect(mfText).toContain('Metadata/model_settings.config');
+    expect(mfText).toContain('value="bambu"');
   });
 
   it('valida orígenes locales permitidos y rechaza orígenes remotos en el puente WebSocket', async () => {
@@ -367,8 +384,8 @@ describe('Kura3D MCP Server', () => {
     expect(validBearer.ok).toBe(true);
   });
 
-  it('bloquea mutaciones en modo Solo Lectura y expone postura de seguridad en kura://info/about', async () => {
-    const { client, server, bridge } = await setupInMemoryPair({
+  it('bloquea mutaciones en modo Solo Lectura, permite analyze_printability y expone postura de seguridad en kura://info/about', async () => {
+    const { client, server, bridge, headless } = await setupInMemoryPair({
       bridgePort: 0,
       authToken: 'token-ro',
       readOnly: true,
@@ -376,23 +393,55 @@ describe('Kura3D MCP Server', () => {
     await bridge.start();
     expect(bridge.isReadOnly()).toBe(true);
 
+    const seeded = headless.createPrimitive({
+      primitiveType: 'box',
+      name: 'PiezaInspeccion',
+      params: { width: 30, height: 15, depth: 20 },
+    });
+
     cleanupTasks.push(async () => {
       await client.close();
       await server.close();
       await bridge.close();
     });
 
-    // Lectura permitida
+    // Lectura e inspección de imprimibilidad permitidas
     const stateRes = await client.callTool({ name: 'kura_get_scene_state', arguments: {} });
     expect(stateRes.isError).not.toBe(true);
 
-    // Mutación bloqueada
+    const printRes = await client.callTool({
+      name: 'kura_analyze_printability',
+      arguments: { objectId: seeded.id, materialPreset: 'pla_matte', infillPercent: 25 },
+    });
+    expect(printRes.isError).not.toBe(true);
+    const printJson = JSON.parse((printRes.content[0] as { text: string }).text);
+    expect(printJson.objectId).toBe(seeded.id);
+    expect(printJson.fitsInBed).toBe(true);
+    expect(printJson.estimatedWeightGrams).toBeGreaterThan(0);
+
+    // Mutación bloqueada (incluyendo generación de moldes Pro)
     const createRes = await client.callTool({
       name: 'kura_create_primitive',
       arguments: { primitiveType: 'box' },
     });
     expect(createRes.isError).toBe(true);
     expect((createRes.content[0] as { text: string }).text).toContain('Solo Lectura');
+
+    const moldRes = await client.callTool({
+      name: 'kura_generate_mold',
+      arguments: {
+        objectId: seeded.id,
+        mode: 'direct_2part',
+        wallMarginMm: 6,
+        boxWallMm: 3,
+        splitAxis: 'x',
+        pourSpout: true,
+        keyToleranceMm: 0.25,
+        cavityWallMm: 3,
+      },
+    });
+    expect(moldRes.isError).toBe(true);
+    expect((moldRes.content[0] as { text: string }).text).toContain('Solo Lectura');
 
     // Exportación también bloqueada en modo Solo Lectura
     const exportRes = await client.callTool({
@@ -408,6 +457,107 @@ describe('Kura3D MCP Server', () => {
     expect(aboutJson.authEnabled).toBe(true);
     expect(aboutJson.readOnly).toBe(true);
     expect(aboutJson.port).toBe(bridge.getPort());
+  });
+
+  it('soporta herramientas Pro v3.0 en modo headless y los 12 perfiles multi-marca', async () => {
+    const { client, server, bridge } = await setupInMemoryPair();
+    cleanupTasks.push(async () => {
+      await client.close();
+      await server.close();
+      await bridge.close();
+    });
+
+    // Perfil multi-marca Bambu Lab H2D y FlashForge AD5X
+    const profileRes = await client.callTool({
+      name: 'kura_set_printer_profile',
+      arguments: { profileId: 'bambu-h2d' },
+    });
+    const profileJson = JSON.parse((profileRes.content[0] as { text: string }).text);
+    expect(profileJson.printerProfile.brand).toBe('bambu');
+    expect(profileJson.printerProfile.bedWidthMm).toBe(350);
+
+    // Crear rosca M8 y asignar material PBR
+    const boltRes = await client.callTool({
+      name: 'kura_create_thread',
+      arguments: {
+        kind: 'bolt',
+        diameterMm: 8,
+        pitchMm: 1.25,
+        lengthMm: 20,
+        clearanceMm: 0.25,
+      },
+    });
+    const boltJson = JSON.parse((boltRes.content[0] as { text: string }).text);
+    expect(boltJson.source).toBe('thread');
+
+    const matRes = await client.callTool({
+      name: 'kura_set_material',
+      arguments: { objectId: boltJson.id, materialPreset: 'carbon_fiber' },
+    });
+    const matJson = JSON.parse((matRes.content[0] as { text: string }).text);
+    expect(matJson.materialPreset).toBe('carbon_fiber');
+
+    // Crear segunda pieza, alinear en grilla, proyectar texto y generar molde
+    const boxRes = await client.callTool({
+      name: 'kura_create_primitive',
+      arguments: { primitiveType: 'box', params: { width: 30, height: 12, depth: 30 } },
+    });
+    const boxJson = JSON.parse((boxRes.content[0] as { text: string }).text);
+
+    const alignRes = await client.callTool({
+      name: 'kura_align_objects',
+      arguments: { objectIds: [boltJson.id, boxJson.id], mode: 'arrange_grid' },
+    });
+    const alignJson = JSON.parse((alignRes.content[0] as { text: string }).text);
+    expect(alignJson.objects).toHaveLength(2);
+
+    const hullRes = await client.callTool({
+      name: 'kura_convex_hull',
+      arguments: { objectIds: [boltJson.id, boxJson.id] },
+    });
+    const hullJson = JSON.parse((hullRes.content[0] as { text: string }).text);
+    expect(hullJson.object.source).toBe('hull');
+
+    const projRes = await client.callTool({
+      name: 'kura_project_on_surface',
+      arguments: {
+        objectId: boxJson.id,
+        kind: 'text',
+        text: 'KURA',
+        mode: 'flush_inlay',
+        axis: '+z',
+        widthMm: 18,
+        depthMm: 1,
+        colorHex: '#f97316',
+      },
+    });
+    const projJson = JSON.parse((projRes.content[0] as { text: string }).text);
+    expect(projJson.object.source).toBe('projected');
+
+    const moldRes = await client.callTool({
+      name: 'kura_generate_mold',
+      arguments: {
+        objectId: boxJson.id,
+        mode: 'direct_2part',
+        wallMarginMm: 5,
+        boxWallMm: 3,
+        splitAxis: 'x',
+        pourSpout: true,
+        keyToleranceMm: 0.25,
+        cavityWallMm: 3,
+      },
+    });
+    const moldJson = JSON.parse((moldRes.content[0] as { text: string }).text);
+    expect(moldJson.parts).toHaveLength(2);
+
+    const printReportRes = await client.callTool({
+      name: 'kura_analyze_printability',
+      arguments: { objectId: boltJson.id, materialPreset: 'carbon_fiber', infillPercent: 40 },
+    });
+    const printReport = JSON.parse((printReportRes.content[0] as { text: string }).text);
+    expect(printReport.fitsInBed).toBe(true);
+    expect(printReport.volumeCm3).toBeGreaterThan(0);
+    expect(printReport.estimatedWeightGrams).toBeGreaterThan(0);
   });
 
   it('aplica rate limiting por minuto rechazando llamadas sobre el umbral configurado', async () => {

@@ -1,8 +1,10 @@
 /**
  * @file src/components/Dialogs.tsx
- * @description Modales nativos <dialog> de Kura3D abiertos con showModal() y soporte
+ * @description Modales nativos <dialog> de Kura3D Pro v3.0 abiertos con showModal() y soporte
  * de light-dismiss (`closedby="any"` + fallback pointer para WebKit/Safari):
- * Importar SVG, Imagen→3D Relieve/Litofanía, Corte por Plano con Conectores, y Ajustes/MCP.
+ * Importar SVG, Imagen→3D (Plana, Cilíndrica, Silueta y Cortador), Corte por Plano,
+ * Generador de Moldes/Silicona, Proyección Conformal en Superficies, Roscas Métricas ISO,
+ * Exportador 3MF Multi-Slicer Pro y Ajustes/MCP.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -10,28 +12,39 @@
 
 import React, { useEffect, useId, useRef, useState } from 'react';
 import {
+  Bolt,
   Check,
   Cloud,
   Copy,
+  Download,
   FileUp,
+  PaintBucket,
   RefreshCw,
   Scissors,
   ShieldCheck,
   Sparkles,
+  Type,
   X,
 } from 'lucide-react';
 import { t } from '../i18n';
 import { type ActiveDialogType, useKuraStore } from '../store/useKuraStore';
-import type {
-  AiProviderType,
-  ColorSchemePreference,
-  CutConnectorType,
-  PlaneCutOptions,
+import {
+  PRINT_COLOR_PALETTE,
+  type AiProviderType,
+  type ColorSchemePreference,
+  type CutConnectorType,
+  type ImageTo3DOptions,
+  type MoldMode,
+  type PlaneCutOptions,
+  type SlicerTarget,
+  type SurfaceProjectionAxis,
+  type SurfaceProjectionMode,
+  type ThreadOptions,
 } from '../types/kura';
 import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
 import { openLocalFile } from '../utils/platformBridge';
 
-/** Presets SVG vectoriales incorporados para probar extrusión 3D al instante. */
+/** Presets SVG vectoriales incorporados para probar extrusión y proyección 3D al instante. */
 const SVG_PRESETS: Record<'star' | 'badge' | 'gear', string> = {
   star: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <polygon points="50,6 63,36 96,38 71,60 79,92 50,74 21,92 29,60 4,38 37,36" fill="#38bdf8"/>
@@ -43,6 +56,17 @@ const SVG_PRESETS: Record<'star' | 'badge' | 'gear', string> = {
   <path d="M44 6 H56 L58 18 A34 34 0 0 1 68 22 L78 14 L86 22 L78 32 A34 34 0 0 1 82 42 L94 44 V56 L82 58 A34 34 0 0 1 78 68 L86 78 L78 86 L68 78 A34 34 0 0 1 58 82 L56 94 H44 L42 82 A34 34 0 0 1 32 78 L22 86 L14 78 L22 68 A34 34 0 0 1 18 58 L6 56 V44 L18 42 A34 34 0 0 1 22 32 L14 22 L22 14 L32 22 A34 34 0 0 1 42 18 Z M50 34 A16 16 0 1 0 50 66 A16 16 0 1 0 50 34 Z" fill="#f97316" fill-rule="evenodd"/>
 </svg>`,
 };
+
+/** Presets métricos ISO estándar (diámetro mm y paso grueso estándar en mm). */
+const ISO_THREAD_PRESETS: Array<{ label: string; diameterMm: number; pitchMm: number }> = [
+  { label: 'M4', diameterMm: 4, pitchMm: 0.7 },
+  { label: 'M6', diameterMm: 6, pitchMm: 1.0 },
+  { label: 'M8', diameterMm: 8, pitchMm: 1.25 },
+  { label: 'M10', diameterMm: 10, pitchMm: 1.5 },
+  { label: 'M12', diameterMm: 12, pitchMm: 1.75 },
+  { label: 'M16', diameterMm: 16, pitchMm: 2.0 },
+  { label: 'M20', diameterMm: 20, pitchMm: 2.5 },
+];
 
 /**
  * Wrapper reutilizable sobre <dialog> nativo con showModal(), `closedby="any"`
@@ -278,7 +302,7 @@ const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   );
 };
 
-/** Modal 2: Imagen → Relieve 3D / Litofanía. */
+/** Modal 2: Imagen → 3D (Relieve plano, Litofanía Cilíndrica Curva, Silueta 3D y Cortador/Sello). */
 const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
   onClose,
@@ -287,6 +311,7 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const generateImageRelief = useKuraStore((s) => s.generateImageRelief);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const [shapeMode, setShapeMode] = useState<NonNullable<ImageTo3DOptions['shapeMode']>>('flat');
   const [name, setName] = useState('Relieve 3D');
   const [widthMm, setWidthMm] = useState(70);
   const [depthMm, setDepthMm] = useState(70);
@@ -294,6 +319,10 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const [reliefHeightMm, setReliefHeightMm] = useState(3.2);
   const [smoothing, setSmoothing] = useState(1);
   const [invert, setInvert] = useState(false);
+  const [cylinderRadiusMm, setCylinderRadiusMm] = useState(42);
+  const [arcDegrees, setArcDegrees] = useState(180);
+  const [threshold, setThreshold] = useState(128);
+  const [cutterWallMm, setCutterWallMm] = useState(1.4);
   const [rgbaBuffer, setRgbaBuffer] = useState<{
     rgba: Uint8ClampedArray;
     w: number;
@@ -400,6 +429,11 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
       reliefHeightMm,
       invert,
       smoothing,
+      shapeMode,
+      cylinderRadiusMm,
+      arcDegrees,
+      threshold,
+      cutterWallMm,
     });
     if (created) onClose();
   };
@@ -434,6 +468,25 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         <button type="button" className="kura-btn kura-btn-sm" onClick={drawSamplePattern}>
           {t(language, 'dialog.img.useSample')}
         </button>
+      </div>
+
+      <div className="kura-form-field">
+        <label htmlFor="img-shape-mode">{t(language, 'dialog.img.shapeMode')}</label>
+        <select
+          id="img-shape-mode"
+          className="kura-select"
+          value={shapeMode}
+          onChange={(e) => {
+            const next = e.target.value as NonNullable<ImageTo3DOptions['shapeMode']>;
+            setShapeMode(next);
+            if (next === 'cylindrical') setInvert(true);
+          }}
+        >
+          <option value="flat">{t(language, 'dialog.img.modeFlat')}</option>
+          <option value="cylindrical">{t(language, 'dialog.img.modeCylindrical')}</option>
+          <option value="silhouette">{t(language, 'dialog.img.modeSilhouette')}</option>
+          <option value="cutter">{t(language, 'dialog.img.modeCutter')}</option>
+        </select>
       </div>
 
       <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
@@ -512,6 +565,70 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
             onChange={(e) => setReliefHeightMm(Number(e.target.value))}
           />
         </div>
+
+        {shapeMode === 'cylindrical' && (
+          <>
+            <div className="kura-form-field">
+              <label htmlFor="img-cyl-r">{t(language, 'dialog.img.cylRadius')}</label>
+              <input
+                id="img-cyl-r"
+                type="number"
+                className="kura-input"
+                min={15}
+                max={180}
+                step={1}
+                value={cylinderRadiusMm}
+                onChange={(e) => setCylinderRadiusMm(Number(e.target.value))}
+              />
+            </div>
+            <div className="kura-form-field">
+              <label htmlFor="img-arc">{t(language, 'dialog.img.arcDegrees')}</label>
+              <input
+                id="img-arc"
+                type="number"
+                className="kura-input"
+                min={60}
+                max={360}
+                step={15}
+                value={arcDegrees}
+                onChange={(e) => setArcDegrees(Number(e.target.value))}
+              />
+            </div>
+          </>
+        )}
+
+        {(shapeMode === 'silhouette' || shapeMode === 'cutter') && (
+          <div className="kura-form-field">
+            <label htmlFor="img-thresh">{t(language, 'dialog.img.threshold')}</label>
+            <input
+              id="img-thresh"
+              type="number"
+              className="kura-input"
+              min={10}
+              max={245}
+              step={5}
+              value={threshold}
+              onChange={(e) => setThreshold(Number(e.target.value))}
+            />
+          </div>
+        )}
+
+        {shapeMode === 'cutter' && (
+          <div className="kura-form-field">
+            <label htmlFor="img-cwall">{t(language, 'dialog.img.cutterWall')}</label>
+            <input
+              id="img-cwall"
+              type="number"
+              className="kura-input"
+              min={0.6}
+              max={6}
+              step={0.2}
+              value={cutterWallMm}
+              onChange={(e) => setCutterWallMm(Number(e.target.value))}
+            />
+          </div>
+        )}
+
         <div className="kura-form-field">
           <label htmlFor="img-smooth">{t(language, 'dialog.img.smoothing')} (0–3)</label>
           <input
@@ -525,6 +642,7 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
             onChange={(e) => setSmoothing(Number(e.target.value))}
           />
         </div>
+
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 18 }}>
           <input
             type="checkbox"
@@ -749,7 +867,647 @@ const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   );
 };
 
-/** Modal 4: Ajustes globales (IA, Esquema de Color tri-estado, MCP y Acerca de). */
+/** Modal 4: Generador Automático de Moldes y Contra-Moldes (Velas, Silicona, Resina). */
+const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+  const language = useKuraStore((s) => s.language);
+  const selectedIds = useKuraStore((s) => s.selectedIds);
+  const objects = useKuraStore((s) => s.objects);
+  const generateMoldForObject = useKuraStore((s) => s.generateMoldForObject);
+
+  const [mode, setMode] = useState<MoldMode>('silicone_master');
+  const [wallMarginMm, setWallMarginMm] = useState(6);
+  const [boxWallMm, setBoxWallMm] = useState(3);
+  const [splitAxis, setSplitAxis] = useState<'x' | 'z'>('x');
+  const [pourSpout, setPourSpout] = useState(true);
+  const [pourSpoutRadiusMm, setPourSpoutRadiusMm] = useState(5);
+  const [keyToleranceMm, setKeyToleranceMm] = useState(0.25);
+  const [cavityWallMm, setCavityWallMm] = useState(3);
+
+  const targetId = selectedIds[0] ?? objects[0]?.id;
+
+  const handleExecute = async () => {
+    if (!targetId) return;
+    const created = await generateMoldForObject(targetId, {
+      mode,
+      wallMarginMm,
+      boxWallMm,
+      splitAxis,
+      pourSpout,
+      pourSpoutRadiusMm,
+      keyToleranceMm,
+      cavityWallMm,
+    });
+    if (created.length > 0) onClose();
+  };
+
+  return (
+    <NativeModal
+      open={open}
+      onClose={onClose}
+      title={t(language, 'dialog.mold.title')}
+      footer={
+        <>
+          <button type="button" className="kura-btn" onClick={onClose}>
+            {t(language, 'dialog.cancel')}
+          </button>
+          <button
+            type="button"
+            className="kura-btn kura-btn-primary"
+            disabled={!targetId}
+            onClick={() => void handleExecute()}
+          >
+            <PaintBucket size={14} />
+            <span>{t(language, 'dialog.mold.execute')}</span>
+          </button>
+        </>
+      }
+    >
+      <div className="kura-form-field">
+        <label htmlFor="mold-mode">{t(language, 'dialog.mold.mode')}</label>
+        <select
+          id="mold-mode"
+          className="kura-select"
+          value={mode}
+          onChange={(e) => setMode(e.target.value as MoldMode)}
+        >
+          <option value="direct_1part">{t(language, 'dialog.mold.modeDirect1')}</option>
+          <option value="direct_2part">{t(language, 'dialog.mold.modeDirect2')}</option>
+          <option value="silicone_master">{t(language, 'dialog.mold.modeSilicone')}</option>
+          <option value="core_cavity">{t(language, 'dialog.mold.modeCoreCavity')}</option>
+        </select>
+      </div>
+
+      <div className="kura-form-grid">
+        <div className="kura-form-field">
+          <label htmlFor="mold-margin">{t(language, 'dialog.mold.wallMargin')}</label>
+          <input
+            id="mold-margin"
+            type="number"
+            className="kura-input"
+            min={2}
+            max={35}
+            step={0.5}
+            value={wallMarginMm}
+            onChange={(e) => setWallMarginMm(Number(e.target.value))}
+          />
+        </div>
+
+        {mode === 'silicone_master' && (
+          <div className="kura-form-field">
+            <label htmlFor="mold-boxwall">{t(language, 'dialog.mold.boxWall')}</label>
+            <input
+              id="mold-boxwall"
+              type="number"
+              className="kura-input"
+              min={1.2}
+              max={15}
+              step={0.4}
+              value={boxWallMm}
+              onChange={(e) => setBoxWallMm(Number(e.target.value))}
+            />
+          </div>
+        )}
+
+        {(mode === 'direct_2part' || mode === 'silicone_master') && (
+          <>
+            <div className="kura-form-field">
+              <label htmlFor="mold-split">{t(language, 'dialog.mold.splitAxis')}</label>
+              <select
+                id="mold-split"
+                className="kura-select"
+                value={splitAxis}
+                onChange={(e) => setSplitAxis(e.target.value as 'x' | 'z')}
+              >
+                <option value="x">X (Izq / Der)</option>
+                <option value="z">Z (Frente / Atrás)</option>
+              </select>
+            </div>
+            <div className="kura-form-field">
+              <label htmlFor="mold-tol">{t(language, 'dialog.mold.keyTolerance')}</label>
+              <input
+                id="mold-tol"
+                type="number"
+                className="kura-input"
+                min={0.05}
+                max={1.0}
+                step={0.05}
+                value={keyToleranceMm}
+                onChange={(e) => setKeyToleranceMm(Number(e.target.value))}
+              />
+            </div>
+          </>
+        )}
+
+        {mode === 'core_cavity' && (
+          <div className="kura-form-field">
+            <label htmlFor="mold-cavwall">{t(language, 'dialog.mold.cavityWall')}</label>
+            <input
+              id="mold-cavwall"
+              type="number"
+              className="kura-input"
+              min={1.0}
+              max={20}
+              step={0.5}
+              value={cavityWallMm}
+              onChange={(e) => setCavityWallMm(Number(e.target.value))}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="kura-form-grid" style={{ alignItems: 'center' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <input
+            type="checkbox"
+            checked={pourSpout}
+            onChange={(e) => setPourSpout(e.target.checked)}
+          />
+          <span>{t(language, 'dialog.mold.pourSpout')}</span>
+        </label>
+
+        {pourSpout && (
+          <div className="kura-form-field">
+            <label htmlFor="mold-spout-r">{t(language, 'dialog.mold.pourSpoutRadius')}</label>
+            <input
+              id="mold-spout-r"
+              type="number"
+              className="kura-input"
+              min={2}
+              max={20}
+              step={0.5}
+              value={pourSpoutRadiusMm}
+              onChange={(e) => setPourSpoutRadiusMm(Number(e.target.value))}
+            />
+          </div>
+        )}
+      </div>
+    </NativeModal>
+  );
+};
+
+/** Modal 5: Proyección Conformal de Texto o SVG sobre cualquier superficie 3D. */
+const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void }> = ({
+  open,
+  onClose,
+}) => {
+  const language = useKuraStore((s) => s.language);
+  const selectedIds = useKuraStore((s) => s.selectedIds);
+  const objects = useKuraStore((s) => s.objects);
+  const projectOnObjectSurface = useKuraStore((s) => s.projectOnObjectSurface);
+
+  const [kind, setKind] = useState<'text' | 'svg'>('text');
+  const [text, setText] = useState('KURA3D');
+  const [svgContent, setSvgContent] = useState(SVG_PRESETS.star);
+  const [mode, setMode] = useState<SurfaceProjectionMode>('emboss');
+  const [axis, setAxis] = useState<SurfaceProjectionAxis>('+z');
+  const [widthMm, setWidthMm] = useState(18);
+  const [depthMm, setDepthMm] = useState(1.2);
+  const [colorHex, setColorHex] = useState('#f97316');
+  const [offsetU, setOffsetU] = useState(0);
+  const [offsetV, setOffsetV] = useState(0);
+
+  const targetId = selectedIds[0] ?? objects[0]?.id;
+
+  const handleLoadSvg = async () => {
+    const file = await openLocalFile('.svg');
+    if (!file) return;
+    setSvgContent(new TextDecoder('utf-8').decode(file.buffer));
+    setKind('svg');
+  };
+
+  const handleExecute = async () => {
+    if (!targetId) return;
+    const res = await projectOnObjectSurface(targetId, {
+      kind,
+      text: kind === 'text' ? text : undefined,
+      svgContent: kind === 'svg' ? svgContent : undefined,
+      mode,
+      axis,
+      widthMm,
+      depthMm,
+      colorHex,
+      offsetU,
+      offsetV,
+    });
+    if (res) onClose();
+  };
+
+  return (
+    <NativeModal
+      open={open}
+      onClose={onClose}
+      title={t(language, 'dialog.project.title')}
+      footer={
+        <>
+          <button type="button" className="kura-btn" onClick={onClose}>
+            {t(language, 'dialog.cancel')}
+          </button>
+          <button
+            type="button"
+            className="kura-btn kura-btn-primary"
+            disabled={!targetId || (kind === 'text' ? !text.trim() : !svgContent.trim())}
+            onClick={() => void handleExecute()}
+          >
+            <Type size={14} />
+            <span>{t(language, 'dialog.project.execute')}</span>
+          </button>
+        </>
+      }
+    >
+      <div className="kura-form-grid">
+        <div className="kura-form-field">
+          <label htmlFor="proj-kind">{t(language, 'dialog.project.kind')}</label>
+          <select
+            id="proj-kind"
+            className="kura-select"
+            value={kind}
+            onChange={(e) => setKind(e.target.value as 'text' | 'svg')}
+          >
+            <option value="text">{t(language, 'dialog.project.kindText')}</option>
+            <option value="svg">{t(language, 'dialog.project.kindSvg')}</option>
+          </select>
+        </div>
+
+        <div className="kura-form-field">
+          <label htmlFor="proj-mode">{t(language, 'dialog.project.mode')}</label>
+          <select
+            id="proj-mode"
+            className="kura-select"
+            value={mode}
+            onChange={(e) => setMode(e.target.value as SurfaceProjectionMode)}
+          >
+            <option value="emboss">{t(language, 'dialog.project.modeEmboss')}</option>
+            <option value="deboss">{t(language, 'dialog.project.modeDeboss')}</option>
+            <option value="flush_inlay">{t(language, 'dialog.project.modeInlay')}</option>
+          </select>
+        </div>
+      </div>
+
+      {kind === 'text' ? (
+        <div className="kura-form-field">
+          <label htmlFor="proj-text">{t(language, 'dialog.project.text')}</label>
+          <input
+            id="proj-text"
+            className="kura-input"
+            value={text}
+            maxLength={32}
+            onChange={(e) => setText(e.target.value)}
+          />
+        </div>
+      ) : (
+        <div className="kura-form-field">
+          <div className="kura-field-row">
+            <label htmlFor="proj-svg">{t(language, 'dialog.project.svg')}</label>
+            <button type="button" className="kura-btn kura-btn-sm" onClick={() => void handleLoadSvg()}>
+              <FileUp size={12} />
+              <span>.SVG</span>
+            </button>
+          </div>
+          <textarea
+            id="proj-svg"
+            className="kura-textarea"
+            rows={4}
+            value={svgContent}
+            onChange={(e) => setSvgContent(e.target.value)}
+          />
+        </div>
+      )}
+
+      <div className="kura-form-grid">
+        <div className="kura-form-field">
+          <label htmlFor="proj-axis">{t(language, 'dialog.project.axis')}</label>
+          <select
+            id="proj-axis"
+            className="kura-select"
+            value={axis}
+            onChange={(e) => setAxis(e.target.value as SurfaceProjectionAxis)}
+          >
+            <option value="+z">+Z (Frontal)</option>
+            <option value="-z">-Z (Trasera)</option>
+            <option value="+x">+X (Derecha)</option>
+            <option value="-x">-X (Izquierda)</option>
+            <option value="+y">+Y (Superior)</option>
+            <option value="-y">-Y (Inferior)</option>
+            <option value="cylindrical">{t(language, 'dialog.project.axisCyl')}</option>
+          </select>
+        </div>
+
+        <div className="kura-form-field">
+          <label htmlFor="proj-width">{t(language, 'dialog.project.width')}</label>
+          <input
+            id="proj-width"
+            type="number"
+            className="kura-input"
+            min={4}
+            max={200}
+            step={1}
+            value={widthMm}
+            onChange={(e) => setWidthMm(Number(e.target.value))}
+          />
+        </div>
+
+        <div className="kura-form-field">
+          <label htmlFor="proj-depth">{t(language, 'dialog.project.depth')}</label>
+          <input
+            id="proj-depth"
+            type="number"
+            className="kura-input"
+            min={0.3}
+            max={15}
+            step={0.2}
+            value={depthMm}
+            onChange={(e) => setDepthMm(Number(e.target.value))}
+          />
+        </div>
+
+        <div className="kura-form-field">
+          <label>{t(language, 'dialog.project.color')}</label>
+          <div className="kura-swatch-row">
+            {PRINT_COLOR_PALETTE.slice(0, 6).map((hex) => (
+              <button
+                key={hex}
+                type="button"
+                className={`kura-swatch ${colorHex === hex ? 'is-active' : ''}`}
+                style={{ backgroundColor: hex }}
+                onClick={() => setColorHex(hex)}
+                aria-label={hex}
+              />
+            ))}
+            <input
+              type="color"
+              className="kura-swatch-custom"
+              value={colorHex}
+              onChange={(e) => setColorHex(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="kura-form-field">
+          <label htmlFor="proj-u">{t(language, 'dialog.project.offsetU')}</label>
+          <input
+            id="proj-u"
+            type="number"
+            className="kura-input"
+            step={0.5}
+            value={offsetU}
+            onChange={(e) => setOffsetU(Number(e.target.value))}
+          />
+        </div>
+
+        <div className="kura-form-field">
+          <label htmlFor="proj-v">{t(language, 'dialog.project.offsetV')}</label>
+          <input
+            id="proj-v"
+            type="number"
+            className="kura-input"
+            step={0.5}
+            value={offsetV}
+            onChange={(e) => setOffsetV(Number(e.target.value))}
+          />
+        </div>
+      </div>
+    </NativeModal>
+  );
+};
+
+/** Modal 6: Generador Paramétrico de Roscas Métricas ISO (M3–M20). */
+const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+  const language = useKuraStore((s) => s.language);
+  const createThreadObject = useKuraStore((s) => s.createThreadObject);
+
+  const [kind, setKind] = useState<ThreadOptions['kind']>('bolt');
+  const [diameterMm, setDiameterMm] = useState(8);
+  const [pitchMm, setPitchMm] = useState(1.25);
+  const [lengthMm, setLengthMm] = useState(20);
+  const [clearanceMm, setClearanceMm] = useState(0.25);
+  const [includeHead, setIncludeHead] = useState(true);
+
+  const handleExecute = async () => {
+    const created = await createThreadObject({
+      kind,
+      diameterMm,
+      pitchMm,
+      lengthMm,
+      clearanceMm,
+      includeHead: kind === 'bolt' ? includeHead : false,
+    });
+    if (created) onClose();
+  };
+
+  return (
+    <NativeModal
+      open={open}
+      onClose={onClose}
+      title={t(language, 'dialog.thread.title')}
+      footer={
+        <>
+          <button type="button" className="kura-btn" onClick={onClose}>
+            {t(language, 'dialog.cancel')}
+          </button>
+          <button
+            type="button"
+            className="kura-btn kura-btn-primary"
+            onClick={() => void handleExecute()}
+          >
+            <Bolt size={14} />
+            <span>{t(language, 'dialog.thread.execute')}</span>
+          </button>
+        </>
+      }
+    >
+      <div className="kura-form-field">
+        <label>{t(language, 'dialog.thread.preset')}</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+          {ISO_THREAD_PRESETS.map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              className={`kura-chip ${
+                diameterMm === preset.diameterMm && pitchMm === preset.pitchMm ? 'is-active' : ''
+              }`}
+              style={
+                diameterMm === preset.diameterMm && pitchMm === preset.pitchMm
+                  ? { borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)' }
+                  : undefined
+              }
+              onClick={() => {
+                setDiameterMm(preset.diameterMm);
+                setPitchMm(preset.pitchMm);
+              }}
+            >
+              {preset.label} ({preset.pitchMm})
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="kura-form-grid">
+        <div className="kura-form-field">
+          <label htmlFor="thread-kind">{t(language, 'dialog.thread.kind')}</label>
+          <select
+            id="thread-kind"
+            className="kura-select"
+            value={kind}
+            onChange={(e) => setKind(e.target.value as ThreadOptions['kind'])}
+          >
+            <option value="bolt">{t(language, 'dialog.thread.kindBolt')}</option>
+            <option value="nut">{t(language, 'dialog.thread.kindNut')}</option>
+            <option value="hole">{t(language, 'dialog.thread.kindHole')}</option>
+          </select>
+        </div>
+
+        <div className="kura-form-field">
+          <label htmlFor="thread-diam">{t(language, 'dialog.thread.diameter')}</label>
+          <input
+            id="thread-diam"
+            type="number"
+            className="kura-input"
+            min={3}
+            max={40}
+            step={0.5}
+            value={diameterMm}
+            onChange={(e) => setDiameterMm(Number(e.target.value))}
+          />
+        </div>
+
+        <div className="kura-form-field">
+          <label htmlFor="thread-pitch">{t(language, 'dialog.thread.pitch')}</label>
+          <input
+            id="thread-pitch"
+            type="number"
+            className="kura-input"
+            min={0.5}
+            max={4}
+            step={0.05}
+            value={pitchMm}
+            onChange={(e) => setPitchMm(Number(e.target.value))}
+          />
+        </div>
+
+        <div className="kura-form-field">
+          <label htmlFor="thread-len">{t(language, 'dialog.thread.length')}</label>
+          <input
+            id="thread-len"
+            type="number"
+            className="kura-input"
+            min={4}
+            max={120}
+            step={1}
+            value={lengthMm}
+            onChange={(e) => setLengthMm(Number(e.target.value))}
+          />
+        </div>
+
+        <div className="kura-form-field">
+          <label htmlFor="thread-clear">{t(language, 'dialog.thread.clearance')}</label>
+          <input
+            id="thread-clear"
+            type="number"
+            className="kura-input"
+            min={0}
+            max={0.8}
+            step={0.05}
+            value={clearanceMm}
+            onChange={(e) => setClearanceMm(Number(e.target.value))}
+          />
+        </div>
+
+        {kind === 'bolt' && (
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 18 }}>
+            <input
+              type="checkbox"
+              checked={includeHead}
+              onChange={(e) => setIncludeHead(e.target.checked)}
+            />
+            <span style={{ fontSize: 12 }}>{t(language, 'dialog.thread.includeHead')}</span>
+          </label>
+        )}
+      </div>
+    </NativeModal>
+  );
+};
+
+/** Modal 7: Exportar 3MF Multi-Slicer Pro (Elegoo, Bambu, Snapmaker, FlashForge, Generic). */
+const Export3mfModal: React.FC<{ open: boolean; onClose: () => void }> = ({
+  open,
+  onClose,
+}) => {
+  const language = useKuraStore((s) => s.language);
+  const printerProfile = useKuraStore((s) => s.printerProfile);
+  const selectedIds = useKuraStore((s) => s.selectedIds);
+  const export3MFForSlicer = useKuraStore((s) => s.export3MFForSlicer);
+
+  const [slicerTarget, setSlicerTarget] = useState<SlicerTarget>(printerProfile.brand);
+  const [onlySelected, setOnlySelected] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setSlicerTarget(printerProfile.brand);
+      setOnlySelected(false);
+    }
+  }, [open, printerProfile.brand]);
+
+  const handleExport = async () => {
+    const ok = await export3MFForSlicer(slicerTarget, onlySelected);
+    if (ok) onClose();
+  };
+
+  return (
+    <NativeModal
+      open={open}
+      onClose={onClose}
+      title={t(language, 'dialog.export3mf.title')}
+      footer={
+        <>
+          <button type="button" className="kura-btn" onClick={onClose}>
+            {t(language, 'dialog.cancel')}
+          </button>
+          <button
+            type="button"
+            className="kura-btn kura-btn-amber"
+            onClick={() => void handleExport()}
+          >
+            <Download size={14} />
+            <span>{t(language, 'dialog.export3mf.execute')}</span>
+          </button>
+        </>
+      }
+    >
+      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
+        {t(language, 'dialog.export3mf.desc')}
+      </p>
+
+      <div className="kura-form-field">
+        <label htmlFor="export-slicer-target">{t(language, 'dialog.export3mf.slicer')}</label>
+        <select
+          id="export-slicer-target"
+          className="kura-select"
+          value={slicerTarget}
+          onChange={(e) => setSlicerTarget(e.target.value as SlicerTarget)}
+        >
+          <option value="elegoo">{t(language, 'dialog.export3mf.elegoo')}</option>
+          <option value="bambu">{t(language, 'dialog.export3mf.bambu')}</option>
+          <option value="snapmaker">{t(language, 'dialog.export3mf.snapmaker')}</option>
+          <option value="flashforge">{t(language, 'dialog.export3mf.flashforge')}</option>
+          <option value="generic">{t(language, 'dialog.export3mf.generic')}</option>
+        </select>
+      </div>
+
+      {selectedIds.length > 0 && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+          <input
+            type="checkbox"
+            checked={onlySelected}
+            onChange={(e) => setOnlySelected(e.target.checked)}
+          />
+          <span>{t(language, 'dialog.export3mf.onlySelected')}</span>
+        </label>
+      )}
+    </NativeModal>
+  );
+};
+
+/** Modal 8: Ajustes globales (IA, Esquema de Color tri-estado, MCP y Acerca de). */
 const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
   onClose,
@@ -1107,7 +1865,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
       {tab === 'about' && (
         <div className="kura-card">
-          <strong>Kura3D Studio v1.0.0</strong>
+          <strong>Kura3D Pro Studio v3.0</strong>
           <p style={{ margin: 0, fontSize: 12 }}>{t(language, 'dialog.settings.aboutAuthor')}</p>
           <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
             {t(language, 'dialog.settings.aboutStack')}
@@ -1133,6 +1891,16 @@ export const Dialogs: React.FC = () => {
       <SvgImportModal open={activeDialog === 'svg'} onClose={() => closeDialog('svg')} />
       <ImageTo3DModal open={activeDialog === 'image'} onClose={() => closeDialog('image')} />
       <PlaneCutModal open={activeDialog === 'cut'} onClose={() => closeDialog('cut')} />
+      <MoldModal open={activeDialog === 'mold'} onClose={() => closeDialog('mold')} />
+      <SurfaceProjectModal
+        open={activeDialog === 'project'}
+        onClose={() => closeDialog('project')}
+      />
+      <ThreadModal open={activeDialog === 'thread'} onClose={() => closeDialog('thread')} />
+      <Export3mfModal
+        open={activeDialog === 'export3mf'}
+        onClose={() => closeDialog('export3mf')}
+      />
       <SettingsModal
         open={activeDialog === 'settings'}
         onClose={() => closeDialog('settings')}

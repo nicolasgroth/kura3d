@@ -1,7 +1,8 @@
 /**
  * @file src/App.tsx
- * @description Shell principal de la aplicación Kura3D: inicialización del motor Manifold,
- * atajos de teclado CAD globales, puente MCP WebSocket, sincronización de tema y stack de toasts.
+ * @description Shell principal de la aplicación Kura3D Pro v3.0: inicialización del motor Manifold,
+ * densidad adaptativa (Expandido / Compacto / Zen con tecla Tab), atajos de teclado CAD globales,
+ * puente MCP WebSocket, sincronización de tema y stack de toasts.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -23,6 +24,7 @@ import { useMcpBridgeClient } from './utils/mcpBridgeClient';
 export const App: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const activeTool = useKuraStore((s) => s.activeTool);
+  const uiDensity = useKuraStore((s) => s.uiDensity);
   const mcpConfig = useKuraStore((s) => s.mcpConfig);
   const initEngine = useKuraStore((s) => s.initEngine);
   const executeCommand = useKuraStore((s) => s.executeCommand);
@@ -90,6 +92,13 @@ export const App: React.FC = () => {
         return;
       }
 
+      // Tecla Tab alterna Modo Zen (100% viewport) sin capturar foco de inputs
+      if (e.key === 'Tab' && !mod && !e.altKey) {
+        e.preventDefault();
+        state.toggleZenMode();
+        return;
+      }
+
       if (mod && key === 'z') {
         e.preventDefault();
         if (e.shiftKey) {
@@ -153,7 +162,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="kura-app" data-tool={activeTool}>
+    <div className="kura-app" data-tool={activeTool} data-density={uiDensity}>
       <TopBar />
 
       <div className="kura-workspace">

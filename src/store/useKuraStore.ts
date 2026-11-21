@@ -1,8 +1,9 @@
 /**
  * @file src/store/useKuraStore.ts
- * @description Store central Zustand de Kura3D: escena 3D, historial Undo/Redo (40 pasos),
- * herramientas activas, perfil de impresora, preferencias persistentes y Command Bus unificado
- * para UI, Servidor MCP y Chat IA.
+ * @description Store central Zustand de Kura3D Pro v3.0: escena 3D, historial Undo/Redo (40 pasos),
+ * densidad adaptativa (Full/Compact/Zen), herramientas activas, materiales PBR, moldes, proyección
+ * en superficies, roscas ISO, validador estructural, plano de sección en vivo, perfil de impresora
+ * multi-marca, preferencias persistentes y Command Bus unificado para UI, Servidor MCP y Chat IA.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -19,6 +20,7 @@ import {
   type AiChatMessage,
   type AiConfig,
   type AiProviderType,
+  type AlignMode,
   type BooleanOpType,
   type ColorSchemePreference,
   type CutPreviewState,
@@ -27,17 +29,24 @@ import {
   type KuraCommandRequest,
   type KuraCommandResponse,
   type LanguageCode,
+  type MaterialPresetId,
   type McpConfig,
   type MeshData,
+  type MoldOptions,
   type ObjectSourceType,
   type PlaneCutOptions,
   type PrimitiveParams,
   type PrimitiveType,
+  type PrintabilityReport,
   type PrinterProfile,
   type SceneObject,
+  type SlicerTarget,
+  type SurfaceProjectionOptions,
   type SvgImportOptions,
   type TextureOptions,
+  type ThreadOptions,
   type TransformMode,
+  type UiDensityMode,
   type UnitSystem,
   type Vec3,
 } from '../types/kura';
@@ -51,8 +60,18 @@ const STORAGE_COLOR_SCHEME_KEY = 'kura3d-color-scheme';
 const STORAGE_LANGUAGE_KEY = 'kura3d-language';
 const STORAGE_UNIT_KEY = 'kura3d-unit-system';
 const STORAGE_PRINTER_KEY = 'kura3d-printer-id';
+const STORAGE_UI_DENSITY_KEY = 'kura3d-ui-density';
 
-export type ActiveDialogType = 'svg' | 'image' | 'cut' | 'settings' | null;
+export type ActiveDialogType =
+  | 'svg'
+  | 'image'
+  | 'cut'
+  | 'mold'
+  | 'project'
+  | 'thread'
+  | 'export3mf'
+  | 'settings'
+  | null;
 export type SettingsTabType = 'ai' | 'mcp' | 'about';
 export type CommandSourceType = 'ui' | 'mcp' | 'ai';
 export type PaintBrushMode = 'brush' | 'smart_fill' | 'whole';
@@ -81,6 +100,12 @@ export interface KuraStoreState {
   past: SceneSnapshot[];
   future: SceneSnapshot[];
 
+  // Densidad adaptativa de interfaz y visibilidad de paneles
+  uiDensity: UiDensityMode;
+  lastNonZenDensity: 'full' | 'compact';
+  leftCollapsed: boolean;
+  rightCollapsed: boolean;
+
   // Herramientas y viewport
   activeTool: ActiveTool;
   transformMode: TransformMode;
@@ -90,6 +115,11 @@ export interface KuraStoreState {
   paintMode: PaintBrushMode;
   eraseRadiusMm: number;
   cameraRequest: { preset: CameraPresetType; nonce: number } | null;
+
+  // Plano de corte visual (Rayos X / Sección) y Validador estructural
+  sectionPlane: { enabled: boolean; heightMm: number };
+  activePrintReport: PrintabilityReport | null;
+  showOverhangs: boolean;
 
   // Preferencias globales
   unitSystem: UnitSystem;
@@ -114,8 +144,16 @@ export interface KuraStoreState {
   spawnedAtById: Record<string, number>;
   toasts: ToastMessage[];
 
-  // Acciones de inicialización y preferencias
+  // Acciones de inicialización, densidad y preferencias
   initEngine: () => Promise<void>;
+  setUiDensity: (mode: UiDensityMode) => void;
+  cycleUiDensity: () => void;
+  toggleZenMode: () => void;
+  toggleLeftSidebar: () => void;
+  toggleRightInspector: () => void;
+  setSectionPlane: (patch: Partial<{ enabled: boolean; heightMm: number }>) => void;
+  setShowOverhangs: (show: boolean) => void;
+  clearPrintReport: () => void;
   setLanguage: (lang: LanguageCode) => void;
   setUnitSystem: (unit: UnitSystem) => void;
   setColorScheme: (scheme: ColorSchemePreference) => void;
@@ -156,18 +194,41 @@ export interface KuraStoreState {
   createPrimitive: (
     type: PrimitiveType,
     params?: PrimitiveParams,
-    options?: { name?: string; color?: string; position?: Vec3; isHole?: boolean },
+    options?: {
+      name?: string;
+      color?: string;
+      position?: Vec3;
+      isHole?: boolean;
+      materialPreset?: MaterialPresetId;
+    },
   ) => Promise<SceneObject | null>;
   addSubtractHelperPrimitive: (
     type: 'sphere' | 'cylinder' | 'box',
+    targetId?: string,
+  ) => Promise<SceneObject | null>;
+  addModularPrimitive: (
+    type: PrimitiveType,
+    mode: 'positive' | 'negative',
+    targetId?: string,
+  ) => Promise<SceneObject | null>;
+  importModelAsModule: (
+    file: { name: string; buffer: ArrayBuffer },
+    mode: 'positive' | 'negative',
+    targetId?: string,
+  ) => Promise<SceneObject | null>;
+  importModelAsModuleFromDialog: (
+    mode: 'positive' | 'negative',
     targetId?: string,
   ) => Promise<SceneObject | null>;
   createStarterCube: () => Promise<void>;
   clearScene: () => void;
   updateObjectMeta: (
     id: string,
-    patch: Partial<Pick<SceneObject, 'name' | 'color' | 'isHole' | 'visible' | 'locked'>>,
+    patch: Partial<
+      Pick<SceneObject, 'name' | 'color' | 'isHole' | 'visible' | 'locked' | 'materialPreset'>
+    >,
   ) => void;
+  setObjectMaterial: (id: string, materialPreset: MaterialPresetId) => void;
   setObjectTransform: (
     id: string,
     patch: Partial<Pick<SceneObject, 'position' | 'rotation' | 'scale'>>,
@@ -180,8 +241,12 @@ export interface KuraStoreState {
   duplicateObjects: (ids?: string[]) => SceneObject[];
   deleteObjects: (ids?: string[]) => void;
 
-  // Operaciones Manifold & Pintado
-  runBooleanOnSelection: (op: BooleanOpType, targetId?: string, toolId?: string) => Promise<SceneObject | null>;
+  // Operaciones Manifold, Pro Maker & Pintado
+  runBooleanOnSelection: (
+    op: BooleanOpType,
+    targetId?: string,
+    toolId?: string,
+  ) => Promise<SceneObject | null>;
   applyHolesOnSolids: () => Promise<void>;
   hollowObject: (id: string, options: HollowOptions) => Promise<boolean>;
   planeCutObject: (id: string, options: PlaneCutOptions) => Promise<SceneObject[]>;
@@ -196,12 +261,34 @@ export interface KuraStoreState {
   ) => void;
   eraseSphereOnObject: (id: string, worldCenter: Vec3, radiusMm?: number) => Promise<void>;
 
+  // Nuevas capacidades Pro v3.0
+  generateMoldForObject: (id: string, options: MoldOptions) => Promise<SceneObject[]>;
+  projectOnObjectSurface: (
+    id: string,
+    options: SurfaceProjectionOptions,
+  ) => Promise<SceneObject | null>;
+  runPrintabilityCheck: (
+    id: string,
+    infillPercent?: number,
+    overhangAngleDeg?: number,
+  ) => PrintabilityReport | null;
+  simplifySelectedMesh: (id: string, toleranceMm: number) => Promise<boolean>;
+  refineSelectedMesh: (
+    id: string,
+    targetEdgeLengthMm: number,
+    smooth?: boolean,
+  ) => Promise<boolean>;
+  runConvexHull: (ids?: string[]) => Promise<SceneObject | null>;
+  createThreadObject: (options: ThreadOptions) => Promise<SceneObject | null>;
+  alignSelectedObjects: (mode: AlignMode) => void;
+
   // Importación / Exportación
   importSvgModel: (options: SvgImportOptions) => Promise<SceneObject | null>;
   generateImageRelief: (options: ImageTo3DOptions) => Promise<SceneObject | null>;
   importMeshFromDialog: () => Promise<void>;
   exportSceneStl: (onlySelected?: boolean) => Promise<boolean>;
-  exportScene3mf: (onlySelected?: boolean) => Promise<boolean>;
+  exportScene3mf: (onlySelected?: boolean, slicerTarget?: SlicerTarget) => Promise<boolean>;
+  export3MFForSlicer: (slicerTarget?: SlicerTarget, onlySelected?: boolean) => Promise<boolean>;
   exportSelectedObj: () => Promise<boolean>;
 
   // Command Bus Unificado (UI, MCP y Chat IA)
@@ -268,7 +355,9 @@ function computeBedPositionY(mesh: MeshData, rotation: Vec3, scale: Vec3): numbe
 
 /** Convierte un Uint8Array a Base64 de forma segura tanto en navegador como en Node.js. */
 function uint8ToBase64(bytes: Uint8Array): string {
-  const globalBuf = (globalThis as { Buffer?: { from: (arr: Uint8Array) => { toString: (enc: string) => string } } }).Buffer;
+  const globalBuf = (
+    globalThis as { Buffer?: { from: (arr: Uint8Array) => { toString: (enc: string) => string } } }
+  ).Buffer;
   if (globalBuf) {
     return globalBuf.from(bytes).toString('base64');
   }
@@ -291,6 +380,7 @@ function buildSceneObject(params: {
   rotation?: Vec3;
   scale?: Vec3;
   color?: string;
+  materialPreset?: MaterialPresetId;
   isHole?: boolean;
   primitiveType?: PrimitiveType;
   primitiveParams?: PrimitiveParams;
@@ -310,12 +400,92 @@ function buildSceneObject(params: {
     rotation,
     scale,
     color: params.color ?? PRINT_COLOR_PALETTE[0],
+    materialPreset: params.materialPreset ?? 'pla_matte',
     isHole: params.isHole ?? false,
     visible: true,
     locked: false,
     mesh: params.mesh,
     stats,
   };
+}
+
+/** Calcula el centro geométrico local [cx, cy, cz] de una malla. */
+function computeLocalMeshCenter(mesh: MeshData): Vec3 {
+  const pos = mesh.positions;
+  if (pos.length < 3) return [0, 0, 0];
+  let minX = Infinity;
+  let minY = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let maxZ = -Infinity;
+  for (let i = 0; i < pos.length; i += 3) {
+    const x = pos[i];
+    const y = pos[i + 1];
+    const z = pos[i + 2];
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (z < minZ) minZ = z;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+    if (z > maxZ) maxZ = z;
+  }
+  return [(minX + maxX) * 0.5, (minY + maxY) * 0.5, (minZ + maxZ) * 0.5];
+}
+
+/** Calcula el centro mundial real de un objeto para posicionar módulos sobre él. */
+function computeObjectWorldCenter(targetObj: SceneObject): Vec3 {
+  const targetLocalCenter = computeLocalMeshCenter(targetObj.mesh);
+  const targetVec = new THREE.Vector3(
+    targetLocalCenter[0] * targetObj.scale[0],
+    targetLocalCenter[1] * targetObj.scale[1],
+    targetLocalCenter[2] * targetObj.scale[2],
+  );
+  const euler = new THREE.Euler(
+    targetObj.rotation[0],
+    targetObj.rotation[1],
+    targetObj.rotation[2],
+    'XYZ',
+  );
+  targetVec.applyEuler(euler);
+  return [
+    targetObj.position[0] + targetVec.x,
+    targetObj.position[1] + targetVec.y,
+    targetObj.position[2] + targetVec.z,
+  ];
+}
+
+/** Parsea un archivo STL, 3MF u OBJ en mallas normalizadas listas para insertar en la escena. */
+function parseModelBufferToMeshes(file: {
+  name: string;
+  buffer: ArrayBuffer;
+}): Array<{ name: string; mesh: MeshData; color?: string }> {
+  const lower = file.name.toLowerCase();
+  if (lower.endsWith('.3mf')) {
+    const parts = engine.import3MFBuffer(file.buffer);
+    return parts.map((part) => ({
+      name: part.name || file.name.replace(/\.3mf$/i, ''),
+      mesh: engine.normalizeMeshToBed(part.mesh),
+      color: part.color,
+    }));
+  }
+  if (lower.endsWith('.obj')) {
+    const text = new TextDecoder('utf-8').decode(file.buffer);
+    const mesh = engine.importOBJText(text);
+    return [
+      {
+        name: file.name.replace(/\.obj$/i, ''),
+        mesh: engine.normalizeMeshToBed(mesh),
+      },
+    ];
+  }
+  const mesh = engine.importSTLBuffer(file.buffer);
+  return [
+    {
+      name: file.name.replace(/\.stl$/i, ''),
+      mesh: engine.normalizeMeshToBed(mesh),
+    },
+  ];
 }
 
 /** Lee de forma segura preferencias desde localStorage sin lanzar errores en entornos restringidos. */
@@ -401,30 +571,6 @@ function loadInitialMcpConfig(): McpConfig {
   }
 }
 
-/** Calcula el centro geométrico local [cx, cy, cz] de una malla. */
-function computeLocalMeshCenter(mesh: MeshData): Vec3 {
-  const pos = mesh.positions;
-  if (pos.length < 3) return [0, 0, 0];
-  let minX = Infinity;
-  let minY = Infinity;
-  let minZ = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  let maxZ = -Infinity;
-  for (let i = 0; i < pos.length; i += 3) {
-    const x = pos[i];
-    const y = pos[i + 1];
-    const z = pos[i + 2];
-    if (x < minX) minX = x;
-    if (y < minY) minY = y;
-    if (z < minZ) minZ = z;
-    if (x > maxX) maxX = x;
-    if (y > maxY) maxY = y;
-    if (z > maxZ) maxZ = z;
-  }
-  return [(minX + maxX) * 0.5, (minY + maxY) * 0.5, (minZ + maxZ) * 0.5];
-}
-
 /** Carga configuración IA persistida localmente (nunca incluye claves precargadas). */
 function loadInitialAiConfig(): AiConfig {
   const defaults: AiConfig = {
@@ -477,6 +623,15 @@ function loadInitialPrinterProfile(): PrinterProfile {
   return found ?? DEFAULT_PRINTER_PROFILES[0];
 }
 
+function loadInitialUiDensity(): UiDensityMode {
+  const stored = readStorage(STORAGE_UI_DENSITY_KEY);
+  // Nunca restaurar en Zen tras recargar la página para que la interfaz sea siempre visible al abrir
+  if (stored === 'compact') {
+    return 'compact';
+  }
+  return 'full';
+}
+
 /** Bandera para evitar doble inicialización concurrente del módulo WASM en React StrictMode. */
 let engineInitPromise: Promise<void> | null = null;
 /** Marca temporal para evitar guardar decenas de snapshots por segundo al pintar con arrastre. */
@@ -486,6 +641,7 @@ let transformSnapshotBeforeDrag: SceneSnapshot | null = null;
 export const useKuraStore = create<KuraStoreState>((set, get) => {
   const initialLang = loadInitialLanguage();
   const initialScheme = loadInitialColorScheme();
+  const initialDensity = loadInitialUiDensity();
   applyMetaColorScheme(initialScheme);
 
   /** Helper interno para registrar un paso Undo antes de mutar `objects`. */
@@ -510,6 +666,11 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     past: [],
     future: [],
 
+    uiDensity: initialDensity,
+    lastNonZenDensity: initialDensity === 'compact' ? 'compact' : 'full',
+    leftCollapsed: false,
+    rightCollapsed: false,
+
     activeTool: 'select',
     transformMode: 'translate',
     snapGridMm: 1,
@@ -518,6 +679,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     paintMode: 'brush',
     eraseRadiusMm: 6,
     cameraRequest: null,
+
+    sectionPlane: { enabled: false, heightMm: 25 },
+    activePrintReport: null,
+    showOverhangs: false,
 
     unitSystem: loadInitialUnits(),
     language: initialLang,
@@ -578,6 +743,47 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
       return engineInitPromise;
     },
+
+    setUiDensity: (mode) => {
+      if (mode !== 'zen') {
+        writeStorage(STORAGE_UI_DENSITY_KEY, mode);
+      }
+      set((state) => ({
+        uiDensity: mode,
+        lastNonZenDensity: mode === 'zen' ? state.lastNonZenDensity : mode,
+      }));
+    },
+
+    cycleUiDensity: () => {
+      const current = get().uiDensity;
+      const next: UiDensityMode =
+        current === 'full' ? 'compact' : current === 'compact' ? 'zen' : 'full';
+      get().setUiDensity(next);
+    },
+
+    toggleZenMode: () => {
+      const { uiDensity, lastNonZenDensity } = get();
+      if (uiDensity === 'zen') {
+        get().setUiDensity(lastNonZenDensity);
+      } else {
+        get().setUiDensity('zen');
+      }
+    },
+
+    toggleLeftSidebar: () =>
+      set((state) => ({ leftCollapsed: !state.leftCollapsed })),
+
+    toggleRightInspector: () =>
+      set((state) => ({ rightCollapsed: !state.rightCollapsed })),
+
+    setSectionPlane: (patch) =>
+      set((state) => ({
+        sectionPlane: { ...state.sectionPlane, ...patch },
+      })),
+
+    setShowOverhangs: (showOverhangs) => set({ showOverhangs }),
+
+    clearPrintReport: () => set({ activePrintReport: null, showOverhangs: false }),
 
     setLanguage: (language) => {
       writeStorage(STORAGE_LANGUAGE_KEY, language);
@@ -771,7 +977,6 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         const rawMesh = await engine.createPrimitiveMesh(type, params);
         const normalized = engine.normalizeMeshToBed(rawMesh);
 
-        // Desplazar ligeramente cada nuevo objeto si ya hay otros en el origen
         const count = get().objects.length;
         const defaultColor =
           options?.color ?? PRINT_COLOR_PALETTE[count % PRINT_COLOR_PALETTE.length];
@@ -784,6 +989,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           mesh: normalized,
           position: options?.position,
           color: defaultColor,
+          materialPreset: options?.materialPreset,
           isHole: options?.isHole,
           primitiveType: type,
           primitiveParams: params,
@@ -809,6 +1015,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     },
 
     addSubtractHelperPrimitive: async (type, targetId) => {
+      return get().addModularPrimitive(type, 'negative', targetId);
+    },
+
+    addModularPrimitive: async (type, mode, targetId) => {
       const state = get();
       const targetObj =
         state.objects.find((o) => o.id === targetId) ??
@@ -816,11 +1026,12 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         state.objects.find((o) => !o.isHole) ??
         state.objects[0];
 
+      const isHole = mode === 'negative';
       if (!targetObj) {
-        return get().createPrimitive(type, undefined, { isHole: true });
+        return get().createPrimitive(type, undefined, { isHole });
       }
 
-      set({ busyOperation: `subtract_${type}` });
+      set({ busyOperation: `modular_${mode}_${type}` });
       try {
         await get().initEngine();
         const scaledX = Math.max(4, targetObj.stats.dimensionsMm[0] * targetObj.scale[0]);
@@ -831,60 +1042,62 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         if (type === 'sphere') {
           const diameter = Math.max(4, Math.min(scaledX, scaledY, scaledZ) * 0.65);
           params = { radius: diameter * 0.5, segments: 28 };
-        } else if (type === 'cylinder') {
-          const diameter = Math.max(4, Math.min(scaledX, scaledZ) * 0.65);
+        } else if (type === 'cylinder' || type === 'cone' || type === 'prism') {
+          const diameter = Math.max(4, Math.min(scaledX, scaledZ) * 0.6);
           params = {
             radius: diameter * 0.5,
             height: Math.max(4, scaledY * 0.65),
             segments: 32,
+            sides: 6,
           };
+        } else if (type === 'tube') {
+          const outer = Math.max(4, Math.min(scaledX, scaledZ) * 0.35);
+          params = {
+            outerRadius: outer,
+            innerRadius: Math.max(1.5, outer * 0.6),
+            height: Math.max(4, scaledY * 0.65),
+            segments: 32,
+          };
+        } else if (type === 'torus') {
+          const outer = Math.max(4, Math.min(scaledX, scaledZ) * 0.35);
+          params = {
+            outerRadius: outer,
+            tubeRadius: Math.max(1.5, outer * 0.3),
+            segments: 28,
+          };
+        } else if (type === 'text') {
+          params = { text: 'KURA', fontSize: Math.max(6, scaledX * 0.32), height: Math.max(3, scaledY * 0.25) };
         } else {
           params = {
-            width: Math.max(4, scaledX * 0.65),
-            height: Math.max(4, scaledY * 0.65),
-            depth: Math.max(4, scaledZ * 0.65),
+            width: Math.max(4, scaledX * 0.62),
+            height: Math.max(4, scaledY * 0.62),
+            depth: Math.max(4, scaledZ * 0.62),
           };
         }
 
         const rawMesh = await engine.createPrimitiveMesh(type, params);
         const normalized = engine.normalizeMeshToBed(rawMesh);
 
-        // Calcula el centro mundial real del sólido objetivo aplicando su rotación/escala
-        const targetLocalCenter = computeLocalMeshCenter(targetObj.mesh);
-        const targetVec = new THREE.Vector3(
-          targetLocalCenter[0] * targetObj.scale[0],
-          targetLocalCenter[1] * targetObj.scale[1],
-          targetLocalCenter[2] * targetObj.scale[2],
-        );
-        const euler = new THREE.Euler(
-          targetObj.rotation[0],
-          targetObj.rotation[1],
-          targetObj.rotation[2],
-          'XYZ',
-        );
-        targetVec.applyEuler(euler);
-        const worldCenter: Vec3 = [
-          targetObj.position[0] + targetVec.x,
-          targetObj.position[1] + targetVec.y,
-          targetObj.position[2] + targetVec.z,
-        ];
-
-        // Alinea el centro geométrico del volumen negativo con el centro mundial del sólido
+        const worldCenter = computeObjectWorldCenter(targetObj);
         const helperLocalCenter = computeLocalMeshCenter(normalized);
+        // En modo positivo, apoyamos ligeramente encima o desplazado en Y para unirse al sólido
+        const yOffset = mode === 'positive' ? scaledY * 0.35 : 0;
         const helperPos: Vec3 = [
           worldCenter[0] - helperLocalCenter[0],
-          worldCenter[1] - helperLocalCenter[1],
+          Math.max(0, worldCenter[1] - helperLocalCenter[1] + yOffset),
           worldCenter[2] - helperLocalCenter[2],
         ];
 
         const labelBase = tr(`sidebar.primitive.${type}` as TranslationKey);
-        const holeObj = buildSceneObject({
-          name: `− ${labelBase}`,
+        const prefix = isHole ? '−' : '+';
+        const modObj = buildSceneObject({
+          name: `${prefix} ${labelBase}`,
           source: 'primitive',
           mesh: normalized,
           position: helperPos,
-          color: '#f97316',
-          isHole: true,
+          color: isHole ? '#f97316' : targetObj.color,
+          materialPreset: targetObj.materialPreset,
+          isHole,
           primitiveType: type,
           primitiveParams: params,
         });
@@ -892,13 +1105,18 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         pushHistory();
         const now = Date.now();
         set((prev) => ({
-          objects: [...prev.objects, holeObj],
-          selectedIds: [holeObj.id],
-          spawnedAtById: { ...prev.spawnedAtById, [holeObj.id]: now },
+          objects: [...prev.objects, modObj],
+          selectedIds: isHole ? [modObj.id] : [targetObj.id, modObj.id],
+          spawnedAtById: { ...prev.spawnedAtById, [modObj.id]: now },
         }));
 
-        get().addToast(tr('toast.subtractHelperCreated'), 'info');
-        return holeObj;
+        get().addToast(
+          isHole
+            ? tr('toast.subtractHelperCreated')
+            : tr('toast.modularHelperCreated', { mode: '+', name: labelBase }),
+          'info',
+        );
+        return modObj;
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         get().addToast(tr('toast.errorPrefix', { message }), 'error');
@@ -906,6 +1124,83 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       } finally {
         set({ busyOperation: null });
       }
+    },
+
+    importModelAsModule: async (file, mode, targetId) => {
+      set({ busyOperation: `import_module_${mode}` });
+      try {
+        await get().initEngine();
+        const parsedParts = parseModelBufferToMeshes(file);
+        if (parsedParts.length === 0) return null;
+
+        const state = get();
+        const targetObj =
+          state.objects.find((o) => o.id === targetId) ??
+          state.objects.find((o) => state.selectedIds.includes(o.id) && !o.isHole) ??
+          state.objects.find((o) => !o.isHole) ??
+          null;
+
+        const isHole = mode === 'negative';
+        const prefix = isHole ? '−' : '+';
+        const created: SceneObject[] = [];
+
+        for (const part of parsedParts) {
+          let position: Vec3 | undefined;
+          if (targetObj) {
+            const worldCenter = computeObjectWorldCenter(targetObj);
+            const modLocalCenter = computeLocalMeshCenter(part.mesh);
+            position = [
+              worldCenter[0] - modLocalCenter[0],
+              Math.max(0, worldCenter[1] - modLocalCenter[1]),
+              worldCenter[2] - modLocalCenter[2],
+            ];
+          }
+          created.push(
+            buildSceneObject({
+              name: `${prefix} ${part.name}`,
+              source: 'imported',
+              mesh: part.mesh,
+              position,
+              color: isHole ? '#f97316' : part.color || PRINT_COLOR_PALETTE[0],
+              isHole,
+            }),
+          );
+        }
+
+        pushHistory();
+        const now = Date.now();
+        const spawnedPatch: Record<string, number> = {};
+        for (const c of created) spawnedPatch[c.id] = now;
+
+        set((prev) => ({
+          objects: [...prev.objects, ...created],
+          selectedIds: isHole || !targetObj
+            ? created.map((c) => c.id)
+            : [targetObj.id, ...created.map((c) => c.id)],
+          spawnedAtById: { ...prev.spawnedAtById, ...spawnedPatch },
+        }));
+
+        get().addToast(
+          tr('toast.modularHelperCreated', {
+            mode: prefix,
+            name: created[0].name,
+          }),
+          'success',
+        );
+        return created[0];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return null;
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
+    importModelAsModuleFromDialog: async (mode, targetId) => {
+      const file = await openLocalFile('.stl,.3mf,.obj');
+      if (!file) return null;
+      return get().importModelAsModule(file, mode, targetId);
     },
 
     createStarterCube: async () => {
@@ -923,12 +1218,15 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           primitiveParams: { width: 30, height: 30, depth: 30 },
           mesh: normalized,
           color: PRINT_COLOR_PALETTE[0],
+          materialPreset: 'pla_matte',
         });
         set({
           objects: [cube],
           selectedIds: [cube.id],
           past: [],
           future: [],
+          activePrintReport: null,
+          showOverhangs: false,
         });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -939,13 +1237,27 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     clearScene: () => {
       if (get().objects.length === 0) return;
       pushHistory();
-      set({ objects: [], selectedIds: [] });
+      set({
+        objects: [],
+        selectedIds: [],
+        activePrintReport: null,
+        showOverhangs: false,
+      });
     },
 
     updateObjectMeta: (id, patch) => {
       pushHistory();
       set((state) => ({
         objects: state.objects.map((obj) => (obj.id === id ? { ...obj, ...patch } : obj)),
+      }));
+    },
+
+    setObjectMaterial: (id, materialPreset) => {
+      pushHistory();
+      set((state) => ({
+        objects: state.objects.map((obj) =>
+          obj.id === id ? { ...obj, materialPreset } : obj,
+        ),
       }));
     },
 
@@ -1069,6 +1381,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       set((state) => ({
         objects: state.objects.filter((o) => !removableIds.has(o.id)),
         selectedIds: state.selectedIds.filter((sid) => !removableIds.has(sid)),
+        activePrintReport:
+          state.activePrintReport && removableIds.has(state.activePrintReport.objectId)
+            ? null
+            : state.activePrintReport,
       }));
       get().addToast(tr('toast.deleted'), 'info');
     },
@@ -1084,7 +1400,6 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
       set({ busyOperation: `boolean:${op}` });
       try {
-        // Si hay más de 2 seleccionados para unión o resta secuencial, encadenamos pares
         const extraIds =
           !explicitTargetId && !explicitToolId ? selectedIds.slice(2) : [];
 
@@ -1096,6 +1411,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           mesh: firstRes.mesh,
           position: firstRes.position,
           color: targetObj.color,
+          materialPreset: targetObj.materialPreset,
         });
 
         const consumedIds = new Set([targetObj.id, toolObj.id]);
@@ -1109,6 +1425,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
             mesh: stepRes.mesh,
             position: stepRes.position,
             color: currentTarget.color,
+            materialPreset: currentTarget.materialPreset,
           });
           consumedIds.add(nextTool.id);
         }
@@ -1155,6 +1472,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
               mesh: res.mesh,
               position: res.position,
               color: solid.color,
+              materialPreset: solid.materialPreset,
             });
           }
           updatedSolids.push(current);
@@ -1233,6 +1551,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
               mesh: result.positive.mesh,
               position: result.positive.position,
               color: obj.color,
+              materialPreset: obj.materialPreset,
             }),
           );
         }
@@ -1245,6 +1564,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
               mesh: result.negative.mesh,
               position: result.negative.position,
               color: obj.color,
+              materialPreset: obj.materialPreset,
             }),
           );
         }
@@ -1288,6 +1608,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
             mesh: part.mesh,
             position: part.position,
             color: obj.color,
+            materialPreset: obj.materialPreset,
           }),
         );
 
@@ -1322,6 +1643,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
             mesh: part.mesh,
             position: part.position,
             color: part.color,
+            materialPreset: obj.materialPreset,
           }),
         );
 
@@ -1400,7 +1722,6 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         return;
       }
 
-      // Agrupa trazos continuos de pincel dentro de 600ms para no saturar la pila Undo
       const now = Date.now();
       if (now - lastPaintSnapshotAt > 600) {
         lastPaintSnapshotAt = now;
@@ -1446,6 +1767,274 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       }
     },
 
+    generateMoldForObject: async (id, options) => {
+      const obj = get().objects.find((o) => o.id === id);
+      if (!obj) return [];
+
+      set({ busyOperation: 'generate_mold' });
+      try {
+        await get().initEngine();
+        const parts = await engine.generateMold(obj, options);
+        if (parts.length === 0) return [];
+
+        const created = parts.map((part) =>
+          buildSceneObject({
+            name: `${obj.name}${part.nameSuffix}`,
+            source: 'mold',
+            mesh: part.mesh,
+            position: part.position,
+            color: part.color,
+            materialPreset: part.materialPreset,
+          }),
+        );
+
+        pushHistory();
+        const now = Date.now();
+        const spawnedPatch: Record<string, number> = {};
+        for (const c of created) spawnedPatch[c.id] = now;
+
+        set((state) => ({
+          objects: [...state.objects, ...created],
+          selectedIds: created.map((c) => c.id),
+          spawnedAtById: { ...state.spawnedAtById, ...spawnedPatch },
+        }));
+        get().addToast(tr('toast.moldDone', { count: created.length }), 'success');
+        return created;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return [];
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
+    projectOnObjectSurface: async (id, options) => {
+      const obj = get().objects.find((o) => o.id === id);
+      if (!obj || obj.locked) return null;
+
+      set({ busyOperation: 'project_surface' });
+      try {
+        await get().initEngine();
+        const res = await engine.projectGraphicOntoSurface(obj, options);
+        const stats = engine.computeMeshStats(res.mesh);
+
+        pushHistory();
+        const updated: SceneObject = {
+          ...obj,
+          source: 'projected',
+          mesh: res.mesh,
+          position: res.position,
+          stats,
+        };
+
+        set((state) => ({
+          objects: state.objects.map((item) => (item.id === id ? updated : item)),
+          selectedIds: [id],
+        }));
+        get().addToast(tr('toast.projectDone'), 'success');
+        return updated;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return null;
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
+    runPrintabilityCheck: (id, infillPercent = 18, overhangAngleDeg = 45) => {
+      const { objects, printerProfile } = get();
+      const obj = objects.find((o) => o.id === id);
+      if (!obj) return null;
+
+      try {
+        const report = engine.analyzePrintability(
+          obj,
+          printerProfile,
+          obj.materialPreset ?? 'pla_matte',
+          infillPercent,
+          overhangAngleDeg,
+        );
+        set({
+          activePrintReport: report,
+          showOverhangs: report.overhangFaceCount > 0,
+        });
+        get().addToast(
+          tr('toast.printabilityDone', {
+            score: report.score,
+            weight: report.estimatedWeightGrams.toFixed(1),
+          }),
+          report.score >= 70 ? 'success' : 'info',
+        );
+        return report;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return null;
+      }
+    },
+
+    simplifySelectedMesh: async (id, toleranceMm) => {
+      const obj = get().objects.find((o) => o.id === id);
+      if (!obj || obj.locked) return false;
+
+      set({ busyOperation: 'simplify' });
+      try {
+        await get().initEngine();
+        const nextMesh = await engine.simplifyMesh(obj, toleranceMm);
+        const stats = engine.computeMeshStats(nextMesh);
+
+        pushHistory();
+        set((state) => ({
+          objects: state.objects.map((item) =>
+            item.id === id ? { ...item, mesh: nextMesh, stats } : item,
+          ),
+        }));
+        get().addToast(
+          tr('toast.simplifyDone', { tris: stats.triangles.toLocaleString() }),
+          'success',
+        );
+        return true;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return false;
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
+    refineSelectedMesh: async (id, targetEdgeLengthMm, smooth = false) => {
+      const obj = get().objects.find((o) => o.id === id);
+      if (!obj || obj.locked) return false;
+
+      set({ busyOperation: 'refine' });
+      try {
+        await get().initEngine();
+        const nextMesh = await engine.refineMesh(obj, targetEdgeLengthMm, smooth);
+        const stats = engine.computeMeshStats(nextMesh);
+
+        pushHistory();
+        set((state) => ({
+          objects: state.objects.map((item) =>
+            item.id === id ? { ...item, mesh: nextMesh, stats } : item,
+          ),
+        }));
+        get().addToast(
+          tr('toast.refineDone', { tris: stats.triangles.toLocaleString() }),
+          'success',
+        );
+        return true;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return false;
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
+    runConvexHull: async (ids) => {
+      const { objects, selectedIds } = get();
+      const targetIds = ids && ids.length >= 2 ? ids : selectedIds;
+      const targetObjs = objects.filter((o) => targetIds.includes(o.id));
+      if (targetObjs.length === 0) return null;
+
+      set({ busyOperation: 'convex_hull' });
+      try {
+        await get().initEngine();
+        const res = await engine.computeConvexHull(targetObjs);
+        const created = buildSceneObject({
+          name: `Hull (${targetObjs.length})`,
+          source: 'hull',
+          mesh: res.mesh,
+          position: res.position,
+          color: targetObjs[0].color,
+          materialPreset: targetObjs[0].materialPreset,
+        });
+
+        pushHistory();
+        const now = Date.now();
+        set((state) => ({
+          objects: [...state.objects, created],
+          selectedIds: [created.id],
+          spawnedAtById: { ...state.spawnedAtById, [created.id]: now },
+        }));
+        get().addToast(tr('toast.hullDone'), 'success');
+        return created;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return null;
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
+    createThreadObject: async (options) => {
+      set({ busyOperation: 'create_thread' });
+      try {
+        await get().initEngine();
+        const rawMesh = await engine.createMetricThread(options);
+        const normalized = engine.normalizeMeshToBed(rawMesh);
+        const isHole = options.kind === 'hole';
+        const kindLabel =
+          options.kind === 'bolt' ? 'Perno' : options.kind === 'nut' ? 'Tuerca' : '− Rosca';
+
+        const existingCount = get().objects.length;
+        const spawnX = existingCount > 0 ? Math.min(90, existingCount * 28) : 0;
+        const obj = buildSceneObject({
+          name: `${kindLabel} M${options.diameterMm}×${options.pitchMm}`,
+          source: 'thread',
+          mesh: normalized,
+          position: [spawnX, 0, 0],
+          color: isHole ? '#f97316' : '#94a3b8',
+          materialPreset: isHole ? 'pla_matte' : 'metallic',
+          isHole,
+        });
+
+        pushHistory();
+        const now = Date.now();
+        set((state) => ({
+          objects: [...state.objects, obj],
+          selectedIds: [obj.id],
+          spawnedAtById: { ...state.spawnedAtById, [obj.id]: now },
+        }));
+        get().addToast(tr('toast.created', { name: obj.name }), 'success');
+        return obj;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return null;
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
+    alignSelectedObjects: (mode) => {
+      const { objects, selectedIds, printerProfile } = get();
+      const targetObjs =
+        mode === 'arrange_grid' && selectedIds.length < 2
+          ? objects.filter((o) => o.visible && !o.locked)
+          : objects.filter((o) => selectedIds.includes(o.id) && !o.locked);
+
+      if (targetObjs.length === 0) return;
+
+      const positions = engine.computeAlignmentPositions(
+        targetObjs,
+        mode,
+        printerProfile,
+      );
+      pushHistory();
+      set((state) => ({
+        objects: state.objects.map((item) =>
+          positions[item.id] ? { ...item, position: positions[item.id] } : item,
+        ),
+      }));
+      get().addToast(tr('toast.alignedDone', { mode }), 'success');
+    },
+
     importSvgModel: async (options) => {
       set({ busyOperation: 'import_svg' });
       try {
@@ -1479,13 +2068,22 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       set({ busyOperation: 'image_to_3d' });
       try {
         await get().initEngine();
-        const mesh = engine.generateReliefFromImage(options);
+        let mesh: MeshData;
+        if (options.shapeMode === 'cylindrical') {
+          mesh = engine.generateCylindricalLithophane(options);
+        } else if (options.shapeMode === 'silhouette' || options.shapeMode === 'cutter') {
+          mesh = await engine.generateSilhouetteOrCutterFromImage(options);
+        } else {
+          mesh = engine.generateReliefFromImage(options);
+        }
+
         const normalized = engine.normalizeMeshToBed(mesh);
         const obj = buildSceneObject({
           name: options.name || 'Relieve 3D',
           source: 'image',
           mesh: normalized,
           color: PRINT_COLOR_PALETTE[6],
+          materialPreset: options.shapeMode === 'cylindrical' || options.invert ? 'pla_matte' : 'pla_matte',
         });
 
         pushHistory();
@@ -1511,46 +2109,15 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       set({ busyOperation: 'import_mesh' });
       try {
         await get().initEngine();
-        const lower = file.name.toLowerCase();
-        const created: SceneObject[] = [];
-
-        if (lower.endsWith('.3mf')) {
-          const parts = engine.import3MFBuffer(file.buffer);
-          for (const part of parts) {
-            const normalized = engine.normalizeMeshToBed(part.mesh);
-            created.push(
-              buildSceneObject({
-                name: part.name || file.name,
-                source: 'imported',
-                mesh: normalized,
-                color: part.color || PRINT_COLOR_PALETTE[0],
-              }),
-            );
-          }
-        } else if (lower.endsWith('.obj')) {
-          const text = new TextDecoder('utf-8').decode(file.buffer);
-          const mesh = engine.importOBJText(text);
-          const normalized = engine.normalizeMeshToBed(mesh);
-          created.push(
-            buildSceneObject({
-              name: file.name.replace(/\.obj$/i, ''),
-              source: 'imported',
-              mesh: normalized,
-              color: PRINT_COLOR_PALETTE[0],
-            }),
-          );
-        } else {
-          const mesh = engine.importSTLBuffer(file.buffer);
-          const normalized = engine.normalizeMeshToBed(mesh);
-          created.push(
-            buildSceneObject({
-              name: file.name.replace(/\.stl$/i, ''),
-              source: 'imported',
-              mesh: normalized,
-              color: PRINT_COLOR_PALETTE[0],
-            }),
-          );
-        }
+        const parsedParts = parseModelBufferToMeshes(file);
+        const created = parsedParts.map((part) =>
+          buildSceneObject({
+            name: part.name,
+            source: 'imported',
+            mesh: part.mesh,
+            color: part.color || PRINT_COLOR_PALETTE[0],
+          }),
+        );
 
         if (created.length > 0) {
           pushHistory();
@@ -1595,8 +2162,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       return saved;
     },
 
-    exportScene3mf: async (onlySelected = false) => {
-      const { objects, selectedIds, unitSystem } = get();
+    exportScene3mf: async (onlySelected = false, slicerTarget) => {
+      const { objects, selectedIds, unitSystem, printerProfile } = get();
       const targetObjs =
         onlySelected && selectedIds.length > 0
           ? objects.filter((o) => selectedIds.includes(o.id) && o.visible)
@@ -1607,11 +2174,12 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         return false;
       }
 
-      const bytes = engine.exportSceneTo3MF(targetObjs, unitSystem);
+      const resolvedSlicer = slicerTarget ?? printerProfile.brand;
+      const bytes = engine.exportSceneTo3MF(targetObjs, unitSystem, resolvedSlicer);
       const fileName =
         targetObjs.length === 1
-          ? `${targetObjs[0].name.replace(/[^\w\-]+/g, '_')}.3mf`
-          : 'kura3d_escena.3mf';
+          ? `${targetObjs[0].name.replace(/[^\w\-]+/g, '_')}_${resolvedSlicer}.3mf`
+          : `kura3d_escena_${resolvedSlicer}.3mf`;
 
       const saved = await saveBinaryFile(fileName, bytes, [
         { name: '3D Manufacturing Format', extensions: ['3mf'] },
@@ -1620,6 +2188,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.exported', { name: fileName }), 'success');
       }
       return saved;
+    },
+
+    export3MFForSlicer: async (slicerTarget, onlySelected = false) => {
+      return get().exportScene3mf(onlySelected, slicerTarget);
     },
 
     exportSelectedObj: async () => {
@@ -1647,7 +2219,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         source === 'mcp' &&
         get().mcpConfig.readOnly &&
         req.command !== 'get_scene_state' &&
-        req.command !== 'capture_viewport'
+        req.command !== 'capture_viewport' &&
+        req.command !== 'analyze_printability'
       ) {
         return {
           id: req.id,
@@ -1665,6 +2238,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
               ok: true,
               result: {
                 engineReady: s.engineReady,
+                uiDensity: s.uiDensity,
                 unitSystem: s.unitSystem,
                 language: s.language,
                 printerProfile: s.printerProfile,
@@ -1678,6 +2252,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
                   rotation: o.rotation,
                   scale: o.scale,
                   color: o.color,
+                  materialPreset: o.materialPreset ?? 'pla_matte',
                   isHole: o.isHole,
                   visible: o.visible,
                   locked: o.locked,
@@ -1688,7 +2263,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           }
 
           case 'create_primitive': {
-            const type = ((p.type ?? p.primitiveType ?? 'box') as PrimitiveType);
+            const type = (p.type ?? p.primitiveType ?? 'box') as PrimitiveType;
             const nestedParams =
               p.params && typeof p.params === 'object'
                 ? (p.params as PrimitiveParams)
@@ -1713,6 +2288,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
               color: typeof p.color === 'string' ? p.color : undefined,
               position: Array.isArray(p.position) ? (p.position as Vec3) : undefined,
               isHole: typeof p.isHole === 'boolean' ? p.isHole : undefined,
+              materialPreset:
+                typeof p.materialPreset === 'string'
+                  ? (p.materialPreset as MaterialPresetId)
+                  : undefined,
             });
             return {
               id: req.id,
@@ -1777,7 +2356,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           }
 
           case 'boolean_operation': {
-            const op = ((p.op ?? p.operation ?? 'union') as BooleanOpType);
+            const op = (p.op ?? p.operation ?? 'union') as BooleanOpType;
             const rawTarget = p.targetId ?? p.id ?? p.objectId;
             const targetId = typeof rawTarget === 'string' && rawTarget ? rawTarget : undefined;
             const toolId =
@@ -1931,6 +2510,150 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
             return { id: req.id, ok: false, error: 'Unidad inválida.' };
           }
 
+          case 'set_material': {
+            const rawId = p.id ?? p.objectId;
+            const targetId =
+              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
+            if (!targetId) {
+              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para asignar material.' };
+            }
+            const materialPreset = (p.materialPreset ?? p.material ?? 'pla_matte') as MaterialPresetId;
+            get().setObjectMaterial(targetId, materialPreset);
+            return { id: req.id, ok: true, result: { id: targetId, materialPreset } };
+          }
+
+          case 'generate_mold': {
+            const rawId = p.id ?? p.objectId;
+            const targetId =
+              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
+            if (!targetId) {
+              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para generar molde.' };
+            }
+            const created = await get().generateMoldForObject(targetId, {
+              mode: (p.mode as MoldOptions['mode']) || 'silicone_master',
+              wallMarginMm: typeof p.wallMarginMm === 'number' ? p.wallMarginMm : 6,
+              boxWallMm: typeof p.boxWallMm === 'number' ? p.boxWallMm : 3,
+              splitAxis: p.splitAxis === 'z' ? 'z' : 'x',
+              pourSpout: typeof p.pourSpout === 'boolean' ? p.pourSpout : true,
+              pourSpoutRadiusMm: typeof p.pourSpoutRadiusMm === 'number' ? p.pourSpoutRadiusMm : 5,
+              keyToleranceMm: typeof p.keyToleranceMm === 'number' ? p.keyToleranceMm : 0.25,
+              cavityWallMm: typeof p.cavityWallMm === 'number' ? p.cavityWallMm : 3,
+            });
+            return {
+              id: req.id,
+              ok: created.length > 0,
+              result: created.map((c) => ({ id: c.id, name: c.name })),
+            };
+          }
+
+          case 'project_on_surface': {
+            const rawId = p.id ?? p.objectId;
+            const targetId =
+              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
+            if (!targetId) {
+              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para proyectar.' };
+            }
+            const updated = await get().projectOnObjectSurface(targetId, {
+              kind: p.kind === 'svg' ? 'svg' : 'text',
+              text: typeof p.text === 'string' ? p.text : 'KURA3D',
+              svgContent: typeof p.svgContent === 'string' ? p.svgContent : undefined,
+              mode: (p.mode as SurfaceProjectionOptions['mode']) || 'emboss',
+              axis: (p.axis as SurfaceProjectionOptions['axis']) || '+z',
+              widthMm: typeof p.widthMm === 'number' ? p.widthMm : 18,
+              depthMm: typeof p.depthMm === 'number' ? p.depthMm : 1.2,
+              colorHex: typeof p.colorHex === 'string' ? p.colorHex : '#f97316',
+              offsetU: typeof p.offsetU === 'number' ? p.offsetU : 0,
+              offsetV: typeof p.offsetV === 'number' ? p.offsetV : 0,
+            });
+            return {
+              id: req.id,
+              ok: Boolean(updated),
+              result: updated ? { id: updated.id, name: updated.name, stats: updated.stats } : null,
+            };
+          }
+
+          case 'analyze_printability': {
+            const rawId = p.id ?? p.objectId;
+            const targetId =
+              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
+            if (!targetId) {
+              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para analizar.' };
+            }
+            const report = get().runPrintabilityCheck(
+              targetId,
+              typeof p.infillPercent === 'number' ? p.infillPercent : 18,
+              typeof p.overhangAngleDeg === 'number' ? p.overhangAngleDeg : 45,
+            );
+            return {
+              id: req.id,
+              ok: Boolean(report),
+              result: report,
+            };
+          }
+
+          case 'simplify_mesh': {
+            const rawId = p.id ?? p.objectId;
+            const targetId =
+              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
+            if (!targetId) {
+              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para simplificar.' };
+            }
+            const ok = await get().simplifySelectedMesh(
+              targetId,
+              typeof p.toleranceMm === 'number' ? p.toleranceMm : 0.15,
+            );
+            const updated = get().objects.find((o) => o.id === targetId);
+            return { id: req.id, ok, result: updated ? updated.stats : null };
+          }
+
+          case 'refine_mesh': {
+            const rawId = p.id ?? p.objectId;
+            const targetId =
+              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
+            if (!targetId) {
+              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para refinar.' };
+            }
+            const ok = await get().refineSelectedMesh(
+              targetId,
+              typeof p.targetEdgeLengthMm === 'number' ? p.targetEdgeLengthMm : 1.5,
+              Boolean(p.smooth),
+            );
+            const updated = get().objects.find((o) => o.id === targetId);
+            return { id: req.id, ok, result: updated ? updated.stats : null };
+          }
+
+          case 'create_thread': {
+            const created = await get().createThreadObject({
+              kind: (p.kind as ThreadOptions['kind']) || 'bolt',
+              diameterMm: typeof p.diameterMm === 'number' ? p.diameterMm : 8,
+              pitchMm: typeof p.pitchMm === 'number' ? p.pitchMm : 1.25,
+              lengthMm: typeof p.lengthMm === 'number' ? p.lengthMm : 20,
+              clearanceMm: typeof p.clearanceMm === 'number' ? p.clearanceMm : 0.25,
+              includeHead: typeof p.includeHead === 'boolean' ? p.includeHead : true,
+            });
+            return {
+              id: req.id,
+              ok: Boolean(created),
+              result: created ? { id: created.id, name: created.name, stats: created.stats } : null,
+            };
+          }
+
+          case 'convex_hull': {
+            const ids = Array.isArray(p.ids) ? (p.ids as string[]) : undefined;
+            const created = await get().runConvexHull(ids);
+            return {
+              id: req.id,
+              ok: Boolean(created),
+              result: created ? { id: created.id, name: created.name, stats: created.stats } : null,
+            };
+          }
+
+          case 'align_objects': {
+            const mode = (p.mode as AlignMode) || 'arrange_grid';
+            get().alignSelectedObjects(mode);
+            return { id: req.id, ok: true, result: { mode } };
+          }
+
           case 'export_stl': {
             const onlySelected = Boolean(p.onlySelected);
             if (p.returnBytes || p.outputPath || typeof document === 'undefined') {
@@ -1960,6 +2683,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
           case 'export_3mf': {
             const onlySelected = Boolean(p.onlySelected);
+            const slicerTarget =
+              typeof p.slicerTarget === 'string'
+                ? (p.slicerTarget as SlicerTarget)
+                : get().printerProfile.brand;
             if (p.returnBytes || p.outputPath || typeof document === 'undefined') {
               const { objects, selectedIds, unitSystem } = get();
               const targetObjs =
@@ -1969,20 +2696,21 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
               if (targetObjs.length === 0) {
                 return { id: req.id, ok: false, error: tr('toast.nothingToExport') };
               }
-              const bytes = engine.exportSceneTo3MF(targetObjs, unitSystem);
+              const bytes = engine.exportSceneTo3MF(targetObjs, unitSystem, slicerTarget);
               const triangleCount = targetObjs.reduce((acc, o) => acc + o.stats.triangles, 0);
               return {
                 id: req.id,
                 ok: true,
                 result: {
                   format: '3mf',
+                  slicerTarget,
                   bytesBase64: uint8ToBase64(bytes),
                   triangleCount,
                 },
               };
             }
-            const ok = await get().exportScene3mf(onlySelected);
-            return { id: req.id, ok, result: { format: '3mf' } };
+            const ok = await get().exportScene3mf(onlySelected, slicerTarget);
+            return { id: req.id, ok, result: { format: '3mf', slicerTarget } };
           }
 
           case 'capture_viewport': {
