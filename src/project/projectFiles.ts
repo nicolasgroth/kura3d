@@ -1,3 +1,12 @@
+/**
+ * @file src/project/projectFiles.ts
+ * @description Guardado y apertura de archivos de proyecto .kura en navegador (File System Access,
+ * descarga) y escritorio (Tauri).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { isTauriRuntime, saveBinaryFile } from '../utils/platformBridge';
 import { MAX_PROJECT_BYTES, ProjectCodecError } from './projectSchema';
 

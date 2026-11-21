@@ -1,3 +1,12 @@
+/**
+ * @file src/project/projectCodec.worker.ts
+ * @description Web Worker que codifica y decodifica proyectos .kura fuera del hilo principal,
+ * transfiriendo los buffers de geometría.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { decodeProject, encodeProject } from './projectCodec';
 import type { ProjectCodecRequest, ProjectCodecResponse } from './projectCodecClient';
 import { ProjectCodecError, type ProjectDocument } from './projectSchema';

@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/headlessEngine.ts
- * @description Motor geométrico autónomo (modo Headless) para el servidor MCP de Kura3D Pro v3.0.
+ * @description Motor geométrico autónomo (modo Headless) para el servidor MCP de Kura3D.
  * Permite crear primitivas paramétricas watertight, roscas ISO, moldes, alinear objetos,
  * analizar imprimibilidad, asignar materiales PBR, y exportar archivos STL binarios/ASCII
  * y 3MF Multi-Slicer directamente en disco aunque la UI de Kura3D no esté abierta.
@@ -395,7 +395,7 @@ export class KuraHeadlessEngine {
   }
 
   /* ------------------------------------------------------------------------ */
-  /* Herramientas Pro v3.0 en modo Headless                                   */
+  /* Herramientas avanzadas en modo Headless                                  */
   /* ------------------------------------------------------------------------ */
 
   /** Analiza imprimibilidad real (bounding box, volumen, encaje en cama, voladizos, peso y advertencias). */
@@ -904,7 +904,7 @@ export class KuraHeadlessEngine {
   }
 
   /* ------------------------------------------------------------------------ */
-  /* Herramientas v4.0: Segmentación Estructural y Simetría (Mirror)          */
+  /* Segmentación Estructural y Simetría (Mirror)          */
   /* ------------------------------------------------------------------------ */
 
   /**
@@ -1165,7 +1165,7 @@ export class KuraHeadlessEngine {
     };
   }
 
-  /** Exporta los objetos seleccionados a un contenedor 3MF Multi-Slicer Pro (con `Metadata/model_settings.config`). */
+  /** Exporta los objetos seleccionados a un contenedor 3MF Multi-Slicer (con `Metadata/model_settings.config`). */
   async export3mf(input: {
     outputPath: string;
     objectIds?: string[];
@@ -1862,7 +1862,7 @@ function encodeAsciiStl(mesh: HeadlessMeshData): string {
 }
 
 /**
- * Empaqueta objetos en un archivo 3MF Multi-Slicer Pro válido (OPC/ZIP sin compresión),
+ * Empaqueta objetos en un archivo 3MF Multi-Slicer válido (OPC/ZIP sin compresión),
  * incluyendo `Metadata/model_settings.config` compatible con Bambu Studio, ElegooSlicer,
  * OrcaSlicer, Snapmaker Luban y FlashPrint.
  */
@@ -1935,7 +1935,7 @@ function encode3mfArchive(
   const modelXml =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<model unit="millimeter" xml:lang="es" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n` +
-    `  <metadata name="Application">Kura3D Pro MCP</metadata>\n` +
+    `  <metadata name="Application">Kura3D MCP</metadata>\n` +
     `  <metadata name="Designer">Nicolás Groth</metadata>\n` +
     `  <metadata name="Kura3D:SlicerTarget">${escapeXml(slicerTarget)}</metadata>\n` +
     `  <resources>\n${resourcesXml.join('\n')}\n  </resources>\n` +
@@ -2071,7 +2071,7 @@ function capitalize(value: string): string {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Helpers determinísticos de segmentación estructural v4.0 (Headless)        */
+/* Helpers determinísticos de segmentación estructural (Headless)        */
 /* -------------------------------------------------------------------------- */
 
 const STRUCTURE_PALETTE = [

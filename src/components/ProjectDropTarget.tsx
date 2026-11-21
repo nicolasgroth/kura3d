@@ -1,3 +1,12 @@
+/**
+ * @file src/components/ProjectDropTarget.tsx
+ * @description Zona de arrastrar y soltar archivos .kura sobre la ventana, con validación de tamaño
+ * y apertura del proyecto en navegador y en Tauri.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { useEffect, useState } from 'react';
 import { FileUp } from 'lucide-react';
 import { t } from '../i18n';

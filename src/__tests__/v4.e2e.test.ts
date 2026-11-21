@@ -1,8 +1,8 @@
 /**
  * @file src/__tests__/v4.e2e.test.ts
- * @description Suite integral de evaluación funcional End-to-End (E2E) para Kura3D v4.0 Ultra Pro.
+ * @description Suite integral de evaluación funcional End-to-End (E2E) para Kura3D.
  * Verifica de punta a punta el store central Zustand (`useKuraStore`), el núcleo geométrico
- * Manifold-3D WASM y el Command Bus unificado a través de las 9 áreas funcionales v3.0 & v4.0:
+ * Manifold-3D WASM y el Command Bus unificado a través de las 9 áreas funcionales:
  *   1. Módulos dinámicos (+ / −) e importación STL modular + aplicación booleana de huecos.
  *   2. Generador automático de moldes (4 modos) con verificación watertight y apoyo Y >= 0.
  *   3. Proyección conformal de texto sobre cilindro curvo (`emboss`, `deboss`, `flush_inlay`).
@@ -11,8 +11,8 @@
  *   6. Alineación inteligente (`minX`) y distribución automática en cama (`arrange_grid`).
  *   7. Detección y segmentación estructural determinística sobre modelo compuesto "Buzo/Diver".
  *   8. Interacciones CAD Pro en store (mirror, nudge, proportionalScale, altClone, materiales, densidad UI)
- *      y Command Bus v4.0 (`detect_structures`, `colorize_structures`, `extract_structure`, `mirror_object`).
- *   9. Exportación 3MF Multi-Slicer Pro (Bambu, Elegoo, Snapmaker, FlashForge) con `Metadata/model_settings.config`.
+ *      y Command Bus (`detect_structures`, `colorize_structures`, `extract_structure`, `mirror_object`).
+ *   9. Exportación 3MF Multi-Slicer (Bambu, Elegoo, Snapmaker, FlashForge) con `Metadata/model_settings.config`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -108,7 +108,7 @@ async function resetCleanStore() {
   });
 }
 
-describe('Kura3D v4.0 Ultra Pro — Evaluación Funcional End-to-End (Store + Engine + Command Bus)', () => {
+describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command Bus)', () => {
   beforeEach(async () => {
     await resetCleanStore();
   });
@@ -676,9 +676,9 @@ describe('Kura3D v4.0 Ultra Pro — Evaluación Funcional End-to-End (Store + En
   });
 
   // ==========================================================================
-  // ÁREA 8: Interacciones CAD Pro en Store & Command Bus v4.0
+  // ÁREA 8: Interacciones CAD Pro en Store & Command Bus
   // ==========================================================================
-  describe('8. Interacciones CAD Pro en Store y Command Bus v4.0', () => {
+  describe('8. Interacciones CAD Pro en Store y Command Bus', () => {
     it('ejecuta mirrorObject, nudgeSelectedObjects, proportionalScale, altCloneForDrag, material y ciclo uiDensity', async () => {
       const box = await useKuraStore
         .getState()
@@ -726,7 +726,7 @@ describe('Kura3D v4.0 Ultra Pro — Evaluación Funcional End-to-End (Store + En
       useKuraStore.getState().commitTransformSnapshot();
     });
 
-    it('despacha los comandos v4.0 del Command Bus (detect_structures, colorize_structures, extract_structure, mirror_object)', async () => {
+    it('despacha los comandos del Command Bus (detect_structures, colorize_structures, extract_structure, mirror_object)', async () => {
       // Construimos un modelo compuesto simple (caja + cilindro unido) vía store
       const b = await useKuraStore
         .getState()
@@ -794,9 +794,9 @@ describe('Kura3D v4.0 Ultra Pro — Evaluación Funcional End-to-End (Store + En
   });
 
   // ==========================================================================
-  // ÁREA 9: Exportación 3MF Multi-Slicer Pro (Bambu, Elegoo, Snapmaker, FlashForge)
+  // ÁREA 9: Exportación 3MF Multi-Slicer (Bambu, Elegoo, Snapmaker, FlashForge)
   // ==========================================================================
-  describe('9. Exportación 3MF Multi-Slicer Pro con Metadata/model_settings.config', () => {
+  describe('9. Exportación 3MF Multi-Slicer con Metadata/model_settings.config', () => {
     it('exporta 3MF válido para bambu, elegoo, snapmaker y flashforge vía engine y Command Bus', async () => {
       const p1 = await useKuraStore
         .getState()

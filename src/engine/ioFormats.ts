@@ -16,6 +16,7 @@ import type {
   SlicerTarget,
   UnitSystem,
 } from '../types/kura';
+import { BRAND } from '../brand';
 import { computeVertexNormals, weldVertices } from './manifoldKernel';
 import { applyTransformToMesh, normalizeMeshToBed } from './primitives';
 
@@ -200,7 +201,7 @@ export function exportSceneToBinarySTL(objects: SceneObject[]): Uint8Array {
 // ============================================================================
 
 /**
- * Genera un paquete `.3mf` Multi-Slicer Pro válido (archivo ZIP con `[Content_Types].xml`,
+ * Genera un paquete `.3mf` Multi-Slicer válido (archivo ZIP con `[Content_Types].xml`,
  * `_rels/.rels`, `3D/3dmodel.model` y `Metadata/model_settings.config`) incluyendo
  * `<basematerials>` y atributos `pid`/`p1` por triángulo para compatibilidad multicolor
  * nativa con Bambu Studio, Elegoo Slicer, Snapmaker Orca, FlashForge Orca y PrusaSlicer.
@@ -335,8 +336,8 @@ export function exportSceneTo3MF(
   const modelXml =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<model unit="${unitSpec.xmlName}" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n` +
-    `  <metadata name="Application">Kura3D by Nicolás Groth</metadata>\n` +
-    `  <metadata name="Organization">ISGROTH — Innovación y Soluciones GROTH</metadata>\n` +
+    `  <metadata name="Application">${BRAND.name} by ${BRAND.author}</metadata>\n` +
+    `  <metadata name="Organization">${BRAND.organization}</metadata>\n` +
     `  <metadata name="SlicerTarget">${escapeXml(slicerTarget)}</metadata>\n` +
     `  <resources>\n` +
     `    <basematerials id="1">\n${baseMaterialsXml}\n    </basematerials>\n` +

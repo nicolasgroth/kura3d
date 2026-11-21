@@ -1,7 +1,7 @@
 /**
  * @file src/engine/molds.ts
  * @description Generador automático paramétrico de moldes y contra-moldes watertight
- * para colado de silicona, velas, resinas y termoconformado en Kura3D Pro v3.0.
+ * para colado de silicona, velas, resinas y termoconformado en Kura3D.
  * Soporta cuatro modos deterministas: molde directo de 1 parte, molde bivalvo de 2 partes
  * con llaves de registro y tolerancia, caja madre contenedora + positivo maestro,
  * y sistema núcleo/cavidad para piezas huecas.

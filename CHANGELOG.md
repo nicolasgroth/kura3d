@@ -10,6 +10,8 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- Nombre único **Kura3D** en interfaz, documentación y metadatos de exportación; marca centralizada en `src/brand.ts` y cabecera de autoría en todo el código.
+- Nuevo flujo de trabajo con agentes de desarrollo, QA y evaluadores independientes (`CLAUDE.md`, `.claude/agents/`), roadmap reenfocado y registro de funcionalidades.
 - Proyecto local `.kura` v1 con escena, unidades, selección, materiales e historial de Deshacer/Rehacer. Guardado atómico en Windows, aviso de cambios al cerrar y procesamiento del archivo en un Worker. Una descarga web conserva el aviso de cambios hasta una escritura confirmada o hasta reabrir el archivo.
 - Navegación por `Tab` y `Shift+Tab`, modo Zen con `Ctrl/⌘+Shift+Enter` y visor adaptable con controles accesibles en ventanas estrechas.
 - Arranque con escena vacía y acciones para importar, abrir proyecto o crear un cubo de ejemplo. Arrastrar modelos STL, 3MF u OBJ los importa como un lote reversible. Un `.kura` abre un proyecto con aviso de descarte si corresponde. Los lotes con mallas inválidas se rechazan antes de cambiar la escena. El recorrido web está verificado y queda pendiente el gesto físico en Tauri. La distribución por placas y la preservación de alturas siguen en el plan de importación.

@@ -2,7 +2,7 @@
  * @file src/engine/structuralSegmentation.ts
  * @description Motor determinístico 100 % local (sin IA externa) de detección, clasificación
  * geométrica, coloreado, extracción sólida con cierre de bucles abiertos, división completa
- * y simetría especular (mirror) para modelos 3D en Kura3D v4.0.
+ * y simetría especular (mirror) para modelos 3D en Kura3D.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

@@ -1,3 +1,11 @@
+/**
+ * @file src/project/projectRecoveryAutosave.test.ts
+ * @description Pruebas del autoguardado de recuperación de proyectos.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from 'zustand/vanilla';
 import { captureProject, useKuraStore, type KuraStoreState } from '../store/useKuraStore';

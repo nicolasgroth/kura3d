@@ -2087,7 +2087,7 @@ dialog.kura-dialog-side[open]:where(:not([data-closing]))::backdrop {
 }
 
 /* ============================================================================
- * 10. Componentes Kura3D Pro v3.0 (Leyenda de Filamentos, Validador, Módulos)
+ * 10. Componentes Kura3D (Leyenda de Filamentos, Validador, Módulos)
  * ============================================================================ */
 .kura-filament-legend {
   display: flex;
@@ -2181,7 +2181,7 @@ dialog.kura-dialog-side[open]:where(:not([data-closing]))::backdrop {
 }
 
 /* ============================================================================
- * 11. Componentes Kura3D v4.0 Ultra Pro (Precision Input, Lock, Estructuras, Pro Tips, Atajos)
+ * 11. Componentes Kura3D (Precision Input, Lock, Estructuras, Pro Tips, Atajos)
  * ============================================================================ */
 .kura-precision-input {
   display: flex;
@@ -2496,7 +2496,7 @@ dialog.kura-dialog-wide {
 }
 
 /* ============================================================================
- * 10. Pulido Final v4.0 Ultra Pro (Pro Tips, Inputs & Select)
+ * 10. Pulido Final (Pro Tips, Inputs & Select)
  * ============================================================================ */
 
 /* Pro Tips posicionado sobre Tamaño/Cama a la izquierda sin salirse de <main> ni tapar controles */

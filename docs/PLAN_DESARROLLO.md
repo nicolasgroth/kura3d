@@ -1,4 +1,4 @@
-# Plan de desarrollo de Kura 3D
+# Plan de desarrollo de Kura3D
 
 Línea base del 21 de noviembre de 2026 · `main` en `9c875ba` · aplicación `0.5.0`.
 

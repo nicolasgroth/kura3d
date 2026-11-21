@@ -3,7 +3,7 @@
  * @description Validador estructural de imprimibilidad 3D (detección de voladizos críticos,
  * ajuste en cama, objetos flotantes, peso realista por material PBR y longitud de filamento),
  * simplificación topológica, refinamiento/suavizado adaptativo y envolvente convexa (Convex Hull)
- * sobre el núcleo Manifold-3D en Kura3D Pro v3.0.
+ * sobre el núcleo Manifold-3D en Kura3D.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

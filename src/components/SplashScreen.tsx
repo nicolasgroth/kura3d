@@ -11,6 +11,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { t } from '../i18n';
+import { BRAND } from '../brand';
 import { useKuraStore } from '../store/useKuraStore';
 
 type SplashPhase = 'visible' | 'leaving' | 'done';
@@ -93,7 +94,7 @@ export const SplashScreen: React.FC = () => {
         </div>
 
         <div className="kura-splash-title-row">
-          <span className="kura-splash-wordmark">Kura 3D</span>
+          <span className="kura-splash-wordmark">{BRAND.name}</span>
           <span className="kura-splash-version">v0.5.0</span>
         </div>
 

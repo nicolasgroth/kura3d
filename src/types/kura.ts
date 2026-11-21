@@ -1,6 +1,6 @@
 /**
  * @file src/types/kura.ts
- * @description Contratos y tipos compartidos para Kura3D Pro v3.0 (Escena, Geometría, Moldes,
+ * @description Contratos y tipos compartidos para Kura3D (Escena, Geometría, Moldes,
  * Proyección en Superficies, Validador Estructural, Materiales PBR, Impresoras Multi-Marca,
  * Unidades, i18n, MCP y Chat IA).
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -318,7 +318,7 @@ export const MATERIAL_PRESETS: Record<MaterialPresetId, MaterialPresetSpec> = {
   },
 };
 
-/** Slicers destino soportados en el exportador 3MF Multi-Slicer Pro. */
+/** Slicers destino soportados en el exportador 3MF Multi-Slicer. */
 export type SlicerTarget = 'generic' | 'elegoo' | 'bambu' | 'snapmaker' | 'flashforge';
 
 /** Tipos de textura superficial procedural aplicable sobre mallas. */
@@ -775,7 +775,7 @@ export interface KuraCommandResponse {
 }
 
 /**
- * Presets oficiales de impresoras 3D integrados en Kura3D Pro:
+ * Presets oficiales de impresoras 3D integrados en Kura3D:
  * Elegoo Centauri Carbon 1 & 2, Bambu Lab, Snapmaker, FlashForge y modos genéricos.
  */
 export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [

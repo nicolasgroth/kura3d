@@ -1,13 +1,13 @@
 /**
  * @file src/engine/__tests__/proEngine.test.ts
  * @description Suite integral de pruebas unitarias Vitest para las extensiones
- * Kura3D Pro v3.0 del núcleo geométrico:
+ * Kura3D del núcleo geométrico:
  * - Generador automático de moldes (4 modos)
  * - Proyección conformal de texto/SVG sobre superficies planas y cilíndricas
  * - Validador de imprimibilidad, simplificación, refinamiento/suavizado y Convex Hull
  * - Roscas métricas ISO helicoidales, litofanías cilíndricas y siluetas/cortadores desde imagen
  * - Alineación inteligente y distribución automática en cama
- * - Exportador 3MF Multi-Slicer Pro con Metadata/model_settings.config
+ * - Exportador 3MF Multi-Slicer con Metadata/model_settings.config
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -105,7 +105,7 @@ function makeCircleRgba(size = 32): Uint8ClampedArray {
   return rgba;
 }
 
-describe('Kura3D Pro v3.0 — Extensiones del Núcleo Geométrico', () => {
+describe('Kura3D — Extensiones del Núcleo Geométrico', () => {
   // ==========================================================================
   // 1. Generador automático de moldes (4 modos)
   // ==========================================================================
@@ -566,9 +566,9 @@ describe('Kura3D Pro v3.0 — Extensiones del Núcleo Geométrico', () => {
   });
 
   // ==========================================================================
-  // 6. Exportador 3MF Multi-Slicer Pro
+  // 6. Exportador 3MF Multi-Slicer
   // ==========================================================================
-  describe('6. Exportador 3MF Multi-Slicer Pro (src/engine/ioFormats.ts)', () => {
+  describe('6. Exportador 3MF Multi-Slicer (src/engine/ioFormats.ts)', () => {
     it('genera Metadata/model_settings.config y metadatos para Bambu/Elegoo/Snapmaker/FlashForge sin romper import3MFBuffer', async () => {
       const box = await createPrimitiveMesh('box', { width: 20, height: 15, depth: 20 });
       const obj1 = makeSceneObject('PiezaAzul', box, { color: '#38bdf8' });

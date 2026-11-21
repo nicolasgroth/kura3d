@@ -1,3 +1,12 @@
+/**
+ * @file src/project/useProjectRecovery.ts
+ * @description Hook de React que gestiona borradores de recuperación: listado, restauración,
+ * descarte y estado del autoguardado.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';

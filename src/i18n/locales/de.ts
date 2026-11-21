@@ -405,7 +405,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'ai.send': 'Senden',
   'ai.clearChat': 'Chat leeren',
   'ai.thinking': 'Geometrie wird berechnet...',
-  'ai.welcome': 'Hallo, ich bin der Assistent von Kura3D Pro. Ich erstelle Grundkörper, ISO-Gewinde, Silikon-/Kerzenformen, prüfe die Druckbarkeit, projiziere Text, schneide mit Verbindern oder exportiere Multi-Slicer-3MF. Konfigurieren Sie Gemini, OpenAI, Anthropic oder Ollama in den Einstellungen oder nutzen Sie lokale Befehle ohne API.',
+  'ai.welcome': 'Hallo, ich bin der Assistent von Kura3D. Ich erstelle Grundkörper, ISO-Gewinde, Silikon-/Kerzenformen, prüfe die Druckbarkeit, projiziere Text, schneide mit Verbindern oder exportiere Multi-Slicer-3MF. Konfigurieren Sie Gemini, OpenAI, Anthropic oder Ollama in den Einstellungen oder nutzen Sie lokale Befehle ohne API.',
   'ai.chip.box': '40-mm-Quader',
   'ai.chip.hollow': '2,5 mm aushöhlen',
   'ai.chip.cylinder': '20×50 mm Zylinder',

@@ -1,3 +1,11 @@
+/**
+ * @file src/components/ProjectRecoveryBanner.tsx
+ * @description Aviso accesible de borradores de recuperación local con acciones de restaurar y descartar.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { useId, useState } from 'react';
 import { History } from 'lucide-react';
 import { t } from '../i18n';

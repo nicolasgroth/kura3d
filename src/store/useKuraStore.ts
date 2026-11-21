@@ -311,7 +311,7 @@ export interface KuraStoreState {
   ) => void;
   eraseSphereOnObject: (id: string, worldCenter: Vec3, radiusMm?: number) => Promise<void>;
 
-  // Nuevas capacidades Pro v3.0
+  // Nuevas capacidades
   generateMoldForObject: (id: string, options: MoldOptions) => Promise<SceneObject[]>;
   projectOnObjectSurface: (
     id: string,
@@ -332,7 +332,7 @@ export interface KuraStoreState {
   createThreadObject: (options: ThreadOptions) => Promise<SceneObject | null>;
   alignSelectedObjects: (mode: AlignMode) => void;
 
-  // Detección estructural local y separación de sub-partes (v4.0)
+  // Detección estructural local y separación de sub-partes
   detectObjectStructures: (
     id?: string,
     creaseAngleDeg?: number,

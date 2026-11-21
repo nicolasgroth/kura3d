@@ -1,3 +1,11 @@
+/**
+ * @file src/project/projectWorkspace.test.ts
+ * @description Pruebas del espacio de trabajo de proyectos locales.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { exportSceneTo3MF, exportSceneToBinarySTL } from '../engine';
 import { isProjectDirty, useKuraStore } from '../store/useKuraStore';

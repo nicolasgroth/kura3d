@@ -1,3 +1,9 @@
+// Autor: Nicolás Groth <ngroth@gmail.com>
+// Organización: ISGROTH — Innovación y Soluciones GROTH
+// Licencia: MIT
+// Descripción: Comandos nativos de Tauri para abrir y guardar proyectos .kura con
+// autorización de rutas por sesión, escritura atómica y límite de tamaño.
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::{self, File};

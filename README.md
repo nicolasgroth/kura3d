@@ -76,7 +76,7 @@ Generador automático de moldes para velas/silicona (4 modos), pernos/tuercas he
   - **Generador Automático de Moldes y Contra-moldes (Velas / Silicona / Resina):** 1 pieza, 2 mitades con llaves de registro + embudo, **Caja Madre para silicona** y **Núcleo/Cavidad**.
   - **Proyección Conformal de Texto y SVG sobre CUALQUIER Superficie:** relieve (+), grabado (−) o incrustación multicolor a ras (*Flush Inlay*) sobre caras planas, cilindros (`360°`), esferas o STLs orgánicos.
   - **Módulos Dinámicos (+ / − con primitivas o STL/3MF)**, **Corte con vista previa láser 3D y uniones (`dowel`/`peg`/`dovetail`)**, **Ahuecado (Hollow)**, **Validador de Imprimibilidad** (voladizos > 45° en rojo 3D, peso/metros de filamento), **Simplificador/Refinador** (`simplify`/`refineToLength`), **Convex Hull**, **Roscas ISO `M3–M20`**, **Litofanía Plana y Cilíndrica**, **Imagen → Silueta/Cortador**, **5 texturas procedurales**, **pintado 3D** y **Vista Rayos X** (*Clipping Plane*).
-- **12 Impresoras Multi-Marca, Materiales PBR y Exportador 3MF Multi-Slicer Pro:**
+- **12 Impresoras Multi-Marca, Materiales PBR y Exportador 3MF Multi-Slicer:**
   - Siluetas 3D de cama con zona de purga para **Elegoo Centauri Carbon 2 & 1**, **Bambu Lab (A1 Mini, A1/P1S/X1C, H2D)**, **Snapmaker (Artisan, J1s)**, **FlashForge (AD5M/Pro, AD5X)**, genéricas y Estudio Libre.
   - 8 materiales PBR (*PLA Mate, PLA Silk, PETG Translúcido, ABS, Fibra de Carbono, Silicona, Cera/Vela, Metálico*), 5 sistemas de unidades (`mm`, `cm`, `m`, `in`, `ft`) y exportación **STL binario Z-up**, **OBJ** y **3MF** con `<basematerials>` y `Metadata/model_settings.config`.
 - **Servidor MCP Open-Source Seguro (`mcp-server/`):** **30 herramientas `kura_*`**, desactivado por defecto en la UI, puerto configurable (`127.0.0.1`), **autenticación Bearer Token (`timingSafeEqual`)**, **Modo Solo Lectura** y *rate-limiting*.
@@ -121,6 +121,8 @@ npm run mcp:test
 ---
 
 ## Documentación Adicional
+- [Roadmap y prioridades](docs/ROADMAP.md)
+- [Registro de funcionalidades](docs/FUNCIONALIDADES.md)
 - [Continuidad del proyecto y próximos pasos](docs/CONTINUAR_KURA3D.md)
 - [Plan de Desarrollo y Seguimiento (`docs/PLAN_DESARROLLO.md`)](docs/PLAN_DESARROLLO.md)
 - [Historial de Versiones (`CHANGELOG.md`)](CHANGELOG.md)

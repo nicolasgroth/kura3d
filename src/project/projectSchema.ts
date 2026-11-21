@@ -1,3 +1,11 @@
+/**
+ * @file src/project/projectSchema.ts
+ * @description Esquema, tipos y validadores del documento de proyecto .kura y sus errores.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneObject, type UnitSystem } from '../types/kura';
 
 export const MAX_PROJECT_BYTES = 128 * 1024 * 1024;

@@ -1,4 +1,4 @@
-# Continuidad de Kura 3D
+# Continuidad de Kura3D
 
 Actualizado el 21 de noviembre de 2026. Abrir el repositorio `G:/OneDrive/proyectos/creador_modelos_3d_impresion` en el chat nuevo y tomar como base `codex/kura3d-proyectos-ux`. La rama parte de `main` en `9c875ba`. El destino Git es `origin`, repositorio `nicolasgroth/kura3d`. La versión declarada sigue siendo 0.5.0 y los cambios de esta entrega están agrupados bajo «Sin publicar».
 

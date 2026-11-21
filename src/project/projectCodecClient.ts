@@ -1,3 +1,11 @@
+/**
+ * @file src/project/projectCodecClient.ts
+ * @description Cliente que delega la codificación y decodificación de proyectos al worker del códec.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { MAX_PROJECT_BYTES, ProjectCodecError, type ProjectDocument } from './projectSchema';
 
 export type ProjectCodecRequest =

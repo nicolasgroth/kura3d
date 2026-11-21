@@ -1,6 +1,6 @@
 /**
  * @file src/components/RightInspector.tsx
- * @description Inspector paramétrico derecho de Kura3D Pro v3.0:
+ * @description Inspector paramétrico derecho de Kura3D:
  * - Colapsable independientemente y adaptable a modo Compacto (264px).
  * - Identidad, Materiales PBR realistas, Paleta & Leyenda de Filamentos en escena.
  * - Transformaciones en la unidad activa y métricas Manifold en vivo.
@@ -893,7 +893,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
           </div>
         </section>
 
-        {/* 4. Herramientas Maker Pro v3.0 */}
+        {/* 4. Herramientas Maker */}
         <section className="kura-card">
           <h3 className="kura-section-label">{t(language, 'inspector.pro.title')}</h3>
 

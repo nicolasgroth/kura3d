@@ -1,3 +1,12 @@
+/**
+ * @file src/project/projectRecoveryAutosave.ts
+ * @description Autoguardado de recuperación: agrupa ediciones y serializa escrituras y limpieza
+ * de borradores del editor activo.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { captureProject, isProjectDirty, type KuraStoreState, useKuraStore } from '../store/useKuraStore';
 import { encodeProjectAsync } from './projectCodecClient';
 import { discardRecoveryDraft, writeRecoveryDraft } from './projectRecoveryStorage';

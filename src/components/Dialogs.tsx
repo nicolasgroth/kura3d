@@ -4,7 +4,7 @@
  * de light-dismiss (`closedby="any"` + fallback pointer para WebKit/Safari):
  * Importar SVG, Imagen→3D (Plana, Cilíndrica, Silueta y Cortador), Corte por Plano,
  * Generador de Moldes/Silicona, Proyección Conformal en Superficies, Roscas Métricas ISO,
- * Exportador 3MF Multi-Slicer Pro, Ajustes (Apariencia con Temas WCAG en vivo, IA, MCP, Acerca de)
+ * Exportador 3MF Multi-Slicer, Ajustes (Apariencia con Temas WCAG en vivo, IA, MCP, Acerca de)
  * y Guía de Atajos CAD.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -1439,7 +1439,7 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
   );
 };
 
-/** Modal 7: Exportar 3MF Multi-Slicer Pro (Elegoo, Bambu, Snapmaker, FlashForge, Generic). */
+/** Modal 7: Exportar 3MF Multi-Slicer (Elegoo, Bambu, Snapmaker, FlashForge, Generic). */
 const Export3mfModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
   onClose,

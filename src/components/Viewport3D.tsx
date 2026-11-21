@@ -1,6 +1,6 @@
 /**
  * @file src/components/Viewport3D.tsx
- * @description Visor 3D de alto rendimiento Kura3D Pro v3.0 con React Three Fiber y Three.js.
+ * @description Visor 3D de alto rendimiento Kura3D con React Three Fiber y Three.js.
  * Incluye silueta realista de impresora multi-marca (Elegoo, Bambu Lab, Snapmaker, FlashForge),
  * detección de desbordamiento de volumen, materiales PBR realistas, plano de corte Rayos X en vivo,
  * resaltado de voladizos (>45°), gizmos TransformControls sin race conditions, pintado multicolor 3MF,

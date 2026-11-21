@@ -133,7 +133,7 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 | `kura_set_units` | Cambia unidades de visualización (`mm`, `cm`, `m`, `in`, `ft`). |
 | `kura_set_printer_profile` | Activa uno de los 12 perfiles multi-marca (`elegoo-centauri-carbon-2`, `elegoo-centauri-carbon-1`, `bambu-p1s-x1c-a1`, `bambu-a1-mini`, `bambu-h2d`, `snapmaker-artisan`, `snapmaker-j1s`, `flashforge-ad5m`, `flashforge-ad5x`, `generic-220`, `generic-300`, `free-studio`). |
 | `kura_export_stl` | Exporta un archivo `.stl` binario o ASCII directamente en disco. |
-| `kura_export_3mf` | Exporta un paquete `.3mf` Multi-Slicer Pro con `Metadata/model_settings.config` (`generic`, `elegoo`, `bambu`, `snapmaker`, `flashforge`). |
+| `kura_export_3mf` | Exporta un paquete `.3mf` Multi-Slicer con `Metadata/model_settings.config` (`generic`, `elegoo`, `bambu`, `snapmaker`, `flashforge`). |
 | `kura_capture_viewport` | Captura una imagen PNG del viewport 3D en modo Live Bridge. |
 | `kura_generate_mold` | *(Pro)* Genera moldes/contra-moldes (`direct_1part`, `direct_2part`, `silicone_master`, `core_cavity`) con llaves y embudo. |
 | `kura_project_on_surface` | *(Pro)* Proyecta texto o SVG sobre una superficie o cilindro (`emboss`, `deboss`, `flush_inlay`). |
@@ -144,10 +144,10 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 | `kura_convex_hull` | *(Pro)* Genera la envolvente convexa cerrada de uno o más objetos. |
 | `kura_align_objects` | *(Pro)* Alinea objetos (`minX`..`maxZ`) o los distribuye en grilla sobre la cama (`arrange_grid`). |
 | `kura_set_material` | *(Pro)* Asigna un preset de material físico/visual PBR (`pla_matte`, `pla_silk`, `petg_clear`, `abs`, `carbon_fiber`, `silicone`, `wax_candle`, `metallic`). |
-| `kura_detect_structures` | *(v4.0 · Solo Lectura)* Detecta y clasifica sub-estructuras geométricas (tanques, tubos, cúpulas, bloques, cuerpo principal) devolviendo sus `regionId` y dimensiones. |
-| `kura_colorize_structures` | *(v4.0)* Detecta las sub-estructuras del modelo y les asigna colores diferenciados para inspección o impresión multicolor. |
-| `kura_extract_structure` | *(v4.0)* Extrae una sub-estructura (`regionId`) como objeto independiente, con opción de removerla del objeto origen (`removeFromSource`). |
-| `kura_mirror_object` | *(v4.0)* Refleja especularmente un objeto sobre el eje `x`, `y` o `z`, invirtiendo vértices y winding de triángulos para mantener normales válidas. |
+| `kura_detect_structures` | *(Solo Lectura)* Detecta y clasifica sub-estructuras geométricas (tanques, tubos, cúpulas, bloques, cuerpo principal) devolviendo sus `regionId` y dimensiones. |
+| `kura_colorize_structures` | Detecta las sub-estructuras del modelo y les asigna colores diferenciados para inspección o impresión multicolor. |
+| `kura_extract_structure` | Extrae una sub-estructura (`regionId`) como objeto independiente, con opción de removerla del objeto origen (`removeFromSource`). |
+| `kura_mirror_object` | Refleja especularmente un objeto sobre el eje `x`, `y` o `z`, invirtiendo vértices y winding de triángulos para mantener normales válidas. |
 
 ### Recursos MCP expuestos
 

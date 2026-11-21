@@ -1,6 +1,6 @@
 /**
  * @file src/engine/generators.ts
- * @description Generadores paramétricos especializados de Kura3D Pro v3.0:
+ * @description Generadores paramétricos especializados de Kura3D:
  * 1) Roscas métricas ISO helicoidales de 60° (`bolt`, `nut`, `hole`) con cabeza hexagonal
  *    biselada y tolerancia de impresión 3D.
  * 2) Litofanías cilíndricas curvas completamente cerradas (watertight, 90°..360°).

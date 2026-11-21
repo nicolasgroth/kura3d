@@ -1,3 +1,11 @@
+/**
+ * @file src/components/ProjectMenu.tsx
+ * @description Menú de proyecto (nuevo, abrir, guardar, guardar como) con estado de cambios sin guardar.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { useId, useRef } from 'react';
 import { FilePlus, FolderOpen, FolderRoot, Save, SaveAll } from 'lucide-react';
 import { t } from '../i18n';

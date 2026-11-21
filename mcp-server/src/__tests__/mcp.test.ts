@@ -480,7 +480,7 @@ describe('Kura3D MCP Server', () => {
     expect(aboutJson.port).toBe(bridge.getPort());
   });
 
-  it('soporta herramientas Pro v3.0 en modo headless y los 12 perfiles multi-marca', async () => {
+  it('soporta herramientas avanzadas en modo headless y los 12 perfiles multi-marca', async () => {
     const { client, server, bridge } = await setupInMemoryPair();
     cleanupTasks.push(async () => {
       await client.close();
@@ -581,7 +581,7 @@ describe('Kura3D MCP Server', () => {
     expect(printReport.estimatedWeightGrams).toBeGreaterThan(0);
   });
 
-  it('soporta segmentación estructural y mirror v4.0 en modo headless preservando winding positivo', async () => {
+  it('soporta segmentación estructural y mirror en modo headless preservando winding positivo', async () => {
     const { client, server, bridge, headless } = await setupInMemoryPair();
     cleanupTasks.push(async () => {
       await client.close();

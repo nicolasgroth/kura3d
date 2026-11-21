@@ -1,3 +1,11 @@
+/**
+ * @file src/project/projectCodec.test.ts
+ * @description Pruebas del códec binario de proyectos .kura v1 (ida y vuelta, CRC y límites).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { describe, expect, it } from 'vitest';
 import { computeMeshStats } from '../engine/primitives';
 import { DEFAULT_PRINTER_PROFILES, type MeshData, type SceneObject } from '../types/kura';

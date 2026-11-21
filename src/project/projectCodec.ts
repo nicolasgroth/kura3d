@@ -1,3 +1,12 @@
+/**
+ * @file src/project/projectCodec.ts
+ * @description Códec binario del formato de proyecto .kura v1: serializa y valida escena, historial
+ * y mallas con CRC-32 y límites de tamaño.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { computeMeshStats } from '../engine/primitives';
 import type { MeshData, SceneObject } from '../types/kura';
 import {

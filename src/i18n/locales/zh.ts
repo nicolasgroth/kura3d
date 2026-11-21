@@ -405,7 +405,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'ai.send': '发送',
   'ai.clearChat': '清空对话',
   'ai.thinking': '正在处理几何体...',
-  'ai.welcome': '你好，我是 Kura3D Pro 助手。我可以创建基本体、ISO 螺纹、硅胶/蜡烛模具、检查可打印性、投影文字、带连接件切割或导出多切片器 3MF。请在“设置”中配置 Gemini、OpenAI、Anthropic 或 Ollama，或离线直接使用本地命令。',
+  'ai.welcome': '你好，我是 Kura3D 助手。我可以创建基本体、ISO 螺纹、硅胶/蜡烛模具、检查可打印性、投影文字、带连接件切割或导出多切片器 3MF。请在“设置”中配置 Gemini、OpenAI、Anthropic 或 Ollama，或离线直接使用本地命令。',
   'ai.chip.box': '40 mm 立方体',
   'ai.chip.hollow': '抽壳 2.5 mm',
   'ai.chip.cylinder': '20×50 mm 圆柱',

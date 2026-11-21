@@ -1,3 +1,11 @@
+/**
+ * @file src/project/projectRecoveryStorage.test.ts
+ * @description Pruebas del almacenamiento local (IndexedDB) de borradores de recuperación.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   discardRecoveryDraft, listRecoveryDrafts, moveRecoveryDraft,

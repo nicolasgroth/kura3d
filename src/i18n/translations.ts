@@ -401,7 +401,7 @@ export const TRANSLATIONS_ES = {
   'cmd.view.xray': 'Alternar Rayos X / Sección en Vivo',
   'cmd.view.shortcuts': 'Ver Atajos de Teclado y Pro Tips',
   'palette.cmd.appearance': 'Cambiar tema de color (Apariencia)',
-  'cmd.export.3mfModal': 'Exportar 3MF Multi-Slicer Pro...',
+  'cmd.export.3mfModal': 'Exportar 3MF Multi-Slicer...',
 
   // Panel de Chat IA (AiChatDrawer)
   'ai.title': 'Asistente IA Kura3D',
@@ -412,7 +412,7 @@ export const TRANSLATIONS_ES = {
   'ai.send': 'Enviar',
   'ai.clearChat': 'Limpiar chat',
   'ai.thinking': 'Procesando geometría...',
-  'ai.welcome': 'Hola, soy el asistente de Kura3D Pro. Puedo crear primitivas, roscas ISO, moldes para silicona/velas, validar imprimibilidad, proyectar texto, cortar con uniones o exportar 3MF Multi-Slicer. Configura Gemini, OpenAI, Anthropic u Ollama en Ajustes, o usa comandos locales sin API.',
+  'ai.welcome': 'Hola, soy el asistente de Kura3D. Puedo crear primitivas, roscas ISO, moldes para silicona/velas, validar imprimibilidad, proyectar texto, cortar con uniones o exportar 3MF Multi-Slicer. Configura Gemini, OpenAI, Anthropic u Ollama en Ajustes, o usa comandos locales sin API.',
   'ai.chip.box': 'Cubo 40 mm',
   'ai.chip.hollow': 'Ahuecar 2.5 mm',
   'ai.chip.cylinder': 'Cilindro 20×50 mm',
@@ -532,7 +532,7 @@ export const TRANSLATIONS_ES = {
   'dialog.thread.execute': 'Crear Rosca ISO',
 
   // Modal Exportar 3MF Multi-Slicer
-  'dialog.export3mf.title': 'Exportar 3MF Multi-Slicer Pro',
+  'dialog.export3mf.title': 'Exportar 3MF Multi-Slicer',
   'dialog.export3mf.desc': 'Genera un paquete 3MF optimizado con materiales PBR, colores por triángulo y metadatos compatibles con tu laminador.',
   'dialog.export3mf.slicer': 'Laminador / Slicer destino',
   'dialog.export3mf.generic': 'Genérico (3MF Estándar / PrusaSlicer / Cura)',
@@ -1061,7 +1061,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'ai.send': 'Send',
   'ai.clearChat': 'Clear chat',
   'ai.thinking': 'Processing geometry...',
-  'ai.welcome': 'Hello, I am the Kura3D Pro assistant. I can create primitives, ISO threads, silicone/candle molds, validate printability, project text, cut with connectors, or export Multi-Slicer 3MF. Configure Gemini, OpenAI, Anthropic or Ollama in Settings, or run direct commands offline.',
+  'ai.welcome': 'Hello, I am the Kura3D assistant. I can create primitives, ISO threads, silicone/candle molds, validate printability, project text, cut with connectors, or export Multi-Slicer 3MF. Configure Gemini, OpenAI, Anthropic or Ollama in Settings, or run direct commands offline.',
   'ai.chip.box': '40 mm Box',
   'ai.chip.hollow': 'Hollow 2.5 mm',
   'ai.chip.cylinder': '20×50 mm Cylinder',

@@ -525,7 +525,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
     }
   );
 
-  // 16. Exportar 3MF Multi-Slicer Pro
+  // 16. Exportar 3MF Multi-Slicer
   server.registerTool(
     'kura_export_3mf',
     {
@@ -982,7 +982,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       )
   );
 
-  // 27. Detección determinística de sub-estructuras geométricas v4.0 (Solo Lectura)
+  // 27. Detección determinística de sub-estructuras geométricas (Solo Lectura)
   server.registerTool(
     'kura_detect_structures',
     {
@@ -1026,7 +1026,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       )
   );
 
-  // 28. Coloreado por sub-estructuras detectadas v4.0
+  // 28. Coloreado por sub-estructuras detectadas
   server.registerTool(
     'kura_colorize_structures',
     {
@@ -1055,7 +1055,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       )
   );
 
-  // 29. Extracción de una sub-estructura a objeto independiente v4.0
+  // 29. Extracción de una sub-estructura a objeto independiente
   server.registerTool(
     'kura_extract_structure',
     {
@@ -1085,7 +1085,7 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       )
   );
 
-  // 30. Simetría / Espejo geométrico (Mirror) v4.0
+  // 30. Simetría / Espejo geométrico (Mirror)
   server.registerTool(
     'kura_mirror_object',
     {

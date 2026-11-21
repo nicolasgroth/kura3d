@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/types.ts
- * @description Tipos y contratos compartidos para el servidor MCP de Kura3D Pro v3.0,
+ * @description Tipos y contratos compartidos para el servidor MCP de Kura3D,
  * alineados con el Command Bus del frontend y el modo autónomo headless.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -32,7 +32,7 @@ export type MaterialPresetId =
   | 'wax_candle'
   | 'metallic';
 
-/** Especificación física de cada material PBR soportado por Kura3D Pro. */
+/** Especificación física de cada material PBR soportado por Kura3D. */
 export interface MaterialPresetSpec {
   id: MaterialPresetId;
   labelEs: string;
@@ -41,7 +41,7 @@ export interface MaterialPresetSpec {
   densityGCm3: number;
 }
 
-/** Catálogo oficial de materiales PBR de Kura3D Pro. */
+/** Catálogo oficial de materiales PBR de Kura3D. */
 export const MATERIAL_PRESETS: Record<MaterialPresetId, MaterialPresetSpec> = {
   pla_matte: {
     id: 'pla_matte',
@@ -93,7 +93,7 @@ export const MATERIAL_PRESETS: Record<MaterialPresetId, MaterialPresetSpec> = {
   },
 };
 
-/** Slicers destino soportados en el exportador 3MF Multi-Slicer Pro. */
+/** Slicers destino soportados en el exportador 3MF Multi-Slicer. */
 export type SlicerTarget = 'generic' | 'elegoo' | 'bambu' | 'snapmaker' | 'flashforge';
 
 /** Patrones procedurales de textura superficial. */
@@ -158,7 +158,7 @@ export type StructuralArchetype =
   | 'appendage'
   | 'detail_part';
 
-/** Opciones del motor determinístico de detección y segmentación estructural v4.0. */
+/** Opciones del motor determinístico de detección y segmentación estructural. */
 export interface SegmentationOptions {
   /** Umbral de ángulo diedro en grados (defecto 28°). */
   creaseAngleDeg?: number;
@@ -312,7 +312,7 @@ export interface PrinterProfile {
 }
 
 /**
- * Perfiles oficiales de impresoras 3D integrados en Kura3D Pro v3.0
+ * Perfiles oficiales de impresoras 3D integrados en Kura3D
  * (Elegoo Centauri Carbon 1 & 2, Bambu Lab, Snapmaker, FlashForge, Genéricas y Estudio Libre).
  */
 export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
@@ -447,7 +447,7 @@ export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
   },
 ];
 
-/** Nombres de comandos aceptados por el Command Bus de Kura3D Pro v4.0. */
+/** Nombres de comandos aceptados por el Command Bus de Kura3D. */
 export type KuraCommandName =
   | 'get_scene_state'
   | 'create_primitive'

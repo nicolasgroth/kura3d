@@ -1,3 +1,11 @@
+/**
+ * @file src/project/projectRecoveryStorage.ts
+ * @description Almacenamiento local en IndexedDB de borradores de recuperación de proyectos.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { MAX_PROJECT_BYTES, ProjectCodecError } from './projectSchema';
 
 export interface RecoveryDraftInfo {

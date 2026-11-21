@@ -394,7 +394,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'cmd.view.xray': 'Basculer Rayons X / Plan de Coupe',
   'cmd.view.shortcuts': 'Voir les Raccourcis Clavier & Conseils Pro',
   'palette.cmd.appearance': 'Changer le thème de couleurs (Apparence)',
-  'cmd.export.3mfModal': 'Exporter 3MF Multi-Slicer Pro...',
+  'cmd.export.3mfModal': 'Exporter 3MF Multi-Slicer...',
 
   // Panel de Chat IA (AiChatDrawer)
   'ai.title': 'Assistant IA Kura3D',
@@ -405,7 +405,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'ai.send': 'Envoyer',
   'ai.clearChat': 'Effacer la discussion',
   'ai.thinking': 'Traitement de la géométrie...',
-  'ai.welcome': 'Bonjour, je suis l’assistant de Kura3D Pro. Je peux créer des primitives, des filetages ISO, des moules en silicone/bougie, valider l’imprimabilité, projeter du texte, découper avec connecteurs ou exporter en 3MF Multi-Slicer. Configurez Gemini, OpenAI, Anthropic ou Ollama dans les Paramètres, ou utilisez les commandes locales sans API.',
+  'ai.welcome': 'Bonjour, je suis l’assistant de Kura3D. Je peux créer des primitives, des filetages ISO, des moules en silicone/bougie, valider l’imprimabilité, projeter du texte, découper avec connecteurs ou exporter en 3MF Multi-Slicer. Configurez Gemini, OpenAI, Anthropic ou Ollama dans les Paramètres, ou utilisez les commandes locales sans API.',
   'ai.chip.box': 'Cube 40 mm',
   'ai.chip.hollow': 'Évider 2,5 mm',
   'ai.chip.cylinder': 'Cylindre 20×50 mm',
@@ -525,7 +525,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.thread.execute': 'Créer le Filetage ISO',
 
   // Modal Exportar 3MF Multi-Slicer
-  'dialog.export3mf.title': 'Exporter 3MF Multi-Slicer Pro',
+  'dialog.export3mf.title': 'Exporter 3MF Multi-Slicer',
   'dialog.export3mf.desc': 'Génère un paquet 3MF optimisé avec matériaux PBR, couleurs par triangle et métadonnées compatibles avec votre trancheur.',
   'dialog.export3mf.slicer': 'Trancheur / Slicer cible',
   'dialog.export3mf.generic': 'Générique (3MF Standard / PrusaSlicer / Cura)',
