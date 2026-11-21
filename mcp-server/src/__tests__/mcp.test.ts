@@ -46,6 +46,10 @@ const EXPECTED_TOOLS = [
   'kura_convex_hull',
   'kura_align_objects',
   'kura_set_material',
+  'kura_detect_structures',
+  'kura_colorize_structures',
+  'kura_extract_structure',
+  'kura_mirror_object',
 ];
 
 async function setupInMemoryPair(
@@ -81,8 +85,8 @@ describe('Kura3D MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(26);
-    expect(toolNames).toHaveLength(26);
+    expect(EXPECTED_TOOLS).toHaveLength(30);
+    expect(toolNames).toHaveLength(30);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }
@@ -419,7 +423,24 @@ describe('Kura3D MCP Server', () => {
     expect(printJson.fitsInBed).toBe(true);
     expect(printJson.estimatedWeightGrams).toBeGreaterThan(0);
 
-    // Mutación bloqueada (incluyendo generación de moldes Pro)
+    // Detección estructural también permitida en modo Solo Lectura (no mutante)
+    const detectRes = await client.callTool({
+      name: 'kura_detect_structures',
+      arguments: { objectId: seeded.id, creaseAngleDeg: 28 },
+    });
+    expect(detectRes.isError).not.toBe(true);
+    const detectJson = JSON.parse((detectRes.content[0] as { text: string }).text);
+    expect(detectJson.objectId).toBe(seeded.id);
+    expect(detectJson.regions.length).toBeGreaterThanOrEqual(1);
+
+    // Mutación bloqueada (incluyendo mirror_object y generación de moldes Pro)
+    const mirrorRes = await client.callTool({
+      name: 'kura_mirror_object',
+      arguments: { objectId: seeded.id, axis: 'x' },
+    });
+    expect(mirrorRes.isError).toBe(true);
+    expect((mirrorRes.content[0] as { text: string }).text).toContain('Solo Lectura');
+
     const createRes = await client.callTool({
       name: 'kura_create_primitive',
       arguments: { primitiveType: 'box' },
@@ -558,6 +579,110 @@ describe('Kura3D MCP Server', () => {
     expect(printReport.fitsInBed).toBe(true);
     expect(printReport.volumeCm3).toBeGreaterThan(0);
     expect(printReport.estimatedWeightGrams).toBeGreaterThan(0);
+  });
+
+  it('soporta segmentación estructural y mirror v4.0 en modo headless preservando winding positivo', async () => {
+    const { client, server, bridge, headless } = await setupInMemoryPair();
+    cleanupTasks.push(async () => {
+      await client.close();
+      await server.close();
+      await bridge.close();
+    });
+
+    // Crear dos primitivas separadas y unirlas para formar un modelo compuesto de 2 islas
+    const bodyRes = await client.callTool({
+      name: 'kura_create_primitive',
+      arguments: {
+        primitiveType: 'box',
+        name: 'Chasis',
+        params: { width: 40, height: 15, depth: 30 },
+        position: [0, 0, 0],
+      },
+    });
+    const bodyJson = JSON.parse((bodyRes.content[0] as { text: string }).text);
+
+    const pipeRes = await client.callTool({
+      name: 'kura_create_primitive',
+      arguments: {
+        primitiveType: 'cylinder',
+        name: 'TuboLateral',
+        params: { radius: 4, height: 32, segments: 16 },
+        position: [35, 0, 0],
+      },
+    });
+    const pipeJson = JSON.parse((pipeRes.content[0] as { text: string }).text);
+
+    const unionRes = await client.callTool({
+      name: 'kura_boolean_operation',
+      arguments: {
+        targetId: bodyJson.id,
+        toolIds: [pipeJson.id],
+        operation: 'union',
+        resultName: 'ModeloCompuesto',
+      },
+    });
+    const unionJson = JSON.parse((unionRes.content[0] as { text: string }).text);
+    const compositeId = unionJson.object.id as string;
+
+    // 1. kura_detect_structures debe detectar las 2 sub-estructuras geométricas
+    const detectRes = await client.callTool({
+      name: 'kura_detect_structures',
+      arguments: {
+        objectId: compositeId,
+        creaseAngleDeg: 28,
+        minRegionPercent: 1,
+        maxRegions: 8,
+      },
+    });
+    expect(detectRes.isError).not.toBe(true);
+    const detectJson = JSON.parse((detectRes.content[0] as { text: string }).text);
+    expect(detectJson.objectId).toBe(compositeId);
+    expect(detectJson.regions).toHaveLength(2);
+    expect(detectJson.regions[0].dimensionsMm).toHaveLength(3);
+
+    // 2. kura_colorize_structures colorea y reporta regiones
+    const colorizeRes = await client.callTool({
+      name: 'kura_colorize_structures',
+      arguments: { objectId: compositeId, creaseAngleDeg: 25 },
+    });
+    expect(colorizeRes.isError).not.toBe(true);
+    const colorizeJson = JSON.parse((colorizeRes.content[0] as { text: string }).text);
+    expect(colorizeJson.regionCount).toBe(2);
+
+    // 3. kura_extract_structure extrae una sub-estructura y la remueve del origen
+    const targetRegionId = detectJson.regions[1].id as string;
+    const extractRes = await client.callTool({
+      name: 'kura_extract_structure',
+      arguments: {
+        objectId: compositeId,
+        regionId: targetRegionId,
+        removeFromSource: true,
+      },
+    });
+    expect(extractRes.isError).not.toBe(true);
+    const extractJson = JSON.parse((extractRes.content[0] as { text: string }).text);
+    expect(extractJson.extractedObject.source).toBe('segmented_part');
+    expect(extractJson.removedFromSource).toBe(true);
+    expect(extractJson.sourceDeleted).toBe(false);
+
+    // 4. kura_mirror_object invierte vértices en el eje elegido y voltea el winding manteniendo volumen positivo
+    const extractedId = extractJson.extractedObject.id as string;
+    const beforeState = headless.getSceneState();
+    const beforeObj = beforeState.objects.find((o) => o.id === extractedId)!;
+    const beforeDetect = headless.detectStructures(extractedId);
+    const beforeCenterX = beforeDetect.regions[0].centerMm[0];
+
+    const mirrorRes = await client.callTool({
+      name: 'kura_mirror_object',
+      arguments: { objectId: extractedId, axis: 'x' },
+    });
+    expect(mirrorRes.isError).not.toBe(true);
+    const mirrorJson = JSON.parse((mirrorRes.content[0] as { text: string }).text);
+    expect(mirrorJson.stats.triangles).toBe(beforeObj.stats.triangles);
+    expect(mirrorJson.stats.volumeMm3).toBeCloseTo(beforeObj.stats.volumeMm3, 2);
+
+    const afterDetect = headless.detectStructures(extractedId);
+    expect(afterDetect.regions[0].centerMm[0]).toBeCloseTo(-beforeCenterX, 2);
   });
 
   it('aplica rate limiting por minuto rechazando llamadas sobre el umbral configurado', async () => {

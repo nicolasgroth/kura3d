@@ -383,6 +383,58 @@ export interface PrintabilityReport {
   score: number;
 }
 
+/** Arquetipos geométricos reconocidos de forma 100 % determinística local (sin IA externa). */
+export type StructuralArchetype =
+  | 'main_body'
+  | 'tank_cylinder'
+  | 'tube_conduit'
+  | 'dome_helmet'
+  | 'block_plate'
+  | 'appendage'
+  | 'detail_part';
+
+/** Opciones del motor determinístico de detección y segmentación de sub-estructuras 3D. */
+export interface SegmentationOptions {
+  /** Umbral de ángulo diedro cóncavo/agudo en grados (15°–75°, defecto 28°). Menor = más regiones. */
+  creaseAngleDeg: number;
+  /** Porcentaje mínimo de triángulos para mantener una región independiente (defecto 1.5 %). */
+  minRegionPercent: number;
+  /** Máximo número de regiones destacadas a devolver (defecto 12). */
+  maxRegions: number;
+}
+
+/** Sub-estructura geométrica detectada dentro de un modelo 3D (ej. tanque, tubo, cúpula, cuerpo). */
+export interface DetectedStructureRegion {
+  id: string;
+  /** Etiqueta descriptiva generada localmente según forma geométrica y posición relativa. */
+  labelEs: string;
+  labelEn: string;
+  archetype: StructuralArchetype;
+  /** Color asignado para visualización y exportación 3MF multicolor. */
+  color: string;
+  /** Índices de triángulos pertenecientes a esta sub-estructura en la malla origen. */
+  faceIndices: number[];
+  triangleCount: number;
+  /** Porcentaje de superficie/triángulos respecto al modelo completo. */
+  percentOfModel: number;
+  /** Dimensiones aproximadas [dx, dy, dz] en mm de la sub-estructura. */
+  dimensionsMm: Vec3;
+  /** Centroide en espacio local del objeto [x, y, z] en mm. */
+  centerMm: Vec3;
+  /** Confianza heurística geométrica (0..100). */
+  confidence: number;
+  /** True si provenía de una isla física independiente (`decompose`), false si se segmentó por pliegues. */
+  isDisconnectedShell: boolean;
+}
+
+/** Resultado completo del análisis de segmentación estructural de un objeto 3D. */
+export interface StructuralSegmentationResult {
+  objectId: string;
+  method: 'shells_and_creases';
+  totalTriangles: number;
+  regions: DetectedStructureRegion[];
+}
+
 /** Origen de creación de un objeto en la escena. */
 export type ObjectSourceType =
   | 'primitive'
@@ -395,7 +447,8 @@ export type ObjectSourceType =
   | 'mold'
   | 'thread'
   | 'hull'
-  | 'projected';
+  | 'projected'
+  | 'segmented_part';
 
 /** Nodo de objeto 3D en la escena de Kura3D. */
 export interface SceneObject {
@@ -532,7 +585,11 @@ export interface KuraCommandRequest {
     | 'create_thread'
     | 'convex_hull'
     | 'align_objects'
-    | 'set_material';
+    | 'set_material'
+    | 'detect_structures'
+    | 'colorize_structures'
+    | 'extract_structure'
+    | 'mirror_object';
   params: Record<string, unknown>;
 }
 

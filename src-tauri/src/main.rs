@@ -1,5 +1,5 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
-//! Organización: ISGROTH — Innovación y Soluciones GROTH
+// Organización: ISGROTH — Innovación y Soluciones GROTH
 // Licencia: MIT
 // Descripción: Punto de entrada principal de escritorio para Kura3D en Windows/macOS/Linux.
 // Delega la inicialización completa de Tauri v2 al módulo de librería `kura3d_lib`.

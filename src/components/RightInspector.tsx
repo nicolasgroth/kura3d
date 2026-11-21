@@ -26,22 +26,30 @@ import {
   Eye,
   EyeOff,
   FileUp,
+  FlipHorizontal2,
   Grid,
+  Link2,
   MinusCircle,
   PaintBucket,
   Palette,
   PlusCircle,
   RotateCcw,
+  ScanSearch,
   Scissors,
   ShieldCheck,
   Sparkles,
   Split,
   Type,
+  Unlink2,
   Wand2,
   Zap,
 } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import {
+  PrecisionNumberInput,
+  type PrecisionModifierState,
+} from './PrecisionNumberInput';
 import {
   MATERIAL_PRESETS,
   PRINT_COLOR_PALETTE,
@@ -97,6 +105,7 @@ export const RightInspector: React.FC = () => {
   const updateObjectMeta = useKuraStore((s) => s.updateObjectMeta);
   const setObjectMaterial = useKuraStore((s) => s.setObjectMaterial);
   const setObjectTransform = useKuraStore((s) => s.setObjectTransform);
+  const commitTransformSnapshot = useKuraStore((s) => s.commitTransformSnapshot);
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
   const centerObjectOnBed = useKuraStore((s) => s.centerObjectOnBed);
   const resetObjectOrientation = useKuraStore((s) => s.resetObjectOrientation);
@@ -114,6 +123,18 @@ export const RightInspector: React.FC = () => {
   const runConvexHull = useKuraStore((s) => s.runConvexHull);
   const alignSelectedObjects = useKuraStore((s) => s.alignSelectedObjects);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
+  const proportionalScale = useKuraStore((s) => s.proportionalScale);
+  const toggleProportionalScale = useKuraStore((s) => s.toggleProportionalScale);
+  const mirrorObject = useKuraStore((s) => s.mirrorObject);
+  const activeSegmentation = useKuraStore((s) => s.activeSegmentation);
+  const segmentationCreaseDeg = useKuraStore((s) => s.segmentationCreaseDeg);
+  const setSegmentationCreaseDeg = useKuraStore((s) => s.setSegmentationCreaseDeg);
+  const detectObjectStructures = useKuraStore((s) => s.detectObjectStructures);
+  const colorizeDetectedStructures = useKuraStore((s) => s.colorizeDetectedStructures);
+  const extractDetectedStructure = useKuraStore((s) => s.extractDetectedStructure);
+  const splitAllDetectedObjectStructures = useKuraStore(
+    (s) => s.splitAllDetectedObjectStructures,
+  );
 
   // Estados locales para parámetros de operaciones Manifold & Pro
   const [wallThicknessMm, setWallThicknessMm] = useState(2.2);
@@ -373,28 +394,43 @@ export const RightInspector: React.FC = () => {
       ? activePrintReport
       : null;
 
-  const handlePosChange = (axisIdx: 0 | 1 | 2, rawValue: string) => {
-    const num = Number(rawValue);
+  const handlePosChange = (axisIdx: 0 | 1 | 2, num: number, modifiers?: PrecisionModifierState) => {
     if (!Number.isFinite(num)) return;
     const nextPos: Vec3 = [...primary.position] as Vec3;
     nextPos[axisIdx] = toMm(num, unitSystem);
-    setObjectTransform(primary.id, { position: nextPos }, true);
+    setObjectTransform(primary.id, { position: nextPos }, !modifiers?.isScrubbing);
   };
 
-  const handleRotChange = (axisIdx: 0 | 1 | 2, rawDeg: string) => {
-    const deg = Number(rawDeg);
+  const handleRotChange = (axisIdx: 0 | 1 | 2, deg: number, modifiers?: PrecisionModifierState) => {
     if (!Number.isFinite(deg)) return;
     const nextRot: Vec3 = [...primary.rotation] as Vec3;
     nextRot[axisIdx] = THREE.MathUtils.degToRad(deg);
-    setObjectTransform(primary.id, { rotation: nextRot }, true);
+    setObjectTransform(primary.id, { rotation: nextRot }, !modifiers?.isScrubbing);
   };
 
-  const handleScaleChange = (axisIdx: 0 | 1 | 2, rawScale: string) => {
-    const factor = Number(rawScale);
-    if (!Number.isFinite(factor) || factor <= 0.01) return;
+  const handleScaleChange = (
+    axisIdx: 0 | 1 | 2,
+    factor: number,
+    modifiers?: PrecisionModifierState,
+  ) => {
+    if (!Number.isFinite(factor) || factor < 0.05) return;
+    const recordHistory = !modifiers?.isScrubbing;
+    const isUniform = proportionalScale || Boolean(modifiers?.shiftKey);
+    if (isUniform) {
+      const prevAxis = primary.scale[axisIdx];
+      const ratio = prevAxis > 1e-6 ? factor / prevAxis : 1;
+      const nextScale: Vec3 = [
+        Math.max(0.05, Number((primary.scale[0] * ratio).toFixed(4))),
+        Math.max(0.05, Number((primary.scale[1] * ratio).toFixed(4))),
+        Math.max(0.05, Number((primary.scale[2] * ratio).toFixed(4))),
+      ];
+      nextScale[axisIdx] = Math.max(0.05, factor);
+      setObjectTransform(primary.id, { scale: nextScale }, recordHistory);
+      return;
+    }
     const nextScale: Vec3 = [...primary.scale] as Vec3;
-    nextScale[axisIdx] = factor;
-    setObjectTransform(primary.id, { scale: nextScale }, true);
+    nextScale[axisIdx] = Math.max(0.05, factor);
+    setObjectTransform(primary.id, { scale: nextScale }, recordHistory);
   };
 
   const scaledDims: Vec3 = [
@@ -513,16 +549,19 @@ export const RightInspector: React.FC = () => {
             <label>{t(language, 'inspector.field.position')}</label>
             <div className="kura-vec3-grid">
               {(['x', 'y', 'z'] as const).map((axis, idx) => (
-                <div key={axis} className="kura-axis-input">
-                  <span className={`kura-axis-tag ${axis}`}>{axis.toUpperCase()}</span>
-                  <input
-                    type="number"
-                    step={stepUnit}
-                    disabled={primary.locked}
-                    value={Number(fromMm(primary.position[idx], unitSystem).toFixed(2))}
-                    onChange={(e) => handlePosChange(idx as 0 | 1 | 2, e.target.value)}
-                  />
-                </div>
+                <PrecisionNumberInput
+                  key={axis}
+                  prefix={axis.toUpperCase()}
+                  axisTone={axis}
+                  step={stepUnit}
+                  precision={2}
+                  defaultValue={0}
+                  disabled={primary.locked}
+                  value={Number(fromMm(primary.position[idx], unitSystem).toFixed(2))}
+                  onChange={(val, mods) => handlePosChange(idx as 0 | 1 | 2, val, mods)}
+                  onCommit={() => commitTransformSnapshot()}
+                  ariaLabel={`${t(language, 'inspector.field.position')} ${axis.toUpperCase()}`}
+                />
               ))}
             </div>
           </div>
@@ -531,35 +570,53 @@ export const RightInspector: React.FC = () => {
             <label>{t(language, 'inspector.field.rotation')}</label>
             <div className="kura-vec3-grid">
               {(['x', 'y', 'z'] as const).map((axis, idx) => (
-                <div key={axis} className="kura-axis-input">
-                  <span className={`kura-axis-tag ${axis}`}>{axis.toUpperCase()}</span>
-                  <input
-                    type="number"
-                    step={5}
-                    disabled={primary.locked}
-                    value={Number(THREE.MathUtils.radToDeg(primary.rotation[idx]).toFixed(1))}
-                    onChange={(e) => handleRotChange(idx as 0 | 1 | 2, e.target.value)}
-                  />
-                </div>
+                <PrecisionNumberInput
+                  key={axis}
+                  prefix={axis.toUpperCase()}
+                  axisTone={axis}
+                  step={5}
+                  precision={1}
+                  defaultValue={0}
+                  disabled={primary.locked}
+                  value={Number(THREE.MathUtils.radToDeg(primary.rotation[idx]).toFixed(1))}
+                  onChange={(val, mods) => handleRotChange(idx as 0 | 1 | 2, val, mods)}
+                  onCommit={() => commitTransformSnapshot()}
+                  ariaLabel={`${t(language, 'inspector.field.rotation')} ${axis.toUpperCase()}`}
+                />
               ))}
             </div>
           </div>
 
           <div className="kura-form-field">
-            <label>{t(language, 'inspector.field.scale')}</label>
+            <div className="kura-field-row">
+              <label>{t(language, 'inspector.field.scale')}</label>
+              <button
+                type="button"
+                className={`kura-lock-btn ${proportionalScale ? 'is-active' : ''}`}
+                onClick={toggleProportionalScale}
+                title={t(language, 'inspector.scale.lockTip')}
+                aria-label={t(language, 'inspector.scale.lockTip')}
+                aria-pressed={proportionalScale}
+              >
+                {proportionalScale ? <Link2 size={12} /> : <Unlink2 size={12} />}
+              </button>
+            </div>
             <div className="kura-vec3-grid">
               {(['x', 'y', 'z'] as const).map((axis, idx) => (
-                <div key={axis} className="kura-axis-input">
-                  <span className={`kura-axis-tag ${axis}`}>{axis.toUpperCase()}</span>
-                  <input
-                    type="number"
-                    step={0.1}
-                    min={0.05}
-                    disabled={primary.locked}
-                    value={Number(primary.scale[idx].toFixed(2))}
-                    onChange={(e) => handleScaleChange(idx as 0 | 1 | 2, e.target.value)}
-                  />
-                </div>
+                <PrecisionNumberInput
+                  key={axis}
+                  prefix={axis.toUpperCase()}
+                  axisTone={axis}
+                  step={0.1}
+                  min={0.05}
+                  precision={2}
+                  defaultValue={1}
+                  disabled={primary.locked}
+                  value={Number(primary.scale[idx].toFixed(2))}
+                  onChange={(val, mods) => handleScaleChange(idx as 0 | 1 | 2, val, mods)}
+                  onCommit={() => commitTransformSnapshot()}
+                  ariaLabel={`${t(language, 'inspector.field.scale')} ${axis.toUpperCase()}`}
+                />
               ))}
             </div>
           </div>
@@ -592,6 +649,26 @@ export const RightInspector: React.FC = () => {
               <RotateCcw size={13} />
               <span>{t(language, 'inspector.action.resetTransform')}</span>
             </button>
+          </div>
+
+          <div className="kura-form-field">
+            <label>{t(language, 'inspector.mirror.title')}</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 5 }}>
+              {(['x', 'y', 'z'] as const).map((axis) => (
+                <button
+                  key={axis}
+                  type="button"
+                  className="kura-btn kura-btn-sm"
+                  style={{ minWidth: 0, padding: '0 6px' }}
+                  title={t(language, `inspector.mirror.${axis}`)}
+                  disabled={primary.locked || isBusy}
+                  onClick={() => mirrorObject(primary.id, axis)}
+                >
+                  <FlipHorizontal2 size={12} />
+                  <span>{axis.toUpperCase()}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -768,21 +845,177 @@ export const RightInspector: React.FC = () => {
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', width: '100%' }} />
 
+          {/* Detección de Estructuras (100 % Local) */}
+          <div className="kura-struct-panel">
+            <div className="kura-field-row">
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 700 }}>
+                <ScanSearch size={13} style={{ color: 'var(--accent-cyan)' }} />
+                <span>{t(language, 'inspector.struct.title')}</span>
+              </label>
+              <span
+                className="kura-source-pill is-local"
+                title={t(language, 'badge.local100Tip')}
+              >
+                <Zap size={10} />
+                <span>{t(language, 'badge.local100')}</span>
+              </span>
+            </div>
+
+            <div className="kura-slider-header">
+              <span className="kura-field-label">
+                {t(language, 'inspector.struct.sensitivity')}
+              </span>
+              <span style={{ fontSize: 11, fontFamily: 'monospace' }}>
+                {segmentationCreaseDeg}°
+              </span>
+            </div>
+            <input
+              type="range"
+              min={15}
+              max={65}
+              step={1}
+              value={segmentationCreaseDeg}
+              title={t(language, 'ui.sliderResetTip')}
+              onDoubleClick={() => setSegmentationCreaseDeg(28)}
+              onChange={(e) => setSegmentationCreaseDeg(Number(e.target.value))}
+            />
+
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm kura-btn-primary"
+              disabled={isBusy}
+              onClick={() => void detectObjectStructures(primary.id, segmentationCreaseDeg)}
+            >
+              <ScanSearch size={13} />
+              <span>{t(language, 'inspector.struct.detectBtn')}</span>
+            </button>
+
+            {activeSegmentation && activeSegmentation.objectId === primary.id && (
+              <div className="kura-struct-results">
+                <div className="kura-field-row">
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    {t(language, 'inspector.struct.regionsCount', {
+                      count: activeSegmentation.regions.length,
+                    })}
+                  </span>
+                </div>
+
+                {activeSegmentation.regions.length === 0 ? (
+                  <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>
+                    {t(language, 'inspector.struct.empty')}
+                  </p>
+                ) : (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 5 }}>
+                      <button
+                        type="button"
+                        className="kura-btn kura-btn-sm"
+                        style={{ minWidth: 0 }}
+                        disabled={isBusy || primary.locked}
+                        onClick={() => void colorizeDetectedStructures(primary.id)}
+                      >
+                        <Palette size={12} style={{ color: 'var(--accent-cyan)' }} />
+                        <span>{t(language, 'inspector.struct.colorizeBtn')}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="kura-btn kura-btn-sm kura-btn-amber"
+                        style={{ minWidth: 0 }}
+                        disabled={isBusy || primary.locked}
+                        onClick={() => void splitAllDetectedObjectStructures(primary.id)}
+                      >
+                        <Split size={12} />
+                        <span>{t(language, 'inspector.struct.splitAllBtn')}</span>
+                      </button>
+                    </div>
+
+                    <div className="kura-struct-list">
+                      {activeSegmentation.regions.map((region) => {
+                        const label = language === 'en' ? region.labelEn : region.labelEs;
+                        return (
+                          <div key={region.id} className="kura-struct-item">
+                            <div className="kura-struct-item-head">
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 6,
+                                  minWidth: 0,
+                                }}
+                              >
+                                <span
+                                  className="kura-color-dot"
+                                  style={{ backgroundColor: region.color }}
+                                />
+                                <span className="kura-struct-label" title={label}>
+                                  {label}
+                                </span>
+                              </span>
+                              <span className="kura-struct-badge">
+                                {t(language, 'inspector.struct.confidence', {
+                                  pct: Math.round(region.confidence),
+                                })}
+                              </span>
+                            </div>
+
+                            <div className="kura-struct-meta">
+                              <span>
+                                {formatDimension(region.dimensionsMm[0], unitSystem, 1)} ×{' '}
+                                {formatDimension(region.dimensionsMm[1], unitSystem, 1)} ×{' '}
+                                {formatDimension(region.dimensionsMm[2], unitSystem, 1)}
+                              </span>
+                              <span>{region.percentOfModel.toFixed(1)}%</span>
+                            </div>
+
+                            <div className="kura-struct-actions">
+                              <button
+                                type="button"
+                                className="kura-btn kura-btn-sm"
+                                disabled={isBusy}
+                                onClick={() => void extractDetectedStructure(region.id, false)}
+                              >
+                                <PlusCircle size={11} />
+                                <span>{t(language, 'inspector.struct.extractCopy')}</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="kura-btn kura-btn-sm"
+                                disabled={isBusy || primary.locked}
+                                title={t(language, 'inspector.struct.detachTip')}
+                                onClick={() => void extractDetectedStructure(region.id, true)}
+                              >
+                                <Scissors size={11} />
+                                <span>{t(language, 'inspector.struct.detach')}</span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', width: '100%' }} />
+
           {/* Simplificar / Refinar Malla */}
           <div className="kura-form-field">
             <label>{t(language, 'inspector.pro.meshTitle')}</label>
             <div className="kura-field-row">
               <span className="kura-field-label">{t(language, 'inspector.pro.simplifyTol')}</span>
               <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-                <input
-                  type="number"
-                  className="kura-input"
-                  style={{ width: 68 }}
+                <PrecisionNumberInput
+                  style={{ width: 92 }}
                   min={0.01}
                   max={5}
                   step={0.05}
+                  precision={2}
+                  defaultValue={0.15}
                   value={simplifyTolMm}
-                  onChange={(e) => setSimplifyTolMm(Number(e.target.value))}
+                  onChange={setSimplifyTolMm}
+                  ariaLabel={t(language, 'inspector.pro.simplifyTol')}
                 />
                 <button
                   type="button"
@@ -798,15 +1031,16 @@ export const RightInspector: React.FC = () => {
             <div className="kura-field-row">
               <span className="kura-field-label">{t(language, 'inspector.pro.refineEdge')}</span>
               <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-                <input
-                  type="number"
-                  className="kura-input"
-                  style={{ width: 68 }}
+                <PrecisionNumberInput
+                  style={{ width: 92 }}
                   min={0.2}
                   max={10}
                   step={0.2}
+                  precision={2}
+                  defaultValue={1.5}
                   value={refineEdgeMm}
-                  onChange={(e) => setRefineEdgeMm(Number(e.target.value))}
+                  onChange={setRefineEdgeMm}
+                  ariaLabel={t(language, 'inspector.pro.refineEdge')}
                 />
                 <button
                   type="button"
@@ -934,9 +1168,18 @@ export const RightInspector: React.FC = () => {
           <div className="kura-form-field">
             <div className="kura-field-row">
               <label>{t(language, 'inspector.op.hollowTitle')}</label>
-              <span style={{ fontSize: 11, fontFamily: 'monospace' }}>
-                {formatDimension(wallThicknessMm, unitSystem)}
-              </span>
+              <PrecisionNumberInput
+                style={{ width: 92 }}
+                min={0.8}
+                max={12}
+                step={0.2}
+                precision={1}
+                defaultValue={2.2}
+                suffix="mm"
+                value={wallThicknessMm}
+                onChange={setWallThicknessMm}
+                ariaLabel={t(language, 'inspector.op.wallThickness')}
+              />
             </div>
             <input
               type="range"
@@ -944,6 +1187,8 @@ export const RightInspector: React.FC = () => {
               max={12}
               step={0.2}
               value={wallThicknessMm}
+              title={t(language, 'ui.sliderResetTip')}
+              onDoubleClick={() => setWallThicknessMm(2.2)}
               onChange={(e) => setWallThicknessMm(Number(e.target.value))}
             />
             <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5 }}>
@@ -957,15 +1202,17 @@ export const RightInspector: React.FC = () => {
             {drainHole && (
               <div className="kura-field-row">
                 <span className="kura-field-label">{t(language, 'inspector.op.drainRadius')}</span>
-                <input
-                  type="number"
-                  className="kura-input"
-                  style={{ width: 78 }}
+                <PrecisionNumberInput
+                  style={{ width: 94 }}
                   min={1}
                   max={25}
                   step={0.5}
+                  precision={1}
+                  defaultValue={4}
+                  suffix="mm"
                   value={drainRadiusMm}
-                  onChange={(e) => setDrainRadiusMm(Number(e.target.value))}
+                  onChange={setDrainRadiusMm}
+                  ariaLabel={t(language, 'inspector.op.drainRadius')}
                 />
               </div>
             )}
@@ -1044,9 +1291,18 @@ export const RightInspector: React.FC = () => {
               <span className="kura-field-label">
                 {t(language, 'inspector.op.textureDepth')}
               </span>
-              <span style={{ fontSize: 11, fontFamily: 'monospace' }}>
-                {textureDepthMm} mm
-              </span>
+              <PrecisionNumberInput
+                style={{ width: 88 }}
+                min={0.1}
+                max={2.5}
+                step={0.05}
+                precision={2}
+                defaultValue={0.45}
+                suffix="mm"
+                value={textureDepthMm}
+                onChange={setTextureDepthMm}
+                ariaLabel={t(language, 'inspector.op.textureDepth')}
+              />
             </div>
             <input
               type="range"
@@ -1054,6 +1310,8 @@ export const RightInspector: React.FC = () => {
               max={2.5}
               step={0.05}
               value={textureDepthMm}
+              title={t(language, 'ui.sliderResetTip')}
+              onDoubleClick={() => setTextureDepthMm(0.45)}
               onChange={(e) => setTextureDepthMm(Number(e.target.value))}
             />
 
@@ -1061,9 +1319,18 @@ export const RightInspector: React.FC = () => {
               <span className="kura-field-label">
                 {t(language, 'inspector.op.textureScale')}
               </span>
-              <span style={{ fontSize: 11, fontFamily: 'monospace' }}>
-                {textureScaleMm} mm
-              </span>
+              <PrecisionNumberInput
+                style={{ width: 88 }}
+                min={1}
+                max={16}
+                step={0.5}
+                precision={1}
+                defaultValue={4}
+                suffix="mm"
+                value={textureScaleMm}
+                onChange={setTextureScaleMm}
+                ariaLabel={t(language, 'inspector.op.textureScale')}
+              />
             </div>
             <input
               type="range"
@@ -1071,6 +1338,8 @@ export const RightInspector: React.FC = () => {
               max={16}
               step={0.5}
               value={textureScaleMm}
+              title={t(language, 'ui.sliderResetTip')}
+              onDoubleClick={() => setTextureScaleMm(4)}
               onChange={(e) => setTextureScaleMm(Number(e.target.value))}
             />
 

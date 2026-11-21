@@ -121,15 +121,89 @@ export const App: React.FC = () => {
         return;
       }
 
+      if (mod && key === 'g') {
+        e.preventDefault();
+        const primaryId = state.selectedIds[0] ?? state.objects[0]?.id;
+        if (e.shiftKey) {
+          if (primaryId) void state.splitDisconnectedObject(primaryId);
+        } else {
+          const selectedObjs = state.objects.filter((o) => state.selectedIds.includes(o.id));
+          const selHasHole = selectedObjs.some((o) => o.isHole && o.visible);
+          const selHasSolid = selectedObjs.some((o) => !o.isHole && o.visible);
+          const sceneHasHole = state.objects.some((o) => o.isHole && o.visible);
+          const sceneHasSolid = state.objects.some((o) => !o.isHole && o.visible);
+          if ((selHasHole && selHasSolid) || (state.selectedIds.length < 2 && sceneHasHole && sceneHasSolid)) {
+            void state.applyHolesOnSolids();
+          } else if (state.selectedIds.length >= 2) {
+            void state.runBooleanOnSelection('union');
+          } else if (sceneHasHole && sceneHasSolid) {
+            void state.applyHolesOnSolids();
+          }
+        }
+        return;
+      }
+
       if (mod && key === 'a') {
         e.preventDefault();
         state.selectAll();
         return;
       }
 
-      if (mod) return;
+      // Empuje numérico de precisión (Arrow Keys / PageUp / PageDown) sobre selección
+      if (
+        e.key === 'ArrowLeft' ||
+        e.key === 'ArrowRight' ||
+        e.key === 'ArrowUp' ||
+        e.key === 'ArrowDown' ||
+        e.key === 'PageUp' ||
+        e.key === 'PageDown'
+      ) {
+        const targetIds =
+          state.selectedIds.length > 0
+            ? state.selectedIds
+            : state.objects.length === 1
+              ? [state.objects[0].id]
+              : [];
+        if (targetIds.length > 0) {
+          if (state.selectedIds.length === 0) {
+            state.selectObject(targetIds[0], false);
+          }
+          e.preventDefault();
+          const base = state.snapGridMm > 0 ? state.snapGridMm : 1;
+          const step = e.shiftKey ? base * 10 : mod || e.altKey ? base * 0.2 : base;
+          if (e.key === 'ArrowLeft') state.nudgeSelectedObjects([-step, 0, 0]);
+          else if (e.key === 'ArrowRight') state.nudgeSelectedObjects([step, 0, 0]);
+          else if (e.key === 'ArrowUp') state.nudgeSelectedObjects([0, 0, -step]);
+          else if (e.key === 'ArrowDown') state.nudgeSelectedObjects([0, 0, step]);
+          else if (e.key === 'PageUp') state.nudgeSelectedObjects([0, step, 0]);
+          else if (e.key === 'PageDown') state.nudgeSelectedObjects([0, -step, 0]);
+        }
+        return;
+      }
 
-      if (key === 'g' || key === 'w') {
+      if (mod || e.altKey) return;
+
+      if (e.key === '?' || e.key === 'F1') {
+        e.preventDefault();
+        state.setActiveDialog('shortcuts');
+        return;
+      }
+
+      if (e.shiftKey && key === 'd') {
+        e.preventDefault();
+        state.duplicateObjects();
+        return;
+      }
+
+      if (key === '1') {
+        state.requestCameraPreset('front');
+      } else if (key === '2') {
+        state.requestCameraPreset('right');
+      } else if (key === '3') {
+        state.requestCameraPreset('iso');
+      } else if (key === '7') {
+        state.requestCameraPreset('top');
+      } else if (key === 'g' || key === 'w') {
         state.setActiveTool('select');
         state.setTransformMode('translate');
       } else if (key === 'r') {
@@ -148,6 +222,30 @@ export const App: React.FC = () => {
           if (obj) {
             state.updateObjectMeta(id, { isHole: !obj.isHole });
           }
+        }
+      } else if (key === 'm') {
+        if (e.shiftKey) {
+          if (state.objects.length > 0) state.setActiveDialog('mold');
+        } else {
+          const mirrorIds =
+            state.selectedIds.length > 0
+              ? state.selectedIds
+              : state.objects.length === 1
+                ? [state.objects[0].id]
+                : [];
+          for (const id of mirrorIds) {
+            state.mirrorObject(id, 'x');
+          }
+        }
+      } else if (key === 'x') {
+        state.setSectionPlane({ enabled: !state.sectionPlane.enabled });
+      } else if (key === 'p') {
+        state.setActiveTool(state.activeTool === 'paint' ? 'select' : 'paint');
+      } else if (key === 'c') {
+        if (state.objects.length > 0) state.setActiveDialog('cut');
+      } else if (key === 'l') {
+        for (const id of state.selectedIds) {
+          state.dropObjectToBed(id);
         }
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         if (state.selectedIds.length > 0) {

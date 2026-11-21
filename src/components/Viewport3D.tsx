@@ -12,7 +12,13 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, type ThreeEvent, useFrame, useThree } from '@react-three/fiber';
-import { ContactShadows, OrbitControls, TransformControls } from '@react-three/drei';
+import {
+  ContactShadows,
+  GizmoHelper,
+  GizmoViewcube,
+  OrbitControls,
+  TransformControls,
+} from '@react-three/drei';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import {
@@ -23,7 +29,10 @@ import {
   Combine,
   Copy,
   FileUp,
+  FlipHorizontal2,
+  HelpCircle,
   Layers,
+  Lightbulb,
   Maximize2,
   Minimize2,
   MinusCircle,
@@ -31,6 +40,7 @@ import {
   PaintBucket,
   RotateCw,
   Scale3d,
+  ScanSearch,
   Scissors,
   ShieldCheck,
   ToggleLeft,
@@ -885,6 +895,14 @@ const SceneContent: React.FC<{
   const [isTransforming, setIsTransforming] = useState(false);
   const [isPaintingDrag, setIsPaintingDrag] = useState(false);
   const [activeTargetGroup, setActiveTargetGroup] = useState<THREE.Group | null>(null);
+  const [ctrlHeld, setCtrlHeld] = useState(false);
+
+  const modifiersRef = useRef<{ shift: boolean; ctrl: boolean; alt: boolean }>({
+    shift: false,
+    ctrl: false,
+    alt: false,
+  });
+  const dragStartScaleRef = useRef<Vec3 | null>(null);
 
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
@@ -892,12 +910,49 @@ const SceneContent: React.FC<{
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const activeTool = useKuraStore((s) => s.activeTool);
   const transformMode = useKuraStore((s) => s.transformMode);
+  const proportionalScale = useKuraStore((s) => s.proportionalScale);
   const snapGridMm = useKuraStore((s) => s.snapGridMm);
   const sectionPlane = useKuraStore((s) => s.sectionPlane);
   const activePrintReport = useKuraStore((s) => s.activePrintReport);
   const showOverhangs = useKuraStore((s) => s.showOverhangs);
+  const language = useKuraStore((s) => s.language);
+  const colorScheme = useKuraStore((s) => s.colorScheme);
   const setObjectTransform = useKuraStore((s) => s.setObjectTransform);
   const commitTransformSnapshot = useKuraStore((s) => s.commitTransformSnapshot);
+  const altCloneForDrag = useKuraStore((s) => s.altCloneForDrag);
+
+  // Rastrea Shift / Ctrl / Alt en tiempo real para modificadores de Gizmo (snap, escala uniforme, Alt-clon)
+  useEffect(() => {
+    const syncMods = (e: KeyboardEvent | PointerEvent) => {
+      const ctrl = e.ctrlKey || e.metaKey;
+      modifiersRef.current = {
+        shift: e.shiftKey,
+        ctrl,
+        alt: e.altKey,
+      };
+      setCtrlHeld((prev) => (prev === ctrl ? prev : ctrl));
+    };
+    const clearMods = () => {
+      modifiersRef.current = { shift: false, ctrl: false, alt: false };
+      setCtrlHeld(false);
+    };
+    window.addEventListener('keydown', syncMods);
+    window.addEventListener('keyup', syncMods);
+    window.addEventListener('pointerdown', syncMods, true);
+    window.addEventListener('blur', clearMods);
+    return () => {
+      window.removeEventListener('keydown', syncMods);
+      window.removeEventListener('keyup', syncMods);
+      window.removeEventListener('pointerdown', syncMods, true);
+      window.removeEventListener('blur', clearMods);
+    };
+  }, []);
+
+  const systemDark =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  const isViewDark =
+    colorScheme === 'dark' || (colorScheme === 'system' && Boolean(systemDark));
 
   // Plano de corte visual Rayos X reutilizado sin recrear materiales en cada cambio de altura
   const clipPlaneRef = useRef<THREE.Plane>(new THREE.Plane(new THREE.Vector3(0, -1, 0), 25));
@@ -1018,23 +1073,74 @@ const SceneContent: React.FC<{
           object={activeTargetGroup}
           mode={transformMode}
           size={0.78}
-          translationSnap={snapGridMm > 0 ? snapGridMm : null}
-          rotationSnap={snapGridMm > 0 ? THREE.MathUtils.degToRad(5) : null}
-          scaleSnap={snapGridMm > 0 ? 0.05 : null}
-          onMouseDown={() => setIsTransforming(true)}
+          translationSnap={
+            ctrlHeld
+              ? snapGridMm > 0
+                ? snapGridMm
+                : 1
+              : snapGridMm > 0
+                ? snapGridMm
+                : null
+          }
+          rotationSnap={
+            ctrlHeld
+              ? Math.PI / 12
+              : snapGridMm > 0
+                ? THREE.MathUtils.degToRad(5)
+                : null
+          }
+          scaleSnap={ctrlHeld ? 0.1 : snapGridMm > 0 ? 0.05 : null}
+          onMouseDown={() => {
+            setIsTransforming(true);
+            dragStartScaleRef.current = [...primaryObj.scale] as Vec3;
+            if (modifiersRef.current.alt) {
+              altCloneForDrag(primaryObj.id);
+            }
+          }}
           onMouseUp={() => {
             setIsTransforming(false);
+            dragStartScaleRef.current = null;
             commitTransformSnapshot();
           }}
           onObjectChange={() => {
             const g = groupRefs.current.get(primaryObj.id);
             if (!g) return;
+
+            let nextScale: Vec3 = [g.scale.x, g.scale.y, g.scale.z];
+            if (
+              transformMode === 'scale' &&
+              (proportionalScale || modifiersRef.current.shift) &&
+              dragStartScaleRef.current
+            ) {
+              const [sx0, sy0, sz0] = dragStartScaleRef.current;
+              const rx = sx0 > 1e-6 ? g.scale.x / sx0 : 1;
+              const ry = sy0 > 1e-6 ? g.scale.y / sy0 : 1;
+              const rz = sz0 > 1e-6 ? g.scale.z / sz0 : 1;
+              const candidates = [rx, ry, rz];
+              let chosen = 1;
+              let maxDelta = -1;
+              for (const r of candidates) {
+                const d = Math.abs(r - 1);
+                if (d > maxDelta) {
+                  maxDelta = d;
+                  chosen = r;
+                }
+              }
+              const factor = Math.max(0.02, chosen);
+              nextScale = [
+                Math.max(0.05, sx0 * factor),
+                Math.max(0.05, sy0 * factor),
+                Math.max(0.05, sz0 * factor),
+              ];
+              g.scale.set(nextScale[0], nextScale[1], nextScale[2]);
+            }
+
             setObjectTransform(
               primaryObj.id,
               {
                 position: [g.position.x, g.position.y, g.position.z],
                 rotation: [g.rotation.x, g.rotation.y, g.rotation.z],
-                scale: [g.scale.x, g.scale.y, g.scale.z],
+                scale: nextScale,
               },
               false,
             );
@@ -1053,6 +1159,22 @@ const SceneContent: React.FC<{
         maxPolarAngle={Math.PI * 0.92}
       />
 
+      {/* Cubo de orientación 3D interactivo estilo CAD */}
+      <GizmoHelper alignment="top-right" margin={[62, 118]}>
+        <GizmoViewcube
+          color={isViewDark ? '#17202e' : '#f1f5f9'}
+          textColor={isViewDark ? '#e2e8f0' : '#0f172a'}
+          strokeColor={isViewDark ? '#38bdf8' : '#0284c7'}
+          hoverColor="#38bdf8"
+          opacity={0.92}
+          faces={
+            language === 'en'
+              ? ['Right', 'Left', 'Top', 'Bottom', 'Front', 'Back']
+              : ['Der', 'Izq', 'Sup', 'Inf', 'Frente', 'Atrás']
+          }
+        />
+      </GizmoHelper>
+
       <CameraController orbitRef={orbitRef} />
       <ViewportCaptureRegistrar />
     </>
@@ -1062,6 +1184,7 @@ const SceneContent: React.FC<{
 export const Viewport3D: React.FC = () => {
   const viewportRef = useRef<HTMLElement | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [tipDismissed, setTipDismissed] = useState(false);
 
   const language = useKuraStore((s) => s.language);
   const unitSystem = useKuraStore((s) => s.unitSystem);
@@ -1098,6 +1221,8 @@ export const Viewport3D: React.FC = () => {
   const duplicateObjects = useKuraStore((s) => s.duplicateObjects);
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
   const deleteObjects = useKuraStore((s) => s.deleteObjects);
+  const mirrorObject = useKuraStore((s) => s.mirrorObject);
+  const detectObjectStructures = useKuraStore((s) => s.detectObjectStructures);
   const toasts = useKuraStore((s) => s.toasts);
   const dismissToast = useKuraStore((s) => s.dismissToast);
 
@@ -1131,8 +1256,8 @@ export const Viewport3D: React.FC = () => {
 
       const rawX = clientX - rect.left;
       const rawY = clientY - rect.top;
-      const clampedX = Math.max(8, Math.min(rawX, Math.max(8, rect.width - 252)));
-      const clampedY = Math.max(8, Math.min(rawY, Math.max(8, rect.height - 420)));
+      const clampedX = Math.max(8, Math.min(rawX, Math.max(8, rect.width - 256)));
+      const clampedY = Math.max(8, Math.min(rawY, Math.max(8, rect.height - 490)));
       setContextMenu({ objectId, x: clampedX, y: clampedY });
     },
     [selectObject],
@@ -1270,6 +1395,8 @@ export const Viewport3D: React.FC = () => {
                     max={maxSceneHeight}
                     step={0.5}
                     value={sectionPlane.heightMm}
+                    title={t(language, 'ui.sliderResetTip')}
+                    onDoubleClick={() => setSectionPlane({ heightMm: 25 })}
                     onChange={(e) => setSectionPlane({ heightMm: Number(e.target.value) })}
                     aria-label={t(language, 'viewport.section.height')}
                   />
@@ -1571,6 +1698,31 @@ export const Viewport3D: React.FC = () => {
             <span>{t(language, 'ctx.validatePrint')}</span>
           </button>
 
+          <button
+            type="button"
+            className="kura-context-item"
+            onClick={() => {
+              setContextMenu(null);
+              void detectObjectStructures(ctxTarget.id);
+            }}
+          >
+            <ScanSearch size={14} style={{ color: 'var(--accent-cyan)' }} />
+            <span>{t(language, 'ctx.detectStructures')}</span>
+          </button>
+
+          <button
+            type="button"
+            className="kura-context-item"
+            disabled={ctxTarget.locked}
+            onClick={() => {
+              setContextMenu(null);
+              mirrorObject(ctxTarget.id, 'x');
+            }}
+          >
+            <FlipHorizontal2 size={14} />
+            <span>{t(language, 'ctx.mirrorX')}</span>
+          </button>
+
           <div className="kura-context-sep" />
 
           <button
@@ -1610,8 +1762,64 @@ export const Viewport3D: React.FC = () => {
             <Trash2 size={14} />
             <span>{t(language, 'ctx.delete')}</span>
           </button>
+
+          <div className="kura-context-sep" />
+
+          <button
+            type="button"
+            className="kura-context-item"
+            onClick={() => {
+              setContextMenu(null);
+              setActiveDialog('shortcuts');
+            }}
+          >
+            <HelpCircle size={14} style={{ color: 'var(--accent-cyan)' }} />
+            <span>{t(language, 'ctx.shortcuts')}</span>
+          </button>
         </div>
       )}
+
+      {/* Píldora contextual inteligente de Pro Tips y acceso directo a Atajos (?) */}
+      <div className="kura-protip-wrap">
+        {tipDismissed ? (
+          <button
+            type="button"
+            className="kura-hud-card kura-protip-collapsed"
+            onClick={() => setTipDismissed(false)}
+            title={t(language, 'viewport.protip.show')}
+            aria-label={t(language, 'viewport.protip.show')}
+          >
+            <Lightbulb size={13} style={{ color: 'var(--accent-amber)' }} />
+            <span>?</span>
+          </button>
+        ) : (
+          <div className="kura-hud-card kura-protip-pill">
+            <Lightbulb size={13} style={{ color: 'var(--accent-amber)', flexShrink: 0 }} />
+            <span className="kura-protip-text">
+              {t(language, `viewport.protip.${activeTool}`)}
+            </span>
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm kura-protip-help-btn"
+              onClick={() => setActiveDialog('shortcuts')}
+              title={t(language, 'status.shortcutsBtn')}
+              aria-label={t(language, 'status.shortcutsBtn')}
+            >
+              <HelpCircle size={12} />
+              <span>?</span>
+            </button>
+            <button
+              type="button"
+              className="kura-mini-icon-btn"
+              onClick={() => setTipDismissed(true)}
+              title={t(language, 'viewport.protip.hide')}
+              aria-label={t(language, 'viewport.protip.hide')}
+            >
+              <X size={12} />
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Toasts anclados dentro del visor para no tapar HUD superior, Inspector ni Chat IA */}
       {toasts.length > 0 && (

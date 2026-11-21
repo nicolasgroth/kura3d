@@ -73,3 +73,12 @@ export {
 } from './generators';
 
 export { computeAlignmentPositions } from './alignment';
+
+export {
+  STRUCTURAL_COLOR_PALETTE,
+  applyStructureColorsToMesh,
+  detectStructuralRegions,
+  extractStructuralRegion,
+  mirrorMeshAxis,
+  splitAllDetectedStructures,
+} from './structuralSegmentation';

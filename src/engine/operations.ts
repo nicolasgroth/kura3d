@@ -273,57 +273,65 @@ function buildConnectorSolid(
   const embed = 0.5;
   const totalLen = h + embed;
 
-  let localZ: Manifold;
+  const tempHandles: Array<{ delete: () => void }> = [];
+  try {
+    let localZ: Manifold;
 
-  if (type === 'dowel') {
-    const raw = wasm.Manifold.cylinder(totalLen, r, r, 24, false);
-    localZ = raw.translate([0, 0, -embed]);
-    raw.delete();
-  } else if (type === 'peg') {
-    // Clavija cuadrada ligeramente cónica en la punta para facilitar el encastre manual
-    const cs = wasm.CrossSection.square([r * 1.8, r * 1.8], true);
-    const extruded = cs.extrude(totalLen, 0, 0, [0.85, 0.85], false);
-    localZ = extruded.translate([0, 0, -embed]);
-    cs.delete();
-    extruded.delete();
-  } else {
-    // Dovetail (cola de milano): trapecio en XZ extruido en espesor Y y reorientado al eje de corte
-    const neckHalf = Math.max(0.35, size * 0.55) + expandTolerance;
-    const headHalf = Math.max(0.55, size * 0.95) + expandTolerance;
-    const thick = Math.max(0.8, size * 1.3 + expandTolerance * 2);
+    if (type === 'dowel') {
+      const raw = wasm.Manifold.cylinder(totalLen, r, r, 24, false);
+      tempHandles.push(raw);
+      localZ = raw.translate([0, 0, -embed]);
+      tempHandles.push(localZ);
+    } else if (type === 'peg') {
+      // Clavija cuadrada ligeramente cónica en la punta para facilitar el encastre manual
+      const cs = wasm.CrossSection.square([r * 1.8, r * 1.8], true);
+      tempHandles.push(cs);
+      const extruded = cs.extrude(totalLen, 0, 0, [0.85, 0.85], false);
+      tempHandles.push(extruded);
+      localZ = extruded.translate([0, 0, -embed]);
+      tempHandles.push(localZ);
+    } else {
+      // Dovetail (cola de milano): trapecio en XZ extruido en espesor Y y reorientado al eje de corte
+      const neckHalf = Math.max(0.35, size * 0.55) + expandTolerance;
+      const headHalf = Math.max(0.55, size * 0.95) + expandTolerance;
+      const thick = Math.max(0.8, size * 1.3 + expandTolerance * 2);
 
-    const profile: [number, number][] = [
-      [-neckHalf, -embed],
-      [neckHalf, -embed],
-      [neckHalf, 0],
-      [headHalf, h],
-      [-headHalf, h],
-      [-neckHalf, 0],
-    ];
-    const cs = wasm.CrossSection.ofPolygons([profile], 'Positive');
-    const extruded = cs.extrude(thick, 0, 0, [1, 1], true);
-    // El perfil tiene su profundidad en el eje 2D +Y, así que rotamos +90° en X para que apunte a +Z
-    localZ = extruded.rotate([90, 0, 0]);
-    cs.delete();
-    extruded.delete();
+      const profile: [number, number][] = [
+        [-neckHalf, -embed],
+        [neckHalf, -embed],
+        [neckHalf, 0],
+        [headHalf, h],
+        [-headHalf, h],
+        [-neckHalf, 0],
+      ];
+      const cs = wasm.CrossSection.ofPolygons([profile], 'Positive');
+      tempHandles.push(cs);
+      const extruded = cs.extrude(thick, 0, 0, [1, 1], true);
+      tempHandles.push(extruded);
+      // El perfil tiene su profundidad en el eje 2D +Y, así que rotamos +90° en X para que apunte a +Z
+      localZ = extruded.rotate([90, 0, 0]);
+      tempHandles.push(localZ);
+    }
+
+    let oriented: Manifold;
+    if (axis === 'z') {
+      oriented = localZ;
+    } else if (axis === 'y') {
+      // Rotar -90° en X lleva +Z a +Y
+      oriented = localZ.rotate([-90, 0, 0]);
+      tempHandles.push(oriented);
+    } else {
+      // Rotar +90° en Y lleva +Z a +X
+      oriented = localZ.rotate([0, 90, 0]);
+      tempHandles.push(oriented);
+    }
+
+    return oriented.translate(worldCenter);
+  } finally {
+    for (const handle of tempHandles) {
+      handle.delete();
+    }
   }
-
-  let oriented: Manifold;
-  if (axis === 'z') {
-    oriented = localZ;
-  } else if (axis === 'y') {
-    // Rotar -90° en X lleva +Z a +Y
-    oriented = localZ.rotate([-90, 0, 0]);
-    localZ.delete();
-  } else {
-    // Rotar +90° en Y lleva +Z a +X
-    oriented = localZ.rotate([0, 90, 0]);
-    localZ.delete();
-  }
-
-  const placed = oriented.translate(worldCenter);
-  oriented.delete();
-  return placed;
 }
 
 /**

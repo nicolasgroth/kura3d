@@ -41,7 +41,7 @@ El servidor MCP de Kura3D está ligado estrictamente a `127.0.0.1` y valida orí
 | :--- | :--- | :--- |
 | `KURA_BRIDGE_PORT` | `17432` | Puerto TCP local del puente WebSocket en `127.0.0.1`. |
 | `KURA_BRIDGE_TOKEN` | *(vacío)* | Token secreto compartido. Si se define, exige `Authorization: Bearer <token>` o `?token=<token>` en el handshake WebSocket (comparación en tiempo constante, rechazando con HTTP `401`). |
-| `KURA_BRIDGE_READ_ONLY` | `false` | Si es `true`, habilita el **modo Solo Lectura**: solo permite `kura_get_scene_state`, `kura_capture_viewport` y `kura_analyze_printability`, bloqueando cualquier modificación o exportación. |
+| `KURA_BRIDGE_READ_ONLY` | `false` | Si es `true`, habilita el **modo Solo Lectura**: solo permite `kura_get_scene_state`, `kura_capture_viewport`, `kura_analyze_printability` y `kura_detect_structures`, bloqueando cualquier modificación o exportación. |
 | `KURA_BRIDGE_RATE_LIMIT` | `120` | Máximo de comandos permitidos por minuto en ventana deslizante de 60 segundos. |
 
 ---
@@ -114,7 +114,7 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 
 ---
 
-## Catálogo de Herramientas MCP (`kura_*` — 26 herramientas)
+## Catálogo de Herramientas MCP (`kura_*` — 30 herramientas)
 
 | Herramienta | Descripción |
 | :--- | :--- |
@@ -144,6 +144,10 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 | `kura_convex_hull` | *(Pro)* Genera la envolvente convexa cerrada de uno o más objetos. |
 | `kura_align_objects` | *(Pro)* Alinea objetos (`minX`..`maxZ`) o los distribuye en grilla sobre la cama (`arrange_grid`). |
 | `kura_set_material` | *(Pro)* Asigna un preset de material físico/visual PBR (`pla_matte`, `pla_silk`, `petg_clear`, `abs`, `carbon_fiber`, `silicone`, `wax_candle`, `metallic`). |
+| `kura_detect_structures` | *(v4.0 · Solo Lectura)* Detecta y clasifica sub-estructuras geométricas (tanques, tubos, cúpulas, bloques, cuerpo principal) devolviendo sus `regionId` y dimensiones. |
+| `kura_colorize_structures` | *(v4.0)* Detecta las sub-estructuras del modelo y les asigna colores diferenciados para inspección o impresión multicolor. |
+| `kura_extract_structure` | *(v4.0)* Extrae una sub-estructura (`regionId`) como objeto independiente, con opción de removerla del objeto origen (`removeFromSource`). |
+| `kura_mirror_object` | *(v4.0)* Refleja especularmente un objeto sobre el eje `x`, `y` o `z`, invirtiendo vértices y winding de triángulos para mantener normales válidas. |
 
 ### Recursos MCP expuestos
 

@@ -24,7 +24,9 @@ import {
   Download,
   FileCode2,
   FileUp,
+  FlipHorizontal2,
   Grid,
+  HelpCircle,
   Hexagon,
   Image as ImageIcon,
   Languages,
@@ -34,6 +36,8 @@ import {
   MinusCircle,
   Moon,
   PaintBucket,
+  Palette,
+  ScanSearch,
   Scissors,
   Search,
   Settings,
@@ -104,6 +108,9 @@ export const CommandPalette: React.FC = () => {
   const requestCameraPreset = useKuraStore((s) => s.requestCameraPreset);
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const setColorScheme = useKuraStore((s) => s.setColorScheme);
+  const detectObjectStructures = useKuraStore((s) => s.detectObjectStructures);
+  const colorizeDetectedStructures = useKuraStore((s) => s.colorizeDetectedStructures);
+  const mirrorObject = useKuraStore((s) => s.mirrorObject);
 
   const aiBadge = getAiBadgeDescriptor(aiConfig, language);
   const primaryId = selectedIds[0] ?? objects[0]?.id;
@@ -283,6 +290,40 @@ export const CommandPalette: React.FC = () => {
         icon: <ShieldCheck size={15} />,
         run: () => {
           if (primaryId) runPrintabilityCheck(primaryId);
+        },
+      },
+      {
+        id: 'op-detect-structures',
+        label: t(language, 'cmd.pro.detectStructures'),
+        category: catOps,
+        keywords: 'detectar estructuras sub-partes segmentar local pliegues islas detect structures',
+        kind: 'local',
+        icon: <ScanSearch size={15} />,
+        run: () => {
+          if (primaryId) void detectObjectStructures(primaryId);
+        },
+      },
+      {
+        id: 'op-colorize-structures',
+        label: t(language, 'cmd.pro.colorizeStructures'),
+        category: catOps,
+        keywords: 'colorear estructuras sub-partes multicolor 3mf colorize structures',
+        kind: 'local',
+        icon: <Palette size={15} />,
+        run: () => {
+          if (primaryId) void colorizeDetectedStructures(primaryId);
+        },
+      },
+      {
+        id: 'op-mirror-x',
+        label: t(language, 'cmd.pro.mirrorX'),
+        category: catOps,
+        keywords: 'espejar simetria reflejar mirror x axis',
+        shortcut: 'M',
+        kind: 'local',
+        icon: <FlipHorizontal2 size={15} />,
+        run: () => {
+          if (primaryId) mirrorObject(primaryId, 'x');
         },
       },
       {
@@ -518,6 +559,16 @@ export const CommandPalette: React.FC = () => {
         run: () => setColorScheme(colorScheme === 'light' ? 'dark' : 'light'),
       },
       {
+        id: 'view-shortcuts',
+        label: t(language, 'cmd.view.shortcuts'),
+        category: catView,
+        keywords: 'atajos teclado ayuda pro tips shortcuts help f1 ?',
+        shortcut: '?',
+        kind: 'local',
+        icon: <HelpCircle size={15} />,
+        run: () => setActiveDialog('shortcuts'),
+      },
+      {
         id: 'set-ai-drawer',
         label: `${t(language, 'topbar.aiChat')} (${aiBadge.label})`,
         category: catSet,
@@ -578,6 +629,9 @@ export const CommandPalette: React.FC = () => {
     setColorScheme,
     setAiDrawerOpen,
     openSettings,
+    detectObjectStructures,
+    colorizeDetectedStructures,
+    mirrorObject,
   ]);
 
   const filtered = useMemo(() => {

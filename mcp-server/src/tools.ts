@@ -982,6 +982,130 @@ export function registerKuraTools(server: McpServer, ctx: KuraToolContext): void
       )
   );
 
+  // 27. Detección determinística de sub-estructuras geométricas v4.0 (Solo Lectura)
+  server.registerTool(
+    'kura_detect_structures',
+    {
+      title: 'Detectar sub-estructuras del modelo 3D',
+      description:
+        'Analiza islas desconectadas, pliegues diedros y proporciones del objeto para detectar sub-estructuras geométricas (tanques, tubos, cúpulas, bloques, cuerpo principal). Seguro en modo Solo Lectura.',
+      inputSchema: {
+        objectId: z.string().min(1).describe('ID del objeto 3D a analizar.'),
+        creaseAngleDeg: z
+          .number()
+          .min(5)
+          .max(85)
+          .optional()
+          .describe('Ángulo diedro umbral en grados (5 a 85, por defecto 28). Menor valor detecta más regiones.'),
+        minRegionPercent: z
+          .number()
+          .min(0.1)
+          .max(100)
+          .optional()
+          .describe('Porcentaje mínimo de triángulos para conservar una región (por defecto 1.5).'),
+        maxRegions: z
+          .number()
+          .int()
+          .min(1)
+          .max(64)
+          .optional()
+          .describe('Cantidad máxima de regiones destacadas a devolver (por defecto 12).'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(
+        ctx,
+        'detect_structures',
+        { ...args, id: args.objectId },
+        () =>
+          ctx.headless.detectStructures(args.objectId, {
+            creaseAngleDeg: args.creaseAngleDeg,
+            minRegionPercent: args.minRegionPercent,
+            maxRegions: args.maxRegions,
+          })
+      )
+  );
+
+  // 28. Coloreado por sub-estructuras detectadas v4.0
+  server.registerTool(
+    'kura_colorize_structures',
+    {
+      title: 'Colorear sub-estructuras detectadas',
+      description:
+        'Detecta las regiones estructurales del modelo y asigna colores diferenciados por sub-estructura para inspección visual o impresión multicolor.',
+      inputSchema: {
+        objectId: z.string().min(1).describe('ID del objeto 3D a colorear por estructuras.'),
+        creaseAngleDeg: z
+          .number()
+          .min(5)
+          .max(85)
+          .optional()
+          .describe('Ángulo diedro umbral en grados (5 a 85, por defecto 28).'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(
+        ctx,
+        'colorize_structures',
+        { ...args, id: args.objectId },
+        () =>
+          ctx.headless.colorizeStructures(args.objectId, {
+            creaseAngleDeg: args.creaseAngleDeg,
+          })
+      )
+  );
+
+  // 29. Extracción de una sub-estructura a objeto independiente v4.0
+  server.registerTool(
+    'kura_extract_structure',
+    {
+      title: 'Extraer sub-estructura como pieza independiente',
+      description:
+        'Extrae una región estructural previamente detectada (`regionId`) como un nuevo objeto 3D independiente, con opción de remover esas caras del objeto origen.',
+      inputSchema: {
+        objectId: z.string().min(1).describe('ID del objeto origen.'),
+        regionId: z.string().min(1).describe('ID de la región estructural devuelta por kura_detect_structures.'),
+        removeFromSource: z
+          .boolean()
+          .optional()
+          .describe('Si es true, elimina las caras extraídas del objeto origen (por defecto false).'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(
+        ctx,
+        'extract_structure',
+        { ...args, id: args.objectId },
+        () =>
+          ctx.headless.extractStructure(
+            args.objectId,
+            args.regionId,
+            args.removeFromSource ?? false
+          )
+      )
+  );
+
+  // 30. Simetría / Espejo geométrico (Mirror) v4.0
+  server.registerTool(
+    'kura_mirror_object',
+    {
+      title: 'Reflejar objeto (Mirror) en eje X, Y o Z',
+      description:
+        'Genera un reflejo especular exacto de la malla a lo largo del eje X, Y o Z invirtiendo coordenadas y orientación (winding) de triángulos para mantener normales salientes válidas.',
+      inputSchema: {
+        objectId: z.string().min(1).describe('ID del objeto 3D a reflejar.'),
+        axis: z.enum(['x', 'y', 'z']).describe('Eje de simetría especular (x, y o z).'),
+      },
+    },
+    async (args) =>
+      dispatchWithFallback(
+        ctx,
+        'mirror_object',
+        { ...args, id: args.objectId },
+        () => ctx.headless.mirrorObject(args.objectId, args.axis)
+      )
+  );
+
   /* ------------------------------------------------------------------------ */
   /* Recursos MCP de solo lectura (`kura://scene/state` y `kura://info/about`)*/
   /* ------------------------------------------------------------------------ */

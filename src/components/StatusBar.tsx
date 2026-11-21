@@ -8,6 +8,7 @@
  */
 
 import React, { useMemo } from 'react';
+import { HelpCircle } from 'lucide-react';
 import { getLocalizedPrinterName, t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { isTauriRuntime } from '../utils/platformBridge';
@@ -20,6 +21,7 @@ export const StatusBar: React.FC = () => {
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const unitSystem = useKuraStore((s) => s.unitSystem);
   const objects = useKuraStore((s) => s.objects);
+  const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
 
   const isNative = useMemo(() => isTauriRuntime(), []);
   const totalTriangles = useMemo(
@@ -64,7 +66,18 @@ export const StatusBar: React.FC = () => {
       </div>
 
       <div className="kura-statusbar-group">
-        <span style={{ opacity: 0.85 }}>{t(language, 'status.shortcuts')}</span>
+        <span className="kura-statusbar-hint" style={{ opacity: 0.78 }}>
+          {t(language, 'status.shortcuts')}
+        </span>
+        <button
+          type="button"
+          className="kura-statusbar-btn"
+          onClick={() => setActiveDialog('shortcuts')}
+          title={t(language, 'cmd.view.shortcuts')}
+        >
+          <HelpCircle size={12} />
+          <span>{t(language, 'status.shortcutsBtn')}</span>
+        </button>
         <span>{t(language, 'status.copyright')}</span>
       </div>
     </footer>

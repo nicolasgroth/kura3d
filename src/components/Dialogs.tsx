@@ -18,6 +18,7 @@ import {
   Copy,
   Download,
   FileUp,
+  Keyboard,
   PaintBucket,
   RefreshCw,
   Scissors,
@@ -28,6 +29,7 @@ import {
 } from 'lucide-react';
 import { t } from '../i18n';
 import { type ActiveDialogType, useKuraStore } from '../store/useKuraStore';
+import { PrecisionNumberInput } from './PrecisionNumberInput';
 import {
   PRINT_COLOR_PALETTE,
   type AiProviderType,
@@ -249,41 +251,41 @@ const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         </div>
         <div className="kura-form-field">
           <label htmlFor="svg-depth">{t(language, 'dialog.svg.depth')} (mm)</label>
-          <input
+          <PrecisionNumberInput
             id="svg-depth"
-            type="number"
-            className="kura-input"
             min={0.5}
             max={150}
             step={0.5}
+            precision={1}
+            defaultValue={6}
             value={depth}
-            onChange={(e) => setDepth(Number(e.target.value))}
+            onChange={setDepth}
           />
         </div>
         <div className="kura-form-field">
           <label htmlFor="svg-width">{t(language, 'dialog.svg.width')} (mm)</label>
-          <input
+          <PrecisionNumberInput
             id="svg-width"
-            type="number"
-            className="kura-input"
             min={5}
             max={350}
             step={1}
+            precision={1}
+            defaultValue={60}
             value={targetWidth}
-            onChange={(e) => setTargetWidth(Number(e.target.value))}
+            onChange={setTargetWidth}
           />
         </div>
         <div className="kura-form-field">
           <label htmlFor="svg-seg">{t(language, 'dialog.svg.segments')}</label>
-          <input
+          <PrecisionNumberInput
             id="svg-seg"
-            type="number"
-            className="kura-input"
             min={4}
             max={48}
             step={1}
+            precision={0}
+            defaultValue={12}
             value={curveSegments}
-            onChange={(e) => setCurveSegments(Number(e.target.value))}
+            onChange={(val) => setCurveSegments(Math.round(val))}
           />
         </div>
       </div>
@@ -513,26 +515,28 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
           </div>
           <div className="kura-form-field">
             <label htmlFor="img-w">{t(language, 'dialog.img.width')} (mm)</label>
-            <input
+            <PrecisionNumberInput
               id="img-w"
-              type="number"
-              className="kura-input"
               value={widthMm}
               min={10}
               max={250}
-              onChange={(e) => setWidthMm(Number(e.target.value))}
+              step={1}
+              precision={1}
+              defaultValue={70}
+              onChange={setWidthMm}
             />
           </div>
           <div className="kura-form-field">
             <label htmlFor="img-d">{t(language, 'dialog.img.depth')} (mm)</label>
-            <input
+            <PrecisionNumberInput
               id="img-d"
-              type="number"
-              className="kura-input"
               value={depthMm}
               min={10}
               max={250}
-              onChange={(e) => setDepthMm(Number(e.target.value))}
+              step={1}
+              precision={1}
+              defaultValue={70}
+              onChange={setDepthMm}
             />
           </div>
         </div>
@@ -541,28 +545,28 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
       <div className="kura-form-grid">
         <div className="kura-form-field">
           <label htmlFor="img-base">{t(language, 'dialog.img.base')} (mm)</label>
-          <input
+          <PrecisionNumberInput
             id="img-base"
-            type="number"
-            className="kura-input"
             step={0.2}
             min={0.4}
             max={20}
+            precision={1}
+            defaultValue={1.2}
             value={baseThicknessMm}
-            onChange={(e) => setBaseThicknessMm(Number(e.target.value))}
+            onChange={setBaseThicknessMm}
           />
         </div>
         <div className="kura-form-field">
           <label htmlFor="img-relief">{t(language, 'dialog.img.relief')} (mm)</label>
-          <input
+          <PrecisionNumberInput
             id="img-relief"
-            type="number"
-            className="kura-input"
             step={0.2}
             min={0.4}
             max={30}
+            precision={1}
+            defaultValue={3.2}
             value={reliefHeightMm}
-            onChange={(e) => setReliefHeightMm(Number(e.target.value))}
+            onChange={setReliefHeightMm}
           />
         </div>
 
@@ -570,28 +574,28 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
           <>
             <div className="kura-form-field">
               <label htmlFor="img-cyl-r">{t(language, 'dialog.img.cylRadius')}</label>
-              <input
+              <PrecisionNumberInput
                 id="img-cyl-r"
-                type="number"
-                className="kura-input"
                 min={15}
                 max={180}
                 step={1}
+                precision={1}
+                defaultValue={42}
                 value={cylinderRadiusMm}
-                onChange={(e) => setCylinderRadiusMm(Number(e.target.value))}
+                onChange={setCylinderRadiusMm}
               />
             </div>
             <div className="kura-form-field">
               <label htmlFor="img-arc">{t(language, 'dialog.img.arcDegrees')}</label>
-              <input
+              <PrecisionNumberInput
                 id="img-arc"
-                type="number"
-                className="kura-input"
                 min={60}
                 max={360}
                 step={15}
+                precision={0}
+                defaultValue={180}
                 value={arcDegrees}
-                onChange={(e) => setArcDegrees(Number(e.target.value))}
+                onChange={setArcDegrees}
               />
             </div>
           </>
@@ -600,15 +604,15 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         {(shapeMode === 'silhouette' || shapeMode === 'cutter') && (
           <div className="kura-form-field">
             <label htmlFor="img-thresh">{t(language, 'dialog.img.threshold')}</label>
-            <input
+            <PrecisionNumberInput
               id="img-thresh"
-              type="number"
-              className="kura-input"
               min={10}
               max={245}
               step={5}
+              precision={0}
+              defaultValue={128}
               value={threshold}
-              onChange={(e) => setThreshold(Number(e.target.value))}
+              onChange={(val) => setThreshold(Math.round(val))}
             />
           </div>
         )}
@@ -616,30 +620,30 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         {shapeMode === 'cutter' && (
           <div className="kura-form-field">
             <label htmlFor="img-cwall">{t(language, 'dialog.img.cutterWall')}</label>
-            <input
+            <PrecisionNumberInput
               id="img-cwall"
-              type="number"
-              className="kura-input"
               min={0.6}
               max={6}
               step={0.2}
+              precision={1}
+              defaultValue={1.4}
               value={cutterWallMm}
-              onChange={(e) => setCutterWallMm(Number(e.target.value))}
+              onChange={setCutterWallMm}
             />
           </div>
         )}
 
         <div className="kura-form-field">
           <label htmlFor="img-smooth">{t(language, 'dialog.img.smoothing')} (0–3)</label>
-          <input
+          <PrecisionNumberInput
             id="img-smooth"
-            type="number"
-            className="kura-input"
             min={0}
             max={3}
             step={1}
+            precision={0}
+            defaultValue={1}
             value={smoothing}
-            onChange={(e) => setSmoothing(Number(e.target.value))}
+            onChange={(val) => setSmoothing(Math.round(val))}
           />
         </div>
 
@@ -774,6 +778,8 @@ const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({
             max={50}
             step={1}
             value={offset}
+            title={t(language, 'ui.sliderResetTip')}
+            onDoubleClick={() => setOffset(0)}
             onChange={(e) => setOffset(Number(e.target.value))}
           />
         </div>
@@ -809,57 +815,57 @@ const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
         <div className="kura-form-field">
           <label htmlFor="cut-size">{t(language, 'dialog.cut.connectorSize')} (mm)</label>
-          <input
+          <PrecisionNumberInput
             id="cut-size"
-            type="number"
-            className="kura-input"
             min={1.5}
             max={20}
             step={0.5}
+            precision={1}
+            defaultValue={4}
             value={connectorSize}
-            onChange={(e) => setConnectorSize(Number(e.target.value))}
+            onChange={setConnectorSize}
           />
         </div>
 
         <div className="kura-form-field">
           <label htmlFor="cut-depth">{t(language, 'dialog.cut.connectorDepth')} (mm)</label>
-          <input
+          <PrecisionNumberInput
             id="cut-depth"
-            type="number"
-            className="kura-input"
             min={2}
             max={25}
             step={0.5}
+            precision={1}
+            defaultValue={6}
             value={connectorDepth}
-            onChange={(e) => setConnectorDepth(Number(e.target.value))}
+            onChange={setConnectorDepth}
           />
         </div>
 
         <div className="kura-form-field">
           <label htmlFor="cut-tol">{t(language, 'dialog.cut.tolerance')} (mm)</label>
-          <input
+          <PrecisionNumberInput
             id="cut-tol"
-            type="number"
-            className="kura-input"
             min={0.05}
             max={1.0}
             step={0.05}
+            precision={2}
+            defaultValue={0.25}
             value={tolerance}
-            onChange={(e) => setTolerance(Number(e.target.value))}
+            onChange={setTolerance}
           />
         </div>
 
         <div className="kura-form-field">
           <label htmlFor="cut-count">{t(language, 'dialog.cut.connectorCount')} (1–4)</label>
-          <input
+          <PrecisionNumberInput
             id="cut-count"
-            type="number"
-            className="kura-input"
             min={1}
             max={4}
             step={1}
+            precision={0}
+            defaultValue={2}
             value={connectorCount}
-            onChange={(e) => setConnectorCount(Number(e.target.value))}
+            onChange={(val) => setConnectorCount(Math.round(val))}
           />
         </div>
       </div>
@@ -940,30 +946,30 @@ const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onC
       <div className="kura-form-grid">
         <div className="kura-form-field">
           <label htmlFor="mold-margin">{t(language, 'dialog.mold.wallMargin')}</label>
-          <input
+          <PrecisionNumberInput
             id="mold-margin"
-            type="number"
-            className="kura-input"
             min={2}
             max={35}
             step={0.5}
+            precision={1}
+            defaultValue={6}
             value={wallMarginMm}
-            onChange={(e) => setWallMarginMm(Number(e.target.value))}
+            onChange={setWallMarginMm}
           />
         </div>
 
         {mode === 'silicone_master' && (
           <div className="kura-form-field">
             <label htmlFor="mold-boxwall">{t(language, 'dialog.mold.boxWall')}</label>
-            <input
+            <PrecisionNumberInput
               id="mold-boxwall"
-              type="number"
-              className="kura-input"
               min={1.2}
               max={15}
               step={0.4}
+              precision={1}
+              defaultValue={3}
               value={boxWallMm}
-              onChange={(e) => setBoxWallMm(Number(e.target.value))}
+              onChange={setBoxWallMm}
             />
           </div>
         )}
@@ -984,15 +990,15 @@ const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onC
             </div>
             <div className="kura-form-field">
               <label htmlFor="mold-tol">{t(language, 'dialog.mold.keyTolerance')}</label>
-              <input
+              <PrecisionNumberInput
                 id="mold-tol"
-                type="number"
-                className="kura-input"
                 min={0.05}
                 max={1.0}
                 step={0.05}
+                precision={2}
+                defaultValue={0.25}
                 value={keyToleranceMm}
-                onChange={(e) => setKeyToleranceMm(Number(e.target.value))}
+                onChange={setKeyToleranceMm}
               />
             </div>
           </>
@@ -1001,15 +1007,15 @@ const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onC
         {mode === 'core_cavity' && (
           <div className="kura-form-field">
             <label htmlFor="mold-cavwall">{t(language, 'dialog.mold.cavityWall')}</label>
-            <input
+            <PrecisionNumberInput
               id="mold-cavwall"
-              type="number"
-              className="kura-input"
               min={1.0}
               max={20}
               step={0.5}
+              precision={1}
+              defaultValue={3}
               value={cavityWallMm}
-              onChange={(e) => setCavityWallMm(Number(e.target.value))}
+              onChange={setCavityWallMm}
             />
           </div>
         )}
@@ -1028,15 +1034,15 @@ const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onC
         {pourSpout && (
           <div className="kura-form-field">
             <label htmlFor="mold-spout-r">{t(language, 'dialog.mold.pourSpoutRadius')}</label>
-            <input
+            <PrecisionNumberInput
               id="mold-spout-r"
-              type="number"
-              className="kura-input"
               min={2}
               max={20}
               step={0.5}
+              precision={1}
+              defaultValue={5}
               value={pourSpoutRadiusMm}
-              onChange={(e) => setPourSpoutRadiusMm(Number(e.target.value))}
+              onChange={setPourSpoutRadiusMm}
             />
           </div>
         )}
@@ -1194,29 +1200,29 @@ const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
         <div className="kura-form-field">
           <label htmlFor="proj-width">{t(language, 'dialog.project.width')}</label>
-          <input
+          <PrecisionNumberInput
             id="proj-width"
-            type="number"
-            className="kura-input"
             min={4}
             max={200}
             step={1}
+            precision={1}
+            defaultValue={18}
             value={widthMm}
-            onChange={(e) => setWidthMm(Number(e.target.value))}
+            onChange={setWidthMm}
           />
         </div>
 
         <div className="kura-form-field">
           <label htmlFor="proj-depth">{t(language, 'dialog.project.depth')}</label>
-          <input
+          <PrecisionNumberInput
             id="proj-depth"
-            type="number"
-            className="kura-input"
             min={0.3}
             max={15}
             step={0.2}
+            precision={1}
+            defaultValue={1.2}
             value={depthMm}
-            onChange={(e) => setDepthMm(Number(e.target.value))}
+            onChange={setDepthMm}
           />
         </div>
 
@@ -1244,25 +1250,25 @@ const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
         <div className="kura-form-field">
           <label htmlFor="proj-u">{t(language, 'dialog.project.offsetU')}</label>
-          <input
+          <PrecisionNumberInput
             id="proj-u"
-            type="number"
-            className="kura-input"
             step={0.5}
+            precision={1}
+            defaultValue={0}
             value={offsetU}
-            onChange={(e) => setOffsetU(Number(e.target.value))}
+            onChange={setOffsetU}
           />
         </div>
 
         <div className="kura-form-field">
           <label htmlFor="proj-v">{t(language, 'dialog.project.offsetV')}</label>
-          <input
+          <PrecisionNumberInput
             id="proj-v"
-            type="number"
-            className="kura-input"
             step={0.5}
+            precision={1}
+            defaultValue={0}
             value={offsetV}
-            onChange={(e) => setOffsetV(Number(e.target.value))}
+            onChange={setOffsetV}
           />
         </div>
       </div>
@@ -1358,57 +1364,57 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
 
         <div className="kura-form-field">
           <label htmlFor="thread-diam">{t(language, 'dialog.thread.diameter')}</label>
-          <input
+          <PrecisionNumberInput
             id="thread-diam"
-            type="number"
-            className="kura-input"
             min={3}
             max={40}
             step={0.5}
+            precision={1}
+            defaultValue={8}
             value={diameterMm}
-            onChange={(e) => setDiameterMm(Number(e.target.value))}
+            onChange={setDiameterMm}
           />
         </div>
 
         <div className="kura-form-field">
           <label htmlFor="thread-pitch">{t(language, 'dialog.thread.pitch')}</label>
-          <input
+          <PrecisionNumberInput
             id="thread-pitch"
-            type="number"
-            className="kura-input"
             min={0.5}
             max={4}
             step={0.05}
+            precision={2}
+            defaultValue={1.25}
             value={pitchMm}
-            onChange={(e) => setPitchMm(Number(e.target.value))}
+            onChange={setPitchMm}
           />
         </div>
 
         <div className="kura-form-field">
           <label htmlFor="thread-len">{t(language, 'dialog.thread.length')}</label>
-          <input
+          <PrecisionNumberInput
             id="thread-len"
-            type="number"
-            className="kura-input"
             min={4}
             max={120}
             step={1}
+            precision={1}
+            defaultValue={20}
             value={lengthMm}
-            onChange={(e) => setLengthMm(Number(e.target.value))}
+            onChange={setLengthMm}
           />
         </div>
 
         <div className="kura-form-field">
           <label htmlFor="thread-clear">{t(language, 'dialog.thread.clearance')}</label>
-          <input
+          <PrecisionNumberInput
             id="thread-clear"
-            type="number"
-            className="kura-input"
             min={0}
             max={0.8}
             step={0.05}
+            precision={2}
+            defaultValue={0.25}
             value={clearanceMm}
-            onChange={(e) => setClearanceMm(Number(e.target.value))}
+            onChange={setClearanceMm}
           />
         </div>
 
@@ -1715,6 +1721,8 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
                 max={1}
                 step={0.1}
                 value={temperature}
+                title={t(language, 'ui.sliderResetTip')}
+                onDoubleClick={() => setTemperature(0.2)}
                 onChange={(e) => setTemperature(Number(e.target.value))}
               />
             </div>
@@ -1865,13 +1873,124 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
       {tab === 'about' && (
         <div className="kura-card">
-          <strong>Kura3D Pro Studio v3.0</strong>
+          <strong>Kura3D Pro Studio v4.0</strong>
           <p style={{ margin: 0, fontSize: 12 }}>{t(language, 'dialog.settings.aboutAuthor')}</p>
           <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
             {t(language, 'dialog.settings.aboutStack')}
           </p>
         </div>
       )}
+    </NativeModal>
+  );
+};
+
+/** Modal 9: Hoja de referencia rápida de Atajos de Teclado Pro y Consejos CAD. */
+const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
+  open,
+  onClose,
+}) => {
+  const language = useKuraStore((s) => s.language);
+
+  const sections: Array<{
+    title: string;
+    items: Array<{ keys: string[]; label: string }>;
+  }> = [
+    {
+      title: t(language, 'dialog.shortcuts.secTransform'),
+      items: [
+        { keys: ['G', 'W'], label: t(language, 'dialog.shortcuts.moveGizmo') },
+        { keys: ['R'], label: t(language, 'dialog.shortcuts.rotateGizmo') },
+        { keys: ['S'], label: t(language, 'dialog.shortcuts.scaleGizmo') },
+        { keys: ['V'], label: t(language, 'dialog.shortcuts.selectTool') },
+        { keys: ['Shift'], label: t(language, 'dialog.shortcuts.shiftScale') },
+        { keys: ['Ctrl'], label: t(language, 'dialog.shortcuts.ctrlSnap') },
+        { keys: ['Alt', 'Drag'], label: t(language, 'dialog.shortcuts.altClone') },
+        { keys: ['↑', '↓', '←', '→'], label: t(language, 'dialog.shortcuts.nudgeXY') },
+        { keys: ['PgUp', 'PgDn'], label: t(language, 'dialog.shortcuts.nudgeHeight') },
+      ],
+    },
+    {
+      title: t(language, 'dialog.shortcuts.secPrecision'),
+      items: [
+        { keys: ['X/Y/Z', '↔'], label: t(language, 'dialog.shortcuts.scrubDrag') },
+        { keys: ['↑', '↓', 'Wheel'], label: t(language, 'dialog.shortcuts.arrowStep') },
+        { keys: ['Shift', '↑/↓'], label: t(language, 'dialog.shortcuts.shiftStep') },
+        { keys: ['Alt/Ctrl', '↑/↓'], label: t(language, 'dialog.shortcuts.altStep') },
+        { keys: ['2× Clic'], label: t(language, 'dialog.shortcuts.sliderReset') },
+      ],
+    },
+    {
+      title: t(language, 'dialog.shortcuts.secCamera'),
+      items: [
+        { keys: ['1', '2', '3', '7'], label: t(language, 'dialog.shortcuts.camPresets') },
+        { keys: ['F'], label: t(language, 'dialog.shortcuts.camFit') },
+        { keys: ['Tab'], label: t(language, 'dialog.shortcuts.zenMode') },
+      ],
+    },
+    {
+      title: t(language, 'dialog.shortcuts.secCad'),
+      items: [
+        { keys: ['Ctrl+G'], label: t(language, 'dialog.shortcuts.smartGroup') },
+        { keys: ['Ctrl+Shift+G'], label: t(language, 'dialog.shortcuts.splitIslands') },
+        { keys: ['M'], label: t(language, 'dialog.shortcuts.mirrorX') },
+        { keys: ['Shift+M'], label: t(language, 'dialog.shortcuts.openMold') },
+        { keys: ['X'], label: t(language, 'dialog.shortcuts.toggleXray') },
+        { keys: ['P'], label: t(language, 'dialog.shortcuts.togglePaint') },
+        { keys: ['C'], label: t(language, 'dialog.shortcuts.openCut') },
+        { keys: ['L'], label: t(language, 'dialog.shortcuts.dropBed') },
+        { keys: ['H'], label: t(language, 'dialog.shortcuts.toggleHole') },
+      ],
+    },
+    {
+      title: t(language, 'dialog.shortcuts.secPalette'),
+      items: [
+        { keys: ['Ctrl+K'], label: t(language, 'dialog.shortcuts.cmdPalette') },
+        { keys: ['Ctrl+Z / Y'], label: t(language, 'dialog.shortcuts.undoRedo') },
+        { keys: ['Ctrl/Shift+D'], label: t(language, 'dialog.shortcuts.duplicate') },
+        { keys: ['Del'], label: t(language, 'dialog.shortcuts.delete') },
+        { keys: ['?', 'F1'], label: t(language, 'dialog.shortcuts.help') },
+      ],
+    },
+  ];
+
+  return (
+    <NativeModal
+      open={open}
+      onClose={onClose}
+      title={t(language, 'dialog.shortcuts.title')}
+      className="kura-dialog-wide"
+      footer={
+        <button type="button" className="kura-btn kura-btn-primary" onClick={onClose}>
+          <Keyboard size={14} />
+          <span>{t(language, 'dialog.close')}</span>
+        </button>
+      }
+    >
+      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
+        {t(language, 'dialog.shortcuts.subtitle')}
+      </p>
+
+      <div className="kura-shortcuts-grid">
+        {sections.map((sec) => (
+          <section key={sec.title} className="kura-card kura-shortcut-card">
+            <h3 className="kura-section-label">{sec.title}</h3>
+            <div className="kura-shortcut-list">
+              {sec.items.map((item) => (
+                <div key={item.label} className="kura-shortcut-row">
+                  <span className="kura-shortcut-desc">{item.label}</span>
+                  <span className="kura-shortcut-keys">
+                    {item.keys.map((k) => (
+                      <kbd key={k} className="kura-kbd">
+                        {k}
+                      </kbd>
+                    ))}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
     </NativeModal>
   );
 };
@@ -1904,6 +2023,10 @@ export const Dialogs: React.FC = () => {
       <SettingsModal
         open={activeDialog === 'settings'}
         onClose={() => closeDialog('settings')}
+      />
+      <ShortcutsModal
+        open={activeDialog === 'shortcuts'}
+        onClose={() => closeDialog('shortcuts')}
       />
     </>
   );

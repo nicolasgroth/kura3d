@@ -145,7 +145,52 @@ export type ObjectSourceType =
   | 'mold'
   | 'thread'
   | 'hull'
-  | 'projected';
+  | 'projected'
+  | 'segmented_part';
+
+/** Arquetipos geométricos reconocidos de forma determinística local (sin IA externa). */
+export type StructuralArchetype =
+  | 'main_body'
+  | 'tank_cylinder'
+  | 'tube_conduit'
+  | 'dome_helmet'
+  | 'block_plate'
+  | 'appendage'
+  | 'detail_part';
+
+/** Opciones del motor determinístico de detección y segmentación estructural v4.0. */
+export interface SegmentationOptions {
+  /** Umbral de ángulo diedro en grados (defecto 28°). */
+  creaseAngleDeg?: number;
+  /** Porcentaje mínimo de triángulos por región (defecto 1.5 %). */
+  minRegionPercent?: number;
+  /** Máximo número de regiones destacadas a devolver (defecto 12). */
+  maxRegions?: number;
+}
+
+/** Sub-estructura geométrica detectada dentro de un modelo 3D. */
+export interface DetectedStructureRegion {
+  id: string;
+  labelEs: string;
+  labelEn: string;
+  archetype: StructuralArchetype;
+  color: string;
+  faceIndices: number[];
+  triangleCount: number;
+  percentOfModel: number;
+  dimensionsMm: Vec3;
+  centerMm: Vec3;
+  confidence: number;
+  isDisconnectedShell: boolean;
+}
+
+/** Resultado completo de la detección y segmentación estructural de un objeto 3D. */
+export interface StructuralSegmentationResult {
+  objectId: string;
+  method: 'shells_and_creases';
+  totalTriangles: number;
+  regions: DetectedStructureRegion[];
+}
 
 /** Vector 3D [X, Y, Z]. */
 export type Vec3 = [number, number, number];
@@ -402,7 +447,7 @@ export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
   },
 ];
 
-/** Nombres de comandos aceptados por el Command Bus de Kura3D Pro v3.0. */
+/** Nombres de comandos aceptados por el Command Bus de Kura3D Pro v4.0. */
 export type KuraCommandName =
   | 'get_scene_state'
   | 'create_primitive'
@@ -430,7 +475,11 @@ export type KuraCommandName =
   | 'create_thread'
   | 'convex_hull'
   | 'align_objects'
-  | 'set_material';
+  | 'set_material'
+  | 'detect_structures'
+  | 'colorize_structures'
+  | 'extract_structure'
+  | 'mirror_object';
 
 /** Mensaje de petición enviado hacia la UI viva de Kura3D por WebSocket. */
 export interface KuraCommandRequest {

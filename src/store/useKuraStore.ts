@@ -41,6 +41,7 @@ import {
   type PrinterProfile,
   type SceneObject,
   type SlicerTarget,
+  type StructuralSegmentationResult,
   type SurfaceProjectionOptions,
   type SvgImportOptions,
   type TextureOptions,
@@ -71,6 +72,7 @@ export type ActiveDialogType =
   | 'thread'
   | 'export3mf'
   | 'settings'
+  | 'shortcuts'
   | null;
 export type SettingsTabType = 'ai' | 'mcp' | 'about';
 export type CommandSourceType = 'ui' | 'mcp' | 'ai';
@@ -109,6 +111,7 @@ export interface KuraStoreState {
   // Herramientas y viewport
   activeTool: ActiveTool;
   transformMode: TransformMode;
+  proportionalScale: boolean;
   snapGridMm: number;
   paintColor: string;
   paintRadiusMm: number;
@@ -116,10 +119,12 @@ export interface KuraStoreState {
   eraseRadiusMm: number;
   cameraRequest: { preset: CameraPresetType; nonce: number } | null;
 
-  // Plano de corte visual (Rayos X / Sección) y Validador estructural
+  // Plano de corte visual (Rayos X / Sección), Validador y Segmentación Estructural Local
   sectionPlane: { enabled: boolean; heightMm: number };
   activePrintReport: PrintabilityReport | null;
   showOverhangs: boolean;
+  activeSegmentation: StructuralSegmentationResult | null;
+  segmentationCreaseDeg: number;
 
   // Preferencias globales
   unitSystem: UnitSystem;
@@ -161,7 +166,11 @@ export interface KuraStoreState {
   setPrinterProfile: (profileId: string) => void;
   setActiveTool: (tool: ActiveTool) => void;
   setTransformMode: (mode: TransformMode) => void;
+  setProportionalScale: (locked: boolean) => void;
+  toggleProportionalScale: () => void;
   setSnapGridMm: (snapMm: number) => void;
+  setSegmentationCreaseDeg: (deg: number) => void;
+  clearSegmentation: () => void;
   setPaintSettings: (
     patch: Partial<{ paintColor: string; paintRadiusMm: number; paintMode: PaintBrushMode }>,
   ) => void;
@@ -238,6 +247,9 @@ export interface KuraStoreState {
   dropObjectToBed: (id: string) => void;
   centerObjectOnBed: (id: string) => void;
   resetObjectOrientation: (id: string) => void;
+  nudgeSelectedObjects: (deltaMm: Vec3) => void;
+  altCloneForDrag: (id: string) => SceneObject | null;
+  mirrorObject: (id: string, axis: 'x' | 'y' | 'z') => boolean;
   duplicateObjects: (ids?: string[]) => SceneObject[];
   deleteObjects: (ids?: string[]) => void;
 
@@ -281,6 +293,18 @@ export interface KuraStoreState {
   runConvexHull: (ids?: string[]) => Promise<SceneObject | null>;
   createThreadObject: (options: ThreadOptions) => Promise<SceneObject | null>;
   alignSelectedObjects: (mode: AlignMode) => void;
+
+  // Detección estructural local y separación de sub-partes (v4.0)
+  detectObjectStructures: (
+    id?: string,
+    creaseAngleDeg?: number,
+  ) => Promise<StructuralSegmentationResult | null>;
+  colorizeDetectedStructures: (id?: string) => Promise<boolean>;
+  extractDetectedStructure: (
+    regionId: string,
+    removeFromSource?: boolean,
+  ) => Promise<SceneObject | null>;
+  splitAllDetectedObjectStructures: (id?: string) => Promise<SceneObject[]>;
 
   // Importación / Exportación
   importSvgModel: (options: SvgImportOptions) => Promise<SceneObject | null>;
@@ -673,6 +697,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
     activeTool: 'select',
     transformMode: 'translate',
+    proportionalScale: true,
     snapGridMm: 1,
     paintColor: PRINT_COLOR_PALETTE[1],
     paintRadiusMm: 5,
@@ -683,6 +708,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     sectionPlane: { enabled: false, heightMm: 25 },
     activePrintReport: null,
     showOverhangs: false,
+    activeSegmentation: null,
+    segmentationCreaseDeg: 28,
 
     unitSystem: loadInitialUnits(),
     language: initialLang,
@@ -828,7 +855,12 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     },
 
     setTransformMode: (transformMode) => set({ transformMode }),
+    setProportionalScale: (proportionalScale) => set({ proportionalScale }),
+    toggleProportionalScale: () =>
+      set((state) => ({ proportionalScale: !state.proportionalScale })),
     setSnapGridMm: (snapGridMm) => set({ snapGridMm }),
+    setSegmentationCreaseDeg: (segmentationCreaseDeg) => set({ segmentationCreaseDeg }),
+    clearSegmentation: () => set({ activeSegmentation: null }),
     setPaintSettings: (patch) => set((state) => ({ ...state, ...patch })),
     setEraseRadiusMm: (eraseRadiusMm) => set({ eraseRadiusMm }),
 
@@ -1227,6 +1259,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           future: [],
           activePrintReport: null,
           showOverhangs: false,
+          activeSegmentation: null,
         });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -1242,6 +1275,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         selectedIds: [],
         activePrintReport: null,
         showOverhangs: false,
+        activeSegmentation: null,
       });
     },
 
@@ -1385,8 +1419,97 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           state.activePrintReport && removableIds.has(state.activePrintReport.objectId)
             ? null
             : state.activePrintReport,
+        activeSegmentation:
+          state.activeSegmentation && removableIds.has(state.activeSegmentation.objectId)
+            ? null
+            : state.activeSegmentation,
       }));
       get().addToast(tr('toast.deleted'), 'info');
+    },
+
+    nudgeSelectedObjects: (deltaMm) => {
+      const { objects, selectedIds } = get();
+      const targets = objects.filter((o) => selectedIds.includes(o.id) && !o.locked);
+      if (targets.length === 0) return;
+      const targetSet = new Set(targets.map((tObj) => tObj.id));
+      pushHistory();
+      set((state) => ({
+        objects: state.objects.map((item) =>
+          targetSet.has(item.id)
+            ? {
+                ...item,
+                position: [
+                  item.position[0] + deltaMm[0],
+                  item.position[1] + deltaMm[1],
+                  item.position[2] + deltaMm[2],
+                ],
+              }
+            : item,
+        ),
+      }));
+    },
+
+    altCloneForDrag: (id) => {
+      const s = get();
+      const src = s.objects.find((o) => o.id === id);
+      if (!src || src.locked) return null;
+
+      // Guarda el estado previo al Alt-arrastre para que Ctrl+Z deshaga clonación y movimiento en un paso
+      if (!transformSnapshotBeforeDrag) {
+        transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds);
+      }
+
+      // Inserta una copia estacionaria idéntica en su posición original y renombra la malla arrastrada como copia
+      // Así TransformControls mantiene el puntero enganchado sin interrupciones a 60fps
+      const stationaryOriginal: SceneObject = {
+        ...src,
+        id: makeId('mesh'),
+        position: [...src.position] as Vec3,
+        rotation: [...src.rotation] as Vec3,
+        scale: [...src.scale] as Vec3,
+        stats: {
+          ...src.stats,
+          dimensionsMm: [...src.stats.dimensionsMm] as Vec3,
+        },
+      };
+
+      const cloneLabel = s.language === 'en' ? '(copy)' : '(copia)';
+      const now = Date.now();
+      set((state) => ({
+        objects: [
+          ...state.objects.map((o) =>
+            o.id === id ? { ...o, name: `${src.name} ${cloneLabel}` } : o,
+          ),
+          stationaryOriginal,
+        ],
+        spawnedAtById: { ...state.spawnedAtById, [stationaryOriginal.id]: now },
+      }));
+
+      return get().objects.find((o) => o.id === id) ?? null;
+    },
+
+    mirrorObject: (id, axis) => {
+      const obj = get().objects.find((o) => o.id === id);
+      if (!obj || obj.locked) return false;
+
+      try {
+        const mirroredMesh = engine.mirrorMeshAxis(obj.mesh, axis);
+        const stats = engine.computeMeshStats(mirroredMesh);
+        pushHistory();
+        set((state) => ({
+          objects: state.objects.map((item) =>
+            item.id === id ? { ...item, mesh: mirroredMesh, stats } : item,
+          ),
+          activeSegmentation:
+            state.activeSegmentation?.objectId === id ? null : state.activeSegmentation,
+        }));
+        get().addToast(tr('toast.mirrored', { axis: axis.toUpperCase() }), 'success');
+        return true;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return false;
+      }
     },
 
     runBooleanOnSelection: async (op, explicitTargetId, explicitToolId) => {
@@ -1462,20 +1585,34 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       try {
         const updatedSolids: SceneObject[] = [];
         for (const solid of solids) {
-          let current = solid;
+          let current: SceneObject | null = solid;
           for (const hole of holes) {
-            const res = await engine.runBooleanOperation(current, hole, 'subtract');
-            current = buildSceneObject({
-              id: solid.id,
-              name: solid.name,
-              source: 'boolean',
-              mesh: res.mesh,
-              position: res.position,
-              color: solid.color,
-              materialPreset: solid.materialPreset,
-            });
+            if (!current) break;
+            try {
+              const res = await engine.runBooleanOperation(current, hole, 'subtract');
+              current = buildSceneObject({
+                id: solid.id,
+                name: solid.name,
+                source: 'boolean',
+                mesh: res.mesh,
+                position: res.position,
+                color: solid.color,
+                materialPreset: solid.materialPreset,
+              });
+            } catch (subErr) {
+              // Si un sólido queda totalmente contenido dentro de un hueco (malla vacía),
+              // se elimina limpiamente sin abortar el resto del lote de sólidos.
+              const msg = subErr instanceof Error ? subErr.message : String(subErr);
+              if (/vac[ií]a|empty/i.test(msg)) {
+                current = null;
+                break;
+              }
+              throw subErr;
+            }
           }
-          updatedSolids.push(current);
+          if (current) {
+            updatedSolids.push(current);
+          }
         }
 
         const solidIds = new Set(solids.map((s) => s.id));
@@ -2035,6 +2172,217 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       get().addToast(tr('toast.alignedDone', { mode }), 'success');
     },
 
+    detectObjectStructures: async (id, creaseAngleDeg) => {
+      const state = get();
+      const targetId = id ?? state.selectedIds[0] ?? state.objects[0]?.id;
+      const obj = state.objects.find((o) => o.id === targetId);
+      if (!obj) return null;
+
+      const angle =
+        typeof creaseAngleDeg === 'number' && Number.isFinite(creaseAngleDeg)
+          ? creaseAngleDeg
+          : state.segmentationCreaseDeg;
+
+      set({ busyOperation: 'detect_structures', segmentationCreaseDeg: angle });
+      try {
+        await get().initEngine();
+        const result = await engine.detectStructuralRegions(obj, {
+          creaseAngleDeg: angle,
+        });
+        set({ activeSegmentation: result });
+        get().addToast(
+          tr('toast.structuresDetected', { count: result.regions.length }),
+          'success',
+        );
+        return result;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return null;
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
+    colorizeDetectedStructures: async (id) => {
+      const state = get();
+      const targetId =
+        id ?? state.activeSegmentation?.objectId ?? state.selectedIds[0] ?? state.objects[0]?.id;
+      const obj = state.objects.find((o) => o.id === targetId);
+      if (!obj || obj.locked) return false;
+
+      let segmentation =
+        state.activeSegmentation && state.activeSegmentation.objectId === obj.id
+          ? state.activeSegmentation
+          : null;
+      if (!segmentation) {
+        segmentation = await get().detectObjectStructures(obj.id);
+      }
+      if (!segmentation || segmentation.regions.length === 0) return false;
+
+      try {
+        const colorizedMesh = engine.applyStructureColorsToMesh(obj.mesh, segmentation);
+        const stats = engine.computeMeshStats(colorizedMesh);
+        pushHistory();
+        set((prev) => ({
+          objects: prev.objects.map((item) =>
+            item.id === obj.id ? { ...item, mesh: colorizedMesh, stats } : item,
+          ),
+        }));
+        get().addToast(
+          tr('toast.structuresColorized', { count: segmentation.regions.length }),
+          'success',
+        );
+        return true;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return false;
+      }
+    },
+
+    extractDetectedStructure: async (regionId, removeFromSource = false) => {
+      const state = get();
+      const seg = state.activeSegmentation;
+      if (!seg) return null;
+      const obj = state.objects.find((o) => o.id === seg.objectId);
+      if (!obj) return null;
+      if (removeFromSource && obj.locked) return null;
+
+      const region = seg.regions.find((r) => r.id === regionId);
+      if (!region) return null;
+
+      set({ busyOperation: 'extract_structure' });
+      try {
+        await get().initEngine();
+        const res = await engine.extractStructuralRegion(obj, region, removeFromSource);
+        const regionLabel = state.language === 'en' ? region.labelEn : region.labelEs;
+        const extractedObj = buildSceneObject({
+          name: `${obj.name} · ${regionLabel}`,
+          source: 'segmented_part',
+          mesh: res.extracted.mesh,
+          position: res.extracted.position,
+          color: region.color,
+          materialPreset: obj.materialPreset,
+        });
+
+        pushHistory();
+        const now = Date.now();
+
+        if (removeFromSource) {
+          if (res.remainder) {
+            const remStats = engine.computeMeshStats(res.remainder.mesh);
+            set((prev) => ({
+              objects: [
+                ...prev.objects.map((item) =>
+                  item.id === obj.id
+                    ? {
+                        ...item,
+                        mesh: res.remainder!.mesh,
+                        position: res.remainder!.position,
+                        stats: remStats,
+                      }
+                    : item,
+                ),
+                extractedObj,
+              ],
+              selectedIds: [extractedObj.id],
+              activeSegmentation: null,
+              spawnedAtById: { ...prev.spawnedAtById, [extractedObj.id]: now },
+            }));
+          } else {
+            set((prev) => ({
+              objects: [
+                ...prev.objects.filter((item) => item.id !== obj.id),
+                extractedObj,
+              ],
+              selectedIds: [extractedObj.id],
+              activeSegmentation: null,
+              spawnedAtById: { ...prev.spawnedAtById, [extractedObj.id]: now },
+            }));
+          }
+        } else {
+          set((prev) => ({
+            objects: [...prev.objects, extractedObj],
+            selectedIds: [extractedObj.id],
+            spawnedAtById: { ...prev.spawnedAtById, [extractedObj.id]: now },
+          }));
+        }
+
+        get().addToast(
+          tr('toast.structureExtracted', { name: extractedObj.name }),
+          'success',
+        );
+        return extractedObj;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return null;
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
+    splitAllDetectedObjectStructures: async (id) => {
+      const state = get();
+      const targetId =
+        id ?? state.activeSegmentation?.objectId ?? state.selectedIds[0] ?? state.objects[0]?.id;
+      const obj = state.objects.find((o) => o.id === targetId);
+      if (!obj || obj.locked) return [];
+
+      let segmentation =
+        state.activeSegmentation && state.activeSegmentation.objectId === obj.id
+          ? state.activeSegmentation
+          : null;
+      if (!segmentation) {
+        segmentation = await get().detectObjectStructures(obj.id);
+      }
+      if (!segmentation || segmentation.regions.length === 0) return [];
+
+      set({ busyOperation: 'split_structures' });
+      try {
+        await get().initEngine();
+        const parts = await engine.splitAllDetectedStructures(obj, segmentation);
+        if (parts.length === 0) return [];
+
+        const created = parts.map((part) => {
+          const label = get().language === 'en' ? part.labelEn : part.labelEs;
+          return buildSceneObject({
+            name: `${obj.name} · ${label}`,
+            source: 'segmented_part',
+            mesh: part.mesh,
+            position: part.position,
+            color: part.color,
+            materialPreset: obj.materialPreset,
+          });
+        });
+
+        pushHistory();
+        const now = Date.now();
+        const spawnedPatch: Record<string, number> = {};
+        for (const c of created) spawnedPatch[c.id] = now;
+
+        set((prev) => ({
+          objects: [...prev.objects.filter((o) => o.id !== obj.id), ...created],
+          selectedIds: created.map((c) => c.id),
+          activeSegmentation: null,
+          spawnedAtById: { ...prev.spawnedAtById, ...spawnedPatch },
+        }));
+
+        get().addToast(
+          tr('toast.structuresSplitAll', { count: created.length }),
+          'success',
+        );
+        return created;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        return [];
+      } finally {
+        set({ busyOperation: null });
+      }
+    },
+
     importSvgModel: async (options) => {
       set({ busyOperation: 'import_svg' });
       try {
@@ -2220,7 +2568,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().mcpConfig.readOnly &&
         req.command !== 'get_scene_state' &&
         req.command !== 'capture_viewport' &&
-        req.command !== 'analyze_printability'
+        req.command !== 'analyze_printability' &&
+        req.command !== 'detect_structures'
       ) {
         return {
           id: req.id,
@@ -2652,6 +3001,111 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
             const mode = (p.mode as AlignMode) || 'arrange_grid';
             get().alignSelectedObjects(mode);
             return { id: req.id, ok: true, result: { mode } };
+          }
+
+          case 'detect_structures': {
+            const rawId = p.id ?? p.objectId;
+            const targetId =
+              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
+            if (!targetId) {
+              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para analizar.' };
+            }
+            const creaseAngleDeg =
+              typeof p.creaseAngleDeg === 'number' ? p.creaseAngleDeg : undefined;
+            const seg = await get().detectObjectStructures(targetId, creaseAngleDeg);
+            return {
+              id: req.id,
+              ok: Boolean(seg),
+              result: seg
+                ? {
+                    objectId: seg.objectId,
+                    method: seg.method,
+                    totalTriangles: seg.totalTriangles,
+                    regions: seg.regions.map((r) => ({
+                      id: r.id,
+                      labelEs: r.labelEs,
+                      labelEn: r.labelEn,
+                      archetype: r.archetype,
+                      color: r.color,
+                      triangleCount: r.triangleCount,
+                      percentOfModel: r.percentOfModel,
+                      dimensionsMm: r.dimensionsMm,
+                      centerMm: r.centerMm,
+                      confidence: r.confidence,
+                      isDisconnectedShell: r.isDisconnectedShell,
+                    })),
+                  }
+                : null,
+            };
+          }
+
+          case 'colorize_structures': {
+            const rawId = p.id ?? p.objectId;
+            const targetId =
+              (typeof rawId === 'string' && rawId) ||
+              get().activeSegmentation?.objectId ||
+              get().selectedIds[0] ||
+              get().objects[0]?.id;
+            if (!targetId) {
+              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para colorear.' };
+            }
+            const ok = await get().colorizeDetectedStructures(targetId);
+            return {
+              id: req.id,
+              ok,
+              result: {
+                objectId: targetId,
+                regionsCount: get().activeSegmentation?.regions.length ?? 0,
+              },
+            };
+          }
+
+          case 'extract_structure': {
+            const rawObjId = p.objectId;
+            const regionId =
+              typeof p.regionId === 'string'
+                ? p.regionId
+                : typeof p.id === 'string'
+                  ? p.id
+                  : '';
+            if (typeof rawObjId === 'string' && rawObjId) {
+              const curSeg = get().activeSegmentation;
+              if (!curSeg || curSeg.objectId !== rawObjId) {
+                await get().detectObjectStructures(rawObjId);
+              }
+            }
+            const seg = get().activeSegmentation;
+            if (!seg) {
+              return { id: req.id, ok: false, error: 'Ejecuta detect_structures primero.' };
+            }
+            const resolvedRegion =
+              seg.regions.find((r) => r.id === regionId) ??
+              (typeof p.regionIndex === 'number' ? seg.regions[p.regionIndex] : undefined);
+            if (!resolvedRegion) {
+              return { id: req.id, ok: false, error: 'Sub-estructura no encontrada.' };
+            }
+            const created = await get().extractDetectedStructure(
+              resolvedRegion.id,
+              Boolean(p.removeFromSource),
+            );
+            return {
+              id: req.id,
+              ok: Boolean(created),
+              result: created ? { id: created.id, name: created.name, stats: created.stats } : null,
+            };
+          }
+
+          case 'mirror_object': {
+            const rawId = p.id ?? p.objectId;
+            const targetId =
+              (typeof rawId === 'string' && rawId) || get().selectedIds[0] || get().objects[0]?.id;
+            if (!targetId) {
+              return { id: req.id, ok: false, error: 'No hay objeto seleccionado para espejar.' };
+            }
+            const axis: 'x' | 'y' | 'z' =
+              p.axis === 'y' || p.axis === 'z' ? p.axis : 'x';
+            const ok = get().mirrorObject(targetId, axis);
+            return { id: req.id, ok, result: { id: targetId, axis } };
           }
 
           case 'export_stl': {

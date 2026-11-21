@@ -17,6 +17,7 @@ import {
   MATERIAL_PRESETS,
   type AlignMode,
   type BooleanOpType,
+  type DetectedStructureRegion,
   type HeadlessMeshData,
   type HeadlessSceneObject,
   type HollowOptions,
@@ -28,7 +29,10 @@ import {
   type PrimitiveType,
   type PrintabilityReport,
   type PrinterProfile,
+  type SegmentationOptions,
   type SlicerTarget,
+  type StructuralArchetype,
+  type StructuralSegmentationResult,
   type SurfaceProjectionOptions,
   type TextureOptions,
   type ThreadOptions,
@@ -897,6 +901,242 @@ export class KuraHeadlessEngine {
       object: this.summarizeObject(hullObj),
       sourceObjectIds: objectIds,
     };
+  }
+
+  /* ------------------------------------------------------------------------ */
+  /* Herramientas v4.0: Segmentación Estructural y Simetría (Mirror)          */
+  /* ------------------------------------------------------------------------ */
+
+  /**
+   * Detecta y clasifica sub-estructuras geométricas de forma determinística
+   * analizando islas desconectadas, dimensiones de bounding box y relación de aspecto.
+   */
+  detectStructures(
+    objectId: string,
+    options: SegmentationOptions = {}
+  ): StructuralSegmentationResult {
+    const obj = this.requireObject(objectId);
+    const triCount = obj.mesh.indices.length / 3;
+    const minRegionPercent = options.minRegionPercent ?? 1.5;
+    const maxRegions = Math.max(1, Math.round(options.maxRegions ?? 12));
+    // creaseAngleDeg queda disponible para alinear con el motor de pliegues de la UI viva
+    void options.creaseAngleDeg;
+
+    if (triCount === 0) {
+      return {
+        objectId: obj.id,
+        method: 'shells_and_creases',
+        totalTriangles: 0,
+        regions: [],
+      };
+    }
+
+    const shells = findConnectedTriangleShells(obj.mesh);
+    const isDisconnected = shells.length > 1;
+    const [sx, sy, sz] = obj.scale;
+    const p = obj.mesh.positions;
+    const idx = obj.mesh.indices;
+
+    const rawRegions = shells.map((faceIndices, shellIdx) => {
+      let minX = Infinity, minY = Infinity, minZ = Infinity;
+      let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+
+      for (const faceIdx of faceIndices) {
+        for (let k = 0; k < 3; k++) {
+          const vi = idx[faceIdx * 3 + k] * 3;
+          const vx = p[vi] * sx;
+          const vy = p[vi + 1] * sy;
+          const vz = p[vi + 2] * sz;
+          if (vx < minX) minX = vx;
+          if (vx > maxX) maxX = vx;
+          if (vy < minY) minY = vy;
+          if (vy > maxY) maxY = vy;
+          if (vz < minZ) minZ = vz;
+          if (vz > maxZ) maxZ = vz;
+        }
+      }
+
+      const dx = round2(Math.abs(maxX - minX));
+      const dy = round2(Math.abs(maxY - minY));
+      const dz = round2(Math.abs(maxZ - minZ));
+      const cx = round2((minX + maxX) * 0.5);
+      const cy = round2((minY + maxY) * 0.5);
+      const cz = round2((minZ + maxZ) * 0.5);
+      const percent = round2((faceIndices.length / triCount) * 100);
+
+      const classification = classifyStructureRegion(
+        [dx, dy, dz],
+        percent,
+        obj.primitiveType,
+        shellIdx === 0 && !isDisconnected
+      );
+
+      return {
+        faceIndices,
+        triangleCount: faceIndices.length,
+        percentOfModel: percent,
+        dimensionsMm: [dx, dy, dz] as Vec3,
+        centerMm: [cx, cy, cz] as Vec3,
+        isDisconnectedShell: isDisconnected,
+        ...classification,
+      };
+    });
+
+    rawRegions.sort((a, b) => b.triangleCount - a.triangleCount);
+
+    const filtered = rawRegions.filter((r) => r.percentOfModel >= minRegionPercent);
+    const kept = (filtered.length > 0 ? filtered : rawRegions).slice(0, maxRegions);
+
+    const regions: DetectedStructureRegion[] = kept.map((r, index) => ({
+      id: `region_${index + 1}`,
+      labelEs: r.labelEs,
+      labelEn: r.labelEn,
+      archetype: r.archetype,
+      color: STRUCTURE_PALETTE[index % STRUCTURE_PALETTE.length],
+      faceIndices: r.faceIndices,
+      triangleCount: r.triangleCount,
+      percentOfModel: r.percentOfModel,
+      dimensionsMm: r.dimensionsMm,
+      centerMm: r.centerMm,
+      confidence: r.confidence,
+      isDisconnectedShell: r.isDisconnectedShell,
+    }));
+
+    return {
+      objectId: obj.id,
+      method: 'shells_and_creases',
+      totalTriangles: triCount,
+      regions,
+    };
+  }
+
+  /**
+   * Colorea las sub-estructuras detectadas del objeto en modo headless
+   * asignando el color de la estructura principal al resumen del objeto y devolviendo el mapa de regiones.
+   */
+  colorizeStructures(
+    objectId: string,
+    options: { creaseAngleDeg?: number } = {}
+  ): {
+    object: SceneObjectSummary;
+    regions: DetectedStructureRegion[];
+    regionCount: number;
+    note: string;
+  } {
+    const obj = this.requireObject(objectId);
+    const segmentation = this.detectStructures(objectId, {
+      creaseAngleDeg: options.creaseAngleDeg,
+    });
+
+    if (segmentation.regions.length > 0) {
+      obj.color = segmentation.regions[0].color;
+    }
+
+    return {
+      object: this.summarizeObject(obj),
+      regions: segmentation.regions,
+      regionCount: segmentation.regions.length,
+      note: `Se colorearon ${segmentation.regions.length} región(es) estructural(es) en modo Headless.`,
+    };
+  }
+
+  /**
+   * Extrae una sub-estructura detectada (`regionId`) como objeto independiente (`segmented_part`),
+   * eliminando opcionalmente esas caras del objeto origen (`removeFromSource`).
+   */
+  extractStructure(
+    objectId: string,
+    regionId: string,
+    removeFromSource: boolean = false
+  ): {
+    extractedObject: SceneObjectSummary;
+    sourceObjectId: string;
+    removedFromSource: boolean;
+    sourceDeleted: boolean;
+    region: DetectedStructureRegion;
+  } {
+    const obj = this.requireObject(objectId);
+    const segmentation = this.detectStructures(objectId);
+    const region = segmentation.regions.find((r) => r.id === regionId);
+
+    if (!region) {
+      const available = segmentation.regions.map((r) => r.id).join(', ') || 'ninguna';
+      throw new Error(
+        `Región estructural '${regionId}' no encontrada en el objeto '${objectId}'. Disponibles: ${available}`
+      );
+    }
+
+    const extractedMesh = extractSubMeshByFaces(obj.mesh, region.faceIndices);
+    const newId = `kura_${++this.counter}_${randomUUID().slice(0, 6)}`;
+    const extractedObj: HeadlessSceneObject = {
+      id: newId,
+      name: `${obj.name}_${region.labelEn}`,
+      source: 'segmented_part',
+      position: [...obj.position],
+      rotation: [...obj.rotation],
+      scale: [...obj.scale],
+      color: region.color,
+      materialPreset: obj.materialPreset ?? 'pla_matte',
+      isHole: obj.isHole,
+      visible: true,
+      locked: false,
+      mesh: extractedMesh,
+      stats: computeMeshStats(extractedMesh, obj.scale),
+    };
+
+    this.objects.set(newId, extractedObj);
+
+    let sourceDeleted = false;
+    if (removeFromSource) {
+      const excluded = new Set<number>(region.faceIndices);
+      const totalTris = obj.mesh.indices.length / 3;
+      const remainingFaces: number[] = [];
+      for (let f = 0; f < totalTris; f++) {
+        if (!excluded.has(f)) {
+          remainingFaces.push(f);
+        }
+      }
+
+      if (remainingFaces.length === 0) {
+        this.objects.delete(obj.id);
+        sourceDeleted = true;
+      } else {
+        obj.mesh = extractSubMeshByFaces(obj.mesh, remainingFaces);
+        obj.stats = computeMeshStats(obj.mesh, obj.scale);
+      }
+    }
+
+    return {
+      extractedObject: this.summarizeObject(extractedObj),
+      sourceObjectId: obj.id,
+      removedFromSource: removeFromSource,
+      sourceDeleted,
+      region,
+    };
+  }
+
+  /**
+   * Crea un reflejo especular (mirror) exacto de la geometría a lo largo del eje X, Y o Z,
+   * invirtiendo las coordenadas de vértices en ese eje e invirtiendo el winding de los triángulos
+   * para conservar normales salientes y volumen positivo válidos para impresión 3D.
+   */
+  mirrorObject(objectId: string, axis: 'x' | 'y' | 'z'): SceneObjectSummary {
+    const obj = this.requireObject(objectId);
+    const axisIdx = axis === 'x' ? 0 : axis === 'y' ? 1 : 2;
+
+    const positions = new Float32Array(obj.mesh.positions);
+    for (let i = 0; i < positions.length; i += 3) {
+      positions[i + axisIdx] = -positions[i + axisIdx];
+    }
+
+    const mirrored = invertMeshWinding({
+      positions,
+      indices: new Uint32Array(obj.mesh.indices),
+    });
+
+    obj.mesh = mirrored;
+    obj.stats = computeMeshStats(obj.mesh, obj.scale);
+    return this.summarizeObject(obj);
   }
 
   /** Exporta los objetos seleccionados (o toda la escena) a un archivo STL binario o ASCII. */
@@ -1828,4 +2068,196 @@ function round2(value: number): number {
 
 function capitalize(value: string): string {
   return value.length > 0 ? value[0].toUpperCase() + value.slice(1) : value;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Helpers determinísticos de segmentación estructural v4.0 (Headless)        */
+/* -------------------------------------------------------------------------- */
+
+const STRUCTURE_PALETTE = [
+  '#38bdf8',
+  '#f97316',
+  '#22c55e',
+  '#a855f7',
+  '#eab308',
+  '#ec4899',
+  '#14b8a6',
+  '#ef4444',
+  '#6366f1',
+  '#84cc16',
+  '#06b6d4',
+  '#f43f5e',
+];
+
+/** Agrupa triángulos en componentes conexas según vértices espacialmente compartidos. */
+function findConnectedTriangleShells(mesh: HeadlessMeshData): number[][] {
+  const triCount = mesh.indices.length / 3;
+  if (triCount === 0) return [];
+
+  const p = mesh.positions;
+  const idx = mesh.indices;
+  const posKeyToFaces = new Map<string, number[]>();
+
+  for (let f = 0; f < triCount; f++) {
+    for (let k = 0; k < 3; k++) {
+      const v = idx[f * 3 + k] * 3;
+      const key = `${Math.round(p[v] * 1000)},${Math.round(p[v + 1] * 1000)},${Math.round(p[v + 2] * 1000)}`;
+      let list = posKeyToFaces.get(key);
+      if (!list) {
+        list = [];
+        posKeyToFaces.set(key, list);
+      }
+      list.push(f);
+    }
+  }
+
+  const visited = new Uint8Array(triCount);
+  const shells: number[][] = [];
+
+  for (let start = 0; start < triCount; start++) {
+    if (visited[start]) continue;
+    const shell: number[] = [];
+    const queue: number[] = [start];
+    visited[start] = 1;
+
+    for (let q = 0; q < queue.length; q++) {
+      const f = queue[q];
+      shell.push(f);
+      for (let k = 0; k < 3; k++) {
+        const v = idx[f * 3 + k] * 3;
+        const key = `${Math.round(p[v] * 1000)},${Math.round(p[v + 1] * 1000)},${Math.round(p[v + 2] * 1000)}`;
+        const neighbors = posKeyToFaces.get(key);
+        if (!neighbors) continue;
+        for (const nf of neighbors) {
+          if (!visited[nf]) {
+            visited[nf] = 1;
+            queue.push(nf);
+          }
+        }
+      }
+    }
+
+    shells.push(shell);
+  }
+
+  return shells;
+}
+
+/** Clasifica heurísticamente una región estructural por dimensiones, relación de aspecto y primitiva. */
+function classifyStructureRegion(
+  dims: Vec3,
+  percentOfModel: number,
+  primitiveType: PrimitiveType | undefined,
+  isSingleShell: boolean
+): {
+  archetype: StructuralArchetype;
+  labelEs: string;
+  labelEn: string;
+  confidence: number;
+} {
+  const [dx, dy, dz] = dims;
+  const sorted = [dx, dy, dz].sort((a, b) => a - b);
+  const minD = Math.max(0.01, sorted[0]);
+  const midD = Math.max(0.01, sorted[1]);
+  const maxD = Math.max(0.01, sorted[2]);
+  const elongation = maxD / midD;
+  const flatness = minD / midD;
+
+  if (primitiveType === 'tube' || primitiveType === 'torus') {
+    return {
+      archetype: 'tube_conduit',
+      labelEs: 'Tubo / Conducto',
+      labelEn: 'Tube_Conduit',
+      confidence: 88,
+    };
+  }
+  if (primitiveType === 'cylinder' || primitiveType === 'cone') {
+    return {
+      archetype: elongation > 2 ? 'tube_conduit' : 'tank_cylinder',
+      labelEs: elongation > 2 ? 'Tubo / Conducto' : 'Tanque / Cilindro',
+      labelEn: elongation > 2 ? 'Tube_Conduit' : 'Tank_Cylinder',
+      confidence: 86,
+    };
+  }
+  if (primitiveType === 'sphere') {
+    return {
+      archetype: 'dome_helmet',
+      labelEs: 'Cúpula / Domo',
+      labelEn: 'Dome_Helmet',
+      confidence: 85,
+    };
+  }
+
+  if (elongation >= 2.6 && Math.abs(dx - dz) < maxD * 0.45) {
+    return {
+      archetype: 'tube_conduit',
+      labelEs: 'Tubo / Conducto',
+      labelEn: 'Tube_Conduit',
+      confidence: 80,
+    };
+  }
+
+  if (flatness <= 0.35) {
+    return {
+      archetype: 'block_plate',
+      labelEs: 'Placa / Bloque',
+      labelEn: 'Block_Plate',
+      confidence: 82,
+    };
+  }
+
+  if (!isSingleShell && percentOfModel < 12) {
+    return {
+      archetype: 'detail_part',
+      labelEs: 'Pieza de Detalle',
+      labelEn: 'Detail_Part',
+      confidence: 76,
+    };
+  }
+
+  if (!isSingleShell && percentOfModel < 35) {
+    return {
+      archetype: 'appendage',
+      labelEs: 'Apéndice / Sub-cuerpo',
+      labelEn: 'Appendage',
+      confidence: 78,
+    };
+  }
+
+  return {
+    archetype: 'main_body',
+    labelEs: 'Cuerpo Principal',
+    labelEn: 'Main_Body',
+    confidence: 90,
+  };
+}
+
+/** Extrae y compacta una submalla indexada para un subconjunto de índices de triángulo. */
+function extractSubMeshByFaces(mesh: HeadlessMeshData, faceIndices: number[]): HeadlessMeshData {
+  const vertexRemap = new Map<number, number>();
+  const pos: number[] = [];
+  const idx: number[] = [];
+
+  for (const faceIdx of faceIndices) {
+    const base = faceIdx * 3;
+    for (let k = 0; k < 3; k++) {
+      const oldVert = mesh.indices[base + k];
+      let newVert = vertexRemap.get(oldVert);
+      if (newVert === undefined) {
+        newVert = pos.length / 3;
+        vertexRemap.set(oldVert, newVert);
+        pos.push(
+          mesh.positions[oldVert * 3],
+          mesh.positions[oldVert * 3 + 1],
+          mesh.positions[oldVert * 3 + 2]
+        );
+      }
+      idx.push(newVert);
+    }
+  }
+
+  return {
+    positions: new Float32Array(pos),
+    indices: new Uint32Array(idx),
+  };
 }
