@@ -26,6 +26,12 @@ Reunir en una sola herramienta abierta lo que hoy está repartido en varias: tom
 | **4. IA universal** | Chat que opera la escena con previsualización y aprobación. Proveedores: Anthropic, OpenAI, Gemini, Ollama y **cualquier API compatible con OpenAI** (DeepSeek, Qwen, OpenRouter, LM Studio) con URL y modelo configurables. Imagen → 3D mediante modelos abiertos (locales o por API), como módulo opcional. | AI-01, API-01, VOZ-01 |
 | **5. Extras** | Estimación de material por pieza, más formatos, extensiones, instaladores firmados. | REL-01, EXT-01 |
 
+| **Transversal: estudio de trabajo** | Pestañas de proyecto, paneles acoplables y layouts, atajos editables, consola de comandos, workspaces, perfiles básico/pro. La especificación lo considera parte del producto mínimo. | UX-02 a UX-08, CMD-01, VIEW-01 |
+| **Transversal: placas y escena** | Placas como entidad del proyecto, los 11 modos de importación y distribución con su asistente, camas personalizadas, árbol de escena con instancias, grupos y filtros. Es el requisito más destacado de la especificación. | PLATE-01/02/03, BED-01, SCENE-01 |
+| **Transversal: malla, medición e historial** | Reparación de malla con mapa de defectos, medición con snapping y tolerancias, historial no destructivo con variantes y recetas. | GEO-03, MEAS-01, HIST-01 |
+
+Las filas transversales se intercalan con las etapas numeradas: placas y escena se diseñan junto con la etapa 1 (dividir para imprimir necesita placas), y el estudio de trabajo avanza después de ordenar el repositorio.
+
 La etapa 0 corre en paralelo con la 1. Las etapas 1 a 3 comparten el modelo de piezas, placas y uniones, que se diseña una sola vez al empezar la etapa 1.
 
 ## Formatos
@@ -52,6 +58,35 @@ Se evalúan antes de escribir código propio. Solo licencias permisivas.
 | Exportar GLB | GLTFExporter de three.js | MIT |
 | Claves en el sistema operativo | keyring (crate Rust) | MIT/Apache-2.0 |
 
+## Cobertura de la especificación maestra
+
+El 21 de noviembre de 2026 se cruzó `KURA_3D_ESPECIFICACION_MAESTRA.md` (secciones F01–F16, E01–E15, US-001 a US-020) y las dos revisiones contra el backlog. Todo requisito tiene ticket salvo estas brechas, que se agregan aquí con identificador nuevo:
+
+| ID nuevo | Qué pide la especificación | Sección |
+|---|---|---|
+| GEO-05 | Cortes múltiples secuenciales y patrón de cortes | F04 |
+| GEO-06 | Ajuste de precisión y estrategia de booleanas según la geometría | F05 |
+| MEAS-02 | Restricciones paramétricas básicas (dimensionales) | F13 |
+| AI-02 | Recordar preferencias dentro del proyecto solo con consentimiento | F15 |
+| API-03 | Modo propuesta y permisos por proyecto, herramienta y operación en MCP | F16, §10.5 |
+| FILE-03 | Política de compatibilidad de `.kura`: avisar campos desconocidos, hash de integridad, versionado del esquema separado del programa, exportar nunca sobrescribe el proyecto | §8.2, §11.5 |
+| DIAG-01 | Registros locales y exportación de diagnósticos | §11.3 |
+| DOC-01 | `DECISIONS.md`, `ARCHITECTURE.md`, `DATA_FORMAT.md`, `MCP_API.md`, `UX_GUIDELINES.md` | §14.1, §15 |
+| TUT-01 | Mini tutoriales interactivos dentro del producto y modelos de ejemplo | §6.6 idea 14 |
+| CORE-02 | Un solo motor compartido entre app y servidor MCP; núcleo independiente de la interfaz | §9.3 |
+| BUILD-01 | Resolver avisos de empaquetado (chunks sobre 500 kB) y auditoría de dependencias en CI | Revisiones |
+| QA-03 | Lista fija de slicers obligatorios con fixtures, y pruebas con millones de triángulos | Revisiones, §12 |
+| SEC-05 | Pruebas de defensa ante instrucciones maliciosas en nombres y metadatos importados | §10.5 |
+| UX-09 | Indicador de conexión MCP en la barra de estado; indicadores de operaciones pendientes en el árbol | §3.5, §4.3 |
+
+Diferencias con la especificación que requieren decisión del autor:
+
+- **Estimación de material.** La especificación (§1.5) deja fuera el cálculo de filamento, duración y costo; la app ya muestra peso y metros. Se mantiene como extra mientras no se indique lo contrario.
+- **Soportes de impresión.** La especificación (§1.5) los deja fuera como módulo. Siguen fuera de alcance.
+- **Tecnología.** La especificación sugería evaluar Qt y un núcleo C++/Rust con prototipos; el proyecto continúa sobre React, Tauri y Manifold, y solo se reabriría ante una limitación medida.
+- **Formato `.kura`.** La especificación proponía ZIP con JSON; la versión 1 usa un contenedor binario propio con manifiesto y CRC-32.
+- **Agregados que no estaban en la especificación:** imagen a 3D, voz, GLB, proveedores compatibles con OpenAI, CLI y capturas sin ventana.
+
 ## Fuera de alcance
 
-Laminado, G-code, perfiles de boquilla y extrusor, control de impresoras, simulación FEA/CFD.
+Laminado, G-code, perfiles de boquilla y extrusor, control de impresoras, generación de soportes de impresión, simulación FEA/CFD.
