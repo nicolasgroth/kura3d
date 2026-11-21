@@ -2,7 +2,8 @@
  * @file src/engine/alignment.ts
  * @description Algoritmos deterministas de alineación inteligente por envolvente mundial
  * (min/centro/max en X, Y, Z) y distribución automática en grilla sobre la cama de
- * impresión (`arrange_grid`) con espaciado de 8 mm libre de solapamientos.
+ * impresión (`arrange_grid`) con espaciado de 8 mm libre de solapamientos; los huecos viajan con
+ * el sólido que perforan y se avisa cuando la distribución no cabe en la cama.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -115,68 +116,11 @@ export function computeAlignmentPositions(
     return result;
   }
 
-  const entries = objects.map(computeObjectWorldBounds);
-
   if (mode === 'arrange_grid') {
-    const spacing = 8;
-    const bedWidth = bed?.bedWidthMm ?? 256;
-    const maxObjW = entries.reduce((acc, e) => Math.max(acc, e.width), 0);
-    const maxRowWidth = Math.max(bedWidth - spacing * 2, maxObjW);
-
-    // Orden determinista por profundidad descendente para empaquetado por estantes compacto
-    const sorted = [...entries].sort((a, b) => {
-      if (Math.abs(b.depth - a.depth) > 0.5) return b.depth - a.depth;
-      return a.obj.id.localeCompare(b.obj.id);
-    });
-
-    interface PlacedBox {
-      entry: WorldBoundsEntry;
-      targetCenterX: number;
-      targetCenterZ: number;
-    }
-
-    const placed: PlacedBox[] = [];
-    let cursorX = 0;
-    let cursorZ = 0;
-    let rowMaxDepth = 0;
-    let totalMaxX = 0;
-
-    for (const entry of sorted) {
-      if (cursorX > 0 && cursorX + entry.width > maxRowWidth) {
-        cursorX = 0;
-        cursorZ += rowMaxDepth + spacing;
-        rowMaxDepth = 0;
-      }
-
-      const targetCenterX = cursorX + entry.width * 0.5;
-      const targetCenterZ = cursorZ + entry.depth * 0.5;
-      placed.push({ entry, targetCenterX, targetCenterZ });
-
-      cursorX += entry.width;
-      if (cursorX > totalMaxX) totalMaxX = cursorX;
-      cursorX += spacing;
-      if (entry.depth > rowMaxDepth) rowMaxDepth = entry.depth;
-    }
-
-    const totalMaxZ = cursorZ + rowMaxDepth;
-    const shiftX = -totalMaxX * 0.5;
-    const shiftZ = -totalMaxZ * 0.5;
-
-    for (const item of placed) {
-      const { entry, targetCenterX, targetCenterZ } = item;
-      const dx = targetCenterX + shiftX - entry.cx;
-      const dy = -entry.minY; // Apoyar exactamente sobre la cama (Y=0)
-      const dz = targetCenterZ + shiftZ - entry.cz;
-
-      result[entry.obj.id] = [
-        entry.obj.position[0] + dx,
-        entry.obj.position[1] + dy,
-        entry.obj.position[2] + dz,
-      ];
-    }
-
-    return result;
+    return computeArrangeLayout(objects, bed).positions;
   }
+
+  const entries = objects.map(computeObjectWorldBounds);
 
   // Alineación por eje respecto a la envolvente global del grupo
   let gMinX = Infinity;
@@ -242,4 +186,147 @@ export function computeAlignmentPositions(
   }
 
   return result;
+}
+
+/** Resultado de distribuir piezas en grilla sobre la cama. */
+export interface ArrangeLayout {
+  /** Nuevas posiciones mundiales por ID (incluye huecos acompañantes). */
+  positions: Record<string, Vec3>;
+  /** Huella total ocupada [ancho X, fondo Z] en mm. */
+  footprintMm: [number, number];
+  /** false si la huella o la pieza más alta exceden la cama/altura de la impresora. */
+  fitsBed: boolean;
+}
+
+/** Pieza a colocar: un sólido (o hueco suelto) y los huecos que lo perforan. */
+interface ArrangeGroup {
+  anchor: WorldBoundsEntry;
+  members: WorldBoundsEntry[];
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+}
+
+function overlapVolume(a: WorldBoundsEntry, b: WorldBoundsEntry): number {
+  const dx = Math.min(a.maxX, b.maxX) - Math.max(a.minX, b.minX);
+  const dy = Math.min(a.maxY, b.maxY) - Math.max(a.minY, b.minY);
+  const dz = Math.min(a.maxZ, b.maxZ) - Math.max(a.minZ, b.minZ);
+  return dx < 0 || dy < 0 || dz < 0 ? -1 : dx * dy * dz;
+}
+
+/** Sólido con mayor solape de envolvente con el hueco, o null si no toca ninguno. */
+function hostFor(hole: WorldBoundsEntry, solids: WorldBoundsEntry[]): WorldBoundsEntry | null {
+  let best: WorldBoundsEntry | null = null;
+  let bestVolume = -1;
+  for (const solid of solids) {
+    const volume = overlapVolume(hole, solid);
+    if (volume > bestVolume) {
+      best = solid;
+      bestVolume = volume;
+    }
+  }
+  return bestVolume >= 0 ? best : null;
+}
+
+function makeGroup(anchor: WorldBoundsEntry): ArrangeGroup {
+  return {
+    anchor,
+    members: [anchor],
+    minX: anchor.minX,
+    maxX: anchor.maxX,
+    minZ: anchor.minZ,
+    maxZ: anchor.maxZ,
+  };
+}
+
+function addMember(group: ArrangeGroup, entry: WorldBoundsEntry): void {
+  group.members.push(entry);
+  group.minX = Math.min(group.minX, entry.minX);
+  group.maxX = Math.max(group.maxX, entry.maxX);
+  group.minZ = Math.min(group.minZ, entry.minZ);
+  group.maxZ = Math.max(group.maxZ, entry.maxZ);
+}
+
+/**
+ * Distribuye piezas en filas sobre la cama con 8 mm de separación y sin solapes. Los modificadores
+ * `isHole` que tocan un sólido se mueven junto a él (mismo desplazamiento) en vez de colocarse por
+ * separado; `companions` son huecos fuera de la selección que solo se mueven si perforan una pieza
+ * distribuida. Informa si la huella resultante no cabe en la cama.
+ */
+export function computeArrangeLayout(
+  objects: SceneObject[],
+  bed?: PrinterProfile,
+  companions: SceneObject[] = []
+): ArrangeLayout {
+  const positions: Record<string, Vec3> = {};
+  if (objects.length === 0) return { positions, footprintMm: [0, 0], fitsBed: true };
+
+  const spacing = 8;
+  const entries = objects.map(computeObjectWorldBounds);
+  const solids = entries.filter((e) => !e.obj.isHole);
+  const groups = new Map<string, ArrangeGroup>(solids.map((s) => [s.obj.id, makeGroup(s)]));
+  for (const hole of entries.filter((e) => e.obj.isHole)) {
+    const host = hostFor(hole, solids);
+    if (host) addMember(groups.get(host.obj.id)!, hole);
+    else groups.set(hole.obj.id, makeGroup(hole));
+  }
+  for (const hole of companions.filter((o) => o.isHole).map(computeObjectWorldBounds)) {
+    const host = hostFor(hole, solids);
+    if (host) addMember(groups.get(host.obj.id)!, hole);
+  }
+
+  const items = [...groups.values()];
+  const width = (g: ArrangeGroup) => g.maxX - g.minX;
+  const depth = (g: ArrangeGroup) => g.maxZ - g.minZ;
+  const bedWidth = bed?.bedWidthMm ?? 256;
+  const maxObjW = items.reduce((acc, g) => Math.max(acc, width(g)), 0);
+  const maxRowWidth = Math.max(bedWidth - spacing * 2, maxObjW);
+
+  // Orden determinista por profundidad descendente para empaquetado por estantes compacto
+  const sorted = items.sort((a, b) => {
+    if (Math.abs(depth(b) - depth(a)) > 0.5) return depth(b) - depth(a);
+    return a.anchor.obj.id.localeCompare(b.anchor.obj.id);
+  });
+
+  const placed: Array<{ group: ArrangeGroup; x: number; z: number }> = [];
+  let cursorX = 0;
+  let cursorZ = 0;
+  let rowMaxDepth = 0;
+  let totalMaxX = 0;
+  for (const group of sorted) {
+    if (cursorX > 0 && cursorX + width(group) > maxRowWidth) {
+      cursorX = 0;
+      cursorZ += rowMaxDepth + spacing;
+      rowMaxDepth = 0;
+    }
+    placed.push({ group, x: cursorX, z: cursorZ });
+    cursorX += width(group);
+    totalMaxX = Math.max(totalMaxX, cursorX);
+    cursorX += spacing;
+    rowMaxDepth = Math.max(rowMaxDepth, depth(group));
+  }
+
+  const totalMaxZ = cursorZ + rowMaxDepth;
+  const shiftX = -totalMaxX * 0.5;
+  const shiftZ = -totalMaxZ * 0.5;
+  let tallest = 0;
+  for (const { group, x, z } of placed) {
+    const dx = x + shiftX - group.minX;
+    const dy = -group.anchor.minY; // Apoya el sólido (no el hueco) exactamente sobre Y=0
+    const dz = z + shiftZ - group.minZ;
+    tallest = Math.max(tallest, group.anchor.maxY - group.anchor.minY);
+    for (const member of group.members) {
+      const p = member.obj.position;
+      positions[member.obj.id] = [p[0] + dx, p[1] + dy, p[2] + dz];
+    }
+  }
+
+  const tolerance = 1e-6;
+  const fitsBed = !bed || (
+    totalMaxX <= bed.bedWidthMm + tolerance &&
+    totalMaxZ <= bed.bedDepthMm + tolerance &&
+    tallest <= bed.maxHeightMm + tolerance
+  );
+  return { positions, footprintMm: [totalMaxX, totalMaxZ], fitsBed };
 }

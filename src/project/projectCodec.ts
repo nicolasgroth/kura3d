@@ -16,7 +16,9 @@ import {
 
 export { MAX_PROJECT_BYTES, ProjectCodecError, type ProjectDocument, type ProjectSceneSnapshot } from './projectSchema';
 const MAX_MANIFEST_BYTES = 16 * 1024 * 1024;
-const MAX_HISTORY = 40;
+/** Pasos de historial (pasado + futuro) que admiten el store y el formato .kura: fuente única. */
+export const MAX_UNDO_HISTORY = 40;
+const MAX_HISTORY = MAX_UNDO_HISTORY;
 const MAX_OBJECTS = 10000;
 const MAX_MESHES = 20000;
 const MAX_TRIANGLES_PER_MESH = 1_000_000;
