@@ -12,7 +12,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AiConfig, KuraCommandRequest, KuraCommandResponse } from '../types/kura';
 import { sendAiPrompt } from './aiClient';
-import { isAllowedProviderUrl, redactSecrets } from './providerSecurity';
+import { DEFAULT_ALLOWED_HOSTS, isAllowedProviderUrl, redactSecrets } from './providerSecurity';
 import { validateToolCall } from './toolValidation';
 
 afterEach(() => {
@@ -217,28 +217,28 @@ describe('isAllowedProviderUrl: evasiones', () => {
     'ftp://localhost', 'file:///etc/passwd', 'javascript:alert(1)', 'data:text/plain,x', 'ws://localhost',
     'http://[::1]:11434', 'http://0.0.0.0:11434', 'http://2130706433', 'http://0x7f.0.0.1', 'http://127.1',
     'https://api.openai.com.evil.com', '//evil.com', 'http:evil.com', '', ' ',
-  ])('escritorio rechaza %j', (url) => {
+  ])('la lista por defecto rechaza %j', (url) => {
     // Las formas numéricas de loopback se normalizan a 127.0.0.1 y son legítimas: se cubren aparte.
     if (['http://2130706433', 'http://0x7f.0.0.1', 'http://127.1'].includes(url)) return;
-    expect(isAllowedProviderUrl(url, true)).toBe(false);
+    expect(isAllowedProviderUrl(url, DEFAULT_ALLOWED_HOSTS)).toBe(false);
   });
 
-  it('web rechaza http remoto y credenciales embebidas', () => {
+  it('rechaza http remoto y credenciales embebidas', () => {
     for (const url of ['http://evil.com', 'http://u:p@localhost', 'https://u:p@example.com', 'ftp://example.com']) {
-      expect(isAllowedProviderUrl(url, false)).toBe(false);
+      expect(isAllowedProviderUrl(url, DEFAULT_ALLOWED_HOSTS)).toBe(false);
     }
   });
 
   it('acepta los destinos legítimos', () => {
-    expect(isAllowedProviderUrl('http://localhost:11434', true)).toBe(true);
-    expect(isAllowedProviderUrl('http://127.0.0.1:1234/v1', true)).toBe(true);
-    expect(isAllowedProviderUrl('https://api.openai.com/v1', true)).toBe(true);
-    expect(isAllowedProviderUrl('https://my.proxy.example/v1', false)).toBe(true);
-    expect(isAllowedProviderUrl('https://my.proxy.example/v1', true)).toBe(false);
+    expect(isAllowedProviderUrl('http://localhost:11434', DEFAULT_ALLOWED_HOSTS)).toBe(true);
+    expect(isAllowedProviderUrl('http://127.0.0.1:1234/v1', DEFAULT_ALLOWED_HOSTS)).toBe(true);
+    expect(isAllowedProviderUrl('https://api.openai.com/v1', DEFAULT_ALLOWED_HOSTS)).toBe(true);
+    expect(isAllowedProviderUrl('https://my.proxy.example/v1', ['my.proxy.example'])).toBe(true);
+    expect(isAllowedProviderUrl('https://my.proxy.example/v1', DEFAULT_ALLOWED_HOSTS)).toBe(false);
   });
 
   it('las formas numéricas alternativas de loopback se normalizan a 127.0.0.1 y se aceptan (es loopback real)', () => {
-    expect(isAllowedProviderUrl('http://2130706433', true)).toBe(true);
-    expect(isAllowedProviderUrl('http://0x7f.0.0.1', true)).toBe(true);
+    expect(isAllowedProviderUrl('http://2130706433', DEFAULT_ALLOWED_HOSTS)).toBe(true);
+    expect(isAllowedProviderUrl('http://0x7f.0.0.1', DEFAULT_ALLOWED_HOSTS)).toBe(true);
   });
 });

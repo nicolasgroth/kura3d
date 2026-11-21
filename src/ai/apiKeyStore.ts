@@ -2,7 +2,8 @@
  * @file src/ai/apiKeyStore.ts
  * @description Almacenamiento de claves API de proveedores IA fuera de `localStorage`.
  * - Escritorio (Tauri): almacén de credenciales del sistema operativo mediante los comandos Rust
- *   `ai_key_get` / `ai_key_set` / `ai_key_delete` (crate `keyring`).
+ *   `ai_key_set` / `ai_key_delete` / `ai_key_status` (crate `keyring`). El valor nunca vuelve al webview:
+ *   solo se pregunta si existe y el proxy nativo (`ai_http_request`) lo adjunta a la solicitud.
  * - Web: solo en memoria; con la opción explícita "recordar en esta sesión" se copia a `sessionStorage`,
  *   que el navegador borra al cerrar la pestaña.
  * Incluye la migración de claves antiguas guardadas en la configuración IA de `localStorage`.
@@ -13,8 +14,11 @@
 
 import type { AiProviderType } from '../types/kura';
 import { isTauriRuntime } from '../utils/platformBridge';
+import { AI_KEY_SLOTS, type AiKeySlot } from './providerCatalog';
 
-export const AI_PROVIDERS: readonly AiProviderType[] = ['gemini', 'openai', 'anthropic', 'ollama'];
+/** Ranuras de clave permitidas (proveedores nativos y presets compatibles). */
+export const AI_PROVIDERS: readonly AiKeySlot[] = AI_KEY_SLOTS;
+const LEGACY_PROVIDERS: readonly AiProviderType[] = ['gemini', 'openai', 'anthropic', 'ollama'];
 export const SESSION_KEYS_STORAGE = 'kura3d-ai-session-keys';
 
 type Invoke = <T>(command: string, args: Record<string, unknown>) => Promise<T>;
@@ -28,22 +32,25 @@ export interface ApiKeyStoreDeps {
 
 export interface ApiKeyStore {
   readonly desktop: boolean;
-  load(provider: AiProviderType): Promise<string>;
-  save(provider: AiProviderType, key: string): Promise<void>;
+  /** Web: la clave en memoria. Escritorio: siempre `''` (la clave no sale del llavero). */
+  load(provider: AiKeySlot): Promise<string>;
+  /** Indica si hay clave guardada para la ranura, sin leer su valor en escritorio. */
+  has(provider: AiKeySlot): Promise<boolean>;
+  save(provider: AiKeySlot, key: string): Promise<void>;
   rememberInSession(): boolean;
   setRememberInSession(remember: boolean): void;
 }
 
-function assertProvider(provider: string): asserts provider is AiProviderType {
-  if (!AI_PROVIDERS.includes(provider as AiProviderType)) throw new Error('ai-provider-not-allowed');
+function assertProvider(provider: string): asserts provider is AiKeySlot {
+  if (!AI_PROVIDERS.includes(provider as AiKeySlot)) throw new Error('ai-provider-not-allowed');
 }
 
-function readSession(session: StorageLike | null | undefined): Partial<Record<AiProviderType, string>> | null {
+function readSession(session: StorageLike | null | undefined): Partial<Record<AiKeySlot, string>> | null {
   try {
     const raw = session?.getItem(SESSION_KEYS_STORAGE);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Record<string, unknown>;
-    const keys: Partial<Record<AiProviderType, string>> = {};
+    const keys: Partial<Record<AiKeySlot, string>> = {};
     for (const provider of AI_PROVIDERS) {
       if (typeof parsed[provider] === 'string') keys[provider] = parsed[provider] as string;
     }
@@ -53,7 +60,7 @@ function readSession(session: StorageLike | null | undefined): Partial<Record<Ai
   }
 }
 
-function writeSession(session: StorageLike | null | undefined, keys: Map<AiProviderType, string> | null) {
+function writeSession(session: StorageLike | null | undefined, keys: Map<AiKeySlot, string> | null) {
   try {
     if (!session) return;
     if (keys === null) session.removeItem(SESSION_KEYS_STORAGE);
@@ -65,10 +72,10 @@ function writeSession(session: StorageLike | null | undefined, keys: Map<AiProvi
 
 /** Crea un almacén con dependencias explícitas (inyectables en pruebas). */
 export function createApiKeyStore({ desktop, invoke, session }: ApiKeyStoreDeps): ApiKeyStore {
-  const memory = new Map<AiProviderType, string>();
+  const memory = new Map<AiKeySlot, string>();
   let remember = !desktop && readSession(session) !== null;
   for (const [provider, key] of Object.entries(readSession(session) ?? {})) {
-    if (key) memory.set(provider as AiProviderType, key);
+    if (key) memory.set(provider as AiKeySlot, key);
   }
 
   const callNative = async <T>(command: string, args: Record<string, unknown>): Promise<T> => {
@@ -80,23 +87,24 @@ export function createApiKeyStore({ desktop, invoke, session }: ApiKeyStoreDeps)
     desktop,
     async load(provider) {
       assertProvider(provider);
-      const cached = memory.get(provider);
-      if (cached !== undefined || !desktop) return cached ?? '';
-      const stored = await callNative<string | null>('ai_key_get', { provider });
-      if (stored) memory.set(provider, stored);
-      return stored ?? '';
+      return desktop ? '' : memory.get(provider) ?? '';
+    },
+    async has(provider) {
+      assertProvider(provider);
+      if (!desktop) return Boolean(memory.get(provider));
+      return Boolean(await callNative<boolean>('ai_key_status', { provider }));
     },
     async save(provider, key) {
       assertProvider(provider);
       const value = key.trim();
-      if (value) memory.set(provider, value);
-      else memory.delete(provider);
       if (desktop) {
         await (value
           ? callNative<void>('ai_key_set', { provider, secret: value })
           : callNative<void>('ai_key_delete', { provider }));
-      } else if (remember) {
-        writeSession(session, memory);
+      } else {
+        if (value) memory.set(provider, value);
+        else memory.delete(provider);
+        if (remember) writeSession(session, memory);
       }
     },
     rememberInSession: () => remember,
@@ -134,7 +142,7 @@ export function getApiKeyStore(): ApiKeyStore {
 }
 
 export interface LegacyAiKey {
-  provider: AiProviderType;
+  provider: AiProviderType & AiKeySlot;
   apiKey: string;
   /** Resuelve `true` si la clave quedó en el nuevo almacén; `false` si solo queda en memoria. */
   saved: Promise<boolean>;
@@ -172,8 +180,8 @@ export function migrateLegacyApiKey(
   }
   const key = typeof apiKey === 'string' ? apiKey.trim() : '';
   if (!key) return null;
-  const provider = AI_PROVIDERS.includes(rest.provider as AiProviderType)
-    ? (rest.provider as AiProviderType)
+  const provider = LEGACY_PROVIDERS.includes(rest.provider as AiProviderType)
+    ? (rest.provider as AiProviderType & AiKeySlot)
     : 'gemini';
   if (!store.desktop) store.setRememberInSession(true);
   const saved = store.save(provider, key).then(() => true, () => false);

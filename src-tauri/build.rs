@@ -10,9 +10,13 @@ const COMMANDS: &[&str] = &[
     "get_mcp_bridge_status",
     "open_kura_project",
     "save_kura_project",
-    "ai_key_get",
+    "ai_key_status",
     "ai_key_set",
     "ai_key_delete",
+    "ai_http_request",
+    "ai_http_cancel",
+    "ai_allowed_hosts_get",
+    "ai_allowed_hosts_set",
 ];
 
 fn main() {

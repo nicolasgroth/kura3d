@@ -3,7 +3,8 @@
  * @description Panel lateral izquierdo de Kura3D:
  * - Adaptable a modo Expandido (268px), Compacto (rail vertical de íconos 56px con tooltips) y colapsado.
  * - Pestaña Formas: Primitivas paramétricas + Generadores 2D/Pro → 3D (SVG, Imagen, Rosca ISO M3–M20).
- * - Pestaña Escena (Outliner): resumen de filamentos/colores en escena, visibilidad, bloqueo y acciones rápidas.
+ * - Pestaña Escena (Outliner): resumen de filamentos/colores y lista de objetos operable con teclado
+ *   (`scene/SceneObjectList.tsx`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -11,32 +12,27 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-  ArrowDownToLine,
   Bolt,
   Box,
   ChevronLeft,
   ChevronRight,
   Circle,
   Cone,
-  Copy,
   Cylinder,
   Disc,
-  Eye,
-  EyeOff,
   FileCode2,
   Hexagon,
   Image as ImageIcon,
   Layers,
-  Lock,
   Shapes,
   Sparkles,
   Trash2,
   Type,
-  Unlock,
 } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import type { PrimitiveType } from '../types/kura';
+import { SceneObjectList } from './scene/SceneObjectList';
 
 export const LeftSidebar: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'shapes' | 'scene'>('shapes');
@@ -53,11 +49,6 @@ export const LeftSidebar: React.FC = () => {
   const createStarterCube = useKuraStore((s) => s.createStarterCube);
   const clearScene = useKuraStore((s) => s.clearScene);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
-  const selectObject = useKuraStore((s) => s.selectObject);
-  const updateObjectMeta = useKuraStore((s) => s.updateObjectMeta);
-  const duplicateObjects = useKuraStore((s) => s.duplicateObjects);
-  const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
-  const deleteObjects = useKuraStore((s) => s.deleteObjects);
 
   // Resumen de colores / filamentos únicos usados en los sólidos visibles de la escena
   const filamentColors = useMemo(() => {
@@ -352,89 +343,8 @@ export const LeftSidebar: React.FC = () => {
                   {t(language, 'sidebar.scene.empty')}
                 </div>
               ) : (
-                <div className="kura-scene-list">
-                  {objects.map((obj) => {
-                    const isSelected = selectedIds.includes(obj.id);
-                    return (
-                      <div
-                        key={obj.id}
-                        className={`kura-scene-item ${isSelected ? 'is-selected' : ''}`}
-                        onClick={(e) => selectObject(obj.id, e.ctrlKey || e.metaKey || e.shiftKey)}
-                      >
-                        <div className="kura-scene-item-main">
-                          <span
-                            className="kura-color-dot"
-                            style={{ backgroundColor: obj.isHole ? '#f97316' : obj.color }}
-                          />
-                          <span className="kura-scene-name" title={obj.name}>
-                            {obj.name}
-                          </span>
-                          {obj.isHole && (
-                            <span className="kura-hole-tag">
-                              {t(language, 'sidebar.scene.holeBadge')}
-                            </span>
-                          )}
-                        </div>
-
-                        <div
-                          className="kura-scene-actions"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button
-                            type="button"
-                            className="kura-mini-icon-btn"
-                            title={t(language, 'sidebar.scene.toggleVisible')}
-                            onClick={() => updateObjectMeta(obj.id, { visible: !obj.visible })}
-                          >
-                            {obj.visible ? <Eye size={13} /> : <EyeOff size={13} />}
-                          </button>
-
-                          <button
-                            type="button"
-                            className="kura-mini-icon-btn"
-                            title={t(language, 'sidebar.scene.toggleLock')}
-                            onClick={() => updateObjectMeta(obj.id, { locked: !obj.locked })}
-                          >
-                            {obj.locked ? <Lock size={13} /> : <Unlock size={13} />}
-                          </button>
-
-                          <button
-                            type="button"
-                            className="kura-mini-icon-btn"
-                            title={t(language, 'sidebar.scene.dropToBed')}
-                            onClick={() => dropObjectToBed(obj.id)}
-                          >
-                            <ArrowDownToLine size={13} />
-                          </button>
-
-                          <button
-                            type="button"
-                            className="kura-mini-icon-btn"
-                            title={t(language, 'sidebar.scene.duplicate')}
-                            onClick={() => duplicateObjects([obj.id])}
-                          >
-                            <Copy size={13} />
-                          </button>
-
-                          <button
-                            type="button"
-                            className="kura-mini-icon-btn"
-                            title={t(language, 'sidebar.scene.delete')}
-                            disabled={obj.locked}
-                            onClick={() => deleteObjects([obj.id])}
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <SceneObjectList />
               )}
-
-              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>
-                {t(language, 'sidebar.scene.multiSelectHint')}
-              </p>
             </div>
           )}
         </>

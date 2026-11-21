@@ -1105,9 +1105,22 @@ function pointToTriangleDistanceSq(
   return qx * qx + qy * qy + qz * qz;
 }
 
+/** Color de las caras sin pintar cuando quien llama no indica el color base del objeto. */
+export const DEFAULT_UNPAINTED_COLOR = '#94a3b8';
+
+/**
+ * Devuelve la malla con nuevos `faceColors` compartiendo posiciones, índices y normales (inmutables):
+ * pintar no copia la geometría. Si ningún color cambió, devuelve la misma malla.
+ */
+function withFaceColors(mesh: MeshData, faceColors: string[], changed: boolean): MeshData {
+  return changed ? { ...mesh, faceColors } : mesh;
+}
+
 /**
  * Pinta con `colorHex` todos los triángulos cuya distancia exacta (vértices, aristas,
  * interior o centroide) hasta `localCenter` sea menor o igual a `radiusMm` (brocha esférica 3D).
+ * El radio está en mm de mundo: las distancias se miden aplicando la escala del objeto (la rotación
+ * y la traslación no alteran distancias), así una pieza escalada ×2 no pinta el doble de área.
  */
 export function paintMeshFacesInSphere(
   obj: SceneObject,
@@ -1116,31 +1129,33 @@ export function paintMeshFacesInSphere(
   colorHex: string
 ): MeshData {
   const triCount = Math.floor(obj.mesh.indices.length / 3);
-  const faceColors =
-    obj.mesh.faceColors && obj.mesh.faceColors.length === triCount
-      ? [...obj.mesh.faceColors]
-      : new Array<string>(triCount).fill(obj.color.toLowerCase());
+  const hadColors = Boolean(obj.mesh.faceColors && obj.mesh.faceColors.length === triCount);
+  const faceColors = hadColors
+    ? [...obj.mesh.faceColors!]
+    : new Array<string>(triCount).fill(obj.color.toLowerCase());
 
+  const [sx, sy, sz] = (obj.scale ?? [1, 1, 1]).map((v) => Math.abs(v) || 1);
   const rSq = radiusMm * radiusMm;
-  const cx = localCenter[0];
-  const cy = localCenter[1];
-  const cz = localCenter[2];
+  const cx = localCenter[0] * sx;
+  const cy = localCenter[1] * sy;
+  const cz = localCenter[2] * sz;
   const normalizedHex = colorHex.toLowerCase();
+  let changed = false;
 
   for (let t = 0; t < triCount; t++) {
     const i0 = obj.mesh.indices[t * 3] * 3;
     const i1 = obj.mesh.indices[t * 3 + 1] * 3;
     const i2 = obj.mesh.indices[t * 3 + 2] * 3;
 
-    const ax = obj.mesh.positions[i0];
-    const ay = obj.mesh.positions[i0 + 1];
-    const az = obj.mesh.positions[i0 + 2];
-    const bx = obj.mesh.positions[i1];
-    const by = obj.mesh.positions[i1 + 1];
-    const bz = obj.mesh.positions[i1 + 2];
-    const d0x = obj.mesh.positions[i2];
-    const d0y = obj.mesh.positions[i2 + 1];
-    const d0z = obj.mesh.positions[i2 + 2];
+    const ax = obj.mesh.positions[i0] * sx;
+    const ay = obj.mesh.positions[i0 + 1] * sy;
+    const az = obj.mesh.positions[i0 + 2] * sz;
+    const bx = obj.mesh.positions[i1] * sx;
+    const by = obj.mesh.positions[i1 + 1] * sy;
+    const bz = obj.mesh.positions[i1 + 2] * sz;
+    const d0x = obj.mesh.positions[i2] * sx;
+    const d0y = obj.mesh.positions[i2 + 1] * sy;
+    const d0z = obj.mesh.positions[i2 + 2] * sz;
 
     const distSq = pointToTriangleDistanceSq(
       cx,
@@ -1156,17 +1171,13 @@ export function paintMeshFacesInSphere(
       d0y,
       d0z
     );
-    if (distSq <= rSq) {
+    if (distSq <= rSq && faceColors[t] !== normalizedHex) {
       faceColors[t] = normalizedHex;
+      changed = true;
     }
   }
 
-  return {
-    positions: new Float32Array(obj.mesh.positions),
-    indices: new Uint32Array(obj.mesh.indices),
-    ...(obj.mesh.normals ? { normals: new Float32Array(obj.mesh.normals) } : {}),
-    faceColors,
-  };
+  return withFaceColors(obj.mesh, faceColors, changed);
 }
 
 /**
@@ -1174,12 +1185,7 @@ export function paintMeshFacesInSphere(
  */
 export function paintEntireMesh(mesh: MeshData, colorHex: string): MeshData {
   const triCount = Math.floor(mesh.indices.length / 3);
-  return {
-    positions: new Float32Array(mesh.positions),
-    indices: new Uint32Array(mesh.indices),
-    ...(mesh.normals ? { normals: new Float32Array(mesh.normals) } : {}),
-    faceColors: new Array<string>(triCount).fill(colorHex.toLowerCase()),
-  };
+  return { ...mesh, faceColors: new Array<string>(triCount).fill(colorHex.toLowerCase()) };
 }
 
 /**
@@ -1191,28 +1197,25 @@ export function paintEntireMesh(mesh: MeshData, colorHex: string): MeshData {
  * @param seedFaceIndex Índice del triángulo semilla.
  * @param colorHex Color objetivo en hexadecimal '#rrggbb'.
  * @param angleThresholdDeg Ángulo máximo permitido entre caras adyacentes (por defecto 30°).
- * @returns Nueva malla con `faceColors` actualizado.
+ * @param baseColorHex Color del objeto para las caras aún sin pintar (si la malla no tiene `faceColors`).
+ * @returns Malla con `faceColors` actualizado (comparte la geometría con la original).
  */
 export function paintFloodFillConnectedFaces(
   mesh: MeshData,
   seedFaceIndex: number,
   colorHex: string,
-  angleThresholdDeg = 30
+  angleThresholdDeg = 30,
+  baseColorHex: string = DEFAULT_UNPAINTED_COLOR
 ): MeshData {
   const triCount = Math.floor(mesh.indices.length / 3);
   if (seedFaceIndex < 0 || seedFaceIndex >= triCount) {
-    return {
-      positions: new Float32Array(mesh.positions),
-      indices: new Uint32Array(mesh.indices),
-      ...(mesh.normals ? { normals: new Float32Array(mesh.normals) } : {}),
-      ...(mesh.faceColors ? { faceColors: [...mesh.faceColors] } : {}),
-    };
+    return mesh;
   }
 
   const faceColors =
     mesh.faceColors && mesh.faceColors.length === triCount
       ? [...mesh.faceColors]
-      : new Array<string>(triCount).fill('#38bdf8');
+      : new Array<string>(triCount).fill(baseColorHex.toLowerCase());
 
   // Mapear vértices por posición cuantizada para conectar también mallas con costuras duplicadas
   const vertCount = Math.floor(mesh.positions.length / 3);
@@ -1321,10 +1324,5 @@ export function paintFloodFillConnectedFaces(
     }
   }
 
-  return {
-    positions: new Float32Array(mesh.positions),
-    indices: new Uint32Array(mesh.indices),
-    ...(mesh.normals ? { normals: new Float32Array(mesh.normals) } : {}),
-    faceColors,
-  };
+  return withFaceColors(mesh, faceColors, true);
 }

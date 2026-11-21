@@ -10,7 +10,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AiConfig, KuraCommandRequest, KuraCommandResponse } from '../types/kura';
 import { sendAiPrompt } from './aiClient';
-import { isAllowedProviderUrl, redactSecrets } from './providerSecurity';
+import { DEFAULT_ALLOWED_HOSTS, isAllowedProviderUrl, redactSecrets } from './providerSecurity';
 
 const FAKE_KEY = 'fake-test-key-abcdef123456';
 
@@ -149,15 +149,20 @@ describe('secret hygiene', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('applies the desktop host allowlist only on desktop', () => {
-    expect(isAllowedProviderUrl('https://api.openai.com/v1', true)).toBe(true);
-    expect(isAllowedProviderUrl('https://openrouter.ai/api/v1', true)).toBe(false);
-    expect(isAllowedProviderUrl('https://openrouter.ai/api/v1', false)).toBe(true);
-    expect(isAllowedProviderUrl('http://127.0.0.1:1234/v1', true)).toBe(true);
-    expect(isAllowedProviderUrl('http://localhost:11434', false)).toBe(true);
-    expect(isAllowedProviderUrl('http://192.168.1.5:11434', false)).toBe(false);
-    expect(isAllowedProviderUrl('https://user:pass@api.openai.com', false)).toBe(false);
-    expect(isAllowedProviderUrl('javascript:alert(1)', false)).toBe(false);
-    expect(isAllowedProviderUrl('not a url', false)).toBe(false);
+  it('applies the user host allowlist on every platform', () => {
+    const custom = ['openrouter.ai', '*.example.org'];
+    expect(isAllowedProviderUrl('https://api.openai.com/v1', DEFAULT_ALLOWED_HOSTS)).toBe(true);
+    expect(isAllowedProviderUrl('https://api.deepseek.com', DEFAULT_ALLOWED_HOSTS)).toBe(true);
+    expect(isAllowedProviderUrl('https://my.proxy.example/v1', DEFAULT_ALLOWED_HOSTS)).toBe(false);
+    expect(isAllowedProviderUrl('https://openrouter.ai/api/v1', custom)).toBe(true);
+    expect(isAllowedProviderUrl('https://api.openai.com/v1', custom)).toBe(false);
+    expect(isAllowedProviderUrl('https://a.example.org/v1', custom)).toBe(true);
+    expect(isAllowedProviderUrl('https://example.org/v1', custom)).toBe(false);
+    expect(isAllowedProviderUrl('http://127.0.0.1:1234/v1', [])).toBe(true);
+    expect(isAllowedProviderUrl('http://localhost:11434', [])).toBe(true);
+    expect(isAllowedProviderUrl('http://192.168.1.5:11434', custom)).toBe(false);
+    expect(isAllowedProviderUrl('https://user:pass@api.openai.com', DEFAULT_ALLOWED_HOSTS)).toBe(false);
+    expect(isAllowedProviderUrl('javascript:alert(1)', DEFAULT_ALLOWED_HOSTS)).toBe(false);
+    expect(isAllowedProviderUrl('not a url', DEFAULT_ALLOWED_HOSTS)).toBe(false);
   });
 });

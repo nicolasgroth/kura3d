@@ -1,14 +1,15 @@
 /**
  * @file src/components/AiChatDrawer.tsx
  * @description Panel lateral desplegable de Chat IA nativo de Kura3D conectado al Command Bus
- * (Gemini, OpenAI, Anthropic, Ollama o Asistente Local Determinista sin API Key).
+ * (Gemini, OpenAI, Anthropic, Ollama, proveedores compatibles con OpenAI o Asistente Local Determinista
+ * sin clave). El historial es un `role="log"` con `aria-live`, y cada solicitud se puede detener.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Bot, Cloud, Send, Settings, Trash2, X, Zap } from 'lucide-react';
+import { Bot, Cloud, Send, Settings, Square, Trash2, X, Zap } from 'lucide-react';
 import { sendAiPrompt } from '../ai/aiClient';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
@@ -17,6 +18,7 @@ import { getAiBadgeDescriptor } from '../utils/aiBadges';
 export const AiChatDrawer: React.FC = () => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const language = useKuraStore((s) => s.language);
   const aiDrawerOpen = useKuraStore((s) => s.aiDrawerOpen);
@@ -34,6 +36,11 @@ export const AiChatDrawer: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [aiMessages.length, aiBusy]);
 
+  // Cerrar el panel cancela la solicitud en curso.
+  useEffect(() => {
+    if (!aiDrawerOpen) abortRef.current?.abort();
+  }, [aiDrawerOpen]);
+
   if (!aiDrawerOpen) {
     return null;
   }
@@ -47,6 +54,8 @@ export const AiChatDrawer: React.FC = () => {
     setInput('');
     addAiMessage({ role: 'user', content: trimmed });
     setAiBusy(true);
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     try {
       const output = await sendAiPrompt(
@@ -55,9 +64,12 @@ export const AiChatDrawer: React.FC = () => {
         aiConfig,
         language,
         executeCommand,
+        { signal: controller.signal },
       );
 
       for (const tool of output.executedTools) {
+        // Las lecturas de escena no son acciones: la respuesta ya trae las medidas en texto.
+        if (tool.name === 'get_scene_state') continue;
         addAiMessage({
           role: 'tool',
           content: `${t(language, 'ai.toolBadge')}: ${tool.name}\n${tool.result}`,
@@ -77,9 +89,12 @@ export const AiChatDrawer: React.FC = () => {
         content: t(language, 'toast.errorPrefix', { message }),
       });
     } finally {
+      if (abortRef.current === controller) abortRef.current = null;
       setAiBusy(false);
     }
   };
+
+  const stopPrompt = () => abortRef.current?.abort();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,13 +106,13 @@ export const AiChatDrawer: React.FC = () => {
       ? [
           { label: t(language, 'ai.chip.box'), prompt: 'Create box 40mm' },
           { label: t(language, 'ai.chip.cylinder'), prompt: 'Create cylinder 20x50mm' },
-          { label: t(language, 'ai.chip.hollow'), prompt: 'Hollow selected object 2.5mm' },
+          { label: t(language, 'ai.chip.hollow'), prompt: 'Hollow the selected object to 2.5 mm' },
           { label: t(language, 'ai.chip.export'), prompt: 'Export STL' },
         ]
       : [
           { label: t(language, 'ai.chip.box'), prompt: 'Crear cubo 40mm' },
           { label: t(language, 'ai.chip.cylinder'), prompt: 'Crear cilindro 20x50mm' },
-          { label: t(language, 'ai.chip.hollow'), prompt: 'Ahuecar a 2.5mm' },
+          { label: t(language, 'ai.chip.hollow'), prompt: 'Ahueca el objeto seleccionado a 2,5 mm' },
           { label: t(language, 'ai.chip.export'), prompt: 'Exportar STL' },
         ];
 
@@ -156,7 +171,14 @@ export const AiChatDrawer: React.FC = () => {
         {aiBadge.tooltip}
       </div>
 
-      <div className="kura-chat-messages">
+      <div
+        className="kura-chat-messages"
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions text"
+        aria-label={t(language, 'ai.chatLog')}
+        aria-busy={aiBusy}
+      >
         {aiMessages.map((msg) => {
           if (msg.role === 'tool') {
             let formattedJson = msg.toolResult ?? msg.content;
@@ -186,7 +208,7 @@ export const AiChatDrawer: React.FC = () => {
           );
         })}
         {aiBusy && (
-          <div className="kura-chat-bubble assistant" style={{ opacity: 0.7 }}>
+          <div className="kura-chat-bubble assistant" style={{ opacity: 0.7 }} role="status">
             {t(language, 'ai.thinking')}
           </div>
         )}
@@ -212,18 +234,32 @@ export const AiChatDrawer: React.FC = () => {
           className="kura-input"
           style={{ flex: 1 }}
           placeholder={t(language, 'ai.placeholder')}
+          aria-label={t(language, 'ai.title')}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={aiBusy}
         />
-        <button
-          type="submit"
-          className="kura-btn kura-btn-primary kura-btn-sm"
-          disabled={aiBusy || !input.trim()}
-          aria-label={t(language, 'ai.send')}
-        >
-          <Send size={14} />
-        </button>
+        {aiBusy ? (
+          <button
+            type="button"
+            className="kura-btn kura-btn-sm"
+            onClick={stopPrompt}
+            aria-label={t(language, 'ai.stop')}
+            title={t(language, 'ai.stop')}
+          >
+            <Square size={14} />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            className="kura-btn kura-btn-primary kura-btn-sm"
+            disabled={!input.trim()}
+            aria-label={t(language, 'ai.send')}
+            title={t(language, 'ai.send')}
+          >
+            <Send size={14} />
+          </button>
+        )}
       </form>
     </aside>
   );

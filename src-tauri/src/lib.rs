@@ -3,13 +3,16 @@
 // Licencia: MIT
 // Descripción: Módulo principal del backend nativo de Kura3D sobre Tauri v2.
 // Expone metadatos de la aplicación, la verificación del puente local MCP, los
-// comandos de proyectos .kura y el almacén de claves IA del sistema operativo.
+// comandos de proyectos .kura, el almacén de claves IA del sistema operativo y el
+// proxy HTTP nativo hacia proveedores IA (la CSP del webview no abre hosts remotos).
 
 use serde::Serialize;
 use std::net::{SocketAddr, TcpStream};
 use std::time::Duration;
 
 mod ai_credentials;
+mod ai_hosts;
+mod ai_proxy;
 mod project_files;
 
 /// Puertos aceptados para el puente MCP (mismo rango que la configuración del frontend).
@@ -78,15 +81,20 @@ pub fn run() {
         // Lectura/escritura solo de rutas elegidas en diálogos o soltadas en la ventana
         .plugin(tauri_plugin_fs::init())
         .manage(project_files::ProjectLocations::default())
+        .manage(ai_proxy::AiProxyState::default())
         // Comandos nativos expuestos vía IPC (`invoke`); la lista coincide con build.rs
         .invoke_handler(tauri::generate_handler![
             get_app_info,
             get_mcp_bridge_status,
             project_files::open_kura_project,
             project_files::save_kura_project,
-            ai_credentials::ai_key_get,
+            ai_credentials::ai_key_status,
             ai_credentials::ai_key_set,
             ai_credentials::ai_key_delete,
+            ai_proxy::ai_http_request,
+            ai_proxy::ai_http_cancel,
+            ai_proxy::ai_allowed_hosts_get,
+            ai_proxy::ai_allowed_hosts_set,
         ])
         .run(tauri::generate_context!())
         .expect("Error crítico al iniciar el runtime nativo de Kura3D");

@@ -681,15 +681,26 @@ export interface PrinterProfile {
 }
 
 /** Proveedores de IA soportados por el chat nativo integrado. */
-export type AiProviderType = 'gemini' | 'openai' | 'anthropic' | 'ollama';
+export type AiProviderType = 'gemini' | 'openai' | 'anthropic' | 'ollama' | 'openai_compatible';
+
+/** Presets del proveedor genérico compatible con OpenAI (URL base, modelo y clave propios). */
+export type AiCompatPresetId = 'deepseek' | 'qwen' | 'openrouter' | 'lmstudio' | 'ollama' | 'custom';
 
 /** Configuración dinámica del chat IA nativo. */
 export interface AiConfig {
   provider: AiProviderType;
+  /**
+   * Clave en memoria (solo web). En escritorio queda vacía: la clave vive en el llavero del sistema
+   * y la adjunta el proxy nativo; el webview solo sabe si existe (`keyStored`).
+   */
   apiKey: string;
   model: string;
   baseUrl: string;
   temperature: number;
+  /** Preset activo cuando `provider` es `openai_compatible`. */
+  compatPreset?: AiCompatPresetId;
+  /** Escritorio: hay una clave guardada en el llavero para la ranura activa (no se persiste). */
+  keyStored?: boolean;
 }
 
 /** Configuración activable, configurable y segura del servidor/puente MCP local. */

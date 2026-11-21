@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ai-http-cancel"
+description = "Enables the ai_http_cancel command without any pre-configured scope."
+commands.allow = ["ai_http_cancel"]
+
+[[permission]]
+identifier = "deny-ai-http-cancel"
+description = "Denies the ai_http_cancel command without any pre-configured scope."
+commands.deny = ["ai_http_cancel"]
