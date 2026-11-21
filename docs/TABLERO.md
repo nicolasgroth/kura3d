@@ -107,6 +107,12 @@ Ordenadas por prioridad dentro de cada grupo.
 | IA e integraciones | Capturas y visor sin abrir la ventana |
 | IA e integraciones | Dictado por voz en español e inglés |
 | IA e integraciones | Imagen a modelo 3D |
+| Automatización | Al importar: revisar la malla, avisar defectos y ofrecer repararla |
+| Automatización | Orientar la pieza sola para minimizar voladizos y apoyar la mejor cara |
+| Automatización | Acomodar las piezas en la cama, y repartir en varias placas si no caben |
+| Automatización | Proponer dónde cortar y dónde poner las uniones según la cama |
+| Automatización | Recetas: guardar una secuencia de pasos y repetirla sobre otra pieza o un lote |
+| Automatización | Exportar todo de una vez: una pieza por archivo con nombres ordenados |
 | Idiomas | Agregar idiomas sin tocar código: un archivo por idioma, guía para traductores, soporte de escritura de derecha a izquierda |
 | Distribución | Instaladores firmados para Windows, Linux y macOS con actualizaciones |
 | Distribución | Estimación de material por pieza |

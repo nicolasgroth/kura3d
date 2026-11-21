@@ -58,3 +58,27 @@ Patrones que se repiten en los tres informes:
 6. **Pruebas circulares o con casos fáciles:** pasan 123 pruebas, pero comparan contra el propio importador o usan cubos.
 
 Los informes completos, con archivo y línea de cada hallazgo, quedaron en la conversación de la sesión; los scripts y capturas en `.eval-tmp/` (no versionado).
+
+## Consumo de agentes · 21 de noviembre de 2026
+
+Tokens y duración que reportó cada agente al terminar. No incluye a la sesión orquestadora.
+
+| Agente | Modelo | Duración | Tokens |
+|---|---|---|---|
+| Limpieza de nombre y autoría | Sonnet | 2 min | 95 mil |
+| Evaluación base de código | Opus | 10 min | 259 mil |
+| Evaluación base de usabilidad | Opus | 14 min | 229 mil |
+| Evaluación base funcional | Opus | 20 min | 259 mil |
+| Seguridad del puente MCP | Opus | 20 min | 253 mil |
+| Seguridad Tauri y claves de IA | Opus | 25 min | 251 mil |
+| QA de seguridad | Sonnet | 15 min | 212 mil |
+| Cruce de especificación | Sonnet | 3 min | 147 mil |
+| MCP con motor real | Opus | 15 min | 299 mil |
+| Bus e historial del store | Opus | 24 min | 264 mil |
+| Importar y exportar | Opus | 37 min | 397 mil |
+| IA, pintura y teclado | Opus | 44 min | 438 mil |
+| Geometría | Opus | 47 min | 386 mil |
+| **Total** | | | **3,5 millones** |
+
+Los tres últimos superaron los 30 minutos porque sus encargos traían entre 8 y 20 objetivos. Desde ahora los encargos se dividen y llevan tope de tiempo y latido (ver "Control de agentes" en `CLAUDE.md`).
+

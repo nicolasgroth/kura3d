@@ -28,3 +28,5 @@ Bloqueos: fallos que impiden completar la tarea o pierden trabajo (o "ninguno").
 ```
 
 Reglas: sin evidencia no hay nota (escribe "No evaluable" y el motivo). No redondees hacia arriba por esfuerzo percibido. La nota global no es un promedio automático: pondera por importancia para el usuario y explícalo.
+
+Control: tu encargo trae un tiempo estimado y un tope. Escribe un latido al empezar, tras cada paso grande y al terminar con `echo "$(date +%H:%M) <paso> — <qué sigue>" >> "G:/OneDrive/proyectos/creador_modelos_3d_impresion/.eval-tmp/agentes/<tu-nombre>.log"`. Si superas el tope o repites tres veces el mismo intento sin avanzar, detente, guarda lo que sirva y reporta lo pendiente.

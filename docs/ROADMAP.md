@@ -83,6 +83,21 @@ Recogidos de la conversación; cada uno tiene ticket y aparece en el [tablero](T
 
 Principios que salen de estos pedidos: la interfaz debe ser **didáctica** (cada operación se entiende y se previsualiza antes de aplicar), **operable por teclado**, y la arquitectura debe ser **extensible** (núcleo independiente de la interfaz, un solo contrato de operaciones para interfaz, comandos, MCP, API y extensiones).
 
+## Automatizaciones
+
+Todo lo que el programa pueda hacer solo y el usuario pueda revisar antes de aceptar. Cada una es una propuesta con vista previa, nunca un cambio silencioso.
+
+| Automatización | Ticket |
+|---|---|
+| Revisión de malla al importar, con oferta de reparación | GEO-03, AUTO-01 (nuevo) |
+| Orientación automática para minimizar voladizos | AUTO-02 (nuevo) |
+| Acomodo automático en la cama y reparto en varias placas | PLATE-02 |
+| Propuesta de cortes y uniones según el tamaño de la cama | GEO-05, FIT-01 |
+| Recetas repetibles sobre otra pieza o un lote | HIST-01, API-01 |
+| Exportación por lote con nombres ordenados | PLATE-03 |
+
+Las reglas para extensiones de terceros están en [EXTENSIONES.md](EXTENSIONES.md). La plataforma principal de desarrollo y prueba es la web; el escritorio (Windows primero, luego Linux y macOS) se valida al cerrar cada versión.
+
 ## Cobertura de la especificación maestra
 
 El 21 de noviembre de 2026 se cruzó `KURA_3D_ESPECIFICACION_MAESTRA.md` (secciones F01–F16, E01–E15, US-001 a US-020) y las dos revisiones contra el backlog. Todo requisito tiene ticket salvo estas brechas, que se agregan aquí con identificador nuevo:

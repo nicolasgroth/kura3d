@@ -59,3 +59,14 @@ Reglas:
 8. Cada cierre actualiza `docs/FUNCIONALIDADES.md`, `docs/EVALUACIONES.md` y `CHANGELOG.md`.
 
 Uso de tokens: da a cada agente solo las rutas y el criterio de su lote; pídele informes breves; no lances evaluadores para cambios mecánicos.
+
+## Control de agentes
+
+Cada agente cuesta entre 150 y 450 mil tokens. Para que ninguno quede pegado:
+
+1. **Presupuesto en el encargo.** Todo encargo indica un tiempo estimado y un tope (por defecto el doble del estimado). Estimados de referencia: cambio mecánico 5 min, lote de interfaz 20 min, lote de motor 30 min, QA 15 min, evaluación 15 min.
+2. **Latido.** El agente escribe una línea en `.eval-tmp/agentes/<nombre>.log` al empezar, al terminar cada paso grande y al terminar: `echo "$(date +%H:%M) <paso> — <qué sigue>" >> .eval-tmp/agentes/<nombre>.log`. Usa la ruta absoluta del repositorio principal aunque trabaje en un worktree.
+3. **Corte propio.** Si el agente supera su tope, o repite tres veces el mismo intento sin avanzar, se detiene, hace commit de lo que sirve y reporta qué quedó pendiente. No sigue probando variantes.
+4. **Revisión del orquestador.** Antes de cada mensaje al usuario y al recibir cualquier aviso, el orquestador revisa los latidos. Un agente sin latido por más de 15 minutos, o que pasó su tope, se investiga y se detiene si no justifica el tiempo.
+5. **Registro.** Al cerrar cada lote se anota en `docs/EVALUACIONES.md` el modelo, la duración y los tokens de cada agente.
+6. **Alcance acotado.** Un encargo con más de unos 8 objetivos se divide. Los evaluadores reciben como máximo las funcionalidades que cambiaron, no todo el producto, salvo en el cierre de una versión.
