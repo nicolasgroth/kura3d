@@ -10,6 +10,7 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Seguridad.** CSP estricta en escritorio y eliminación de comandos nativos de lectura/escritura arbitraria. Las claves de IA ya no se guardan en `localStorage`: en web quedan en memoria (opcional por sesión) y en escritorio en el llavero del sistema. El puente MCP exige token, valida Host y Origin, aplica solo lectura en el servidor, rota el token de verdad y exporta solo a una carpeta permitida. Las acciones propuestas por la IA se validan antes de ejecutarse. Dependencias actualizadas (vitest 5, zod 4) con auditoría en cero. Pendiente de verificar en la app de escritorio instalada.
 - Nombre único **Kura3D** en interfaz, documentación y metadatos de exportación; marca centralizada en `src/brand.ts` y cabecera de autoría en todo el código.
 - Nuevo flujo de trabajo con agentes de desarrollo, QA y evaluadores independientes (`CLAUDE.md`, `.claude/agents/`), roadmap reenfocado y registro de funcionalidades.
 - Proyecto local `.kura` v1 con escena, unidades, selección, materiales e historial de Deshacer/Rehacer. Guardado atómico en Windows, aviso de cambios al cerrar y procesamiento del archivo en un Worker. Una descarga web conserva el aviso de cambios hasta una escritura confirmada o hasta reabrir el archivo.
