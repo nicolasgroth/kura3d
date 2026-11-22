@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { createMetricThread, hexAcrossFlats, isoCoarsePitch } from '../threads';
+import { createMetricThread, hexAcrossFlats, isoCoarsePitch, isoHeadHeight } from '../threads';
 import { initManifoldEngine, meshDataToManifold } from '../manifoldKernel';
 
 describe('roscas ISO: cabeza hexagonal y diámetro menor del perno', () => {
@@ -22,7 +22,7 @@ describe('roscas ISO: cabeza hexagonal y diámetro menor del perno', () => {
   it.each([[3], [8], [20]])('M%i: entrecaras de la cabeza según tabla y núcleo en d3; malla manifold', async (d) => {
     const P = isoCoarsePitch(d);
     const mesh = await createMetricThread({ kind: 'bolt', diameterMm: d, lengthMm: 10, clearanceMm: 0, includeHead: true });
-    const headH = Math.max(2.2, 0.65 * d);
+    const headH = isoHeadHeight(d);
     let zMin = Infinity, zMax = -Infinity, rLo = Infinity;
     const p = mesh.positions;
     for (let i = 0; i < p.length; i += 3) {

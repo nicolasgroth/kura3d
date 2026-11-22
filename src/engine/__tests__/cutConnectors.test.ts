@@ -40,10 +40,11 @@ describe('Corte con conectores validado contra la cara (operations.ts)', () => {
     ).rejects.toMatchObject({ code: 'CUT_CONNECTOR_TOO_LARGE' });
   });
 
-  it('4 dowels de 8 mm en una caja de 40 mm se solapan: CUT_CONNECTORS_OVERLAP', async () => {
+  // Con 9.5 mm la zona segura (≈18.9 mm de lado) no admite 4 alojamientos a ≥ 20.3 mm; 8 mm sí caben en las esquinas
+  it('4 dowels de 9.5 mm en una caja de 40 mm se solapan: CUT_CONNECTORS_OVERLAP', async () => {
     const box = await createPrimitiveMesh('box', { width: 40, height: 40, depth: 40 });
     await expect(
-      planeCutWithConnectors(makeObject('o', box), { ...CUT, connectorType: 'dowel', connectorSize: 8, connectorCount: 4 })
+      planeCutWithConnectors(makeObject('o', box), { ...CUT, connectorType: 'dowel', connectorSize: 9.5, connectorCount: 4 })
     ).rejects.toMatchObject({ code: 'CUT_CONNECTORS_OVERLAP' });
   });
 

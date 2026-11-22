@@ -58,6 +58,7 @@ export const ENGINE_WARNING_CODES = [
   'REFINE_SMOOTH_REVERTED',
   'HOLLOW_COARSE_GRID',
   'SPLIT_COLOR_NON_MANIFOLD',
+  'CUT_CONNECTOR_ISLAND_SKIPPED',
 ] as const;
 
 export type EngineWarningCode = (typeof ENGINE_WARNING_CODES)[number];

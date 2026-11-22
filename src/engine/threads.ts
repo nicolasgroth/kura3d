@@ -1,12 +1,14 @@
 /**
  * @file src/engine/threads.ts
- * @description Roscas métricas ISO de 60° (perno, tuerca y macho negativo) con tabla ISO 261
- * de paso grueso M2–M64, paso automático por diámetro, validación tipada y una malla
+ * @description Roscas métricas ISO de 60° (perno, tuerca y macho negativo), rango M3–M20 con
+ * las tablas de `threadIsoTables.ts`, paso automático por diámetro, validación tipada y una malla
  * helicoidal exacta: los vértices se ubican sobre las 4 hélices de quiebre del perfil y sobre
  * N columnas angulares, de modo que la malla es invariante ante el movimiento de tornillo
  * (girar 360°/N y avanzar paso/N). Así perno y tuerca generados con la misma N calzan igual
- * en cualquier fase de giro y la holgura radial queda garantizada (se compensa además el error
- * de cuerda de las columnas). Un M8×16 ronda 5–6 k triángulos (antes ~40 k).
+ * en cualquier fase de giro y la holgura queda garantizada (se compensa además el error de cuerda
+ * de las columnas). La holgura se aplica desplazando los flancos de la tuerca, no subiendo su
+ * diámetro menor: así el engrane radial se mantiene cerca del básico 5/8·H. Un M8×16 ronda 5–6 k
+ * triángulos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -17,37 +19,18 @@ import type { MeshData, ThreadOptions } from '../types/kura';
 import { EngineError, requireNumberInRange } from './engineErrors';
 import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from './manifoldKernel';
 import { OPERATION_RANGES } from './operationLimits';
+import {
+  defaultThreadClearance,
+  hexAcrossFlats,
+  ISO_COARSE_THREADS,
+  ISO_HEX_ACROSS_FLATS,
+  isoHeadHeight,
+  isoMinorDiameterMax6H,
+} from './threadIsoTables';
 
 const THREAD_RANGES = OPERATION_RANGES.thread;
 
-/** Tabla ISO 261 de paso grueso (diámetro nominal → paso en mm). */
-export const ISO_COARSE_THREADS: ReadonlyArray<{ diameterMm: number; pitchMm: number }> = [
-  { diameterMm: 2, pitchMm: 0.4 },
-  { diameterMm: 2.5, pitchMm: 0.45 },
-  { diameterMm: 3, pitchMm: 0.5 },
-  { diameterMm: 3.5, pitchMm: 0.6 },
-  { diameterMm: 4, pitchMm: 0.7 },
-  { diameterMm: 5, pitchMm: 0.8 },
-  { diameterMm: 6, pitchMm: 1.0 },
-  { diameterMm: 7, pitchMm: 1.0 },
-  { diameterMm: 8, pitchMm: 1.25 },
-  { diameterMm: 10, pitchMm: 1.5 },
-  { diameterMm: 12, pitchMm: 1.75 },
-  { diameterMm: 14, pitchMm: 2.0 },
-  { diameterMm: 16, pitchMm: 2.0 },
-  { diameterMm: 18, pitchMm: 2.5 },
-  { diameterMm: 20, pitchMm: 2.5 },
-  { diameterMm: 22, pitchMm: 2.5 },
-  { diameterMm: 24, pitchMm: 3.0 },
-  { diameterMm: 27, pitchMm: 3.0 },
-  { diameterMm: 30, pitchMm: 3.5 },
-  { diameterMm: 33, pitchMm: 3.5 },
-  { diameterMm: 36, pitchMm: 4.0 },
-  { diameterMm: 42, pitchMm: 4.5 },
-  { diameterMm: 48, pitchMm: 5.0 },
-  { diameterMm: 56, pitchMm: 5.5 },
-  { diameterMm: 64, pitchMm: 6.0 },
-];
+export { ISO_COARSE_THREADS, ISO_HEX_ACROSS_FLATS, hexAcrossFlats, isoHeadHeight, isoMinorDiameterMax6H, defaultThreadClearance };
 
 export const THREAD_MIN_DIAMETER_MM = THREAD_RANGES.diameterMm.min;
 export const THREAD_MAX_DIAMETER_MM = THREAD_RANGES.diameterMm.max;
@@ -67,8 +50,11 @@ export function maxPitchForDiameter(diameterMm: number): number {
   return Math.max(0.25, diameterMm / 4);
 }
 
-/** Opciones de rosca con paso opcional (sin paso ⇒ ISO 261 grueso). */
-export type ThreadRequest = Omit<ThreadOptions, 'pitchMm'> & { pitchMm?: number };
+/**
+ * Opciones de rosca con paso y holgura opcionales (sin paso ⇒ ISO 261 grueso; sin holgura ⇒
+ * `defaultThreadClearance(paso)`).
+ */
+export type ThreadRequest = Omit<ThreadOptions, 'pitchMm' | 'clearanceMm'> & { pitchMm?: number; clearanceMm?: number };
 
 /** Parámetros resueltos y geometría derivada de una rosca. */
 export interface ResolvedThread {
@@ -76,7 +62,11 @@ export interface ResolvedThread {
   diameterMm: number;
   pitchMm: number;
   lengthMm: number;
-  /** Holgura radial aplicada (mm); la holgura por flanco de 60° es la mitad. */
+  /**
+   * Holgura radial equivalente (mm): los flancos de 60° de la tuerca se desplazan esta distancia en
+   * radio (holgura normal por flanco = mitad). El diámetro menor D1 solo sube lo que la cresta de la
+   * tuerca no alcanza a absorber (ver `threadRadii`).
+   */
   radialClearanceMm: number;
   flankClearanceMm: number;
   columns: number;
@@ -103,7 +93,8 @@ export function resolveThreadOptions(options: ThreadRequest): ResolvedThread {
   const lengthMm = requireNumberInRange('lengthMm', options.lengthMm, THREAD_RANGES.lengthMm.min, THREAD_RANGES.lengthMm.max);
   const radialClearanceMm =
     options.kind === 'bolt' ? 0 : requireNumberInRange(
-      'clearanceMm', options.clearanceMm, THREAD_RANGES.clearanceMm.min, THREAD_RANGES.clearanceMm.max, 0.25);
+      'clearanceMm', options.clearanceMm ?? defaultThreadClearance(pitchMm),
+      THREAD_RANGES.clearanceMm.min, THREAD_RANGES.clearanceMm.max);
   const columns = Math.min(96, Math.max(32, Math.ceil((Math.PI * diameterMm) / 0.6 / 8) * 8));
   return {
     kind: options.kind,
@@ -137,16 +128,6 @@ function profileRadius(phi: number, rMinor: number, rMajor: number, b: ProfileBr
   if (p <= b[2]) return rMinor + (rMajor - rMinor) * ((p - b[1]) / (b[2] - b[1]));
   if (p <= b[3]) return rMajor;
   return rMajor - (rMajor - rMinor) * ((p - b[3]) / (b[0] + 1 - b[3]));
-}
-
-/** Entrecaras s (mm) de cabezas y tuercas hexagonales ISO 4017 / ISO 4032, M3–M20. */
-export const ISO_HEX_ACROSS_FLATS: Readonly<Record<number, number>> = {
-  3: 5.5, 4: 7, 5: 8, 6: 10, 8: 13, 10: 16, 12: 18, 14: 21, 16: 24, 18: 27, 20: 30,
-};
-
-/** Entrecaras del hexágono para `diameterMm`: tabla ISO si es nominal; si no, 1.55·d. */
-export function hexAcrossFlats(diameterMm: number): number {
-  return ISO_HEX_ACROSS_FLATS[diameterMm] ?? 1.55 * diameterMm;
 }
 
 /**
@@ -276,27 +257,46 @@ function buildChamferedHexPrismZ(
   }
 }
 
-/** Radios de la rosca exterior (perno) y del macho negativo (tuerca/agujero) para `spec`. */
+/** Fracción de paso máxima de cada mitad de la cresta interior que el desplazamiento de flancos puede comer (deja ≥ 0.01·P de meseta). */
+const MAX_FLANK_SHIFT_PHASE = 0.12;
+
+/** Radios y perfil de la rosca exterior (perno) y del macho negativo (tuerca/agujero) para `spec`. */
 export function threadRadii(spec: ResolvedThread): {
   boltMinor: number;
   boltMajor: number;
   tapMinor: number;
   tapMajor: number;
+  tapBreaks: ProfileBreaks;
 } {
   const H = (Math.sqrt(3) / 2) * spec.pitchMm;
   const boltMajor = spec.diameterMm / 2;
-  // Perno: d3 (ISO 724, h3 = 17/24 H). Tuerca/macho: D1 básico (5/8 H) más la holgura.
+  // Perno: d3 (ISO 724, h3 = 17/24 H). Tuerca/macho: perfil básico (D1 = 5/8 H bajo el mayor).
   const boltMinor = boltMajor - (17 / 24) * H;
   const basicMinor = boltMajor - (5 / 8) * H;
+  if (spec.kind === 'bolt') {
+    return { boltMinor, boltMajor, tapMinor: basicMinor, tapMajor: boltMajor, tapBreaks: BASIC_PROFILE_BREAKS };
+  }
   // Error de cuerda de las columnas: la cuerda queda hasta r·(1−cos(π/N)) dentro del arco
   const sagitta = (boltMajor + spec.radialClearanceMm) * (1 - Math.cos(Math.PI / spec.columns));
-  const extra = spec.kind === 'bolt' ? 0 : spec.radialClearanceMm + sagitta;
+  const shift = spec.radialClearanceMm + sagitta;
+  // Los flancos se desplazan `shift` en radio (= shift·tan30° en fase/eje). La meseta de la cresta
+  // interior (1/4 P en D1) absorbe el desplazamiento; D1 sube solo el exceso (pendiente 2H por fase).
+  const slope = 2 * H;
+  const minorRise = Math.max(0, shift - slope * MAX_FLANK_SHIFT_PHASE);
+  const e = (shift - minorRise) / slope;
   return {
     boltMinor,
     boltMajor,
-    tapMinor: basicMinor + extra,
-    tapMajor: boltMajor + extra,
+    tapMinor: basicMinor + minorRise,
+    tapMajor: boltMajor + shift,
+    tapBreaks: [e, BASIC_PROFILE_BREAKS[1] - e, BASIC_PROFILE_BREAKS[2], BASIC_PROFILE_BREAKS[3]],
   };
+}
+
+/** Engrane radial (mm) entre el mayor del perno y el menor de la tuerca, y el básico 5/8·H. */
+export function threadEngagement(spec: ResolvedThread): { radialMm: number; basicMm: number } {
+  const { boltMajor, tapMinor } = threadRadii(spec);
+  return { radialMm: boltMajor - tapMinor, basicMm: (5 / 8) * (Math.sqrt(3) / 2) * spec.pitchMm };
 }
 
 /**
@@ -308,7 +308,7 @@ export function threadRadii(spec: ResolvedThread): {
 export async function createMetricThread(options: ThreadRequest): Promise<MeshData> {
   const spec = resolveThreadOptions(options);
   const wasm = await initManifoldEngine();
-  const { boltMinor, boltMajor, tapMinor, tapMajor } = threadRadii(spec);
+  const { boltMinor, boltMajor, tapMinor, tapMajor, tapBreaks } = threadRadii(spec);
   const { pitchMm, lengthMm, columns, diameterMm } = spec;
   const hexRadius = hexAcrossFlats(diameterMm) / Math.sqrt(3);
   const handles: Manifold[] = [];
@@ -322,14 +322,14 @@ export async function createMetricThread(options: ThreadRequest): Promise<MeshDa
   try {
     let resultZ: Manifold;
     if (options.kind === 'hole') {
-      resultZ = solid(tapMinor, tapMajor, 0, lengthMm);
+      resultZ = solid(tapMinor, tapMajor, 0, lengthMm, tapBreaks);
     } else if (options.kind === 'nut') {
       const hexBody = own(buildChamferedHexPrismZ(wasm, hexRadius, lengthMm, true));
-      resultZ = own(hexBody.subtract(solid(tapMinor, tapMajor, -1, lengthMm + 1)));
+      resultZ = own(hexBody.subtract(solid(tapMinor, tapMajor, -1, lengthMm + 1, tapBreaks)));
     } else if (options.includeHead === false) {
       resultZ = solid(boltMinor, boltMajor, 0, lengthMm, BOLT_PROFILE_BREAKS);
     } else {
-      const headH = Math.max(2.2, 0.65 * diameterMm);
+      const headH = isoHeadHeight(diameterMm);
       const head = own(buildChamferedHexPrismZ(wasm, hexRadius, headH, false));
       resultZ = own(head.add(solid(boltMinor, boltMajor, headH - 0.5, headH + lengthMm, BOLT_PROFILE_BREAKS)));
     }

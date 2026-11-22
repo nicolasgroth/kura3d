@@ -38,6 +38,15 @@ export function validateConnectorParams(options: PlaneCutOptions): ValidatedConn
   };
 }
 
+/** Lanza `CUT_CONNECTOR_TOO_DEEP` si el alojamiento (con pared) no cabe en la mitad receptora. */
+export function assertConnectorDepth(receiver: Manifold, normal: Vec3, cutCoord: number, depthWithWall: number): void {
+  const axis = normal[0] ? 0 : normal[1] ? 1 : 2;
+  const available = receiver.boundingBox().max[axis] - cutCoord;
+  if (depthWithWall > available) {
+    throw new EngineError('CUT_CONNECTOR_TOO_DEEP', { depth: depthWithWall, available });
+  }
+}
+
 /**
  * Verifica que los alojamientos (`shells`: hembra + pared mínima) quepan en `receiver`
  * (la mitad positiva antes de perforarla) y que los `spacers` (hembra + media pared) no se
@@ -56,12 +65,7 @@ export function assertConnectorsFit(
   depthWithWall: number,
   size: number
 ): void {
-  const axis = normal[0] ? 0 : normal[1] ? 1 : 2;
-  const recvBox = receiver.boundingBox();
-  const available = recvBox.max[axis] - cutCoord;
-  if (depthWithWall > available) {
-    throw new EngineError('CUT_CONNECTOR_TOO_DEEP', { depth: depthWithWall, available });
-  }
+  assertConnectorDepth(receiver, normal, cutCoord, depthWithWall);
 
   const trimmed: Manifold[] = [];
   const trimmedSpacers: Manifold[] = [];

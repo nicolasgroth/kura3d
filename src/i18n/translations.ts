@@ -921,6 +921,7 @@ export const TRANSLATIONS_ES = {
   'engineWarning.REFINE_SMOOTH_REVERTED': 'El suavizado cambiaba las medidas en {deviation} mm (tolerancia {tolerance} mm); se aplicó solo el refinado.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Pieza grande: la pared puede llegar a {maxWall} mm (pedido {thickness} mm).',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '{count} pieza(s) separadas por color no son sólidos cerrados; revísalas antes de imprimir.',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': '{skipped} de {islands} zona(s) de la cara de corte quedaron sin conector: no cabe uno de {size} mm con su pared.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -1803,6 +1804,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Smoothing changed the dimensions by {deviation} mm (tolerance {tolerance} mm); only refinement was applied.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Large part: the wall may reach {maxWall} mm (requested {thickness} mm).',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '{count} color-split part(s) are not closed solids; check them before printing.',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': '{skipped} of {islands} region(s) of the cut face got no connector: a {size} mm one does not fit with its wall.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

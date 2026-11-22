@@ -914,4 +914,5 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'engineWarning.REFINE_SMOOTH_REVERTED': 'स्मूदिंग से माप {deviation} mm बदल रहे थे (सहनशीलता {tolerance} mm); केवल रिफ़ाइन लागू हुआ।',
   'engineWarning.HOLLOW_COARSE_GRID': 'बड़ा भाग: दीवार {maxWall} mm तक हो सकती है (माँगी {thickness} mm)।',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': 'रंग से अलग किए गए {count} भाग बंद ठोस नहीं हैं; प्रिंट से पहले जाँचें।',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'कट सतह के {islands} में से {skipped} क्षेत्र में कनेक्टर नहीं लगा: दीवार सहित {size} mm का कनेक्टर नहीं समाता।',
 };

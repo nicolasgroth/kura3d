@@ -54,7 +54,13 @@ import { isTauriRuntime, openLocalFile } from '../utils/platformBridge';
 import { AiSettingsPanel } from './settings/AiSettingsPanel';
 import { McpTokenField } from './settings/McpTokenField';
 import { SettingsTabs } from './settings/SettingsTabs';
-import { ISO_COARSE_THREADS, isoCoarsePitch } from '../engine/threads';
+import {
+  defaultThreadClearance,
+  ISO_COARSE_THREADS,
+  isoCoarsePitch,
+  THREAD_MAX_DIAMETER_MM,
+  THREAD_MIN_DIAMETER_MM,
+} from '../engine/threads';
 
 /** Presets SVG vectoriales incorporados para probar extrusión y proyección 3D al instante. */
 const SVG_PRESETS: Record<'star' | 'badge' | 'gear', string> = {
@@ -71,9 +77,7 @@ const SVG_PRESETS: Record<'star' | 'badge' | 'gear', string> = {
 
 /** Presets métricos ISO estándar (diámetro mm y paso grueso estándar en mm). */
 const ISO_THREAD_PRESETS: Array<{ label: string; diameterMm: number; pitchMm: number }> =
-  ISO_COARSE_THREADS.filter(
-    (row) => row.diameterMm >= 3 && row.diameterMm <= 20 && Number.isInteger(row.diameterMm) && row.diameterMm !== 7,
-  ).map((row) => ({ label: `M${row.diameterMm}`, ...row }));
+  ISO_COARSE_THREADS.filter((row) => Number.isInteger(row.diameterMm) && row.diameterMm !== 7).map((row) => ({ label: `M${row.diameterMm}`, ...row }));
 
 /** Modal 1: Importar y Extruir SVG a sólido 3D. */
 const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = ({
@@ -1237,9 +1241,14 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
   const [diameterMm, setDiameterMm] = useState(8);
   const [pitchMm, setPitchMm] = useState(1.25);
   const [lengthMm, setLengthMm] = useState(20);
-  const [clearanceMm, setClearanceMm] = useState(0.25);
+  const [clearanceMm, setClearanceMm] = useState(() => defaultThreadClearance(1.25));
   const [includeHead, setIncludeHead] = useState(true);
   const failure = useOperationFailure(open);
+  // La holgura por defecto escala con el paso; cambiar el paso la restablece (editable después)
+  const applyPitch = (value: number) => {
+    setPitchMm(value);
+    setClearanceMm(defaultThreadClearance(value));
+  };
 
   const handleExecute = async () => {
     const { result: created } = await failure.run(() =>
@@ -1294,7 +1303,7 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
               }
               onClick={() => {
                 setDiameterMm(preset.diameterMm);
-                setPitchMm(preset.pitchMm);
+                applyPitch(preset.pitchMm);
               }}
             >
               {preset.label} ({preset.pitchMm})
@@ -1322,8 +1331,8 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
           <label htmlFor="thread-diam">{t(language, 'dialog.thread.diameter')}</label>
           <PrecisionNumberInput
             id="thread-diam"
-            min={2}
-            max={64}
+            min={THREAD_MIN_DIAMETER_MM}
+            max={THREAD_MAX_DIAMETER_MM}
             step={0.5}
             precision={1}
             defaultValue={8}
@@ -1331,7 +1340,7 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
             onChange={(value) => {
               // Paso ISO 261 grueso automático al cambiar el diámetro (editable después)
               setDiameterMm(value);
-              setPitchMm(isoCoarsePitch(value));
+              applyPitch(isoCoarsePitch(value));
             }}
           />
         </div>
@@ -1346,7 +1355,7 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
             precision={2}
             defaultValue={1.25}
             value={pitchMm}
-            onChange={setPitchMm}
+            onChange={applyPitch}
           />
         </div>
 
@@ -1372,7 +1381,7 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
             max={0.8}
             step={0.05}
             precision={2}
-            defaultValue={0.25}
+            defaultValue={defaultThreadClearance(pitchMm)}
             value={clearanceMm}
             onChange={setClearanceMm}
           />

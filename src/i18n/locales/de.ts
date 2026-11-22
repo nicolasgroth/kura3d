@@ -914,4 +914,5 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Das Glätten veränderte die Maße um {deviation} mm (Toleranz {tolerance} mm); nur die Verfeinerung wurde angewendet.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Großes Teil: die Wand kann bis zu {maxWall} mm erreichen (gefordert {thickness} mm).',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '{count} nach Farbe getrennte Teil(e) sind keine geschlossenen Körper; vor dem Druck prüfen.',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': '{skipped} von {islands} Bereich(en) der Schnittfläche ohne Verbinder: einer mit {size} mm passt samt Wand nicht hinein.',
 };
