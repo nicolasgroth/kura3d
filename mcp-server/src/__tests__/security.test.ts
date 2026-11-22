@@ -224,6 +224,8 @@ describe('TRUST-02 · solo lectura como fuente única', () => {
   it('interpreta solo lectura igual desde CLI y entorno (true/1/yes)', () => {
     expect(resolveBridgeConfig({}, { KURA_BRIDGE_READ_ONLY: '1' }).readOnly).toBe(true);
     expect(resolveBridgeConfig({}, { KURA_BRIDGE_READ_ONLY: 'true' }).readOnly).toBe(true);
+    // Límite de fallos por defecto: 10 por minuto (solo lo alimentan los 401; se aplica antes del token).
+    expect(resolveBridgeConfig({}, {}).authFailureLimitPerMin).toBe(10);
     expect(resolveBridgeConfig({}, { KURA_BRIDGE_READ_ONLY: 'false' }).readOnly).toBe(false);
     expect(resolveBridgeConfig({}, {}, ['--read-only']).readOnly).toBe(true);
     expect(resolveBridgeConfig({}, { KURA_BRIDGE_READ_ONLY: '1' }, ['--read-only=false']).readOnly).toBe(false);

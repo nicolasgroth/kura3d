@@ -39,7 +39,7 @@ npm test
 
 El puente WebSocket escucha solo en `127.0.0.1` y aplica, en este orden, a cada handshake:
 
-1. **Throttle de fallos**: tras 30 intentos fallidos en 60 s responde `429` durante el resto de la ventana.
+1. **Throttle de fallos**: tras 10 intentos fallidos (respuestas `401`) en 60 s responde `429` durante el resto de la ventana.
 2. **Host** (anti DNS rebinding): solo `127.0.0.1:<puerto>` o `localhost:<puerto>`; otro valor → `403`.
 3. **Origin**: sin Origin (clientes nativos), `http://localhost[:p]`, `http://127.0.0.1[:p]`, `tauri://localhost` o `http(s)://tauri.localhost`; otro valor → `403`.
 4. **Token obligatorio**: `Authorization: Bearer <token>` o `?token=<token>`, comparado en tiempo constante (SHA-256 + `timingSafeEqual`); ausente o inválido → `401`.
