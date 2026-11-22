@@ -17,6 +17,7 @@ import {
   CONNECTOR_SIZE_RANGE_MM,
 } from './cutConnectorChecks';
 import { layoutForCut } from './cutConnectorLayout';
+import { OPERATION_RANGES } from './operationLimits';
 import { initManifoldEngine, meshDataToManifold } from './manifoldKernel';
 import { applyTransformToMesh } from './primitives';
 
@@ -114,7 +115,8 @@ function largest(lo: number, hi: number, ok: (v: number) => boolean): number | n
   if (ok(hi)) return hi;
   let a = lo;
   let b = hi;
-  for (let i = 0; i < 9 && b - a > 0.1; i++) {
+  // Hasta 14 bisecciones: resolución < 0,1 mm aun con el tope de 500 mm de operationLimits.
+  for (let i = 0; i < 14 && b - a > 0.1; i++) {
     const mid = (a + b) / 2;
     if (ok(mid)) a = mid;
     else b = mid;
@@ -177,7 +179,7 @@ export async function suggestCutConnectors(
     const maxSize =
       largest(minSize, CONNECTOR_SIZE_RANGE_MM.max, (s) => fits({ size: s, depth, tolerance, count: 1 })) ?? size;
     let maxCount = count;
-    for (let c = 4; c > count; c--) {
+    for (let c = OPERATION_RANGES.cut.connectorCount.max; c > count; c--) {
       if (fits({ size, depth, tolerance, count: c })) {
         maxCount = c;
         break;

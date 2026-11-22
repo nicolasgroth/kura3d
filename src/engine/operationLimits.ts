@@ -47,10 +47,10 @@ export const OPERATION_RANGES = {
   },
   cut: {
     offset: COORD,
-    connectorSize: positive(500),
-    connectorDepth: positive(500),
+    connectorSize: closed(0.5, 500), // < 0,5 mm no se puede imprimir; el tope real lo da la cara (CUT_CONNECTOR_TOO_LARGE)
+    connectorDepth: closed(1, 500), // el tope real lo da la pieza (CUT_CONNECTOR_TOO_DEEP)
     tolerance: closed(0, 5),
-    connectorCount: int(0, 8),
+    connectorCount: int(0, 8), // 0 = corte sin conectores
   },
   texture: {
     depth: closed(0, 50),
@@ -69,8 +69,8 @@ export const OPERATION_RANGES = {
     cavityWallMm: closed(0.8, 500),
   },
   projection: {
-    widthMm: positive(10_000),
-    depthMm: positive(500),
+    widthMm: closed(1, 10_000), // el tope real lo da la cara (PROJECTION_OUT_OF_BOUNDS)
+    depthMm: closed(0.1, 500), // en grabado, el tope real lo da la pieza (PROJECTION_TOO_DEEP)
     offsetU: COORD,
     offsetV: COORD,
   },
@@ -86,14 +86,43 @@ export const OPERATION_RANGES = {
     lengthMm: closed(1, 300),
     clearanceMm: closed(0, 1.5),
   },
+  /** Litofanía cilíndrica (`generateCylindricalLithophane`): altura = `depthMm`. */
+  lithophane: {
+    widthMm: closed(2, 2000),
+    heightMm: closed(4, 2000),
+    arcDegrees: closed(30, 360),
+    cylinderRadiusMm: closed(4, 1000),
+    baseThicknessMm: closed(0.6, 50),
+    reliefHeightMm: closed(0, 50),
+  },
+  /** Silueta y cortador desde imagen (`generateSilhouetteOrCutterFromImage`). */
+  imageShape: {
+    threshold: int(0, 255),
+    widthMm: closed(2, 2000),
+    depthMm: closed(2, 2000),
+    silhouetteHeightMm: closed(0.2, 500), // base + relieve
+    cutterWallMm: closed(0.4, 20),
+    cutterBaseMm: closed(0.4, 50),
+    cutterBladeMm: closed(1, 200),
+  },
   printability: {
     infillPercent: closed(0, 100),
+    minWallMm: closed(0, 20),
     overhangAngleDeg: closed(0, 90),
   },
   detect: {
     creaseAngleDeg: closed(1, 179),
   },
 } as const satisfies Record<string, Record<string, OperationRange>>;
+
+/**
+ * Valores por defecto compartidos por motor, Command Bus, interfaz y servidor MCP (app y headless
+ * deben producir lo mismo cuando el llamador omite el parámetro).
+ */
+export const OPERATION_DEFAULTS = {
+  mold: { wallMarginMm: 6, boxWallMm: 3, pourSpoutRadiusMm: 5, keyToleranceMm: 0.25, cavityWallMm: 3 },
+  printability: { infillPercent: 20, overhangAngleDeg: 45, minWallMm: 0.8 },
+} as const;
 
 /** Indica si `value` es un número finito dentro de `range`. */
 export function isInOperationRange(value: unknown, range: OperationRange): value is number {

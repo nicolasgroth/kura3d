@@ -1087,6 +1087,17 @@ export const TRANSLATIONS_ES = {
   'status.measures.settings': 'Más en Ajustes',
   'palette.cmd.changeUnit': 'Cambiar unidad de medida…',
   'palette.cmd.changePrinter': 'Cambiar impresora…',
+  'engineWarning.MOLD_SPOUT_REDUCED': 'El embudo de {requested} mm no cabe sobre la pieza; se usó {applied} mm.',
+  'engineWarning.IMPORT_NORMALS_FLIPPED': 'La malla importada tenía las normales invertidas (volumen negativo); se reorientó.',
+  'engineWarning.BOOLEAN_NO_EFFECT': 'Las piezas no se tocan: la operación no cambia nada y no se aplicó.',
+  'printWarning.NOT_MANIFOLD': 'La malla no es cerrada (no-manifold); puede presentar huecos o errores al laminar.',
+  'printWarning.EXCEEDS_BED': 'El objeto excede los límites de impresión ({width}×{depth}×{height} mm).',
+  'printWarning.FLOATING': 'El objeto está flotando a {gap} mm sobre la cama de impresión.',
+  'printWarning.OVERHANG': 'El {percent} % de la superficie queda en voladizo (> {angle}°); considera activar soportes.',
+  'printWarning.LOW_DENSITY': 'Baja densidad poligonal en superficies curvas; pueden verse facetadas.',
+  'printWarning.HIGH_DENSITY': 'Malla muy densa (> 50 000 triángulos); considera simplificarla.',
+  'printWarning.THIN_WALL': 'Hay paredes de {thickness} mm, más delgadas que el mínimo de {min} mm; pueden no imprimirse.',
+  'printWarning.INVERTED_NORMALS': 'La malla tiene las normales invertidas (volumen negativo); reoriéntala antes de imprimir.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2134,6 +2145,17 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'status.measures.settings': 'More in Settings',
   'palette.cmd.changeUnit': 'Change unit of measure…',
   'palette.cmd.changePrinter': 'Change printer…',
+  'engineWarning.MOLD_SPOUT_REDUCED': 'A {requested} mm pour spout does not fit on the part; {applied} mm was used.',
+  'engineWarning.IMPORT_NORMALS_FLIPPED': 'The imported mesh had inverted normals (negative volume); it was reoriented.',
+  'engineWarning.BOOLEAN_NO_EFFECT': 'The parts do not touch: the operation changes nothing and was not applied.',
+  'printWarning.NOT_MANIFOLD': 'The mesh is not closed (non-manifold); it may have holes or slicing errors.',
+  'printWarning.EXCEEDS_BED': 'The object exceeds the build volume ({width}×{depth}×{height} mm).',
+  'printWarning.FLOATING': 'The object floats {gap} mm above the print bed.',
+  'printWarning.OVERHANG': '{percent}% of the surface overhangs (> {angle}°); consider enabling supports.',
+  'printWarning.LOW_DENSITY': 'Low polygon density on curved surfaces; they may look faceted.',
+  'printWarning.HIGH_DENSITY': 'Very dense mesh (> 50,000 triangles); consider simplifying it.',
+  'printWarning.THIN_WALL': 'Some walls are {thickness} mm, thinner than the {min} mm minimum; they may not print.',
+  'printWarning.INVERTED_NORMALS': 'The mesh has inverted normals (negative volume); reorient it before printing.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

@@ -14,7 +14,8 @@
 
 import type { Manifold } from 'manifold-3d';
 import type { MeshData, SceneObject } from '../types/kura';
-import { engineWarning, requireNumberInRange, type EngineWarning } from './engineErrors';
+import { engineWarning, requireOperationRange, type EngineWarning } from './engineErrors';
+import { OPERATION_RANGES } from './operationLimits';
 import {
   createColorRegistry,
   initManifoldEngine,
@@ -157,7 +158,7 @@ export async function refineMeshDetailed(
   targetEdgeLengthMm: number,
   smooth = false
 ): Promise<RefineResult> {
-  const requested = requireNumberInRange('targetEdgeLengthMm', targetEdgeLengthMm, 0.05, 1000);
+  const requested = requireOperationRange('targetEdgeLengthMm', targetEdgeLengthMm, OPERATION_RANGES.refine.targetEdgeLengthMm);
   const scale = obj.scale.map((s) => Math.abs(s) || 1);
   const maxScale = Math.max(...scale);
   const warnings: EngineWarning[] = [];

@@ -11,14 +11,15 @@
 
 import type { Manifold } from 'manifold-3d';
 import type { PlaneCutOptions, Vec3 } from '../types/kura';
-import { EngineError, requireIntegerInRange, requireNumberInRange } from './engineErrors';
+import { EngineError, requireOperationRange } from './engineErrors';
+import { OPERATION_RANGES } from './operationLimits';
 
 /** Pared mínima (mm) que debe rodear al alojamiento hembra dentro de la pieza. */
 export const CONNECTOR_MIN_WALL_MM = 0.8;
 
-/** Rangos (mm) aceptados para tamaño y profundidad del conector; la interfaz los muestra tal cual. */
-export const CONNECTOR_SIZE_RANGE_MM = { min: 0.5, max: 200 } as const;
-export const CONNECTOR_DEPTH_RANGE_MM = { min: 1, max: 400 } as const;
+/** Rangos (mm) de tamaño y profundidad del conector; vienen de `operationLimits.ts` (fuente única). */
+export const CONNECTOR_SIZE_RANGE_MM = OPERATION_RANGES.cut.connectorSize;
+export const CONNECTOR_DEPTH_RANGE_MM = OPERATION_RANGES.cut.connectorDepth;
 
 /** Parámetros de conector validados. */
 export interface ValidatedConnectorParams {
@@ -31,10 +32,10 @@ export interface ValidatedConnectorParams {
 /** Valida tamaño, profundidad, holgura y cantidad (errores tipados en vez de recortes). */
 export function validateConnectorParams(options: PlaneCutOptions): ValidatedConnectorParams {
   return {
-    size: requireNumberInRange('connectorSize', options.connectorSize, CONNECTOR_SIZE_RANGE_MM.min, CONNECTOR_SIZE_RANGE_MM.max),
-    depth: requireNumberInRange('connectorDepth', options.connectorDepth, CONNECTOR_DEPTH_RANGE_MM.min, CONNECTOR_DEPTH_RANGE_MM.max),
-    tolerance: requireNumberInRange('tolerance', options.tolerance, 0, 2),
-    count: requireIntegerInRange('connectorCount', options.connectorCount, 1, 4),
+    size: requireOperationRange('connectorSize', options.connectorSize, OPERATION_RANGES.cut.connectorSize),
+    depth: requireOperationRange('connectorDepth', options.connectorDepth, OPERATION_RANGES.cut.connectorDepth),
+    tolerance: requireOperationRange('tolerance', options.tolerance, OPERATION_RANGES.cut.tolerance),
+    count: requireOperationRange('connectorCount', options.connectorCount, OPERATION_RANGES.cut.connectorCount),
   };
 }
 

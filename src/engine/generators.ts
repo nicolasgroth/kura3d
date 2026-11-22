@@ -17,7 +17,8 @@ import {
   initManifoldEngine,
   manifoldToMeshData,
 } from './manifoldKernel';
-import { EngineError, requireNumberInRange } from './engineErrors';
+import { EngineError, requireOperationRange } from './engineErrors';
+import { OPERATION_RANGES } from './operationLimits';
 import { detectForeground, validateImageBuffer } from './imageInput';
 import { normalizeMeshToBed } from './primitives';
 
@@ -106,16 +107,21 @@ export function generateCylindricalLithophane(
   validateImageBuffer(options);
   const { grid, cols, rows } = sampleLuminanceGrid(options, 256);
 
-  const arcDeg = Math.max(30, Math.min(360, options.arcDegrees ?? 180));
+  // Fuera de rango es un error tipado (nunca se acota en silencio); `??` respeta un 0 explícito.
+  const L = OPERATION_RANGES.lithophane;
+  const arcDeg = requireOperationRange('arcDegrees', options.arcDegrees, L.arcDegrees, 180);
   const isFullCircle = arcDeg >= 359.9;
   const arcRad = (arcDeg * Math.PI) / 180;
-  const rInner = Math.max(
-    4,
-    options.cylinderRadiusMm ?? Math.max(8, options.widthMm / Math.max(0.5, arcRad))
+  const widthMm = requireOperationRange('widthMm', options.widthMm, L.widthMm, 60);
+  const rInner = requireOperationRange(
+    'cylinderRadiusMm',
+    options.cylinderRadiusMm,
+    L.cylinderRadiusMm,
+    Math.min(L.cylinderRadiusMm.max, Math.max(8, widthMm / arcRad))
   );
-  const heightMm = Math.max(4, options.depthMm || options.widthMm || 60);
-  const baseMm = Math.max(0.6, options.baseThicknessMm || 1.2);
-  const reliefMm = Math.max(0, options.reliefHeightMm ?? 2.4);
+  const heightMm = requireOperationRange('depthMm', options.depthMm, L.heightMm, widthMm);
+  const baseMm = requireOperationRange('baseThicknessMm', options.baseThicknessMm, L.baseThicknessMm, 1.2);
+  const reliefMm = requireOperationRange('reliefHeightMm', options.reliefHeightMm, L.reliefHeightMm, 2.4);
 
   const positions: number[] = [];
   const indices: number[] = [];
@@ -252,11 +258,12 @@ export async function generateSilhouetteOrCutterFromImage(
   options: ImageTo3DOptions
 ): Promise<MeshData> {
   const { w: srcW, h: srcH } = validateImageBuffer(options);
-  const threshold = requireNumberInRange('threshold', options.threshold, 0, 255, 128);
-  const widthMm = requireNumberInRange('widthMm', options.widthMm, 2, 2000, 50);
-  const depthMm = requireNumberInRange('depthMm', options.depthMm, 2, 2000, 50);
+  const IR = OPERATION_RANGES.imageShape;
+  const threshold = requireOperationRange('threshold', options.threshold, IR.threshold, 128);
+  const widthMm = requireOperationRange('widthMm', options.widthMm, IR.widthMm, 50);
+  const depthMm = requireOperationRange('depthMm', options.depthMm, IR.depthMm, 50);
   const mode = options.shapeMode === 'cutter' ? 'cutter' : 'silhouette';
-  const wallW = mode === 'cutter' ? requireNumberInRange('cutterWallMm', options.cutterWallMm, 0.4, 20, 1.2) : 0;
+  const wallW = mode === 'cutter' ? requireOperationRange('cutterWallMm', options.cutterWallMm, IR.cutterWallMm, 1.2) : 0;
   const flangeExtra = 3.0;
   const margin = mode === 'cutter' ? wallW + flangeExtra : 0;
   const foreground = detectForeground(options, threshold);
@@ -328,17 +335,16 @@ export async function generateSilhouetteOrCutterFromImage(
 
     let combinedZ: Manifold;
     if (mode === 'silhouette') {
-      const totalH = requireNumberInRange(
+      const totalH = requireOperationRange(
         'height',
         (options.baseThicknessMm ?? 2) + (options.reliefHeightMm ?? 2),
-        0.2,
-        500
+        IR.silhouetteHeightMm
       );
       combinedZ = own(baseCs.extrude(totalH, 0, 0, [1, 1], false));
     } else {
       // Cortador: pestaña exterior de agarre + cuchilla perimetral
-      const baseH = requireNumberInRange('baseThicknessMm', options.baseThicknessMm, 0.4, 50, 2);
-      const bladeH = requireNumberInRange('reliefHeightMm', options.reliefHeightMm, 1, 200, 12);
+      const baseH = requireOperationRange('baseThicknessMm', options.baseThicknessMm, IR.cutterBaseMm, 2);
+      const bladeH = requireOperationRange('reliefHeightMm', options.reliefHeightMm, IR.cutterBladeMm, 12);
       const outerWallCs = own(baseCs.offset(wallW, 'Round'));
       const wallCs = own(outerWallCs.subtract(baseCs));
       const flangeOuterCs = own(baseCs.offset(margin, 'Round'));

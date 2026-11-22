@@ -186,7 +186,7 @@ export function analyzePrintability(
 
   // Cálculo realista de peso (perímetros/tapas ~22% sólido + interior según % infill)
   const preset = MATERIAL_PRESETS[materialId] ?? MATERIAL_PRESETS.pla_matte;
-  const clampedInfill = Math.max(0, Math.min(100, infillPercent)) / 100;
+  const clampedInfill = requireOperationRange('infillPercent', infillPercent, OPERATION_RANGES.printability.infillPercent) / 100;
   const effectiveFillRatio = Math.min(1, 0.22 + 0.78 * clampedInfill);
   const volumeCm3 = stats.volumeMm3 / 1000;
   const effectiveVolumeCm3 = volumeCm3 * effectiveFillRatio;
@@ -269,7 +269,7 @@ export function analyzePrintability(
  * preservando `faceColors` cuando existen.
  *
  * @param obj Objeto de escena a simplificar (opera sobre su malla local).
- * @param toleranceMm Tolerancia máxima de desviación geométrica en milímetros (mín. 0.01 mm).
+ * @param toleranceMm Tolerancia máxima de desviación en mm de mundo (se aplica dividida por la escala).
  * @returns Malla simplificada watertight normalizada a cama.
  */
 export async function simplifyMesh(
@@ -294,7 +294,10 @@ export async function simplifyMesh(
       registry?.colorToId,
       obj.color
     );
-    simplified = manifold.simplify(tol);
+    // La tolerancia es en mm de mundo: en la malla local se divide por la mayor escala del objeto,
+    // así la desviación final nunca supera `tol` en ningún eje.
+    const maxScale = Math.max(...obj.scale.map((s) => Math.abs(s))) || 1;
+    simplified = manifold.simplify(tol / maxScale);
     // Una tolerancia mayor que la pieza la colapsa: error tipado, el objeto queda intacto.
     if (simplified.isEmpty() || simplified.numTri() === 0 || simplified.volume() <= 0) {
       throw new EngineError('MESH_EMPTY', { operation: 'simplify_mesh' });
