@@ -97,6 +97,21 @@ describe('grupos en el store', () => {
     expect(doc.groups?.[0].hiddenByGroup?.sort()).toEqual([a.id, c.id].sort());
   });
 
+  it('reglas: un objeto no forma grupo, un grupo bloqueado no se desagrupa y un grupo de 1 se disuelve', async () => {
+    const { a, b, c } = await fourBoxes();
+    expect(store().groupObjects([a.id])).toBeNull();
+    expect(store().groups).toEqual([]);
+    const g = store().groupObjects([a.id, b.id])!;
+    store().setGroupFlag(g.id, 'locked', true);
+    expect(store().ungroupObjects(g.id)).toBe(0);
+    expect(store().groups).toHaveLength(1);
+    store().setGroupFlag(g.id, 'locked', false);
+    // Agrupar B con C (fuera del grupo) deja a «g» con un solo miembro: se disuelve.
+    const h = store().groupObjects([b.id, c.id])!;
+    expect(store().groups.map((x) => x.id)).toEqual([h.id]);
+    expect(byId(a.id)!.groupRef).toBeUndefined();
+  });
+
   it('duplicar un grupo duplica su estructura', async () => {
     const { a, b } = await fourBoxes();
     store().groupObjects([a.id, b.id]);

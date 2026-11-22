@@ -60,6 +60,12 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         get().addToast(tr('groups.toast.needSelection'), 'info');
         return null;
       }
+      // Un solo objeto no forma grupo.
+      if (objs.length < 2) {
+        get().addToast(tr('groups.toast.needTwo'), 'info');
+        return null;
+      }
+      // Regla única: con algo bloqueado no se agrupa ni se desagrupa.
       if (objs.some((o) => o.locked)) {
         get().addToast(tr('groups.toast.locked'), 'info');
         return null;
@@ -95,6 +101,10 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       }
       if (ids.length === 0) {
         get().addToast(tr('groups.toast.noGroup'), 'info');
+        return 0;
+      }
+      if (ids.some((gid) => descendantObjectIds(s.objects, s.groups, gid).some((oid) => s.objects.find((o) => o.id === oid)?.locked))) {
+        get().addToast(tr('groups.toast.lockedUngroup'), 'info');
         return 0;
       }
       let next: GroupScene = scene();

@@ -71,6 +71,15 @@ const GROUPS_TABLE = {
 
   'groups.toast.needSelection': ['Selecciona uno o más objetos', 'Select one or more objects', 'Wähle ein oder mehrere Objekte', 'Sélectionne un ou plusieurs objets', 'एक या अधिक ऑब्जेक्ट चुनें', '请选择一个或多个对象'],
   'groups.toast.locked': ['Hay objetos bloqueados en la selección', 'The selection has locked objects', 'Die Auswahl enthält gesperrte Objekte', 'La sélection contient des objets verrouillés', 'चयन में लॉक ऑब्जेक्ट हैं', '所选内容包含已锁定对象'],
+  'groups.toast.lockedUngroup': [
+    'Un grupo bloqueado no se desagrupa: desbloquéalo primero',
+    'A locked group cannot be ungrouped: unlock it first',
+    'Eine gesperrte Gruppe lässt sich nicht auflösen: entsperre sie zuerst',
+    'Un groupe verrouillé ne peut pas être dégroupé : déverrouille-le d’abord',
+    'लॉक समूह को अलग नहीं किया जा सकता: पहले अनलॉक करें',
+    '已锁定的组无法取消编组:请先解锁',
+  ],
+  'groups.toast.needTwo': ['Selecciona 2 o más objetos para agrupar', 'Select 2 or more objects to group', 'Wähle 2 oder mehr Objekte zum Gruppieren', 'Sélectionne 2 objets ou plus à grouper', 'समूह के लिए 2 या अधिक ऑब्जेक्ट चुनें', '请选择 2 个或以上对象进行编组'],
   'groups.toast.tooDeep': ['No se puede anidar más: máximo 16 niveles', 'Cannot nest further: 16 levels at most', 'Keine tiefere Verschachtelung: höchstens 16 Ebenen', 'Impossible d’imbriquer davantage : 16 niveaux maximum', 'और नेस्ट नहीं हो सकता: अधिकतम 16 स्तर', '无法继续嵌套:最多 16 层'],
   'groups.toast.grouped.one': ['{count} objeto agrupado', '{count} object grouped', '{count} Objekt gruppiert', '{count} objet groupé', '{count} ऑब्जेक्ट समूहित', '已编组 {count} 个对象'],
   'groups.toast.grouped.other': ['{count} objetos agrupados', '{count} objects grouped', '{count} Objekte gruppiert', '{count} objets groupés', '{count} ऑब्जेक्ट समूहित', '已编组 {count} 个对象'],

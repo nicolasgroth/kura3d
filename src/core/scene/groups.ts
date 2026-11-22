@@ -187,7 +187,23 @@ export function groupSelection(
     created,
   ];
   const objects = scene.objects.map((o) => (movedObjects.has(o.id) ? { ...o, groupRef: group.id } : o));
-  return reconcileGroups({ objects, groups });
+  // Un grupo que pierde miembros y queda con uno solo se disuelve (su miembro sube a su padre).
+  const losers = new Set<string>();
+  for (const oid of movedObjects) {
+    const ref = scene.objects.find((o) => o.id === oid)?.groupRef;
+    if (ref) losers.add(ref);
+  }
+  for (const gid of movedGroups) {
+    const parent = map.get(gid)?.parentId;
+    if (parent) losers.add(parent);
+  }
+  let next: GroupScene = { objects, groups };
+  for (const gid of losers) {
+    if (gid === group.id) continue;
+    const direct = next.objects.filter((o) => o.groupRef === gid).length + next.groups.filter((g) => g.parentId === gid).length;
+    if (direct === 1) next = ungroup(next, gid) ?? next;
+  }
+  return reconcileGroups(next);
 }
 
 /** Deshace un grupo: sus hijos pasan al padre del grupo. */
