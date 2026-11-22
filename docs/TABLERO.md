@@ -96,6 +96,11 @@ Ordenadas por prioridad dentro de cada grupo.
 |---|---|
 | Base | Pruebas E2E reales con Playwright y pruebas de regresión geométrica |
 | Dividir para imprimir | Uniones vinculadas entre mitades (mover una mueve su pareja) |
+| Dividir para imprimir | Unión de enchufe para tubos: una boca se ensancha y la otra pieza se alarga para conservar el largo total (opción del usuario, modifica la forma) |
+| Dividir para imprimir | Cortes inclinados y más de un plano por eje ajustados a mano; mostrar u ocultar los cortes para ver solo las piezas |
+| Dividir para imprimir | Colocar piezas en diagonal sobre la cama para ganar largo sin cortar |
+| Dividir para imprimir | Flujo inteligente: separar primero por color y después dividir solo las piezas que no caben |
+| Dividir para imprimir | Vista sin camas: las piezas flotando entre armado y desarmado, con todas las placas a la vista |
 | Dividir para imprimir | Guía de uniones: previsualizar, editar y confirmar |
 | Placas y escena | Placas como entidad del proyecto y camas personalizadas |
 | Placas y escena | Asistente de importación con 11 modos de distribución |
@@ -114,12 +119,14 @@ Ordenadas por prioridad dentro de cada grupo.
 | Estudio | Atajos editables y uso completo por teclado |
 | Estudio | Entrada numérica flotante junto al cursor al pulsar M, R o S |
 | Estudio | Línea de comandos integrada |
+| Estudio | Historial de deshacer configurable: más pasos según la memoria disponible, con el límite visible en Ajustes |
 | Estudio | Barra de herramientas configurable y perfiles básico/pro |
 | Aprender | Tutorial interactivo de uso del programa y modelos de ejemplo |
 | Aprender | Instrucciones de armado generadas al dividir un modelo |
 | Edición | Modificadores no destructivos e historial editable |
 | Edición | Vista previa en vivo en molde, ahuecado, litofanía y simplificar |
 | Edición | Patrones lineales y circulares, espejo, tubos y refuerzos |
+| Edición | Patrones de perforación sobre una superficie (por ejemplo una esfera hueca calada) |
 | Edición | Reparación de malla con mapa de defectos |
 | Edición | Medición con snapping y tolerancias |
 | IA e integraciones | Chat que previsualiza y pide aprobación antes de aplicar |

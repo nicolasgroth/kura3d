@@ -86,6 +86,20 @@ Recogidos de la conversación; cada uno tiene ticket y aparece en el [tablero](T
 
 Principios que salen de estos pedidos: la interfaz debe ser **didáctica** (cada operación se entiende y se previsualiza antes de aplicar), **operable por teclado**, y la arquitectura debe ser **extensible** (núcleo independiente de la interfaz, un solo contrato de operaciones para interfaz, comandos, MCP, API y extensiones).
 
+## Pedidos del autor del 22 de noviembre de 2026
+
+| Pedido | Decisión o ticket |
+|---|---|
+| Sección de corte demasiado delgada para un conector | **Decidido:** queda como corte liso para pegar, con aviso por unión y la marca de pareja igual. Hay un espesor mínimo configurable para poner conectores. No se deforma la pieza sin que el usuario lo pida |
+| Uniones que modifican la forma (solape de borde, enchufe de tubo con la boca ensanchada y la pieza alargada para conservar el largo) | Opción explícita del usuario. FIT-03 (nuevo) |
+| Holgura al usar la cama completa | Ya existe como margen (5 mm por defecto); se muestra el margen real por pieza |
+| Piezas en diagonal sobre la cama | SPLIT-02 (nuevo) |
+| Ver todas las placas tras dividir; vista sin camas con las piezas entre armado y desarmado | UX-14 (nuevo), junto con el encuadre automático |
+| Separar por color y luego dividir lo que no cabe, animando el conjunto | SPLIT-03 (nuevo) |
+| Mostrar u ocultar los cortes, moverlos, inclinarlos, y recién entonces aplicar | Mover ya existe; inclinar y ocultar: SPLIT-04 (nuevo) |
+| Esfera hueca con patrón de perforaciones | GEO-07 (nuevo), para más adelante |
+| Límite de deshacer y rehacer | HIST-02 (nuevo): configurable según memoria |
+
 ## Automatizaciones
 
 Todo lo que el programa pueda hacer solo y el usuario pueda revisar antes de aceptar. Cada una es una propuesta con vista previa, nunca un cambio silencioso.
