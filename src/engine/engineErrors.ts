@@ -48,6 +48,8 @@ export const ENGINE_ERROR_CODES = [
   'MESH_INVALID',
   'CUT_PLANE_OUTSIDE',
   'TEXT_GLYPH_MISSING',
+  'SPLIT_TOO_MANY_PIECES',
+  'SPLIT_AXIS_BLOCKED',
 ] as const;
 
 export type EngineErrorCode = (typeof ENGINE_ERROR_CODES)[number];
@@ -64,6 +66,10 @@ export const ENGINE_WARNING_CODES = [
   'IMPORT_NORMALS_FLIPPED',
   'BOOLEAN_NO_EFFECT',
   'IMPORT_NORMALS_INCONSISTENT',
+  'SPLIT_JOINT_NO_CONNECTOR',
+  'SPLIT_CONNECTOR_REDUCED',
+  'SPLIT_LABEL_SKIPPED',
+  'SPLIT_EMPTY_CELLS',
 ] as const;
 
 export type EngineWarningCode = (typeof ENGINE_WARNING_CODES)[number];

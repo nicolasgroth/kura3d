@@ -1101,4 +1101,10 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'printWarning.THIN_WALL': 'Einige Wände sind {thickness} mm dick, dünner als das Minimum von {min} mm; sie werden evtl. nicht gedruckt.',
   'printWarning.INVERTED_NORMALS': 'Das Netz hat invertierte Normalen (negatives Volumen); richte es vor dem Druck neu aus.',
   'printWarning.BELOW_BED': 'Das Objekt liegt {depth} mm unter dem Druckbett (Y < 0); setze es vor dem Druck auf das Bett.',
+  'engineError.SPLIT_TOO_MANY_PIECES': 'Es wären etwa {needed} Teile nötig, damit alles aufs Druckbett passt (maximal {max}). Nimm ein größeres Bett, erhöhe das Maximum oder skaliere das Modell.',
+  'engineError.SPLIT_AXIS_BLOCKED': 'Das Modell misst {size} mm in {axis}, das nutzbare Bett {usable} mm, aber Schnitte in dieser Achse sind nicht erlaubt.',
+  'engineWarning.SPLIT_JOINT_NO_CONNECTOR': 'Verbindung {label} ({a}–{b}) hat keinen Verbinder: ihr Querschnitt hat zu wenig massive Fläche.',
+  'engineWarning.SPLIT_CONNECTOR_REDUCED': 'An Verbindung {label} ({a}–{b}) wurde der Verbinder auf {count} mit {size} mm verkleinert, damit er passt.',
+  'engineWarning.SPLIT_LABEL_SKIPPED': 'Verbindung {label} ({a}–{b}) hat keinen Platz für eine lesbare Markierung von {min} mm: ausgelassen.',
+  'engineWarning.SPLIT_EMPTY_CELLS': 'Rasterzellen ohne Material: {count}. Sie wurden ausgelassen.',
 };

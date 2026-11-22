@@ -1101,4 +1101,10 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'printWarning.THIN_WALL': 'Certaines parois font {thickness} mm, moins que le minimum de {min} mm ; elles risquent de ne pas s\'imprimer.',
   'printWarning.INVERTED_NORMALS': 'Le maillage a des normales inversées (volume négatif) ; réorientez-le avant d\'imprimer.',
   'printWarning.BELOW_BED': 'L\'objet est {depth} mm sous le plateau (Y < 0) ; posez-le sur le plateau avant d\'imprimer.',
+  'engineError.SPLIT_TOO_MANY_PIECES': 'Il faudrait environ {needed} pièces pour tenir sur le plateau (maximum {max}). Utilise un plateau plus grand, augmente le maximum ou mets le modèle à l\'échelle.',
+  'engineError.SPLIT_AXIS_BLOCKED': 'Le modèle mesure {size} mm en {axis} et le plateau utile {usable} mm, mais couper sur cet axe n\'est pas autorisé.',
+  'engineWarning.SPLIT_JOINT_NO_CONNECTOR': 'La jonction {label} ({a}–{b}) n\'a pas de connecteur : sa section manque de surface pleine.',
+  'engineWarning.SPLIT_CONNECTOR_REDUCED': 'À la jonction {label} ({a}–{b}), le connecteur a été réduit à {count} de {size} mm pour tenir.',
+  'engineWarning.SPLIT_LABEL_SKIPPED': 'La jonction {label} ({a}–{b}) n\'a pas la place pour une marque lisible de {min} mm : omise.',
+  'engineWarning.SPLIT_EMPTY_CELLS': 'Cellules de la grille sans matière : {count}. Elles ont été omises.',
 };

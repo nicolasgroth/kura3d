@@ -1101,4 +1101,10 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'printWarning.THIN_WALL': 'कुछ दीवारें {thickness} mm की हैं, न्यूनतम {min} mm से पतली; वे प्रिंट न हो सकें।',
   'printWarning.INVERTED_NORMALS': 'मेश के नॉर्मल उलटे हैं (ऋणात्मक आयतन); प्रिंट से पहले इसे फिर से उन्मुख करें।',
   'printWarning.BELOW_BED': 'ऑब्जेक्ट बेड से {depth} mm नीचे है (Y < 0); प्रिंट से पहले इसे बेड पर रखें।',
+  'engineError.SPLIT_TOO_MANY_PIECES': 'बेड में समाने के लिए लगभग {needed} टुकड़े चाहिए (अधिकतम {max})। बड़ा बेड लें, अधिकतम बढ़ाएँ या मॉडल को स्केल करें।',
+  'engineError.SPLIT_AXIS_BLOCKED': 'मॉडल {axis} में {size} mm है और उपयोगी बेड {usable} mm, पर उस अक्ष पर काटने की अनुमति नहीं है।',
+  'engineWarning.SPLIT_JOINT_NO_CONNECTOR': 'जोड़ {label} ({a}–{b}) में कनेक्टर नहीं है: इसके सेक्शन में पर्याप्त ठोस क्षेत्र नहीं है।',
+  'engineWarning.SPLIT_CONNECTOR_REDUCED': 'जोड़ {label} ({a}–{b}) पर कनेक्टर को समाने के लिए {count} × {size} mm कर दिया गया।',
+  'engineWarning.SPLIT_LABEL_SKIPPED': 'जोड़ {label} ({a}–{b}) में {min} mm के पढ़ने योग्य चिह्न की जगह नहीं है: छोड़ा गया।',
+  'engineWarning.SPLIT_EMPTY_CELLS': 'बिना सामग्री वाली ग्रिड कोशिकाएँ: {count}। इन्हें छोड़ दिया गया।',
 };

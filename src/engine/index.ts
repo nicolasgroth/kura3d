@@ -149,3 +149,4 @@ export {
   isInOperationRange,
   type OperationRange,
 } from './operationLimits';
+export * from './split';
