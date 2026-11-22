@@ -10,6 +10,7 @@
 
 import type { BedSplitPlan, PlannedPiece, SplitAxis, SplitPlane } from '../../engine';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
+import { estimateSplitPlates } from '../../engine/split/splitLayout';
 import type { Vec3 } from '../../types/kura';
 import { toUserSize } from './displayAxes';
 
@@ -69,42 +70,6 @@ export function pieceFitsUsable(size: Vec3, usable: Vec3, allowRotation: boolean
   return s.every((v, i) => v <= u[i] + eps);
 }
 
-/** Placas estimadas: huella = las dos medidas mayores, filas sobre la cama útil X × Z. */
-export function estimatePlates(pieces: ReadonlyArray<Pick<PlannedPiece, 'sizeMm'> | Vec3>, usable: Vec3, gapMm = 5): number {
-  if (pieces.length === 0) return 0;
-  const W = usable[0];
-  const D = usable[2];
-  const prints = pieces
-    .map((p) => {
-      const [a, b] = sortDesc(Array.isArray(p) ? p : (p as PlannedPiece).sizeMm);
-      // El lado largo a lo ancho de la cama si cabe; si no, al fondo.
-      return a <= W ? { w: a, d: b } : { w: b, d: a };
-    })
-    .sort((p, q) => q.d - p.d || q.w - p.w);
-  let plates = 1;
-  let x = 0;
-  let z = 0;
-  let row = 0;
-  let used = false;
-  for (const it of prints) {
-    if (used && x + it.w > W) {
-      x = 0;
-      z += row + gapMm;
-      row = 0;
-    }
-    if (used && z + it.d > D) {
-      plates++;
-      x = 0;
-      z = 0;
-      row = 0;
-    }
-    x += it.w + gapMm;
-    row = Math.max(row, it.d);
-    used = true;
-  }
-  return plates;
-}
-
 export function summarizeSplitPlan(plan: BedSplitPlan, allowRotation: boolean): SplitPlanSummary {
   const volume = (p: PlannedPiece) => p.sizeMm[0] * p.sizeMm[1] * p.sizeMm[2];
   const occ = plan.occupancy;
@@ -123,7 +88,11 @@ export function summarizeSplitPlan(plan: BedSplitPlan, allowRotation: boolean): 
   return {
     pieceCount: occ ? occ.pieces : plan.pieces.length,
     exact: occ?.exact === true,
-    plateEstimate: estimatePlates(occ && occ.pieceSizesMm.length > 0 ? occ.pieceSizesMm : realPieces, plan.usableMm),
+    plateEstimate: estimateSplitPlates(
+      (occ && occ.pieceSizesMm.length > 0 ? occ.pieceSizesMm : realPieces.map((p) => p.sizeMm)),
+      { widthMm: plan.usableMm[0], heightMm: plan.usableMm[1], depthMm: plan.usableMm[2] },
+      { marginMm: 0 },
+    ),
     largest,
     largestRealMm: largest ? ([0, 1, 2].map((i) => largest.bounds.max[i] - largest.bounds.min[i]) as Vec3) : null,
     gridUser: toUserSize([x, y, z]),
