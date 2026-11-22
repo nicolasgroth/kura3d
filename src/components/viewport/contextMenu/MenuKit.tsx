@@ -126,7 +126,10 @@ export interface MenuItemProps {
   onSelect: () => void;
 }
 
-export const MenuItem: React.FC<MenuItemProps> = ({ icon, label, tip, shortcut, keys, disabled, danger, accent, checked, checkedLabel, onSelect }) => (
+export const MenuItem: React.FC<MenuItemProps> = ({ icon, label, tip, shortcut, keys, disabled, danger, accent, checked, checkedLabel, onSelect }) => {
+  // Todos los atajos se muestran alineados a la derecha: sin `shortcut` explícito se usa `keys` si es una sola tecla.
+  const shownKey = shortcut ?? (keys && !keys.includes(' ') ? keys : undefined);
+  return (
   <button
     type="button"
     role={checked === undefined ? 'menuitem' : 'menuitemradio'}
@@ -142,9 +145,10 @@ export const MenuItem: React.FC<MenuItemProps> = ({ icon, label, tip, shortcut, 
     <span className="kura-context-label">{label}</span>
     {checked && <Check size={13} aria-hidden="true" />}
     {checked && checkedLabel && <span className="sr-only">, {checkedLabel}</span>}
-    {shortcut && <kbd className="kura-context-kbd" aria-hidden="true">{shortcut}</kbd>}
+    {shownKey && <kbd className="kura-context-kbd" aria-hidden="true">{shownKey}</kbd>}
   </button>
-);
+  );
+};
 
 /** Ítem que abre un submenú (→ o Enter lo abre; ← lo cierra). */
 export const SubMenu: React.FC<{
