@@ -68,7 +68,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
           mesh,
           type,
           params,
-          name: options?.name ?? op.naming.primitive(type, count),
+          name: options?.name ?? (options?.label ? `${options.label} ${count + 1}` : op.naming.primitive(type, count)),
           color: options?.color ?? PRINT_COLOR_PALETTE[count % PRINT_COLOR_PALETTE.length],
           position: options?.position,
           rotation: options?.rotation,

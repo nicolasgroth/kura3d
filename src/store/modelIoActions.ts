@@ -17,7 +17,7 @@ import { ProjectCodecError } from '../project/projectSchema';
 import type { LanguageCode, MeshData, SceneObject, Vec3 } from '../types/kura';
 import { FileSaveError, LocalFileError, saveFileSet, type SaveSetEntry } from '../utils/platformBridge';
 import { tCount } from '../utils/plural';
-import { exportFileBase } from '../utils/exportNaming';
+import { exportFileBase, sanitizeFileBase } from '../utils/exportNaming';
 import { selectExportTargets } from './exportTargets';
 import { placeGroupInFreeSpot, type BedSize } from '../core/scene/freeSpot';
 import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
@@ -248,9 +248,12 @@ export function createModelIoActions(deps: ModelIoDeps) {
     try {
       if (splitMode === 'perPiece') {
         const zipName = `${base}.zip`;
-        // Dentro del ZIP: <proyecto>_<código>; sin proyecto, el nombre del modelo original.
+        // Dentro del ZIP: <proyecto>_<código>; sin proyecto, el nombre del modelo original. Un grupo usa el
+        // nombre elegido (el del grupo). Nunca arrastra la extensión del proyecto («grupos.kura»).
         const firstPart = targets.find((o) => o.metadata?.split);
-        const pieceBase = state.projectName?.trim() || firstPart?.name.split(' · ')[0] || base;
+        const pieceBase = request.perObject && !hasSplitParts(targets)
+          ? base
+          : sanitizeFileBase(state.projectName ?? '') || firstPart?.name.split(' · ')[0] || base;
         // Un archivo por objeto de un grupo: el nombre lleva la ruta del árbol.
         const named = request.perObject && !hasSplitParts(targets)
           ? targets.map((o) => ({ ...o, name: [...objectAncestors(state.groups ?? [], o).reverse().map((g) => g.name), o.name].join(' - ') }))

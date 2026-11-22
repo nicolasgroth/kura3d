@@ -565,9 +565,9 @@ export function duplicateGroupStructure(
   const twins = [...cloned.entries()].map(([origId, twin]) => {
     const orig = map.get(origId)!;
     const parent = orig.parentId ? cloned.get(orig.parentId)?.id ?? orig.parentId : undefined;
-    // El gemelo de mayor nivel lleva el sufijo de copia; su padre es el mismo del original.
-    const isTop = !orig.parentId || !cloned.has(orig.parentId);
-    const next: SceneGroup = { ...twin, name: isTop ? copyName(orig.name) : orig.name };
+    // Cada gemelo (también los subgrupos) lleva el sufijo de copia; no hereda la memoria de ojo/candado.
+    const { hiddenByGroup: _h, lockedByGroup: _l, ...plain } = twin;
+    const next: SceneGroup = { ...plain, name: copyName(orig.name) };
     if (parent) next.parentId = parent;
     else delete next.parentId;
     return next;

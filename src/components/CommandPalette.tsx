@@ -256,7 +256,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'disco disc arandela moneda base cilindro bajo',
         kind: 'local',
         icon: <Cylinder size={15} />,
-        run: () => void createPrimitive('cylinder', { ...discParams(16) }, { placement: 'free', name: t(language, 'menu.shape.disc') }),
+        run: () => void createPrimitive('cylinder', { ...discParams(16) }, { placement: 'free', label: t(language, 'menu.shape.disc') }),
       },
       {
         id: 'prim-tube',

@@ -97,6 +97,14 @@ const GROUPS_TABLE = {
   'groups.toast.combined.one': ['{count} objeto combinado en uno', '{count} object combined into one', '{count} Objekt zu einem kombiniert', '{count} objet combiné en un', '{count} ऑब्जेक्ट एक में मिला', '已将 {count} 个对象合并为一个'],
   'groups.toast.combined.other': ['{count} objetos combinados en uno', '{count} objects combined into one', '{count} Objekte zu einem kombiniert', '{count} objets combinés en un', '{count} ऑब्जेक्ट एक में मिले', '已将 {count} 个对象合并为一个'],
 
+  'engineWarning.SPLIT_COLOR_MESH_DEFECTS': [
+    'Piezas de color con defectos de malla tras la limpieza ({count}): {colors}. Son sólidos cerrados, pero revísalas antes de imprimir.',
+    'Color pieces with mesh defects after cleanup ({count}): {colors}. They are closed solids, but check them before printing.',
+    'Farbteile mit Netzfehlern nach der Bereinigung ({count}): {colors}. Es sind geschlossene Körper, prüfe sie aber vor dem Druck.',
+    'Pièces de couleur avec défauts de maillage après nettoyage ({count}) : {colors}. Ce sont des solides fermés, mais vérifie-les avant d’imprimer.',
+    'सफ़ाई के बाद मेश दोष वाले रंग भाग ({count}): {colors}। ये बंद ठोस हैं, पर प्रिंट से पहले जाँचें।',
+    '清理后仍有网格缺陷的颜色件({count}):{colors}。它们是封闭实体,但打印前请检查。',
+  ],
   'groups.tree.label': ['Árbol de la escena', 'Scene tree', 'Szenenbaum', 'Arborescence de la scène', 'दृश्य ट्री', '场景树'],
   'groups.tree.members.one': ['{count} objeto', '{count} object', '{count} Objekt', '{count} objet', '{count} ऑब्जेक्ट', '{count} 个对象'],
   'groups.tree.members.other': ['{count} objetos', '{count} objects', '{count} Objekte', '{count} objets', '{count} ऑब्जेक्ट', '{count} 个对象'],
