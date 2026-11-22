@@ -6,9 +6,7 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 ## En desarrollo
 
-| Funcionalidad | Estado |
-|---|---|
-| Grupos y árbol de escena: Agrupar / Desagrupar (Ctrl+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ocultar, bloquear, renombrar, arrastrar), "Combinar en un objeto" y "Separar cuerpos" | En curso desde las 18:25 |
+Nada en este momento.
 
 ## En QA
 
@@ -24,6 +22,7 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Menú contextual ordenado y teclas F2, F3, F4, Mayús+F5 | Evaluado en la ronda 5 (85 y 72); F2 corregido; QA en curso |
 | Pintura por caras rápida; operaciones de creación en el Worker | QA aprobó sin bloqueos; falta medir el pincel con GPU real |
 | Grabar sobre un relieve ya no da el error falso de profundidad; 3MF determinista (misma escena, mismos bytes); auditoría de secretos: claves de IA y token MCP nunca van a `localStorage` ni a logs, ahora con prueba que lo hace cumplir | Implementado con pruebas; sin QA en navegador |
+| Grupos y árbol de escena: Agrupar (Ctrl+G) y Desagrupar (Ctrl+Mayús+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ojo, candado, renombrar, arrastrar, teclado), manipulador del conjunto con escala proporcional, "Combinar en un objeto" y "Separar cuerpos", exportar un grupo como un archivo o uno por objeto, comandos de bus y MCP | Implementado; verificado por el desarrollador en navegador; QA independiente en curso |
 | Pintura sobre primitivas: el arrastre no modifica nada hasta aceptar el aviso, "Cancelar" deja el cubo intacto, un trazo = un paso también con refinado | Corregido tras el rechazo de QA; verificado por el desarrollador en navegador; falta QA independiente |
 | Separar por colores en superficies curvas: malla limpia (el defecto que midió QA en la esfera era real y quedó corregido) | Corregido con pruebas; falta QA |
 | Menú del objeto con ideas de OrcaSlicer: Centrar en la cama, Transformar ▸, Alinear y distribuir ▸, forma Disco, Reemplazar por archivo, Exportar selección como un STL, "Ocultar (no se exporta)", aviso de malla pesada con acceso a Simplificar | Implementado; verificado por el desarrollador en navegador; falta QA |
