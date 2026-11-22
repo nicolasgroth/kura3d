@@ -18,6 +18,7 @@ import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClien
 import { CommandError, type CommandErrorCode } from './commandErrors';
 import { selectExportTargets } from './exportTargets';
 import * as schema from './commandSchemas';
+import { parseUpdatePrimitiveParams } from './parametricCommandSchemas';
 import type { OperationErrorTracker } from './operationErrors';
 import type { RawParams } from './commandValidation';
 import type { CommandSourceType, KuraStoreState } from './useKuraStore';
@@ -81,7 +82,18 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
 
   create_primitive: async (p, { get }, command) => {
     const { type, params, ...options } = schema.parseCreatePrimitive(p);
-    return withStats(required(await get().createPrimitive(type, params, options), command));
+    const obj = required(await get().createPrimitive(type, params, options), command);
+    return { ...withStats(obj), position: obj.position };
+  },
+
+  update_primitive_params: async (p, { get }, command) => {
+    const { target, edit } = parseUpdatePrimitiveParams(get(), p);
+    const obj = required(await get().updatePrimitiveParams(target.id, edit), command);
+    return {
+      ...withStats(obj),
+      primitiveType: obj.primitiveType,
+      ...(edit.kind === 'primitive' ? { primitiveParams: obj.primitiveParams } : { thread: obj.parametric?.thread }),
+    };
   },
 
   create_thread: async (p, { get }, command) =>

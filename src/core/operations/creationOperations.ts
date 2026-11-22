@@ -19,8 +19,12 @@ import type {
   ThreadOptions,
   Vec3,
 } from '../../types/kura';
+import { parametricOrigin, parametricStateOf } from '../scene/parametric';
 import { computeLocalMeshCenter, computeObjectWorldCenter } from '../scene/sceneObjects';
-import { buildWith, type OperationContext } from './operationTypes';
+import { buildWith, change, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
+
+/** Decide la posición de una malla recién generada (p. ej. el primer hueco libre de la cama). */
+export type PlaceMesh = (mesh: MeshData) => Vec3;
 
 /** Color de los objetos hueco (negativos) creados como ayuda. */
 export const HOLE_HELPER_COLOR = '#f97316';
@@ -34,6 +38,8 @@ export async function createPrimitive(
     name: string;
     color: string;
     position?: Vec3;
+    /** Se usa si no hay `position`. */
+    place?: PlaceMesh;
     rotation?: Vec3;
     scale?: Vec3;
     isHole?: boolean;
@@ -45,7 +51,7 @@ export async function createPrimitive(
     name: input.name,
     source: 'primitive',
     mesh,
-    position: input.position,
+    position: input.position ?? input.place?.(mesh),
     rotation: input.rotation,
     scale: input.scale,
     color: input.color,
@@ -53,6 +59,7 @@ export async function createPrimitive(
     isHole: input.isHole,
     primitiveType: input.type,
     primitiveParams: input.params,
+    parametric: parametricOrigin('primitive', mesh),
   });
 }
 
@@ -107,6 +114,7 @@ export async function createModulePrimitive(
     isHole,
     primitiveType: type,
     primitiveParams: params,
+    parametric: parametricOrigin('primitive', mesh),
   });
 }
 
@@ -114,7 +122,7 @@ export async function createModulePrimitive(
 export async function createThread(
   ctx: OperationContext,
   options: ThreadOptions,
-  placement: { name?: string; position?: Vec3 } = {},
+  placement: { name?: string; position?: Vec3; place?: PlaceMesh } = {},
 ): Promise<SceneObject> {
   const mesh = engine.normalizeMeshToBed(await engine.createMetricThread(options));
   const isHole = options.kind === 'hole';
@@ -122,11 +130,39 @@ export async function createThread(
     name: placement.name ?? ctx.naming.thread(options),
     source: 'thread',
     mesh,
-    position: placement.position,
+    position: placement.position ?? placement.place?.(mesh),
     color: isHole ? HOLE_HELPER_COLOR : '#94a3b8',
     materialPreset: isHole ? 'pla_matte' : 'metallic',
     isHole,
+    parametric: parametricOrigin('thread', mesh, options),
   });
+}
+
+/** Parámetros nuevos para regenerar un objeto paramétrico. */
+export type ParametricEdit =
+  | { kind: 'primitive'; params: PrimitiveParams }
+  | { kind: 'thread'; options: ThreadOptions };
+
+/**
+ * Regenera la malla de una primitiva o rosca con parámetros nuevos. Conserva id, nombre,
+ * transformación, color, material y banderas; la pintura por caras se pierde (malla nueva).
+ * Lanza `INVALID_PARAMETER` si el objeto ya no es paramétrico o el tipo de edición no calza.
+ */
+export async function regenerateParametric(ctx: OperationContext, obj: SceneObject, edit: ParametricEdit): Promise<SceneChange> {
+  const state = parametricStateOf(obj);
+  if (state.status === 'primitive' && edit.kind === 'primitive') {
+    const params: PrimitiveParams = { ...state.params, ...edit.params };
+    const mesh = engine.normalizeMeshToBed(await engine.createPrimitiveMesh(state.type, params));
+    return change({
+      patches: [{ id: obj.id, patch: { ...meshPatch(ctx, obj, mesh), primitiveParams: params, parametric: parametricOrigin('primitive', mesh) } }],
+    });
+  }
+  if (state.status === 'thread' && edit.kind === 'thread') {
+    const options: ThreadOptions = { ...state.options, ...edit.options };
+    const mesh = engine.normalizeMeshToBed(await engine.createMetricThread(options));
+    return change({ patches: [{ id: obj.id, patch: { ...meshPatch(ctx, obj, mesh), parametric: parametricOrigin('thread', mesh, options) } }] });
+  }
+  throw new engine.EngineError('INVALID_PARAMETER', { name: 'parametric', value: state.status, min: 0, max: 0 });
 }
 
 /** Extruye los contornos de un SVG. */

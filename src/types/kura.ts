@@ -487,6 +487,15 @@ export interface ThreadOptions {
   includeHead?: boolean;
 }
 
+/** Origen paramétrico de un objeto: permite regenerar su malla desde los parámetros. */
+export interface ParametricOrigin {
+  kind: 'primitive' | 'thread';
+  /** `computeMeshFingerprint` de la malla tal como se generó. */
+  meshFingerprint: string;
+  /** Opciones de la rosca (solo `kind: 'thread'`). */
+  thread?: ThreadOptions;
+}
+
 /** Opciones de importación y extrusión de SVG. */
 export interface SvgImportOptions {
   /** Contenido textual del SVG. */
@@ -632,6 +641,11 @@ export interface SceneObject {
   source: ObjectSourceType;
   primitiveType?: PrimitiveType;
   primitiveParams?: PrimitiveParams;
+  /**
+   * Origen paramétrico (primitiva o rosca): huella de la malla generada y, en roscas, sus opciones.
+   * Si la malla actual ya no calza con la huella, una operación la cambió y deja de ser paramétrico.
+   */
+  parametric?: ParametricOrigin;
   /** Posición [x, y, z] en mm (sistema Y-up: Y es altura sobre la cama). */
   position: Vec3;
   /** Rotación Euler [rx, ry, rz] en radianes. */
@@ -747,6 +761,7 @@ export interface KuraCommandRequest {
   command:
     | 'get_scene_state'
     | 'create_primitive'
+    | 'update_primitive_params'
     | 'transform_object'
     | 'delete_object'
     | 'duplicate_object'

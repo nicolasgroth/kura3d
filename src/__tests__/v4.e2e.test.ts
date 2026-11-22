@@ -483,7 +483,8 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
       expect(nut).not.toBeNull();
       expect(nut!.isHole).toBe(false);
       expect(nut!.stats.isManifold).toBe(true);
-      expect(nut!.position[0]).toBeGreaterThan(0);
+      // Colocación en espacio libre: la tuerca no comparte lugar con el perno.
+      expect(Math.hypot(nut!.position[0], nut!.position[2])).toBeGreaterThan(0);
 
       const holeTap = await useKuraStore.getState().createThreadObject({
         kind: 'hole',
@@ -495,7 +496,8 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
       expect(holeTap).not.toBeNull();
       expect(holeTap!.isHole).toBe(true);
       expect(holeTap!.stats.isManifold).toBe(true);
-      expect(holeTap!.position[0]).toBeGreaterThan(nut!.position[0]);
+      expect(holeTap!.position).not.toEqual(nut!.position);
+      expect(Math.hypot(holeTap!.position[0], holeTap!.position[2])).toBeGreaterThan(0);
 
       // Litofanía cilíndrica (arco de 180°) vía generateImageRelief
       const rgba = makeCircleRgba(24);

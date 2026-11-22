@@ -81,6 +81,15 @@ const params = shape({
   segments: numberOption, sides: numberOption, text: optional(str), fontSize: numberOption, bevel: numberOption,
 });
 
+// Desde la versión 2 del formato: origen paramétrico (huella de malla y opciones de rosca).
+const threadOptions = shape({
+  kind: oneOf('bolt', 'nut', 'hole'), diameterMm: finite, pitchMm: finite, lengthMm: finite,
+  clearanceMm: numberOption, includeHead: optional(bool),
+});
+const parametric = shape({
+  kind: oneOf('primitive', 'thread'), meshFingerprint: (v) => str(v) && v.length <= 64, thread: optional(threadOptions),
+});
+
 export type ObjectMetadata = Omit<SceneObject, 'mesh' | 'stats'>;
 const metadataFields = {
   id, name: str,
@@ -88,6 +97,7 @@ const metadataFields = {
     'mold', 'thread', 'hull', 'projected', 'segmented_part'),
   primitiveType: optional(oneOf('box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text')),
   primitiveParams: optional(params),
+  parametric: optional(parametric),
   position: withinAbs(TRANSFORM_LIMITS.maxAbsCoordinate), rotation: withinAbs(TRANSFORM_LIMITS.maxAbsRotation),
   scale: scaleVec, color,
   materialPreset: optional(oneOf(...Object.keys(MATERIAL_PRESETS))),

@@ -26,6 +26,7 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   analyze_printability: 'read',
   detect_structures: 'read',
   create_primitive: 'write',
+  update_primitive_params: 'write',
   transform_object: 'write',
   delete_object: 'write',
   duplicate_object: 'write',
@@ -76,6 +77,7 @@ export const READ_COMMANDS: readonly KuraCommandName[] = Object.freeze(
 export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.freeze({
   kura_get_scene_state: 'get_scene_state',
   kura_create_primitive: 'create_primitive',
+  kura_update_primitive_params: 'update_primitive_params',
   kura_transform_object: 'transform_object',
   kura_delete_object: 'delete_object',
   kura_boolean_operation: 'boolean_operation',
