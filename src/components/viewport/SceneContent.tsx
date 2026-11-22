@@ -23,6 +23,7 @@ import { type Vec3 } from '../../types/kura';
 import { PaintBrushCursor } from './PaintBrushCursor';
 import { ViewportCaptureRegistrar } from './ViewportCaptureRegistrar';
 import { CameraController } from './CameraController';
+import { overhangFacesFor } from '../../store/printReportSelectors';
 import { PrinterBedOverlay } from './PrinterBedOverlay';
 import { PreviewLayers } from './PreviewLayers';
 import { SegmentHighlight } from './SegmentHighlight';
@@ -54,6 +55,7 @@ export const SceneContent: React.FC<{
   const sectionPlane = useKuraStore((s) => s.sectionPlane);
   const activePrintReport = useKuraStore((s) => s.activePrintReport);
   const showOverhangs = useKuraStore((s) => s.showOverhangs);
+  const printReportSource = useKuraStore((s) => s.printReportSource);
   const language = useKuraStore((s) => s.language);
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const setObjectTransform = useKuraStore((s) => s.setObjectTransform);
@@ -153,11 +155,10 @@ export const SceneContent: React.FC<{
           isSelected={selectedIds.includes(obj.id)}
           isPrimarySelected={selectedIds[0] === obj.id}
           clipPlane={activeClipPlane}
-          overhangFaces={
-            showOverhangs && activePrintReport?.objectId === obj.id
-              ? activePrintReport.overhangFaceIndices
-              : null
-          }
+          overhangFaces={overhangFacesFor(
+            { activePrintReport, printReportSource, objects, showOverhangs, selectedIds },
+            obj.id,
+          )}
           onStartPaintDrag={() => setIsPaintingDrag(true)}
           onObjectContextMenu={onObjectContextMenu}
           registerGroupRef={registerGroupRef}

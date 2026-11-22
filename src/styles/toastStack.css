@@ -1,0 +1,38 @@
+/**
+ * @file src/styles/toastStack.css
+ * @description Pila de avisos sin scroll: como máximo 3 visibles y el resto plegado en «+N».
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-toast-stack {
+  max-height: none;
+  overflow: visible;
+}
+
+.kura-toast-more {
+  pointer-events: auto;
+  align-self: center;
+  min-height: 24px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color, rgba(127, 127, 127, 0.4));
+  background: var(--panel-bg, #fff);
+  color: var(--text-primary, inherit);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kura-toast-more:focus-visible {
+  outline: 2px solid var(--tool-accent, #0ea5e9);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .kura-toast-stack {
+    max-height: none;
+  }
+}

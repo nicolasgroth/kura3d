@@ -42,6 +42,11 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         const others = get().objects.filter((o) => o.id !== obj.id);
         const separated = separateCutHalves(others, parts, options.axis, activeBedSize(get()));
         commitChange({ ...change, added: separated.parts }, { select: separated.parts.map((c) => c.id) });
+        // El corte terminó: se vuelve a Seleccionar y se apaga la vista previa del plano.
+        set((state) => ({
+          activeTool: state.activeTool === 'cut' ? 'select' : state.activeTool,
+          cutPreview: { ...state.cutPreview, active: false, objectId: null },
+        }));
         get().addToast(tr('toast.cutDone'), 'success');
         if (!separated.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
         return separated.parts;

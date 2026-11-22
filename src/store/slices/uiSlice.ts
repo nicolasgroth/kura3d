@@ -57,6 +57,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
     sectionPlane: { enabled: false, heightMm: 25 },
     activePrintReport: null,
+    printReportSource: null,
     showOverhangs: false,
     activeSegmentation: null,
     segmentationCreaseDeg: 28,
@@ -106,7 +107,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     toggleRightInspector: () => set((state) => ({ rightCollapsed: !state.rightCollapsed })),
     setSectionPlane: (patch) => set((state) => ({ sectionPlane: { ...state.sectionPlane, ...patch } })),
     setShowOverhangs: (showOverhangs) => set({ showOverhangs }),
-    clearPrintReport: () => set({ activePrintReport: null, showOverhangs: false }),
+    clearPrintReport: () => set({ activePrintReport: null, printReportSource: null, showOverhangs: false }),
 
     setLanguage: (language) => {
       writeStorage(STORAGE_LANGUAGE_KEY, language);

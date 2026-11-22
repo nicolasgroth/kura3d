@@ -150,6 +150,8 @@ export interface KuraStoreState {
   // Plano de corte visual (Rayos X / Sección), Validador y Segmentación Estructural Local
   sectionPlane: { enabled: boolean; heightMm: number };
   activePrintReport: PrintabilityReport | null;
+  /** Objeto exacto analizado: si la pieza cambia (editar, deshacer), el informe deja de valer. */
+  printReportSource: SceneObject | null;
   showOverhangs: boolean;
   activeSegmentation: StructuralSegmentationResult | null;
   segmentationCreaseDeg: number;

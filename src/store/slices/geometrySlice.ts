@@ -99,9 +99,16 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         await get().initEngine();
         const change = await runEngine('simplify', { obj, toleranceMm });
         assertCurrent([obj]);
-        commitChange(change);
+        const before = obj.stats.triangles;
         const tris = change.patches[0].patch.stats!.triangles;
-        get().addToast(tr('toast.simplifyDone', { tris: formatNumber(get().language, tris) }), 'success');
+        // Sin reducción no hay paso de historial: el aviso lo dice tal cual.
+        if (tris >= before) {
+          get().addToast(tr('toast.simplifyNoChange', { tris: formatNumber(get().language, before) }), 'info');
+          return false;
+        }
+        commitChange(change);
+        const lang = get().language;
+        get().addToast(tr('toast.simplifyDone', { before: formatNumber(lang, before), tris: formatNumber(lang, tris) }), 'success');
         return true;
       });
     },
@@ -209,7 +216,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         });
         // Si el objeto cambió mientras se analizaba, el informe ya no corresponde: no se muestra.
         if (get().objects.find((o) => o.id === id) !== obj) return report;
-        set({ activePrintReport: report, showOverhangs: report.overhangFaceCount > 0 });
+        set({ activePrintReport: report, printReportSource: obj, showOverhangs: report.overhangFaceCount > 0 });
         get().addToast(
           tr('toast.printabilityDone', { score: report.score, weight: report.estimatedWeightGrams.toFixed(1) }),
           report.score >= 70 ? 'success' : 'info',

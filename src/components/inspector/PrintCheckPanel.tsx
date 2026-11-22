@@ -17,6 +17,7 @@ import '../../styles/printCheckPanel.css';
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../../engine/operationLimits';
 import { t, type TranslationKey } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import { currentPrintReport } from '../../store/printReportSelectors';
 import type { PrintWarningCode, SceneObject } from '../../types/kura';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 
@@ -45,7 +46,10 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
   const [minWall, setMinWall] = useState<number>(OPERATION_DEFAULTS.printability.minWallMm);
   const isBusy = Boolean(busyOperation);
-  const report = activePrintReport && activePrintReport.objectId === primary.id ? activePrintReport : null;
+  const printReportSource = useKuraStore((s) => s.printReportSource);
+  const objects = useKuraStore((s) => s.objects);
+  // Tras editar, transformar o deshacer, el informe anterior ya no describe la pieza: se oculta.
+  const report = currentPrintReport({ activePrintReport, printReportSource, objects }, primary.id);
 
   const validate = (wall = minWall) => void runPrintabilityCheck(primary.id, undefined, undefined, wall);
   const dropAndRevalidate = () => {
@@ -159,11 +163,6 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
                     {w.code === 'BELOW_BED' && (
                       <button type="button" className="kura-btn kura-btn-sm" disabled={isBusy || primary.locked} onClick={dropAndRevalidate}>
                         {t(language, 'inspector.pro.actionDropToBed')}
-                      </button>
-                    )}
-                    {w.code === 'OVERHANG' && report.overhangFaceCount > 0 && (
-                      <button type="button" className="kura-btn kura-btn-sm" aria-pressed={showOverhangs} onClick={() => setShowOverhangs(true)}>
-                        {t(language, 'inspector.pro.actionShowOverhangs')}
                       </button>
                     )}
                   </li>
