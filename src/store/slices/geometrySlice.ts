@@ -71,6 +71,8 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         const change = await runEngine('hollow', { obj, options });
         assertCurrent([obj]);
         commitChange(change);
+        // Muestra la pared con un corte de sección temporal (el aviso explica cómo volver).
+        get().showInteriorSection(id);
         get().addToast(tr('toast.hollowDone', { thickness: options.wallThickness }), 'success');
         reportEngineWarnings(change.warnings);
         return true;

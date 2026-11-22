@@ -12,7 +12,7 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
-import { NativeModal } from '../NativeModal';
+import { OperationPanel } from '../OperationPanel';
 import { type MoldMode } from '../../types/kura';
 
 /** Modal 4: Generador Automático de Moldes y Contra-Moldes (Velas, Silicona, Resina). */
@@ -52,7 +52,7 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
   };
 
   return (
-    <NativeModal
+    <OperationPanel
       open={open}
       onClose={onClose}
       title={t(language, 'dialog.mold.title')}
@@ -193,6 +193,6 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           </div>
         )}
       </div>
-    </NativeModal>
+    </OperationPanel>
   );
 };

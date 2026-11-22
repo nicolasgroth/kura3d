@@ -22,7 +22,7 @@ import {
   type CutConnectorSuggestion,
 } from '../engine/cutConnectorSuggest';
 import { formatNumber } from '../utils/plural';
-import { NativeModal } from './NativeModal';
+import { OperationPanel } from './OperationPanel';
 import { OperationFailureAlert, useOperationFailure } from './OperationFailureAlert';
 import { PrecisionNumberInput } from './PrecisionNumberInput';
 import '../styles/planeCut.css';
@@ -177,11 +177,11 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
   const reasonId = `${uid}-reason`;
 
   return (
-    <NativeModal
+    <OperationPanel
       open={open}
       onClose={onClose}
       title={t(language, 'dialog.cut.title')}
-      className="kura-dialog-side"
+     
       footer={
         <>
           <button type="button" className="kura-btn" onClick={onClose}>
@@ -365,6 +365,6 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
           )}
         </div>
       </div>
-    </NativeModal>
+    </OperationPanel>
   );
 };

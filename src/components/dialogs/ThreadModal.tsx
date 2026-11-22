@@ -12,7 +12,7 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
-import { NativeModal } from '../NativeModal';
+import { OperationPanel } from '../OperationPanel';
 import { type ThreadOptions } from '../../types/kura';
 import {
   defaultThreadClearance,
@@ -55,7 +55,7 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
   };
 
   return (
-    <NativeModal
+    <OperationPanel
       open={open}
       onClose={onClose}
       title={t(language, 'dialog.thread.title')}
@@ -194,6 +194,6 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
           </label>
         )}
       </div>
-    </NativeModal>
+    </OperationPanel>
   );
 };

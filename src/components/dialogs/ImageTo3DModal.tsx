@@ -12,7 +12,7 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
-import { NativeModal } from '../NativeModal';
+import { OperationPanel } from '../OperationPanel';
 import { type ImageTo3DOptions } from '../../types/kura';
 import { openLocalFile } from '../../utils/platformBridge';
 
@@ -154,7 +154,7 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
   };
 
   return (
-    <NativeModal
+    <OperationPanel
       open={open}
       onClose={onClose}
       title={t(language, 'dialog.img.title')}
@@ -370,6 +370,6 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
           <span style={{ fontSize: 12 }}>{t(language, 'dialog.img.invert')}</span>
         </label>
       </div>
-    </NativeModal>
+    </OperationPanel>
   );
 };

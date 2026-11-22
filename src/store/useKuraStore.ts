@@ -20,6 +20,7 @@ import { createGeometrySlice } from './slices/geometrySlice';
 import { createHistorySlice } from './slices/historySlice';
 import { createIoSlice } from './slices/ioSlice';
 import { createPartsSlice } from './slices/partsSlice';
+import { clearPreviewOnSelectionChange, createPreviewSlice } from './slices/previewSlice';
 import { createSelectionSlice } from './slices/selectionSlice';
 import { createUiSlice } from './slices/uiSlice';
 
@@ -62,6 +63,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createGeometrySlice(ctx),
     ...createPartsSlice(ctx),
     ...createIoSlice(ctx),
+    ...createPreviewSlice(ctx),
     executeCommand: createCommandBus({
       get,
       setSelectedIds: (ids) => ctx.set({ selectedIds: ids }),
@@ -74,3 +76,4 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
 });
 
 hydrateSecrets(useKuraStore);
+clearPreviewOnSelectionChange(useKuraStore);

@@ -8,11 +8,13 @@
  */
 
 import type { TranslationKey } from '../translations';
+import { PREVIEW_ZH } from './preview';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
  */
 export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
+  ...PREVIEW_ZH,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',

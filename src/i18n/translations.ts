@@ -13,6 +13,7 @@ import { TRANSLATIONS_DE } from './locales/de';
 import { TRANSLATIONS_FR } from './locales/fr';
 import { TRANSLATIONS_HI } from './locales/hi';
 import { TRANSLATIONS_ZH } from './locales/zh';
+import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -20,6 +21,7 @@ import { TRANSLATIONS_ZH } from './locales/zh';
  * y garantizar paridad 1:1 en todos los idiomas durante la compilación TypeScript.
  */
 export const TRANSLATIONS_ES = {
+  ...PREVIEW_ES,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
@@ -1046,6 +1048,7 @@ export type TranslationKey = keyof typeof TRANSLATIONS_ES;
  * Diccionario en inglés con paridad estricta de claves respecto a `TRANSLATIONS_ES`.
  */
 export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
+  ...PREVIEW_EN,
   'app.name': 'Kura3D',
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',

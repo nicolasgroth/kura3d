@@ -12,7 +12,7 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
-import { NativeModal } from '../NativeModal';
+import { OperationPanel } from '../OperationPanel';
 import {
   PRINT_COLOR_PALETTE,
   type SurfaceProjectionAxis,
@@ -72,7 +72,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
   };
 
   return (
-    <NativeModal
+    <OperationPanel
       open={open}
       onClose={onClose}
       title={t(language, 'dialog.project.title')}
@@ -246,6 +246,6 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
           />
         </div>
       </div>
-    </NativeModal>
+    </OperationPanel>
   );
 };

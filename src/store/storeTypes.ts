@@ -50,6 +50,7 @@ import type {
   Vec3,
 } from '../types/kura';
 import type { ExportRequest, ModelImportOptions, ModelImportSource } from './modelIoActions';
+import type { PreviewSliceState } from './slices/previewSlice';
 
 export type ActiveDialogType =
   | 'svg'
@@ -87,6 +88,10 @@ export interface BusyProgress {
   /** true mientras una tarea del motor puede cancelarse con `cancelBusyOperation`. */
   cancellable: boolean;
 }
+
+/** Vista previa de operaciones (declarada en `slices/previewSlice.ts`), fusionada al estado. */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface KuraStoreState extends PreviewSliceState {}
 
 export interface KuraStoreState {
   // Estado del motor geométrico

@@ -1,0 +1,195 @@
+/**
+ * @file src/styles/operationPreview.css
+ * @description Barra de progreso sobre el visor, estado de la vista previa, rótulos base/
+ * herramienta de las booleanas y aviso de la vista de sección.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-op-progress {
+  position: absolute;
+  z-index: 40;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  padding: 6px 8px 6px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-hud);
+  font-size: 12.5px;
+}
+
+.kura-op-progress-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kura-op-progress-time {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.kura-op-progress-track {
+  position: relative;
+  width: 56px;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--border-subtle);
+}
+
+.kura-op-progress-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  border-radius: 2px;
+  background: var(--accent-cyan);
+  animation: kura-op-progress-slide 1.1s ease-in-out infinite;
+}
+
+.kura-op-progress-spin {
+  color: var(--accent-cyan);
+  animation: kura-op-spin 0.9s linear infinite;
+}
+
+@keyframes kura-op-progress-slide {
+  from {
+    left: -40%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes kura-op-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-op-progress-bar,
+  .kura-op-progress-spin {
+    animation: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .kura-op-progress {
+    top: 8px;
+  }
+}
+
+/* Estado de la vista previa en los paneles */
+.kura-preview-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.kura-preview-status[data-state='error'] {
+  color: var(--accent-red);
+}
+
+/* Rótulos 3D (Html de drei) */
+.kura-preview-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  border: 2px solid currentColor;
+  background: var(--bg-panel);
+}
+
+.kura-preview-tag[data-role='base'] {
+  color: var(--accent-cyan);
+}
+
+.kura-preview-tag[data-role='tool'] {
+  color: var(--accent-red);
+  border-style: dashed;
+}
+
+/* Barra flotante de booleanas sobre el visor */
+.kura-bool-bar {
+  position: absolute;
+  z-index: 30;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  max-width: calc(100% - 32px);
+  padding: 6px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-hud);
+  font-size: 12px;
+}
+
+.kura-bool-bar-roles {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.kura-bool-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 120px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-bool-chip[data-role='base'] {
+  color: var(--accent-cyan);
+}
+
+.kura-bool-chip[data-role='tool'] {
+  color: var(--accent-red);
+  border-style: dashed;
+}
+
+/* Aviso de vista de sección temporal */
+.kura-section-notice {
+  position: absolute;
+  z-index: 38;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(560px, calc(100% - 32px));
+  padding: 8px 10px 8px 12px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-hud);
+  font-size: 12.5px;
+}
