@@ -6,9 +6,7 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 ## En desarrollo
 
-| Funcionalidad | Qué se está haciendo |
-|---|---|
-| Dividir para imprimir | Motor: plan de cortes según la cama, corte con uniones, piezas nombradas, marcas de pareja y datos para la animación de armado. Después viene su interfaz |
+Nada en este momento.
 
 ## En QA
 
@@ -18,7 +16,7 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 ## En evaluación
 
-Las correcciones posteriores a la tercera ronda (barra superior, colocación libre, mallas limpias, informe de imprimibilidad, texto 3D con fuente real, aristas vivas en el visor) esperan la cuarta ronda.
+Cuarta ronda en curso. Incluye las correcciones posteriores a la tercera (barra superior, colocación libre, mallas limpias, informe de imprimibilidad, texto 3D con fuente real, aristas vivas) y dos funcionalidades nuevas: **Dividir para imprimir** y **Vista explosionada y armado**.
 
 ## Lista
 
@@ -86,6 +84,9 @@ Trabajo terminado y verificado con pruebas automáticas; lo marcado con ✔ adem
 | Campos con expresiones y unidades; plurales y números por idioma | ✔ |
 | Aristas vivas en el visor; resaltado de estructuras; pintura solo en el objeto activo | ✔ |
 | README reescrito con capturas actuales | ✔ |
+| Dividir para imprimir: plan según la cama, planos arrastrables, uniones, nombres, marcas de pareja | ✔ |
+| Animación de armado, preparar para imprimir por placas, exportar un archivo por pieza | ✔ |
+| Repositorio mudado fuera de OneDrive, verificado en web y escritorio | ✔ |
 
 ## Planificada
 
@@ -94,12 +95,8 @@ Ordenadas por prioridad dentro de cada grupo.
 | Grupo | Funcionalidad |
 |---|---|
 | Base | Pruebas E2E reales con Playwright y pruebas de regresión geométrica |
-| Dividir para imprimir | Corte automático según el tamaño de la cama, con cortes múltiples |
 | Dividir para imprimir | Uniones vinculadas entre mitades (mover una mueve su pareja) |
-| Dividir para imprimir | Marcas de pareja (A–A, B–B) y nombre por pieza |
 | Dividir para imprimir | Guía de uniones: previsualizar, editar y confirmar |
-| Dividir para imprimir | Vista explosionada y animación de armado |
-| Dividir para imprimir | Exportar por pieza y por placa |
 | Placas y escena | Placas como entidad del proyecto y camas personalizadas |
 | Placas y escena | Asistente de importación con 11 modos de distribución |
 | Placas y escena | Árbol de escena con grupos, instancias, filtros y búsqueda |
@@ -136,9 +133,7 @@ Ordenadas por prioridad dentro de cada grupo.
 | Automatización | Al importar: revisar la malla, avisar defectos y ofrecer repararla |
 | Automatización | Orientar la pieza sola para minimizar voladizos y apoyar la mejor cara |
 | Automatización | Acomodar las piezas en la cama, y repartir en varias placas si no caben |
-| Automatización | Proponer dónde cortar y dónde poner las uniones según la cama |
 | Automatización | Recetas: guardar una secuencia de pasos y repetirla sobre otra pieza o un lote |
-| Automatización | Exportar todo de una vez: una pieza por archivo con nombres ordenados |
 | Idiomas | Agregar idiomas sin tocar código: un archivo por idioma, guía para traductores, soporte de escritura de derecha a izquierda |
 | Distribución | Instaladores firmados para Windows, Linux y macOS con actualizaciones |
 | Distribución | Estimación de material por pieza |
