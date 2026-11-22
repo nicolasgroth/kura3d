@@ -23,6 +23,20 @@ import { parseSplitForBed } from './splitCommandSchemas';
 import type { OperationErrorTracker } from './operationErrors';
 import type { RawParams } from './commandValidation';
 import type { CommandSourceType, KuraStoreState } from './useKuraStore';
+import {
+  alignModeFromUser,
+  axisFromUser,
+  planeFromUser,
+  projectionAxisFromUser,
+  rotationFromUser,
+  scaleFromUser,
+  statsToUser,
+  toUserSize,
+  toUserVector,
+  transformToUser,
+  vecFromUser,
+} from './commandAxes';
+import { fromUserVector } from '../core/scene/displayAxes';
 
 export interface CommandBusDeps {
   get: () => KuraStoreState;
@@ -41,8 +55,11 @@ type Handler = (p: RawParams, deps: CommandBusDeps, command: string) => Promise<
 const NON_SCENE_WRITES = new Set(['set_printer_profile', 'set_unit_system', 'export_stl', 'export_3mf']);
 
 const brief = (o: SceneObject) => ({ id: o.id, name: o.name });
-/** `stats` del bus en dimensiones de mundo (rotación y escala aplicadas), igual que el MCP headless. */
-const worldStats = (o: SceneObject) => engine.computeWorldStats(o.mesh, o.rotation, o.scale);
+/**
+ * `stats` del bus en dimensiones de mundo (rotación y escala aplicadas), igual que el MCP headless.
+ * El contrato del bus usa los ejes del usuario (Z arriba): ver `commandAxes.ts`.
+ */
+const worldStats = (o: SceneObject) => statsToUser(engine.computeWorldStats(o.mesh, o.rotation, o.scale));
 const withStats = (o: SceneObject) => ({ id: o.id, name: o.name, stats: worldStats(o) });
 
 /** Convierte un resultado vacío de una acción del store en un error tipado. */
@@ -74,7 +91,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       selectedIds: s.selectedIds,
       objects: s.objects.map((o) => ({
         id: o.id, name: o.name, source: o.source, primitiveType: o.primitiveType,
-        position: o.position, rotation: o.rotation, scale: o.scale, color: o.color,
+        ...transformToUser(o), color: o.color,
         materialPreset: o.materialPreset ?? 'pla_matte', isHole: o.isHole, visible: o.visible,
         locked: o.locked, stats: worldStats(o),
       })),
@@ -84,7 +101,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   create_primitive: async (p, { get }, command) => {
     const { type, params, ...options } = schema.parseCreatePrimitive(p);
     const obj = required(await get().createPrimitive(type, params, options), command);
-    return { ...withStats(obj), position: obj.position };
+    return { ...withStats(obj), position: toUserVector(obj.position) };
   },
 
   update_primitive_params: async (p, { get }, command) => {
@@ -108,9 +125,15 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     const id = input.target.id;
     if (input.dropToBed) get().dropObjectToBed(id);
     else if (input.centerOnBed) get().centerObjectOnBed(id);
-    else get().setObjectTransform(id, { position: input.position, rotation: input.rotation, scale: input.scale }, true);
+    else {
+      get().setObjectTransform(id, {
+        position: vecFromUser(input.position),
+        rotation: rotationFromUser(input.rotation),
+        scale: scaleFromUser(input.scale),
+      }, true);
+    }
     const updated = required(get().objects.find((o) => o.id === id), command);
-    return { id, position: updated.position, rotation: updated.rotation, scale: updated.scale };
+    return { id, ...transformToUser(updated) };
   },
 
   delete_object: (p, { get }) => {
@@ -136,7 +159,8 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   },
 
   plane_cut: async (p, { get }, command) => {
-    const { target, options } = schema.parsePlaneCut(get(), p);
+    const { target, options: userOptions } = schema.parsePlaneCut(get(), p);
+    const options = { ...userOptions, ...planeFromUser(userOptions.axis, userOptions.offset) };
     return required(await get().planeCutObject(target.id, options), command).map(brief);
   },
 
@@ -173,7 +197,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     const { target, color: rawColor, localPoint } = schema.parsePaint(get(), p);
     const color = rawColor ?? get().paintColor;
     get().setPaintSettings({ paintColor: color });
-    get().paintObjectSurface(target.id, localPoint ?? null, null, localPoint ? 'brush' : 'whole');
+    get().paintObjectSurface(target.id, localPoint ? fromUserVector(localPoint) : null, null, localPoint ? 'brush' : 'whole');
     return { id: target.id, color };
   },
 
@@ -200,7 +224,8 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   },
 
   project_on_surface: async (p, { get }, command) => {
-    const { target, options } = schema.parseProjection(get(), p);
+    const { target, options: userOptions } = schema.parseProjection(get(), p);
+    const options = { ...userOptions, axis: projectionAxisFromUser(userOptions.axis) };
     return withStats(required(await get().projectOnObjectSurface(target.id, options), command));
   },
 
@@ -229,13 +254,13 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   align_objects: (p, deps) => {
     const { mode, objects } = schema.parseAlign(deps.get(), p);
     if (objects) deps.setSelectedIds(objects.map((o) => o.id));
-    const result = deps.get().alignSelectedObjects(mode);
+    const result = deps.get().alignSelectedObjects(alignModeFromUser(mode));
     return { mode, moved: result?.moved ?? 0, fitsBed: result?.fitsBed ?? true };
   },
 
   mirror_object: (p, { get }, command) => {
     const { target, axis } = schema.parseMirror(get(), p);
-    required(get().mirrorObject(target.id, axis), command);
+    required(get().mirrorObject(target.id, axisFromUser(axis)), command);
     return { id: target.id, axis };
   },
 
@@ -248,8 +273,8 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       totalTriangles: seg.totalTriangles,
       regions: seg.regions.map((r) => ({
         id: r.id, labelEs: r.labelEs, labelEn: r.labelEn, archetype: r.archetype, color: r.color,
-        triangleCount: r.triangleCount, percentOfModel: r.percentOfModel, dimensionsMm: r.dimensionsMm,
-        centerMm: r.centerMm, confidence: r.confidence, isDisconnectedShell: r.isDisconnectedShell,
+        triangleCount: r.triangleCount, percentOfModel: r.percentOfModel, dimensionsMm: toUserSize(r.dimensionsMm),
+        centerMm: toUserVector(r.centerMm), confidence: r.confidence, isDisconnectedShell: r.isDisconnectedShell,
       })),
     };
   },

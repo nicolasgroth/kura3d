@@ -140,8 +140,9 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
                 value={splitAxis}
                 onChange={(e) => setSplitAxis(e.target.value as 'x' | 'z')}
               >
-                <option value="x">X (Izq / Der)</option>
-                <option value="z">Z (Frente / Atrás)</option>
+                {/* Valor interno ('z' = frente/fondo); el usuario lo ve como su eje Y. */}
+                <option value="x">{t(language, 'dialog.mold.axisX')}</option>
+                <option value="z">{t(language, 'dialog.mold.axisY')}</option>
               </select>
             </div>
             <div className="kura-form-field">

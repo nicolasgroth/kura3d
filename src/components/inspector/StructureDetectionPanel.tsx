@@ -187,8 +187,8 @@ export const StructureDetectionPanel: React.FC<InspectorSectionProps> = ({ prima
                       <div className="kura-struct-meta">
                         <span>
                           {formatDimension(region.dimensionsMm[0], unitSystem, 1)} ×{' '}
-                          {formatDimension(region.dimensionsMm[1], unitSystem, 1)} ×{' '}
-                          {formatDimension(region.dimensionsMm[2], unitSystem, 1)}
+                          {formatDimension(region.dimensionsMm[2], unitSystem, 1)} ×{' '}
+                          {formatDimension(region.dimensionsMm[1], unitSystem, 1)}
                         </span>
                         <span>{region.percentOfModel.toFixed(1)}%</span>
                       </div>

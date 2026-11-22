@@ -32,7 +32,8 @@ export const InspectorMulti: React.FC = () => {
   const holeCount = objects.filter((o) => o.isHole && o.visible).length;
   const hasAnyHoles = holeCount > 0;
   const isBusy = Boolean(busyOperation);
-  const alignButtons = ['minX', 'centerX', 'maxX', 'minY', 'centerY', 'maxY', 'minZ', 'centerZ', 'maxZ'] as const satisfies readonly AlignMode[];
+  // Filas en ejes del usuario: X (izq → der), Y (frente → fondo = Z interno máx → mín), Z (abajo → arriba = Y interno).
+  const alignButtons = ['minX', 'centerX', 'maxX', 'maxZ', 'centerZ', 'minZ', 'minY', 'centerY', 'maxY'] as const satisfies readonly AlignMode[];
 
   return (
     <aside

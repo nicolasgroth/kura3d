@@ -266,7 +266,8 @@ export function parsePlaneCut(scene: SceneView, p: RawParams): { target: SceneOb
   return {
     target: resolveTarget(scene, p, { unlocked: true }),
     options: {
-      axis: readEnum(p, AXES, 'axis') ?? 'y',
+      // Ejes del usuario (Z = altura): el bus convierte a internos con `planeFromUser`.
+      axis: readEnum(p, AXES, 'axis') ?? 'z',
       offset: readRange(p, OR.cut.offset, 'offset') ?? 0,
       connectorType: readEnum(p, ['none', 'dowel', 'peg', 'dovetail'] as const, 'connectorType') ?? 'dowel',
       connectorSize: readRange(p, OR.cut.connectorSize, 'connectorSize') ?? 4,
@@ -304,7 +305,8 @@ export function parseMold(scene: SceneView, p: RawParams): { target: SceneObject
       mode: readEnum(p, ['direct_1part', 'direct_2part', 'silicone_master', 'core_cavity'] as const, 'mode') ?? 'silicone_master',
       wallMarginMm: readRange(p, OR.mold.wallMarginMm, 'wallMarginMm') ?? 6,
       boxWallMm: readRange(p, OR.mold.boxWallMm, 'boxWallMm') ?? 3,
-      splitAxis: readEnum(p, ['x', 'z'] as const, 'splitAxis') ?? 'x',
+      // Eje de partición horizontal en ejes del usuario ('x' | 'y'); se devuelve en ejes internos.
+      splitAxis: readEnum(p, ['x', 'y'] as const, 'splitAxis') === 'y' ? 'z' : 'x',
       pourSpout: readBoolean(p, 'pourSpout') ?? true,
       pourSpoutRadiusMm: readRange(p, OR.mold.pourSpoutRadiusMm, 'pourSpoutRadiusMm') ?? 5,
       keyToleranceMm: readRange(p, OR.mold.keyToleranceMm, 'keyToleranceMm') ?? 0.25,
@@ -324,7 +326,8 @@ export function parseProjection(
       text: readString(p, TEXT_MAX, 'text') ?? 'KURA3D',
       svgContent: readString(p, SVG_MAX, 'svgContent'),
       mode: readEnum(p, ['emboss', 'deboss', 'flush_inlay'] as const, 'mode') ?? 'emboss',
-      axis: readEnum(p, ['+z', '-z', '+x', '-x', '+y', '-y', 'cylindrical'] as const, 'axis') ?? '+z',
+      // Dirección en ejes del usuario ('+z' = arriba); el bus la convierte. Por defecto, la cara frontal.
+      axis: readEnum(p, ['+z', '-z', '+x', '-x', '+y', '-y', 'cylindrical'] as const, 'axis') ?? '-y',
       widthMm: readRange(p, OR.projection.widthMm, 'widthMm') ?? 18,
       depthMm: readRange(p, OR.projection.depthMm, 'depthMm') ?? 1.2,
       colorHex: readColor(p, 'colorHex') ?? '#f97316',

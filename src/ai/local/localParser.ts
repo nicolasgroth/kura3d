@@ -159,16 +159,20 @@ export function extractMeasures(clause: string): Measure[] {
   return out;
 }
 
+/**
+ * Eje en el sistema del usuario (como los slicers): 0 = X derecha, 1 = Y fondo, 2 = Z arriba. El chat
+ * trabaja con el Command Bus, que recibe y devuelve coordenadas en ese mismo sistema.
+ */
 function detectAxis(clause: string): { axis: Axis; sign: 1 | -1 } | null {
   if (/\beje_x\b/.test(clause)) return { axis: 0, sign: 1 };
   if (/\beje_y\b/.test(clause)) return { axis: 1, sign: 1 };
   if (/\beje_z\b/.test(clause)) return { axis: 2, sign: 1 };
-  if (/\b(arriba|up|upward|sube\w*|subir|raise|lift)\b/.test(clause)) return { axis: 1, sign: 1 };
-  if (/\b(abajo|down|downward|baj[ae]\w*|bajar|lower)\b/.test(clause)) return { axis: 1, sign: -1 };
+  if (/\b(arriba|up|upward|sube\w*|subir|raise|lift)\b/.test(clause)) return { axis: 2, sign: 1 };
+  if (/\b(abajo|down|downward|baj[ae]\w*|bajar|lower)\b/.test(clause)) return { axis: 2, sign: -1 };
   if (/\b(derecha|right)\b/.test(clause)) return { axis: 0, sign: 1 };
   if (/\b(izquierda|left)\b/.test(clause)) return { axis: 0, sign: -1 };
-  if (/\b(adelante|delante|frente|forward|front)\b/.test(clause)) return { axis: 2, sign: 1 };
-  if (/\b(atras|detras|back|backward)\b/.test(clause)) return { axis: 2, sign: -1 };
+  if (/\b(adelante|delante|frente|forward|front)\b/.test(clause)) return { axis: 1, sign: -1 };
+  if (/\b(atras|detras|fondo|back|backward)\b/.test(clause)) return { axis: 1, sign: 1 };
   return null;
 }
 
@@ -309,7 +313,8 @@ function intentOf(clause: string): LocalIntent | null {
       return factor !== undefined && factor > 0 ? { kind: 'scale', factor } : null;
     }
     case 'rotate': {
-      const axis = detectAxis(clause)?.axis ?? 1;
+      // Sin eje explícito se gira sobre la cama (alrededor de Z, la vertical).
+      const axis = detectAxis(clause)?.axis ?? 2;
       return { kind: 'rotate', axis, degrees: ms[0]?.value ?? 90 };
     }
     case 'move': {

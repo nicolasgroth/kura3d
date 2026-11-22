@@ -235,7 +235,8 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
       for (const id of ids) {
         const target = run.find(id);
         if (!target) return fail();
-        const height = (target.stats?.dimensionsMm?.[1] ?? 0) * (target.scale?.[1] ?? 1);
+        // Coordenadas del bus en ejes del usuario: índice 2 = Z (altura).
+        const height = (target.stats?.dimensionsMm?.[2] ?? 0) * (target.scale?.[2] ?? 1);
         if (!(height > 0)) return fail();
         if (target.rotation.some((r) => Math.abs(r) > 1e-6)) {
           run.say('ai.local.threadHoleRotated', { name: target.name });
@@ -247,7 +248,7 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
         const total = height + 2;
         const threadLen = Math.min(total, MAX_THREAD_LENGTH_MM);
         const plainLen = total - threadLen;
-        const base = target.position[1] - 1;
+        const base = target.position[2] - 1;
         const created = await run.run('create_thread', {
           kind: 'hole', diameterMm: intent.diameter, pitchMm: intent.pitch, lengthMm: threadLen, includeHead: false,
         });
@@ -259,7 +260,7 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
           for (const tool of tools) await run.run('delete_object', { id: tool });
         };
         const moved = await run.run('transform_object', {
-          id: holeId, position: [target.position[0], base + plainLen, target.position[2]],
+          id: holeId, position: [target.position[0], target.position[1], base + plainLen],
         });
         if (!moved.ok) {
           await cleanup();
@@ -274,7 +275,7 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
             return fail(plain);
           }
           tools.push(plainId);
-          const placed = await run.run('transform_object', { id: plainId, position: [target.position[0], base, target.position[2]] });
+          const placed = await run.run('transform_object', { id: plainId, position: [target.position[0], target.position[1], base] });
           if (!placed.ok) {
             await cleanup();
             return fail(placed);
@@ -353,7 +354,7 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
         res = await run.run('apply_texture', { id, pattern: intent.pattern, depth: 0.45, scale: 4 });
         break;
       case 'cut':
-        res = await run.run('plane_cut', { id, axis: 'y', offset: 0, connectorType: 'dowel', connectorCount: 2 });
+        res = await run.run('plane_cut', { id, axis: 'z', offset: 0, connectorType: 'dowel', connectorCount: 2 });
         break;
       default:
         return fail();

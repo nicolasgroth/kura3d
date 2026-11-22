@@ -14,6 +14,7 @@ import { computeSelectionBounds } from '../../utils/selectionBounds';
 import { formatNumber } from '../../utils/plural';
 import { formatDimension, formatVolume } from '../../utils/units';
 import { type InspectorSectionProps } from './inspectorTypes';
+import { toUserSize } from '../../core/scene/displayAxes';
 
 /** Sección 3: geometría y métricas. */
 export const GeometrySection: React.FC<Pick<InspectorSectionProps, 'primary'>> = ({ primary }) => {
@@ -27,7 +28,8 @@ export const GeometrySection: React.FC<Pick<InspectorSectionProps, 'primary'>> =
   // Con el objeto girado, "Dimensiones" muestra la caja envolvente en el mundo (no la local).
   const isRotated = primary.rotation.some((r) => Math.abs(r) > 1e-6);
   const worldBounds = isRotated ? computeSelectionBounds([primary]) : null;
-  const shownDims: Vec3 = worldBounds ? worldBounds.size : scaledDims;
+  // Se muestra X × Y × Z del usuario (Z = altura).
+  const shownDims: Vec3 = toUserSize(worldBounds ? worldBounds.size : scaledDims);
   const scaledVolumeMm3 =
     primary.stats.volumeMm3 * primary.scale[0] * primary.scale[1] * primary.scale[2];
 

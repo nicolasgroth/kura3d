@@ -1,12 +1,12 @@
 /**
  * @file src/components/inspector/TransformSection.tsx
  * @description Sección Transformación del inspector: posición, rotación y escala en la unidad activa.
+ * Muestra y recibe los valores en los ejes del usuario (Z = altura) vía `core/scene/displayAxes`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import '../../styles/axisHint.css';
 import React from 'react';
 import * as THREE from 'three';
 import {
@@ -23,6 +23,16 @@ import { PrecisionNumberInput, type PrecisionModifierState } from '../PrecisionN
 import { type Vec3 } from '../../types/kura';
 import { fromMm, getUnitLabel, getUnitStep, toMm } from '../../utils/units';
 import { AXES, MIN_SCALE } from './inspectorConstants';
+import {
+  fromUserPosition,
+  fromUserRotation,
+  fromUserScale,
+  internalAxisOfUser,
+  toUserPosition,
+  toUserRotation,
+  toUserScale,
+  toUserSize,
+} from '../../core/scene/displayAxes';
 import { RelativeTransformFields } from './RelativeTransformFields';
 import { type InspectorSectionProps } from './inspectorTypes';
 
@@ -50,21 +60,27 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
     ? `${t(language, 'precision.localSize')} (${unitLabel})`
     : t(language, 'inspector.field.scale');
   const transformDisabled = primary.locked || isBusy;
+  // Valores en ejes del usuario (X derecha, Y fondo, Z arriba); el objeto guarda los internos.
+  const userPosition = toUserPosition(primary.position);
+  const userRotation = toUserRotation(primary.rotation);
+  const userScale = toUserScale(primary.scale);
+  const userDimensions = toUserSize(primary.stats.dimensionsMm);
   const handlePosChange = (axisIdx: 0 | 1 | 2, num: number, modifiers?: PrecisionModifierState) => {
     const millimeters = toMm(num, unitSystem);
-    if (!Number.isFinite(millimeters) || millimeters === primary.position[axisIdx]) return;
-    const nextPos: Vec3 = [...primary.position] as Vec3;
-    nextPos[axisIdx] = millimeters;
-    setObjectTransform(primary.id, { position: nextPos }, !modifiers?.isScrubbing);
+    if (!Number.isFinite(millimeters) || millimeters === userPosition[axisIdx]) return;
+    const nextUser: Vec3 = [...userPosition];
+    nextUser[axisIdx] = millimeters;
+    setObjectTransform(primary.id, { position: fromUserPosition(nextUser) }, !modifiers?.isScrubbing);
   };
   const handleRotChange = (axisIdx: 0 | 1 | 2, deg: number, modifiers?: PrecisionModifierState) => {
     const radians = THREE.MathUtils.degToRad(deg);
-    if (!Number.isFinite(radians) || radians === primary.rotation[axisIdx]) return;
-    const nextRot: Vec3 = [...primary.rotation] as Vec3;
-    nextRot[axisIdx] = radians;
-    setObjectTransform(primary.id, { rotation: nextRot }, !modifiers?.isScrubbing);
+    if (!Number.isFinite(radians)) return;
+    if (Math.abs(radians - userRotation[axisIdx]) < 1e-9) return;
+    const nextUser: Vec3 = [...userRotation];
+    nextUser[axisIdx] = radians;
+    setObjectTransform(primary.id, { rotation: fromUserRotation(nextUser) }, !modifiers?.isScrubbing);
   };
-  const smallestScale = Math.min(...primary.scale);
+  const smallestScale = Math.min(...userScale);
   const handleScaleChange = (
     axisIdx: 0 | 1 | 2,
     factor: number,
@@ -75,21 +91,21 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
     const isUniform = proportionalScale || Boolean(modifiers?.shiftKey);
     if (isUniform) {
       if (smallestScale <= 0) return;
-      const requestedRatio = factor / primary.scale[axisIdx];
+      const requestedRatio = factor / userScale[axisIdx];
       const nextSmallest = Math.max(MIN_SCALE, smallestScale * requestedRatio);
       if (nextSmallest === smallestScale) return;
-      const nextScale = primary.scale.map(
+      const nextScale = userScale.map(
         (value) => nextSmallest * (value / smallestScale),
       ) as Vec3;
       if (!nextScale.every(Number.isFinite)) return;
-      setObjectTransform(primary.id, { scale: nextScale }, recordHistory);
+      setObjectTransform(primary.id, { scale: fromUserScale(nextScale) }, recordHistory);
       return;
     }
     const nextFactor = Math.max(MIN_SCALE, factor);
-    if (nextFactor === primary.scale[axisIdx]) return;
-    const nextScale: Vec3 = [...primary.scale] as Vec3;
+    if (nextFactor === userScale[axisIdx]) return;
+    const nextScale: Vec3 = [...userScale];
     nextScale[axisIdx] = nextFactor;
-    setObjectTransform(primary.id, { scale: nextScale }, recordHistory);
+    setObjectTransform(primary.id, { scale: fromUserScale(nextScale) }, recordHistory);
   };
 
   return (
@@ -97,9 +113,6 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
       <h3 className="kura-section-label">
         {t(language, 'inspector.section.transform', { unit: unitLabel })}
       </h3>
-      <p className="kura-axis-hint" title={t(language, 'inspector.axisHintTip')}>
-        {t(language, 'inspector.axisHint')}
-      </p>
 
       <div
         className="kura-form-field kura-transform-group"
@@ -129,10 +142,12 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
             precision={unitPrecision}
             disabled={transformDisabled}
             onApply={(delta) => {
-              const position = primary.position.map(
+              const position = userPosition.map(
                 (value, index) => value + toMm(delta[index], unitSystem),
               ) as Vec3;
-              if (position.every(Number.isFinite)) setObjectTransform(primary.id, { position }, true);
+              if (position.every(Number.isFinite)) {
+                setObjectTransform(primary.id, { position: fromUserPosition(position) }, true);
+              }
             }}
           />
         ) : (
@@ -148,7 +163,7 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
                 unit={unitSystem}
                 defaultValue={0}
                 disabled={transformDisabled}
-                value={Number(fromMm(primary.position[idx], unitSystem).toFixed(unitPrecision))}
+                value={Number(fromMm(userPosition[idx], unitSystem).toFixed(unitPrecision))}
                 onChange={(val, mods) => handlePosChange(idx as 0 | 1 | 2, val, mods)}
                 onCommit={commitTransformSnapshot}
                 ariaLabel={`${positionLabel} ${axis.toUpperCase()}`}
@@ -188,10 +203,12 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
               precision={2}
               disabled={transformDisabled}
               onApply={(delta) => {
-                const rotation = primary.rotation.map(
+                const rotation = userRotation.map(
                   (value, index) => value + THREE.MathUtils.degToRad(delta[index]),
                 ) as Vec3;
-                if (rotation.every(Number.isFinite)) setObjectTransform(primary.id, { rotation }, true);
+                if (rotation.every(Number.isFinite)) {
+                  setObjectTransform(primary.id, { rotation: fromUserRotation(rotation) }, true);
+                }
               }}
             />
           </>
@@ -207,7 +224,7 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
                 commitOnBlur
                 defaultValue={0}
                 disabled={transformDisabled}
-                value={Number(THREE.MathUtils.radToDeg(primary.rotation[idx]).toFixed(2))}
+                value={Number(THREE.MathUtils.radToDeg(userRotation[idx]).toFixed(2))}
                 onChange={(val, mods) => handleRotChange(idx as 0 | 1 | 2, val, mods)}
                 onCommit={commitTransformSnapshot}
                 ariaLabel={`${rotationLabel} ${axis.toUpperCase()}`}
@@ -250,11 +267,11 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
         </div>
         <div className="kura-vec3-grid">
           {AXES.map((axis, idx) => {
-            const baseSize = fromMm(primary.stats.dimensionsMm[idx], unitSystem);
+            const baseSize = fromMm(userDimensions[idx], unitSystem);
             const precision = scaleBySize ? unitPrecision : 4;
-            const value = scaleBySize ? baseSize * primary.scale[idx] : primary.scale[idx];
+            const value = scaleBySize ? baseSize * userScale[idx] : userScale[idx];
             const minimumFactor = proportionalScale && smallestScale > 0
-              ? MIN_SCALE * (primary.scale[idx] / smallestScale)
+              ? MIN_SCALE * (userScale[idx] / smallestScale)
               : MIN_SCALE;
             return (
               <PrecisionNumberInput
@@ -322,7 +339,7 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
               style={{ minWidth: 0, padding: '0 6px' }}
               title={t(language, `inspector.mirror.${axis}`)}
               disabled={primary.locked || isBusy}
-              onClick={() => mirrorObject(primary.id, axis)}
+              onClick={() => mirrorObject(primary.id, internalAxisOfUser(axis).axis)}
             >
               <FlipHorizontal2 size={12} />
               <span>{axis.toUpperCase()}</span>
