@@ -13,13 +13,15 @@ import { guardUnsavedChanges } from '../utils/unsavedGuard';
 import { useKuraStore } from '../store/useKuraStore';
 import { askDecision } from '../utils/confirmDialog';
 import { isTauriRuntime } from '../utils/platformBridge';
-import { startProjectRecovery, type RecoveryStatus } from './projectRecoveryAutosave';
+import { startProjectRecovery, type RecoveryFailure, type RecoveryStatus } from './projectRecoveryAutosave';
 import { recoveryDraftLabel } from './projectRecoveryLabels';
 import { discardRecoveryDraft, listRecoveryDrafts, type RecoveryDraftInfo } from './projectRecoveryStorage';
 
 export function useProjectRecovery() {
   const [drafts, setDrafts] = useState<RecoveryDraftInfo[]>([]);
   const [status, setStatus] = useState<RecoveryStatus>('idle');
+  // Causa tipada del último fallo del autoguardado (null mientras funciona).
+  const [failure, setFailure] = useState<RecoveryFailure | null>(null);
   const [listFailed, setListFailed] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
   const projectDraftId = useKuraStore((state) => state.projectDraftId);
@@ -45,7 +47,11 @@ export function useProjectRecovery() {
   }, []);
 
   useEffect(() => {
-    const controller = startProjectRecovery(setStatus, useKuraStore, () => void refresh());
+    const onStatus = (next: RecoveryStatus) => {
+      setStatus(next);
+      if (next !== 'unavailable') setFailure(null);
+    };
+    const controller = startProjectRecovery(onStatus, useKuraStore, () => void refresh(), setFailure);
     controllerRef.current = controller;
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') controller.checkpointSoon();
@@ -125,6 +131,7 @@ export function useProjectRecovery() {
     drafts: drafts.filter((draft) => draft.id !== projectDraftId),
     busy: actionBusy || workspaceBusy,
     status: listFailed ? 'unavailable' as const : status,
+    failure,
     restore,
     discard,
     discardOnClose,

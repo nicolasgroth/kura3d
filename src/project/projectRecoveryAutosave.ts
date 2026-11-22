@@ -10,11 +10,31 @@
 import { captureProject, isProjectDirty, type KuraStoreState, useKuraStore } from '../store/useKuraStore';
 import { encodeProjectAsync } from './projectCodecClient';
 import { discardRecoveryDraft, writeRecoveryDraft } from './projectRecoveryStorage';
+import { ProjectCodecError } from './projectSchema';
 
 const IDLE_WAIT_MS = 1500;
 const MAX_WAIT_MS = 8000;
 
 export type RecoveryStatus = 'idle' | 'pending' | 'saving' | 'ready' | 'unavailable';
+
+/** Causa estable de un fallo del autoguardado, para avisar con el texto que corresponda. */
+export type RecoveryFailureCause = ProjectCodecError['code'] | 'quota' | 'storage' | 'unknown';
+/** Etapa donde falló: codificar el proyecto, escribir el borrador o borrar uno obsoleto. */
+export type RecoveryFailureStage = 'encode' | 'write' | 'cleanup';
+export interface RecoveryFailure {
+  cause: RecoveryFailureCause;
+  stage: RecoveryFailureStage;
+}
+
+/** Traduce un error de codificación o almacenamiento a su causa tipada (sin el mensaje técnico). */
+export function classifyRecoveryFailure(error: unknown, stage: RecoveryFailureStage): RecoveryFailure {
+  if (error instanceof ProjectCodecError) return { cause: error.code, stage };
+  const name = error instanceof Error || (typeof DOMException !== 'undefined' && error instanceof DOMException)
+    ? (error as { name: string }).name
+    : '';
+  if (name === 'QuotaExceededError') return { cause: 'quota', stage };
+  return { cause: stage === 'encode' ? 'unknown' : 'storage', stage };
+}
 
 function recoveryChanged(state: KuraStoreState, previous: KuraStoreState) {
   return state.projectDraftId !== previous.projectDraftId || state.projectName !== previous.projectName ||
@@ -33,6 +53,7 @@ export function startProjectRecovery(
   onStatus: (status: RecoveryStatus) => void,
   store: Pick<typeof useKuraStore, 'getState' | 'subscribe'> = useKuraStore,
   onCleanup?: () => void,
+  onFailure?: (failure: RecoveryFailure) => void,
 ) {
   const obsoleteIds = new Set<string>();
   let stopped = false;
@@ -44,6 +65,12 @@ export function startProjectRecovery(
 
   function report(status: RecoveryStatus) {
     if (!stopped) onStatus(status);
+  }
+
+  function fail(error: unknown, stage: RecoveryFailureStage) {
+    if (stopped) return;
+    onFailure?.(classifyRecoveryFailure(error, stage));
+    onStatus('unavailable');
   }
 
   function schedule() {
@@ -72,8 +99,8 @@ export function startProjectRecovery(
       try {
         await discardRecoveryDraft(id);
         if (!stopped) onCleanup?.();
-      } catch {
-        report('unavailable');
+      } catch (error) {
+        fail(error, 'cleanup');
       }
     }
 
@@ -83,8 +110,14 @@ export function startProjectRecovery(
     if (!isProjectDirty(state)) return;
 
     report('saving');
+    let bytes: Uint8Array;
     try {
-      const bytes = await encodeProjectAsync(captureProject(state));
+      bytes = await encodeProjectAsync(captureProject(state));
+    } catch (error) {
+      fail(error, 'encode');
+      return;
+    }
+    try {
       const current = store.getState();
       if (stopped || obsoleteIds.has(state.projectDraftId) ||
           current.projectDraftId !== state.projectDraftId || !isProjectDirty(current)) return;
@@ -93,8 +126,8 @@ export function startProjectRecovery(
       lastWrittenAt = updatedAt;
       if (checkpointDue !== null) report('pending');
       else if (!obsoleteIds.has(state.projectDraftId)) report('ready');
-    } catch {
-      report('unavailable');
+    } catch (error) {
+      fail(error, 'write');
     }
   }
 
