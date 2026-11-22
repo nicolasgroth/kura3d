@@ -84,7 +84,17 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
   const running = validation?.status === 'running';
   const show = (label: string) => setFocus({ groupId, label });
   const rest = () => setFocus(pinned ? { groupId, label: pinned } : null);
-  const warnText = (row: SplitJointRow) => localizeWarnings(language, row.warnings);
+  const warnText = (row: SplitJointRow) =>
+    row.warnings.map((w) => {
+      if (w.code === 'ASSEMBLY_JOINT_TYPE_CHANGED') {
+        return t(language, 'splitJoints.note.changed', { from: jointTypeName(language, { type: String(w.params.from) }), to: jointTypeName(language, { type: String(w.params.to) }) });
+      }
+      if (w.code === 'ASSEMBLY_JOINT_GLUED_FOR_ORDER') return t(language, 'splitJoints.note.gluedFix');
+      if (w.code === 'ASSEMBLY_CONNECTOR_CLASH') {
+        return t(language, 'splitJoints.note.clash', { distance: fmt(Math.max(0, Number(w.params.distance))), required: fmt(Number(w.params.required)) });
+      }
+      return localizeWarnings(language, [w])[0];
+    });
 
   return (
     <section className="kura-split-joints-section" aria-labelledby={`${uid}-title`}>
@@ -133,7 +143,7 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
                   </span>
                 </button>
                 <small className="kura-cut-hint">
-                  {t(language, 'splitJoints.plane', { axis: userAxisLabel(row.axis), pos: fmt(axis.sign * row.position) })}
+                  {t(language, 'splitJoints.plane', { axis: userAxisLabel(row.axis), pos: fmt(Math.round(axis.sign * row.position * 10) / 10 + 0) })}
                   {' · '}
                   {row.connector && row.kind === 'connector' && count > 0
                     ? t(language, 'splitJoints.connectors', { count, type: typeName, d: fmt(2 * row.connector.size) })
@@ -228,9 +238,13 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
           <ol className="kura-split-order">
             {order.map((o) => (
               <li key={o.id}>
-                {o.step !== null
-                  ? t(language, 'splitJoints.order.step', { n: o.step, code: o.code, dir: o.direction ? directionText(language, o.direction) : '' })
-                  : o.code}
+                {o.step === null
+                  ? o.code
+                  : o.step === 1
+                    ? t(language, 'splitJoints.order.base', { n: o.step, code: o.code })
+                    : !o.direction
+                      ? `${t(language, 'splitJoints.order.badge', { n: o.step })}: ${o.code}`
+                      : t(language, 'splitJoints.order.step', { n: o.step, code: o.code, dir: directionText(language, o.direction) })}
               </li>
             ))}
           </ol>

@@ -15,6 +15,7 @@ import { ArrowDownToLine, Copy, Eye, EyeOff, Lock, Trash2, Unlock } from 'lucide
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import '../../styles/sceneList.css';
+import '../../styles/splitJoints.css';
 
 const MAX_NAME = 80;
 
@@ -215,6 +216,12 @@ export const SceneObjectList: React.FC = () => {
                 />
               ) : (
                 <span className="kura-scene-name" title={obj.name}>{obj.name}</span>
+              )}
+              {obj.metadata?.split?.assemblyStep != null && (
+                <span className="kura-step-tag" title={t(language, 'splitJoints.order.title')}>
+                  <span className="sr-only">{t(language, 'splitJoints.order.badge', { n: obj.metadata.split.assemblyStep })}</span>
+                  <span aria-hidden="true">{obj.metadata.split.assemblyStep}</span>
+                </span>
               )}
               {obj.isHole && <span className="kura-hole-tag" aria-hidden="true">{t(language, 'sidebar.scene.holeBadge')}</span>}
               {states.length > 0 && <span className="sr-only">, {states.join(', ')}</span>}

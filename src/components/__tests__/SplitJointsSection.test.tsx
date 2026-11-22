@@ -75,7 +75,7 @@ describe('SplitJointsSection', () => {
     render(<SplitJointsSection primary={parts[0]} />);
     expect(row('2').textContent).toContain(t('es', 'splitJoints.note.weak', { measured: '4', recommended: '6' }));
     expect(row('3').textContent).toContain(t('es', 'engineWarning.SPLIT_LAP_NOT_PRINTABLE', { label: '3', tongue: 1, groove: 1, min: 2 }));
-    expect(row('4').textContent).toContain('dovetail');
+    expect(row('4').textContent).toContain(t('es', 'splitJoints.note.changed', { from: t('es', 'dialog.cut.connector.dowel'), to: t('es', 'dialog.cut.connector.dovetail') }));
   });
 
   it('resalta la unión al enfocarla o pasar el cursor y la apaga al salir; clic la fija', () => {

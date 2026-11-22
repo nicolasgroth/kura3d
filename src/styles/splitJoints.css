@@ -85,29 +85,36 @@
 }
 
 .kura-split-joint-status {
+  --status-color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 1px 7px;
-  border: 1px solid currentColor;
+  border: 1px solid var(--status-color);
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
+  /* El texto usa el color primario (contraste en tema claro); el estado se marca con icono, borde y texto. */
+  color: var(--text-primary);
+}
+
+.kura-split-joint-status svg {
+  color: var(--status-color);
 }
 
 .kura-split-joint-status[data-status='weak'],
 .kura-split-joint-status[data-status='blocked'] {
-  color: #f59e0b;
+  --status-color: #d97706;
 }
 
 .kura-split-joint-status[data-status='ok'] {
-  color: #22c55e;
+  --status-color: #16a34a;
 }
 
 .kura-split-joint-status[data-status='glue'],
 .kura-split-joint-status[data-status='changed'] {
-  color: var(--accent-cyan);
+  --status-color: var(--accent-cyan);
 }
 
 .kura-split-joint-notes {
@@ -216,4 +223,18 @@
   .kura-split-joint-status {
     border-color: CanvasText;
   }
+}
+
+/* Número de paso de montaje junto al nombre de una pieza en la lista de la escena */
+.kura-step-tag {
+  flex: none;
+  min-width: 16px;
+  padding: 0 4px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  color: var(--accent-cyan);
 }
