@@ -19,11 +19,6 @@ Todo lo de hoy se probó en web y con pruebas automáticas. Falta verificar en l
 - **Opciones:** (a) me autorizas a compilar y abrir la app en tu equipo para probarla yo; (b) la pruebas tú con una lista corta de pasos que te dejo.
 - **Mientras tanto:** queda marcado como no verificado en el tablero.
 
-### 4. El repositorio está dentro de OneDrive
-Sincronizar `.git`, `node_modules` y `src-tauri/target` puede causar bloqueos y corrupción. Hoy ya hubo dos instalaciones de dependencias que fallaron por archivos bloqueados, y el servidor de desarrollo no detecta los cambios de archivos en esta ruta, lo que obligó a los agentes a reiniciarlo tras cada edición.
-- **Opciones:** (a) mover el repositorio fuera de OneDrive, por ejemplo a `C:\dev\kura3d`, y dejar GitHub como respaldo; (b) dejarlo donde está y excluir esas carpetas de la sincronización.
-- **Mientras tanto:** no moví nada.
-
 ### 5. Límite de intentos del puente MCP
 Tras 30 tokens inválidos en un minuto, el puente rechaza todo por un minuto, incluido el token correcto. Protege contra fuerza bruta, pero un programa local malicioso podría dejar el puente bloqueado.
 - **Opciones:** (a) dejarlo así; (b) que el token correcto siempre pase y confiar solo en que el token es largo (128 bits aleatorios).
@@ -71,11 +66,6 @@ Ya comparten el mismo código de operaciones, pero conservan dos diferencias vis
 - **Mi recomendación:** (a), para que un agente externo vea lo mismo que tú en pantalla.
 - **Mientras tanto:** (b), porque el reordenamiento no debía cambiar comportamiento.
 
-### 14. Límite de uso durante la noche
-A las 00:04 del 22 de noviembre se alcanzó el límite de uso de 5 horas y los dos agentes en curso se cortaron hasta las 01:30. No se perdió trabajo: se reanudaron desde donde quedaron.
-- **Para decidir:** si prefieres que en jornadas largas corra menos en paralelo (más lento, sin cortes) o que siga a este ritmo aceptando pausas.
-- **Mientras tanto:** sigo con dos agentes en paralelo como máximo.
-
 ## Resueltas
 
 | Fecha | Decisión | Resultado |
@@ -84,3 +74,5 @@ A las 00:04 del 22 de noviembre se alcanzó el límite de uso de 5 horas y los d
 | 2026-11-21 | Llamadas a proveedores de IA en escritorio | Por el lado nativo (Rust), con lista de hosts aprobada por el usuario. |
 | 2026-11-21 | Evaluador externo (Codex, Gemini) | Pospuesto. |
 | 2026-11-21 | Rama de Codex | Fusionada a `main`; se trabaja con ramas cortas por lote. |
+| 2026-11-22 | Repositorio dentro de OneDrive | Mudado a `G:\proyectos\kura3d` (clon desde GitHub, con el stash antiguo respaldado en la rama `respaldo/stash-io-01a`). La carpeta de OneDrive queda sin borrar hasta que el autor lo confirme. |
+| 2026-11-22 | Límite de uso | Se debía a otro agente del autor en otro proyecto; se sigue con dos agentes en paralelo. |
