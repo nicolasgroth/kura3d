@@ -12,6 +12,8 @@ import {
   RECENT_PROJECTS_KEY,
   addRecentProject,
   clearRecentProjects,
+  isRecentRememberEnabled,
+  setRecentRememberEnabled,
   loadRecentProjects,
   parseRecentProjects,
 } from './recentProjects';
@@ -75,5 +77,17 @@ describe('proyectos recientes', () => {
     expect(loadRecentProjects(broken)).toEqual([]);
     expect(addRecentProject('x.kura', 1, broken)).toHaveLength(1);
     expect(() => clearRecentProjects(broken)).not.toThrow();
+  });
+
+  it('recordar recientes viene activado; al desactivarlo se borra la lista y no se agrega nada', () => {
+    const storage = memoryStorage();
+    expect(isRecentRememberEnabled(storage)).toBe(true);
+    addRecentProject('a.kura', 1, storage);
+    setRecentRememberEnabled(false, storage);
+    expect(isRecentRememberEnabled(storage)).toBe(false);
+    expect(loadRecentProjects(storage)).toEqual([]);
+    expect(addRecentProject('b.kura', 2, storage)).toEqual([]);
+    setRecentRememberEnabled(true, storage);
+    expect(addRecentProject('b.kura', 3, storage)).toHaveLength(1);
   });
 });

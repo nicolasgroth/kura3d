@@ -18,7 +18,7 @@ interface SavedProjectFile {
   viaDownload?: true;
 }
 
-interface OpenedProjectFile extends SavedProjectFile {
+export interface OpenedProjectFile extends SavedProjectFile {
   bytes: Uint8Array;
 }
 
@@ -50,7 +50,7 @@ function normalizeFileName(defaultName: string): string {
   return name.toLowerCase().endsWith(EXTENSION) ? name : `${name}${EXTENSION}`;
 }
 
-async function invokeProject<T>(command: string, payload?: Uint8Array): Promise<T> {
+export async function invokeProject<T>(command: string, payload?: Uint8Array | Record<string, unknown>): Promise<T> {
   try {
     const { invoke } = await import('@tauri-apps/api/core');
     return await invoke<T>(command, payload);
@@ -71,7 +71,7 @@ function encodeSavePayload(name: string, bytes: Uint8Array, location?: string): 
   return payload;
 }
 
-function decodeOpenPayload(response: ArrayBuffer | number[]): OpenedProjectFile | null {
+export function decodeOpenPayload(response: ArrayBuffer | number[]): OpenedProjectFile | null {
   // Some desktop WebViews represent a raw IPC response as an array.
   const payload = response instanceof ArrayBuffer ? new Uint8Array(response) : Uint8Array.from(response);
   if (!payload.byteLength) return null;

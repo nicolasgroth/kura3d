@@ -19,6 +19,7 @@ import { McpSetupPanel } from '../settings/McpSetupPanel';
 import { McpTokenField } from '../settings/McpTokenField';
 import { HistorySettings } from '../settings/HistorySettings';
 import { MeasuresFields } from '../settings/MeasuresFields';
+import { RecentProjectsSettings } from '../settings/RecentProjectsSettings';
 import { SettingsTabs } from '../settings/SettingsTabs';
 import { SettingsAppearancePanel } from './SettingsAppearancePanel';
 
@@ -122,6 +123,7 @@ export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = (
           <strong style={{ fontSize: 13 }}>{t(language, 'dialog.settings.projectTitle')}</strong>
           <MeasuresFields idPrefix="settings-measures" showHelp />
           <HistorySettings idPrefix="settings-history" />
+          <RecentProjectsSettings idPrefix="settings-recent" />
         </div>
       )}
 

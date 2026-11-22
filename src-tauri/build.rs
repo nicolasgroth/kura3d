@@ -8,6 +8,11 @@
 const COMMANDS: &[&str] = &[
     "open_kura_project",
     "save_kura_project",
+    "recent_projects_list",
+    "recent_project_open",
+    "recent_projects_remove",
+    "recent_projects_clear",
+    "recent_projects_set_enabled",
     "ai_key_status",
     "ai_key_set",
     "ai_key_delete",

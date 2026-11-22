@@ -8,17 +8,14 @@
  * @license MIT
  */
 
-import { useEffect, useId, useRef, useState } from 'react';
-import { FilePlus, FolderOpen, FolderRoot, History, Save, SaveAll, Trash2 } from 'lucide-react';
+import { useId, useRef, useState } from 'react';
+import { FilePlus, FolderOpen, FolderRoot, Save, SaveAll } from 'lucide-react';
 import { t } from '../i18n';
 import { isProjectDirty, useKuraStore } from '../store/useKuraStore';
-import {
-  addRecentProject,
-  clearRecentProjects,
-  loadRecentProjects,
-  type RecentProject,
-} from '../utils/recentProjects';
+import { openNativeRecent } from '../project/nativeRecents';
 import { guardUnsavedChanges } from '../utils/unsavedGuard';
+import { useRecentProjects, type RecentEntry } from '../utils/useRecentProjects';
+import { RecentProjectsGroup } from './RecentProjectsGroup';
 import '../styles/projectMenu.css';
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform ?? '');
@@ -40,16 +37,14 @@ export function ProjectMenu() {
   const popover = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const [expanded, setExpanded] = useState(false);
-  const [recents, setRecents] = useState<RecentProject[]>(() => loadRecentProjects());
+  const recents = useRecentProjects();
   const label = t(language, 'fileProject.menu');
   const description = [label, name, dirty && t(language, 'fileProject.unsaved')].filter(Boolean).join(' · ');
 
-  // Cada apertura o guardado correcto deja el nombre en la lista (solo nombre y fecha).
-  useEffect(() => useKuraStore.subscribe((state, previous) => {
-    if (state.projectName && state.savedProject && state.savedProject !== previous.savedProject) {
-      setRecents(addRecentProject(state.projectName));
-    }
-  }), []);
+  // En escritorio el elemento abre el proyecto por id (sin selector); en web lleva al selector de archivos.
+  const openRecent = (entry: RecentEntry) =>
+    guardUnsavedChanges(() => openProject(recents.desktop ? () => openNativeRecent(entry.id, entry.name) : undefined))
+      .finally(() => void recents.refresh());
 
   const actions = [
     { key: 'new', icon: FilePlus, keys: 'N', shift: false, run: () => guardUnsavedChanges(() => newProject()) },
@@ -97,6 +92,7 @@ export function ProjectMenu() {
   const onToggle = (event: React.SyntheticEvent) => {
     const open = (event.nativeEvent as Event & { newState?: string }).newState === 'open';
     setExpanded(open);
+    if (open) void recents.refresh();
     if (open) requestAnimationFrame(() => items()[0]?.focus());
   };
 
@@ -156,46 +152,22 @@ export function ProjectMenu() {
           ))}
 
           <hr className="kura-menu-separator" role="separator" />
-          <div role="group" aria-label={t(language, 'project.recent.title')} className="kura-project-recents">
-            <span className="kura-section-label" aria-hidden="true">
-              <History size={12} /> {t(language, 'project.recent.title')}
-            </span>
-            {recents.length === 0 && (
-              <span className="kura-project-unsaved">{t(language, 'project.recent.empty')}</span>
-            )}
-            {recents.map((item) => (
-              <button
-                key={item.name}
-                type="button"
-                role="menuitem"
-                className="kura-btn kura-btn-sm kura-menu-item kura-recent-item"
-                disabled={blocked}
-                title={t(language, 'project.recent.itemTip', { name: item.name })}
-                onClick={() => runAndClose(() => guardUnsavedChanges(() => openProject()))}
-              >
-                <span className="kura-menu-item-label">{item.name}</span>
-                <span className="kura-menu-kbd">{formatDate(item.openedAt)}</span>
-              </button>
-            ))}
-            {recents.length > 0 && (
-              <button
-                type="button"
-                role="menuitem"
-                className="kura-btn kura-btn-sm kura-menu-item"
-                onClick={() => {
-                  clearRecentProjects();
-                  setRecents([]);
-                  addToast(t(language, 'project.recent.cleared'), 'info');
-                  close();
-                }}
-              >
-                <Trash2 size={14} aria-hidden="true" />
-                <span className="kura-menu-item-label">{t(language, 'project.recent.clear')}</span>
-              </button>
-            )}
-          </div>
+          <RecentProjectsGroup
+            language={language}
+            view={recents}
+            blocked={blocked}
+            formatDate={formatDate}
+            onOpen={(entry) => runAndClose(() => openRecent(entry))}
+            onClear={() => {
+              void recents.clear();
+              addToast(t(language, 'project.recent.cleared'), 'info');
+              close();
+            }}
+          />
         </div>
-        <span className="kura-project-unsaved">{t(language, 'project.recent.note')}</span>
+        <span className="kura-project-unsaved">
+          {t(language, recents.desktop ? 'project.recent.noteDesktop' : 'project.recent.note')}
+        </span>
       </div>
     </>
   );

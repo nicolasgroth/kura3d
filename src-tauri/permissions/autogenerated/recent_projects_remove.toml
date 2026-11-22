@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-recent-projects-remove"
+description = "Enables the recent_projects_remove command without any pre-configured scope."
+commands.allow = ["recent_projects_remove"]
+
+[[permission]]
+identifier = "deny-recent-projects-remove"
+description = "Denies the recent_projects_remove command without any pre-configured scope."
+commands.deny = ["recent_projects_remove"]

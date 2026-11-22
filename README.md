@@ -54,7 +54,7 @@ El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kura3
 ## Qué puedes hacer hoy
 
 **Proyecto**
-- Proyectos `.kura` con escena, materiales, pintura e historial de deshacer. Autoguardado y recuperación de borradores.
+- Proyectos `.kura` con escena, materiales, pintura e historial de deshacer. Autoguardado y recuperación de borradores. En escritorio, la lista de recientes recuerda las rutas y reabre con un clic (se puede desactivar en Ajustes).
 - Importar **STL, 3MF, OBJ y PLY**, varios archivos a la vez, por diálogo o arrastrando. Lee los 3MF de slicers (componentes, instancias, colores de filamento) conservando las posiciones.
 - Exportar **3MF, STL, OBJ con colores, GLB y PLY**, la escena completa o la selección.
 

@@ -9,7 +9,7 @@ Estados: **Activa** (disponible al usuario), **Parcial** (existe con límites co
 | F-PROY | Proyectos `.kura` | Nuevo, abrir, guardar y guardar como, conservando escena e historial | Activa | `src/project/` |
 | F-RECUP | Recuperación local | Autoguardado de borradores y recuperación al reabrir | Activa (web) | `src/project/projectRecovery*` |
 | F-IMPORT | Importar STL/3MF/OBJ/PLY | Por diálogo o arrastre, en lote, con un solo deshacer; 3MF con componentes, instancias y posiciones | Activa | `src/engine/io/` |
-| F-EXPORT | Exportar 3MF/STL/OBJ/GLB/PLY | Diálogo único, selección o escena, colores por cara en 3MF | Parcial: sin verificación en slicers reales; el perfil de slicer no cambia el archivo | `src/engine/io/` |
+| F-EXPORT | Exportar 3MF/STL/OBJ/GLB/PLY | Diálogo único, selección o escena, colores por cara en 3MF; un solo 3MF estándar (sin selector de perfil de slicer) | Parcial: sin verificación en slicers reales | `src/engine/io/` |
 | F-TRANSF | Transformar con precisión | Mover, rotar y escalar por gizmo o valores exactos | Activa | `src/components/RightInspector.tsx` |
 | F-PRIM | Primitivas | Sólidos básicos con parámetros editables tras crearlos; piezas nuevas en espacio libre | Activa | `src/engine/primitives.ts`, `src/core/scene/` |
 | F-BOOL | Booleanas | Unión, diferencia e intersección | Activa | `src/engine/operations.ts` |
@@ -21,7 +21,7 @@ Estados: **Activa** (disponible al usuario), **Parcial** (existe con límites co
 | F-LITO | Litofanía e imagen a silueta | Relieve desde imagen, cortador desde silueta | Activa | `src/engine/generators.ts` |
 | F-SEGM | Segmentación estructural | Detectar, colorear y extraer sub-estructuras | Activa | `src/engine/structuralSegmentation.ts` |
 | F-PINT | Pintura 3D | Pintar caras para multicolor | Activa | `src/components/Viewport3D.tsx` |
-| F-ANAL | Análisis de imprimibilidad | Voladizos, cierre de malla, peso estimado | Activa | `src/engine/analysis.ts` |
+| F-ANAL | Análisis de imprimibilidad | Voladizos, cierre de malla; peso y filamento solo como estimación muy aproximada («≈», depende del slicer, no entra en el puntaje) | Activa | `src/engine/analysis.ts` |
 | F-SIMPL | Simplificar y refinar | Reducir o densificar malla | Activa | `src/engine/advancedGeometry.ts` |
 | F-ALIN | Alineación | Alinear y apoyar objetos | Activa | `src/engine/alignment.ts` |
 | F-UI | Estudio | Temas, densidades, 6 idiomas, paleta de comandos, atajos | Activa | `src/components/`, `src/i18n/` |

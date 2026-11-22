@@ -1,8 +1,8 @@
 /**
  * @file src/utils/recentProjects.ts
- * @description Lista de proyectos recientes (máximo 8) guardada en localStorage. Solo se conserva el
- * nombre del archivo y la fecha: no hay rutas ni contenido, porque la ubicación que entrega el
- * escritorio es una autorización opaca de la sesión y la web no tiene ruta reabrible.
+ * @description Lista de proyectos recientes de la versión web (máximo 8) guardada en localStorage. Solo se
+ * conserva el nombre del archivo y la fecha: la web no tiene ruta reabrible. En escritorio la lista vive en
+ * Rust (`src/project/nativeRecents.ts`). Aquí también está la preferencia «Recordar proyectos recientes».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -15,6 +15,7 @@ export interface RecentProject {
 }
 
 export const RECENT_PROJECTS_KEY = 'kura3d-recent-projects';
+export const RECENT_REMEMBER_KEY = 'kura3d-recent-remember';
 export const MAX_RECENT_PROJECTS = 8;
 const MAX_NAME_LENGTH = 120;
 
@@ -60,6 +61,26 @@ export function loadRecentProjects(storage: StorageLike | null = defaultStorage(
   }
 }
 
+/** Preferencia «Recordar proyectos recientes» (web): activada salvo que se haya desactivado. */
+export function isRecentRememberEnabled(storage: StorageLike | null = defaultStorage()): boolean {
+  try {
+    return storage?.getItem(RECENT_REMEMBER_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+
+/** Cambia la preferencia; al desactivarla se borra la lista guardada. */
+export function setRecentRememberEnabled(enabled: boolean, storage: StorageLike | null = defaultStorage()): void {
+  try {
+    if (enabled) storage?.removeItem(RECENT_REMEMBER_KEY);
+    else storage?.setItem(RECENT_REMEMBER_KEY, '0');
+  } catch {
+    // Sin almacenamiento la preferencia no persiste; la lista de la sesión igual se vacía abajo.
+  }
+  if (!enabled) clearRecentProjects(storage);
+}
+
 /** Agrega (o sube al primer lugar) un proyecto y devuelve la lista resultante. */
 export function addRecentProject(
   name: string,
@@ -68,7 +89,7 @@ export function addRecentProject(
 ): RecentProject[] {
   const clean = name.trim().slice(0, MAX_NAME_LENGTH);
   const current = loadRecentProjects(storage);
-  if (!clean) return current;
+  if (!clean || !isRecentRememberEnabled(storage)) return current;
   const next = [{ name: clean, openedAt: now }, ...current.filter((item) => item.name !== clean)]
     .slice(0, MAX_RECENT_PROJECTS);
   try {

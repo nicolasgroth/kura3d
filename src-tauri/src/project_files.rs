@@ -17,7 +17,7 @@ use tempfile::NamedTempFile;
 use uuid::Uuid;
 
 // Keep this limit in sync with MAX_PROJECT_BYTES in the web project codec.
-const MAX_PROJECT_BYTES: usize = 128 * 1024 * 1024;
+pub(crate) const MAX_PROJECT_BYTES: usize = 128 * 1024 * 1024;
 const MAX_METADATA_BYTES: usize = 64 * 1024;
 const TOO_LARGE: &str = "kura-project-too-large";
 
@@ -70,7 +70,7 @@ fn project_dialog(
     Ok(dialog)
 }
 
-fn is_project_path(path: &Path) -> bool {
+pub(crate) fn is_project_path(path: &Path) -> bool {
     path.extension()
         .is_some_and(|ext| ext.eq_ignore_ascii_case("kura"))
 }
@@ -126,7 +126,7 @@ fn read_save_request(body: &InvokeBody) -> Result<(SaveRequest, &[u8]), String> 
     Ok((request, bytes))
 }
 
-fn write_atomically(
+pub(crate) fn write_atomically(
     target: &Path,
     write: impl FnOnce(&mut File) -> io::Result<()>,
 ) -> io::Result<()> {
@@ -148,23 +148,36 @@ fn write_atomically(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn open_kura_project(window: WebviewWindow) -> Result<Response, String> {
-    let Some(selected) = project_dialog(&window)?.blocking_pick_file() else {
-        return Ok(Response::new(Vec::<u8>::new()));
-    };
-    let target = selected_path(selected)?;
-    let metadata = fs::symlink_metadata(&target).map_err(|err| err.to_string())?;
-    if !metadata.is_file() {
-        return Err("El proyecto debe ser un archivo normal.".into());
+/// Checks that `target` is a regular `.kura` file within the size cap. Errors are stable
+/// codes the web UI maps to messages (`kura-project-missing`, `kura-project-invalid`,
+/// `kura-project-too-large`).
+pub(crate) fn validate_project_file(target: &Path, max_bytes: u64) -> Result<fs::Metadata, String> {
+    if !is_project_path(target) {
+        return Err("kura-project-invalid".into());
     }
-    if metadata.len() > MAX_PROJECT_BYTES as u64 {
+    let metadata = fs::symlink_metadata(target).map_err(|err| {
+        if err.kind() == io::ErrorKind::NotFound {
+            "kura-project-missing".to_string()
+        } else {
+            err.to_string()
+        }
+    })?;
+    if !metadata.is_file() {
+        return Err("kura-project-invalid".into());
+    }
+    if metadata.len() > max_bytes {
         return Err(TOO_LARGE.into());
     }
+    Ok(metadata)
+}
 
+/// Reads the project at `target` and builds the IPC response (length-prefixed JSON
+/// metadata followed by the raw project bytes), registering its session location.
+pub(crate) fn project_response(window: &WebviewWindow, target: PathBuf) -> Result<Response, String> {
+    let metadata = validate_project_file(&target, MAX_PROJECT_BYTES as u64)?;
     let file = File::open(&target).map_err(|err| err.to_string())?;
     let name = file_name(&target)?;
-    let location = window.state::<ProjectLocations>().remember(target)?;
+    let location = window.state::<ProjectLocations>().remember(target.clone())?;
     let metadata_bytes =
         serde_json::to_vec(&ProjectFile { name, location }).map_err(|err| err.to_string())?;
     let prefix_len = 4 + metadata_bytes.len();
@@ -177,7 +190,16 @@ pub async fn open_kura_project(window: WebviewWindow) -> Result<Response, String
     if response.len() - prefix_len > MAX_PROJECT_BYTES {
         return Err(TOO_LARGE.into());
     }
+    crate::recent_projects::record_best_effort(window, &target);
     Ok(Response::new(response))
+}
+
+#[tauri::command]
+pub async fn open_kura_project(window: WebviewWindow) -> Result<Response, String> {
+    let Some(selected) = project_dialog(&window)?.blocking_pick_file() else {
+        return Ok(Response::new(Vec::<u8>::new()));
+    };
+    project_response(&window, selected_path(selected)?)
 }
 
 #[tauri::command]
@@ -199,7 +221,8 @@ pub async fn save_kura_project(
     };
     let name = file_name(&target)?;
     write_atomically(&target, |file| file.write_all(bytes)).map_err(|err| err.to_string())?;
-    let location = locations.remember(target)?;
+    let location = locations.remember(target.clone())?;
+    crate::recent_projects::record_best_effort(&window, &target);
     Ok(Some(ProjectFile { name, location }))
 }
 

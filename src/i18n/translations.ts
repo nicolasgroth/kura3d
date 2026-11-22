@@ -1318,6 +1318,20 @@ export const TRANSLATIONS_ES = {
   'inspector.pro.estimateNote': 'Estimación muy aproximada: el valor real depende del slicer y de sus ajustes',
   'toast.printabilityDone': 'Validación 3D: {score}/100',
   'ai.local.printability': '«{name}»: imprimibilidad {score}/100, voladizos {overhang} %, {issues} avisos. Material ≈ {weight} g (estimación muy aproximada: depende del slicer). Los detalles están en el Inspector.',
+  'project.recent.itemTipDesktop': 'Abrir «{name}» ({folder})',
+  'project.recent.noteDesktop': 'Se recuerdan las rutas de los proyectos que abres o guardas. Puedes desactivarlo en Ajustes.',
+  'project.recent.off': 'Los recientes están desactivados (Ajustes › Proyecto y medidas)',
+  'project.recent.missingTag': 'no encontrado',
+  'project.recent.remove': 'Quitar de recientes',
+  'project.recent.removeOne': 'Quitar «{name}» de recientes',
+  'project.recent.missing': '«{name}» ya no existe en su carpeta. Quítalo de la lista o ábrelo con «Abrir…».',
+  'project.recent.invalid': '«{name}» ya no es un proyecto .kura válido (cambió de tipo o extensión).',
+  'project.recent.unknown': 'Ese proyecto ya no está en la lista de recientes.',
+  'settings.recent.title': 'Proyectos recientes',
+  'settings.recent.remember': 'Recordar proyectos recientes',
+  'settings.recent.helpDesktop': 'Guarda la ruta de los proyectos que abres o guardas para reabrirlos con un clic. Al desactivarlo se borra la lista.',
+  'settings.recent.helpWeb': 'Guarda solo el nombre y la fecha (el navegador no permite reabrir por ruta). Al desactivarlo se borra la lista.',
+  'settings.recent.forget': 'Olvidar recientes',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2596,6 +2610,20 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'inspector.pro.estimateNote': 'Very rough estimate: the real value depends on the slicer and its settings',
   'toast.printabilityDone': '3D Check: {score}/100',
   'ai.local.printability': '“{name}”: printability {score}/100, overhangs {overhang} %, {issues} warnings. Material ≈ {weight} g (very rough estimate: it depends on the slicer). Details are in the Inspector.',
+  'project.recent.itemTipDesktop': 'Open “{name}” ({folder})',
+  'project.recent.noteDesktop': 'The paths of projects you open or save are remembered. You can turn this off in Settings.',
+  'project.recent.off': 'Recent projects are turned off (Settings › Project and measures)',
+  'project.recent.missingTag': 'not found',
+  'project.recent.remove': 'Remove from recent',
+  'project.recent.removeOne': 'Remove “{name}” from recent',
+  'project.recent.missing': '“{name}” no longer exists in its folder. Remove it from the list or use “Open…”.',
+  'project.recent.invalid': '“{name}” is no longer a valid .kura project (its type or extension changed).',
+  'project.recent.unknown': 'That project is no longer in the recent list.',
+  'settings.recent.title': 'Recent projects',
+  'settings.recent.remember': 'Remember recent projects',
+  'settings.recent.helpDesktop': 'Stores the path of projects you open or save so you can reopen them with one click. Turning it off erases the list.',
+  'settings.recent.helpWeb': 'Stores only the name and date (the browser cannot reopen by path). Turning it off erases the list.',
+  'settings.recent.forget': 'Forget recent',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };
