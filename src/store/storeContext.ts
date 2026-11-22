@@ -28,7 +28,7 @@ import { StoreOperationError } from './commandErrors';
 import { createExclusiveRunner } from './exclusiveOperation';
 import { createOperationErrorTracker, localizeWarnings } from './operationErrors';
 import { cloneSnapshot } from './projectDocument';
-import type { KuraStoreState, SceneSnapshot } from './storeTypes';
+import type { HistoryStep, KuraStoreState, SceneSnapshot } from './storeTypes';
 
 type SetState = StoreApi<KuraStoreState>['setState'];
 type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
@@ -37,6 +37,8 @@ type Translate = (key: TranslationKey, params?: Record<string, string | number>)
 export interface StoreRuntime {
   /** Trazo de pincel en curso: un solo paso de historial por trazo. */
   paintStroke: { open: boolean; recorded: boolean };
+  /** Trazo en vivo del visor: malla original (antes de preparar) y malla preparada sobre la que se pinta. */
+  livePaint: { objectId: string; original: import('../types/kura').MeshData; prepared: import('../types/kura').MeshData } | null;
   /** Escena previa a un arrastre de transformación sin confirmar. */
   transformSnapshotBeforeDrag: SceneSnapshot | null;
   /** El aviso de pasos descartados por memoria ya se mostró en esta sesión. */
@@ -59,7 +61,9 @@ export interface StoreContext {
   tr: Translate;
   pushHistory: () => void;
   /** Recorta pasado y futuro al presupuesto vigente; avisa una vez por sesión al descartar por memoria. */
-  limitHistory: (past: SceneSnapshot[], future: SceneSnapshot[]) => { past: SceneSnapshot[]; future: SceneSnapshot[] };
+  limitHistory: (past: HistoryStep[], future: HistoryStep[]) => { past: HistoryStep[]; future: HistoryStep[] };
+  /** Agrega un paso (instantánea o delta) al pasado, vacía el futuro y recorta al presupuesto. */
+  pushHistoryStep: (step: HistoryStep) => void;
   isHistoryLocked: () => boolean;
   rejectWhileLocked: () => boolean;
   runExclusive: ReturnType<typeof createExclusiveRunner>;
@@ -108,6 +112,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
 
   const runtime: StoreRuntime = {
     paintStroke: { open: false, recorded: false },
+    livePaint: null,
     transformSnapshotBeforeDrag: null,
     historyBudgetWarned: false,
     activeJob: null,
@@ -123,10 +128,12 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     return { past: result.past, future: result.future };
   };
 
+  const pushHistoryStep = (step: HistoryStep) => {
+    set(limitHistory([...get().past, step], []));
+  };
   const pushHistory = () => {
     const state = get();
-    const snap = cloneSnapshot(state.objects, state.selectedIds);
-    set(limitHistory([...state.past, snap], []));
+    pushHistoryStep(cloneSnapshot(state.objects, state.selectedIds));
   };
 
   const operationErrors = createOperationErrorTracker();
@@ -254,7 +261,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   };
 
   return {
-    set, get, runtime, tr, pushHistory, limitHistory, isHistoryLocked, rejectWhileLocked, runExclusive, operationErrors,
+    set, get, runtime, tr, pushHistory, pushHistoryStep, limitHistory, isHistoryLocked, rejectWhileLocked, runExclusive, operationErrors,
     reportOperationError, reportEngineWarnings, currentSegmentationFor, projectErrorMessage, opCtx, assertCurrent, commitChange,
     runEngine, cancelBusyOperation, runEngineDetached,
   };

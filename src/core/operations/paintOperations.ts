@@ -12,7 +12,10 @@ import { paintEntireMesh, paintFloodFillConnectedFaces, paintMeshFacesInSphere, 
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
 import { change, emptyChange, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
 
-/** Ángulo por defecto entre caras vecinas para el relleno por región. */
+/**
+ * El relleno por región se detiene en las aristas vivas: mismo ángulo de pliegue que el visor
+ * (`CREASE_ANGLE_DEG` de `utils/creasedNormals`; una prueba exige que coincidan, core no importa utils).
+ */
 export const PAINT_REGION_ANGLE_DEG = 35;
 
 /** Parche de la malla pintada: solo la malla si la topología no cambió; con estadísticas si se subdividió. */

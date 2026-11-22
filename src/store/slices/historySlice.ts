@@ -1,12 +1,13 @@
 /**
  * @file src/store/slices/historySlice.ts
  * @description Slice de historial: deshacer y rehacer (bloqueados durante operaciones o
- * arrastres) y confirmación o cancelación del paso de un arrastre de transformación.
+ * arrastres; los deltas de pintura se aplican sobre el estado actual) y confirmación o cancelación del paso de un arrastre de transformación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
+import { applyPaintDeltaStep, isPaintDeltaStep } from '../historySteps';
 import { cloneSnapshot } from '../projectDocument';
 import { clampHistoryLimits, loadInitialHistoryLimits, saveHistoryLimits } from '../preferencesStorage';
 import type { StoreContext } from '../storeContext';
@@ -35,20 +36,31 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
       rejectWhileLocked() ||
       set((state) => {
         if (state.past.length === 0) return state;
-        const previous = state.past[state.past.length - 1];
+        const step = state.past[state.past.length - 1];
+        if (isPaintDeltaStep(step)) {
+          // Delta de pintura: se aplica hacia atrás y el mismo paso pasa al futuro.
+          const objects = applyPaintDeltaStep(state.objects, step, 'undo');
+          const { past, future } = limitHistory(state.past.slice(0, -1), objects ? [step, ...state.future] : state.future);
+          return { objects: objects ?? state.objects, activeSegmentation: null, past, future };
+        }
         const current = cloneSnapshot(state.objects, state.selectedIds);
         const { past, future } = limitHistory(state.past.slice(0, -1), [current, ...state.future]);
-        return { objects: previous.objects, selectedIds: previous.selectedIds, activeSegmentation: null, past, future };
+        return { objects: step.objects, selectedIds: step.selectedIds, activeSegmentation: null, past, future };
       }),
 
     redo: () =>
       rejectWhileLocked() ||
       set((state) => {
         if (state.future.length === 0) return state;
-        const next = state.future[0];
+        const step = state.future[0];
+        if (isPaintDeltaStep(step)) {
+          const objects = applyPaintDeltaStep(state.objects, step, 'redo');
+          const { past, future } = limitHistory(objects ? [...state.past, step] : state.past, state.future.slice(1));
+          return { objects: objects ?? state.objects, activeSegmentation: null, past, future };
+        }
         const current = cloneSnapshot(state.objects, state.selectedIds);
         const { past, future } = limitHistory([...state.past, current], state.future.slice(1));
-        return { objects: next.objects, selectedIds: next.selectedIds, activeSegmentation: null, past, future };
+        return { objects: step.objects, selectedIds: step.selectedIds, activeSegmentation: null, past, future };
       }),
 
     commitTransformSnapshot: () => {

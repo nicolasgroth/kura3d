@@ -16,6 +16,7 @@ import type { SceneObject } from '../../types/kura';
 import { clampHistoryLimits, loadInitialHistoryLimits, STORAGE_HISTORY_LIMITS_KEY } from '../preferencesStorage';
 import { hasProjectChanged } from '../projectDocument';
 import { captureProject, useKuraStore } from '../useKuraStore';
+import type { SceneSnapshot } from '../storeTypes';
 import { addBox, resetStore, store } from './storeTestUtils';
 
 const TRIS_10MB = Math.round((10 * 1024 * 1024) / 48);
@@ -49,7 +50,8 @@ describe('Historial por presupuesto', () => {
     expect(past.length).toBeLessThan(8);
     expect(past.length).toBeGreaterThanOrEqual(2);
     // El paso más reciente (la escena previa al último movimiento) siempre sigue ahí.
-    expect(past[past.length - 1].objects[0].mesh).not.toBe(past[0].objects[0].mesh);
+    const snaps = past as SceneSnapshot[]; // solo hay movimientos: todos son instantáneas
+    expect(snaps[snaps.length - 1].objects[0].mesh).not.toBe(snaps[0].objects[0].mesh);
   });
 
   it('con un solo paso enorme conserva ese paso aunque exceda el presupuesto', async () => {
@@ -162,7 +164,7 @@ describe('Archivo .kura con historial largo', () => {
   it('el códec sigue rechazando archivos con más de 40 pasos de historial', async () => {
     const box = await addBox(10);
     for (let i = 1; i <= 45; i++) store().setObjectTransform(box.id, { position: [i, 0, 0] }, true);
-    const doc = { ...captureProject(store()), past: store().past };
+    const doc = { ...captureProject(store()), past: store().past as SceneSnapshot[] };
     expect(() => encodeProject(doc)).toThrow();
   });
 });

@@ -15,6 +15,7 @@ import type { openProjectFile } from '../project/projectFiles';
 import type { RecoveryDraftInfo } from '../project/projectRecoveryStorage';
 import type { HistoryLimits } from '../project/historyBudget';
 import type { ProjectDocument, ProjectSceneSnapshot } from '../project/projectSchema';
+import type { HistoryStep } from './historySteps';
 import type {
   ActiveTool,
   AiChatMessage,
@@ -88,6 +89,7 @@ export interface ToastMessage {
 }
 
 export type SceneSnapshot = ProjectSceneSnapshot;
+export type { HistoryStep } from './historySteps';
 
 /** Progreso de la operación en curso (para la barra con Cancelar). */
 export interface BusyProgress {
@@ -119,8 +121,9 @@ export interface KuraStoreState {
   // Escena y selección
   objects: SceneObject[];
   selectedIds: string[];
-  past: SceneSnapshot[];
-  future: SceneSnapshot[];
+  /** Pasos de deshacer/rehacer: instantáneas o deltas de pintura (ver `historySteps.ts`). */
+  past: HistoryStep[];
+  future: HistoryStep[];
   projectName: string | null;
   projectLocation?: string;
   projectDraftId: string;
@@ -348,6 +351,13 @@ export interface KuraStoreState {
   /** Abre un trazo de pincel: las muestras siguientes comparten un único paso de historial. */
   beginPaintStroke: () => void;
   endPaintStroke: () => void;
+  /**
+   * Trazo en vivo del visor: deja la malla lista para pintar (con colores por cara, sin historial)
+   * y devuelve esa malla; `null` si el objeto no se puede pintar ahora.
+   */
+  preparePaintStroke: (id: string) => MeshData | null;
+  /** Cierra el trazo en vivo: guarda la malla final y UN paso de historial (delta); `null` lo descarta. */
+  commitPaintStroke: (id: string, result: import('../engine/paint/strokeSession').StrokeResult | null) => void;
   eraseSphereOnObject: (id: string, worldCenter: Vec3, radiusMm?: number) => Promise<void>;
 
   // Nuevas capacidades

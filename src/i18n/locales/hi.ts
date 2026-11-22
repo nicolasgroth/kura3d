@@ -775,6 +775,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.shortcuts.openMold': 'मोल्ड / सिलिकॉन जनरेटर खोलें',
   'dialog.shortcuts.toggleXray': 'एक्स-रे / अनुभाग समतल टॉगल करें',
   'dialog.shortcuts.togglePaint': '3MF पेंट उपकरण टॉगल करें',
+  'dialog.shortcuts.brushSize': 'ब्रश त्रिज्या घटाएँ / बढ़ाएँ',
   'dialog.shortcuts.openCut': 'कनेक्टर के साथ समतल कट खोलें',
   'dialog.shortcuts.dropBed': 'चयन को बेड पर रखें (Z=0)',
   'dialog.shortcuts.toggleHole': 'ठोस / छेद (घटाव) टॉगल करें',

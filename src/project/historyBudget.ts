@@ -3,13 +3,17 @@
  * @description Memoria retenida por el historial de deshacer/rehacer y recorte por presupuesto. Los
  * snapshots comparten por referencia las mallas que no cambiaron, así que cada buffer (posiciones,
  * índices, normales, colores por cara) se cuenta UNA vez por identidad, más un costo fijo por objeto
- * y por paso. Funciones puras, sin dependencia del store.
+ * y por paso; un delta de pintura cuenta solo sus arreglos. Funciones puras, sin dependencia del store.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import type { SceneSnapshot } from '../store/storeTypes';
+import { faceColorDeltaBytes } from '../engine/paint/colorDelta';
+import type { MeshData } from '../types/kura';
+import { isPaintDeltaStep, type HistoryStep } from '../store/historySteps';
+
+type SceneSnapshot = HistoryStep;
 
 /** Costo fijo estimado de un paso del historial (arreglos, selección, envoltorio). */
 export const STEP_OVERHEAD_BYTES = 256;
@@ -44,7 +48,7 @@ export interface HistoryUsage {
 type Buffer = object;
 
 /** Buffers de una malla con su tamaño estimado (todos distintos por identidad). */
-function meshBuffers(mesh: SceneSnapshot['objects'][number]['mesh']): Array<[Buffer, number]> {
+function meshBuffers(mesh: MeshData): Array<[Buffer, number]> {
   const out: Array<[Buffer, number]> = [
     [mesh.positions, mesh.positions.byteLength],
     [mesh.indices, mesh.indices.byteLength],
@@ -55,12 +59,15 @@ function meshBuffers(mesh: SceneSnapshot['objects'][number]['mesh']): Array<[Buf
 }
 
 function stepBuffers(step: SceneSnapshot): Array<[Buffer, number]> {
+  // Un delta de pintura retiene solo sus arreglos (los índices los comparte con la escena).
+  if (isPaintDeltaStep(step)) return [[step.delta, faceColorDeltaBytes(step.delta)]];
   const out: Array<[Buffer, number]> = [];
   for (const obj of step.objects) out.push(...meshBuffers(obj.mesh));
   return out;
 }
 
 function stepFixedBytes(step: SceneSnapshot): number {
+  if (isPaintDeltaStep(step)) return STEP_OVERHEAD_BYTES;
   return STEP_OVERHEAD_BYTES + step.objects.length * OBJECT_OVERHEAD_BYTES;
 }
 
@@ -83,9 +90,9 @@ export function describeHistoryUsage(past: readonly SceneSnapshot[], future: rea
   return { steps: past.length + future.length, bytes: estimateHistoryBytes([...past, ...future]) };
 }
 
-export interface TrimResult {
-  past: SceneSnapshot[];
-  future: SceneSnapshot[];
+export interface TrimResult<T extends HistoryStep = HistoryStep> {
+  past: T[];
+  future: T[];
   /** Pasos descartados por superar el presupuesto de memoria. */
   droppedByBudget: number;
   /** Pasos descartados por superar el máximo de pasos. */
@@ -98,12 +105,12 @@ export interface TrimResult {
  * pasado, o el primero del futuro si no hay pasado) aunque exceda el presupuesto. Devuelve los
  * mismos arreglos si no hay nada que descartar.
  */
-export function trimHistory(
-  past: SceneSnapshot[],
-  future: SceneSnapshot[],
+export function trimHistory<T extends HistoryStep>(
+  past: T[],
+  future: T[],
   limits: { budgetBytes: number; maxSteps: number },
-): TrimResult {
-  const noChange: TrimResult = { past, future, droppedByBudget: 0, droppedByCount: 0 };
+): TrimResult<T> {
+  const noChange: TrimResult<T> = { past, future, droppedByBudget: 0, droppedByCount: 0 };
   const refs = new Map<Buffer, { size: number; count: number }>();
   let bytes = 0;
   const add = (step: SceneSnapshot, sign: 1 | -1) => {
@@ -168,10 +175,10 @@ export function formatMb(bytes: number): string {
  * Historial que cabe en el archivo `.kura`: los pasos MÁS RECIENTES (los últimos del pasado y los
  * primeros del futuro) hasta 40 pasos o 64 MB, lo que ocurra primero. Mantiene el archivo acotado.
  */
-export function trimHistoryForFile(
-  past: SceneSnapshot[],
-  future: SceneSnapshot[],
-): { past: SceneSnapshot[]; future: SceneSnapshot[] } {
+export function trimHistoryForFile<T extends HistoryStep>(
+  past: T[],
+  future: T[],
+): { past: T[]; future: T[] } {
   const result = trimHistory(past, future, {
     budgetBytes: FILE_HISTORY_BUDGET_MB * MB,
     maxSteps: FILE_HISTORY_MAX_STEPS,

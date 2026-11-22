@@ -775,6 +775,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.shortcuts.openMold': 'Gießform- / Silikongenerator öffnen',
   'dialog.shortcuts.toggleXray': 'Röntgen / Schnittebene umschalten',
   'dialog.shortcuts.togglePaint': '3MF-Malwerkzeug umschalten',
+  'dialog.shortcuts.brushSize': 'Pinselradius verkleinern / vergrößern',
   'dialog.shortcuts.openCut': 'Ebenenschnitt mit Verbindern öffnen',
   'dialog.shortcuts.dropBed': 'Auswahl auf Druckbett absetzen (Z=0)',
   'dialog.shortcuts.toggleHole': 'Vollkörper / Bohrung (Subtraktion) umschalten',

@@ -64,6 +64,7 @@ export const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = 
         { keys: ['Shift+M'], label: t(language, 'dialog.shortcuts.openMold') },
         { keys: ['X'], label: t(language, 'dialog.shortcuts.toggleXray') },
         { keys: ['P'], label: t(language, 'dialog.shortcuts.togglePaint') },
+        { keys: ['[', ']'], label: t(language, 'dialog.shortcuts.brushSize') },
         { keys: ['C'], label: t(language, 'dialog.shortcuts.openCut') },
         { keys: ['Shift+C'], label: t(language, 'split.open') },
         { keys: ['L'], label: t(language, 'dialog.shortcuts.dropBed') },

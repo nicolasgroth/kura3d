@@ -1,6 +1,6 @@
 /**
  * @file src/components/viewport/PaintToolbar.tsx
- * @description Barra contextual de la herramienta Pintar: modo de pincel, radio (mm de mundo) y muestras
+ * @description Barra contextual de la herramienta Pintar: modo de pincel, radio (mm de mundo, con `[` y `]`) y muestras
  * de filamento con nombre legible, estado pulsado y borde visible en colores claros.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -14,6 +14,7 @@ import { type PaintBrushMode, useKuraStore } from '../../store/useKuraStore';
 import { PRINT_COLOR_PALETTE } from '../../types/kura';
 import { colorName, colorNameWithHex } from '../../utils/colorNames';
 import { PaintRefineHint } from './PaintRefineHint';
+import { PAINT_RADIUS_MAX_MM, PAINT_RADIUS_MIN_MM, usePaintRadiusKeys } from './usePaintRadiusKeys';
 import '../../styles/paintTools.css';
 
 /** Luminancia relativa aproximada: las muestras claras llevan borde para verse sobre fondos claros. */
@@ -36,6 +37,7 @@ export const PaintToolbar: React.FC = () => {
   // En móvil la barra es una hoja inferior plegable; en escritorio el botón no se muestra.
   const [folded, setFolded] = useState(false);
   const colorBeforeEraser = useRef<string | null>(null);
+  usePaintRadiusKeys(paintMode === 'brush');
 
   useEffect(() => {
     if (eraser && baseColor) setPaintSettings({ paintColor: baseColor });
@@ -98,13 +100,14 @@ export const PaintToolbar: React.FC = () => {
           <span>{t(language, 'viewport.paint.radius')}: {paintRadiusMm} mm</span>
           <input
             type="range"
-            min={1}
-            max={25}
+            min={PAINT_RADIUS_MIN_MM}
+            max={PAINT_RADIUS_MAX_MM}
             step={0.5}
             value={paintRadiusMm}
             aria-label={t(language, 'viewport.paint.radius')}
             aria-valuetext={`${paintRadiusMm} mm`}
-            title={t(language, 'viewport.paint.radiusTip')}
+            aria-keyshortcuts="[ ]"
+            title={`${t(language, 'viewport.paint.radiusTip')} — [ / ]: ${t(language, 'dialog.shortcuts.brushSize')}`}
             onChange={(e) => setPaintSettings({ paintRadiusMm: Number(e.target.value) })}
           />
         </label>

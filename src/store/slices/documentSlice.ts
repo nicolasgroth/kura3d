@@ -33,6 +33,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     { location, recoveredDraftId }: { location?: string; recoveredDraftId?: string } = {},
   ) => {
     ctx.runtime.paintStroke = { open: false, recorded: false };
+    ctx.runtime.livePaint = null;
     // La vista de sección es un estado de visualización: abrir un proyecto o recuperar un borrador
     // no la reactiva (ni su aviso "Salir de la sección").
     document = { ...document, sectionPlane: { ...document.sectionPlane, enabled: false } };
