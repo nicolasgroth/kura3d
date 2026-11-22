@@ -10,6 +10,8 @@
  * @license MIT
  */
 
+import { OPERATION_RANGES } from '../../engine/operationLimits';
+
 export type LocalShape = 'box' | 'cylinder' | 'tube' | 'sphere' | 'cone' | 'torus' | 'prism';
 export type Axis = 0 | 1 | 2;
 
@@ -59,6 +61,15 @@ export interface LocalPlan {
   unknown: string[];
   /** Valores fuera de rango encontrados (en mm). */
   outOfRange: number[];
+  /** Parámetros de rosca fuera de rango: no se crea nada y se responde con el rango válido. */
+  threadRange: ThreadRangeError[];
+}
+
+export interface ThreadRangeError {
+  key: 'threadDiameterRange' | 'threadPitchRange' | 'threadLengthRange';
+  value: number;
+  min: number;
+  max: number;
 }
 
 export const MIN_MM = 0.1;
@@ -245,22 +256,37 @@ function createParams(shape: LocalShape, ms: Measure[]): Record<string, number> 
   }
 }
 
-const THREAD_WORD = /\b(rosca\w*|roscad\w*|threads?|threaded|tornillos?|pernos?|bolts?|screws?|tuercas?|nuts?)\b|\bm\d{1,2}\b/;
+const THREAD_WORD = /\b(rosca\w*|roscad\w*|threads?|threaded|tornillos?|pernos?|bolts?|screws?|tuercas?|nuts?)\b|\bm\d{1,3}\b/;
 const HOLE_WORD = /\b(agujeros?|orificios?|hoyos?|holes?|perforacion\w*|taladr\w*)\b/;
 const PRINTABILITY = /\b(imprimib\w*|printab\w*|se puede imprimir|can (it|this) be printed|valid\w*|analiz\w*|analy[sz]\w*|voladizos?|overhangs?)\b/;
-const NOMINAL = /\bm(\d{1,2})(?: paso (\d+(?:\.\d+)?))?\b/;
+const NOMINAL = /\bm(\d{1,3})(?: paso (\d+(?:\.\d+)?))?\b/;
 
 function threadIntent(clause: string): LocalIntent | null {
   if (!THREAD_WORD.test(clause)) return null;
   const nominalMatch = clause.match(NOMINAL);
   const ms = extractMeasures(clause.replace(NOMINAL, ' '));
   const nominal = Number(nominalMatch?.[1] ?? pick(ms, 'diameter') ?? 8);
-  const diameter = Math.min(64, Math.max(3, nominal));
+  // Sin acotar en silencio: un valor fuera de rango lo informa `parseLocalPrompt` (ver `threadRangeErrors`)
+  const diameter = nominal;
   const pitch = nominalMatch?.[2] ? Number(nominalMatch[2]) : ISO_COARSE_PITCH[diameter] ?? Math.max(0.5, Math.round(diameter * 0.6) / 4);
   if (HOLE_WORD.test(clause)) return { kind: 'threadHole', diameter, pitch };
   const part = /\b(tuercas?|nuts?)\b/.test(clause) ? 'nut' : 'bolt';
   const length = pick(ms, 'height') ?? pick(ms, 'depth') ?? ms.find((m) => !m.label && !m.percent && !m.multiplier)?.value ?? 20;
   return { kind: 'thread', part, diameter, pitch, length };
+}
+
+/** Parámetros de rosca fuera del rango que acepta el motor (M3–M64, paso 0,2–16 mm, largo 1–300 mm). */
+export function threadRangeErrors(intent: LocalIntent): ThreadRangeError[] {
+  if (intent.kind !== 'thread' && intent.kind !== 'threadHole') return [];
+  const R = OPERATION_RANGES.thread;
+  const out: ThreadRangeError[] = [];
+  const check = (key: ThreadRangeError['key'], value: number, r: { min: number; max: number }) => {
+    if (!Number.isFinite(value) || value < r.min || value > r.max) out.push({ key, value, min: r.min, max: r.max });
+  };
+  check('threadDiameterRange', intent.diameter, R.diameterMm);
+  check('threadPitchRange', intent.pitch, R.pitchMm);
+  if (intent.kind === 'thread') check('threadLengthRange', intent.length, R.lengthMm);
+  return out;
 }
 
 function intentOf(clause: string): LocalIntent | null {
@@ -352,13 +378,13 @@ export function parseLocalPrompt(prompt: string, objectNames: readonly string[] 
   const text = strip(prompt)
     .replace(/(\d),(\d)/g, '$1.$2')
     // "M6x1" es métrica y paso, no dos medidas; "en el centro" es una ubicación, no "centrar".
-    .replace(/\bm(\d{1,2})\s*[x×]\s*(\d+(?:\.\d+)?)/g, 'm$1 paso $2')
+    .replace(/\bm(\d{1,3})\s*[x×]\s*(\d+(?:\.\d+)?)/g, 'm$1 paso $2')
     .replace(/\b(en el|en la|al|in the|at the|on the)\s+(centro|center|centre|medio|middle)\b/g, ' ')
     // "20x50x30" → "20 50 30" para leer cada medida por separado.
     .replace(/(\d)\s*[x×*]\s*(?=\d)/g, '$1 ')
     .replace(/[¿¡]/g, ' ')
     .replace(/\b(en|eje|axis|along|on|the|el)\s+([xyz])\b/g, ' eje_$2');
-  const plan: LocalPlan = { steps: [], unknown: [], outOfRange: [] };
+  const plan: LocalPlan = { steps: [], unknown: [], outOfRange: [], threadRange: [] };
   for (const clause of splitClauses(text)) {
     const ref = refOf(clause, objectNames);
     // Los nombres ("Caja 2") no deben leerse como medidas.
@@ -369,6 +395,7 @@ export function parseLocalPrompt(prompt: string, objectNames: readonly string[] 
       plan.unknown.push(clause);
       continue;
     }
+    plan.threadRange.push(...threadRangeErrors(intent));
     if (intent.kind === 'create') {
       for (const [key, value] of Object.entries(intent.params)) {
         if (key !== 'sides' && (value < MIN_MM || value > MAX_MM)) plan.outOfRange.push(value);

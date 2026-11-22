@@ -461,6 +461,11 @@ export async function runLocalAssistant(prompt: string, lang: LanguageCode, exec
     run.say('ai.local.outOfRange', { value: fmt(plan.outOfRange[0]) });
     return run.output();
   }
+  if (plan.threadRange.length) {
+    const e = plan.threadRange[0];
+    run.say(`ai.local.${e.key}` as TranslationKey, { value: fmt(e.value), min: fmt(e.min), max: fmt(e.max) });
+    return run.output();
+  }
   if (plan.steps.length === 0) {
     run.say('ai.local.notUnderstood', { text: prompt.trim().slice(0, 80) });
     return run.output();
