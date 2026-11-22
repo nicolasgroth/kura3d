@@ -394,10 +394,10 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
         </div>
 
         <div className="kura-form-field">
-          <label htmlFor="cut-count">{t(language, 'dialog.cut.connectorCount')} (1-4)</label>
+          <label htmlFor="cut-count">{t(language, 'dialog.cut.connectorCount')}</label>
           <PrecisionNumberInput
             id="cut-count"
-            ariaLabel={`${t(language, 'dialog.cut.connectorCount')} (1-4)`}
+            ariaLabel={t(language, 'dialog.cut.connectorCount')}
             min={1}
             max={4}
             step={1}
