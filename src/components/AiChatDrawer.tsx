@@ -83,10 +83,14 @@ export const AiChatDrawer: React.FC = () => {
         content: output.assistantText,
       });
     } catch (err) {
+      // Detener es una decisión del usuario, no un fallo: mensaje neutro, sin prefijo de error.
+      const stopped = controller.signal.aborted || (err instanceof Error && err.name === 'AbortError');
       const message = err instanceof Error ? err.message : String(err);
       addAiMessage({
         role: 'assistant',
-        content: t(language, 'toast.errorPrefix', { message }),
+        content: stopped
+          ? t(language, 'ai.chat.stopped')
+          : t(language, 'toast.errorPrefix', { message }),
       });
     } finally {
       if (abortRef.current === controller) abortRef.current = null;

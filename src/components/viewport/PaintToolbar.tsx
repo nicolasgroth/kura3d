@@ -11,6 +11,7 @@ import React from 'react';
 import { t, type TranslationKey } from '../../i18n';
 import { type PaintBrushMode, useKuraStore } from '../../store/useKuraStore';
 import { PRINT_COLOR_PALETTE } from '../../types/kura';
+import { PaintRefineHint } from './PaintRefineHint';
 import '../../styles/paintTools.css';
 
 /** Nombre de cada color de la paleta de filamentos (mismo orden que `PRINT_COLOR_PALETTE`). */
@@ -102,6 +103,7 @@ export const PaintToolbar: React.FC = () => {
         />
       </div>
       <span className="kura-paint-hint">{t(language, 'viewport.paint.hint')}</span>
+      <PaintRefineHint />
     </div>
   );
 };

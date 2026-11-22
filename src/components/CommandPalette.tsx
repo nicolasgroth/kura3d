@@ -56,6 +56,7 @@ import { SUPPORTED_LANGUAGES } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
 import { openExportDialog } from './ExportDialog';
 import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
+import { rankPaletteItems } from '../utils/paletteRank';
 import { REFINE_UI_DEFAULTS } from './refineDefaults';
 
 interface PaletteActionItem {
@@ -689,16 +690,7 @@ export const CommandPalette: React.FC = () => {
     mirrorObject,
   ]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return actions;
-    return actions.filter(
-      (item) =>
-        item.label.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q) ||
-        item.keywords.toLowerCase().includes(q),
-    );
-  }, [actions, query]);
+  const filtered = useMemo(() => rankPaletteItems(actions, query), [actions, query]);
 
   useEffect(() => {
     setActiveIndex(0);

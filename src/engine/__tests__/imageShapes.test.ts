@@ -90,6 +90,39 @@ describe('Imagen → silueta / cortador / litofanía', () => {
     expect(computeMeshStats(sil).isManifold).toBe(true);
   });
 
+  it('el contorno de un círculo sale suave: perímetro a menos del 3 % del ideal (dientes de sierra ~+27 %)', async () => {
+    const size = 200;
+    const rgba = new Uint8ClampedArray(size * size * 4).fill(255);
+    const c = (size - 1) / 2;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        if (Math.hypot(x - c, y - c) <= 80) {
+          const i = (y * size + x) * 4;
+          rgba[i] = rgba[i + 1] = rgba[i + 2] = 0;
+        }
+      }
+    }
+    const sil = await generateSilhouetteOrCutterFromImage({ ...base(rgba, size), shapeMode: 'silhouette' });
+    const stats = computeMeshStats(sil);
+    expect(stats.isManifold).toBe(true);
+    const d = stats.dimensionsMm;
+    expect(d[0]).toBeCloseTo(70, 1);
+    // Perímetro = área lateral (normales horizontales) / altura de extrusión (eje Y).
+    const { positions, indices } = sil;
+    let side = 0;
+    for (let t = 0; t < indices.length; t += 3) {
+      const [a, b, cc] = [indices[t] * 3, indices[t + 1] * 3, indices[t + 2] * 3];
+      const u = [positions[b] - positions[a], positions[b + 1] - positions[a + 1], positions[b + 2] - positions[a + 2]];
+      const v = [positions[cc] - positions[a], positions[cc + 1] - positions[a + 1], positions[cc + 2] - positions[a + 2]];
+      const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+      const len = Math.hypot(n[0], n[1], n[2]);
+      if (len > 0 && Math.abs(n[1] / len) < 0.5) side += len / 2;
+    }
+    const perimeter = side / d[1];
+    const ideal = Math.PI * d[0];
+    expect(Math.abs(perimeter - ideal) / ideal).toBeLessThan(0.03);
+  });
+
   it('rechaza buffers RGBA incoherentes con IMAGE_BUFFER_INVALID', async () => {
     const good = base(darkRingOnWhite(32), 32);
     const bad: ImageTo3DOptions[] = [

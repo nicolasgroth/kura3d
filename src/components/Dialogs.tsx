@@ -33,6 +33,8 @@ import { type ActiveDialogType, generateRandomTokenHex, useKuraStore } from '../
 import { rotateMcpBridgeToken, useMcpBridgeStatus } from '../utils/mcpBridgeClient';
 import { describeMcpBridge } from '../utils/mcpBridgeHealth';
 import { maskToken } from '../utils/mcpTokenStore';
+import { OperationFailureAlert, useOperationFailure } from './OperationFailureAlert';
+import { CONNECTOR_DEPTH_RANGE_MM, CONNECTOR_SIZE_RANGE_MM } from '../engine/cutConnectorChecks';
 import { PrecisionNumberInput } from './PrecisionNumberInput';
 import { ExportDialog } from './ExportDialog';
 import { NativeModal } from './NativeModal';
@@ -241,6 +243,7 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 }) => {
   const language = useKuraStore((s) => s.language);
   const generateImageRelief = useKuraStore((s) => s.generateImageRelief);
+  const failure = useOperationFailure(open);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [shapeMode, setShapeMode] = useState<NonNullable<ImageTo3DOptions['shapeMode']>>('flat');
@@ -350,7 +353,7 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
   const handleGenerate = async () => {
     if (!rgbaBuffer) return;
-    const created = await generateImageRelief({
+    const { result: created } = await failure.run(() => generateImageRelief({
       name,
       rgba: rgbaBuffer.rgba,
       pixelWidth: rgbaBuffer.w,
@@ -366,7 +369,7 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
       arcDegrees,
       threshold,
       cutterWallMm,
-    });
+    }));
     if (created) onClose();
   };
 
@@ -392,6 +395,7 @@ const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         </>
       }
     >
+      <OperationFailureAlert message={failure.error} />
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button type="button" className="kura-btn kura-btn-sm" onClick={() => void handleUploadImage()}>
           <FileUp size={13} />
@@ -609,6 +613,7 @@ const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const [tolerance, setTolerance] = useState(0.25);
   const [connectorCount, setConnectorCount] = useState(2);
   const [keepMode, setKeepMode] = useState<PlaneCutOptions['keepMode']>('both');
+  const failure = useOperationFailure(open);
 
   const targetId = selectedIds[0] ?? objects[0]?.id;
 
@@ -648,17 +653,19 @@ const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
   const handleExecute = async () => {
     if (!targetId) return;
-    await planeCutObject(targetId, {
-      axis,
-      offset,
-      connectorType,
-      connectorSize,
-      connectorDepth,
-      tolerance,
-      connectorCount,
-      keepMode,
-    });
-    onClose();
+    const { failed } = await failure.run(() =>
+      planeCutObject(targetId, {
+        axis,
+        offset,
+        connectorType,
+        connectorSize,
+        connectorDepth,
+        tolerance,
+        connectorCount,
+        keepMode,
+      }),
+    );
+    if (!failed) onClose();
   };
 
   return (
@@ -684,6 +691,7 @@ const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         </>
       }
     >
+      <OperationFailureAlert message={failure.error} />
       <div className="kura-form-grid">
         <div className="kura-form-field">
           <label htmlFor="cut-axis">{t(language, 'dialog.cut.axis')}</label>
@@ -747,28 +755,34 @@ const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({
           <label htmlFor="cut-size">{t(language, 'dialog.cut.connectorSize')} (mm)</label>
           <PrecisionNumberInput
             id="cut-size"
-            min={1.5}
-            max={20}
+            min={CONNECTOR_SIZE_RANGE_MM.min}
+            max={CONNECTOR_SIZE_RANGE_MM.max}
             step={0.5}
             precision={1}
             defaultValue={4}
             value={connectorSize}
             onChange={setConnectorSize}
           />
+          <small id="cut-size-max" style={{ fontSize: 11, opacity: 0.8 }}>
+            {t(language, 'dialog.cut.maxAllowed', { max: CONNECTOR_SIZE_RANGE_MM.max })}
+          </small>
         </div>
 
         <div className="kura-form-field">
           <label htmlFor="cut-depth">{t(language, 'dialog.cut.connectorDepth')} (mm)</label>
           <PrecisionNumberInput
             id="cut-depth"
-            min={2}
-            max={25}
+            min={CONNECTOR_DEPTH_RANGE_MM.min}
+            max={CONNECTOR_DEPTH_RANGE_MM.max}
             step={0.5}
             precision={1}
             defaultValue={6}
             value={connectorDepth}
             onChange={setConnectorDepth}
           />
+          <small id="cut-depth-max" style={{ fontSize: 11, opacity: 0.8 }}>
+            {t(language, 'dialog.cut.maxAllowed', { max: CONNECTOR_DEPTH_RANGE_MM.max })}
+          </small>
         </div>
 
         <div className="kura-form-field">
@@ -818,21 +832,24 @@ const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onC
   const [pourSpoutRadiusMm, setPourSpoutRadiusMm] = useState(5);
   const [keyToleranceMm, setKeyToleranceMm] = useState(0.25);
   const [cavityWallMm, setCavityWallMm] = useState(3);
+  const failure = useOperationFailure(open);
 
   const targetId = selectedIds[0] ?? objects[0]?.id;
 
   const handleExecute = async () => {
     if (!targetId) return;
-    const created = await generateMoldForObject(targetId, {
-      mode,
-      wallMarginMm,
-      boxWallMm,
-      splitAxis,
-      pourSpout,
-      pourSpoutRadiusMm,
-      keyToleranceMm,
-      cavityWallMm,
-    });
+    const { result: created } = await failure.run(() =>
+      generateMoldForObject(targetId, {
+        mode,
+        wallMarginMm,
+        boxWallMm,
+        splitAxis,
+        pourSpout,
+        pourSpoutRadiusMm,
+        keyToleranceMm,
+        cavityWallMm,
+      }),
+    );
     if (created.length > 0) onClose();
   };
 
@@ -858,6 +875,7 @@ const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onC
         </>
       }
     >
+      <OperationFailureAlert message={failure.error} />
       <div className="kura-form-field">
         <label htmlFor="mold-mode">{t(language, 'dialog.mold.mode')}</label>
         <select
@@ -990,6 +1008,7 @@ const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const objects = useKuraStore((s) => s.objects);
   const projectOnObjectSurface = useKuraStore((s) => s.projectOnObjectSurface);
+  const failure = useOperationFailure(open);
 
   const [kind, setKind] = useState<'text' | 'svg'>('text');
   const [text, setText] = useState('KURA3D');
@@ -1013,18 +1032,20 @@ const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
   const handleExecute = async () => {
     if (!targetId) return;
-    const res = await projectOnObjectSurface(targetId, {
-      kind,
-      text: kind === 'text' ? text : undefined,
-      svgContent: kind === 'svg' ? svgContent : undefined,
-      mode,
-      axis,
-      widthMm,
-      depthMm,
-      colorHex,
-      offsetU,
-      offsetV,
-    });
+    const { result: res } = await failure.run(() =>
+      projectOnObjectSurface(targetId, {
+        kind,
+        text: kind === 'text' ? text : undefined,
+        svgContent: kind === 'svg' ? svgContent : undefined,
+        mode,
+        axis,
+        widthMm,
+        depthMm,
+        colorHex,
+        offsetU,
+        offsetV,
+      }),
+    );
     if (res) onClose();
   };
 
@@ -1050,6 +1071,7 @@ const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         </>
       }
     >
+      <OperationFailureAlert message={failure.error} />
       <div className="kura-form-grid">
         <div className="kura-form-field">
           <label htmlFor="proj-kind">{t(language, 'dialog.project.kind')}</label>
@@ -1217,16 +1239,19 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
   const [lengthMm, setLengthMm] = useState(20);
   const [clearanceMm, setClearanceMm] = useState(0.25);
   const [includeHead, setIncludeHead] = useState(true);
+  const failure = useOperationFailure(open);
 
   const handleExecute = async () => {
-    const created = await createThreadObject({
-      kind,
-      diameterMm,
-      pitchMm,
-      lengthMm,
-      clearanceMm,
-      includeHead: kind === 'bolt' ? includeHead : false,
-    });
+    const { result: created } = await failure.run(() =>
+      createThreadObject({
+        kind,
+        diameterMm,
+        pitchMm,
+        lengthMm,
+        clearanceMm,
+        includeHead: kind === 'bolt' ? includeHead : false,
+      }),
+    );
     if (created) onClose();
   };
 
@@ -1251,6 +1276,7 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
         </>
       }
     >
+      <OperationFailureAlert message={failure.error} />
       <div className="kura-form-field">
         <label>{t(language, 'dialog.thread.preset')}</label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>

@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import type { Manifold } from 'manifold-3d';
+import type { CrossSection, Manifold } from 'manifold-3d';
 import type { ImageTo3DOptions, MeshData } from '../types/kura';
 import {
   computeVertexNormals,
@@ -213,6 +213,27 @@ export function generateCylindricalLithophane(
 // 3. Siluetas sólidas y cortadores de galletas/sellos desde imagen RGBA
 // ============================================================================
 
+/**
+ * Suaviza un contorno escalonado: cierre (rellena las muescas de la escalera) y apertura
+ * (recorta sus esquinas) con unión redonda de radio `r` (mm), y vuelve a simplificar.
+ * Si el resultado se vacía (figura más fina que `2r`) devuelve el contorno original.
+ */
+/** Radios de cierre y apertura en múltiplos de 0,75 px: el cierre alisa; la apertura es mínima para no romper trazos finos. */
+const CLOSE_K = 4;
+const OPEN_K = 1;
+function smoothStaircase(
+  cs: CrossSection,
+  r: number,
+  own: <T extends { delete: () => void }>(m: T) => T
+): CrossSection {
+  const closeR = r * CLOSE_K;
+  const openR = r * OPEN_K;
+  const closed = own(own(cs.offset(closeR, 'Round', 2, 16)).offset(-closeR, 'Round', 2, 16));
+  const opened = own(own(closed.offset(-openR, 'Round', 2, 16)).offset(openR, 'Round', 2, 16));
+  if (opened.isEmpty()) return closed.isEmpty() ? cs : closed;
+  return own(opened.simplify(r * 0.1));
+}
+
 /** Resolución máxima de la grilla de muestreo de siluetas y cortadores (celdas por lado). */
 export const CUTTER_MAX_GRID = 256;
 
@@ -285,7 +306,10 @@ export async function generateSilhouetteOrCutterFromImage(
     }
 
     const rawUnion = own(wasm.CrossSection.ofPolygons(quads, 'Positive'));
-    const simplified = own(rawUnion.simplify(Math.min(pxW, pxH) * 0.25));
+    const staircase = own(rawUnion.simplify(Math.min(pxW, pxH) * 0.25));
+    // El muestreo por píxeles deja el contorno en dientes de sierra (infla el perímetro ~27 % en un
+    // círculo): cierre y apertura redondeados con radio sub-píxel lo suavizan sin mover el tamaño.
+    const simplified = staircase.isEmpty() ? staircase : smoothStaircase(staircase, Math.min(pxW, pxH) * 0.75, own);
     if (simplified.isEmpty()) {
       throw new EngineError('IMAGE_NO_FOREGROUND', { threshold });
     }

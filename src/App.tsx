@@ -16,6 +16,7 @@ import { Dialogs } from './components/Dialogs';
 import { LeftSidebar } from './components/LeftSidebar';
 import { ProjectDropTarget } from './components/ProjectDropTarget';
 import { ProjectRecoveryBanner } from './components/ProjectRecoveryBanner';
+import { DownloadSaveNotice } from './components/DownloadSaveNotice';
 import { RightInspector } from './components/RightInspector';
 import { SplashScreen } from './components/SplashScreen';
 import { StatusBar } from './components/StatusBar';
@@ -364,6 +365,7 @@ export const App: React.FC = () => {
   return (
     <div className="kura-app" data-tool={activeTool} data-density={uiDensity}>
       <TopBar />
+      <DownloadSaveNotice />
       <ProjectRecoveryBanner
         drafts={recovery.drafts}
         busy={recovery.busy}

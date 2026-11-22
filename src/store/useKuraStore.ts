@@ -140,6 +140,8 @@ export interface KuraStoreState {
   engineReady: boolean;
   engineError: string | null;
   busyOperation: string | null;
+  /** Mensaje del último fallo de una operación (los diálogos lo muestran sin cerrarse). */
+  lastOperationError: string | null;
 
   // Escena y selección
   objects: SceneObject[];
@@ -156,6 +158,10 @@ export interface KuraStoreState {
   openProject: (loadFile?: typeof openProjectFile) => Promise<boolean>;
   recoverProject: (draft: RecoveryDraftInfo) => Promise<boolean>;
   saveProject: (saveAs?: boolean) => Promise<boolean>;
+  /** Descarga de `.kura` iniciada sin confirmación del navegador; el proyecto sigue con cambios pendientes. */
+  pendingDownloadSave: { name: string; document: ProjectDocument } | null;
+  /** El usuario confirma que el archivo descargado se guardó: limpia la marca de cambios. */
+  acknowledgeDownloadSave: () => void;
 
   // Densidad adaptativa de interfaz y visibilidad de paneles
   uiDensity: UiDensityMode;
@@ -771,6 +777,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
   const operationErrors = createOperationErrorTracker();
   const reportOperationError = (err: unknown) => {
     const message = operationErrors.record(err, get().language);
+    set({ lastOperationError: message });
     get().addToast(tr('toast.errorPrefix', { message }), 'error');
   };
   /** Muestra los avisos del motor (la operación se completó con un ajuste). */
@@ -831,6 +838,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       projectDraftId: recoveredDraftId ?? makeProjectDraftId(),
       projectRecovered: Boolean(recoveredDraftId),
       savedProject: document,
+      pendingDownloadSave: null,
       activeTool: 'select',
       transformMode: 'translate',
       activePrintReport: null,
@@ -848,6 +856,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     engineReady: false,
     engineError: null,
     busyOperation: null,
+    lastOperationError: null,
 
     objects: [],
     selectedIds: [],
@@ -857,6 +866,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     projectDraftId: makeProjectDraftId(),
     projectRecovered: false,
     savedProject: null,
+    pendingDownloadSave: null,
     projectBusy: false,
 
     newProject: () => {
@@ -927,6 +937,12 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       }
     },
 
+    acknowledgeDownloadSave: () => {
+      const pending = get().pendingDownloadSave;
+      if (!pending) return;
+      set({ projectName: pending.name, savedProject: pending.document, projectRecovered: false, pendingDownloadSave: null });
+    },
+
     saveProject: async (saveAs = false) => {
       if (get().projectBusy || !canChangeDocument()) return false;
       set({ projectBusy: true });
@@ -941,10 +957,11 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         if (!saved) return false;
         if (saved.viaDownload) {
+          set({ pendingDownloadSave: { name: saved.name, document } });
           get().addToast(tr('fileProject.downloadRequested', { name: saved.name }), 'info');
           return true;
         }
-        set({ projectName: saved.name, projectLocation: saved.location, savedProject: document, projectRecovered: false });
+        set({ projectName: saved.name, projectLocation: saved.location, savedProject: document, projectRecovered: false, pendingDownloadSave: null });
         get().addToast(tr('fileProject.saved', { name: saved.name }), 'success');
         return true;
       } catch (error) {

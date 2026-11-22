@@ -57,3 +57,17 @@
 .kura-viewport-canvas.is-painting {
   cursor: crosshair;
 }
+
+/* Aviso de malla gruesa: discreto, en línea con la barra, con borde (no depende solo del color). */
+.kura-paint-refine-hint {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-basis: 100%;
+  padding: 4px 8px;
+  font-size: 11.5px;
+  color: var(--text-primary);
+  border: 1px dashed var(--border-strong);
+  border-radius: 6px;
+}
