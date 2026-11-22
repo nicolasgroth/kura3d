@@ -97,7 +97,7 @@ describe('MCP headless: colocación en espacio libre', () => {
     const diff = await call('kura_boolean_operation', { targetId: box.id, toolIds: [hole.id], operation: 'subtract' });
     expect(diff.resultId).toBeTruthy();
     const cut = await call('kura_plane_cut', {
-      objectId: diff.resultId, axis: 'y', offset: 0, connectorType: 'peg', connectorSize: 3,
+      objectId: diff.resultId, axis: 'z', offset: 0, connectorType: 'peg', connectorSize: 3,
       connectorDepth: 4, tolerance: 0.25, connectorCount: 1, keepMode: 'both',
     });
     expect(cut.parts).toHaveLength(2);
@@ -121,15 +121,15 @@ describe('MCP headless: colocación en espacio libre', () => {
     const second = await call('kura_create_primitive', { ...p, placement: 'origin' });
     const third = await call('kura_create_primitive', p);
     expect(second.position[0]).toBeCloseTo(first.position[0], 6);
-    expect(second.position[2]).toBeCloseTo(first.position[2], 6);
-    expect(Math.hypot(third.position[0], third.position[2])).toBeGreaterThanOrEqual(25 - 1e-6);
+    expect(second.position[1]).toBeCloseTo(first.position[1], 6); // plano de la cama = X/Y del usuario
+    expect(Math.hypot(third.position[0], third.position[1])).toBeGreaterThanOrEqual(25 - 1e-6);
   });
 
   it('llamadas concurrentes se serializan: cada pieza nueva ve a las anteriores', async () => {
     const call = await session();
     const p = { primitiveType: 'box', params: { width: 20, height: 20, depth: 20 } };
     const made = await Promise.all([call('kura_create_primitive', p), call('kura_create_primitive', p), call('kura_create_primitive', p)]);
-    const keys = new Set(made.map((m) => `${m.position[0].toFixed(3)},${m.position[2].toFixed(3)}`));
+    const keys = new Set(made.map((m) => `${m.position[0].toFixed(3)},${m.position[1].toFixed(3)}`));
     expect(keys.size).toBe(3);
   });
 });

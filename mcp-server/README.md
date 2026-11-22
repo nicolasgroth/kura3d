@@ -162,20 +162,20 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 | `kura_boolean_operation` | Ejecuta operaciones CSG (`union`, `subtract`, `intersect`). Si una resta o intersección no cambia nada porque las piezas no se tocan, devuelve `resultId: null` y el aviso `BOOLEAN_NO_EFFECT` sin tocar la escena. |
 | `kura_hollow_object` | Ahueca un sólido indicando grosor de pared en mm y drenaje opcional. |
 | `kura_plane_cut` | Corta un modelo por plano (`x`, `y`, `z`) con conectores (`dowel`, `peg`, `dovetail`). En headless las mitades se separan en X/Z para que no se solapen. |
-| `kura_split_for_bed` | Divide para imprimir: plan por cama (por defecto la del perfil) con planos desplazados a la sección más simple, conectores por unión, piezas "Objeto · A1" (letra = columna X, número = nivel Y, minúscula = fila Z), uniones con etiqueta y marcas de pareja grabadas opcionales (`labels: 'engraved'`). Con `connectorType: 'loose-dowel'` (tarugo suelto) agujerea ambas piezas y entrega los tarugos como objeto aparte ("Dowel Ø8×11.5 ×6" en headless). `dryRun: true` devuelve solo el plan. Las piezas quedan armadas en su lugar; la ubicación de impresión y la placa van en `metadata.split`. |
+| `kura_split_for_bed` | Divide para imprimir: plan por cama (por defecto la del perfil) con planos desplazados a la sección más simple, conectores por unión, piezas "Objeto · A1" (letra = columna X, número = nivel en altura Z, minúscula = fila Y), uniones con etiqueta y marcas de pareja grabadas opcionales (`labels: 'engraved'`). Con `connectorType: 'loose-dowel'` (tarugo suelto) agujerea ambas piezas y entrega los tarugos como objeto aparte ("Dowel Ø8×11.5 ×6" en headless). `dryRun: true` devuelve solo el plan. Las piezas quedan armadas en su lugar; la ubicación de impresión y la placa van en `metadata.split`. |
 | `kura_split_disconnected` | Separa islas geométricas desconectadas en objetos independientes. |
 | `kura_split_by_color` | Divide una malla pintada por color para impresión multimaterial. |
 | `kura_apply_texture` | Aplica textura superficial (`fuzzy`, `knurling`, `waves`, `honeycomb`, `grid`). |
-| `kura_paint_object` | Pinta un objeto con un color hexadecimal (`#rrggbb`). |
+| `kura_paint_object` | Pinta un objeto con un color hexadecimal (`#rrggbb`), entero o solo una pincelada alrededor de `localPoint` (coordenadas locales, Z arriba). |
 | `kura_import_svg` | Extruye contenido vectorial SVG a un sólido 3D. Acepta `placement`. |
 | `kura_set_units` | Cambia unidades de visualización (`mm`, `cm`, `m`, `in`, `ft`). |
 | `kura_set_printer_profile` | Activa uno de los 12 perfiles multi-marca (`elegoo-centauri-carbon-2`, `elegoo-centauri-carbon-1`, `bambu-p1s-x1c-a1`, `bambu-a1-mini`, `bambu-h2d`, `snapmaker-artisan`, `snapmaker-j1s`, `flashforge-ad5m`, `flashforge-ad5x`, `generic-220`, `generic-300`, `free-studio`). |
 | `kura_export_stl` | Exporta un archivo `.stl` binario o ASCII directamente en disco. |
-| `kura_export_3mf` | Exporta un paquete `.3mf` Multi-Slicer con `Metadata/model_settings.config` (`generic`, `elegoo`, `bambu`, `snapmaker`, `flashforge`). |
+| `kura_export_3mf` | Exporta un único `.3mf` estándar con colores por triángulo (OrcaSlicer, Bambu Studio, PrusaSlicer, Cura). `slicerTarget` está obsoleto: si llega, se ignora. |
 | `kura_capture_viewport` | Captura una imagen PNG del viewport 3D en modo Live Bridge. |
 | `kura_generate_mold` | *(Pro)* Genera moldes/contra-moldes (`direct_1part`, `direct_2part`, `silicone_master`, `core_cavity`) con llaves y embudo. Acepta `placement`; en headless las piezas se reparten sin solaparse. |
 | `kura_project_on_surface` | *(Pro)* Proyecta texto o SVG sobre una superficie o cilindro (`emboss`, `deboss`, `flush_inlay`). |
-| `kura_analyze_printability` | *(Pro · Solo Lectura)* Analiza encaje en cama, contacto `Y=0`, voladizos, volumen, peso en gramos y advertencias. |
+| `kura_analyze_printability` | *(Pro · Solo Lectura)* Analiza encaje en cama, contacto con la cama (`Z=0`), voladizos, volumen, peso en gramos y advertencias. Peso y filamento son una referencia muy aproximada (`approximate: true`). |
 | `kura_simplify_mesh` | *(Pro)* Simplifica la densidad de triángulos según tolerancia geométrica en mm. |
 | `kura_refine_mesh` | *(Pro)* Refina/subdivide aristas de la malla con suavizado opcional. |
 | `kura_create_thread` | *(Pro)* Crea roscas métricas ISO (`bolt`, `nut`, `hole`) con diámetro, paso, longitud y holgura. Acepta `placement`. |
@@ -188,6 +188,10 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 | `kura_update_primitive_params` | Regenera una primitiva o rosca paramétrica con parámetros nuevos, conservando id y posición. |
 | `kura_mirror_object` | Refleja especularmente un objeto sobre el eje `x`, `y` o `z`, invirtiendo vértices y winding de triángulos para mantener normales válidas. |
 | `kura_validate_assembly` | *(Solo Lectura)* Revalida el armado de un grupo dividido (`groupId`) o de una selección de sus piezas (`ids`) con las uniones guardadas en `metadata.split.joints`: cierre, choques de conectores, orden de montaje con direcciones, piezas trabadas con sus opciones por unión (`glue` o `change-type:<tipo>`) y uniones débiles. |
+
+### Ejes
+
+Con la app conectada y sin interfaz, las herramientas usan los mismos ejes que la app y los slicers: X derecha, Y hacia el fondo, **Z arriba** (altura). Posiciones, rotaciones (`rz` gira en la vertical), escalas, `dimensionsMm`, cortes (`axis: 'z'` = corte horizontal, por defecto), alineación (`minZ` = abajo), proyección (`'+z'` = cara superior, `'-y'` = frente, por defecto), molde (`splitAxis: 'x' | 'y'`), planos y uniones de `kura_split_for_bed` y direcciones de `kura_validate_assembly` (`'-z'` = la pieza entra bajando).
 
 ### Colocación en espacio libre (headless)
 

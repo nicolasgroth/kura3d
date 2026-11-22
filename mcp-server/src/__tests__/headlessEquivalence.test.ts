@@ -128,7 +128,7 @@ describe('Equivalencia headless ↔ src/engine', () => {
     const before = h.getSceneState().objects.length;
     const opts = { plan: {}, execute: {}, bed: { widthMm: 200, depthMm: 200, heightMm: 200 } };
     const dry = await h.splitForBed(col.id, { ...opts, dryRun: true });
-    expect(dry.plan.counts.y).toBeGreaterThan(1);
+    expect(dry.plan.counts.z).toBeGreaterThan(1); // niveles en altura (Z del usuario)
     expect(h.getSceneState().objects.length).toBe(before);
     const vol = worldMetrics(h.getObject(col.id)).volume;
     const res = await h.splitForBed(col.id, { ...opts, dryRun: false });
@@ -256,10 +256,11 @@ describe('Equivalencia headless ↔ src/engine', () => {
       depthMm: 2,
       colorHex: '#f97316',
     };
-    const { object } = await h.projectOnSurface(cube.id, options);
+    // '-y' del usuario (frente) = '+z' interno, el que recibe el motor de referencia.
+    const { object } = await h.projectOnSurface(cube.id, { ...options, axis: '-y' });
     expect(object.source).toBe('projected');
     expect(object.stats.isManifold).toBe(true);
-    expect(object.stats.dimensionsMm[2]).toBeCloseTo(42, 1);
+    expect(object.stats.dimensionsMm[1]).toBeCloseTo(42, 1); // fondo (Y del usuario)
     expect(h.getObject(cube.id).mesh.faceColors).toContain('#f97316');
 
     const ref = await engine.projectGraphicOntoSurface(before, options);
@@ -313,7 +314,7 @@ describe('Equivalencia headless ↔ src/engine', () => {
     h.paintObject(b.id, '#22c55e');
     h.transformObject(b.id, { position: [40, 0, 0] });
     const path = join(tempDir, 'colores.3mf');
-    const res = await h.export3mf({ outputPath: path, slicerTarget: 'bambu' });
+    const res = await h.export3mf({ outputPath: path });
     expect(res.objectCount).toBe(2);
     expect(res.colorCount).toBe(2);
     expect(res.triangles).toBe(24);
@@ -324,7 +325,7 @@ describe('Equivalencia headless ↔ src/engine', () => {
     // El exportador declara el color base por objeto (pindex) y solo marca p1 en caras pintadas distinto.
     expect(new Set([...model.matchAll(/(?:pindex|p1)="(\d+)"/g)].map((m) => m[1])).size).toBe(2);
 
-    const refBytes = engine.exportSceneTo3MF([h.getObject(a.id), h.getObject(b.id)], 'mm', 'bambu');
+    const refBytes = engine.exportSceneTo3MF([h.getObject(a.id), h.getObject(b.id)], 'mm');
     expect(model).toBe(strFromU8(unzipSync(refBytes)['3D/3dmodel.model']));
   });
 });

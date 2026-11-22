@@ -75,8 +75,8 @@ describe('MCP headless respeta locked', () => {
   it('stats en dimensiones de mundo: escala y rotación aplicadas', async () => {
     const h = new KuraHeadlessEngine();
     const a = await h.createPrimitive({ primitiveType: 'box', params: { width: 10, height: 20, depth: 30 } });
-    const t = h.transformObject(a.id, { scale: [2, 1, 1], rotation: [0, Math.PI / 2, 0] });
-    const [x, y, z] = t.stats.dimensionsMm;
+    const t = h.transformObject(a.id, { scale: [2, 1, 1], rotation: [0, 0, Math.PI / 2] }); // ejes del usuario: giro en Z (vertical)
+    const [x, y, z] = t.stats.dimensionsMm; // [X, Y fondo, Z alto]
     expect(x).toBeCloseTo(30, 3);
     expect(y).toBeCloseTo(20, 3);
     expect(z).toBeCloseTo(20, 3);

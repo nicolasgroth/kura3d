@@ -38,7 +38,8 @@ describe('MCP headless: primitivas paramétricas', () => {
     const first = JSON.parse((await call('kura_create_primitive', box)).text);
     expect(first.position).toEqual([0, 0, 0]);
     const second = JSON.parse((await call('kura_create_primitive', { ...box, placement: 'free' })).text);
-    expect(Math.hypot(second.position[0], second.position[2])).toBeGreaterThanOrEqual(35 - 1e-6);
+    // Plano de la cama = X/Y del usuario (Z es la altura).
+    expect(Math.hypot(second.position[0], second.position[1])).toBeGreaterThanOrEqual(35 - 1e-6);
   });
 
   it('update_primitive_params regenera conservando id y posición', async () => {
@@ -52,7 +53,7 @@ describe('MCP headless: primitivas paramétricas', () => {
     expect(updated.id).toBe(created.id);
     expect(updated.position).toEqual([20, 0, 5]);
     expect(updated.stats.isManifold).toBe(true);
-    expect(updated.stats.dimensionsMm[1]).toBeCloseTo(25, 3);
+    expect(updated.stats.dimensionsMm[2]).toBeCloseTo(25, 3); // altura = Z del usuario
   });
 
   it('falla si la pieza ya no es paramétrica o el valor está fuera de rango', async () => {

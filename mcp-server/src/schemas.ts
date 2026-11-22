@@ -113,9 +113,9 @@ const vec3Of = (range: OperationRange, what: string) =>
   z.tuple([rangeSchema(range), rangeSchema(range), rangeSchema(range)]).describe(what);
 
 /** Posición [x, y, z] en mm (±100000). */
-export const positionSchema = vec3Of(TRANSFORM_RANGES.position, 'Position [X, Y, Z] in millimeters.');
+export const positionSchema = vec3Of(TRANSFORM_RANGES.position, 'Position [X, Y, Z] in millimeters (X right, Y back, Z up).');
 /** Rotación Euler [rx, ry, rz] en radianes, acotada. */
-export const rotationSchema = vec3Of(TRANSFORM_RANGES.rotation, 'Euler rotation [rx, ry, rz] in radians.');
+export const rotationSchema = vec3Of(TRANSFORM_RANGES.rotation, 'Euler XYZ rotation [rx, ry, rz] in radians (rz turns around the vertical Z axis).');
 /** Escala [sx, sy, sz], cada factor en [0.001, 1000]. */
 export const scaleSchema = vec3Of(TRANSFORM_RANGES.scale, 'Scale [sx, sy, sz]; each factor in [0.001, 1000].');
 /** Colocación de piezas nuevas: `free` (por defecto) busca un hueco libre; `origin` las deja en el centro. */

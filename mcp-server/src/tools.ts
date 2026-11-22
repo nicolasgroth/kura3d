@@ -13,6 +13,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { isEngineError } from '../../src/engine/engineErrors';
+import { localizeEngineErrorForUser, userErrorParams } from '../../src/core/scene/userEngineMessages';
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../../src/engine/operationLimits';
 import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
 import { resolveExportPath } from './exportPaths.js';
@@ -172,11 +173,15 @@ function failCoded(code: string, message: string, params: Record<string, unknown
 
 /**
  * Error MCP con código y causa: un `EngineError` del motor headless se devuelve como
- * `[CÓDIGO] mensaje` más un bloque JSON `{ code, params }` (p. ej. `MESH_INVALID` con
- * `cause: "Non-finite vertex"` o `MESH_EMPTY`), en vez de solo el texto.
+ * `[CÓDIGO] mensaje` (en inglés, ejes del usuario) más un bloque JSON `{ code, params }` (p. ej.
+ * `MESH_INVALID` con `cause: "Non-finite vertex"` o `MESH_EMPTY`), en vez de solo el texto.
  */
 function failError(err: unknown): CallToolResult {
-  if (isEngineError(err) || err instanceof HeadlessCommandError) {
+  if (isEngineError(err)) {
+    // Mismo texto que la app, en inglés y con los ejes del usuario (Z = altura).
+    return failCoded(err.code, localizeEngineErrorForUser('en', err), userErrorParams(err.code, err.params));
+  }
+  if (err instanceof HeadlessCommandError) {
     return failCoded(err.code, err.message, err.params);
   }
   return failText(err instanceof Error ? err.message : String(err));
@@ -195,7 +200,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     {
       title: 'Get 3D scene state',
       description:
-        'Returns the current scene objects, their transforms, dimensions in mm, active units and 3D printer profile.',
+        'Returns the current scene objects, their transforms, dimensions in mm, active units and 3D printer profile. ' +
+        'Axes as in slicers: X right, Y back, Z up (height); dimensionsMm is [X, Y, Z].',
       inputSchema: {},
     },
     async () =>
@@ -254,7 +260,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     {
       title: 'Transform 3D object',
       description:
-        'Updates position [x, y, z] in mm, Euler rotation [rx, ry, rz] in radians, scale [sx, sy, sz] or metadata of an object.',
+        'Updates position [X, Y, Z] in mm (Z up), Euler XYZ rotation [rx, ry, rz] in radians (rz turns around the vertical), ' +
+        'scale [sx, sy, sz] or metadata of an object.',
       inputSchema: {
         objectId: idSchema.describe('ID of the object to modify.'),
         position: positionSchema.optional(),
@@ -367,11 +374,11 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     {
       title: 'Cut model by plane',
       description:
-        'Splits an object with a plane on the X, Y or Z axis, optionally generating mechanical connectors (dowel, peg, dovetail).',
+        'Splits an object with a plane normal to X, Y or Z (Z = horizontal plane, the default), optionally generating mechanical connectors (dowel, peg, dovetail).',
       inputSchema: {
         objectId: idSchema.describe('ID of the object to cut.'),
-        axis: z.enum(['x', 'y', 'z']).describe('Normal axis of the cut plane.'),
-        offset: rangeSchema(OR.cut.offset).default(0).describe('Plane offset in mm from the center.'),
+        axis: z.enum(['x', 'y', 'z']).default('z').describe('Normal axis of the cut plane (z = horizontal cut).'),
+        offset: rangeSchema(OR.cut.offset).default(0).describe('Plane offset in mm from the center along that axis (+Z = up, +Y = back).'),
         connectorType: z
           .enum(['none', 'dowel', 'peg', 'dovetail'])
           .default('none')
@@ -380,7 +387,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         connectorDepth: rangeSchema(OR.cut.connectorDepth).default(5).describe('Connector depth in mm.'),
         tolerance: rangeSchema(OR.cut.tolerance).default(0.25).describe('Fit clearance in mm.'),
         connectorCount: rangeSchema(OR.cut.connectorCount).default(2),
-        keepMode: z.enum(['both', 'positive', 'negative']).default('both'),
+        keepMode: z.enum(['both', 'positive', 'negative']).default('both')
+          .describe('Halves to keep: positive = the +axis side (top for z, back for y), negative = the other one.'),
       },
     },
     async (args) =>
@@ -473,10 +481,14 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     'kura_paint_object',
     {
       title: 'Paint 3D object',
-      description: 'Assigns a hexadecimal color (#rrggbb) to the material of the selected object.',
+      description:
+        'Paints the whole object with a hexadecimal color (#rrggbb), or only a brush stroke around `localPoint`.',
       inputSchema: {
         objectId: idSchema.describe('Object ID.'),
         color: hexColorSchema.describe('Hex color in #rrggbb format.'),
+        localPoint: positionSchema
+          .optional()
+          .describe('Brush center [X, Y, Z] in mm in object-local coordinates (Z up). Omit to paint the whole object.'),
       },
     },
     async (args) =>
@@ -484,7 +496,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         ctx,
         'paint_object',
         { ...args, id: args.objectId },
-        () => ctx.headless.paintObject(args.objectId, args.color)
+        () => ctx.headless.paintObject(args.objectId, args.color, args.localPoint)
       )
   );
 
@@ -599,20 +611,17 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     }
   );
 
-  // 16. Exportar 3MF Multi-Slicer
+  // 16. Exportar 3MF (un único 3MF estándar)
   server.registerTool(
     'kura_export_3mf',
     {
-      title: 'Export scene to 3MF Multi-Slicer file',
+      title: 'Export scene to 3MF file',
       description:
-        'Exports the indicated objects (or the whole visible scene) as standard 3MF with Metadata/model_settings.config for the target slicer (generic, elegoo, bambu, snapmaker, flashforge).',
+        'Exports the indicated objects (or the whole visible scene) as one standard 3MF with per-triangle colors, readable by ' +
+        'OrcaSlicer, Bambu Studio, PrusaSlicer and Cura. The former `slicerTarget` argument is obsolete and ignored.',
       inputSchema: {
         outputPath: outputPathSchema.describe('Destination path of the .3mf file on disk.'),
         objectIds: z.array(idSchema).max(256).optional().describe('Specific IDs to export (optional).'),
-        slicerTarget: z
-          .enum(['generic', 'elegoo', 'bambu', 'snapmaker', 'flashforge'])
-          .optional()
-          .describe('Target slicer for 3MF metadata (generic, elegoo, bambu, snapmaker, flashforge).'),
       },
     },
     async (args) => {
@@ -623,7 +632,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         if (ctx.bridge.isConnected()) {
           const response = await ctx.bridge.sendCommand(
             'export_3mf',
-            { objectIds: args.objectIds, slicerTarget: args.slicerTarget, returnBytes: true },
+            { objectIds: args.objectIds, returnBytes: true },
             undefined,
             { skipRateLimit: true }
           );
@@ -632,20 +641,12 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           }
           const written = await writeLiveExport(targetPath, response.result);
           if (written) {
-            return okJson({
-              mode: 'live-bridge',
-              ...written,
-              slicerTarget: args.slicerTarget ?? 'generic',
-            });
+            return okJson({ mode: 'live-bridge', ...written });
           }
           return okJson({ mode: 'live-bridge', result: response.result });
         }
 
-        const result = await ctx.headless.export3mf({
-          outputPath: targetPath,
-          objectIds: args.objectIds,
-          slicerTarget: args.slicerTarget,
-        });
+        const result = await ctx.headless.export3mf({ outputPath: targetPath, objectIds: args.objectIds });
         return okJson(result);
       } catch (err) {
         return failError(err);
@@ -733,13 +734,13 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           .default(OD.mold.boxWallMm)
           .describe('Wall thickness of the containing master box in mm.'),
         splitAxis: z
-          .enum(['x', 'z'])
+          .enum(['x', 'y'])
           .default('x')
-          .describe('Parting axis for two-half molds.'),
+          .describe('Horizontal parting axis for two-half molds (x = left/right halves, y = front/back halves).'),
         pourSpout: z
           .boolean()
           .default(true)
-          .describe('If true, adds a top funnel/pour channel.'),
+          .describe('If true, adds a pour funnel on top (+Z).'),
         pourSpoutRadiusMm: rangeSchema(OR.mold.pourSpoutRadiusMm)
           .default(OD.mold.pourSpoutRadiusMm)
           .optional()
@@ -789,8 +790,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           .describe('Surface application mode.'),
         axis: z
           .enum(['+z', '-z', '+x', '-x', '+y', '-y', 'cylindrical'])
-          .default('+z')
-          .describe('Projection direction or cylindrical wrap.'),
+          .default('-y')
+          .describe('Face to project onto (Z up): -y = front (default), +z = top, -z = bottom, +y = back, ±x = sides; or cylindrical wrap.'),
         widthMm: rangeSchema(OR.projection.widthMm).default(24).describe('Projected width in mm.'),
         depthMm: rangeSchema(OR.projection.depthMm).default(1.2).describe('Relief/engraving depth in mm.'),
         colorHex: z
@@ -829,7 +830,9 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     {
       title: 'Analyze 3D printability',
       description:
-        'Checks fit on the active bed, contact with the Y=0 plane, critical overhangs, volume, estimated weight and printing warnings (`warnings` in English and `issues` with code and parameters). Safe in Read-only mode.',
+        'Checks fit on the active bed, contact with the bed plane (Z=0), critical overhangs, volume, estimated weight and printing ' +
+        'warnings (`warnings` in English and `issues` with code and parameters). Weight and filament are a very rough estimate ' +
+        '(`approximate: true`; the real value depends on the slicer) and do not affect the score. Safe in Read-only mode.',
       inputSchema: {
         objectId: idSchema.describe('ID of the object to inspect.'),
         materialPreset: z
@@ -921,7 +924,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         'Generates a threaded bolt, hexagonal nut or negative threaded cavity with calibrated clearance for 3D printing.',
       inputSchema: {
         kind: z.enum(['bolt', 'nut', 'hole']).describe('Threaded element type.'),
-        diameterMm: rangeSchema(OR.thread.diameterMm).default(8).describe('Nominal metric diameter in mm (e.g. 8 for M8; M2–M64).'),
+        diameterMm: rangeSchema(OR.thread.diameterMm).default(8).describe('Nominal metric diameter in mm (e.g. 8 for M8; M3–M64).'),
         pitchMm: rangeSchema(OR.thread.pitchMm).default(1.25).describe('Thread pitch in mm (maximum d/4).'),
         lengthMm: rangeSchema(OR.thread.lengthMm).default(20).describe('Threaded length in mm.'),
         clearanceMm: rangeSchema(OR.thread.clearanceMm).optional().describe('Radial print clearance in mm. If omitted, it is calculated from the pitch.'),
@@ -967,7 +970,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     {
       title: 'Align or distribute objects on bed',
       description:
-        'Aligns multiple objects by edges or centers (min/center/max on X/Y/Z) or automatically distributes them in a grid on the bed.',
+        'Aligns multiple objects by edges or centers (min/center/max on X/Y/Z; minZ = bottom, maxZ = top, minY = front) ' +
+        'or automatically distributes them in a grid on the bed.',
       inputSchema: {
         objectIds: z.array(idSchema).max(256).min(1).describe('IDs of the objects to align or distribute.'),
         mode: z
@@ -1125,7 +1129,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     {
       title: 'Mirror object on X, Y or Z axis',
       description:
-        'Generates an exact mirror image of the mesh along the X, Y or Z axis by inverting coordinates and triangle winding so outward normals stay valid.',
+        'Generates an exact mirror image of the mesh along the X, Y or Z axis (Z = upside down) by inverting coordinates and triangle winding so outward normals stay valid.',
       inputSchema: {
         objectId: idSchema.describe('ID of the 3D object to mirror.'),
         axis: z.enum(['x', 'y', 'z']).describe('Mirror symmetry axis (x, y or z).'),
