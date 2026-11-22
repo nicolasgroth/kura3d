@@ -15,14 +15,15 @@ import { normalizeHexColor } from './meshBuffers';
 import { exportableObjects } from './stl';
 import { writeGlb, type GlbMeshInput } from './glbWriter';
 import { computeVertexNormals } from '../manifoldKernel';
+import { brandSignature, type ExportBrand } from './exportBrand';
 
-/** Factor de milímetros (Kura3D) a metros (glTF). */
+/** Factor de milímetros (unidad interna del motor) a metros (glTF). */
 export const GLTF_METERS_PER_MM = 0.001;
 
 /** Construye la escena three.js que se exporta (separada para pruebas). */
-export function buildGltfScene(objects: SceneObject[]): THREE.Scene {
+export function buildGltfScene(objects: SceneObject[], brand?: ExportBrand): THREE.Scene {
   const scene = new THREE.Scene();
-  scene.name = 'Kura3D';
+  scene.name = brand?.name || 'Scene';
   for (const obj of exportableObjects(objects)) {
     const world = applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale);
     const base = normalizeHexColor(obj.color);
@@ -65,9 +66,9 @@ export function buildGltfScene(objects: SceneObject[]): THREE.Scene {
 /**
  * Exporta los objetos visibles y sólidos a un archivo GLB (metros, Y-up, una primitiva por color).
  * Se escribe a mano con `writeGlb`, sin `GLTFExporter`: este depende de `FileReader` y falla en Node
- * (servidor MCP, pruebas).
+ * (servidor MCP, pruebas). `brand` (desde quien llama) da el nombre de la escena y el `generator`.
  */
-export async function exportSceneToGLB(objects: SceneObject[]): Promise<Uint8Array> {
+export async function exportSceneToGLB(objects: SceneObject[], brand?: ExportBrand): Promise<Uint8Array> {
   const meshes: GlbMeshInput[] = [];
   for (const obj of exportableObjects(objects)) {
     const world = applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale);
@@ -89,5 +90,5 @@ export async function exportSceneToGLB(objects: SceneObject[]): Promise<Uint8Arr
       groups: [...byColor].map(([color, idx]) => ({ color, indices: Uint32Array.from(idx) })),
     });
   }
-  return writeGlb(meshes);
+  return brand?.name ? writeGlb(meshes, brand.name, brandSignature(brand) ?? brand.name) : writeGlb(meshes);
 }

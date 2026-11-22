@@ -1,6 +1,6 @@
 /**
- * @file mcp-server/src/__tests__/qaAttacks.test.ts
- * @description Pruebas adversariales de QA (TRUST-02) que complementan `security.test.ts`: Origin/Host
+ * @file mcp-server/src/__tests__/securityAttacks.test.ts
+ * @description Pruebas adversariales (TRUST-02) que complementan `security.test.ts`: Origin/Host
  * con apariencia local, token por cabecera Bearer, bloqueo del cliente legítimo por inundación de 401
  * (límite aceptado y documentado) y rutas de exportación con flujos alternativos de NTFS.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -42,7 +42,7 @@ async function start(authFailureLimitPerMin?: number) {
   return { bridge, base: `ws://127.0.0.1:${bridge.getPort()}` };
 }
 
-describe('QA · puente MCP: encabezados y token', () => {
+describe('puente MCP: encabezados y token', () => {
   it.each([
     'http://127.0.0.1.evil.example', 'http://localhost.evil.example', 'http://localhost:80@evil.example',
     'https://localhost', 'null', 'file://', 'http://[::1]:5173', 'http://127.0.0.1:5173/path', 'HTTP://EVIL',
@@ -74,7 +74,7 @@ describe('QA · puente MCP: encabezados y token', () => {
   });
 });
 
-describe('QA · exportaciones', () => {
+describe('exportaciones', () => {
   it('rechaza flujos alternativos NTFS y nombres con espacios finales que cambian la extensión', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'kura3d-qa-'));
     cleanup.push(() => rm(dir, { recursive: true, force: true }));

@@ -7,7 +7,7 @@
  * @license MIT
  */
 
-import { render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { getLocalizedPrinterName, t } from '../../i18n';
@@ -67,8 +67,11 @@ describe('StatusBarMeasures', () => {
   it('una petición de la paleta abre el popover', async () => {
     useKuraStore.setState({ language: 'es' } as never);
     render(<StatusBarMeasures />);
-    useKuraStore.getState().requestMeasuresPopover('printer');
-    await new Promise((r) => setTimeout(r, 120));
-    expect(document.querySelector('.kura-measures-popover')?.getAttribute('data-open')).toBe('true');
+    // Dentro de act y esperando la condición (no un tiempo fijo): bajo carga, el render y el
+    // temporizador de 60 ms del componente pueden terminar después de una espera fija.
+    act(() => useKuraStore.getState().requestMeasuresPopover('printer'));
+    await waitFor(() =>
+      expect(document.querySelector('.kura-measures-popover')?.getAttribute('data-open')).toBe('true'),
+    );
   });
 });

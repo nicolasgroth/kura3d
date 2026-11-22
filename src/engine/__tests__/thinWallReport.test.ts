@@ -2,7 +2,8 @@
  * @file src/engine/__tests__/thinWallReport.test.ts
  * @description QA ronda 5: pared delgada del informe de imprimibilidad con mallas distintas de las del
  * desarrollo (cono, cápsula, cilindro de 8 y de 256 lados, pieza ahuecada, texto, placa con nervio de
- * 0,5 mm, STL con normales invertidas, malla de 200 mil triángulos).
+ * 0,5 mm, STL con normales invertidas). La malla de 200 mil triángulos con tope de tiempo está en
+ * `thinWallLargeMesh.perf.test.ts` (`npm run test:perf`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -148,18 +149,6 @@ describe('STL con normales invertidas y malla enorme', () => {
     out.push(`esfera-inv: inv=${r.normalsInverted} thin=${thin(r)} min=${r.minWallThicknessMm}`);
     expect(thin(r)).toBe(false);
   });
-  it('malla de ~200 mil triángulos: informe en menos de 15 s', () => {
-    let sph = w.Manifold.sphere(40, 640);
-    let mesh = fromM(sph);
-    const tris = mesh.indices.length / 3;
-    const t0 = performance.now();
-    const r = rep(mesh);
-    const ms = performance.now() - t0;
-    out.push(`200k: tris=${tris} ms=${ms.toFixed(0)} thin=${thin(r)} min=${r.minWallThicknessMm}`);
-    expect(tris).toBeGreaterThan(150_000);
-    expect(thin(r)).toBe(false);
-    expect(ms).toBeLessThan(15_000);
-    sph = null as unknown as Manifold;
-  }, 60_000);
+  // La malla de ~200 mil triángulos con tope de 15 s vive en thinWallLargeMesh.perf.test.ts.
   it('resumen', () => { console.info('QA5-PRINT\n' + out.join('\n')); });
 });

@@ -1,6 +1,6 @@
 /**
- * @file src/store/__tests__/qaBusBoundary.test.ts
- * @description QA adversarial del Command Bus: valores en el borde exacto de cada rango aceptado por el bus
+ * @file src/store/__tests__/commandBusRangeEdges.test.ts
+ * @description Command Bus ante valores límite: valores en el borde exacto de cada rango aceptado por el bus
  * (commandSchemas) y por la validación de herramientas de IA (toolValidation). Invariante: tras cada comando
  * (aceptado o rechazado) la escena solo contiene geometría finita y el proyecto sigue codificándose.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -34,7 +34,7 @@ function assertSceneSane(label: string) {
 
 const bad = (res: CommandBusResponse) => !res.ok && typeof res.errorCode === 'string';
 
-describe('QA bus: bordes de rango y estado guardable', () => {
+describe('bus: bordes de rango y estado guardable', () => {
   beforeEach(() => resetStore());
 
   const edge: Array<[string, KuraCommandRequest['command'], Record<string, unknown>]> = [

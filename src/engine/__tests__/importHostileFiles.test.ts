@@ -1,8 +1,9 @@
 /**
- * @file src/engine/__tests__/qaImportHostile.test.ts
- * @description QA adversarial del importador: 3MF con miles de componentes vacíos, cadenas profundas, XML sin cerrar,
+ * @file src/engine/__tests__/importHostileFiles.test.ts
+ * @description Importador ante archivos hostiles: 3MF con miles de componentes vacíos, cadenas profundas, XML sin cerrar,
  * ZIP con tamaño declarado falso (bomba), PLY con cabecera mentirosa, STL truncado y OBJ con índices fuera de rango.
- * Exige error tipado (`ModelImportError`) que nombra el archivo y tiempo acotado (< 3 s) en cada caso.
+ * Exige error tipado (`ModelImportError`) que nombra el archivo en cada caso. El tope de tiempo
+ * (< 3 s) vive en `importHostileTiming.perf.test.ts` (`npm run test:perf`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -19,7 +20,6 @@ const enc = (text: string) => new TextEncoder().encode(text).buffer as ArrayBuff
 beforeAll(async () => { await initManifoldEngine(); });
 
 function attack(name: string, buffer: ArrayBuffer, limits?: Record<string, number>) {
-  const t0 = performance.now();
   let err: unknown = null;
   let ok = false;
   try {
@@ -28,17 +28,16 @@ function attack(name: string, buffer: ArrayBuffer, limits?: Record<string, numbe
   } catch (e) {
     err = e;
   }
-  return { ms: performance.now() - t0, err, ok };
+  return { err, ok };
 }
 
 function expectTyped(name: string, r: ReturnType<typeof attack>) {
   expect(r.ok, `${name}: se aceptó un archivo hostil`).toBe(false);
   expect(r.err, `${name}: error no tipado: ${String(r.err)}`).toBeInstanceOf(ModelImportError);
   expect((r.err as ModelImportError).fileName, `${name}: el error no nombra el archivo`).toBe(name);
-  expect(r.ms, `${name}: tardó ${r.ms.toFixed(0)} ms`).toBeLessThan(3000);
 }
 
-describe('QA importador hostil: 3MF', () => {
+describe('importador hostil: 3MF', () => {
   it('miles de componentes vacíos en una sola lista', () => {
     const comps = Array.from({ length: 20_000 }, () => '<component objectid="1"/>').join('');
     const xml = modelXml(`<object id="1"/><object id="2"><components>${comps}</components></object>`, '<item objectid="2"/>');
@@ -56,7 +55,7 @@ describe('QA importador hostil: 3MF', () => {
     expectTyped('ciclo.3mf', attack('ciclo.3mf', pack3mf({ '3D/3dmodel.model': modelXml(res, '<item objectid="1"/>') })));
   });
 
-  it('etiquetas sin cerrar (4 MB de "<a " y de "<object") en tiempo lineal', () => {
+  it('etiquetas sin cerrar (4 MB de "<a " y de "<object") dan error tipado', () => {
     for (const filler of ['<a '.repeat(1_400_000), '<object id="1" '.repeat(250_000), '<vertex x="1" '.repeat(300_000)]) {
       const xml = `<?xml version="1.0"?><model unit="millimeter"><resources>${filler}`;
       expectTyped('sincerrar.3mf', attack('sincerrar.3mf', pack3mf({ '3D/3dmodel.model': xml })));
@@ -83,7 +82,6 @@ describe('QA importador hostil: 3MF', () => {
     const r = attack('mentira.3mf', u8.buffer as ArrayBuffer, { maxUncompressedBytes: 4 * 1024 * 1024 });
     expectTyped('mentira.3mf', r);
     expect(['archive-too-large', 'too-large', 'corrupt']).toContain((r.err as ModelImportError).code);
-    (globalThis as Record<string, unknown>).__zipLieCode = (r.err as ModelImportError).code + ' ' + r.ms.toFixed(0) + 'ms';
   });
 
   it('ZIP que declara 3 GB descomprimidos', () => {
@@ -104,7 +102,7 @@ describe('QA importador hostil: 3MF', () => {
   });
 });
 
-describe('QA importador hostil: PLY, STL, OBJ', () => {
+describe('importador hostil: PLY, STL, OBJ', () => {
   it('PLY ascii con cabecera que declara millones de vértices/caras en 1 KB', () => {
     const h = 'ply\nformat ascii 1.0\nelement vertex 2000000000\nproperty float x\nproperty float y\nproperty float z\nelement face 2000000000\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n';
     expectTyped('mentiroso.ply', attack('mentiroso.ply', enc(h)));
@@ -156,7 +154,6 @@ describe('QA importador hostil: PLY, STL, OBJ', () => {
   it('OBJ con una cara de 200000 vértices y con millones de vértices sin caras', () => {
     const face = 'f ' + Array.from({ length: 200_000 }, (_, i) => String((i % 3) + 1)).join(' ') + '\n';
     const r1 = attack('cara-enorme.obj', enc('v 0 0 0\nv 1 0 0\nv 0 1 0\n' + face));
-    expect(r1.ms).toBeLessThan(3000);
     if (!r1.ok) expect(r1.err).toBeInstanceOf(ModelImportError);
     const verts = 'v 1 2 3\n'.repeat(1_500_000);
     expectTyped('solo-vertices.obj', attack('solo-vertices.obj', enc(verts)));

@@ -11,8 +11,8 @@
 
 import { strToU8, zipSync } from 'fflate';
 import type { SceneObject, SlicerTarget, UnitSystem } from '../../types/kura';
-import { BRAND } from '../../brand';
 import { applyTransformToMesh } from '../primitives';
+import { brandSignature, type ExportBrand } from './exportBrand';
 import { normalizeHexColor } from './meshBuffers';
 import { exportableObjects } from './stl';
 
@@ -77,11 +77,14 @@ const num = (n: number) => {
  * Genera un paquete `.3mf` (`[Content_Types].xml`, `_rels/.rels`, `3D/3dmodel.model` y
  * `Metadata/model_settings.config`) con `<basematerials>` y colores por triángulo. Es un único 3MF estándar:
  * `_deprecatedSlicerTarget` se acepta e ignora para no romper a quienes aún lo pasan (p. ej. el servidor MCP).
+ * `brand` (la marca de la app, desde quien llama) firma los metadatos `Application`/`Organization`
+ * y el nombre de la placa; sin ella se omiten.
  */
 export function exportSceneTo3MF(
   objects: SceneObject[],
   unit: UnitSystem = 'mm',
   _deprecatedSlicerTarget?: SlicerTarget,
+  brand?: ExportBrand,
 ): Uint8Array {
   const solidObjects = exportableObjects(objects);
   const unitSpec = UNIT_TO_3MF[unit] ?? UNIT_TO_3MF.mm;
@@ -106,12 +109,13 @@ export function exportSceneTo3MF(
   }
   if (palette.length === 0) registerColor('#38bdf8');
 
+  const signature = brandSignature(brand);
   const model = new ByteChunks();
   model.write(
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<model unit="${unitSpec.xmlName}" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n` +
-    `  <metadata name="Application">${escapeXml(`${BRAND.name} by ${BRAND.author}`)}</metadata>\n` +
-    `  <metadata name="Organization">${escapeXml(BRAND.organization)}</metadata>\n` +
+    (signature ? `  <metadata name="Application">${escapeXml(signature)}</metadata>\n` : '') +
+    (brand?.organization ? `  <metadata name="Organization">${escapeXml(brand.organization)}</metadata>\n` : '') +
     `  <resources>\n    <basematerials id="1">\n`,
   );
   palette.forEach((hex, idx) => {
@@ -174,7 +178,7 @@ export function exportSceneTo3MF(
     `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n` +
     `  <metadata key="filament_count" value="${palette.length}"/>\n` +
     `${configObjects.join('\n')}\n  <plate>\n` +
-    `    <metadata key="plater_id" value="1"/>\n    <metadata key="plater_name" value="Kura3D_Bed"/>\n` +
+    `    <metadata key="plater_id" value="1"/>\n    <metadata key="plater_name" value="${escapeXml(brand?.name ? `${brand.name}_Bed` : 'Plate_1')}"/>\n` +
     `${configInstances.join('\n')}\n  </plate>\n</config>\n`;
 
   const contentTypes =
@@ -189,10 +193,17 @@ export function exportSceneTo3MF(
     `  <Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" />\n` +
     `</Relationships>\n`;
 
-  return zipSync({
-    '[Content_Types].xml': strToU8(contentTypes),
-    '_rels/.rels': strToU8(rels),
-    '3D/3dmodel.model': model.toBytes(),
-    'Metadata/model_settings.config': strToU8(settings),
-  });
+  // Fecha fija en las entradas del ZIP: la misma escena produce siempre los mismos bytes.
+  return zipSync(
+    {
+      '[Content_Types].xml': strToU8(contentTypes),
+      '_rels/.rels': strToU8(rels),
+      '3D/3dmodel.model': model.toBytes(),
+      'Metadata/model_settings.config': strToU8(settings),
+    },
+    { mtime: ZIP_FIXED_MTIME },
+  );
 }
+
+/** Fecha de las entradas del ZIP (la mínima del formato DOS): salida determinista. */
+const ZIP_FIXED_MTIME = new Date(1980, 0, 1, 0, 0, 0);

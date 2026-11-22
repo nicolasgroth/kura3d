@@ -15,6 +15,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { strFromU8, unzipSync } from 'fflate';
+import { BRAND } from '../../brand';
 import {
   DEFAULT_PRINTER_PROFILES,
   type ImageTo3DOptions,
@@ -580,9 +581,9 @@ describe('Herramientas geométricas: moldes, proyección, análisis, generadores
         position: [35, 0, 0],
       });
 
-      const reference = exportSceneTo3MF([obj1, obj2], 'mm');
+      const reference = exportSceneTo3MF([obj1, obj2], 'mm', undefined, BRAND);
       for (const legacy of [undefined, 'bambu', 'elegoo', 'snapmaker', 'flashforge'] as const) {
-        const bytes = exportSceneTo3MF([obj1, obj2], 'mm', legacy);
+        const bytes = exportSceneTo3MF([obj1, obj2], 'mm', legacy, BRAND);
         expect(Array.from(bytes)).toEqual(Array.from(reference));
         const archive = unzipSync(bytes);
 

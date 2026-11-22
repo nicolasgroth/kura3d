@@ -16,6 +16,7 @@ import { ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits
 import type { ImportedModel, ImportedPart } from './importTypes';
 import { GrowableFloat32, GrowableUint32, finishMesh, hexToRgb01, normalizeHexColor, rgbToHex } from './meshBuffers';
 import { exportableObjects } from './stl';
+import { brandSignature, type ExportBrand } from './exportBrand';
 
 /** Lee un MTL y devuelve el color `Kd` de cada material como '#rrggbb'. */
 export function parseMtlColors(text: string): Map<string, string> {
@@ -179,13 +180,18 @@ export function readOBJBuffer(
 // ============================================================================
 
 const fmt = (n: number) => (Math.abs(n) < 5e-6 ? '0' : n.toFixed(5).replace(/\.?0+$/, ''));
-const safeName = (name: string) => name.replace(/\s+/g, '_') || 'Kura3D_Model';
+const safeName = (name: string) => name.replace(/\s+/g, '_') || 'Model';
+/** Comentario inicial del OBJ, firmado con la marca que entrega quien exporta. */
+const objHeader = (brand?: ExportBrand) => {
+  const signature = brandSignature(brand);
+  return `# ${signature ? `${signature} — ` : ''}Wavefront OBJ Export (Units: mm, Y-up)`;
+};
 
 /**
  * Exporta una malla `MeshData` (en milímetros, Y-up) a texto Wavefront OBJ válido.
  */
-export function exportMeshToOBJ(mesh: MeshData, name = 'Kura3D_Model'): string {
-  const lines: string[] = ['# Kura3D Wavefront OBJ Export (Units: mm, Y-up)', `o ${safeName(name)}`];
+export function exportMeshToOBJ(mesh: MeshData, name = 'Model', brand?: ExportBrand): string {
+  const lines: string[] = [objHeader(brand), `o ${safeName(name)}`];
   const vertCount = Math.floor(mesh.positions.length / 3);
   for (let v = 0; v < vertCount; v++) {
     lines.push(`v ${fmt(mesh.positions[v * 3])} ${fmt(mesh.positions[v * 3 + 1])} ${fmt(mesh.positions[v * 3 + 2])}`);
@@ -211,10 +217,11 @@ export function exportMeshToOBJ(mesh: MeshData, name = 'Kura3D_Model'): string {
  * Cada color (base o por cara) es un material `kura_rrggbb` del MTL.
  *
  * @param baseName Nombre base sin extensión; el OBJ referencia `<baseName>.mtl`.
+ * @param brand Marca de la app (desde quien llama) para los comentarios de cabecera.
  */
-export function exportSceneToOBJ(objects: SceneObject[], baseName: string): { obj: string; mtl: string } {
+export function exportSceneToOBJ(objects: SceneObject[], baseName: string, brand?: ExportBrand): { obj: string; mtl: string } {
   const mtlName = `${baseName}.mtl`;
-  const lines: string[] = ['# Kura3D Wavefront OBJ Export (Units: mm, Y-up)', `mtllib ${mtlName}`];
+  const lines: string[] = [objHeader(brand), `mtllib ${mtlName}`];
   const palette = new Set<string>();
   let vertexBase = 1;
 
@@ -248,7 +255,8 @@ export function exportSceneToOBJ(objects: SceneObject[], baseName: string): { ob
     vertexBase += vertCount;
   }
 
-  const mtl: string[] = ['# Kura3D MTL Export'];
+  const signature = brandSignature(brand);
+  const mtl: string[] = [`# ${signature ? `${signature} — ` : ''}MTL Export`];
   for (const color of palette) {
     const [r, g, b] = hexToRgb01(color);
     mtl.push(`newmtl kura_${color.slice(1)}`, `Kd ${r.toFixed(4)} ${g.toFixed(4)} ${b.toFixed(4)}`, 'Ka 0 0 0', 'Ks 0 0 0', 'd 1', 'illum 1', '');

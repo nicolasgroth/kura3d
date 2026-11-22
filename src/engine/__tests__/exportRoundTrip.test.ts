@@ -8,7 +8,7 @@
  */
 
 import { strFromU8, unzipSync } from 'fflate';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
 import { computeMeshStats, createPrimitiveMesh, initManifoldEngine } from '../index';
 import {
@@ -62,6 +62,20 @@ describe('ida y vuelta de exportación', () => {
     expect(new Set(model.parts[0].mesh.faceColors)).toEqual(new Set(['#ff0000', '#00ff00']));
     expect(placements([model])).toEqual([[20, 5, -10], [-15, 0, 8]]);
     expect(model.parts.every((p) => p.openEdges === 0)).toBe(true);
+  });
+
+  it('3MF es determinista: la misma escena da los mismos bytes en otro instante', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date(2026, 0, 1, 8, 0, 2));
+      const a = exportSceneTo3MF(scene, 'mm');
+      vi.setSystemTime(new Date(2031, 6, 15, 23, 59, 58));
+      const b = exportSceneTo3MF(scene, 'mm');
+      expect(a.length).toBe(b.length);
+      expect(a.every((byte, i) => byte === b[i])).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('3MF exporta una estructura válida y conserva posiciones, color base y colores por cara', () => {
