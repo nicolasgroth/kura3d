@@ -35,6 +35,7 @@ import {
   normalizeMeshToBed,
 } from './primitives';
 import { extrudeSvgToMesh } from './advancedGeometry';
+import { composeFlushInlaySurface } from './inlaySurface';
 
 /** Malla gráfica normalizada en coordenadas locales `(u, v, w)` antes de proyectar. */
 interface NormalizedGraphicUV {
@@ -707,19 +708,31 @@ export async function projectGraphicOntoSurface(
         pocketDepth,
         stampColor
       );
-      pocketManifold = meshDataToManifold(
-        wasm,
-        pocketMesh,
-        registry.colorToId,
+      // La cavidad lleva un originalID propio: sus caras (paredes internas) se descartan al componer.
+      const rawPocket = meshDataToManifold(wasm, pocketMesh, registry.colorToId, stampColor);
+      pocketManifold = rawPocket.asOriginal();
+      rawPocket.delete();
+      carvedManifold = targetManifold.subtract(pocketManifold);
+      inlayIntersectManifold = targetManifold.intersect(pocketManifold);
+      const pocketVolume = Math.max(1e-9, pocketManifold.volume());
+      const effect = inlayIntersectManifold.volume() / pocketVolume;
+      if (inlayIntersectManifold.isEmpty() || effect < 0.05) {
+        throw new EngineError('PROJECTION_NO_EFFECT', { change: effect * 100 });
+      }
+      // Una sola malla: la superficie de la pieza con la región incrustada pintada (sin unir sólidos
+      // que se tocan, que dejaba láminas coincidentes y aristas no pareadas).
+      const inlayMesh = composeFlushInlaySurface(
+        carvedManifold,
+        inlayIntersectManifold,
+        pocketManifold.originalID(),
+        registry.idToColor,
+        targetObj.color.toLowerCase(),
         stampColor
       );
-      carvedManifold = targetManifold.subtract(pocketManifold);
-
-      inlayIntersectManifold = targetManifold.intersect(pocketManifold);
-      // asOriginal() asigna un originalID único manteniendo precisión double exacta (sin drift Float32)
-      stampManifold = inlayIntersectManifold.asOriginal();
-      registry.idToColor.set(stampManifold.originalID(), stampColor);
-      resultManifold = carvedManifold.add(stampManifold);
+      if (!computeMeshStats(inlayMesh).isManifold) {
+        throw new EngineError('PROJECTION_NON_MANIFOLD');
+      }
+      return extractPositionAndNormalize(inlayMesh);
     }
 
     if (resultManifold.isEmpty() || resultManifold.numTri() === 0) {
@@ -727,16 +740,10 @@ export async function projectGraphicOntoSurface(
     }
 
     // El resultado debe cambiar de verdad la pieza (no solo agregar triángulos sueltos)
-    const stampVolume = Math.max(
-      1e-9,
-      (options.mode === 'flush_inlay' ? pocketManifold : stampManifold)?.volume() ?? 0
-    );
+    const stampVolume = Math.max(1e-9, stampManifold?.volume() ?? 0);
     const before = targetManifold.volume();
     const after = resultManifold.volume();
-    const effect =
-      options.mode === 'flush_inlay'
-        ? (inlayIntersectManifold?.volume() ?? 0) / stampVolume
-        : Math.abs(after - before) / stampVolume;
+    const effect = Math.abs(after - before) / stampVolume;
     if (effect < 0.05) {
       throw new EngineError('PROJECTION_NO_EFFECT', { change: effect * 100 });
     }
