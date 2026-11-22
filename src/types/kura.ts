@@ -476,7 +476,7 @@ export interface SurfaceProjectionOptions {
   offsetV?: number;
 }
 
-/** Opciones del generador paramétrico de roscas métricas ISO (M3 a M20). */
+/** Opciones del generador paramétrico de roscas métricas ISO (M3 a M64). */
 export interface ThreadOptions {
   /** Tipo de pieza roscada: perno exterior, tuerca hexagonal o cilindro roscado negativo. */
   kind: 'bolt' | 'nut' | 'hole';

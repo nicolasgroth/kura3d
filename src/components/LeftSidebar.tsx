@@ -2,7 +2,7 @@
  * @file src/components/LeftSidebar.tsx
  * @description Panel lateral izquierdo de Kura3D:
  * - Adaptable a modo Expandido (268px), Compacto (rail vertical de íconos 56px con tooltips) y colapsado.
- * - Pestaña Formas: Primitivas paramétricas + Generadores 2D/Pro → 3D (SVG, Imagen, Rosca ISO M3–M20).
+ * - Pestaña Formas: Primitivas paramétricas + Generadores 2D/Pro → 3D (SVG, Imagen, Rosca ISO M3–M64).
  * - Pestaña Escena (Outliner): resumen de filamentos/colores y lista de objetos operable con teclado
  *   (`scene/SceneObjectList.tsx`).
  * @author Nicolás Groth <ngroth@gmail.com>

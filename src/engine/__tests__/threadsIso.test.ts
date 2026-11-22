@@ -1,5 +1,5 @@
 /**
- * @file src/engine/__tests__/threadsIso.test.ts
+ * @file src/engine/__tests__/
  * @description Roscas ISO: tabla ISO 261 de paso grueso, paso automático, validación tipada,
  * cantidad de triángulos e interferencia perno–tuerca barriendo 8 fases de giro (movimiento de
  * tornillo: girar α y avanzar P·α/2π) más fases fuera de la grilla, para M3, M5, M6, M8 y M20.
@@ -14,7 +14,7 @@ import { createMetricThread, isoCoarsePitch, ISO_COARSE_THREADS, isoHeadHeight }
 import { intersectionVolume } from './geometryTestUtils';
 
 describe('Roscas métricas ISO (threads.ts)', () => {
-  it('incluye la tabla ISO 261 de paso grueso de M3 a M20 (con M3 y M5)', () => {
+  it('incluye la tabla ISO 261 de paso grueso de M3 a M64 (con M3 y M5)', () => {
     const expected: Record<number, number> = {
       3: 0.5, 4: 0.7, 5: 0.8, 6: 1.0, 8: 1.25, 10: 1.5, 12: 1.75, 14: 2.0, 16: 2.0, 18: 2.5, 20: 2.5,
     };

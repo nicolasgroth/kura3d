@@ -17,7 +17,7 @@ Estados: **Activa** (disponible al usuario), **Parcial** (existe con límites co
 | F-HUECO | Ahuecado | Cáscara con espesor | Activa | `src/engine/operations.ts` |
 | F-MOLDE | Moldes | 1 pieza, 2 mitades, caja madre, núcleo/cavidad | Activa | `src/engine/molds.ts` |
 | F-PROYEC | Texto y SVG sobre superficie | Relieve, grabado o incrustación | Activa | `src/engine/surfaceProjection.ts` |
-| F-ROSCA | Roscas ISO M3–M20 | Perno, tuerca y agujero roscado, con paso y holgura según norma | Parcial: sin tapa roscada | `src/engine/threads.ts` |
+| F-ROSCA | Roscas ISO M3–M64 | Perno, tuerca y agujero roscado, con paso y holgura según norma | Parcial: sin tapa roscada | `src/engine/threads.ts` |
 | F-LITO | Litofanía e imagen a silueta | Relieve desde imagen, cortador desde silueta | Activa | `src/engine/generators.ts` |
 | F-SEGM | Segmentación estructural | Detectar, colorear y extraer sub-estructuras | Activa | `src/engine/structuralSegmentation.ts` |
 | F-PINT | Pintura 3D | Pintar caras para multicolor | Activa | `src/components/Viewport3D.tsx` |

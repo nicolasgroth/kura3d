@@ -32,9 +32,10 @@ export type LocalIntent =
   | { kind: 'thread'; part: 'bolt' | 'nut'; diameter: number; pitch: number; length: number }
   | { kind: 'threadHole'; diameter: number; pitch: number };
 
-/** Paso ISO grueso por diámetro nominal (M3–M20). */
+/** Paso ISO grueso por diámetro nominal (M3–M64). */
 export const ISO_COARSE_PITCH: Record<number, number> = {
   3: 0.5, 4: 0.7, 5: 0.8, 6: 1, 8: 1.25, 10: 1.5, 12: 1.75, 14: 2, 16: 2, 18: 2.5, 20: 2.5,
+  22: 2.5, 24: 3, 27: 3, 30: 3.5, 33: 3.5, 36: 4, 39: 4, 42: 4.5, 45: 4.5, 48: 5, 52: 5, 56: 5.5, 60: 5.5, 64: 6,
 };
 
 /** A qué se refiere la cláusula, tal como lo dijo el usuario. */
@@ -250,7 +251,7 @@ function threadIntent(clause: string): LocalIntent | null {
   const nominalMatch = clause.match(NOMINAL);
   const ms = extractMeasures(clause.replace(NOMINAL, ' '));
   const nominal = Number(nominalMatch?.[1] ?? pick(ms, 'diameter') ?? 8);
-  const diameter = Math.min(20, Math.max(3, nominal));
+  const diameter = Math.min(64, Math.max(3, nominal));
   const pitch = nominalMatch?.[2] ? Number(nominalMatch[2]) : ISO_COARSE_PITCH[diameter] ?? Math.max(0.5, Math.round(diameter * 0.6) / 4);
   if (HOLE_WORD.test(clause)) return { kind: 'threadHole', diameter, pitch };
   const part = /\b(tuercas?|nuts?)\b/.test(clause) ? 'nut' : 'bolt';

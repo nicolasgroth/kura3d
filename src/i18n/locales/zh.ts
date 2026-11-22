@@ -149,7 +149,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'sidebar.shapes.quickActionsTitle': '快速场景',
   'sidebar.shapes.createStarter': '30 mm 校准方块',
   'sidebar.shapes.clearScene': '清空打印床',
-  'sidebar.generators.thread': 'ISO 公制螺纹 (M3–M20)',
+  'sidebar.generators.thread': 'ISO 公制螺纹 (M3–M64)',
   'sidebar.generators.threadTip': '生成带 3D 打印间隙的 ISO 公制螺栓、螺母或负螺纹孔',
   'sidebar.primitive.box': '立方体',
   'sidebar.primitive.cylinder': '圆柱体',
@@ -394,7 +394,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'cmd.cat.settings': '设置、MCP 与 AI',
   'cmd.pro.mold': '生成模具 / 硅胶模盒',
   'cmd.pro.project': '将文字或 SVG 投影到表面',
-  'cmd.pro.thread': '创建 ISO 公制螺纹 (M3–M20)',
+  'cmd.pro.thread': '创建 ISO 公制螺纹 (M3–M64)',
   'cmd.pro.validate': '检查可打印性（悬垂与重量）',
   'cmd.pro.simplify': '简化网格（减少三角面）',
   'cmd.pro.refine': '细分网格（细分与平滑）',
@@ -641,7 +641,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.project.execute': '投影到模型',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'ISO 公制螺纹生成器 (M3–M20)',
+  'dialog.thread.title': 'ISO 公制螺纹生成器 (M3–M64)',
   'dialog.thread.preset': 'ISO 公制预设',
   'dialog.thread.kind': '螺纹零件类型',
   'dialog.thread.kindBolt': '螺栓（外螺纹）',
@@ -1314,4 +1314,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': '接合 {label} 的连接件强度不足：{measured} mm，建议 {recommended} mm。',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': '接合 {label} 的搭接无法打印（榫舌 {tongue} mm，槽壁 {groove} mm；最小 {min} mm）：该接合改为粘合。',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': '标记 {label} 雕刻深度为 {depth} mm（请求 {requested} mm），以免穿透 {wall} mm 的壁。',
+  'dialog.thread.presetCommon': '常用 (M3–M20)',
+  'dialog.thread.presetLarge': '大规格 (M22–M64)',
 };

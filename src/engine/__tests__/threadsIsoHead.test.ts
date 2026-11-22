@@ -12,11 +12,12 @@ import { createMetricThread, hexAcrossFlats, isoCoarsePitch, isoHeadHeight } fro
 import { initManifoldEngine, meshDataToManifold } from '../manifoldKernel';
 
 describe('roscas ISO: cabeza hexagonal y diámetro menor del perno', () => {
-  it('tabla ISO 4017: M3 5.5, M8 13, M20 30; fuera de tabla 1.55·d', () => {
+  it('tabla ISO 4017: M3 5.5, M8 13, M20 30; M24 36, M64 95; fuera de tabla 1.55·d', () => {
     expect(hexAcrossFlats(3)).toBe(5.5);
     expect(hexAcrossFlats(8)).toBe(13);
     expect(hexAcrossFlats(20)).toBe(30);
-    expect(hexAcrossFlats(30)).toBeCloseTo(46.5, 6);
+    expect(hexAcrossFlats(30)).toBe(46);
+    expect(hexAcrossFlats(3.2)).toBeCloseTo(1.55 * 3.2, 6);
   });
 
   it.each([[3], [8], [20]])('M%i: entrecaras de la cabeza según tabla y núcleo en d3; malla manifold', async (d) => {

@@ -24,3 +24,12 @@ export const SVG_PRESETS: Record<'star' | 'badge' | 'gear', string> = {
 /** Presets métricos ISO estándar (diámetro mm y paso grueso estándar en mm). */
 export const ISO_THREAD_PRESETS: Array<{ label: string; diameterMm: number; pitchMm: number }> =
   ISO_COARSE_THREADS.filter((row) => Number.isInteger(row.diameterMm) && row.diameterMm !== 7).map((row) => ({ label: `M${row.diameterMm}`, ...row }));
+
+/** Diámetro máximo (mm) del grupo de presets habituales; por encima van los grandes. */
+export const ISO_THREAD_COMMON_MAX_MM = 20;
+
+/** Presets en dos grupos: habituales (M3–M20) y grandes (M22–M64). */
+export const ISO_THREAD_PRESET_GROUPS = {
+  common: ISO_THREAD_PRESETS.filter((p) => p.diameterMm <= ISO_THREAD_COMMON_MAX_MM),
+  large: ISO_THREAD_PRESETS.filter((p) => p.diameterMm > ISO_THREAD_COMMON_MAX_MM),
+};

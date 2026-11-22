@@ -1,6 +1,6 @@
 /**
  * @file src/engine/threadIsoTables.ts
- * @description Tablas ISO de roscas métricas M3–M20 (rango único de Kura3D, igual en interfaz,
+ * @description Tablas ISO de roscas métricas M3–M64 (rango único de Kura3D, igual en interfaz,
  * límites y motor): paso grueso ISO 261, entrecaras s y altura de cabeza k de ISO 4017 / ISO 4032,
  * tolerancia TD1 grado 6 del diámetro menor interior (ISO 965-1, posición H ⇒ D1 máx = D1 + TD1)
  * y la holgura radial por defecto para impresión FDM, escalada con el paso.
@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-/** Tabla ISO 261 de paso grueso (diámetro nominal → paso en mm), M3–M20. */
+/** Tabla ISO 261 de paso grueso (diámetro nominal → paso en mm), M3–M64: serie preferente + segunda elección habitual. */
 export const ISO_COARSE_THREADS: ReadonlyArray<{ diameterMm: number; pitchMm: number }> = [
   { diameterMm: 3, pitchMm: 0.5 },
   { diameterMm: 3.5, pitchMm: 0.6 },
@@ -24,16 +24,38 @@ export const ISO_COARSE_THREADS: ReadonlyArray<{ diameterMm: number; pitchMm: nu
   { diameterMm: 16, pitchMm: 2.0 },
   { diameterMm: 18, pitchMm: 2.5 },
   { diameterMm: 20, pitchMm: 2.5 },
+  { diameterMm: 22, pitchMm: 2.5 },
+  { diameterMm: 24, pitchMm: 3.0 },
+  { diameterMm: 27, pitchMm: 3.0 },
+  { diameterMm: 30, pitchMm: 3.5 },
+  { diameterMm: 33, pitchMm: 3.5 },
+  { diameterMm: 36, pitchMm: 4.0 },
+  { diameterMm: 39, pitchMm: 4.0 },
+  { diameterMm: 42, pitchMm: 4.5 },
+  { diameterMm: 45, pitchMm: 4.5 },
+  { diameterMm: 48, pitchMm: 5.0 },
+  { diameterMm: 52, pitchMm: 5.0 },
+  { diameterMm: 56, pitchMm: 5.5 },
+  { diameterMm: 60, pitchMm: 5.5 },
+  { diameterMm: 64, pitchMm: 6.0 },
 ];
 
-/** Entrecaras s (mm) de cabezas y tuercas hexagonales ISO 4017 / ISO 4032 (M3.5 y M7 según DIN 933). */
+/**
+ * Entrecaras s (mm) de cabezas y tuercas hexagonales ISO 4017 / ISO 4032 (M3.5 y M7 según DIN 933).
+ * Valores de M22 a M64: pendiente de contrastar con la norma (tomados de memoria, sin acceso a ISO 4017/4032).
+ */
 export const ISO_HEX_ACROSS_FLATS: Readonly<Record<number, number>> = {
   3: 5.5, 3.5: 6, 4: 7, 5: 8, 6: 10, 7: 11, 8: 13, 10: 16, 12: 18, 14: 21, 16: 24, 18: 27, 20: 30,
+  22: 34, 24: 36, 27: 41, 30: 46, 33: 50, 36: 55, 39: 60, 42: 65, 45: 70, 48: 75, 52: 80, 56: 85, 60: 90, 64: 95,
 };
 
-/** Altura nominal de cabeza k (mm) de ISO 4017 (M3.5 y M7 según DIN 933). */
+/**
+ * Altura nominal de cabeza k (mm) de ISO 4017 (M3.5 y M7 según DIN 933). Valores de M22 a M64: pendiente de
+ * contrastar con la norma (de memoria). La altura de tuerca ISO 4032 (m) no se usa: la tuerca se genera con el largo pedido.
+ */
 export const ISO_HEAD_HEIGHT: Readonly<Record<number, number>> = {
   3: 2.0, 3.5: 2.4, 4: 2.8, 5: 3.5, 6: 4.0, 7: 4.8, 8: 5.3, 10: 6.4, 12: 7.5, 14: 8.8, 16: 10, 18: 11.5, 20: 12.5,
+  22: 14, 24: 15, 27: 17, 30: 18.7, 33: 21, 36: 22.5, 39: 25, 42: 26, 45: 28, 48: 30, 52: 33, 56: 35, 60: 38, 64: 40,
 };
 
 /** Tolerancia TD1 grado 6 del diámetro menor interior por paso (ISO 965-1), en mm. */
@@ -41,6 +63,8 @@ const TD1_GRADE6: ReadonlyArray<readonly [number, number]> = [
   [0.2, 0.056], [0.25, 0.071], [0.3, 0.085], [0.35, 0.1], [0.4, 0.112], [0.45, 0.125], [0.5, 0.14],
   [0.6, 0.16], [0.7, 0.18], [0.75, 0.19], [0.8, 0.2], [1.0, 0.236], [1.25, 0.265], [1.5, 0.3],
   [1.75, 0.335], [2.0, 0.375], [2.5, 0.45], [3.0, 0.5], [3.5, 0.56], [4.0, 0.6], [4.5, 0.67], [5.0, 0.71],
+  // P 5.5 y 6.0: pendiente de contrastar con ISO 965-1 (extrapolación de la progresión de la tabla)
+  [5.5, 0.75], [6.0, 0.8],
 ];
 
 /** Interpolación lineal por tramos sobre una tabla ordenada (extremos constantes). */

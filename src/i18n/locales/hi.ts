@@ -149,7 +149,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'sidebar.shapes.quickActionsTitle': 'त्वरित दृश्य',
   'sidebar.shapes.createStarter': '30 mm कैलिब्रेशन घन',
   'sidebar.shapes.clearScene': 'बेड साफ़ करें',
-  'sidebar.generators.thread': 'ISO थ्रेड (M3–M20)',
+  'sidebar.generators.thread': 'ISO थ्रेड (M3–M64)',
   'sidebar.generators.threadTip': '3D प्रिंट क्लियरेंस के साथ मीट्रिक ISO बोल्ट, नट या थ्रेडेड छिद्र बनाएं',
   'sidebar.primitive.box': 'घन / बॉक्स',
   'sidebar.primitive.cylinder': 'बेलन',
@@ -394,7 +394,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'cmd.cat.settings': 'सेटिंग्स, MCP और AI',
   'cmd.pro.mold': 'मोल्ड / सिलिकॉन बॉक्स बनाएं',
   'cmd.pro.project': 'सतह पर पाठ या SVG प्रोजेक्ट करें',
-  'cmd.pro.thread': 'मीट्रिक ISO थ्रेड बनाएं (M3–M20)',
+  'cmd.pro.thread': 'मीट्रिक ISO थ्रेड बनाएं (M3–M64)',
   'cmd.pro.validate': 'प्रिंट योग्यता जांचें (ओवरहैंग व वजन)',
   'cmd.pro.simplify': 'मेश सरल करें (त्रिभुज घटाएं)',
   'cmd.pro.refine': 'मेश परिष्कृत करें (उपविभाजित व चिकना)',
@@ -641,7 +641,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.project.execute': 'मॉडल पर प्रोजेक्ट करें',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'मीट्रिक ISO थ्रेड जनरेटर (M3–M20)',
+  'dialog.thread.title': 'मीट्रिक ISO थ्रेड जनरेटर (M3–M64)',
   'dialog.thread.preset': 'ISO मीट्रिक प्रीसेट',
   'dialog.thread.kind': 'थ्रेडेड भाग प्रकार',
   'dialog.thread.kindBolt': 'बोल्ट (बाहरी थ्रेड)',
@@ -1314,4 +1314,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': 'जोड़ {label} का कनेक्टर कमज़ोर है: {measured} mm, अनुशंसित {recommended} mm।',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'जोड़ {label} का ओवरलैप प्रिंट योग्य नहीं (जीभ {tongue} mm, खाँचे की दीवार {groove} mm; न्यूनतम {min} mm): जोड़ चिपकाने के लिए रहेगा।',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'निशान {label} को {depth} mm गहरा उकेरा गया (माँगा {requested} mm) ताकि {wall} mm दीवार न छिदे।',
+  'dialog.thread.presetCommon': 'सामान्य (M3–M20)',
+  'dialog.thread.presetLarge': 'बड़े (M22–M64)',
 };

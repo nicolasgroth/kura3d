@@ -149,7 +149,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'sidebar.shapes.quickActionsTitle': 'Schnellszene',
   'sidebar.shapes.createStarter': '30-mm-Kalibrierwürfel',
   'sidebar.shapes.clearScene': 'Druckbett leeren',
-  'sidebar.generators.thread': 'ISO-Gewinde (M3–M20)',
+  'sidebar.generators.thread': 'ISO-Gewinde (M3–M64)',
   'sidebar.generators.threadTip': 'Metrische ISO-Schraube, Mutter oder Gewindebohrung mit 3D-Druck-Spiel erzeugen',
   'sidebar.primitive.box': 'Quader',
   'sidebar.primitive.cylinder': 'Zylinder',
@@ -394,7 +394,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'cmd.cat.settings': 'Einstellungen, MCP & KI',
   'cmd.pro.mold': 'Gießform / Silikonbox erzeugen',
   'cmd.pro.project': 'Text oder SVG auf Oberfläche projizieren',
-  'cmd.pro.thread': 'Metrisches ISO-Gewinde erstellen (M3–M20)',
+  'cmd.pro.thread': 'Metrisches ISO-Gewinde erstellen (M3–M64)',
   'cmd.pro.validate': 'Druckbarkeit prüfen (Überhänge & Gewicht)',
   'cmd.pro.simplify': 'Netz vereinfachen (Dreiecke reduzieren)',
   'cmd.pro.refine': 'Netz verfeinern (Unterteilen & Glätten)',
@@ -641,7 +641,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.project.execute': 'Auf Modell projizieren',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'Metrischer ISO-Gewindegenerator (M3–M20)',
+  'dialog.thread.title': 'Metrischer ISO-Gewindegenerator (M3–M64)',
   'dialog.thread.preset': 'Metrisches ISO-Preset',
   'dialog.thread.kind': 'Gewindeteiltyp',
   'dialog.thread.kindBolt': 'Schraube (Außengewinde)',
@@ -1314,4 +1314,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': 'Der Verbinder der Verbindung {label} ist schwach: {measured} mm, empfohlen {recommended} mm.',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'Die Überlappung der Verbindung {label} ist nicht druckbar (Feder {tongue} mm, Nutwand {groove} mm; Minimum {min} mm): die Verbindung wird geklebt.',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Markierung {label} wurde {depth} mm tief graviert (angefragt {requested} mm), um die {wall} mm Wand nicht zu durchstoßen.',
+  'dialog.thread.presetCommon': 'Gängig (M3–M20)',
+  'dialog.thread.presetLarge': 'Groß (M22–M64)',
 };

@@ -1,6 +1,6 @@
 /**
  * @file src/engine/threads.ts
- * @description Roscas métricas ISO de 60° (perno, tuerca y macho negativo), rango M3–M20 con
+ * @description Roscas métricas ISO de 60° (perno, tuerca y macho negativo), rango M3–M64 con
  * las tablas de `threadIsoTables.ts`, paso automático por diámetro, validación tipada y una malla
  * helicoidal exacta: los vértices se ubican sobre las 4 hélices de quiebre del perfil y sobre
  * N columnas angulares, de modo que la malla es invariante ante el movimiento de tornillo

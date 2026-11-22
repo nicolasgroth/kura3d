@@ -149,7 +149,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'sidebar.shapes.quickActionsTitle': 'Scène Rapide',
   'sidebar.shapes.createStarter': 'Cube de calibration 30 mm',
   'sidebar.shapes.clearScene': 'Vider le plateau',
-  'sidebar.generators.thread': 'Filetage ISO (M3–M20)',
+  'sidebar.generators.thread': 'Filetage ISO (M3–M64)',
   'sidebar.generators.threadTip': 'Générer une vis, un écrou ou un taraudage métrique ISO avec jeu d’impression 3D',
   'sidebar.primitive.box': 'Cube',
   'sidebar.primitive.cylinder': 'Cylindre',
@@ -394,7 +394,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'cmd.cat.settings': 'Paramètres, MCP & IA',
   'cmd.pro.mold': 'Générer un Moule / Coffrage Silicone',
   'cmd.pro.project': 'Projeter un Texte ou SVG sur Surface',
-  'cmd.pro.thread': 'Créer un Filetage Métrique ISO (M3–M20)',
+  'cmd.pro.thread': 'Créer un Filetage Métrique ISO (M3–M64)',
   'cmd.pro.validate': 'Valider l’Imprimabilité (Porte-à-faux & Poids)',
   'cmd.pro.simplify': 'Simplifier le Maillage (Réduire les Triangles)',
   'cmd.pro.refine': 'Affiner le Maillage (Subdiviser & Lisser)',
@@ -641,7 +641,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.project.execute': 'Projeter sur le Modèle',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'Générateur de Filetages Métriques ISO (M3–M20)',
+  'dialog.thread.title': 'Générateur de Filetages Métriques ISO (M3–M64)',
   'dialog.thread.preset': 'Préréglage Métrique ISO',
   'dialog.thread.kind': 'Type de pièce filetée',
   'dialog.thread.kindBolt': 'Vis (Filetage extérieur)',
@@ -1314,4 +1314,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': 'Le connecteur de la jonction {label} est fragile : {measured} mm, {recommended} mm recommandés.',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'Le recouvrement de la jonction {label} n\'est pas imprimable (languette {tongue} mm, paroi de rainure {groove} mm ; minimum {min} mm) : la jonction est à coller.',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Le repère {label} a été gravé à {depth} mm (demandé {requested} mm) pour ne pas percer la paroi de {wall} mm.',
+  'dialog.thread.presetCommon': 'Courants (M3–M20)',
+  'dialog.thread.presetLarge': 'Grands (M22–M64)',
 };

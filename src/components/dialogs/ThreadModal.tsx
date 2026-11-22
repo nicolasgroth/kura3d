@@ -21,9 +21,9 @@ import {
   THREAD_MAX_DIAMETER_MM,
   THREAD_MIN_DIAMETER_MM,
 } from '../../engine/threads';
-import { ISO_THREAD_PRESETS } from './dialogPresets';
+import { ISO_THREAD_PRESET_GROUPS } from './dialogPresets';
 
-/** Modal 6: Generador Paramétrico de Roscas Métricas ISO (M3–M20). */
+/** Modal 6: Generador Paramétrico de Roscas Métricas ISO (M3–M64). */
 export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const language = useKuraStore((s) => s.language);
   const createThreadObject = useKuraStore((s) => s.createThreadObject);
@@ -85,34 +85,41 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
       />
       <div className="kura-form-field">
         <label>{t(language, 'dialog.thread.preset')}</label>
-        <div
-          role="radiogroup"
-          aria-label={t(language, 'dialog.thread.preset')}
-          style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}
-        >
-          {ISO_THREAD_PRESETS.map((preset) => (
-            <button
-              key={preset.label}
-              type="button"
-              role="radio"
-              aria-checked={diameterMm === preset.diameterMm && pitchMm === preset.pitchMm}
-              className={`kura-chip ${
-                diameterMm === preset.diameterMm && pitchMm === preset.pitchMm ? 'is-active' : ''
-              }`}
-              style={
-                diameterMm === preset.diameterMm && pitchMm === preset.pitchMm
-                  ? { borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)' }
-                  : undefined
-              }
-              onClick={() => {
-                setDiameterMm(preset.diameterMm);
-                applyPitch(preset.pitchMm);
-              }}
+        {(
+          [
+            ['common', ISO_THREAD_PRESET_GROUPS.common, 'dialog.thread.presetCommon'],
+            ['large', ISO_THREAD_PRESET_GROUPS.large, 'dialog.thread.presetLarge'],
+          ] as const
+        ).map(([group, presets, labelKey]) => (
+          <div key={group} style={{ marginTop: 4 }}>
+            <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 3 }}>{t(language, labelKey)}</div>
+            <div
+              role="radiogroup"
+              aria-label={`${t(language, 'dialog.thread.preset')} — ${t(language, labelKey)}`}
+              style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}
             >
-              {preset.label} ({preset.pitchMm})
-            </button>
-          ))}
-        </div>
+              {presets.map((preset) => {
+                const active = diameterMm === preset.diameterMm && pitchMm === preset.pitchMm;
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    className={`kura-chip ${active ? 'is-active' : ''}`}
+                    style={active ? { borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)' } : undefined}
+                    onClick={() => {
+                      setDiameterMm(preset.diameterMm);
+                      applyPitch(preset.pitchMm);
+                    }}
+                  >
+                    {preset.label} ({preset.pitchMm})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="kura-form-grid">
@@ -153,7 +160,7 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
           <PrecisionNumberInput
             id="thread-pitch"
             min={0.2}
-            max={4}
+            max={6}
             step={0.05}
             precision={2}
             defaultValue={1.25}

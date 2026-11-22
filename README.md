@@ -63,7 +63,7 @@ El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kura3
 - **Corte por plano con conectores** (espiga, pasador, cola de milano) con holgura configurable, también en aros y piezas en L.
 - **Ahuecado** con pared uniforme y orificio de drenaje.
 - **Moldes** de 1 pieza, 2 mitades, caja madre y núcleo/cavidad.
-- **Roscas ISO M3–M20** con paso y holgura automáticos según la norma.
+- **Roscas ISO M3–M64** con paso y holgura automáticos según la norma.
 - Texto y SVG en relieve, grabado o incrustado sobre cualquier superficie.
 - Litofanías planas y cilíndricas, y cortadores desde una imagen.
 - Simplificar y refinar mallas, alinear y distribuir en la cama.

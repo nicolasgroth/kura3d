@@ -87,12 +87,12 @@ describe('roscas: cabeza ISO 4017 y rango único', () => {
     }
   });
 
-  it('el rango aceptado es M3–M20 en límites, tabla y motor', () => {
+  it('el rango aceptado es M3–M64 en límites, tabla y motor', () => {
     expect(OPERATION_RANGES.thread.diameterMm.min).toBe(3);
-    expect(OPERATION_RANGES.thread.diameterMm.max).toBe(20);
+    expect(OPERATION_RANGES.thread.diameterMm.max).toBe(64);
     expect(ISO_COARSE_THREADS[0].diameterMm).toBe(3);
-    expect(ISO_COARSE_THREADS[ISO_COARSE_THREADS.length - 1].diameterMm).toBe(20);
-    for (const diameterMm of [2, 24, 64]) {
+    expect(ISO_COARSE_THREADS[ISO_COARSE_THREADS.length - 1].diameterMm).toBe(64);
+    for (const diameterMm of [2, 66, 100]) {
       expect(() => resolveThreadOptions({ kind: 'bolt', diameterMm, lengthMm: 5 })).toThrow(
         expect.objectContaining({ code: 'INVALID_PARAMETER' }),
       );

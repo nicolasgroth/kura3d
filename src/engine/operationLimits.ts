@@ -81,7 +81,7 @@ export const OPERATION_RANGES = {
     targetEdgeLengthMm: closed(0.05, 1000),
   },
   thread: {
-    diameterMm: closed(3, 20), // M3–M20: el rango de las tablas ISO 4017 de `threadIsoTables.ts` y de la interfaz
+    diameterMm: closed(3, 64), // M3–M64: el rango de las tablas ISO 4017 de `threadIsoTables.ts` y de la interfaz
     pitchMm: closed(0.2, 16),
     lengthMm: closed(1, 300),
     clearanceMm: closed(0, 1.5),

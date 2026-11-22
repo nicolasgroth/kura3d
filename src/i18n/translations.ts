@@ -156,7 +156,7 @@ export const TRANSLATIONS_ES = {
   'sidebar.shapes.quickActionsTitle': 'Escena Rápida',
   'sidebar.shapes.createStarter': 'Cubo de calibración 30 mm',
   'sidebar.shapes.clearScene': 'Vaciar cama',
-  'sidebar.generators.thread': 'Rosca ISO (M3–M20)',
+  'sidebar.generators.thread': 'Rosca ISO (M3–M64)',
   'sidebar.generators.threadTip': 'Generar perno, tuerca o cilindro roscado métrico ISO con holgura 3D',
   'sidebar.primitive.box': 'Cubo',
   'sidebar.primitive.cylinder': 'Cilindro',
@@ -401,7 +401,7 @@ export const TRANSLATIONS_ES = {
   'cmd.cat.settings': 'Ajustes, MCP e IA',
   'cmd.pro.mold': 'Generar Molde / Caja de Silicona',
   'cmd.pro.project': 'Proyectar Texto o SVG en Superficie',
-  'cmd.pro.thread': 'Crear Rosca Métrica ISO (M3–M20)',
+  'cmd.pro.thread': 'Crear Rosca Métrica ISO (M3–M64)',
   'cmd.pro.validate': 'Validar Imprimibilidad (Voladizos y Peso)',
   'cmd.pro.simplify': 'Simplificar Malla (Reducir Triángulos)',
   'cmd.pro.refine': 'Refinar Malla (Subdividir y Suavizar)',
@@ -648,7 +648,7 @@ export const TRANSLATIONS_ES = {
   'dialog.project.execute': 'Proyectar sobre Modelo',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'Generador de Roscas Métricas ISO (M3–M20)',
+  'dialog.thread.title': 'Generador de Roscas Métricas ISO (M3–M64)',
   'dialog.thread.preset': 'Preset Métrico ISO',
   'dialog.thread.kind': 'Tipo de pieza roscada',
   'dialog.thread.kindBolt': 'Perno (Rosca exterior)',
@@ -1321,6 +1321,8 @@ export const TRANSLATIONS_ES = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': 'El conector de la unión {label} es poco firme: mide {measured} mm, se recomienda {recommended} mm.',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'El solape de la unión {label} no es imprimible (lengüeta {tongue} mm, pared de ranura {groove} mm; mínimo {min} mm): la unión queda para pegar.',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'La marca {label} se grabó a {depth} mm (pedido {requested} mm) para no atravesar la pared de {wall} mm.',
+  'dialog.thread.presetCommon': 'Habituales (M3–M20)',
+  'dialog.thread.presetLarge': 'Grandes (M22–M64)',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -1458,7 +1460,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'sidebar.shapes.quickActionsTitle': 'Quick Scene',
   'sidebar.shapes.createStarter': '30 mm Calibration Cube',
   'sidebar.shapes.clearScene': 'Clear bed',
-  'sidebar.generators.thread': 'ISO Thread (M3–M20)',
+  'sidebar.generators.thread': 'ISO Thread (M3–M64)',
   'sidebar.generators.threadTip': 'Generate metric ISO bolt, nut or negative threaded hole with 3D print clearance',
   'sidebar.primitive.box': 'Box',
   'sidebar.primitive.cylinder': 'Cylinder',
@@ -1695,7 +1697,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'cmd.cat.settings': 'Settings, MCP & AI',
   'cmd.pro.mold': 'Generate Mold / Silicone Box',
   'cmd.pro.project': 'Project Text or SVG onto Surface',
-  'cmd.pro.thread': 'Create Metric ISO Thread (M3–M20)',
+  'cmd.pro.thread': 'Create Metric ISO Thread (M3–M64)',
   'cmd.pro.validate': 'Validate Printability (Overhangs & Weight)',
   'cmd.pro.simplify': 'Simplify Mesh (Reduce Triangles)',
   'cmd.pro.refine': 'Refine Mesh (Subdivide & Smooth)',
@@ -1934,7 +1936,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.project.offsetV': 'V Offset (mm)',
   'dialog.project.execute': 'Project onto Model',
 
-  'dialog.thread.title': 'Metric ISO Thread Generator (M3–M20)',
+  'dialog.thread.title': 'Metric ISO Thread Generator (M3–M64)',
   'dialog.thread.preset': 'ISO Metric Preset',
   'dialog.thread.kind': 'Threaded part type',
   'dialog.thread.kindBolt': 'Bolt (External thread)',
@@ -2602,6 +2604,8 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': 'The connector of joint {label} is weak: {measured} mm, {recommended} mm recommended.',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'The lap of joint {label} is not printable (tongue {tongue} mm, groove wall {groove} mm; minimum {min} mm): the joint is left for gluing.',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Label {label} was engraved {depth} mm deep (requested {requested} mm) so it does not pierce the {wall} mm wall.',
+  'dialog.thread.presetCommon': 'Common (M3–M20)',
+  'dialog.thread.presetLarge': 'Large (M22–M64)',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };
