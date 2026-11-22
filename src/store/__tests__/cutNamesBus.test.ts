@@ -1,7 +1,7 @@
 /**
  * @file src/store/__tests__/cutNamesBus.test.ts
  * @description Nombres de resultados: en el corte por plano la mitad A es el lado negativo del eje del
- * usuario y la B el positivo, en los tres ejes; conservar solo la mitad de arriba la apoya en la cama;
+ * usuario y la B el positivo, en los tres ejes; la mitad conservada sola queda en su lugar;
  * y una resta con una herramienta "− Rosca" no repite el signo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -51,13 +51,14 @@ describe('nombres de corte y resta', () => {
     }
   });
 
-  it('conservar solo la mitad de arriba la apoya en la cama', async () => {
+  it('conservar solo la mitad de arriba la deja en su lugar y se llama B', async () => {
     const b = await box();
     const res = await run('plane_cut', { id: b.id, axis: 'z', offset: 0, connectorType: 'none', keepMode: 'positive' });
     expect(res.ok, JSON.stringify(res)).toBe(true);
     const [half] = store().objects;
     expect(half.name.endsWith('B')).toBe(true);
-    expect(half.position[1]).toBeCloseTo(0, 6);
+    // Contrato vigente (planeCutDialogAxes, qa6Bus): la mitad conservada queda de su lado del plano.
+    expect(half.position[1]).toBeCloseTo(20, 4);
   });
 
   it('una resta no duplica el signo de la herramienta', () => {

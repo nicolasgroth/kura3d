@@ -31,17 +31,14 @@ export async function planeCut(
   // lado positivo del motor en Z es el negativo del usuario en Y.
   const positiveIsUserPositive = userAxisOfInternal(options.axis).sign > 0;
   const halves = [
-    { part: result.positive, half: positiveIsUserPositive ? ('b' as const) : ('a' as const), upper: true },
-    { part: result.negative, half: positiveIsUserPositive ? ('a' as const) : ('b' as const), upper: false },
+    { part: result.positive, half: positiveIsUserPositive ? ('b' as const) : ('a' as const) },
+    { part: result.negative, half: positiveIsUserPositive ? ('a' as const) : ('b' as const) },
   ].filter((h) => h.part !== null);
-  // Si se conserva solo la mitad de arriba de un corte horizontal, se apoya en la cama (como hace el
-  // corte que conserva ambas: la de arriba va a la cama); en X/Y queda en su lugar.
-  const dropToBed = halves.length === 1 && halves[0].upper && options.axis === 'y';
   const parts = halves.map(({ part, half }) => buildWith(ctx, {
     name: ctx.naming.cutHalf(obj, half),
     source: 'cut_part',
     mesh: part!.mesh,
-    position: dropToBed ? [part!.position[0], 0, part!.position[2]] : part!.position,
+    position: part!.position,
     color: obj.color,
     materialPreset: obj.materialPreset,
   }));
