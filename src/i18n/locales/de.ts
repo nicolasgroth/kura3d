@@ -9,6 +9,7 @@
 
 import type { TranslationKey } from '../translations';
 import { MENU_DE } from './menuKeys';
+import { FLOWUX_DE } from './flowUx';
 import { PREVIEW_DE } from './preview';
 import { SPLITJOINTS_DE } from './splitJoints';
 import { SPLITPREFS_DE } from './splitPrefs';
@@ -19,6 +20,7 @@ import { SPLITCOUPLING_DE } from './splitCoupling';
  */
 export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...MENU_DE,
+  ...FLOWUX_DE,
   ...PREVIEW_DE,
   ...SPLITJOINTS_DE,
   ...SPLITPREFS_DE,
@@ -35,7 +37,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'recovery.status.sceneChanged': 'Die Szene wurde während der Wiederherstellung geändert. Wähle den Entwurf erneut aus.',
   'recovery.status.restored': 'Entwurf wiederhergestellt. Speichere das Projekt als .kura-Datei.',
   'recovery.status.restoreFailed': 'Der Entwurf konnte nicht wiederhergestellt werden. {message}',
-  'recovery.status.discardConfirm': 'Lokalen Entwurf für „{name}“ verwerfen?',
+  'recovery.status.discardConfirm': 'Lokalen Entwurf für „{name}“ verwerfen? Das lässt sich nicht rückgängig machen.',
   'recovery.status.discardFailed': 'Der Entwurf konnte nicht verworfen werden.',
   'dropProject.prompt': 'STL-, 3MF-, OBJ/PLY-Modelle oder ein .kura-Projekt ablegen',
   'dropProject.unsupported': 'Lege ein .kura-Projekt oder ein oder mehrere STL-, 3MF- oder OBJ/PLY-Modelle ab.',
@@ -1167,7 +1169,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'printWarning.NOT_MANIFOLD': 'Das Netz ist nicht geschlossen (non-manifold); es kann Löcher oder Slicing-Fehler haben.',
   'printWarning.EXCEEDS_BED': 'Das Objekt überschreitet den Bauraum ({width}×{depth}×{height} mm).',
   'printWarning.FLOATING': 'Das Objekt schwebt {gap} mm über dem Druckbett.',
-  'printWarning.OVERHANG': '{percent} % der Oberfläche hängen über (> {angle}°); erwäge Stützstrukturen.',
+  'printWarning.OVERHANG': 'Überhang von mehr als {angle}° auf {percent} % der Oberfläche; beim Slicen kann Stütze nötig sein.',
   'printWarning.LOW_DENSITY': 'Geringe Polygondichte auf gekrümmten Flächen; sie können facettiert wirken.',
   'printWarning.HIGH_DENSITY': 'Sehr dichtes Netz (> 50 000 Dreiecke); erwäge, es zu vereinfachen.',
   'printWarning.THIN_WALL': 'Einige Wände sind {thickness} mm dick, dünner als das Minimum von {min} mm; sie werden evtl. nicht gedruckt.',

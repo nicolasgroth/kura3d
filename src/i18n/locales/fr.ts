@@ -9,6 +9,7 @@
 
 import type { TranslationKey } from '../translations';
 import { MENU_FR } from './menuKeys';
+import { FLOWUX_FR } from './flowUx';
 import { PREVIEW_FR } from './preview';
 import { SPLITJOINTS_FR } from './splitJoints';
 import { SPLITPREFS_FR } from './splitPrefs';
@@ -19,6 +20,7 @@ import { SPLITCOUPLING_FR } from './splitCoupling';
  */
 export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...MENU_FR,
+  ...FLOWUX_FR,
   ...PREVIEW_FR,
   ...SPLITJOINTS_FR,
   ...SPLITPREFS_FR,
@@ -35,7 +37,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'recovery.status.sceneChanged': 'La scène a changé pendant la récupération. Vous pouvez sélectionner à nouveau le brouillon.',
   'recovery.status.restored': 'Brouillon récupéré. Enregistrez le projet pour le conserver dans un fichier .kura.',
   'recovery.status.restoreFailed': 'Impossible de récupérer le brouillon. {message}',
-  'recovery.status.discardConfirm': 'Supprimer le brouillon local de « {name} » ?',
+  'recovery.status.discardConfirm': 'Supprimer le brouillon local de « {name} » ? Cette action est irréversible.',
   'recovery.status.discardFailed': 'Impossible de supprimer le brouillon.',
   'dropProject.prompt': 'Déposez des modèles STL, 3MF, OBJ/PLY ou un projet .kura',
   'dropProject.unsupported': 'Déposez un seul projet .kura ou un ou plusieurs modèles STL, 3MF ou OBJ/PLY.',
@@ -1167,7 +1169,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'printWarning.NOT_MANIFOLD': 'Le maillage n\'est pas fermé (non-manifold) ; il peut présenter des trous ou des erreurs au tranchage.',
   'printWarning.EXCEEDS_BED': 'L\'objet dépasse le volume d\'impression ({width}×{depth}×{height} mm).',
   'printWarning.FLOATING': 'L\'objet flotte à {gap} mm au-dessus du plateau.',
-  'printWarning.OVERHANG': '{percent} % de la surface est en surplomb (> {angle}°) ; pensez à activer les supports.',
+  'printWarning.OVERHANG': 'Surplomb de plus de {angle}° sur {percent} % de la surface ; un support peut être nécessaire au découpage.',
   'printWarning.LOW_DENSITY': 'Faible densité de polygones sur les surfaces courbes ; elles peuvent paraître facettées.',
   'printWarning.HIGH_DENSITY': 'Maillage très dense (> 50 000 triangles) ; pensez à le simplifier.',
   'printWarning.THIN_WALL': 'Certaines parois font {thickness} mm, moins que le minimum de {min} mm ; elles risquent de ne pas s\'imprimer.',

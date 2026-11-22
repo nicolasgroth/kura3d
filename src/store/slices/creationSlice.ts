@@ -33,10 +33,14 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
     return { place, result };
   };
 
-  /** Tras colocar en espacio libre: avisa si no cupo y encuadra si quedó fuera de la cama. */
-  const afterFreePlacement = (fits: boolean, wasEmpty: boolean) => {
+  /**
+   * Tras colocar en espacio libre: avisa si no cupo en la cama y encuadra. Escena vacía o fuera de la
+   * cama: encuadre de toda la escena; si ya había objetos, se asegura que la pieza nueva quede a la vista.
+   */
+  const afterFreePlacement = (fits: boolean, wasEmpty: boolean, newId: string) => {
     if (!fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
     if (!fits || wasEmpty) get().requestCameraPreset('fit');
+    else get().requestCameraPreset('ensure', [newId]);
   };
 
   /** Agrega un objeto recién creado con animación de aparición. */
@@ -75,7 +79,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
         });
         addSpawned(obj, [obj.id]);
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
-        if (free) afterFreePlacement(free.result.fits, count === 0);
+        if (free) afterFreePlacement(free.result.fits, count === 0, obj.id);
         return obj;
       }),
 
@@ -104,14 +108,12 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
 
     createStarterCube: async () => {
       if (get().busyOperation || get().projectBusy) return;
-      const wasEmpty = get().objects.length === 0;
-      const cube = await get().createPrimitive('box', { width: 30, height: 30, depth: 30 }, {
+      await get().createPrimitive('box', { width: 30, height: 30, depth: 30 }, {
         name: `${tr('sidebar.primitive.box')} ${BRAND.name} 30 mm`,
         color: PRINT_COLOR_PALETTE[0],
         materialPreset: 'pla_matte',
         placement: 'free',
       });
-      if (cube && wasEmpty) get().requestCameraPreset('fit');
     },
 
     createThreadObject: async (options) =>
@@ -124,7 +126,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
         const obj = { ...created, position: free.place(created.mesh) };
         addSpawned(obj, [obj.id]);
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
-        afterFreePlacement(free.result.fits, wasEmpty);
+        afterFreePlacement(free.result.fits, wasEmpty, obj.id);
         return obj;
       }),
 

@@ -1,0 +1,23 @@
+/**
+ * @file src/styles/toastNarrow.css
+ * @description En pantallas estrechas (<= 900 px) los avisos van arriba, bajo la barra superior, para no
+ * tapar la hoja inferior (Formas o Inspector) ni sus botones.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+@media (max-width: 900px) {
+  div.kura-hud-top-stack .kura-toast-stack,
+  .kura-toast-stack {
+    position: fixed;
+    top: 52px;
+    bottom: auto;
+    left: 8px;
+    right: 8px;
+    z-index: 60;
+    max-height: 40vh;
+    overflow: visible;
+    pointer-events: none;
+  }
+}

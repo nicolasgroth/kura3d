@@ -11,6 +11,7 @@
 import React, { useState } from 'react';
 import '../styles/mobileHud.css';
 import '../styles/toastStack.css';
+import '../styles/toastNarrow.css';
 import { X } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
@@ -65,6 +66,19 @@ export const ToastStack: React.FC = () => {
           }}
         >
           <span>{toast.text}</span>
+          {toast.action && (
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm kura-toast-action"
+              onClick={() => {
+                const { run } = toast.action!;
+                dismissToast(toast.id);
+                run();
+              }}
+            >
+              {toast.action.label}
+            </button>
+          )}
           <button
             type="button"
             className="kura-mini-icon-btn"

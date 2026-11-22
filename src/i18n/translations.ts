@@ -18,6 +18,7 @@ import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
 import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
 import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
+import { FLOWUX_EN, FLOWUX_ES } from './locales/flowUx';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -26,6 +27,7 @@ import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
  */
 export const TRANSLATIONS_ES = {
   ...MENU_ES,
+  ...FLOWUX_ES,
   ...PREVIEW_ES,
   ...SPLITJOINTS_ES,
   ...SPLITPREFS_ES,
@@ -42,7 +44,7 @@ export const TRANSLATIONS_ES = {
   'recovery.status.sceneChanged': 'La escena cambió durante la recuperación. Puedes volver a elegir el borrador.',
   'recovery.status.restored': 'Borrador recuperado. Guarda el proyecto para conservarlo en un archivo .kura.',
   'recovery.status.restoreFailed': 'No se pudo recuperar el borrador. {message}',
-  'recovery.status.discardConfirm': '¿Descartar el borrador local de «{name}»?',
+  'recovery.status.discardConfirm': '¿Descartar el borrador local de «{name}»? No se puede deshacer.',
   'recovery.status.discardFailed': 'No se pudo descartar el borrador.',
   'dropProject.prompt': 'Suelta modelos STL, 3MF u OBJ/PLY, o un proyecto .kura',
   'dropProject.unsupported': 'Suelta un solo proyecto .kura o uno o más modelos STL, 3MF u OBJ/PLY.',
@@ -1174,7 +1176,7 @@ export const TRANSLATIONS_ES = {
   'printWarning.NOT_MANIFOLD': 'La malla no es cerrada (no-manifold); puede presentar huecos o errores al laminar.',
   'printWarning.EXCEEDS_BED': 'El objeto excede los límites de impresión ({width}×{depth}×{height} mm).',
   'printWarning.FLOATING': 'El objeto está flotando a {gap} mm sobre la cama de impresión.',
-  'printWarning.OVERHANG': 'El {percent} % de la superficie queda en voladizo (> {angle}°); considera activar soportes.',
+  'printWarning.OVERHANG': 'Voladizo de más de {angle}° en el {percent} % de la superficie; puede necesitar soporte al laminar.',
   'printWarning.LOW_DENSITY': 'Baja densidad poligonal en superficies curvas; pueden verse facetadas.',
   'printWarning.HIGH_DENSITY': 'Malla muy densa (> 50 000 triángulos); considera simplificarla.',
   'printWarning.THIN_WALL': 'Hay paredes de {thickness} mm, más delgadas que el mínimo de {min} mm; pueden no imprimirse.',
@@ -1387,6 +1389,7 @@ export type TranslationKey = keyof typeof TRANSLATIONS_ES;
  */
 export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...MENU_EN,
+  ...FLOWUX_EN,
   ...PREVIEW_EN,
   ...SPLITJOINTS_EN,
   ...SPLITPREFS_EN,
@@ -1402,7 +1405,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'recovery.status.sceneChanged': 'The scene changed during recovery. You can select the draft again.',
   'recovery.status.restored': 'Draft recovered. Save the project to keep it in a .kura file.',
   'recovery.status.restoreFailed': 'Could not recover the draft. {message}',
-  'recovery.status.discardConfirm': 'Discard the local draft for “{name}”?',
+  'recovery.status.discardConfirm': 'Discard the local draft for “{name}”? This cannot be undone.',
   'recovery.status.discardFailed': 'Could not discard the draft.',
   'dropProject.prompt': 'Drop STL, 3MF, OBJ/PLY models or a .kura project',
   'dropProject.unsupported': 'Drop one .kura project or one or more STL, 3MF or OBJ/PLY models.',
@@ -2507,7 +2510,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'printWarning.NOT_MANIFOLD': 'The mesh is not closed (non-manifold); it may have holes or slicing errors.',
   'printWarning.EXCEEDS_BED': 'The object exceeds the build volume ({width}×{depth}×{height} mm).',
   'printWarning.FLOATING': 'The object floats {gap} mm above the print bed.',
-  'printWarning.OVERHANG': '{percent}% of the surface overhangs (> {angle}°); consider enabling supports.',
+  'printWarning.OVERHANG': 'Overhang beyond {angle}° on {percent}% of the surface; it may need support when slicing.',
   'printWarning.LOW_DENSITY': 'Low polygon density on curved surfaces; they may look faceted.',
   'printWarning.HIGH_DENSITY': 'Very dense mesh (> 50,000 triangles); consider simplifying it.',
   'printWarning.THIN_WALL': 'Some walls are {thickness} mm, thinner than the {min} mm minimum; they may not print.',

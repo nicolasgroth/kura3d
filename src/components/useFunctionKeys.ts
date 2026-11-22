@@ -36,7 +36,9 @@ export async function repeatWithToast(): Promise<void> {
   const s = useKuraStore.getState();
   const outcome = await s.repeatLastAction();
   const after = useKuraStore.getState();
-  if (outcome === 'none') after.addToast(t(after.language, 'repeat.none'), 'info');
+  if (outcome === 'done' && s.lastRepeatable) {
+    after.addToast(t(after.language, 'repeat.done', { name: repeatLabel(after.language, s.lastRepeatable) }), 'info');
+  } else if (outcome === 'none') after.addToast(t(after.language, 'repeat.none'), 'info');
   else if (outcome === 'notApplicable' && s.lastRepeatable) {
     after.addToast(t(after.language, 'repeat.notApplicable', { name: repeatLabel(after.language, s.lastRepeatable) }), 'info');
   }

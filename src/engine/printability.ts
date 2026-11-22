@@ -23,6 +23,7 @@ import { requireOperationRange } from './engineErrors';
 import { signedVolumeMm3 } from './meshOrientation';
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from './operationLimits';
 import { applyTransformToMesh, computeMeshStats } from './primitives';
+import { measureSealedCavities } from './printabilityCavities';
 import { faceGeometry, hasFacetedCurvature, measureOverhang, sampleWallThickness } from './printabilityChecks';
 
 /** Fracción sólida asumida por perímetros y tapas en la estimación de peso. */
@@ -144,6 +145,11 @@ export function analyzePrintability(
     issues.push(printWarning('OVERHANG', { percent: Math.round(overhangPercent * 10) / 10, angle }));
   }
   score -= Math.min(25, Math.round(overhangPercent * 0.55));
+  // Cavidad cerrada sin salida (pieza ahuecada sin orificio): hecho geométrico, sin restar nota.
+  const cavities = measureSealedCavities(world);
+  if (cavities.count > 0) {
+    issues.push(printWarning('SEALED_CAVITY', { count: cavities.count, volume: Math.round(cavities.volumeMm3 / 10) / 100 }));
+  }
   if (densityQuality === 'low') issues.push(printWarning('LOW_DENSITY'));
   else if (densityQuality === 'high') issues.push(printWarning('HIGH_DENSITY'));
   score = Math.max(0, Math.min(100, score));

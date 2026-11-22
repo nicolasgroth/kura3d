@@ -169,17 +169,17 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
     setActiveDialog: (activeDialog) => set({ activeDialog }),
     setSettingsTab: (settingsTab) => set({ settingsTab }),
-    openSettings: (tab = 'ai') => set({ settingsTab: tab, activeDialog: 'settings' }),
+    openSettings: (tab = 'appearance') => set({ settingsTab: tab, activeDialog: 'settings' }),
     requestMeasuresPopover: (focus = 'unit') =>
       set((state) => ({ measuresRequest: { nonce: (state.measuresRequest?.nonce ?? 0) + 1, focus } })),
     setCommandPaletteOpen: (commandPaletteOpen) => set({ commandPaletteOpen }),
     setCutPreview: (patch) => set((state) => ({ cutPreview: { ...state.cutPreview, ...patch } })),
 
-    addToast: (text, kind = 'info') => {
+    addToast: (text, kind = 'info', action) => {
       const id = makeId('toast');
-      set((state) => ({ toasts: [...state.toasts.slice(-4), { id, text, kind }] }));
-      // Los errores permanecen más tiempo para poder leerse (el usuario también puede cerrarlos).
-      setTimeout(() => get().dismissToast(id), kind === 'error' ? 12000 : 4200);
+      set((state) => ({ toasts: [...state.toasts.slice(-4), { id, text, kind, ...(action ? { action } : {}) }] }));
+      // Los errores y los avisos con acción permanecen más tiempo para poder leerse o usarse.
+      setTimeout(() => get().dismissToast(id), kind === 'error' ? 12000 : action ? 9000 : 4200);
     },
     dismissToast: (id) => set((state) => ({ toasts: state.toasts.filter((toast) => toast.id !== id) })),
   };

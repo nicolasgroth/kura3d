@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ArrowDownToLine, Copy, Eye, EyeOff, Lock, Trash2, Unlock } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -40,6 +40,7 @@ export const SceneObjectList: React.FC = () => {
   const [anchorId, setAnchorId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
+  const renameDone = useRef(false);
 
   // El elemento activo siempre existe: si se borró, pasa al primero seleccionado o al primero.
   const active = objects.find((o) => o.id === activeId)
@@ -78,6 +79,7 @@ export const SceneObjectList: React.FC = () => {
   const startRename = (id: string) => {
     const obj = objects.find((o) => o.id === id);
     if (!obj || obj.locked) return;
+    renameDone.current = false;
     setRenamingId(id);
     setDraft(obj.name);
   };
@@ -93,7 +95,22 @@ export const SceneObjectList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renameRequest?.n]);
 
+  // Al abrir el campo de renombrado: foco y todo el texto seleccionado (escribir reemplaza el nombre).
+  const focusRenameField = useCallback((el: HTMLInputElement | null) => {
+    if (!el) return;
+    el.focus();
+    el.select();
+  }, []);
+
+  const cancelRename = () => {
+    renameDone.current = true;
+    setRenamingId(null);
+    listRef.current?.focus();
+  };
+
   const commitRename = () => {
+    if (renameDone.current) return; // Enter o Escape ya cerraron el campo; el blur posterior no repite.
+    renameDone.current = true;
     const name = draft.trim().slice(0, MAX_NAME);
     const obj = objects.find((o) => o.id === renamingId);
     if (obj && name && name !== obj.name) updateObjectMeta(obj.id, { name });
@@ -218,7 +235,7 @@ export const SceneObjectList: React.FC = () => {
                   className="kura-input kura-scene-rename"
                   value={draft}
                   maxLength={MAX_NAME}
-                  autoFocus
+                  ref={focusRenameField}
                   aria-label={t(language, 'sidebar.scene.renameLabel')}
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => setDraft(e.target.value)}
@@ -226,10 +243,7 @@ export const SceneObjectList: React.FC = () => {
                   onKeyDown={(e) => {
                     e.stopPropagation();
                     if (e.key === 'Enter') commitRename();
-                    else if (e.key === 'Escape') {
-                      setRenamingId(null);
-                      listRef.current?.focus();
-                    }
+                    else if (e.key === 'Escape') cancelRename();
                   }}
                 />
               ) : (

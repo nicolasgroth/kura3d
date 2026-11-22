@@ -597,7 +597,8 @@ export type PrintWarningCode =
   | 'LOW_DENSITY'
   | 'HIGH_DENSITY'
   | 'THIN_WALL'
-  | 'INVERTED_NORMALS';
+  | 'INVERTED_NORMALS'
+  | 'SEALED_CAVITY';
 
 /** Aviso tipado del informe de imprimibilidad. */
 export interface PrintWarning {
