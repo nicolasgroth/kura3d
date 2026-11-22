@@ -23,7 +23,7 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
       title: 'Split for printing',
       description:
         'Splits a large object into pieces that fit on the bed (by default the active profile bed), with connectors at each joint, ' +
-        'grid-based name ("Object · A1": letter = X column, number = Y level, lowercase = Z row) and optional engraved mating marks ' +
+        'grid-based name ("Object · A1": letter = X column, number = Z level (height), lowercase = Y row) and optional engraved mating marks. ' +
         'Cut planes shift toward the simplest section. With dryRun=true it only returns the plan (planes and estimated pieces) ' +
         'without changing the scene. Returns a short summary; detail=true adds the full plan. ' +
         'Error SPLIT_TOO_MANY_PIECES (with needed = pieces required) if more than maxPieces would be needed; ' +
@@ -33,11 +33,11 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         objectId: idSchema.describe('ID of the object to split.'),
         dryRun: z.boolean().default(false).describe('true = plan only, no cutting.'),
         detail: z.boolean().default(false).describe('true = returns the full plan; by default a summary (pieces, plates, joints with/without connector, warnings).'),
-        bedWidthMm: rangeSchema(OR.split.bedMm).optional().describe('Bed X width (default: active profile).'),
-        bedDepthMm: rangeSchema(OR.split.bedMm).optional().describe('Bed Z depth.'),
-        bedHeightMm: rangeSchema(OR.split.bedMm).optional().describe('Usable printing height (Y).'),
+        bedWidthMm: rangeSchema(OR.split.bedMm).optional().describe('Bed width along X (default: active profile).'),
+        bedDepthMm: rangeSchema(OR.split.bedMm).optional().describe('Bed depth along Y.'),
+        bedHeightMm: rangeSchema(OR.split.bedMm).optional().describe('Usable printing height along Z.'),
         marginMm: rangeSchema(OR.split.marginMm).default(d.marginMm).describe('Margin per side subtracted from the bed.'),
-        axes: z.array(z.enum(['x', 'y', 'z'])).min(1).max(3).optional().describe('Axes where cutting is allowed (default: all three).'),
+        axes: z.array(z.enum(['x', 'y', 'z'])).min(1).max(3).optional().describe('Axes where cutting is allowed (z = horizontal cuts; default: all three). Planes and joints come back with the same axes.'),
         maxPieces: z.union([rangeSchema(OR.split.maxPieces), z.literal('auto')]).default(d.maxPieces),
         allowRotation: z.boolean().default(true).describe('Allows rotating a part 90° so it fits.'),
         allowDiagonal: z.boolean().default(false).describe('Allows resting the part diagonally on the bed if it fits that way without cutting.'),

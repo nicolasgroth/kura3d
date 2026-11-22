@@ -14,14 +14,13 @@ import { dirname, resolve } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { exportSceneTo3MF, exportSceneToBinarySTL } from '../../src/engine/index';
 import type { HeadlessSceneObject } from './headlessSupport.js';
-import type { SlicerTarget, UnitSystem } from './types.js';
+import type { UnitSystem } from './types.js';
 
 /** Resultado de exportación STL/3MF en disco. */
 export interface ExportFileResult {
   mode: 'headless';
   path: string;
   format: 'stl-binary' | 'stl-ascii' | '3mf';
-  slicerTarget?: SlicerTarget;
   objectCount: number;
   triangles: number;
   /** Colores distintos escritos en `<basematerials>` (solo 3MF). */
@@ -84,15 +83,14 @@ export async function writeStlFile(
   };
 }
 
-/** Escribe un 3MF Multi-Slicer con materiales y colores por triángulo generado por el motor. */
+/** Escribe un único 3MF estándar (como la app) con materiales y colores por triángulo generado por el motor. */
 export async function write3mfFile(
   outputPath: string,
   targets: HeadlessSceneObject[],
-  units: UnitSystem,
-  slicerTarget: SlicerTarget
+  units: UnitSystem
 ): Promise<ExportFileResult> {
   const solids = exportableObjects(targets);
-  const bytes = exportSceneTo3MF(solids, units, slicerTarget);
+  const bytes = exportSceneTo3MF(solids, units);
 
   // Lee de vuelta el modelo escrito por el motor para informar exactamente lo exportado
   const modelXml = strFromU8(unzipSync(bytes, { filter: (f) => f.name === '3D/3dmodel.model' })['3D/3dmodel.model']);
@@ -107,7 +105,6 @@ export async function write3mfFile(
     mode: 'headless',
     path: resolvedPath,
     format: '3mf',
-    slicerTarget,
     objectCount: solids.length,
     triangles,
     colorCount,

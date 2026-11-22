@@ -95,7 +95,7 @@ export const MATERIAL_PRESETS: Record<MaterialPresetId, MaterialPresetSpec> = {
   },
 };
 
-/** Slicers destino soportados en el exportador 3MF Multi-Slicer. */
+/** Marca del perfil de impresora (ya no elige un 3MF distinto: la exportación es un único 3MF estándar). */
 export type SlicerTarget = 'generic' | 'elegoo' | 'bambu' | 'snapmaker' | 'flashforge';
 
 /** Patrones procedurales de textura superficial. */
@@ -285,7 +285,9 @@ export interface PrintabilityReport {
   isManifold: boolean;
   fitsInBed: boolean;
   isFloating: boolean;
+  /** Altura mínima de la pieza sobre la cama (Z del usuario; el nombre se conserva por compatibilidad). */
   minYWorldMm: number;
+  /** Medidas de mundo [X, Y, Z] en ejes del usuario (Z = altura). */
   dimensionsMm: Vec3;
   overhangFaceCount: number;
   overhangPercent: number;
@@ -298,11 +300,14 @@ export interface PrintabilityReport {
   materialPreset: MaterialPresetId;
   infillPercent: number;
   printerProfileId: string;
-  /** Avisos en español (compatibilidad). Para tratarlos por programa, usa `issues`. */
+  /** Avisos en inglés. Para tratarlos por programa, usa `issues`. */
   warnings: string[];
   /** Avisos tipados: `code` estable (p. ej. `THIN_WALL`, `BELOW_BED`) y `params` con los números del aviso. */
   issues: PrintabilityIssue[];
   score: number;
+  /** Peso y filamento son una referencia muy aproximada (dependen del slicer); no entran en el puntaje. */
+  approximate: true;
+  estimateNote: string;
 }
 
 /** Aviso de imprimibilidad con código estable y parámetros (independiente del idioma). */
@@ -439,7 +444,7 @@ export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
   },
   {
     id: 'generic-220',
-    name: 'Genérica 220 × 220 × 250 mm',
+    name: 'Generic 220 × 220 × 250 mm',
     brand: 'generic',
     bedWidthMm: 220,
     bedDepthMm: 220,
@@ -449,7 +454,7 @@ export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
   },
   {
     id: 'generic-300',
-    name: 'Gran Formato 300 × 300 × 350 mm',
+    name: 'Large format 300 × 300 × 350 mm',
     brand: 'generic',
     bedWidthMm: 300,
     bedDepthMm: 300,
@@ -459,7 +464,7 @@ export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
   },
   {
     id: 'free-studio',
-    name: 'Estudio 3D Libre (Sin límites de cama)',
+    name: 'Free 3D studio (no bed limits)',
     brand: 'generic',
     bedWidthMm: 400,
     bedDepthMm: 400,

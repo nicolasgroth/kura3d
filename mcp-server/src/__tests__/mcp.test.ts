@@ -154,8 +154,8 @@ describe('Kura3D MCP Server', () => {
       name: 'kura_transform_object',
       arguments: {
         objectId: tubeJson.id,
-        position: [0, 10, 0],
-        scale: [1, 1.5, 1],
+        position: [0, 0, 10], // ejes del usuario: Z = altura
+        scale: [1, 1, 1.5],
       },
     });
 
@@ -202,7 +202,7 @@ describe('Kura3D MCP Server', () => {
     expect(triCount).toBe(hollowJson.stats.triangles + tubeJson.stats.triangles);
     expect(stlBytes.byteLength).toBe(84 + triCount * 50);
 
-    // Verifica conversión Y-up -> Z-up en los vértices STL (el tubo escalado Y*1.5 en y=10..40 pasa a Z=10..40)
+    // El STL usa los mismos ejes que el usuario (Z arriba): el tubo escalado Z*1.5 en z=10..40 queda en Z=10..40
     let maxStlZ = -Infinity;
     for (let t = 0; t < triCount; t++) {
       const base = 84 + t * 50;
@@ -213,14 +213,16 @@ describe('Kura3D MCP Server', () => {
     }
     expect(maxStlZ).toBeCloseTo(40, 3);
 
-    // 6. Exportar 3MF Multi-Slicer para Bambu Studio y validar contenedor ZIP/OPC + Metadata/model_settings.config
+    // 6. Exportar el 3MF único: `slicerTarget` (obsoleto) se ignora sin error
     const threeMfPath = join(tempDir, 'modelo_prueba.3mf');
     const exportMfRes = await client.callTool({
       name: 'kura_export_3mf',
       arguments: { outputPath: threeMfPath, slicerTarget: 'bambu' },
     });
     const exportMfJson = JSON.parse((exportMfRes.content[0] as { text: string }).text);
-    expect(exportMfJson.slicerTarget).toBe('bambu');
+    expect(exportMfRes.isError).toBeFalsy();
+    expect(exportMfJson.slicerTarget).toBeUndefined();
+    expect(exportMfJson.format).toBe('3mf');
 
     const mfBytes = await readFile(threeMfPath);
     expect(mfBytes.subarray(0, 4).toString('binary')).toBe('PK\x03\x04');
