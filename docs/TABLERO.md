@@ -1,36 +1,29 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 14:00, tras la QA previa a la quinta ronda.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 17:25, con las correcciones de la quinta ronda integradas.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## En desarrollo
 
-Seis lotes de corrección de la ronda 5, en paralelo:
-
 | Funcionalidad | Estado |
 |---|---|
-| Separar por colores: cada color como sólido cerrado imprimible (único bloqueo de la ronda 5) | En corrección |
-| Dividir: vista previa con el número real de uniones con conector; ZIP por pieza centrado; nombres de mitades y de roscas | En corrección |
-| Dividir y uniones, usabilidad: tamaño de conector "Automático (recomendado)" por defecto, diámetro como única medida, consejo de unión débil una sola vez, resaltado más visible, plurales | En corrección |
-| Flujo general: F2 reemplaza el nombre, aviso antes de que pintar convierta una primitiva, piezas nuevas en un hueco libre, confirmar "Vaciar cama", señal al guardar, ejes en el mismo orden, análisis sin "activar soportes" y con aviso de cavidad cerrada | En corrección |
-| Lenguaje y accesibilidad: sin "Pro", sin mezcla de inglés, vocabulario único Sólido / Negativo / Restar, atajos con un solo formato, cubo de vistas por teclado, movimiento reducido | En corrección |
-| SVG con un solo lector en importación, proyección y MCP; memoria liberada en errores; parámetros del proyecto acotados | En corrección |
-| Reglas de producto en código (marca, almacenamiento) y pruebas sin umbrales de tiempo | En corrección |
+| Cabos sueltos de la ronda 5: error falso al grabar sobre un relieve, tamaños del panel de división en ejes del usuario, pruebas sin umbrales de tiempo, auditoría de dónde se guardan claves y tokens | En curso |
 
 ## En QA
 
+QA en navegador en curso sobre las correcciones de la ronda 5 (integradas en `main` a las 17:20):
+
 | Funcionalidad | Estado |
 |---|---|
-| Dividir para imprimir y validación de armado (tarugo suelto, conectores sin choques, montaje siempre armable, marca de puntos, sección Uniones, conteo real de piezas en el plan, informe de armado completo al dividir) | Re-verificación: los 9 fallos anteriores corregidos (el cubo de 440 mm cierra con cola de milano, solape y tarugo suelto). Queda en corrección: mensajes contradictorios al reforzar, placas estimadas de más (3 frente a 2) y mostrar la marca de pareja por unión |
-| Dividir para imprimir: conector y holgura preferidos en Ajustes; refuerzo de uniones débiles apagado por defecto, con casilla, explicación y botón "Reforzar y dividir de nuevo" | QA aprobó preferencias y flujo de refuerzo; en corrección el texto del aviso de refuerzo |
-| Z como altura en interfaz, chat, bus y MCP | QA encontró el corte en Y invertido y el resumen de división en ejes antiguos; corregido y confirmado por QA |
-| MCP igual a la app (ejes, valores por defecto del corte y del pintado), en inglés, tope de 10 intentos | QA de motor aprobó la paridad salvo crear primitiva con posición; corregido y confirmado por QA |
-| Pintura por caras: pincel con índice espacial (0,5 ms por muestra en 200 mil triángulos, antes 10 ms), trazo en vivo, un trazo = un paso de deshacer guardado como delta, tamaño con `[` y `]` | QA en navegador en curso |
-| Relieve, litofanía, SVG y texto 3D en el Worker; avisos veraces al terminar molde, proyección y relieve; moldes probados; segmentación sin partes de grosor cero; ahuecado con pared exacta en curvas (error medio bajo 2,5 %, antes hasta 18 %) | QA en navegador en curso |
-| Roscas M3–M64, 3MF estándar sin selector de slicer, estimación aproximada | QA aprobó; roscas con entrada inválida corregido |
-| Proyectos recientes con un clic y confirmación al sobrescribir (escritorio) | Probado con pruebas; falta verificar en la app instalada |
-| Seguridad en escritorio (CSP, llavero, permisos, proxy de IA) | QA web aprobado; falta verificar en la app instalada |
+| Separar por colores: cada color sale como sólido cerrado, con profundidad configurable (era el bloqueo de la ronda 5) | Implementado con pruebas; QA en curso |
+| Dividir para imprimir: tamaño de conector "Automático (recomendado)" por defecto, diámetro como única medida, vista previa con las uniones reales con conector y para pegar, consejo de unión débil una sola vez, resaltado y encuadre de la unión, estado "Armado", ZIP por pieza centrado | QA en curso |
+| Flujo general: F2 reemplaza el nombre, aviso antes de que pintar convierta una primitiva, lo nuevo se encuadra, confirmar "Vaciar cama" con Deshacer, aviso de cavidad cerrada, análisis sin "activar soportes" | QA en curso |
+| Lenguaje y accesibilidad: sin "Pro", sin inglés mezclado, glosario (Sólido / Negativo / Restar), atajos alineados, enlaces de salto, cubo de vistas por teclado, movimiento reducido | QA en curso |
+| SVG con un solo lector en importación, proyección y MCP; memoria liberada en errores; parámetros del proyecto acotados | Implementado con pruebas; QA en curso |
+| Menú contextual ordenado y teclas F2, F3, F4, Mayús+F5 | Evaluado en la ronda 5 (85 y 72); F2 corregido; QA en curso |
+| Pintura por caras rápida; operaciones de creación en el Worker | QA aprobó sin bloqueos; falta medir el pincel con GPU real |
+| Proyectos recientes y seguridad en escritorio (CSP, llavero, permisos, proxy de IA, confirmación al sobrescribir) | Probado en web y con pruebas; falta verificar en la app instalada |
 
 ## En evaluación
 
