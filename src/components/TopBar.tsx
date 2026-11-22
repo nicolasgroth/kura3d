@@ -50,6 +50,7 @@ import { ImportMenuButton } from './ImportMenuButton';
 import { ProjectMenu } from './ProjectMenu';
 import { TopBarOverflowMenu } from './TopBarOverflowMenu';
 import '../styles/topbarOverflow.css';
+import '../styles/statusFit.css';
 
 const UNIT_OPTIONS: UnitSystem[] = ['mm', 'cm', 'm', 'in', 'ft'];
 

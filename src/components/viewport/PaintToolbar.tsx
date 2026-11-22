@@ -8,23 +8,12 @@
  */
 
 import React from 'react';
-import { t, type TranslationKey } from '../../i18n';
+import { t } from '../../i18n';
 import { type PaintBrushMode, useKuraStore } from '../../store/useKuraStore';
 import { PRINT_COLOR_PALETTE } from '../../types/kura';
+import { colorName, colorNameWithHex } from '../../utils/colorNames';
 import { PaintRefineHint } from './PaintRefineHint';
 import '../../styles/paintTools.css';
-
-/** Nombre de cada color de la paleta de filamentos (mismo orden que `PRINT_COLOR_PALETTE`). */
-const SWATCH_NAMES: Record<string, TranslationKey> = {
-  '#38bdf8': 'viewport.paint.swatch.blue',
-  '#f97316': 'viewport.paint.swatch.orange',
-  '#22c55e': 'viewport.paint.swatch.green',
-  '#eab308': 'viewport.paint.swatch.yellow',
-  '#ef4444': 'viewport.paint.swatch.red',
-  '#a855f7': 'viewport.paint.swatch.violet',
-  '#f8fafc': 'viewport.paint.swatch.white',
-  '#1e293b': 'viewport.paint.swatch.charcoal',
-};
 
 /** Luminancia relativa aproximada: las muestras claras llevan borde para verse sobre fondos claros. */
 function isLight(hex: string): boolean {
@@ -78,7 +67,7 @@ export const PaintToolbar: React.FC = () => {
 
       <div className="kura-swatch-row" role="group" aria-label={t(language, 'viewport.paint.color')}>
         {PRINT_COLOR_PALETTE.map((hex) => {
-          const name = SWATCH_NAMES[hex] ? t(language, SWATCH_NAMES[hex]) : hex;
+          const name = colorName(language, hex);
           const active = paintColor.toLowerCase() === hex;
           return (
             <button
@@ -89,7 +78,7 @@ export const PaintToolbar: React.FC = () => {
               onClick={() => setPaintSettings({ paintColor: hex })}
               aria-label={name}
               aria-pressed={active}
-              title={`${name} (${hex.toUpperCase()})`}
+              title={colorNameWithHex(language, hex)}
             />
           );
         })}

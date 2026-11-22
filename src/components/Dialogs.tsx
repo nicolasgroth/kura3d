@@ -1279,11 +1279,17 @@ const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
       <OperationFailureAlert message={failure.error} />
       <div className="kura-form-field">
         <label>{t(language, 'dialog.thread.preset')}</label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+        <div
+          role="radiogroup"
+          aria-label={t(language, 'dialog.thread.preset')}
+          style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}
+        >
           {ISO_THREAD_PRESETS.map((preset) => (
             <button
               key={preset.label}
               type="button"
+              role="radio"
+              aria-checked={diameterMm === preset.diameterMm && pitchMm === preset.pitchMm}
               className={`kura-chip ${
                 diameterMm === preset.diameterMm && pitchMm === preset.pitchMm ? 'is-active' : ''
               }`}

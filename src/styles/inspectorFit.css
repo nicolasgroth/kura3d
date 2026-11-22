@@ -1,0 +1,45 @@
+/**
+ * @file src/styles/inspectorFit.css
+ * @description Evita el desborde horizontal del inspector derecho en cualquier ancho de panel:
+ * las tarjetas pueden encogerse y los botones largos parten el texto en vez de recortarse.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-sidebar-right .kura-scroll-area {
+  overflow-x: hidden;
+}
+
+.kura-sidebar-right .kura-scroll-area > *,
+.kura-sidebar-right .kura-card,
+.kura-sidebar-right .kura-form-field,
+.kura-sidebar-right .kura-field-row {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.kura-sidebar-right .kura-btn:not(.kura-segmented .kura-btn) {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.2;
+  overflow-wrap: break-word;
+}
+
+.kura-sidebar-right .kura-btn.kura-btn-sm:not(.kura-segmented .kura-btn) {
+  height: auto;
+  min-height: 28px;
+  padding-block: 3px;
+}
+
+.kura-sidebar-right .kura-filament-legend {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.kura-sidebar-right .kura-filament-chip {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}

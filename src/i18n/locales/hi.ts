@@ -85,6 +85,9 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'precision.localSize': 'स्थानीय आकार',
   'precision.stepUp': 'मान बढ़ाएं',
   'precision.stepDown': 'मान घटाएं',
+  'precision.invalidValue': 'अमान्य मान। संख्या या व्यंजक (10+5, 2cm) लिखें।',
+  'precision.stepUpFor': '{label} बढ़ाएँ',
+  'precision.stepDownFor': '{label} घटाएँ',
 
   // Barra superior (TopBar)
   'topbar.importModel': '3D आयात करें',
@@ -169,6 +172,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'sidebar.scene.multiSelectHint': 'बहु-चयन के लिए Ctrl+क्लिक करें',
   'scene.filamentLegend': 'दृश्य फ़िलामेंट',
   'scene.colorsCount': '{count} रंग',
+  'scene.colorsCount.one': '{count} रंग',
 
   // Viewport 3D y HUD flotante
   'viewport.camera.iso': 'आइसो',
@@ -254,6 +258,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'inspector.action.resetTransform': 'घूर्णन/स्केल रीसेट',
   'inspector.section.stats': 'ज्यामिति और माप',
   'inspector.stats.dimensions': 'आयाम',
+  'inspector.stats.dimensionsWorld': 'आयाम (विश्व बाउंडिंग बॉक्स)',
   'inspector.stats.volume': 'आयतन',
   'inspector.stats.triangles': 'त्रिभुज',
   'inspector.stats.vertices': 'शीर्ष बिंदु',
@@ -808,6 +813,8 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'toast.settingsSaved': 'सेटिंग्स सहेजी गईं',
   'toast.nothingToExport': 'निर्यात करने के लिए दृश्य में कोई दृश्यमान वस्तु नहीं है',
   'toast.moldDone': 'मोल्ड बनाया गया ({count} भाग)',
+  'toast.moldDone.one': 'मोल्ड बनाया गया (1 भाग)',
+  'toast.moldDone.other': 'मोल्ड बनाया गया ({count} भाग)',
   'toast.projectDone': 'सतह पर ग्राफ़िक प्रोजेक्ट किया गया',
   'toast.printabilityDone': '3D जांच: {score}/100 ({weight} g)',
   'toast.simplifyDone': 'मेश सरल किया गया ({tris} त्रिभुज)',
@@ -843,6 +850,8 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'import.openMesh': '{name} का मेश खुला है ({edges} मुक्त किनारे): प्रिंट से पहले जाँचें।',
   'import.openMeshMany': '{count} भागों के मेश खुले हैं ({list}): प्रिंट से पहले जाँचें।',
   'import.partialFailed': '{count} फ़ाइल(ें) आयात नहीं हुईं: {list}',
+  'import.partialFailed.one': '{count} फ़ाइल आयात नहीं हुई: {list}',
+  'import.partialFailed.other': '{count} फ़ाइलें आयात नहीं हुईं: {list}',
   'import.menu': 'आयात विकल्प',
   'import.placement.title': 'आयात पर स्थान',
   'import.placement.bed': 'बेड पर रखें',

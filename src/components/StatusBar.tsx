@@ -12,6 +12,7 @@ import { HelpCircle } from 'lucide-react';
 import { getLocalizedPrinterName, t } from '../i18n';
 import type { RecoveryStatus } from '../project/projectRecoveryAutosave';
 import { useKuraStore } from '../store/useKuraStore';
+import { formatNumber } from '../utils/plural';
 import { isTauriRuntime } from '../utils/platformBridge';
 
 export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recoveryStatus = 'idle' }) => {
@@ -72,7 +73,7 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recov
         <span>{unitSystem}</span>
         <span>
           {t(language, 'status.objects', { count: objects.length })} ·{' '}
-          {t(language, 'status.triangles', { count: totalTriangles.toLocaleString() })}
+          {t(language, 'status.triangles', { count: formatNumber(language, totalTriangles) })}
         </span>
       </div>
 

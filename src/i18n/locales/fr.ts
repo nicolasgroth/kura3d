@@ -85,6 +85,9 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'precision.localSize': 'Taille locale',
   'precision.stepUp': 'Augmenter la valeur',
   'precision.stepDown': 'Diminuer la valeur',
+  'precision.invalidValue': 'Valeur invalide. Utilisez un nombre ou une expression (10+5, 2cm).',
+  'precision.stepUpFor': 'Augmenter {label}',
+  'precision.stepDownFor': 'Diminuer {label}',
 
   // Barra superior (TopBar)
   'topbar.importModel': 'Importer 3D',
@@ -169,6 +172,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'sidebar.scene.multiSelectHint': 'Ctrl+Clic pour sélection multiple',
   'scene.filamentLegend': 'Filaments de la scène',
   'scene.colorsCount': '{count} couleurs',
+  'scene.colorsCount.one': '{count} couleur',
 
   // Viewport 3D y HUD flotante
   'viewport.camera.iso': 'Iso',
@@ -254,6 +258,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'inspector.action.resetTransform': 'Réinit. rot/échelle',
   'inspector.section.stats': 'Géométrie & Métriques',
   'inspector.stats.dimensions': 'Dimensions',
+  'inspector.stats.dimensionsWorld': 'Dimensions (boîte englobante du monde)',
   'inspector.stats.volume': 'Volume',
   'inspector.stats.triangles': 'Triangles',
   'inspector.stats.vertices': 'Sommets',
@@ -808,6 +813,8 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'toast.settingsSaved': 'Paramètres enregistrés',
   'toast.nothingToExport': 'Aucun objet visible dans la scène à exporter',
   'toast.moldDone': 'Moule généré ({count} pièce/s)',
+  'toast.moldDone.one': 'Moule généré (1 pièce)',
+  'toast.moldDone.other': 'Moule généré ({count} pièces)',
   'toast.projectDone': 'Graphique projeté sur la surface',
   'toast.printabilityDone': 'Validation 3D : {score}/100 ({weight} g)',
   'toast.simplifyDone': 'Maillage simplifié ({tris} triangles)',
@@ -843,6 +850,8 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'import.openMesh': '{name} a un maillage ouvert ({edges} arêtes libres) : vérifiez-le avant d’imprimer.',
   'import.openMeshMany': '{count} pièces ont un maillage ouvert ({list}) : vérifiez-les avant d’imprimer.',
   'import.partialFailed': '{count} fichier(s) non importé(s) : {list}',
+  'import.partialFailed.one': '{count} fichier non importé : {list}',
+  'import.partialFailed.other': '{count} fichiers non importés : {list}',
   'import.menu': 'Options d’importation',
   'import.placement.title': 'Placement à l’importation',
   'import.placement.bed': 'Poser sur le plateau',

@@ -85,6 +85,9 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'precision.localSize': 'Lokale Größe',
   'precision.stepUp': 'Wert erhöhen',
   'precision.stepDown': 'Wert verringern',
+  'precision.invalidValue': 'Ungültiger Wert. Zahl oder Ausdruck verwenden (10+5, 2cm).',
+  'precision.stepUpFor': '{label} erhöhen',
+  'precision.stepDownFor': '{label} verringern',
 
   // Barra superior (TopBar)
   'topbar.importModel': '3D importieren',
@@ -169,6 +172,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'sidebar.scene.multiSelectHint': 'Strg+Klick für Mehrfachauswahl',
   'scene.filamentLegend': 'Szenen-Filamente',
   'scene.colorsCount': '{count} Farben',
+  'scene.colorsCount.one': '{count} Farbe',
 
   // Viewport 3D y HUD flotante
   'viewport.camera.iso': 'Iso',
@@ -254,6 +258,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'inspector.action.resetTransform': 'Rot/Skal. zurücksetzen',
   'inspector.section.stats': 'Geometrie & Metriken',
   'inspector.stats.dimensions': 'Abmessungen',
+  'inspector.stats.dimensionsWorld': 'Abmessungen (Welt-Hüllbox)',
   'inspector.stats.volume': 'Volumen',
   'inspector.stats.triangles': 'Dreiecke',
   'inspector.stats.vertices': 'Scheitelpunkte',
@@ -808,6 +813,8 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'toast.settingsSaved': 'Einstellungen gespeichert',
   'toast.nothingToExport': 'Keine sichtbaren Objekte in der Szene zum Exportieren',
   'toast.moldDone': 'Gießform erzeugt ({count} Teil/e)',
+  'toast.moldDone.one': 'Gießform erzeugt (1 Teil)',
+  'toast.moldDone.other': 'Gießform erzeugt ({count} Teile)',
   'toast.projectDone': 'Grafik auf Oberfläche projiziert',
   'toast.printabilityDone': '3D-Prüfung: {score}/100 ({weight} g)',
   'toast.simplifyDone': 'Netz vereinfacht ({tris} Dreiecke)',
@@ -843,6 +850,8 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'import.openMesh': '{name} hat ein offenes Netz ({edges} freie Kanten): vor dem Drucken prüfen.',
   'import.openMeshMany': '{count} Teile haben offene Netze ({list}): vor dem Drucken prüfen.',
   'import.partialFailed': '{count} Datei(en) nicht importiert: {list}',
+  'import.partialFailed.one': '{count} Datei nicht importiert: {list}',
+  'import.partialFailed.other': '{count} Dateien nicht importiert: {list}',
   'import.menu': 'Importoptionen',
   'import.placement.title': 'Platzierung beim Import',
   'import.placement.bed': 'Auf das Druckbett legen',
