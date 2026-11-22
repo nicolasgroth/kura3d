@@ -70,3 +70,8 @@ Cada agente cuesta entre 150 y 450 mil tokens. Para que ninguno quede pegado:
 4. **Revisión del orquestador.** Antes de cada mensaje al usuario y al recibir cualquier aviso, el orquestador revisa los latidos. Un agente sin latido por más de 15 minutos, o que pasó su tope, se investiga y se detiene si no justifica el tiempo.
 5. **Registro.** Al cerrar cada lote se anota en `docs/EVALUACIONES.md` el modelo, la duración y los tokens de cada agente.
 6. **Alcance acotado.** Un encargo con más de unos 8 objetivos se divide. Los evaluadores reciben como máximo las funcionalidades que cambiaron, no todo el producto, salvo en el cierre de una versión.
+7. **Base del worktree.** Los worktrees de agentes nacen desde `main`, no desde la rama en curso. Si el lote depende de una rama sin publicar, el encargo debe indicar `git merge --ff-only <rama>` como primer paso.
+8. **Commit temprano.** En lotes de más de 20 minutos el agente hace un primer commit apenas tiene algo que compila y pasa las pruebas, y sigue con commits parciales. Así un corte (límite de uso, caída) no pierde el trabajo.
+9. **Límite de uso.** Si un agente se corta por límite de uso, su worktree queda intacto: se reanuda con un mensaje al mismo agente cuando el límite se restablece, no se lanza uno nuevo.
+10. **Servidores.** Un agente levanta como máximo un servidor, en el puerto que indica su encargo, y lo detiene antes de entregar. El orquestador revisa los puertos abiertos al cerrar cada lote.
+

@@ -65,6 +65,17 @@ La lista de recientes muestra nombre y fecha y abre el selector de archivos. Rea
 - **Opciones:** (a) agregarlo, guardando las rutas elegidas por ti; (b) dejarlo como está por privacidad.
 - **Mientras tanto:** (b).
 
+### 13. Unificar el comportamiento de la app y del servidor MCP
+Ya comparten el mismo código de operaciones, pero conservan dos diferencias visibles: la app apoya cada objeto nuevo en la cama y el servidor lo deja en el origen; y los nombres de los resultados son distintos (la app usa los traducidos, el servidor usa nombres fijos en español).
+- **Opciones:** (a) que el servidor se comporte igual que la app; (b) mantener la diferencia.
+- **Mi recomendación:** (a), para que un agente externo vea lo mismo que tú en pantalla.
+- **Mientras tanto:** (b), porque el reordenamiento no debía cambiar comportamiento.
+
+### 14. Límite de uso durante la noche
+A las 00:04 del 22 de noviembre se alcanzó el límite de uso de 5 horas y los dos agentes en curso se cortaron hasta las 01:30. No se perdió trabajo: se reanudaron desde donde quedaron.
+- **Para decidir:** si prefieres que en jornadas largas corra menos en paralelo (más lento, sin cortes) o que siga a este ritmo aceptando pausas.
+- **Mientras tanto:** sigo con dos agentes en paralelo como máximo.
+
 ## Resueltas
 
 | Fecha | Decisión | Resultado |
