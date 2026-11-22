@@ -107,7 +107,9 @@ Ordenadas por prioridad dentro de cada grupo.
 | Encajes | Detección de colisiones, holguras e interferencias |
 | Color y material | Separar por color o región para imprimir aparte |
 | Color y material | 3MF multimaterial verificado en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura |
-| Estudio | Paneles móviles, minimizables y que se agregan o quitan; layouts guardados |
+| Estudio | Paneles móviles, minimizables y que se agregan o quitan, con un menú fijo para reabrir cualquiera |
+| Estudio | Guardar, cargar y restablecer la disposición del escritorio (perfiles de layout por usuario) |
+| Estudio | Unidades e impresora fuera de la barra superior: en Ajustes y en un panel que se puede esconder |
 | Estudio | Pestañas de proyecto |
 | Estudio | Menú de clic derecho en visor y árbol (agregar, quitar, mostrar, ocultar, operar) |
 | Estudio | Atajos editables y uso completo por teclado |
@@ -128,6 +130,7 @@ Ordenadas por prioridad dentro de cada grupo.
 | IA e integraciones | Capturas y visor sin abrir la ventana |
 | IA e integraciones | Dictado por voz en español e inglés |
 | IA e integraciones | Imagen a modelo 3D |
+| IA e integraciones | Adjuntar imágenes y archivos de referencia en el chat |
 | Automatización | Al importar: revisar la malla, avisar defectos y ofrecer repararla |
 | Automatización | Orientar la pieza sola para minimizar voladizos y apoyar la mejor cara |
 | Automatización | Acomodar las piezas en la cama, y repartir en varias placas si no caben |

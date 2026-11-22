@@ -80,6 +80,9 @@ Recogidos de la conversación; cada uno tiene ticket y aparece en el [tablero](T
 | Capturas y visor sin abrir la ventana, para que una IA use la herramienta | CAP-01 |
 | Evaluador externo (Codex, Gemini) | Pospuesto por decisión del autor |
 | Usos derivados, como modelos para videojuegos | Idea |
+| Adjuntar imágenes o archivos de referencia en el chat de IA | AI-03 (nuevo), para el final |
+| Guardar y recuperar la disposición del escritorio (paneles como los deja cada usuario), con exportar e importar | UX-12 (nuevo), junto con UX-03 |
+| Unidades e impresora esperada como opciones de Ajustes o de un panel plegable, para liberar la barra superior | UX-13 (nuevo), lote corto próximo |
 
 Principios que salen de estos pedidos: la interfaz debe ser **didáctica** (cada operación se entiende y se previsualiza antes de aplicar), **operable por teclado**, y la arquitectura debe ser **extensible** (núcleo independiente de la interfaz, un solo contrato de operaciones para interfaz, comandos, MCP, API y extensiones).
 
