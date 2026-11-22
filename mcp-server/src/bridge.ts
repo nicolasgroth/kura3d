@@ -387,7 +387,7 @@ export class KuraBridgeServer {
     const now = Date.now();
     this.authFailureTimestamps = this.authFailureTimestamps.filter((ts) => ts > now - 60_000);
     if (this.authFailureTimestamps.length >= this.config.authFailureLimitPerMin) {
-      done(false, 429, 'Demasiados intentos fallidos; espera un minuto.');
+      done(false, 429, 'Too many failed attempts; wait a minute.');
       return;
     }
     if (!this.verifyRequestToken(req)) {

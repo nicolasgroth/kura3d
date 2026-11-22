@@ -172,8 +172,8 @@ describe('QA6 D: tope de 10 intentos fallidos', () => {
     expect((await attempt(`${base}/?token=${TOKEN}`)).status).toBe('open');
   });
 
-  // Brecha CONFIRMADA (menor): las respuestas HTTP del puente 401/403/429 salen en español.
-  it.fails('las respuestas HTTP de rechazo (429) están en inglés', async () => {
+  // Corregida (antes `it.fails`): el 429 del puente salía en español.
+  it('las respuestas HTTP de rechazo (429) están en inglés', async () => {
     const base = await start();
     for (let i = 0; i < 10; i++) await attempt(`${base}/?token=mal-${i}`);
     const r = await attempt(`${base}/?token=${TOKEN}`);
@@ -256,8 +256,8 @@ describe('QA6 D: todos los textos visibles al cliente MCP están en inglés', ()
     expect(bad).toEqual([]);
   }, 120_000);
 
-  // Brecha CONFIRMADA (menor): bridge.ts:390 responde 429 con 'Demasiados intentos fallidos; espera un minuto.'
-  it.fails('el texto fuente de mensajes al cliente (failText, reject, done, Error) no contiene español', async () => {
+  // Corregida (antes `it.fails`): bridge.ts respondía el 429 en español.
+  it('el texto fuente de mensajes al cliente (failText, reject, done, Error) no contiene español', async () => {
     const src = join(__dirname, '..');
     const bad: string[] = [];
     for (const f of (await readdir(src)).filter((n) => n.endsWith('.ts'))) {
