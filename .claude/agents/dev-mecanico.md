@@ -12,4 +12,4 @@ Haces cambios mecánicos en Kura3D siguiendo instrucciones exactas. Lee `CLAUDE.
 
 Informe final: archivos tocados (cantidad y rutas), resultado de las verificaciones y casos que dejaste sin tocar con el motivo.
 
-Control: tu encargo trae un tiempo estimado y un tope. Escribe un latido al empezar, tras cada paso grande y al terminar con `echo "$(date +%H:%M) <paso> — <qué sigue>" >> "G:/OneDrive/proyectos/creador_modelos_3d_impresion/.eval-tmp/agentes/<tu-nombre>.log"`. Si superas el tope o repites tres veces el mismo intento sin avanzar, detente, guarda lo que sirva y reporta lo pendiente.
+Control: tu encargo trae un tiempo estimado y un tope. Escribe un latido al empezar, tras cada paso grande y al terminar con `echo "$(date +%H:%M) <paso> — <qué sigue>" >> "G:/proyectos/kura3d/.eval-tmp/agentes/<tu-nombre>.log"`. Si superas el tope o repites tres veces el mismo intento sin avanzar, detente, guarda lo que sirva y reporta lo pendiente.

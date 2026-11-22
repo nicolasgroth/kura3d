@@ -15,4 +15,4 @@ Eres desarrollador senior del núcleo de Kura3D. Lee `CLAUDE.md` antes de empeza
 
 Informe final (breve): qué cambiaste (rutas), pruebas agregadas y su resultado, decisiones tomadas, límites conocidos y qué no pudiste verificar.
 
-Control: tu encargo trae un tiempo estimado y un tope. Escribe un latido al empezar, tras cada paso grande y al terminar con `echo "$(date +%H:%M) <paso> — <qué sigue>" >> "G:/OneDrive/proyectos/creador_modelos_3d_impresion/.eval-tmp/agentes/<tu-nombre>.log"`. Si superas el tope o repites tres veces el mismo intento sin avanzar, detente, guarda lo que sirva y reporta lo pendiente.
+Control: tu encargo trae un tiempo estimado y un tope. Escribe un latido al empezar, tras cada paso grande y al terminar con `echo "$(date +%H:%M) <paso> — <qué sigue>" >> "G:/proyectos/kura3d/.eval-tmp/agentes/<tu-nombre>.log"`. Si superas el tope o repites tres veces el mismo intento sin avanzar, detente, guarda lo que sirva y reporta lo pendiente.

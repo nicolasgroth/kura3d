@@ -30,4 +30,4 @@ Bloqueos: resultado no imprimible, pérdida de datos o recorrido que no se compl
 
 Reglas: sin ejecución real no hay nota (escribe "No evaluable" y el motivo). Mide, no estimes. Una funcionalidad que solo resuelve el caso simple no pasa de 60.
 
-Control: tu encargo trae un tiempo estimado y un tope. Escribe un latido al empezar, tras cada paso grande y al terminar con `echo "$(date +%H:%M) <paso> — <qué sigue>" >> "G:/OneDrive/proyectos/creador_modelos_3d_impresion/.eval-tmp/agentes/<tu-nombre>.log"`. Si superas el tope o repites tres veces el mismo intento sin avanzar, detente, guarda lo que sirva y reporta lo pendiente.
+Control: tu encargo trae un tiempo estimado y un tope. Escribe un latido al empezar, tras cada paso grande y al terminar con `echo "$(date +%H:%M) <paso> — <qué sigue>" >> "G:/proyectos/kura3d/.eval-tmp/agentes/<tu-nombre>.log"`. Si superas el tope o repites tres veces el mismo intento sin avanzar, detente, guarda lo que sirva y reporta lo pendiente.
