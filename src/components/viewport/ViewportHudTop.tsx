@@ -84,7 +84,8 @@ export const ViewportHudTop: React.FC = () => {
                 type="button"
                 className="kura-btn kura-btn-sm"
                 onClick={() => requestCameraPreset(preset)}
-                title={t(language, `viewport.camera.${preset}`)}
+                title={t(language, `viewcube.view.${preset}`)}
+                aria-label={t(language, `viewcube.view.${preset}`)}
               >
                 {t(language, `viewport.camera.${preset}`)}
               </button>

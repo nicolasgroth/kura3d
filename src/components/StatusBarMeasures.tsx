@@ -85,8 +85,8 @@ export const StatusBarMeasures: React.FC = () => {
         className="kura-measures-popover"
         id={popoverId}
         popover="auto"
-        role="dialog"
-        aria-label={t(language, 'status.measures.title')}
+        role={expanded ? 'dialog' : undefined}
+        aria-label={expanded ? t(language, 'status.measures.title') : undefined}
         ref={popover}
         onToggle={onToggle}
         onKeyDown={onKeyDown}

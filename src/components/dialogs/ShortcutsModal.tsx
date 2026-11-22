@@ -51,7 +51,10 @@ export const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = 
     {
       title: t(language, 'dialog.shortcuts.secCamera'),
       items: [
-        { keys: ['1', '2', '3', '7'], label: t(language, 'dialog.shortcuts.camPresets') },
+        { keys: ['1'], label: t(language, 'dialog.shortcuts.camFront') },
+        { keys: ['2'], label: t(language, 'dialog.shortcuts.camRight') },
+        { keys: ['3'], label: t(language, 'dialog.shortcuts.camIso') },
+        { keys: ['7'], label: t(language, 'dialog.shortcuts.camTop') },
         { keys: ['F'], label: t(language, 'dialog.shortcuts.camFit') },
         { keys: ['Ctrl/⌘+Shift+Enter'], label: t(language, 'dialog.shortcuts.zenMode') },
       ],

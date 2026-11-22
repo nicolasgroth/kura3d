@@ -14,6 +14,7 @@ import { PREVIEW_HI } from './preview';
 import { SPLITJOINTS_HI } from './splitJoints';
 import { SPLITPREFS_HI } from './splitPrefs';
 import { SPLITCOUPLING_HI } from './splitCoupling';
+import { A11YUX_HI } from './a11yUx';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -25,6 +26,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...SPLITJOINTS_HI,
   ...SPLITPREFS_HI,
   ...SPLITCOUPLING_HI,
+  ...A11YUX_HI,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
@@ -137,7 +139,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'topbar.theme.dark': 'गहरा',
   'topbar.theme.switchToLight': 'हल्की थीम पर स्विच करें',
   'topbar.theme.switchToDark': 'गहरी थीम पर स्विच करें',
-  'topbar.mcpConnected': 'MCP ठीक',
+  'topbar.mcpConnected': 'MCP जुड़ा है',
   'topbar.mcpOff': 'MCP बंद',
   'topbar.mcpTip': 'बाहरी AI एजेंटों (Antigravity / Claude / Codex) के लिए लोकल WebSocket ब्रिज',
   'topbar.mcpDisabledTip': 'उपयोगकर्ता द्वारा MCP ब्रिज निष्क्रिय (कॉन्फ़िगर करने के लिए क्लिक करें)',
@@ -155,7 +157,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'sidebar.tab.shapes': 'आकृतियाँ',
   'sidebar.tab.scene': 'दृश्य',
   'sidebar.shapes.primitivesTitle': 'पैरामेट्रिक मूल आकृतियाँ',
-  'sidebar.shapes.generatorsTitle': '2D/Pro → 3D जनरेटर',
+  'sidebar.shapes.generatorsTitle': '2D → 3D जनरेटर',
   'sidebar.shapes.quickActionsTitle': 'त्वरित दृश्य',
   'sidebar.shapes.createStarter': '30 mm कैलिब्रेशन घन',
   'sidebar.shapes.clearScene': 'बेड साफ़ करें',
@@ -174,7 +176,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'sidebar.scene.empty': 'प्रिंट बेड खाली है। कोई आकृति जोड़ें या STL/3MF/OBJ मॉडल आयात करें।',
   'sidebar.scene.objectsCount': '{count} वस्तुएं',
   'sidebar.scene.selectedCount': '{count} चयनित',
-  'sidebar.scene.holeBadge': 'छेद',
+  'sidebar.scene.holeBadge': 'ऋणात्मक',
   'sidebar.scene.solidBadge': 'ठोस',
   'sidebar.scene.toggleVisible': 'वस्तु दिखाएं या छिपाएं',
   'sidebar.scene.toggleLock': 'संपादन लॉक या अनलॉक करें',
@@ -235,7 +237,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'viewport.protip.hide': 'सुझाव छिपाएं',
 
   // Materiales PBR
-  'material.title': 'PBR सामग्री',
+  'material.title': 'सामग्री',
   'material.pla_matte': 'मैट PLA',
   'material.pla_silk': 'सिल्क PLA (चमकदार)',
   'material.petg_clear': 'पारभासी PETG',
@@ -256,8 +258,8 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'inspector.field.color': 'मूल रंग',
   'inspector.field.role': 'आयतन प्रकार',
   'inspector.role.solid': 'ठोस',
-  'inspector.role.hole': 'छेद (घटाव)',
-  'inspector.role.holeTip': 'छेद मोड बदलें (H)',
+  'inspector.role.hole': 'ऋणात्मक',
+  'inspector.role.holeTip': 'ठोस / ऋणात्मक बदलें (H)',
   'inspector.section.transform': 'रूपांतरण ({unit})',
   'inspector.field.position': 'स्थिति',
   'inspector.field.rotation': 'घूर्णन (°)',
@@ -277,7 +279,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'inspector.stats.triangles': 'त्रिभुज',
   'inspector.stats.vertices': 'शीर्ष बिंदु',
   'inspector.stats.manifold': 'बंद मेश',
-  'inspector.stats.watertight': 'वॉटरटाइट ठीक',
+  'inspector.stats.watertight': 'बंद मेश',
   'inspector.stats.nonManifold': 'मेश जांचें',
   'inspector.section.operations': '3D संचालन (Manifold)',
   'inspector.op.hollowTitle': 'खोखला करें (शेल)',
@@ -289,7 +291,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'inspector.op.union': 'संयोजन (Union)',
   'inspector.op.subtract': 'घटाव (Subtract)',
   'inspector.op.intersect': 'प्रतिच्छेदन (Intersect)',
-  'inspector.op.applyHoles': 'ठोस पर छेद लागू करें',
+  'inspector.op.applyHoles': 'घटाव लागू करें',
   'inspector.op.needTwoObjects': 'जोड़ने, घटाने या प्रतिच्छेद करने के लिए कम से कम 2 वस्तुएं (Ctrl+क्लिक) चुनें।',
   'inspector.op.cutAndSplitTitle': 'काटें और विभाजित करें',
   'inspector.op.planeCut': 'समतल कट + कनेक्टर',
@@ -305,20 +307,20 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'inspector.op.subtractSphereTip': 'गुहा तराशने के लिए ठोस के भीतर केंद्रित एक ऋणात्मक गोला बनाता है',
   'inspector.op.subtractCylinder': '− बेलन',
   'inspector.op.subtractCylinderTip': 'सुरंग बनाने के लिए ठोस के भीतर केंद्रित एक ऋणात्मक बेलन बनाता है',
-  'inspector.op.modularTitle': 'डायनामिक मॉड्यूल (+ / −)',
-  'inspector.op.modularAdd': 'जोड़ें (+)',
-  'inspector.op.modularSub': 'घटाएं (−)',
+  'inspector.op.modularTitle': 'भाग जोड़ें या हटाएँ',
+  'inspector.op.modularAdd': 'भाग जोड़ें (+)',
+  'inspector.op.modularSub': 'भाग घटाएँ (−)',
   'inspector.op.importModuleAdd': 'STL/3MF आयात (+)',
   'inspector.op.importModuleSub': 'STL/3MF आयात (−)',
   'inspector.texture.none': 'कोई नहीं',
   'inspector.texture.fuzzy': 'फ़ज़ी स्किन (खुरदुरा)',
-  'inspector.texture.knurling': 'नर्लिंग (Knurling)',
+  'inspector.texture.knurling': 'नर्लिंग (खुरदुरी पकड़)',
   'inspector.texture.waves': 'साइन तरंगें',
   'inspector.texture.honeycomb': 'मधुमक्खी छत्ता',
   'inspector.texture.grid': 'तकनीकी ग्रिड',
 
   // Herramientas Pro Maker en Inspector
-  'inspector.pro.title': 'प्रो मेकर उपकरण',
+  'inspector.pro.title': 'तैयारी उपकरण',
   'inspector.pro.mold': 'मोल्ड / सिलिकॉन बॉक्स बनाएं',
   'inspector.pro.project': 'सतह पर पाठ/SVG प्रोजेक्ट करें',
   'inspector.pro.thread': 'ISO थ्रेड जनरेटर',
@@ -345,7 +347,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'inspector.pro.refineEdge': 'लक्ष्य किनारा (mm)',
   'inspector.pro.refineSmooth': 'जैविक चिकनाई',
   'inspector.pro.refineBtn': 'परिष्कृत करें',
-  'inspector.pro.hull': 'उत्तल आवरण (Hull)',
+  'inspector.pro.hull': 'उत्तल आवरण',
   'inspector.pro.alignTitle': 'स्मार्ट संरेखण और बेड लेआउट',
   'inspector.pro.arrangeGrid': 'बेड पर व्यवस्थित करें (ऑटो)',
 
@@ -381,10 +383,10 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'ctx.projectSurface': 'सतह पर पाठ/SVG प्रोजेक्ट करें',
   'ctx.validatePrint': '3D संरचना सत्यापित करें',
   'ctx.detectStructures': 'उप-संरचनाएं पहचानें (लोकल)',
-  'ctx.shortcuts': 'कीबोर्ड शॉर्टकट (?)',
-  'ctx.duplicate': 'डुप्लिकेट (Ctrl+D)',
+  'ctx.shortcuts': 'कीबोर्ड शॉर्टकट',
+  'ctx.duplicate': 'डुप्लिकेट',
   'ctx.dropToBed': 'प्रिंट बेड पर रखें (Z=0)',
-  'ctx.delete': 'हटाएं (Del)',
+  'ctx.delete': 'हटाएं',
 
   // Paleta de comandos (Ctrl+K)
   'cmd.title': 'Kura3D कमांड पैलेट',
@@ -403,7 +405,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'cmd.pro.validate': 'प्रिंट योग्यता जांचें (ओवरहैंग व वजन)',
   'cmd.pro.simplify': 'मेश सरल करें (त्रिभुज घटाएं)',
   'cmd.pro.refine': 'मेश परिष्कृत करें (उपविभाजित व चिकना)',
-  'cmd.pro.hull': 'उत्तल आवरण (Convex Hull)',
+  'cmd.pro.hull': 'उत्तल आवरण',
   'cmd.pro.arrangeGrid': 'बेड पर भाग व्यवस्थित करें (ऑटो)',
   'cmd.pro.detectStructures': '3D उप-संरचनाएं पहचानें (लोकल)',
   'cmd.pro.colorizeStructures': 'पहचानी गई उप-संरचनाओं को रंगें (3MF)',
@@ -411,7 +413,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'cmd.view.compact': 'संहत मोड टॉगल करें',
   'cmd.view.zen': 'ज़ेन मोड टॉगल करें (100% कैनवास)',
   'cmd.view.xray': 'लाइव एक्स-रे / अनुभाग समतल टॉगल करें',
-  'cmd.view.shortcuts': 'कीबोर्ड शॉर्टकट और प्रो टिप्स देखें',
+  'cmd.view.shortcuts': 'कीबोर्ड शॉर्टकट और सुझाव देखें',
   'palette.cmd.appearance': 'रंग थीम बदलें (रूप-रंग)',
 
   // Panel de Chat IA (AiChatDrawer)
@@ -598,8 +600,8 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.cut.connectorType': 'कनेक्टर प्रकार',
   'dialog.cut.connector.none': 'बिना कनेक्टर (साफ़ कट)',
   'dialog.cut.connector.dowel': 'बेलनाकार डॉवेल',
-  'dialog.cut.connector.peg': 'वर्गाकार पिन (Peg)',
-  'dialog.cut.connector.dovetail': 'डवटेल जोड़ (Dovetail)',
+  'dialog.cut.connector.peg': 'वर्गाकार पिन',
+  'dialog.cut.connector.dovetail': 'डवटेल जोड़',
   'dialog.cut.connectorSize': 'कनेक्टर आकार',
   'dialog.cut.connectorDepth': 'कनेक्टर गहराई',
   'dialog.cut.tolerance': 'प्रिंट सहिष्णुता',
@@ -661,7 +663,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.thread.execute': 'ISO थ्रेड बनाएं',
 
   // Modal Exportar 3MF Multi-Slicer
-  'dialog.export3mf.title': 'मल्टी-स्लाइसर 3MF प्रो निर्यात करें',
+  'dialog.export3mf.title': 'कई स्लाइसर के लिए 3MF निर्यात करें',
   'dialog.export3mf.desc': 'PBR सामग्री, प्रति-त्रिभुज रंग और स्लाइसर-संगत मेटाडेटा के साथ अनुकूलित 3MF पैकेज बनाता है।',
   'dialog.export3mf.onlySelected': 'केवल चयनित वस्तुएं निर्यात करें',
   'dialog.export3mf.execute': '.3MF फ़ाइल डाउनलोड करें',
@@ -682,7 +684,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'theme.obsidian.desc': 'तकनीकी सियान के साथ गहरा स्लेट स्टूडियो (डिफ़ॉल्ट थीम)।',
   'theme.kura_prism.name': 'Kura Prism',
   'theme.kura_prism.desc': 'आधिकारिक लोगो से प्रेरित: गहरा बैंगनी और फ़िरोज़ी मिंट।',
-  'theme.studio_pro.name': 'Carbon Pro',
+  'theme.studio_pro.name': 'Carbon',
   'theme.studio_pro.desc': 'लंबे सत्रों के लिए स्टील ब्लू के साथ तटस्थ औद्योगिक ग्रेफ़ाइट।',
   'theme.nordic_frost.name': 'Nordic Slate',
   'theme.nordic_frost.desc': 'रात में आंखों के कम तनाव के लिए सौम्य नॉर्डिक नीले रंग।',
@@ -750,8 +752,8 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'app.monoAlt': '{name} एकवर्णी प्रतीक',
 
   // Modal Atajos de Teclado y Pro Tips
-  'dialog.shortcuts.title': 'प्रो कीबोर्ड शॉर्टकट और CAD सुझाव',
-  'dialog.shortcuts.subtitle': 'Blender, Rhino और आधुनिक स्लाइसर्स से प्रेरित सटीक कार्यप्रवाह।',
+  'dialog.shortcuts.title': 'कीबोर्ड शॉर्टकट और सुझाव',
+  'dialog.shortcuts.subtitle': 'तेज़ काम के लिए कुंजियाँ: हिलाना, घुमाना, व्यू बदलना और बहुत कुछ।',
   'dialog.shortcuts.secTransform': 'रूपांतरण और संशोधक (Shift / Ctrl / Alt)',
   'dialog.shortcuts.secPrecision': 'संख्यात्मक सटीकता और ड्रैग-स्क्रब',
   'dialog.shortcuts.secCamera': 'कैमरा और त्वरित दृश्य',
@@ -784,7 +786,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.shortcuts.brushSize': 'ब्रश त्रिज्या घटाएँ / बढ़ाएँ',
   'dialog.shortcuts.openCut': 'कनेक्टर के साथ समतल कट खोलें',
   'dialog.shortcuts.dropBed': 'चयन को बेड पर रखें (Z=0)',
-  'dialog.shortcuts.toggleHole': 'ठोस / छेद (घटाव) टॉगल करें',
+  'dialog.shortcuts.toggleHole': 'ठोस / ऋणात्मक बदलें',
   'dialog.shortcuts.cmdPalette': 'कमांड पैलेट खोलें',
   'dialog.shortcuts.undoRedo': 'पूर्ववत / फिर से करें (40 चरणों तक)',
   'dialog.shortcuts.duplicate': 'चयन डुप्लिकेट करें',
@@ -834,8 +836,8 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'inspector.params.field.pitchMm': 'पिच',
   'inspector.params.field.lengthMm': 'लंबाई',
   'inspector.params.field.clearanceMm': 'क्लीयरेंस',
-  'toast.subtractHelperCreated': 'ठोस के अंदर घटाव आयतन बनाया गया। समायोजित करें या "घटाव लागू करें" दबाएं।',
-  'toast.modularHelperCreated': 'मॉड्यूल {mode} ({name}) लक्ष्य पर रखा गया।',
+  'toast.subtractHelperCreated': 'ऋणात्मक भाग जोड़ा गया। उसे हिलाएँ और आकार बदलें, फिर "घटाव लागू करें" दबाएँ।',
+  'toast.modularHelperCreated': 'भाग जोड़ा गया: {name}। उसे जहाँ चाहिए वहाँ हिलाएँ।',
   'toast.imported': 'सफलतापूर्वक आयातित: {name}',
   'toast.exported': 'सफलतापूर्वक निर्यातित: {name}',
   'toast.duplicated': 'डुप्लिकेट बनाया गया',

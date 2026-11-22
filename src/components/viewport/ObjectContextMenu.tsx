@@ -41,6 +41,8 @@ import { MenuGroup, MenuItem, MenuSurface, SubMenu } from './contextMenu/MenuKit
 import { PieceShapeItems } from './contextMenu/PieceShapeItems';
 import { openHollowPanel } from '../inspector/hollowPanelRequest';
 
+const MOD = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform ?? '') ? '⌘' : 'Ctrl';
+
 /** Ejes del usuario (Z = altura) con su eje interno del motor. */
 const MIRROR_AXES = [
   { internal: 'x', user: 'x' },
@@ -139,7 +141,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
       <div className="kura-context-sep" role="separator" />
       <MenuGroup title={t(language, 'menu.group.object')}>
         <MenuItem icon={<PencilLine size={14} aria-hidden="true" />} label={t(language, 'menu.rename')} shortcut="F2" keys="F2" disabled={target.locked} onSelect={run(() => void requestRename(target.id))} />
-        <MenuItem icon={<Copy size={14} aria-hidden="true" />} label={t(language, 'ctx.duplicate')} onSelect={run(() => duplicateObjects([target.id]))} />
+        <MenuItem icon={<Copy size={14} aria-hidden="true" />} label={t(language, 'ctx.duplicate')} shortcut={`${MOD}+D`} keys="Control+D" onSelect={run(() => duplicateObjects([target.id]))} />
         <MenuItem icon={<ArrowDownToLine size={14} aria-hidden="true" />} label={t(language, 'ctx.dropToBed')} keys="L" disabled={target.locked} onSelect={run(() => dropObjectToBed(target.id))} />
         {isParametric && (
           <MenuItem
@@ -162,12 +164,12 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
             onSelect={run(() => void repeatLastAction())}
           />
         )}
-        <MenuItem icon={<Trash2 size={14} aria-hidden="true" />} label={t(language, 'ctx.delete')} danger disabled={target.locked} onSelect={run(() => deleteObjects([target.id]))} />
+        <MenuItem icon={<Trash2 size={14} aria-hidden="true" />} label={t(language, 'ctx.delete')} shortcut="Del" keys="Delete" danger disabled={target.locked} onSelect={run(() => deleteObjects([target.id]))} />
       </MenuGroup>
 
       <div className="kura-context-sep" role="separator" />
       <MenuGroup title={t(language, 'menu.group.help')}>
-        <MenuItem icon={<HelpCircle size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.shortcuts')} keys="F1" onSelect={run(() => setActiveDialog('shortcuts'))} />
+        <MenuItem icon={<HelpCircle size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.shortcuts')} shortcut="?" keys="F1" onSelect={run(() => setActiveDialog('shortcuts'))} />
       </MenuGroup>
     </MenuSurface>
   );
