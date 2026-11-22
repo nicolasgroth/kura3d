@@ -1,5 +1,5 @@
 /**
- * @file src/core/scene/__tests__/userSizeText.test.ts
+ * @file src/utils/userSizeText.test.ts
  * @description Los avisos que muestran tamaños usan los ejes del usuario (X × Y × Z, Z = altura): un
  * cilindro Ø100 × 600 de alto se lee "100 × 100 × 600", y ningún componente arma "a × b × c" sin
  * convertir antes el tamaño interno.
@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { formatUserSize } from '../userSizeText';
+import { formatUserSize } from './userSizeText';
 
 /** Archivos con un arreglo pendiente que este lote no puede tocar (otro agente trabaja ahí). */
 const PENDING_ELSEWHERE = new Set(['src/components/split/SplitOverlays.tsx']);
