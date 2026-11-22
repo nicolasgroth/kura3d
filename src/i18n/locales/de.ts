@@ -88,6 +88,9 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'precision.stepUp': 'Wert erhöhen',
   'precision.stepDown': 'Wert verringern',
   'precision.invalidValue': 'Ungültiger Wert. Zahl oder Ausdruck verwenden (10+5, 2cm).',
+  'precision.outOfRange': 'Außerhalb des Bereichs. Erlaubt: {min}–{max}. Escape stellt wieder her.',
+  'precision.invalidRange': 'Ungültiger Wert. Zahl zwischen {min} und {max} verwenden. Escape stellt wieder her.',
+  'precision.rangeTip': 'Erlaubter Bereich: {min}–{max}',
   'precision.stepUpFor': '{label} erhöhen',
   'precision.stepDownFor': '{label} verringern',
 

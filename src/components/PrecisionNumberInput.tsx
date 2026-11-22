@@ -59,6 +59,11 @@ export interface PrecisionNumberInputProps {
   style?: React.CSSProperties;
   /** Aplica el texto editado al confirmar con Enter o al salir del campo. */
   commitOnBlur?: boolean;
+  /**
+   * Un valor escrito fuera de [min, max] no se recorta en silencio: se marca como inválido con el
+   * rango permitido y no se aplica (Escape restaura).
+   */
+  strictRange?: boolean;
   /** Callback opcional al confirmar edición o soltar scrub/stepper. */
   onCommit?: (finalValue: number) => void;
 }
@@ -117,6 +122,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   className,
   style,
   commitOnBlur = false,
+  strictRange = false,
   onCommit,
 }) => {
   const language = useKuraStore((s) => s.language);
@@ -126,7 +132,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   const [isFocused, setIsFocused] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [draft, setDraft] = useState<string>(() => formatDisplayValue(value, precision));
-  const [invalid, setInvalid] = useState<ExpressionFailure | null>(null);
+  const [invalid, setInvalid] = useState<ExpressionFailure | 'range' | null>(null);
   const errorId = useId();
   const activeUnit = unit === undefined ? unitFromSuffix(suffix) : unit;
   const unitRef = useRef(activeUnit);
@@ -218,7 +224,12 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
       if (commitOnBlur && (!draftEditedRef.current || disabled)) return;
       draftEditedRef.current = false;
       const parsed = evaluateExpression(draft, { unit: activeUnit });
-      if (parsed.ok) {
+      const outOfRange = parsed.ok && strictRange
+        && ((typeof min === 'number' && parsed.value < min) || (typeof max === 'number' && parsed.value > max));
+      if (parsed.ok && outOfRange) {
+        // Fuera de rango: se conserva el texto y se marca con el rango permitido, sin aplicar.
+        setInvalid('range');
+      } else if (parsed.ok) {
         setInvalid(null);
         const clamped = clampAndClean(parsed.value, min, max, precision);
         setDraft(formatDisplayValue(clamped, precision));
@@ -234,7 +245,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
         setInvalid(parsed.reason);
       }
     },
-    [commitOnBlur, disabled, draft, min, max, precision, value, activeUnit, onChange, onCommit],
+    [commitOnBlur, disabled, draft, min, max, precision, value, activeUnit, onChange, onCommit, strictRange],
   );
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -379,6 +390,16 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
     ? t(language, 'precision.stepDownFor', { label: fieldLabel })
     : t(language, 'precision.stepDown');
 
+  const hasRange = typeof min === 'number' && typeof max === 'number';
+  const rangeParams = hasRange
+    ? { min: formatDisplayValue(min, precision), max: formatDisplayValue(max, precision) }
+    : null;
+  const errorText = invalid === 'range' && rangeParams
+    ? t(language, 'precision.outOfRange', rangeParams)
+    : strictRange && rangeParams
+      ? t(language, 'precision.invalidRange', rangeParams)
+      : t(language, 'precision.invalidValue');
+
   const scrubTitle =
     title ??
     (prefix
@@ -447,7 +468,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
 
       {invalid && (
         <span id={errorId} role="alert" className="kura-precision-error">
-          {t(language, 'precision.invalidValue')}
+          {errorText}
         </span>
       )}
 

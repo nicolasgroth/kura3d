@@ -95,6 +95,9 @@ export const TRANSLATIONS_ES = {
   'precision.stepUp': 'Incrementar valor',
   'precision.stepDown': 'Disminuir valor',
   'precision.invalidValue': 'Valor no válido. Usa un número o una expresión (10+5, 2cm).',
+  'precision.outOfRange': 'Fuera de rango. Permitido: {min}–{max}. Escape restaura.',
+  'precision.invalidRange': 'Valor no válido. Usa un número entre {min} y {max}. Escape restaura.',
+  'precision.rangeTip': 'Rango permitido: {min}–{max}',
   'precision.stepUpFor': 'Aumentar {label}',
   'precision.stepDownFor': 'Disminuir {label}',
 
@@ -1152,6 +1155,9 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'precision.stepUp': 'Increase value',
   'precision.stepDown': 'Decrease value',
   'precision.invalidValue': 'Invalid value. Use a number or an expression (10+5, 2cm).',
+  'precision.outOfRange': 'Out of range. Allowed: {min}–{max}. Escape restores.',
+  'precision.invalidRange': 'Invalid value. Use a number between {min} and {max}. Escape restores.',
+  'precision.rangeTip': 'Allowed range: {min}–{max}',
   'precision.stepUpFor': 'Increase {label}',
   'precision.stepDownFor': 'Decrease {label}',
 

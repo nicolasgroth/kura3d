@@ -88,6 +88,9 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'precision.stepUp': 'मान बढ़ाएं',
   'precision.stepDown': 'मान घटाएं',
   'precision.invalidValue': 'अमान्य मान। संख्या या व्यंजक (10+5, 2cm) लिखें।',
+  'precision.outOfRange': 'सीमा से बाहर। अनुमत: {min}–{max}। Escape पुनर्स्थापित करता है।',
+  'precision.invalidRange': 'अमान्य मान। {min} और {max} के बीच संख्या लिखें। Escape पुनर्स्थापित करता है।',
+  'precision.rangeTip': 'अनुमत सीमा: {min}–{max}',
   'precision.stepUpFor': '{label} बढ़ाएँ',
   'precision.stepDownFor': '{label} घटाएँ',
 

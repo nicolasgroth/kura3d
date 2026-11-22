@@ -7,7 +7,7 @@
  * @license MIT
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { parametricOrigin } from '../../core/scene/parametric';
 import { t } from '../../i18n';
@@ -49,6 +49,51 @@ describe('ParametersSection', () => {
     expect(executeCommand.mock.calls[0][0]).toMatchObject({
       command: 'update_primitive_params', params: { id: 'c', params: { radius: 8 } },
     });
+  });
+
+  it('un valor fuera de rango o no numérico se marca con el rango y no se aplica; Escape restaura', async () => {
+    const executeCommand = vi.fn().mockResolvedValue({ id: 'x', ok: true });
+    useKuraStore.setState({ executeCommand } as never);
+    render(<ParametersSection primary={cylinder()} />);
+    const input = screen.getByLabelText(label('radius')) as HTMLInputElement;
+    for (const bad of ['-5', 'abc']) {
+      act(() => input.focus());
+      fireEvent.change(input, { target: { value: bad } });
+      act(() => input.blur());
+      expect(input.getAttribute('aria-invalid')).toBe('true');
+      expect(input.value).toBe(bad);
+      expect(screen.getByRole('alert').textContent).toContain('0.1');
+      act(() => input.focus());
+      fireEvent.keyDown(input, { key: 'Escape' });
+      expect(input.getAttribute('aria-invalid')).toBeNull();
+      expect(input.value).toBe('5');
+    }
+    expect(executeCommand).not.toHaveBeenCalled();
+  });
+
+  it('↑/↓ aplican el valor en un solo comando al terminar la ráfaga', async () => {
+    vi.useFakeTimers();
+    try {
+      const executeCommand = vi.fn().mockResolvedValue({ id: 'x', ok: true });
+      useKuraStore.setState({ executeCommand } as never);
+      render(<ParametersSection primary={cylinder()} />);
+      const input = screen.getByLabelText(label('radius')) as HTMLInputElement;
+      fireEvent.focus(input);
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(executeCommand).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(600);
+      expect(executeCommand).toHaveBeenCalledTimes(1);
+      expect(executeCommand.mock.calls[0][0]).toMatchObject({ params: { params: { radius: 6.5 } } });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('muestra los límites del campo', () => {
+    render(<ParametersSection primary={cylinder()} />);
+    expect(document.querySelectorAll('.kura-param-range').length).toBeGreaterThan(0);
   });
 
   it('si una operación cambió la malla, reemplaza los campos por una explicación', () => {

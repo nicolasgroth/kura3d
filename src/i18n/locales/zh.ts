@@ -88,6 +88,9 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'precision.stepUp': '增大数值',
   'precision.stepDown': '减小数值',
   'precision.invalidValue': '数值无效。请输入数字或表达式（10+5、2cm）。',
+  'precision.outOfRange': '超出范围。允许：{min}–{max}。按 Esc 恢复。',
+  'precision.invalidRange': '数值无效。请输入 {min} 到 {max} 之间的数字。按 Esc 恢复。',
+  'precision.rangeTip': '允许范围：{min}–{max}',
   'precision.stepUpFor': '增大{label}',
   'precision.stepDownFor': '减小{label}',
 
