@@ -137,13 +137,15 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
     return o && plan && o.length === plan.planes.filter((p) => p.axis === axis).length ? o[index] : fallback;
   };
 
-  // Arrastre en el visor y flechas ↑/↓ con el foco en el visor (Mayús: ×10).
+  // Arrastre en el visor y flechas ↑/↓ (Mayús: ×10) sobre el plano elegido, con el foco en el visor
+  // o en su botón "Elegir" (el campo de posición ya las maneja por su cuenta).
   useEffect(() => {
     if (!open) return;
     const off = onSplitPlaneMove((m) => movePlane(m.axis, m.index, m.position));
     const onKey = (e: KeyboardEvent) => {
       if ((e.key !== 'ArrowUp' && e.key !== 'ArrowDown') || e.defaultPrevented || !activePlane || !plan) return;
-      if (!keyboardFocusInViewport(e.target)) return;
+      const onPick = e.target instanceof Element && Boolean(e.target.closest('[data-split-pick]'));
+      if (!onPick && !keyboardFocusInViewport(e.target)) return;
       const [axis, idx] = activePlane.split(':') as [SplitAxis, string];
       const p = plan.planes.find((q) => q.axis === axis && q.index === Number(idx));
       if (!p) return;
@@ -385,7 +387,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
                       type="button"
                       className={`kura-btn kura-btn-sm kura-split-plane-pick${activePlane === key ? ' is-active' : ''}`}
                       aria-pressed={activePlane === key}
-                      title={t(language, 'split.planePickTip')}
+                      aria-label={t(language, 'split.planePickLabel', { axis: p.axis.toUpperCase(), n: p.index + 1 })}
+                      data-split-pick={key}
+                      title={t(language, 'split.planePickTip', { axis: p.axis.toUpperCase(), n: p.index + 1 })}
                       onClick={() => setActivePlane(activePlane === key ? null : key)}
                     >
                       {t(language, 'split.planePick')}

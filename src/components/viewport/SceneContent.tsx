@@ -22,6 +22,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { type Vec3 } from '../../types/kura';
 import { PaintBrushCursor } from './PaintBrushCursor';
 import { ViewportCaptureRegistrar } from './ViewportCaptureRegistrar';
+import { ViewportCanvasA11y } from './ViewportCanvasA11y';
 import { CameraController } from './CameraController';
 import { overhangFacesFor } from '../../store/printReportSelectors';
 import { PrinterBedOverlay } from './PrinterBedOverlay';
@@ -298,6 +299,7 @@ export const SceneContent: React.FC<{
 
       <CameraController orbitRef={orbitRef} />
       <ViewportCaptureRegistrar />
+      <ViewportCanvasA11y />
     </>
   );
 };

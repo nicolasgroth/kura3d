@@ -115,6 +115,23 @@ describe('SplitForBedPanel', () => {
     expect(request.mock.calls.at(-1)![2].planePositions).toEqual({});
   });
 
+  it('cada "Elegir" tiene nombre propio y, tras elegir, ↑/↓ (Mayús ×10) mueven el plano con el foco en el botón', () => {
+    render(<SplitForBedPanel open onClose={() => undefined} />);
+    ready(PLAN);
+    const pick = screen.getByRole('button', { name: t('es', 'split.planePickLabel', { axis: 'Y', n: 2 }), hidden: true });
+    expect(screen.getAllByRole('button', { name: new RegExp(t('es', 'split.planePick')), hidden: true }).length).toBe(4);
+    expect(pick.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(pick);
+    expect(useKuraStore.getState().splitActivePlane).toBe('y:1');
+    expect(pick.getAttribute('aria-pressed')).toBe('true');
+    pick.focus();
+    fireEvent.keyDown(pick, { key: 'ArrowUp' });
+    expect(request.mock.calls.at(-1)![2].planePositions).toEqual({ y: [200, 401, 600, 800] });
+    fireEvent.keyDown(pick, { key: 'ArrowDown', shiftKey: true });
+    expect(request.mock.calls.at(-1)![2].planePositions).toEqual({ y: [200, 391, 600, 800] });
+    act(() => useKuraStore.setState({ splitActivePlane: null }));
+  });
+
   it('queda ligado al objeto con que se abrió: deseleccionar no borra el plan; si el objeto desaparece, se cierra', () => {
     const onClose = vi.fn();
     render(<SplitForBedPanel open onClose={onClose} />);
