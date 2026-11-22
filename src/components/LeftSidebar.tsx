@@ -115,8 +115,9 @@ export const LeftSidebar: React.FC = () => {
   const handleCreateText = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleaned = textDraft.trim() || 'KURA3D';
-    await createPrimitive('text', { text: cleaned, fontSize: 18, height: 6 }, { name: `Texto "${cleaned}"`, placement: 'free' });
-    setShowTextBox(false);
+    const created = await createPrimitive('text', { text: cleaned, fontSize: 18, height: 6 }, { name: `Texto "${cleaned}"`, placement: 'free' });
+    // Si falla (p. ej. caracteres que la fuente no tiene) el cuadro sigue abierto para corregir el texto.
+    if (created) setShowTextBox(false);
   };
 
   const isCompactRail = uiDensity === 'compact';
