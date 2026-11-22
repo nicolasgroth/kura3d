@@ -70,7 +70,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         commitChange(change, { select: result.parts.map((p) => p.id) });
         get().addToast(tr('toast.splitForBedDone', { count: result.parts.length, joints: result.joints.length }), 'success');
         reportEngineWarnings(change.warnings);
-        return { plan, parts: result.parts, joints: result.joints, plateCount: result.plateCount };
+        return { plan, parts: result.parts, joints: result.joints, plateCount: result.plateCount, assembly: result.assembly };
       });
     },
 

@@ -28,6 +28,8 @@ export interface ExecuteBedSplitResult {
   sourceVolumeMm3: number;
   clearanceVolumeMm3: number;
   engravedVolumeMm3: number;
+  /** Resumen de la validación de armado (orden, bloqueos, choques, firmeza, uniones pegadas por el arreglo). */
+  assembly?: engine.AssemblySummary;
   elapsedMs: number;
 }
 
@@ -69,6 +71,7 @@ export async function executeBedSplit(
       jointPartners: res.joints
         .filter((j) => j.a.code === part.code || j.b.code === part.code)
         .map((j) => ({ label: j.label, code: j.a.code === part.code ? j.b.code : j.a.code })),
+      ...(part.assemblyStep !== undefined ? { assemblyStep: part.assemblyStep, insertDirection: part.insertDirection } : {}),
     };
     const built = buildWith(ctx, {
       name: ctx.naming.splitPart(obj, part.code),
@@ -89,6 +92,7 @@ export async function executeBedSplit(
       sourceVolumeMm3: res.sourceVolumeMm3,
       clearanceVolumeMm3: res.clearanceVolumeMm3,
       engravedVolumeMm3: res.engravedVolumeMm3,
+      assembly: res.assembly ? engine.summarizeAssembly(res.assembly) : undefined,
       elapsedMs: res.elapsedMs,
     },
     change: change({ added: parts, removedIds: parts.length > 0 ? [obj.id] : [], warnings: [...(plan.warnings ?? []), ...res.warnings] }),

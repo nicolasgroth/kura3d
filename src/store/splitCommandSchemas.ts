@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import type { AssemblySummary } from '../engine/split';
 import type {
   BedSplitExecuteOptions, BedSplitPlan, BedSplitPlanOptions, SplitAxis, SplitBed, SplitConnectorOptions, SplitJoint,
 } from '../engine';
@@ -33,6 +34,8 @@ export interface SplitForBedOutcome {
   parts: SceneObject[];
   joints: SplitJoint[];
   plateCount: number;
+  /** Resumen de la validación de armado (solo si se ejecutó). */
+  assembly?: AssemblySummary;
 }
 
 /** Cama activa (perfil de impresora o medidas personalizadas) como volumen de impresión. */

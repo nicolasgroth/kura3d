@@ -750,6 +750,9 @@ export interface SplitPartMetadata {
   jointLabels: string[];
   /** Pareja de cada unión de la pieza: etiqueta y código de la pieza vecina ("Se une con A2 por la unión 3"). */
   jointPartners?: Array<{ label: string; code: string }>;
+  /** Paso del orden de montaje validado (1 = base) y dirección de movimiento al entrar ('-y' = baja). */
+  assemblyStep?: number;
+  insertDirection?: string;
 }
 
 /** Perfil de impresora 3D o espacio de trabajo libre. */

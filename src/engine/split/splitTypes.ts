@@ -14,6 +14,7 @@
 
 import type { CutConnectorType, MeshData, Vec3 } from '../../types/kura';
 import type { EngineWarning } from '../engineErrors';
+import type { AssemblyReport } from './assemblyTypes';
 
 export type SplitAxis = 'x' | 'y' | 'z';
 
@@ -181,6 +182,12 @@ export interface BedSplitExecuteOptions {
   labelMinHeightMm?: number;
   /** Avance por corte (`done` de `total`). */
   onProgress?: (done: number, total: number) => void;
+  /**
+   * Valida el armado (`validateAssembly`, por defecto `true`) y, con `assemblyAutoFix` (por defecto
+   * `true`), pasa a "para pegar" las uniones que impiden montar las piezas en algún orden.
+   */
+  validateAssembly?: boolean;
+  assemblyAutoFix?: boolean;
 }
 
 /** Cara de una pieza en una unión: signo y eje de la normal hacia afuera. */
@@ -238,6 +245,9 @@ export interface SplitPart {
   volumeMm3: number;
   /** Etiquetas de las uniones de esta pieza. */
   jointLabels: string[];
+  /** Paso del orden de montaje (1 = base) y dirección de movimiento al entrar; sin validación, ausentes. */
+  assemblyStep?: number;
+  insertDirection?: SplitFace;
 }
 
 /** Resultado de la ejecución. */
@@ -252,6 +262,8 @@ export interface BedSplitResult {
   engravedVolumeMm3: number;
   /** Uniones que quedaron como corte liso para pegar. */
   glueJoints: number;
+  /** Informe de armado (orden de montaje, choques, cierre, firmeza); ausente con `validateAssembly: false`. */
+  assembly?: AssemblyReport;
   warnings: EngineWarning[];
   elapsedMs: number;
 }
