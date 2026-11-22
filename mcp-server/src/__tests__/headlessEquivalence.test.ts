@@ -122,6 +122,22 @@ describe('Equivalencia headless ↔ src/engine', () => {
     expect(h.getSceneState().objectCount).toBe(2);
   });
 
+  it('dividir para imprimir: dryRun no cambia la escena y la ejecución conserva el volumen', async () => {
+    const h = new KuraHeadlessEngine();
+    const col = await h.createPrimitive({ primitiveType: 'cylinder', params: { radius: 40, height: 500 } });
+    const before = h.getSceneState().objects.length;
+    const opts = { plan: {}, execute: {}, bed: { widthMm: 200, depthMm: 200, heightMm: 200 } };
+    const dry = await h.splitForBed(col.id, { ...opts, dryRun: true });
+    expect(dry.plan.counts.y).toBeGreaterThan(1);
+    expect(h.getSceneState().objects.length).toBe(before);
+    const vol = worldMetrics(h.getObject(col.id)).volume;
+    const res = await h.splitForBed(col.id, { ...opts, dryRun: false });
+    expect(res.parts).toHaveLength(dry.plan.pieces.length);
+    expect(res.parts[0].name).toMatch(/ · A1$/);
+    const sum = res.parts.reduce((s, p) => s + worldMetrics(h.getObject(p.id)).volume, 0);
+    expect(sum).toBeCloseTo(vol - res.volumes!.clearance, 0);
+  });
+
   it('corte por plano produce dos mitades reales de 4000 mm³ (no copias escaladas)', async () => {
     const h = new KuraHeadlessEngine();
     const cube = await h.createPrimitive({ primitiveType: 'box', params: { width: 20, height: 20, depth: 20 } });

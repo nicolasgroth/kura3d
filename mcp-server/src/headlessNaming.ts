@@ -26,5 +26,6 @@ export function createHeadlessNaming(counter: () => number): ResultNaming {
     hull: () => `ConvexHull_${counter() + 1}`,
     thread: (o) => `${o.kind === 'bolt' ? 'Perno' : o.kind === 'nut' ? 'Tuerca' : 'Cavidad'} M${o.diameterMm}x${o.pitchMm}`,
     structurePart: (src, _regions, region) => `${src.name}_${region.labelEn}`,
+    splitPart: (src, code) => `${src.name} · ${code}`,
   };
 }

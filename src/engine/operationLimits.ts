@@ -113,6 +113,15 @@ export const OPERATION_RANGES = {
   detect: {
     creaseAngleDeg: closed(1, 179),
   },
+  /** Dividir para imprimir (`split_for_bed`); los conectores usan los rangos de `cut`. */
+  split: {
+    bedMm: closed(10, 10_000),
+    marginMm: closed(0, 50),
+    maxPieces: int(1, 512),
+    shiftWindow: closed(0, 0.45),
+    labelDepthMm: closed(0.1, 3),
+    labelMinHeightMm: closed(2, 50),
+  },
 } as const satisfies Record<string, Record<string, OperationRange>>;
 
 /**
@@ -122,6 +131,7 @@ export const OPERATION_RANGES = {
 export const OPERATION_DEFAULTS = {
   mold: { wallMarginMm: 6, boxWallMm: 3, pourSpoutRadiusMm: 5, keyToleranceMm: 0.25, cavityWallMm: 3 },
   printability: { infillPercent: 20, overhangAngleDeg: 45, minWallMm: 0.8 },
+  split: { marginMm: 5, maxPieces: 64, shiftWindow: 0.15, labelDepthMm: 0.4, labelMinHeightMm: 4 },
 } as const;
 
 /** Indica si `value` es un número finito dentro de `range`. */

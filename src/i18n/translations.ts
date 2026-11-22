@@ -1114,6 +1114,9 @@ export const TRANSLATIONS_ES = {
   'engineWarning.SPLIT_CONNECTOR_REDUCED': 'En la unión {label} ({a}–{b}) el conector se redujo a {count} de {size} mm para que cupiera.',
   'engineWarning.SPLIT_LABEL_SKIPPED': 'La unión {label} ({a}–{b}) no tiene espacio para una marca legible de {min} mm: se omitió.',
   'engineWarning.SPLIT_EMPTY_CELLS': 'Celdas de la rejilla sin material: {count}. Se omitieron.',
+  'progress.op.split_for_bed': 'Dividiendo para la cama',
+  'toast.splitForBedDone': 'Modelo dividido en {count} piezas con {joints} uniones',
+  'toast.splitForBedFits': 'El modelo ya cabe en la cama: no hace falta dividirlo',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2188,6 +2191,9 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_CONNECTOR_REDUCED': 'At joint {label} ({a}–{b}) the connector was reduced to {count} of {size} mm so it fits.',
   'engineWarning.SPLIT_LABEL_SKIPPED': 'Joint {label} ({a}–{b}) has no room for a legible {min} mm mark: skipped.',
   'engineWarning.SPLIT_EMPTY_CELLS': 'Grid cells without material: {count}. They were skipped.',
+  'progress.op.split_for_bed': 'Splitting for the bed',
+  'toast.splitForBedDone': 'Model split into {count} pieces with {joints} joints',
+  'toast.splitForBedFits': 'The model already fits the bed: no split needed',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

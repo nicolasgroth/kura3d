@@ -1107,4 +1107,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_CONNECTOR_REDUCED': 'जोड़ {label} ({a}–{b}) पर कनेक्टर को समाने के लिए {count} × {size} mm कर दिया गया।',
   'engineWarning.SPLIT_LABEL_SKIPPED': 'जोड़ {label} ({a}–{b}) में {min} mm के पढ़ने योग्य चिह्न की जगह नहीं है: छोड़ा गया।',
   'engineWarning.SPLIT_EMPTY_CELLS': 'बिना सामग्री वाली ग्रिड कोशिकाएँ: {count}। इन्हें छोड़ दिया गया।',
+  'progress.op.split_for_bed': 'बेड के लिए विभाजित किया जा रहा है',
+  'toast.splitForBedDone': 'मॉडल {count} टुकड़ों और {joints} जोड़ों में विभाजित',
+  'toast.splitForBedFits': 'मॉडल पहले से बेड में समाता है: विभाजन की ज़रूरत नहीं',
 };

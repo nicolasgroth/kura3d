@@ -10,6 +10,7 @@
 
 import type * as engine from '../engine';
 import type { ParametricEdit } from '../core/operations/creationOperations';
+import type { SplitForBedOutcome, SplitForBedRequest } from './splitCommandSchemas';
 import type { openProjectFile } from '../project/projectFiles';
 import type { RecoveryDraftInfo } from '../project/projectRecoveryStorage';
 import type { ProjectDocument, ProjectSceneSnapshot } from '../project/projectSchema';
@@ -301,6 +302,11 @@ export interface KuraStoreState {
   applyHolesOnSolids: () => Promise<void>;
   hollowObject: (id: string, options: HollowOptions) => Promise<boolean>;
   planeCutObject: (id: string, options: PlaneCutOptions) => Promise<SceneObject[]>;
+  /**
+   * Dividir para imprimir: plan por cama y, salvo `dryRun` o si ya cabe, ejecución que reemplaza el
+   * objeto por sus piezas armadas en su lugar (`metadata.split`). `null` si falló o está bloqueado.
+   */
+  splitObjectForBed: (id: string, request: Omit<SplitForBedRequest, 'target'>) => Promise<SplitForBedOutcome | null>;
   splitDisconnectedObject: (id: string) => Promise<SceneObject[]>;
   splitObjectByColor: (id: string) => SceneObject[];
   applyTextureToObject: (id: string, options: TextureOptions) => boolean;

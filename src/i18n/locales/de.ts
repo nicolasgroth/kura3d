@@ -1107,4 +1107,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_CONNECTOR_REDUCED': 'An Verbindung {label} ({a}–{b}) wurde der Verbinder auf {count} mit {size} mm verkleinert, damit er passt.',
   'engineWarning.SPLIT_LABEL_SKIPPED': 'Verbindung {label} ({a}–{b}) hat keinen Platz für eine lesbare Markierung von {min} mm: ausgelassen.',
   'engineWarning.SPLIT_EMPTY_CELLS': 'Rasterzellen ohne Material: {count}. Sie wurden ausgelassen.',
+  'progress.op.split_for_bed': 'Wird fürs Druckbett geteilt',
+  'toast.splitForBedDone': 'Modell in {count} Teile mit {joints} Verbindungen geteilt',
+  'toast.splitForBedFits': 'Das Modell passt bereits aufs Druckbett: Teilen ist nicht nötig',
 };

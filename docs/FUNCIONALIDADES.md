@@ -26,7 +26,7 @@ Estados: **Activa** (disponible al usuario), **Parcial** (existe con límites co
 | F-ALIN | Alineación | Alinear y apoyar objetos | Activa | `src/engine/alignment.ts` |
 | F-UI | Estudio | Temas, densidades, 6 idiomas, paleta de comandos, atajos | Activa | `src/components/`, `src/i18n/` |
 | F-CHAT | Chat IA | Asistente local; Anthropic, OpenAI, Gemini, Ollama y cualquier API compatible con OpenAI | Activa; sin adjuntar imágenes | `src/ai/` |
-| F-MCP | Servidor MCP | 31 herramientas para agentes externos sobre el mismo motor de la app | Activa; token obligatorio | `mcp-server/` |
+| F-MCP | Servidor MCP | 32 herramientas para agentes externos sobre el mismo motor de la app | Activa; token obligatorio | `mcp-server/` |
 | F-DIVIDIR | Dividir por volumen de cama | Partir un modelo grande en piezas que caben, con uniones y marcas | Planificada | — |
 | F-ARMADO | Vista explosionada y armado | Animación de cómo se ensambla | Planificada | — |
 | F-MULTI | Multimaterial verificado | 3MF comprobado en slicers reales | Planificada | — |

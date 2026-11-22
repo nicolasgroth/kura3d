@@ -223,6 +223,33 @@ export class KuraHeadlessEngine {
     return { object: summarizeObject(result), resultId: result.id, consumedIds: change.removedIds, note: ENGINE_NOTE, warnings: [] };
   }
 
+  /**
+   * Dividir para imprimir (misma operación que la app). Con `dryRun` solo devuelve el plan. Las piezas
+   * quedan armadas en su lugar; su ubicación de impresión va en `metadata.split.print`.
+   */
+  async splitForBed(
+    objectId: string,
+    input: { bed?: Partial<engine.SplitBed>; plan: engine.BedSplitPlanOptions; execute: Omit<engine.BedSplitExecuteOptions, 'onProgress'>; dryRun: boolean }
+  ) {
+    const obj = this.requireEditable(objectId);
+    const p = this.printerProfile;
+    const bed: engine.SplitBed = { widthMm: p.bedWidthMm, depthMm: p.bedDepthMm, heightMm: p.maxHeightMm, ...input.bed };
+    const plan = await ops.planSplitForBed(this.ctx, obj, bed, input.plan);
+    if (input.dryRun || plan.fitsWithoutCuts) return { dryRun: input.dryRun, plan, parts: [], joints: [], plateCount: 0, note: ENGINE_NOTE, warnings: [] };
+    const { result, change } = await ops.executeBedSplit(this.ctx, obj, plan, { ...input.execute, bed });
+    this.apply(change);
+    return {
+      dryRun: false,
+      plan,
+      parts: result.parts.map((o) => ({ ...summarizeObject(o), code: o.metadata?.split?.code, plate: o.metadata?.split?.print.plate })),
+      joints: result.joints,
+      plateCount: result.plateCount,
+      volumes: { source: result.sourceVolumeMm3, clearance: result.clearanceVolumeMm3, engraved: result.engravedVolumeMm3 },
+      note: ENGINE_NOTE,
+      warnings: change.warnings,
+    };
+  }
+
   /** Corta por plano con `planeCutWithConnectors` del motor (conectores reales incluidos). */
   async planeCut(
     objectId: string,

@@ -14,6 +14,7 @@ import type { Manifold } from 'manifold-3d';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { EngineError } from '../engineErrors';
 import { initManifoldEngine, meshDataToManifold } from '../manifoldKernel';
+import { OPERATION_DEFAULTS } from '../operationLimits';
 import { applyTransformToMesh } from '../primitives';
 import {
   AXIS_INDEX,
@@ -35,11 +36,7 @@ import type {
 } from './splitTypes';
 
 export const SPLIT_DEFAULTS = {
-  marginMm: 5,
-  maxPieces: 64,
-  shiftWindow: 0.15,
-  labelDepthMm: 0.4,
-  labelMinHeightMm: 4,
+  ...OPERATION_DEFAULTS.split,
   connector: { type: 'dowel', size: 4, depth: 6, tolerance: 0.25, count: 2 } as SplitConnectorOptions,
 } as const;
 

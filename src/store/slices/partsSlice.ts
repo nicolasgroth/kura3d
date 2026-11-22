@@ -1,7 +1,8 @@
 /**
  * @file src/store/slices/partsSlice.ts
  * @description Slice de operaciones que producen piezas: corte por plano, islas, separación por
- * color, moldes y detección/coloreado/extracción/división de estructuras. Adaptador delgado sobre
+ * color, dividir para imprimir (`split_for_bed`), moldes y detección/coloreado/extracción/división de
+ * estructuras. Adaptador delgado sobre
  * `src/core/operations/partOperations`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -44,6 +45,26 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         get().addToast(tr('toast.cutDone'), 'success');
         if (!separated.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
         return separated.parts;
+      });
+    },
+
+    splitObjectForBed: async (id, request) => {
+      const obj = editable(id);
+      if (!obj) return null;
+      return runExclusive('split_for_bed', null, async () => {
+        const plan = await runEngine('splitPlan', { obj, bed: request.bed, options: request.plan });
+        const none = { plan, parts: [], joints: [], plateCount: 0 };
+        if (request.dryRun) return none;
+        if (plan.fitsWithoutCuts) {
+          get().addToast(tr('toast.splitForBedFits'), 'info');
+          return none;
+        }
+        const { result, change } = await runEngine('splitForBed', { obj, plan, options: { ...request.execute, bed: request.bed } });
+        assertCurrent([obj]);
+        commitChange(change, { select: result.parts.map((p) => p.id) });
+        get().addToast(tr('toast.splitForBedDone', { count: result.parts.length, joints: result.joints.length }), 'success');
+        reportEngineWarnings(change.warnings);
+        return { plan, parts: result.parts, joints: result.joints, plateCount: result.plateCount };
       });
     },
 

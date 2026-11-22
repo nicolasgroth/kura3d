@@ -151,7 +151,7 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 
 ---
 
-## Catálogo de Herramientas MCP (`kura_*` — 31 herramientas)
+## Catálogo de Herramientas MCP (`kura_*` — 32 herramientas)
 
 | Herramienta | Descripción |
 | :--- | :--- |
@@ -162,6 +162,7 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 | `kura_boolean_operation` | Ejecuta operaciones CSG (`union`, `subtract`, `intersect`). Si una resta o intersección no cambia nada porque las piezas no se tocan, devuelve `resultId: null` y el aviso `BOOLEAN_NO_EFFECT` sin tocar la escena. |
 | `kura_hollow_object` | Ahueca un sólido indicando grosor de pared en mm y drenaje opcional. |
 | `kura_plane_cut` | Corta un modelo por plano (`x`, `y`, `z`) con conectores (`dowel`, `peg`, `dovetail`). En headless las mitades se separan en X/Z para que no se solapen. |
+| `kura_split_for_bed` | Divide para imprimir: plan por cama (por defecto la del perfil) con planos desplazados a la sección más simple, conectores por unión, piezas "Objeto · A1" (letra = columna X, número = nivel Y, minúscula = fila Z), uniones con etiqueta y marcas de pareja grabadas opcionales (`labels: 'engraved'`). `dryRun: true` devuelve solo el plan. Las piezas quedan armadas en su lugar; la ubicación de impresión y la placa van en `metadata.split`. |
 | `kura_split_disconnected` | Separa islas geométricas desconectadas en objetos independientes. |
 | `kura_split_by_color` | Divide una malla pintada por color para impresión multimaterial. |
 | `kura_apply_texture` | Aplica textura superficial (`fuzzy`, `knurling`, `waves`, `honeycomb`, `grid`). |

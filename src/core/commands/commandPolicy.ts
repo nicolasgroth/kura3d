@@ -33,6 +33,8 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   boolean_operation: 'write',
   hollow_object: 'write',
   plane_cut: 'write',
+  // Con dryRun solo planifica, pero el comando es de escritura (la ejecución reemplaza el objeto).
+  split_for_bed: 'write',
   split_disconnected: 'write',
   split_by_color: 'write',
   apply_texture: 'write',
@@ -83,6 +85,7 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_boolean_operation: 'boolean_operation',
   kura_hollow_object: 'hollow_object',
   kura_plane_cut: 'plane_cut',
+  kura_split_for_bed: 'split_for_bed',
   kura_split_disconnected: 'split_disconnected',
   kura_split_by_color: 'split_by_color',
   kura_apply_texture: 'apply_texture',

@@ -1107,4 +1107,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_CONNECTOR_REDUCED': 'À la jonction {label} ({a}–{b}), le connecteur a été réduit à {count} de {size} mm pour tenir.',
   'engineWarning.SPLIT_LABEL_SKIPPED': 'La jonction {label} ({a}–{b}) n\'a pas la place pour une marque lisible de {min} mm : omise.',
   'engineWarning.SPLIT_EMPTY_CELLS': 'Cellules de la grille sans matière : {count}. Elles ont été omises.',
+  'progress.op.split_for_bed': 'Découpe pour le plateau',
+  'toast.splitForBedDone': 'Modèle découpé en {count} pièces avec {joints} jonctions',
+  'toast.splitForBedFits': 'Le modèle tient déjà sur le plateau : inutile de le découper',
 };
