@@ -68,6 +68,8 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         const { result, change } = await runEngine('splitForBed', { obj, plan, options: { ...request.execute, bed: request.bed } });
         assertCurrent([obj]);
         commitChange(change, { select: result.parts.map((p) => p.id) });
+        // El grupo dividido se encuadra siempre (aunque haya otros objetos en escena).
+        get().requestCameraPreset('focus', result.parts.map((p) => p.id));
         get().addToast(tr('toast.splitForBedDone', { count: result.parts.length, joints: result.joints.length }), 'success');
         reportEngineWarnings(change.warnings);
         return { plan, parts: result.parts, joints: result.joints, plateCount: result.plateCount, assembly: result.assembly };

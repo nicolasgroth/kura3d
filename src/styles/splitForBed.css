@@ -158,6 +158,35 @@
   color: var(--text-primary);
 }
 
+/* Acción secundaria destacada ("Continuar con N piezas"): borde y texto de acento. */
+.kura-btn.kura-split-continue {
+  align-self: flex-start;
+  margin: 4px 0 8px;
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: var(--bg-elevated);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.kura-btn.kura-split-continue:hover:not(:disabled) {
+  border-color: var(--accent-cyan);
+  background: var(--bg-hover);
+}
+
+.kura-btn.kura-split-continue:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-split-glue-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
 .kura-split-warnings li::marker {
   content: '! ';
   font-weight: 700;
@@ -236,9 +265,37 @@
   font-size: 12.5px;
 }
 
+/* Arriba y compacto: no tapa la base de la pieza encuadrada; se pliega a solo el icono y el botón. */
 .kura-split-notice {
-  bottom: 124px;
+  top: var(--kura-split-notice-top, 116px);
+  bottom: auto;
+  gap: 6px;
+  padding: 4px 6px;
+  font-size: 12px;
   border-left: 4px solid #d97706;
+}
+
+.kura-split-notice-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #b45309;
+  cursor: pointer;
+}
+
+.kura-split-notice-toggle:hover {
+  background: var(--bg-hover);
+}
+
+.kura-split-notice-toggle:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
 }
 
 .kura-split-assembly {
@@ -299,7 +356,17 @@
   }
 
   .kura-split-notice {
-    flex-wrap: wrap;
+    top: var(--kura-split-notice-top-mobile, 60px);
+    bottom: auto;
+    width: auto;
+    flex-wrap: nowrap;
+  }
+
+  .kura-split-notice > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
   }
 }
 

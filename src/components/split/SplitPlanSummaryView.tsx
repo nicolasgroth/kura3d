@@ -20,18 +20,31 @@ export const SplitPlanSummaryView: React.FC<{
   plan: BedSplitPlan | null;
   pending: boolean;
   checking: boolean;
-}> = ({ summary, plan, pending, checking }) => {
+  /** Lleva el foco al campo "mínimo de pared para conector". */
+  onLowerMinWall?: () => void;
+  /** Cambia la unión a solape de borde (sirve en pared delgada). */
+  onUseLap?: () => void;
+}> = ({ summary, plan, pending, checking, onLowerMinWall, onUseLap }) => {
   const language = useKuraStore((s) => s.language);
   const fmt = (n: number) => formatNumber(language, n, { maximumFractionDigits: 0 });
+  const fmt1 = (n: number) => formatNumber(language, n, { maximumFractionDigits: 1 });
   const dims = (v: readonly number[]) => v.map(fmt).join(' × ');
 
   const warnings: string[] = [];
+  const glueOnly = summary && plan?.connector ? summary.planesWithoutConnector : [];
   if (summary && plan) {
-    for (const p of summary.planesWithoutConnector) {
-      warnings.push(t(language, 'split.warn.planeNoConnector', { plane: t(language, 'split.planeName', { axis: p.axis.toUpperCase(), n: p.number }) }));
+    const min = fmt1(summary.minWallForConnectorMm ?? 0);
+    for (const p of glueOnly) {
+      const plane = t(language, 'split.planeName', { axis: p.axis.toUpperCase(), n: p.number });
+      warnings.push(
+        p.wallMm !== null
+          ? t(language, 'split.warn.planeGlueOnly', { plane, wall: fmt1(p.wallMm), min })
+          : t(language, 'split.warn.planeGlueOnlyNoWall', { plane, min }),
+      );
     }
     if (!plan.connector && summary.jointCount > 0) warnings.push(t(language, 'split.warn.noConnectors'));
     if (summary.rotatedCount > 0) warnings.push(t(language, 'split.warn.rotated', { count: summary.rotatedCount }));
+    if (summary.diagonalCount > 0) warnings.push(t(language, 'split.warn.diagonal', { count: summary.diagonalCount }));
   }
 
   return (
@@ -64,12 +77,22 @@ export const SplitPlanSummaryView: React.FC<{
             )}
             <dt>{t(language, 'split.sum.joints')}</dt>
             <dd>
-              {t(language, 'split.sum.jointsValue', {
-                count: summary.jointCount,
-                with: summary.jointCount - summary.jointsWithoutConnector,
-                without: summary.jointsWithoutConnector,
-              })}
+              {plan.connector
+                ? summary.jointsWithoutConnector > 0
+                  ? t(language, 'split.sum.jointsGlueValue', {
+                      count: summary.jointCount,
+                      with: summary.jointCount - summary.jointsWithoutConnector,
+                      glue: summary.jointsWithoutConnector,
+                    })
+                  : t(language, 'split.sum.jointsAllValue', { count: summary.jointCount })
+                : t(language, 'split.sum.jointsNoneValue', { count: summary.jointCount })}
             </dd>
+            {summary.tightest && (
+              <>
+                <dt>{t(language, 'split.sum.margin')}</dt>
+                <dd>{t(language, 'split.sum.marginValue', { code: summary.tightest.code, mm: fmt1(summary.tightest.marginMm) })}</dd>
+              </>
+            )}
           </dl>
           {warnings.length > 0 && (
             <ul className="kura-split-warnings">
@@ -77,6 +100,21 @@ export const SplitPlanSummaryView: React.FC<{
                 <li key={w}>{w}</li>
               ))}
             </ul>
+          )}
+          {glueOnly.length > 0 && (onLowerMinWall || onUseLap) && (
+            <p className="kura-split-glue-options">
+              <span>{t(language, 'split.glueOptions')}</span>
+              {onLowerMinWall && (
+                <button type="button" className="kura-btn kura-btn-sm" title={t(language, 'split.glueLowerMinTip')} onClick={onLowerMinWall}>
+                  {t(language, 'split.glueLowerMin')}
+                </button>
+              )}
+              {onUseLap && (
+                <button type="button" className="kura-btn kura-btn-sm" title={t(language, 'split.glueUseLapTip')} onClick={onUseLap}>
+                  {t(language, 'split.glueUseLap')}
+                </button>
+              )}
+            </p>
           )}
         </>
       )}

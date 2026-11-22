@@ -13,6 +13,7 @@ import React, { useEffect, useId, useMemo, useState } from 'react';
 import { Scissors } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import { useBoundOperationTarget } from './useBoundOperationTarget';
 import type { CutConnectorType, PlaneCutOptions } from '../types/kura';
 import { CONNECTOR_DEPTH_RANGE_MM, CONNECTOR_SIZE_RANGE_MM } from '../engine/cutConnectorChecks';
 import {
@@ -34,7 +35,6 @@ type FitState = 'idle' | 'checking' | 'ok' | 'bad' | 'plane';
 
 export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const language = useKuraStore((s) => s.language);
-  const selectedIds = useKuraStore((s) => s.selectedIds);
   const objects = useKuraStore((s) => s.objects);
   const planeCutObject = useKuraStore((s) => s.planeCutObject);
   const setCutPreview = useKuraStore((s) => s.setCutPreview);
@@ -52,8 +52,7 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
   const [fit, setFit] = useState<FitState>('idle');
   const failure = useOperationFailure(open);
 
-  const targetId = selectedIds[0] ?? objects[0]?.id;
-  const target = useMemo(() => objects.find((o) => o.id === targetId) ?? null, [objects, targetId]);
+  const { target, targetId, markConsumed } = useBoundOperationTarget(open, onClose);
   const range = useMemo(() => (target ? cutOffsetRange(target, axis) : { min: 0, max: 0 }), [target, axis]);
   const connectorKind = connectorType === 'none' ? null : connectorType;
   const fmt = (n: number) => formatNumber(language, n, { maximumFractionDigits: 1 });
@@ -202,6 +201,7 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
 
   const handleExecute = async () => {
     if (!targetId) return;
+    markConsumed();
     const { failed } = await failure.run(() =>
       planeCutObject(targetId, {
         axis,

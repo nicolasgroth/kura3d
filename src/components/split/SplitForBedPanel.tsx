@@ -20,6 +20,7 @@ import { OPERATION_DEFAULTS, OPERATION_RANGES as OR, SPLIT_HARD_MAX_PIECES } fro
 import { summarizeSplitPlan } from '../../core/scene/splitPlanSummary';
 import { formatNumber } from '../../utils/plural';
 import { OperationPanel } from '../OperationPanel';
+import { useBoundOperationTarget } from '../useBoundOperationTarget';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { keyboardFocusInViewport } from '../viewport/cutPlaneDrag';
@@ -36,8 +37,6 @@ const D = OPERATION_DEFAULTS.split;
 
 export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const language = useKuraStore((s) => s.language);
-  const selectedIds = useKuraStore((s) => s.selectedIds);
-  const objects = useKuraStore((s) => s.objects);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const customBed = useKuraStore((s) => s.customBedDimensions);
   const preview = useKuraStore((s) => s.splitPlanPreview);
@@ -72,8 +71,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const [maxPieces, setMaxPieces] = useState<'auto' | undefined>(undefined);
   const [overrides, setOverrides] = useState<Overrides>({});
 
-  const target = useMemo(() => objects.find((o) => o.id === selectedIds[0]) ?? null, [objects, selectedIds]);
-  const targetId = target?.id ?? null;
+  // Ligado al objeto con el que se abrió: clics en el visor no cambian el objetivo ni borran el plan.
+  const { target, targetId, markConsumed } = useBoundOperationTarget(open, onClose);
   const fmt = (n: number, digits = 1) => formatNumber(language, n, { maximumFractionDigits: digits });
 
   // Al abrir, la cama activa; al cambiar de pieza, sin planos a mano.
@@ -138,13 +137,15 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
     return o && plan && o.length === plan.planes.filter((p) => p.axis === axis).length ? o[index] : fallback;
   };
 
-  // Arrastre en el visor y flechas ↑/↓ con el foco en el visor (Mayús: ×10).
+  // Arrastre en el visor y flechas ↑/↓ (Mayús: ×10) sobre el plano elegido, con el foco en el visor
+  // o en su botón "Elegir" (el campo de posición ya las maneja por su cuenta).
   useEffect(() => {
     if (!open) return;
     const off = onSplitPlaneMove((m) => movePlane(m.axis, m.index, m.position));
     const onKey = (e: KeyboardEvent) => {
       if ((e.key !== 'ArrowUp' && e.key !== 'ArrowDown') || e.defaultPrevented || !activePlane || !plan) return;
-      if (!keyboardFocusInViewport(e.target)) return;
+      const onPick = e.target instanceof Element && Boolean(e.target.closest('[data-split-pick]'));
+      if (!onPick && !keyboardFocusInViewport(e.target)) return;
       const [axis, idx] = activePlane.split(':') as [SplitAxis, string];
       const p = plan.planes.find((q) => q.axis === axis && q.index === Number(idx));
       if (!p) return;
@@ -181,6 +182,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
 
   const handleSplit = async () => {
     if (!targetId) return;
+    markConsumed();
     const { result, failed } = await failure.run(() =>
       splitObjectForBed(targetId, {
         bed,
@@ -252,7 +254,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       {canRaise && (
         <button
           type="button"
-          className="kura-btn kura-btn-sm"
+          className="kura-btn kura-btn-sm kura-split-continue"
           title={t(language, 'split.continueWithTip', { max: SPLIT_HARD_MAX_PIECES })}
           onClick={() => setMaxPieces('auto')}
         >
@@ -385,7 +387,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
                       type="button"
                       className={`kura-btn kura-btn-sm kura-split-plane-pick${activePlane === key ? ' is-active' : ''}`}
                       aria-pressed={activePlane === key}
-                      title={t(language, 'split.planePickTip')}
+                      aria-label={t(language, 'split.planePickLabel', { axis: p.axis.toUpperCase(), n: p.index + 1 })}
+                      data-split-pick={key}
+                      title={t(language, 'split.planePickTip', { axis: p.axis.toUpperCase(), n: p.index + 1 })}
                       onClick={() => setActivePlane(activePlane === key ? null : key)}
                     >
                       {t(language, 'split.planePick')}
@@ -415,7 +419,14 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         )}
       </fieldset>
 
-      <SplitPlanSummaryView summary={summary} plan={plan} pending={pending} checking={checking} />
+      <SplitPlanSummaryView
+        summary={summary}
+        plan={plan}
+        pending={pending}
+        checking={checking}
+        onLowerMinWall={kind !== 'lap' && kind !== 'none' ? () => document.getElementById(`${uid}-minwall`)?.focus() : undefined}
+        onUseLap={kind !== 'lap' ? () => setKind('lap') : undefined}
+      />
     </OperationPanel>
   );
 };

@@ -13,6 +13,7 @@ import { Crosshair, FileUp, Type } from 'lucide-react';
 import { t } from '../../i18n';
 import { suggestProjectionFace, suggestProjectionWidth } from '../../engine/projectionSuggest';
 import { useKuraStore } from '../../store/useKuraStore';
+import { useBoundOperationTarget } from '../useBoundOperationTarget';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { OperationPanel } from '../OperationPanel';
@@ -32,7 +33,6 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
   onClose,
 }) => {
   const language = useKuraStore((s) => s.language);
-  const selectedIds = useKuraStore((s) => s.selectedIds);
   const objects = useKuraStore((s) => s.objects);
   const projectOnObjectSurface = useKuraStore((s) => s.projectOnObjectSurface);
   const failure = useOperationFailure(open);
@@ -48,8 +48,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
   const [offsetU, setOffsetU] = useState(0);
   const [offsetV, setOffsetV] = useState(0);
 
-  const targetId = selectedIds[0] ?? objects[0]?.id;
-  const target = objects.find((o) => o.id === targetId) ?? null;
+  const { target, targetId } = useBoundOperationTarget(open, onClose);
   const requestPreview = useKuraStore((s) => s.requestOperationPreview);
   const clearPreview = useKuraStore((s) => s.clearOperationPreview);
   const previewStatus = useKuraStore((s) => (s.operationPreview.key === 'project' ? s.operationPreview.status : 'idle'));

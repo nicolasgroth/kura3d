@@ -294,4 +294,17 @@ describe('disposición y armado', () => {
     for (const p of lay.placements) expect(['-y', '+y']).toContain(p.downFace);
     expect(lay.plateCount).toBe(Math.ceil(res.parts.length / 4));
   });
+
+  it('layoutSplitParts: una pieza esbelta (tubo Ø28 × 206 mm) se acuesta en vez de quedar de pie', () => {
+    const m = verticalTube(206, 14, 10);
+    const mesh = manifoldToMeshData(m);
+    m.delete();
+    const lay = layoutSplitParts([{ mesh }], { widthMm: 256, depthMm: 256, heightMm: 256 });
+    expect(['-y', '+y']).not.toContain(lay.placements[0].downFace);
+    // Una pieza baja y ancha sigue apoyada sobre su cara de corte.
+    const s = verticalTube(60, 50, 46);
+    const squat = manifoldToMeshData(s);
+    s.delete();
+    expect(['-y', '+y']).toContain(layoutSplitParts([{ mesh: squat }], { widthMm: 256, depthMm: 256, heightMm: 256 }).placements[0].downFace);
+  });
 });

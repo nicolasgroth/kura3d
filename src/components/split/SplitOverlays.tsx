@@ -8,8 +8,8 @@
  * @license MIT
  */
 
-import React, { useMemo } from 'react';
-import { Grid3x3 } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { AlertTriangle, Grid3x3 } from 'lucide-react';
 import { t } from '../../i18n';
 import { exceedsBed } from '../../core/scene/splitGroups';
 import { activeBed } from '../../store/splitCommandSchemas';
@@ -32,6 +32,7 @@ export const SplitFitNotice: React.FC = () => {
   const busy = useKuraStore((s) => Boolean(s.busyOperation));
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
 
+  const [collapsed, setCollapsed] = useState(false);
   const obj = selectedIds.length === 1 ? objects.find((o) => o.id === selectedIds[0]) ?? null : null;
   const size = useMemo<Vec3 | null>(() => {
     if (!obj || obj.isHole || obj.metadata?.split) return null;
@@ -43,8 +44,18 @@ export const SplitFitNotice: React.FC = () => {
   const dims = size.map((v) => formatNumber(language, v, { maximumFractionDigits: 0 })).join(' × ');
 
   return (
-    <div className="kura-split-notice" role="status">
-      <span>{t(language, 'split.notice', { size: dims })}</span>
+    <div className="kura-split-notice" role="status" data-collapsed={collapsed || undefined}>
+      <button
+        type="button"
+        className="kura-split-notice-toggle"
+        aria-expanded={!collapsed}
+        aria-label={t(language, collapsed ? 'split.noticeExpand' : 'split.noticeCollapse')}
+        title={t(language, collapsed ? 'split.noticeExpand' : 'split.noticeCollapse')}
+        onClick={() => setCollapsed((c) => !c)}
+      >
+        <AlertTriangle size={13} aria-hidden="true" />
+      </button>
+      {!collapsed && <span>{t(language, 'split.notice', { size: dims })}</span>}
       <button
         type="button"
         className="kura-btn kura-btn-sm kura-btn-primary"

@@ -12,7 +12,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { initManifoldEngine } from '../../engine';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { LanguageCode } from '../../types/kura';
-import { resetLocalAssistant, runLocalAssistant } from './localAssistant';
+import { t } from '../../i18n';
+import { humanError, resetLocalAssistant, runLocalAssistant } from './localAssistant';
 import { parseLocalPrompt } from './localParser';
 
 const exec = (req: Parameters<ReturnType<typeof useKuraStore.getState>['executeCommand']>[0]) =>
@@ -170,6 +171,28 @@ describe('local assistant on the real store', () => {
     expect(objects().filter((o) => o.isHole)).toHaveLength(0);
     expect(result.stats.volumeMm3).toBeLessThan(volumeBefore - 300);
     expect(done.assistantText).toMatch(/M6×1/);
+  });
+
+  it('threaded hole through a part taller than the max thread: threads the top and finishes plain, no internal errors', async () => {
+    await useKuraStore.getState().createPrimitive('cylinder', { radius: 15, height: 400 }, { name: 'Tubo alto' });
+    const tall = byName('Tubo alto');
+    useKuraStore.getState().setSelection([tall.id]);
+    const volumeBefore = tall.stats.volumeMm3;
+    await ask('agrégale un agujero roscado M6 en el centro');
+    const done = await ask('sí');
+    expect(done.assistantText).not.toMatch(/lengthMm|threadHole|∈|\.\./);
+    expect(done.assistantText).toContain(t('es', 'ai.local.threadHoleLimited', { thread: '300', total: '402', max: '300' }));
+    expect(done.executedTools.map((x) => x.name)).toEqual(['create_thread', 'transform_object', 'create_primitive', 'transform_object', 'boolean_operation']);
+    expect(objects().filter((o) => o.isHole)).toHaveLength(0);
+    const result = objects().find((o) => !o.isHole)!;
+    // Paso completo: al menos el volumen de un agujero de Ø ~5 mm por 400 mm.
+    expect(result.stats.volumeMm3).toBeLessThan(volumeBefore - Math.PI * 2.4 * 2.4 * 390);
+  }, 30_000);
+
+  it('humanError drops internal messages and trailing periods', () => {
+    expect(humanError('Parámetro "lengthMm" inválido: se esperaba number ∈ [1, 300].')).toBeNull();
+    expect(humanError('La pieza está bloqueada.')).toBe('La pieza está bloqueada');
+    expect(humanError(undefined)).toBeNull();
   });
 
   it('greeting: "¿qué tan imprimible es?" analyzes the selection without asking', async () => {

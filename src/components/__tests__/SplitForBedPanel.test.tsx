@@ -92,8 +92,13 @@ describe('SplitForBedPanel', () => {
     render(<SplitForBedPanel open onClose={() => undefined} />);
     ready(PLAN);
     expect(screen.getByTestId('split-piece-count').textContent).toContain('5');
-    expect(document.body.textContent).toContain(t('es', 'split.sum.jointsValue', { count: 4, with: 3, without: 1 }));
-    expect(document.body.textContent).toContain(t('es', 'split.noJoint'));
+    const text = document.body.textContent ?? '';
+    expect(text).toContain(t('es', 'split.sum.jointsGlueValue', { count: 4, with: 3, glue: 1 }));
+    expect(text).toContain('solo para pegar');
+    expect(text).not.toContain('sin conector');
+    // Margen real contra la cama de la pieza más justa y opciones para tener conectores.
+    expect(text).toContain(t('es', 'split.sum.marginValue', { code: 'A1', mm: '5' }));
+    expect(screen.getByRole('button', { name: t('es', 'split.glueUseLap'), hidden: true })).toBeTruthy();
     expect((splitButton() as HTMLButtonElement).disabled).toBe(false);
   });
 
@@ -113,6 +118,35 @@ describe('SplitForBedPanel', () => {
     expect(request.mock.calls.at(-1)![2].planePositions).toEqual({ y: [200, 432, 600, 800] });
     fireEvent.click(screen.getByRole('button', { name: new RegExp(t('es', 'split.resetPlanes')), hidden: true }));
     expect(request.mock.calls.at(-1)![2].planePositions).toEqual({});
+  });
+
+  it('cada "Elegir" tiene nombre propio y, tras elegir, ↑/↓ (Mayús ×10) mueven el plano con el foco en el botón', () => {
+    render(<SplitForBedPanel open onClose={() => undefined} />);
+    ready(PLAN);
+    const pick = screen.getByRole('button', { name: t('es', 'split.planePickLabel', { axis: 'Y', n: 2 }), hidden: true });
+    expect(screen.getAllByRole('button', { name: new RegExp(t('es', 'split.planePick')), hidden: true }).length).toBe(4);
+    expect(pick.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(pick);
+    expect(useKuraStore.getState().splitActivePlane).toBe('y:1');
+    expect(pick.getAttribute('aria-pressed')).toBe('true');
+    pick.focus();
+    fireEvent.keyDown(pick, { key: 'ArrowUp' });
+    expect(request.mock.calls.at(-1)![2].planePositions).toEqual({ y: [200, 401, 600, 800] });
+    fireEvent.keyDown(pick, { key: 'ArrowDown', shiftKey: true });
+    expect(request.mock.calls.at(-1)![2].planePositions).toEqual({ y: [200, 391, 600, 800] });
+    act(() => useKuraStore.setState({ splitActivePlane: null }));
+  });
+
+  it('queda ligado al objeto con que se abrió: deseleccionar no borra el plan; si el objeto desaparece, se cierra', () => {
+    const onClose = vi.fn();
+    render(<SplitForBedPanel open onClose={onClose} />);
+    ready(PLAN);
+    act(() => useKuraStore.setState({ selectedIds: [] }));
+    expect(screen.getByTestId('split-piece-count').textContent).toContain('5');
+    expect(document.body.textContent).toContain(t('es', 'split.target', { name: 'Tubería' }));
+    expect(onClose).not.toHaveBeenCalled();
+    act(() => useKuraStore.setState({ objects: [] }));
+    expect(onClose).toHaveBeenCalled();
   });
 
   it('con el tope superado ofrece continuar con las piezas necesarias y pide maxPieces auto', () => {
