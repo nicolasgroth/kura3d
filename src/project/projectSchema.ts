@@ -90,6 +90,16 @@ const parametric = shape({
   kind: oneOf('primitive', 'thread'), meshFingerprint: (v) => str(v) && v.length <= 64, thread: optional(threadOptions),
 });
 
+// Pieza de "dividir para imprimir" (`metadata.split`): validación estricta, campo opcional.
+const nat3 = (v: unknown) => Array.isArray(v) && v.length === 3 && v.every((n) => Number.isInteger(n) && n >= 0 && n < 4096);
+const splitTransform = shape({ position: vec3, rotation: vec3 });
+const splitMetadata = shape({
+  groupId: id, code: (v) => str(v) && v.length <= 16, cell: nat3, assembly: splitTransform,
+  print: shape({ position: vec3, rotation: vec3, plate: (v) => Number.isInteger(v) && (v as number) >= 0, downFace: oneOf('+x', '-x', '+y', '-y', '+z', '-z') }),
+  jointLabels: (v) => Array.isArray(v) && v.length <= 4096 && v.every((l) => str(l) && l.length <= 16),
+});
+const objectExtra = shape({ split: optional(splitMetadata) });
+
 export type ObjectMetadata = Omit<SceneObject, 'mesh' | 'stats'>;
 const metadataFields = {
   id, name: str,
@@ -104,6 +114,7 @@ const metadataFields = {
   isHole: bool, visible: bool, locked: bool,
   hollow: optional(shape({ enabled: bool, wallThickness: finite, drainHole: optional(bool), drainHoleRadius: numberOption })),
   texture: optional(shape({ pattern: oneOf('none', 'fuzzy', 'knurling', 'waves', 'honeycomb', 'grid'), depth: finite, scale: finite })),
+  metadata: optional(objectExtra),
 } satisfies Record<keyof ObjectMetadata, Rule>;
 
 export const validStoredObject = shape({ ...metadataFields, mesh: nat }) as

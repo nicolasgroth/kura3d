@@ -31,6 +31,8 @@ export interface ResultNaming {
   hull(targets: SceneObject[]): string;
   thread(options: ThreadOptions): string;
   structurePart(source: SceneObject, regions: DetectedStructureRegion[], region: DetectedStructureRegion): string;
+  /** Pieza de "dividir para imprimir" por su código de rejilla ("A1", "B2a"). */
+  splitPart(source: SceneObject, code: string): string;
 }
 
 export type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
@@ -59,5 +61,6 @@ export function createKeyedNaming(
     hull: (targets) => tr('object.name.hull', { count: targets.length }),
     thread: (o) => `${tr(`store.thread.${o.kind}` as TranslationKey)} M${o.diameterMm}×${o.pitchMm}`,
     structurePart: (src, regions, region) => `${src.name} — ${labels.structure(regions, region.id)}`,
+    splitPart: (src, code) => `${src.name} · ${code}`,
   };
 }

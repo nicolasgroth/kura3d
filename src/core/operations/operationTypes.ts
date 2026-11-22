@@ -29,6 +29,8 @@ export interface OperationContext {
   policy: ObjectBuildPolicy;
   newId: () => string;
   naming: ResultNaming;
+  /** Avance de operaciones largas (fase legible por máquina, p. ej. `cut:3/8`). Opcional. */
+  onProgress?: (phase: string) => void;
 }
 
 export function emptyChange(): SceneChange {

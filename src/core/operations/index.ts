@@ -13,3 +13,4 @@ export * from './meshOperations';
 export * from './partOperations';
 export * from './creationOperations';
 export * from './alignOperations';
+export * from './splitOperations';

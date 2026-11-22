@@ -27,6 +27,7 @@ import { createThread } from './creationOperations';
 import { eraseSphere, hollowObject, projectOnSurface, refineObject, simplifyObject } from './meshOperations';
 import type { OperationContext } from './operationTypes';
 import { extractStructure, generateMold, planeCut, splitDisconnected, splitStructures } from './partOperations';
+import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 
@@ -98,6 +99,10 @@ export const ENGINE_TASKS = {
     splitStructures(ctx, a.obj, a.segmentation),
   thread: (ctx: OperationContext, a: { options: ThreadOptions; placement: { name?: string; position?: Vec3 } }) =>
     createThread(ctx, a.options, a.placement),
+  splitPlan: (ctx: OperationContext, a: { obj: SceneObject; bed: engine.SplitBed; options?: engine.BedSplitPlanOptions }) =>
+    planSplitForBed(ctx, a.obj, a.bed, a.options),
+  splitForBed: (ctx: OperationContext, a: { obj: SceneObject; plan: engine.BedSplitPlan; options: ExecuteBedSplitOptions }) =>
+    executeBedSplit(ctx, a.obj, a.plan, a.options),
   export: (_ctx: OperationContext, a: ExportTaskArgs) => exportSceneFiles(a),
   printability: (_ctx: OperationContext, a: PrintabilityTaskArgs) =>
     engine.analyzePrintability(a.obj, a.bed, a.materialId, a.infillPercent, a.overhangAngleDeg, a.minWallMm),

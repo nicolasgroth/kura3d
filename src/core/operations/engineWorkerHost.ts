@@ -29,7 +29,12 @@ export async function handleEngineRequest(req: EngineTaskRequest, post: PostResp
     await initManifoldEngine();
     post({ type: 'progress', id: req.id, phase: 'compute' }, []);
     const { naming, calls } = createRecordingNaming();
-    const ctx = { policy: req.policy, newId: () => makeId('mesh'), naming };
+    const ctx = {
+      policy: req.policy,
+      newId: () => makeId('mesh'),
+      naming,
+      onProgress: (phase: string) => post({ type: 'progress', id: req.id, phase }, []),
+    };
     const result = await runEngineTaskInProcess(ctx, req.task as EngineTaskName, req.args as never);
     post({ type: 'done', id: req.id, result, names: calls }, collectTransferables(result));
   } catch (err) {

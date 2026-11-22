@@ -726,6 +726,28 @@ export interface SceneObject {
     volumeMm3: number;
     dimensionsMm: Vec3;
   };
+  /** Datos auxiliares de operaciones (p. ej. pieza de "dividir para imprimir"); se guardan en `.kura`. */
+  metadata?: SceneObjectMetadata;
+}
+
+/** Datos auxiliares de un objeto de escena. */
+export interface SceneObjectMetadata {
+  split?: SplitPartMetadata;
+}
+
+/** Pieza producida por "dividir para imprimir" (`split_for_bed`). */
+export interface SplitPartMetadata {
+  /** ID del objeto original: agrupa las piezas del mismo lote. */
+  groupId: string;
+  /** Código en la rejilla: letra = columna X, número = nivel Y, minúscula = fila Z ("A1", "B2a"). */
+  code: string;
+  cell: [number, number, number];
+  /** Transformación en el modelo armado (malla local con centro X/Z en 0 y base en Y=0). */
+  assembly: { position: Vec3; rotation: Vec3 };
+  /** Transformación de impresión (relativa a su placa, cama centrada en el origen) y placa virtual. */
+  print: { position: Vec3; rotation: Vec3; plate: number; downFace: string };
+  /** Etiquetas de las uniones de la pieza (las grabadas si se pidieron marcas). */
+  jointLabels: string[];
 }
 
 /** Perfil de impresora 3D o espacio de trabajo libre. */
