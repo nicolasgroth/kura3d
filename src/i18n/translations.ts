@@ -14,6 +14,7 @@ import { TRANSLATIONS_FR } from './locales/fr';
 import { TRANSLATIONS_HI } from './locales/hi';
 import { TRANSLATIONS_ZH } from './locales/zh';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
+import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -22,6 +23,7 @@ import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
  */
 export const TRANSLATIONS_ES = {
   ...PREVIEW_ES,
+  ...SPLITJOINTS_ES,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
@@ -1364,6 +1366,7 @@ export type TranslationKey = keyof typeof TRANSLATIONS_ES;
  */
 export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PREVIEW_EN,
+  ...SPLITJOINTS_EN,
   'app.name': 'Kura3D',
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',

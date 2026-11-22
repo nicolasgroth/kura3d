@@ -102,6 +102,19 @@ describe('SplitForBedPanel', () => {
     expect((splitButton() as HTMLButtonElement).disabled).toBe(false);
   });
 
+  it('ofrece Tarugo suelto con su ayuda y cuenta los tarugos del plan en el resumen', () => {
+    render(<SplitForBedPanel open onClose={() => undefined} />);
+    const select = screen.getByLabelText(t('es', 'dialog.cut.connectorType'), { selector: 'select' }) as HTMLSelectElement;
+    expect(Array.from(select.options).some((o) => o.value === 'loose-dowel')).toBe(true);
+    fireEvent.change(select, { target: { value: 'loose-dowel' } });
+    expect(request.mock.calls.at(-1)![2].connector).toMatchObject({ type: 'loose-dowel' });
+    expect(screen.getByText(t('es', 'split.looseDowelHelp'))).toBeTruthy();
+    expect(select.getAttribute('aria-describedby')).toBeTruthy();
+    ready({ ...PLAN, connector: { type: 'loose-dowel', size: 4, depth: 6, tolerance: 0.25, count: 2 } });
+    // 4 uniones, 1 sin conector (plano que no lo admite): 3 × 2 tarugos de Ø8 × 11,5.
+    expect(screen.getByTestId('split-dowel-count').textContent).toBe(t('es', 'split.sum.dowelsValue', { count: 6, d: '8', l: '11,5' }));
+  });
+
   it('deshabilita Dividir con el motivo si el motor no acepta el plan', () => {
     render(<SplitForBedPanel open onClose={() => undefined} />);
     ready(null, 'Harían falta unas 900 piezas');

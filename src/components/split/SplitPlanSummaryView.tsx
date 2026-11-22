@@ -11,6 +11,7 @@
 import React from 'react';
 import { t } from '../../i18n';
 import type { BedSplitPlan } from '../../engine';
+import { looseDowelLength } from '../../engine/split/splitLooseDowel';
 import type { SplitPlanSummary } from '../../core/scene/splitPlanSummary';
 import { useKuraStore } from '../../store/useKuraStore';
 import { formatNumber } from '../../utils/plural';
@@ -88,6 +89,18 @@ export const SplitPlanSummaryView: React.FC<{
                   : t(language, 'split.sum.jointsAllValue', { count: summary.jointCount })
                 : t(language, 'split.sum.jointsNoneValue', { count: summary.jointCount })}
             </dd>
+            {plan.connector?.type === 'loose-dowel' && summary.jointCount > summary.jointsWithoutConnector && (
+              <>
+                <dt>{t(language, 'split.sum.dowels')}</dt>
+                <dd data-testid="split-dowel-count">
+                  {t(language, 'split.sum.dowelsValue', {
+                    count: (summary.jointCount - summary.jointsWithoutConnector) * plan.connector.count,
+                    d: fmt1(2 * plan.connector.size),
+                    l: fmt1(looseDowelLength(plan.connector)),
+                  })}
+                </dd>
+              </>
+            )}
             {summary.tightest && (
               <>
                 <dt>{t(language, 'split.sum.margin')}</dt>

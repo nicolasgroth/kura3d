@@ -14,6 +14,7 @@ import { type InspectorSectionProps } from './inspectorTypes';
 import { ModulesPanel } from './ModulesPanel';
 import { HollowPanel } from './HollowPanel';
 import { TexturePanel } from './TexturePanel';
+import { SplitJointsSection } from '../split/SplitJointsSection';
 import { SplitPartInfo } from '../split/SplitPartInfo';
 
 /** Sección 5: operaciones 3D determinísticas y módulos dinámicos. */
@@ -74,6 +75,7 @@ export const OperationsSection: React.FC<InspectorSectionProps> = ({ primary, ui
           <span>{t(language, 'split.open')}</span>
         </button>
         <SplitPartInfo primary={primary} />
+        <SplitJointsSection primary={primary} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <button
             type="button"
