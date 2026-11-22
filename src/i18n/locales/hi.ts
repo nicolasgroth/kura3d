@@ -569,7 +569,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.cut.offset': 'केंद्र से ऑफ़सेट',
   'dialog.cut.connectorType': 'कनेक्टर प्रकार',
   'dialog.cut.connector.none': 'बिना कनेक्टर (साफ़ कट)',
-  'dialog.cut.connector.dowel': 'बेलनाकार डॉवेल (Dowel)',
+  'dialog.cut.connector.dowel': 'बेलनाकार डॉवेल',
   'dialog.cut.connector.peg': 'वर्गाकार पिन (Peg)',
   'dialog.cut.connector.dovetail': 'डवटेल जोड़ (Dovetail)',
   'dialog.cut.connectorSize': 'कनेक्टर आकार',

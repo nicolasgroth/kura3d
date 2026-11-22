@@ -569,7 +569,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.cut.offset': 'Décalage depuis le centre',
   'dialog.cut.connectorType': 'Type de connecteur',
   'dialog.cut.connector.none': 'Sans connecteurs (coupe nette)',
-  'dialog.cut.connector.dowel': 'Tourillon cylindrique (Dowel)',
+  'dialog.cut.connector.dowel': 'Tourillon cylindrique',
   'dialog.cut.connector.peg': 'Tenon carré (Peg)',
   'dialog.cut.connector.dovetail': 'Queue d’aronde (Dovetail)',
   'dialog.cut.connectorSize': 'Taille du connecteur',

@@ -22,6 +22,8 @@ import { t } from '../../i18n';
 import { type CameraPresetType, useKuraStore } from '../../store/useKuraStore';
 import { PaintToolbar } from './PaintToolbar';
 import { ToastStack } from '../ToastStack';
+import { SectionViewNotice } from './SectionViewNotice';
+import '../../styles/sectionNotice.css';
 import { formatDimension } from '../../utils/units';
 import { tCount } from '../../utils/plural';
 
@@ -233,6 +235,8 @@ export const ViewportHudTop: React.FC = () => {
         </div>
       )}
 
+      {/* Aviso de sección y toasts en la misma columna: se apilan en vez de montarse. */}
+      <SectionViewNotice />
       <ToastStack />
     </div>
   );

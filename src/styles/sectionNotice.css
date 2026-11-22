@@ -1,0 +1,15 @@
+/**
+ * @file src/styles/sectionNotice.css
+ * @description El aviso de vista de sección va en la columna superior del visor, junto a los
+ * toasts: ambos se apilan en vez de superponerse.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-section-notice {
+  position: static;
+  transform: none;
+  align-self: center;
+  pointer-events: auto;
+}

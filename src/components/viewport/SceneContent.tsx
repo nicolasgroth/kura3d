@@ -99,9 +99,12 @@ export const SceneContent: React.FC<{
 
   // Con "colocar con clic" activo el gizmo no debe capturar clics cerca del centro de la pieza.
   const pickingSurface = useKuraStore((s) => s.surfacePick !== null);
+  // Con un panel de operación abierto (corte, molde, proyección…) el gizmo de mover se oculta.
+  const operationOpen = useKuraStore((s) => s.activeDialog !== null);
   const showGizmo =
     activeTool === 'select' &&
     !pickingSurface &&
+    !operationOpen &&
     Boolean(primaryObj) &&
     Boolean(activeTargetGroup) &&
     !primaryObj?.locked &&

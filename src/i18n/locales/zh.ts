@@ -569,7 +569,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.cut.offset': '距中心偏移量',
   'dialog.cut.connectorType': '连接件类型',
   'dialog.cut.connector.none': '无连接件（平滑切割）',
-  'dialog.cut.connector.dowel': '圆柱定位销 (Dowel)',
+  'dialog.cut.connector.dowel': '圆柱定位销',
   'dialog.cut.connector.peg': '方形插销 (Peg)',
   'dialog.cut.connector.dovetail': '燕尾榫 (Dovetail)',
   'dialog.cut.connectorSize': '连接件尺寸',

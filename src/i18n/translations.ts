@@ -576,7 +576,7 @@ export const TRANSLATIONS_ES = {
   'dialog.cut.offset': 'Desplazamiento desde el centro',
   'dialog.cut.connectorType': 'Tipo de conector',
   'dialog.cut.connector.none': 'Sin conectores (corte limpio)',
-  'dialog.cut.connector.dowel': 'Tarugo cilíndrico (Dowel)',
+  'dialog.cut.connector.dowel': 'Tarugo cilíndrico',
   'dialog.cut.connector.peg': 'Pin cuadrado (Peg)',
   'dialog.cut.connector.dovetail': 'Cola de milano (Dovetail)',
   'dialog.cut.connectorSize': 'Tamaño del conector',

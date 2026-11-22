@@ -569,7 +569,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.cut.offset': 'Versatz vom Zentrum',
   'dialog.cut.connectorType': 'Verbindertyp',
   'dialog.cut.connector.none': 'Ohne Verbinder (sauberer Schnitt)',
-  'dialog.cut.connector.dowel': 'Zylindrischer Dübel (Dowel)',
+  'dialog.cut.connector.dowel': 'Zylindrischer Dübel',
   'dialog.cut.connector.peg': 'Vierkantstift (Peg)',
   'dialog.cut.connector.dovetail': 'Schwalbenschwanz (Dovetail)',
   'dialog.cut.connectorSize': 'Verbindergröße',

@@ -10,7 +10,6 @@
 import React from 'react';
 import { BooleanPreviewBar } from './BooleanPreviewBar';
 import { OperationProgressBar } from './OperationProgressBar';
-import { SectionViewNotice } from './SectionViewNotice';
 import { ViewportHudBottom } from './ViewportHudBottom';
 import { ViewportProTip } from './ViewportProTip';
 
@@ -19,7 +18,6 @@ export const ViewportOverlays: React.FC = () => (
     <ViewportProTip />
     <ViewportHudBottom />
     <BooleanPreviewBar />
-    <SectionViewNotice />
     <OperationProgressBar />
   </>
 );
