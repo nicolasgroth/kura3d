@@ -1,6 +1,6 @@
 /**
- * @file src/ai/qaRedactEvasion.test.ts
- * @description QA adversarial de `redactSecrets` y `validateToolCall`: evasiones por codificación, separadores,
+ * @file src/ai/redactSecretsEvasion.test.ts
+ * @description Pruebas adversariales de `redactSecrets` y `validateToolCall`: evasiones por codificación, separadores,
  * formatos de credenciales de otros proveedores y llamadas de herramienta con parámetros al borde.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -46,7 +46,7 @@ const leaks = (out: string, k: string) => {
   return false;
 };
 
-describe('QA redactSecrets: eco de la clave con transformaciones', () => {
+describe('redactSecrets: eco de la clave con transformaciones', () => {
   const results = echoes(KEY).map(([name, text]) => ({ name, text, out: redactSecrets(text, KEY) }));
 
   // Las brechas de clave truncada o enmascarada se cerraron: se borra cualquier fragmento de 16+ caracteres.
@@ -55,7 +55,7 @@ describe('QA redactSecrets: eco de la clave con transformaciones', () => {
   });
 });
 
-describe('QA redactSecrets: credenciales de otros proveedores sin la clave conocida', () => {
+describe('redactSecrets: credenciales de otros proveedores sin la clave conocida', () => {
   const samples: Case[] = [
     ['openai sk-proj', 'x sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz0123456789'],
     ['anthropic', 'x sk-ant-api03-AbCdEf_GhIj-KlMnOpQrStUvWxYz0123456789'],
@@ -87,24 +87,29 @@ describe('QA redactSecrets: credenciales de otros proveedores sin la clave conoc
     expect(out, `credencial visible: ${out}`).not.toContain(m![0].slice(0, 12));
   });
 
-  it('clave de caracteres repetidos sobre 100k repeticiones: tiempo lineal', () => {
-    const t0 = performance.now();
+  // Los topes absolutos en ms viven en redactSecretsTiming.perf.test.ts (npm run test:perf).
+  it('clave de caracteres repetidos sobre 100k repeticiones: la borra entera', () => {
     const out = redactSecrets('aaaa'.repeat(25_000) + ' fin', 'a'.repeat(40));
     expect(out).toBe('[redacted] fin');
-    redactSecrets('ab'.repeat(50_000), 'ab'.repeat(30) + 'c');
-    expect(performance.now() - t0).toBeLessThan(1000);
+    expect(redactSecrets('ab'.repeat(50_000), 'ab'.repeat(30) + 'c')).not.toContain('ab'.repeat(8));
   });
 
-  it('tiempo lineal con entradas de 5 MB y con claves hostiles', () => {
-    const t0 = performance.now();
-    redactSecrets('a '.repeat(2_500_000) + 'Bearer ' + 'x'.repeat(1_000_000), 'a b c d e f g h');
-    redactSecrets('s'.repeat(5_000_000), 'ssssssssssssssssssssss');
-    redactSecrets('k'.repeat(5_000_000), 'sk-' + 'k'.repeat(105));
-    expect(performance.now() - t0).toBeLessThan(4000);
+  it('crece de forma lineal: duplicar la entrada no cuadruplica el tiempo', () => {
+    const time = (n: number) => {
+      const text = 's'.repeat(n);
+      const t0 = performance.now();
+      redactSecrets(text, 'ssssssssssssssssssssss');
+      return performance.now() - t0;
+    };
+    time(200_000); // calentamiento del JIT
+    const small = Math.min(time(500_000), time(500_000));
+    const big = Math.min(time(1_000_000), time(1_000_000));
+    // Lineal ≈ 2×; cuadrático ≈ 4×. Margen amplio contra el ruido y piso de 5 ms.
+    expect(big).toBeLessThan(Math.max(5, small) * 3.5);
   });
 });
 
-describe('QA validateToolCall: bordes y evasiones', () => {
+describe('validateToolCall: bordes y evasiones', () => {
   const bad: Array<[string, unknown, unknown]> = [
     ['nombre con prototipo', '__proto__', {}],
     ['nombre constructor', 'constructor', {}],

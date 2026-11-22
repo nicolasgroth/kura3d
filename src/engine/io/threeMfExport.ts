@@ -189,10 +189,17 @@ export function exportSceneTo3MF(
     `  <Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" />\n` +
     `</Relationships>\n`;
 
-  return zipSync({
-    '[Content_Types].xml': strToU8(contentTypes),
-    '_rels/.rels': strToU8(rels),
-    '3D/3dmodel.model': model.toBytes(),
-    'Metadata/model_settings.config': strToU8(settings),
-  });
+  // Fecha fija en las entradas del ZIP: la misma escena produce siempre los mismos bytes.
+  return zipSync(
+    {
+      '[Content_Types].xml': strToU8(contentTypes),
+      '_rels/.rels': strToU8(rels),
+      '3D/3dmodel.model': model.toBytes(),
+      'Metadata/model_settings.config': strToU8(settings),
+    },
+    { mtime: ZIP_FIXED_MTIME },
+  );
 }
+
+/** Fecha de las entradas del ZIP (la mínima del formato DOS): salida determinista. */
+const ZIP_FIXED_MTIME = new Date(1980, 0, 1, 0, 0, 0);

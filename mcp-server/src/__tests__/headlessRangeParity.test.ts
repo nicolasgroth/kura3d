@@ -1,8 +1,8 @@
 /**
- * @file mcp-server/src/__tests__/qaHeadlessLimits.test.ts
- * @description QA de paridad de rangos entre el servidor MCP headless y el Command Bus de la app: todo valor que el bus
+ * @file mcp-server/src/__tests__/headlessRangeParity.test.ts
+ * @description Paridad de rangos entre el servidor MCP headless y el Command Bus de la app: todo valor que el bus
  * rechaza (`src/store/commandSchemas.ts`, `transformLimits.ts`) debe rechazarse también en modo headless con error
- * explícito y sin dejar geometría descomunal en la escena. Las brechas que QA marcó con `it.fails` ya están cerradas (rangos de `operationLimits`).
+ * explícito y sin dejar geometría descomunal en la escena. Las brechas marcadas con `it.fails` ya están cerradas (rangos de `operationLimits`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -45,7 +45,7 @@ async function session() {
 
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
 
-describe('QA MCP headless: parámetros inválidos con error explícito y estado intacto', () => {
+describe('MCP headless: parámetros inválidos con error explícito y estado intacto', () => {
   // BRECHA (mayor): el headless acepta transformaciones que el bus rechaza (escala 0/negativa/1e9, coordenadas 1e300).
   it.each([
     ['transform escala 0', 'kura_transform_object', { scale: [0, 1, 1] }],
@@ -80,7 +80,7 @@ describe('QA MCP headless: parámetros inválidos con error explícito y estado 
   });
 });
 
-describe('QA MCP headless: rangos que el bus de la app ya rechaza (brechas conocidas)', () => {
+describe('MCP headless: rangos que el bus de la app ya rechaza (brechas conocidas)', () => {
   const gaps: Array<[string, string, Record<string, unknown>]> = [
     ['texture depth 51 (bus ≤ 50)', 'kura_apply_texture', { pattern: 'fuzzy', depth: 1e9, scale: 1 }],
     ['import_svg targetWidth 1e9 (bus ≤ 10000)', 'kura_import_svg', { svgContent: SVG, targetWidth: 1e9 }],

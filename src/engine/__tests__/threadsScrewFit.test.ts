@@ -1,6 +1,6 @@
 /**
- * @file src/engine/__tests__/qaThreadsScrew.test.ts
- * @description QA independiente de roscas: perno + tuerca M3/M8/M20 medidos de dos formas (a) movimiento de
+ * @file src/engine/__tests__/threadsScrewFit.test.ts
+ * @description Medición independiente de roscas: perno + tuerca M3/M8/M20 medidos de dos formas (a) movimiento de
  * tornillo real (girar α y avanzar P·α/2π) y (b) solo giro sin avance axial; mide diámetros mayor/menor
  * del perno y de la tuerca contra ISO 261 y comprueba la lateralidad (hélice derecha).
  * La disputa se resuelve en el informe: solo (a) representa enroscar; (b) se mide como referencia.
@@ -28,7 +28,7 @@ function radialRange(positions: Float32Array, y0: number, y1: number) {
   return { lo, hi };
 }
 
-describe('QA roscas: lateralidad y diámetros', () => {
+describe('roscas: lateralidad y diámetros', () => {
   it('el perno M8 es de hélice derecha: la cresta sube con el ángulo Z→X (regla de la mano derecha sobre +Y)', async () => {
     const bolt = await createMetricThread({ kind: 'bolt', diameterMm: 8, lengthMm: 20, clearanceMm: 0, includeHead: false });
     const p = bolt.positions;
@@ -75,7 +75,7 @@ describe('QA roscas: lateralidad y diámetros', () => {
   });
 });
 
-describe('QA roscas: perno + tuerca, (a) movimiento de tornillo vs (b) solo giro', () => {
+describe('roscas: perno + tuerca, (a) movimiento de tornillo vs (b) solo giro', () => {
   it.each([[3, 0.2], [3, 0.25], [8, 0.2], [8, 0.25], [20, 0.2], [20, 0.25]])(
     'M%i holgura %f: (a) interferencia ~0 enroscando; (b) se reporta',
     async (d, clearanceMm) => {

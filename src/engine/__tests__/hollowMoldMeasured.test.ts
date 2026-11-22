@@ -1,6 +1,6 @@
 /**
- * @file src/engine/__tests__/qaHollowMold.test.ts
- * @description QA independiente de ahuecado, moldes y refinado con mediciones propias (distancia
+ * @file src/engine/__tests__/hollowMoldMeasured.test.ts
+ * @description Medición independiente de ahuecado, moldes y refinado con mediciones propias (distancia
  * punto–triángulo exacta, sin usar el campo de distancias del motor): espesor mínimo real de pared,
  * cavidad que no toca el exterior, moldes sin vacíos sellados y núcleo contenido en el maestro,
  * refinado que conserva dimensiones.
@@ -96,7 +96,7 @@ async function plateWithHole(): Promise<MeshData> {
   return (await runBooleanOperation(a, b, 'subtract')).mesh;
 }
 
-describe('QA ahuecado: pared real y cavidad interior', () => {
+describe('ahuecado: pared real y cavidad interior', () => {
   const cases: Array<[string, () => Promise<MeshData>, number]> = [
     ['toro', () => createPrimitiveMesh('torus', { radius: 20, tubeRadius: 8, segments: 48 }), 2],
     ['toro pared 1', () => createPrimitiveMesh('torus', { radius: 20, tubeRadius: 8, segments: 48 }), 1],
@@ -141,7 +141,7 @@ describe('QA ahuecado: pared real y cavidad interior', () => {
   }, 60_000);
 });
 
-describe('QA moldes: sin vacíos sellados, núcleo dentro del maestro', () => {
+describe('moldes: sin vacíos sellados, núcleo dentro del maestro', () => {
   const base = { wallMarginMm: 6, boxWallMm: 3, splitAxis: 'x' as const, pourSpout: true, pourSpoutRadiusMm: 4, keyToleranceMm: 0.25, cavityWallMm: 3 };
 
   async function masterTorus(): Promise<SceneObject> {
@@ -206,7 +206,7 @@ describe('QA moldes: sin vacíos sellados, núcleo dentro del maestro', () => {
   }, 120_000);
 });
 
-describe('QA refinado: dimensiones intactas', () => {
+describe('refinado: dimensiones intactas', () => {
   it.each([['esfera', 'sphere'], ['toro', 'torus'], ['caja', 'box']] as const)('%s: refinar (con y sin suavizado) conserva dimensiones en 0.1 mm', async (_n, type) => {
     const mesh = await createPrimitiveMesh(type, type === 'torus' ? { radius: 20, tubeRadius: 7, segments: 32 } : type === 'sphere' ? { radius: 15, segments: 24 } : { width: 30, height: 20, depth: 10 });
     const obj = makeObject('r', mesh);
