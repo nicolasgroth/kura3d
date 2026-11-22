@@ -10,10 +10,10 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 
 import { type ThreeEvent, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { X } from 'lucide-react';
-import * as engine from '../../engine';
 import { useKuraStore } from '../../store/useKuraStore';
 import { MATERIAL_PRESETS, type SceneObject, type Vec3 } from '../../types/kura';
 import { updateGeometryFaceColors } from '../../engine/paintColorAttribute';
+import { buildViewportGeometry } from './creasedGeometry';
 import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
 
 /** Renderiza un SceneObject con caché de BufferGeometry, materiales PBR, sección Rayos X y voladizos. */
@@ -75,7 +75,7 @@ export const SceneMeshItem: React.FC<{
     const baseColor = obj.isHole ? '#f97316' : obj.color;
 
     const geometry = useMemo(() => {
-      return engine.createBufferGeometryFromMeshData(obj.mesh, hasFaceColors ? baseColor : undefined);
+      return buildViewportGeometry(obj.mesh, hasFaceColors ? baseColor : undefined);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [obj.mesh.positions, obj.mesh.indices, obj.mesh.normals, hasFaceColors]);
 
