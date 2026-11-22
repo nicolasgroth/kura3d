@@ -1,9 +1,9 @@
 /**
  * @file src/engine/svgContourPack.ts
  * @description Contornos SVG ya leídos (grupos → anillos → puntos 2D) empaquetados en vistas
- * tipadas para viajar al Worker del motor como buffers transferibles, y su desempaquetado. Los
- * contornos se leen en el hilo principal porque `THREE.SVGLoader` necesita `DOMParser`, que el
- * Worker no tiene; la extrusión con Manifold corre en el Worker.
+ * tipadas para viajar al Worker del motor como buffers transferibles, y su desempaquetado. El
+ * lector (`svg/svgContours.ts`) da el mismo resultado en cualquier hilo; empaquetar sirve para
+ * leer una vez y extruir con Manifold en el Worker.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

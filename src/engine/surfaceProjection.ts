@@ -34,7 +34,7 @@ import {
   createPrimitiveMesh,
   normalizeMeshToBed,
 } from './primitives';
-import { extrudeSvgToMesh } from './advancedGeometry';
+import { extrudeSvgToMesh } from './svg/svgExtrude';
 import { composeFlushInlaySurface } from './inlaySurface';
 import { closeComposedProjectionMesh, closedProjectionMesh } from './projectionCleanup';
 
