@@ -259,3 +259,27 @@ Tras la ronda 4 se aplicó la lección de proceso: todo lo nuevo pasó por QA in
 Corregido en dos lotes (motor: registro global de conectores y cierre del armado; interfaz: los 7 puntos). Estado tras la corrección: 1484 pruebas frontend, 123 MCP, 37 Rust, sin brechas `it.fails`. Pendiente: re-verificación de QA y ronda 5.
 
 Consumo de agentes del día (modelo · duración · tokens): cierre de armado (Opus · 41 min · 292 k), eje Z (Opus · 30 min · 268 k), recientes seguros (Sonnet · 8 min · 125 k), restos del eje Z (Sonnet · 6 min · 118 k), MCP alineado (Opus · 21 min · 275 k), interfaz de armado (Sonnet · 22 min · 271 k), islas y marcas (Opus · 22 min · 235 k), QA motor (Sonnet · 23 min · 274 k), QA interfaz (Sonnet · 34 min · 169 k), corrección motor (Opus · 34 min · 269 k), corrección interfaz (Sonnet · 28 min · 323 k).
+
+## Ronda 5 · 22 de noviembre de 2026 · `main`
+
+Tres evaluadores Opus a ciegas sobre todo el producto, después de QA independiente. Los bloques de cada evaluador no son idénticos, por eso van en tablas separadas.
+
+| Evaluador | Ronda 4 | Ronda 5 | Bloqueos duros |
+|---|---|---|---|
+| Usabilidad | 70 | **76** | Ninguno; tres riesgos de pérdida silenciosa |
+| Código | 79 | **85** | Ninguno |
+| Funcional | 76 | **86** | Uno: separar por colores entrega piezas abiertas |
+
+Es la primera ronda en que dos evaluadores alcanzan el mínimo de 85. Usabilidad sigue bajo el mínimo.
+
+**Funcional (86).** Dividir 88 (ronda 4: 52), armado 87, corte por plano 92, roscas y caja con tapa 85, multicolor 68, importar y exportar 88, ahuecado/moldes/booleanas 90, texto/proyección/relieve/SVG 86, análisis/simplificar/alinear/segmentar 88 (análisis solo: 50 en ronda 4), chat local 86, servidor MCP 90. Midió 24 divisiones (cilindro de 600 mm, tubo de 1 m, L, T, estatua de 1050 mm y cubo de 440 mm con cuatro conectores): todas las piezas cerradas, dentro de la cama, volumen conservado y conteo previo igual al real. Fallos: separar por colores entrega cáscaras abiertas; la vista previa promete "12 uniones con conector" y el cubo de 440 deja 5 para pegar; el ZIP por pieza sale desplazado; error falso de profundidad al grabar sobre un cilindro con relieve; nombres incoherentes de mitades y roscas.
+
+**Código (85).** Proyecto `.kura` 90, backend nativo 89, validación y límites 89, importar 88, transformar y ejes 88, núcleo y Worker 88, exportar 86, primitivas y texto 86, roscas 86, chat IA 86, servidor MCP 86, ahuecado 85, pintura 85 (ronda 4: 63), imprimibilidad 85, dividir 85, armado y uniones 85, store y bus 85, booleanas 84, corte 84, segmentación 84, simplificar y alinear 83, moldes 82, interfaz general 78, proyección 76, relieve/imagen/SVG 76. Hallazgos: el mismo SVG da formas distintas según el camino (lector completo al importar, lector simplificado al proyectar y en MCP); memoria WASM sin liberar en errores del ahuecado; parámetros de primitivas sin acotar en el esquema del proyecto; marca como literal y `localStorage` directo en algunos componentes; pruebas con umbrales de reloj; archivos grandes (paleta de comandos 912 líneas, herramientas MCP 1225, geometría avanzada 1032); tres sistemas de validación de forma para los mismos comandos. Sin fallos de seguridad explotables.
+
+**Usabilidad (76).** Importar/exportar 88, menú contextual 85, chat 85, booleanas 82, panel MCP 82, primer uso 80, transformar 80, ajustes 80, primitivas y texto 78, uniones y armado 76, proyecto 74, herramientas 74, móvil 74, accesibilidad 74, teclas F 72, dividir 72, retroalimentación 72, pintar 70, consistencia 68, análisis 65. Problemas principales: el resumen de dividir no coincide con el resultado; el tamaño de conector de fábrica deja uniones débiles; pintar convierte la primitiva en malla sin avisar; F2 anexa al nombre en vez de reemplazarlo; las piezas nuevas aparecen encima de las existentes; el análisis sugiere "activar soportes" en una pieza ahuecada; el mismo párrafo repetido en cada unión; "Vaciar cama" sin confirmación; ejes en distinto orden entre avisos; mezcla de español e inglés y restos de "Pro".
+
+Todo lo anterior está en corrección en seis lotes. Tras corregir, QA y reevaluación de usabilidad con un evaluador nuevo.
+
+Consumo de agentes desde la QA previa (modelo · duración · tokens): costura de la división (Opus · 32 min · 289 k), preferencias de división (Sonnet · 17 min · 229 k), pintura (Opus · 33 min · 282 k), deuda de motor (Opus · 31 min · 263 k), QA re-verificación (Sonnet · 55 min · 171 k), corrección QA7 (Sonnet · 23 min · 218 k), QA pintura (Sonnet · 21 min · 131 k, incompleta por tiempo), QA operaciones en Worker (Sonnet · 18 min · 168 k), menú contextual y teclas F (Sonnet · 25 min · 287 k), evaluador de código (Opus · 15 min · 167 k), evaluador funcional (Opus · 23 min · 264 k), evaluador de usabilidad (Opus · 17 min · 221 k).
+
+Aprendizajes de proceso: un encargo de QA con tres áreas no alcanza en 55 minutos (se dividió); los evaluadores comparten el navegador de pruebas y uno operó sobre la pestaña de otro (en adelante, uno a la vez en navegador o perfiles separados); un evaluador dejó un servidor sin detener (se detuvo al cerrar).

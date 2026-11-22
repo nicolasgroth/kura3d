@@ -6,10 +6,15 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 ## En desarrollo
 
+Seis lotes de corrección de la ronda 5, en paralelo:
+
 | Funcionalidad | Estado |
 |---|---|
-| Separar por colores: cada color como sólido cerrado imprimible (hoy salen cáscaras abiertas; único bloqueo de la ronda 5) | En corrección |
-| Dividir: vista previa con el número real de uniones con conector; archivos por pieza centrados; nombres de mitades y de roscas | En corrección |
+| Separar por colores: cada color como sólido cerrado imprimible (único bloqueo de la ronda 5) | En corrección |
+| Dividir: vista previa con el número real de uniones con conector; ZIP por pieza centrado; nombres de mitades y de roscas | En corrección |
+| Dividir y uniones, usabilidad: tamaño de conector "Automático (recomendado)" por defecto, diámetro como única medida, consejo de unión débil una sola vez, resaltado más visible, plurales | En corrección |
+| Flujo general: F2 reemplaza el nombre, aviso antes de que pintar convierta una primitiva, piezas nuevas en un hueco libre, confirmar "Vaciar cama", señal al guardar, ejes en el mismo orden, análisis sin "activar soportes" y con aviso de cavidad cerrada | En corrección |
+| Lenguaje y accesibilidad: sin "Pro", sin mezcla de inglés, vocabulario único Sólido / Negativo / Restar, atajos con un solo formato, cubo de vistas por teclado, movimiento reducido | En corrección |
 | SVG con un solo lector en importación, proyección y MCP; memoria liberada en errores; parámetros del proyecto acotados | En corrección |
 | Reglas de producto en código (marca, almacenamiento) y pruebas sin umbrales de tiempo | En corrección |
 
@@ -29,13 +34,11 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 ## En evaluación
 
-Quinta ronda (22-nov). Notas globales recibidas: **código 85** (ronda 4: 79) y **funcional 86** (ronda 4: 76); falta usabilidad, en curso. Es la primera vez que dos evaluadores alcanzan el mínimo de 85.
-
-Funcional por bloque: dividir 88, armado 87, corte por plano 92, roscas y caja 85, multicolor 68, importar y exportar 88, ahuecado/moldes/booleanas 90, texto/proyección/relieve/SVG 86, análisis/simplificar/alinear/segmentar 88, chat local 86, MCP 90. Un bloqueo: separar por colores entrega piezas abiertas.
+Quinta ronda cerrada el 22-nov: **usabilidad 76 · código 85 · funcional 86** (ronda 4: 70 · 79 · 76). Código y funcional alcanzan por primera vez el mínimo de 85; usabilidad no. Detalle por bloque en [EVALUACIONES.md](EVALUACIONES.md). Tras las correcciones se reevalúa usabilidad con un evaluador nuevo.
 
 ## Lista
 
-Ninguna funcionalidad cumple todavía el mínimo de 85 en los tres evaluadores. Las más cercanas: proyectos `.kura`, roscas, exportar y corte con uniones.
+Ninguna funcionalidad tiene todavía 85 en los tres evaluadores. Con 85 o más en código y funcional, y a la espera de usabilidad: corte por plano con uniones (funcional 92), dividir para imprimir (88), armado (87), importar y exportar (88), ahuecado, moldes y booleanas (90), servidor MCP (90), roscas (85).
 
 ## Existe, con mejoras pendientes
 
