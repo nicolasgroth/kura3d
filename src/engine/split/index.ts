@@ -9,6 +9,6 @@
  */
 
 export * from './splitTypes';
-export { planBedSplit, planFromManifold, splitPartCode, SPLIT_DEFAULTS } from './splitPlan';
+export { planBedSplit, planFromManifold, splitPartCode, SPLIT_DEFAULTS, SPLIT_HARD_MAX_PIECES } from './splitPlan';
 export { executeBedSplitGeometry } from './splitExecute';
 export { explodedTransforms, layoutSplitParts, type SplitLayoutOptions, type SplitLayoutResult } from './splitLayout';

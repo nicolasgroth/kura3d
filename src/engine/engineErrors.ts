@@ -70,6 +70,8 @@ export const ENGINE_WARNING_CODES = [
   'SPLIT_CONNECTOR_REDUCED',
   'SPLIT_LABEL_SKIPPED',
   'SPLIT_EMPTY_CELLS',
+  'SPLIT_FRAGMENT_KEPT',
+  'SPLIT_PLANE_THIN_SECTION',
 ] as const;
 
 export type EngineWarningCode = (typeof ENGINE_WARNING_CODES)[number];

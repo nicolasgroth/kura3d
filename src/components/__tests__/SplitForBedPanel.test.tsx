@@ -28,6 +28,7 @@ const PLAN: BedSplitPlan = {
     uniformPosition: position,
     sectionAreaMm2: 11000,
     islands: 1,
+    strips: 0,
     smallestIslandMm2: 11000,
     admitsConnectors: index !== 2,
   })),

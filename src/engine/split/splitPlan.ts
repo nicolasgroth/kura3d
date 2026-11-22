@@ -12,7 +12,7 @@
 
 import type { Manifold } from 'manifold-3d';
 import type { SceneObject, Vec3 } from '../../types/kura';
-import { EngineError } from '../engineErrors';
+import { EngineError, engineWarning } from '../engineErrors';
 import { initManifoldEngine, meshDataToManifold } from '../manifoldKernel';
 import { OPERATION_DEFAULTS } from '../operationLimits';
 import { applyTransformToMesh } from '../primitives';
@@ -62,7 +62,9 @@ export function splitPartCode(cell: [number, number, number], zCount: number): s
 
 /** Saliente del macho más allá de la cara de unión (mm). */
 export function connectorProtrusion(c: SplitConnectorOptions | null): number {
-  return c ? Math.max(0.8, c.depth) : 0;
+  if (!c) return 0;
+  const lap = c.type === 'lap' || (c.thinWall ?? 'lap') === 'lap' ? (c.lapHeightMm ?? SPLIT_DEFAULTS.lapHeightMm) : 0;
+  return Math.max(0.8, c.type === 'lap' ? 0 : c.depth, lap);
 }
 
 /** Tramo mínimo: el alojamiento con su pared debe caber en la pieza que lo recibe. */
@@ -98,12 +100,59 @@ function chooseCounts(size: Vec3, usable: Vec3, axes: Set<SplitAxis>, maxPieces:
   return best ? { counts: best.counts, rot: best.rot } : null;
 }
 
-/** Puntaje de una sección (menor es mejor). */
-function sectionScore(s: SectionStats, maxArea: number, shift: number, window: number, connector: SplitConnectorOptions | null): number {
+/** Tope duro de piezas con `maxPieces: 'auto'`. */
+export const SPLIT_HARD_MAX_PIECES = 400;
+
+/**
+ * Puntaje de una sección (menor es mejor). Pesa, de más a menos: islas diminutas, tiras (pared
+ * cortada a lo largo: delgada y sin agujero), sección que cambia mucho respecto de las vecinas (plano
+ * casi tangente a una superficie), islas que no admiten la unión, islas extra, área y desplazamiento.
+ * Una sección compacta (anillo completo, perpendicular al eje del tubo) queda con el menor puntaje.
+ */
+function sectionScore(s: SectionStats, maxArea: number, shift: number, window: number, connector: SplitConnectorOptions | null, change: number): number {
   const tinyLimit = connector ? Math.max(100, 2 * Math.PI * connectorMargin(connector) ** 2) : 100;
   const tiny = s.islands > 0 && s.smallestIslandMm2 < tinyLimit ? 100 : 0;
-  const noConnector = connector && !s.admitsConnectors ? 50 : 0;
-  return tiny + noConnector + 2 * Math.max(0, s.islands - 1) + s.areaMm2 / (maxArea || 1) + (0.25 * Math.abs(shift)) / (window || 1);
+  const lapFallback = !connector || connector.type === 'lap' || (connector.thinWall ?? 'lap') === 'lap';
+  const noConnector = connector && !s.admitsConnectors ? (lapFallback ? 5 : 50) : 0;
+  return (
+    tiny +
+    40 * s.strips +
+    10 * change +
+    noConnector +
+    2 * Math.max(0, s.islands - 1) +
+    s.areaMm2 / (maxArea || 1) +
+    (0.25 * Math.abs(shift)) / (window || 1)
+  );
+}
+
+type Sample = { pos: number; s: SectionStats };
+
+/** Muestras equiespaciadas en [lo, hi]. */
+function sampleWindow(oriented: Manifold, lo: number, hi: number, count: number, connector: SplitConnectorOptions | null): Sample[] {
+  const out: Sample[] = [];
+  for (let i = 0; i < count; i++) {
+    const pos = hi === lo ? lo : lo + ((hi - lo) * i) / (count - 1);
+    out.push({ pos, s: measureSection(oriented, pos, connector) });
+    if (hi === lo) break;
+  }
+  return out;
+}
+
+/** Mejor muestra por puntaje (el cambio se mide contra las vecinas inmediatas). */
+function bestSample(samples: Sample[], uni: number, w: number, connector: SplitConnectorOptions | null): { pick: Sample; score: number } {
+  const maxArea = Math.max(...samples.map((c) => c.s.areaMm2));
+  let pick = samples[0];
+  let bestScore = Infinity;
+  samples.forEach((c, i) => {
+    const near = [samples[i - 1], samples[i + 1]].filter(Boolean);
+    const change = near.length > 0 ? Math.max(...near.map((n) => Math.abs(n.s.areaMm2 - c.s.areaMm2) + 1e3 * Math.abs(n.s.islands - c.s.islands))) / (maxArea || 1) : 0;
+    const score = sectionScore(c.s, maxArea, c.pos - uni, w, connector, Math.min(1, change));
+    if (score < bestScore) {
+      bestScore = score;
+      pick = c;
+    }
+  });
+  return { pick, score: bestScore };
 }
 
 /** Planos de un eje con tramos de largo ≤ `allowed`, desplazados hacia la mejor sección. */
@@ -137,6 +186,7 @@ function placePlanes(
         uniformPosition: min + k * span,
         sectionAreaMm2: s.areaMm2,
         islands: s.islands,
+        strips: s.strips,
         smallestIslandMm2: s.smallestIslandMm2,
         admitsConnectors: s.admitsConnectors,
       });
@@ -150,20 +200,22 @@ function placePlanes(
     let lo = Math.max(uni - w, prev + minLen, max - (n - k) * allowed);
     let hi = Math.min(uni + w, prev + allowed, max - (n - k) * minLen);
     if (lo > hi) lo = hi = Math.min(Math.max(uni, prev + minLen), prev + allowed);
-    const samples: Array<{ pos: number; s: SectionStats }> = [];
-    for (let i = 0; i < SAMPLES; i++) {
-      const pos = hi === lo ? lo : lo + ((hi - lo) * i) / (SAMPLES - 1);
-      samples.push({ pos, s: measureSection(oriented, pos, connector) });
-      if (hi === lo) break;
-    }
-    const maxArea = Math.max(...samples.map((c) => c.s.areaMm2));
-    let pick = samples[0];
-    let bestScore = Infinity;
-    for (const c of samples) {
-      const score = sectionScore(c.s, maxArea, c.pos - uni, w, connector);
-      if (score < bestScore) {
-        bestScore = score;
-        pick = c;
+    let { pick } = bestSample(sampleWindow(oriented, lo, hi, SAMPLES, connector), uni, w, connector);
+    let fallback = false;
+    if (pick.s.strips > 0 && hi > lo) {
+      // Sin plano razonable: amplía la ventana al doble dentro de lo que permiten los tramos
+      const lo2 = Math.max(uni - 2 * w, prev + minLen, max - (n - k) * allowed);
+      const hi2 = Math.min(uni + 2 * w, prev + allowed, max - (n - k) * minLen);
+      if (hi2 > lo2) {
+        const wide = bestSample(sampleWindow(oriented, lo2, hi2, 2 * SAMPLES - 1, connector), uni, 2 * w, connector).pick;
+        if (wide.s.strips < pick.s.strips) pick = wide;
+      }
+      if (pick.s.strips > 0) {
+        // Sigue partiendo paredes a lo largo: se conserva la posición uniforme y se avisa
+        const u = Math.min(hi, Math.max(lo, uni));
+        const atUni = measureSection(oriented, u, connector);
+        if (atUni.strips <= pick.s.strips) pick = { pos: u, s: atUni };
+        fallback = true;
       }
     }
     planes.push({
@@ -173,8 +225,10 @@ function placePlanes(
       uniformPosition: uni,
       sectionAreaMm2: pick.s.areaMm2,
       islands: pick.s.islands,
+      strips: pick.s.strips,
       smallestIslandMm2: pick.s.smallestIslandMm2,
       admitsConnectors: pick.s.admitsConnectors,
+      ...(fallback ? { fallback } : {}),
     });
     prev = pick.pos;
   }
@@ -183,7 +237,12 @@ function placePlanes(
 
 /** Valida y completa opciones. */
 function resolveOptions(bed: SplitBed, o: BedSplitPlanOptions) {
+  const sides: Array<[string, number]> = [['bedWidthMm', bed.widthMm], ['bedDepthMm', bed.depthMm], ['bedHeightMm', bed.heightMm]];
+  for (const [name, v] of sides) {
+    if (!(Number.isFinite(v) && v > 0)) throw new EngineError('INVALID_PARAMETER', { name, value: String(v), min: 0, max: 10_000 });
+  }
   const margin = o.marginMm ?? SPLIT_DEFAULTS.marginMm;
+  if (!(Number.isFinite(margin) && margin >= 0)) throw new EngineError('INVALID_PARAMETER', { name: 'marginMm', value: String(margin), min: 0, max: 50 });
   const usable: Vec3 = [bed.widthMm - 2 * margin, bed.heightMm - 2 * margin, bed.depthMm - 2 * margin];
   if (usable.some((v) => !(v > 0))) {
     throw new EngineError('INVALID_PARAMETER', { name: 'marginMm', value: String(margin), min: 0, max: Math.min(bed.widthMm, bed.depthMm, bed.heightMm) / 2 });
@@ -191,7 +250,7 @@ function resolveOptions(bed: SplitBed, o: BedSplitPlanOptions) {
   return {
     usable,
     axes: new Set(o.axes && o.axes.length > 0 ? o.axes : AXES),
-    maxPieces: o.maxPieces ?? SPLIT_DEFAULTS.maxPieces,
+    maxPieces: o.maxPieces === 'auto' ? SPLIT_HARD_MAX_PIECES : (o.maxPieces ?? SPLIT_DEFAULTS.maxPieces),
     allowRotation: o.allowRotation ?? true,
     window: o.shiftWindow ?? SPLIT_DEFAULTS.shiftWindow,
     connector: o.connector === undefined ? SPLIT_DEFAULTS.connector : o.connector,
@@ -265,9 +324,12 @@ export function planFromManifold(m: Manifold, bed: SplitBed, options: BedSplitPl
       }
     }
   }
+  const thin = planes.filter((p) => p.fallback);
+  const warnings = thin.length > 0 ? [engineWarning('SPLIT_PLANE_THIN_SECTION', { count: thin.length, planes: thin.map((p) => `${p.axis.toUpperCase()}${p.index + 1}`).join(', ') })] : [];
   return {
     bounds: { min, max },
     usableMm: opt.usable,
+    warnings,
     counts: { x: counts[0], y: counts[1], z: counts[2] },
     planes,
     pieces,

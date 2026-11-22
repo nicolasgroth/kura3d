@@ -1207,6 +1207,18 @@ export const TRANSLATIONS_ES = {
   'export.split.printLayout': 'Un 3MF con todas las piezas en su disposición de impresión',
   'export.split.printLayoutTip': 'Cada pieza apoyada en su placa (placas una al lado de otra), sin mover la escena',
   'export.split.zipDone': '{count} piezas exportadas en {name}',
+  'engineWarning.SPLIT_FRAGMENT_KEPT': 'La pieza {code} trae un fragmento suelto de {volume} mm³ que no se pudo fusionar con una vecina: queda como pieza propia.',
+  'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} plano(s) ({planes}) no encontraron una sección que evite cortar paredes a lo largo: se dejó la posición uniforme.',
+  'split.joint.auto': 'Automática (elige según el espesor)',
+  'split.joint.lap': 'Solape de borde',
+  'split.lapHeight': 'Alto del solape',
+  'split.labelPlacement': 'Ubicación de la marca',
+  'split.labelPlacementTip': 'Dónde se graba la marca: en la cara de unión o por fuera junto al borde',
+  'split.labelPlacement.auto': 'Automática',
+  'split.labelPlacement.joint': 'En la unión',
+  'split.labelPlacement.outside': 'Por fuera',
+  'split.continueWith': 'Continuar con {count} piezas',
+  'split.continueWithTip': 'Sube el tope de piezas para este plan (máximo {max})',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2374,6 +2386,18 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'export.split.printLayout': 'One 3MF with all pieces in their print layout',
   'export.split.printLayoutTip': 'Each piece laid on its plate (plates side by side), without moving the scene',
   'export.split.zipDone': '{count} pieces exported to {name}',
+  'engineWarning.SPLIT_FRAGMENT_KEPT': 'Piece {code} has a loose {volume} mm³ fragment that could not be merged with a neighbour: it stays as its own piece.',
+  'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} plane(s) ({planes}) found no section that avoids cutting walls lengthwise: the uniform position was kept.',
+  'split.joint.auto': 'Automatic (chosen by wall thickness)',
+  'split.joint.lap': 'Edge lap',
+  'split.lapHeight': 'Lap height',
+  'split.labelPlacement': 'Mark placement',
+  'split.labelPlacementTip': 'Where the mark is engraved: on the joint face or outside next to the edge',
+  'split.labelPlacement.auto': 'Automatic',
+  'split.labelPlacement.joint': 'On the joint',
+  'split.labelPlacement.outside': 'Outside',
+  'split.continueWith': 'Continue with {count} pieces',
+  'split.continueWithTip': 'Raise the piece limit for this plan (maximum {max})',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

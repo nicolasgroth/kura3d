@@ -197,14 +197,14 @@ describe('executeBedSplitGeometry', () => {
     checkParts(res);
   });
 
-  it('(2) tubo hueco de 1000 mm con pared de 5 mm: conectores por isla o aviso', async () => {
+  it('(2) tubo hueco de 1000 mm con pared de 5 mm: conector, solape de borde o aviso', async () => {
     const obj = objFrom(verticalTube(1000, 60, 55), 'tubo');
     const plan = await planBedSplit(obj, BED);
     const res = await executeBedSplitGeometry(obj, plan);
     expect(res.parts.length).toBe(plan.counts.y);
     for (const j of res.joints) {
       const warned = res.warnings.some((w) => w.code === 'SPLIT_JOINT_NO_CONNECTOR' && w.params.label === j.label);
-      expect(j.connector !== null || warned).toBe(true);
+      expect(j.connector !== null || j.lap !== null || warned).toBe(true);
       if (j.connector) expect(j.connector.size).toBeLessThanOrEqual(4);
     }
     checkVolume(res);

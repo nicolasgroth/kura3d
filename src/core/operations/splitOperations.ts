@@ -91,6 +91,6 @@ export async function executeBedSplit(
       engravedVolumeMm3: res.engravedVolumeMm3,
       elapsedMs: res.elapsedMs,
     },
-    change: change({ added: parts, removedIds: parts.length > 0 ? [obj.id] : [], warnings: res.warnings }),
+    change: change({ added: parts, removedIds: parts.length > 0 ? [obj.id] : [], warnings: [...(plan.warnings ?? []), ...res.warnings] }),
   };
 }

@@ -30,9 +30,12 @@ export interface SplitBounds {
   max: Vec3;
 }
 
-/** Conector de las uniones (un tipo y medidas para todo el lote; el motor lo reduce si no cabe). */
+/**
+ * Conector de las uniones (un tipo y medidas para todo el lote; el motor lo reduce si no cabe).
+ * `lap` = solape de borde (lengüeta/ranura por la línea media de la pared) en todas las uniones.
+ */
 export interface SplitConnectorOptions {
-  type: Exclude<CutConnectorType, 'none'>;
+  type: Exclude<CutConnectorType, 'none'> | 'lap';
   /** Radio (dowel) o semiancho (peg/dovetail) en mm. */
   size: number;
   depth: number;
@@ -40,6 +43,23 @@ export interface SplitConnectorOptions {
   tolerance: number;
   /** Conectores por unión (por isla de la sección, ver `cutConnectorLayout.ts`). */
   count: number;
+  /**
+   * Islas donde el conector no cabe (pared delgada): `'lap'` (por defecto) les pone solape de borde,
+   * `'none'` las deja sin unión con aviso.
+   */
+  thinWall?: 'lap' | 'none';
+  /** Alto del solape (mm, por defecto 6). */
+  lapHeightMm?: number;
+}
+
+/** Solape de borde aplicado a una unión. */
+export interface SplitLapInfo {
+  /** Islas de la sección con solape. */
+  islands: number;
+  heightMm: number;
+  /** Ancho de la lengüeta y holgura por lado (mm). */
+  tongueMm: number;
+  clearanceMm: number;
 }
 
 /** Opciones del plan. Todos los campos son opcionales. */
@@ -48,8 +68,11 @@ export interface BedSplitPlanOptions {
   marginMm?: number;
   /** Ejes en los que se permite cortar (por defecto los tres). */
   axes?: SplitAxis[];
-  /** Tope de piezas (por defecto 64). Si hacen falta más: `SPLIT_TOO_MANY_PIECES`. */
-  maxPieces?: number;
+  /**
+   * Tope de piezas (por defecto 64). Si hacen falta más: `SPLIT_TOO_MANY_PIECES` con `needed`.
+   * `'auto'` sube el tope hasta `SPLIT_HARD_MAX_PIECES` (400).
+   */
+  maxPieces?: number | 'auto';
   /** Permite girar 90° una pieza para que quepa (por defecto `true`). */
   allowRotation?: boolean;
   /** Ventana de desplazamiento de cada plano como fracción del tramo (por defecto 0,15). */
@@ -77,6 +100,10 @@ export interface SplitPlane {
   sectionAreaMm2: number;
   /** Islas (regiones separadas) de la sección. */
   islands: number;
+  /** Islas que son tiras (pared cortada a lo largo: delgadas y sin agujero). */
+  strips: number;
+  /** `true` si la ventana no tenía un plano razonable y quedó la posición uniforme. */
+  fallback?: boolean;
   /** Área de la isla más pequeña (mm²); 0 si no hay sección. */
   smallestIslandMm2: number;
   /** Si al menos una isla admite el conector previsto (siempre `false` sin conector). */
@@ -107,6 +134,8 @@ export interface BedSplitPlan {
   /** `true` si ya cabe sin cortes. */
   fitsWithoutCuts: boolean;
   connector: SplitConnectorOptions | null;
+  /** Avisos del plan (p. ej. planos que no evitan partir una pared a lo largo). */
+  warnings?: EngineWarning[];
   elapsedMs: number;
 }
 
@@ -116,6 +145,16 @@ export interface BedSplitExecuteOptions {
   connector?: SplitConnectorOptions | null;
   /** Marcas de pareja grabadas en las caras de unión (por defecto `'none'`). */
   labels?: 'none' | 'engraved';
+  /**
+   * Dónde va la marca: `'joint'` en la cara de unión, `'outside'` en la cara exterior junto al borde,
+   * `'auto'` (por defecto) en la unión si cabe y si no por fuera.
+   */
+  labelPlacement?: 'auto' | 'joint' | 'outside';
+  /**
+   * Cuerpos sueltos de una celda con volumen menor (mm³, por defecto 2000) se fusionan con la pieza
+   * vecina con la que comparten cara; 0 = nunca fusionar.
+   */
+  minFragmentMm3?: number;
   /** Profundidad del grabado (mm, por defecto 0,4). */
   labelDepthMm?: number;
   /** Altura mínima legible de la etiqueta (mm, por defecto 4). */
@@ -149,13 +188,22 @@ export interface SplitJoint {
   connector: SplitConnectorOptions | null;
   /** Centros (mundo) de los conectores. */
   connectorCenters: Vec3[];
+  /** Solape de borde aplicado (islas de pared delgada) o `null`. */
+  lap: SplitLapInfo | null;
+  /** Área de contacto real entre las dos piezas (mm²). */
+  contactAreaMm2: number;
   /** Si la etiqueta quedó grabada en ambas caras. */
   labelEngraved: boolean;
+  /** Dónde quedó la marca (`null` si no se grabó). */
+  labelPlacement: 'joint' | 'outside' | null;
   /** Altura de letra usada (mm), 0 si no se grabó. */
   labelHeightMm: number;
 }
 
-/** Pieza resultante. */
+/**
+ * Pieza resultante. Si una celda deja varios cuerpos sueltos, cada uno es una pieza con el código de
+ * la celda y un sufijo "·1", "·2", … (de mayor a menor volumen), p. ej. "B5a·1".
+ */
 export interface SplitPart {
   code: string;
   cell: [number, number, number];
