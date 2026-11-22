@@ -79,7 +79,7 @@ export {
   type PlacedPart,
 } from './ioFormats';
 
-export { generateMold, type GeneratedMoldPart } from './molds';
+export { generateMold, generateMoldDetailed, safeSpoutRadius, type GeneratedMold, type GeneratedMoldPart } from './molds';
 
 export { projectGraphicOntoSurface } from './surfaceProjection';
 

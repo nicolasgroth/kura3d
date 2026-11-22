@@ -26,7 +26,8 @@ import {
   manifoldToMeshData,
   meshDataToManifold,
 } from './manifoldKernel';
-import { EngineError, requireNumberInRange } from './engineErrors';
+import { EngineError, requireOperationRange } from './engineErrors';
+import { OPERATION_RANGES } from './operationLimits';
 import {
   applyTransformToMesh,
   computeMeshStats,
@@ -480,10 +481,11 @@ export async function projectGraphicOntoSurface(
 ): Promise<{ mesh: MeshData; position: Vec3 }> {
   const wasm = await initManifoldEngine();
 
-  const widthMm = requireNumberInRange('widthMm', options.widthMm, 1, 1000, 20);
-  const depthMm = requireNumberInRange('depthMm', options.depthMm, 0.1, 100, 1.2);
-  const offsetU = options.offsetU ?? 0;
-  const offsetV = options.offsetV ?? 0;
+  const R = OPERATION_RANGES.projection;
+  const widthMm = requireOperationRange('widthMm', options.widthMm, R.widthMm, 20);
+  const depthMm = requireOperationRange('depthMm', options.depthMm, R.depthMm, 1.2);
+  const offsetU = requireOperationRange('offsetU', options.offsetU, R.offsetU, 0);
+  const offsetV = requireOperationRange('offsetV', options.offsetV, R.offsetV, 0);
   const stampColor = (options.colorHex || '#f97316').toLowerCase();
 
   // 1) Generar el sólido 2D extruido del texto o SVG

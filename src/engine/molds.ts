@@ -23,8 +23,8 @@ import {
   manifoldToMeshData,
   meshDataToManifold,
 } from './manifoldKernel';
-import { EngineError, requireOperationRange } from './engineErrors';
-import { OPERATION_RANGES } from './operationLimits';
+import { EngineError, engineWarning, requireOperationRange, type EngineWarning } from './engineErrors';
+import { OPERATION_DEFAULTS, OPERATION_RANGES } from './operationLimits';
 import { buildPourChannels, countSealedVoids, type AxisBox } from './moldChannels';
 import { applyTransformToMesh, normalizeMeshToBed } from './primitives';
 import { inwardOffset } from './solidOffset';
@@ -183,10 +183,11 @@ function buildDirectMoldSolid(
     }
     handles.push(cavity);
 
-    // Un embudo por cuerpo del maestro, sobre su cara superior real (no el centro del bbox)
-    const maxSafeR = Math.max(1.5, Math.min(dx, dz) * 0.45);
-    const spoutR = Math.max(1.5, Math.min(pourSpoutRadius, maxSafeR));
-    const channels = buildPourChannels(wasm, master, boxMaxY, spoutR);
+    // Un embudo por cuerpo del maestro, sobre su cara superior real (no el centro del bbox). El radio
+    // ya viene ajustado por `safeSpoutRadius` (y avisado) desde `generateMoldDetailed`.
+    void dx;
+    void dz;
+    const channels = buildPourChannels(wasm, master, boxMaxY, pourSpoutRadius);
     if (!channels) {
       handles.pop();
       return verified(cavity);
@@ -255,9 +256,41 @@ function buildRegistrationKey(
  * @param options Parámetros geométricos del molde en milímetros.
  * @returns Lista de piezas generadas listas para insertar en la escena.
  */
-export async function generateMold(
+/** Radio máximo del embudo para un maestro de `dx` × `dz` mm (45 % del lado menor, mínimo 1,5 mm). */
+export function safeSpoutRadius(dx: number, dz: number): number {
+  return Math.max(OPERATION_RANGES.mold.pourSpoutRadiusMm.min, Math.min(dx, dz) * 0.45);
+}
+
+/** Piezas de molde y avisos de los ajustes que impuso la geometría. */
+export interface GeneratedMold {
+  parts: GeneratedMoldPart[];
+  warnings: EngineWarning[];
+}
+
+/** Igual que `generateMoldDetailed` pero solo devuelve las piezas. */
+export async function generateMold(obj: SceneObject, options: MoldOptions): Promise<GeneratedMoldPart[]> {
+  return (await generateMoldDetailed(obj, options)).parts;
+}
+
+/**
+ * Genera las piezas del molde. Si el embudo pedido no cabe sobre el maestro, se reduce al radio
+ * seguro y se devuelve el aviso `MOLD_SPOUT_REDUCED` (nunca un ajuste silencioso).
+ */
+export async function generateMoldDetailed(obj: SceneObject, options: MoldOptions): Promise<GeneratedMold> {
+  const warnings: EngineWarning[] = [];
+  const parts = await generateMoldParts(obj, options, (requested, dx, dz) => {
+    const safe = safeSpoutRadius(dx, dz);
+    if (requested <= safe) return requested;
+    if (options.pourSpout) warnings.push(engineWarning('MOLD_SPOUT_REDUCED', { requested, applied: safe }));
+    return safe;
+  });
+  return { parts, warnings };
+}
+
+async function generateMoldParts(
   obj: SceneObject,
-  options: MoldOptions
+  options: MoldOptions,
+  fitSpout: (requested: number, dx: number, dz: number) => number
 ): Promise<GeneratedMoldPart[]> {
   const wasm = await initManifoldEngine();
   const worldMesh = applyTransformToMesh(
@@ -269,11 +302,12 @@ export async function generateMold(
 
   // Rangos de la fuente única: fuera de rango es error tipado, no un valor acotado en silencio.
   const R = OPERATION_RANGES.mold;
-  const wallMargin = requireOperationRange('wallMarginMm', options.wallMarginMm, R.wallMarginMm, 5);
-  const boxWall = requireOperationRange('boxWallMm', options.boxWallMm, R.boxWallMm, 3);
-  const pourSpoutRadius = requireOperationRange('pourSpoutRadiusMm', options.pourSpoutRadiusMm, R.pourSpoutRadiusMm, 6);
-  const keyTolerance = requireOperationRange('keyToleranceMm', options.keyToleranceMm, R.keyToleranceMm, 0.25);
-  const cavityWall = requireOperationRange('cavityWallMm', options.cavityWallMm, R.cavityWallMm, 3);
+  const D = OPERATION_DEFAULTS.mold;
+  const wallMargin = requireOperationRange('wallMarginMm', options.wallMarginMm, R.wallMarginMm, D.wallMarginMm);
+  const boxWall = requireOperationRange('boxWallMm', options.boxWallMm, R.boxWallMm, D.boxWallMm);
+  const requestedSpout = requireOperationRange('pourSpoutRadiusMm', options.pourSpoutRadiusMm, R.pourSpoutRadiusMm, D.pourSpoutRadiusMm);
+  const keyTolerance = requireOperationRange('keyToleranceMm', options.keyToleranceMm, R.keyToleranceMm, D.keyToleranceMm);
+  const cavityWall = requireOperationRange('cavityWallMm', options.cavityWallMm, R.cavityWallMm, D.cavityWallMm);
 
   let master: Manifold | null = null;
   const handles: Manifold[] = [];
@@ -292,6 +326,7 @@ export async function generateMold(
     const cz = (minZ + maxZ) * 0.5;
 
     const bounds = { minX, minY, minZ, maxX, maxY, maxZ };
+    const pourSpoutRadius = fitSpout(requestedSpout, maxX - minX, maxZ - minZ);
 
     // ------------------------------------------------------------------------
     // Modo 1: Molde directo en 1 parte

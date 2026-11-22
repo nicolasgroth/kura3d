@@ -311,8 +311,10 @@ export async function planeCutWithConnectors(
       });
     }
 
-    if (options.connectorType !== 'none') {
-      const { size, depth, tolerance: tol, count } = validateConnectorParams(options);
+    // Con tipo de conector se validan todos sus parámetros; cantidad 0 equivale a cortar sin conectores.
+    const connectorParams = options.connectorType !== 'none' ? validateConnectorParams(options) : null;
+    if (options.connectorType !== 'none' && connectorParams && connectorParams.count > 0) {
+      const { size, depth, tolerance: tol, count } = connectorParams;
       const type = options.connectorType;
       const depthWithWall = Math.max(0.8, depth + tol) + CONNECTOR_MIN_WALL_MM;
       assertConnectorDepth(posHalf, normal, cutCoord, depthWithWall);

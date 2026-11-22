@@ -91,7 +91,7 @@ export async function generateMold(
   obj: SceneObject,
   options: MoldOptions,
 ): Promise<{ parts: SceneObject[]; change: SceneChange }> {
-  const generated = await engine.generateMold(obj, options);
+  const { parts: generated, warnings } = await engine.generateMoldDetailed(obj, options);
   const parts = generated.map((part) => buildWith(ctx, {
     name: ctx.naming.moldPart(obj, part),
     source: 'mold',
@@ -100,7 +100,7 @@ export async function generateMold(
     color: part.color,
     materialPreset: part.materialPreset,
   }));
-  return { parts, change: change({ added: parts }) };
+  return { parts, change: change({ added: parts, warnings }) };
 }
 
 /**
