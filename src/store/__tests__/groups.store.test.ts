@@ -67,6 +67,18 @@ describe('grupos en el store', () => {
     expect(store().groups[0]).toMatchObject({ visible: false, locked: true });
   });
 
+  it('F2 con un grupo entero seleccionado pide renombrar el grupo, no su primer objeto', async () => {
+    const { a, b, c } = await fourBoxes();
+    const g = store().groupObjects([a.id, b.id])!;
+    store().selectObject(a.id);
+    expect(store().requestRename()).toBe(true);
+    expect(store().renameRequest).toMatchObject({ id: g.id, group: true });
+    store().setSelection([c.id]);
+    expect(store().requestRename()).toBe(true);
+    expect(store().renameRequest).toMatchObject({ id: c.id });
+    expect(store().renameRequest?.group).toBeUndefined();
+  });
+
   it('duplicar un grupo duplica su estructura', async () => {
     const { a, b } = await fourBoxes();
     store().groupObjects([a.id, b.id]);

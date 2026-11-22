@@ -48,8 +48,11 @@ export interface QuickActionsSliceState {
   setSceneFilter: (value: string) => void;
   /** Selecciona y encuadra el primer resultado, el siguiente o el anterior. Devuelve el objeto o null. */
   findSceneMatch: (mode: 'first' | 'next' | 'prev') => SceneObject | null;
-  /** Renombrar en línea (F2): la lista reacciona a cada petición nueva. */
-  renameRequest: { id: string; n: number; at: number } | null;
+  /**
+   * Renombrar en línea (F2): la lista reacciona a cada petición nueva. `group: true` = el id es de un
+   * grupo (F2 con un grupo entero seleccionado renombra el grupo, no su primer objeto).
+   */
+  renameRequest: { id: string; n: number; at: number; group?: boolean } | null;
   requestRename: (id?: string) => boolean;
   /** Pide enfocar el campo de búsqueda de la escena (F3). */
   searchFocusRequest: { n: number; at: number } | null;

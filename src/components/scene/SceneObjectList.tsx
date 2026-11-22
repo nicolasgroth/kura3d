@@ -116,23 +116,30 @@ export const SceneObjectList: React.FC = () => {
     setDraft(row.node.kind === 'object' ? row.node.object.name : row.node.group.name);
   };
 
-  // F2 global (o menú contextual): renombra en línea el objeto pedido.
+  // F2 global (o menú contextual): renombra en línea el objeto o el grupo pedido.
   useEffect(() => {
     if (!renameRequest || Date.now() - renameRequest.at > REQUEST_FRESH_MS) return;
-    const key = `o:${renameRequest.id}` as TreeKey;
+    const isGroup = Boolean(renameRequest.group);
+    const key = `${isGroup ? 'g' : 'o'}:${renameRequest.id}` as TreeKey;
     let row = rows.find((r) => r.key === key);
     if (!row) {
-      useKuraStore.getState().setSceneFilter('');
-      // Despliega los grupos que lo contienen para que la fila exista.
-      const obj = useKuraStore.getState().objects.find((o) => o.id === renameRequest.id);
-      let gid = obj?.groupRef;
       const st = useKuraStore.getState();
+      st.setSceneFilter('');
+      // Despliega los grupos que lo contienen para que la fila exista.
+      let gid = isGroup ? st.groups.find((g) => g.id === renameRequest.id)?.parentId : st.objects.find((o) => o.id === renameRequest.id)?.groupRef;
       while (gid) {
         st.setGroupCollapsed(gid, false);
         gid = st.groups.find((g) => g.id === gid)?.parentId;
       }
-      const o = useKuraStore.getState().objects.find((x) => x.id === renameRequest.id);
-      if (o) row = { node: { kind: 'object', key, object: o, level: 1 }, key, level: 1, parentGroupId: null, parentKey: null, objectIds: [o.id], posInSet: 1, setSize: 1 };
+      const fresh = useKuraStore.getState();
+      const base = { key, level: 1, parentGroupId: null, parentKey: null, posInSet: 1, setSize: 1 };
+      if (isGroup) {
+        const g = fresh.groups.find((x) => x.id === renameRequest.id);
+        if (g) row = { ...base, node: { kind: 'group', key, group: g, level: 1, children: [], objectCount: 0 }, objectIds: [] };
+      } else {
+        const o = fresh.objects.find((x) => x.id === renameRequest.id);
+        if (o) row = { ...base, node: { kind: 'object', key, object: o, level: 1 }, objectIds: [o.id] };
+      }
     }
     setActiveKey(key);
     if (row) startRename(row);
@@ -269,7 +276,12 @@ export const SceneObjectList: React.FC = () => {
     }
   };
 
+  // Fila donde empezó un doble clic: el doble clic renombra esa fila aunque el segundo clic caiga en
+  // otra (p. ej. si la lista se movió entre clics), y ese segundo clic no cambia la selección.
+  const clickStart = useRef<TreeKey | null>(null);
   const handleClick = (e: React.MouseEvent, row: TreeRow) => {
+    if (e.detail >= 2 && clickStart.current && clickStart.current !== row.key) return;
+    if (e.detail <= 1) clickStart.current = row.key;
     const index = rows.indexOf(row);
     setActiveKey(row.key);
     if (e.shiftKey) setSelection(rangeIds(anchorKey ?? active?.key ?? row.key, index));
@@ -331,14 +343,6 @@ export const SceneObjectList: React.FC = () => {
 
   return (
     <>
-      {contextGroup && (
-        <div className="kura-tree-context" role="status">
-          <span>{t(language, 'groups.tree.inside', { name: contextGroup.name })}</span>
-          <button type="button" className="kura-mini-icon-btn" title={t(language, 'groups.tree.exit')} aria-label={t(language, 'groups.tree.exit')} aria-keyshortcuts="Escape" onClick={() => useKuraStore.getState().exitGroup()}>
-            <LogOut size={13} aria-hidden="true" />
-          </button>
-        </div>
-      )}
       <div
         ref={listRef}
         className="kura-scene-list kura-scene-tree"
@@ -368,7 +372,11 @@ export const SceneObjectList: React.FC = () => {
             onCancelRename={cancelRename}
             onRenameField={focusRenameField}
             onClick={(e) => handleClick(e, row)}
-            onDoubleClick={() => startRename(row)}
+            onDoubleClick={() => {
+              const start = rows.find((r) => r.key === clickStart.current) ?? row;
+              setActiveKey(start.key);
+              startRename(start);
+            }}
             onToggleExpand={() => setExpanded(row, !row.expanded)}
             onToggleVisible={() => toggleVisible(row)}
             onToggleLock={() => toggleLock(row)}
@@ -379,6 +387,15 @@ export const SceneObjectList: React.FC = () => {
           />
         ))}
       </div>
+      {/* Bajo el árbol: al entrar o salir de un grupo las filas no se desplazan entre clics. */}
+      {contextGroup && (
+        <div className="kura-tree-context" role="status">
+          <span>{t(language, 'groups.tree.inside', { name: contextGroup.name })}</span>
+          <button type="button" className="kura-mini-icon-btn" title={t(language, 'groups.tree.exit')} aria-label={t(language, 'groups.tree.exit')} aria-keyshortcuts="Escape" onClick={() => useKuraStore.getState().exitGroup()}>
+            <LogOut size={13} aria-hidden="true" />
+          </button>
+        </div>
+      )}
       <p id={`${baseId}-hint`} className="kura-scene-hint">
         {t(language, 'sidebar.scene.keyboardHint')} · {t(language, 'groups.tree.hint')}
       </p>
