@@ -6,11 +6,12 @@
  * @license MIT
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { type InspectorSectionProps } from './inspectorTypes';
+import { HOLLOW_REQUEST_FRESH_MS, useHollowRequest } from './hollowPanelRequest';
 
 /** Ahuecar con grosor de pared y orificio de drenaje. */
 export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
@@ -20,9 +21,21 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
   const hollowObject = useKuraStore((s) => s.hollowObject);
   const showInteriorSection = useKuraStore((s) => s.showInteriorSection);
   const isBusy = Boolean(busyOperation);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const request = useHollowRequest();
+
+  // Abierto desde el menú contextual: el panel entra a la vista y el grosor queda enfocado.
+  useEffect(() => {
+    if (!request.at || Date.now() - request.at > HOLLOW_REQUEST_FRESH_MS) return;
+    const root = rootRef.current;
+    if (!root) return;
+    root.scrollIntoView({ block: 'nearest' });
+    root.querySelector<HTMLInputElement>('input')?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [request.n]);
 
   return (
-    <div className="kura-form-field">
+    <div className="kura-form-field" ref={rootRef}>
       <div className="kura-field-row">
         <label>{t(language, 'inspector.op.hollowTitle')}</label>
         <PrecisionNumberInput

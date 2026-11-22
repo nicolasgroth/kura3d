@@ -39,6 +39,7 @@ import { type ContextMenuState } from './viewportHelpers';
 import { type SceneObject } from '../../types/kura';
 import { MenuGroup, MenuItem, MenuSurface, SubMenu } from './contextMenu/MenuKit';
 import { PieceShapeItems } from './contextMenu/PieceShapeItems';
+import { openHollowPanel } from '../inspector/hollowPanelRequest';
 
 /** Ejes del usuario (Z = altura) con su eje interno del motor. */
 const MIRROR_AXES = [
@@ -58,7 +59,6 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
   const setObjectsHole = useKuraStore((s) => s.setObjectsHole);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const runBooleanOnSelection = useKuraStore((s) => s.runBooleanOnSelection);
-  const hollowObject = useKuraStore((s) => s.hollowObject);
   const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
   const duplicateObjects = useKuraStore((s) => s.duplicateObjects);
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
@@ -113,7 +113,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
 
       <div className="kura-context-sep" role="separator" />
       <MenuGroup title={t(language, 'menu.group.geometry')}>
-        <MenuItem icon={<Box size={14} aria-hidden="true" />} label={t(language, 'ctx.hollow')} disabled={target.locked} onSelect={run(() => void hollowObject(target.id, { enabled: true, wallThickness: 2.2 }))} />
+        <MenuItem icon={<Box size={14} aria-hidden="true" />} label={t(language, 'ctx.hollowOpen')} tip={t(language, 'ctx.hollowOpenTip')} disabled={target.locked} onSelect={run(() => openHollowPanel(target.id))} />
         <MenuItem icon={<Scissors size={14} aria-hidden="true" />} label={t(language, 'ctx.planeCut')} disabled={target.locked} keys="C" onSelect={run(() => setActiveDialog('cut'))} />
         <MenuItem icon={<PaintBucket size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.generateMold')} keys="Shift+M" onSelect={run(() => setActiveDialog('mold'))} />
         <MenuItem icon={<Type size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.projectSurface')} disabled={target.locked} onSelect={run(() => setActiveDialog('project'))} />

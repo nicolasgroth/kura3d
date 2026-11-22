@@ -87,6 +87,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         // Muestra la pared con un corte de sección temporal (el aviso explica cómo volver).
         get().showInteriorSection(id);
         get().addToast(tr('toast.hollowDone', { thickness: options.wallThickness }), 'success');
+        if (!options.drainHole) get().addToast(tr('toast.hollowSealed'), 'info');
         reportEngineWarnings(change.warnings);
         return true;
       });

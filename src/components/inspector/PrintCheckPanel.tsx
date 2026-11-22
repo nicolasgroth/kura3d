@@ -11,7 +11,7 @@
 import React, { useState } from 'react';
 import {
   AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Boxes, Eye, EyeOff, FlipVertical, Grid3x3,
-  Layers, Maximize2, Ruler, ShieldAlert, ShieldCheck, type LucideIcon,
+  Layers, Maximize2, PackageOpen, Ruler, ShieldAlert, ShieldCheck, type LucideIcon,
 } from 'lucide-react';
 import '../../styles/printCheckPanel.css';
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../../engine/operationLimits';
@@ -32,6 +32,7 @@ const ISSUE_ICONS: Record<PrintWarningCode, LucideIcon> = {
   HIGH_DENSITY: Boxes,
   THIN_WALL: Ruler,
   INVERTED_NORMALS: FlipVertical,
+  SEALED_CAVITY: PackageOpen,
 };
 
 const WALL = OPERATION_RANGES.printability.minWallMm;

@@ -531,7 +531,7 @@ export const TopBar: React.FC = () => {
         <button
           type="button"
           className="kura-btn kura-btn-icon kura-btn-sm"
-          onClick={() => openSettings('ai')}
+          onClick={() => openSettings('appearance')}
           title={t(language, 'topbar.settingsTip')}
           aria-label={t(language, 'topbar.settings')}
         >

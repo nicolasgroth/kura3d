@@ -49,7 +49,8 @@ const count = (type: PrimitiveType, key: 'segments' | 'sides', defaultValue: num
 /** Campos de cada primitiva, en el orden en que se muestran (defaults de `primitiveParams.ts`). */
 export function primitiveParamFields(type: PrimitiveType): ParamField[] {
   switch (type) {
-    case 'box': return [len(type, 'width', 20), len(type, 'height', 20), len(type, 'depth', 20)];
+    // Orden del usuario: Ancho (X), Fondo (Y), Alto (Z).
+    case 'box': return [len(type, 'width', 20), len(type, 'depth', 20), len(type, 'height', 20)];
     case 'cylinder': return [len(type, 'radius', 10), len(type, 'height', 20), count(type, 'segments', 32)];
     case 'cone': return [len(type, 'radius', 12), len(type, 'height', 24), count(type, 'segments', 32)];
     case 'tube': return [len(type, 'outerRadius', 12), len(type, 'innerRadius', 7), len(type, 'height', 20), count(type, 'segments', 36)];

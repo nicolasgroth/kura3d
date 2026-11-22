@@ -32,6 +32,8 @@ import { useFunctionKeys } from './components/useFunctionKeys';
 import { guardUnsavedChanges } from './utils/unsavedGuard';
 import { ConfirmDialogHost } from './components/ConfirmDialogHost';
 import { NarrowPanelBar } from './components/NarrowPanelBar';
+import { requestLeftPanelTab } from './components/leftPanelTabRequest';
+import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest';
 
 const TRANSFORM_SHORTCUTS = new Map<string, TransformMode>([
   ['m', 'translate'],
@@ -71,8 +73,20 @@ export const App: React.FC = () => {
   }, []);
   useFunctionKeys({ revealLeftPanel });
 
+  // El menú contextual pide abrir el inspector (panel Ahuecar): en pantallas estrechas es una hoja.
+  useEffect(() => {
+    const onOpenInspector = () => {
+      if (useKuraStore.getState().aiDrawerOpen) useKuraStore.getState().setAiDrawerOpen(false);
+      setNarrowPanel('right');
+    };
+    window.addEventListener(OPEN_INSPECTOR_EVENT, onOpenInspector);
+    return () => window.removeEventListener(OPEN_INSPECTOR_EVENT, onOpenInspector);
+  }, []);
+
   function toggleNarrowPanel(panel: 'left' | 'right') {
     if (aiDrawerOpen) setAiDrawerOpen(false);
+    // «Formas» abre la pestaña Formas, no la última visitada (Escena).
+    if (panel === 'left' && visibleNarrowPanel !== 'left') requestLeftPanelTab('shapes');
     setNarrowPanel(visibleNarrowPanel === panel ? null : panel);
   }
 
@@ -211,7 +225,7 @@ export const App: React.FC = () => {
 
       if (mod && e.key === ',') {
         e.preventDefault();
-        state.openSettings('ai');
+        state.openSettings('appearance');
         return;
       }
 
