@@ -17,6 +17,7 @@ import type { PreviewGhost, PreviewRole } from '../../store/slices/previewSlice'
 import { useKuraStore } from '../../store/useKuraStore';
 import { LaserCutPreview } from './LaserCutPreview';
 import { SplitPlanPreview } from '../split/SplitPlanPreview';
+import { SplitJointHighlight } from '../split/SplitJointHighlight';
 import { SplitPlateGuides } from '../split/SplitPlateGuides';
 
 const ROLE_COLOR: Record<PreviewRole, string> = { result: '#22d3ee', base: '#38bdf8', tool: '#f43f5e' };
@@ -104,6 +105,7 @@ export const PreviewLayers: React.FC = () => {
       <LaserCutPreview />
       <SplitPlanPreview />
       <SplitPlateGuides />
+      <SplitJointHighlight />
       {pickId && <SurfacePickCatcher objectId={pickId} />}
       {preview.ghosts.map((g) => (
         <GhostMesh key={`${g.id}:${g.role}`} ghost={g} dimmed={dimmed} />

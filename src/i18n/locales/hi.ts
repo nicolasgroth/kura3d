@@ -9,12 +9,14 @@
 
 import type { TranslationKey } from '../translations';
 import { PREVIEW_HI } from './preview';
+import { SPLITJOINTS_HI } from './splitJoints';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
  */
 export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...PREVIEW_HI,
+  ...SPLITJOINTS_HI,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',

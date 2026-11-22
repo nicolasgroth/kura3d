@@ -9,12 +9,14 @@
 
 import type { TranslationKey } from '../translations';
 import { PREVIEW_FR } from './preview';
+import { SPLITJOINTS_FR } from './splitJoints';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
  */
 export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...PREVIEW_FR,
+  ...SPLITJOINTS_FR,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',

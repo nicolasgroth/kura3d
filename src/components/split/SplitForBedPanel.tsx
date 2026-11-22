@@ -307,15 +307,17 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         <legend>{t(language, 'split.joint')}</legend>
         <div className="kura-form-field">
           <label htmlFor={`${uid}-kind`}>{t(language, 'dialog.cut.connectorType')}</label>
-          <select id={`${uid}-kind`} className="kura-select" value={kind} title={t(language, 'split.connectorTip')} onChange={(e) => setKind(e.target.value as ConnectorKind)}>
+          <select id={`${uid}-kind`} className="kura-select" value={kind} title={t(language, 'split.connectorTip')} aria-describedby={kind === 'loose-dowel' ? `${uid}-dowel-help` : undefined} onChange={(e) => setKind(e.target.value as ConnectorKind)}>
             <option value="auto">{t(language, 'split.joint.auto')}</option>
             <option value="lap">{t(language, 'split.joint.lap')}</option>
             <option value="none">{t(language, 'dialog.cut.connector.none')}</option>
             <option value="dowel">{t(language, 'dialog.cut.connector.dowel')}</option>
             <option value="peg">{t(language, 'dialog.cut.connector.peg')}</option>
             <option value="dovetail">{t(language, 'dialog.cut.connector.dovetail')}</option>
+            <option value="loose-dowel">{t(language, 'split.joint.looseDowel')}</option>
           </select>
         </div>
+        {kind === 'loose-dowel' && <p className="kura-split-target" id={`${uid}-dowel-help`}>{t(language, 'split.looseDowelHelp')}</p>}
         {kind !== 'none' && kind !== 'lap' &&
           num('minwall', `${t(language, 'split.minWall')} (mm)`, minWall, setMinWall, OR.split.minWallForConnectorMm, { step: 0.5, def: D.minWallForConnectorMm, hint: t(language, 'split.minWallTip') })}
         {kind === 'lap' && <p className="kura-split-target">{t(language, 'split.lapShapeNote')}</p>}

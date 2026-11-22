@@ -1,0 +1,240 @@
+/**
+ * @file src/styles/splitJoints.css
+ * @description Estilos de la sección "Uniones" del inspector (lista de uniones con estado, avisos,
+ * sugerencias, validación y orden de montaje). Los estados se distinguen por icono y texto además del color.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-split-joints-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.kura-split-joint-list,
+.kura-split-order,
+.kura-split-validation ul,
+.kura-split-joint-options ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kura-split-joint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-split-joint {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-subtle);
+  border-left-width: 3px;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  min-width: 0;
+}
+
+.kura-split-joint[data-status='weak'],
+.kura-split-joint[data-status='blocked'] {
+  border-left-color: #f59e0b;
+}
+
+.kura-split-joint[data-status='glue'],
+.kura-split-joint[data-status='changed'] {
+  border-left-color: var(--accent-cyan);
+}
+
+.kura-split-joint[data-status='ok'] {
+  border-left-color: #22c55e;
+}
+
+.kura-split-joint-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kura-split-joint-btn:hover,
+.kura-split-joint-btn[aria-pressed='true'] {
+  color: var(--accent-cyan);
+}
+
+.kura-split-joint-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.kura-split-joint-status {
+  --status-color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border: 1px solid var(--status-color);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  /* El texto usa el color primario (contraste en tema claro); el estado se marca con icono, borde y texto. */
+  color: var(--text-primary);
+}
+
+.kura-split-joint-status svg {
+  color: var(--status-color);
+}
+
+.kura-split-joint-status[data-status='weak'],
+.kura-split-joint-status[data-status='blocked'] {
+  --status-color: #d97706;
+}
+
+.kura-split-joint-status[data-status='ok'] {
+  --status-color: #16a34a;
+}
+
+.kura-split-joint-status[data-status='glue'],
+.kura-split-joint-status[data-status='changed'] {
+  --status-color: var(--accent-cyan);
+}
+
+.kura-split-joint-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-split-joint-note,
+.kura-split-validation p {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.kura-split-joint-note svg,
+.kura-split-validation p svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.kura-split-joint-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.kura-split-joint-options ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kura-split-joint-options li {
+  padding: 2px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.kura-split-joint-dowels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.kura-split-validate {
+  align-self: flex-start;
+}
+
+.kura-split-validation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-split-validation-main {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.kura-split-validation [data-kind='ok'] svg {
+  color: #22c55e;
+}
+
+.kura-split-validation [data-kind='warn'] svg {
+  color: #f59e0b;
+}
+
+.kura-split-validation ul {
+  padding-left: 18px;
+  list-style: disc;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.kura-split-order-title {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.kura-split-order {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+@media (forced-colors: active) {
+  .kura-split-joint-status {
+    border-color: CanvasText;
+  }
+}
+
+/* Número de paso de montaje junto al nombre de una pieza en la lista de la escena */
+.kura-step-tag {
+  flex: none;
+  min-width: 16px;
+  padding: 0 4px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  color: var(--accent-cyan);
+}

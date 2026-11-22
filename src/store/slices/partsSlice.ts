@@ -72,6 +72,14 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         get().requestCameraPreset('focus', result.parts.map((p) => p.id));
         get().addToast(tr('toast.splitForBedDone', { count: result.parts.length, joints: result.joints.length }), 'success');
         reportEngineWarnings(change.warnings);
+        // Lo que dijo el motor queda junto a las uniones del grupo (la interfaz lo muestra por unión).
+        get().setSplitNotes(obj.id, {
+          warnings: [...(change.warnings ?? [])],
+          suggestions: result.assembly?.suggestions ?? [],
+          weakJoints: result.assembly?.weakJoints ?? [],
+          gluedByFix: result.assembly?.gluedByFix ?? [],
+          changedByFix: result.assembly?.changedByFix ?? [],
+        });
         return { plan, parts: result.parts, joints: result.joints, looseDowels: result.looseDowels, plateCount: result.plateCount, assembly: result.assembly };
       });
     },
