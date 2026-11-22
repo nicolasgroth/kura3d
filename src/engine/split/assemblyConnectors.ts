@@ -43,14 +43,16 @@ export function jointDirections(j: AssemblyJointInput, part: number): AssemblyDi
 /**
  * Tipo de conector alternativo con el que `part` puede entrar con la dirección `d` en la unión `j`, o
  * `null`: la cola de milano desliza por su eje propio; espiga y tarugo, por la normal del plano.
+ * Pasar a cola de milano exige una ranura pasante que abre la superficie exterior: solo con
+ * `allowSurface` (decisión del usuario). Pasar de cola de milano a espiga no la altera.
  */
-export function alternativeType(j: AssemblyJointInput, part: number, d: AssemblyDirection): SplitConnectorType | null {
+export function alternativeType(j: AssemblyJointInput, part: number, d: AssemblyDirection, allowSurface = true): SplitConnectorType | null {
   if (j.kind !== 'connector' || !j.connector || j.connector.type === 'lap') return null;
   if (j.connector.type === 'dovetail') {
     const normal = `${part === j.a.part ? '+' : '-'}${j.axis}`;
     return d === normal ? 'dowel' : null;
   }
-  return d[1] === DOVETAIL_SLIDE[j.axis] ? 'dovetail' : null;
+  return allowSurface && d[1] === DOVETAIL_SLIDE[j.axis] ? 'dovetail' : null;
 }
 
 /** Radio de huella con holgura del conector de una unión. */
@@ -191,6 +193,17 @@ export function connectorClashes(
     }
   }
   return out;
+}
+
+/**
+ * Radio máximo al que la firmeza activa puede llevar un conector pedido de radio `requestedMm` en una
+ * cara cuya isla más ancha mide `widthMm` (2·área/perímetro): max(pedido, min(máximo recomendado,
+ * `maxReinforceWidthFraction`·ancho)). Así un tubo de pared 12 no pasa de 3 mm de radio; lo pedido por
+ * el usuario nunca se recorta aquí (si no cabe, lo reduce la ubicación).
+ */
+export function reinforcementCap(requestedMm: number, widthMm: number): number {
+  const L = ASSEMBLY_LIMITS;
+  return Math.max(requestedMm, Math.min(L.maxRecommendedRadiusMm, L.maxReinforceWidthFraction * widthMm));
 }
 
 /** Radio recomendado del conector de una unión según su área de contacto y la pieza que sostiene. */

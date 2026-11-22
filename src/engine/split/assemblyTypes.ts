@@ -54,6 +54,11 @@ export interface ValidateAssemblyOptions {
   checkExterior?: boolean;
   /** Considera cambiar el tipo de conector como arreglo (por defecto `true`). */
   allowTypeChange?: boolean;
+  /**
+   * Permite que el arreglo elija cambios que alteran la superficie exterior (por defecto `false`): a
+   * cola de milano, cuya ranura pasante abre la pieza. Sin esta opción ese cambio solo se sugiere.
+   */
+  allowSurfaceChange?: boolean;
 }
 
 /** Par de piezas que se interfieren rearmadas. */

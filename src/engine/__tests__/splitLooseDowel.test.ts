@@ -72,7 +72,7 @@ describe('firmeza activa', () => {
 });
 
 describe('sugerencias por unión trabada', () => {
-  it('cubo 2×2×2: cada unión trabada ofrece pegar o cambiar a cola de milano y autoFix conserva más conectores', async () => {
+  it('cubo 2×2×2: cada unión trabada ofrece pegar o cambiar a cola de milano y, si se pide, autoFix conserva más conectores', async () => {
     const obj = objFromM(w.Manifold.cube([100, 100, 100], true), 'cubo');
     const plan = await planBedSplit(obj, { widthMm: 70, depthMm: 70, heightMm: 70 }, { connector: { type: 'dowel', size: 4, depth: 5, tolerance: 0.2, count: 1 } });
     const raw = await executeBedSplitGeometry(obj, plan, { assemblyAutoFix: false, reinforceWeakJoints: false });
@@ -80,7 +80,8 @@ describe('sugerencias por unión trabada', () => {
     expect(s.length).toBeGreaterThan(0);
     for (const x of s) expect(x.options).toContain('glue');
     expect(s.some((x) => x.options.some((o) => o.startsWith('change-type:')))).toBe(true);
-    const res = await executeBedSplitGeometry(obj, plan, { reinforceWeakJoints: false });
+    // La cola de milano pasante abre la superficie: solo se aplica si el usuario la pide
+    const res = await executeBedSplitGeometry(obj, plan, { reinforceWeakJoints: false, assemblyAllowSurfaceChange: true });
     const a = res.assembly!;
     expect(a.blocked).toEqual([]);
     const withConnector = res.joints.filter((j) => j.kind === 'connector').length;

@@ -60,12 +60,15 @@ export function buildLapSolids(
   heightMm: number,
   clearanceMm: number,
   rejected?: LapRejection,
+  /** Si se pasa, recibe por isla si llevó solape. */
+  accepted?: boolean[],
 ): LapSolids | null {
   const tongues: CrossSection[] = [];
   const grooves: CrossSection[] = [];
   let tongueMm = Infinity;
   try {
-    for (const island of islands) {
+    for (const [i, island] of islands.entries()) {
+      if (accepted) accepted[i] = false;
       const w = islandWidth(island);
       // Lengüeta y paredes de ranura iguales: w = lengüeta + 2·holgura + 2·pared
       const tongueW = (w - 2 * clearanceMm) / 3;
@@ -85,6 +88,7 @@ export function buildLapSolids(
         continue;
       }
       tongues.push(t);
+      if (accepted) accepted[i] = true;
       grooves.push(cleanOffset(island, -grooveWall));
       tongueMm = Math.min(tongueMm, tongueW);
     }
