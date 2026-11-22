@@ -54,6 +54,32 @@ export interface RigidDelta {
 }
 
 /**
+ * Pivote único de la transformación rígida (lo usan el inspector, el gizmo y el bus): solo escala →
+ * base del conjunto (no se hunde ni se despega de la cama); con giro → centro de la caja.
+ */
+export function rigidPivot(objects: readonly Placed[], delta: RigidDelta): Vec3 {
+  const onlyScale = delta.scale !== undefined && !delta.rotation?.some((r) => r !== 0);
+  return onlyScale ? selectionBasePivot(objects) : selectionPivot(objects);
+}
+
+/**
+ * Delta del conjunto a partir del nodo auxiliar del gizmo: según el modo, solo traslación (posición
+ * actual − inicial), solo giro o solo escala proporcional (manda el eje que más cambió, mínimo 0,02).
+ */
+export function gizmoRigidDelta(
+  mode: 'translate' | 'rotate' | 'scale',
+  start: Vec3,
+  proxy: { position: Vec3; rotation: Vec3; scale: Vec3 },
+): RigidDelta {
+  if (mode === 'translate') {
+    return { translate: [proxy.position[0] - start[0], proxy.position[1] - start[1], proxy.position[2] - start[2]] };
+  }
+  if (mode === 'rotate') return { rotation: [...proxy.rotation] as Vec3 };
+  const factor = proxy.scale.reduce((best, f) => (Math.abs(f - 1) > Math.abs(best - 1) ? f : best), 1);
+  return { scale: Math.max(0.02, factor) };
+}
+
+/**
  * Nuevas posición, rotación y escala de cada objeto al aplicar `delta` al conjunto alrededor de
  * `pivot`: p' = pivote + t + R·s·(p − pivote); rotación' = R·rotación; escala' = s·escala. La escala
  * es uniforme: con objetos girados dentro del conjunto, una escala por eje deformaría el grupo.

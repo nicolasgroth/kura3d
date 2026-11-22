@@ -10,6 +10,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { decodeProject, encodeProject } from '../../project/projectCodec';
+import { gizmoRigidDelta, selectionBox, selectionPivot } from '../../core/scene/groupTransform';
 import { captureProject } from '../projectDocument';
 import { useKuraStore } from '../useKuraStore';
 import { addBox, byId, resetStore, store } from './storeTestUtils';
@@ -87,6 +88,38 @@ describe('grupos en el store', () => {
     store().undo();
     store().undo();
     expect(byId(a.id)!.scale).toEqual([1, 1, 1]);
+  });
+
+  it('ruta del gizmo: escalar el grupo lo deja apoyado en la cama y girar no lo hunde', async () => {
+    const { a, b, c } = await fourBoxes();
+    store().groupObjects([a.id, b.id, c.id]);
+    const members = () => store().objects.filter((o) => store().selectedIds.includes(o.id));
+    const minY = () => selectionBox(members())!.min.y;
+    expect(minY()).toBeCloseTo(0, 5);
+    // Igual que GroupTransformGizmo: base del arrastre, nodo auxiliar en el centro, sin pivote propio.
+    const baseline = members().map((o) => ({ id: o.id, position: o.position, rotation: o.rotation, scale: o.scale }));
+    const start = selectionPivot(members());
+    for (const f of [1.4, 2]) {
+      const delta = gizmoRigidDelta('scale', start, { position: start, rotation: [0, 0, 0], scale: [f, 1, 1] });
+      expect(store().transformSelectionRigid(delta, { baseline })).toBe(true);
+    }
+    store().commitTransformSnapshot();
+    expect(minY()).toBeCloseTo(0, 4);
+    expect(byId(a.id)!.scale).toEqual([2, 2, 2]);
+    // Mover por el gizmo traslada exactamente lo arrastrado.
+    const before = byId(a.id)!.position[0];
+    const s2 = selectionPivot(members());
+    const base2 = members().map((o) => ({ id: o.id, position: o.position, rotation: o.rotation, scale: o.scale }));
+    store().transformSelectionRigid(gizmoRigidDelta('translate', s2, { position: [s2[0] + 7, s2[1], s2[2]], rotation: [0, 0, 0], scale: [1, 1, 1] }), { baseline: base2 });
+    store().commitTransformSnapshot();
+    expect(byId(a.id)!.position[0]).toBeCloseTo(before + 7, 5);
+    expect(minY()).toBeCloseTo(0, 4);
+    // Girar en Y (vertical interna) no cambia la altura del conjunto.
+    const s3 = selectionPivot(members());
+    const base3 = members().map((o) => ({ id: o.id, position: o.position, rotation: o.rotation, scale: o.scale }));
+    store().transformSelectionRigid(gizmoRigidDelta('rotate', s3, { position: s3, rotation: [0, Math.PI / 3, 0], scale: [1, 1, 1] }), { baseline: base3 });
+    store().commitTransformSnapshot();
+    expect(minY()).toBeCloseTo(0, 4);
   });
 
   it('combina sin booleanas (volumen = suma) y separa los cuerpos', async () => {
