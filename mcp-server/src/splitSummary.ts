@@ -25,7 +25,7 @@ interface PartLike {
 
 interface SplitResultLike {
   dryRun?: boolean;
-  plan?: { fitsWithoutCuts?: boolean; pieces?: unknown[]; planes?: unknown[]; counts?: unknown };
+  plan?: { fitsWithoutCuts?: boolean; pieces?: unknown[]; planes?: unknown[]; counts?: unknown; occupancy?: { exact?: boolean; pieces?: number; joints?: number } };
   parts?: PartLike[];
   joints?: JointLike[];
   plateCount?: number;
@@ -53,7 +53,11 @@ export function summarizeSplitResult(raw: unknown): Record<string, unknown> {
   return {
     dryRun: r.dryRun ?? false,
     fitsWithoutCuts: r.plan?.fitsWithoutCuts ?? false,
-    pieces: parts.length > 0 ? parts.length : (r.plan?.pieces?.length ?? 0),
+    // Sin dividir (dryRun): las piezas reales del plan (celdas ocupadas) si las trae; si no, las celdas de la rejilla.
+    pieces: parts.length > 0 ? parts.length : (r.plan?.occupancy?.pieces ?? r.plan?.pieces?.length ?? 0),
+    ...(parts.length === 0 && r.plan?.occupancy
+      ? { planned: { pieces: r.plan.occupancy.pieces, joints: r.plan.occupancy.joints, exact: r.plan.occupancy.exact === true } }
+      : {}),
     planes: r.plan?.planes?.length ?? 0,
     counts: r.plan?.counts,
     plates: r.plateCount ?? 0,

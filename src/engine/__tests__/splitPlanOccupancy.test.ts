@@ -11,6 +11,7 @@
 import type { ManifoldToplevel } from 'manifold-3d';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { summarizeSplitPlan } from '../../core/scene/splitPlanSummary';
+import { splitPlanToUser } from '../../core/scene/userAxesContract';
 import { initManifoldEngine } from '../manifoldKernel';
 import { executeBedSplitGeometry, planBedSplit } from '../split';
 import { lPipe, objFrom } from './splitPipeShapes';
@@ -39,6 +40,11 @@ describe('plan con conteos reales', () => {
     expect(summary.jointCount).toBe(4);
     expect(summary.exact).toBe(true);
     expect(summary.plateEstimate).toBeGreaterThan(0);
+
+    // En ejes del usuario (bus y MCP) las celdas y medidas se reordenan como las piezas del plan
+    const user = splitPlanToUser(plan);
+    expect(user.occupancy!.cells).toEqual(plan.occupancy!.cells.map((c) => [c[0], c[2], c[1]]));
+    expect(user.occupancy!.pieceSizesMm[0]).toEqual([0, 2, 1].map((a) => plan.occupancy!.pieceSizesMm[0][a]));
 
     const res = await executeBedSplitGeometry(obj, plan, { connector: null, validateAssembly: false });
     expect(res.parts.length).toBe(5);
