@@ -1,13 +1,14 @@
 /**
  * @file src/components/dialogs/SurfaceProjectModal.tsx
- * @description Diálogo de proyección conformal de texto o SVG sobre una superficie 3D.
+ * @description Panel de proyección conformal de texto o SVG sobre una superficie 3D, con vista
+ * previa en vivo en el visor y colocación con clic sobre la pieza (fija cara y U/V).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import React, { useState } from 'react';
-import { FileUp, Type } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Crosshair, FileUp, Type } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
@@ -17,6 +18,7 @@ import {
   PRINT_COLOR_PALETTE,
   type SurfaceProjectionAxis,
   type SurfaceProjectionMode,
+  type SurfaceProjectionOptions,
 } from '../../types/kura';
 import { openLocalFile } from '../../utils/platformBridge';
 import { SVG_PRESETS } from './dialogPresets';
@@ -44,6 +46,68 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
   const [offsetV, setOffsetV] = useState(0);
 
   const targetId = selectedIds[0] ?? objects[0]?.id;
+  const target = objects.find((o) => o.id === targetId) ?? null;
+  const requestPreview = useKuraStore((s) => s.requestOperationPreview);
+  const clearPreview = useKuraStore((s) => s.clearOperationPreview);
+  const previewStatus = useKuraStore((s) => (s.operationPreview.key === 'project' ? s.operationPreview.status : 'idle'));
+  const surfacePick = useKuraStore((s) => s.surfacePick);
+  const setSurfacePick = useKuraStore((s) => s.setSurfacePick);
+  const picking = Boolean(open && surfacePick && surfacePick.objectId === targetId);
+  const content = kind === 'text' ? text.trim() : svgContent.trim();
+
+  const options: SurfaceProjectionOptions = {
+    kind,
+    text: kind === 'text' ? text : undefined,
+    svgContent: kind === 'svg' ? svgContent : undefined,
+    mode,
+    axis,
+    widthMm,
+    depthMm,
+    colorHex,
+    offsetU,
+    offsetV,
+  };
+  const signature = JSON.stringify(options);
+
+  // Vista previa en vivo sobre la pieza (debounce y descarte de obsoletos en el store).
+  useEffect(() => {
+    if (!open || !target || !content) {
+      clearPreview('project');
+      return;
+    }
+    requestPreview({ key: 'project', task: 'projectSurface', args: { obj: target, options } });
+    // `options` se resume en `signature`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, target, signature, content]);
+
+  useEffect(() => {
+    if (open) return;
+    clearPreview('project');
+    setSurfacePick(null);
+  }, [open, clearPreview, setSurfacePick]);
+
+  // Clic sobre la pieza: fija cara y U/V.
+  const pickNonce = surfacePick?.nonce ?? 0;
+  useEffect(() => {
+    const placement = useKuraStore.getState().surfacePick?.placement;
+    if (!placement) return;
+    setAxis(placement.axis);
+    setOffsetU(placement.offsetU);
+    setOffsetV(placement.offsetV);
+  }, [pickNonce]);
+
+  // Escape sale del modo de colocación antes que cerrar el panel.
+  useEffect(() => {
+    if (!picking) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setSurfacePick(null);
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [picking, setSurfacePick]);
 
   const handleLoadSvg = async () => {
     const file = await openLocalFile('.svg');
@@ -54,20 +118,8 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
 
   const handleExecute = async () => {
     if (!targetId) return;
-    const { result: res } = await failure.run(() =>
-      projectOnObjectSurface(targetId, {
-        kind,
-        text: kind === 'text' ? text : undefined,
-        svgContent: kind === 'svg' ? svgContent : undefined,
-        mode,
-        axis,
-        widthMm,
-        depthMm,
-        colorHex,
-        offsetU,
-        offsetV,
-      }),
-    );
+    clearPreview('project');
+    const { result: res } = await failure.run(() => projectOnObjectSurface(targetId, options));
     if (res) onClose();
   };
 
@@ -94,6 +146,36 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
       }
     >
       <OperationFailureAlert message={failure.error} />
+      <div className="kura-preview-status" data-state={previewStatus}>
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm"
+          aria-pressed={picking}
+          disabled={!targetId}
+          title={t(language, 'projectPreview.pickTip')}
+          onClick={() => setSurfacePick(picking || !targetId ? null : targetId)}
+        >
+          <Crosshair size={13} aria-hidden="true" />
+          <span>{t(language, 'projectPreview.pick')}</span>
+        </button>
+        <span role="status">
+          {picking
+            ? surfacePick?.placement
+              ? t(language, 'projectPreview.placed', {
+                  axis: surfacePick.placement.axis.toUpperCase(),
+                  u: surfacePick.placement.offsetU,
+                  v: surfacePick.placement.offsetV,
+                })
+              : t(language, 'projectPreview.picking')
+            : previewStatus === 'pending'
+              ? t(language, 'preview.computing')
+              : previewStatus === 'error'
+                ? t(language, 'preview.failed')
+                : previewStatus === 'ready'
+                  ? t(language, 'preview.ready')
+                  : ''}
+        </span>
+      </div>
       <div className="kura-form-grid">
         <div className="kura-form-field">
           <label htmlFor="proj-kind">{t(language, 'dialog.project.kind')}</label>

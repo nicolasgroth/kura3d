@@ -10,6 +10,7 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { Html } from '@react-three/drei';
+import type { ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { t, type TranslationKey } from '../../i18n';
 import type { PreviewGhost, PreviewRole } from '../../store/slices/previewSlice';
@@ -55,13 +56,51 @@ const GhostMesh: React.FC<{ ghost: PreviewGhost; dimmed: boolean }> = ({ ghost, 
   );
 };
 
+/** Copia invisible de la pieza que recibe el clic de "colocar con clic" (punto y normal de mundo). */
+const SurfacePickCatcher: React.FC<{ objectId: string }> = ({ objectId }) => {
+  const obj = useKuraStore((s) => s.objects.find((o) => o.id === objectId) ?? null);
+  const pick = useKuraStore((s) => s.pickSurfaceAt);
+  const geometry = useMemo(() => {
+    if (!obj) return null;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(obj.mesh.positions, 3));
+    g.setIndex(new THREE.BufferAttribute(obj.mesh.indices, 1));
+    g.computeBoundingSphere();
+    return g;
+  }, [obj]);
+  useEffect(() => () => geometry?.dispose(), [geometry]);
+  if (!obj || !geometry) return null;
+  const onClick = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    if (!e.face) return;
+    const n = e.face.normal.clone().transformDirection(e.object.matrixWorld);
+    pick([e.point.x, e.point.y, e.point.z], [n.x, n.y, n.z]);
+  };
+  return (
+    <mesh
+      geometry={geometry}
+      position={obj.position}
+      rotation={obj.rotation}
+      // Apenas más grande para que el rayo la toque antes que la pieza real.
+      scale={[obj.scale[0] * 1.003, obj.scale[1] * 1.003, obj.scale[2] * 1.003]}
+      onClick={onClick}
+      onPointerOver={(e) => ((e.nativeEvent.target as HTMLElement).style.cursor = 'crosshair')}
+      onPointerOut={(e) => ((e.nativeEvent.target as HTMLElement).style.cursor = '')}
+    >
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
+    </mesh>
+  );
+};
+
 export const PreviewLayers: React.FC = () => {
   const preview = useKuraStore((s) => s.operationPreview);
   const language = useKuraStore((s) => s.language);
+  const pickId = useKuraStore((s) => s.surfacePick?.objectId ?? null);
   const dimmed = preview.status === 'pending';
   return (
     <>
       <LaserCutPreview />
+      {pickId && <SurfacePickCatcher objectId={pickId} />}
       {preview.ghosts.map((g) => (
         <GhostMesh key={`${g.id}:${g.role}`} ghost={g} dimmed={dimmed} />
       ))}

@@ -12,6 +12,7 @@
 import type { SceneChange } from '../../core/operations';
 import type { EngineTaskArgs, EngineTaskName } from '../../core/operations/engineTasks';
 import { resolveBooleanInputs } from '../../core/scene/sceneRules';
+import { placementFromHit, worldCenter, type SurfacePlacement } from '../../engine/surfacePlacement';
 import type { BooleanOpType, MeshData, SceneObject, Vec3 } from '../../types/kura';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
@@ -78,6 +79,11 @@ export interface PreviewSliceState {
   showInteriorSection: (objectId: string) => void;
   /** Sale de la vista de sección temporal y restaura el estado anterior. */
   exitInteriorSection: () => void;
+  /** Modo "colocar con clic" sobre una pieza: el último clic fija cara y U/V (`nonce` cambia). */
+  surfacePick: { objectId: string; placement: SurfacePlacement | null; nonce: number } | null;
+  setSurfacePick: (objectId: string | null) => void;
+  /** Registra un clic sobre la pieza (punto y normal de mundo). */
+  pickSurfaceAt: (point: Vec3, normal: Vec3) => void;
 }
 
 export const PREVIEW_DEBOUNCE_MS = 250;
@@ -218,6 +224,18 @@ export function createPreviewSlice(ctx: StoreContext): PreviewSliceState {
       if (!view) return;
       get().setSectionPlane(view.previous);
       set({ temporarySectionView: null });
+    },
+
+    surfacePick: null,
+
+    setSurfacePick: (objectId) =>
+      set({ surfacePick: objectId ? { objectId, placement: null, nonce: get().surfacePick?.nonce ?? 0 } : null }),
+
+    pickSurfaceAt: (point, normal) => {
+      const pick = get().surfacePick;
+      const obj = pick && get().objects.find((o) => o.id === pick.objectId);
+      if (!pick || !obj) return;
+      set({ surfacePick: { ...pick, placement: placementFromHit(worldCenter(obj), point, normal), nonce: pick.nonce + 1 } });
     },
   };
 }
