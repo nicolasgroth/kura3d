@@ -13,6 +13,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { OperationPanel } from '../OperationPanel';
+import { PreviewButton } from '../preview/PreviewButton';
 import { type MoldMode } from '../../types/kura';
 
 /** Modal 4: Generador Automático de Moldes y Contra-Moldes (Velas, Silicona, Resina). */
@@ -34,20 +35,20 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
 
   const targetId = selectedIds[0] ?? objects[0]?.id;
 
+  const moldOptions = {
+    mode,
+    wallMarginMm,
+    boxWallMm,
+    splitAxis,
+    pourSpout,
+    pourSpoutRadiusMm,
+    keyToleranceMm,
+    cavityWallMm,
+  };
+
   const handleExecute = async () => {
     if (!targetId) return;
-    const { result: created } = await failure.run(() =>
-      generateMoldForObject(targetId, {
-        mode,
-        wallMarginMm,
-        boxWallMm,
-        splitAxis,
-        pourSpout,
-        pourSpoutRadiusMm,
-        keyToleranceMm,
-        cavityWallMm,
-      }),
-    );
+    const { result: created } = await failure.run(() => generateMoldForObject(targetId, moldOptions));
     if (created.length > 0) onClose();
   };
 
@@ -74,6 +75,15 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
       }
     >
       <OperationFailureAlert message={failure.error} />
+      <PreviewButton
+        previewKey="mold"
+        open={open}
+        signature={`${targetId}|${JSON.stringify(moldOptions)}`}
+        buildRequest={() => {
+          const obj = objects.find((o) => o.id === targetId);
+          return obj ? { key: 'mold', task: 'mold', args: { obj, options: moldOptions } } : null;
+        }}
+      />
       <div className="kura-form-field">
         <label htmlFor="mold-mode">{t(language, 'dialog.mold.mode')}</label>
         <select

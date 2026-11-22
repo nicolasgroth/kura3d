@@ -90,6 +90,8 @@ function changeOf(result: unknown): SceneChange | null {
   const rec = result as Record<string, unknown>;
   if (rec.change && typeof rec.change === 'object') return rec.change as SceneChange;
   if (Array.isArray(rec.added) && Array.isArray(rec.patches)) return rec as unknown as SceneChange;
+  // Tareas que crean un objeto suelto (p. ej. rosca).
+  if ('id' in rec && 'mesh' in rec) return { added: [rec as unknown as SceneObject], removedIds: [], patches: [], warnings: [] };
   return null;
 }
 
