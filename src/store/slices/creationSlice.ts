@@ -137,6 +137,13 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
         await get().initEngine();
         const change = await regenerateParametric(opCtx(), obj, edit);
         assertCurrent([obj]);
+        // Texto 3D: el nombre sigue al texto mientras conserve el texto anterior (no editado a mano).
+        const oldText = state.status === 'primitive' ? (state.params as { text?: unknown }).text : undefined;
+        const newText = edit.kind === 'primitive' ? (edit.params as { text?: unknown }).text : undefined;
+        if (typeof oldText === 'string' && typeof newText === 'string' && oldText.trim() && newText.trim()
+          && oldText !== newText && obj.name.includes(oldText) && change.patches?.[0]) {
+          change.patches[0].patch.name = obj.name.split(oldText).join(newText.trim());
+        }
         // Un solo paso de deshacer por edición confirmada (commitChange guarda el historial).
         commitChange(change, { select: [obj.id] });
         return get().objects.find((o) => o.id === id) ?? null;

@@ -17,6 +17,10 @@ import { type InspectorSectionProps } from './inspectorTypes';
 import '../../styles/structure-highlight.css';
 
 /** Detección de estructuras dentro de Herramientas Maker. */
+/** Grosor mínimo (mm) para listar una región como parte. */
+const MIN_REGION_MM = 0.05;
+const isListedRegion = (region: { dimensionsMm: readonly number[] }) => Math.min(...region.dimensionsMm) > MIN_REGION_MM;
+
 export const StructureDetectionPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
   const language = useKuraStore((s) => s.language);
   const unitSystem = useKuraStore((s) => s.unitSystem);
@@ -102,12 +106,13 @@ export const StructureDetectionPanel: React.FC<InspectorSectionProps> = ({ prima
 
       {activeSegmentation && activeSegmentation.objectId === primary.id && (
         <div className="kura-struct-results">
+          {/* Las regiones degeneradas (sin grosor) no son partes imprimibles: no se listan. */}
           <div className="kura-field-row">
             <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>
               {tCount(
                 language,
                 { one: 'inspector.struct.regionsCount.one', other: 'inspector.struct.regionsCount.other' },
-                activeSegmentation.regions.length,
+                activeSegmentation.regions.filter(isListedRegion).length,
               )}
             </span>
           </div>
@@ -143,7 +148,7 @@ export const StructureDetectionPanel: React.FC<InspectorSectionProps> = ({ prima
               </div>
 
               <div className="kura-struct-list" ref={listRef}>
-                {activeSegmentation.regions.map((region) => {
+                {activeSegmentation.regions.filter(isListedRegion).map((region) => {
                   const label = structureLabel(language, activeSegmentation.regions, region.id);
                   return (
                     <div
