@@ -771,6 +771,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.shortcuts.openMold': '打开模具 / 硅胶生成器',
   'dialog.shortcuts.toggleXray': '切换 X 光 / 剖切平面',
   'dialog.shortcuts.togglePaint': '切换 3MF 涂色工具',
+  'dialog.shortcuts.brushSize': '缩小 / 放大画笔半径',
   'dialog.shortcuts.openCut': '打开带连接件的平面切割',
   'dialog.shortcuts.dropBed': '将选中对象贴合热床 (Z=0)',
   'dialog.shortcuts.toggleHole': '切换实体 / 镂空（减法）',

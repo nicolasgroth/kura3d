@@ -771,6 +771,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.shortcuts.openMold': 'Ouvrir le Générateur de Moules / Silicone',
   'dialog.shortcuts.toggleXray': 'Basculer le plan Rayons X / Coupe',
   'dialog.shortcuts.togglePaint': 'Basculer l’outil Peindre 3MF',
+  'dialog.shortcuts.brushSize': 'Réduire / agrandir le rayon du pinceau',
   'dialog.shortcuts.openCut': 'Ouvrir la Coupe par Plan avec connecteurs',
   'dialog.shortcuts.dropBed': 'Poser la sélection sur le plateau (Z=0)',
   'dialog.shortcuts.toggleHole': 'Basculer Solide / Creux (Soustraction)',
