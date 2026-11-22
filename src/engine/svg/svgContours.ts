@@ -26,6 +26,27 @@ function isFilled(style: { fill?: string; fillOpacity?: number } | undefined): b
   return fill !== 'none' && fill !== 'transparent' && style?.fillOpacity !== 0;
 }
 
+/** Un elemento con trazo visible (lo que el usuario ve como línea). */
+function isStroked(style: { stroke?: string; strokeOpacity?: number; strokeWidth?: number } | undefined): boolean {
+  const stroke = style?.stroke?.trim().toLowerCase();
+  return Boolean(stroke) && stroke !== 'none' && stroke !== 'transparent' && style?.strokeOpacity !== 0 && style?.strokeWidth !== 0;
+}
+
+/**
+ * true si el SVG tiene líneas visibles (trazos). Se consulta solo cuando no salió ningún contorno
+ * relleno: es el caso típico de un dibujo exportado solo con trazos, que no da sólido, y permite
+ * explicar el error en vez del genérico. (Una `<line>` tiene relleno por defecto pero no área.)
+ */
+export function svgHasStrokes(svgContent: string): boolean {
+  let parsed: ReturnType<SVGLoader['parse']>;
+  try {
+    parsed = withSvgDomParser(() => new SVGLoader().parse(svgContent));
+  } catch {
+    return false;
+  }
+  return parsed.paths.some((path) => path.subPaths.length > 0 && isStroked(path.userData?.style));
+}
+
 /**
  * Lee los contornos rellenos de un SVG. Cada grupo conserva su anillo exterior y sus agujeros
  * (regla par-impar dentro del grupo); los grupos distintos se unen luego con `CrossSection.union`.

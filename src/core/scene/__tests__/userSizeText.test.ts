@@ -8,21 +8,16 @@
  * @license MIT
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { formatUserSize } from '../userSizeText';
 
 /** Archivos con un arreglo pendiente que este lote no puede tocar (otro agente trabaja ahí). */
 const PENDING_ELSEWHERE = new Set(['src/components/split/SplitOverlays.tsx']);
 
-function sourceFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    if (statSync(path).isDirectory()) return name === '__tests__' ? [] : sourceFiles(path);
-    return /\.tsx?$/.test(name) ? [path] : [];
-  });
-}
+/** Fuentes de los componentes (sin pruebas), como texto. */
+const SOURCES = import.meta.glob(['/src/components/**/*.{ts,tsx}', '!/src/components/**/__tests__/**'], {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>;
 
 describe('tamaños en ejes del usuario', () => {
   it('cilindro Ø100 × 600 (alto en Y interno) se muestra 100 × 100 × 600', () => {
@@ -31,11 +26,10 @@ describe('tamaños en ejes del usuario', () => {
   });
 
   it('todo componente que arma "a × b × c" convierte el tamaño con toUserSize/formatUserSize', () => {
-    const root = process.cwd();
-    const offenders = sourceFiles(join(root, 'src', 'components'))
-      .map((f) => [relative(root, f).replace(/\\/g, '/'), readFileSync(f, 'utf8')] as const)
+    expect(Object.keys(SOURCES).length).toBeGreaterThan(20);
+    const offenders = Object.entries(SOURCES)
       .filter(([, text]) => /join\(' × '\)/.test(text) && !/toUserSize|formatUserSize/.test(text))
-      .map(([path]) => path)
+      .map(([path]) => path.replace(/^\//, ''))
       .filter((path) => !PENDING_ELSEWHERE.has(path));
     expect(offenders).toEqual([]);
   });

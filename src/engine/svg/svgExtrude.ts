@@ -14,7 +14,7 @@ import { EngineError } from '../engineErrors';
 import { initManifoldEngine, manifoldToMeshData } from '../manifoldKernel';
 import { normalizeMeshToBed } from '../primitives';
 import type { SvgContourGroups } from '../svgContourPack';
-import { extractSvgElementGroups, svgCurveSegments } from './svgContours';
+import { extractSvgElementGroups, svgCurveSegments, svgHasStrokes } from './svgContours';
 
 /**
  * Importa y extruye un SVG en un sólido cerrado, escalado a `targetWidth` mm y apoyado en Y=0.
@@ -31,7 +31,7 @@ export async function extrudeSvgToMesh(
   const groups = preParsedGroups ?? extractSvgElementGroups(options.svgContent, svgCurveSegments(options));
 
   if (groups.length === 0) {
-    throw new EngineError('SVG_NO_CONTOURS');
+    throw new EngineError(svgHasStrokes(options.svgContent) ? 'SVG_STROKES_ONLY' : 'SVG_NO_CONTOURS');
   }
 
   const elementSections: CrossSection[] = [];

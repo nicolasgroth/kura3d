@@ -16,6 +16,7 @@ import { SPLITPREFS_DE } from './splitPrefs';
 import { SPLITCOUPLING_DE } from './splitCoupling';
 import { A11YUX_DE } from './a11yUx';
 import { SPLITUX_DE } from './splitUx';
+import { FIX10_DE } from './fix10';
 import { OPNOTES_DE } from './operationNotes';
 
 /**
@@ -30,6 +31,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...SPLITCOUPLING_DE,
   ...A11YUX_DE,
   ...SPLITUX_DE,
+  ...FIX10_DE,
   ...OPNOTES_DE,
   // Marca y shell principal
   'app.name': 'Kura3D',
@@ -749,7 +751,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyExternal': 'Hinweis: Mit {provider} und konfiguriertem API-Schlüssel werden Chat-Nachrichten an den externen Dienst {provider} gesendet.',
   'dialog.settings.aiPrivacyLocal': 'Volle Privatsphäre: Ohne externen API-Schlüssel (oder mit lokalem Ollama) bleiben alle Operationen auf Ihrem Gerät.',
   'dialog.settings.aboutAuthor': 'Autor: Nicolás Groth (ngroth@gmail.com) — Entwickelt für ISGROTH (Innovación y Soluciones GROTH). MIT-Lizenz.',
-  'dialog.settings.aboutStack': 'Watertight Manifold-WASM-Geometriekern, React Three Fiber, Three.js, Tauri v2 und Echtzeit-MCP-Brücke.',
+  'dialog.settings.aboutStack': 'Manifold-WASM-Geometriekern für geschlossene Netze, React Three Fiber, Three.js, Tauri v2 und Echtzeit-MCP-Brücke.',
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': '{name}-Emblem',
   'app.lockupAlt': 'Offizielles {name}-Logo',

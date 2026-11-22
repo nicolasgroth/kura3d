@@ -2,7 +2,7 @@
  * @file src/engine/svg/svgDocument.ts
  * @description Lectura del XML de un SVG con `@xmldom/xmldom` (MIT), igual en navegador, Worker y
  * Node, y adaptación mínima del árbol a lo que `THREE.SVGLoader` espera de un DOM de navegador:
- * `viewportElement.getElementById` para `<use>`, `style` en línea consultable por propiedad y
+ * `viewportElement.getElementById` para `<use>` (también con `href` de SVG 2), `style` en línea consultable por propiedad y
  * `sheet.cssRules` para bloques `<style>` con selectores simples.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -53,10 +53,24 @@ function parseStyleSheet(css: string): { cssRules: { type: number; selectorText:
   return { cssRules };
 }
 
+const XLINK_NS = 'http://www.w3.org/1999/xlink';
+
+/**
+ * SVG 2 escribe `<use href="#id">` sin `xlink:`; `SVGLoader` solo lee `xlink:href`. Se copia `href`
+ * al atributo con espacio de nombres xlink (si no lo tiene ya).
+ */
+function normalizeHref(node: AnyNode): void {
+  const el = node as AnyNode & { getAttributeNS?(ns: string, name: string): string | null; setAttributeNS?(ns: string, name: string, value: string): void };
+  if (node.nodeName !== 'use' || !el.getAttributeNS || !el.setAttributeNS) return;
+  const plain = node.getAttribute('href');
+  if (plain && !el.getAttributeNS(XLINK_NS, 'href')) el.setAttributeNS(XLINK_NS, 'xlink:href', plain);
+}
+
 /** Recorre el árbol y le agrega lo que `SVGLoader` lee de un DOM de navegador. */
 function decorate(node: AnyNode, doc: AnyNode): void {
   if (node.nodeType !== 1) return;
   node.viewportElement = doc;
+  normalizeHref(node);
   const inline = node.getAttribute('style');
   node.style = styleDeclaration(inline ? parseDeclarations(inline) : {});
   if (node.nodeName === 'style') node.sheet = parseStyleSheet(node.textContent ?? '');
