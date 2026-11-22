@@ -32,6 +32,7 @@ import { PreviewLayers } from './PreviewLayers';
 import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
 import { GroupTransformGizmo } from './GroupTransformGizmo';
+import { GroupEnterOnDoubleClick } from './GroupEnterOnDoubleClick';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
 import { usePaintStroke } from './usePaintStroke';
 
@@ -314,6 +315,7 @@ export const SceneContent: React.FC<{
       </GizmoHelper>
 
       <CameraController orbitRef={orbitRef} />
+      <GroupEnterOnDoubleClick />
       <ViewportCaptureRegistrar />
       <ViewportCanvasA11y />
     </>
