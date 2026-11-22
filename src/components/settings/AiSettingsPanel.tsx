@@ -347,8 +347,9 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
         </div>
       )}
 
+      {/* En modo Local no hay modelo ni temperatura: el intérprete es determinista. */}
+      {!localMode && (
       <div className="kura-form-grid">
-        {!localMode && (
         <div className="kura-form-field">
           <label htmlFor="ai-model">{t(language, 'dialog.settings.model')}</label>
           <input
@@ -364,7 +365,6 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
             {modelSuggestions(draft).map((model) => <option key={model} value={model} />)}
           </datalist>
         </div>
-        )}
         <div className="kura-form-field">
           <label htmlFor="ai-temp">
             {t(language, 'dialog.settings.temperature')} ({draft.temperature})
@@ -382,6 +382,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
           />
         </div>
       </div>
+      )}
 
       {!localMode && (
       <div className="kura-form-field">

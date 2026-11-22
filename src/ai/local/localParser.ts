@@ -27,7 +27,15 @@ export type LocalIntent =
   | { kind: 'cut' }
   | { kind: 'boolean'; op: 'union' | 'subtract' | 'intersect' }
   | { kind: 'export'; format: 'stl' | '3mf'; onlySelected: boolean }
-  | { kind: 'query'; what: 'size' | 'scene' };
+  | { kind: 'query'; what: 'size' | 'scene' }
+  | { kind: 'printability' }
+  | { kind: 'thread'; part: 'bolt' | 'nut'; diameter: number; pitch: number; length: number }
+  | { kind: 'threadHole'; diameter: number; pitch: number };
+
+/** Paso ISO grueso por diámetro nominal (M3–M20). */
+export const ISO_COARSE_PITCH: Record<number, number> = {
+  3: 0.5, 4: 0.7, 5: 0.8, 6: 1, 8: 1.25, 10: 1.5, 12: 1.75, 14: 2, 16: 2, 18: 2.5, 20: 2.5,
+};
 
 /** A qué se refiere la cláusula, tal como lo dijo el usuario. */
 export interface TargetRef {
@@ -86,7 +94,8 @@ const ACTIONS: Array<[LocalIntent['kind'] | 'union' | 'subtract' | 'intersect', 
   ['cut', /\b(cort\w*|cut|divid\w*|split)\b/],
   ['duplicate', /\b(duplic\w*|clon\w*|copi\w*|duplicate|clone|copy)\b/],
   ['delete', /\b(borr\w*|elimin\w*|delete|remove|quita\w*)\b/],
-  ['center', /\b(centr\w*|center|centre)\b/],
+  // Solo el verbo: "en el centro" es una ubicación, no la orden de centrar.
+  ['center', /\b(centra|centrar|centrala|centralo|centralas|centralos|centre|center)\b/],
   ['drop', /\b(apoy\w*|drop|lay)\b/],
   ['scale', /\b(escal\w*|agrand\w*|achic\w*|redimension\w*|scale|resize|enlarge|shrink)\b/],
   ['rotate', /\b(rot[ae]\w*|rotar|gir[ae]\w*|girar|rotate|turn|spin)\b/],
@@ -172,7 +181,8 @@ function actionOf(clause: string): (typeof ACTIONS)[number][0] | undefined {
 }
 
 function isActionable(clause: string): boolean {
-  return Boolean(shapeOf(clause) || actionOf(clause) || CREATE_VERB.test(clause) || QUESTION.test(clause));
+  return Boolean(shapeOf(clause) || actionOf(clause) || CREATE_VERB.test(clause) || QUESTION.test(clause)
+    || THREAD_WORD.test(clause) || PRINTABILITY.test(clause));
 }
 
 /** Divide en cláusulas; los fragmentos sin verbo ni figura ("20 mm de diámetro") se unen al anterior. */
@@ -183,7 +193,10 @@ export function splitClauses(text: string): string[] {
     .filter(Boolean);
   const clauses: string[] = [];
   for (const piece of pieces) {
-    if (clauses.length > 0 && !isActionable(piece)) clauses[clauses.length - 1] += ` ${piece}`;
+    // Solo se unen fragmentos que parecen medidas o colores; el resto queda como cláusula propia
+    // (y, si no se entiende, se informa en vez de pegarse a la orden anterior).
+    const looksLikeDetail = /\d/.test(piece) || LABEL_AFTER.test(piece) || COLORS.some(([re]) => re.test(piece));
+    if (clauses.length > 0 && !isActionable(piece) && looksLikeDetail) clauses[clauses.length - 1] += ` ${piece}`;
     else clauses.push(piece);
   }
   return clauses;
@@ -227,7 +240,28 @@ function createParams(shape: LocalShape, ms: Measure[]): Record<string, number> 
   }
 }
 
+const THREAD_WORD = /\b(rosca\w*|roscad\w*|threads?|threaded|tornillos?|pernos?|bolts?|screws?|tuercas?|nuts?)\b|\bm\d{1,2}\b/;
+const HOLE_WORD = /\b(agujeros?|orificios?|hoyos?|holes?|perforacion\w*|taladr\w*)\b/;
+const PRINTABILITY = /\b(imprimib\w*|printab\w*|se puede imprimir|can (it|this) be printed|valid\w*|analiz\w*|analy[sz]\w*|voladizos?|overhangs?)\b/;
+const NOMINAL = /\bm(\d{1,2})(?: paso (\d+(?:\.\d+)?))?\b/;
+
+function threadIntent(clause: string): LocalIntent | null {
+  if (!THREAD_WORD.test(clause)) return null;
+  const nominalMatch = clause.match(NOMINAL);
+  const ms = extractMeasures(clause.replace(NOMINAL, ' '));
+  const nominal = Number(nominalMatch?.[1] ?? pick(ms, 'diameter') ?? 8);
+  const diameter = Math.min(20, Math.max(3, nominal));
+  const pitch = nominalMatch?.[2] ? Number(nominalMatch[2]) : ISO_COARSE_PITCH[diameter] ?? Math.max(0.5, Math.round(diameter * 0.6) / 4);
+  if (HOLE_WORD.test(clause)) return { kind: 'threadHole', diameter, pitch };
+  const part = /\b(tuercas?|nuts?)\b/.test(clause) ? 'nut' : 'bolt';
+  const length = pick(ms, 'height') ?? pick(ms, 'depth') ?? ms.find((m) => !m.label && !m.percent && !m.multiplier)?.value ?? 20;
+  return { kind: 'thread', part, diameter, pitch, length };
+}
+
 function intentOf(clause: string): LocalIntent | null {
+  const thread = threadIntent(clause);
+  if (thread) return thread;
+  if (PRINTABILITY.test(clause)) return { kind: 'printability' };
   const shape = shapeOf(clause);
   const action = actionOf(clause);
   const creating = CREATE_VERB.test(clause);
@@ -311,6 +345,9 @@ function refOf(clause: string, objectNames: readonly string[]): TargetRef {
 export function parseLocalPrompt(prompt: string, objectNames: readonly string[] = []): LocalPlan {
   const text = strip(prompt)
     .replace(/(\d),(\d)/g, '$1.$2')
+    // "M6x1" es métrica y paso, no dos medidas; "en el centro" es una ubicación, no "centrar".
+    .replace(/\bm(\d{1,2})\s*[x×]\s*(\d+(?:\.\d+)?)/g, 'm$1 paso $2')
+    .replace(/\b(en el|en la|al|in the|at the|on the)\s+(centro|center|centre|medio|middle)\b/g, ' ')
     // "20x50x30" → "20 50 30" para leer cada medida por separado.
     .replace(/(\d)\s*[x×*]\s*(?=\d)/g, '$1 ')
     .replace(/[¿¡]/g, ' ')

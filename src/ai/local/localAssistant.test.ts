@@ -153,6 +153,60 @@ describe('local assistant on the real store', () => {
     expect(exported.executedTools[0].name).toBe('export_stl');
   });
 
+  it('greeting: threaded hole M6 confirmed with "sí" runs exactly the shown plan (no centering)', async () => {
+    await useKuraStore.getState().createPrimitive('cylinder', { radius: 15, height: 30 }, { name: 'Cilindro 4' });
+    const cyl = byName('Cilindro 4');
+    useKuraStore.getState().setSelection([cyl.id]);
+    const volumeBefore = cyl.stats.volumeMm3;
+    const ask1 = await ask('agrégale un agujero roscado M6 en el centro');
+    expect(ask1.executedTools).toEqual([]);
+    expect(ask1.assistantText).toMatch(/agujero roscado M6×1/);
+    expect(ask1.assistantText).not.toMatch(/centrar/);
+    const done = await ask('sí');
+    const names = done.executedTools.map((t) => t.name);
+    expect(names).toEqual(['create_thread', 'transform_object', 'boolean_operation']);
+    expect(names).not.toContain('center');
+    const result = objects().find((o) => !o.isHole)!;
+    expect(objects().filter((o) => o.isHole)).toHaveLength(0);
+    expect(result.stats.volumeMm3).toBeLessThan(volumeBefore - 300);
+    expect(done.assistantText).toMatch(/M6×1/);
+  });
+
+  it('greeting: "¿qué tan imprimible es?" analyzes the selection without asking', async () => {
+    await addBoxes(1);
+    const out = await ask('¿qué tan imprimible es?');
+    expect(out.executedTools.map((t) => t.name)).toEqual(['analyze_printability']);
+    expect(out.assistantText).toMatch(/imprimibilidad \d+\/100/);
+  });
+
+  it('greeting: creates ISO bolts and nuts', async () => {
+    const out = await ask('crea un tornillo M8 de 25 mm');
+    expect(out.executedTools.map((t) => t.name)).toEqual(['create_thread']);
+    expect(parseLocalPrompt('crea una tuerca M10').steps[0].intent).toMatchObject({ kind: 'thread', part: 'nut', diameter: 10, pitch: 1.5 });
+    expect(parseLocalPrompt('rosca M6x0.75').steps[0].intent).toMatchObject({ diameter: 6, pitch: 0.75 });
+  });
+
+  it('does nothing at all when part of the request is not understood', async () => {
+    await addBoxes(1);
+    const revision = objects();
+    const out = await ask('duplica Caja 1 y baila la macarena');
+    expect(out.executedTools).toEqual([]);
+    expect(objects()).toBe(revision);
+    expect(out.assistantText).toMatch(/no ejecuté nada/);
+  });
+
+  it('"en el centro" is a location, not the center command', () => {
+    expect(parseLocalPrompt('pon una esfera en el centro').steps.map((s) => s.intent.kind)).toEqual(['create']);
+    expect(parseLocalPrompt('céntrala').steps[0].intent.kind).toBe('center');
+  });
+
+  it('chat-created pieces are born in free space, not inside another one', async () => {
+    await ask('crea un cubo de 40 mm');
+    await ask('crea un cubo de 40 mm');
+    const [a, b] = objects();
+    expect(Math.abs(a.position[0] - b.position[0]) + Math.abs(a.position[2] - b.position[2])).toBeGreaterThanOrEqual(40);
+  });
+
   it('replies in the UI language', async () => {
     const out = await ask('make a 30 mm cube', 'en');
     expect(out.assistantText).toMatch(/^Created/);

@@ -75,7 +75,8 @@ export const AiChatDrawer: React.FC = () => {
         { signal: controller.signal },
       );
 
-      for (const tool of output.executedTools) {
+      // El asistente local ya describe cada acción con su detalle: sin burbujas de herramienta duplicadas.
+      for (const tool of output.usedLocalFallback ? [] : output.executedTools) {
         // Las lecturas de escena no son acciones: la respuesta ya trae las medidas en texto.
         if (tool.name === 'get_scene_state') continue;
         addAiMessage({

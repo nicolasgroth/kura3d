@@ -45,14 +45,46 @@ export function resetLocalAssistant(): void {
 
 const AXES = ['X', 'Y', 'Z'];
 const MODIFIES: ReadonlySet<LocalIntent['kind']> = new Set([
-  'move', 'scale', 'rotate', 'hollow', 'center', 'drop', 'duplicate', 'delete', 'texture', 'cut', 'boolean',
+  'move', 'scale', 'rotate', 'hollow', 'center', 'drop', 'duplicate', 'delete', 'texture', 'cut', 'boolean', 'threadHole',
 ]);
+/** Solo lectura: actúa sobre la selección sin pedir confirmación. */
+const READS: ReadonlySet<LocalIntent['kind']> = new Set(['printability']);
 
 const fmt = (n: number) => String(Math.round(n * 10) / 10);
 const dimsOf = (o?: SceneObject) => {
   const d = o?.stats?.dimensionsMm;
   return d ? `${fmt(d[0])} × ${fmt(d[1])} × ${fmt(d[2])} mm` : '—';
 };
+
+/** Descripción del paso tal como se ejecutará: es lo que se muestra al pedir confirmación. */
+export function describeIntent(lang: LanguageCode, intent: LocalIntent): string {
+  const tr = (key: string, params?: Record<string, string | number>) => t(lang, key as TranslationKey, params);
+  switch (intent.kind) {
+    case 'move':
+      return tr('ai.local.plan.move', { amount: fmt(intent.amount), axis: AXES[intent.axis] });
+    case 'scale':
+      return tr('ai.local.plan.scale', { percent: fmt(intent.factor * 100) });
+    case 'rotate':
+      return tr('ai.local.plan.rotate', { degrees: fmt(intent.degrees), axis: AXES[intent.axis] });
+    case 'hollow':
+      return tr(intent.drain ? 'ai.local.plan.hollowDrain' : 'ai.local.plan.hollow', { wall: fmt(intent.wall) });
+    case 'texture':
+      return tr('ai.local.plan.texture', { pattern: intent.pattern });
+    case 'boolean':
+      return tr(`ai.local.op.${intent.op}`);
+    case 'threadHole':
+      return tr('ai.local.plan.threadHole', { size: `M${fmt(intent.diameter)}×${fmt(intent.pitch)}` });
+    case 'center':
+    case 'drop':
+    case 'duplicate':
+    case 'delete':
+    case 'cut':
+    case 'printability':
+      return tr(`ai.local.plan.${intent.kind}`);
+    default:
+      return intent.kind;
+  }
+}
 
 class LocalRun {
   readonly executedTools: AiTurnOutput['executedTools'] = [];
@@ -127,7 +159,8 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
   };
   switch (intent.kind) {
     case 'create': {
-      const res = await run.run('create_primitive', { type: intent.shape, ...intent.params, ...(intent.color ? { color: intent.color } : {}) });
+      // Nace en espacio libre de la cama, nunca dentro de otra pieza.
+      const res = await run.run('create_primitive', { type: intent.shape, ...intent.params, placement: 'free', ...(intent.color ? { color: intent.color } : {}) });
       if (!res.ok) return fail(res.error);
       const id = (res.result as { id?: string } | null)?.id ?? null;
       run.createdId = id;
@@ -145,6 +178,71 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
       await run.refresh();
       const obj = run.find(id);
       run.say('ai.local.booleanDone', { op: t(run.lang, `ai.local.op.${intent.op}` as TranslationKey), name: obj?.name ?? '—', dims: dimsOf(obj) });
+      return true;
+    }
+    case 'thread': {
+      const res = await run.run('create_thread', {
+        kind: intent.part, diameterMm: intent.diameter, pitchMm: intent.pitch, lengthMm: intent.length, includeHead: intent.part === 'bolt',
+      });
+      if (!res.ok) return fail(res.error);
+      const id = (res.result as { id?: string } | null)?.id ?? null;
+      run.createdId = id;
+      memory.lastCreatedId = id;
+      await run.refresh();
+      const obj = run.find(id);
+      run.say('ai.local.created', { name: obj?.name ?? `M${fmt(intent.diameter)}`, dims: dimsOf(obj) });
+      return true;
+    }
+    case 'printability': {
+      for (const id of ids) {
+        const name = run.find(id)?.name ?? id;
+        const res = await run.run('analyze_printability', { id });
+        if (!res.ok) return fail(res.error);
+        const r = res.result as { score?: number; overhangPercent?: number; estimatedWeightGrams?: number; issues?: unknown[] } | null;
+        run.say('ai.local.printability', {
+          name,
+          score: r?.score ?? '—',
+          overhang: fmt(r?.overhangPercent ?? 0),
+          weight: fmt(r?.estimatedWeightGrams ?? 0),
+          issues: r?.issues?.length ?? 0,
+        });
+      }
+      return true;
+    }
+    case 'threadHole': {
+      for (const id of ids) {
+        const target = run.find(id);
+        if (!target) return fail();
+        const height = (target.stats?.dimensionsMm?.[1] ?? 0) * (target.scale?.[1] ?? 1);
+        if (!(height > 0)) return fail();
+        if (target.rotation.some((r) => Math.abs(r) > 1e-6)) {
+          run.say('ai.local.threadHoleRotated', { name: target.name });
+          return false;
+        }
+        // Atraviesa la pieza por su eje vertical con 1 mm de sobra a cada lado y se resta.
+        const created = await run.run('create_thread', {
+          kind: 'hole', diameterMm: intent.diameter, pitchMm: intent.pitch, lengthMm: height + 2, includeHead: false,
+        });
+        if (!created.ok) return fail(created.error);
+        const holeId = (created.result as { id?: string } | null)?.id;
+        if (!holeId) return fail();
+        const moved = await run.run('transform_object', {
+          id: holeId, position: [target.position[0], target.position[1] - 1, target.position[2]],
+        });
+        if (!moved.ok) return fail(moved.error);
+        const cut = await run.run('boolean_operation', { op: 'subtract', targetId: id, toolIds: [holeId] });
+        if (!cut.ok) {
+          await run.run('delete_object', { id: holeId });
+          return fail(cut.error);
+        }
+        const resultId = (cut.result as { resultId?: string } | null)?.resultId ?? id;
+        run.createdId = resultId;
+        await run.refresh();
+        const after = run.find(resultId);
+        run.say('ai.local.threadHoleDone', {
+          name: after?.name ?? target.name, size: `M${fmt(intent.diameter)}×${fmt(intent.pitch)}`, dims: dimsOf(after),
+        });
+      }
       return true;
     }
     case 'export': {
@@ -311,6 +409,11 @@ export async function runLocalAssistant(prompt: string, lang: LanguageCode, exec
     run.say('ai.local.notUnderstood', { text: prompt.trim().slice(0, 80) });
     return run.output();
   }
+  // Si una parte no se entiende no se ejecuta nada: hacer solo lo entendido cambiaría el sentido.
+  if (plan.unknown.length) {
+    run.say('ai.local.nothingDone', { text: plan.unknown.join(' / ').slice(0, 80) });
+    return run.output();
+  }
 
   for (let i = 0; i < plan.steps.length; i++) {
     const step = plan.steps[i];
@@ -320,12 +423,16 @@ export async function runLocalAssistant(prompt: string, lang: LanguageCode, exec
       describeScene(run, step);
       continue;
     }
-    if (intent.kind === 'create' || intent.kind === 'export') {
+    if (intent.kind === 'create' || intent.kind === 'export' || intent.kind === 'thread') {
       if (!(await applyStep(intent, [], run))) break;
       continue;
     }
-    if (!MODIFIES.has(intent.kind)) continue;
+    if (!MODIFIES.has(intent.kind) && !READS.has(intent.kind)) continue;
     const target = resolveTarget(step, run);
+    if ('confirm' in target && READS.has(intent.kind)) {
+      if (!(await applyStep(intent, target.confirm, run))) break;
+      continue;
+    }
     if ('ambiguous' in target) {
       run.say('ai.local.ambiguous', { names: target.ambiguous.map((n) => `«${n}»`).join(', ') });
       break;
@@ -338,11 +445,11 @@ export async function runLocalAssistant(prompt: string, lang: LanguageCode, exec
       // No se nombró ningún objeto: se pregunta antes de tocar la selección actual.
       const rest = plan.steps.slice(i).filter((s) => MODIFIES.has(s.intent.kind));
       memory.pending = { steps: rest, targetIds: target.confirm };
-      run.say('ai.local.confirm', { action: rest.map((s) => s.clause).join(' + '), names: names(run, target.confirm) });
+      // Lo que se muestra es exactamente lo que se ejecutará al responder «sí».
+      run.say('ai.local.confirm', { action: rest.map((s) => describeIntent(run.lang, s.intent)).join(' + '), names: names(run, target.confirm) });
       break;
     }
     if (!(await applyStep(intent, intent.kind === 'boolean' ? [] : target.ids, run))) break;
   }
-  if (plan.unknown.length) run.say('ai.local.partlyUnderstood', { text: plan.unknown.join(' / ').slice(0, 80) });
   return run.output();
 }
