@@ -78,7 +78,6 @@ test('un STL de 10×20×30 mide eso en el inspector y al exportarlo', async ({ p
 for (const [axis, label, idx] of [['X', 'X (vertical)', 0], ['Y', 'Y (vertical)', 1], ['Z', 'Z (horizontal)', 2]] as const) {
   test(`corte por plano eje ${axis}: "solo mitad positiva" conserva el lado + del eje`, async ({ page }, info) => {
     // Fallo conocido: en Y conserva la mitad con Y negativa.
-    if (axis === 'Y') test.fail(true, 'QA6: la mitad positiva en Y conserva y∈[-10,0]');
     await page.goto(URL);
     await importar(page, 'caja.stl', boxStl(10, 20, 30));
     await page.getByRole('button', { name: 'Corte por plano + uniones' }).first().click();

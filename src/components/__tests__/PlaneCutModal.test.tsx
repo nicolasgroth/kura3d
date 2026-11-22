@@ -73,4 +73,24 @@ describe('PlaneCutModal', () => {
     expect(describedBy).toBeTruthy();
     expect(document.getElementById(describedBy!)?.textContent).toContain(reason);
   });
+
+  it('Ejecutar entrega al store la mitad en el sentido del motor: Y del usuario (fondo) invierte, Z y X no', async () => {
+    suggest.mockResolvedValue(null);
+    check.mockResolvedValue(null);
+    const cut = vi.fn().mockResolvedValue([]);
+    useKuraStore.setState({ planeCutObject: cut } as never);
+    render(<PlaneCutModal open onClose={() => undefined} />);
+    fireEvent.change(screen.getByLabelText(t('es', 'dialog.cut.connectorType')), { target: { value: 'none' } });
+    fireEvent.change(screen.getByLabelText(t('es', 'dialog.cut.keepMode')), { target: { value: 'positive' } });
+    // Selector (valores internos): 'z' = Y del usuario, 'y' = Z del usuario (altura), 'x' = X.
+    const expected = { z: 'negative', y: 'positive', x: 'positive' } as const;
+    for (const internal of ['z', 'y', 'x'] as const) {
+      cut.mockClear();
+      fireEvent.change(screen.getByLabelText(t('es', 'dialog.cut.axis')), { target: { value: internal } });
+      await waitFor(() => expect(executeButton()).toHaveProperty('disabled', false));
+      fireEvent.click(executeButton());
+      await waitFor(() => expect(cut).toHaveBeenCalled());
+      expect(cut.mock.calls[0][1]).toMatchObject({ axis: internal, keepMode: expected[internal] });
+    }
+  });
 });

@@ -30,7 +30,7 @@ import { PrecisionNumberInput } from './PrecisionNumberInput';
 import { keyboardFocusInViewport, onCutPlaneDrag } from './viewport/cutPlaneDrag';
 import '../styles/planeCut.css';
 import { userAxisLabel, userAxisOfInternal } from '../core/scene/displayAxes';
-import { axisToUser, keepModeFromUser } from '../store/commandAxes';
+import { planeCutOptionsFromDialog } from './planeCutOptions';
 
 type Axis = 'x' | 'y' | 'z';
 type FitState = 'idle' | 'checking' | 'ok' | 'bad' | 'plane';
@@ -209,16 +209,10 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
     if (!targetId) return;
     markConsumed();
     const { failed } = await failure.run(() =>
-      planeCutObject(targetId, {
-        axis,
-        offset,
-        connectorType,
-        connectorSize,
-        connectorDepth,
-        tolerance,
-        connectorCount,
-        keepMode,
-      }),
+      planeCutObject(
+        targetId,
+        planeCutOptionsFromDialog({ axis, offset, connectorType, connectorSize, connectorDepth, tolerance, connectorCount, keepMode }),
+      ),
     );
     if (!failed) onClose();
   };
