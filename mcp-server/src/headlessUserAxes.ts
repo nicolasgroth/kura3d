@@ -46,9 +46,6 @@ export function userSegmentation(seg: StructuralSegmentationResult): StructuralS
   return { ...seg, regions: seg.regions.map(structureRegionToUser) };
 }
 
-/** Radio de la pincelada de `paint_object` con `localPoint` (el valor inicial del pincel de la app). */
-export const PAINT_BRUSH_RADIUS_MM = 5;
-
 /** Aviso del motor con su mensaje en inglés. */
 export type UserWarning = EngineWarning & { message: string };
 

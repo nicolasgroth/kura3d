@@ -139,18 +139,23 @@ describe('validateAssembly', () => {
     expect(fixed.fix.glueJoints).toHaveLength(1);
   });
 
-  it('(6) rejilla 4×4×3 con espigas: valida y arregla en tiempo acotado', () => {
+  it('(6) rejilla 4×4×3 con espigas: valida y arregla sin crecer más rápido que ~cuadrático', () => {
     const { parts, joints } = grid(4, 4, 3, 40);
-    const t0 = performance.now();
-    const r = validateAssembly(parts, joints, { autoFix: true, allowTypeChange: false });
-    const ms = performance.now() - t0;
+    const run = (g: ReturnType<typeof grid>) => {
+      const t0 = performance.now();
+      const out = validateAssembly(g.parts, g.joints, { autoFix: true, allowTypeChange: false });
+      return { out, ms: performance.now() - t0 };
+    };
+    const { out: r, ms } = run({ parts, joints });
+    const baseline = Math.min(...[0, 1, 2].map(() => run(grid(2, 2, 3, 40)).ms));
     expect(r.blocked).toEqual([]);
     expect(r.order).toHaveLength(48);
     // Cota inferior: uniones − (piezas − 1); el arreglo voraz queda a lo más 3 uniones encima
     expect(r.fix.glueJoints.length).toBeGreaterThanOrEqual(joints.length - 47);
     expect(r.fix.glueJoints.length).toBeLessThanOrEqual(joints.length - 47 + 3);
-    // Objetivo: < 1 s en solitario (≈0,5 s medido). Umbral holgado porque la suite corre en paralelo.
-    expect(ms).toBeLessThan(8000);
+    // Complejidad, no milisegundos: 48 piezas son 4× las 12 de la referencia (medida en esta corrida);
+    // el orden esperado es O(n²·u) ≈ 16×, así que 150× solo cae ante un crecimiento explosivo.
+    expect(ms).toBeLessThan(Math.max(baseline, 2) * 150);
     // Sin espigas (solo pegar): ningún bloqueo y ningún cambio
     const glue = grid(4, 4, 3, 40, false);
     const g = validateAssembly(glue.parts, glue.joints);

@@ -82,6 +82,7 @@ export const SceneMeshItem: React.FC<{
 
     const geometry = useMemo(() => {
       return buildViewportGeometry(obj.mesh, hasFaceColors ? baseColor : undefined);
+      // `baseColor` solo importa si hay colores por cara; pintar o recolorear no reconstruye la geometría.
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [obj.mesh.positions, obj.mesh.indices, obj.mesh.normals, hasFaceColors]);
 

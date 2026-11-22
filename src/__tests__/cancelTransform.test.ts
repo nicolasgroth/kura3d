@@ -1,6 +1,10 @@
 /**
- * Cancelar un arrastre del gizmo (Escape o cambio de herramienta) restaura la transformación
- * previa y no deja ningún paso en el historial.
+ * @file src/__tests__/cancelTransform.test.ts
+ * @description Cancelar un arrastre del gizmo (Escape o cambio de herramienta) restaura la
+ * transformación previa y no deja ningún paso en el historial.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
  */
 import { beforeEach, describe, expect, it } from 'vitest';
 import { initManifoldEngine } from '../engine';

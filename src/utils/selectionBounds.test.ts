@@ -1,3 +1,11 @@
+/**
+ * @file src/utils/selectionBounds.test.ts
+ * @description Pruebas del cálculo de la caja envolvente de la selección con rotación y escala.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { describe, expect, it } from 'vitest';
 import { computeSelectionBounds } from './selectionBounds';
 

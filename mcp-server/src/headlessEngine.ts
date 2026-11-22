@@ -347,7 +347,7 @@ export class KuraHeadlessEngine {
   paintObject(objectId: string, color: string, localPoint?: Vec3): SceneObjectSummary {
     const obj = this.requireEditable(objectId);
     const change = localPoint
-      ? ops.paintBrushSample(this.ctx, obj, ua.vecFromUser(localPoint)!, ua.PAINT_BRUSH_RADIUS_MM, color, { refineEdge: true })
+      ? ops.paintBrushSample(this.ctx, obj, ua.vecFromUser(localPoint)!, OPERATION_DEFAULTS.paint.brushRadiusMm, color, { refineEdge: true })
       : ops.paintWholeObject(this.ctx, obj, color, OPERATION_DEFAULTS.paint.wholeSetsBaseColor);
     if (change) this.apply(change);
     return userSummary(obj);

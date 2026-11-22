@@ -20,6 +20,13 @@ import {
 import { userAxisOfInternal, type AxisName } from './displayAxes';
 import type { LanguageCode } from '../../types/kura';
 
+/**
+ * Códigos cuyo texto nombra un eje ({axis}, {plane} o {planes}) y que se convierten a ejes del usuario aquí.
+ * Una prueba exige que todo código del motor con esos parámetros esté en estas listas.
+ */
+export const AXIS_ERROR_CODES: readonly string[] = ['CUT_PLANE_OUTSIDE', 'SPLIT_AXIS_BLOCKED'];
+export const AXIS_WARNING_CODES: readonly string[] = ['SPLIT_PLANE_THIN_SECTION'];
+
 /** Eje interno (cualquier caja) → rótulo de eje de usuario en mayúscula (como en el resto de la interfaz). */
 function userAxisText(axis: unknown): { text: unknown; sign: 1 | -1 } {
   if (typeof axis !== 'string' || !/^[xyzXYZ]$/.test(axis)) return { text: axis, sign: 1 };

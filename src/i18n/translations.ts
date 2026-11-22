@@ -378,10 +378,6 @@ export const TRANSLATIONS_ES = {
   'badge.localNoAiTip': 'Modo offline determinista: ningún dato sale de tu equipo',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.subtractSphere': 'Quitar esfera interior (− Esfera)',
-  'ctx.subtractCylinder': 'Quitar cilindro interior (− Cilindro)',
-  'ctx.importModuleSub': 'Importar STL/3MF como resta (−)',
-  'ctx.toggleHole': 'Alternar Sólido / Negativo (H)',
   'ctx.applyHoles': 'Aplicar restas ahora',
   'ctx.unionSelection': 'Unir selección',
   'ctx.hollow': 'Ahuecar pieza (Shell)',
@@ -390,7 +386,6 @@ export const TRANSLATIONS_ES = {
   'ctx.projectSurface': 'Proyectar Texto/SVG en Superficie',
   'ctx.validatePrint': 'Validar Estructura 3D',
   'ctx.detectStructures': 'Detectar sub-estructuras (Local)',
-  'ctx.mirrorX': 'Espejar en eje X',
   'ctx.shortcuts': 'Atajos de teclado (?)',
   'ctx.duplicate': 'Duplicar (Ctrl+D)',
   'ctx.dropToBed': 'Apoyar en cama (Z=0)',
@@ -754,6 +749,10 @@ export const TRANSLATIONS_ES = {
   'dialog.settings.aiPrivacyLocal': 'Privacidad total: Sin API Key externa (o con Ollama local), todas las operaciones permanecen en tu equipo.',
   'dialog.settings.aboutAuthor': 'Autor: Nicolás Groth (ngroth@gmail.com) — Desarrollado para ISGROTH (Innovación y Soluciones GROTH). Licencia MIT.',
   'dialog.settings.aboutStack': 'Motor geométrico Manifold WASM watertight, React Three Fiber, Three.js, Tauri v2 y puente MCP en tiempo real.',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': 'Emblema de {name}',
+  'app.lockupAlt': 'Logotipo oficial de {name}',
+  'app.monoAlt': 'Emblema monocromo de {name}',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'Atajos de Teclado Pro y Consejos CAD',
@@ -1726,10 +1725,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'badge.localNoAi': 'Local (No external AI)',
   'badge.localNoAiTip': 'Offline deterministic mode: zero data leaves your device',
 
-  'ctx.subtractSphere': 'Subtract inner sphere (− Sphere)',
-  'ctx.subtractCylinder': 'Subtract inner cylinder (− Cylinder)',
-  'ctx.importModuleSub': 'Import STL/3MF as subtraction (−)',
-  'ctx.toggleHole': 'Toggle Solid / Negative (H)',
   'ctx.applyHoles': 'Apply subtractions now',
   'ctx.unionSelection': 'Union selection',
   'ctx.hollow': 'Hollow part (Shell)',
@@ -1738,7 +1733,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'ctx.projectSurface': 'Project Text/SVG onto Surface',
   'ctx.validatePrint': 'Validate 3D Structure',
   'ctx.detectStructures': 'Detect sub-structures (Local)',
-  'ctx.mirrorX': 'Mirror along X axis',
   'ctx.shortcuts': 'Keyboard shortcuts (?)',
   'ctx.duplicate': 'Duplicate (Ctrl+D)',
   'ctx.dropToBed': 'Drop to build plate (Z=0)',
@@ -2091,6 +2085,10 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyLocal': 'Full privacy: Without an external API Key (or using local Ollama), all operations stay on your machine.',
   'dialog.settings.aboutAuthor': 'Author: Nicolás Groth (ngroth@gmail.com) — Built for ISGROTH (Innovación y Soluciones GROTH). MIT License.',
   'dialog.settings.aboutStack': 'Watertight Manifold WASM geometry kernel, React Three Fiber, Three.js, Tauri v2 & real-time MCP bridge.',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': '{name} emblem',
+  'app.lockupAlt': '{name} official lockup',
+  'app.monoAlt': '{name} monochrome emblem',
 
   'dialog.shortcuts.title': 'Pro Keyboard Shortcuts & CAD Tips',
   'dialog.shortcuts.subtitle': 'Precision workflow inspired by Blender, Rhino & modern slicers.',

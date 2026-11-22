@@ -171,13 +171,19 @@ describe('detección de formato y soldado', () => {
     expect([...welded.triangleSource]).toEqual([0, 1]);
   });
 
-  it('suelda 200 000 triángulos en menos de un segundo', () => {
-    const n = 200_000;
-    const positions = new Float32Array(n * 9);
-    for (let i = 0; i < positions.length; i++) positions[i] = Math.floor(Math.random() * 400) / 4;
-    const indices = new Uint32Array(n * 3).map((_, i) => i);
-    const start = performance.now();
-    weldVertices(positions, indices, 1e-5);
-    expect(performance.now() - start).toBeLessThan(1000);
+  it('suelda 200 000 triángulos sin crecer más que ~lineal', () => {
+    // Complejidad: 10× los triángulos no debe costar mucho más de 10× (medido en la misma corrida).
+    const time = (n: number) => {
+      const positions = new Float32Array(n * 9);
+      for (let i = 0; i < positions.length; i++) positions[i] = Math.floor(Math.random() * 400) / 4;
+      const indices = new Uint32Array(n * 3).map((_, i) => i);
+      const start = performance.now();
+      weldVertices(positions, indices, 1e-5);
+      return performance.now() - start;
+    };
+    time(2_000); // calienta
+    const small = Math.min(time(20_000), time(20_000));
+    const large = time(200_000);
+    expect(large).toBeLessThan(Math.max(small, 2) * 40);
   });
 });

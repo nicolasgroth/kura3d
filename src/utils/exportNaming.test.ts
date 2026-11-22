@@ -1,3 +1,11 @@
+/**
+ * @file src/utils/exportNaming.test.ts
+ * @description Pruebas del nombre base por defecto y la sanitización del nombre de archivo al exportar.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { describe, expect, it } from 'vitest';
 import { defaultExportBase, sanitizeFileBase } from './exportNaming';
 

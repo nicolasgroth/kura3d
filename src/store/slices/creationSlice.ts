@@ -13,6 +13,7 @@ import { placeInFreeSpot } from '../../core/scene/freeSpot';
 import { parametricStateOf } from '../../core/scene/parametric';
 import { resolveModuleTarget } from '../../core/scene/sceneRules';
 import { PRINT_COLOR_PALETTE, type SceneObject, type Vec3 } from '../../types/kura';
+import { BRAND } from '../../brand';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -105,7 +106,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
       if (get().busyOperation || get().projectBusy) return;
       const wasEmpty = get().objects.length === 0;
       const cube = await get().createPrimitive('box', { width: 30, height: 30, depth: 30 }, {
-        name: `${tr('sidebar.primitive.box')} Kura3D 30 mm`,
+        name: `${tr('sidebar.primitive.box')} ${BRAND.name} 30 mm`,
         color: PRINT_COLOR_PALETTE[0],
         materialPreset: 'pla_matte',
         placement: 'free',

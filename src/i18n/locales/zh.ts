@@ -371,10 +371,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'badge.localNoAiTip': '离线确定性模式：无任何数据离开您的设备',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.subtractSphere': '减去内部球体 (− 球体)',
-  'ctx.subtractCylinder': '减去内部圆柱 (− 圆柱)',
-  'ctx.importModuleSub': '导入 STL/3MF 作为减法 (−)',
-  'ctx.toggleHole': '切换实体 / 负体积 (H)',
   'ctx.applyHoles': '立即应用减法',
   'ctx.unionSelection': '合并选中对象',
   'ctx.hollow': '抽壳（镂空零件）',
@@ -383,7 +379,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'ctx.projectSurface': '表面投影文字 / SVG',
   'ctx.validatePrint': '验证 3D 结构',
   'ctx.detectStructures': '检测子结构（本地）',
-  'ctx.mirrorX': '沿 X 轴镜像',
   'ctx.shortcuts': '键盘快捷键 (?)',
   'ctx.duplicate': '复制 (Ctrl+D)',
   'ctx.dropToBed': '贴合打印床 (Z=0)',
@@ -747,6 +742,10 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyLocal': '完全隐私：未配置外部 API 密钥（或使用本地 Ollama）时，所有操作均保留在您的设备上。',
   'dialog.settings.aboutAuthor': '作者：Nicolás Groth (ngroth@gmail.com) — 为 ISGROTH (Innovación y Soluciones GROTH) 开发。MIT 许可证。',
   'dialog.settings.aboutStack': '水密 Manifold WASM 几何内核、React Three Fiber、Three.js、Tauri v2 与实时 MCP 桥接。',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': '{name} 徽标',
+  'app.lockupAlt': '{name} 官方标志',
+  'app.monoAlt': '{name} 单色徽标',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': '专业键盘快捷键与 CAD 技巧',

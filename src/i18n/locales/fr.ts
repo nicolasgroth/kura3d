@@ -371,10 +371,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'badge.localNoAiTip': 'Mode hors ligne déterministe : aucune donnée ne quitte votre appareil',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.subtractSphere': 'Soustraire sphère interne (− Sphère)',
-  'ctx.subtractCylinder': 'Soustraire cylindre interne (− Cylindre)',
-  'ctx.importModuleSub': 'Importer STL/3MF en soustraction (−)',
-  'ctx.toggleHole': 'Basculer Solide / Négatif (H)',
   'ctx.applyHoles': 'Appliquer les soustractions',
   'ctx.unionSelection': 'Unir la sélection',
   'ctx.hollow': 'Évider la pièce (Coque)',
@@ -383,7 +379,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'ctx.projectSurface': 'Projeter Texte/SVG sur Surface',
   'ctx.validatePrint': 'Valider la structure 3D',
   'ctx.detectStructures': 'Détecter les sous-structures (Local)',
-  'ctx.mirrorX': 'Miroir sur l’axe X',
   'ctx.shortcuts': 'Raccourcis clavier (?)',
   'ctx.duplicate': 'Dupliquer (Ctrl+D)',
   'ctx.dropToBed': 'Poser sur le plateau (Z=0)',
@@ -747,6 +742,10 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyLocal': 'Confidentialité totale : Sans clé API externe (ou avec Ollama local), toutes les opérations restent sur votre appareil.',
   'dialog.settings.aboutAuthor': 'Auteur : Nicolás Groth (ngroth@gmail.com) — Conçu pour ISGROTH (Innovación y Soluciones GROTH). Licence MIT.',
   'dialog.settings.aboutStack': 'Noyau géométrique étanche Manifold WASM, React Three Fiber, Three.js, Tauri v2 et pont MCP temps réel.',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': 'Emblème de {name}',
+  'app.lockupAlt': 'Logo officiel de {name}',
+  'app.monoAlt': 'Emblème monochrome de {name}',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'Raccourcis Clavier Pro & Astuces CAO',

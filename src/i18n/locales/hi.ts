@@ -371,10 +371,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'badge.localNoAiTip': 'ऑफ़लाइन नियतात्मक मोड: कोई भी डेटा आपके डिवाइस से बाहर नहीं जाता',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.subtractSphere': 'आंतरिक गोला घटाएं (− गोला)',
-  'ctx.subtractCylinder': 'आंतरिक बेलन घटाएं (− बेलन)',
-  'ctx.importModuleSub': 'STL/3MF को घटाव के रूप में आयात करें (−)',
-  'ctx.toggleHole': 'ठोस / ऋणात्मक बदलें (H)',
   'ctx.applyHoles': 'घटाव अभी लागू करें',
   'ctx.unionSelection': 'चयन को जोड़ें',
   'ctx.hollow': 'भाग को खोखला करें (शेल)',
@@ -383,7 +379,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'ctx.projectSurface': 'सतह पर पाठ/SVG प्रोजेक्ट करें',
   'ctx.validatePrint': '3D संरचना सत्यापित करें',
   'ctx.detectStructures': 'उप-संरचनाएं पहचानें (लोकल)',
-  'ctx.mirrorX': 'X अक्ष पर प्रतिबिंबित करें',
   'ctx.shortcuts': 'कीबोर्ड शॉर्टकट (?)',
   'ctx.duplicate': 'डुप्लिकेट (Ctrl+D)',
   'ctx.dropToBed': 'प्रिंट बेड पर रखें (Z=0)',
@@ -747,6 +742,10 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyLocal': 'पूर्ण गोपनीयता: बिना बाहरी API कुंजी के (या लोकल Ollama के साथ), सभी कार्य आपके डिवाइस पर ही रहते हैं।',
   'dialog.settings.aboutAuthor': 'लेखक: Nicolás Groth (ngroth@gmail.com) — ISGROTH (Innovación y Soluciones GROTH) के लिए निर्मित। MIT लाइसेंस।',
   'dialog.settings.aboutStack': 'वॉटरटाइट Manifold WASM ज्यामिति कर्नेल, React Three Fiber, Three.js, Tauri v2 और रीयल-टाइम MCP ब्रिज।',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': '{name} प्रतीक',
+  'app.lockupAlt': '{name} आधिकारिक लोगो',
+  'app.monoAlt': '{name} एकवर्णी प्रतीक',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'प्रो कीबोर्ड शॉर्टकट और CAD सुझाव',

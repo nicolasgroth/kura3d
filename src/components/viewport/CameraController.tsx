@@ -230,6 +230,7 @@ export const CameraController: React.FC<{
       if (needsReframeAfterEdit(box, camera.position.toArray() as Vec3, vp.elements)) frameBox(box, 'fit');
     });
     return () => cancelAnimationFrame(handle);
+    // Solo cuando cambian los objetos; `frameBox` y la cámara se leen vigentes dentro del frame.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [objects]);
 
@@ -246,6 +247,7 @@ export const CameraController: React.FC<{
     const exploded = group.parts.map((p) => ({ ...p, position: positions.get(p.id) ?? p.position }));
     const box = boxForObjects([...group.parts, ...exploded]);
     if (box) frameBox(box, 'ensure');
+    // Solo al empezar la vista explosionada de un grupo; el estado se lee con `getState()`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [explodeGroup]);
 

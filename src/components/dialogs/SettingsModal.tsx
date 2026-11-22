@@ -9,6 +9,7 @@
 import React, { useEffect } from 'react';
 import { Palette, Ruler } from 'lucide-react';
 import { t } from '../../i18n';
+import { BRAND } from '../../brand';
 import { generateRandomTokenHex, useKuraStore } from '../../store/useKuraStore';
 import { rotateMcpBridgeToken, useMcpBridgeStatus } from '../../utils/mcpBridgeClient';
 import { describeMcpBridge } from '../../utils/mcpBridgeHealth';
@@ -212,8 +213,8 @@ export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = (
         <div className="kura-about-stack" role="tabpanel" id="settings-panel-about" aria-labelledby="settings-tab-about">
           <div className="kura-card">
             <div className="kura-about-header">
-              <strong>Kura3D Studio v0.5.0</strong>
-              <span className="kura-brand-badge">v0.5.0</span>
+              <strong>{t(language, 'app.studioVersion', { name: BRAND.name, version: BRAND.version })}</strong>
+              <span className="kura-brand-badge">v{BRAND.version}</span>
             </div>
             <p style={{ margin: 0, fontSize: 12 }}>{t(language, 'dialog.settings.aboutAuthor')}</p>
             <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
@@ -229,14 +230,14 @@ export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = (
               <div className="kura-brand-variant-card">
                 <img
                   src="/branding/kura3d-lockup.png"
-                  alt="Kura3D Official Lockup"
+                  alt={t(language, 'app.lockupAlt', { name: BRAND.name })}
                   className="kura-brand-lockup-img"
                 />
               </div>
               <div className="kura-brand-variant-card is-mono">
                 <img
                   src="/branding/kura3d-mono.png"
-                  alt="Kura3D Monochrome Emblem"
+                  alt={t(language, 'app.monoAlt', { name: BRAND.name })}
                   className="kura-brand-mono-img"
                 />
               </div>

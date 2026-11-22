@@ -151,7 +151,13 @@ export const OPERATION_DEFAULTS = {
    */
   cut: { connectorType: 'none', connectorSize: 4, connectorDepth: 6, tolerance: 0.25, connectorCount: 2 },
   /** Pintar el objeto entero (`paint_object` sin punto): también cambia el color base del objeto. */
-  paint: { wholeSetsBaseColor: true },
+  paint: {
+    wholeSetsBaseColor: true,
+    /** Radio inicial del pincel (app y MCP). */
+    brushRadiusMm: 5,
+    /** Ángulo de pliegue del relleno por región; el visor suaviza con el mismo (`CREASE_ANGLE_DEG`). */
+    regionAngleDeg: 35,
+  },
   split: { marginMm: 5, maxPieces: 64, shiftWindow: 0.15, labelDepthMm: 0.4, labelMinHeightMm: 4, lapHeightMm: 6, minFragmentMm3: 2000, minWallForConnectorMm: 8,
     /** Firmeza activa de las uniones: apagada por defecto en todas las rutas (app, bus y MCP); el usuario la elige. */
     reinforceWeakJoints: false,

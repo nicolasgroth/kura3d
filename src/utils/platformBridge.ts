@@ -7,6 +7,7 @@
  */
 
 import { MAX_PROJECT_BYTES } from '../project/projectSchema';
+import { LOG_TAG } from '../brand';
 
 /** Filtro de extensión compatible con diálogos nativos y web. */
 export interface FileDialogFilter {
@@ -59,7 +60,7 @@ async function loadTauriFilePlugins() {
     ]);
     return { dialogMod, fsMod };
   } catch (err) {
-    console.warn('[Kura3D] Plugins nativos no disponibles; se usa la ruta web:', err);
+    console.warn(`${LOG_TAG} Plugins nativos no disponibles; se usa la ruta web:`, err);
     return null;
   }
 }
@@ -106,7 +107,7 @@ export async function saveFileWithDialog(
       }
       if (!targetPath) return null;
       if (!hasAllowedExtension(targetPath, filterExtensions(filters))) {
-        console.warn('[Kura3D] Destino rechazado: extensión no permitida.');
+        console.warn(`${LOG_TAG} Destino rechazado: extensión no permitida.`);
         return null;
       }
       try {
@@ -288,12 +289,12 @@ export async function openLocalFile(accept: string): Promise<OpenedLocalFile | n
       }
       const allowed = filters.length > 0 ? filterExtensions(filters) : [];
       if (!hasAllowedExtension(selected, allowed)) {
-        console.warn('[Kura3D] Archivo rechazado: extensión no permitida.');
+        console.warn(`${LOG_TAG} Archivo rechazado: extensión no permitida.`);
         return null;
       }
       const info = await fsMod.stat(selected);
       if (!info.isFile || info.size > MAX_LOCAL_FILE_BYTES) {
-        console.warn('[Kura3D] Archivo rechazado: no es un archivo normal o supera el tamaño máximo.');
+        console.warn(`${LOG_TAG} Archivo rechazado: no es un archivo normal o supera el tamaño máximo.`);
         return null;
       }
 
@@ -308,7 +309,7 @@ export async function openLocalFile(accept: string): Promise<OpenedLocalFile | n
         buffer: copy.buffer,
       };
     } catch (err) {
-      console.warn('[Kura3D] Fallback a selector web tras error Tauri:', err);
+      console.warn(`${LOG_TAG} Fallback a selector web tras error Tauri:`, err);
     }
   }
 

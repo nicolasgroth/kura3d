@@ -10,6 +10,7 @@
 
 import type { TranslationKey } from '../../i18n';
 import { makeId } from '../../core/scene/sceneObjects';
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { DEFAULT_PRINTER_PROFILES, PRINT_COLOR_PALETTE, THEME_PRESETS, type UiDensityMode } from '../../types/kura';
 import {
   applyMetaColorScheme,
@@ -50,7 +51,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     proportionalScale: true,
     snapGridMm: 1,
     paintColor: PRINT_COLOR_PALETTE[1],
-    paintRadiusMm: 5,
+    paintRadiusMm: OPERATION_DEFAULTS.paint.brushRadiusMm,
     paintMode: 'brush',
     paintRefineEdge: true,
     eraseRadiusMm: 6,

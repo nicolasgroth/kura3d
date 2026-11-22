@@ -11,6 +11,7 @@
 import { Check, Copy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { t } from '../../i18n';
+import { readStorage, writeStorage } from '../../store/preferencesStorage';
 import { useKuraStore } from '../../store/useKuraStore';
 import { useMcpBridgeStatus } from '../../utils/mcpBridgeClient';
 import { probeBridgeServer } from '../../utils/mcpBridgeHealth';
@@ -24,11 +25,7 @@ import {
 import { maskToken } from '../../utils/mcpTokenStore';
 
 function readSavedRepoPath(): string {
-  try {
-    return normalizeRepoPath(localStorage.getItem(MCP_REPO_PATH_KEY) ?? '');
-  } catch {
-    return '';
-  }
+  return normalizeRepoPath(readStorage(MCP_REPO_PATH_KEY) ?? '');
 }
 
 function CopyButton({ text, label, copiedLabel }: { text: string; label: string; copiedLabel: string }) {
@@ -75,13 +72,8 @@ export function McpSetupPanel() {
 
   const updatePath = (value: string) => {
     setRepoPath(value);
-    try {
-      const clean = normalizeRepoPath(value);
-      if (clean) localStorage.setItem(MCP_REPO_PATH_KEY, clean);
-      else localStorage.removeItem(MCP_REPO_PATH_KEY);
-    } catch {
-      // Sin almacenamiento: la ruta vale solo para esta sesión.
-    }
+    // Sin almacenamiento la ruta vale solo para esta sesión (writeStorage tolera el fallo).
+    writeStorage(MCP_REPO_PATH_KEY, normalizeRepoPath(value) || null);
   };
 
   const runTest = async () => {

@@ -170,10 +170,20 @@ describe('redactSecrets: claves partidas, codificadas o truncadas', () => {
   });
 
   it('no revienta ni se vuelve cuadrático con entradas enormes', () => {
-    const big = `sk-${'a'.repeat(200_000)} ${'Bearer '.repeat(5000)}`;
-    const t0 = Date.now();
-    redactSecrets(big, KEY);
-    expect(Date.now() - t0).toBeLessThan(2000);
+    // Complejidad, no milisegundos: 10× la entrada no puede costar mucho más de ~10× (cuadrático ≈ 100×).
+    const build = (n: number) => `sk-${'a'.repeat(n)} ${'Bearer '.repeat(n / 40)}`;
+    const measure = (input: string) => {
+      let best = Infinity;
+      for (let i = 0; i < 3; i += 1) {
+        const t0 = performance.now();
+        redactSecrets(input, KEY);
+        best = Math.min(best, performance.now() - t0);
+      }
+      return best;
+    };
+    const small = measure(build(20_000));
+    const large = measure(build(200_000));
+    expect(large).toBeLessThan(Math.max(small, 1) * 40);
   });
 });
 

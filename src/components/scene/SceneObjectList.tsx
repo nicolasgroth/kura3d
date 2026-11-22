@@ -50,6 +50,7 @@ export const SceneObjectList: React.FC = () => {
 
   useEffect(() => {
     if (active) document.getElementById(optionId(active.id))?.scrollIntoView({ block: 'nearest' });
+    // Solo al cambiar el elemento activo; `optionId` se recrea en cada render sin cambiar de valor.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active?.id]);
 
@@ -88,6 +89,7 @@ export const SceneObjectList: React.FC = () => {
     if (!objects.some((o) => o.id === id)) useKuraStore.getState().setSceneFilter('');
     setActiveId(id);
     startRename(id);
+    // Solo reacciona a una petición nueva (`renameRequest.n`), no a cada cambio de la lista.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renameRequest?.n]);
 

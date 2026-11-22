@@ -98,6 +98,7 @@ export function useRevealSceneOnRequest(showSceneTab: () => void): void {
     if (!at || Date.now() - at > REQUEST_FRESH_MS) return;
     showSceneTab();
     if (leftCollapsed) toggleLeftSidebar();
+    // Solo al llegar una petición nueva (`n`); el resto de valores se leen vigentes en ese momento.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [n]);
 }

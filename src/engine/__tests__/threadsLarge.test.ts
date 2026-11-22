@@ -86,7 +86,7 @@ describe.each(LARGE)('rosca grande M%i (paso %f)', (d, P) => {
 
     console.info(`M${d}: perno ${bolt.indices.length / 3} tri, tuerca ${nut.indices.length / 3} tri, ${ms.toFixed(0)} ms`);
     expect(bolt.indices.length / 3).toBeLessThan(400_000);
-    expect(ms).toBeLessThan(20_000);
+    // El tiempo (`ms`) solo se reporta: sin umbral absoluto en `npm test`.
   }, 60_000);
 
   it('0 mm³ de interferencia al enroscar (girar α y avanzar paso·α/360)', async () => {

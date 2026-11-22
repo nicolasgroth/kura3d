@@ -9,8 +9,10 @@
  * @license MIT
  */
 
+import { OPERATION_DEFAULTS } from '../engine/operationLimits';
+
 /** Ángulo diedro (grados) a partir del cual una arista queda viva. */
-export const CREASE_ANGLE_DEG = 35;
+export const CREASE_ANGLE_DEG = OPERATION_DEFAULTS.paint.regionAngleDeg;
 
 export interface CreasedMesh {
   positions: Float32Array;
