@@ -109,8 +109,10 @@ export const ENGINE_TASKS = {
   regenerateParametric: (ctx: OperationContext, a: { obj: SceneObject; edit: ParametricEdit }) => regenerateParametric(ctx, a.obj, a.edit),
   imageReliefMesh: (_ctx: OperationContext, a: { options: ImageTo3DOptions }) => imageReliefMesh(a.options),
   svgMesh: (_ctx: OperationContext, a: { options: SvgImportOptions; contours: engine.PackedSvgContours }) => svgMesh(a.options, a.contours),
-  splitPlan: (ctx: OperationContext, a: { obj: SceneObject; bed: engine.SplitBed; options?: engine.BedSplitPlanOptions }) =>
-    planSplitForBed(ctx, a.obj, a.bed, a.options),
+  splitPlan: (
+    ctx: OperationContext,
+    a: { obj: SceneObject; bed: engine.SplitBed; options?: engine.BedSplitPlanOptions; assemblyPreview?: Omit<engine.BedSplitExecuteOptions, 'onProgress'> },
+  ) => planSplitForBed(ctx, a.obj, a.bed, a.options, a.assemblyPreview),
   splitForBed: (ctx: OperationContext, a: { obj: SceneObject; plan: engine.BedSplitPlan; options: ExecuteBedSplitOptions }) =>
     executeBedSplit(ctx, a.obj, a.plan, a.options),
   validateAssembly: (_ctx: OperationContext, a: { objects: SceneObject[] }) => engine.storedAssemblyResponse(a.objects),

@@ -1,6 +1,6 @@
 /**
  * @file src/i18n/locales/operationNotes.ts
- * @description Textos de "Separar por colores" en sólidos (profundidad del color, color absorbido) y del
+ * @description Textos de la previa de uniones de "dividir para imprimir" (máximo sin medir el armado), de "Separar por colores" en sólidos (profundidad del color, color absorbido) y del
  * aviso de cambio de volumen al simplificar, en los 6 idiomas. Se mezclan en cada diccionario de
  * `translations.ts` y `locales/*.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -9,6 +9,7 @@
  */
 
 export const OPNOTES_ES = {
+  'split.sum.jointsUpToValue': '{count}: hasta {with} con conector; el armado puede dejar algunas para pegar',
   'inspector.op.colorDepth': 'Profundidad del color',
   'inspector.op.colorDepthTip': 'Cada color pintado sale como pieza sólida que entra esta medida hacia adentro; el color base se queda con el resto.',
   'progress.op.split_colors': 'Separar por colores',
@@ -17,6 +18,7 @@ export const OPNOTES_ES = {
 };
 
 export const OPNOTES_EN = {
+  'split.sum.jointsUpToValue': '{count}: up to {with} with connector; assembly may leave some glue-only',
   'inspector.op.colorDepth': 'Color depth',
   'inspector.op.colorDepthTip': 'Each painted color becomes a solid part reaching this far inward; the base color keeps the rest.',
   'progress.op.split_colors': 'Split by colors',
@@ -25,6 +27,7 @@ export const OPNOTES_EN = {
 };
 
 export const OPNOTES_DE = {
+  'split.sum.jointsUpToValue': '{count}: bis zu {with} mit Verbinder; die Montage kann einige zum Kleben lassen',
   'inspector.op.colorDepth': 'Farbtiefe',
   'inspector.op.colorDepthTip': 'Jede bemalte Farbe wird ein festes Teil, das so tief nach innen reicht; die Grundfarbe behält den Rest.',
   'progress.op.split_colors': 'Nach Farben trennen',
@@ -33,6 +36,7 @@ export const OPNOTES_DE = {
 };
 
 export const OPNOTES_FR = {
+  'split.sum.jointsUpToValue': '{count} : jusqu’à {with} avec connecteur ; l’assemblage peut en laisser certaines à coller',
   'inspector.op.colorDepth': 'Profondeur de couleur',
   'inspector.op.colorDepthTip': 'Chaque couleur peinte devient une pièce pleine qui pénètre de cette mesure vers l’intérieur ; la couleur de base garde le reste.',
   'progress.op.split_colors': 'Séparer par couleurs',
@@ -41,6 +45,7 @@ export const OPNOTES_FR = {
 };
 
 export const OPNOTES_HI = {
+  'split.sum.jointsUpToValue': '{count}: अधिकतम {with} कनेक्टर के साथ; जोड़ने का क्रम कुछ को केवल चिपकाने के लिए छोड़ सकता है',
   'inspector.op.colorDepth': 'रंग की गहराई',
   'inspector.op.colorDepthTip': 'हर रंगा हुआ रंग एक ठोस हिस्सा बनता है जो इतनी गहराई तक अंदर जाता है; आधार रंग बाकी रखता है।',
   'progress.op.split_colors': 'रंगों से अलग करें',
@@ -49,6 +54,7 @@ export const OPNOTES_HI = {
 };
 
 export const OPNOTES_ZH = {
+  'split.sum.jointsUpToValue': '{count}：最多 {with} 个带连接件；装配可能会留下一些仅粘合',
   'inspector.op.colorDepth': '颜色深度',
   'inspector.op.colorDepthTip': '每种绘制的颜色都会成为向内延伸此深度的实心部件；基础颜色保留其余部分。',
   'progress.op.split_colors': '按颜色拆分',

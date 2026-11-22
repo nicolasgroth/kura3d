@@ -30,8 +30,13 @@ export interface SplitPlanSummary {
   oversized: string[];
   rotatedCount: number;
   jointCount: number;
-  /** Uniones en planos que no admiten el conector previsto. */
+  /** Uniones en planos que no admiten el conector previsto (o que el armado deja para pegar, si se midió). */
   jointsWithoutConnector: number;
+  /**
+   * `true` si las uniones salen de ejecutar el plan con el cierre de armado (`plan.assemblyPreview`).
+   * Si es `false`, las uniones con conector son un máximo: el armado puede dejar algunas para pegar.
+   */
+  assemblyMeasured: boolean;
   /**
    * Planos cuya sección es más delgada que el mínimo para conector: quedan como corte liso para
    * pegar. `wallMm` es el grosor de pared estimado (área de la sección ÷ perímetro medio de un tubo
@@ -98,8 +103,9 @@ export function summarizeSplitPlan(plan: BedSplitPlan, allowRotation: boolean): 
     gridUser: toUserSize([x, y, z]),
     oversized: realPieces.filter((p) => !pieceFitsUsable(p.sizeMm, plan.usableMm, allowRotation)).map((p) => p.code),
     rotatedCount: realPieces.filter((p) => p.rotated).length,
-    jointCount: plan.planes.reduce((n, p) => n + jointsOn(p), 0),
-    jointsWithoutConnector: (plan.connector ? withoutPlanes : plan.planes).reduce((n, p) => n + jointsOn(p), 0),
+    jointCount: plan.assemblyPreview?.joints ?? plan.planes.reduce((n, p) => n + jointsOn(p), 0),
+    jointsWithoutConnector: plan.assemblyPreview?.glueJoints ?? (plan.connector ? withoutPlanes : plan.planes).reduce((n, p) => n + jointsOn(p), 0),
+    assemblyMeasured: plan.assemblyPreview !== undefined,
     planesWithoutConnector: withoutPlanes.filter((p) => jointsOn(p) > 0).map((p) => ({
       axis: p.axis,
       number: p.index + 1,

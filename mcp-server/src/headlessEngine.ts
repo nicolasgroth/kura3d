@@ -241,7 +241,8 @@ export class KuraHeadlessEngine {
     const p = this.printerProfile;
     const bed: engine.SplitBed = { widthMm: p.bedWidthMm, depthMm: p.bedDepthMm, heightMm: p.maxHeightMm, ...input.bed };
     const axes = input.plan.axes?.map(ua.axisFromUser);
-    const plan = await ops.planSplitForBed(this.ctx, obj, bed, { ...input.plan, axes });
+    // En la previa (`dryRun`) el plan barato se ejecuta sin tocar la escena: da las uniones reales del armado.
+    const plan = await ops.planSplitForBed(this.ctx, obj, bed, { ...input.plan, axes }, input.dryRun ? input.execute : undefined);
     const userPlan = ua.splitPlanToUser(plan);
     if (input.dryRun || plan.fitsWithoutCuts) return { dryRun: input.dryRun, plan: userPlan, parts: [], joints: [], plateCount: 0, note: ENGINE_NOTE, warnings: [] };
     const { result, change } = await ops.executeBedSplit(this.ctx, obj, plan, { ...input.execute, bed });
