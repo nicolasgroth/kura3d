@@ -1088,8 +1088,9 @@ export const TRANSLATIONS_ES = {
   'palette.cmd.changeUnit': 'Cambiar unidad de medida…',
   'palette.cmd.changePrinter': 'Cambiar impresora…',
   'engineWarning.MOLD_SPOUT_REDUCED': 'El embudo de {requested} mm no cabe sobre la pieza; se usó {applied} mm.',
-  'engineWarning.IMPORT_NORMALS_FLIPPED': 'La malla importada tenía las normales invertidas (volumen negativo); se reorientó.',
+  'engineWarning.IMPORT_NORMALS_FLIPPED': '{name} tenía las normales invertidas (volumen negativo); se reorientó al importar.',
   'engineWarning.BOOLEAN_NO_EFFECT': 'Las piezas no se tocan: la operación no cambia nada y no se aplicó.',
+  'engineWarning.IMPORT_NORMALS_INCONSISTENT': '{name} tiene triángulos con orientación mezclada; no se modificó. Repárala antes de imprimir.',
   'printWarning.NOT_MANIFOLD': 'La malla no es cerrada (no-manifold); puede presentar huecos o errores al laminar.',
   'printWarning.EXCEEDS_BED': 'El objeto excede los límites de impresión ({width}×{depth}×{height} mm).',
   'printWarning.FLOATING': 'El objeto está flotando a {gap} mm sobre la cama de impresión.',
@@ -1098,6 +1099,7 @@ export const TRANSLATIONS_ES = {
   'printWarning.HIGH_DENSITY': 'Malla muy densa (> 50 000 triángulos); considera simplificarla.',
   'printWarning.THIN_WALL': 'Hay paredes de {thickness} mm, más delgadas que el mínimo de {min} mm; pueden no imprimirse.',
   'printWarning.INVERTED_NORMALS': 'La malla tiene las normales invertidas (volumen negativo); reoriéntala antes de imprimir.',
+  'printWarning.BELOW_BED': 'El objeto queda {depth} mm bajo la cama (Y < 0); apóyalo antes de imprimir.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2146,8 +2148,9 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'palette.cmd.changeUnit': 'Change unit of measure…',
   'palette.cmd.changePrinter': 'Change printer…',
   'engineWarning.MOLD_SPOUT_REDUCED': 'A {requested} mm pour spout does not fit on the part; {applied} mm was used.',
-  'engineWarning.IMPORT_NORMALS_FLIPPED': 'The imported mesh had inverted normals (negative volume); it was reoriented.',
+  'engineWarning.IMPORT_NORMALS_FLIPPED': '{name} had inverted normals (negative volume); it was reoriented on import.',
   'engineWarning.BOOLEAN_NO_EFFECT': 'The parts do not touch: the operation changes nothing and was not applied.',
+  'engineWarning.IMPORT_NORMALS_INCONSISTENT': '{name} has triangles with mixed orientation; it was not changed. Repair it before printing.',
   'printWarning.NOT_MANIFOLD': 'The mesh is not closed (non-manifold); it may have holes or slicing errors.',
   'printWarning.EXCEEDS_BED': 'The object exceeds the build volume ({width}×{depth}×{height} mm).',
   'printWarning.FLOATING': 'The object floats {gap} mm above the print bed.',
@@ -2156,6 +2159,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'printWarning.HIGH_DENSITY': 'Very dense mesh (> 50,000 triangles); consider simplifying it.',
   'printWarning.THIN_WALL': 'Some walls are {thickness} mm, thinner than the {min} mm minimum; they may not print.',
   'printWarning.INVERTED_NORMALS': 'The mesh has inverted normals (negative volume); reorient it before printing.',
+  'printWarning.BELOW_BED': 'The object sits {depth} mm below the bed (Y < 0); place it on the bed before printing.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

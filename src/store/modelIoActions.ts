@@ -2,7 +2,7 @@
  * @file src/store/modelIoActions.ts
  * @description Acciones de importación y exportación de modelos del store: lote parcial (importa
  * los archivos válidos y nombra los que fallaron), lectura en Worker, colocación en la cama
- * (conjunto apoyado o posición original), aviso de malla abierta, y exportación única
+ * (conjunto apoyado o posición original), aviso de malla abierta y de normales reorientadas, y exportación única
  * STL/3MF/OBJ+MTL/GLB/PLY de la selección o la escena con nombre elegido.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -68,6 +68,8 @@ export interface ModelIoDeps {
   bedSize?: () => BedSize | null;
   /** Genera los archivos de exportación (la app usa el Worker del motor; por defecto en proceso). */
   exportFiles?: (args: ExportTaskArgs) => Promise<ExportTaskResult>;
+  /** Muestra los avisos del motor al leer (p. ej. normales reorientadas). */
+  reportWarnings?: (warnings: readonly engine.EngineWarning[]) => void;
 }
 
 const EXPORT_FILTERS: Record<ExportFormat, { name: string; extensions: string[] }> = {
@@ -195,6 +197,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         'info',
       );
     }
+    deps.reportWarnings?.(models.flatMap((m) => m.warnings ?? []));
     if (failures.length > 0) {
       get().addToast(tCount(get().language, { one: 'import.partialFailed.one', other: 'import.partialFailed.other' }, failures.length, { list: failures.join(' · ') }), 'error');
     }

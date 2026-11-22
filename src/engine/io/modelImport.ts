@@ -1,13 +1,14 @@
 /**
  * @file src/engine/io/modelImport.ts
  * @description Punto de entrada único de lectura de modelos: detecta el formato por extensión,
- * aplica límites y adjunta el nombre del archivo a cualquier error.
+ * aplica límites, adjunta el nombre del archivo a cualquier error y corrige normales invertidas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import { ModelImportError, attachFileName } from './importErrors';
+import { fixImportedOrientation } from './importOrientation';
 import type { ImportedModel, ModelImportFormat, ModelParseOptions } from './importTypes';
 import { readOBJBuffer } from './obj';
 import { readPLY } from './ply';
@@ -26,8 +27,15 @@ export function detectModelFormat(fileName: string): ModelImportFormat | null {
   return (MODEL_IMPORT_EXTENSIONS as string[]).includes(ext) ? (ext as ModelImportFormat) : null;
 }
 
-/** Lee un archivo de modelo; los errores salen como `ModelImportError` con `fileName`. */
+/**
+ * Lee un archivo de modelo; los errores salen como `ModelImportError` con `fileName`. Las piezas
+ * con normales invertidas se reorientan y el modelo trae el aviso en `warnings`.
+ */
 export function parseModelFile(fileName: string, buffer: ArrayBuffer, options: ModelParseOptions = {}): ImportedModel {
+  return fixImportedOrientation(readModelFile(fileName, buffer, options));
+}
+
+function readModelFile(fileName: string, buffer: ArrayBuffer, options: ModelParseOptions): ImportedModel {
   try {
     const format = detectModelFormat(fileName);
     switch (format) {

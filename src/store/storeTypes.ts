@@ -325,7 +325,8 @@ export interface KuraStoreState {
     id: string,
     infillPercent?: number,
     overhangAngleDeg?: number,
-  ) => PrintabilityReport | null;
+    minWallMm?: number,
+  ) => Promise<PrintabilityReport | null>;
   simplifySelectedMesh: (id: string, toleranceMm: number) => Promise<boolean>;
   refineSelectedMesh: (
     id: string,

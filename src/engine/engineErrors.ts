@@ -62,6 +62,7 @@ export const ENGINE_WARNING_CODES = [
   'MOLD_SPOUT_REDUCED',
   'IMPORT_NORMALS_FLIPPED',
   'BOOLEAN_NO_EFFECT',
+  'IMPORT_NORMALS_INCONSISTENT',
 ] as const;
 
 export type EngineWarningCode = (typeof ENGINE_WARNING_CODES)[number];

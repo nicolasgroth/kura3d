@@ -1081,8 +1081,9 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'palette.cmd.changeUnit': 'Changer l’unité de mesure…',
   'palette.cmd.changePrinter': 'Changer d’imprimante…',
   'engineWarning.MOLD_SPOUT_REDUCED': 'Un entonnoir de {requested} mm ne tient pas sur la pièce ; {applied} mm a été utilisé.',
-  'engineWarning.IMPORT_NORMALS_FLIPPED': 'Le maillage importé avait des normales inversées (volume négatif) ; il a été réorienté.',
+  'engineWarning.IMPORT_NORMALS_FLIPPED': '{name} avait des normales inversées (volume négatif) ; il a été réorienté à l\'importation.',
   'engineWarning.BOOLEAN_NO_EFFECT': 'Les pièces ne se touchent pas : l\'opération ne change rien et n\'a pas été appliquée.',
+  'engineWarning.IMPORT_NORMALS_INCONSISTENT': '{name} a des triangles d\'orientation mixte ; il n\'a pas été modifié. Réparez-le avant d\'imprimer.',
   'printWarning.NOT_MANIFOLD': 'Le maillage n\'est pas fermé (non-manifold) ; il peut présenter des trous ou des erreurs au tranchage.',
   'printWarning.EXCEEDS_BED': 'L\'objet dépasse le volume d\'impression ({width}×{depth}×{height} mm).',
   'printWarning.FLOATING': 'L\'objet flotte à {gap} mm au-dessus du plateau.',
@@ -1091,4 +1092,5 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'printWarning.HIGH_DENSITY': 'Maillage très dense (> 50 000 triangles) ; pensez à le simplifier.',
   'printWarning.THIN_WALL': 'Certaines parois font {thickness} mm, moins que le minimum de {min} mm ; elles risquent de ne pas s\'imprimer.',
   'printWarning.INVERTED_NORMALS': 'Le maillage a des normales inversées (volume négatif) ; réorientez-le avant d\'imprimer.',
+  'printWarning.BELOW_BED': 'L\'objet est {depth} mm sous le plateau (Y < 0) ; posez-le sur le plateau avant d\'imprimer.',
 };

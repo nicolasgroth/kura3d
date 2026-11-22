@@ -12,8 +12,10 @@ import * as engine from '../../engine';
 import type {
   DetectedStructureRegion,
   HollowOptions,
+  MaterialPresetId,
   MoldOptions,
   PlaneCutOptions,
+  PrinterProfile,
   SceneObject,
   StructuralSegmentationResult,
   SurfaceProjectionOptions,
@@ -34,6 +36,16 @@ export interface ExportTaskArgs {
   baseName: string;
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
   slicerTarget: Parameters<typeof engine.exportSceneTo3MF>[2];
+}
+
+/** Argumentos del informe de imprimibilidad (solo lectura; no modifica la escena). */
+export interface PrintabilityTaskArgs {
+  obj: SceneObject;
+  bed: PrinterProfile;
+  materialId: MaterialPresetId;
+  infillPercent?: number;
+  overhangAngleDeg?: number;
+  minWallMm?: number;
 }
 
 /** Archivos producidos por la exportación (`suffix` es la extensión con punto). */
@@ -87,6 +99,8 @@ export const ENGINE_TASKS = {
   thread: (ctx: OperationContext, a: { options: ThreadOptions; placement: { name?: string; position?: Vec3 } }) =>
     createThread(ctx, a.options, a.placement),
   export: (_ctx: OperationContext, a: ExportTaskArgs) => exportSceneFiles(a),
+  printability: (_ctx: OperationContext, a: PrintabilityTaskArgs) =>
+    engine.analyzePrintability(a.obj, a.bed, a.materialId, a.infillPercent, a.overhangAngleDeg, a.minWallMm),
 };
 
 export type EngineTaskName = keyof typeof ENGINE_TASKS;

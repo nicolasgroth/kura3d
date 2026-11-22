@@ -399,7 +399,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
         true
       );
 
-      const report = useKuraStore.getState().runPrintabilityCheck(cone!.id, 20, 45);
+      const report = await useKuraStore.getState().runPrintabilityCheck(cone!.id, 20, 45);
       expect(report).not.toBeNull();
       expect(report!.isManifold).toBe(true);
       expect(report!.estimatedWeightGrams).toBeGreaterThan(0);

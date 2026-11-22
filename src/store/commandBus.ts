@@ -190,9 +190,9 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     return withStats(required(await get().projectOnObjectSurface(target.id, options), command));
   },
 
-  analyze_printability: (p, { get }, command) => {
+  analyze_printability: async (p, { get }, command) => {
     const { target, infillPercent, overhangAngleDeg } = schema.parsePrintability(get(), p);
-    return required(get().runPrintabilityCheck(target.id, infillPercent, overhangAngleDeg), command);
+    return required(await get().runPrintabilityCheck(target.id, infillPercent, overhangAngleDeg), command);
   },
 
   simplify_mesh: async (p, { get }, command) => {

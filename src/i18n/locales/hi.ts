@@ -1081,8 +1081,9 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'palette.cmd.changeUnit': 'माप की इकाई बदलें…',
   'palette.cmd.changePrinter': 'प्रिंटर बदलें…',
   'engineWarning.MOLD_SPOUT_REDUCED': '{requested} mm का कीप भाग पर नहीं समाता; {applied} mm इस्तेमाल किया गया।',
-  'engineWarning.IMPORT_NORMALS_FLIPPED': 'आयात किए गए मेश के नॉर्मल उलटे थे (ऋणात्मक आयतन); इसे फिर से उन्मुख किया गया।',
+  'engineWarning.IMPORT_NORMALS_FLIPPED': '{name} के नॉर्मल उलटे थे (ऋणात्मक आयतन); आयात के समय इसे फिर से उन्मुख किया गया।',
   'engineWarning.BOOLEAN_NO_EFFECT': 'भाग एक-दूसरे को नहीं छूते: ऑपरेशन से कुछ नहीं बदलता, इसलिए लागू नहीं किया गया।',
+  'engineWarning.IMPORT_NORMALS_INCONSISTENT': '{name} में मिश्रित अभिविन्यास वाले त्रिभुज हैं; इसे बदला नहीं गया। प्रिंट से पहले इसे ठीक करें।',
   'printWarning.NOT_MANIFOLD': 'मेश बंद नहीं है (non-manifold); इसमें छेद या स्लाइसिंग त्रुटियाँ हो सकती हैं।',
   'printWarning.EXCEEDS_BED': 'ऑब्जेक्ट प्रिंट सीमा ({width}×{depth}×{height} mm) से बड़ा है।',
   'printWarning.FLOATING': 'ऑब्जेक्ट प्रिंट बेड से {gap} mm ऊपर तैर रहा है।',
@@ -1091,4 +1092,5 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'printWarning.HIGH_DENSITY': 'बहुत घना मेश (> 50 000 त्रिभुज); इसे सरल करने पर विचार करें।',
   'printWarning.THIN_WALL': 'कुछ दीवारें {thickness} mm की हैं, न्यूनतम {min} mm से पतली; वे प्रिंट न हो सकें।',
   'printWarning.INVERTED_NORMALS': 'मेश के नॉर्मल उलटे हैं (ऋणात्मक आयतन); प्रिंट से पहले इसे फिर से उन्मुख करें।',
+  'printWarning.BELOW_BED': 'ऑब्जेक्ट बेड से {depth} mm नीचे है (Y < 0); प्रिंट से पहले इसे बेड पर रखें।',
 };

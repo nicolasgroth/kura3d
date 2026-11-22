@@ -1081,8 +1081,9 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'palette.cmd.changeUnit': '更改度量单位…',
   'palette.cmd.changePrinter': '更改打印机…',
   'engineWarning.MOLD_SPOUT_REDUCED': '{requested} mm 的浇口放不下，已改用 {applied} mm。',
-  'engineWarning.IMPORT_NORMALS_FLIPPED': '导入的网格法线反向（体积为负），已重新定向。',
+  'engineWarning.IMPORT_NORMALS_FLIPPED': '{name} 的法线反向（体积为负），导入时已重新定向。',
   'engineWarning.BOOLEAN_NO_EFFECT': '零件互不接触：该操作不会产生任何变化，未执行。',
+  'engineWarning.IMPORT_NORMALS_INCONSISTENT': '{name} 的三角形朝向不一致，未作修改。打印前请先修复。',
   'printWarning.NOT_MANIFOLD': '网格未封闭（非流形），切片时可能出现孔洞或错误。',
   'printWarning.EXCEEDS_BED': '对象超出打印范围（{width}×{depth}×{height} mm）。',
   'printWarning.FLOATING': '对象悬浮在打印床上方 {gap} mm。',
@@ -1091,4 +1092,5 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'printWarning.HIGH_DENSITY': '网格过密（> 50 000 个三角形），建议简化。',
   'printWarning.THIN_WALL': '部分壁厚为 {thickness} mm，低于最小值 {min} mm，可能无法打印。',
   'printWarning.INVERTED_NORMALS': '网格法线反向（体积为负），打印前请重新定向。',
+  'printWarning.BELOW_BED': '对象位于打印床下方 {depth} mm（Y < 0），打印前请将其放到床面上。',
 };
