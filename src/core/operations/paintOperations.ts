@@ -8,15 +8,16 @@
  * @license MIT
  */
 
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { paintEntireMesh, paintFloodFillConnectedFaces, paintMeshFacesInSphere, type BrushOptions } from '../../engine/paint';
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
 import { change, emptyChange, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
 
 /**
  * El relleno por región se detiene en las aristas vivas: mismo ángulo de pliegue que el visor
- * (`CREASE_ANGLE_DEG` de `utils/creasedNormals`; una prueba exige que coincidan, core no importa utils).
+ * (`CREASE_ANGLE_DEG` de `utils/creasedNormals`): ambos salen de `OPERATION_DEFAULTS.paint.regionAngleDeg`.
  */
-export const PAINT_REGION_ANGLE_DEG = 35;
+export const PAINT_REGION_ANGLE_DEG = OPERATION_DEFAULTS.paint.regionAngleDeg;
 
 /** Parche de la malla pintada: solo la malla si la topología no cambió; con estadísticas si se subdividió. */
 function paintPatch(ctx: OperationContext, obj: SceneObject, mesh: MeshData): SceneChange | null {
