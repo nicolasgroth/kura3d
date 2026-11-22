@@ -11,6 +11,8 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 | Dividir para imprimir: conteo real de piezas en el plan e informe de armado completo al dividir | Lote de costura entre motor e interfaz, en curso |
 | Dividir para imprimir: conector preferido en Ajustes y refuerzo de uniones débiles como elección del usuario | Decidido el 22-nov; sigue al lote anterior |
 | Paridad app y MCP: valores por defecto del corte por plano y del pintado | En el lote de costura |
+| Pintura por caras: pincel rápido con índice espacial, un trazo = un paso de deshacer | En curso |
+| Relieve, SVG y texto 3D en el Worker; avisos al terminar en molde, proyección y relieve; más pruebas de moldes; segmentación sin partes de grosor cero; precisión del ahuecado | En curso |
 
 ## En QA
 
