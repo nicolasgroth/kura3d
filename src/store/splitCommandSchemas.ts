@@ -41,7 +41,7 @@ export interface BedSource {
   customBedDimensions: { width: number; depth: number; height: number } | null;
 }
 
-function activeBed(scene: BedSource): SplitBed {
+export function activeBed(scene: BedSource): SplitBed {
   const c = scene.customBedDimensions;
   if (c) return { widthMm: c.width, depthMm: c.depth, heightMm: c.height };
   const p = scene.printerProfile;

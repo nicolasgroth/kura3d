@@ -15,7 +15,9 @@ import { selectBusyProgress } from '../../store/busySelectors';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { LanguageCode } from '../../types/kura';
 import { formatNumber } from '../../utils/plural';
+import { parseCutPhase, progressPhaseLabel } from '../split/splitProgress';
 import '../../styles/operationPreview.css';
+import '../../styles/splitForBed.css';
 
 /** Retardo antes de mostrar la barra. */
 export const PROGRESS_SHOW_DELAY_MS = 400;
@@ -62,17 +64,23 @@ export const OperationProgressBar: React.FC = () => {
   if (!view || view.elapsedMs < PROGRESS_SHOW_DELAY_MS) return null;
 
   const label = operationLabel(language, view.name);
+  const phaseText = progressPhaseLabel(language, view.phase);
+  const cut = parseCutPhase(view.phase);
   const seconds = formatNumber(language, view.elapsedMs / 1000, { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 
   return (
     <div className="kura-op-progress" role="status" aria-live="polite" aria-label={t(language, 'progress.label')}>
       <Loader2 size={14} className="kura-op-progress-spin" aria-hidden="true" />
       <span className="kura-op-progress-name">{t(language, 'progress.running', { op: label })}</span>
+      {phaseText && <span className="kura-op-progress-phase">{phaseText}</span>}
       <span className="kura-op-progress-time" aria-hidden="true">
         {t(language, 'progress.elapsed', { seconds })}
       </span>
       <span className="kura-op-progress-track" aria-hidden="true">
-        <span className="kura-op-progress-bar" />
+        <span
+          className={cut ? 'kura-op-progress-bar is-determinate' : 'kura-op-progress-bar'}
+          style={cut ? { width: `${Math.round((cut.done / cut.total) * 100)}%` } : undefined}
+        />
       </span>
       {view.cancellable && (
         <button

@@ -53,11 +53,13 @@ import type {
 } from '../types/kura';
 import type { ExportRequest, ModelImportOptions, ModelImportSource } from './modelIoActions';
 import type { PreviewSliceState } from './slices/previewSlice';
+import type { SplitSliceState } from './slices/splitSlice';
 
 export type ActiveDialogType =
   | 'svg'
   | 'image'
   | 'cut'
+  | 'splitForBed'
   | 'mold'
   | 'project'
   | 'thread'
@@ -94,7 +96,7 @@ export interface BusyProgress {
 
 /** Vista previa de operaciones (declarada en `slices/previewSlice.ts`), fusionada al estado. */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface KuraStoreState extends PreviewSliceState {}
+export interface KuraStoreState extends PreviewSliceState, SplitSliceState {}
 
 export interface KuraStoreState {
   // Estado del motor geométrico

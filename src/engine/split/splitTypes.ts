@@ -56,6 +56,12 @@ export interface BedSplitPlanOptions {
   shiftWindow?: number;
   /** Conector previsto (para el saliente del macho y si la sección lo admite); `null` = sin conectores. */
   connector?: SplitConnectorOptions | null;
+  /**
+   * Posiciones forzadas (mm, mundo) de los planos de un eje, p. ej. ajustadas a mano en la interfaz.
+   * Se usan solo si traen tantas posiciones como planos necesita ese eje; se ordenan y se acotan al
+   * modelo con el tramo mínimo del conector. Las piezas resultantes pueden no caber: revisar `sizeMm`.
+   */
+  planePositions?: Partial<Record<SplitAxis, number[]>>;
 }
 
 /** Plano de corte propuesto. */

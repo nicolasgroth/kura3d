@@ -748,6 +748,8 @@ export interface SplitPartMetadata {
   print: { position: Vec3; rotation: Vec3; plate: number; downFace: string };
   /** Etiquetas de las uniones de la pieza (las grabadas si se pidieron marcas). */
   jointLabels: string[];
+  /** Pareja de cada unión de la pieza: etiqueta y código de la pieza vecina ("Se une con A2 por la unión 3"). */
+  jointPartners?: Array<{ label: string; code: string }>;
 }
 
 /** Perfil de impresora 3D o espacio de trabajo libre. */

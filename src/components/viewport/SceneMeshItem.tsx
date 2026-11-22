@@ -11,6 +11,7 @@ import { type ThreeEvent, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { X } from 'lucide-react';
 import { useKuraStore } from '../../store/useKuraStore';
+import { useSplitExplodedPosition } from '../split/useSplitExplode';
 import { MATERIAL_PRESETS, type SceneObject, type Vec3 } from '../../types/kura';
 import { updateGeometryFaceColors } from '../../engine/paintColorAttribute';
 import { regionIdForFace } from '../../utils/segmentHighlight';
@@ -46,6 +47,7 @@ export const SceneMeshItem: React.FC<{
     const activeTool = useKuraStore((s) => s.activeTool);
     const paintMode = useKuraStore((s) => s.paintMode);
     const spawnedAt = useKuraStore((s) => s.spawnedAtById[obj.id]);
+    const displayPosition = useSplitExplodedPosition(obj);
     const selectObject = useKuraStore((s) => s.selectObject);
     const paintObjectSurface = useKuraStore((s) => s.paintObjectSurface);
     const beginPaintStroke = useKuraStore((s) => s.beginPaintStroke);
@@ -248,7 +250,7 @@ export const SceneMeshItem: React.FC<{
     return (
       <group
         ref={handleGroupRef}
-        position={obj.position}
+        position={displayPosition}
         rotation={obj.rotation}
         scale={obj.scale}
       >

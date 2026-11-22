@@ -97,6 +97,8 @@ const splitMetadata = shape({
   groupId: id, code: (v) => str(v) && v.length <= 16, cell: nat3, assembly: splitTransform,
   print: shape({ position: vec3, rotation: vec3, plate: (v) => Number.isInteger(v) && (v as number) >= 0, downFace: oneOf('+x', '-x', '+y', '-y', '+z', '-z') }),
   jointLabels: (v) => Array.isArray(v) && v.length <= 4096 && v.every((l) => str(l) && l.length <= 16),
+  jointPartners: optional((v) => Array.isArray(v) && v.length <= 4096
+    && v.every(shape({ label: (l) => str(l) && l.length <= 16, code: (c) => str(c) && c.length <= 16 }))),
 });
 const objectExtra = shape({ split: optional(splitMetadata) });
 

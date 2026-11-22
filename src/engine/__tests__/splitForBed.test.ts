@@ -108,6 +108,24 @@ describe('planBedSplit', () => {
     expect(plan.pieces.map((p) => p.code)).toEqual(Array.from({ length: plan.counts.y }, (_, j) => `A${j + 1}`));
   });
 
+  it('acepta posiciones de plano forzadas (ajuste a mano) y recalcula piezas y secciones', async () => {
+    const obj = objFrom(verticalTube(1000, 60), 'cil');
+    const auto = await planBedSplit(obj, BED);
+    const n = auto.counts.y - 1;
+    const forced = auto.planes.map((p) => p.position + 7).reverse();
+    const plan = await planBedSplit(obj, BED, { planePositions: { y: forced } });
+    expect(plan.counts.y).toBe(auto.counts.y);
+    expect(plan.planes.map((p) => p.position)).toEqual([...forced].sort((a, b) => a - b));
+    expect(plan.planes.every((p) => p.islands === 1 && p.sectionAreaMm2 > 0)).toBe(true);
+    expect(plan.pieces[0].bounds.max[1]).toBeCloseTo(forced[n - 1], 6);
+    // Cantidad equivocada: se ignora y queda el plan automático.
+    const ignored = await planBedSplit(obj, BED, { planePositions: { y: [500] } });
+    expect(ignored.planes.map((p) => p.position)).toEqual(auto.planes.map((p) => p.position));
+    // Fuera del modelo: se acota dentro de la caja.
+    const clamped = await planBedSplit(obj, BED, { planePositions: { y: Array.from({ length: n }, () => 5000) } });
+    expect(Math.max(...clamped.planes.map((p) => p.position))).toBeLessThan(plan.bounds.max[1]);
+  });
+
   it('(4) pieza que ya cabe: plan sin cortes', async () => {
     const obj = objFrom(wasm.Manifold.cube([100, 80, 60], true), 'cubo');
     const plan = await planBedSplit(obj, BED);

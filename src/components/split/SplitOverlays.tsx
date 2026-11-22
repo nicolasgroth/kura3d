@@ -1,0 +1,78 @@
+/**
+ * @file src/components/split/SplitOverlays.tsx
+ * @description Capas HTML de "dividir para imprimir" sobre el visor: el panel (según
+ * `activeDialog`), el aviso discreto cuando la pieza seleccionada no cabe en la cama activa y el
+ * control "Armado" de un grupo dividido.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import React, { useMemo } from 'react';
+import { Grid3x3 } from 'lucide-react';
+import { t } from '../../i18n';
+import { exceedsBed } from '../../core/scene/splitGroups';
+import { activeBed } from '../../store/splitCommandSchemas';
+import { useKuraStore } from '../../store/useKuraStore';
+import type { Vec3 } from '../../types/kura';
+import { formatNumber } from '../../utils/plural';
+import { computeWorldBounds } from '../viewport/viewportHelpers';
+import { SplitAssemblyControl } from './SplitAssemblyControl';
+import { SplitForBedPanel } from './SplitForBedPanel';
+import '../../styles/splitForBed.css';
+
+/** Aviso "No cabe en la cama (X × Y × Z mm)" con el botón para dividir. */
+export const SplitFitNotice: React.FC = () => {
+  const language = useKuraStore((s) => s.language);
+  const selectedIds = useKuraStore((s) => s.selectedIds);
+  const objects = useKuraStore((s) => s.objects);
+  const printerProfile = useKuraStore((s) => s.printerProfile);
+  const customBed = useKuraStore((s) => s.customBedDimensions);
+  const activeDialog = useKuraStore((s) => s.activeDialog);
+  const busy = useKuraStore((s) => Boolean(s.busyOperation));
+  const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
+
+  const obj = selectedIds.length === 1 ? objects.find((o) => o.id === selectedIds[0]) ?? null : null;
+  const size = useMemo<Vec3 | null>(() => {
+    if (!obj || obj.isHole || obj.metadata?.split) return null;
+    const b = computeWorldBounds(obj);
+    return [b.maxX - b.minX, b.maxY - b.minY, b.maxZ - b.minZ];
+  }, [obj]);
+  const bed = activeBed({ printerProfile, customBedDimensions: customBed });
+  if (!obj || !size || activeDialog === 'splitForBed' || !exceedsBed(size, bed)) return null;
+  const dims = size.map((v) => formatNumber(language, v, { maximumFractionDigits: 0 })).join(' × ');
+
+  return (
+    <div className="kura-split-notice" role="status">
+      <span>{t(language, 'split.notice', { size: dims })}</span>
+      <button
+        type="button"
+        className="kura-btn kura-btn-sm kura-btn-primary"
+        disabled={busy || obj.locked}
+        title={t(language, 'split.openTip')}
+        aria-keyshortcuts="Shift+C"
+        onClick={() => setActiveDialog('splitForBed')}
+      >
+        <Grid3x3 size={13} aria-hidden="true" />
+        <span>{t(language, 'split.open')}</span>
+      </button>
+    </div>
+  );
+};
+
+export const SplitOverlays: React.FC = () => {
+  const open = useKuraStore((s) => s.activeDialog === 'splitForBed');
+  const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
+  return (
+    <>
+      <SplitFitNotice />
+      <SplitAssemblyControl />
+      <SplitForBedPanel
+        open={open}
+        onClose={() => {
+          if (useKuraStore.getState().activeDialog === 'splitForBed') setActiveDialog(null);
+        }}
+      />
+    </>
+  );
+};

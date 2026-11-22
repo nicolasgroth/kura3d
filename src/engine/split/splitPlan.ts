@@ -116,11 +116,34 @@ function placePlanes(
   allowed: number,
   windowFrac: number,
   connector: SplitConnectorOptions | null,
+  forced?: number[],
 ): SplitPlane[] {
   const span = (max - min) / n;
   const w = windowFrac * span;
   const minLen = Math.min(minSpan(connector), span * 0.5);
   const planes: SplitPlane[] = [];
+  if (forced && forced.length === n - 1 && forced.every(Number.isFinite)) {
+    // Posiciones a mano: ordenadas y separadas al menos el tramo mínimo, dentro del modelo.
+    const sorted = [...forced].sort((p, q) => p - q);
+    let prevForced = min;
+    sorted.forEach((raw, i) => {
+      const k = i + 1;
+      const pos = Math.min(max - (n - k) * minLen, Math.max(prevForced + minLen, raw));
+      const s = measureSection(oriented, pos, connector);
+      planes.push({
+        axis,
+        index: i,
+        position: pos,
+        uniformPosition: min + k * span,
+        sectionAreaMm2: s.areaMm2,
+        islands: s.islands,
+        smallestIslandMm2: s.smallestIslandMm2,
+        admitsConnectors: s.admitsConnectors,
+      });
+      prevForced = pos;
+    });
+    return planes;
+  }
   let prev = min;
   for (let k = 1; k < n; k++) {
     const uni = min + k * span;
@@ -172,6 +195,7 @@ function resolveOptions(bed: SplitBed, o: BedSplitPlanOptions) {
     allowRotation: o.allowRotation ?? true,
     window: o.shiftWindow ?? SPLIT_DEFAULTS.shiftWindow,
     connector: o.connector === undefined ? SPLIT_DEFAULTS.connector : o.connector,
+    planePositions: o.planePositions ?? {},
   };
 }
 
@@ -213,7 +237,7 @@ export function planFromManifold(m: Manifold, bed: SplitBed, options: BedSplitPl
       const allowed = opt.usable[bedAxis] - protrusion;
       const { oriented, owned } = orientForAxis(m, axis);
       try {
-        axisPlanes = placePlanes(oriented, axis, min[a], max[a], n, allowed, opt.window, opt.connector);
+        axisPlanes = placePlanes(oriented, axis, min[a], max[a], n, allowed, opt.window, opt.connector, opt.planePositions[axis]);
       } finally {
         if (owned) oriented.delete();
       }

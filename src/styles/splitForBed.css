@@ -1,0 +1,310 @@
+/*
+ * @file src/styles/splitForBed.css
+ * @description Estilos de "dividir para imprimir": panel (grupos, planos, resumen), rótulos del
+ * visor (planos, piezas, placas), aviso de que no cabe, control de armado y fase de la barra de
+ * progreso. Usa los tokens del tema (claro y oscuro).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* Panel */
+.kura-split-target {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.kura-split-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 8px 10px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.kura-split-group > legend {
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.kura-split-row3,
+.kura-split-row2 {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.kura-split-row2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.kura-split-row3 .kura-form-field,
+.kura-split-row2 .kura-form-field {
+  min-width: 0;
+}
+
+.kura-split-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.kura-split-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.kura-split-check input:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-split-planes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kura-split-planes[aria-busy='true'] {
+  opacity: 0.7;
+}
+
+.kura-split-planes li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+
+.kura-split-planes li > label {
+  min-width: 64px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kura-split-planes li.is-active {
+  border-color: #f97316;
+  background: color-mix(in srgb, #f97316 10%, transparent);
+}
+
+.kura-split-plane-pick.is-active {
+  border-color: #f97316;
+  font-weight: 700;
+}
+
+.kura-split-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border: 1px dashed currentColor;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.kura-split-summary {
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+}
+
+.kura-split-summary[data-pending] .kura-split-dl {
+  opacity: 0.65;
+}
+
+.kura-split-dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 10px;
+  margin: 4px 0 0;
+  font-size: 12.5px;
+}
+
+.kura-split-dl dt {
+  color: var(--text-secondary);
+}
+
+.kura-split-dl dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.kura-split-warnings {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.kura-split-warnings li::marker {
+  content: '! ';
+  font-weight: 700;
+}
+
+/* Inspector: marcas de pareja */
+.kura-split-joints {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+}
+
+/* Rótulos del visor */
+.kura-split-plane-tag,
+.kura-split-piece-tag,
+.kura-split-plate-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 2px solid #f97316;
+  box-shadow: var(--shadow-hud);
+}
+
+.kura-split-plane-tag[data-no-joint] {
+  border-style: dashed;
+  border-color: #ca8a04;
+}
+
+.kura-split-plane-tag[data-active] {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+.kura-split-piece-tag {
+  border-color: var(--accent-cyan);
+  font-size: 12px;
+}
+
+.kura-split-piece-tag[data-rotated] {
+  border-style: double;
+  border-width: 3px;
+}
+
+.kura-split-piece-rot {
+  font-weight: 600;
+  font-size: 10.5px;
+}
+
+.kura-split-plate-tag {
+  border-color: #38bdf8;
+}
+
+/* Aviso de que no cabe y control de armado (capas HTML del visor) */
+.kura-split-notice,
+.kura-split-assembly {
+  position: absolute;
+  z-index: 31;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100% - 32px);
+  padding: 6px 8px 6px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-hud);
+  font-size: 12.5px;
+}
+
+.kura-split-notice {
+  bottom: 124px;
+  border-left: 4px solid #d97706;
+}
+
+.kura-split-assembly {
+  bottom: 124px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 8px 10px;
+  min-width: 280px;
+}
+
+.kura-split-assembly-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kura-split-assembly-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kura-split-assembly-row input[type='range'] {
+  flex: 1 1 120px;
+  min-width: 0;
+}
+
+.kura-split-assembly-pct {
+  min-width: 42px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fase de la barra de progreso ("Cortando 3 de 7") */
+.kura-op-progress-phase {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.kura-op-progress-bar.is-determinate {
+  animation: none;
+  transition: width 0.2s ease-out;
+}
+
+@media (max-width: 767.98px) {
+  .kura-split-row3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kura-split-notice,
+  .kura-split-assembly {
+    bottom: 76px;
+    min-width: 0;
+    width: calc(100% - 32px);
+  }
+
+  .kura-split-notice {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-op-progress-bar.is-determinate {
+    transition: none;
+  }
+}

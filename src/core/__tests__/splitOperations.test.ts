@@ -49,6 +49,9 @@ describe('executeBedSplit', () => {
       expect(p.position[2]).toBeCloseTo(-5, 3);
     }
     expect(result.joints.length).toBe(result.parts.length - 1);
+    // Cada pieza sabe con qué vecina se une y por cuál unión.
+    const first = result.parts[0].metadata?.split;
+    expect(first?.jointPartners).toEqual([{ label: result.joints[0].label, code: result.joints[0].b.code }]);
   });
 
   it('corre en el Worker con avance por corte y nombres diferidos', async () => {

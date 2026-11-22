@@ -1,19 +1,20 @@
 /**
  * @file src/components/inspector/OperationsSection.tsx
- * @description Sección Operaciones 3D (Manifold) del inspector: módulos, ahuecar, corte y textura.
+ * @description Sección Operaciones 3D (Manifold) del inspector: módulos, ahuecar, corte, dividir para imprimir (con las marcas de pareja de una pieza dividida) y textura.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import React from 'react';
-import { Palette, Scissors, Split, Zap } from 'lucide-react';
+import { Grid3x3, Palette, Scissors, Split, Zap } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { ModulesPanel } from './ModulesPanel';
 import { HollowPanel } from './HollowPanel';
 import { TexturePanel } from './TexturePanel';
+import { SplitPartInfo } from '../split/SplitPartInfo';
 
 /** Sección 5: operaciones 3D determinísticas y módulos dinámicos. */
 export const OperationsSection: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
@@ -61,6 +62,18 @@ export const OperationsSection: React.FC<InspectorSectionProps> = ({ primary, ui
           <Scissors size={13} />
           <span>{t(language, 'inspector.op.planeCut')}</span>
         </button>
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm"
+          disabled={isBusy || primary.locked}
+          title={t(language, 'split.openTip')}
+          aria-keyshortcuts="Shift+C"
+          onClick={() => setActiveDialog('splitForBed')}
+        >
+          <Grid3x3 size={13} />
+          <span>{t(language, 'split.open')}</span>
+        </button>
+        <SplitPartInfo primary={primary} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <button
             type="button"

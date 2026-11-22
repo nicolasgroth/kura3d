@@ -66,6 +66,9 @@ export async function executeBedSplit(
       assembly: part.assembly,
       print: { position: print.position, rotation: print.rotation, plate: print.plate, downFace: print.downFace },
       jointLabels: part.jointLabels,
+      jointPartners: res.joints
+        .filter((j) => j.a.code === part.code || j.b.code === part.code)
+        .map((j) => ({ label: j.label, code: j.a.code === part.code ? j.b.code : j.a.code })),
     };
     const built = buildWith(ctx, {
       name: ctx.naming.splitPart(obj, part.code),

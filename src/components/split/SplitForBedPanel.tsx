@@ -1,0 +1,350 @@
+/**
+ * @file src/components/split/SplitForBedPanel.tsx
+ * @description Panel "Dividir para imprimir" (sobre `OperationPanel`; hoja inferior en móvil): cama
+ * (la activa por defecto, editable), margen, ejes permitidos, acostar piezas, unión (tipo, tamaño,
+ * profundidad, holgura y cantidad) y marcas de pareja. El plan se recalcula solo (Worker, debounce)
+ * y se dibuja en el visor; cada plano se ajusta a mano (campo, arrastre o flechas en el visor) y se
+ * restablece. Muestra el resumen y deja "Dividir" deshabilitado con el motivo si no se puede.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import React, { useEffect, useId, useMemo, useState } from 'react';
+import { AlertTriangle, Grid3x3, RotateCcw } from 'lucide-react';
+import { t } from '../../i18n';
+import { useKuraStore } from '../../store/useKuraStore';
+import { activeBed } from '../../store/splitCommandSchemas';
+import type { BedSplitPlanOptions, SplitAxis, SplitBed, SplitConnectorOptions } from '../../engine';
+import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../../engine/operationLimits';
+import { summarizeSplitPlan } from '../../core/scene/splitPlanSummary';
+import { formatNumber } from '../../utils/plural';
+import { OperationPanel } from '../OperationPanel';
+import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
+import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { keyboardFocusInViewport } from '../viewport/cutPlaneDrag';
+import { onSplitPlaneMove, planeKey } from './splitPlaneDrag';
+import { SplitPlanSummaryView } from './SplitPlanSummaryView';
+import '../../styles/splitForBed.css';
+
+type ConnectorKind = 'none' | SplitConnectorOptions['type'];
+type Overrides = Partial<Record<SplitAxis, number[]>>;
+const AXES: SplitAxis[] = ['x', 'y', 'z'];
+const D = OPERATION_DEFAULTS.split;
+
+export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+  const language = useKuraStore((s) => s.language);
+  const selectedIds = useKuraStore((s) => s.selectedIds);
+  const objects = useKuraStore((s) => s.objects);
+  const printerProfile = useKuraStore((s) => s.printerProfile);
+  const customBed = useKuraStore((s) => s.customBedDimensions);
+  const preview = useKuraStore((s) => s.splitPlanPreview);
+  const activePlane = useKuraStore((s) => s.splitActivePlane);
+  const requestSplitPlan = useKuraStore((s) => s.requestSplitPlan);
+  const clearSplitPlan = useKuraStore((s) => s.clearSplitPlan);
+  const setActivePlane = useKuraStore((s) => s.setSplitActivePlane);
+  const splitObjectForBed = useKuraStore((s) => s.splitObjectForBed);
+  const busy = useKuraStore((s) => Boolean(s.busyOperation));
+  const failure = useOperationFailure(open);
+  const uid = useId();
+
+  const defaultBed = useMemo<SplitBed>(
+    () => activeBed({ printerProfile, customBedDimensions: customBed }),
+    [printerProfile, customBed],
+  );
+  const [bed, setBed] = useState<SplitBed>(defaultBed);
+  const [margin, setMargin] = useState<number>(D.marginMm);
+  const [axes, setAxes] = useState<Record<SplitAxis, boolean>>({ x: true, y: true, z: true });
+  const [allowRotation, setAllowRotation] = useState(true);
+  const [kind, setKind] = useState<ConnectorKind>('dowel');
+  const [size, setSize] = useState(4);
+  const [depth, setDepth] = useState(6);
+  const [tolerance, setTolerance] = useState(0.25);
+  const [count, setCount] = useState(2);
+  const [labels, setLabels] = useState<'none' | 'engraved'>('engraved');
+  const [labelDepth, setLabelDepth] = useState<number>(D.labelDepthMm);
+  const [overrides, setOverrides] = useState<Overrides>({});
+
+  const target = useMemo(() => objects.find((o) => o.id === selectedIds[0]) ?? null, [objects, selectedIds]);
+  const targetId = target?.id ?? null;
+  const fmt = (n: number, digits = 1) => formatNumber(language, n, { maximumFractionDigits: digits });
+
+  // Al abrir, la cama activa; al cambiar de pieza, sin planos a mano.
+  useEffect(() => {
+    if (open) setBed(defaultBed);
+  }, [open, defaultBed]);
+  useEffect(() => setOverrides({}), [targetId]);
+
+  const connector = useMemo<SplitConnectorOptions | null>(
+    () => (kind === 'none' ? null : { type: kind, size, depth, tolerance, count }),
+    [kind, size, depth, tolerance, count],
+  );
+  const allowedAxes = useMemo(() => AXES.filter((a) => axes[a]), [axes]);
+  const planOptions = useMemo<BedSplitPlanOptions>(
+    () => ({ marginMm: margin, axes: allowedAxes, allowRotation, connector, planePositions: overrides }),
+    [margin, allowedAxes, allowRotation, connector, overrides],
+  );
+
+  // Plan en vivo con debounce (el visor lo dibuja).
+  useEffect(() => {
+    if (!open || !targetId || allowedAxes.length === 0) return;
+    requestSplitPlan(targetId, bed, planOptions);
+  }, [open, targetId, bed, planOptions, allowedAxes.length, requestSplitPlan]);
+
+  useEffect(() => {
+    if (!open) clearSplitPlan();
+  }, [open, clearSplitPlan]);
+  useEffect(() => () => clearSplitPlan(), [clearSplitPlan]);
+
+  const plan = preview.objectId === targetId ? preview.plan : null;
+
+  const movePlane = (axis: SplitAxis, index: number, position: number) => {
+    if (!plan) return;
+    const current = plan.planes.filter((p) => p.axis === axis).map((p) => p.position);
+    if (index >= current.length) return;
+    const lo = plan.bounds.min[AXES.indexOf(axis)];
+    const hi = plan.bounds.max[AXES.indexOf(axis)];
+    current[index] = Math.min(hi, Math.max(lo, Math.round(position * 10) / 10));
+    setOverrides((o) => ({ ...o, [axis]: current }));
+  };
+
+  // Arrastre en el visor y flechas ↑/↓ con el foco en el visor (Mayús: ×10).
+  useEffect(() => {
+    if (!open) return;
+    const off = onSplitPlaneMove((m) => movePlane(m.axis, m.index, m.position));
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key !== 'ArrowUp' && e.key !== 'ArrowDown') || e.defaultPrevented || !activePlane || !plan) return;
+      if (!keyboardFocusInViewport(e.target)) return;
+      const [axis, idx] = activePlane.split(':') as [SplitAxis, string];
+      const p = plan.planes.find((q) => q.axis === axis && q.index === Number(idx));
+      if (!p) return;
+      e.preventDefault();
+      movePlane(axis, p.index, p.position + (e.shiftKey ? 10 : 1) * (e.key === 'ArrowUp' ? 1 : -1));
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      off();
+      document.removeEventListener('keydown', onKey);
+    };
+    // movePlane depende del plan vigente.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, plan, activePlane]);
+
+  const summary = plan ? summarizeSplitPlan(plan, allowRotation) : null;
+  const pending = preview.status === 'pending';
+  const hasOverrides = Object.values(overrides).some((v) => v && v.length > 0);
+
+  let reason: string | null = null;
+  if (!target) reason = t(language, 'split.reason.noTarget');
+  else if (target.locked) reason = t(language, 'split.reason.locked');
+  else if (allowedAxes.length === 0) reason = t(language, 'split.reason.noAxes');
+  else if (preview.status === 'error' && preview.objectId === targetId) reason = preview.error ?? t(language, 'split.reason.planFailed');
+  else if (plan?.fitsWithoutCuts) reason = t(language, 'split.reason.fits');
+  else if (summary && summary.oversized.length > 0) reason = t(language, 'split.reason.oversized', { codes: summary.oversized.join(', ') });
+  const checking = !reason && (pending || !plan);
+  const reasonId = `${uid}-reason`;
+
+  const handleSplit = async () => {
+    if (!targetId) return;
+    const { result, failed } = await failure.run(() =>
+      splitObjectForBed(targetId, {
+        bed,
+        plan: planOptions,
+        execute: { connector, labels, labelDepthMm: labelDepth },
+        dryRun: false,
+      }),
+    );
+    if (!failed && result && result.parts.length > 0) onClose();
+  };
+
+  const num = (
+    id: string,
+    label: string,
+    value: number,
+    onChange: (v: number) => void,
+    range: { min: number; max: number },
+    opts: { step?: number; precision?: number; disabled?: boolean; def?: number; hint?: string } = {},
+  ) => (
+    <div className="kura-form-field">
+      <label htmlFor={`${uid}-${id}`}>{label}</label>
+      <PrecisionNumberInput
+        id={`${uid}-${id}`}
+        ariaLabel={label}
+        title={opts.hint ?? t(language, 'split.rangeTip', { min: fmt(range.min, 2), max: fmt(range.max, 2) })}
+        min={range.min}
+        max={range.max}
+        step={opts.step ?? 1}
+        precision={opts.precision ?? 1}
+        defaultValue={opts.def}
+        disabled={opts.disabled}
+        value={value}
+        onChange={(v) => onChange(Math.min(range.max, Math.max(range.min, v)))}
+      />
+    </div>
+  );
+
+  return (
+    <OperationPanel
+      open={open}
+      onClose={onClose}
+      title={t(language, 'split.title')}
+      className="kura-split-panel"
+      footer={
+        <>
+          <button type="button" className="kura-btn" onClick={onClose}>
+            {t(language, 'dialog.cancel')}
+          </button>
+          <button
+            type="button"
+            className="kura-btn kura-btn-primary"
+            disabled={Boolean(reason) || checking || busy}
+            aria-describedby={reason ? reasonId : undefined}
+            title={reason ?? t(language, 'split.executeTip')}
+            onClick={() => void handleSplit()}
+          >
+            <Grid3x3 size={14} aria-hidden="true" />
+            <span>{t(language, 'split.execute')}</span>
+          </button>
+        </>
+      }
+    >
+      <OperationFailureAlert message={failure.error} />
+      {reason && (
+        <div id={reasonId} role="alert" className="kura-cut-reason">
+          {t(language, 'split.blocked', { reason })}
+        </div>
+      )}
+      {target && <p className="kura-split-target">{t(language, 'split.target', { name: target.name })}</p>}
+
+      <fieldset className="kura-split-group">
+        <legend>{t(language, 'split.bed')}</legend>
+        <div className="kura-split-row3">
+          {num('bw', t(language, 'split.bedWidth'), bed.widthMm, (v) => setBed((b) => ({ ...b, widthMm: v })), OR.split.bedMm, { def: defaultBed.widthMm })}
+          {num('bd', t(language, 'split.bedDepth'), bed.depthMm, (v) => setBed((b) => ({ ...b, depthMm: v })), OR.split.bedMm, { def: defaultBed.depthMm })}
+          {num('bh', t(language, 'split.bedHeight'), bed.heightMm, (v) => setBed((b) => ({ ...b, heightMm: v })), OR.split.bedMm, { def: defaultBed.heightMm })}
+        </div>
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm"
+          title={t(language, 'split.useActiveBedTip')}
+          disabled={bed.widthMm === defaultBed.widthMm && bed.depthMm === defaultBed.depthMm && bed.heightMm === defaultBed.heightMm}
+          onClick={() => setBed(defaultBed)}
+        >
+          {t(language, 'split.useActiveBed')}
+        </button>
+        {num('margin', t(language, 'split.margin'), margin, setMargin, OR.split.marginMm, { step: 0.5, def: D.marginMm })}
+      </fieldset>
+
+      <fieldset className="kura-split-group">
+        <legend>{t(language, 'split.axes')}</legend>
+        <div className="kura-split-checks">
+          {AXES.map((a) => (
+            <label key={a} className="kura-split-check" title={t(language, 'split.axisTip', { axis: a.toUpperCase() })}>
+              <input type="checkbox" checked={axes[a]} onChange={(e) => setAxes((s) => ({ ...s, [a]: e.target.checked }))} />
+              <span>{a.toUpperCase()}</span>
+            </label>
+          ))}
+        </div>
+        <label className="kura-split-check" title={t(language, 'split.allowRotationTip')}>
+          <input type="checkbox" checked={allowRotation} onChange={(e) => setAllowRotation(e.target.checked)} />
+          <span>{t(language, 'split.allowRotation')}</span>
+        </label>
+      </fieldset>
+
+      <fieldset className="kura-split-group">
+        <legend>{t(language, 'split.joint')}</legend>
+        <div className="kura-form-field">
+          <label htmlFor={`${uid}-kind`}>{t(language, 'dialog.cut.connectorType')}</label>
+          <select id={`${uid}-kind`} className="kura-select" value={kind} title={t(language, 'split.connectorTip')} onChange={(e) => setKind(e.target.value as ConnectorKind)}>
+            <option value="none">{t(language, 'dialog.cut.connector.none')}</option>
+            <option value="dowel">{t(language, 'dialog.cut.connector.dowel')}</option>
+            <option value="peg">{t(language, 'dialog.cut.connector.peg')}</option>
+            <option value="dovetail">{t(language, 'dialog.cut.connector.dovetail')}</option>
+          </select>
+        </div>
+        <div className="kura-split-row2">
+          {num('size', `${t(language, 'dialog.cut.connectorSize')} (mm)`, size, setSize, { min: OR.cut.connectorSize.min, max: 50 }, { step: 0.5, disabled: !connector, def: 4 })}
+          {num('depth', `${t(language, 'dialog.cut.connectorDepth')} (mm)`, depth, setDepth, { min: OR.cut.connectorDepth.min, max: 50 }, { step: 0.5, disabled: !connector, def: 6 })}
+          {num('tol', `${t(language, 'dialog.cut.tolerance')} (mm)`, tolerance, setTolerance, OR.cut.tolerance, { step: 0.05, precision: 2, disabled: !connector, def: 0.25 })}
+          {num('count', t(language, 'dialog.cut.connectorCount'), count, (v) => setCount(Math.round(v)), { min: 1, max: OR.cut.connectorCount.max }, { precision: 0, disabled: !connector, def: 2 })}
+        </div>
+      </fieldset>
+
+      <fieldset className="kura-split-group">
+        <legend>{t(language, 'split.labels')}</legend>
+        <div className="kura-split-row2">
+          <div className="kura-form-field">
+            <label htmlFor={`${uid}-labels`}>{t(language, 'split.labelsMode')}</label>
+            <select id={`${uid}-labels`} className="kura-select" value={labels} title={t(language, 'split.labelsTip')} onChange={(e) => setLabels(e.target.value as 'none' | 'engraved')}>
+              <option value="none">{t(language, 'split.labels.none')}</option>
+              <option value="engraved">{t(language, 'split.labels.engraved')}</option>
+            </select>
+          </div>
+          {num('ldepth', `${t(language, 'split.labelDepth')} (mm)`, labelDepth, setLabelDepth, OR.split.labelDepthMm, { step: 0.1, precision: 2, disabled: labels === 'none', def: D.labelDepthMm })}
+        </div>
+      </fieldset>
+
+      <fieldset className="kura-split-group">
+        <legend>{t(language, 'split.planes')}</legend>
+        {plan && plan.planes.length > 0 ? (
+          <>
+            <small className="kura-cut-hint">{t(language, 'split.planesHint')}</small>
+            <ul className="kura-split-planes" aria-busy={pending}>
+              {plan.planes.map((p) => {
+                const key = planeKey(p.axis, p.index);
+                const a = AXES.indexOf(p.axis);
+                const name = t(language, 'split.planeName', { axis: p.axis.toUpperCase(), n: p.index + 1 });
+                const noJoint = Boolean(connector) && !p.admitsConnectors;
+                return (
+                  <li key={key} className={activePlane === key ? 'is-active' : undefined} data-no-joint={noJoint || undefined}>
+                    <label htmlFor={`${uid}-plane-${key}`}>{name}</label>
+                    <PrecisionNumberInput
+                      id={`${uid}-plane-${key}`}
+                      ariaLabel={`${name} (mm)`}
+                      title={t(language, 'split.planeTip')}
+                      min={plan.bounds.min[a]}
+                      max={plan.bounds.max[a]}
+                      step={1}
+                      precision={1}
+                      value={p.position}
+                      onChange={(v) => movePlane(p.axis, p.index, v)}
+                      style={{ width: 96 }}
+                    />
+                    <button
+                      type="button"
+                      className={`kura-btn kura-btn-sm kura-split-plane-pick${activePlane === key ? ' is-active' : ''}`}
+                      aria-pressed={activePlane === key}
+                      title={t(language, 'split.planePickTip')}
+                      onClick={() => setActivePlane(activePlane === key ? null : key)}
+                    >
+                      {t(language, 'split.planePick')}
+                    </button>
+                    {noJoint && (
+                      <span className="kura-split-badge" title={t(language, 'split.noJointTip')}>
+                        <AlertTriangle size={11} aria-hidden="true" /> {t(language, 'split.noJoint')}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm"
+              disabled={!hasOverrides}
+              title={t(language, 'split.resetPlanesTip')}
+              onClick={() => setOverrides({})}
+            >
+              <RotateCcw size={13} aria-hidden="true" />
+              <span>{t(language, 'split.resetPlanes')}</span>
+            </button>
+          </>
+        ) : (
+          <small className="kura-cut-hint">{t(language, plan?.fitsWithoutCuts ? 'split.reason.fits' : 'split.planesNone')}</small>
+        )}
+      </fieldset>
+
+      <SplitPlanSummaryView summary={summary} plan={plan} pending={pending} checking={checking} />
+    </OperationPanel>
+  );
+};
