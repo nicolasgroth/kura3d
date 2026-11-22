@@ -32,17 +32,7 @@ export const InspectorMulti: React.FC = () => {
   const holeCount = objects.filter((o) => o.isHole && o.visible).length;
   const hasAnyHoles = holeCount > 0;
   const isBusy = Boolean(busyOperation);
-  const alignButtons: Array<{ mode: AlignMode; label: string }> = [
-    { mode: 'minX', label: 'Min X' },
-    { mode: 'centerX', label: 'Cen X' },
-    { mode: 'maxX', label: 'Max X' },
-    { mode: 'minY', label: 'Min Y' },
-    { mode: 'centerY', label: 'Cen Y' },
-    { mode: 'maxY', label: 'Max Y' },
-    { mode: 'minZ', label: 'Min Z' },
-    { mode: 'centerZ', label: 'Cen Z' },
-    { mode: 'maxZ', label: 'Max Z' },
-  ];
+  const alignButtons = ['minX', 'centerX', 'maxX', 'minY', 'centerY', 'maxY', 'minZ', 'centerZ', 'maxZ'] as const satisfies readonly AlignMode[];
 
   return (
     <aside
@@ -125,15 +115,17 @@ export const InspectorMulti: React.FC = () => {
         <div className="kura-card">
           <h3 className="kura-section-label">{t(language, 'inspector.pro.alignTitle')}</h3>
           <div className="kura-align-grid">
-            {alignButtons.map((btn) => (
+            {alignButtons.map((mode) => (
               <button
-                key={btn.mode}
+                key={mode}
                 type="button"
                 className="kura-btn kura-btn-sm"
-                onClick={() => alignSelectedObjects(btn.mode)}
+                title={t(language, `align.tip.${mode}`)}
+                aria-label={t(language, `align.tip.${mode}`)}
+                onClick={() => alignSelectedObjects(mode)}
               >
-                <AlignCenter size={11} />
-                <span>{btn.label}</span>
+                <AlignCenter size={11} aria-hidden="true" />
+                <span>{t(language, `align.label.${mode}`)}</span>
               </button>
             ))}
           </div>

@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import '../../styles/axisHint.css';
 import React from 'react';
 import * as THREE from 'three';
 import {
@@ -96,6 +97,9 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
       <h3 className="kura-section-label">
         {t(language, 'inspector.section.transform', { unit: unitLabel })}
       </h3>
+      <p className="kura-axis-hint" title={t(language, 'inspector.axisHintTip')}>
+        {t(language, 'inspector.axisHint')}
+      </p>
 
       <div
         className="kura-form-field kura-transform-group"
@@ -105,7 +109,7 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
         aria-labelledby="kura-precision-translate-label"
       >
         <div className="kura-field-row">
-          <span className="kura-field-label" id="kura-precision-translate-label">{positionLabel}</span>
+          <span className="kura-field-label" id="kura-precision-translate-label" title={t(language, 'inspector.axisHintTip')}>{positionLabel}</span>
           <select
             className="kura-select kura-transform-mode"
             value={positionRelative ? 'relative' : 'absolute'}
@@ -162,7 +166,7 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
         aria-labelledby="kura-precision-rotate-label"
       >
         <div className="kura-field-row">
-          <span className="kura-field-label" id="kura-precision-rotate-label">{rotationLabel}</span>
+          <span className="kura-field-label" id="kura-precision-rotate-label" title={t(language, 'inspector.axisHintTip')}>{rotationLabel}</span>
           <select
             className="kura-select kura-transform-mode"
             value={rotationRelative ? 'relative' : 'absolute'}
