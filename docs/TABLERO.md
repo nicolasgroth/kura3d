@@ -14,6 +14,8 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 ## En QA
 
+Prueba con modelos reales del autor (bustos en STL de hasta 2,4 millones de triángulos y 3MF de slicer multipieza): importar, ida y vuelta, simplificar, analizar, dividir, ahuecar y cortar. En curso desde las 20:10.
+
 QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintura sobre primitivas (ver En desarrollo). Confirmó corregidos F2/F3/F4, la vista previa de uniones (7 con conector y 5 para pegar, igual al resultado), el conector automático, el ZIP centrado, los nombres de mitades, el aviso de cavidad cerrada, el vocabulario y la accesibilidad; y separar por colores en cubo y placa (piezas cerradas, suma exacta, 3MF con colores).
 
 | Funcionalidad | Estado |
