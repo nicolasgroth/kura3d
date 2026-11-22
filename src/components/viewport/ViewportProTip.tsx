@@ -34,7 +34,7 @@ export const ViewportProTip: React.FC = () => {
       ) : (
         <div className="kura-hud-card kura-protip-pill">
           <Lightbulb size={13} style={{ color: 'var(--accent-amber)', flexShrink: 0 }} />
-          <span className="kura-protip-text">
+          <span className="kura-protip-text" title={t(language, `viewport.protip.${activeTool}`)}>
             {t(language, `viewport.protip.${activeTool}`)}
           </span>
           <button
