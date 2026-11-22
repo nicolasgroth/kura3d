@@ -125,6 +125,13 @@ export interface BedSplitPlanOptions {
    * modelo con el tramo mínimo del conector. Las piezas resultantes pueden no caber: revisar `sizeMm`.
    */
   planePositions?: Partial<Record<SplitAxis, number[]>>;
+  /**
+   * Umbral de fragmento de la ejecución (mm³, por defecto el mismo de `BedSplitExecuteOptions`), para que
+   * los conteos reales del plan (`occupancy`) coincidan con lo que resulte.
+   */
+  minFragmentMm3?: number;
+  /** Calcula `occupancy` (por defecto `true`). */
+  countOccupancy?: boolean;
 }
 
 /** Plano de corte propuesto. */
@@ -180,7 +187,26 @@ export interface BedSplitPlan {
   connector: SplitConnectorOptions | null;
   /** Avisos del plan (p. ej. planos que no evitan partir una pared a lo largo). */
   warnings?: EngineWarning[];
+  /**
+   * Piezas y uniones que dará la ejecución (celdas vacías fuera, cuerpos sueltos y fragmentos como en
+   * la ejecución). Ausente si el modelo cabe sin cortes o en planes de versiones anteriores.
+   */
+  occupancy?: SplitPlanOccupancy;
   elapsedMs: number;
+}
+
+/** Conteos reales del plan (`splitOccupancy.ts`). */
+export interface SplitPlanOccupancy {
+  /** `true` si coincide con la ejecución (mismo corte, fusión de fragmentos y contacto real). */
+  exact: boolean;
+  /** Celdas con material `[i, j, k]`. */
+  cells: Array<[number, number, number]>;
+  pieces: number;
+  joints: number;
+  /** Uniones por plano, en el orden de `BedSplitPlan.planes`. */
+  jointsPerPlane: number[];
+  /** Medidas de impresión de cada pieza (caja real más el saliente de los machos), ejes del motor. */
+  pieceSizesMm: Vec3[];
 }
 
 /** Opciones de ejecución. */

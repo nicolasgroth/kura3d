@@ -58,7 +58,7 @@ export const SplitPlanSummaryView: React.FC<{
           <dl className="kura-split-dl">
             <dt>{t(language, 'split.sum.pieces')}</dt>
             <dd data-testid="split-piece-count">
-              {t(language, 'split.sum.piecesValue', {
+              {t(language, summary.exact ? 'split.sum.piecesExactValue' : 'split.sum.piecesValue', {
                 count: summary.pieceCount,
                 grid: summary.gridUser.join(' × '),
               })}
@@ -109,7 +109,8 @@ export const SplitPlanSummaryView: React.FC<{
               </>
             )}
           </dl>
-          <small className="kura-cut-hint" data-testid="split-max-hint">{t(language, 'split.sum.maxHint')}</small>
+          {/* Con el conteo exacto del plan las cifras ya son las reales: la nota de máximos sobra. */}
+          {!summary.exact && <small className="kura-cut-hint" data-testid="split-max-hint">{t(language, 'split.sum.maxHint')}</small>}
           {warnings.length > 0 && (
             <ul className="kura-split-warnings">
               {warnings.map((w) => (
