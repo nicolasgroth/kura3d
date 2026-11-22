@@ -225,7 +225,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'cubo caja box cube primitiva',
         kind: 'local',
         icon: <Box size={15} />,
-        run: () => void createPrimitive('box', { width: 30, height: 30, depth: 30 }),
+        run: () => void createPrimitive('box', { width: 30, height: 30, depth: 30 }, { placement: 'free' }),
       },
       {
         id: 'prim-cyl',
@@ -234,7 +234,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'cilindro cylinder tubo',
         kind: 'local',
         icon: <Cylinder size={15} />,
-        run: () => void createPrimitive('cylinder', { radius: 14, height: 36 }),
+        run: () => void createPrimitive('cylinder', { radius: 14, height: 36 }, { placement: 'free' }),
       },
       {
         id: 'prim-tube',
@@ -244,7 +244,7 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <Disc size={15} />,
         run: () =>
-          void createPrimitive('tube', { outerRadius: 16, innerRadius: 11, height: 36 }),
+          void createPrimitive('tube', { outerRadius: 16, innerRadius: 11, height: 36 }, { placement: 'free' }),
       },
       {
         id: 'prim-sphere',
@@ -253,7 +253,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'esfera sphere bola',
         kind: 'local',
         icon: <Circle size={15} />,
-        run: () => void createPrimitive('sphere', { radius: 16 }),
+        run: () => void createPrimitive('sphere', { radius: 16 }, { placement: 'free' }),
       },
       {
         id: 'prim-cone',
@@ -262,7 +262,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'cono cone piramide',
         kind: 'local',
         icon: <Cone size={15} />,
-        run: () => void createPrimitive('cone', { radius: 16, height: 34 }),
+        run: () => void createPrimitive('cone', { radius: 16, height: 34 }, { placement: 'free' }),
       },
       {
         id: 'prim-torus',
@@ -271,7 +271,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'toroide torus dona',
         kind: 'local',
         icon: <Sparkles size={15} />,
-        run: () => void createPrimitive('torus', { outerRadius: 18, tubeRadius: 5.5 }),
+        run: () => void createPrimitive('torus', { outerRadius: 18, tubeRadius: 5.5 }, { placement: 'free' }),
       },
       {
         id: 'prim-prism',
@@ -280,7 +280,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'prisma hexagono prism',
         kind: 'local',
         icon: <Hexagon size={15} />,
-        run: () => void createPrimitive('prism', { radius: 16, height: 28, sides: 6 }),
+        run: () => void createPrimitive('prism', { radius: 16, height: 28, sides: 6 }, { placement: 'free' }),
       },
       {
         id: 'prim-text',
@@ -289,7 +289,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'texto 3d text letra',
         kind: 'local',
         icon: <Type size={15} />,
-        run: () => void createPrimitive('text', { text: 'KURA3D', fontSize: 18, height: 6 }),
+        run: () => void createPrimitive('text', { text: 'KURA3D', fontSize: 18, height: 6 }, { placement: 'free' }),
       },
       {
         id: 'gen-thread',

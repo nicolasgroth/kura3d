@@ -17,6 +17,7 @@ import {
   type MeshData,
   type ObjectSourceType,
   type PrimitiveParams,
+  type ParametricOrigin,
   type PrimitiveType,
   type SceneObject,
   type Vec3,
@@ -44,6 +45,7 @@ export interface BuildObjectParams {
   isHole?: boolean;
   primitiveType?: PrimitiveType;
   primitiveParams?: PrimitiveParams;
+  parametric?: ParametricOrigin;
 }
 
 /**
@@ -102,6 +104,7 @@ export function buildSceneObject(params: BuildObjectParams, policy: ObjectBuildP
     source: params.source,
     primitiveType: params.primitiveType,
     primitiveParams: params.primitiveParams ? { ...params.primitiveParams } : undefined,
+    ...(params.parametric ? { parametric: { ...params.parametric, ...(params.parametric.thread ? { thread: { ...params.parametric.thread } } : {}) } } : {}),
     position: params.position ? [...params.position] : defaultPosition,
     rotation,
     scale,

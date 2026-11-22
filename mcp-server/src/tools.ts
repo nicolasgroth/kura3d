@@ -16,6 +16,7 @@ import { isEngineError } from '../../src/engine/engineErrors';
 import { OPERATION_RANGES } from '../../src/engine/operationLimits';
 import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
 import { resolveExportPath } from './exportPaths.js';
+import { registerParametricTools } from './parametricTools.js';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
 import { HeadlessCommandError } from './headlessSupport.js';
 import {
@@ -120,7 +121,7 @@ function createAccessAwareRegistrar(server: McpServer): McpServer['registerTool'
  * Ejecuta un comando priorizando el puente WebSocket vivo de Kura3D y cayendo
  * automáticamente al motor Headless cuando la interfaz gráfica no está conectada.
  */
-async function dispatchWithFallback(
+export async function dispatchWithFallback(
   ctx: KuraToolContext,
   command: KuraCommandName,
   params: Record<string, unknown>,
@@ -215,6 +216,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         scale: scaleSchema.optional(),
         color: hexColorSchema.optional().describe('Color hexadecimal, por ejemplo #38bdf8.'),
         isHole: z.boolean().optional().describe('Si es true, marca la pieza como volumen de resta.'),
+        placement: z
+          .enum(['free', 'origin'])
+          .optional()
+          .describe("'free': primer hueco libre de la cama sin solaparse; 'origin' (por defecto): centro. Devuelve la posición final."),
       },
     },
     async (args) =>
@@ -232,9 +237,12 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             scale: args.scale,
             color: args.color,
             isHole: args.isHole,
+            placement: args.placement,
           })
       )
   );
+
+  registerParametricTools(server, ctx);
 
   // 3. Transformación de objetos
   server.registerTool(

@@ -19,6 +19,7 @@ import { InspectorMulti } from './inspector/InspectorMulti';
 import { IdentitySection } from './inspector/IdentitySection';
 import { TransformSection } from './inspector/TransformSection';
 import { GeometrySection } from './inspector/GeometrySection';
+import { ParametersSection } from './inspector/ParametersSection';
 import { MakerToolsSection } from './inspector/MakerToolsSection';
 import { OperationsSection } from './inspector/OperationsSection';
 import '../styles/inspectorFit.css';
@@ -89,6 +90,8 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
         <IdentitySection primary={primary} />
 
         <FilamentLegendCard />
+
+        <ParametersSection primary={primary} />
 
         <TransformSection primary={primary} ui={ui} />
 

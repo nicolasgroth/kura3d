@@ -1,6 +1,6 @@
 /**
  * @file src/project/projectCodec.ts
- * @description Códec binario del formato de proyecto .kura v1: serializa y valida escena, historial
+ * @description Códec binario del formato de proyecto .kura (v2, lee v1): serializa y valida escena, historial
  * y mallas con CRC-32 y límites de tamaño.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -29,7 +29,10 @@ const MAX_VERTICES_PER_MESH = 3_000_000;
 // Object coordinates remain local millimetres, Y-up, independent of the chosen display unit.
 const MAGIC = [0x4b, 0x55, 0x52, 0x41];
 const HEADER_SIZE = 16;
-const VERSION = 1;
+// Versiones: 1 = formato inicial; 2 = agrega el campo opcional `parametric` a cada objeto.
+// Se escribe siempre la última; se leen todas las listadas. Un archivo v1 no puede traer campos de v2.
+const VERSION = 2;
+const READABLE_VERSIONS = new Set([1, 2]);
 const LITTLE_ENDIAN = new Uint8Array(new Uint32Array([1]).buffer)[0] === 1;
 const crcTable = Uint32Array.from({ length: 256 }, (_, i) => {
   for (let bit = 0; bit < 8; bit++) i = (i >>> 1) ^ ((i & 1) ? 0xedb88320 : 0);
@@ -223,7 +226,8 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
   limit(bytes.byteLength <= MAX_PROJECT_BYTES);
   check(bytes.length >= HEADER_SIZE && MAGIC.every((b, i) => bytes[i] === b));
   const header = new DataView(bytes.buffer, bytes.byteOffset, HEADER_SIZE);
-  if (header.getUint32(4, true) !== VERSION) throw new ProjectCodecError('unsupported');
+  const version = header.getUint32(4, true);
+  if (!READABLE_VERSIONS.has(version)) throw new ProjectCodecError('unsupported');
   const manifestLength = header.getUint32(8, true);
   limit(manifestLength <= MAX_MANIFEST_BYTES);
   let offset = HEADER_SIZE + manifestLength;
@@ -290,6 +294,7 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
   const stats = new Map<string, SceneObject['stats']>();
   function restoreObject(stored: unknown): SceneObject {
     check(validStoredObject(stored) && stored.mesh < assets.length, `object:${String((stored as { name?: unknown }).name)}`);
+    check(version >= 2 || stored.parametric === undefined, `object:${String(stored.name)}`);
     const { mesh, geometryKey } = assets[stored.mesh];
     usedMeshes.add(stored.mesh);
     let cache = stats.get(geometryKey);

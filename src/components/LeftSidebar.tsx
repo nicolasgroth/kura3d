@@ -88,19 +88,19 @@ export const LeftSidebar: React.FC = () => {
   const handlePrimitiveClick = async (type: PrimitiveType, params?: Record<string, unknown>) => {
     if (type === 'text') {
       if (uiDensity === 'compact') {
-        await createPrimitive('text', { text: textDraft.trim() || 'KURA3D', fontSize: 18, height: 6 });
+        await createPrimitive('text', { text: textDraft.trim() || 'KURA3D', fontSize: 18, height: 6 }, { placement: 'free' });
         return;
       }
       setShowTextBox((prev) => !prev);
       return;
     }
-    await createPrimitive(type, params);
+    await createPrimitive(type, params, { placement: 'free' });
   };
 
   const handleCreateText = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleaned = textDraft.trim() || 'KURA3D';
-    await createPrimitive('text', { text: cleaned, fontSize: 18, height: 6 }, { name: `Texto "${cleaned}"` });
+    await createPrimitive('text', { text: cleaned, fontSize: 18, height: 6 }, { name: `Texto "${cleaned}"`, placement: 'free' });
     setShowTextBox(false);
   };
 

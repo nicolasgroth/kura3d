@@ -72,10 +72,11 @@ export interface CreatePrimitiveInput {
   position?: Vec3;
   isHole?: boolean;
   materialPreset?: MaterialPresetId;
+  placement: 'free' | 'origin';
 }
 
 /** Lee los parámetros de una primitiva con los rangos del motor (`primitiveLimits`) para `type`. */
-function readPrimitiveParams(raw: RawParams, type: PrimitiveType): PrimitiveParams {
+export function readPrimitiveParams(raw: RawParams, type: PrimitiveType): PrimitiveParams {
   const out: PrimitiveParams = {};
   const set = <K extends keyof PrimitiveParams>(key: K, value: PrimitiveParams[K] | undefined) => {
     if (value !== undefined) out[key] = value;
@@ -101,6 +102,8 @@ export function parseCreatePrimitive(p: RawParams): CreatePrimitiveInput {
     position: readVec3(p, 'position'),
     isHole: readBoolean(p, 'isHole'),
     materialPreset: readEnum(p, MATERIALS, 'materialPreset'),
+    // Por defecto 'origin' (comportamiento previo del bus); 'free' busca el primer hueco libre.
+    placement: readEnum(p, ['free', 'origin'] as const, 'placement') ?? 'origin',
   };
 }
 

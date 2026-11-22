@@ -9,6 +9,7 @@
  */
 
 import type * as engine from '../engine';
+import type { ParametricEdit } from '../core/operations/creationOperations';
 import type { openProjectFile } from '../project/projectFiles';
 import type { RecoveryDraftInfo } from '../project/projectRecoveryStorage';
 import type { ProjectDocument, ProjectSceneSnapshot } from '../project/projectSchema';
@@ -232,8 +233,12 @@ export interface KuraStoreState {
       position?: Vec3;
       isHole?: boolean;
       materialPreset?: MaterialPresetId;
+      /** `free`: primer hueco libre de la cama; `origin` (por defecto): centro de la cama. */
+      placement?: 'free' | 'origin';
     },
   ) => Promise<SceneObject | null>;
+  /** Regenera una primitiva o rosca con parámetros nuevos (un paso de deshacer). */
+  updatePrimitiveParams: (id: string, edit: ParametricEdit) => Promise<SceneObject | null>;
   addSubtractHelperPrimitive: (
     type: 'sphere' | 'cylinder' | 'box',
     targetId?: string,

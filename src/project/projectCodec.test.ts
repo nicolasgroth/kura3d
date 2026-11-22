@@ -115,9 +115,9 @@ describe('Kura project v1', () => {
     const broken = bytes.slice();
     broken[broken.length - 1] ^= 1;
     expect(() => decodeProject(broken)).toThrowError(expect.objectContaining({ code: 'invalid' }));
-    broken[4] = 2;
+    broken[4] = 3;
     expect(() => decodeProject(broken)).toThrowError(expect.objectContaining({ code: 'unsupported' }));
-    broken[4] = 1;
+    broken[4] = 2;
     new DataView(broken.buffer).setUint32(8, 16 * 1024 * 1024 + 1, true);
     expect(() => decodeProject(broken)).toThrowError(expect.objectContaining({ code: 'too-large' }));
   });

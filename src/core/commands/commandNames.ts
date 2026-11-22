@@ -11,6 +11,7 @@
 export type KuraCommandName =
   | 'get_scene_state'
   | 'create_primitive'
+  | 'update_primitive_params'
   | 'transform_object'
   | 'delete_object'
   | 'duplicate_object'

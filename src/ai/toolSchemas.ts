@@ -80,8 +80,39 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
         text: { type: 'string', description: 'Texto a extruir si type=text.', maxLength: PRIMITIVE_LIMITS.maxTextLength },
         name: { type: 'string', description: 'Nombre descriptivo opcional.' },
         color: { type: 'string', description: 'Color hexadecimal #rrggbb opcional.' },
+        placement: {
+          type: 'string',
+          enum: ['free', 'origin'],
+          description: "'free': primer hueco libre de la cama sin solaparse; 'origin' (por defecto): centro.",
+        },
       },
       required: ['type'],
+    },
+  },
+  {
+    name: 'update_primitive_params',
+    description:
+      'Cambia los parámetros de una primitiva o rosca ya creada (radio, altura, segmentos, texto, diámetro, paso, largo) y regenera su malla conservando posición, color y nombre.',
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'ID del objeto (si se omite usa el seleccionado).' },
+        width: dim('width', 'Ancho en mm.'),
+        height: dim('height', 'Altura en mm.'),
+        depth: dim('depth', 'Profundidad en mm.'),
+        radius: dim('radius', 'Radio en mm.'),
+        outerRadius: dim('outerRadius', 'Radio exterior en mm.'),
+        innerRadius: dim('innerRadius', 'Radio interior en mm.'),
+        tubeRadius: dim('tubeRadius', 'Radio del tubo del toro en mm.'),
+        segments: dim('segments', 'Segmentos de la circunferencia.'),
+        sides: dim('sides', 'Lados del prisma.'),
+        fontSize: dim('fontSize', 'Tamaño de letra del texto en mm.'),
+        text: { type: 'string', description: 'Texto nuevo si es texto 3D.', maxLength: PRIMITIVE_LIMITS.maxTextLength },
+        diameterMm: ranged(OR.thread.diameterMm, 'Diámetro nominal de la rosca en mm.'),
+        pitchMm: ranged(OR.thread.pitchMm, 'Paso de la rosca en mm.'),
+        lengthMm: ranged(OR.thread.lengthMm, 'Largo roscado en mm.'),
+        clearanceMm: ranged(OR.thread.clearanceMm, 'Holgura radial en mm.'),
+      },
     },
   },
   {
@@ -195,6 +226,7 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
 export const TOOL_PARAM_RANGES: Partial<Record<KuraCommandRequest['command'], Record<string, OperationRange>>> = {
   transform_object: TRANSFORM_RANGES,
   hollow_object: { wallThickness: OR.hollow.wallThickness },
+  update_primitive_params: { diameterMm: OR.thread.diameterMm, pitchMm: OR.thread.pitchMm, lengthMm: OR.thread.lengthMm, clearanceMm: OR.thread.clearanceMm },
   plane_cut: { offset: OR.cut.offset, connectorCount: OR.cut.connectorCount, tolerance: OR.cut.tolerance },
   apply_texture: { depth: OR.texture.depth, scale: OR.texture.scale },
 };

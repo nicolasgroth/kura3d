@@ -23,6 +23,7 @@ import type { KuraCommandRequest, KuraCommandResponse } from '../types.js';
 const EXPECTED_TOOLS = [
   'kura_get_scene_state',
   'kura_create_primitive',
+  'kura_update_primitive_params',
   'kura_transform_object',
   'kura_delete_object',
   'kura_boolean_operation',
@@ -99,8 +100,8 @@ describe('Kura3D MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(30);
-    expect(toolNames).toHaveLength(30);
+    expect(EXPECTED_TOOLS).toHaveLength(31);
+    expect(toolNames).toHaveLength(31);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }
