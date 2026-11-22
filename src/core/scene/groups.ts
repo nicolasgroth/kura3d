@@ -347,11 +347,42 @@ export function reconcileGroups(scene: GroupScene): GroupScene {
   return { objects: sameObjects ? scene.objects : objects, groups: sameGroups ? scene.groups : groups };
 }
 
-/** Cambia `visible` o `locked` de todos los objetos de un grupo (el grupo se resume solo). */
+const MEMORY = { visible: 'hiddenByGroup', locked: 'lockedByGroup' } as const;
+
+/**
+ * Ojo o candado de un grupo sin perder el estado individual: al ocultar (o bloquear) el grupo, recuerda
+ * qué miembros cambió él; al mostrar (o desbloquear), solo revierte esos. Un miembro que ya estaba oculto
+ * (o bloqueado) uno a uno sigue así. Sin memoria (p. ej. todos se ocultaron a mano), revierte a todos.
+ * El resumen `visible`/`locked` del grupo sigue saliendo de sus miembros (`reconcileGroups`).
+ */
 export function setGroupFlag(scene: GroupScene, groupId: string, flag: 'visible' | 'locked', value: boolean): GroupScene {
+  const group = scene.groups.find((g) => g.id === groupId);
+  if (!group) return scene;
+  const memoryKey = MEMORY[flag];
   const ids = new Set(descendantObjectIds(scene.objects, scene.groups, groupId));
-  const objects = scene.objects.map((o) => (ids.has(o.id) && o[flag] !== value ? { ...o, [flag]: value } : o));
-  return reconcileGroups({ objects, groups: scene.groups });
+  const members = scene.objects.filter((o) => ids.has(o.id));
+  // Valor "activo" del ojo/candado: ocultar = visible:false; bloquear = locked:true.
+  const applying = flag === 'visible' ? !value : value;
+  const changed = (o: SceneObject) => o[flag] !== value;
+  let targets: Set<string>;
+  let memory: string[] | undefined;
+  if (applying) {
+    // Lo que cambia ahora, más lo que el grupo ya había cambiado y sigue así.
+    const prev = new Set((group[memoryKey] ?? []).filter((x) => ids.has(x)));
+    targets = new Set(members.filter(changed).map((o) => o.id));
+    memory = [...new Set([...members.filter((o) => prev.has(o.id) && !changed(o)).map((o) => o.id), ...targets])];
+  } else {
+    const remembered = (group[memoryKey] ?? []).filter((x) => ids.has(x));
+    targets = new Set(remembered.length ? remembered : members.filter(changed).map((o) => o.id));
+    memory = undefined;
+  }
+  const objects = scene.objects.map((o) => (targets.has(o.id) && o[flag] !== value ? { ...o, [flag]: value } : o));
+  const groups = scene.groups.map((g) => {
+    if (g.id !== groupId) return g;
+    const { [memoryKey]: _drop, ...rest } = g;
+    return (memory && memory.length ? { ...rest, [memoryKey]: memory } : rest) as SceneGroup;
+  });
+  return reconcileGroups({ objects, groups });
 }
 
 /** Mueve un nodo (objeto o grupo) dentro de `parentId` (null = raíz), antes de `beforeKey` o al final. */

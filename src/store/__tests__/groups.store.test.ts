@@ -79,6 +79,24 @@ describe('grupos en el store', () => {
     expect(store().renameRequest?.group).toBeUndefined();
   });
 
+  it('ojo y candado del grupo no pierden el estado individual de cada miembro', async () => {
+    const { a, b, c } = await fourBoxes();
+    const g = store().groupObjects([a.id, b.id, c.id])!;
+    store().updateObjectMeta(b.id, { visible: false });
+    store().updateObjectMeta(c.id, { locked: true });
+    store().setGroupFlag(g.id, 'visible', false);
+    expect([a, b, c].map((o) => byId(o.id)!.visible)).toEqual([false, false, false]);
+    store().setGroupFlag(g.id, 'visible', true);
+    expect([a, b, c].map((o) => byId(o.id)!.visible)).toEqual([true, false, true]);
+    store().setGroupFlag(g.id, 'locked', true);
+    store().setGroupFlag(g.id, 'locked', false);
+    expect([a, b, c].map((o) => byId(o.id)!.locked)).toEqual([false, false, true]);
+    // Deshacer vuelve al estado anterior, memoria incluida; y se guarda en el proyecto.
+    store().setGroupFlag(g.id, 'visible', false);
+    const doc = decodeProject(encodeProject(captureProject(store())));
+    expect(doc.groups?.[0].hiddenByGroup?.sort()).toEqual([a.id, c.id].sort());
+  });
+
   it('duplicar un grupo duplica su estructura', async () => {
     const { a, b } = await fourBoxes();
     store().groupObjects([a.id, b.id]);
