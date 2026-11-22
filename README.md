@@ -27,13 +27,25 @@ El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kura3
 
 ## Capturas
 
-![Estudio principal](docs/screenshots/01-studio-obsidian.png)
+![Estudio con un perno M8, su tuerca, un toroide pintado en dos colores y texto 3D](docs/screenshots/01-estudio.png)
 
-| Temas accesibles | Modo compacto y 6 idiomas | Moldes y roscas |
-| :---: | :---: | :---: |
-| ![Temas](docs/screenshots/02-themes-kura-prism.png) | ![Compacto](docs/screenshots/03-compact-multilang.png) | ![Moldes y roscas](docs/screenshots/04-molds-and-threads.png) |
+*Estudio en tema oscuro: piezas paramétricas, pintura por colores de filamento y el inspector con sus parámetros.*
 
-Las capturas son de una versión anterior de la interfaz.
+![Corte por plano con conectores](docs/screenshots/02-corte-con-uniones.png)
+
+*Corte por plano con uniones: el plano naranja y los puntos azules marcan dónde irán los conectores.*
+
+![Resta booleana con vista previa](docs/screenshots/03-booleana-vista-previa.png)
+
+*Booleanas con vista previa fantasma y rótulos Base y Herramienta antes de aplicar la operación.*
+
+![Ajustes en tema claro e inglés](docs/screenshots/04-temas-e-idiomas.png)
+
+*Seis idiomas y temas accesibles, claro y oscuro, desde Ajustes.*
+
+<img src="docs/screenshots/05-movil.png" alt="Kura3D en pantalla de 390 píxeles" width="260">
+
+*En el móvil: la barra se recoge en menús y la barra de estado conserva unidad e impresora.*
 
 ## Qué puedes hacer hoy
 

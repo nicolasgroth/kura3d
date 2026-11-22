@@ -83,3 +83,14 @@
   gap: 12px;
   max-width: 460px;
 }
+
+/* En 390 px el aviso de borrador desplazaba al indicador: se oculta ese texto (el guardado sigue indicado en el botón Proyecto). */
+@media (max-width: 480px) {
+  .kura-statusbar-group:last-child > span[role="status"] {
+    display: none;
+  }
+
+  .kura-statusbar-group:first-child {
+    flex: 1 1 auto;
+  }
+}
