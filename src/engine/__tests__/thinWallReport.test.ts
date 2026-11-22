@@ -1,5 +1,5 @@
 /**
- * @file src/engine/__tests__/qa5Printability.test.ts
+ * @file src/engine/__tests__/thinWallReport.test.ts
  * @description QA ronda 5: pared delgada del informe de imprimibilidad con mallas distintas de las del
  * desarrollo (cono, cápsula, cilindro de 8 y de 256 lados, pieza ahuecada, texto, placa con nervio de
  * 0,5 mm, STL con normales invertidas, malla de 200 mil triángulos).
@@ -28,7 +28,7 @@ const thin = (r: { issues: { code: string }[] }) => r.issues.some((i) => i.code 
 const fromM = (m: Manifold) => { const x = normalizeMeshToBed(manifoldToMeshData(m)); m.delete(); return x; };
 const out: string[] = [];
 
-describe('qa5 pared delgada: sólidos macizos (no deben avisar)', () => {
+describe('pared delgada: sólidos macizos (no deben avisar)', () => {
   it('cono macizo r30 h60', async () => {
     const r = rep(await createPrimitiveMesh('cone', { radius: 30, height: 60, segments: 64 }));
     out.push(`cono: thin=${thin(r)} pct=${r.thinWallAreaPercent.toFixed(2)} min=${r.minWallThicknessMm}`);
@@ -58,7 +58,7 @@ describe('qa5 pared delgada: sólidos macizos (no deben avisar)', () => {
   });
 });
 
-describe('qa5 pared delgada: paredes realmente delgadas (deben medirse)', () => {
+describe('pared delgada: paredes realmente delgadas (deben medirse)', () => {
   it('pieza ahuecada con el motor, pared 1,2: mide ≈1,2 y avisa solo con mínimo 2', async () => {
     const solid = makeObject('s', await createPrimitiveMesh('box', { width: 60, height: 40, depth: 40 }));
     const h = await hollowMeshDetailed(solid, { enabled: true, wallThickness: 1.2 });
@@ -115,7 +115,7 @@ function binaryStl(mesh: MeshData, invert: boolean): ArrayBuffer {
   return buf;
 }
 
-describe('qa5 STL con normales invertidas y malla enorme', () => {
+describe('STL con normales invertidas y malla enorme', () => {
   it('STL de una caja hueca (pared 2) con triángulos al revés: avisa de normales y no confunde la pared', async () => {
     const solid = makeObject('s', await createPrimitiveMesh('box', { width: 50, height: 30, depth: 30 }));
     const h = await hollowMeshDetailed(solid, { enabled: true, wallThickness: 2 });

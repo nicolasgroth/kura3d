@@ -1,5 +1,5 @@
 /**
- * @file src/engine/__tests__/qa5SplitHarness.ts
+ * @file src/engine/__tests__/splitModelHarness.ts
  * @description Modelos y medidor independientes (QA ronda 5) de "dividir para imprimir": tubería en T
  * horizontal, L con codo toroidal, tubos de pared 2 y 12, cruz, reducción cónica, mezcla maciza/delgada
  * y peine de brazos finos; mide cuerpos, aristas sueltas, volumen, interferencia, uniones y marcas.

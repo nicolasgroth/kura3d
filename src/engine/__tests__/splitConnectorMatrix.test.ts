@@ -1,5 +1,5 @@
 /**
- * @file src/engine/__tests__/qa6Split.test.ts
+ * @file src/engine/__tests__/splitConnectorMatrix.test.ts
  * @description QA ronda 6 de "dividir para imprimir" con modelos propios (estatua simulada de ~1 m,
  * tubo recto, L con codo, T, cono hueco, esfera hueca de pared 2, placa delgada y cubo grande) en cama
  * 250³ con cada tipo de conector y con/sin firmeza activa y cambio de superficie. Cada caso mide y
@@ -226,7 +226,7 @@ export const TYPES: Array<[string, SplitConnectorOptions]> = [
 // (estatua, cubo 440 con tarugo suelto) y montajes bloqueados (cola de milano, solape en el cubo 440). Toda la
 // matriz exige 0 choques de conectores y 0 piezas bloqueadas tras dividir.
 
-describe('QA6 dividir A: modelos x tipo de conector (cama 250)', () => {
+describe('dividir A: modelos x tipo de conector (cama 250)', () => {
   for (const model of Object.keys(MODELS)) {
     for (const [tname, conn] of TYPES) {
       it(`${model} / ${tname}`, async () => {
@@ -239,7 +239,7 @@ describe('QA6 dividir A: modelos x tipo de conector (cama 250)', () => {
   }
 });
 
-describe('QA6 dividir A: loose-dowel sin salientes (sin fusión de fragmentos)', () => {
+describe('dividir A: loose-dowel sin salientes (sin fusión de fragmentos)', () => {
   for (const model of Object.keys(MODELS)) {
     it(`${model}: ninguna pieza sobresale del plano de corte`, async () => {
       const { v } = await runCase(model, TYPES[1][1], { minFragmentMm3: 0, reinforceWeakJoints: false });
@@ -251,7 +251,7 @@ describe('QA6 dividir A: loose-dowel sin salientes (sin fusión de fragmentos)',
 // Medida independiente (cilindro del alojamiento menos el sólido original): en la estatua con dowel por defecto ningún
 // conector atraviesa de verdad la superficie (peor caso 0,23 mm3); lo que falla es la pared mínima de 0,8 mm que exige
 // el validador (corregido: la ubicación exige esa pared con el mismo modelo, ver `splitConnectorRoom.ts`).
-describe('QA6 dividir A: el conector queda dentro del sólido (medida independiente)', () => {
+describe('dividir A: el conector queda dentro del sólido (medida independiente)', () => {
   const outsideVolumes = async (model: string, conn: SplitConnectorOptions) => {
     const { res } = await runCase(model, conn);
     const src = MODELS[model]();
@@ -282,7 +282,7 @@ describe('QA6 dividir A: el conector queda dentro del sólido (medida independie
 
 // Corregida (antes `it.fails`): `islands[].areaMm2` sumaba menos que `contactAreaMm2` porque se medía la cara de
 // unión recortada lejos de los otros planos (faceClipBox); ahora las islas se miden sobre el contacto real.
-describe('QA6 dividir A: coherencia de islas', () => {
+describe('dividir A: coherencia de islas', () => {
   it('cubo 440 / dowel: la suma de áreas de islas ~ área de contacto (±2 %)', async () => {
     const { v } = await runCase('cubo 440', TYPES[0][1]);
     expect(v.filter((x) => x.startsWith('ISLAS'))).toEqual([]);
@@ -293,7 +293,7 @@ describe('QA6 dividir A: coherencia de islas', () => {
   }, 120_000);
 });
 
-describe('QA6 dividir A: firmeza activa y cambio de superficie', () => {
+describe('dividir A: firmeza activa y cambio de superficie', () => {
   const models = ['estatua', 'cubo 440', 'tubo en T', 'placa 600x600x4'];
   const small = (type: SplitConnectorOptions['type']): SplitConnectorOptions => ({ type, size: 2, depth: 8, tolerance: 0.2, count: 1 });
   for (const model of models) {

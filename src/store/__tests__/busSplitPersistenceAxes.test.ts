@@ -1,5 +1,5 @@
 /**
- * @file src/store/__tests__/qa6Bus.test.ts
+ * @file src/store/__tests__/busSplitPersistenceAxes.test.ts
  * @description QA ronda 6 sin interfaz. (B) Persistencia: dividir → guardar `.kura` → abrir →
  * `validate_assembly` da lo mismo; deshacer/rehacer conserva `metadata.split`. (C) Ejes del usuario (Z = altura):
  * las mismas entradas dan las mismas salidas en el Command Bus y en el motor headless del MCP (transform,
@@ -68,7 +68,7 @@ function userCentroid(o: Pick<SceneObject, 'mesh' | 'position' | 'rotation' | 's
 }
 const sig = (o: SceneObject) => JSON.stringify({ s: userBox(o).size, c: userCentroid(o) });
 
-describe('QA6 B: persistencia de la división', () => {
+describe('persistencia de la división', () => {
   beforeEach(() => resetStore());
 
   const dowel = { connectorType: 'dowel', connectorSize: 4, connectorDepth: 8, connectorCount: 1, bedWidthMm: 250, bedDepthMm: 250, bedHeightMm: 250 };
@@ -119,7 +119,7 @@ describe('QA6 B: persistencia de la división', () => {
 // ---------------------------------------------------------------------------------------------------------------------
 // C. Paridad bus <-> headless (mismas entradas, mismas salidas, ejes del usuario)
 // ---------------------------------------------------------------------------------------------------------------------
-describe('QA6 C: ejes del usuario, bus ↔ MCP headless', () => {
+describe('ejes del usuario, bus ↔ MCP headless', () => {
   let h: HeadlessLike;
   beforeEach(async () => {
     await resetStore();
@@ -299,7 +299,7 @@ function boxStl(sx: number, sy: number, sz: number): ArrayBuffer {
 }
 const fromB64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)).buffer as ArrayBuffer;
 
-describe('QA6 C: STL 10×20×30 (Z arriba) importa, exporta y reimporta sin cambios', () => {
+describe('STL 10×20×30 (Z arriba) importa, exporta y reimporta sin cambios', () => {
   beforeEach(() => resetStore());
 
   it('importar da 10×20×30 de usuario; exportar y reimportar conserva medidas y volumen', async () => {
@@ -344,7 +344,7 @@ describe('QA6 C: STL 10×20×30 (Z arriba) importa, exporta y reimporta sin camb
 
 // Corregida (antes `it.fails`): `create_primitive` del bus convierte `position` de ejes del usuario a internos, igual
 // que el MCP headless, y devuelve la posición pedida.
-describe('QA6 C: posición de create_primitive en el bus', () => {
+describe('posición de create_primitive en el bus', () => {
   beforeEach(() => resetStore());
   it('create_primitive con position [4,5,20] (Z arriba) devuelve y coloca esa posición de usuario', async () => {
     const res = await run('create_primitive', { type: 'box', params: { width: 10, depth: 10, height: 10 }, placement: 'origin', position: [4, 5, 20] });
