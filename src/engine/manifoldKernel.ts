@@ -36,7 +36,8 @@ export async function initManifoldEngine(): Promise<ManifoldToplevel> {
     manifoldPromise = (async () => {
       // En navegador/Vite indicamos explícitamente la ubicación del binario .wasm;
       // en Node.js omitimos `locateFile` para que Emscripten resuelva el archivo local en node_modules.
-      const isBrowser = typeof window !== 'undefined';
+      // Un Web Worker no tiene `window` pero sí `WorkerGlobalScope`: también es navegador.
+      const isBrowser = typeof window !== 'undefined' || typeof (globalThis as { WorkerGlobalScope?: unknown }).WorkerGlobalScope !== 'undefined';
       const wasm = isBrowser
         ? await Module({
             locateFile: () => new URL('manifold-3d/manifold.wasm', import.meta.url).href,

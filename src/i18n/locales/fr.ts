@@ -797,6 +797,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'store.error.busy': 'Attends la fin de l’opération en cours.',
   'store.error.locked': 'L’opération inclut des objets verrouillés.',
   'store.error.staleInput': 'La scène a changé pendant l’opération ; elle a été annulée pour ne pas écraser tes modifications.',
+  'store.operationCancelled': 'Opération annulée.',
   'store.align.overflow': 'La disposition ne tient pas sur le plateau ({width} × {depth} mm). Retire des pièces ou choisis une autre imprimante.',
   'toast.hollowDone': 'Évidement appliqué ({thickness} mm)',
   'toast.cutDone': 'Coupe par plan terminée',

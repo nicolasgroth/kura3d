@@ -76,11 +76,26 @@ export interface ToastMessage {
 
 export type SceneSnapshot = ProjectSceneSnapshot;
 
+/** Progreso de la operación en curso (para la barra con Cancelar). */
+export interface BusyProgress {
+  /** Nombre de la operación (igual a `busyOperation`). */
+  name: string;
+  /** Fase informada por el motor (`init`, `compute`…) o null si no se conoce. */
+  phase: string | null;
+  /** `Date.now()` al empezar; el tiempo transcurrido lo da `selectBusyElapsedMs`. */
+  startedAt: number;
+  /** true mientras una tarea del motor puede cancelarse con `cancelBusyOperation`. */
+  cancellable: boolean;
+}
+
 export interface KuraStoreState {
   // Estado del motor geométrico
   engineReady: boolean;
   engineError: string | null;
   busyOperation: string | null;
+  busyProgress: BusyProgress | null;
+  /** Cancela la tarea del motor en curso (descarta su resultado). false si no hay nada cancelable. */
+  cancelBusyOperation: () => boolean;
   /** Mensaje del último fallo de una operación (los diálogos lo muestran sin cerrarse). */
   lastOperationError: string | null;
 

@@ -86,7 +86,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
         await get().initEngine();
         const existingCount = get().objects.length;
         const spawnX = existingCount > 0 ? Math.min(90, existingCount * 28) : 0;
-        const obj = await createThread(opCtx(), options, { position: [spawnX, 0, 0] });
+        const obj = await ctx.runEngine('thread', { options, placement: { position: [spawnX, 0, 0] } });
         addSpawned(obj, [obj.id]);
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
         return obj;

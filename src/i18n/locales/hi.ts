@@ -797,6 +797,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'store.error.busy': 'चल रहे ऑपरेशन के पूरा होने तक प्रतीक्षा करें।',
   'store.error.locked': 'ऑपरेशन में लॉक ऑब्जेक्ट शामिल हैं।',
   'store.error.staleInput': 'ऑपरेशन के दौरान दृश्य बदल गया; आपके बदलाव सुरक्षित रखने के लिए इसे रद्द किया गया।',
+  'store.operationCancelled': 'ऑपरेशन रद्द किया गया।',
   'store.align.overflow': 'लेआउट बेड ({width} × {depth} mm) में नहीं समाता। कुछ हिस्से हटाएँ या दूसरा प्रिंटर चुनें।',
   'toast.hollowDone': 'खोखलापन लागू ({thickness} mm)',
   'toast.cutDone': 'समतल कट पूर्ण हुआ',

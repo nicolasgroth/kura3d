@@ -18,6 +18,7 @@ import { FileSaveError, LocalFileError, saveFileSet, type SaveSetEntry } from '.
 import { tCount } from '../utils/plural';
 import { exportFileBase } from '../utils/exportNaming';
 import { selectExportTargets } from './exportTargets';
+import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 export type ExportScope = 'selection' | 'scene';
@@ -62,6 +63,8 @@ export interface ModelIoDeps {
   tr: Translate;
   pushHistory: () => void;
   buildObject: (params: { name: string; mesh: MeshData; position: Vec3; color: string; isHole?: boolean }) => SceneObject;
+  /** Genera los archivos de exportación (la app usa el Worker del motor; por defecto en proceso). */
+  exportFiles?: (args: ExportTaskArgs) => Promise<ExportTaskResult>;
 }
 
 const EXPORT_FILTERS: Record<ExportFormat, { name: string; extensions: string[] }> = {
@@ -208,33 +211,19 @@ export function createModelIoActions(deps: ModelIoDeps) {
     const base = exportFileBase(request.fileName, state.projectName, targets, tr('export.defaultName'));
     const fileName = `${base}.${request.format}`;
     try {
-      const entries: SaveSetEntry[] = [];
       const filters = [EXPORT_FILTERS[request.format]];
-      switch (request.format) {
-        case 'stl':
-          entries.push({ name: fileName, data: engine.exportSceneToBinarySTL(targets), filters });
-          break;
-        case '3mf':
-          entries.push({
-            name: fileName,
-            data: engine.exportSceneTo3MF(targets, state.unitSystem, request.slicerTarget ?? state.printerProfile.brand),
-            filters,
-          });
-          break;
-        case 'obj': {
-          const { obj, mtl } = engine.exportSceneToOBJ(targets, base);
-          const encoder = new TextEncoder();
-          entries.push({ name: fileName, data: encoder.encode(obj), filters });
-          entries.push({ name: `${base}.mtl`, data: encoder.encode(mtl), filters: [{ name: 'Wavefront MTL', extensions: ['mtl'] }] });
-          break;
-        }
-        case 'glb':
-          entries.push({ name: fileName, data: await engine.exportSceneToGLB(targets), filters });
-          break;
-        case 'ply':
-          entries.push({ name: fileName, data: engine.exportSceneToPLY(targets), filters });
-          break;
-      }
+      const { files } = await (deps.exportFiles ?? exportSceneFiles)({
+        format: request.format,
+        targets,
+        baseName: base,
+        unitSystem: state.unitSystem,
+        slicerTarget: request.slicerTarget ?? state.printerProfile.brand,
+      });
+      const entries: SaveSetEntry[] = files.map((f) => ({
+        name: `${base}${f.suffix}`,
+        data: f.data,
+        filters: f.suffix === '.mtl' ? [{ name: 'Wavefront MTL', extensions: ['mtl'] }] : filters,
+      }));
       const saved = await saveFileSet(entries);
       if (saved) get().addToast(tr('toast.exported', { name: entries.map((e) => e.name).join(' + ') }), 'success');
       return saved;
