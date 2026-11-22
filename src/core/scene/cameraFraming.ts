@@ -130,20 +130,34 @@ export function fitDistance({ box, viewDir, fovDeg, aspect, margin = DEFAULT_FRA
   return Math.max(distance, 1);
 }
 
+/** Área libre del lienzo: paneles que tapan cada borde (px) y tamaño del lienzo (px). */
+export interface FreeArea {
+  insets: ViewInsets;
+  width: number;
+  height: number;
+}
+
 /**
  * true si todas las esquinas de la caja caen dentro del encuadre de la cámara (NDC en [-limit, limit]
- * y delante de la cámara). `viewProjection` es `projectionMatrix × matrixWorldInverse` en orden
- * column-major (`Matrix4.elements`).
+ * y delante de la cámara). Con `free`, el encuadre es solo el área que no tapan los paneles.
+ * `viewProjection` es `projectionMatrix × matrixWorldInverse` en orden column-major (`Matrix4.elements`).
  */
-export function isBoxInView(box: FrameBox, viewProjection: ArrayLike<number>, limit = 0.96): boolean {
+export function isBoxInView(box: FrameBox, viewProjection: ArrayLike<number>, limit = 0.96, free?: FreeArea): boolean {
   const m = new THREE.Matrix4().fromArray(Array.from(viewProjection));
+  const pad = 1 - limit;
+  const w = free && free.width > 0 ? free.width : 0;
+  const h = free && free.height > 0 ? free.height : 0;
+  const minX = (w ? -1 + (2 * free!.insets.left) / w : -1) + pad;
+  const maxX = (w ? 1 - (2 * free!.insets.right) / w : 1) - pad;
+  const minY = (h ? -1 + (2 * free!.insets.bottom) / h : -1) + pad;
+  const maxY = (h ? 1 - (2 * free!.insets.top) / h : 1) - pad;
   for (const corner of corners(box)) {
     const v = new THREE.Vector4(corner.x, corner.y, corner.z, 1).applyMatrix4(m);
     if (v.w <= 1e-6) return false;
     const nx = v.x / v.w;
     const ny = v.y / v.w;
     const nz = v.z / v.w;
-    if (Math.abs(nx) > limit || Math.abs(ny) > limit || nz < -1 || nz > 1) return false;
+    if (nx < minX || nx > maxX || ny < minY || ny > maxY || nz < -1 || nz > 1) return false;
   }
   return true;
 }
