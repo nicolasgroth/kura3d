@@ -58,7 +58,7 @@ interface IoState {
   projectName: string | null;
   importPlacementMode: engine.ImportPlacementMode;
   addToast: (text: string, kind?: 'info' | 'success' | 'error') => void;
-  requestCameraPreset: (preset: 'fit') => void;
+  requestCameraPreset: (preset: 'fit' | 'ensure', ids?: string[]) => void;
 }
 
 export interface ModelIoDeps {
@@ -180,6 +180,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
     pushHistory();
     set((prev) => ({ objects: [...prev.objects, ...created], selectedIds: created.map((o) => o.id) }));
     if (wasEmpty || placement === 'original') get().requestCameraPreset('fit');
+    else get().requestCameraPreset('ensure', created.map((o) => o.id));
 
     const pieces = created.length;
     const tris = created.reduce((acc, o) => acc + Math.floor(o.mesh.indices.length / 3), 0);
