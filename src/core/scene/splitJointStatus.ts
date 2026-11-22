@@ -12,7 +12,7 @@
 
 import type { EngineWarning, EngineWarningCode } from '../../engine/engineErrors';
 import type { AssemblyFixOption, AssemblySuggestion, WeakJoint } from '../../engine/split/assemblyTypes';
-import type { SceneObject, SplitJointRecord, Vec3 } from '../../types/kura';
+import type { SceneObject, SplitJointRecord, SplitStoredReport, Vec3 } from '../../types/kura';
 import type { SplitGroup } from './splitGroups';
 
 export type SplitJointStatus = 'ok' | 'weak' | 'glue' | 'changed' | 'blocked';
@@ -25,8 +25,11 @@ export interface SplitGroupNotes {
   gluedByFix: string[];
   /** `"3:dovetail"`: unión y tipo al que cambió el arreglo. */
   changedByFix: string[];
-  /** Estado del armado al terminar de dividir (cuántas piezas traban, choques…); sin él, solo se ven los avisos. */
-  report?: { ok: boolean; steps: number; blocked: string[]; clashes: number; interference: number; gaps: number };
+  /**
+   * Estado del armado al terminar de dividir (piezas que traban con su detalle, choques, interferencias,
+   * huecos y uniones débiles medidas); sin él, solo se ven los avisos.
+   */
+  report?: SplitStoredReport;
 }
 
 /** Resultado de revalidar el armado (subconjunto de `storedAssemblyResponse` que usa la interfaz). */
@@ -48,6 +51,7 @@ export interface SplitValidationReport {
 /** Códigos de aviso que se muestran junto a la unión afectada (llevan `label` en sus parámetros). */
 const JOINT_WARNING_CODES: ReadonlySet<EngineWarningCode> = new Set<EngineWarningCode>([
   'ASSEMBLY_JOINT_GLUED_FOR_ORDER',
+  'ASSEMBLY_JOINT_GLUED_FOR_CLASH',
   'ASSEMBLY_JOINT_TYPE_CHANGED',
   'SPLIT_LAP_NOT_PRINTABLE',
   'SPLIT_LABEL_DEPTH_CLAMPED',
@@ -75,7 +79,7 @@ export interface SplitJointRow {
   weak: { measuredMm: number; recommendedMm: number } | null;
   /** Avisos del motor propios de esta unión (solape no imprimible, marca limitada, pegada, cambiada…). */
   warnings: EngineWarning[];
-  /** `true` si la marca de pareja de esta unión va como puntos por fuera (el texto no cabía). */
+  /** `true` si la marca de pareja de esta unión va como puntos por fuera (`labelPlacement: 'dots'`). */
   labelDots: boolean;
   /** Piezas que esta unión impide montar (si traba). */
   blocks: string[];
@@ -106,13 +110,17 @@ export function buildJointRows(
   const glued = new Set(notes?.gluedByFix ?? []);
   const weakList: WeakJoint[] = validation
     ? validation.weak
-    : (notes?.weakJoints ?? []).map((joint) => {
+    : notes?.report?.weak
+      ? notes.report.weak.map((w) => ({ ...w, areaFraction: 0 }))
+      : (notes?.weakJoints ?? []).map((joint) => {
         const w = warnings.find((x) => x.code === 'ASSEMBLY_WEAK_JOINT' && labelOf(x) === joint);
         return { joint, measuredMm: Number(w?.params.measured ?? 0), recommendedMm: Number(w?.params.recommended ?? 0), areaFraction: 0 };
       });
   const suggestions = validation ? validation.suggestions : notes?.suggestions ?? [];
   for (const w of warnings) if (w.code === 'ASSEMBLY_JOINT_TYPE_CHANGED') changed.add(labelOf(w));
-  for (const w of warnings) if (w.code === 'ASSEMBLY_JOINT_GLUED_FOR_ORDER') glued.add(labelOf(w));
+  for (const w of warnings) if (w.code === 'ASSEMBLY_JOINT_GLUED_FOR_ORDER' || w.code === 'ASSEMBLY_JOINT_GLUED_FOR_CLASH') glued.add(labelOf(w));
+  // Piezas que traba cada unión: de la última validación o, si no hay, del informe de la división.
+  const blockedDetail = validation ? validation.blockedDetail : notes?.report?.blockedDetail ?? [];
 
   return records.map((r) => {
     const weak = weakList.find((w) => w.joint === r.label) ?? null;
@@ -136,10 +144,12 @@ export function buildJointRows(
       seen.add(key);
       return true;
     });
-    const blocks = validation ? validation.blockedDetail.filter((b) => b.conflictingJoints.includes(r.label)).map((b) => b.code) : [];
+    const blocks = blockedDetail.filter((b) => b.conflictingJoints.includes(r.label)).map((b) => b.code);
+    // La marca de puntos la dice el registro; los proyectos anteriores (sin el campo) la deducen del aviso.
+    const labelDots = r.labelPlacement !== undefined ? r.labelPlacement === 'dots' : own.some((w) => w.code === 'SPLIT_LABEL_DOTS');
     return {
       label: r.label, a: r.a, b: r.b, axis: r.axis, position: r.position, kind: r.kind, connector: r.connector,
-      centers: r.connectorCenters, status, labelDots: own.some((w) => w.code === 'SPLIT_LABEL_DOTS'),
+      centers: r.connectorCenters, status, labelDots,
       weak: weak ? { measuredMm: weak.measuredMm, recommendedMm: weak.recommendedMm } : null,
       warnings: own, blocks, options: pending?.options ?? [],
     };

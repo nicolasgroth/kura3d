@@ -176,4 +176,10 @@ export interface AssemblySummary {
   changedByFix: string[];
   suggestions: AssemblySuggestion[];
   volumeErrorPct: number | null;
+  /** Por pieza bloqueada: uniones que la traban y piezas con que topa. */
+  blockedDetail: Array<Pick<AssemblyBlocked, 'code' | 'conflictingJoints' | 'blockingParts'>>;
+  /** Uniones débiles con lo medido y lo recomendado. */
+  weak: WeakJoint[];
+  /** Cierre rearmado: interferencias entre piezas y huecos en las uniones. */
+  closure: Pick<AssemblyClosure, 'ok' | 'interference' | 'gaps'>;
 }

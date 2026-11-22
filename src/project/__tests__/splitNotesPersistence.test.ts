@@ -54,7 +54,10 @@ describe('avisos de uniones en el .kura', () => {
     await store().splitObjectForBed(box.id, {
       bed: { widthMm: 250, depthMm: 250, heightMm: 250 }, plan: {}, execute: { connector: null }, dryRun: false,
     });
-    const objects = store().objects.map((o) => ({ ...o }));
+    // Proyecto anterior: las uniones no guardaban `labelPlacement`, así que la marca de puntos se deduce del aviso.
+    const objects = store().objects.map((o) => (o.metadata?.split?.joints
+      ? { ...o, metadata: { ...o.metadata, split: { ...o.metadata.split, joints: o.metadata.split.joints.map(({ labelPlacement: _l, ...j }) => j) } } }
+      : { ...o }));
     const first = objects.find((o) => o.metadata?.split)!;
     const label = first.metadata!.split!.joints![0].label;
     first.metadata = {
@@ -75,6 +78,37 @@ describe('avisos de uniones en el .kura', () => {
     const row = buildJointRows(group, notes, null).find((r) => r.label === label)!;
     expect(row.labelDots).toBe(true);
     expect(row.warnings.map((w) => w.code)).toContain('SPLIT_LABEL_DOTS');
+  }, 120_000);
+
+  it('la unión guarda dónde quedó su marca (incluye puntos) y el detalle del armado viaja en el archivo', async () => {
+    const box = await addBox(400);
+    await store().splitObjectForBed(box.id, {
+      bed: { widthMm: 250, depthMm: 250, heightMm: 250 }, plan: {}, execute: { connector: null }, dryRun: false,
+    });
+    const objects = store().objects.map((o) => ({ ...o }));
+    const first = objects.find((o) => o.metadata?.split)!;
+    const joints = first.metadata!.split!.joints!.map((j, i) => (i === 0 ? { ...j, labelPlacement: 'dots' as const } : j));
+    first.metadata = {
+      ...first.metadata,
+      split: {
+        ...first.metadata!.split!, joints,
+        groupNotes: {
+          warnings: [], suggestions: [], weakJoints: [], gluedByFix: [], changedByFix: [],
+          report: {
+            ok: false, steps: 1, blocked: ['B1'], clashes: 0, interference: 1, gaps: 0,
+            blockedDetail: [{ code: 'B1', conflictingJoints: [joints[0].label], blockingParts: ['A1'] }],
+            weak: [{ joint: joints[0].label, measuredMm: 2, recommendedMm: 4 }],
+          },
+        },
+      },
+    };
+    const reopened = decodeProject(encodeProject(doc(objects))).objects;
+    const group = splitGroupOf(reopened, reopened.find((o) => o.metadata?.split)!.id)!;
+    const notes = groupNotesOf(group.parts, null)!;
+    const row = buildJointRows(group, notes, null).find((r) => r.label === joints[0].label)!;
+    expect(row.labelDots).toBe(true);
+    expect(row.blocks).toEqual(['B1']);
+    expect(notes.report?.weak).toEqual([{ joint: joints[0].label, measuredMm: 2, recommendedMm: 4 }]);
   }, 120_000);
 
   it('un proyecto sin el campo abre igual y un campo corrupto o desmedido se rechaza', async () => {

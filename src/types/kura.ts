@@ -783,8 +783,22 @@ export interface SplitStoredNotes {
   weakJoints: string[];
   gluedByFix: string[];
   changedByFix: string[];
-  /** Estado del armado al terminar de dividir. */
-  report?: { ok: boolean; steps: number; blocked: string[]; clashes: number; interference: number; gaps: number };
+  /** Estado del armado al terminar de dividir (detalle de bloqueos y débiles: ausente en proyectos anteriores). */
+  report?: SplitStoredReport;
+}
+
+/** Estado del armado al dividir: conteos y, desde esta versión, el detalle por pieza y unión. */
+export interface SplitStoredReport {
+  ok: boolean;
+  steps: number;
+  blocked: string[];
+  clashes: number;
+  interference: number;
+  gaps: number;
+  /** Por pieza bloqueada: uniones que la traban y piezas con que topa. */
+  blockedDetail?: Array<{ code: string; conflictingJoints: string[]; blockingParts: string[] }>;
+  /** Uniones débiles con su medida y la recomendada (mm). */
+  weak?: Array<{ joint: string; measuredMm: number; recommendedMm: number }>;
 }
 
 /** Unión guardada de "dividir para imprimir": `a` = pieza del lado negativo del eje, `b` = positivo. */
@@ -806,6 +820,8 @@ export interface SplitJointRecord {
   } | null;
   connectorCenters: Vec3[];
   contactAreaMm2: number;
+  /** Dónde quedó la marca de pareja (`dots` = puntos por fuera); `null` sin marca. Ausente en proyectos anteriores. */
+  labelPlacement?: 'joint' | 'outside' | 'dots' | null;
 }
 
 /** Perfil de impresora 3D o espacio de trabajo libre. */

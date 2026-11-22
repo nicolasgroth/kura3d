@@ -104,6 +104,7 @@ const splitJointRecord = shape({
   label: label16, axis: oneOf('x', 'y', 'z'), position: finite, a: label16, b: label16,
   kind: oneOf('connector', 'glue', 'lap', 'socket'), connector: (v) => v === null || splitConnector(v),
   connectorCenters: (v) => Array.isArray(v) && v.length <= 4096 && v.every(vec3), contactAreaMm2: nonnegative,
+  labelPlacement: optional((v) => v === null || oneOf('joint', 'outside', 'dots')(v)),
 });
 // Avisos de la división guardados con el grupo (`SplitStoredNotes`): todo acotado en cantidad y largo.
 const short = (n: number) => (v: unknown) => typeof v === 'string' && v.length <= n;
@@ -115,7 +116,12 @@ const splitNotes = shape({
   })),
   suggestions: (v) => Array.isArray(v) && v.length <= 512 && v.every(shape({ joint: short(16), options: shortList(8, 40) })),
   weakJoints: shortList(512, 16), gluedByFix: shortList(512, 16), changedByFix: shortList(512, 40),
-  report: optional(shape({ ok: bool, steps: nat, blocked: shortList(512, 24), clashes: nat, interference: nat, gaps: nat })),
+  report: optional(shape({
+    ok: bool, steps: nat, blocked: shortList(512, 24), clashes: nat, interference: nat, gaps: nat,
+    blockedDetail: optional((v) => Array.isArray(v) && v.length <= 512
+      && v.every(shape({ code: short(24), conflictingJoints: shortList(64, 16), blockingParts: shortList(64, 24) }))),
+    weak: optional((v) => Array.isArray(v) && v.length <= 512 && v.every(shape({ joint: short(16), measuredMm: nonnegative, recommendedMm: nonnegative }))),
+  })),
 });
 const splitMetadata = shape({
   groupId: id, code: (v) => str(v) && v.length <= 16, cell: nat3, assembly: splitTransform,

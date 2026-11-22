@@ -3,8 +3,8 @@
  * @description Estado del armado de un grupo dividido, arriba de la sección "Uniones": si el resultado no
  * cierra (piezas que no entran, choques entre conectores, interferencias o huecos), un aviso visible con lo
  * que hay que hacer; y, si Kura3D pegó uniones o cambió tipos de conector para poder montarlo, cuántas.
- * Toma el último "Validar armado" si existe y, si no, el estado que devolvió la división (se guarda en el
- * proyecto, así que se ve igual al reabrir).
+ * También lista las uniones débiles. Toma el último "Validar armado" si existe y, si no, el informe completo
+ * que devolvió la división (se guarda en el proyecto, así que se ve igual al reabrir).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -34,7 +34,9 @@ export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validati
       }
     : notes?.report ?? null;
   const fixed = (notes?.gluedByFix.length ?? 0) + (notes?.changedByFix.length ?? 0);
-  if (!base && fixed === 0) return null;
+  // Uniones débiles medidas: de la última validación o del informe que dejó la división.
+  const weak = validation ? validation.weak.map((w) => w.joint) : notes?.report?.weak?.map((w) => w.joint) ?? notes?.weakJoints ?? [];
+  if (!base && fixed === 0 && weak.length === 0) return null;
   const failed = base !== null && !base.ok;
   const details: string[] = [];
   if (base) {
@@ -60,6 +62,12 @@ export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validati
             <p>{t(language, 'splitJoints.banner.action')}</p>
           </div>
         </div>
+      )}
+      {weak.length > 0 && (
+        <p className="kura-split-assembly-alert" data-kind="info" data-testid="split-assembly-weak">
+          <Info size={14} aria-hidden="true" />
+          <span>{t(language, 'splitJoints.result.weak', { labels: weak.join(', ') })}</span>
+        </p>
       )}
       {fixed > 0 && (
         <p className="kura-split-assembly-alert" data-kind="info">
