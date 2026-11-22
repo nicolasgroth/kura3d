@@ -125,4 +125,22 @@ describe('grupos en el store', () => {
     expect(doc.groups).toBeUndefined();
     expect(doc.objects.every((o) => o.groupRef === undefined)).toBe(true);
   });
+
+  it('Command Bus: group_objects, combine_objects, separate_bodies, ungroup y jerarquía en get_scene_state', async () => {
+    const { a, b, c, d } = await fourBoxes();
+    const run = (command: string, params: Record<string, unknown> = {}) =>
+      store().executeCommand({ id: `t_${command}`, command: command as never, params }) as Promise<{ ok: boolean; result?: any }>;
+    const grouped = await run('group_objects', { ids: [a.id, b.id], name: 'Bus' });
+    expect(grouped.ok).toBe(true);
+    const state = await run('get_scene_state');
+    expect(state.result.groups[0]).toMatchObject({ name: 'Bus', parentId: null, objectIds: [a.id, b.id] });
+    expect(state.result.objects.find((o: { id: string }) => o.id === a.id).groupId).toBe(grouped.result.id);
+    const combined = await run('combine_objects', { ids: [c.id, d.id] });
+    expect(combined.ok).toBe(true);
+    expect((await run('combine_objects', { ids: [a.id] })).ok).toBe(false);
+    const separated = await run('separate_bodies', { id: combined.result.id });
+    expect(separated.result).toHaveLength(2);
+    expect((await run('ungroup', { groupId: grouped.result.id })).ok).toBe(true);
+    expect(store().groups).toEqual([]);
+  });
 });

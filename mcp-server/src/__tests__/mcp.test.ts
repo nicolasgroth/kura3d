@@ -31,6 +31,10 @@ const EXPECTED_TOOLS = [
   'kura_plane_cut',
   'kura_split_for_bed',
   'kura_split_disconnected',
+  'kura_group_objects',
+  'kura_ungroup',
+  'kura_combine_objects',
+  'kura_separate_bodies',
   'kura_split_by_color',
   'kura_apply_texture',
   'kura_paint_object',
@@ -102,8 +106,8 @@ describe('Kura3D MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(33);
-    expect(toolNames).toHaveLength(33);
+    expect(EXPECTED_TOOLS).toHaveLength(37);
+    expect(toolNames).toHaveLength(37);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }
