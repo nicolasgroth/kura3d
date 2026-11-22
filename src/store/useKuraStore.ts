@@ -24,6 +24,7 @@ import { clearPreviewOnSelectionChange, createPreviewSlice } from './slices/prev
 import { createSelectionSlice } from './slices/selectionSlice';
 import { createSplitSlice } from './slices/splitSlice';
 import { createSplitJointsSlice } from './slices/splitJointsSlice';
+import { createSplitPrefsSlice } from './slices/splitPrefsSlice';
 import { createUiSlice } from './slices/uiSlice';
 
 export type {
@@ -68,6 +69,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createPreviewSlice(ctx),
     ...createSplitSlice(ctx),
     ...createSplitJointsSlice(ctx),
+    ...createSplitPrefsSlice(ctx),
     executeCommand: createCommandBus({
       get,
       setSelectedIds: (ids) => ctx.set({ selectedIds: ids }),

@@ -18,6 +18,7 @@ import { AiSettingsPanel } from '../settings/AiSettingsPanel';
 import { McpSetupPanel } from '../settings/McpSetupPanel';
 import { McpTokenField } from '../settings/McpTokenField';
 import { HistorySettings } from '../settings/HistorySettings';
+import { SplitSettings } from '../settings/SplitSettings';
 import { MeasuresFields } from '../settings/MeasuresFields';
 import { RecentProjectsSettings } from '../settings/RecentProjectsSettings';
 import { SettingsTabs } from '../settings/SettingsTabs';
@@ -122,6 +123,7 @@ export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = (
         <div className="kura-measures-panel" role="tabpanel" id="settings-panel-project" aria-labelledby="settings-tab-project">
           <strong style={{ fontSize: 13 }}>{t(language, 'dialog.settings.projectTitle')}</strong>
           <MeasuresFields idPrefix="settings-measures" showHelp />
+          <SplitSettings idPrefix="settings-split" />
           <HistorySettings idPrefix="settings-history" />
           <RecentProjectsSettings idPrefix="settings-recent" />
         </div>

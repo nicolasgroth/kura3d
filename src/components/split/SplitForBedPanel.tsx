@@ -49,6 +49,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const setActivePlane = useKuraStore((s) => s.setSplitActivePlane);
   const splitObjectForBed = useKuraStore((s) => s.splitObjectForBed);
   const busy = useKuraStore((s) => Boolean(s.busyOperation));
+  const prefs = useKuraStore((s) => s.splitPrefs);
   const failure = useOperationFailure(open);
   const uid = useId();
 
@@ -62,12 +63,13 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const [allowRotation, setAllowRotation] = useState(true);
   const [allowDiagonal, setAllowDiagonal] = useState(false);
   const [allowSurface, setAllowSurface] = useState(false);
-  const [kind, setKind] = useState<ConnectorKind>('auto');
+  const [kind, setKind] = useState<ConnectorKind>(prefs.connectorType);
   const [lapHeight, setLapHeight] = useState<number>(D.lapHeightMm);
   const [minWall, setMinWall] = useState<number>(D.minWallForConnectorMm);
   const [size, setSize] = useState(4);
   const [depth, setDepth] = useState(6);
-  const [tolerance, setTolerance] = useState(0.25);
+  const [tolerance, setTolerance] = useState(prefs.tolerance);
+  const [reinforce, setReinforce] = useState(prefs.reinforceWeakJoints);
   const [count, setCount] = useState(2);
   const [labels, setLabels] = useState<'none' | 'engraved'>('engraved');
   const [labelDepth, setLabelDepth] = useState<number>(D.labelDepthMm);
@@ -83,6 +85,14 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   useEffect(() => {
     if (open) setBed(defaultBed);
   }, [open, defaultBed]);
+  // Al abrir, las preferencias del usuario (Ajustes); lo que se cambie aquí no las modifica.
+  useEffect(() => {
+    if (!open) return;
+    const p = useKuraStore.getState().splitPrefs;
+    setKind(p.connectorType);
+    setTolerance(p.tolerance);
+    setReinforce(p.reinforceWeakJoints);
+  }, [open]);
   useEffect(() => {
     setOverrides({});
     setMaxPieces(undefined);
@@ -191,7 +201,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       splitObjectForBed(targetId, {
         bed,
         plan: planOptions,
-        execute: { connector, labels, labelDepthMm: labelDepth, labelPlacement, assemblyAllowSurfaceChange: allowSurface },
+        execute: { connector, labels, labelDepthMm: labelDepth, labelPlacement, assemblyAllowSurfaceChange: allowSurface, reinforceWeakJoints: reinforce },
         dryRun: false,
       }),
     );
@@ -338,6 +348,20 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
           {num('tol', `${t(language, 'dialog.cut.tolerance')} (mm)`, tolerance, setTolerance, OR.cut.tolerance, { step: 0.05, precision: 2, disabled: !connector, def: 0.25 })}
           {num('count', t(language, 'dialog.cut.connectorCount'), count, (v) => setCount(Math.round(v)), { min: 1, max: OR.cut.connectorCount.max }, { precision: 0, disabled: !connector || kind === 'lap', def: 2 })}
         </div>
+        {kind !== 'none' && kind !== 'lap' && (
+          <>
+            <label className="kura-split-check" title={t(language, 'split.reinforceTip')}>
+              <input
+                type="checkbox"
+                checked={reinforce}
+                aria-describedby={`${uid}-reinforce-help`}
+                onChange={(e) => setReinforce(e.target.checked)}
+              />
+              <span>{t(language, 'split.reinforce')}</span>
+            </label>
+            <p className="kura-split-target" id={`${uid}-reinforce-help`}>{t(language, 'split.reinforceHelp')}</p>
+          </>
+        )}
       </fieldset>
 
       <fieldset className="kura-split-group">

@@ -10,6 +10,7 @@
 import type { TranslationKey } from '../translations';
 import { PREVIEW_ZH } from './preview';
 import { SPLITJOINTS_ZH } from './splitJoints';
+import { SPLITPREFS_ZH } from './splitPrefs';
 import { SPLITCOUPLING_ZH } from './splitCoupling';
 
 /**
@@ -18,6 +19,7 @@ import { SPLITCOUPLING_ZH } from './splitCoupling';
 export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PREVIEW_ZH,
   ...SPLITJOINTS_ZH,
+  ...SPLITPREFS_ZH,
   ...SPLITCOUPLING_ZH,
   // Marca y shell principal
   'app.name': 'Kura3D',
@@ -1351,7 +1353,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_JOINT_PARTIAL_GLUE': '接合 {label}（{a}–{b}）的端面中有 {glued}/{total} 个区域太薄，无法放置连接件（壁厚 {width} mm）：这些区域只能粘合。',
   'engineWarning.SPLIT_JOINT_MESH_OPEN': '接合 {label}（{a}–{b}）加上连接件后网格未能闭合：保留为平切面，用于粘合。',
   'engineWarning.SPLIT_PART_NOT_CLOSED': '零件 {code} 即使没有连接件网格仍未闭合：打印前请检查。',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': '接合 {label}（{a}–{b}）已加固：连接件由 {requested} mm ×{requestedCount} 改为 {size} mm ×{count}，以保证牢固。',
   'engineWarning.SPLIT_LABEL_DOTS': '标记 {label}（{a}–{b}）放不下文字：改为在外侧雕刻圆点，从接合处开始读（每个数字是一组圆点；0 是一条短线）。',
   'object.name.looseDowel': '定位销 Ø{d}×{l} ×{count}',
   'bus.error.assemblyNotFound': '未找到零件或组“{id}”。',

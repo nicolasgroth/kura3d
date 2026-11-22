@@ -15,6 +15,7 @@ import { TRANSLATIONS_HI } from './locales/hi';
 import { TRANSLATIONS_ZH } from './locales/zh';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
 import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
+import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
 
 /**
@@ -25,6 +26,7 @@ import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
 export const TRANSLATIONS_ES = {
   ...PREVIEW_ES,
   ...SPLITJOINTS_ES,
+  ...SPLITPREFS_ES,
   ...SPLITCOUPLING_ES,
   // Marca y shell principal
   'app.name': 'Kura3D',
@@ -1358,7 +1360,6 @@ export const TRANSLATIONS_ES = {
   'engineWarning.SPLIT_JOINT_PARTIAL_GLUE': 'En la unión {label} ({a}–{b}), {glued} de {total} partes de la cara son demasiado delgadas para conector (pared de {width} mm): esas partes son solo para pegar.',
   'engineWarning.SPLIT_JOINT_MESH_OPEN': 'La malla de la unión {label} ({a}–{b}) no cerró con el conector: quedó como corte liso para pegar.',
   'engineWarning.SPLIT_PART_NOT_CLOSED': 'La pieza {code} quedó con la malla abierta aun sin conectores: revísala antes de imprimir.',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'La unión {label} ({a}–{b}) se reforzó: el conector de {requested} mm ×{requestedCount} pasó a {size} mm ×{count} para que sea firme.',
   'engineWarning.SPLIT_LABEL_DOTS': 'La marca {label} ({a}–{b}) no cabía como texto: va como puntos por fuera, leyendo desde la unión (cada dígito es un grupo de puntos; el 0 es una raya).',
   'object.name.looseDowel': 'Tarugo Ø{d}×{l} ×{count}',
   'bus.error.assemblyNotFound': 'No se encontró la pieza o el grupo «{id}».',
@@ -1376,6 +1377,7 @@ export type TranslationKey = keyof typeof TRANSLATIONS_ES;
 export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PREVIEW_EN,
   ...SPLITJOINTS_EN,
+  ...SPLITPREFS_EN,
   ...SPLITCOUPLING_EN,
   'app.name': 'Kura3D',
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
@@ -2681,7 +2683,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_JOINT_PARTIAL_GLUE': 'In joint {label} ({a}–{b}), {glued} of {total} areas of the face are too thin for a connector ({width} mm wall): those areas are glue-only.',
   'engineWarning.SPLIT_JOINT_MESH_OPEN': 'The mesh of joint {label} ({a}–{b}) did not close with the connector: it was left as a plain cut for gluing.',
   'engineWarning.SPLIT_PART_NOT_CLOSED': 'Part {code} still has an open mesh even without connectors: check it before printing.',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'Joint {label} ({a}–{b}) was reinforced: the {requested} mm ×{requestedCount} connector became {size} mm ×{count} so it holds firmly.',
   'engineWarning.SPLIT_LABEL_DOTS': 'Label {label} ({a}–{b}) did not fit as text: it is engraved as dots on the outside, read from the joint (each digit is a group of dots; 0 is a dash).',
   'object.name.looseDowel': 'Dowel Ø{d}×{l} ×{count}',
   'bus.error.assemblyNotFound': 'Part or group “{id}” not found.',

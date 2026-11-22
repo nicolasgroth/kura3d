@@ -56,6 +56,7 @@ import type { ExportRequest, ModelImportOptions, ModelImportSource } from './mod
 import type { PreviewSliceState } from './slices/previewSlice';
 import type { SplitSliceState } from './slices/splitSlice';
 import type { SplitJointsSliceState } from './slices/splitJointsSlice';
+import type { SplitPrefsSliceState } from './slices/splitPrefsSlice';
 
 export type ActiveDialogType =
   | 'svg'
@@ -102,7 +103,7 @@ export interface BusyProgress {
 
 /** Vista previa de operaciones (declarada en `slices/previewSlice.ts`), fusionada al estado. */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface KuraStoreState extends PreviewSliceState, SplitSliceState, SplitJointsSliceState {}
+export interface KuraStoreState extends PreviewSliceState, SplitSliceState, SplitJointsSliceState, SplitPrefsSliceState {}
 
 export interface KuraStoreState {
   // Estado del motor geométrico
