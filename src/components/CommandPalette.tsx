@@ -576,7 +576,7 @@ export const CommandPalette: React.FC = () => {
         id: 'io-3mf-modal',
         label: t(language, 'cmd.export.3mfModal'),
         category: catExp,
-        keywords: 'exportar 3mf multi slicer elegoo bambu snapmaker flashforge multicolor',
+        keywords: 'exportar 3mf slicer orca bambu prusa cura multicolor',
         kind: 'local',
         icon: <Download size={15} />,
         run: () => openExportDialog('3mf'),

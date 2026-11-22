@@ -104,7 +104,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'topbar.exportStl': 'STL exportieren',
   'topbar.exportStlTip': 'Auswahl oder gesamte Szene als binäre STL-Datei exportieren',
   'topbar.export3mf': '3MF exportieren',
-  'topbar.export3mfTip': 'Mehrfarbiges Multi-Slicer-3MF exportieren (Elegoo, Bambu, Snapmaker, FlashForge)',
   'topbar.exportObj': 'OBJ exportieren',
   'topbar.undo': 'Rückgängig',
   'topbar.undoTip': 'Letzte Aktion rückgängig machen (Strg+Z)',
@@ -408,7 +407,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'cmd.view.xray': 'Live-Röntgen / Schnittebene umschalten',
   'cmd.view.shortcuts': 'Tastenkürzel & Pro-Tipps anzeigen',
   'palette.cmd.appearance': 'Farbthema ändern (Erscheinungsbild)',
-  'cmd.export.3mfModal': 'Multi-Slicer-3MF Pro exportieren...',
 
   // Panel de Chat IA (AiChatDrawer)
   'ai.title': 'Kura3D KI-Assistent',
@@ -657,12 +655,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   // Modal Exportar 3MF Multi-Slicer
   'dialog.export3mf.title': 'Multi-Slicer-3MF Pro exportieren',
   'dialog.export3mf.desc': 'Erstellt ein optimiertes 3MF-Paket mit PBR-Materialien, Dreiecksfarben und Slicer-kompatiblen Metadaten.',
-  'dialog.export3mf.slicer': 'Ziel-Slicer',
-  'dialog.export3mf.generic': 'Generisch (Standard-3MF / PrusaSlicer / Cura)',
-  'dialog.export3mf.elegoo': 'Elegoo Slicer / Orca (Centauri Carbon 1 & 2)',
-  'dialog.export3mf.bambu': 'Bambu Studio (A1 / P1S / X1C / H2D)',
-  'dialog.export3mf.snapmaker': 'Snapmaker Luban / Orca (Artisan / J1s)',
-  'dialog.export3mf.flashforge': 'FlashPrint / Orca-FF (AD5M / AD5X)',
   'dialog.export3mf.onlySelected': 'Nur ausgewählte Objekte exportieren',
   'dialog.export3mf.execute': '.3MF-Datei herunterladen',
 
@@ -1316,4 +1308,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Markierung {label} wurde {depth} mm tief graviert (angefragt {requested} mm), um die {wall} mm Wand nicht zu durchstoßen.',
   'dialog.thread.presetCommon': 'Gängig (M3–M20)',
   'dialog.thread.presetLarge': 'Groß (M22–M64)',
+  'dialog.export3mf.standardNote': 'Standard-3MF, kompatibel mit OrcaSlicer, Bambu Studio, PrusaSlicer und Cura',
+  'cmd.export.3mfModal': '3MF exportieren...',
 };

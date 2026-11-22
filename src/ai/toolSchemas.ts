@@ -216,7 +216,7 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
   },
   {
     name: 'export_3mf',
-    description: 'Exporta la escena multicolor en formato 3MF.',
+    description: 'Exporta la escena multicolor en formato 3MF estándar (compatible con OrcaSlicer, Bambu Studio, PrusaSlicer y Cura).',
     parameters: {
       type: 'object',
       properties: { onlySelected: { type: 'boolean' } },

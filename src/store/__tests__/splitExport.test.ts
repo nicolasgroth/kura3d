@@ -37,10 +37,10 @@ describe('exportación por pieza', () => {
   it('empaqueta un archivo por pieza con <proyecto>_<código>.<ext>', async () => {
     const parts = [piece('a', 'A1', 0), piece('b', 'A2', 1)];
     expect(hasSplitParts(parts)).toBe(true);
-    const { data, count } = await zipPerPiece(parts, 'Estatua', { format: 'stl', unitSystem: 'mm', slicerTarget: 'generic' }, fakeExport);
+    const { data, count } = await zipPerPiece(parts, 'Estatua', { format: 'stl', unitSystem: 'mm' }, fakeExport);
     expect(count).toBe(2);
     expect(Object.keys(unzipSync(data)).sort()).toEqual(['Estatua_A1.stl', 'Estatua_A2.stl']);
-    const obj = await zipPerPiece(parts, 'Estatua', { format: 'obj', unitSystem: 'mm', slicerTarget: 'generic' }, fakeExport);
+    const obj = await zipPerPiece(parts, 'Estatua', { format: 'obj', unitSystem: 'mm' }, fakeExport);
     expect(Object.keys(unzipSync(obj.data)).sort()).toEqual(['Estatua_A1.mtl', 'Estatua_A1.obj', 'Estatua_A2.mtl', 'Estatua_A2.obj']);
   });
 

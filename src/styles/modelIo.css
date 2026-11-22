@@ -101,6 +101,12 @@
   color: var(--text-secondary);
 }
 
+.kura-export-info {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
 .kura-import-split {
   display: inline-flex;
   align-items: stretch;

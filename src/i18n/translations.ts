@@ -111,7 +111,6 @@ export const TRANSLATIONS_ES = {
   'topbar.exportStl': 'Exportar STL',
   'topbar.exportStlTip': 'Exportar selección o escena completa como STL binario',
   'topbar.export3mf': 'Exportar 3MF',
-  'topbar.export3mfTip': 'Exportar 3MF multicolor Multi-Slicer (Elegoo, Bambu, Snapmaker, FlashForge)',
   'topbar.exportObj': 'Exportar OBJ',
   'topbar.undo': 'Deshacer',
   'topbar.undoTip': 'Deshacer última acción (Ctrl+Z)',
@@ -415,7 +414,6 @@ export const TRANSLATIONS_ES = {
   'cmd.view.xray': 'Alternar Rayos X / Sección en Vivo',
   'cmd.view.shortcuts': 'Ver Atajos de Teclado y Pro Tips',
   'palette.cmd.appearance': 'Cambiar tema de color (Apariencia)',
-  'cmd.export.3mfModal': 'Exportar 3MF Multi-Slicer...',
 
   // Panel de Chat IA (AiChatDrawer)
   'ai.title': 'Asistente IA Kura3D',
@@ -664,12 +662,6 @@ export const TRANSLATIONS_ES = {
   // Modal Exportar 3MF Multi-Slicer
   'dialog.export3mf.title': 'Exportar 3MF Multi-Slicer',
   'dialog.export3mf.desc': 'Genera un paquete 3MF optimizado con materiales PBR, colores por triángulo y metadatos compatibles con tu laminador.',
-  'dialog.export3mf.slicer': 'Laminador / Slicer destino',
-  'dialog.export3mf.generic': 'Genérico (3MF Estándar / PrusaSlicer / Cura)',
-  'dialog.export3mf.elegoo': 'Elegoo Slicer / Orca (Centauri Carbon 1 & 2)',
-  'dialog.export3mf.bambu': 'Bambu Studio (A1 / P1S / X1C / H2D)',
-  'dialog.export3mf.snapmaker': 'Snapmaker Luban / Orca (Artisan / J1s)',
-  'dialog.export3mf.flashforge': 'FlashPrint / Orca-FF (AD5M / AD5X)',
   'dialog.export3mf.onlySelected': 'Exportar solo los objetos seleccionados',
   'dialog.export3mf.execute': 'Descargar archivo .3MF',
 
@@ -1323,6 +1315,8 @@ export const TRANSLATIONS_ES = {
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'La marca {label} se grabó a {depth} mm (pedido {requested} mm) para no atravesar la pared de {wall} mm.',
   'dialog.thread.presetCommon': 'Habituales (M3–M20)',
   'dialog.thread.presetLarge': 'Grandes (M22–M64)',
+  'dialog.export3mf.standardNote': '3MF estándar, compatible con OrcaSlicer, Bambu Studio, PrusaSlicer y Cura',
+  'cmd.export.3mfModal': 'Exportar 3MF...',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -1416,7 +1410,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'topbar.exportStl': 'Export STL',
   'topbar.exportStlTip': 'Export selection or full scene as binary STL',
   'topbar.export3mf': 'Export 3MF',
-  'topbar.export3mfTip': 'Export Multi-Slicer multicolor 3MF (Elegoo, Bambu, Snapmaker, FlashForge)',
   'topbar.exportObj': 'Export OBJ',
   'topbar.undo': 'Undo',
   'topbar.undoTip': 'Undo last action (Ctrl+Z)',
@@ -1711,7 +1704,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'cmd.view.xray': 'Toggle Live X-Ray / Section Plane',
   'cmd.view.shortcuts': 'View Keyboard Shortcuts & Pro Tips',
   'palette.cmd.appearance': 'Change color theme (Appearance)',
-  'cmd.export.3mfModal': 'Export Multi-Slicer 3MF Pro...',
 
   'ai.title': 'Kura3D AI Assistant',
   'ai.subtitle': 'Direct scene & modeling control',
@@ -1951,12 +1943,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
 
   'dialog.export3mf.title': 'Export Multi-Slicer 3MF Pro',
   'dialog.export3mf.desc': 'Generates a 3MF package with PBR materials, per-triangle colors, and slicer-compatible metadata.',
-  'dialog.export3mf.slicer': 'Target Slicer',
-  'dialog.export3mf.generic': 'Generic (Standard 3MF / PrusaSlicer / Cura)',
-  'dialog.export3mf.elegoo': 'Elegoo Slicer / Orca (Centauri Carbon 1 & 2)',
-  'dialog.export3mf.bambu': 'Bambu Studio (A1 / P1S / X1C / H2D)',
-  'dialog.export3mf.snapmaker': 'Snapmaker Luban / Orca (Artisan / J1s)',
-  'dialog.export3mf.flashforge': 'FlashPrint / Orca-FF (AD5M / AD5X)',
   'dialog.export3mf.onlySelected': 'Export selected objects only',
   'dialog.export3mf.execute': 'Download .3MF File',
 
@@ -2606,6 +2592,8 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Label {label} was engraved {depth} mm deep (requested {requested} mm) so it does not pierce the {wall} mm wall.',
   'dialog.thread.presetCommon': 'Common (M3–M20)',
   'dialog.thread.presetLarge': 'Large (M22–M64)',
+  'dialog.export3mf.standardNote': 'Standard 3MF, compatible with OrcaSlicer, Bambu Studio, PrusaSlicer and Cura',
+  'cmd.export.3mfModal': 'Export 3MF...',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

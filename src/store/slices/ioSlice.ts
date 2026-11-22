@@ -172,9 +172,8 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     exportModel: (request) => modelIo.exportModel(request),
     exportSceneStl: async (onlySelected = false) =>
       modelIo.exportModel({ format: 'stl', scope: onlySelected ? 'selection' : 'scene' }),
-    exportScene3mf: async (onlySelected = false, slicerTarget) =>
-      modelIo.exportModel({ format: '3mf', scope: onlySelected ? 'selection' : 'scene', slicerTarget }),
-    export3MFForSlicer: async (slicerTarget, onlySelected = false) => get().exportScene3mf(onlySelected, slicerTarget),
+    exportScene3mf: async (onlySelected = false) =>
+      modelIo.exportModel({ format: '3mf', scope: onlySelected ? 'selection' : 'scene' }),
     exportSelectedObj: async () =>
       modelIo.exportModel({ format: 'obj', scope: get().selectedIds.length > 0 ? 'selection' : 'scene' }),
   };

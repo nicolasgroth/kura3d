@@ -388,8 +388,7 @@ export interface KuraStoreState {
   /** Exportación única (STL, 3MF, OBJ+MTL, GLB, PLY) de la selección o la escena. */
   exportModel: (request: ExportRequest) => Promise<boolean>;
   exportSceneStl: (onlySelected?: boolean) => Promise<boolean>;
-  exportScene3mf: (onlySelected?: boolean, slicerTarget?: SlicerTarget) => Promise<boolean>;
-  export3MFForSlicer: (slicerTarget?: SlicerTarget, onlySelected?: boolean) => Promise<boolean>;
+  exportScene3mf: (onlySelected?: boolean) => Promise<boolean>;
   exportSelectedObj: () => Promise<boolean>;
 
   // Command Bus Unificado (UI, MCP y Chat IA)

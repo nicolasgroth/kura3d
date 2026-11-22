@@ -117,7 +117,7 @@ describe('Worker del motor: equivalencia con la ruta en proceso', () => {
 
   it('exportación STL y 3MF: mismos bytes', async () => {
     for (const format of ['stl', '3mf'] as const) {
-      const args = { format, targets: [a], baseName: 'x', unitSystem: 'mm' as const, slicerTarget: 'generic' as never };
+      const args = { format, targets: [a], baseName: 'x', unitSystem: 'mm' as const };
       const { local, remote } = await both('export', args);
       expect(remote.files.map((f) => f.data.byteLength)).toEqual(local.files.map((f) => f.data.byteLength));
       if (format === 'stl') expect(Array.from(remote.files[0].data)).toEqual(Array.from(local.files[0].data));

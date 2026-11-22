@@ -12,7 +12,7 @@
  *   7. Detección y segmentación estructural determinística sobre modelo compuesto "Buzo/Diver".
  *   8. Interacciones CAD Pro en store (mirror, nudge, proportionalScale, altClone, materiales, densidad UI)
  *      y Command Bus (`detect_structures`, `colorize_structures`, `extract_structure`, `mirror_object`).
- *   9. Exportación 3MF Multi-Slicer (Bambu, Elegoo, Snapmaker, FlashForge) con `Metadata/model_settings.config`.
+ *   9. Exportación 3MF estándar (único perfil; `slicerTarget` obsoleto se ignora) con `Metadata/model_settings.config`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -798,9 +798,9 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
   });
 
   // ==========================================================================
-  // ÁREA 9: Exportación 3MF Multi-Slicer (Bambu, Elegoo, Snapmaker, FlashForge)
+  // ÁREA 9: Exportación 3MF estándar (único perfil)
   // ==========================================================================
-  describe('9. Exportación 3MF Multi-Slicer con Metadata/model_settings.config', () => {
+  describe('9. Exportación 3MF estándar con Metadata/model_settings.config', () => {
     it('exporta 3MF válido para bambu, elegoo, snapmaker y flashforge vía engine y Command Bus', async () => {
       const p1 = await useKuraStore
         .getState()
@@ -819,7 +819,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
 
       for (const slicer of slicers) {
         // Exportación directa desde motor
-        const bytes = exportSceneTo3MF(sceneObjects, 'mm', slicer);
+        const bytes = exportSceneTo3MF(sceneObjects, 'mm');
         const archive = unzipSync(bytes);
 
         expect(archive['3D/3dmodel.model']).toBeDefined();
@@ -828,8 +828,8 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
         const modelXml = strFromU8(archive['3D/3dmodel.model']);
         const configXml = strFromU8(archive['Metadata/model_settings.config']);
 
-        expect(modelXml).toContain(`<metadata name="SlicerTarget">${slicer}</metadata>`);
-        expect(configXml).toContain(`value="${slicer}"`);
+        expect(modelXml).not.toContain('SlicerTarget');
+        expect(configXml).not.toContain('slicer_target');
         expect(configXml).toContain('<metadata key="extruder" value="1"/>');
         expect(configXml).toContain('<metadata key="extruder" value="2"/>');
 
@@ -849,9 +849,9 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
           'mcp'
         );
         expect(cmdRes.ok).toBe(true);
-        const payload = cmdRes.result as { format: string; slicerTarget: string; bytesBase64: string };
+        const payload = cmdRes.result as { format: string; slicerTarget?: string; bytesBase64: string };
         expect(payload.format).toBe('3mf');
-        expect(payload.slicerTarget).toBe(slicer);
+        expect(payload.slicerTarget).toBeUndefined(); // obsoleto: aceptado como parámetro, ya no se devuelve
         expect(payload.bytesBase64.length).toBeGreaterThan(100);
       }
     });

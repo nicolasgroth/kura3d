@@ -284,16 +284,16 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     return { format: 'stl' };
   },
 
+  // `slicerTarget` está obsoleto: se acepta e ignora (un único 3MF estándar, compatible con OrcaSlicer, Bambu Studio, PrusaSlicer y Cura).
   export_3mf: async (p, deps, command) => {
     const input = schema.parseExport(p);
-    const slicerTarget = input.slicerTarget ?? deps.get().printerProfile.brand;
     if (input.wantsBytes || headless()) {
       const { targets, skippedHoles } = exportTargets(deps, input.onlySelected);
-      const bytes = engine.exportSceneTo3MF(targets, deps.get().unitSystem, slicerTarget);
-      return { format: '3mf', slicerTarget, bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles };
+      const bytes = engine.exportSceneTo3MF(targets, deps.get().unitSystem);
+      return { format: '3mf', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles };
     }
-    required(await deps.get().exportScene3mf(input.onlySelected, slicerTarget), command);
-    return { format: '3mf', slicerTarget };
+    required(await deps.get().exportScene3mf(input.onlySelected), command);
+    return { format: '3mf' };
   },
 
   capture_viewport: () => {

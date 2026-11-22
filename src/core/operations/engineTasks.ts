@@ -36,7 +36,6 @@ export interface ExportTaskArgs {
   targets: SceneObject[];
   baseName: string;
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
-  slicerTarget: Parameters<typeof engine.exportSceneTo3MF>[2];
 }
 
 /** Argumentos del informe de imprimibilidad (solo lectura; no modifica la escena). */
@@ -60,7 +59,7 @@ export async function exportSceneFiles(a: ExportTaskArgs): Promise<ExportTaskRes
     case 'stl':
       return { files: [{ suffix: '.stl', data: engine.exportSceneToBinarySTL(a.targets) }] };
     case '3mf':
-      return { files: [{ suffix: '.3mf', data: engine.exportSceneTo3MF(a.targets, a.unitSystem, a.slicerTarget) }] };
+      return { files: [{ suffix: '.3mf', data: engine.exportSceneTo3MF(a.targets, a.unitSystem) }] };
     case 'obj': {
       const { obj, mtl } = engine.exportSceneToOBJ(a.targets, a.baseName);
       const enc = new TextEncoder();

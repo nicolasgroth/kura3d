@@ -104,7 +104,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'topbar.exportStl': '导出 STL',
   'topbar.exportStlTip': '将选中对象或整个场景导出为二进制 STL',
   'topbar.export3mf': '导出 3MF',
-  'topbar.export3mfTip': '导出多色多切片器 3MF（Elegoo、Bambu、Snapmaker、FlashForge）',
   'topbar.exportObj': '导出 OBJ',
   'topbar.undo': '撤销',
   'topbar.undoTip': '撤销上一步操作 (Ctrl+Z)',
@@ -408,7 +407,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'cmd.view.xray': '切换实时 X 光 / 剖切平面',
   'cmd.view.shortcuts': '查看键盘快捷键与专业技巧',
   'palette.cmd.appearance': '更改颜色主题（外观）',
-  'cmd.export.3mfModal': '导出多切片器 3MF Pro...',
 
   // Panel de Chat IA (AiChatDrawer)
   'ai.title': 'Kura3D AI 助手',
@@ -657,12 +655,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   // Modal Exportar 3MF Multi-Slicer
   'dialog.export3mf.title': '导出多切片器 3MF Pro',
   'dialog.export3mf.desc': '生成包含 PBR 材质、逐三角面颜色及切片器兼容元数据的优化 3MF 文件包。',
-  'dialog.export3mf.slicer': '目标切片软件',
-  'dialog.export3mf.generic': '通用 (标准 3MF / PrusaSlicer / Cura)',
-  'dialog.export3mf.elegoo': 'Elegoo Slicer / Orca (Centauri Carbon 1 & 2)',
-  'dialog.export3mf.bambu': 'Bambu Studio (A1 / P1S / X1C / H2D)',
-  'dialog.export3mf.snapmaker': 'Snapmaker Luban / Orca (Artisan / J1s)',
-  'dialog.export3mf.flashforge': 'FlashPrint / Orca-FF (AD5M / AD5X)',
   'dialog.export3mf.onlySelected': '仅导出选中的对象',
   'dialog.export3mf.execute': '下载 .3MF 文件',
 
@@ -1316,4 +1308,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': '标记 {label} 雕刻深度为 {depth} mm（请求 {requested} mm），以免穿透 {wall} mm 的壁。',
   'dialog.thread.presetCommon': '常用 (M3–M20)',
   'dialog.thread.presetLarge': '大规格 (M22–M64)',
+  'dialog.export3mf.standardNote': '标准 3MF，兼容 OrcaSlicer、Bambu Studio、PrusaSlicer 和 Cura',
+  'cmd.export.3mfModal': '导出 3MF...',
 };

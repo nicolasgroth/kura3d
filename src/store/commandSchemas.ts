@@ -20,7 +20,6 @@ import {
   type PrimitiveParams,
   type PrimitiveType,
   type SceneObject,
-  type SlicerTarget,
   type SurfaceProjectionOptions,
   type TextureOptions,
   type ThreadOptions,
@@ -48,7 +47,6 @@ const PRIMITIVES: readonly PrimitiveType[] = ['box', 'cylinder', 'tube', 'sphere
 const MATERIALS = Object.keys(MATERIAL_PRESETS) as MaterialPresetId[];
 const BOOLEAN_OPS: readonly BooleanOpType[] = ['union', 'subtract', 'intersect'];
 const UNITS: readonly UnitSystem[] = ['mm', 'cm', 'm', 'in', 'ft'];
-const SLICERS: readonly SlicerTarget[] = ['generic', 'elegoo', 'bambu', 'snapmaker', 'flashforge'];
 const ALIGN_MODES: readonly AlignMode[] = [
   'minX', 'centerX', 'maxX', 'minY', 'centerY', 'maxY', 'minZ', 'centerZ', 'maxZ', 'arrange_grid',
 ];
@@ -235,14 +233,13 @@ export function parseAlign(scene: SceneView, p: RawParams): { mode: AlignMode; o
 export interface ExportInput {
   onlySelected: boolean;
   wantsBytes: boolean;
-  slicerTarget?: SlicerTarget;
 }
 
+/** `slicerTarget` (obsoleto) se acepta en `p` pero se ignora: hay un único 3MF estándar. */
 export function parseExport(p: RawParams): ExportInput {
   return {
     onlySelected: readBoolean(p, 'onlySelected') ?? false,
     wantsBytes: Boolean(readBoolean(p, 'returnBytes')) || Boolean(readString(p, 4096, 'outputPath')),
-    slicerTarget: readEnum(p, SLICERS, 'slicerTarget'),
   };
 }
 

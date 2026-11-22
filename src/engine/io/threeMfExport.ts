@@ -75,12 +75,13 @@ const num = (n: number) => {
 
 /**
  * Genera un paquete `.3mf` (`[Content_Types].xml`, `_rels/.rels`, `3D/3dmodel.model` y
- * `Metadata/model_settings.config`) con `<basematerials>` y colores por triángulo.
+ * `Metadata/model_settings.config`) con `<basematerials>` y colores por triángulo. Es un único 3MF estándar:
+ * `_deprecatedSlicerTarget` se acepta e ignora para no romper a quienes aún lo pasan (p. ej. el servidor MCP).
  */
 export function exportSceneTo3MF(
   objects: SceneObject[],
   unit: UnitSystem = 'mm',
-  slicerTarget: SlicerTarget = 'generic',
+  _deprecatedSlicerTarget?: SlicerTarget,
 ): Uint8Array {
   const solidObjects = exportableObjects(objects);
   const unitSpec = UNIT_TO_3MF[unit] ?? UNIT_TO_3MF.mm;
@@ -111,7 +112,6 @@ export function exportSceneTo3MF(
     `<model unit="${unitSpec.xmlName}" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n` +
     `  <metadata name="Application">${escapeXml(`${BRAND.name} by ${BRAND.author}`)}</metadata>\n` +
     `  <metadata name="Organization">${escapeXml(BRAND.organization)}</metadata>\n` +
-    `  <metadata name="SlicerTarget">${escapeXml(slicerTarget)}</metadata>\n` +
     `  <resources>\n    <basematerials id="1">\n`,
   );
   palette.forEach((hex, idx) => {
@@ -172,7 +172,6 @@ export function exportSceneTo3MF(
 
   const settings =
     `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n` +
-    `  <metadata key="slicer_target" value="${escapeXml(slicerTarget)}"/>\n` +
     `  <metadata key="filament_count" value="${palette.length}"/>\n` +
     `${configObjects.join('\n')}\n  <plate>\n` +
     `    <metadata key="plater_id" value="1"/>\n    <metadata key="plater_name" value="Kura3D_Bed"/>\n` +

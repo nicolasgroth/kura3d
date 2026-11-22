@@ -14,7 +14,6 @@ import { Download } from 'lucide-react';
 import { t, type TranslationKey } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import type { ExportFormat, ExportScope } from '../store/modelIoActions';
-import type { SlicerTarget } from '../types/kura';
 import { defaultExportBase, sanitizeFileBase } from '../utils/exportNaming';
 import { NativeModal } from './NativeModal';
 import { SplitExportOptions } from './split/SplitExportOptions';
@@ -22,7 +21,6 @@ import { hasSplitParts, type SplitExportMode } from '../store/splitExport';
 import '../styles/modelIo.css';
 
 const FORMATS: ExportFormat[] = ['3mf', 'stl', 'obj', 'glb', 'ply'];
-const SLICERS: SlicerTarget[] = ['elegoo', 'bambu', 'snapmaker', 'flashforge', 'generic'];
 const FORMAT_STORAGE_KEY = 'kura3d-export-format';
 
 let pendingFormat: ExportFormat | null = null;
@@ -63,7 +61,6 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const exportModel = useKuraStore((s) => s.exportModel);
   const formId = useId();
   const nameId = useId();
-  const slicerId = useId();
 
   const exportable = useMemo(() => objects.filter((o) => o.visible && !o.isHole), [objects]);
   const selected = useMemo(
@@ -74,7 +71,6 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const [format, setFormat] = useState<ExportFormat>('3mf');
   const [scope, setScope] = useState<ExportScope>('scene');
   const [fileName, setFileName] = useState('');
-  const [slicer, setSlicer] = useState<SlicerTarget>(printerProfile.brand);
   const [busy, setBusy] = useState(false);
   const [splitMode, setSplitMode] = useState<SplitExportMode | null>(null);
   // Si el usuario no ha editado el nombre, seguir el alcance elegido.
@@ -95,7 +91,6 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     setFormat(pendingFormat ?? initialFormat ?? readStoredFormat());
     pendingFormat = null;
     setScope(nextScope);
-    setSlicer(printerProfile.brand);
     nameEditedRef.current = false;
     formatPickedRef.current = false;
     setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix')));
@@ -113,7 +108,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     setBusy(true);
     try {
       if (formatPickedRef.current) storeFormat(format);
-      const ok = await exportModel({ format, scope, fileName: base, slicerTarget: slicer, splitMode: effectiveSplit ?? undefined });
+      const ok = await exportModel({ format, scope, fileName: base, splitMode: effectiveSplit ?? undefined });
       if (ok) onClose();
     } finally {
       setBusy(false);
@@ -190,16 +185,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
           </div>
         </div>
 
-        {format === '3mf' && (
-          <div className="kura-form-field">
-            <label htmlFor={slicerId}>{t(language, 'dialog.export3mf.slicer')}</label>
-            <select id={slicerId} className="kura-select" value={slicer} onChange={(e) => setSlicer(e.target.value as SlicerTarget)}>
-              {SLICERS.map((s) => (
-                <option key={s} value={s}>{t(language, `dialog.export3mf.${s}` as TranslationKey)}</option>
-              ))}
-            </select>
-          </div>
-        )}
+        {format === '3mf' && <p className="kura-export-info">{t(language, 'dialog.export3mf.standardNote')}</p>}
 
         {splitTargets && (
           <SplitExportOptions

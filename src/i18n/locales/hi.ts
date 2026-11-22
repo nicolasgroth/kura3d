@@ -104,7 +104,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'topbar.exportStl': 'STL निर्यात करें',
   'topbar.exportStlTip': 'चयन या संपूर्ण दृश्य को बाइनरी STL के रूप में निर्यात करें',
   'topbar.export3mf': '3MF निर्यात करें',
-  'topbar.export3mfTip': 'मल्टी-स्लाइसर बहुरंगी 3MF निर्यात करें (Elegoo, Bambu, Snapmaker, FlashForge)',
   'topbar.exportObj': 'OBJ निर्यात करें',
   'topbar.undo': 'पूर्ववत करें',
   'topbar.undoTip': 'अंतिम क्रिया पूर्ववत करें (Ctrl+Z)',
@@ -408,7 +407,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'cmd.view.xray': 'लाइव एक्स-रे / अनुभाग समतल टॉगल करें',
   'cmd.view.shortcuts': 'कीबोर्ड शॉर्टकट और प्रो टिप्स देखें',
   'palette.cmd.appearance': 'रंग थीम बदलें (रूप-रंग)',
-  'cmd.export.3mfModal': 'मल्टी-स्लाइसर 3MF प्रो निर्यात करें...',
 
   // Panel de Chat IA (AiChatDrawer)
   'ai.title': 'Kura3D AI सहायक',
@@ -657,12 +655,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   // Modal Exportar 3MF Multi-Slicer
   'dialog.export3mf.title': 'मल्टी-स्लाइसर 3MF प्रो निर्यात करें',
   'dialog.export3mf.desc': 'PBR सामग्री, प्रति-त्रिभुज रंग और स्लाइसर-संगत मेटाडेटा के साथ अनुकूलित 3MF पैकेज बनाता है।',
-  'dialog.export3mf.slicer': 'लक्ष्य स्लाइसर',
-  'dialog.export3mf.generic': 'जेनेरिक (मानक 3MF / PrusaSlicer / Cura)',
-  'dialog.export3mf.elegoo': 'Elegoo Slicer / Orca (Centauri Carbon 1 & 2)',
-  'dialog.export3mf.bambu': 'Bambu Studio (A1 / P1S / X1C / H2D)',
-  'dialog.export3mf.snapmaker': 'Snapmaker Luban / Orca (Artisan / J1s)',
-  'dialog.export3mf.flashforge': 'FlashPrint / Orca-FF (AD5M / AD5X)',
   'dialog.export3mf.onlySelected': 'केवल चयनित वस्तुएं निर्यात करें',
   'dialog.export3mf.execute': '.3MF फ़ाइल डाउनलोड करें',
 
@@ -1316,4 +1308,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'निशान {label} को {depth} mm गहरा उकेरा गया (माँगा {requested} mm) ताकि {wall} mm दीवार न छिदे।',
   'dialog.thread.presetCommon': 'सामान्य (M3–M20)',
   'dialog.thread.presetLarge': 'बड़े (M22–M64)',
+  'dialog.export3mf.standardNote': 'मानक 3MF, OrcaSlicer, Bambu Studio, PrusaSlicer और Cura के साथ संगत',
+  'cmd.export.3mfModal': '3MF निर्यात करें...',
 };

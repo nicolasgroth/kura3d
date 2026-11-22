@@ -7,7 +7,7 @@
  * - Validador de imprimibilidad, simplificación, refinamiento/suavizado y Convex Hull
  * - Roscas métricas ISO helicoidales, litofanías cilíndricas y siluetas/cortadores desde imagen
  * - Alineación inteligente y distribución automática en cama
- * - Exportador 3MF Multi-Slicer con Metadata/model_settings.config
+ * - Exportador 3MF estándar con Metadata/model_settings.config
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -569,10 +569,10 @@ describe('Kura3D — Extensiones del Núcleo Geométrico', () => {
   });
 
   // ==========================================================================
-  // 6. Exportador 3MF Multi-Slicer
+  // 6. Exportador 3MF estándar
   // ==========================================================================
-  describe('6. Exportador 3MF Multi-Slicer (src/engine/ioFormats.ts)', () => {
-    it('genera Metadata/model_settings.config y metadatos para Bambu/Elegoo/Snapmaker/FlashForge sin romper import3MFBuffer', async () => {
+  describe('6. Exportador 3MF estándar (src/engine/ioFormats.ts)', () => {
+    it('genera Metadata/model_settings.config y metadatos estándar sin romper import3MFBuffer; el parámetro de slicer obsoleto no cambia el archivo', async () => {
       const box = await createPrimitiveMesh('box', { width: 20, height: 15, depth: 20 });
       const obj1 = makeSceneObject('PiezaAzul', box, { color: '#38bdf8' });
       const obj2 = makeSceneObject('PiezaNaranja', box, {
@@ -580,22 +580,23 @@ describe('Kura3D — Extensiones del Núcleo Geométrico', () => {
         position: [35, 0, 0],
       });
 
-      const targets = ['bambu', 'elegoo', 'snapmaker', 'flashforge'] as const;
-      for (const target of targets) {
-        const bytes = exportSceneTo3MF([obj1, obj2], 'mm', target);
+      const reference = exportSceneTo3MF([obj1, obj2], 'mm');
+      for (const legacy of [undefined, 'bambu', 'elegoo', 'snapmaker', 'flashforge'] as const) {
+        const bytes = exportSceneTo3MF([obj1, obj2], 'mm', legacy);
+        expect(Array.from(bytes)).toEqual(Array.from(reference));
         const archive = unzipSync(bytes);
 
         expect(archive['3D/3dmodel.model']).toBeDefined();
         expect(archive['Metadata/model_settings.config']).toBeDefined();
 
         const modelXml = strFromU8(archive['3D/3dmodel.model']);
-        expect(modelXml).toContain(`<metadata name="SlicerTarget">${target}</metadata>`);
+        expect(modelXml).not.toContain('SlicerTarget');
         expect(modelXml).toContain('ISGROTH');
 
         const configXml = strFromU8(archive['Metadata/model_settings.config']);
         expect(configXml).toContain('<metadata key="extruder" value="1"/>');
         expect(configXml).toContain('<metadata key="extruder" value="2"/>');
-        expect(configXml).toContain(`value="${target}"`);
+        expect(configXml).not.toContain('slicer_target');
 
         const imported = import3MFBuffer(bytes.buffer as ArrayBuffer);
         expect(imported).toHaveLength(2);

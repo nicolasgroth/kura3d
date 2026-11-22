@@ -13,7 +13,7 @@ import * as THREE from 'three';
 import * as engine from '../engine';
 import type { TranslationKey } from '../i18n';
 import { ProjectCodecError } from '../project/projectSchema';
-import type { LanguageCode, MeshData, SceneObject, SlicerTarget, Vec3 } from '../types/kura';
+import type { LanguageCode, MeshData, SceneObject, Vec3 } from '../types/kura';
 import { FileSaveError, LocalFileError, saveFileSet, type SaveSetEntry } from '../utils/platformBridge';
 import { tCount } from '../utils/plural';
 import { exportFileBase } from '../utils/exportNaming';
@@ -31,7 +31,6 @@ export interface ExportRequest {
   scope: ExportScope;
   /** Nombre base sin extensión (se sanea); por defecto se deriva del proyecto. */
   fileName?: string;
-  slicerTarget?: SlicerTarget;
   /** Piezas de una división: un archivo por pieza (ZIP) o un 3MF en disposición de impresión. */
   splitMode?: SplitExportMode;
 }
@@ -54,7 +53,7 @@ interface IoState {
   objects: SceneObject[];
   selectedIds: string[];
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
-  printerProfile: { brand: SlicerTarget; bedWidthMm?: number };
+  printerProfile: { bedWidthMm?: number };
   customBedDimensions?: { width: number } | null;
   projectName: string | null;
   importPlacementMode: engine.ImportPlacementMode;
@@ -237,7 +236,6 @@ export function createModelIoActions(deps: ModelIoDeps) {
         const { data, count } = await zipPerPiece(targets, pieceBase, {
           format: request.format,
           unitSystem: state.unitSystem,
-          slicerTarget: request.slicerTarget ?? state.printerProfile.brand,
         }, exportFiles);
         const saved = await saveFileSet([{ name: zipName, data, filters: [{ name: 'ZIP', extensions: ['zip'] }] }]);
         if (saved) get().addToast(tr('export.split.zipDone', { count, name: zipName }), 'success');
@@ -251,7 +249,6 @@ export function createModelIoActions(deps: ModelIoDeps) {
         targets: layoutTargets,
         baseName: base,
         unitSystem: state.unitSystem,
-        slicerTarget: request.slicerTarget ?? state.printerProfile.brand,
       });
       const entries: SaveSetEntry[] = files.map((f) => ({
         name: `${base}${f.suffix}`,
