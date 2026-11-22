@@ -1,22 +1,31 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026, tras la tercera ronda de evaluación.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 14:00, tras la QA previa a la quinta ronda.
 
-Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md) y las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md).
+Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## En desarrollo
 
-Nada en este momento.
+| Funcionalidad | Estado |
+|---|---|
+| Dividir para imprimir: conteo real de piezas en el plan e informe de armado completo al dividir | Lote de costura entre motor e interfaz, en curso |
+| Dividir para imprimir: conector preferido en Ajustes y refuerzo de uniones débiles como elección del usuario | Decidido el 22-nov; sigue al lote anterior |
+| Paridad app y MCP: valores por defecto del corte por plano y del pintado | En el lote de costura |
 
 ## En QA
 
 | Funcionalidad | Estado |
 |---|---|
+| Dividir para imprimir y validación de armado (tarugo suelto, conectores sin choques, montaje siempre armable, marca de puntos, sección Uniones) | QA rechazó motor e interfaz; corregido; falta la re-verificación |
+| Z como altura en interfaz, chat, bus y MCP | QA encontró el corte en Y invertido y el resumen de división en ejes antiguos; corregido; falta la re-verificación |
+| MCP igual a la app, en inglés, tope de 10 intentos | QA de motor aprobó la paridad salvo crear primitiva con posición; corregido; falta la re-verificación |
+| Roscas M3–M64, 3MF estándar sin selector de slicer, estimación aproximada | QA aprobó; roscas con entrada inválida corregido |
+| Proyectos recientes con un clic y confirmación al sobrescribir (escritorio) | Probado con pruebas; falta verificar en la app instalada |
 | Seguridad en escritorio (CSP, llavero, permisos, proxy de IA) | QA web aprobado; falta verificar en la app instalada |
 
 ## En evaluación
 
-Cuarta ronda en curso. Incluye las correcciones posteriores a la tercera (barra superior, colocación libre, mallas limpias, informe de imprimibilidad, texto 3D con fuente real, aristas vivas) y dos funcionalidades nuevas: **Dividir para imprimir** y **Vista explosionada y armado**.
+Nada en este momento. La cuarta ronda cerró con 70 · 79 · 76 (usabilidad · código · funcional); sus tres bloqueos (división de tuberías, aviso de pared delgada, chat que ejecutaba otra acción) están corregidos. La quinta ronda parte cuando QA apruebe.
 
 ## Lista
 

@@ -24,3 +24,7 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-22 | Proyectos recientes en escritorio | Recordar las rutas para reabrir con un clic, con una opción en Ajustes para desactivarlo; activado por defecto. |
 | 2026-11-22 | App y servidor MCP | Deben comportarse igual. Los nombres y textos que entrega el servidor MCP van en inglés, porque quien los lee es una IA. |
 | 2026-11-22 | Límite de uso en jornadas largas | Llevar control del consumo y dejar el trabajo en un punto reanudable antes de alcanzar el tope. |
+| 2026-11-22 | Conector por defecto al dividir | Espiga fija al inicio. El tarugo suelto queda como opción. El usuario puede elegir en Ajustes qué conector prefiere por defecto. |
+| 2026-11-22 | Refuerzo de uniones débiles | Es elección del usuario, porque cambia el radio del conector y puede modificar la pieza. La app explica qué cambiaría y el usuario decide. Si no se refuerza, se mantiene el aviso de unión débil para que lo tenga presente al imprimir. |
+| 2026-11-22 | Cola de milano pasante | Como abre la superficie de la pieza, nunca se aplica sola: es una opción explícita, apagada por defecto. |
+| 2026-11-22 | Tablero | Se actualiza cada vez que algo cambia de etapa, no solo al cerrar una ronda. |
