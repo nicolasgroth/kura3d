@@ -10,6 +10,7 @@
  */
 
 import { t, type TranslationKey } from '../../i18n';
+import { OPERATION_RANGES } from '../../engine/operationLimits';
 import type { KuraCommandRequest, LanguageCode, Vec3 } from '../../types/kura';
 import type { AiTurnOutput, CommandExecutor } from '../providerLoop';
 import { isAffirmative, isNegative, parseLocalPrompt, type LocalIntent, type LocalStep } from './localParser';
@@ -51,10 +52,23 @@ const MODIFIES: ReadonlySet<LocalIntent['kind']> = new Set([
 const READS: ReadonlySet<LocalIntent['kind']> = new Set(['printability']);
 
 const fmt = (n: number) => String(Math.round(n * 10) / 10);
+/** Largo máximo de una rosca (mm): lo que pase de ahí en un agujero pasante va liso. */
+const MAX_THREAD_LENGTH_MM = OPERATION_RANGES.thread.lengthMm.max;
 const dimsOf = (o?: SceneObject) => {
   const d = o?.stats?.dimensionsMm;
   return d ? `${fmt(d[0])} × ${fmt(d[1])} × ${fmt(d[2])} mm` : '—';
 };
+
+/**
+ * Texto de error apto para el usuario: sin puntuación final (la pone la plantilla) y sin mensajes
+ * técnicos (identificadores entre comillas, `Error:`, rangos `∈ [a, b]`), que se descartan.
+ */
+export function humanError(error?: string): string | null {
+  const text = (error ?? '').trim().replace(/[.。।\s]+$/u, '');
+  if (!text || text === '—') return null;
+  if (/["“][a-z]+[A-Z]\w*["”]|∈|\bError:|\bundefined\b|\bnull\b|[a-z]+_[a-z]+\(/.test(text)) return null;
+  return text;
+}
 
 /** Descripción del paso tal como se ejecutará: es lo que se muestra al pedir confirmación. */
 export function describeIntent(lang: LanguageCode, intent: LocalIntent): string {
@@ -153,15 +167,23 @@ const names = (run: LocalRun, ids: string[]) =>
 
 /** Ejecuta un paso sobre objetivos ya resueltos. Devuelve false si falló (se detiene el plan). */
 async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Promise<boolean> {
-  const fail = (error?: string) => {
-    run.say('ai.local.failed', { action: intent.kind, error: error ?? '—' });
+  // Ningún error interno llega tal cual: se nombra la acción en lenguaje natural y, si el fallo es
+  // de parámetros (nombres internos, rangos), se explica sin nombres de funciones ni de campos.
+  const fail = (res?: { error?: string }) => {
+    const action = describeIntent(run.lang, intent);
+    const code = (res as { errorCode?: string } | undefined)?.errorCode;
+    const error = code === 'invalid-params' || code === 'missing-params'
+      ? t(run.lang, 'ai.local.error.badValue')
+      : humanError(res?.error);
+    if (error) run.say('ai.local.failed', { action, error });
+    else run.say('ai.local.failedNoReason', { action });
     return false;
   };
   switch (intent.kind) {
     case 'create': {
       // Nace en espacio libre de la cama, nunca dentro de otra pieza.
       const res = await run.run('create_primitive', { type: intent.shape, ...intent.params, placement: 'free', ...(intent.color ? { color: intent.color } : {}) });
-      if (!res.ok) return fail(res.error);
+      if (!res.ok) return fail(res);
       const id = (res.result as { id?: string } | null)?.id ?? null;
       run.createdId = id;
       memory.lastCreatedId = id;
@@ -172,7 +194,7 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
     }
     case 'boolean': {
       const res = await run.run('boolean_operation', { op: intent.op });
-      if (!res.ok) return fail(res.error);
+      if (!res.ok) return fail(res);
       const id = (res.result as { id?: string } | null)?.id ?? null;
       run.createdId = id;
       await run.refresh();
@@ -184,7 +206,7 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
       const res = await run.run('create_thread', {
         kind: intent.part, diameterMm: intent.diameter, pitchMm: intent.pitch, lengthMm: intent.length, includeHead: intent.part === 'bolt',
       });
-      if (!res.ok) return fail(res.error);
+      if (!res.ok) return fail(res);
       const id = (res.result as { id?: string } | null)?.id ?? null;
       run.createdId = id;
       memory.lastCreatedId = id;
@@ -197,7 +219,7 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
       for (const id of ids) {
         const name = run.find(id)?.name ?? id;
         const res = await run.run('analyze_printability', { id });
-        if (!res.ok) return fail(res.error);
+        if (!res.ok) return fail(res);
         const r = res.result as { score?: number; overhangPercent?: number; estimatedWeightGrams?: number; issues?: unknown[] } | null;
         run.say('ai.local.printability', {
           name,
@@ -219,21 +241,52 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
           run.say('ai.local.threadHoleRotated', { name: target.name });
           return false;
         }
-        // Atraviesa la pieza por su eje vertical con 1 mm de sobra a cada lado y se resta.
+        // Atraviesa la pieza por su eje vertical con 1 mm de sobra a cada lado y se resta. La rosca
+        // tiene un largo máximo: si la pieza es más alta, se rosca el tramo superior (por donde
+        // entra el tornillo) y el resto del paso queda como agujero liso del diámetro nominal.
+        const total = height + 2;
+        const threadLen = Math.min(total, MAX_THREAD_LENGTH_MM);
+        const plainLen = total - threadLen;
+        const base = target.position[1] - 1;
         const created = await run.run('create_thread', {
-          kind: 'hole', diameterMm: intent.diameter, pitchMm: intent.pitch, lengthMm: height + 2, includeHead: false,
+          kind: 'hole', diameterMm: intent.diameter, pitchMm: intent.pitch, lengthMm: threadLen, includeHead: false,
         });
-        if (!created.ok) return fail(created.error);
+        if (!created.ok) return fail(created);
         const holeId = (created.result as { id?: string } | null)?.id;
         if (!holeId) return fail();
+        const tools = [holeId];
+        const cleanup = async () => {
+          for (const tool of tools) await run.run('delete_object', { id: tool });
+        };
         const moved = await run.run('transform_object', {
-          id: holeId, position: [target.position[0], target.position[1] - 1, target.position[2]],
+          id: holeId, position: [target.position[0], base + plainLen, target.position[2]],
         });
-        if (!moved.ok) return fail(moved.error);
-        const cut = await run.run('boolean_operation', { op: 'subtract', targetId: id, toolIds: [holeId] });
+        if (!moved.ok) {
+          await cleanup();
+          return fail(moved);
+        }
+        if (plainLen > 0) {
+          // 0,5 mm de solape con la rosca para que no quede una lámina entre ambos tramos.
+          const plain = await run.run('create_primitive', { type: 'cylinder', radius: intent.diameter / 2, height: plainLen + 0.5, placement: 'free' });
+          const plainId = (plain.result as { id?: string } | null)?.id;
+          if (!plain.ok || !plainId) {
+            await cleanup();
+            return fail(plain);
+          }
+          tools.push(plainId);
+          const placed = await run.run('transform_object', { id: plainId, position: [target.position[0], base, target.position[2]] });
+          if (!placed.ok) {
+            await cleanup();
+            return fail(placed);
+          }
+        }
+        const cut = await run.run('boolean_operation', { op: 'subtract', targetId: id, toolIds: tools });
         if (!cut.ok) {
-          await run.run('delete_object', { id: holeId });
-          return fail(cut.error);
+          await cleanup();
+          return fail(cut);
+        }
+        if (plainLen > 0) {
+          run.say('ai.local.threadHoleLimited', { thread: fmt(threadLen), total: fmt(total), max: fmt(MAX_THREAD_LENGTH_MM) });
         }
         const resultId = (cut.result as { resultId?: string } | null)?.resultId ?? id;
         run.createdId = resultId;
@@ -247,14 +300,14 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
     }
     case 'export': {
       const res = await run.run(intent.format === '3mf' ? 'export_3mf' : 'export_stl', { onlySelected: intent.onlySelected });
-      if (!res.ok) return fail(res.error);
+      if (!res.ok) return fail(res);
       run.say('ai.local.exported', { format: intent.format.toUpperCase() });
       return true;
     }
     case 'delete': {
       const label = names(run, ids);
       const res = await run.run('delete_object', ids.length === 1 ? { id: ids[0] } : { ids });
-      if (!res.ok) return fail(res.error);
+      if (!res.ok) return fail(res);
       if (ids.includes(run.createdId ?? '')) run.createdId = null;
       await run.refresh();
       run.say('ai.local.deleted', { names: label });
@@ -305,7 +358,7 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
       default:
         return fail();
     }
-    if (!res.ok) return fail(res.error);
+    if (!res.ok) return fail(res);
     await run.refresh();
     const after = run.find(id);
     switch (intent.kind) {
