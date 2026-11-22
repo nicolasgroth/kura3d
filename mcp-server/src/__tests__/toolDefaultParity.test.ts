@@ -37,6 +37,18 @@ describe('valores por defecto app ↔ MCP', () => {
     expect(props.connectorCount.default).toBe(d.connectorCount);
   });
 
+  it('kura_split_for_bed anuncia el refuerzo de uniones débiles apagado (misma fuente que la app)', async () => {
+    const { server, bridge } = createKuraMcpServer({ bridgePort: 0 });
+    const [a, b] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: 'qa', version: '1' });
+    await Promise.all([server.connect(a), client.connect(b)]);
+    open.push(async () => { await client.close(); await server.close(); await bridge.close(); });
+    const tool = (await client.listTools()).tools.find((t) => t.name === 'kura_split_for_bed')!;
+    const props = (tool.inputSchema as { properties: Record<string, { default?: unknown }> }).properties;
+    expect(props.reinforceWeakJoints.default).toBe(OPERATION_DEFAULTS.split.reinforceWeakJoints);
+    expect(OPERATION_DEFAULTS.split.reinforceWeakJoints).toBe(false);
+  });
+
   it('paint_object del objeto entero sigue OPERATION_DEFAULTS.paint para el color base', async () => {
     const h = new KuraHeadlessEngine();
     const { id } = await h.createPrimitive({ primitiveType: 'box', color: '#112233', placement: 'origin' });

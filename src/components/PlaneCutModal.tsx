@@ -31,6 +31,7 @@ import { keyboardFocusInViewport, onCutPlaneDrag } from './viewport/cutPlaneDrag
 import '../styles/planeCut.css';
 import { userAxisLabel, userAxisOfInternal } from '../core/scene/displayAxes';
 import { planeCutOptionsFromDialog } from './planeCutOptions';
+import { cutConnectorFromPreference } from '../store/splitPreferences';
 
 type Axis = 'x' | 'y' | 'z';
 type FitState = 'idle' | 'checking' | 'ok' | 'bad' | 'plane';
@@ -53,6 +54,14 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
   const [suggestion, setSuggestion] = useState<CutConnectorSuggestion | null>(null);
   const [fit, setFit] = useState<FitState>('idle');
   const failure = useOperationFailure(open);
+
+  // Al abrir, conector y holgura preferidos del usuario (Ajustes); cambiarlos aquí no altera la preferencia.
+  useEffect(() => {
+    if (!open) return;
+    const p = useKuraStore.getState().splitPrefs;
+    setConnectorType(cutConnectorFromPreference(p.connectorType));
+    setTolerance(p.tolerance);
+  }, [open]);
 
   const { target, targetId, markConsumed } = useBoundOperationTarget(open, onClose);
   const range = useMemo(() => (target ? cutOffsetRange(target, axis) : { min: 0, max: 0 }), [target, axis]);

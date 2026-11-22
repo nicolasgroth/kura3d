@@ -76,6 +76,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         get().addToast(tr('toast.splitForBedDone', { count: result.parts.length, joints: result.joints.length }), 'success');
         reportEngineWarnings(change.warnings);
         get().setSplitNotes(obj.id, notes);
+        get().setSplitRequest(obj.id, { objectId: obj.id, request, historyDepth: get().past.length });
         return { plan, parts: result.parts, joints: result.joints, looseDowels: result.looseDowels, plateCount: result.plateCount, assembly: result.assembly };
       });
     },

@@ -9,6 +9,8 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
+import { parseSplitForBed } from '../splitCommandSchemas';
 import type { KuraCommandRequest } from '../../types/kura';
 import type { CommandBusResponse } from '../commandBus';
 import { addBox, byId, resetStore, store } from './storeTestUtils';
@@ -18,6 +20,15 @@ const run = (params: Record<string, unknown>) =>
 
 describe('split_for_bed', () => {
   beforeEach(() => resetStore());
+
+  it('el refuerzo de uniones débiles viene apagado por defecto y se enciende con reinforceWeakJoints', async () => {
+    const box = await addBox(300);
+    const req = (extra: Record<string, unknown> = {}) =>
+      parseSplitForBed(store(), { id: box.id, bedWidthMm: 200, bedDepthMm: 200, bedHeightMm: 200, ...extra });
+    expect(req().execute.reinforceWeakJoints).toBe(OPERATION_DEFAULTS.split.reinforceWeakJoints);
+    expect(req().execute.reinforceWeakJoints).toBe(false);
+    expect(req({ reinforceWeakJoints: true }).execute.reinforceWeakJoints).toBe(true);
+  });
 
   it('dryRun devuelve el plan sin tocar la escena; la ejecución deja piezas con metadata', async () => {
     const box = await addBox(300);

@@ -52,6 +52,9 @@ export function directionText(language: LanguageCode, direction: string): string
   return t(language, 'splitJoints.dir.axis', { axis: `${sign * user.sign < 0 ? '−' : '+'}${user.axis.toUpperCase()}` });
 }
 
+/** `groupId` del grupo dividido al que pertenece el objeto, o null. */
+const group0 = (objects: SceneObject[], id: string): string | null => splitGroupOf(objects, id)?.groupId ?? null;
+
 export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary }) => {
   const language = useKuraStore((s) => s.language);
   const objects = useKuraStore((s) => s.objects);
@@ -60,6 +63,15 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
   const validate = useKuraStore((s) => s.validateSplitGroup);
   const setFocus = useKuraStore((s) => s.setSplitJointFocus);
   const busy = useKuraStore((s) => Boolean(s.busyOperation));
+  const reinforceGroup = useKuraStore((s) => s.reinforceSplitGroup);
+  const canReinforce = useKuraStore((s) => {
+    const rec = group0(s.objects, primary.id) ? s.splitRequests[group0(s.objects, primary.id)!] : undefined;
+    return Boolean(rec && !rec.request.execute.reinforceWeakJoints && s.past.length === rec.historyDepth);
+  });
+  const reinforced = useKuraStore((s) => {
+    const gid = group0(s.objects, primary.id);
+    return Boolean(gid && s.splitRequests[gid]?.request.execute.reinforceWeakJoints);
+  });
   const uid = useId();
   const [pinned, setPinned] = useState<string | null>(null);
 
@@ -164,6 +176,20 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
                       <span>{t(language, 'splitJoints.note.weak', { measured: fmt(row.weak.measuredMm), recommended: fmt(row.weak.recommendedMm) })}</span>
                     </p>
                   )}
+                  {row.weak && (canReinforce ? (
+                    <button
+                      type="button"
+                      className="kura-btn kura-btn-sm"
+                      disabled={busy}
+                      title={t(language, 'splitJoints.reinforceTip')}
+                      onClick={() => void reinforceGroup(groupId)}
+                    >
+                      <ShieldCheck size={13} aria-hidden="true" />
+                      <span>{t(language, 'splitJoints.reinforce')}</span>
+                    </button>
+                  ) : !reinforced && (
+                    <small className="kura-cut-hint">{t(language, 'splitJoints.reinforceHow')}</small>
+                  ))}
                   {notes.map((text) => (
                     <p key={text} className="kura-split-joint-note" data-kind="info">
                       <AlertTriangle size={12} aria-hidden="true" />

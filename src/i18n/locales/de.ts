@@ -10,6 +10,7 @@
 import type { TranslationKey } from '../translations';
 import { PREVIEW_DE } from './preview';
 import { SPLITJOINTS_DE } from './splitJoints';
+import { SPLITPREFS_DE } from './splitPrefs';
 import { SPLITCOUPLING_DE } from './splitCoupling';
 
 /**
@@ -18,6 +19,7 @@ import { SPLITCOUPLING_DE } from './splitCoupling';
 export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...PREVIEW_DE,
   ...SPLITJOINTS_DE,
+  ...SPLITPREFS_DE,
   ...SPLITCOUPLING_DE,
   // Marca y shell principal
   'app.name': 'Kura3D',
@@ -1351,7 +1353,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_JOINT_PARTIAL_GLUE': 'In Verbindung {label} ({a}–{b}) sind {glued} von {total} Bereichen der Fläche zu dünn für einen Verbinder ({width} mm Wand): diese Bereiche werden nur geklebt.',
   'engineWarning.SPLIT_JOINT_MESH_OPEN': 'Das Netz der Verbindung {label} ({a}–{b}) schloss sich mit dem Verbinder nicht: sie blieb ein glatter Schnitt zum Kleben.',
   'engineWarning.SPLIT_PART_NOT_CLOSED': 'Teil {code} hat auch ohne Verbinder ein offenes Netz: vor dem Drucken prüfen.',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'Verbindung {label} ({a}–{b}) wurde verstärkt: der Verbinder {requested} mm ×{requestedCount} wurde zu {size} mm ×{count}, damit sie fest hält.',
   'engineWarning.SPLIT_LABEL_DOTS': 'Markierung {label} ({a}–{b}) passte nicht als Text: sie ist als Punkte außen graviert, von der Verbindung aus zu lesen (jede Ziffer ist eine Punktgruppe; die 0 ist ein Strich).',
   'object.name.looseDowel': 'Dübel Ø{d}×{l} ×{count}',
   'bus.error.assemblyNotFound': 'Teil oder Gruppe „{id}“ nicht gefunden.',

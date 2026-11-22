@@ -53,6 +53,7 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         labelDepthMm: rangeSchema(OR.split.labelDepthMm).default(d.labelDepthMm),
         labelMinHeightMm: rangeSchema(OR.split.labelMinHeightMm).default(d.labelMinHeightMm),
         labelPlacement: z.enum(['auto', 'joint', 'outside']).default('auto').describe('Mark on the joint face, outside next to the edge, or automatic.'),
+        reinforceWeakJoints: z.boolean().default(d.reinforceWeakJoints).describe('true = enlarges or adds connectors when a joint would be weak for its size (changes the radius you asked for). Off by default: weak joints are only reported.'),
         minFragmentMm3: rangeSchema(OR.split.minFragmentMm3).default(d.minFragmentMm3).describe('Smaller loose bodies are merged into the neighboring part.'),
       },
     },
@@ -73,7 +74,7 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
           plan: { marginMm: args.marginMm, axes: args.axes, maxPieces: args.maxPieces, allowRotation: args.allowRotation, allowDiagonal: args.allowDiagonal, connector },
           execute: {
             connector, labels: args.labels, labelDepthMm: args.labelDepthMm, labelMinHeightMm: args.labelMinHeightMm,
-            labelPlacement: args.labelPlacement, minFragmentMm3: args.minFragmentMm3,
+            labelPlacement: args.labelPlacement, minFragmentMm3: args.minFragmentMm3, reinforceWeakJoints: args.reinforceWeakJoints,
           },
           dryRun: args.dryRun,
         }),

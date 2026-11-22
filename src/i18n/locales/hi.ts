@@ -10,6 +10,7 @@
 import type { TranslationKey } from '../translations';
 import { PREVIEW_HI } from './preview';
 import { SPLITJOINTS_HI } from './splitJoints';
+import { SPLITPREFS_HI } from './splitPrefs';
 import { SPLITCOUPLING_HI } from './splitCoupling';
 
 /**
@@ -18,6 +19,7 @@ import { SPLITCOUPLING_HI } from './splitCoupling';
 export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...PREVIEW_HI,
   ...SPLITJOINTS_HI,
+  ...SPLITPREFS_HI,
   ...SPLITCOUPLING_HI,
   // Marca y shell principal
   'app.name': 'Kura3D',
@@ -1351,7 +1353,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_JOINT_PARTIAL_GLUE': 'जोड़ {label} ({a}–{b}) में सतह के {total} में से {glued} हिस्से कनेक्टर के लिए बहुत पतले हैं ({width} mm दीवार): वे हिस्से केवल चिपकाने के लिए हैं।',
   'engineWarning.SPLIT_JOINT_MESH_OPEN': 'जोड़ {label} ({a}–{b}) का मेश कनेक्टर के साथ बंद नहीं हुआ: इसे चिपकाने के लिए सपाट कट छोड़ा गया।',
   'engineWarning.SPLIT_PART_NOT_CLOSED': 'हिस्सा {code} कनेक्टर के बिना भी खुले मेश वाला है: प्रिंट से पहले जाँचें।',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'जोड़ {label} ({a}–{b}) को मज़बूत किया गया: {requested} mm ×{requestedCount} कनेक्टर {size} mm ×{count} किया गया ताकि वह मज़बूती से टिके।',
   'engineWarning.SPLIT_LABEL_DOTS': 'निशान {label} ({a}–{b}) पाठ के रूप में नहीं समाया: इसे बाहर बिंदुओं में उकेरा गया है, जोड़ से पढ़ें (हर अंक बिंदुओं का एक समूह है; 0 एक रेखा है)।',
   'object.name.looseDowel': 'डॉवेल Ø{d}×{l} ×{count}',
   'bus.error.assemblyNotFound': 'हिस्सा या समूह “{id}” नहीं मिला।',

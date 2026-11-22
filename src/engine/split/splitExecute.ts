@@ -27,6 +27,7 @@ import { ConnectorRoom } from './splitConnectorRoom';
 import type { AssemblyFix, AssemblySuggestion } from './assemblyTypes';
 import { SPLIT_DEFAULTS, splitPartCode } from './splitPlan';
 import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitResult, SplitAxis, SplitJoint, SplitLooseDowel } from './splitTypes';
+import { OPERATION_DEFAULTS } from '../operationLimits';
 
 const AXES = SPLIT_AXES;
 
@@ -111,7 +112,7 @@ export async function executeBedSplitGeometry(
               {
                 low, high, axis, coord, span: bounds[a][hc[a] + 1] - coord, contact, bounds, label, connector,
                 lapHeightMm: lapHeight, labels, labelPlacement, labelDepthMm: labelDepth, labelMinHeightMm: labelMin,
-                reinforce: options.reinforceWeakJoints !== false, room,
+                reinforce: options.reinforceWeakJoints ?? OPERATION_DEFAULTS.split.reinforceWeakJoints, room,
               },
               warnings,
             );

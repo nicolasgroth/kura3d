@@ -10,6 +10,7 @@
 import type { TranslationKey } from '../translations';
 import { PREVIEW_FR } from './preview';
 import { SPLITJOINTS_FR } from './splitJoints';
+import { SPLITPREFS_FR } from './splitPrefs';
 import { SPLITCOUPLING_FR } from './splitCoupling';
 
 /**
@@ -18,6 +19,7 @@ import { SPLITCOUPLING_FR } from './splitCoupling';
 export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...PREVIEW_FR,
   ...SPLITJOINTS_FR,
+  ...SPLITPREFS_FR,
   ...SPLITCOUPLING_FR,
   // Marca y shell principal
   'app.name': 'Kura3D',
@@ -1351,7 +1353,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineWarning.SPLIT_JOINT_PARTIAL_GLUE': 'Dans la jonction {label} ({a}–{b}), {glued} zones sur {total} de la face sont trop minces pour un connecteur (paroi de {width} mm) : ces zones sont à coller uniquement.',
   'engineWarning.SPLIT_JOINT_MESH_OPEN': 'Le maillage de la jonction {label} ({a}–{b}) ne s’est pas fermé avec le connecteur : elle reste une coupe lisse à coller.',
   'engineWarning.SPLIT_PART_NOT_CLOSED': 'La pièce {code} garde un maillage ouvert même sans connecteurs : vérifiez-la avant d’imprimer.',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'La jonction {label} ({a}–{b}) a été renforcée : le connecteur de {requested} mm ×{requestedCount} est passé à {size} mm ×{count} pour bien tenir.',
   'engineWarning.SPLIT_LABEL_DOTS': 'Le repère {label} ({a}–{b}) ne tenait pas en texte : il est gravé en points à l’extérieur, à lire depuis la jonction (chaque chiffre est un groupe de points ; le 0 est un trait).',
   'object.name.looseDowel': 'Tourillon Ø{d}×{l} ×{count}',
   'bus.error.assemblyNotFound': 'Pièce ou groupe « {id} » introuvable.',

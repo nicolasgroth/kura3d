@@ -77,7 +77,7 @@ describe('división con firmeza activa y armado final', () => {
     const obj = cube440();
     const conn: SplitConnectorOptions = { type: 'loose-dowel', size: 4, depth: 10, tolerance: 0.2, count: 2 };
     const plan = await planBedSplit(obj, { widthMm: 250, depthMm: 250, heightMm: 250 }, { maxPieces: 'auto', connector: conn });
-    const res = await executeBedSplitGeometry(obj, plan, {});
+    const res = await executeBedSplitGeometry(obj, plan, { reinforceWeakJoints: true });
     const a = res.assembly!;
     expect(a.clashes).toEqual([]);
     expect(a.blocked).toEqual([]);

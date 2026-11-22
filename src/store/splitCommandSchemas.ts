@@ -119,6 +119,7 @@ export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): Sp
       labelMinHeightMm: readRange(p, OR.split.labelMinHeightMm, 'labelMinHeightMm') ?? d.labelMinHeightMm,
       labelPlacement: readEnum(p, ['auto', 'joint', 'outside'] as const, 'labelPlacement') ?? 'auto',
       minFragmentMm3: readRange(p, OR.split.minFragmentMm3, 'minFragmentMm3') ?? d.minFragmentMm3,
+      reinforceWeakJoints: readBoolean(p, 'reinforceWeakJoints') ?? d.reinforceWeakJoints,
     },
     dryRun: readBoolean(p, 'dryRun') ?? false,
   };

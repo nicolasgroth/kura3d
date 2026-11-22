@@ -9,6 +9,7 @@
  */
 
 import type { SplitGroupNotes, SplitValidationReport } from '../../core/scene/splitJointStatus';
+import type { SplitForBedRequest } from '../splitCommandSchemas';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -18,7 +19,24 @@ export type SplitValidationState =
   | { status: 'error' }
   | { status: 'nodata' };
 
+/** Lo pedido al dividir, para repetir la división con el refuerzo activo (solo en la sesión). */
+export interface SplitRequestRecord {
+  /** Objeto que se dividió (al deshacer vuelve con este id). */
+  objectId: string;
+  request: Omit<SplitForBedRequest, 'target'>;
+  /** Pasos de deshacer justo después de dividir: si cambia, ya hay otros pasos encima y no se puede rehacer. */
+  historyDepth: number;
+}
+
 export interface SplitJointsSliceState {
+  /** Petición con la que se dividió cada grupo (por `groupId`), para "Reforzar y dividir de nuevo". */
+  splitRequests: Record<string, SplitRequestRecord>;
+  setSplitRequest: (groupId: string, record: SplitRequestRecord) => void;
+  /**
+   * Deshace la división del grupo y la repite con los mismos parámetros y `reinforceWeakJoints: true`.
+   * Solo si la división es lo último del historial; devuelve `false` si no se pudo.
+   */
+  reinforceSplitGroup: (groupId: string) => Promise<boolean>;
   /** Avisos y arreglos del motor al dividir, por grupo (`groupId`). */
   splitNotes: Record<string, SplitGroupNotes>;
   setSplitNotes: (groupId: string, notes: SplitGroupNotes) => void;
@@ -35,6 +53,19 @@ export function createSplitJointsSlice(ctx: StoreContext): Partial<KuraStoreStat
   const { set, get } = ctx;
   return {
     splitNotes: {},
+    splitRequests: {},
+    setSplitRequest: (groupId, record) => set((s) => ({ splitRequests: { ...s.splitRequests, [groupId]: record } })),
+    reinforceSplitGroup: async (groupId) => {
+      const rec = get().splitRequests[groupId];
+      if (!rec || rec.request.execute.reinforceWeakJoints || get().past.length !== rec.historyDepth || get().busyOperation) return false;
+      get().undo();
+      if (get().past.length >= rec.historyDepth) return false;
+      const out = await get().splitObjectForBed(rec.objectId, {
+        ...rec.request,
+        execute: { ...rec.request.execute, reinforceWeakJoints: true },
+      });
+      return Boolean(out && out.parts.length > 0);
+    },
     splitValidation: {},
     splitJointFocus: null,
     setSplitJointFocus: (focus) => {
