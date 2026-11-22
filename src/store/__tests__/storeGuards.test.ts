@@ -136,15 +136,17 @@ describe('Resta vacía detectada por geometría', () => {
 describe('Límite común de historial e i18n', () => {
   beforeEach(() => resetStore());
 
-  it('el historial nunca supera MAX_UNDO_HISTORY y el proyecto sigue guardable', async () => {
+  it('el historial del store supera el tope del archivo pero el proyecto sigue guardable', async () => {
     const box = await addBox(10);
     for (let i = 1; i <= MAX_UNDO_HISTORY + 5; i++) {
       store().setObjectTransform(box.id, { position: [i, 0, 0] }, true);
     }
     for (let i = 0; i < 3; i++) store().undo();
     const { past, future } = store();
-    expect(past.length + future.length).toBeLessThanOrEqual(MAX_UNDO_HISTORY);
-    expect(() => encodeProject(captureProject(store()))).not.toThrow();
+    expect(past.length + future.length).toBeGreaterThan(MAX_UNDO_HISTORY);
+    const doc = captureProject(store());
+    expect(doc.past.length + doc.future.length).toBeLessThanOrEqual(MAX_UNDO_HISTORY);
+    expect(() => encodeProject(doc)).not.toThrow();
   });
 
   it('el sufijo de copia sale del diccionario del idioma activo', async () => {

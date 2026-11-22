@@ -108,6 +108,13 @@ export const TopBar: React.FC = () => {
   const setActiveTool = useKuraStore((s) => s.setActiveTool);
   const pastCount = useKuraStore((s) => s.past.length);
   const futureCount = useKuraStore((s) => s.future.length);
+  /** Tooltip de deshacer/rehacer con los pasos disponibles ("Deshacer (Ctrl+Z) · 37 pasos"). */
+  const stepTip = (base: 'topbar.undoTip' | 'topbar.redoTip', counted: 'topbar.undoTipCount' | 'topbar.redoTipCount', count: number) =>
+    count === 0
+      ? t(language, base)
+      : count === 1
+        ? t(language, `${counted}.one`)
+        : t(language, counted, { count });
   const undo = useKuraStore((s) => s.undo);
   const redo = useKuraStore((s) => s.redo);
   const openSettings = useKuraStore((s) => s.openSettings);
@@ -299,7 +306,7 @@ export const TopBar: React.FC = () => {
           className="kura-btn kura-btn-icon kura-btn-sm"
           disabled={pastCount === 0}
           onClick={undo}
-          title={t(language, 'topbar.undoTip')}
+          title={stepTip('topbar.undoTip', 'topbar.undoTipCount', pastCount)}
           aria-label={t(language, 'topbar.undo')}
         >
           <Undo2 size={13} />
@@ -309,7 +316,7 @@ export const TopBar: React.FC = () => {
           className="kura-btn kura-btn-icon kura-btn-sm"
           disabled={futureCount === 0}
           onClick={redo}
-          title={t(language, 'topbar.redoTip')}
+          title={stepTip('topbar.redoTip', 'topbar.redoTipCount', futureCount)}
           aria-label={t(language, 'topbar.redo')}
         >
           <Redo2 size={13} />
