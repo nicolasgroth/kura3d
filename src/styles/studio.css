@@ -48,26 +48,26 @@
   --text-secondary-light: #475569;
   --text-secondary-dark: #94a3b8;
 
-  --text-muted-light: #64748b;
-  --text-muted-dark: #64748b;
+  --text-muted-light: #59677c;
+  --text-muted-dark: #8694a8;
 
-  --accent-cyan-light: #0284c7;
+  --accent-cyan-light: #026ca3;
   --accent-cyan-dark: #38bdf8;
 
   --accent-cyan-fg-light: #ffffff;
   --accent-cyan-fg-dark: #07131e;
 
-  --accent-amber-light: #c2410c;
+  --accent-amber-light: #b63d0b;
   --accent-amber-dark: #f97316;
 
   --accent-amber-fg-light: #ffffff;
   --accent-amber-fg-dark: #1c0a00;
 
-  --accent-green-light: #16a34a;
+  --accent-green-light: #0f7234;
   --accent-green-dark: #22c55e;
 
-  --accent-red-light: #dc2626;
-  --accent-red-dark: #ef4444;
+  --accent-red-light: #c21f1f;
+  --accent-red-dark: #f48080;
 
   --hud-glass-light: rgba(255, 255, 255, 0.86);
   --hud-glass-dark: rgba(15, 20, 28, 0.82);
@@ -146,12 +146,12 @@
   --text-secondary-dark: #c4b5fd;
   --text-muted-light: #624a8c;
   --text-muted-dark: #a799d8;
-  --accent-cyan-light: #0f766e;
+  --accent-cyan-light: #0e6f67;
   --accent-cyan-dark: #2dd4bf;
   --accent-cyan-fg-light: #ffffff;
   --accent-cyan-fg-dark: #042f2e;
   --accent-amber-light: #7e22ce;
-  --accent-amber-dark: #a855f7;
+  --accent-amber-dark: #b46cf8;
   --accent-amber-fg-light: #ffffff;
   --accent-amber-fg-dark: #14052b;
   --hud-glass-light: rgba(250, 249, 255, 0.88);
@@ -182,13 +182,13 @@
   --text-primary-dark: #f4f4f5;
   --text-secondary-light: #4b505c;
   --text-secondary-dark: #b4b9c2;
-  --text-muted-light: #5f6673;
-  --text-muted-dark: #8e95a2;
+  --text-muted-light: #5e6572;
+  --text-muted-dark: #9299a6;
   --accent-cyan-light: #1d4ed8;
   --accent-cyan-dark: #60a5fa;
   --accent-cyan-fg-light: #ffffff;
   --accent-cyan-fg-dark: #071936;
-  --accent-amber-light: #b45309;
+  --accent-amber-light: #a34b08;
   --accent-amber-dark: #f59e0b;
   --accent-amber-fg-light: #ffffff;
   --accent-amber-fg-dark: #1f1302;
@@ -221,12 +221,12 @@
   --text-secondary-light: #415269;
   --text-secondary-dark: #b6c2d6;
   --text-muted-light: #52647d;
-  --text-muted-dark: #8fa0bc;
+  --text-muted-dark: #93a3be;
   --accent-cyan-light: #0369a1;
   --accent-cyan-dark: #7dd3fc;
   --accent-cyan-fg-light: #ffffff;
   --accent-cyan-fg-dark: #082436;
-  --accent-amber-light: #047857;
+  --accent-amber-light: #047253;
   --accent-amber-dark: #34d399;
   --accent-amber-fg-light: #ffffff;
   --accent-amber-fg-dark: #03261a;
@@ -260,7 +260,7 @@
   --text-secondary-dark: #d9c3a3;
   --text-muted-light: #6e5334;
   --text-muted-dark: #b39874;
-  --accent-cyan-light: #b45309;
+  --accent-cyan-light: #a34b08;
   --accent-cyan-dark: #fbbf24;
   --accent-cyan-fg-light: #ffffff;
   --accent-cyan-fg-dark: #271502;
@@ -695,7 +695,9 @@ body,
 .kura-btn.is-active {
   background: color-mix(in srgb, var(--tool-accent) 18%, var(--bg-elevated));
   border-color: var(--tool-accent);
-  color: var(--tool-accent);
+  /* Texto primario sobre el tinte: el acento como texto no llegaba a 4.5:1 en todos los temas. */
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .kura-segmented {
@@ -2244,15 +2246,15 @@ dialog.kura-dialog-side[open]:where(:not([data-closing]))::backdrop {
 }
 
 .kura-precision-prefix.axis-x {
-  color: #ef4444;
+  color: var(--accent-red);
 }
 
 .kura-precision-prefix.axis-y {
-  color: #22c55e;
+  color: var(--accent-green);
 }
 
 .kura-precision-prefix.axis-z {
-  color: #38bdf8;
+  color: var(--accent-cyan);
 }
 
 .kura-precision-field {

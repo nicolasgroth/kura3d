@@ -60,6 +60,10 @@ import {
   type Vec3,
 } from '../types/kura';
 import { REFINE_UI_DEFAULTS } from './refineDefaults';
+import '../styles/inspectorFit.css';
+import { colorName, colorNameWithHex } from '../utils/colorNames';
+import { computeSelectionBounds } from '../utils/selectionBounds';
+import { formatNumber, tCount } from '../utils/plural';
 import {
   formatDimension,
   formatVolume,
@@ -270,14 +274,14 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
           {t(language, 'scene.filamentLegend')}
         </span>
         <span style={{ fontSize: 10.5, color: 'var(--text-secondary)' }}>
-          {t(language, 'scene.colorsCount', { count: sceneColors.length })}
+          {tCount(language, { one: 'scene.colorsCount.one', other: 'scene.colorsCount' }, sceneColors.length)}
         </span>
       </div>
       <div className="kura-filament-legend">
         {sceneColors.map(([hex, count]) => (
           <span key={hex} className="kura-filament-chip">
-            <span className="kura-color-dot" style={{ backgroundColor: hex }} />
-            <span>{hex.toUpperCase()}</span>
+            <span className="kura-color-dot" style={{ backgroundColor: hex }} aria-hidden="true" />
+            <span title={colorNameWithHex(language, hex)}>{colorName(language, hex)}</span>
             <span style={{ color: 'var(--text-muted)' }}>×{count}</span>
           </span>
         ))}
@@ -374,7 +378,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
 
           <div className="kura-card">
             <h3 className="kura-section-label">{t(language, 'inspector.op.booleanTitle')}</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 6 }}>
               <button
                 type="button"
                 className="kura-btn kura-btn-primary"
@@ -520,6 +524,10 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
     primary.stats.dimensionsMm[1] * primary.scale[1],
     primary.stats.dimensionsMm[2] * primary.scale[2],
   ];
+  // Con el objeto girado, "Dimensiones" muestra la caja envolvente en el mundo (no la local).
+  const isRotated = primary.rotation.some((r) => Math.abs(r) > 1e-6);
+  const worldBounds = isRotated ? computeSelectionBounds([primary]) : null;
+  const shownDims: Vec3 = worldBounds ? worldBounds.size : scaledDims;
   const scaledVolumeMm3 =
     primary.stats.volumeMm3 * primary.scale[0] * primary.scale[1] * primary.scale[2];
 
@@ -605,8 +613,9 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
                   className={`kura-swatch ${primary.color === hex ? 'is-active' : ''}`}
                   style={{ backgroundColor: hex }}
                   onClick={() => updateObjectMeta(primary.id, { color: hex })}
-                  aria-label={hex}
-                  title={hex}
+                  aria-label={colorName(language, hex)}
+                  aria-pressed={primary.color === hex}
+                  title={colorNameWithHex(language, hex)}
                 />
               ))}
               <input
@@ -673,6 +682,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
                     step={stepUnit}
                     precision={unitPrecision}
                     commitOnBlur
+                    unit={unitSystem}
                     defaultValue={0}
                     disabled={transformDisabled}
                     value={Number(fromMm(primary.position[idx], unitSystem).toFixed(unitPrecision))}
@@ -792,6 +802,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
                     min={scaleBySize ? baseSize * minimumFactor : minimumFactor}
                     precision={precision}
                     commitOnBlur
+                    unit={scaleBySize ? unitSystem : null}
                     defaultValue={scaleBySize ? baseSize : 1}
                     disabled={transformDisabled || (scaleBySize && baseSize <= 0)}
                     value={value}
@@ -863,11 +874,11 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
           <h3 className="kura-section-label">{t(language, 'inspector.section.stats')}</h3>
           <div className="kura-stats-grid">
             <div className="kura-stat-box" style={{ gridColumn: '1 / -1' }}>
-              <div className="kura-stat-title">{t(language, 'inspector.stats.dimensions')}</div>
+              <div className="kura-stat-title">{worldBounds ? t(language, 'inspector.stats.dimensionsWorld') : t(language, 'inspector.stats.dimensions')}</div>
               <div className="kura-stat-val">
-                {formatDimension(scaledDims[0], unitSystem)} ×{' '}
-                {formatDimension(scaledDims[1], unitSystem)} ×{' '}
-                {formatDimension(scaledDims[2], unitSystem)}
+                {formatDimension(shownDims[0], unitSystem)} ×{' '}
+                {formatDimension(shownDims[1], unitSystem)} ×{' '}
+                {formatDimension(shownDims[2], unitSystem)}
               </div>
             </div>
             <div className="kura-stat-box">
@@ -876,11 +887,11 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
             </div>
             <div className="kura-stat-box">
               <div className="kura-stat-title">{t(language, 'inspector.stats.triangles')}</div>
-              <div className="kura-stat-val">{primary.stats.triangles.toLocaleString()}</div>
+              <div className="kura-stat-val">{formatNumber(language, primary.stats.triangles)}</div>
             </div>
             <div className="kura-stat-box">
               <div className="kura-stat-title">{t(language, 'inspector.stats.vertices')}</div>
-              <div className="kura-stat-val">{primary.stats.vertices.toLocaleString()}</div>
+              <div className="kura-stat-val">{formatNumber(language, primary.stats.vertices)}</div>
             </div>
             <div className="kura-stat-box">
               <div className="kura-stat-title">{t(language, 'inspector.stats.manifold')}</div>
@@ -1094,7 +1105,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
                   </p>
                 ) : (
                   <>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 5 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 5 }}>
                       <button
                         type="button"
                         className="kura-btn kura-btn-sm"
@@ -1316,7 +1327,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 4 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 6, marginTop: 4 }}>
               <button
                 type="button"
                 className="kura-btn kura-btn-sm"

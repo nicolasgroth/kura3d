@@ -145,6 +145,8 @@ export const SceneObjectList: React.FC = () => {
   };
 
   const handleClick = (e: React.MouseEvent, id: string) => {
+    // Toda la fila selecciona, salvo los botones de acción (agrupados a la derecha).
+    if ((e.target as HTMLElement).closest('button')) return;
     const index = objects.findIndex((o) => o.id === id);
     setActiveId(id);
     if (e.shiftKey) {
@@ -212,14 +214,14 @@ export const SceneObjectList: React.FC = () => {
                   }}
                 />
               ) : (
-                <span className="kura-scene-name">{obj.name}</span>
+                <span className="kura-scene-name" title={obj.name}>{obj.name}</span>
               )}
               {obj.isHole && <span className="kura-hole-tag" aria-hidden="true">{t(language, 'sidebar.scene.holeBadge')}</span>}
               {states.length > 0 && <span className="sr-only">, {states.join(', ')}</span>}
             </div>
 
             {/* Acciones de ratón; con teclado: Supr, F2, Ctrl+D y L (atajos globales). */}
-            <div className="kura-scene-actions" aria-hidden="true" onClick={(e) => e.stopPropagation()}>
+            <div className="kura-scene-actions" aria-hidden="true">
               <button type="button" tabIndex={-1} className="kura-mini-icon-btn" title={t(language, 'sidebar.scene.toggleVisible')} onClick={() => updateObjectMeta(obj.id, { visible: !obj.visible })}>
                 {obj.visible ? <Eye size={13} /> : <EyeOff size={13} />}
               </button>

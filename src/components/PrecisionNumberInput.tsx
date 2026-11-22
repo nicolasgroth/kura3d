@@ -10,9 +10,12 @@
  * @license MIT
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import type { UnitSystem } from '../types/kura';
+import { evaluateExpression, unitFromSuffix, type ExpressionFailure } from '../utils/numericExpression';
+import '../styles/precisionInput.css';
 
 export interface PrecisionModifierState {
   shiftKey: boolean;
@@ -41,6 +44,11 @@ export interface PrecisionNumberInputProps {
   axisTone?: 'x' | 'y' | 'z';
   /** Sufijo compacto opcional dentro de la caja (ej. 'mm', '°', '×'). */
   suffix?: string;
+  /**
+   * Unidad de longitud activa del campo: habilita escribir `2cm` o `1in` y los convierte a ella.
+   * Sin ella se deduce del sufijo (`mm`, `in`…); con `null` el campo no admite unidades.
+   */
+  unit?: UnitSystem | null;
   /** Valor por defecto para restablecer con doble clic sobre el prefijo. */
   defaultValue?: number;
   /** Píxeles horizontales necesarios por cada paso durante el scrub (por defecto 4). */
@@ -101,6 +109,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   prefix,
   axisTone,
   suffix,
+  unit,
   defaultValue,
   scrubPixelsPerStep = 4,
   ariaLabel,
@@ -117,8 +126,14 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   const [isFocused, setIsFocused] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [draft, setDraft] = useState<string>(() => formatDisplayValue(value, precision));
+  const [invalid, setInvalid] = useState<ExpressionFailure | null>(null);
+  const errorId = useId();
+  const activeUnit = unit === undefined ? unitFromSuffix(suffix) : unit;
+  const unitRef = useRef(activeUnit);
+  unitRef.current = activeUnit;
   const initialFocusValueRef = useRef<number>(value);
   const draftEditedRef = useRef(false);
+  const escapedRef = useRef(false);
 
   // Referencias para el arrastre horizontal a 60fps sin re-renderizar listeners
   const scrubRef = useRef<{
@@ -134,10 +149,15 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
 
   // Sincroniza el texto mostrado cuando el valor cambia externamente (gizmos, Undo/Redo, escala proporcional)
   useEffect(() => {
-    if (!isFocused) {
+    if (!isFocused && !invalid) {
       setDraft(formatDisplayValue(value, precision));
     }
-  }, [value, precision, isFocused]);
+  }, [value, precision, isFocused, invalid]);
+
+  // Un cambio externo del valor (Deshacer, gizmo) descarta el error pendiente.
+  useEffect(() => {
+    setInvalid(null);
+  }, [value]);
 
   /** Aplica un incremento escalado por Shift (×10) o Alt/Ctrl (×0.1). */
   const applyStepDelta = useCallback(
@@ -148,9 +168,8 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
       const delta = direction * cur.step * mult;
       if (cur.commitOnBlur && draftEditedRef.current) {
         setDraft((text) => {
-          const normalized = text.trim().replace(',', '.');
-          const parsed = Number(normalized);
-          const base = normalized && Number.isFinite(parsed) ? parsed : cur.value;
+          const parsed = evaluateExpression(text, { unit: unitRef.current });
+          const base = parsed.ok ? parsed.value : cur.value;
           const next = clampAndClean(base + delta, cur.min, cur.max, cur.precision);
           return formatDisplayValue(next, cur.precision);
         });
@@ -192,29 +211,37 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   /** Confirma el borrador numérico si es válido, o revierte al valor actual. */
   const commitDraft = useCallback(
     (modifiers?: PrecisionModifierState) => {
+      if (escapedRef.current) {
+        escapedRef.current = false;
+        return;
+      }
       if (commitOnBlur && (!draftEditedRef.current || disabled)) return;
       draftEditedRef.current = false;
-      const normalized = draft.trim().replace(',', '.');
-      const parsed = Number(normalized);
-      if (normalized !== '' && Number.isFinite(parsed)) {
-        const clamped = clampAndClean(parsed, min, max, precision);
+      const parsed = evaluateExpression(draft, { unit: activeUnit });
+      if (parsed.ok) {
+        setInvalid(null);
+        const clamped = clampAndClean(parsed.value, min, max, precision);
         setDraft(formatDisplayValue(clamped, precision));
         if (clamped !== value) {
           onChange(clamped, modifiers);
         }
         onCommit?.(clamped);
-      } else {
+      } else if (parsed.reason === 'empty') {
+        setInvalid(null);
         setDraft(formatDisplayValue(value, precision));
+      } else {
+        // No se revierte en silencio: se conserva el texto, se marca el error y Escape restaura.
+        setInvalid(parsed.reason);
       }
     },
-    [commitOnBlur, disabled, draft, min, max, precision, value, onChange, onCommit],
+    [commitOnBlur, disabled, draft, min, max, precision, value, activeUnit, onChange, onCommit],
   );
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
     initialFocusValueRef.current = value;
     draftEditedRef.current = false;
-    setDraft(formatDisplayValue(value, precision));
+    if (!invalid) setDraft(formatDisplayValue(value, precision));
     e.currentTarget.select();
   };
 
@@ -251,6 +278,9 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
     if (e.key === 'Escape') {
       e.preventDefault();
       e.stopPropagation();
+      setInvalid(null);
+      escapedRef.current = true;
+      setDraft(formatDisplayValue(initialFocusValueRef.current, precision));
       if (commitOnBlur) {
         draftEditedRef.current = false;
         inputRef.current?.blur();
@@ -341,6 +371,14 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
     });
   };
 
+  const fieldLabel = ariaLabel ?? prefix ?? '';
+  const stepUpLabel = fieldLabel
+    ? t(language, 'precision.stepUpFor', { label: fieldLabel })
+    : t(language, 'precision.stepUp');
+  const stepDownLabel = fieldLabel
+    ? t(language, 'precision.stepDownFor', { label: fieldLabel })
+    : t(language, 'precision.stepDown');
+
   const scrubTitle =
     title ??
     (prefix
@@ -349,7 +387,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
 
   return (
     <div
-      className={`kura-precision-input ${isScrubbing ? 'is-scrubbing' : ''} ${
+      className={`kura-precision-input ${isScrubbing ? 'is-scrubbing' : ''} ${invalid ? 'is-invalid' : ''} ${
         disabled ? 'is-disabled' : ''
       } ${className ?? ''}`}
       style={style}
@@ -377,24 +415,28 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
         className="kura-precision-field"
         disabled={disabled}
         data-commit-on-blur={commitOnBlur || undefined}
-        value={isFocused ? draft : formatDisplayValue(value, precision)}
+        value={isFocused || invalid ? draft : formatDisplayValue(value, precision)}
         aria-label={ariaLabel ?? prefix}
+        aria-invalid={invalid ? true : undefined}
+        aria-describedby={invalid ? errorId : undefined}
         onFocus={handleFocus}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         onChange={(e) => {
           const val = e.target.value;
           setDraft(val);
+          setInvalid(null);
           if (commitOnBlur) {
             draftEditedRef.current = true;
             return;
           }
-          // Permitir actualización en vivo mientras se escribe un número válido completo
+          // Actualización en vivo solo con un número simple completo; expresiones y unidades se aplican al confirmar.
           const normalized = val.trim().replace(',', '.');
           if (
             normalized !== '' &&
             normalized !== '-' &&
             !normalized.endsWith('.') &&
+            /^[-+]?\d*\.?\d*$/.test(normalized) &&
             Number.isFinite(Number(normalized))
           ) {
             const next = clampAndClean(Number(normalized), min, max, precision);
@@ -402,6 +444,12 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
           }
         }}
       />
+
+      {invalid && (
+        <span id={errorId} role="alert" className="kura-precision-error">
+          {t(language, 'precision.invalidValue')}
+        </span>
+      )}
 
       {suffix && <span className="kura-precision-suffix">{suffix}</span>}
 
@@ -413,8 +461,8 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
           disabled={disabled}
           onMouseDown={(e) => e.preventDefault()}
           onClick={(e) => stepBtnClick(1, e)}
-          aria-label={t(language, 'precision.stepUp')}
-          title={`${t(language, 'precision.stepUp')} (Shift ×10 · Alt ×0.1)`}
+          aria-label={stepUpLabel}
+          title={`${stepUpLabel} (Shift ×10 · Alt ×0.1)`}
         >
           ▲
         </button>
@@ -425,8 +473,8 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
           disabled={disabled}
           onMouseDown={(e) => e.preventDefault()}
           onClick={(e) => stepBtnClick(-1, e)}
-          aria-label={t(language, 'precision.stepDown')}
-          title={`${t(language, 'precision.stepDown')} (Shift ×10 · Alt ×0.1)`}
+          aria-label={stepDownLabel}
+          title={`${stepDownLabel} (Shift ×10 · Alt ×0.1)`}
         >
           ▼
         </button>

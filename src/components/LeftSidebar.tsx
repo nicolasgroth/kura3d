@@ -32,6 +32,8 @@ import {
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import type { PrimitiveType } from '../types/kura';
+import { colorName, colorNameWithHex } from '../utils/colorNames';
+import { tCount } from '../utils/plural';
 import { SceneObjectList } from './scene/SceneObjectList';
 
 export const LeftSidebar: React.FC = () => {
@@ -323,14 +325,14 @@ export const LeftSidebar: React.FC = () => {
                   <div className="kura-field-row" style={{ fontSize: 10.5 }}>
                     <span className="kura-field-label">{t(language, 'scene.filamentLegend')}</span>
                     <span style={{ color: 'var(--text-muted)' }}>
-                      {t(language, 'scene.colorsCount', { count: filamentColors.length })}
+                      {tCount(language, { one: 'scene.colorsCount.one', other: 'scene.colorsCount' }, filamentColors.length)}
                     </span>
                   </div>
                   <div className="kura-filament-legend">
                     {filamentColors.map(([hex, count]) => (
-                      <span key={hex} className="kura-filament-chip" title={`${hex} (${count})`}>
-                        <span className="kura-color-dot" style={{ backgroundColor: hex }} />
-                        <span>{hex.toUpperCase()}</span>
+                      <span key={hex} className="kura-filament-chip" title={`${colorNameWithHex(language, hex)} (${count})`}>
+                        <span className="kura-color-dot" style={{ backgroundColor: hex }} aria-hidden="true" />
+                        <span>{colorName(language, hex)}</span>
                         <span style={{ color: 'var(--text-muted)' }}>×{count}</span>
                       </span>
                     ))}

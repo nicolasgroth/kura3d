@@ -1,0 +1,41 @@
+/**
+ * @file src/styles/statusFit.css
+ * @description Barra de estado y selector de unidades sin textos cortados: el estado del motor nunca se encoge
+ * y, en pantallas estrechas, se ocultan el nombre del entorno, el perfil de impresora y la unidad
+ * (siguen visibles en la barra superior).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* Orden de la primera agrupación: entorno, estado del motor, impresora, unidad, recuento. */
+.kura-statusbar-group:first-child > span:nth-child(2) {
+  flex: 0 0 auto;
+}
+
+.kura-statusbar-group:first-child > span:not(:nth-child(2)) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .kura-statusbar-group:first-child {
+    gap: 8px;
+  }
+
+  .kura-statusbar-group:first-child > span:nth-child(1),
+  .kura-statusbar-group:first-child > span:nth-child(3),
+  .kura-statusbar-group:first-child > span:nth-child(4) {
+    display: none;
+  }
+}
+
+/* "mm", "cm"... completos: el ancho anterior (56 px) dejaba "m…" con el relleno y la flecha. */
+.kura-topbar .kura-unit-select,
+.kura-unit-select {
+  width: 70px;
+  min-width: 70px;
+  padding-inline: 8px 2px;
+  text-overflow: clip;
+}

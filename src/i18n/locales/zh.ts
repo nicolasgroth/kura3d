@@ -85,6 +85,9 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'precision.localSize': '局部尺寸',
   'precision.stepUp': '增大数值',
   'precision.stepDown': '减小数值',
+  'precision.invalidValue': '数值无效。请输入数字或表达式（10+5、2cm）。',
+  'precision.stepUpFor': '增大{label}',
+  'precision.stepDownFor': '减小{label}',
 
   // Barra superior (TopBar)
   'topbar.importModel': '导入 3D',
@@ -169,6 +172,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'sidebar.scene.multiSelectHint': 'Ctrl+点击进行多选',
   'scene.filamentLegend': '场景耗材颜色',
   'scene.colorsCount': '{count} 种颜色',
+  'scene.colorsCount.one': '{count} 种颜色',
 
   // Viewport 3D y HUD flotante
   'viewport.camera.iso': '等轴',
@@ -254,6 +258,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'inspector.action.resetTransform': '重置旋转/缩放',
   'inspector.section.stats': '几何与度量',
   'inspector.stats.dimensions': '尺寸',
+  'inspector.stats.dimensionsWorld': '尺寸（世界包围盒）',
   'inspector.stats.volume': '体积',
   'inspector.stats.triangles': '三角面数',
   'inspector.stats.vertices': '顶点数',
@@ -809,6 +814,8 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'toast.nothingToExport': '场景中没有可导出的可见对象',
   'export.holesSkipped': '已跳过 {count} 个未应用的孔：请先减去它们，使其成为零件的一部分。',
   'toast.moldDone': '模具已生成（{count} 个部件）',
+  'toast.moldDone.one': '模具已生成（1 个部件）',
+  'toast.moldDone.other': '模具已生成（{count} 个部件）',
   'toast.projectDone': '图形已投影到表面',
   'toast.printabilityDone': '3D 检查：{score}/100 ({weight} g)',
   'toast.simplifyDone': '网格已简化（{tris} 个三角面）',
@@ -844,6 +851,8 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'import.openMesh': '{name} 的网格未闭合（{edges} 条自由边）：打印前请检查。',
   'import.openMeshMany': '{count} 个零件的网格未闭合（{list}）：打印前请检查。',
   'import.partialFailed': '{count} 个文件未导入：{list}',
+  'import.partialFailed.one': '{count} 个文件未导入：{list}',
+  'import.partialFailed.other': '{count} 个文件未导入：{list}',
   'import.menu': '导入选项',
   'import.placement.title': '导入时的位置',
   'import.placement.bed': '放置到热床上',

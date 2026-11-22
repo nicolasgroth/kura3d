@@ -40,3 +40,35 @@
   font-size: 11px;
   color: var(--text-muted);
 }
+
+/* Los botones de acción forman un grupo fijo al extremo derecho; el resto de la fila es zona de selección. */
+/* Si no caben nombre (>= 96 px) y botones en una línea, el grupo de botones baja a una segunda línea
+   alineada a la derecha; el resto de la fila sigue siendo zona de selección. */
+.kura-scene-item {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.kura-scene-item .kura-scene-item-main {
+  flex: 1 1 96px;
+  min-width: 0;
+  align-self: stretch;
+}
+
+.kura-scene-item .kura-scene-actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+  gap: 2px;
+}
+
+.kura-scene-actions .kura-mini-icon-btn {
+  width: 26px;
+  height: 26px;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.kura-scene-actions .kura-mini-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
