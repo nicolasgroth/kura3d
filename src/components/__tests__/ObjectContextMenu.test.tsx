@@ -120,7 +120,7 @@ describe('Lista de escena: F2 y búsqueda', () => {
     const user = userEvent.setup();
     useKuraStore.setState({ objects: [fakeBox('a', 'Alfa'), fakeBox('b', 'Beta'), fakeBox('c', 'Beto')], selectedIds: [] } as never);
     render(<><SceneSearch /><SceneObjectList /></>);
-    await user.type(screen.getByRole('searchbox', { name: /Buscar en la escena/ }), 'bet{Enter}');
+    await user.type(screen.getByRole('textbox', { name: /Buscar en la escena/ }), 'bet{Enter}');
     expect(screen.getAllByRole('option')).toHaveLength(2);
     expect(useKuraStore.getState().selectedIds).toEqual(['b']);
     await user.keyboard('{F3}');

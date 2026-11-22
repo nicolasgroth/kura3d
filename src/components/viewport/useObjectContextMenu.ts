@@ -40,7 +40,8 @@ export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | 
   }, []);
   const handleBackgroundContextMenu = useCallback(
     (e: React.MouseEvent) => {
-      if ((e.target as HTMLElement).tagName !== 'CANVAS') return;
+      // Un objeto bajo el cursor ya atendió el evento (R3F llama a preventDefault).
+      if (e.defaultPrevented || (e.target as HTMLElement).tagName !== 'CANVAS') return;
       e.preventDefault();
       const down = rightDown.current;
       rightDown.current = null;

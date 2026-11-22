@@ -40,7 +40,7 @@ export const SceneSearch: React.FC = () => {
       <Search size={13} aria-hidden="true" className="kura-scene-search-icon" />
       <input
         ref={inputRef}
-        type="search"
+        type="text"
         className="kura-input kura-scene-search-input"
         value={filter}
         placeholder={t(language, 'scene.search.placeholder')}

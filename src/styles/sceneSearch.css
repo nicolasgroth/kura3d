@@ -20,10 +20,10 @@
   pointer-events: none;
 }
 
-.kura-scene-search-input {
+.kura-scene-search .kura-scene-search-input {
   flex: 1;
   min-width: 0;
-  padding-left: 26px;
+  padding-left: 28px;
 }
 
 .kura-scene-search-input:focus-visible {
