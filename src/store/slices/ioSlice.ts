@@ -58,6 +58,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     buildObject: ({ name, mesh, position, color, isHole }) =>
       buildSceneObject({ name, source: 'imported', mesh, position, color: color || PRINT_COLOR_PALETTE[0], isHole }),
     exportFiles: (args) => ctx.runEngineDetached('export', args),
+    bedSize: () => activeBedSize(get()),
   });
 
   /** Colocador en el primer hueco libre; recuerda si cupo en la cama y si la escena estaba vacía. */

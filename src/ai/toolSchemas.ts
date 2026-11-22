@@ -83,7 +83,7 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
         placement: {
           type: 'string',
           enum: ['free', 'origin'],
-          description: "'free': primer hueco libre de la cama sin solaparse; 'origin' (por defecto): centro.",
+          description: "'free' (por defecto en el chat): primer hueco libre de la cama sin solaparse; 'origin': centro de la cama.",
         },
       },
       required: ['type'],

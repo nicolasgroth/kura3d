@@ -156,3 +156,72 @@ export function placeGroupInFreeSpot(
     fits: spot.fits,
   };
 }
+
+const overlapsXZ = (a: FootprintXZ, b: FootprintXZ) =>
+  a.minX < b.maxX - EPS && a.maxX > b.minX + EPS && a.minZ < b.maxZ - EPS && a.maxZ > b.minZ + EPS;
+
+type Placeable = Pick<SceneObject, 'mesh' | 'position' | 'rotation' | 'scale'>;
+
+/**
+ * Coloca un grupo de piezas nuevas (molde, etc.): primero como bloque en el primer hueco libre y,
+ * si alguna pieza del grupo queda encima de otra del mismo grupo, la lleva sola a otro hueco libre.
+ */
+export function placePartsInFreeSpot<T extends Placeable>(
+  objects: readonly SceneObject[],
+  parts: readonly T[],
+  bed: BedSize | null = null,
+): { parts: T[]; fits: boolean } {
+  const group = placeGroupInFreeSpot(objects, parts, bed);
+  let fits = group.fits;
+  const out: T[] = [];
+  const placedFps: FootprintXZ[] = [];
+  for (const part of parts) {
+    let next: T = {
+      ...part,
+      position: [part.position[0] + group.offset[0], part.position[1], part.position[2] + group.offset[2]],
+    };
+    const fp = footprintOf(next.mesh, next.position, next.rotation, next.scale);
+    if (fp && placedFps.some((other) => overlapsXZ(fp, other))) {
+      const scene = [...objects, ...out.map((p) => ({ ...p, visible: true }) as unknown as SceneObject)];
+      const spot = placeInFreeSpot(scene, next.mesh, next.rotation, next.scale, bed);
+      fits = fits && spot.fits;
+      next = { ...next, position: spot.position };
+    }
+    const placedFp = footprintOf(next.mesh, next.position, next.rotation, next.scale);
+    if (placedFp) placedFps.push(placedFp);
+    out.push(next);
+  }
+  return { parts: out, fits };
+}
+
+/** Separación entre las dos mitades de un corte por plano (mm). */
+export const CUT_SEPARATION_MM = 4;
+
+/**
+ * Separa las mitades de un corte para que no queden encimadas: con plano vertical (X o Z) se
+ * alejan `CUT_SEPARATION_MM` a lo largo del eje; con plano horizontal (Y) la mitad superior se
+ * apoya en la cama en el primer hueco libre junto a la inferior.
+ * @param others objetos de la escena sin la pieza cortada.
+ * @param parts mitades en el orden [positiva, negativa]; con una sola mitad no cambia nada.
+ */
+export function separateCutHalves<T extends Placeable>(
+  others: readonly SceneObject[],
+  parts: readonly T[],
+  axis: 'x' | 'y' | 'z',
+  bed: BedSize | null = null,
+): { parts: T[]; fits: boolean } {
+  if (parts.length !== 2) return { parts: [...parts], fits: true };
+  const [upper, lower] = parts;
+  if (axis === 'y') {
+    const scene = [...others, { ...lower, visible: true } as unknown as SceneObject];
+    const spot = placeInFreeSpot(scene, upper.mesh, upper.rotation, upper.scale, bed);
+    return { parts: [{ ...upper, position: spot.position }, lower], fits: spot.fits };
+  }
+  const k = axis === 'x' ? 0 : 2;
+  const shift = (p: T, sign: number): T => {
+    const position = [...p.position] as Vec3;
+    position[k] += (sign * CUT_SEPARATION_MM) / 2;
+    return { ...p, position };
+  };
+  return { parts: [shift(upper, 1), shift(lower, -1)], fits: true };
+}

@@ -63,6 +63,21 @@ function createAdapter(input: AdapterInput): ProviderAdapter {
 }
 
 /**
+ * En el chat, una primitiva sin posición ni colocación explícitas nace en el primer hueco libre
+ * de la cama en vez de en el origen (donde se solaparía con lo que ya hay).
+ */
+export function withFreePlacement(executeCommand: CommandExecutor): CommandExecutor {
+  return (req) => {
+    const params = (req.params ?? {}) as Record<string, unknown>;
+    if (req.command === 'create_primitive' && typeof params === 'object' && !Array.isArray(params)
+      && params.placement === undefined && params.position === undefined) {
+      return executeCommand({ ...req, params: { ...params, placement: 'free' } });
+    }
+    return executeCommand(req);
+  };
+}
+
+/**
  * Envía un mensaje al proveedor configurado o al Asistente Local Determinista cuando no hay
  * credenciales. Los errores llegan traducidos y sin la clave.
  */
@@ -74,6 +89,7 @@ export async function sendAiPrompt(
   executeCommand: CommandExecutor,
   options: SendAiOptions = {},
 ): Promise<AiTurnOutput> {
+  executeCommand = withFreePlacement(executeCommand);
   if (!hasUsableCredentials(config)) {
     return runLocalAssistant(prompt, lang, executeCommand);
   }

@@ -18,6 +18,7 @@ import { FileSaveError, LocalFileError, saveFileSet, type SaveSetEntry } from '.
 import { tCount } from '../utils/plural';
 import { exportFileBase } from '../utils/exportNaming';
 import { selectExportTargets } from './exportTargets';
+import { placeGroupInFreeSpot, type BedSize } from '../core/scene/freeSpot';
 import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
@@ -63,6 +64,8 @@ export interface ModelIoDeps {
   tr: Translate;
   pushHistory: () => void;
   buildObject: (params: { name: string; mesh: MeshData; position: Vec3; color: string; isHole?: boolean }) => SceneObject;
+  /** Cama activa para buscar el hueco libre de las piezas importadas (null = sin límite). */
+  bedSize?: () => BedSize | null;
   /** Genera los archivos de exportación (la app usa el Worker del motor; por defecto en proceso). */
   exportFiles?: (args: ExportTaskArgs) => Promise<ExportTaskResult>;
 }
@@ -153,7 +156,13 @@ export function createModelIoActions(deps: ModelIoDeps) {
 
     const state = get();
     const wasEmpty = state.objects.length === 0;
-    const placed = engine.placeImportedModels(models, placement, sceneFootprint(state.objects));
+    // El conjunto se arma centrado y luego se mueve como bloque al primer hueco libre de la cama.
+    const placed = engine.placeImportedModels(models, placement, null);
+    if (placement === 'bed' && !wasEmpty) {
+      const spot = placeGroupInFreeSpot(state.objects, placed, deps.bedSize?.() ?? null);
+      for (const p of placed) p.position = [p.position[0] + spot.offset[0], p.position[1], p.position[2] + spot.offset[2]];
+      if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+    }
     const created = placed.map((p) =>
       buildObject({
         name: p.part.name || p.fileName,

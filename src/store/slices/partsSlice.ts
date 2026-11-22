@@ -10,7 +10,7 @@
 
 import * as engine from '../../engine';
 import * as ops from '../../core/operations';
-import { placeGroupInFreeSpot } from '../../core/scene/freeSpot';
+import { placePartsInFreeSpot, separateCutHalves } from '../../core/scene/freeSpot';
 import { resolveStructureTarget } from '../../core/scene/sceneRules';
 import { segmentationMatchesMesh } from '../../engine/segmentationGuards';
 import { tCount } from '../../utils/plural';
@@ -37,9 +37,13 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         reportEngineWarnings(change.warnings);
         if (parts.length === 0) return [];
         assertCurrent([obj]);
-        commitChange(change, { select: parts.map((c) => c.id) });
+        // Las mitades no quedan encimadas: se separan unos milímetros o la superior va a la cama.
+        const others = get().objects.filter((o) => o.id !== obj.id);
+        const separated = separateCutHalves(others, parts, options.axis, activeBedSize(get()));
+        commitChange({ ...change, added: separated.parts }, { select: separated.parts.map((c) => c.id) });
         get().addToast(tr('toast.cutDone'), 'success');
-        return parts;
+        if (!separated.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+        return separated.parts;
       });
     },
 
@@ -84,8 +88,9 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         if (parts.length === 0) return [];
         assertCurrent([obj]);
         // Las mitades se mueven juntas, como un bloque, a un hueco libre junto a la pieza original.
-        const spot = placeGroupInFreeSpot(get().objects, parts, activeBedSize(get()));
-        const placed = parts.map((p) => ({ ...p, position: [p.position[0] + spot.offset[0], p.position[1], p.position[2] + spot.offset[2]] as Vec3 }));
+        // Si una pieza del molde queda sobre otra (p. ej. el positivo dentro de la caja), va sola a otro hueco.
+        const spot = placePartsInFreeSpot(get().objects, parts, activeBedSize(get()));
+        const placed = spot.parts;
         commitChange({ ...change, added: placed }, { select: placed.map((c) => c.id), spawned: placed });
         get().addToast(tCount(get().language, { one: 'toast.moldDone.one', other: 'toast.moldDone.other' }, placed.length), 'success');
         if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
