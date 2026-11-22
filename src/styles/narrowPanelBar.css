@@ -83,6 +83,16 @@
     scrollbar-width: none;
     justify-content: flex-start;
     padding-bottom: 2px;
+    /* La fila se desplaza: se detiene al inicio de cada control (nunca a medio corte) y el borde
+       derecho se desvanece para mostrar que hay más controles. */
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 0 24px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+
+  .kura-app .kura-hud-top-stack .kura-hud-top-bar .kura-hud-card {
+    scroll-snap-align: start;
   }
 
   .kura-hud-top-stack .kura-hud-top-bar::-webkit-scrollbar {
