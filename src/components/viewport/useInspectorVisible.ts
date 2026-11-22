@@ -17,20 +17,28 @@ export function useInspectorVisible(): boolean {
   const rightCollapsed = useKuraStore((s) => s.rightCollapsed);
   const density = useKuraStore((s) => s.uiDensity);
   const aiOpen = useKuraStore((s) => s.aiDrawerOpen);
+  // El inspector cambia de elemento según la selección (vacío, uno, varios): se vuelve a medir.
+  const selectionSize = useKuraStore((s) => s.selectedIds.length);
   const [visible, setVisible] = useState(false);
 
   useLayoutEffect(() => {
-    const el = document.querySelector<HTMLElement>('.kura-sidebar-right');
-    const check = () => setVisible(Boolean(el && el.isConnected && el.offsetWidth >= MIN_VISIBLE_WIDTH));
+    const check = () => {
+      const el = document.querySelector<HTMLElement>('.kura-sidebar-right');
+      setVisible(Boolean(el && el.offsetWidth >= MIN_VISIBLE_WIDTH));
+    };
     check();
     window.addEventListener('resize', check);
-    const observer = el && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(check) : null;
-    if (el && observer) observer.observe(el);
+    const workspace = document.querySelector<HTMLElement>('.kura-workspace');
+    const observer = workspace && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(check) : null;
+    if (workspace && observer) {
+      observer.observe(workspace);
+      for (const child of Array.from(workspace.children)) observer.observe(child);
+    }
     return () => {
       window.removeEventListener('resize', check);
       observer?.disconnect();
     };
-  }, [rightCollapsed, density, aiOpen]);
+  }, [rightCollapsed, density, aiOpen, selectionSize]);
 
   return visible;
 }

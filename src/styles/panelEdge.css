@@ -6,20 +6,20 @@
  * @license MIT
  */
 
-.kura-panel-edge-btn {
+.kura-app .kura-panel-edge-btn {
   width: 24px;
 }
 
-.kura-panel-edge-btn.is-left {
+.kura-app .kura-panel-edge-btn.is-left {
   right: -24px;
 }
 
-.kura-panel-edge-btn.is-right {
+.kura-app .kura-panel-edge-btn.is-right {
   left: -24px;
 }
 
 /* Área táctil ampliada sin cambiar el aspecto. */
-.kura-panel-edge-btn::after {
+.kura-app .kura-panel-edge-btn::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -29,7 +29,7 @@
   transform: translate(-50%, -50%);
 }
 
-.kura-panel-edge-btn:focus-visible {
+.kura-app .kura-panel-edge-btn:focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
