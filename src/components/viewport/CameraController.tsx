@@ -193,6 +193,15 @@ export const CameraController: React.FC<{
       case 'right':
         position = [target[0] + distance * 1.25, target[1] + distance * 0.15, target[2]];
         break;
+      case 'left':
+        position = [target[0] - distance * 1.25, target[1] + distance * 0.15, target[2]];
+        break;
+      case 'back':
+        position = [target[0], target[1] + distance * 0.15, target[2] - distance * 1.25];
+        break;
+      case 'bottom':
+        position = [target[0], target[1] - distance * 1.3, target[2] + 0.01];
+        break;
       default:
         position = [target[0] + distance * 0.72, target[1] + distance * 0.62, target[2] + distance * 0.85];
     }

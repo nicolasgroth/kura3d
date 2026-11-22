@@ -20,6 +20,7 @@ import { DownloadSaveNotice } from './components/DownloadSaveNotice';
 import { RightInspector } from './components/RightInspector';
 import { SplashScreen } from './components/SplashScreen';
 import { StatusBar } from './components/StatusBar';
+import { SkipLinks } from './components/SkipLinks';
 import { TopBar } from './components/TopBar';
 import { Viewport3D } from './components/Viewport3D';
 import { t } from './i18n';
@@ -394,6 +395,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="kura-app" data-tool={activeTool} data-density={uiDensity}>
+      <SkipLinks />
       <TopBar />
       <DownloadSaveNotice />
       <ProjectRecoveryBanner

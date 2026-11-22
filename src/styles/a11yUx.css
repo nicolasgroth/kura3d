@@ -1,0 +1,112 @@
+/**
+ * @file src/styles/a11yUx.css
+ * @description Accesibilidad y adaptación a móvil: enlaces de salto, cubo de vistas por teclado (ambos
+ * visibles solo al recibir el foco), movimiento reducido para transiciones con `transform`, áreas táctiles de
+ * 44 px en las acciones de fila y el diálogo de exportar sin desplazamiento horizontal a 390 px.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* Enlaces de salto: ocultos hasta recibir el foco con Tab. */
+.kura-skip-links {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 400;
+  display: flex;
+  gap: 8px;
+}
+
+.kura-skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.kura-skip-link:focus,
+.kura-skip-link:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--accent-cyan);
+  color: var(--accent-cyan-fg);
+  font-weight: 700;
+  text-decoration: none;
+  outline: 3px solid var(--text-primary);
+  outline-offset: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* Cubo de vistas por teclado: aparece al enfocar cualquiera de sus botones. */
+.kura-viewcube-keys {
+  position: fixed;
+  top: 56px;
+  right: 12px;
+  z-index: 400;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: min(420px, calc(100vw - 24px));
+  padding: 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--bg-panel);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.kura-viewcube-keys:not(:focus-within) {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+/* Movimiento reducido: sin transiciones ni animaciones, tampoco las de `transform`. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Acciones de fila de la escena: área táctil de 44 px en pantallas táctiles y estrechas. */
+@media (pointer: coarse), (max-width: 760px) {
+  .kura-scene-actions {
+    flex-wrap: wrap;
+  }
+
+  .kura-scene-actions .kura-mini-icon-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Exportar: sin barra de desplazamiento horizontal en móvil; el texto largo baja de línea. */
+@media (max-width: 480px) {
+  dialog.kura-dialog .kura-dialog-body {
+    overflow-x: hidden;
+    overflow-wrap: anywhere;
+  }
+}

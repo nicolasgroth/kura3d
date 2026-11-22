@@ -137,6 +137,7 @@ export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = (
 
       {tab === 'mcp' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} role="tabpanel" id="settings-panel-mcp" aria-labelledby="settings-tab-mcp">
+          <p style={{ margin: 0, fontSize: 13 }}>{t(language, 'settings.mcp.intro')}</p>
           <strong style={{ fontSize: 13 }}>{t(language, 'dialog.settings.mcpTitle')}</strong>
           <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
             {t(language, 'dialog.settings.mcpDesc')}
