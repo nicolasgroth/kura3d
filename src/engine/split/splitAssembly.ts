@@ -12,7 +12,7 @@
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import { buildConnectorSolid } from '../cutConnectorSolid';
 import { layoutType } from './splitLooseDowel';
-import type { SplitConnectorOptions, SplitConnectorType, SplitJointKind, SplitLapInfo, SplitPart } from './splitTypes';
+import type { SplitConnectorOptions, SplitConnectorType, SplitJointIsland, SplitJointKind, SplitLapInfo, SplitPart } from './splitTypes';
 import type { Vec3 } from '../../types/kura';
 import type { EngineWarning } from '../engineErrors';
 import { manifoldToMeshData } from '../manifoldKernel';
@@ -34,6 +34,8 @@ export interface PendingJoint {
   lap: SplitLapInfo | null;
   contactAreaMm2: number;
   clearance: number;
+  /** Islas de la cara con su tipo (pasan a `glue` si la unión se pega). */
+  islands?: SplitJointIsland[];
   /** Sólidos de conector/solape agregados a `low.adds` y restados en `high.subs` (y en `low.subs`: agujeros del tarugo suelto). */
   solids: { adds: Manifold[]; subs: Manifold[]; lowSubs?: Manifold[] };
 }
@@ -49,6 +51,20 @@ function dropSolids(j: PendingJoint, low: SplitBody, high: SplitBody): void {
   drop(j.solids.adds, low.adds);
   drop(j.solids.subs, high.subs);
   drop(j.solids.lowSubs ?? [], low.subs);
+}
+
+/**
+ * Pasa una unión a corte liso para pegar: quita sus sólidos de conector o solape (la marca se conserva)
+ * y deja sus islas como `glue`. Devuelve la holgura que dejó de quitar.
+ */
+export function demoteToGlue(j: PendingJoint, low: SplitBody, high: SplitBody): number {
+  dropSolids(j, low, high);
+  const removed = j.clearance;
+  Object.assign(j, {
+    kind: 'glue', connector: null, connectorCenters: [], lap: null, clearance: 0, solids: { adds: [], subs: [] },
+    islands: j.islands?.map((i) => ({ ...i, kind: 'glue' as const })),
+  });
+  return removed;
 }
 
 /** Rehace los conectores de una unión con otro tipo, en los mismos centros y medidas. */
@@ -83,7 +99,8 @@ function rebuildAs(wasm: ManifoldToplevel, j: PendingJoint, low: SplitBody, high
 /**
  * Valida con los cuerpos lisos y aplica el arreglo que destraba el montaje: pasa uniones a "para
  * pegar" (quita sus sólidos) o, si conserva más uniones con conector, cambia el tipo de algunas
- * (`fix.changeType`, rehechas en los mismos centros). `clearanceDelta` se suma a la holgura total.
+ * (`fix.changeType`, rehechas en los mismos centros). Los cambios que abren la superficie exterior
+ * (cola de milano pasante) solo se aplican con `allowSurfaceChange`; si no, quedan en las sugerencias. `clearanceDelta` se suma a la holgura total.
  */
 export function fixAssemblyBeforeConnectors(
   wasm: ManifoldToplevel,
@@ -92,6 +109,7 @@ export function fixAssemblyBeforeConnectors(
   warnings: EngineWarning[],
   apply = true,
   allowTypeChange = true,
+  allowSurfaceChange = false,
 ): { glued: string[]; fix: AssemblyFix | null; suggestions: AssemblySuggestion[]; clearanceDelta: number } {
   const index = new Map(order.map((b, i) => [b.id, i]));
   const parts = order.map((b) => ({ code: b.code, mesh: manifoldToMeshData(b.m), assembly: { position: [0, 0, 0] as Vec3, rotation: [0, 0, 0] as Vec3 } }));
@@ -101,15 +119,13 @@ export function fixAssemblyBeforeConnectors(
     a: { part: index.get(j.low)!, code: order[index.get(j.low)!].code },
     b: { part: index.get(j.high)!, code: order[index.get(j.high)!].code },
   }));
-  const report = validateAssembly(parts, input, { autoFix: apply, checkExterior: false, allowTypeChange });
+  const report = validateAssembly(parts, input, { autoFix: apply, checkExterior: false, allowTypeChange, allowSurfaceChange });
   if (!report.fix.applied) return { glued: [], fix: report.blocked.length > 0 ? report.fix : null, suggestions: report.suggestions, clearanceDelta: 0 };
   let clearanceDelta = 0;
   const bodies = new Map(order.map((b) => [b.id, b]));
   for (const label of report.fix.glueJoints) {
     const j = joints.find((x) => x.label === label)!;
-    dropSolids(j, bodies.get(j.low)!, bodies.get(j.high)!);
-    clearanceDelta -= j.clearance;
-    Object.assign(j, { kind: 'glue', connector: null, connectorCenters: [], lap: null, clearance: 0, solids: { adds: [], subs: [] } });
+    clearanceDelta -= demoteToGlue(j, bodies.get(j.low)!, bodies.get(j.high)!);
   }
   for (const { joint, type } of report.fix.changeType) {
     const j = joints.find((x) => x.label === joint)!;

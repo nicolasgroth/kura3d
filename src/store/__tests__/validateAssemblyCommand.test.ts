@@ -29,8 +29,9 @@ describe('validate_assembly y tarugo suelto', () => {
     expect(out.looseDowels).toHaveLength(1);
     const dowel = store().objects.find((o) => o.id === out.looseDowels![0].id)!;
     expect(dowel.metadata?.splitDowel?.count).toBe(out.looseDowels![0].count);
-    // La firmeza activa puede agrandar el tarugo; el largo es 2·6 − 2·0,25
-    expect(dowel.name).toMatch(/^Tarugo Ø[\d.]+×11\.5 ×\d+$/);
+    // La firmeza activa puede agrandar el tarugo (a lo más al doble); el largo es 2·6 − 2·0,25; coma decimal en es
+    expect(dowel.name).toMatch(/^Tarugo Ø[\d,]+×11,5 ×\d+$/);
+    expect(out.looseDowels![0].diameterMm).toBeLessThanOrEqual(12 + 1e-9);
     const parts = store().objects.filter((o) => o.metadata?.split?.groupId === box.id);
     expect(parts).toHaveLength(2);
     expect(parts.every((p) => (p.metadata!.split!.joints ?? []).length === 1)).toBe(true);

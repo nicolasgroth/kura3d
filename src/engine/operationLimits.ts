@@ -159,6 +159,10 @@ export const SPLIT_HARD_MAX_PIECES = 400;
  * - Cierre: error de volumen ≤ `volumeTolerancePct` y hueco entre caras ≤ `gapToleranceMm` + holgura.
  * - Imprimible: lengüeta y cada pared de ranura del solape ≥ `minPrintableWallMm`.
  * - Marca: profundidad ≤ `labelDepthWallFraction` del espesor local.
+ * - Firmeza activa: al agrandar un conector, el radio aplicado no pasa de
+ *   max(pedido, min(máximo recomendado, `maxReinforceWidthFraction`·ancho de la isla más ancha de la
+ *   cara, `maxReinforceGrowth`·pedido, profundidad del conector)); además debe caber con la pared
+ *   mínima (lo verifica la ubicación de conectores).
  */
 export const ASSEMBLY_LIMITS = {
   minConnectorRadiusMm: 1.5,
@@ -171,6 +175,8 @@ export const ASSEMBLY_LIMITS = {
   voxelsPerSide: 48,
   minPrintableWallMm: 0.8,
   labelDepthWallFraction: 0.4,
+  maxReinforceWidthFraction: 0.25,
+  maxReinforceGrowth: 2,
 } as const;
 
 /** Indica si `value` es un número finito dentro de `range`. */

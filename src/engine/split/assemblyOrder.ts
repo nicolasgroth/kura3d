@@ -144,11 +144,13 @@ export function findOrder(input: OrderInput, glued: Set<string> = new Set()): Or
 /**
  * Arreglo voraz: uniones a pasar a "para pegar" para que todas las piezas entren. Con `allowChange`,
  * una unión que traba pero admite otro tipo de conector compatible con la dirección elegida
- * (`alternativeType`) cambia de tipo en vez de pegarse; el costo es (pegadas, cambiadas).
+ * (`alternativeType`) cambia de tipo en vez de pegarse; el costo es (pegadas, cambiadas). Los cambios
+ * que alteran la superficie exterior (a cola de milano pasante) solo con `allowSurface`.
  */
 export function greedyFix(
   input: OrderInput,
   allowChange = false,
+  allowSurface = true,
 ): { glued: Set<string>; changed: Map<string, SplitConnectorType>; blocked: AssemblyBlocked[]; order: AssemblyStep[] } {
   const n = input.codes.length;
   // Copias: un cambio de tipo modifica las direcciones de las evaluaciones siguientes
@@ -171,7 +173,7 @@ export function greedyFix(
         const change: Array<[AssemblyJointInput, SplitConnectorType]> = [];
         const glue: string[] = [];
         for (const j of stuck) {
-          const t = allowChange ? alternativeType(j, p, d) : null;
+          const t = allowChange ? alternativeType(j, p, d, allowSurface) : null;
           if (t) change.push([j, t]);
           else glue.push(j.label);
         }

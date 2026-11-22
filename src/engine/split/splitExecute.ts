@@ -5,7 +5,8 @@
  * fragmentos diminutos (`splitBodies.ts`), y arma una unión por cada par de piezas con contacto real a
  * través de un plano (`splitJoints.ts`: conectores, solape de borde en pared delgada y marca de
  * pareja). Machos y lengüetas van en la pieza baja; alojamientos y ranuras con holgura en la alta.
- * Todo en Manifold: las piezas salen cerradas.
+ * Todo en Manifold; la malla de cada pieza se cierra en `splitFinish.ts` (si no cierra, sus uniones
+ * pasan a pegar con aviso).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -15,16 +16,16 @@ import type { Manifold } from 'manifold-3d';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { engineWarning, type EngineWarning } from '../engineErrors';
 import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../manifoldKernel';
-import { applyTransformToMesh, normalizeMeshToBed } from '../primitives';
+import { applyTransformToMesh } from '../primitives';
 import { buildBodies, cellKey, contactSection, MIN_CONTACT_MM2, type Cell } from './splitBodies';
 import { buildJoint } from './splitJoints';
-import { closeSplitMesh } from './splitMeshClean';
+import { finishParts } from './splitFinish';
 import { buildLooseDowelBatch, looseDowelLength } from './splitLooseDowel';
 import { finalAssemblyReport, fixAssemblyBeforeConnectors, type PendingJoint } from './splitAssembly';
 import type { AssemblyFix, AssemblySuggestion } from './assemblyTypes';
 import { SPLIT_DEFAULTS, splitPartCode } from './splitPlan';
 import { AXIS_INDEX } from './splitSections';
-import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitResult, SplitAxis, SplitJoint, SplitLooseDowel, SplitPart } from './splitTypes';
+import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitResult, SplitAxis, SplitJoint, SplitLooseDowel } from './splitTypes';
 
 const AXES: SplitAxis[] = ['x', 'y', 'z'];
 const NORMALS: Record<SplitAxis, Vec3> = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] };
@@ -153,7 +154,7 @@ export async function executeBedSplitGeometry(
             high.labels.push(label);
             joints.push({
               label, axis, position: coord, low: low.id, high: hid, connector: out.used, connectorCenters: out.centers,
-              kind: out.kind, lap: out.lap, contactAreaMm2: area, labelEngraved: out.labelPlacement !== null,
+              kind: out.kind, lap: out.lap, islands: out.islands, contactAreaMm2: area, labelEngraved: out.labelPlacement !== null,
               labelPlacement: out.labelPlacement, labelHeightMm: out.labelHeightMm, clearance: out.clearance, solids,
             });
           } finally {
@@ -168,44 +169,19 @@ export async function executeBedSplitGeometry(
     let fix: AssemblyFix | null = null;
     let suggestions: AssemblySuggestion[] = [];
     if (check && joints.some((j) => j.kind !== 'glue')) {
-      const r = fixAssemblyBeforeConnectors(wasm, order, joints, warnings, options.assemblyAutoFix !== false, options.assemblyAllowTypeChange !== false);
+      const r = fixAssemblyBeforeConnectors(
+        wasm, order, joints, warnings, options.assemblyAutoFix !== false, options.assemblyAllowTypeChange !== false,
+        options.assemblyAllowSurfaceChange === true,
+      );
       fix = r.fix;
       suggestions = r.suggestions;
       clearance += r.clearanceDelta;
     }
 
-    // 3. Aplicar conectores, solapes y marcas, y pasar a mallas
-    const parts: SplitPart[] = [];
-    const index = new Map<number, number>();
-    for (const b of order) {
-      let m = b.m;
-      if (b.adds.length > 0) {
-        const u = wasm.Manifold.union([m, ...b.adds]);
-        if (m !== b.m) m.delete();
-        m = u;
-      }
-      if (b.subs.length > 0) {
-        const cutter = wasm.Manifold.union(b.subs);
-        const r = m.subtract(cutter);
-        cutter.delete();
-        if (m !== b.m) m.delete();
-        m = r;
-      }
-      const mesh = closeSplitMesh(wasm, normalizeMeshToBed(manifoldToMeshData(m))).mesh;
-      const bb = m.boundingBox();
-      const volume = m.volume();
-      if (m !== b.m) m.delete();
-      index.set(b.id, parts.length);
-      parts.push({
-        code: b.code,
-        cell: b.cell,
-        mesh,
-        assembly: { position: [(bb.min[0] + bb.max[0]) / 2, bb.min[1], (bb.min[2] + bb.max[2]) / 2], rotation: [0, 0, 0] },
-        bounds: { min: bb.min as Vec3, max: bb.max as Vec3 },
-        volumeMm3: volume,
-        jointLabels: b.labels,
-      });
-    }
+    // 3. Aplicar conectores, solapes y marcas, y pasar a mallas cerradas (si no cierra: para pegar)
+    const finished = finishParts(wasm, order, joints, warnings);
+    const { parts, index } = finished;
+    clearance += finished.clearanceDelta;
     const sign = (axis: SplitAxis, s: '+' | '-') => `${s}${axis}` as SplitJoint['a']['face'];
     const outJoints: SplitJoint[] = joints.map(({ low, high, clearance: _c, solids: _s, ...j }) => ({
       ...j,

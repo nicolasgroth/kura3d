@@ -125,13 +125,17 @@ export function validateAssembly(
   let fix: AssemblyFix = { glueJoints: [], changeType: [], applied: false };
   const suggestions: AssemblySuggestion[] = [];
   if (outcome.blocked.length > 0) {
-    // Dos arreglos: solo pegar, o pegar/cambiar de tipo; gana el que conserva más uniones con conector
+    // Dos arreglos: solo pegar, o pegar/cambiar de tipo; gana el que conserva más uniones con conector.
+    // Cambiar a un tipo que abre la superficie (cola de milano pasante) solo con `allowSurfaceChange`;
+    // las sugerencias lo listan igual para que el usuario decida.
     const glueOnly = greedyFix(input);
-    const withChange = options.allowTypeChange === false ? glueOnly : greedyFix(input, true);
+    const surface = options.allowSurfaceChange === true;
+    const withChange = options.allowTypeChange === false ? glueOnly : greedyFix(input, true, surface);
+    const suggested = surface || options.allowTypeChange === false ? withChange : greedyFix(input, true, true);
     const useChange = withChange.blocked.length <= glueOnly.blocked.length && withChange.glued.size < glueOnly.glued.size;
     const repair = useChange ? withChange : glueOnly;
-    for (const label of new Set([...glueOnly.glued, ...withChange.glued, ...withChange.changed.keys()])) {
-      const t = withChange.changed.get(label);
+    for (const label of new Set([...glueOnly.glued, ...withChange.glued, ...suggested.glued, ...withChange.changed.keys(), ...suggested.changed.keys()])) {
+      const t = withChange.changed.get(label) ?? suggested.changed.get(label);
       suggestions.push({ joint: label, options: t ? ['glue', `change-type:${t}`] : ['glue'] });
     }
     suggestions.sort((x, y) => Number(x.joint) - Number(y.joint) || x.joint.localeCompare(y.joint));

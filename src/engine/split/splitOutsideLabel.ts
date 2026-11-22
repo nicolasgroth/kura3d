@@ -14,6 +14,7 @@
 import type { CrossSection, Manifold, ManifoldToplevel, Mat4 } from 'manifold-3d';
 import type { Vec3 } from '../../types/kura';
 import { buildTextCrossSection } from '../text/textCrossSection';
+import { dotCodeLength, dotCodeShape } from './splitDotCode';
 import { planeUVToWorld } from './splitLabels';
 import { orientForAxis } from './splitSections';
 import type { SplitAxis } from './splitTypes';
@@ -149,33 +150,30 @@ function engravesSurface(wasm: ManifoldToplevel, piece: Manifold, solid: Manifol
   return !blocked;
 }
 
-/** Sólidos de grabado exterior para ambas piezas, o `null` si no cabe en ningún borde probado. */
-export async function buildOutsideLabel(wasm: ManifoldToplevel, input: OutsideLabelInput): Promise<OutsideLabelSolids | null> {
-  const unit = await buildTextCrossSection(wasm, input.text, { size: 1, align: 'center' });
-  const ub = unit.bounds();
-  const h = ub.max[1] - ub.min[1];
-  const scale = input.heightMm / (h || 1);
-  const text = unit.translate([-(ub.max[0] + ub.min[0]) / 2, -(ub.max[1] + ub.min[1]) / 2]).scale([scale, scale]);
-  unit.delete();
-  const tb = text.bounds();
+/**
+ * Graba `lowShape`/`highShape` (secciones centradas en el origen, alto `input.heightMm` a lo largo de
+ * +eje) en la cara exterior de ambas piezas; `null` si no cabe en ningún borde probado. No libera las formas.
+ */
+function placeOutside(wasm: ManifoldToplevel, input: OutsideLabelInput, lowShape: CrossSection, highShape: CrossSection): OutsideLabelSolids | null {
+  const tb = highShape.bounds();
   const halfW = (tb.max[0] - tb.min[0]) / 2;
-  const expected = text.area() * input.depthMm;
+  const expected = highShape.area() * input.depthMm;
   const u = UP[input.axis];
   const lowO = orientForAxis(input.low, input.axis);
   const highO = orientForAxis(input.high, input.axis);
   try {
     for (const e of outerEdges(input.contact).slice(0, CANDIDATES)) {
-      if (halfW * 2 > e.len * 4) continue; // borde demasiado corto para el ancho del texto
+      if (halfW * 2 > e.len * 4) continue; // borde demasiado corto para el ancho de la marca
       const n2: Vec3 = planeUVToWorld(input.axis, e.n[0], e.n[1], 0);
       const lowFrame = surfaceFrame(lowO.oriented, input.axis, e, input.coord - 1 - input.heightMm, input.coord - 1, n2, u);
       const highFrame = surfaceFrame(highO.oriented, input.axis, e, input.coord + input.highGapMm, input.coord + input.highGapMm + input.heightMm, n2, u);
       if (!lowFrame || !highFrame) continue;
-      const lowSolid = placeText(text, input.depthMm, lowFrame);
+      const lowSolid = placeText(lowShape, input.depthMm, lowFrame);
       if (!engravesSurface(wasm, input.low, lowSolid, expected, lowFrame.front)) {
         lowSolid.delete();
         continue;
       }
-      const highSolid = placeText(text, input.depthMm, highFrame);
+      const highSolid = placeText(highShape, input.depthMm, highFrame);
       if (!engravesSurface(wasm, input.high, highSolid, expected, highFrame.front)) {
         lowSolid.delete();
         highSolid.delete();
@@ -185,8 +183,39 @@ export async function buildOutsideLabel(wasm: ManifoldToplevel, input: OutsideLa
     }
     return null;
   } finally {
-    text.delete();
     if (lowO.owned) lowO.oriented.delete();
     if (highO.owned) highO.oriented.delete();
+  }
+}
+
+/** Sólidos de grabado exterior (texto) para ambas piezas, o `null` si no cabe en ningún borde probado. */
+export async function buildOutsideLabel(wasm: ManifoldToplevel, input: OutsideLabelInput): Promise<OutsideLabelSolids | null> {
+  const unit = await buildTextCrossSection(wasm, input.text, { size: 1, align: 'center' });
+  const ub = unit.bounds();
+  const h = ub.max[1] - ub.min[1];
+  const scale = input.heightMm / (h || 1);
+  const text = unit.translate([-(ub.max[0] + ub.min[0]) / 2, -(ub.max[1] + ub.min[1]) / 2]).scale([scale, scale]);
+  unit.delete();
+  try {
+    return placeOutside(wasm, input, text, text);
+  } finally {
+    text.delete();
+  }
+}
+
+/**
+ * Marca mínima de puntos (`splitDotCode.ts`) por fuera de ambas piezas, leyendo desde el borde de la
+ * unión; `null` si no cabe o la etiqueta no es numérica. `input.heightMm` se ignora: manda el largo del código.
+ */
+export function buildOutsideDots(wasm: ManifoldToplevel, input: Omit<OutsideLabelInput, 'heightMm'>): OutsideLabelSolids | null {
+  if (!/^\d+$/.test(input.text)) return null;
+  // En la baja el borde de la unión está en +eje (v máximo); en la alta, en v mínimo
+  const low = dotCodeShape(wasm, input.text, false);
+  const high = dotCodeShape(wasm, input.text, true);
+  try {
+    return placeOutside(wasm, { ...input, heightMm: dotCodeLength(input.text) }, low, high);
+  } finally {
+    low.delete();
+    high.delete();
   }
 }

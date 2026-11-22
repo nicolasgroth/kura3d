@@ -78,11 +78,11 @@ describe('QA5 dividir: mezcla maciza/delgada y brazos finos', () => {
     expect(mixed.kind).toBe('connector');
     expect(mixed.labelEngraved).toBe(true);
   }, 60_000);
-  // Brecha menor declarada por el autor: la isla delgada de una unión 'connector' queda pegada sin avisar.
-  it.fails('una unión mixta con isla delgada sin conector debería avisar (SPLIT_JOINT_GLUE_ONLY)', async () => {
+  // Antes la isla delgada de una unión 'connector' quedaba pegada sin avisar: ahora aviso parcial por unión.
+  it('una unión mixta con isla delgada sin conector avisa que esa parte es solo para pegar', async () => {
     const { res } = await H.measure(w, H.modelMixed(w, -110), 'mixta', 250, mixedOpts, {}, 'mixta');
     const j = res!.joints.find((q) => q.a.code === 'A1' && q.b.code === 'B1')!;
-    expect(res!.warnings.some((x) => x.code === 'SPLIT_JOINT_GLUE_ONLY' && x.params.label === j.label)).toBe(true);
+    expect(res!.warnings.some((x) => x.code === 'SPLIT_JOINT_PARTIAL_GLUE' && x.params.label === j.label)).toBe(true);
   }, 60_000);
   it('peine de brazos de 4 mm con cama 100: sin aristas sueltas, un cuerpo, y las marcas omitidas se avisan', async () => {
     const { row } = await H.measure(w, H.modelComb(w), 'peine', 100, { connector: dowel }, {}, 'peine');
@@ -91,8 +91,8 @@ describe('QA5 dividir: mezcla maciza/delgada y brazos finos', () => {
     expect(row.volErrPct).toBeLessThan(0.01);
     if (row.markBothPct < 100) expect(row.warnings).toContain('SPLIT_LABEL_SKIPPED');
   }, 60_000);
-  // El criterio del autor dice que la marca de pareja va SIEMPRE: en brazos de 4 mm no cabe ni por fuera.
-  it.fails('peine de brazos de 4 mm con cama 100: todas las uniones con marca en ambas piezas', async () => {
+  // La marca de pareja va SIEMPRE: en brazos de 4 mm, donde no cabe texto, va la marca mínima de puntos.
+  it('peine de brazos de 4 mm con cama 100: todas las uniones con marca en ambas piezas', async () => {
     const { row } = await H.measure(w, H.modelComb(w), 'peine', 100, { connector: dowel }, {}, 'peine');
     expect(row.markBothPct).toBe(100);
   }, 60_000);

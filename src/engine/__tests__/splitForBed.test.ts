@@ -257,14 +257,19 @@ describe('executeBedSplitGeometry', () => {
     checkParts(res);
   });
 
-  it('(6b) sin espacio para una marca legible: se omite con aviso', async () => {
+  it('(6b) sin espacio para texto legible: marca mínima de puntos; solo en la cara de unión, se omite con aviso', async () => {
     const obj = objFrom(verticalTube(400, 6), 'varilla');
     const plan = await planBedSplit(obj, BED, { connector: null });
     const res = await executeBedSplitGeometry(obj, plan, { labels: 'engraved', labelMinHeightMm: 10 });
     expect(res.joints.length).toBeGreaterThan(0);
-    expect(res.joints.every((j) => !j.labelEngraved)).toBe(true);
-    expect(res.warnings.some((w) => w.code === 'SPLIT_LABEL_SKIPPED')).toBe(true);
+    expect(res.joints.every((j) => j.labelEngraved && j.labelPlacement === 'dots')).toBe(true);
+    expect(res.warnings.some((w) => w.code === 'SPLIT_LABEL_DOTS')).toBe(true);
     checkVolume(res);
+    checkParts(res);
+    const only = await executeBedSplitGeometry(obj, plan, { labels: 'engraved', labelMinHeightMm: 10, labelPlacement: 'joint' });
+    expect(only.joints.every((j) => !j.labelEngraved)).toBe(true);
+    expect(only.warnings.some((w) => w.code === 'SPLIT_LABEL_SKIPPED')).toBe(true);
+    checkVolume(only);
   });
 });
 

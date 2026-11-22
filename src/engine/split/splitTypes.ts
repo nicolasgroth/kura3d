@@ -78,6 +78,22 @@ export interface SplitLapInfo {
   clearanceMm: number;
 }
 
+/** Isla (región separada) de la cara de una unión y lo que llevó. */
+export interface SplitJointIsland {
+  /** `connector` = lleva al menos un conector; `lap` = solape de borde; `glue` = solo para pegar. */
+  kind: 'connector' | 'lap' | 'glue';
+  areaMm2: number;
+  /** Ancho típico de la isla (2·área/perímetro, mm): el espesor de pared en anillos y tiras. */
+  minWidthMm: number;
+}
+
+/**
+ * Dónde quedó la marca de pareja: `joint` = texto en la cara de unión; `outside` = texto en la cara
+ * exterior junto al borde; `dots` = marca mínima de puntos por fuera (`splitDotCode.ts`), cuando el
+ * texto no cabe.
+ */
+export type SplitLabelPlacement = 'joint' | 'outside' | 'dots';
+
 /** Opciones del plan. Todos los campos son opcionales. */
 export interface BedSplitPlanOptions {
   /**
@@ -198,8 +214,15 @@ export interface BedSplitExecuteOptions {
   /**
    * Considera en el arreglo cambiar el tipo de conector de una unión trabada por uno compatible con la
    * dirección de entrada (por defecto `true`); se aplica si conserva más uniones con conector que pegar.
+   * Solo cambia a tipos que no alteran la superficie exterior (p. ej. cola de milano → espiga).
    */
   assemblyAllowTypeChange?: boolean;
+  /**
+   * Permite que el arreglo aplique cambios que SÍ alteran la superficie exterior (por defecto `false`):
+   * la cola de milano que entra deslizando necesita una ranura pasante que abre la pieza. Sin esta
+   * opción ese cambio solo aparece en `assembly.suggestions` (`change-type:dovetail`) y la unión se pega.
+   */
+  assemblyAllowSurfaceChange?: boolean;
   /**
    * Firmeza activa (por defecto `true`): si el conector de una unión queda bajo el radio recomendado,
    * se intenta agrandarlo hasta el recomendado y, si no cabe, agregar uno más; si tampoco, queda el que
@@ -239,10 +262,15 @@ export interface SplitJoint {
   lap: SplitLapInfo | null;
   /** Área de contacto real entre las dos piezas (mm²). */
   contactAreaMm2: number;
+  /**
+   * Islas de la cara de unión con su tipo, área y ancho. Si unas llevan conector o solape y otras no,
+   * se avisa `SPLIT_JOINT_PARTIAL_GLUE` (esas partes son solo para pegar).
+   */
+  islands: SplitJointIsland[];
   /** Si la etiqueta quedó grabada en ambas caras. */
   labelEngraved: boolean;
   /** Dónde quedó la marca (`null` si no se grabó). */
-  labelPlacement: 'joint' | 'outside' | null;
+  labelPlacement: SplitLabelPlacement | null;
   /** Altura de letra usada (mm), 0 si no se grabó. */
   labelHeightMm: number;
 }
