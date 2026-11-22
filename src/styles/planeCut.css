@@ -1,0 +1,31 @@
+/* Diálogo de corte por plano: desplazamiento con campo numérico, máximos y motivo de bloqueo. */
+.kura-cut-offset-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kura-cut-offset-row input[type='range'] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.kura-cut-offset-row .kura-precision-input {
+  flex: 0 0 96px;
+}
+
+.kura-cut-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.kura-cut-reason {
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid #d97706;
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}

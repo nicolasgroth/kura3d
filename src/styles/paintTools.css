@@ -85,3 +85,36 @@
   border: 1px dashed var(--border-strong);
   border-radius: 6px;
 }
+
+.kura-paint-fold {
+  display: none;
+}
+
+/* Móvil: hoja inferior plegable para no tapar el objeto ni el cubo de vista. */
+@media (max-width: 520px) {
+  .kura-paint-toolbar {
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: 34px;
+    max-width: none;
+    max-height: 42dvh;
+    overflow-y: auto;
+    z-index: 25;
+    gap: 6px;
+  }
+
+  .kura-paint-fold {
+    display: inline-flex;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .kura-paint-toolbar.is-folded > :not(.kura-paint-fold) {
+    display: none;
+  }
+
+  .kura-paint-hint {
+    display: none;
+  }
+}

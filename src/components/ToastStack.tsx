@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import '../styles/mobileHud.css';
 import { X } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';

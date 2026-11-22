@@ -24,6 +24,10 @@ import {
   Disc,
   Download,
   FileCode2,
+  FilePlus,
+  FolderOpen,
+  Save,
+  SaveAll,
   FileUp,
   FlipHorizontal2,
   Grid,
@@ -54,10 +58,14 @@ import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { SUPPORTED_LANGUAGES } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
+import { guardUnsavedChanges } from '../utils/unsavedGuard';
 import { openExportDialog } from './ExportDialog';
 import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
 import { rankPaletteItems } from '../utils/paletteRank';
 import { REFINE_UI_DEFAULTS } from './refineDefaults';
+
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform ?? '');
+const MOD = isMac ? '⌘' : 'Ctrl';
 
 interface PaletteActionItem {
   id: string;
@@ -114,6 +122,9 @@ export const CommandPalette: React.FC = () => {
   const detectObjectStructures = useKuraStore((s) => s.detectObjectStructures);
   const colorizeDetectedStructures = useKuraStore((s) => s.colorizeDetectedStructures);
   const mirrorObject = useKuraStore((s) => s.mirrorObject);
+  const newProject = useKuraStore((s) => s.newProject);
+  const openProject = useKuraStore((s) => s.openProject);
+  const saveProject = useKuraStore((s) => s.saveProject);
 
   const aiBadge = getAiBadgeDescriptor(aiConfig, language);
   const primaryId = selectedIds[0] ?? objects[0]?.id;
@@ -164,8 +175,49 @@ export const CommandPalette: React.FC = () => {
     const catExp = t(language, 'cmd.cat.export');
     const catView = t(language, 'cmd.cat.view');
     const catSet = t(language, 'cmd.cat.settings');
+    const catProj = t(language, 'cmd.cat.project');
 
     return [
+      {
+        id: 'project-new',
+        label: t(language, 'fileProject.new'),
+        category: catProj,
+        keywords: 'nuevo proyecto escena new project',
+        shortcut: `${MOD}+N`,
+        kind: 'local',
+        icon: <FilePlus size={15} />,
+        run: () => guardUnsavedChanges(() => newProject()),
+      },
+      {
+        id: 'project-open',
+        label: t(language, 'fileProject.open'),
+        category: catProj,
+        keywords: 'abrir proyecto kura open project',
+        shortcut: `${MOD}+O`,
+        kind: 'local',
+        icon: <FolderOpen size={15} />,
+        run: () => guardUnsavedChanges(() => openProject()),
+      },
+      {
+        id: 'project-save',
+        label: t(language, 'fileProject.save'),
+        category: catProj,
+        keywords: 'guardar proyecto kura save project',
+        shortcut: `${MOD}+S`,
+        kind: 'local',
+        icon: <Save size={15} />,
+        run: () => saveProject(),
+      },
+      {
+        id: 'project-save-as',
+        label: t(language, 'fileProject.saveAs'),
+        category: catProj,
+        keywords: 'guardar proyecto como save as',
+        shortcut: `${MOD}+Shift+S`,
+        kind: 'local',
+        icon: <SaveAll size={15} />,
+        run: () => saveProject(true),
+      },
       {
         id: 'prim-box',
         label: t(language, 'sidebar.primitive.box'),
@@ -268,6 +320,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-mold',
+        shortcut: 'Shift+M',
         label: t(language, 'cmd.pro.mold'),
         category: catOps,
         keywords: 'molde silicona vela resina contramolde mold silicone candle',
@@ -419,6 +472,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-cut',
+        shortcut: 'C',
         label: t(language, 'inspector.op.planeCut'),
         category: catOps,
         keywords: 'cortar plano uniones tarugo dovetail cut',
@@ -450,6 +504,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-drop-bed',
+        shortcut: 'L',
         label: t(language, 'inspector.action.dropToBed'),
         category: catOps,
         keywords: 'apoyar cama suelo drop bed y=0',
@@ -554,13 +609,14 @@ export const CommandPalette: React.FC = () => {
         label: t(language, 'cmd.view.zen'),
         category: catView,
         keywords: 'zen pantalla completa canvas hide panels',
-        shortcut: 'Ctrl/⌘+Shift+Enter',
+        shortcut: `${MOD}+Shift+Enter`,
         kind: 'local',
         icon: <Minimize2 size={15} />,
         run: () => toggleZenMode(),
       },
       {
         id: 'view-xray',
+        shortcut: 'X',
         label: t(language, 'cmd.view.xray'),
         category: catView,
         keywords: 'rayos x seccion corte visual clipping xray section',
@@ -648,6 +704,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'set-ai',
+        shortcut: `${MOD}+,`,
         label: t(language, 'dialog.settings.tab.ai'),
         category: catSet,
         keywords: 'ajustes configuracion api key ai settings',
@@ -657,6 +714,9 @@ export const CommandPalette: React.FC = () => {
       },
     ];
   }, [
+    newProject,
+    openProject,
+    saveProject,
     language,
     aiBadge,
     primaryId,

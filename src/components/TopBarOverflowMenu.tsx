@@ -7,7 +7,8 @@
  * @license MIT
  */
 
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { MoreHorizontal } from 'lucide-react';
 
 interface TopBarOverflowMenuProps {
@@ -24,7 +25,11 @@ export const TopBarOverflowMenu: React.FC<TopBarOverflowMenuProps> = ({
   children,
 }) => {
   const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
+  const [pos, setPos] = useState<{ top: number; anchorRight: number; left: number | null }>({
+    top: 0,
+    anchorRight: 0,
+    left: null,
+  });
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -37,16 +42,25 @@ export const TopBarOverflowMenu: React.FC<TopBarOverflowMenuProps> = ({
   const toggle = () => {
     if (!open && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 4, right: Math.max(8, window.innerWidth - rect.right) });
+      setPos({ top: rect.bottom + 4, anchorRight: rect.right, left: null });
     }
     setOpen((v) => !v);
   };
 
+  // Ancla el borde derecho del menú al botón sin salirse nunca de la pantalla visible.
+  useLayoutEffect(() => {
+    if (!open || !menuRef.current) return;
+    const width = menuRef.current.getBoundingClientRect().width;
+    const viewport = document.documentElement.clientWidth;
+    const left = Math.max(8, Math.min(pos.anchorRight - width, viewport - width - 8));
+    setPos((p) => (p.left === left ? p : { ...p, left }));
+  }, [open, pos.anchorRight]);
+
   // Foco al primer elemento al abrir.
   useEffect(() => {
-    if (!open) return;
+    if (!open || pos.left === null) return;
     menuRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
-  }, [open]);
+  }, [open, pos.left]);
 
   // Cierre al hacer clic fuera o al redimensionar.
   useEffect(() => {
@@ -115,7 +129,8 @@ export const TopBarOverflowMenu: React.FC<TopBarOverflowMenuProps> = ({
       >
         <MoreHorizontal size={13} />
       </button>
-      {open && (
+      {open &&
+        createPortal(
         <div
           ref={menuRef}
           id={menuId}
@@ -124,15 +139,18 @@ export const TopBarOverflowMenu: React.FC<TopBarOverflowMenuProps> = ({
           className="kura-topbar-more-menu"
           style={{
             top: pos.top,
-            right: pos.right,
-            maxHeight: `calc(100vh - ${pos.top + 8}px)`,
+            left: pos.left ?? 8,
+            visibility: pos.left === null ? 'hidden' : 'visible',
+            maxHeight: `calc(100dvh - ${pos.top + 8}px)`,
           }}
           onKeyDown={onMenuKeyDown}
           onClick={onMenuClick}
         >
           {children}
         </div>
-      )}
+      ,
+          document.body
+        )}
     </div>
   );
 };

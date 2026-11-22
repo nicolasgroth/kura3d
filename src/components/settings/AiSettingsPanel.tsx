@@ -130,7 +130,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
       }
     }
     const url = (draft.baseUrl.trim() || spec.defaultBaseUrl).replace(/\/+$/, '');
-    if (url && !isAllowedProviderUrl(url, allowed)) {
+    if (!localMode && url && !isAllowedProviderUrl(url, allowed)) {
       let host = url;
       try {
         host = new URL(url).hostname;
@@ -344,6 +344,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
       )}
 
       <div className="kura-form-grid">
+        {!localMode && (
         <div className="kura-form-field">
           <label htmlFor="ai-model">{t(language, 'dialog.settings.model')}</label>
           <input
@@ -359,6 +360,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
             {modelSuggestions(draft).map((model) => <option key={model} value={model} />)}
           </datalist>
         </div>
+        )}
         <div className="kura-form-field">
           <label htmlFor="ai-temp">
             {t(language, 'dialog.settings.temperature')} ({draft.temperature})
@@ -377,6 +379,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
         </div>
       </div>
 
+      {!localMode && (
       <div className="kura-form-field">
         <label htmlFor="ai-url">{t(language, 'dialog.settings.baseUrl')}</label>
         <input
@@ -400,6 +403,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
           {t(language, 'dialog.settings.baseUrlHint')}
         </small>
       </div>
+      )}
 
       <div className="kura-form-field">
         <label htmlFor="ai-hosts">{t(language, 'dialog.settings.allowedHosts')}</label>

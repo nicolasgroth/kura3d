@@ -88,14 +88,67 @@
   flex-shrink: 0;
 }
 
+.kura-recovery-toggle-icon {
+  display: none;
+}
+
+/* Móvil: una sola línea (icono, nombre y hora, acciones compactas, plegar). */
 @media (max-width: 680px) {
   .kura-recovery-banner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 5px;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
   }
 
-  .kura-recovery-heading {
-    justify-content: space-between;
+  .kura-recovery-heading,
+  .kura-recovery-body:not([hidden]) {
+    display: contents;
+  }
+
+  .kura-recovery-heading h2 {
+    order: 0;
+  }
+
+  .kura-recovery-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .kura-recovery-details {
+    order: 1;
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 11px;
+  }
+
+  .kura-recovery-details time {
+    display: none;
+  }
+
+  .kura-recovery-actions {
+    order: 2;
+    gap: 4px;
+  }
+
+  .kura-recovery-heading > button {
+    order: 3;
+    padding-inline: 6px;
+  }
+
+  .kura-recovery-toggle-text {
+    display: none;
+  }
+
+  .kura-recovery-toggle-icon {
+    display: inline;
+  }
+
+  .kura-recovery-actions .kura-btn {
+    padding-inline: 8px;
   }
 }

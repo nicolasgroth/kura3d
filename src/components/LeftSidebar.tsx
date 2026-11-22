@@ -315,8 +315,8 @@ export const LeftSidebar: React.FC = () => {
           ) : (
             <div className="kura-scroll-area">
               <div className="kura-field-row" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                <span>{t(language, 'sidebar.scene.objectsCount', { count: objects.length })}</span>
-                <span>{t(language, 'sidebar.scene.selectedCount', { count: selectedIds.length })}</span>
+                <span>{tCount(language, { one: 'sidebar.scene.objectsCount.one', other: 'sidebar.scene.objectsCount' }, objects.length)}</span>
+                <span>{tCount(language, { one: 'sidebar.scene.selectedCount.one', other: 'sidebar.scene.selectedCount' }, selectedIds.length)}</span>
               </div>
 
               {/* Resumen de filamentos/colores activos en la escena */}

@@ -8,7 +8,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Eraser } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eraser } from 'lucide-react';
 import { t } from '../../i18n';
 import { type PaintBrushMode, useKuraStore } from '../../store/useKuraStore';
 import { PRINT_COLOR_PALETTE } from '../../types/kura';
@@ -32,6 +32,8 @@ export const PaintToolbar: React.FC = () => {
   // Goma: pintar con el color base del objeto seleccionado devuelve la cara a su aspecto original.
   const baseColor = useKuraStore((s) => s.objects.find((o) => o.id === s.selectedIds[0])?.color ?? null);
   const [eraser, setEraser] = useState(false);
+  // En móvil la barra es una hoja inferior plegable; en escritorio el botón no se muestra.
+  const [folded, setFolded] = useState(false);
   const colorBeforeEraser = useRef<string | null>(null);
 
   useEffect(() => {
@@ -63,10 +65,20 @@ export const PaintToolbar: React.FC = () => {
 
   return (
     <div
-      className="kura-hud-card kura-paint-toolbar"
+      className={`kura-hud-card kura-paint-toolbar ${folded ? 'is-folded' : ''}`}
       role="toolbar"
       aria-label={t(language, 'viewport.paint.toolbar')}
     >
+      <button
+        type="button"
+        className="kura-btn kura-btn-sm kura-paint-fold"
+        aria-expanded={!folded}
+        title={t(language, folded ? 'viewport.paint.expand' : 'viewport.paint.collapse')}
+        onClick={() => setFolded((v) => !v)}
+      >
+        {folded ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+        <span>{t(language, folded ? 'viewport.paint.expand' : 'viewport.paint.collapse')}</span>
+      </button>
       <select
         className="kura-select"
         style={{ height: 26 }}

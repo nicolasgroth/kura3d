@@ -7,7 +7,7 @@
  */
 
 import { useId, useState } from 'react';
-import { History } from 'lucide-react';
+import { ChevronDown, ChevronUp, History } from 'lucide-react';
 import { t } from '../i18n';
 import { recoveryDraftLabel, recoveryDraftTime } from '../project/projectRecoveryLabels';
 import type { RecoveryDraftInfo } from '../project/projectRecoveryStorage';
@@ -37,16 +37,24 @@ export function ProjectRecoveryBanner({ drafts, busy, onRestore, onDiscard }: Pr
       <div className="kura-recovery-heading">
         <h2 id={headingId}>
           <History size={16} aria-hidden="true" />
-          {t(language, 'recovery.banner.title')}
+          <span className="kura-recovery-title">{t(language, 'recovery.banner.title')}</span>
         </h2>
         <button
           type="button"
           className="kura-btn kura-btn-sm"
           aria-controls={bodyId}
           aria-expanded={!collapsed}
+          aria-label={t(language, collapsed ? 'recovery.banner.show' : 'recovery.banner.later')}
           onClick={() => setCollapsed((previous) => !previous)}
         >
-          {t(language, collapsed ? 'recovery.banner.show' : 'recovery.banner.later')}
+          <span className="kura-recovery-toggle-text">
+            {t(language, collapsed ? 'recovery.banner.show' : 'recovery.banner.later')}
+          </span>
+          {collapsed ? (
+            <ChevronDown size={14} className="kura-recovery-toggle-icon" aria-hidden="true" />
+          ) : (
+            <ChevronUp size={14} className="kura-recovery-toggle-icon" aria-hidden="true" />
+          )}
         </button>
       </div>
 
