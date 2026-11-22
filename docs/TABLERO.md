@@ -8,11 +8,14 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 | Funcionalidad | Estado |
 |---|---|
+| Pintura sobre primitivas: "Cancelar" del aviso no cancelaba el trazo y un trazo costaba 5 pasos de deshacer (QA los encontró el 22-nov a las 17:45) | En corrección |
+| Separar por colores en superficies curvas: revisar la limpieza de la malla (aristas compartidas de más en la esfera) | En corrección |
+| Menores de QA: aviso "No cabe en la cama" con ejes cambiados, `<use href>` de SVG 2, corte por plano en Ø, reencuadre al deshacer una división | En corrección |
 | Cabos sueltos de la ronda 5: error falso al grabar sobre un relieve, tamaños del panel de división en ejes del usuario, pruebas sin umbrales de tiempo, auditoría de dónde se guardan claves y tokens | En curso |
 
 ## En QA
 
-QA en navegador en curso sobre las correcciones de la ronda 5 (integradas en `main` a las 17:20):
+QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintura sobre primitivas (ver En desarrollo). Confirmó corregidos F2/F3/F4, la vista previa de uniones (7 con conector y 5 para pegar, igual al resultado), el conector automático, el ZIP centrado, los nombres de mitades, el aviso de cavidad cerrada, el vocabulario y la accesibilidad; y separar por colores en cubo y placa (piezas cerradas, suma exacta, 3MF con colores).
 
 | Funcionalidad | Estado |
 |---|---|
