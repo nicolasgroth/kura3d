@@ -8,7 +8,6 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 | Funcionalidad | Estado |
 |---|---|
-| Dividir para imprimir: conector preferido en Ajustes y refuerzo de uniones débiles como elección del usuario | En curso |
 | Pintura por caras: pincel rápido con índice espacial, un trazo = un paso de deshacer | En curso |
 | Relieve, SVG y texto 3D en el Worker; avisos al terminar en molde, proyección y relieve; más pruebas de moldes; segmentación sin partes de grosor cero; precisión del ahuecado | En curso |
 
@@ -16,7 +15,8 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 | Funcionalidad | Estado |
 |---|---|
-| Dividir para imprimir y validación de armado (tarugo suelto, conectores sin choques, montaje siempre armable, marca de puntos, sección Uniones, conteo real de piezas en el plan, informe de armado completo al dividir) | QA rechazó motor e interfaz; corregido; falta la re-verificación |
+| Dividir para imprimir y validación de armado (tarugo suelto, conectores sin choques, montaje siempre armable, marca de puntos, sección Uniones, conteo real de piezas en el plan, informe de armado completo al dividir) | QA rechazó motor e interfaz; corregido; re-verificación en curso |
+| Dividir para imprimir: conector y holgura preferidos en Ajustes; refuerzo de uniones débiles apagado por defecto, con casilla, explicación y botón "Reforzar y dividir de nuevo" | Implementado; en la re-verificación de QA |
 | Z como altura en interfaz, chat, bus y MCP | QA encontró el corte en Y invertido y el resumen de división en ejes antiguos; corregido; falta la re-verificación |
 | MCP igual a la app (ejes, valores por defecto del corte y del pintado), en inglés, tope de 10 intentos | QA de motor aprobó la paridad salvo crear primitiva con posición; corregido; falta la re-verificación |
 | Roscas M3–M64, 3MF estándar sin selector de slicer, estimación aproximada | QA aprobó; roscas con entrada inválida corregido |
