@@ -884,8 +884,12 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineError.IMAGE_BUFFER_INVALID': 'Ungültiges Bild: {width}×{height} px erfordert {expected} RGBA-Bytes, angekommen sind {actual}.',
   'engineError.IMAGE_NO_FOREGROUND': 'Im Bild wurde mit Schwellwert {threshold} keine Form erkannt.',
   'engineError.IMAGE_SIZE_TOO_SMALL': 'Die Größe {width}×{depth} mm lässt keinen Platz für die Form ({margin} mm Rand pro Seite).',
+  'engineError.MESH_EMPTY': 'Die Operation „{operation}“ ergab ein leeres Netz; das Objekt wurde nicht verändert.',
+  'engineError.MESH_INVALID': 'Das Netz ist kein gültiger geschlossener Körper ({cause}).',
+  'engineError.CUT_PLANE_OUTSIDE': 'Die Schnittebene bei {axis} = {offset} mm schneidet das Objekt nicht (Innenbereich {min} bis {max} mm).',
   'engineWarning.REFINE_LENGTH_CLAMPED': 'Statt {requested} mm wurde eine Kante von {effective} mm verwendet, um {maxTriangles} Dreiecke nicht zu überschreiten.',
   'engineWarning.REFINE_NO_CHANGE': 'Das Netz hat bereits Kanten von {edge} mm oder weniger: keine Dreiecke hinzugefügt ({triangles}).',
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Das Glätten veränderte die Maße um {deviation} mm (Toleranz {tolerance} mm); nur die Verfeinerung wurde angewendet.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Großes Teil: die Wand kann bis zu {maxWall} mm erreichen (gefordert {thickness} mm).',
+  'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '{count} nach Farbe getrennte Teil(e) sind keine geschlossenen Körper; vor dem Druck prüfen.',
 };

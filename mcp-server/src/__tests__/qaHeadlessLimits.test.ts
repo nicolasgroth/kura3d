@@ -2,7 +2,7 @@
  * @file mcp-server/src/__tests__/qaHeadlessLimits.test.ts
  * @description QA de paridad de rangos entre el servidor MCP headless y el Command Bus de la app: todo valor que el bus
  * rechaza (`src/store/commandSchemas.ts`, `transformLimits.ts`) debe rechazarse también en modo headless con error
- * explícito y sin dejar geometría descomunal en la escena. Las brechas conocidas están marcadas con `it.fails`.
+ * explícito y sin dejar geometría descomunal en la escena. Las brechas que QA marcó con `it.fails` ya están cerradas (rangos de `operationLimits`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -47,7 +47,7 @@ const SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect w
 
 describe('QA MCP headless: parámetros inválidos con error explícito y estado intacto', () => {
   // BRECHA (mayor): el headless acepta transformaciones que el bus rechaza (escala 0/negativa/1e9, coordenadas 1e300).
-  it.fails.each([
+  it.each([
     ['transform escala 0', 'kura_transform_object', { scale: [0, 1, 1] }],
     ['transform escala negativa', 'kura_transform_object', { scale: [-1, 1, 1] }],
     ['transform escala 1e9', 'kura_transform_object', { scale: [1e9, 1, 1] }],
@@ -90,7 +90,7 @@ describe('QA MCP headless: rangos que el bus de la app ya rechaza (brechas conoc
     ['mold spout 1e6 (bus ≤ 500)', 'kura_generate_mold', { mode: 'direct_1part', pourSpoutRadiusMm: 1e6 }],
   ];
 
-  it.fails.each(gaps)('BRECHA %s', async (_n, tool, extra) => {
+  it.each(gaps)('rechaza %s', async (_n, tool, extra) => {
     const s = await session();
     const id = await s.box();
     const res = await s.call(tool, tool === 'kura_import_svg' ? extra : { objectId: id, ...extra });

@@ -7,6 +7,9 @@
  * @license MIT
  */
 
+import {
+  OPERATION_RANGES as OR, TRANSFORM_RANGES, type OperationRange,
+} from '../engine/operationLimits';
 import { PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, type PrimitiveRangeKey } from '../engine/primitiveLimits';
 import type { KuraCommandRequest } from '../types/kura';
 
@@ -16,6 +19,27 @@ const dim = (key: PrimitiveRangeKey, description: string) => ({
   description,
   minimum: PRIMITIVE_PARAM_RANGES[key].min,
   maximum: PRIMITIVE_PARAM_RANGES[key].max,
+});
+
+/**
+ * Propiedad numérica con el rango de la fuente única (`operationLimits`). Solo emite `minimum`/`maximum`
+ * (subconjunto que aceptan todos los proveedores); el mínimo exclusivo y los enteros los aplica
+ * `toolValidation` leyendo el rango original desde `TOOL_PARAM_RANGES`.
+ */
+const ranged = (range: OperationRange, description: string) => ({
+  type: range.integer ? 'integer' : 'number',
+  description,
+  minimum: range.min,
+  maximum: range.max,
+});
+
+/** Vector [x, y, z] con cada componente en `range`. */
+const vec3 = (range: OperationRange, description: string) => ({
+  type: 'array',
+  description,
+  minItems: 3,
+  maxItems: 3,
+  items: { type: 'number', minimum: range.min, maximum: range.max },
 });
 
 /** Definición neutral de herramienta compartida entre proveedores LLM. */
@@ -67,9 +91,9 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
       type: 'object',
       properties: {
         id: { type: 'string', description: 'ID del objeto (si se omite usa el seleccionado).' },
-        position: { type: 'array', items: { type: 'number' }, description: '[x, y, z] en mm.' },
-        rotation: { type: 'array', items: { type: 'number' }, description: '[rx, ry, rz] en radianes.' },
-        scale: { type: 'array', items: { type: 'number' }, description: '[sx, sy, sz].' },
+        position: vec3(TRANSFORM_RANGES.position, '[x, y, z] en mm.'),
+        rotation: vec3(TRANSFORM_RANGES.rotation, '[rx, ry, rz] en radianes.'),
+        scale: vec3(TRANSFORM_RANGES.scale, '[sx, sy, sz]; cada factor entre 0.001 y 1000.'),
         dropToBed: { type: 'boolean', description: 'Si es true, apoya la base del objeto en Y=0.' },
         centerOnBed: { type: 'boolean', description: 'Si es true, centra el objeto en X=0, Z=0 sobre la cama.' },
       },
@@ -82,7 +106,7 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
       type: 'object',
       properties: {
         id: { type: 'string' },
-        wallThickness: { type: 'number', description: 'Grosor de pared en mm (ej. 2.0).' },
+        wallThickness: ranged(OR.hollow.wallThickness, 'Grosor de pared en mm (ej. 2.0).'),
         drainHole: { type: 'boolean', description: 'Agregar agujero inferior de drenaje.' },
       },
       required: ['wallThickness'],
@@ -109,10 +133,10 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
       properties: {
         id: { type: 'string' },
         axis: { type: 'string', enum: ['x', 'y', 'z'] },
-        offset: { type: 'number' },
+        offset: ranged(OR.cut.offset, 'Desplazamiento del plano respecto al centro en mm.'),
         connectorType: { type: 'string', enum: ['none', 'dowel', 'peg', 'dovetail'] },
-        connectorCount: { type: 'number' },
-        tolerance: { type: 'number' },
+        connectorCount: ranged(OR.cut.connectorCount, 'Cantidad de conectores (entero).'),
+        tolerance: ranged(OR.cut.tolerance, 'Holgura de encaje en mm.'),
       },
     },
   },
@@ -124,8 +148,8 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
       properties: {
         id: { type: 'string' },
         pattern: { type: 'string', enum: ['fuzzy', 'knurling', 'waves', 'honeycomb', 'grid'] },
-        depth: { type: 'number', description: 'Profundidad del relieve en mm.' },
-        scale: { type: 'number', description: 'Escala del patrón en mm.' },
+        depth: ranged(OR.texture.depth, 'Profundidad del relieve en mm.'),
+        scale: ranged(OR.texture.scale, 'Escala del patrón en mm (mayor que 0).'),
       },
       required: ['pattern'],
     },
@@ -163,3 +187,14 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
     },
   },
 ];
+
+/**
+ * Rango original (con mínimo exclusivo y enteros) de cada parámetro numérico por herramienta, para que
+ * `toolValidation` aplique exactamente lo mismo que el Command Bus. Las primitivas usan `primitiveLimits`.
+ */
+export const TOOL_PARAM_RANGES: Partial<Record<KuraCommandRequest['command'], Record<string, OperationRange>>> = {
+  transform_object: TRANSFORM_RANGES,
+  hollow_object: { wallThickness: OR.hollow.wallThickness },
+  plane_cut: { offset: OR.cut.offset, connectorCount: OR.cut.connectorCount, tolerance: OR.cut.tolerance },
+  apply_texture: { depth: OR.texture.depth, scale: OR.texture.scale },
+};

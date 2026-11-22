@@ -261,9 +261,13 @@ export class KuraHeadlessEngine {
   }
 
   /** Separa por color de cara con `splitMeshByColor` del motor. */
-  splitByColor(objectId: string): { parts: SceneObjectSummary[]; note: string } {
+  splitByColor(objectId: string): {
+    parts: SceneObjectSummary[];
+    note: string;
+    warnings?: Array<{ code: string; message: string }>;
+  } {
     const obj = this.requireObject(objectId);
-    const pieces = engine.splitMeshByColor(obj);
+    const { parts: pieces, warnings } = engine.splitMeshByColorDetailed(obj);
     if (pieces.length <= 1) {
       return { parts: [summarizeObject(obj)], note: 'El objeto tiene un solo color; no hay nada que separar.' };
     }
@@ -280,7 +284,12 @@ export class KuraHeadlessEngine {
         })
       )
     );
-    return { parts, note: ENGINE_NOTE };
+    if (warnings.length === 0) return { parts, note: ENGINE_NOTE };
+    return {
+      parts,
+      note: ENGINE_NOTE,
+      warnings: warnings.map((w) => ({ code: w.code, message: engine.localizeEngineWarning('es', w) })),
+    };
   }
 
   /** Desplaza la superficie con `applyProceduralTexture` del motor. */

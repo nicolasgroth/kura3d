@@ -388,8 +388,17 @@ export async function planeCutWithConnectors(
       posHalf.numTri() > 0 &&
       !negHalf.isEmpty() &&
       negHalf.numTri() > 0;
+    // Un plano fuera del objeto o en su borde no corta nada: error tipado en vez de "ok" con una pieza.
+    if (!bothNonEmpty) {
+      throw new EngineError('CUT_PLANE_OUTSIDE', {
+        axis: options.axis,
+        offset: options.offset,
+        min: bbox.min[axisIdx] - (bbox.min[axisIdx] + bbox.max[axisIdx]) * 0.5,
+        max: bbox.max[axisIdx] - (bbox.min[axisIdx] + bbox.max[axisIdx]) * 0.5,
+      });
+    }
 
-    if (options.connectorType !== 'none' && bothNonEmpty) {
+    if (options.connectorType !== 'none') {
       const { size, depth, tolerance: tol, count } = validateConnectorParams(options);
       const margin = size + tol + CONNECTOR_MIN_WALL_MM;
 

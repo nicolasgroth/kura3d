@@ -10,7 +10,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { applyTransformToMesh, computeMeshStats } from '../../src/engine/index';
+import { applyTransformToMesh, computeMeshStats, EngineError } from '../../src/engine/index';
 import type { MeshData, SceneObject } from '../../src/types/kura';
 import type {
   HollowOptions,
@@ -95,7 +95,7 @@ export interface BuildObjectParams {
 /** Construye un `SceneObject` con estadísticas calculadas por el motor compartido. */
 export function buildSceneObject(params: BuildObjectParams): HeadlessSceneObject {
   if (params.mesh.indices.length === 0) {
-    throw new Error(`El motor devolvió una malla vacía para '${params.name}'.`);
+    throw new EngineError('MESH_EMPTY', { operation: params.name });
   }
   const scale: Vec3 = params.scale ? [...params.scale] : [1, 1, 1];
   return {
@@ -120,7 +120,7 @@ export function buildSceneObject(params: BuildObjectParams): HeadlessSceneObject
 /** Reemplaza la malla (y opcionalmente la posición) de un objeto recalculando sus estadísticas. */
 export function replaceMesh(obj: HeadlessSceneObject, mesh: MeshData, position?: Vec3): void {
   if (mesh.indices.length === 0) {
-    throw new Error(`El motor devolvió una malla vacía para '${obj.name}'.`);
+    throw new EngineError('MESH_EMPTY', { operation: obj.name });
   }
   obj.mesh = mesh;
   if (position) obj.position = [...position];

@@ -8,19 +8,22 @@
  * @license MIT
  */
 
+import { TRANSFORM_LIMITS } from '../engine/operationLimits';
 import type { SceneObject, Vec3 } from '../types/kura';
 
-/** Máximo valor absoluto aceptado para posición y rotación. */
-export const MAX_ABS_COORDINATE = 100_000;
+/** Máximo valor absoluto aceptado para posición (fuente única: `operationLimits`). */
+export const MAX_ABS_COORDINATE = TRANSFORM_LIMITS.maxAbsCoordinate;
+/** Máximo valor absoluto aceptado para rotación en radianes. */
+export const MAX_ABS_ROTATION = TRANSFORM_LIMITS.maxAbsRotation;
 /** Escala mínima por eje: evita mallas degeneradas de volumen nulo. */
-export const MIN_SCALE = 0.001;
+export const MIN_SCALE = TRANSFORM_LIMITS.minScale;
 /** Escala máxima por eje. */
-export const MAX_SCALE = 1000;
+export const MAX_SCALE = TRANSFORM_LIMITS.maxScale;
 
 export type TransformPatch = Partial<Pick<SceneObject, 'position' | 'rotation' | 'scale'>>;
 
 /** Indica si `value` es un vector de exactamente 3 números finitos dentro de ±`maxAbs`. */
-export function isFiniteVec3(value: unknown, maxAbs = MAX_ABS_COORDINATE): value is Vec3 {
+export function isFiniteVec3(value: unknown, maxAbs: number = MAX_ABS_COORDINATE): value is Vec3 {
   return (
     Array.isArray(value) &&
     value.length === 3 &&
@@ -45,7 +48,7 @@ export function sanitizeTransformPatch(patch: TransformPatch): TransformPatch | 
     out.position = [...patch.position] as Vec3;
   }
   if (patch.rotation !== undefined) {
-    if (!isFiniteVec3(patch.rotation)) return null;
+    if (!isFiniteVec3(patch.rotation, MAX_ABS_ROTATION)) return null;
     out.rotation = [...patch.rotation] as Vec3;
   }
   if (patch.scale !== undefined) {

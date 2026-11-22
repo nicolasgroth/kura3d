@@ -25,6 +25,8 @@ import {
   manifoldToMeshData,
   meshDataToManifold,
 } from './manifoldKernel';
+import { EngineError, requireOperationRange } from './engineErrors';
+import { OPERATION_RANGES } from './operationLimits';
 import { refineMeshDetailed } from './refine';
 import {
   applyTransformToMesh,
@@ -274,8 +276,8 @@ export async function simplifyMesh(
   obj: SceneObject,
   toleranceMm: number
 ): Promise<MeshData> {
+  const tol = requireOperationRange('toleranceMm', toleranceMm, OPERATION_RANGES.simplify.toleranceMm);
   const wasm = await initManifoldEngine();
-  const tol = Math.max(0.01, toleranceMm);
   const registry = obj.mesh.faceColors?.length
     ? createColorRegistry(wasm, [
         { color: obj.color, faceColors: obj.mesh.faceColors },
@@ -293,6 +295,10 @@ export async function simplifyMesh(
       obj.color
     );
     simplified = manifold.simplify(tol);
+    // Una tolerancia mayor que la pieza la colapsa: error tipado, el objeto queda intacto.
+    if (simplified.isEmpty() || simplified.numTri() === 0 || simplified.volume() <= 0) {
+      throw new EngineError('MESH_EMPTY', { operation: 'simplify_mesh' });
+    }
     const outMesh = manifoldToMeshData(simplified, registry?.idToColor);
     return normalizeMeshToBed(outMesh);
   } finally {
@@ -353,7 +359,7 @@ export async function computeConvexHull(
 
     hullManifold = wasm.Manifold.hull(manifolds);
     if (hullManifold.isEmpty() || hullManifold.numTri() === 0) {
-      throw new Error('El cálculo de envolvente convexa produjo una malla vacía.');
+      throw new EngineError('MESH_EMPTY', { operation: 'convex_hull' });
     }
 
     const outMesh = manifoldToMeshData(hullManifold);

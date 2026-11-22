@@ -16,6 +16,9 @@ import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import type { MeshData, ThreadOptions } from '../types/kura';
 import { EngineError, requireNumberInRange } from './engineErrors';
 import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from './manifoldKernel';
+import { OPERATION_RANGES } from './operationLimits';
+
+const THREAD_RANGES = OPERATION_RANGES.thread;
 
 /** Tabla ISO 261 de paso grueso (diámetro nominal → paso en mm). */
 export const ISO_COARSE_THREADS: ReadonlyArray<{ diameterMm: number; pitchMm: number }> = [
@@ -46,9 +49,9 @@ export const ISO_COARSE_THREADS: ReadonlyArray<{ diameterMm: number; pitchMm: nu
   { diameterMm: 64, pitchMm: 6.0 },
 ];
 
-export const THREAD_MIN_DIAMETER_MM = 2;
-export const THREAD_MAX_DIAMETER_MM = 64;
-export const THREAD_MIN_PITCH_MM = 0.2;
+export const THREAD_MIN_DIAMETER_MM = THREAD_RANGES.diameterMm.min;
+export const THREAD_MAX_DIAMETER_MM = THREAD_RANGES.diameterMm.max;
+export const THREAD_MIN_PITCH_MM = THREAD_RANGES.pitchMm.min;
 
 /** Paso ISO grueso para `diameterMm` (exacto si es nominal; si no, el del nominal inmediato inferior). */
 export function isoCoarsePitch(diameterMm: number): number {
@@ -97,9 +100,10 @@ export function resolveThreadOptions(options: ThreadRequest): ResolvedThread {
   } else {
     pitchMm = options.pitchMm;
   }
-  const lengthMm = requireNumberInRange('lengthMm', options.lengthMm, 1, 500);
+  const lengthMm = requireNumberInRange('lengthMm', options.lengthMm, THREAD_RANGES.lengthMm.min, THREAD_RANGES.lengthMm.max);
   const radialClearanceMm =
-    options.kind === 'bolt' ? 0 : requireNumberInRange('clearanceMm', options.clearanceMm, 0, 1.5, 0.25);
+    options.kind === 'bolt' ? 0 : requireNumberInRange(
+      'clearanceMm', options.clearanceMm, THREAD_RANGES.clearanceMm.min, THREAD_RANGES.clearanceMm.max, 0.25);
   const columns = Math.min(96, Math.max(32, Math.ceil((Math.PI * diameterMm) / 0.6 / 8) * 8));
   return {
     kind: options.kind,
@@ -112,16 +116,37 @@ export function resolveThreadOptions(options: ThreadRequest): ResolvedThread {
   };
 }
 
-/** Quiebres del perfil ISO en fase [0,1): valle, flanco ascendente, cresta, flanco descendente. */
-const PROFILE_BREAKS = [0, 0.25, 0.5625, 0.6875];
+/** Quiebres de fase de un perfil: inicio y fin del valle, inicio y fin de la cresta. */
+export type ProfileBreaks = readonly [number, number, number, number];
 
-/** Radio del perfil ISO 60° (valle 1/4 P, cresta 1/8 P) en la fase `phi`. */
-function profileRadius(phi: number, rMinor: number, rMajor: number): number {
-  const p = ((phi % 1) + 1) % 1;
-  if (p <= 0.25) return rMinor;
-  if (p <= 0.5625) return rMinor + (rMajor - rMinor) * ((p - 0.25) / 0.3125);
-  if (p <= 0.6875) return rMajor;
-  return rMajor - (rMajor - rMinor) * ((p - 0.6875) / 0.3125);
+/** Perfil básico ISO 68-1 (tuerca y macho): valle 1/4 P en D1, cresta 1/8 P. */
+export const BASIC_PROFILE_BREAKS: ProfileBreaks = [0, 0.25, 0.5625, 0.6875];
+
+/**
+ * Perfil del perno: los mismos flancos de 60° prolongados hasta el diámetro menor d3 = d − 1.22687·P
+ * (ISO 724, h3 = 17/24·H), con fondo de 1/6 P. Como los flancos coinciden con los del perfil básico,
+ * el perno solo puede quedar más holgado que la tuerca, nunca interferir.
+ */
+export const BOLT_PROFILE_BREAKS: ProfileBreaks = [1 / 24, 5 / 24, 0.5625, 0.6875];
+
+/** Radio del perfil ISO 60° en la fase `phi` para los quiebres `b`. */
+function profileRadius(phi: number, rMinor: number, rMajor: number, b: ProfileBreaks): number {
+  let p = ((phi % 1) + 1) % 1;
+  if (p < b[0]) p += 1;
+  if (p <= b[1]) return rMinor;
+  if (p <= b[2]) return rMinor + (rMajor - rMinor) * ((p - b[1]) / (b[2] - b[1]));
+  if (p <= b[3]) return rMajor;
+  return rMajor - (rMajor - rMinor) * ((p - b[3]) / (b[0] + 1 - b[3]));
+}
+
+/** Entrecaras s (mm) de cabezas y tuercas hexagonales ISO 4017 / ISO 4032, M3–M20. */
+export const ISO_HEX_ACROSS_FLATS: Readonly<Record<number, number>> = {
+  3: 5.5, 4: 7, 5: 8, 6: 10, 8: 13, 10: 16, 12: 18, 14: 21, 16: 24, 18: 27, 20: 30,
+};
+
+/** Entrecaras del hexágono para `diameterMm`: tabla ISO si es nominal; si no, 1.55·d. */
+export function hexAcrossFlats(diameterMm: number): number {
+  return ISO_HEX_ACROSS_FLATS[diameterMm] ?? 1.55 * diameterMm;
 }
 
 /**
@@ -134,7 +159,8 @@ export function buildHelicalThreadMesh(
   pitch: number,
   z0: number,
   z1: number,
-  columns: number
+  columns: number,
+  breaks: ProfileBreaks = BASIC_PROFILE_BREAKS
 ): MeshData {
   const positions: number[] = [];
   const indices: number[] = [];
@@ -148,14 +174,14 @@ export function buildHelicalThreadMesh(
     const s = Math.sin(theta);
     const u = i / columns;
     const zs: number[] = [z0];
-    const rs: number[] = [profileRadius(u - z0 / pitch, rMinor, rMajor)];
+    const rs: number[] = [profileRadius(u - z0 / pitch, rMinor, rMajor, breaks)];
     // Cruces de hélices de quiebre: z = P·(u − (m + b_q)), recorridos en z creciente
     const mStart = Math.floor(u - z1 / pitch) - 1;
     const mEnd = Math.ceil(u - z0 / pitch) + 1;
     const crossings: Array<[number, number]> = [];
     for (let m = mStart; m <= mEnd; m++) {
       for (let q = 0; q < 4; q++) {
-        const z = pitch * (u - (m + PROFILE_BREAKS[q]));
+        const z = pitch * (u - (m + breaks[q]));
         if (z > z0 + eps && z < z1 - eps) crossings.push([z, q < 2 ? rMinor : rMajor]);
       }
     }
@@ -165,7 +191,7 @@ export function buildHelicalThreadMesh(
       rs.push(r);
     }
     zs.push(z1);
-    rs.push(profileRadius(u - z1 / pitch, rMinor, rMajor));
+    rs.push(profileRadius(u - z1 / pitch, rMinor, rMajor, breaks));
 
     const ids: number[] = [];
     for (let k = 0; k < zs.length; k++) {
@@ -257,16 +283,18 @@ export function threadRadii(spec: ResolvedThread): {
   tapMinor: number;
   tapMajor: number;
 } {
-  const depth = (5 / 8) * (Math.sqrt(3) / 2) * spec.pitchMm;
+  const H = (Math.sqrt(3) / 2) * spec.pitchMm;
   const boltMajor = spec.diameterMm / 2;
-  const boltMinor = boltMajor - depth;
+  // Perno: d3 (ISO 724, h3 = 17/24 H). Tuerca/macho: D1 básico (5/8 H) más la holgura.
+  const boltMinor = boltMajor - (17 / 24) * H;
+  const basicMinor = boltMajor - (5 / 8) * H;
   // Error de cuerda de las columnas: la cuerda queda hasta r·(1−cos(π/N)) dentro del arco
   const sagitta = (boltMajor + spec.radialClearanceMm) * (1 - Math.cos(Math.PI / spec.columns));
   const extra = spec.kind === 'bolt' ? 0 : spec.radialClearanceMm + sagitta;
   return {
     boltMinor,
     boltMajor,
-    tapMinor: boltMinor + extra,
+    tapMinor: basicMinor + extra,
     tapMajor: boltMajor + extra,
   };
 }
@@ -282,14 +310,14 @@ export async function createMetricThread(options: ThreadRequest): Promise<MeshDa
   const wasm = await initManifoldEngine();
   const { boltMinor, boltMajor, tapMinor, tapMajor } = threadRadii(spec);
   const { pitchMm, lengthMm, columns, diameterMm } = spec;
-  const hexRadius = (1.55 * diameterMm) / Math.sqrt(3);
+  const hexRadius = hexAcrossFlats(diameterMm) / Math.sqrt(3);
   const handles: Manifold[] = [];
   const own = <T extends Manifold>(m: T): T => {
     handles.push(m);
     return m;
   };
-  const solid = (rMin: number, rMaj: number, z0: number, z1: number): Manifold =>
-    own(meshDataToManifold(wasm, buildHelicalThreadMesh(rMin, rMaj, pitchMm, z0, z1, columns)));
+  const solid = (rMin: number, rMaj: number, z0: number, z1: number, breaks = BASIC_PROFILE_BREAKS): Manifold =>
+    own(meshDataToManifold(wasm, buildHelicalThreadMesh(rMin, rMaj, pitchMm, z0, z1, columns, breaks)));
 
   try {
     let resultZ: Manifold;
@@ -299,11 +327,11 @@ export async function createMetricThread(options: ThreadRequest): Promise<MeshDa
       const hexBody = own(buildChamferedHexPrismZ(wasm, hexRadius, lengthMm, true));
       resultZ = own(hexBody.subtract(solid(tapMinor, tapMajor, -1, lengthMm + 1)));
     } else if (options.includeHead === false) {
-      resultZ = solid(boltMinor, boltMajor, 0, lengthMm);
+      resultZ = solid(boltMinor, boltMajor, 0, lengthMm, BOLT_PROFILE_BREAKS);
     } else {
       const headH = Math.max(2.2, 0.65 * diameterMm);
       const head = own(buildChamferedHexPrismZ(wasm, hexRadius, headH, false));
-      resultZ = own(head.add(solid(boltMinor, boltMajor, headH - 0.5, headH + lengthMm)));
+      resultZ = own(head.add(solid(boltMinor, boltMajor, headH - 0.5, headH + lengthMm, BOLT_PROFILE_BREAKS)));
     }
     const rotatedY = own(resultZ.rotate([-90, 0, 0]));
     const mesh = manifoldToMeshData(rotatedY);

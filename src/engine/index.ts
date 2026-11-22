@@ -122,3 +122,16 @@ export {
 export { hollowMeshDetailed, type HollowResult } from './hollow';
 
 export { refineMeshDetailed, type RefineResult } from './refine';
+
+export { splitMeshByColorDetailed, type ColorSplitResult } from './colorSplit';
+
+export { isClosedMesh } from './meshClosure';
+
+export {
+  OPERATION_RANGES,
+  TRANSFORM_LIMITS,
+  TRANSFORM_RANGES,
+  describeOperationRange,
+  isInOperationRange,
+  type OperationRange,
+} from './operationLimits';

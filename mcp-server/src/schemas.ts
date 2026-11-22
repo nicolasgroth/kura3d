@@ -14,6 +14,7 @@ import {
   PRIMITIVE_PARAM_RANGES,
   type ParamRange,
 } from '../../src/engine/primitiveLimits';
+import { TRANSFORM_RANGES, type OperationRange } from '../../src/engine/operationLimits';
 
 /** Caracteres de control C0/C1 (excepto ninguno: los nombres son de una línea). */
 const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/;
@@ -97,3 +98,20 @@ export const exportPayloadSchema = z
     text: z.string().optional(),
   })
   .passthrough();
+
+/** Número con el rango de la fuente única (`src/engine/operationLimits.ts`). */
+export function rangeSchema(range: OperationRange) {
+  const low = range.exclusiveMin ? z.number().gt(range.min) : z.number().min(range.min);
+  const ranged = low.max(range.max);
+  return range.integer ? ranged.int() : ranged;
+}
+
+const vec3Of = (range: OperationRange, what: string) =>
+  z.tuple([rangeSchema(range), rangeSchema(range), rangeSchema(range)]).describe(what);
+
+/** Posición [x, y, z] en mm (±100000). */
+export const positionSchema = vec3Of(TRANSFORM_RANGES.position, 'Posición [X, Y, Z] en milímetros.');
+/** Rotación Euler [rx, ry, rz] en radianes, acotada. */
+export const rotationSchema = vec3Of(TRANSFORM_RANGES.rotation, 'Rotación Euler [rx, ry, rz] en radianes.');
+/** Escala [sx, sy, sz], cada factor en [0.001, 1000]. */
+export const scaleSchema = vec3Of(TRANSFORM_RANGES.scale, 'Escala [sx, sy, sz]; cada factor en [0.001, 1000].');

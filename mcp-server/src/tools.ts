@@ -12,6 +12,8 @@ import { writeFile } from 'node:fs/promises';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+import { isEngineError } from '../../src/engine/engineErrors';
+import { OPERATION_RANGES } from '../../src/engine/operationLimits';
 import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
 import { resolveExportPath } from './exportPaths.js';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
@@ -21,8 +23,12 @@ import {
   idSchema,
   nameSchema,
   outputPathSchema,
+  positionSchema,
   primitiveParamsSchema,
   profileIdSchema,
+  rangeSchema,
+  rotationSchema,
+  scaleSchema,
   shortTextSchema,
   svgContentSchema,
 } from './schemas.js';
@@ -37,9 +43,7 @@ export interface KuraToolContext {
   headless: KuraHeadlessEngine;
 }
 
-const vec3Schema = z
-  .tuple([z.number(), z.number(), z.number()])
-  .describe('Vector 3D [X, Y, Z] en milímetros (o radianes en rotación / factor en escala).');
+const OR = OPERATION_RANGES;
 
 /** Formatea una respuesta JSON legible como bloque de texto estándar MCP. */
 function okJson(payload: unknown): CallToolResult {
@@ -141,9 +145,26 @@ async function dispatchWithFallback(
     const result = await headlessHandler();
     return okJson(result);
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return failText(message);
+    return failError(err);
   }
+}
+
+/**
+ * Error MCP con código y causa: un `EngineError` del motor headless se devuelve como
+ * `[CÓDIGO] mensaje` más un bloque JSON `{ code, params }` (p. ej. `MESH_INVALID` con
+ * `cause: "Non-finite vertex"` o `MESH_EMPTY`), en vez de solo el texto.
+ */
+function failError(err: unknown): CallToolResult {
+  if (isEngineError(err)) {
+    return {
+      isError: true,
+      content: [
+        { type: 'text', text: `[${err.code}] ${err.message}` },
+        { type: 'text', text: JSON.stringify({ code: err.code, params: err.params }) },
+      ],
+    };
+  }
+  return failText(err instanceof Error ? err.message : String(err));
 }
 
 /**
@@ -181,9 +202,9 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         params: primitiveParamsSchema
           .optional()
           .describe('Parámetros dimensionales en milímetros según la primitiva elegida.'),
-        position: vec3Schema.optional(),
-        rotation: vec3Schema.optional(),
-        scale: vec3Schema.optional(),
+        position: positionSchema.optional(),
+        rotation: rotationSchema.optional(),
+        scale: scaleSchema.optional(),
         color: hexColorSchema.optional().describe('Color hexadecimal, por ejemplo #38bdf8.'),
         isHole: z.boolean().optional().describe('Si es true, marca la pieza como volumen de resta.'),
       },
@@ -216,9 +237,9 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         'Actualiza posición [x, y, z] en mm, rotación Euler [rx, ry, rz] en radianes, escala [sx, sy, sz] o metadatos de un objeto.',
       inputSchema: {
         objectId: idSchema.describe('ID del objeto a modificar.'),
-        position: vec3Schema.optional(),
-        rotation: vec3Schema.optional(),
-        scale: vec3Schema.optional(),
+        position: positionSchema.optional(),
+        rotation: rotationSchema.optional(),
+        scale: scaleSchema.optional(),
         name: nameSchema.optional(),
         isHole: z.boolean().optional(),
         visible: z.boolean().optional(),
@@ -301,9 +322,9 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         'Convierte un sólido en una carcasa hueca con grosor de pared en milímetros y orificio de drenaje opcional.',
       inputSchema: {
         objectId: idSchema.describe('ID del objeto a ahuecar.'),
-        wallThickness: z.number().positive().describe('Espesor de pared en milímetros.'),
+        wallThickness: rangeSchema(OR.hollow.wallThickness).describe('Espesor de pared en milímetros.'),
         drainHole: z.boolean().optional().describe('Agrega orificio inferior de drenaje (resina).'),
-        drainHoleRadius: z.number().positive().optional().describe('Radio del orificio de drenaje en mm.'),
+        drainHoleRadius: rangeSchema(OR.hollow.drainHoleRadius).optional().describe('Radio del orificio de drenaje en mm.'),
       },
     },
     async (args) =>
@@ -330,15 +351,15 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       inputSchema: {
         objectId: idSchema.describe('ID del objeto a cortar.'),
         axis: z.enum(['x', 'y', 'z']).describe('Eje normal del plano de corte.'),
-        offset: z.number().default(0).describe('Desplazamiento del plano en mm respecto al centro.'),
+        offset: rangeSchema(OR.cut.offset).default(0).describe('Desplazamiento del plano en mm respecto al centro.'),
         connectorType: z
           .enum(['none', 'dowel', 'peg', 'dovetail'])
           .default('none')
           .describe('Tipo de conector automático entre mitades.'),
-        connectorSize: z.number().positive().default(4).describe('Radio/ancho del conector en mm.'),
-        connectorDepth: z.number().positive().default(5).describe('Profundidad del conector en mm.'),
-        tolerance: z.number().min(0).default(0.25).describe('Holgura de encaje en mm.'),
-        connectorCount: z.number().int().min(1).max(4).default(2),
+        connectorSize: rangeSchema(OR.cut.connectorSize).default(4).describe('Radio/ancho del conector en mm.'),
+        connectorDepth: rangeSchema(OR.cut.connectorDepth).default(5).describe('Profundidad del conector en mm.'),
+        tolerance: rangeSchema(OR.cut.tolerance).default(0.25).describe('Holgura de encaje en mm.'),
+        connectorCount: rangeSchema(OR.cut.connectorCount).default(2),
         keepMode: z.enum(['both', 'positive', 'negative']).default('both'),
       },
     },
@@ -409,8 +430,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       inputSchema: {
         objectId: idSchema.describe('ID del objeto.'),
         pattern: z.enum(['none', 'fuzzy', 'knurling', 'waves', 'honeycomb', 'grid']),
-        depth: z.number().min(0).default(0.4).describe('Profundidad del relieve en mm.'),
-        scale: z.number().positive().default(3).describe('Escala/frecuencia del patrón en mm.'),
+        depth: rangeSchema(OR.texture.depth).default(0.4).describe('Profundidad del relieve en mm.'),
+        scale: rangeSchema(OR.texture.scale).default(3).describe('Escala/frecuencia del patrón en mm.'),
       },
     },
     async (args) =>
@@ -456,9 +477,9 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       inputSchema: {
         svgContent: svgContentSchema.describe('Contenido XML completo del archivo SVG.'),
         name: nameSchema.optional().describe('Nombre del objeto generado.'),
-        depth: z.number().positive().default(4).describe('Altura de extrusión en mm.'),
-        targetWidth: z.number().positive().default(50).describe('Ancho objetivo en mm.'),
-        curveSegments: z.number().int().min(4).max(64).default(16),
+        depth: rangeSchema(OR.svg.depth).default(4).describe('Altura de extrusión en mm.'),
+        targetWidth: rangeSchema(OR.svg.targetWidth).default(50).describe('Ancho objetivo en mm.'),
+        curveSegments: rangeSchema(OR.svg.curveSegments).default(16),
       },
     },
     async (args) =>
@@ -551,7 +572,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         });
         return okJson(result);
       } catch (err) {
-        return failText(err instanceof Error ? err.message : String(err));
+        return failError(err);
       }
     }
   );
@@ -605,7 +626,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         });
         return okJson(result);
       } catch (err) {
-        return failText(err instanceof Error ? err.message : String(err));
+        return failError(err);
       }
     }
   );
@@ -666,7 +687,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           ],
         };
       } catch (err) {
-        return failText(err instanceof Error ? err.message : String(err));
+        return failError(err);
       }
     }
   );
@@ -683,14 +704,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         mode: z
           .enum(['direct_1part', 'direct_2part', 'silicone_master', 'core_cavity'])
           .describe('Modo de generación del molde.'),
-        wallMarginMm: z
-          .number()
-          .positive()
+        wallMarginMm: rangeSchema(OR.mold.wallMarginMm)
           .default(6)
           .describe('Margen de pared exterior del molde en mm (o espesor de silicona).'),
-        boxWallMm: z
-          .number()
-          .positive()
+        boxWallMm: rangeSchema(OR.mold.boxWallMm)
           .default(3)
           .describe('Grosor de pared de la caja madre contenedora en mm.'),
         splitAxis: z
@@ -701,20 +718,14 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           .boolean()
           .default(true)
           .describe('Si es true, agrega embudo/canal de vertido superior.'),
-        pourSpoutRadiusMm: z
-          .number()
-          .positive()
+        pourSpoutRadiusMm: rangeSchema(OR.mold.pourSpoutRadiusMm)
           .default(5)
           .optional()
           .describe('Radio del embudo de vertido en mm.'),
-        keyToleranceMm: z
-          .number()
-          .min(0)
+        keyToleranceMm: rangeSchema(OR.mold.keyToleranceMm)
           .default(0.25)
           .describe('Holgura de encaje para llaves de registro en mm.'),
-        cavityWallMm: z
-          .number()
-          .positive()
+        cavityWallMm: rangeSchema(OR.mold.cavityWallMm)
           .default(3)
           .describe('Espesor de pared de la pieza colada en modo core_cavity (mm).'),
       },
@@ -757,15 +768,15 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           .enum(['+z', '-z', '+x', '-x', '+y', '-y', 'cylindrical'])
           .default('+z')
           .describe('Dirección o envoltura cilíndrica de proyección.'),
-        widthMm: z.number().positive().default(24).describe('Ancho proyectado en mm.'),
-        depthMm: z.number().positive().default(1.2).describe('Profundidad de relieve/grabado en mm.'),
+        widthMm: rangeSchema(OR.projection.widthMm).default(24).describe('Ancho proyectado en mm.'),
+        depthMm: rangeSchema(OR.projection.depthMm).default(1.2).describe('Profundidad de relieve/grabado en mm.'),
         colorHex: z
           .string()
           .regex(/^#[0-9a-fA-F]{6}$/)
           .default('#f97316')
           .describe('Color hexadecimal (#rrggbb) para la proyección o incrustación.'),
-        offsetU: z.number().optional().describe('Desplazamiento horizontal local en mm.'),
-        offsetV: z.number().optional().describe('Desplazamiento vertical local en mm.'),
+        offsetU: rangeSchema(OR.projection.offsetU).optional().describe('Desplazamiento horizontal local en mm.'),
+        offsetV: rangeSchema(OR.projection.offsetV).optional().describe('Desplazamiento vertical local en mm.'),
       },
     },
     async (args) =>
@@ -811,16 +822,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           ])
           .optional()
           .describe('Material para el cálculo de peso (por defecto el asignado al objeto o pla_matte).'),
-        infillPercent: z
-          .number()
-          .min(0)
-          .max(100)
+        infillPercent: rangeSchema(OR.printability.infillPercent)
           .default(20)
           .describe('Porcentaje de relleno estimado (0 a 100).'),
-        overhangAngleDeg: z
-          .number()
-          .min(10)
-          .max(85)
+        overhangAngleDeg: rangeSchema(OR.printability.overhangAngleDeg)
           .default(45)
           .describe('Ángulo máximo de voladizo sin soporte en grados.'),
       },
@@ -847,9 +852,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       description: 'Reduce la densidad de triángulos respetando la tolerancia geométrica en mm.',
       inputSchema: {
         objectId: idSchema.describe('ID del objeto a simplificar.'),
-        toleranceMm: z
-          .number()
-          .positive()
+        toleranceMm: rangeSchema(OR.simplify.toleranceMm)
           .default(0.1)
           .describe('Tolerancia máxima de desviación geométrica en mm.'),
       },
@@ -871,9 +874,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       description: 'Subdivide y suaviza opcionalmente la malla hasta la longitud de arista objetivo en mm.',
       inputSchema: {
         objectId: idSchema.describe('ID del objeto a refinar.'),
-        targetEdgeLengthMm: z
-          .number()
-          .positive()
+        targetEdgeLengthMm: rangeSchema(OR.refine.targetEdgeLengthMm)
           .default(1.5)
           .describe('Longitud máxima de arista objetivo en milímetros.'),
         smooth: z.boolean().default(true).describe('Activa suavizado superficial durante el refinado.'),
@@ -897,10 +898,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         'Genera un perno roscado, tuerca hexagonal o cavidad roscada negativa con holgura calibrada para impresión 3D.',
       inputSchema: {
         kind: z.enum(['bolt', 'nut', 'hole']).describe('Tipo de elemento roscado.'),
-        diameterMm: z.number().min(2).max(100).default(8).describe('Diámetro nominal métrico en mm (ej. 8 para M8).'),
-        pitchMm: z.number().min(0.3).max(10).default(1.25).describe('Paso de rosca en mm.'),
-        lengthMm: z.number().min(2).max(300).default(20).describe('Longitud roscada en mm.'),
-        clearanceMm: z.number().min(0).max(2).default(0.25).describe('Holgura radial de impresión en mm.'),
+        diameterMm: rangeSchema(OR.thread.diameterMm).default(8).describe('Diámetro nominal métrico en mm (ej. 8 para M8; M2–M64).'),
+        pitchMm: rangeSchema(OR.thread.pitchMm).default(1.25).describe('Paso de rosca en mm (máximo d/4).'),
+        lengthMm: rangeSchema(OR.thread.lengthMm).default(20).describe('Longitud roscada en mm.'),
+        clearanceMm: rangeSchema(OR.thread.clearanceMm).default(0.25).describe('Holgura radial de impresión en mm.'),
         includeHead: z.boolean().optional().describe('Incluir cabeza hexagonal cuando kind === "bolt".'),
         name: nameSchema.optional().describe('Nombre opcional de la pieza generada.'),
       },
