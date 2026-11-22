@@ -998,6 +998,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'unsaved.saveIncomplete': 'L’enregistrement n’a pas abouti : l’action a été annulée pour ne rien perdre.',
   'recovery.discard.title': 'Ignorer le brouillon',
   'ai.tool.create_primitive': 'J’ai créé une pièce',
+  'ai.tool.update_primitive_params': 'J’ai modifié les paramètres d’une pièce',
   'ai.tool.transform_object': 'J’ai transformé une pièce',
   'ai.tool.hollow_object': 'J’ai évidé une pièce',
   'ai.tool.boolean_operation': 'J’ai combiné des pièces par opération booléenne',

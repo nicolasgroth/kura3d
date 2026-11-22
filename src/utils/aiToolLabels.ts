@@ -12,6 +12,7 @@ import type { LanguageCode } from '../types/kura';
 
 const TOOL_LABEL_KEYS: Record<string, TranslationKey> = {
   create_primitive: 'ai.tool.create_primitive',
+  update_primitive_params: 'ai.tool.update_primitive_params',
   transform_object: 'ai.tool.transform_object',
   hollow_object: 'ai.tool.hollow_object',
   boolean_operation: 'ai.tool.boolean_operation',

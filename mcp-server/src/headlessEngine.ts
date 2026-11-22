@@ -12,6 +12,8 @@
 
 import * as ops from '../../src/core/operations/index';
 import type { OperationContext, SceneChange } from '../../src/core/operations/index';
+import { placeInFreeSpot } from '../../src/core/scene/freeSpot';
+import { parametricStateOf } from '../../src/core/scene/parametric';
 import { HEADLESS_BUILD_POLICY } from '../../src/core/scene/sceneObjects';
 import * as engine from '../../src/engine/index';
 import { createHeadlessNaming } from './headlessNaming.js';
@@ -107,9 +109,15 @@ export class KuraHeadlessEngine {
     color?: string;
     materialPreset?: MaterialPresetId;
     isHole?: boolean;
+    /** `free`: primer hueco libre de la cama del perfil; `origin` (por defecto): origen. */
+    placement?: 'free' | 'origin';
   }): Promise<SceneObjectSummary> {
     const params: PrimitiveParams = input.params ?? {};
+    const bed = { width: this.printerProfile.bedWidthMm, depth: this.printerProfile.bedDepthMm };
     const obj = await ops.createPrimitive(this.ctx, {
+      place: input.placement === 'free'
+        ? (mesh) => placeInFreeSpot([...this.objects.values()], mesh, input.rotation, input.scale, bed).position
+        : undefined,
       type: input.primitiveType,
       params,
       name: input.name ?? this.ctx.naming.primitive(input.primitiveType, this.counter),
@@ -523,6 +531,23 @@ export class KuraHeadlessEngine {
       return objectIds.map((id) => this.requireObject(id));
     }
     return Array.from(this.objects.values());
+  }
+
+  /** Regenera una primitiva o rosca paramétrica con parámetros nuevos (misma operación que la app). */
+  async updatePrimitiveParams(
+    objectId: string,
+    values: PrimitiveParams & Partial<Omit<ThreadOptions, 'kind'>>,
+  ): Promise<SceneObjectSummary> {
+    const obj = this.requireEditable(objectId);
+    const state = parametricStateOf(obj);
+    const { diameterMm, pitchMm, lengthMm, clearanceMm, includeHead, ...params } = values;
+    let edit: ops.ParametricEdit;
+    if (state.status === 'primitive') edit = { kind: 'primitive', params: stripUndefined(params) };
+    else if (state.status === 'thread') {
+      edit = { kind: 'thread', options: stripUndefined({ diameterMm, pitchMm, lengthMm, clearanceMm, includeHead }) as ThreadOptions };
+    } else throw new Error(`El objeto '${obj.name}' ya no es paramétrico: una operación cambió su malla.`);
+    this.apply(await ops.regenerateParametric(this.ctx, obj, edit));
+    return summarizeObject(this.requireObject(objectId));
   }
 
   /** Aplica un `SceneChange` en el mapa: parches in situ, bajas y altas al final (orden de inserción). */

@@ -998,6 +998,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'unsaved.saveIncomplete': 'Speichern nicht abgeschlossen: Die Aktion wurde abgebrochen, damit nichts verloren geht.',
   'recovery.discard.title': 'Entwurf verwerfen',
   'ai.tool.create_primitive': 'Ich habe ein Teil erstellt',
+  'ai.tool.update_primitive_params': 'Ich habe die Parameter eines Teils geändert',
   'ai.tool.transform_object': 'Ich habe ein Teil transformiert',
   'ai.tool.hollow_object': 'Ich habe ein Teil ausgehöhlt',
   'ai.tool.boolean_operation': 'Ich habe Teile per Boolesche Operation kombiniert',

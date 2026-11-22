@@ -998,6 +998,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'unsaved.saveIncomplete': '保存未完成：为避免丢失更改，已取消该操作。',
   'recovery.discard.title': '放弃草稿',
   'ai.tool.create_primitive': '已创建一个零件',
+  'ai.tool.update_primitive_params': '已修改零件的参数',
   'ai.tool.transform_object': '已变换一个零件',
   'ai.tool.hollow_object': '已将零件抽壳',
   'ai.tool.boolean_operation': '已用布尔运算组合零件',

@@ -998,6 +998,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'unsaved.saveIncomplete': 'सहेजना पूरा नहीं हुआ: बदलाव न खोएँ इसलिए कार्रवाई रद्द कर दी गई।',
   'recovery.discard.title': 'ड्राफ़्ट छोड़ें',
   'ai.tool.create_primitive': 'मैंने एक पीस बनाया',
+  'ai.tool.update_primitive_params': 'मैंने एक पीस के पैरामीटर बदले',
   'ai.tool.transform_object': 'मैंने एक पीस बदला',
   'ai.tool.hollow_object': 'मैंने एक पीस खोखला किया',
   'ai.tool.boolean_operation': 'मैंने बूलियन ऑपरेशन से पीस जोड़े',
