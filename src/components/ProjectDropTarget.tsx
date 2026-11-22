@@ -14,6 +14,7 @@ import { MAX_PROJECT_BYTES, ProjectCodecError } from '../project/projectSchema';
 import { useKuraStore } from '../store/useKuraStore';
 import { isTauriRuntime } from '../utils/platformBridge';
 import { guardUnsavedChanges } from '../utils/unsavedGuard';
+import { LOG_TAG } from '../brand';
 import '../styles/projectDrop.css';
 
 interface DroppedFile {
@@ -97,7 +98,7 @@ export function ProjectDropTarget() {
         if (disposed) unlisten();
         else stopListening = unlisten;
       };
-      void register().catch((error) => console.error('[Kura3D] File drop:', error));
+      void register().catch((error) => console.error(`${LOG_TAG} File drop:`, error));
       return () => {
         disposed = true;
         stopListening?.();

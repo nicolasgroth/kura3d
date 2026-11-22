@@ -747,6 +747,10 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyLocal': 'पूर्ण गोपनीयता: बिना बाहरी API कुंजी के (या लोकल Ollama के साथ), सभी कार्य आपके डिवाइस पर ही रहते हैं।',
   'dialog.settings.aboutAuthor': 'लेखक: Nicolás Groth (ngroth@gmail.com) — ISGROTH (Innovación y Soluciones GROTH) के लिए निर्मित। MIT लाइसेंस।',
   'dialog.settings.aboutStack': 'वॉटरटाइट Manifold WASM ज्यामिति कर्नेल, React Three Fiber, Three.js, Tauri v2 और रीयल-टाइम MCP ब्रिज।',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': '{name} प्रतीक',
+  'app.lockupAlt': '{name} आधिकारिक लोगो',
+  'app.monoAlt': '{name} एकवर्णी प्रतीक',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'प्रो कीबोर्ड शॉर्टकट और CAD सुझाव',

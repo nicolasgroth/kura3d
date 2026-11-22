@@ -30,6 +30,7 @@ import { useMcpBridgeClient } from './utils/mcpBridgeClient';
 import { isTauriRuntime } from './utils/platformBridge';
 import { useFunctionKeys } from './components/useFunctionKeys';
 import { guardUnsavedChanges } from './utils/unsavedGuard';
+import { LOG_TAG } from './brand';
 import { ConfirmDialogHost } from './components/ConfirmDialogHost';
 import { NarrowPanelBar } from './components/NarrowPanelBar';
 
@@ -142,7 +143,7 @@ export const App: React.FC = () => {
       else stopListening = unlisten;
     };
 
-    void register().catch((error) => console.error('[Kura3D] Project close protection:', error));
+    void register().catch((error) => console.error(`${LOG_TAG} Project close protection:`, error));
     return () => {
       disposed = true;
       stopListening?.();

@@ -747,6 +747,10 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyLocal': 'Confidentialité totale : Sans clé API externe (ou avec Ollama local), toutes les opérations restent sur votre appareil.',
   'dialog.settings.aboutAuthor': 'Auteur : Nicolás Groth (ngroth@gmail.com) — Conçu pour ISGROTH (Innovación y Soluciones GROTH). Licence MIT.',
   'dialog.settings.aboutStack': 'Noyau géométrique étanche Manifold WASM, React Three Fiber, Three.js, Tauri v2 et pont MCP temps réel.',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': 'Emblème de {name}',
+  'app.lockupAlt': 'Logo officiel de {name}',
+  'app.monoAlt': 'Emblème monochrome de {name}',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'Raccourcis Clavier Pro & Astuces CAO',

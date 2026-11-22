@@ -9,6 +9,7 @@
 
 import type { AiChatMessage, AiConfig, LanguageCode } from '../../types/kura';
 import type { AiKeySlot } from '../providerCatalog';
+import { BRAND } from '../../brand';
 
 export interface AdapterInput {
   prompt: string;
@@ -33,7 +34,7 @@ export function recentTurns(history: AiChatMessage[]): Array<{ role: 'user' | 'a
 export function buildSystemPrompt(lang: LanguageCode): string {
   if (lang === 'es') {
     return (
-      'Eres el Asistente de Kura3D, experto en modelado CAD 3D e impresión 3D. ' +
+      `Eres el Asistente de ${BRAND.name}, experto en modelado CAD 3D e impresión 3D. ` +
       'Las unidades internas de la escena están en milímetros (mm), con eje Y hacia arriba (Y=0 es la cama). ' +
       'Usa siempre las herramientas disponibles cuando el usuario pida crear, transformar, ahuecar, cortar o exportar geometría. ' +
       'No modifiques objetos existentes que el usuario no haya nombrado. ' +
@@ -41,7 +42,7 @@ export function buildSystemPrompt(lang: LanguageCode): string {
     );
   }
   return (
-    'You are Kura3D Assistant, a precision 3D CAD and 3D-printing modeling expert. ' +
+    `You are ${BRAND.name} Assistant, a precision 3D CAD and 3D-printing modeling expert. ` +
     'Internal scene units are millimeters (mm), Y-up (Y=0 is the build plate). ' +
     'Always use the provided tools to inspect or modify the 3D scene when the user asks to create, edit, hollow, cut, or export geometry. ' +
     'Never modify existing objects the user did not name. ' +

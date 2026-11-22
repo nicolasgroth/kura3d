@@ -12,4 +12,9 @@ export const BRAND = {
   author: 'Nicolás Groth',
   organization: 'ISGROTH — Innovación y Soluciones GROTH',
   license: 'MIT',
+  /** Versión de la app; debe coincidir con package.json (lo verifica una prueba). */
+  version: '0.5.0',
 } as const;
+
+/** Prefijo de los mensajes de consola de la app. */
+export const LOG_TAG = `[${BRAND.name}]`;

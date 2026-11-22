@@ -747,6 +747,10 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyLocal': 'Volle Privatsphäre: Ohne externen API-Schlüssel (oder mit lokalem Ollama) bleiben alle Operationen auf Ihrem Gerät.',
   'dialog.settings.aboutAuthor': 'Autor: Nicolás Groth (ngroth@gmail.com) — Entwickelt für ISGROTH (Innovación y Soluciones GROTH). MIT-Lizenz.',
   'dialog.settings.aboutStack': 'Watertight Manifold-WASM-Geometriekern, React Three Fiber, Three.js, Tauri v2 und Echtzeit-MCP-Brücke.',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': '{name}-Emblem',
+  'app.lockupAlt': 'Offizielles {name}-Logo',
+  'app.monoAlt': 'Einfarbiges {name}-Emblem',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'Profi-Tastenkürzel & CAD-Tipps',

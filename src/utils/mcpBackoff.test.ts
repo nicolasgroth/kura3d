@@ -1,3 +1,11 @@
+/**
+ * @file src/utils/mcpBackoff.test.ts
+ * @description Pruebas de la espera creciente de reconexión del puente MCP.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
 import { describe, expect, it } from 'vitest';
 import { nextReconnectDelay, RECONNECT_DELAYS } from './mcpBridgeClient';
 

@@ -34,6 +34,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { t } from '../i18n';
+import { BRAND } from '../brand';
 import { useKuraStore } from '../store/useKuraStore';
 import {
   SUPPORTED_LANGUAGES,
@@ -229,15 +230,15 @@ export const TopBar: React.FC = () => {
     <div className="kura-brand" title={t(language, 'app.tagline')}>
       <img
         src="/branding/kura3d-icon.png"
-        alt="Kura3D"
+        alt={BRAND.name}
         className="kura-brand-icon-img"
         width={26}
         height={26}
       />
       {!isHidden('brand') && (
         <>
-          <span className="kura-brand-title">Kura3D</span>
-          <span className="kura-brand-badge">0.5</span>
+          <span className="kura-brand-title">{BRAND.name}</span>
+          <span className="kura-brand-badge">{BRAND.version.split('.').slice(0, 2).join('.')}</span>
         </>
       )}
     </div>

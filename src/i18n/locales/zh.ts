@@ -747,6 +747,10 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyLocal': '完全隐私：未配置外部 API 密钥（或使用本地 Ollama）时，所有操作均保留在您的设备上。',
   'dialog.settings.aboutAuthor': '作者：Nicolás Groth (ngroth@gmail.com) — 为 ISGROTH (Innovación y Soluciones GROTH) 开发。MIT 许可证。',
   'dialog.settings.aboutStack': '水密 Manifold WASM 几何内核、React Three Fiber、Three.js、Tauri v2 与实时 MCP 桥接。',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': '{name} 徽标',
+  'app.lockupAlt': '{name} 官方标志',
+  'app.monoAlt': '{name} 单色徽标',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': '专业键盘快捷键与 CAD 技巧',

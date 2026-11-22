@@ -77,7 +77,7 @@ export const SplashScreen: React.FC = () => {
       className={`kura-splash-overlay ${phase === 'leaving' ? 'is-leaving' : ''}`}
       role="status"
       aria-live="polite"
-      aria-label="Kura3D v0.5.0"
+      aria-label={t(language, 'app.studioVersion', { name: BRAND.name, version: BRAND.version })}
       onClick={dismiss}
     >
       <div className="kura-splash-glow" aria-hidden="true" />
@@ -86,7 +86,7 @@ export const SplashScreen: React.FC = () => {
         <div className="kura-splash-emblem-wrap">
           <img
             src="/branding/kura3d-emblem.png"
-            alt="Kura3D Emblem"
+            alt={t(language, 'app.emblemAlt', { name: BRAND.name })}
             className="kura-splash-emblem"
             width={112}
             height={112}
@@ -95,7 +95,7 @@ export const SplashScreen: React.FC = () => {
 
         <div className="kura-splash-title-row">
           <span className="kura-splash-wordmark">{BRAND.name}</span>
-          <span className="kura-splash-version">v0.5.0</span>
+          <span className="kura-splash-version">v{BRAND.version}</span>
         </div>
 
         <p className="kura-splash-subtitle">{t(language, 'splash.subtitle')}</p>

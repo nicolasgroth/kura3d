@@ -13,6 +13,7 @@ import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Download } from 'lucide-react';
 import { t, type TranslationKey } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import { readStorage, writeStorage } from '../store/preferencesStorage';
 import type { ExportFormat, ExportScope } from '../store/modelIoActions';
 import { defaultExportBase, sanitizeFileBase } from '../utils/exportNaming';
 import { NativeModal } from './NativeModal';
@@ -32,20 +33,12 @@ export function openExportDialog(format?: ExportFormat) {
 }
 
 function readStoredFormat(): ExportFormat {
-  try {
-    const stored = localStorage.getItem(FORMAT_STORAGE_KEY) as ExportFormat | null;
-    return stored && FORMATS.includes(stored) ? stored : '3mf';
-  } catch {
-    return '3mf';
-  }
+  const stored = readStorage(FORMAT_STORAGE_KEY) as ExportFormat | null;
+  return stored && FORMATS.includes(stored) ? stored : '3mf';
 }
 
 function storeFormat(format: ExportFormat) {
-  try {
-    localStorage.setItem(FORMAT_STORAGE_KEY, format);
-  } catch {
-    // Almacenamiento bloqueado: la preferencia es solo una comodidad.
-  }
+  writeStorage(FORMAT_STORAGE_KEY, format);
 }
 
 export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initialFormat?: ExportFormat }> = ({

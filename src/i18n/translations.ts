@@ -754,6 +754,10 @@ export const TRANSLATIONS_ES = {
   'dialog.settings.aiPrivacyLocal': 'Privacidad total: Sin API Key externa (o con Ollama local), todas las operaciones permanecen en tu equipo.',
   'dialog.settings.aboutAuthor': 'Autor: Nicolás Groth (ngroth@gmail.com) — Desarrollado para ISGROTH (Innovación y Soluciones GROTH). Licencia MIT.',
   'dialog.settings.aboutStack': 'Motor geométrico Manifold WASM watertight, React Three Fiber, Three.js, Tauri v2 y puente MCP en tiempo real.',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': 'Emblema de {name}',
+  'app.lockupAlt': 'Logotipo oficial de {name}',
+  'app.monoAlt': 'Emblema monocromo de {name}',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'Atajos de Teclado Pro y Consejos CAD',
@@ -2091,6 +2095,10 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyLocal': 'Full privacy: Without an external API Key (or using local Ollama), all operations stay on your machine.',
   'dialog.settings.aboutAuthor': 'Author: Nicolás Groth (ngroth@gmail.com) — Built for ISGROTH (Innovación y Soluciones GROTH). MIT License.',
   'dialog.settings.aboutStack': 'Watertight Manifold WASM geometry kernel, React Three Fiber, Three.js, Tauri v2 & real-time MCP bridge.',
+  'app.studioVersion': '{name} Studio v{version}',
+  'app.emblemAlt': '{name} emblem',
+  'app.lockupAlt': '{name} official lockup',
+  'app.monoAlt': '{name} monochrome emblem',
 
   'dialog.shortcuts.title': 'Pro Keyboard Shortcuts & CAD Tips',
   'dialog.shortcuts.subtitle': 'Precision workflow inspired by Blender, Rhino & modern slicers.',
