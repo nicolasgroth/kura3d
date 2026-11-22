@@ -105,13 +105,17 @@ export function cleanColorPartMesh(wasm: ManifoldToplevel, m: Manifold): { mesh:
  * (cada arista con 2 triángulos) y conserva el volumen; si no, la original.
  */
 function coarseCollapse(mesh: MeshData): MeshData {
-  const candidate = dropFins(collapseShortEdges(mesh, COLOR_PART_COLLAPSE_MM));
-  if (candidate.indices.length === mesh.indices.length) return mesh;
-  if (candidate.indices.length < 12 || !isClean(stlDefects(candidate))) return mesh;
   const before = signedVolume(mesh);
-  const after = signedVolume(candidate);
-  if (!(Math.abs(before) > 0) || Math.abs(after - before) / Math.abs(before) > MAX_VOLUME_CHANGE) return mesh;
-  return candidate;
+  if (!(Math.abs(before) > 0)) return mesh;
+  // De la tolerancia mayor a la menor: la primera que deja la pieza limpia y con el mismo volumen.
+  for (const tol of [COLOR_PART_COLLAPSE_MM, COLOR_PART_COLLAPSE_MM / 3, COLOR_PART_COLLAPSE_MM / 10]) {
+    const candidate = dropFins(collapseShortEdges(mesh, tol));
+    if (candidate.indices.length === mesh.indices.length) return mesh;
+    if (candidate.indices.length < 12 || !isClean(stlDefects(candidate))) continue;
+    if (Math.abs(signedVolume(candidate) - before) / Math.abs(before) > MAX_VOLUME_CHANGE) continue;
+    return candidate;
+  }
+  return mesh;
 }
 
 /** Volumen con signo (mm³) por el teorema de la divergencia. */
