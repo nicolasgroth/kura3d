@@ -198,7 +198,8 @@ export const SubMenu: React.FC<{
         title={tip ?? label}
         disabled={disabled}
         tabIndex={-1}
-        onClick={() => (open ? setOpen(false) : openAndFocus())}
+        // Con el puntero, pasar encima ya lo abrió: el clic no debe cerrarlo. En línea sí alterna.
+        onClick={() => (open && inline ? setOpen(false) : openAndFocus())}
         onKeyDown={(e) => {
           if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();

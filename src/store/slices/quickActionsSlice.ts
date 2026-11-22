@@ -152,6 +152,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
     pendingPiece: null,
     sceneFilter: '',
     renameRequest: null,
+    searchFocusRequest: null,
 
     // ---- Envoltorios que registran la última acción repetible ----
     duplicateObjects: (ids) => {
@@ -309,11 +310,16 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       return found;
     },
 
+    requestSceneSearchFocus: () => {
+      renameCounter += 1;
+      set({ searchFocusRequest: { n: renameCounter, at: Date.now() } });
+    },
+
     requestRename: (id) => {
       const target = get().objects.find((o) => o.id === (id ?? get().selectedIds[0]));
       if (!target || target.locked) return false;
       renameCounter += 1;
-      set({ renameRequest: { id: target.id, n: renameCounter } });
+      set({ renameRequest: { id: target.id, n: renameCounter, at: Date.now() } });
       return true;
     },
   };

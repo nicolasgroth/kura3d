@@ -28,6 +28,7 @@ import { isProjectDirty, useKuraStore } from './store/useKuraStore';
 import type { TransformMode } from './types/kura';
 import { useMcpBridgeClient } from './utils/mcpBridgeClient';
 import { isTauriRuntime } from './utils/platformBridge';
+import { useFunctionKeys } from './components/useFunctionKeys';
 import { guardUnsavedChanges } from './utils/unsavedGuard';
 import { ConfirmDialogHost } from './components/ConfirmDialogHost';
 import { NarrowPanelBar } from './components/NarrowPanelBar';
@@ -60,6 +61,15 @@ export const App: React.FC = () => {
   const discardRecoveryOnClose = recovery.discardOnClose;
 
   const [narrowTall, setNarrowTall] = useState(false);
+
+  // F2/F3 necesitan la lista de escena: en pantallas estrechas el panel izquierdo es un cajón.
+  const revealLeftPanel = useCallback(() => {
+    if (window.matchMedia('(max-width: 900px)').matches) {
+      if (useKuraStore.getState().aiDrawerOpen) useKuraStore.getState().setAiDrawerOpen(false);
+      setNarrowPanel('left');
+    }
+  }, []);
+  useFunctionKeys({ revealLeftPanel });
 
   function toggleNarrowPanel(panel: 'left' | 'right') {
     if (aiDrawerOpen) setAiDrawerOpen(false);

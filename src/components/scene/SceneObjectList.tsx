@@ -10,10 +10,12 @@
  * @license MIT
  */
 
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ArrowDownToLine, Copy, Eye, EyeOff, Lock, Trash2, Unlock } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import { matchSceneObjects } from '../../store/slices/quickActionsSlice';
+import { REQUEST_FRESH_MS } from './SceneSearch';
 import '../../styles/sceneList.css';
 import '../../styles/splitJoints.css';
 
@@ -21,7 +23,10 @@ const MAX_NAME = 80;
 
 export const SceneObjectList: React.FC = () => {
   const language = useKuraStore((s) => s.language);
-  const objects = useKuraStore((s) => s.objects);
+  const allObjects = useKuraStore((s) => s.objects);
+  const sceneFilter = useKuraStore((s) => s.sceneFilter);
+  const renameRequest = useKuraStore((s) => s.renameRequest);
+  const objects = useMemo(() => matchSceneObjects(allObjects, sceneFilter), [allObjects, sceneFilter]);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const setSelection = useKuraStore((s) => s.setSelection);
   const updateObjectMeta = useKuraStore((s) => s.updateObjectMeta);
@@ -75,6 +80,16 @@ export const SceneObjectList: React.FC = () => {
     setRenamingId(id);
     setDraft(obj.name);
   };
+
+  // F2 global (o menú contextual): renombra en línea el objeto pedido.
+  useEffect(() => {
+    if (!renameRequest || Date.now() - renameRequest.at > REQUEST_FRESH_MS) return;
+    const { id } = renameRequest;
+    if (!objects.some((o) => o.id === id)) useKuraStore.getState().setSceneFilter('');
+    setActiveId(id);
+    startRename(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renameRequest?.n]);
 
   const commitRename = () => {
     const name = draft.trim().slice(0, MAX_NAME);
@@ -168,6 +183,7 @@ export const SceneObjectList: React.FC = () => {
       className="kura-scene-list"
       role="listbox"
       aria-multiselectable="true"
+      aria-keyshortcuts="F2"
       aria-label={t(language, 'sidebar.scene.listLabel')}
       aria-describedby={`${baseId}-hint`}
       aria-activedescendant={active ? optionId(active.id) : undefined}

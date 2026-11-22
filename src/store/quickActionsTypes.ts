@@ -46,6 +46,9 @@ export interface QuickActionsSliceState {
   /** Selecciona y encuadra el primer resultado, el siguiente o el anterior. Devuelve el objeto o null. */
   findSceneMatch: (mode: 'first' | 'next' | 'prev') => SceneObject | null;
   /** Renombrar en línea (F2): la lista reacciona a cada petición nueva. */
-  renameRequest: { id: string; n: number } | null;
+  renameRequest: { id: string; n: number; at: number } | null;
   requestRename: (id?: string) => boolean;
+  /** Pide enfocar el campo de búsqueda de la escena (F3). */
+  searchFocusRequest: { n: number; at: number } | null;
+  requestSceneSearchFocus: () => void;
 }

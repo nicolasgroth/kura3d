@@ -13,6 +13,8 @@ import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   ArrowDownToLine,
   Bolt,
+  Repeat2,
+  RefreshCw,
   Bot,
   Box,
   Circle,
@@ -65,6 +67,9 @@ import { openExportDialog } from './ExportDialog';
 import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
 import { rankPaletteItems } from '../utils/paletteRank';
 import { REFINE_UI_DEFAULTS } from './refineDefaults';
+import { recomputeWithToast, repeatWithToast } from './useFunctionKeys';
+import { repeatLabel } from '../store/repeatLabel';
+import { isTauriRuntime } from '../utils/platformBridge';
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform ?? '');
 const MOD = isMac ? '⌘' : 'Ctrl';
@@ -91,6 +96,7 @@ export const CommandPalette: React.FC = () => {
   const open = useKuraStore((s) => s.commandPaletteOpen);
   const setCommandPaletteOpen = useKuraStore((s) => s.setCommandPaletteOpen);
   const language = useKuraStore((s) => s.language);
+  const lastRepeatable = useKuraStore((s) => s.lastRepeatable);
   const sceneBusy = useKuraStore((s) => Boolean(s.busyOperation) || s.projectBusy);
   const setLanguage = useKuraStore((s) => s.setLanguage);
   const uiDensity = useKuraStore((s) => s.uiDensity);
@@ -424,6 +430,28 @@ export const CommandPalette: React.FC = () => {
         icon: <Grid size={15} />,
         run: () => alignSelectedObjects('arrange_grid'),
       },
+      ...(lastRepeatable
+        ? [{
+            id: 'edit-repeat',
+            label: t(language, 'repeat.label', { name: repeatLabel(language, lastRepeatable) }),
+            category: catOps,
+            keywords: 'repetir ultima accion repeat last action f4',
+            shortcut: 'F4',
+            kind: 'local' as const,
+            icon: <Repeat2 size={15} />,
+            run: () => void repeatWithToast(),
+          }]
+        : []),
+      {
+        id: 'op-recompute',
+        label: t(language, 'menu.recompute'),
+        category: catOps,
+        keywords: 'recalcular regenerar parametrico recompute regenerate parametric f5',
+        shortcut: isTauriRuntime() ? 'F5' : 'Shift+F5',
+        kind: 'local',
+        icon: <RefreshCw size={15} />,
+        run: () => void recomputeWithToast(),
+      },
       {
         id: 'op-sub-sphere',
         label: t(language, 'inspector.op.subtractSphere'),
@@ -751,6 +779,7 @@ export const CommandPalette: React.FC = () => {
     language,
     aiBadge,
     primaryId,
+    lastRepeatable,
     colorScheme,
     uiDensity,
     sectionPlane.enabled,
