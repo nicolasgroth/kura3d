@@ -21,7 +21,8 @@ import type { AssemblyFix, AssemblyJointInput, AssemblyPartInput, AssemblyReport
 import { demoteToGlue, type PendingJoint } from './splitAssembly';
 import type { SplitBody } from './splitBodies';
 import { rebuildParts } from './splitFinish';
-import type { SplitPart } from './splitTypes';
+import type { SplitConnectorOptions, SplitPart } from './splitTypes';
+import { checkSuggestions, type OriginalConnectors } from './splitSuggestionCheck';
 import { validateAssembly } from './validateAssembly';
 
 /** Rondas de arreglo como máximo (cada una pega al menos una unión). */
@@ -43,6 +44,8 @@ export interface RepairInput {
   preSuggestions: AssemblySuggestion[];
   /** Con `false` solo se informa (no se pega nada): `assemblyAutoFix: false`. */
   autoFix: boolean;
+  /** Conector pedido (para comprobar los cambios de tipo de uniones pegadas antes de poner conectores). */
+  connector: SplitConnectorOptions | null;
   warnings: EngineWarning[];
 }
 
@@ -105,6 +108,7 @@ export function settleAssembly(input: RepairInput): { report: AssemblyReport; cl
   const smooth = () => (smoothCache ??= input.smoothParts());
   const glued: string[] = [];
   const suggestions: AssemblySuggestion[] = [];
+  const originals: OriginalConnectors = new Map();
   const validate = () => validateAssembly(parts, input.toJoints(), {
     sourceVolumeMm3: input.volumes.source,
     clearanceVolumeMm3: input.volumes.clearance + clearanceDelta,
@@ -122,9 +126,10 @@ export function settleAssembly(input: RepairInput): { report: AssemblyReport; cl
     for (const j of todo) {
       const low = bodies.get(j.low)!;
       const high = bodies.get(j.high)!;
+      if (j.connector) originals.set(j.label, { connector: { ...j.connector }, centers: j.connectorCenters.map((c) => [c[0], c[1], c[2]]) });
       clearanceDelta -= demoteToGlue(j, low, high);
       glued.push(j.label);
-      const code = blockedNow.has(j.label) && !clashCulprits(report).includes(j.label) ? 'ASSEMBLY_JOINT_GLUED_FOR_ORDER' : 'SPLIT_JOINT_NO_CONNECTOR';
+      const code = blockedNow.has(j.label) && !clashCulprits(report).includes(j.label) ? 'ASSEMBLY_JOINT_GLUED_FOR_ORDER' : 'ASSEMBLY_JOINT_GLUED_FOR_CLASH';
       warnings.push(engineWarning(code, { label: j.label, a: low.code, b: high.code }));
       dirty.add(j.low);
       dirty.add(j.high);
@@ -151,6 +156,8 @@ export function settleAssembly(input: RepairInput): { report: AssemblyReport; cl
     }
     report.suggestions = [...merged.values()].sort((x, y) => byLabel(x.joint, y.joint));
   }
+  // Solo sugerencias de uniones pegadas o que aún traban, y cambios de tipo que el validador confirma
+  report.suggestions = checkSuggestions(report, parts, input.toJoints(), originals, input.connector);
   for (const s of report.order) {
     parts[s.part].assemblyStep = s.step;
     parts[s.part].insertDirection = s.direction;

@@ -12,12 +12,12 @@
  * @license MIT
  */
 
-import type { Manifold } from 'manifold-3d';
-import type { SceneObject, Vec3 } from '../../types/kura';
+import type { SceneObject } from '../../types/kura';
 import { engineWarning, type EngineWarning } from '../engineErrors';
 import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../manifoldKernel';
 import { applyTransformToMesh } from '../primitives';
 import { buildBodies, cellKey, contactSection, MIN_CONTACT_MM2, type Cell } from './splitBodies';
+import { cutIntoCells, gridOf, SPLIT_AXES } from './splitCells';
 import { buildJoint } from './splitJoints';
 import { finishParts } from './splitFinish';
 import { buildLooseDowelBatch, looseDowelLength } from './splitLooseDowel';
@@ -26,40 +26,9 @@ import { settleAssembly } from './splitAssemblyRepair';
 import { ConnectorRoom } from './splitConnectorRoom';
 import type { AssemblyFix, AssemblySuggestion } from './assemblyTypes';
 import { SPLIT_DEFAULTS, splitPartCode } from './splitPlan';
-import { AXIS_INDEX } from './splitSections';
 import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitResult, SplitAxis, SplitJoint, SplitLooseDowel } from './splitTypes';
 
-const AXES: SplitAxis[] = ['x', 'y', 'z'];
-const NORMALS: Record<SplitAxis, Vec3> = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] };
-
-/** Corta por los planos de un eje cada pieza de la lista; devuelve la nueva lista con su celda. */
-function cutAxis(
-  cells: Array<{ cell: Cell; m: Manifold }>,
-  axis: SplitAxis,
-  planes: number[],
-  tick: () => void,
-): Array<{ cell: Cell; m: Manifold }> {
-  if (planes.length === 0) return cells;
-  const a = AXIS_INDEX[axis];
-  const out: Array<{ cell: Cell; m: Manifold }> = [];
-  for (const { cell, m } of cells) {
-    let rest = m;
-    planes.forEach((p, t) => {
-      const [above, below] = rest.splitByPlane(NORMALS[axis], p);
-      if (rest !== m || t > 0) rest.delete();
-      const c = [...cell] as Cell;
-      c[a] = t;
-      out.push({ cell: c, m: below });
-      rest = above;
-      tick();
-    });
-    const c = [...cell] as Cell;
-    c[a] = planes.length;
-    out.push({ cell: c, m: rest });
-    m.delete();
-  }
-  return out;
-}
+const AXES = SPLIT_AXES;
 
 /** Tarugos sueltos de las uniones que los conservan, en un lote por medida. */
 function buildLooseDowels(wasm: Awaited<ReturnType<typeof initManifoldEngine>>, joints: SplitJoint[]): SplitLooseDowel[] {
@@ -103,16 +72,14 @@ export async function executeBedSplitGeometry(
   const source = meshDataToManifold(wasm, world, undefined, obj.color);
   const sourceVolume = source.volume();
   const counts = [plan.counts.x, plan.counts.y, plan.counts.z];
-  const planesBy = AXES.map((axis) => plan.planes.filter((p) => p.axis === axis).map((p) => p.position).sort((a, b) => a - b));
-  const bounds = AXES.map((_, a) => [plan.bounds.min[a], ...planesBy[a], plan.bounds.max[a]]);
+  const { planesBy, bounds } = gridOf(plan);
   const totalCuts = planesBy[0].length + planesBy[1].length * counts[0] + planesBy[2].length * counts[0] * counts[1];
   let done = 0;
   const tick = () => options.onProgress?.(++done, totalCuts);
   const codeOf = (c: Cell) => splitPartCode(c, counts[2]);
 
   // 1. Cortes en secuencia y piezas de un solo cuerpo
-  let cells: Array<{ cell: Cell; m: Manifold }> = [{ cell: [0, 0, 0], m: source }];
-  for (let a = 0; a < 3; a++) cells = cutAxis(cells, AXES[a], planesBy[a], tick);
+  const cells = cutIntoCells(source, planesBy, tick);
   const { bodies, byCell, cache } = buildBodies(wasm, cells, bounds, { minFragmentMm3: minFragment, usable: plan.usableMm, codeOf }, warnings);
 
   try {
@@ -198,7 +165,7 @@ export async function executeBedSplitGeometry(
       const settled = settleAssembly({
         wasm, bodies, joints, parts, index, toJoints, volumes: { source: sourceVolume, clearance, engraved },
         smoothParts: () => order.map((b) => ({ code: b.code, mesh: manifoldToMeshData(b.m), assembly: { position: [0, 0, 0], rotation: [0, 0, 0] } })),
-        preFix: fix, preSuggestions: suggestions, autoFix: options.assemblyAutoFix !== false, warnings,
+        preFix: fix, preSuggestions: suggestions, autoFix: options.assemblyAutoFix !== false, connector, warnings,
       });
       clearance += settled.clearanceDelta;
       assembly = settled.report;
