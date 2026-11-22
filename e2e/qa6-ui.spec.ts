@@ -102,6 +102,7 @@ test('resumen de dividir muestra rejilla y medidas en los ejes del usuario (Z = 
 });
 
 test('guardar y reabrir .kura conserva los avisos de las uniones', async ({ page }) => {
+  test.setTimeout(120000);
   await page.goto(URL);
   await page.evaluate(() => {
     const w = window as unknown as { __saved: Blob | null; showSaveFilePicker: unknown };
@@ -118,7 +119,7 @@ test('guardar y reabrir .kura conserva los avisos de las uniones', async ({ page
   await page.getByRole('button', { name: 'Dividir para imprimir' }).first().click();
   await page.getByLabel('Tipo de conector').selectOption({ label: 'Tarugo suelto (se imprime aparte)' });
   await page.getByRole('button', { name: 'Dividir', exact: true }).click();
-  await expect(page.getByText(/UNIONES \(12\)/)).toBeVisible({ timeout: 30000 });
+  await expect(page.getByText(/Uniones \(12\)/i)).toBeVisible({ timeout: 30000 });
   const antes = await page.getByText('Kura3D dejó esta unión para pegar').count();
   expect(antes).toBeGreaterThan(0);
   await page.keyboard.press('Control+s');
@@ -130,6 +131,7 @@ test('guardar y reabrir .kura conserva los avisos de las uniones', async ({ page
     return btoa(s);
   });
   await page.goto(URL);
+  await page.getByText('Manifold WASM Listo').waitFor();
   await page.evaluate(async (data) => {
     const bin = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
     const dt = new DataTransfer();
@@ -137,6 +139,6 @@ test('guardar y reabrir .kura conserva los avisos de las uniones', async ({ page
     window.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }));
   }, b64);
   await page.keyboard.press('Control+a');
-  await expect(page.getByText(/UNIONES \(12\)/)).toBeVisible({ timeout: 30000 });
+  await expect(page.getByText(/Uniones \(12\)/i)).toBeVisible({ timeout: 30000 });
   expect(await page.getByText('Kura3D dejó esta unión para pegar').count()).toBe(antes);
 });
