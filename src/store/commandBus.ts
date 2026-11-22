@@ -10,6 +10,7 @@
  */
 
 import { isReadCommand } from '../core/commands/commandPolicy';
+import { BRAND } from '../brand';
 import * as engine from '../engine';
 import { isEngineError, type EngineErrorCode } from '../engine/engineErrors';
 import { localizeEngineErrorForUser } from './userEngineMessages';
@@ -325,7 +326,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     const { onlySelected, wantsBytes } = schema.parseExport(p);
     if (wantsBytes || headless()) {
       const { targets, skippedHoles } = exportTargets(deps, onlySelected);
-      const bytes = engine.exportSceneToBinarySTL(targets);
+      const bytes = engine.exportSceneToBinarySTL(targets, engine.stlBrandHeader(BRAND));
       return { format: 'stl', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles };
     }
     required(await deps.get().exportSceneStl(onlySelected), command);

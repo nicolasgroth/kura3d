@@ -9,6 +9,7 @@
  */
 
 import * as engine from '../../engine';
+import { BRAND } from '../../brand';
 import type {
   DetectedStructureRegion,
   HollowOptions,
@@ -61,7 +62,7 @@ export interface ExportTaskResult {
 export async function exportSceneFiles(a: ExportTaskArgs): Promise<ExportTaskResult> {
   switch (a.format) {
     case 'stl':
-      return { files: [{ suffix: '.stl', data: engine.exportSceneToBinarySTL(a.targets) }] };
+      return { files: [{ suffix: '.stl', data: engine.exportSceneToBinarySTL(a.targets, engine.stlBrandHeader(BRAND)) }] };
     case '3mf':
       return { files: [{ suffix: '.3mf', data: engine.exportSceneTo3MF(a.targets, a.unitSystem) }] };
     case 'obj': {

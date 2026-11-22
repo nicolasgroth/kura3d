@@ -12,7 +12,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
-import { exportSceneTo3MF, exportSceneToBinarySTL } from '../../src/engine/index';
+import { exportSceneTo3MF, exportSceneToBinarySTL, stlBrandHeader } from '../../src/engine/index';
+import { BRAND } from '../../src/brand';
 import type { HeadlessSceneObject } from './headlessSupport.js';
 import type { UnitSystem } from './types.js';
 
@@ -65,7 +66,7 @@ export async function writeStlFile(
   binary: boolean
 ): Promise<ExportFileResult> {
   const solids = exportableObjects(targets);
-  const binaryBytes = exportSceneToBinarySTL(solids);
+  const binaryBytes = exportSceneToBinarySTL(solids, stlBrandHeader(BRAND));
   const triangles = new DataView(binaryBytes.buffer, binaryBytes.byteOffset).getUint32(80, true);
   const data = binary ? binaryBytes : Buffer.from(binaryStlToAscii(binaryBytes), 'utf8');
 
