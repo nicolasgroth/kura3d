@@ -342,20 +342,22 @@ describe('QA6 C: STL 10×20×30 (Z arriba) importa, exporta y reimporta sin camb
   }, 60_000);
 });
 
-// Brecha CONFIRMADA (mayor): `create_primitive` del bus NO convierte `position` de ejes del usuario a internos (el MCP
-// headless sí). La misma llamada `kura_create_primitive {position:[4,5,20]}` crea el objeto en otro lugar según haya o
-// no UI conectada: en el bus queda en el usuario (4, −20, 5) y devuelve esa posición, no la pedida.
+// Corregida (antes `it.fails`): `create_primitive` del bus convierte `position` de ejes del usuario a internos, igual
+// que el MCP headless, y devuelve la posición pedida.
 describe('QA6 C: posición de create_primitive en el bus', () => {
   beforeEach(() => resetStore());
-  it.fails('create_primitive con position [4,5,20] (Z arriba) devuelve y coloca esa posición de usuario', async () => {
+  it('create_primitive con position [4,5,20] (Z arriba) devuelve y coloca esa posición de usuario', async () => {
     const res = await run('create_primitive', { type: 'box', params: { width: 10, depth: 10, height: 10 }, placement: 'origin', position: [4, 5, 20] });
     expect(res.ok).toBe(true);
     expect((res.result as { position: number[] }).position.map(round)).toEqual([4, 5, 20]);
-    expect(userBox(store().objects[0]).min.slice(2)).toEqual([15]);
+    // `position` es el centro de la base (convención del motor y del headless): la caja va de Z = 20 a 30
+    expect(userBox(store().objects[0]).min).toEqual([-1, 0, 20]);
+    expect(userBox(store().objects[0]).max).toEqual([9, 10, 30]);
   });
   it('el headless sí respeta la posición del usuario (referencia de contraste)', async () => {
     const h = await newHeadless();
     const s = await h.createPrimitive({ primitiveType: 'box', params: { width: 10, depth: 10, height: 10 }, placement: 'origin', position: [4, 5, 20] } );
     expect(s.position.map(round)).toEqual([4, 5, 20]);
+    expect(userBox(h.getObject(s.id)).min).toEqual([-1, 0, 20]);
   });
 });

@@ -105,7 +105,8 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
 
   create_primitive: async (p, { get }, command) => {
     const { type, params, ...options } = schema.parseCreatePrimitive(p);
-    const obj = required(await get().createPrimitive(type, params, options), command);
+    // `position` llega en ejes del usuario (Z arriba), como en el modo sin interfaz
+    const obj = required(await get().createPrimitive(type, params, { ...options, position: vecFromUser(options.position) }), command);
     return { ...withStats(obj), position: toUserVector(obj.position) };
   },
 
