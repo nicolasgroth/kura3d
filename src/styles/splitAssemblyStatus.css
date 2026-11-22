@@ -1,0 +1,63 @@
+/**
+ * @file src/styles/splitAssemblyStatus.css
+ * @description Aviso del estado del armado arriba de la sección "Uniones" y etiqueta "Marca de puntos".
+ * El estado se distingue por icono, borde y texto, no solo por el color.
+ */
+
+.kura-split-assembly-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-split-assembly-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--text-secondary);
+  border-left-width: 4px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.kura-split-assembly-alert[data-kind='fail'] {
+  border-color: #d97706;
+}
+
+.kura-split-assembly-alert[data-kind='info'] {
+  border-color: var(--accent-cyan);
+}
+
+.kura-split-assembly-alert svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.kura-split-assembly-alert[data-kind='fail'] svg {
+  color: #d97706;
+}
+
+.kura-split-assembly-alert ul {
+  margin: 4px 0;
+  padding-left: 18px;
+  list-style: disc;
+  color: var(--text-secondary);
+}
+
+.kura-split-assembly-alert p {
+  margin: 0;
+}
+
+.kura-split-joint-status[data-status='dots'] {
+  --status-color: var(--accent-cyan);
+}
+
+@media (forced-colors: active) {
+  .kura-split-assembly-alert {
+    border-color: CanvasText;
+  }
+}

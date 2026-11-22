@@ -1211,7 +1211,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'split.summary': 'Übersicht',
   'split.calculating': 'Plan wird berechnet…',
   'split.sum.pieces': 'Teile',
-  'split.sum.piecesValue': '{count} (Raster {grid})',
+  'split.sum.piecesValue': 'bis zu {count} (Raster {grid})',
   'split.sum.plates': 'Druckplatten',
   'split.sum.platesValue': '≈ {count} (geschätzt)',
   'split.sum.largest': 'Größtes Teil',
@@ -1355,4 +1355,5 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'bus.error.assemblyNotFound': 'Teil oder Gruppe „{id}“ nicht gefunden.',
   'bus.error.assemblyNoTarget': 'Gib groupId oder die ids der geteilten Teile an.',
   'bus.error.assemblyNotSplit': 'Diese Teile können nicht neu geprüft werden ({reason}): Sie müssen zu einer geteilten Gruppe mit gespeicherten Verbindungen gehören.',
+  'dialog.thread.invalidFields': 'Korrigiere die markierten Felder, bevor du das Gewinde erstellst: Ein nicht numerischer oder außerhalb des Bereichs liegender Wert wird nicht übernommen.',
 };

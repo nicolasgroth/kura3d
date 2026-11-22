@@ -1211,7 +1211,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'split.summary': 'Résumé',
   'split.calculating': 'Calcul du plan…',
   'split.sum.pieces': 'Pièces',
-  'split.sum.piecesValue': '{count} (grille {grid})',
+  'split.sum.piecesValue': 'jusqu’à {count} (grille {grid})',
   'split.sum.plates': 'Plateaux',
   'split.sum.platesValue': '≈ {count} (estimation)',
   'split.sum.largest': 'Plus grande pièce',
@@ -1355,4 +1355,5 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'bus.error.assemblyNotFound': 'Pièce ou groupe « {id} » introuvable.',
   'bus.error.assemblyNoTarget': 'Indique groupId ou les ids des pièces divisées.',
   'bus.error.assemblyNotSplit': 'Ces pièces ne peuvent pas être revalidées ({reason}) : elles doivent appartenir à un même groupe divisé avec ses jonctions enregistrées.',
+  'dialog.thread.invalidFields': 'Corrigez les champs marqués avant de créer le filetage : une valeur non numérique ou hors plage n’est pas appliquée.',
 };

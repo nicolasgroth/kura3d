@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { BooleanOpType } from '../../types/kura';
@@ -32,11 +32,30 @@ export const BooleanPreviewBar: React.FC = () => {
   const api = useBooleanPreview();
   // Con el inspector a la vista los controles viven solo allí: la barra no los duplica.
   const inspectorVisible = useInspectorVisible();
+  const visible = !(selectedCount < 2 || activeDialog !== null || inspectorVisible || !api.base || !api.tool);
+  const barRef = useRef<HTMLDivElement | null>(null);
 
-  if (selectedCount < 2 || activeDialog !== null || inspectorVisible || !api.base || !api.tool) return null;
+  // Publica su alto real (`--kura-bool-bar-h`) para que otros paneles flotantes del visor (p. ej. "Armado" en
+  // móvil) se coloquen encima y no tapen Unir / Restar / Intersectar aunque los rótulos ocupen varias filas.
+  useEffect(() => {
+    const root = document.documentElement;
+    const el = barRef.current;
+    if (!visible || !el) return;
+    const publish = () => root.style.setProperty('--kura-bool-bar-h', `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    publish();
+    if (typeof ResizeObserver === 'undefined') return () => root.style.removeProperty('--kura-bool-bar-h');
+    const observer = new ResizeObserver(publish);
+    observer.observe(el, { box: 'border-box' });
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty('--kura-bool-bar-h');
+    };
+  }, [visible]);
+
+  if (!visible) return null;
 
   return (
-    <div className="kura-bool-bar" role="toolbar" aria-label={t(language, 'boolPreview.title')}>
+    <div ref={barRef} className="kura-bool-bar" role="toolbar" aria-label={t(language, 'boolPreview.title')}>
       {OPS.map(({ op, key }) => (
         <button
           key={op}

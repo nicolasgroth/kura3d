@@ -769,6 +769,22 @@ export interface SplitPartMetadata {
    * después (`validate_assembly`). Ausente en proyectos anteriores.
    */
   joints?: SplitJointRecord[];
+  /**
+   * Avisos y arreglos que dijo el motor al dividir el grupo, para verlos al reabrir el `.kura`. Solo la
+   * pieza de menor código del grupo los lleva (no se repiten). Ausente en proyectos anteriores.
+   */
+  groupNotes?: SplitStoredNotes;
+}
+
+/** Avisos de una división guardados en el proyecto (versión plana de `SplitGroupNotes`, con límites de tamaño). */
+export interface SplitStoredNotes {
+  warnings: Array<{ code: string; params: Record<string, string | number> }>;
+  suggestions: Array<{ joint: string; options: string[] }>;
+  weakJoints: string[];
+  gluedByFix: string[];
+  changedByFix: string[];
+  /** Estado del armado al terminar de dividir. */
+  report?: { ok: boolean; steps: number; blocked: string[]; clashes: number; interference: number; gaps: number };
 }
 
 /** Unión guardada de "dividir para imprimir": `a` = pieza del lado negativo del eje, `b` = positivo. */

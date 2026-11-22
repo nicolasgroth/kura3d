@@ -1211,7 +1211,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'split.summary': '摘要',
   'split.calculating': '正在计算方案…',
   'split.sum.pieces': '零件数',
-  'split.sum.piecesValue': '{count}（网格 {grid}）',
+  'split.sum.piecesValue': '最多 {count}（网格 {grid}）',
   'split.sum.plates': '打印批次',
   'split.sum.platesValue': '≈ {count}（估计）',
   'split.sum.largest': '最大零件',
@@ -1355,4 +1355,5 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'bus.error.assemblyNotFound': '未找到零件或组“{id}”。',
   'bus.error.assemblyNoTarget': '请提供 groupId 或分割零件的 ids。',
   'bus.error.assemblyNotSplit': '无法重新验证这些零件（{reason}）：它们必须属于同一分割组并保存了接合信息。',
+  'dialog.thread.invalidFields': '创建螺纹前请先修正标记的字段：非数字或超出范围的值不会被应用。',
 };

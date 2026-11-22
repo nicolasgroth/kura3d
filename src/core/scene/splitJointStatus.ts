@@ -25,6 +25,8 @@ export interface SplitGroupNotes {
   gluedByFix: string[];
   /** `"3:dovetail"`: unión y tipo al que cambió el arreglo. */
   changedByFix: string[];
+  /** Estado del armado al terminar de dividir (cuántas piezas traban, choques…); sin él, solo se ven los avisos. */
+  report?: { ok: boolean; steps: number; blocked: string[]; clashes: number; interference: number; gaps: number };
 }
 
 /** Resultado de revalidar el armado (subconjunto de `storedAssemblyResponse` que usa la interfaz). */
@@ -51,6 +53,12 @@ const JOINT_WARNING_CODES: ReadonlySet<EngineWarningCode> = new Set<EngineWarnin
   'SPLIT_LABEL_DEPTH_CLAMPED',
   'ASSEMBLY_CONNECTOR_CLASH',
   'ASSEMBLY_GAP',
+  'SPLIT_JOINT_PARTIAL_GLUE',
+  'SPLIT_CONNECTOR_REINFORCED',
+  'SPLIT_LABEL_DOTS',
+  'SPLIT_JOINT_MESH_OPEN',
+  // Lleva el código de la pieza (no la etiqueta): se muestra en las uniones de esa pieza.
+  'SPLIT_PART_NOT_CLOSED',
 ]);
 
 export interface SplitJointRow {
@@ -67,6 +75,8 @@ export interface SplitJointRow {
   weak: { measuredMm: number; recommendedMm: number } | null;
   /** Avisos del motor propios de esta unión (solape no imprimible, marca limitada, pegada, cambiada…). */
   warnings: EngineWarning[];
+  /** `true` si la marca de pareja de esta unión va como puntos por fuera (el texto no cabía). */
+  labelDots: boolean;
   /** Piezas que esta unión impide montar (si traba). */
   blocks: string[];
   /** Alternativas del motor para una unión que traba: `glue` o `change-type:<tipo>`. */
@@ -117,16 +127,19 @@ export function buildJointRows(
           : weak
             ? 'weak'
             : 'ok';
-    const seenCodes = new Set<string>();
+    const seen = new Set<string>();
     const own = warnings.filter((w) => {
-      if (!JOINT_WARNING_CODES.has(w.code) || labelOf(w) !== r.label || seenCodes.has(w.code)) return false;
-      seenCodes.add(w.code);
+      if (!JOINT_WARNING_CODES.has(w.code)) return false;
+      const mine = w.code === 'SPLIT_PART_NOT_CLOSED' ? [r.a, r.b].includes(String(w.params.code)) : labelOf(w) === r.label;
+      const key = `${w.code}:${w.params.code ?? ''}`;
+      if (!mine || seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
     const blocks = validation ? validation.blockedDetail.filter((b) => b.conflictingJoints.includes(r.label)).map((b) => b.code) : [];
     return {
       label: r.label, a: r.a, b: r.b, axis: r.axis, position: r.position, kind: r.kind, connector: r.connector,
-      centers: r.connectorCenters, status,
+      centers: r.connectorCenters, status, labelDots: own.some((w) => w.code === 'SPLIT_LABEL_DOTS'),
       weak: weak ? { measuredMm: weak.measuredMm, recommendedMm: weak.recommendedMm } : null,
       warnings: own, blocks, options: pending?.options ?? [],
     };

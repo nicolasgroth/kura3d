@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect, useId, useMemo, useState } from 'react';
-import { AlertTriangle, Ban, CheckCircle2, Paperclip, RefreshCw, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, Ban, CheckCircle2, CircleDot, Paperclip, RefreshCw, ShieldCheck } from 'lucide-react';
 import { t } from '../../i18n';
 import { userAxisLabel, userAxisOfInternal } from '../../core/scene/displayAxes';
 import {
@@ -19,6 +19,8 @@ import {
   type SplitJointRow, type SplitJointStatus,
 } from '../../core/scene/splitJointStatus';
 import { splitGroupOf } from '../../core/scene/splitGroups';
+import { groupNotesOf } from '../../core/scene/splitGroupNotes';
+import { SplitAssemblyStatus } from './SplitAssemblyStatus';
 import { localizeWarnings } from '../../store/operationErrors';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { LanguageCode, SceneObject } from '../../types/kura';
@@ -65,10 +67,9 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
   const groupId = group?.groupId ?? null;
   const validation = groupId ? validationAll[groupId] : undefined;
   const report = validation?.status === 'done' ? validation.report : null;
-  const rows = useMemo(
-    () => (group ? buildJointRows(group, groupId ? notesAll[groupId] : null, report) : []),
-    [group, groupId, notesAll, report],
-  );
+  // Lo que dijo el motor al dividir: de la sesión o, si se reabrió el archivo, el guardado con las piezas.
+  const notes = useMemo(() => (group ? groupNotesOf(group.parts, groupId ? notesAll[groupId] : null) : null), [group, groupId, notesAll]);
+  const rows = useMemo(() => (group ? buildJointRows(group, notes, report) : []), [group, notes, report]);
   const order = useMemo(() => (group ? assemblyOrderOf(group) : []), [group]);
   const dowels = useMemo(() => (groupId ? groupLooseDowels(objects, groupId) : []), [objects, groupId]);
 
@@ -93,11 +94,13 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
       if (w.code === 'ASSEMBLY_CONNECTOR_CLASH') {
         return t(language, 'splitJoints.note.clash', { distance: fmt(Math.max(0, Number(w.params.distance))), required: fmt(Number(w.params.required)) });
       }
+      if (w.code === 'SPLIT_LABEL_DOTS') return t(language, 'splitJoints.note.dots', { label: String(w.params.label ?? row.label) });
       return localizeWarnings(language, [w])[0];
     });
 
   return (
     <section className="kura-split-joints-section" aria-labelledby={`${uid}-title`}>
+      <SplitAssemblyStatus language={language} notes={notes} validation={report} />
       <h3 id={`${uid}-title`} className="kura-section-label">{t(language, 'splitJoints.title')} ({rows.length})</h3>
       {rows.length > 0 && <small className="kura-cut-hint">{t(language, 'splitJoints.intro')}</small>}
       {dowels.length > 0 && (
@@ -124,7 +127,7 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
                   type="button"
                   className="kura-split-joint-btn"
                   aria-pressed={pinned === row.label}
-                  aria-label={`${t(language, 'splitJoints.item', { label: row.label, a: row.a, b: row.b })}. ${t(language, 'splitJoints.status.label')}: ${statusText}`}
+                  aria-label={`${t(language, 'splitJoints.item', { label: row.label, a: row.a, b: row.b })}. ${t(language, 'splitJoints.status.label')}: ${statusText}${row.labelDots ? `, ${t(language, 'splitJoints.status.dots')}` : ''}`}
                   aria-describedby={notes.length > 0 || row.status !== 'ok' ? noteId : undefined}
                   title={t(language, 'splitJoints.intro')}
                   onMouseEnter={() => show(row.label)}
@@ -141,12 +144,17 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
                   <span className="kura-split-joint-status" data-status={row.status}>
                     {STATUS_ICON[row.status]} {statusText}
                   </span>
+                  {row.labelDots && (
+                    <span className="kura-split-joint-status" data-status="dots" title={t(language, 'splitJoints.note.dotsShort')}>
+                      <CircleDot size={12} aria-hidden="true" /> {t(language, 'splitJoints.status.dots')}
+                    </span>
+                  )}
                 </button>
                 <small className="kura-cut-hint">
                   {t(language, 'splitJoints.plane', { axis: userAxisLabel(row.axis), pos: fmt(Math.round(axis.sign * row.position * 10) / 10 + 0) })}
                   {' · '}
                   {row.connector && row.kind === 'connector' && count > 0
-                    ? t(language, 'splitJoints.connectors', { count, type: typeName, d: fmt(2 * row.connector.size) })
+                    ? t(language, row.connector.type === 'dovetail' ? 'splitJoints.connectorsWidth' : 'splitJoints.connectors', { count, type: typeName, d: fmt(2 * row.connector.size) })
                     : typeName}
                 </small>
                 <div id={noteId} className="kura-split-joint-notes">

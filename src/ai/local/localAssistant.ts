@@ -156,6 +156,8 @@ function resolveTarget(step: LocalStep, run: LocalRun): Resolution {
     if (sameType.length > 1) return { ambiguous: sameType.map((o) => o.name) };
   }
   if (run.createdId && run.find(run.createdId)) return { ids: [run.createdId] };
+  // "muévelo", "gíralo", "súbelo": el pronombre es el objeto seleccionado (solo uno), sin volver a preguntar.
+  if (ref.pronoun && !ref.names.length && !ref.shape && selectedIds.length === 1) return { ids: [selectedIds[0]] };
   if (ref.pronoun && run.find(memory.lastCreatedId)) return { ids: [memory.lastCreatedId!] };
   if (step.intent.kind === 'boolean' && selectedIds.length >= 2) return { confirm: [...selectedIds] };
   if (selectedIds.length) return { confirm: [...selectedIds] };

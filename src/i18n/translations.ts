@@ -1218,7 +1218,7 @@ export const TRANSLATIONS_ES = {
   'split.summary': 'Resumen',
   'split.calculating': 'Calculando el plan…',
   'split.sum.pieces': 'Piezas',
-  'split.sum.piecesValue': '{count} (rejilla {grid})',
+  'split.sum.piecesValue': 'hasta {count} (rejilla {grid})',
   'split.sum.plates': 'Placas',
   'split.sum.platesValue': '≈ {count} (estimado)',
   'split.sum.largest': 'Pieza más grande',
@@ -1362,6 +1362,7 @@ export const TRANSLATIONS_ES = {
   'bus.error.assemblyNotFound': 'No se encontró la pieza o el grupo «{id}».',
   'bus.error.assemblyNoTarget': 'Indica groupId o ids de las piezas divididas.',
   'bus.error.assemblyNotSplit': 'Esas piezas no se pueden revalidar ({reason}): deben ser piezas de un mismo grupo dividido con sus uniones guardadas.',
+  'dialog.thread.invalidFields': 'Corrige los campos marcados antes de crear la rosca: un valor no numérico o fuera de rango no se aplica.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2539,7 +2540,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'split.summary': 'Summary',
   'split.calculating': 'Computing the plan…',
   'split.sum.pieces': 'Pieces',
-  'split.sum.piecesValue': '{count} (grid {grid})',
+  'split.sum.piecesValue': 'up to {count} (grid {grid})',
   'split.sum.plates': 'Plates',
   'split.sum.platesValue': '≈ {count} (estimate)',
   'split.sum.largest': 'Largest piece',
@@ -2683,6 +2684,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'bus.error.assemblyNotFound': 'Part or group “{id}” not found.',
   'bus.error.assemblyNoTarget': 'Give groupId or the ids of the split parts.',
   'bus.error.assemblyNotSplit': 'These parts cannot be revalidated ({reason}): they must be parts of one split group with their joints saved.',
+  'dialog.thread.invalidFields': 'Fix the marked fields before creating the thread: a non-numeric or out-of-range value is not applied.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

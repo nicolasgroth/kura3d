@@ -6,7 +6,7 @@
  * @license MIT
  */
 
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Bolt } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -35,6 +35,18 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
   const [clearanceMm, setClearanceMm] = useState(() => defaultThreadClearance(1.25));
   const [includeHead, setIncludeHead] = useState(true);
   const failure = useOperationFailure(open);
+  const uid = useId();
+  // Campos con texto no numérico o fuera de rango: no se crea con el valor anterior en silencio.
+  const [invalidFields, setInvalidFields] = useState<ReadonlySet<string>>(new Set());
+  const markInvalid = (field: string) => (bad: boolean) =>
+    setInvalidFields((prev) => {
+      if (prev.has(field) === bad) return prev;
+      const next = new Set(prev);
+      if (bad) next.add(field);
+      else next.delete(field);
+      return next;
+    });
+  const blocked = invalidFields.size > 0;
   // La holgura por defecto escala con el paso; cambiar el paso la restablece (editable después)
   const applyPitch = (value: number) => {
     setPitchMm(value);
@@ -51,6 +63,7 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
   };
 
   const handleExecute = async () => {
+    if (blocked) return;
     const { result: created } = await failure.run(() => createThreadObject(threadOptions));
     if (created) onClose();
   };
@@ -68,6 +81,9 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
           <button
             type="button"
             className="kura-btn kura-btn-primary"
+            disabled={blocked}
+            aria-describedby={blocked ? `${uid}-invalid` : undefined}
+            title={blocked ? t(language, 'dialog.thread.invalidFields') : t(language, 'dialog.thread.execute')}
             onClick={() => void handleExecute()}
           >
             <Bolt size={14} />
@@ -77,6 +93,11 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
       }
     >
       <OperationFailureAlert message={failure.error} />
+      {blocked && (
+        <div id={`${uid}-invalid`} role="alert" className="kura-cut-reason">
+          {t(language, 'dialog.thread.invalidFields')}
+        </div>
+      )}
       <PreviewButton
         previewKey="thread"
         open={open}
@@ -141,6 +162,8 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
           <label htmlFor="thread-diam">{t(language, 'dialog.thread.diameter')}</label>
           <PrecisionNumberInput
             id="thread-diam"
+            strictRange
+            onInvalidChange={markInvalid('diameter')}
             min={THREAD_MIN_DIAMETER_MM}
             max={THREAD_MAX_DIAMETER_MM}
             step={0.5}
@@ -159,6 +182,8 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
           <label htmlFor="thread-pitch">{t(language, 'dialog.thread.pitch')}</label>
           <PrecisionNumberInput
             id="thread-pitch"
+            strictRange
+            onInvalidChange={markInvalid('pitch')}
             min={0.2}
             max={6}
             step={0.05}
@@ -173,6 +198,8 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
           <label htmlFor="thread-len">{t(language, 'dialog.thread.length')}</label>
           <PrecisionNumberInput
             id="thread-len"
+            strictRange
+            onInvalidChange={markInvalid('length')}
             min={4}
             max={120}
             step={1}
@@ -187,6 +214,8 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
           <label htmlFor="thread-clear">{t(language, 'dialog.thread.clearance')}</label>
           <PrecisionNumberInput
             id="thread-clear"
+            strictRange
+            onInvalidChange={markInvalid('clearance')}
             min={0}
             max={0.8}
             step={0.05}

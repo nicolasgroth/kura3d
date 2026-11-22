@@ -2,8 +2,8 @@
  * @file e2e/qa6-ui.spec.ts
  * @description Recorridos Playwright del QA del lote "Z como altura + dividir/armado": medidas de un STL 10×20×30,
  * corte por plano con "mitad positiva" en cada eje (sobre el STL exportado), resumen de división en los ejes del usuario
- * y persistencia de avisos de unión al guardar/reabrir `.kura`. Las pruebas marcadas con `test.fail` documentan fallos
- * conocidos (al corregirlos, Playwright las reporta como "inesperadamente pasan" y se quita la marca).
+ * y persistencia de avisos de unión al guardar/reabrir `.kura`. Los fallos que documentaban las marcas `test.fail`
+ * (corte en Y, resumen en ejes del motor, avisos que se perdían al reabrir) están corregidos y se cubren además con vitest.
  * Requiere `@playwright/test` y la web en KURA_URL (por defecto http://127.0.0.1:5189).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -78,7 +78,6 @@ test('un STL de 10×20×30 mide eso en el inspector y al exportarlo', async ({ p
 for (const [axis, label, idx] of [['X', 'X (vertical)', 0], ['Y', 'Y (vertical)', 1], ['Z', 'Z (horizontal)', 2]] as const) {
   test(`corte por plano eje ${axis}: "solo mitad positiva" conserva el lado + del eje`, async ({ page }, info) => {
     // Fallo conocido: en Y conserva la mitad con Y negativa.
-    if (axis === 'Y') test.fail(true, 'QA6: la mitad positiva en Y conserva y∈[-10,0]');
     await page.goto(URL);
     await importar(page, 'caja.stl', boxStl(10, 20, 30));
     await page.getByRole('button', { name: 'Corte por plano + uniones' }).first().click();
@@ -94,7 +93,6 @@ for (const [axis, label, idx] of [['X', 'X (vertical)', 0], ['Y', 'Y (vertical)'
 }
 
 test('resumen de dividir muestra rejilla y medidas en los ejes del usuario (Z = altura)', async ({ page }) => {
-  test.fail(true, 'QA6: el resumen usa los ejes del motor (rejilla 1 × 3 × 1 y 100 × 206 × 100 para un cilindro vertical)');
   await page.goto(URL);
   await importar(page, 'poste.stl', boxStl(100, 100, 600));
   await page.getByRole('button', { name: 'Dividir para imprimir' }).first().click();
@@ -104,7 +102,6 @@ test('resumen de dividir muestra rejilla y medidas en los ejes del usuario (Z = 
 });
 
 test('guardar y reabrir .kura conserva los avisos de las uniones', async ({ page }) => {
-  test.fail(true, 'QA6: al reabrir se pierden los avisos de cada unión (conector cerca del borde, "dejó para pegar")');
   await page.goto(URL);
   await page.evaluate(() => {
     const w = window as unknown as { __saved: Blob | null; showSaveFilePicker: unknown };

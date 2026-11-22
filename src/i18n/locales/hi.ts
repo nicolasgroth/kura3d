@@ -1211,7 +1211,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.summary': 'सारांश',
   'split.calculating': 'योजना की गणना हो रही है…',
   'split.sum.pieces': 'टुकड़े',
-  'split.sum.piecesValue': '{count} (ग्रिड {grid})',
+  'split.sum.piecesValue': 'अधिकतम {count} (ग्रिड {grid})',
   'split.sum.plates': 'प्लेटें',
   'split.sum.platesValue': '≈ {count} (अनुमान)',
   'split.sum.largest': 'सबसे बड़ा टुकड़ा',
@@ -1355,4 +1355,5 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'bus.error.assemblyNotFound': 'हिस्सा या समूह “{id}” नहीं मिला।',
   'bus.error.assemblyNoTarget': 'groupId या विभाजित हिस्सों के ids दें।',
   'bus.error.assemblyNotSplit': 'इन हिस्सों की फिर से जाँच नहीं हो सकती ({reason}): वे एक ही विभाजित समूह के हों और उनके जोड़ सहेजे हों।',
+  'dialog.thread.invalidFields': 'थ्रेड बनाने से पहले चिह्नित फ़ील्ड सुधारें: गैर-संख्यात्मक या सीमा से बाहर का मान लागू नहीं होता।',
 };

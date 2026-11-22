@@ -133,6 +133,17 @@ describe('local assistant on the real store', () => {
     expect(objects().every((o) => o.hollow?.wallThickness === 2)).toBe(true);
   });
 
+  it('"muévelo" con un objeto seleccionado lo mueve sin preguntar a cuál', async () => {
+    await addBoxes(2);
+    const target = objects()[1];
+    useKuraStore.setState({ selectedIds: [target.id] });
+    const before = target.position[0];
+    const out = await ask('muévelo 20 mm');
+    expect(out.executedTools.map((t) => t.name)).toEqual(['transform_object']);
+    expect(objects().find((o) => o.id === target.id)!.position[0]).toBeCloseTo(before + 20, 3);
+    expect(out.assistantText).not.toMatch(/\?/);
+  });
+
   it('cancels the pending action on "no" and when the user says something else', async () => {
     await addBoxes(1);
     await ask('duplica');
