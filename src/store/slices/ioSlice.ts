@@ -21,34 +21,30 @@ import { loadInitialImportPlacement, STORAGE_IMPORT_PLACEMENT_KEY, writeStorage 
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
-/** Parsea un archivo STL, 3MF u OBJ en mallas normalizadas listas para insertar en la escena. */
-function parseModelBufferToMeshes(
-  file: { name: string; buffer: ArrayBuffer },
-  invalidGeometryMessage: string,
-): Array<{ name: string; mesh: MeshData; color?: string }> {
-  const normalize = (mesh: MeshData) => {
-    const normalized = engine.normalizeMeshToBed(mesh);
-    const vertexCount = normalized.positions.length / 3;
-    if (!Number.isInteger(vertexCount) || vertexCount < 3 ||
-        normalized.indices.length < 3 || normalized.indices.length % 3 !== 0 ||
-        normalized.indices.some((index) => index >= vertexCount) ||
-        !normalized.positions.every(Number.isFinite) ||
-        (normalized.normals && (normalized.normals.length !== normalized.positions.length ||
-          !normalized.normals.every(Number.isFinite)))) {
-      throw new Error(invalidGeometryMessage);
-    }
-    return normalized;
-  };
-  // Lectores validados (índices, NaN, límites); cada pieza se centra para anclarla al objetivo.
-  return engine.parseModelFile(file.name, file.buffer).parts.map((part) => ({
+/** Lee un archivo STL, 3MF, OBJ o PLY en el Worker: piezas centradas listas para anclar a un objetivo. */
+async function parseModelBufferToMeshes(file: { name: string; buffer: ArrayBuffer }) {
+  // Los lectores ya validan índices, NaN, límites y orientación; aquí solo se centra cada pieza.
+  const model = await engine.parseModelFileAsync(file.name, file.buffer);
+  const parts = model.parts.map((part) => ({
     name: part.name || file.name.replace(/\.[^.]+$/, ''),
-    mesh: normalize(part.mesh),
+    mesh: engine.normalizeMeshToBed(part.mesh),
     color: part.color,
   }));
+  return { parts, warnings: model.warnings ?? [] };
 }
 
 export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
-  const { set, get, tr, pushHistory, runExclusive, runtime, projectErrorMessage, opCtx } = ctx;
+  const { set, get, tr, pushHistory, runExclusive, runtime, projectErrorMessage, opCtx, reportEngineWarnings } = ctx;
+
+  /** Igual que en `importModelFiles`: no se importa durante otra operación, la IA o un arrastre. */
+  const rejectWhileBusy = () => {
+    const state = get();
+    if (state.projectBusy || state.busyOperation || state.aiBusy || runtime.transformSnapshotBeforeDrag) {
+      state.addToast(tr('fileProject.busy'), 'info');
+      return true;
+    }
+    return false;
+  };
 
   const modelIo = createModelIoActions({
     get: () => get(),
@@ -58,6 +54,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     buildObject: ({ name, mesh, position, color, isHole }) =>
       buildSceneObject({ name, source: 'imported', mesh, position, color: color || PRINT_COLOR_PALETTE[0], isHole }),
     exportFiles: (args) => ctx.runEngineDetached('export', args),
+    reportWarnings: (warnings) => reportEngineWarnings(warnings),
     bedSize: () => activeBedSize(get()),
   });
 
@@ -84,9 +81,10 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
   return {
     importModelAsModule: async (file, mode, targetId) => {
+      if (rejectWhileBusy()) return null;
       return runExclusive(`import_module_${mode}`, null, async () => {
         await get().initEngine();
-        const parsedParts = parseModelBufferToMeshes(file, tr('dropProject.invalidGeometry', { name: file.name }));
+        const { parts: parsedParts, warnings } = await parseModelBufferToMeshes(file);
         if (parsedParts.length === 0) return null;
 
         const state = get();
@@ -113,6 +111,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
           spawnedAtById: { ...prev.spawnedAtById, ...Object.fromEntries(created.map((c) => [c.id, now])) },
         }));
         get().addToast(tr('toast.modularHelperCreated', { mode: prefix, name: created[0].name }), 'success');
+        reportEngineWarnings(warnings);
         return created[0];
       });
     },
@@ -158,11 +157,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
     importModelFiles: async (files, options) => {
       if (files.length === 0) return false;
-      const state = get();
-      if (state.projectBusy || state.busyOperation || state.aiBusy || runtime.transformSnapshotBeforeDrag) {
-        state.addToast(tr('fileProject.busy'), 'info');
-        return false;
-      }
+      if (rejectWhileBusy()) return false;
       return runExclusive(
         'import_mesh',
         false,

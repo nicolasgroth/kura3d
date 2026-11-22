@@ -8,6 +8,7 @@
  */
 
 import type { MeshData } from '../../types/kura';
+import type { EngineWarning } from '../engineErrors';
 import type { ModelImportLimits } from './importErrors';
 
 /** Formatos de modelo que Kura3D sabe leer. */
@@ -40,6 +41,8 @@ export interface ImportedModel {
    * transformación). Si es false, los grupos se colocan sin solaparse.
    */
   hasPlacement: boolean;
+  /** Ajustes hechos al leer (p. ej. normales invertidas reorientadas), con el nombre del archivo. */
+  warnings?: EngineWarning[];
 }
 
 /** Opciones comunes de lectura. */
