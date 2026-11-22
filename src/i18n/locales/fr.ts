@@ -515,6 +515,11 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'viewport.paint.swatch.violet': 'Violet',
   'viewport.paint.swatch.white': 'Blanc mat',
   'viewport.paint.swatch.charcoal': 'Anthracite',
+  'viewport.paint.swatch.gray': 'Gris',
+  'viewport.paint.swatch.black': 'Noir',
+  'viewport.paint.swatch.pink': 'Rose',
+  'viewport.paint.swatch.brown': 'Marron',
+  'viewport.paint.swatch.near': '{name} approx.',
 
   // Diálogos modales nativos (<dialog>)
   'dialog.close': 'Fermer',
@@ -1018,7 +1023,8 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'ai.tool.get_scene_state': 'J’ai consulté la scène',
   'ai.tool.unknown': 'J’ai exécuté une action',
   'dialog.settings.providerLocal': 'Local (sans IA externe)',
-  'dialog.settings.providerLocalNote': 'Mode local : l’assistant déterministe fonctionne sur votre appareil et n’envoie rien à l’extérieur. L’enregistrement supprime la clé Gemini stockée.',
+  'dialog.settings.providerLocalNote': 'Mode local : l’assistant déterministe fonctionne sur votre appareil et n’envoie rien à l’extérieur.',
+  'dialog.settings.providerLocalKeyNote': 'L’enregistrement supprime la clé Gemini stockée.',
   'dialog.settings.aiUnsavedMessage': 'Le fournisseur d’IA contient des modifications non enregistrées. Les enregistrer ?',
   'dialog.settings.testConnection': 'Tester la connexion',
   'dialog.settings.testing': 'Test en cours…',

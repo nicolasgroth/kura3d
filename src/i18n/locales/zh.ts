@@ -515,6 +515,11 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'viewport.paint.swatch.violet': '紫色',
   'viewport.paint.swatch.white': '哑光白',
   'viewport.paint.swatch.charcoal': '炭黑',
+  'viewport.paint.swatch.gray': '灰色',
+  'viewport.paint.swatch.black': '黑色',
+  'viewport.paint.swatch.pink': '粉色',
+  'viewport.paint.swatch.brown': '棕色',
+  'viewport.paint.swatch.near': '近似{name}',
 
   // Diálogos modales nativos (<dialog>)
   'dialog.close': '关闭',
@@ -1018,7 +1023,8 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'ai.tool.get_scene_state': '已查看场景',
   'ai.tool.unknown': '已执行一项操作',
   'dialog.settings.providerLocal': '本地（不使用外部 AI）',
-  'dialog.settings.providerLocalNote': '本地模式：确定性助手在你的设备上运行，不会向外发送任何内容。保存时将移除已保存的 Gemini 密钥。',
+  'dialog.settings.providerLocalNote': '本地模式：确定性助手在你的设备上运行，不会向外发送任何内容。',
+  'dialog.settings.providerLocalKeyNote': '保存时将移除已保存的 Gemini 密钥。',
   'dialog.settings.aiUnsavedMessage': 'AI 提供商有未保存的更改。要保存吗？',
   'dialog.settings.testConnection': '测试连接',
   'dialog.settings.testing': '正在测试…',

@@ -182,7 +182,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         try {
           await engine.initManifoldEngine();
           set({ engineReady: true, engineError: null, savedProject: captureProject(get()) });
-          get().addToast(tr('toast.engineReady'), 'success');
+          // Sin toast: el estado del motor ya se ve en la barra de estado (avisarlo en cada carga era ruido).
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
           // Libera la promesa para que la próxima llamada reintente en vez de reutilizar el fallo.

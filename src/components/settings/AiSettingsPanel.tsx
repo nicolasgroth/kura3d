@@ -277,7 +277,11 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
       {localMode && (
         <div className="kura-callout is-local" role="note">
           <ShieldCheck size={15} aria-hidden="true" />
-          <span>{t(language, 'dialog.settings.providerLocalNote')}</span>
+          <span>
+            {t(language, 'dialog.settings.providerLocalNote')}
+            {/* Solo si hay una clave guardada que el cambio a modo local vaya a quitar. */}
+            {keyStored && ` ${t(language, 'dialog.settings.providerLocalKeyNote')}`}
+          </span>
         </div>
       )}
 

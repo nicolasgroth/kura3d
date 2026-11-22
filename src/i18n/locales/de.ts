@@ -515,6 +515,11 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'viewport.paint.swatch.violet': 'Violett',
   'viewport.paint.swatch.white': 'Mattweiß',
   'viewport.paint.swatch.charcoal': 'Anthrazit',
+  'viewport.paint.swatch.gray': 'Grau',
+  'viewport.paint.swatch.black': 'Schwarz',
+  'viewport.paint.swatch.pink': 'Rosa',
+  'viewport.paint.swatch.brown': 'Braun',
+  'viewport.paint.swatch.near': 'ca. {name}',
 
   // Diálogos modales nativos (<dialog>)
   'dialog.close': 'Schließen',
@@ -1018,7 +1023,8 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'ai.tool.get_scene_state': 'Ich habe die Szene abgefragt',
   'ai.tool.unknown': 'Ich habe eine Aktion ausgeführt',
   'dialog.settings.providerLocal': 'Lokal (keine externe KI)',
-  'dialog.settings.providerLocalNote': 'Lokaler Modus: Der deterministische Assistent läuft auf deinem Gerät und sendet nichts nach außen. Beim Speichern wird der gespeicherte Gemini-Schlüssel entfernt.',
+  'dialog.settings.providerLocalNote': 'Lokaler Modus: Der deterministische Assistent läuft auf deinem Gerät und sendet nichts nach außen.',
+  'dialog.settings.providerLocalKeyNote': 'Beim Speichern wird der gespeicherte Gemini-Schlüssel entfernt.',
   'dialog.settings.aiUnsavedMessage': 'Beim KI-Anbieter gibt es nicht gespeicherte Änderungen. Speichern?',
   'dialog.settings.testConnection': 'Verbindung testen',
   'dialog.settings.testing': 'Teste…',

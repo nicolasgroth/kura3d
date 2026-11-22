@@ -9,7 +9,7 @@
  */
 
 import { Check, Copy } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { useMcpBridgeStatus } from '../../utils/mcpBridgeClient';
@@ -68,6 +68,10 @@ export function McpSetupPanel() {
   const [repoPath, setRepoPath] = useState(readSavedRepoPath);
   const [testText, setTestText] = useState<{ ok: boolean; text: string } | null>(null);
   const [testing, setTesting] = useState(false);
+  // Un resultado de "Probar conexión" deja de valer cuando cambia el estado del puente.
+  useEffect(() => {
+    setTestText(null);
+  }, [config.enabled, config.port, config.requireAuth, phase, connected]);
 
   const updatePath = (value: string) => {
     setRepoPath(value);

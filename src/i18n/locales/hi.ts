@@ -515,6 +515,11 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'viewport.paint.swatch.violet': 'बैंगनी',
   'viewport.paint.swatch.white': 'मैट सफ़ेद',
   'viewport.paint.swatch.charcoal': 'चारकोल',
+  'viewport.paint.swatch.gray': 'धूसर',
+  'viewport.paint.swatch.black': 'काला',
+  'viewport.paint.swatch.pink': 'गुलाबी',
+  'viewport.paint.swatch.brown': 'भूरा',
+  'viewport.paint.swatch.near': 'लगभग {name}',
 
   // Diálogos modales nativos (<dialog>)
   'dialog.close': 'बंद करें',
@@ -1018,7 +1023,8 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'ai.tool.get_scene_state': 'मैंने दृश्य देखा',
   'ai.tool.unknown': 'मैंने एक कार्रवाई चलाई',
   'dialog.settings.providerLocal': 'स्थानीय (बाहरी AI नहीं)',
-  'dialog.settings.providerLocalNote': 'स्थानीय मोड: निर्धारित सहायक आपके डिवाइस पर चलता है और कुछ बाहर नहीं भेजता। सहेजने पर Gemini की सहेजी कुंजी हट जाती है।',
+  'dialog.settings.providerLocalNote': 'स्थानीय मोड: निर्धारित सहायक आपके डिवाइस पर चलता है और कुछ बाहर नहीं भेजता।',
+  'dialog.settings.providerLocalKeyNote': 'सहेजने पर Gemini की सहेजी कुंजी हट जाती है।',
   'dialog.settings.aiUnsavedMessage': 'AI प्रदाता में बिना सहेजे बदलाव हैं। क्या उन्हें सहेजना है?',
   'dialog.settings.testConnection': 'कनेक्शन जाँचें',
   'dialog.settings.testing': 'जाँच हो रही है…',
