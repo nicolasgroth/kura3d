@@ -10,6 +10,7 @@
 import * as engine from '../../engine';
 import type {
   DetectedStructureRegion,
+  MeshData,
   MoldOptions,
   PlaneCutOptions,
   SceneObject,
@@ -45,6 +46,21 @@ export async function planeCut(
   return { parts, change: change({ added: parts, removedIds: parts.length > 0 ? [obj.id] : [], warnings }) };
 }
 
+/**
+ * Colores de una pieza separada: si todas sus caras tienen el mismo color, ese pasa a ser el color base
+ * y la malla queda sin `faceColors`; si no, conserva la pintura por cara y el color base de origen.
+ */
+export function pieceColors(mesh: MeshData, fallback: string): { mesh: MeshData; color: string } {
+  const fc = mesh.faceColors;
+  if (!fc?.length) return { mesh, color: fallback };
+  const first = fc[0];
+  if (fc.every((c) => c === first)) {
+    const { faceColors: _drop, ...rest } = mesh;
+    return { mesh: rest as MeshData, color: first };
+  }
+  return { mesh, color: fallback };
+}
+
 /** Separa islas desconectadas. Con una sola isla (o ninguna) no cambia la escena. */
 export async function splitDisconnected(
   ctx: OperationContext,
@@ -52,14 +68,17 @@ export async function splitDisconnected(
 ): Promise<{ pieceCount: number; parts: SceneObject[]; change: SceneChange }> {
   const pieces = await engine.splitDisconnectedParts(obj);
   if (pieces.length <= 1) return { pieceCount: pieces.length, parts: [], change: change({}) };
-  const parts = pieces.map((piece, idx) => buildWith(ctx, {
-    name: ctx.naming.piece(obj, idx),
-    source: 'cut_part',
-    mesh: piece.mesh,
-    position: piece.position,
-    color: obj.color,
-    materialPreset: obj.materialPreset,
-  }));
+  const parts = pieces.map((piece, idx) => {
+    const colored = pieceColors(piece.mesh, obj.color);
+    return buildWith(ctx, {
+      name: ctx.naming.piece(obj, idx),
+      source: 'cut_part',
+      mesh: colored.mesh,
+      position: piece.position,
+      color: colored.color,
+      materialPreset: obj.materialPreset,
+    });
+  });
   return { pieceCount: pieces.length, parts, change: change({ added: parts, removedIds: [obj.id] }) };
 }
 

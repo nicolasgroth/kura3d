@@ -377,7 +377,8 @@ export async function planeCutWithConnectors(
  * en mallas independientes usando `manifold.decompose()`.
  *
  * @param obj Objeto de escena origen.
- * @returns Arreglo de partes independientes normalizadas a cama con su posición mundial.
+ * @returns Arreglo de partes independientes normalizadas a cama con su posición mundial. Si el origen
+ *   tenía colores por cara, cada parte trae sus `faceColors` (aunque sea de un solo color).
  */
 export async function splitDisconnectedParts(
   obj: SceneObject
@@ -409,7 +410,7 @@ export async function splitDisconnectedParts(
     return parts
       .filter((p) => !p.isEmpty() && p.numTri() > 0)
       .map((p) =>
-        extractPositionAndNormalize(manifoldToMeshData(p, registry?.idToColor))
+        extractPositionAndNormalize(manifoldToMeshData(p, registry?.idToColor, true))
       );
   } finally {
     for (const p of parts) {
