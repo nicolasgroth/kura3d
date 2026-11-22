@@ -9,8 +9,9 @@ use crate::project_files::{self, is_project_path, write_atomically, MAX_PROJECT_
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::collections::VecDeque;
 use std::sync::Mutex;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tauri::ipc::Response;
 use tauri::{Manager, WebviewWindow};
 use uuid::Uuid;
@@ -129,7 +130,7 @@ impl Registry {
                 RecentItem {
                     id: entry.id.clone(),
                     name: path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default(),
-                    folder: path.parent().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default(),
+                    folder: path.parent().map(|p| abbreviate_folder(&p.to_string_lossy())).unwrap_or_default(),
                     opened_at: entry.opened_at,
                     exists: project_files::validate_project_file(path, MAX_PROJECT_BYTES as u64).is_ok(),
                 }
@@ -139,15 +140,47 @@ impl Registry {
     }
 }
 
+/// Only the last two folders travel to the webview: «…/penúltima/última».
+fn abbreviate_folder(folder: &str) -> String {
+    let parts: Vec<&str> = folder.split(['\\', '/']).filter(|p| !p.is_empty()).collect();
+    if parts.len() <= 2 {
+        return folder.to_string();
+    }
+    format!("…/{}/{}", parts[parts.len() - 2], parts[parts.len() - 1])
+}
+
+const MAX_OPENS_PER_WINDOW: usize = 10;
+const OPEN_WINDOW: Duration = Duration::from_secs(60);
+const RATE_LIMITED: &str = "kura-recent-rate-limited";
+
+/// Sliding-window limiter so the registry cannot be walked in a burst.
+#[derive(Default)]
+struct OpenLimiter(Mutex<VecDeque<Instant>>);
+
+impl OpenLimiter {
+    fn allow(&self, now: Instant) -> Result<(), String> {
+        let mut opens = self.0.lock().map_err(|err| err.to_string())?;
+        while opens.front().is_some_and(|t| now.duration_since(*t) >= OPEN_WINDOW) {
+            opens.pop_front();
+        }
+        if opens.len() >= MAX_OPENS_PER_WINDOW {
+            return Err(RATE_LIMITED.into());
+        }
+        opens.push_back(now);
+        Ok(())
+    }
+}
+
 /// Persistent registry in the app data directory; every read-modify-write holds the lock.
 pub struct RecentStore {
     file: PathBuf,
     lock: Mutex<()>,
+    opens: OpenLimiter,
 }
 
 impl RecentStore {
     pub fn new(directory: PathBuf) -> Self {
-        Self { file: directory.join(REGISTRY_FILE), lock: Mutex::new(()) }
+        Self { file: directory.join(REGISTRY_FILE), lock: Mutex::new(()), opens: OpenLimiter::default() }
     }
 
     /// A missing, oversized or corrupt registry reads as empty (and enabled).
@@ -215,8 +248,10 @@ pub async fn recent_projects_list(window: WebviewWindow) -> Result<RecentList, S
 /// validated again (still exists, regular `.kura` file, within the size cap) before reading.
 #[tauri::command]
 pub async fn recent_project_open(window: WebviewWindow, id: String) -> Result<Response, String> {
-    let path = store(&window)?.read(|registry| registry.resolve(&id))??;
-    project_files::project_response(&window, path)
+    let store = store(&window)?;
+    store.opens.allow(Instant::now())?;
+    let path = store.read(|registry| registry.resolve(&id))??;
+    project_files::project_response(&window, path, true)
 }
 
 #[tauri::command]
@@ -331,6 +366,35 @@ mod tests {
         fs::write(&big, vec![0u8; 2048]).unwrap();
         assert_eq!(project_files::validate_project_file(&big, 1024).unwrap_err(), "kura-project-too-large");
         assert!(project_files::validate_project_file(&big, 4096).is_ok());
+    }
+
+    #[test]
+    fn open_rate_is_limited_to_ten_per_minute() {
+        let limiter = OpenLimiter::default();
+        let start = Instant::now();
+        for _ in 0..MAX_OPENS_PER_WINDOW {
+            limiter.allow(start).unwrap();
+        }
+        assert_eq!(limiter.allow(start).unwrap_err(), RATE_LIMITED);
+        assert_eq!(limiter.allow(start + Duration::from_secs(59)).unwrap_err(), RATE_LIMITED);
+        assert!(limiter.allow(start + Duration::from_secs(61)).is_ok());
+    }
+
+    #[test]
+    fn view_exposes_only_name_abbreviated_folder_date_and_id() {
+        let mut registry = Registry::default();
+        registry.entries.push(Entry {
+            id: Uuid::new_v4().to_string(),
+            path: "C:\\Users\\ana\\Documentos\\Modelos\\a.kura".into(),
+            opened_at: 1,
+        });
+        let item = &registry.view().items[0];
+        assert_eq!(item.name, "a.kura");
+        assert_eq!(item.folder, "…/Documentos/Modelos");
+        let json = serde_json::to_string(&registry.view().items).unwrap();
+        assert!(!json.contains("Users") && !json.contains("ana"));
+        assert_eq!(Uuid::parse_str(&item.id).unwrap().get_version_num(), 4);
+        assert_eq!(abbreviate_folder("/tmp"), "/tmp");
     }
 
     #[test]

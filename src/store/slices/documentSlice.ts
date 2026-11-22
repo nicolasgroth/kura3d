@@ -9,7 +9,7 @@
 
 import * as engine from '../../engine';
 import { decodeProjectAsync, encodeProjectAsync } from '../../project/projectCodecClient';
-import { openProjectFile, saveProjectFile } from '../../project/projectFiles';
+import { openProjectFile, saveProjectFile, SaveNotConfirmedError } from '../../project/projectFiles';
 import { moveRecoveryDraft, readRecoveryDraft } from '../../project/projectRecoveryStorage';
 import type { ProjectDocument } from '../../project/projectSchema';
 import { captureProject, hasProjectChanged, makeProjectDraftId } from '../projectDocument';
@@ -171,6 +171,11 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         get().addToast(tr('fileProject.saved', { name: saved.name }), 'success');
         return true;
       } catch (error) {
+        if (error instanceof SaveNotConfirmedError) {
+          // El proyecto sigue con cambios sin guardar; solo se avisa.
+          get().addToast(tr('fileProject.saveNotConfirmed'), 'info');
+          return false;
+        }
         get().addToast(tr('fileProject.saveError', { message: projectErrorMessage(error) }), 'error');
         return false;
       } finally {

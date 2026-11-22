@@ -34,6 +34,7 @@ describe('recientes nativos', () => {
     ['kura-project-missing', 'project.recent.missing'],
     ['kura-project-invalid', 'project.recent.invalid'],
     ['kura-recent-unknown', 'project.recent.unknown'],
+    ['kura-recent-rate-limited', 'project.recent.rateLimited'],
   ] as const)('traduce el código %s', async (code, key) => {
     invokeMock.mockRejectedValueOnce(code);
     await expect(openNativeRecent('abc', 'a.kura')).rejects.toThrow(t('es', key, { name: 'a.kura' }));

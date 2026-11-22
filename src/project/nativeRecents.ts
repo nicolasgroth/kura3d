@@ -33,6 +33,7 @@ const ERROR_KEYS = {
   'kura-project-missing': 'project.recent.missing',
   'kura-project-invalid': 'project.recent.invalid',
   'kura-recent-unknown': 'project.recent.unknown',
+  'kura-recent-rate-limited': 'project.recent.rateLimited',
 } as const;
 
 export const listNativeRecents = () => invokeProject<NativeRecentList>('recent_projects_list');
