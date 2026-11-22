@@ -1,7 +1,7 @@
 /**
  * @file src/core/operations/meshOperations.ts
  * @description Operaciones puras que reemplazan la malla de un objeto existente: ahuecar,
- * simplificar, refinar, reflejar, texturizar, pintar entero, borrar con esfera, proyectar en
+ * simplificar, refinar, reflejar, texturizar, borrar con esfera, proyectar en
  * superficie y colorear estructuras. Devuelven un parche por ID dentro de un `SceneChange`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -55,12 +55,6 @@ export function mirrorObject(ctx: OperationContext, obj: SceneObject, axis: 'x' 
 /** Desplaza la superficie con una textura procedural. */
 export function textureObject(ctx: OperationContext, obj: SceneObject, options: TextureOptions): SceneChange {
   return patchOf(obj, { ...meshPatch(ctx, obj, engine.applyProceduralTexture(obj.mesh, options)), texture: { ...options } });
-}
-
-/** Pinta el objeto completo: color por cara (y color base si `setBaseColor`). */
-export function paintWholeObject(ctx: OperationContext, obj: SceneObject, color: string, setBaseColor: boolean): SceneChange {
-  const patch = meshPatch(ctx, obj, engine.paintEntireMesh(obj.mesh, color));
-  return patchOf(obj, setBaseColor ? { ...patch, color } : patch);
 }
 
 /** Borra material dentro de una esfera mundial; la malla resultante ya está en espacio mundial. */
