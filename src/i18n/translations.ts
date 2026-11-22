@@ -759,7 +759,7 @@ export const TRANSLATIONS_ES = {
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'Atajos de teclado y consejos',
-  'dialog.shortcuts.subtitle': 'Flujo de trabajo de precisión estilo Blender, Rhino y laminadores modernos.',
+  'dialog.shortcuts.subtitle': 'Teclas para trabajar más rápido: mover, girar, cambiar de vista y más.',
   'dialog.shortcuts.secTransform': 'Transformación y Modificadores (Shift / Ctrl / Alt)',
   'dialog.shortcuts.secPrecision': 'Precisión numérica y arrastre',
   'dialog.shortcuts.secCamera': 'Cámara y Vistas Rápidas',
@@ -2096,7 +2096,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.settings.aboutStack': 'Watertight Manifold WASM geometry kernel, React Three Fiber, Three.js, Tauri v2 & real-time MCP bridge.',
 
   'dialog.shortcuts.title': 'Keyboard Shortcuts & Tips',
-  'dialog.shortcuts.subtitle': 'Precision workflow inspired by Blender, Rhino & modern slicers.',
+  'dialog.shortcuts.subtitle': 'Keys to work faster: move, rotate, change view and more.',
   'dialog.shortcuts.secTransform': 'Transform & Modifiers (Shift / Ctrl / Alt)',
   'dialog.shortcuts.secPrecision': 'Numeric Precision & Drag-Scrub',
   'dialog.shortcuts.secCamera': 'Camera & Quick Views',

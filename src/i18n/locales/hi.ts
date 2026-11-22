@@ -752,7 +752,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'कीबोर्ड शॉर्टकट और सुझाव',
-  'dialog.shortcuts.subtitle': 'Blender, Rhino और आधुनिक स्लाइसर्स से प्रेरित सटीक कार्यप्रवाह।',
+  'dialog.shortcuts.subtitle': 'तेज़ काम के लिए कुंजियाँ: हिलाना, घुमाना, व्यू बदलना और बहुत कुछ।',
   'dialog.shortcuts.secTransform': 'रूपांतरण और संशोधक (Shift / Ctrl / Alt)',
   'dialog.shortcuts.secPrecision': 'संख्यात्मक सटीकता और ड्रैग-स्क्रब',
   'dialog.shortcuts.secCamera': 'कैमरा और त्वरित दृश्य',

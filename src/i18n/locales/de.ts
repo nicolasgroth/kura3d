@@ -752,7 +752,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'Profi-Tastenkürzel & CAD-Tipps',
-  'dialog.shortcuts.subtitle': 'Präzisions-Workflow inspiriert von Blender, Rhino und modernen Slicern.',
+  'dialog.shortcuts.subtitle': 'Tasten für schnelleres Arbeiten: verschieben, drehen, Ansicht wechseln und mehr.',
   'dialog.shortcuts.secTransform': 'Transformation & Modifikatoren (Shift / Strg / Alt)',
   'dialog.shortcuts.secPrecision': 'Numerische Präzision & Drag-Scrub',
   'dialog.shortcuts.secCamera': 'Kamera & Schnellansichten',

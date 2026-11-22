@@ -752,7 +752,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': '专业键盘快捷键与 CAD 技巧',
-  'dialog.shortcuts.subtitle': '源自 Blender、Rhino 与现代切片软件的精密工作流。',
+  'dialog.shortcuts.subtitle': '提高效率的按键:移动、旋转、切换视图等。',
   'dialog.shortcuts.secTransform': '变换与修饰键 (Shift / Ctrl / Alt)',
   'dialog.shortcuts.secPrecision': '数值精度与拖动微调 (Drag-Scrub)',
   'dialog.shortcuts.secCamera': '相机与快速视角',
