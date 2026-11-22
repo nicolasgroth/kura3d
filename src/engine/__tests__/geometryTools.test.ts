@@ -1,5 +1,5 @@
 /**
- * @file src/engine/__tests__/proEngine.test.ts
+ * @file src/engine/__tests__/geometryTools.test.ts
  * @description Suite integral de pruebas unitarias Vitest para las extensiones
  * Kura3D del núcleo geométrico:
  * - Generador automático de moldes (4 modos)
@@ -105,7 +105,7 @@ function makeCircleRgba(size = 32): Uint8ClampedArray {
   return rgba;
 }
 
-describe('Kura3D — Extensiones del Núcleo Geométrico', () => {
+describe('Herramientas geométricas: moldes, proyección, análisis, generadores, alineación y 3MF', () => {
   // ==========================================================================
   // 1. Generador automático de moldes (4 modos)
   // ==========================================================================

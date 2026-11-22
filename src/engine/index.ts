@@ -61,6 +61,7 @@ export {
   exportSceneToGLB,
   exportSceneToOBJ,
   exportSceneToPLY,
+  stlBrandHeader,
   import3MFBuffer,
   importOBJText,
   importSTLBuffer,

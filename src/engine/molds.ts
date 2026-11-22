@@ -418,6 +418,7 @@ async function generateMoldParts(
           keyDepth,
           0
         );
+        handles.push(male);
         const socket = buildRegistrationKey(
           wasm,
           splitAxis,
@@ -426,18 +427,20 @@ async function generateMoldParts(
           keyDepth,
           keyTolerance
         );
+        handles.push(socket);
         males.push(male);
         sockets.push(socket);
-        handles.push(male, socket);
       }
 
       const maleUnion = wasm.Manifold.union(males);
+      handles.push(maleUnion);
       const socketUnion = wasm.Manifold.union(sockets);
-      handles.push(maleUnion, socketUnion);
+      handles.push(socketUnion);
 
       const halfA = negHalf.add(maleUnion);
+      handles.push(halfA);
       const halfB = posHalf.subtract(socketUnion);
-      handles.push(halfA, halfB);
+      handles.push(halfB);
 
       const normA = extractPositionAndNormalize(manifoldToMeshData(halfA));
       const normB = extractPositionAndNormalize(manifoldToMeshData(halfB));

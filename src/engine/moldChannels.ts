@@ -12,6 +12,7 @@
 
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import { highestPoint } from './solidOffset';
+import { withWasmScope } from './wasmScope';
 
 /** Caja alineada a ejes. */
 export interface AxisBox {
@@ -30,11 +31,11 @@ export function pourPointOnTop(body: Manifold, radius: number): [number, number,
   const bb = body.boundingBox();
   const height = bb.max[1] - bb.min[1];
   const sliceY = top[1] - Math.min(0.5, height * 0.1);
-  // Rotación +90° en X: (x, y, z) → (x, −z, y); el corte a altura sliceY es la planta en Y
-  const rotated = body.rotate([90, 0, 0]);
-  const section = rotated.slice(sliceY);
-  const eroded = section.offset(-radius * 0.9, 'Round');
-  try {
+  return withWasmScope((scope) => {
+    // Rotación +90° en X: (x, y, z) → (x, −z, y); el corte a altura sliceY es la planta en Y
+    const rotated = scope.track(body.rotate([90, 0, 0]));
+    const section = scope.track(rotated.slice(sliceY));
+    const eroded = scope.track(section.offset(-radius * 0.9, 'Round'));
     if (eroded.isEmpty()) return top;
     // Un vértice del contorno erosionado queda a 0.9·r del borde: el canal cae sobre la pieza
     // (el centroide de un anillo, como en un toro, caería en el hueco).
@@ -53,11 +54,7 @@ export function pourPointOnTop(body: Manifold, radius: number): [number, number,
       }
     }
     return best ? [best[0], sliceY, -best[1]] : top;
-  } finally {
-    eroded.delete();
-    section.delete();
-    rotated.delete();
-  }
+  });
 }
 
 /**
@@ -70,28 +67,22 @@ export function buildPourChannels(
   topY: number,
   radius: number
 ): Manifold | null {
-  const bodies = master.decompose();
-  const channels: Manifold[] = [];
-  const temps: Manifold[] = [];
-  try {
+  return withWasmScope((scope) => {
+    const bodies = scope.trackAll(master.decompose());
+    const channels: Manifold[] = [];
     for (const body of bodies) {
       const point = pourPointOnTop(body, radius);
       if (!point) continue;
       const into = Math.min(0.8, (body.boundingBox().max[1] - body.boundingBox().min[1]) * 0.25);
       const y0 = point[1] - into;
       const height = topY + 1 - y0;
-      const cone = wasm.Manifold.cylinder(height, radius, radius * 1.45, 32, false);
-      const up = cone.rotate([-90, 0, 0]);
-      temps.push(cone, up);
-      channels.push(up.translate([point[0], y0, point[2]]));
+      const cone = scope.track(wasm.Manifold.cylinder(height, radius, radius * 1.45, 32, false));
+      const up = scope.track(cone.rotate([-90, 0, 0]));
+      channels.push(scope.track(up.translate([point[0], y0, point[2]])));
     }
     if (channels.length === 0) return null;
-    return channels.length === 1 ? channels.pop()! : wasm.Manifold.union(channels);
-  } finally {
-    for (const b of bodies) b.delete();
-    for (const c of channels) c.delete();
-    for (const t of temps) t.delete();
-  }
+    return channels.length === 1 ? scope.keep(channels[0]) : wasm.Manifold.union(channels);
+  });
 }
 
 /**
@@ -104,17 +95,17 @@ export function countSealedVoids(
   box: AxisBox
 ): { count: number; volumeMm3: number } {
   const pad = 1;
-  const outer = wasm.Manifold.cube(
-    [box.maxX - box.minX + 2 * pad, box.maxY - box.minY + 2 * pad, box.maxZ - box.minZ + 2 * pad],
-    false
-  );
-  const placed = outer.translate([box.minX - pad, box.minY - pad, box.minZ - pad]);
-  const air = placed.subtract(mold);
-  const parts = air.decompose();
-  let count = 0;
-  let volumeMm3 = 0;
-  const eps = 1e-3;
-  try {
+  return withWasmScope((scope) => {
+    const outer = scope.track(wasm.Manifold.cube(
+      [box.maxX - box.minX + 2 * pad, box.maxY - box.minY + 2 * pad, box.maxZ - box.minZ + 2 * pad],
+      false
+    ));
+    const placed = scope.track(outer.translate([box.minX - pad, box.minY - pad, box.minZ - pad]));
+    const air = scope.track(placed.subtract(mold));
+    const parts = scope.trackAll(air.decompose());
+    let count = 0;
+    let volumeMm3 = 0;
+    const eps = 1e-3;
     for (const part of parts) {
       const b = part.boundingBox();
       const touches =
@@ -131,10 +122,5 @@ export function countSealedVoids(
       }
     }
     return { count, volumeMm3 };
-  } finally {
-    for (const p of parts) p.delete();
-    air.delete();
-    placed.delete();
-    outer.delete();
-  }
+  });
 }

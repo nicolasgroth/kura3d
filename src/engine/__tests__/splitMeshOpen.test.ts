@@ -30,7 +30,7 @@ vi.mock('../split/splitMeshClean', async (orig) => {
 import { initManifoldEngine } from '../manifoldKernel';
 import { countUnpairedEdges } from '../meshClosure';
 import { executeBedSplitGeometry, planBedSplit } from '../split';
-import { objFromM } from './qa5SplitHarness';
+import { objFromM } from './splitModelHarness';
 
 let w: ManifoldToplevel;
 beforeAll(async () => {

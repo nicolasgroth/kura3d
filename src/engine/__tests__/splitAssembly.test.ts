@@ -13,7 +13,7 @@ import type { ManifoldToplevel } from 'manifold-3d';
 import { initManifoldEngine } from '../manifoldKernel';
 import { countUnpairedEdges } from '../meshClosure';
 import { executeBedSplitGeometry, planBedSplit, type SplitConnectorOptions } from '../split';
-import { objFromM } from './qa5SplitHarness';
+import { objFromM } from './splitModelHarness';
 
 const DOWEL: SplitConnectorOptions = { type: 'dowel', size: 3, depth: 5, tolerance: 0.2, count: 1 };
 let w: ManifoldToplevel;

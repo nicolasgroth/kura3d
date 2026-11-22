@@ -17,7 +17,7 @@ import { executeBedSplitGeometry, planBedSplit, type SplitConnectorOptions } fro
 import { dotCodeGroups } from '../split/splitDotCode';
 import { reinforcementCap } from '../split/assemblyConnectors';
 import { ASSEMBLY_LIMITS } from '../operationLimits';
-import * as H from './qa5SplitHarness';
+import * as H from './splitModelHarness';
 
 let w: ManifoldToplevel;
 beforeAll(async () => {

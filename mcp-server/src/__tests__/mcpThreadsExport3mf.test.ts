@@ -1,5 +1,5 @@
 /**
- * @file mcp-server/src/__tests__/qa6Mcp.test.ts
+ * @file mcp-server/src/__tests__/mcpThreadsExport3mf.test.ts
  * @description QA ronda 6 del servidor MCP sin interfaz. (D) `slicerTarget` enviado se ignora, `approximate: true`
  * en imprimibilidad, rosca M3 y M64 válidas y M2/M65 con error tipado en inglés, tope de 10 intentos fallidos
  * (el 11.º y un token válido posterior quedan bloqueados) y todos los textos visibles al cliente en inglés
@@ -53,7 +53,7 @@ const ACCENTED = /[áéíóúüñÁÉÍÓÚÑ¿¡]/;
 const SPANISH_WORDS = /\b(el|la|los|las|una?|de|del|que|para|con|sin|por|pieza|piezas|unión|uniones|objeto|mensaje|espera|intentos|fallidos|demasiados|error al|no se puede|debe|puede|altura|ancho|fondo)\b/i;
 const looksSpanish = (s: string) => ACCENTED.test(s) || /\b(demasiados|intentos|espera un|no se puede|pieza|uniones?|objeto|debe ser|altura|ancho|fondo)\b/i.test(s);
 
-describe('QA6 D: rosca M3 / M64 válidas, M2 / M65 con error tipado en inglés', () => {
+describe('rosca M3 / M64 válidas, M2 / M65 con error tipado en inglés', () => {
   it.each([[3, 0.5], [64, 6]])('M%i (paso %f) se crea con la rosca pedida', async (d, pitch) => {
     const { call } = await session();
     for (const kind of ['bolt', 'nut', 'hole']) {
@@ -92,7 +92,7 @@ describe('QA6 D: rosca M3 / M64 válidas, M2 / M65 con error tipado en inglés',
   }, 60_000);
 });
 
-describe('QA6 D: slicerTarget ignorado y approximate', () => {
+describe('slicerTarget ignorado y approximate', () => {
   it('kura_export_3mf con slicerTarget (válido o no) no falla y produce el mismo archivo', async () => {
     const { call } = await session();
     const box = await call<{ id: string }>('kura_create_primitive', { primitiveType: 'box', params: { width: 10, depth: 10, height: 10 }, placement: 'origin' });
@@ -126,7 +126,7 @@ describe('QA6 D: slicerTarget ignorado y approximate', () => {
   }, 60_000);
 });
 
-describe('QA6 D: tope de 10 intentos fallidos', () => {
+describe('tope de 10 intentos fallidos', () => {
   function attempt(url: string): Promise<{ status: number | 'open'; body: string }> {
     return new Promise((resolve) => {
       const ws = new WebSocket(url);
@@ -188,7 +188,7 @@ describe('QA6 D: tope de 10 intentos fallidos', () => {
   });
 });
 
-describe('QA6 D: todos los textos visibles al cliente MCP están en inglés', () => {
+describe('todos los textos visibles al cliente MCP están en inglés', () => {
   it('títulos, descripciones y esquemas de todas las herramientas no traen español', async () => {
     const { client } = await session();
     const { tools } = await client.listTools();

@@ -14,6 +14,7 @@ import {
   check, color, id, limit, MAX_PROJECT_BYTES, nat, ProjectCodecError, record, shape, validSettings, validStoredObject,
   type ObjectMetadata, type ProjectDocument, type ProjectSceneSnapshot,
 } from './projectSchema';
+import { withBoundedParams } from './primitiveParamsBounds';
 
 export { MAX_PROJECT_BYTES, ProjectCodecError, type ProjectDocument, type ProjectSceneSnapshot } from './projectSchema';
 const MAX_MANIFEST_BYTES = 16 * 1024 * 1024;
@@ -192,8 +193,9 @@ export function encodeProject(doc: ProjectDocument): Uint8Array {
   function storeObject(obj: SceneObject): StoredObject {
     check(record(obj));
     const { mesh, stats: _cache, ...metadata } = obj;
-    const stored = { ...metadata, mesh: storeMesh(mesh) };
-    check(validStoredObject(stored), `object:${String(obj.name)}`);
+    const valid = { ...metadata, mesh: storeMesh(mesh) };
+    check(validStoredObject(valid), `object:${String(obj.name)}`);
+    const stored = withBoundedParams(valid);
     // Enforce the metadata budget incrementally before constructing a whole-history JSON string.
     metadataCharacters += JSON.stringify(stored).length;
     limit(metadataCharacters <= MAX_MANIFEST_BYTES);
@@ -308,7 +310,7 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
       cache = computeMeshStats(mesh);
       stats.set(geometryKey, cache);
     }
-    return { ...stored, mesh, stats: { ...cache, dimensionsMm: [...cache.dimensionsMm] } };
+    return { ...withBoundedParams(stored), mesh, stats: { ...cache, dimensionsMm: [...cache.dimensionsMm] } };
   }
   function snapshot(s: unknown) {
     check(validSnapshot(s));

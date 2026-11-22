@@ -34,7 +34,8 @@ import {
   createPrimitiveMesh,
   normalizeMeshToBed,
 } from './primitives';
-import { extrudeSvgToMesh } from './advancedGeometry';
+import { extrudeSvgToMesh } from './svg/svgExtrude';
+import { useThenDelete } from './wasmScope';
 import { composeFlushInlaySurface } from './inlaySurface';
 import { closeComposedProjectionMesh, closedProjectionMesh } from './projectionCleanup';
 
@@ -711,8 +712,7 @@ export async function projectGraphicOntoSurface(
       );
       // La cavidad lleva un originalID propio: sus caras (paredes internas) se descartan al componer.
       const rawPocket = meshDataToManifold(wasm, pocketMesh, registry.colorToId, stampColor);
-      pocketManifold = rawPocket.asOriginal();
-      rawPocket.delete();
+      pocketManifold = useThenDelete(rawPocket, (m) => m.asOriginal());
       carvedManifold = targetManifold.subtract(pocketManifold);
       inlayIntersectManifold = targetManifold.intersect(pocketManifold);
       const pocketVolume = Math.max(1e-9, pocketManifold.volume());

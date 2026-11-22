@@ -1,5 +1,5 @@
 /**
- * @file src/engine/__tests__/qa5Split.test.ts
+ * @file src/engine/__tests__/splitPipeModels.test.ts
  * @description QA ronda 5 de "dividir para imprimir" con modelos propios (T horizontal, L con codo
  * toroidal, tubos de pared 2 y 12, cruz, cono hueco, mezcla maciza/delgada, peine de brazos finos) con
  * camas de 250 y 256. Las pruebas `it.fails` documentan brechas CONFIRMADAS (pasan mientras el defecto
@@ -12,7 +12,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initManifoldEngine } from '../manifoldKernel';
 import { executeBedSplitGeometry, planBedSplit } from '../split';
-import * as H from './qa5SplitHarness';
+import * as H from './splitModelHarness';
 
 let w: Awaited<ReturnType<typeof initManifoldEngine>>;
 beforeAll(async () => {
@@ -32,7 +32,7 @@ function core(r: H.Row) {
   expect(r.markBothPct).toBe(100);
 }
 
-describe('QA5 dividir: tuberías de pared delgada con conector por defecto (glue)', () => {
+describe('dividir: tuberías de pared delgada con conector por defecto (glue)', () => {
   const cases: Array<[string, () => import('manifold-3d').Manifold]> = [
     ['T horizontal pared 4', () => H.modelT(w, 4)],
     ['L con codo toroidal pared 3', () => H.modelL(w, 3)],
@@ -69,7 +69,7 @@ describe('QA5 dividir: tuberías de pared delgada con conector por defecto (glue
   });
 });
 
-describe('QA5 dividir: mezcla maciza/delgada y brazos finos', () => {
+describe('dividir: mezcla maciza/delgada y brazos finos', () => {
   const mixedOpts = { connector: dowel, planePositions: { x: [-200, 0, 200] } };
   it('anillo delgado + varilla maciza en la misma sección: la unión es connector y la marca existe', async () => {
     const { row, res } = await H.measure(w, H.modelMixed(w, -110), 'mixta', 250, mixedOpts, {}, 'mixta');
@@ -98,7 +98,7 @@ describe('QA5 dividir: mezcla maciza/delgada y brazos finos', () => {
   }, 60_000);
 });
 
-describe('QA5 dividir: solape de borde (lap)', () => {
+describe('dividir: solape de borde (lap)', () => {
   it('T horizontal con lap: solape en todas, sin interferencia, holgura > 0, 0 aristas sueltas', async () => {
     const { row } = await H.measure(w, H.modelT(w, 4), 'T', 250, { connector: lap }, {}, 'lap');
     core(row);
@@ -129,7 +129,7 @@ describe('QA5 dividir: solape de borde (lap)', () => {
   }, 60_000);
 });
 
-describe('QA5 dividir: marca por fuera', () => {
+describe('dividir: marca por fuera', () => {
   it('la marca grabada (0,4 mm) en pared de 2 mm es superficial', async () => {
     const obj = H.objFromM(H.modelStraight(w, 2), 'tubo2');
     const plan = await planBedSplit(obj, { widthMm: 250, depthMm: 250, heightMm: 250 }, { connector: dowel });

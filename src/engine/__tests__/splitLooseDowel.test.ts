@@ -14,7 +14,7 @@ import { initManifoldEngine } from '../manifoldKernel';
 import { countUnpairedEdges } from '../meshClosure';
 import { executeBedSplitGeometry, planBedSplit, type SplitConnectorOptions } from '../split';
 import { recommendedConnectorRadius } from '../split/assemblyConnectors';
-import { objFromM } from './qa5SplitHarness';
+import { objFromM } from './splitModelHarness';
 
 const LOOSE: SplitConnectorOptions = { type: 'loose-dowel', size: 3, depth: 6, tolerance: 0.2, count: 1 };
 let w: ManifoldToplevel;

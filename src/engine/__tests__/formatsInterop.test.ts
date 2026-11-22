@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * @file src/engine/__tests__/qa5Formats.test.ts
+ * @file src/engine/__tests__/formatsInterop.test.ts
  * @description QA ronda 5 de formatos: GLB generado en Node que carga con el GLTFLoader de three
  * (estructura, accesores y conteos), PLY de ida y vuelta con 4 colores por cara, y 3MF cuya entrada ZIP
  * miente sobre su tamaño descomprimido (debe rechazarse con error tipado, sin reservar la salida).
@@ -23,7 +23,7 @@ import { cubeMeshXml } from './ioFixtures';
 
 const toBuf = (u: Uint8Array) => u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer;
 
-describe('QA5 GLB', () => {
+describe('GLB', () => {
   it('un GLB con malla pintada de 3 colores y una esfera carga en GLTFLoader con los mismos triángulos', async () => {
     const box = await createPrimitiveMesh('box', { width: 20, height: 10, depth: 10 });
     const n = box.indices.length / 3;
@@ -55,7 +55,7 @@ describe('QA5 GLB', () => {
   });
 });
 
-describe('QA5 PLY', () => {
+describe('PLY', () => {
   it('4 colores por cara en una esfera vuelven con el mismo reparto y la malla sigue cerrada', async () => {
     const sphere = await createPrimitiveMesh('sphere', { radius: 10, segments: 24 });
     const pal = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
@@ -91,7 +91,7 @@ function lyingZip(padding: number, declared: number): ArrayBuffer {
   return toBuf(zip);
 }
 
-describe('QA5 3MF con ZIP mentiroso', () => {
+describe('3MF con ZIP mentiroso', () => {
   const code = (fn: () => unknown) => {
     try {
       fn();

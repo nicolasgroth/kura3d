@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
+    "@xmldom/xmldom": "^0.9.12",
     "fflate": "^0.8.3",
     "manifold-3d": "^3.5.5",
     "opentype.js": "^2.0.0",

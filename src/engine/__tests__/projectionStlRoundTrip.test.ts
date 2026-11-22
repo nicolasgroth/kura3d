@@ -1,5 +1,5 @@
 /**
- * @file src/engine/__tests__/qa5Projection.test.ts
+ * @file src/engine/__tests__/projectionStlRoundTrip.test.ts
  * @description QA ronda 5: relieve, grabado e incrustación de texto con tildes y de un SVG con
  * agujeros sobre esfera, cilindro, toro, cono y esfera ahuecada, con ida y vuelta REAL por STL binario
  * (exportar, releer, soldar por posición): 0 aristas no pareadas, malla manifold y volumen coherente.
@@ -40,7 +40,7 @@ const TARGETS: Array<[string, () => Promise<MeshData>, number]> = [
 ];
 const MODES: SurfaceProjectionMode[] = ['emboss', 'deboss', 'flush_inlay'];
 
-describe('QA5 proyección sobre curvas con ida y vuelta por STL', () => {
+describe('proyección sobre curvas con ida y vuelta por STL', () => {
   for (const [name, make, width] of TARGETS) {
     for (const kind of ['text', 'svg'] as const) {
       for (const mode of MODES) {

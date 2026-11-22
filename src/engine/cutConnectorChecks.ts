@@ -13,6 +13,7 @@ import type { Manifold } from 'manifold-3d';
 import type { PlaneCutOptions, Vec3 } from '../types/kura';
 import { EngineError, requireOperationRange } from './engineErrors';
 import { OPERATION_RANGES } from './operationLimits';
+import { useThenDelete } from './wasmScope';
 
 /** Pared mínima (mm) que debe rodear al alojamiento hembra dentro de la pieza. */
 export const CONNECTOR_MIN_WALL_MM = 0.8;
@@ -78,9 +79,7 @@ export function assertConnectorsFit(
       trimmedSpacers.push(spacer.trimByPlane(normal, cutCoord + 1e-3));
     }
     for (const t of trimmed) {
-      const outside = t.subtract(receiver);
-      const v = outside.volume();
-      outside.delete();
+      const v = useThenDelete(t.subtract(receiver), (outside) => outside.volume());
       if (v > 1e-3 * Math.max(1, t.volume())) {
         throw new EngineError('CUT_CONNECTOR_TOO_LARGE', {
           size,
@@ -91,9 +90,7 @@ export function assertConnectorsFit(
     }
     for (let i = 0; i < trimmedSpacers.length; i++) {
       for (let j = i + 1; j < trimmedSpacers.length; j++) {
-        const inter = trimmedSpacers[i].intersect(trimmedSpacers[j]);
-        const v = inter.volume();
-        inter.delete();
+        const v = useThenDelete(trimmedSpacers[i].intersect(trimmedSpacers[j]), (inter) => inter.volume());
         if (v > 1e-6) {
           throw new EngineError('CUT_CONNECTORS_OVERLAP', { size, count: shells.length });
         }

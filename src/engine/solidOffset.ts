@@ -16,6 +16,7 @@
 
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import { buildMeshDistanceField, type MeshDistanceField } from './meshDistance';
+import { deleteOnThrow, useThenDelete } from './wasmScope';
 
 /** Resultado del offset interior. */
 export interface InwardOffsetResult {
@@ -95,9 +96,7 @@ export function convexInwardOffset(
     if (planes.size > MAX_CONVEX_PLANES) return null;
   }
   const vol = solid.volume();
-  const hull = solid.hull();
-  const hullVol = hull.volume();
-  hull.delete();
+  const hullVol = useThenDelete(solid.hull(), (hull) => hull.volume());
   if (Math.abs(hullVol - vol) > 1e-6 * Math.max(1, vol)) return null;
 
   const bbox = solid.boundingBox();
@@ -106,17 +105,22 @@ export function convexInwardOffset(
     bbox.max[1] - bbox.min[1] + 2,
     bbox.max[2] - bbox.min[2] + 2,
   ];
-  const cube = wasm.Manifold.cube(size, false);
-  let current = cube.translate([bbox.min[0] - 1, bbox.min[1] - 1, bbox.min[2] - 1]);
-  cube.delete();
-  for (const [nx, ny, nz, d] of planes.values()) {
-    // Conserva n·x ≤ d − t  ⇔  (−n)·x ≥ t − d
-    const next = current.trimByPlane([-nx, -ny, -nz], thickness - d);
+  let current = useThenDelete(wasm.Manifold.cube(size, false), (cube) =>
+    cube.translate([bbox.min[0] - 1, bbox.min[1] - 1, bbox.min[2] - 1])
+  );
+  try {
+    for (const [nx, ny, nz, d] of planes.values()) {
+      // Conserva n·x ≤ d − t  ⇔  (−n)·x ≥ t − d
+      const next = current.trimByPlane([-nx, -ny, -nz], thickness - d);
+      current.delete();
+      current = next;
+      if (current.isEmpty()) break;
+    }
+    return current;
+  } catch (err) {
     current.delete();
-    current = next;
-    if (current.isEmpty()) break;
+    throw err;
   }
-  return current;
 }
 
 /**
@@ -174,9 +178,7 @@ export function inwardOffset(
       level
     );
     // Funde triángulos coplanares de la grilla sin mover la superficie más que una fracción del espesor
-    const simplified = raw.simplify(simplifyTol);
-    raw.delete();
-    return simplified;
+    return useThenDelete(raw, (m) => m.simplify(simplifyTol));
   };
 
   // Margen adaptativo: un margen fijo para el peor caso (cuerdas sobre zonas cóncavas de la
@@ -188,7 +190,7 @@ export function inwardOffset(
   for (let attempt = 0; attempt < MAX_LEVEL_TRIES; attempt++) {
     const inner = extract(thickness + margin);
     if (inner.isEmpty()) return { inner, gridEdgeMm: gridEdge, levelMarginMm: margin };
-    const wall = measureWallThickness(field, inner);
+    const wall = deleteOnThrow(inner, (m) => measureWallThickness(field, m));
     if (wall.minMm >= minAccepted) return { inner, gridEdgeMm: gridEdge, levelMarginMm: margin, wall };
     inner.delete();
     margin += (thickness - wall.minMm) * 1.15 + thickness * 0.002;

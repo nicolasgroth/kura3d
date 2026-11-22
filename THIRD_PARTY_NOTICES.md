@@ -25,3 +25,11 @@ repositorio o que tienen avisos que deben acompañar la distribución.
 - Uso: lectura de la fuente (contornos Bézier, avances y kerning) en navegador, Worker y Node.
 - Versión: 2.0.x. Repositorio: https://github.com/opentypejs/opentype.js
 - Licencia: MIT. Copyright (c) 2020 Frederik De Bleser.
+
+### @xmldom/xmldom
+
+- Uso: lectura del XML de los SVG (importación, proyección y MCP sin interfaz) con el mismo
+  resultado en navegador, Worker y Node, antes de pasar el árbol a `THREE.SVGLoader`.
+- Versión: 0.9.x. Repositorio: https://github.com/xmldom/xmldom
+- Licencia: MIT. Copyright 2019 - present Christopher J. Brody and other contributors;
+  Copyright 2012 - 2017 @jindw and other contributors.
