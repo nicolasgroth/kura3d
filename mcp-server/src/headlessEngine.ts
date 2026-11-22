@@ -212,7 +212,7 @@ export class KuraHeadlessEngine {
   async planeCut(
     objectId: string,
     options: PlaneCutOptions
-  ): Promise<{ parts: SceneObjectSummary[]; note: string }> {
+  ): Promise<{ parts: SceneObjectSummary[]; note: string; warnings: engine.EngineWarning[] }> {
     const obj = this.requireEditable(objectId);
     const result = await engine.planeCutWithConnectors(obj, options);
     const halves = [
@@ -236,7 +236,7 @@ export class KuraHeadlessEngine {
         })
       )
     );
-    return { parts, note: ENGINE_NOTE };
+    return { parts, note: ENGINE_NOTE, warnings: [...(result.warnings ?? [])] };
   }
 
   /** Separa islas desconectadas con `splitDisconnectedParts` del motor. */

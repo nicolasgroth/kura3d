@@ -270,7 +270,7 @@ export interface ThreadOptions {
   diameterMm: number;
   pitchMm: number;
   lengthMm: number;
-  clearanceMm: number;
+  clearanceMm?: number;
   includeHead?: boolean;
   name?: string;
 }

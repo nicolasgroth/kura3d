@@ -2005,6 +2005,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
 
       return runExclusive('plane_cut', [], async () => {
         const result = await engine.planeCutWithConnectors(obj, options);
+        reportEngineWarnings(result.warnings);
         const created: SceneObject[] = [];
 
         if (result.positive) {

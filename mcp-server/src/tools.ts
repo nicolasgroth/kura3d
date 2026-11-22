@@ -909,7 +909,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         diameterMm: rangeSchema(OR.thread.diameterMm).default(8).describe('Diámetro nominal métrico en mm (ej. 8 para M8; M2–M64).'),
         pitchMm: rangeSchema(OR.thread.pitchMm).default(1.25).describe('Paso de rosca en mm (máximo d/4).'),
         lengthMm: rangeSchema(OR.thread.lengthMm).default(20).describe('Longitud roscada en mm.'),
-        clearanceMm: rangeSchema(OR.thread.clearanceMm).default(0.25).describe('Holgura radial de impresión en mm.'),
+        clearanceMm: rangeSchema(OR.thread.clearanceMm).optional().describe('Holgura radial de impresión en mm. Si se omite, se calcula según el paso.'),
         includeHead: z.boolean().optional().describe('Incluir cabeza hexagonal cuando kind === "bolt".'),
         name: nameSchema.optional().describe('Nombre opcional de la pieza generada.'),
       },

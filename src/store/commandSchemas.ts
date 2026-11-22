@@ -110,7 +110,7 @@ export function parseThread(p: RawParams): ThreadOptions {
     diameterMm: readRange(p, OR.thread.diameterMm, 'diameterMm') ?? 8,
     pitchMm: readRange(p, OR.thread.pitchMm, 'pitchMm') ?? 1.25,
     lengthMm: readRange(p, OR.thread.lengthMm, 'lengthMm') ?? 20,
-    clearanceMm: readRange(p, OR.thread.clearanceMm, 'clearanceMm') ?? 0.25,
+    clearanceMm: readRange(p, OR.thread.clearanceMm, 'clearanceMm'),
     includeHead: readBoolean(p, 'includeHead') ?? true,
   };
 }

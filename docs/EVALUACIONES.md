@@ -82,3 +82,56 @@ Tokens y duración que reportó cada agente al terminar. No incluye a la sesión
 
 Los tres últimos superaron los 30 minutos porque sus encargos traían entre 8 y 20 objetivos. Desde ahora los encargos se dividen y llevan tope de tiempo y latido (ver "Control de agentes" en `CLAUDE.md`).
 
+## Ronda 2 · 21 de noviembre de 2026 · rama `correcciones/linea-base` (commit `de534ca`)
+
+Tras los lotes de seguridad, motor MCP, bus de comandos, geometría, importación y exportación, IA, pintura y teclado. Tres evaluadores Opus a ciegas, con mediciones propias. QA previo: motor rechazado y luego corregido; interfaz aprobada con observaciones en dos pasadas.
+
+| Funcionalidad | Usabilidad (base → ahora) | Código (base → ahora) | Funcional (base → ahora) | Pendiente principal |
+|---|---|---|---|---|
+| F-PROY | 72 → 72 | 84 → 86 | 88 → 90 | Diálogo propio para descartar, recientes, menú por teclado |
+| F-RECUP | 74 → 82 | 82 → 86 | — | Vista previa del borrador |
+| F-IMPORT | 64 → 85 | 66 → 79 | 66 → 82 | Progreso y cancelar; importar GLB |
+| F-EXPORT | 55 → 84 | 64 → 79 | 84 → 78 | El perfil de slicer no cambia el archivo; exportar en segundo plano |
+| F-TRANSF | 80 → 70 | 70 → 71 | — | Expresiones en campos, valores inválidos sin aviso, eje Y vertical |
+| F-PRIM | 58 → 58 | 68 → 71 | 85 → 92 | Parámetros editables tras crear; colocar en espacio libre |
+| F-BOOL | 66 → 66 | 66 → 71 | 93 → 93 | Indicar base y herramienta; vista previa |
+| F-CORTE | 55 → 50 | 64 → 71 | 72 → 68 | **Conectores en aros y piezas en L** (en corrección); valores por defecto según la pieza; plano visible |
+| F-HUECO | 68 → 68 | 55 → 71 | 50 → 85 | Mostrar el interior; 14,5 s con 200 mil triángulos |
+| F-MOLDE | 62 → 74 | 62 → 71 | 50 → 84 | Vista previa; nombres pegados; núcleo flotante |
+| F-PROYEC | 50 → 62 | 60 → 71 | 75 → 85 | Vista previa y colocar con clic |
+| F-ROSCA | 45 → 78 | 68 → 71 | 62 → 74 | **Tuerca M3 casi sin engrane** (en corrección) |
+| F-LITO | 45 → 70 | 63 → 71 | 80 → 88 | Contorno aún escalonado a la vista; vista previa |
+| F-SEGM | 52 → 60 | 58 → 71 | 82 → 80 | Etiquetas sin sentido en piezas mecánicas; resaltar en el visor |
+| F-PINT | 68 → 76 | 50 → 71 | — | Borde dentado; goma |
+| F-ANAL | 62 → 80 | 62 → 71 | 70 → 84 | Mostrar supuestos del peso |
+| F-SIMPL | 70 → 62 | 70 → 71 | 55 → 90 | Objetivo por porcentaje o triángulos |
+| F-ALIN | 62 → 70 | 58 → 71 | 88 → 88 | Identificadores internos en avisos; elegir referencia |
+| F-UI | 58 → 74 | 55 → 64 | — | Contrastes puntuales, textos cortados, archivos gigantes, sin pruebas de componentes |
+| F-CHAT | 30 → 66 | 45 → 87 | — | Ajustes se pierden al cerrar; probar conexión; acciones sin traducir |
+| F-MCP | 55 → 70 | 35 → 76 | 25 → 85 | Ruta relativa en el JSON; ignora objetos bloqueados (en corrección) |
+| Store y bus | — | 52 → 62 | — | **Segmentación obsoleta puede dañar una pieza** (en corrección); exclusión entre operaciones |
+| Backend nativo | — | 40 → 81 | — | Comandos sin uso |
+| **Global** | **57 → 68** | **60 → 75** | **68 → 84** | |
+
+El evaluador de código puntuó las 14 funcionalidades del motor como un solo módulo (71); se repite esa nota en cada fila.
+
+Bloqueos de esta ronda: segmentación obsoleta (código), tuerca M3 sin engrane y conectores en secciones no convexas (funcional). Los tres están en corrección. Ninguna funcionalidad alcanza todavía 85 en los tres evaluadores.
+
+Corrección a la línea base: el bloqueo "M20 no enrosca" fue un error de medición (se giró la tuerca sin avanzarla). Medido como tornillo, QA y el evaluador funcional de esta ronda obtienen 0 mm³ de interferencia en M3 a M20.
+
+Patrones que explican la nota de usabilidad: operaciones sin vista previa en el visor, valores por defecto que no se ajustan a la pieza, resultados que aparecen en el origen encima de otros objetos, e identificadores internos, plurales y formatos numéricos sin pulir en los textos.
+
+### Consumo de la ronda
+
+| Agente | Modelo | Duración | Tokens |
+|---|---|---|---|
+| Cabos sueltos de integración | Opus | 31 min | 327 mil |
+| QA de motor y MCP | Sonnet | 16 min | 244 mil |
+| QA de interfaz | Sonnet | 17 min | 168 mil |
+| Arreglos de validación | Opus | 20 min | 254 mil |
+| Arreglos de interfaz | Sonnet | 12 min | 178 mil |
+| QA de interfaz, segunda pasada | Sonnet | 22 min | 226 mil |
+| Menores de QA | Sonnet | 8 min | 160 mil |
+| Evaluación de código | Opus | 8 min | 148 mil |
+| Evaluación funcional | Opus | 13 min | 197 mil |
+

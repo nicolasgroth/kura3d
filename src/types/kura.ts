@@ -481,8 +481,8 @@ export interface ThreadOptions {
   pitchMm: number;
   /** Longitud roscada en mm. */
   lengthMm: number;
-  /** Holgura radial para impresión 3D (mm, típico 0.20–0.30 mm). */
-  clearanceMm: number;
+  /** Holgura radial para impresión 3D en mm. Si se omite, el motor la calcula según el paso. */
+  clearanceMm?: number;
   /** Incluir cabeza hexagonal en el perno. */
   includeHead?: boolean;
 }
