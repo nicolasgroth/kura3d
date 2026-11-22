@@ -14,10 +14,12 @@
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import type { MeshData, SceneObject, Vec3 } from '../types/kura';
 import { engineWarning, requireOperationRange, type EngineWarning } from './engineErrors';
-import { initManifoldEngine, manifoldToMeshData, meshDataToManifold, weldVertices } from './manifoldKernel';
+import { cleanColorPartMesh } from './colorSplitCleanup';
+import { checkerboardVertices, pinchPlug } from './colorSplitPinch';
+import { initManifoldEngine, meshDataToManifold, weldVertices } from './manifoldKernel';
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from './operationLimits';
 import { extractPositionAndNormalize } from './operations';
-import { applyTransformToMesh } from './primitives';
+import { applyTransformToMesh, computeMeshStats } from './primitives';
 
 /** Opciones de la separación por colores. */
 export interface ColorSplitOptions {
@@ -40,6 +42,12 @@ export interface SolidColorSplitResult {
 
 /** Margen hacia afuera de cada prisma: asegura que la cara pintada quede dentro y lo recorta el sólido. */
 const OUTWARD_MARGIN_MM = 0.05;
+/**
+ * Holgura (mm) con que cada prisma y cada placa se agrandan hacia los lados: dos prismas que solo se
+ * TOCAN por una pared quedan, tras la unión de Manifold, como sólidos que se tocan (paredes internas
+ * duplicadas y aristas compartidas por 4 triángulos al soldar el STL). Con esta holgura se solapan.
+ */
+const PRISM_OVERLAP_MM = 5e-4;
 /** Volumen bajo el cual una pieza se considera vacía (mm³). */
 const EMPTY_VOLUME_MM3 = 1e-3;
 /** Tope del factor de desplazamiento en vértices agudos (evita capas desmedidas en puntas). */
@@ -78,7 +86,7 @@ export async function splitMeshByColorSolid(
     const only = [...distinct][0] ?? base;
     const solid = meshDataToManifold(wasm, { positions: P, indices: I });
     try {
-      return { parts: [toPart(solid, only)], warnings: [] };
+      return { parts: [toPart(wasm, solid, only)], warnings: [] };
     } finally {
       solid.delete();
     }
@@ -107,7 +115,7 @@ export async function splitMeshByColorSolid(
     const layered = ranked.slice(1).reverse().map(([c]) => c);
     let remaining = solid;
     for (const color of layered) {
-      const shell = regionShell(wasm, P, I, offsets, body.tris.filter((t) => colors[t] === color), depth);
+      const shell = regionShell(wasm, P, I, offsets, body.tris, body.tris.filter((t) => colors[t] === color), depth);
       const piece = remaining.intersect(shell);
       const rest = remaining.subtract(shell);
       shell.delete();
@@ -125,7 +133,7 @@ export async function splitMeshByColorSolid(
     const merged = dropEmptyComponents(wasm, list.length === 1 ? list[0] : wasm.Manifold.union(list));
     if (list.length > 1) for (const m of list) m.delete();
     if (merged.isEmpty()) { merged.delete(); byColor.delete(color); continue; }
-    parts.push(toPart(merged, color));
+    parts.push(toPart(wasm, merged, color));
     merged.delete();
   }
   const lost = [...distinct].filter((c) => !byColor.has(c));
@@ -133,10 +141,11 @@ export async function splitMeshByColorSolid(
   return { parts, warnings };
 }
 
-function toPart(m: Manifold, color: string): SolidColorPart {
-  const mesh = manifoldToMeshData(m);
+function toPart(wasm: ManifoldToplevel, m: Manifold, color: string): SolidColorPart {
+  const { mesh } = cleanColorPartMesh(wasm, m);
   const normalized = extractPositionAndNormalize({ ...mesh, faceColors: new Array(mesh.indices.length / 3).fill(color) });
-  return { color, mesh: normalized.mesh, position: normalized.position, volumeMm3: m.volume() };
+  // Volumen de la malla entregada (ya limpia), no del sólido previo: así calza con lo que se exporta.
+  return { color, mesh: normalized.mesh, position: normalized.position, volumeMm3: computeMeshStats(normalized.mesh).volumeMm3 };
 }
 
 /** Quita de una pieza los componentes de volumen nulo (aletas degeneradas que dejan las booleanas). */
@@ -191,9 +200,10 @@ function vertexOffsets(P: Float32Array, I: Uint32Array): Float64Array {
 /**
  * Une el volumen de una región: los triángulos interiores de una cara plana (sus tres vértices se
  * desplazan por la normal de la cara) se agrupan por plano y salen como una sola extrusión 2D; el
- * resto, como prismas por triángulo. Va de +margen a −`depth`.
+ * resto, como prismas por triángulo. Va de +margen a −`depth`. En los vértices donde la región entra y
+ * sale más de una vez se agrega una columna delgada (ver `colorSplitPinch.ts`).
  */
-function regionShell(wasm: ManifoldToplevel, P: Float32Array, I: Uint32Array, offsets: Float64Array, tris: number[], depth: number): Manifold {
+function regionShell(wasm: ManifoldToplevel, P: Float32Array, I: Uint32Array, offsets: Float64Array, bodyTris: number[], tris: number[], depth: number): Manifold {
   const pieces: Manifold[] = [];
   const planes = new Map<string, { n: number[]; origin: number[]; tris: number[] }>();
   for (const t of tris) {
@@ -214,6 +224,14 @@ function regionShell(wasm: ManifoldToplevel, P: Float32Array, I: Uint32Array, of
   for (const plane of planes.values()) {
     const slab = planarSlab(wasm, P, I, plane, depth);
     if (slab) pieces.push(slab);
+  }
+  // Vértices en tablero: una columna a lo largo de la arista desplazada evita el pellizco.
+  const pinched = checkerboardVertices(I, bodyTris, tris);
+  for (const v of pinched) {
+    const p = [P[v * 3], P[v * 3 + 1], P[v * 3 + 2]];
+    const o = [offsets[v * 3], offsets[v * 3 + 1], offsets[v * 3 + 2]];
+    const plug = pinchPlug(wasm, p.map((x, a) => x + o[a] * OUTWARD_MARGIN_MM), p.map((x, a) => x - o[a] * depth));
+    if (plug) pieces.push(plug);
   }
   if (pieces.length === 0) return wasm.Manifold.compose([]);
   const shell = pieces.length === 1 ? pieces[0] : wasm.Manifold.union(pieces);
@@ -244,8 +262,10 @@ function planarSlab(wasm: ManifoldToplevel, P: Float32Array, I: Uint32Array, pla
   const polys = plane.tris.map((t) => [to2d(I[t * 3]), to2d(I[t * 3 + 1]), to2d(I[t * 3 + 2])]);
   const section = new wasm.CrossSection(polys, 'Positive');
   if (section.isEmpty()) { section.delete(); return null; }
-  const slab = section.extrude(depth + OUTWARD_MARGIN_MM);
+  const grown = section.offset(PRISM_OVERLAP_MM, 'Miter');
   section.delete();
+  const slab = grown.extrude(depth + OUTWARD_MARGIN_MM);
+  grown.delete();
   const T = origin.map((x, a) => x - n[a] * depth);
   const placed = slab.transform([uu[0], uu[1], uu[2], 0, v[0], v[1], v[2], 0, n[0], n[1], n[2], 0, T[0], T[1], T[2], 1]);
   slab.delete();
@@ -269,7 +289,13 @@ function trianglePrism(wasm: ManifoldToplevel, P: Float32Array, I: Uint32Array, 
   let { out, inn } = build((k) => [offsets[ids[k] * 3], offsets[ids[k] * 3 + 1], offsets[ids[k] * 3 + 2]]);
   const innN = normalOf(inn[0], inn[1], inn[2]);
   if (!innN || innN[0] * n[0] + innN[1] * n[1] + innN[2] * n[2] < 0.2) ({ out, inn } = build(() => n));
-  const vert = new Float32Array([...out.flat(), ...inn.flat()]);
+  const all = [...out, ...inn];
+  const centroid = [0, 1, 2].map((a) => all.reduce((acc, p) => acc + p[a], 0) / all.length);
+  const vert = new Float32Array(all.flatMap((p) => {
+    const d = p.map((x, a) => x - centroid[a]);
+    const l = Math.hypot(d[0], d[1], d[2]) || 1;
+    return p.map((x, a) => x + (d[a] / l) * PRISM_OVERLAP_MM);
+  }));
   // 0-2 cara exterior (misma orientación), 3-5 interior (invertida), tres caras laterales.
   const tri = new Uint32Array([0, 1, 2, 3, 5, 4, 0, 3, 4, 0, 4, 1, 1, 4, 5, 1, 5, 2, 2, 5, 3, 2, 3, 0]);
   const m = new wasm.Manifold(new wasm.Mesh({ numProp: 3, vertProperties: vert, triVerts: tri }));
