@@ -175,7 +175,11 @@ export interface AssemblySummary {
   /** Uniones cuyo tipo de conector cambió el arreglo (`"3:dovetail"`). */
   changedByFix: string[];
   suggestions: AssemblySuggestion[];
-  volumeErrorPct: number | null;
+  /**
+   * (piezas + holgura + grabado) − original, en %. Solo cuando se conoce el volumen original (al
+   * dividir); al revalidar piezas guardadas no se conoce y el campo no aparece.
+   */
+  volumeErrorPct?: number;
   /** Por pieza bloqueada: uniones que la traban y piezas con que topa. */
   blockedDetail: Array<Pick<AssemblyBlocked, 'code' | 'conflictingJoints' | 'blockingParts'>>;
   /** Uniones débiles con lo medido y lo recomendado. */
