@@ -1,0 +1,227 @@
+/**
+ * @file src/store/slices/geometrySlice.ts
+ * @description Slice de operaciones geométricas sobre objetos existentes: booleanas, aplicar
+ * huecos, ahuecar, simplificar, refinar, envolvente, reflejar, textura, goma, proyección,
+ * imprimibilidad y pintado. Cada acción valida bloqueos, delega en `src/core/operations` y
+ * aplica el `SceneChange` con historial y aviso.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import * as engine from '../../engine';
+import * as ops from '../../core/operations';
+import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets } from '../../core/scene/sceneRules';
+import type { MeshData } from '../../types/kura';
+import { formatNumber } from '../../utils/plural';
+import type { StoreContext } from '../storeContext';
+import type { KuraStoreState } from '../storeTypes';
+
+export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> {
+  const { set, get, tr, pushHistory, runExclusive, rejectWhileLocked, opCtx, assertCurrent, commitChange, runtime } = ctx;
+  const { reportOperationError, reportEngineWarnings } = ctx;
+
+  const editable = (id: string) => {
+    const obj = get().objects.find((o) => o.id === id);
+    return obj && !obj.locked ? obj : null;
+  };
+
+  return {
+    runBooleanOnSelection: async (op, explicitTargetId, explicitToolId) => {
+      const { objects, selectedIds } = get();
+      const inputs = resolveBooleanInputs(objects, selectedIds, explicitTargetId, explicitToolId);
+      if (!inputs || rejectWhileLocked()) return null;
+      const all = [inputs.target, inputs.tool, ...inputs.extrasInSceneOrder];
+      // Los objetos bloqueados no se consumen ni se modifican.
+      if (all.some((o) => o.locked)) {
+        get().addToast(tr('store.error.locked'), 'error');
+        return null;
+      }
+      return runExclusive(`boolean:${op}`, null, async () => {
+        const op$ = opCtx();
+        const { result, change } = await ops.booleanOperation(op$, {
+          target: inputs.target,
+          tools: [inputs.tool, ...inputs.extras],
+          op,
+          name: op$.naming.booleanResult(op, all),
+        });
+        assertCurrent(all);
+        commitChange(change, { select: [result.id] });
+        get().addToast(tr(`toast.booleanDone.${op}`), 'success');
+        return result;
+      });
+    },
+
+    applyHolesOnSolids: async () => {
+      const { objects, selectedIds } = get();
+      // Los objetos bloqueados ni se recortan ni se consumen.
+      const { solids, holes } = resolveHoleScope(objects, selectedIds);
+      if (solids.length === 0 || holes.length === 0 || rejectWhileLocked()) return;
+      return runExclusive('apply_holes', undefined, async () => {
+        const { updated, change } = await ops.applyHoles(opCtx(), solids, holes);
+        assertCurrent([...solids, ...holes]);
+        commitChange(change, { select: updated.map((s) => s.id) });
+        get().addToast(tr('toast.booleanDone.subtract'), 'success');
+      });
+    },
+
+    hollowObject: async (id, options) => {
+      const obj = editable(id);
+      if (!obj) return false;
+      return runExclusive('hollow', false, async () => {
+        const change = await ops.hollowObject(opCtx(), obj, options);
+        assertCurrent([obj]);
+        commitChange(change);
+        get().addToast(tr('toast.hollowDone', { thickness: options.wallThickness }), 'success');
+        reportEngineWarnings(change.warnings);
+        return true;
+      });
+    },
+
+    simplifySelectedMesh: async (id, toleranceMm) => {
+      const obj = editable(id);
+      if (!obj) return false;
+      return runExclusive('simplify', false, async () => {
+        await get().initEngine();
+        const change = await ops.simplifyObject(opCtx(), obj, toleranceMm);
+        assertCurrent([obj]);
+        commitChange(change);
+        const tris = change.patches[0].patch.stats!.triangles;
+        get().addToast(tr('toast.simplifyDone', { tris: formatNumber(get().language, tris) }), 'success');
+        return true;
+      });
+    },
+
+    refineSelectedMesh: async (id, targetEdgeLengthMm, smooth = false) => {
+      const obj = editable(id);
+      if (!obj) return false;
+      return runExclusive('refine', false, async () => {
+        await get().initEngine();
+        const change = await ops.refineObject(opCtx(), obj, targetEdgeLengthMm, smooth);
+        assertCurrent([obj]);
+        commitChange(change);
+        const tris = change.patches[0].patch.stats!.triangles;
+        get().addToast(tr('toast.refineDone', { tris: formatNumber(get().language, tris) }), 'success');
+        reportEngineWarnings(change.warnings);
+        return true;
+      });
+    },
+
+    runConvexHull: async (ids) => {
+      const { objects, selectedIds } = get();
+      const targetObjs = resolveHullTargets(objects, selectedIds, ids);
+      if (targetObjs.length === 0) return null;
+      return runExclusive('convex_hull', null, async () => {
+        await get().initEngine();
+        const { result, change } = await ops.convexHull(opCtx(), targetObjs);
+        assertCurrent(targetObjs);
+        commitChange(change, { select: [result.id], spawned: [result] });
+        get().addToast(tr('toast.hullDone'), 'success');
+        return result;
+      });
+    },
+
+    mirrorObject: (id, axis) => {
+      const obj = editable(id);
+      if (!obj) return false;
+      try {
+        const change = ops.mirrorObject(opCtx(), obj, axis);
+        commitChange(change, {
+          extra: { activeSegmentation: get().activeSegmentation?.objectId === id ? null : get().activeSegmentation },
+        });
+        get().addToast(tr('toast.mirrored', { axis: axis.toUpperCase() }), 'success');
+        return true;
+      } catch (err) {
+        reportOperationError(err);
+        return false;
+      }
+    },
+
+    applyTextureToObject: (id, options) => {
+      const obj = editable(id);
+      if (!obj) return false;
+      try {
+        commitChange(ops.textureObject(opCtx(), obj, options));
+        get().addToast(tr('toast.textureDone', { pattern: options.pattern }), 'success');
+        return true;
+      } catch (err) {
+        reportOperationError(err);
+        return false;
+      }
+    },
+
+    eraseSphereOnObject: async (id, worldCenter, radiusMm) => {
+      const obj = editable(id);
+      if (!obj) return;
+      return runExclusive('erase', undefined, async () => {
+        const change = await ops.eraseSphere(opCtx(), obj, worldCenter, radiusMm ?? get().eraseRadiusMm);
+        assertCurrent([obj]);
+        commitChange(change);
+        get().addToast(tr('toast.erased'), 'success');
+      });
+    },
+
+    projectOnObjectSurface: async (id, options) => {
+      const obj = editable(id);
+      if (!obj) return null;
+      return runExclusive('project_surface', null, async () => {
+        await get().initEngine();
+        const change = await ops.projectOnSurface(opCtx(), obj, options);
+        assertCurrent([obj]);
+        commitChange(change, { select: [id] });
+        get().addToast(tr('toast.projectDone'), 'success');
+        return get().objects.find((o) => o.id === id) ?? null;
+      });
+    },
+
+    runPrintabilityCheck: (id, infillPercent = 18, overhangAngleDeg = 45) => {
+      const { objects, printerProfile } = get();
+      const obj = objects.find((o) => o.id === id);
+      if (!obj) return null;
+      try {
+        const report = engine.analyzePrintability(obj, printerProfile, obj.materialPreset ?? 'pla_matte', infillPercent, overhangAngleDeg);
+        set({ activePrintReport: report, showOverhangs: report.overhangFaceCount > 0 });
+        get().addToast(
+          tr('toast.printabilityDone', { score: report.score, weight: report.estimatedWeightGrams.toFixed(1) }),
+          report.score >= 70 ? 'success' : 'info',
+        );
+        return report;
+      } catch (err) {
+        reportOperationError(err);
+        return null;
+      }
+    },
+
+    paintObjectSurface: (id, localPoint, faceIndex, modeOverride) => {
+      const state = get();
+      const obj = state.objects.find((o) => o.id === id);
+      if (!obj || obj.locked) return;
+      const mode = modeOverride ?? state.paintMode;
+      let nextMesh: MeshData;
+      if (mode === 'whole') {
+        nextMesh = engine.paintEntireMesh(obj.mesh, state.paintColor);
+      } else if (mode === 'smart_fill' && faceIndex !== null) {
+        nextMesh = engine.paintFloodFillConnectedFaces(obj.mesh, faceIndex, state.paintColor, 35, obj.color);
+      } else if (localPoint) {
+        nextMesh = engine.paintMeshFacesInSphere(obj, localPoint, state.paintRadiusMm, state.paintColor);
+      } else {
+        return;
+      }
+      // Sin cambios de color (pasar el pincel sobre caras ya pintadas): ni historial ni render.
+      if (nextMesh === obj.mesh) return;
+      const stroke = runtime.paintStroke;
+      if (!stroke.open || !stroke.recorded) {
+        pushHistory();
+        stroke.recorded = true;
+      }
+      set((prev) => ({ objects: prev.objects.map((item) => (item.id === id ? { ...item, mesh: nextMesh } : item)) }));
+    },
+
+    beginPaintStroke: () => {
+      runtime.paintStroke = { open: true, recorded: false };
+    },
+    endPaintStroke: () => {
+      runtime.paintStroke = { open: false, recorded: false };
+    },
+  };
+}

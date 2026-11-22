@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { READ_COMMANDS } from '../../mcp-server/src/toolPolicy';
+import { READ_COMMANDS } from '../core/commands/commandPolicy';
 import { buildMcpWsUrl, isMcpCommandAllowed, rotateMcpBridgeToken } from './mcpBridgeClient';
 
 const config = { enabled: true, port: 17432, requireAuth: true, authToken: 'abc def', readOnly: false };

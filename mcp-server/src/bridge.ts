@@ -23,7 +23,7 @@ import {
   type ResolvedBridgeConfig,
 } from './config.js';
 import { uiCommandResponseSchema, uiControlMessageSchema } from './schemas.js';
-import { READ_COMMANDS, isReadCommand } from './toolPolicy.js';
+import { READ_COMMANDS, isReadCommand } from '../../src/core/commands/commandPolicy';
 import type { KuraCommandName, KuraCommandRequest, KuraCommandResponse } from './types.js';
 
 /** Comandos permitidos en modo Solo Lectura (derivado de `toolPolicy.ts`). */

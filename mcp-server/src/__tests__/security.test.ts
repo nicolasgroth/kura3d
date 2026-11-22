@@ -18,7 +18,7 @@ import { WebSocket } from 'ws';
 import { CLOSE_TOKEN_ROTATED, constantTimeEquals, isAllowedLocalHost } from '../bridge.js';
 import { parseCliArgs, resolveBridgeConfig } from '../config.js';
 import { createKuraMcpServer } from '../index.js';
-import { COMMAND_ACCESS, READ_COMMANDS, TOOL_COMMANDS } from '../toolPolicy.js';
+import { COMMAND_ACCESS, READ_COMMANDS, TOOL_COMMANDS } from '../../../src/core/commands/commandPolicy';
 import type { KuraCommandName } from '../types.js';
 
 const TOKEN_A = 'a'.repeat(16) + '0123456789abcdef';

@@ -1,5 +1,5 @@
 /**
- * @file mcp-server/src/toolPolicy.ts
+ * @file src/core/commands/commandPolicy.ts
  * @description Fuente única de verdad del acceso (lectura o escritura) de cada comando del
  * Command Bus de Kura3D. La consumen el servidor MCP (rechazo en servidor), el puente WebSocket
  * y el cliente del puente en la UI (`src/utils/mcpBridgeClient.ts`). Módulo puro, sin dependencias
@@ -9,7 +9,9 @@
  * @license MIT
  */
 
-import type { KuraCommandName } from './types.js';
+import type { KuraCommandName } from './commandNames';
+
+export type { KuraCommandName } from './commandNames';
 
 /** Tipo de acceso de un comando: `read` no modifica escena ni disco; `write` sí. */
 export type CommandAccess = 'read' | 'write';

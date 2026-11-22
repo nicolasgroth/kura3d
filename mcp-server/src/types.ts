@@ -7,6 +7,8 @@
  * @license MIT
  */
 
+import type { KuraCommandName } from '../../src/core/commands/commandNames';
+
 /** Unidades de medida soportadas por Kura3D (almacenamiento interno siempre en mm). */
 export type UnitSystem = 'mm' | 'cm' | 'm' | 'in' | 'ft';
 
@@ -447,39 +449,8 @@ export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
   },
 ];
 
-/** Nombres de comandos aceptados por el Command Bus de Kura3D. */
-export type KuraCommandName =
-  | 'get_scene_state'
-  | 'create_primitive'
-  | 'transform_object'
-  | 'delete_object'
-  | 'duplicate_object'
-  | 'boolean_operation'
-  | 'hollow_object'
-  | 'plane_cut'
-  | 'split_disconnected'
-  | 'split_by_color'
-  | 'apply_texture'
-  | 'paint_object'
-  | 'import_svg'
-  | 'set_printer_profile'
-  | 'set_unit_system'
-  | 'export_stl'
-  | 'export_3mf'
-  | 'capture_viewport'
-  | 'generate_mold'
-  | 'project_on_surface'
-  | 'analyze_printability'
-  | 'simplify_mesh'
-  | 'refine_mesh'
-  | 'create_thread'
-  | 'convex_hull'
-  | 'align_objects'
-  | 'set_material'
-  | 'detect_structures'
-  | 'colorize_structures'
-  | 'extract_structure'
-  | 'mirror_object';
+/** Nombres de comandos del Command Bus (fuente única en `src/core/commands`). */
+export type { KuraCommandName } from '../../src/core/commands/commandNames';
 
 /** Mensaje de petición enviado hacia la UI viva de Kura3D por WebSocket. */
 export interface KuraCommandRequest {

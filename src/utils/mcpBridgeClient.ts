@@ -12,7 +12,7 @@
 
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import { isKnownCommand, isReadCommand } from '../../mcp-server/src/toolPolicy';
+import { isKnownCommand, isReadCommand } from '../core/commands/commandPolicy';
 import type {
   KuraCommandRequest,
   KuraCommandResponse,

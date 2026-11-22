@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import { isReadCommand } from '../../mcp-server/src/toolPolicy';
+import { isReadCommand } from '../core/commands/commandPolicy';
 import * as engine from '../engine';
 import { isEngineError, localizeEngineError, type EngineErrorCode } from '../engine/engineErrors';
 import type { TranslationKey } from '../i18n';

@@ -10,7 +10,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { encodeProject, MAX_UNDO_HISTORY } from '../../project/projectCodec';
-import { subtractOrEmpty } from '../sceneOperationGuards';
+import { subtractOrEmpty } from '../../core/operations';
 import { captureProject, useKuraStore } from '../useKuraStore';
 import { addBox, byId, resetStore, store } from './storeTestUtils';
 

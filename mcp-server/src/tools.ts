@@ -33,7 +33,7 @@ import {
   shortTextSchema,
   svgContentSchema,
 } from './schemas.js';
-import { READ_COMMANDS, isReadCommand, toolAccess } from './toolPolicy.js';
+import { READ_COMMANDS, isReadCommand, toolAccess } from '../../src/core/commands/commandPolicy';
 import type { KuraCommandName } from './types.js';
 
 export { READ_ONLY_COMMANDS };
