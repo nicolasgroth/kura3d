@@ -176,7 +176,7 @@ describe('planBedSplit', () => {
     expect(tris).toBeGreaterThan(180_000);
     // Objetivo: < 1 s en solitario (≈0,7 s medido). El umbral es muy holgado: la suite corre en paralelo y a veces junto a otros procesos pesados; solo detecta una regresión grave.
     expect(plan.elapsedMs).toBeLessThan(20000);
-  });
+  }, 60_000);
 });
 
 describe('executeBedSplitGeometry', () => {
