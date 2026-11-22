@@ -66,6 +66,11 @@ export interface PrecisionNumberInputProps {
   strictRange?: boolean;
   /** Callback opcional al confirmar edición o soltar scrub/stepper. */
   onCommit?: (finalValue: number) => void;
+  /**
+   * Avisa cuando el texto del campo queda marcado como inválido (no numérico o fuera de rango con
+   * `strictRange`) y cuando deja de estarlo, para que el diálogo no actúe con el valor anterior.
+   */
+  onInvalidChange?: (invalid: boolean) => void;
 }
 
 /** Limita un número al rango [min, max] y elimina ruido binario de punto flotante. */
@@ -124,6 +129,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   commitOnBlur = false,
   strictRange = false,
   onCommit,
+  onInvalidChange,
 }) => {
   const language = useKuraStore((s) => s.language);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -159,6 +165,15 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
       setDraft(formatDisplayValue(value, precision));
     }
   }, [value, precision, isFocused, invalid]);
+
+  // El diálogo se entera de si el campo tiene un texto inválido pendiente.
+  const invalidCallbackRef = useRef(onInvalidChange);
+  invalidCallbackRef.current = onInvalidChange;
+  const isInvalid = invalid !== null;
+  useEffect(() => {
+    invalidCallbackRef.current?.(isInvalid);
+  }, [isInvalid]);
+  useEffect(() => () => invalidCallbackRef.current?.(false), []);
 
   // Un cambio externo del valor (Deshacer, gizmo) descarta el error pendiente.
   useEffect(() => {
@@ -460,8 +475,10 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
             /^[-+]?\d*\.?\d*$/.test(normalized) &&
             Number.isFinite(Number(normalized))
           ) {
-            const next = clampAndClean(Number(normalized), min, max, precision);
-            onChange(next);
+            const typed = Number(normalized);
+            // Con rango estricto, un número fuera de rango no se aplica (ni se acota a escondidas): se marca al confirmar.
+            const outside = strictRange && ((typeof min === 'number' && typed < min) || (typeof max === 'number' && typed > max));
+            if (!outside) onChange(clampAndClean(typed, min, max, precision));
           }
         }}
       />

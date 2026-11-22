@@ -1354,4 +1354,5 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'bus.error.assemblyNotFound': 'हिस्सा या समूह “{id}” नहीं मिला।',
   'bus.error.assemblyNoTarget': 'groupId या विभाजित हिस्सों के ids दें।',
   'bus.error.assemblyNotSplit': 'इन हिस्सों की फिर से जाँच नहीं हो सकती ({reason}): वे एक ही विभाजित समूह के हों और उनके जोड़ सहेजे हों।',
+  'dialog.thread.invalidFields': 'थ्रेड बनाने से पहले चिह्नित फ़ील्ड सुधारें: गैर-संख्यात्मक या सीमा से बाहर का मान लागू नहीं होता।',
 };

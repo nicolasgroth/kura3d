@@ -1354,4 +1354,5 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'bus.error.assemblyNotFound': '未找到零件或组“{id}”。',
   'bus.error.assemblyNoTarget': '请提供 groupId 或分割零件的 ids。',
   'bus.error.assemblyNotSplit': '无法重新验证这些零件（{reason}）：它们必须属于同一分割组并保存了接合信息。',
+  'dialog.thread.invalidFields': '创建螺纹前请先修正标记的字段：非数字或超出范围的值不会被应用。',
 };
