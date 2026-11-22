@@ -19,6 +19,7 @@ import type { MeshData, ThreadOptions } from '../types/kura';
 import { EngineError, requireNumberInRange } from './engineErrors';
 import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from './manifoldKernel';
 import { OPERATION_RANGES } from './operationLimits';
+import { withWasmScope } from './wasmScope';
 import {
   defaultThreadClearance,
   hexAcrossFlats,
@@ -225,36 +226,29 @@ function buildChamferedHexPrismZ(
   height: number,
   chamferBothEnds: boolean
 ): Manifold {
-  const handles: Manifold[] = [];
-  try {
-    const hex = wasm.Manifold.cylinder(height, radius, radius, 6, false);
-    handles.push(hex);
+  return withWasmScope((scope) => {
+    const hex = scope.track(wasm.Manifold.cylinder(height, radius, radius, 6, false));
     const chamferH = Math.min(height * 0.22, radius * 0.28);
     const outerR = radius * 1.12;
     const innerR = radius * 0.84;
     let envelope: Manifold;
     if (chamferBothEnds && height > chamferH * 2.5) {
       const midH = height - chamferH * 2;
-      const bot = wasm.Manifold.cylinder(chamferH, innerR, outerR, 36, false);
-      const midRaw = wasm.Manifold.cylinder(midH, outerR, outerR, 36, false);
-      const mid = midRaw.translate([0, 0, chamferH]);
-      const topRaw = wasm.Manifold.cylinder(chamferH, outerR, innerR, 36, false);
-      const topC = topRaw.translate([0, 0, chamferH + midH]);
-      handles.push(bot, midRaw, mid, topRaw, topC);
-      envelope = wasm.Manifold.union([bot, mid, topC]);
+      const bot = scope.track(wasm.Manifold.cylinder(chamferH, innerR, outerR, 36, false));
+      const midRaw = scope.track(wasm.Manifold.cylinder(midH, outerR, outerR, 36, false));
+      const mid = scope.track(midRaw.translate([0, 0, chamferH]));
+      const topRaw = scope.track(wasm.Manifold.cylinder(chamferH, outerR, innerR, 36, false));
+      const topC = scope.track(topRaw.translate([0, 0, chamferH + midH]));
+      envelope = scope.track(wasm.Manifold.union([bot, mid, topC]));
     } else {
       const bodyH = Math.max(0.2, height - chamferH);
-      const body = wasm.Manifold.cylinder(bodyH, outerR, outerR, 36, false);
-      const topRaw = wasm.Manifold.cylinder(chamferH, outerR, innerR, 36, false);
-      const topC = topRaw.translate([0, 0, bodyH]);
-      handles.push(body, topRaw, topC);
-      envelope = body.add(topC);
+      const body = scope.track(wasm.Manifold.cylinder(bodyH, outerR, outerR, 36, false));
+      const topRaw = scope.track(wasm.Manifold.cylinder(chamferH, outerR, innerR, 36, false));
+      const topC = scope.track(topRaw.translate([0, 0, bodyH]));
+      envelope = scope.track(body.add(topC));
     }
-    handles.push(envelope);
     return hex.intersect(envelope);
-  } finally {
-    for (const h of handles) h.delete();
-  }
+  });
 }
 
 /** Fracción de paso máxima de cada mitad de la cresta interior que el desplazamiento de flancos puede comer (deja ≥ 0.01·P de meseta). */

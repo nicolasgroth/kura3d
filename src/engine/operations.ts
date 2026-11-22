@@ -268,9 +268,14 @@ export async function planeCutWithConnectors(
       if (centers.length > 0) {
         const males: Manifold[] = [];
         const females: Manifold[] = [];
+        // Cada sólido queda registrado apenas existe: si el siguiente lanza, el inally lo libera.
+        const tracked = (m: Manifold): Manifold => {
+          cleanupHandles.push(m);
+          return m;
+        };
 
         for (const center of centers) {
-          const male = buildConnectorSolid(
+          const male = tracked(buildConnectorSolid(
             wasm,
             options.connectorType,
             options.axis,
@@ -278,8 +283,8 @@ export async function planeCutWithConnectors(
             size,
             depth,
             0
-          );
-          const female = buildConnectorSolid(
+          ));
+          const female = tracked(buildConnectorSolid(
             wasm,
             options.connectorType,
             options.axis,
@@ -287,15 +292,14 @@ export async function planeCutWithConnectors(
             size,
             depth,
             tol
-          );
+          ));
           males.push(male);
           females.push(female);
-          cleanupHandles.push(male, female);
         }
 
         // Alojamiento + pared mínima: debe caber en la mitad que lo recibe y no solaparse
         const shells = centers.map((center) =>
-          buildConnectorSolid(
+          tracked(buildConnectorSolid(
             wasm,
             options.connectorType as Exclude<CutConnectorType, 'none'>,
             options.axis,
@@ -303,11 +307,11 @@ export async function planeCutWithConnectors(
             size,
             depth,
             tol + CONNECTOR_MIN_WALL_MM
-          )
+          ))
         );
         // Para el solape basta media pared por lado: entre alojamientos quedan ≥ CONNECTOR_MIN_WALL_MM
         const spacers = centers.map((center) =>
-          buildConnectorSolid(
+          tracked(buildConnectorSolid(
             wasm,
             options.connectorType as Exclude<CutConnectorType, 'none'>,
             options.axis,
@@ -315,9 +319,8 @@ export async function planeCutWithConnectors(
             size,
             depth,
             tol + CONNECTOR_MIN_WALL_MM * 0.5
-          )
+          ))
         );
-        cleanupHandles.push(...shells, ...spacers);
         assertConnectorsFit(
           posHalf,
           shells,
@@ -328,16 +331,15 @@ export async function planeCutWithConnectors(
           size
         );
 
-        const maleUnion = wasm.Manifold.union(males);
-        const femaleUnion = wasm.Manifold.union(females);
-        cleanupHandles.push(maleUnion, femaleUnion);
+        const maleUnion = tracked(wasm.Manifold.union(males));
+        const femaleUnion = tracked(wasm.Manifold.union(females));
 
+        // Se reemplaza cada mitad apenas existe su sucesora: el inally libera la vigente.
         const nextNeg = negHalf.add(maleUnion);
-        const nextPos = posHalf.subtract(femaleUnion);
-
         negHalf.delete();
-        posHalf.delete();
         negHalf = nextNeg;
+        const nextPos = posHalf.subtract(femaleUnion);
+        posHalf.delete();
         posHalf = nextPos;
       }
     }
