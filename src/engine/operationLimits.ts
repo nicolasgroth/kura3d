@@ -110,8 +110,19 @@ export const OPERATION_RANGES = {
     minWallMm: closed(0, 20),
     overhangAngleDeg: closed(0, 90),
   },
+  /** Detección de sub-estructuras (`detectStructuralRegions`): fuera de rango es error, no recorte. */
   detect: {
-    creaseAngleDeg: closed(1, 179),
+    creaseAngleDeg: closed(5, 85),
+    minRegionPercent: closed(0.1, 25),
+    maxRegions: int(1, 32),
+  },
+  /** Distribución en grilla (`align_objects` con `arrange_grid`). */
+  align: {
+    spacingMm: closed(0, 1000),
+  },
+  /** Captura del viewport por el servidor MCP (píxeles por lado). */
+  capture: {
+    sizePx: int(128, 2048),
   },
   /** Dividir para imprimir (`split_for_bed`); los conectores usan los rangos de `cut`. */
   split: {

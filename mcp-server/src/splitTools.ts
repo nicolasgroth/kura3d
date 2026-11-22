@@ -12,6 +12,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../../src/engine/operationLimits';
 import { idSchema, rangeSchema } from './schemas.js';
+import { summarizeSplitResult } from './splitSummary.js';
 import { dispatchWithFallback, type KuraToolContext } from './tools.js';
 
 export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx: KuraToolContext): void {
@@ -24,10 +25,11 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         'Divide un objeto grande en piezas que caben en la cama (por defecto la del perfil activo), con conectores en cada unión, ' +
         'nombre por rejilla ("Objeto · A1": letra = columna X, número = nivel Y, minúscula = fila Z) y marcas de pareja grabadas ' +
         'opcionales. Los planos se desplazan hacia la sección más simple. Con dryRun=true solo devuelve el plan (planos y piezas estimadas) ' +
-        'sin cambiar la escena. Error SPLIT_TOO_MANY_PIECES si harían falta más de maxPieces.',
+        'sin cambiar la escena. Devuelve un resumen corto; detail=true agrega el plan completo. Error SPLIT_TOO_MANY_PIECES si harían falta más de maxPieces.',
       inputSchema: {
         objectId: idSchema.describe('ID del objeto a dividir.'),
         dryRun: z.boolean().default(false).describe('true = solo plan, sin cortar.'),
+        detail: z.boolean().default(false).describe('true = devuelve el plan completo; por defecto un resumen (piezas, placas, uniones con/sin conector, avisos).'),
         bedWidthMm: rangeSchema(OR.split.bedMm).optional().describe('Ancho X de la cama (por defecto el perfil activo).'),
         bedDepthMm: rangeSchema(OR.split.bedMm).optional().describe('Fondo Z de la cama.'),
         bedHeightMm: rangeSchema(OR.split.bedMm).optional().describe('Alto Y útil de impresión.'),
@@ -45,7 +47,7 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         labelMinHeightMm: rangeSchema(OR.split.labelMinHeightMm).default(d.labelMinHeightMm),
       },
     },
-    async (args) => {
+    async ({ detail, ...args }) => {
       const connector =
         args.connectorType === 'none'
           ? null
@@ -60,6 +62,7 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
           execute: { connector, labels: args.labels, labelDepthMm: args.labelDepthMm, labelMinHeightMm: args.labelMinHeightMm },
           dryRun: args.dryRun,
         }),
+        detail ? undefined : summarizeSplitResult,
       );
     },
   );

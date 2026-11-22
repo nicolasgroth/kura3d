@@ -128,7 +128,9 @@ export async function dispatchWithFallback(
   ctx: KuraToolContext,
   command: KuraCommandName,
   params: Record<string, unknown>,
-  headlessHandler: () => Promise<unknown> | unknown
+  headlessHandler: () => Promise<unknown> | unknown,
+  /** Da forma al resultado (p. ej. un resumen) igual en el puente vivo y en headless. */
+  shape: (result: unknown) => unknown = (result) => result
 ): Promise<CallToolResult> {
   try {
     enforceSecurityPolicy(ctx, command);
@@ -145,13 +147,13 @@ export async function dispatchWithFallback(
       return okJson({
         mode: 'live-bridge',
         command,
-        result: response.result ?? { ok: true },
+        result: shape(response.result ?? { ok: true }),
       });
     }
 
     // Cola FIFO: dos llamadas concurrentes no se intercalan sobre la escena headless.
     const result = await ctx.headless.queue.run(headlessHandler);
-    return okJson(result);
+    return okJson(shape(result));
   } catch (err) {
     return failError(err);
   }
@@ -659,8 +661,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       description:
         'Captura una imagen PNG del viewport 3D cuando la aplicación gráfica Kura3D está conectada vía Live Bridge.',
       inputSchema: {
-        width: z.number().int().min(128).max(2048).optional(),
-        height: z.number().int().min(128).max(2048).optional(),
+        width: rangeSchema(OR.capture.sizePx).optional(),
+        height: rangeSchema(OR.capture.sizePx).optional(),
       },
     },
     async (args) => {
@@ -982,9 +984,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             'arrange_grid',
           ])
           .describe('Modo de alineación o distribución en grilla.'),
-        spacingMm: z
-          .number()
-          .min(0)
+        spacingMm: rangeSchema(OR.align.spacingMm)
           .optional()
           .describe(
             'Separación en mm entre piezas cuando mode === "arrange_grid". El motor usa 8 mm fijos; en modo headless otro valor se rechaza.'
@@ -1038,25 +1038,15 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         'Analiza islas desconectadas, pliegues diedros y proporciones del objeto para detectar sub-estructuras geométricas (tanques, tubos, cúpulas, bloques, cuerpo principal). Seguro en modo Solo Lectura.',
       inputSchema: {
         objectId: idSchema.describe('ID del objeto 3D a analizar.'),
-        creaseAngleDeg: z
-          .number()
-          .min(5)
-          .max(85)
+        creaseAngleDeg: rangeSchema(OR.detect.creaseAngleDeg)
           .optional()
-          .describe('Ángulo diedro umbral en grados (5 a 85, por defecto 28). Menor valor detecta más regiones.'),
-        minRegionPercent: z
-          .number()
-          .min(0.1)
-          .max(100)
+          .describe(`Ángulo diedro umbral en grados (${OR.detect.creaseAngleDeg.min} a ${OR.detect.creaseAngleDeg.max}, por defecto 28). Menor valor detecta más regiones.`),
+        minRegionPercent: rangeSchema(OR.detect.minRegionPercent)
           .optional()
-          .describe('Porcentaje mínimo de triángulos para conservar una región (por defecto 1.5).'),
-        maxRegions: z
-          .number()
-          .int()
-          .min(1)
-          .max(64)
+          .describe(`Porcentaje mínimo de triángulos para conservar una región (${OR.detect.minRegionPercent.min} a ${OR.detect.minRegionPercent.max}, por defecto 1.5).`),
+        maxRegions: rangeSchema(OR.detect.maxRegions)
           .optional()
-          .describe('Cantidad máxima de regiones destacadas a devolver (por defecto 12).'),
+          .describe(`Cantidad máxima de regiones destacadas a devolver (${OR.detect.maxRegions.min} a ${OR.detect.maxRegions.max}, por defecto 12).`),
       },
     },
     async (args) =>
@@ -1082,12 +1072,9 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         'Detecta las regiones estructurales del modelo y asigna colores diferenciados por sub-estructura para inspección visual o impresión multicolor.',
       inputSchema: {
         objectId: idSchema.describe('ID del objeto 3D a colorear por estructuras.'),
-        creaseAngleDeg: z
-          .number()
-          .min(5)
-          .max(85)
+        creaseAngleDeg: rangeSchema(OR.detect.creaseAngleDeg)
           .optional()
-          .describe('Ángulo diedro umbral en grados (5 a 85, por defecto 28).'),
+          .describe(`Ángulo diedro umbral en grados (${OR.detect.creaseAngleDeg.min} a ${OR.detect.creaseAngleDeg.max}, por defecto 28).`),
       },
     },
     async (args) =>

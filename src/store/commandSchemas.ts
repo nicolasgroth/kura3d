@@ -84,7 +84,6 @@ export function readPrimitiveParams(raw: RawParams, type: PrimitiveType): Primit
   for (const key of Object.keys(PRIMITIVE_PARAM_RANGES) as PrimitiveRangeKey[]) {
     set(key, readNumber(raw, primitiveRangeFor(type, key), key));
   }
-  set('bevel', readNumber(raw, nonNegative(1000), 'bevel'));
   set('text', readString(raw, PRIMITIVE_LIMITS.maxTextLength, 'text'));
   set('textAlign', readEnum(raw, TEXT_ALIGN_OPTIONS, 'textAlign'));
   return out;

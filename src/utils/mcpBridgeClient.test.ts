@@ -1,7 +1,7 @@
 /**
  * @file src/utils/mcpBridgeClient.test.ts
  * @description Pruebas del cliente del puente MCP: URL con token obligatorio y preferencia de solo
- * lectura, y política lectura/escritura compartida con el servidor (`mcp-server/src/toolPolicy.ts`).
+ * lectura, y política lectura/escritura compartida con el servidor (`src/core/commands/commandPolicy.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

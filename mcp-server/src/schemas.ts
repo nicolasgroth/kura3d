@@ -65,7 +65,7 @@ export const primitiveParamsSchema = z.object({
   fontSize: ranged(PRIMITIVE_PARAM_RANGES.fontSize),
   letterSpacing: ranged(PRIMITIVE_PARAM_RANGES.letterSpacing),
   textAlign: z.enum(TEXT_ALIGN_OPTIONS).optional(),
-  bevel: z.number().min(0).max(1000).optional(),
+  bevel: ranged(PRIMITIVE_PARAM_RANGES.bevel),
 });
 
 /** Contenido SVG acotado a 2 MB (se parsea como datos, nunca se ejecuta). */
