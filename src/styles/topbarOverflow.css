@@ -1,0 +1,73 @@
+/* Barra superior adaptativa: nunca hay scroll horizontal; lo que no cabe pasa al menú "Más". */
+.kura-topbar.kura-topbar-adaptive {
+  overflow: hidden;
+  min-width: 0;
+}
+
+.kura-topbar-adaptive.is-compact .kura-btn-label,
+.kura-topbar-adaptive.is-compact .kura-tool-label,
+.kura-topbar-adaptive.is-compact .kura-mcp-label {
+  display: none;
+}
+
+.kura-topbar-adaptive.is-compact .kura-select {
+  max-width: 145px;
+}
+
+.kura-topbar-more {
+  position: relative;
+  display: inline-flex;
+}
+
+.kura-topbar-more-menu {
+  position: fixed;
+  z-index: 200;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 16px));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.kura-topbar-more-menu .kura-btn {
+  justify-content: flex-start;
+  width: 100%;
+  gap: 8px;
+}
+
+.kura-topbar-more-menu .kura-btn .kura-btn-label,
+.kura-topbar-more-menu .kura-btn .kura-tool-label {
+  display: inline;
+}
+
+.kura-topbar-more-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.kura-topbar-more-row .kura-select {
+  width: 100%;
+  max-width: none;
+}
+
+/* Anchos muy reducidos (móvil): el nombre del proyecto queda solo en el nombre accesible. */
+.kura-topbar-adaptive.is-narrow .kura-project-name,
+.kura-topbar-adaptive.is-narrow .kura-project-trigger .kura-btn-label {
+  display: none;
+}
+
+.kura-topbar-adaptive.is-narrow {
+  gap: 4px;
+  padding: 0 6px;
+}

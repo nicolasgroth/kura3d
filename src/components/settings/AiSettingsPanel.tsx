@@ -35,11 +35,13 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
   const [keyStored, setKeyStored] = useState(Boolean(aiConfig.keyStored || aiConfig.apiKey));
   const [clearKey, setClearKey] = useState(false);
   const [rememberKey, setRememberKey] = useState(() => keyStore.rememberInSession());
+  const [urlError, setUrlError] = useState<string | null>(null);
   const [hostsText, setHostsText] = useState(() => getAllowedHostsSync().join('\n'));
 
   useEffect(() => {
     if (!open) return;
     setDraft(aiConfig);
+    setUrlError(null);
     setKeyInput(keyStore.desktop ? '' : aiConfig.apiKey);
     setKeyStored(Boolean(aiConfig.keyStored || aiConfig.apiKey));
     setClearKey(false);
@@ -55,6 +57,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
   const switchTo = (next: Draft) => {
     const nextSpec = specFor(next);
     setDraft({ ...next, model: nextSpec.defaultModel, baseUrl: '' });
+    setUrlError(null);
     setKeyInput('');
     setClearKey(false);
     setKeyStored(false);
@@ -65,6 +68,23 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
   };
 
   const handleSave = async () => {
+    // La URL base se valida primero: un error se muestra junto al campo y no se guarda nada.
+    const typedUrl = draft.baseUrl.trim();
+    if (typedUrl) {
+      let parsedOk = false;
+      try {
+        const parsed = new URL(typedUrl);
+        parsedOk = parsed.protocol === 'https:' || parsed.protocol === 'http:';
+      } catch {
+        parsedOk = false;
+      }
+      if (!parsedOk) {
+        setUrlError(t(language, 'dialog.settings.baseUrlInvalid'));
+        document.getElementById('ai-url')?.focus();
+        return;
+      }
+    }
+    setUrlError(null);
     const { hosts, invalid } = parseHostList(hostsText.split(/\r?\n/));
     if (invalid.length) {
       addToast(t(language, 'dialog.settings.allowedHostsInvalid', { list: invalid.join(', ') }), 'error');
@@ -87,12 +107,12 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
       } catch {
         // URL inválida: se muestra tal cual.
       }
-      addToast(
+      setUrlError(
         isLoopbackUrl(url) || !/^https:/i.test(url)
           ? t(language, 'ai.error.endpointBlocked')
           : t(language, 'dialog.settings.hostNotInList', { host }),
-        'error',
       );
+      document.getElementById('ai-url')?.focus();
       return;
     }
     keyStore.setRememberInSession(rememberKey);
@@ -223,9 +243,18 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
           className="kura-input"
           placeholder={spec.defaultBaseUrl || 'https://'}
           value={draft.baseUrl}
-          aria-describedby="ai-url-hint"
-          onChange={(e) => setDraft({ ...draft, baseUrl: e.target.value })}
+          aria-invalid={urlError ? true : undefined}
+          aria-describedby={urlError ? 'ai-url-error ai-url-hint' : 'ai-url-hint'}
+          onChange={(e) => {
+            setUrlError(null);
+            setDraft({ ...draft, baseUrl: e.target.value });
+          }}
         />
+        {urlError && (
+          <small id="ai-url-error" role="alert" style={{ fontSize: 12, color: 'var(--accent-red)', fontWeight: 600 }}>
+            {urlError}
+          </small>
+        )}
         <small id="ai-url-hint" style={{ fontSize: 11, opacity: 0.85 }}>
           {t(language, 'dialog.settings.baseUrlHint')}
         </small>

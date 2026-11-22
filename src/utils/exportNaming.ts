@@ -34,3 +34,17 @@ export function exportFileBase(
   }
   return 'kura3d';
 }
+
+/**
+ * Nombre por defecto del diálogo de exportación según el alcance: con la escena completa
+ * manda el proyecto (o el nombre por defecto), nunca el del objeto seleccionado.
+ */
+export function defaultExportBase(
+  scope: 'selection' | 'scene',
+  projectName: string | null,
+  selected: Array<{ name: string }>,
+  exportable: Array<{ name: string }>,
+  fallback: string,
+): string {
+  return exportFileBase(undefined, projectName, scope === 'selection' ? selected : exportable, fallback);
+}
