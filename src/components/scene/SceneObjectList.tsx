@@ -380,7 +380,7 @@ export const SceneObjectList: React.FC = () => {
         ))}
       </div>
       <p id={`${baseId}-hint`} className="kura-scene-hint">
-        {t(language, 'sidebar.scene.keyboardHint')} {t(language, 'groups.tree.hint')}
+        {t(language, 'sidebar.scene.keyboardHint')} · {t(language, 'groups.tree.hint')}
       </p>
     </>
   );

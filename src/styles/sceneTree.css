@@ -8,9 +8,19 @@
  * @license MIT
  */
 
-.kura-tree-row {
+.kura-scene-tree .kura-tree-row {
   position: relative;
-  padding-left: calc(4px + var(--tree-level, 0) * 14px);
+  padding-left: calc(4px + var(--tree-level, 0) * 16px);
+}
+
+/* Guía de nivel: una línea a la izquierda de las filas anidadas (además de la sangría). */
+.kura-scene-tree .kura-tree-row[aria-level]:not([aria-level='1'])::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: calc(var(--tree-level, 0) * 16px - 6px);
+  border-left: 1px solid var(--border-subtle);
 }
 
 .kura-tree-chevron,

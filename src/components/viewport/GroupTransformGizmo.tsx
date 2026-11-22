@@ -12,7 +12,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TransformControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { selectionPivot } from '../../core/scene/groupTransform';
+import { selectionBasePivot, selectionPivot } from '../../core/scene/groupTransform';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject, Vec3 } from '../../types/kura';
 
@@ -63,7 +63,9 @@ export const GroupTransformGizmo: React.FC<{
             const baseline = s.objects
               .filter((o) => s.selectedIds.includes(o.id))
               .map((o) => ({ id: o.id, position: [...o.position] as Vec3, rotation: [...o.rotation] as Vec3, scale: [...o.scale] as Vec3 }));
-            drag.current = { baseline, pivot };
+            // Escalar crece desde la base del conjunto; mover y girar usan el centro de la caja.
+            const members = s.objects.filter((o) => s.selectedIds.includes(o.id));
+            drag.current = { baseline, pivot: s.transformMode === 'scale' ? selectionBasePivot(members) : pivot };
             onDragChange(true);
           }}
           onMouseUp={() => {

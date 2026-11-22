@@ -14,7 +14,7 @@ import {
   descendantObjectIds, groupSelection, indentNode, MAX_GROUP_NAME, moveNode, objectAncestors, outdentNode, pickSelection,
   reorderNode, selectedGroup, setGroupFlag, ungroup, type GroupScene,
 } from '../../core/scene/groups';
-import { rigidTransformPatches, selectionPivot } from '../../core/scene/groupTransform';
+import { rigidTransformPatches, selectionBasePivot, selectionPivot } from '../../core/scene/groupTransform';
 import { makeId } from '../../core/scene/sceneObjects';
 import type { SceneObject } from '../../types/kura';
 import { tCount } from '../../utils/plural';
@@ -214,7 +214,9 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       });
       if (movable.length === 0) return false;
       const full = movable.map((b) => ({ ...byId.get(b.id)!, position: b.position, rotation: b.rotation, scale: b.scale }));
-      const pivot = options.pivot ?? selectionPivot(full);
+      // Solo escala: desde la base (no se hunde bajo la cama); con giro, desde el centro de la caja.
+      const onlyScale = delta.scale !== undefined && !delta.rotation?.some((r) => r !== 0);
+      const pivot = options.pivot ?? (onlyScale ? selectionBasePivot(full) : selectionPivot(full));
       const patches = rigidTransformPatches(full, pivot, delta);
       const clean = new Map<string, Partial<SceneObject>>();
       for (const p of patches) {

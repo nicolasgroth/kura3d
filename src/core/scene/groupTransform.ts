@@ -33,6 +33,17 @@ export function selectionPivot(objects: readonly Placed[]): Vec3 {
   return [c.x, c.y, c.z];
 }
 
+/**
+ * Pivote de escala: centro de la caja en X/Z (internos) y su base en altura. Escalar el conjunto lo
+ * agranda desde el centro sin hundirlo bajo la cama ni despegarlo de ella.
+ */
+export function selectionBasePivot(objects: readonly Placed[]): Vec3 {
+  const box = selectionBox(objects);
+  if (!box) return [0, 0, 0];
+  const c = box.getCenter(new THREE.Vector3());
+  return [c.x, box.min.y, c.z];
+}
+
 export interface RigidDelta {
   /** Traslación en mm (interno). */
   translate?: Vec3;
