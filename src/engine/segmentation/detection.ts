@@ -1,6 +1,6 @@
 /**
  * @file src/engine/segmentation/detection.ts
- * @description Detección determinística de sub-estructuras: cáscaras topológicas, crecimiento de regiones por costuras cóncavas y diedros agudos, fusión de ruido y límite de regiones.
+ * @description Detección determinística de sub-estructuras: cáscaras topológicas, crecimiento de regiones por costuras cóncavas y diedros agudos, fusión de ruido, límite de regiones y absorción de regiones de grosor cero.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -23,6 +23,7 @@ import {
 } from './adjacency';
 import { DEFAULT_SEGMENTATION_OPTIONS } from './constants';
 import { labelStructuralRegions } from './labeling';
+import { absorbNegligibleRegions } from './negligibleRegions';
 
 /**
  * Detecta y clasifica de forma 100 % determinística local las sub-estructuras geométricas
@@ -384,6 +385,9 @@ export async function detectStructuralRegions(
     ] as Vec3,
     span: [mMaxX - mMinX, mMaxY - mMinY, mMaxZ - mMinZ] as Vec3,
   };
+
+  // 5. Sin partes de grosor cero ni volumen despreciable (caras planas sueltas): se funden en su vecina.
+  absorbNegligibleRegions(mesh, graph, regionsMap, triRegion, modelBounds.span);
 
   const finalRegions = labelStructuralRegions(
     obj,

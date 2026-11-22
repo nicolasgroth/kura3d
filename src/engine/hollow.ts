@@ -108,7 +108,7 @@ export async function hollowMeshDetailed(
 
     // Verificación: la cavidad debe quedar dentro y a ≥ t (menos tolerancia de mundo) de la superficie
     const tolerance = Math.max(0.02, t * 0.05);
-    const wall = measureWallThickness(field, inner);
+    const wall = offset.wall ?? measureWallThickness(field, inner);
     const escaped = own(inner.subtract(outer)).volume();
     if (wall.minMm < t - tolerance || escaped > 1e-6 * Math.max(1, outer.volume())) {
       throw new EngineError('HOLLOW_WALL_BREACH', { thickness: t, measured: wall.minMm });

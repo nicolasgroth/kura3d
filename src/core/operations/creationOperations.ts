@@ -2,6 +2,8 @@
  * @file src/core/operations/creationOperations.ts
  * @description Operaciones puras que crean objetos nuevos: primitivas, módulos (+/−) sobre un
  * objetivo, roscas ISO, SVG extruido y relieves de imagen. Llaman al motor y devuelven el objeto.
+ * La generación de malla está separada (`primitiveMesh`, `svgMesh`, `imageReliefMesh`) para que el
+ * store la corra en el Worker del motor y luego construya el objeto con la colocación de la escena.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -44,9 +46,11 @@ export async function createPrimitive(
     scale?: Vec3;
     isHole?: boolean;
     materialPreset?: MaterialPresetId;
+    /** Malla ya generada con `primitiveMesh` (p. ej. en el Worker); si falta se genera aquí. */
+    mesh?: MeshData;
   },
 ): Promise<SceneObject> {
-  const mesh = engine.normalizeMeshToBed(await engine.createPrimitiveMesh(input.type, input.params));
+  const mesh = input.mesh ?? (await primitiveMesh(input.type, input.params));
   return buildWith(ctx, {
     name: input.name,
     source: 'primitive',
@@ -61,6 +65,11 @@ export async function createPrimitive(
     primitiveParams: input.params,
     parametric: parametricOrigin('primitive', mesh),
   });
+}
+
+/** Malla de una primitiva apoyada en la cama (texto 3D incluido). */
+export async function primitiveMesh(type: PrimitiveType, params?: PrimitiveParams): Promise<MeshData> {
+  return engine.normalizeMeshToBed(await engine.createPrimitiveMesh(type, params));
 }
 
 /** Parámetros de un módulo dimensionado respecto del objetivo (escala incluida). */
@@ -189,30 +198,49 @@ function keepBase(obj: SceneObject, mesh: MeshData): { position: Vec3 } | Record
   return { position: [obj.position[0], obj.position[1] + dy, obj.position[2]] };
 }
 
-/** Extruye los contornos de un SVG. */
+/** Contornos de un SVG empaquetados para el Worker (se leen donde haya `DOMParser`). */
+export function readSvgContours(options: SvgImportOptions): engine.PackedSvgContours {
+  return engine.packSvgContours(engine.extractSvgElementGroups(options.svgContent, engine.svgCurveSegments(options)));
+}
+
+/** Malla extruida de un SVG; con `contours` usa los contornos ya leídos en el hilo principal. */
+export async function svgMesh(options: SvgImportOptions, contours?: engine.PackedSvgContours): Promise<MeshData> {
+  const groups = contours ? engine.unpackSvgContours(contours) : undefined;
+  return engine.normalizeMeshToBed(await engine.extrudeSvgToMesh(options, groups));
+}
+
+/** Extruye los contornos de un SVG. `mesh` permite pasar la malla ya generada con `svgMesh`. */
 export async function importSvg(
   ctx: OperationContext,
   options: SvgImportOptions,
   look: { name: string; color: string; place?: PlaceMesh },
+  generated?: MeshData,
 ): Promise<SceneObject> {
-  const mesh = engine.normalizeMeshToBed(await engine.extrudeSvgToMesh(options));
+  const mesh = generated ?? (await svgMesh(options));
   return buildWith(ctx, { name: look.name, source: 'svg', mesh, position: look.place?.(mesh), color: look.color });
 }
 
-/** Relieve, litofanía cilíndrica, silueta o cortador a partir de una imagen. */
+/** Malla (apoyada en la cama) de un relieve, litofanía cilíndrica, silueta o cortador. */
+export function imageReliefMesh(options: ImageTo3DOptions): MeshData | Promise<MeshData> {
+  if (options.shapeMode === 'silhouette' || options.shapeMode === 'cutter') {
+    return engine.generateSilhouetteOrCutterFromImage(options).then(engine.normalizeMeshToBed);
+  }
+  const mesh = options.shapeMode === 'cylindrical'
+    ? engine.generateCylindricalLithophane(options)
+    : engine.generateReliefFromImage(options);
+  return engine.normalizeMeshToBed(mesh);
+}
+
+/**
+ * Relieve, litofanía cilíndrica, silueta o cortador a partir de una imagen. `generated` permite
+ * pasar la malla ya calculada con `imageReliefMesh` (p. ej. en el Worker).
+ */
 export async function imageRelief(
   ctx: OperationContext,
   options: ImageTo3DOptions,
   look: { name: string; color: string; place?: PlaceMesh },
+  generated?: MeshData,
 ): Promise<SceneObject> {
-  let mesh: MeshData;
-  if (options.shapeMode === 'cylindrical') {
-    mesh = engine.generateCylindricalLithophane(options);
-  } else if (options.shapeMode === 'silhouette' || options.shapeMode === 'cutter') {
-    mesh = await engine.generateSilhouetteOrCutterFromImage(options);
-  } else {
-    mesh = engine.generateReliefFromImage(options);
-  }
-  const normalized = engine.normalizeMeshToBed(mesh);
+  const normalized = generated ?? (await imageReliefMesh(options));
   return buildWith(ctx, { name: look.name, source: 'image', mesh: normalized, position: look.place?.(normalized), color: look.color, materialPreset: 'pla_matte' });
 }

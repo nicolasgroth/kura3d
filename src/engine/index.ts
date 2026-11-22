@@ -38,12 +38,15 @@ export {
 
 export {
   applyProceduralTexture,
+  extractSvgElementGroups,
   extrudeSvgToMesh,
   generateReliefFromImage,
+  svgCurveSegments,
   paintEntireMesh,
   paintFloodFillConnectedFaces,
   paintMeshFacesInSphere,
 } from './advancedGeometry';
+export { packSvgContours, unpackSvgContours, type PackedSvgContours, type SvgContourGroups } from './svgContourPack';
 
 export {
   DEFAULT_IMPORT_LIMITS,

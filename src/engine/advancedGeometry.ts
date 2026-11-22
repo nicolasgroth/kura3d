@@ -481,11 +481,16 @@ function parseSvgElementGroupsFallback(
   return groups;
 }
 
+/** Pasos por curva efectivos de una importación SVG. */
+export function svgCurveSegments(options: Pick<SvgImportOptions, 'curveSegments'>): number {
+  return Math.max(4, Math.round(options.curveSegments || 12));
+}
+
 /**
  * Extrae grupos de contornos usando `THREE.SVGLoader` cuando el DOM del navegador
  * está disponible, o el parser determinista puro en entornos Node/headless.
  */
-function extractSvgElementGroups(
+export function extractSvgElementGroups(
   svgContent: string,
   curveSegments: number
 ): [number, number][][][] {
@@ -532,10 +537,13 @@ function extractSvgElementGroups(
  * @param options Opciones de importación y extrusión SVG.
  * @returns Malla `MeshData` extrusionada en milímetros.
  */
-export async function extrudeSvgToMesh(options: SvgImportOptions): Promise<MeshData> {
+export async function extrudeSvgToMesh(
+  options: SvgImportOptions,
+  preParsedGroups?: [number, number][][][]
+): Promise<MeshData> {
   const wasm = await initManifoldEngine();
-  const curveSegments = Math.max(4, Math.round(options.curveSegments || 12));
-  const groups = extractSvgElementGroups(options.svgContent, curveSegments);
+  // Los contornos pueden llegar ya leídos (el Worker no tiene DOMParser: se leen en el hilo principal).
+  const groups = preParsedGroups ?? extractSvgElementGroups(options.svgContent, svgCurveSegments(options));
 
   if (groups.length === 0) {
     throw new EngineError('SVG_NO_CONTOURS');

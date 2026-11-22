@@ -25,7 +25,14 @@ export interface InwardOffsetResult {
   gridEdgeMm: number;
   /** Margen extra aplicado al nivel para compensar el error de cuerda de la grilla (mm). */
   levelMarginMm: number;
+  /** Pared medida de `inner` si ya se midió al ajustar el margen (evita medir dos veces). */
+  wall?: WallThicknessStats;
 }
+
+/** Fracción del espesor que la pared mínima puede quedar por debajo del pedido (0,5 %). */
+export const WALL_UNDERSHOOT_REL = 0.005;
+/** Intentos de ajuste del nivel antes de caer al margen fijo del peor caso. */
+const MAX_LEVEL_TRIES = 3;
 
 /** Estadística de espesor entre la superficie de una cavidad y la superficie exterior. */
 export interface WallThicknessStats {
@@ -150,31 +157,45 @@ export function inwardOffset(
   const budgetEdge = Math.cbrt((2 * volume) / Math.max(10_000, sampleBudget));
   const gridEdge = Math.max(thickness / 4, budgetEdge);
 
-  // Las cuerdas sobre zonas cóncavas de la cavidad (aristas reentrantes) adelgazan la pared
-  // a lo sumo ~edge²/(8·t); se compensa subiendo el nivel.
-  // La simplificación posterior puede mover la superficie hasta `simplifyTol`: también se compensa.
+  // La simplificación posterior puede mover la superficie hasta `simplifyTol`.
   const simplifyTol = Math.min(0.03, thickness * 0.02);
-  const levelMargin = Math.min(thickness * 0.5, (gridEdge * gridEdge) / (6 * thickness)) + simplifyTol;
-  const level = thickness + levelMargin;
+  const extract = (level: number): Manifold => {
+    // Lipschitz: si |d − nivel| > arista de grilla, ninguna arista que toque ese punto cruza el
+    // nivel, así que basta el lado correcto. Con el tope se evita recorrer todo el BVH en puntos
+    // hondos (el centro de una esfera equidista de todos sus triángulos).
+    const cap = level + 2 * gridEdge;
+    const raw = wasm.Manifold.levelSet(
+      (p) => field.boundedSignedDistance(p[0], p[1], p[2], cap),
+      {
+        min: [bbox.min[0] + pad, bbox.min[1] + pad, bbox.min[2] + pad],
+        max: [bbox.max[0] - pad, bbox.max[1] - pad, bbox.max[2] - pad],
+      },
+      gridEdge,
+      level
+    );
+    // Funde triángulos coplanares de la grilla sin mover la superficie más que una fracción del espesor
+    const simplified = raw.simplify(simplifyTol);
+    raw.delete();
+    return simplified;
+  };
 
-  // Lipschitz: si |d − nivel| > arista de grilla, ninguna arista que toque ese punto cruza el
-  // nivel, así que basta el lado correcto. Con el tope se evita recorrer todo el BVH en puntos
-  // hondos (el centro de una esfera equidista de todos sus triángulos).
-  const cap = level + 2 * gridEdge;
-  const inner = wasm.Manifold.levelSet(
-    (p) => field.boundedSignedDistance(p[0], p[1], p[2], cap),
-    {
-      min: [bbox.min[0] + pad, bbox.min[1] + pad, bbox.min[2] + pad],
-      max: [bbox.max[0] - pad, bbox.max[1] - pad, bbox.max[2] - pad],
-    },
-    gridEdge,
-    level
-  );
-
-  // Funde triángulos coplanares de la grilla sin mover la superficie más que una fracción del espesor
-  const simplified = inner.simplify(simplifyTol);
-  inner.delete();
-  return { inner: simplified, gridEdgeMm: gridEdge, levelMarginMm: levelMargin };
+  // Margen adaptativo: un margen fijo para el peor caso (cuerdas sobre zonas cóncavas de la
+  // cavidad, ~edge²/(8·t)) engrosaba la pared en curvas convexas hasta ~19 % (esfera de 50 mm,
+  // pared 2 mm). Se parte del margen de simplificación, se mide la pared real y solo se sube el
+  // nivel lo que falte, hasta `MAX_LEVEL_TRIES` intentos; si no alcanza, se usa el margen fijo.
+  const minAccepted = thickness * (1 - WALL_UNDERSHOOT_REL);
+  let margin = simplifyTol;
+  for (let attempt = 0; attempt < MAX_LEVEL_TRIES; attempt++) {
+    const inner = extract(thickness + margin);
+    if (inner.isEmpty()) return { inner, gridEdgeMm: gridEdge, levelMarginMm: margin };
+    const wall = measureWallThickness(field, inner);
+    if (wall.minMm >= minAccepted) return { inner, gridEdgeMm: gridEdge, levelMarginMm: margin, wall };
+    inner.delete();
+    margin += (thickness - wall.minMm) * 1.15 + thickness * 0.002;
+  }
+  const worstCase = Math.min(thickness * 0.5, (gridEdge * gridEdge) / (6 * thickness)) + simplifyTol;
+  const levelMargin = Math.max(worstCase, margin);
+  return { inner: extract(thickness + levelMargin), gridEdgeMm: gridEdge, levelMarginMm: levelMargin };
 }
 
 /**

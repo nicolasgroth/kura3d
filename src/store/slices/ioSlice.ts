@@ -9,11 +9,13 @@
  */
 
 import * as engine from '../../engine';
-import { HOLE_HELPER_COLOR, importSvg, imageRelief, positionOnTarget } from '../../core/operations';
+import { HOLE_HELPER_COLOR, importSvg, imageRelief, positionOnTarget, readSvgContours } from '../../core/operations';
 import { placeInFreeSpot } from '../../core/scene/freeSpot';
 import { buildSceneObject } from '../../core/scene/sceneObjects';
 import { resolveModuleTarget } from '../../core/scene/sceneRules';
-import { PRINT_COLOR_PALETTE, type MeshData, type SceneObject, type Vec3 } from '../../types/kura';
+import { PRINT_COLOR_PALETTE, type ImageTo3DOptions, type MeshData, type SceneObject, type Vec3 } from '../../types/kura';
+
+type ImageShapeMode = NonNullable<ImageTo3DOptions['shapeMode']>;
 import { openLocalFile, openLocalFiles } from '../../utils/platformBridge';
 import { activeBedSize } from '../bedSize';
 import { createModelIoActions, type ModelImportSource } from '../modelIoActions';
@@ -69,13 +71,14 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     return { place, result };
   };
 
-  /** Agrega un objeto creado, lo selecciona y avisa. */
-  const addCreated = (obj: SceneObject, toastKey: 'toast.imported' | 'toast.created', fits = true, wasEmpty = false) => {
+  /** Agrega un objeto creado, lo selecciona, avisa con su nombre y lo deja a la vista. */
+  const addCreated = (obj: SceneObject, toastKey: 'toast.imported' | `toast.imageDone.${ImageShapeMode}`, fits = true, wasEmpty = false) => {
     pushHistory();
     set((state) => ({ objects: [...state.objects, obj], selectedIds: [obj.id] }));
     get().addToast(tr(toastKey, { name: obj.name }), 'success');
     if (!fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
     if (!fits || wasEmpty) get().requestCameraPreset('fit');
+    else get().requestCameraPreset('ensure', [obj.id]);
     return obj;
   };
 
@@ -125,17 +128,22 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     importSvgModel: async (options) =>
       runExclusive('import_svg', null, async () => {
         await get().initEngine();
+        // Los contornos se leen aquí (SVGLoader necesita DOMParser); la extrusión corre en el Worker.
+        const mesh = await ctx.runEngine('svgMesh', { options, contours: readSvgContours(options) });
         const free = freePlacer();
-        const obj = await importSvg(opCtx(), options, { name: options.name || 'SVG Extruido', color: PRINT_COLOR_PALETTE[0], place: free.place });
+        const obj = await importSvg(opCtx(), options, { name: options.name || 'SVG Extruido', color: PRINT_COLOR_PALETTE[0], place: free.place }, mesh);
         return addCreated(obj, 'toast.imported', free.result.fits, free.result.wasEmpty);
       }),
 
     generateImageRelief: async (options) =>
       runExclusive('image_to_3d', null, async () => {
         await get().initEngine();
+        // La malla se genera en el Worker (se transfiere una copia del RGBA: el diálogo la conserva
+        // para reintentar) y se ubica después en un hueco libre de la escena vigente.
+        const mesh = await ctx.runEngine('imageReliefMesh', { options });
         const free = freePlacer();
-        const obj = await imageRelief(opCtx(), options, { name: options.name || 'Relieve 3D', color: PRINT_COLOR_PALETTE[6], place: free.place });
-        return addCreated(obj, 'toast.created', free.result.fits, free.result.wasEmpty);
+        const obj = await imageRelief(opCtx(), options, { name: options.name || 'Relieve 3D', color: PRINT_COLOR_PALETTE[6], place: free.place }, mesh);
+        return addCreated(obj, `toast.imageDone.${options.shapeMode ?? 'flat'}`, free.result.fits, free.result.wasEmpty);
       }),
 
     importPlacementMode: loadInitialImportPlacement(),
