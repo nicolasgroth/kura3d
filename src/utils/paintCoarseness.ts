@@ -39,6 +39,33 @@ export function typicalTriangleSizeMm(
   return Math.sqrt(2 * areas[Math.floor(areas.length / 2)]);
 }
 
+/**
+ * Arista más larga (mm) de la malla, con la escala aplicada. Tras refinar una zona la mediana se
+ * vuelve pequeña aunque queden caras enormes; esta medida detecta esas caras.
+ */
+export function longestEdgeMm(
+  positions: ArrayLike<number>,
+  indices: ArrayLike<number>,
+  scale: readonly [number, number, number] = [1, 1, 1],
+): number {
+  const [sx, sy, sz] = scale;
+  let best = 0;
+  const edge = (i: number, j: number) => {
+    const a = i * 3;
+    const b = j * 3;
+    const d = ((positions[b] - positions[a]) * sx) ** 2
+      + ((positions[b + 1] - positions[a + 1]) * sy) ** 2
+      + ((positions[b + 2] - positions[a + 2]) * sz) ** 2;
+    if (d > best) best = d;
+  };
+  for (let t = 0; t + 2 < indices.length; t += 3) {
+    edge(indices[t], indices[t + 1]);
+    edge(indices[t + 1], indices[t + 2]);
+    edge(indices[t + 2], indices[t]);
+  }
+  return Math.sqrt(best);
+}
+
 /** True si el pincel de `radiusMm` pintaría caras enteras de esta malla. */
 export function isMeshTooCoarseForBrush(
   positions: ArrayLike<number>,
