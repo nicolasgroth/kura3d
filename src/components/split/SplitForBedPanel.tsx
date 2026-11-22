@@ -419,7 +419,14 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         )}
       </fieldset>
 
-      <SplitPlanSummaryView summary={summary} plan={plan} pending={pending} checking={checking} />
+      <SplitPlanSummaryView
+        summary={summary}
+        plan={plan}
+        pending={pending}
+        checking={checking}
+        onLowerMinWall={kind !== 'lap' && kind !== 'none' ? () => document.getElementById(`${uid}-minwall`)?.focus() : undefined}
+        onUseLap={kind !== 'lap' ? () => setKind('lap') : undefined}
+      />
     </OperationPanel>
   );
 };

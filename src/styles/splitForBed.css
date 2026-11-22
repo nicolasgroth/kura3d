@@ -158,6 +158,15 @@
   color: var(--text-primary);
 }
 
+.kura-split-glue-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
 .kura-split-warnings li::marker {
   content: '! ';
   font-weight: 700;

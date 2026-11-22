@@ -92,8 +92,13 @@ describe('SplitForBedPanel', () => {
     render(<SplitForBedPanel open onClose={() => undefined} />);
     ready(PLAN);
     expect(screen.getByTestId('split-piece-count').textContent).toContain('5');
-    expect(document.body.textContent).toContain(t('es', 'split.sum.jointsValue', { count: 4, with: 3, without: 1 }));
-    expect(document.body.textContent).toContain(t('es', 'split.noJoint'));
+    const text = document.body.textContent ?? '';
+    expect(text).toContain(t('es', 'split.sum.jointsGlueValue', { count: 4, with: 3, glue: 1 }));
+    expect(text).toContain('solo para pegar');
+    expect(text).not.toContain('sin conector');
+    // Margen real contra la cama de la pieza más justa y opciones para tener conectores.
+    expect(text).toContain(t('es', 'split.sum.marginValue', { code: 'A1', mm: '5' }));
+    expect(screen.getByRole('button', { name: t('es', 'split.glueUseLap'), hidden: true })).toBeTruthy();
     expect((splitButton() as HTMLButtonElement).disabled).toBe(false);
   });
 

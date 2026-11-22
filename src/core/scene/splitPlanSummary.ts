@@ -9,6 +9,7 @@
  */
 
 import type { BedSplitPlan, PlannedPiece, SplitAxis } from '../../engine';
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import type { Vec3 } from '../../types/kura';
 
 export interface SplitPlanSummary {
@@ -22,8 +23,31 @@ export interface SplitPlanSummary {
   jointCount: number;
   /** Uniones en planos que no admiten el conector previsto. */
   jointsWithoutConnector: number;
-  /** Planos que no admiten el conector previsto (eje e índice, 1 = el primero). */
-  planesWithoutConnector: Array<{ axis: SplitAxis; number: number }>;
+  /**
+   * Planos cuya sección es más delgada que el mínimo para conector: quedan como corte liso para
+   * pegar. `wallMm` es el grosor de pared estimado (área de la sección ÷ perímetro medio de un tubo
+   * que llena la caja del modelo en ese plano); `null` si no hay sección.
+   */
+  planesWithoutConnector: Array<{ axis: SplitAxis; number: number; wallMm: number | null }>;
+  /** Mínimo de pared para conector pedido (mm), si hay conector. */
+  minWallForConnectorMm: number | null;
+  /** Pieza con menos margen real contra la cama completa. */
+  tightest: { code: string; marginMm: number } | null;
+  /** Piezas que irán en diagonal sobre la cama. */
+  diagonalCount: number;
+}
+
+const AXIS_INDEX: Record<SplitAxis, number> = { x: 0, y: 1, z: 2 };
+
+/** Grosor de pared estimado de la sección por un plano (exacto para un tubo redondo de pared delgada). */
+export function estimateSectionWallMm(plan: BedSplitPlan, axis: SplitAxis, sectionAreaMm2: number): number | null {
+  if (!(sectionAreaMm2 > 0)) return null;
+  const a = AXIS_INDEX[axis];
+  const sides = [0, 1, 2].filter((i) => i !== a).map((i) => plan.bounds.max[i] - plan.bounds.min[i]);
+  const meanPerimeter = (Math.PI * (sides[0] + sides[1])) / 2;
+  if (!(meanPerimeter > 0)) return null;
+  // Una sección maciza no es "pared": el grosor no puede pasar de la mitad del lado menor.
+  return Math.min(sectionAreaMm2 / meanPerimeter, Math.min(sides[0], sides[1]) / 2);
 }
 
 const sortDesc = (v: readonly number[]) => [...v].sort((a, b) => b - a);
@@ -87,6 +111,16 @@ export function summarizeSplitPlan(plan: BedSplitPlan, allowRotation: boolean): 
     rotatedCount: plan.pieces.filter((p) => p.rotated).length,
     jointCount: plan.planes.reduce((n, p) => n + perPlane[p.axis], 0),
     jointsWithoutConnector: plan.connector ? withoutPlanes.reduce((n, p) => n + perPlane[p.axis], 0) : plan.planes.reduce((n, p) => n + perPlane[p.axis], 0),
-    planesWithoutConnector: withoutPlanes.map((p) => ({ axis: p.axis, number: p.index + 1 })),
+    planesWithoutConnector: withoutPlanes.map((p) => ({
+      axis: p.axis,
+      number: p.index + 1,
+      wallMm: estimateSectionWallMm(plan, p.axis, p.sectionAreaMm2),
+    })),
+    minWallForConnectorMm: plan.connector ? plan.connector.minWallForConnectorMm ?? OPERATION_DEFAULTS.split.minWallForConnectorMm : null,
+    tightest: plan.pieces.reduce<{ code: string; marginMm: number } | null>(
+      (best, p) => (Number.isFinite(p.bedMarginMm) && (!best || p.bedMarginMm < best.marginMm) ? { code: p.code, marginMm: p.bedMarginMm } : best),
+      null,
+    ),
+    diagonalCount: plan.pieces.filter((p) => p.diagonal).length,
   };
 }
