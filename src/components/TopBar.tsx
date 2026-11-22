@@ -2,7 +2,7 @@
  * @file src/components/TopBar.tsx
  * @description Barra superior principal de Kura3D v0.5.0: marca oficial con ícono y versión,
  * importación/exportación Multi-Slicer (STL/3MF), Undo/Redo, selector de herramientas, perfil de
- * impresora multi-marca, unidades, selector compacto de 6 idiomas, acceso directo a temas WCAG,
+ * selector compacto de 6 idiomas, acceso directo a temas WCAG,
  * toggle de densidad adaptativa (Expandido / Compacto / Zen), paleta Ctrl+K, estado MCP seguro
  * y acceso al Asistente IA.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -33,14 +33,12 @@ import {
   Undo2,
   Zap,
 } from 'lucide-react';
-import { getLocalizedPrinterName, t } from '../i18n';
+import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import {
-  DEFAULT_PRINTER_PROFILES,
   SUPPORTED_LANGUAGES,
   type ActiveTool,
   type LanguageCode,
-  type UnitSystem,
 } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
 import { useMcpBridgeStatus } from '../utils/mcpBridgeClient';
@@ -52,7 +50,6 @@ import { TopBarOverflowMenu } from './TopBarOverflowMenu';
 import '../styles/topbarOverflow.css';
 import '../styles/statusFit.css';
 
-const UNIT_OPTIONS: UnitSystem[] = ['mm', 'cm', 'm', 'in', 'ft'];
 
 /** Detecta si el sistema operativo prefiere modo oscuro en tiempo real. */
 function useSystemPrefersDark(): boolean {
@@ -81,8 +78,6 @@ const HIDE_ORDER = [
   'palette',
   'lang',
   'themes',
-  'unit',
-  'printer',
   'theme',
   'mcp',
   'ai',
@@ -94,14 +89,10 @@ type HideId = (typeof HIDE_ORDER)[number];
 export const TopBar: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const setLanguage = useKuraStore((s) => s.setLanguage);
-  const unitSystem = useKuraStore((s) => s.unitSystem);
-  const setUnitSystem = useKuraStore((s) => s.setUnitSystem);
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const setColorScheme = useKuraStore((s) => s.setColorScheme);
   const uiDensity = useKuraStore((s) => s.uiDensity);
   const cycleUiDensity = useKuraStore((s) => s.cycleUiDensity);
-  const printerProfile = useKuraStore((s) => s.printerProfile);
-  const setPrinterProfile = useKuraStore((s) => s.setPrinterProfile);
   const activeTool = useKuraStore((s) => s.activeTool);
   const setActiveTool = useKuraStore((s) => s.setActiveTool);
   const pastCount = useKuraStore((s) => s.past.length);
@@ -238,38 +229,6 @@ export const TopBar: React.FC = () => {
     </button>
   );
 
-  const printerSelect = (
-    <select
-      className="kura-select kura-printer-select"
-      value={printerProfile.id}
-      onChange={(e) => setPrinterProfile(e.target.value)}
-      aria-label={t(language, 'topbar.printerProfile')}
-      title={getLocalizedPrinterName(language, printerProfile)}
-    >
-      {DEFAULT_PRINTER_PROFILES.map((profile) => (
-        <option key={profile.id} value={profile.id}>
-          {getLocalizedPrinterName(language, profile)}
-        </option>
-      ))}
-    </select>
-  );
-
-  const unitSelect = (
-    <select
-      className="kura-select kura-unit-select"
-      value={unitSystem}
-      onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
-      aria-label={t(language, 'topbar.unitLabel')}
-      title={t(language, 'topbar.unitLabel')}
-    >
-      {UNIT_OPTIONS.map((u) => (
-        <option key={u} value={u}>
-          {u}
-        </option>
-      ))}
-    </select>
-  );
-
   const langSelect = (
     <select
       className="kura-lang-select-native"
@@ -341,9 +300,6 @@ export const TopBar: React.FC = () => {
             {tools.map((tool) => toolButton(tool, false))}
           </div>
         )}
-
-        {!isHidden('printer') && printerSelect}
-        {!isHidden('unit') && unitSelect}
 
         <button
           type="button"
@@ -458,18 +414,6 @@ export const TopBar: React.FC = () => {
           >
             {isHidden('tools') &&
               tools.map((tool) => <React.Fragment key={tool.id}>{toolButton(tool, true)}</React.Fragment>)}
-            {isHidden('printer') && (
-              <label className="kura-topbar-more-row">
-                {t(language, 'topbar.printerProfile')}
-                {printerSelect}
-              </label>
-            )}
-            {isHidden('unit') && (
-              <label className="kura-topbar-more-row">
-                {t(language, 'topbar.unitLabel')}
-                {unitSelect}
-              </label>
-            )}
             {isHidden('lang') && (
               <label className="kura-topbar-more-row">
                 {t(language, 'topbar.languageSelect')}

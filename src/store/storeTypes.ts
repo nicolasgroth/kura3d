@@ -65,7 +65,8 @@ export type ActiveDialogType =
   | 'settings'
   | 'shortcuts'
   | null;
-export type SettingsTabType = 'appearance' | 'ai' | 'mcp' | 'about';
+export type SettingsTabType = 'appearance' | 'project' | 'ai' | 'mcp' | 'about';
+export type MeasuresFocus = 'unit' | 'printer';
 export type CommandSourceType = 'ui' | 'mcp' | 'ai';
 export type PaintBrushMode = 'brush' | 'smart_fill' | 'whole';
 export type CameraPresetType = 'iso' | 'top' | 'front' | 'right' | 'fit';
@@ -169,6 +170,8 @@ export interface KuraStoreState {
   // UI auxiliar, vista previa de corte y animaciones de creación
   activeDialog: ActiveDialogType;
   settingsTab: SettingsTabType;
+  /** Petición de abrir el popover de unidad e impresora de la barra de estado (paleta de comandos). */
+  measuresRequest: { nonce: number; focus: MeasuresFocus } | null;
   commandPaletteOpen: boolean;
   cutPreview: CutPreviewState;
   spawnedAtById: Record<string, number>;
@@ -206,6 +209,7 @@ export interface KuraStoreState {
   setActiveDialog: (dialog: ActiveDialogType) => void;
   setSettingsTab: (tab: SettingsTabType) => void;
   openSettings: (tab?: SettingsTabType) => void;
+  requestMeasuresPopover: (focus?: MeasuresFocus) => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setCutPreview: (patch: Partial<CutPreviewState>) => void;
   setAiDrawerOpen: (open: boolean) => void;

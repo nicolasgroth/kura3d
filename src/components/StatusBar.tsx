@@ -1,7 +1,7 @@
 /**
  * @file src/components/StatusBar.tsx
  * @description Barra de estado inferior de Kura3D con estado de runtime (Tauri/Web),
- * motor Manifold WASM, perfil de impresora, conteo de triángulos y atajos rápidos.
+ * motor Manifold WASM, indicador de unidad e impresora (popover), conteo de triángulos y atajos rápidos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -9,11 +9,12 @@
 
 import React, { useMemo } from 'react';
 import { HelpCircle } from 'lucide-react';
-import { getLocalizedPrinterName, t } from '../i18n';
+import { t } from '../i18n';
 import type { RecoveryStatus } from '../project/projectRecoveryAutosave';
 import { useKuraStore } from '../store/useKuraStore';
 import { formatNumber } from '../utils/plural';
 import { isTauriRuntime } from '../utils/platformBridge';
+import { StatusBarMeasures } from './StatusBarMeasures';
 
 export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recoveryStatus = 'idle' }) => {
   const language = useKuraStore((s) => s.language);
@@ -21,8 +22,6 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recov
   const engineError = useKuraStore((s) => s.engineError);
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const projectBusy = useKuraStore((s) => s.projectBusy);
-  const printerProfile = useKuraStore((s) => s.printerProfile);
-  const unitSystem = useKuraStore((s) => s.unitSystem);
   const objects = useKuraStore((s) => s.objects);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
 
@@ -69,8 +68,7 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recov
             : busyOperation ? `${engineLabel} (${busyOperation})` : engineLabel}
         </span>
 
-        <span>{getLocalizedPrinterName(language, printerProfile)}</span>
-        <span>{unitSystem}</span>
+        <StatusBarMeasures />
         <span>
           {t(language, 'status.objects', { count: objects.length })} ·{' '}
           {t(language, 'status.triangles', { count: formatNumber(language, totalTriangles) })}

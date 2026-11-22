@@ -42,6 +42,7 @@ import {
   Moon,
   PaintBucket,
   Palette,
+  Ruler,
   ScanSearch,
   Scissors,
   Search,
@@ -114,6 +115,7 @@ export const CommandPalette: React.FC = () => {
   const alignSelectedObjects = useKuraStore((s) => s.alignSelectedObjects);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const openSettings = useKuraStore((s) => s.openSettings);
+  const requestMeasuresPopover = useKuraStore((s) => s.requestMeasuresPopover);
   const setAiDrawerOpen = useKuraStore((s) => s.setAiDrawerOpen);
   const importMeshFromDialog = useKuraStore((s) => s.importMeshFromDialog);
   const requestCameraPreset = useKuraStore((s) => s.requestCameraPreset);
@@ -673,6 +675,24 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <Palette size={15} />,
         run: () => openSettings('appearance'),
+      },
+      {
+        id: 'set-unit',
+        label: t(language, 'palette.cmd.changeUnit'),
+        category: catSet,
+        keywords: 'unidad medida mm cm pulgadas unit measure inches millimetres',
+        kind: 'local',
+        icon: <Ruler size={15} />,
+        run: () => requestMeasuresPopover('unit'),
+      },
+      {
+        id: 'set-printer',
+        label: t(language, 'palette.cmd.changePrinter'),
+        category: catSet,
+        keywords: 'impresora perfil cama volumen printer profile bed elegoo bambu',
+        kind: 'local',
+        icon: <Ruler size={15} />,
+        run: () => requestMeasuresPopover('printer'),
       },
       {
         id: 'view-shortcuts',

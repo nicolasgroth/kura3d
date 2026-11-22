@@ -1063,6 +1063,17 @@ export const TRANSLATIONS_ES = {
   'sidebar.scene.selectedCount.one': '{count} seleccionado',
   'viewport.paint.collapse': 'Plegar pincel',
   'viewport.paint.expand': 'Mostrar pincel',
+  'dialog.settings.tab.project': 'Proyecto y medidas',
+  'dialog.settings.projectTitle': 'Proyecto y medidas',
+  'dialog.settings.unitLabel': 'Unidad de medida',
+  'dialog.settings.unitHelp': 'Cómo se muestran largos y medidas en el inspector y en el visor. La geometría interna siempre es milímetros.',
+  'dialog.settings.printerLabel': 'Impresora esperada',
+  'dialog.settings.printerHelp': 'Define el volumen de impresión que se dibuja en el visor y avisa si una pieza no cabe.',
+  'status.measures.button': 'Unidad {unit} e impresora {printer}: cambiar',
+  'status.measures.title': 'Unidad e impresora',
+  'status.measures.settings': 'Más en Ajustes',
+  'palette.cmd.changeUnit': 'Cambiar unidad de medida…',
+  'palette.cmd.changePrinter': 'Cambiar impresora…',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2086,6 +2097,17 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'sidebar.scene.selectedCount.one': '{count} selected',
   'viewport.paint.collapse': 'Collapse brush',
   'viewport.paint.expand': 'Show brush',
+  'dialog.settings.tab.project': 'Project & units',
+  'dialog.settings.projectTitle': 'Project & units',
+  'dialog.settings.unitLabel': 'Unit of measure',
+  'dialog.settings.unitHelp': 'How lengths and sizes are shown in the inspector and viewport. Internal geometry is always millimetres.',
+  'dialog.settings.printerLabel': 'Expected printer',
+  'dialog.settings.printerHelp': 'Sets the print volume drawn in the viewport and warns when a part does not fit.',
+  'status.measures.button': 'Unit {unit} and printer {printer}: change',
+  'status.measures.title': 'Unit and printer',
+  'status.measures.settings': 'More in Settings',
+  'palette.cmd.changeUnit': 'Change unit of measure…',
+  'palette.cmd.changePrinter': 'Change printer…',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

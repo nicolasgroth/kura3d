@@ -87,16 +87,6 @@
   font-size: 12px;
 }
 
-.kura-printer-select {
-  max-width: 175px;
-  min-width: 110px;
-  text-overflow: ellipsis;
-}
-
-.kura-unit-select {
-  width: 56px;
-}
-
 @media (max-width: 1220px) {
   .kura-tool-label {
     display: none;

@@ -7,7 +7,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { Palette } from 'lucide-react';
+import { Palette, Ruler } from 'lucide-react';
 import { t } from '../../i18n';
 import { generateRandomTokenHex, useKuraStore } from '../../store/useKuraStore';
 import { rotateMcpBridgeToken, useMcpBridgeStatus } from '../../utils/mcpBridgeClient';
@@ -17,6 +17,7 @@ import { isTauriRuntime } from '../../utils/platformBridge';
 import { AiSettingsPanel } from '../settings/AiSettingsPanel';
 import { McpSetupPanel } from '../settings/McpSetupPanel';
 import { McpTokenField } from '../settings/McpTokenField';
+import { MeasuresFields } from '../settings/MeasuresFields';
 import { SettingsTabs } from '../settings/SettingsTabs';
 import { SettingsAppearancePanel } from './SettingsAppearancePanel';
 
@@ -104,6 +105,7 @@ export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = (
         label={t(language, 'dialog.settings.tabsLabel')}
         tabs={[
           { id: 'appearance', label: t(language, 'dialog.settings.tab.appearance'), icon: <Palette size={13} /> },
+          { id: 'project', label: t(language, 'dialog.settings.tab.project'), icon: <Ruler size={13} /> },
           { id: 'ai', label: t(language, 'dialog.settings.tab.ai') },
           { id: 'mcp', label: t(language, 'dialog.settings.tab.mcp') },
           { id: 'about', label: t(language, 'dialog.settings.tab.about') },
@@ -112,6 +114,13 @@ export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = (
 
       {tab === 'appearance' && (
         <SettingsAppearancePanel />
+      )}
+
+      {tab === 'project' && (
+        <div className="kura-measures-panel" role="tabpanel" id="settings-panel-project" aria-labelledby="settings-tab-project">
+          <strong style={{ fontSize: 13 }}>{t(language, 'dialog.settings.projectTitle')}</strong>
+          <MeasuresFields idPrefix="settings-measures" showHelp />
+        </div>
       )}
 
       {tab === 'ai' && (

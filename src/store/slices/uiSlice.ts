@@ -71,6 +71,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
     activeDialog: null,
     settingsTab: 'ai',
+    measuresRequest: null,
     commandPaletteOpen: false,
     cutPreview: {
       active: false,
@@ -162,6 +163,8 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     setActiveDialog: (activeDialog) => set({ activeDialog }),
     setSettingsTab: (settingsTab) => set({ settingsTab }),
     openSettings: (tab = 'ai') => set({ settingsTab: tab, activeDialog: 'settings' }),
+    requestMeasuresPopover: (focus = 'unit') =>
+      set((state) => ({ measuresRequest: { nonce: (state.measuresRequest?.nonce ?? 0) + 1, focus } })),
     setCommandPaletteOpen: (commandPaletteOpen) => set({ commandPaletteOpen }),
     setCutPreview: (patch) => set((state) => ({ cutPreview: { ...state.cutPreview, ...patch } })),
 

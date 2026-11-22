@@ -1,0 +1,85 @@
+/**
+ * @file src/styles/statusMeasures.css
+ * @description Indicador de unidad e impresora en la barra de estado, su popover y los campos de la pestaña "Proyecto y medidas".
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-measures-trigger {
+  min-width: 0;
+  max-width: min(320px, 46vw);
+}
+
+.kura-measures-trigger:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+.kura-measures-trigger[aria-expanded="true"] {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.kura-measures-unit {
+  flex: 0 0 auto;
+}
+
+.kura-measures-printer {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-measures-popover {
+  position: fixed;
+  inset: auto auto 34px 10px;
+  margin: 0;
+  width: min(300px, calc(100vw - 20px));
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-hud);
+}
+
+.kura-measures-popover:popover-open {
+  display: grid;
+  gap: 10px;
+}
+
+.kura-measures-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.kura-measures-field {
+  display: grid;
+  gap: 4px;
+}
+
+.kura-measures-field .kura-select {
+  width: 100%;
+  max-width: none;
+}
+
+.kura-measures-help {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .kura-measures-trigger {
+    max-width: 58vw;
+  }
+}
+
+.kura-measures-panel {
+  display: grid;
+  gap: 12px;
+  max-width: 460px;
+}
