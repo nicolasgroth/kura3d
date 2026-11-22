@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { formatUserSize } from './userSizeText';
 
 /** Archivos con un arreglo pendiente que este lote no puede tocar (otro agente trabaja ahí). */
-const PENDING_ELSEWHERE = new Set(['src/components/split/SplitOverlays.tsx']);
+const PENDING_ELSEWHERE = new Set<string>();
 
 /** Fuentes de los componentes (sin pruebas), como texto. */
 const SOURCES = import.meta.glob(['/src/components/**/*.{ts,tsx}', '!/src/components/**/__tests__/**'], {
