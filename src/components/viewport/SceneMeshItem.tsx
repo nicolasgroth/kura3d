@@ -17,6 +17,8 @@ import { updateGeometryFaceColors } from '../../engine/paintColorAttribute';
 import { regionIdForFace } from '../../utils/segmentHighlight';
 import { buildViewportGeometry } from './creasedGeometry';
 import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
+import { hasLiveStroke, queueLiveSample, startLiveStroke } from './livePaintStroke';
+import { brushQueryFromEvent, usePaintRaycastAcceleration } from './paintPointer';
 
 /** Renderiza un SceneObject con caché de BufferGeometry, materiales PBR, sección Rayos X y voladizos. */
 export const SceneMeshItem: React.FC<{
@@ -93,6 +95,8 @@ export const SceneMeshItem: React.FC<{
         geometry.dispose();
       };
     }, [geometry]);
+
+    usePaintRaycastAcceleration(meshRef, geometry, activeTool === 'paint' && isPrimarySelected && obj.visible);
 
     // Malla superpuesta liviana para resaltar en rojo los triángulos en voladizo (> 45°)
     const overhangGeo = useMemo(() => {
@@ -187,6 +191,14 @@ export const SceneMeshItem: React.FC<{
           return;
         }
         onStartPaintDrag();
+        const state = useKuraStore.getState();
+        // Pincel sin borde fino: trazo en vivo (pinta por frame y sube a la GPU solo lo cambiado).
+        if (paintMode === 'brush' && !state.paintRefineEdge && meshRef.current) {
+          if (startLiveStroke(obj.id, () => meshRef.current?.geometry ?? null)) {
+            queueLiveSample(obj.id, brushQueryFromEvent(e, meshRef.current, obj.scale, state.paintRadiusMm));
+          }
+          return;
+        }
         beginPaintStroke();
         lastPaintMoveAtRef.current = performance.now();
         const localPt = meshRef.current
@@ -226,6 +238,11 @@ export const SceneMeshItem: React.FC<{
       updatePaintCursor(e);
       if ((e.buttons & 1) === 0) return;
       e.stopPropagation();
+
+      if (hasLiveStroke(obj.id) && meshRef.current) {
+        queueLiveSample(obj.id, brushQueryFromEvent(e, meshRef.current, obj.scale, useKuraStore.getState().paintRadiusMm));
+        return;
+      }
 
       const now = performance.now();
       if (now - lastPaintMoveAtRef.current < 45) return;

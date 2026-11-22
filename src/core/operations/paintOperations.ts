@@ -10,10 +10,11 @@
 
 import { paintEntireMesh, paintFloodFillConnectedFaces, paintMeshFacesInSphere, type BrushOptions } from '../../engine/paint';
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
+import { CREASE_ANGLE_DEG } from '../../utils/creasedNormals';
 import { change, emptyChange, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
 
-/** Ángulo por defecto entre caras vecinas para el relleno por región. */
-export const PAINT_REGION_ANGLE_DEG = 35;
+/** El relleno por región se detiene en las aristas vivas: el mismo ángulo de pliegue del visor. */
+export const PAINT_REGION_ANGLE_DEG = CREASE_ANGLE_DEG;
 
 /** Parche de la malla pintada: solo la malla si la topología no cambió; con estadísticas si se subdividió. */
 function paintPatch(ctx: OperationContext, obj: SceneObject, mesh: MeshData): SceneChange | null {
