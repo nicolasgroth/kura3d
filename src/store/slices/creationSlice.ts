@@ -7,7 +7,7 @@
  * @license MIT
  */
 
-import { createModulePrimitive, createPrimitive, createThread, regenerateParametric, type PlaceMesh } from '../../core/operations';
+import { createModulePrimitive, createPrimitive, type PlaceMesh } from '../../core/operations';
 import { activeBedSize } from '../bedSize';
 import { placeInFreeSpot } from '../../core/scene/freeSpot';
 import { parametricStateOf } from '../../core/scene/parametric';
@@ -55,8 +55,12 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
         await get().initEngine();
         const op = opCtx();
         const count = get().objects.length;
+        // El texto 3D (maquetado y extrusión de glifos) se genera en el Worker; las demás primitivas son
+        // instantáneas y se generan aquí.
+        const mesh = type === 'text' ? await ctx.runEngine('primitiveMesh', { type, params }) : undefined;
         const free = options?.placement === 'free' && !options.position ? freePlacer() : null;
         const obj = await createPrimitive(op, {
+          mesh,
           type,
           params,
           name: options?.name ?? op.naming.primitive(type, count),
@@ -135,7 +139,8 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
       }
       return runExclusive('update_primitive_params', null, async () => {
         await get().initEngine();
-        const change = await regenerateParametric(opCtx(), obj, edit);
+        // Texto 3D y roscas pueden tardar: la regeneración corre en el Worker.
+        const change = await ctx.runEngine('regenerateParametric', { obj, edit });
         assertCurrent([obj]);
         // Texto 3D: el nombre sigue al texto mientras conserve el texto anterior (no editado a mano).
         const oldText = state.status === 'primitive' ? (state.params as { text?: unknown }).text : undefined;

@@ -1,7 +1,8 @@
 /**
  * @file src/core/operations/engine.worker.ts
  * @description Web Worker único y reutilizable del motor: ejecuta booleanas, corte, ahuecado,
- * moldes, proyección, segmentación, roscas y exportación fuera del hilo principal.
+ * moldes, proyección, segmentación, roscas, texto 3D, SVG, relieves de imagen y exportación fuera
+ * del hilo principal.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

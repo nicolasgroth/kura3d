@@ -9,7 +9,7 @@
  */
 
 import * as engine from '../../engine';
-import { HOLE_HELPER_COLOR, importSvg, imageRelief, positionOnTarget } from '../../core/operations';
+import { HOLE_HELPER_COLOR, importSvg, imageRelief, positionOnTarget, readSvgContours } from '../../core/operations';
 import { placeInFreeSpot } from '../../core/scene/freeSpot';
 import { buildSceneObject } from '../../core/scene/sceneObjects';
 import { resolveModuleTarget } from '../../core/scene/sceneRules';
@@ -125,16 +125,21 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     importSvgModel: async (options) =>
       runExclusive('import_svg', null, async () => {
         await get().initEngine();
+        // Los contornos se leen aquí (SVGLoader necesita DOMParser); la extrusión corre en el Worker.
+        const mesh = await ctx.runEngine('svgMesh', { options, contours: readSvgContours(options) });
         const free = freePlacer();
-        const obj = await importSvg(opCtx(), options, { name: options.name || 'SVG Extruido', color: PRINT_COLOR_PALETTE[0], place: free.place });
+        const obj = await importSvg(opCtx(), options, { name: options.name || 'SVG Extruido', color: PRINT_COLOR_PALETTE[0], place: free.place }, mesh);
         return addCreated(obj, 'toast.imported', free.result.fits, free.result.wasEmpty);
       }),
 
     generateImageRelief: async (options) =>
       runExclusive('image_to_3d', null, async () => {
         await get().initEngine();
+        // La malla se genera en el Worker (se transfiere una copia del RGBA: el diálogo la conserva
+        // para reintentar) y se ubica después en un hueco libre de la escena vigente.
+        const mesh = await ctx.runEngine('imageReliefMesh', { options });
         const free = freePlacer();
-        const obj = await imageRelief(opCtx(), options, { name: options.name || 'Relieve 3D', color: PRINT_COLOR_PALETTE[6], place: free.place });
+        const obj = await imageRelief(opCtx(), options, { name: options.name || 'Relieve 3D', color: PRINT_COLOR_PALETTE[6], place: free.place }, mesh);
         return addCreated(obj, 'toast.created', free.result.fits, free.result.wasEmpty);
       }),
 

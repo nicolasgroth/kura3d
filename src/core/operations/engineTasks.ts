@@ -12,18 +12,22 @@ import * as engine from '../../engine';
 import type {
   DetectedStructureRegion,
   HollowOptions,
+  ImageTo3DOptions,
   MaterialPresetId,
   MoldOptions,
   PlaneCutOptions,
+  PrimitiveParams,
+  PrimitiveType,
   PrinterProfile,
   SceneObject,
   StructuralSegmentationResult,
   SurfaceProjectionOptions,
+  SvgImportOptions,
   ThreadOptions,
   Vec3,
 } from '../../types/kura';
 import { applyHoles, booleanOperation, convexHull } from './csgOperations';
-import { createThread } from './creationOperations';
+import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
 import { eraseSphere, hollowObject, projectOnSurface, refineObject, simplifyObject } from './meshOperations';
 import type { OperationContext } from './operationTypes';
 import { extractStructure, generateMold, planeCut, splitDisconnected, splitStructures } from './partOperations';
@@ -98,6 +102,11 @@ export const ENGINE_TASKS = {
     splitStructures(ctx, a.obj, a.segmentation),
   thread: (ctx: OperationContext, a: { options: ThreadOptions; placement: { name?: string; position?: Vec3 } }) =>
     createThread(ctx, a.options, a.placement),
+  // Creación: el Worker genera la malla; el hilo principal la ubica en la escena y crea el objeto.
+  primitiveMesh: (_ctx: OperationContext, a: { type: PrimitiveType; params?: PrimitiveParams }) => primitiveMesh(a.type, a.params),
+  regenerateParametric: (ctx: OperationContext, a: { obj: SceneObject; edit: ParametricEdit }) => regenerateParametric(ctx, a.obj, a.edit),
+  imageReliefMesh: (_ctx: OperationContext, a: { options: ImageTo3DOptions }) => imageReliefMesh(a.options),
+  svgMesh: (_ctx: OperationContext, a: { options: SvgImportOptions; contours: engine.PackedSvgContours }) => svgMesh(a.options, a.contours),
   splitPlan: (ctx: OperationContext, a: { obj: SceneObject; bed: engine.SplitBed; options?: engine.BedSplitPlanOptions }) =>
     planSplitForBed(ctx, a.obj, a.bed, a.options),
   splitForBed: (ctx: OperationContext, a: { obj: SceneObject; plan: engine.BedSplitPlan; options: ExecuteBedSplitOptions }) =>
