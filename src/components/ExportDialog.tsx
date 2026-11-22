@@ -79,7 +79,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const changeScope = (nextScope: ExportScope) => {
     setScope(nextScope);
     if (!nameEditedRef.current) {
-      setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName')));
+      setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix')));
     }
   };
 
@@ -91,7 +91,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     setScope(nextScope);
     setSlicer(printerProfile.brand);
     nameEditedRef.current = false;
-    setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName')));
+    setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix')));
     // Solo al abrir: los cambios de selección posteriores no pisan lo que escribió el usuario.
   }, [open]);
 

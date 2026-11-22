@@ -37,7 +37,9 @@ export function exportFileBase(
 
 /**
  * Nombre por defecto del diálogo de exportación según el alcance: con la escena completa
- * manda el proyecto (o el nombre por defecto), nunca el del objeto seleccionado.
+ * manda el proyecto (o el nombre por defecto), nunca el del objeto seleccionado. Con la
+ * selección: el nombre de la pieza si es una sola; si son varias, el proyecto (o la primera
+ * pieza) con el sufijo de selección. Nunca el nombre genérico de "escena".
  */
 export function defaultExportBase(
   scope: 'selection' | 'scene',
@@ -45,6 +47,15 @@ export function defaultExportBase(
   selected: Array<{ name: string }>,
   exportable: Array<{ name: string }>,
   fallback: string,
+  selectionSuffix = 'selection',
 ): string {
-  return exportFileBase(undefined, projectName, scope === 'selection' ? selected : exportable, fallback);
+  if (scope === 'selection' && selected.length > 1) {
+    const stem = sanitizeFileBase(projectName ?? '') || sanitizeFileBase(selected[0].name);
+    const suffix = sanitizeFileBase(selectionSuffix);
+    if (stem) return sanitizeFileBase(`${stem}_${suffix}`);
+  }
+  if (scope === 'selection' && selected.length === 1) {
+    return exportFileBase(selected[0].name, projectName, selected, fallback);
+  }
+  return exportFileBase(undefined, projectName, exportable, fallback);
 }

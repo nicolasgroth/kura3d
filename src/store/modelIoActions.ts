@@ -177,14 +177,14 @@ export function createModelIoActions(deps: ModelIoDeps) {
     if (wasEmpty || placement === 'original') get().requestCameraPreset('fit');
 
     const pieces = created.length;
-    get().addToast(
-      models.length === 1
-        ? pieces === 1
-          ? tr('toast.imported', { name: models[0].fileName })
-          : tr('import.importedParts', { name: models[0].fileName, count: pieces })
-        : tr('import.importedFiles', { count: models.length, parts: pieces }),
-      'success',
-    );
+    const tris = created.reduce((acc, o) => acc + Math.floor(o.mesh.indices.length / 3), 0);
+    const trisText = tr('import.trisSuffix', { tris: new Intl.NumberFormat(get().language).format(tris) });
+    const summary = models.length === 1
+      ? pieces === 1
+        ? tr('import.importedOne', { name: models[0].fileName })
+        : tr('import.importedParts', { name: models[0].fileName, count: pieces })
+      : tr('import.importedFiles', { count: models.length, parts: pieces });
+    get().addToast(`${summary} · ${trisText}`, 'success');
     const open = placed.filter((p) => p.part.openEdges > 0);
     if (open.length > 0) {
       const names = [...new Set(open.map((p) => p.part.name || p.fileName))];

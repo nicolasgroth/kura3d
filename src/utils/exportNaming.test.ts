@@ -14,4 +14,11 @@ describe('defaultExportBase', () => {
   it('con la selección y sin proyecto usa el único objeto', () => {
     expect(defaultExportBase('selection', null, [cube], [cube, ball], 'modelo')).toBe('Cubo_1');
   });
+  it('con varias piezas seleccionadas usa el proyecto o la primera pieza con sufijo, nunca "escena"', () => {
+    const a = { name: 'Cubo' };
+    const b = { name: 'Bola' };
+    expect(defaultExportBase('selection', 'Mi proyecto', [a, b], [a, b], 'kura3d_escena', 'seleccion')).toBe('Mi_proyecto_seleccion');
+    expect(defaultExportBase('selection', null, [a, b], [a, b], 'kura3d_escena', 'seleccion')).toBe('Cubo_seleccion');
+    expect(defaultExportBase('selection', 'Mi proyecto', [b], [a, b], 'kura3d_escena')).toBe('Bola');
+  });
 });
