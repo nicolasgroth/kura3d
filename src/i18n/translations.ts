@@ -13,6 +13,7 @@ import { TRANSLATIONS_DE } from './locales/de';
 import { TRANSLATIONS_FR } from './locales/fr';
 import { TRANSLATIONS_HI } from './locales/hi';
 import { TRANSLATIONS_ZH } from './locales/zh';
+import { MENU_EN, MENU_ES } from './locales/menuKeys';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
 import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
 import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
@@ -24,6 +25,7 @@ import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
  * y garantizar paridad 1:1 en todos los idiomas durante la compilación TypeScript.
  */
 export const TRANSLATIONS_ES = {
+  ...MENU_ES,
   ...PREVIEW_ES,
   ...SPLITJOINTS_ES,
   ...SPLITPREFS_ES,
@@ -1381,6 +1383,7 @@ export type TranslationKey = keyof typeof TRANSLATIONS_ES;
  * Diccionario en inglés con paridad estricta de claves respecto a `TRANSLATIONS_ES`.
  */
 export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
+  ...MENU_EN,
   ...PREVIEW_EN,
   ...SPLITJOINTS_EN,
   ...SPLITPREFS_EN,

@@ -8,6 +8,7 @@
  */
 
 import type { TranslationKey } from '../translations';
+import { MENU_FR } from './menuKeys';
 import { PREVIEW_FR } from './preview';
 import { SPLITJOINTS_FR } from './splitJoints';
 import { SPLITPREFS_FR } from './splitPrefs';
@@ -17,6 +18,7 @@ import { SPLITCOUPLING_FR } from './splitCoupling';
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
  */
 export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
+  ...MENU_FR,
   ...PREVIEW_FR,
   ...SPLITJOINTS_FR,
   ...SPLITPREFS_FR,
