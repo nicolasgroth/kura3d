@@ -7,7 +7,8 @@
  * @license MIT
  */
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Eraser } from 'lucide-react';
 import { t, type TranslationKey } from '../../i18n';
 import { type PaintBrushMode, useKuraStore } from '../../store/useKuraStore';
 import { PRINT_COLOR_PALETTE } from '../../types/kura';
@@ -39,6 +40,37 @@ export const PaintToolbar: React.FC = () => {
   const paintRadiusMm = useKuraStore((s) => s.paintRadiusMm);
   const paintMode = useKuraStore((s) => s.paintMode);
   const setPaintSettings = useKuraStore((s) => s.setPaintSettings);
+  // Goma: pintar con el color base del objeto seleccionado devuelve la cara a su aspecto original.
+  const baseColor = useKuraStore((s) => s.objects.find((o) => o.id === s.selectedIds[0])?.color ?? null);
+  const [eraser, setEraser] = useState(false);
+  const colorBeforeEraser = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (eraser && baseColor) setPaintSettings({ paintColor: baseColor });
+  }, [eraser, baseColor, setPaintSettings]);
+
+  // Al salir de la herramienta con la goma activa se recupera el color de pincel anterior.
+  useEffect(() => () => {
+    const previous = colorBeforeEraser.current;
+    if (previous) useKuraStore.getState().setPaintSettings({ paintColor: previous });
+  }, []);
+
+  const toggleEraser = () => {
+    if (eraser) {
+      if (colorBeforeEraser.current) setPaintSettings({ paintColor: colorBeforeEraser.current });
+      colorBeforeEraser.current = null;
+      setEraser(false);
+      return;
+    }
+    colorBeforeEraser.current = paintColor;
+    setEraser(true);
+  };
+
+  const chooseColor = (hex: string) => {
+    colorBeforeEraser.current = null;
+    setEraser(false);
+    setPaintSettings({ paintColor: hex });
+  };
 
   return (
     <div
@@ -79,14 +111,14 @@ export const PaintToolbar: React.FC = () => {
       <div className="kura-swatch-row" role="group" aria-label={t(language, 'viewport.paint.color')}>
         {PRINT_COLOR_PALETTE.map((hex) => {
           const name = SWATCH_NAMES[hex] ? t(language, SWATCH_NAMES[hex]) : hex;
-          const active = paintColor.toLowerCase() === hex;
+          const active = !eraser && paintColor.toLowerCase() === hex;
           return (
             <button
               key={hex}
               type="button"
               className={`kura-swatch ${active ? 'is-active' : ''} ${isLight(hex) ? 'is-light' : ''}`}
               style={{ backgroundColor: hex }}
-              onClick={() => setPaintSettings({ paintColor: hex })}
+              onClick={() => chooseColor(hex)}
               aria-label={name}
               aria-pressed={active}
               title={`${name} (${hex.toUpperCase()})`}
@@ -97,10 +129,21 @@ export const PaintToolbar: React.FC = () => {
           type="color"
           className="kura-swatch-custom"
           value={paintColor}
-          onChange={(e) => setPaintSettings({ paintColor: e.target.value })}
+          onChange={(e) => chooseColor(e.target.value)}
           aria-label={t(language, 'viewport.paint.customColor')}
           title={t(language, 'viewport.paint.customColor')}
         />
+        <button
+          type="button"
+          className={`kura-btn kura-btn-sm kura-paint-eraser ${eraser ? 'is-active' : ''}`}
+          aria-pressed={eraser}
+          disabled={!eraser && !baseColor}
+          onClick={toggleEraser}
+          title={t(language, 'viewport.paint.eraserTip')}
+        >
+          <Eraser size={13} aria-hidden="true" />
+          <span>{t(language, 'viewport.paint.eraser')}</span>
+        </button>
       </div>
       <span className="kura-paint-hint">{t(language, 'viewport.paint.hint')}</span>
       <PaintRefineHint />

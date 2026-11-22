@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import { askDecision } from '../utils/confirmDialog';
 import { isTauriRuntime } from '../utils/platformBridge';
 import { startProjectRecovery, type RecoveryStatus } from './projectRecoveryAutosave';
 import { recoveryDraftLabel } from './projectRecoveryLabels';
@@ -91,7 +92,15 @@ export function useProjectRecovery() {
           ? await (await import('@tauri-apps/plugin-dialog')).ask(message, {
             title: t(language, 'fileProject.menu'), kind: 'warning',
           })
-          : window.confirm(message);
+          : (await askDecision({
+            title: t(language, 'recovery.discard.title'),
+            message,
+            safeId: 'cancel',
+            actions: [
+              { id: 'discard', label: t(language, 'unsaved.discard'), tone: 'danger' },
+              { id: 'cancel', label: t(language, 'unsaved.cancel') },
+            ],
+          })) === 'discard';
         if (!accepted) return;
         if (!(await discardRecoveryDraft(draft.id, draft.updatedAt))) {
           addToast(t(language, 'recovery.status.changedElsewhere'), 'info');

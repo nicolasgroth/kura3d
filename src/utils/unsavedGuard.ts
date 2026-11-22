@@ -1,0 +1,62 @@
+/**
+ * @file src/utils/unsavedGuard.ts
+ * @description Protege acciones que reemplazan el proyecto (nuevo, abrir): si hay cambios sin guardar pregunta
+ * con el diálogo propio (Guardar / Descartar / Cancelar) en vez de `confirm()` nativo. El store aún llama a
+ * `window.confirm` al reemplazar un proyecto sucio; tras la decisión del usuario se acepta esa llamada de forma
+ * acotada (solo mientras corre la acción protegida).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import { t } from '../i18n';
+import { isProjectDirty, useKuraStore } from '../store/useKuraStore';
+import { askDecision } from './confirmDialog';
+
+/** Ejecuta `action` con `window.confirm` aceptado: el usuario ya decidió en el diálogo propio. */
+async function runWithDiscardAccepted<T>(action: () => T | Promise<T>): Promise<T> {
+  if (typeof window === 'undefined') return action();
+  const original = window.confirm;
+  window.confirm = () => true;
+  try {
+    return await action();
+  } finally {
+    window.confirm = original;
+  }
+}
+
+/**
+ * Corre `proceed` tras resolver los cambios sin guardar. Devuelve false si el usuario canceló o si el
+ * guardado no terminó (para no perder datos).
+ */
+export async function guardUnsavedChanges(proceed: () => unknown | Promise<unknown>): Promise<boolean> {
+  const state = useKuraStore.getState();
+  if (!isProjectDirty(state)) {
+    await proceed();
+    return true;
+  }
+  const { language } = state;
+  const decision = await askDecision({
+    title: t(language, 'unsaved.title'),
+    message: t(language, 'unsaved.message', { name: state.projectName ?? t(language, 'app.untitled') }),
+    safeId: 'cancel',
+    actions: [
+      { id: 'save', label: t(language, 'unsaved.save'), tone: 'primary' },
+      { id: 'discard', label: t(language, 'unsaved.discard'), tone: 'danger' },
+      { id: 'cancel', label: t(language, 'unsaved.cancel') },
+    ],
+  });
+  if (decision === 'discard') {
+    await runWithDiscardAccepted(proceed);
+    return true;
+  }
+  if (decision !== 'save') return false;
+  await state.saveProject();
+  const after = useKuraStore.getState();
+  if (isProjectDirty(after)) {
+    after.addToast(t(after.language, 'unsaved.saveIncomplete'), 'info');
+    return false;
+  }
+  await proceed();
+  return true;
+}

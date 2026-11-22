@@ -9,8 +9,11 @@
  * @license MIT
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Cloud, ShieldCheck } from 'lucide-react';
+import { askDecision } from '../../utils/confirmDialog';
+import { testAiConnection } from '../../utils/aiConnectionTest';
+import { modelSuggestions } from '../../utils/aiModelSuggestions';
 import { getApiKeyStore } from '../../ai/apiKeyStore';
 import { loadKeyState } from '../../ai/aiConfigState';
 import { getAllowedHostsSync, loadAllowedHosts, parseHostList, saveAllowedHosts } from '../../ai/allowedHosts';
@@ -21,6 +24,17 @@ import { useKuraStore } from '../../store/useKuraStore';
 import type { AiCompatPresetId, AiConfig, AiProviderType } from '../../types/kura';
 
 type Draft = Pick<AiConfig, 'provider' | 'compatPreset' | 'model' | 'baseUrl' | 'temperature'>;
+
+/** Sin clave para un proveedor que la exige, el asistente determinista local atiende el chat. */
+function isLocalConfig(config: AiConfig): boolean {
+  return specFor(config).needsKey && !config.apiKey.trim() && !config.keyStored;
+}
+
+interface TestOutcome {
+  busy: boolean;
+  text: string;
+  ok: boolean;
+}
 
 export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> = ({ open, onSaved }) => {
   const language = useKuraStore((s) => s.language);
@@ -37,9 +51,23 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
   const [rememberKey, setRememberKey] = useState(() => keyStore.rememberInSession());
   const [urlError, setUrlError] = useState<string | null>(null);
   const [hostsText, setHostsText] = useState(() => getAllowedHostsSync().join('\n'));
+  const [localMode, setLocalMode] = useState(() => isLocalConfig(aiConfig));
+  const [test, setTest] = useState<TestOutcome | null>(null);
+  const openSettings = useKuraStore((s) => s.openSettings);
+  const testAbort = useRef<AbortController | null>(null);
+  const resumeRef = useRef(false);
+  const skipCloseCheck = useRef(false);
+  const wasOpen = useRef(open);
 
   useEffect(() => {
     if (!open) return;
+    if (resumeRef.current) {
+      // Volver a editar tras cancelar el aviso: se conserva el borrador.
+      resumeRef.current = false;
+      return;
+    }
+    setLocalMode(isLocalConfig(aiConfig));
+    setTest(null);
     setDraft(aiConfig);
     setUrlError(null);
     setKeyInput(keyStore.desktop ? '' : aiConfig.apiKey);
@@ -57,6 +85,8 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
   const switchTo = (next: Draft) => {
     const nextSpec = specFor(next);
     setDraft({ ...next, model: nextSpec.defaultModel, baseUrl: '' });
+    setLocalMode(false);
+    setTest(null);
     setUrlError(null);
     setKeyInput('');
     setClearKey(false);
@@ -67,7 +97,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<boolean> => {
     // La URL base se valida primero: un error se muestra junto al campo y no se guarda nada.
     const typedUrl = draft.baseUrl.trim();
     if (typedUrl) {
@@ -81,14 +111,14 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
       if (!parsedOk) {
         setUrlError(t(language, 'dialog.settings.baseUrlInvalid'));
         document.getElementById('ai-url')?.focus();
-        return;
+        return false;
       }
     }
     setUrlError(null);
     const { hosts, invalid } = parseHostList(hostsText.split(/\r?\n/));
     if (invalid.length) {
       addToast(t(language, 'dialog.settings.allowedHostsInvalid', { list: invalid.join(', ') }), 'error');
-      return;
+      return false;
     }
     let allowed = hosts;
     if (hosts.join('\n') !== getAllowedHostsSync().join('\n')) {
@@ -96,7 +126,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
         allowed = await saveAllowedHosts(hosts);
       } catch {
         addToast(t(language, 'dialog.settings.allowedHostsCancelled'), 'info');
-        return;
+        return false;
       }
     }
     const url = (draft.baseUrl.trim() || spec.defaultBaseUrl).replace(/\/+$/, '');
@@ -113,19 +143,110 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
           : t(language, 'dialog.settings.hostNotInList', { host }),
       );
       document.getElementById('ai-url')?.focus();
-      return;
+      return false;
     }
     keyStore.setRememberInSession(rememberKey);
     const typedKey = keyInput.trim();
-    const keyChanged = clearKey || (keyStore.desktop ? typedKey.length > 0 : typedKey !== aiConfig.apiKey);
-    if (keyChanged) setAiConfig({ ...draft, apiKey: clearKey ? '' : typedKey });
+    // Modo local: se guarda sin clave, de modo que el chat usa el asistente determinista del equipo.
+    const dropKey = clearKey || localMode;
+    const keyChanged = dropKey || (keyStore.desktop ? typedKey.length > 0 : typedKey !== aiConfig.apiKey);
+    if (keyChanged) setAiConfig({ ...draft, apiKey: dropKey ? '' : typedKey });
     // Sin clave nueva: en escritorio se conserva la del llavero de la ranura elegida (solo su existencia).
     else setAiConfig({ ...draft, ...(keyStore.desktop ? { keyStored } : {}) });
     addToast(t(language, 'toast.settingsSaved'), 'success');
+    skipCloseCheck.current = true;
     onSaved();
+    return true;
   };
 
-  const external = !isLoopbackUrl(draft.baseUrl.trim() || spec.defaultBaseUrl) && (keyStored || keyInput.trim().length > 0);
+  const external = !localMode && !isLoopbackUrl(draft.baseUrl.trim() || spec.defaultBaseUrl)
+    && (keyStored || keyInput.trim().length > 0);
+
+  const hasPendingChanges = (
+    draft.provider !== aiConfig.provider
+    || (draft.provider === 'openai_compatible' && (draft.compatPreset ?? 'custom') !== (aiConfig.compatPreset ?? 'custom'))
+    || draft.model.trim() !== aiConfig.model.trim()
+    || draft.baseUrl.trim() !== aiConfig.baseUrl.trim()
+    || draft.temperature !== aiConfig.temperature
+    || clearKey
+    || (keyStore.desktop ? keyInput.trim().length > 0 : keyInput.trim() !== aiConfig.apiKey.trim())
+    || localMode !== isLocalConfig(aiConfig)
+    || hostsText.trim() !== getAllowedHostsSync().join('\n').trim()
+  );
+  const pendingRef = useRef(false);
+  pendingRef.current = hasPendingChanges;
+
+  // Cerrar Ajustes con cambios sin guardar no los descarta en silencio: se pregunta.
+  const saveRef = useRef(handleSave);
+  saveRef.current = handleSave;
+  useEffect(() => {
+    const closed = wasOpen.current && !open;
+    wasOpen.current = open;
+    if (!closed) return;
+    if (skipCloseCheck.current) {
+      skipCloseCheck.current = false;
+      return;
+    }
+    if (!pendingRef.current) return;
+    void (async () => {
+      const decision = await askDecision({
+        title: t(language, 'unsaved.title'),
+        message: t(language, 'dialog.settings.aiUnsavedMessage'),
+        safeId: 'cancel',
+        actions: [
+          { id: 'save', label: t(language, 'unsaved.save'), tone: 'primary' },
+          { id: 'discard', label: t(language, 'unsaved.discard'), tone: 'danger' },
+          { id: 'cancel', label: t(language, 'unsaved.cancel') },
+        ],
+      });
+      if (decision === 'discard') return;
+      if (decision === 'save' && (await saveRef.current())) return;
+      // Cancelar (o un guardado con errores) vuelve a Ajustes con el borrador intacto.
+      resumeRef.current = true;
+      openSettings('ai');
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const runConnectionTest = async () => {
+    if (localMode) {
+      setTest({ busy: false, ok: true, text: t(language, 'dialog.settings.test.local') });
+      return;
+    }
+    const typed = keyInput.trim();
+    if (keyStore.desktop && typed && !keyStored) {
+      setTest({ busy: false, ok: false, text: t(language, 'dialog.settings.test.desktopKey') });
+      return;
+    }
+    testAbort.current?.abort();
+    const controller = new AbortController();
+    testAbort.current = controller;
+    setTest({ busy: true, ok: false, text: t(language, 'dialog.settings.testing') });
+    const result = await testAiConnection({
+      config: draft,
+      typedKey: keyStore.desktop ? '' : typed,
+      keyStored: keyStored && !clearKey,
+      allowedHosts: getAllowedHostsSync(),
+      signal: controller.signal,
+    });
+    if (controller.signal.aborted) return;
+    const provider = spec.label;
+    const text = (() => {
+      switch (result.kind) {
+        case 'ok': return t(language, 'dialog.settings.test.ok', { provider });
+        case 'auth': return t(language, 'dialog.settings.test.auth', { provider, status: result.status });
+        case 'http': return t(language, 'dialog.settings.test.http', { provider, status: result.status });
+        case 'timeout': return t(language, 'dialog.settings.test.timeout');
+        case 'noKey': return t(language, 'dialog.settings.test.noKey');
+        case 'url': return t(language, 'dialog.settings.test.url');
+        case 'blocked': return t(language, 'ai.error.endpointBlocked');
+        default: return t(language, 'dialog.settings.test.network');
+      }
+    })();
+    setTest({ busy: false, ok: result.kind === 'ok', text });
+  };
+
+  useEffect(() => () => testAbort.current?.abort(), []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -134,9 +255,17 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
         <select
           id="ai-provider"
           className="kura-select"
-          value={draft.provider}
-          onChange={(e) => switchTo({ ...draft, provider: e.target.value as AiProviderType })}
+          value={localMode ? 'local' : draft.provider}
+          onChange={(e) => {
+            if (e.target.value === 'local') {
+              switchTo({ ...draft, provider: 'gemini', compatPreset: undefined });
+              setLocalMode(true);
+              return;
+            }
+            switchTo({ ...draft, provider: e.target.value as AiProviderType });
+          }}
         >
+          <option value="local">{t(language, 'dialog.settings.providerLocal')}</option>
           <option value="gemini">{PROVIDERS.gemini.label}</option>
           <option value="openai">{PROVIDERS.openai.label}</option>
           <option value="anthropic">{PROVIDERS.anthropic.label}</option>
@@ -145,7 +274,14 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
         </select>
       </div>
 
-      {isCompat && (
+      {localMode && (
+        <div className="kura-callout is-local" role="note">
+          <ShieldCheck size={15} aria-hidden="true" />
+          <span>{t(language, 'dialog.settings.providerLocalNote')}</span>
+        </div>
+      )}
+
+      {isCompat && !localMode && (
         <div className="kura-form-field">
           <label htmlFor="ai-preset">{t(language, 'dialog.settings.aiCompatPreset')}</label>
           <select
@@ -163,7 +299,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
         </div>
       )}
 
-      {draft.provider !== 'ollama' && (
+      {draft.provider !== 'ollama' && !localMode && (
         <div className="kura-form-field">
           <label htmlFor="ai-key">
             {spec.needsKey ? t(language, 'dialog.settings.apiKey') : t(language, 'dialog.settings.apiKeyOptional')}
@@ -214,9 +350,14 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
             id="ai-model"
             className="kura-input"
             value={draft.model}
+            list="ai-model-suggestions"
+            autoComplete="off"
             placeholder={spec.defaultModel}
             onChange={(e) => setDraft({ ...draft, model: e.target.value })}
           />
+          <datalist id="ai-model-suggestions">
+            {modelSuggestions(draft).map((model) => <option key={model} value={model} />)}
+          </datalist>
         </div>
         <div className="kura-form-field">
           <label htmlFor="ai-temp">
@@ -294,9 +435,30 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
         </span>
       </div>
 
-      <button type="button" className="kura-btn kura-btn-primary" style={{ alignSelf: 'flex-end' }} onClick={() => void handleSave()}>
-        {t(language, 'dialog.settings.saveAi')}
-      </button>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap', alignItems: 'center' }}>
+        <button
+          type="button"
+          className="kura-btn"
+          disabled={test?.busy}
+          title={t(language, 'dialog.settings.testConnection')}
+          onClick={() => void runConnectionTest()}
+        >
+          {test?.busy ? t(language, 'dialog.settings.testing') : t(language, 'dialog.settings.testConnection')}
+        </button>
+        <button type="button" className="kura-btn kura-btn-primary" onClick={() => void handleSave()}>
+          {t(language, 'dialog.settings.saveAi')}
+        </button>
+      </div>
+      <div role="status" aria-live="polite" style={{ minHeight: 18 }}>
+        {test && !test.busy && (
+          <span
+            className={`kura-callout ${test.ok ? 'is-local' : 'is-warning'}`}
+            style={{ display: 'flex', fontWeight: 600 }}
+          >
+            {test.ok ? '✓ ' : '✕ '}{test.text}
+          </span>
+        )}
+      </div>
     </div>
   );
 };

@@ -11,6 +11,20 @@
   flex-wrap: wrap;
   gap: 8px;
   align-self: flex-start;
+  /* No invade la columna del cubo de vista (arriba a la derecha). */
+  max-width: calc(100% - 150px);
+}
+
+@media (max-width: 520px) {
+  .kura-paint-toolbar {
+    max-width: calc(100% - 118px);
+  }
+}
+
+.kura-paint-eraser.is-active {
+  border-color: var(--accent-cyan);
+  box-shadow: inset 0 0 0 1px var(--accent-cyan);
+  font-weight: 700;
 }
 
 .kura-paint-radius {

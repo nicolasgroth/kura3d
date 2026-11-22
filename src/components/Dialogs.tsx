@@ -15,7 +15,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Bolt,
   Check,
-  Copy,
   FileUp,
   Keyboard,
   Monitor,
@@ -32,7 +31,6 @@ import { t, type TranslationKey } from '../i18n';
 import { type ActiveDialogType, generateRandomTokenHex, useKuraStore } from '../store/useKuraStore';
 import { rotateMcpBridgeToken, useMcpBridgeStatus } from '../utils/mcpBridgeClient';
 import { describeMcpBridge } from '../utils/mcpBridgeHealth';
-import { maskToken } from '../utils/mcpTokenStore';
 import { OperationFailureAlert, useOperationFailure } from './OperationFailureAlert';
 import { CONNECTOR_DEPTH_RANGE_MM, CONNECTOR_SIZE_RANGE_MM } from '../engine/cutConnectorChecks';
 import { PrecisionNumberInput } from './PrecisionNumberInput';
@@ -52,6 +50,7 @@ import {
 } from '../types/kura';
 import { isTauriRuntime, openLocalFile } from '../utils/platformBridge';
 import { AiSettingsPanel } from './settings/AiSettingsPanel';
+import { McpSetupPanel } from './settings/McpSetupPanel';
 import { McpTokenField } from './settings/McpTokenField';
 import { SettingsTabs } from './settings/SettingsTabs';
 import { ISO_COARSE_THREADS, isoCoarsePitch } from '../engine/threads';
@@ -1433,7 +1432,6 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
   const isRenderedDark = useResolvedDarkScheme(colorScheme);
 
-  const [copied, setCopied] = useState(false);
 
   // Garantiza que cualquier vista previa en vivo se revierta al cerrar o desmontar el modal
   useEffect(() => {
@@ -1481,40 +1479,8 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     setMcpConfig({ authToken: nextToken });
   };
 
-  const mcpEnv: Record<string, string> = {
-    KURA_BRIDGE_PORT: String(mcpConfig.port),
-    KURA_BRIDGE_TOKEN: mcpConfig.authToken,
-  };
-  if (mcpConfig.readOnly) {
-    mcpEnv.KURA_BRIDGE_READ_ONLY = 'true';
-  }
-
   const bridgeView = describeMcpBridge(language, mcpConfig.enabled, bridgeStatus);
   const bridgePhaseLabel = bridgeView.label;
-
-  const mcpSnippet = JSON.stringify(
-    {
-      mcpServers: {
-        kura3d: {
-          command: 'node',
-          args: ['mcp-server/dist/index.js'],
-          env: mcpEnv,
-        },
-      },
-    },
-    null,
-    2,
-  );
-
-  const handleCopyMcp = async () => {
-    try {
-      await navigator.clipboard.writeText(mcpSnippet);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Ignorar si portapapeles está bloqueado
-    }
-  };
 
   const schemeOptions: Array<{
     value: ColorSchemePreference;
@@ -1810,27 +1776,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
               </span>
             </span>
           </div>
-          <pre
-            style={{
-              margin: 0,
-              padding: 10,
-              borderRadius: 8,
-              background: 'var(--bg-canvas)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: 11,
-              overflowX: 'auto',
-            }}
-          >
-            {mcpConfig.authToken ? mcpSnippet.replace(mcpConfig.authToken, maskToken(mcpConfig.authToken)) : mcpSnippet}
-          </pre>
-          <button type="button" className="kura-btn kura-btn-sm" onClick={() => void handleCopyMcp()}>
-            {copied ? <Check size={14} /> : <Copy size={14} />}
-            <span>
-              {copied
-                ? t(language, 'dialog.settings.mcpCopied')
-                : t(language, 'dialog.settings.mcpCopy')}
-            </span>
-          </button>
+          <McpSetupPanel />
         </div>
       )}
 

@@ -14,11 +14,14 @@ import { sendAiPrompt } from '../ai/aiClient';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
+import { toolLabel } from '../utils/aiToolLabels';
+import '../styles/aiDrawer.css';
 
 export const AiChatDrawer: React.FC = () => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const language = useKuraStore((s) => s.language);
   const aiDrawerOpen = useKuraStore((s) => s.aiDrawerOpen);
@@ -35,6 +38,11 @@ export const AiChatDrawer: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [aiMessages.length, aiBusy]);
+
+  // Al abrir el panel (y al terminar una respuesta) el foco vuelve al campo de texto.
+  useEffect(() => {
+    if (aiDrawerOpen && !aiBusy) inputRef.current?.focus();
+  }, [aiDrawerOpen, aiBusy]);
 
   // Cerrar el panel cancela la solicitud en curso.
   useEffect(() => {
@@ -72,7 +80,7 @@ export const AiChatDrawer: React.FC = () => {
         if (tool.name === 'get_scene_state') continue;
         addAiMessage({
           role: 'tool',
-          content: `${t(language, 'ai.toolBadge')}: ${tool.name}\n${tool.result}`,
+          content: toolLabel(language, tool.name),
           toolName: tool.name,
           toolResult: tool.result,
         });
@@ -196,7 +204,7 @@ export const AiChatDrawer: React.FC = () => {
             return (
               <div key={msg.id} className="kura-chat-bubble tool">
                 <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                  {t(language, 'ai.toolBadge')}: {msg.toolName ?? 'command'}
+                  {toolLabel(language, msg.toolName)}
                 </div>
                 <details className="kura-tool-details">
                   <summary>{t(language, 'ai.technicalDetails')}</summary>
@@ -235,6 +243,7 @@ export const AiChatDrawer: React.FC = () => {
 
       <form className="kura-chat-form" onSubmit={handleSubmit}>
         <input
+          ref={inputRef}
           className="kura-input"
           style={{ flex: 1 }}
           placeholder={t(language, 'ai.placeholder')}

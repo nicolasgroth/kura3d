@@ -1,0 +1,62 @@
+/**
+ * @file src/styles/projectMenu.css
+ * @description Estilos del menú Proyecto: filas con atajo a la derecha, lista de recientes y separadores.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-project-head {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.kura-project-menu {
+  display: grid;
+  gap: 3px;
+}
+
+.kura-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+.kura-menu-item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-menu-kbd {
+  flex-shrink: 0;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.kura-menu-item:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: -2px;
+}
+
+.kura-menu-separator {
+  width: 100%;
+  margin: 4px 0;
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.kura-project-recents {
+  display: grid;
+  gap: 3px;
+}
+
+.kura-recent-item .kura-menu-item-label {
+  font-weight: 600;
+}

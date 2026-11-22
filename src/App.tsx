@@ -28,6 +28,8 @@ import { isProjectDirty, useKuraStore } from './store/useKuraStore';
 import type { TransformMode } from './types/kura';
 import { useMcpBridgeClient } from './utils/mcpBridgeClient';
 import { isTauriRuntime } from './utils/platformBridge';
+import { guardUnsavedChanges } from './utils/unsavedGuard';
+import { ConfirmDialogHost } from './components/ConfirmDialogHost';
 
 const TRANSFORM_SHORTCUTS = new Map<string, TransformMode>([
   ['m', 'translate'],
@@ -165,8 +167,8 @@ export const App: React.FC = () => {
           }
           void state.saveProject(e.shiftKey);
         }
-        else if (key === 'o') void state.openProject();
-        else state.newProject();
+        else if (key === 'o') void guardUnsavedChanges(() => state.openProject());
+        else void guardUnsavedChanges(() => state.newProject());
         return;
       }
       const target = e.target as HTMLElement | null;
@@ -403,6 +405,7 @@ export const App: React.FC = () => {
 
       <StatusBar recoveryStatus={recovery.status} />
       <Dialogs />
+      <ConfirmDialogHost />
       <CommandPalette />
       <SplashScreen />
     </div>
