@@ -20,6 +20,7 @@ import {
   AXIS_INDEX,
   connectorMargin,
   fittingRotation,
+  isDiagonal,
   measureSection,
   orientForAxis,
   rotatedSize,
@@ -78,7 +79,7 @@ interface CountChoice {
 }
 
 /** Menor rejilla uniforme que cabe; `null` si ninguna con ≤ `maxPieces`. */
-function chooseCounts(size: Vec3, usable: Vec3, axes: Set<SplitAxis>, maxPieces: number, protrusion: number, allowRotation: boolean): CountChoice | null {
+function chooseCounts(size: Vec3, usable: Vec3, axes: Set<SplitAxis>, maxPieces: number, protrusion: number, allowRotation: boolean, allowDiagonal: boolean): CountChoice | null {
   let best: (CountChoice & { pieces: number; rotated: boolean }) | null = null;
   const lim = (a: SplitAxis) => (axes.has(a) ? maxPieces : 1);
   for (let nx = 1; nx <= lim('x'); nx++) {
@@ -88,7 +89,7 @@ function chooseCounts(size: Vec3, usable: Vec3, axes: Set<SplitAxis>, maxPieces:
         if (best && pieces > best.pieces) break;
         const n = [nx, ny, nz];
         const piece = size.map((L, a) => L / n[a] + (n[a] > 1 ? protrusion : 0)) as Vec3;
-        const rot = fittingRotation(piece, usable, allowRotation);
+        const rot = fittingRotation(piece, usable, allowRotation, allowDiagonal && pieces === 1);
         if (!rot) continue;
         const rotated = rot.some((v) => v !== 0);
         if (!best || pieces < best.pieces || (pieces === best.pieces && best.rotated && !rotated)) {
@@ -101,6 +102,9 @@ function chooseCounts(size: Vec3, usable: Vec3, axes: Set<SplitAxis>, maxPieces:
 }
 
 export { SPLIT_HARD_MAX_PIECES };
+
+/** Holgura mínima por lado contra la cama (mm), aunque `marginMm` sea menor. */
+export const SPLIT_MIN_BED_CLEARANCE_MM = 1;
 
 /**
  * Puntaje de una sección (menor es mejor). Pesa, de más a menos: islas diminutas, tiras (pared
@@ -248,7 +252,8 @@ function resolveOptions(bed: SplitBed, o: BedSplitPlanOptions) {
   }
   const margin = o.marginMm ?? SPLIT_DEFAULTS.marginMm;
   if (!(Number.isFinite(margin) && margin >= 0)) throw new EngineError('INVALID_PARAMETER', { name: 'marginMm', value: String(margin), min: 0, max: 50 });
-  const usable: Vec3 = [bed.widthMm - 2 * margin, bed.heightMm - 2 * margin, bed.depthMm - 2 * margin];
+  const clear = Math.max(margin, SPLIT_MIN_BED_CLEARANCE_MM);
+  const usable: Vec3 = [bed.widthMm - 2 * clear, bed.heightMm - 2 * clear, bed.depthMm - 2 * clear];
   if (usable.some((v) => !(v > 0))) {
     throw new EngineError('INVALID_PARAMETER', { name: 'marginMm', value: String(margin), min: 0, max: Math.min(bed.widthMm, bed.depthMm, bed.heightMm) / 2 });
   }
@@ -257,6 +262,7 @@ function resolveOptions(bed: SplitBed, o: BedSplitPlanOptions) {
     axes: new Set(o.axes && o.axes.length > 0 ? o.axes : AXES),
     maxPieces: o.maxPieces === 'auto' ? SPLIT_HARD_MAX_PIECES : (o.maxPieces ?? SPLIT_DEFAULTS.maxPieces),
     allowRotation: o.allowRotation ?? true,
+    allowDiagonal: o.allowDiagonal ?? false,
     window: o.shiftWindow ?? SPLIT_DEFAULTS.shiftWindow,
     connector: o.connector === undefined ? SPLIT_DEFAULTS.connector : o.connector,
     planePositions: o.planePositions ?? {},
@@ -272,7 +278,7 @@ export function planFromManifold(m: Manifold, bed: SplitBed, options: BedSplitPl
   const max = bb.max as Vec3;
   const size = [0, 1, 2].map((a) => max[a] - min[a]) as Vec3;
   const protrusion = connectorProtrusion(opt.connector);
-  const choice = chooseCounts(size, opt.usable, opt.axes, opt.maxPieces, protrusion, opt.allowRotation);
+  const choice = chooseCounts(size, opt.usable, opt.axes, opt.maxPieces, protrusion, opt.allowRotation, opt.allowDiagonal);
   if (!choice) {
     // Estimación de las piezas que harían falta (sin giro), para el mensaje
     let needed = 1;
@@ -317,7 +323,9 @@ export function planFromManifold(m: Manifold, bed: SplitBed, options: BedSplitPl
         const lo = cell.map((c, a) => bounds[a][c]) as Vec3;
         const hi = cell.map((c, a) => bounds[a][c + 1]) as Vec3;
         const sizeMm = [0, 1, 2].map((a) => hi[a] - lo[a] + (cell[a] < counts[a] - 1 ? protrusion : 0)) as Vec3;
-        const printRotation = fittingRotation(sizeMm, opt.usable, opt.allowRotation) ?? rot;
+        const printRotation = fittingRotation(sizeMm, opt.usable, opt.allowRotation, opt.allowDiagonal && counts.every((c) => c === 1)) ?? rot;
+        const printed = rotatedSize(sizeMm, printRotation);
+        const full: Vec3 = [bed.widthMm, bed.heightMm, bed.depthMm];
         pieces.push({
           code: splitPartCode(cell, counts[2]),
           cell,
@@ -325,6 +333,8 @@ export function planFromManifold(m: Manifold, bed: SplitBed, options: BedSplitPl
           sizeMm,
           rotated: printRotation.some((v) => v !== 0),
           printRotation,
+          diagonal: isDiagonal(printRotation),
+          bedMarginMm: Math.min(...[0, 1, 2].map((a) => (full[a] - printed[a]) / 2)),
         });
       }
     }

@@ -58,6 +58,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const [margin, setMargin] = useState<number>(D.marginMm);
   const [axes, setAxes] = useState<Record<SplitAxis, boolean>>({ x: true, y: true, z: true });
   const [allowRotation, setAllowRotation] = useState(true);
+  const [allowDiagonal, setAllowDiagonal] = useState(false);
   const [kind, setKind] = useState<ConnectorKind>('auto');
   const [lapHeight, setLapHeight] = useState<number>(D.lapHeightMm);
   const [minWall, setMinWall] = useState<number>(D.minWallForConnectorMm);
@@ -98,8 +99,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   );
   const allowedAxes = useMemo(() => AXES.filter((a) => axes[a]), [axes]);
   const planOptions = useMemo<BedSplitPlanOptions>(
-    () => ({ marginMm: margin, axes: allowedAxes, allowRotation, connector, planePositions: overrides, maxPieces }),
-    [margin, allowedAxes, allowRotation, connector, overrides, maxPieces],
+    () => ({ marginMm: margin, axes: allowedAxes, allowRotation, allowDiagonal, connector, planePositions: overrides, maxPieces }),
+    [margin, allowedAxes, allowRotation, allowDiagonal, connector, overrides, maxPieces],
   );
 
   // Plan en vivo con debounce (el visor lo dibuja).
@@ -292,6 +293,10 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         <label className="kura-split-check" title={t(language, 'split.allowRotationTip')}>
           <input type="checkbox" checked={allowRotation} onChange={(e) => setAllowRotation(e.target.checked)} />
           <span>{t(language, 'split.allowRotation')}</span>
+        </label>
+        <label className="kura-split-check" title={t(language, 'split.allowDiagonalTip')}>
+          <input type="checkbox" checked={allowDiagonal} onChange={(e) => setAllowDiagonal(e.target.checked)} />
+          <span>{t(language, 'split.allowDiagonal')}</span>
         </label>
       </fieldset>
 

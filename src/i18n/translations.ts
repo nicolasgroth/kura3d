@@ -1224,6 +1224,8 @@ export const TRANSLATIONS_ES = {
   'split.minWall': 'Espesor mínimo para conector',
   'split.minWallTip': 'Más delgada que esto, la unión queda como corte liso para pegar',
   'split.lapShapeNote': 'Modifica la forma en la unión: lengüeta en una pieza y ranura en la otra.',
+  'split.allowDiagonal': 'Permitir pieza en diagonal',
+  'split.allowDiagonalTip': 'Apoya la pieza en diagonal sobre la cama si así cabe sin cortar',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2408,6 +2410,8 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'split.minWall': 'Minimum thickness for connector',
   'split.minWallTip': 'Thinner than this, the joint is left as a plain cut for gluing',
   'split.lapShapeNote': 'Changes the shape at the joint: tongue on one piece and groove on the other.',
+  'split.allowDiagonal': 'Allow diagonal placement',
+  'split.allowDiagonalTip': 'Lays the piece diagonally on the bed if it then fits without cutting',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

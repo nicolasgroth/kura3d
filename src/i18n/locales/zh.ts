@@ -1217,4 +1217,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'split.minWall': '连接件最小厚度',
   'split.minWallTip': '比此值更薄时，接合保留为平切面用于粘合',
   'split.lapShapeNote': '会改变接合处形状：一件为榫舌，另一件为槽。',
+  'split.allowDiagonal': '允许斜放',
+  'split.allowDiagonalTip': '若斜放在打印床上无需切割即可放下，则斜放零件',
 };

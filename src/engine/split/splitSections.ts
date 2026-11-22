@@ -124,12 +124,34 @@ export function rotatedSize(size: Vec3, rot: Vec3): Vec3 {
   return [0, 1, 2].map((r) => m[r].reduce((s, v, k) => s + Math.abs(v) * size[k], 0)) as Vec3;
 }
 
-/** Primera rotación con la que `size` cabe en `usable` (o `null`). */
-export function fittingRotation(size: Vec3, usable: Vec3, allowRotation: boolean): Vec3 | null {
+/**
+ * Primera rotación con la que `size` cabe en `usable` (o `null`). Con `allowDiagonal`, si ninguna
+ * de 90° sirve, prueba girar la pieza derecha sobre la cama (solo en torno a Y, de 1° a 89°) y elige
+ * el ángulo con más holgura.
+ */
+export function fittingRotation(size: Vec3, usable: Vec3, allowRotation: boolean, allowDiagonal = false): Vec3 | null {
   const eps = 1e-6;
+  const fits = (s: Vec3) => s[0] <= usable[0] + eps && s[1] <= usable[1] + eps && s[2] <= usable[2] + eps;
   for (const rot of allowRotation ? ROTATIONS : ROTATIONS.slice(0, 1)) {
-    const s = rotatedSize(size, rot);
-    if (s[0] <= usable[0] + eps && s[1] <= usable[1] + eps && s[2] <= usable[2] + eps) return rot;
+    if (fits(rotatedSize(size, rot))) return rot;
   }
-  return null;
+  if (!allowDiagonal) return null;
+  let best: Vec3 | null = null;
+  let bestSlack = -Infinity;
+  for (let deg = 1; deg < 90; deg++) {
+    const rot: Vec3 = [0, (deg * Math.PI) / 180, 0];
+    const s = rotatedSize(size, rot);
+    if (!fits(s)) continue;
+    const slack = Math.min(usable[0] - s[0], usable[2] - s[2]);
+    if (slack > bestSlack) {
+      bestSlack = slack;
+      best = rot;
+    }
+  }
+  return best;
+}
+
+/** `true` si la rotación no es múltiplo de 90° (pieza en diagonal sobre la cama). */
+export function isDiagonal(rot: Vec3): boolean {
+  return rot.some((v) => Math.abs(v / (Math.PI / 2) - Math.round(v / (Math.PI / 2))) > 1e-9);
 }

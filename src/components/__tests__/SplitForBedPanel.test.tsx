@@ -39,6 +39,8 @@ const PLAN: BedSplitPlan = {
     sizeMm: [120, j < 4 ? 206 : 200, 120] as [number, number, number],
     rotated: false,
     printRotation: [0, 0, 0] as [number, number, number],
+    diagonal: false,
+    bedMarginMm: 5,
   })),
   fitsWithoutCuts: false,
   connector: { type: 'dowel', size: 4, depth: 6, tolerance: 0.25, count: 2 },

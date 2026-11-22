@@ -1217,4 +1217,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.minWall': 'कनेक्टर के लिए न्यूनतम मोटाई',
   'split.minWallTip': 'इससे पतला होने पर जोड़ चिपकाने के लिए सपाट कट रहता है',
   'split.lapShapeNote': 'जोड़ पर आकार बदलता है: एक भाग पर जीभ और दूसरे पर खाँचा।',
+  'split.allowDiagonal': 'तिरछी स्थिति की अनुमति दें',
+  'split.allowDiagonalTip': 'यदि बिना काटे फिट हो तो भाग को बेड पर तिरछा रखता है',
 };

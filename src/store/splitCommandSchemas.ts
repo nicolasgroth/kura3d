@@ -84,6 +84,7 @@ export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): Sp
       axes: readAxes(p),
       maxPieces: pick(p, 'maxPieces')?.[1] === 'auto' ? 'auto' : (readRange(p, OR.split.maxPieces, 'maxPieces') ?? d.maxPieces),
       allowRotation: readBoolean(p, 'allowRotation') ?? true,
+      allowDiagonal: readBoolean(p, 'allowDiagonal') ?? false,
       shiftWindow: readRange(p, OR.split.shiftWindow, 'shiftWindow') ?? d.shiftWindow,
       connector,
     },

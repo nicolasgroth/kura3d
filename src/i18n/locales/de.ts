@@ -1217,4 +1217,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'split.minWall': 'Mindestdicke für Verbinder',
   'split.minWallTip': 'Dünner als dies bleibt die Verbindung ein glatter Schnitt zum Kleben',
   'split.lapShapeNote': 'Ändert die Form an der Verbindung: Feder an einem Teil, Nut am anderen.',
+  'split.allowDiagonal': 'Diagonale Lage erlauben',
+  'split.allowDiagonalTip': 'Legt das Teil diagonal aufs Druckbett, wenn es so ohne Schnitt passt',
 };

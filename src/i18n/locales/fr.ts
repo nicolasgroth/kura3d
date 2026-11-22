@@ -1217,4 +1217,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'split.minWall': 'Épaisseur minimale pour connecteur',
   'split.minWallTip': 'Plus mince que cela, la jonction reste une coupe lisse à coller',
   'split.lapShapeNote': 'Modifie la forme à la jonction : languette sur une pièce et rainure sur l\'autre.',
+  'split.allowDiagonal': 'Autoriser la diagonale',
+  'split.allowDiagonalTip': 'Pose la pièce en diagonale sur le plateau si elle tient ainsi sans coupe',
 };

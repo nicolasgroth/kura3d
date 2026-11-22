@@ -37,6 +37,7 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         axes: z.array(z.enum(['x', 'y', 'z'])).min(1).max(3).optional().describe('Ejes donde se permite cortar (por defecto los tres).'),
         maxPieces: z.union([rangeSchema(OR.split.maxPieces), z.literal('auto')]).default(d.maxPieces),
         allowRotation: z.boolean().default(true).describe('Permite girar 90° una pieza para que quepa.'),
+        allowDiagonal: z.boolean().default(false).describe('Permite apoyar la pieza en diagonal sobre la cama si así cabe sin cortar.'),
         connectorType: z.enum(['none', 'dowel', 'peg', 'dovetail', 'lap']).default('dowel'),
         minWallForConnectorMm: rangeSchema(OR.split.minWallForConnectorMm).default(d.minWallForConnectorMm).describe('Espesor mínimo de la sección para poner conector; más delgada queda para pegar.'),
         lapHeightMm: rangeSchema(OR.split.lapHeightMm).default(d.lapHeightMm).describe('Alto del solape de borde en mm.'),
@@ -65,7 +66,7 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
           bed: Object.fromEntries(
             Object.entries({ widthMm: args.bedWidthMm, depthMm: args.bedDepthMm, heightMm: args.bedHeightMm }).filter(([, v]) => v !== undefined),
           ),
-          plan: { marginMm: args.marginMm, axes: args.axes, maxPieces: args.maxPieces, allowRotation: args.allowRotation, connector },
+          plan: { marginMm: args.marginMm, axes: args.axes, maxPieces: args.maxPieces, allowRotation: args.allowRotation, allowDiagonal: args.allowDiagonal, connector },
           execute: {
             connector, labels: args.labels, labelDepthMm: args.labelDepthMm, labelMinHeightMm: args.labelMinHeightMm,
             labelPlacement: args.labelPlacement, minFragmentMm3: args.minFragmentMm3,

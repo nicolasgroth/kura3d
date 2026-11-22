@@ -72,7 +72,10 @@ export interface SplitLapInfo {
 
 /** Opciones del plan. Todos los campos son opcionales. */
 export interface BedSplitPlanOptions {
-  /** Margen por lado que se descuenta de cada medida de la cama (mm, por defecto 5). */
+  /**
+   * Margen por lado que se descuenta de cada medida de la cama (mm, por defecto 5). Nunca menos de
+   * `SPLIT_MIN_BED_CLEARANCE_MM` (1 mm): ninguna pieza usa la cama al milímetro.
+   */
   marginMm?: number;
   /** Ejes en los que se permite cortar (por defecto los tres). */
   axes?: SplitAxis[];
@@ -83,6 +86,11 @@ export interface BedSplitPlanOptions {
   maxPieces?: number | 'auto';
   /** Permite girar 90° una pieza para que quepa (por defecto `true`). */
   allowRotation?: boolean;
+  /**
+   * Permite apoyar una pieza derecha en diagonal sobre la cama (giro en torno a Y que no es de 90°)
+   * si así cabe sin otro corte (por defecto `false`). Lo indica `PlannedPiece.diagonal`.
+   */
+  allowDiagonal?: boolean;
   /** Ventana de desplazamiento de cada plano como fracción del tramo (por defecto 0,15). */
   shiftWindow?: number;
   /** Conector previsto (para el saliente del macho y si la sección lo admite); `null` = sin conectores. */
@@ -128,6 +136,10 @@ export interface PlannedPiece {
   /** Si hay que girarla 90° para que quepa; `printRotation` (radianes, Euler XYZ) dice cómo. */
   rotated: boolean;
   printRotation: Vec3;
+  /** Si va en diagonal sobre la cama (giro en Y que no es de 90°). */
+  diagonal: boolean;
+  /** Margen real que queda (mm): menor distancia por lado a la cama completa en X, Y o Z. */
+  bedMarginMm: number;
 }
 
 /** Plan de división (no corta nada). */

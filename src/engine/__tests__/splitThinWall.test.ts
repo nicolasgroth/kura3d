@@ -149,4 +149,24 @@ describe('errores y tope', () => {
     const plan = await planBedSplit(obj, BED, { maxPieces: 'auto' });
     expect(plan.pieces.length).toBe(err.params.needed);
   });
+
+  it('ninguna pieza usa la cama al milímetro y el plan informa el margen real por pieza', async () => {
+    const obj = objFrom(wasm.Manifold.cube([250, 600, 100], true), 'losa');
+    const plan = await planBedSplit(obj, BED, { marginMm: 0 });
+    for (const p of plan.pieces) expect(p.bedMarginMm).toBeGreaterThanOrEqual(1 - 1e-6);
+    expect(plan.counts.x).toBe(2);
+    const def = await planBedSplit(obj, BED);
+    for (const p of def.pieces) expect(p.bedMarginMm).toBeGreaterThanOrEqual(5 - 1e-6);
+  });
+
+  it('allowDiagonal apoya en diagonal una pieza que así cabe sin cortar', async () => {
+    const obj = objFrom(wasm.Manifold.cube([300, 50, 30], true), 'regla');
+    const bed = { widthMm: 250, depthMm: 250, heightMm: 100 };
+    const cut = await planBedSplit(obj, bed, { allowRotation: false });
+    expect(cut.planes.length).toBeGreaterThan(0);
+    const plan = await planBedSplit(obj, bed, { allowRotation: false, allowDiagonal: true });
+    expect(plan.planes).toHaveLength(0);
+    expect(plan.pieces[0].diagonal).toBe(true);
+    expect(plan.pieces[0].bedMarginMm).toBeGreaterThan(0);
+  });
 });
