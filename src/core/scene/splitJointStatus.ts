@@ -65,6 +65,8 @@ const JOINT_WARNING_CODES: ReadonlySet<EngineWarningCode> = new Set<EngineWarnin
   'SPLIT_PART_NOT_CLOSED',
 ]);
 
+export type SplitJointMark = 'joint' | 'outside' | 'dots' | 'skipped' | 'none' | 'unknown';
+
 export interface SplitJointRow {
   label: string;
   a: string;
@@ -81,6 +83,10 @@ export interface SplitJointRow {
   warnings: EngineWarning[];
   /** `true` si la marca de pareja de esta unión va como puntos por fuera (`labelPlacement: 'dots'`). */
   labelDots: boolean;
+  /** Dónde quedó la marca de pareja: en la cara de unión, por fuera, como puntos, omitida (sin espacio), desactivada o sin dato. */
+  mark: SplitJointMark;
+  /** `true` si el motor reforzó el conector de esta unión (solo si aún tiene conector). */
+  reinforced: boolean;
   /** Piezas que esta unión impide montar (si traba). */
   blocks: string[];
   /** Alternativas del motor para una unión que traba: `glue` o `change-type:<tipo>`. */
@@ -123,7 +129,9 @@ export function buildJointRows(
   const blockedDetail = validation ? validation.blockedDetail : notes?.report?.blockedDetail ?? [];
 
   return records.map((r) => {
-    const weak = weakList.find((w) => w.joint === r.label) ?? null;
+    const stillConnector = r.kind === 'connector' && !glued.has(r.label) && !changed.has(r.label);
+    // Una unión pegada o cambiada ya no se mide como conector débil
+    const weak = stillConnector ? weakList.find((w) => w.joint === r.label) ?? null : null;
     // Una unión ya pegada o cambiada por el motor no sigue trabando: solo una unión aún con conector puede trabar.
     const pending = r.kind === 'connector' && !glued.has(r.label) && !changed.has(r.label) ? suggestions.find((s) => s.joint === r.label) : undefined;
     const status: SplitJointStatus = pending
@@ -138,6 +146,8 @@ export function buildJointRows(
     const seen = new Set<string>();
     const own = warnings.filter((w) => {
       if (!JOINT_WARNING_CODES.has(w.code)) return false;
+      // El refuerzo solo se cuenta en uniones que conservan conector
+      if (w.code === 'SPLIT_CONNECTOR_REINFORCED' && !stillConnector) return false;
       const mine = w.code === 'SPLIT_PART_NOT_CLOSED' ? [r.a, r.b].includes(String(w.params.code)) : labelOf(w) === r.label;
       const key = `${w.code}:${w.params.code ?? ''}`;
       if (!mine || seen.has(key)) return false;
@@ -147,9 +157,15 @@ export function buildJointRows(
     const blocks = blockedDetail.filter((b) => b.conflictingJoints.includes(r.label)).map((b) => b.code);
     // La marca de puntos la dice el registro; los proyectos anteriores (sin el campo) la deducen del aviso.
     const labelDots = r.labelPlacement !== undefined ? r.labelPlacement === 'dots' : own.some((w) => w.code === 'SPLIT_LABEL_DOTS');
+    const skipped = warnings.some((w) => w.code === 'SPLIT_LABEL_SKIPPED' && labelOf(w) === r.label);
+    const mark: SplitJointMark = labelDots ? 'dots'
+      : r.labelPlacement === 'joint' || r.labelPlacement === 'outside' ? r.labelPlacement
+        : skipped ? 'skipped'
+          : r.labelPlacement === null ? 'none' : 'unknown';
     return {
       label: r.label, a: r.a, b: r.b, axis: r.axis, position: r.position, kind: r.kind, connector: r.connector,
-      centers: r.connectorCenters, status, labelDots,
+      centers: r.connectorCenters, status, labelDots, mark,
+      reinforced: own.some((w) => w.code === 'SPLIT_CONNECTOR_REINFORCED'),
       weak: weak ? { measuredMm: weak.measuredMm, recommendedMm: weak.recommendedMm } : null,
       warnings: own, blocks, options: pending?.options ?? [],
     };

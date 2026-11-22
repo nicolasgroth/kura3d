@@ -106,13 +106,27 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
       if (w.code === 'ASSEMBLY_CONNECTOR_CLASH') {
         return t(language, 'splitJoints.note.clash', { distance: fmt(Math.max(0, Number(w.params.distance))), required: fmt(Number(w.params.required)) });
       }
-      if (w.code === 'SPLIT_LABEL_DOTS') return t(language, 'splitJoints.note.dots', { label: String(w.params.label ?? row.label) });
+      // La marca de puntos se explica en la línea de la marca de la unión
+      if (w.code === 'SPLIT_LABEL_DOTS') return '';
+      if (w.code === 'SPLIT_CONNECTOR_REINFORCED') {
+        const p = w.params;
+        return t(language, 'engineWarning.SPLIT_CONNECTOR_REINFORCED', {
+          label: String(p.label ?? row.label), a: String(p.a ?? row.a), b: String(p.b ?? row.b),
+          requested: fmt(Number(p.requested), 2), size: fmt(Number(p.size), 2),
+          requestedCount: fmt(Number(p.requestedCount), 0), count: fmt(Number(p.count), 0),
+        });
+      }
       return localizeWarnings(language, [w])[0];
     });
+  const markText = (row: SplitJointRow): string => {
+    if (row.mark === 'dots') return t(language, 'splitJoints.note.dots', { label: row.label });
+    if (row.mark === 'unknown') return '';
+    return t(language, `splitJoints.mark.${row.mark}`, { label: row.label, a: row.a, b: row.b });
+  };
 
   return (
     <section className="kura-split-joints-section" aria-labelledby={`${uid}-title`}>
-      <SplitAssemblyStatus language={language} notes={notes} validation={report} />
+      <SplitAssemblyStatus language={language} notes={notes} validation={report} weakLabels={rows.filter((r) => r.weak !== null).map((r) => r.label)} />
       <h3 id={`${uid}-title`} className="kura-section-label">{t(language, 'splitJoints.title')} ({rows.length})</h3>
       {rows.length > 0 && <small className="kura-cut-hint">{t(language, 'splitJoints.intro')}</small>}
       {dowels.length > 0 && (
@@ -173,7 +187,7 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
                   {row.weak && (
                     <p className="kura-split-joint-note" data-kind="warn">
                       <AlertTriangle size={12} aria-hidden="true" />
-                      <span>{t(language, 'splitJoints.note.weak', { measured: fmt(row.weak.measuredMm), recommended: fmt(row.weak.recommendedMm) })}</span>
+                      <span>{t(language, reinforced || row.reinforced ? 'splitJoints.note.weakLimit' : 'splitJoints.note.weak', { measured: fmt(row.weak.measuredMm), recommended: fmt(row.weak.recommendedMm) })}</span>
                     </p>
                   )}
                   {row.weak && (canReinforce ? (
@@ -190,7 +204,13 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
                   ) : !reinforced && (
                     <small className="kura-cut-hint">{t(language, 'splitJoints.reinforceHow')}</small>
                   ))}
-                  {notes.map((text) => (
+                  {markText(row) && (
+                    <p className="kura-split-joint-note" data-kind="info" data-testid={`split-joint-mark-${row.label}`}>
+                      <CircleDot size={12} aria-hidden="true" />
+                      <span>{markText(row)}</span>
+                    </p>
+                  )}
+                  {notes.filter(Boolean).map((text) => (
                     <p key={text} className="kura-split-joint-note" data-kind="info">
                       <AlertTriangle size={12} aria-hidden="true" />
                       <span>{text}</span>

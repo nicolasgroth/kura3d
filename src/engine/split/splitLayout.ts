@@ -80,6 +80,62 @@ export interface SplitLayoutResult {
 }
 
 /**
+ * Empaquetado en filas sobre la cama (las huellas más hondas primero) con placas nuevas cuando no caben.
+ * Lo usan `layoutSplitParts` (medidas reales) y `estimateSplitPlates` (medidas del plan), así coinciden.
+ */
+export function packOnPlates(
+  items: Array<{ id: number; size: Vec3 }>, W: number, D: number, gap: number,
+): Array<{ id: number; plate: number; x: number; z: number; w: number; d: number }> {
+  const order = [...items].sort((p, q) => q.size[2] - p.size[2] || q.size[0] - p.size[0]);
+  const out: Array<{ id: number; plate: number; x: number; z: number; w: number; d: number }> = [];
+  let plate = 0;
+  let x = 0;
+  let z = 0;
+  let rowDepth = 0;
+  let used = false;
+  for (const it of order) {
+    const [w, , d] = it.size;
+    if (used && x + w > W) {
+      x = 0;
+      z += rowDepth + gap;
+      rowDepth = 0;
+    }
+    if (used && z + d > D) {
+      plate++;
+      x = 0;
+      z = 0;
+      rowDepth = 0;
+    }
+    out.push({ id: it.id, plate, x, z, w, d });
+    x += w + gap;
+    rowDepth = Math.max(rowDepth, d);
+    used = true;
+  }
+  return out;
+}
+
+/**
+ * Placas de impresión a partir de las medidas de las piezas (sin malla), con el mismo empaquetado que
+ * `layoutSplitParts` (`packOnPlates`). La cara de abajo real depende de la malla (cara plana mayor), que aquí
+ * no se conoce: se toma la orientación de menor huella que quepa, así la cifra no sobrestima las placas.
+ */
+export function estimateSplitPlates(sizes: ReadonlyArray<Vec3>, bed: SplitBed, options: SplitLayoutOptions = {}): number {
+  if (sizes.length === 0) return 0;
+  const gap = options.gapMm ?? 5;
+  const margin = options.marginMm ?? 5;
+  const W = bed.widthMm - 2 * margin;
+  const D = bed.depthMm - 2 * margin;
+  const items = sizes.map((s, id) => {
+    const cands = ([[s[1], s[0], s[2]], [s[0], s[1], s[2]], [s[0], s[2], s[1]]] as Vec3[])
+      .map((size) => ({ size, area: size[0] * size[2] }))
+      .sort((p, q) => p.area - q.area);
+    const fitting = cands.filter((c) => c.size[1] <= bed.heightMm && c.size[0] <= W && c.size[2] <= D);
+    return { id, size: (fitting[0] ?? cands[cands.length - 1]).size };
+  });
+  return Math.max(...packOnPlates(items, W, D, gap).map((p) => p.plate)) + 1;
+}
+
+/**
  * Orienta y acomoda las piezas para imprimir: cara plana más grande abajo, filas sobre la cama y
  * tantas placas virtuales como hagan falta (índice de placa por pieza).
  */
@@ -110,38 +166,21 @@ export function layoutSplitParts(parts: Array<Pick<SplitPart, 'mesh'>>, bed: Spl
     const b = rotatedBounds(part.mesh, o.rot);
     return { i, o, b, size: [b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]] as Vec3 };
   });
-  // Filas: las más hondas primero
-  const order = [...oriented].sort((p, q) => q.size[2] - p.size[2] || q.size[0] - p.size[0]);
+  const packed = packOnPlates(oriented.map((o) => ({ id: o.i, size: o.size })), W, D, gap);
   const placements: SplitPrintPlacement[] = new Array(parts.length);
+  const byId = new Map(oriented.map((o) => [o.i, o]));
   let plate = 0;
-  let x = 0;
-  let z = 0;
-  let rowDepth = 0;
-  let used = false;
-  for (const it of order) {
-    const [w, , d] = it.size;
-    if (used && x + w > W) {
-      x = 0;
-      z += rowDepth + gap;
-      rowDepth = 0;
-    }
-    if (used && z + d > D) {
-      plate++;
-      x = 0;
-      z = 0;
-      rowDepth = 0;
-    }
-    const cx = -W / 2 + x + w / 2;
-    const cz = -D / 2 + z + d / 2;
-    placements[it.i] = {
-      plate,
+  for (const pk of packed) {
+    const it = byId.get(pk.id)!;
+    plate = Math.max(plate, pk.plate);
+    const cx = -W / 2 + pk.x + pk.w / 2;
+    const cz = -D / 2 + pk.z + pk.d / 2;
+    placements[pk.id] = {
+      plate: pk.plate,
       downFace: it.o.face,
       rotation: it.o.rot,
       position: [cx - (it.b.min[0] + it.b.max[0]) / 2, -it.b.min[1], cz - (it.b.min[2] + it.b.max[2]) / 2],
     };
-    x += w + gap;
-    rowDepth = Math.max(rowDepth, d);
-    used = true;
   }
   return { placements, plateCount: parts.length > 0 ? plate + 1 : 0, oversized };
 }

@@ -244,6 +244,26 @@ describe('local assistant on the real store', () => {
     expect(parseLocalPrompt('rosca M6x0.75').steps[0].intent).toMatchObject({ diameter: 6, pitch: 0.75 });
   });
 
+  it('rosca fuera de rango: no crea nada y responde con el rango válido (sin acotar en silencio)', async () => {
+    for (const [prompt, key] of [
+      ['agrega una rosca M0', 'threadDiameterRange'],
+      ['crea un perno M100 de 20 mm', 'threadDiameterRange'],
+      ['crea un perno M8 de 500 mm', 'threadLengthRange'],
+      ['rosca M8 paso 30', 'threadPitchRange'],
+    ] as const) {
+      const before = objects();
+      const out = await ask(prompt);
+      expect(out.executedTools).toEqual([]);
+      expect(objects()).toEqual(before);
+      const range = key === 'threadDiameterRange' ? ['3', '64'] : key === 'threadLengthRange' ? ['1', '300'] : ['0.2', '16'];
+      expect(out.assistantText).toContain(range[0]);
+      expect(out.assistantText).toContain(range[1]);
+      expect(out.assistantText).toMatch(/fuera del rango/);
+    }
+    expect(parseLocalPrompt('agrega una rosca M0').threadRange).toEqual([{ key: 'threadDiameterRange', value: 0, min: 3, max: 64 }]);
+    expect(parseLocalPrompt('crea un perno M8').threadRange).toEqual([]);
+  });
+
   it('does nothing at all when part of the request is not understood', async () => {
     await addBoxes(1);
     const revision = objects();

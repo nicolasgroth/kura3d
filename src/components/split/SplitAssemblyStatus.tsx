@@ -21,9 +21,11 @@ interface Props {
   language: LanguageCode;
   notes: SplitGroupNotes | null;
   validation: SplitValidationReport | null;
+  /** Etiquetas de las uniones que la lista muestra como débiles; el resumen debe coincidir con las filas. */
+  weakLabels?: string[];
 }
 
-export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validation }) => {
+export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validation, weakLabels }) => {
   const base = validation
     ? {
         ok: validation.ok,
@@ -35,7 +37,8 @@ export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validati
     : notes?.report ?? null;
   const fixed = (notes?.gluedByFix.length ?? 0) + (notes?.changedByFix.length ?? 0);
   // Uniones débiles medidas: de la última validación o del informe que dejó la división.
-  const weak = validation ? validation.weak.map((w) => w.joint) : notes?.report?.weak?.map((w) => w.joint) ?? notes?.weakJoints ?? [];
+  const measured = validation ? validation.weak.map((w) => w.joint) : notes?.report?.weak?.map((w) => w.joint) ?? notes?.weakJoints ?? [];
+  const weak = weakLabels ? measured.filter((l) => weakLabels.includes(l)) : measured;
   if (!base && fixed === 0 && weak.length === 0) return null;
   const failed = base !== null && !base.ok;
   const details: string[] = [];
