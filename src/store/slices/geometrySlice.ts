@@ -45,6 +45,11 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
           name: opCtx().naming.booleanResult(op, all),
         });
         assertCurrent(all);
+        // Piezas que no se tocan: aviso BOOLEAN_NO_EFFECT, sin cambio de escena ni historial.
+        if (!result) {
+          reportEngineWarnings(change.warnings);
+          return null;
+        }
         commitChange(change, { select: [result.id] });
         get().addToast(tr(`toast.booleanDone.${op}`), 'success');
         return result;

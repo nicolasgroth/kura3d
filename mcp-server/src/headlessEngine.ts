@@ -190,7 +190,13 @@ export class KuraHeadlessEngine {
     operation: BooleanOpType;
     keepTools?: boolean;
     resultName?: string;
-  }): Promise<{ object: SceneObjectSummary; resultId: string; consumedIds: string[]; note: string }> {
+  }): Promise<{
+    object: SceneObjectSummary | null;
+    resultId: string | null;
+    consumedIds: string[];
+    note: string;
+    warnings: engine.EngineWarning[];
+  }> {
     const target = this.requireEditable(input.targetId);
     if (input.toolIds.length === 0) {
       throw new Error('Se requiere al menos un objeto herramienta en `toolIds`.');
@@ -207,8 +213,10 @@ export class KuraHeadlessEngine {
       keepTools: input.keepTools,
       name: input.resultName ?? this.ctx.naming.booleanResult(input.operation, [target]),
     });
+    // Piezas que no se tocan: la escena no cambia y se devuelve el aviso BOOLEAN_NO_EFFECT.
+    if (!result) return { object: null, resultId: null, consumedIds: [], note: ENGINE_NOTE, warnings: change.warnings };
     this.apply(change);
-    return { object: summarizeObject(result), resultId: result.id, consumedIds: change.removedIds, note: ENGINE_NOTE };
+    return { object: summarizeObject(result), resultId: result.id, consumedIds: change.removedIds, note: ENGINE_NOTE, warnings: [] };
   }
 
   /** Corta por plano con `planeCutWithConnectors` del motor (conectores reales incluidos). */

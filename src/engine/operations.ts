@@ -87,7 +87,7 @@ export async function runBooleanOperation(
   targetObj: SceneObject,
   toolObj: SceneObject,
   op: BooleanOpType
-): Promise<{ mesh: MeshData; position: Vec3 }> {
+): Promise<{ mesh: MeshData; position: Vec3; noEffect?: boolean }> {
   const wasm = await initManifoldEngine();
 
   const targetWorld = applyTransformToMesh(
@@ -143,6 +143,14 @@ export async function runBooleanOperation(
 
     if (resultManifold.isEmpty() || resultManifold.numTri() === 0) {
       throw new EngineError('BOOLEAN_EMPTY_RESULT', { op });
+    }
+
+    // Resta que no quita volumen: las piezas no se tocan (o solo se rozan) y nada cambia.
+    if (op === 'subtract') {
+      const before = targetManifold.volume();
+      if (Math.abs(resultManifold.volume() - before) <= 1e-9 * Math.max(1, Math.abs(before))) {
+        return { ...extractPositionAndNormalize(manifoldToMeshData(targetManifold, registry?.idToColor)), noEffect: true };
+      }
     }
 
     const outMesh = manifoldToMeshData(resultManifold, registry?.idToColor);

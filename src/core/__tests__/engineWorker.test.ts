@@ -86,8 +86,8 @@ describe('Worker del motor: equivalencia con la ruta en proceso', () => {
 
   it('booleana: mismo volumen, triángulos, manifold y nombre', async () => {
     const { local, remote } = await both('boolean', { target: a, tools: [b], op: 'subtract' });
-    expect(summary([remote.result])).toEqual(summary([local.result]));
-    expect(remote.result.name).toBe('A − B');
+    expect(summary([remote.result!])).toEqual(summary([local.result!]));
+    expect(remote.result!.name).toBe('A − B');
     expect(remote.change.removedIds).toEqual([a.id, b.id]);
     // Las entradas se copiaron antes de transferir: la malla del editor sigue intacta.
     expect(byId(a.id)!.mesh.positions.length).toBeGreaterThan(0);

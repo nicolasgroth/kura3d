@@ -47,7 +47,8 @@ describe('Operaciones CSG', () => {
   it('resta de cajas: resultado manifold con el volumen esperado y entradas consumidas', async () => {
     const a = await box(20, 'A');
     const b = { ...(await box(10, 'B')), position: [5, 5, 5] as [number, number, number] };
-    const { result, change } = await ops.booleanOperation(ctx, { target: a, tools: [b], op: 'subtract' });
+    const { result: res, change } = await ops.booleanOperation(ctx, { target: a, tools: [b], op: 'subtract' });
+    const result = res!;
     expect(result.stats.isManifold).toBe(true);
     // A ocupa x,z ∈ [-10, 10], y ∈ [0, 20]; B (apoyada en cama y movida a [5, 5, 5]) ocupa
     // x,z ∈ [0, 10], y ∈ [5, 15]: queda entera dentro de A.
