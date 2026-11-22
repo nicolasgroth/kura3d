@@ -1,60 +1,61 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 21 de noviembre de 2026, tras la segunda ronda de evaluación.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026, tras la tercera ronda de evaluación.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md) y las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md).
 
 ## En desarrollo
 
-Nada en este momento.
+| Funcionalidad | Qué se está haciendo |
+|---|---|
+| Dividir para imprimir | Motor: plan de cortes según la cama, corte con uniones, piezas nombradas, marcas de pareja y datos para la animación de armado. Después viene su interfaz |
 
 ## En QA
 
 | Funcionalidad | Estado |
 |---|---|
-| Correcciones de la segunda ronda | Pasada de humo en navegador antes de publicar en la rama principal |
 | Seguridad en escritorio (CSP, llavero, permisos, proxy de IA) | QA web aprobado; falta verificar en la app instalada |
 
 ## En evaluación
 
-Las correcciones posteriores a la segunda ronda (roscas, conectores, segmentación, textos, campos, paneles) esperan su tercera ronda.
+Las correcciones posteriores a la tercera ronda (barra superior, colocación libre, mallas limpias, informe de imprimibilidad, texto 3D con fuente real, aristas vivas en el visor) esperan la cuarta ronda.
 
 ## Lista
 
-Ninguna funcionalidad cumple todavía el mínimo de 85 en los tres evaluadores.
+Ninguna funcionalidad cumple todavía el mínimo de 85 en los tres evaluadores. Las más cercanas: proyectos `.kura`, roscas, exportar y corte con uniones.
 
 ## Existe, con mejoras pendientes
 
-Notas de la segunda ronda (usabilidad · código · funcional). "—" significa que ese evaluador no pudo medirla. Entre paréntesis, la nota de la línea base.
+Notas de la tercera ronda (usabilidad · código · funcional). "—" significa que ese evaluador no pudo medirla. Entre paréntesis, la nota de la línea base.
 
 | Funcionalidad | Usabilidad | Código | Funcional | Qué le falta para estar lista |
 |---|---|---|---|---|
-| Proyectos `.kura` | 72 (72) | 86 (84) | 90 (88) | Menú y diálogo de descarte ya corregidos; falta reevaluar |
-| Recuperación local | 82 (74) | 86 (82) | — | Vista previa del borrador |
-| Importar | 85 (64) | 79 (66) | 82 (66) | Progreso y cancelar; importar GLB |
-| Exportar | 84 (55) | 79 (64) | 78 (84) | Perfil de slicer con efecto real; verificar en slicers |
-| Transformar con precisión | 70 (80) | 71 (70) | — | Expresiones ya agregadas; eje vertical Y frente a Z |
-| Primitivas | 58 (58) | 71 (68) | 92 (85) | Parámetros editables tras crear; colocar en espacio libre |
-| Booleanas | 66 (66) | 71 (66) | 93 (93) | Indicar base y herramienta; vista previa |
-| Corte con uniones | 50 (55) | 71 (64) | 68 (72) | Conectores por isla ya corregidos; plano visible y valores según la pieza |
-| Ahuecado | 68 (68) | 71 (55) | 85 (50) | Mostrar el interior; rendimiento en mallas grandes |
-| Moldes | 74 (62) | 71 (62) | 84 (50) | Vista previa; núcleo anclado |
-| Texto y SVG sobre superficie | 62 (50) | 71 (60) | 85 (75) | Vista previa y colocar con clic |
-| Roscas ISO | 78 (45) | 71 (68) | 74 (62) | Engrane ya corregido; tuerca emparejada en un clic |
-| Litofanía y cortador | 70 (45) | 71 (63) | 88 (80) | Contorno más suave; vista previa |
-| Segmentación estructural | 60 (52) | 71 (58) | 80 (82) | Resaltar en el visor; etiquetas ya neutras |
-| Pintura 3D | 76 (68) | 71 (50) | — | Borde más fino; goma ya agregada |
-| Análisis de imprimibilidad | 80 (62) | 71 (62) | 84 (70) | Mostrar supuestos del peso |
-| Simplificar y refinar | 62 (70) | 71 (70) | 90 (55) | Objetivo por porcentaje o triángulos |
-| Alineación y distribución | 70 (62) | 71 (58) | 88 (88) | Elegir la referencia |
-| Estudio | 74 (58) | 64 (55) | — | Dividir archivos gigantes; pruebas de componentes |
-| Chat IA y proveedores | 66 (30) | 87 (45) | — | Varias mejoras ya aplicadas; falta reevaluar |
-| Servidor MCP | 70 (55) | 76 (35) | 85 (25) | Contrato único compartido con la app |
-| **Global** | **68 (57)** | **75 (60)** | **84 (68)** | |
+| Proyectos `.kura` | 80 (72) | 86 (84) | 90 (88) | Encuadrar al abrir; barra superior ya corregida |
+| Recuperación local | 85 (74) | 86 (82) | — | Vista previa del borrador |
+| Importar | 78 (64) | 76 (66) | 86 (66) | Aviso de éxito y normales invertidas ya corregidos; importar GLB |
+| Exportar | 86 (55) | 76 (64) | 85 (84) | Perfil de slicer con efecto real; verificar en slicers |
+| Transformar con precisión | 72 (80) | 79 (70) | — | Eje vertical Y frente a Z |
+| Primitivas | 68 (58) | 85 (68) | 88 (85) | Validación de parámetros ya corregida; falta reevaluar |
+| Booleanas | 66 (66) | 84 (66) | 93 (93) | Aviso sin contacto ya agregado; falta reevaluar |
+| Corte con uniones | 80 (55) | 76 (64) | 85 (72) | Mitades ya se separan; uniones vinculadas |
+| Ahuecado | 74 (68) | 81 (55) | 88 (50) | Vista previa antes de aplicar |
+| Moldes | 72 (62) | 77 (62) | 82 (50) | Verificar llaves y vertedero; vista previa en vivo |
+| Texto y SVG sobre superficie | 60 (50) | 72 (60) | 80 (75) | Cara y tamaño sugeridos ya agregados; falta reevaluar |
+| Roscas ISO | 80 (45) | 86 (68) | 92 (62) | Tapa roscada |
+| Litofanía y cortador | 72 (45) | 70 (63) | 78 (80) | Mallas ya limpias; vista previa 3D |
+| Segmentación estructural | 68 (52) | 71 (58) | 80 (82) | Resaltado en el visor ya agregado; dividir el archivo |
+| Pintura 3D | 72 (68) | 72 (50) | — | Pincel lento en mallas grandes |
+| Análisis de imprimibilidad | 70 (62) | 66 (62) | 75 (70) | Reescrito tras la ronda; falta reevaluar |
+| Simplificar y refinar | 70 (70) | 79 (70) | 90 (55) | Vista previa con antes y después |
+| Alineación y distribución | 78 (62) | 80 (58) | 92 (88) | Repartir en varias placas |
+| Estudio | 70 (58) | 71 (55) | — | Paneles móviles; más pruebas de componentes |
+| Chat IA y proveedores | 80 (30) | 85 (45) | — | Que el chat no encoja tanto el visor; adjuntos |
+| Servidor MCP | 74 (55) | 83 (35) | 80 (25) | Colocación libre ya agregada; falta reevaluar |
+| **Global** | **73 (57)** | **77 (60)** | **85 (68)** | |
 
 ## Hecho en esta etapa
 
-Trabajo terminado y verificado con pruebas automáticas; lo marcado con ✔ además pasó QA en navegador.
+Trabajo terminado y verificado con pruebas automáticas; lo marcado con ✔ además se vio funcionar en un navegador.
 
 | Qué | Verificación |
 |---|---|
@@ -62,25 +63,29 @@ Trabajo terminado y verificado con pruebas automáticas; lo marcado con ✔ adem
 | Agentes de desarrollo, QA y evaluación a ciegas; control de agentes con latido | En uso |
 | Seguridad: CSP en escritorio, sin comandos de disco arbitrario, claves de IA fuera del navegador | ✔ web |
 | Puente MCP: token obligatorio, solo lectura en el servidor, rotación, carpeta de exportación acotada | ✔ ataques reales |
-| Dependencias actualizadas, auditoría en cero | Pruebas |
-| Servidor MCP con el motor real de la app, sin geometría simulada | ✔ |
-| Comandos de IA y MCP validados con una sola fuente de rangos | ✔ |
-| Deshacer protegido y bloqueo real entre operaciones | ✔ parcial |
-| Ahuecado y moldes con pared real en piezas no convexas | ✔ |
-| Refinar sin deformar; roscas con tabla ISO, engrane real y cabeza según norma | ✔ parcial |
-| Conectores de corte por isla, en aros y piezas en L | Pruebas |
-| Importar 3MF de slicers con componentes, instancias y posiciones; lote parcial; PLY | ✔ |
-| Importador resistente a archivos maliciosos | ✔ |
+| Servidor MCP con el motor real de la app, colocación en espacio libre y cola de llamadas | ✔ parcial |
+| Una sola fuente de rangos para interfaz, IA, bus, MCP y motor, con prueba de paridad | Pruebas |
+| Store dividido por responsabilidad y núcleo independiente de la interfaz | Pruebas |
+| Componentes y hojas de estilo gigantes divididos, sin cambios visuales | ✔ capturas idénticas |
+| Geometría y exportación en segundo plano, con progreso y Cancelar | ✔ |
+| Ahuecado y moldes con pared real en piezas no convexas; ahuecado 3 veces más rápido | ✔ |
+| Roscas con tabla ISO, engrane real y cabeza según norma | ✔ parcial |
+| Corte con conectores por isla, valores sugeridos según la pieza y plano arrastrable | ✔ |
+| Mallas siempre limpias en cortador e incrustación | Pruebas |
+| Primitivas con parámetros editables, guardados en el proyecto (`.kura` versión 2) | ✔ |
+| Piezas nuevas en espacio libre, también moldes, importación y chat | ✔ |
+| Vista previa en el visor: booleanas con base y herramienta, proyección en vivo, paneles laterales | ✔ |
+| Texto 3D con fuente tipográfica real, tildes y ñ, alineación y varias líneas | ✔ |
+| Importar 3MF de slicers, lote parcial, PLY, normales invertidas corregidas, archivos maliciosos rechazados | ✔ |
 | Exportar en un diálogo único: 3MF, STL, OBJ con colores, GLB, PLY | ✔ |
+| Informe de imprimibilidad traducido, con paredes delgadas y voladizo por área | ✔ |
 | Errores y avisos del motor traducidos a 6 idiomas | ✔ |
-| Chat local que encadena acciones y pregunta antes de tocar la selección | ✔ |
-| Proveedores compatibles con OpenAI y proxy nativo de IA | Pruebas |
-| Pintura sin recolorear, un deshacer por trazo, goma | ✔ parcial |
-| Lista de escena, menús y paleta por teclado; contraste verificado en 6 temas | ✔ parcial |
-| Campos con expresiones y unidades; plurales y números por idioma | Pruebas |
-| Menú Proyecto con recientes y diálogo propio para descartar cambios | Pruebas |
-| Token del puente MCP en el llavero del sistema | Pruebas |
-| Segmentación que se invalida sola cuando cambia la pieza | Pruebas |
+| Chat local que encadena acciones; proveedores compatibles con OpenAI y proxy nativo | ✔ parcial |
+| Barra superior adaptable con menú "Más"; unidades e impresora en Ajustes y barra de estado | ✔ |
+| Uso por teclado: lista de escena, menús, paleta; contraste verificado en 6 temas | ✔ parcial |
+| Campos con expresiones y unidades; plurales y números por idioma | ✔ |
+| Aristas vivas en el visor; resaltado de estructuras; pintura solo en el objeto activo | ✔ |
+| README reescrito con capturas actuales | ✔ |
 
 ## Planificada
 
@@ -88,9 +93,7 @@ Ordenadas por prioridad dentro de cada grupo.
 
 | Grupo | Funcionalidad |
 |---|---|
-| Base | Ordenar el repositorio: dividir store, diálogos, inspector y visor; núcleo independiente de la interfaz |
 | Base | Pruebas E2E reales con Playwright y pruebas de regresión geométrica |
-| Base | Geometría pesada en segundo plano (Workers) con progreso y cancelación |
 | Dividir para imprimir | Corte automático según el tamaño de la cama, con cortes múltiples |
 | Dividir para imprimir | Uniones vinculadas entre mitades (mover una mueve su pareja) |
 | Dividir para imprimir | Marcas de pareja (A–A, B–B) y nombre por pieza |
@@ -109,17 +112,16 @@ Ordenadas por prioridad dentro de cada grupo.
 | Color y material | 3MF multimaterial verificado en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura |
 | Estudio | Paneles móviles, minimizables y que se agregan o quitan, con un menú fijo para reabrir cualquiera |
 | Estudio | Guardar, cargar y restablecer la disposición del escritorio (perfiles de layout por usuario) |
-| Estudio | Unidades e impresora fuera de la barra superior: en Ajustes y en un panel que se puede esconder |
 | Estudio | Pestañas de proyecto |
 | Estudio | Menú de clic derecho en visor y árbol (agregar, quitar, mostrar, ocultar, operar) |
 | Estudio | Atajos editables y uso completo por teclado |
 | Estudio | Entrada numérica flotante junto al cursor al pulsar M, R o S |
 | Estudio | Línea de comandos integrada |
-| Estudio | Vista previa en el visor antes de aplicar cada operación |
 | Estudio | Barra de herramientas configurable y perfiles básico/pro |
 | Aprender | Tutorial interactivo de uso del programa y modelos de ejemplo |
 | Aprender | Instrucciones de armado generadas al dividir un modelo |
-| Edición | Modificadores no destructivos (texto con profundidad, relieve, grabado) e historial editable |
+| Edición | Modificadores no destructivos e historial editable |
+| Edición | Vista previa en vivo en molde, ahuecado, litofanía y simplificar |
 | Edición | Patrones lineales y circulares, espejo, tubos y refuerzos |
 | Edición | Reparación de malla con mapa de defectos |
 | Edición | Medición con snapping y tolerancias |
