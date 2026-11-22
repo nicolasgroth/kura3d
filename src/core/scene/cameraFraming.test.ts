@@ -52,11 +52,11 @@ describe('fitDistance', () => {
         const pose = framePose({ box, viewDir: iso, fovDeg: 42, aspect });
         const vp = cameraAt(pose, 42, aspect);
         expect(isBoxInView(box, vp, 0.99)).toBe(true);
-        // Ajustado: a un 70 % de la distancia ya no cabe.
+        // Ajustado: a un 60 % de la distancia ya no cabe.
         const near = framePose({ box, viewDir: iso, fovDeg: 42, aspect });
         const closer = {
           target: near.target,
-          position: near.target.map((t, i) => t + (near.position[i] - t) * 0.7) as Vec3,
+          position: near.target.map((t, i) => t + (near.position[i] - t) * 0.6) as Vec3,
         };
         expect(isBoxInView(box, cameraAt(closer, 42, aspect), 0.99)).toBe(false);
       });

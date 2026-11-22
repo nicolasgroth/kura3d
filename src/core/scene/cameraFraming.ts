@@ -19,8 +19,8 @@ export interface FrameBox {
   max: Vec3;
 }
 
-/** Margen por defecto: la caja ocupa como máximo ~74 % del encuadre (deja sitio a las barras flotantes del visor) en su eje más ajustado. */
-export const DEFAULT_FRAME_MARGIN = 1.35;
+/** Margen por defecto: la caja ocupa como máximo ~67 % del encuadre (deja sitio a las barras flotantes del visor) en su eje más ajustado. */
+export const DEFAULT_FRAME_MARGIN = 1.5;
 
 /** Caja envolvente en mundo de varios objetos (null si ninguno tiene malla). */
 export function boxForObjects(
