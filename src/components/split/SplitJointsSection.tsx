@@ -68,6 +68,10 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
     const rec = group0(s.objects, primary.id) ? s.splitRequests[group0(s.objects, primary.id)!] : undefined;
     return Boolean(rec && !rec.request.execute.reinforceWeakJoints && s.past.length === rec.historyDepth);
   });
+  const reinforced = useKuraStore((s) => {
+    const gid = group0(s.objects, primary.id);
+    return Boolean(gid && s.splitRequests[gid]?.request.execute.reinforceWeakJoints);
+  });
   const uid = useId();
   const [pinned, setPinned] = useState<string | null>(null);
 
@@ -183,7 +187,7 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
                       <ShieldCheck size={13} aria-hidden="true" />
                       <span>{t(language, 'splitJoints.reinforce')}</span>
                     </button>
-                  ) : (
+                  ) : !reinforced && (
                     <small className="kura-cut-hint">{t(language, 'splitJoints.reinforceHow')}</small>
                   ))}
                   {notes.map((text) => (
