@@ -17,6 +17,8 @@ import type {
   TextureOptions,
   Vec3,
 } from '../../types/kura';
+import { engineWarning } from '../../engine/engineErrors';
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { worldBaked } from '../scene/sceneObjects';
 import { change, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
 
@@ -33,7 +35,15 @@ export async function hollowObject(ctx: OperationContext, obj: SceneObject, opti
 
 /** Decima la malla (Manifold `simplify`). */
 export async function simplifyObject(ctx: OperationContext, obj: SceneObject, toleranceMm: number): Promise<SceneChange> {
-  return patchOf(obj, meshPatch(ctx, obj, await engine.simplifyMesh(obj, toleranceMm)));
+  const simplified = await engine.simplifyMesh(obj, toleranceMm);
+  // Volumen en coordenadas locales: la escala del objeto no cambia el porcentaje.
+  const before = engine.computeMeshStats(obj.mesh).volumeMm3;
+  const after = engine.computeMeshStats(simplified).volumeMm3;
+  const pct = before > 0 ? (100 * (after - before)) / before : 0;
+  const warnings = Math.abs(pct) > OPERATION_DEFAULTS.simplify.volumeWarnPct
+    ? [engineWarning('SIMPLIFY_VOLUME_CHANGED', { pct: Math.round(pct * 10) / 10 })]
+    : [];
+  return patchOf(obj, meshPatch(ctx, obj, simplified), warnings);
 }
 
 /** Refina (y suaviza opcionalmente) la malla. */

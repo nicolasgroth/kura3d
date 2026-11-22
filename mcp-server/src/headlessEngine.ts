@@ -484,11 +484,14 @@ export class KuraHeadlessEngine {
   async simplifyMesh(
     objectId: string,
     toleranceMm: number
-  ): Promise<{ object: SceneObjectSummary; toleranceMm: number; trianglesBefore: number }> {
+  ): Promise<{ object: SceneObjectSummary; toleranceMm: number; trianglesBefore: number; warnings?: ua.UserWarning[] }> {
     const obj = this.requireEditable(objectId);
     const trianglesBefore = obj.stats.triangles;
-    this.apply(await ops.simplifyObject(this.ctx, obj, toleranceMm));
-    return { object: userSummary(obj), toleranceMm, trianglesBefore };
+    const change = await ops.simplifyObject(this.ctx, obj, toleranceMm);
+    this.apply(change);
+    // Aviso tipado si el volumen cambió más que el umbral (`SIMPLIFY_VOLUME_CHANGED`).
+    const warnings = change.warnings.length > 0 ? { warnings: ua.userWarnings(change.warnings) } : {};
+    return { object: userSummary(obj), toleranceMm, trianglesBefore, ...warnings };
   }
 
   /** Refina (y suaviza opcionalmente) con `refineMesh` del motor. */
