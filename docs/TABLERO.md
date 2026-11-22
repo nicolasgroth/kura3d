@@ -122,6 +122,7 @@ Ordenadas por prioridad dentro de cada grupo.
 | Estudio | Atajos editables y uso completo por teclado |
 | Estudio | Entrada numérica flotante junto al cursor al pulsar M, R o S |
 | Estudio | Línea de comandos integrada |
+| Estudio | Redimensionar arrastrando las esquinas o caras de la caja de selección (Ctrl para proporcional) |
 | Estudio | Historial de deshacer configurable: más pasos según la memoria disponible, con el límite visible en Ajustes |
 | Estudio | Barra de herramientas configurable y perfiles básico/pro |
 | Aprender | Tutorial interactivo de uso del programa y modelos de ejemplo |

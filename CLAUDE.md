@@ -32,6 +32,7 @@ Las pruebas se hacen sobre la versión **web** en una pestaña (Playwright o el 
 - `docs/FUNCIONALIDADES.md` — registro de funcionalidades y su estado; es lo que puntúan los evaluadores.
 - `docs/PLAN_DESARROLLO.md` — backlog detallado por ticket e historial.
 - `docs/EVALUACIONES.md` — registro de notas por lote.
+- `docs/CONSULTAS_PROYECTO.md` — dudas abiertas para el autor; `docs/DECISIONES.md` — histórico de lo ya decidido.
 - `docs/TABLERO.md` — tablero con título y etapa de cada funcionalidad; se actualiza cada vez que un lote cambia de etapa.
 
 ## Flujo de trabajo: desarrollo → QA → evaluación

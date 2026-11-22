@@ -137,7 +137,7 @@ Kura3D se desarrolla con agentes de IA organizados en tres equipos independiente
 - [Roadmap y prioridades](docs/ROADMAP.md)
 - [Registro de funcionalidades](docs/FUNCIONALIDADES.md)
 - [Evaluaciones de calidad](docs/EVALUACIONES.md)
-- [Consultas y decisiones pendientes](docs/CONSULTAS_PROYECTO.md)
+- [Consultas pendientes](docs/CONSULTAS_PROYECTO.md) · [Decisiones tomadas](docs/DECISIONES.md)
 - [Reglas para extensiones](docs/EXTENSIONES.md)
 - [Backlog detallado](docs/PLAN_DESARROLLO.md)
 - [Servidor MCP](mcp-server/README.md)
