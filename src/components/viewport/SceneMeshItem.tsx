@@ -192,8 +192,9 @@ export const SceneMeshItem: React.FC<{
         }
         onStartPaintDrag();
         const state = useKuraStore.getState();
-        // Pincel sin borde fino: trazo en vivo (pinta por frame y sube a la GPU solo lo cambiado).
-        if (paintMode === 'brush' && !state.paintRefineEdge && meshRef.current) {
+        // Pincel sin subdivisión: trazo en vivo (pinta por frame y sube a la GPU solo lo cambiado).
+        const refine = strokeNeedsEdgeRefine(state.paintRefineEdge, obj.mesh, obj.scale, state.paintRadiusMm);
+        if (paintMode === 'brush' && !refine && meshRef.current) {
           if (startLiveStroke(obj.id, () => meshRef.current?.geometry ?? null)) {
             queueLiveSample(obj.id, brushQueryFromEvent(e, meshRef.current, obj.scale, state.paintRadiusMm));
           }
