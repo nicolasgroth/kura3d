@@ -6,7 +6,11 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 ## En desarrollo
 
-Nada en este momento.
+| Funcionalidad | Estado |
+|---|---|
+| Menú contextual ordenado como en los slicers: Agregar pieza ▸ / Agregar pieza negativa ▸ con submenú de formas, Cambiar tipo ▸ Sólido / Negativo, y grupos por tema | Pedido el 22-nov; en curso |
+| Teclas de función: F2 renombrar, F3 buscar en la escena, F4 repetir la última acción sobre la selección, Mayús+F5 recalcular el objeto (F5 solo en escritorio, porque en el navegador recarga la página) | Pedido el 22-nov; en curso |
+| Dividir para imprimir: mensajes del refuerzo, placas estimadas y marca de pareja visible por unión | Corrección tras la re-verificación de QA; en curso |
 
 ## En QA
 
