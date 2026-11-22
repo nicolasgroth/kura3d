@@ -18,12 +18,12 @@ import { connectorFootprintRadius, layoutForCut } from '../cutConnectorLayout';
 import { buildConnectorSolid } from '../cutConnectorSolid';
 import { engineWarning, type EngineWarning } from '../engineErrors';
 import type { SplitBody } from './splitBodies';
-import { buildLapSolids } from './splitLap';
+import { buildLapSolids, type LapRejection } from './splitLap';
 import { buildLooseDowelHoles, layoutType } from './splitLooseDowel';
 import { recommendedConnectorRadius } from './assemblyConnectors';
 import { buildJointLabel, orientedToWorld } from './splitLabels';
 import { buildOutsideLabel } from './splitOutsideLabel';
-import { OPERATION_DEFAULTS } from '../operationLimits';
+import { ASSEMBLY_LIMITS, OPERATION_DEFAULTS } from '../operationLimits';
 import { AXIS_INDEX, islandWidth, orientForAxis } from './splitSections';
 import type { SplitAxis, SplitConnectorOptions, SplitJointKind, SplitLapInfo } from './splitTypes';
 
@@ -193,7 +193,13 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     const lapOn = connector && connector.type === 'lap';
     if (lapOn && j.span > j.lapHeightMm + connector.tolerance + 1) {
       const thin = islands;
-      const solids = thin.length > 0 ? buildLapSolids(wasm, thin, axis, coord, j.lapHeightMm, connector.tolerance) : null;
+      const rejected: LapRejection = { islands: 0, tongueMm: Infinity, grooveWallMm: Infinity };
+      const solids = thin.length > 0 ? buildLapSolids(wasm, thin, axis, coord, j.lapHeightMm, connector.tolerance, rejected) : null;
+      if (rejected.islands > 0) {
+        warnings.push(engineWarning('SPLIT_LAP_NOT_PRINTABLE', {
+          ...pair, tongue: rejected.tongueMm, groove: rejected.grooveWallMm, min: ASSEMBLY_LIMITS.minPrintableWallMm,
+        }));
+      }
       if (solids) {
         const tongueIn = own(low.m.intersect(solids.tongue));
         const grooveIn = own(high.m.intersect(solids.groove));
@@ -211,12 +217,19 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     let labelPlacement: 'joint' | 'outside' | null = null;
     let labelHeightMm = 0;
     if (j.labels === 'engraved') {
+      // Profundidad limitada a una fracción del espesor local (la isla más delgada de la cara)
+      const wall = islands.length > 0 ? Math.min(...islands.map((isl) => islandWidth(isl))) : Infinity;
+      const maxDepth = ASSEMBLY_LIMITS.labelDepthWallFraction * wall;
+      const depthMm = Math.min(j.labelDepthMm, maxDepth);
+      if (depthMm < j.labelDepthMm - 1e-9) {
+        warnings.push(engineWarning('SPLIT_LABEL_DEPTH_CLAMPED', { label: j.label, depth: depthMm, requested: j.labelDepthMm, wall }));
+      }
       let solids: { forLow: Manifold; forHigh: Manifold; heightMm: number } | null = null;
       if (j.labelPlacement !== 'outside') {
         const radius = used && used.type !== 'lap' ? connectorFootprintRadius(layoutType(used.type), used.size, used.tolerance) : 0;
         const inJoint = await buildJointLabel(wasm, {
           text: j.label, axis, coord, high: face, connectorCenters: centers, connectorRadius: radius,
-          depthMm: j.labelDepthMm, minHeightMm: j.labelMinHeightMm, exclude: lapZone,
+          depthMm, minHeightMm: j.labelMinHeightMm, exclude: lapZone,
         });
         if (inJoint) {
           solids = inJoint;
@@ -228,7 +241,7 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
         for (const h of [Math.max(j.labelMinHeightMm, 5), j.labelMinHeightMm]) {
           solids = await buildOutsideLabel(wasm, {
             text: j.label, axis, coord, contact: faceSection.isEmpty() ? j.contact : faceSection, low: low.m, high: high.m,
-            highGapMm: highGap, depthMm: j.labelDepthMm, heightMm: h,
+            highGapMm: highGap, depthMm, heightMm: h,
           });
           if (solids) break;
         }

@@ -18,6 +18,7 @@ import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../m
 import { applyTransformToMesh, normalizeMeshToBed } from '../primitives';
 import { buildBodies, cellKey, contactSection, MIN_CONTACT_MM2, type Cell } from './splitBodies';
 import { buildJoint } from './splitJoints';
+import { closeSplitMesh } from './splitMeshClean';
 import { buildLooseDowelBatch, looseDowelLength } from './splitLooseDowel';
 import { finalAssemblyReport, fixAssemblyBeforeConnectors, type PendingJoint } from './splitAssembly';
 import type { AssemblyFix, AssemblySuggestion } from './assemblyTypes';
@@ -190,7 +191,7 @@ export async function executeBedSplitGeometry(
         if (m !== b.m) m.delete();
         m = r;
       }
-      const mesh = manifoldToMeshData(m);
+      const mesh = closeSplitMesh(wasm, normalizeMeshToBed(manifoldToMeshData(m))).mesh;
       const bb = m.boundingBox();
       const volume = m.volume();
       if (m !== b.m) m.delete();
@@ -198,7 +199,7 @@ export async function executeBedSplitGeometry(
       parts.push({
         code: b.code,
         cell: b.cell,
-        mesh: normalizeMeshToBed(mesh),
+        mesh,
         assembly: { position: [(bb.min[0] + bb.max[0]) / 2, bb.min[1], (bb.min[2] + bb.max[2]) / 2], rotation: [0, 0, 0] },
         bounds: { min: bb.min as Vec3, max: bb.max as Vec3 },
         volumeMm3: volume,
