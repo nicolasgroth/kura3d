@@ -1,0 +1,27 @@
+/**
+ * @file src/styles/aiDrawer.css
+ * @description Panel de chat IA como superposición flotante en ventanas de menos de 1280 px, para no encoger
+ * el visor 3D por debajo de un ancho útil. Por debajo de 900 px sigue el diseño de panel apilado de studio.css.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+@media (900px < width < 1280px) {
+  .kura-workspace > .kura-ai-drawer {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    bottom: 8px;
+    z-index: 30;
+    width: min(340px, calc(100% - 16px));
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hud);
+  }
+
+  /* El inspector queda detrás del panel flotante: se oculta mientras el chat está abierto. */
+  .kura-workspace[data-narrow-panel="ai"] > .kura-sidebar-right {
+    display: none;
+  }
+}

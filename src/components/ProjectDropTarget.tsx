@@ -13,6 +13,7 @@ import { t } from '../i18n';
 import { MAX_PROJECT_BYTES, ProjectCodecError } from '../project/projectSchema';
 import { useKuraStore } from '../store/useKuraStore';
 import { isTauriRuntime } from '../utils/platformBridge';
+import { guardUnsavedChanges } from '../utils/unsavedGuard';
 import '../styles/projectDrop.css';
 
 interface DroppedFile {
@@ -37,10 +38,10 @@ async function acceptDrop(files: DroppedFile[]) {
       return;
     }
     const file = files[0];
-    await state.openProject(async () => ({
+    await guardUnsavedChanges(() => state.openProject(async () => ({
       name: file.name,
       bytes: new Uint8Array(await file.read(MAX_PROJECT_BYTES)),
-    }));
+    })));
     return;
   }
   // Lote parcial: los archivos no soportados o dañados se informan por nombre y el resto se importa.
