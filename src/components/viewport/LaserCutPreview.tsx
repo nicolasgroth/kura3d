@@ -1,19 +1,30 @@
 /**
  * @file src/components/viewport/LaserCutPreview.tsx
- * @description Vista previa láser del plano de corte y conectores fantasma en el visor.
+ * @description Vista previa láser del plano de corte (translúcido, con borde) y conectores fantasma
+ * en el visor. El plano se arrastra con el ratón a lo largo de su eje (sin orbitar mientras tanto)
+ * y publica el desplazamiento al panel de corte por `cutPlaneDrag`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
+import { type ThreeEvent, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useKuraStore } from '../../store/useKuraStore';
 import { type Vec3 } from '../../types/kura';
+import { cutOffsetRange } from '../../engine/cutConnectorSuggest';
+import { closestAxisParam, emitCutPlaneDrag } from './cutPlaneDrag';
+
+const AXIS_DIR = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
 
 export const LaserCutPreview: React.FC = () => {
   const cutPreview = useKuraStore((s) => s.cutPreview);
   const objects = useKuraStore((s) => s.objects);
+  const controls = useThree((s) => s.controls) as { enabled: boolean } | null;
+  const gl = useThree((s) => s.gl);
+  const drag = useRef<{ startT: number; startOffset: number; min: number; max: number } | null>(null);
+  const [hover, setHover] = useState(false);
 
   const targetObj = useMemo(() => {
     if (!cutPreview.active || !cutPreview.objectId) return null;
@@ -69,6 +80,39 @@ export const LaserCutPreview: React.FC = () => {
     return null;
   }
 
+  const axisDir = AXIS_DIR[cutPreview.axis];
+  const axisOrigin = previewGeometry.center;
+
+  const onPointerDown = (e: ThreeEvent<PointerEvent>) => {
+    if (e.button !== 0) return;
+    const startT = closestAxisParam(e.ray, axisOrigin, axisDir);
+    if (startT === null) return;
+    e.stopPropagation();
+    const range = cutOffsetRange(targetObj, cutPreview.axis);
+    drag.current = { startT, startOffset: cutPreview.offset, min: range.min, max: range.max };
+    if (controls) controls.enabled = false;
+    (e.target as Element | null)?.setPointerCapture?.(e.pointerId);
+  };
+  const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
+    const d = drag.current;
+    if (!d) return;
+    e.stopPropagation();
+    const now = closestAxisParam(e.ray, axisOrigin, axisDir);
+    if (now === null) return;
+    const next = Math.min(d.max, Math.max(d.min, Math.round((d.startOffset + now - d.startT) * 2) / 2));
+    if (next !== cutPreview.offset) emitCutPlaneDrag(next);
+  };
+  const endDrag = (e: ThreeEvent<PointerEvent>) => {
+    if (!drag.current) return;
+    e.stopPropagation();
+    drag.current = null;
+    if (controls) controls.enabled = true;
+    (e.target as Element | null)?.releasePointerCapture?.(e.pointerId);
+  };
+  const setCursor = (value: string) => {
+    gl.domElement.style.cursor = value;
+  };
+
   const { center, span } = previewGeometry;
   const planePos: Vec3 = [center.x, center.y, center.z];
   let planeRot: Vec3 = [-Math.PI / 2, 0, 0];
@@ -117,16 +161,43 @@ export const LaserCutPreview: React.FC = () => {
 
   return (
     <group>
-      <mesh position={planePos} rotation={planeRot} renderOrder={20}>
+      <mesh
+        position={planePos}
+        rotation={planeRot}
+        renderOrder={20}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onPointerOver={() => {
+          setHover(true);
+          setCursor(cutPreview.axis === 'y' ? 'ns-resize' : 'ew-resize');
+        }}
+        onPointerOut={() => {
+          setHover(false);
+          if (!drag.current) setCursor('');
+        }}
+      >
         <planeGeometry args={[span, span]} />
         <meshBasicMaterial
           color="#f97316"
           transparent
-          opacity={0.28}
+          opacity={hover ? 0.4 : 0.28}
           side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
+      <lineSegments position={planePos} rotation={planeRot} renderOrder={22}>
+        <edgesGeometry args={[new THREE.PlaneGeometry(span, span)]} />
+        <lineBasicMaterial color="#f97316" transparent opacity={0.95} depthWrite={false} />
+      </lineSegments>
+      {cutPreview.connectorType !== 'none' &&
+        connectorOffsets.map((pos, idx) => (
+          <mesh key={`dot-${idx}`} position={pos} renderOrder={23}>
+            <sphereGeometry args={[Math.max(0.8, cutPreview.connectorSize * 0.35), 14, 10]} />
+            <meshBasicMaterial color="#0ea5e9" depthTest={false} depthWrite={false} />
+          </mesh>
+        ))}
 
       {cutPreview.connectorType !== 'none' &&
         connectorOffsets.map((pos, idx) => (

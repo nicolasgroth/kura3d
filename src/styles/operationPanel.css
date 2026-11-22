@@ -1,0 +1,88 @@
+/**
+ * @file src/styles/operationPanel.css
+ * @description Panel de operación no modal: acoplado a la derecha en escritorio y hoja inferior
+ * en móvil (< 768 px). Sin fondo ni desenfoque: el visor sigue visible e interactivo.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-op-panel {
+  position: fixed;
+  z-index: 60;
+  top: calc(var(--op-panel-top, 56px) + 8px);
+  right: 8px;
+  bottom: calc(var(--op-panel-bottom, 0px) + 8px);
+  width: min(360px, calc(100vw - 16px));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hud);
+  overflow: hidden;
+  animation: kura-op-panel-in 0.18s ease-out;
+}
+
+.kura-op-panel:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-op-panel-body {
+  flex: 1;
+  min-height: 0;
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kura-op-panel-header,
+.kura-op-panel-footer {
+  flex-shrink: 0;
+}
+
+.kura-op-panel-footer {
+  flex-wrap: wrap;
+}
+
+@keyframes kura-op-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .kura-op-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 52vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: none;
+    animation-name: kura-op-panel-up;
+  }
+
+  .kura-op-panel .kura-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @keyframes kura-op-panel-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-op-panel {
+    animation: none;
+  }
+}

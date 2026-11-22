@@ -22,9 +22,10 @@ import {
   type CutConnectorSuggestion,
 } from '../engine/cutConnectorSuggest';
 import { formatNumber } from '../utils/plural';
-import { NativeModal } from './NativeModal';
+import { OperationPanel } from './OperationPanel';
 import { OperationFailureAlert, useOperationFailure } from './OperationFailureAlert';
 import { PrecisionNumberInput } from './PrecisionNumberInput';
+import { keyboardFocusInViewport, onCutPlaneDrag } from './viewport/cutPlaneDrag';
 import '../styles/planeCut.css';
 
 type Axis = 'x' | 'y' | 'z';
@@ -140,6 +141,25 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
     };
   }, [setCutPreview]);
 
+  // Arrastre del plano en el visor y flechas ↑/↓ con el foco en el visor (Mayús: ×10).
+  useEffect(() => {
+    if (!open) return;
+    const clamp = (v: number) => Math.min(range.max, Math.max(range.min, v));
+    const off = onCutPlaneDrag((v) => setOffset(clamp(v)));
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key !== 'ArrowUp' && e.key !== 'ArrowDown') || e.defaultPrevented) return;
+      if (!keyboardFocusInViewport(e.target)) return;
+      e.preventDefault();
+      const step = (e.shiftKey ? 5 : 0.5) * (e.key === 'ArrowUp' ? 1 : -1);
+      setOffset((o) => clamp(Math.round((o + step) * 10) / 10));
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      off();
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, range.min, range.max]);
+
   // Motivo visible cuando no se puede ejecutar.
   let reason: string | null = null;
   if (connectorKind && fit === 'plane') {
@@ -177,11 +197,11 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
   const reasonId = `${uid}-reason`;
 
   return (
-    <NativeModal
+    <OperationPanel
       open={open}
       onClose={onClose}
       title={t(language, 'dialog.cut.title')}
-      className="kura-dialog-side"
+     
       footer={
         <>
           <button type="button" className="kura-btn" onClick={onClose}>
@@ -258,6 +278,10 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
           </div>
           <small className="kura-cut-hint">
             {t(language, 'dialog.cut.offsetRange', { min: fmt(range.min), max: fmt(range.max) })}
+          </small>
+          <small className="kura-cut-hint">
+            {t(language, 'cutPlane.dragHint')}
+            {connectorKind ? ` ${t(language, 'cutPlane.connectorsHint')}` : ''}
           </small>
         </div>
 
@@ -365,6 +389,6 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
           )}
         </div>
       </div>
-    </NativeModal>
+    </OperationPanel>
   );
 };

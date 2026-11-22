@@ -15,8 +15,7 @@ import { useObjectContextMenu } from './viewport/useObjectContextMenu';
 import { EmptySceneOverlay } from './viewport/EmptySceneOverlay';
 import { ViewportHudTop } from './viewport/ViewportHudTop';
 import { ObjectContextMenu } from './viewport/ObjectContextMenu';
-import { ViewportProTip } from './viewport/ViewportProTip';
-import { ViewportHudBottom } from './viewport/ViewportHudBottom';
+import { ViewportOverlays } from './viewport/ViewportOverlays';
 
 export const Viewport3D: React.FC = () => {
   const viewportRef = useRef<HTMLElement | null>(null);
@@ -59,9 +58,7 @@ export const Viewport3D: React.FC = () => {
         <ObjectContextMenu menu={contextMenu} target={ctxTarget} onClose={() => setContextMenu(null)} />
       )}
 
-      <ViewportProTip />
-
-      <ViewportHudBottom />
+      <ViewportOverlays />
     </main>
   );
 };

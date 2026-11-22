@@ -7,7 +7,8 @@
  * @license MIT
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { emitCutPlaneDrag } from '../viewport/cutPlaneDrag';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -39,6 +40,25 @@ describe('PlaneCutModal', () => {
     await waitFor(() => expect((screen.getByLabelText(sizeLabel) as HTMLInputElement).value).toBe('5'));
     await waitFor(() => expect(executeButton()).toHaveProperty('disabled', false));
     expect(suggest).toHaveBeenCalled();
+  });
+
+  it('es un panel no modal: arrastrar el plano en el visor y ↑ sincronizan el campo, Escape cierra', async () => {
+    suggest.mockResolvedValue(null);
+    check.mockResolvedValue(null);
+    const onClose = vi.fn();
+    render(<PlaneCutModal open onClose={onClose} />);
+    const panel = screen.getByRole('dialog', { name: t('es', 'dialog.cut.title') });
+    expect(panel.getAttribute('aria-modal')).toBe('false');
+    const offsetInput = screen.getByLabelText(`${t('es', 'dialog.cut.offset')} (mm)`) as HTMLInputElement;
+    act(() => emitCutPlaneDrag(7.5));
+    await waitFor(() => expect(offsetInput.value).toBe('7.5'));
+    act(() => emitCutPlaneDrag(99)); // se limita a la pieza
+    await waitFor(() => expect(offsetInput.value).toBe('10'));
+    fireEvent.keyDown(document.body, { key: 'ArrowDown' });
+    await waitFor(() => expect(offsetInput.value).toBe('9.5'));
+    await waitFor(() => expect(useKuraStore.getState().cutPreview.offset).toBe(9.5));
+    fireEvent.keyDown(panel, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalled();
   });
 
   it('deshabilita Cortar y explica el motivo cuando no cabe ningún conector', async () => {

@@ -8,11 +8,13 @@
  */
 
 import type { TranslationKey } from '../translations';
+import { PREVIEW_DE } from './preview';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
  */
 export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
+  ...PREVIEW_DE,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',

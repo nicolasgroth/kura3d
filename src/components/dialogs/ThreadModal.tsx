@@ -12,7 +12,8 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
-import { NativeModal } from '../NativeModal';
+import { OperationPanel } from '../OperationPanel';
+import { PreviewButton } from '../preview/PreviewButton';
 import { type ThreadOptions } from '../../types/kura';
 import {
   defaultThreadClearance,
@@ -40,22 +41,22 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
     setClearanceMm(defaultThreadClearance(value));
   };
 
+  const threadOptions: ThreadOptions = {
+    kind,
+    diameterMm,
+    pitchMm,
+    lengthMm,
+    clearanceMm,
+    includeHead: kind === 'bolt' ? includeHead : false,
+  };
+
   const handleExecute = async () => {
-    const { result: created } = await failure.run(() =>
-      createThreadObject({
-        kind,
-        diameterMm,
-        pitchMm,
-        lengthMm,
-        clearanceMm,
-        includeHead: kind === 'bolt' ? includeHead : false,
-      }),
-    );
+    const { result: created } = await failure.run(() => createThreadObject(threadOptions));
     if (created) onClose();
   };
 
   return (
-    <NativeModal
+    <OperationPanel
       open={open}
       onClose={onClose}
       title={t(language, 'dialog.thread.title')}
@@ -76,6 +77,12 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
       }
     >
       <OperationFailureAlert message={failure.error} />
+      <PreviewButton
+        previewKey="thread"
+        open={open}
+        signature={JSON.stringify(threadOptions)}
+        buildRequest={() => ({ key: 'thread', task: 'thread', args: { options: threadOptions, placement: { position: [0, 0, 0] } } })}
+      />
       <div className="kura-form-field">
         <label>{t(language, 'dialog.thread.preset')}</label>
         <div
@@ -194,6 +201,6 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
           </label>
         )}
       </div>
-    </NativeModal>
+    </OperationPanel>
   );
 };

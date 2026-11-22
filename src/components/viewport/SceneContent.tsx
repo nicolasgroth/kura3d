@@ -24,7 +24,7 @@ import { PaintBrushCursor } from './PaintBrushCursor';
 import { ViewportCaptureRegistrar } from './ViewportCaptureRegistrar';
 import { CameraController } from './CameraController';
 import { PrinterBedOverlay } from './PrinterBedOverlay';
-import { LaserCutPreview } from './LaserCutPreview';
+import { PreviewLayers } from './PreviewLayers';
 import { SceneMeshItem } from './SceneMeshItem';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
 import { usePaintStroke } from './usePaintStroke';
@@ -175,7 +175,7 @@ export const SceneContent: React.FC<{
         </mesh>
       )}
 
-      <LaserCutPreview />
+      <PreviewLayers />
 
       {activeTool === 'paint' && <PaintBrushCursor />}
 
