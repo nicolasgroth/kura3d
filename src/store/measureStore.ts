@@ -34,13 +34,24 @@ export interface MeasurePick {
   point: Vec3;
   /** Normal de la región tocada (para el ángulo entre caras). */
   normal: Vec3;
+  objectId: string;
 }
 
-export type Measurement =
+/** Objetos sobre los que se marcó la medición (si alguno desaparece, deja de mostrarse). */
+type OnObjects = { objectIds: string[] };
+
+export type Measurement = OnObjects & (
   | { id: string; kind: 'distance'; a: Vec3; b: Vec3; distanceMm: number; deltaUser: Vec3 }
   | { id: string; kind: 'angle'; points: [Vec3, Vec3, Vec3]; deg: number }
   | { id: string; kind: 'faceAngle'; points: [Vec3, Vec3]; deg: number; betweenNormalsDeg: number }
-  | { id: string; kind: 'area'; objectName: string; areaMm2: number; regions: number; centroid: Vec3; highlight: Float32Array };
+  | { id: string; kind: 'area'; objectName: string; areaMm2: number; regions: number; centroid: Vec3; highlight: Float32Array }
+);
+
+/** Mediciones cuyos objetos siguen en la escena. */
+export function liveMeasurements(measurements: Measurement[], objects: ReadonlyArray<{ id: string }>): Measurement[] {
+  const ids = new Set(objects.map((o) => o.id));
+  return measurements.filter((m) => m.objectIds.every((id) => ids.has(id)));
+}
 
 export interface CapacityState {
   objectId: string;
@@ -135,30 +146,31 @@ export const useMeasureStore = create<MeasureState>((set, get) => ({
         set({
           measurements: [
             ...measurements.slice(0, -1),
-            { ...last, areaMm2: last.areaMm2 + region.areaMm2, regions: last.regions + 1, highlight: merged },
+            { ...last, areaMm2: last.areaMm2 + region.areaMm2, regions: last.regions + 1, highlight: merged, objectIds: [...new Set([...last.objectIds, obj.id])] },
           ],
         });
         return;
       }
-      set({ measurements: [...measurements, { id: newId(), kind: 'area', objectName: obj.name, areaMm2: region.areaMm2, regions: 1, centroid: region.centroid, highlight }] });
+      set({ measurements: [...measurements, { id: newId(), kind: 'area', objectIds: [obj.id], objectName: obj.name, areaMm2: region.areaMm2, regions: 1, centroid: region.centroid, highlight }] });
       return;
     }
     const point = noSnap || face < 0 ? worldPoint : snapOnFace(world, face, worldPoint, snapRadiusMm).point;
     const normal = face >= 0 ? measureRegionArea(world, face, 1).normal : ([0, 1, 0] as Vec3);
-    const picks = [...pending, { point, normal }];
+    const picks = [...pending, { point, normal, objectId: obj.id }];
+    const objectIds = [...new Set(picks.map((p) => p.objectId))];
     if (mode === 'distance' && picks.length === 2) {
       const d = measureDistance(picks[0].point, picks[1].point);
-      set({ pending: [], measurements: [...measurements, { id: newId(), kind: 'distance', a: picks[0].point, b: picks[1].point, ...d }] });
+      set({ pending: [], measurements: [...measurements, { id: newId(), kind: 'distance', objectIds, a: picks[0].point, b: picks[1].point, ...d }] });
       return;
     }
     if (mode === 'angle' && angleInput === 'faces' && picks.length === 2) {
       const r = angleBetweenFaces(picks[0].normal, picks[1].normal);
-      set({ pending: [], measurements: [...measurements, { id: newId(), kind: 'faceAngle', points: [picks[0].point, picks[1].point], deg: r.dihedralDeg, betweenNormalsDeg: r.betweenNormalsDeg }] });
+      set({ pending: [], measurements: [...measurements, { id: newId(), kind: 'faceAngle', objectIds, points: [picks[0].point, picks[1].point], deg: r.dihedralDeg, betweenNormalsDeg: r.betweenNormalsDeg }] });
       return;
     }
     if (mode === 'angle' && angleInput === 'points' && picks.length === 3) {
       const pts: [Vec3, Vec3, Vec3] = [picks[0].point, picks[1].point, picks[2].point];
-      set({ pending: [], measurements: [...measurements, { id: newId(), kind: 'angle', points: pts, deg: angleAtVertex(...pts) }] });
+      set({ pending: [], measurements: [...measurements, { id: newId(), kind: 'angle', objectIds, points: pts, deg: angleAtVertex(...pts) }] });
       return;
     }
     set({ pending: picks });

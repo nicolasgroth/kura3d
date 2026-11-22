@@ -28,6 +28,7 @@
   align-self: flex-start;
   max-width: min(360px, calc(100vw - 32px));
   font-size: 12px;
+  text-align: left;
 }
 
 .kura-measure-modes {

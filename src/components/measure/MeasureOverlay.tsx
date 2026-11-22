@@ -11,7 +11,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
-import { useMeasureStore, type Measurement } from '../../store/measureStore';
+import { liveMeasurements, useMeasureStore, type Measurement } from '../../store/measureStore';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { MeshData, Vec3 } from '../../types/kura';
 import { formatAngle, formatArea, formatLength } from '../../utils/measureUnits';
@@ -81,7 +81,8 @@ const Liquid: React.FC<{ mesh: MeshData }> = ({ mesh }) => {
   useEffect(() => () => geo.dispose(), [geo]);
   return (
     <mesh geometry={geo} renderOrder={ON_TOP - 2}>
-      <meshStandardMaterial color="#38bdf8" transparent opacity={0.55} depthWrite={false} roughness={0.15} />
+      {/* Sin prueba de profundidad: el nivel se ve a través de la pared, como un vaso transparente. */}
+      <meshStandardMaterial color="#1d4ed8" emissive="#1e3a8a" emissiveIntensity={0.6} transparent opacity={0.7} depthWrite={false} depthTest={false} roughness={0.2} />
     </mesh>
   );
 };
@@ -125,12 +126,14 @@ const MeasurementShape: React.FC<{ m: Measurement }> = ({ m }) => {
 };
 
 export const MeasureOverlay: React.FC = () => {
-  const measurements = useMeasureStore((s) => s.measurements);
+  const all = useMeasureStore((s) => s.measurements);
   const pending = useMeasureStore((s) => s.pending);
   const hover = useMeasureStore((s) => s.hover);
   const mode = useMeasureStore((s) => s.mode);
   const capacity = useMeasureStore((s) => s.capacity);
   const objects = useKuraStore((s) => s.objects);
+  // En Capacidad solo se ve el líquido; las mediciones de objetos borrados no se dibujan.
+  const measurements = mode === 'capacity' ? [] : liveMeasurements(all, objects);
   const current = capacity ? objects.find((o) => o.id === capacity.objectId) : undefined;
   const showLiquid = mode === 'capacity' && capacity?.liquid && current === capacity.source;
 

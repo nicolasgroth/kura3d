@@ -134,6 +134,17 @@ describe('MeasurePanel', () => {
     expect(screen.getByTestId('measure-list').textContent).toContain(`${t('es', 'measure.item.faceAngle')}: 90°`);
   });
 
+  it('una medición deja de mostrarse si su objeto se borra', () => {
+    render(<MeasurePanel />);
+    const top = faceWith(cube, [0, 1, 0]);
+    const o = { snapRadiusMm: 0, noSnap: true, additive: false };
+    act(() => useMeasureStore.getState().pick(cube, [0, 40, 0], top, o));
+    act(() => useMeasureStore.getState().pick(cube, [10, 40, 0], top, o));
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    act(() => useKuraStore.setState({ objects: [] } as never));
+    expect(screen.queryByTestId('measure-list')).toBeNull();
+  });
+
   it('muestra los totales del objeto seleccionado (superficie y volumen en mL)', () => {
     act(() => store().selectObject(cube.id, false));
     render(<MeasurePanel />);
