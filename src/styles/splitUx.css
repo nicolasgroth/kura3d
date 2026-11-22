@@ -1,0 +1,137 @@
+/**
+ * @file src/styles/splitUx.css
+ * @description Estilos de la mejora de usabilidad de la división: resumen único de uniones débiles, avisos
+ * repetidos, filas compactas con detalle desplegable, selector de tamaño automático, barra de progreso sin
+ * truncar y distintivo de grupo armado. Los estados se marcan con icono y texto, no solo con color.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-split-weak-summary,
+.kura-split-common-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid #d97706;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  min-width: 0;
+}
+
+.kura-split-weak-summary p,
+.kura-split-common-notes ul {
+  margin: 0;
+}
+
+.kura-split-weak-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
+}
+
+.kura-split-weak-title svg {
+  flex: none;
+  color: #d97706;
+}
+
+.kura-split-weak-summary .kura-btn {
+  align-self: flex-start;
+}
+
+.kura-split-common-notes {
+  border-left-color: var(--accent-cyan);
+}
+
+.kura-split-common-notes ul {
+  padding-left: 16px;
+}
+
+.kura-split-joint-line {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.kura-split-joint-weak {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.kura-split-joint-weak svg {
+  vertical-align: -1px;
+  color: #d97706;
+}
+
+.kura-split-joint-detail > summary {
+  display: inline-block;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.kura-split-joint-detail > summary:hover {
+  color: var(--accent-cyan);
+}
+
+.kura-split-joint-detail > summary:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-split-joint-detail[open] > summary {
+  margin-bottom: 4px;
+}
+
+.kura-split-size-auto {
+  grid-column: 1 / -1;
+}
+
+/* Barra de progreso: el nombre de la operación se lee entero y la barra no tapa las herramientas. */
+.kura-viewport-wrap .kura-op-progress {
+  /* Debajo de las barras de herramientas del visor (antes las tapaba) */
+  top: 112px;
+  flex-wrap: wrap;
+  justify-content: center;
+  border-radius: 18px;
+  max-width: min(560px, calc(100% - 32px));
+}
+
+.kura-viewport-wrap .kura-op-progress .kura-op-progress-name {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+/* Distintivo "Armado" del pie en lugar del aviso de fuera de volumen */
+.kura-assembled-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.kura-assembled-badge svg {
+  color: var(--accent-cyan);
+}
+
+@media (forced-colors: active) {
+  .kura-split-weak-summary,
+  .kura-split-common-notes,
+  .kura-assembled-badge {
+    border-color: CanvasText;
+  }
+}

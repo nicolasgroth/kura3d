@@ -73,9 +73,77 @@ describe('SplitJointsSection', () => {
 
   it('muestra junto a la unión el aviso de unión débil y el de solape no imprimible', () => {
     render(<SplitJointsSection primary={parts[0]} />);
-    expect(row('2').textContent).toContain(t('es', 'splitJoints.note.weak', { measured: '4', recommended: '6' }));
+    // En la fila solo el dato corto, en diámetro Ø (radio 4 -> Ø8, recomendado 6 -> Ø12); el consejo va una vez arriba.
+    expect(row('2').textContent).toContain('Débil · Ø8, recomendado Ø12');
+    expect(row('2').textContent).not.toContain(t('es', 'splitUx.weak.advice'));
     expect(row('3').textContent).toContain(t('es', 'engineWarning.SPLIT_LAP_NOT_PRINTABLE', { label: '3', tongue: 1, groove: 1, min: 2 }));
     expect(row('4').textContent).toContain(t('es', 'splitJoints.note.changed', { from: t('es', 'dialog.cut.connector.dowel'), to: t('es', 'dialog.cut.connector.dovetail') }));
+  });
+
+  it('el consejo de unión débil sale una sola vez arriba, con cuántas uniones afecta y la acción', () => {
+    act(() => useKuraStore.setState({
+      splitNotes: {
+        g: {
+          warnings: [weakWarning, { code: 'ASSEMBLY_WEAK_JOINT', params: { label: '1', measured: 4, recommended: 6 } }],
+          suggestions: [], weakJoints: ['1', '2'], gluedByFix: [], changedByFix: [],
+        },
+      },
+    } as never));
+    render(<SplitJointsSection primary={parts[0]} />);
+    const summary = screen.getByTestId('split-weak-summary');
+    expect(summary.textContent).toContain('2 uniones son más débiles de lo recomendado');
+    expect(screen.getAllByText(t('es', 'splitUx.weak.advice'))).toHaveLength(1);
+    expect(row('1').textContent).toContain('Débil · Ø8, recomendado Ø12');
+    expect(row('2').textContent).toContain('Débil · Ø8, recomendado Ø12');
+    expect(screen.getAllByText(/Débil · Ø8/)).toHaveLength(2);
+  });
+
+  it('con una sola unión débil dice "1 unión" (singular)', () => {
+    render(<SplitJointsSection primary={parts[0]} />);
+    expect(screen.getByTestId('split-weak-summary').textContent).toContain('1 unión es más débil de lo recomendado');
+    expect(screen.getByTestId('split-weak-summary').textContent).not.toMatch(/\(es\)|1 uniones/);
+  });
+
+  it('un aviso que se repite en varias uniones se muestra una vez arriba y no en cada fila', () => {
+    act(() => useKuraStore.setState({
+      objects: parts.map((p) => ({
+        ...p,
+        metadata: { ...p.metadata!, split: { ...p.metadata!.split, joints: JOINTS.map((j) => (j.label === '1' || j.label === '4' ? { ...j, kind: 'glue', connector: null, connectorCenters: [] } : j)) } },
+      })),
+      splitNotes: { g: { warnings: [], suggestions: [], weakJoints: [], gluedByFix: [], changedByFix: [] } },
+    } as never));
+    render(<SplitJointsSection primary={parts[0]} />);
+    const glueText = t('es', 'splitJoints.note.glue');
+    const common = screen.getByTestId('split-common-notes');
+    expect(common.textContent).toContain(`${glueText} (afecta a 3 uniones)`);
+    expect(row('1').textContent).not.toContain(glueText);
+  });
+
+  it('la lista se recorre con flechas, Inicio y Fin', () => {
+    render(<SplitJointsSection primary={parts[0]} />);
+    const list = screen.getByRole('list', { name: t('es', 'splitUx.list.label') });
+    const btn = (l: string) => within(row(l)).getByRole('button', { name: new RegExp(`Unión ${l}:`) });
+    btn('1').focus();
+    fireEvent.keyDown(btn('1'), { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(btn('2'));
+    fireEvent.keyDown(btn('2'), { key: 'End' });
+    expect(document.activeElement).toBe(btn('4'));
+    fireEvent.keyDown(btn('4'), { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(btn('3'));
+    fireEvent.keyDown(btn('3'), { key: 'Home' });
+    expect(document.activeElement).toBe(btn('1'));
+    expect(list).toBeTruthy();
+  });
+
+  it('al hacer clic en una unión la cámara encuadra sus dos piezas', () => {
+    const camera = vi.fn();
+    act(() => useKuraStore.setState({ requestCameraPreset: camera } as never));
+    render(<SplitJointsSection primary={parts[0]} />);
+    fireEvent.click(within(row('2')).getByRole('button', { name: /Unión 2:/ }));
+    expect(camera).toHaveBeenCalledWith('focus', ['p1', 'p2']);
+    camera.mockClear();
+    fireEvent.click(within(row('2')).getByRole('button', { name: /Unión 2:/ }));
+    expect(camera).not.toHaveBeenCalled();
   });
 
   it('resalta la unión al enfocarla o pasar el cursor y la apaga al salir; clic la fija', () => {

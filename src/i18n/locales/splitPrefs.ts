@@ -23,7 +23,7 @@ export const SPLITPREFS_ES = {
   'splitJoints.reinforceTip': 'Deshace la división y la repite con los mismos parámetros y el refuerzo de uniones activo',
   'splitJoints.reinforceHow': 'Para reforzarla: deshaz la división, activa «Reforzar uniones débiles» en Dividir para imprimir y divide de nuevo.',
   'splitJoints.note.weak': 'Unión débil: el conector tiene radio {measured} mm y se recomienda {recommended} mm. Cuídala al imprimir (más perímetros y buena adhesión entre capas) y al armar (pegamento y sin forzar). También puedes dividir de nuevo con «Reforzar uniones débiles» activo.',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'Unión {label} ({a}–{b}): se aumentó el conector. Pedido: radio {requested} mm ×{requestedCount} → aplicado: radio {size} mm ×{count}.',
+  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'Unión {label} ({a}–{b}): se aumentó el conector. Pedido: Ø{requested} mm ×{requestedCount} → aplicado: Ø{size} mm ×{count}.',
   'splitJoints.note.weakLimit': 'Unión aún débil tras reforzar: el conector tiene radio {measured} mm y se recomienda {recommended} mm. No cabe uno mayor sin dejar la pared bajo el mínimo (o se llegó al tope de refuerzo). Puedes pedir un conector mayor o más conectores, o dejar esta unión para pegar. Cuídala al imprimir y al armar (pegamento, sin forzar).',
 };
 
@@ -42,7 +42,7 @@ export const SPLITPREFS_EN = {
   'splitJoints.reinforceTip': 'Undoes the split and repeats it with the same parameters and joint reinforcement on',
   'splitJoints.reinforceHow': 'To reinforce it: undo the split, turn on "Reinforce weak joints" in Split to print and split again.',
   'splitJoints.note.weak': 'Weak joint: the connector radius is {measured} mm and {recommended} mm is recommended. Take care when printing (more perimeters, good layer adhesion) and when assembling (glue, no forcing). You can also split again with "Reinforce weak joints" on.',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'Joint {label} ({a}–{b}): the connector was enlarged. Requested: radius {requested} mm ×{requestedCount} → applied: radius {size} mm ×{count}.',
+  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'Joint {label} ({a}–{b}): the connector was enlarged. Requested: Ø{requested} mm ×{requestedCount} → applied: Ø{size} mm ×{count}.',
   'splitJoints.note.weakLimit': 'Joint still weak after reinforcing: the connector radius is {measured} mm and {recommended} mm is recommended. A larger one does not fit without leaving the wall under the minimum (or the reinforcement limit was reached). You can ask for a larger connector or more connectors, or leave this joint to glue. Take care when printing and assembling (glue, no forcing).',
 };
 
@@ -61,7 +61,7 @@ export const SPLITPREFS_DE = {
   'splitJoints.reinforceTip': 'Macht die Teilung rückgängig und wiederholt sie mit denselben Parametern und aktiver Verstärkung',
   'splitJoints.reinforceHow': 'Zum Verstärken: Teilung rückgängig machen, in „Zum Drucken teilen“ „Schwache Verbindungen verstärken“ einschalten und neu teilen.',
   'splitJoints.note.weak': 'Schwache Verbindung: Der Verbinderradius beträgt {measured} mm, empfohlen sind {recommended} mm. Achte beim Drucken (mehr Wände, gute Schichthaftung) und beim Zusammenbau (Kleber, nicht erzwingen) darauf. Du kannst auch mit „Schwache Verbindungen verstärken“ neu teilen.',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'Verbindung {label} ({a}–{b}): Der Verbinder wurde vergrößert. Gewünscht: Radius {requested} mm ×{requestedCount} → angewendet: Radius {size} mm ×{count}.',
+  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'Verbindung {label} ({a}–{b}): Der Verbinder wurde vergrößert. Gewünscht: Ø{requested} mm ×{requestedCount} → angewendet: Ø{size} mm ×{count}.',
   'splitJoints.note.weakLimit': 'Verbindung nach der Verstärkung noch schwach: Der Verbinderradius beträgt {measured} mm, empfohlen sind {recommended} mm. Ein größerer passt nicht, ohne die Wand unter das Minimum zu bringen (oder die Verstärkungsgrenze ist erreicht). Du kannst einen größeren Verbinder oder mehr Verbinder wählen oder diese Verbindung zum Kleben lassen. Achte beim Drucken und Zusammenbau darauf (Kleber, nicht erzwingen).',
 };
 
@@ -80,7 +80,7 @@ export const SPLITPREFS_FR = {
   'splitJoints.reinforceTip': 'Annule la découpe et la refait avec les mêmes paramètres et le renforcement actif',
   'splitJoints.reinforceHow': 'Pour la renforcer : annule la découpe, active « Renforcer les jonctions fragiles » dans Découper pour imprimer et redécoupe.',
   'splitJoints.note.weak': 'Jonction fragile : le rayon du connecteur est de {measured} mm et {recommended} mm sont recommandés. Fais attention à l’impression (plus de périmètres, bonne adhérence des couches) et à l’assemblage (colle, sans forcer). Tu peux aussi redécouper avec « Renforcer les jonctions fragiles » activé.',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'Jonction {label} ({a}–{b}) : le connecteur a été agrandi. Demandé : rayon {requested} mm ×{requestedCount} → appliqué : rayon {size} mm ×{count}.',
+  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'Jonction {label} ({a}–{b}) : le connecteur a été agrandi. Demandé : Ø{requested} mm ×{requestedCount} → appliqué : Ø{size} mm ×{count}.',
   'splitJoints.note.weakLimit': 'Jonction encore fragile après renforcement : le rayon du connecteur est de {measured} mm et {recommended} mm sont recommandés. Un connecteur plus grand ne tient pas sans laisser la paroi sous le minimum (ou la limite de renforcement est atteinte). Tu peux demander un connecteur plus grand ou plus de connecteurs, ou laisser cette jonction à coller. Fais attention à l’impression et à l’assemblage (colle, sans forcer).',
 };
 
@@ -99,7 +99,7 @@ export const SPLITPREFS_HI = {
   'splitJoints.reinforceTip': 'विभाजन पूर्ववत करता है और वही पैरामीटर तथा सक्रिय सुदृढ़ीकरण के साथ दोहराता है',
   'splitJoints.reinforceHow': 'मज़बूत करने के लिए: विभाजन पूर्ववत करें, प्रिंट के लिए विभाजित करें में «कमज़ोर जोड़ मज़बूत करें» चालू करें और फिर विभाजित करें।',
   'splitJoints.note.weak': 'कमज़ोर जोड़: कनेक्टर की त्रिज्या {measured} मिमी है और {recommended} मिमी अनुशंसित है। प्रिंट करते समय (अधिक परिधि, परतों की अच्छी चिपकन) और जोड़ते समय (गोंद, ज़ोर न लगाएँ) ध्यान रखें। «कमज़ोर जोड़ मज़बूत करें» चालू करके दोबारा विभाजित भी कर सकते हैं।',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'जोड़ {label} ({a}–{b}): कनेक्टर बड़ा किया गया। माँगा: त्रिज्या {requested} मिमी ×{requestedCount} → लागू: त्रिज्या {size} मिमी ×{count}।',
+  'engineWarning.SPLIT_CONNECTOR_REINFORCED': 'जोड़ {label} ({a}–{b}): कनेक्टर बड़ा किया गया। माँगा: Ø{requested} मिमी ×{requestedCount} → लागू: Ø{size} मिमी ×{count}।',
   'splitJoints.note.weakLimit': 'मज़बूत करने के बाद भी जोड़ कमज़ोर है: कनेक्टर की त्रिज्या {measured} मिमी है और {recommended} मिमी अनुशंसित है। दीवार को न्यूनतम से नीचे छोड़े बिना बड़ा कनेक्टर नहीं आता (या मज़बूती की सीमा आ गई)। आप बड़ा कनेक्टर या ज़्यादा कनेक्टर माँग सकते हैं, या इस जोड़ को गोंद के लिए छोड़ सकते हैं। प्रिंट और जोड़ते समय ध्यान रखें (गोंद, ज़ोर न लगाएँ)।',
 };
 
@@ -118,6 +118,6 @@ export const SPLITPREFS_ZH = {
   'splitJoints.reinforceTip': '撤销分割，并用相同参数和已开启的加固重新分割',
   'splitJoints.reinforceHow': '要加固它：撤销分割，在“分割以便打印”中开启“加固较弱接合”，然后重新分割。',
   'splitJoints.note.weak': '接合较弱：连接件半径为 {measured} 毫米，建议 {recommended} 毫米。打印时（增加外壳层数、保证层间附着）和装配时（用胶水、不要硬塞）请多加留意。也可以开启“加固较弱接合”后重新分割。',
-  'engineWarning.SPLIT_CONNECTOR_REINFORCED': '接合 {label}（{a}–{b}）：连接件已加大。请求：半径 {requested} 毫米 ×{requestedCount} → 实际：半径 {size} 毫米 ×{count}。',
+  'engineWarning.SPLIT_CONNECTOR_REINFORCED': '接合 {label}（{a}–{b}）：连接件已加大。请求：Ø{requested} 毫米 ×{requestedCount} → 实际：Ø{size} 毫米 ×{count}。',
   'splitJoints.note.weakLimit': '加固后接合仍较弱：连接件半径为 {measured} 毫米，建议 {recommended} 毫米。更大的连接件会使壁厚低于最小值（或已达到加固上限）。可以请求更大的连接件或更多连接件，或将此接合留作粘接。打印和装配时请多加留意（用胶水、不要硬塞）。',
 };

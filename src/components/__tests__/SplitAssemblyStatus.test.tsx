@@ -11,7 +11,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { t } from '../../i18n';
 import type { SplitGroupNotes } from '../../core/scene/splitJointStatus';
-import { SplitAssemblyStatus } from '../split/SplitAssemblyStatus';
+import { fixedSummary, SplitAssemblyStatus } from '../split/SplitAssemblyStatus';
 
 const notes = (over: Partial<SplitGroupNotes>): SplitGroupNotes => ({
   warnings: [], suggestions: [], weakJoints: [], gluedByFix: [], changedByFix: [], ...over,
@@ -44,6 +44,15 @@ describe('SplitAssemblyStatus', () => {
         notes={notes({ gluedByFix: ['2'], changedByFix: ['3:dovetail', '4:peg'], report: { ok: true, steps: 3, blocked: [], clashes: 0, interference: 0, gaps: 0 } })}
       />,
     );
-    expect(screen.getByTestId('split-assembly-status').textContent).toContain(t('es', 'splitJoints.banner.fixed', { glued: 1, changed: 2 }));
+    expect(screen.getByTestId('split-assembly-status').textContent).toContain(
+      'Para que se pueda montar, Kura3D dejó 1 unión para pegar y cambió el tipo de conector en 2 uniones.',
+    );
+  });
+
+  it('plurales correctos y sin frases con cero', () => {
+    expect(fixedSummary('es', 0, 1)).toBe('Para que se pueda montar, Kura3D cambió el tipo de conector en 1 unión.');
+    expect(fixedSummary('es', 3, 0)).toBe('Para que se pueda montar, Kura3D dejó 3 uniones para pegar.');
+    expect(fixedSummary('en', 1, 1)).toBe('So it can be assembled, Kura3D left 1 joint for gluing and changed the connector type on 1 joint.');
+    expect(fixedSummary('es', 0, 2)).not.toContain('0');
   });
 });

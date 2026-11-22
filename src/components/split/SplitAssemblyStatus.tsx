@@ -15,17 +15,24 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { t } from '../../i18n';
 import type { SplitGroupNotes, SplitValidationReport } from '../../core/scene/splitJointStatus';
 import type { LanguageCode } from '../../types/kura';
+import { tCount } from '../../utils/plural';
 import '../../styles/splitAssemblyStatus.css';
 
 interface Props {
   language: LanguageCode;
   notes: SplitGroupNotes | null;
   validation: SplitValidationReport | null;
-  /** Etiquetas de las uniones que la lista muestra como débiles; el resumen debe coincidir con las filas. */
-  weakLabels?: string[];
 }
 
-export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validation, weakLabels }) => {
+/** Frase de los arreglos del motor: solo nombra lo que ocurrió (nada de «0 uniones») y respeta el singular. */
+export function fixedSummary(language: LanguageCode, glued: number, changed: number): string {
+  const parts: string[] = [];
+  if (glued > 0) parts.push(tCount(language, { one: 'splitUx.fixed.glued.one', other: 'splitUx.fixed.glued.other' }, glued));
+  if (changed > 0) parts.push(tCount(language, { one: 'splitUx.fixed.changed.one', other: 'splitUx.fixed.changed.other' }, changed));
+  return t(language, 'splitUx.fixed.intro', { actions: parts.join(t(language, 'splitUx.fixed.and')) });
+}
+
+export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validation }) => {
   const base = validation
     ? {
         ok: validation.ok,
@@ -36,10 +43,7 @@ export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validati
       }
     : notes?.report ?? null;
   const fixed = (notes?.gluedByFix.length ?? 0) + (notes?.changedByFix.length ?? 0);
-  // Uniones débiles medidas: de la última validación o del informe que dejó la división.
-  const measured = validation ? validation.weak.map((w) => w.joint) : notes?.report?.weak?.map((w) => w.joint) ?? notes?.weakJoints ?? [];
-  const weak = weakLabels ? measured.filter((l) => weakLabels.includes(l)) : measured;
-  if (!base && fixed === 0 && weak.length === 0) return null;
+  if (!base && fixed === 0) return null;
   const failed = base !== null && !base.ok;
   const details: string[] = [];
   if (base) {
@@ -66,20 +70,11 @@ export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validati
           </div>
         </div>
       )}
-      {weak.length > 0 && (
-        <p className="kura-split-assembly-alert" data-kind="info" data-testid="split-assembly-weak">
-          <Info size={14} aria-hidden="true" />
-          <span>{t(language, 'splitJoints.result.weak', { labels: weak.join(', ') })}</span>
-        </p>
-      )}
       {fixed > 0 && (
         <p className="kura-split-assembly-alert" data-kind="info">
           <Info size={14} aria-hidden="true" />
           <span>
-            {t(language, 'splitJoints.banner.fixed', {
-              glued: notes?.gluedByFix.length ?? 0,
-              changed: notes?.changedByFix.length ?? 0,
-            })}
+            {fixedSummary(language, notes?.gluedByFix.length ?? 0, notes?.changedByFix.length ?? 0)}
           </span>
         </p>
       )}
