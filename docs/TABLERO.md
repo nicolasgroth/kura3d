@@ -11,6 +11,7 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 | Pintura sobre primitivas: "Cancelar" del aviso no cancelaba el trazo y un trazo costaba 5 pasos de deshacer (QA los encontró el 22-nov a las 17:45) | En corrección |
 | Separar por colores en superficies curvas: revisar la limpieza de la malla (aristas compartidas de más en la esfera) | En corrección |
 | Menores de QA: aviso "No cabe en la cama" con ejes cambiados, `<use href>` de SVG 2, corte por plano en Ø, reencuadre al deshacer una división | En corrección |
+| Grupos y árbol de escena: agrupar objetos para moverlos y escalarlos juntos, grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ocultar, bloquear, renombrar, arrastrar), y "Combinar en un objeto" para exportar varios como un solo STL sin fusionar la geometría | Pedido el 22-nov; parte al terminar el lote del menú, porque tocan los mismos archivos |
 | Ideas tomadas del menú de OrcaSlicer: Centrar en la cama, Transformar ▸ y Alinear ▸ como submenús, forma Disco, Reemplazar por archivo, Exportar selección como un STL, objeto imprimible sí/no, aviso de malla pesada al importar con acceso a Simplificar | Pedido el 22-nov; en curso |
 
 ## En QA
