@@ -340,7 +340,7 @@ describe('Operaciones no soportadas en headless', () => {
     try {
       const res = await client.callTool({ name: 'kura_capture_viewport', arguments: {} });
       expect(res.isError).toBe(true);
-      expect((res.content as Array<{ text: string }>)[0].text).toContain('no soportada en headless');
+      expect((res.content as Array<{ text: string }>)[0].text).toContain('not supported in headless');
     } finally {
       await client.close();
       await server.close();
@@ -351,7 +351,7 @@ describe('Operaciones no soportadas en headless', () => {
   it('alinear con una separación distinta a la del motor se rechaza', async () => {
     const h = new KuraHeadlessEngine();
     const a = await h.createPrimitive({ primitiveType: 'box' });
-    expect(() => h.alignObjects([a.id], 'arrange_grid', 25)).toThrow(/no soportado/);
+    expect(() => h.alignObjects([a.id], 'arrange_grid', 25)).toThrow(/not supported/);
     expect(h.alignObjects([a.id], 'arrange_grid').spacingMm).toBe(8);
   });
 });

@@ -34,7 +34,7 @@ function exportableObjects(targets: HeadlessSceneObject[]): HeadlessSceneObject[
   const solids = targets.filter((o) => o.visible && !o.isHole);
   if (solids.length === 0) {
     throw new Error(
-      'No hay objetos visibles sólidos para exportar (los objetos ocultos o marcados como hueco no se exportan).'
+      'There are no visible solid objects to export (hidden objects or objects marked as holes are not exported).'
     );
   }
   return solids;

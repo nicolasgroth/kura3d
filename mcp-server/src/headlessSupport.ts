@@ -47,7 +47,7 @@ export { summarizeObject, type SceneObjectSummary } from '../../src/core/scene/s
 export class HeadlessUnsupportedError extends Error {
   constructor(operation: string, reason: string) {
     super(
-      `Operación '${operation}' no soportada en headless: ${reason} Abre la UI de Kura3D y conéctala al puente MCP.`
+      `Operation '${operation}' not supported in headless: ${reason} Open the Kura3D UI and connect it to the MCP bridge.`
     );
     this.name = 'HeadlessUnsupportedError';
   }
@@ -73,7 +73,7 @@ export class HeadlessCommandError extends Error {
 /** Lanza `locked` (mismo código y mensaje que el bus) si el objeto está bloqueado. */
 export function assertUnlocked<T extends Pick<HeadlessSceneObject, 'locked' | 'name'>>(obj: T): T {
   if (obj.locked) {
-    throw new HeadlessCommandError('locked', t('es', 'bus.error.locked', { name: obj.name }), { name: obj.name });
+    throw new HeadlessCommandError('locked', t('en', 'bus.error.locked', { name: obj.name }), { name: obj.name });
   }
   return obj;
 }

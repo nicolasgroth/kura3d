@@ -43,7 +43,7 @@ describe('puente: reemplazo del cliente activo', () => {
     const outcome = bridge.sendCommand('get_scene_state', {}).then(() => null, (err: Error) => err);
     await connect(bridge.getPort());
     const err = await outcome;
-    expect(err?.message).toMatch(/reemplazada/);
+    expect(err?.message).toMatch(/replaced/);
     expect(Date.now() - started).toBeLessThan(5_000);
     expect(first.readyState).not.toBe(WebSocket.CONNECTING);
   });

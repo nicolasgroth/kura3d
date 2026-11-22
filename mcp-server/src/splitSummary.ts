@@ -68,6 +68,6 @@ export function summarizeSplitResult(raw: unknown): Record<string, unknown> {
     ...(r.assembly ? { assembly: r.assembly } : {}),
     warnings: Array.isArray(r.warnings) ? r.warnings : [],
     ...(r.note ? { note: r.note } : {}),
-    detail: 'Resumen. Pide detail=true para el plan completo (planos, piezas planificadas y uniones).',
+    detail: 'Summary. Pass detail=true for the full plan (planes, planned pieces and joints).',
   };
 }

@@ -128,7 +128,7 @@ export class KuraBridgeServer {
       this.startupError =
         this.authToken.length === 0
           ? 'Puente WebSocket deshabilitado: falta KURA_BRIDGE_TOKEN (o --token-file). Modo Headless disponible.'
-          : `Puente WebSocket deshabilitado: el token debe tener al menos ${MIN_TOKEN_LENGTH} caracteres.`;
+          : `WebSocket bridge disabled: the token must have at least ${MIN_TOKEN_LENGTH} characters.`;
       console.error(`[Kura3D-MCP] ${this.startupError}`);
       this.listening = false;
       return false;
@@ -252,7 +252,7 @@ export class KuraBridgeServer {
     this.commandTimestamps = this.commandTimestamps.filter((ts) => ts > now - 60_000);
     if (this.commandTimestamps.length >= this.config.rateLimitPerMin) {
       throw new Error(
-        `Límite de tasa MCP excedido (${this.config.rateLimitPerMin} comandos/minuto). Espere unos segundos antes de reintentar.`
+        `MCP rate limit exceeded (${this.config.rateLimitPerMin} commands/minute). Wait a few seconds before retrying.`
       );
     }
     this.commandTimestamps.push(now);
@@ -264,10 +264,10 @@ export class KuraBridgeServer {
    */
   async rotateToken(newToken: string): Promise<TokenRotationResult> {
     if (!ROTATION_TOKEN_PATTERN.test(newToken)) {
-      return { ok: false, persistent: false, reason: 'Formato de token inválido (32–256 caracteres URL-safe).' };
+      return { ok: false, persistent: false, reason: 'Invalid token format (32–256 URL-safe characters).' };
     }
     if (constantTimeEquals(this.authToken, newToken)) {
-      return { ok: false, persistent: false, reason: 'El token nuevo es igual al vigente.' };
+      return { ok: false, persistent: false, reason: 'The new token is equal to the current one.' };
     }
 
     this.authToken = newToken;
@@ -296,7 +296,7 @@ export class KuraBridgeServer {
     options?: { skipRateLimit?: boolean }
   ): Promise<KuraCommandResponse> {
     if (this.isReadOnly() && !isReadCommand(command)) {
-      throw new Error('Operación bloqueada: Kura3D MCP se encuentra en modo Solo Lectura.');
+      throw new Error('Operation blocked: Kura3D MCP is in Read-only mode.');
     }
 
     if (!options?.skipRateLimit) {
@@ -305,7 +305,7 @@ export class KuraBridgeServer {
 
     const client = this.activeClient;
     if (!client || client.readyState !== WebSocket.OPEN) {
-      throw new Error('No hay ninguna instancia de Kura3D conectada al puente WebSocket.');
+      throw new Error('No Kura3D instance is connected to the WebSocket bridge.');
     }
 
     const id = randomUUID();
@@ -315,7 +315,7 @@ export class KuraBridgeServer {
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(
-          new Error(`Tiempo de espera agotado (${timeoutMs} ms) ejecutando el comando '${command}' en Kura3D.`)
+          new Error(`Timed out (${timeoutMs} ms) running command '${command}' in Kura3D.`)
         );
       }, timeoutMs);
 
@@ -325,7 +325,7 @@ export class KuraBridgeServer {
         if (err) {
           clearTimeout(timer);
           this.pending.delete(id);
-          reject(new Error(`Error enviando comando '${command}' por WebSocket: ${err.message}`));
+          reject(new Error(`Error sending command '${command}' over WebSocket: ${err.message}`));
         }
       });
     });
@@ -333,11 +333,11 @@ export class KuraBridgeServer {
 
   /** Cierra ordenadamente las conexiones activas y libera el puerto TCP local. */
   async close(): Promise<void> {
-    this.rejectAllPending(new Error('El servidor puente de Kura3D fue detenido.'));
+    this.rejectAllPending(new Error('The Kura3D bridge server was stopped.'));
 
     if (this.activeClient) {
       try {
-        this.activeClient.close(1000, 'Servidor MCP detenido');
+        this.activeClient.close(1000, 'MCP server stopped');
       } catch {
         // Ignora errores de cierre
       }
@@ -374,11 +374,11 @@ export class KuraBridgeServer {
     // Los rechazos por Host/Origin no cuentan para el throttle: una página ajena
     // no debe poder bloquear al cliente legítimo provocando fallos en masa.
     if (!isAllowedLocalHost(req.headers.host, this.port)) {
-      reject(403, 'Host no permitido (solo 127.0.0.1/localhost).');
+      reject(403, 'Host not allowed (127.0.0.1/localhost only).');
       return;
     }
     if (!isAllowedLocalOrigin(origin ?? req.headers.origin)) {
-      reject(403, 'Origen no permitido en el puente local de Kura3D.');
+      reject(403, 'Origin not allowed on the local Kura3D bridge.');
       return;
     }
     // El throttle se aplica antes de mirar el token (también al correcto) para que
@@ -392,7 +392,7 @@ export class KuraBridgeServer {
     }
     if (!this.verifyRequestToken(req)) {
       this.authFailureTimestamps.push(now);
-      reject(401, 'Token de autenticación ausente o inválido.');
+      reject(401, 'Authentication token missing or invalid.');
       return;
     }
     done(true);
@@ -402,9 +402,9 @@ export class KuraBridgeServer {
   private handleConnection(socket: WebSocket, req: IncomingMessage): void {
     if (this.activeClient && this.activeClient !== socket) {
       // Las solicitudes en vuelo eran del cliente anterior: se rechazan ya, sin esperar el timeout.
-      this.rejectAllPending(new Error('La instancia de Kura3D fue reemplazada por otra antes de responder.'));
+      this.rejectAllPending(new Error('The Kura3D instance was replaced by another before responding.'));
       try {
-        this.activeClient.close(1000, 'Reemplazado por nueva instancia de Kura3D');
+        this.activeClient.close(1000, 'Replaced by a new Kura3D instance');
       } catch {
         // Ignora errores al cerrar conexiones previas obsoletas
       }
@@ -433,7 +433,7 @@ export class KuraBridgeServer {
       if (this.activeClient === socket) {
         this.activeClient = null;
         this.rejectAllPending(
-          new Error('La conexión con la UI de Kura3D se cerró antes de completar el comando.')
+          new Error('The connection to the Kura3D UI closed before the command completed.')
         );
         console.error('[Kura3D-MCP] UI de Kura3D desconectada. Modo Headless disponible.');
       }
@@ -486,7 +486,7 @@ export class KuraBridgeServer {
     if (!this.wss) return;
     for (const client of this.wss.clients) {
       try {
-        client.close(CLOSE_TOKEN_ROTATED, 'Token rotado');
+        client.close(CLOSE_TOKEN_ROTATED, 'Token rotated');
       } catch {
         client.terminate();
       }

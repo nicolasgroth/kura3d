@@ -72,7 +72,7 @@ function failText(message: string): CallToolResult {
 function enforceSecurityPolicy(ctx: KuraToolContext, command: KuraCommandName): void {
   if (ctx.bridge.isReadOnly() && !isReadCommand(command)) {
     throw new Error(
-      `Operación denegada: Kura3D MCP está en modo de seguridad Solo Lectura. Solo se permiten comandos de inspección (${READ_COMMANDS.join(', ')}).`
+      `Operation denied: Kura3D MCP is in Read-only mode. Only inspection commands are allowed (${READ_COMMANDS.join(', ')}).`
     );
   }
   ctx.bridge.consumeRateLimit();
@@ -88,7 +88,7 @@ async function writeLiveExport(
 ): Promise<{ path: string; bytesWritten: number } | null> {
   const payload = exportPayloadSchema.safeParse(result ?? {});
   if (!payload.success) {
-    throw new Error('La UI de Kura3D devolvió una carga de exportación con formato inválido.');
+    throw new Error('The Kura3D UI returned an export payload with an invalid format.');
   }
   const { bytesBase64, text } = payload.data;
   if (!bytesBase64 && !text) {
@@ -140,7 +140,7 @@ export async function dispatchWithFallback(
         skipRateLimit: true,
       });
       if (!response.ok) {
-        const message = response.error ?? `El comando '${command}' falló en la UI de Kura3D.`;
+        const message = response.error ?? `The command '${command}' failed in the Kura3D UI.`;
         const code = (response as { errorCode?: string }).errorCode;
         return code ? failCoded(code, message, {}) : failText(message);
       }
@@ -193,9 +193,9 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_get_scene_state',
     {
-      title: 'Obtener estado de la escena 3D',
+      title: 'Get 3D scene state',
       description:
-        'Devuelve los objetos actuales de la escena, sus transformaciones, dimensiones en mm, unidades activas y perfil de impresora 3D.',
+        'Returns the current scene objects, their transforms, dimensions in mm, active units and 3D printer profile.',
       inputSchema: {},
     },
     async () =>
@@ -206,22 +206,22 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_create_primitive',
     {
-      title: 'Crear primitiva 3D paramétrica',
+      title: 'Create parametric 3D primitive',
       description:
-        'Crea una primitiva sólida cerrada (box, cylinder, tube, sphere, cone, torus, prism o text) en milímetros.',
+        'Creates a closed solid primitive (box, cylinder, tube, sphere, cone, torus, prism or text) in millimeters.',
       inputSchema: {
         primitiveType: z
           .enum(['box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text'])
-          .describe('Tipo de primitiva paramétrica a crear.'),
-        name: nameSchema.optional().describe('Nombre legible del objeto.'),
+          .describe('Type of parametric primitive to create.'),
+        name: nameSchema.optional().describe('Human-readable object name.'),
         params: primitiveParamsSchema
           .optional()
-          .describe('Parámetros dimensionales en milímetros según la primitiva elegida.'),
+          .describe('Dimensional parameters in millimeters, depending on the chosen primitive.'),
         position: positionSchema.optional(),
         rotation: rotationSchema.optional(),
         scale: scaleSchema.optional(),
-        color: hexColorSchema.optional().describe('Color hexadecimal, por ejemplo #38bdf8.'),
-        isHole: z.boolean().optional().describe('Si es true, marca la pieza como volumen de resta.'),
+        color: hexColorSchema.optional().describe('Hexadecimal color, for example #38bdf8.'),
+        isHole: z.boolean().optional().describe('If true, marks the part as a subtraction volume.'),
         placement: placementSchema,
       },
     },
@@ -252,11 +252,11 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_transform_object',
     {
-      title: 'Transformar objeto 3D',
+      title: 'Transform 3D object',
       description:
-        'Actualiza posición [x, y, z] en mm, rotación Euler [rx, ry, rz] en radianes, escala [sx, sy, sz] o metadatos de un objeto.',
+        'Updates position [x, y, z] in mm, Euler rotation [rx, ry, rz] in radians, scale [sx, sy, sz] or metadata of an object.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto a modificar.'),
+        objectId: idSchema.describe('ID of the object to modify.'),
         position: positionSchema.optional(),
         rotation: rotationSchema.optional(),
         scale: scaleSchema.optional(),
@@ -288,10 +288,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_delete_object',
     {
-      title: 'Eliminar objeto 3D',
-      description: 'Elimina permanentemente un objeto de la escena por su identificador.',
+      title: 'Delete 3D object',
+      description: 'Permanently deletes an object from the scene by its identifier.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto a eliminar.'),
+        objectId: idSchema.describe('ID of the object to delete.'),
       },
     },
     async (args) =>
@@ -307,18 +307,18 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_boolean_operation',
     {
-      title: 'Operación booleana CSG',
+      title: 'CSG boolean operation',
       description:
-        'Ejecuta unión, resta o intersección entre un objeto objetivo y uno o más objetos herramienta.',
+        'Performs union, subtraction or intersection between a target object and one or more tool objects.',
       inputSchema: {
-        targetId: z.string().describe('ID del objeto base sobre el que se aplica la operación.'),
-        toolIds: z.array(idSchema).max(256).min(1).describe('Lista de IDs de objetos herramienta.'),
-        operation: z.enum(['union', 'subtract', 'intersect']).describe('Tipo de operación CSG.'),
+        targetId: z.string().describe('ID of the base object the operation is applied to.'),
+        toolIds: z.array(idSchema).max(256).min(1).describe('List of tool object IDs.'),
+        operation: z.enum(['union', 'subtract', 'intersect']).describe('CSG operation type.'),
         keepTools: z
           .boolean()
           .optional()
-          .describe('Si es true, conserva los objetos originales en la escena.'),
-        resultName: nameSchema.optional().describe('Nombre opcional del objeto resultante.'),
+          .describe('If true, keeps the original objects in the scene.'),
+        resultName: nameSchema.optional().describe('Optional name of the resulting object.'),
       },
     },
     async (args) =>
@@ -337,14 +337,14 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_hollow_object',
     {
-      title: 'Ahuecar modelo 3D (Hollow)',
+      title: 'Hollow 3D model',
       description:
-        'Convierte un sólido en una carcasa hueca con grosor de pared en milímetros y orificio de drenaje opcional.',
+        'Converts a solid into a hollow shell with wall thickness in millimeters and an optional drain hole.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto a ahuecar.'),
-        wallThickness: rangeSchema(OR.hollow.wallThickness).describe('Espesor de pared en milímetros.'),
-        drainHole: z.boolean().optional().describe('Agrega orificio inferior de drenaje (resina).'),
-        drainHoleRadius: rangeSchema(OR.hollow.drainHoleRadius).optional().describe('Radio del orificio de drenaje en mm.'),
+        objectId: idSchema.describe('ID of the object to hollow.'),
+        wallThickness: rangeSchema(OR.hollow.wallThickness).describe('Wall thickness in millimeters.'),
+        drainHole: z.boolean().optional().describe('Adds a bottom drain hole (resin).'),
+        drainHoleRadius: rangeSchema(OR.hollow.drainHoleRadius).optional().describe('Drain hole radius in mm.'),
       },
     },
     async (args) =>
@@ -365,20 +365,20 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_plane_cut',
     {
-      title: 'Cortar modelo por plano',
+      title: 'Cut model by plane',
       description:
-        'Divide un objeto mediante un plano en el eje X, Y o Z generando conectores mecánicos opcionales (dowel, peg, dovetail).',
+        'Splits an object with a plane on the X, Y or Z axis, optionally generating mechanical connectors (dowel, peg, dovetail).',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto a cortar.'),
-        axis: z.enum(['x', 'y', 'z']).describe('Eje normal del plano de corte.'),
-        offset: rangeSchema(OR.cut.offset).default(0).describe('Desplazamiento del plano en mm respecto al centro.'),
+        objectId: idSchema.describe('ID of the object to cut.'),
+        axis: z.enum(['x', 'y', 'z']).describe('Normal axis of the cut plane.'),
+        offset: rangeSchema(OR.cut.offset).default(0).describe('Plane offset in mm from the center.'),
         connectorType: z
           .enum(['none', 'dowel', 'peg', 'dovetail'])
           .default('none')
-          .describe('Tipo de conector automático entre mitades.'),
-        connectorSize: rangeSchema(OR.cut.connectorSize).default(4).describe('Radio/ancho del conector en mm.'),
-        connectorDepth: rangeSchema(OR.cut.connectorDepth).default(5).describe('Profundidad del conector en mm.'),
-        tolerance: rangeSchema(OR.cut.tolerance).default(0.25).describe('Holgura de encaje en mm.'),
+          .describe('Automatic connector type between halves.'),
+        connectorSize: rangeSchema(OR.cut.connectorSize).default(4).describe('Connector radius/width in mm.'),
+        connectorDepth: rangeSchema(OR.cut.connectorDepth).default(5).describe('Connector depth in mm.'),
+        tolerance: rangeSchema(OR.cut.tolerance).default(0.25).describe('Fit clearance in mm.'),
         connectorCount: rangeSchema(OR.cut.connectorCount).default(2),
         keepMode: z.enum(['both', 'positive', 'negative']).default('both'),
       },
@@ -406,10 +406,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_split_disconnected',
     {
-      title: 'Separar islas desconectadas',
-      description: 'Divide una malla compuesta por múltiples cuerpos separados en objetos independientes.',
+      title: 'Split disconnected islands',
+      description: 'Splits a mesh made of several separate bodies into independent objects.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto a analizar y separar.'),
+        objectId: idSchema.describe('ID of the object to analyze and split.'),
       },
     },
     async (args) =>
@@ -425,10 +425,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_split_by_color',
     {
-      title: 'Separar por color',
-      description: 'Separa un modelo pintado multicolor en piezas individuales por cada color para impresión multimaterial.',
+      title: 'Split by color',
+      description: 'Splits a multicolor painted model into individual parts per color for multi-material printing.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto multicolor a separar.'),
+        objectId: idSchema.describe('ID of the multicolor object to split.'),
       },
     },
     async (args) =>
@@ -444,14 +444,14 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_apply_texture',
     {
-      title: 'Aplicar textura superficial procedural',
+      title: 'Apply procedural surface texture',
       description:
-        'Aplica desplazamiento superficial procedural (fuzzy skin, knurling, waves, honeycomb, grid o none).',
+        'Applies procedural surface displacement (fuzzy skin, knurling, waves, honeycomb, grid or none).',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto.'),
+        objectId: idSchema.describe('Object ID.'),
         pattern: z.enum(['none', 'fuzzy', 'knurling', 'waves', 'honeycomb', 'grid']),
-        depth: rangeSchema(OR.texture.depth).default(0.4).describe('Profundidad del relieve en mm.'),
-        scale: rangeSchema(OR.texture.scale).default(3).describe('Escala/frecuencia del patrón en mm.'),
+        depth: rangeSchema(OR.texture.depth).default(0.4).describe('Relief depth in mm.'),
+        scale: rangeSchema(OR.texture.scale).default(3).describe('Pattern scale/frequency in mm.'),
       },
     },
     async (args) =>
@@ -472,11 +472,11 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_paint_object',
     {
-      title: 'Pintar objeto 3D',
-      description: 'Asigna un color hexadecimal (#rrggbb) al material del objeto seleccionado.',
+      title: 'Paint 3D object',
+      description: 'Assigns a hexadecimal color (#rrggbb) to the material of the selected object.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto.'),
-        color: hexColorSchema.describe('Color hex en formato #rrggbb.'),
+        objectId: idSchema.describe('Object ID.'),
+        color: hexColorSchema.describe('Hex color in #rrggbb format.'),
       },
     },
     async (args) =>
@@ -492,13 +492,13 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_import_svg',
     {
-      title: 'Importar y extruir SVG a 3D',
-      description: 'Convierte trazos vectoriales SVG en un sólido 3D extruido.',
+      title: 'Import and extrude SVG to 3D',
+      description: 'Converts SVG vector strokes into an extruded 3D solid.',
       inputSchema: {
-        svgContent: svgContentSchema.describe('Contenido XML completo del archivo SVG.'),
-        name: nameSchema.optional().describe('Nombre del objeto generado.'),
-        depth: rangeSchema(OR.svg.depth).default(4).describe('Altura de extrusión en mm.'),
-        targetWidth: rangeSchema(OR.svg.targetWidth).default(50).describe('Ancho objetivo en mm.'),
+        svgContent: svgContentSchema.describe('Full XML content of the SVG file.'),
+        name: nameSchema.optional().describe('Name of the generated object.'),
+        depth: rangeSchema(OR.svg.depth).default(4).describe('Extrusion height in mm.'),
+        targetWidth: rangeSchema(OR.svg.targetWidth).default(50).describe('Target width in mm.'),
         curveSegments: rangeSchema(OR.svg.curveSegments).default(16),
         placement: placementSchema,
       },
@@ -520,10 +520,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_set_units',
     {
-      title: 'Configurar sistema de unidades',
-      description: 'Cambia la unidad de visualización de Kura3D (mm, cm, m, in, ft).',
+      title: 'Set unit system',
+      description: 'Changes the Kura3D display unit (mm, cm, m, in, ft).',
       inputSchema: {
-        units: z.enum(['mm', 'cm', 'm', 'in', 'ft']).describe('Unidad de medida deseada.'),
+        units: z.enum(['mm', 'cm', 'm', 'in', 'ft']).describe('Desired unit of measure.'),
       },
     },
     async (args) =>
@@ -539,11 +539,11 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_set_printer_profile',
     {
-      title: 'Seleccionar perfil de impresora 3D',
+      title: 'Select 3D printer profile',
       description:
-        'Establece el volumen de cama y perfil activo entre los 12 presets multi-marca (elegoo-centauri-carbon-2, elegoo-centauri-carbon-1, bambu-p1s-x1c-a1, bambu-a1-mini, bambu-h2d, snapmaker-artisan, snapmaker-j1s, flashforge-ad5m, flashforge-ad5x, generic-220, generic-300 o free-studio).',
+        'Sets the bed volume and active profile from the 12 multi-brand presets (elegoo-centauri-carbon-2, elegoo-centauri-carbon-1, bambu-p1s-x1c-a1, bambu-a1-mini, bambu-h2d, snapmaker-artisan, snapmaker-j1s, flashforge-ad5m, flashforge-ad5x, generic-220, generic-300 or free-studio).',
       inputSchema: {
-        profileId: profileIdSchema.describe('ID del perfil de impresora a activar.'),
+        profileId: profileIdSchema.describe('ID of the printer profile to activate.'),
       },
     },
     async (args) =>
@@ -556,13 +556,13 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_export_stl',
     {
-      title: 'Exportar escena a archivo STL',
+      title: 'Export scene to STL file',
       description:
-        'Exporta los objetos indicados (o toda la escena visible) en formato STL binario o ASCII directamente en disco.',
+        'Exports the indicated objects (or the whole visible scene) as binary or ASCII STL directly to disk.',
       inputSchema: {
-        outputPath: outputPathSchema.describe('Ruta destino del archivo .stl en disco.'),
-        objectIds: z.array(idSchema).max(256).optional().describe('IDs específicos a exportar (opcional).'),
-        binary: z.boolean().default(true).describe('true para STL binario (recomendado), false para ASCII.'),
+        outputPath: outputPathSchema.describe('Destination path of the .stl file on disk.'),
+        objectIds: z.array(idSchema).max(256).optional().describe('Specific IDs to export (optional).'),
+        binary: z.boolean().default(true).describe('true for binary STL (recommended), false for ASCII.'),
       },
     },
     async (args) => {
@@ -578,7 +578,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             { skipRateLimit: true }
           );
           if (!response.ok) {
-            return failText(response.error ?? 'Error al exportar STL desde la UI de Kura3D.');
+            return failText(response.error ?? 'Error exporting STL from the Kura3D UI.');
           }
           const written = await writeLiveExport(targetPath, response.result);
           if (written) {
@@ -603,16 +603,16 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_export_3mf',
     {
-      title: 'Exportar escena a archivo 3MF Multi-Slicer',
+      title: 'Export scene to 3MF Multi-Slicer file',
       description:
-        'Exporta los objetos indicados (o toda la escena visible) en formato estándar 3MF con Metadata/model_settings.config para el laminador destino (generic, elegoo, bambu, snapmaker, flashforge).',
+        'Exports the indicated objects (or the whole visible scene) as standard 3MF with Metadata/model_settings.config for the target slicer (generic, elegoo, bambu, snapmaker, flashforge).',
       inputSchema: {
-        outputPath: outputPathSchema.describe('Ruta destino del archivo .3mf en disco.'),
-        objectIds: z.array(idSchema).max(256).optional().describe('IDs específicos a exportar (opcional).'),
+        outputPath: outputPathSchema.describe('Destination path of the .3mf file on disk.'),
+        objectIds: z.array(idSchema).max(256).optional().describe('Specific IDs to export (optional).'),
         slicerTarget: z
           .enum(['generic', 'elegoo', 'bambu', 'snapmaker', 'flashforge'])
           .optional()
-          .describe('Laminador destino para metadatos 3MF (generic, elegoo, bambu, snapmaker, flashforge).'),
+          .describe('Target slicer for 3MF metadata (generic, elegoo, bambu, snapmaker, flashforge).'),
       },
     },
     async (args) => {
@@ -628,7 +628,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             { skipRateLimit: true }
           );
           if (!response.ok) {
-            return failText(response.error ?? 'Error al exportar 3MF desde la UI de Kura3D.');
+            return failText(response.error ?? 'Error exporting 3MF from the Kura3D UI.');
           }
           const written = await writeLiveExport(targetPath, response.result);
           if (written) {
@@ -657,9 +657,9 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_capture_viewport',
     {
-      title: 'Capturar vista del viewport 3D',
+      title: 'Capture 3D viewport view',
       description:
-        'Captura una imagen PNG del viewport 3D cuando la aplicación gráfica Kura3D está conectada vía Live Bridge.',
+        'Captures a PNG image of the 3D viewport when the Kura3D graphical app is connected via Live Bridge.',
       inputSchema: {
         width: rangeSchema(OR.capture.sizePx).optional(),
         height: rangeSchema(OR.capture.sizePx).optional(),
@@ -672,7 +672,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         if (!ctx.bridge.isConnected()) {
           throw new HeadlessUnsupportedError(
             'capture_viewport',
-            'la captura del viewport necesita el renderizador WebGL de la UI, que no existe en Node.'
+            'capturing the viewport needs the UI WebGL renderer, which does not exist in Node.'
           );
         }
 
@@ -680,7 +680,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           skipRateLimit: true,
         });
         if (!response.ok) {
-          return failText(response.error ?? 'No se pudo capturar el viewport de Kura3D.');
+          return failText(response.error ?? 'Could not capture the Kura3D viewport.');
         }
 
         const payload = (response.result ?? {}) as {
@@ -692,7 +692,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         const cleanBase64 = raw.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '');
 
         if (!cleanBase64) {
-          return failText('La UI de Kura3D no devolvió datos PNG válidos para la captura.');
+          return failText('The Kura3D UI did not return valid PNG data for the capture.');
         }
 
         return {
@@ -704,7 +704,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             },
             {
               type: 'text',
-              text: 'Captura del viewport 3D obtenida correctamente desde Kura3D Live Bridge.',
+              text: '3D viewport capture obtained successfully from Kura3D Live Bridge.',
             },
           ],
         };
@@ -718,38 +718,38 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_generate_mold',
     {
-      title: 'Generar molde o contra-molde 3D',
+      title: 'Generate 3D mold or counter-mold',
       description:
-        'Genera automáticamente un molde o contra-molde de 1 parte, 2 partes con llaves, caja maestra para silicona o núcleo-cavidad a partir de un objeto maestro.',
+        'Automatically generates a mold or counter-mold (1 part, 2 parts with keys, master box for silicone, or core-cavity) from a master object.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto maestro a partir del cual se genera el molde.'),
+        objectId: idSchema.describe('ID of the master object the mold is generated from.'),
         mode: z
           .enum(['direct_1part', 'direct_2part', 'silicone_master', 'core_cavity'])
-          .describe('Modo de generación del molde.'),
+          .describe('Mold generation mode.'),
         wallMarginMm: rangeSchema(OR.mold.wallMarginMm)
           .default(OD.mold.wallMarginMm)
-          .describe('Margen de pared exterior del molde en mm (o espesor de silicona).'),
+          .describe('Outer wall margin of the mold in mm (or silicone thickness).'),
         boxWallMm: rangeSchema(OR.mold.boxWallMm)
           .default(OD.mold.boxWallMm)
-          .describe('Grosor de pared de la caja madre contenedora en mm.'),
+          .describe('Wall thickness of the containing master box in mm.'),
         splitAxis: z
           .enum(['x', 'z'])
           .default('x')
-          .describe('Eje de partición para moldes de dos mitades.'),
+          .describe('Parting axis for two-half molds.'),
         pourSpout: z
           .boolean()
           .default(true)
-          .describe('Si es true, agrega embudo/canal de vertido superior.'),
+          .describe('If true, adds a top funnel/pour channel.'),
         pourSpoutRadiusMm: rangeSchema(OR.mold.pourSpoutRadiusMm)
           .default(OD.mold.pourSpoutRadiusMm)
           .optional()
-          .describe('Radio del embudo de vertido en mm.'),
+          .describe('Pour funnel radius in mm.'),
         keyToleranceMm: rangeSchema(OR.mold.keyToleranceMm)
           .default(OD.mold.keyToleranceMm)
-          .describe('Holgura de encaje para llaves de registro en mm.'),
+          .describe('Fit clearance for registration keys in mm.'),
         cavityWallMm: rangeSchema(OR.mold.cavityWallMm)
           .default(OD.mold.cavityWallMm)
-          .describe('Espesor de pared de la pieza colada en modo core_cavity (mm).'),
+          .describe('Wall thickness of the cast part in core_cavity mode (mm).'),
         placement: placementSchema,
       },
     },
@@ -776,30 +776,30 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_project_on_surface',
     {
-      title: 'Proyectar texto o SVG sobre superficie 3D',
+      title: 'Project text or SVG onto 3D surface',
       description:
-        'Proyecta texto o gráficos SVG sobre una cara o cilindro del objeto en modo relieve (emboss), grabado (deboss) o incrustación multicolor a ras (flush_inlay).',
+        'Projects text or SVG graphics onto a face or cylinder of the object as raised relief (emboss), engraving (deboss) or flush multicolor inlay (flush_inlay).',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto objetivo.'),
-        kind: z.enum(['text', 'svg']).describe('Tipo de gráfico a proyectar.'),
-        text: shortTextSchema.optional().describe('Texto a proyectar cuando kind === "text".'),
-        svgContent: svgContentSchema.optional().describe('Contenido XML SVG cuando kind === "svg".'),
+        objectId: idSchema.describe('Target object ID.'),
+        kind: z.enum(['text', 'svg']).describe('Type of graphic to project.'),
+        text: shortTextSchema.optional().describe('Text to project when kind === "text".'),
+        svgContent: svgContentSchema.optional().describe('SVG XML content when kind === "svg".'),
         mode: z
           .enum(['emboss', 'deboss', 'flush_inlay'])
-          .describe('Modo de aplicación superficial.'),
+          .describe('Surface application mode.'),
         axis: z
           .enum(['+z', '-z', '+x', '-x', '+y', '-y', 'cylindrical'])
           .default('+z')
-          .describe('Dirección o envoltura cilíndrica de proyección.'),
-        widthMm: rangeSchema(OR.projection.widthMm).default(24).describe('Ancho proyectado en mm.'),
-        depthMm: rangeSchema(OR.projection.depthMm).default(1.2).describe('Profundidad de relieve/grabado en mm.'),
+          .describe('Projection direction or cylindrical wrap.'),
+        widthMm: rangeSchema(OR.projection.widthMm).default(24).describe('Projected width in mm.'),
+        depthMm: rangeSchema(OR.projection.depthMm).default(1.2).describe('Relief/engraving depth in mm.'),
         colorHex: z
           .string()
           .regex(/^#[0-9a-fA-F]{6}$/)
           .default('#f97316')
-          .describe('Color hexadecimal (#rrggbb) para la proyección o incrustación.'),
-        offsetU: rangeSchema(OR.projection.offsetU).optional().describe('Desplazamiento horizontal local en mm.'),
-        offsetV: rangeSchema(OR.projection.offsetV).optional().describe('Desplazamiento vertical local en mm.'),
+          .describe('Hexadecimal color (#rrggbb) for the projection or inlay.'),
+        offsetU: rangeSchema(OR.projection.offsetU).optional().describe('Local horizontal offset in mm.'),
+        offsetV: rangeSchema(OR.projection.offsetV).optional().describe('Local vertical offset in mm.'),
       },
     },
     async (args) =>
@@ -827,11 +827,11 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_analyze_printability',
     {
-      title: 'Analizar imprimibilidad 3D',
+      title: 'Analyze 3D printability',
       description:
-        'Evalúa encaje en la cama activa, contacto con el plano Y=0, voladizos críticos, volumen, peso estimado y advertencias de impresión (`warnings` en español e `issues` con código y parámetros). Seguro en modo Solo Lectura.',
+        'Checks fit on the active bed, contact with the Y=0 plane, critical overhangs, volume, estimated weight and printing warnings (`warnings` in English and `issues` with code and parameters). Safe in Read-only mode.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto a inspeccionar.'),
+        objectId: idSchema.describe('ID of the object to inspect.'),
         materialPreset: z
           .enum([
             'pla_matte',
@@ -844,13 +844,13 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             'metallic',
           ])
           .optional()
-          .describe('Material para el cálculo de peso (por defecto el asignado al objeto o pla_matte).'),
+          .describe('Material for the weight calculation (default: the material assigned to the object, or pla_matte).'),
         infillPercent: rangeSchema(OR.printability.infillPercent)
           .default(OD.printability.infillPercent)
-          .describe('Porcentaje de relleno estimado (0 a 100).'),
+          .describe('Estimated infill percentage (0 to 100).'),
         overhangAngleDeg: rangeSchema(OR.printability.overhangAngleDeg)
           .default(OD.printability.overhangAngleDeg)
-          .describe('Ángulo máximo de voladizo sin soporte en grados.'),
+          .describe('Maximum unsupported overhang angle in degrees.'),
       },
     },
     async (args) =>
@@ -871,13 +871,13 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_simplify_mesh',
     {
-      title: 'Simplificar malla 3D',
-      description: 'Reduce la densidad de triángulos respetando la tolerancia geométrica en mm.',
+      title: 'Simplify 3D mesh',
+      description: 'Reduces triangle density while respecting the geometric tolerance in mm.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto a simplificar.'),
+        objectId: idSchema.describe('ID of the object to simplify.'),
         toleranceMm: rangeSchema(OR.simplify.toleranceMm)
           .default(0.1)
-          .describe('Tolerancia máxima de desviación geométrica en mm.'),
+          .describe('Maximum geometric deviation tolerance in mm.'),
       },
     },
     async (args) =>
@@ -893,14 +893,14 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_refine_mesh',
     {
-      title: 'Refinar malla 3D',
-      description: 'Subdivide y suaviza opcionalmente la malla hasta la longitud de arista objetivo en mm.',
+      title: 'Refine 3D mesh',
+      description: 'Subdivides and optionally smooths the mesh down to the target edge length in mm.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto a refinar.'),
+        objectId: idSchema.describe('ID of the object to refine.'),
         targetEdgeLengthMm: rangeSchema(OR.refine.targetEdgeLengthMm)
           .default(1.5)
-          .describe('Longitud máxima de arista objetivo en milímetros.'),
-        smooth: z.boolean().default(true).describe('Activa suavizado superficial durante el refinado.'),
+          .describe('Maximum target edge length in millimeters.'),
+        smooth: z.boolean().default(true).describe('Enables surface smoothing during refinement.'),
       },
     },
     async (args) =>
@@ -916,17 +916,17 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_create_thread',
     {
-      title: 'Crear rosca métrica ISO 3D',
+      title: 'Create ISO metric thread 3D',
       description:
-        'Genera un perno roscado, tuerca hexagonal o cavidad roscada negativa con holgura calibrada para impresión 3D.',
+        'Generates a threaded bolt, hexagonal nut or negative threaded cavity with calibrated clearance for 3D printing.',
       inputSchema: {
-        kind: z.enum(['bolt', 'nut', 'hole']).describe('Tipo de elemento roscado.'),
-        diameterMm: rangeSchema(OR.thread.diameterMm).default(8).describe('Diámetro nominal métrico en mm (ej. 8 para M8; M2–M64).'),
-        pitchMm: rangeSchema(OR.thread.pitchMm).default(1.25).describe('Paso de rosca en mm (máximo d/4).'),
-        lengthMm: rangeSchema(OR.thread.lengthMm).default(20).describe('Longitud roscada en mm.'),
-        clearanceMm: rangeSchema(OR.thread.clearanceMm).optional().describe('Holgura radial de impresión en mm. Si se omite, se calcula según el paso.'),
-        includeHead: z.boolean().optional().describe('Incluir cabeza hexagonal cuando kind === "bolt".'),
-        name: nameSchema.optional().describe('Nombre opcional de la pieza generada.'),
+        kind: z.enum(['bolt', 'nut', 'hole']).describe('Threaded element type.'),
+        diameterMm: rangeSchema(OR.thread.diameterMm).default(8).describe('Nominal metric diameter in mm (e.g. 8 for M8; M2–M64).'),
+        pitchMm: rangeSchema(OR.thread.pitchMm).default(1.25).describe('Thread pitch in mm (maximum d/4).'),
+        lengthMm: rangeSchema(OR.thread.lengthMm).default(20).describe('Threaded length in mm.'),
+        clearanceMm: rangeSchema(OR.thread.clearanceMm).optional().describe('Radial print clearance in mm. If omitted, it is calculated from the pitch.'),
+        includeHead: z.boolean().optional().describe('Include hexagonal head when kind === "bolt".'),
+        name: nameSchema.optional().describe('Optional name of the generated part.'),
         placement: placementSchema,
       },
     },
@@ -948,11 +948,11 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_convex_hull',
     {
-      title: 'Generar envolvente convexa (Convex Hull)',
-      description: 'Crea un sólido cerrado que envuelve convexamente a uno o varios objetos seleccionados.',
+      title: 'Generate convex hull',
+      description: 'Creates a closed solid that convexly wraps one or more selected objects.',
       inputSchema: {
-        objectIds: z.array(idSchema).max(256).min(1).describe('Lista de IDs de objetos a envolver.'),
-        name: nameSchema.optional().describe('Nombre opcional del objeto resultante.'),
+        objectIds: z.array(idSchema).max(256).min(1).describe('List of IDs of the objects to wrap.'),
+        name: nameSchema.optional().describe('Optional name of the resulting object.'),
       },
     },
     async (args) =>
@@ -965,11 +965,11 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_align_objects',
     {
-      title: 'Alinear o distribuir objetos en cama',
+      title: 'Align or distribute objects on bed',
       description:
-        'Alinea múltiples objetos según bordes o centros (min/center/max en X/Y/Z) o los distribuye automáticamente en grilla sobre la cama.',
+        'Aligns multiple objects by edges or centers (min/center/max on X/Y/Z) or automatically distributes them in a grid on the bed.',
       inputSchema: {
-        objectIds: z.array(idSchema).max(256).min(1).describe('IDs de los objetos a alinear o distribuir.'),
+        objectIds: z.array(idSchema).max(256).min(1).describe('IDs of the objects to align or distribute.'),
         mode: z
           .enum([
             'minX',
@@ -983,11 +983,11 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             'maxZ',
             'arrange_grid',
           ])
-          .describe('Modo de alineación o distribución en grilla.'),
+          .describe('Alignment or grid distribution mode.'),
         spacingMm: rangeSchema(OR.align.spacingMm)
           .optional()
           .describe(
-            'Separación en mm entre piezas cuando mode === "arrange_grid". El motor usa 8 mm fijos; en modo headless otro valor se rechaza.'
+            'Spacing in mm between parts when mode === "arrange_grid". The engine uses a fixed 8 mm; in headless mode any other value is rejected.'
           ),
       },
     },
@@ -1001,11 +1001,11 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_set_material',
     {
-      title: 'Asignar material PBR al objeto',
+      title: 'Assign PBR material to object',
       description:
-        'Establece el preset de material físico/visual del objeto (pla_matte, pla_silk, petg_clear, abs, carbon_fiber, silicone, wax_candle, metallic).',
+        'Sets the physical/visual material preset of the object (pla_matte, pla_silk, petg_clear, abs, carbon_fiber, silicone, wax_candle, metallic).',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto.'),
+        objectId: idSchema.describe('Object ID.'),
         materialPreset: z
           .enum([
             'pla_matte',
@@ -1017,7 +1017,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             'wax_candle',
             'metallic',
           ])
-          .describe('Identificador del preset de material PBR.'),
+          .describe('Identifier of the PBR material preset.'),
       },
     },
     async (args) =>
@@ -1033,20 +1033,20 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_detect_structures',
     {
-      title: 'Detectar sub-estructuras del modelo 3D',
+      title: 'Detect sub-structures of 3D model',
       description:
-        'Analiza islas desconectadas, pliegues diedros y proporciones del objeto para detectar sub-estructuras geométricas (tanques, tubos, cúpulas, bloques, cuerpo principal). Seguro en modo Solo Lectura.',
+        'Analyzes disconnected islands, dihedral folds and proportions of the object to detect geometric sub-structures (tanks, tubes, domes, blocks, main body). Safe in Read-only mode.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto 3D a analizar.'),
+        objectId: idSchema.describe('ID of the 3D object to analyze.'),
         creaseAngleDeg: rangeSchema(OR.detect.creaseAngleDeg)
           .optional()
-          .describe(`Ángulo diedro umbral en grados (${OR.detect.creaseAngleDeg.min} a ${OR.detect.creaseAngleDeg.max}, por defecto 28). Menor valor detecta más regiones.`),
+          .describe(`Dihedral threshold angle in degrees (${OR.detect.creaseAngleDeg.min} to ${OR.detect.creaseAngleDeg.max}, default 28). Lower values detect more regions.`),
         minRegionPercent: rangeSchema(OR.detect.minRegionPercent)
           .optional()
-          .describe(`Porcentaje mínimo de triángulos para conservar una región (${OR.detect.minRegionPercent.min} a ${OR.detect.minRegionPercent.max}, por defecto 1.5).`),
+          .describe(`Minimum percentage of triangles to keep a region (${OR.detect.minRegionPercent.min} to ${OR.detect.minRegionPercent.max}, default 1.5).`),
         maxRegions: rangeSchema(OR.detect.maxRegions)
           .optional()
-          .describe(`Cantidad máxima de regiones destacadas a devolver (${OR.detect.maxRegions.min} a ${OR.detect.maxRegions.max}, por defecto 12).`),
+          .describe(`Maximum number of highlighted regions to return (${OR.detect.maxRegions.min} to ${OR.detect.maxRegions.max}, default 12).`),
       },
     },
     async (args) =>
@@ -1067,14 +1067,14 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_colorize_structures',
     {
-      title: 'Colorear sub-estructuras detectadas',
+      title: 'Color detected sub-structures',
       description:
-        'Detecta las regiones estructurales del modelo y asigna colores diferenciados por sub-estructura para inspección visual o impresión multicolor.',
+        'Detects the structural regions of the model and assigns distinct colors per sub-structure for visual inspection or multicolor printing.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto 3D a colorear por estructuras.'),
+        objectId: idSchema.describe('ID of the 3D object to color by structure.'),
         creaseAngleDeg: rangeSchema(OR.detect.creaseAngleDeg)
           .optional()
-          .describe(`Ángulo diedro umbral en grados (${OR.detect.creaseAngleDeg.min} a ${OR.detect.creaseAngleDeg.max}, por defecto 28).`),
+          .describe(`Dihedral threshold angle in degrees (${OR.detect.creaseAngleDeg.min} to ${OR.detect.creaseAngleDeg.max}, default 28).`),
       },
     },
     async (args) =>
@@ -1093,16 +1093,16 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_extract_structure',
     {
-      title: 'Extraer sub-estructura como pieza independiente',
+      title: 'Extract sub-structure as independent part',
       description:
-        'Extrae una región estructural previamente detectada (`regionId`) como un nuevo objeto 3D independiente, con opción de remover esas caras del objeto origen.',
+        'Extracts a previously detected structural region (`regionId`) as a new independent 3D object, optionally removing those faces from the source object.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto origen.'),
-        regionId: idSchema.describe('ID de la región estructural devuelta por kura_detect_structures.'),
+        objectId: idSchema.describe('Source object ID.'),
+        regionId: idSchema.describe('ID of the structural region returned by kura_detect_structures.'),
         removeFromSource: z
           .boolean()
           .optional()
-          .describe('Si es true, elimina las caras extraídas del objeto origen (por defecto false).'),
+          .describe('If true, removes the extracted faces from the source object (default false).'),
       },
     },
     async (args) =>
@@ -1123,12 +1123,12 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_mirror_object',
     {
-      title: 'Reflejar objeto (Mirror) en eje X, Y o Z',
+      title: 'Mirror object on X, Y or Z axis',
       description:
-        'Genera un reflejo especular exacto de la malla a lo largo del eje X, Y o Z invirtiendo coordenadas y orientación (winding) de triángulos para mantener normales salientes válidas.',
+        'Generates an exact mirror image of the mesh along the X, Y or Z axis by inverting coordinates and triangle winding so outward normals stay valid.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto 3D a reflejar.'),
-        axis: z.enum(['x', 'y', 'z']).describe('Eje de simetría especular (x, y o z).'),
+        objectId: idSchema.describe('ID of the 3D object to mirror.'),
+        axis: z.enum(['x', 'y', 'z']).describe('Mirror symmetry axis (x, y or z).'),
       },
     },
     async (args) =>
@@ -1148,8 +1148,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     'scene-state',
     'kura://scene/state',
     {
-      title: 'Estado actual de la escena Kura3D',
-      description: 'Instantánea JSON de los objetos, unidades y perfil de impresora activos.',
+      title: 'Current Kura3D scene state',
+      description: 'JSON snapshot of the objects, units and active printer profile.',
       mimeType: 'application/json',
     },
     async (uri) => {
@@ -1181,8 +1181,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     'about-kura3d',
     'kura://info/about',
     {
-      title: 'Información de Kura3D MCP',
-      description: 'Metadatos de autoría, licencia MIT y estado de conexión del puente WebSocket.',
+      title: 'Kura3D MCP information',
+      description: 'Authorship metadata, MIT license and WebSocket bridge connection status.',
       mimeType: 'application/json',
     },
     async (uri) => ({

@@ -26,14 +26,14 @@ export function registerParametricTools(server: Pick<McpServer, 'registerTool'>,
   server.registerTool(
     'kura_update_primitive_params',
     {
-      title: 'Editar parámetros de una primitiva o rosca',
+      title: 'Edit parameters of a primitive or thread',
       description:
-        'Regenera una primitiva (radio, alto, segmentos, texto…) o una rosca (diámetro, paso, largo, holgura) con parámetros nuevos, ' +
-        'conservando id, nombre, posición, rotación, escala, color y material. Falla si una operación ya cambió la malla. ' +
-        'Si la pieza tenía caras pintadas, la pintura se pierde.',
+        'Regenerates a primitive (radius, height, segments, text…) or a thread (diameter, pitch, length, clearance) with new parameters, ' +
+        'keeping id, name, position, rotation, scale, color and material. Fails if an operation has already changed the mesh. ' +
+        'If the part had painted faces, the paint is lost.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto paramétrico.'),
-        params: primitiveParamsSchema.merge(threadEditSchema).describe('Solo los parámetros que cambian, en milímetros.'),
+        objectId: idSchema.describe('ID of the parametric object.'),
+        params: primitiveParamsSchema.merge(threadEditSchema).describe('Only the parameters that change, in millimeters.'),
       },
     },
     async (args) =>

@@ -61,7 +61,7 @@ export { HeadlessUnsupportedError, type SceneObjectSummary } from './headlessSup
 export const ENGINE_GRID_SPACING_MM = ops.ARRANGE_GRID_SPACING_MM;
 
 /** Nota común que identifica el origen real de la geometría en las respuestas. */
-const ENGINE_NOTE = 'Calculado con el motor Manifold compartido de Kura3D (src/engine).';
+const ENGINE_NOTE = 'Computed with the shared Kura3D Manifold engine (src/engine).';
 
 /** Instantánea completa del estado de la escena en modo Headless. */
 export interface HeadlessSceneState {
@@ -205,11 +205,11 @@ export class KuraHeadlessEngine {
   }> {
     const target = this.requireEditable(input.targetId);
     if (input.toolIds.length === 0) {
-      throw new Error('Se requiere al menos un objeto herramienta en `toolIds`.');
+      throw new Error('At least one tool object is required in `toolIds`.');
     }
     const tools = input.toolIds.map((id) => this.requireEditable(id));
     if (tools.some((t) => t.id === target.id)) {
-      throw new Error('El objeto objetivo no puede ser también herramienta de la operación booleana.');
+      throw new Error('The target object cannot also be a tool of the boolean operation.');
     }
 
     const { result, change } = await ops.booleanOperation(this.ctx, {
@@ -286,7 +286,7 @@ export class KuraHeadlessEngine {
     const obj = this.requireEditable(objectId);
     const { parts, change } = await ops.planeCut(this.ctx, obj, options);
     if (parts.length === 0) {
-      throw new Error('El plano de corte no intersecta el objeto: no se generaron piezas.');
+      throw new Error('The cut plane does not intersect the object: no pieces were generated.');
     }
     // Las mitades se separan en X/Z para que sus cajas envolventes (y los conectores) no se solapen.
     const placed = this.spread(parts, change.removedIds);
@@ -299,7 +299,7 @@ export class KuraHeadlessEngine {
     const obj = this.requireEditable(objectId);
     const { parts, change } = await ops.splitDisconnected(this.ctx, obj);
     if (parts.length === 0) {
-      return { parts: [summarizeObject(obj)], note: 'El objeto es un único cuerpo conexo; no hay nada que separar.' };
+      return { parts: [summarizeObject(obj)], note: 'The object is a single connected body; there is nothing to split.' };
     }
     this.apply(change);
     return { parts: parts.map(summarizeObject), note: ENGINE_NOTE };
@@ -314,7 +314,7 @@ export class KuraHeadlessEngine {
     const obj = this.requireEditable(objectId);
     const { parts, change } = ops.splitByColor(this.ctx, obj, 2);
     if (parts.length === 0) {
-      return { parts: [summarizeObject(obj)], note: 'El objeto tiene un solo color; no hay nada que separar.' };
+      return { parts: [summarizeObject(obj)], note: 'The object has a single color; there is nothing to split.' };
     }
     this.apply(change);
     const summaries = parts.map(summarizeObject);
@@ -322,7 +322,7 @@ export class KuraHeadlessEngine {
     return {
       parts: summaries,
       note: ENGINE_NOTE,
-      warnings: change.warnings.map((w) => ({ code: w.code, message: engine.localizeEngineWarning('es', w) })),
+      warnings: change.warnings.map((w) => ({ code: w.code, message: engine.localizeEngineWarning('en', w) })),
     };
   }
 
@@ -344,7 +344,7 @@ export class KuraHeadlessEngine {
   setMaterial(objectId: string, materialPreset: MaterialPresetId): SceneObjectSummary {
     if (!Object.prototype.hasOwnProperty.call(MATERIAL_PRESETS, materialPreset)) {
       throw new Error(
-        `Preset de material desconocido '${materialPreset}'. Disponibles: ${Object.keys(MATERIAL_PRESETS).join(', ')}`
+        `Unknown material preset '${materialPreset}'. Available: ${Object.keys(MATERIAL_PRESETS).join(', ')}`
       );
     }
     const obj = this.requireEditable(objectId);
@@ -384,7 +384,7 @@ export class KuraHeadlessEngine {
     const found = DEFAULT_PRINTER_PROFILES.find((p) => p.id === profileId);
     if (!found) {
       const available = DEFAULT_PRINTER_PROFILES.map((p) => p.id).join(', ');
-      throw new Error(`Perfil de impresora desconocido '${profileId}'. Disponibles: ${available}`);
+      throw new Error(`Unknown printer profile '${profileId}'. Available: ${available}`);
     }
     this.printerProfile = { ...found };
     return { printerProfile: { ...this.printerProfile } };
@@ -410,7 +410,7 @@ export class KuraHeadlessEngine {
     return {
       ...rest,
       // `warnings` (español) se mantiene por compatibilidad; `issues` trae código y parámetros.
-      warnings: report.issues.map((w) => engine.localizePrintWarning('es', w)),
+      warnings: report.issues.map((w) => engine.localizePrintWarning('en', w)),
       issues: report.issues.map((w) => ({ code: w.code, params: { ...w.params } })),
       dimensionsMm: engine.computeMeshStats(world).dimensionsMm,
       materialPreset,
@@ -426,11 +426,11 @@ export class KuraHeadlessEngine {
     spacingMm?: number
   ): { objects: SceneObjectSummary[]; mode: AlignMode; spacingMm?: number } {
     if (objectIds.length === 0) {
-      throw new Error('Se requiere al menos un objeto en `objectIds` para alinear.');
+      throw new Error('At least one object is required in `objectIds` to align.');
     }
     if (spacingMm !== undefined && spacingMm !== ENGINE_GRID_SPACING_MM) {
       throw new Error(
-        `spacingMm=${spacingMm} no soportado: el motor de Kura3D distribuye con separación fija de ${ENGINE_GRID_SPACING_MM} mm. Omite el parámetro.`
+        `spacingMm=${spacingMm} not supported: the Kura3D engine distributes with a fixed spacing of ${ENGINE_GRID_SPACING_MM} mm. Omit the parameter.`
       );
     }
     // Operación pura compartida con el store; los bloqueados no se mueven.
@@ -462,7 +462,7 @@ export class KuraHeadlessEngine {
       pourSpoutRadiusMm: options.pourSpoutRadiusMm ?? OPERATION_DEFAULTS.mold.pourSpoutRadiusMm,
     });
     if (parts.length === 0) {
-      throw new Error('El motor no generó piezas de molde para este objeto.');
+      throw new Error('The engine did not generate mold parts for this object.');
     }
     const placed = placement === 'origin' ? parts : this.spread(parts, change.removedIds);
     this.apply({ ...change, added: placed });
@@ -476,7 +476,7 @@ export class KuraHeadlessEngine {
   ): Promise<{ object: SceneObjectSummary; mode: SurfaceProjectionOptions['mode']; note: string }> {
     const target = this.requireEditable(objectId);
     if (options.kind === 'svg' && !options.svgContent) {
-      throw new Error('kind="svg" requiere `svgContent`.');
+      throw new Error('kind="svg" requires `svgContent`.');
     }
     this.apply(await ops.projectOnSurface(this.ctx, target, options));
     return { object: summarizeObject(target), mode: options.mode, note: ENGINE_NOTE };
@@ -510,7 +510,7 @@ export class KuraHeadlessEngine {
     name?: string
   ): Promise<{ object: SceneObjectSummary; sourceObjectIds: string[] }> {
     if (objectIds.length === 0) {
-      throw new Error('Se requiere al menos un objeto en `objectIds` para generar la envolvente.');
+      throw new Error('At least one object is required in `objectIds` to generate the hull.');
     }
     const targets = objectIds.map((id) => this.requireObject(id));
     const { result, change } = await ops.convexHull(this.ctx, targets, name);
@@ -535,7 +535,7 @@ export class KuraHeadlessEngine {
     const obj = this.requireEditable(objectId);
     const segmentation = await this.detectStructures(objectId, options);
     if (segmentation.regions.length === 0) {
-      throw new Error('No se detectaron sub-estructuras para colorear en el objeto.');
+      throw new Error('No sub-structures were detected to color on the object.');
     }
     this.apply(ops.colorizeStructures(this.ctx, obj, segmentation));
     return { object: summarizeObject(obj), regions: segmentation.regions, regionCount: segmentation.regions.length };
@@ -559,7 +559,7 @@ export class KuraHeadlessEngine {
     if (!region) {
       const available = segmentation.regions.map((r) => r.id).join(', ') || 'ninguna';
       throw new Error(
-        `Región estructural '${regionId}' no encontrada en el objeto '${objectId}'. Disponibles: ${available}`
+        `Structural region '${regionId}' not found on object '${objectId}'. Available: ${available}`
       );
     }
 
@@ -617,7 +617,7 @@ export class KuraHeadlessEngine {
     if (state.status === 'primitive') edit = { kind: 'primitive', params: stripUndefined(params) };
     else if (state.status === 'thread') {
       edit = { kind: 'thread', options: stripUndefined({ diameterMm, pitchMm, lengthMm, clearanceMm, includeHead }) as ThreadOptions };
-    } else throw new Error(`El objeto '${obj.name}' ya no es paramétrico: una operación cambió su malla.`);
+    } else throw new Error(`Object '${obj.name}' is no longer parametric: an operation changed its mesh.`);
     this.apply(await ops.regenerateParametric(this.ctx, obj, edit));
     return summarizeObject(this.requireObject(objectId));
   }
@@ -654,7 +654,7 @@ export class KuraHeadlessEngine {
   private requireObject(id: string): HeadlessSceneObject {
     const obj = this.objects.get(id);
     if (!obj) {
-      throw new Error(`Objeto no encontrado en escena headless: '${id}'.`);
+      throw new Error(`Object not found in headless scene: '${id}'.`);
     }
     return obj;
   }

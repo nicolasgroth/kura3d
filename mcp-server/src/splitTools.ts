@@ -20,40 +20,40 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
   server.registerTool(
     'kura_split_for_bed',
     {
-      title: 'Dividir para imprimir',
+      title: 'Split for printing',
       description:
-        'Divide un objeto grande en piezas que caben en la cama (por defecto la del perfil activo), con conectores en cada unión, ' +
-        'nombre por rejilla ("Objeto · A1": letra = columna X, número = nivel Y, minúscula = fila Z) y marcas de pareja grabadas ' +
-        'opcionales. Los planos se desplazan hacia la sección más simple. Con dryRun=true solo devuelve el plan (planos y piezas estimadas) ' +
-        'sin cambiar la escena. Devuelve un resumen corto; detail=true agrega el plan completo. ' +
-        'Error SPLIT_TOO_MANY_PIECES (con needed = piezas necesarias) si harían falta más de maxPieces; ' +
-        'maxPieces="auto" sube el tope hasta 400. Una sección más delgada que minWallForConnectorMm queda como corte liso para pegar ' +
-        '(kind="glue", con aviso); connectorType="lap" (solape de borde, modifica la forma en la unión) lo usa en todas las uniones.',
+        'Splits a large object into pieces that fit on the bed (by default the active profile bed), with connectors at each joint, ' +
+        'grid-based name ("Object · A1": letter = X column, number = Y level, lowercase = Z row) and optional engraved mating marks ' +
+        'Cut planes shift toward the simplest section. With dryRun=true it only returns the plan (planes and estimated pieces) ' +
+        'without changing the scene. Returns a short summary; detail=true adds the full plan. ' +
+        'Error SPLIT_TOO_MANY_PIECES (with needed = pieces required) if more than maxPieces would be needed; ' +
+        'maxPieces="auto" raises the limit to 400. A section thinner than minWallForConnectorMm becomes a flat cut to glue ' +
+        '(kind="glue", with a warning); connectorType="lap" (edge overlap, changes the joint shape) uses it on all joints.',
       inputSchema: {
-        objectId: idSchema.describe('ID del objeto a dividir.'),
-        dryRun: z.boolean().default(false).describe('true = solo plan, sin cortar.'),
-        detail: z.boolean().default(false).describe('true = devuelve el plan completo; por defecto un resumen (piezas, placas, uniones con/sin conector, avisos).'),
-        bedWidthMm: rangeSchema(OR.split.bedMm).optional().describe('Ancho X de la cama (por defecto el perfil activo).'),
-        bedDepthMm: rangeSchema(OR.split.bedMm).optional().describe('Fondo Z de la cama.'),
-        bedHeightMm: rangeSchema(OR.split.bedMm).optional().describe('Alto Y útil de impresión.'),
-        marginMm: rangeSchema(OR.split.marginMm).default(d.marginMm).describe('Margen por lado que se descuenta de la cama.'),
-        axes: z.array(z.enum(['x', 'y', 'z'])).min(1).max(3).optional().describe('Ejes donde se permite cortar (por defecto los tres).'),
+        objectId: idSchema.describe('ID of the object to split.'),
+        dryRun: z.boolean().default(false).describe('true = plan only, no cutting.'),
+        detail: z.boolean().default(false).describe('true = returns the full plan; by default a summary (pieces, plates, joints with/without connector, warnings).'),
+        bedWidthMm: rangeSchema(OR.split.bedMm).optional().describe('Bed X width (default: active profile).'),
+        bedDepthMm: rangeSchema(OR.split.bedMm).optional().describe('Bed Z depth.'),
+        bedHeightMm: rangeSchema(OR.split.bedMm).optional().describe('Usable printing height (Y).'),
+        marginMm: rangeSchema(OR.split.marginMm).default(d.marginMm).describe('Margin per side subtracted from the bed.'),
+        axes: z.array(z.enum(['x', 'y', 'z'])).min(1).max(3).optional().describe('Axes where cutting is allowed (default: all three).'),
         maxPieces: z.union([rangeSchema(OR.split.maxPieces), z.literal('auto')]).default(d.maxPieces),
-        allowRotation: z.boolean().default(true).describe('Permite girar 90° una pieza para que quepa.'),
-        allowDiagonal: z.boolean().default(false).describe('Permite apoyar la pieza en diagonal sobre la cama si así cabe sin cortar.'),
+        allowRotation: z.boolean().default(true).describe('Allows rotating a part 90° so it fits.'),
+        allowDiagonal: z.boolean().default(false).describe('Allows resting the part diagonally on the bed if it fits that way without cutting.'),
         connectorType: z.enum(['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel']).default('dowel')
           .describe('dowel = fixed peg on one part; loose-dowel = blind holes in both parts plus separate printed dowels (no protrusions).'),
-        minWallForConnectorMm: rangeSchema(OR.split.minWallForConnectorMm).default(d.minWallForConnectorMm).describe('Espesor mínimo de la sección para poner conector; más delgada queda para pegar.'),
-        lapHeightMm: rangeSchema(OR.split.lapHeightMm).default(d.lapHeightMm).describe('Alto del solape de borde en mm.'),
-        connectorSize: rangeSchema(OR.cut.connectorSize).default(4).describe('Radio/semiancho del conector en mm.'),
+        minWallForConnectorMm: rangeSchema(OR.split.minWallForConnectorMm).default(d.minWallForConnectorMm).describe('Minimum section thickness to place a connector; thinner sections are left for gluing.'),
+        lapHeightMm: rangeSchema(OR.split.lapHeightMm).default(d.lapHeightMm).describe('Edge overlap height in mm.'),
+        connectorSize: rangeSchema(OR.cut.connectorSize).default(4).describe('Connector radius/half-width in mm.'),
         connectorDepth: rangeSchema(OR.cut.connectorDepth).default(6),
-        tolerance: rangeSchema(OR.cut.tolerance).default(0.25).describe('Holgura de encaje en mm.'),
+        tolerance: rangeSchema(OR.cut.tolerance).default(0.25).describe('Fit clearance in mm.'),
         connectorCount: rangeSchema(OR.cut.connectorCount).default(2),
-        labels: z.enum(['none', 'engraved']).default('none').describe('Marcas de pareja grabadas en las caras de unión.'),
+        labels: z.enum(['none', 'engraved']).default('none').describe('Engraved mating marks on the joint faces.'),
         labelDepthMm: rangeSchema(OR.split.labelDepthMm).default(d.labelDepthMm),
         labelMinHeightMm: rangeSchema(OR.split.labelMinHeightMm).default(d.labelMinHeightMm),
-        labelPlacement: z.enum(['auto', 'joint', 'outside']).default('auto').describe('Marca en la cara de unión, por fuera junto al borde o automática.'),
-        minFragmentMm3: rangeSchema(OR.split.minFragmentMm3).default(d.minFragmentMm3).describe('Cuerpos sueltos menores se funden con la pieza vecina.'),
+        labelPlacement: z.enum(['auto', 'joint', 'outside']).default('auto').describe('Mark on the joint face, outside next to the edge, or automatic.'),
+        minFragmentMm3: rangeSchema(OR.split.minFragmentMm3).default(d.minFragmentMm3).describe('Smaller loose bodies are merged into the neighboring part.'),
       },
     },
     async ({ detail, ...args }) => {

@@ -26,20 +26,20 @@ export const nameSchema = z
   .trim()
   .min(1)
   .max(128)
-  .refine((v) => !CONTROL_CHARS.test(v), 'El nombre no puede contener caracteres de control.');
+  .refine((v) => !CONTROL_CHARS.test(v), 'Name cannot contain control characters.');
 
 /** Identificador de objeto o región: 1–128 caracteres imprimibles sin espacios. */
 export const idSchema = z
   .string()
   .min(1)
   .max(128)
-  .regex(/^[^\s\u0000-\u001f\u007f-\u009f]+$/, 'ID inválido.');
+  .regex(/^[^\s\u0000-\u001f\u007f-\u009f]+$/, 'Invalid ID.');
 
 /** Texto corto para primitivas de texto o proyección (permite saltos de línea, no otros controles). */
 export const shortTextSchema = z
   .string()
   .max(500)
-  .refine((v) => !/[\u0000-\u0008\u000b-\u001f\u007f]/.test(v), 'Texto con caracteres de control.');
+  .refine((v) => !/[\u0000-\u0008\u000b-\u001f\u007f]/.test(v), 'Text contains control characters.');
 
 const ranged = (range: ParamRange) => {
   const base = z.number().min(range.min).max(range.max);
@@ -113,15 +113,15 @@ const vec3Of = (range: OperationRange, what: string) =>
   z.tuple([rangeSchema(range), rangeSchema(range), rangeSchema(range)]).describe(what);
 
 /** Posición [x, y, z] en mm (±100000). */
-export const positionSchema = vec3Of(TRANSFORM_RANGES.position, 'Posición [X, Y, Z] en milímetros.');
+export const positionSchema = vec3Of(TRANSFORM_RANGES.position, 'Position [X, Y, Z] in millimeters.');
 /** Rotación Euler [rx, ry, rz] en radianes, acotada. */
-export const rotationSchema = vec3Of(TRANSFORM_RANGES.rotation, 'Rotación Euler [rx, ry, rz] en radianes.');
+export const rotationSchema = vec3Of(TRANSFORM_RANGES.rotation, 'Euler rotation [rx, ry, rz] in radians.');
 /** Escala [sx, sy, sz], cada factor en [0.001, 1000]. */
-export const scaleSchema = vec3Of(TRANSFORM_RANGES.scale, 'Escala [sx, sy, sz]; cada factor en [0.001, 1000].');
+export const scaleSchema = vec3Of(TRANSFORM_RANGES.scale, 'Scale [sx, sy, sz]; each factor in [0.001, 1000].');
 /** Colocación de piezas nuevas: `free` (por defecto) busca un hueco libre; `origin` las deja en el centro. */
 export const placementSchema = z
   .enum(['free', 'origin'])
   .optional()
   .describe(
-    "'free' (por defecto): primer hueco libre de la cama sin solapar otras piezas; 'origin': centro de la escena. Una `position` explícita manda sobre ambos. Devuelve la posición final."
+    "'free' (default): first free spot on the bed without overlapping other parts; 'origin': center of the scene. An explicit `position` overrides both. Returns the final position."
   );
