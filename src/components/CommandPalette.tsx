@@ -540,7 +540,7 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <Sparkles size={15} />,
         run: () => {
-          if (primaryId) splitObjectByColor(primaryId);
+          if (primaryId) void splitObjectByColor(primaryId);
         },
       },
       {

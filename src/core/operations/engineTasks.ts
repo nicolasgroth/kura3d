@@ -30,7 +30,7 @@ import { applyHoles, booleanOperation, convexHull } from './csgOperations';
 import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
 import { eraseSphere, hollowObject, projectOnSurface, refineObject, simplifyObject } from './meshOperations';
 import type { OperationContext } from './operationTypes';
-import { extractStructure, generateMold, planeCut, splitDisconnected, splitStructures } from './partOperations';
+import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnected, splitStructures } from './partOperations';
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
@@ -91,6 +91,8 @@ export const ENGINE_TASKS = {
     projectOnSurface(ctx, a.obj, a.options),
   planeCut: (ctx: OperationContext, a: { obj: SceneObject; options: PlaneCutOptions }) => planeCut(ctx, a.obj, a.options),
   splitDisconnected: (ctx: OperationContext, a: { obj: SceneObject }) => splitDisconnected(ctx, a.obj),
+  splitByColor: (ctx: OperationContext, a: { obj: SceneObject; options: engine.ColorSplitOptions }) =>
+    splitByColor(ctx, a.obj, 1, a.options),
   mold: (ctx: OperationContext, a: { obj: SceneObject; options: MoldOptions }) => generateMold(ctx, a.obj, a.options),
   detectStructures: (_ctx: OperationContext, a: { obj: SceneObject; creaseAngleDeg: number }) =>
     engine.detectStructuralRegions(a.obj, { creaseAngleDeg: a.creaseAngleDeg }),

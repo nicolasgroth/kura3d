@@ -312,14 +312,14 @@ export class KuraHeadlessEngine {
     return { parts: parts.map(userSummary), note: ENGINE_NOTE };
   }
 
-  /** Separa por color de cara con `splitMeshByColor` del motor. */
-  splitByColor(objectId: string): {
+  /** Separa por color de cara en sólidos cerrados (`splitMeshByColorSolid` del motor). */
+  async splitByColor(objectId: string, depthMm?: number): Promise<{
     parts: SceneObjectSummary[];
     note: string;
     warnings?: Array<{ code: string; message: string }>;
-  } {
+  }> {
     const obj = this.requireEditable(objectId);
-    const { parts, change } = ops.splitByColor(this.ctx, obj, 2);
+    const { parts, change } = await ops.splitByColor(this.ctx, obj, 2, depthMm === undefined ? {} : { depthMm });
     if (parts.length === 0) {
       return { parts: [userSummary(obj)], note: 'The object has a single color; there is nothing to split.' };
     }

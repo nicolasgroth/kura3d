@@ -203,9 +203,10 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     return required(await get().splitDisconnectedObject(id), command).map(brief);
   },
 
-  split_by_color: (p, { get }, command) => {
-    const { id } = schema.parseEditableTarget(get(), p);
-    return required(get().splitObjectByColor(id), command).map((o) => ({ ...brief(o), color: o.color }));
+  split_by_color: async (p, { get }, command) => {
+    const { target, depthMm } = schema.parseSplitByColor(get(), p);
+    const parts = required(await get().splitObjectByColor(target.id, depthMm === undefined ? {} : { depthMm }), command);
+    return parts.map((o) => ({ ...brief(o), color: o.color, volumeMm3: o.stats.volumeMm3 }));
   },
 
   apply_texture: (p, { get }, command) => {

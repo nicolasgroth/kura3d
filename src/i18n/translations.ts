@@ -18,6 +18,7 @@ import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
 import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
 import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
+import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -30,6 +31,7 @@ export const TRANSLATIONS_ES = {
   ...SPLITJOINTS_ES,
   ...SPLITPREFS_ES,
   ...SPLITCOUPLING_ES,
+  ...OPNOTES_ES,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
@@ -1392,6 +1394,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...SPLITJOINTS_EN,
   ...SPLITPREFS_EN,
   ...SPLITCOUPLING_EN,
+  ...OPNOTES_EN,
   'app.name': 'Kura3D',
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',

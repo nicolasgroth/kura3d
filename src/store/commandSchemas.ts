@@ -358,6 +358,14 @@ export function parseSimplify(scene: SceneView, p: RawParams) {
   };
 }
 
+/** `split_by_color`: objeto editable y profundidad opcional del color (mm). */
+export function parseSplitByColor(scene: SceneView, p: RawParams) {
+  return {
+    target: resolveTarget(scene, p, { unlocked: true }),
+    depthMm: readRange(p, OR.colorSplit.depthMm, 'depthMm'),
+  };
+}
+
 export function parseRefine(scene: SceneView, p: RawParams) {
   return {
     target: resolveTarget(scene, p, { unlocked: true }),

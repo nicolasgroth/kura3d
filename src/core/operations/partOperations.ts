@@ -60,15 +60,17 @@ export async function splitDisconnected(
 }
 
 /**
- * Separa por color de cara. Con menos de `minParts` piezas no construye nada ni cambia la escena
- * (la app separa desde 1 pieza; el MCP headless exige 2).
+ * Separa por color de cara en sólidos cerrados (`splitMeshByColorSolid`): cada color no base toma una
+ * capa de `depthMm` hacia el interior. Con menos de `minParts` piezas no construye nada ni cambia la
+ * escena (la app separa desde 1 pieza; el MCP headless exige 2).
  */
-export function splitByColor(
+export async function splitByColor(
   ctx: OperationContext,
   obj: SceneObject,
   minParts = 1,
-): { pieceCount: number; parts: SceneObject[]; change: SceneChange } {
-  const { parts: pieces, warnings } = engine.splitMeshByColorDetailed(obj);
+  options: engine.ColorSplitOptions = {},
+): Promise<{ pieceCount: number; parts: SceneObject[]; change: SceneChange }> {
+  const { parts: pieces, warnings } = await engine.splitMeshByColorSolid(obj, options);
   if (pieces.length < minParts) return { pieceCount: pieces.length, parts: [], change: change({ warnings: [...warnings] }) };
   const parts = pieces.map((piece, idx) => buildWith(ctx, {
     name: ctx.naming.colorPart(obj, piece.color, idx),
