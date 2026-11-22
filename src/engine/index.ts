@@ -121,6 +121,8 @@ export {
 
 export { hollowMeshDetailed, type HollowResult } from './hollow';
 
+export { computeWorldStats } from './worldStats';
+
 export { refineMeshDetailed, type RefineResult } from './refine';
 
 export { splitMeshByColorDetailed, type ColorSplitResult } from './colorSplit';

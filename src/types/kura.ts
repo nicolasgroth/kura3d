@@ -606,6 +606,8 @@ export interface StructuralSegmentationResult {
   method: 'shells_and_creases';
   totalTriangles: number;
   regions: DetectedStructureRegion[];
+  /** Huella de la malla analizada (`computeMeshFingerprint`): invalida el resultado si la malla cambió. */
+  meshFingerprint?: string;
 }
 
 /** Origen de creación de un objeto en la escena. */

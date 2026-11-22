@@ -26,6 +26,7 @@ import {
   initManifoldEngine,
   manifoldToMeshData,
 } from './manifoldKernel';
+import { EngineError } from './engineErrors';
 import { normalizeMeshToBed } from './primitives';
 import { validateImageBuffer } from './imageInput';
 
@@ -537,9 +538,7 @@ export async function extrudeSvgToMesh(options: SvgImportOptions): Promise<MeshD
   const groups = extractSvgElementGroups(options.svgContent, curveSegments);
 
   if (groups.length === 0) {
-    throw new Error(
-      'No se encontraron contornos vectoriales válidos (<path>, <rect>, <circle>, <polygon>, <ellipse>) en el SVG.'
-    );
+    throw new EngineError('SVG_NO_CONTOURS');
   }
 
   const elementSections: CrossSection[] = [];
@@ -561,7 +560,7 @@ export async function extrudeSvgToMesh(options: SvgImportOptions): Promise<MeshD
     }
 
     if (elementSections.length === 0) {
-      throw new Error('La geometría 2D del SVG tiene área nula.');
+      throw new EngineError('SVG_ZERO_AREA');
     }
 
     // Unimos todos los elementos SVG independientes (como hace el renderizador SVG estándar)
@@ -572,7 +571,7 @@ export async function extrudeSvgToMesh(options: SvgImportOptions): Promise<MeshD
     csUnion = rawUnion.simplify(1e-4);
 
     if (csUnion.isEmpty()) {
-      throw new Error('La geometría 2D del SVG tiene área nula.');
+      throw new EngineError('SVG_ZERO_AREA');
     }
 
     const bounds = csUnion.bounds();

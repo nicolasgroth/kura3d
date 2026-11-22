@@ -25,6 +25,23 @@ export function isInsideRoot(root: string, target: string): boolean {
   return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel) && rel.split(sep)[0] !== '..');
 }
 
+/** Sube desde `path` hasta el primer directorio que existe (como mucho, `root`, que ya existe). */
+async function nearestExistingAncestor(path: string, root: string): Promise<string> {
+  let current = path;
+  while (current !== root) {
+    try {
+      await lstat(current);
+      return current;
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+    }
+    const up = dirname(current);
+    if (up === current) break;
+    current = up;
+  }
+  return root;
+}
+
 /**
  * Resuelve `requested` dentro de `exportDir` y garantiza que el archivo final quede confinado.
  * Las rutas relativas se resuelven respecto de `exportDir`; las absolutas deben caer dentro.
@@ -57,8 +74,14 @@ export async function resolveExportPath(
   await mkdir(root, { recursive: true });
   const realRoot = await realpath(root);
 
-  // Crea solo subdirectorios bajo la raíz y valida su ruta real (bloquea symlinks/junctions hacia fuera).
+  // Antes de crear nada, el ancestro existente más cercano debe resolver dentro de la raíz: si un
+  // enlace sale de ella, `mkdir` crearía carpetas fuera antes del rechazo.
   const parent = dirname(target);
+  const realAncestor = await realpath(await nearestExistingAncestor(parent, root));
+  if (!isInsideRoot(realRoot, realAncestor)) {
+    throw new ExportPathError('La ruta de exportación atraviesa un enlace que sale del directorio permitido.');
+  }
+  // Crea solo subdirectorios bajo la raíz y revalida su ruta real (bloquea symlinks/junctions hacia fuera).
   await mkdir(parent, { recursive: true });
   const realParent = await realpath(parent);
   if (!isInsideRoot(realRoot, realParent)) {

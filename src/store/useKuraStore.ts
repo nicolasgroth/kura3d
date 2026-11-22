@@ -80,6 +80,8 @@ import {
 } from '../utils/mcpTokenStore';
 import { computeArrangeLayout } from '../engine/alignment';
 import { assertInputsCurrent, subtractOrEmpty, worldBaked } from './sceneOperationGuards';
+import { createExclusiveRunner } from './exclusiveOperation';
+import { segmentationMatchesMesh } from '../engine/segmentationGuards';
 import { sanitizeTransformPatch } from './transformLimits';
 import { loadKeyState, parseStoredAiConfig, persistableAiConfig } from '../ai/aiConfigState';
 import { loadAllowedHosts } from '../ai/allowedHosts';
@@ -400,12 +402,24 @@ export interface KuraStoreState {
   ) => Promise<KuraCommandResponse>;
 }
 
+/** Selección sin ids huérfanos ni duplicados: guardar no debe fallar por una selección vieja. */
+function liveSelection(objects: SceneObject[], selectedIds: string[]): string[] {
+  const ids = new Set(objects.map((o) => o.id));
+  const clean = [...new Set(selectedIds)].filter((id) => ids.has(id));
+  return clean.length === selectedIds.length ? selectedIds : clean;
+}
+
+function cleanSnapshotSelection<T extends { objects: SceneObject[]; selectedIds: string[] }>(snapshot: T): T {
+  const selectedIds = liveSelection(snapshot.objects, snapshot.selectedIds);
+  return selectedIds === snapshot.selectedIds ? snapshot : { ...snapshot, selectedIds };
+}
+
 export function captureProject(state: KuraStoreState): ProjectDocument {
   return {
     objects: state.objects,
-    selectedIds: state.selectedIds,
-    past: state.past,
-    future: state.future,
+    selectedIds: liveSelection(state.objects, state.selectedIds),
+    past: state.past.map(cleanSnapshotSelection),
+    future: state.future.map(cleanSnapshotSelection),
     unitSystem: state.unitSystem,
     printerProfile: state.printerProfile,
     customBedDimensions: state.customBedDimensions,
@@ -746,7 +760,27 @@ let engineInitPromise: Promise<void> | null = null;
 let paintStroke: { open: boolean; recorded: boolean } = { open: false, recorded: false };
 let transformSnapshotBeforeDrag: SceneSnapshot | null = null;
 
-export const useKuraStore = create<KuraStoreState>((set, get) => {
+export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
+  /**
+   * Toda escritura del store pasa por aquí: si la malla del objeto segmentado ya no es la analizada
+   * (undo/redo, simplificar, refinar, vaciar, booleanas, borrado...), la segmentación se descarta.
+   */
+  let verifiedSegmentationMesh: MeshData | null = null;
+  const dropStaleSegmentation = () => {
+    const seg = get().activeSegmentation;
+    if (!seg) return;
+    const obj = get().objects.find((o) => o.id === seg.objectId);
+    if (obj && obj.mesh === verifiedSegmentationMesh) return;
+    if (obj && segmentationMatchesMesh(obj.mesh, seg)) {
+      verifiedSegmentationMesh = obj.mesh;
+      return;
+    }
+    rawSet({ activeSegmentation: null });
+  };
+  const set: typeof rawSet = ((...args: Parameters<typeof rawSet>) => {
+    rawSet(...args);
+    dropStaleSegmentation();
+  }) as typeof rawSet;
   const initialLang = loadInitialLanguage();
   const initialScheme = loadInitialColorScheme();
   const initialThemePreset = loadInitialThemePreset();
@@ -792,10 +826,24 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
     get().addToast(tr('store.error.busy'), 'info');
     return true;
   };
+  /** Única puerta de las operaciones asíncronas: rechaza si hay otra en curso, marca y libera `busyOperation`. */
+  const runExclusive = createExclusiveRunner({
+    isLocked: isHistoryLocked,
+    setBusy: (name) => set({ busyOperation: name }),
+    onRejected: () => get().addToast(tr('store.error.busy'), 'info'),
+    onError: (err) => reportOperationError(err),
+  });
+  /** Segmentación activa del objeto solo si se calculó sobre su malla actual. */
+  const currentSegmentationFor = (obj: SceneObject) => {
+    const seg = get().activeSegmentation;
+    return seg && seg.objectId === obj.id && segmentationMatchesMesh(obj.mesh, seg) ? seg : null;
+  };
 
   const projectErrorMessage = (error: unknown) => {
     if (error instanceof ProjectCodecError) {
-      return tr(error.code === 'too-large' ? 'fileProject.tooLarge' : `fileProject.${error.code}`);
+      const message = tr(error.code === 'too-large' ? 'fileProject.tooLarge' : `fileProject.${error.code}`);
+      // La causa técnica (campo u objeto) ayuda a saber qué impidió guardar o abrir.
+      return error.detail ? `${message} (${error.detail})` : message;
     }
     return error instanceof Error ? error.message : String(error);
   };
@@ -1305,6 +1353,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         return {
           objects: previous.objects,
           selectedIds: previous.selectedIds,
+          activeSegmentation: null,
           past: state.past.slice(0, -1),
           future: [current, ...state.future].slice(0, MAX_UNDO_HISTORY),
         };
@@ -1319,14 +1368,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         return {
           objects: next.objects,
           selectedIds: next.selectedIds,
+          activeSegmentation: null,
           past: [...state.past, current].slice(-MAX_UNDO_HISTORY),
           future: state.future.slice(1),
         };
       }),
 
     createPrimitive: async (type, params, options) => {
-      set({ busyOperation: type });
-      try {
+      return runExclusive(type, null, async () => {
         await get().initEngine();
         const rawMesh = await engine.createPrimitiveMesh(type, params);
         const normalized = engine.normalizeMeshToBed(rawMesh);
@@ -1359,12 +1408,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
         return obj;
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     addSubtractHelperPrimitive: async (type, targetId) => {
@@ -1384,8 +1428,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         return get().createPrimitive(type, undefined, { isHole });
       }
 
-      set({ busyOperation: `modular_${mode}_${type}` });
-      try {
+      return runExclusive(`modular_${mode}_${type}`, null, async () => {
         await get().initEngine();
         const scaledX = Math.max(4, targetObj.stats.dimensionsMm[0] * targetObj.scale[0]);
         const scaledY = Math.max(4, targetObj.stats.dimensionsMm[1] * targetObj.scale[1]);
@@ -1470,17 +1513,11 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           'info',
         );
         return modObj;
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     importModelAsModule: async (file, mode, targetId) => {
-      set({ busyOperation: `import_module_${mode}` });
-      try {
+      return runExclusive(`import_module_${mode}`, null, async () => {
         await get().initEngine();
         const parsedParts = parseModelBufferToMeshes(file, tr('dropProject.invalidGeometry', { name: file.name }));
         if (parsedParts.length === 0) return null;
@@ -1540,12 +1577,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           'success',
         );
         return created[0];
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     importModelAsModuleFromDialog: async (mode, targetId) => {
@@ -1841,9 +1873,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         return null;
       }
 
-      set({ busyOperation: `boolean:${op}` });
-      try {
-
+      return runExclusive(`boolean:${op}`, null, async () => {
         let currentTarget: SceneObject = targetObj;
         const firstRes = await engine.runBooleanOperation(currentTarget, toolObj, op);
         currentTarget = buildSceneObject({
@@ -1880,12 +1910,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
         get().addToast(tr('toast.booleanDone', { op }), 'success');
         return currentTarget;
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     applyHolesOnSolids: async () => {
@@ -1900,8 +1925,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       const holes = scope.filter((o) => o.isHole && o.visible && !o.locked);
       if (solids.length === 0 || holes.length === 0 || rejectWhileLocked()) return;
 
-      set({ busyOperation: 'apply_holes' });
-      try {
+      return runExclusive('apply_holes', undefined, async () => {
         const updatedSolids: SceneObject[] = [];
         for (const solid of solids) {
           let current: SceneObject | null = solid;
@@ -1938,19 +1962,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           selectedIds: updatedSolids.map((s) => s.id),
         }));
         get().addToast(tr('toast.booleanDone', { op: 'subtract' }), 'success');
-      } catch (err) {
-        reportOperationError(err);
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     hollowObject: async (id, options) => {
       const obj = get().objects.find((o) => o.id === id);
       if (!obj || obj.locked) return false;
 
-      set({ busyOperation: 'hollow' });
-      try {
+      return runExclusive('hollow', false, async () => {
         const detailed = options.enabled && options.wallThickness !== 0
           ? await engine.hollowMeshDetailed(obj, options)
           : { mesh: await engine.hollowMesh(obj, options), warnings: [] };
@@ -1977,20 +1996,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         reportEngineWarnings(detailed.warnings);
         return true;
-      } catch (err) {
-        reportOperationError(err);
-        return false;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     planeCutObject: async (id, options) => {
       const obj = get().objects.find((o) => o.id === id);
       if (!obj || obj.locked) return [];
 
-      set({ busyOperation: 'plane_cut' });
-      try {
+      return runExclusive('plane_cut', [], async () => {
         const result = await engine.planeCutWithConnectors(obj, options);
         const created: SceneObject[] = [];
 
@@ -2032,20 +2045,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         }));
         get().addToast(tr('toast.cutDone'), 'success');
         return created;
-      } catch (err) {
-        reportOperationError(err);
-        return [];
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     splitDisconnectedObject: async (id) => {
       const obj = get().objects.find((o) => o.id === id);
       if (!obj || obj.locked) return [];
 
-      set({ busyOperation: 'split_parts' });
-      try {
+      return runExclusive('split_parts', [], async () => {
         const parts = await engine.splitDisconnectedParts(obj);
         if (parts.length <= 1) {
           get().addToast(tr('toast.splitPartsDone', { count: parts.length }), 'info');
@@ -2071,12 +2078,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         }));
         get().addToast(tr('toast.splitPartsDone', { count: created.length }), 'success');
         return created;
-      } catch (err) {
-        reportOperationError(err);
-        return [];
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     splitObjectByColor: (id) => {
@@ -2199,8 +2201,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       const obj = get().objects.find((o) => o.id === id);
       if (!obj || obj.locked) return;
 
-      set({ busyOperation: 'erase' });
-      try {
+      return runExclusive('erase', undefined, async () => {
         const radius = radiusMm ?? get().eraseRadiusMm;
         const result = await engine.eraseRegionWithSphere(obj, worldCenter, radius);
         const stats = engine.computeMeshStats(result.mesh);
@@ -2222,22 +2223,18 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           ),
         }));
         get().addToast(tr('toast.erased'), 'success');
-      } catch (err) {
-        reportOperationError(err);
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     generateMoldForObject: async (id, options) => {
       const obj = get().objects.find((o) => o.id === id);
       if (!obj) return [];
 
-      set({ busyOperation: 'generate_mold' });
-      try {
+      return runExclusive('generate_mold', [], async () => {
         await get().initEngine();
         const parts = await engine.generateMold(obj, options);
         if (parts.length === 0) return [];
+        assertInputsCurrent(get().objects, [obj], tr);
 
         const created = parts.map((part) =>
           buildSceneObject({
@@ -2262,20 +2259,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         }));
         get().addToast(tr('toast.moldDone', { count: created.length }), 'success');
         return created;
-      } catch (err) {
-        reportOperationError(err);
-        return [];
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     projectOnObjectSurface: async (id, options) => {
       const obj = get().objects.find((o) => o.id === id);
       if (!obj || obj.locked) return null;
 
-      set({ busyOperation: 'project_surface' });
-      try {
+      return runExclusive('project_surface', null, async () => {
         await get().initEngine();
         const res = await engine.projectGraphicOntoSurface(obj, options);
         const stats = engine.computeMeshStats(res.mesh);
@@ -2298,12 +2289,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         }));
         get().addToast(tr('toast.projectDone'), 'success');
         return updated;
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     runPrintabilityCheck: (id, infillPercent = 18, overhangAngleDeg = 45) => {
@@ -2341,8 +2327,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       const obj = get().objects.find((o) => o.id === id);
       if (!obj || obj.locked) return false;
 
-      set({ busyOperation: 'simplify' });
-      try {
+      return runExclusive('simplify', false, async () => {
         await get().initEngine();
         const nextMesh = await engine.simplifyMesh(obj, toleranceMm);
         const stats = engine.computeMeshStats(nextMesh);
@@ -2359,20 +2344,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           'success',
         );
         return true;
-      } catch (err) {
-        reportOperationError(err);
-        return false;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     refineSelectedMesh: async (id, targetEdgeLengthMm, smooth = false) => {
       const obj = get().objects.find((o) => o.id === id);
       if (!obj || obj.locked) return false;
 
-      set({ busyOperation: 'refine' });
-      try {
+      return runExclusive('refine', false, async () => {
         await get().initEngine();
         const refined = await engine.refineMeshDetailed(obj, targetEdgeLengthMm, smooth);
         const nextMesh = refined.mesh;
@@ -2391,12 +2370,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         reportEngineWarnings(refined.warnings);
         return true;
-      } catch (err) {
-        reportOperationError(err);
-        return false;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     runConvexHull: async (ids) => {
@@ -2405,8 +2379,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       const targetObjs = objects.filter((o) => targetIds.includes(o.id));
       if (targetObjs.length === 0) return null;
 
-      set({ busyOperation: 'convex_hull' });
-      try {
+      return runExclusive('convex_hull', null, async () => {
         await get().initEngine();
         const res = await engine.computeConvexHull(targetObjs);
         const created = buildSceneObject({
@@ -2428,17 +2401,11 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         }));
         get().addToast(tr('toast.hullDone'), 'success');
         return created;
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     createThreadObject: async (options) => {
-      set({ busyOperation: 'create_thread' });
-      try {
+      return runExclusive('create_thread', null, async () => {
         await get().initEngine();
         const rawMesh = await engine.createMetricThread(options);
         const normalized = engine.normalizeMeshToBed(rawMesh);
@@ -2466,12 +2433,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         }));
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
         return obj;
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     alignSelectedObjects: (mode) => {
@@ -2523,8 +2485,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           ? creaseAngleDeg
           : state.segmentationCreaseDeg;
 
-      set({ busyOperation: 'detect_structures', segmentationCreaseDeg: angle });
-      try {
+      set({ segmentationCreaseDeg: angle });
+      return runExclusive('detect_structures', null, async () => {
         await get().initEngine();
         const result = await engine.detectStructuralRegions(obj, {
           creaseAngleDeg: angle,
@@ -2535,12 +2497,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           'success',
         );
         return result;
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     colorizeDetectedStructures: async (id) => {
@@ -2550,10 +2507,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       const obj = state.objects.find((o) => o.id === targetId);
       if (!obj || obj.locked) return false;
 
-      let segmentation =
-        state.activeSegmentation && state.activeSegmentation.objectId === obj.id
-          ? state.activeSegmentation
-          : null;
+      let segmentation = currentSegmentationFor(obj);
       if (!segmentation) {
         segmentation = await get().detectObjectStructures(obj.id);
       }
@@ -2590,10 +2544,15 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       const region = seg.regions.find((r) => r.id === regionId);
       if (!region) return null;
 
-      set({ busyOperation: 'extract_structure' });
-      try {
+      return runExclusive('extract_structure', null, async () => {
+        // Índices calculados sobre otra malla no se aplican: se descarta la segmentación.
+        if (!segmentationMatchesMesh(obj.mesh, seg)) {
+          set({ activeSegmentation: null });
+          throw new engine.EngineError('SEGMENTATION_STALE');
+        }
         await get().initEngine();
         const res = await engine.extractStructuralRegion(obj, region, removeFromSource);
+        assertInputsCurrent(get().objects, [obj], tr);
         const regionLabel = state.language === 'en' ? region.labelEn : region.labelEs;
         const extractedObj = buildSceneObject({
           name: `${obj.name} · ${regionLabel}`,
@@ -2654,12 +2613,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           'success',
         );
         return extractedObj;
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     splitAllDetectedObjectStructures: async (id) => {
@@ -2669,20 +2623,14 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       const obj = state.objects.find((o) => o.id === targetId);
       if (!obj || obj.locked) return [];
 
-      let segmentation =
-        state.activeSegmentation && state.activeSegmentation.objectId === obj.id
-          ? state.activeSegmentation
-          : null;
-      if (!segmentation) {
-        segmentation = await get().detectObjectStructures(obj.id);
-      }
+      const segmentation = currentSegmentationFor(obj) ?? (await get().detectObjectStructures(obj.id));
       if (!segmentation || segmentation.regions.length === 0) return [];
 
-      set({ busyOperation: 'split_structures' });
-      try {
+      return runExclusive('split_structures', [], async () => {
         await get().initEngine();
         const parts = await engine.splitAllDetectedStructures(obj, segmentation);
         if (parts.length === 0) return [];
+        assertInputsCurrent(get().objects, [obj], tr);
 
         const created = parts.map((part) => {
           const label = get().language === 'en' ? part.labelEn : part.labelEs;
@@ -2713,17 +2661,11 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           'success',
         );
         return created;
-      } catch (err) {
-        reportOperationError(err);
-        return [];
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     importSvgModel: async (options) => {
-      set({ busyOperation: 'import_svg' });
-      try {
+      return runExclusive('import_svg', null, async () => {
         await get().initEngine();
         const mesh = await engine.extrudeSvgToMesh(options);
         const normalized = engine.normalizeMeshToBed(mesh);
@@ -2741,17 +2683,11 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         }));
         get().addToast(tr('toast.imported', { name: obj.name }), 'success');
         return obj;
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     generateImageRelief: async (options) => {
-      set({ busyOperation: 'image_to_3d' });
-      try {
+      return runExclusive('image_to_3d', null, async () => {
         await get().initEngine();
         let mesh: MeshData;
         if (options.shapeMode === 'cylindrical') {
@@ -2778,12 +2714,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         }));
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
         return obj;
-      } catch (err) {
-        reportOperationError(err);
-        return null;
-      } finally {
-        set({ busyOperation: null });
-      }
+      });
     },
 
     importPlacementMode: loadInitialImportPlacement(),
@@ -2810,16 +2741,15 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         state.addToast(tr('fileProject.busy'), 'info');
         return false;
       }
-      set({ busyOperation: 'import_mesh' });
-      try {
-        await get().initEngine();
-        return await modelIo.importModelFiles(files, options);
-      } catch (err) {
-        get().addToast(tr('toast.errorPrefix', { message: projectErrorMessage(err) }), 'error');
-        return false;
-      } finally {
-        set({ busyOperation: null });
-      }
+      return runExclusive(
+        'import_mesh',
+        false,
+        async () => {
+          await get().initEngine();
+          return modelIo.importModelFiles(files, options);
+        },
+        { onError: (err) => get().addToast(tr('toast.errorPrefix', { message: projectErrorMessage(err) }), 'error') },
+      );
     },
 
     exportModel: (request) => modelIo.exportModel(request),

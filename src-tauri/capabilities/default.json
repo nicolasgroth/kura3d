@@ -15,8 +15,6 @@
     "fs:allow-read-file",
     "fs:allow-stat",
     "fs:allow-write-file",
-    "allow-get-app-info",
-    "allow-get-mcp-bridge-status",
     "allow-open-kura-project",
     "allow-save-kura-project",
     "allow-ai-key-status",

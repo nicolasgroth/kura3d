@@ -16,6 +16,7 @@ import { ProjectCodecError } from '../project/projectSchema';
 import type { MeshData, SceneObject, SlicerTarget, Vec3 } from '../types/kura';
 import { FileSaveError, LocalFileError, saveFileSet, type SaveSetEntry } from '../utils/platformBridge';
 import { exportFileBase } from '../utils/exportNaming';
+import { selectExportTargets } from './exportTargets';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 export type ExportScope = 'selection' | 'scene';
@@ -186,12 +187,12 @@ export function createModelIoActions(deps: ModelIoDeps) {
     return true;
   }
 
-  /** Objetos a exportar según el alcance (la selección incluye solo lo visible). */
+  /** Objetos a exportar según el alcance (selector compartido con el Command Bus). */
   function exportTargets(scope: ExportScope): SceneObject[] {
     const { objects, selectedIds } = get();
-    return scope === 'selection' && selectedIds.length > 0
-      ? objects.filter((o) => selectedIds.includes(o.id) && o.visible && !o.isHole)
-      : objects.filter((o) => o.visible && !o.isHole);
+    const { targets, skippedHoles } = selectExportTargets(objects, selectedIds, scope === 'selection');
+    if (targets.length > 0 && skippedHoles > 0) get().addToast(tr('export.holesSkipped', { count: skippedHoles }), 'info');
+    return targets;
   }
 
   /** Exporta selección o escena en el formato pedido; false si no hay nada, se cancela o falla. */

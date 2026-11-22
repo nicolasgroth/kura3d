@@ -29,6 +29,8 @@ import {
   computeMeshStats,
   normalizeMeshToBed,
 } from './primitives';
+import { computeMeshFingerprint } from './meshFingerprint';
+import { assertRegionFitsMesh, assertSegmentationMatchesMesh } from './segmentationGuards';
 
 /** Paleta de 12 colores de alto contraste para distinguir sub-estructuras y exportar 3MF multicolor. */
 export const STRUCTURAL_COLOR_PALETTE: string[] = [
@@ -943,6 +945,7 @@ export async function detectStructuralRegions(
       method: 'shells_and_creases',
       totalTriangles: 0,
       regions: [],
+      meshFingerprint: computeMeshFingerprint(mesh),
     };
   }
 
@@ -1386,6 +1389,7 @@ export async function detectStructuralRegions(
     method: 'shells_and_creases',
     totalTriangles,
     regions: finalRegions,
+    meshFingerprint: computeMeshFingerprint(mesh),
   };
 }
 
@@ -1401,6 +1405,7 @@ export function applyStructureColorsToMesh(
   mesh: MeshData,
   segmentation: StructuralSegmentationResult
 ): MeshData {
+  assertSegmentationMatchesMesh(mesh, segmentation);
   const triCount = Math.floor(mesh.indices.length / 3);
   const fallbackColor = segmentation.regions[0]?.color ?? STRUCTURAL_COLOR_PALETTE[0];
   const faceColors = new Array<string>(triCount).fill(fallbackColor);
@@ -1641,9 +1646,7 @@ export async function extractStructuralRegion(
   remainder?: { mesh: MeshData; position: Vec3 } | null;
 }> {
   const totalTris = Math.floor(obj.mesh.indices.length / 3);
-  if (totalTris === 0 || region.faceIndices.length === 0) {
-    throw new Error('La región seleccionada no contiene triángulos válidos para extraer.');
-  }
+  assertRegionFitsMesh(region, totalTris);
 
   const localExtracted = buildClosedSubMesh(
     obj.mesh,
@@ -1731,6 +1734,7 @@ export async function splitAllDetectedStructures(
     position: Vec3;
   }> = [];
 
+  assertSegmentationMatchesMesh(obj.mesh, segmentation);
   for (const region of segmentation.regions) {
     const { extracted } = await extractStructuralRegion(obj, region, false);
     const triCount = Math.floor(extracted.mesh.indices.length / 3);

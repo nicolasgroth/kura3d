@@ -13,10 +13,11 @@
 import * as engine from '../../src/engine/index';
 import { write3mfFile, writeStlFile, type ExportFileResult } from './headlessExport.js';
 import {
+  assertUnlocked,
   buildSceneObject,
   makeObjectId,
   replaceMesh,
-  scaledStats,
+  worldStatsOf,
   summarizeObject,
   type BuildObjectParams,
   type HeadlessSceneObject,
@@ -131,6 +132,9 @@ export class KuraHeadlessEngine {
     }
   ): SceneObjectSummary {
     const obj = this.requireObject(objectId);
+    // Bloqueado: solo se acepta cambiar el propio `locked` (para desbloquear).
+    const otherKeys = Object.entries(patch).some(([k, v]) => k !== 'locked' && v !== undefined);
+    if (otherKeys && !(patch.locked === false)) assertUnlocked(obj);
     if (patch.position) obj.position = [...patch.position];
     if (patch.rotation) obj.rotation = [...patch.rotation];
     if (patch.scale) obj.scale = [...patch.scale];
@@ -138,13 +142,13 @@ export class KuraHeadlessEngine {
     if (patch.isHole !== undefined) obj.isHole = patch.isHole;
     if (patch.visible !== undefined) obj.visible = patch.visible;
     if (patch.locked !== undefined) obj.locked = patch.locked;
-    obj.stats = scaledStats(obj.mesh, obj.scale);
+    obj.stats = worldStatsOf(obj);
     return summarizeObject(obj);
   }
 
   /** Elimina un objeto de la escena por su identificador. */
   deleteObject(objectId: string): { deletedId: string; remainingCount: number } {
-    this.requireObject(objectId);
+    this.requireEditable(objectId);
     this.objects.delete(objectId);
     return { deletedId: objectId, remainingCount: this.objects.size };
   }
@@ -154,7 +158,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     options: { wallThickness: number; drainHole?: boolean; drainHoleRadius?: number }
   ): Promise<SceneObjectSummary> {
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     const hollow = {
       enabled: true,
       wallThickness: options.wallThickness,
@@ -173,12 +177,12 @@ export class KuraHeadlessEngine {
     operation: BooleanOpType;
     keepTools?: boolean;
     resultName?: string;
-  }): Promise<{ object: SceneObjectSummary; note: string }> {
-    const target = this.requireObject(input.targetId);
+  }): Promise<{ object: SceneObjectSummary; resultId: string; consumedIds: string[]; note: string }> {
+    const target = this.requireEditable(input.targetId);
     if (input.toolIds.length === 0) {
       throw new Error('Se requiere al menos un objeto herramienta en `toolIds`.');
     }
-    const tools = input.toolIds.map((id) => this.requireObject(id));
+    const tools = input.toolIds.map((id) => this.requireEditable(id));
     if (tools.some((t) => t.id === target.id)) {
       throw new Error('El objeto objetivo no puede ser también herramienta de la operación booleana.');
     }
@@ -197,13 +201,11 @@ export class KuraHeadlessEngine {
       });
     }
 
-    if (!input.keepTools) {
-      this.objects.delete(target.id);
-      for (const tool of tools) this.objects.delete(tool.id);
-    }
+    const consumedIds = input.keepTools ? [] : [target.id, ...tools.map((t) => t.id)];
+    for (const id of consumedIds) this.objects.delete(id);
     current.id = makeObjectId(++this.counter);
     this.objects.set(current.id, current);
-    return { object: summarizeObject(current), note: ENGINE_NOTE };
+    return { object: summarizeObject(current), resultId: current.id, consumedIds, note: ENGINE_NOTE };
   }
 
   /** Corta por plano con `planeCutWithConnectors` del motor (conectores reales incluidos). */
@@ -211,7 +213,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     options: PlaneCutOptions
   ): Promise<{ parts: SceneObjectSummary[]; note: string }> {
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     const result = await engine.planeCutWithConnectors(obj, options);
     const halves = [
       { part: result.positive, suffix: '(+)' },
@@ -239,7 +241,7 @@ export class KuraHeadlessEngine {
 
   /** Separa islas desconectadas con `splitDisconnectedParts` del motor. */
   async splitDisconnected(objectId: string): Promise<{ parts: SceneObjectSummary[]; note: string }> {
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     const pieces = await engine.splitDisconnectedParts(obj);
     if (pieces.length <= 1) {
       return { parts: [summarizeObject(obj)], note: 'El objeto es un único cuerpo conexo; no hay nada que separar.' };
@@ -266,7 +268,7 @@ export class KuraHeadlessEngine {
     note: string;
     warnings?: Array<{ code: string; message: string }>;
   } {
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     const { parts: pieces, warnings } = engine.splitMeshByColorDetailed(obj);
     if (pieces.length <= 1) {
       return { parts: [summarizeObject(obj)], note: 'El objeto tiene un solo color; no hay nada que separar.' };
@@ -294,7 +296,7 @@ export class KuraHeadlessEngine {
 
   /** Desplaza la superficie con `applyProceduralTexture` del motor. */
   applyTexture(objectId: string, texture: TextureOptions): SceneObjectSummary {
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     replaceMesh(obj, engine.applyProceduralTexture(obj.mesh, texture));
     obj.texture = { ...texture };
     return summarizeObject(obj);
@@ -302,7 +304,7 @@ export class KuraHeadlessEngine {
 
   /** Pinta el objeto completo (`paintEntireMesh`): color base y color por cara para 3MF. */
   paintObject(objectId: string, color: string): SceneObjectSummary {
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     replaceMesh(obj, engine.paintEntireMesh(obj.mesh, color));
     obj.color = color;
     return summarizeObject(obj);
@@ -315,7 +317,7 @@ export class KuraHeadlessEngine {
         `Preset de material desconocido '${materialPreset}'. Disponibles: ${Object.keys(MATERIAL_PRESETS).join(', ')}`
       );
     }
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     obj.materialPreset = materialPreset;
     return summarizeObject(obj);
   }
@@ -397,7 +399,8 @@ export class KuraHeadlessEngine {
         `spacingMm=${spacingMm} no soportado: el motor de Kura3D distribuye con separación fija de ${ENGINE_GRID_SPACING_MM} mm. Omite el parámetro.`
       );
     }
-    const targets = objectIds.map((id) => this.requireObject(id));
+    // Los bloqueados no se mueven (misma regla que el store).
+    const targets = objectIds.map((id) => this.requireObject(id)).filter((o) => !o.locked);
     const positions = engine.computeAlignmentPositions(targets, mode, this.printerProfile);
     for (const obj of targets) {
       if (positions[obj.id]) obj.position = [...positions[obj.id]];
@@ -458,7 +461,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     options: SurfaceProjectionOptions
   ): Promise<{ object: SceneObjectSummary; mode: SurfaceProjectionOptions['mode']; note: string }> {
-    const target = this.requireObject(objectId);
+    const target = this.requireEditable(objectId);
     if (options.kind === 'svg' && !options.svgContent) {
       throw new Error('kind="svg" requiere `svgContent`.');
     }
@@ -466,7 +469,7 @@ export class KuraHeadlessEngine {
     replaceMesh(target, res.mesh, res.position);
     target.rotation = [0, 0, 0];
     target.scale = [1, 1, 1];
-    target.stats = scaledStats(target.mesh, target.scale);
+    target.stats = worldStatsOf(target);
     target.source = 'projected';
     return { object: summarizeObject(target), mode: options.mode, note: ENGINE_NOTE };
   }
@@ -476,7 +479,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     toleranceMm: number
   ): Promise<{ object: SceneObjectSummary; toleranceMm: number; trianglesBefore: number }> {
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     const trianglesBefore = obj.stats.triangles;
     replaceMesh(obj, await engine.simplifyMesh(obj, toleranceMm));
     return { object: summarizeObject(obj), toleranceMm, trianglesBefore };
@@ -488,7 +491,7 @@ export class KuraHeadlessEngine {
     targetEdgeLengthMm: number,
     smooth: boolean
   ): Promise<{ object: SceneObjectSummary; targetEdgeLengthMm: number; smooth: boolean }> {
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     replaceMesh(obj, await engine.refineMesh(obj, targetEdgeLengthMm, smooth));
     return { object: summarizeObject(obj), targetEdgeLengthMm, smooth };
   }
@@ -528,7 +531,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     options: { creaseAngleDeg?: number } = {}
   ): Promise<{ object: SceneObjectSummary; regions: DetectedStructureRegion[]; regionCount: number }> {
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     const segmentation = await this.detectStructures(objectId, options);
     if (segmentation.regions.length === 0) {
       throw new Error('No se detectaron sub-estructuras para colorear en el objeto.');
@@ -549,7 +552,7 @@ export class KuraHeadlessEngine {
     sourceDeleted: boolean;
     region: DetectedStructureRegion;
   }> {
-    const obj = this.requireObject(objectId);
+    const obj = removeFromSource ? this.requireEditable(objectId) : this.requireObject(objectId);
     const segmentation = await this.detectStructures(objectId);
     const region = segmentation.regions.find((r) => r.id === regionId);
     if (!region) {
@@ -594,7 +597,7 @@ export class KuraHeadlessEngine {
 
   /** Refleja la malla en un eje con `mirrorMeshAxis` del motor (winding corregido). */
   mirrorObject(objectId: string, axis: 'x' | 'y' | 'z'): SceneObjectSummary {
-    const obj = this.requireObject(objectId);
+    const obj = this.requireEditable(objectId);
     replaceMesh(obj, engine.mirrorMeshAxis(obj.mesh, axis));
     return summarizeObject(obj);
   }
@@ -625,6 +628,10 @@ export class KuraHeadlessEngine {
     const obj = buildSceneObject({ ...params, id: makeObjectId(++this.counter) });
     this.objects.set(obj.id, obj);
     return obj;
+  }
+
+  private requireEditable(id: string): HeadlessSceneObject {
+    return assertUnlocked(this.requireObject(id));
   }
 
   private requireObject(id: string): HeadlessSceneObject {

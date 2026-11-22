@@ -69,9 +69,7 @@ export function isManifoldReady(): boolean {
  */
 export function getManifoldModule(): ManifoldToplevel {
   if (!cachedModule) {
-    throw new Error(
-      'El núcleo Manifold-3D aún no está inicializado. Llama a initManifoldEngine() primero.'
-    );
+    throw new EngineError('ENGINE_NOT_READY');
   }
   return cachedModule;
 }

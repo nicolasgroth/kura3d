@@ -104,7 +104,7 @@ function mapSnapshot<I, O extends { id: string }>(snapshot: Snapshot<I>, mapObje
     return mapped;
   });
   const selectedIds = Array.from(snapshot.selectedIds, selected => {
-    check(id(selected) && ids.delete(selected));
+    check(id(selected) && ids.delete(selected), `selectedIds "${String(selected)}"`);
     return selected;
   });
   return { objects, selectedIds };
@@ -184,7 +184,7 @@ export function encodeProject(doc: ProjectDocument): Uint8Array {
     check(record(obj));
     const { mesh, stats: _cache, ...metadata } = obj;
     const stored = { ...metadata, mesh: storeMesh(mesh) };
-    check(validStoredObject(stored));
+    check(validStoredObject(stored), `object "${String(obj.name)}"`);
     // Enforce the metadata budget incrementally before constructing a whole-history JSON string.
     metadataCharacters += JSON.stringify(stored).length;
     limit(metadataCharacters <= MAX_MANIFEST_BYTES);
@@ -289,7 +289,7 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
   const usedMeshes = new Set<number>();
   const stats = new Map<string, SceneObject['stats']>();
   function restoreObject(stored: unknown): SceneObject {
-    check(validStoredObject(stored) && stored.mesh < assets.length);
+    check(validStoredObject(stored) && stored.mesh < assets.length, `object "${String((stored as { name?: unknown }).name)}"`);
     const { mesh, geometryKey } = assets[stored.mesh];
     usedMeshes.add(stored.mesh);
     let cache = stats.get(geometryKey);

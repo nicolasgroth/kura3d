@@ -693,9 +693,7 @@ export async function eraseRegionWithSphere(
     result = target.subtract(sphere);
 
     if (result.isEmpty() || result.numTri() === 0) {
-      throw new Error(
-        'El borrado esférico eliminó por completo la geometría del objeto.'
-      );
+      throw new EngineError('ERASE_REMOVED_ALL');
     }
 
     const outMesh = manifoldToMeshData(result, registry?.idToColor);

@@ -17,6 +17,7 @@ import { OPERATION_RANGES } from '../../src/engine/operationLimits';
 import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
 import { resolveExportPath } from './exportPaths.js';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
+import { HeadlessCommandError } from './headlessSupport.js';
 import {
   exportPayloadSchema,
   hexColorSchema,
@@ -133,7 +134,9 @@ async function dispatchWithFallback(
         skipRateLimit: true,
       });
       if (!response.ok) {
-        return failText(response.error ?? `El comando '${command}' falló en la UI de Kura3D.`);
+        const message = response.error ?? `El comando '${command}' falló en la UI de Kura3D.`;
+        const code = (response as { errorCode?: string }).errorCode;
+        return code ? failCoded(code, message, {}) : failText(message);
       }
       return okJson({
         mode: 'live-bridge',
@@ -149,20 +152,25 @@ async function dispatchWithFallback(
   }
 }
 
+/** Error MCP con código estable (mismo formato en headless y en el puente vivo). */
+function failCoded(code: string, message: string, params: Record<string, unknown>): CallToolResult {
+  return {
+    isError: true,
+    content: [
+      { type: 'text', text: `[${code}] ${message}` },
+      { type: 'text', text: JSON.stringify({ code, params }) },
+    ],
+  };
+}
+
 /**
  * Error MCP con código y causa: un `EngineError` del motor headless se devuelve como
  * `[CÓDIGO] mensaje` más un bloque JSON `{ code, params }` (p. ej. `MESH_INVALID` con
  * `cause: "Non-finite vertex"` o `MESH_EMPTY`), en vez de solo el texto.
  */
 function failError(err: unknown): CallToolResult {
-  if (isEngineError(err)) {
-    return {
-      isError: true,
-      content: [
-        { type: 'text', text: `[${err.code}] ${err.message}` },
-        { type: 'text', text: JSON.stringify({ code: err.code, params: err.params }) },
-      ],
-    };
+  if (isEngineError(err) || err instanceof HeadlessCommandError) {
+    return failCoded(err.code, err.message, err.params);
   }
   return failText(err instanceof Error ? err.message : String(err));
 }

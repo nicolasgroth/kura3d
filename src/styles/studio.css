@@ -1819,6 +1819,11 @@ dialog.kura-palette-dialog {
   cursor: pointer;
 }
 
+.kura-palette-item.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .kura-palette-item.is-active {
   background: color-mix(in srgb, var(--tool-accent) 14%, var(--bg-elevated));
   border-color: color-mix(in srgb, var(--tool-accent) 45%, transparent);

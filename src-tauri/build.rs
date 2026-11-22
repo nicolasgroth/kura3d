@@ -6,8 +6,6 @@
 // comandos propios para que solo los listados en `capabilities/` sean invocables.
 
 const COMMANDS: &[&str] = &[
-    "get_app_info",
-    "get_mcp_bridge_status",
     "open_kura_project",
     "save_kura_project",
     "ai_key_status",

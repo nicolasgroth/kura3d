@@ -650,7 +650,7 @@ export async function createPrimitiveMesh(
 
       default: {
         const exhaustive: never = type;
-        throw new Error(`Tipo de primitiva no soportado: ${String(exhaustive)}`);
+        throw new EngineError('PRIMITIVE_UNSUPPORTED', { type: String(exhaustive) });
       }
     }
 

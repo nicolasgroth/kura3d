@@ -491,7 +491,7 @@ export async function projectGraphicOntoSurface(
   if (options.kind === 'svg') {
     const svg = options.svgContent?.trim();
     if (!svg) {
-      throw new Error('Se requiere contenido SVG válido para proyectar un gráfico SVG.');
+      throw new EngineError('PROJECTION_EMPTY_SVG');
     }
     rawGraphic = await extrudeSvgToMesh({
       svgContent: svg,

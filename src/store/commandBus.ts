@@ -16,6 +16,7 @@ import type { TranslationKey } from '../i18n';
 import type { KuraCommandRequest, KuraCommandResponse, SceneObject } from '../types/kura';
 import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { CommandError, type CommandErrorCode } from './commandErrors';
+import { selectExportTargets } from './exportTargets';
 import * as schema from './commandSchemas';
 import type { OperationErrorTracker } from './operationErrors';
 import type { RawParams } from './commandValidation';
@@ -38,7 +39,9 @@ type Handler = (p: RawParams, deps: CommandBusDeps, command: string) => Promise<
 const NON_SCENE_WRITES = new Set(['set_printer_profile', 'set_unit_system', 'export_stl', 'export_3mf']);
 
 const brief = (o: SceneObject) => ({ id: o.id, name: o.name });
-const withStats = (o: SceneObject) => ({ id: o.id, name: o.name, stats: o.stats });
+/** `stats` del bus en dimensiones de mundo (rotación y escala aplicadas), igual que el MCP headless. */
+const worldStats = (o: SceneObject) => engine.computeWorldStats(o.mesh, o.rotation, o.scale);
+const withStats = (o: SceneObject) => ({ id: o.id, name: o.name, stats: worldStats(o) });
 
 /** Convierte un resultado vacío de una acción del store en un error tipado. */
 function required<T>(value: T, command: string): NonNullable<T> {
@@ -47,13 +50,11 @@ function required<T>(value: T, command: string): NonNullable<T> {
   return value as NonNullable<T>;
 }
 
-function exportTargets(deps: CommandBusDeps, onlySelected: boolean): SceneObject[] {
+function exportTargets(deps: CommandBusDeps, onlySelected: boolean): { targets: SceneObject[]; skippedHoles: number } {
   const { objects, selectedIds } = deps.get();
-  const targets = onlySelected && selectedIds.length > 0
-    ? objects.filter((o) => selectedIds.includes(o.id) && o.visible)
-    : objects.filter((o) => o.visible && !o.isHole);
-  if (targets.length === 0) throw new CommandError('precondition', 'toast.nothingToExport');
-  return targets;
+  const selection = selectExportTargets(objects, selectedIds, onlySelected);
+  if (selection.targets.length === 0) throw new CommandError('precondition', 'toast.nothingToExport');
+  return selection;
 }
 
 const triangles = (objs: SceneObject[]) => objs.reduce((acc, o) => acc + o.stats.triangles, 0);
@@ -73,7 +74,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
         id: o.id, name: o.name, source: o.source, primitiveType: o.primitiveType,
         position: o.position, rotation: o.rotation, scale: o.scale, color: o.color,
         materialPreset: o.materialPreset ?? 'pla_matte', isHole: o.isHole, visible: o.visible,
-        locked: o.locked, stats: o.stats,
+        locked: o.locked, stats: worldStats(o),
       })),
     };
   },
@@ -110,7 +111,9 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
 
   boolean_operation: async (p, { get }, command) => {
     const { op, target, tools } = schema.parseBoolean(get(), p);
-    return withStats(required(await get().runBooleanOnSelection(op, target.id, tools.map((o) => o.id)), command));
+    const result = required(await get().runBooleanOnSelection(op, target.id, tools.map((o) => o.id)), command);
+    // Mismo contrato que el MCP headless: ids consumidos e id resultante explícitos.
+    return { ...withStats(result), resultId: result.id, consumedIds: [target.id, ...tools.map((o) => o.id)] };
   },
 
   hollow_object: async (p, { get }, command) => {
@@ -183,13 +186,15 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   simplify_mesh: async (p, { get }, command) => {
     const { target, toleranceMm } = schema.parseSimplify(get(), p);
     required(await get().simplifySelectedMesh(target.id, toleranceMm), command);
-    return get().objects.find((o) => o.id === target.id)?.stats ?? null;
+    const updated = get().objects.find((o) => o.id === target.id);
+    return updated ? worldStats(updated) : null;
   },
 
   refine_mesh: async (p, { get }, command) => {
     const { target, targetEdgeLengthMm, smooth } = schema.parseRefine(get(), p);
     required(await get().refineSelectedMesh(target.id, targetEdgeLengthMm, smooth), command);
-    return get().objects.find((o) => o.id === target.id)?.stats ?? null;
+    const updated = get().objects.find((o) => o.id === target.id);
+    return updated ? worldStats(updated) : null;
   },
 
   convex_hull: async (p, { get }, command) =>
@@ -245,9 +250,9 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   export_stl: async (p, deps, command) => {
     const { onlySelected, wantsBytes } = schema.parseExport(p);
     if (wantsBytes || headless()) {
-      const targets = exportTargets(deps, onlySelected);
+      const { targets, skippedHoles } = exportTargets(deps, onlySelected);
       const bytes = engine.exportSceneToBinarySTL(targets);
-      return { format: 'stl', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets) };
+      return { format: 'stl', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles };
     }
     required(await deps.get().exportSceneStl(onlySelected), command);
     return { format: 'stl' };
@@ -257,9 +262,9 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     const input = schema.parseExport(p);
     const slicerTarget = input.slicerTarget ?? deps.get().printerProfile.brand;
     if (input.wantsBytes || headless()) {
-      const targets = exportTargets(deps, input.onlySelected);
+      const { targets, skippedHoles } = exportTargets(deps, input.onlySelected);
       const bytes = engine.exportSceneTo3MF(targets, deps.get().unitSystem, slicerTarget);
-      return { format: '3mf', slicerTarget, bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets) };
+      return { format: '3mf', slicerTarget, bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles };
     }
     required(await deps.get().exportScene3mf(input.onlySelected, slicerTarget), command);
     return { format: '3mf', slicerTarget };

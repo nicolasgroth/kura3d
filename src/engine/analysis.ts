@@ -337,9 +337,7 @@ export async function computeConvexHull(
   objects: SceneObject[]
 ): Promise<{ mesh: MeshData; position: Vec3 }> {
   if (objects.length === 0) {
-    throw new Error(
-      'Se requiere al menos un objeto para calcular la envolvente convexa.'
-    );
+    throw new EngineError('HULL_NO_INPUT');
   }
 
   const wasm = await initManifoldEngine();

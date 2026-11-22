@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { TRANSFORM_LIMITS } from '../engine/operationLimits';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneObject, type UnitSystem } from '../types/kura';
 
 export const MAX_PROJECT_BYTES = 128 * 1024 * 1024;
@@ -26,7 +27,8 @@ export interface ProjectDocument extends ProjectSceneSnapshot {
 }
 
 export class ProjectCodecError extends Error {
-  constructor(public readonly code: 'invalid' | 'unsupported' | 'too-large') {
+  /** Causa técnica opcional (campo u objeto que no pasó la validación). */
+  constructor(public readonly code: 'invalid' | 'unsupported' | 'too-large', public readonly detail?: string) {
     super({
       invalid: 'Invalid or damaged Kura3D project.',
       unsupported: 'Unsupported Kura3D project version.',
@@ -36,8 +38,8 @@ export class ProjectCodecError extends Error {
   }
 }
 
-export function check(condition: unknown): asserts condition {
-  if (!condition) throw new ProjectCodecError('invalid');
+export function check(condition: unknown, detail?: string): asserts condition {
+  if (!condition) throw new ProjectCodecError('invalid', detail);
 }
 
 export function limit(condition: boolean) {
@@ -55,6 +57,10 @@ const str = (v: unknown): v is string => typeof v === 'string' && v.length <= 65
 export const id = (v: unknown): v is string => str(v) && v.length > 0 && v.length <= 1024;
 export const color = (v: unknown): v is string => typeof v === 'string' && /^#[\da-f]{6}$/i.test(v);
 const vec3 = (v: unknown) => Array.isArray(v) && v.length === 3 && finite(v[0]) && finite(v[1]) && finite(v[2]);
+// Mismos límites que la escena (`operationLimits`): un .kura no puede traer transformaciones que la UI rechazaría.
+const withinAbs = (max: number) => (v: unknown) => vec3(v) && (v as number[]).every((n) => Math.abs(n) <= max);
+const scaleVec = (v: unknown) =>
+  vec3(v) && (v as number[]).every((n) => Math.abs(n) >= TRANSFORM_LIMITS.minScale && Math.abs(n) <= TRANSFORM_LIMITS.maxScale);
 const oneOf = (...values: string[]): Rule => (v) => typeof v === 'string' && values.includes(v);
 
 // Only plain records with explicitly declared own properties enter the runtime document.
@@ -82,7 +88,8 @@ const metadataFields = {
     'mold', 'thread', 'hull', 'projected', 'segmented_part'),
   primitiveType: optional(oneOf('box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text')),
   primitiveParams: optional(params),
-  position: vec3, rotation: vec3, scale: vec3, color,
+  position: withinAbs(TRANSFORM_LIMITS.maxAbsCoordinate), rotation: withinAbs(TRANSFORM_LIMITS.maxAbsRotation),
+  scale: scaleVec, color,
   materialPreset: optional(oneOf(...Object.keys(MATERIAL_PRESETS))),
   isHole: bool, visible: bool, locked: bool,
   hollow: optional(shape({ enabled: bool, wallThickness: finite, drainHole: optional(bool), drainHoleRadius: numberOption })),

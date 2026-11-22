@@ -11,6 +11,7 @@
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 import type { SceneObject } from '../../types/kura';
+import { EngineError } from '../engineErrors';
 import { applyTransformToMesh } from '../primitives';
 import { normalizeHexColor } from './meshBuffers';
 import { exportableObjects } from './stl';
@@ -72,6 +73,6 @@ export async function exportSceneToGLB(objects: SceneObject[]): Promise<Uint8Arr
       (Array.isArray(node.material) ? node.material : [node.material]).forEach((m: THREE.Material) => m.dispose());
     }
   });
-  if (!(result instanceof ArrayBuffer)) throw new Error('GLTFExporter no devolvió un GLB binario.');
+  if (!(result instanceof ArrayBuffer)) throw new EngineError('GLB_EXPORT_FAILED');
   return new Uint8Array(result);
 }

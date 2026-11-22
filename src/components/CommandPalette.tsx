@@ -81,6 +81,7 @@ export const CommandPalette: React.FC = () => {
   const open = useKuraStore((s) => s.commandPaletteOpen);
   const setCommandPaletteOpen = useKuraStore((s) => s.setCommandPaletteOpen);
   const language = useKuraStore((s) => s.language);
+  const sceneBusy = useKuraStore((s) => Boolean(s.busyOperation) || s.projectBusy);
   const setLanguage = useKuraStore((s) => s.setLanguage);
   const uiDensity = useKuraStore((s) => s.uiDensity);
   const setUiDensity = useKuraStore((s) => s.setUiDensity);
@@ -696,8 +697,15 @@ export const CommandPalette: React.FC = () => {
     setActiveIndex(0);
   }, [query]);
 
+  /** Crear, operar o importar mientras otra operación corre se bloquea (la exclusión del store la rechazaría). */
+  const blockedByBusy = (item: PaletteActionItem) =>
+    sceneBusy &&
+    (item.category === t(language, 'cmd.cat.primitives') ||
+      item.category === t(language, 'cmd.cat.operations') ||
+      item.id.startsWith('io-import'));
+
   const executeItem = (item: PaletteActionItem | undefined) => {
-    if (!item) return;
+    if (!item || blockedByBusy(item)) return;
     closePalette();
     void item.run();
   };
@@ -780,7 +788,9 @@ export const CommandPalette: React.FC = () => {
               role="option"
               tabIndex={-1}
               aria-selected={idx === activeIndex}
-              className={`kura-palette-item ${idx === activeIndex ? 'is-active' : ''}`}
+              aria-disabled={blockedByBusy(item) || undefined}
+              title={blockedByBusy(item) ? t(language, 'store.error.busy') : undefined}
+              className={`kura-palette-item ${idx === activeIndex ? 'is-active' : ''} ${blockedByBusy(item) ? 'is-disabled' : ''}`}
               onMouseEnter={() => setActiveIndex(idx)}
               onClick={() => executeItem(item)}
             >
