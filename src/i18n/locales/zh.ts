@@ -9,6 +9,7 @@
 
 import type { TranslationKey } from '../translations';
 import { MENU_ZH } from './menuKeys';
+import { MENU_IDEAS_ZH } from './menuIdeas';
 import { FLOWUX_ZH } from './flowUx';
 import { PREVIEW_ZH } from './preview';
 import { SPLITJOINTS_ZH } from './splitJoints';
@@ -23,6 +24,7 @@ import { OPNOTES_ZH } from './operationNotes';
  */
 export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...MENU_ZH,
+  ...MENU_IDEAS_ZH,
   ...FLOWUX_ZH,
   ...PREVIEW_ZH,
   ...SPLITJOINTS_ZH,

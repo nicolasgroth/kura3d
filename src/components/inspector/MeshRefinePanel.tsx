@@ -6,12 +6,13 @@
  * @license MIT
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, Wand2 } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { type InspectorSectionProps } from './inspectorTypes';
+import { SIMPLIFY_REQUEST_FRESH_MS } from './simplifyPanelRequest';
 
 /** Simplificar / refinar malla dentro de Herramientas Maker. */
 export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
@@ -22,9 +23,21 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
   const refineSelectedMesh = useKuraStore((s) => s.refineSelectedMesh);
   const runConvexHull = useKuraStore((s) => s.runConvexHull);
   const isBusy = Boolean(busyOperation);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const request = useKuraStore((s) => s.simplifyRequest);
+
+  // Abierto desde el aviso de malla pesada: el panel entra a la vista y la tolerancia queda enfocada.
+  useEffect(() => {
+    if (!request || request.id !== primary.id || Date.now() - request.at > SIMPLIFY_REQUEST_FRESH_MS) return;
+    const root = rootRef.current;
+    if (!root) return;
+    root.scrollIntoView({ block: 'nearest' });
+    root.querySelector<HTMLInputElement>('input')?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [request?.n]);
 
   return (
-    <div className="kura-form-field">
+    <div className="kura-form-field" ref={rootRef}>
       <label>{t(language, 'inspector.pro.meshTitle')}</label>
       <div className="kura-field-row">
         <span className="kura-field-label">{t(language, 'inspector.pro.simplifyTol')}</span>

@@ -36,6 +36,7 @@ import { ConfirmDialogHost } from './components/ConfirmDialogHost';
 import { NarrowPanelBar } from './components/NarrowPanelBar';
 import { requestLeftPanelTab } from './components/leftPanelTabRequest';
 import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest';
+import { useSimplifyRequestRelay } from './components/inspector/simplifyPanelRequest';
 
 const TRANSFORM_SHORTCUTS = new Map<string, TransformMode>([
   ['m', 'translate'],
@@ -46,6 +47,7 @@ const TRANSFORM_SHORTCUTS = new Map<string, TransformMode>([
 ]);
 
 export const App: React.FC = () => {
+  useSimplifyRequestRelay();
   const language = useKuraStore((s) => s.language);
   const activeTool = useKuraStore((s) => s.activeTool);
   const uiDensity = useKuraStore((s) => s.uiDensity);

@@ -12,7 +12,7 @@
 import { createPrimitive as createPrimitiveObject, positionOnTarget } from '../../core/operations';
 import { HOLE_HELPER_COLOR } from '../../core/operations/creationOperations';
 import { parametricStateOf } from '../../core/scene/parametric';
-import { pieceParams, pieceSizeFor, pieceYOffset } from '../../core/scene/pieceSizing';
+import { discParams, pieceParams, pieceSizeFor, pieceYOffset } from '../../core/scene/pieceSizing';
 import { resolveHoleScope } from '../../core/scene/sceneRules';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import type { StoreContext } from '../storeContext';
@@ -41,20 +41,21 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
   };
 
   /** Agrega la primitiva centrada (−) o apoyada arriba (+) respecto de `target`; queda seleccionada. */
-  const addPrimitivePiece = async (type: Parameters<typeof pieceParams>[0], mode: PieceMode, target: SceneObject) =>
-    runExclusive(`modular_${mode}_${type}`, null, async () => {
+  const addPrimitivePiece = async (type: Parameters<typeof pieceParams>[0], mode: PieceMode, target: SceneObject, asDisc = false) =>
+    runExclusive(`modular_${mode}_${asDisc ? 'disc' : type}`, null, async () => {
       await get().initEngine();
       const op = opCtx();
       const isHole = mode === 'negative';
       const side = pieceSizeFor(target);
-      const params = pieceParams(type, side);
+      const params = asDisc ? discParams(side / 2) : pieceParams(type, side);
+      const label = asDisc ? tr('menu.shape.disc') : op.naming.primitiveLabel(type);
       const mesh = type === 'text' ? await ctx.runEngine('primitiveMesh', { type, params }) : undefined;
-      const yOffset = pieceYOffset(target, mode, side);
+      const yOffset = pieceYOffset(target, mode, asDisc ? (params.height ?? side) : side);
       const obj = await createPrimitiveObject(op, {
         mesh,
         type,
         params,
-        name: `${op.naming.modulePrefix(isHole)} ${op.naming.primitiveLabel(type)}`,
+        name: `${op.naming.modulePrefix(isHole)} ${label}`,
         color: isHole ? HOLE_HELPER_COLOR : target.color,
         place: (m) => positionOnTarget(target, m, yOffset),
         materialPreset: target.materialPreset,
@@ -67,7 +68,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         spawnedAtById: { ...s.spawnedAtById, [obj.id]: Date.now() },
       }));
       get().addToast(
-        isHole ? tr('toast.subtractHelperCreated') : tr('toast.modularHelperCreated', { mode: '+', name: op.naming.primitiveLabel(type) }),
+        isHole ? tr('toast.subtractHelperCreated') : tr('toast.modularHelperCreated', { mode: '+', name: label }),
         'info',
       );
       return obj;
@@ -137,6 +138,8 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         set((st) => ({ objects: st.objects.map((o) => (ids.has(o.id) ? { ...o, color: rec.color } : o)) }));
         return 'done';
       }
+      case 'centerOnBed':
+        return s.centerSelectionOnBed() ? 'done' : 'notApplicable';
       case 'setType': {
         if (!first) return 'notApplicable';
         s.setObjectsHole(targets.map((o) => o.id), rec.isHole);
@@ -267,6 +270,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         return null;
       }
       if (shape === 'import') return s.importModelAsModuleFromDialog(mode, target.id);
+      if (shape === 'disc') return addPrimitivePiece('cylinder', mode, target, true);
       return addPrimitivePiece(shape, mode, target);
     },
 

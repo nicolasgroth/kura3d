@@ -10,11 +10,9 @@
 
 import React from 'react';
 import {
-  ArrowDownToLine,
   Box,
   Combine,
   Copy,
-  FlipHorizontal2,
   HelpCircle,
   MinusCircle,
   PaintBucket,
@@ -30,7 +28,6 @@ import {
   Type,
 } from 'lucide-react';
 import { t } from '../../i18n';
-import { userAxisLabel } from '../../core/scene/displayAxes';
 import { parametricStateOf } from '../../core/scene/parametric';
 import { useKuraStore } from '../../store/useKuraStore';
 import { repeatLabel } from '../../store/repeatLabel';
@@ -39,16 +36,11 @@ import { type ContextMenuState } from './viewportHelpers';
 import { type SceneObject } from '../../types/kura';
 import { MenuGroup, MenuItem, MenuSurface, SubMenu } from './contextMenu/MenuKit';
 import { PieceShapeItems } from './contextMenu/PieceShapeItems';
+import { ObjectMenuMore } from './contextMenu/ObjectMenuMore';
+import { ObjectMenuPosition } from './contextMenu/ObjectMenuPosition';
 import { openHollowPanel } from '../inspector/hollowPanelRequest';
 
 const MOD = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform ?? '') ? '⌘' : 'Ctrl';
-
-/** Ejes del usuario (Z = altura) con su eje interno del motor. */
-const MIRROR_AXES = [
-  { internal: 'x', user: 'x' },
-  { internal: 'z', user: 'y' },
-  { internal: 'y', user: 'z' },
-] as const;
 
 /** Menú contextual sobre un objeto 3D; cada acción cierra el menú antes de ejecutarse. */
 export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: SceneObject; onClose: () => void }> = ({ menu, target, onClose }) => {
@@ -63,9 +55,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
   const runBooleanOnSelection = useKuraStore((s) => s.runBooleanOnSelection);
   const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
   const duplicateObjects = useKuraStore((s) => s.duplicateObjects);
-  const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
   const deleteObjects = useKuraStore((s) => s.deleteObjects);
-  const mirrorObject = useKuraStore((s) => s.mirrorObject);
   const detectObjectStructures = useKuraStore((s) => s.detectObjectStructures);
   const requestRename = useKuraStore((s) => s.requestRename);
   const recomputeSelected = useKuraStore((s) => s.recomputeSelected);
@@ -119,17 +109,17 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
         <MenuItem icon={<Scissors size={14} aria-hidden="true" />} label={t(language, 'ctx.planeCut')} disabled={target.locked} keys="C" onSelect={run(() => setActiveDialog('cut'))} />
         <MenuItem icon={<PaintBucket size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.generateMold')} keys="Shift+M" onSelect={run(() => setActiveDialog('mold'))} />
         <MenuItem icon={<Type size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.projectSurface')} disabled={target.locked} onSelect={run(() => setActiveDialog('project'))} />
-        <SubMenu icon={<FlipHorizontal2 size={14} aria-hidden="true" />} label={t(language, 'menu.mirror')} disabled={target.locked}>
-          {MIRROR_AXES.map(({ internal, user }) => (
-            <MenuItem key={user} label={t(language, 'menu.mirror.axis', { axis: userAxisLabel(internal) })} onSelect={run(() => mirrorObject(target.id, internal))} />
-          ))}
-        </SubMenu>
         {holeCount > 0 && solidCount > 0 && (
           <MenuItem icon={<Combine size={14} aria-hidden="true" />} label={t(language, 'ctx.applyHoles')} accent onSelect={run(() => void applyHolesOnSolids())} />
         )}
         {selectedIds.length >= 2 && (
           <MenuItem icon={<Combine size={14} aria-hidden="true" />} label={t(language, 'ctx.unionSelection')} onSelect={run(() => void runBooleanOnSelection('union'))} />
         )}
+      </MenuGroup>
+
+      <div className="kura-context-sep" role="separator" />
+      <MenuGroup title={t(language, 'menu.group.position')}>
+        <ObjectMenuPosition target={target} run={run} />
       </MenuGroup>
 
       <div className="kura-context-sep" role="separator" />
@@ -142,7 +132,6 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
       <MenuGroup title={t(language, 'menu.group.object')}>
         <MenuItem icon={<PencilLine size={14} aria-hidden="true" />} label={t(language, 'menu.rename')} shortcut="F2" keys="F2" disabled={target.locked} onSelect={run(() => void requestRename(target.id))} />
         <MenuItem icon={<Copy size={14} aria-hidden="true" />} label={t(language, 'ctx.duplicate')} shortcut={`${MOD}+D`} keys="Control+D" onSelect={run(() => duplicateObjects([target.id]))} />
-        <MenuItem icon={<ArrowDownToLine size={14} aria-hidden="true" />} label={t(language, 'ctx.dropToBed')} keys="L" disabled={target.locked} onSelect={run(() => dropObjectToBed(target.id))} />
         {isParametric && (
           <MenuItem
             icon={<RefreshCw size={14} aria-hidden="true" />}
@@ -164,6 +153,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
             onSelect={run(() => void repeatLastAction())}
           />
         )}
+        <ObjectMenuMore target={target} run={run} />
         <MenuItem icon={<Trash2 size={14} aria-hidden="true" />} label={t(language, 'ctx.delete')} shortcut="Del" keys="Delete" danger disabled={target.locked} onSelect={run(() => deleteObjects([target.id]))} />
       </MenuGroup>
 

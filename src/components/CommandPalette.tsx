@@ -31,6 +31,8 @@ import {
   Save,
   SaveAll,
   FileUp,
+  FileInput,
+  Crosshair,
   FlipHorizontal2,
   Grid,
   Grid3x3,
@@ -64,6 +66,7 @@ import { SUPPORTED_LANGUAGES } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
 import { guardUnsavedChanges } from '../utils/unsavedGuard';
 import { openExportDialog } from './ExportDialog';
+import { discParams } from '../core/scene/pieceSizing';
 import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
 import { rankPaletteItems } from '../utils/paletteRank';
 import { REFINE_UI_DEFAULTS } from './refineDefaults';
@@ -244,6 +247,15 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <Cylinder size={15} />,
         run: () => void createPrimitive('cylinder', { radius: 14, height: 36 }, { placement: 'free' }),
+      },
+      {
+        id: 'prim-disc',
+        label: t(language, 'menu.shape.disc'),
+        category: catPrim,
+        keywords: 'disco disc arandela moneda base cilindro bajo',
+        kind: 'local',
+        icon: <Cylinder size={15} />,
+        run: () => void createPrimitive('cylinder', { ...discParams(16) }, { placement: 'free', name: t(language, 'menu.shape.disc') }),
       },
       {
         id: 'prim-tube',
@@ -556,6 +568,26 @@ export const CommandPalette: React.FC = () => {
         },
       },
       {
+        id: 'op-center-bed',
+        label: t(language, 'ctx.centerOnBed'),
+        category: catOps,
+        keywords: 'centrar cama centro center bed xy',
+        kind: 'local',
+        icon: <Crosshair size={15} />,
+        run: () => void useKuraStore.getState().centerSelectionOnBed(),
+      },
+      {
+        id: 'op-replace-mesh',
+        label: t(language, 'menu.more.replace'),
+        category: catOps,
+        keywords: 'reemplazar archivo malla stl 3mf obj sustituir replace file mesh',
+        kind: 'local',
+        icon: <FileInput size={15} />,
+        run: () => {
+          if (primaryId) void useKuraStore.getState().replaceObjectMeshFromDialog(primaryId);
+        },
+      },
+      {
         id: 'io-import',
         label: t(language, 'topbar.importModel'),
         category: catExp,
@@ -599,6 +631,15 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <Download size={15} />,
         run: () => openExportDialog('stl'),
+      },
+      {
+        id: 'io-stl-selection',
+        label: t(language, 'menu.more.exportStl'),
+        category: catExp,
+        keywords: 'exportar seleccion stl un solo archivo selection export',
+        kind: 'local',
+        icon: <Download size={15} />,
+        run: () => openExportDialog('stl', 'selection'),
       },
       {
         id: 'io-3mf-modal',

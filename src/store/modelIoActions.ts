@@ -11,6 +11,7 @@
 
 import * as THREE from 'three';
 import * as engine from '../engine';
+import { OPERATION_DEFAULTS } from '../engine/operationLimits';
 import type { TranslationKey } from '../i18n';
 import { ProjectCodecError } from '../project/projectSchema';
 import type { LanguageCode, MeshData, SceneObject, Vec3 } from '../types/kura';
@@ -57,7 +58,7 @@ interface IoState {
   customBedDimensions?: { width: number } | null;
   projectName: string | null;
   importPlacementMode: engine.ImportPlacementMode;
-  addToast: (text: string, kind?: 'info' | 'success' | 'error') => void;
+  addToast: (text: string, kind?: 'info' | 'success' | 'error', action?: { label: string; run: () => void }) => void;
   requestCameraPreset: (preset: 'fit' | 'ensure', ids?: string[]) => void;
 }
 
@@ -73,6 +74,8 @@ export interface ModelIoDeps {
   exportFiles?: (args: ExportTaskArgs) => Promise<ExportTaskResult>;
   /** Muestra los avisos del motor al leer (p. ej. normales reorientadas). */
   reportWarnings?: (warnings: readonly engine.EngineWarning[]) => void;
+  /** Abre el panel Simplificar para un objeto (acción del aviso de malla pesada). */
+  openSimplify?: (id: string) => void;
 }
 
 const EXPORT_FILTERS: Record<ExportFormat, { name: string; extensions: string[] }> = {
@@ -191,6 +194,15 @@ export function createModelIoActions(deps: ModelIoDeps) {
         : tr('import.importedParts', { name: models[0].fileName, count: pieces })
       : tr('import.importedFiles', { count: models.length, parts: pieces });
     get().addToast(`${summary} · ${trisText}`, 'success');
+    const heavy = created.find((o) => o.stats.triangles >= OPERATION_DEFAULTS.heavyMesh.warnTriangles);
+    if (heavy) {
+      const fmt = new Intl.NumberFormat(get().language).format(heavy.stats.triangles);
+      get().addToast(
+        tr('import.heavy', { tris: fmt }),
+        'info',
+        deps.openSimplify ? { label: tr('import.heavy.action'), run: () => deps.openSimplify?.(heavy.id) } : undefined,
+      );
+    }
     const open = placed.filter((p) => p.part.openEdges > 0);
     if (open.length > 0) {
       const names = [...new Set(open.map((p) => p.part.name || p.fileName))];

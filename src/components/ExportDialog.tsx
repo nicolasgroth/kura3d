@@ -25,10 +25,12 @@ const FORMATS: ExportFormat[] = ['3mf', 'stl', 'obj', 'glb', 'ply'];
 const FORMAT_STORAGE_KEY = 'kura3d-export-format';
 
 let pendingFormat: ExportFormat | null = null;
+let pendingScope: ExportScope | null = null;
 
-/** Abre el diálogo de exportación con un formato preseleccionado (paleta, atajos). */
-export function openExportDialog(format?: ExportFormat) {
+/** Abre el diálogo de exportación con formato y, si se pide, alcance preseleccionados (paleta, menús, atajos). */
+export function openExportDialog(format?: ExportFormat, scope?: ExportScope) {
   pendingFormat = format ?? null;
+  pendingScope = scope ?? null;
   useKuraStore.getState().setActiveDialog('export');
 }
 
@@ -80,9 +82,11 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
 
   useEffect(() => {
     if (!open) return;
-    const nextScope: ExportScope = selected.length > 0 ? 'selection' : 'scene';
+    // Un alcance pedido explícitamente (menú «Exportar selección…») manda; sin selección exportable se usa la escena.
+    const nextScope: ExportScope = (pendingScope ?? 'selection') === 'selection' && selected.length > 0 ? 'selection' : 'scene';
     setFormat(pendingFormat ?? initialFormat ?? readStoredFormat());
     pendingFormat = null;
+    pendingScope = null;
     setScope(nextScope);
     nameEditedRef.current = false;
     formatPickedRef.current = false;

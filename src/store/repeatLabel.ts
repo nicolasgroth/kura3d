@@ -24,6 +24,7 @@ export function repeatLabel(language: LanguageCode, rec: RepeatRecord): string {
       return t(language, rec.mode === 'negative' ? 'repeat.name.addNegative' : 'repeat.name.addPart', {
         shape: t(language, `menu.shape.${rec.shape}` as TranslationKey),
       });
+    case 'centerOnBed': return t(language, 'repeat.name.centerOnBed');
     case 'simplify': return t(language, 'repeat.name.simplify');
     case 'color': return t(language, 'repeat.name.color');
     case 'setType':
