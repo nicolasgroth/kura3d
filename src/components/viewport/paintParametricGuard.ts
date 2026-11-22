@@ -25,6 +25,24 @@ export function paintWouldDropParameters(obj: SceneObject, willRefine: boolean):
   return state.status === 'primitive' || state.status === 'thread';
 }
 
+/**
+ * Espera a que se suelte el botón del puntero (con un tope): un diálogo modal abierto en el pointerdown
+ * recibiría el pointerup sobre su fondo y se cerraría solo.
+ */
+export function afterPointerRelease(timeoutMs = 1500): Promise<void> {
+  return new Promise((resolve) => {
+    const done = () => {
+      window.removeEventListener('pointerup', done, true);
+      window.removeEventListener('pointercancel', done, true);
+      clearTimeout(timer);
+      setTimeout(resolve, 60);
+    };
+    const timer = setTimeout(done, timeoutMs);
+    window.addEventListener('pointerup', done, true);
+    window.addEventListener('pointercancel', done, true);
+  });
+}
+
 /** Pregunta al usuario; devuelve true si debe pintarse. Recuerda la respuesta afirmativa. */
 export async function confirmPaintOnParametric(obj: SceneObject, language: LanguageCode): Promise<boolean> {
   const decision = await askDecision({

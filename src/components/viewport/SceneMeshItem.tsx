@@ -18,7 +18,7 @@ import { regionIdForFace } from '../../utils/segmentHighlight';
 import { buildViewportGeometry } from './creasedGeometry';
 import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
 import { hasLiveStroke, queueLiveSample, startLiveStroke } from './livePaintStroke';
-import { confirmPaintOnParametric, paintWouldDropParameters } from './paintParametricGuard';
+import { afterPointerRelease, confirmPaintOnParametric, paintWouldDropParameters } from './paintParametricGuard';
 import { brushQueryFromEvent, strokeNeedsEdgeRefine, usePaintRaycastAcceleration } from './paintPointer';
 
 /** Renderiza un SceneObject con caché de BufferGeometry, materiales PBR, sección Rayos X y voladizos. */
@@ -207,7 +207,7 @@ export const SceneMeshItem: React.FC<{
         // Primer trazo que refinará la malla de una primitiva/rosca: antes se avisa que dejará de ser paramétrica.
         if (paintMode === 'brush' && paintWouldDropParameters(obj, refine)) {
           const faceIndex = e.faceIndex ?? null;
-          void confirmPaintOnParametric(obj, state.language).then((ok) => {
+          void afterPointerRelease().then(() => confirmPaintOnParametric(obj, state.language)).then((ok) => {
             if (ok) paintObjectSurface(obj.id, [firstPoint.x, firstPoint.y, firstPoint.z], faceIndex);
           });
           return;
