@@ -1,139 +1,138 @@
 <p align="center">
-  <img src="public/branding/kura3d-banner.png" alt="Kura3D — Desktop & Web 3D Modeling Studio" width="680" />
+  <img src="public/branding/kura3d-banner.png" alt="Kura3D — estudio de modelado 3D para impresión" width="680" />
 </p>
 
-<h1 align="center">Kura3D v0.5.0</h1>
+<h1 align="center">Kura3D</h1>
 
 <p align="center">
-  <strong>Estudio de Modelado 3D Nativo y Web de Alto Rendimiento para Diseño e Impresión 3D</strong><br/>
-  Desarrollado por <strong>Nicolás Groth</strong> (<code>ngroth@gmail.com</code>) para <strong>ISGROTH — Innovación y Soluciones GROTH</strong>
+  <strong>Estudio abierto de modelado 3D para dejar cualquier pieza lista para imprimir</strong><br/>
+  Creado por <strong>Nicolás Groth</strong> · <strong>ISGROTH — Innovación y Soluciones GROTH</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/versi%C3%B3n-0.5.0--beta-7c3aed?style=for-the-badge" alt="Version 0.5.0" />
-  <img src="https://img.shields.io/badge/licencia-MIT-0d9488?style=for-the-badge" alt="MIT License" />
-  <img src="https://img.shields.io/badge/Tauri_v2-Windows_%7C_Linux_%7C_macOS-0284c7?style=for-the-badge" alt="Tauri v2" />
-  <img src="https://img.shields.io/badge/Kernel-Manifold--3D_WASM-f97316?style=for-the-badge" alt="Manifold-3D" />
-  <img src="https://img.shields.io/badge/Idiomas-ES_%7C_EN_%7C_DE_%7C_FR_%7C_HI_%7C_ZH-22c55e?style=for-the-badge" alt="6 Languages" />
-  <img src="https://img.shields.io/badge/MCP-30_Herramientas_Seguras-a855f7?style=for-the-badge" alt="30 MCP Tools" />
+  <img src="https://img.shields.io/badge/versi%C3%B3n-0.5.0--beta-7c3aed?style=for-the-badge" alt="Versión 0.5.0 beta" />
+  <img src="https://img.shields.io/badge/licencia-MIT-0d9488?style=for-the-badge" alt="Licencia MIT" />
+  <img src="https://img.shields.io/badge/web_%2B_escritorio-Tauri_v2-0284c7?style=for-the-badge" alt="Web y escritorio" />
+  <img src="https://img.shields.io/badge/motor-Manifold_WASM-f97316?style=for-the-badge" alt="Motor Manifold" />
+  <img src="https://img.shields.io/badge/idiomas-ES_EN_DE_FR_HI_ZH-22c55e?style=for-the-badge" alt="6 idiomas" />
 </p>
 
 ---
 
-**Kura3D** (*Kura* = roca/piedra en mapudungun) es un estudio CAD/3D nativo (**Tauri v2 + Rust**, ~6 MiB de instalador) y web (**React + Three.js + Manifold-3D WASM**), determinístico y **100 % local** (sin depender de IA externa), diseñado para crear, segmentar, modificar, validar y exportar modelos 3D listos para impresión multi-marca, moldes de silicona/velas, automatización vía **MCP** y asistente **Chat IA** opcional.
+**Kura3D** (*kura* es "piedra" en mapudungun) reúne en una sola herramienta lo que hoy está repartido en varias: importar o crear un modelo, cortarlo, ahuecarlo, unirlo con encajes, pintarlo por colores y exportarlo para tu slicer. Funciona en el navegador y como aplicación de escritorio, **100 % local**: la inteligencia artificial es opcional.
 
----
+El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kura3D entrega archivos que los slicers abren sin sorpresas.
 
-## Galería de Capturas (`v0.5.0`)
+> **Estado: beta en desarrollo activo.** El avance de cada funcionalidad, con sus notas de calidad, está en el [tablero](docs/TABLERO.md). La versión web es la más probada; la aplicación de escritorio todavía tiene verificaciones pendientes.
 
-### 1. Estudio Principal (*Obsidian Cyan* por defecto) y Segmentación Estructural 3D Local
-Detección determinística de sub-estructuras (PCA 3×3 + costuras cóncavas), coloreo multicolor para 3MF, ViewCube 3D interactivo y métricas *watertight* en vivo:
+## Capturas
 
-![Kura3D Estudio Principal Obsidian Cyan y Segmentación 3D](docs/screenshots/01-studio-obsidian.png)
+![Estudio principal](docs/screenshots/01-studio-obsidian.png)
 
-### 2. Temas de Color WCAG AA/AAA con Vista Previa Interactiva en Caliente
-6 temas accesibles con cambio instantáneo en vivo (*Obsidian Cyan por defecto, Kura Prism, Carbon Pro, Nordic Slate, Forge Amber y Alto Contraste AAA*) compatibles con modo Claro y Oscuro:
-
-![Kura3D Selector de 6 Temas WCAG AA/AAA con Vista Previa en Vivo](docs/screenshots/02-themes-kura-prism.png)
-
-### 3. Modo Compacto (Pantallas Pequeñas) + Soporte en 6 Idiomas (`ES · EN · DE · FR · HI · ZH`)
-Rail vertical compacto de `56 px` con tooltips enriquecidos, tema **Kura Prism** y soporte completo en Español, Inglés, Alemán, Francés, Hindi (Devanagari) y Chino Simplificado:
-
-![Kura3D Modo Compacto Tema Kura Prism e Idioma Chino Simplificado](docs/screenshots/03-compact-multilang.png)
-
-### 4. Herramientas Maker Pro: Caja Madre para Moldes de Silicona + Roscas Métricas ISO
-Generador automático de moldes para velas/silicona (4 modos), pernos/tuercas helicoidales ISO `M3–M20` con material PBR metálico, alineación inteligente y silueta de cama **Elegoo Centauri Carbon 2**:
-
-![Kura3D Caja Madre para Moldes de Silicona y Perno Metálico ISO M8](docs/screenshots/04-molds-and-threads.png)
-
----
-
-## Identidad Visual Oficial
-
-| Ícono de Aplicación | Lockup Horizontal | Variante Monocroma |
+| Temas accesibles | Modo compacto y 6 idiomas | Moldes y roscas |
 | :---: | :---: | :---: |
-| <img src="public/branding/kura3d-icon.png" alt="Kura3D Icon" width="84" /> | <img src="public/branding/kura3d-lockup.png" alt="Kura3D Lockup" width="220" /> | <img src="public/branding/kura3d-mono.png" alt="Kura3D Monochrome" width="220" /> |
+| ![Temas](docs/screenshots/02-themes-kura-prism.png) | ![Compacto](docs/screenshots/03-compact-multilang.png) | ![Moldes y roscas](docs/screenshots/04-molds-and-threads.png) |
 
----
+Las capturas son de una versión anterior de la interfaz.
 
-## Características Principales
+## Qué puedes hacer hoy
 
-- **Doble despliegue desde un solo código base:**
-  - **Escritorio Nativo (Tauri v2 + Rust):** Splash Screen animada, instaladores nativos de ~6 MiB para **Windows (`.exe` NSIS / `.msi`)**, **Linux (`.AppImage` / `.deb`)** y **macOS (`.dmg`)** vía [`.github/workflows/release.yml`](.github/workflows/release.yml).
-  - **Web Estática (Vite + WASM):** *code-splitting* por proveedor (`three`, `react`, `manifold-3d`) con carga optimizada.
-- **6 Idiomas Internacionales (`src/i18n/`):** **Español (`es`)**, **English (`en`)**, **Deutsch (`de`)**, **Français (`fr`)**, **हिन्दी (`hi`)** y **中文 (`zh`)** con 100 % de paridad de claves y placeholders verificada por tests.
-- **Proyectos locales `.kura`:** Nuevo, Abrir, Guardar y Guardar como desde el menú Proyecto. El archivo conserva geometría, transformaciones, materiales, selección, unidades e historial de Deshacer/Rehacer. Importar añade geometría al proyecto abierto. El escritorio vuelve a guardar en el destino elegido. En navegadores compatibles se usa el selector de guardado. Cuando el navegador solo admite descargas, Kura mantiene el aviso de cambios pendientes hasta que haya una escritura confirmada o se vuelva a abrir el archivo.
-- **Escena vacía al arrancar.** Importa geometría, abre un `.kura` o agrega el cubo de ejemplo. Puedes soltar modelos STL, 3MF u OBJ juntos y deshacer todo el lote en un paso.
-- **Recuperación local.** El editor guarda borradores de los cambios pendientes. Al volver a abrirlo, puedes recuperar su última copia con la escena, las unidades y el historial de Deshacer/Rehacer.
-- **6 Temas de Color WCAG AA/AAA con Vista Previa en Vivo:** **Obsidian Cyan** *(por defecto)*, **Kura Prism**, **Carbon Pro**, **Nordic Slate**, **Forge Amber** y **Alto Contraste AAA (≥10:1)** conmutables en caliente en modo Claro, Oscuro o Sistema.
-- **Interfaz Adaptativa, Precisión CAD y Atajos Profesionales:**
-  - 3 modos de densidad: **Expandido**, **Compacto** (rail `56px` + tooltips) y **Zen** (100 % viewport con `Ctrl/⌘+Shift+Enter`) + plegado individual de barras laterales.
-  - **Inspector de transformación.** `M` enfoca Mover, `R` Rotar y `S` Escalar. Mueve y rota con valores absolutos o deltas por eje. Escala por factor o por tamaño local, con bloqueo proporcional opcional. `Shift+M` abre Molde.
-  - **`PrecisionNumberInput`:** flechas `↑/↓`, `Shift+↑/↓` (10×), `Alt/Ctrl+↑/↓` (0.1×), rueda del ratón y *drag-scrub* horizontal a 60fps con 1 solo paso Undo.
-  - **Modificadores en gizmo:** `Alt + arrastrar` clona al vuelo, `Shift` (o candado `🔗`) escala proporcional, `Ctrl` activa *snap* de rejilla/15°, flechas `↑↓←→` / `RePág`/`AvPág` empujan con precisión, **ViewCube 3D**, **Paleta `Ctrl+K`** y hoja de atajos (`?` / `F1`).
-- **Motor Geométrico Determinístico Manifold-3D (100 % Local — Sin IA Externa):**
-  - **Detección y Segmentación Estructural 3D (PCA 3×3 + Costuras Cóncavas):** reconoce cuerpo principal, tanques/cilindros, tubos/conductos, cúpulas/escafandras y bloques; permite colorear para 3MF multicolor, extraer sub-partes cerrando tapas o separar todas las estructuras.
-  - **Generador Automático de Moldes y Contra-moldes (Velas / Silicona / Resina):** 1 pieza, 2 mitades con llaves de registro + embudo, **Caja Madre para silicona** y **Núcleo/Cavidad**.
-  - **Proyección Conformal de Texto y SVG sobre CUALQUIER Superficie:** relieve (+), grabado (−) o incrustación multicolor a ras (*Flush Inlay*) sobre caras planas, cilindros (`360°`), esferas o STLs orgánicos.
-  - **Módulos Dinámicos (+ / − con primitivas o STL/3MF)**, **Corte con vista previa láser 3D y uniones (`dowel`/`peg`/`dovetail`)**, **Ahuecado (Hollow)**, **Validador de Imprimibilidad** (voladizos > 45° en rojo 3D, peso/metros de filamento), **Simplificador/Refinador** (`simplify`/`refineToLength`), **Convex Hull**, **Roscas ISO `M3–M20`**, **Litofanía Plana y Cilíndrica**, **Imagen → Silueta/Cortador**, **5 texturas procedurales**, **pintado 3D** y **Vista Rayos X** (*Clipping Plane*).
-- **12 Impresoras Multi-Marca, Materiales PBR y Exportador 3MF Multi-Slicer:**
-  - Siluetas 3D de cama con zona de purga para **Elegoo Centauri Carbon 2 & 1**, **Bambu Lab (A1 Mini, A1/P1S/X1C, H2D)**, **Snapmaker (Artisan, J1s)**, **FlashForge (AD5M/Pro, AD5X)**, genéricas y Estudio Libre.
-  - 8 materiales PBR (*PLA Mate, PLA Silk, PETG Translúcido, ABS, Fibra de Carbono, Silicona, Cera/Vela, Metálico*), 5 sistemas de unidades (`mm`, `cm`, `m`, `in`, `ft`) y exportación **STL binario Z-up**, **OBJ** y **3MF** con `<basematerials>` y `Metadata/model_settings.config`.
-- **Servidor MCP Open-Source Seguro (`mcp-server/`):** **30 herramientas `kura_*`**, desactivado por defecto en la UI, puerto configurable (`127.0.0.1`), **autenticación Bearer Token (`timingSafeEqual`)**, **Modo Solo Lectura** y *rate-limiting*.
-- **Chat IA Dinámico Opcional:** Gemini, OpenAI, Anthropic, Ollama (local) y asistente determinístico offline, con etiquetas explícitas **`⚡ 100 % Local`** vs **`☁️ IA Externa`**.
+**Proyecto**
+- Proyectos `.kura` con escena, materiales, pintura e historial de deshacer. Autoguardado y recuperación de borradores.
+- Importar **STL, 3MF, OBJ y PLY**, varios archivos a la vez, por diálogo o arrastrando. Lee los 3MF de slicers (componentes, instancias, colores de filamento) conservando las posiciones.
+- Exportar **3MF, STL, OBJ con colores, GLB y PLY**, la escena completa o la selección.
 
----
+**Modelado**
+- Primitivas, texto 3D, unión, resta e intersección.
+- **Corte por plano con conectores** (espiga, pasador, cola de milano) con holgura configurable, también en aros y piezas en L.
+- **Ahuecado** con pared uniforme y orificio de drenaje.
+- **Moldes** de 1 pieza, 2 mitades, caja madre y núcleo/cavidad.
+- **Roscas ISO M3–M20** con paso y holgura automáticos según la norma.
+- Texto y SVG en relieve, grabado o incrustado sobre cualquier superficie.
+- Litofanías planas y cilíndricas, y cortadores desde una imagen.
+- Simplificar y refinar mallas, alinear y distribuir en la cama.
 
-## Instalación y Desarrollo
+**Preparación para imprimir**
+- Pintura 3D por caras para impresión multicolor, con separación por color.
+- Detección de estructuras para separar un modelo en partes.
+- Análisis de imprimibilidad: malla cerrada, voladizos, tamaño de cama y peso aproximado.
+- Siluetas de cama de 12 impresoras (Elegoo, Bambu Lab, Snapmaker, FlashForge y genéricas).
 
-### Requisitos
-- **Node.js ≥ 20** (recomendado 22 LTS)
-- **Rust estable** (`rustup` + `cargo`) y requisitos nativos de Tauri v2 para compilar ejecutables de escritorio
+**Estudio**
+- 6 idiomas, 6 temas en claro y oscuro con contraste verificado, y modo compacto.
+- Uso por teclado: atajos, paleta de comandos (`Ctrl/⌘+K`), lista de escena y menús navegables.
+- Campos numéricos que aceptan expresiones y unidades (`10+5`, `2cm`).
 
-### Comandos principales
+**Inteligencia artificial (opcional)**
+- Asistente local sin conexión que entiende órdenes simples en español e inglés.
+- Proveedores externos: Anthropic, OpenAI, Gemini, Ollama y **cualquier API compatible con OpenAI** (DeepSeek, Qwen, OpenRouter, LM Studio). En escritorio las claves se guardan en el llavero del sistema.
+- **Servidor MCP** con 30 herramientas para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Ver [mcp-server/README.md](mcp-server/README.md).
+
+## Hacia dónde va
+
+El orden de trabajo está en el [roadmap](docs/ROADMAP.md). Lo siguiente:
+
+1. **Dividir para imprimir:** partir un modelo grande según el tamaño de tu cama, con uniones, piezas nombradas, marcas de pareja y animación de armado.
+2. **Vista previa en el visor** antes de aplicar cada operación.
+3. **Placas** como parte del proyecto y exportación por placa.
+4. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
+5. **Estudio configurable:** paneles móviles, pestañas de proyecto, clic derecho y línea de comandos.
+6. **Extensiones de terceros**, con las reglas ya escritas en [docs/EXTENSIONES.md](docs/EXTENSIONES.md).
+
+## Instalación y desarrollo
+
+Requisitos: **Node.js 20 o superior**. Para la aplicación de escritorio, además **Rust estable** y los [requisitos de Tauri v2](https://tauri.app/start/prerequisites/).
+
 ```bash
-# 1. Instalar dependencias
+# Dependencias
 npm install
 npm --prefix mcp-server install
 
-# 2. Ejecutar versión Web
+# Versión web
 npm run dev
 npm run build
 
-# 3. Ejecutar y compilar App Nativa (Windows / Linux / macOS)
+# Aplicación de escritorio (Windows, Linux, macOS)
 npm run tauri:dev
 npm run tauri:build
 
-# 4. Servidor MCP (Antigravity / Claude Desktop / Codex)
+# Servidor MCP
 npm run mcp:build
 npm run mcp:start
 
-# 5. Ejecutar las pruebas del frontend y del servidor MCP
+# Pruebas
 npm test
 npm run mcp:test
 ```
 
-### Plan de Instaladores Multiplataforma
-- **Windows (x64):** `Kura3D_0.5.0_x64-setup.exe` (NSIS) y `Kura3D_0.5.0_x64_en-US.msi` (WiX) generados en `src-tauri/target/release/bundle/`.
-- **Linux (x64):** `.AppImage` y `.deb` automatizados en [`.github/workflows/release.yml`](.github/workflows/release.yml).
-- **macOS (Universal Apple Silicon + Intel):** `.dmg` automatizado en [`.github/workflows/release.yml`](.github/workflows/release.yml).
+## Tecnología
 
----
+React 19, TypeScript y Vite · Three.js con react-three-fiber · Zustand · [Manifold](https://github.com/elalish/manifold) en WebAssembly como motor geométrico · Tauri v2 con Rust para el escritorio.
 
-## Documentación Adicional
+Todas las dependencias tienen licencia permisiva (MIT, Apache-2.0, BSD, ISC).
+
+## Cómo se construye
+
+Kura3D se desarrolla con agentes de IA organizados en tres equipos independientes: desarrollo, QA y evaluación. Cada funcionalidad recibe una nota de 1 a 100 en usabilidad, código y funcionalidad, con evidencia, y solo se da por lista con 85 o más en las tres. Las reglas están en [CLAUDE.md](CLAUDE.md) y las notas en [docs/EVALUACIONES.md](docs/EVALUACIONES.md).
+
+## Documentación
+
 - [Tablero de funcionalidades](docs/TABLERO.md)
 - [Roadmap y prioridades](docs/ROADMAP.md)
 - [Registro de funcionalidades](docs/FUNCIONALIDADES.md)
-- [Continuidad del proyecto y próximos pasos](docs/CONTINUAR_KURA3D.md)
-- [Plan de Desarrollo y Seguimiento (`docs/PLAN_DESARROLLO.md`)](docs/PLAN_DESARROLLO.md)
-- [Historial de Versiones (`CHANGELOG.md`)](CHANGELOG.md)
-- [Configuración Segura del Servidor MCP (`mcp-server/README.md`)](mcp-server/README.md)
-- [Política de Seguridad (`SECURITY.md`)](SECURITY.md)
-- [Guía de Contribución (`CONTRIBUTING.md`)](CONTRIBUTING.md)
-- [Licencia MIT (`LICENSE`)](LICENSE)
+- [Evaluaciones de calidad](docs/EVALUACIONES.md)
+- [Consultas y decisiones pendientes](docs/CONSULTAS_PROYECTO.md)
+- [Reglas para extensiones](docs/EXTENSIONES.md)
+- [Backlog detallado](docs/PLAN_DESARROLLO.md)
+- [Servidor MCP](mcp-server/README.md)
+- [Historial de versiones](CHANGELOG.md) · [Seguridad](SECURITY.md) · [Cómo contribuir](CONTRIBUTING.md)
+
+## Contribuir y apoyar
+
+El proyecto es de código abierto y los aportes son bienvenidos: errores, traducciones, ideas y código. Lee [CONTRIBUTING.md](CONTRIBUTING.md) antes de empezar. Agregar un idioma no requiere programar; está explicado en [docs/EXTENSIONES.md](docs/EXTENSIONES.md).
 
 ---
 
 <p align="center">
-  © 2026 <strong>Nicolás Groth</strong> (<code>ngroth@gmail.com</code>) · <strong>ISGROTH — Innovación y Soluciones GROTH</strong> · Licencia MIT
+  © 2026 <strong>Nicolás Groth</strong> · <strong>ISGROTH — Innovación y Soluciones GROTH</strong> · <a href="LICENSE">Licencia MIT</a>
 </p>

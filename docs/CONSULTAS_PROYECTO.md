@@ -20,7 +20,7 @@ Todo lo de hoy se probó en web y con pruebas automáticas. Falta verificar en l
 - **Mientras tanto:** queda marcado como no verificado en el tablero.
 
 ### 4. El repositorio está dentro de OneDrive
-Sincronizar `.git`, `node_modules` y `src-tauri/target` puede causar bloqueos y corrupción. Hoy ya hubo dos instalaciones de dependencias que fallaron por archivos bloqueados.
+Sincronizar `.git`, `node_modules` y `src-tauri/target` puede causar bloqueos y corrupción. Hoy ya hubo dos instalaciones de dependencias que fallaron por archivos bloqueados, y el servidor de desarrollo no detecta los cambios de archivos en esta ruta, lo que obligó a los agentes a reiniciarlo tras cada edición.
 - **Opciones:** (a) mover el repositorio fuera de OneDrive, por ejemplo a `C:\dev\kura3d`, y dejar GitHub como respaldo; (b) dejarlo donde está y excluir esas carpetas de la sincronización.
 - **Mientras tanto:** no moví nada.
 
@@ -43,6 +43,27 @@ La especificación la deja fuera; la app ya muestra peso y metros de filamento, 
 La especificación sugiere `core/` (escena, geometría, operaciones, análisis, persistencia), `integrations/` y `apps/desktop/`. Mover todo de golpe rompe el historial de cada archivo y choca con cualquier trabajo en curso.
 - **Mi plan:** reordenar por dentro de `src/` (`src/core/…`, `src/integrations/…`) en pasos pequeños, sin convertirlo en monorepo.
 - **Mientras tanto:** avanzo con ese plan salvo que digas otra cosa.
+
+### 9. Perfil de slicer al exportar 3MF
+Hoy elegir Bambu, Prusa, Orca o Cura produce exactamente el mismo archivo. Hacerlo bien requiere los metadatos propios de cada slicer y probar en ellos.
+- **Opciones:** (a) implementar los metadatos de los slicers que uses (depende de la consulta 1); (b) quitar el selector hasta entonces.
+- **Mientras tanto:** el selector sigue visible, sin efecto.
+
+### 10. Eje vertical
+La app usa Y como altura; los slicers y la mayoría de los programas de impresión 3D usan Z. Dos evaluadores lo marcaron como fuente de confusión al leer dimensiones.
+- **Opciones:** (a) mostrar Z como vertical en toda la interfaz, manteniendo Y por dentro; (b) dejarlo y rotularlo claramente.
+- **Mi recomendación:** (a). Es un cambio de presentación, no de datos, pero toca muchos rótulos y atajos.
+- **Mientras tanto:** sigue en Y.
+
+### 11. Rango de roscas
+Quedó en M3–M20 en interfaz, límites y motor, que es lo que prometía la interfaz. La tabla ISO que se agregó llegaba hasta M64.
+- **Opciones:** (a) dejar M3–M20; (b) ampliar a M2–M64.
+- **Mientras tanto:** M3–M20.
+
+### 12. Reabrir proyectos recientes con un clic (escritorio)
+La lista de recientes muestra nombre y fecha y abre el selector de archivos. Reabrir directo necesita que la app recuerde rutas del disco entre sesiones.
+- **Opciones:** (a) agregarlo, guardando las rutas elegidas por ti; (b) dejarlo como está por privacidad.
+- **Mientras tanto:** (b).
 
 ## Resueltas
 

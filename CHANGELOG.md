@@ -10,6 +10,12 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Motor único.** El servidor MCP usa el mismo motor geométrico de la app; se eliminó el motor duplicado que devolvía geometría simulada.
+- **Geometría corregida.** Ahuecado y moldes con pared uniforme en piezas no convexas, refinado que no deforma, roscas ISO M3–M20 con paso y holgura automáticos y engrane real, conectores de corte repartidos por cada isla de la sección, cortador desde imagen con el tamaño pedido.
+- **Importar y exportar.** 3MF de slicers con componentes, instancias y posiciones, importación en lote que nombra los archivos fallidos, PLY, defensa contra archivos maliciosos. Diálogo único de exportación con 3MF, STL, OBJ con colores, GLB y PLY.
+- **Validación.** Una sola fuente de rangos para interfaz, IA, bus de comandos y MCP. Los errores del motor llevan código y se muestran traducidos en los 6 idiomas. Las operaciones largas no se pisan entre sí y deshacer queda protegido.
+- **IA.** Chat local que encadena acciones y pregunta antes de modificar la selección. Proveedores compatibles con OpenAI (DeepSeek, Qwen, OpenRouter, LM Studio) y, en escritorio, llamadas por el lado nativo con lista de hosts aprobada.
+- **Interfaz.** Barra superior sin desborde con menú "Más", campos numéricos con expresiones y unidades, lista de escena y menús por teclado, diálogo propio para descartar cambios, proyectos recientes, contraste verificado en los 6 temas, plurales y números según el idioma, avisos de error accesibles.
 - **Seguridad.** CSP estricta en escritorio y eliminación de comandos nativos de lectura/escritura arbitraria. Las claves de IA ya no se guardan en `localStorage`: en web quedan en memoria (opcional por sesión) y en escritorio en el llavero del sistema. El puente MCP exige token, valida Host y Origin, aplica solo lectura en el servidor, rota el token de verdad y exporta solo a una carpeta permitida. Las acciones propuestas por la IA se validan antes de ejecutarse. Dependencias actualizadas (vitest 5, zod 4) con auditoría en cero. Pendiente de verificar en la app de escritorio instalada.
 - Nombre único **Kura3D** en interfaz, documentación y metadatos de exportación; marca centralizada en `src/brand.ts` y cabecera de autoría en todo el código.
 - Nuevo flujo de trabajo con agentes de desarrollo, QA y evaluadores independientes (`CLAUDE.md`, `.claude/agents/`), roadmap reenfocado y registro de funcionalidades.
