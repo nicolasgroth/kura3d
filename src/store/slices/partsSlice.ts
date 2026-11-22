@@ -135,8 +135,11 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         const spot = placePartsInFreeSpot(get().objects, parts, activeBedSize(get()));
         const placed = spot.parts;
         commitChange({ ...change, added: placed }, { select: placed.map((c) => c.id), spawned: placed });
-        get().addToast(tCount(get().language, { one: 'toast.moldDone.one', other: 'toast.moldDone.other' }, placed.length), 'success');
+        const names = placed.map((c) => c.name).join(', ');
+        get().addToast(tCount(get().language, { one: 'toast.moldDone.one', other: 'toast.moldDone.other' }, placed.length, { names }), 'success');
         if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+        // El molde queda en un hueco libre que puede estar fuera de la vista: se encuadra siempre.
+        get().requestCameraPreset('focus', placed.map((c) => c.id));
         return placed;
       });
     },

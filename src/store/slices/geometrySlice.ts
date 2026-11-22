@@ -189,7 +189,8 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         const change = await runEngine('projectSurface', { obj, options });
         assertCurrent([obj]);
         commitChange(change, { select: [id] });
-        get().addToast(tr('toast.projectDone'), 'success');
+        get().addToast(tr('toast.projectDone', { name: obj.name }), 'success');
+        get().requestCameraPreset('ensure', [id]);
         return get().objects.find((o) => o.id === id) ?? null;
       });
     },
