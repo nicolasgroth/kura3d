@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { MeasureOverlay } from '../measure/MeasureOverlay';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import {
@@ -204,6 +205,7 @@ export const SceneContent: React.FC<{
       <SegmentHighlight />
 
       {activeTool === 'paint' && <PaintBrushCursor />}
+      {activeTool === 'measure' && <MeasureOverlay />}
 
       {showGizmo && primaryObj && activeTargetGroup && (
         <TransformControls

@@ -22,6 +22,7 @@ import {
 import { t } from '../../i18n';
 import { type CameraPresetType, useKuraStore } from '../../store/useKuraStore';
 import { PaintToolbar } from './PaintToolbar';
+import { MeasurePanel } from '../measure/MeasurePanel';
 import { ToastStack } from '../ToastStack';
 import { SectionViewNotice } from './SectionViewNotice';
 import '../../styles/sectionNotice.css';
@@ -202,6 +203,7 @@ export const ViewportHudTop: React.FC = () => {
 
       {/* Barra contextual de herramientas (Pintar / Tallar / Cortar) */}
       {activeTool === 'paint' && <PaintToolbar />}
+      {activeTool === 'measure' && <MeasurePanel />}
 
       {activeTool === 'erase' && (
         <div className="kura-hud-card" style={{ gap: 10, alignSelf: 'flex-start' }}>

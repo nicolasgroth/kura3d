@@ -27,6 +27,7 @@ import type {
   ThreadOptions,
   Vec3,
 } from '../../types/kura';
+import { measureObjectCapacity, type CapacityOptions } from '../../engine/measure';
 import { applyHoles, booleanOperation, convexHull } from './csgOperations';
 import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
 import { eraseSphere, hollowObject, projectOnSurface, refineObject, simplifyObject } from './meshOperations';
@@ -51,6 +52,12 @@ export interface PrintabilityTaskArgs {
   infillPercent?: number;
   overhangAngleDeg?: number;
   minWallMm?: number;
+}
+
+/** Argumentos de la capacidad de un recipiente (solo lectura). */
+export interface CapacityTaskArgs {
+  obj: Pick<SceneObject, 'mesh' | 'position' | 'rotation' | 'scale'>;
+  options?: Omit<CapacityOptions, 'onProgress'>;
 }
 
 /** Archivos producidos por la exportación (`suffix` es la extensión con punto). */
@@ -120,6 +127,8 @@ export const ENGINE_TASKS = {
   export: (_ctx: OperationContext, a: ExportTaskArgs) => exportSceneFiles(a),
   printability: (_ctx: OperationContext, a: PrintabilityTaskArgs) =>
     engine.analyzePrintability(a.obj, a.bed, a.materialId, a.infillPercent, a.overhangAngleDeg, a.minWallMm),
+  capacity: (ctx: OperationContext, a: CapacityTaskArgs) =>
+    measureObjectCapacity(a.obj, { ...a.options, onProgress: ctx.onProgress }),
 };
 
 export type EngineTaskName = keyof typeof ENGINE_TASKS;

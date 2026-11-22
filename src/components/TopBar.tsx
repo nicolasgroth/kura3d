@@ -26,6 +26,7 @@ import {
   Paintbrush,
   Palette,
   Redo2,
+  Ruler,
   Scissors,
   Search,
   Settings,
@@ -152,12 +153,13 @@ export const TopBar: React.FC = () => {
   const tools: Array<{
     id: ActiveTool;
     icon: React.ReactNode;
-    labelKey: 'select' | 'paint' | 'cut' | 'erase';
+    labelKey: 'select' | 'paint' | 'cut' | 'erase' | 'measure';
   }> = [
     { id: 'select', icon: <MousePointer size={13} />, labelKey: 'select' },
     { id: 'paint', icon: <Paintbrush size={13} />, labelKey: 'paint' },
     { id: 'cut', icon: <Scissors size={13} />, labelKey: 'cut' },
     { id: 'erase', icon: <Eraser size={13} />, labelKey: 'erase' },
+    { id: 'measure', icon: <Ruler size={13} />, labelKey: 'measure' },
   ];
 
   // Nivel de ahorro de espacio: 0 = completo, 1 = etiquetas compactas, 2+ = oculta controles en orden.

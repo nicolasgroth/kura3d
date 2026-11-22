@@ -197,7 +197,7 @@ export type UiDensityMode = 'full' | 'compact' | 'zen';
 export type TransformMode = 'translate' | 'rotate' | 'scale';
 
 /** Herramientas activas en la barra superior/lateral. */
-export type ActiveTool = 'select' | 'paint' | 'cut' | 'erase';
+export type ActiveTool = 'select' | 'paint' | 'cut' | 'erase' | 'measure';
 
 /** Tipos de primitivas paramétricas nativas. */
 export type PrimitiveType =

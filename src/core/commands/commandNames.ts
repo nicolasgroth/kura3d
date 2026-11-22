@@ -46,4 +46,7 @@ export type KuraCommandName =
   | 'colorize_structures'
   | 'extract_structure'
   | 'mirror_object'
-  | 'validate_assembly';
+  | 'validate_assembly'
+  | 'measure_distance'
+  | 'measure_object'
+  | 'measure_capacity';
