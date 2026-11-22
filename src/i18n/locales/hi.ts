@@ -993,6 +993,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'engineError.MESH_EMPTY': '"{operation}" ऑपरेशन से खाली मेश बना; ऑब्जेक्ट नहीं बदला गया।',
   'engineError.MESH_INVALID': 'मेश एक मान्य बंद ठोस नहीं है ({cause})।',
   'engineError.CUT_PLANE_OUTSIDE': '{axis} = {offset} mm पर कट प्लेन ऑब्जेक्ट को पार नहीं करता (भीतरी सीमा {min} से {max} mm)।',
+  'engineError.TEXT_GLYPH_MISSING': 'फ़ॉन्ट में ये अक्षर नहीं हैं: {chars}। इन्हें हटाएँ या बदलें (शामिल फ़ॉन्ट लैटिन वर्णमाला को कवर करता है)।',
   'engineWarning.REFINE_LENGTH_CLAMPED': '{maxTriangles} त्रिभुजों से अधिक न हो, इसलिए {requested} mm के बजाय {effective} mm किनारा उपयोग हुआ।',
   'engineWarning.REFINE_NO_CHANGE': 'मेश के किनारे पहले से {edge} mm या कम हैं: कोई त्रिभुज नहीं जोड़ा गया ({triangles})।',
   'engineWarning.REFINE_SMOOTH_REVERTED': 'स्मूदिंग से माप {deviation} mm बदल रहे थे (सहनशीलता {tolerance} mm); केवल रिफ़ाइन लागू हुआ।',

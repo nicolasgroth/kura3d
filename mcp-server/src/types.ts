@@ -210,6 +210,8 @@ export interface PrimitiveParams {
   sides?: number;
   text?: string;
   fontSize?: number;
+  letterSpacing?: number;
+  textAlign?: 'left' | 'center' | 'right';
   bevel?: number;
 }
 

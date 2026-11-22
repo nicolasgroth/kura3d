@@ -993,6 +993,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineError.MESH_EMPTY': 'L\'opération « {operation} » a produit un maillage vide ; l\'objet n\'a pas été modifié.',
   'engineError.MESH_INVALID': 'Le maillage n\'est pas un solide fermé valide ({cause}).',
   'engineError.CUT_PLANE_OUTSIDE': 'Le plan de coupe {axis} = {offset} mm ne traverse pas l\'objet (intérieur entre {min} et {max} mm).',
+  'engineError.TEXT_GLYPH_MISSING': 'La police ne contient pas ces caractères : {chars}. Supprime-les ou remplace-les (la police incluse couvre l\'alphabet latin).',
   'engineWarning.REFINE_LENGTH_CLAMPED': 'Arête de {effective} mm utilisée au lieu de {requested} mm pour ne pas dépasser {maxTriangles} triangles.',
   'engineWarning.REFINE_NO_CHANGE': 'Le maillage a déjà des arêtes de {edge} mm ou moins : aucun triangle ajouté ({triangles}).',
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Le lissage modifiait les dimensions de {deviation} mm (tolérance {tolerance} mm) ; seul le raffinage a été appliqué.',

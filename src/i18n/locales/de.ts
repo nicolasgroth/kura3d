@@ -993,6 +993,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineError.MESH_EMPTY': 'Die Operation „{operation}“ ergab ein leeres Netz; das Objekt wurde nicht verändert.',
   'engineError.MESH_INVALID': 'Das Netz ist kein gültiger geschlossener Körper ({cause}).',
   'engineError.CUT_PLANE_OUTSIDE': 'Die Schnittebene bei {axis} = {offset} mm schneidet das Objekt nicht (Innenbereich {min} bis {max} mm).',
+  'engineError.TEXT_GLYPH_MISSING': 'Die Schrift enthält diese Zeichen nicht: {chars}. Entferne oder ersetze sie (die mitgelieferte Schrift deckt das lateinische Alphabet ab).',
   'engineWarning.REFINE_LENGTH_CLAMPED': 'Statt {requested} mm wurde eine Kante von {effective} mm verwendet, um {maxTriangles} Dreiecke nicht zu überschreiten.',
   'engineWarning.REFINE_NO_CHANGE': 'Das Netz hat bereits Kanten von {edge} mm oder weniger: keine Dreiecke hinzugefügt ({triangles}).',
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Das Glätten veränderte die Maße um {deviation} mm (Toleranz {tolerance} mm); nur die Verfeinerung wurde angewendet.',

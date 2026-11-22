@@ -37,7 +37,10 @@ export const PRIMITIVE_PARAM_RANGES = {
   tubeRadius: { min: 0.05, max: PRIMITIVE_LIMITS.maxSize },
   segments: { min: 3, max: PRIMITIVE_LIMITS.maxSegments, integer: true },
   sides: { min: 3, max: PRIMITIVE_LIMITS.maxSegments, integer: true },
+  /** Alto de mayúscula del texto 3D en mm (la "H" mide exactamente esto). */
   fontSize: { min: 1, max: 500 },
+  /** Espacio extra entre letras del texto 3D en mm (negativo las junta). */
+  letterSpacing: { min: -10, max: 100 },
 } as const satisfies Record<string, ParamRange>;
 
 export type PrimitiveRangeKey = keyof typeof PRIMITIVE_PARAM_RANGES;
@@ -50,6 +53,10 @@ export const MIN_SEGMENTS_BY_TYPE: Readonly<Record<string, number>> = {
   sphere: 4,
   torus: 6,
 };
+
+/** Alineación de las líneas del texto 3D. */
+export const TEXT_ALIGN_OPTIONS = ['left', 'center', 'right'] as const;
+export type TextAlignOption = (typeof TEXT_ALIGN_OPTIONS)[number];
 
 /** Profundidad de extrusión del texto (mm). */
 export const TEXT_DEPTH_RANGE: ParamRange = { min: 0.1, max: 500 };

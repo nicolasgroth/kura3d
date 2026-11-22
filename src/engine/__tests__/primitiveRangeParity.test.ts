@@ -26,6 +26,7 @@ const USES: Array<[keyof typeof PRIMITIVE_PARAM_RANGES, PrimitiveType]> = [
   ['segments', 'cylinder'],
   ['sides', 'prism'],
   ['fontSize', 'text'],
+  ['letterSpacing', 'text'],
 ];
 
 const busAccepts = (type: PrimitiveType, params: Record<string, unknown>) => {
@@ -55,7 +56,8 @@ describe('rangos de primitivas: una sola fuente', () => {
 
   it.each(USES)('%s en %s: fuera de rango se rechaza antes del motor', (key, type) => {
     const range = primitiveRangeFor(type, key);
-    const below = range.integer ? range.min - 1 : range.min / 2;
+    // Mínimos negativos (espaciado de letras): la mitad quedaría dentro del rango.
+    const below = range.integer || range.min <= 0 ? range.min - 1 : range.min / 2;
     for (const value of [below, range.max + 1]) {
       expect(busAccepts(type, { [key]: value })).toBe(false);
       expect(primitiveParamsSchema.safeParse({ [key]: value }).success).toBe(false);

@@ -47,6 +47,7 @@ export const ENGINE_ERROR_CODES = [
   'MESH_EMPTY',
   'MESH_INVALID',
   'CUT_PLANE_OUTSIDE',
+  'TEXT_GLYPH_MISSING',
 ] as const;
 
 export type EngineErrorCode = (typeof ENGINE_ERROR_CODES)[number];
