@@ -2,8 +2,8 @@
  * @file e2e/qa6-ui.spec.ts
  * @description Recorridos Playwright del QA del lote "Z como altura + dividir/armado": medidas de un STL 10×20×30,
  * corte por plano con "mitad positiva" en cada eje (sobre el STL exportado), resumen de división en los ejes del usuario
- * y persistencia de avisos de unión al guardar/reabrir `.kura`. Las pruebas marcadas con `test.fail` documentan fallos
- * conocidos (al corregirlos, Playwright las reporta como "inesperadamente pasan" y se quita la marca).
+ * y persistencia de avisos de unión al guardar/reabrir `.kura`. Los fallos que documentaban las marcas `test.fail`
+ * (corte en Y, resumen en ejes del motor, avisos que se perdían al reabrir) están corregidos y se cubren además con vitest.
  * Requiere `@playwright/test` y la web en KURA_URL (por defecto http://127.0.0.1:5189).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -93,7 +93,6 @@ for (const [axis, label, idx] of [['X', 'X (vertical)', 0], ['Y', 'Y (vertical)'
 }
 
 test('resumen de dividir muestra rejilla y medidas en los ejes del usuario (Z = altura)', async ({ page }) => {
-  test.fail(true, 'QA6: el resumen usa los ejes del motor (rejilla 1 × 3 × 1 y 100 × 206 × 100 para un cilindro vertical)');
   await page.goto(URL);
   await importar(page, 'poste.stl', boxStl(100, 100, 600));
   await page.getByRole('button', { name: 'Dividir para imprimir' }).first().click();
@@ -103,7 +102,6 @@ test('resumen de dividir muestra rejilla y medidas en los ejes del usuario (Z = 
 });
 
 test('guardar y reabrir .kura conserva los avisos de las uniones', async ({ page }) => {
-  test.fail(true, 'QA6: al reabrir se pierden los avisos de cada unión (conector cerca del borde, "dejó para pegar")');
   await page.goto(URL);
   await page.evaluate(() => {
     const w = window as unknown as { __saved: Blob | null; showSaveFilePicker: unknown };
