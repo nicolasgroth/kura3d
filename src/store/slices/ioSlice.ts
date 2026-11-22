@@ -55,6 +55,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     pushHistory: () => pushHistory(),
     buildObject: ({ name, mesh, position, color, isHole }) =>
       buildSceneObject({ name, source: 'imported', mesh, position, color: color || PRINT_COLOR_PALETTE[0], isHole }),
+    exportFiles: (args) => ctx.runEngineDetached('export', args),
   });
 
   /** Agrega un objeto creado, lo selecciona y avisa. */

@@ -16,6 +16,8 @@ import { t, type TranslationKey } from '../i18n';
 import { MAX_UNDO_HISTORY } from '../project/projectCodec';
 import { ProjectCodecError } from '../project/projectSchema';
 import { applySceneChange, type OperationContext, type SceneChange } from '../core/operations';
+import { getEngineClient, isEngineCancelled, type EngineClient, type EngineJob } from '../core/operations/engineClient';
+import type { EngineTaskArgs, EngineTaskName, EngineTaskResult } from '../core/operations/engineTasks';
 import { createKeyedNaming } from '../core/scene/resultNames';
 import { APP_BUILD_POLICY, makeId } from '../core/scene/sceneObjects';
 import { inputsAreCurrent } from '../core/scene/sceneRules';
@@ -37,6 +39,15 @@ export interface StoreRuntime {
   paintStroke: { open: boolean; recorded: boolean };
   /** Escena previa a un arrastre de transformación sin confirmar. */
   transformSnapshotBeforeDrag: SceneSnapshot | null;
+  /** Tarea del motor en curso (cancelable). */
+  activeJob: EngineJob<unknown> | null;
+}
+
+let engineClientOverride: EngineClient | null = null;
+
+/** Sustituye el cliente del motor (pruebas: Worker simulado). `null` vuelve al compartido. */
+export function setStoreEngineClient(client: EngineClient | null): void {
+  engineClientOverride = client;
 }
 
 export interface StoreContext {
@@ -59,6 +70,11 @@ export interface StoreContext {
   assertCurrent: (inputs: SceneObject[]) => void;
   /** Registra historial y aplica el cambio; opcionalmente fija selección y marca la aparición. */
   commitChange: (change: SceneChange, options?: CommitOptions) => void;
+  /** Ejecuta una tarea pesada en el Worker del motor (en proceso sin Worker), cancelable. */
+  runEngine: <N extends EngineTaskName>(name: N, args: EngineTaskArgs<N>) => Promise<EngineTaskResult<N>>;
+  cancelBusyOperation: () => boolean;
+  /** Igual que `runEngine` pero sin tomar el bloqueo ni registrarse como cancelable (exportar). */
+  runEngineDetached: <N extends EngineTaskName>(name: N, args: EngineTaskArgs<N>) => Promise<EngineTaskResult<N>>;
 }
 
 export interface CommitOptions {
@@ -86,7 +102,11 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     dropStaleSegmentation();
   }) as SetState;
 
-  const runtime: StoreRuntime = { paintStroke: { open: false, recorded: false }, transformSnapshotBeforeDrag: null };
+  const runtime: StoreRuntime = {
+    paintStroke: { open: false, recorded: false },
+    transformSnapshotBeforeDrag: null,
+    activeJob: null,
+  };
   const tr: Translate = (key, params) => t(get().language, key, params);
 
   const pushHistory = () => {
@@ -114,9 +134,18 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   };
   const runExclusive = createExclusiveRunner({
     isLocked: isHistoryLocked,
-    setBusy: (name) => set({ busyOperation: name }),
+    setBusy: (name) => {
+      if (name === null) runtime.activeJob = null;
+      set({
+        busyOperation: name,
+        busyProgress: name === null ? null : { name, phase: null, startedAt: Date.now(), cancellable: false },
+      });
+    },
     onRejected: () => get().addToast(tr('store.error.busy'), 'info'),
-    onError: (err) => reportOperationError(err),
+    onError: (err) => {
+      if (isEngineCancelled(err)) get().addToast(tr('store.operationCancelled'), 'info');
+      else reportOperationError(err);
+    },
   });
 
   const currentSegmentationFor = (obj: SceneObject) => {
@@ -170,8 +199,48 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     });
   };
 
+  const patchProgress = (patch: Partial<NonNullable<KuraStoreState['busyProgress']>>) => {
+    const current = get().busyProgress;
+    if (current) set({ busyProgress: { ...current, ...patch } });
+  };
+
+  const runEngine = async <N extends EngineTaskName>(name: N, args: EngineTaskArgs<N>): Promise<EngineTaskResult<N>> => {
+    const client = engineClientOverride ?? getEngineClient();
+    // El progreso puede llegar antes de que `run` devuelva (ruta en proceso).
+    let started = true;
+    const job = client.run(opCtx(), name, args, (phase) => {
+      if (started) patchProgress({ phase });
+    });
+    const stop = () => {
+      started = false;
+    };
+    runtime.activeJob = job as EngineJob<unknown>;
+    patchProgress({ cancellable: true });
+    try {
+      return await job.promise;
+    } finally {
+      stop();
+      if (runtime.activeJob === job) {
+        runtime.activeJob = null;
+        patchProgress({ cancellable: false });
+      }
+    }
+  };
+
+  const runEngineDetached = <N extends EngineTaskName>(name: N, args: EngineTaskArgs<N>) =>
+    (engineClientOverride ?? getEngineClient()).run(opCtx(), name, args).promise;
+
+  const cancelBusyOperation = () => {
+    const job = runtime.activeJob;
+    if (!job) return false;
+    runtime.activeJob = null;
+    job.cancel();
+    return true;
+  };
+
   return {
     set, get, runtime, tr, pushHistory, isHistoryLocked, rejectWhileLocked, runExclusive, operationErrors,
     reportOperationError, reportEngineWarnings, currentSegmentationFor, projectErrorMessage, opCtx, assertCurrent, commitChange,
+    runEngine, cancelBusyOperation, runEngineDetached,
   };
 }

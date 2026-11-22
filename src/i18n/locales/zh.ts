@@ -797,6 +797,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'store.error.busy': '请等待当前操作完成。',
   'store.error.locked': '该操作包含已锁定的对象。',
   'store.error.staleInput': '操作期间场景已更改；为避免覆盖你的更改，操作已取消。',
+  'store.operationCancelled': '操作已取消。',
   'store.align.overflow': '排布超出打印床（{width} × {depth} mm）。请移除部分零件或更换打印机。',
   'toast.hollowDone': '已应用抽壳 ({thickness} mm)',
   'toast.cutDone': '平面切割完成',

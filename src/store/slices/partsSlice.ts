@@ -17,7 +17,7 @@ import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
 export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
-  const { set, get, tr, runExclusive, opCtx, assertCurrent, commitChange, currentSegmentationFor } = ctx;
+  const { set, get, tr, runExclusive, opCtx, assertCurrent, commitChange, currentSegmentationFor, runEngine } = ctx;
   const { reportOperationError, reportEngineWarnings } = ctx;
 
   const editable = (id: string) => {
@@ -30,7 +30,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const obj = editable(id);
       if (!obj) return [];
       return runExclusive('plane_cut', [], async () => {
-        const { parts, change } = await ops.planeCut(opCtx(), obj, options);
+        const { parts, change } = await runEngine('planeCut', { obj, options });
         reportEngineWarnings(change.warnings);
         if (parts.length === 0) return [];
         assertCurrent([obj]);
@@ -44,7 +44,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const obj = editable(id);
       if (!obj) return [];
       return runExclusive('split_parts', [], async () => {
-        const { pieceCount, parts, change } = await ops.splitDisconnected(opCtx(), obj);
+        const { pieceCount, parts, change } = await runEngine('splitDisconnected', { obj });
         if (parts.length === 0) {
           get().addToast(tr('toast.splitPartsDone', { count: pieceCount }), 'info');
           return [obj];
@@ -77,7 +77,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       if (!obj) return [];
       return runExclusive('generate_mold', [], async () => {
         await get().initEngine();
-        const { parts, change } = await ops.generateMold(opCtx(), obj, options);
+        const { parts, change } = await runEngine('mold', { obj, options });
         if (parts.length === 0) return [];
         assertCurrent([obj]);
         commitChange(change, { select: parts.map((c) => c.id), spawned: parts });
@@ -96,7 +96,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       set({ segmentationCreaseDeg: angle });
       return runExclusive('detect_structures', null, async () => {
         await get().initEngine();
-        const result = await engine.detectStructuralRegions(obj, { creaseAngleDeg: angle });
+        const result = await runEngine('detectStructures', { obj, creaseAngleDeg: angle });
         set({ activeSegmentation: result });
         get().addToast(
           tCount(get().language, { one: 'toast.structuresDetected.one', other: 'toast.structuresDetected.other' }, result.regions.length),
@@ -137,7 +137,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
           throw new engine.EngineError('SEGMENTATION_STALE');
         }
         await get().initEngine();
-        const { extracted, change } = await ops.extractStructure(opCtx(), obj, seg, region, removeFromSource);
+        const { extracted, change } = await runEngine('extractStructure', { obj, segmentation: seg, region, removeFromSource });
         assertCurrent([obj]);
         commitChange(change, {
           select: [extracted.id],
@@ -158,7 +158,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
       return runExclusive('split_structures', [], async () => {
         await get().initEngine();
-        const { parts, change } = await ops.splitStructures(opCtx(), obj, segmentation);
+        const { parts, change } = await runEngine('splitStructures', { obj, segmentation });
         if (parts.length === 0) return [];
         assertCurrent([obj]);
         commitChange(change, { select: parts.map((c) => c.id), spawned: parts, extra: { activeSegmentation: null } });

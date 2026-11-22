@@ -69,12 +69,7 @@ export function convexInwardOffset(
   solid: Manifold,
   thickness: number
 ): Manifold | null {
-  const vol = solid.volume();
-  const hull = solid.hull();
-  const hullVol = hull.volume();
-  hull.delete();
-  if (Math.abs(hullVol - vol) > 1e-6 * Math.max(1, vol)) return null;
-
+  // Primero se cuentan los planos (barato, corta al pasar el máximo); la envolvente es cara.
   const { positions, indices } = manifoldBuffers(solid);
   const planes = new Map<string, [number, number, number, number]>();
   for (let t = 0; t < indices.length / 3; t++) {
@@ -92,6 +87,11 @@ export function convexInwardOffset(
     if (!planes.has(key)) planes.set(key, [nx, ny, nz, d]);
     if (planes.size > MAX_CONVEX_PLANES) return null;
   }
+  const vol = solid.volume();
+  const hull = solid.hull();
+  const hullVol = hull.volume();
+  hull.delete();
+  if (Math.abs(hullVol - vol) > 1e-6 * Math.max(1, vol)) return null;
 
   const bbox = solid.boundingBox();
   const size: [number, number, number] = [
@@ -121,18 +121,20 @@ export function convexInwardOffset(
  * @param solid Sólido origen (no se modifica ni libera).
  * @param thickness Espesor de pared en las unidades de la malla.
  * @param sampleBudget Máximo aproximado de evaluaciones de la SDF.
+ * @param solidField Campo de distancia ya construido de `solid` (se reutiliza si llega).
  */
 export function inwardOffset(
   wasm: ManifoldToplevel,
   solid: Manifold,
   thickness: number,
-  sampleBudget = DEFAULT_SAMPLE_BUDGET
+  sampleBudget = DEFAULT_SAMPLE_BUDGET,
+  solidField?: MeshDistanceField
 ): InwardOffsetResult {
   const exact = convexInwardOffset(wasm, solid, thickness);
   if (exact) {
     return { inner: exact, gridEdgeMm: 0, levelMarginMm: 0 };
   }
-  const field = distanceFieldOfManifold(solid);
+  const field = solidField ?? distanceFieldOfManifold(solid);
   const bbox = solid.boundingBox();
   const sx = bbox.max[0] - bbox.min[0];
   const sy = bbox.max[1] - bbox.min[1];
@@ -155,8 +157,12 @@ export function inwardOffset(
   const levelMargin = Math.min(thickness * 0.5, (gridEdge * gridEdge) / (6 * thickness)) + simplifyTol;
   const level = thickness + levelMargin;
 
+  // Lipschitz: si |d − nivel| > arista de grilla, ninguna arista que toque ese punto cruza el
+  // nivel, así que basta el lado correcto. Con el tope se evita recorrer todo el BVH en puntos
+  // hondos (el centro de una esfera equidista de todos sus triángulos).
+  const cap = level + 2 * gridEdge;
   const inner = wasm.Manifold.levelSet(
-    (p) => field.signedDistance(p[0], p[1], p[2]),
+    (p) => field.boundedSignedDistance(p[0], p[1], p[2], cap),
     {
       min: [bbox.min[0] + pad, bbox.min[1] + pad, bbox.min[2] + pad],
       max: [bbox.max[0] - pad, bbox.max[1] - pad, bbox.max[2] - pad],

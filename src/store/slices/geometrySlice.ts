@@ -18,7 +18,7 @@ import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
 export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> {
-  const { set, get, tr, pushHistory, runExclusive, rejectWhileLocked, opCtx, assertCurrent, commitChange, runtime } = ctx;
+  const { set, get, tr, pushHistory, runExclusive, rejectWhileLocked, opCtx, assertCurrent, commitChange, runtime, runEngine } = ctx;
   const { reportOperationError, reportEngineWarnings } = ctx;
 
   const editable = (id: string) => {
@@ -38,12 +38,11 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         return null;
       }
       return runExclusive(`boolean:${op}`, null, async () => {
-        const op$ = opCtx();
-        const { result, change } = await ops.booleanOperation(op$, {
+        const { result, change } = await runEngine('boolean', {
           target: inputs.target,
           tools: [inputs.tool, ...inputs.extras],
           op,
-          name: op$.naming.booleanResult(op, all),
+          name: opCtx().naming.booleanResult(op, all),
         });
         assertCurrent(all);
         commitChange(change, { select: [result.id] });
@@ -58,7 +57,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       const { solids, holes } = resolveHoleScope(objects, selectedIds);
       if (solids.length === 0 || holes.length === 0 || rejectWhileLocked()) return;
       return runExclusive('apply_holes', undefined, async () => {
-        const { updated, change } = await ops.applyHoles(opCtx(), solids, holes);
+        const { updated, change } = await runEngine('applyHoles', { solids, holes });
         assertCurrent([...solids, ...holes]);
         commitChange(change, { select: updated.map((s) => s.id) });
         get().addToast(tr('toast.booleanDone.subtract'), 'success');
@@ -69,7 +68,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       const obj = editable(id);
       if (!obj) return false;
       return runExclusive('hollow', false, async () => {
-        const change = await ops.hollowObject(opCtx(), obj, options);
+        const change = await runEngine('hollow', { obj, options });
         assertCurrent([obj]);
         commitChange(change);
         get().addToast(tr('toast.hollowDone', { thickness: options.wallThickness }), 'success');
@@ -83,7 +82,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       if (!obj) return false;
       return runExclusive('simplify', false, async () => {
         await get().initEngine();
-        const change = await ops.simplifyObject(opCtx(), obj, toleranceMm);
+        const change = await runEngine('simplify', { obj, toleranceMm });
         assertCurrent([obj]);
         commitChange(change);
         const tris = change.patches[0].patch.stats!.triangles;
@@ -97,7 +96,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       if (!obj) return false;
       return runExclusive('refine', false, async () => {
         await get().initEngine();
-        const change = await ops.refineObject(opCtx(), obj, targetEdgeLengthMm, smooth);
+        const change = await runEngine('refine', { obj, edgeMm: targetEdgeLengthMm, smooth });
         assertCurrent([obj]);
         commitChange(change);
         const tris = change.patches[0].patch.stats!.triangles;
@@ -113,7 +112,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       if (targetObjs.length === 0) return null;
       return runExclusive('convex_hull', null, async () => {
         await get().initEngine();
-        const { result, change } = await ops.convexHull(opCtx(), targetObjs);
+        const { result, change } = await runEngine('convexHull', { targets: targetObjs });
         assertCurrent(targetObjs);
         commitChange(change, { select: [result.id], spawned: [result] });
         get().addToast(tr('toast.hullDone'), 'success');
@@ -154,7 +153,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       const obj = editable(id);
       if (!obj) return;
       return runExclusive('erase', undefined, async () => {
-        const change = await ops.eraseSphere(opCtx(), obj, worldCenter, radiusMm ?? get().eraseRadiusMm);
+        const change = await runEngine('erase', { obj, center: worldCenter, radiusMm: radiusMm ?? get().eraseRadiusMm });
         assertCurrent([obj]);
         commitChange(change);
         get().addToast(tr('toast.erased'), 'success');
@@ -166,7 +165,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       if (!obj) return null;
       return runExclusive('project_surface', null, async () => {
         await get().initEngine();
-        const change = await ops.projectOnSurface(opCtx(), obj, options);
+        const change = await runEngine('projectSurface', { obj, options });
         assertCurrent([obj]);
         commitChange(change, { select: [id] });
         get().addToast(tr('toast.projectDone'), 'success');

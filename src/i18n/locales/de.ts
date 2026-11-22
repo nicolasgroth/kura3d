@@ -797,6 +797,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'store.error.busy': 'Warte, bis der laufende Vorgang abgeschlossen ist.',
   'store.error.locked': 'Der Vorgang enthält gesperrte Objekte.',
   'store.error.staleInput': 'Die Szene hat sich während des Vorgangs geändert; er wurde abgebrochen, um deine Änderungen nicht zu überschreiben.',
+  'store.operationCancelled': 'Vorgang abgebrochen.',
   'store.align.overflow': 'Die Anordnung passt nicht auf das Druckbett ({width} × {depth} mm). Entferne Teile oder wähle einen anderen Drucker.',
   'toast.hollowDone': 'Aushöhlung angewendet ({thickness} mm)',
   'toast.cutDone': 'Ebenenschnitt abgeschlossen',

@@ -58,6 +58,8 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     engineReady: false,
     engineError: null,
     busyOperation: null,
+    busyProgress: null,
+    cancelBusyOperation: () => ctx.cancelBusyOperation(),
     lastOperationError: null,
 
     objects: [],
