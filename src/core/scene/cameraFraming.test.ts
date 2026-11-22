@@ -75,6 +75,15 @@ describe('fitDistance', () => {
 });
 
 describe('isBoxInView', () => {
+  it('con paneles encima, una caja tapada por el panel derecho no cuenta como visible', () => {
+    const vp = cameraAt({ position: [0, 0, 100], target: [0, 0, 0] }, 42, 1);
+    const atRight: FrameBox = { min: [25, -5, -5], max: [32, 5, 5] };
+    expect(isBoxInView(atRight, vp)).toBe(true);
+    const covered = { insets: { top: 0, bottom: 0, left: 0, right: 300 }, width: 1000, height: 1000 };
+    expect(isBoxInView(atRight, vp, 0.96, covered)).toBe(false);
+    expect(isBoxInView(cube10, vp, 0.96, covered)).toBe(true);
+  });
+
   it('detecta una caja fuera de cuadro y una detrás de la cámara', () => {
     const vp = cameraAt({ position: [0, 0, 100], target: [0, 0, 0] }, 42, 1);
     expect(isBoxInView(cube10, vp)).toBe(true);

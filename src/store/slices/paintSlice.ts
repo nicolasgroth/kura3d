@@ -76,6 +76,7 @@ export function createPaintSlice(ctx: StoreContext): Partial<KuraStoreState> {
     endPaintStroke: () => {
       runtime.paintStroke = { open: false, recorded: false };
     },
+    isPaintStrokeOpen: () => runtime.paintStroke.open,
 
     preparePaintStroke: (id) => {
       const obj = editable(id);

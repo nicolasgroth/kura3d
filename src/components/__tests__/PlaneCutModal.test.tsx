@@ -24,7 +24,8 @@ vi.mock('../../engine/cutConnectorSuggest', () => ({
   cutConnectorCenters: () => Promise.resolve([]),
 }));
 
-const sizeLabel = `${t('es', 'dialog.cut.connectorSize')} (mm)`;
+// El campo muestra el diámetro Ø (el contrato interno sigue en radio: sugerido 5 → Ø10).
+const sizeLabel = `${t('es', 'split.size.label')} (mm)`;
 const executeButton = () => screen.getByRole('button', { name: new RegExp(t('es', 'dialog.cut.execute')), hidden: true });
 
 beforeEach(() => {
@@ -38,7 +39,8 @@ describe('PlaneCutModal', () => {
     suggest.mockResolvedValue({ feasible: true, size: 5, depth: 7, count: 3, maxSize: 9, maxDepth: 12, maxCount: 4 });
     check.mockResolvedValue(true);
     render(<PlaneCutModal open onClose={() => undefined} />);
-    await waitFor(() => expect((screen.getByLabelText(sizeLabel) as HTMLInputElement).value).toBe('5'));
+    await waitFor(() => expect((screen.getByLabelText(sizeLabel) as HTMLInputElement).value).toBe('10'));
+    expect(screen.getByText(t('es', 'dialog.cut.maxDiameterFor', { max: '18' }))).toBeTruthy();
     await waitFor(() => expect(executeButton()).toHaveProperty('disabled', false));
     expect(suggest).toHaveBeenCalled();
   });

@@ -100,7 +100,9 @@ export const CameraController: React.FC<{
     if (mode === 'ensure') {
       camera.updateMatrixWorld();
       const vp = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
-      if (isBoxInView(box, vp.elements)) return;
+      // Visible = entera en el área que no tapan los paneles (no basta con estar en el lienzo).
+      const free = { insets: measureViewportInsets(gl.domElement), width: sizeRef.current.width, height: sizeRef.current.height };
+      if (isBoxInView(box, vp.elements, undefined, free)) return;
     }
     const fit = {
       box,

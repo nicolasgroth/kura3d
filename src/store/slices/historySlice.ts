@@ -15,6 +15,16 @@ import type { KuraStoreState } from '../storeTypes';
 
 export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, rejectWhileLocked, runtime, limitHistory } = ctx;
+
+  /**
+   * Tras deshacer/rehacer una instantánea (p. ej. una división), la cámara asegura la selección
+   * restaurada: si lo restaurado quedó fuera de vista (o tapado por paneles), se encuadra.
+   */
+  const ensureRestoredInView = (before: KuraStoreState['objects']) => {
+    const { objects, selectedIds } = get();
+    if (objects === before || selectedIds.length === 0) return;
+    get().requestCameraPreset('ensure', [...selectedIds]);
+  };
   return {
     historyLimits: loadInitialHistoryLimits(),
 
@@ -32,8 +42,9 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
       set({ past: [], future: [] });
     },
 
-    undo: () =>
-      rejectWhileLocked() ||
+    undo: () => {
+      if (rejectWhileLocked()) return;
+      const before = get().objects;
       set((state) => {
         if (state.past.length === 0) return state;
         const step = state.past[state.past.length - 1];
@@ -46,10 +57,13 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
         const current = cloneSnapshot(state.objects, state.selectedIds);
         const { past, future } = limitHistory(state.past.slice(0, -1), [current, ...state.future]);
         return { objects: step.objects, selectedIds: step.selectedIds, activeSegmentation: null, past, future };
-      }),
+      });
+      ensureRestoredInView(before);
+    },
 
-    redo: () =>
-      rejectWhileLocked() ||
+    redo: () => {
+      if (rejectWhileLocked()) return;
+      const before = get().objects;
       set((state) => {
         if (state.future.length === 0) return state;
         const step = state.future[0];
@@ -61,7 +75,9 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
         const current = cloneSnapshot(state.objects, state.selectedIds);
         const { past, future } = limitHistory([...state.past, current], state.future.slice(1));
         return { objects: step.objects, selectedIds: step.selectedIds, activeSegmentation: null, past, future };
-      }),
+      });
+      ensureRestoredInView(before);
+    },
 
     commitTransformSnapshot: () => {
       const snap = runtime.transformSnapshotBeforeDrag;

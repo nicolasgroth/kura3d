@@ -31,6 +31,17 @@ describe('defaultExportBase', () => {
   });
 });
 
+describe('defaultExportBase con piezas divididas', () => {
+  it('varias piezas de un mismo objeto dividido → <original>_piezas', () => {
+    const part = (code: string) => ({ name: `Cubo 1 · ${code}`, metadata: { split: { groupId: 'g1' } } });
+    const pieces = [part('A1a'), part('A1b')];
+    expect(defaultExportBase('selection', 'Proyecto', pieces, pieces, 'modelo', 'seleccion', 'piezas')).toBe('Cubo_1_piezas');
+    // Piezas de dos grupos distintos: se mantiene la regla general.
+    const mixed = [part('A1a'), { name: 'Bola · A1', metadata: { split: { groupId: 'g2' } } }];
+    expect(defaultExportBase('selection', null, mixed, mixed, 'modelo', 'seleccion', 'piezas')).toBe('Cubo_1_A1a_seleccion');
+  });
+});
+
 describe('sanitizeFileBase', () => {
   it('quita separadores tipográficos y no deja guiones bajos repetidos', () => {
     expect(sanitizeFileBase('Cilindro 1 · A1 selección')).toBe('Cilindro_1_A1_selección');

@@ -38,20 +38,43 @@ export function exportFileBase(
   return 'kura3d';
 }
 
+/** Objeto exportable: su nombre y, si es pieza de una división, el grupo al que pertenece. */
+export interface NamedTarget {
+  name: string;
+  metadata?: { split?: { groupId: string } };
+}
+
+/**
+ * Nombre del objeto original si todas las piezas vienen de la misma división ("Cubo 1 · A1a" → "Cubo 1");
+ * null si no.
+ */
+function splitOriginalName(selected: NamedTarget[]): string | null {
+  const group = selected[0].metadata?.split?.groupId;
+  if (!group || !selected.every((o) => o.metadata?.split?.groupId === group)) return null;
+  return selected[0].name.split(' · ')[0].trim() || null;
+}
+
 /**
  * Nombre por defecto del diálogo de exportación según el alcance: con la escena completa
  * manda el proyecto (o el nombre por defecto), nunca el del objeto seleccionado. Con la
  * selección: el nombre de la pieza si es una sola; si son varias, el proyecto (o la primera
- * pieza) con el sufijo de selección. Nunca el nombre genérico de "escena".
+ * pieza) con el sufijo de selección; si todas son piezas de una misma división, el objeto original con el
+ * sufijo de piezas ("Cubo_1_piezas"). Nunca el nombre genérico de "escena".
  */
 export function defaultExportBase(
   scope: 'selection' | 'scene',
   projectName: string | null,
-  selected: Array<{ name: string }>,
-  exportable: Array<{ name: string }>,
+  selected: Array<NamedTarget>,
+  exportable: Array<NamedTarget>,
   fallback: string,
   selectionSuffix = 'selection',
+  piecesSuffix = 'pieces',
 ): string {
+  const pieces = scope === 'selection' && selected.length > 1 ? splitOriginalName(selected) : null;
+  if (pieces) {
+    const named = sanitizeFileBase(`${pieces}_${sanitizeFileBase(piecesSuffix)}`);
+    if (named) return named;
+  }
   if (scope === 'selection' && selected.length > 1) {
     const stem = sanitizeFileBase(projectName ?? '') || sanitizeFileBase(selected[0].name);
     const suffix = sanitizeFileBase(selectionSuffix);

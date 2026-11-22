@@ -22,6 +22,7 @@ import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
 import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
 import { SPLITUX_EN, SPLITUX_ES } from './locales/splitUx';
+import { FIX10_EN, FIX10_ES } from './locales/fix10';
 import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
 
 /**
@@ -39,6 +40,7 @@ export const TRANSLATIONS_ES = {
   ...SPLITCOUPLING_ES,
   ...A11YUX_ES,
   ...SPLITUX_ES,
+  ...FIX10_ES,
   ...OPNOTES_ES,
   // Marca y shell principal
   'app.name': 'Kura3D',
@@ -758,7 +760,7 @@ export const TRANSLATIONS_ES = {
   'dialog.settings.aiPrivacyExternal': 'Atención: Con {provider} y API Key configurada, tus mensajes del chat se enviarán al servicio externo de {provider}.',
   'dialog.settings.aiPrivacyLocal': 'Privacidad total: Sin API Key externa (o con Ollama local), todas las operaciones permanecen en tu equipo.',
   'dialog.settings.aboutAuthor': 'Autor: Nicolás Groth (ngroth@gmail.com) — Desarrollado para ISGROTH (Innovación y Soluciones GROTH). Licencia MIT.',
-  'dialog.settings.aboutStack': 'Motor geométrico Manifold WASM watertight, React Three Fiber, Three.js, Tauri v2 y puente MCP en tiempo real.',
+  'dialog.settings.aboutStack': 'Motor geométrico Manifold WASM de mallas cerradas, React Three Fiber, Three.js, Tauri v2 y puente MCP en tiempo real.',
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': 'Emblema de {name}',
   'app.lockupAlt': 'Logotipo oficial de {name}',
@@ -1405,6 +1407,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...SPLITCOUPLING_EN,
   ...A11YUX_EN,
   ...SPLITUX_EN,
+  ...FIX10_EN,
   ...OPNOTES_EN,
   'app.name': 'Kura3D',
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
@@ -2099,7 +2102,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.settings.aiPrivacyExternal': 'Notice: With {provider} and an API Key configured, chat messages are sent to {provider} external service.',
   'dialog.settings.aiPrivacyLocal': 'Full privacy: Without an external API Key (or using local Ollama), all operations stay on your machine.',
   'dialog.settings.aboutAuthor': 'Author: Nicolás Groth (ngroth@gmail.com) — Built for ISGROTH (Innovación y Soluciones GROTH). MIT License.',
-  'dialog.settings.aboutStack': 'Watertight Manifold WASM geometry kernel, React Three Fiber, Three.js, Tauri v2 & real-time MCP bridge.',
+  'dialog.settings.aboutStack': 'Closed-mesh Manifold WASM geometry kernel, React Three Fiber, Three.js, Tauri v2 & real-time MCP bridge.',
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': '{name} emblem',
   'app.lockupAlt': '{name} official lockup',
