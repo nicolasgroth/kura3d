@@ -1211,7 +1211,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'split.summary': '摘要',
   'split.calculating': '正在计算方案…',
   'split.sum.pieces': '零件数',
-  'split.sum.piecesValue': '{count}（网格 {grid}）',
+  'split.sum.piecesValue': '最多 {count}（网格 {grid}）',
   'split.sum.plates': '打印批次',
   'split.sum.platesValue': '≈ {count}（估计）',
   'split.sum.largest': '最大零件',

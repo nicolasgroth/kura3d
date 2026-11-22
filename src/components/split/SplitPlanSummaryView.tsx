@@ -15,7 +15,7 @@ import { looseDowelLength } from '../../engine/split/splitLooseDowel';
 import type { SplitPlanSummary } from '../../core/scene/splitPlanSummary';
 import { useKuraStore } from '../../store/useKuraStore';
 import { formatNumber } from '../../utils/plural';
-import { userAxisLabel } from '../../core/scene/displayAxes';
+import { toUserSize, userAxisLabel } from '../../core/scene/displayAxes';
 
 export const SplitPlanSummaryView: React.FC<{
   summary: SplitPlanSummary | null;
@@ -60,7 +60,7 @@ export const SplitPlanSummaryView: React.FC<{
             <dd data-testid="split-piece-count">
               {t(language, 'split.sum.piecesValue', {
                 count: summary.pieceCount,
-                grid: `${plan.counts.x} × ${plan.counts.y} × ${plan.counts.z}`,
+                grid: summary.gridUser.join(' × '),
               })}
             </dd>
             <dt>{t(language, 'split.sum.plates')}</dt>
@@ -71,8 +71,9 @@ export const SplitPlanSummaryView: React.FC<{
                 <dd>
                   {t(language, 'split.sum.largestValue', {
                     code: summary.largest.code,
-                    size: dims(summary.largest.sizeMm),
-                    usable: dims(plan.usableMm),
+                    // Medidas en los ejes del usuario (Z = altura) y de la pieza real, sin el saliente de los machos.
+                    size: dims(toUserSize(summary.largestRealMm ?? summary.largest.sizeMm)),
+                    usable: dims(toUserSize(plan.usableMm)),
                   })}
                 </dd>
               </>
@@ -108,6 +109,7 @@ export const SplitPlanSummaryView: React.FC<{
               </>
             )}
           </dl>
+          <small className="kura-cut-hint" data-testid="split-max-hint">{t(language, 'split.sum.maxHint')}</small>
           {warnings.length > 0 && (
             <ul className="kura-split-warnings">
               {warnings.map((w) => (

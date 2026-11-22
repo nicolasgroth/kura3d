@@ -1211,7 +1211,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.summary': 'सारांश',
   'split.calculating': 'योजना की गणना हो रही है…',
   'split.sum.pieces': 'टुकड़े',
-  'split.sum.piecesValue': '{count} (ग्रिड {grid})',
+  'split.sum.piecesValue': 'अधिकतम {count} (ग्रिड {grid})',
   'split.sum.plates': 'प्लेटें',
   'split.sum.platesValue': '≈ {count} (अनुमान)',
   'split.sum.largest': 'सबसे बड़ा टुकड़ा',

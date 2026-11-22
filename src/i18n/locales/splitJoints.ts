@@ -62,6 +62,7 @@ export const SPLITJOINTS_ES = {
   'splitJoints.dir.up': 'sube desde abajo',
   'splitJoints.dir.axis': 'se mueve hacia {axis}',
   'splitJoints.none': 'Esta división no tiene uniones.',
+  'split.sum.maxHint': 'Son cifras máximas según la rejilla: las celdas vacías (por ejemplo en una L o un tubo) no generan pieza ni uniones. El número real aparece al dividir.',
 };
 
 export const SPLITJOINTS_EN = {
@@ -118,6 +119,7 @@ export const SPLITJOINTS_EN = {
   'splitJoints.dir.up': 'moves up from below',
   'splitJoints.dir.axis': 'moves toward {axis}',
   'splitJoints.none': 'This split has no joints.',
+  'split.sum.maxHint': 'These are maximums from the grid: empty cells (for example in an L or a tube) produce no piece or joints. The real number appears after splitting.',
 };
 
 export const SPLITJOINTS_DE = {
@@ -174,6 +176,7 @@ export const SPLITJOINTS_DE = {
   'splitJoints.dir.up': 'bewegt sich von unten nach oben',
   'splitJoints.dir.axis': 'bewegt sich nach {axis}',
   'splitJoints.none': 'Diese Teilung hat keine Verbindungen.',
+  'split.sum.maxHint': 'Das sind Höchstwerte nach dem Raster: leere Zellen (z. B. bei einem L oder Rohr) ergeben weder Teil noch Verbindungen. Die tatsächliche Zahl erscheint nach dem Teilen.',
 };
 
 export const SPLITJOINTS_FR = {
@@ -230,6 +233,7 @@ export const SPLITJOINTS_FR = {
   'splitJoints.dir.up': 'monte par le bas',
   'splitJoints.dir.axis': 'se déplace vers {axis}',
   'splitJoints.none': 'Cette division n\'a pas de jonctions.',
+  'split.sum.maxHint': 'Ce sont des maximums selon la grille : les cellules vides (par exemple dans un L ou un tube) ne donnent ni pièce ni jonction. Le nombre réel apparaît après la division.',
 };
 
 export const SPLITJOINTS_HI = {
@@ -286,6 +290,7 @@ export const SPLITJOINTS_HI = {
   'splitJoints.dir.up': 'नीचे से ऊपर जाता है',
   'splitJoints.dir.axis': '{axis} की ओर बढ़ता है',
   'splitJoints.none': 'इस विभाजन में कोई जोड़ नहीं है।',
+  'split.sum.maxHint': 'ये ग्रिड के अनुसार अधिकतम आँकड़े हैं: खाली खाने (जैसे L या ट्यूब में) से कोई हिस्सा या जोड़ नहीं बनता। असली संख्या बाँटने के बाद दिखती है।',
 };
 
 export const SPLITJOINTS_ZH = {
@@ -342,4 +347,5 @@ export const SPLITJOINTS_ZH = {
   'splitJoints.dir.up': '从下方上移',
   'splitJoints.dir.axis': '向 {axis} 移动',
   'splitJoints.none': '此分割没有接合。',
+  'split.sum.maxHint': '这些是按网格得出的最大值：空单元格（例如 L 形或管状模型中）不会产生零件或接合。实际数量在分割后显示。',
 };

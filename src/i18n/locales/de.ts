@@ -1211,7 +1211,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'split.summary': 'Übersicht',
   'split.calculating': 'Plan wird berechnet…',
   'split.sum.pieces': 'Teile',
-  'split.sum.piecesValue': '{count} (Raster {grid})',
+  'split.sum.piecesValue': 'bis zu {count} (Raster {grid})',
   'split.sum.plates': 'Druckplatten',
   'split.sum.platesValue': '≈ {count} (geschätzt)',
   'split.sum.largest': 'Größtes Teil',
