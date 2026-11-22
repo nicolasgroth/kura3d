@@ -61,7 +61,8 @@ export function connectorRadius(c: SplitConnectorOptions): number {
   return connectorFootprintRadius(layoutType(c.type), c.size, c.tolerance);
 }
 
-interface Capsule {
+/** Conector como cápsula: eje del anclaje al fondo del alojamiento y radio de huella con holgura. */
+export interface Capsule {
   joint: string;
   index: number;
   p: Vec3;
@@ -70,9 +71,15 @@ interface Capsule {
   axis: SplitAxis;
   plane: number;
   parts: [number, number];
+  /**
+   * Cola de milano: eje (índice) por el que desliza. Su ranura se abre a lo largo de ese eje (pasante si
+   * el usuario aceptó el cambio de superficie), así que esas caras son del propio conector, no pared.
+   */
+  slide?: number;
 }
 
-function capsules(joints: AssemblyJointInput[]): Capsule[] {
+/** Cápsulas de los conectores de las uniones (las de pegar y solape no tienen). */
+export function capsules(joints: AssemblyJointInput[]): Capsule[] {
   const out: Capsule[] = [];
   for (const j of joints) {
     if (j.kind !== 'connector' || !j.connector || j.connector.type === 'lap') continue;
@@ -85,7 +92,8 @@ function capsules(joints: AssemblyJointInput[]): Capsule[] {
       // Tarugo suelto: agujero a ambos lados del plano
       p[a] -= j.connector!.type === 'loose-dowel' ? looseDowelHoleDepth(j.connector!) : 0.5;
       q[a] += reach;
-      out.push({ joint: j.label, index, p, q, r, axis: j.axis, plane: j.position, parts: [j.a.part, j.b.part] });
+      const slide = j.connector!.type === 'dovetail' ? AXIS_INDEX[DOVETAIL_SLIDE[j.axis]] : undefined;
+      out.push({ joint: j.label, index, p, q, r, axis: j.axis, plane: j.position, parts: [j.a.part, j.b.part], slide });
     });
   }
   return out;
@@ -142,7 +150,7 @@ function pointTriangle(p: Vec3, a: Vec3, b: Vec3, c: Vec3): number {
 }
 
 /** Pared libre de un conector hasta la superficie de sus dos piezas (mm), sin contar sus propias caras. */
-function exteriorWall(cap: Capsule, world: Float64Array[], meshes: MeshData[], wall: number): number {
+export function exteriorWall(cap: Capsule, world: Float64Array[], meshes: MeshData[], wall: number): number {
   const a = AXIS_INDEX[cap.axis];
   const reach = cap.r + wall + 1;
   const lo = [0, 1, 2].map((i) => Math.min(cap.p[i], cap.q[i]) - reach);
@@ -160,7 +168,7 @@ function exteriorWall(cap: Capsule, world: Float64Array[], meshes: MeshData[], w
       if (v.every((p) => Math.abs(p[a] - cap.plane) < 0.05)) continue;
       const own = v.every((p) => {
         const along = p[a];
-        const radial = Math.hypot(...([0, 1, 2].filter((i) => i !== a).map((i) => p[i] - cap.p[i]) as [number, number]));
+        const radial = Math.hypot(...[0, 1, 2].filter((i) => i !== a && i !== cap.slide).map((i) => p[i] - cap.p[i]));
         return radial <= cap.r + 0.35 && along >= Math.min(cap.p[a], cap.q[a]) - 0.35 && along <= Math.max(cap.p[a], cap.q[a]) + 0.35;
       });
       if (own) continue;

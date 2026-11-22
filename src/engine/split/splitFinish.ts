@@ -82,15 +82,36 @@ export function finishParts(
     const r = built.get(b.id)!;
     if (!r.closed) warnings.push(engineWarning('SPLIT_PART_NOT_CLOSED', { code: b.code }));
     index.set(b.id, parts.length);
-    parts.push({
-      code: b.code,
-      cell: b.cell,
-      mesh: r.mesh,
-      assembly: { position: [(r.min[0] + r.max[0]) / 2, r.min[1], (r.min[2] + r.max[2]) / 2], rotation: [0, 0, 0] },
-      bounds: { min: r.min, max: r.max },
-      volumeMm3: r.volume,
-      jointLabels: b.labels,
-    });
+    parts.push(toPart(b, r));
   }
   return { parts, index, clearanceDelta };
+}
+
+function toPart(b: SplitBody, r: Built): SplitPart {
+  return {
+    code: b.code,
+    cell: b.cell,
+    mesh: r.mesh,
+    assembly: { position: [(r.min[0] + r.max[0]) / 2, r.min[1], (r.min[2] + r.max[2]) / 2], rotation: [0, 0, 0] },
+    bounds: { min: r.min, max: r.max },
+    volumeMm3: r.volume,
+    jointLabels: b.labels,
+  };
+}
+
+/** Rehace en su lugar las piezas de los cuerpos `ids` (tras quitarles sólidos de conector). */
+export function rebuildParts(
+  wasm: ManifoldToplevel,
+  bodies: Map<number, SplitBody>,
+  ids: Iterable<number>,
+  parts: SplitPart[],
+  index: Map<number, number>,
+  warnings: EngineWarning[],
+): void {
+  for (const id of ids) {
+    const b = bodies.get(id)!;
+    const r = buildBody(wasm, b);
+    if (!r.closed) warnings.push(engineWarning('SPLIT_PART_NOT_CLOSED', { code: b.code }));
+    parts[index.get(id)!] = toPart(b, r);
+  }
 }

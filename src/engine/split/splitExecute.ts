@@ -21,7 +21,9 @@ import { buildBodies, cellKey, contactSection, MIN_CONTACT_MM2, type Cell } from
 import { buildJoint } from './splitJoints';
 import { finishParts } from './splitFinish';
 import { buildLooseDowelBatch, looseDowelLength } from './splitLooseDowel';
-import { finalAssemblyReport, fixAssemblyBeforeConnectors, type PendingJoint } from './splitAssembly';
+import { fixAssemblyBeforeConnectors, type PendingJoint } from './splitAssembly';
+import { settleAssembly } from './splitAssemblyRepair';
+import { ConnectorRoom } from './splitConnectorRoom';
 import type { AssemblyFix, AssemblySuggestion } from './assemblyTypes';
 import { SPLIT_DEFAULTS, splitPartCode } from './splitPlan';
 import { AXIS_INDEX } from './splitSections';
@@ -118,6 +120,8 @@ export async function executeBedSplitGeometry(
     const joints: Array<Omit<SplitJoint, 'a' | 'b'> & PendingJoint> = [];
     let clearance = 0;
     let engraved = 0;
+    // Registro global: un conector nuevo deja la pared mínima a los de las demás uniones y al exterior
+    const room = new ConnectorRoom();
     const order = [...bodies.values()].sort((p, q) => p.cell[2] - q.cell[2] || p.cell[1] - q.cell[1] || p.cell[0] - q.cell[0] || p.id - q.id);
     for (const low of order) {
       for (let a = 0; a < 3; a++) {
@@ -140,7 +144,7 @@ export async function executeBedSplitGeometry(
               {
                 low, high, axis, coord, span: bounds[a][hc[a] + 1] - coord, contact, bounds, label, connector,
                 lapHeightMm: lapHeight, labels, labelPlacement, labelDepthMm: labelDepth, labelMinHeightMm: labelMin,
-                reinforce: options.reinforceWeakJoints !== false,
+                reinforce: options.reinforceWeakJoints !== false, room,
               },
               warnings,
             );
@@ -183,17 +187,26 @@ export async function executeBedSplitGeometry(
     const { parts, index } = finished;
     clearance += finished.clearanceDelta;
     const sign = (axis: SplitAxis, s: '+' | '-') => `${s}${axis}` as SplitJoint['a']['face'];
-    const outJoints: SplitJoint[] = joints.map(({ low, high, clearance: _c, solids: _s, ...j }) => ({
+    const toJoints = (): SplitJoint[] => joints.map(({ low, high, clearance: _c, solids: _s, ...j }) => ({
       ...j,
       a: { part: index.get(low)!, code: bodies.get(low)!.code, face: sign(j.axis, '+') },
       b: { part: index.get(high)!, code: bodies.get(high)!.code, face: sign(j.axis, '-') },
     }));
+    // 4. Armado final: lo que aún traba o choca pasa a pegar (el resultado por defecto siempre es armable)
+    let assembly: BedSplitResult['assembly'];
+    if (check) {
+      const settled = settleAssembly({
+        wasm, bodies, joints, parts, index, toJoints, volumes: { source: sourceVolume, clearance, engraved },
+        smoothParts: () => order.map((b) => ({ code: b.code, mesh: manifoldToMeshData(b.m), assembly: { position: [0, 0, 0], rotation: [0, 0, 0] } })),
+        preFix: fix, preSuggestions: suggestions, autoFix: options.assemblyAutoFix !== false, warnings,
+      });
+      clearance += settled.clearanceDelta;
+      assembly = settled.report;
+    }
+    const outJoints = toJoints();
     const looseDowels = buildLooseDowels(wasm, outJoints);
     const glueJoints = outJoints.filter((j) => j.kind === 'glue').length;
     if (glueJoints > 0 && connector) warnings.push(engineWarning('SPLIT_GLUE_SUMMARY', { count: glueJoints, total: outJoints.length }));
-    const assembly = check
-      ? finalAssemblyReport(parts, outJoints, { source: sourceVolume, clearance, engraved }, fix, suggestions)
-      : undefined;
     if (assembly) warnings.push(...assembly.warnings);
     return {
       parts,

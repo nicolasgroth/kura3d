@@ -178,7 +178,8 @@ export async function runCase(model: string, conn: SplitConnectorOptions | null,
     }
   }
   if (conn?.type === 'loose-dowel') {
-    const holes = res.joints.reduce((s, j) => s + (j.kind === 'connector' ? j.connectorCenters.length : 0), 0);
+    // Solo las uniones que siguen con tarugo suelto (con cambio de superficie algunas pasan a cola de milano)
+    const holes = res.joints.reduce((s, j) => s + (j.kind === 'connector' && j.connector?.type === 'loose-dowel' ? j.connectorCenters.length : 0), 0);
     const dowels = res.looseDowels.reduce((s, d) => s + d.count, 0);
     if (dowels !== holes) v.push(`tarugos sueltos ${dowels} vs agujeros-par ${holes}`);
     for (const d of res.looseDowels) {
@@ -221,31 +222,14 @@ export const TYPES: Array<[string, SplitConnectorOptions]> = [
 ];
 
 
-/**
- * Brechas CONFIRMADAS (se documentan con `it.fails`; al corregirlas el caso pasa a verde y hay que quitarlo de aquí):
- * - estatua/dowel, estatua/peg: tras el arreglo automático quedan conectores con pared negativa (el tarugo asoma por
- *   la superficie exterior, -0,26 mm) o menor que la mínima de 0,8 mm (`ASSEMBLY_CONNECTOR_CLASH` con `other: null`).
- * - estatua/loose-dowel, cubo 440/loose-dowel: la firmeza activa agranda el agujero (Ø4 → 5,55) y los agujeros de
- *   uniones cruzadas (x/y/z en el centro) se pisan hasta 0,9 mm o dejan paredes < 0,8 mm; el arreglo no lo resuelve.
- * - cubo 440/dovetail, estatua/dovetail: el armado queda con piezas bloqueadas y orden incompleto aunque el arreglo
- *   se marca `applied` (cambió 2 uniones a dowel, que además chocan).
- * - cubo 440/lap: 3 de 8 piezas no pueden entrar (barrido bloqueado) y el arreglo no ofrece nada (`fix.applied` false,
- *   `suggestions` vacío): el solape en todas las uniones no se destraba pasando a pegar.
- * - con `assemblyAllowSurfaceChange: true` el cambio a cola de milano introduce choques de conectores sin resolver.
- */
-const KNOWN_FAIL = new Set<string>([
-  'estatua / dowel', 'estatua / peg', 'estatua / loose-dowel', 'estatua / dovetail',
-  'cubo 440 / loose-dowel', 'cubo 440 / dovetail', 'cubo 440 / lap',
-]);
-const knownToggle = (model: string, type: string, reinforce: boolean, surf: boolean) =>
-  surf
-    ? (model === 'estatua' || model === 'cubo 440') && !(model === 'estatua' && type === 'dovetail' && !reinforce)
-    : type === 'dovetail' && (model === 'cubo 440' || (model === 'estatua' && reinforce));
+// Corregidas (antes `it.fails`): conectores que se pisaban o quedaban bajo la pared mínima con firmeza activa
+// (estatua, cubo 440 con tarugo suelto) y montajes bloqueados (cola de milano, solape en el cubo 440). Toda la
+// matriz exige 0 choques de conectores y 0 piezas bloqueadas tras dividir.
 
 describe('QA6 dividir A: modelos x tipo de conector (cama 250)', () => {
   for (const model of Object.keys(MODELS)) {
     for (const [tname, conn] of TYPES) {
-      (KNOWN_FAIL.has(`${model} / ${tname}`) ? it.fails : it)(`${model} / ${tname}`, async () => {
+      it(`${model} / ${tname}`, async () => {
         const { v, secs } = await runCase(model, conn);
         console.log(`QA6 ${model} / ${tname}: ${secs.toFixed(1)} s ${v.length ? 'VIOL ' + v.slice(0, 6).join(' | ') : 'ok'}`);
         expect(v.filter((x) => !x.startsWith('ISLAS'))).toEqual([]);
@@ -266,7 +250,7 @@ describe('QA6 dividir A: loose-dowel sin salientes (sin fusión de fragmentos)',
 
 // Medida independiente (cilindro del alojamiento menos el sólido original): en la estatua con dowel por defecto ningún
 // conector atraviesa de verdad la superficie (peor caso 0,23 mm3); lo que falla es la pared mínima de 0,8 mm que exige
-// el validador (ver KNOWN_FAIL: estatua / dowel).
+// el validador (corregido: la ubicación exige esa pared con el mismo modelo, ver `splitConnectorRoom.ts`).
 describe('QA6 dividir A: el conector queda dentro del sólido (medida independiente)', () => {
   const outsideVolumes = async (model: string, conn: SplitConnectorOptions) => {
     const { res } = await runCase(model, conn);
@@ -316,7 +300,7 @@ describe('QA6 dividir A: firmeza activa y cambio de superficie', () => {
     for (const type of ['dowel', 'loose-dowel', 'dovetail'] as const) {
       for (const reinforce of [true, false]) {
         for (const surf of [true, false]) {
-          (knownToggle(model, type, reinforce, surf) ? it.fails : it)(`${model} / ${type} (radio 2) / refuerzo ${reinforce} / cambio de superficie ${surf}`, async () => {
+          it(`${model} / ${type} (radio 2) / refuerzo ${reinforce} / cambio de superficie ${surf}`, async () => {
             const { v, secs, res } = await runCase(model, small(type), { reinforceWeakJoints: reinforce, assemblyAllowSurfaceChange: surf });
             console.log(`QA6 ${model} / ${type} / ref ${reinforce} / surf ${surf}: ${secs.toFixed(1)} s ${v.filter((x) => !x.startsWith('ISLAS')).slice(0, 5).join(' | ') || 'ok'} ${res ? 'reforzadas=' + res.joints.filter((j) => j.connector && j.connector.size > 2).length : ''}`);
             expect(v.filter((x) => !x.startsWith('ISLAS'))).toEqual([]);

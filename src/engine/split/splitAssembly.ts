@@ -3,7 +3,7 @@
  * @description Validación de armado dentro de "dividir para imprimir": antes de aplicar conectores se
  * valida con los cuerpos lisos de cada celda (sin conectores) y, con `autoFix`, las uniones que traban
  * el montaje pasan a "para pegar" quitando sus sólidos de conector o solape (la marca de pareja se
- * conserva); al final se valida el resultado y se anota en cada pieza su paso y dirección de entrada.
+ * conserva). La validación final de las piezas terminadas está en `splitAssemblyRepair.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,12 +12,12 @@
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import { buildConnectorSolid } from '../cutConnectorSolid';
 import { layoutType } from './splitLooseDowel';
-import type { SplitConnectorOptions, SplitConnectorType, SplitJointIsland, SplitJointKind, SplitLapInfo, SplitPart } from './splitTypes';
+import type { SplitConnectorOptions, SplitConnectorType, SplitJointIsland, SplitJointKind, SplitLapInfo } from './splitTypes';
 import type { Vec3 } from '../../types/kura';
 import type { EngineWarning } from '../engineErrors';
 import { manifoldToMeshData } from '../manifoldKernel';
 import type { SplitBody } from './splitBodies';
-import type { AssemblyFix, AssemblyJointInput, AssemblyReport, AssemblySuggestion } from './assemblyTypes';
+import type { AssemblyFix, AssemblyJointInput, AssemblySuggestion } from './assemblyTypes';
 import { validateAssembly } from './validateAssembly';
 import type { SplitAxis } from './splitTypes';
 
@@ -137,27 +137,4 @@ export function fixAssemblyBeforeConnectors(
   }
   warnings.push(...report.warnings.filter((w) => w.code === 'ASSEMBLY_JOINT_GLUED_FOR_ORDER' || w.code === 'ASSEMBLY_JOINT_TYPE_CHANGED'));
   return { glued: report.fix.glueJoints, fix: report.fix, suggestions: report.suggestions, clearanceDelta };
-}
-
-/** Valida las piezas terminadas y anota paso y dirección de entrada en cada una. */
-export function finalAssemblyReport(
-  parts: SplitPart[],
-  joints: AssemblyJointInput[],
-  volumes: { source: number; clearance: number; engraved: number },
-  fix: AssemblyFix | null,
-  suggestions: AssemblySuggestion[] = [],
-): AssemblyReport {
-  const report = validateAssembly(parts, joints, {
-    sourceVolumeMm3: volumes.source, clearanceVolumeMm3: volumes.clearance, engravedVolumeMm3: volumes.engraved,
-  });
-  // Con conectores ya puestos el barrido no puede simular quitarlos: el arreglo sale de los cuerpos lisos
-  if (fix) {
-    report.fix = fix;
-    report.suggestions = suggestions;
-  }
-  for (const s of report.order) {
-    parts[s.part].assemblyStep = s.step;
-    parts[s.part].insertDirection = s.direction;
-  }
-  return report;
 }
