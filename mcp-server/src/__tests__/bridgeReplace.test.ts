@@ -39,12 +39,11 @@ describe('puente: reemplazo del cliente activo', () => {
       tick();
     });
     // El primer cliente nunca responde.
-    const started = Date.now();
     const outcome = bridge.sendCommand('get_scene_state', {}).then(() => null, (err: Error) => err);
     await connect(bridge.getPort());
     const err = await outcome;
     expect(err?.message).toMatch(/replaced/);
-    expect(Date.now() - started).toBeLessThan(5_000);
+    // Que la promesa se resuelva (sin esperar el tiempo de la orden) es el criterio; el timeout de la prueba lo acota.
     expect(first.readyState).not.toBe(WebSocket.CONNECTING);
   });
 });

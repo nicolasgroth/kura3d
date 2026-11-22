@@ -12,6 +12,12 @@ import react from '@vitejs/plugin-react';
 // Detección del host en modo desarrollo de Tauri
 const tauriDevHost = process.env.TAURI_DEV_HOST;
 
+// Mediciones de tiempo (`*.perf.test.ts`, umbrales en ms): el proyecto `perf` solo existe con KURA_PERF=1
+// (`npm run test:perf`), así `npm test` y `npx vitest run` no dependen de la carga de la máquina.
+const perfProjects = process.env.KURA_PERF
+  ? [{ extends: true, test: { name: 'perf', environment: 'node' as const, include: ['src/**/*.perf.test.ts'] } }]
+  : [];
+
 export default defineConfig({
   plugins: [react()],
 
@@ -76,8 +82,9 @@ export default defineConfig({
     projects: [
       {
         extends: true,
-        test: { name: 'unit', environment: 'node', include: ['src/**/*.test.ts'] },
+        test: { name: 'unit', environment: 'node', include: ['src/**/*.test.ts'], exclude: ['**/node_modules/**', '**/*.perf.test.ts'] },
       },
+      ...perfProjects,
       {
         extends: true,
         test: {

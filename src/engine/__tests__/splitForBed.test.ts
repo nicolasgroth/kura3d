@@ -2,7 +2,7 @@
  * @file src/engine/__tests__/splitForBed.test.ts
  * @description Pruebas medidas de "dividir para imprimir": plan (tramos, planos desplazados, errores
  * tipados), ejecución (piezas cerradas que caben, volumen conservado salvo holguras, interferencia 0
- * entre vecinas), marcas grabadas dentro de la unión y vista explosionada. Reporta tiempos.
+ * entre vecinas), marcas grabadas dentro de la unión y vista explosionada (el tiempo está en splitForBed.perf.test.ts).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -167,16 +167,6 @@ describe('planBedSplit', () => {
     expect(cut.position).toBeLessThan(cut.uniformPosition);
   });
 
-  it('planifica unos 200 mil triángulos en tiempo acotado', async () => {
-    const sphere = wasm.Manifold.sphere(300, 640).scale([1, 1.6, 1]);
-    const obj = objFrom(sphere, 'esfera');
-    const tris = obj.mesh.indices.length / 3;
-    const plan = await planBedSplit(obj, BED);
-    console.info(`[split] plan ${tris} triángulos: ${plan.elapsedMs.toFixed(0)} ms, ${plan.pieces.length} piezas`);
-    expect(tris).toBeGreaterThan(180_000);
-    // Objetivo: < 1 s en solitario (≈0,7 s medido). El umbral es muy holgado: la suite corre en paralelo y a veces junto a otros procesos pesados; solo detecta una regresión grave.
-    expect(plan.elapsedMs).toBeLessThan(20000);
-  }, 60_000);
 });
 
 describe('executeBedSplitGeometry', () => {

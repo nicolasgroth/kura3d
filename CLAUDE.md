@@ -19,6 +19,7 @@ React 19 + TypeScript + Vite, Three.js (react-three-fiber), Zustand, Manifold WA
 ```
 npm test                 # vitest frontend
 npm run mcp:test         # vitest servidor MCP
+npm run test:perf          # pruebas de rendimiento (*.perf.test.ts, umbrales en ms); no corren en npm test
 npm run build            # tsc -b + vite build
 npx vite --host 127.0.0.1 --port 5189 --strictPort   # web para QA en navegador
 cargo check --offline --locked --manifest-path src-tauri/Cargo.toml

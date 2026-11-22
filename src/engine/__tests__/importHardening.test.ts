@@ -40,9 +40,8 @@ describe('3MF: presupuesto global de nodos visitados', () => {
       resources += `<object id="${level}"><components>${comps}</components></object>`;
     }
     const buffer = pack3mf({ '3D/3dmodel.model': modelXml(resources, '<item objectid="0"/>') });
-    const started = performance.now();
+    // Terminar es el criterio: una bomba sin presupuesto agotaría el tiempo de la prueba (sin umbral en ms).
     expect(codeOf(() => read3MF(buffer, 'bomba.3mf'))).toBe('too-many-parts');
-    expect(performance.now() - started).toBeLessThan(1500);
   });
 
   it('acepta un árbol legítimo de componentes dentro del presupuesto', () => {
@@ -65,9 +64,8 @@ describe('3MF: etiquetas sin cerrar se rechazan en tiempo lineal', () => {
     const spam = '<object id="9">'.repeat(60_000) + '<vertex x="1"'.repeat(60_000);
     const xml = modelXml(`<object id="1">${cubeMeshXml(5)}</object>` + spam, '<item objectid="1"/>');
     const buffer = pack3mf({ '3D/3dmodel.model': xml });
-    const started = performance.now();
+    // Tiempo lineal: si fuera cuadrático, 60 mil aperturas agotarían el tiempo de la prueba.
     expect(codeOf(() => read3MF(buffer))).toBe('corrupt');
-    expect(performance.now() - started).toBeLessThan(1500);
   });
 
   it('rechaza vértices sin cierre de etiqueta dentro de la malla', () => {

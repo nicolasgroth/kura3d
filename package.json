@@ -19,6 +19,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --port 4173",
     "test": "vitest run",
+    "test:perf": "node scripts/test-perf.mjs",
     "test:watch": "vitest",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
