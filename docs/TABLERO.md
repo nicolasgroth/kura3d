@@ -12,12 +12,12 @@ Nada en este momento.
 
 | Funcionalidad | Estado |
 |---|---|
-| Dividir para imprimir y validación de armado (tarugo suelto, conectores sin choques, montaje siempre armable, marca de puntos, sección Uniones, conteo real de piezas en el plan, informe de armado completo al dividir) | QA rechazó motor e interfaz; corregido; re-verificación en curso |
-| Dividir para imprimir: conector y holgura preferidos en Ajustes; refuerzo de uniones débiles apagado por defecto, con casilla, explicación y botón "Reforzar y dividir de nuevo" | Implementado; en la re-verificación de QA |
-| Z como altura en interfaz, chat, bus y MCP | QA encontró el corte en Y invertido y el resumen de división en ejes antiguos; corregido; falta la re-verificación |
-| MCP igual a la app (ejes, valores por defecto del corte y del pintado), en inglés, tope de 10 intentos | QA de motor aprobó la paridad salvo crear primitiva con posición; corregido; falta la re-verificación |
-| Pintura por caras: pincel con índice espacial (0,5 ms por muestra en 200 mil triángulos, antes 10 ms), trazo en vivo, un trazo = un paso de deshacer guardado como delta, tamaño con `[` y `]` | Implementado con pruebas; falta QA en navegador con malla grande |
-| Relieve, litofanía, SVG y texto 3D en el Worker; avisos veraces al terminar molde, proyección y relieve; moldes probados; segmentación sin partes de grosor cero; ahuecado con pared exacta en curvas (error medio bajo 2,5 %, antes hasta 18 %) | Implementado con pruebas; falta QA en navegador |
+| Dividir para imprimir y validación de armado (tarugo suelto, conectores sin choques, montaje siempre armable, marca de puntos, sección Uniones, conteo real de piezas en el plan, informe de armado completo al dividir) | Re-verificación: los 9 fallos anteriores corregidos (el cubo de 440 mm cierra con cola de milano, solape y tarugo suelto). Queda en corrección: mensajes contradictorios al reforzar, placas estimadas de más (3 frente a 2) y mostrar la marca de pareja por unión |
+| Dividir para imprimir: conector y holgura preferidos en Ajustes; refuerzo de uniones débiles apagado por defecto, con casilla, explicación y botón "Reforzar y dividir de nuevo" | QA aprobó preferencias y flujo de refuerzo; en corrección el texto del aviso de refuerzo |
+| Z como altura en interfaz, chat, bus y MCP | QA encontró el corte en Y invertido y el resumen de división en ejes antiguos; corregido y confirmado por QA |
+| MCP igual a la app (ejes, valores por defecto del corte y del pintado), en inglés, tope de 10 intentos | QA de motor aprobó la paridad salvo crear primitiva con posición; corregido y confirmado por QA |
+| Pintura por caras: pincel con índice espacial (0,5 ms por muestra en 200 mil triángulos, antes 10 ms), trazo en vivo, un trazo = un paso de deshacer guardado como delta, tamaño con `[` y `]` | QA en navegador en curso |
+| Relieve, litofanía, SVG y texto 3D en el Worker; avisos veraces al terminar molde, proyección y relieve; moldes probados; segmentación sin partes de grosor cero; ahuecado con pared exacta en curvas (error medio bajo 2,5 %, antes hasta 18 %) | QA en navegador en curso |
 | Roscas M3–M64, 3MF estándar sin selector de slicer, estimación aproximada | QA aprobó; roscas con entrada inválida corregido |
 | Proyectos recientes con un clic y confirmación al sobrescribir (escritorio) | Probado con pruebas; falta verificar en la app instalada |
 | Seguridad en escritorio (CSP, llavero, permisos, proxy de IA) | QA web aprobado; falta verificar en la app instalada |
