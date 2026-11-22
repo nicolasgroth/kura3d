@@ -1282,4 +1282,13 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'topbar.redoTipCount.one': 'Rétablir (Ctrl+Y) · 1 étape',
   'settings.history.mb': '{mb} Mo',
   'settings.history.gb': '{gb} Go',
+  'engineWarning.ASSEMBLY_VOLUME_MISMATCH': 'Les pièces réassemblées diffèrent de l\'original de {pct} % du volume.',
+  'engineWarning.ASSEMBLY_INTERFERENCE': 'Les pièces {a} et {b} s\'interpénètrent à l\'assemblage ({volume} mm³).',
+  'engineWarning.ASSEMBLY_GAP': 'La jonction {label} laisse un jeu de {gap} mm entre ses faces.',
+  'engineWarning.ASSEMBLY_CONNECTOR_CLASH': 'Un connecteur de la jonction {label} heurte {other} ou en est trop proche : paroi {distance} mm, minimum {required} mm.',
+  'engineWarning.ASSEMBLY_BLOCKED': 'La pièce {code} ne peut entrer dans aucun ordre : connecteurs {joints}, bute sur {parts}.',
+  'engineWarning.ASSEMBLY_JOINT_GLUED_FOR_ORDER': 'La jonction {label} ({a}–{b}) est passée à coller pour que l\'assemblage ait un ordre possible.',
+  'engineWarning.ASSEMBLY_WEAK_JOINT': 'Le connecteur de la jonction {label} est fragile : {measured} mm, {recommended} mm recommandés.',
+  'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'Le recouvrement de la jonction {label} n\'est pas imprimable (languette {tongue} mm, paroi de rainure {groove} mm ; minimum {min} mm) : la jonction est à coller.',
+  'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Le repère {label} a été gravé à {depth} mm (demandé {requested} mm) pour ne pas percer la paroi de {wall} mm.',
 };

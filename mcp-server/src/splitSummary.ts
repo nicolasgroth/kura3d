@@ -29,6 +29,8 @@ interface SplitResultLike {
   parts?: PartLike[];
   joints?: JointLike[];
   plateCount?: number;
+  /** Resumen de la validación de armado (`summarizeAssembly`). */
+  assembly?: unknown;
   warnings?: unknown[];
   note?: string;
 }
@@ -60,6 +62,7 @@ export function summarizeSplitResult(raw: unknown): Record<string, unknown> {
       labelsWithoutConnector: joints.filter((j) => connectorCount(j) === 0).map((j) => j.label).filter(Boolean),
     },
     parts: parts.map((p) => ({ id: p.id, code: p.code, plate: p.plate })),
+    ...(r.assembly ? { assembly: r.assembly } : {}),
     warnings: Array.isArray(r.warnings) ? r.warnings : [],
     ...(r.note ? { note: r.note } : {}),
     detail: 'Resumen. Pide detail=true para el plan completo (planos, piezas planificadas y uniones).',

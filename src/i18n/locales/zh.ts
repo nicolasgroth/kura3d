@@ -1282,4 +1282,13 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'topbar.redoTipCount.one': '重做 (Ctrl+Y) · 1 步',
   'settings.history.mb': '{mb} MB',
   'settings.history.gb': '{gb} GB',
+  'engineWarning.ASSEMBLY_VOLUME_MISMATCH': '重新组装的零件与原模型体积相差 {pct}%。',
+  'engineWarning.ASSEMBLY_INTERFERENCE': '零件 {a} 与 {b} 组装时相互干涉（{volume} mm³）。',
+  'engineWarning.ASSEMBLY_GAP': '接合 {label} 两面之间有 {gap} mm 间隙。',
+  'engineWarning.ASSEMBLY_CONNECTOR_CLASH': '接合 {label} 的一个连接件与 {other} 碰撞或过近：壁厚 {distance} mm，最小 {required} mm。',
+  'engineWarning.ASSEMBLY_BLOCKED': '零件 {code} 无论按何种顺序都无法装入：连接件 {joints}，与 {parts} 相撞。',
+  'engineWarning.ASSEMBLY_JOINT_GLUED_FOR_ORDER': '接合 {label}（{a}–{b}）已改为仅粘合，以便存在可行的组装顺序。',
+  'engineWarning.ASSEMBLY_WEAK_JOINT': '接合 {label} 的连接件强度不足：{measured} mm，建议 {recommended} mm。',
+  'engineWarning.SPLIT_LAP_NOT_PRINTABLE': '接合 {label} 的搭接无法打印（榫舌 {tongue} mm，槽壁 {groove} mm；最小 {min} mm）：该接合改为粘合。',
+  'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': '标记 {label} 雕刻深度为 {depth} mm（请求 {requested} mm），以免穿透 {wall} mm 的壁。',
 };

@@ -1289,6 +1289,15 @@ export const TRANSLATIONS_ES = {
   'topbar.redoTipCount.one': 'Rehacer (Ctrl+Y) · 1 paso',
   'settings.history.mb': '{mb} MB',
   'settings.history.gb': '{gb} GB',
+  'engineWarning.ASSEMBLY_VOLUME_MISMATCH': 'Las piezas rearmadas difieren del original en {pct} % del volumen.',
+  'engineWarning.ASSEMBLY_INTERFERENCE': 'Las piezas {a} y {b} se interfieren al armar ({volume} mm³).',
+  'engineWarning.ASSEMBLY_GAP': 'La unión {label} deja un hueco de {gap} mm entre sus caras.',
+  'engineWarning.ASSEMBLY_CONNECTOR_CLASH': 'Un conector de la unión {label} choca o queda muy cerca de {other}: pared {distance} mm, mínimo {required} mm.',
+  'engineWarning.ASSEMBLY_BLOCKED': 'La pieza {code} no puede entrar en ningún orden: conectores {joints}, topa con {parts}.',
+  'engineWarning.ASSEMBLY_JOINT_GLUED_FOR_ORDER': 'La unión {label} ({a}–{b}) pasó a «para pegar» para que el armado tenga un orden posible.',
+  'engineWarning.ASSEMBLY_WEAK_JOINT': 'El conector de la unión {label} es poco firme: mide {measured} mm, se recomienda {recommended} mm.',
+  'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'El solape de la unión {label} no es imprimible (lengüeta {tongue} mm, pared de ranura {groove} mm; mínimo {min} mm): la unión queda para pegar.',
+  'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'La marca {label} se grabó a {depth} mm (pedido {requested} mm) para no atravesar la pared de {wall} mm.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2538,6 +2547,15 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'topbar.redoTipCount.one': 'Redo (Ctrl+Y) · 1 step',
   'settings.history.mb': '{mb} MB',
   'settings.history.gb': '{gb} GB',
+  'engineWarning.ASSEMBLY_VOLUME_MISMATCH': 'Reassembled parts differ from the original by {pct}% of volume.',
+  'engineWarning.ASSEMBLY_INTERFERENCE': 'Parts {a} and {b} interfere when assembled ({volume} mm³).',
+  'engineWarning.ASSEMBLY_GAP': 'Joint {label} leaves a {gap} mm gap between its faces.',
+  'engineWarning.ASSEMBLY_CONNECTOR_CLASH': 'A connector of joint {label} clashes with or is too close to {other}: wall {distance} mm, minimum {required} mm.',
+  'engineWarning.ASSEMBLY_BLOCKED': 'Part {code} cannot be inserted in any order: connectors {joints}, hits {parts}.',
+  'engineWarning.ASSEMBLY_JOINT_GLUED_FOR_ORDER': 'Joint {label} ({a}–{b}) was changed to glue-only so the assembly has a feasible order.',
+  'engineWarning.ASSEMBLY_WEAK_JOINT': 'The connector of joint {label} is weak: {measured} mm, {recommended} mm recommended.',
+  'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'The lap of joint {label} is not printable (tongue {tongue} mm, groove wall {groove} mm; minimum {min} mm): the joint is left for gluing.',
+  'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Label {label} was engraved {depth} mm deep (requested {requested} mm) so it does not pierce the {wall} mm wall.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

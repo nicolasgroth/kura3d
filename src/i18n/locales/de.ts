@@ -1282,4 +1282,13 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'topbar.redoTipCount.one': 'Wiederholen (Strg+Y) · 1 Schritt',
   'settings.history.mb': '{mb} MB',
   'settings.history.gb': '{gb} GB',
+  'engineWarning.ASSEMBLY_VOLUME_MISMATCH': 'Die zusammengesetzten Teile weichen um {pct} % vom Volumen des Originals ab.',
+  'engineWarning.ASSEMBLY_INTERFERENCE': 'Die Teile {a} und {b} überschneiden sich beim Zusammenbau ({volume} mm³).',
+  'engineWarning.ASSEMBLY_GAP': 'Verbindung {label} lässt einen Spalt von {gap} mm zwischen den Flächen.',
+  'engineWarning.ASSEMBLY_CONNECTOR_CLASH': 'Ein Verbinder der Verbindung {label} kollidiert mit {other} oder liegt zu nah: Wand {distance} mm, Minimum {required} mm.',
+  'engineWarning.ASSEMBLY_BLOCKED': 'Teil {code} lässt sich in keiner Reihenfolge einsetzen: Verbinder {joints}, stößt an {parts}.',
+  'engineWarning.ASSEMBLY_JOINT_GLUED_FOR_ORDER': 'Verbindung {label} ({a}–{b}) wurde auf Kleben umgestellt, damit eine Montagereihenfolge möglich ist.',
+  'engineWarning.ASSEMBLY_WEAK_JOINT': 'Der Verbinder der Verbindung {label} ist schwach: {measured} mm, empfohlen {recommended} mm.',
+  'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'Die Überlappung der Verbindung {label} ist nicht druckbar (Feder {tongue} mm, Nutwand {groove} mm; Minimum {min} mm): die Verbindung wird geklebt.',
+  'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Markierung {label} wurde {depth} mm tief graviert (angefragt {requested} mm), um die {wall} mm Wand nicht zu durchstoßen.',
 };

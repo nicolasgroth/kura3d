@@ -18,6 +18,7 @@ import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../m
 import { applyTransformToMesh, normalizeMeshToBed } from '../primitives';
 import { buildBodies, cellKey, contactSection, MIN_CONTACT_MM2, type Cell } from './splitBodies';
 import { buildJoint } from './splitJoints';
+import { finalAssemblyReport, fixAssemblyBeforeConnectors, type PendingJoint } from './splitAssembly';
 import { SPLIT_DEFAULTS, splitPartCode } from './splitPlan';
 import { AXIS_INDEX } from './splitSections';
 import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitResult, SplitAxis, SplitJoint, SplitPart } from './splitTypes';
@@ -91,7 +92,7 @@ export async function executeBedSplitGeometry(
 
   try {
     // 2. Uniones entre piezas con contacto real
-    const joints: Array<Omit<SplitJoint, 'a' | 'b'> & { low: number; high: number }> = [];
+    const joints: Array<Omit<SplitJoint, 'a' | 'b'> & PendingJoint> = [];
     let clearance = 0;
     let engraved = 0;
     const order = [...bodies.values()].sort((p, q) => p.cell[2] - q.cell[2] || p.cell[1] - q.cell[1] || p.cell[0] - q.cell[0] || p.id - q.id);
@@ -108,6 +109,8 @@ export async function executeBedSplitGeometry(
             const area = contact.area();
             if (area <= MIN_CONTACT_MM2) continue;
             const label = String(joints.length + 1);
+            const addsBefore = low.adds.length;
+            const subsBefore = high.subs.length;
             const out = await buildJoint(
               wasm,
               {
@@ -118,18 +121,32 @@ export async function executeBedSplitGeometry(
             );
             clearance += out.clearance;
             engraved += out.engraved;
+            // Sólidos de conector o solape (sin la marca, que va al final de `high.subs`)
+            const subsEnd = high.subs.length - (out.labelPlacement !== null ? 1 : 0);
+            const solids = { adds: low.adds.slice(addsBefore), subs: high.subs.slice(subsBefore, subsEnd) };
             low.labels.push(label);
             high.labels.push(label);
             joints.push({
               label, axis, position: coord, low: low.id, high: hid, connector: out.used, connectorCenters: out.centers,
               kind: out.kind, lap: out.lap, contactAreaMm2: area, labelEngraved: out.labelPlacement !== null,
-              labelPlacement: out.labelPlacement, labelHeightMm: out.labelHeightMm,
+              labelPlacement: out.labelPlacement, labelHeightMm: out.labelHeightMm, clearance: out.clearance, solids,
             });
           } finally {
             contact.delete();
           }
         }
       }
+    }
+
+    // 2b. Montaje posible en algún orden: si no, las uniones que traban pasan a "para pegar"
+    const check = options.validateAssembly !== false;
+    let glued: string[] = [];
+    let suggested: string[] = [];
+    if (check && joints.some((j) => j.kind !== 'glue')) {
+      const fix = fixAssemblyBeforeConnectors(order, joints, warnings, options.assemblyAutoFix !== false);
+      glued = fix.glued;
+      suggested = fix.suggested;
+      clearance -= fix.clearanceRemoved;
     }
 
     // 3. Aplicar conectores, solapes y marcas, y pasar a mallas
@@ -165,16 +182,21 @@ export async function executeBedSplitGeometry(
       });
     }
     const sign = (axis: SplitAxis, s: '+' | '-') => `${s}${axis}` as SplitJoint['a']['face'];
-    const outJoints: SplitJoint[] = joints.map(({ low, high, ...j }) => ({
+    const outJoints: SplitJoint[] = joints.map(({ low, high, clearance: _c, solids: _s, ...j }) => ({
       ...j,
       a: { part: index.get(low)!, code: bodies.get(low)!.code, face: sign(j.axis, '+') },
       b: { part: index.get(high)!, code: bodies.get(high)!.code, face: sign(j.axis, '-') },
     }));
     const glueJoints = outJoints.filter((j) => j.kind === 'glue').length;
     if (glueJoints > 0 && connector) warnings.push(engineWarning('SPLIT_GLUE_SUMMARY', { count: glueJoints, total: outJoints.length }));
+    const assembly = check
+      ? finalAssemblyReport(parts, outJoints, { source: sourceVolume, clearance, engraved }, glued, suggested)
+      : undefined;
+    if (assembly) warnings.push(...assembly.warnings);
     return {
       parts,
       joints: outJoints,
+      assembly,
       glueJoints,
       sourceVolumeMm3: sourceVolume,
       clearanceVolumeMm3: clearance,

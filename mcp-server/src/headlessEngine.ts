@@ -244,6 +244,7 @@ export class KuraHeadlessEngine {
       parts: result.parts.map((o) => ({ ...summarizeObject(o), code: o.metadata?.split?.code, plate: o.metadata?.split?.print.plate })),
       joints: result.joints,
       plateCount: result.plateCount,
+      assembly: result.assembly,
       volumes: { source: result.sourceVolumeMm3, clearance: result.clearanceVolumeMm3, engraved: result.engravedVolumeMm3 },
       note: ENGINE_NOTE,
       warnings: change.warnings,

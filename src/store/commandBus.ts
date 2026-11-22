@@ -149,6 +149,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       parts: out.parts.map((o) => ({ ...brief(o), code: o.metadata?.split?.code, plate: o.metadata?.split?.print.plate })),
       joints: out.joints.map((j) => ({ label: j.label, axis: j.axis, a: j.a, b: j.b, connectors: j.connectorCenters.length, labelEngraved: j.labelEngraved })),
       plateCount: out.plateCount,
+      ...(out.assembly ? { assembly: out.assembly } : {}),
     };
   },
 
