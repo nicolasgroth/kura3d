@@ -1,7 +1,9 @@
 /**
  * @file src/__tests__/repoRules.test.ts
  * @description Hace cumplir reglas del repositorio: versión única de la marca, cabecera de autoría
- * en todo archivo de código, y uso del envoltorio de preferencias en lugar de `localStorage` directo.
+ * en todo archivo de código, uso del envoltorio de preferencias en lugar de `localStorage` directo,
+ * lista explícita de claves de almacenamiento (no sensibles) en `src/ai` y `src/utils`, y marca de
+ * los exportadores recibida por parámetro.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -85,6 +87,44 @@ describe('reglas del repositorio', () => {
       })
       .map(rel);
     expect(offenders).toEqual([]);
+  });
+
+  it('src/ai y src/utils solo usan claves de almacenamiento de la lista explícita', () => {
+    // localStorage: preferencias y listas no sensibles. sessionStorage: los únicos sitios de secretos en web.
+    const LOCAL_KEYS = new Set([
+      'kura3d-ai-allowed-hosts', // hosts de IA permitidos (nombres de host)
+      'kura3d-mcp-config', // configuración MCP sin token (se lee solo para migrar el token antiguo)
+      'kura3d-mcp-repo-path', // ruta del repositorio para el fragmento de configuración MCP
+      'kura3d-recent-projects', // nombre de archivo y fecha
+      'kura3d-recent-remember', // preferencia «recordar recientes»
+    ]);
+    const SESSION_KEYS = new Set(['kura3d-ai-session-keys', 'kura3d-mcp-session-token']);
+    // Archivos que pueden tocar localStorage directamente (el resto pasa por los almacenes de arriba).
+    const DIRECT_LOCAL = new Set(['src/ai/allowedHosts.ts', 'src/ai/apiKeyStore.ts', 'src/utils/recentProjects.ts']);
+    const files = [
+      ...walk(join(ROOT, 'src', 'ai'), ['.ts', '.tsx']),
+      ...walk(join(ROOT, 'src', 'utils'), ['.ts', '.tsx']),
+    ].filter((f) => !isTestFile(f));
+    const unknownKeys: string[] = [];
+    const directUse: string[] = [];
+    const seen = new Set<string>();
+    for (const f of files) {
+      const code = stripComments(readFileSync(f, 'utf8'));
+      for (const m of code.matchAll(/['"`](kura3d-[a-z0-9-]+)['"`]/g)) {
+        seen.add(m[1]);
+        if (!LOCAL_KEYS.has(m[1]) && !SESSION_KEYS.has(m[1])) unknownKeys.push(`${rel(f)}: ${m[1]}`);
+      }
+      if (/\blocalStorage\b/.test(code) && !DIRECT_LOCAL.has(rel(f))) directUse.push(rel(f));
+    }
+    expect(seen.size, 'la búsqueda de claves debe encontrar las conocidas').toBeGreaterThanOrEqual(6);
+    expect(unknownKeys, 'clave nueva: agrégala a la lista si no es secreta').toEqual([]);
+    expect(directUse).toEqual([]);
+    // Las claves de sesión (secretos) nunca se usan con localStorage
+    const misuse = files.filter((f) => {
+      const code = stripComments(readFileSync(f, 'utf8'));
+      return /localStorage[\s\S]{0,80}(SESSION_KEYS_STORAGE|MCP_SESSION_TOKEN_KEY)/.test(code);
+    });
+    expect(misuse.map(rel)).toEqual([]);
   });
 
   it('componentes y store no usan localStorage/sessionStorage directamente', () => {
