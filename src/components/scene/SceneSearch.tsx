@@ -1,7 +1,7 @@
 /**
  * @file src/components/scene/SceneSearch.tsx
  * @description Campo de búsqueda de la lista de escena (F3): filtra por nombre; Enter selecciona y encuadra
- * el primer resultado; F3 / Mayús+F3 pasan al siguiente o anterior; Escape borra el texto. También expone
+ * el primer resultado; F3 / Mayús+F3 pasan al siguiente o anterior; Escape borra el texto y devuelve el foco a la lista. También expone
  * `useRevealSceneOnRequest`, que abre la pestaña Escena cuando F2 o F3 la necesitan.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -58,9 +58,13 @@ export const SceneSearch: React.FC = () => {
           } else if (e.key === 'F3') {
             e.preventDefault();
             findSceneMatch(e.shiftKey ? 'prev' : 'next');
-          } else if (e.key === 'Escape' && filter) {
+          } else if (e.key === 'Escape') {
+            // Borra el texto (si hay) y devuelve el foco a la lista de escena para seguir con teclado.
             e.preventDefault();
-            setSceneFilter('');
+            if (filter) setSceneFilter('');
+            const list = document.querySelector<HTMLElement>('.kura-scene-list');
+            if (list) list.focus();
+            else inputRef.current?.blur();
           }
         }}
       />

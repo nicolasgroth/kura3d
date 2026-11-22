@@ -9,6 +9,7 @@
 
 import type { TranslationKey } from '../translations';
 import { MENU_HI } from './menuKeys';
+import { FLOWUX_HI } from './flowUx';
 import { PREVIEW_HI } from './preview';
 import { SPLITJOINTS_HI } from './splitJoints';
 import { SPLITPREFS_HI } from './splitPrefs';
@@ -19,6 +20,7 @@ import { SPLITCOUPLING_HI } from './splitCoupling';
  */
 export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...MENU_HI,
+  ...FLOWUX_HI,
   ...PREVIEW_HI,
   ...SPLITJOINTS_HI,
   ...SPLITPREFS_HI,
@@ -35,7 +37,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'recovery.status.sceneChanged': 'पुनर्प्राप्ति के दौरान दृश्य बदल गया। आप ड्राफ़्ट फिर से चुन सकते हैं।',
   'recovery.status.restored': 'ड्राफ़्ट पुनर्प्राप्त हुआ। इसे .kura फ़ाइल में रखने के लिए प्रोजेक्ट सहेजें।',
   'recovery.status.restoreFailed': 'ड्राफ़्ट पुनर्प्राप्त नहीं हो सका। {message}',
-  'recovery.status.discardConfirm': 'क्या «{name}» का स्थानीय ड्राफ़्ट छोड़ दें?',
+  'recovery.status.discardConfirm': 'क्या «{name}» का स्थानीय ड्राफ़्ट छोड़ दें? इसे पूर्ववत नहीं किया जा सकता।',
   'recovery.status.discardFailed': 'ड्राफ़्ट छोड़ा नहीं जा सका।',
   'dropProject.prompt': 'STL, 3MF, OBJ/PLY मॉडल या .kura प्रोजेक्ट छोड़ें',
   'dropProject.unsupported': 'एक .kura प्रोजेक्ट या एक या अधिक STL, 3MF या OBJ/PLY मॉडल छोड़ें।',
@@ -1168,7 +1170,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'printWarning.NOT_MANIFOLD': 'मेश बंद नहीं है (non-manifold); इसमें छेद या स्लाइसिंग त्रुटियाँ हो सकती हैं।',
   'printWarning.EXCEEDS_BED': 'ऑब्जेक्ट प्रिंट सीमा ({width}×{depth}×{height} mm) से बड़ा है।',
   'printWarning.FLOATING': 'ऑब्जेक्ट प्रिंट बेड से {gap} mm ऊपर तैर रहा है।',
-  'printWarning.OVERHANG': 'सतह का {percent}% ओवरहैंग है (> {angle}°); सपोर्ट चालू करने पर विचार करें।',
+  'printWarning.OVERHANG': 'सतह के {percent}% हिस्से में {angle}° से अधिक ओवरहैंग है; स्लाइस करते समय सपोर्ट की ज़रूरत पड़ सकती है।',
   'printWarning.LOW_DENSITY': 'वक्र सतहों पर कम पॉलीगॉन घनत्व; वे कोणीय दिख सकती हैं।',
   'printWarning.HIGH_DENSITY': 'बहुत घना मेश (> 50 000 त्रिभुज); इसे सरल करने पर विचार करें।',
   'printWarning.THIN_WALL': 'कुछ दीवारें {thickness} mm की हैं, न्यूनतम {min} mm से पतली; वे प्रिंट न हो सकें।',

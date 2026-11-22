@@ -48,9 +48,11 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
     clearSelection: () => set({ selectedIds: [] }),
 
     clearScene: () => {
-      if (get().objects.length === 0) return;
+      const count = get().objects.length;
+      if (count === 0) return;
       pushHistory();
       set({ objects: [], selectedIds: [], activePrintReport: null, showOverhangs: false, activeSegmentation: null });
+      get().addToast(tCount(get().language, { one: 'toast.sceneCleared.one', other: 'toast.sceneCleared.other' }, count), 'info', { label: tr('toast.undo'), run: () => get().undo() });
     },
 
     updateObjectMeta: (id, patch) => {
@@ -133,6 +135,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       get().addToast(
         tCount(get().language, { one: 'toast.deleted.one', other: 'toast.deleted.other' }, removableIds.size),
         'info',
+        { label: tr('toast.undo'), run: () => get().undo() },
       );
     },
 

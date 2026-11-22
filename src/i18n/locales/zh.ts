@@ -9,6 +9,7 @@
 
 import type { TranslationKey } from '../translations';
 import { MENU_ZH } from './menuKeys';
+import { FLOWUX_ZH } from './flowUx';
 import { PREVIEW_ZH } from './preview';
 import { SPLITJOINTS_ZH } from './splitJoints';
 import { SPLITPREFS_ZH } from './splitPrefs';
@@ -19,6 +20,7 @@ import { SPLITCOUPLING_ZH } from './splitCoupling';
  */
 export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...MENU_ZH,
+  ...FLOWUX_ZH,
   ...PREVIEW_ZH,
   ...SPLITJOINTS_ZH,
   ...SPLITPREFS_ZH,
@@ -35,7 +37,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'recovery.status.sceneChanged': '恢复期间场景已更改。你可以重新选择草稿。',
   'recovery.status.restored': '草稿已恢复。保存项目以将其保留在 .kura 文件中。',
   'recovery.status.restoreFailed': '无法恢复草稿。{message}',
-  'recovery.status.discardConfirm': '要放弃“{name}”的本地草稿吗？',
+  'recovery.status.discardConfirm': '要放弃“{name}”的本地草稿吗？此操作无法撤销。',
   'recovery.status.discardFailed': '无法放弃草稿。',
   'dropProject.prompt': '拖放 STL、3MF、OBJ/PLY 模型或 .kura 项目',
   'dropProject.unsupported': '请拖放一个 .kura 项目或一个以上 STL、3MF、OBJ/PLY 模型。',
@@ -1168,7 +1170,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'printWarning.NOT_MANIFOLD': '网格未封闭（非流形），切片时可能出现孔洞或错误。',
   'printWarning.EXCEEDS_BED': '对象超出打印范围（{width}×{depth}×{height} mm）。',
   'printWarning.FLOATING': '对象悬浮在打印床上方 {gap} mm。',
-  'printWarning.OVERHANG': '{percent}% 的表面为悬垂（> {angle}°），建议启用支撑。',
+  'printWarning.OVERHANG': '{percent}% 的表面悬垂超过 {angle}°；切片时可能需要支撑。',
   'printWarning.LOW_DENSITY': '曲面多边形密度低，可能出现明显棱面。',
   'printWarning.HIGH_DENSITY': '网格过密（> 50 000 个三角形），建议简化。',
   'printWarning.THIN_WALL': '部分壁厚为 {thickness} mm，低于最小值 {min} mm，可能无法打印。',

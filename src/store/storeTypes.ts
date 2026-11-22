@@ -87,6 +87,13 @@ export interface ToastMessage {
   id: string;
   text: string;
   kind: 'info' | 'success' | 'error';
+  /** Acción opcional del aviso (p. ej. «Deshacer»); al ejecutarla el aviso se cierra. */
+  action?: ToastAction;
+}
+
+export interface ToastAction {
+  label: string;
+  run: () => void;
 }
 
 export type SceneSnapshot = ProjectSceneSnapshot;
@@ -244,7 +251,7 @@ export interface KuraStoreState {
   clearAiMessages: () => void;
   setAiBusy: (busy: boolean) => void;
   setMcpConnected: (connected: boolean) => void;
-  addToast: (text: string, kind?: ToastMessage['kind']) => void;
+  addToast: (text: string, kind?: ToastMessage['kind'], action?: ToastAction) => void;
   dismissToast: (id: string) => void;
 
   // Selección e historial

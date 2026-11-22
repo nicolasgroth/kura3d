@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Bolt,
   Box,
@@ -36,11 +36,19 @@ import { colorName, colorNameWithHex } from '../utils/colorNames';
 import { tCount } from '../utils/plural';
 import { SceneObjectList } from './scene/SceneObjectList';
 import { SceneSearch, useRevealSceneOnRequest } from './scene/SceneSearch';
+import { confirmClearScene } from './confirmClearScene';
+import { useLeftTabRequest } from './leftPanelTabRequest';
 import '../styles/panelEdge.css';
 
 export const LeftSidebar: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'shapes' | 'scene'>('shapes');
   useRevealSceneOnRequest(() => setActiveTab('scene'));
+  const leftTabRequest = useLeftTabRequest();
+  useEffect(() => {
+    if (leftTabRequest.tab) setActiveTab(leftTabRequest.tab);
+    // Solo reacciona a peticiones nuevas.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leftTabRequest.n]);
   const [textDraft, setTextDraft] = useState('KURA3D');
   const [showTextBox, setShowTextBox] = useState(false);
 
@@ -52,7 +60,6 @@ export const LeftSidebar: React.FC = () => {
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const createPrimitive = useKuraStore((s) => s.createPrimitive);
   const createStarterCube = useKuraStore((s) => s.createStarterCube);
-  const clearScene = useKuraStore((s) => s.clearScene);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
 
   // Resumen de colores / filamentos únicos usados en los sólidos visibles de la escena
@@ -309,7 +316,7 @@ export const LeftSidebar: React.FC = () => {
                     className="kura-btn kura-btn-sm kura-btn-danger"
                     style={{ justifyContent: 'flex-start' }}
                     disabled={objects.length === 0}
-                    onClick={clearScene}
+                    onClick={() => void confirmClearScene()}
                   >
                     <Trash2 size={14} />
                     <span>{t(language, 'sidebar.shapes.clearScene')}</span>
