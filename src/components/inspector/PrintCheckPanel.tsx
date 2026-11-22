@@ -102,14 +102,6 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
 
           <div className="kura-stats-grid">
             <div className="kura-stat-box">
-              <div className="kura-stat-title">{t(language, 'inspector.pro.weight')}</div>
-              <div className="kura-stat-val">{report.estimatedWeightGrams.toFixed(1)} g</div>
-            </div>
-            <div className="kura-stat-box">
-              <div className="kura-stat-title">{t(language, 'inspector.pro.filament')}</div>
-              <div className="kura-stat-val">{report.estimatedFilamentMeters.toFixed(2)} m</div>
-            </div>
-            <div className="kura-stat-box">
               <div className="kura-stat-title">{t(language, 'inspector.pro.overhangs')}</div>
               <div className="kura-stat-val">{report.overhangPercent.toFixed(1)}%</div>
             </div>
@@ -123,6 +115,14 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
                     : t(language, 'inspector.pro.grounded')}
               </div>
             </div>
+          </div>
+
+          <div className="kura-printcheck-estimate" data-testid="print-material-estimate">
+            <span>
+              {t(language, 'inspector.pro.weight')} ≈ {report.estimatedWeightGrams.toFixed(1)} g · {t(language, 'inspector.pro.filament')} ≈{' '}
+              {report.estimatedFilamentMeters.toFixed(1)} m
+            </span>
+            <span className="kura-printcheck-estimate-note">{t(language, 'inspector.pro.estimateNote')}</span>
           </div>
 
           {assumptions && (

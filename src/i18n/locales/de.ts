@@ -484,7 +484,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'ai.local.plan.delete': 'löschen',
   'ai.local.plan.cut': 'auf halber Höhe mit 2 Stiften schneiden',
   'ai.local.plan.printability': 'Druckbarkeit prüfen',
-  'ai.local.printability': '„{name}“: Druckbarkeit {score}/100, Überhänge {overhang} %, geschätztes Gewicht {weight} g, {issues} Hinweise. Details im Inspektor.',
   'ai.local.threadHoleDone': 'Durchgehendes {size}-Gewindeloch in der Mitte von „{name}“ erstellt. Maße jetzt {dims}.',
   'ai.local.threadHoleRotated': '„{name}“ ist gedreht: Ich kann das Gewindeloch nicht auf ihrer Achse platzieren. Nichts wurde geändert; setze die Drehung zurück oder nutze ISO-Gewinde unter Formen.',
   'ai.local.nothingDone': 'Diesen Teil kann ich nicht: „{text}“. Damit sich der Sinn nicht ändert, habe ich nichts ausgeführt. Formuliere es neu oder bitte nur um das, was ich kann.',
@@ -863,7 +862,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'toast.moldDone.one': 'Gießform erzeugt (1 Teil)',
   'toast.moldDone.other': 'Gießform erzeugt ({count} Teile)',
   'toast.projectDone': 'Grafik auf Oberfläche projiziert',
-  'toast.printabilityDone': '3D-Prüfung: {score}/100 ({weight} g)',
   'toast.simplifyDone': 'Netz vereinfacht: {before} → {tris} Dreiecke',
   'toast.simplifyNoChange': 'Mit dieser Toleranz ließ sich nichts reduzieren: Das Netz hat weiterhin {tris} Dreiecke. Versuche eine größere Toleranz.',
   'toast.moreTip': '{count} frühere Hinweise anzeigen',
@@ -1310,4 +1308,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.thread.presetLarge': 'Groß (M22–M64)',
   'dialog.export3mf.standardNote': 'Standard-3MF, kompatibel mit OrcaSlicer, Bambu Studio, PrusaSlicer und Cura',
   'cmd.export.3mfModal': '3MF exportieren...',
+  'inspector.pro.estimateNote': 'Sehr grobe Schätzung: Der tatsächliche Wert hängt vom Slicer und seinen Einstellungen ab',
+  'toast.printabilityDone': '3D-Prüfung: {score}/100',
+  'ai.local.printability': '„{name}“: Druckbarkeit {score}/100, Überhänge {overhang} %, {issues} Hinweise. Material ≈ {weight} g (sehr grobe Schätzung: hängt vom Slicer ab). Details im Inspektor.',
 };

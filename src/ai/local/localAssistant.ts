@@ -225,7 +225,7 @@ async function applyStep(intent: LocalIntent, ids: string[], run: LocalRun): Pro
           name,
           score: r?.score ?? '—',
           overhang: fmt(r?.overhangPercent ?? 0),
-          weight: fmt(r?.estimatedWeightGrams ?? 0),
+          weight: fmt(r?.estimatedWeightGrams ?? 0), // referencia aproximada: el texto lo rotula con «≈»
           issues: r?.issues?.length ?? 0,
         });
       }

@@ -206,7 +206,9 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
 
   analyze_printability: async (p, { get }, command) => {
     const { target, infillPercent, overhangAngleDeg } = schema.parsePrintability(get(), p);
-    return required(await get().runPrintabilityCheck(target.id, infillPercent, overhangAngleDeg), command);
+    const report = required(await get().runPrintabilityCheck(target.id, infillPercent, overhangAngleDeg), command);
+    // Peso y filamento son una referencia muy aproximada (el valor real depende del slicer): no entran en el puntaje.
+    return { ...report, approximate: true };
   },
 
   simplify_mesh: async (p, { get }, command) => {

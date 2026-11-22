@@ -408,6 +408,17 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
       expect(report!.overhangFaceIndices.length).toBe(report!.overhangFaceCount);
       expect(report!.score).toBeGreaterThan(0);
       expect(report!.score).toBeLessThan(100);
+
+      // Peso y filamento son una referencia muy aproximada: no influyen en el puntaje y el bus lo marca
+      const viaBus = await useKuraStore.getState().executeCommand(
+        { id: 'cmd_pr_approx', command: 'analyze_printability', params: { id: cone!.id, infillPercent: 100, overhangAngleDeg: 45 } },
+        'mcp'
+      );
+      expect(viaBus.ok).toBe(true);
+      const busReport = viaBus.result as { approximate?: boolean; score: number; estimatedWeightGrams: number };
+      expect(busReport.approximate).toBe(true);
+      expect(busReport.estimatedWeightGrams).toBeGreaterThan(report!.estimatedWeightGrams);
+      expect(busReport.score).toBe(report!.score);
       expect(useKuraStore.getState().activePrintReport?.objectId).toBe(cone!.id);
       expect(useKuraStore.getState().showOverhangs).toBe(true);
 

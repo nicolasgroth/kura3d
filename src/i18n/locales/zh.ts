@@ -484,7 +484,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'ai.local.plan.delete': '删除',
   'ai.local.plan.cut': '在半高处切开并加 2 个定位销',
   'ai.local.plan.printability': '检查可打印性',
-  'ai.local.printability': '「{name}」：可打印性 {score}/100，悬垂 {overhang}%，估计重量 {weight} g，{issues} 条提示。详情见检查器。',
   'ai.local.threadHoleDone': '已在「{name}」中心打出贯通的 {size} 螺纹孔。现在尺寸为 {dims}。',
   'ai.local.threadHoleRotated': '「{name}」已旋转：无法在其轴线上放置螺纹孔。未做任何更改；请清除旋转或在“形状”中使用 ISO 螺纹。',
   'ai.local.nothingDone': '我无法完成这部分：「{text}」。为避免改变你的本意，我没有执行任何操作。请换个说法，或只请求我能做的部分。',
@@ -863,7 +862,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'toast.moldDone.one': '模具已生成（1 个部件）',
   'toast.moldDone.other': '模具已生成（{count} 个部件）',
   'toast.projectDone': '图形已投影到表面',
-  'toast.printabilityDone': '3D 检查：{score}/100 ({weight} g)',
   'toast.simplifyDone': '网格已简化：{before} → {tris} 个三角面',
   'toast.simplifyNoChange': '该容差无法再简化：网格仍有 {tris} 个三角面。请尝试更大的容差。',
   'toast.moreTip': '显示之前的 {count} 条提示',
@@ -1310,4 +1308,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.thread.presetLarge': '大规格 (M22–M64)',
   'dialog.export3mf.standardNote': '标准 3MF，兼容 OrcaSlicer、Bambu Studio、PrusaSlicer 和 Cura',
   'cmd.export.3mfModal': '导出 3MF...',
+  'inspector.pro.estimateNote': '非常粗略的估计：实际数值取决于切片软件及其设置',
+  'toast.printabilityDone': '3D 检查：{score}/100',
+  'ai.local.printability': '「{name}」：可打印性 {score}/100，悬垂 {overhang}%，{issues} 条提示。耗材 ≈ {weight} g（非常粗略的估计：取决于切片软件）。详情见检查器。',
 };

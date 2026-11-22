@@ -484,7 +484,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'ai.local.plan.delete': 'हटाना',
   'ai.local.plan.cut': 'आधी ऊँचाई पर 2 डॉवेल के साथ काटना',
   'ai.local.plan.printability': 'प्रिंट योग्यता जाँचना',
-  'ai.local.printability': '«{name}»: प्रिंट योग्यता {score}/100, ओवरहैंग {overhang} %, अनुमानित वज़न {weight} g, {issues} चेतावनियाँ। विवरण इंस्पेक्टर में है।',
   'ai.local.threadHoleDone': '«{name}» के बीच में आर-पार {size} थ्रेडेड छेद बनाया। अब माप {dims} है।',
   'ai.local.threadHoleRotated': '«{name}» घुमाई हुई है: मैं उसके अक्ष पर थ्रेडेड छेद नहीं रख सकता। कुछ नहीं बदला; रोटेशन हटाएँ या आकृतियों में ISO थ्रेड इस्तेमाल करें।',
   'ai.local.nothingDone': 'यह हिस्सा मैं नहीं कर सकता: «{text}»। आपकी बात का अर्थ न बदले, इसलिए मैंने कुछ नहीं किया। दोबारा लिखें या केवल वही माँगें जो मैं कर सकता हूँ।',
@@ -863,7 +862,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'toast.moldDone.one': 'मोल्ड बनाया गया (1 भाग)',
   'toast.moldDone.other': 'मोल्ड बनाया गया ({count} भाग)',
   'toast.projectDone': 'सतह पर ग्राफ़िक प्रोजेक्ट किया गया',
-  'toast.printabilityDone': '3D जांच: {score}/100 ({weight} g)',
   'toast.simplifyDone': 'मेश सरल किया गया: {before} → {tris} त्रिभुज',
   'toast.simplifyNoChange': 'इस टॉलरेंस से घटाया नहीं जा सका: मेश में अब भी {tris} त्रिभुज हैं। बड़ा टॉलरेंस आज़माएँ।',
   'toast.moreTip': '{count} पिछली सूचनाएँ दिखाएँ',
@@ -1310,4 +1308,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.thread.presetLarge': 'बड़े (M22–M64)',
   'dialog.export3mf.standardNote': 'मानक 3MF, OrcaSlicer, Bambu Studio, PrusaSlicer और Cura के साथ संगत',
   'cmd.export.3mfModal': '3MF निर्यात करें...',
+  'inspector.pro.estimateNote': 'बहुत मोटा अनुमान: वास्तविक मान स्लाइसर और उसकी सेटिंग्स पर निर्भर करता है',
+  'toast.printabilityDone': '3D जांच: {score}/100',
+  'ai.local.printability': '«{name}»: प्रिंट योग्यता {score}/100, ओवरहैंग {overhang} %, {issues} चेतावनियाँ। सामग्री ≈ {weight} g (बहुत मोटा अनुमान: स्लाइसर पर निर्भर)। विवरण इंस्पेक्टर में है।',
 };

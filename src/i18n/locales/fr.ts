@@ -484,7 +484,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'ai.local.plan.delete': 'supprimer',
   'ai.local.plan.cut': 'couper à mi-hauteur avec 2 goujons',
   'ai.local.plan.printability': 'vérifier l’imprimabilité',
-  'ai.local.printability': '« {name} » : imprimabilité {score}/100, surplombs {overhang} %, poids estimé {weight} g, {issues} avertissements. Détails dans l’Inspecteur.',
   'ai.local.threadHoleDone': 'Trou taraudé {size} traversant percé au centre de « {name} ». Mesure maintenant {dims}.',
   'ai.local.threadHoleRotated': '« {name} » est tournée : je ne peux pas placer le trou taraudé sur son axe. Rien n’a été modifié ; annulez la rotation ou utilisez Filetage ISO dans Formes.',
   'ai.local.nothingDone': 'Je ne sais pas faire cette partie : « {text} ». Pour ne pas changer le sens de la demande, je n’ai rien exécuté. Reformulez ou demandez seulement ce que je sais faire.',
@@ -863,7 +862,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'toast.moldDone.one': 'Moule généré (1 pièce)',
   'toast.moldDone.other': 'Moule généré ({count} pièces)',
   'toast.projectDone': 'Graphique projeté sur la surface',
-  'toast.printabilityDone': 'Validation 3D : {score}/100 ({weight} g)',
   'toast.simplifyDone': 'Maillage simplifié : {before} → {tris} triangles',
   'toast.simplifyNoChange': 'Impossible de réduire avec cette tolérance : le maillage garde {tris} triangles. Essayez une tolérance plus grande.',
   'toast.moreTip': 'Afficher {count} avis précédents',
@@ -1310,4 +1308,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.thread.presetLarge': 'Grands (M22–M64)',
   'dialog.export3mf.standardNote': '3MF standard, compatible avec OrcaSlicer, Bambu Studio, PrusaSlicer et Cura',
   'cmd.export.3mfModal': 'Exporter en 3MF...',
+  'inspector.pro.estimateNote': 'Estimation très approximative : la valeur réelle dépend du slicer et de ses réglages',
+  'toast.printabilityDone': 'Validation 3D : {score}/100',
+  'ai.local.printability': '« {name} » : imprimabilité {score}/100, surplombs {overhang} %, {issues} avertissements. Matière ≈ {weight} g (estimation très approximative : dépend du slicer). Détails dans l’Inspecteur.',
 };

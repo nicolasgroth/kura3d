@@ -491,7 +491,6 @@ export const TRANSLATIONS_ES = {
   'ai.local.plan.delete': 'borrar',
   'ai.local.plan.cut': 'cortar por la mitad de la altura con 2 pasadores',
   'ai.local.plan.printability': 'validar imprimibilidad',
-  'ai.local.printability': '«{name}»: imprimibilidad {score}/100, voladizos {overhang} %, peso estimado {weight} g, {issues} avisos. Los detalles están en el Inspector.',
   'ai.local.threadHoleDone': 'Hice un agujero roscado {size} pasante en el centro de «{name}». Ahora mide {dims}.',
   'ai.local.threadHoleRotated': '«{name}» está girada: no sé ubicar el agujero roscado en su eje. No hice ningún cambio; quita la rotación o usa Rosca ISO desde Formas.',
   'ai.local.nothingDone': 'No sé hacer esta parte: «{text}». Para no cambiar el sentido de tu pedido no ejecuté nada. Reformúlalo o pide solo lo que sí puedo hacer.',
@@ -870,7 +869,6 @@ export const TRANSLATIONS_ES = {
   'toast.moldDone.one': 'Molde generado (1 pieza)',
   'toast.moldDone.other': 'Molde generado ({count} piezas)',
   'toast.projectDone': 'Gráfico proyectado sobre la superficie',
-  'toast.printabilityDone': 'Validación 3D: {score}/100 ({weight} g)',
   'toast.simplifyDone': 'Malla simplificada: {before} → {tris} triángulos',
   'toast.simplifyNoChange': 'No se pudo reducir con esa tolerancia: la malla sigue con {tris} triángulos. Prueba una tolerancia mayor.',
   'toast.moreTip': 'Mostrar {count} avisos anteriores',
@@ -1317,6 +1315,9 @@ export const TRANSLATIONS_ES = {
   'dialog.thread.presetLarge': 'Grandes (M22–M64)',
   'dialog.export3mf.standardNote': '3MF estándar, compatible con OrcaSlicer, Bambu Studio, PrusaSlicer y Cura',
   'cmd.export.3mfModal': 'Exportar 3MF...',
+  'inspector.pro.estimateNote': 'Estimación muy aproximada: el valor real depende del slicer y de sus ajustes',
+  'toast.printabilityDone': 'Validación 3D: {score}/100',
+  'ai.local.printability': '«{name}»: imprimibilidad {score}/100, voladizos {overhang} %, {issues} avisos. Material ≈ {weight} g (estimación muy aproximada: depende del slicer). Los detalles están en el Inspector.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -1780,7 +1781,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'ai.local.plan.delete': 'delete',
   'ai.local.plan.cut': 'cut at half height with 2 dowels',
   'ai.local.plan.printability': 'check printability',
-  'ai.local.printability': '“{name}”: printability {score}/100, overhangs {overhang} %, estimated weight {weight} g, {issues} warnings. Details are in the Inspector.',
   'ai.local.threadHoleDone': 'Made a through {size} threaded hole in the center of “{name}”. It now measures {dims}.',
   'ai.local.threadHoleRotated': '“{name}” is rotated: I cannot place the threaded hole on its axis. Nothing was changed; reset the rotation or use ISO Thread from Shapes.',
   'ai.local.nothingDone': 'I cannot do this part: “{text}”. To avoid changing what you meant, I did nothing. Rephrase it or ask only for what I can do.',
@@ -2147,7 +2147,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'toast.moldDone.one': 'Mold generated (1 part)',
   'toast.moldDone.other': 'Mold generated ({count} parts)',
   'toast.projectDone': 'Graphic projected onto surface',
-  'toast.printabilityDone': '3D Check: {score}/100 ({weight} g)',
   'toast.simplifyDone': 'Mesh simplified: {before} → {tris} triangles',
   'toast.simplifyNoChange': 'Could not reduce with that tolerance: the mesh still has {tris} triangles. Try a larger tolerance.',
   'toast.moreTip': 'Show {count} earlier notices',
@@ -2594,6 +2593,9 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.thread.presetLarge': 'Large (M22–M64)',
   'dialog.export3mf.standardNote': 'Standard 3MF, compatible with OrcaSlicer, Bambu Studio, PrusaSlicer and Cura',
   'cmd.export.3mfModal': 'Export 3MF...',
+  'inspector.pro.estimateNote': 'Very rough estimate: the real value depends on the slicer and its settings',
+  'toast.printabilityDone': '3D Check: {score}/100',
+  'ai.local.printability': '“{name}”: printability {score}/100, overhangs {overhang} %, {issues} warnings. Material ≈ {weight} g (very rough estimate: it depends on the slicer). Details are in the Inspector.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };
