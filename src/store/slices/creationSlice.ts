@@ -8,7 +8,8 @@
  */
 
 import { createModulePrimitive, createPrimitive, createThread, regenerateParametric, type PlaceMesh } from '../../core/operations';
-import { placeInFreeSpot, type BedSize } from '../../core/scene/freeSpot';
+import { activeBedSize } from '../bedSize';
+import { placeInFreeSpot } from '../../core/scene/freeSpot';
 import { parametricStateOf } from '../../core/scene/parametric';
 import { resolveModuleTarget } from '../../core/scene/sceneRules';
 import { PRINT_COLOR_PALETTE, type SceneObject } from '../../types/kura';
@@ -18,12 +19,7 @@ import type { KuraStoreState } from '../storeTypes';
 export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, pushHistory, runExclusive, opCtx, assertCurrent, commitChange, rejectWhileLocked } = ctx;
 
-  /** Cama activa (perfil o medidas personalizadas), centrada en el origen. */
-  const activeBed = (): BedSize | null => {
-    const { customBedDimensions: custom, printerProfile: profile } = get();
-    if (custom) return { width: custom.width, depth: custom.depth };
-    return profile ? { width: profile.bedWidthMm, depth: profile.bedDepthMm } : null;
-  };
+  const activeBed = () => activeBedSize(get());
 
   /** Colocador en el primer hueco libre; recuerda si la pieza cupo en la cama. */
   const freePlacer = () => {

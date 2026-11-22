@@ -169,17 +169,17 @@ export async function regenerateParametric(ctx: OperationContext, obj: SceneObje
 export async function importSvg(
   ctx: OperationContext,
   options: SvgImportOptions,
-  look: { name: string; color: string },
+  look: { name: string; color: string; place?: PlaceMesh },
 ): Promise<SceneObject> {
   const mesh = engine.normalizeMeshToBed(await engine.extrudeSvgToMesh(options));
-  return buildWith(ctx, { name: look.name, source: 'svg', mesh, color: look.color });
+  return buildWith(ctx, { name: look.name, source: 'svg', mesh, position: look.place?.(mesh), color: look.color });
 }
 
 /** Relieve, litofanía cilíndrica, silueta o cortador a partir de una imagen. */
 export async function imageRelief(
   ctx: OperationContext,
   options: ImageTo3DOptions,
-  look: { name: string; color: string },
+  look: { name: string; color: string; place?: PlaceMesh },
 ): Promise<SceneObject> {
   let mesh: MeshData;
   if (options.shapeMode === 'cylindrical') {
@@ -189,5 +189,6 @@ export async function imageRelief(
   } else {
     mesh = engine.generateReliefFromImage(options);
   }
-  return buildWith(ctx, { name: look.name, source: 'image', mesh: engine.normalizeMeshToBed(mesh), color: look.color, materialPreset: 'pla_matte' });
+  const normalized = engine.normalizeMeshToBed(mesh);
+  return buildWith(ctx, { name: look.name, source: 'image', mesh: normalized, position: look.place?.(normalized), color: look.color, materialPreset: 'pla_matte' });
 }

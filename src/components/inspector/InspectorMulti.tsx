@@ -13,6 +13,8 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { type AlignMode } from '../../types/kura';
 import { InspectorEdgeToggle } from './InspectorEdgeToggle';
 import { FilamentLegendCard } from './FilamentLegendCard';
+import { BooleanRoles } from '../booleanPreview/BooleanRoles';
+import { useBooleanPreview } from '../booleanPreview/useBooleanPreview';
 
 /** Panel del inspector con 2 o más objetos seleccionados. */
 export const InspectorMulti: React.FC = () => {
@@ -21,7 +23,7 @@ export const InspectorMulti: React.FC = () => {
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const busyOperation = useKuraStore((s) => s.busyOperation);
-  const runBooleanOnSelection = useKuraStore((s) => s.runBooleanOnSelection);
+  const boolApi = useBooleanPreview();
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const runConvexHull = useKuraStore((s) => s.runConvexHull);
   const alignSelectedObjects = useKuraStore((s) => s.alignSelectedObjects);
@@ -69,7 +71,8 @@ export const InspectorMulti: React.FC = () => {
               type="button"
               className="kura-btn kura-btn-primary"
               disabled={isBusy}
-              onClick={() => void runBooleanOnSelection('union')}
+              title={t(language, 'boolPreview.hint')}
+              {...boolApi.buttonProps('union')}
             >
               {t(language, 'inspector.op.union')}
             </button>
@@ -77,7 +80,8 @@ export const InspectorMulti: React.FC = () => {
               type="button"
               className="kura-btn kura-btn-amber"
               disabled={isBusy}
-              onClick={() => void runBooleanOnSelection('subtract')}
+              title={t(language, 'boolPreview.hint')}
+              {...boolApi.buttonProps('subtract')}
             >
               {t(language, 'inspector.op.subtract')}
             </button>
@@ -85,10 +89,14 @@ export const InspectorMulti: React.FC = () => {
               type="button"
               className="kura-btn"
               disabled={isBusy}
-              onClick={() => void runBooleanOnSelection('intersect')}
+              title={t(language, 'boolPreview.hint')}
+              {...boolApi.buttonProps('intersect')}
             >
               {t(language, 'inspector.op.intersect')}
             </button>
+          </div>
+          <div className="kura-bool-inspector-roles">
+            <BooleanRoles api={boolApi} />
           </div>
 
           <button

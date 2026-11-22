@@ -131,3 +131,28 @@ export function placeInFreeSpot(
     fits: spot.fits,
   };
 }
+
+/**
+ * Desplazamiento XZ para mover un grupo de piezas (con posiciones ya en mundo) como un bloque al
+ * primer hueco libre, sin solapar los objetos visibles ni separar las piezas entre sí.
+ */
+export function placeGroupInFreeSpot(
+  objects: readonly SceneObject[],
+  items: ReadonlyArray<{ mesh: MeshData; position: Vec3 }>,
+  bed: BedSize | null = null,
+): { offset: Vec3; fits: boolean } {
+  const fps = items
+    .map((it) => footprintOf(it.mesh, it.position, [0, 0, 0], [1, 1, 1]))
+    .filter((f): f is FootprintXZ => f !== null);
+  if (fps.length === 0) return { offset: [0, 0, 0], fits: true };
+  const union = {
+    minX: Math.min(...fps.map((f) => f.minX)), maxX: Math.max(...fps.map((f) => f.maxX)),
+    minZ: Math.min(...fps.map((f) => f.minZ)), maxZ: Math.max(...fps.map((f) => f.maxZ)),
+  };
+  const spot = findFreeSpot(sceneFootprints(objects), [union.maxX - union.minX, union.maxZ - union.minZ], bed);
+  const clean = (n: number) => (Math.abs(n) < 1e-9 ? 0 : n);
+  return {
+    offset: [clean(spot.x - (union.minX + union.maxX) / 2), 0, clean(spot.z - (union.minZ + union.maxZ) / 2)],
+    fits: spot.fits,
+  };
+}

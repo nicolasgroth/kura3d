@@ -86,3 +86,37 @@
     animation: none;
   }
 }
+
+/*
+ * Escritorio (> 900 px): el panel ocupa el lugar del inspector, dentro del flujo del área de
+ * trabajo (el inspector se oculta y el visor recalcula su ancho). Debajo de eso sigue superpuesto.
+ */
+.kura-op-slot {
+  display: contents;
+}
+
+@media (min-width: 901px) {
+  .kura-op-slot:has(> .kura-op-panel) {
+    display: flex;
+    flex: 0 0 auto;
+    width: 376px;
+    padding: 8px;
+    box-sizing: border-box;
+    min-height: 0;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border-subtle);
+  }
+
+  .kura-op-slot > .kura-op-panel {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .kura-workspace:has(> .kura-op-slot > .kura-op-panel) > .kura-sidebar-right {
+    display: none;
+  }
+}

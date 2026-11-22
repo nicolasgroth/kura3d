@@ -12,6 +12,7 @@
 import type { SceneChange } from '../../core/operations';
 import type { EngineTaskArgs, EngineTaskName } from '../../core/operations/engineTasks';
 import { resolveBooleanInputs } from '../../core/scene/sceneRules';
+import { isEngineError, localizeEngineError } from '../../engine/engineErrors';
 import { placementFromHit, worldCenter, type SurfacePlacement } from '../../engine/surfacePlacement';
 import type { BooleanOpType, MeshData, SceneObject, Vec3 } from '../../types/kura';
 import type { StoreContext } from '../storeContext';
@@ -45,6 +46,8 @@ export interface OperationPreviewState {
   status: PreviewStatus;
   ghosts: PreviewGhost[];
   guides: PreviewGuide[];
+  /** Mensaje localizado del error tipado del motor cuando `status` es `error`; ausente si fue genérico. */
+  error?: string | null;
 }
 
 export interface PreviewRequest<N extends EngineTaskName = EngineTaskName> {
@@ -160,9 +163,10 @@ export function createPreviewSlice(ctx: StoreContext): PreviewSliceState {
             const computed = change ? ghostsFromChange(change, get().objects, request.role) : [];
             patch({ status: 'ready', ghosts: [...extras, ...computed] });
           },
-          () => {
+          (err: unknown) => {
             if (gen !== generation) return;
-            patch({ status: 'error', ghosts: extras });
+            const error = isEngineError(err) ? localizeEngineError(get().language, err) : null;
+            patch({ status: 'error', ghosts: extras, error });
           },
         );
       }, request.delayMs ?? PREVIEW_DEBOUNCE_MS);

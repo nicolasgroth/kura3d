@@ -81,6 +81,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       connectorSize: 4,
       connectorDepth: 6,
       connectorCount: 2,
+      connectorCenters: [],
     },
     spawnedAtById: {},
     toasts: [],

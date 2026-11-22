@@ -50,6 +50,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
   const requestPreview = useKuraStore((s) => s.requestOperationPreview);
   const clearPreview = useKuraStore((s) => s.clearOperationPreview);
   const previewStatus = useKuraStore((s) => (s.operationPreview.key === 'project' ? s.operationPreview.status : 'idle'));
+  const previewError = useKuraStore((s) => (s.operationPreview.key === 'project' ? s.operationPreview.error ?? null : null));
   const surfacePick = useKuraStore((s) => s.surfacePick);
   const setSurfacePick = useKuraStore((s) => s.setSurfacePick);
   const picking = Boolean(open && surfacePick && surfacePick.objectId === targetId);
@@ -170,7 +171,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
             : previewStatus === 'pending'
               ? t(language, 'preview.computing')
               : previewStatus === 'error'
-                ? t(language, 'preview.failed')
+                ? previewError ?? t(language, 'preview.failed')
                 : previewStatus === 'ready'
                   ? t(language, 'preview.ready')
                   : ''}

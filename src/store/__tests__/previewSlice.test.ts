@@ -9,19 +9,24 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EngineClient } from '../../core/operations/engineClient';
+import { EngineError, localizeEngineError } from '../../engine/engineErrors';
 import { fakeBox } from '../../test/fakeObjects';
 import { setStoreEngineClient } from '../storeContext';
 import { EMPTY_PREVIEW } from '../slices/previewSlice';
 import { useKuraStore } from '../useKuraStore';
 
 type Resolver = (value: unknown) => void;
-let calls: Array<{ name: string; args: unknown; resolve: Resolver }>;
+let calls: Array<{ name: string; args: unknown; resolve: Resolver; reject: (e: unknown) => void }>;
 
 const fakeClient: EngineClient = {
   run: ((_ctx: unknown, name: string, args: unknown) => {
     let resolve: Resolver = () => {};
-    const promise = new Promise((r) => (resolve = r));
-    calls.push({ name, args, resolve });
+    let reject: (e: unknown) => void = () => {};
+    const promise = new Promise((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    calls.push({ name, args, resolve, reject });
     return { id: calls.length, inWorker: true, promise, cancel: () => undefined };
   }) as EngineClient['run'],
   dispose: () => undefined,
@@ -45,6 +50,17 @@ afterEach(() => {
 });
 
 describe('operationPreview', () => {
+  it('un error tipado del motor queda traducido en la vista previa', async () => {
+    request('x');
+    await vi.advanceTimersByTimeAsync(250);
+    calls[0].reject(new EngineError('PROJECTION_OUT_OF_BOUNDS', { width: 40 }));
+    await vi.runAllTimersAsync();
+    const p = useKuraStore.getState().operationPreview;
+    expect(p.status).toBe('error');
+    expect(p.error).toBe(localizeEngineError(useKuraStore.getState().language, new EngineError('PROJECTION_OUT_OF_BOUNDS', { width: 40 })));
+    expect(p.error).toContain('40');
+  });
+
   it('agrupa peticiones seguidas con debounce y calcula una sola vez', async () => {
     request('1');
     request('2');

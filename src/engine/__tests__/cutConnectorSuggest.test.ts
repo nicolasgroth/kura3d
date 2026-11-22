@@ -9,10 +9,12 @@
 
 import { describe, expect, it } from 'vitest';
 import type { PlaneCutOptions, SceneObject } from '../../types/kura';
-import { checkCutConnectorFit, cutOffsetRange, suggestCutConnectors } from '../cutConnectorSuggest';
-import { initManifoldEngine, manifoldToMeshData } from '../manifoldKernel';
+import { CONNECTOR_MIN_WALL_MM } from '../cutConnectorChecks';
+import { layoutForCut } from '../cutConnectorLayout';
+import { checkCutConnectorFit, cutConnectorCenters, cutOffsetRange, suggestCutConnectors } from '../cutConnectorSuggest';
+import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../manifoldKernel';
 import { planeCutWithConnectors } from '../operations';
-import { createPrimitiveMesh } from '../primitives';
+import { applyTransformToMesh, createPrimitiveMesh } from '../primitives';
 import { makeObject } from './geometryTestUtils';
 
 async function lShape(): Promise<SceneObject> {
@@ -80,5 +82,32 @@ describe('suggestCutConnectors', () => {
   it('plano fuera de la pieza devuelve null', async () => {
     const mesh = await createPrimitiveMesh('box', { width: 10, height: 10, depth: 10 });
     expect(await suggestCutConnectors(makeObject('c', mesh), 'y', 50)).toBeNull();
+  });
+});
+
+describe('posiciones de los conectores (vista previa = corte real)', () => {
+  it('la sugerencia y cutConnectorCenters devuelven las posiciones que usa el corte', async () => {
+    const mesh = await createPrimitiveMesh('box', { width: 40, height: 20, depth: 30 });
+    const obj = makeObject('b', mesh);
+    const s = await suggestCutConnectors(obj, 'y', 2);
+    expect(s?.feasible).toBe(true);
+    expect(s!.centers).toHaveLength(s!.count);
+
+    const wasm = await initManifoldEngine();
+    const world = applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale);
+    const manifold = meshDataToManifold(wasm, world);
+    const bbox = manifold.boundingBox();
+    const cutCoord = (bbox.min[1] + bbox.max[1]) / 2 + 2;
+    const real = layoutForCut(manifold, 'y', cutCoord, { type: 'dowel', size: s!.size, depth: s!.depth, tolerance: 0.25, count: s!.count }, CONNECTOR_MIN_WALL_MM);
+    manifold.delete();
+    expect(s!.centers).toEqual(real.centers);
+    for (const c of s!.centers) expect(c[1]).toBeCloseTo(cutCoord, 6);
+
+    const direct = await cutConnectorCenters(obj, 'y', 2, 'dowel', { size: s!.size, depth: s!.depth, tolerance: 0.25, count: s!.count });
+    expect(direct).toEqual(real.centers);
+    // El corte real con esos parámetros funciona
+    await expect(planeCutWithConnectors(obj, options(s!, 'y', 2))).resolves.toBeTruthy();
+    // Un tamaño que no cabe no devuelve posiciones
+    expect(await cutConnectorCenters(obj, 'y', 2, 'dowel', { size: 40, depth: 6, tolerance: 0.25, count: 2 })).toEqual([]);
   });
 });

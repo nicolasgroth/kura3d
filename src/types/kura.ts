@@ -743,6 +743,8 @@ export interface CutPreviewState {
   connectorSize: number;
   connectorDepth: number;
   connectorCount: number;
+  /** Centros (mundo) reales de los conectores según el motor; vacío mientras se calculan o si no caben. */
+  connectorCenters: Vec3[];
 }
 
 /** Mensaje en el historial del Chat IA integrado. */

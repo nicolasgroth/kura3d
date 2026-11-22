@@ -193,3 +193,31 @@
   box-shadow: var(--shadow-hud);
   font-size: 12.5px;
 }
+
+/* Rótulos Base/Herramienta e Invertir dentro del inspector */
+.kura-bool-inspector-roles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+  font-size: 12px;
+}
+.kura-bool-inspector-roles .kura-bool-chip {
+  max-width: 100%;
+}
+.kura-bool-inspector-roles .kura-bool-bar-roles {
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 100%;
+}
+
+@media (max-width: 480px) {
+  .kura-section-notice {
+    width: calc(100% - 32px);
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+}

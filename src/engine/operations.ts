@@ -29,7 +29,7 @@ import {
   CONNECTOR_MIN_WALL_MM,
   validateConnectorParams,
 } from './cutConnectorChecks';
-import { connectorFootprintRadius, layoutConnectorsOnSection } from './cutConnectorLayout';
+import { layoutForCut } from './cutConnectorLayout';
 import { EngineError, engineWarning, type EngineWarning } from './engineErrors';
 import {
   applyTransformToMesh,
@@ -316,16 +316,7 @@ export async function planeCutWithConnectors(
       const type = options.connectorType;
       const depthWithWall = Math.max(0.8, depth + tol) + CONNECTOR_MIN_WALL_MM;
       assertConnectorDepth(posHalf, normal, cutCoord, depthWithWall);
-      // Margen al borde: huella del alojamiento con pared (+0.02 mm por el facetado del offset);
-      // separación: dos huellas con media pared cada una.
-      const layout = layoutConnectorsOnSection(manifold, {
-        axis: options.axis,
-        cutCoord,
-        count,
-        margin: connectorFootprintRadius(type, size, tol + CONNECTOR_MIN_WALL_MM) + 0.02,
-        separation: 2 * connectorFootprintRadius(type, size, tol + CONNECTOR_MIN_WALL_MM * 0.5),
-        depth: depthWithWall,
-      });
+      const layout = layoutForCut(manifold, options.axis, cutCoord, { type, size, depth, tolerance: tol, count }, CONNECTOR_MIN_WALL_MM);
       if (layout.skippedIslands === layout.islands) {
         throw new EngineError('CUT_CONNECTOR_TOO_LARGE', { size, count, wall: CONNECTOR_MIN_WALL_MM });
       }

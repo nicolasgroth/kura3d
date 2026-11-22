@@ -10,13 +10,13 @@
  */
 
 import type { Manifold } from 'manifold-3d';
-import type { CutConnectorType, SceneObject } from '../types/kura';
+import type { CutConnectorType, SceneObject, Vec3 } from '../types/kura';
 import {
   CONNECTOR_DEPTH_RANGE_MM,
   CONNECTOR_MIN_WALL_MM,
   CONNECTOR_SIZE_RANGE_MM,
 } from './cutConnectorChecks';
-import { connectorFootprintRadius, layoutConnectorsOnSection } from './cutConnectorLayout';
+import { layoutForCut } from './cutConnectorLayout';
 import { initManifoldEngine, meshDataToManifold } from './manifoldKernel';
 import { applyTransformToMesh } from './primitives';
 
@@ -56,6 +56,8 @@ export interface CutConnectorSuggestion {
   maxSize: number;
   maxDepth: number;
   maxCount: number;
+  /** Centros (mundo) donde el corte pondrá los conectores sugeridos; vacío si no es factible. */
+  centers: Vec3[];
 }
 
 /** Parámetros de un conector a comprobar. */
@@ -77,6 +79,7 @@ async function withSection<T>(
   run: (ctx: {
     available: number;
     fits: (p: CutConnectorFitParams) => boolean;
+    centersFor: (p: CutConnectorFitParams) => Vec3[] | null;
   }) => T
 ): Promise<T | null> {
   const wasm = await initManifoldEngine();
@@ -90,20 +93,16 @@ async function withSection<T>(
     const available = bbox.max[idx] - cutCoord;
     if (!(cutCoord > bbox.min[idx] && cutCoord < bbox.max[idx])) return null;
     const m = manifold;
+    const layoutOf = (p: CutConnectorFitParams) =>
+      layoutForCut(m, axis, cutCoord, { type, size: p.size, depth: p.depth, tolerance: p.tolerance, count: p.count }, CONNECTOR_MIN_WALL_MM);
     const fits = (p: CutConnectorFitParams): boolean => {
       const depthWithWall = Math.max(0.8, p.depth + p.tolerance) + CONNECTOR_MIN_WALL_MM;
       if (depthWithWall > available) return false;
-      const layout = layoutConnectorsOnSection(m, {
-        axis,
-        cutCoord,
-        count: p.count,
-        margin: connectorFootprintRadius(type, p.size, p.tolerance + CONNECTOR_MIN_WALL_MM) + 0.02,
-        separation: 2 * connectorFootprintRadius(type, p.size, p.tolerance + CONNECTOR_MIN_WALL_MM * 0.5),
-        depth: depthWithWall,
-      });
+      const layout = layoutOf(p);
       return layout.skippedIslands < layout.islands && layout.enoughRoom;
     };
-    return run({ available, fits });
+    const centersFor = (p: CutConnectorFitParams): Vec3[] | null => (fits(p) ? layoutOf(p).centers : null);
+    return run({ available, fits, centersFor });
   } finally {
     manifold?.delete();
   }
@@ -144,8 +143,9 @@ export async function suggestCutConnectors(
     maxSize: 0,
     maxDepth: 0,
     maxCount: 0,
+    centers: [],
   };
-  const result = await withSection(obj, axis, offset, type, ({ available, fits }) => {
+  const result = await withSection(obj, axis, offset, type, ({ available, fits, centersFor }) => {
     const minSize = CONNECTOR_SIZE_RANGE_MM.min;
     const minDepth = CONNECTOR_DEPTH_RANGE_MM.min;
     const depthCap = Math.min(
@@ -184,7 +184,8 @@ export async function suggestCutConnectors(
       }
     }
     const maxDepth = largest(minDepth, depthCap, (d) => fits({ size, depth: d, tolerance, count })) ?? depth;
-    return { feasible: true, size, depth, count, maxSize, maxDepth, maxCount } satisfies CutConnectorSuggestion;
+    const centers = centersFor({ size, depth, tolerance, count }) ?? [];
+    return { feasible: true, size, depth, count, maxSize, maxDepth, maxCount, centers } satisfies CutConnectorSuggestion;
   });
   return result ?? null;
 }
@@ -198,4 +199,19 @@ export async function checkCutConnectorFit(
   params: CutConnectorFitParams
 ): Promise<boolean | null> {
   return withSection(obj, axis, offset, type, ({ fits }) => fits(params));
+}
+
+/**
+ * Centros (mundo) donde el corte pondrá los conectores con estos parámetros; `[]` si no caben y
+ * `null` si el plano queda fuera de la pieza. Usa la misma ubicación que `planeCutWithConnectors`.
+ */
+export async function cutConnectorCenters(
+  obj: SceneObject,
+  axis: Axis,
+  offset: number,
+  type: ConnectorKind,
+  params: CutConnectorFitParams
+): Promise<Vec3[] | null> {
+  const res = await withSection(obj, axis, offset, type, ({ centersFor }) => centersFor(params) ?? []);
+  return res ?? null;
 }

@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { findFreeSpot, footprintOf, placeInFreeSpot, sceneFootprints, type FootprintXZ } from '../scene/freeSpot';
+import { findFreeSpot, footprintOf, placeGroupInFreeSpot, placeInFreeSpot, sceneFootprints, type FootprintXZ } from '../scene/freeSpot';
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
 
 /** Caja de w×h×d con base en Y=0 y centrada en XZ (como `normalizeMeshToBed`). */
@@ -81,5 +81,21 @@ describe('findFreeSpot / placeInFreeSpot', () => {
       for (const other of sceneFootprints(scene)) expect(overlap(fp, other)).toBe(false);
       scene.push(obj(mesh, placed.position));
     }
+  });
+});
+
+describe('placeGroupInFreeSpot', () => {
+  it('mueve el grupo como bloque a un hueco sin solapar la pieza original', () => {
+    const master = obj(boxMesh(30, 30, 30), [0, 0, 0]);
+    const items = [
+      { mesh: boxMesh(20, 10, 20), position: [-12, 0, 0] as Vec3 },
+      { mesh: boxMesh(20, 10, 20), position: [12, 0, 0] as Vec3 },
+    ];
+    const { offset, fits } = placeGroupInFreeSpot([master], items, BED);
+    expect(fits).toBe(true);
+    const fps = items.map((it) => footprintOf(it.mesh, [it.position[0] + offset[0], 0, it.position[2] + offset[2]], [0, 0, 0], [1, 1, 1])!);
+    for (const fp of fps) expect(overlap(fp, sceneFootprints([master])[0])).toBe(false);
+    // Las mitades conservan su separación relativa (32 mm entre centros).
+    expect(fps[1].minX - fps[0].minX).toBeCloseTo(24, 5);
   });
 });

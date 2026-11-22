@@ -132,32 +132,8 @@ export const LaserCutPreview: React.FC = () => {
     connRot = [Math.PI / 2, 0, 0];
   }
 
-  const count = Math.max(1, Math.min(4, cutPreview.connectorCount));
-  const connectorOffsets: Vec3[] = [];
-  const spread = Math.min(span * 0.24, Math.max(8, cutPreview.connectorSize * 2.8));
-
-  for (let i = 0; i < count; i++) {
-    let u = 0;
-    let v = 0;
-    if (count === 2) {
-      u = i === 0 ? -spread : spread;
-    } else if (count === 3) {
-      const ang = (i * Math.PI * 2) / 3;
-      u = Math.cos(ang) * spread;
-      v = Math.sin(ang) * spread;
-    } else if (count === 4) {
-      u = i % 2 === 0 ? -spread : spread;
-      v = i < 2 ? -spread : spread;
-    }
-
-    if (cutPreview.axis === 'x') {
-      connectorOffsets.push([planePos[0], planePos[1] + u, planePos[2] + v]);
-    } else if (cutPreview.axis === 'y') {
-      connectorOffsets.push([planePos[0] + u, planePos[1], planePos[2] + v]);
-    } else {
-      connectorOffsets.push([planePos[0] + u, planePos[1] + v, planePos[2]]);
-    }
-  }
+  // Posiciones reales calculadas por el motor (las mismas que usa el corte).
+  const connectorOffsets: Vec3[] = cutPreview.connectorCenters;
 
   return (
     <group>

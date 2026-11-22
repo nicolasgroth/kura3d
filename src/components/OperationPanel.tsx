@@ -1,8 +1,8 @@
 /**
  * @file src/components/OperationPanel.tsx
  * @description Contenedor común no modal de los paneles de operación (corte, molde, proyección,
- * rosca, imagen/litofanía). Se acopla al costado derecho bajo la barra superior (hoja inferior
- * en móvil < 768 px), no tiene fondo ni bloquea el visor (se puede orbitar), lleva el foco al
+ * rosca, imagen/litofanía). En escritorio ocupa el lugar del inspector (`#kura-op-slot` del área de
+ * trabajo, ver operationPanel.css); en pantallas angostas se superpone (hoja inferior en móvil < 768 px), no tiene fondo ni bloquea el visor (se puede orbitar), lleva el foco al
  * abrir, lo devuelve al cerrar y Escape lo cierra con el foco dentro del panel.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -115,6 +115,6 @@ export const OperationPanel: React.FC<{
       <div className="kura-op-panel-body">{children}</div>
       {footer && <div className="kura-dialog-footer kura-op-panel-footer">{footer}</div>}
     </section>,
-    document.body,
+    document.getElementById('kura-op-slot') ?? document.body,
   );
 };

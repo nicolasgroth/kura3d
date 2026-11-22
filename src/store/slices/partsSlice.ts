@@ -10,9 +10,12 @@
 
 import * as engine from '../../engine';
 import * as ops from '../../core/operations';
+import { placeGroupInFreeSpot } from '../../core/scene/freeSpot';
 import { resolveStructureTarget } from '../../core/scene/sceneRules';
 import { segmentationMatchesMesh } from '../../engine/segmentationGuards';
 import { tCount } from '../../utils/plural';
+import type { Vec3 } from '../../types/kura';
+import { activeBedSize } from '../bedSize';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -80,9 +83,13 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         const { parts, change } = await runEngine('mold', { obj, options });
         if (parts.length === 0) return [];
         assertCurrent([obj]);
-        commitChange(change, { select: parts.map((c) => c.id), spawned: parts });
-        get().addToast(tCount(get().language, { one: 'toast.moldDone.one', other: 'toast.moldDone.other' }, parts.length), 'success');
-        return parts;
+        // Las mitades se mueven juntas, como un bloque, a un hueco libre junto a la pieza original.
+        const spot = placeGroupInFreeSpot(get().objects, parts, activeBedSize(get()));
+        const placed = parts.map((p) => ({ ...p, position: [p.position[0] + spot.offset[0], p.position[1], p.position[2] + spot.offset[2]] as Vec3 }));
+        commitChange({ ...change, added: placed }, { select: placed.map((c) => c.id), spawned: placed });
+        get().addToast(tCount(get().language, { one: 'toast.moldDone.one', other: 'toast.moldDone.other' }, placed.length), 'success');
+        if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+        return placed;
       });
     },
 

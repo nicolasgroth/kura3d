@@ -399,6 +399,8 @@ export const App: React.FC = () => {
         <LeftSidebar />
         <Viewport3D />
         <RightInspector precisionRequest={precisionRequest} />
+        {/* Destino de los paneles de operación: en escritorio ocupan el lugar del inspector. */}
+        <div id="kura-op-slot" className="kura-op-slot" />
         <AiChatDrawer />
         <ProjectDropTarget />
       </div>

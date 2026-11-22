@@ -243,3 +243,39 @@ export function layoutConnectorsOnSection(manifold: Manifold, p: ConnectorLayout
     for (const h of handles) h.delete();
   }
 }
+
+/** Medidas del conector con las que el corte y su vista previa calculan la ubicación. */
+export interface CutConnectorLayoutInput {
+  type: Exclude<CutConnectorType, 'none'>;
+  size: number;
+  depth: number;
+  tolerance: number;
+  count: number;
+}
+
+/** Espesor mínimo de pared que el corte deja alrededor del alojamiento (mm). */
+const LAYOUT_MIN_WALL_MM = 0.8;
+
+/**
+ * Ubicación exacta que usa el corte por plano: única fuente de márgenes, separación y profundidad,
+ * llamada por `planeCutWithConnectors`, por la comprobación de cabida y por la vista previa del visor.
+ * `minWallMm` es `CONNECTOR_MIN_WALL_MM` de `cutConnectorChecks.ts`.
+ */
+export function layoutForCut(
+  manifold: Manifold,
+  axis: 'x' | 'y' | 'z',
+  cutCoord: number,
+  c: CutConnectorLayoutInput,
+  minWallMm: number = LAYOUT_MIN_WALL_MM
+): ConnectorLayout {
+  // Margen al borde: huella del alojamiento con pared (+0.02 mm por el facetado del offset);
+  // separación: dos huellas con media pared cada una.
+  return layoutConnectorsOnSection(manifold, {
+    axis,
+    cutCoord,
+    count: c.count,
+    margin: connectorFootprintRadius(c.type, c.size, c.tolerance + minWallMm) + 0.02,
+    separation: 2 * connectorFootprintRadius(c.type, c.size, c.tolerance + minWallMm * 0.5),
+    depth: Math.max(0.8, c.depth + c.tolerance) + minWallMm,
+  });
+}

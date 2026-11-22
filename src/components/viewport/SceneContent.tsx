@@ -97,8 +97,11 @@ export const SceneContent: React.FC<{
 
   const primaryObj = primaryId ? objects.find((o) => o.id === primaryId) ?? null : null;
 
+  // Con "colocar con clic" activo el gizmo no debe capturar clics cerca del centro de la pieza.
+  const pickingSurface = useKuraStore((s) => s.surfacePick !== null);
   const showGizmo =
     activeTool === 'select' &&
+    !pickingSurface &&
     Boolean(primaryObj) &&
     Boolean(activeTargetGroup) &&
     !primaryObj?.locked &&

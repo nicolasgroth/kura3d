@@ -19,6 +19,7 @@ import {
   checkCutConnectorFit,
   cutOffsetRange,
   suggestCutConnectors,
+  cutConnectorCenters,
   type CutConnectorSuggestion,
 } from '../engine/cutConnectorSuggest';
 import { formatNumber } from '../utils/plural';
@@ -116,6 +117,29 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
       window.clearTimeout(timer);
     };
   }, [open, target, axis, offset, connectorKind, connectorSize, connectorDepth, tolerance, connectorCount]);
+
+  // Posiciones reales de los conectores (las que usará el corte) para los marcadores del visor.
+  useEffect(() => {
+    if (!open || !target || !connectorKind) {
+      setCutPreview({ connectorCenters: [] });
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void cutConnectorCenters(target, axis, offset, connectorKind, {
+        size: connectorSize,
+        depth: connectorDepth,
+        tolerance,
+        count: connectorCount,
+      }).then((centers) => {
+        if (!cancelled) setCutPreview({ connectorCenters: centers ?? [] });
+      });
+    }, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [open, target, axis, offset, connectorKind, connectorSize, connectorDepth, tolerance, connectorCount, setCutPreview]);
 
   // Sincroniza en tiempo real el plano láser y los conectores fantasma 3D en el viewport
   useEffect(() => {

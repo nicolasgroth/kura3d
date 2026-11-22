@@ -18,6 +18,7 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
   const language = useKuraStore((s) => s.language);
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const hollowObject = useKuraStore((s) => s.hollowObject);
+  const showInteriorSection = useKuraStore((s) => s.showInteriorSection);
   const isBusy = Boolean(busyOperation);
 
   return (
@@ -87,6 +88,15 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
         }
       >
         {t(language, 'inspector.op.applyHollow')}
+      </button>
+      <button
+        type="button"
+        className="kura-btn kura-btn-sm"
+        disabled={isBusy}
+        title={t(language, 'hollowView.showTip')}
+        onClick={() => showInteriorSection(primary.id)}
+      >
+        {t(language, 'hollowView.show')}
       </button>
     </div>
   );

@@ -21,6 +21,7 @@ vi.mock('../../engine/cutConnectorSuggest', () => ({
   cutOffsetRange: () => ({ min: -10, max: 10 }),
   suggestCutConnectors: (...args: unknown[]) => suggest(...args),
   checkCutConnectorFit: (...args: unknown[]) => check(...args),
+  cutConnectorCenters: () => Promise.resolve([]),
 }));
 
 const sizeLabel = `${t('es', 'dialog.cut.connectorSize')} (mm)`;
