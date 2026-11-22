@@ -26,6 +26,14 @@ import {
 import { openLocalFile } from '../../utils/platformBridge';
 import { currentCameraPosition } from '../viewport/viewCameraRegistry';
 import { SVG_PRESETS } from './dialogPresets';
+import {
+  faceOfInternalDirection,
+  userDirectionOfInternal,
+  type AxisDirection,
+} from '../../core/scene/displayAxes';
+
+/** Direcciones internas en el orden del selector: superior, inferior, frontal, trasera, derecha, izquierda. */
+const PROJECTION_DIRECTIONS: AxisDirection[] = ['+y', '-y', '+z', '-z', '+x', '-x'];
 
 /** Modal 5: Proyección Conformal de Texto o SVG sobre cualquier superficie 3D. */
 export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void }> = ({
@@ -189,7 +197,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
           {picking
             ? surfacePick?.placement
               ? t(language, 'projectPreview.placed', {
-                  axis: surfacePick.placement.axis.toUpperCase(),
+                  axis: userDirectionOfInternal(surfacePick.placement.axis).toUpperCase(),
                   u: surfacePick.placement.offsetU,
                   v: surfacePick.placement.offsetV,
                 })
@@ -271,12 +279,12 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
             value={axis}
             onChange={(e) => setAxis(e.target.value as SurfaceProjectionAxis)}
           >
-            <option value="+z">+Z (Frontal)</option>
-            <option value="-z">-Z (Trasera)</option>
-            <option value="+x">+X (Derecha)</option>
-            <option value="-x">-X (Izquierda)</option>
-            <option value="+y">+Y (Superior)</option>
-            <option value="-y">-Y (Inferior)</option>
+            {/* Valores internos; el rótulo muestra la dirección y la cara en ejes del usuario (Z arriba). */}
+            {PROJECTION_DIRECTIONS.map((direction) => (
+              <option key={direction} value={direction}>
+                {userDirectionOfInternal(direction).toUpperCase()} ({t(language, `axes.face.${faceOfInternalDirection(direction)}`)})
+              </option>
+            ))}
             <option value="cylindrical">{t(language, 'dialog.project.axisCyl')}</option>
           </select>
         </div>

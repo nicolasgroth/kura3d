@@ -12,6 +12,7 @@ import { getLocalizedPrinterName, t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { computeSelectionBounds } from '../../utils/selectionBounds';
 import { formatDimension } from '../../utils/units';
+import { toUserSize } from '../../core/scene/displayAxes';
 import { checkObjectsOutOfBounds } from './viewportHelpers';
 
 /** HUD inferior en una sola línea. */
@@ -35,15 +36,16 @@ export const ViewportHudBottom: React.FC = () => {
       // Selección múltiple: caja envolvente de todos los objetos seleccionados.
       const bounds = computeSelectionBounds(objects.filter((o) => selectedIds.includes(o.id)));
       if (bounds) {
-        const [bx, by, bz] = bounds.size;
+        const [bx, by, bz] = toUserSize(bounds.size);
         return t(language, 'viewport.dimensionsMulti', {
           size: `${formatDimension(bx, unitSystem)} × ${formatDimension(by, unitSystem)} × ${formatDimension(bz, unitSystem)}`,
           count: selectedIds.length,
         });
       }
     }
-    const [dx, dy, dz] = selectedObj.stats.dimensionsMm;
-    const [sx, sy, sz] = selectedObj.scale;
+    // Ejes del usuario: X × Y × Z con Z = altura.
+    const [dx, dy, dz] = toUserSize(selectedObj.stats.dimensionsMm);
+    const [sx, sy, sz] = toUserSize(selectedObj.scale);
     return `${formatDimension(dx * sx, unitSystem)} × ${formatDimension(
       dy * sy,
       unitSystem,

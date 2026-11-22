@@ -57,7 +57,7 @@ export interface KuraToolSchema {
 export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
   {
     name: 'get_scene_state',
-    description: 'Obtiene el listado de objetos actuales en la escena, dimensiones en mm, selección y unidad activa.',
+    description: 'Obtiene el listado de objetos actuales en la escena, dimensiones en mm, selección y unidad activa. Ejes como en los slicers: X derecha, Y fondo, Z arriba (altura).',
     parameters: { type: 'object', properties: {} },
   },
   {
@@ -122,16 +122,16 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
   },
   {
     name: 'transform_object',
-    description: 'Mueve, rota, escala, centra o apoya un objeto en la cama (Y=0).',
+    description: 'Mueve, rota, escala, centra o apoya un objeto en la cama (Z=0). Ejes como en los slicers: X derecha, Y fondo, Z arriba.',
     parameters: {
       type: 'object',
       properties: {
         id: { type: 'string', description: 'ID del objeto (si se omite usa el seleccionado).' },
-        position: vec3(TRANSFORM_RANGES.position, '[x, y, z] en mm.'),
-        rotation: vec3(TRANSFORM_RANGES.rotation, '[rx, ry, rz] en radianes.'),
+        position: vec3(TRANSFORM_RANGES.position, '[x, y, z] en mm; z es la altura sobre la cama.'),
+        rotation: vec3(TRANSFORM_RANGES.rotation, '[rx, ry, rz] en radianes (Euler XYZ); rz gira sobre la cama.'),
         scale: vec3(TRANSFORM_RANGES.scale, '[sx, sy, sz]; cada factor entre 0.001 y 1000.'),
-        dropToBed: { type: 'boolean', description: 'Si es true, apoya la base del objeto en Y=0.' },
-        centerOnBed: { type: 'boolean', description: 'Si es true, centra el objeto en X=0, Z=0 sobre la cama.' },
+        dropToBed: { type: 'boolean', description: 'Si es true, apoya la base del objeto en Z=0.' },
+        centerOnBed: { type: 'boolean', description: 'Si es true, centra el objeto en X=0, Y=0 sobre la cama.' },
       },
     },
   },
@@ -168,8 +168,8 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
       type: 'object',
       properties: {
         id: { type: 'string' },
-        axis: { type: 'string', enum: ['x', 'y', 'z'] },
-        offset: ranged(OR.cut.offset, 'Desplazamiento del plano respecto al centro en mm.'),
+        axis: { type: 'string', enum: ['x', 'y', 'z'], description: "Eje normal al plano; 'z' (por defecto) corta en horizontal." },
+        offset: ranged(OR.cut.offset, 'Desplazamiento del plano respecto al centro en mm, a lo largo del eje.'),
         connectorType: { type: 'string', enum: ['none', 'dowel', 'peg', 'dovetail'] },
         connectorCount: ranged(OR.cut.connectorCount, 'Cantidad de conectores (entero).'),
         tolerance: ranged(OR.cut.tolerance, 'Holgura de encaje en mm.'),

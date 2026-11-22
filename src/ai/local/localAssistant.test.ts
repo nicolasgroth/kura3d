@@ -49,9 +49,13 @@ describe('parser', () => {
     expect(parseLocalPrompt('Crear cilindro 20x50mm').steps[0].intent).toMatchObject({ params: { radius: 10, height: 50 } });
     expect(parseLocalPrompt('crea un cubo de 4 cm').steps[0].intent).toMatchObject({ params: { width: 40 } });
     const move = parseLocalPrompt('súbela 15 mm').steps[0];
-    expect(move.intent).toMatchObject({ kind: 'move', axis: 1, amount: 15 });
+    // Ejes del usuario (Z = altura): subir es +Z; "en y" es el fondo.
+    expect(move.intent).toMatchObject({ kind: 'move', axis: 2, amount: 15 });
     expect(parseLocalPrompt('muévela 10 mm a la izquierda').steps[0].ref.pronoun).toBe(true);
     expect(parseLocalPrompt('mueve 10 mm en z').steps[0].intent).toMatchObject({ axis: 2, amount: 10 });
+    expect(parseLocalPrompt('muévelo 30 mm en y').steps[0].intent).toMatchObject({ axis: 1, amount: 30 });
+    expect(parseLocalPrompt('muévelo 5 mm hacia adelante').steps[0].intent).toMatchObject({ axis: 1, amount: -5 });
+    expect(parseLocalPrompt('gíralo 90 grados').steps[0].intent).toMatchObject({ kind: 'rotate', axis: 2, degrees: 90 });
   });
 
   it('treats questions as queries, not as creation', () => {
@@ -61,6 +65,25 @@ describe('parser', () => {
 });
 
 describe('local assistant on the real store', () => {
+  it('interpreta y responde los ejes en el sistema del usuario (Z = altura, Y = fondo)', async () => {
+    await addBoxes(1);
+    const id = objects()[0].id;
+    const start = [...byName(objects()[0].name).position];
+    const run = async (prompt: string) => {
+      const out = await ask(prompt);
+      return out.executedTools.length > 0 ? out : ask('sí');
+    };
+    const up = await run('súbela 10 mm en z');
+    expect(up.executedTools.map((x) => x.name)).toContain('transform_object');
+    const afterUp = objects().find((o) => o.id === id)!.position;
+    expect(afterUp[1]).toBeCloseTo(start[1] + 10, 6); // interno: Y es la altura
+    expect(up.assistantText).toContain('Z');
+    await run('muévela 30 mm en y');
+    const afterBack = objects().find((o) => o.id === id)!.position;
+    expect(afterBack[2]).toBeCloseTo(start[2] - 30, 6); // Y del usuario = fondo = −Z interno
+    expect(afterBack[1]).toBeCloseTo(start[1] + 10, 6);
+  });
+
   it('placeholder example: creates the cylinder and hollows only the new cylinder, never the selection', async () => {
     await addBoxes(3);
     const before = objects().map((o) => ({ id: o.id, volume: o.stats.volumeMm3 }));
@@ -76,7 +99,8 @@ describe('local assistant on the real store', () => {
       expect(objects().find((o) => o.id === id)!.hollow?.enabled ?? false).toBe(false);
     }
     expect(out.assistantText).toContain(tube.name);
-    expect(out.assistantText).toMatch(/24 × 40 × 24 mm/);
+    // X × Y × Z con Z = alto.
+    expect(out.assistantText).toMatch(/24 × 24 × 40 mm/);
   });
 
   it('creates a sphere and moves the new sphere 30 mm', async () => {

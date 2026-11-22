@@ -29,6 +29,7 @@ import { OperationFailureAlert, useOperationFailure } from './OperationFailureAl
 import { PrecisionNumberInput } from './PrecisionNumberInput';
 import { keyboardFocusInViewport, onCutPlaneDrag } from './viewport/cutPlaneDrag';
 import '../styles/planeCut.css';
+import { userAxisLabel, userAxisOfInternal } from '../core/scene/displayAxes';
 
 type Axis = 'x' | 'y' | 'z';
 type FitState = 'idle' | 'checking' | 'ok' | 'bad' | 'plane';
@@ -54,6 +55,10 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
 
   const { target, targetId, markConsumed } = useBoundOperationTarget(open, onClose);
   const range = useMemo(() => (target ? cutOffsetRange(target, axis) : { min: 0, max: 0 }), [target, axis]);
+  // El desplazamiento se muestra en ejes del usuario: el Y del usuario (fondo) es el −Z interno.
+  const userSign = userAxisOfInternal(axis).sign;
+  const userOffset = offset * userSign + 0;
+  const userRange = userSign > 0 ? range : { min: -range.max + 0, max: -range.min + 0 };
   const connectorKind = connectorType === 'none' ? null : connectorType;
   const fmt = (n: number) => formatNumber(language, n, { maximumFractionDigits: 1 });
 
@@ -265,43 +270,44 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
             value={axis}
             onChange={(e) => setAxis(e.target.value as Axis)}
           >
-            <option value="y">Y (Horizontal)</option>
-            <option value="x">X (Lateral)</option>
-            <option value="z">Z (Frontal)</option>
+            {/* Valores internos; el rótulo usa los ejes del usuario (Z = altura → plano horizontal). */}
+            <option value="y">{t(language, 'axes.plane.horizontal', { axis: userAxisLabel('y') })}</option>
+            <option value="x">{t(language, 'axes.plane.vertical', { axis: userAxisLabel('x') })}</option>
+            <option value="z">{t(language, 'axes.plane.vertical', { axis: userAxisLabel('z') })}</option>
           </select>
         </div>
 
         <div className="kura-form-field">
           <label htmlFor="cut-offset">
-            {t(language, 'dialog.cut.offset')} ({fmt(offset)} mm)
+            {t(language, 'dialog.cut.offset')} ({fmt(userOffset)} mm)
           </label>
           <div className="kura-cut-offset-row">
             <input
               id="cut-offset"
               type="range"
-              min={Math.floor(range.min * 10) / 10}
-              max={Math.ceil(range.max * 10) / 10}
+              min={Math.floor(userRange.min * 10) / 10}
+              max={Math.ceil(userRange.max * 10) / 10}
               step={0.5}
-              value={offset}
+              value={userOffset}
               disabled={range.max <= range.min}
               title={t(language, 'ui.sliderResetTip')}
               onDoubleClick={() => setOffset(0)}
-              onChange={(e) => setOffset(Number(e.target.value))}
+              onChange={(e) => setOffset(Number(e.target.value) * userSign)}
             />
             <PrecisionNumberInput
               id="cut-offset-number"
               ariaLabel={`${t(language, 'dialog.cut.offset')} (mm)`}
-              min={range.min}
-              max={range.max}
+              min={userRange.min}
+              max={userRange.max}
               step={0.5}
               precision={1}
               defaultValue={0}
-              value={offset}
-              onChange={(v) => setOffset(Math.min(range.max, Math.max(range.min, v)))}
+              value={userOffset}
+              onChange={(v) => setOffset(Math.min(userRange.max, Math.max(userRange.min, v)) * userSign)}
             />
           </div>
           <small className="kura-cut-hint">
-            {t(language, 'dialog.cut.offsetRange', { min: fmt(range.min), max: fmt(range.max) })}
+            {t(language, 'dialog.cut.offsetRange', { min: fmt(userRange.min), max: fmt(userRange.max) })}
           </small>
           <small className="kura-cut-hint">
             {t(language, 'cutPlane.dragHint')}

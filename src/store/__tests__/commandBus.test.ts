@@ -53,7 +53,8 @@ describe('Command Bus: validación de vectores y proyecto guardable', () => {
 
   it('acepta un transform válido y el proyecto sigue codificándose', async () => {
     const box = await addBox(10);
-    const res = await run('transform_object', { id: box.id, position: [5, 0, -3], scale: [2, 2, 2] });
+    // El bus recibe ejes del usuario (Y = fondo, Z = altura): Y = 3 es Z interno = −3.
+    const res = await run('transform_object', { id: box.id, position: [5, 3, 0], scale: [2, 2, 2] });
     expect(res.ok).toBe(true);
     expect(byId(box.id)!.position).toEqual([5, 0, -3]);
     expect(saveable().byteLength).toBeGreaterThan(0);
@@ -85,7 +86,7 @@ describe('Command Bus: objetivos sin defaults peligrosos', () => {
     await addBox(10, [0, 0, 0]);
     const b = await addBox(10, [40, 0, 0]);
     useKuraStore.setState({ selectedIds: [b.id] });
-    expect((await run('transform_object', { position: [1, 0, 1] })).ok).toBe(true);
+    expect((await run('transform_object', { position: [1, -1, 0] })).ok).toBe(true);
     expect(byId(b.id)!.position).toEqual([1, 0, 1]);
   });
 

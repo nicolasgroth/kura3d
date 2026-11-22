@@ -18,7 +18,9 @@ import {
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { X } from 'lucide-react';
+import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import { useUserAxisGizmoColors } from './gizmoAxisColors';
 import { type Vec3 } from '../../types/kura';
 import { PaintBrushCursor } from './PaintBrushCursor';
 import { ViewportCaptureRegistrar } from './ViewportCaptureRegistrar';
@@ -32,6 +34,9 @@ import { SceneMeshItem } from './SceneMeshItem';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
 import { usePaintStroke } from './usePaintStroke';
 
+/** Caras del cubo de vistas en el orden de drei (+X, −X, +Y, −Y, +Z, −Z internos = der, izq, sup, inf, frente, fondo). */
+const VIEWCUBE_FACES = ['right', 'left', 'top', 'bottom', 'front', 'back'] as const;
+
 /** Contenido interno del Canvas 3D: luces, objetos, plano sección, vista previa láser, OrbitControls y gizmos. */
 export const SceneContent: React.FC<{
   isOutOfBounds: boolean;
@@ -43,6 +48,7 @@ export const SceneContent: React.FC<{
   const { isTransforming, setIsTransforming, gizmoEpoch, dragStartScaleRef } = useGizmoDrag();
   const { isPaintingDrag, setIsPaintingDrag } = usePaintStroke();
   const { modifiersRef, ctrlHeld } = useGizmoModifiers();
+  const gizmoColorsRef = useUserAxisGizmoColors();
   const [activeTargetGroup, setActiveTargetGroup] = useState<THREE.Group | null>(null);
 
   const objects = useKuraStore((s) => s.objects);
@@ -192,6 +198,7 @@ export const SceneContent: React.FC<{
       {showGizmo && primaryObj && activeTargetGroup && (
         <TransformControls
           key={`${primaryObj.id}:${gizmoEpoch}`}
+          ref={gizmoColorsRef}
           object={activeTargetGroup}
           mode={transformMode}
           size={0.78}
@@ -289,11 +296,7 @@ export const SceneContent: React.FC<{
           strokeColor={isViewDark ? '#38bdf8' : '#075985'}
           hoverColor="#38bdf8"
           opacity={1}
-          faces={
-            language === 'en'
-              ? ['Right', 'Left', 'Top', 'Bottom', 'Front', 'Back']
-              : ['Der', 'Izq', 'Sup', 'Inf', 'Frente', 'Atrás']
-          }
+          faces={VIEWCUBE_FACES.map((face) => t(language, `viewcube.${face}`))}
         />
       </GizmoHelper>
 
