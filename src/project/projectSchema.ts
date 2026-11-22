@@ -7,13 +7,16 @@
  */
 
 import { TRANSFORM_LIMITS } from '../engine/operationLimits';
-import { MATERIAL_PRESETS, type PrinterProfile, type SceneObject, type UnitSystem } from '../types/kura';
+import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
+import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
 
 export const MAX_PROJECT_BYTES = 128 * 1024 * 1024;
 
 export interface ProjectSceneSnapshot {
   objects: SceneObject[];
   selectedIds: string[];
+  /** Grupos de organización (opcional: proyectos sin grupos lo omiten). */
+  groups?: SceneGroup[];
 }
 
 export interface ProjectDocument extends ProjectSceneSnapshot {
@@ -141,7 +144,7 @@ export type ObjectMetadata = Omit<SceneObject, 'mesh' | 'stats'>;
 const metadataFields = {
   id, name: str,
   source: oneOf('primitive', 'imported', 'boolean', 'svg', 'image', 'cut_part', 'color_split',
-    'mold', 'thread', 'hull', 'projected', 'segmented_part'),
+    'mold', 'thread', 'hull', 'projected', 'segmented_part', 'combined'),
   primitiveType: optional(oneOf('box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text')),
   primitiveParams: optional(params),
   parametric: optional(parametric),
@@ -152,7 +155,17 @@ const metadataFields = {
   hollow: optional(shape({ enabled: bool, wallThickness: finite, drainHole: optional(bool), drainHoleRadius: numberOption })),
   texture: optional(shape({ pattern: oneOf('none', 'fuzzy', 'knurling', 'waves', 'honeycomb', 'grid'), depth: finite, scale: finite })),
   metadata: optional(objectExtra),
+  groupRef: optional(id),
 } satisfies Record<keyof ObjectMetadata, Rule>;
+
+/** Grupo de organización guardado (`SceneGroup`); el saneado de ciclos y huérfanos va aparte. */
+export const validStoredGroup = shape({
+  id, name: (v) => typeof v === 'string' && v.length <= MAX_GROUP_NAME, parentId: optional(id),
+  visible: bool, locked: bool, collapsed: bool,
+} satisfies Record<keyof SceneGroup, Rule>) as (v: unknown) => v is SceneGroup;
+
+export const validStoredGroups = (v: unknown): v is SceneGroup[] =>
+  v === undefined || (Array.isArray(v) && v.length <= MAX_GROUPS && v.every(validStoredGroup));
 
 export const validStoredObject = shape({ ...metadataFields, mesh: nat }) as
   (v: unknown) => v is ObjectMetadata & { mesh: number };

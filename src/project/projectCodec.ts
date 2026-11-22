@@ -8,10 +8,11 @@
  */
 
 import { computeMeshStats } from '../engine/primitives';
-import type { MeshData, SceneObject } from '../types/kura';
+import { MAX_GROUPS, reconcileGroups } from '../core/scene/groups';
+import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
 import { FILE_HISTORY_MAX_STEPS } from './historyBudget';
 import {
-  check, color, id, limit, MAX_PROJECT_BYTES, nat, ProjectCodecError, record, shape, validSettings, validStoredObject,
+  check, color, id, limit, MAX_PROJECT_BYTES, nat, ProjectCodecError, record, shape, validSettings, validStoredGroups, validStoredObject,
   type ObjectMetadata, type ProjectDocument, type ProjectSceneSnapshot,
 } from './projectSchema';
 import { withBoundedParams } from './primitiveParamsBounds';
@@ -60,7 +61,7 @@ type StoredMesh = {
   faceColors?: { palette: string[]; indices: number };
 };
 type StoredObject = ObjectMetadata & { mesh: number };
-type Snapshot<T> = { objects: T[]; selectedIds: string[] };
+type Snapshot<T> = { objects: T[]; selectedIds: string[]; groups?: SceneGroup[] };
 const maybeIndex = (v: unknown) => v === undefined || nat(v);
 const colorTable = shape({ palette: Array.isArray, indices: nat });
 const validMesh = shape({
@@ -69,7 +70,7 @@ const validMesh = shape({
 const validBlock = shape({
   kind: (v) => v === 'f32' || v === 'u32', length: nat,
 }) as (v: unknown) => v is Block;
-const validSnapshot = shape({ objects: Array.isArray, selectedIds: Array.isArray }) as
+const validSnapshot = shape({ objects: Array.isArray, selectedIds: Array.isArray, groups: (v) => v === undefined || Array.isArray(v) }) as
   (v: unknown) => v is Snapshot<unknown>;
 
 function copyWords(src: Uint8Array, dest: Uint8Array) {
@@ -117,7 +118,20 @@ function mapSnapshot<I, O extends { id: string }>(snapshot: Snapshot<I>, mapObje
     check(id(selected) && ids.delete(selected), `selection:${String(selected)}`);
     return selected;
   });
-  return { objects, selectedIds };
+  if (snapshot.groups === undefined || snapshot.groups.length === 0) return { objects, selectedIds };
+  // Grupos: forma estricta y cantidad acotada; ciclos, huérfanos y vacíos se sanean, no rechazan el archivo.
+  limit(snapshot.groups.length <= MAX_GROUPS);
+  check(validStoredGroups(snapshot.groups), 'groups');
+  const groups = snapshot.groups.map((g) => ({ ...g }));
+  return { objects, selectedIds, groups };
+}
+
+/** Escena con grupos saneados (al abrir): huérfanos, ciclos, profundidad y orden contiguo. */
+function reconcileSnapshot<T extends { objects: SceneObject[]; selectedIds: string[]; groups?: SceneGroup[] }>(s: T): T {
+  if (!s.groups && !s.objects.some((o) => o.groupRef !== undefined)) return s;
+  const clean = reconcileGroups({ objects: s.objects, groups: s.groups ?? [] });
+  const { groups: _drop, ...rest } = s;
+  return (clean.groups.length ? { ...rest, objects: clean.objects, groups: clean.groups } : { ...rest, objects: clean.objects }) as T;
 }
 
 export function encodeProject(doc: ProjectDocument): Uint8Array {
@@ -203,7 +217,7 @@ export function encodeProject(doc: ProjectDocument): Uint8Array {
   }
 
   const snapshot = (s: ProjectSceneSnapshot) => mapSnapshot(s, storeObject);
-  const current = snapshot({ objects: doc.objects, selectedIds: doc.selectedIds });
+  const current = snapshot({ objects: doc.objects, selectedIds: doc.selectedIds, ...(doc.groups?.length ? { groups: doc.groups } : {}) });
   const past = Array.from(doc.past, snapshot);
   const future = Array.from(doc.future, snapshot);
   const manifest = {
@@ -314,7 +328,7 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
   }
   function snapshot(s: unknown) {
     check(validSnapshot(s));
-    return mapSnapshot(s, restoreObject);
+    return reconcileSnapshot(mapSnapshot(s, restoreObject));
   }
   const document = { ...settings, ...snapshot(current), past: past.map(snapshot), future: future.map(snapshot) };
   check(usedMeshes.size === assets.length);

@@ -21,7 +21,8 @@ import type { EngineTaskArgs, EngineTaskName, EngineTaskResult } from '../core/o
 import { createKeyedNaming, localeShortMm } from '../core/scene/resultNames';
 import { APP_BUILD_POLICY, makeId } from '../core/scene/sceneObjects';
 import { inputsAreCurrent } from '../core/scene/sceneRules';
-import type { MeshData, SceneObject } from '../types/kura';
+import { reconcileGroups } from '../core/scene/groups';
+import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
 import { colorName } from '../utils/colorNames';
 import { structureLabel } from '../utils/structureLabels';
 import { StoreOperationError } from './commandErrors';
@@ -91,6 +92,19 @@ export interface CommitOptions {
   extra?: Partial<KuraStoreState>;
 }
 
+/**
+ * Lo que reemplaza a objetos de un mismo grupo (unir, cortar, separar…) queda en ese grupo: si todo lo
+ * que sale compartía grupo, las piezas nuevas sin grupo lo heredan.
+ */
+function inheritGroupRef(objects: SceneObject[], change: SceneChange): SceneChange {
+  if (change.added.length === 0 || change.removedIds.length === 0) return change;
+  const removed = new Set(change.removedIds);
+  const refs = new Set(objects.filter((o) => removed.has(o.id)).map((o) => o.groupRef));
+  const [ref] = refs;
+  if (refs.size !== 1 || ref === undefined) return change;
+  return { ...change, added: change.added.map((o) => (o.groupRef === undefined ? { ...o, groupRef: ref } : o)) };
+}
+
 export function createStoreContext(rawSet: SetState, get: () => KuraStoreState): StoreContext {
   // Toda escritura pasa por aquí: si la malla segmentada ya no es la analizada, se descarta.
   let verifiedSegmentationMesh: MeshData | null = null;
@@ -105,8 +119,19 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     }
     rawSet({ activeSegmentation: null });
   };
+  // Tras cualquier cambio de objetos o grupos, los grupos quedan coherentes (sin huérfanos ni vacíos,
+  // miembros contiguos, ojo y candado resumidos): así ninguna operación existente necesita conocerlos.
+  const keepGroupsCoherent = (before: SceneObject[] | undefined, beforeGroups: SceneGroup[] | undefined) => {
+    const state = get();
+    if (state.objects === before && state.groups === beforeGroups) return;
+    if (!state.groups?.length && !state.objects.some((o) => o.groupRef !== undefined)) return;
+    const clean = reconcileGroups({ objects: state.objects, groups: state.groups ?? [] });
+    if (clean.objects !== state.objects || clean.groups !== state.groups) rawSet({ objects: clean.objects, groups: clean.groups });
+  };
   const set: SetState = ((...args: Parameters<SetState>) => {
+    const prev = get();
     rawSet(...args);
+    if (prev) keepGroupsCoherent(prev.objects, prev.groups);
     dropStaleSegmentation();
   }) as SetState;
 
@@ -133,7 +158,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   };
   const pushHistory = () => {
     const state = get();
-    pushHistoryStep(cloneSnapshot(state.objects, state.selectedIds));
+    pushHistoryStep(cloneSnapshot(state.objects, state.selectedIds, state.groups));
   };
 
   const operationErrors = createOperationErrorTracker();
@@ -213,7 +238,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
         ? { spawnedAtById: { ...state.spawnedAtById, ...Object.fromEntries(options.spawned.map((o) => [o.id, now])) } }
         : {};
       return {
-        objects: applySceneChange(state.objects, change),
+        objects: applySceneChange(state.objects, inheritGroupRef(state.objects, change)),
         ...(options.select ? { selectedIds: options.select } : {}),
         ...spawned,
         ...options.extra,

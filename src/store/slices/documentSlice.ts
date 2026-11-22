@@ -39,6 +39,8 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     document = { ...document, sectionPlane: { ...document.sectionPlane, enabled: false } };
     set((state) => ({
       ...document,
+      groups: document.groups ?? [],
+      groupContextId: null,
       temporarySectionView: null,
       projectName: name,
       projectLocation: location,
@@ -69,6 +71,8 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
 
     objects: [],
     selectedIds: [],
+    groups: [],
+    groupContextId: null,
     past: [],
     future: [],
     projectName: null,
@@ -84,6 +88,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         ...captureProject(get()),
         objects: [],
         selectedIds: [],
+        groups: [],
         past: [],
         future: [],
         sectionPlane: { enabled: false, heightMm: 25 },

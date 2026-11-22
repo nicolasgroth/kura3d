@@ -683,7 +683,8 @@ export type ObjectSourceType =
   | 'thread'
   | 'hull'
   | 'projected'
-  | 'segmented_part';
+  | 'segmented_part'
+  | 'combined';
 
 /** Nodo de objeto 3D en la escena de Kura3D. */
 export interface SceneObject {
@@ -729,6 +730,23 @@ export interface SceneObject {
   };
   /** Datos auxiliares de operaciones (p. ej. pieza de "dividir para imprimir"); se guardan en `.kura`. */
   metadata?: SceneObjectMetadata;
+  /** Grupo de organización al que pertenece (`SceneGroup.id`). No confundir con `metadata.split.groupId`. */
+  groupRef?: string;
+}
+
+/**
+ * Grupo de organización de la escena (capas anidadas): sus objetos siguen independientes, pero se
+ * seleccionan y transforman como conjunto. `visible`/`locked` resumen a sus miembros; `collapsed` es
+ * solo de presentación en el árbol.
+ */
+export interface SceneGroup {
+  id: string;
+  name: string;
+  /** Grupo padre (grupos dentro de grupos); ausente en la raíz. */
+  parentId?: string;
+  visible: boolean;
+  locked: boolean;
+  collapsed: boolean;
 }
 
 /** Datos auxiliares de un objeto de escena. */

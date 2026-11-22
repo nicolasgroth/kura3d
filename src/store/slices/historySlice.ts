@@ -43,9 +43,9 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
           const { past, future } = limitHistory(state.past.slice(0, -1), objects ? [step, ...state.future] : state.future);
           return { objects: objects ?? state.objects, activeSegmentation: null, past, future };
         }
-        const current = cloneSnapshot(state.objects, state.selectedIds);
+        const current = cloneSnapshot(state.objects, state.selectedIds, state.groups);
         const { past, future } = limitHistory(state.past.slice(0, -1), [current, ...state.future]);
-        return { objects: step.objects, selectedIds: step.selectedIds, activeSegmentation: null, past, future };
+        return { objects: step.objects, selectedIds: step.selectedIds, groups: step.groups ?? [], activeSegmentation: null, past, future };
       }),
 
     redo: () =>
@@ -58,9 +58,9 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
           const { past, future } = limitHistory(objects ? [...state.past, step] : state.past, state.future.slice(1));
           return { objects: objects ?? state.objects, activeSegmentation: null, past, future };
         }
-        const current = cloneSnapshot(state.objects, state.selectedIds);
+        const current = cloneSnapshot(state.objects, state.selectedIds, state.groups);
         const { past, future } = limitHistory([...state.past, current], state.future.slice(1));
-        return { objects: step.objects, selectedIds: step.selectedIds, activeSegmentation: null, past, future };
+        return { objects: step.objects, selectedIds: step.selectedIds, groups: step.groups ?? [], activeSegmentation: null, past, future };
       }),
 
     commitTransformSnapshot: () => {
@@ -74,7 +74,7 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
       const snap = runtime.transformSnapshotBeforeDrag;
       if (!snap) return;
       runtime.transformSnapshotBeforeDrag = null;
-      set({ objects: snap.objects, selectedIds: snap.selectedIds });
+      set({ objects: snap.objects, selectedIds: snap.selectedIds, groups: snap.groups ?? [] });
     },
   };
 }

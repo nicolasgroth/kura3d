@@ -11,7 +11,7 @@
  */
 
 import { applyFaceColorDelta, type DeltaDirection, type FaceColorDelta } from '../engine/paint/colorDelta';
-import type { SceneObject } from '../types/kura';
+import type { SceneGroup, SceneObject } from '../types/kura';
 import type { ProjectSceneSnapshot } from '../project/projectSchema';
 
 export interface PaintDeltaStep {
@@ -65,21 +65,27 @@ export function materializeHistory(
   selectedIds: string[],
   past: readonly HistoryStep[],
   future: readonly HistoryStep[],
+  groups: SceneGroup[] = [],
 ): { past: ProjectSceneSnapshot[]; future: ProjectSceneSnapshot[] } {
   const walk = (steps: readonly HistoryStep[], direction: DeltaDirection) => {
     const out: ProjectSceneSnapshot[] = [];
     let state = objects;
     let selection = selectedIds;
+    let groupState = groups;
     for (const step of steps) {
       if (!isPaintDeltaStep(step)) {
         out.push(step);
         state = step.objects;
         selection = step.selectedIds;
+        groupState = step.groups ?? [];
         continue;
       }
       const next = applyPaintDeltaStep(state, step, direction);
       if (!next) break;
-      const snapshot: ProjectSceneSnapshot = { objects: next, selectedIds: selection };
+      // Un trazo no cambia los grupos: la instantánea lleva los del estado vecino.
+      const snapshot: ProjectSceneSnapshot = groupState.length
+        ? { objects: next, selectedIds: selection, groups: groupState }
+        : { objects: next, selectedIds: selection };
       materializedFrom.set(snapshot, step);
       out.push(snapshot);
       state = next;
