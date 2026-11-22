@@ -293,7 +293,7 @@
 
   .kura-split-notice,
   .kura-split-assembly {
-    bottom: 76px;
+    bottom: 132px;
     min-width: 0;
     width: calc(100% - 32px);
   }

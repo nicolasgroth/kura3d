@@ -86,7 +86,9 @@ export function exceedsBed(size: Vec3, bed: { widthMm: number; depthMm: number; 
 
 /** Nombre de archivo de una pieza: `<proyecto>_<código>.<ext>`, sin caracteres problemáticos. */
 export function splitPartFileName(project: string, code: string, ext: string): string {
-  const clean = (s: string) => s.trim().replace(/[\\/:*?"<>|\s]+/g, '_').replace(/^_+|_+$/g, '');
+  // ASCII sin acentos: un ZIP sin la bandera UTF-8 muestra mal otros caracteres en algunos sistemas.
+  const clean = (s: string) =>
+    s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().replace(/[^A-Za-z0-9.-]+/g, '_').replace(/^_+|_+$/g, '');
   const base = clean(project) || 'kura3d';
   return `${base}_${clean(code) || 'pieza'}.${ext.replace(/^\./, '')}`;
 }

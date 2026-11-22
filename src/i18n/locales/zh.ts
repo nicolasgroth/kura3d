@@ -1194,6 +1194,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'split.toast.arrangedPrint': '已为打印排列 {count} 个零件',
   'split.toast.arrangedAssembly': '已重新装配 {count} 个零件',
   'progress.phase.cut': '正在切割第 {current}/{total} 刀',
+  'progress.phase.joints': '正在准备接合与标记',
   'export.split.perPiece': '每个零件一个文件（ZIP）',
   'export.split.perPieceTip': '将每个零件以 {name} 保存到 ZIP 中',
   'export.split.printLayout': '一个 3MF，含按打印布局排列的全部零件',

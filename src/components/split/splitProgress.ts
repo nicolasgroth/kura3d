@@ -1,7 +1,7 @@
 /**
  * @file src/components/split/splitProgress.ts
  * @description Traducción de la fase de progreso del motor para la barra de operación: `cut:i/n`
- * ("Cortando 3 de 7") y su fracción para la barra determinada. Otras fases no tienen texto.
+ * ("Cortando 3 de 7"; terminado el último corte, "Preparando uniones") y su fracción para la barra determinada. Otras fases no tienen texto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -24,8 +24,10 @@ export function parseCutPhase(phase: string | null | undefined): { done: number;
 export function progressPhaseLabel(language: LanguageCode, phase: string | null | undefined): string | null {
   const cut = parseCutPhase(phase);
   if (!cut) return null;
-  // El corte en curso es el siguiente al último terminado (sin pasar del total).
-  const current = Math.min(cut.total, cut.done + 1);
+  // Con todos los cortes hechos, el motor arma las uniones (conectores y marcas).
+  if (cut.done >= cut.total) return t(language, 'progress.phase.joints');
+  // El corte en curso es el siguiente al último terminado.
+  const current = cut.done + 1;
   return t(language, 'progress.phase.cut', {
     current: formatNumber(language, current),
     total: formatNumber(language, cut.total),

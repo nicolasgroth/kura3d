@@ -1194,6 +1194,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'split.toast.arrangedPrint': '{count} Teile für den Druck angeordnet',
   'split.toast.arrangedAssembly': '{count} Teile wieder zusammengebaut',
   'progress.phase.cut': 'Schnitt {current} von {total}',
+  'progress.phase.joints': 'Verbindungen und Marken werden vorbereitet',
   'export.split.perPiece': 'Eine Datei pro Teil (ZIP)',
   'export.split.perPieceTip': 'Speichert jedes Teil als {name} in einer ZIP-Datei',
   'export.split.printLayout': 'Ein 3MF mit allen Teilen in Druckanordnung',

@@ -1194,6 +1194,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.toast.arrangedPrint': '{count} टुकड़े प्रिंट के लिए व्यवस्थित',
   'split.toast.arrangedAssembly': '{count} टुकड़े फिर जोड़े गए',
   'progress.phase.cut': '{total} में से {current} काट रहे हैं',
+  'progress.phase.joints': 'जोड़ और चिह्न तैयार हो रहे हैं',
   'export.split.perPiece': 'हर टुकड़े की एक फ़ाइल (ZIP)',
   'export.split.perPieceTip': 'हर टुकड़े को ZIP में {name} के रूप में सहेजें',
   'export.split.printLayout': 'सभी टुकड़े प्रिंट विन्यास में एक 3MF में',

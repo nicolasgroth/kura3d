@@ -41,12 +41,12 @@ function part(id: string, code: string, y: number, plate: number): SceneObject {
 }
 
 describe('fase de progreso', () => {
-  it('traduce cut:i/n como "Cortando i+1 de n" sin pasar del total', () => {
+  it('traduce cut:i/n como "Cortando i+1 de n" y, al terminar, la preparación de uniones', () => {
     expect(parseCutPhase('cut:2/7')).toEqual({ done: 2, total: 7 });
     expect(parseCutPhase('compute')).toBeNull();
     expect(parseCutPhase('cut:9/7')).toBeNull();
     expect(progressPhaseLabel('es', 'cut:2/7')).toBe('Cortando 3 de 7');
-    expect(progressPhaseLabel('es', 'cut:7/7')).toBe('Cortando 7 de 7');
+    expect(progressPhaseLabel('es', 'cut:7/7')).toBe('Preparando uniones y marcas');
     expect(progressPhaseLabel('en', 'cut:0/4')).toBe('Cutting 1 of 4');
     expect(progressPhaseLabel('es', null)).toBeNull();
   });
@@ -95,5 +95,6 @@ describe('nombre de archivo por pieza', () => {
     expect(splitPartFileName('Estatua', 'A1', 'stl')).toBe('Estatua_A1.stl');
     expect(splitPartFileName('Mi proyecto: v2', 'B2a', '.3mf')).toBe('Mi_proyecto_v2_B2a.3mf');
     expect(splitPartFileName('  ', 'A1', 'obj')).toBe('kura3d_A1.obj');
+    expect(splitPartFileName('Unión · estatua', 'C1b', 'stl')).toBe('Union_estatua_C1b.stl');
   });
 });

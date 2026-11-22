@@ -20,6 +20,7 @@ import { exportFileBase } from '../utils/exportNaming';
 import { selectExportTargets } from './exportTargets';
 import { placeGroupInFreeSpot, type BedSize } from '../core/scene/freeSpot';
 import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
+import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } from './splitExport';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 export type ExportScope = 'selection' | 'scene';
@@ -31,6 +32,8 @@ export interface ExportRequest {
   /** Nombre base sin extensión (se sanea); por defecto se deriva del proyecto. */
   fileName?: string;
   slicerTarget?: SlicerTarget;
+  /** Piezas de una división: un archivo por pieza (ZIP) o un 3MF en disposición de impresión. */
+  splitMode?: SplitExportMode;
 }
 
 /** Fuente de un archivo a importar (lectura diferida para fallar por archivo). */
@@ -51,7 +54,8 @@ interface IoState {
   objects: SceneObject[];
   selectedIds: string[];
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
-  printerProfile: { brand: SlicerTarget };
+  printerProfile: { brand: SlicerTarget; bedWidthMm?: number };
+  customBedDimensions?: { width: number } | null;
   projectName: string | null;
   importPlacementMode: engine.ImportPlacementMode;
   addToast: (text: string, kind?: 'info' | 'success' | 'error') => void;
@@ -222,11 +226,29 @@ export function createModelIoActions(deps: ModelIoDeps) {
     const state = get();
     const base = exportFileBase(request.fileName, state.projectName, targets, tr('export.defaultName'));
     const fileName = `${base}.${request.format}`;
+    const exportFiles = deps.exportFiles ?? exportSceneFiles;
+    const splitMode = hasSplitParts(targets) ? request.splitMode : undefined;
     try {
+      if (splitMode === 'perPiece') {
+        const zipName = `${base}.zip`;
+        // Dentro del ZIP: <proyecto>_<código>; sin proyecto, el nombre del modelo original.
+        const firstPart = targets.find((o) => o.metadata?.split);
+        const pieceBase = state.projectName?.trim() || firstPart?.name.split(' · ')[0] || base;
+        const { data, count } = await zipPerPiece(targets, pieceBase, {
+          format: request.format,
+          unitSystem: state.unitSystem,
+          slicerTarget: request.slicerTarget ?? state.printerProfile.brand,
+        }, exportFiles);
+        const saved = await saveFileSet([{ name: zipName, data, filters: [{ name: 'ZIP', extensions: ['zip'] }] }]);
+        if (saved) get().addToast(tr('export.split.zipDone', { count, name: zipName }), 'success');
+        return saved;
+      }
+      const bedWidth = state.customBedDimensions?.width ?? state.printerProfile.bedWidthMm ?? 256;
+      const layoutTargets = splitMode === 'printLayout' && request.format === '3mf' ? printLayoutTargets(targets, bedWidth) : targets;
       const filters = [EXPORT_FILTERS[request.format]];
-      const { files } = await (deps.exportFiles ?? exportSceneFiles)({
+      const { files } = await exportFiles({
         format: request.format,
-        targets,
+        targets: layoutTargets,
         baseName: base,
         unitSystem: state.unitSystem,
         slicerTarget: request.slicerTarget ?? state.printerProfile.brand,

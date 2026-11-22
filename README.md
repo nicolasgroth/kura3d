@@ -39,6 +39,10 @@ El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kura3
 
 *Booleanas con vista previa fantasma y rótulos Base y Herramienta antes de aplicar la operación.*
 
+![Dividir para imprimir: planos de corte y códigos de pieza sobre una pieza más grande que la cama](docs/screenshots/06-dividir-para-imprimir.png)
+
+*Dividir para imprimir: el plan se dibuja en el visor con sus planos arrastrables y el código de cada pieza; el panel resume piezas, placas y uniones.*
+
 ![Ajustes en tema claro e inglés](docs/screenshots/04-temas-e-idiomas.png)
 
 *Seis idiomas y temas accesibles, claro y oscuro, desde Ajustes.*

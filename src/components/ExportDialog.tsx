@@ -2,7 +2,8 @@
  * @file src/components/ExportDialog.tsx
  * @description Diálogo único de exportación: formato (STL, 3MF, OBJ+MTL, GLB, PLY), alcance
  * (selección o escena), nombre de archivo basado en el proyecto y laminador destino para 3MF,
- * con avisos de lo que cada formato conserva.
+ * con avisos de lo que cada formato conserva. Con piezas de una división ofrece un archivo por pieza
+ * (ZIP) o un 3MF en disposición de impresión (`split/SplitExportOptions`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -16,6 +17,8 @@ import type { ExportFormat, ExportScope } from '../store/modelIoActions';
 import type { SlicerTarget } from '../types/kura';
 import { defaultExportBase, sanitizeFileBase } from '../utils/exportNaming';
 import { NativeModal } from './NativeModal';
+import { SplitExportOptions } from './split/SplitExportOptions';
+import { hasSplitParts, type SplitExportMode } from '../store/splitExport';
 import '../styles/modelIo.css';
 
 const FORMATS: ExportFormat[] = ['3mf', 'stl', 'obj', 'glb', 'ply'];
@@ -73,6 +76,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const [fileName, setFileName] = useState('');
   const [slicer, setSlicer] = useState<SlicerTarget>(printerProfile.brand);
   const [busy, setBusy] = useState(false);
+  const [splitMode, setSplitMode] = useState<SplitExportMode | null>(null);
   // Si el usuario no ha editado el nombre, seguir el alcance elegido.
   const nameEditedRef = useRef(false);
 
@@ -97,6 +101,8 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
 
   const targets = scope === 'selection' ? selected : exportable;
   const base = sanitizeFileBase(fileName) || t(language, 'export.defaultName');
+  const splitTargets = hasSplitParts(targets);
+  const effectiveSplit = splitTargets && (splitMode === 'perPiece' || (splitMode === 'printLayout' && format === '3mf')) ? splitMode : null;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -104,7 +110,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     setBusy(true);
     try {
       storeFormat(format);
-      const ok = await exportModel({ format, scope, fileName: base, slicerTarget: slicer });
+      const ok = await exportModel({ format, scope, fileName: base, slicerTarget: slicer, splitMode: effectiveSplit ?? undefined });
       if (ok) onClose();
     } finally {
       setBusy(false);
@@ -123,7 +129,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
           </button>
           <button type="submit" form={formId} className="kura-btn kura-btn-primary" disabled={busy || targets.length === 0}>
             <Download size={14} aria-hidden="true" />
-            <span>{t(language, 'dialog.export.execute')} {base}.{format}</span>
+            <span>{t(language, 'dialog.export.execute')} {base}.{effectiveSplit === 'perPiece' ? 'zip' : format}</span>
           </button>
         </>
       }
@@ -187,6 +193,16 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
               ))}
             </select>
           </div>
+        )}
+
+        {splitTargets && (
+          <SplitExportOptions
+            format={format}
+            base={base}
+            firstCode={targets.find((o) => o.metadata?.split)?.metadata?.split?.code ?? 'A1'}
+            value={splitMode}
+            onChange={setSplitMode}
+          />
         )}
 
         <ul className="kura-export-notes">
