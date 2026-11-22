@@ -115,3 +115,10 @@ export const positionSchema = vec3Of(TRANSFORM_RANGES.position, 'Posición [X, Y
 export const rotationSchema = vec3Of(TRANSFORM_RANGES.rotation, 'Rotación Euler [rx, ry, rz] en radianes.');
 /** Escala [sx, sy, sz], cada factor en [0.001, 1000]. */
 export const scaleSchema = vec3Of(TRANSFORM_RANGES.scale, 'Escala [sx, sy, sz]; cada factor en [0.001, 1000].');
+/** Colocación de piezas nuevas: `free` (por defecto) busca un hueco libre; `origin` las deja en el centro. */
+export const placementSchema = z
+  .enum(['free', 'origin'])
+  .optional()
+  .describe(
+    "'free' (por defecto): primer hueco libre de la cama sin solapar otras piezas; 'origin': centro de la escena. Una `position` explícita manda sobre ambos. Devuelve la posición final."
+  );

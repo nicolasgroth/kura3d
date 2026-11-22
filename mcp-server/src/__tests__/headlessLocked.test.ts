@@ -61,12 +61,13 @@ describe('MCP headless respeta locked', () => {
   it('la booleana devuelve consumedIds y resultId', async () => {
     const h = new KuraHeadlessEngine();
     const a = await h.createPrimitive({ primitiveType: 'box', params: { width: 10, height: 10, depth: 10 } });
-    const b = await h.createPrimitive({ primitiveType: 'box', params: { width: 4, height: 4, depth: 4 } });
+    // `origin`: el cubo chico queda dentro del grande (por defecto iría a un hueco libre).
+    const b = await h.createPrimitive({ primitiveType: 'box', params: { width: 4, height: 4, depth: 4 }, placement: 'origin' });
     const res = await h.booleanOperation({ targetId: a.id, toolIds: [b.id], operation: 'subtract' });
     expect(res.consumedIds).toEqual([a.id, b.id]);
-    expect(res.resultId).toBe(res.object.id);
+    expect(res.resultId).toBe(res.object!.id);
     const kept = await h.booleanOperation({
-      targetId: res.resultId, toolIds: [(await h.createPrimitive({ primitiveType: 'box' })).id], operation: 'union', keepTools: true,
+      targetId: res.resultId!, toolIds: [(await h.createPrimitive({ primitiveType: 'box' })).id], operation: 'union', keepTools: true,
     });
     expect(kept.consumedIds).toEqual([]);
   });

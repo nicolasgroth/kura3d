@@ -8,10 +8,9 @@
  * @license MIT
  */
 
-import * as engine from '../../engine';
-import { computeArrangeLayout } from '../../engine/alignment';
+import * as ops from '../../core/operations';
 import { computeBedPositionY, copySceneObject, makeId } from '../../core/scene/sceneObjects';
-import { holeCompanions, resolveAlignTargets } from '../../core/scene/sceneRules';
+import { resolveAlignTargets } from '../../core/scene/sceneRules';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { tCount } from '../../utils/plural';
 import { cloneSnapshot } from '../projectDocument';
@@ -180,20 +179,10 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       const targetObjs = resolveAlignTargets(objects, selectedIds, mode);
       if (targetObjs.length === 0) return null;
 
-      let positions: Record<string, Vec3>;
-      let fitsBed = true;
-      if (mode === 'arrange_grid') {
-        // Los huecos viajan con el sólido que perforan, aunque no estén seleccionados.
-        const layout = computeArrangeLayout(targetObjs, printerProfile, holeCompanions(objects, targetObjs));
-        positions = layout.positions;
-        fitsBed = layout.fitsBed;
-      } else {
-        positions = engine.computeAlignmentPositions(targetObjs, mode, printerProfile);
-      }
+      // Operación pura compartida con el MCP headless: parches de posición.
+      const { change, moved, fitsBed } = ops.alignObjects(objects, targetObjs, mode, printerProfile);
       pushHistory();
-      set((state) => ({
-        objects: state.objects.map((item) => (positions[item.id] ? { ...item, position: positions[item.id] } : item)),
-      }));
+      set((state) => ({ objects: ops.applySceneChange(state.objects, change) }));
       get().addToast(tr(`toast.alignedDone.${mode}`), 'success');
       if (!fitsBed) {
         get().addToast(
@@ -201,7 +190,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
           'error',
         );
       }
-      return { moved: Object.keys(positions).length, fitsBed };
+      return { moved, fitsBed };
     },
   };
 }

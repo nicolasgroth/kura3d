@@ -12,12 +12,14 @@
 
 import * as ops from '../../src/core/operations/index';
 import type { OperationContext, SceneChange } from '../../src/core/operations/index';
-import { placeInFreeSpot } from '../../src/core/scene/freeSpot';
 import { parametricStateOf } from '../../src/core/scene/parametric';
 import { HEADLESS_BUILD_POLICY } from '../../src/core/scene/sceneObjects';
 import * as engine from '../../src/engine/index';
+import { OPERATION_DEFAULTS } from '../../src/engine/operationLimits';
 import { createHeadlessNaming } from './headlessNaming.js';
 import { write3mfFile, writeStlFile, type ExportFileResult } from './headlessExport.js';
+import { freePlacer, spreadPartsInFreeSpace, type HeadlessPlacement } from './headlessPlacement.js';
+import { SerialQueue } from './headlessQueue.js';
 import {
   assertUnlocked,
   makeObjectId,
@@ -53,8 +55,8 @@ import {
 export type { ExportFileResult } from './headlessExport.js';
 export { HeadlessUnsupportedError, type SceneObjectSummary } from './headlessSupport.js';
 
-/** Separación fija entre piezas que usa `computeAlignmentPositions` del motor en `arrange_grid`. */
-export const ENGINE_GRID_SPACING_MM = 8;
+/** Separación fija entre piezas de `arrange_grid` (la misma que en la app). */
+export const ENGINE_GRID_SPACING_MM = ops.ARRANGE_GRID_SPACING_MM;
 
 /** Nota común que identifica el origen real de la geometría en las respuestas. */
 const ENGINE_NOTE = 'Calculado con el motor Manifold compartido de Kura3D (src/engine).';
@@ -74,6 +76,8 @@ export class KuraHeadlessEngine {
   private units: UnitSystem = 'mm';
   private printerProfile: PrinterProfile = { ...DEFAULT_PRINTER_PROFILES[0] };
   private counter = 0;
+  /** Cola FIFO: las llamadas MCP concurrentes se ejecutan de a una (ver `dispatchWithFallback`). */
+  readonly queue = new SerialQueue();
   /** Contexto de las operaciones compartidas: estadísticas de mundo, IDs `kura_N_*` y nombres fijos. */
   private readonly ctx: OperationContext = {
     policy: HEADLESS_BUILD_POLICY,
@@ -98,7 +102,10 @@ export class KuraHeadlessEngine {
     return structuredClone(this.requireObject(objectId));
   }
 
-  /** Crea una primitiva paramétrica con `createPrimitiveMesh` del motor, apoyada en la cama. */
+  /**
+   * Crea una primitiva paramétrica (o texto 3D) con `createPrimitiveMesh` del motor, apoyada en la
+   * cama en el primer hueco libre, salvo `placement: 'origin'` o `position` explícita.
+   */
   async createPrimitive(input: {
     primitiveType: PrimitiveType;
     name?: string;
@@ -109,15 +116,12 @@ export class KuraHeadlessEngine {
     color?: string;
     materialPreset?: MaterialPresetId;
     isHole?: boolean;
-    /** `free`: primer hueco libre de la cama del perfil; `origin` (por defecto): origen. */
-    placement?: 'free' | 'origin';
+    /** `free` (por defecto): primer hueco libre de la cama del perfil; `origin`: origen. */
+    placement?: HeadlessPlacement;
   }): Promise<SceneObjectSummary> {
     const params: PrimitiveParams = input.params ?? {};
-    const bed = { width: this.printerProfile.bedWidthMm, depth: this.printerProfile.bedDepthMm };
     const obj = await ops.createPrimitive(this.ctx, {
-      place: input.placement === 'free'
-        ? (mesh) => placeInFreeSpot([...this.objects.values()], mesh, input.rotation, input.scale, bed).position
-        : undefined,
+      place: this.placer(input.placement, input.rotation, input.scale),
       type: input.primitiveType,
       params,
       name: input.name ?? this.ctx.naming.primitive(input.primitiveType, this.counter),
@@ -229,8 +233,10 @@ export class KuraHeadlessEngine {
     if (parts.length === 0) {
       throw new Error('El plano de corte no intersecta el objeto: no se generaron piezas.');
     }
-    this.apply(change);
-    return { parts: parts.map(summarizeObject), note: ENGINE_NOTE, warnings: change.warnings };
+    // Las mitades se separan en X/Z para que sus cajas envolventes (y los conectores) no se solapen.
+    const placed = this.spread(parts, change.removedIds);
+    this.apply({ ...change, added: placed });
+    return { parts: placed.map(summarizeObject), note: ENGINE_NOTE, warnings: change.warnings };
   }
 
   /** Separa islas desconectadas con `splitDisconnectedParts` del motor. */
@@ -298,6 +304,7 @@ export class KuraHeadlessEngine {
     depth?: number;
     targetWidth?: number;
     curveSegments?: number;
+    placement?: HeadlessPlacement;
   }): Promise<SceneObjectSummary> {
     const name = input.name ?? 'SVG_Extruded';
     const obj = await ops.importSvg(this.ctx, {
@@ -306,7 +313,7 @@ export class KuraHeadlessEngine {
       depth: input.depth ?? 4,
       targetWidth: input.targetWidth ?? 50,
       curveSegments: input.curveSegments ?? 16,
-    }, { name, color: '#f97316' });
+    }, { name, color: '#f97316', place: this.placer(input.placement) });
     this.objects.set(obj.id, obj);
     return summarizeObject(obj);
   }
@@ -335,13 +342,13 @@ export class KuraHeadlessEngine {
   ): PrintabilityReport {
     const obj = this.requireObject(objectId);
     const materialPreset = options.materialPreset ?? obj.materialPreset ?? 'pla_matte';
-    const infillPercent = options.infillPercent ?? 20;
+    const infillPercent = options.infillPercent ?? OPERATION_DEFAULTS.printability.infillPercent;
     const report = engine.analyzePrintability(
       obj,
       this.printerProfile,
       materialPreset,
       infillPercent,
-      options.overhangAngleDeg ?? 45
+      options.overhangAngleDeg ?? OPERATION_DEFAULTS.printability.overhangAngleDeg
     );
     const world = engine.applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale);
     const { overhangFaceIndices: _omitted, ...rest } = report;
@@ -368,22 +375,19 @@ export class KuraHeadlessEngine {
         `spacingMm=${spacingMm} no soportado: el motor de Kura3D distribuye con separación fija de ${ENGINE_GRID_SPACING_MM} mm. Omite el parámetro.`
       );
     }
-    // Los bloqueados no se mueven (misma regla que el store).
-    const targets = objectIds.map((id) => this.requireObject(id)).filter((o) => !o.locked);
-    const positions = engine.computeAlignmentPositions(targets, mode, this.printerProfile);
-    for (const obj of targets) {
-      if (positions[obj.id]) obj.position = [...positions[obj.id]];
-    }
+    // Operación pura compartida con el store; los bloqueados no se mueven.
+    const targets = objectIds.map((id) => this.requireObject(id));
+    this.apply(ops.alignObjects([...this.objects.values()], targets, mode, this.printerProfile).change);
     return {
       mode,
       ...(mode === 'arrange_grid' ? { spacingMm: ENGINE_GRID_SPACING_MM } : {}),
-      objects: targets.map(summarizeObject),
+      objects: targets.filter((o) => !o.locked).map(summarizeObject),
     };
   }
 
   /** Genera una rosca métrica ISO helicoidal real con `createMetricThread` del motor. */
-  async createThread(options: ThreadOptions): Promise<SceneObjectSummary> {
-    const obj = await ops.createThread(this.ctx, options, { name: options.name });
+  async createThread(options: ThreadOptions, placement?: HeadlessPlacement): Promise<SceneObjectSummary> {
+    const obj = await ops.createThread(this.ctx, options, { name: options.name, place: this.placer(placement) });
     this.objects.set(obj.id, obj);
     return summarizeObject(obj);
   }
@@ -391,18 +395,20 @@ export class KuraHeadlessEngine {
   /** Genera moldes con cavidad booleana real mediante `generateMold` del motor. */
   async generateMold(
     objectId: string,
-    options: MoldOptions
+    options: MoldOptions,
+    placement: HeadlessPlacement = 'free'
   ): Promise<{ parts: SceneObjectSummary[]; mode: MoldOptions['mode']; note: string }> {
     const master = this.requireObject(objectId);
     const { parts, change } = await ops.generateMold(this.ctx, master, {
       ...options,
-      pourSpoutRadiusMm: options.pourSpoutRadiusMm ?? 5,
+      pourSpoutRadiusMm: options.pourSpoutRadiusMm ?? OPERATION_DEFAULTS.mold.pourSpoutRadiusMm,
     });
     if (parts.length === 0) {
       throw new Error('El motor no generó piezas de molde para este objeto.');
     }
-    this.apply(change);
-    return { parts: parts.map(summarizeObject), mode: options.mode, note: ENGINE_NOTE };
+    const placed = placement === 'origin' ? parts : this.spread(parts, change.removedIds);
+    this.apply({ ...change, added: placed });
+    return { parts: placed.map(summarizeObject), mode: options.mode, note: ENGINE_NOTE };
   }
 
   /** Proyecta texto o SVG con `projectGraphicOntoSurface` del motor (modifica el objeto). */
@@ -556,6 +562,21 @@ export class KuraHeadlessEngine {
     } else throw new Error(`El objeto '${obj.name}' ya no es paramétrico: una operación cambió su malla.`);
     this.apply(await ops.regenerateParametric(this.ctx, obj, edit));
     return summarizeObject(this.requireObject(objectId));
+  }
+
+  private bed() {
+    return { width: this.printerProfile.bedWidthMm, depth: this.printerProfile.bedDepthMm };
+  }
+
+  /** Colocador de piezas nuevas (hueco libre por defecto) frente a la escena actual. */
+  private placer(placement?: HeadlessPlacement, rotation?: Vec3, scale?: Vec3) {
+    return freePlacer([...this.objects.values()], this.bed(), placement, rotation, scale);
+  }
+
+  /** Reparte piezas resultantes en huecos libres, sin contar los objetos que la operación quita. */
+  private spread<T extends HeadlessSceneObject>(parts: T[], removedIds: string[]): T[] {
+    const removed = new Set(removedIds);
+    return spreadPartsInFreeSpace([...this.objects.values()].filter((o) => !removed.has(o.id)), parts, this.bed());
   }
 
   /** Aplica un `SceneChange` en el mapa: parches in situ, bajas y altas al final (orden de inserción). */

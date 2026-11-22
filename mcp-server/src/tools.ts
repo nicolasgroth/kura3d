@@ -13,7 +13,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { isEngineError } from '../../src/engine/engineErrors';
-import { OPERATION_RANGES } from '../../src/engine/operationLimits';
+import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../../src/engine/operationLimits';
 import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
 import { resolveExportPath } from './exportPaths.js';
 import { registerParametricTools } from './parametricTools.js';
@@ -25,6 +25,7 @@ import {
   idSchema,
   nameSchema,
   outputPathSchema,
+  placementSchema,
   positionSchema,
   primitiveParamsSchema,
   profileIdSchema,
@@ -46,6 +47,7 @@ export interface KuraToolContext {
 }
 
 const OR = OPERATION_RANGES;
+const OD = OPERATION_DEFAULTS;
 
 /** Formatea una respuesta JSON legible como bloque de texto estándar MCP. */
 function okJson(payload: unknown): CallToolResult {
@@ -98,7 +100,7 @@ async function writeLiveExport(
 
 /**
  * Envuelve `server.registerTool` para anotar cada herramienta con `readOnlyHint` desde
- * `toolPolicy.ts` (misma fuente de verdad que aplica el rechazo en servidor).
+ * `src/core/commands/commandPolicy.ts` (misma fuente de verdad que aplica el rechazo en servidor).
  */
 function createAccessAwareRegistrar(server: McpServer): McpServer['registerTool'] {
   const register = (name: string, config: { annotations?: Record<string, unknown> }, cb: unknown) => {
@@ -146,7 +148,8 @@ export async function dispatchWithFallback(
       });
     }
 
-    const result = await headlessHandler();
+    // Cola FIFO: dos llamadas concurrentes no se intercalan sobre la escena headless.
+    const result = await ctx.headless.queue.run(headlessHandler);
     return okJson(result);
   } catch (err) {
     return failError(err);
@@ -216,10 +219,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         scale: scaleSchema.optional(),
         color: hexColorSchema.optional().describe('Color hexadecimal, por ejemplo #38bdf8.'),
         isHole: z.boolean().optional().describe('Si es true, marca la pieza como volumen de resta.'),
-        placement: z
-          .enum(['free', 'origin'])
-          .optional()
-          .describe("'free': primer hueco libre de la cama sin solaparse; 'origin' (por defecto): centro. Devuelve la posición final."),
+        placement: placementSchema,
       },
     },
     async (args) =>
@@ -496,6 +496,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         depth: rangeSchema(OR.svg.depth).default(4).describe('Altura de extrusión en mm.'),
         targetWidth: rangeSchema(OR.svg.targetWidth).default(50).describe('Ancho objetivo en mm.'),
         curveSegments: rangeSchema(OR.svg.curveSegments).default(16),
+        placement: placementSchema,
       },
     },
     async (args) =>
@@ -506,6 +507,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           depth: args.depth,
           targetWidth: args.targetWidth,
           curveSegments: args.curveSegments,
+          placement: args.placement,
         })
       )
   );
@@ -721,10 +723,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           .enum(['direct_1part', 'direct_2part', 'silicone_master', 'core_cavity'])
           .describe('Modo de generación del molde.'),
         wallMarginMm: rangeSchema(OR.mold.wallMarginMm)
-          .default(6)
+          .default(OD.mold.wallMarginMm)
           .describe('Margen de pared exterior del molde en mm (o espesor de silicona).'),
         boxWallMm: rangeSchema(OR.mold.boxWallMm)
-          .default(3)
+          .default(OD.mold.boxWallMm)
           .describe('Grosor de pared de la caja madre contenedora en mm.'),
         splitAxis: z
           .enum(['x', 'z'])
@@ -735,15 +737,16 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           .default(true)
           .describe('Si es true, agrega embudo/canal de vertido superior.'),
         pourSpoutRadiusMm: rangeSchema(OR.mold.pourSpoutRadiusMm)
-          .default(5)
+          .default(OD.mold.pourSpoutRadiusMm)
           .optional()
           .describe('Radio del embudo de vertido en mm.'),
         keyToleranceMm: rangeSchema(OR.mold.keyToleranceMm)
-          .default(0.25)
+          .default(OD.mold.keyToleranceMm)
           .describe('Holgura de encaje para llaves de registro en mm.'),
         cavityWallMm: rangeSchema(OR.mold.cavityWallMm)
-          .default(3)
+          .default(OD.mold.cavityWallMm)
           .describe('Espesor de pared de la pieza colada en modo core_cavity (mm).'),
+        placement: placementSchema,
       },
     },
     async (args) =>
@@ -761,7 +764,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             pourSpoutRadiusMm: args.pourSpoutRadiusMm,
             keyToleranceMm: args.keyToleranceMm,
             cavityWallMm: args.cavityWallMm,
-          })
+          }, args.placement)
       )
   );
 
@@ -839,10 +842,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           .optional()
           .describe('Material para el cálculo de peso (por defecto el asignado al objeto o pla_matte).'),
         infillPercent: rangeSchema(OR.printability.infillPercent)
-          .default(20)
+          .default(OD.printability.infillPercent)
           .describe('Porcentaje de relleno estimado (0 a 100).'),
         overhangAngleDeg: rangeSchema(OR.printability.overhangAngleDeg)
-          .default(45)
+          .default(OD.printability.overhangAngleDeg)
           .describe('Ángulo máximo de voladizo sin soporte en grados.'),
       },
     },
@@ -920,6 +923,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         clearanceMm: rangeSchema(OR.thread.clearanceMm).optional().describe('Holgura radial de impresión en mm. Si se omite, se calcula según el paso.'),
         includeHead: z.boolean().optional().describe('Incluir cabeza hexagonal cuando kind === "bolt".'),
         name: nameSchema.optional().describe('Nombre opcional de la pieza generada.'),
+        placement: placementSchema,
       },
     },
     async (args) =>
@@ -932,7 +936,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           clearanceMm: args.clearanceMm,
           includeHead: args.includeHead,
           name: args.name,
-        })
+        }, args.placement)
       )
   );
 

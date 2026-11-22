@@ -12,3 +12,4 @@ export * from './csgOperations';
 export * from './meshOperations';
 export * from './partOperations';
 export * from './creationOperations';
+export * from './alignOperations';
