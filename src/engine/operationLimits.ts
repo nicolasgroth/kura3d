@@ -145,6 +145,10 @@ export const OPERATION_RANGES = {
 export const OPERATION_DEFAULTS = {
   mold: { wallMarginMm: 6, boxWallMm: 3, pourSpoutRadiusMm: 5, keyToleranceMm: 0.25, cavityWallMm: 3 },
   printability: { infillPercent: 20, overhangAngleDeg: 45, minWallMm: 0.8 },
+  /** Corte por plano (`plane_cut`): conector por defecto de la app, del bus y del MCP (con y sin interfaz). */
+  cut: { connectorType: 'dowel', connectorSize: 4, connectorDepth: 6, tolerance: 0.25, connectorCount: 2 },
+  /** Pintar el objeto entero (`paint_object` sin punto): también cambia el color base del objeto. */
+  paint: { wholeSetsBaseColor: true },
   split: { marginMm: 5, maxPieces: 64, shiftWindow: 0.15, labelDepthMm: 0.4, labelMinHeightMm: 4, lapHeightMm: 6, minFragmentMm3: 2000, minWallForConnectorMm: 8 },
 } as const;
 

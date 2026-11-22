@@ -12,7 +12,7 @@ import { activeBedSize } from '../bedSize';
 import { placeInFreeSpot } from '../../core/scene/freeSpot';
 import { parametricStateOf } from '../../core/scene/parametric';
 import { resolveModuleTarget } from '../../core/scene/sceneRules';
-import { PRINT_COLOR_PALETTE, type SceneObject } from '../../types/kura';
+import { PRINT_COLOR_PALETTE, type SceneObject, type Vec3 } from '../../types/kura';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -22,10 +22,10 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
   const activeBed = () => activeBedSize(get());
 
   /** Colocador en el primer hueco libre; recuerda si la pieza cupo en la cama. */
-  const freePlacer = () => {
+  const freePlacer = (rotation: Vec3 = [0, 0, 0], scale: Vec3 = [1, 1, 1]) => {
     const result = { fits: true };
     const place: PlaceMesh = (mesh) => {
-      const spot = placeInFreeSpot(get().objects, mesh, [0, 0, 0], [1, 1, 1], activeBed());
+      const spot = placeInFreeSpot(get().objects, mesh, rotation, scale, activeBed());
       result.fits = spot.fits;
       return spot.position;
     };
@@ -55,13 +55,15 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
         await get().initEngine();
         const op = opCtx();
         const count = get().objects.length;
-        const free = options?.placement === 'free' && !options.position ? freePlacer() : null;
+        const free = options?.placement === 'free' && !options.position ? freePlacer(options.rotation, options.scale) : null;
         const obj = await createPrimitive(op, {
           type,
           params,
           name: options?.name ?? op.naming.primitive(type, count),
           color: options?.color ?? PRINT_COLOR_PALETTE[count % PRINT_COLOR_PALETTE.length],
           position: options?.position,
+          rotation: options?.rotation,
+          scale: options?.scale,
           place: free?.place,
           materialPreset: options?.materialPreset,
           isHole: options?.isHole,

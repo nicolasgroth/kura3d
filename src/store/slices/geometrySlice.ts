@@ -236,7 +236,8 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       const color = state.paintColor;
       let change: ops.SceneChange | null;
       if (mode === 'whole') {
-        change = ops.paintWholeObject(opCtx(), obj, color, false);
+        // Pintar el objeto entero también cambia su color base (igual que el MCP sin interfaz).
+        change = ops.paintWholeObject(opCtx(), obj, color, OPERATION_DEFAULTS.paint.wholeSetsBaseColor);
       } else if (mode === 'smart_fill' && faceIndex !== null) {
         change = ops.paintRegion(opCtx(), obj, faceIndex, color);
       } else if (localPoint) {

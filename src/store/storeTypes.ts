@@ -264,6 +264,9 @@ export interface KuraStoreState {
       name?: string;
       color?: string;
       position?: Vec3;
+      /** Giro (radianes, Euler XYZ) y escala en ejes internos; el bus los convierte desde los del usuario. */
+      rotation?: Vec3;
+      scale?: Vec3;
       isHole?: boolean;
       materialPreset?: MaterialPresetId;
       /** `free`: primer hueco libre de la cama; `origin` (por defecto): centro de la cama. */

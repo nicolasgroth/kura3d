@@ -31,6 +31,8 @@ import {
 } from '../engine/primitiveLimits';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../engine/operationLimits';
 import { CommandError } from './commandErrors';
+
+const CUT_DEFAULTS = OPERATION_DEFAULTS.cut;
 import {
   findObject, resolveIdsOrSelection, resolveObjects, resolveTarget, selectedObjects, type SceneView,
 } from './commandTargets';
@@ -68,6 +70,9 @@ export interface CreatePrimitiveInput {
   name?: string;
   color?: string;
   position?: Vec3;
+  /** Ejes del usuario: grados (Euler XYZ) y factores por eje. */
+  rotation?: Vec3;
+  scale?: Vec3;
   isHole?: boolean;
   materialPreset?: MaterialPresetId;
   placement: 'free' | 'origin';
@@ -98,6 +103,9 @@ export function parseCreatePrimitive(p: RawParams): CreatePrimitiveInput {
     name: readString(p, NAME_MAX, 'name'),
     color: readColor(p, 'color'),
     position: readVec3(p, 'position'),
+    // Giro (grados) y escala en ejes del usuario (Z = altura), como `transform_object` y el modo sin interfaz.
+    rotation: readVec3(p, 'rotation'),
+    scale: readScale(p, 'scale'),
     isHole: readBoolean(p, 'isHole'),
     materialPreset: readEnum(p, MATERIALS, 'materialPreset'),
     // Por defecto 'origin' (comportamiento previo del bus); 'free' busca el primer hueco libre.
@@ -266,11 +274,12 @@ export function parsePlaneCut(scene: SceneView, p: RawParams): { target: SceneOb
       // Ejes del usuario (Z = altura): el bus convierte a internos con `planeFromUser`.
       axis: readEnum(p, AXES, 'axis') ?? 'z',
       offset: readRange(p, OR.cut.offset, 'offset') ?? 0,
-      connectorType: readEnum(p, ['none', 'dowel', 'peg', 'dovetail'] as const, 'connectorType') ?? 'dowel',
-      connectorSize: readRange(p, OR.cut.connectorSize, 'connectorSize') ?? 4,
-      connectorDepth: readRange(p, OR.cut.connectorDepth, 'connectorDepth') ?? 6,
-      tolerance: readRange(p, OR.cut.tolerance, 'tolerance') ?? 0.25,
-      connectorCount: readRange(p, OR.cut.connectorCount, 'connectorCount') ?? 2,
+      // Valores por defecto de la fuente única (`OPERATION_DEFAULTS.cut`), los mismos del MCP.
+      connectorType: readEnum(p, ['none', 'dowel', 'peg', 'dovetail'] as const, 'connectorType') ?? CUT_DEFAULTS.connectorType,
+      connectorSize: readRange(p, OR.cut.connectorSize, 'connectorSize') ?? CUT_DEFAULTS.connectorSize,
+      connectorDepth: readRange(p, OR.cut.connectorDepth, 'connectorDepth') ?? CUT_DEFAULTS.connectorDepth,
+      tolerance: readRange(p, OR.cut.tolerance, 'tolerance') ?? CUT_DEFAULTS.tolerance,
+      connectorCount: readRange(p, OR.cut.connectorCount, 'connectorCount') ?? CUT_DEFAULTS.connectorCount,
       keepMode: readEnum(p, ['both', 'positive', 'negative'] as const, 'keepMode') ?? 'both',
     },
   };

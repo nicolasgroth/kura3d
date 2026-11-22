@@ -28,6 +28,7 @@ import {
   STORAGE_UNIT_KEY,
   writeStorage,
 } from '../preferencesStorage';
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -82,10 +83,10 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       objectId: null,
       axis: 'y',
       offset: 0,
-      connectorType: 'dowel',
-      connectorSize: 4,
-      connectorDepth: 6,
-      connectorCount: 2,
+      connectorType: OPERATION_DEFAULTS.cut.connectorType,
+      connectorSize: OPERATION_DEFAULTS.cut.connectorSize,
+      connectorDepth: OPERATION_DEFAULTS.cut.connectorDepth,
+      connectorCount: OPERATION_DEFAULTS.cut.connectorCount,
       connectorCenters: [],
     },
     spawnedAtById: {},
