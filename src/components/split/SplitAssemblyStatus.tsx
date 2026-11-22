@@ -62,7 +62,7 @@ export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validati
         </div>
       )}
       {fixed > 0 && (
-        <p role="status" className="kura-split-assembly-alert" data-kind="info">
+        <p className="kura-split-assembly-alert" data-kind="info">
           <Info size={14} aria-hidden="true" />
           <span>
             {t(language, 'splitJoints.banner.fixed', {
