@@ -355,6 +355,11 @@
     width: calc(100% - 32px);
   }
 
+  /* Encima de la barra de booleanas (su alto real lo publica `BooleanPreviewBar`), aunque ocupe varias filas. */
+  .kura-split-assembly {
+    bottom: max(132px, calc(56px + var(--kura-bool-bar-h, 0px) + 10px));
+  }
+
   .kura-split-notice {
     top: var(--kura-split-notice-top-mobile, 60px);
     bottom: auto;
