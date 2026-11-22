@@ -11,7 +11,7 @@
 
 import { arrangeSplitGroupPatches, splitGroupOf, type SplitArrangement } from '../../core/scene/splitGroups';
 import { change } from '../../core/operations/operationTypes';
-import type { BedSplitPlan, BedSplitPlanOptions, SplitBed } from '../../engine';
+import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitPlanOptions, SplitBed } from '../../engine';
 import { isEngineError } from '../../engine/engineErrors';
 import { localizeEngineErrorForUser } from '../userEngineMessages';
 import { activeBed } from '../splitCommandSchemas';
@@ -37,7 +37,17 @@ export interface SplitPlanPreviewState {
 export interface SplitSliceState {
   splitPlanPreview: SplitPlanPreviewState;
   /** Pide el plan en vivo (debounce, Worker, descarte de obsoletos). */
-  requestSplitPlan: (objectId: string, bed: SplitBed, options: BedSplitPlanOptions, delayMs?: number) => void;
+  /**
+   * Pide el plan en vivo. Con `assemblyPreview` (las opciones de ejecución), el plan barato se ejecuta
+   * en el Worker para dar las uniones reales tras el cierre de armado.
+   */
+  requestSplitPlan: (
+    objectId: string,
+    bed: SplitBed,
+    options: BedSplitPlanOptions,
+    delayMs?: number,
+    assemblyPreview?: Omit<BedSplitExecuteOptions, 'onProgress'>,
+  ) => void;
   clearSplitPlan: () => void;
   /** Plano activo para el teclado y el resaltado (`eje:índice`), o null. */
   splitActivePlane: string | null;
@@ -62,7 +72,7 @@ export function createSplitSlice(ctx: StoreContext): Partial<KuraStoreState> {
     splitActivePlane: null,
     setSplitActivePlane: (key) => set({ splitActivePlane: key }),
 
-    requestSplitPlan: (objectId, bed, options, delayMs = SPLIT_PLAN_DEBOUNCE_MS) => {
+    requestSplitPlan: (objectId, bed, options, delayMs = SPLIT_PLAN_DEBOUNCE_MS, assemblyPreview) => {
       const ticket = ++token;
       if (timer) clearTimeout(timer);
       const prev = get().splitPlanPreview;
@@ -75,7 +85,7 @@ export function createSplitSlice(ctx: StoreContext): Partial<KuraStoreState> {
           set({ splitPlanPreview: IDLE });
           return;
         }
-        runEngineDetached('splitPlan', { obj, bed, options }).then(
+        runEngineDetached('splitPlan', { obj, bed, options, ...(assemblyPreview ? { assemblyPreview } : {}) }).then(
           (plan) => {
             if (ticket !== token) return;
             set({ splitPlanPreview: { objectId, status: 'ready', plan, bed, error: null, errorCode: null } });

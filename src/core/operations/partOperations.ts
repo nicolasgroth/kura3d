@@ -15,6 +15,7 @@ import type {
   SceneObject,
   StructuralSegmentationResult,
 } from '../../types/kura';
+import { userAxisOfInternal } from '../scene/displayAxes';
 import { worldBaked } from '../scene/sceneObjects';
 import { buildWith, change, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
 
@@ -26,9 +27,12 @@ export async function planeCut(
 ): Promise<{ parts: SceneObject[]; change: SceneChange }> {
   const result = await engine.planeCutWithConnectors(obj, options);
   const warnings = [...(result.warnings ?? [])];
+  // Mitad A = lado negativo del eje que ve el usuario; B = lado positivo (Z = altura, Y = fondo). El
+  // lado positivo del motor en Z es el negativo del usuario en Y.
+  const positiveIsUserPositive = userAxisOfInternal(options.axis).sign > 0;
   const halves = [
-    { part: result.positive, half: 'a' as const },
-    { part: result.negative, half: 'b' as const },
+    { part: result.positive, half: positiveIsUserPositive ? ('b' as const) : ('a' as const) },
+    { part: result.negative, half: positiveIsUserPositive ? ('a' as const) : ('b' as const) },
   ].filter((h) => h.part !== null);
   const parts = halves.map(({ part, half }) => buildWith(ctx, {
     name: ctx.naming.cutHalf(obj, half),
@@ -60,15 +64,17 @@ export async function splitDisconnected(
 }
 
 /**
- * Separa por color de cara. Con menos de `minParts` piezas no construye nada ni cambia la escena
- * (la app separa desde 1 pieza; el MCP headless exige 2).
+ * Separa por color de cara en sólidos cerrados (`splitMeshByColorSolid`): cada color no base toma una
+ * capa de `depthMm` hacia el interior. Con menos de `minParts` piezas no construye nada ni cambia la
+ * escena (la app separa desde 1 pieza; el MCP headless exige 2).
  */
-export function splitByColor(
+export async function splitByColor(
   ctx: OperationContext,
   obj: SceneObject,
   minParts = 1,
-): { pieceCount: number; parts: SceneObject[]; change: SceneChange } {
-  const { parts: pieces, warnings } = engine.splitMeshByColorDetailed(obj);
+  options: engine.ColorSplitOptions = {},
+): Promise<{ pieceCount: number; parts: SceneObject[]; change: SceneChange }> {
+  const { parts: pieces, warnings } = await engine.splitMeshByColorSolid(obj, options);
   if (pieces.length < minParts) return { pieceCount: pieces.length, parts: [], change: change({ warnings: [...warnings] }) };
   const parts = pieces.map((piece, idx) => buildWith(ctx, {
     name: ctx.naming.colorPart(obj, piece.color, idx),

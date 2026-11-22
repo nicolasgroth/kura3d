@@ -121,11 +121,16 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
     [margin, allowedAxes, allowRotation, allowDiagonal, connector, overrides, maxPieces],
   );
 
-  // Plan en vivo con debounce (el visor lo dibuja).
+  const executeOptions = useMemo(
+    () => ({ connector, labels, labelDepthMm: labelDepth, labelPlacement, assemblyAllowSurfaceChange: allowSurface, reinforceWeakJoints: reinforce }),
+    [connector, labels, labelDepth, labelPlacement, allowSurface, reinforce],
+  );
+
+  // Plan en vivo con debounce (el visor lo dibuja; si es barato, con las uniones reales del armado).
   useEffect(() => {
     if (!open || !targetId || allowedAxes.length === 0) return;
-    requestSplitPlan(targetId, bed, planOptions);
-  }, [open, targetId, bed, planOptions, allowedAxes.length, requestSplitPlan]);
+    requestSplitPlan(targetId, bed, planOptions, undefined, executeOptions);
+  }, [open, targetId, bed, planOptions, executeOptions, allowedAxes.length, requestSplitPlan]);
 
   useEffect(() => {
     if (!open) clearSplitPlan();
@@ -206,7 +211,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       splitObjectForBed(targetId, {
         bed,
         plan: planOptions,
-        execute: { connector, labels, labelDepthMm: labelDepth, labelPlacement, assemblyAllowSurfaceChange: allowSurface, reinforceWeakJoints: reinforce },
+        execute: executeOptions,
         dryRun: false,
       }),
     );

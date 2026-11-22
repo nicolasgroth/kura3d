@@ -9,7 +9,7 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { splitMeshByColorDetailed } from '../../engine';
+import { computeMeshStats, splitMeshByColorSolid } from '../../engine';
 import type { KuraCommandRequest } from '../../types/kura';
 import type { CommandBusResponse } from '../commandBus';
 import { useKuraStore } from '../useKuraStore';
@@ -78,7 +78,7 @@ describe('guardas de resultado del Command Bus', () => {
     expect(store().objects.map((o) => o.id)).toEqual([box.id]);
   });
 
-  it('separar por color avisa SPLIT_COLOR_NON_MANIFOLD cuando las piezas quedan abiertas', async () => {
+  it('separar por color entrega sólidos cerrados sin avisos (antes: SPLIT_COLOR_NON_MANIFOLD)', async () => {
     const box = await addBox(10);
     const obj = byId(box.id)!;
     const tris = obj.mesh.indices.length / 3;
@@ -86,10 +86,13 @@ describe('guardas de resultado del Command Bus', () => {
       ...obj,
       mesh: { ...obj.mesh, faceColors: Array.from({ length: tris }, (_, i) => (i < 2 ? '#ff0000' : '#00ff00')) },
     };
-    const { parts, warnings } = splitMeshByColorDetailed(painted);
+    const { parts, warnings } = await splitMeshByColorSolid(painted);
     expect(parts).toHaveLength(2);
-    expect(warnings).toEqual([{ code: 'SPLIT_COLOR_NON_MANIFOLD', params: { count: 2 } }]);
-    // Un objeto de un solo color no se separa ni avisa.
-    expect(splitMeshByColorDetailed(obj).warnings).toEqual([]);
+    expect(warnings).toEqual([]);
+    for (const part of parts) expect(computeMeshStats(part.mesh).isManifold).toBe(true);
+    // Un objeto de un solo color sale entero, sin avisos.
+    const single = await splitMeshByColorSolid(obj);
+    expect(single.parts).toHaveLength(1);
+    expect(single.warnings).toEqual([]);
   });
 });

@@ -80,7 +80,12 @@ export const SplitPlanSummaryView: React.FC<{
             )}
             <dt>{t(language, 'split.sum.joints')}</dt>
             <dd>
-              {plan.connector
+              {plan.connector && !summary.assemblyMeasured
+                ? t(language, 'split.sum.jointsUpToValue', {
+                    count: summary.jointCount,
+                    with: summary.jointCount - summary.jointsWithoutConnector,
+                  })
+                : plan.connector
                 ? summary.jointsWithoutConnector > 0
                   ? t(language, 'split.sum.jointsGlueValue', {
                       count: summary.jointCount,

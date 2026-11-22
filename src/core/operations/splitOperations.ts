@@ -36,13 +36,30 @@ export interface ExecuteBedSplitResult {
 }
 
 /** Plan de división (no cambia la escena). */
-export function planSplitForBed(
+export async function planSplitForBed(
   _ctx: OperationContext,
   obj: SceneObject,
   bed: engine.SplitBed,
   options: engine.BedSplitPlanOptions = {},
+  assemblyPreview?: Omit<engine.BedSplitExecuteOptions, 'onProgress'>,
 ): Promise<engine.BedSplitPlan> {
-  return engine.planBedSplit(obj, bed, options);
+  const plan = await engine.planBedSplit(obj, bed, options);
+  if (!assemblyPreview || !cheapToExecute(obj, plan, assemblyPreview)) return plan;
+  // Previa fiel: corre la división completa (sin tocar la escena) para contar las uniones que el
+  // cierre de armado deja para pegar por orden de montaje o choque de conectores.
+  const res = await engine.executeBedSplitGeometry(obj, plan, assemblyPreview);
+  return { ...plan, assemblyPreview: { joints: res.joints.length, glueJoints: res.glueJoints } };
+}
+
+/** Celdas y triángulos hasta los que la previa ejecuta el plan (en estos casos corre en < 2 s). */
+export const ASSEMBLY_PREVIEW_MAX_CELLS = 27;
+export const ASSEMBLY_PREVIEW_MAX_TRIANGLES = 50_000;
+
+function cheapToExecute(obj: SceneObject, plan: engine.BedSplitPlan, exec: Omit<engine.BedSplitExecuteOptions, 'onProgress'>): boolean {
+  const connector = exec.connector === undefined ? plan.connector : exec.connector;
+  if (!connector || plan.fitsWithoutCuts || plan.occupancy?.exact !== true || exec.validateAssembly === false) return false;
+  const cells = plan.counts.x * plan.counts.y * plan.counts.z;
+  return cells <= ASSEMBLY_PREVIEW_MAX_CELLS && obj.mesh.indices.length / 3 <= ASSEMBLY_PREVIEW_MAX_TRIANGLES;
 }
 
 /**

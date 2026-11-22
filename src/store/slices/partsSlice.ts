@@ -107,20 +107,18 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       });
     },
 
-    splitObjectByColor: (id) => {
+    splitObjectByColor: async (id, options = {}) => {
       const obj = editable(id);
       if (!obj) return [];
-      try {
-        const { parts, change } = ops.splitByColor(opCtx(), obj);
+      return runExclusive('split_colors', [], async () => {
+        const { parts, change } = await runEngine('splitByColor', { obj, options });
         if (parts.length === 0) return [];
+        assertCurrent([obj]);
         commitChange(change, { select: parts.map((c) => c.id) });
         get().addToast(tr('toast.splitColorsDone', { count: parts.length }), 'success');
         reportEngineWarnings(change.warnings);
         return parts;
-      } catch (err) {
-        reportOperationError(err);
-        return [];
-      }
+      });
     },
 
     generateMoldForObject: async (id, options) => {

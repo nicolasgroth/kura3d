@@ -16,6 +16,7 @@ import { SPLITPREFS_DE } from './splitPrefs';
 import { SPLITCOUPLING_DE } from './splitCoupling';
 import { A11YUX_DE } from './a11yUx';
 import { SPLITUX_DE } from './splitUx';
+import { OPNOTES_DE } from './operationNotes';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -29,6 +30,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...SPLITCOUPLING_DE,
   ...A11YUX_DE,
   ...SPLITUX_DE,
+  ...OPNOTES_DE,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',

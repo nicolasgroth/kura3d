@@ -241,7 +241,8 @@ export class KuraHeadlessEngine {
     const p = this.printerProfile;
     const bed: engine.SplitBed = { widthMm: p.bedWidthMm, depthMm: p.bedDepthMm, heightMm: p.maxHeightMm, ...input.bed };
     const axes = input.plan.axes?.map(ua.axisFromUser);
-    const plan = await ops.planSplitForBed(this.ctx, obj, bed, { ...input.plan, axes });
+    // En la previa (`dryRun`) el plan barato se ejecuta sin tocar la escena: da las uniones reales del armado.
+    const plan = await ops.planSplitForBed(this.ctx, obj, bed, { ...input.plan, axes }, input.dryRun ? input.execute : undefined);
     const userPlan = ua.splitPlanToUser(plan);
     if (input.dryRun || plan.fitsWithoutCuts) return { dryRun: input.dryRun, plan: userPlan, parts: [], joints: [], plateCount: 0, note: ENGINE_NOTE, warnings: [] };
     const { result, change } = await ops.executeBedSplit(this.ctx, obj, plan, { ...input.execute, bed });
@@ -312,14 +313,14 @@ export class KuraHeadlessEngine {
     return { parts: parts.map(userSummary), note: ENGINE_NOTE };
   }
 
-  /** Separa por color de cara con `splitMeshByColor` del motor. */
-  splitByColor(objectId: string): {
+  /** Separa por color de cara en sólidos cerrados (`splitMeshByColorSolid` del motor). */
+  async splitByColor(objectId: string, depthMm?: number): Promise<{
     parts: SceneObjectSummary[];
     note: string;
     warnings?: Array<{ code: string; message: string }>;
-  } {
+  }> {
     const obj = this.requireEditable(objectId);
-    const { parts, change } = ops.splitByColor(this.ctx, obj, 2);
+    const { parts, change } = await ops.splitByColor(this.ctx, obj, 2, depthMm === undefined ? {} : { depthMm });
     if (parts.length === 0) {
       return { parts: [userSummary(obj)], note: 'The object has a single color; there is nothing to split.' };
     }
@@ -416,11 +417,12 @@ export class KuraHeadlessEngine {
     objectIds: string[],
     mode: AlignMode,
     spacingMm?: number
-  ): { objects: SceneObjectSummary[]; mode: AlignMode; spacingMm?: number } {
+  ): { objects: SceneObjectSummary[]; mode: AlignMode; spacingMm?: number; ignoredParams?: string[]; note?: string } {
     if (objectIds.length === 0) {
       throw new Error('At least one object is required in `objectIds` to align.');
     }
-    if (spacingMm !== undefined && spacingMm !== ENGINE_GRID_SPACING_MM) {
+    // `spacingMm` solo aplica a la grilla (misma regla que el bus): en los demás modos se ignora con nota.
+    if (mode === 'arrange_grid' && spacingMm !== undefined && spacingMm !== ENGINE_GRID_SPACING_MM) {
       throw new Error(
         `spacingMm=${spacingMm} not supported: the Kura3D engine distributes with a fixed spacing of ${ENGINE_GRID_SPACING_MM} mm. Omit the parameter.`
       );
@@ -431,6 +433,9 @@ export class KuraHeadlessEngine {
     return {
       mode,
       ...(mode === 'arrange_grid' ? { spacingMm: ENGINE_GRID_SPACING_MM } : {}),
+      ...(mode !== 'arrange_grid' && spacingMm !== undefined
+        ? { ignoredParams: ['spacingMm'], note: 'spacingMm only applies to mode "arrange_grid"; it was ignored.' }
+        : {}),
       objects: targets.filter((o) => !o.locked).map(userSummary),
     };
   }
@@ -479,11 +484,14 @@ export class KuraHeadlessEngine {
   async simplifyMesh(
     objectId: string,
     toleranceMm: number
-  ): Promise<{ object: SceneObjectSummary; toleranceMm: number; trianglesBefore: number }> {
+  ): Promise<{ object: SceneObjectSummary; toleranceMm: number; trianglesBefore: number; warnings?: ua.UserWarning[] }> {
     const obj = this.requireEditable(objectId);
     const trianglesBefore = obj.stats.triangles;
-    this.apply(await ops.simplifyObject(this.ctx, obj, toleranceMm));
-    return { object: userSummary(obj), toleranceMm, trianglesBefore };
+    const change = await ops.simplifyObject(this.ctx, obj, toleranceMm);
+    this.apply(change);
+    // Aviso tipado si el volumen cambió más que el umbral (`SIMPLIFY_VOLUME_CHANGED`).
+    const warnings = change.warnings.length > 0 ? { warnings: ua.userWarnings(change.warnings) } : {};
+    return { object: userSummary(obj), toleranceMm, trianglesBefore, ...warnings };
   }
 
   /** Refina (y suaviza opcionalmente) con `refineMesh` del motor. */

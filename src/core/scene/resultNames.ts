@@ -72,7 +72,7 @@ export function createKeyedNaming(
     primitiveLabel,
     booleanResult: (op, inputs) =>
       op === 'subtract'
-        ? inputs.map((o) => o.name).join(' − ')
+        ? inputs.map((o, i) => (i === 0 ? o.name : withoutModulePrefix(o.name))).join(' − ')
         : tr(op === 'union' ? 'object.name.union' : 'object.name.intersect', { count: inputs.length }),
     cutHalf: (src, half) => `${src.name} — ${tr(half === 'a' ? 'cut.half.a' : 'cut.half.b')}`,
     piece: (src, i) => `${src.name} — ${tr('object.name.piece', { n: i + 1 })}`,
@@ -84,4 +84,9 @@ export function createKeyedNaming(
     splitPart: (src, code) => `${src.name} · ${code}`,
     looseDowel: (d, l, count) => tr('object.name.looseDowel', { d: mm(d), l: mm(l), count }),
   };
+}
+
+/** Nombre sin el prefijo de módulo («− Rosca» → «Rosca»): en una resta el signo ya lo pone el « − ». */
+export function withoutModulePrefix(name: string): string {
+  return name.replace(/^[+−-]\s*/, '');
 }

@@ -7,12 +7,13 @@
  */
 
 import React from 'react';
-import { Grid3x3, Palette, Scissors, Split, Zap } from 'lucide-react';
+import { Grid3x3, Scissors, Split, Zap } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { ModulesPanel } from './ModulesPanel';
 import { HollowPanel } from './HollowPanel';
+import { ColorSplitControl } from './ColorSplitControl';
 import { TexturePanel } from './TexturePanel';
 import { SplitJointsSection } from '../split/SplitJointsSection';
 import { SplitPartInfo } from '../split/SplitPartInfo';
@@ -22,7 +23,6 @@ export const OperationsSection: React.FC<InspectorSectionProps> = ({ primary, ui
   const language = useKuraStore((s) => s.language);
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const splitDisconnectedObject = useKuraStore((s) => s.splitDisconnectedObject);
-  const splitObjectByColor = useKuraStore((s) => s.splitObjectByColor);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const isBusy = Boolean(busyOperation);
 
@@ -93,15 +93,7 @@ export const OperationsSection: React.FC<InspectorSectionProps> = ({ primary, ui
             <Split size={13} />
             <span>{t(language, 'inspector.op.splitParts')}</span>
           </button>
-          <button
-            type="button"
-            className="kura-btn kura-btn-sm"
-            disabled={isBusy || primary.locked}
-            onClick={() => splitObjectByColor(primary.id)}
-          >
-            <Palette size={13} />
-            <span>{t(language, 'inspector.op.splitColors')}</span>
-          </button>
+          <ColorSplitControl primary={primary} />
         </div>
       </div>
 

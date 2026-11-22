@@ -109,6 +109,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
           return false;
         }
         commitChange(change);
+        reportEngineWarnings(change.warnings);
         const lang = get().language;
         const counts = { before: formatNumber(lang, before), tris: formatNumber(lang, tris) };
         // Menos de 1 % de reducción no se anuncia como éxito.

@@ -42,7 +42,7 @@ import {
  * Extrae el centro-base mundial `[cx, minY, cz]` de una malla y devuelve la malla
  * normalizada con su centro horizontal en (0, 0) y su base en Y=0.
  */
-function extractPositionAndNormalize(mesh: MeshData): {
+export function extractPositionAndNormalize(mesh: MeshData): {
   mesh: MeshData;
   position: Vec3;
 } {

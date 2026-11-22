@@ -51,6 +51,9 @@ describe('MCP: kura_validate_assembly', () => {
     const before = (await call('kura_get_scene_state', {})).objects.length;
     const v = await call('kura_validate_assembly', { groupId: box.id });
     expect(v).toMatchObject({ groupId: box.id, ok: true, parts: 2, joints: 1, steps: 2 });
+    // Sin el volumen original no hay error de volumen que informar: el campo no aparece (antes: null).
+    expect('volumeErrorPct' in v).toBe(false);
+    expect(typeof done.assembly.volumeErrorPct).toBe('number');
     expect((await call('kura_get_scene_state', {})).objects.length).toBe(before);
 
     const missing = await raw('kura_validate_assembly', { groupId: 'nope' });

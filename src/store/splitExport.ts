@@ -11,7 +11,8 @@
 import { zipSync } from 'fflate';
 import { splitPartFileName, splitTransformFor } from '../core/scene/splitGroups';
 import type { ExportTaskArgs, ExportTaskResult } from '../core/operations/engineTasks';
-import type { SceneObject } from '../types/kura';
+import { applyTransformToMesh } from '../engine/primitives';
+import type { SceneObject, Vec3 } from '../types/kura';
 
 /** Modo de exportación de piezas divididas. */
 export type SplitExportMode = 'perPiece' | 'printLayout';
@@ -25,8 +26,10 @@ export function hasSplitParts(objects: SceneObject[]): boolean {
 const fileCode = (o: SceneObject) => o.metadata?.split?.code ?? o.name;
 
 /**
- * Exporta cada objeto por separado y los empaqueta en un ZIP. Los archivos auxiliares (p. ej. `.mtl`)
- * comparten el nombre de su pieza. Devuelve los bytes del ZIP y la cantidad de piezas.
+ * Exporta cada objeto por separado y los empaqueta en un ZIP. Cada archivo lleva su pieza lista para
+ * imprimir (`printReadyAtOrigin`): en la orientación de impresión, apoyada en la cama (Z = 0) y
+ * centrada en el origen XY, como un objeto suelto en el centro de la cama. Los archivos auxiliares
+ * (p. ej. `.mtl`) comparten el nombre de su pieza. Devuelve los bytes del ZIP y la cantidad de piezas.
  */
 export async function zipPerPiece(
   targets: SceneObject[],
@@ -38,7 +41,7 @@ export async function zipPerPiece(
   for (const obj of targets) {
     const name = splitPartFileName(base, fileCode(obj), args.format);
     const stem = name.slice(0, -(args.format.length + 1));
-    const { files } = await exportFiles({ ...args, targets: [obj], baseName: stem });
+    const { files } = await exportFiles({ ...args, targets: [printReadyAtOrigin(obj)], baseName: stem });
     for (const f of files) {
       let entry = `${stem}${f.suffix}`;
       for (let n = 2; entries[entry]; n++) entry = `${stem}_${n}${f.suffix}`;
@@ -46,6 +49,26 @@ export async function zipPerPiece(
     }
   }
   return { data: zipSync(entries, { level: 6 }), count: targets.length };
+}
+
+/**
+ * Pieza en su orientación de impresión (la de `metadata.split.print`; un objeto que no es pieza
+ * conserva su giro), apoyada en Z = 0 y centrada en el origen XY (ejes del usuario; en el motor, Y = 0
+ * y centro en X/Z). No toca la escena.
+ */
+export function printReadyAtOrigin(o: SceneObject): SceneObject {
+  const rotation = (o.metadata?.split ? [...o.metadata.split.print.rotation] : [...o.rotation]) as Vec3;
+  const { positions } = applyTransformToMesh(o.mesh, [0, 0, 0], rotation, o.scale);
+  const lo = [Infinity, Infinity, Infinity];
+  const hi = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < positions.length; i += 3) {
+    for (let a = 0; a < 3; a++) {
+      lo[a] = Math.min(lo[a], positions[i + a]);
+      hi[a] = Math.max(hi[a], positions[i + a]);
+    }
+  }
+  if (!Number.isFinite(lo[0])) return o;
+  return { ...o, rotation, position: [-(lo[0] + hi[0]) / 2, -lo[1], -(lo[2] + hi[2]) / 2] };
 }
 
 /** Objetos en su disposición de impresión (las piezas que no son de una división quedan igual). */

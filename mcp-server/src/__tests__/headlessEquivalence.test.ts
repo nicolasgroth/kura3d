@@ -354,5 +354,8 @@ describe('Operaciones no soportadas en headless', () => {
     const a = await h.createPrimitive({ primitiveType: 'box' });
     expect(() => h.alignObjects([a.id], 'arrange_grid', 25)).toThrow(/not supported/);
     expect(h.alignObjects([a.id], 'arrange_grid').spacingMm).toBe(8);
+    // spacingMm solo aplica a la grilla: en minZ se ignora con nota; en la grilla, otro paso se rechaza.
+    expect(h.alignObjects([a.id], 'minZ', 20)).toMatchObject({ ignoredParams: ['spacingMm'] });
+    expect(() => h.alignObjects([a.id], 'arrange_grid', 20)).toThrow(/spacingMm=20/);
   });
 });

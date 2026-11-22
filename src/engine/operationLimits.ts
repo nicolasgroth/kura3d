@@ -77,6 +77,10 @@ export const OPERATION_RANGES = {
   simplify: {
     toleranceMm: closed(0.01, 100),
   },
+  /** Separar por colores: capa que toma cada color hacia el interior (`colorSplitSolid.ts`). */
+  colorSplit: {
+    depthMm: closed(0.2, 50),
+  },
   refine: {
     targetEdgeLengthMm: closed(0.05, 1000),
   },
@@ -145,6 +149,10 @@ export const OPERATION_RANGES = {
 export const OPERATION_DEFAULTS = {
   mold: { wallMarginMm: 6, boxWallMm: 3, pourSpoutRadiusMm: 5, keyToleranceMm: 0.25, cavityWallMm: 3 },
   printability: { infillPercent: 20, overhangAngleDeg: 45, minWallMm: 0.8 },
+  /** Profundidad del color por defecto: unas 2–3 capas de pared, suficiente para que el color se vea. */
+  colorSplit: { depthMm: 1 },
+  /** Simplificar avisa (`SIMPLIFY_VOLUME_CHANGED`) cuando el volumen cambia más que este porcentaje. */
+  simplify: { volumeWarnPct: 2 },
   /**
    * Corte por plano (`plane_cut`) cuando el llamador omite el conector: igual en el bus y en el MCP (con y sin
    * interfaz). Sin conector por defecto: un corte de una pieza chica no falla por un conector que no pidió.

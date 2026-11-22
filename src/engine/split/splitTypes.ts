@@ -198,6 +198,12 @@ export interface BedSplitPlan {
    * la ejecución). Ausente si el modelo cabe sin cortes o en planes de versiones anteriores.
    */
   occupancy?: SplitPlanOccupancy;
+  /**
+   * Uniones reales tras el cierre de armado (orden de montaje y choques), medidas ejecutando el plan
+   * cuando es barato (`planSplitForBed` con `assemblyPreview`). Ausente si no se midió: la previa solo
+   * puede decir "hasta N con conector".
+   */
+  assemblyPreview?: { joints: number; glueJoints: number };
   elapsedMs: number;
 }
 

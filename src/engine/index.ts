@@ -141,7 +141,7 @@ export { computeWorldStats } from './worldStats';
 
 export { refineMeshDetailed, type RefineResult } from './refine';
 
-export { splitMeshByColorDetailed, type ColorSplitResult } from './colorSplit';
+export { splitMeshByColorSolid, type ColorSplitOptions, type SolidColorPart, type SolidColorSplitResult } from './colorSplitSolid';
 
 export { isClosedMesh } from './meshClosure';
 

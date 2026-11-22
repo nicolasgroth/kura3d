@@ -31,7 +31,7 @@ import { applyHoles, booleanOperation, convexHull } from './csgOperations';
 import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
 import { eraseSphere, hollowObject, projectOnSurface, refineObject, simplifyObject } from './meshOperations';
 import type { OperationContext } from './operationTypes';
-import { extractStructure, generateMold, planeCut, splitDisconnected, splitStructures } from './partOperations';
+import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnected, splitStructures } from './partOperations';
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
@@ -92,6 +92,8 @@ export const ENGINE_TASKS = {
     projectOnSurface(ctx, a.obj, a.options),
   planeCut: (ctx: OperationContext, a: { obj: SceneObject; options: PlaneCutOptions }) => planeCut(ctx, a.obj, a.options),
   splitDisconnected: (ctx: OperationContext, a: { obj: SceneObject }) => splitDisconnected(ctx, a.obj),
+  splitByColor: (ctx: OperationContext, a: { obj: SceneObject; options: engine.ColorSplitOptions }) =>
+    splitByColor(ctx, a.obj, 1, a.options),
   mold: (ctx: OperationContext, a: { obj: SceneObject; options: MoldOptions }) => generateMold(ctx, a.obj, a.options),
   detectStructures: (_ctx: OperationContext, a: { obj: SceneObject; creaseAngleDeg: number }) =>
     engine.detectStructuralRegions(a.obj, { creaseAngleDeg: a.creaseAngleDeg }),
@@ -108,8 +110,10 @@ export const ENGINE_TASKS = {
   regenerateParametric: (ctx: OperationContext, a: { obj: SceneObject; edit: ParametricEdit }) => regenerateParametric(ctx, a.obj, a.edit),
   imageReliefMesh: (_ctx: OperationContext, a: { options: ImageTo3DOptions }) => imageReliefMesh(a.options),
   svgMesh: (_ctx: OperationContext, a: { options: SvgImportOptions; contours: engine.PackedSvgContours }) => svgMesh(a.options, a.contours),
-  splitPlan: (ctx: OperationContext, a: { obj: SceneObject; bed: engine.SplitBed; options?: engine.BedSplitPlanOptions }) =>
-    planSplitForBed(ctx, a.obj, a.bed, a.options),
+  splitPlan: (
+    ctx: OperationContext,
+    a: { obj: SceneObject; bed: engine.SplitBed; options?: engine.BedSplitPlanOptions; assemblyPreview?: Omit<engine.BedSplitExecuteOptions, 'onProgress'> },
+  ) => planSplitForBed(ctx, a.obj, a.bed, a.options, a.assemblyPreview),
   splitForBed: (ctx: OperationContext, a: { obj: SceneObject; plan: engine.BedSplitPlan; options: ExecuteBedSplitOptions }) =>
     executeBedSplit(ctx, a.obj, a.plan, a.options),
   validateAssembly: (_ctx: OperationContext, a: { objects: SceneObject[] }) => engine.storedAssemblyResponse(a.objects),

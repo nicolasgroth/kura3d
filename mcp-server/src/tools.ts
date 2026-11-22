@@ -472,9 +472,15 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     'kura_split_by_color',
     {
       title: 'Split by color',
-      description: 'Splits a multicolor painted model into individual parts per color for multi-material printing.',
+      description:
+        'Splits a multicolor painted model into one closed, printable solid per color for multi-material printing. ' +
+        'Each non-base color takes a layer of depthMm inward from its painted surface; the base color keeps the rest. ' +
+        'The parts do not overlap and their volumes add up to the original.',
       inputSchema: {
         objectId: idSchema.describe('ID of the multicolor object to split.'),
+        depthMm: rangeSchema(OR.colorSplit.depthMm)
+          .optional()
+          .describe('Color depth in mm: how far each painted color reaches inward (default 1).'),
       },
     },
     async (args) =>
@@ -482,7 +488,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         ctx,
         'split_by_color',
         { ...args, id: args.objectId },
-        () => ctx.headless.splitByColor(args.objectId)
+        () => ctx.headless.splitByColor(args.objectId, args.depthMm)
       )
   );
 
@@ -998,7 +1004,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         spacingMm: rangeSchema(OR.align.spacingMm)
           .optional()
           .describe(
-            'Spacing in mm between parts when mode === "arrange_grid". The engine uses a fixed 8 mm; in headless mode any other value is rejected.'
+            'Spacing in mm between parts when mode === "arrange_grid". The engine uses a fixed 8 mm: with arrange_grid any other value is rejected. Other modes ignore it (the result lists it in ignoredParams).'
           ),
       },
     },

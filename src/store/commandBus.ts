@@ -204,9 +204,10 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     return required(await get().splitDisconnectedObject(id), command).map(brief);
   },
 
-  split_by_color: (p, { get }, command) => {
-    const { id } = schema.parseEditableTarget(get(), p);
-    return required(get().splitObjectByColor(id), command).map((o) => ({ ...brief(o), color: o.color }));
+  split_by_color: async (p, { get }, command) => {
+    const { target, depthMm } = schema.parseSplitByColor(get(), p);
+    const parts = required(await get().splitObjectByColor(target.id, depthMm === undefined ? {} : { depthMm }), command);
+    return parts.map((o) => ({ ...brief(o), color: o.color, volumeMm3: o.stats.volumeMm3 }));
   },
 
   apply_texture: (p, { get }, command) => {
@@ -276,10 +277,10 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     withStats(required(await get().runConvexHull(schema.parseHull(get(), p).map((o) => o.id)), command)),
 
   align_objects: (p, deps) => {
-    const { mode, objects } = schema.parseAlign(deps.get(), p);
+    const { mode, objects, spacingIgnored } = schema.parseAlign(deps.get(), p);
     if (objects) deps.setSelectedIds(objects.map((o) => o.id));
     const result = deps.get().alignSelectedObjects(alignModeFromUser(mode));
-    return { mode, moved: result?.moved ?? 0, fitsBed: result?.fitsBed ?? true };
+    return { mode, moved: result?.moved ?? 0, fitsBed: result?.fitsBed ?? true, ...(spacingIgnored ? { ignoredParams: ['spacingMm'] } : {}) };
   },
 
   mirror_object: (p, { get }, command) => {
