@@ -30,6 +30,7 @@ import {
   PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, TEXT_ALIGN_OPTIONS, primitiveRangeFor, type PrimitiveRangeKey,
 } from '../engine/primitiveLimits';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../engine/operationLimits';
+import { ARRANGE_GRID_SPACING_MM } from '../core/operations/alignOperations';
 import { CommandError } from './commandErrors';
 
 const CUT_DEFAULTS = OPERATION_DEFAULTS.cut;
@@ -230,11 +231,22 @@ export function parseMaterial(scene: SceneView, p: RawParams): { target: SceneOb
   return { target: resolveTarget(scene, p, { unlocked: true }), materialPreset };
 }
 
-export function parseAlign(scene: SceneView, p: RawParams): { mode: AlignMode; objects?: SceneObject[] } {
+/**
+ * `align_objects`. `spacingMm` solo aplica a `arrange_grid` (donde el motor usa un paso fijo de
+ * `ARRANGE_GRID_SPACING_MM`: otro valor es invalid-params); en los demás modos se acepta y se ignora
+ * (`spacingIgnored`). El MCP sin interfaz aplica la misma regla.
+ */
+export function parseAlign(scene: SceneView, p: RawParams): { mode: AlignMode; objects?: SceneObject[]; spacingIgnored: boolean } {
   const ids = readIds(p, 'objectIds', 'ids');
+  const mode = readEnum(p, ALIGN_MODES, 'mode') ?? 'arrange_grid';
+  const spacing = readRange(p, OR.align.spacingMm, 'spacingMm');
+  if (mode === 'arrange_grid' && spacing !== undefined && spacing !== ARRANGE_GRID_SPACING_MM) {
+    throw new CommandError('invalid-params', 'bus.error.alignSpacing', { value: spacing, fixed: ARRANGE_GRID_SPACING_MM });
+  }
   return {
-    mode: readEnum(p, ALIGN_MODES, 'mode') ?? 'arrange_grid',
+    mode,
     objects: ids ? resolveObjects(scene, ids) : undefined,
+    spacingIgnored: spacing !== undefined && mode !== 'arrange_grid',
   };
 }
 

@@ -997,7 +997,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         spacingMm: rangeSchema(OR.align.spacingMm)
           .optional()
           .describe(
-            'Spacing in mm between parts when mode === "arrange_grid". The engine uses a fixed 8 mm; in headless mode any other value is rejected.'
+            'Spacing in mm between parts when mode === "arrange_grid". The engine uses a fixed 8 mm: with arrange_grid any other value is rejected. Other modes ignore it (the result lists it in ignoredParams).'
           ),
       },
     },

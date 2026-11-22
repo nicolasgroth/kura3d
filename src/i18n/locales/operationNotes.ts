@@ -9,6 +9,7 @@
  */
 
 export const OPNOTES_ES = {
+  'bus.error.alignSpacing': 'spacingMm={value} no se admite: la grilla usa un paso fijo de {fixed} mm. Omite el parámetro.',
   'split.sum.jointsUpToValue': '{count}: hasta {with} con conector; el armado puede dejar algunas para pegar',
   'inspector.op.colorDepth': 'Profundidad del color',
   'inspector.op.colorDepthTip': 'Cada color pintado sale como pieza sólida que entra esta medida hacia adentro; el color base se queda con el resto.',
@@ -18,6 +19,7 @@ export const OPNOTES_ES = {
 };
 
 export const OPNOTES_EN = {
+  'bus.error.alignSpacing': 'spacingMm={value} is not supported: the grid uses a fixed {fixed} mm spacing. Omit the parameter.',
   'split.sum.jointsUpToValue': '{count}: up to {with} with connector; assembly may leave some glue-only',
   'inspector.op.colorDepth': 'Color depth',
   'inspector.op.colorDepthTip': 'Each painted color becomes a solid part reaching this far inward; the base color keeps the rest.',
@@ -27,6 +29,7 @@ export const OPNOTES_EN = {
 };
 
 export const OPNOTES_DE = {
+  'bus.error.alignSpacing': 'spacingMm={value} wird nicht unterstützt: das Raster nutzt einen festen Abstand von {fixed} mm. Lass den Parameter weg.',
   'split.sum.jointsUpToValue': '{count}: bis zu {with} mit Verbinder; die Montage kann einige zum Kleben lassen',
   'inspector.op.colorDepth': 'Farbtiefe',
   'inspector.op.colorDepthTip': 'Jede bemalte Farbe wird ein festes Teil, das so tief nach innen reicht; die Grundfarbe behält den Rest.',
@@ -36,6 +39,7 @@ export const OPNOTES_DE = {
 };
 
 export const OPNOTES_FR = {
+  'bus.error.alignSpacing': 'spacingMm={value} n’est pas pris en charge : la grille utilise un pas fixe de {fixed} mm. Omets le paramètre.',
   'split.sum.jointsUpToValue': '{count} : jusqu’à {with} avec connecteur ; l’assemblage peut en laisser certaines à coller',
   'inspector.op.colorDepth': 'Profondeur de couleur',
   'inspector.op.colorDepthTip': 'Chaque couleur peinte devient une pièce pleine qui pénètre de cette mesure vers l’intérieur ; la couleur de base garde le reste.',
@@ -45,6 +49,7 @@ export const OPNOTES_FR = {
 };
 
 export const OPNOTES_HI = {
+  'bus.error.alignSpacing': 'spacingMm={value} समर्थित नहीं है: ग्रिड {fixed} mm की तय दूरी इस्तेमाल करता है। यह पैरामीटर छोड़ दें।',
   'split.sum.jointsUpToValue': '{count}: अधिकतम {with} कनेक्टर के साथ; जोड़ने का क्रम कुछ को केवल चिपकाने के लिए छोड़ सकता है',
   'inspector.op.colorDepth': 'रंग की गहराई',
   'inspector.op.colorDepthTip': 'हर रंगा हुआ रंग एक ठोस हिस्सा बनता है जो इतनी गहराई तक अंदर जाता है; आधार रंग बाकी रखता है।',
@@ -54,6 +59,7 @@ export const OPNOTES_HI = {
 };
 
 export const OPNOTES_ZH = {
+  'bus.error.alignSpacing': '不支持 spacingMm={value}：网格使用固定的 {fixed} mm 间距。请省略该参数。',
   'split.sum.jointsUpToValue': '{count}：最多 {with} 个带连接件；装配可能会留下一些仅粘合',
   'inspector.op.colorDepth': '颜色深度',
   'inspector.op.colorDepthTip': '每种绘制的颜色都会成为向内延伸此深度的实心部件；基础颜色保留其余部分。',

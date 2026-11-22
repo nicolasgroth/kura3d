@@ -417,11 +417,12 @@ export class KuraHeadlessEngine {
     objectIds: string[],
     mode: AlignMode,
     spacingMm?: number
-  ): { objects: SceneObjectSummary[]; mode: AlignMode; spacingMm?: number } {
+  ): { objects: SceneObjectSummary[]; mode: AlignMode; spacingMm?: number; ignoredParams?: string[]; note?: string } {
     if (objectIds.length === 0) {
       throw new Error('At least one object is required in `objectIds` to align.');
     }
-    if (spacingMm !== undefined && spacingMm !== ENGINE_GRID_SPACING_MM) {
+    // `spacingMm` solo aplica a la grilla (misma regla que el bus): en los demás modos se ignora con nota.
+    if (mode === 'arrange_grid' && spacingMm !== undefined && spacingMm !== ENGINE_GRID_SPACING_MM) {
       throw new Error(
         `spacingMm=${spacingMm} not supported: the Kura3D engine distributes with a fixed spacing of ${ENGINE_GRID_SPACING_MM} mm. Omit the parameter.`
       );
@@ -432,6 +433,9 @@ export class KuraHeadlessEngine {
     return {
       mode,
       ...(mode === 'arrange_grid' ? { spacingMm: ENGINE_GRID_SPACING_MM } : {}),
+      ...(mode !== 'arrange_grid' && spacingMm !== undefined
+        ? { ignoredParams: ['spacingMm'], note: 'spacingMm only applies to mode "arrange_grid"; it was ignored.' }
+        : {}),
       objects: targets.filter((o) => !o.locked).map(userSummary),
     };
   }

@@ -276,10 +276,10 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     withStats(required(await get().runConvexHull(schema.parseHull(get(), p).map((o) => o.id)), command)),
 
   align_objects: (p, deps) => {
-    const { mode, objects } = schema.parseAlign(deps.get(), p);
+    const { mode, objects, spacingIgnored } = schema.parseAlign(deps.get(), p);
     if (objects) deps.setSelectedIds(objects.map((o) => o.id));
     const result = deps.get().alignSelectedObjects(alignModeFromUser(mode));
-    return { mode, moved: result?.moved ?? 0, fitsBed: result?.fitsBed ?? true };
+    return { mode, moved: result?.moved ?? 0, fitsBed: result?.fitsBed ?? true, ...(spacingIgnored ? { ignoredParams: ['spacingMm'] } : {}) };
   },
 
   mirror_object: (p, { get }, command) => {
