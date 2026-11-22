@@ -10,6 +10,7 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Z es la altura, como en los slicers.** La interfaz, el chat local, el bus de comandos y las herramientas de IA usan X derecha, Y fondo, Z arriba: el inspector (posición, giro, escala, tamaño), la alineación ("Abajo (Z)", "Frente (Y)"), el gizmo (Z azul vertical), el cubo de vistas, los atajos (RePág/AvPág suben y bajan en Z), el corte (plano horizontal = Z), la división, el molde y la proyección. "Girar en Z" gira la pieza sobre la cama. Los proyectos `.kura` existentes abren igual: la geometría y los números guardados no cambian, solo se renombran los ejes que ves. Importar y exportar STL/3MF no cambia.
 - **Motor único.** El servidor MCP usa el mismo motor geométrico de la app; se eliminó el motor duplicado que devolvía geometría simulada.
 - **Geometría corregida.** Ahuecado y moldes con pared uniforme en piezas no convexas, refinado que no deforma, roscas ISO M3–M20 con paso y holgura automáticos y engrane real, conectores de corte repartidos por cada isla de la sección, cortador desde imagen con el tamaño pedido.
 - **Importar y exportar.** 3MF de slicers con componentes, instancias y posiciones, importación en lote que nombra los archivos fallidos, PLY, defensa contra archivos maliciosos. Diálogo único de exportación con 3MF, STL, OBJ con colores, GLB y PLY.

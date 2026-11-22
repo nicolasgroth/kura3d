@@ -15,6 +15,23 @@ Guía breve de capas y dependencias. La prueba `src/__tests__/dependencyRules.te
 | Servidor MCP | `mcp-server/` | stdio + puente WebSocket. En modo headless (`headlessEngine.ts`) usa las mismas funciones de `src/core/operations` con `HEADLESS_BUILD_POLICY` y sus nombres fijos (`headlessNaming.ts`). |
 | Escritorio | `src-tauri/` | Rust/Tauri: archivos nativos, llavero, proxy IA. Habla con la web por comandos Tauri, no importa TypeScript. |
 
+## Ejes: interno y del usuario
+
+Hay dos sistemas y **una sola capa** que convierte entre ellos: `src/core/scene/displayAxes.ts`.
+
+| | X | Y | Z |
+|---|---|---|---|
+| **Interno** (three.js, motor, `.kura`, geometría guardada) | derecha | arriba | hacia el frente |
+| **Usuario** (interfaz, chat, Command Bus, herramientas de IA, MCP en puente) | derecha | hacia el fondo | arriba (altura) |
+
+- Posición: usuario `(X, Y, Z)` = interno `(x, −z, y)`. Tamaños y escalas permutan Y↔Z sin signo. Cajas: `toUserBox`/`fromUserBox`.
+- Rotación: Euler XYZ en ambos lados; se convierte conjugando la matriz (`R_u = C·R_i·Cᵀ`), así que "girar en Z" del usuario es girar alrededor de la vertical. Ida y vuelta probada en `displayAxes.test.ts`.
+- Direcciones y caras: `'+z'` del usuario es arriba (cara superior), `'-y'` es el frente. Los selectores guardan el valor interno y muestran el rótulo del usuario.
+- **Contrato externo:** el Command Bus recibe y devuelve coordenadas en ejes del usuario; convierte en el borde (`src/store/commandAxes.ts`) y el núcleo sigue igual. Los modos de alineación del bus (`minZ` = abajo, `minY` = frente) también son del usuario. El chat local trabaja sobre el bus, por eso "sube 10 mm en Z" se interpreta tal cual.
+- La interfaz guarda en el estado los valores internos; los componentes solo convierten para mostrar y al recibir lo que escribe el usuario. No escribas `position[1]` como "altura" en un rótulo: pasa por `displayAxes`.
+- Importar/exportar STL y 3MF (Z arriba) ya convierte a Y arriba en `src/engine/io/`; no cambia.
+- Códigos de pieza al dividir: letra = columna en X, número = nivel en altura (Z del usuario), minúscula = fila en profundidad (Y del usuario). Los planos se rotulan `X1`, `Y2`, `Z1` con el eje del usuario (Z = horizontal).
+
 ## Regla de dependencias
 
 Una capa solo importa de las que están a su derecha:
