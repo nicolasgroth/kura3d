@@ -166,7 +166,7 @@ export async function runCase(model: string, conn: SplitConnectorOptions | null,
   for (const j of res.joints) {
     if (j.labelPlacement === null && !skipped.has(j.label)) v.push(`unión ${j.label}: sin marca ni aviso`);
     const areaSum = j.islands.reduce((s, i) => s + i.areaMm2, 0);
-    if (j.islands.length && Math.abs(areaSum - j.contactAreaMm2) > 0.03 * j.contactAreaMm2 + 1)
+    if (j.islands.length && Math.abs(areaSum - j.contactAreaMm2) > 0.02 * j.contactAreaMm2 + 1)
       v.push(`ISLAS unión ${j.label}: islas suman ${areaSum.toFixed(0)} vs contacto ${j.contactAreaMm2.toFixed(0)}`);
     if (THIN.has(model) && conn && conn.type !== 'lap' && (j.kind !== 'glue' || Math.abs(j.contactAreaMm2 - areaSum) < -1)) v.push(`unión ${j.label}: pared delgada con kind ${j.kind} (esperado glue)`);
     if (j.kind === 'glue' && (j.connector !== null || j.connectorCenters.length > 0)) v.push(`unión ${j.label}: glue con conector`);
@@ -232,7 +232,7 @@ describe('QA6 dividir A: modelos x tipo de conector (cama 250)', () => {
       it(`${model} / ${tname}`, async () => {
         const { v, secs } = await runCase(model, conn);
         console.log(`QA6 ${model} / ${tname}: ${secs.toFixed(1)} s ${v.length ? 'VIOL ' + v.slice(0, 6).join(' | ') : 'ok'}`);
-        expect(v.filter((x) => !x.startsWith('ISLAS'))).toEqual([]);
+        expect(v).toEqual([]);
         expect(secs, 'tiempo').toBeLessThan(30);
       }, 300_000);
     }
@@ -280,14 +280,14 @@ describe('QA6 dividir A: el conector queda dentro del sólido (medida independie
   }, 120_000);
 });
 
-// Brecha CONFIRMADA (menor): `islands[].areaMm2` suma menos que `contactAreaMm2` porque la cara de unión
-// se recorta lejos de los otros planos (faceClipBox); en un cubo de 440 con corte en cruz falta ~10 %.
+// Corregida (antes `it.fails`): `islands[].areaMm2` sumaba menos que `contactAreaMm2` porque se medía la cara de
+// unión recortada lejos de los otros planos (faceClipBox); ahora las islas se miden sobre el contacto real.
 describe('QA6 dividir A: coherencia de islas', () => {
-  it.fails('cubo 440 / dowel: la suma de áreas de islas ~ área de contacto (±3 %)', async () => {
+  it('cubo 440 / dowel: la suma de áreas de islas ~ área de contacto (±2 %)', async () => {
     const { v } = await runCase('cubo 440', TYPES[0][1]);
     expect(v.filter((x) => x.startsWith('ISLAS'))).toEqual([]);
   }, 120_000);
-  it.fails('placa 600x600x4 / dowel: la suma de áreas de islas ~ área de contacto (±3 %)', async () => {
+  it('placa 600x600x4 / dowel: la suma de áreas de islas ~ área de contacto (±2 %)', async () => {
     const { v } = await runCase('placa 600x600x4', TYPES[0][1]);
     expect(v.filter((x) => x.startsWith('ISLAS'))).toEqual([]);
   }, 120_000);
@@ -303,7 +303,7 @@ describe('QA6 dividir A: firmeza activa y cambio de superficie', () => {
           it(`${model} / ${type} (radio 2) / refuerzo ${reinforce} / cambio de superficie ${surf}`, async () => {
             const { v, secs, res } = await runCase(model, small(type), { reinforceWeakJoints: reinforce, assemblyAllowSurfaceChange: surf });
             console.log(`QA6 ${model} / ${type} / ref ${reinforce} / surf ${surf}: ${secs.toFixed(1)} s ${v.filter((x) => !x.startsWith('ISLAS')).slice(0, 5).join(' | ') || 'ok'} ${res ? 'reforzadas=' + res.joints.filter((j) => j.connector && j.connector.size > 2).length : ''}`);
-            expect(v.filter((x) => !x.startsWith('ISLAS'))).toEqual([]);
+            expect(v).toEqual([]);
             if (!reinforce && res) expect(res.joints.every((j) => !j.connector || (j.connector.size <= 2 && j.connector.count <= 1))).toBe(true);
             expect(secs).toBeLessThan(30);
           }, 300_000);

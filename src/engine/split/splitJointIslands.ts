@@ -47,3 +47,39 @@ export function classifyIslands(islands: CrossSection[], axis: SplitAxis, center
     return { kind, areaMm2, minWidthMm };
   });
 }
+
+/**
+ * Islas de la unión con el área del CONTACTO real (no de la cara recortada lejos de los demás planos,
+ * que pierde los bordes): así la suma de `areaMm2` es `contactAreaMm2`. Cada isla de contacto es
+ * `connector` si tiene un centro, `lap` si la toca una isla de cara con solape aceptado, si no `glue`.
+ * No libera `contact` ni `faceIslands`.
+ */
+export function classifyContactIslands(
+  contact: CrossSection, faceIslands: CrossSection[], axis: SplitAxis, centers: Vec3[], lapAccepted?: boolean[],
+): SplitJointIsland[] {
+  const parts = contact.decompose();
+  try {
+    if (parts.length === 0) return classifyIslands(faceIslands, axis, centers, lapAccepted);
+    const uvs = centers.map((c) => worldToSectionUV(axis, c));
+    return parts.map((isl) => {
+      const areaMm2 = isl.area();
+      const minWidthMm = islandWidth(isl, areaMm2);
+      let kind: SplitJointIsland['kind'] = 'glue';
+      if (uvs.some((uv) => sectionContains(isl, uv))) kind = 'connector';
+      else if (lapAccepted && faceIslands.some((f, i) => lapAccepted[i] && overlaps(isl, f))) kind = 'lap';
+      return { kind, areaMm2, minWidthMm };
+    });
+  } finally {
+    for (const p of parts) p.delete();
+  }
+}
+
+function overlaps(a: CrossSection, b: CrossSection): boolean {
+  const i = a.intersect(b);
+  try {
+    return i.area() > 1e-6;
+  } finally {
+    i.delete();
+  }
+}
+

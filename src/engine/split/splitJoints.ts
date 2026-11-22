@@ -23,7 +23,7 @@ import { buildLooseDowelHoles, layoutType, looseDowelHoleDepth } from './splitLo
 import type { Capsule } from './assemblyConnectors';
 import type { ConnectorRoom } from './splitConnectorRoom';
 import { recommendedConnectorRadius, reinforcementCap } from './assemblyConnectors';
-import { classifyIslands } from './splitJointIslands';
+import { classifyContactIslands } from './splitJointIslands';
 import { buildJointLabel, orientedToWorld } from './splitLabels';
 import { buildOutsideDots, buildOutsideLabel } from './splitOutsideLabel';
 import { ASSEMBLY_LIMITS, OPERATION_DEFAULTS } from '../operationLimits';
@@ -270,7 +270,7 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     }
     const kind: SplitJointKind = used ? 'connector' : lap ? 'lap' : 'glue';
     if (connector && kind === 'glue') warnings.push(engineWarning(thinOnly ? 'SPLIT_JOINT_GLUE_ONLY' : 'SPLIT_JOINT_NO_CONNECTOR', pair));
-    const islandInfo = classifyIslands(islands, axis, centers, lap ? lapAccepted : undefined);
+    const islandInfo = classifyContactIslands(j.contact, islands, axis, centers, lap ? lapAccepted : undefined);
     const glued = islandInfo.filter((i) => i.kind === 'glue').length;
     // Unas islas con conector o solape y otras no: esas partes son solo para pegar
     if (kind !== 'glue' && glued > 0) {
