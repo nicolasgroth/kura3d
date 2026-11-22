@@ -903,4 +903,5 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineWarning.REFINE_SMOOTH_REVERTED': '平滑会使尺寸变化 {deviation} mm（公差 {tolerance} mm）；仅应用了细分。',
   'engineWarning.HOLLOW_COARSE_GRID': '大型零件：壁厚可能达到 {maxWall} mm（要求 {thickness} mm）。',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '按颜色拆分出的 {count} 个零件不是封闭实体；打印前请检查。',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': '切割面 {islands} 个区域中有 {skipped} 个未放置连接件：放不下带壁厚的 {size} mm 连接件。',
 };

@@ -903,4 +903,5 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Le lissage modifiait les dimensions de {deviation} mm (tolérance {tolerance} mm) ; seul le raffinage a été appliqué.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Grande pièce : la paroi peut atteindre {maxWall} mm (demandé {thickness} mm).',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '{count} pièce(s) séparées par couleur ne sont pas des solides fermés ; vérifiez-les avant d\'imprimer.',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': '{skipped} zone(s) sur {islands} de la face de coupe sans connecteur : un connecteur de {size} mm n\'y tient pas avec sa paroi.',
 };

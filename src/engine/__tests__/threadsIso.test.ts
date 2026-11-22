@@ -10,7 +10,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { computeMeshStats } from '../primitives';
-import { createMetricThread, isoCoarsePitch, ISO_COARSE_THREADS } from '../threads';
+import { createMetricThread, isoCoarsePitch, ISO_COARSE_THREADS, isoHeadHeight } from '../threads';
 import { intersectionVolume } from './geometryTestUtils';
 
 describe('Roscas métricas ISO (threads.ts)', () => {
@@ -43,7 +43,7 @@ describe('Roscas métricas ISO (threads.ts)', () => {
     expect(stats.isManifold).toBe(true);
     expect(stats.triangles).toBeLessThan(12_000);
     // Diámetro mayor ≈ 8 mm en el vástago (la cabeza es más ancha)
-    expect(stats.dimensionsMm[1]).toBeCloseTo(0.65 * 8 + 16, 1);
+    expect(stats.dimensionsMm[1]).toBeCloseTo(isoHeadHeight(8) + 16, 1);
   });
 
   it.each([3, 5, 6, 8, 20])('M%i: interferencia cero perno–tuerca en todas las fases', async (d) => {
@@ -52,7 +52,7 @@ describe('Roscas métricas ISO (threads.ts)', () => {
     const bolt = await createMetricThread({ kind: 'bolt', diameterMm: d, lengthMm: 4 * pitch + 6, clearanceMm: 0, includeHead: true });
     const nutLen = 3 * pitch;
     const nut = await createMetricThread({ kind: 'nut', diameterMm: d, lengthMm: nutLen, clearanceMm });
-    const headH = Math.max(2.2, 0.65 * d);
+    const headH = isoHeadHeight(d);
     const base = Math.ceil((headH + 1) / pitch) * pitch;
 
     // 8 fases de la grilla + 3 fases arbitrarias

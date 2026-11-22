@@ -10,7 +10,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { createMetricThread, isoCoarsePitch } from '../threads';
+import { createMetricThread, isoCoarsePitch, isoHeadHeight } from '../threads';
 import { intersectionVolume } from './geometryTestUtils';
 
 const PHASES = [0, 1 / 16, 1 / 8, 0.19, 0.25, 0.37, 0.5, 0.63, 0.75, 0.913];
@@ -82,7 +82,7 @@ describe('QA roscas: perno + tuerca, (a) movimiento de tornillo vs (b) solo giro
       const P = isoCoarsePitch(d);
       const bolt = await createMetricThread({ kind: 'bolt', diameterMm: d, lengthMm: 4 * P + 6, clearanceMm: 0, includeHead: true });
       const nut = await createMetricThread({ kind: 'nut', diameterMm: d, lengthMm: 3 * P, clearanceMm });
-      const headH = Math.max(2.2, 0.65 * d);
+      const headH = isoHeadHeight(d);
       const base = Math.ceil((headH + 1) / P) * P;
       let screwWorst = 0, rotOnlyWorst = 0;
       for (const f of PHASES) {
@@ -106,7 +106,7 @@ describe('QA roscas: perno + tuerca, (a) movimiento de tornillo vs (b) solo giro
     const d = 8, P = 1.25;
     const bolt = await createMetricThread({ kind: 'bolt', diameterMm: d, lengthMm: 4 * P + 6, clearanceMm: 0, includeHead: true });
     const nut = await createMetricThread({ kind: 'nut', diameterMm: d, lengthMm: 3 * P, clearanceMm: 0.2 });
-    const base = Math.ceil((Math.max(2.2, 0.65 * d) + 1) / P) * P;
+    const base = Math.ceil((isoHeadHeight(d) + 1) / P) * P;
     const f = 0.37;
     const vol = await intersectionVolume(bolt, nut, { position: [0, base - P * f, 0], rotation: [0, 2 * Math.PI * f, 0] });
     expect(vol).toBeGreaterThan(0.01);

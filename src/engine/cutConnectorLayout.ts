@@ -1,0 +1,245 @@
+/**
+ * @file src/engine/cutConnectorLayout.ts
+ * @description Ubicación de conectores del corte por plano sobre la sección real: la cara de corte
+ * se descompone en islas (`CrossSection.decompose` de manifold-3d), cada isla se contrae por el radio
+ * del alojamiento más la pared (`offset` redondo) y se intersecta con las secciones a lo largo de la
+ * profundidad del conector (así un cuerpo curvo como un toro no deja salir el alojamiento). Los
+ * conectores se reparten entre las islas proporcional al área (al menos uno por isla que lo admita)
+ * y dentro de cada isla por muestreo del punto más alejado (polo de inaccesibilidad para uno solo,
+ * muestreo de punto más lejano para varios), respetando la separación entre alojamientos.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import type { CrossSection, Manifold } from 'manifold-3d';
+import type { CutConnectorType, Vec3 } from '../types/kura';
+
+type Vec2 = [number, number];
+
+/** Radio (mm) del círculo que circunscribe la huella del conector en el plano de corte. */
+export function connectorFootprintRadius(
+  type: Exclude<CutConnectorType, 'none'>,
+  size: number,
+  expand: number
+): number {
+  if (type === 'dowel') return Math.max(0.4, size + expand);
+  if (type === 'peg') return 0.9 * Math.SQRT2 * Math.max(0.4, size + expand);
+  const headHalf = Math.max(0.55, size * 0.95) + expand;
+  const halfThick = Math.max(0.4, size * 0.65 + expand);
+  return Math.hypot(headHalf, halfThick);
+}
+
+/** Datos de una isla de la sección para repartir conectores. */
+export interface IslandCapacity {
+  area: number;
+  /** Cuántos conectores caben con la separación pedida (0 si la isla no admite ninguno). */
+  capacity: number;
+}
+
+/**
+ * Reparte `count` conectores entre islas: si hay menos conectores que islas aptas, van a las de
+ * mayor área; si no, uno por isla apta y el resto proporcional al área (mayor resto), sin pasar la
+ * capacidad de cada isla. Devuelve `null` si en total no caben `count`.
+ */
+export function allocateConnectors(islands: IslandCapacity[], count: number): number[] | null {
+  const alloc = islands.map(() => 0);
+  const eligible = islands.map((_, i) => i).filter((i) => islands[i].capacity > 0);
+  const total = eligible.reduce((s, i) => s + islands[i].capacity, 0);
+  if (total < count) return null;
+  const byArea = [...eligible].sort((a, b) => islands[b].area - islands[a].area);
+  if (count <= eligible.length) {
+    for (const i of byArea.slice(0, count)) alloc[i] = 1;
+    return alloc;
+  }
+  for (const i of eligible) alloc[i] = 1;
+  const eligibleArea = eligible.reduce((s, i) => s + islands[i].area, 0) || 1;
+  for (let left = count - eligible.length; left > 0; left--) {
+    // Mayor déficit respecto del reparto proporcional al área, entre islas con capacidad libre
+    let best = -1;
+    let bestDeficit = -Infinity;
+    for (const i of byArea) {
+      if (alloc[i] >= islands[i].capacity) continue;
+      const deficit = (islands[i].area / eligibleArea) * count - alloc[i];
+      if (deficit > bestDeficit) {
+        bestDeficit = deficit;
+        best = i;
+      }
+    }
+    alloc[best]++;
+  }
+  return alloc;
+}
+
+/** Punto dentro de los polígonos (regla par-impar, válida con agujeros). */
+function insidePolygons(p: Vec2, polys: Vec2[][]): boolean {
+  let inside = false;
+  for (const poly of polys) {
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const [xi, yi] = poly[i];
+      const [xj, yj] = poly[j];
+      if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/** Distancia de `p` al borde de los polígonos. */
+function distanceToBoundary(p: Vec2, polys: Vec2[][]): number {
+  let best = Infinity;
+  for (const poly of polys) {
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const [ax, ay] = poly[j];
+      const dx = poly[i][0] - ax;
+      const dy = poly[i][1] - ay;
+      const len2 = dx * dx + dy * dy;
+      const t = len2 > 0 ? Math.max(0, Math.min(1, ((p[0] - ax) * dx + (p[1] - ay) * dy) / len2)) : 0;
+      best = Math.min(best, Math.hypot(p[0] - ax - t * dx, p[1] - ay - t * dy));
+    }
+  }
+  return best;
+}
+
+const dist = (a: Vec2, b: Vec2) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+const GRID_STEPS = 40;
+
+/** Candidatos: grilla dentro de la zona segura más sus vértices. */
+function sampleCandidates(safe: CrossSection): Vec2[] {
+  const polys = safe.toPolygons() as Vec2[][];
+  const b = safe.bounds();
+  const step = Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1], 1e-6) / GRID_STEPS;
+  const out: Vec2[] = [];
+  for (let u = b.min[0]; u <= b.max[0] + 1e-9; u += step) {
+    for (let v = b.min[1]; v <= b.max[1] + 1e-9; v += step) {
+      if (insidePolygons([u, v], polys)) out.push([u, v]);
+    }
+  }
+  for (const poly of polys) for (const p of poly) out.push([p[0], p[1]]);
+  return out;
+}
+
+/**
+ * Orden de muestreo del punto más lejano: el primero es el polo (más alejado del borde de la isla);
+ * para dos o más se toma el par más separado y luego el candidato más lejano de los ya elegidos.
+ * `capacity` es cuántos de ese orden quedan a ≥ `separation` entre sí.
+ */
+function farthestPointOrder(
+  candidates: Vec2[],
+  islandPolys: Vec2[][],
+  maxCount: number,
+  separation: number
+): { pole: Vec2; order: Vec2[]; capacity: number } {
+  let pole = candidates[0];
+  let poleD = -Infinity;
+  for (const c of candidates) {
+    const d = distanceToBoundary(c, islandPolys);
+    if (d > poleD) {
+      poleD = d;
+      pole = c;
+    }
+  }
+  const farthestFrom = (pts: Vec2[]) => {
+    let best = candidates[0];
+    let bestD = -Infinity;
+    for (const c of candidates) {
+      const d = Math.min(...pts.map((p) => dist(c, p)));
+      if (d > bestD) {
+        bestD = d;
+        best = c;
+      }
+    }
+    return { best, bestD };
+  };
+  let p2 = farthestFrom([pole]).best;
+  const p1 = farthestFrom([p2]).best;
+  p2 = farthestFrom([p1]).best;
+  const order: Vec2[] = [p1, p2];
+  let capacity = dist(p1, p2) >= separation ? 2 : 1;
+  while (order.length < maxCount) {
+    const { best, bestD } = farthestFrom(order);
+    order.push(best);
+    if (capacity === order.length - 1 && bestD >= separation) capacity = order.length;
+  }
+  return { pole, order, capacity };
+}
+
+/** Resultado de la ubicación de conectores. */
+export interface ConnectorLayout {
+  centers: Vec3[];
+  islands: number;
+  /** Islas de la sección donde no cabe ni un conector. */
+  skippedIslands: number;
+  /** `false` si no caben `count` conectores separados (aunque quepa alguno). */
+  enoughRoom: boolean;
+}
+
+/** Parámetros geométricos de la ubicación. */
+export interface ConnectorLayoutParams {
+  axis: 'x' | 'y' | 'z';
+  cutCoord: number;
+  count: number;
+  /** Radio de la huella del alojamiento más pared (distancia mínima al borde). */
+  margin: number;
+  /** Separación mínima entre centros. */
+  separation: number;
+  /** Profundidad (desde el plano, hacia +normal) en la que el alojamiento debe seguir dentro. */
+  depth: number;
+}
+
+/**
+ * Ubica `count` conectores en la sección de `manifold` por el plano del eje `axis` en `cutCoord`.
+ * Devuelve los centros en mundo y el conteo de islas (las sin espacio quedan sin conector).
+ */
+export function layoutConnectorsOnSection(manifold: Manifold, p: ConnectorLayoutParams): ConnectorLayout {
+  const handles: Array<{ delete: () => void }> = [];
+  const own = <T extends { delete: () => void }>(h: T): T => {
+    handles.push(h);
+    return h;
+  };
+  try {
+    // Orienta el plano de corte a z' = cutCoord (ver conversión inversa al final)
+    const oriented =
+      p.axis === 'z' ? manifold : own(p.axis === 'y' ? manifold.rotate([90, 0, 0]) : manifold.rotate([0, -90, 0]));
+    const section = own(oriented.slice(p.cutCoord));
+    const islandSections = section.decompose();
+    handles.push(...islandSections);
+    // Secciones a lo largo de la profundidad: el alojamiento debe caber en todas
+    const SLICES = 3;
+    const deep: CrossSection[] = [];
+    for (let k = 1; k <= SLICES; k++) {
+      const slice = own(oriented.slice(p.cutCoord + (p.depth * k) / SLICES - 1e-3));
+      deep.push(own(slice.offset(-p.margin, 'Round')));
+    }
+    const islands: Array<IslandCapacity & { order: Vec2[]; pole: Vec2 }> = [];
+    for (const island of islandSections) {
+      let safe = own(island.offset(-p.margin, 'Round'));
+      for (const d of deep) safe = own(safe.intersect(d));
+      if (safe.isEmpty()) {
+        islands.push({ area: island.area(), capacity: 0, order: [], pole: [0, 0] });
+        continue;
+      }
+      const candidates = sampleCandidates(safe);
+      if (candidates.length === 0) {
+        islands.push({ area: island.area(), capacity: 0, order: [], pole: [0, 0] });
+        continue;
+      }
+      const fp = farthestPointOrder(candidates, island.toPolygons() as Vec2[][], Math.max(2, p.count), p.separation);
+      islands.push({ area: island.area(), ...fp });
+    }
+    const skippedIslands = islands.filter((i) => i.capacity === 0).length;
+    const alloc = allocateConnectors(islands, p.count);
+    const uv: Vec2[] = [];
+    if (alloc) {
+      islands.forEach((island, i) => {
+        if (alloc[i] === 1) uv.push(island.pole);
+        else uv.push(...island.order.slice(0, alloc[i]));
+      });
+    }
+    const centers = uv.map(([u, v]): Vec3 =>
+      p.axis === 'z' ? [u, v, p.cutCoord] : p.axis === 'y' ? [u, p.cutCoord, -v] : [p.cutCoord, v, -u]
+    );
+    return { centers, islands: islands.length, skippedIslands, enoughRoom: alloc !== null };
+  } finally {
+    for (const h of handles) h.delete();
+  }
+}

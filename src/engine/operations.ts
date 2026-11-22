@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';
+import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import type {
   BooleanOpType,
   CutConnectorType,
@@ -24,11 +24,13 @@ import {
   meshDataToManifold,
 } from './manifoldKernel';
 import {
+  assertConnectorDepth,
   assertConnectorsFit,
   CONNECTOR_MIN_WALL_MM,
   validateConnectorParams,
 } from './cutConnectorChecks';
-import { EngineError } from './engineErrors';
+import { connectorFootprintRadius, layoutConnectorsOnSection } from './cutConnectorLayout';
+import { EngineError, engineWarning, type EngineWarning } from './engineErrors';
 import {
   applyTransformToMesh,
   computeMeshStats,
@@ -235,107 +237,16 @@ function buildConnectorSolid(
 }
 
 /**
- * Calcula entre 1 y 4 ubicaciones óptimas en el plano de corte dentro de la sección
- * transversal del modelo para colocar conectores sin salirse de los bordes.
- */
-function computeConnectorPositionsOnPlane(
-  wasm: ManifoldToplevel,
-  manifold: Manifold,
-  axis: 'x' | 'y' | 'z',
-  cutCoord: number,
-  connectorCount: number,
-  margin: number
-): { centers: Vec3[]; fits: boolean } {
-  const count = connectorCount;
-  let oriented: Manifold | null = null;
-  let sliceCs: CrossSection | null = null;
-  let safeCs: CrossSection | null = null;
-
-  try {
-    if (axis === 'z') {
-      oriented = manifold;
-    } else if (axis === 'y') {
-      // +90° en X: (x, y, z) -> (x, -z, y), por lo que el plano y = cutCoord queda en z' = cutCoord
-      oriented = manifold.rotate([90, 0, 0]);
-    } else {
-      // -90° en Y: (x, y, z) -> (-z, y, x), por lo que el plano x = cutCoord queda en z' = cutCoord
-      oriented = manifold.rotate([0, -90, 0]);
-    }
-
-    sliceCs = oriented.slice(cutCoord);
-    if (sliceCs.isEmpty()) {
-      return { centers: [], fits: false };
-    }
-
-    // La zona segura (cara contraída por el radio del conector + holgura + pared) debe existir
-    safeCs = sliceCs.offset(-margin, 'Round');
-    if (safeCs.isEmpty()) {
-      return { centers: [], fits: false };
-    }
-    const bounds = safeCs.bounds();
-
-    const uMin = bounds.min[0];
-    const uMax = bounds.max[0];
-    const vMin = bounds.min[1];
-    const vMax = bounds.max[1];
-    const uMid = (uMin + uMax) * 0.5;
-    const vMid = (vMin + vMax) * 0.5;
-    const uSpan = uMax - uMin;
-    const vSpan = vMax - vMin;
-
-    // Máxima separación dentro de la zona segura (los extremos de un círculo inscrito siguen dentro)
-    const uvCandidates: [number, number][] = [];
-    if (count === 1) {
-      uvCandidates.push([uMid, vMid]);
-    } else if (count === 2) {
-      if (uSpan >= vSpan) {
-        uvCandidates.push([uMid - 0.49 * uSpan, vMid], [uMid + 0.49 * uSpan, vMid]);
-      } else {
-        uvCandidates.push([uMid, vMid - 0.49 * vSpan], [uMid, vMid + 0.49 * vSpan]);
-      }
-    } else if (count === 3) {
-      uvCandidates.push(
-        [uMid, vMid + 0.48 * vSpan],
-        [uMid - 0.41 * uSpan, vMid - 0.24 * vSpan],
-        [uMid + 0.41 * uSpan, vMid - 0.24 * vSpan]
-      );
-    } else {
-      uvCandidates.push(
-        [uMid - 0.34 * uSpan, vMid - 0.34 * vSpan],
-        [uMid + 0.34 * uSpan, vMid - 0.34 * vSpan],
-        [uMid - 0.34 * uSpan, vMid + 0.34 * vSpan],
-        [uMid + 0.34 * uSpan, vMid + 0.34 * vSpan]
-      );
-    }
-
-    // Convertir coordenadas 2D (u, v) del corte de vuelta al espacio mundial 3D
-    const centers = uvCandidates.map(([u, v]): Vec3 => {
-      if (axis === 'z') {
-        return [u, v, cutCoord];
-      }
-      if (axis === 'y') {
-        return [u, cutCoord, -v];
-      }
-      return [cutCoord, v, -u];
-    });
-    return { centers, fits: true };
-  } finally {
-    if (oriented && oriented !== manifold) {
-      oriented.delete();
-    }
-    sliceCs?.delete();
-    safeCs?.delete();
-  }
-}
-
-/**
  * Corta un objeto por un plano ortogonal (X, Y o Z) y genera conectores mecánicos
  * automáticos (`dowel`, `peg`, `dovetail`) macho en la mitad negativa y hembra con
  * tolerancia de impresión (`options.tolerance`) en la mitad positiva.
  *
  * @param obj Objeto de escena a dividir.
  * @param options Configuración de eje, desplazamiento, conectores y modo de conservación.
- * @returns Mitades `positive` y `negative` normalizadas a cama con su posición mundial.
+ * Los conectores se ubican por isla de la sección real (ver `cutConnectorLayout.ts`); una isla
+ * sin espacio para ninguno queda sin conector y se avisa con `CUT_CONNECTOR_ISLAND_SKIPPED`.
+ *
+ * @returns Mitades `positive` y `negative` normalizadas a cama con su posición mundial, y avisos.
  */
 export async function planeCutWithConnectors(
   obj: SceneObject,
@@ -343,6 +254,7 @@ export async function planeCutWithConnectors(
 ): Promise<{
   positive: { mesh: MeshData; position: Vec3 } | null;
   negative: { mesh: MeshData; position: Vec3 } | null;
+  warnings: EngineWarning[];
 }> {
   const wasm = await initManifoldEngine();
   const worldMesh = applyTransformToMesh(
@@ -362,6 +274,7 @@ export async function planeCutWithConnectors(
   let posHalf: Manifold | null = null;
   let negHalf: Manifold | null = null;
   const cleanupHandles: Manifold[] = [];
+  const warnings: EngineWarning[] = [];
 
   try {
     manifold = meshDataToManifold(
@@ -400,23 +313,35 @@ export async function planeCutWithConnectors(
 
     if (options.connectorType !== 'none') {
       const { size, depth, tolerance: tol, count } = validateConnectorParams(options);
-      const margin = size + tol + CONNECTOR_MIN_WALL_MM;
-
-      const { centers, fits } = computeConnectorPositionsOnPlane(
-        wasm,
-        manifold,
-        options.axis,
+      const type = options.connectorType;
+      const depthWithWall = Math.max(0.8, depth + tol) + CONNECTOR_MIN_WALL_MM;
+      assertConnectorDepth(posHalf, normal, cutCoord, depthWithWall);
+      // Margen al borde: huella del alojamiento con pared (+0.02 mm por el facetado del offset);
+      // separación: dos huellas con media pared cada una.
+      const layout = layoutConnectorsOnSection(manifold, {
+        axis: options.axis,
         cutCoord,
         count,
-        margin
-      );
-      if (!fits) {
-        throw new EngineError('CUT_CONNECTOR_TOO_LARGE', {
-          size,
-          count,
-          wall: CONNECTOR_MIN_WALL_MM,
-        });
+        margin: connectorFootprintRadius(type, size, tol + CONNECTOR_MIN_WALL_MM) + 0.02,
+        separation: 2 * connectorFootprintRadius(type, size, tol + CONNECTOR_MIN_WALL_MM * 0.5),
+        depth: depthWithWall,
+      });
+      if (layout.skippedIslands === layout.islands) {
+        throw new EngineError('CUT_CONNECTOR_TOO_LARGE', { size, count, wall: CONNECTOR_MIN_WALL_MM });
       }
+      if (!layout.enoughRoom) {
+        throw new EngineError('CUT_CONNECTORS_OVERLAP', { size, count });
+      }
+      if (layout.skippedIslands > 0) {
+        warnings.push(
+          engineWarning('CUT_CONNECTOR_ISLAND_SKIPPED', {
+            skipped: layout.skippedIslands,
+            islands: layout.islands,
+            size,
+          })
+        );
+      }
+      const centers = layout.centers;
 
       if (centers.length > 0) {
         const males: Manifold[] = [];
@@ -477,7 +402,7 @@ export async function planeCutWithConnectors(
           spacers,
           normal,
           cutCoord,
-          Math.max(0.8, depth + tol) + CONNECTOR_MIN_WALL_MM,
+          depthWithWall,
           size
         );
 
@@ -512,7 +437,7 @@ export async function planeCutWithConnectors(
           )
         : null;
 
-    return { positive, negative };
+    return { positive, negative, warnings };
   } finally {
     for (const h of cleanupHandles) {
       h.delete();
