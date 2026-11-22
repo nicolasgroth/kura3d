@@ -247,3 +247,15 @@ Aprendizaje de proceso: una funcionalidad nueva debe pasar por QA con los casos 
 
 Todos los bloqueos están en corrección.
 
+## QA previa a la ronda 5 · 22 de noviembre de 2026
+
+Tras la ronda 4 se aplicó la lección de proceso: todo lo nuevo pasó por QA independiente (Sonnet) con los casos del autor antes de evaluar. Ambas QA rechazaron el lote.
+
+| QA | Resultado | Hallazgos principales |
+|---|---|---|
+| Motor y MCP (8 modelos × 5 conectores, 99 casos) | Rechazado: 3 mayores, 3 menores | Montaje bloqueado sin resolver en cubo 440 y estatua; conectores de uniones cruzadas que se pisan (paredes 0,1–0,9 mm); `create_primitive` del bus sin convertir la posición a Z arriba |
+| Interfaz (navegador, 1440 y 390 px) | Rechazado: 1 bloqueo, 5 mayores | Corte por plano en Y conservaba la mitad contraria; resumen de división en ejes del motor y contando celdas vacías; avisos por unión no persistían; estado "Firme" antes de validar |
+
+Corregido en dos lotes (motor: registro global de conectores y cierre del armado; interfaz: los 7 puntos). Estado tras la corrección: 1484 pruebas frontend, 123 MCP, 37 Rust, sin brechas `it.fails`. Pendiente: re-verificación de QA y ronda 5.
+
+Consumo de agentes del día (modelo · duración · tokens): cierre de armado (Opus · 41 min · 292 k), eje Z (Opus · 30 min · 268 k), recientes seguros (Sonnet · 8 min · 125 k), restos del eje Z (Sonnet · 6 min · 118 k), MCP alineado (Opus · 21 min · 275 k), interfaz de armado (Sonnet · 22 min · 271 k), islas y marcas (Opus · 22 min · 235 k), QA motor (Sonnet · 23 min · 274 k), QA interfaz (Sonnet · 34 min · 169 k), corrección motor (Opus · 34 min · 269 k), corrección interfaz (Sonnet · 28 min · 323 k).
