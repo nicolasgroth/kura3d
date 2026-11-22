@@ -1258,6 +1258,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.labelPlacement.joint': 'जोड़ पर',
   'split.labelPlacement.outside': 'बाहर',
   'split.continueWith': '{count} भागों के साथ जारी रखें',
+  'operation.targetGone': 'इस ऑपरेशन का ऑब्जेक्ट अब मौजूद नहीं है; पैनल बंद कर दिया गया।',
   'split.continueWithTip': 'इस योजना के लिए भागों की सीमा बढ़ाता है (अधिकतम {max})',
   'engineWarning.SPLIT_JOINT_GLUE_ONLY': 'यह जोड़ कनेक्टर के लिए बहुत पतला है: इसे चिपकाने के लिए सपाट कट छोड़ा गया ({label}: {a}–{b})।',
   'engineWarning.SPLIT_GLUE_SUMMARY': '{total} में से {count} जोड़ केवल चिपकाने के लिए हैं।',

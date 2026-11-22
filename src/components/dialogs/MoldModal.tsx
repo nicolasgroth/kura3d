@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { PaintBucket } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import { useBoundOperationTarget } from '../useBoundOperationTarget';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { OperationPanel } from '../OperationPanel';
@@ -19,7 +20,6 @@ import { type MoldMode } from '../../types/kura';
 /** Modal 4: Generador Automático de Moldes y Contra-Moldes (Velas, Silicona, Resina). */
 export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const language = useKuraStore((s) => s.language);
-  const selectedIds = useKuraStore((s) => s.selectedIds);
   const objects = useKuraStore((s) => s.objects);
   const generateMoldForObject = useKuraStore((s) => s.generateMoldForObject);
 
@@ -33,7 +33,7 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
   const [cavityWallMm, setCavityWallMm] = useState(3);
   const failure = useOperationFailure(open);
 
-  const targetId = selectedIds[0] ?? objects[0]?.id;
+  const { targetId } = useBoundOperationTarget(open, onClose);
 
   const moldOptions = {
     mode,

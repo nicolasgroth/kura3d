@@ -1258,6 +1258,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'split.labelPlacement.joint': 'Auf der Verbindung',
   'split.labelPlacement.outside': 'Außen',
   'split.continueWith': 'Mit {count} Teilen fortfahren',
+  'operation.targetGone': 'Das Objekt dieser Operation existiert nicht mehr; das Panel wurde geschlossen.',
   'split.continueWithTip': 'Erhöht die Teilegrenze für diesen Plan (maximal {max})',
   'engineWarning.SPLIT_JOINT_GLUE_ONLY': 'Diese Verbindung ist zu dünn für einen Verbinder: sie blieb ein glatter Schnitt zum Kleben ({label}: {a}–{b}).',
   'engineWarning.SPLIT_GLUE_SUMMARY': '{count} von {total} Verbindungen nur zum Kleben.',

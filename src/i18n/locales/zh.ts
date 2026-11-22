@@ -1258,6 +1258,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'split.labelPlacement.joint': '在接合面',
   'split.labelPlacement.outside': '外侧',
   'split.continueWith': '以 {count} 个零件继续',
+  'operation.targetGone': '此操作的对象已不存在，面板已关闭。',
   'split.continueWithTip': '提高此方案的零件上限（最多 {max}）',
   'engineWarning.SPLIT_JOINT_GLUE_ONLY': '此接合太薄，无法放置连接件：保留为平切面，用于粘合（{label}：{a}–{b}）。',
   'engineWarning.SPLIT_GLUE_SUMMARY': '{total} 个接合中有 {count} 个仅用于粘合。',

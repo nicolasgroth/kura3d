@@ -1258,6 +1258,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'split.labelPlacement.joint': 'Sur la jonction',
   'split.labelPlacement.outside': 'À l\'extérieur',
   'split.continueWith': 'Continuer avec {count} pièces',
+  'operation.targetGone': 'L’objet de cette opération n’existe plus ; le panneau a été fermé.',
   'split.continueWithTip': 'Relève la limite de pièces pour ce plan (maximum {max})',
   'engineWarning.SPLIT_JOINT_GLUE_ONLY': 'Cette jonction est trop mince pour un connecteur : elle reste une coupe lisse à coller ({label} : {a}–{b}).',
   'engineWarning.SPLIT_GLUE_SUMMARY': '{count} jonctions sur {total} sont à coller uniquement.',

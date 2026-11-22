@@ -115,6 +115,18 @@ describe('SplitForBedPanel', () => {
     expect(request.mock.calls.at(-1)![2].planePositions).toEqual({});
   });
 
+  it('queda ligado al objeto con que se abrió: deseleccionar no borra el plan; si el objeto desaparece, se cierra', () => {
+    const onClose = vi.fn();
+    render(<SplitForBedPanel open onClose={onClose} />);
+    ready(PLAN);
+    act(() => useKuraStore.setState({ selectedIds: [] }));
+    expect(screen.getByTestId('split-piece-count').textContent).toContain('5');
+    expect(document.body.textContent).toContain(t('es', 'split.target', { name: 'Tubería' }));
+    expect(onClose).not.toHaveBeenCalled();
+    act(() => useKuraStore.setState({ objects: [] }));
+    expect(onClose).toHaveBeenCalled();
+  });
+
   it('con el tope superado ofrece continuar con las piezas necesarias y pide maxPieces auto', () => {
     render(<SplitForBedPanel open onClose={() => undefined} />);
     expect(request.mock.calls.at(-1)![2].connector).toMatchObject({ type: 'dowel', minWallForConnectorMm: 8 });
