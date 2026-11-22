@@ -82,6 +82,14 @@ export {
 export { generateMold, generateMoldDetailed, safeSpoutRadius, type GeneratedMold, type GeneratedMoldPart } from './molds';
 
 export { projectGraphicOntoSurface } from './surfaceProjection';
+export {
+  listProjectionFaces,
+  suggestProjectionFace,
+  suggestProjectionWidth,
+  type PlanarProjectionAxis,
+  type ProjectionFaceCandidate,
+} from './projectionSuggest';
+export { registerTextFont, registeredTextFonts, DEFAULT_TEXT_FONT_ID } from './text/fontRegistry';
 
 export {
   analyzePrintability,

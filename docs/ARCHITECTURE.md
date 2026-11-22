@@ -6,7 +6,7 @@ Guía breve de capas y dependencias. La prueba `src/__tests__/dependencyRules.te
 
 | Capa | Ruta | Responsabilidad |
 |---|---|---|
-| Motor | `src/engine/` | Geometría pura sobre Manifold WASM: primitivas, CSG, corte, ahuecado, moldes, roscas, análisis, formatos de archivo. Errores (`engineErrors.ts`) y límites (`primitiveLimits.ts`, `operationLimits.ts`) propios del motor. |
+| Motor | `src/engine/` | Geometría pura sobre Manifold WASM: primitivas, CSG, corte, ahuecado, moldes, roscas, análisis, formatos de archivo. Errores (`engineErrors.ts`) y límites (`primitiveLimits.ts`, `operationLimits.ts`) propios del motor. Texto 3D en `src/engine/text/`: fuente real (Roboto Bold, OFL) leída con opentype.js y cargada en diferido; `fontRegistry.ts` es el punto de extensión para más fuentes, `textOutlines.ts` maqueta y aplana contornos, `textCrossSection.ts` los pasa a Manifold (lo comparten la primitiva y la proyección). |
 | Escena | `src/core/scene/` | Modelo de escena sin interfaz: construir objetos (`sceneObjects.ts`, con `ObjectBuildPolicy` para app y headless), reglas de bloqueo, vigencia y selección de objetivos (`sceneRules.ts`), nombres de resultados (`resultNames.ts`), resumen serializable (`sceneSummary.ts`). |
 | Operaciones | `src/core/operations/` | Una función pura por operación: recibe objetos y opciones, llama al motor y devuelve un `SceneChange` (agregar, quitar, parchar + avisos). Sin `set`, sin toasts, sin i18n salvo claves. |
 | Comandos | `src/core/commands/` | Contrato del Command Bus compartido por app y servidor MCP: nombres de comando y política lectura/escritura (`commandPolicy.ts`). |
