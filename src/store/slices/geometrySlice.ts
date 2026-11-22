@@ -16,6 +16,7 @@ import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { formatNumber } from '../../utils/plural';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
+import { userAxisLabel } from '../../core/scene/displayAxes';
 
 export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, pushHistory, runExclusive, rejectWhileLocked, opCtx, assertCurrent, commitChange, runtime, runEngine } = ctx;
@@ -148,7 +149,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         commitChange(change, {
           extra: { activeSegmentation: get().activeSegmentation?.objectId === id ? null : get().activeSegmentation },
         });
-        get().addToast(tr('toast.mirrored', { axis: axis.toUpperCase() }), 'success');
+        get().addToast(tr('toast.mirrored', { axis: userAxisLabel(axis) }), 'success');
         return true;
       } catch (err) {
         reportOperationError(err);
