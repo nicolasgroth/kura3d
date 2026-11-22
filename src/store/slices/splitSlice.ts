@@ -29,6 +29,8 @@ export interface SplitPlanPreviewState {
   /** Mensaje localizado y código del error tipado del motor. */
   error: string | null;
   errorCode: string | null;
+  /** Parámetros del error tipado (p. ej. `needed` de `SPLIT_TOO_MANY_PIECES`). */
+  errorParams?: Record<string, string | number> | null;
 }
 
 export interface SplitSliceState {
@@ -87,6 +89,7 @@ export function createSplitSlice(ctx: StoreContext): Partial<KuraStoreState> {
                 bed,
                 error: localizeEngineError(get().language, err),
                 errorCode: isEngineError(err) ? err.code : null,
+                errorParams: isEngineError(err) ? { ...err.params } : null,
               },
             });
           },

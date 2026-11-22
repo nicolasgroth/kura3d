@@ -58,7 +58,7 @@ function readAxes(p: RawParams): SplitAxis[] | undefined {
 export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): SplitForBedRequest {
   const target = resolveTarget(scene, p, { unlocked: true });
   const bed = activeBed(scene);
-  const type = readEnum(p, ['none', 'dowel', 'peg', 'dovetail'] as const, 'connectorType') ?? 'dowel';
+  const type = readEnum(p, ['none', 'dowel', 'peg', 'dovetail', 'lap'] as const, 'connectorType') ?? 'dowel';
   const connector: SplitConnectorOptions | null =
     type === 'none'
       ? null
@@ -68,6 +68,8 @@ export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): Sp
           depth: readRange(p, OR.cut.connectorDepth, 'connectorDepth') ?? 6,
           tolerance: readRange(p, OR.cut.tolerance, 'tolerance') ?? 0.25,
           count: Math.max(1, readRange(p, OR.cut.connectorCount, 'connectorCount') ?? 2),
+          minWallForConnectorMm: readRange(p, OR.split.minWallForConnectorMm, 'minWallForConnectorMm') ?? OPERATION_DEFAULTS.split.minWallForConnectorMm,
+          lapHeightMm: readRange(p, OR.split.lapHeightMm, 'lapHeightMm') ?? OPERATION_DEFAULTS.split.lapHeightMm,
         };
   const d = OPERATION_DEFAULTS.split;
   return {
@@ -80,8 +82,9 @@ export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): Sp
     plan: {
       marginMm: readRange(p, OR.split.marginMm, 'marginMm') ?? d.marginMm,
       axes: readAxes(p),
-      maxPieces: readRange(p, OR.split.maxPieces, 'maxPieces') ?? d.maxPieces,
+      maxPieces: pick(p, 'maxPieces')?.[1] === 'auto' ? 'auto' : (readRange(p, OR.split.maxPieces, 'maxPieces') ?? d.maxPieces),
       allowRotation: readBoolean(p, 'allowRotation') ?? true,
+      allowDiagonal: readBoolean(p, 'allowDiagonal') ?? false,
       shiftWindow: readRange(p, OR.split.shiftWindow, 'shiftWindow') ?? d.shiftWindow,
       connector,
     },
@@ -90,6 +93,8 @@ export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): Sp
       labels: readEnum(p, ['none', 'engraved'] as const, 'labels') ?? 'none',
       labelDepthMm: readRange(p, OR.split.labelDepthMm, 'labelDepthMm') ?? d.labelDepthMm,
       labelMinHeightMm: readRange(p, OR.split.labelMinHeightMm, 'labelMinHeightMm') ?? d.labelMinHeightMm,
+      labelPlacement: readEnum(p, ['auto', 'joint', 'outside'] as const, 'labelPlacement') ?? 'auto',
+      minFragmentMm3: readRange(p, OR.split.minFragmentMm3, 'minFragmentMm3') ?? d.minFragmentMm3,
     },
     dryRun: readBoolean(p, 'dryRun') ?? false,
   };

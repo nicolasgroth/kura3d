@@ -16,7 +16,7 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { activeBed } from '../../store/splitCommandSchemas';
 import type { BedSplitPlanOptions, SplitAxis, SplitBed, SplitConnectorOptions } from '../../engine';
-import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../../engine/operationLimits';
+import { OPERATION_DEFAULTS, OPERATION_RANGES as OR, SPLIT_HARD_MAX_PIECES } from '../../engine/operationLimits';
 import { summarizeSplitPlan } from '../../core/scene/splitPlanSummary';
 import { formatNumber } from '../../utils/plural';
 import { OperationPanel } from '../OperationPanel';
@@ -27,7 +27,9 @@ import { onSplitPlaneMove, planeKey } from './splitPlaneDrag';
 import { SplitPlanSummaryView } from './SplitPlanSummaryView';
 import '../../styles/splitForBed.css';
 
-type ConnectorKind = 'none' | SplitConnectorOptions['type'];
+/** `auto` = espigas donde quepan y corte liso para pegar donde no (por defecto). */
+type ConnectorKind = 'none' | 'auto' | SplitConnectorOptions['type'];
+type LabelPlacement = 'auto' | 'joint' | 'outside';
 type Overrides = Partial<Record<SplitAxis, number[]>>;
 const AXES: SplitAxis[] = ['x', 'y', 'z'];
 const D = OPERATION_DEFAULTS.split;
@@ -56,13 +58,18 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const [margin, setMargin] = useState<number>(D.marginMm);
   const [axes, setAxes] = useState<Record<SplitAxis, boolean>>({ x: true, y: true, z: true });
   const [allowRotation, setAllowRotation] = useState(true);
-  const [kind, setKind] = useState<ConnectorKind>('dowel');
+  const [allowDiagonal, setAllowDiagonal] = useState(false);
+  const [kind, setKind] = useState<ConnectorKind>('auto');
+  const [lapHeight, setLapHeight] = useState<number>(D.lapHeightMm);
+  const [minWall, setMinWall] = useState<number>(D.minWallForConnectorMm);
   const [size, setSize] = useState(4);
   const [depth, setDepth] = useState(6);
   const [tolerance, setTolerance] = useState(0.25);
   const [count, setCount] = useState(2);
   const [labels, setLabels] = useState<'none' | 'engraved'>('engraved');
   const [labelDepth, setLabelDepth] = useState<number>(D.labelDepthMm);
+  const [labelPlacement, setLabelPlacement] = useState<LabelPlacement>('auto');
+  const [maxPieces, setMaxPieces] = useState<'auto' | undefined>(undefined);
   const [overrides, setOverrides] = useState<Overrides>({});
 
   const target = useMemo(() => objects.find((o) => o.id === selectedIds[0]) ?? null, [objects, selectedIds]);
@@ -73,16 +80,27 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   useEffect(() => {
     if (open) setBed(defaultBed);
   }, [open, defaultBed]);
-  useEffect(() => setOverrides({}), [targetId]);
+  useEffect(() => {
+    setOverrides({});
+    setMaxPieces(undefined);
+  }, [targetId]);
 
   const connector = useMemo<SplitConnectorOptions | null>(
-    () => (kind === 'none' ? null : { type: kind, size, depth, tolerance, count }),
-    [kind, size, depth, tolerance, count],
+    () =>
+      kind === 'none'
+        ? null
+        : {
+            type: kind === 'auto' ? 'dowel' : kind,
+            size, depth, tolerance, count,
+            minWallForConnectorMm: minWall,
+            lapHeightMm: lapHeight,
+          },
+    [kind, size, depth, tolerance, count, lapHeight, minWall],
   );
   const allowedAxes = useMemo(() => AXES.filter((a) => axes[a]), [axes]);
   const planOptions = useMemo<BedSplitPlanOptions>(
-    () => ({ marginMm: margin, axes: allowedAxes, allowRotation, connector, planePositions: overrides }),
-    [margin, allowedAxes, allowRotation, connector, overrides],
+    () => ({ marginMm: margin, axes: allowedAxes, allowRotation, allowDiagonal, connector, planePositions: overrides, maxPieces }),
+    [margin, allowedAxes, allowRotation, allowDiagonal, connector, overrides, maxPieces],
   );
 
   // Plan en vivo con debounce (el visor lo dibuja).
@@ -154,6 +172,11 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   else if (plan?.fitsWithoutCuts) reason = t(language, 'split.reason.fits');
   else if (summary && summary.oversized.length > 0) reason = t(language, 'split.reason.oversized', { codes: summary.oversized.join(', ') });
   const checking = !reason && (pending || !plan);
+  // Tope superado: ofrece seguir con las piezas necesarias (hasta el tope duro).
+  const needed = Number(preview.errorParams?.needed);
+  const canRaise =
+    preview.status === 'error' && preview.objectId === targetId && preview.errorCode === 'SPLIT_TOO_MANY_PIECES' &&
+    maxPieces !== 'auto' && Number.isFinite(needed) && needed <= SPLIT_HARD_MAX_PIECES;
   const reasonId = `${uid}-reason`;
 
   const handleSplit = async () => {
@@ -162,7 +185,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       splitObjectForBed(targetId, {
         bed,
         plan: planOptions,
-        execute: { connector, labels, labelDepthMm: labelDepth },
+        execute: { connector, labels, labelDepthMm: labelDepth, labelPlacement },
         dryRun: false,
       }),
     );
@@ -226,6 +249,16 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
           {t(language, 'split.blocked', { reason })}
         </div>
       )}
+      {canRaise && (
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm"
+          title={t(language, 'split.continueWithTip', { max: SPLIT_HARD_MAX_PIECES })}
+          onClick={() => setMaxPieces('auto')}
+        >
+          {t(language, 'split.continueWith', { count: needed })}
+        </button>
+      )}
       {target && <p className="kura-split-target">{t(language, 'split.target', { name: target.name })}</p>}
 
       <fieldset className="kura-split-group">
@@ -261,6 +294,10 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
           <input type="checkbox" checked={allowRotation} onChange={(e) => setAllowRotation(e.target.checked)} />
           <span>{t(language, 'split.allowRotation')}</span>
         </label>
+        <label className="kura-split-check" title={t(language, 'split.allowDiagonalTip')}>
+          <input type="checkbox" checked={allowDiagonal} onChange={(e) => setAllowDiagonal(e.target.checked)} />
+          <span>{t(language, 'split.allowDiagonal')}</span>
+        </label>
       </fieldset>
 
       <fieldset className="kura-split-group">
@@ -268,17 +305,24 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         <div className="kura-form-field">
           <label htmlFor={`${uid}-kind`}>{t(language, 'dialog.cut.connectorType')}</label>
           <select id={`${uid}-kind`} className="kura-select" value={kind} title={t(language, 'split.connectorTip')} onChange={(e) => setKind(e.target.value as ConnectorKind)}>
+            <option value="auto">{t(language, 'split.joint.auto')}</option>
+            <option value="lap">{t(language, 'split.joint.lap')}</option>
             <option value="none">{t(language, 'dialog.cut.connector.none')}</option>
             <option value="dowel">{t(language, 'dialog.cut.connector.dowel')}</option>
             <option value="peg">{t(language, 'dialog.cut.connector.peg')}</option>
             <option value="dovetail">{t(language, 'dialog.cut.connector.dovetail')}</option>
           </select>
         </div>
+        {kind !== 'none' && kind !== 'lap' &&
+          num('minwall', `${t(language, 'split.minWall')} (mm)`, minWall, setMinWall, OR.split.minWallForConnectorMm, { step: 0.5, def: D.minWallForConnectorMm, hint: t(language, 'split.minWallTip') })}
+        {kind === 'lap' && <p className="kura-split-target">{t(language, 'split.lapShapeNote')}</p>}
+        {kind === 'lap' &&
+          num('laph', `${t(language, 'split.lapHeight')} (mm)`, lapHeight, setLapHeight, OR.split.lapHeightMm, { step: 0.5, def: D.lapHeightMm })}
         <div className="kura-split-row2">
-          {num('size', `${t(language, 'dialog.cut.connectorSize')} (mm)`, size, setSize, { min: OR.cut.connectorSize.min, max: 50 }, { step: 0.5, disabled: !connector, def: 4 })}
-          {num('depth', `${t(language, 'dialog.cut.connectorDepth')} (mm)`, depth, setDepth, { min: OR.cut.connectorDepth.min, max: 50 }, { step: 0.5, disabled: !connector, def: 6 })}
+          {num('size', `${t(language, 'dialog.cut.connectorSize')} (mm)`, size, setSize, { min: OR.cut.connectorSize.min, max: 50 }, { step: 0.5, disabled: !connector || kind === 'lap', def: 4 })}
+          {num('depth', `${t(language, 'dialog.cut.connectorDepth')} (mm)`, depth, setDepth, { min: OR.cut.connectorDepth.min, max: 50 }, { step: 0.5, disabled: !connector || kind === 'lap', def: 6 })}
           {num('tol', `${t(language, 'dialog.cut.tolerance')} (mm)`, tolerance, setTolerance, OR.cut.tolerance, { step: 0.05, precision: 2, disabled: !connector, def: 0.25 })}
-          {num('count', t(language, 'dialog.cut.connectorCount'), count, (v) => setCount(Math.round(v)), { min: 1, max: OR.cut.connectorCount.max }, { precision: 0, disabled: !connector, def: 2 })}
+          {num('count', t(language, 'dialog.cut.connectorCount'), count, (v) => setCount(Math.round(v)), { min: 1, max: OR.cut.connectorCount.max }, { precision: 0, disabled: !connector || kind === 'lap', def: 2 })}
         </div>
       </fieldset>
 
@@ -293,6 +337,21 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
             </select>
           </div>
           {num('ldepth', `${t(language, 'split.labelDepth')} (mm)`, labelDepth, setLabelDepth, OR.split.labelDepthMm, { step: 0.1, precision: 2, disabled: labels === 'none', def: D.labelDepthMm })}
+          <div className="kura-form-field">
+            <label htmlFor={`${uid}-lplace`}>{t(language, 'split.labelPlacement')}</label>
+            <select
+              id={`${uid}-lplace`}
+              className="kura-select"
+              value={labelPlacement}
+              disabled={labels === 'none'}
+              title={t(language, 'split.labelPlacementTip')}
+              onChange={(e) => setLabelPlacement(e.target.value as LabelPlacement)}
+            >
+              <option value="auto">{t(language, 'split.labelPlacement.auto')}</option>
+              <option value="joint">{t(language, 'split.labelPlacement.joint')}</option>
+              <option value="outside">{t(language, 'split.labelPlacement.outside')}</option>
+            </select>
+          </div>
         </div>
       </fieldset>
 

@@ -39,7 +39,7 @@ export function planeUVToWorld(axis: SplitAxis, u: number, v: number, coord: num
 }
 
 /** Lleva un sólido del marco orientado (z' = eje) al mundo. */
-function orientedToWorld(m: Manifold, axis: SplitAxis): Manifold {
+export function orientedToWorld(m: Manifold, axis: SplitAxis): Manifold {
   if (axis === 'z') return m.translate([0, 0, 0]);
   return axis === 'y' ? m.rotate([-90, 0, 0]) : m.rotate([0, 90, 0]);
 }
@@ -56,6 +56,8 @@ export interface JointLabelInput {
   connectorRadius: number;
   depthMm: number;
   minHeightMm: number;
+  /** Zona a evitar en (u, v) (p. ej. islas con solape); no se libera. */
+  exclude?: CrossSection;
 }
 
 export interface JointLabelSolids {
@@ -74,8 +76,15 @@ function labelZone(wasm: ManifoldToplevel, input: JointLabelInput): CrossSection
   const { oriented, owned } = orientForAxis(input.high, input.axis);
   const section = oriented.slice(input.coord + 0.01);
   if (owned) oriented.delete();
-  const inner = section.offset(-BORDER_MM, 'Round');
+  let inner = section.offset(-BORDER_MM, 'Round');
   section.delete();
+  if (input.exclude && !input.exclude.isEmpty()) {
+    const grown = input.exclude.offset(CONNECTOR_GAP_MM, 'Round');
+    const rest = inner.subtract(grown);
+    grown.delete();
+    inner.delete();
+    inner = rest;
+  }
   if (input.connectorCenters.length === 0) return inner;
   const holes = input.connectorCenters.map((c) => {
     const [u, v] = worldToPlaneUV(input.axis, c);

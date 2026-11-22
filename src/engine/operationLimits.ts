@@ -132,6 +132,9 @@ export const OPERATION_RANGES = {
     shiftWindow: closed(0, 0.45),
     labelDepthMm: closed(0.1, 3),
     labelMinHeightMm: closed(2, 50),
+    lapHeightMm: closed(2, 30),
+    minFragmentMm3: closed(0, 1_000_000),
+    minWallForConnectorMm: closed(0, 50),
   },
 } as const satisfies Record<string, Record<string, OperationRange>>;
 
@@ -142,8 +145,11 @@ export const OPERATION_RANGES = {
 export const OPERATION_DEFAULTS = {
   mold: { wallMarginMm: 6, boxWallMm: 3, pourSpoutRadiusMm: 5, keyToleranceMm: 0.25, cavityWallMm: 3 },
   printability: { infillPercent: 20, overhangAngleDeg: 45, minWallMm: 0.8 },
-  split: { marginMm: 5, maxPieces: 64, shiftWindow: 0.15, labelDepthMm: 0.4, labelMinHeightMm: 4 },
+  split: { marginMm: 5, maxPieces: 64, shiftWindow: 0.15, labelDepthMm: 0.4, labelMinHeightMm: 4, lapHeightMm: 6, minFragmentMm3: 2000, minWallForConnectorMm: 8 },
 } as const;
+
+/** Tope duro de piezas de "dividir para imprimir" con `maxPieces: 'auto'`. */
+export const SPLIT_HARD_MAX_PIECES = 400;
 
 /** Indica si `value` es un número finito dentro de `range`. */
 export function isInOperationRange(value: unknown, range: OperationRange): value is number {

@@ -28,6 +28,7 @@ const PLAN: BedSplitPlan = {
     uniformPosition: position,
     sectionAreaMm2: 11000,
     islands: 1,
+    strips: 0,
     smallestIslandMm2: 11000,
     admitsConnectors: index !== 2,
   })),
@@ -38,6 +39,8 @@ const PLAN: BedSplitPlan = {
     sizeMm: [120, j < 4 ? 206 : 200, 120] as [number, number, number],
     rotated: false,
     printRotation: [0, 0, 0] as [number, number, number],
+    diagonal: false,
+    bedMarginMm: 5,
   })),
   fitsWithoutCuts: false,
   connector: { type: 'dowel', size: 4, depth: 6, tolerance: 0.25, count: 2 },
@@ -110,5 +113,20 @@ describe('SplitForBedPanel', () => {
     expect(request.mock.calls.at(-1)![2].planePositions).toEqual({ y: [200, 432, 600, 800] });
     fireEvent.click(screen.getByRole('button', { name: new RegExp(t('es', 'split.resetPlanes')), hidden: true }));
     expect(request.mock.calls.at(-1)![2].planePositions).toEqual({});
+  });
+
+  it('con el tope superado ofrece continuar con las piezas necesarias y pide maxPieces auto', () => {
+    render(<SplitForBedPanel open onClose={() => undefined} />);
+    expect(request.mock.calls.at(-1)![2].connector).toMatchObject({ type: 'dowel', minWallForConnectorMm: 8 });
+    act(() =>
+      useKuraStore.setState({
+        splitPlanPreview: {
+          objectId: 'a', status: 'error', plan: null, bed: { widthMm: 256, depthMm: 256, heightMm: 256 },
+          error: 'Harían falta unas 125 piezas', errorCode: 'SPLIT_TOO_MANY_PIECES', errorParams: { needed: 125, max: 64 },
+        },
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: t('es', 'split.continueWith', { count: 125 }), hidden: true }));
+    expect(request.mock.calls.at(-1)![2].maxPieces).toBe('auto');
   });
 });
