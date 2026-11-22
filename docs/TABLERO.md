@@ -6,7 +6,10 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 ## En desarrollo
 
-Nada en este momento.
+| Funcionalidad | Estado |
+|---|---|
+| Grupos, corrección tras QA: "Separar cuerpos" pierde los colores, escalar un grupo con el gizmo lo despega de la cama, doble clic renombra el grupo equivocado, Alt+→ hacia un grupo plegado pierde el foco; y menores (ojo del grupo, accesibilidad de los botones de fila, nombres) | En corrección desde las 19:40 |
+| Pruebas de navegador ejecutables con `npm run test:e2e` (hoy los recorridos que escribe QA no se pueden correr porque Playwright no es dependencia del repo) | En el mismo lote |
 
 ## En QA
 
@@ -22,10 +25,10 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Menú contextual ordenado y teclas F2, F3, F4, Mayús+F5 | Evaluado en la ronda 5 (85 y 72); F2 corregido; QA en curso |
 | Pintura por caras rápida; operaciones de creación en el Worker | QA aprobó sin bloqueos; falta medir el pincel con GPU real |
 | Grabar sobre un relieve ya no da el error falso de profundidad; 3MF determinista (misma escena, mismos bytes); auditoría de secretos: claves de IA y token MCP nunca van a `localStorage` ni a logs, ahora con prueba que lo hace cumplir | Implementado con pruebas; sin QA en navegador |
-| Grupos y árbol de escena: Agrupar (Ctrl+G) y Desagrupar (Ctrl+Mayús+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ojo, candado, renombrar, arrastrar, teclado), manipulador del conjunto con escala proporcional, "Combinar en un objeto" y "Separar cuerpos", exportar un grupo como un archivo o uno por objeto, comandos de bus y MCP | Implementado; verificado por el desarrollador en navegador; QA independiente en curso |
-| Pintura sobre primitivas: el arrastre no modifica nada hasta aceptar el aviso, "Cancelar" deja el cubo intacto, un trazo = un paso también con refinado | Corregido tras el rechazo de QA; verificado por el desarrollador en navegador; falta QA independiente |
-| Separar por colores en superficies curvas: malla limpia (el defecto que midió QA en la esfera era real y quedó corregido) | Corregido con pruebas; falta QA |
-| Menú del objeto con ideas de OrcaSlicer: Centrar en la cama, Transformar ▸, Alinear y distribuir ▸, forma Disco, Reemplazar por archivo, Exportar selección como un STL, "Ocultar (no se exporta)", aviso de malla pesada con acceso a Simplificar | Implementado; verificado por el desarrollador en navegador; falta QA |
+| Grupos y árbol de escena: Agrupar (Ctrl+G) y Desagrupar (Ctrl+Mayús+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ojo, candado, renombrar, arrastrar, teclado), manipulador del conjunto con escala proporcional, "Combinar en un objeto" y "Separar cuerpos", exportar un grupo como un archivo o uno por objeto, comandos de bus y MCP | QA rechazó por 4 fallos mayores (sin pérdida de datos ni jerarquía corrupta); en corrección. Aprobado: agrupar, anidar, deshacer, guardar y reabrir, combinar, exportar, atajos, 390 px, piezas de división en el árbol |
+| Pintura sobre primitivas: el arrastre no modifica nada hasta aceptar el aviso, "Cancelar" deja el cubo intacto, un trazo = un paso también con refinado | Corregido y confirmado por QA con arrastre largo |
+| Separar por colores en superficies curvas: malla limpia (el defecto que midió QA en la esfera era real y quedó corregido) | Confirmado por QA en esfera y cilindro; queda afinar triángulos casi degenerados en bordes irregulares |
+| Menú del objeto con ideas de OrcaSlicer: Centrar en la cama, Transformar ▸, Alinear y distribuir ▸, forma Disco, Reemplazar por archivo, Exportar selección como un STL, "Ocultar (no se exporta)", aviso de malla pesada con acceso a Simplificar | Confirmado por QA |
 | Proyectos recientes y seguridad en escritorio (CSP, llavero, permisos, proxy de IA, confirmación al sobrescribir) | Probado en web y con pruebas; falta verificar en la app instalada |
 
 ## En evaluación
