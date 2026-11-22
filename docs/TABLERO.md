@@ -8,6 +8,7 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 | Funcionalidad | Estado |
 |---|---|
+| Herramienta Medir: distancia entre dos puntos (con imán a vértices y centros), ángulo, área de una cara o región, volumen, y capacidad de un recipiente hasta su nivel de rebalse, en mm/cm/pulgadas y mL/litros | Pedido el 22-nov; en curso desde las 19:50 |
 | Grupos, corrección tras QA: "Separar cuerpos" pierde los colores, escalar un grupo con el gizmo lo despega de la cama, doble clic renombra el grupo equivocado, Alt+→ hacia un grupo plegado pierde el foco; y menores (ojo del grupo, accesibilidad de los botones de fila, nombres) | En corrección desde las 19:40 |
 | Pruebas de navegador ejecutables con `npm run test:e2e` (hoy los recorridos que escribe QA no se pueden correr porque Playwright no es dependencia del repo) | En el mismo lote |
 
