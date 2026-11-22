@@ -70,6 +70,23 @@
   max-width: none;
 }
 
+/* En el menu el selector de idioma es visible (en la barra va oculto bajo su cara corta). */
+.kura-topbar-more-row .kura-lang-select-native {
+  position: static;
+  opacity: 1;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--border-color, var(--border-subtle));
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-input, var(--bg-panel));
+  color: var(--text-primary);
+}
+
+.kura-topbar-more-row .kura-lang-select-native:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
 /* Anchos muy reducidos (móvil): el nombre del proyecto queda solo en el nombre accesible. */
 .kura-topbar-adaptive.is-narrow .kura-project-name,
 .kura-topbar-adaptive.is-narrow .kura-project-trigger .kura-btn-label {

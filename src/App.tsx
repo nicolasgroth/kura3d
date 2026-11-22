@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { AiChatDrawer } from './components/AiChatDrawer';
 import { CommandPalette } from './components/CommandPalette';
 import { Dialogs } from './components/Dialogs';
@@ -30,6 +30,7 @@ import { useMcpBridgeClient } from './utils/mcpBridgeClient';
 import { isTauriRuntime } from './utils/platformBridge';
 import { guardUnsavedChanges } from './utils/unsavedGuard';
 import { ConfirmDialogHost } from './components/ConfirmDialogHost';
+import { NarrowPanelBar } from './components/NarrowPanelBar';
 
 const TRANSFORM_SHORTCUTS = new Map<string, TransformMode>([
   ['m', 'translate'],
@@ -58,10 +59,18 @@ export const App: React.FC = () => {
   const recovery = useProjectRecovery();
   const discardRecoveryOnClose = recovery.discardOnClose;
 
+  const [narrowTall, setNarrowTall] = useState(false);
+
   function toggleNarrowPanel(panel: 'left' | 'right') {
     if (aiDrawerOpen) setAiDrawerOpen(false);
     setNarrowPanel(visibleNarrowPanel === panel ? null : panel);
   }
+
+  const closeNarrowPanel = useCallback(() => {
+    if (useKuraStore.getState().aiDrawerOpen) useKuraStore.getState().setAiDrawerOpen(false);
+    setNarrowPanel(null);
+    setNarrowTall(false);
+  }, []);
 
   // Sincroniza título del documento e idioma del elemento <html>
   useEffect(() => {
@@ -384,27 +393,19 @@ export const App: React.FC = () => {
         onDiscard={recovery.discard}
       />
 
-      <div className="kura-workspace" data-narrow-panel={visibleNarrowPanel ?? undefined}>
-        <div className="kura-narrow-panel-actions">
-          <button
-            type="button"
-            className={`kura-btn kura-btn-sm ${visibleNarrowPanel === 'left' ? 'is-active' : ''}`}
-            aria-controls="kura-shapes-panel"
-            aria-expanded={visibleNarrowPanel === 'left'}
-            onClick={() => toggleNarrowPanel('left')}
-          >
-            {t(language, 'sidebar.tab.shapes')}
-          </button>
-          <button
-            type="button"
-            className={`kura-btn kura-btn-sm ${visibleNarrowPanel === 'right' ? 'is-active' : ''}`}
-            aria-controls="kura-inspector-panel"
-            aria-expanded={visibleNarrowPanel === 'right'}
-            onClick={() => toggleNarrowPanel('right')}
-          >
-            {t(language, 'inspector.title')}
-          </button>
-        </div>
+      <div
+        className="kura-workspace"
+        data-narrow-panel={visibleNarrowPanel ?? undefined}
+        data-narrow-tall={visibleNarrowPanel && narrowTall ? '' : undefined}
+      >
+        <NarrowPanelBar
+          language={language}
+          panel={visibleNarrowPanel}
+          tall={narrowTall}
+          onToggle={toggleNarrowPanel}
+          onClose={closeNarrowPanel}
+          onTallChange={setNarrowTall}
+        />
         <LeftSidebar />
         <Viewport3D />
         <RightInspector precisionRequest={precisionRequest} />
