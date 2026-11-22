@@ -30,6 +30,7 @@ export const PaintToolbar: React.FC = () => {
   const paintMode = useKuraStore((s) => s.paintMode);
   const setPaintSettings = useKuraStore((s) => s.setPaintSettings);
   // Goma: pintar con el color base del objeto seleccionado devuelve la cara a su aspecto original.
+  const targetName = useKuraStore((s) => s.objects.find((o) => o.id === s.selectedIds[0])?.name ?? null);
   const baseColor = useKuraStore((s) => s.objects.find((o) => o.id === s.selectedIds[0])?.color ?? null);
   const [eraser, setEraser] = useState(false);
   // En móvil la barra es una hoja inferior plegable; en escritorio el botón no se muestra.
@@ -146,6 +147,15 @@ export const PaintToolbar: React.FC = () => {
           <span>{t(language, 'viewport.paint.eraser')}</span>
         </button>
       </div>
+      <span
+        className={`kura-paint-target ${targetName ? '' : 'is-empty'}`}
+        role="status"
+        title={targetName ?? undefined}
+      >
+        {targetName
+          ? t(language, 'viewport.paint.target', { name: targetName })
+          : t(language, 'viewport.paint.noTarget')}
+      </span>
       <span className="kura-paint-hint">{t(language, 'viewport.paint.hint')}</span>
       <PaintRefineHint />
     </div>

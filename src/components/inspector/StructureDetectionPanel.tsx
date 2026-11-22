@@ -6,14 +6,15 @@
  * @license MIT
  */
 
-import React from 'react';
-import { Palette, PlusCircle, ScanSearch, Scissors, Split, Zap } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { Check, Palette, PlusCircle, ScanSearch, Scissors, Split, Zap } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { tCount } from '../../utils/plural';
 import { structureLabel } from '../../utils/structureLabels';
 import { formatDimension } from '../../utils/units';
 import { type InspectorSectionProps } from './inspectorTypes';
+import '../../styles/structure-highlight.css';
 
 /** Detección de estructuras dentro de Herramientas Maker. */
 export const StructureDetectionPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
@@ -29,7 +30,28 @@ export const StructureDetectionPanel: React.FC<InspectorSectionProps> = ({ prima
   const splitAllDetectedObjectStructures = useKuraStore(
     (s) => s.splitAllDetectedObjectStructures,
   );
+  const selectedRegionId = useKuraStore((s) => s.selectedRegionId);
+  const setHoveredRegionId = useKuraStore((s) => s.setHoveredRegionId);
+  const setSelectedRegionId = useKuraStore((s) => s.setSelectedRegionId);
   const isBusy = Boolean(busyOperation);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Al cerrar el panel se limpia el resaltado del visor.
+  useEffect(
+    () => () => {
+      setHoveredRegionId(null);
+      setSelectedRegionId(null);
+    },
+    [setHoveredRegionId, setSelectedRegionId],
+  );
+
+  // Un clic en el visor elige una estructura: se muestra en la lista.
+  useEffect(() => {
+    if (!selectedRegionId) return;
+    listRef.current
+      ?.querySelector<HTMLElement>('[data-region-selected="true"]')
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [selectedRegionId]);
 
   return (
     <div className="kura-struct-panel">
@@ -109,9 +131,10 @@ export const StructureDetectionPanel: React.FC<InspectorSectionProps> = ({ prima
                 </button>
                 <button
                   type="button"
-                  className="kura-btn kura-btn-sm kura-btn-amber"
+                  className="kura-btn kura-btn-sm"
                   style={{ minWidth: 0 }}
                   disabled={isBusy || primary.locked}
+                  title={t(language, 'inspector.struct.splitAllTip')}
                   onClick={() => void splitAllDetectedObjectStructures(primary.id)}
                 >
                   <Split size={12} />
@@ -119,19 +142,29 @@ export const StructureDetectionPanel: React.FC<InspectorSectionProps> = ({ prima
                 </button>
               </div>
 
-              <div className="kura-struct-list">
+              <div className="kura-struct-list" ref={listRef}>
                 {activeSegmentation.regions.map((region) => {
                   const label = structureLabel(language, activeSegmentation.regions, region.id);
                   return (
-                    <div key={region.id} className="kura-struct-item">
+                    <div
+                      key={region.id}
+                      className="kura-struct-item"
+                      data-region-selected={selectedRegionId === region.id}
+                      onMouseEnter={() => setHoveredRegionId(region.id)}
+                      onMouseLeave={() => setHoveredRegionId(null)}
+                      onFocus={() => setHoveredRegionId(region.id)}
+                      onBlur={() => setHoveredRegionId(null)}
+                    >
                       <div className="kura-struct-item-head">
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 6,
-                            minWidth: 0,
-                          }}
+                        <button
+                          type="button"
+                          className="kura-struct-pick"
+                          aria-pressed={selectedRegionId === region.id}
+                          aria-label={`${t(language, 'inspector.struct.pickTip')}: ${label}`}
+                          title={t(language, 'inspector.struct.pickTip')}
+                          onClick={() =>
+                            setSelectedRegionId(selectedRegionId === region.id ? null : region.id)
+                          }
                         >
                           <span
                             className="kura-color-dot"
@@ -140,7 +173,10 @@ export const StructureDetectionPanel: React.FC<InspectorSectionProps> = ({ prima
                           <span className="kura-struct-label" title={label}>
                             {label}
                           </span>
-                        </span>
+                          {selectedRegionId === region.id && (
+                            <Check size={11} aria-hidden="true" style={{ flex: 'none' }} />
+                          )}
+                        </button>
                       </div>
 
                       <div className="kura-struct-meta">

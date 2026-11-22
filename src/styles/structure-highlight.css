@@ -1,0 +1,38 @@
+/**
+ * @file src/styles/structure-highlight.css
+ * @description Selección de estructuras detectadas en el inspector: fila elegible y estado activo.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-struct-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kura-struct-pick:hover {
+  background: color-mix(in srgb, var(--accent-cyan) 12%, transparent);
+}
+
+.kura-struct-pick:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+.kura-struct-item[data-region-selected='true'] {
+  border-color: var(--accent-cyan);
+  box-shadow: inset 3px 0 0 var(--accent-cyan);
+}

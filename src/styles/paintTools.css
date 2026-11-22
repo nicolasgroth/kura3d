@@ -118,3 +118,20 @@
     display: none;
   }
 }
+
+/* Objeto que recibe la pintura: visible también en móvil (donde el texto de ayuda se oculta). */
+.kura-paint-target {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.kura-paint-target.is-empty {
+  font-weight: 600;
+  color: var(--accent-amber-text, var(--text-secondary));
+  white-space: normal;
+}

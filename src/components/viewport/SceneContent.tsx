@@ -25,6 +25,7 @@ import { ViewportCaptureRegistrar } from './ViewportCaptureRegistrar';
 import { CameraController } from './CameraController';
 import { PrinterBedOverlay } from './PrinterBedOverlay';
 import { PreviewLayers } from './PreviewLayers';
+import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
 import { usePaintStroke } from './usePaintStroke';
@@ -182,6 +183,7 @@ export const SceneContent: React.FC<{
       )}
 
       <PreviewLayers />
+      <SegmentHighlight />
 
       {activeTool === 'paint' && <PaintBrushCursor />}
 

@@ -13,6 +13,7 @@ import { X } from 'lucide-react';
 import { useKuraStore } from '../../store/useKuraStore';
 import { MATERIAL_PRESETS, type SceneObject, type Vec3 } from '../../types/kura';
 import { updateGeometryFaceColors } from '../../engine/paintColorAttribute';
+import { regionIdForFace } from '../../utils/segmentHighlight';
 import { buildViewportGeometry } from './creasedGeometry';
 import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
 
@@ -49,6 +50,7 @@ export const SceneMeshItem: React.FC<{
     const paintObjectSurface = useKuraStore((s) => s.paintObjectSurface);
     const beginPaintStroke = useKuraStore((s) => s.beginPaintStroke);
     const eraseSphereOnObject = useKuraStore((s) => s.eraseSphereOnObject);
+    const setSelectedRegionId = useKuraStore((s) => s.setSelectedRegionId);
 
     // Animación elástica de aparición (0.78 -> 1.0 en ~240ms; cero costo tras finalizar)
     useFrame(() => {
@@ -177,6 +179,11 @@ export const SceneMeshItem: React.FC<{
 
       if (activeTool === 'paint') {
         if (obj.locked) return;
+        // Se pinta solo el objeto seleccionado: sin selección (u otro objeto), el clic lo elige.
+        if (!isPrimarySelected) {
+          selectObject(obj.id, false);
+          return;
+        }
         onStartPaintDrag();
         beginPaintStroke();
         lastPaintMoveAtRef.current = performance.now();
@@ -199,10 +206,21 @@ export const SceneMeshItem: React.FC<{
 
       const additive = e.ctrlKey || e.metaKey || e.shiftKey;
       selectObject(obj.id, additive);
+
+      // Con la lista de estructuras abierta, un clic en el visor elige la estructura en la lista.
+      const seg = useKuraStore.getState().activeSegmentation;
+      if (seg && seg.objectId === obj.id && e.faceIndex != null) {
+        const regionId = regionIdForFace(seg.regions, e.faceIndex);
+        if (regionId) setSelectedRegionId(regionId);
+      }
     };
 
     const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
       if (activeTool !== 'paint' || paintMode !== 'brush' || obj.locked) return;
+      if (!isPrimarySelected) {
+        hidePaintCursor();
+        return;
+      }
       updatePaintCursor(e);
       if ((e.buttons & 1) === 0) return;
       e.stopPropagation();

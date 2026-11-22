@@ -60,6 +60,8 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     showOverhangs: false,
     activeSegmentation: null,
     segmentationCreaseDeg: 28,
+    hoveredRegionId: null,
+    selectedRegionId: null,
 
     unitSystem: loadInitialUnits(),
     language: loadInitialLanguage(),
@@ -154,7 +156,9 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     toggleProportionalScale: () => set((state) => ({ proportionalScale: !state.proportionalScale })),
     setSnapGridMm: (snapGridMm) => set({ snapGridMm }),
     setSegmentationCreaseDeg: (segmentationCreaseDeg) => set({ segmentationCreaseDeg }),
-    clearSegmentation: () => set({ activeSegmentation: null }),
+    clearSegmentation: () => set({ activeSegmentation: null, hoveredRegionId: null, selectedRegionId: null }),
+    setHoveredRegionId: (hoveredRegionId) => set({ hoveredRegionId }),
+    setSelectedRegionId: (selectedRegionId) => set({ selectedRegionId }),
     setPaintSettings: (patch) => set((state) => ({ ...state, ...patch })),
     setEraseRadiusMm: (eraseRadiusMm) => set({ eraseRadiusMm }),
     requestCameraPreset: (preset) =>

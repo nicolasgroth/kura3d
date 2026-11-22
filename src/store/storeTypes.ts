@@ -149,6 +149,10 @@ export interface KuraStoreState {
   showOverhangs: boolean;
   activeSegmentation: StructuralSegmentationResult | null;
   segmentationCreaseDeg: number;
+  /** Estructura bajo el cursor o foco en la lista (resaltado temporal en el visor). */
+  hoveredRegionId: string | null;
+  /** Estructura elegida en la lista o con clic en el visor. */
+  selectedRegionId: string | null;
 
   // Preferencias globales
   unitSystem: UnitSystem;
@@ -201,6 +205,8 @@ export interface KuraStoreState {
   setSnapGridMm: (snapMm: number) => void;
   setSegmentationCreaseDeg: (deg: number) => void;
   clearSegmentation: () => void;
+  setHoveredRegionId: (id: string | null) => void;
+  setSelectedRegionId: (id: string | null) => void;
   setPaintSettings: (
     patch: Partial<{ paintColor: string; paintRadiusMm: number; paintMode: PaintBrushMode }>,
   ) => void;
