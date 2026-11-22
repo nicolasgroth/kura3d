@@ -870,6 +870,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'toast.imageDone.silhouette': 'Silhouette erstellt: {name}',
   'toast.imageDone.cutter': 'Ausstecher erstellt: {name}',
   'toast.simplifyDone': 'Netz vereinfacht: {before} → {tris} Dreiecke',
+  'toast.simplifyMarginal': 'Kaum reduziert: {before} → {tris} Dreiecke (weniger als 1 %). Versuche eine größere Toleranz.',
   'toast.simplifyNoChange': 'Mit dieser Toleranz ließ sich nichts reduzieren: Das Netz hat weiterhin {tris} Dreiecke. Versuche eine größere Toleranz.',
   'toast.moreTip': '{count} frühere Hinweise anzeigen',
   'toast.less': 'Weniger anzeigen',

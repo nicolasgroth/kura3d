@@ -870,6 +870,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'toast.imageDone.silhouette': 'सिल्हूट बनाया गया: {name}',
   'toast.imageDone.cutter': 'कटर बनाया गया: {name}',
   'toast.simplifyDone': 'मेश सरल किया गया: {before} → {tris} त्रिभुज',
+  'toast.simplifyMarginal': 'लगभग कोई कमी नहीं: {before} → {tris} त्रिभुज (1% से कम)। बड़ा टॉलरेंस आज़माएँ।',
   'toast.simplifyNoChange': 'इस टॉलरेंस से घटाया नहीं जा सका: मेश में अब भी {tris} त्रिभुज हैं। बड़ा टॉलरेंस आज़माएँ।',
   'toast.moreTip': '{count} पिछली सूचनाएँ दिखाएँ',
   'toast.less': 'कम दिखाएँ',

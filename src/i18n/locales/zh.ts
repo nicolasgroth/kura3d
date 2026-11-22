@@ -870,6 +870,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'toast.imageDone.silhouette': '剪影已创建：{name}',
   'toast.imageDone.cutter': '切模已创建：{name}',
   'toast.simplifyDone': '网格已简化：{before} → {tris} 个三角面',
+  'toast.simplifyMarginal': '几乎未简化：{before} → {tris} 个三角面（不到 1%）。请尝试更大的容差。',
   'toast.simplifyNoChange': '该容差无法再简化：网格仍有 {tris} 个三角面。请尝试更大的容差。',
   'toast.moreTip': '显示之前的 {count} 条提示',
   'toast.less': '收起',

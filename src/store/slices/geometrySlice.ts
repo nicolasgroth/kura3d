@@ -13,6 +13,7 @@ import { boxesOverlap } from '../../core/scene/overlap';
 import * as ops from '../../core/operations';
 import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets } from '../../core/scene/sceneRules';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
+import { classifySimplifyResult } from '../../core/operations/simplifyOutcome';
 import { formatNumber } from '../../utils/plural';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
@@ -100,14 +101,18 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         assertCurrent([obj]);
         const before = obj.stats.triangles;
         const tris = change.patches[0].patch.stats!.triangles;
+        const outcome = classifySimplifyResult(before, tris);
         // Sin reducción no hay paso de historial: el aviso lo dice tal cual.
-        if (tris >= before) {
+        if (outcome === 'none') {
           get().addToast(tr('toast.simplifyNoChange', { tris: formatNumber(get().language, before) }), 'info');
           return false;
         }
         commitChange(change);
         const lang = get().language;
-        get().addToast(tr('toast.simplifyDone', { before: formatNumber(lang, before), tris: formatNumber(lang, tris) }), 'success');
+        const counts = { before: formatNumber(lang, before), tris: formatNumber(lang, tris) };
+        // Menos de 1 % de reducción no se anuncia como éxito.
+        if (outcome === 'marginal') get().addToast(tr('toast.simplifyMarginal', counts), 'info');
+        else get().addToast(tr('toast.simplifyDone', counts), 'success');
         return true;
       });
     },

@@ -870,6 +870,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'toast.imageDone.silhouette': 'Silhouette créée : {name}',
   'toast.imageDone.cutter': 'Emporte-pièce créé : {name}',
   'toast.simplifyDone': 'Maillage simplifié : {before} → {tris} triangles',
+  'toast.simplifyMarginal': 'Réduction quasi nulle : {before} → {tris} triangles (moins de 1 %). Essayez une tolérance plus grande.',
   'toast.simplifyNoChange': 'Impossible de réduire avec cette tolérance : le maillage garde {tris} triangles. Essayez une tolérance plus grande.',
   'toast.moreTip': 'Afficher {count} avis précédents',
   'toast.less': 'Voir moins',
