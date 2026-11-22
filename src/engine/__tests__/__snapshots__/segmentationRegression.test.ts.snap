@@ -1,0 +1,160 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`detectStructuralRegions — regresión de resultados fijados > cubo + cilindro + esfera unidos 1`] = `
+{
+  "regions": [
+    {
+      "archetype": "main_body",
+      "center": [
+        1.02,
+        9.39,
+        -0,
+      ],
+      "dims": [
+        20,
+        20,
+        20,
+      ],
+      "faces": 63,
+      "shell": false,
+    },
+    {
+      "archetype": "tank_cylinder",
+      "center": [
+        15.5,
+        19.78,
+        -0,
+      ],
+      "dims": [
+        10,
+        30,
+        10,
+      ],
+      "faces": 123,
+      "shell": false,
+    },
+    {
+      "archetype": "dome_helmet",
+      "center": [
+        -11.51,
+        24.68,
+        -0,
+      ],
+      "dims": [
+        18,
+        18,
+        18,
+      ],
+      "faces": 518,
+      "shell": false,
+    },
+  ],
+  "totalTriangles": 704,
+}
+`;
+
+exports[`detectStructuralRegions — regresión de resultados fijados > perno M8 generado por el motor 1`] = `
+{
+  "regions": [
+    {
+      "archetype": "main_body",
+      "center": [
+        -0.02,
+        2.36,
+        -0.03,
+      ],
+      "dims": [
+        15.01,
+        5.3,
+        13,
+      ],
+      "faces": 238,
+      "shell": false,
+    },
+    {
+      "archetype": "appendage",
+      "center": [
+        0.01,
+        14.4,
+        0.04,
+      ],
+      "dims": [
+        8,
+        16,
+        8,
+      ],
+      "faces": 1327,
+      "shell": false,
+    },
+    {
+      "archetype": "appendage",
+      "center": [
+        -0.04,
+        13.3,
+        -0,
+      ],
+      "dims": [
+        8,
+        16,
+        8,
+      ],
+      "faces": 1279,
+      "shell": false,
+    },
+    {
+      "archetype": "tank_cylinder",
+      "center": [
+        0,
+        13.3,
+        0.04,
+      ],
+      "dims": [
+        6.47,
+        16,
+        6.47,
+      ],
+      "faces": 1245,
+      "shell": false,
+    },
+    {
+      "archetype": "tank_cylinder",
+      "center": [
+        -0.01,
+        13.3,
+        -0.06,
+      ],
+      "dims": [
+        8,
+        16,
+        8,
+      ],
+      "faces": 1241,
+      "shell": false,
+    },
+  ],
+  "totalTriangles": 5330,
+}
+`;
+
+exports[`detectStructuralRegions — regresión de resultados fijados > toro 1`] = `
+{
+  "regions": [
+    {
+      "archetype": "main_body",
+      "center": [
+        0,
+        4,
+        -0,
+      ],
+      "dims": [
+        36,
+        8,
+        36,
+      ],
+      "faces": 1536,
+      "shell": false,
+    },
+  ],
+  "totalTriangles": 1536,
+}
+`;
