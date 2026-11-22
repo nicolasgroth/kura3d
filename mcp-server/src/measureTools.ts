@@ -13,7 +13,8 @@ import { z } from 'zod';
 import { capacityToUser, MEASURE_LIMITS, measureDistanceUser, measureObjectUser } from '../../src/core/operations/measureOperations';
 import { measureObjectCapacity } from '../../src/engine/measure';
 import type { Vec3 } from '../../src/types/kura';
-import { idSchema } from './schemas.js';
+import { OPERATION_RANGES as OR } from '../../src/engine/operationLimits';
+import { idSchema, rangeSchema } from './schemas.js';
 import { dispatchWithFallback, type KuraToolContext } from './tools.js';
 
 const coord = z.number().finite().min(-MEASURE_LIMITS.coordMm).max(MEASURE_LIMITS.coordMm);
@@ -63,9 +64,9 @@ export function registerMeasureTools(server: Pick<McpServer, 'registerTool'>, ct
         'Rotate the object to measure another tilt. Does not change the scene.',
       inputSchema: {
         objectId: idSchema.describe('ID of the container object.'),
-        levelMm: z.number().finite().min(0).max(MEASURE_LIMITS.levelMm).optional()
+        levelMm: rangeSchema(OR.measure.levelMm).optional()
           .describe('Fill level in mm above the object base (default: the overflow level). Capped at the overflow level.'),
-        cavityIndex: z.number().int().min(0).max(64).optional().describe('Cavity to measure (0 = largest).'),
+        cavityIndex: rangeSchema(OR.measure.cavityIndex).optional().describe('Cavity to measure (0 = largest).'),
       },
       annotations: { readOnlyHint: true },
     },

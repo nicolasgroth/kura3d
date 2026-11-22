@@ -16,7 +16,8 @@ import { APP_BUILD_POLICY, makeId } from '../core/scene/sceneObjects';
 import type { Vec3 } from '../types/kura';
 import { CommandError } from './commandErrors';
 import { resolveTarget } from './commandTargets';
-import { nonNegative, readNumber, readVec3, type RawParams } from './commandValidation';
+import { OPERATION_RANGES as OR } from '../engine/operationLimits';
+import { readRange, readVec3, type RawParams } from './commandValidation';
 import type { KuraStoreState } from './useKuraStore';
 
 type Deps = { get: () => KuraStoreState };
@@ -33,8 +34,8 @@ function requiredPoint(p: RawParams, key: string, alias: string): Vec3 {
 /** Lee los parámetros de `measure_capacity` (compartido con las pruebas de paridad). */
 export function parseMeasureCapacity(p: RawParams) {
   return {
-    levelHeightMm: readNumber(p, nonNegative(MEASURE_LIMITS.levelMm), 'levelMm', 'levelHeightMm'),
-    basinIndex: readNumber(p, { min: 0, max: 64, integer: true }, 'cavityIndex'),
+    levelHeightMm: readRange(p, OR.measure.levelMm, 'levelMm', 'levelHeightMm'),
+    basinIndex: readRange(p, OR.measure.cavityIndex, 'cavityIndex'),
   };
 }
 

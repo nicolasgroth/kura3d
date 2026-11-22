@@ -23,7 +23,7 @@ const roundVec = (v: Vec3, d = 3): Vec3 => [round(v[0], d), round(v[1], d), roun
 const ml = (mm3: number) => round(mm3 / 1000, 2);
 
 /** Límites aceptados para niveles y puntos (mm). */
-export const MEASURE_LIMITS = { coordMm: 100_000, levelMm: 100_000 } as const;
+export const MEASURE_LIMITS = { coordMm: 100_000 } as const;
 
 export interface DistanceResponse {
   distanceMm: number;

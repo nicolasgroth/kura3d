@@ -41,6 +41,11 @@ export const TRANSFORM_RANGES = {
 
 /** Rangos por operación y parámetro. */
 export const OPERATION_RANGES = {
+  /** Medir: nivel de llenado sobre la base (mm) y cavidad elegida. */
+  measure: {
+    levelMm: closed(0, 100_000),
+    cavityIndex: int(0, 64),
+  },
   hollow: {
     wallThickness: closed(0.2, 100),
     drainHoleRadius: closed(0.3, 100),
