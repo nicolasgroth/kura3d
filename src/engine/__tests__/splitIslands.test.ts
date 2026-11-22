@@ -107,6 +107,11 @@ describe('firmeza activa', () => {
     expect(j.connector!.size).toBeGreaterThan(3);
     expect(j.connector!.size).toBeLessThanOrEqual(6 + 1e-9);
     expect(res.warnings.some((x) => x.code === 'SPLIT_CONNECTOR_REINFORCED')).toBe(true);
+    // El aviso corresponde al estado final: solo uniones que terminaron con conector
+    const ended = new Map(res.joints.map((x) => [x.label, x.kind]));
+    for (const w2 of res.warnings.filter((x) => x.code === 'SPLIT_CONNECTOR_REINFORCED' || x.code === 'SPLIT_CONNECTOR_REDUCED')) {
+      expect(ended.get(String(w2.params.label))).toBe('connector');
+    }
   }, 60_000);
 
   it('tubo de 1 m pared 12 con conector chico: el radio aplicado respeta el tope de la pared', async () => {

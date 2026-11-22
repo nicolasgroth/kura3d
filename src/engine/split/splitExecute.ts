@@ -172,6 +172,12 @@ export async function executeBedSplitGeometry(
       assembly = settled.report;
     }
     const outJoints = toJoints();
+    // Un aviso de conector reforzado o reducido solo vale si la unión terminó con conector
+    const noConnector = new Set(outJoints.filter((j) => j.kind !== 'connector').map((j) => j.label));
+    for (let i = warnings.length - 1; i >= 0; i--) {
+      const w = warnings[i];
+      if ((w.code === 'SPLIT_CONNECTOR_REINFORCED' || w.code === 'SPLIT_CONNECTOR_REDUCED') && noConnector.has(String(w.params.label))) warnings.splice(i, 1);
+    }
     const looseDowels = buildLooseDowels(wasm, outJoints);
     const glueJoints = outJoints.filter((j) => j.kind === 'glue').length;
     if (glueJoints > 0 && connector) warnings.push(engineWarning('SPLIT_GLUE_SUMMARY', { count: glueJoints, total: outJoints.length }));

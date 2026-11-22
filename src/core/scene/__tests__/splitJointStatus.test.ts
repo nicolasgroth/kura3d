@@ -65,6 +65,28 @@ describe('buildJointRows', () => {
     expect(buildJointRows(group([rec('1')]), null, report({ weak: [{ joint: '1', measuredMm: 2, recommendedMm: 4, areaFraction: 0.1 }] }))[0].status).toBe('weak');
   });
 
+  it('el aviso de refuerzo solo aparece en uniones que conservan conector', () => {
+    const reinf = (label: string) => ({ code: 'SPLIT_CONNECTOR_REINFORCED' as const, params: { label, a: 'A1', b: 'A2', requested: 1.5, size: 3, requestedCount: 1, count: 2 } });
+    const notes = { warnings: [reinf('1'), reinf('2'), reinf('3')], suggestions: [], weakJoints: ['1', '2'], gluedByFix: ['2'], changedByFix: [] };
+    const rows = buildJointRows(group([rec('1'), rec('2'), rec('3', { kind: 'glue', connector: null })]), notes, null);
+    expect(rows[0].reinforced).toBe(true);
+    expect(rows[0].status).toBe('weak');
+    expect(rows[1].reinforced).toBe(false);
+    expect(rows[1].warnings).toEqual([]);
+    expect(rows[1].weak).toBeNull();
+    expect(rows[2].reinforced).toBe(false);
+    expect(rows[2].weak).toBeNull();
+  });
+
+  it('cada unión dice dónde quedó su marca de pareja', () => {
+    const notes = { warnings: [{ code: 'SPLIT_LABEL_SKIPPED' as const, params: { label: '4', a: 'A1', b: 'A2', min: 3 } }], suggestions: [], weakJoints: [], gluedByFix: [], changedByFix: [] };
+    const rows = buildJointRows(group([
+      rec('1', { labelPlacement: 'joint' }), rec('2', { labelPlacement: 'outside' }), rec('3', { labelPlacement: 'dots' }),
+      rec('4', { labelPlacement: null }), rec('5', { labelPlacement: null }), rec('6'),
+    ]), notes, null);
+    expect(rows.map((r) => r.mark)).toEqual(['joint', 'outside', 'dots', 'skipped', 'none', 'unknown']);
+  });
+
   it('optionType separa pegar de cambiar de tipo', () => {
     expect(optionType('glue')).toBeNull();
     expect(optionType('change-type:dovetail')).toBe('dovetail');

@@ -71,6 +71,10 @@ export const SPLITJOINTS_ES = {
   'splitJoints.connectorsWidth': '{count} × {type}, ancho {d} mm',
   'split.allowSurfaceChange': 'Permitir cola de milano pasante (abre la superficie)',
   'split.allowSurfaceChangeTip': 'Avanzado. Si una unión no deja montar la pieza, Kura3D puede cambiarla a cola de milano con ranura pasante, que se ve desde afuera. Apagado: esa unión se deja para pegar.',
+  'splitJoints.mark.joint': 'Marca «{label}»: grabada en la cara de unión.',
+  'splitJoints.mark.outside': 'Marca «{label}»: grabada por fuera, junto a la unión.',
+  'splitJoints.mark.skipped': 'Sin marca: no hay espacio para un texto legible. La pareja se identifica por las piezas {a}–{b}.',
+  'splitJoints.mark.none': 'Sin marca: las marcas de pareja están desactivadas.',
 };
 
 export const SPLITJOINTS_EN = {
@@ -136,6 +140,10 @@ export const SPLITJOINTS_EN = {
   'splitJoints.connectorsWidth': '{count} × {type}, width {d} mm',
   'split.allowSurfaceChange': 'Allow through dovetail (opens the surface)',
   'split.allowSurfaceChangeTip': 'Advanced. If a joint prevents assembling the part, Kura3D may switch it to a dovetail with a through slot, visible from outside. Off: that joint is left for gluing.',
+  'splitJoints.mark.joint': 'Mark "{label}": engraved on the joint face.',
+  'splitJoints.mark.outside': 'Mark "{label}": engraved on the outside, next to the joint.',
+  'splitJoints.mark.skipped': 'No mark: there is no room for legible text. The pair is identified by parts {a}–{b}.',
+  'splitJoints.mark.none': 'No mark: pair marks are turned off.',
 };
 
 export const SPLITJOINTS_DE = {
@@ -201,6 +209,10 @@ export const SPLITJOINTS_DE = {
   'splitJoints.connectorsWidth': '{count} × {type}, Breite {d} mm',
   'split.allowSurfaceChange': 'Durchgehenden Schwalbenschwanz erlauben (öffnet die Oberfläche)',
   'split.allowSurfaceChangeTip': 'Erweitert. Verhindert eine Verbindung die Montage, kann Kura3D sie auf einen Schwalbenschwanz mit durchgehender Nut umstellen, die von außen sichtbar ist. Aus: Diese Verbindung wird zum Kleben belassen.',
+  'splitJoints.mark.joint': 'Markierung „{label}“: in die Verbindungsfläche graviert.',
+  'splitJoints.mark.outside': 'Markierung „{label}“: außen neben der Verbindung graviert.',
+  'splitJoints.mark.skipped': 'Keine Markierung: Kein Platz für lesbaren Text. Das Paar erkennst du an den Teilen {a}–{b}.',
+  'splitJoints.mark.none': 'Keine Markierung: Paarmarkierungen sind ausgeschaltet.',
 };
 
 export const SPLITJOINTS_FR = {
@@ -266,6 +278,10 @@ export const SPLITJOINTS_FR = {
   'splitJoints.connectorsWidth': '{count} × {type}, largeur {d} mm',
   'split.allowSurfaceChange': 'Autoriser la queue d’aronde traversante (ouvre la surface)',
   'split.allowSurfaceChangeTip': 'Avancé. Si une jonction empêche le montage, Kura3D peut la passer en queue d’aronde avec rainure traversante, visible de l’extérieur. Désactivé : cette jonction est laissée à coller.',
+  'splitJoints.mark.joint': 'Marque « {label} » : gravée sur la face de jonction.',
+  'splitJoints.mark.outside': 'Marque « {label} » : gravée à l’extérieur, près de la jonction.',
+  'splitJoints.mark.skipped': 'Pas de marque : pas assez de place pour un texte lisible. La paire s’identifie par les pièces {a}–{b}.',
+  'splitJoints.mark.none': 'Pas de marque : les marques de paire sont désactivées.',
 };
 
 export const SPLITJOINTS_HI = {
@@ -331,6 +347,10 @@ export const SPLITJOINTS_HI = {
   'splitJoints.connectorsWidth': '{count} × {type}, चौड़ाई {d} mm',
   'split.allowSurfaceChange': 'आर-पार डवटेल की अनुमति दें (सतह खुल जाती है)',
   'split.allowSurfaceChangeTip': 'उन्नत। यदि कोई जोड़ हिस्से को जुड़ने नहीं देता, तो Kura3D उसे आर-पार खाँचे वाले डवटेल में बदल सकता है, जो बाहर से दिखता है। बंद: वह जोड़ चिपकाने के लिए छोड़ा जाता है।',
+  'splitJoints.mark.joint': 'निशान «{label}»: जोड़ की सतह पर उकेरा गया।',
+  'splitJoints.mark.outside': 'निशान «{label}»: जोड़ के पास बाहर की ओर उकेरा गया।',
+  'splitJoints.mark.skipped': 'कोई निशान नहीं: पढ़ने लायक़ टेक्स्ट के लिए जगह नहीं है। जोड़ी को हिस्सों {a}–{b} से पहचानें।',
+  'splitJoints.mark.none': 'कोई निशान नहीं: जोड़ी के निशान बंद हैं।',
 };
 
 export const SPLITJOINTS_ZH = {
@@ -396,4 +416,8 @@ export const SPLITJOINTS_ZH = {
   'splitJoints.connectorsWidth': '{count} × {type}，宽 {d} mm',
   'split.allowSurfaceChange': '允许贯穿燕尾榫（会使表面开口）',
   'split.allowSurfaceChangeTip': '高级选项。如果某个接合妨碍装配，Kura3D 可将其改为带贯穿槽的燕尾榫，槽从外部可见。关闭时：该接合保留为粘合。',
+  'splitJoints.mark.joint': '标记“{label}”：刻在接合面上。',
+  'splitJoints.mark.outside': '标记“{label}”：刻在接合处旁边的外侧。',
+  'splitJoints.mark.skipped': '无标记：没有足够空间放置清晰的文字。可通过部件 {a}–{b} 识别这一对。',
+  'splitJoints.mark.none': '无标记：配对标记已关闭。',
 };
