@@ -135,3 +135,68 @@ Patrones que explican la nota de usabilidad: operaciones sin vista previa en el 
 | Evaluación de código | Opus | 8 min | 148 mil |
 | Evaluación funcional | Opus | 13 min | 197 mil |
 
+## Ronda 3 · 22 de noviembre de 2026 · `main` (commit `5a02994`)
+
+Tras ordenar el store y los componentes, mover la geometría a un Worker, agregar primitivas paramétricas, colocación en espacio libre, vista previa en el visor y sacar unidades e impresora de la barra superior. Tres evaluadores Opus a ciegas. El evaluador de código dio esta vez una nota por cada funcionalidad del motor.
+
+| Funcionalidad | Usabilidad (R2 → R3) | Código (R2 → R3) | Funcional (R2 → R3) | Pendiente principal |
+|---|---|---|---|---|
+| F-PROY | 72 → 80 | 86 → 86 | 90 → 90 | La barra superior queda solo con iconos tras abrir un proyecto |
+| F-RECUP | 82 → 85 | 86 → 86 | — | Vista previa del borrador |
+| F-IMPORT | 85 → 78 | 79 → 76 | 82 → 86 | Normales invertidas sin detectar; "importar como módulo" en el hilo principal; sin aviso de éxito |
+| F-EXPORT | 84 → 86 | 79 → 76 | 78 → 85 | 3MF por defecto; verificar en slicers reales |
+| F-TRANSF | 70 → 72 | 71 → 79 | — | Eje vertical Y frente a Z |
+| F-PRIM | 58 → 68 | 71 → 85 | 92 → 88 | Validación silenciosa en Parámetros; no re-apoya en la cama al regenerar |
+| F-BOOL | 66 → 66 | 71 → 84 | 93 → 93 | Sin aviso cuando las piezas no se tocan |
+| F-CORTE | 50 → 80 | 71 → 76 | 68 → 85 | Mitades encimadas tras cortar; rangos del motor distintos a los declarados |
+| F-HUECO | 68 → 74 | 71 → 81 | 85 → 88 | Vista previa antes de aplicar |
+| F-MOLDE | 74 → 72 | 71 → 77 | 84 → 82 | Embudo ajustado en silencio; verificar llaves y vertedero |
+| F-PROYEC | 62 → 60 | 71 → 72 | 85 → 80 | Cara por defecto poco útil; incrustación curva con aristas sueltas |
+| F-ROSCA | 78 → 80 | 71 → 86 | 74 → 92 | Tapa roscada |
+| F-LITO | 70 → 72 | 71 → 70 | 88 → 78 | **Cortador invertido con malla abierta**; ajustes silenciosos |
+| F-SEGM | 60 → 68 | 71 → 71 | 80 → 80 | Resaltar partes en el visor; archivo de 1.806 líneas |
+| F-PINT | 76 → 72 | 71 → 72 | — | Pinta objetos no seleccionados; pincel lento |
+| F-ANAL | 80 → 70 | 71 → 66 | 84 → 75 | Avisos solo en español; no detecta paredes inimprimibles |
+| F-SIMPL | 62 → 70 | 71 → 79 | 90 → 90 | Vista previa; tolerancia sin considerar la escala |
+| F-ALIN | 70 → 78 | 71 → 80 | 88 → 92 | Separar piezas que se intersectan |
+| F-UI | 74 → 70 | 64 → 71 | — | **Barra superior que no se recalcula al redimensionar** |
+| F-CHAT | 66 → 80 | 87 → 85 | — | El chat encoge demasiado el visor |
+| F-MCP | 70 → 74 | 76 → 83 | 85 → 80 | **Escena exportada por MCP con piezas superpuestas** |
+| Núcleo y Worker | — | — → 83 | — | Cancelar rechaza todas las tareas en cola |
+| Store y bus | — | 62 → 79 | — | Slices que llaman al motor sin pasar por el núcleo |
+| Backend nativo | — | 81 → 85 | — | Diálogos bloqueantes en comandos asíncronos |
+| Validación y límites | — | 83 → 60 | — | **La fuente única de rangos no se cumple en corte y proyección** |
+| **Global** | **68 → 73** | **75 → 77** | **84 → 85** | |
+
+Bloqueos de esta ronda: la barra superior deja Exportar y Ajustes inalcanzables con puntero tras redimensionar a 390 px sin recargar (usabilidad); el cortador de imagen invertido sale con malla abierta y la escena exportada por MCP sale con piezas superpuestas (funcional). Los tres están en corrección. El evaluador de código no encontró bloqueos.
+
+Verificado en pantalla por el evaluador de usabilidad: los dos paneles laterales se reabren sin recargar, y del modo Zen se sale con un botón visible y con su atajo.
+
+Primeras funcionalidades cerca del mínimo de 85 en los tres evaluadores: F-PROY (80 · 86 · 90), F-EXPORT (86 · 76 · 85), F-ROSCA (80 · 86 · 92) y F-CORTE (80 · 76 · 85). Ninguna lo cumple todavía en los tres.
+
+Lectura de las bajas: varias notas bajan entre rondas sin que el producto haya empeorado, porque cada evaluador es nuevo y no conoce la nota anterior. Las diferencias de 2 a 6 puntos entre rondas están dentro de esa variación; lo que cuenta es la tendencia global y los bloqueos.
+
+### Consumo de la ronda
+
+| Agente | Modelo | Duración | Tokens |
+|---|---|---|---|
+| Arreglos de store | Opus | 22 min | 250 mil |
+| Roscas y corte | Opus | 15 min | 180 mil |
+| Usabilidad: campos | Sonnet | 26 min | 253 mil |
+| Usabilidad: paneles | Sonnet | 26 min | 286 mil |
+| Limpieza de textos | Sonnet | 8 min | 166 mil |
+| QA de humo | Sonnet | 16 min | 185 mil |
+| Arreglos de humo | Sonnet | 20 min | 219 mil |
+| Ordenar store y núcleo | Opus | 23 min | 278 mil |
+| Dividir componentes | Opus | 40 min (con un corte por límite de uso) | 279 mil |
+| Geometría en segundo plano | Opus | 35 min (con un corte por límite de uso) | 208 mil |
+| Primitivas paramétricas | Opus | 19 min | 230 mil |
+| Vista previa | Opus | 27 min | 258 mil |
+| Cabos de vista previa | Sonnet | 15 min | 214 mil |
+| Unidades y capturas | Sonnet | 19 min | 230 mil |
+| Evaluación de usabilidad | Opus | 15 min (R2) · 14 min (R3) | 212 mil · 220 mil |
+| Evaluación de código | Opus | 8 min · 8 min | 148 mil · 211 mil |
+| Evaluación funcional | Opus | 13 min · 15 min | 197 mil · 216 mil |
+
+Ningún agente superó su tope salvo el de capturas (38 de 35 minutos). El control por latido permitió ver el avance de cada uno sin esperar a que terminara.
+
