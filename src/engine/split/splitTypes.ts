@@ -250,7 +250,7 @@ export interface BedSplitExecuteOptions {
    */
   assemblyAllowSurfaceChange?: boolean;
   /**
-   * Firmeza activa (por defecto `true`): si el conector de una unión queda bajo el radio recomendado,
+   * Firmeza activa (por defecto `false`, `OPERATION_DEFAULTS.split.reinforceWeakJoints`): si el conector de una unión queda bajo el radio recomendado,
    * se intenta agrandarlo hasta el recomendado y, si no cabe, agregar uno más; si tampoco, queda el que
    * cabe y el informe de armado mantiene `ASSEMBLY_WEAK_JOINT` con lo medido y lo recomendado.
    */

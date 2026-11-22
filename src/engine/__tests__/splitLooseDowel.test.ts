@@ -61,7 +61,7 @@ describe('firmeza activa', () => {
     const plan = await planBedSplit(obj, { widthMm: 200, depthMm: 200, heightMm: 160 }, { connector: small, axes: ['y'], allowRotation: false });
     const weak = await executeBedSplitGeometry(obj, plan, { reinforceWeakJoints: false });
     expect(weak.assembly!.weak.length).toBeGreaterThan(0);
-    const res = await executeBedSplitGeometry(obj, plan);
+    const res = await executeBedSplitGeometry(obj, plan, { reinforceWeakJoints: true });
     const j = res.joints[0];
     const rec = recommendedConnectorRadius(j.contactAreaMm2, j.connectorCenters.length, 160);
     expect(j.connector!.size).toBeGreaterThan(small.size);

@@ -73,11 +73,15 @@ describe('firmeza activa', () => {
     const obj = H.objFromM(w.Manifold.cylinder(300, 40, 40, 64).rotate([-90, 0, 0]), 'cil');
     const small: SplitConnectorOptions = { type: 'dowel', size: 1.5, depth: 6, tolerance: 0.2, count: 1 };
     const plan = await planBedSplit(obj, { widthMm: 200, depthMm: 200, heightMm: 160 }, { connector: small, axes: ['y'], allowRotation: false });
-    const res = await executeBedSplitGeometry(obj, plan);
+    const res = await executeBedSplitGeometry(obj, plan, { reinforceWeakJoints: true });
     const warn = res.warnings.find((x) => x.code === 'SPLIT_CONNECTOR_REINFORCED');
     expect(warn).toBeDefined();
     expect(Number(warn!.params.requested)).toBeCloseTo(1.5, 6);
     expect(Number(warn!.params.size)).toBeGreaterThan(1.5);
+    // Sin la opción: apagado (OPERATION_DEFAULTS.split.reinforceWeakJoints), el conector queda como se pidió
+    const dflt = await executeBedSplitGeometry(obj, plan);
+    expect(dflt.warnings.some((x) => x.code === 'SPLIT_CONNECTOR_REINFORCED')).toBe(false);
+    expect(dflt.joints[0].connector!.size).toBeCloseTo(1.5, 6);
     const off = await executeBedSplitGeometry(obj, plan, { reinforceWeakJoints: false });
     expect(off.warnings.some((x) => x.code === 'SPLIT_CONNECTOR_REINFORCED')).toBe(false);
   }, 60_000);
@@ -97,7 +101,7 @@ describe('firmeza activa', () => {
     const obj = H.objFromM(w.Manifold.cube([300, 300, 300], true), 'caja');
     const c: SplitConnectorOptions = { type: 'loose-dowel', size: 3, depth: 6, tolerance: 0.25, count: 1 };
     const plan = await planBedSplit(obj, { widthMm: 400, depthMm: 400, heightMm: 200 }, { connector: c });
-    const res = await executeBedSplitGeometry(obj, plan);
+    const res = await executeBedSplitGeometry(obj, plan, { reinforceWeakJoints: true });
     const j = res.joints[0];
     expect(j.kind).toBe('connector');
     expect(j.connector!.size).toBeGreaterThan(3);
