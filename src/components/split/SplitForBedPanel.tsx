@@ -100,12 +100,24 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
 
   const movePlane = (axis: SplitAxis, index: number, position: number) => {
     if (!plan) return;
-    const current = plan.planes.filter((p) => p.axis === axis).map((p) => p.position);
-    if (index >= current.length) return;
+    const fromPlan = plan.planes.filter((p) => p.axis === axis).map((p) => p.position);
+    if (index >= fromPlan.length) return;
     const lo = plan.bounds.min[AXES.indexOf(axis)];
     const hi = plan.bounds.max[AXES.indexOf(axis)];
-    current[index] = Math.min(hi, Math.max(lo, Math.round(position * 10) / 10));
-    setOverrides((o) => ({ ...o, [axis]: current }));
+    const next = Math.min(hi, Math.max(lo, Math.round(position * 10) / 10));
+    setOverrides((o) => {
+      // Parte de lo último pedido (aunque el plan aún no se recalcule) para no perder pasos seguidos.
+      const prev = o[axis];
+      const current = prev && prev.length === fromPlan.length ? [...prev] : fromPlan;
+      current[index] = next;
+      return { ...o, [axis]: current };
+    });
+  };
+
+  /** Posición vigente de un plano: la pedida a mano si existe, si no la del plan. */
+  const planePosition = (axis: SplitAxis, index: number, fallback: number) => {
+    const o = overrides[axis];
+    return o && plan && o.length === plan.planes.filter((p) => p.axis === axis).length ? o[index] : fallback;
   };
 
   // Arrastre en el visor y flechas ↑/↓ con el foco en el visor (Mayús: ×10).
@@ -119,7 +131,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       const p = plan.planes.find((q) => q.axis === axis && q.index === Number(idx));
       if (!p) return;
       e.preventDefault();
-      movePlane(axis, p.index, p.position + (e.shiftKey ? 10 : 1) * (e.key === 'ArrowUp' ? 1 : -1));
+      movePlane(axis, p.index, planePosition(axis, p.index, p.position) + (e.shiftKey ? 10 : 1) * (e.key === 'ArrowUp' ? 1 : -1));
     };
     document.addEventListener('keydown', onKey);
     return () => {
@@ -128,7 +140,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
     };
     // movePlane depende del plan vigente.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, plan, activePlane]);
+  }, [open, plan, activePlane, overrides]);
 
   const summary = plan ? summarizeSplitPlan(plan, allowRotation) : null;
   const pending = preview.status === 'pending';

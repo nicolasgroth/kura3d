@@ -275,7 +275,7 @@ export const SceneContent: React.FC<{
         enableDamping
         dampingFactor={0.08}
         minDistance={18}
-        maxDistance={950}
+        maxDistance={3000}
         maxPolarAngle={Math.PI * 0.92}
       />
 
