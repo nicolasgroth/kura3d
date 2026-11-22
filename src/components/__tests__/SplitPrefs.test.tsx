@@ -49,13 +49,16 @@ beforeEach(() => {
 
 describe('preferencias de división', () => {
   it('valores iniciales: espiga fija, holgura de OPERATION_DEFAULTS y refuerzo apagado', () => {
-    expect(DEFAULT_SPLIT_PREFERENCES).toEqual({ connectorType: 'dowel', tolerance: 0.25, reinforceWeakJoints: false });
+    expect(DEFAULT_SPLIT_PREFERENCES).toEqual({ connectorType: 'dowel', tolerance: 0.25, connectorSize: 'auto', reinforceWeakJoints: false });
     expect(OPERATION_DEFAULTS.split.reinforceWeakJoints).toBe(false);
   });
 
   it('se validan: tipo desconocido, holgura fuera de rango o basura vuelven a lo seguro', () => {
-    expect(sanitizeSplitPreferences({ connectorType: 'x', tolerance: 99, reinforceWeakJoints: 'sí' })).toEqual({ connectorType: 'dowel', tolerance: 5, reinforceWeakJoints: false });
+    expect(sanitizeSplitPreferences({ connectorType: 'x', tolerance: 99, reinforceWeakJoints: 'sí' })).toEqual({ connectorType: 'dowel', tolerance: 5, connectorSize: 'auto', reinforceWeakJoints: false });
     expect(sanitizeSplitPreferences(null)).toEqual(DEFAULT_SPLIT_PREFERENCES);
+    expect(sanitizeSplitPreferences({ connectorSize: 3 }).connectorSize).toBe(3);
+    expect(sanitizeSplitPreferences({ connectorSize: 'enorme' }).connectorSize).toBe('auto');
+    expect(sanitizeSplitPreferences({ connectorSize: 9999 }).connectorSize).toBe(500);
   });
 
   it('Ajustes guarda las preferencias y se recuperan al reiniciar', () => {
@@ -77,6 +80,38 @@ describe('preferencias de división', () => {
     expect(request.mock.calls.at(-1)![2].connector).toMatchObject({ type: 'loose-dowel', tolerance: 0.4 });
     fireEvent.change(kindSelect(), { target: { value: 'peg' } });
     expect(useKuraStore.getState().splitPrefs.connectorType).toBe('loose-dowel');
+  });
+
+  it('el tamaño del conector es automático por defecto, se manda al motor y se puede fijar en diámetro Ø', async () => {
+    useKuraStore.getState().setSplitPrefs({ connectorType: 'dowel' });
+    const { unmount } = render(<SplitForBedPanel open onClose={() => undefined} />);
+    const auto = screen.getByLabelText(t('es', 'split.size.auto')) as HTMLInputElement;
+    expect(auto.checked).toBe(true);
+    expect(request.mock.calls.at(-1)![2].connector).toMatchObject({ sizeAuto: true });
+    expect((screen.getByLabelText(`${t('es', 'split.size.label')} (mm)`) as HTMLInputElement).disabled).toBe(true);
+    fireEvent.click(auto);
+    const call = request.mock.calls.at(-1)![2].connector;
+    expect(call.sizeAuto).toBeUndefined();
+    expect(call.size).toBe(4);
+    // El campo muestra el diámetro (el doble del radio interno)
+    expect((screen.getByLabelText(`${t('es', 'split.size.label')} (mm)`) as HTMLInputElement).value).toBe('8');
+    unmount();
+    // La preferencia fija un radio guardado y el panel lo abre como diámetro
+    useKuraStore.getState().setSplitPrefs({ connectorSize: 3 });
+    render(<SplitForBedPanel open onClose={() => undefined} />);
+    expect((screen.getByLabelText(t('es', 'split.size.auto')) as HTMLInputElement).checked).toBe(false);
+    expect((screen.getByLabelText(`${t('es', 'split.size.label')} (mm)`) as HTMLInputElement).value).toBe('6');
+  });
+
+  it('Ajustes ofrece Automático (recomendado) y, al quitarlo, el diámetro Ø', () => {
+    render(<SplitSettings idPrefix="s" />);
+    const box = screen.getByLabelText(t('es', 'settings.split.sizeAuto'), { exact: false }) as HTMLInputElement;
+    expect(box.checked).toBe(true);
+    fireEvent.click(box);
+    expect(useKuraStore.getState().splitPrefs.connectorSize).toBe(4);
+    expect((screen.getByLabelText(t('es', 'settings.split.sizeValue')) as HTMLInputElement).value).toBe('8');
+    fireEvent.click(box);
+    expect(useKuraStore.getState().splitPrefs.connectorSize).toBe('auto');
   });
 
   it('el corte por plano toma el conector preferido; si no lo ofrece usa espiga', () => {
@@ -121,7 +156,7 @@ describe('refuerzo de uniones débiles en el panel', () => {
     expect(box.checked).toBe(false);
     const help = document.getElementById(box.getAttribute('aria-describedby')!);
     expect(help?.textContent).toBe(t('es', 'split.reinforceHelp'));
-    expect(help?.textContent).toContain('cambia el radio que pediste');
+    expect(help?.textContent).toContain('cambia el diámetro que pediste');
     expect((await runSplit()).reinforceWeakJoints).toBe(false);
   });
 

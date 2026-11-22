@@ -155,9 +155,15 @@ export const OPERATION_DEFAULTS = {
   split: { marginMm: 5, maxPieces: 64, shiftWindow: 0.15, labelDepthMm: 0.4, labelMinHeightMm: 4, lapHeightMm: 6, minFragmentMm3: 2000, minWallForConnectorMm: 8,
     /** Firmeza activa de las uniones: apagada por defecto en todas las rutas (app, bus y MCP); el usuario la elige. */
     reinforceWeakJoints: false,
+    /**
+     * Tamaño del conector de "dividir para imprimir" cuando el llamador no lo da: `'auto'` = cada unión usa su radio
+     * recomendado (`recommendedConnectorRadius`, respetando pared mínima y choques). Un número se respeta tal cual.
+     */
+    connectorSize: 'auto',
     /** Conector y holgura iniciales de las preferencias del usuario (Ajustes → División y uniones). */
     prefConnectorType: 'dowel',
     prefTolerance: 0.25,
+    prefConnectorSize: 'auto',
   },
 } as const;
 

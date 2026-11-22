@@ -13,6 +13,7 @@ import { PREVIEW_HI } from './preview';
 import { SPLITJOINTS_HI } from './splitJoints';
 import { SPLITPREFS_HI } from './splitPrefs';
 import { SPLITCOUPLING_HI } from './splitCoupling';
+import { SPLITUX_HI } from './splitUx';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -23,6 +24,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...SPLITJOINTS_HI,
   ...SPLITPREFS_HI,
   ...SPLITCOUPLING_HI,
+  ...SPLITUX_HI,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',

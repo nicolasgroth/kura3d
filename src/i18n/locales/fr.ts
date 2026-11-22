@@ -13,6 +13,7 @@ import { PREVIEW_FR } from './preview';
 import { SPLITJOINTS_FR } from './splitJoints';
 import { SPLITPREFS_FR } from './splitPrefs';
 import { SPLITCOUPLING_FR } from './splitCoupling';
+import { SPLITUX_FR } from './splitUx';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -23,6 +24,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...SPLITJOINTS_FR,
   ...SPLITPREFS_FR,
   ...SPLITCOUPLING_FR,
+  ...SPLITUX_FR,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
