@@ -9,6 +9,7 @@
 
 import { computeMeshStats } from '../engine/primitives';
 import type { MeshData, SceneObject } from '../types/kura';
+import { FILE_HISTORY_MAX_STEPS } from './historyBudget';
 import {
   check, color, id, limit, MAX_PROJECT_BYTES, nat, ProjectCodecError, record, shape, validSettings, validStoredObject,
   type ObjectMetadata, type ProjectDocument, type ProjectSceneSnapshot,
@@ -16,8 +17,13 @@ import {
 
 export { MAX_PROJECT_BYTES, ProjectCodecError, type ProjectDocument, type ProjectSceneSnapshot } from './projectSchema';
 const MAX_MANIFEST_BYTES = 16 * 1024 * 1024;
-/** Pasos de historial (pasado + futuro) que admiten el store y el formato .kura: fuente única. */
-export const MAX_UNDO_HISTORY = 40;
+/**
+ * Pasos de historial (pasado + futuro) que admite el formato .kura. El store conserva más (por
+ * presupuesto de memoria, ver `historyBudget.ts`); al guardar se recortan a los más recientes que
+ * caben en `FILE_HISTORY_MAX_STEPS` pasos o `FILE_HISTORY_BUDGET_MB` MB. Los archivos ya escritos
+ * (máximo 40 pasos) siguen leyéndose igual.
+ */
+export const MAX_UNDO_HISTORY = FILE_HISTORY_MAX_STEPS;
 const MAX_HISTORY = MAX_UNDO_HISTORY;
 const MAX_OBJECTS = 10000;
 const MAX_MESHES = 20000;

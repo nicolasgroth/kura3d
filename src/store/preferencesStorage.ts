@@ -10,6 +10,12 @@
 
 import type * as engine from '../engine';
 import {
+  defaultHistoryLimits,
+  MAX_HISTORY_STEPS,
+  MIN_HISTORY_STEPS,
+  type HistoryLimits,
+} from '../project/historyBudget';
+import {
   DEFAULT_PRINTER_PROFILES,
   THEME_PRESETS,
   type ColorSchemePreference,
@@ -29,6 +35,7 @@ export const STORAGE_UNIT_KEY = 'kura3d-unit-system';
 export const STORAGE_PRINTER_KEY = 'kura3d-printer-id';
 export const STORAGE_UI_DENSITY_KEY = 'kura3d-ui-density';
 export const STORAGE_IMPORT_PLACEMENT_KEY = 'kura3d-import-placement';
+export const STORAGE_HISTORY_LIMITS_KEY = 'kura3d-history-limits';
 
 /** Lee de forma segura preferencias desde localStorage sin lanzar errores en entornos restringidos. */
 export function readStorage(key: string): string | null {
@@ -102,4 +109,33 @@ export function loadInitialImportPlacement(): engine.ImportPlacementMode {
 /** Nunca se restaura en Zen tras recargar: la interfaz debe verse siempre al abrir. */
 export function loadInitialUiDensity(): UiDensityMode {
   return readStorage(STORAGE_UI_DENSITY_KEY) === 'compact' ? 'compact' : 'full';
+}
+
+/** Ajusta presupuesto y pasos a rangos válidos (64 MB–1 GB y 50–2000 pasos). */
+export function clampHistoryLimits(limits: HistoryLimits): HistoryLimits {
+  const budget = Number.isFinite(limits.budgetMb) ? Math.round(limits.budgetMb) : 0;
+  const steps = Number.isFinite(limits.maxSteps) ? Math.round(limits.maxSteps) : 0;
+  return {
+    budgetMb: Math.min(1024, Math.max(32, budget)),
+    maxSteps: Math.min(MAX_HISTORY_STEPS, Math.max(MIN_HISTORY_STEPS, steps)),
+  };
+}
+
+/** Límites del historial: lo guardado (validado) o el valor por defecto según memoria y ancho. */
+export function loadInitialHistoryLimits(): HistoryLimits {
+  const defaults = defaultHistoryLimits();
+  const raw = readStorage(STORAGE_HISTORY_LIMITS_KEY);
+  if (!raw) return defaults;
+  try {
+    const parsed = JSON.parse(raw) as Partial<HistoryLimits> | null;
+    const budgetMb = typeof parsed?.budgetMb === 'number' ? parsed.budgetMb : defaults.budgetMb;
+    const maxSteps = typeof parsed?.maxSteps === 'number' ? parsed.maxSteps : defaults.maxSteps;
+    return clampHistoryLimits({ budgetMb, maxSteps });
+  } catch {
+    return defaults;
+  }
+}
+
+export function saveHistoryLimits(limits: HistoryLimits): void {
+  writeStorage(STORAGE_HISTORY_LIMITS_KEY, JSON.stringify(limits));
 }

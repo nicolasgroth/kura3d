@@ -13,6 +13,7 @@ import type { ParametricEdit } from '../core/operations/creationOperations';
 import type { SplitForBedOutcome, SplitForBedRequest } from './splitCommandSchemas';
 import type { openProjectFile } from '../project/projectFiles';
 import type { RecoveryDraftInfo } from '../project/projectRecoveryStorage';
+import type { HistoryLimits } from '../project/historyBudget';
 import type { ProjectDocument, ProjectSceneSnapshot } from '../project/projectSchema';
 import type {
   ActiveTool,
@@ -243,6 +244,11 @@ export interface KuraStoreState {
   clearSelection: () => void;
   undo: () => void;
   redo: () => void;
+  /** Límites del historial de deshacer (presupuesto de memoria y máximo de pasos); preferencia global. */
+  historyLimits: HistoryLimits;
+  setHistoryLimits: (limits: Partial<HistoryLimits>) => void;
+  /** Descarta todos los pasos de deshacer y rehacer (la escena actual no cambia). */
+  clearHistory: () => void;
 
   // Operaciones sobre escena y geometría
   createPrimitive: (

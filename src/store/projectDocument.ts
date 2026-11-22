@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import { trimHistoryForFile } from '../project/historyBudget';
 import type { ProjectDocument } from '../project/projectSchema';
 import { makeId } from '../core/scene/sceneObjects';
 import type { SceneObject, Vec3 } from '../types/kura';
@@ -41,12 +42,24 @@ function cleanSnapshotSelection<T extends { objects: SceneObject[]; selectedIds:
   return selectedIds === snapshot.selectedIds ? snapshot : { ...snapshot, selectedIds };
 }
 
+const fileHistoryCache = new WeakMap<SceneSnapshot[], { future: SceneSnapshot[]; value: { past: SceneSnapshot[]; future: SceneSnapshot[] } }>();
+
+/** Historial que viaja en el `.kura` (los pasos más recientes que caben en su presupuesto), memoizado. */
+function fileHistory(past: SceneSnapshot[], future: SceneSnapshot[]) {
+  const cached = fileHistoryCache.get(past);
+  if (cached && cached.future === future) return cached.value;
+  const value = trimHistoryForFile(past, future);
+  fileHistoryCache.set(past, { future, value });
+  return value;
+}
+
 export function captureProject(state: KuraStoreState): ProjectDocument {
+  const history = fileHistory(state.past, state.future);
   return {
     objects: state.objects,
     selectedIds: liveSelection(state.objects, state.selectedIds),
-    past: state.past.map(cleanSnapshotSelection),
-    future: state.future.map(cleanSnapshotSelection),
+    past: history.past.map(cleanSnapshotSelection),
+    future: history.future.map(cleanSnapshotSelection),
     unitSystem: state.unitSystem,
     printerProfile: state.printerProfile,
     customBedDimensions: state.customBedDimensions,
@@ -57,8 +70,9 @@ export function captureProject(state: KuraStoreState): ProjectDocument {
 
 export function hasProjectChanged(saved: ProjectDocument, state: KuraStoreState): boolean {
   // Selection is written with a save, but moving focus around the scene does not require one.
+  const history = fileHistory(state.past, state.future);
   return sceneRevision(saved.objects) !== sceneRevision(state.objects) ||
-    !sameHistory(saved.past, state.past) || !sameHistory(saved.future, state.future) ||
+    !sameHistory(saved.past, history.past) || !sameHistory(saved.future, history.future) ||
     saved.unitSystem !== state.unitSystem || saved.printerProfile !== state.printerProfile ||
     saved.customBedDimensions !== state.customBedDimensions || saved.sectionPlane !== state.sectionPlane ||
     saved.snapGridMm !== state.snapGridMm;

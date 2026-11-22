@@ -13,7 +13,7 @@ import type { StoreApi } from 'zustand';
 import type * as engine from '../engine';
 import { segmentationMatchesMesh } from '../engine/segmentationGuards';
 import { t, type TranslationKey } from '../i18n';
-import { MAX_UNDO_HISTORY } from '../project/projectCodec';
+import { limitsToBytes, trimHistory } from '../project/historyBudget';
 import { ProjectCodecError } from '../project/projectSchema';
 import { applySceneChange, type OperationContext, type SceneChange } from '../core/operations';
 import { getEngineClient, isEngineCancelled, type EngineClient, type EngineJob } from '../core/operations/engineClient';
@@ -39,6 +39,8 @@ export interface StoreRuntime {
   paintStroke: { open: boolean; recorded: boolean };
   /** Escena previa a un arrastre de transformación sin confirmar. */
   transformSnapshotBeforeDrag: SceneSnapshot | null;
+  /** El aviso de pasos descartados por memoria ya se mostró en esta sesión. */
+  historyBudgetWarned: boolean;
   /** Tarea del motor en curso (cancelable). */
   activeJob: EngineJob<unknown> | null;
 }
@@ -56,6 +58,8 @@ export interface StoreContext {
   runtime: StoreRuntime;
   tr: Translate;
   pushHistory: () => void;
+  /** Recorta pasado y futuro al presupuesto vigente; avisa una vez por sesión al descartar por memoria. */
+  limitHistory: (past: SceneSnapshot[], future: SceneSnapshot[]) => { past: SceneSnapshot[]; future: SceneSnapshot[] };
   isHistoryLocked: () => boolean;
   rejectWhileLocked: () => boolean;
   runExclusive: ReturnType<typeof createExclusiveRunner>;
@@ -105,14 +109,24 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   const runtime: StoreRuntime = {
     paintStroke: { open: false, recorded: false },
     transformSnapshotBeforeDrag: null,
+    historyBudgetWarned: false,
     activeJob: null,
   };
   const tr: Translate = (key, params) => t(get().language, key, params);
 
+  const limitHistory: StoreContext['limitHistory'] = (past, future) => {
+    const result = trimHistory(past, future, limitsToBytes(get().historyLimits));
+    if (result.droppedByBudget > 0 && !runtime.historyBudgetWarned) {
+      runtime.historyBudgetWarned = true;
+      get().addToast(tr('toast.historyTrimmed'), 'info');
+    }
+    return { past: result.past, future: result.future };
+  };
+
   const pushHistory = () => {
     const state = get();
     const snap = cloneSnapshot(state.objects, state.selectedIds);
-    set({ past: [...state.past, snap].slice(-MAX_UNDO_HISTORY), future: [] });
+    set(limitHistory([...state.past, snap], []));
   };
 
   const operationErrors = createOperationErrorTracker();
@@ -239,7 +253,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   };
 
   return {
-    set, get, runtime, tr, pushHistory, isHistoryLocked, rejectWhileLocked, runExclusive, operationErrors,
+    set, get, runtime, tr, pushHistory, limitHistory, isHistoryLocked, rejectWhileLocked, runExclusive, operationErrors,
     reportOperationError, reportEngineWarnings, currentSegmentationFor, projectErrorMessage, opCtx, assertCurrent, commitChange,
     runEngine, cancelBusyOperation, runEngineDetached,
   };
