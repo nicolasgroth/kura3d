@@ -34,6 +34,8 @@ type ConnectorKind = 'none' | 'auto' | SplitConnectorOptions['type'];
 type LabelPlacement = 'auto' | 'joint' | 'outside';
 type Overrides = Partial<Record<SplitAxis, number[]>>;
 const AXES: SplitAxis[] = ['x', 'y', 'z'];
+/** Orden en que se muestran los ejes: el del usuario (X, Y = fondo, Z = altura), que en el motor es x, z, y. */
+const AXES_USER_ORDER: SplitAxis[] = ['x', 'z', 'y'];
 const D = OPERATION_DEFAULTS.split;
 
 export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
@@ -59,6 +61,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const [axes, setAxes] = useState<Record<SplitAxis, boolean>>({ x: true, y: true, z: true });
   const [allowRotation, setAllowRotation] = useState(true);
   const [allowDiagonal, setAllowDiagonal] = useState(false);
+  const [allowSurface, setAllowSurface] = useState(false);
   const [kind, setKind] = useState<ConnectorKind>('auto');
   const [lapHeight, setLapHeight] = useState<number>(D.lapHeightMm);
   const [minWall, setMinWall] = useState<number>(D.minWallForConnectorMm);
@@ -188,7 +191,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       splitObjectForBed(targetId, {
         bed,
         plan: planOptions,
-        execute: { connector, labels, labelDepthMm: labelDepth, labelPlacement },
+        execute: { connector, labels, labelDepthMm: labelDepth, labelPlacement, assemblyAllowSurfaceChange: allowSurface },
         dryRun: false,
       }),
     );
@@ -286,7 +289,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       <fieldset className="kura-split-group">
         <legend>{t(language, 'split.axes')}</legend>
         <div className="kura-split-checks">
-          {AXES.map((a) => (
+          {AXES_USER_ORDER.map((a) => (
             <label key={a} className="kura-split-check" title={t(language, 'split.axisTip', { axis: userAxisLabel(a) })}>
               <input type="checkbox" checked={axes[a]} onChange={(e) => setAxes((s) => ({ ...s, [a]: e.target.checked }))} />
               <span>{userAxisLabel(a)}</span>
@@ -320,6 +323,12 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         {kind === 'loose-dowel' && <p className="kura-split-target" id={`${uid}-dowel-help`}>{t(language, 'split.looseDowelHelp')}</p>}
         {kind !== 'none' && kind !== 'lap' &&
           num('minwall', `${t(language, 'split.minWall')} (mm)`, minWall, setMinWall, OR.split.minWallForConnectorMm, { step: 0.5, def: D.minWallForConnectorMm, hint: t(language, 'split.minWallTip') })}
+        {kind !== 'none' && kind !== 'lap' && (
+          <label className="kura-split-check" title={t(language, 'split.allowSurfaceChangeTip')}>
+            <input type="checkbox" checked={allowSurface} onChange={(e) => setAllowSurface(e.target.checked)} />
+            <span>{t(language, 'split.allowSurfaceChange')}</span>
+          </label>
+        )}
         {kind === 'lap' && <p className="kura-split-target">{t(language, 'split.lapShapeNote')}</p>}
         {kind === 'lap' &&
           num('laph', `${t(language, 'split.lapHeight')} (mm)`, lapHeight, setLapHeight, OR.split.lapHeightMm, { step: 0.5, def: D.lapHeightMm })}
@@ -366,7 +375,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
           <>
             <small className="kura-cut-hint">{t(language, 'split.planesHint')}</small>
             <ul className="kura-split-planes" aria-busy={pending}>
-              {plan.planes.map((p) => {
+              {[...plan.planes].sort((p, q) => AXES_USER_ORDER.indexOf(p.axis) - AXES_USER_ORDER.indexOf(q.axis) || p.index - q.index).map((p) => {
                 const key = planeKey(p.axis, p.index);
                 const a = AXES.indexOf(p.axis);
                 const name = t(language, 'split.planeName', { axis: userAxisLabel(p.axis), n: p.index + 1 });

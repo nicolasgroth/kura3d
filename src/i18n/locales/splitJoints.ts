@@ -63,6 +63,15 @@ export const SPLITJOINTS_ES = {
   'splitJoints.dir.axis': 'se mueve hacia {axis}',
   'splitJoints.none': 'Esta división no tiene uniones.',
   'split.sum.maxHint': 'Son cifras máximas según la rejilla: las celdas vacías (por ejemplo en una L o un tubo) no generan pieza ni uniones. El número real aparece al dividir.',
+  'splitJoints.banner.fail': 'El armado no cierra: las piezas no se pueden montar tal como quedaron.',
+  'splitJoints.banner.action': 'Qué hacer: en las uniones marcadas «Traba el montaje», déjalas para pegar o cambia su conector. También puedes deshacer (Ctrl+Z) y dividir de nuevo con otro tipo de unión. Después pulsa «Validar armado».',
+  'splitJoints.banner.fixed': 'Para que se pueda montar, Kura3D dejó {glued} unión(es) para pegar y cambió el tipo de conector en {changed}.',
+  'splitJoints.status.dots': 'Marca de puntos',
+  'splitJoints.note.dots': 'La marca {label} va como puntos por fuera porque el texto no cabía. Se lee desde el borde de la unión hacia afuera: cada dígito es un grupo de puntos seguidos (3 = •••) y el 0 es una raya corta; entre dígitos queda un hueco. Ejemplo: 12 = • ••.',
+  'splitJoints.note.dotsShort': 'La marca de pareja va grabada como puntos (el texto no cabía).',
+  'splitJoints.connectorsWidth': '{count} × {type}, ancho {d} mm',
+  'split.allowSurfaceChange': 'Permitir cola de milano pasante (abre la superficie)',
+  'split.allowSurfaceChangeTip': 'Avanzado. Si una unión no deja montar la pieza, Kura3D puede cambiarla a cola de milano con ranura pasante, que se ve desde afuera. Apagado: esa unión se deja para pegar.',
 };
 
 export const SPLITJOINTS_EN = {
@@ -120,6 +129,15 @@ export const SPLITJOINTS_EN = {
   'splitJoints.dir.axis': 'moves toward {axis}',
   'splitJoints.none': 'This split has no joints.',
   'split.sum.maxHint': 'These are maximums from the grid: empty cells (for example in an L or a tube) produce no piece or joints. The real number appears after splitting.',
+  'splitJoints.banner.fail': 'The assembly does not close: the parts cannot be assembled as they are.',
+  'splitJoints.banner.action': 'What to do: for joints marked "Blocks assembly", leave them for gluing or change their connector. You can also undo (Ctrl+Z) and split again with another joint type. Then press "Validate assembly".',
+  'splitJoints.banner.fixed': 'So it can be assembled, Kura3D left {glued} joint(s) for gluing and changed the connector type in {changed}.',
+  'splitJoints.status.dots': 'Dot mark',
+  'splitJoints.note.dots': 'Mark {label} is engraved as dots on the outside because the text did not fit. Read it from the joint edge outward: each digit is a group of consecutive dots (3 = •••) and 0 is a short dash; a gap separates digits. Example: 12 = • ••.',
+  'splitJoints.note.dotsShort': 'The pairing mark is engraved as dots (the text did not fit).',
+  'splitJoints.connectorsWidth': '{count} × {type}, width {d} mm',
+  'split.allowSurfaceChange': 'Allow through dovetail (opens the surface)',
+  'split.allowSurfaceChangeTip': 'Advanced. If a joint prevents assembling the part, Kura3D may switch it to a dovetail with a through slot, visible from outside. Off: that joint is left for gluing.',
 };
 
 export const SPLITJOINTS_DE = {
@@ -177,6 +195,15 @@ export const SPLITJOINTS_DE = {
   'splitJoints.dir.axis': 'bewegt sich nach {axis}',
   'splitJoints.none': 'Diese Teilung hat keine Verbindungen.',
   'split.sum.maxHint': 'Das sind Höchstwerte nach dem Raster: leere Zellen (z. B. bei einem L oder Rohr) ergeben weder Teil noch Verbindungen. Die tatsächliche Zahl erscheint nach dem Teilen.',
+  'splitJoints.banner.fail': 'Der Zusammenbau geht nicht auf: Die Teile lassen sich so nicht montieren.',
+  'splitJoints.banner.action': 'Was tun: Verbindungen mit „Blockiert die Montage“ zum Kleben lassen oder den Verbinder ändern. Du kannst auch rückgängig machen (Strg+Z) und mit einem anderen Verbindungstyp neu teilen. Danach „Zusammenbau prüfen“ drücken.',
+  'splitJoints.banner.fixed': 'Damit sich alles montieren lässt, hat Kura3D {glued} Verbindung(en) zum Kleben belassen und bei {changed} den Verbindertyp geändert.',
+  'splitJoints.status.dots': 'Punktmarke',
+  'splitJoints.note.dots': 'Die Markierung {label} ist außen als Punkte graviert, weil der Text nicht passte. Vom Rand der Verbindung nach außen lesen: Jede Ziffer ist eine Gruppe aufeinanderfolgender Punkte (3 = •••), die 0 ist ein kurzer Strich; zwischen den Ziffern ist eine Lücke. Beispiel: 12 = • ••.',
+  'splitJoints.note.dotsShort': 'Die Paarmarkierung ist als Punkte graviert (der Text passte nicht).',
+  'splitJoints.connectorsWidth': '{count} × {type}, Breite {d} mm',
+  'split.allowSurfaceChange': 'Durchgehenden Schwalbenschwanz erlauben (öffnet die Oberfläche)',
+  'split.allowSurfaceChangeTip': 'Erweitert. Verhindert eine Verbindung die Montage, kann Kura3D sie auf einen Schwalbenschwanz mit durchgehender Nut umstellen, die von außen sichtbar ist. Aus: Diese Verbindung wird zum Kleben belassen.',
 };
 
 export const SPLITJOINTS_FR = {
@@ -234,6 +261,15 @@ export const SPLITJOINTS_FR = {
   'splitJoints.dir.axis': 'se déplace vers {axis}',
   'splitJoints.none': 'Cette division n\'a pas de jonctions.',
   'split.sum.maxHint': 'Ce sont des maximums selon la grille : les cellules vides (par exemple dans un L ou un tube) ne donnent ni pièce ni jonction. Le nombre réel apparaît après la division.',
+  'splitJoints.banner.fail': 'L’assemblage ne se referme pas : les pièces ne peuvent pas être montées telles quelles.',
+  'splitJoints.banner.action': 'Que faire : pour les jonctions marquées « Bloque l’assemblage », laissez-les à coller ou changez leur connecteur. Vous pouvez aussi annuler (Ctrl+Z) et diviser à nouveau avec un autre type de jonction. Puis appuyez sur « Valider l’assemblage ».',
+  'splitJoints.banner.fixed': 'Pour que le montage soit possible, Kura3D a laissé {glued} jonction(s) à coller et changé le type de connecteur pour {changed}.',
+  'splitJoints.status.dots': 'Repère en points',
+  'splitJoints.note.dots': 'Le repère {label} est gravé en points à l’extérieur car le texte ne tenait pas. Lisez-le depuis le bord de la jonction vers l’extérieur : chaque chiffre est un groupe de points consécutifs (3 = •••) et le 0 est un trait court ; un espace sépare les chiffres. Exemple : 12 = • ••.',
+  'splitJoints.note.dotsShort': 'Le repère d’appariement est gravé en points (le texte ne tenait pas).',
+  'splitJoints.connectorsWidth': '{count} × {type}, largeur {d} mm',
+  'split.allowSurfaceChange': 'Autoriser la queue d’aronde traversante (ouvre la surface)',
+  'split.allowSurfaceChangeTip': 'Avancé. Si une jonction empêche le montage, Kura3D peut la passer en queue d’aronde avec rainure traversante, visible de l’extérieur. Désactivé : cette jonction est laissée à coller.',
 };
 
 export const SPLITJOINTS_HI = {
@@ -291,6 +327,15 @@ export const SPLITJOINTS_HI = {
   'splitJoints.dir.axis': '{axis} की ओर बढ़ता है',
   'splitJoints.none': 'इस विभाजन में कोई जोड़ नहीं है।',
   'split.sum.maxHint': 'ये ग्रिड के अनुसार अधिकतम आँकड़े हैं: खाली खाने (जैसे L या ट्यूब में) से कोई हिस्सा या जोड़ नहीं बनता। असली संख्या बाँटने के बाद दिखती है।',
+  'splitJoints.banner.fail': 'असेंबली पूरी नहीं होती: हिस्से इस रूप में जोड़े नहीं जा सकते।',
+  'splitJoints.banner.action': 'क्या करें: “जोड़ना रोकता है” वाले जोड़ों को चिपकाने के लिए छोड़ें या उनका कनेक्टर बदलें। आप पूर्ववत (Ctrl+Z) करके दूसरे प्रकार के जोड़ से फिर बाँट भी सकते हैं। फिर “जोड़ना जाँचें” दबाएँ।',
+  'splitJoints.banner.fixed': 'असेंबली संभव करने के लिए Kura3D ने {glued} जोड़ चिपकाने के लिए छोड़े और {changed} में कनेक्टर का प्रकार बदला।',
+  'splitJoints.status.dots': 'बिंदु निशान',
+  'splitJoints.note.dots': 'निशान {label} बाहर बिंदुओं के रूप में उकेरा गया है क्योंकि पाठ नहीं समाया। इसे जोड़ के किनारे से बाहर की ओर पढ़ें: हर अंक लगातार बिंदुओं का समूह है (3 = •••) और 0 एक छोटी रेखा है; अंकों के बीच खाली जगह रहती है। उदाहरण: 12 = • ••।',
+  'splitJoints.note.dotsShort': 'जोड़ी का निशान बिंदुओं के रूप में उकेरा गया है (पाठ नहीं समाया)।',
+  'splitJoints.connectorsWidth': '{count} × {type}, चौड़ाई {d} mm',
+  'split.allowSurfaceChange': 'आर-पार डवटेल की अनुमति दें (सतह खुल जाती है)',
+  'split.allowSurfaceChangeTip': 'उन्नत। यदि कोई जोड़ हिस्से को जुड़ने नहीं देता, तो Kura3D उसे आर-पार खाँचे वाले डवटेल में बदल सकता है, जो बाहर से दिखता है। बंद: वह जोड़ चिपकाने के लिए छोड़ा जाता है।',
 };
 
 export const SPLITJOINTS_ZH = {
@@ -348,4 +393,13 @@ export const SPLITJOINTS_ZH = {
   'splitJoints.dir.axis': '向 {axis} 移动',
   'splitJoints.none': '此分割没有接合。',
   'split.sum.maxHint': '这些是按网格得出的最大值：空单元格（例如 L 形或管状模型中）不会产生零件或接合。实际数量在分割后显示。',
+  'splitJoints.banner.fail': '装配无法闭合：这些零件目前无法按现状装配。',
+  'splitJoints.banner.action': '处理方法：对标为“阻碍组装”的接合，改为粘合或更换连接件；也可以撤销（Ctrl+Z）后用其他接合类型重新分割。然后点击“验证组装”。',
+  'splitJoints.banner.fixed': '为了能够装配，Kura3D 将 {glued} 个接合改为粘合，并更换了 {changed} 个连接件类型。',
+  'splitJoints.status.dots': '圆点标记',
+  'splitJoints.note.dots': '标记 {label} 因文字放不下而在外侧雕刻为圆点。从接合边缘向外读取：每个数字是一组连续的圆点（3 = •••），0 是一条短线；数字之间留有间隙。例如：12 = • ••。',
+  'splitJoints.note.dotsShort': '配对标记以圆点雕刻（文字放不下）。',
+  'splitJoints.connectorsWidth': '{count} × {type}，宽 {d} mm',
+  'split.allowSurfaceChange': '允许贯穿燕尾榫（会使表面开口）',
+  'split.allowSurfaceChangeTip': '高级选项。如果某个接合妨碍装配，Kura3D 可将其改为带贯穿槽的燕尾榫，槽从外部可见。关闭时：该接合保留为粘合。',
 };

@@ -105,6 +105,18 @@ const splitJointRecord = shape({
   kind: oneOf('connector', 'glue', 'lap', 'socket'), connector: (v) => v === null || splitConnector(v),
   connectorCenters: (v) => Array.isArray(v) && v.length <= 4096 && v.every(vec3), contactAreaMm2: nonnegative,
 });
+// Avisos de la división guardados con el grupo (`SplitStoredNotes`): todo acotado en cantidad y largo.
+const short = (n: number) => (v: unknown) => typeof v === 'string' && v.length <= n;
+const shortList = (max: number, n: number) => (v: unknown) => Array.isArray(v) && v.length <= max && v.every(short(n));
+const splitNotes = shape({
+  warnings: (v) => Array.isArray(v) && v.length <= 256 && v.every(shape({
+    code: short(64),
+    params: (p) => record(p) && Object.keys(p).length <= 16 && Object.entries(p).every(([k, x]) => k.length <= 32 && (finite(x) || short(200)(x))),
+  })),
+  suggestions: (v) => Array.isArray(v) && v.length <= 512 && v.every(shape({ joint: short(16), options: shortList(8, 40) })),
+  weakJoints: shortList(512, 16), gluedByFix: shortList(512, 16), changedByFix: shortList(512, 40),
+  report: optional(shape({ ok: bool, steps: nat, blocked: shortList(512, 24), clashes: nat, interference: nat, gaps: nat })),
+});
 const splitMetadata = shape({
   groupId: id, code: (v) => str(v) && v.length <= 16, cell: nat3, assembly: splitTransform,
   print: shape({ position: vec3, rotation: vec3, plate: (v) => Number.isInteger(v) && (v as number) >= 0, downFace: face }),
@@ -114,6 +126,7 @@ const splitMetadata = shape({
   assemblyStep: optional((v) => Number.isInteger(v) && (v as number) >= 1),
   insertDirection: optional(face),
   joints: optional((v) => Array.isArray(v) && v.length <= 4096 && v.every(splitJointRecord)),
+  groupNotes: optional(splitNotes),
 });
 const splitDowelMetadata = shape({ groupId: id, diameterMm: positive, lengthMm: positive, count: (v) => nat(v) && v > 0 && v <= 100_000 });
 const objectExtra = shape({ split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata) });

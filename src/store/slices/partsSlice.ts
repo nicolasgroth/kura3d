@@ -13,6 +13,7 @@ import * as engine from '../../engine';
 import * as ops from '../../core/operations';
 import { placePartsInFreeSpot, separateCutHalves } from '../../core/scene/freeSpot';
 import { resolveStructureTarget } from '../../core/scene/sceneRules';
+import { attachNotesToParts, buildGroupNotes } from '../../core/scene/splitGroupNotes';
 import { segmentationMatchesMesh } from '../../engine/segmentationGuards';
 import { tCount } from '../../utils/plural';
 import type { Vec3 } from '../../types/kura';
@@ -67,19 +68,14 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         }
         const { result, change } = await runEngine('splitForBed', { obj, plan, options: { ...request.execute, bed: request.bed } });
         assertCurrent([obj]);
-        commitChange(change, { select: result.parts.map((p) => p.id) });
+        // Lo que dijo el motor viaja con el grupo (se guarda en el .kura) y se muestra junto a cada unión.
+        const notes = buildGroupNotes(change.warnings, result.assembly);
+        commitChange({ ...change, added: attachNotesToParts(change.added ?? [], notes) }, { select: result.parts.map((p) => p.id) });
         // El grupo dividido se encuadra siempre (aunque haya otros objetos en escena).
         get().requestCameraPreset('focus', result.parts.map((p) => p.id));
         get().addToast(tr('toast.splitForBedDone', { count: result.parts.length, joints: result.joints.length }), 'success');
         reportEngineWarnings(change.warnings);
-        // Lo que dijo el motor queda junto a las uniones del grupo (la interfaz lo muestra por unión).
-        get().setSplitNotes(obj.id, {
-          warnings: [...(change.warnings ?? [])],
-          suggestions: result.assembly?.suggestions ?? [],
-          weakJoints: result.assembly?.weakJoints ?? [],
-          gluedByFix: result.assembly?.gluedByFix ?? [],
-          changedByFix: result.assembly?.changedByFix ?? [],
-        });
+        get().setSplitNotes(obj.id, notes);
         return { plan, parts: result.parts, joints: result.joints, looseDowels: result.looseDowels, plateCount: result.plateCount, assembly: result.assembly };
       });
     },
