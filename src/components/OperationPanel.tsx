@@ -14,6 +14,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import { keyboardFocusInViewport } from './viewport/cutPlaneDrag';
 import '../styles/operationPanel.css';
 
 const FOCUSABLE = 'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -61,6 +62,19 @@ export const OperationPanel: React.FC<{
       if (back && back.isConnected) back.focus({ preventScroll: true });
     };
   }, [open]);
+
+  // Escape con el foco en el visor también cierra el panel (salvo que haya algo que cancelar).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || !keyboardFocusInViewport(e.target)) return;
+      if (useKuraStore.getState().busyProgress?.cancellable) return;
+      e.preventDefault();
+      onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
 
   if (!open || typeof document === 'undefined') return null;
 
