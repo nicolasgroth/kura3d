@@ -11,6 +11,7 @@ import type { TranslationKey } from '../translations';
 import { MENU_HI } from './menuKeys';
 import { MENU_IDEAS_HI } from './menuIdeas';
 import { GROUPS_HI } from './groups';
+import { MEASURE_HI } from './measure';
 import { FLOWUX_HI } from './flowUx';
 import { PREVIEW_HI } from './preview';
 import { SPLITJOINTS_HI } from './splitJoints';
@@ -28,6 +29,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...MENU_HI,
   ...MENU_IDEAS_HI,
   ...GROUPS_HI,
+  ...MEASURE_HI,
   ...FLOWUX_HI,
   ...PREVIEW_HI,
   ...SPLITJOINTS_HI,

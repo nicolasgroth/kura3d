@@ -16,6 +16,7 @@ import { useSplitJointDimmed } from '../split/SplitJointHighlight';
 import { MATERIAL_PRESETS, type SceneObject, type Vec3 } from '../../types/kura';
 import { updateGeometryFaceColors } from '../../engine/paintColorAttribute';
 import { regionIdForFace } from '../../utils/segmentHighlight';
+import { onMeasureContextMenu, onMeasurePointerDown, onMeasurePointerMove, onMeasurePointerOut } from '../measure/measurePointer';
 import { buildViewportGeometry } from './creasedGeometry';
 import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
 import { hasLiveStroke, queueLiveSample, startLiveStroke } from './livePaintStroke';
@@ -99,7 +100,11 @@ export const SceneMeshItem: React.FC<{
       };
     }, [geometry]);
 
-    usePaintRaycastAcceleration(meshRef, geometry, activeTool === 'paint' && isPrimarySelected && obj.visible);
+    usePaintRaycastAcceleration(
+      meshRef,
+      geometry,
+      obj.visible && ((activeTool === 'paint' && isPrimarySelected) || activeTool === 'measure'),
+    );
 
     // Malla superpuesta liviana para resaltar en rojo los triángulos en voladizo (> 45°)
     const overhangGeo = useMemo(() => {
@@ -212,6 +217,11 @@ export const SceneMeshItem: React.FC<{
         return;
       }
 
+      if (activeTool === 'measure') {
+        onMeasurePointerDown(obj, e);
+        return;
+      }
+
       if (activeTool === 'erase') {
         if (obj.locked) return;
         void eraseSphereOnObject(obj.id, [e.point.x, e.point.y, e.point.z]);
@@ -230,6 +240,10 @@ export const SceneMeshItem: React.FC<{
     };
 
     const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
+      if (activeTool === 'measure') {
+        onMeasurePointerMove(obj, e);
+        return;
+      }
       if (activeTool !== 'paint' || paintMode !== 'brush' || obj.locked) return;
       if (!isPrimarySelected) {
         hidePaintCursor();
@@ -257,6 +271,7 @@ export const SceneMeshItem: React.FC<{
     const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
       e.nativeEvent.preventDefault();
+      if (activeTool === 'measure' && onMeasureContextMenu()) return;
       onObjectContextMenu(obj.id, e.nativeEvent.clientX, e.nativeEvent.clientY);
     };
 
@@ -275,7 +290,7 @@ export const SceneMeshItem: React.FC<{
           renderOrder={obj.isHole ? 8 : 0}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
-          onPointerOut={hidePaintCursor}
+          onPointerOut={activeTool === 'measure' ? onMeasurePointerOut : hidePaintCursor}
           onContextMenu={handleContextMenu}
         >
           {obj.isHole ? (

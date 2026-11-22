@@ -412,6 +412,8 @@ export const App: React.FC = () => {
         state.setSectionPlane({ enabled: !state.sectionPlane.enabled });
       } else if (key === 'p') {
         state.setActiveTool(state.activeTool === 'paint' ? 'select' : 'paint');
+      } else if (key === 'd' && !e.shiftKey) {
+        state.setActiveTool(state.activeTool === 'measure' ? 'select' : 'measure');
       } else if (key === 'c' && e.shiftKey) {
         if (state.selectedIds.length > 0) state.setActiveDialog('splitForBed');
       } else if (key === 'c') {

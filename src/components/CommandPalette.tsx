@@ -747,6 +747,16 @@ export const CommandPalette: React.FC = () => {
         run: () => setSectionPlane({ enabled: !sectionPlane.enabled }),
       },
       {
+        id: 'tool-measure',
+        shortcut: 'D',
+        label: t(language, 'cmd.tool.measure'),
+        category: catView,
+        keywords: 'medir regla distancia area angulo capacidad volumen litros recipiente measure ruler distance angle capacity volume',
+        kind: 'local',
+        icon: <Ruler size={15} />,
+        run: () => useKuraStore.getState().setActiveTool('measure'),
+      },
+      {
         id: 'view-fit',
         label: t(language, 'viewport.camera.fit'),
         category: catView,
