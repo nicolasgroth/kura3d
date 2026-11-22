@@ -1306,6 +1306,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'split.continueWithTip': 'Relève la limite de pièces pour ce plan (maximum {max})',
   'engineWarning.SPLIT_JOINT_GLUE_ONLY': 'Cette jonction est trop mince pour un connecteur : elle reste une coupe lisse à coller ({label} : {a}–{b}).',
   'engineWarning.SPLIT_GLUE_SUMMARY': '{count} jonctions sur {total} sont à coller uniquement.',
+  'engineWarning.SPLIT_SURFACE_CHANGE_UNUSED': 'Queue d’aronde traversante autorisée, mais aucune jonction ne permettait ainsi l’assemblage. Si le connecteur est déjà une queue d’aronde, il n’y a pas d’autre type vers lequel changer ; avec un tourillon ou un ergot, elle peut s’appliquer.',
   'split.minWall': 'Épaisseur minimale pour connecteur',
   'split.minWallTip': 'Plus mince que cela, la jonction reste une coupe lisse à coller',
   'split.lapShapeNote': 'Modifie la forme à la jonction : languette sur une pièce et rainure sur l\'autre.',

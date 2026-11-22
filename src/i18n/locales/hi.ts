@@ -1306,6 +1306,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.continueWithTip': 'इस योजना के लिए भागों की सीमा बढ़ाता है (अधिकतम {max})',
   'engineWarning.SPLIT_JOINT_GLUE_ONLY': 'यह जोड़ कनेक्टर के लिए बहुत पतला है: इसे चिपकाने के लिए सपाट कट छोड़ा गया ({label}: {a}–{b})।',
   'engineWarning.SPLIT_GLUE_SUMMARY': '{total} में से {count} जोड़ केवल चिपकाने के लिए हैं।',
+  'engineWarning.SPLIT_SURFACE_CHANGE_UNUSED': 'आर-पार डवटेल की अनुमति थी, पर कोई जोड़ ऐसा नहीं मिला जहाँ इससे जोड़ना संभव होता। यदि कनेक्टर पहले से डवटेल है तो बदलने के लिए कोई और प्रकार नहीं है; डॉवेल या पेग के साथ यह लागू हो सकता है।',
   'split.minWall': 'कनेक्टर के लिए न्यूनतम मोटाई',
   'split.minWallTip': 'इससे पतला होने पर जोड़ चिपकाने के लिए सपाट कट रहता है',
   'split.lapShapeNote': 'जोड़ पर आकार बदलता है: एक भाग पर जीभ और दूसरे पर खाँचा।',

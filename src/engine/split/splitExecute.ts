@@ -182,6 +182,11 @@ export async function executeBedSplitGeometry(
     const glueJoints = outJoints.filter((j) => j.kind === 'glue').length;
     if (glueJoints > 0 && connector) warnings.push(engineWarning('SPLIT_GLUE_SUMMARY', { count: glueJoints, total: outJoints.length }));
     if (assembly) warnings.push(...assembly.warnings);
+    // Con "cola de milano pasante" activa: si ninguna unión pasó a ese tipo, se dice (no queda en silencio)
+    if (check && options.assemblyAllowSurfaceChange === true) {
+      const used = warnings.some((w) => w.code === 'ASSEMBLY_JOINT_TYPE_CHANGED' && w.params.to === 'dovetail');
+      if (!used) warnings.push(engineWarning('SPLIT_SURFACE_CHANGE_UNUSED'));
+    }
     return {
       parts,
       looseDowels,

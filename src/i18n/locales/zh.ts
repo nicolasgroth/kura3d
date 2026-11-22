@@ -1306,6 +1306,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'split.continueWithTip': '提高此方案的零件上限（最多 {max}）',
   'engineWarning.SPLIT_JOINT_GLUE_ONLY': '此接合太薄，无法放置连接件：保留为平切面，用于粘合（{label}：{a}–{b}）。',
   'engineWarning.SPLIT_GLUE_SUMMARY': '{total} 个接合中有 {count} 个仅用于粘合。',
+  'engineWarning.SPLIT_SURFACE_CHANGE_UNUSED': '已允许贯穿燕尾榫，但没有任何接合因此能够装配。如果连接件已经是燕尾榫，就没有其他类型可切换；使用销钉或榫头时才可能生效。',
   'split.minWall': '连接件最小厚度',
   'split.minWallTip': '比此值更薄时，接合保留为平切面用于粘合',
   'split.lapShapeNote': '会改变接合处形状：一件为榫舌，另一件为槽。',

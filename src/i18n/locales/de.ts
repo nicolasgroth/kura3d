@@ -1306,6 +1306,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'split.continueWithTip': 'Erhöht die Teilegrenze für diesen Plan (maximal {max})',
   'engineWarning.SPLIT_JOINT_GLUE_ONLY': 'Diese Verbindung ist zu dünn für einen Verbinder: sie blieb ein glatter Schnitt zum Kleben ({label}: {a}–{b}).',
   'engineWarning.SPLIT_GLUE_SUMMARY': '{count} von {total} Verbindungen nur zum Kleben.',
+  'engineWarning.SPLIT_SURFACE_CHANGE_UNUSED': 'Durchgehender Schwalbenschwanz erlaubt, aber es gab keine Verbindungen, bei denen er den Zusammenbau ermöglicht hätte. Ist der Verbinder schon ein Schwalbenschwanz, gibt es keinen anderen Typ zum Wechseln; bei Dübel oder Zapfen kann er greifen.',
   'split.minWall': 'Mindestdicke für Verbinder',
   'split.minWallTip': 'Dünner als dies bleibt die Verbindung ein glatter Schnitt zum Kleben',
   'split.lapShapeNote': 'Ändert die Form an der Verbindung: Feder an einem Teil, Nut am anderen.',
