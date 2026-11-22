@@ -21,6 +21,7 @@ npm test                 # vitest frontend
 npm run mcp:test         # vitest servidor MCP
 npm run test:perf          # pruebas de rendimiento (*.perf.test.ts, umbrales en ms); no corren en npm test
 npm run build            # tsc -b + vite build
+npm run test:e2e         # Playwright (e2e/); levanta Vite en 5212 o usa KURA_URL
 npx vite --host 127.0.0.1 --port 5189 --strictPort   # web para QA en navegador
 cargo check --offline --locked --manifest-path src-tauri/Cargo.toml
 ```

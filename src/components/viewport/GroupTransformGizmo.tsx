@@ -2,7 +2,8 @@
  * @file src/components/viewport/GroupTransformGizmo.tsx
  * @description Manipulador del visor para un grupo o una selección múltiple: un nodo auxiliar en el
  * centro de la caja del conjunto recibe el arrastre y el store aplica la transformación a todos los
- * miembros como cuerpo rígido (rotación y escala respecto de ese centro; escala siempre proporcional).
+ * miembros como cuerpo rígido con el mismo pivote que el inspector (`rigidPivot`: escala desde la base,
+ * giro desde el centro; escala siempre proporcional).
  * Un arrastre es un paso de deshacer; Escape lo cancela (lo gestiona `useGizmoDrag`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -12,7 +13,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TransformControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { selectionBasePivot, selectionPivot } from '../../core/scene/groupTransform';
+import { gizmoRigidDelta, selectionPivot } from '../../core/scene/groupTransform';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject, Vec3 } from '../../types/kura';
 
@@ -30,7 +31,7 @@ export const GroupTransformGizmo: React.FC<{
   const transformSelectionRigid = useKuraStore((s) => s.transformSelectionRigid);
   const commitTransformSnapshot = useKuraStore((s) => s.commitTransformSnapshot);
   const [proxy, setProxy] = useState<THREE.Group | null>(null);
-  const drag = useRef<{ baseline: Baseline; pivot: Vec3 } | null>(null);
+  const drag = useRef<{ baseline: Baseline; start: Vec3 } | null>(null);
 
   // Un arrastre cancelado (Escape) remonta el manipulador: se olvida la base del arrastre.
   useEffect(() => {
@@ -63,9 +64,9 @@ export const GroupTransformGizmo: React.FC<{
             const baseline = s.objects
               .filter((o) => s.selectedIds.includes(o.id))
               .map((o) => ({ id: o.id, position: [...o.position] as Vec3, rotation: [...o.rotation] as Vec3, scale: [...o.scale] as Vec3 }));
-            // Escalar crece desde la base del conjunto; mover y girar usan el centro de la caja.
-            const members = s.objects.filter((o) => s.selectedIds.includes(o.id));
-            drag.current = { baseline, pivot: s.transformMode === 'scale' ? selectionBasePivot(members) : pivot };
+            // El pivote lo decide el store (`rigidPivot`), igual que en el inspector: escalar crece
+            // desde la base del conjunto; girar usa el centro de la caja.
+            drag.current = { baseline, start: [proxy!.position.x, proxy!.position.y, proxy!.position.z] };
             onDragChange(true);
           }}
           onMouseUp={() => {
@@ -76,19 +77,14 @@ export const GroupTransformGizmo: React.FC<{
           onObjectChange={() => {
             const d = drag.current;
             if (!d) return;
-            // Escala proporcional: manda el eje que más cambió.
-            const factors = [proxy.scale.x, proxy.scale.y, proxy.scale.z];
-            const factor = factors.reduce((best, f) => (Math.abs(f - 1) > Math.abs(best - 1) ? f : best), 1);
-            const scale = Math.max(0.02, factor);
-            if (transformMode === 'scale') proxy.scale.setScalar(scale);
-            transformSelectionRigid(
-              {
-                translate: [proxy.position.x - d.pivot[0], proxy.position.y - d.pivot[1], proxy.position.z - d.pivot[2]],
-                rotation: [proxy.rotation.x, proxy.rotation.y, proxy.rotation.z],
-                scale,
-              },
-              { baseline: d.baseline, pivot: d.pivot },
-            );
+            const delta = gizmoRigidDelta(transformMode, d.start, {
+              position: [proxy.position.x, proxy.position.y, proxy.position.z],
+              rotation: [proxy.rotation.x, proxy.rotation.y, proxy.rotation.z],
+              scale: [proxy.scale.x, proxy.scale.y, proxy.scale.z],
+            });
+            // Escala proporcional: el nodo auxiliar muestra el mismo factor en los tres ejes.
+            if (delta.scale !== undefined) proxy.scale.setScalar(delta.scale);
+            transformSelectionRigid(delta, { baseline: d.baseline });
           }}
         />
       )}

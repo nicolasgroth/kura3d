@@ -48,3 +48,12 @@ describe('sanitizeFileBase', () => {
     expect(sanitizeFileBase('Pieza — final')).toBe('Pieza_final');
   });
 });
+
+describe('nombre sugerido para un grupo', () => {
+  it('usa el nombre del grupo y nunca la extensión del proyecto', () => {
+    const sel = [{ name: 'Alfa' }, { name: 'Beta' }];
+    expect(defaultExportBase('selection', 'grupos.kura', sel, sel, 'modelo', 'seleccion', 'piezas', 'Robot')).toBe('Robot');
+    expect(defaultExportBase('selection', 'grupos.kura', sel, sel, 'modelo', 'seleccion', 'piezas')).toBe('grupos_seleccion');
+    expect(defaultExportBase('scene', 'grupos.kura', sel, sel, 'modelo', 'seleccion', 'piezas', 'Robot')).toBe('grupos');
+  });
+});

@@ -747,6 +747,13 @@ export interface SceneGroup {
   visible: boolean;
   locked: boolean;
   collapsed: boolean;
+  /**
+   * Miembros que ocultó el ojo del grupo (no los que ya estaban ocultos uno a uno): al volver a mostrar
+   * el grupo solo esos reaparecen. Ausente = el grupo no ocultó nada.
+   */
+  hiddenByGroup?: string[];
+  /** Miembros que bloqueó el candado del grupo; al desbloquear solo esos se liberan. */
+  lockedByGroup?: string[];
 }
 
 /** Datos auxiliares de un objeto de escena. */

@@ -14,7 +14,7 @@ import {
   descendantObjectIds, groupSelection, indentNode, MAX_GROUP_NAME, moveNode, objectAncestors, outdentNode, pickSelection,
   reorderNode, selectedGroup, setGroupFlag, ungroup, type GroupScene,
 } from '../../core/scene/groups';
-import { rigidTransformPatches, selectionBasePivot, selectionPivot } from '../../core/scene/groupTransform';
+import { rigidPivot, rigidTransformPatches } from '../../core/scene/groupTransform';
 import { makeId } from '../../core/scene/sceneObjects';
 import type { SceneObject } from '../../types/kura';
 import { tCount } from '../../utils/plural';
@@ -60,6 +60,12 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         get().addToast(tr('groups.toast.needSelection'), 'info');
         return null;
       }
+      // Un solo objeto no forma grupo.
+      if (objs.length < 2) {
+        get().addToast(tr('groups.toast.needTwo'), 'info');
+        return null;
+      }
+      // Regla única: con algo bloqueado no se agrupa ni se desagrupa.
       if (objs.some((o) => o.locked)) {
         get().addToast(tr('groups.toast.locked'), 'info');
         return null;
@@ -95,6 +101,10 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       }
       if (ids.length === 0) {
         get().addToast(tr('groups.toast.noGroup'), 'info');
+        return 0;
+      }
+      if (ids.some((gid) => descendantObjectIds(s.objects, s.groups, gid).some((oid) => s.objects.find((o) => o.id === oid)?.locked))) {
+        get().addToast(tr('groups.toast.lockedUngroup'), 'info');
         return 0;
       }
       let next: GroupScene = scene();
@@ -214,9 +224,8 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       });
       if (movable.length === 0) return false;
       const full = movable.map((b) => ({ ...byId.get(b.id)!, position: b.position, rotation: b.rotation, scale: b.scale }));
-      // Solo escala: desde la base (no se hunde bajo la cama); con giro, desde el centro de la caja.
-      const onlyScale = delta.scale !== undefined && !delta.rotation?.some((r) => r !== 0);
-      const pivot = options.pivot ?? (onlyScale ? selectionBasePivot(full) : selectionPivot(full));
+      // Pivote calculado sobre la base del arrastre: estable durante todo el gesto.
+      const pivot = options.pivot ?? rigidPivot(full, delta);
       const patches = rigidTransformPatches(full, pivot, delta);
       const clean = new Map<string, Partial<SceneObject>>();
       for (const p of patches) {

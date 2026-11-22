@@ -77,10 +77,16 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   // Solo una elección explícita del formato en el diálogo se recuerda; un atajo no la pisa.
   const formatPickedRef = useRef(false);
 
+  // Leído al momento (no del render): el efecto de apertura corre antes de que cambie la selección.
+  const selectedGroupName = () => {
+    const s = useKuraStore.getState();
+    return selectedGroup(s.objects, s.groups, s.selectedIds)?.name;
+  };
+
   const changeScope = (nextScope: ExportScope) => {
     setScope(nextScope);
     if (!nameEditedRef.current) {
-      setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix'), t(language, 'export.piecesSuffix')));
+      setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix'), t(language, 'export.piecesSuffix'), selectedGroupName()));
     }
   };
 
@@ -94,7 +100,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     setScope(nextScope);
     nameEditedRef.current = false;
     formatPickedRef.current = false;
-    setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix'), t(language, 'export.piecesSuffix')));
+    setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix'), t(language, 'export.piecesSuffix'), selectedGroupName()));
     // Solo al abrir: los cambios de selección posteriores no pisan lo que escribió el usuario.
   }, [open]);
 

@@ -72,13 +72,13 @@ export const GroupTransformCard: React.FC = () => {
       </p>
       <div className="kura-group-card-actions">
         {!group && (
-          <button type="button" className="kura-btn kura-btn-sm" title={t(language, 'groups.action.group.tip')} aria-keyshortcuts="Control+G Meta+G" disabled={locked} onClick={() => groupObjects()}>
+          <button type="button" className="kura-btn kura-btn-sm" title={t(language, locked ? 'groups.toast.locked' : 'groups.action.group.tip')} aria-keyshortcuts="Control+G Meta+G" disabled={locked} onClick={() => groupObjects()}>
             <Group size={13} aria-hidden="true" />
             <span>{t(language, 'groups.action.group')}</span>
           </button>
         )}
         {group && (
-          <button type="button" className="kura-btn kura-btn-sm" title={t(language, 'groups.action.ungroup.tip')} aria-keyshortcuts="Control+Shift+G Meta+Shift+G" onClick={() => ungroupObjects(group.id)}>
+          <button type="button" className="kura-btn kura-btn-sm" title={t(language, locked ? 'groups.toast.lockedUngroup' : 'groups.action.ungroup.tip')} aria-keyshortcuts="Control+Shift+G Meta+Shift+G" disabled={locked} onClick={() => ungroupObjects(group.id)}>
             <Ungroup size={13} aria-hidden="true" />
             <span>{t(language, 'groups.action.ungroup')}</span>
           </button>

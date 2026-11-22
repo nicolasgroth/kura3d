@@ -39,7 +39,7 @@ export const BackgroundContextMenu: React.FC<{ menu: ContextMenuState; onClose: 
             onPick={(shape) => {
               onClose();
               if (shape === 'svg') setActiveDialog('svg');
-              else if (shape === 'disc') void createPrimitive('cylinder', discParams(DEFAULT_DISC_RADIUS_MM), { placement: 'free', name: t(language, 'menu.shape.disc') });
+              else if (shape === 'disc') void createPrimitive('cylinder', discParams(DEFAULT_DISC_RADIUS_MM), { placement: 'free', label: t(language, 'menu.shape.disc') });
               else if (shape !== 'import') void createPrimitive(shape, undefined, { placement: 'free' });
             }}
           />

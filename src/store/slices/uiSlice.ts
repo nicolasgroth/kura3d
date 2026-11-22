@@ -177,7 +177,11 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
     addToast: (text, kind = 'info', action) => {
       const id = makeId('toast');
-      set((state) => ({ toasts: [...state.toasts.slice(-4), { id, text, kind, ...(action ? { action } : {}) }] }));
+      // Un aviso por acción: uno idéntico (mismo texto y tipo) se reemplaza en vez de apilarse.
+      set((state) => {
+        const rest = state.toasts.filter((x) => !(x.text === text && x.kind === kind));
+        return { toasts: [...rest.slice(-4), { id, text, kind, ...(action ? { action } : {}) }] };
+      });
       // Los errores y los avisos con acción permanecen más tiempo para poder leerse o usarse.
       setTimeout(() => get().dismissToast(id), kind === 'error' ? 12000 : action ? 9000 : 4200);
     },

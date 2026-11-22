@@ -20,6 +20,13 @@ import { collapseShortEdges, PROJECTION_COLLAPSE_MM } from './projectionCleanup'
 export const COLOR_PART_SIMPLIFY_MM = 1e-3;
 /** Triángulos con área menor (mm²) cuentan como degenerados. */
 const DEGENERATE_AREA_MM2 = 1e-8;
+/**
+ * Segundo colapso, más amplio (mm): funde las aristas cortas que dejan los bordes irregulares de las
+ * capas (triángulos de ~1e-8 mm², aristas < 1 µm), muy por debajo de la resolución de impresión. Solo se
+ * acepta si la pieza sigue cerrada y el volumen cambia menos de `MAX_VOLUME_CHANGE`.
+ */
+export const COLOR_PART_COLLAPSE_MM = 1e-2;
+const MAX_VOLUME_CHANGE = 1e-4;
 /** Intentos de reconstrucción antes de rendirse. */
 const MAX_PASSES = 3;
 
@@ -74,7 +81,7 @@ export function cleanColorPartMesh(wasm: ManifoldToplevel, m: Manifold): { mesh:
   try {
     for (let pass = 0; pass < MAX_PASSES; pass++) {
       mesh = dropFins(collapseShortEdges(mesh, PROJECTION_COLLAPSE_MM));
-      if (isClean(stlDefects(mesh))) return { mesh, clean: true };
+      if (isClean(stlDefects(mesh))) return { mesh: coarseCollapse(mesh), clean: true };
       // Reconstrucción: Manifold vuelve a armar la topología desde la malla colapsada.
       let rebuilt: Manifold;
       try {
@@ -91,6 +98,37 @@ export function cleanColorPartMesh(wasm: ManifoldToplevel, m: Manifold): { mesh:
   } finally {
     solid.delete();
   }
+}
+
+/**
+ * Colapso amplio (`COLOR_PART_COLLAPSE_MM`) sobre una malla ya limpia: devuelve la nueva si sigue limpia
+ * (cada arista con 2 triángulos) y conserva el volumen; si no, la original.
+ */
+function coarseCollapse(mesh: MeshData): MeshData {
+  const before = signedVolume(mesh);
+  if (!(Math.abs(before) > 0)) return mesh;
+  // De la tolerancia mayor a la menor: la primera que deja la pieza limpia y con el mismo volumen.
+  for (const tol of [COLOR_PART_COLLAPSE_MM, COLOR_PART_COLLAPSE_MM / 3, COLOR_PART_COLLAPSE_MM / 10]) {
+    const candidate = dropFins(collapseShortEdges(mesh, tol));
+    if (candidate.indices.length === mesh.indices.length) return mesh;
+    if (candidate.indices.length < 12 || !isClean(stlDefects(candidate))) continue;
+    if (Math.abs(signedVolume(candidate) - before) / Math.abs(before) > MAX_VOLUME_CHANGE) continue;
+    return candidate;
+  }
+  return mesh;
+}
+
+/** Volumen con signo (mm³) por el teorema de la divergencia. */
+export function signedVolume(mesh: MeshData): number {
+  const P = mesh.positions, I = mesh.indices;
+  let v = 0;
+  for (let t = 0; t < I.length; t += 3) {
+    const a = I[t] * 3, b = I[t + 1] * 3, c = I[t + 2] * 3;
+    v += P[a] * (P[b + 1] * P[c + 2] - P[b + 2] * P[c + 1])
+      - P[a + 1] * (P[b] * P[c + 2] - P[b + 2] * P[c])
+      + P[a + 2] * (P[b] * P[c + 1] - P[b + 1] * P[c]);
+  }
+  return v / 6;
 }
 
 /** Quita pares de triángulos con los mismos tres vértices (aletas de volumen cero). */

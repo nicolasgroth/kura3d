@@ -2,10 +2,11 @@
  * @file src/components/scene/SceneObjectList.tsx
  * @description Árbol de la escena como capas (`tree` multiselección): grupos anidados con sangría, piezas de
  * una división bajo un nodo plegable, ojo y candado por fila (en un grupo aplican a todo) y búsqueda que
- * muestra los ancestros de lo encontrado. Teclado: flechas (Inicio/Fin), ←/→ pliegan y despliegan, Shift
- * para rango, Ctrl mueve el foco sin seleccionar, Espacio alterna, Ctrl+A todo, Supr elimina (un grupo pide
- * confirmación), F2 o doble clic en el nombre renombra, Enter pliega un grupo, Alt+↑/↓ reordena, Alt+→ mete
- * en el grupo de arriba y Alt+← saca. Con ratón: clic, Ctrl+clic, Shift+clic y arrastrar y soltar.
+ * muestra los ancestros de lo encontrado. Teclado: ↑/↓ mueven, Inicio/Fin, → despliega o entra, ← pliega o
+ * sube al padre, Shift para rango, Ctrl mueve el foco sin seleccionar, Enter selecciona, Espacio alterna,
+ * Ctrl+A todo, Supr elimina (un grupo pide confirmación), F2 o doble clic en el nombre renombra, Mayús+H
+ * oculta/muestra, Mayús+L bloquea, Alt+↑/↓ reordena, Alt+→ mete en el grupo de arriba (lo despliega y el
+ * foco sigue en lo movido) y Alt+← saca. Con ratón: clic, Ctrl+clic, Shift+clic y arrastrar y soltar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,7 +15,7 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { t } from '../../i18n';
-import { buildSceneTree, type TreeKey } from '../../core/scene/groups';
+import { buildSceneTree, descendantObjectIds, type TreeKey } from '../../core/scene/groups';
 import { useKuraStore } from '../../store/useKuraStore';
 import { matchSceneObjects } from '../../store/slices/quickActionsSlice';
 import { REQUEST_FRESH_MS } from './SceneSearch';
@@ -116,23 +117,30 @@ export const SceneObjectList: React.FC = () => {
     setDraft(row.node.kind === 'object' ? row.node.object.name : row.node.group.name);
   };
 
-  // F2 global (o menú contextual): renombra en línea el objeto pedido.
+  // F2 global (o menú contextual): renombra en línea el objeto o el grupo pedido.
   useEffect(() => {
     if (!renameRequest || Date.now() - renameRequest.at > REQUEST_FRESH_MS) return;
-    const key = `o:${renameRequest.id}` as TreeKey;
+    const isGroup = Boolean(renameRequest.group);
+    const key = `${isGroup ? 'g' : 'o'}:${renameRequest.id}` as TreeKey;
     let row = rows.find((r) => r.key === key);
     if (!row) {
-      useKuraStore.getState().setSceneFilter('');
-      // Despliega los grupos que lo contienen para que la fila exista.
-      const obj = useKuraStore.getState().objects.find((o) => o.id === renameRequest.id);
-      let gid = obj?.groupRef;
       const st = useKuraStore.getState();
+      st.setSceneFilter('');
+      // Despliega los grupos que lo contienen para que la fila exista.
+      let gid = isGroup ? st.groups.find((g) => g.id === renameRequest.id)?.parentId : st.objects.find((o) => o.id === renameRequest.id)?.groupRef;
       while (gid) {
         st.setGroupCollapsed(gid, false);
         gid = st.groups.find((g) => g.id === gid)?.parentId;
       }
-      const o = useKuraStore.getState().objects.find((x) => x.id === renameRequest.id);
-      if (o) row = { node: { kind: 'object', key, object: o, level: 1 }, key, level: 1, parentGroupId: null, parentKey: null, objectIds: [o.id], posInSet: 1, setSize: 1 };
+      const fresh = useKuraStore.getState();
+      const base = { key, level: 1, parentGroupId: null, parentKey: null, posInSet: 1, setSize: 1 };
+      if (isGroup) {
+        const g = fresh.groups.find((x) => x.id === renameRequest.id);
+        if (g) row = { ...base, node: { kind: 'group', key, group: g, level: 1, children: [], objectCount: 0 }, objectIds: [] };
+      } else {
+        const o = fresh.objects.find((x) => x.id === renameRequest.id);
+        if (o) row = { ...base, node: { kind: 'object', key, object: o, level: 1 }, objectIds: [o.id] };
+      }
     }
     setActiveKey(key);
     if (row) startRename(row);
@@ -175,6 +183,27 @@ export const SceneObjectList: React.FC = () => {
     else if (row.node.kind === 'object') updateObjectMeta(row.node.object.id, { locked: !row.node.object.locked });
   };
 
+  /**
+   * Tras meter o sacar un nodo por teclado: despliega los grupos que ahora lo contienen y deja el foco
+   * y la selección en el nodo movido.
+   */
+  const revealMoved = (key: TreeKey) => {
+    const st = useKuraStore.getState();
+    let gid = key.startsWith('g:')
+      ? st.groups.find((g) => g.id === key.slice(2))?.parentId
+      : st.objects.find((o) => o.id === key.slice(2))?.groupRef;
+    while (gid) {
+      st.setGroupCollapsed(gid, false);
+      gid = st.groups.find((g) => g.id === gid)?.parentId;
+    }
+    const fresh = useKuraStore.getState();
+    const ids = key.startsWith('g:') ? descendantObjectIds(fresh.objects, fresh.groups, key.slice(2)) : key.startsWith('o:') ? [key.slice(2)] : null;
+    if (ids) setSelection(ids);
+    setActiveKey(key);
+    setAnchorKey(key);
+    listRef.current?.focus();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (renamingKey || !active) return;
     const mods = { shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey };
@@ -193,8 +222,15 @@ export const SceneObjectList: React.FC = () => {
                 : null;
       if (ok !== null) {
         handled();
-        setActiveKey(key);
+        if (ok) revealMoved(key);
       }
+      return;
+    }
+    // Acciones de la fila activa (también son botones en la fila): Mayús+H ojo, Mayús+L candado.
+    if (e.shiftKey && !e.ctrlKey && !e.metaKey && (e.key === 'H' || e.key === 'h' || e.key === 'L' || e.key === 'l')) {
+      handled();
+      if (e.key.toLowerCase() === 'h') toggleVisible(active);
+      else toggleLock(active);
       return;
     }
     switch (e.key) {
@@ -226,10 +262,10 @@ export const SceneObjectList: React.FC = () => {
         focusIndex(rows.length - 1, mods);
         break;
       case 'Enter':
-        if (active.expanded !== undefined) {
-          handled();
-          setExpanded(active, !active.expanded);
-        }
+        // Enter selecciona la fila activa (plegar y desplegar van con ←/→).
+        handled();
+        selectRow(active);
+        setAnchorKey(active.key);
         break;
       case ' ':
         handled();
@@ -269,7 +305,12 @@ export const SceneObjectList: React.FC = () => {
     }
   };
 
+  // Fila donde empezó un doble clic: el doble clic renombra esa fila aunque el segundo clic caiga en
+  // otra (p. ej. si la lista se movió entre clics), y ese segundo clic no cambia la selección.
+  const clickStart = useRef<TreeKey | null>(null);
   const handleClick = (e: React.MouseEvent, row: TreeRow) => {
+    if (e.detail >= 2 && clickStart.current && clickStart.current !== row.key) return;
+    if (e.detail <= 1) clickStart.current = row.key;
     const index = rows.indexOf(row);
     setActiveKey(row.key);
     if (e.shiftKey) setSelection(rangeIds(anchorKey ?? active?.key ?? row.key, index));
@@ -331,14 +372,6 @@ export const SceneObjectList: React.FC = () => {
 
   return (
     <>
-      {contextGroup && (
-        <div className="kura-tree-context" role="status">
-          <span>{t(language, 'groups.tree.inside', { name: contextGroup.name })}</span>
-          <button type="button" className="kura-mini-icon-btn" title={t(language, 'groups.tree.exit')} aria-label={t(language, 'groups.tree.exit')} aria-keyshortcuts="Escape" onClick={() => useKuraStore.getState().exitGroup()}>
-            <LogOut size={13} aria-hidden="true" />
-          </button>
-        </div>
-      )}
       <div
         ref={listRef}
         className="kura-scene-list kura-scene-tree"
@@ -368,7 +401,11 @@ export const SceneObjectList: React.FC = () => {
             onCancelRename={cancelRename}
             onRenameField={focusRenameField}
             onClick={(e) => handleClick(e, row)}
-            onDoubleClick={() => startRename(row)}
+            onDoubleClick={() => {
+              const start = rows.find((r) => r.key === clickStart.current) ?? row;
+              setActiveKey(start.key);
+              startRename(start);
+            }}
             onToggleExpand={() => setExpanded(row, !row.expanded)}
             onToggleVisible={() => toggleVisible(row)}
             onToggleLock={() => toggleLock(row)}
@@ -379,6 +416,15 @@ export const SceneObjectList: React.FC = () => {
           />
         ))}
       </div>
+      {/* Bajo el árbol: al entrar o salir de un grupo las filas no se desplazan entre clics. */}
+      {contextGroup && (
+        <div className="kura-tree-context" role="status">
+          <span>{t(language, 'groups.tree.inside', { name: contextGroup.name })}</span>
+          <button type="button" className="kura-mini-icon-btn" title={t(language, 'groups.tree.exit')} aria-label={t(language, 'groups.tree.exit')} aria-keyshortcuts="Escape" onClick={() => useKuraStore.getState().exitGroup()}>
+            <LogOut size={13} aria-hidden="true" />
+          </button>
+        </div>
+      )}
       <p id={`${baseId}-hint`} className="kura-scene-hint">
         {t(language, 'sidebar.scene.keyboardHint')} · {t(language, 'groups.tree.hint')}
       </p>

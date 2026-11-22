@@ -2,12 +2,17 @@
  * @file e2e/qa-interfaz-2.spec.ts
  * @description Recorridos Playwright de la segunda pasada de QA de interfaz: tallado sobre objeto rotado/escalado,
  * errores del motor traducidos (EN/DE), lista de escena con teclado y errores claros de corte/proyección.
- * Requiere `@playwright/test` y la web en http://127.0.0.1:5189; fixtures en .eval-tmp/qa-interfaz/fx/.
+ * Requiere `@playwright/test` y la web en KURA_URL (por defecto http://127.0.0.1:5189; `npm run test:e2e` la levanta); fixtures en .eval-tmp/qa-interfaz/fx/.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 import { test, expect, type Page } from '@playwright/test';
+import { existsSync } from 'node:fs';
+
+// Los fixtures viven en .eval-tmp (fuera del repo); sin ellos el spec se salta con motivo en vez de fallar.
+const FIXTURES = '.eval-tmp/qa-interfaz/fx';
+test.skip(!existsSync(FIXTURES), `faltan los fixtures en ${FIXTURES} (generar con .eval-tmp/qa-interfaz/gen.mjs)`);
 
 async function importar(page: Page, nombre: string) {
   await page.evaluate(async (n) => {
@@ -26,7 +31,7 @@ async function fijar(page: Page, etiqueta: string, valor: string) {
 }
 
 test('tallar un cubo rotado y escalado no duplica la transformación', async ({ page }) => {
-  await page.goto('http://127.0.0.1:5189/');
+  await page.goto(process.env.KURA_URL ?? 'http://127.0.0.1:5189/');
   await importar(page, 'cubo10.stl');
   await fijar(page, 'Rotación (°) X', '90');
   await fijar(page, 'Rotación (°) Z', '30');
@@ -38,7 +43,7 @@ test('tallar un cubo rotado y escalado no duplica la transformación', async ({ 
 });
 
 test('conector demasiado grande y gráfico fuera de la cara dan error claro', async ({ page }) => {
-  await page.goto('http://127.0.0.1:5189/');
+  await page.goto(process.env.KURA_URL ?? 'http://127.0.0.1:5189/');
   await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
   await page.getByRole('button', { name: 'Corte por plano + uniones' }).click();
   await fijar(page, 'Tamaño del conector (mm)', '50');
@@ -51,7 +56,7 @@ test('conector demasiado grande y gráfico fuera de la cara dan error claro', as
 });
 
 test('lista de escena: flechas, Shift+flechas, F2 y Supr con teclado', async ({ page }) => {
-  await page.goto('http://127.0.0.1:5189/');
+  await page.goto(process.env.KURA_URL ?? 'http://127.0.0.1:5189/');
   for (const n of ['Cubo', 'Cilindro', 'Esfera']) await page.getByRole('button', { name: n, exact: true }).first().click();
   await page.getByRole('tab', { name: /Escena/ }).click();
   const lista = page.locator('.kura-scene-list');
@@ -70,7 +75,7 @@ test('lista de escena: flechas, Shift+flechas, F2 y Supr con teclado', async ({ 
 
 for (const [lang, texto] of [['en', /leaves no cavity/], ['de', /lässt keinen Hohlraum/]] as const) {
   test(`pared imposible al ahuecar sale traducida (${lang})`, async ({ page }) => {
-    await page.goto('http://127.0.0.1:5189/');
+    await page.goto(process.env.KURA_URL ?? 'http://127.0.0.1:5189/');
     await page.getByLabel(/Interface language|Idioma|Sprache/).selectOption(lang);
     await page.locator('aside button').filter({ hasText: /^(Box|Quader)/ }).first().click();
     const aplicar = page.getByRole('button', { name: /Apply hollowing|Aushöhlung anwenden/ });

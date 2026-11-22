@@ -362,11 +362,14 @@ export function meshDataToManifold(
  *
  * @param manifold Sólido `Manifold` origen.
  * @param idToColor Mapa inverso opcional (`originalID` -> color hex '#rrggbb').
+ * @param keepUniformColors Si es `true`, conserva `faceColors` aunque todas las caras tengan el mismo
+ *   color (así quien llama sabe qué color tenía la pieza, p. ej. al separar cuerpos de un combinado).
  * @returns Malla cerrada `MeshData` con posiciones, índices y normales calculadas.
  */
 export function manifoldToMeshData(
   manifold: Manifold,
-  idToColor?: Map<number, string>
+  idToColor?: Map<number, string>,
+  keepUniformColors = false
 ): MeshData {
   const raw = manifold.getMesh();
   const numProp = raw.numProp;
@@ -418,7 +421,7 @@ export function manifoldToMeshData(
       // Si todos los triángulos tienen el mismo color único, podemos conservarlo o simplificar;
       // conservamos faceColors si existen múltiples colores para no perder detalle multicolor.
       const uniqueSet = new Set(colors);
-      if (uniqueSet.size > 1) {
+      if (uniqueSet.size > 1 || keepUniformColors) {
         faceColors = colors;
       }
     }

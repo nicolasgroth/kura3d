@@ -276,6 +276,8 @@ export interface KuraStoreState {
     params?: PrimitiveParams,
     options?: {
       name?: string;
+      /** Etiqueta del tipo cuando no es la de `type` (p. ej. «Disco»): se numera igual («Disco 3»). */
+      label?: string;
       color?: string;
       position?: Vec3;
       /** Giro (radianes, Euler XYZ) y escala en ejes internos; el bus los convierte desde los del usuario. */

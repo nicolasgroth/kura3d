@@ -10,9 +10,13 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { decodeProject, encodeProject } from '../../project/projectCodec';
+import { gizmoRigidDelta, selectionBox, selectionPivot } from '../../core/scene/groupTransform';
 import { captureProject } from '../projectDocument';
 import { useKuraStore } from '../useKuraStore';
 import { addBox, byId, resetStore, store } from './storeTestUtils';
+
+const paint = (id: string, color: string) =>
+  useKuraStore.setState((st) => ({ objects: st.objects.map((o) => (o.id === id ? { ...o, color } : o)) }));
 
 async function fourBoxes() {
   const a = await addBox(10, [0, 0, 0], { name: 'A' });
@@ -63,6 +67,51 @@ describe('grupos en el store', () => {
     expect(store().groups[0]).toMatchObject({ visible: false, locked: true });
   });
 
+  it('F2 con un grupo entero seleccionado pide renombrar el grupo, no su primer objeto', async () => {
+    const { a, b, c } = await fourBoxes();
+    const g = store().groupObjects([a.id, b.id])!;
+    store().selectObject(a.id);
+    expect(store().requestRename()).toBe(true);
+    expect(store().renameRequest).toMatchObject({ id: g.id, group: true });
+    store().setSelection([c.id]);
+    expect(store().requestRename()).toBe(true);
+    expect(store().renameRequest).toMatchObject({ id: c.id });
+    expect(store().renameRequest?.group).toBeUndefined();
+  });
+
+  it('ojo y candado del grupo no pierden el estado individual de cada miembro', async () => {
+    const { a, b, c } = await fourBoxes();
+    const g = store().groupObjects([a.id, b.id, c.id])!;
+    store().updateObjectMeta(b.id, { visible: false });
+    store().updateObjectMeta(c.id, { locked: true });
+    store().setGroupFlag(g.id, 'visible', false);
+    expect([a, b, c].map((o) => byId(o.id)!.visible)).toEqual([false, false, false]);
+    store().setGroupFlag(g.id, 'visible', true);
+    expect([a, b, c].map((o) => byId(o.id)!.visible)).toEqual([true, false, true]);
+    store().setGroupFlag(g.id, 'locked', true);
+    store().setGroupFlag(g.id, 'locked', false);
+    expect([a, b, c].map((o) => byId(o.id)!.locked)).toEqual([false, false, true]);
+    // Deshacer vuelve al estado anterior, memoria incluida; y se guarda en el proyecto.
+    store().setGroupFlag(g.id, 'visible', false);
+    const doc = decodeProject(encodeProject(captureProject(store())));
+    expect(doc.groups?.[0].hiddenByGroup?.sort()).toEqual([a.id, c.id].sort());
+  });
+
+  it('reglas: un objeto no forma grupo, un grupo bloqueado no se desagrupa y un grupo de 1 se disuelve', async () => {
+    const { a, b, c } = await fourBoxes();
+    expect(store().groupObjects([a.id])).toBeNull();
+    expect(store().groups).toEqual([]);
+    const g = store().groupObjects([a.id, b.id])!;
+    store().setGroupFlag(g.id, 'locked', true);
+    expect(store().ungroupObjects(g.id)).toBe(0);
+    expect(store().groups).toHaveLength(1);
+    store().setGroupFlag(g.id, 'locked', false);
+    // Agrupar B con C (fuera del grupo) deja a «g» con un solo miembro: se disuelve.
+    const h = store().groupObjects([b.id, c.id])!;
+    expect(store().groups.map((x) => x.id)).toEqual([h.id]);
+    expect(byId(a.id)!.groupRef).toBeUndefined();
+  });
+
   it('duplicar un grupo duplica su estructura', async () => {
     const { a, b } = await fourBoxes();
     store().groupObjects([a.id, b.id]);
@@ -86,6 +135,38 @@ describe('grupos en el store', () => {
     expect(byId(a.id)!.scale).toEqual([1, 1, 1]);
   });
 
+  it('ruta del gizmo: escalar el grupo lo deja apoyado en la cama y girar no lo hunde', async () => {
+    const { a, b, c } = await fourBoxes();
+    store().groupObjects([a.id, b.id, c.id]);
+    const members = () => store().objects.filter((o) => store().selectedIds.includes(o.id));
+    const minY = () => selectionBox(members())!.min.y;
+    expect(minY()).toBeCloseTo(0, 5);
+    // Igual que GroupTransformGizmo: base del arrastre, nodo auxiliar en el centro, sin pivote propio.
+    const baseline = members().map((o) => ({ id: o.id, position: o.position, rotation: o.rotation, scale: o.scale }));
+    const start = selectionPivot(members());
+    for (const f of [1.4, 2]) {
+      const delta = gizmoRigidDelta('scale', start, { position: start, rotation: [0, 0, 0], scale: [f, 1, 1] });
+      expect(store().transformSelectionRigid(delta, { baseline })).toBe(true);
+    }
+    store().commitTransformSnapshot();
+    expect(minY()).toBeCloseTo(0, 4);
+    expect(byId(a.id)!.scale).toEqual([2, 2, 2]);
+    // Mover por el gizmo traslada exactamente lo arrastrado.
+    const before = byId(a.id)!.position[0];
+    const s2 = selectionPivot(members());
+    const base2 = members().map((o) => ({ id: o.id, position: o.position, rotation: o.rotation, scale: o.scale }));
+    store().transformSelectionRigid(gizmoRigidDelta('translate', s2, { position: [s2[0] + 7, s2[1], s2[2]], rotation: [0, 0, 0], scale: [1, 1, 1] }), { baseline: base2 });
+    store().commitTransformSnapshot();
+    expect(byId(a.id)!.position[0]).toBeCloseTo(before + 7, 5);
+    expect(minY()).toBeCloseTo(0, 4);
+    // Girar en Y (vertical interna) no cambia la altura del conjunto.
+    const s3 = selectionPivot(members());
+    const base3 = members().map((o) => ({ id: o.id, position: o.position, rotation: o.rotation, scale: o.scale }));
+    store().transformSelectionRigid(gizmoRigidDelta('rotate', s3, { position: s3, rotation: [0, Math.PI / 3, 0], scale: [1, 1, 1] }), { baseline: base3 });
+    store().commitTransformSnapshot();
+    expect(minY()).toBeCloseTo(0, 4);
+  });
+
   it('combina sin booleanas (volumen = suma) y separa los cuerpos', async () => {
     const { a, b } = await fourBoxes();
     const total = a.stats.volumeMm3 + b.stats.volumeMm3;
@@ -96,6 +177,45 @@ describe('grupos en el store', () => {
     const parts = await store().separateBodies(combined.id);
     expect(parts).toHaveLength(2);
     expect(parts.reduce((n, p) => n + p.stats.volumeMm3, 0)).toBeCloseTo(total, 1);
+  });
+
+  it('el Disco se numera como las demás primitivas', async () => {
+    await fourBoxes();
+    const disc = await store().createPrimitive('cylinder', { radius: 16, height: 2 }, { placement: 'free', label: 'Disco' });
+    expect(disc!.name).toBe('Disco 5');
+  });
+
+  it('separar cuerpos conserva el color de cada cuerpo (combinar → separar)', async () => {
+    const { a, b, c } = await fourBoxes();
+    paint(a.id, '#ff0000');
+    paint(b.id, '#00ff00');
+    paint(c.id, '#0000ff');
+    const combined = store().combineObjects([a.id, b.id, c.id])!;
+    expect(new Set(combined.mesh.faceColors)).toEqual(new Set(['#ff0000', '#00ff00', '#0000ff']));
+    const parts = await store().separateBodies(combined.id);
+    expect(parts).toHaveLength(3);
+    const colors = parts.map((p) => byId(p.id)!.color.toLowerCase()).sort();
+    expect(colors).toEqual(['#0000ff', '#00ff00', '#ff0000']);
+    // Un solo color por cuerpo: pasa a color base, sin colores por cara.
+    expect(parts.every((p) => !byId(p.id)!.mesh.faceColors?.length)).toBe(true);
+  });
+
+  it('separar piezas conserva la pintura por cara de cada isla', async () => {
+    const { a, b } = await fourBoxes();
+    paint(a.id, '#ff0000');
+    const combined = store().combineObjects([a.id, b.id])!;
+    // Pinta la mitad de las caras del cuerpo de B (las últimas) de azul: B queda bicolor.
+    const fc = [...combined.mesh.faceColors!];
+    const total = fc.length;
+    for (let f = total - 4; f < total; f++) fc[f] = '#0000ff';
+    useKuraStore.setState((st) => ({ objects: st.objects.map((o) => (o.id === combined.id ? { ...o, mesh: { ...o.mesh, faceColors: fc } } : o)) }));
+    const parts = await store().splitDisconnectedObject(combined.id);
+    expect(parts).toHaveLength(2);
+    const multi = parts.map((p) => byId(p.id)!).find((p) => p.mesh.faceColors?.length);
+    expect(multi).toBeDefined();
+    expect(new Set(multi!.mesh.faceColors).has('#0000ff')).toBe(true);
+    const single = parts.map((p) => byId(p.id)!).find((p) => !p.mesh.faceColors?.length)!;
+    expect(single.color.toLowerCase()).toBe('#ff0000');
   });
 
   it('lo que reemplaza a un miembro hereda su grupo', async () => {

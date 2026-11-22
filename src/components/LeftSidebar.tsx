@@ -100,7 +100,7 @@ export const LeftSidebar: React.FC = () => {
     { id: 'text', type: 'text', icon: <Type size={19} /> },
   ];
 
-  const handlePrimitiveClick = async (type: PrimitiveType, params?: Record<string, unknown>, name?: string) => {
+  const handlePrimitiveClick = async (type: PrimitiveType, params?: Record<string, unknown>, label?: string) => {
     if (type === 'text') {
       if (uiDensity === 'compact') {
         await createPrimitive('text', { text: textDraft.trim() || 'KURA3D', fontSize: 18, height: 6 }, { placement: 'free' });
@@ -109,14 +109,15 @@ export const LeftSidebar: React.FC = () => {
       setShowTextBox((prev) => !prev);
       return;
     }
-    await createPrimitive(type, params, { placement: 'free', ...(name ? { name } : {}) });
+    await createPrimitive(type, params, { placement: 'free', ...(label ? { label } : {}) });
   };
 
   const handleCreateText = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleaned = textDraft.trim() || 'KURA3D';
-    await createPrimitive('text', { text: cleaned, fontSize: 18, height: 6 }, { name: `Texto "${cleaned}"`, placement: 'free' });
-    setShowTextBox(false);
+    const created = await createPrimitive('text', { text: cleaned, fontSize: 18, height: 6 }, { name: `Texto "${cleaned}"`, placement: 'free' });
+    // Si falla (p. ej. caracteres que la fuente no tiene) el cuadro sigue abierto para corregir el texto.
+    if (created) setShowTextBox(false);
   };
 
   const isCompactRail = uiDensity === 'compact';

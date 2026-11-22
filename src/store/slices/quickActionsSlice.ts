@@ -11,6 +11,7 @@
 
 import { createPrimitive as createPrimitiveObject, positionOnTarget } from '../../core/operations';
 import { HOLE_HELPER_COLOR } from '../../core/operations/creationOperations';
+import { selectedGroup } from '../../core/scene/groups';
 import { parametricStateOf } from '../../core/scene/parametric';
 import { discParams, pieceParams, pieceSizeFor, pieceYOffset } from '../../core/scene/pieceSizing';
 import { resolveHoleScope } from '../../core/scene/sceneRules';
@@ -324,6 +325,17 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
     },
 
     requestRename: (id) => {
+      if (!id) {
+        // Un grupo entero seleccionado (clic en el visor): se renombra el grupo.
+        const s = get();
+        const group = selectedGroup(s.objects, s.groups, s.selectedIds);
+        if (group) {
+          if (s.objects.some((o) => s.selectedIds.includes(o.id) && o.locked)) return false;
+          renameCounter += 1;
+          set({ renameRequest: { id: group.id, n: renameCounter, at: Date.now(), group: true } });
+          return true;
+        }
+      }
       const target = get().objects.find((o) => o.id === (id ?? get().selectedIds[0]));
       if (!target || target.locked) return false;
       renameCounter += 1;

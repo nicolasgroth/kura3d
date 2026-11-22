@@ -158,10 +158,13 @@ const metadataFields = {
   groupRef: optional(id),
 } satisfies Record<keyof ObjectMetadata, Rule>;
 
+const idList = (v: unknown) => Array.isArray(v) && v.length <= 1_000_000 && v.every(id);
+
 /** Grupo de organización guardado (`SceneGroup`); el saneado de ciclos y huérfanos va aparte. */
 export const validStoredGroup = shape({
   id, name: (v) => typeof v === 'string' && v.length <= MAX_GROUP_NAME, parentId: optional(id),
   visible: bool, locked: bool, collapsed: bool,
+  hiddenByGroup: optional(idList), lockedByGroup: optional(idList),
 } satisfies Record<keyof SceneGroup, Rule>) as (v: unknown) => v is SceneGroup;
 
 export const validStoredGroups = (v: unknown): v is SceneGroup[] =>

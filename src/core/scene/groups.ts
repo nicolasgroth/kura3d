@@ -187,7 +187,23 @@ export function groupSelection(
     created,
   ];
   const objects = scene.objects.map((o) => (movedObjects.has(o.id) ? { ...o, groupRef: group.id } : o));
-  return reconcileGroups({ objects, groups });
+  // Un grupo que pierde miembros y queda con uno solo se disuelve (su miembro sube a su padre).
+  const losers = new Set<string>();
+  for (const oid of movedObjects) {
+    const ref = scene.objects.find((o) => o.id === oid)?.groupRef;
+    if (ref) losers.add(ref);
+  }
+  for (const gid of movedGroups) {
+    const parent = map.get(gid)?.parentId;
+    if (parent) losers.add(parent);
+  }
+  let next: GroupScene = { objects, groups };
+  for (const gid of losers) {
+    if (gid === group.id) continue;
+    const direct = next.objects.filter((o) => o.groupRef === gid).length + next.groups.filter((g) => g.parentId === gid).length;
+    if (direct === 1) next = ungroup(next, gid) ?? next;
+  }
+  return reconcileGroups(next);
 }
 
 /** Deshace un grupo: sus hijos pasan al padre del grupo. */
@@ -347,11 +363,42 @@ export function reconcileGroups(scene: GroupScene): GroupScene {
   return { objects: sameObjects ? scene.objects : objects, groups: sameGroups ? scene.groups : groups };
 }
 
-/** Cambia `visible` o `locked` de todos los objetos de un grupo (el grupo se resume solo). */
+const MEMORY = { visible: 'hiddenByGroup', locked: 'lockedByGroup' } as const;
+
+/**
+ * Ojo o candado de un grupo sin perder el estado individual: al ocultar (o bloquear) el grupo, recuerda
+ * qué miembros cambió él; al mostrar (o desbloquear), solo revierte esos. Un miembro que ya estaba oculto
+ * (o bloqueado) uno a uno sigue así. Sin memoria (p. ej. todos se ocultaron a mano), revierte a todos.
+ * El resumen `visible`/`locked` del grupo sigue saliendo de sus miembros (`reconcileGroups`).
+ */
 export function setGroupFlag(scene: GroupScene, groupId: string, flag: 'visible' | 'locked', value: boolean): GroupScene {
+  const group = scene.groups.find((g) => g.id === groupId);
+  if (!group) return scene;
+  const memoryKey = MEMORY[flag];
   const ids = new Set(descendantObjectIds(scene.objects, scene.groups, groupId));
-  const objects = scene.objects.map((o) => (ids.has(o.id) && o[flag] !== value ? { ...o, [flag]: value } : o));
-  return reconcileGroups({ objects, groups: scene.groups });
+  const members = scene.objects.filter((o) => ids.has(o.id));
+  // Valor "activo" del ojo/candado: ocultar = visible:false; bloquear = locked:true.
+  const applying = flag === 'visible' ? !value : value;
+  const changed = (o: SceneObject) => o[flag] !== value;
+  let targets: Set<string>;
+  let memory: string[] | undefined;
+  if (applying) {
+    // Lo que cambia ahora, más lo que el grupo ya había cambiado y sigue así.
+    const prev = new Set((group[memoryKey] ?? []).filter((x) => ids.has(x)));
+    targets = new Set(members.filter(changed).map((o) => o.id));
+    memory = [...new Set([...members.filter((o) => prev.has(o.id) && !changed(o)).map((o) => o.id), ...targets])];
+  } else {
+    const remembered = (group[memoryKey] ?? []).filter((x) => ids.has(x));
+    targets = new Set(remembered.length ? remembered : members.filter(changed).map((o) => o.id));
+    memory = undefined;
+  }
+  const objects = scene.objects.map((o) => (targets.has(o.id) && o[flag] !== value ? { ...o, [flag]: value } : o));
+  const groups = scene.groups.map((g) => {
+    if (g.id !== groupId) return g;
+    const { [memoryKey]: _drop, ...rest } = g;
+    return (memory && memory.length ? { ...rest, [memoryKey]: memory } : rest) as SceneGroup;
+  });
+  return reconcileGroups({ objects, groups });
 }
 
 /** Mueve un nodo (objeto o grupo) dentro de `parentId` (null = raíz), antes de `beforeKey` o al final. */
@@ -518,9 +565,9 @@ export function duplicateGroupStructure(
   const twins = [...cloned.entries()].map(([origId, twin]) => {
     const orig = map.get(origId)!;
     const parent = orig.parentId ? cloned.get(orig.parentId)?.id ?? orig.parentId : undefined;
-    // El gemelo de mayor nivel lleva el sufijo de copia; su padre es el mismo del original.
-    const isTop = !orig.parentId || !cloned.has(orig.parentId);
-    const next: SceneGroup = { ...twin, name: isTop ? copyName(orig.name) : orig.name };
+    // Cada gemelo (también los subgrupos) lleva el sufijo de copia; no hereda la memoria de ojo/candado.
+    const { hiddenByGroup: _h, lockedByGroup: _l, ...plain } = twin;
+    const next: SceneGroup = { ...plain, name: copyName(orig.name) };
     if (parent) next.parentId = parent;
     else delete next.parentId;
     return next;

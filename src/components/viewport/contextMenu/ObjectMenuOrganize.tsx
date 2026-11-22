@@ -44,19 +44,19 @@ export const ObjectMenuOrganize: React.FC<{
       <MenuItem
         icon={<Group size={14} aria-hidden="true" />}
         label={t(language, 'groups.action.group')}
-        tip={t(language, 'groups.action.group.tip')}
+        tip={t(language, anyLocked ? 'groups.toast.locked' : ids.length < 2 ? 'groups.toast.needTwo' : 'groups.action.group.tip')}
         shortcut={`${MOD}+G`}
         keys="Control+G Meta+G"
-        disabled={anyLocked}
+        disabled={anyLocked || ids.length < 2}
         onSelect={run(() => void groupObjects(ids))}
       />
       <MenuItem
         icon={<Ungroup size={14} aria-hidden="true" />}
         label={t(language, 'groups.action.ungroup')}
-        tip={t(language, 'groups.action.ungroup.tip')}
+        tip={t(language, inGroup && anyLocked ? 'groups.toast.lockedUngroup' : 'groups.action.ungroup.tip')}
         shortcut={`${MOD}+Shift+G`}
         keys="Control+Shift+G Meta+Shift+G"
-        disabled={!inGroup}
+        disabled={!inGroup || anyLocked}
         onSelect={run(() => void ungroupObjects())}
       />
       <MenuItem

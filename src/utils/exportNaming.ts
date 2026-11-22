@@ -59,7 +59,8 @@ function splitOriginalName(selected: NamedTarget[]): string | null {
  * manda el proyecto (o el nombre por defecto), nunca el del objeto seleccionado. Con la
  * selección: el nombre de la pieza si es una sola; si son varias, el proyecto (o la primera
  * pieza) con el sufijo de selección; si todas son piezas de una misma división, el objeto original con el
- * sufijo de piezas ("Cubo_1_piezas"). Nunca el nombre genérico de "escena".
+ * sufijo de piezas ("Cubo_1_piezas"). Si la selección es un grupo entero, el nombre del grupo. Nunca el
+ * nombre genérico de "escena".
  */
 export function defaultExportBase(
   scope: 'selection' | 'scene',
@@ -69,7 +70,12 @@ export function defaultExportBase(
   fallback: string,
   selectionSuffix = 'selection',
   piecesSuffix = 'pieces',
+  groupName?: string,
 ): string {
+  if (scope === 'selection' && groupName) {
+    const named = sanitizeFileBase(groupName);
+    if (named) return named;
+  }
   const pieces = scope === 'selection' && selected.length > 1 ? splitOriginalName(selected) : null;
   if (pieces) {
     const named = sanitizeFileBase(`${pieces}_${sanitizeFileBase(piecesSuffix)}`);

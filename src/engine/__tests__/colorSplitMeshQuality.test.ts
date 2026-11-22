@@ -40,6 +40,19 @@ function paintByCentroid(mesh: MeshData, pick: (c: number[], n: number[]) => boo
   return { ...mesh, faceColors: colors };
 }
 
+function minFeature(mesh: MeshData): { area: number; edge: number } {
+  const P = mesh.positions, I = mesh.indices;
+  let area = Infinity, edge = Infinity;
+  const pt = (i: number) => [P[i * 3], P[i * 3 + 1], P[i * 3 + 2]];
+  for (let t = 0; t < I.length; t += 3) {
+    const [a, b, c] = [pt(I[t]), pt(I[t + 1]), pt(I[t + 2])];
+    const u = b.map((x, k) => x - a[k]), v = c.map((x, k) => x - a[k]), w = c.map((x, k) => x - b[k]);
+    area = Math.min(area, 0.5 * Math.hypot(u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]));
+    edge = Math.min(edge, Math.hypot(...u), Math.hypot(...v), Math.hypot(...w));
+  }
+  return { area, edge };
+}
+
 async function expectCleanParts(o: SceneObject, depthMm: number) {
   const { parts } = await splitMeshByColorSolid(o, { depthMm });
   expect(parts.length).toBeGreaterThanOrEqual(2);
@@ -47,6 +60,9 @@ async function expectCleanParts(o: SceneObject, depthMm: number) {
     // Como un lector de STL: posiciones float32 soldadas a 1e-5 mm.
     expect({ color: p.color, ...stlDefects(p.mesh, 1e-5) }).toEqual({ color: p.color, badEdges: 0, degenerate: 0, duplicates: 0 });
     expect(computeMeshStats(p.mesh).isManifold).toBe(true);
+    // Sin triángulos casi degenerados ni aristas por debajo de 1 µm en los bordes irregulares.
+    expect(minFeature(p.mesh).area).toBeGreaterThan(1e-7);
+    expect(minFeature(p.mesh).edge).toBeGreaterThan(1e-3);
   }
   return parts;
 }

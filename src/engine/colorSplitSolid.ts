@@ -86,7 +86,9 @@ export async function splitMeshByColorSolid(
     const only = [...distinct][0] ?? base;
     const solid = meshDataToManifold(wasm, { positions: P, indices: I });
     try {
-      return { parts: [toPart(wasm, solid, only)], warnings: [] };
+      const unclean: string[] = [];
+      const part = toPart(wasm, solid, only, unclean);
+      return { parts: [part], warnings: uncleanWarnings(unclean) };
     } finally {
       solid.delete();
     }
@@ -127,22 +129,29 @@ export async function splitMeshByColorSolid(
   }
 
   const parts: SolidColorPart[] = [];
+  const unclean: string[] = [];
   for (const color of [...distinct].sort((a, b) => Number(b === base) - Number(a === base) || a.localeCompare(b))) {
     const list = byColor.get(color);
     if (!list) continue;
     const merged = dropEmptyComponents(wasm, list.length === 1 ? list[0] : wasm.Manifold.union(list));
     if (list.length > 1) for (const m of list) m.delete();
     if (merged.isEmpty()) { merged.delete(); byColor.delete(color); continue; }
-    parts.push(toPart(wasm, merged, color));
+    parts.push(toPart(wasm, merged, color, unclean));
     merged.delete();
   }
   const lost = [...distinct].filter((c) => !byColor.has(c));
   const warnings = lost.length > 0 ? [engineWarning('SPLIT_COLOR_ABSORBED', { colors: lost.join(', '), count: lost.length })] : [];
-  return { parts, warnings };
+  return { parts, warnings: [...warnings, ...uncleanWarnings(unclean)] };
 }
 
-function toPart(wasm: ManifoldToplevel, m: Manifold, color: string): SolidColorPart {
-  const { mesh } = cleanColorPartMesh(wasm, m);
+/** Aviso tipado si alguna pieza no quedó limpia como STL tras la limpieza (se entrega igual, cerrada). */
+function uncleanWarnings(colors: string[]): EngineWarning[] {
+  return colors.length ? [engineWarning('SPLIT_COLOR_MESH_DEFECTS', { colors: colors.join(', '), count: colors.length })] : [];
+}
+
+function toPart(wasm: ManifoldToplevel, m: Manifold, color: string, unclean?: string[]): SolidColorPart {
+  const { mesh, clean } = cleanColorPartMesh(wasm, m);
+  if (!clean) unclean?.push(color);
   const normalized = extractPositionAndNormalize({ ...mesh, faceColors: new Array(mesh.indices.length / 3).fill(color) });
   // Volumen de la malla entregada (ya limpia), no del sólido previo: así calza con lo que se exporta.
   return { color, mesh: normalized.mesh, position: normalized.position, volumeMm3: computeMeshStats(normalized.mesh).volumeMm3 };
