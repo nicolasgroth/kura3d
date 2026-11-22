@@ -200,3 +200,50 @@ Lectura de las bajas: varias notas bajan entre rondas sin que el producto haya e
 
 Ningún agente superó su tope salvo el de capturas (38 de 35 minutos). El control por latido permitió ver el avance de cada uno sin esperar a que terminara.
 
+## Ronda 4 · 22 de noviembre de 2026 · `main` (commit de "dividir para imprimir y armado pasan a activas")
+
+Primera ronda que evalúa **Dividir para imprimir** y **Armado**. Tres evaluadores Opus a ciegas.
+
+| Funcionalidad | Usabilidad (R3 → R4) | Código (R3 → R4) | Funcional (R3 → R4) | Pendiente principal |
+|---|---|---|---|---|
+| F-PROY | 80 → 82 | 86 → 88 | 90 → 88 | Encuadrar al abrir |
+| F-RECUP | 85 → 84 | 86 → 88 | — | Encuadrar al recuperar |
+| F-IMPORT | 78 → 85 | 76 → 81 | 86 → 85 | Importar como módulo fuera del patrón protegido |
+| F-EXPORT | 86 → 82 | 76 → 81 | 85 → 78 | Colores en PLY; GLB fuera del navegador; 3MF por defecto |
+| F-TRANSF | 72 → 72 | 79 → 79 | — | Eje vertical Y frente a Z |
+| F-PRIM | 68 → 75 | 85 → 80 | 88 → 90 | Renombrar el texto al editarlo; encuadrar al crear |
+| F-BOOL | 66 → 85 | 84 → 79 | 93 → 92 | Vista previa del resultado antes de aplicar |
+| F-CORTE | 80 → 78 | 76 → 82 | 85 → 85 | Volver a Seleccionar tras cortar; unión para pared delgada |
+| F-HUECO | 74 → 80 | 81 → 80 | 88 → 84 | Pared 8 % más gruesa en curvas |
+| F-MOLDE | 72 → 72 | 77 → 75 | 82 → 78 | Sin aviso al terminar; pocas pruebas |
+| F-PROYEC | 60 → 65 | 72 → 77 | 80 → 74 | **SVG grabado sobre esfera queda abierto**; sin aviso al terminar |
+| F-ROSCA | 80 → 82 | 86 → 83 | 92 → 92 | Tapa roscada |
+| F-LITO | 72 → 78 | 70 → 68 | 78 → 85 | Corre en el hilo principal |
+| F-SEGM | 68 → 62 | 71 → 70 | 80 → 80 | Lista partes de grosor cero; archivo de 1.806 líneas |
+| F-PINT | 72 → 74 | 72 → 63 | — | Pincel lento y con historial de más |
+| F-ANAL | 70 → 68 | 66 → 80 | 75 → 50 | **Pared delgada falla en toda superficie curva** |
+| F-SIMPL | 70 → 55 | 79 → 70 | 90 → 88 | Dice éxito cuando no redujo nada |
+| F-ALIN | 78 → 58 | 80 → 72 | 92 → 85 | Rótulos de ejes contradictorios; dos avisos opuestos |
+| F-DIVIDIR | — → 74 | — → 84 | — → 52 | **Tuberías de pared delgada sin uniones ni marcas; corta paredes a lo largo** |
+| F-ARMADO | — → 75 | — | — | Piezas esbeltas quedan de pie; encuadre durante la animación |
+| F-UI | 70 → 66 | 71 → 73 | — | Móvil con el visor tapado |
+| F-CHAT | 80 → 55 | 85 → 84 | — | **El chat local ejecuta una acción distinta a la confirmada** |
+| F-MCP | 74 → 80 | 83 → 79 | 80 → 86 | Rangos propios en algunas herramientas |
+| Núcleo y Worker | — | 83 → 85 | — | Relieve, SVG y texto fuera del Worker |
+| Store y bus | — | 79 → 79 | — | Patrón protegido no aplicado en todos los slices |
+| Backend nativo | — | 85 → 88 | — | Scope de archivos explícito |
+| Validación y límites | — | 60 → 80 | — | MCP fuera de la prueba de paridad |
+| **Global** | **73 → 70** | **77 → 79** | **85 → 76** | |
+
+La baja en funcional y usabilidad se explica por tres defectos, dos de ellos introducidos en el trabajo de esta misma etapa:
+
+1. **Dividir para imprimir** resuelve piezas macizas (cilindro, estatua, esfera: todas las uniones con conector y marca, volumen exacto, sin interferencia) pero no tuberías de pared delgada: en una tubería en L, en T y en un tubo de 1 m, ninguna unión lleva conector ni marca, y el criterio de ubicación de planos corta las paredes a lo largo dejando tiras de 5 mm. Las pruebas del desarrollo usaban un tubo recto simple y no lo detectaron.
+2. **El aviso de pared delgada**, agregado tras la ronda 3, marca como delgada casi toda la superficie de cualquier sólido curvo (una esfera maciza de 50 mm de radio: 99,6 %).
+3. **El chat local**, tras confirmar "agrégale un agujero roscado M6", ejecutó "centrar sobre la cama".
+
+Problemas transversales de usabilidad: la cámara no se encuadra tras crear, abrir, dividir o proyectar; hay mensajes de resultado que no dicen la verdad (simplificar sin efecto, distribuir con dos avisos opuestos); los rótulos de ejes se contradicen; y en móvil el visor queda tapado.
+
+Aprendizaje de proceso: una funcionalidad nueva debe pasar por QA con los casos de uso reales del autor antes de darse por terminada. Aquí el motor y la interfaz de la división se integraron con pruebas propias y verificación en pantalla, pero sin QA independiente, y la evaluación encontró lo que QA habría encontrado.
+
+Todos los bloqueos están en corrección.
+
