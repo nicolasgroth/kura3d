@@ -371,10 +371,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'badge.localNoAiTip': 'Mode hors ligne déterministe : aucune donnée ne quitte votre appareil',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.subtractSphere': 'Soustraire sphère interne (− Sphère)',
-  'ctx.subtractCylinder': 'Soustraire cylindre interne (− Cylindre)',
-  'ctx.importModuleSub': 'Importer STL/3MF en soustraction (−)',
-  'ctx.toggleHole': 'Basculer Solide / Négatif (H)',
   'ctx.applyHoles': 'Appliquer les soustractions',
   'ctx.unionSelection': 'Unir la sélection',
   'ctx.hollow': 'Évider la pièce (Coque)',
@@ -383,7 +379,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'ctx.projectSurface': 'Projeter Texte/SVG sur Surface',
   'ctx.validatePrint': 'Valider la structure 3D',
   'ctx.detectStructures': 'Détecter les sous-structures (Local)',
-  'ctx.mirrorX': 'Miroir sur l’axe X',
   'ctx.shortcuts': 'Raccourcis clavier (?)',
   'ctx.duplicate': 'Dupliquer (Ctrl+D)',
   'ctx.dropToBed': 'Poser sur le plateau (Z=0)',

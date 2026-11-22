@@ -378,10 +378,6 @@ export const TRANSLATIONS_ES = {
   'badge.localNoAiTip': 'Modo offline determinista: ningún dato sale de tu equipo',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.subtractSphere': 'Quitar esfera interior (− Esfera)',
-  'ctx.subtractCylinder': 'Quitar cilindro interior (− Cilindro)',
-  'ctx.importModuleSub': 'Importar STL/3MF como resta (−)',
-  'ctx.toggleHole': 'Alternar Sólido / Negativo (H)',
   'ctx.applyHoles': 'Aplicar restas ahora',
   'ctx.unionSelection': 'Unir selección',
   'ctx.hollow': 'Ahuecar pieza (Shell)',
@@ -390,7 +386,6 @@ export const TRANSLATIONS_ES = {
   'ctx.projectSurface': 'Proyectar Texto/SVG en Superficie',
   'ctx.validatePrint': 'Validar Estructura 3D',
   'ctx.detectStructures': 'Detectar sub-estructuras (Local)',
-  'ctx.mirrorX': 'Espejar en eje X',
   'ctx.shortcuts': 'Atajos de teclado (?)',
   'ctx.duplicate': 'Duplicar (Ctrl+D)',
   'ctx.dropToBed': 'Apoyar en cama (Z=0)',
@@ -1730,10 +1725,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'badge.localNoAi': 'Local (No external AI)',
   'badge.localNoAiTip': 'Offline deterministic mode: zero data leaves your device',
 
-  'ctx.subtractSphere': 'Subtract inner sphere (− Sphere)',
-  'ctx.subtractCylinder': 'Subtract inner cylinder (− Cylinder)',
-  'ctx.importModuleSub': 'Import STL/3MF as subtraction (−)',
-  'ctx.toggleHole': 'Toggle Solid / Negative (H)',
   'ctx.applyHoles': 'Apply subtractions now',
   'ctx.unionSelection': 'Union selection',
   'ctx.hollow': 'Hollow part (Shell)',
@@ -1742,7 +1733,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'ctx.projectSurface': 'Project Text/SVG onto Surface',
   'ctx.validatePrint': 'Validate 3D Structure',
   'ctx.detectStructures': 'Detect sub-structures (Local)',
-  'ctx.mirrorX': 'Mirror along X axis',
   'ctx.shortcuts': 'Keyboard shortcuts (?)',
   'ctx.duplicate': 'Duplicate (Ctrl+D)',
   'ctx.dropToBed': 'Drop to build plate (Z=0)',

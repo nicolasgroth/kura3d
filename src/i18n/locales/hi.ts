@@ -371,10 +371,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'badge.localNoAiTip': 'ऑफ़लाइन नियतात्मक मोड: कोई भी डेटा आपके डिवाइस से बाहर नहीं जाता',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.subtractSphere': 'आंतरिक गोला घटाएं (− गोला)',
-  'ctx.subtractCylinder': 'आंतरिक बेलन घटाएं (− बेलन)',
-  'ctx.importModuleSub': 'STL/3MF को घटाव के रूप में आयात करें (−)',
-  'ctx.toggleHole': 'ठोस / ऋणात्मक बदलें (H)',
   'ctx.applyHoles': 'घटाव अभी लागू करें',
   'ctx.unionSelection': 'चयन को जोड़ें',
   'ctx.hollow': 'भाग को खोखला करें (शेल)',
@@ -383,7 +379,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'ctx.projectSurface': 'सतह पर पाठ/SVG प्रोजेक्ट करें',
   'ctx.validatePrint': '3D संरचना सत्यापित करें',
   'ctx.detectStructures': 'उप-संरचनाएं पहचानें (लोकल)',
-  'ctx.mirrorX': 'X अक्ष पर प्रतिबिंबित करें',
   'ctx.shortcuts': 'कीबोर्ड शॉर्टकट (?)',
   'ctx.duplicate': 'डुप्लिकेट (Ctrl+D)',
   'ctx.dropToBed': 'प्रिंट बेड पर रखें (Z=0)',

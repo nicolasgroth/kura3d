@@ -101,6 +101,44 @@ async function writeLiveExport(
 }
 
 /**
+ * Exporta a un archivo en disco: con la UI conectada pide los bytes por el puente y los escribe confinados al
+ * directorio permitido; sin UI usa el motor sin interfaz. Común a STL y 3MF.
+ */
+async function exportToFile(
+  ctx: KuraToolContext,
+  opts: {
+    command: 'export_stl' | 'export_3mf';
+    extension: '.stl' | '.3mf';
+    label: 'STL' | '3MF';
+    outputPath: string;
+    liveParams: Record<string, unknown>;
+    headless: (targetPath: string) => Promise<unknown>;
+  }
+): Promise<CallToolResult> {
+  enforceSecurityPolicy(ctx, opts.command);
+  const targetPath = await resolveExportPath(ctx.bridge.getExportDir(), opts.outputPath, opts.extension);
+
+  if (ctx.bridge.isConnected()) {
+    const response = await ctx.bridge.sendCommand(
+      opts.command,
+      { ...opts.liveParams, returnBytes: true },
+      undefined,
+      { skipRateLimit: true }
+    );
+    if (!response.ok) {
+      return failText(response.error ?? `Error exporting ${opts.label} from the Kura3D UI.`);
+    }
+    const written = await writeLiveExport(targetPath, response.result);
+    if (written) {
+      return okJson({ mode: 'live-bridge', ...written });
+    }
+    return okJson({ mode: 'live-bridge', result: response.result });
+  }
+
+  return okJson(await opts.headless(targetPath));
+}
+
+/**
  * Envuelve `server.registerTool` para anotar cada herramienta con `readOnlyHint` desde
  * `src/core/commands/commandPolicy.ts` (misma fuente de verdad que aplica el rechazo en servidor).
  */
@@ -579,32 +617,15 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     },
     async (args) => {
       try {
-        enforceSecurityPolicy(ctx, 'export_stl');
-        const targetPath = await resolveExportPath(ctx.bridge.getExportDir(), args.outputPath, '.stl');
-
-        if (ctx.bridge.isConnected()) {
-          const response = await ctx.bridge.sendCommand(
-            'export_stl',
-            { objectIds: args.objectIds, binary: args.binary, returnBytes: true },
-            undefined,
-            { skipRateLimit: true }
-          );
-          if (!response.ok) {
-            return failText(response.error ?? 'Error exporting STL from the Kura3D UI.');
-          }
-          const written = await writeLiveExport(targetPath, response.result);
-          if (written) {
-            return okJson({ mode: 'live-bridge', ...written });
-          }
-          return okJson({ mode: 'live-bridge', result: response.result });
-        }
-
-        const result = await ctx.headless.exportStl({
-          outputPath: targetPath,
-          objectIds: args.objectIds,
-          binary: args.binary,
+        return await exportToFile(ctx, {
+          command: 'export_stl',
+          extension: '.stl',
+          label: 'STL',
+          outputPath: args.outputPath,
+          liveParams: { objectIds: args.objectIds, binary: args.binary },
+          headless: (targetPath) =>
+            ctx.headless.exportStl({ outputPath: targetPath, objectIds: args.objectIds, binary: args.binary }),
         });
-        return okJson(result);
       } catch (err) {
         return failError(err);
       }
@@ -626,28 +647,14 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     },
     async (args) => {
       try {
-        enforceSecurityPolicy(ctx, 'export_3mf');
-        const targetPath = await resolveExportPath(ctx.bridge.getExportDir(), args.outputPath, '.3mf');
-
-        if (ctx.bridge.isConnected()) {
-          const response = await ctx.bridge.sendCommand(
-            'export_3mf',
-            { objectIds: args.objectIds, returnBytes: true },
-            undefined,
-            { skipRateLimit: true }
-          );
-          if (!response.ok) {
-            return failText(response.error ?? 'Error exporting 3MF from the Kura3D UI.');
-          }
-          const written = await writeLiveExport(targetPath, response.result);
-          if (written) {
-            return okJson({ mode: 'live-bridge', ...written });
-          }
-          return okJson({ mode: 'live-bridge', result: response.result });
-        }
-
-        const result = await ctx.headless.export3mf({ outputPath: targetPath, objectIds: args.objectIds });
-        return okJson(result);
+        return await exportToFile(ctx, {
+          command: 'export_3mf',
+          extension: '.3mf',
+          label: '3MF',
+          outputPath: args.outputPath,
+          liveParams: { objectIds: args.objectIds },
+          headless: (targetPath) => ctx.headless.export3mf({ outputPath: targetPath, objectIds: args.objectIds }),
+        });
       } catch (err) {
         return failError(err);
       }

@@ -31,8 +31,6 @@ import {
 } from '../engine/primitiveLimits';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../engine/operationLimits';
 import { CommandError } from './commandErrors';
-
-const CUT_DEFAULTS = OPERATION_DEFAULTS.cut;
 import {
   findObject, resolveIdsOrSelection, resolveObjects, resolveTarget, selectedObjects, type SceneView,
 } from './commandTargets';
@@ -40,6 +38,8 @@ import {
   nonNegative, pick, readBoolean, readColor, readEnum, readId, readIds, readNumber, readRange,
   readScale, readString, readVec3, type RawParams,
 } from './commandValidation';
+
+const CUT_DEFAULTS = OPERATION_DEFAULTS.cut;
 
 const NAME_MAX = 200;
 const TEXT_MAX = 500;
