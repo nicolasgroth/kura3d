@@ -8,13 +8,16 @@
  * @license MIT
  */
 
-import type { BedSplitPlan, PlannedPiece, SplitAxis } from '../../engine';
+import type { BedSplitPlan, PlannedPiece, SplitAxis, SplitPlane } from '../../engine';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import type { Vec3 } from '../../types/kura';
 import { toUserSize } from './displayAxes';
 
 export interface SplitPlanSummary {
+  /** Piezas que resultan (conteo real del plan si existe; si no, las celdas de la rejilla). */
   pieceCount: number;
+  /** `true` si piezas, uniones y placas salen del conteo exacto del plan (`plan.occupancy.exact`). */
+  exact: boolean;
   /** Placas estimadas (la cifra real la da la disposición tras dividir). */
   plateEstimate: number;
   largest: PlannedPiece | null;
@@ -67,13 +70,13 @@ export function pieceFitsUsable(size: Vec3, usable: Vec3, allowRotation: boolean
 }
 
 /** Placas estimadas: huella = las dos medidas mayores, filas sobre la cama útil X × Z. */
-export function estimatePlates(pieces: PlannedPiece[], usable: Vec3, gapMm = 5): number {
+export function estimatePlates(pieces: ReadonlyArray<Pick<PlannedPiece, 'sizeMm'> | Vec3>, usable: Vec3, gapMm = 5): number {
   if (pieces.length === 0) return 0;
   const W = usable[0];
   const D = usable[2];
   const prints = pieces
     .map((p) => {
-      const [a, b] = sortDesc(p.sizeMm);
+      const [a, b] = sortDesc(Array.isArray(p) ? p : (p as PlannedPiece).sizeMm);
       // El lado largo a lo ancho de la cama si cabe; si no, al fondo.
       return a <= W ? { w: a, d: b } : { w: b, d: a };
     })
@@ -104,30 +107,40 @@ export function estimatePlates(pieces: PlannedPiece[], usable: Vec3, gapMm = 5):
 
 export function summarizeSplitPlan(plan: BedSplitPlan, allowRotation: boolean): SplitPlanSummary {
   const volume = (p: PlannedPiece) => p.sizeMm[0] * p.sizeMm[1] * p.sizeMm[2];
-  const largest = plan.pieces.reduce<PlannedPiece | null>((best, p) => (!best || volume(p) > volume(best) ? p : best), null);
+  const occ = plan.occupancy;
+  // Celdas vacías (p. ej. el hueco de una L) no dan pieza: lo que sigue mira solo las celdas ocupadas.
+  const occupied = occ ? new Set(occ.cells.map((c) => c.join(','))) : null;
+  const realPieces = occupied ? plan.pieces.filter((p) => occupied.has(p.cell.join(','))) : plan.pieces;
+  const largest = realPieces.reduce<PlannedPiece | null>((best, p) => (!best || volume(p) > volume(best) ? p : best), null);
   const { x, y, z } = plan.counts;
   const perPlane: Record<SplitAxis, number> = { x: y * z, y: x * z, z: x * y };
   const withoutPlanes = plan.connector ? plan.planes.filter((p) => !p.admitsConnectors) : [];
+  // Uniones por plano: las reales del plan si existen; si no, todas las celdas de la rejilla a cada lado.
+  const jointsOn = (p: SplitPlane) => {
+    const i = plan.planes.indexOf(p);
+    return occ && i >= 0 && occ.jointsPerPlane[i] !== undefined ? occ.jointsPerPlane[i] : perPlane[p.axis];
+  };
   return {
-    pieceCount: plan.pieces.length,
-    plateEstimate: estimatePlates(plan.pieces, plan.usableMm),
+    pieceCount: occ ? occ.pieces : plan.pieces.length,
+    exact: occ?.exact === true,
+    plateEstimate: estimatePlates(occ && occ.pieceSizesMm.length > 0 ? occ.pieceSizesMm : realPieces, plan.usableMm),
     largest,
     largestRealMm: largest ? ([0, 1, 2].map((i) => largest.bounds.max[i] - largest.bounds.min[i]) as Vec3) : null,
     gridUser: toUserSize([x, y, z]),
-    oversized: plan.pieces.filter((p) => !pieceFitsUsable(p.sizeMm, plan.usableMm, allowRotation)).map((p) => p.code),
-    rotatedCount: plan.pieces.filter((p) => p.rotated).length,
-    jointCount: plan.planes.reduce((n, p) => n + perPlane[p.axis], 0),
-    jointsWithoutConnector: plan.connector ? withoutPlanes.reduce((n, p) => n + perPlane[p.axis], 0) : plan.planes.reduce((n, p) => n + perPlane[p.axis], 0),
-    planesWithoutConnector: withoutPlanes.map((p) => ({
+    oversized: realPieces.filter((p) => !pieceFitsUsable(p.sizeMm, plan.usableMm, allowRotation)).map((p) => p.code),
+    rotatedCount: realPieces.filter((p) => p.rotated).length,
+    jointCount: plan.planes.reduce((n, p) => n + jointsOn(p), 0),
+    jointsWithoutConnector: (plan.connector ? withoutPlanes : plan.planes).reduce((n, p) => n + jointsOn(p), 0),
+    planesWithoutConnector: withoutPlanes.filter((p) => jointsOn(p) > 0).map((p) => ({
       axis: p.axis,
       number: p.index + 1,
       wallMm: estimateSectionWallMm(plan, p.axis, p.sectionAreaMm2),
     })),
     minWallForConnectorMm: plan.connector ? plan.connector.minWallForConnectorMm ?? OPERATION_DEFAULTS.split.minWallForConnectorMm : null,
-    tightest: plan.pieces.reduce<{ code: string; marginMm: number } | null>(
+    tightest: realPieces.reduce<{ code: string; marginMm: number } | null>(
       (best, p) => (Number.isFinite(p.bedMarginMm) && (!best || p.bedMarginMm < best.marginMm) ? { code: p.code, marginMm: p.bedMarginMm } : best),
       null,
     ),
-    diagonalCount: plan.pieces.filter((p) => p.diagonal).length,
+    diagonalCount: realPieces.filter((p) => p.diagonal).length,
   };
 }

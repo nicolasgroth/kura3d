@@ -145,6 +145,13 @@ export const OPERATION_RANGES = {
 export const OPERATION_DEFAULTS = {
   mold: { wallMarginMm: 6, boxWallMm: 3, pourSpoutRadiusMm: 5, keyToleranceMm: 0.25, cavityWallMm: 3 },
   printability: { infillPercent: 20, overhangAngleDeg: 45, minWallMm: 0.8 },
+  /**
+   * Corte por plano (`plane_cut`) cuando el llamador omite el conector: igual en el bus y en el MCP (con y sin
+   * interfaz). Sin conector por defecto: un corte de una pieza chica no falla por un conector que no pidió.
+   */
+  cut: { connectorType: 'none', connectorSize: 4, connectorDepth: 6, tolerance: 0.25, connectorCount: 2 },
+  /** Pintar el objeto entero (`paint_object` sin punto): también cambia el color base del objeto. */
+  paint: { wholeSetsBaseColor: true },
   split: { marginMm: 5, maxPieces: 64, shiftWindow: 0.15, labelDepthMm: 0.4, labelMinHeightMm: 4, lapHeightMm: 6, minFragmentMm3: 2000, minWallForConnectorMm: 8 },
 } as const;
 

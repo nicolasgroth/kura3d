@@ -381,12 +381,12 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         offset: rangeSchema(OR.cut.offset).default(0).describe('Plane offset in mm from the center along that axis (+Z = up, +Y = back).'),
         connectorType: z
           .enum(['none', 'dowel', 'peg', 'dovetail'])
-          .default('none')
-          .describe('Automatic connector type between halves.'),
-        connectorSize: rangeSchema(OR.cut.connectorSize).default(4).describe('Connector radius/width in mm.'),
-        connectorDepth: rangeSchema(OR.cut.connectorDepth).default(5).describe('Connector depth in mm.'),
-        tolerance: rangeSchema(OR.cut.tolerance).default(0.25).describe('Fit clearance in mm.'),
-        connectorCount: rangeSchema(OR.cut.connectorCount).default(2),
+          .default(OPERATION_DEFAULTS.cut.connectorType)
+          .describe('Automatic connector type between halves (none = plain cut).'),
+        connectorSize: rangeSchema(OR.cut.connectorSize).default(OPERATION_DEFAULTS.cut.connectorSize).describe('Connector radius/width in mm.'),
+        connectorDepth: rangeSchema(OR.cut.connectorDepth).default(OPERATION_DEFAULTS.cut.connectorDepth).describe('Connector depth in mm.'),
+        tolerance: rangeSchema(OR.cut.tolerance).default(OPERATION_DEFAULTS.cut.tolerance).describe('Fit clearance in mm.'),
+        connectorCount: rangeSchema(OR.cut.connectorCount).default(OPERATION_DEFAULTS.cut.connectorCount),
         keepMode: z.enum(['both', 'positive', 'negative']).default('both')
           .describe('Halves to keep: positive = the +axis side (top for z, back for y), negative = the other one.'),
       },

@@ -10,6 +10,7 @@
 import type { TranslationKey } from '../translations';
 import { PREVIEW_ZH } from './preview';
 import { SPLITJOINTS_ZH } from './splitJoints';
+import { SPLITCOUPLING_ZH } from './splitCoupling';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -17,6 +18,7 @@ import { SPLITJOINTS_ZH } from './splitJoints';
 export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PREVIEW_ZH,
   ...SPLITJOINTS_ZH,
+  ...SPLITCOUPLING_ZH,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',

@@ -11,7 +11,7 @@
 
 import { ENGINE_WARNING_CODES, type EngineWarning } from '../../engine/engineErrors';
 import type { AssemblyFixOption, AssemblySummary } from '../../engine/split/assemblyTypes';
-import type { SceneObject, SplitStoredNotes } from '../../types/kura';
+import type { SceneObject, SplitStoredNotes, SplitStoredReport } from '../../types/kura';
 import type { SplitGroupNotes } from './splitJointStatus';
 
 const KNOWN = new Set<string>(ENGINE_WARNING_CODES);
@@ -25,10 +25,29 @@ export function buildGroupNotes(warnings: readonly EngineWarning[] | undefined, 
     weakJoints: assembly?.weakJoints ?? [],
     gluedByFix: assembly?.gluedByFix ?? [],
     changedByFix: assembly?.changedByFix ?? [],
-    // El resumen de la división no trae cierre por volumen: interferencias y huecos solo salen en "Validar armado".
+    // Informe completo del cierre de la división: bloqueos con detalle, débiles medidas, interferencias y huecos.
     report: assembly
-      ? { ok: assembly.ok, steps: assembly.steps, blocked: [...assembly.blocked], clashes: assembly.clashes, interference: 0, gaps: 0 }
+      ? {
+          ok: assembly.ok, steps: assembly.steps, blocked: [...assembly.blocked], clashes: assembly.clashes,
+          interference: assembly.closure?.interference.length ?? 0, gaps: assembly.closure?.gaps.length ?? 0,
+          blockedDetail: (assembly.blockedDetail ?? []).map((b) => ({ code: b.code, conflictingJoints: [...b.conflictingJoints], blockingParts: [...b.blockingParts] })),
+          weak: (assembly.weak ?? []).map((w) => ({ joint: w.joint, measuredMm: w.measuredMm, recommendedMm: w.recommendedMm })),
+        }
       : undefined,
+  };
+}
+
+/** Informe acotado para guardar (mismos límites que valida `projectSchema.ts`). */
+function storedReport(r: SplitStoredReport): SplitStoredReport {
+  const finite = (n: number) => (Number.isFinite(n) && n >= 0 ? n : 0);
+  return {
+    ok: r.ok, steps: r.steps, blocked: r.blocked.slice(0, 512), clashes: r.clashes, interference: r.interference, gaps: r.gaps,
+    ...(r.blockedDetail ? {
+      blockedDetail: r.blockedDetail.slice(0, 512).map((b) => ({
+        code: b.code, conflictingJoints: b.conflictingJoints.slice(0, 64), blockingParts: b.blockingParts.slice(0, 64),
+      })),
+    } : {}),
+    ...(r.weak ? { weak: r.weak.slice(0, 512).map((w) => ({ joint: w.joint, measuredMm: finite(w.measuredMm), recommendedMm: finite(w.recommendedMm) })) } : {}),
   };
 }
 
@@ -42,7 +61,7 @@ export function toStoredNotes(notes: SplitGroupNotes): SplitStoredNotes {
     weakJoints: notes.weakJoints.slice(0, 512),
     gluedByFix: notes.gluedByFix.slice(0, 512),
     changedByFix: notes.changedByFix.slice(0, 512),
-    ...(notes.report ? { report: { ...notes.report, blocked: notes.report.blocked.slice(0, 512) } } : {}),
+    ...(notes.report ? { report: storedReport(notes.report) } : {}),
   };
 }
 
@@ -54,7 +73,7 @@ export function fromStoredNotes(stored: SplitStoredNotes): SplitGroupNotes {
     weakJoints: [...stored.weakJoints],
     gluedByFix: [...stored.gluedByFix],
     changedByFix: [...stored.changedByFix],
-    report: stored.report ? { ...stored.report, blocked: [...stored.report.blocked] } : undefined,
+    report: stored.report ? storedReport(stored.report) : undefined,
   };
 }
 

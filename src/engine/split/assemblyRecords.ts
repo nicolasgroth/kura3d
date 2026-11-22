@@ -20,6 +20,7 @@ export function jointRecord(j: SplitJoint): SplitJointRecord {
     label: j.label, axis: j.axis, position: j.position, a: j.a.code, b: j.b.code, kind: j.kind,
     connector: j.connector ? { ...j.connector } : null,
     connectorCenters: j.connectorCenters.map((c) => [c[0], c[1], c[2]]), contactAreaMm2: j.contactAreaMm2,
+    labelPlacement: j.labelPlacement,
   };
 }
 

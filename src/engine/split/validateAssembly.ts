@@ -204,5 +204,8 @@ export function summarizeAssembly(r: AssemblyReport): AssemblySummary {
     changedByFix: r.fix.applied ? r.fix.changeType.map((c) => `${c.joint}:${c.type}`) : [],
     suggestions: r.suggestions,
     volumeErrorPct: r.closure.volumeErrorPct,
+    blockedDetail: r.blocked.map((b) => ({ code: b.code, conflictingJoints: [...b.conflictingJoints], blockingParts: [...b.blockingParts] })),
+    weak: r.weak,
+    closure: { ok: r.closure.ok, interference: r.closure.interference, gaps: r.closure.gaps },
   };
 }

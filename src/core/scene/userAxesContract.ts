@@ -107,6 +107,8 @@ interface PlanLike {
   counts: { x: number; y: number; z: number };
   planes: { axis: AxisName; position: number; uniformPosition: number }[];
   pieces: { cell: [number, number, number]; bounds: { min: Vec3; max: Vec3 }; sizeMm: Vec3; printRotation: Vec3 }[];
+  /** Conteos reales del plan: celdas y medidas en ejes internos (`jointsPerPlane` sigue el orden de `planes`). */
+  occupancy?: { cells: Array<[number, number, number]>; pieceSizesMm: Vec3[] };
 }
 
 /**
@@ -131,6 +133,15 @@ export function splitPlanToUser<T extends PlanLike>(plan: T): T {
       sizeMm: toUserSize(piece.sizeMm),
       printRotation: toUserRotation(piece.printRotation),
     })),
+    ...(plan.occupancy
+      ? {
+          occupancy: {
+            ...plan.occupancy,
+            cells: plan.occupancy.cells.map((c) => [c[0], c[2], c[1]] as [number, number, number]),
+            pieceSizesMm: plan.occupancy.pieceSizesMm.map(toUserSize),
+          },
+        }
+      : {}),
   };
 }
 
