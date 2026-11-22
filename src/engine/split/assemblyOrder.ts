@@ -1,0 +1,171 @@
+/**
+ * @file src/engine/split/assemblyOrder.ts
+ * @description Orden de montaje de la validación de armado.
+ *
+ * Una pieza P puede entrar con la dirección d si (1) d es compatible con TODAS sus uniones con
+ * conector o solape hacia piezas ya puestas (`jointDirections`) y (2) ninguna pieza ya puesta está en
+ * su sombra de barrido para d (`sweepShadows`: el camino muestreado en vóxeles desde lejos hasta su
+ * lugar). Las uniones para pegar no restringen d; el barrido evita que la pieza atraviese a la vecina.
+ *
+ * Búsqueda (`findOrder`): en profundidad con retroceso; candidatas = piezas tocando lo ya puesto,
+ * de abajo hacia arriba; memo de conjuntos puestos que ya fracasaron y tope de nodos. Agregar piezas
+ * solo agrega restricciones, así que la primera candidata factible casi siempre lleva a una solución:
+ * en la práctica es O(n²·u) con u = uniones por pieza; el peor caso (sin solución) queda acotado por
+ * el tope de nodos.
+ *
+ * Arreglo (`greedyFix`): construcción voraz desde la base; en cada paso elige la pieza y dirección
+ * libres de barrido que obligan a pegar menos uniones, y pasa esas uniones a "para pegar". Cuando cada
+ * pieza tiene a lo más un vecino por eje (rejillas) alcanza el mínimo: uniones − (piezas − 1).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import { jointDirections, restricts } from './assemblyConnectors';
+import type { AssemblyBlocked, AssemblyDirection, AssemblyJointInput, AssemblyStep } from './assemblyTypes';
+import { DIRECTIONS } from './assemblyVoxels';
+
+export interface OrderInput {
+  codes: string[];
+  /** Cota baja en Y de cada pieza (base primero). */
+  minY: number[];
+  joints: AssemblyJointInput[];
+  shadows: Array<Map<AssemblyDirection, Set<number>>>;
+  /** Pieza base (va primero y no se mueve): la más baja; a igual altura, la de más volumen. */
+  base: number;
+  nodeBudget?: number;
+}
+
+export interface OrderOutcome {
+  order: AssemblyStep[];
+  blocked: AssemblyBlocked[];
+}
+
+function byPart(n: number, joints: AssemblyJointInput[]): AssemblyJointInput[][] {
+  const out: AssemblyJointInput[][] = Array.from({ length: n }, () => []);
+  for (const j of joints) {
+    out[j.a.part]?.push(j);
+    if (j.b.part !== j.a.part) out[j.b.part]?.push(j);
+  }
+  return out;
+}
+const other = (j: AssemblyJointInput, p: number) => (j.a.part === p ? j.b.part : j.a.part);
+
+interface Eval {
+  dirs: AssemblyDirection[];
+  conflicting: string[];
+  blockingBy: Map<AssemblyDirection, number[]>;
+  adjacent: boolean;
+}
+
+function evaluate(p: number, placed: Uint8Array, mine: AssemblyJointInput[], shadows: OrderInput['shadows'], glued: Set<string>): Eval {
+  let allowed = new Set(DIRECTIONS);
+  const conflicting: string[] = [];
+  let adjacent = false;
+  for (const j of mine) {
+    if (!placed[other(j, p)]) continue;
+    adjacent = true;
+    if (!restricts(j) || glued.has(j.label)) continue;
+    conflicting.push(j.label);
+    const ok = new Set(jointDirections(j, p));
+    allowed = new Set([...allowed].filter((d) => ok.has(d)));
+  }
+  const blockingBy = new Map<AssemblyDirection, number[]>();
+  const dirs: AssemblyDirection[] = [];
+  for (const d of DIRECTIONS) {
+    const hit = [...shadows[p].get(d)!].filter((q) => placed[q]);
+    blockingBy.set(d, hit);
+    if (hit.length === 0 && allowed.has(d)) dirs.push(d);
+  }
+  return { dirs, conflicting, blockingBy, adjacent };
+}
+
+function candidates(input: OrderInput, placed: Uint8Array, joints: AssemblyJointInput[][]): number[] {
+  const n = input.codes.length;
+  if (!placed[input.base]) return [input.base];
+  const list: number[] = [];
+  for (let p = 0; p < n; p++) if (!placed[p]) list.push(p);
+  const touches = (p: number) => joints[p].some((j) => placed[other(j, p)]);
+  return list.sort((p, q) => Number(touches(q)) - Number(touches(p)) || input.minY[p] - input.minY[q] || p - q);
+}
+
+function blockedOf(input: OrderInput, placed: Uint8Array, joints: AssemblyJointInput[][], glued: Set<string>): AssemblyBlocked[] {
+  const out: AssemblyBlocked[] = [];
+  const evals = candidates(input, placed, joints).map((p) => ({ p, e: evaluate(p, placed, joints[p], input.shadows, glued) }));
+  const adjacent = evals.filter((x) => x.e.adjacent);
+  for (const { p, e } of adjacent.length > 0 ? adjacent : evals) {
+    // Sin dirección por conectores, o todas las compatibles topan al barrer
+    const jointOk = DIRECTIONS.filter((d) => {
+      return joints[p].every((j) => !placed[other(j, p)] || !restricts(j) || glued.has(j.label) || jointDirections(j, p).includes(d));
+    });
+    const reason = jointOk.length === 0 ? 'directions' : 'sweep';
+    const blocking = new Set<number>();
+    for (const d of jointOk) for (const q of e.blockingBy.get(d) ?? []) blocking.add(q);
+    out.push({ part: p, code: input.codes[p], reason, conflictingJoints: e.conflicting, blockingParts: [...blocking].map((q) => input.codes[q]) });
+  }
+  return out;
+}
+
+/** Busca un orden de montaje sin cambiar las uniones; si no hay, el tramo más largo y los bloqueos. */
+export function findOrder(input: OrderInput, glued: Set<string> = new Set()): OrderOutcome {
+  const n = input.codes.length;
+  const joints = byPart(n, input.joints);
+  const placed = new Uint8Array(n);
+  const order: AssemblyStep[] = [];
+  let best: { order: AssemblyStep[]; placed: Uint8Array } = { order: [], placed: placed.slice() };
+  const failed = new Set<string>();
+  const budget = input.nodeBudget ?? 20_000;
+  let nodes = 0;
+  const key = () => Array.from(placed).join('');
+  const search = (): boolean => {
+    if (order.length === n) return true;
+    if (++nodes > budget) return false;
+    const k = key();
+    if (failed.has(k)) return false;
+    for (const p of candidates(input, placed, joints)) {
+      const e = evaluate(p, placed, joints[p], input.shadows, glued);
+      if (e.dirs.length === 0) continue;
+      placed[p] = 1;
+      order.push({ part: p, code: input.codes[p], direction: e.dirs[0], step: order.length + 1 });
+      if (order.length > best.order.length) best = { order: [...order], placed: placed.slice() };
+      if (search()) return true;
+      order.pop();
+      placed[p] = 0;
+      if (nodes > budget) break;
+    }
+    failed.add(k);
+    return false;
+  };
+  if (n === 0 || search()) return { order: [...order], blocked: [] };
+  return { order: best.order, blocked: blockedOf(input, best.placed, joints, glued) };
+}
+
+/** Arreglo voraz: uniones a pasar a "para pegar" para que todas las piezas entren. */
+export function greedyFix(input: OrderInput): { glued: Set<string>; blocked: AssemblyBlocked[]; order: AssemblyStep[] } {
+  const n = input.codes.length;
+  const joints = byPart(n, input.joints);
+  const placed = new Uint8Array(n);
+  const glued = new Set<string>();
+  const order: AssemblyStep[] = [];
+  for (let step = 0; step < n; step++) {
+    // Por capas: la más baja primero (no encierra piezas), luego tocando lo puesto, luego menos uniones a pegar
+    let pick: { p: number; d: AssemblyDirection; cost: number; glue: string[]; y: number; touch: boolean } | null = null;
+    const better = (y: number, touch: boolean, cost: number) =>
+      !pick || y < pick.y - 1e-3 || (Math.abs(y - pick.y) <= 1e-3 && (Number(touch) > Number(pick.touch) || (touch === pick.touch && cost < pick.cost)));
+    for (const p of candidates(input, placed, joints)) {
+      const e = evaluate(p, placed, joints[p], input.shadows, glued);
+      for (const d of DIRECTIONS) {
+        if ((e.blockingBy.get(d) ?? []).length > 0) continue;
+        const glue = joints[p]
+          .filter((j) => placed[other(j, p)] && restricts(j) && !glued.has(j.label) && !jointDirections(j, p).includes(d))
+          .map((j) => j.label);
+        if (better(input.minY[p], e.adjacent, glue.length)) pick = { p, d, cost: glue.length, glue, y: input.minY[p], touch: e.adjacent };
+      }
+    }
+    if (!pick) return { glued, order, blocked: blockedOf(input, placed, joints, glued) };
+    for (const l of pick.glue) glued.add(l);
+    placed[pick.p] = 1;
+    order.push({ part: pick.p, code: input.codes[pick.p], direction: pick.d, step: step + 1 });
+  }
+  return { glued, order, blocked: [] };
+}

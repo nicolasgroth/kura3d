@@ -1266,4 +1266,13 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.lapShapeNote': 'जोड़ पर आकार बदलता है: एक भाग पर जीभ और दूसरे पर खाँचा।',
   'split.allowDiagonal': 'तिरछी स्थिति की अनुमति दें',
   'split.allowDiagonalTip': 'यदि बिना काटे फिट हो तो भाग को बेड पर तिरछा रखता है',
+  'engineWarning.ASSEMBLY_VOLUME_MISMATCH': 'दोबारा जोड़े गए भाग मूल से आयतन में {pct} % भिन्न हैं।',
+  'engineWarning.ASSEMBLY_INTERFERENCE': 'भाग {a} और {b} जोड़ते समय एक-दूसरे में घुसते हैं ({volume} mm³)।',
+  'engineWarning.ASSEMBLY_GAP': 'जोड़ {label} की सतहों के बीच {gap} mm का अंतर है।',
+  'engineWarning.ASSEMBLY_CONNECTOR_CLASH': 'जोड़ {label} का एक कनेक्टर {other} से टकराता है या बहुत पास है: दीवार {distance} mm, न्यूनतम {required} mm।',
+  'engineWarning.ASSEMBLY_BLOCKED': 'भाग {code} किसी भी क्रम में नहीं लग सकता: कनेक्टर {joints}, {parts} से टकराता है।',
+  'engineWarning.ASSEMBLY_JOINT_GLUED_FOR_ORDER': 'जोड़ {label} ({a}–{b}) को केवल चिपकाने वाला बनाया गया ताकि जोड़ने का क्रम संभव हो।',
+  'engineWarning.ASSEMBLY_WEAK_JOINT': 'जोड़ {label} का कनेक्टर कमज़ोर है: {measured} mm, अनुशंसित {recommended} mm।',
+  'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'जोड़ {label} का ओवरलैप प्रिंट योग्य नहीं (जीभ {tongue} mm, खाँचे की दीवार {groove} mm; न्यूनतम {min} mm): जोड़ चिपकाने के लिए रहेगा।',
+  'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'निशान {label} को {depth} mm गहरा उकेरा गया (माँगा {requested} mm) ताकि {wall} mm दीवार न छिदे।',
 };

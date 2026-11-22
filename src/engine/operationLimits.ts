@@ -151,6 +151,28 @@ export const OPERATION_DEFAULTS = {
 /** Tope duro de piezas de "dividir para imprimir" con `maxPieces: 'auto'`. */
 export const SPLIT_HARD_MAX_PIECES = 400;
 
+/**
+ * Validación de armado (`validateAssembly`) y firmeza de conectores. Reglas geométricas simples:
+ * - Firmeza: radio del conector ≥ max(`minConnectorRadiusMm`, √(`minConnectorAreaFraction`·área/(π·n)),
+ *   `connectorRadiusPerPieceMm`·medida mayor de la pieza más chica), sin pasar de `maxRecommendedRadiusMm`.
+ * - Pared: entre conectores y hasta la superficie, al menos `minWallMm`.
+ * - Cierre: error de volumen ≤ `volumeTolerancePct` y hueco entre caras ≤ `gapToleranceMm` + holgura.
+ * - Imprimible: lengüeta y cada pared de ranura del solape ≥ `minPrintableWallMm`.
+ * - Marca: profundidad ≤ `labelDepthWallFraction` del espesor local.
+ */
+export const ASSEMBLY_LIMITS = {
+  minConnectorRadiusMm: 1.5,
+  minConnectorAreaFraction: 0.004,
+  connectorRadiusPerPieceMm: 0.004,
+  maxRecommendedRadiusMm: 8,
+  minWallMm: 0.8,
+  volumeTolerancePct: 0.5,
+  gapToleranceMm: 0.05,
+  voxelsPerSide: 48,
+  minPrintableWallMm: 0.8,
+  labelDepthWallFraction: 0.4,
+} as const;
+
 /** Indica si `value` es un número finito dentro de `range`. */
 export function isInOperationRange(value: unknown, range: OperationRange): value is number {
   return (
