@@ -13,10 +13,22 @@ import type { ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { acceleratedRaycast, MeshBVH, type MeshBVHOptions } from 'three-mesh-bvh';
 import type { BrushQuery } from '../../engine/paint/brushSelect';
-import type { Vec3 } from '../../types/kura';
+import type { MeshData, Vec3 } from '../../types/kura';
+import { typicalTriangleSizeMm } from '../../utils/paintCoarseness';
 
 /** `indirect` existe en three-mesh-bvh 0.8 aunque sus tipos no lo declaran. */
 export const PAINT_BVH_OPTIONS = { indirect: true } as MeshBVHOptions;
+
+/**
+ * Con el borde fino activo, se subdivide (camino por muestra, más lento) solo si el triángulo típico
+ * supera esta fracción del radio; en mallas más finas el borde ya sigue el círculo y se pinta en vivo.
+ */
+export const REFINE_EDGE_TRIANGLE_RATIO = 0.5;
+
+/** El trazo necesita subdividir el borde (no puede ir por el camino en vivo). */
+export function strokeNeedsEdgeRefine(refineEdge: boolean, mesh: MeshData, scale: Vec3, radiusMm: number): boolean {
+  return refineEdge && typicalTriangleSizeMm(mesh.positions, mesh.indices, scale) > radiusMm * REFINE_EDGE_TRIANGLE_RATIO;
+}
 
 /** Bajo este tamaño el raycast normal ya es rápido y no vale la pena construir el BVH. */
 const BVH_MIN_TRIANGLES = 20_000;

@@ -18,7 +18,7 @@ import { regionIdForFace } from '../../utils/segmentHighlight';
 import { buildViewportGeometry } from './creasedGeometry';
 import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
 import { hasLiveStroke, queueLiveSample, startLiveStroke } from './livePaintStroke';
-import { brushQueryFromEvent, usePaintRaycastAcceleration } from './paintPointer';
+import { brushQueryFromEvent, strokeNeedsEdgeRefine, usePaintRaycastAcceleration } from './paintPointer';
 
 /** Renderiza un SceneObject con caché de BufferGeometry, materiales PBR, sección Rayos X y voladizos. */
 export const SceneMeshItem: React.FC<{

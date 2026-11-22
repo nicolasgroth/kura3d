@@ -1,5 +1,5 @@
 /**
- * @file src/engine/paint/__tests__/raycastBvh.test.ts
+ * @file src/components/viewport/__tests__/paintRaycastBvh.test.ts
  * @description El BVH del visor (three-mesh-bvh en modo indirecto) no altera la geometría pintada y
  * el raycast acelerado devuelve la misma cara y el mismo punto que el raycast normal.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -10,9 +10,9 @@
 import * as THREE from 'three';
 import { acceleratedRaycast, MeshBVH } from 'three-mesh-bvh';
 import { describe, expect, it } from 'vitest';
-import { PAINT_BVH_OPTIONS } from '../../../components/viewport/paintPointer';
-import { createBufferGeometryFromMeshData } from '../../primitives';
-import { seededRandom, uvSphere } from './paintTestMeshes';
+import { PAINT_BVH_OPTIONS } from '../paintPointer';
+import { createBufferGeometryFromMeshData } from '../../../engine/primitives';
+import { seededRandom, uvSphere } from '../../../engine/paint/__tests__/paintTestMeshes';
 
 describe('raycast con BVH indirecto', () => {
   it('misma cara que el raycast normal y sin índice nuevo', () => {
