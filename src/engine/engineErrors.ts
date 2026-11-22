@@ -15,6 +15,7 @@ import type { LanguageCode } from '../types/kura';
 /** Códigos de error estables del motor. */
 export const ENGINE_ERROR_CODES = [
   'INVALID_PARAMETER',
+  'BOOLEAN_EMPTY_RESULT',
   'HOLLOW_WALL_TOO_THICK',
   'HOLLOW_WALL_BREACH',
   'MOLD_SEALED_CAVITY',

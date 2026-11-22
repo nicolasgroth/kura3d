@@ -36,9 +36,14 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
     && Object.getPrototypeOf(value) === Object.prototype;
 }
 
-function checkNumber(key: string, value: unknown): string | null {
+function checkNumber(key: string, value: unknown, spec: Record<string, unknown> = {}): string | null {
   if (typeof value !== 'number' || !Number.isFinite(value) || Math.abs(value) > MAX_ABS_NUMBER) {
     return `"${key}" must be a finite number within ±${MAX_ABS_NUMBER}`;
+  }
+  // Rango declarado en el esquema (para primitivas, el mismo del motor: `primitiveLimits`).
+  const { minimum, maximum } = spec;
+  if ((typeof minimum === 'number' && value < minimum) || (typeof maximum === 'number' && value > maximum)) {
+    return `"${key}" must be between ${String(minimum ?? -MAX_ABS_NUMBER)} and ${String(maximum ?? MAX_ABS_NUMBER)}`;
   }
   if (POSITIVE_KEYS.has(key) && value <= 0) return `"${key}" must be greater than 0`;
   if (NON_NEGATIVE_KEYS.has(key) && value < 0) return `"${key}" must not be negative`;
@@ -52,7 +57,9 @@ function checkValue(key: string, spec: Record<string, unknown>, value: unknown):
   switch (spec.type) {
     case 'string': {
       if (typeof value !== 'string') return `"${key}" must be a string`;
-      const limit = key === 'text' ? MAX_TEXT_LENGTH : MAX_STRING_LENGTH;
+      const limit = typeof spec.maxLength === 'number'
+        ? spec.maxLength
+        : key === 'text' ? MAX_TEXT_LENGTH : MAX_STRING_LENGTH;
       if (value.length > limit) return `"${key}" exceeds ${limit} characters`;
       // Mismo criterio que el puente MCP: sin caracteres de control en textos, IDs ni nombres.
       if (/[\u0000-\u001f\u007f]/.test(value)) return `"${key}" contains control characters`;
@@ -63,7 +70,7 @@ function checkValue(key: string, spec: Record<string, unknown>, value: unknown):
       return null;
     }
     case 'number':
-      return checkNumber(key, value);
+      return checkNumber(key, value, spec);
     case 'boolean':
       return typeof value === 'boolean' ? null : `"${key}" must be a boolean`;
     case 'array': {

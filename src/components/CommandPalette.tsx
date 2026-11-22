@@ -56,6 +56,7 @@ import { SUPPORTED_LANGUAGES } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
 import { openExportDialog } from './ExportDialog';
 import { attachDialogDismissHandlers, closeDialogWithMotion } from '../utils/dialogMotion';
+import { REFINE_UI_DEFAULTS } from './refineDefaults';
 
 interface PaletteActionItem {
   id: string;
@@ -344,7 +345,7 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <Wand2 size={15} />,
         run: () => {
-          if (primaryId) void refineSelectedMesh(primaryId, 1.5, true);
+          if (primaryId) void refineSelectedMesh(primaryId, REFINE_UI_DEFAULTS.edgeMm, REFINE_UI_DEFAULTS.smooth);
         },
       },
       {

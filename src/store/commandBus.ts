@@ -11,11 +11,13 @@
 
 import { isReadCommand } from '../../mcp-server/src/toolPolicy';
 import * as engine from '../engine';
+import { isEngineError, localizeEngineError, type EngineErrorCode } from '../engine/engineErrors';
 import type { TranslationKey } from '../i18n';
 import type { KuraCommandRequest, KuraCommandResponse, SceneObject } from '../types/kura';
 import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { CommandError, type CommandErrorCode } from './commandErrors';
 import * as schema from './commandSchemas';
+import type { OperationErrorTracker } from './operationErrors';
 import type { RawParams } from './commandValidation';
 import type { CommandSourceType, KuraStoreState } from './useKuraStore';
 
@@ -26,6 +28,8 @@ export interface CommandBusDeps {
   isInteractionLocked: () => boolean;
   tr: (key: TranslationKey, params?: Record<string, string | number>) => string;
   toBase64: (bytes: Uint8Array) => string;
+  /** Último error de operación del store: aporta el código del `EngineError` a `errorCode`. */
+  operationErrors?: OperationErrorTracker;
 }
 
 type Handler = (p: RawParams, deps: CommandBusDeps, command: string) => Promise<unknown> | unknown;
@@ -269,13 +273,17 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   },
 };
 
-/** Respuesta del bus: la estándar más el código de error tipado cuando falla. */
-export type CommandBusResponse = KuraCommandResponse & { errorCode?: CommandErrorCode };
+/**
+ * Respuesta del bus: la estándar más el código de error tipado cuando falla. Si el fallo vino del
+ * motor geométrico, `errorCode` es el código estable del `EngineError` (p. ej. `HOLLOW_WALL_TOO_THICK`).
+ */
+export type CommandBusResponse = KuraCommandResponse & { errorCode?: CommandErrorCode | EngineErrorCode };
 
 /** Crea la función `executeCommand` del store a partir de sus dependencias. */
 export function createCommandBus(deps: CommandBusDeps) {
   return async (req: KuraCommandRequest, source: CommandSourceType = 'ui'): Promise<CommandBusResponse> => {
     const command = String(req.command);
+    deps.operationErrors?.clear();
     try {
       if (source === 'mcp' && !isMcpCommandAllowed(command, deps.get().mcpConfig.readOnly)) {
         throw new CommandError('read-only', 'bus.error.readOnly');
@@ -294,8 +302,16 @@ export function createCommandBus(deps: CommandBusDeps) {
       const result = await handler((params ?? {}) as RawParams, deps, command);
       return { id: req.id, ok: true, result };
     } catch (err) {
+      // Una acción del store que devolvió vacío tras un error del motor: se usa ese error tipado.
+      const failure = deps.operationErrors?.take();
+      if (err instanceof CommandError && err.code === 'failed' && failure?.engineCode) {
+        return { id: req.id, ok: false, error: failure.message, errorCode: failure.engineCode };
+      }
       if (err instanceof CommandError) {
         return { id: req.id, ok: false, error: deps.tr(err.key, err.params), errorCode: err.code };
+      }
+      if (isEngineError(err)) {
+        return { id: req.id, ok: false, error: localizeEngineError(deps.get().language, err), errorCode: err.code };
       }
       return { id: req.id, ok: false, error: err instanceof Error ? err.message : String(err), errorCode: 'failed' };
     }

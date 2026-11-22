@@ -21,7 +21,8 @@ export type ModelImportErrorCode =
   | 'non-finite'
   | 'too-many-triangles'
   | 'too-many-parts'
-  | 'component-cycle';
+  | 'component-cycle'
+  | 'timeout';
 
 /** Límites de entrada aplicados por todos los lectores. */
 export interface ModelImportLimits {
@@ -35,6 +36,8 @@ export interface ModelImportLimits {
   maxParts: number;
   /** Profundidad máxima de anidamiento de `<components>` 3MF. */
   maxComponentDepth: number;
+  /** Nodos máximos visitados al expandir componentes 3MF (con o sin malla). */
+  maxSceneNodes: number;
 }
 
 export const DEFAULT_IMPORT_LIMITS: ModelImportLimits = {
@@ -43,6 +46,7 @@ export const DEFAULT_IMPORT_LIMITS: ModelImportLimits = {
   maxTriangles: 12_000_000,
   maxParts: 2_000,
   maxComponentDepth: 16,
+  maxSceneNodes: 100_000,
 };
 
 /** Completa límites parciales con los valores por defecto. */
@@ -64,6 +68,7 @@ const DEFAULT_MESSAGES: Record<ModelImportErrorCode, string> = {
   'too-many-triangles': 'El modelo supera el número máximo de triángulos permitido.',
   'too-many-parts': 'El modelo supera el número máximo de piezas permitido.',
   'component-cycle': 'Los componentes 3MF forman un ciclo o anidan demasiado.',
+  timeout: 'La lectura del archivo tardó demasiado y se canceló.',
 };
 
 /** Error de importación con código estable y nombre de archivo opcional. */

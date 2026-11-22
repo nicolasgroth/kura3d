@@ -140,9 +140,7 @@ export async function runBooleanOperation(
     }
 
     if (resultManifold.isEmpty() || resultManifold.numTri() === 0) {
-      throw new Error(
-        `La operación booleana "${op}" produjo una geometría vacía (sin volumen resultante).`
-      );
+      throw new EngineError('BOOLEAN_EMPTY_RESULT', { op });
     }
 
     const outMesh = manifoldToMeshData(resultManifold, registry?.idToColor);

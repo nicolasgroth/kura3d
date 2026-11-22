@@ -14,6 +14,17 @@ import { ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits
 import type { ImportedModel, ImportedPart } from './importTypes';
 import { GrowableFloat32, GrowableUint32, finishMesh, normalizeHexColor } from './meshBuffers';
 import { normalizePartPath, open3MFPackage, parseXmlAttrs, type ThreeMfPackage } from './threeMfPackage';
+import { findElement, forEachElement, forEachLeaf } from './xmlScan';
+
+/** Atributos crudos del primer elemento hoja con ese nombre local, o null. */
+function findLeaf(xml: string, local: string): string | null {
+  let found: string | null = null;
+  forEachLeaf(xml, local, (attrs) => {
+    found = attrs;
+    return false;
+  });
+  return found;
+}
 
 /** Factores de conversión de unidades 3MF hacia milímetros internos. */
 export const MF3_UNIT_TO_MM: Record<string, number> = {
@@ -100,77 +111,66 @@ function attrLocal(attrs: Record<string, string>, local: string): string | undef
 }
 
 function parseModelDoc(xml: string, path: string): ModelDoc {
-  const modelTag = /<model\b([^>]*)>/i.exec(xml);
-  if (!modelTag) throw new ModelImportError('corrupt', `${path}: falta <model>`);
-  const unit = (parseXmlAttrs(modelTag[1]).unit ?? 'millimeter').toLowerCase();
+  const modelTag = findLeaf(xml, 'model');
+  if (modelTag === null) throw new ModelImportError('corrupt', `${path}: falta <model>`);
+  const unit = (parseXmlAttrs(modelTag).unit ?? 'millimeter').toLowerCase();
   const unitScale = MF3_UNIT_TO_MM[unit] ?? 1;
 
   const materials = new Map<string, string[]>();
-  const baseRe = /<(?:\w+:)?basematerials\b([^>]*)>([\s\S]*?)<\/(?:\w+:)?basematerials>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = baseRe.exec(xml)) !== null) {
-    const id = parseXmlAttrs(m[1]).id;
+  forEachElement(xml, 'basematerials', ({ attrs, body }) => {
+    const id = parseXmlAttrs(attrs).id;
     const colors: string[] = [];
-    const re = /<(?:\w+:)?base\b([^>]*?)\/?>/gi;
-    let b: RegExpExecArray | null;
-    while ((b = re.exec(m[2])) !== null) colors.push(normalizeHexColor(parseXmlAttrs(b[1]).displaycolor));
+    forEachLeaf(body ?? '', 'base', (a) => { colors.push(normalizeHexColor(parseXmlAttrs(a).displaycolor)); });
     if (id) materials.set(id, colors);
-  }
-  const groupRe = /<(?:\w+:)?colorgroup\b([^>]*)>([\s\S]*?)<\/(?:\w+:)?colorgroup>/gi;
-  while ((m = groupRe.exec(xml)) !== null) {
-    const id = parseXmlAttrs(m[1]).id;
+  });
+  forEachElement(xml, 'colorgroup', ({ attrs, body }) => {
+    const id = parseXmlAttrs(attrs).id;
     const colors: string[] = [];
-    const re = /<(?:\w+:)?color\b([^>]*?)\/?>/gi;
-    let c: RegExpExecArray | null;
-    while ((c = re.exec(m[2])) !== null) colors.push(normalizeHexColor(parseXmlAttrs(c[1]).color));
+    forEachLeaf(body ?? '', 'color', (a) => { colors.push(normalizeHexColor(parseXmlAttrs(a).color)); });
     if (id) materials.set(id, colors);
-  }
+  });
 
   const objects = new Map<string, ObjectDef>();
-  const objRe = /<object\b([^>]*)>([\s\S]*?)<\/object>/gi;
-  while ((m = objRe.exec(xml)) !== null) {
-    const attrs = parseXmlAttrs(m[1]);
-    if (!attrs.id) continue;
-    const body = m[2];
-    const meshMatch = /<mesh\b[^>]*>([\s\S]*?)<\/mesh>/i.exec(body);
+  forEachElement(xml, 'object', ({ attrs: rawAttrs, body: rawBody }) => {
+    const attrs = parseXmlAttrs(rawAttrs);
+    if (!attrs.id) return;
+    const body = rawBody ?? '';
+    const meshMatch = findElement(body, 'mesh');
     const components: ComponentRef[] = [];
-    const compRe = /<component\b([^>]*?)\/?>/gi;
-    let cm: RegExpExecArray | null;
-    while ((cm = compRe.exec(body)) !== null) {
-      const ca = parseXmlAttrs(cm[1]);
-      if (!ca.objectid) continue;
+    forEachLeaf(body, 'component', (raw) => {
+      const ca = parseXmlAttrs(raw);
+      if (!ca.objectid) return;
       const compPath = attrLocal(ca, 'path');
       components.push({
         objectId: ca.objectid,
         path: compPath ? normalizePartPath(compPath) : undefined,
         transform: parseTransform(ca.transform) ?? IDENTITY,
       });
-    }
+    });
     objects.set(attrs.id, {
       id: attrs.id,
       name: attrs.name || undefined,
       type: (attrs.type ?? 'model').toLowerCase(),
       pid: attrs.pid,
       pindex: attrs.pindex ? parseInt(attrs.pindex, 10) || 0 : 0,
-      meshBody: meshMatch?.[1],
+      meshBody: meshMatch ? meshMatch.body ?? '' : undefined,
       components,
     });
-  }
+  });
 
   const build: ModelDoc['build'] = [];
-  const buildMatch = /<build\b[^>]*>([\s\S]*?)<\/build>/i.exec(xml);
+  const buildMatch = findElement(xml, 'build');
   if (buildMatch) {
-    const itemRe = /<item\b([^>]*?)\/?>/gi;
-    while ((m = itemRe.exec(buildMatch[1])) !== null) {
-      const attrs = parseXmlAttrs(m[1]);
-      if (!attrs.objectid) continue;
+    forEachLeaf(buildMatch.body ?? '', 'item', (raw) => {
+      const attrs = parseXmlAttrs(raw);
+      if (!attrs.objectid) return;
       const itemPath = attrLocal(attrs, 'path');
       build.push({
         objectId: attrs.objectid,
         path: itemPath ? normalizePartPath(itemPath) : undefined,
         transform: parseTransform(attrs.transform),
       });
-    }
+    });
   }
   return { path, unitScale, objects, materials, build };
 }
@@ -179,18 +179,16 @@ const COORD_RE = /\b([xyz])\s*=\s*"([^"]*)"/g;
 
 function parseGeometry(doc: ModelDoc, obj: ObjectDef): CachedGeometry {
   const body = obj.meshBody ?? '';
-  const vertBlock = /<vertices\b[^>]*>([\s\S]*?)<\/vertices>/i.exec(body)?.[1] ?? '';
-  const triBlock = /<triangles\b[^>]*>([\s\S]*?)<\/triangles>/i.exec(body)?.[1] ?? '';
+  const vertBlock = findElement(body, 'vertices')?.body ?? '';
+  const triBlock = findElement(body, 'triangles')?.body ?? '';
 
   const coords = new GrowableFloat32(4096);
-  const vertexRe = /<vertex\b([^>]*?)\/?>/gi;
-  let m: RegExpExecArray | null;
   let vertexCount = 0;
-  while ((m = vertexRe.exec(vertBlock)) !== null) {
+  forEachLeaf(vertBlock, 'vertex', (raw) => {
     let x = NaN, y = NaN, z = NaN;
     COORD_RE.lastIndex = 0;
     let c: RegExpExecArray | null;
-    while ((c = COORD_RE.exec(m[1])) !== null) {
+    while ((c = COORD_RE.exec(raw)) !== null) {
       const v = Number(c[2]);
       if (c[1] === 'x') x = v;
       else if (c[1] === 'y') y = v;
@@ -201,14 +199,13 @@ function parseGeometry(doc: ModelDoc, obj: ObjectDef): CachedGeometry {
     }
     coords.push3(x, y, z);
     vertexCount++;
-  }
+  });
 
   const baseColor = obj.pid ? doc.materials.get(obj.pid)?.[obj.pindex] : undefined;
   const indices = new GrowableUint32(4096);
   const colors: (string | undefined)[] = [];
-  const triRe = /<triangle\b([^>]*?)\/?>/gi;
-  while ((m = triRe.exec(triBlock)) !== null) {
-    const attrs = parseXmlAttrs(m[1]);
+  forEachLeaf(triBlock, 'triangle', (raw) => {
+    const attrs = parseXmlAttrs(raw);
     const v1 = Number(attrs.v1), v2 = Number(attrs.v2), v3 = Number(attrs.v3);
     for (const v of [v1, v2, v3]) {
       if (!Number.isInteger(v) || v < 0 || v >= vertexCount) {
@@ -219,7 +216,7 @@ function parseGeometry(doc: ModelDoc, obj: ObjectDef): CachedGeometry {
     const pid = attrs.pid ?? obj.pid;
     const p1 = attrs.p1 !== undefined ? parseInt(attrs.p1, 10) : obj.pindex;
     colors.push(pid ? doc.materials.get(pid)?.[p1] : undefined);
-  }
+  });
   return { positions: coords.toArray(), indices: indices.toArray(), colors, baseColor };
 }
 
@@ -259,6 +256,7 @@ export function read3MF(
   const root = loadDoc(pkg.rootPath);
   const instances: Instance[] = [];
   let triangleBudget = 0;
+  let visitedNodes = 0;
   const geometryCache = new Map<string, CachedGeometry>();
   const geometryOf = (doc: ModelDoc, obj: ObjectDef) => {
     const key = `${doc.path}#${obj.id}`;
@@ -274,6 +272,10 @@ export function read3MF(
     doc: ModelDoc, objectId: string, transform: Affine, depth: number, stack: string[],
     rootId: string, rootName: string | undefined, group: number,
   ) => {
+    // Presupuesto global: cuenta cada nodo visitado (con o sin malla) para cortar árboles de
+    // componentes vacíos que se expanden combinatoriamente.
+    visitedNodes++;
+    if (visitedNodes > limits.maxSceneNodes) throw new ModelImportError('too-many-parts', `${visitedNodes} nodos de componentes`);
     const obj = doc.objects.get(objectId);
     if (!obj) throw new ModelImportError('corrupt', `objeto ${objectId} inexistente en ${doc.path}`);
     if (obj.type === 'support' || obj.type === 'solidsupport' || obj.type === 'other') return;
@@ -293,10 +295,12 @@ export function read3MF(
   };
 
   // Sin <build>, se usa cada objeto raíz no referenciado como componente (archivos mínimos).
+  const referenced = new Set<string>();
+  for (const o of root.objects.values()) for (const c of o.components) if (!c.path) referenced.add(c.objectId);
   const items = root.build.length > 0
     ? root.build
     : [...root.objects.values()]
-        .filter((obj) => ![...root.objects.values()].some((o) => o.components.some((c) => !c.path && c.objectId === obj.id)))
+        .filter((obj) => !referenced.has(obj.id))
         .map((obj) => ({ objectId: obj.id, path: undefined as string | undefined, transform: null as Affine | null }));
   items.forEach((item, group) => {
     const doc = item.path ? loadDoc(item.path) : root;

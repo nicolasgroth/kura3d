@@ -7,7 +7,16 @@
  * @license MIT
  */
 
+import { PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, type PrimitiveRangeKey } from '../engine/primitiveLimits';
 import type { KuraCommandRequest } from '../types/kura';
+
+/** Propiedad numérica de primitiva con `minimum`/`maximum` tomados del motor (fuente única). */
+const dim = (key: PrimitiveRangeKey, description: string) => ({
+  type: 'number',
+  description,
+  minimum: PRIMITIVE_PARAM_RANGES[key].min,
+  maximum: PRIMITIVE_PARAM_RANGES[key].max,
+});
 
 /** Definición neutral de herramienta compartida entre proveedores LLM. */
 export interface KuraToolSchema {
@@ -38,13 +47,13 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
           enum: ['box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text'],
           description: 'Tipo de primitiva geométrica.',
         },
-        width: { type: 'number', description: 'Ancho en mm (para box/prism).' },
-        height: { type: 'number', description: 'Altura en mm.' },
-        depth: { type: 'number', description: 'Profundidad en mm.' },
-        radius: { type: 'number', description: 'Radio en mm (sphere/cylinder/cone).' },
-        outerRadius: { type: 'number', description: 'Radio exterior en mm (tube/torus).' },
-        innerRadius: { type: 'number', description: 'Radio interior en mm (tube).' },
-        text: { type: 'string', description: 'Texto a extruir si type=text.' },
+        width: dim('width', 'Ancho en mm (para box/prism).'),
+        height: dim('height', 'Altura en mm.'),
+        depth: dim('depth', 'Profundidad en mm.'),
+        radius: dim('radius', 'Radio en mm (sphere/cylinder/cone).'),
+        outerRadius: dim('outerRadius', 'Radio exterior en mm (tube/torus).'),
+        innerRadius: dim('innerRadius', 'Radio interior en mm (tube).'),
+        text: { type: 'string', description: 'Texto a extruir si type=text.', maxLength: PRIMITIVE_LIMITS.maxTextLength },
         name: { type: 'string', description: 'Nombre descriptivo opcional.' },
         color: { type: 'string', description: 'Color hexadecimal #rrggbb opcional.' },
       },

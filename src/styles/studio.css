@@ -771,6 +771,17 @@ body,
   opacity: 0.72;
 }
 
+.kura-pill.is-waiting {
+  border-color: color-mix(in srgb, var(--accent-amber) 48%, transparent);
+  color: var(--accent-amber);
+}
+
+.kura-pill.is-error {
+  border-color: color-mix(in srgb, var(--accent-red) 52%, transparent);
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
+  color: var(--accent-red);
+}
+
 .kura-source-pill {
   display: inline-flex;
   align-items: center;

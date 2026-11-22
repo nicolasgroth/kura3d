@@ -27,6 +27,9 @@ import {
   type UnitSystem,
   type Vec3,
 } from '../types/kura';
+import {
+  PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, primitiveRangeFor, type PrimitiveRangeKey,
+} from '../engine/primitiveLimits';
 import { CommandError } from './commandErrors';
 import {
   findObject, resolveIdsOrSelection, resolveObjects, resolveTarget, selectedObjects, type SceneView,
@@ -70,29 +73,28 @@ export interface CreatePrimitiveInput {
   materialPreset?: MaterialPresetId;
 }
 
-function readPrimitiveParams(raw: RawParams): PrimitiveParams {
-  const dims = positiveMm(10_000);
+/** Lee los parámetros de una primitiva con los rangos del motor (`primitiveLimits`) para `type`. */
+function readPrimitiveParams(raw: RawParams, type: PrimitiveType): PrimitiveParams {
   const out: PrimitiveParams = {};
   const set = <K extends keyof PrimitiveParams>(key: K, value: PrimitiveParams[K] | undefined) => {
     if (value !== undefined) out[key] = value;
   };
-  for (const key of ['width', 'height', 'depth', 'radius', 'outerRadius', 'innerRadius', 'tubeRadius', 'fontSize'] as const) {
-    set(key, readNumber(raw, dims, key));
+  for (const key of Object.keys(PRIMITIVE_PARAM_RANGES) as PrimitiveRangeKey[]) {
+    set(key, readNumber(raw, primitiveRangeFor(type, key), key));
   }
-  set('segments', readNumber(raw, { min: 3, max: 512, integer: true }, 'segments'));
-  set('sides', readNumber(raw, { min: 3, max: 128, integer: true }, 'sides'));
   set('bevel', readNumber(raw, nonNegative(1000), 'bevel'));
-  set('text', readString(raw, TEXT_MAX, 'text'));
+  set('text', readString(raw, PRIMITIVE_LIMITS.maxTextLength, 'text'));
   return out;
 }
 
 export function parseCreatePrimitive(p: RawParams): CreatePrimitiveInput {
   const nested = pick(p, 'params');
   if (nested && !isPlainObject(nested[1])) throw missing('params', 'object');
+  const type = readEnum(p, PRIMITIVES, 'type', 'primitiveType') ?? 'box';
   return {
-    type: readEnum(p, PRIMITIVES, 'type', 'primitiveType') ?? 'box',
+    type,
     // Los parámetros planos tienen prioridad sobre el objeto anidado `params`.
-    params: { ...(nested ? readPrimitiveParams(nested[1] as RawParams) : {}), ...readPrimitiveParams(p) },
+    params: { ...(nested ? readPrimitiveParams(nested[1] as RawParams, type) : {}), ...readPrimitiveParams(p, type) },
     name: readString(p, NAME_MAX, 'name'),
     color: readColor(p, 'color'),
     position: readVec3(p, 'position'),

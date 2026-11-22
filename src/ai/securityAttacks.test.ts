@@ -2,8 +2,7 @@
  * @file src/ai/securityAttacks.test.ts
  * @description Pruebas adversariales de QA (TRUST-01/03) sobre `validateToolCall`, `redactSecrets`,
  * `isAllowedProviderUrl` y el cliente IA: prototype pollution, unicode, JSON anidado, claves partidas o
- * codificadas en mensajes de error. Los casos marcados con `it.fails` documentan huecos conocidos: cuando
- * se corrijan, Vitest los reportará como fallidos para que se conviertan en `it` normales.
+ * codificadas en mensajes de error (URL, JSON, capitalización, partidas por espacios).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -147,25 +146,25 @@ describe('redactSecrets: claves partidas, codificadas o truncadas', () => {
     expect(out).not.toContain('a.b*c');
   });
 
-  it.fails('GAP (menor): redacta la clave codificada como URL (%xx) en un error del proveedor', () => {
+  it('redacta la clave codificada como URL (%xx) en un error del proveedor', () => {
     const key = 'abc/def+ghi=jkl0123456789';
     const out = redactSecrets(`invalid key ${encodeURIComponent(key)}`, key);
     expect(out).not.toContain(encodeURIComponent(key));
   });
 
-  it.fails('GAP (menor): redacta la clave escapada como JSON (comillas/barras)', () => {
+  it('redacta la clave escapada como JSON (comillas/barras)', () => {
     const key = 'ab"cd\\ef-0123456789xyz';
     const escaped = JSON.stringify(key).slice(1, -1);
     const out = redactSecrets(`{"error":"bad ${escaped}"}`, key);
     expect(out).not.toContain(escaped);
   });
 
-  it.fails('GAP (menor): redacta la clave partida por espacios o saltos de línea', () => {
+  it('redacta la clave partida por espacios o saltos de línea', () => {
     const out = redactSecrets(`bad key ${KEY.slice(0, 20)}\n${KEY.slice(20)}`, KEY);
     expect(out).not.toContain(KEY.slice(0, 20));
   });
 
-  it.fails('GAP (menor): redacta la clave en otra capitalización', () => {
+  it('redacta la clave en otra capitalización', () => {
     const out = redactSecrets(`bad ${KEY.toUpperCase()}`, KEY);
     expect(out).not.toContain(KEY.toUpperCase());
   });

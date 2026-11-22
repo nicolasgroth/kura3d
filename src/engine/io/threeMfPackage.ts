@@ -12,6 +12,7 @@
 import { strFromU8, unzipSync } from 'fflate';
 import { ModelImportError, type ModelImportLimits } from './importErrors';
 import { normalizeHexColor } from './meshBuffers';
+import { forEachElement, forEachLeaf } from './xmlScan';
 
 /** Extrae atributos XML de una etiqueta sin depender de DOMParser (disponible en Workers). */
 export function parseXmlAttrs(attrString: string): Record<string, string> {
@@ -99,15 +100,13 @@ export function open3MFPackage(buffer: ArrayBuffer, limits: ModelImportLimits): 
   const relsKey = find('_rels/.rels');
   if (relsKey) {
     const rels = strFromU8(archive[relsKey]);
-    const relRe = /<Relationship\b([^>]*)\/?>/gi;
-    let m: RegExpExecArray | null;
-    while ((m = relRe.exec(rels)) !== null) {
-      const attrs = parseXmlAttrs(m[1]);
+    forEachLeaf(rels, 'Relationship', (raw) => {
+      const attrs = parseXmlAttrs(raw);
       if ((attrs.Type ?? '').toLowerCase().endsWith('/3dmodel') && attrs.Target) {
         rootPath = find(attrs.Target);
-        if (rootPath) break;
+        if (rootPath) return false;
       }
-    }
+    });
   }
   rootPath ??= find('3D/3dmodel.model') ?? Object.keys(archive).find((k) => k.toLowerCase().endsWith('.model'));
   if (!rootPath) throw new ModelImportError('missing-model');
@@ -134,20 +133,21 @@ function readSlicerConfig(
   const settingsKey = find('Metadata/model_settings.config');
   if (settingsKey) {
     const xml = strFromU8(archive[settingsKey]);
-    const objRe = /<object\b([^>]*)>([\s\S]*?)<\/object>/gi;
-    let om: RegExpExecArray | null;
-    while ((om = objRe.exec(xml)) !== null) {
-      const objId = parseXmlAttrs(om[1]).id;
-      if (!objId) continue;
-      const body = om[2];
-      const partRe = /<part\b([^>]*?)(?:\/>|>([\s\S]*?)<\/part>)/gi;
-      let pm: RegExpExecArray | null;
-      while ((pm = partRe.exec(body)) !== null) {
-        const attrs = parseXmlAttrs(pm[1]);
-        if (attrs.id) parts.set(`${objId}/${attrs.id}`, { ...readMetadata(pm[2] ?? ''), subtype: attrs.subtype });
-      }
-      objects.set(objId, readMetadata(body.replace(partRe, '')));
-    }
+    forEachElement(xml, 'object', ({ attrs: rawAttrs, body: rawBody }) => {
+      const objId = parseXmlAttrs(rawAttrs).id;
+      if (!objId) return;
+      const body = rawBody ?? '';
+      // Metadatos propios del objeto: el cuerpo sin los tramos de sus <part>.
+      let own = '';
+      let cursor = 0;
+      forEachElement(body, 'part', ({ attrs: partAttrs, body: partBody, start, end }) => {
+        const attrs = parseXmlAttrs(partAttrs);
+        if (attrs.id) parts.set(`${objId}/${attrs.id}`, { ...readMetadata(partBody ?? ''), subtype: attrs.subtype });
+        own += body.slice(cursor, start);
+        cursor = end;
+      });
+      objects.set(objId, readMetadata(own + body.slice(cursor)));
+    });
   }
 
   const projectKey = find('Metadata/project_settings.config');
@@ -166,15 +166,13 @@ function readSlicerConfig(
 
 function readMetadata(body: string): SlicerPartConfig {
   const out: SlicerPartConfig = {};
-  const metaRe = /<metadata\b([^>]*)\/?>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = metaRe.exec(body)) !== null) {
-    const attrs = parseXmlAttrs(m[1]);
+  forEachLeaf(body, 'metadata', (raw) => {
+    const attrs = parseXmlAttrs(raw);
     if (attrs.key === 'name' && attrs.value) out.name = attrs.value;
     if (attrs.key === 'extruder') {
       const n = parseInt(attrs.value ?? '', 10);
       if (Number.isInteger(n) && n > 0) out.extruder = n;
     }
-  }
+  });
   return out;
 }

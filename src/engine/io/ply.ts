@@ -74,6 +74,34 @@ function parseHeader(bytes: Uint8Array): { format: string; elements: PlyElement[
   return { format, elements, bodyStart: endMatch.index + endMatch[0].length };
 }
 
+/**
+ * Valida los conteos de la cabecera antes de reservar memoria o iterar: cada elemento debe tener
+ * propiedades, la suma `count × tamaño mínimo` debe caber en los bytes restantes y los vértices y
+ * caras quedan acotados por `maxTriangles`.
+ */
+function checkDeclaredCounts(elements: PlyElement[], format: string, bodyBytes: number, limits: ModelImportLimits): void {
+  let minimum = 0;
+  for (const element of elements) {
+    if (element.count === 0) continue;
+    if (element.properties.length === 0) throw new ModelImportError('corrupt', `elemento ${element.name} sin propiedades`);
+    if (element.name === 'vertex' && element.count > 3 * limits.maxTriangles) {
+      throw new ModelImportError('too-many-triangles', `${element.count} vértices declarados`);
+    }
+    if (element.name === 'face' && element.count > limits.maxTriangles) {
+      throw new ModelImportError('too-many-triangles', `${element.count} caras declaradas`);
+    }
+    // Binario: escalares completos y, en listas, al menos el contador. ASCII: un token y un separador.
+    const perElement = format === 'ascii'
+      ? element.properties.length * 2
+      : element.properties.reduce((sum, p) => sum + TYPE_SIZE[p.countType ?? p.type], 0);
+    minimum += element.count * perElement;
+  }
+  // En ASCII el último token puede no llevar separador.
+  if (minimum - (format === 'ascii' ? 1 : 0) > bodyBytes) {
+    throw new ModelImportError('truncated', `la cabecera declara al menos ${minimum} bytes y quedan ${bodyBytes}`);
+  }
+}
+
 /** Lector secuencial de valores escalares (binario o tokens ASCII). */
 interface ValueReader {
   read(type: ScalarType): number;
@@ -119,6 +147,7 @@ export function readPLY(buffer: ArrayBuffer, fileName = 'model.ply', limitsInput
   checkInputSize(buffer.byteLength, limits);
   const bytes = new Uint8Array(buffer);
   const { format, elements, bodyStart } = parseHeader(bytes);
+  checkDeclaredCounts(elements, format, bytes.length - bodyStart, limits);
   const reader = format === 'ascii'
     ? asciiReader(new TextDecoder('utf-8').decode(bytes.subarray(bodyStart)))
     : binaryReader(new DataView(buffer), bodyStart, format === 'binary_little_endian');

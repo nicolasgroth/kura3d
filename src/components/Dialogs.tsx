@@ -31,6 +31,8 @@ import {
 import { t, type TranslationKey } from '../i18n';
 import { type ActiveDialogType, generateRandomTokenHex, useKuraStore } from '../store/useKuraStore';
 import { rotateMcpBridgeToken, useMcpBridgeStatus } from '../utils/mcpBridgeClient';
+import { describeMcpBridge } from '../utils/mcpBridgeHealth';
+import { maskToken } from '../utils/mcpTokenStore';
 import { PrecisionNumberInput } from './PrecisionNumberInput';
 import { ExportDialog } from './ExportDialog';
 import { NativeModal } from './NativeModal';
@@ -46,8 +48,9 @@ import {
   type SurfaceProjectionMode,
   type ThreadOptions,
 } from '../types/kura';
-import { openLocalFile } from '../utils/platformBridge';
+import { isTauriRuntime, openLocalFile } from '../utils/platformBridge';
 import { AiSettingsPanel } from './settings/AiSettingsPanel';
+import { McpTokenField } from './settings/McpTokenField';
 import { SettingsTabs } from './settings/SettingsTabs';
 import { ISO_COARSE_THREADS, isoCoarsePitch } from '../engine/threads';
 
@@ -1442,6 +1445,16 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     }
   };
 
+  // Token escrito a mano: si hay sesión, el servidor lo adopta (rotación); si no, solo se guarda.
+  const handleApplyToken = async (nextToken: string) => {
+    const result = await rotateMcpBridgeToken(nextToken);
+    if (result === 'failed') {
+      addToast(t(language, 'toast.mcpTokenRotateFailed'), 'error');
+      return;
+    }
+    setMcpConfig({ authToken: nextToken });
+  };
+
   const mcpEnv: Record<string, string> = {
     KURA_BRIDGE_PORT: String(mcpConfig.port),
     KURA_BRIDGE_TOKEN: mcpConfig.authToken,
@@ -1450,15 +1463,8 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     mcpEnv.KURA_BRIDGE_READ_ONLY = 'true';
   }
 
-  const bridgePhaseLabel = !mcpConfig.enabled
-    ? t(language, 'topbar.mcpOff')
-    : bridgeStatus.phase === 'rotating'
-      ? t(language, 'dialog.settings.mcpRotating')
-      : bridgeStatus.phase === 'reconnecting'
-        ? t(language, 'dialog.settings.mcpReconnecting')
-        : mcpConnected
-          ? t(language, 'topbar.mcpConnected')
-          : t(language, 'topbar.mcpLocal');
+  const bridgeView = describeMcpBridge(language, mcpConfig.enabled, bridgeStatus);
+  const bridgePhaseLabel = bridgeView.label;
 
   const mcpSnippet = JSON.stringify(
     {
@@ -1742,32 +1748,14 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
               />
             </div>
 
-            <div className="kura-form-field">
-              <label htmlFor="mcp-token">{t(language, 'dialog.settings.mcpToken')}</label>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <input
-                  id="mcp-token"
-                  className="kura-input"
-                  style={{ flex: 1, fontFamily: 'monospace' }}
-                  value={mcpConfig.authToken}
-                  aria-describedby="mcp-token-hint"
-                  onChange={(e) => setMcpConfig({ authToken: e.target.value })}
-                />
-                <button
-                  type="button"
-                  className="kura-btn kura-btn-sm"
-                  onClick={() => void handleRegenerateToken()}
-                  disabled={bridgeStatus.phase === 'rotating'}
-                  title={t(language, 'dialog.settings.mcpRegenerate')}
-                >
-                  <RefreshCw size={13} />
-                  <span>{t(language, 'dialog.settings.mcpRegenerate')}</span>
-                </button>
-              </div>
-              <span id="mcp-token-hint" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                {t(language, 'dialog.settings.mcpAuthRequired')}
-              </span>
-            </div>
+            <McpTokenField
+              language={language}
+              token={mcpConfig.authToken}
+              desktop={isTauriRuntime()}
+              rotating={bridgeStatus.phase === 'rotating'}
+              onApply={(token) => void handleApplyToken(token)}
+              onRegenerate={() => void handleRegenerateToken()}
+            />
 
             <label className="kura-switch-row">
               <span>{t(language, 'dialog.settings.mcpReadOnly')}</span>
@@ -1788,9 +1776,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
           <div className="kura-field-row">
             <span className="kura-field-label">{t(language, 'dialog.settings.mcpStatus')}</span>
             <span
-              className={`kura-pill ${
-                !mcpConfig.enabled ? 'is-off' : mcpConnected ? 'is-online' : ''
-              }`}
+              className={`kura-pill is-${bridgeView.tone}`}
             >
               <span className="kura-dot" />
               <span role="status" aria-live="polite">
@@ -1809,7 +1795,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
               overflowX: 'auto',
             }}
           >
-            {mcpSnippet}
+            {mcpConfig.authToken ? mcpSnippet.replace(mcpConfig.authToken, maskToken(mcpConfig.authToken)) : mcpSnippet}
           </pre>
           <button type="button" className="kura-btn kura-btn-sm" onClick={() => void handleCopyMcp()}>
             {copied ? <Check size={14} /> : <Copy size={14} />}

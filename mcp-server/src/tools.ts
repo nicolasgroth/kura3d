@@ -21,6 +21,7 @@ import {
   idSchema,
   nameSchema,
   outputPathSchema,
+  primitiveParamsSchema,
   profileIdSchema,
   shortTextSchema,
   svgContentSchema,
@@ -177,21 +178,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           .enum(['box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text'])
           .describe('Tipo de primitiva paramétrica a crear.'),
         name: nameSchema.optional().describe('Nombre legible del objeto.'),
-        params: z
-          .object({
-            width: z.number().positive().optional(),
-            height: z.number().positive().optional(),
-            depth: z.number().positive().optional(),
-            radius: z.number().positive().optional(),
-            outerRadius: z.number().positive().optional(),
-            innerRadius: z.number().positive().optional(),
-            tubeRadius: z.number().positive().optional(),
-            segments: z.number().int().min(3).max(128).optional(),
-            sides: z.number().int().min(3).max(64).optional(),
-            text: shortTextSchema.optional(),
-            fontSize: z.number().positive().optional(),
-            bevel: z.number().min(0).optional(),
-          })
+        params: primitiveParamsSchema
           .optional()
           .describe('Parámetros dimensionales en milímetros según la primitiva elegida.'),
         position: vec3Schema.optional(),

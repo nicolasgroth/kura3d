@@ -18,6 +18,10 @@ import type {
   KuraCommandResponse,
   McpConfig,
 } from '../types/kura';
+import { probeBridgeServer, type McpBridgeErrorReason, type McpBridgePhase } from './mcpBridgeHealth';
+import { validateMcpToken } from './mcpTokenStore';
+
+export type { McpBridgeErrorReason, McpBridgePhase } from './mcpBridgeHealth';
 
 /** Callback registrado por Viewport3D para capturar el canvas WebGL en PNG base64. */
 type ViewportCaptureFn = () => string | null;
@@ -54,9 +58,6 @@ export function isMcpCommandAllowed(command: string, readOnly: boolean): boolean
   return !readOnly || isReadCommand(command);
 }
 
-/** Fase visible del puente para Ajustes y barra superior. */
-export type McpBridgePhase = 'off' | 'connecting' | 'connected' | 'rotating' | 'reconnecting';
-
 /** Estado observable del puente (no persistido; nunca contiene el token). */
 export interface McpBridgeStatus {
   phase: McpBridgePhase;
@@ -66,6 +67,8 @@ export interface McpBridgeStatus {
   serverReadOnly: boolean;
   /** Si la última rotación sobrevive a reinicios del servidor (archivo de token). */
   rotationPersistent: boolean;
+  /** Motivo cuando `phase === 'error'`. */
+  error: McpBridgeErrorReason | null;
 }
 
 const INITIAL_STATUS: McpBridgeStatus = {
@@ -73,6 +76,7 @@ const INITIAL_STATUS: McpBridgeStatus = {
   effectiveReadOnly: false,
   serverReadOnly: false,
   rotationPersistent: false,
+  error: null,
 };
 
 /** Store mínimo del estado del puente MCP (separado de `useKuraStore` para no agrandarlo). */
@@ -90,6 +94,8 @@ export interface McpBridgeOptions {
     source?: 'ui' | 'mcp' | 'ai',
   ) => Promise<KuraCommandResponse>;
   onStatusChange?: (connected: boolean) => void;
+  /** Sondeo del puerto local tras un cierre sin abrir (inyectable en pruebas). */
+  probe?: (port: number) => Promise<boolean>;
 }
 
 const MIN_RECONNECT_MS = 3000;
@@ -166,6 +172,7 @@ function handleControlMessage(message: Record<string, unknown>): void {
     case 'hello':
       setStatus({
         phase: 'connected',
+        error: null,
         effectiveReadOnly: message.readOnly === true,
         serverReadOnly: message.serverReadOnly === true,
         rotationPersistent: message.rotationPersistent === true,
@@ -195,8 +202,26 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
     return () => {};
   }
 
+  // Token aún cargándose desde el almacén seguro: se espera sin conectar.
+  const token = options.config?.authToken.trim() ?? '';
+  if (options.config && !options.url && !token) {
+    options.onStatusChange?.(false);
+    setStatus({ ...INITIAL_STATUS, phase: 'connecting' });
+    return () => {};
+  }
+  // Un token que el servidor rechazaría en silencio se informa en vez de reintentar sin fin.
+  const tokenCheck = options.config && !options.url ? validateMcpToken(token) : 'ok';
+  if (tokenCheck !== 'ok') {
+    options.onStatusChange?.(false);
+    setStatus({ ...INITIAL_STATUS, phase: 'error', error: tokenCheck === 'too-short' ? 'token-too-short' : 'token-invalid-chars' });
+    return () => {};
+  }
+
   const targetUrl = buildMcpWsUrl(options.config, options.url);
   const readOnly = options.config?.readOnly ?? false;
+  const port = options.config?.port ?? 17432;
+  const probe = options.probe ?? ((p: number) => probeBridgeServer(p));
+  let opened = false;
   let socket: WebSocket | null = null;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   let backoffMs = MIN_RECONNECT_MS;
@@ -226,12 +251,15 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
       window.location.hostname !== '127.0.0.1'
     ) {
       options.onStatusChange?.(false);
+      setStatus({ phase: 'error', error: 'insecure-context' });
       return;
     }
 
-    if (useMcpBridgeStatus.getState().phase !== 'reconnecting') {
-      setStatus({ phase: 'connecting' });
+    const phase = useMcpBridgeStatus.getState().phase;
+    if (phase !== 'reconnecting' && phase !== 'waiting' && phase !== 'error') {
+      setStatus({ phase: 'connecting', error: null });
     }
+    opened = false;
 
     try {
       socket = new WebSocket(targetUrl);
@@ -248,6 +276,7 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
         return;
       }
       backoffMs = MIN_RECONNECT_MS;
+      opened = true;
       activeSocket = current;
       options.onStatusChange?.(true);
     });
@@ -333,7 +362,15 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
         return;
       }
       settleRotation('failed');
-      setStatus({ phase: 'connecting' });
+      if (opened) {
+        setStatus({ phase: 'connecting', error: null });
+      } else {
+        // Sin apertura: o no hay servidor, o rechazó el token/origen (el navegador oculta el 401).
+        void probe(port).then((listening) => {
+          if (disposed) return;
+          setStatus(listening ? { phase: 'error', error: 'rejected' } : { phase: 'waiting', error: null });
+        });
+      }
       scheduleReconnect();
     });
 

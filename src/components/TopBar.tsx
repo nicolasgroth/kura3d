@@ -43,6 +43,8 @@ import {
   type UnitSystem,
 } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
+import { useMcpBridgeStatus } from '../utils/mcpBridgeClient';
+import { describeMcpBridge } from '../utils/mcpBridgeHealth';
 import { openExportDialog } from './ExportDialog';
 import { ImportMenuButton } from './ImportMenuButton';
 import { ProjectMenu } from './ProjectMenu';
@@ -86,7 +88,7 @@ export const TopBar: React.FC = () => {
   const redo = useKuraStore((s) => s.redo);
   const openSettings = useKuraStore((s) => s.openSettings);
   const setCommandPaletteOpen = useKuraStore((s) => s.setCommandPaletteOpen);
-  const mcpConnected = useKuraStore((s) => s.mcpConnected);
+  const bridgeStatus = useMcpBridgeStatus();
   const mcpConfig = useKuraStore((s) => s.mcpConfig);
   const aiConfig = useKuraStore((s) => s.aiConfig);
   const aiDrawerOpen = useKuraStore((s) => s.aiDrawerOpen);
@@ -126,15 +128,12 @@ export const TopBar: React.FC = () => {
     { id: 'erase', icon: <Eraser size={13} />, labelKey: 'erase' },
   ];
 
-  const mcpLabel = !mcpConfig.enabled
-    ? t(language, 'topbar.mcpOff')
-    : mcpConnected
-      ? t(language, 'topbar.mcpConnected')
-      : t(language, 'topbar.mcpLocal');
+  const mcpView = describeMcpBridge(language, mcpConfig.enabled, bridgeStatus);
+  const mcpLabel = mcpView.short;
 
   const mcpTooltip = !mcpConfig.enabled
     ? t(language, 'topbar.mcpDisabledTip')
-    : `${mcpLabel} (127.0.0.1:${mcpConfig.port})${
+    : `${mcpView.label} (127.0.0.1:${mcpConfig.port})${
         mcpConfig.requireAuth ? ` · ${t(language, 'topbar.mcpAuthTip')}` : ''
       }`;
 
@@ -325,9 +324,7 @@ export const TopBar: React.FC = () => {
 
         <button
           type="button"
-          className={`kura-pill ${
-            !mcpConfig.enabled ? 'is-off' : mcpConnected ? 'is-online' : ''
-          }`}
+          className={`kura-pill is-${mcpView.tone}`}
           onClick={() => openSettings('mcp')}
           title={mcpTooltip}
           aria-label={mcpTooltip}

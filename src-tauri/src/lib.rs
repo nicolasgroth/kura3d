@@ -13,6 +13,7 @@ use std::time::Duration;
 mod ai_credentials;
 mod ai_hosts;
 mod ai_proxy;
+mod mcp_credentials;
 mod project_files;
 
 /// Puertos aceptados para el puente MCP (mismo rango que la configuración del frontend).
@@ -91,6 +92,9 @@ pub fn run() {
             ai_credentials::ai_key_status,
             ai_credentials::ai_key_set,
             ai_credentials::ai_key_delete,
+            mcp_credentials::mcp_token_get,
+            mcp_credentials::mcp_token_set,
+            mcp_credentials::mcp_token_delete,
             ai_proxy::ai_http_request,
             ai_proxy::ai_http_cancel,
             ai_proxy::ai_allowed_hosts_get,

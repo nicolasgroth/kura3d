@@ -9,6 +9,11 @@
  */
 
 import { z } from 'zod';
+import {
+  PRIMITIVE_LIMITS,
+  PRIMITIVE_PARAM_RANGES,
+  type ParamRange,
+} from '../../src/engine/primitiveLimits';
 
 /** Caracteres de control C0/C1 (excepto ninguno: los nombres son de una línea). */
 const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/;
@@ -33,6 +38,31 @@ export const shortTextSchema = z
   .string()
   .max(500)
   .refine((v) => !/[\u0000-\u0008\u000b-\u001f\u007f]/.test(v), 'Texto con caracteres de control.');
+
+const ranged = (range: ParamRange) => {
+  const base = z.number().min(range.min).max(range.max);
+  return (range.integer ? base.int() : base).optional();
+};
+
+/**
+ * Parámetros de primitiva con los mismos rangos que el motor (`src/engine/primitiveLimits.ts`):
+ * un valor aceptado aquí no puede ser rechazado después por rango (las restricciones cruzadas
+ * como radio interior < exterior las sigue validando el motor con un error tipado).
+ */
+export const primitiveParamsSchema = z.object({
+  width: ranged(PRIMITIVE_PARAM_RANGES.width),
+  height: ranged(PRIMITIVE_PARAM_RANGES.height),
+  depth: ranged(PRIMITIVE_PARAM_RANGES.depth),
+  radius: ranged(PRIMITIVE_PARAM_RANGES.radius),
+  outerRadius: ranged(PRIMITIVE_PARAM_RANGES.outerRadius),
+  innerRadius: ranged(PRIMITIVE_PARAM_RANGES.innerRadius),
+  tubeRadius: ranged(PRIMITIVE_PARAM_RANGES.tubeRadius),
+  segments: ranged(PRIMITIVE_PARAM_RANGES.segments),
+  sides: ranged(PRIMITIVE_PARAM_RANGES.sides),
+  text: shortTextSchema.pipe(z.string().max(PRIMITIVE_LIMITS.maxTextLength)).optional(),
+  fontSize: ranged(PRIMITIVE_PARAM_RANGES.fontSize),
+  bevel: z.number().min(0).max(1000).optional(),
+});
 
 /** Contenido SVG acotado a 2 MB (se parsea como datos, nunca se ejecuta). */
 export const svgContentSchema = z.string().min(1).max(2_000_000);

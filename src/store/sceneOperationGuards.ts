@@ -2,13 +2,14 @@
  * @file src/store/sceneOperationGuards.ts
  * @description Guardas de las operaciones asíncronas del store: detecta si los objetos de entrada
  * cambiaron mientras se calculaba (para no escribir un resultado sobre un estado viejo) y clasifica
- * una resta booleana sin volumen por geometría, sin depender del texto del error del motor.
+ * una resta booleana sin volumen por el código tipado del motor (`BOOLEAN_EMPTY_RESULT`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import * as engine from '../engine';
+import { isEngineError } from '../engine/engineErrors';
 import type { TranslationKey } from '../i18n';
 import type { MeshData, SceneObject, Vec3 } from '../types/kura';
 import { StoreOperationError } from './commandErrors';
@@ -34,18 +35,19 @@ export function assertInputsCurrent(current: SceneObject[], inputs: SceneObject[
   }
 }
 
-/** Tolerancia relativa para decidir que el hueco contiene por completo al sólido. */
-const CONTAINMENT_TOLERANCE = 1e-3;
-
-function worldVolume(obj: SceneObject): number {
-  const [sx, sy, sz] = obj.scale;
-  return Math.abs(obj.stats.volumeMm3 * sx * sy * sz);
+/**
+ * Transformación neutra para objetos cuya malla el motor ya devolvió en espacio mundial
+ * (normalizada a cama con su `position`). Conservar la rotación o escala previas las aplicaría
+ * dos veces.
+ */
+export function worldBaked(): { rotation: Vec3; scale: Vec3 } {
+  return { rotation: [0, 0, 0], scale: [1, 1, 1] };
 }
 
 /**
- * Resta `hole` de `solid`. Devuelve `null` cuando el resultado no tiene volumen porque el hueco
- * contiene al sólido; esa condición se verifica intersecando ambos y comparando volúmenes. Cualquier
- * otro fallo del motor se propaga sin cambios.
+ * Resta `hole` de `solid`. Devuelve `null` cuando el motor informa una resta sin volumen
+ * (`EngineError` con código `BOOLEAN_EMPTY_RESULT`: el hueco contiene al sólido). Cualquier otro
+ * fallo del motor se propaga sin cambios.
  */
 export async function subtractOrEmpty(
   solid: SceneObject,
@@ -53,16 +55,8 @@ export async function subtractOrEmpty(
 ): Promise<{ mesh: MeshData; position: Vec3 } | null> {
   try {
     return await engine.runBooleanOperation(solid, hole, 'subtract');
-  } catch (subtractError) {
-    let insideVolume: number;
-    try {
-      const inside = await engine.runBooleanOperation(solid, hole, 'intersect');
-      insideVolume = engine.computeMeshStats(inside.mesh).volumeMm3;
-    } catch {
-      throw subtractError;
-    }
-    const solidVolume = worldVolume(solid);
-    if (solidVolume > 0 && insideVolume >= solidVolume * (1 - CONTAINMENT_TOLERANCE)) return null;
-    throw subtractError;
+  } catch (err) {
+    if (isEngineError(err) && err.code === 'BOOLEAN_EMPTY_RESULT') return null;
+    throw err;
   }
 }

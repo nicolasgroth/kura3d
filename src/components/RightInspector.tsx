@@ -59,6 +59,7 @@ import {
   type TransformMode,
   type Vec3,
 } from '../types/kura';
+import { REFINE_UI_DEFAULTS } from './refineDefaults';
 import {
   formatDimension,
   formatVolume,
@@ -214,8 +215,8 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
 
   const [modularShape, setModularShape] = useState<PrimitiveType>('cylinder');
   const [simplifyTolMm, setSimplifyTolMm] = useState(0.15);
-  const [refineEdgeMm, setRefineEdgeMm] = useState(1.5);
-  const [refineSmooth, setRefineSmooth] = useState(false);
+  const [refineEdgeMm, setRefineEdgeMm] = useState<number>(REFINE_UI_DEFAULTS.edgeMm);
+  const [refineSmooth, setRefineSmooth] = useState<boolean>(REFINE_UI_DEFAULTS.smooth);
 
   const selectedObjects = objects.filter((o) => selectedIds.includes(o.id));
   const primary = selectedObjects[0] ?? null;

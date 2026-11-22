@@ -69,8 +69,17 @@ import {
 import { browserLocalStorage, getApiKeyStore, migrateLegacyApiKey } from '../ai/apiKeyStore';
 import { MAX_UNDO_HISTORY } from '../project/projectCodec';
 import { createCommandBus } from './commandBus';
+import { createOperationErrorTracker, localizeWarnings } from './operationErrors';
+import { hydrateMcpToken, parseStoredMcpConfig, persistableMcpConfig } from './mcpConfigState';
+import {
+  generateRandomTokenHex,
+  getMcpTokenStore,
+  forgetLegacyMcpToken,
+  readLegacyMcpToken,
+  validateMcpToken,
+} from '../utils/mcpTokenStore';
 import { computeArrangeLayout } from '../engine/alignment';
-import { assertInputsCurrent, subtractOrEmpty } from './sceneOperationGuards';
+import { assertInputsCurrent, subtractOrEmpty, worldBaked } from './sceneOperationGuards';
 import { sanitizeTransformPatch } from './transformLimits';
 import { loadKeyState, parseStoredAiConfig, persistableAiConfig } from '../ai/aiConfigState';
 import { loadAllowedHosts } from '../ai/allowedHosts';
@@ -635,57 +644,19 @@ function applyThemePresetToDom(preset: ThemePresetId): void {
   document.documentElement.dataset.theme = preset;
 }
 
-/** Genera un token hexadecimal aleatorio seguro usando crypto.getRandomValues con fallback. */
-export function generateRandomTokenHex(length = 32): string {
-  const byteCount = Math.max(8, Math.ceil(length / 2));
-  const bytes = new Uint8Array(byteCount);
-  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-    crypto.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < byteCount; i++) {
-      bytes[i] = Math.floor(Math.random() * 256);
-    }
-  }
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0'))
-    .join('')
-    .slice(0, length);
-}
+/** Genera un token hexadecimal aleatorio seguro (re-exportado desde `utils/mcpTokenStore`). */
+export { generateRandomTokenHex };
 
-/** Carga configuración MCP local persistida (desactivada y protegida por defecto). */
+/**
+ * Token MCP antiguo guardado en claro en localStorage: se retira al iniciar y se migra al almacén
+ * seguro (llavero en escritorio, sessionStorage en web) durante la hidratación.
+ */
+const legacyMcpToken = readLegacyMcpToken(browserLocalStorage());
+
+/** Configuración MCP inicial sin token (desactivada y protegida por defecto). */
 function loadInitialMcpConfig(): McpConfig {
-  const defaults: McpConfig = {
-    enabled: false,
-    port: 17432,
-    requireAuth: true,
-    authToken: generateRandomTokenHex(32),
-    readOnly: false,
-  };
-  const raw = readStorage(STORAGE_MCP_CONFIG_KEY);
-  if (!raw) {
-    writeStorage(STORAGE_MCP_CONFIG_KEY, JSON.stringify(defaults));
-    return defaults;
-  }
-  try {
-    const parsed = JSON.parse(raw) as Partial<McpConfig>;
-    const port =
-      typeof parsed.port === 'number' && parsed.port >= 1024 && parsed.port <= 65535
-        ? Math.round(parsed.port)
-        : defaults.port;
-    const token =
-      typeof parsed.authToken === 'string' && parsed.authToken.trim().length >= 8
-        ? parsed.authToken.trim()
-        : defaults.authToken;
-    return {
-      enabled: typeof parsed.enabled === 'boolean' ? parsed.enabled : defaults.enabled,
-      port,
-      // El puente exige token siempre (TRUST-02): se ignora cualquier `requireAuth: false` heredado.
-      requireAuth: true,
-      authToken: token,
-      readOnly: typeof parsed.readOnly === 'boolean' ? parsed.readOnly : defaults.readOnly,
-    };
-  } catch {
-    return defaults;
-  }
+  const config = parseStoredMcpConfig(readStorage(STORAGE_MCP_CONFIG_KEY));
+  return { ...config, authToken: legacyMcpToken ?? '' };
 }
 
 /** Clave antigua retirada de localStorage al iniciar (TRUST-03); null si no había. */
@@ -786,6 +757,24 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
   /** Helper interno para traducir mensajes usando el idioma activo del store. */
   const tr = (key: TranslationKey, params?: Record<string, string | number>) =>
     t(get().language, key, params);
+
+  /** Guarda el token MCP en su almacén seguro (nunca en localStorage); avisa si falla. */
+  const saveMcpToken = (token: string) => {
+    getMcpTokenStore().save(token).catch(() => {
+      get().addToast(t(get().language, 'dialog.settings.mcpTokenSaveFailed'), 'error');
+    });
+  };
+
+  /** Último error de operación (para el `errorCode` del Command Bus) y su toast localizado. */
+  const operationErrors = createOperationErrorTracker();
+  const reportOperationError = (err: unknown) => {
+    const message = operationErrors.record(err, get().language);
+    get().addToast(tr('toast.errorPrefix', { message }), 'error');
+  };
+  /** Muestra los avisos del motor (la operación se completó con un ajuste). */
+  const reportEngineWarnings = (warnings: readonly engine.EngineWarning[] | undefined) => {
+    for (const text of localizeWarnings(get().language, warnings)) get().addToast(text, 'info');
+  };
 
   /** Historial y borrado quedan bloqueados durante una operación asíncrona o un arrastre sin confirmar. */
   const isHistoryLocked = () => Boolean(get().busyOperation) || transformSnapshotBeforeDrag !== null;
@@ -1189,31 +1178,35 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         return { aiConfig: next };
       }),
 
-    setMcpConfig: (patch) =>
+    setMcpConfig: (patch) => {
+      const { authToken, ...rest } = patch;
+      // Un token escrito a mano solo se acepta si el servidor lo aceptará (≥16 caracteres, sin espacios).
+      const nextToken = authToken !== undefined && validateMcpToken(authToken.trim()) === 'ok'
+        ? authToken.trim()
+        : undefined;
       set((state) => {
         const nextPort =
-          typeof patch.port === 'number' && Number.isFinite(patch.port)
-            ? Math.min(65535, Math.max(1024, Math.round(patch.port)))
+          typeof rest.port === 'number' && Number.isFinite(rest.port)
+            ? Math.min(65535, Math.max(1024, Math.round(rest.port)))
             : state.mcpConfig.port;
         const next: McpConfig = {
           ...state.mcpConfig,
-          ...patch,
+          ...rest,
+          ...(nextToken !== undefined ? { authToken: nextToken } : {}),
           port: nextPort,
           requireAuth: true,
         };
-        writeStorage(STORAGE_MCP_CONFIG_KEY, JSON.stringify(next));
+        writeStorage(STORAGE_MCP_CONFIG_KEY, persistableMcpConfig(next));
         return { mcpConfig: next };
-      }),
+      });
+      if (nextToken !== undefined) saveMcpToken(nextToken);
+    },
 
-    regenerateMcpToken: () =>
-      set((state) => {
-        const next: McpConfig = {
-          ...state.mcpConfig,
-          authToken: generateRandomTokenHex(32),
-        };
-        writeStorage(STORAGE_MCP_CONFIG_KEY, JSON.stringify(next));
-        return { mcpConfig: next };
-      }),
+    regenerateMcpToken: () => {
+      const token = generateRandomTokenHex(32);
+      set((state) => ({ mcpConfig: { ...state.mcpConfig, authToken: token } }));
+      saveMcpToken(token);
+    },
 
     addAiMessage: (msg) =>
       set((state) => ({
@@ -1347,8 +1340,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
         return obj;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -1459,8 +1451,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         return modObj;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -1530,8 +1521,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         return created[0];
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -1799,8 +1789,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.mirrored', { axis: axis.toUpperCase() }), 'success');
         return true;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return false;
       }
     },
@@ -1865,8 +1854,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.booleanDone', { op }), 'success');
         return currentTarget;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -1924,8 +1912,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         }));
         get().addToast(tr('toast.booleanDone', { op: 'subtract' }), 'success');
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
       } finally {
         set({ busyOperation: null });
       }
@@ -1937,7 +1924,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
 
       set({ busyOperation: 'hollow' });
       try {
-        const nextMesh = await engine.hollowMesh(obj, options);
+        const detailed = options.enabled && options.wallThickness !== 0
+          ? await engine.hollowMeshDetailed(obj, options)
+          : { mesh: await engine.hollowMesh(obj, options), warnings: [] };
+        const nextMesh = detailed.mesh;
         const stats = engine.computeMeshStats(nextMesh);
 
         assertInputsCurrent(get().objects, [obj], tr);
@@ -1958,10 +1948,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           tr('toast.hollowDone', { thickness: options.wallThickness }),
           'success',
         );
+        reportEngineWarnings(detailed.warnings);
         return true;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return false;
       } finally {
         set({ busyOperation: null });
@@ -2016,8 +2006,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.cutDone'), 'success');
         return created;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return [];
       } finally {
         set({ busyOperation: null });
@@ -2056,8 +2045,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.splitPartsDone', { count: created.length }), 'success');
         return created;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return [];
       } finally {
         set({ busyOperation: null });
@@ -2091,8 +2079,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.splitColorsDone', { count: created.length }), 'success');
         return created;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return [];
       }
     },
@@ -2124,8 +2111,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         return true;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return false;
       }
     },
@@ -2198,6 +2184,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
             item.id === id
               ? {
                   ...item,
+                  // La malla del motor ya está en espacio mundial: se hornea la transformación.
+                  ...worldBaked(),
                   mesh: result.mesh,
                   position: result.position,
                   stats,
@@ -2207,8 +2195,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         }));
         get().addToast(tr('toast.erased'), 'success');
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
       } finally {
         set({ busyOperation: null });
       }
@@ -2248,8 +2235,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.moldDone', { count: created.length }), 'success');
         return created;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return [];
       } finally {
         set({ busyOperation: null });
@@ -2271,6 +2257,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         const updated: SceneObject = {
           ...obj,
           source: 'projected',
+          // La malla del motor ya está en espacio mundial: se hornea la transformación.
+          ...worldBaked(),
           mesh: res.mesh,
           position: res.position,
           stats,
@@ -2283,8 +2271,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.projectDone'), 'success');
         return updated;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -2317,8 +2304,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         return report;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       }
     },
@@ -2346,8 +2332,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         return true;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return false;
       } finally {
         set({ busyOperation: null });
@@ -2361,7 +2346,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       set({ busyOperation: 'refine' });
       try {
         await get().initEngine();
-        const nextMesh = await engine.refineMesh(obj, targetEdgeLengthMm, smooth);
+        const refined = await engine.refineMeshDetailed(obj, targetEdgeLengthMm, smooth);
+        const nextMesh = refined.mesh;
         const stats = engine.computeMeshStats(nextMesh);
 
         assertInputsCurrent(get().objects, [obj], tr);
@@ -2375,10 +2361,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           tr('toast.refineDone', { tris: stats.triangles.toLocaleString() }),
           'success',
         );
+        reportEngineWarnings(refined.warnings);
         return true;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return false;
       } finally {
         set({ busyOperation: null });
@@ -2415,8 +2401,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.hullDone'), 'success');
         return created;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -2454,8 +2439,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
         return obj;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -2524,8 +2508,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         return result;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -2563,8 +2546,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         return true;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return false;
       }
     },
@@ -2606,6 +2588,8 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
                   item.id === obj.id
                     ? {
                         ...item,
+                        // El remanente ya está en espacio mundial: se hornea la transformación.
+                        ...worldBaked(),
                         mesh: res.remainder!.mesh,
                         position: res.remainder!.position,
                         stats: remStats,
@@ -2643,8 +2627,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         return extractedObj;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -2703,8 +2686,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         );
         return created;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return [];
       } finally {
         set({ busyOperation: null });
@@ -2732,8 +2714,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.imported', { name: obj.name }), 'success');
         return obj;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -2770,8 +2751,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
         return obj;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        get().addToast(tr('toast.errorPrefix', { message }), 'error');
+        reportOperationError(err);
         return null;
       } finally {
         set({ busyOperation: null });
@@ -2835,9 +2815,22 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       isInteractionLocked: () => isHistoryLocked(),
       tr,
       toBase64: uint8ToBase64,
+      operationErrors,
     }),
   };
 });
+
+/** Carga el token MCP desde su almacén seguro (migrando el antiguo de localStorage). */
+void (async () => {
+  const { token, saved } = await hydrateMcpToken(getMcpTokenStore(), legacyMcpToken);
+  // El token antiguo en claro se borra de localStorage solo cuando ya quedó en el almacén seguro.
+  if (saved) forgetLegacyMcpToken(browserLocalStorage());
+  const state = useKuraStore.getState();
+  // Si el usuario ya fijó un token en esta sesión, no se pisa.
+  if (state.mcpConfig.authToken && state.mcpConfig.authToken !== (legacyMcpToken ?? '')) return;
+  useKuraStore.setState({ mcpConfig: { ...state.mcpConfig, authToken: token } });
+  if (!saved) state.addToast(t(state.language, 'dialog.settings.mcpTokenSaveFailed'), 'error');
+})();
 
 /** Carga la clave del proveedor activo desde el almacén seguro y avisa si la migración no pudo guardarla. */
 void (async () => {
