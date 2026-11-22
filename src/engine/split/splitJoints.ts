@@ -154,7 +154,7 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
       const dim = j.reinforce ? smallerPieceDim(low, high) : 0;
       // Tope relativo a la sección: la isla más ancha que admite conector
       const width = Math.max(0, ...islands.map((isl) => islandWidth(isl)).filter((wd) => wd >= minWall));
-      const cap = reinforcementCap(connector.size, width);
+      const cap = reinforcementCap(connector.size, width, connector.depth);
       const ladder = connectorLadder(connector, j.reinforce ? (n) => Math.min(cap, recommendedConnectorRadius(area, n, dim)) : undefined);
       for (const c of ladder) {
         const layout = layoutForCut(face, axis, coord + 0.01, { ...c, type: layoutType(connector.type) }, CONNECTOR_MIN_WALL_MM);

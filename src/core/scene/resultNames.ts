@@ -37,8 +37,20 @@ export interface ResultNaming {
   looseDowel(diameterMm: number, lengthMm: number, count: number): string;
 }
 
-/** Medida corta para nombres (hasta 1 decimal, sin ceros de más). */
+/** Medida corta para nombres (hasta 1 decimal, sin ceros de más) con punto decimal: modo sin interfaz. */
 export const shortMm = (v: number) => String(Math.round(v * 10) / 10);
+
+/**
+ * Medida corta con el separador decimal del idioma (coma en es, de y fr), sin separador de miles:
+ * la usa la app para los nombres; el modo sin interfaz usa `shortMm`.
+ */
+export function localeShortMm(lang: string, v: number): string {
+  try {
+    return new Intl.NumberFormat(lang, { maximumFractionDigits: 1, useGrouping: false }).format(Math.round(v * 10) / 10);
+  } catch {
+    return shortMm(v);
+  }
+}
 
 export type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
 
@@ -48,9 +60,12 @@ export function createKeyedNaming(
   labels: {
     color: (hex: string) => string;
     structure: (regions: DetectedStructureRegion[], regionId: string) => string;
+    /** Medida corta para nombres; por defecto `shortMm` (punto decimal). */
+    shortMm?: (v: number) => string;
   },
 ): ResultNaming {
   const primitiveLabel = (type: PrimitiveType) => tr(`sidebar.primitive.${type}` as TranslationKey);
+  const mm = labels.shortMm ?? shortMm;
   return {
     primitive: (type, count) => `${primitiveLabel(type)} ${count + 1}`,
     modulePrefix: (isHole) => (isHole ? '−' : '+'),
@@ -67,6 +82,6 @@ export function createKeyedNaming(
     thread: (o) => `${tr(`store.thread.${o.kind}` as TranslationKey)} M${o.diameterMm}×${o.pitchMm}`,
     structurePart: (src, regions, region) => `${src.name} — ${labels.structure(regions, region.id)}`,
     splitPart: (src, code) => `${src.name} · ${code}`,
-    looseDowel: (d, l, count) => tr('object.name.looseDowel', { d: shortMm(d), l: shortMm(l), count }),
+    looseDowel: (d, l, count) => tr('object.name.looseDowel', { d: mm(d), l: mm(l), count }),
   };
 }

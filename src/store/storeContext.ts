@@ -18,7 +18,7 @@ import { ProjectCodecError } from '../project/projectSchema';
 import { applySceneChange, type OperationContext, type SceneChange } from '../core/operations';
 import { getEngineClient, isEngineCancelled, type EngineClient, type EngineJob } from '../core/operations/engineClient';
 import type { EngineTaskArgs, EngineTaskName, EngineTaskResult } from '../core/operations/engineTasks';
-import { createKeyedNaming } from '../core/scene/resultNames';
+import { createKeyedNaming, localeShortMm } from '../core/scene/resultNames';
 import { APP_BUILD_POLICY, makeId } from '../core/scene/sceneObjects';
 import { inputsAreCurrent } from '../core/scene/sceneRules';
 import type { MeshData, SceneObject } from '../types/kura';
@@ -189,6 +189,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
       naming: createKeyedNaming(tr, {
         color: (hex) => colorName(lang, hex),
         structure: (regions, id) => structureLabel(lang, regions, id),
+        shortMm: (v) => localeShortMm(lang, v),
       }),
     };
   };

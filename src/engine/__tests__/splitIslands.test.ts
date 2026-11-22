@@ -87,7 +87,23 @@ describe('firmeza activa', () => {
     expect(reinforcementCap(3, 12)).toBeCloseTo(Math.max(3, f * 12), 9);
     expect(reinforcementCap(1.5, 12)).toBeCloseTo(f * 12, 9);
     expect(reinforcementCap(3, 400)).toBeLessThanOrEqual(ASSEMBLY_LIMITS.maxRecommendedRadiusMm);
+    // Crecer a lo más al doble y nunca más ancho que hondo
+    expect(reinforcementCap(3, 400)).toBeCloseTo(ASSEMBLY_LIMITS.maxReinforceGrowth * 3, 9);
+    expect(reinforcementCap(3, 400, 4)).toBeCloseTo(4, 9);
+    expect(reinforcementCap(10, 400, 4)).toBe(10);
   });
+
+  it('caja de 300 con tarugo suelto de 3 mm: no salta al máximo de 8 mm', async () => {
+    const obj = H.objFromM(w.Manifold.cube([300, 300, 300], true), 'caja');
+    const c: SplitConnectorOptions = { type: 'loose-dowel', size: 3, depth: 6, tolerance: 0.25, count: 1 };
+    const plan = await planBedSplit(obj, { widthMm: 400, depthMm: 400, heightMm: 200 }, { connector: c });
+    const res = await executeBedSplitGeometry(obj, plan);
+    const j = res.joints[0];
+    expect(j.kind).toBe('connector');
+    expect(j.connector!.size).toBeGreaterThan(3);
+    expect(j.connector!.size).toBeLessThanOrEqual(6 + 1e-9);
+    expect(res.warnings.some((x) => x.code === 'SPLIT_CONNECTOR_REINFORCED')).toBe(true);
+  }, 60_000);
 
   it('tubo de 1 m pared 12 con conector chico: el radio aplicado respeta el tope de la pared', async () => {
     const small: SplitConnectorOptions = { type: 'dowel', size: 1.5, depth: 6, tolerance: 0.2, count: 1 };

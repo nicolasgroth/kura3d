@@ -196,14 +196,17 @@ export function connectorClashes(
 }
 
 /**
- * Radio máximo al que la firmeza activa puede llevar un conector pedido de radio `requestedMm` en una
- * cara cuya isla más ancha mide `widthMm` (2·área/perímetro): max(pedido, min(máximo recomendado,
- * `maxReinforceWidthFraction`·ancho)). Así un tubo de pared 12 no pasa de 3 mm de radio; lo pedido por
- * el usuario nunca se recorta aquí (si no cabe, lo reduce la ubicación).
+ * Radio máximo al que la firmeza activa puede llevar un conector pedido de radio `requestedMm` y
+ * profundidad `depthMm` en una cara cuya isla más ancha mide `widthMm` (2·área/perímetro):
+ * max(pedido, min(máximo recomendado, `maxReinforceWidthFraction`·ancho, `maxReinforceGrowth`·pedido,
+ * profundidad)). Así un tubo de pared 12 no pasa de 3 mm, un tarugo de 3 mm no pasa de 6 y ninguno
+ * queda más ancho que largo. Lo pedido por el usuario nunca se recorta aquí (si no cabe, lo reduce la
+ * ubicación de conectores, que exige la pared mínima).
  */
-export function reinforcementCap(requestedMm: number, widthMm: number): number {
+export function reinforcementCap(requestedMm: number, widthMm: number, depthMm = Infinity): number {
   const L = ASSEMBLY_LIMITS;
-  return Math.max(requestedMm, Math.min(L.maxRecommendedRadiusMm, L.maxReinforceWidthFraction * widthMm));
+  const cap = Math.min(L.maxRecommendedRadiusMm, L.maxReinforceWidthFraction * widthMm, L.maxReinforceGrowth * requestedMm, depthMm);
+  return Math.max(requestedMm, cap);
 }
 
 /** Radio recomendado del conector de una unión según su área de contacto y la pieza que sostiene. */
