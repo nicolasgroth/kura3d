@@ -117,6 +117,30 @@ export function closeComposedProjectionMesh(
   }
 }
 
+/**
+ * Volumen (mm³) bajo el cual un cuerpo suelto que deja un grabado es viruta: aparece cuando el
+ * sello corta en diagonal las paredes de un relieve previo y deja astillas de ~0,001–0,3 mm³ que
+ * no se pueden imprimir y quedarían flotando.
+ */
+export const PROJECTION_DEBRIS_MM3 = 0.5;
+
+/**
+ * Quita del resultado de un grabado los cuerpos nuevos de volumen despreciable. Conserva todos los
+ * cuerpos si la pieza original ya tenía varios o si todos serían descartados. Devuelve un sólido
+ * nuevo (el llamador libera ambos) o el mismo si no hay nada que quitar.
+ */
+export function dropProjectionDebris(wasm: ManifoldToplevel, solid: Manifold, originalShells: number): Manifold {
+  const parts = solid.decompose();
+  try {
+    if (parts.length <= Math.max(1, originalShells)) return solid;
+    const kept = parts.filter((p) => p.volume() >= PROJECTION_DEBRIS_MM3);
+    if (kept.length === 0 || kept.length === parts.length) return solid;
+    return wasm.Manifold.compose(kept);
+  } finally {
+    for (const p of parts) p.delete();
+  }
+}
+
 function isClosed(mesh: MeshData): boolean {
   return mesh.indices.length > 0 && countUnpairedEdges(mesh) === 0 && computeMeshStats(mesh).isManifold;
 }

@@ -37,7 +37,8 @@ import {
 import { extrudeSvgToMesh } from './svg/svgExtrude';
 import { useThenDelete } from './wasmScope';
 import { composeFlushInlaySurface } from './inlaySurface';
-import { closeComposedProjectionMesh, closedProjectionMesh } from './projectionCleanup';
+import { firstSolidThickness } from './projectionThickness';
+import { closeComposedProjectionMesh, closedProjectionMesh, dropProjectionDebris } from './projectionCleanup';
 
 /** Malla gráfica normalizada en coordenadas locales `(u, v, w)` antes de proyectar. */
 interface NormalizedGraphicUV {
@@ -560,10 +561,17 @@ export async function projectGraphicOntoSurface(
 
         if (hits.length > 0) {
           const hit = hits[0];
-          const exit = hits.find((h) => h.distance > hit.distance + 1e-4);
-          if (exit) {
-            minThickness = Math.min(minThickness, exit.distance - hit.distance);
-          }
+          const fn = raySetup.faceNormals;
+          minThickness = Math.min(
+            minThickness,
+            firstSolidThickness(
+              hits.map((h) => {
+                const f = (h.faceIndex ?? -1) * 3;
+                const cosToRay = f >= 0 ? fn[f] * dir.x + fn[f + 1] * dir.y + fn[f + 2] * dir.z : -1;
+                return { distance: h.distance, cosToRay };
+              })
+            )
+          );
           let nx = -dir.x;
           let ny = -dir.y;
           let nz = -dir.z;
@@ -698,7 +706,16 @@ export async function projectGraphicOntoSurface(
         registry.colorToId,
         stampColor
       );
+      // Sobre un relieve previo, el sello corta sus paredes y deja astillas sueltas: se descartan
       resultManifold = targetManifold.subtract(stampManifold);
+      const originalParts = targetManifold.decompose();
+      const originalShells = originalParts.length;
+      for (const p of originalParts) p.delete();
+      const cleaned = dropProjectionDebris(wasm, resultManifold, originalShells);
+      if (cleaned !== resultManifold) {
+        resultManifold.delete();
+        resultManifold = cleaned;
+      }
     } else {
       // flush_inlay: talla una cavidad poco profunda y rellena con la intersección exacta
       // del volumen objetivo pintada con colorHex para mantener la superficie externa 100% a ras.
