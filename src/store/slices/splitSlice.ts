@@ -12,7 +12,8 @@
 import { arrangeSplitGroupPatches, splitGroupOf, type SplitArrangement } from '../../core/scene/splitGroups';
 import { change } from '../../core/operations/operationTypes';
 import type { BedSplitPlan, BedSplitPlanOptions, SplitBed } from '../../engine';
-import { isEngineError, localizeEngineError } from '../../engine/engineErrors';
+import { isEngineError } from '../../engine/engineErrors';
+import { localizeEngineErrorForUser } from '../userEngineMessages';
 import { activeBed } from '../splitCommandSchemas';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
@@ -87,7 +88,7 @@ export function createSplitSlice(ctx: StoreContext): Partial<KuraStoreState> {
                 status: 'error',
                 plan: null,
                 bed,
-                error: localizeEngineError(get().language, err),
+                error: localizeEngineErrorForUser(get().language, err),
                 errorCode: isEngineError(err) ? err.code : null,
                 errorParams: isEngineError(err) ? { ...err.params } : null,
               },

@@ -11,7 +11,8 @@
 
 import { isReadCommand } from '../core/commands/commandPolicy';
 import * as engine from '../engine';
-import { isEngineError, localizeEngineError, type EngineErrorCode } from '../engine/engineErrors';
+import { isEngineError, type EngineErrorCode } from '../engine/engineErrors';
+import { localizeEngineErrorForUser } from './userEngineMessages';
 import type { TranslationKey } from '../i18n';
 import type { KuraCommandRequest, KuraCommandResponse, SceneObject } from '../types/kura';
 import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
@@ -28,6 +29,7 @@ import {
   axisFromUser,
   axisToUser,
   splitPlanToUser,
+  keepModeFromUser,
   planeFromUser,
   projectionAxisFromUser,
   rotationFromUser,
@@ -162,7 +164,11 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
 
   plane_cut: async (p, { get }, command) => {
     const { target, options: userOptions } = schema.parsePlaneCut(get(), p);
-    const options = { ...userOptions, ...planeFromUser(userOptions.axis, userOptions.offset) };
+    const options = {
+      ...userOptions,
+      ...planeFromUser(userOptions.axis, userOptions.offset),
+      keepMode: keepModeFromUser(userOptions.axis, userOptions.keepMode),
+    };
     return required(await get().planeCutObject(target.id, options), command).map(brief);
   },
 
@@ -372,7 +378,7 @@ export function createCommandBus(deps: CommandBusDeps) {
         return { id: req.id, ok: false, error: deps.tr(err.key, err.params), errorCode: err.code };
       }
       if (isEngineError(err)) {
-        return { id: req.id, ok: false, error: localizeEngineError(deps.get().language, err), errorCode: err.code };
+        return { id: req.id, ok: false, error: localizeEngineErrorForUser(deps.get().language, err), errorCode: err.code };
       }
       return { id: req.id, ok: false, error: err instanceof Error ? err.message : String(err), errorCode: 'failed' };
     }

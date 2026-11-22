@@ -12,7 +12,8 @@
 import type { SceneChange } from '../../core/operations';
 import type { EngineTaskArgs, EngineTaskName } from '../../core/operations/engineTasks';
 import { resolveBooleanInputs } from '../../core/scene/sceneRules';
-import { isEngineError, localizeEngineError } from '../../engine/engineErrors';
+import { isEngineError } from '../../engine/engineErrors';
+import { localizeEngineErrorForUser } from '../userEngineMessages';
 import { placementFromHit, worldCenter, type SurfacePlacement } from '../../engine/surfacePlacement';
 import type { BooleanOpType, MeshData, SceneObject, Vec3 } from '../../types/kura';
 import type { StoreContext } from '../storeContext';
@@ -165,7 +166,7 @@ export function createPreviewSlice(ctx: StoreContext): PreviewSliceState {
           },
           (err: unknown) => {
             if (gen !== generation) return;
-            const error = isEngineError(err) ? localizeEngineError(get().language, err) : null;
+            const error = isEngineError(err) ? localizeEngineErrorForUser(get().language, err) : null;
             patch({ status: 'error', ghosts: extras, error });
           },
         );

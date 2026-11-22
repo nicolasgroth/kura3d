@@ -59,6 +59,12 @@ export function planeFromUser(axis: AxisName, offset: number): { axis: AxisName;
   return { axis: internal, offset: offset * sign + 0 };
 }
 
+/** Mitad a conservar del usuario → interna: en el Y del usuario el lado + es el −Z interno. */
+export function keepModeFromUser<K extends 'both' | 'positive' | 'negative'>(axis: AxisName, keepMode: K): K {
+  if (internalAxisOfUser(axis).sign > 0 || keepMode === 'both') return keepMode;
+  return (keepMode === 'positive' ? 'negative' : 'positive') as K;
+}
+
 /** Dirección de proyección del usuario (`'+z'` = arriba) → interna. */
 export function projectionAxisFromUser(axis: SurfaceProjectionAxis): SurfaceProjectionAxis {
   return axis === 'cylindrical' ? axis : internalDirectionOfUser(axis as AxisDirection);

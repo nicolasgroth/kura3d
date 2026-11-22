@@ -30,6 +30,7 @@ import { PrecisionNumberInput } from './PrecisionNumberInput';
 import { keyboardFocusInViewport, onCutPlaneDrag } from './viewport/cutPlaneDrag';
 import '../styles/planeCut.css';
 import { userAxisLabel, userAxisOfInternal } from '../core/scene/displayAxes';
+import { axisToUser, keepModeFromUser } from '../store/commandAxes';
 
 type Axis = 'x' | 'y' | 'z';
 type FitState = 'idle' | 'checking' | 'ok' | 'bad' | 'plane';

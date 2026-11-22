@@ -8,10 +8,9 @@
  * @license MIT
  */
 
+import { localizeEngineErrorForUser, localizeEngineWarningForUser } from './userEngineMessages';
 import {
   isEngineError,
-  localizeEngineError,
-  localizeEngineWarning,
   type EngineErrorCode,
   type EngineWarning,
 } from '../engine/engineErrors';
@@ -38,7 +37,7 @@ export function createOperationErrorTracker(): OperationErrorTracker {
   let last: OperationFailure | null = null;
   return {
     record(err, lang) {
-      const message = localizeEngineError(lang, err);
+      const message = localizeEngineErrorForUser(lang, err);
       last = { message, engineCode: isEngineError(err) ? err.code : undefined };
       return message;
     },
@@ -55,5 +54,5 @@ export function createOperationErrorTracker(): OperationErrorTracker {
 
 /** Textos localizados de los avisos del motor (vacío si no hay). */
 export function localizeWarnings(lang: LanguageCode, warnings: readonly EngineWarning[] | undefined): string[] {
-  return (warnings ?? []).map((warning) => localizeEngineWarning(lang, warning));
+  return (warnings ?? []).map((warning) => localizeEngineWarningForUser(lang, warning));
 }
