@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-import type { ResultNaming } from '../../src/core/scene/resultNames';
+import { shortMm, type ResultNaming } from '../../src/core/scene/resultNames';
 
 const capitalize = (value: string) => (value.length > 0 ? value[0].toUpperCase() + value.slice(1) : value);
 
@@ -27,5 +27,6 @@ export function createHeadlessNaming(counter: () => number): ResultNaming {
     thread: (o) => `${o.kind === 'bolt' ? 'Perno' : o.kind === 'nut' ? 'Tuerca' : 'Cavidad'} M${o.diameterMm}x${o.pitchMm}`,
     structurePart: (src, _regions, region) => `${src.name}_${region.labelEn}`,
     splitPart: (src, code) => `${src.name} · ${code}`,
+    looseDowel: (d, l, count) => `Dowel Ø${shortMm(d)}×${shortMm(l)} ×${count}`,
   };
 }

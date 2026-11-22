@@ -53,6 +53,7 @@ const EXPECTED_TOOLS = [
   'kura_colorize_structures',
   'kura_extract_structure',
   'kura_mirror_object',
+  'kura_validate_assembly',
 ];
 
 /** Token de prueba con longitud suficiente para habilitar el puente (mínimo 16). */
@@ -101,8 +102,8 @@ describe('Kura3D MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(32);
-    expect(toolNames).toHaveLength(32);
+    expect(EXPECTED_TOOLS).toHaveLength(33);
+    expect(toolNames).toHaveLength(33);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }

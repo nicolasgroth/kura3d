@@ -1314,4 +1314,9 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': 'Der Verbinder der Verbindung {label} ist schwach: {measured} mm, empfohlen {recommended} mm.',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'Die Überlappung der Verbindung {label} ist nicht druckbar (Feder {tongue} mm, Nutwand {groove} mm; Minimum {min} mm): die Verbindung wird geklebt.',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Markierung {label} wurde {depth} mm tief graviert (angefragt {requested} mm), um die {wall} mm Wand nicht zu durchstoßen.',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': 'Die Verbindung {label} ({a}–{b}) wechselte den Verbinder von {from} zu {to}, damit sich die Teile montieren lassen.',
+  'object.name.looseDowel': 'Dübel Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': 'Teil oder Gruppe „{id}“ nicht gefunden.',
+  'bus.error.assemblyNoTarget': 'Gib groupId oder die ids der geteilten Teile an.',
+  'bus.error.assemblyNotSplit': 'Diese Teile können nicht neu geprüft werden ({reason}): Sie müssen zu einer geteilten Gruppe mit gespeicherten Verbindungen gehören.',
 };

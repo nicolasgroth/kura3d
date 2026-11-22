@@ -1314,4 +1314,9 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': 'Le connecteur de la jonction {label} est fragile : {measured} mm, {recommended} mm recommandés.',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'Le recouvrement de la jonction {label} n\'est pas imprimable (languette {tongue} mm, paroi de rainure {groove} mm ; minimum {min} mm) : la jonction est à coller.',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Le repère {label} a été gravé à {depth} mm (demandé {requested} mm) pour ne pas percer la paroi de {wall} mm.',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': 'La jonction {label} ({a}–{b}) a changé de connecteur, de {from} à {to}, pour que les pièces puissent s’assembler.',
+  'object.name.looseDowel': 'Tourillon Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': 'Pièce ou groupe « {id} » introuvable.',
+  'bus.error.assemblyNoTarget': 'Indique groupId ou les ids des pièces divisées.',
+  'bus.error.assemblyNotSplit': 'Ces pièces ne peuvent pas être revalidées ({reason}) : elles doivent appartenir à un même groupe divisé avec ses jonctions enregistrées.',
 };

@@ -93,14 +93,30 @@ const parametric = shape({
 // Pieza de "dividir para imprimir" (`metadata.split`): validación estricta, campo opcional.
 const nat3 = (v: unknown) => Array.isArray(v) && v.length === 3 && v.every((n) => Number.isInteger(n) && n >= 0 && n < 4096);
 const splitTransform = shape({ position: vec3, rotation: vec3 });
+const face = oneOf('+x', '-x', '+y', '-y', '+z', '-z');
+const label16 = (v: unknown) => str(v) && v.length <= 16;
+// Unión guardada para revalidar el armado (`SplitJointRecord`).
+const splitConnector = shape({
+  type: oneOf('dowel', 'peg', 'dovetail', 'lap', 'loose-dowel'), size: positive, depth: positive, tolerance: nonnegative,
+  count: (v) => nat(v) && v > 0, minWallForConnectorMm: optional(nonnegative), lapHeightMm: optional(positive),
+});
+const splitJointRecord = shape({
+  label: label16, axis: oneOf('x', 'y', 'z'), position: finite, a: label16, b: label16,
+  kind: oneOf('connector', 'glue', 'lap', 'socket'), connector: (v) => v === null || splitConnector(v),
+  connectorCenters: (v) => Array.isArray(v) && v.length <= 4096 && v.every(vec3), contactAreaMm2: nonnegative,
+});
 const splitMetadata = shape({
   groupId: id, code: (v) => str(v) && v.length <= 16, cell: nat3, assembly: splitTransform,
-  print: shape({ position: vec3, rotation: vec3, plate: (v) => Number.isInteger(v) && (v as number) >= 0, downFace: oneOf('+x', '-x', '+y', '-y', '+z', '-z') }),
+  print: shape({ position: vec3, rotation: vec3, plate: (v) => Number.isInteger(v) && (v as number) >= 0, downFace: face }),
   jointLabels: (v) => Array.isArray(v) && v.length <= 4096 && v.every((l) => str(l) && l.length <= 16),
   jointPartners: optional((v) => Array.isArray(v) && v.length <= 4096
     && v.every(shape({ label: (l) => str(l) && l.length <= 16, code: (c) => str(c) && c.length <= 16 }))),
+  assemblyStep: optional((v) => Number.isInteger(v) && (v as number) >= 1),
+  insertDirection: optional(face),
+  joints: optional((v) => Array.isArray(v) && v.length <= 4096 && v.every(splitJointRecord)),
 });
-const objectExtra = shape({ split: optional(splitMetadata) });
+const splitDowelMetadata = shape({ groupId: id, diameterMm: positive, lengthMm: positive, count: (v) => nat(v) && v > 0 && v <= 100_000 });
+const objectExtra = shape({ split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata) });
 
 export type ObjectMetadata = Omit<SceneObject, 'mesh' | 'stats'>;
 const metadataFields = {

@@ -1321,6 +1321,11 @@ export const TRANSLATIONS_ES = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': 'El conector de la unión {label} es poco firme: mide {measured} mm, se recomienda {recommended} mm.',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'El solape de la unión {label} no es imprimible (lengüeta {tongue} mm, pared de ranura {groove} mm; mínimo {min} mm): la unión queda para pegar.',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'La marca {label} se grabó a {depth} mm (pedido {requested} mm) para no atravesar la pared de {wall} mm.',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': 'La unión {label} ({a}–{b}) cambió su conector de {from} a {to} para que las piezas se puedan montar.',
+  'object.name.looseDowel': 'Tarugo Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': 'No se encontró la pieza o el grupo «{id}».',
+  'bus.error.assemblyNoTarget': 'Indica groupId o ids de las piezas divididas.',
+  'bus.error.assemblyNotSplit': 'Esas piezas no se pueden revalidar ({reason}): deben ser piezas de un mismo grupo dividido con sus uniones guardadas.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2602,6 +2607,11 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': 'The connector of joint {label} is weak: {measured} mm, {recommended} mm recommended.',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'The lap of joint {label} is not printable (tongue {tongue} mm, groove wall {groove} mm; minimum {min} mm): the joint is left for gluing.',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Label {label} was engraved {depth} mm deep (requested {requested} mm) so it does not pierce the {wall} mm wall.',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': 'Joint {label} ({a}–{b}) changed its connector from {from} to {to} so the parts can be assembled.',
+  'object.name.looseDowel': 'Dowel Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': 'Part or group “{id}” not found.',
+  'bus.error.assemblyNoTarget': 'Give groupId or the ids of the split parts.',
+  'bus.error.assemblyNotSplit': 'These parts cannot be revalidated ({reason}): they must be parts of one split group with their joints saved.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

@@ -1,7 +1,8 @@
 /**
  * @file src/store/splitCommandSchemas.ts
  * @description Esquema del comando `split_for_bed` ("dividir para imprimir"): objetivo, cama (por
- * defecto la activa), margen, ejes, tope de piezas, conector, marcas de pareja y `dryRun` (solo plan).
+ * defecto la activa), margen, ejes, tope de piezas, conector, marcas de pareja y `dryRun` (solo plan);
+ * y de `validate_assembly` (revalidar el armado de un grupo dividido, ver `core/commands/validateAssemblySchema`).
  * Rangos de `OPERATION_RANGES.split` y `OPERATION_RANGES.cut` (fuente única con el servidor MCP).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -15,7 +16,9 @@ import type {
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../engine/operationLimits';
 import type { SceneObject } from '../types/kura';
 import { resolveTarget, type SceneView } from './commandTargets';
-import { pick, readBoolean, readEnum, readRange, type RawParams } from './commandValidation';
+import { resolveAssemblyTargets, ValidateAssemblyTargetError } from '../core/commands/validateAssemblySchema';
+import { CommandError } from './commandErrors';
+import { pick, readBoolean, readEnum, readId, readIds, readRange, type RawParams } from './commandValidation';
 
 const AXES = ['x', 'y', 'z'] as const;
 
@@ -33,6 +36,8 @@ export interface SplitForBedOutcome {
   plan: BedSplitPlan;
   parts: SceneObject[];
   joints: SplitJoint[];
+  /** Lotes de tarugos sueltos generados como objetos aparte (`loose-dowel`). */
+  looseDowels?: Array<{ id: string; name: string; diameterMm: number; lengthMm: number; count: number }>;
   plateCount: number;
   /** Resumen de la validación de armado (solo si se ejecutó). */
   assembly?: AssemblySummary;
@@ -58,10 +63,24 @@ function readAxes(p: RawParams): SplitAxis[] | undefined {
   return list.map((v) => readEnum({ axes: v }, AXES, 'axes')!);
 }
 
+/** `validate_assembly`: `groupId` o `ids` (piezas del mismo grupo dividido). */
+export function parseValidateAssembly(scene: SceneView, p: RawParams): SceneObject[] {
+  const groupId = readId(p, 'groupId');
+  const ids = readIds(p, 'ids', 'objectIds');
+  try {
+    return resolveAssemblyTargets(scene.objects, { groupId, ids });
+  } catch (err) {
+    if (!(err instanceof ValidateAssemblyTargetError)) throw err;
+    if (err.reason === 'not-found') throw new CommandError('not-found', 'bus.error.assemblyNotFound', { id: err.detail });
+    if (err.reason === 'no-target') throw new CommandError('invalid-params', 'bus.error.assemblyNoTarget');
+    throw new CommandError('precondition', 'bus.error.assemblyNotSplit', { reason: err.reason });
+  }
+}
+
 export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): SplitForBedRequest {
   const target = resolveTarget(scene, p, { unlocked: true });
   const bed = activeBed(scene);
-  const type = readEnum(p, ['none', 'dowel', 'peg', 'dovetail', 'lap'] as const, 'connectorType') ?? 'dowel';
+  const type = readEnum(p, ['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel'] as const, 'connectorType') ?? 'dowel';
   const connector: SplitConnectorOptions | null =
     type === 'none'
       ? null

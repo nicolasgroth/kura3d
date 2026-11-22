@@ -22,7 +22,9 @@ export function buildConnectorSolid(
   worldCenter: Vec3,
   size: number,
   depth: number,
-  expandTolerance: number
+  expandTolerance: number,
+  /** Solo cola de milano: largo de deslizamiento (mm) en vez del espesor propio; p. ej. ranura pasante. */
+  slideLengthMm?: number
 ): Manifold {
   const r = Math.max(0.4, size + expandTolerance);
   const h = Math.max(0.8, depth + expandTolerance);
@@ -50,7 +52,7 @@ export function buildConnectorSolid(
       // Dovetail (cola de milano): trapecio en XZ extruido en espesor Y y reorientado al eje de corte
       const neckHalf = Math.max(0.35, size * 0.55) + expandTolerance;
       const headHalf = Math.max(0.55, size * 0.95) + expandTolerance;
-      const thick = Math.max(0.8, size * 1.3 + expandTolerance * 2);
+      const thick = slideLengthMm ?? Math.max(0.8, size * 1.3 + expandTolerance * 2);
 
       const profile: [number, number][] = [
         [-neckHalf, -embed],

@@ -83,6 +83,7 @@ export const ENGINE_WARNING_CODES = [
   'ASSEMBLY_WEAK_JOINT',
   'SPLIT_LAP_NOT_PRINTABLE',
   'SPLIT_LABEL_DEPTH_CLAMPED',
+  'ASSEMBLY_JOINT_TYPE_CHANGED',
 ] as const;
 
 export type EngineWarningCode = (typeof ENGINE_WARNING_CODES)[number];

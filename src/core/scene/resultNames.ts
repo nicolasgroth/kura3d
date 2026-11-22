@@ -33,7 +33,12 @@ export interface ResultNaming {
   structurePart(source: SceneObject, regions: DetectedStructureRegion[], region: DetectedStructureRegion): string;
   /** Pieza de "dividir para imprimir" por su código de rejilla ("A1", "B2a"). */
   splitPart(source: SceneObject, code: string): string;
+  /** Lote de tarugos sueltos de una división ("Tarugo Ø8×11,6 ×6"). */
+  looseDowel(diameterMm: number, lengthMm: number, count: number): string;
 }
+
+/** Medida corta para nombres (hasta 1 decimal, sin ceros de más). */
+export const shortMm = (v: number) => String(Math.round(v * 10) / 10);
 
 export type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
 
@@ -62,5 +67,6 @@ export function createKeyedNaming(
     thread: (o) => `${tr(`store.thread.${o.kind}` as TranslationKey)} M${o.diameterMm}×${o.pitchMm}`,
     structurePart: (src, regions, region) => `${src.name} — ${labels.structure(regions, region.id)}`,
     splitPart: (src, code) => `${src.name} · ${code}`,
+    looseDowel: (d, l, count) => tr('object.name.looseDowel', { d: shortMm(d), l: shortMm(l), count }),
   };
 }

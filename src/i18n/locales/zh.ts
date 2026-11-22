@@ -1314,4 +1314,9 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': '接合 {label} 的连接件强度不足：{measured} mm，建议 {recommended} mm。',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': '接合 {label} 的搭接无法打印（榫舌 {tongue} mm，槽壁 {groove} mm；最小 {min} mm）：该接合改为粘合。',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': '标记 {label} 雕刻深度为 {depth} mm（请求 {requested} mm），以免穿透 {wall} mm 的壁。',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': '接合 {label}（{a}–{b}）的连接件由 {from} 改为 {to}，以便零件能够组装。',
+  'object.name.looseDowel': '定位销 Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': '未找到零件或组“{id}”。',
+  'bus.error.assemblyNoTarget': '请提供 groupId 或分割零件的 ids。',
+  'bus.error.assemblyNotSplit': '无法重新验证这些零件（{reason}）：它们必须属于同一分割组并保存了接合信息。',
 };

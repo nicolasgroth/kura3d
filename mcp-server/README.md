@@ -60,7 +60,7 @@ Prioridad: argumentos CLI > variables de entorno > valores por defecto.
 
 ### Solo Lectura: una sola fuente de verdad
 
-`src/core/commands/commandPolicy.ts` (en la raíz del repositorio) declara cada comando como `read` o `write`. De ahí salen el rechazo en servidor (herramientas MCP y puente), la anotación `readOnlyHint` de cada herramienta en `tools/list` y la validación del cliente del puente en la UI (que importa el mismo módulo). Solo son de lectura `kura_get_scene_state`, `kura_capture_viewport`, `kura_analyze_printability` y `kura_detect_structures`; las exportaciones cuentan como escritura.
+`src/core/commands/commandPolicy.ts` (en la raíz del repositorio) declara cada comando como `read` o `write`. De ahí salen el rechazo en servidor (herramientas MCP y puente), la anotación `readOnlyHint` de cada herramienta en `tools/list` y la validación del cliente del puente en la UI (que importa el mismo módulo). Solo son de lectura `kura_get_scene_state`, `kura_capture_viewport`, `kura_analyze_printability`, `kura_detect_structures` y `kura_validate_assembly`; las exportaciones cuentan como escritura.
 
 Solo Lectura efectivo = impuesto por el servidor (CLI/env) **o** pedido por la UI en el handshake (`readOnly=1`, el interruptor de Ajustes). La petición de la UI se conserva aunque la UI se desconecte. Las herramientas de escritura siguen listadas, pero el servidor las **rechaza** con un error que menciona "Solo Lectura" y nunca las reenvía a la UI.
 
@@ -151,7 +151,7 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 
 ---
 
-## Catálogo de Herramientas MCP (`kura_*` — 32 herramientas)
+## Catálogo de Herramientas MCP (`kura_*` — 33 herramientas)
 
 | Herramienta | Descripción |
 | :--- | :--- |
@@ -162,7 +162,7 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 | `kura_boolean_operation` | Ejecuta operaciones CSG (`union`, `subtract`, `intersect`). Si una resta o intersección no cambia nada porque las piezas no se tocan, devuelve `resultId: null` y el aviso `BOOLEAN_NO_EFFECT` sin tocar la escena. |
 | `kura_hollow_object` | Ahueca un sólido indicando grosor de pared en mm y drenaje opcional. |
 | `kura_plane_cut` | Corta un modelo por plano (`x`, `y`, `z`) con conectores (`dowel`, `peg`, `dovetail`). En headless las mitades se separan en X/Z para que no se solapen. |
-| `kura_split_for_bed` | Divide para imprimir: plan por cama (por defecto la del perfil) con planos desplazados a la sección más simple, conectores por unión, piezas "Objeto · A1" (letra = columna X, número = nivel Y, minúscula = fila Z), uniones con etiqueta y marcas de pareja grabadas opcionales (`labels: 'engraved'`). `dryRun: true` devuelve solo el plan. Las piezas quedan armadas en su lugar; la ubicación de impresión y la placa van en `metadata.split`. |
+| `kura_split_for_bed` | Divide para imprimir: plan por cama (por defecto la del perfil) con planos desplazados a la sección más simple, conectores por unión, piezas "Objeto · A1" (letra = columna X, número = nivel Y, minúscula = fila Z), uniones con etiqueta y marcas de pareja grabadas opcionales (`labels: 'engraved'`). Con `connectorType: 'loose-dowel'` (tarugo suelto) agujerea ambas piezas y entrega los tarugos como objeto aparte ("Dowel Ø8×11.5 ×6" en headless). `dryRun: true` devuelve solo el plan. Las piezas quedan armadas en su lugar; la ubicación de impresión y la placa van en `metadata.split`. |
 | `kura_split_disconnected` | Separa islas geométricas desconectadas en objetos independientes. |
 | `kura_split_by_color` | Divide una malla pintada por color para impresión multimaterial. |
 | `kura_apply_texture` | Aplica textura superficial (`fuzzy`, `knurling`, `waves`, `honeycomb`, `grid`). |
@@ -187,6 +187,7 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 | `kura_extract_structure` | Extrae una sub-estructura (`regionId`) como objeto independiente, con opción de removerla del objeto origen (`removeFromSource`). |
 | `kura_update_primitive_params` | Regenera una primitiva o rosca paramétrica con parámetros nuevos, conservando id y posición. |
 | `kura_mirror_object` | Refleja especularmente un objeto sobre el eje `x`, `y` o `z`, invirtiendo vértices y winding de triángulos para mantener normales válidas. |
+| `kura_validate_assembly` | *(Solo Lectura)* Revalida el armado de un grupo dividido (`groupId`) o de una selección de sus piezas (`ids`) con las uniones guardadas en `metadata.split.joints`: cierre, choques de conectores, orden de montaje con direcciones, piezas trabadas con sus opciones por unión (`glue` o `change-type:<tipo>`) y uniones débiles. |
 
 ### Colocación en espacio libre (headless)
 

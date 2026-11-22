@@ -10,6 +10,7 @@
  * @license MIT
  */
 
+import { layoutType } from './splitLooseDowel';
 import type { CrossSection, Manifold } from 'manifold-3d';
 import type { Vec3 } from '../../types/kura';
 import { connectorFootprintRadius } from '../cutConnectorLayout';
@@ -38,7 +39,7 @@ export interface SectionStats {
 /** Margen al borde que necesita un conector (huella + holgura + pared). */
 export function connectorMargin(c: SplitConnectorOptions): number {
   if (c.type === 'lap') return 0;
-  return connectorFootprintRadius(c.type, c.size, c.tolerance + CONNECTOR_MIN_WALL_MM) + 0.02;
+  return connectorFootprintRadius(layoutType(c.type), c.size, c.tolerance + CONNECTOR_MIN_WALL_MM) + 0.02;
 }
 
 /** Ancho bajo el cual una isla sin agujero cuenta como tira (pared cortada a lo largo), mm. */

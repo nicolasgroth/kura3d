@@ -29,6 +29,8 @@ interface SplitResultLike {
   parts?: PartLike[];
   joints?: JointLike[];
   plateCount?: number;
+  /** Lotes de tarugos sueltos (`loose-dowel`), objetos aparte. */
+  looseDowels?: unknown[];
   /** Resumen de la validación de armado (`summarizeAssembly`). */
   assembly?: unknown;
   warnings?: unknown[];
@@ -62,6 +64,7 @@ export function summarizeSplitResult(raw: unknown): Record<string, unknown> {
       labelsWithoutConnector: joints.filter((j) => connectorCount(j) === 0).map((j) => j.label).filter(Boolean),
     },
     parts: parts.map((p) => ({ id: p.id, code: p.code, plate: p.plate })),
+    ...(Array.isArray(r.looseDowels) && r.looseDowels.length > 0 ? { looseDowels: r.looseDowels } : {}),
     ...(r.assembly ? { assembly: r.assembly } : {}),
     warnings: Array.isArray(r.warnings) ? r.warnings : [],
     ...(r.note ? { note: r.note } : {}),

@@ -103,6 +103,7 @@ export const ENGINE_TASKS = {
     planSplitForBed(ctx, a.obj, a.bed, a.options),
   splitForBed: (ctx: OperationContext, a: { obj: SceneObject; plan: engine.BedSplitPlan; options: ExecuteBedSplitOptions }) =>
     executeBedSplit(ctx, a.obj, a.plan, a.options),
+  validateAssembly: (_ctx: OperationContext, a: { objects: SceneObject[] }) => engine.storedAssemblyResponse(a.objects),
   export: (_ctx: OperationContext, a: ExportTaskArgs) => exportSceneFiles(a),
   printability: (_ctx: OperationContext, a: PrintabilityTaskArgs) =>
     engine.analyzePrintability(a.obj, a.bed, a.materialId, a.infillPercent, a.overhangAngleDeg, a.minWallMm),

@@ -1314,4 +1314,9 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_WEAK_JOINT': 'जोड़ {label} का कनेक्टर कमज़ोर है: {measured} mm, अनुशंसित {recommended} mm।',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'जोड़ {label} का ओवरलैप प्रिंट योग्य नहीं (जीभ {tongue} mm, खाँचे की दीवार {groove} mm; न्यूनतम {min} mm): जोड़ चिपकाने के लिए रहेगा।',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'निशान {label} को {depth} mm गहरा उकेरा गया (माँगा {requested} mm) ताकि {wall} mm दीवार न छिदे।',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': 'जोड़ {label} ({a}–{b}) का कनेक्टर {from} से {to} किया गया ताकि हिस्से जोड़े जा सकें।',
+  'object.name.looseDowel': 'डॉवेल Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': 'हिस्सा या समूह “{id}” नहीं मिला।',
+  'bus.error.assemblyNoTarget': 'groupId या विभाजित हिस्सों के ids दें।',
+  'bus.error.assemblyNotSplit': 'इन हिस्सों की फिर से जाँच नहीं हो सकती ({reason}): वे एक ही विभाजित समूह के हों और उनके जोड़ सहेजे हों।',
 };

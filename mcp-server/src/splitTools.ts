@@ -41,7 +41,8 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         maxPieces: z.union([rangeSchema(OR.split.maxPieces), z.literal('auto')]).default(d.maxPieces),
         allowRotation: z.boolean().default(true).describe('Permite girar 90° una pieza para que quepa.'),
         allowDiagonal: z.boolean().default(false).describe('Permite apoyar la pieza en diagonal sobre la cama si así cabe sin cortar.'),
-        connectorType: z.enum(['none', 'dowel', 'peg', 'dovetail', 'lap']).default('dowel'),
+        connectorType: z.enum(['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel']).default('dowel')
+          .describe('dowel = fixed peg on one part; loose-dowel = blind holes in both parts plus separate printed dowels (no protrusions).'),
         minWallForConnectorMm: rangeSchema(OR.split.minWallForConnectorMm).default(d.minWallForConnectorMm).describe('Espesor mínimo de la sección para poner conector; más delgada queda para pegar.'),
         lapHeightMm: rangeSchema(OR.split.lapHeightMm).default(d.lapHeightMm).describe('Alto del solape de borde en mm.'),
         connectorSize: rangeSchema(OR.cut.connectorSize).default(4).describe('Radio/semiancho del conector en mm.'),
@@ -79,5 +80,25 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         detail ? undefined : summarizeSplitResult,
       );
     },
+  );
+
+  server.registerTool(
+    'kura_validate_assembly',
+    {
+      title: 'Validate assembly',
+      description:
+        'Read-only. Revalidates the assembly of a split group (parts from kura_split_for_bed) using the joints saved in each part: ' +
+        'closure (volume, interference, gaps), connector clashes, an assembly order with insertion directions, blocked parts and, per ' +
+        'blocking joint, the options (`glue` or `change-type:<type>`), plus weak joints (measured vs recommended radius). ' +
+        'Pass groupId (the id of the original object) for the whole group, or ids for a selection of parts of the same group ' +
+        '(only joints between selected parts are checked). Does not change the scene.',
+      inputSchema: {
+        groupId: idSchema.optional().describe('Split group id (the id of the object that was split).'),
+        ids: z.array(idSchema).min(1).max(4096).optional().describe('Ids of parts of one split group.'),
+      },
+      annotations: { readOnlyHint: true },
+    },
+    async (args) =>
+      dispatchWithFallback(ctx, 'validate_assembly', { ...args }, () => ctx.headless.validateAssembly(args)),
   );
 }

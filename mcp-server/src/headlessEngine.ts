@@ -16,12 +16,14 @@ import { parametricStateOf } from '../../src/core/scene/parametric';
 import { HEADLESS_BUILD_POLICY } from '../../src/core/scene/sceneObjects';
 import * as engine from '../../src/engine/index';
 import { OPERATION_DEFAULTS } from '../../src/engine/operationLimits';
+import { resolveAssemblyTargets, ValidateAssemblyTargetError } from '../../src/core/commands/validateAssemblySchema';
 import { createHeadlessNaming } from './headlessNaming.js';
 import { write3mfFile, writeStlFile, type ExportFileResult } from './headlessExport.js';
 import { freePlacer, spreadPartsInFreeSpace, type HeadlessPlacement } from './headlessPlacement.js';
 import { SerialQueue } from './headlessQueue.js';
 import {
   assertUnlocked,
+  HeadlessCommandError,
   makeObjectId,
   worldStatsOf,
   summarizeObject,
@@ -243,12 +245,37 @@ export class KuraHeadlessEngine {
       plan,
       parts: result.parts.map((o) => ({ ...summarizeObject(o), code: o.metadata?.split?.code, plate: o.metadata?.split?.print.plate })),
       joints: result.joints,
+      ...(result.looseDowels.length > 0 ? { looseDowels: result.looseDowels } : {}),
       plateCount: result.plateCount,
       assembly: result.assembly,
       volumes: { source: result.sourceVolumeMm3, clearance: result.clearanceVolumeMm3, engraved: result.engravedVolumeMm3 },
       note: ENGINE_NOTE,
       warnings: change.warnings,
     };
+  }
+
+  /**
+   * Revalida el armado de un grupo dividido (solo lectura): por `groupId` o por `ids` de piezas del
+   * mismo grupo, con las uniones guardadas en `metadata.split.joints`. Mismo esquema que el bus.
+   */
+  validateAssembly(input: { groupId?: string; ids?: string[] }) {
+    let targets: HeadlessSceneObject[];
+    try {
+      targets = resolveAssemblyTargets(Array.from(this.objects.values()), input);
+    } catch (err) {
+      if (!(err instanceof ValidateAssemblyTargetError)) throw err;
+      const message: Record<string, string> = {
+        'not-found': `Part or split group "${err.detail}" not found.`,
+        'no-target': 'Give groupId or the ids of the split parts.',
+      };
+      const code = err.reason === 'not-found' ? 'not-found' : err.reason === 'no-target' ? 'invalid-params' : 'precondition';
+      throw new HeadlessCommandError(
+        code,
+        message[err.reason] ?? `These parts cannot be revalidated (${err.reason}): they must belong to one split group with their joints saved.`,
+        { reason: err.reason },
+      );
+    }
+    return { ...engine.storedAssemblyResponse(targets), note: ENGINE_NOTE };
   }
 
   /** Corta por plano con `planeCutWithConnectors` del motor (conectores reales incluidos). */

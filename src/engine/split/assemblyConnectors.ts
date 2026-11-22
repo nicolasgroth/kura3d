@@ -21,7 +21,8 @@ import { connectorFootprintRadius } from '../cutConnectorLayout';
 import { ASSEMBLY_LIMITS } from '../operationLimits';
 import type { AssemblyDirection, AssemblyJointInput, ConnectorClash } from './assemblyTypes';
 import { holeDepth } from './splitJoints';
-import type { SplitAxis, SplitConnectorOptions } from './splitTypes';
+import { layoutType, looseDowelHoleDepth } from './splitLooseDowel';
+import type { SplitAxis, SplitConnectorOptions, SplitConnectorType } from './splitTypes';
 
 const AXIS_INDEX: Record<SplitAxis, number> = { x: 0, y: 1, z: 2 };
 const DOVETAIL_SLIDE: Record<SplitAxis, SplitAxis> = { x: 'y', y: 'z', z: 'y' };
@@ -39,10 +40,23 @@ export function jointDirections(j: AssemblyJointInput, part: number): AssemblyDi
   return [`${part === j.a.part ? '+' : '-'}${j.axis}` as AssemblyDirection];
 }
 
+/**
+ * Tipo de conector alternativo con el que `part` puede entrar con la dirección `d` en la unión `j`, o
+ * `null`: la cola de milano desliza por su eje propio; espiga y tarugo, por la normal del plano.
+ */
+export function alternativeType(j: AssemblyJointInput, part: number, d: AssemblyDirection): SplitConnectorType | null {
+  if (j.kind !== 'connector' || !j.connector || j.connector.type === 'lap') return null;
+  if (j.connector.type === 'dovetail') {
+    const normal = `${part === j.a.part ? '+' : '-'}${j.axis}`;
+    return d === normal ? 'dowel' : null;
+  }
+  return d[1] === DOVETAIL_SLIDE[j.axis] ? 'dovetail' : null;
+}
+
 /** Radio de huella con holgura del conector de una unión. */
 export function connectorRadius(c: SplitConnectorOptions): number {
   if (c.type === 'lap') return 0;
-  return connectorFootprintRadius(c.type, c.size, c.tolerance);
+  return connectorFootprintRadius(layoutType(c.type), c.size, c.tolerance);
 }
 
 interface Capsule {
@@ -66,7 +80,8 @@ function capsules(joints: AssemblyJointInput[]): Capsule[] {
     j.connectorCenters.forEach((c, index) => {
       const p = [...c] as Vec3;
       const q = [...c] as Vec3;
-      p[a] -= 0.5;
+      // Tarugo suelto: agujero a ambos lados del plano
+      p[a] -= j.connector!.type === 'loose-dowel' ? looseDowelHoleDepth(j.connector!) : 0.5;
       q[a] += reach;
       out.push({ joint: j.label, index, p, q, r, axis: j.axis, plane: j.position, parts: [j.a.part, j.b.part] });
     });

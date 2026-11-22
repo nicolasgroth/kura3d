@@ -61,7 +61,7 @@ export function makeObjectId(counter: number): string {
 /** Error de comando headless con el mismo código que el Command Bus (p. ej. `locked`). */
 export class HeadlessCommandError extends Error {
   constructor(
-    readonly code: 'locked',
+    readonly code: 'locked' | 'not-found' | 'invalid-params' | 'precondition',
     message: string,
     readonly params: Record<string, string | number> = {},
   ) {

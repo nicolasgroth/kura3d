@@ -25,6 +25,8 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   capture_viewport: 'read',
   analyze_printability: 'read',
   detect_structures: 'read',
+  // Revalida el armado de un grupo dividido; no cambia la escena.
+  validate_assembly: 'read',
   create_primitive: 'write',
   update_primitive_params: 'write',
   transform_object: 'write',
@@ -109,6 +111,7 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_colorize_structures: 'colorize_structures',
   kura_extract_structure: 'extract_structure',
   kura_mirror_object: 'mirror_object',
+  kura_validate_assembly: 'validate_assembly',
 });
 
 /** Acceso de una herramienta MCP; herramientas no declaradas se tratan como escritura. */

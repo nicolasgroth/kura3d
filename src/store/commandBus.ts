@@ -19,7 +19,7 @@ import { CommandError, type CommandErrorCode } from './commandErrors';
 import { selectExportTargets } from './exportTargets';
 import * as schema from './commandSchemas';
 import { parseUpdatePrimitiveParams } from './parametricCommandSchemas';
-import { parseSplitForBed } from './splitCommandSchemas';
+import { parseSplitForBed, parseValidateAssembly } from './splitCommandSchemas';
 import type { OperationErrorTracker } from './operationErrors';
 import type { RawParams } from './commandValidation';
 import type { CommandSourceType, KuraStoreState } from './useKuraStore';
@@ -148,9 +148,15 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       plan: out.plan,
       parts: out.parts.map((o) => ({ ...brief(o), code: o.metadata?.split?.code, plate: o.metadata?.split?.print.plate })),
       joints: out.joints.map((j) => ({ label: j.label, axis: j.axis, a: j.a, b: j.b, connectors: j.connectorCenters.length, labelEngraved: j.labelEngraved })),
+      ...(out.looseDowels && out.looseDowels.length > 0 ? { looseDowels: out.looseDowels } : {}),
       plateCount: out.plateCount,
       ...(out.assembly ? { assembly: out.assembly } : {}),
     };
+  },
+
+  validate_assembly: async (p, { get }, command) => {
+    const targets = parseValidateAssembly(get(), p);
+    return required(await get().validateSplitAssembly(targets), command);
   },
 
   split_disconnected: async (p, { get }, command) => {

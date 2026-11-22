@@ -330,6 +330,8 @@ export interface KuraStoreState {
    */
   splitObjectForBed: (id: string, request: Omit<SplitForBedRequest, 'target'>) => Promise<SplitForBedOutcome | null>;
   splitDisconnectedObject: (id: string) => Promise<SceneObject[]>;
+  /** Revalida el armado de piezas divididas (solo lectura, en el Worker); `null` si falló. */
+  validateSplitAssembly: (targets: SceneObject[]) => Promise<ReturnType<typeof import('../engine').storedAssemblyResponse> | null>;
   splitObjectByColor: (id: string) => SceneObject[];
   applyTextureToObject: (id: string, options: TextureOptions) => boolean;
   paintObjectSurface: (
