@@ -11,6 +11,7 @@
 
 import { t, type TranslationKey } from '../i18n';
 import type { LanguageCode } from '../types/kura';
+import { isInOperationRange, type OperationRange } from './operationLimits';
 
 /** Códigos de error estables del motor. */
 export const ENGINE_ERROR_CODES = [
@@ -33,6 +34,9 @@ export const ENGINE_ERROR_CODES = [
   'IMAGE_BUFFER_INVALID',
   'IMAGE_NO_FOREGROUND',
   'IMAGE_SIZE_TOO_SMALL',
+  'MESH_EMPTY',
+  'MESH_INVALID',
+  'CUT_PLANE_OUTSIDE',
 ] as const;
 
 export type EngineErrorCode = (typeof ENGINE_ERROR_CODES)[number];
@@ -43,6 +47,7 @@ export const ENGINE_WARNING_CODES = [
   'REFINE_NO_CHANGE',
   'REFINE_SMOOTH_REVERTED',
   'HOLLOW_COARSE_GRID',
+  'SPLIT_COLOR_NON_MANIFOLD',
 ] as const;
 
 export type EngineWarningCode = (typeof ENGINE_WARNING_CODES)[number];
@@ -136,6 +141,23 @@ export function requireIntegerInRange(
   const v = requireNumberInRange(name, value, min, max, fallback);
   if (!Number.isInteger(v)) {
     throw new EngineError('INVALID_PARAMETER', { name, value: String(v), min, max });
+  }
+  return v;
+}
+
+/**
+ * Valida `value` contra un rango de la fuente única (`operationLimits`); `undefined` toma `fallback`.
+ * Lanza `INVALID_PARAMETER` en vez de acotar en silencio.
+ */
+export function requireOperationRange(
+  name: string,
+  value: number | undefined,
+  range: OperationRange,
+  fallback?: number
+): number {
+  const v = value === undefined ? fallback : value;
+  if (!isInOperationRange(v, range)) {
+    throw new EngineError('INVALID_PARAMETER', { name, value: String(v), min: range.min, max: range.max });
   }
   return v;
 }

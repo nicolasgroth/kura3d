@@ -285,13 +285,14 @@ export function createCommandBus(deps: CommandBusDeps) {
     const command = String(req.command);
     deps.operationErrors?.clear();
     try {
-      if (source === 'mcp' && !isMcpCommandAllowed(command, deps.get().mcpConfig.readOnly)) {
-        throw new CommandError('read-only', 'bus.error.readOnly');
-      }
+      // Un comando inexistente es `unknown-command` desde cualquier origen, antes de la política de solo lectura.
       const handler = Object.prototype.hasOwnProperty.call(HANDLERS, command)
         ? HANDLERS[command as KuraCommandRequest['command']]
         : undefined;
       if (!handler) throw new CommandError('unknown-command', 'bus.error.unknownCommand', { command: command.slice(0, 64) });
+      if (source === 'mcp' && !isMcpCommandAllowed(command, deps.get().mcpConfig.readOnly)) {
+        throw new CommandError('read-only', 'bus.error.readOnly');
+      }
       if (!isReadCommand(command) && !NON_SCENE_WRITES.has(command) && deps.isInteractionLocked()) {
         throw new CommandError('busy', 'bus.error.busy');
       }

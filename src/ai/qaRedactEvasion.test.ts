@@ -49,13 +49,9 @@ const leaks = (out: string, k: string) => {
 describe('QA redactSecrets: eco de la clave con transformaciones', () => {
   const results = echoes(KEY).map(([name, text]) => ({ name, text, out: redactSecrets(text, KEY) }));
 
-  // Brechas conocidas (menor): una clave truncada o enmascarada deja visible su prefijo; it.fails pasará a verde al cerrarlas.
-  const GAPS = new Set(['enmascarada con sufijo', 'truncada 24']);
-  it.each(results.filter((r) => !GAPS.has(r.name)).map((r) => [r.name, r] as const))('%s', (_n, r) => {
+  // Las brechas de clave truncada o enmascarada se cerraron: se borra cualquier fragmento de 16+ caracteres.
+  it.each(results.map((r) => [r.name, r] as const))('%s', (_n, r) => {
     expect(leaks(r.out, KEY) || r.out.includes(KEY), `filtrado: ${r.out.slice(0, 120)}`).toBe(false);
-  });
-  it.fails.each(results.filter((r) => GAPS.has(r.name)).map((r) => [r.name, r] as const))('BRECHA %s', (_n, r) => {
-    expect(leaks(r.out, KEY), `filtrado: ${r.out.slice(0, 120)}`).toBe(false);
   });
 });
 
@@ -83,19 +79,20 @@ describe('QA redactSecrets: credenciales de otros proveedores sin la clave conoc
     ['query secret', 'https://x/?secret=abcd1234abcd1234abcd1234'],
     ['SK- mayúsculas', 'SK-ABCDEFGHIJKLMNOPQRSTUVWXYZ'],
   ];
-  const GAP_FORMATS = new Set(['groq', 'xai', 'huggingface', 'perplexity', 'github', 'aws', 'json api_key', 'json apiKey', 'x-api-key',
-    'authorization sin Bearer', 'query access_token', 'query api-key', 'query auth', 'query secret', 'SK- mayúsculas']);
-  // Brechas conocidas (menor, defensa en profundidad: la clave activa sí se redacta por literal).
-  it.fails.each(samples.filter(([n]) => GAP_FORMATS.has(n)))('BRECHA %s', (_n, text) => {
-    const out = redactSecrets(text);
-    const m = /(?:sk-[\w-]{8,}|AIza\w{20,}|gsk_\w+|xai-[\w-]+|hf_\w+|pplx-[\w-]+|ghp_\w+|AKIA\w+|abcd1234abcd1234abcd1234)/i.exec(text);
-    expect(out).not.toContain(m![0].slice(0, 12));
-  });
-  it.each(samples.filter(([n]) => !GAP_FORMATS.has(n)))('%s', (_n, text) => {
+  // Los formatos que QA marcó como brecha (groq, xai, hf, pplx, ghp, AKIA, JSON, cabeceras, query, SK-) ya se borran.
+  it.each(samples)('%s', (_n, text) => {
     const out = redactSecrets(text);
     const m = /(?:sk-[\w-]{8,}|AIza\w{20,}|gsk_\w+|xai-[\w-]+|hf_\w+|pplx-[\w-]+|ghp_\w+|AKIA\w+|abcd1234abcd1234abcd1234)/i.exec(text);
     expect(m, 'muestra mal formada').not.toBeNull();
     expect(out, `credencial visible: ${out}`).not.toContain(m![0].slice(0, 12));
+  });
+
+  it('clave de caracteres repetidos sobre 100k repeticiones: tiempo lineal', () => {
+    const t0 = performance.now();
+    const out = redactSecrets('aaaa'.repeat(25_000) + ' fin', 'a'.repeat(40));
+    expect(out).toBe('[redacted] fin');
+    redactSecrets('ab'.repeat(50_000), 'ab'.repeat(30) + 'c');
+    expect(performance.now() - t0).toBeLessThan(1000);
   });
 
   it('tiempo lineal con entradas de 5 MB y con claves hostiles', () => {

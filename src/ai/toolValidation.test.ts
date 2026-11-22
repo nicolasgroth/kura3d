@@ -73,6 +73,35 @@ describe('validateToolCall', () => {
     }
   });
 
+  it('applies the shared operation ranges (operationLimits), the same as the command bus', () => {
+    const bad: Array<[string, unknown]> = [
+      ['transform_object', { scale: [0, 1, 1] }],
+      ['transform_object', { scale: [-1, 1, 1] }],
+      ['transform_object', { scale: [99999, 1, 1] }],
+      ['transform_object', { position: [1e6, 0, 0] }],
+      ['hollow_object', { wallThickness: 1e5 }],
+      ['hollow_object', { wallThickness: 0.1 }],
+      ['plane_cut', { connectorCount: 9 }],
+      ['plane_cut', { connectorCount: 64 }],
+      ['plane_cut', { tolerance: 6 }],
+      ['apply_texture', { pattern: 'fuzzy', depth: 99999 }],
+      ['apply_texture', { pattern: 'fuzzy', scale: 0 }],
+    ];
+    for (const [name, args] of bad) {
+      expect(validateToolCall(name, args).ok, `${name} ${JSON.stringify(args)}`).toBe(false);
+    }
+    const good: Array<[string, unknown]> = [
+      ['transform_object', { scale: [0.001, 1000, 1] }],
+      ['hollow_object', { wallThickness: 100 }],
+      ['plane_cut', { connectorCount: 0 }],
+      ['plane_cut', { connectorCount: 8 }],
+      ['apply_texture', { pattern: 'fuzzy', depth: 0, scale: 1000 }],
+    ];
+    for (const [name, args] of good) {
+      expect(validateToolCall(name, args).ok, `${name} ${JSON.stringify(args)}`).toBe(true);
+    }
+  });
+
   it('drops null values and copies arrays so the provider payload cannot be mutated later', () => {
     const position = [1, 2, 3];
     const result = validateToolCall('transform_object', { id: null, position });

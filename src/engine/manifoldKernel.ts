@@ -13,6 +13,7 @@ import Module, {
   type Mesh as ManifoldMesh,
 } from 'manifold-3d';
 import type { MeshData } from '../types/kura';
+import { EngineError } from './engineErrors';
 
 /** Promesa singleton cacheada para evitar múltiples cargas del módulo WASM. */
 let manifoldPromise: Promise<ManifoldToplevel> | null = null;
@@ -238,6 +239,16 @@ export function computeVertexNormals(
   return normals;
 }
 
+/** `new Manifold(mesh)` con el `ManifoldError` del WASM convertido en `EngineError('MESH_INVALID')`. */
+function constructManifold(wasm: ManifoldToplevel, mesh: ManifoldMesh): Manifold {
+  try {
+    return new wasm.Manifold(mesh);
+  } catch (err) {
+    const cause = err instanceof Error ? err.message : String((err as { code?: unknown })?.code ?? err);
+    throw new EngineError('MESH_INVALID', { cause });
+  }
+}
+
 /**
  * Convierte una malla `MeshData` de Kura3D (sistema Y-up en mm) a un sólido `Manifold`.
  * Opcionalmente asocia IDs originales (`originalID`) agrupando triángulos por color para
@@ -256,7 +267,10 @@ export function meshDataToManifold(
   fallbackColor = '#38bdf8'
 ): Manifold {
   if (mesh.positions.length === 0 || mesh.indices.length === 0) {
-    throw new Error('No se puede construir un sólido Manifold a partir de una malla vacía.');
+    throw new EngineError('MESH_EMPTY', { operation: 'manifold' });
+  }
+  for (let i = 0; i < mesh.positions.length; i++) {
+    if (!Number.isFinite(mesh.positions[i])) throw new EngineError('MESH_INVALID', { cause: 'NonFiniteVertex' });
   }
 
   const triCount = Math.floor(mesh.indices.length / 3);
@@ -321,7 +335,7 @@ export function meshDataToManifold(
   // Asegura la fusión topológica de vértices coincidentes si la malla venía sin índices compartidos
   manifoldMesh.merge();
 
-  let manifold = new wasm.Manifold(manifoldMesh);
+  let manifold = constructManifold(wasm, manifoldMesh);
   if (manifold.status() !== 'NoError') {
     // Segundo intento soldando explícitamente vértices cercanos (útil para STL/OBJ importados con tolerancia)
     manifold.delete();
@@ -332,11 +346,11 @@ export function meshDataToManifold(
       triVerts: welded.indices,
     });
     retryMesh.merge();
-    manifold = new wasm.Manifold(retryMesh);
+    manifold = constructManifold(wasm, retryMesh);
     if (manifold.status() !== 'NoError') {
       const status = manifold.status();
       manifold.delete();
-      throw new Error(`La malla no es un sólido 2-manifold válido (${status}).`);
+      throw new EngineError('MESH_INVALID', { cause: String(status) });
     }
   }
 

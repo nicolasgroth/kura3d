@@ -15,8 +15,10 @@ import {
   EngineError,
   engineWarning,
   requireNumberInRange,
+  requireOperationRange,
   type EngineWarning,
 } from './engineErrors';
+import { OPERATION_RANGES } from './operationLimits';
 import {
   createColorRegistry,
   initManifoldEngine,
@@ -66,7 +68,7 @@ export async function hollowMeshDetailed(
   obj: SceneObject,
   options: HollowOptions
 ): Promise<HollowResult> {
-  const t = requireNumberInRange('wallThickness', options.wallThickness, 0.2, 100);
+  const t = requireOperationRange('wallThickness', options.wallThickness, OPERATION_RANGES.hollow.wallThickness);
   const scale = obj.scale.map((s) => Math.abs(s));
   if (scale.some((s) => !Number.isFinite(s) || s < 1e-6)) {
     throw new EngineError('INVALID_PARAMETER', { name: 'scale', value: obj.scale.join(','), min: 1e-6, max: 1e6 });
@@ -125,7 +127,7 @@ export async function hollowMeshDetailed(
       const holeR = requireNumberInRange(
         'drainHoleRadius',
         options.drainHoleRadius,
-        0.3,
+        OPERATION_RANGES.hollow.drainHoleRadius.min,
         Math.max(0.6, Math.min(dx, dz) * 0.45),
         defaultR
       );

@@ -81,7 +81,7 @@ describe('QA bus: bordes de rango y estado guardable', () => {
   }, 60_000);
 
   // BRECHA (mayor): simplify_mesh con tolerancia 100 (dentro del rango del bus) devuelve ok:true y deja el objeto con malla vacía.
-  it.fails('simplify_mesh con tolerancia gigante no deja una malla vacía aceptada', async () => {
+  it('simplify_mesh con tolerancia gigante no deja una malla vacía aceptada', async () => {
     const box = await addBox(10);
     const res = await run('simplify_mesh', { id: box.id, toleranceMm: 100 });
     assertSceneSane('simplify 100');

@@ -3,8 +3,8 @@
  * @description Reglas de red y de secretos para los proveedores IA. Una URL de proveedor se acepta si es
  * `https://` hacia un host de la lista permitida del usuario (por defecto los oficiales) o hacia loopback,
  * o `http://` solo hacia loopback. Es la misma regla que aplica el proxy nativo en
- * `src-tauri/src/ai_hosts.rs`, que en escritorio es quien decide. También borra claves de cualquier texto
- * antes de mostrarlo o registrarlo.
+ * `src-tauri/src/ai_hosts.rs`, que en escritorio es quien decide. Reexporta `redactSecrets`
+ * (`secretRedaction.ts`), que borra claves de cualquier texto antes de mostrarlo o registrarlo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -73,42 +73,5 @@ export function isAllowedProviderUrl(value: string, allowedHosts: readonly strin
   return allowedHosts.some((pattern) => hostMatches(pattern, host));
 }
 
-// Formatos habituales de claves y parámetros de autenticación que algunos proveedores repiten en errores.
-const SECRET_PATTERNS: RegExp[] = [
-  /\bsk-[A-Za-z0-9_-]{8,}/g,
-  /\bAIza[0-9A-Za-z_-]{20,}/g,
-  /([?&](?:key|api_key|apikey|token)=)[^&\s"']+/gi,
-  /(Bearer\s+)[A-Za-z0-9._~+/=-]{8,}/gi,
-];
-
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-/**
- * Expresiones que encuentran la clave tal cual y en las formas en que un proveedor suele repetirla:
- * codificada como URL (`%2F`), escapada como JSON (`\"`, `\\`), en otra capitalización y partida
- * por espacios o saltos de línea. Todas son literales (sin cuantificadores anidados): tiempo lineal.
- */
-function secretMatchers(secret: string): RegExp[] {
-  const variants = new Set([secret, encodeURIComponent(secret), JSON.stringify(secret).slice(1, -1)]);
-  const matchers = [...variants].map((v) => new RegExp(escapeRegExp(v), 'gi'));
-  const compact = secret.replace(/\s+/g, '');
-  // Partida por espacios: solo con claves largas, para no tapar texto legítimo.
-  if (compact.length >= 8) {
-    matchers.push(new RegExp([...compact].map(escapeRegExp).join('\\s*'), 'gi'));
-  }
-  return matchers;
-}
-
-/** Sustituye la clave dada (y sus variantes codificadas) y patrones de credenciales conocidos por `[redacted]`. */
-export function redactSecrets(text: string, secret?: string): string {
-  let result = text;
-  const trimmed = secret?.trim();
-  if (trimmed && trimmed.length >= 4) {
-    for (const matcher of secretMatchers(trimmed)) result = result.replace(matcher, '[redacted]');
-  }
-  for (const pattern of SECRET_PATTERNS) {
-    result = result.replace(pattern, (match, prefix?: string) =>
-      typeof prefix === 'string' && match.startsWith(prefix) ? `${prefix}[redacted]` : '[redacted]');
-  }
-  return result;
-}
+// El borrado de claves vive en `secretRedaction.ts`; se reexporta para los consumidores existentes.
+export { redactSecrets } from './secretRedaction';

@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import type { OperationRange } from '../engine/operationLimits';
 import type { Vec3 } from '../types/kura';
 import { CommandError } from './commandErrors';
 import { isFiniteVec3, isValidScale, MAX_ABS_COORDINATE, MAX_SCALE, MIN_SCALE } from './transformLimits';
@@ -63,6 +64,14 @@ export function readNumber(p: RawParams, rule: NumberRule, ...keys: string[]): n
     (!rule.integer || Number.isInteger(value));
   if (!ok) throw invalid(key, describeRule(rule));
   return value as number;
+}
+
+/** Número dentro de un rango de la fuente única (`operationLimits`). */
+export function readRange(p: RawParams, range: OperationRange, ...keys: string[]): number | undefined {
+  const rule: NumberRule = range.exclusiveMin
+    ? { gt: range.min, min: range.min, max: range.max, integer: range.integer }
+    : { min: range.min, max: range.max, integer: range.integer };
+  return readNumber(p, rule, ...keys);
 }
 
 /** Longitud positiva en mm (0, max]. */

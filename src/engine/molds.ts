@@ -23,7 +23,8 @@ import {
   manifoldToMeshData,
   meshDataToManifold,
 } from './manifoldKernel';
-import { EngineError } from './engineErrors';
+import { EngineError, requireOperationRange } from './engineErrors';
+import { OPERATION_RANGES } from './operationLimits';
 import { buildPourChannels, countSealedVoids, type AxisBox } from './moldChannels';
 import { applyTransformToMesh, normalizeMeshToBed } from './primitives';
 import { inwardOffset } from './solidOffset';
@@ -261,11 +262,13 @@ export async function generateMold(
     obj.scale
   );
 
-  const wallMargin = Math.max(1.5, options.wallMarginMm || 5);
-  const boxWall = Math.max(1.2, options.boxWallMm || 3);
-  const pourSpoutRadius = Math.max(1.5, options.pourSpoutRadiusMm || 6);
-  const keyTolerance = Math.max(0.05, options.keyToleranceMm ?? 0.25);
-  const cavityWall = Math.max(0.8, options.cavityWallMm || 3);
+  // Rangos de la fuente única: fuera de rango es error tipado, no un valor acotado en silencio.
+  const R = OPERATION_RANGES.mold;
+  const wallMargin = requireOperationRange('wallMarginMm', options.wallMarginMm, R.wallMarginMm, 5);
+  const boxWall = requireOperationRange('boxWallMm', options.boxWallMm, R.boxWallMm, 3);
+  const pourSpoutRadius = requireOperationRange('pourSpoutRadiusMm', options.pourSpoutRadiusMm, R.pourSpoutRadiusMm, 6);
+  const keyTolerance = requireOperationRange('keyToleranceMm', options.keyToleranceMm, R.keyToleranceMm, 0.25);
+  const cavityWall = requireOperationRange('cavityWallMm', options.cavityWallMm, R.cavityWallMm, 3);
 
   let master: Manifold | null = null;
   const handles: Manifold[] = [];

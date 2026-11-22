@@ -891,10 +891,14 @@ export const TRANSLATIONS_ES = {
   'engineError.IMAGE_BUFFER_INVALID': 'Imagen inválida: {width}×{height} px requiere {expected} bytes RGBA y llegaron {actual}.',
   'engineError.IMAGE_NO_FOREGROUND': 'No se detectó ninguna figura en la imagen con el umbral {threshold}.',
   'engineError.IMAGE_SIZE_TOO_SMALL': 'El tamaño {width}×{depth} mm no deja espacio para la figura (margen de {margin} mm por lado).',
+  'engineError.MESH_EMPTY': 'La operación «{operation}» dejó una malla vacía; el objeto no se modificó.',
+  'engineError.MESH_INVALID': 'La malla no es un sólido cerrado válido ({cause}).',
+  'engineError.CUT_PLANE_OUTSIDE': 'El plano de corte en {axis} = {offset} mm no atraviesa el objeto (interior entre {min} y {max} mm).',
   'engineWarning.REFINE_LENGTH_CLAMPED': 'Se usó una arista de {effective} mm en vez de {requested} mm para no superar {maxTriangles} triángulos.',
   'engineWarning.REFINE_NO_CHANGE': 'La malla ya tiene aristas de {edge} mm o menos: no se agregaron triángulos ({triangles}).',
   'engineWarning.REFINE_SMOOTH_REVERTED': 'El suavizado cambiaba las medidas en {deviation} mm (tolerancia {tolerance} mm); se aplicó solo el refinado.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Pieza grande: la pared puede llegar a {maxWall} mm (pedido {thickness} mm).',
+  'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '{count} pieza(s) separadas por color no son sólidos cerrados; revísalas antes de imprimir.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -1747,10 +1751,14 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'engineError.IMAGE_BUFFER_INVALID': 'Invalid image: {width}×{height} px requires {expected} RGBA bytes but {actual} arrived.',
   'engineError.IMAGE_NO_FOREGROUND': 'No shape was detected in the image with threshold {threshold}.',
   'engineError.IMAGE_SIZE_TOO_SMALL': 'A size of {width}×{depth} mm leaves no room for the shape ({margin} mm margin per side).',
+  'engineError.MESH_EMPTY': 'The "{operation}" operation left an empty mesh; the object was not changed.',
+  'engineError.MESH_INVALID': 'The mesh is not a valid closed solid ({cause}).',
+  'engineError.CUT_PLANE_OUTSIDE': 'The cut plane at {axis} = {offset} mm does not cross the object (interior between {min} and {max} mm).',
   'engineWarning.REFINE_LENGTH_CLAMPED': 'Used a {effective} mm edge instead of {requested} mm to stay under {maxTriangles} triangles.',
   'engineWarning.REFINE_NO_CHANGE': 'The mesh already has edges of {edge} mm or less: no triangles were added ({triangles}).',
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Smoothing changed the dimensions by {deviation} mm (tolerance {tolerance} mm); only refinement was applied.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Large part: the wall may reach {maxWall} mm (requested {thickness} mm).',
+  'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '{count} color-split part(s) are not closed solids; check them before printing.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

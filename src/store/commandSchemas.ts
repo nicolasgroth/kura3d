@@ -30,12 +30,13 @@ import {
 import {
   PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, primitiveRangeFor, type PrimitiveRangeKey,
 } from '../engine/primitiveLimits';
+import { OPERATION_RANGES as OR } from '../engine/operationLimits';
 import { CommandError } from './commandErrors';
 import {
   findObject, resolveIdsOrSelection, resolveObjects, resolveTarget, selectedObjects, type SceneView,
 } from './commandTargets';
 import {
-  nonNegative, pick, positiveMm, readBoolean, readColor, readEnum, readId, readIds, readNumber,
+  nonNegative, pick, readBoolean, readColor, readEnum, readId, readIds, readNumber, readRange,
   readScale, readString, readVec3, type RawParams,
 } from './commandValidation';
 
@@ -106,10 +107,10 @@ export function parseCreatePrimitive(p: RawParams): CreatePrimitiveInput {
 export function parseThread(p: RawParams): ThreadOptions {
   return {
     kind: readEnum(p, ['bolt', 'nut', 'hole'] as const, 'kind') ?? 'bolt',
-    diameterMm: readNumber(p, { min: 2, max: 100 }, 'diameterMm') ?? 8,
-    pitchMm: readNumber(p, { min: 0.3, max: 10 }, 'pitchMm') ?? 1.25,
-    lengthMm: readNumber(p, { min: 2, max: 300 }, 'lengthMm') ?? 20,
-    clearanceMm: readNumber(p, { min: 0, max: 2 }, 'clearanceMm') ?? 0.25,
+    diameterMm: readRange(p, OR.thread.diameterMm, 'diameterMm') ?? 8,
+    pitchMm: readRange(p, OR.thread.pitchMm, 'pitchMm') ?? 1.25,
+    lengthMm: readRange(p, OR.thread.lengthMm, 'lengthMm') ?? 20,
+    clearanceMm: readRange(p, OR.thread.clearanceMm, 'clearanceMm') ?? 0.25,
     includeHead: readBoolean(p, 'includeHead') ?? true,
   };
 }
@@ -128,9 +129,9 @@ export function parseImportSvg(p: RawParams): SvgImportInput {
   return {
     svgContent,
     name: readString(p, NAME_MAX, 'name') ?? 'SVG',
-    depth: readNumber(p, positiveMm(1000), 'depth') ?? 6,
-    targetWidth: readNumber(p, positiveMm(10_000), 'targetWidth') ?? 60,
-    curveSegments: readNumber(p, { min: 1, max: 128, integer: true }, 'curveSegments') ?? 12,
+    depth: readRange(p, OR.svg.depth, 'depth') ?? 6,
+    targetWidth: readRange(p, OR.svg.targetWidth, 'targetWidth') ?? 60,
+    curveSegments: readRange(p, OR.svg.curveSegments, 'curveSegments') ?? 12,
   };
 }
 
@@ -252,9 +253,9 @@ export function parseEditableTarget(scene: SceneView, p: RawParams): SceneObject
 export function parseHollow(scene: SceneView, p: RawParams) {
   return {
     target: resolveTarget(scene, p, { unlocked: true }),
-    wallThickness: readNumber(p, positiveMm(100), 'wallThickness') ?? 2,
+    wallThickness: readRange(p, OR.hollow.wallThickness, 'wallThickness') ?? 2,
     drainHole: readBoolean(p, 'drainHole') ?? false,
-    drainHoleRadius: readNumber(p, positiveMm(100), 'drainHoleRadius') ?? 4,
+    drainHoleRadius: readRange(p, OR.hollow.drainHoleRadius, 'drainHoleRadius') ?? 4,
   };
 }
 
@@ -263,12 +264,12 @@ export function parsePlaneCut(scene: SceneView, p: RawParams): { target: SceneOb
     target: resolveTarget(scene, p, { unlocked: true }),
     options: {
       axis: readEnum(p, AXES, 'axis') ?? 'y',
-      offset: readNumber(p, {}, 'offset') ?? 0,
+      offset: readRange(p, OR.cut.offset, 'offset') ?? 0,
       connectorType: readEnum(p, ['none', 'dowel', 'peg', 'dovetail'] as const, 'connectorType') ?? 'dowel',
-      connectorSize: readNumber(p, positiveMm(500), 'connectorSize') ?? 4,
-      connectorDepth: readNumber(p, positiveMm(500), 'connectorDepth') ?? 6,
-      tolerance: readNumber(p, nonNegative(5), 'tolerance') ?? 0.25,
-      connectorCount: readNumber(p, { min: 0, max: 8, integer: true }, 'connectorCount') ?? 2,
+      connectorSize: readRange(p, OR.cut.connectorSize, 'connectorSize') ?? 4,
+      connectorDepth: readRange(p, OR.cut.connectorDepth, 'connectorDepth') ?? 6,
+      tolerance: readRange(p, OR.cut.tolerance, 'tolerance') ?? 0.25,
+      connectorCount: readRange(p, OR.cut.connectorCount, 'connectorCount') ?? 2,
       keepMode: readEnum(p, ['both', 'positive', 'negative'] as const, 'keepMode') ?? 'both',
     },
   };
@@ -279,8 +280,8 @@ export function parseTexture(scene: SceneView, p: RawParams): { target: SceneObj
     target: resolveTarget(scene, p, { unlocked: true }),
     options: {
       pattern: readEnum(p, ['none', 'fuzzy', 'knurling', 'waves', 'honeycomb', 'grid'] as const, 'pattern') ?? 'fuzzy',
-      depth: readNumber(p, nonNegative(50), 'depth') ?? 0.4,
-      scale: readNumber(p, positiveMm(1000), 'scale') ?? 4,
+      depth: readRange(p, OR.texture.depth, 'depth') ?? 0.4,
+      scale: readRange(p, OR.texture.scale, 'scale') ?? 4,
     },
   };
 }
@@ -298,13 +299,13 @@ export function parseMold(scene: SceneView, p: RawParams): { target: SceneObject
     target: resolveTarget(scene, p),
     options: {
       mode: readEnum(p, ['direct_1part', 'direct_2part', 'silicone_master', 'core_cavity'] as const, 'mode') ?? 'silicone_master',
-      wallMarginMm: readNumber(p, positiveMm(500), 'wallMarginMm') ?? 6,
-      boxWallMm: readNumber(p, positiveMm(500), 'boxWallMm') ?? 3,
+      wallMarginMm: readRange(p, OR.mold.wallMarginMm, 'wallMarginMm') ?? 6,
+      boxWallMm: readRange(p, OR.mold.boxWallMm, 'boxWallMm') ?? 3,
       splitAxis: readEnum(p, ['x', 'z'] as const, 'splitAxis') ?? 'x',
       pourSpout: readBoolean(p, 'pourSpout') ?? true,
-      pourSpoutRadiusMm: readNumber(p, positiveMm(500), 'pourSpoutRadiusMm') ?? 5,
-      keyToleranceMm: readNumber(p, nonNegative(5), 'keyToleranceMm') ?? 0.25,
-      cavityWallMm: readNumber(p, positiveMm(500), 'cavityWallMm') ?? 3,
+      pourSpoutRadiusMm: readRange(p, OR.mold.pourSpoutRadiusMm, 'pourSpoutRadiusMm') ?? 5,
+      keyToleranceMm: readRange(p, OR.mold.keyToleranceMm, 'keyToleranceMm') ?? 0.25,
+      cavityWallMm: readRange(p, OR.mold.cavityWallMm, 'cavityWallMm') ?? 3,
     },
   };
 }
@@ -321,11 +322,11 @@ export function parseProjection(
       svgContent: readString(p, SVG_MAX, 'svgContent'),
       mode: readEnum(p, ['emboss', 'deboss', 'flush_inlay'] as const, 'mode') ?? 'emboss',
       axis: readEnum(p, ['+z', '-z', '+x', '-x', '+y', '-y', 'cylindrical'] as const, 'axis') ?? '+z',
-      widthMm: readNumber(p, positiveMm(10_000), 'widthMm') ?? 18,
-      depthMm: readNumber(p, positiveMm(500), 'depthMm') ?? 1.2,
+      widthMm: readRange(p, OR.projection.widthMm, 'widthMm') ?? 18,
+      depthMm: readRange(p, OR.projection.depthMm, 'depthMm') ?? 1.2,
       colorHex: readColor(p, 'colorHex') ?? '#f97316',
-      offsetU: readNumber(p, {}, 'offsetU') ?? 0,
-      offsetV: readNumber(p, {}, 'offsetV') ?? 0,
+      offsetU: readRange(p, OR.projection.offsetU, 'offsetU') ?? 0,
+      offsetV: readRange(p, OR.projection.offsetV, 'offsetV') ?? 0,
     },
   };
 }
@@ -333,22 +334,22 @@ export function parseProjection(
 export function parsePrintability(scene: SceneView, p: RawParams) {
   return {
     target: resolveTarget(scene, p),
-    infillPercent: readNumber(p, { min: 0, max: 100 }, 'infillPercent') ?? 18,
-    overhangAngleDeg: readNumber(p, { min: 0, max: 90 }, 'overhangAngleDeg') ?? 45,
+    infillPercent: readRange(p, OR.printability.infillPercent, 'infillPercent') ?? 18,
+    overhangAngleDeg: readRange(p, OR.printability.overhangAngleDeg, 'overhangAngleDeg') ?? 45,
   };
 }
 
 export function parseSimplify(scene: SceneView, p: RawParams) {
   return {
     target: resolveTarget(scene, p, { unlocked: true }),
-    toleranceMm: readNumber(p, positiveMm(100), 'toleranceMm') ?? 0.15,
+    toleranceMm: readRange(p, OR.simplify.toleranceMm, 'toleranceMm') ?? 0.15,
   };
 }
 
 export function parseRefine(scene: SceneView, p: RawParams) {
   return {
     target: resolveTarget(scene, p, { unlocked: true }),
-    targetEdgeLengthMm: readNumber(p, { min: 0.05, max: 1000 }, 'targetEdgeLengthMm') ?? 1.5,
+    targetEdgeLengthMm: readRange(p, OR.refine.targetEdgeLengthMm, 'targetEdgeLengthMm') ?? 1.5,
     smooth: readBoolean(p, 'smooth') ?? false,
   };
 }
@@ -367,7 +368,7 @@ export function parseMirror(scene: SceneView, p: RawParams) {
 export function parseDetect(scene: SceneView, p: RawParams) {
   return {
     target: resolveTarget(scene, p),
-    creaseAngleDeg: readNumber(p, { min: 1, max: 179 }, 'creaseAngleDeg'),
+    creaseAngleDeg: readRange(p, OR.detect.creaseAngleDeg, 'creaseAngleDeg'),
   };
 }
 

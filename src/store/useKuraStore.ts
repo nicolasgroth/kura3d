@@ -2057,7 +2057,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       if (!obj || obj.locked) return [];
 
       try {
-        const parts = engine.splitMeshByColor(obj);
+        const { parts, warnings } = engine.splitMeshByColorDetailed(obj);
         if (parts.length === 0) return [];
 
         const created = parts.map((part, idx) =>
@@ -2077,6 +2077,7 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
           selectedIds: created.map((c) => c.id),
         }));
         get().addToast(tr('toast.splitColorsDone', { count: created.length }), 'success');
+        reportEngineWarnings(warnings);
         return created;
       } catch (err) {
         reportOperationError(err);

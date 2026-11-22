@@ -884,8 +884,12 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineError.IMAGE_BUFFER_INVALID': 'Image invalide : {width}×{height} px exige {expected} octets RGBA, {actual} reçus.',
   'engineError.IMAGE_NO_FOREGROUND': 'Aucune forme détectée dans l\'image avec le seuil {threshold}.',
   'engineError.IMAGE_SIZE_TOO_SMALL': 'La taille {width}×{depth} mm ne laisse pas de place à la forme (marge de {margin} mm par côté).',
+  'engineError.MESH_EMPTY': 'L\'opération « {operation} » a produit un maillage vide ; l\'objet n\'a pas été modifié.',
+  'engineError.MESH_INVALID': 'Le maillage n\'est pas un solide fermé valide ({cause}).',
+  'engineError.CUT_PLANE_OUTSIDE': 'Le plan de coupe {axis} = {offset} mm ne traverse pas l\'objet (intérieur entre {min} et {max} mm).',
   'engineWarning.REFINE_LENGTH_CLAMPED': 'Arête de {effective} mm utilisée au lieu de {requested} mm pour ne pas dépasser {maxTriangles} triangles.',
   'engineWarning.REFINE_NO_CHANGE': 'Le maillage a déjà des arêtes de {edge} mm ou moins : aucun triangle ajouté ({triangles}).',
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Le lissage modifiait les dimensions de {deviation} mm (tolérance {tolerance} mm) ; seul le raffinage a été appliqué.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Grande pièce : la paroi peut atteindre {maxWall} mm (demandé {thickness} mm).',
+  'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '{count} pièce(s) séparées par couleur ne sont pas des solides fermés ; vérifiez-les avant d\'imprimer.',
 };

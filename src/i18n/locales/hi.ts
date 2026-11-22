@@ -884,8 +884,12 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'engineError.IMAGE_BUFFER_INVALID': 'अमान्य छवि: {width}×{height} px के लिए {expected} RGBA बाइट चाहिए, {actual} मिले।',
   'engineError.IMAGE_NO_FOREGROUND': 'सीमा {threshold} के साथ छवि में कोई आकृति नहीं मिली।',
   'engineError.IMAGE_SIZE_TOO_SMALL': '{width}×{depth} mm आकार में आकृति के लिए जगह नहीं है (हर ओर {margin} mm किनारा)।',
+  'engineError.MESH_EMPTY': '"{operation}" ऑपरेशन से खाली मेश बना; ऑब्जेक्ट नहीं बदला गया।',
+  'engineError.MESH_INVALID': 'मेश एक मान्य बंद ठोस नहीं है ({cause})।',
+  'engineError.CUT_PLANE_OUTSIDE': '{axis} = {offset} mm पर कट प्लेन ऑब्जेक्ट को पार नहीं करता (भीतरी सीमा {min} से {max} mm)।',
   'engineWarning.REFINE_LENGTH_CLAMPED': '{maxTriangles} त्रिभुजों से अधिक न हो, इसलिए {requested} mm के बजाय {effective} mm किनारा उपयोग हुआ।',
   'engineWarning.REFINE_NO_CHANGE': 'मेश के किनारे पहले से {edge} mm या कम हैं: कोई त्रिभुज नहीं जोड़ा गया ({triangles})।',
   'engineWarning.REFINE_SMOOTH_REVERTED': 'स्मूदिंग से माप {deviation} mm बदल रहे थे (सहनशीलता {tolerance} mm); केवल रिफ़ाइन लागू हुआ।',
   'engineWarning.HOLLOW_COARSE_GRID': 'बड़ा भाग: दीवार {maxWall} mm तक हो सकती है (माँगी {thickness} mm)।',
+  'engineWarning.SPLIT_COLOR_NON_MANIFOLD': 'रंग से अलग किए गए {count} भाग बंद ठोस नहीं हैं; प्रिंट से पहले जाँचें।',
 };

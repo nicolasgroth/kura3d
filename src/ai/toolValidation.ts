@@ -8,8 +8,9 @@
  * @license MIT
  */
 
+import { describeOperationRange, isInOperationRange, type OperationRange } from '../engine/operationLimits';
 import type { KuraCommandRequest } from '../types/kura';
-import { KURA_TOOL_SCHEMAS } from './toolSchemas';
+import { KURA_TOOL_SCHEMAS, TOOL_PARAM_RANGES } from './toolSchemas';
 
 /** Máximo de llamadas de herramienta que se ejecutan en un mismo turno de chat. */
 export const MAX_TOOL_CALLS_PER_TURN = 8;
@@ -18,11 +19,7 @@ const MAX_ABS_NUMBER = 100_000;
 const MAX_STRING_LENGTH = 200;
 const MAX_TEXT_LENGTH = 500;
 const VECTOR_KEYS = new Set(['position', 'rotation', 'scale']);
-const POSITIVE_KEYS = new Set([
-  'width', 'height', 'depth', 'radius', 'outerRadius', 'innerRadius', 'wallThickness',
-]);
-const NON_NEGATIVE_KEYS = new Set(['tolerance', 'connectorCount']);
-const INTEGER_KEYS = new Set(['connectorCount']);
+const POSITIVE_KEYS = new Set(['width', 'height', 'radius', 'outerRadius', 'innerRadius']);
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 const SCHEMAS = new Map(KURA_TOOL_SCHEMAS.map((schema) => [schema.name, schema]));
@@ -36,24 +33,33 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
     && Object.getPrototypeOf(value) === Object.prototype;
 }
 
-function checkNumber(key: string, value: unknown, spec: Record<string, unknown> = {}): string | null {
+function checkNumber(
+  key: string,
+  value: unknown,
+  spec: Record<string, unknown> = {},
+  range?: OperationRange,
+): string | null {
   if (typeof value !== 'number' || !Number.isFinite(value) || Math.abs(value) > MAX_ABS_NUMBER) {
     return `"${key}" must be a finite number within ±${MAX_ABS_NUMBER}`;
   }
+  // Rango de la fuente única (`operationLimits`), el mismo que aplica el Command Bus.
+  if (range && !isInOperationRange(value, range)) return `"${key}" must be ${describeOperationRange(range)}`;
+  if (spec.type === 'integer' && !Number.isInteger(value)) return `"${key}" must be an integer`;
   // Rango declarado en el esquema (para primitivas, el mismo del motor: `primitiveLimits`).
   const { minimum, maximum } = spec;
   if ((typeof minimum === 'number' && value < minimum) || (typeof maximum === 'number' && value > maximum)) {
     return `"${key}" must be between ${String(minimum ?? -MAX_ABS_NUMBER)} and ${String(maximum ?? MAX_ABS_NUMBER)}`;
   }
   if (POSITIVE_KEYS.has(key) && value <= 0) return `"${key}" must be greater than 0`;
-  if (NON_NEGATIVE_KEYS.has(key) && value < 0) return `"${key}" must not be negative`;
-  if (INTEGER_KEYS.has(key) && (!Number.isInteger(value) || value > 64)) {
-    return `"${key}" must be an integer between 0 and 64`;
-  }
   return null;
 }
 
-function checkValue(key: string, spec: Record<string, unknown>, value: unknown): string | null {
+function checkValue(
+  key: string,
+  spec: Record<string, unknown>,
+  value: unknown,
+  range?: OperationRange,
+): string | null {
   switch (spec.type) {
     case 'string': {
       if (typeof value !== 'string') return `"${key}" must be a string`;
@@ -70,14 +76,15 @@ function checkValue(key: string, spec: Record<string, unknown>, value: unknown):
       return null;
     }
     case 'number':
-      return checkNumber(key, value, spec);
+    case 'integer':
+      return checkNumber(key, value, spec, range);
     case 'boolean':
       return typeof value === 'boolean' ? null : `"${key}" must be a boolean`;
     case 'array': {
       if (!Array.isArray(value)) return `"${key}" must be an array`;
       if (VECTOR_KEYS.has(key) && value.length !== 3) return `"${key}" must have 3 numbers`;
       for (const item of value) {
-        const error = checkNumber(key, item);
+        const error = checkNumber(key, item, (spec.items ?? {}) as Record<string, unknown>, range);
         if (error) return error;
       }
       return null;
@@ -110,13 +117,15 @@ export function validateToolCall(name: unknown, rawArgs: unknown): ToolValidatio
   }
 
   const properties = schema.parameters.properties;
+  const ranges = TOOL_PARAM_RANGES[schema.name] ?? {};
   const params: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(args)) {
     if (!Object.prototype.hasOwnProperty.call(properties, key)) {
       return { ok: false, error: `Parameter "${key.slice(0, 64)}" is not allowed for "${name}"` };
     }
     if (value === null || value === undefined) continue;
-    const error = checkValue(key, properties[key], value);
+    const range = Object.prototype.hasOwnProperty.call(ranges, key) ? ranges[key] : undefined;
+    const error = checkValue(key, properties[key], value, range);
     if (error) return { ok: false, error };
     params[key] = Array.isArray(value) ? [...value] : value;
   }

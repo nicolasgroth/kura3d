@@ -884,8 +884,12 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineError.IMAGE_BUFFER_INVALID': '图像无效：{width}×{height} px 需要 {expected} 字节 RGBA，实际收到 {actual}。',
   'engineError.IMAGE_NO_FOREGROUND': '在阈值 {threshold} 下未在图像中检测到图形。',
   'engineError.IMAGE_SIZE_TOO_SMALL': '{width}×{depth} mm 的尺寸没有为图形留出空间（每边 {margin} mm 边距）。',
+  'engineError.MESH_EMPTY': '“{operation}”操作得到了空网格；对象未被修改。',
+  'engineError.MESH_INVALID': '网格不是有效的封闭实体（{cause}）。',
+  'engineError.CUT_PLANE_OUTSIDE': '位于 {axis} = {offset} mm 的切割平面没有穿过对象（内部范围 {min} 到 {max} mm）。',
   'engineWarning.REFINE_LENGTH_CLAMPED': '为不超过 {maxTriangles} 个三角形，使用了 {effective} mm 边长而非 {requested} mm。',
   'engineWarning.REFINE_NO_CHANGE': '网格边长已不大于 {edge} mm：未添加三角形（{triangles}）。',
   'engineWarning.REFINE_SMOOTH_REVERTED': '平滑会使尺寸变化 {deviation} mm（公差 {tolerance} mm）；仅应用了细分。',
   'engineWarning.HOLLOW_COARSE_GRID': '大型零件：壁厚可能达到 {maxWall} mm（要求 {thickness} mm）。',
+  'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '按颜色拆分出的 {count} 个零件不是封闭实体；打印前请检查。',
 };
