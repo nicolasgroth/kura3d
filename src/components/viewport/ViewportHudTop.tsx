@@ -77,7 +77,7 @@ export const ViewportHudTop: React.FC = () => {
         <div className="kura-hud-bar">
           <div className="kura-hud-card">
             <Camera size={13} style={{ color: 'var(--tool-accent)' }} />
-            {(['iso', 'top', 'front', 'right'] as CameraPresetType[]).map((preset) => (
+            {(['iso', 'top', 'front', 'right'] as const satisfies readonly CameraPresetType[]).map((preset) => (
               <button
                 key={preset}
                 type="button"

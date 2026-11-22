@@ -72,7 +72,8 @@ export type SettingsTabType = 'appearance' | 'project' | 'ai' | 'mcp' | 'about';
 export type MeasuresFocus = 'unit' | 'printer';
 export type CommandSourceType = 'ui' | 'mcp' | 'ai';
 export type PaintBrushMode = 'brush' | 'smart_fill' | 'whole';
-export type CameraPresetType = 'iso' | 'top' | 'front' | 'right' | 'fit';
+/** 'fit': selección o escena; 'scene': toda la escena (abrir/recuperar); 'ensure': mostrar `ids` solo si no están a la vista. */
+export type CameraPresetType = 'iso' | 'top' | 'front' | 'right' | 'fit' | 'scene' | 'ensure';
 
 export interface ToastMessage {
   id: string;
@@ -144,7 +145,7 @@ export interface KuraStoreState {
   paintRadiusMm: number;
   paintMode: PaintBrushMode;
   eraseRadiusMm: number;
-  cameraRequest: { preset: CameraPresetType; nonce: number } | null;
+  cameraRequest: { preset: CameraPresetType; nonce: number; ids?: string[] } | null;
 
   // Plano de corte visual (Rayos X / Sección), Validador y Segmentación Estructural Local
   sectionPlane: { enabled: boolean; heightMm: number };
@@ -214,7 +215,7 @@ export interface KuraStoreState {
     patch: Partial<{ paintColor: string; paintRadiusMm: number; paintMode: PaintBrushMode }>,
   ) => void;
   setEraseRadiusMm: (radiusMm: number) => void;
-  requestCameraPreset: (preset: CameraPresetType) => void;
+  requestCameraPreset: (preset: CameraPresetType, ids?: string[]) => void;
   setActiveDialog: (dialog: ActiveDialogType) => void;
   setSettingsTab: (tab: SettingsTabType) => void;
   openSettings: (tab?: SettingsTabType) => void;

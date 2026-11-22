@@ -120,6 +120,7 @@ export function createSplitSlice(ctx: StoreContext): Partial<KuraStoreState> {
       if (patches.length === 0) return true;
       commitChange(change({ patches }));
       get().addToast(tr(mode === 'print' ? 'split.toast.arrangedPrint' : 'split.toast.arrangedAssembly', { count: group.parts.length }), 'success');
+      get().requestCameraPreset('ensure', group.parts.map((p) => p.id));
       return true;
     },
   };

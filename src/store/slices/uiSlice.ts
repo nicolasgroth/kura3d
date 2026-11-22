@@ -161,8 +161,8 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     setSelectedRegionId: (selectedRegionId) => set({ selectedRegionId }),
     setPaintSettings: (patch) => set((state) => ({ ...state, ...patch })),
     setEraseRadiusMm: (eraseRadiusMm) => set({ eraseRadiusMm }),
-    requestCameraPreset: (preset) =>
-      set((state) => ({ cameraRequest: { preset, nonce: (state.cameraRequest?.nonce ?? 0) + 1 } })),
+    requestCameraPreset: (preset, ids) =>
+      set((state) => ({ cameraRequest: { preset, nonce: (state.cameraRequest?.nonce ?? 0) + 1, ...(ids ? { ids } : {}) } })),
 
     setActiveDialog: (activeDialog) => set({ activeDialog }),
     setSettingsTab: (settingsTab) => set({ settingsTab }),

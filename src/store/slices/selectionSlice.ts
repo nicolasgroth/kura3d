@@ -183,13 +183,16 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       const { change, moved, fitsBed } = ops.alignObjects(objects, targetObjs, mode, printerProfile);
       pushHistory();
       set((state) => ({ objects: ops.applySceneChange(state.objects, change) }));
-      get().addToast(tr(`toast.alignedDone.${mode}`), 'success');
-      if (!fitsBed) {
+      // Un solo aviso coherente: si la distribución no cabe, no se anuncia como lograda.
+      if (fitsBed) {
+        get().addToast(tr(`toast.alignedDone.${mode}`), 'success');
+      } else {
         get().addToast(
           tr('store.align.overflow', { width: printerProfile.bedWidthMm, depth: printerProfile.bedDepthMm }),
           'error',
         );
       }
+      get().requestCameraPreset('ensure', targetObjs.map((o) => o.id));
       return { moved, fitsBed };
     },
   };

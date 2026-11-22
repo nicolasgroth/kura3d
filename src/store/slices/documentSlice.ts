@@ -54,7 +54,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
       commandPaletteOpen: false,
       cutPreview: { ...state.cutPreview, active: false, objectId: null },
       spawnedAtById: {},
-      cameraRequest: { preset: 'fit', nonce: (state.cameraRequest?.nonce ?? 0) + 1 },
+      cameraRequest: { preset: 'scene', nonce: (state.cameraRequest?.nonce ?? 0) + 1 },
     }));
   };
 
