@@ -1342,4 +1342,9 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'settings.recent.helpDesktop': 'Speichert den Pfad geöffneter oder gespeicherter Projekte zum Öffnen mit einem Klick. Beim Abschalten wird die Liste gelöscht.',
   'settings.recent.helpWeb': 'Speichert nur Name und Datum (der Browser kann nicht per Pfad öffnen). Beim Abschalten wird die Liste gelöscht.',
   'settings.recent.forget': 'Liste leeren',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': 'Die Verbindung {label} ({a}–{b}) wechselte den Verbinder von {from} zu {to}, damit sich die Teile montieren lassen.',
+  'object.name.looseDowel': 'Dübel Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': 'Teil oder Gruppe „{id}“ nicht gefunden.',
+  'bus.error.assemblyNoTarget': 'Gib groupId oder die ids der geteilten Teile an.',
+  'bus.error.assemblyNotSplit': 'Diese Teile können nicht neu geprüft werden ({reason}): Sie müssen zu einer geteilten Gruppe mit gespeicherten Verbindungen gehören.',
 };

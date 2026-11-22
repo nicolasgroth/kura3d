@@ -41,4 +41,5 @@ export type KuraCommandName =
   | 'detect_structures'
   | 'colorize_structures'
   | 'extract_structure'
-  | 'mirror_object';
+  | 'mirror_object'
+  | 'validate_assembly';

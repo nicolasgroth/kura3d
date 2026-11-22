@@ -18,10 +18,13 @@ import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../m
 import { applyTransformToMesh, normalizeMeshToBed } from '../primitives';
 import { buildBodies, cellKey, contactSection, MIN_CONTACT_MM2, type Cell } from './splitBodies';
 import { buildJoint } from './splitJoints';
+import { closeSplitMesh } from './splitMeshClean';
+import { buildLooseDowelBatch, looseDowelLength } from './splitLooseDowel';
 import { finalAssemblyReport, fixAssemblyBeforeConnectors, type PendingJoint } from './splitAssembly';
+import type { AssemblyFix, AssemblySuggestion } from './assemblyTypes';
 import { SPLIT_DEFAULTS, splitPartCode } from './splitPlan';
 import { AXIS_INDEX } from './splitSections';
-import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitResult, SplitAxis, SplitJoint, SplitPart } from './splitTypes';
+import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitResult, SplitAxis, SplitJoint, SplitLooseDowel, SplitPart } from './splitTypes';
 
 const AXES: SplitAxis[] = ['x', 'y', 'z'];
 const NORMALS: Record<SplitAxis, Vec3> = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] };
@@ -53,6 +56,25 @@ function cutAxis(
     m.delete();
   }
   return out;
+}
+
+/** Tarugos sueltos de las uniones que los conservan, en un lote por medida. */
+function buildLooseDowels(wasm: Awaited<ReturnType<typeof initManifoldEngine>>, joints: SplitJoint[]): SplitLooseDowel[] {
+  const groups = new Map<string, { c: NonNullable<SplitJoint['connector']>; count: number }>();
+  for (const j of joints) {
+    const c = j.connector;
+    if (j.kind !== 'connector' || c?.type !== 'loose-dowel' || j.connectorCenters.length === 0) continue;
+    const key = [c.size, c.depth, c.tolerance].map((v) => v.toFixed(4)).join('|');
+    const g = groups.get(key) ?? { c, count: 0 };
+    g.count += j.connectorCenters.length;
+    groups.set(key, g);
+  }
+  return [...groups.values()].map(({ c, count }) => {
+    const m = buildLooseDowelBatch(wasm, c, count);
+    const out = { diameterMm: 2 * c.size, lengthMm: looseDowelLength(c), count, mesh: manifoldToMeshData(m), volumeMm3: m.volume() };
+    m.delete();
+    return out;
+  });
 }
 
 /**
@@ -111,11 +133,13 @@ export async function executeBedSplitGeometry(
             const label = String(joints.length + 1);
             const addsBefore = low.adds.length;
             const subsBefore = high.subs.length;
+            const lowSubsBefore = low.subs.length;
             const out = await buildJoint(
               wasm,
               {
                 low, high, axis, coord, span: bounds[a][hc[a] + 1] - coord, contact, bounds, label, connector,
                 lapHeightMm: lapHeight, labels, labelPlacement, labelDepthMm: labelDepth, labelMinHeightMm: labelMin,
+                reinforce: options.reinforceWeakJoints !== false,
               },
               warnings,
             );
@@ -123,7 +147,8 @@ export async function executeBedSplitGeometry(
             engraved += out.engraved;
             // Sólidos de conector o solape (sin la marca, que va al final de `high.subs`)
             const subsEnd = high.subs.length - (out.labelPlacement !== null ? 1 : 0);
-            const solids = { adds: low.adds.slice(addsBefore), subs: high.subs.slice(subsBefore, subsEnd) };
+            const lowSubsEnd = low.subs.length - (out.labelPlacement !== null ? 1 : 0);
+            const solids = { adds: low.adds.slice(addsBefore), subs: high.subs.slice(subsBefore, subsEnd), lowSubs: low.subs.slice(lowSubsBefore, lowSubsEnd) };
             low.labels.push(label);
             high.labels.push(label);
             joints.push({
@@ -140,13 +165,13 @@ export async function executeBedSplitGeometry(
 
     // 2b. Montaje posible en algún orden: si no, las uniones que traban pasan a "para pegar"
     const check = options.validateAssembly !== false;
-    let glued: string[] = [];
-    let suggested: string[] = [];
+    let fix: AssemblyFix | null = null;
+    let suggestions: AssemblySuggestion[] = [];
     if (check && joints.some((j) => j.kind !== 'glue')) {
-      const fix = fixAssemblyBeforeConnectors(order, joints, warnings, options.assemblyAutoFix !== false);
-      glued = fix.glued;
-      suggested = fix.suggested;
-      clearance -= fix.clearanceRemoved;
+      const r = fixAssemblyBeforeConnectors(wasm, order, joints, warnings, options.assemblyAutoFix !== false, options.assemblyAllowTypeChange !== false);
+      fix = r.fix;
+      suggestions = r.suggestions;
+      clearance += r.clearanceDelta;
     }
 
     // 3. Aplicar conectores, solapes y marcas, y pasar a mallas
@@ -166,7 +191,7 @@ export async function executeBedSplitGeometry(
         if (m !== b.m) m.delete();
         m = r;
       }
-      const mesh = manifoldToMeshData(m);
+      const mesh = closeSplitMesh(wasm, normalizeMeshToBed(manifoldToMeshData(m))).mesh;
       const bb = m.boundingBox();
       const volume = m.volume();
       if (m !== b.m) m.delete();
@@ -174,7 +199,7 @@ export async function executeBedSplitGeometry(
       parts.push({
         code: b.code,
         cell: b.cell,
-        mesh: normalizeMeshToBed(mesh),
+        mesh,
         assembly: { position: [(bb.min[0] + bb.max[0]) / 2, bb.min[1], (bb.min[2] + bb.max[2]) / 2], rotation: [0, 0, 0] },
         bounds: { min: bb.min as Vec3, max: bb.max as Vec3 },
         volumeMm3: volume,
@@ -187,14 +212,16 @@ export async function executeBedSplitGeometry(
       a: { part: index.get(low)!, code: bodies.get(low)!.code, face: sign(j.axis, '+') },
       b: { part: index.get(high)!, code: bodies.get(high)!.code, face: sign(j.axis, '-') },
     }));
+    const looseDowels = buildLooseDowels(wasm, outJoints);
     const glueJoints = outJoints.filter((j) => j.kind === 'glue').length;
     if (glueJoints > 0 && connector) warnings.push(engineWarning('SPLIT_GLUE_SUMMARY', { count: glueJoints, total: outJoints.length }));
     const assembly = check
-      ? finalAssemblyReport(parts, outJoints, { source: sourceVolume, clearance, engraved }, glued, suggested)
+      ? finalAssemblyReport(parts, outJoints, { source: sourceVolume, clearance, engraved }, fix, suggestions)
       : undefined;
     if (assembly) warnings.push(...assembly.warnings);
     return {
       parts,
+      looseDowels,
       joints: outJoints,
       assembly,
       glueJoints,

@@ -18,10 +18,12 @@ import { connectorFootprintRadius, layoutForCut } from '../cutConnectorLayout';
 import { buildConnectorSolid } from '../cutConnectorSolid';
 import { engineWarning, type EngineWarning } from '../engineErrors';
 import type { SplitBody } from './splitBodies';
-import { buildLapSolids } from './splitLap';
+import { buildLapSolids, type LapRejection } from './splitLap';
+import { buildLooseDowelHoles, layoutType } from './splitLooseDowel';
+import { recommendedConnectorRadius } from './assemblyConnectors';
 import { buildJointLabel, orientedToWorld } from './splitLabels';
 import { buildOutsideLabel } from './splitOutsideLabel';
-import { OPERATION_DEFAULTS } from '../operationLimits';
+import { ASSEMBLY_LIMITS, OPERATION_DEFAULTS } from '../operationLimits';
 import { AXIS_INDEX, islandWidth, orientForAxis } from './splitSections';
 import type { SplitAxis, SplitConnectorOptions, SplitJointKind, SplitLapInfo } from './splitTypes';
 
@@ -33,9 +35,17 @@ const BIG = 1e5;
 /** Profundidad del alojamiento con su pared. */
 export const holeDepth = (c: SplitConnectorOptions) => Math.max(0.8, c.depth + c.tolerance) + CONNECTOR_MIN_WALL_MM;
 
-/** Variantes del conector de mayor a menor, para reducirlo si no cabe. */
-function connectorLadder(c: SplitConnectorOptions): SplitConnectorOptions[] {
-  const out: SplitConnectorOptions[] = [c];
+/**
+ * Variantes del conector de mayor a menor, para reducirlo si no cabe. Con `recommended` (firmeza
+ * activa) y un conector bajo ese radio, antes prueba agrandarlo al recomendado y luego agregar uno más.
+ */
+function connectorLadder(c: SplitConnectorOptions, recommended?: (count: number) => number): SplitConnectorOptions[] {
+  const out: SplitConnectorOptions[] = [];
+  if (recommended && c.size < recommended(c.count) - 1e-6) {
+    out.push({ ...c, size: recommended(c.count) });
+    out.push({ ...c, size: Math.max(c.size, recommended(c.count + 1)), count: c.count + 1 });
+  }
+  out.push(c);
   if (c.count > 1) out.push({ ...c, count: 1 });
   for (const f of [0.75, 0.5]) if (c.size * f >= 1.5) out.push({ ...c, size: c.size * f, count: 1 });
   return out;
@@ -84,6 +94,15 @@ export interface JointInput {
   labelPlacement: 'auto' | 'joint' | 'outside';
   labelDepthMm: number;
   labelMinHeightMm: number;
+  /** Firmeza activa: agranda o agrega conectores bajo el radio recomendado (ver `BedSplitExecuteOptions`). */
+  reinforce?: boolean;
+}
+
+/** Medida mayor de la pieza más chica (por volumen) de la unión, para la regla de firmeza. */
+function smallerPieceDim(low: SplitBody, high: SplitBody): number {
+  const m = low.m.volume() <= high.m.volume() ? low.m : high.m;
+  const bb = m.boundingBox();
+  return Math.max(bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2]);
 }
 
 export interface JointOutcome {
@@ -124,9 +143,15 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     const minWall = connector?.minWallForConnectorMm ?? MIN_WALL_DEFAULT;
     // Pared más delgada que el mínimo en todas las islas: corte liso para pegar, sin deformar
     const thinOnly = islands.length > 0 && islands.every((isl) => islandWidth(isl) < minWall);
-    if (connector && connector.type !== 'lap' && !thinOnly && holeDepth(connector) < j.span && !face.isEmpty()) {
-      for (const c of connectorLadder(connector)) {
-        const layout = layoutForCut(face, axis, coord + 0.01, { ...c, type: connector.type }, CONNECTOR_MIN_WALL_MM);
+    // El tarugo suelto también agujerea la pieza baja: necesita fondo a ambos lados del plano
+    const lowSpan = coord - j.bounds[a][low.cell[a]];
+    const roomBelow = connector?.type !== 'loose-dowel' || holeDepth(connector) < lowSpan;
+    if (connector && connector.type !== 'lap' && !thinOnly && roomBelow && holeDepth(connector) < j.span && !face.isEmpty()) {
+      const area = j.contact.area();
+      const dim = j.reinforce ? smallerPieceDim(low, high) : 0;
+      const ladder = connectorLadder(connector, j.reinforce ? (n) => recommendedConnectorRadius(area, n, dim) : undefined);
+      for (const c of ladder) {
+        const layout = layoutForCut(face, axis, coord + 0.01, { ...c, type: layoutType(connector.type) }, CONNECTOR_MIN_WALL_MM);
         if (layout.centers.length > 0 && layout.enoughRoom && layout.skippedIslands < layout.islands) {
           used = c;
           centers = layout.centers.map((p) => {
@@ -137,12 +162,22 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
           break;
         }
       }
-      if (used && used !== connector) warnings.push(engineWarning('SPLIT_CONNECTOR_REDUCED', { ...pair, count: used.count, size: used.size }));
+      const reduced = used && used !== connector && (used.size < connector.size || used.count < connector.count);
+      if (used && reduced) warnings.push(engineWarning('SPLIT_CONNECTOR_REDUCED', { ...pair, count: used.count, size: used.size }));
     }
-    if (used && used.type !== 'lap') {
+    if (used && used.type === 'loose-dowel') {
       for (const center of centers) {
-        const male = buildConnectorSolid(wasm, used.type, axis, center, used.size, used.depth, 0);
-        const female = buildConnectorSolid(wasm, used.type, axis, center, used.size, used.depth, used.tolerance);
+        const holes = buildLooseDowelHoles(wasm, axis, center, used);
+        const inLow = own(low.m.intersect(holes.low));
+        const inHigh = own(high.m.intersect(holes.high));
+        clearance += inLow.volume() + inHigh.volume();
+        low.subs.push(holes.low);
+        high.subs.push(holes.high);
+      }
+    } else if (used && used.type !== 'lap') {
+      for (const center of centers) {
+        const male = buildConnectorSolid(wasm, layoutType(used.type), axis, center, used.size, used.depth, 0);
+        const female = buildConnectorSolid(wasm, layoutType(used.type), axis, center, used.size, used.depth, used.tolerance);
         const maleIn = male.trimByPlane(NORMALS[axis], coord);
         const femaleIn = female.trimByPlane(NORMALS[axis], coord);
         clearance += femaleIn.volume() - maleIn.volume();
@@ -158,7 +193,13 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     const lapOn = connector && connector.type === 'lap';
     if (lapOn && j.span > j.lapHeightMm + connector.tolerance + 1) {
       const thin = islands;
-      const solids = thin.length > 0 ? buildLapSolids(wasm, thin, axis, coord, j.lapHeightMm, connector.tolerance) : null;
+      const rejected: LapRejection = { islands: 0, tongueMm: Infinity, grooveWallMm: Infinity };
+      const solids = thin.length > 0 ? buildLapSolids(wasm, thin, axis, coord, j.lapHeightMm, connector.tolerance, rejected) : null;
+      if (rejected.islands > 0) {
+        warnings.push(engineWarning('SPLIT_LAP_NOT_PRINTABLE', {
+          ...pair, tongue: rejected.tongueMm, groove: rejected.grooveWallMm, min: ASSEMBLY_LIMITS.minPrintableWallMm,
+        }));
+      }
       if (solids) {
         const tongueIn = own(low.m.intersect(solids.tongue));
         const grooveIn = own(high.m.intersect(solids.groove));
@@ -176,12 +217,19 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     let labelPlacement: 'joint' | 'outside' | null = null;
     let labelHeightMm = 0;
     if (j.labels === 'engraved') {
+      // Profundidad limitada a una fracción del espesor local (la isla más delgada de la cara)
+      const wall = islands.length > 0 ? Math.min(...islands.map((isl) => islandWidth(isl))) : Infinity;
+      const maxDepth = ASSEMBLY_LIMITS.labelDepthWallFraction * wall;
+      const depthMm = Math.min(j.labelDepthMm, maxDepth);
+      if (depthMm < j.labelDepthMm - 1e-9) {
+        warnings.push(engineWarning('SPLIT_LABEL_DEPTH_CLAMPED', { label: j.label, depth: depthMm, requested: j.labelDepthMm, wall }));
+      }
       let solids: { forLow: Manifold; forHigh: Manifold; heightMm: number } | null = null;
       if (j.labelPlacement !== 'outside') {
-        const radius = used && used.type !== 'lap' ? connectorFootprintRadius(used.type, used.size, used.tolerance) : 0;
+        const radius = used && used.type !== 'lap' ? connectorFootprintRadius(layoutType(used.type), used.size, used.tolerance) : 0;
         const inJoint = await buildJointLabel(wasm, {
           text: j.label, axis, coord, high: face, connectorCenters: centers, connectorRadius: radius,
-          depthMm: j.labelDepthMm, minHeightMm: j.labelMinHeightMm, exclude: lapZone,
+          depthMm, minHeightMm: j.labelMinHeightMm, exclude: lapZone,
         });
         if (inJoint) {
           solids = inJoint;
@@ -193,7 +241,7 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
         for (const h of [Math.max(j.labelMinHeightMm, 5), j.labelMinHeightMm]) {
           solids = await buildOutsideLabel(wasm, {
             text: j.label, axis, coord, contact: faceSection.isEmpty() ? j.contact : faceSection, low: low.m, high: high.m,
-            highGapMm: highGap, depthMm: j.labelDepthMm, heightMm: h,
+            highGapMm: highGap, depthMm, heightMm: h,
           });
           if (solids) break;
         }

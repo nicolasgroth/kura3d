@@ -18,7 +18,7 @@ import { ASSEMBLY_LIMITS } from '../operationLimits';
 import { connectorClashes, connectorRadius, recommendedConnectorRadius } from './assemblyConnectors';
 import { findOrder, greedyFix } from './assemblyOrder';
 import type {
-  AssemblyClosure, AssemblyGap, AssemblyJointInput, AssemblyPartInput, AssemblyReport, AssemblySummary,
+  AssemblyClosure, AssemblyFix, AssemblyGap, AssemblySuggestion, AssemblyJointInput, AssemblyPartInput, AssemblyReport, AssemblySummary,
   ValidateAssemblyOptions, WeakJoint,
 } from './assemblyTypes';
 import { sweepShadows, voxelize, worldPositions } from './assemblyVoxels';
@@ -122,15 +122,33 @@ export function validateAssembly(
   }
   const input = { codes, minY, joints, base, shadows: grid ? sweepShadows(grid, parts.length) : [] };
   let outcome = findOrder(input);
-  let fix = { glueJoints: [] as string[], applied: false };
+  let fix: AssemblyFix = { glueJoints: [], changeType: [], applied: false };
+  const suggestions: AssemblySuggestion[] = [];
   if (outcome.blocked.length > 0) {
-    const repair = greedyFix(input);
-    fix = { glueJoints: [...repair.glued], applied: options.autoFix === true };
+    // Dos arreglos: solo pegar, o pegar/cambiar de tipo; gana el que conserva más uniones con conector
+    const glueOnly = greedyFix(input);
+    const withChange = options.allowTypeChange === false ? glueOnly : greedyFix(input, true);
+    const useChange = withChange.blocked.length <= glueOnly.blocked.length && withChange.glued.size < glueOnly.glued.size;
+    const repair = useChange ? withChange : glueOnly;
+    for (const label of new Set([...glueOnly.glued, ...withChange.glued, ...withChange.changed.keys()])) {
+      const t = withChange.changed.get(label);
+      suggestions.push({ joint: label, options: t ? ['glue', `change-type:${t}`] : ['glue'] });
+    }
+    suggestions.sort((x, y) => Number(x.joint) - Number(y.joint) || x.joint.localeCompare(y.joint));
+    fix = {
+      glueJoints: [...repair.glued],
+      changeType: useChange ? [...withChange.changed].map(([joint, type]) => ({ joint, type })) : [],
+      applied: options.autoFix === true,
+    };
     if (fix.applied) {
       outcome = { order: repair.order, blocked: repair.blocked };
       for (const label of repair.glued) {
         const j = joints.find((x) => x.label === label)!;
         warnings.push(engineWarning('ASSEMBLY_JOINT_GLUED_FOR_ORDER', { label, a: j.a.code, b: j.b.code }));
+      }
+      for (const c of fix.changeType) {
+        const j = joints.find((x) => x.label === c.joint)!;
+        warnings.push(engineWarning('ASSEMBLY_JOINT_TYPE_CHANGED', { label: c.joint, a: j.a.code, b: j.b.code, from: j.connector?.type ?? '-', to: c.type }));
       }
     }
   }
@@ -162,6 +180,7 @@ export function validateAssembly(
     order: outcome.order,
     blocked: outcome.blocked,
     fix,
+    suggestions,
     weak,
     warnings,
     voxelMm: h,
@@ -178,6 +197,8 @@ export function summarizeAssembly(r: AssemblyReport): AssemblySummary {
     clashes: r.clashes.length,
     weakJoints: r.weak.map((w) => w.joint),
     gluedByFix: r.fix.applied ? r.fix.glueJoints : [],
+    changedByFix: r.fix.applied ? r.fix.changeType.map((c) => `${c.joint}:${c.type}`) : [],
+    suggestions: r.suggestions,
     volumeErrorPct: r.closure.volumeErrorPct,
   };
 }

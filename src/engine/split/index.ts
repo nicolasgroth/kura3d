@@ -13,4 +13,5 @@ export { planBedSplit, planFromManifold, splitPartCode, SPLIT_DEFAULTS, SPLIT_HA
 export { executeBedSplitGeometry } from './splitExecute';
 export * from './assemblyTypes';
 export { summarizeAssembly, validateAssembly } from './validateAssembly';
+export { jointRecord, storedAssemblyInput, storedAssemblyResponse, StoredAssemblyInputError, validateStoredAssembly, type StoredAssemblyError } from './assemblyRecords';
 export { explodedTransforms, layoutSplitParts, type SplitLayoutOptions, type SplitLayoutResult } from './splitLayout';

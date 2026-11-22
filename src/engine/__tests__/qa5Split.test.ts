@@ -110,18 +110,20 @@ describe('QA5 dividir: solape de borde (lap)', () => {
     const { res } = await H.measure(w, H.modelStraight(w, 3), 'tubo3', 250, { connector: lap }, {}, 'lap');
     for (const j of res!.joints) expect(j.lap!.tongueMm).toBeGreaterThanOrEqual(0.8);
   }, 60_000);
-  // Brecha: con pared de 2 mm la lengüeta mide 0,67 mm y la pared de la ranura 0,47 mm (< 0,8 mm).
-  it.fails('lengüeta imprimible (>= 0,8 mm) en pared de 2 mm (o caer a pegar)', async () => {
+  // Con pared de 2 mm la lengüeta mediría 0,67 mm y la pared de la ranura 0,47 mm (< 0,8 mm): cae a pegar con aviso.
+  it('lengüeta imprimible (>= 0,8 mm) en pared de 2 mm (o caer a pegar)', async () => {
     const { res } = await H.measure(w, H.modelStraight(w, 2), 'tubo2', 250, { connector: lap }, {}, 'lap');
     for (const j of res!.joints) if (j.kind === 'lap') expect(j.lap!.tongueMm).toBeGreaterThanOrEqual(0.8);
+    expect(res!.joints.every((j) => j.kind === 'glue')).toBe(true);
+    expect(res!.warnings.some((x) => x.code === 'SPLIT_LAP_NOT_PRINTABLE')).toBe(true);
   }, 60_000);
-  // Brecha: el codo toroidal con lap deja 4 aristas dobles por pieza (corona del tubo, y = 75).
-  it.fails('L con codo toroidal y lap: 0 aristas no pareadas', async () => {
+  // Antes: el codo toroidal con lap dejaba 4 aristas dobles por pieza (corona del tubo, y = 75).
+  it('L con codo toroidal y lap: 0 aristas no pareadas', async () => {
     const { row } = await H.measure(w, H.modelL(w, 3), 'L', 250, { connector: lap }, { labels: 'none' }, 'lap');
     expect(row.unpaired).toBe(0);
   }, 60_000);
-  // Brecha: el cono hueco con lap deja ~84-92 aristas no pareadas por pieza (704 en total).
-  it.fails('cono hueco con lap: 0 aristas no pareadas', async () => {
+  // Antes: el cono hueco con lap dejaba ~84-92 aristas no pareadas por pieza (triángulos degenerados).
+  it('cono hueco con lap: 0 aristas no pareadas', async () => {
     const { row } = await H.measure(w, H.modelCone(w), 'cono', 250, { connector: lap }, {}, 'lap');
     expect(row.unpaired).toBe(0);
   }, 60_000);
@@ -136,14 +138,15 @@ describe('QA5 dividir: marca por fuera', () => {
     // Volumen grabado por marca: muy por debajo del que quitaría atravesar la pared
     expect(lab.engravedVolumeMm3 / lab.joints.length / 2).toBeLessThan(30);
   }, 60_000);
-  // Brecha menor: con profundidad 3 (dentro del rango permitido) en pared de 2 mm la marca atraviesa
-  // la pared y no hay aviso ni recorte.
-  it.fails('profundidad de marca mayor que la pared: avisa o se recorta', async () => {
+  // Con profundidad 3 (dentro del rango permitido) en pared de 2 mm la marca se limita a 0,4 · 2 = 0,8 mm
+  // y se avisa (SPLIT_LABEL_DEPTH_CLAMPED).
+  it('profundidad de marca mayor que la pared: avisa o se recorta', async () => {
     const obj = H.objFromM(H.modelStraight(w, 2), 'tubo2');
     const plan = await planBedSplit(obj, { widthMm: 250, depthMm: 250, heightMm: 250 }, { connector: dowel });
     const a = await executeBedSplitGeometry(obj, plan, { labels: 'engraved', labelDepthMm: 1.5 });
     const b = await executeBedSplitGeometry(obj, plan, { labels: 'engraved', labelDepthMm: 3 });
     const extra = b.warnings.filter((x) => x.code.startsWith('SPLIT_LABEL')).length;
     expect(extra > 0 || b.engravedVolumeMm3 <= a.engravedVolumeMm3 * 1.1).toBe(true);
+    expect(b.warnings.some((x) => x.code === 'SPLIT_LABEL_DEPTH_CLAMPED' && Number(x.params.depth) <= 0.8 + 1e-6)).toBe(true);
   }, 60_000);
 });

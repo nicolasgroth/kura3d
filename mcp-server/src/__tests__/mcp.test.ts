@@ -53,6 +53,7 @@ const EXPECTED_TOOLS = [
   'kura_colorize_structures',
   'kura_extract_structure',
   'kura_mirror_object',
+  'kura_validate_assembly',
 ];
 
 /** Token de prueba con longitud suficiente para habilitar el puente (mínimo 16). */
@@ -101,8 +102,8 @@ describe('Kura3D MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(32);
-    expect(toolNames).toHaveLength(32);
+    expect(EXPECTED_TOOLS).toHaveLength(33);
+    expect(toolNames).toHaveLength(33);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }
@@ -462,14 +463,14 @@ describe('Kura3D MCP Server', () => {
       arguments: { objectId: seeded.id, axis: 'x' },
     });
     expect(mirrorRes.isError).toBe(true);
-    expect((mirrorRes.content[0] as { text: string }).text).toContain('Solo Lectura');
+    expect((mirrorRes.content[0] as { text: string }).text).toContain('Read-only mode');
 
     const createRes = await client.callTool({
       name: 'kura_create_primitive',
       arguments: { primitiveType: 'box' },
     });
     expect(createRes.isError).toBe(true);
-    expect((createRes.content[0] as { text: string }).text).toContain('Solo Lectura');
+    expect((createRes.content[0] as { text: string }).text).toContain('Read-only mode');
 
     const moldRes = await client.callTool({
       name: 'kura_generate_mold',
@@ -485,7 +486,7 @@ describe('Kura3D MCP Server', () => {
       },
     });
     expect(moldRes.isError).toBe(true);
-    expect((moldRes.content[0] as { text: string }).text).toContain('Solo Lectura');
+    expect((moldRes.content[0] as { text: string }).text).toContain('Read-only mode');
 
     // Exportación también bloqueada en modo Solo Lectura
     const exportRes = await client.callTool({
@@ -628,7 +629,7 @@ describe('Kura3D MCP Server', () => {
     expect(typeof thin.params.thickness).toBe('number');
     // Compatibilidad: `warnings` sigue siendo texto en español, uno por aviso.
     expect(plate.warnings).toHaveLength(plate.issues.length);
-    expect(plate.warnings.join(' ')).toContain('paredes');
+    expect(plate.warnings.join(' ')).toContain('walls');
 
     const cube = await analyze({ width: 20, height: 20, depth: 20 });
     expect(cube.issues).toEqual([]);
@@ -758,6 +759,6 @@ describe('Kura3D MCP Server', () => {
     expect(r1.isError).not.toBe(true);
     expect(r2.isError).not.toBe(true);
     expect(r3.isError).toBe(true);
-    expect((r3.content[0] as { text: string }).text).toContain('Límite de tasa MCP excedido');
+    expect((r3.content[0] as { text: string }).text).toContain('MCP rate limit exceeded');
   });
 });

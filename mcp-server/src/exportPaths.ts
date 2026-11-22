@@ -53,10 +53,10 @@ export async function resolveExportPath(
   expectedExtension: '.stl' | '.3mf'
 ): Promise<string> {
   if (typeof requested !== 'string' || requested.trim() === '') {
-    throw new ExportPathError('Ruta de exportación vacía.');
+    throw new ExportPathError('Export path is empty.');
   }
   if (/[\u0000-\u001f]/.test(requested)) {
-    throw new ExportPathError('La ruta de exportación contiene caracteres de control.');
+    throw new ExportPathError('The export path contains control characters.');
   }
 
   const root = resolve(exportDir);
@@ -64,11 +64,11 @@ export async function resolveExportPath(
 
   if (!isInsideRoot(root, target) || target === root) {
     throw new ExportPathError(
-      `Ruta de exportación fuera del directorio permitido (${root}). Usa una ruta relativa dentro de él.`
+      `Export path is outside the allowed directory (${root}). Use a relative path inside it.`
     );
   }
   if (extname(target).toLowerCase() !== expectedExtension) {
-    throw new ExportPathError(`La ruta de exportación debe terminar en ${expectedExtension}.`);
+    throw new ExportPathError(`The export path must end in ${expectedExtension}.`);
   }
 
   await mkdir(root, { recursive: true });
@@ -79,23 +79,23 @@ export async function resolveExportPath(
   const parent = dirname(target);
   const realAncestor = await realpath(await nearestExistingAncestor(parent, root));
   if (!isInsideRoot(realRoot, realAncestor)) {
-    throw new ExportPathError('La ruta de exportación atraviesa un enlace que sale del directorio permitido.');
+    throw new ExportPathError('The export path traverses a link that leaves the allowed directory.');
   }
   // Crea solo subdirectorios bajo la raíz y revalida su ruta real (bloquea symlinks/junctions hacia fuera).
   await mkdir(parent, { recursive: true });
   const realParent = await realpath(parent);
   if (!isInsideRoot(realRoot, realParent)) {
-    throw new ExportPathError('La ruta de exportación atraviesa un enlace que sale del directorio permitido.');
+    throw new ExportPathError('The export path traverses a link that leaves the allowed directory.');
   }
 
   const finalPath = join(realParent, basename(target));
   try {
     const info = await lstat(finalPath);
     if (info.isSymbolicLink()) {
-      throw new ExportPathError('El destino de exportación es un enlace simbólico; se rechaza por seguridad.');
+      throw new ExportPathError('The export destination is a symbolic link; it is rejected for security.');
     }
     if (!info.isFile()) {
-      throw new ExportPathError('El destino de exportación existe y no es un archivo regular.');
+      throw new ExportPathError('The export destination exists and is not a regular file.');
     }
   } catch (err) {
     if (err instanceof ExportPathError) throw err;

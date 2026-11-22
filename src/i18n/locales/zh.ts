@@ -1342,4 +1342,9 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'settings.recent.helpDesktop': '保存你打开或保存的项目路径，便于一键重新打开。关闭后会清空列表。',
   'settings.recent.helpWeb': '仅保存名称和日期（浏览器无法按路径重新打开）。关闭后会清空列表。',
   'settings.recent.forget': '清除最近项目',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': '接合 {label}（{a}–{b}）的连接件由 {from} 改为 {to}，以便零件能够组装。',
+  'object.name.looseDowel': '定位销 Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': '未找到零件或组“{id}”。',
+  'bus.error.assemblyNoTarget': '请提供 groupId 或分割零件的 ids。',
+  'bus.error.assemblyNotSplit': '无法重新验证这些零件（{reason}）：它们必须属于同一分割组并保存了接合信息。',
 };

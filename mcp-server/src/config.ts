@@ -52,6 +52,9 @@ export interface BridgeConfigOverrides {
 }
 
 /** Interpreta booleanos de CLI/entorno: `true/1/yes/on` y `false/0/no/off`. */
+/** Intentos fallidos (401) tolerados por minuto antes de responder 429; se mira antes del token. */
+export const DEFAULT_AUTH_FAILURE_LIMIT_PER_MIN = 10;
+
 export function parseBooleanFlag(value: string | undefined): boolean | undefined {
   if (value === undefined) return undefined;
   const v = value.trim().toLowerCase();
@@ -160,6 +163,6 @@ export function resolveBridgeConfig(
       parsePositiveInt(env.KURA_BRIDGE_MAX_MESSAGE_BYTES) ??
       DEFAULT_MAX_MESSAGE_BYTES,
     exportDir,
-    authFailureLimitPerMin: overrides.authFailureLimitPerMin ?? 30,
+    authFailureLimitPerMin: overrides.authFailureLimitPerMin ?? DEFAULT_AUTH_FAILURE_LIMIT_PER_MIN,
   };
 }

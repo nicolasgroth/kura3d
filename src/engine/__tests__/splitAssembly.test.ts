@@ -43,7 +43,7 @@ describe('split_for_bed + validación de armado', () => {
     const obj = objFromM(w.Manifold.cube([100, 100, 100], true), 'cubo');
     const plan = await planBedSplit(obj, { widthMm: 70, depthMm: 70, heightMm: 70 }, { connector: { ...DOWEL, size: 4 } });
     expect(plan.counts).toEqual({ x: 2, y: 2, z: 2 });
-    const res = await executeBedSplitGeometry(obj, plan);
+    const res = await executeBedSplitGeometry(obj, plan, { assemblyAllowTypeChange: false });
     const a = res.assembly!;
     expect(a.blocked).toEqual([]);
     expect(a.order).toHaveLength(8);
@@ -54,7 +54,7 @@ describe('split_for_bed + validación de armado', () => {
     for (const p of res.parts) expect(countUnpairedEdges(p.mesh)).toBe(0);
     expect(Math.abs(a.closure.volumeErrorPct!)).toBeLessThan(0.5);
     // Sin arreglo: el informe muestra las piezas trabadas
-    const raw = await executeBedSplitGeometry(obj, plan, { assemblyAutoFix: false });
+    const raw = await executeBedSplitGeometry(obj, plan, { assemblyAutoFix: false, assemblyAllowTypeChange: false });
     expect(raw.assembly!.blocked.length).toBeGreaterThan(0);
     expect(raw.assembly!.fix.glueJoints).toHaveLength(5);
   }, 60_000);

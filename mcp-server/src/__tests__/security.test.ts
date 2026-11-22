@@ -198,7 +198,7 @@ describe('TRUST-02 · rotación de token', () => {
 
     const write = await client.callTool({ name: 'kura_create_primitive', arguments: { primitiveType: 'box' } });
     expect(write.isError).toBe(true);
-    expect(textOf(write)).toContain('Solo Lectura');
+    expect(textOf(write)).toContain('Read-only mode');
 
     const read = await client.callTool({ name: 'kura_get_scene_state', arguments: {} });
     expect(read.isError).not.toBe(true);
@@ -217,13 +217,15 @@ describe('TRUST-02 · solo lectura como fuente única', () => {
       expect(tool.annotations?.readOnlyHint, tool.name).toBe(COMMAND_ACCESS[command] === 'read');
     }
     expect([...READ_COMMANDS].sort()).toEqual(
-      ['analyze_printability', 'capture_viewport', 'detect_structures', 'get_scene_state'].sort()
+      ['analyze_printability', 'capture_viewport', 'detect_structures', 'get_scene_state', 'validate_assembly'].sort()
     );
   });
 
   it('interpreta solo lectura igual desde CLI y entorno (true/1/yes)', () => {
     expect(resolveBridgeConfig({}, { KURA_BRIDGE_READ_ONLY: '1' }).readOnly).toBe(true);
     expect(resolveBridgeConfig({}, { KURA_BRIDGE_READ_ONLY: 'true' }).readOnly).toBe(true);
+    // Límite de fallos por defecto: 10 por minuto (solo lo alimentan los 401; se aplica antes del token).
+    expect(resolveBridgeConfig({}, {}).authFailureLimitPerMin).toBe(10);
     expect(resolveBridgeConfig({}, { KURA_BRIDGE_READ_ONLY: 'false' }).readOnly).toBe(false);
     expect(resolveBridgeConfig({}, {}, ['--read-only']).readOnly).toBe(true);
     expect(resolveBridgeConfig({}, { KURA_BRIDGE_READ_ONLY: '1' }, ['--read-only=false']).readOnly).toBe(false);
@@ -277,7 +279,7 @@ describe('TRUST-02 · destinos de exportación', () => {
     await symlink(outsideDir, join(exportDir, 'link'), 'junction');
     const res = await client.callTool({ name: 'kura_export_stl', arguments: { outputPath: 'link/fuga.stl' } });
     expect(res.isError).toBe(true);
-    expect(textOf(res)).toMatch(/enlace/);
+    expect(textOf(res)).toMatch(/link/);
     await expect(stat(join(outsideDir, 'fuga.stl'))).rejects.toThrow();
   });
 });
@@ -321,6 +323,6 @@ describe('TRUST-02 · límites y datos tratados como datos', () => {
     });
     const res = await client.callTool({ name: 'kura_get_scene_state', arguments: {} });
     expect(res.isError).toBe(true);
-    expect(textOf(res)).toMatch(/Tiempo de espera agotado/);
+    expect(textOf(res)).toMatch(/Timed out/);
   });
 });

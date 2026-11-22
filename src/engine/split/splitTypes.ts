@@ -38,8 +38,12 @@ export interface SplitBounds {
  * ensanchada y pieza alargada) está declarado en `SplitJointKind` pero PENDIENTE: aún no se implementa.
  */
 export interface SplitConnectorOptions {
-  type: Exclude<CutConnectorType, 'none'> | 'lap';
-  /** Radio (dowel) o semiancho (peg/dovetail) en mm. */
+  /**
+   * `dowel` = espiga cilíndrica FIJA en la pieza baja y alojamiento en la alta; `loose-dowel` = tarugo
+   * suelto: agujero en ambas piezas y el tarugo como pieza aparte (`BedSplitResult.looseDowels`).
+   */
+  type: SplitConnectorType;
+  /** Radio (dowel, loose-dowel) o semiancho (peg/dovetail) en mm. */
   size: number;
   depth: number;
   /** Holgura de encaje en mm. */
@@ -54,6 +58,9 @@ export interface SplitConnectorOptions {
   /** Alto del solape (mm, por defecto 6), solo con `type: 'lap'`. */
   lapHeightMm?: number;
 }
+
+/** Tipos de conector de las uniones de "dividir para imprimir". */
+export type SplitConnectorType = Exclude<CutConnectorType, 'none'> | 'lap' | 'loose-dowel';
 
 /**
  * Tipo de unión resultante: conectores, corte liso para pegar (pared delgada o sin espacio), solape
@@ -188,6 +195,17 @@ export interface BedSplitExecuteOptions {
    */
   validateAssembly?: boolean;
   assemblyAutoFix?: boolean;
+  /**
+   * Considera en el arreglo cambiar el tipo de conector de una unión trabada por uno compatible con la
+   * dirección de entrada (por defecto `true`); se aplica si conserva más uniones con conector que pegar.
+   */
+  assemblyAllowTypeChange?: boolean;
+  /**
+   * Firmeza activa (por defecto `true`): si el conector de una unión queda bajo el radio recomendado,
+   * se intenta agrandarlo hasta el recomendado y, si no cabe, agregar uno más; si tampoco, queda el que
+   * cabe y el informe de armado mantiene `ASSEMBLY_WEAK_JOINT` con lo medido y lo recomendado.
+   */
+  reinforceWeakJoints?: boolean;
 }
 
 /** Cara de una pieza en una unión: signo y eje de la normal hacia afuera. */
@@ -250,9 +268,21 @@ export interface SplitPart {
   insertDirection?: SplitFace;
 }
 
+/** Lote de tarugos sueltos de una misma medida (piezas aparte, listas para imprimir de pie). */
+export interface SplitLooseDowel {
+  diameterMm: number;
+  lengthMm: number;
+  count: number;
+  /** Malla local con los `count` tarugos en rejilla (base en Y = 0). */
+  mesh: MeshData;
+  volumeMm3: number;
+}
+
 /** Resultado de la ejecución. */
 export interface BedSplitResult {
   parts: SplitPart[];
+  /** Tarugos sueltos a imprimir aparte, agrupados por medida (vacío sin `loose-dowel`). */
+  looseDowels: SplitLooseDowel[];
   joints: SplitJoint[];
   /** Volumen del modelo original (mm³). */
   sourceVolumeMm3: number;

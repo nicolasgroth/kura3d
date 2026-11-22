@@ -72,8 +72,18 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         get().requestCameraPreset('focus', result.parts.map((p) => p.id));
         get().addToast(tr('toast.splitForBedDone', { count: result.parts.length, joints: result.joints.length }), 'success');
         reportEngineWarnings(change.warnings);
-        return { plan, parts: result.parts, joints: result.joints, plateCount: result.plateCount, assembly: result.assembly };
+        return { plan, parts: result.parts, joints: result.joints, looseDowels: result.looseDowels, plateCount: result.plateCount, assembly: result.assembly };
       });
+    },
+
+    validateSplitAssembly: async (targets) => {
+      try {
+        // Solo lectura: corre en el Worker sin tomar el bloqueo de operaciones.
+        return await ctx.runEngineDetached('validateAssembly', { objects: targets });
+      } catch (err) {
+        reportOperationError(err);
+        return null;
+      }
     },
 
     splitDisconnectedObject: async (id) => {

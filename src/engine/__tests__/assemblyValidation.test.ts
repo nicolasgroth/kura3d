@@ -66,11 +66,11 @@ describe('validateAssembly', () => {
 
   it('(2) rejilla 2×2×2 con espigas en todas las uniones: detecta piezas trabadas y autoFix pega el mínimo', () => {
     const { parts, joints } = grid(2, 2, 2);
-    const r = validateAssembly(parts, joints, { checkExterior: false });
+    const r = validateAssembly(parts, joints, { checkExterior: false, allowTypeChange: false });
     expect(r.blocked.length).toBeGreaterThan(0);
     expect(r.blocked.some((b) => b.reason === 'directions' && b.conflictingJoints.length >= 2)).toBe(true);
     expect(r.fix.applied).toBe(false);
-    const fixed = validateAssembly(parts, joints, { checkExterior: false, autoFix: true });
+    const fixed = validateAssembly(parts, joints, { checkExterior: false, autoFix: true, allowTypeChange: false });
     expect(fixed.blocked).toEqual([]);
     expect(fixed.order).toHaveLength(8);
     // Mínimo: cada pieza conserva a lo más una espiga hacia lo ya puesto → 12 − 7 = 5
@@ -127,13 +127,13 @@ describe('validateAssembly', () => {
       joint('3', 'y', 10, 0, 3, parts, null, 2000),
       joint('4', 'x', 80, 3, 2, parts, [80, 35, 50], 5000),
     ];
-    const r = validateAssembly(parts, joints, { checkExterior: false });
+    const r = validateAssembly(parts, joints, { checkExterior: false, allowTypeChange: false });
     expect(r.closure.interference).toEqual([]);
     expect(r.blocked.length).toBeGreaterThan(0);
     const sweep = r.blocked.find((b) => b.reason === 'sweep');
     expect(sweep).toBeDefined();
     expect(sweep!.blockingParts.length).toBeGreaterThan(0);
-    const fixed = validateAssembly(parts, joints, { checkExterior: false, autoFix: true });
+    const fixed = validateAssembly(parts, joints, { checkExterior: false, autoFix: true, allowTypeChange: false });
     expect(fixed.blocked).toEqual([]);
     expect(fixed.order).toHaveLength(4);
     expect(fixed.fix.glueJoints).toHaveLength(1);
@@ -142,7 +142,7 @@ describe('validateAssembly', () => {
   it('(6) rejilla 4×4×3 con espigas: valida y arregla en tiempo acotado', () => {
     const { parts, joints } = grid(4, 4, 3, 40);
     const t0 = performance.now();
-    const r = validateAssembly(parts, joints, { autoFix: true });
+    const r = validateAssembly(parts, joints, { autoFix: true, allowTypeChange: false });
     const ms = performance.now() - t0;
     expect(r.blocked).toEqual([]);
     expect(r.order).toHaveLength(48);

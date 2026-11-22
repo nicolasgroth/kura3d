@@ -1349,6 +1349,11 @@ export const TRANSLATIONS_ES = {
   'settings.recent.helpDesktop': 'Guarda la ruta de los proyectos que abres o guardas para reabrirlos con un clic. Al desactivarlo se borra la lista.',
   'settings.recent.helpWeb': 'Guarda solo el nombre y la fecha (el navegador no permite reabrir por ruta). Al desactivarlo se borra la lista.',
   'settings.recent.forget': 'Olvidar recientes',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': 'La unión {label} ({a}–{b}) cambió su conector de {from} a {to} para que las piezas se puedan montar.',
+  'object.name.looseDowel': 'Tarugo Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': 'No se encontró la pieza o el grupo «{id}».',
+  'bus.error.assemblyNoTarget': 'Indica groupId o ids de las piezas divididas.',
+  'bus.error.assemblyNotSplit': 'Esas piezas no se pueden revalidar ({reason}): deben ser piezas de un mismo grupo dividido con sus uniones guardadas.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2658,6 +2663,11 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'settings.recent.helpDesktop': 'Stores the path of projects you open or save so you can reopen them with one click. Turning it off erases the list.',
   'settings.recent.helpWeb': 'Stores only the name and date (the browser cannot reopen by path). Turning it off erases the list.',
   'settings.recent.forget': 'Forget recent',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': 'Joint {label} ({a}–{b}) changed its connector from {from} to {to} so the parts can be assembled.',
+  'object.name.looseDowel': 'Dowel Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': 'Part or group “{id}” not found.',
+  'bus.error.assemblyNoTarget': 'Give groupId or the ids of the split parts.',
+  'bus.error.assemblyNotSplit': 'These parts cannot be revalidated ({reason}): they must be parts of one split group with their joints saved.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

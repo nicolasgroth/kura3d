@@ -62,6 +62,6 @@ describe('MCP headless: primitivas paramétricas', () => {
     await call('kura_hollow_object', { objectId: created.id, wallThickness: 2 });
     const res = await call('kura_update_primitive_params', { objectId: created.id, params: { width: 30 } });
     expect(res.isError).toBe(true);
-    expect(res.text).toMatch(/paramétrico/);
+    expect(res.text).toMatch(/parametric/);
   });
 });

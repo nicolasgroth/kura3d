@@ -1342,4 +1342,9 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'settings.recent.helpDesktop': 'Mémorise le chemin des projets ouverts ou enregistrés pour les rouvrir en un clic. La désactivation efface la liste.',
   'settings.recent.helpWeb': 'Ne mémorise que le nom et la date (le navigateur ne peut pas rouvrir par chemin). La désactivation efface la liste.',
   'settings.recent.forget': 'Oublier les récents',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': 'La jonction {label} ({a}–{b}) a changé de connecteur, de {from} à {to}, pour que les pièces puissent s’assembler.',
+  'object.name.looseDowel': 'Tourillon Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': 'Pièce ou groupe « {id} » introuvable.',
+  'bus.error.assemblyNoTarget': 'Indique groupId ou les ids des pièces divisées.',
+  'bus.error.assemblyNotSplit': 'Ces pièces ne peuvent pas être revalidées ({reason}) : elles doivent appartenir à un même groupe divisé avec ses jonctions enregistrées.',
 };

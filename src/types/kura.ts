@@ -733,6 +733,17 @@ export interface SceneObject {
 /** Datos auxiliares de un objeto de escena. */
 export interface SceneObjectMetadata {
   split?: SplitPartMetadata;
+  /** Lote de tarugos sueltos de una división (`loose-dowel`): se imprimen aparte. */
+  splitDowel?: SplitDowelMetadata;
+}
+
+/** Lote de tarugos sueltos de "dividir para imprimir": medida y cantidad. */
+export interface SplitDowelMetadata {
+  /** ID del objeto original (mismo `groupId` que sus piezas). */
+  groupId: string;
+  diameterMm: number;
+  lengthMm: number;
+  count: number;
 }
 
 /** Pieza producida por "dividir para imprimir" (`split_for_bed`). */
@@ -753,6 +764,32 @@ export interface SplitPartMetadata {
   /** Paso del orden de montaje validado (1 = base) y dirección de movimiento al entrar ('-y' = baja). */
   assemblyStep?: number;
   insertDirection?: string;
+  /**
+   * Uniones de la pieza (eje, plano, piezas por código, tipo y conectores) para revalidar el armado
+   * después (`validate_assembly`). Ausente en proyectos anteriores.
+   */
+  joints?: SplitJointRecord[];
+}
+
+/** Unión guardada de "dividir para imprimir": `a` = pieza del lado negativo del eje, `b` = positivo. */
+export interface SplitJointRecord {
+  label: string;
+  axis: 'x' | 'y' | 'z';
+  position: number;
+  a: string;
+  b: string;
+  kind: 'connector' | 'glue' | 'lap' | 'socket';
+  connector: {
+    type: 'dowel' | 'peg' | 'dovetail' | 'lap' | 'loose-dowel';
+    size: number;
+    depth: number;
+    tolerance: number;
+    count: number;
+    minWallForConnectorMm?: number;
+    lapHeightMm?: number;
+  } | null;
+  connectorCenters: Vec3[];
+  contactAreaMm2: number;
 }
 
 /** Perfil de impresora 3D o espacio de trabajo libre. */
@@ -870,7 +907,8 @@ export interface KuraCommandRequest {
     | 'detect_structures'
     | 'colorize_structures'
     | 'extract_structure'
-    | 'mirror_object';
+    | 'mirror_object'
+    | 'validate_assembly';
   params: Record<string, unknown>;
 }
 

@@ -12,7 +12,7 @@
 
 import type { MeshData } from '../../types/kura';
 import type { EngineWarning } from '../engineErrors';
-import type { SplitAxis, SplitConnectorOptions, SplitFace, SplitJointKind, SplitTransform } from './splitTypes';
+import type { SplitAxis, SplitConnectorOptions, SplitConnectorType, SplitFace, SplitJointKind, SplitTransform } from './splitTypes';
 
 /** Dirección de inserción (eje y signo del movimiento). */
 export type AssemblyDirection = SplitFace;
@@ -52,6 +52,8 @@ export interface ValidateAssemblyOptions {
   minWallMm?: number;
   /** Mide la pared de cada conector hasta la superficie exterior (por defecto `true`). */
   checkExterior?: boolean;
+  /** Considera cambiar el tipo de conector como arreglo (por defecto `true`). */
+  allowTypeChange?: boolean;
 }
 
 /** Par de piezas que se interfieren rearmadas. */
@@ -117,6 +119,24 @@ export interface WeakJoint {
   areaFraction: number;
 }
 
+/** Arreglo posible de una unión que traba el montaje: pegarla o cambiar su tipo de conector. */
+export type AssemblyFixOption = 'glue' | `change-type:${SplitConnectorType}`;
+
+/** Opciones de arreglo de una unión (la primera es siempre `glue`). */
+export interface AssemblySuggestion {
+  joint: string;
+  options: AssemblyFixOption[];
+}
+
+/** Arreglo del montaje: uniones a pegar y uniones a las que conviene cambiar el tipo de conector. */
+export interface AssemblyFix {
+  glueJoints: string[];
+  /** Uniones que conservan conector cambiando de tipo (p. ej. a cola de milano, que desliza de lado). */
+  changeType: Array<{ joint: string; type: SplitConnectorType }>;
+  /** `true` si el informe (y, en la división, la geometría) ya lo aplicó. */
+  applied: boolean;
+}
+
 /** Informe de la validación de armado. */
 export interface AssemblyReport {
   ok: boolean;
@@ -125,8 +145,13 @@ export interface AssemblyReport {
   /** Orden de montaje completo, o el tramo que se pudo armar si hay bloqueos. */
   order: AssemblyStep[];
   blocked: AssemblyBlocked[];
-  /** Uniones que conviene (o ya se hizo, `applied`) pasar a "para pegar" para destrabar el montaje. */
-  fix: { glueJoints: string[]; applied: boolean };
+  /**
+   * Arreglo que conviene (o ya se hizo, `applied`) para destrabar el montaje: el que conserva más
+   * uniones con conector entre "solo pegar" y "pegar o cambiar de tipo".
+   */
+  fix: AssemblyFix;
+  /** Por unión trabada, las alternativas: pegar o cambiar el tipo de conector. */
+  suggestions: AssemblySuggestion[];
   weak: WeakJoint[];
   warnings: EngineWarning[];
   /** Lado del vóxel usado (mm) y tiempo. */
@@ -142,5 +167,8 @@ export interface AssemblySummary {
   clashes: number;
   weakJoints: string[];
   gluedByFix: string[];
+  /** Uniones cuyo tipo de conector cambió el arreglo (`"3:dovetail"`). */
+  changedByFix: string[];
+  suggestions: AssemblySuggestion[];
   volumeErrorPct: number | null;
 }

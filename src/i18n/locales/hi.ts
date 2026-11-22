@@ -1342,4 +1342,9 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'settings.recent.helpDesktop': 'खोले या सहेजे गए प्रोजेक्ट का पथ सहेजता है ताकि एक क्लिक में दोबारा खुल सकें। बंद करने पर सूची मिट जाती है।',
   'settings.recent.helpWeb': 'केवल नाम और तिथि सहेजता है (ब्राउज़र पथ से दोबारा नहीं खोल सकता)। बंद करने पर सूची मिट जाती है।',
   'settings.recent.forget': 'हाल की सूची मिटाएँ',
+  'engineWarning.ASSEMBLY_JOINT_TYPE_CHANGED': 'जोड़ {label} ({a}–{b}) का कनेक्टर {from} से {to} किया गया ताकि हिस्से जोड़े जा सकें।',
+  'object.name.looseDowel': 'डॉवेल Ø{d}×{l} ×{count}',
+  'bus.error.assemblyNotFound': 'हिस्सा या समूह “{id}” नहीं मिला।',
+  'bus.error.assemblyNoTarget': 'groupId या विभाजित हिस्सों के ids दें।',
+  'bus.error.assemblyNotSplit': 'इन हिस्सों की फिर से जाँच नहीं हो सकती ({reason}): वे एक ही विभाजित समूह के हों और उनके जोड़ सहेजे हों।',
 };

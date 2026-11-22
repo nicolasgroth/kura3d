@@ -12,13 +12,13 @@
  */
 
 import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';
+import { ASSEMBLY_LIMITS } from '../operationLimits';
 import { islandWidth } from './splitSections';
 import { orientedToWorld } from './splitLabels';
 import type { SplitAxis } from './splitTypes';
 
-/** Pared mínima de la ranura y ancho mínimo de la lengüeta (mm). */
-const MIN_GROOVE_WALL_MM = 0.4;
-const MIN_TONGUE_MM = 0.6;
+/** Lengüeta y cada pared de la ranura, como mínimo imprimible (mm). */
+const MIN_PRINTABLE_MM = ASSEMBLY_LIMITS.minPrintableWallMm;
 
 /**
  * Offset con esquinas en inglete y contorno simplificado: el redondeo deja vértices a menos de 1 µm
@@ -41,6 +41,13 @@ export interface LapSolids {
   tongueMm: number;
 }
 
+/** Islas sin solape porque no sería imprimible: medidas que habría tenido la más delgada. */
+export interface LapRejection {
+  islands: number;
+  tongueMm: number;
+  grooveWallMm: number;
+}
+
 /**
  * Lengüeta y ranura para las islas dadas (sección orientada: plano del eje en z' = `coord`). Devuelve
  * `null` si ninguna isla tiene ancho suficiente. El llamador libera lo devuelto; no libera `islands`.
@@ -52,6 +59,7 @@ export function buildLapSolids(
   coord: number,
   heightMm: number,
   clearanceMm: number,
+  rejected?: LapRejection,
 ): LapSolids | null {
   const tongues: CrossSection[] = [];
   const grooves: CrossSection[] = [];
@@ -59,16 +67,26 @@ export function buildLapSolids(
   try {
     for (const island of islands) {
       const w = islandWidth(island);
-      const third = w / 3;
-      if (third < MIN_TONGUE_MM || third - clearanceMm < MIN_GROOVE_WALL_MM) continue;
-      const t = cleanOffset(island, -third);
+      // Lengüeta y paredes de ranura iguales: w = lengüeta + 2·holgura + 2·pared
+      const tongueW = (w - 2 * clearanceMm) / 3;
+      const inset = (w - tongueW) / 2;
+      const grooveWall = inset - clearanceMm;
+      if (tongueW < MIN_PRINTABLE_MM || grooveWall < MIN_PRINTABLE_MM) {
+        if (rejected) {
+          rejected.islands++;
+          rejected.tongueMm = Math.min(rejected.tongueMm, tongueW);
+          rejected.grooveWallMm = Math.min(rejected.grooveWallMm, grooveWall);
+        }
+        continue;
+      }
+      const t = cleanOffset(island, -inset);
       if (t.isEmpty() || t.area() < 0.25 * island.area() * (1 / 3)) {
         t.delete();
         continue;
       }
       tongues.push(t);
-      grooves.push(cleanOffset(island, -(third - clearanceMm)));
-      tongueMm = Math.min(tongueMm, third);
+      grooves.push(cleanOffset(island, -grooveWall));
+      tongueMm = Math.min(tongueMm, tongueW);
     }
     if (tongues.length === 0) return null;
     const tUnion = wasm.CrossSection.union(tongues);

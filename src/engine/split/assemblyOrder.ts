@@ -21,7 +21,8 @@
  * @license MIT
  */
 
-import { jointDirections, restricts } from './assemblyConnectors';
+import { alternativeType, jointDirections, restricts } from './assemblyConnectors';
+import type { SplitConnectorType } from './splitTypes';
 import type { AssemblyBlocked, AssemblyDirection, AssemblyJointInput, AssemblyStep } from './assemblyTypes';
 import { DIRECTIONS } from './assemblyVoxels';
 
@@ -140,32 +141,52 @@ export function findOrder(input: OrderInput, glued: Set<string> = new Set()): Or
   return { order: best.order, blocked: blockedOf(input, best.placed, joints, glued) };
 }
 
-/** Arreglo voraz: uniones a pasar a "para pegar" para que todas las piezas entren. */
-export function greedyFix(input: OrderInput): { glued: Set<string>; blocked: AssemblyBlocked[]; order: AssemblyStep[] } {
+/**
+ * Arreglo voraz: uniones a pasar a "para pegar" para que todas las piezas entren. Con `allowChange`,
+ * una unión que traba pero admite otro tipo de conector compatible con la dirección elegida
+ * (`alternativeType`) cambia de tipo en vez de pegarse; el costo es (pegadas, cambiadas).
+ */
+export function greedyFix(
+  input: OrderInput,
+  allowChange = false,
+): { glued: Set<string>; changed: Map<string, SplitConnectorType>; blocked: AssemblyBlocked[]; order: AssemblyStep[] } {
   const n = input.codes.length;
-  const joints = byPart(n, input.joints);
+  // Copias: un cambio de tipo modifica las direcciones de las evaluaciones siguientes
+  const own = input.joints.map((j) => ({ ...j }));
+  const joints = byPart(n, own);
+  const changed = new Map<string, SplitConnectorType>();
   const placed = new Uint8Array(n);
   const glued = new Set<string>();
   const order: AssemblyStep[] = [];
   for (let step = 0; step < n; step++) {
     // Por capas: la más baja primero (no encierra piezas), luego tocando lo puesto, luego menos uniones a pegar
-    let pick: { p: number; d: AssemblyDirection; cost: number; glue: string[]; y: number; touch: boolean } | null = null;
+    let pick: { p: number; d: AssemblyDirection; cost: number; glue: string[]; change: Array<[AssemblyJointInput, SplitConnectorType]>; y: number; touch: boolean } | null = null;
     const better = (y: number, touch: boolean, cost: number) =>
       !pick || y < pick.y - 1e-3 || (Math.abs(y - pick.y) <= 1e-3 && (Number(touch) > Number(pick.touch) || (touch === pick.touch && cost < pick.cost)));
     for (const p of candidates(input, placed, joints)) {
       const e = evaluate(p, placed, joints[p], input.shadows, glued);
       for (const d of DIRECTIONS) {
         if ((e.blockingBy.get(d) ?? []).length > 0) continue;
-        const glue = joints[p]
-          .filter((j) => placed[other(j, p)] && restricts(j) && !glued.has(j.label) && !jointDirections(j, p).includes(d))
-          .map((j) => j.label);
-        if (better(input.minY[p], e.adjacent, glue.length)) pick = { p, d, cost: glue.length, glue, y: input.minY[p], touch: e.adjacent };
+        const stuck = joints[p].filter((j) => placed[other(j, p)] && restricts(j) && !glued.has(j.label) && !jointDirections(j, p).includes(d));
+        const change: Array<[AssemblyJointInput, SplitConnectorType]> = [];
+        const glue: string[] = [];
+        for (const j of stuck) {
+          const t = allowChange ? alternativeType(j, p, d) : null;
+          if (t) change.push([j, t]);
+          else glue.push(j.label);
+        }
+        const cost = glue.length * 1000 + change.length;
+        if (better(input.minY[p], e.adjacent, cost)) pick = { p, d, cost, glue, change, y: input.minY[p], touch: e.adjacent };
       }
     }
-    if (!pick) return { glued, order, blocked: blockedOf(input, placed, joints, glued) };
+    if (!pick) return { glued, changed, order, blocked: blockedOf({ ...input, joints: own }, placed, joints, glued) };
     for (const l of pick.glue) glued.add(l);
+    for (const [j, t] of pick.change) {
+      j.connector = { ...j.connector!, type: t };
+      changed.set(j.label, t);
+    }
     placed[pick.p] = 1;
     order.push({ part: pick.p, code: input.codes[pick.p], direction: pick.d, step: step + 1 });
   }
-  return { glued, order, blocked: [] };
+  return { glued, changed, order, blocked: [] };
 }
