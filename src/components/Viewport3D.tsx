@@ -15,11 +15,12 @@ import { useObjectContextMenu } from './viewport/useObjectContextMenu';
 import { EmptySceneOverlay } from './viewport/EmptySceneOverlay';
 import { ViewportHudTop } from './viewport/ViewportHudTop';
 import { ObjectContextMenu } from './viewport/ObjectContextMenu';
+import { BackgroundContextMenu } from './viewport/BackgroundContextMenu';
 import { ViewportOverlays } from './viewport/ViewportOverlays';
 
 export const Viewport3D: React.FC = () => {
   const viewportRef = useRef<HTMLElement | null>(null);
-  const { contextMenu, setContextMenu, ctxTarget, handleObjectContextMenu } = useObjectContextMenu(viewportRef);
+  const { contextMenu, setContextMenu, ctxTarget, handleObjectContextMenu, handleBackgroundContextMenu, handleBackgroundPointerDown } = useObjectContextMenu(viewportRef);
   const activeTool = useKuraStore((s) => s.activeTool);
   const clearSelection = useKuraStore((s) => s.clearSelection);
   const objects = useKuraStore((s) => s.objects);
@@ -30,7 +31,7 @@ export const Viewport3D: React.FC = () => {
   );
 
   return (
-    <main ref={viewportRef} className="kura-viewport-wrap">
+    <main ref={viewportRef} className="kura-viewport-wrap" onPointerDownCapture={handleBackgroundPointerDown} onContextMenu={handleBackgroundContextMenu}>
       <Canvas
         className={activeTool === 'paint' ? 'kura-viewport-canvas is-painting' : 'kura-viewport-canvas'}
         shadows
@@ -56,6 +57,9 @@ export const Viewport3D: React.FC = () => {
 
       {contextMenu && ctxTarget && (
         <ObjectContextMenu menu={contextMenu} target={ctxTarget} onClose={() => setContextMenu(null)} />
+      )}
+      {contextMenu && !contextMenu.objectId && (
+        <BackgroundContextMenu menu={contextMenu} onClose={() => setContextMenu(null)} />
       )}
 
       <ViewportOverlays />

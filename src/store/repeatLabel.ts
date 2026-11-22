@@ -1,0 +1,32 @@
+/**
+ * @file src/store/repeatLabel.ts
+ * @description Nombre legible de la acción repetible (F4) para el menú, la paleta y los avisos.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import { userAxisLabel } from '../core/scene/displayAxes';
+import { t, type TranslationKey } from '../i18n';
+import type { LanguageCode } from '../types/kura';
+import type { RepeatRecord } from './quickActionsTypes';
+
+export function repeatLabel(language: LanguageCode, rec: RepeatRecord): string {
+  switch (rec.kind) {
+    case 'duplicate': return t(language, 'repeat.name.duplicate');
+    case 'nudge': return t(language, 'repeat.name.move');
+    case 'transform':
+      return t(language, rec.part === 'position' ? 'repeat.name.move' : rec.part === 'rotation' ? 'repeat.name.rotate' : 'repeat.name.scale');
+    case 'hollow': return t(language, 'repeat.name.hollow', { mm: rec.wallThickness });
+    case 'mirror': return t(language, 'repeat.name.mirror', { axis: userAxisLabel(rec.axis) });
+    case 'applyHoles': return t(language, 'repeat.name.applyHoles');
+    case 'addPiece':
+      return t(language, rec.mode === 'negative' ? 'repeat.name.addNegative' : 'repeat.name.addPart', {
+        shape: t(language, `menu.shape.${rec.shape}` as TranslationKey),
+      });
+    case 'simplify': return t(language, 'repeat.name.simplify');
+    case 'color': return t(language, 'repeat.name.color');
+    case 'setType':
+      return t(language, 'repeat.name.setType', { type: t(language, rec.isHole ? 'menu.type.negative' : 'menu.type.solid') });
+  }
+}

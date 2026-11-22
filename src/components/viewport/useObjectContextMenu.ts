@@ -6,7 +6,7 @@
  * @license MIT
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useKuraStore } from '../../store/useKuraStore';
 import { type ContextMenuState } from './viewportHelpers';
 
@@ -33,6 +33,27 @@ export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | 
     [selectObject],
   );
 
+  // Menú sobre el fondo vacío: solo clic derecho sin arrastre (el arrastre derecho desplaza la cámara).
+  const rightDown = useRef<{ x: number; y: number } | null>(null);
+  const handleBackgroundPointerDown = useCallback((e: React.PointerEvent) => {
+    rightDown.current = e.button === 2 ? { x: e.clientX, y: e.clientY } : null;
+  }, []);
+  const handleBackgroundContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      if ((e.target as HTMLElement).tagName !== 'CANVAS') return;
+      e.preventDefault();
+      const down = rightDown.current;
+      rightDown.current = null;
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) return;
+      const rect = viewportRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const x = Math.max(8, Math.min(e.clientX - rect.left, Math.max(8, rect.width - 256)));
+      const y = Math.max(8, Math.min(e.clientY - rect.top, Math.max(8, rect.height - 120)));
+      setContextMenu({ objectId: null, x, y });
+    },
+    [viewportRef],
+  );
+
   // Cerrar menú contextual con Escape o clic externo
   useEffect(() => {
     if (!contextMenu) return;
@@ -53,9 +74,9 @@ export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | 
     };
   }, [contextMenu]);
 
-  const ctxTarget = contextMenu
+  const ctxTarget = contextMenu?.objectId
     ? objects.find((o) => o.id === contextMenu.objectId) ?? null
     : null;
 
-  return { contextMenu, setContextMenu, ctxTarget, handleObjectContextMenu };
+  return { contextMenu, setContextMenu, ctxTarget, handleObjectContextMenu, handleBackgroundContextMenu, handleBackgroundPointerDown };
 }

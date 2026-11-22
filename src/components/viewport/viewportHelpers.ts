@@ -12,7 +12,8 @@ import { plateOffsetX } from '../../core/scene/splitGroups';
 import { type PrinterProfile, type SceneObject, type SlicerTarget } from '../../types/kura';
 
 export interface ContextMenuState {
-  objectId: string;
+  /** Objeto bajo el cursor; `null` en el fondo vacío del visor. */
+  objectId: string | null;
   x: number;
   y: number;
 }
