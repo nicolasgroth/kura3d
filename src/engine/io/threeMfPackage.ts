@@ -9,7 +9,8 @@
  * @license MIT
  */
 
-import { strFromU8, unzipSync } from 'fflate';
+import { strFromU8 } from 'fflate';
+import { unzipBounded } from './boundedUnzip';
 import { ModelImportError, type ModelImportLimits } from './importErrors';
 import { normalizeHexColor } from './meshBuffers';
 import { forEachElement, forEachLeaf } from './xmlScan';
@@ -81,19 +82,10 @@ export function open3MFPackage(buffer: ArrayBuffer, limits: ModelImportLimits): 
   if (bytes.length < 4 || bytes[0] !== 0x50 || bytes[1] !== 0x4b) {
     throw new ModelImportError('corrupt', 'no es un archivo ZIP');
   }
-  let declaredTotal = 0;
   let archive: Record<string, Uint8Array>;
   try {
-    archive = unzipSync(bytes, {
-      filter(file) {
-        if (!USEFUL_PART.test(file.name)) return false;
-        declaredTotal += file.originalSize;
-        if (declaredTotal > limits.maxUncompressedBytes) {
-          throw new ModelImportError('archive-too-large');
-        }
-        return true;
-      },
-    });
+    // Tope sobre los bytes descomprimidos REALES, no solo sobre el tamaño declarado de cada entrada.
+    archive = unzipBounded(bytes, (name) => USEFUL_PART.test(name), limits.maxUncompressedBytes);
   } catch (error) {
     if (error instanceof ModelImportError) throw error;
     throw new ModelImportError('corrupt', error instanceof Error ? error.message : String(error));

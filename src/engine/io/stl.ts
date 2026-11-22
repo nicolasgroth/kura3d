@@ -160,8 +160,19 @@ function writeTriangles(view: DataView, offset: number, mesh: MeshData): number 
     } else {
       nx = 0; ny = 0; nz = 1;
     }
-    const values = [nx, ny, nz, ax, ay, az, bx, by, bz, cx, cy, cz];
-    for (let k = 0; k < 12; k++) view.setFloat32(offset + k * 4, values[k], true);
+    // Escritura directa en el único buffer de salida (sin arreglos temporales por triángulo).
+    view.setFloat32(offset, nx, true);
+    view.setFloat32(offset + 4, ny, true);
+    view.setFloat32(offset + 8, nz, true);
+    view.setFloat32(offset + 12, ax, true);
+    view.setFloat32(offset + 16, ay, true);
+    view.setFloat32(offset + 20, az, true);
+    view.setFloat32(offset + 24, bx, true);
+    view.setFloat32(offset + 28, by, true);
+    view.setFloat32(offset + 32, bz, true);
+    view.setFloat32(offset + 36, cx, true);
+    view.setFloat32(offset + 40, cy, true);
+    view.setFloat32(offset + 44, cz, true);
     view.setUint16(offset + 48, 0, true);
     offset += 50;
   }

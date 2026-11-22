@@ -1,6 +1,6 @@
 /**
  * @file src/engine/io/glb.ts
- * @description Exportación GLB (glTF 2.0 binario) con `GLTFExporter` de three.js (MIT): un nodo por
+ * @description Exportación GLB (glTF 2.0 binario) escrita a mano (`glbWriter.ts`, sin APIs del navegador): un nodo por
  * objeto, coordenadas mundiales en metros (unidad estándar glTF, Y-up) y un material por color,
  * incluidos los colores por cara como primitivas separadas.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -9,12 +9,12 @@
  */
 
 import * as THREE from 'three';
-import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 import type { SceneObject } from '../../types/kura';
-import { EngineError } from '../engineErrors';
 import { applyTransformToMesh } from '../primitives';
 import { normalizeHexColor } from './meshBuffers';
 import { exportableObjects } from './stl';
+import { writeGlb, type GlbMeshInput } from './glbWriter';
+import { computeVertexNormals } from '../manifoldKernel';
 
 /** Factor de milímetros (Kura3D) a metros (glTF). */
 export const GLTF_METERS_PER_MM = 0.001;
@@ -62,17 +62,32 @@ export function buildGltfScene(objects: SceneObject[]): THREE.Scene {
   return scene;
 }
 
-/** Exporta los objetos visibles y sólidos a un archivo GLB. */
+/**
+ * Exporta los objetos visibles y sólidos a un archivo GLB (metros, Y-up, una primitiva por color).
+ * Se escribe a mano con `writeGlb`, sin `GLTFExporter`: este depende de `FileReader` y falla en Node
+ * (servidor MCP, pruebas).
+ */
 export async function exportSceneToGLB(objects: SceneObject[]): Promise<Uint8Array> {
-  const scene = buildGltfScene(objects);
-  const exporter = new GLTFExporter();
-  const result = await exporter.parseAsync(scene, { binary: true, onlyVisible: false });
-  scene.traverse((node) => {
-    if (node instanceof THREE.Mesh) {
-      node.geometry.dispose();
-      (Array.isArray(node.material) ? node.material : [node.material]).forEach((m: THREE.Material) => m.dispose());
+  const meshes: GlbMeshInput[] = [];
+  for (const obj of exportableObjects(objects)) {
+    const world = applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale);
+    const base = normalizeHexColor(obj.color);
+    const triCount = Math.floor(world.indices.length / 3);
+    const byColor = new Map<string, number[]>();
+    for (let t = 0; t < triCount; t++) {
+      const color = normalizeHexColor(world.faceColors?.[t], base);
+      let list = byColor.get(color);
+      if (!list) byColor.set(color, (list = []));
+      list.push(world.indices[t * 3], world.indices[t * 3 + 1], world.indices[t * 3 + 2]);
     }
-  });
-  if (!(result instanceof ArrayBuffer)) throw new EngineError('GLB_EXPORT_FAILED');
-  return new Uint8Array(result);
+    const positions = new Float32Array(world.positions.length);
+    for (let i = 0; i < positions.length; i++) positions[i] = world.positions[i] * GLTF_METERS_PER_MM;
+    meshes.push({
+      name: obj.name,
+      positions,
+      normals: computeVertexNormals(positions, world.indices),
+      groups: [...byColor].map(([color, idx]) => ({ color, indices: Uint32Array.from(idx) })),
+    });
+  }
+  return writeGlb(meshes);
 }

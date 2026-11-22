@@ -24,7 +24,7 @@ export type PostResponse = (response: EngineTaskResponse, transfer: Transferable
 /** Atiende una petición del hilo principal. Nunca lanza: los errores viajan serializados. */
 export async function handleEngineRequest(req: EngineTaskRequest, post: PostResponse): Promise<void> {
   try {
-    if (!(req.task in ENGINE_TASKS)) throw new Error(`Unknown engine task: ${req.task}`);
+    if (typeof req.task !== 'string' || !Object.hasOwn(ENGINE_TASKS, req.task)) throw new Error(`Unknown engine task: ${req.task}`);
     post({ type: 'progress', id: req.id, phase: 'init' }, []);
     await initManifoldEngine();
     post({ type: 'progress', id: req.id, phase: 'compute' }, []);

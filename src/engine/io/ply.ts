@@ -1,8 +1,9 @@
 /**
  * @file src/engine/io/ply.ts
  * @description Lectura y escritura PLY (Stanford). Lector ASCII y binario (little/big endian) con
- * colores por vértice o por cara; escritor binario little endian con colores por vértice (los
- * vértices compartidos por caras de distinto color se duplican). PLY se trata como Z-up, igual que STL.
+ * colores por vértice o por cara; escritor binario little endian con color por cara y también por
+ * vértice para lectores que solo leen ese (los vértices compartidos por caras de distinto color se
+ * duplican). PLY se trata como Z-up, igual que STL.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -251,6 +252,7 @@ export function exportSceneToPLY(objects: SceneObject[]): Uint8Array {
   const verts: number[] = [];
   const colors: number[] = [];
   const faceList: number[] = [];
+  const faceRgb: number[] = [];
   for (const obj of exportableObjects(objects)) {
     const world = applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale);
     const base = normalizeHexColor(obj.color);
@@ -258,6 +260,8 @@ export function exportSceneToPLY(objects: SceneObject[]): Uint8Array {
     const triCount = Math.floor(world.indices.length / 3);
     for (let t = 0; t < triCount; t++) {
       const color = normalizeHexColor(world.faceColors?.[t], base);
+      const [fr, fg, fb] = hexToRgb01(color);
+      faceRgb.push(Math.round(fr * 255), Math.round(fg * 255), Math.round(fb * 255));
       for (let c = 0; c < 3; c++) {
         const v = world.indices[t * 3 + c];
         const key = `${v}${color}`;
@@ -280,9 +284,10 @@ export function exportSceneToPLY(objects: SceneObject[]): Uint8Array {
     'ply\nformat binary_little_endian 1.0\ncomment Kura3D export (units: mm, Z-up)\n' +
     `element vertex ${vertexCount}\nproperty float x\nproperty float y\nproperty float z\n` +
     'property uchar red\nproperty uchar green\nproperty uchar blue\n' +
-    `element face ${faceCount}\nproperty list uchar int vertex_indices\nend_header\n`;
+    `element face ${faceCount}\nproperty list uchar int vertex_indices\n` +
+    'property uchar red\nproperty uchar green\nproperty uchar blue\nend_header\n';
   const headerBytes = new TextEncoder().encode(header);
-  const out = new Uint8Array(headerBytes.length + vertexCount * 15 + faceCount * 13);
+  const out = new Uint8Array(headerBytes.length + vertexCount * 15 + faceCount * 16);
   out.set(headerBytes, 0);
   const view = new DataView(out.buffer);
   let o = headerBytes.length;
@@ -300,7 +305,10 @@ export function exportSceneToPLY(objects: SceneObject[]): Uint8Array {
     view.setInt32(o + 1, faceList[f * 3], true);
     view.setInt32(o + 5, faceList[f * 3 + 1], true);
     view.setInt32(o + 9, faceList[f * 3 + 2], true);
-    o += 13;
+    out[o + 13] = faceRgb[f * 3];
+    out[o + 14] = faceRgb[f * 3 + 1];
+    out[o + 15] = faceRgb[f * 3 + 2];
+    o += 16;
   }
   return out;
 }

@@ -41,6 +41,8 @@ export const PRIMITIVE_PARAM_RANGES = {
   fontSize: { min: 1, max: 500 },
   /** Espacio extra entre letras del texto 3D en mm (negativo las junta). */
   letterSpacing: { min: -10, max: 100 },
+  /** Bisel del texto 3D en mm (se guarda en el proyecto; 0 = sin bisel). */
+  bevel: { min: 0, max: 1000 },
 } as const satisfies Record<string, ParamRange>;
 
 export type PrimitiveRangeKey = keyof typeof PRIMITIVE_PARAM_RANGES;

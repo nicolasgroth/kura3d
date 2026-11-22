@@ -35,9 +35,10 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       if (!obj) return [];
       return runExclusive('plane_cut', [], async () => {
         const { parts, change } = await runEngine('planeCut', { obj, options });
+        // Primero se confirma que la pieza sigue vigente: un corte descartado no muestra avisos.
+        assertCurrent([obj]);
         reportEngineWarnings(change.warnings);
         if (parts.length === 0) return [];
-        assertCurrent([obj]);
         // Las mitades no quedan encimadas: se separan unos milímetros o la superior va a la cama.
         const others = get().objects.filter((o) => o.id !== obj.id);
         const separated = separateCutHalves(others, parts, options.axis, activeBedSize(get()));

@@ -100,6 +100,9 @@ export function sampleWallThickness(mesh: OrientableMesh, geo: FaceGeometry, min
     cumulative[t] = acc;
   }
 
+  // Épsilon relativa al tamaño: el origen se aparta de su cara y se descartan impactos más cercanos.
+  const eps = Math.max(1e-6, boundingDiagonal(p) * 1e-7);
+
   let minThickness = Infinity;
   let thin = 0;
   let measured = 0;
@@ -114,17 +117,22 @@ export function sampleWallThickness(mesh: OrientableMesh, geo: FaceGeometry, min
     }
     const t = lo;
     if (geo.areas[t] <= 1e-12) continue;
-    // Punto interior del triángulo con baricéntricas de baja discrepancia (lejos de las aristas).
-    let u = 0.15 + 0.7 * ((s * golden) % 1);
-    let v = 0.15 + 0.7 * ((s * golden * golden) % 1);
-    if (u + v > 0.85) { u = 0.85 - u * 0.5; v = 0.85 - v * 0.5; }
+    // Punto interior del triángulo: baricéntricas de baja discrepancia plegadas dentro del
+    // triángulo (u + v ≤ 1) y acercadas al baricentro, lejos de aristas y vértices. Un punto fuera
+    // del triángulo (en su plano, más allá de una arista) quedaría fuera del sólido en superficies
+    // convexas y el rayo chocaría con la cara vecina a distancia casi nula.
+    let u = (s * golden) % 1;
+    let v = (s * golden * golden) % 1;
+    if (u + v > 1) { u = 1 - u; v = 1 - v; }
+    u = 1 / 3 + 0.7 * (u - 1 / 3);
+    v = 1 / 3 + 0.7 * (v - 1 / 3);
     const a = idx[t * 3] * 3, b = idx[t * 3 + 1] * 3, c = idx[t * 3 + 2] * 3;
     const w = 1 - u - v;
-    const ox = w * p[a] + u * p[b] + v * p[c];
-    const oy = w * p[a + 1] + u * p[b + 1] + v * p[c + 1];
-    const oz = w * p[a + 2] + u * p[b + 2] + v * p[c + 2];
     const dx = -geo.normals[t * 3], dy = -geo.normals[t * 3 + 1], dz = -geo.normals[t * 3 + 2];
-    const hit = firstHit(p, idx, triCount, t, ox, oy, oz, dx, dy, dz);
+    const ox = w * p[a] + u * p[b] + v * p[c] + dx * eps;
+    const oy = w * p[a + 1] + u * p[b + 1] + v * p[c + 1] + dy * eps;
+    const oz = w * p[a + 2] + u * p[b + 2] + v * p[c + 2] + dz * eps;
+    const hit = firstOppositeHit(p, idx, geo.normals, triCount, t, eps, ox, oy, oz, dx, dy, dz);
     if (!Number.isFinite(hit)) continue;
     measured++;
     if (hit < minThickness) minThickness = hit;
@@ -137,21 +145,47 @@ export function sampleWallThickness(mesh: OrientableMesh, geo: FaceGeometry, min
   };
 }
 
-/** Distancia al primer triángulo (distinto de `skip`) que corta el rayo; `Infinity` si ninguno. */
-function firstHit(
-  p: ArrayLike<number>, idx: ArrayLike<number>, triCount: number, skip: number,
-  ox: number, oy: number, oz: number, dx: number, dy: number, dz: number,
+/** Diagonal de la caja que envuelve las posiciones (0 si no hay vértices). */
+function boundingDiagonal(p: ArrayLike<number>): number {
+  if (p.length < 3) return 0;
+  let minX = Infinity, minY = Infinity, minZ = Infinity, maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  for (let i = 0; i + 2 < p.length; i += 3) {
+    if (p[i] < minX) minX = p[i];
+    if (p[i] > maxX) maxX = p[i];
+    if (p[i + 1] < minY) minY = p[i + 1];
+    if (p[i + 1] > maxY) maxY = p[i + 1];
+    if (p[i + 2] < minZ) minZ = p[i + 2];
+    if (p[i + 2] > maxZ) maxZ = p[i + 2];
+  }
+  return Math.hypot(maxX - minX, maxY - minY, maxZ - minZ);
+}
+
+/**
+ * Distancia desde el origen de la muestra (en su cara `skip`) a la primera cara OPUESTA que corta
+ * el rayo; `Infinity` si ninguna. Un espesor real termina en una cara por la que el rayo sale del
+ * sólido (normal en el sentido del rayo), así que se ignoran: la propia cara, las que comparten
+ * vértice con ella (vecinas casi coplanares), las de normal con el mismo sentido que la de origen
+ * y los impactos a menos de `eps`. La distancia incluye el desplazamiento `eps` del origen.
+ */
+function firstOppositeHit(
+  p: ArrayLike<number>, idx: ArrayLike<number>, normals: Float64Array, triCount: number, skip: number,
+  eps: number, ox: number, oy: number, oz: number, dx: number, dy: number, dz: number,
 ): number {
   let best = Infinity;
-  const eps = 1e-9;
+  const detEps = 1e-12;
+  const s0 = idx[skip * 3], s1 = idx[skip * 3 + 1], s2 = idx[skip * 3 + 2];
   for (let t = 0; t < triCount; t++) {
     if (t === skip) continue;
-    const a = idx[t * 3] * 3, b = idx[t * 3 + 1] * 3, c = idx[t * 3 + 2] * 3;
+    // La cara de salida tiene la normal en el sentido del rayo (opuesta a la de origen).
+    if (normals[t * 3] * dx + normals[t * 3 + 1] * dy + normals[t * 3 + 2] * dz <= 0) continue;
+    const i0 = idx[t * 3], i1 = idx[t * 3 + 1], i2 = idx[t * 3 + 2];
+    if (i0 === s0 || i0 === s1 || i0 === s2 || i1 === s0 || i1 === s1 || i1 === s2 || i2 === s0 || i2 === s1 || i2 === s2) continue;
+    const a = i0 * 3, b = i1 * 3, c = i2 * 3;
     const e1x = p[b] - p[a], e1y = p[b + 1] - p[a + 1], e1z = p[b + 2] - p[a + 2];
     const e2x = p[c] - p[a], e2y = p[c + 1] - p[a + 1], e2z = p[c + 2] - p[a + 2];
     const px = dy * e2z - dz * e2y, py = dz * e2x - dx * e2z, pz = dx * e2y - dy * e2x;
     const det = e1x * px + e1y * py + e1z * pz;
-    if (det > -eps && det < eps) continue;
+    if (det > -detEps && det < detEps) continue;
     const invDet = 1 / det;
     const tx = ox - p[a], ty = oy - p[a + 1], tz = oz - p[a + 2];
     const u = (tx * px + ty * py + tz * pz) * invDet;
@@ -160,9 +194,9 @@ function firstHit(
     const v = (dx * qx + dy * qy + dz * qz) * invDet;
     if (v < 0 || u + v > 1) continue;
     const dist = (e2x * qx + e2y * qy + e2z * qz) * invDet;
-    if (dist > 1e-4 && dist < best) best = dist;
+    if (dist > eps && dist < best) best = dist;
   }
-  return best;
+  return best + eps;
 }
 
 /** Ángulos diedros (grados) que se consideran facetado visible de una superficie curva. */

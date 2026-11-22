@@ -30,6 +30,8 @@ import {
   normalizeMeshToBed,
 } from './primitives';
 import { computeMeshFingerprint } from './meshFingerprint';
+import { requireOperationRange } from './engineErrors';
+import { OPERATION_RANGES } from './operationLimits';
 import { assertRegionFitsMesh, assertSegmentationMatchesMesh } from './segmentationGuards';
 
 /** Paleta de 12 colores de alto contraste para distinguir sub-estructuras y exportar 3MF multicolor. */
@@ -924,18 +926,12 @@ export async function detectStructuralRegions(
   obj: SceneObject,
   options?: Partial<SegmentationOptions>
 ): Promise<StructuralSegmentationResult> {
-  const creaseAngleDeg = Math.max(
-    5,
-    Math.min(85, options?.creaseAngleDeg ?? DEFAULT_SEGMENTATION_OPTIONS.creaseAngleDeg)
-  );
-  const minRegionPercent = Math.max(
-    0.1,
-    Math.min(25, options?.minRegionPercent ?? DEFAULT_SEGMENTATION_OPTIONS.minRegionPercent)
-  );
-  const maxRegions = Math.max(
-    1,
-    Math.min(32, Math.round(options?.maxRegions ?? DEFAULT_SEGMENTATION_OPTIONS.maxRegions))
-  );
+  // Rangos de la fuente única: un valor fuera de rango es error tipado, no un recorte silencioso.
+  const R = OPERATION_RANGES.detect;
+  const D = DEFAULT_SEGMENTATION_OPTIONS;
+  const creaseAngleDeg = requireOperationRange('creaseAngleDeg', options?.creaseAngleDeg, R.creaseAngleDeg, D.creaseAngleDeg);
+  const minRegionPercent = requireOperationRange('minRegionPercent', options?.minRegionPercent, R.minRegionPercent, D.minRegionPercent);
+  const maxRegions = requireOperationRange('maxRegions', options?.maxRegions, R.maxRegions, D.maxRegions);
 
   const mesh = obj.mesh;
   const totalTriangles = Math.floor(mesh.indices.length / 3);

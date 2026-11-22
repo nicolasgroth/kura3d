@@ -36,6 +36,7 @@ import {
 } from './primitives';
 import { extrudeSvgToMesh } from './advancedGeometry';
 import { composeFlushInlaySurface } from './inlaySurface';
+import { closeComposedProjectionMesh, closedProjectionMesh } from './projectionCleanup';
 
 /** Malla gráfica normalizada en coordenadas locales `(u, v, w)` antes de proyectar. */
 interface NormalizedGraphicUV {
@@ -729,10 +730,9 @@ export async function projectGraphicOntoSurface(
         targetObj.color.toLowerCase(),
         stampColor
       );
-      if (!computeMeshStats(inlayMesh).isManifold) {
-        throw new EngineError('PROJECTION_NON_MANIFOLD');
-      }
-      return extractPositionAndNormalize(inlayMesh);
+      return extractPositionAndNormalize(
+        closeComposedProjectionMesh(wasm, inlayMesh, registry.colorToId, registry.idToColor, targetObj.color)
+      );
     }
 
     if (resultManifold.isEmpty() || resultManifold.numTri() === 0) {
@@ -748,11 +748,7 @@ export async function projectGraphicOntoSurface(
       throw new EngineError('PROJECTION_NO_EFFECT', { change: effect * 100 });
     }
 
-    const outMesh = manifoldToMeshData(resultManifold, registry.idToColor);
-    if (!computeMeshStats(outMesh).isManifold) {
-      throw new EngineError('PROJECTION_NON_MANIFOLD');
-    }
-    return extractPositionAndNormalize(outMesh);
+    return extractPositionAndNormalize(closedProjectionMesh(resultManifold, registry.idToColor));
   } finally {
     targetManifold?.delete();
     stampManifold?.delete();

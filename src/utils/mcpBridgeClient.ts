@@ -3,7 +3,7 @@
  * @description Cliente WebSocket controlado por el usuario para conectar Kura3D con el servidor MCP local.
  * Cuando `mcpConfig.enabled` es false, no realiza ningún intento de conexión ni reconexión.
  * Cuando está activo, usa `ws://127.0.0.1:${port}` con token obligatorio y declara su preferencia de
- * solo lectura en el handshake. La política lectura/escritura se importa de `mcp-server/src/toolPolicy.ts`
+ * solo lectura en el handshake. La política lectura/escritura se importa de `src/core/commands/commandPolicy.ts`
  * (fuente única). Expone el estado del puente y la rotación efectiva del token en el servidor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -51,7 +51,7 @@ export function captureViewportPng(): string | null {
 
 /**
  * Indica si un comando llegado por MCP puede ejecutarse con la preferencia de solo lectura dada.
- * Usa la misma política que el servidor (`toolPolicy.ts`); comandos desconocidos se rechazan.
+ * Usa la misma política que el servidor (`src/core/commands/commandPolicy.ts`); comandos desconocidos se rechazan.
  */
 export function isMcpCommandAllowed(command: string, readOnly: boolean): boolean {
   if (!isKnownCommand(command)) return false;
