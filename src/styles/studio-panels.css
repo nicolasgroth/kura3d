@@ -1,0 +1,325 @@
+/**
+ * @file src/styles/studio-panels.css
+ * @description Paneles laterales: primitivas, escena, rail compacto y bordes colapsables. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* ============================================================================
+ * 4. Sidebars (Izquierda: Primitivas/Escena, Derecha: Inspector & Chat IA)
+ * ============================================================================ */
+.kura-sidebar-left {
+  position: relative;
+  width: 268px;
+  flex-shrink: 0;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  transition: width 0.18s ease;
+}
+
+.kura-sidebar-left.is-collapsed {
+  width: 0;
+  border-right: none;
+  overflow: visible;
+}
+
+.kura-sidebar-right {
+  position: relative;
+  width: 296px;
+  flex-shrink: 0;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  transition: width 0.18s ease;
+}
+
+.kura-sidebar-right.is-collapsed {
+  width: 0;
+  border-left: none;
+  overflow: visible;
+}
+
+@media (width > 900px) {
+  .kura-sidebar-left.is-collapsed > *:not(.kura-panel-edge-btn),
+  .kura-sidebar-right.is-collapsed > *:not(.kura-panel-edge-btn) {
+    display: none;
+  }
+}
+
+/* Botón delgado ‹ / › en el borde interior de cada panel lateral */
+.kura-panel-edge-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
+  width: 18px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+
+.kura-panel-edge-btn:hover {
+  background: var(--bg-hover);
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+}
+
+.kura-panel-edge-btn.is-left {
+  right: -18px;
+  border-left: none;
+  border-radius: 0 7px 7px 0;
+}
+
+.kura-panel-edge-btn.is-right {
+  left: -18px;
+  border-right: none;
+  border-radius: 7px 0 0 7px;
+}
+
+/* Rail vertical compacto (56px) para LeftSidebar en modo Compacto */
+.kura-compact-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  scrollbar-width: none;
+}
+
+.kura-compact-rail-sep {
+  width: 28px;
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 2px 0;
+  flex-shrink: 0;
+}
+
+/* Píldora para salir de Modo Zen en la primera fila del HUD */
+.kura-zen-exit-pill {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--hud-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: var(--shadow-hud);
+  transition: border-color 0.14s ease, transform 0.14s ease;
+}
+
+.kura-zen-exit-pill:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-1px);
+}
+
+.kura-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.kura-ai-drawer {
+  width: 340px;
+  flex-shrink: 0;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.kura-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.kura-tab-btn {
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.kura-tab-btn.is-active {
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.kura-scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+}
+
+.kura-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin: 0 0 6px 0;
+}
+
+/* Rejilla de primitivas estilo Tinkercad / Studio */
+.kura-primitive-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.kura-primitive-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.14s ease, background-color 0.14s ease, transform 0.1s ease;
+}
+
+.kura-primitive-card:hover {
+  border-color: var(--accent-cyan);
+  background: color-mix(in srgb, var(--accent-cyan) 10%, var(--bg-elevated));
+}
+
+.kura-primitive-card:active {
+  transform: scale(0.98);
+}
+
+.kura-primitive-icon {
+  color: var(--accent-cyan);
+}
+
+/* Árbol de escena */
+.kura-scene-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-scene-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  user-select: none;
+}
+
+.kura-scene-item.is-selected {
+  border-color: var(--accent-cyan);
+  background: color-mix(in srgb, var(--accent-cyan) 13%, var(--bg-elevated));
+}
+
+.kura-scene-item-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.kura-color-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.kura-scene-name {
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-hole-tag {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent-amber) 18%, transparent);
+  color: var(--accent-amber);
+  border: 1px solid color-mix(in srgb, var(--accent-amber) 38%, transparent);
+  flex-shrink: 0;
+}
+
+.kura-scene-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.kura-mini-icon-btn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.kura-mini-icon-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}

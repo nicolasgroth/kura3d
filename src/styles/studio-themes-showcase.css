@@ -1,0 +1,306 @@
+/**
+ * @file src/styles/studio-themes-showcase.css
+ * @description Ajustes amplios: rejilla de temas, maquetas miniatura y vitrina de marca. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* Modal de Ajustes amplio con pestaña Apariencia y rejilla 2×3 de temas */
+dialog.kura-dialog-settings {
+  width: min(680px, calc(100vw - 24px));
+}
+
+.kura-appearance-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kura-themes-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.kura-themes-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.kura-themes-hint {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.kura-theme-preview-pill {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-cyan) 16%, transparent);
+  color: var(--accent-cyan);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 42%, transparent);
+}
+
+.kura-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .kura-theme-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .kura-theme-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kura-theme-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.14s ease, transform 0.12s ease, box-shadow 0.14s ease;
+}
+
+.kura-theme-card:hover,
+.kura-theme-card:focus-visible {
+  border-color: var(--accent-cyan);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+.kura-theme-card.is-active {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-cyan) 32%, transparent);
+  background: color-mix(in srgb, var(--accent-cyan) 8%, var(--bg-elevated));
+}
+
+/* Maqueta miniatura del estudio Kura3D dentro de cada tarjeta de tema */
+.kura-theme-mockup {
+  width: 100%;
+  height: 76px;
+  border-radius: 7px;
+  border: 1px solid;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.kura-theme-mockup-topbar {
+  height: 13px;
+  padding: 0 6px;
+  border-bottom: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kura-theme-mockup-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.kura-theme-mockup-dots i {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.kura-theme-mockup-pill {
+  width: 18px;
+  height: 5px;
+  border-radius: 999px;
+}
+
+.kura-theme-mockup-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 20% 1fr 24%;
+}
+
+.kura-theme-mockup-sidebar {
+  padding: 5px 4px;
+  border-right: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-theme-mockup-sidebar span {
+  height: 5px;
+  border-radius: 2px;
+  opacity: 0.85;
+}
+
+.kura-theme-mockup-viewport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kura-theme-mockup-cube {
+  display: block;
+}
+
+.kura-theme-mockup-inspector {
+  padding: 5px 4px;
+  border-left: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-theme-mockup-inspector span {
+  height: 4px;
+  border-radius: 2px;
+}
+
+.kura-theme-mockup-cta {
+  margin-top: auto;
+  height: 7px !important;
+  border-radius: 3px;
+}
+
+.kura-theme-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.kura-theme-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.kura-theme-card-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.kura-wcag-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.kura-wcag-badge.is-aaa {
+  border-color: color-mix(in srgb, var(--accent-green) 50%, transparent);
+  color: var(--accent-green);
+}
+
+.kura-theme-card-desc {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.32;
+  color: var(--text-secondary);
+}
+
+.kura-theme-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 2px;
+}
+
+.kura-theme-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+}
+
+.kura-theme-status-badge.is-active {
+  background: var(--accent-cyan);
+  color: var(--accent-cyan-fg);
+  border-color: transparent;
+}
+
+/* Brand Identity Showcase en pestaña Acerca de */
+.kura-about-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kura-about-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kura-brand-showcase {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 520px) {
+  .kura-brand-showcase {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kura-brand-variant-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  min-height: 84px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #0d0919;
+}
+
+.kura-brand-variant-card.is-mono {
+  background: #141923;
+}
+
+.kura-brand-lockup-img {
+  max-width: 100%;
+  max-height: 54px;
+  object-fit: contain;
+}
+
+.kura-brand-mono-img {
+  max-width: 100%;
+  max-height: 54px;
+  object-fit: contain;
+}

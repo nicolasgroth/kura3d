@@ -64,9 +64,23 @@ export default defineConfig({
   },
 
   // Configuración para pruebas unitarias con Vitest
+  // Unitarias (*.test.ts) en Node; componentes React (*.test.tsx) en jsdom con Testing Library.
   test: {
-    environment: 'node',
     globals: true,
-    include: ['src/**/*.test.ts'],
+    projects: [
+      {
+        extends: true,
+        test: { name: 'unit', environment: 'node', include: ['src/**/*.test.ts'] },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'components',
+          environment: 'jsdom',
+          include: ['src/**/*.test.tsx'],
+          setupFiles: ['src/test/setupComponents.ts'],
+        },
+      },
+    ],
   },
 });

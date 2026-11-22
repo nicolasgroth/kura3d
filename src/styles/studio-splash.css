@@ -1,0 +1,207 @@
+/**
+ * @file src/styles/studio-splash.css
+ * @description Pantalla de bienvenida animada. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* ============================================================================
+ * 12. Kura3D v0.5.0: Splash Screen, Temas Interactivos WCAG y Brand Showcase
+ * ============================================================================ */
+
+/* Pantalla de bienvenida animada */
+.kura-splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(
+    circle at 50% 40%,
+    light-dark(#eef2ff, #140f29) 0%,
+    light-dark(#e2e8f0, #070a12) 72%
+  );
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 0.28s ease-out, transform 0.28s ease-out;
+}
+
+.kura-splash-overlay.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.015);
+}
+
+.kura-splash-glow {
+  position: absolute;
+  width: min(460px, 82vw);
+  height: min(460px, 82vw);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(139, 92, 246, 0.28) 0%,
+    rgba(45, 212, 191, 0.16) 45%,
+    transparent 72%
+  );
+  filter: blur(36px);
+  pointer-events: none;
+}
+
+.kura-splash-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  width: min(420px, 92vw);
+  padding: 32px 28px 24px;
+  border-radius: 20px;
+  background: light-dark(rgba(255, 255, 255, 0.86), rgba(15, 19, 32, 0.84));
+  border: 1px solid light-dark(rgba(124, 58, 237, 0.22), rgba(167, 139, 250, 0.26));
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.42);
+}
+
+.kura-splash-emblem-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 124px;
+  height: 124px;
+  margin-bottom: 4px;
+  border-radius: 28px;
+  background: radial-gradient(
+    circle,
+    rgba(139, 92, 246, 0.22) 0%,
+    rgba(45, 212, 191, 0.1) 58%,
+    transparent 76%
+  );
+}
+
+.kura-splash-emblem {
+  width: 108px;
+  height: 108px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 24px rgba(109, 40, 217, 0.35));
+  animation: kura-splash-float 3s ease-in-out infinite;
+}
+
+@keyframes kura-splash-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.kura-splash-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.kura-splash-wordmark {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  background: linear-gradient(125deg, #8b5cf6 0%, #38bdf8 55%, #2dd4bf 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.kura-splash-version {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-cyan) 16%, transparent);
+  color: var(--accent-cyan);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 40%, transparent);
+}
+
+.kura-splash-subtitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.kura-splash-org {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary);
+}
+
+.kura-splash-progress-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.kura-splash-progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.kura-splash-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8b5cf6 0%, #38bdf8 55%, #2dd4bf 100%);
+  transition: width 0.35s ease;
+}
+
+.kura-splash-progress-bar.is-loading {
+  width: 62%;
+  animation: kura-splash-pulse 1.3s ease-in-out infinite;
+}
+
+.kura-splash-progress-bar.is-ready {
+  width: 100%;
+}
+
+@keyframes kura-splash-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.kura-splash-status-text {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.kura-splash-skip {
+  margin-top: 6px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-splash-overlay {
+    transition-duration: 0.1s;
+  }
+  .kura-splash-emblem,
+  .kura-splash-progress-bar.is-loading {
+    animation: none;
+  }
+}

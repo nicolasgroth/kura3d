@@ -1,0 +1,219 @@
+/**
+ * @file src/styles/studio-viewport.css
+ * @description Visor 3D central, HUD flotante y menú contextual. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* ============================================================================
+ * 5. Viewport 3D Central y HUD Flotante
+ * ============================================================================ */
+.kura-viewport-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background: radial-gradient(
+    circle at 50% 35%,
+    var(--viewport-bg-center) 0%,
+    var(--viewport-bg-edge) 100%
+  );
+  overflow: hidden;
+}
+
+.kura-empty-stage {
+  position: absolute;
+  inset: 20% 12px 14%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.kura-empty-stage h2 {
+  margin: 0 0 2px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-size: 16px;
+  text-align: center;
+}
+
+.kura-empty-stage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.kura-empty-stage .kura-btn {
+  pointer-events: auto;
+}
+
+.kura-hud-top-stack {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.kura-hud-top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.kura-hud-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.kura-hud-bottom {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.kura-hud-card {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: var(--radius-md);
+  background: var(--hud-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-hud);
+}
+
+.kura-boolean-fab {
+  align-self: flex-start;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-amber) 92%, #ffffff 8%),
+    color-mix(in srgb, var(--accent-amber) 76%, #000000 24%)
+  );
+  color: var(--accent-amber-fg);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-amber) 38%, transparent);
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+
+.kura-boolean-fab:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.kura-hud-pill-nowrap {
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kura-dims-badge {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Menú contextual clic derecho sobre objeto 3D */
+.kura-context-menu {
+  position: absolute;
+  z-index: 35;
+  width: 244px;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  background: var(--hud-glass);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kura-context-header {
+  padding: 4px 8px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tool-accent);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-context-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kura-context-item:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tool-accent) 16%, transparent);
+}
+
+.kura-context-item.is-accent {
+  color: var(--accent-amber);
+  font-weight: 700;
+}
+
+.kura-context-item.is-danger {
+  color: var(--accent-red);
+}
+
+.kura-context-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kura-context-sep {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 3px 4px;
+}

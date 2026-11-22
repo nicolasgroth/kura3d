@@ -1,0 +1,92 @@
+/**
+ * @file src/components/inspector/OperationsSection.tsx
+ * @description Sección Operaciones 3D (Manifold) del inspector: módulos, ahuecar, corte y textura.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import React from 'react';
+import { Palette, Scissors, Split, Zap } from 'lucide-react';
+import { t } from '../../i18n';
+import { useKuraStore } from '../../store/useKuraStore';
+import { type InspectorSectionProps } from './inspectorTypes';
+import { ModulesPanel } from './ModulesPanel';
+import { HollowPanel } from './HollowPanel';
+import { TexturePanel } from './TexturePanel';
+
+/** Sección 5: operaciones 3D determinísticas y módulos dinámicos. */
+export const OperationsSection: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
+  const language = useKuraStore((s) => s.language);
+  const busyOperation = useKuraStore((s) => s.busyOperation);
+  const splitDisconnectedObject = useKuraStore((s) => s.splitDisconnectedObject);
+  const splitObjectByColor = useKuraStore((s) => s.splitObjectByColor);
+  const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
+  const isBusy = Boolean(busyOperation);
+
+  return (
+    <section className="kura-card">
+      <div className="kura-field-row" style={{ marginBottom: 2 }}>
+        <h3 className="kura-section-label" style={{ margin: 0 }}>
+          {t(language, 'inspector.section.operations')}
+        </h3>
+        <span
+          className="kura-source-pill is-local"
+          title={t(language, 'badge.local100Tip')}
+        >
+          <Zap size={10} />
+          <span>{t(language, 'badge.local100')}</span>
+        </span>
+      </div>
+
+      {/* Módulos dinámicos (+ / −) para cualquier forma o STL/3MF importado */}
+      <ModulesPanel primary={primary} ui={ui} />
+
+      <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', width: '100%' }} />
+
+      {/* Ahuecar (Hollow) */}
+      <HollowPanel primary={primary} ui={ui} />
+
+      <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', width: '100%' }} />
+
+      {/* Corte y separación */}
+      <div className="kura-form-field">
+        <label>{t(language, 'inspector.op.cutAndSplitTitle')}</label>
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm"
+          disabled={isBusy || primary.locked}
+          onClick={() => setActiveDialog('cut')}
+        >
+          <Scissors size={13} />
+          <span>{t(language, 'inspector.op.planeCut')}</span>
+        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <button
+            type="button"
+            className="kura-btn kura-btn-sm"
+            disabled={isBusy || primary.locked}
+            onClick={() => void splitDisconnectedObject(primary.id)}
+          >
+            <Split size={13} />
+            <span>{t(language, 'inspector.op.splitParts')}</span>
+          </button>
+          <button
+            type="button"
+            className="kura-btn kura-btn-sm"
+            disabled={isBusy || primary.locked}
+            onClick={() => splitObjectByColor(primary.id)}
+          >
+            <Palette size={13} />
+            <span>{t(language, 'inspector.op.splitColors')}</span>
+          </button>
+        </div>
+      </div>
+
+      <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', width: '100%' }} />
+
+      {/* Textura superficial */}
+      <TexturePanel primary={primary} ui={ui} />
+    </section>
+  );
+};

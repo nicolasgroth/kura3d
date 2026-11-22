@@ -1,0 +1,318 @@
+/**
+ * @file src/styles/studio-tokens.css
+ * @description Esquema de color dinámico, tokens de diseño y paletas WCAG conmutables en caliente. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* ============================================================================
+ * 1. Esquema de Color Dinámico y Tokens de Diseño (Modern Web Guidance)
+ * ============================================================================ */
+:root {
+  color-scheme: light dark;
+
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+
+  /* Colores base por tema (Por defecto: Obsidian Cyan) */
+  --bg-canvas-light: #eef2f6;
+  --bg-canvas-dark: #0b0f16;
+
+  --bg-panel-light: #ffffff;
+  --bg-panel-dark: #111722;
+
+  --bg-elevated-light: #f8fafc;
+  --bg-elevated-dark: #17202e;
+
+  --bg-hover-light: #e2e8f0;
+  --bg-hover-dark: #1f2b3d;
+
+  --border-subtle-light: #cbd5e1;
+  --border-subtle-dark: #253247;
+
+  --border-strong-light: #94a3b8;
+  --border-strong-dark: #384966;
+
+  --text-primary-light: #0f172a;
+  --text-primary-dark: #f1f5f9;
+
+  --text-secondary-light: #475569;
+  --text-secondary-dark: #94a3b8;
+
+  --text-muted-light: #59677c;
+  --text-muted-dark: #8694a8;
+
+  --accent-cyan-light: #026ca3;
+  --accent-cyan-dark: #38bdf8;
+
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #07131e;
+
+  --accent-amber-light: #b63d0b;
+  --accent-amber-dark: #f97316;
+
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #1c0a00;
+
+  --accent-green-light: #0f7234;
+  --accent-green-dark: #22c55e;
+
+  --accent-red-light: #c21f1f;
+  --accent-red-dark: #f48080;
+
+  --hud-glass-light: rgba(255, 255, 255, 0.86);
+  --hud-glass-dark: rgba(15, 20, 28, 0.82);
+
+  --viewport-bg-center-light: #f8fafc;
+  --viewport-bg-center-dark: #182232;
+  --viewport-bg-edge-light: #dbe4ef;
+  --viewport-bg-edge-dark: #0a0e15;
+
+  /* Tokens semánticos automáticos light-dark() */
+  --bg-canvas: light-dark(var(--bg-canvas-light), var(--bg-canvas-dark));
+  --bg-panel: light-dark(var(--bg-panel-light), var(--bg-panel-dark));
+  --bg-elevated: light-dark(var(--bg-elevated-light), var(--bg-elevated-dark));
+  --bg-hover: light-dark(var(--bg-hover-light), var(--bg-hover-dark));
+  --border-subtle: light-dark(var(--border-subtle-light), var(--border-subtle-dark));
+  --border-strong: light-dark(var(--border-strong-light), var(--border-strong-dark));
+  --text-primary: light-dark(var(--text-primary-light), var(--text-primary-dark));
+  --text-secondary: light-dark(var(--text-secondary-light), var(--text-secondary-dark));
+  --text-muted: light-dark(var(--text-muted-light), var(--text-muted-dark));
+
+  --accent-cyan: light-dark(var(--accent-cyan-light), var(--accent-cyan-dark));
+  --accent-cyan-fg: light-dark(var(--accent-cyan-fg-light), var(--accent-cyan-fg-dark));
+  --accent-amber: light-dark(var(--accent-amber-light), var(--accent-amber-dark));
+  --accent-amber-fg: light-dark(var(--accent-amber-fg-light), var(--accent-amber-fg-dark));
+  --accent-green: light-dark(var(--accent-green-light), var(--accent-green-dark));
+  --accent-red: light-dark(var(--accent-red-light), var(--accent-red-dark));
+  --hud-glass: light-dark(var(--hud-glass-light), var(--hud-glass-dark));
+  --viewport-bg-center: light-dark(var(--viewport-bg-center-light), var(--viewport-bg-center-dark));
+  --viewport-bg-edge: light-dark(var(--viewport-bg-edge-light), var(--viewport-bg-edge-dark));
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-hud: 0 10px 28px rgba(0, 0, 0, 0.28);
+
+  --scrollbar-track: light-dark(#e2e8f0, #0f151f);
+  --scrollbar-thumb: light-dark(#94a3b8, #334155);
+
+  accent-color: var(--accent-cyan);
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  font-family:
+    'Inter',
+    'Segoe UI',
+    'Noto Sans',
+    'Noto Sans Devanagari',
+    'Noto Sans SC',
+    'Microsoft YaHei',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* ============================================================================
+ * 1b. Paletas Conmutables en Caliente (WCAG AA / AAA en Claro y Oscuro)
+ * ============================================================================ */
+
+/* Kura Prism: inspirado en el isotipo oficial (violeta profundo + menta turquesa) */
+:root[data-theme="kura_prism"] {
+  --bg-canvas-light: #f1eefb;
+  --bg-canvas-dark: #0d0919;
+  --bg-panel-light: #faf9ff;
+  --bg-panel-dark: #151026;
+  --bg-elevated-light: #f3effe;
+  --bg-elevated-dark: #1d1634;
+  --bg-hover-light: #e6defc;
+  --bg-hover-dark: #281f47;
+  --border-subtle-light: #c4b5f0;
+  --border-subtle-dark: #372a61;
+  --border-strong-light: #8f77d6;
+  --border-strong-dark: #54418f;
+  --text-primary-light: #1e1038;
+  --text-primary-dark: #f5f3ff;
+  --text-secondary-light: #4c3575;
+  --text-secondary-dark: #c4b5fd;
+  --text-muted-light: #624a8c;
+  --text-muted-dark: #a799d8;
+  --accent-cyan-light: #0e6f67;
+  --accent-cyan-dark: #2dd4bf;
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #042f2e;
+  --accent-amber-light: #7e22ce;
+  --accent-amber-dark: #b46cf8;
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #14052b;
+  --hud-glass-light: rgba(250, 249, 255, 0.88);
+  --hud-glass-dark: rgba(21, 16, 38, 0.86);
+  --viewport-bg-center-light: #faf9ff;
+  --viewport-bg-center-dark: #221940;
+  --viewport-bg-edge-light: #ddd6f3;
+  --viewport-bg-edge-dark: #090613;
+  --scrollbar-track: light-dark(#e6defc, #110c21);
+  --scrollbar-thumb: light-dark(#8f77d6, #4b3882);
+}
+
+/* Carbon Pro: grafito industrial neutro + azul acero */
+:root[data-theme="studio_pro"] {
+  --bg-canvas-light: #eceef1;
+  --bg-canvas-dark: #111214;
+  --bg-panel-light: #fafafa;
+  --bg-panel-dark: #191b1f;
+  --bg-elevated-light: #f2f4f7;
+  --bg-elevated-dark: #22252b;
+  --bg-hover-light: #e2e5ea;
+  --bg-hover-dark: #2c3038;
+  --border-subtle-light: #c6cbd4;
+  --border-subtle-dark: #363b45;
+  --border-strong-light: #8d95a5;
+  --border-strong-dark: #525968;
+  --text-primary-light: #18181b;
+  --text-primary-dark: #f4f4f5;
+  --text-secondary-light: #4b505c;
+  --text-secondary-dark: #b4b9c2;
+  --text-muted-light: #5e6572;
+  --text-muted-dark: #9299a6;
+  --accent-cyan-light: #1d4ed8;
+  --accent-cyan-dark: #60a5fa;
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #071936;
+  --accent-amber-light: #a34b08;
+  --accent-amber-dark: #f59e0b;
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #1f1302;
+  --hud-glass-light: rgba(250, 250, 250, 0.88);
+  --hud-glass-dark: rgba(25, 27, 31, 0.86);
+  --viewport-bg-center-light: #fafafa;
+  --viewport-bg-center-dark: #262930;
+  --viewport-bg-edge-light: #d8dce3;
+  --viewport-bg-edge-dark: #0d0e10;
+  --scrollbar-track: light-dark(#e2e5ea, #14161a);
+  --scrollbar-thumb: light-dark(#8d95a5, #3f4552);
+}
+
+/* Nordic Slate: azules nórdicos suaves con baja fatiga visual */
+:root[data-theme="nordic_frost"] {
+  --bg-canvas-light: #e6edf5;
+  --bg-canvas-dark: #141923;
+  --bg-panel-light: #f4f8fc;
+  --bg-panel-dark: #1b2230;
+  --bg-elevated-light: #eaf1f8;
+  --bg-elevated-dark: #232c3d;
+  --bg-hover-light: #d9e4f0;
+  --bg-hover-dark: #2d384d;
+  --border-subtle-light: #b7c8db;
+  --border-subtle-dark: #384661;
+  --border-strong-light: #7c97b5;
+  --border-strong-dark: #506387;
+  --text-primary-light: #1b2432;
+  --text-primary-dark: #eceff4;
+  --text-secondary-light: #415269;
+  --text-secondary-dark: #b6c2d6;
+  --text-muted-light: #52647d;
+  --text-muted-dark: #93a3be;
+  --accent-cyan-light: #0369a1;
+  --accent-cyan-dark: #7dd3fc;
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #082436;
+  --accent-amber-light: #047253;
+  --accent-amber-dark: #34d399;
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #03261a;
+  --hud-glass-light: rgba(244, 248, 252, 0.88);
+  --hud-glass-dark: rgba(27, 34, 48, 0.86);
+  --viewport-bg-center-light: #f4f8fc;
+  --viewport-bg-center-dark: #263145;
+  --viewport-bg-edge-light: #d3e0ee;
+  --viewport-bg-edge-dark: #10151e;
+  --scrollbar-track: light-dark(#d9e4f0, #161c28);
+  --scrollbar-thumb: light-dark(#7c97b5, #41516e);
+}
+
+/* Forge Amber: taller cálido con acentos ámbar dorado */
+:root[data-theme="solar_amber"] {
+  --bg-canvas-light: #f7f1e8;
+  --bg-canvas-dark: #14100c;
+  --bg-panel-light: #fffdf9;
+  --bg-panel-dark: #1e1711;
+  --bg-elevated-light: #f9f3e9;
+  --bg-elevated-dark: #281f16;
+  --bg-hover-light: #efe3d0;
+  --bg-hover-dark: #35291d;
+  --border-subtle-light: #d6c0a3;
+  --border-subtle-dark: #4a3a29;
+  --border-strong-light: #9e7e56;
+  --border-strong-dark: #6b543b;
+  --text-primary-light: #271a0c;
+  --text-primary-dark: #fef3c7;
+  --text-secondary-light: #5c4328;
+  --text-secondary-dark: #d9c3a3;
+  --text-muted-light: #6e5334;
+  --text-muted-dark: #b39874;
+  --accent-cyan-light: #a34b08;
+  --accent-cyan-dark: #fbbf24;
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #271502;
+  --accent-amber-light: #be123c;
+  --accent-amber-dark: #fb7185;
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #2b060e;
+  --hud-glass-light: rgba(255, 253, 249, 0.88);
+  --hud-glass-dark: rgba(30, 23, 17, 0.86);
+  --viewport-bg-center-light: #fffdf9;
+  --viewport-bg-center-dark: #2c2218;
+  --viewport-bg-edge-light: #eadbc5;
+  --viewport-bg-edge-dark: #0f0b08;
+  --scrollbar-track: light-dark(#efe3d0, #19130e);
+  --scrollbar-thumb: light-dark(#9e7e56, #5c4731);
+}
+
+/* Alto Contraste AAA: ≥ 10:1 en texto principal, secundario y bordes definidos */
+:root[data-theme="high_contrast"] {
+  --bg-canvas-light: #ffffff;
+  --bg-canvas-dark: #000000;
+  --bg-panel-light: #ffffff;
+  --bg-panel-dark: #080808;
+  --bg-elevated-light: #f3f4f6;
+  --bg-elevated-dark: #121212;
+  --bg-hover-light: #e5e7eb;
+  --bg-hover-dark: #1e1e1e;
+  --border-subtle-light: #374151;
+  --border-subtle-dark: #7a8494;
+  --border-strong-light: #000000;
+  --border-strong-dark: #d1d5db;
+  --text-primary-light: #000000;
+  --text-primary-dark: #ffffff;
+  --text-secondary-light: #111827;
+  --text-secondary-dark: #e5e7eb;
+  --text-muted-light: #1f2937;
+  --text-muted-dark: #d1d5db;
+  --accent-cyan-light: #003d99;
+  --accent-cyan-dark: #38f2ff;
+  --accent-cyan-fg-light: #ffffff;
+  --accent-cyan-fg-dark: #000000;
+  --accent-amber-light: #7c2d12;
+  --accent-amber-dark: #ffd60a;
+  --accent-amber-fg-light: #ffffff;
+  --accent-amber-fg-dark: #000000;
+  --accent-green-light: #14532d;
+  --accent-green-dark: #4ade80;
+  --accent-red-light: #7f1d1d;
+  --accent-red-dark: #ff6b6b;
+  --hud-glass-light: rgba(255, 255, 255, 0.96);
+  --hud-glass-dark: rgba(8, 8, 8, 0.94);
+  --viewport-bg-center-light: #ffffff;
+  --viewport-bg-center-dark: #141414;
+  --viewport-bg-edge-light: #e5e7eb;
+  --viewport-bg-edge-dark: #000000;
+  --scrollbar-track: light-dark(#e5e7eb, #0a0a0a);
+  --scrollbar-thumb: light-dark(#1f2937, #9ca3af);
+}

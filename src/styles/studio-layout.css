@@ -1,0 +1,115 @@
+/**
+ * @file src/styles/studio-layout.css
+ * @description Reset, layout principal de 3 columnas, modos Zen/Compacto, foco visible y utilidades de accesibilidad. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* ============================================================================
+ * 2. Reset y Layout Principal de 3 Columnas + Barras Superior/Inferior
+ * ============================================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+}
+
+.kura-app {
+  --tool-accent: var(--accent-cyan);
+  --tool-accent-fg: var(--accent-cyan-fg);
+  display: grid;
+  grid-template-rows: 52px minmax(0, 1fr) 28px;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-canvas);
+  transition: grid-template-rows 0.2s ease;
+}
+
+/* Modo Zen: 100% viewport canvas ocultando barras superior, inferior y paneles laterales */
+.kura-app[data-density="zen"] {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.kura-app[data-density="zen"] .kura-topbar,
+.kura-app[data-density="zen"] .kura-statusbar,
+.kura-app[data-density="zen"] .kura-sidebar-left,
+.kura-app[data-density="zen"] .kura-sidebar-right,
+.kura-app[data-density="zen"] .kura-ai-drawer,
+.kura-app[data-density="zen"] .kura-panel-edge-btn {
+  display: none;
+}
+
+/* Modo Compacto: ideal para laptops y pantallas medianas (solo íconos + rail 56px) */
+.kura-app[data-density="compact"] .kura-btn-label,
+.kura-app[data-density="compact"] .kura-tool-label,
+.kura-app[data-density="compact"] .kura-mcp-label {
+  display: none;
+}
+
+.kura-app[data-density="compact"] .kura-sidebar-left:not(.is-collapsed) {
+  width: 56px;
+}
+
+.kura-app[data-density="compact"] .kura-sidebar-right:not(.is-collapsed) {
+  width: 264px;
+}
+
+.kura-app[data-tool="cut"] {
+  --tool-accent: var(--accent-amber);
+  --tool-accent-fg: var(--accent-amber-fg);
+}
+
+.kura-app[data-tool="paint"] {
+  --tool-accent: light-dark(#7c3aed, #a855f7);
+  /* Texto oscuro sobre el violeta claro del modo oscuro: >= 4.5:1 (blanco daba 3.96:1). */
+  --tool-accent-fg: light-dark(#ffffff, #14052b);
+}
+
+.kura-app[data-tool="erase"] {
+  --tool-accent: light-dark(#e11d48, #f43f5e);
+  --tool-accent-fg: light-dark(#ffffff, #2b060e);
+}
+
+.kura-workspace {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.kura-narrow-panel-actions {
+  display: none;
+}
+
+/* Foco accesible visible en toda la interfaz */
+:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+/* Utilidad visualmente oculta para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
