@@ -20,6 +20,7 @@ import {
   Cone,
   Cylinder,
   Disc,
+  Disc3,
   FileCode2,
   Hexagon,
   Image as ImageIcon,
@@ -29,7 +30,8 @@ import {
   Trash2,
   Type,
 } from 'lucide-react';
-import { t } from '../i18n';
+import { t, type TranslationKey } from '../i18n';
+import { discParams } from '../core/scene/pieceSizing';
 import { useKuraStore } from '../store/useKuraStore';
 import type { PrimitiveType } from '../types/kura';
 import { colorName, colorNameWithHex } from '../utils/colorNames';
@@ -81,21 +83,24 @@ export const LeftSidebar: React.FC = () => {
   }, [objects]);
 
   const primitiveCards: Array<{
+    /** Identificador de la tarjeta: la forma, o `disc` (cilindro bajo con otros valores por defecto). */
+    id: string;
     type: PrimitiveType;
     icon: React.ReactNode;
     defaultParams?: Record<string, unknown>;
   }> = [
-    { type: 'box', icon: <Box size={19} />, defaultParams: { width: 30, height: 30, depth: 30 } },
-    { type: 'cylinder', icon: <Cylinder size={19} />, defaultParams: { radius: 14, height: 36 } },
-    { type: 'tube', icon: <Disc size={19} />, defaultParams: { outerRadius: 16, innerRadius: 11, height: 36 } },
-    { type: 'sphere', icon: <Circle size={19} />, defaultParams: { radius: 16 } },
-    { type: 'cone', icon: <Cone size={19} />, defaultParams: { radius: 16, height: 34 } },
-    { type: 'torus', icon: <Sparkles size={19} />, defaultParams: { outerRadius: 18, tubeRadius: 5.5 } },
-    { type: 'prism', icon: <Hexagon size={19} />, defaultParams: { radius: 16, height: 28, sides: 6 } },
-    { type: 'text', icon: <Type size={19} /> },
+    { id: 'box', type: 'box', icon: <Box size={19} />, defaultParams: { width: 30, height: 30, depth: 30 } },
+    { id: 'cylinder', type: 'cylinder', icon: <Cylinder size={19} />, defaultParams: { radius: 14, height: 36 } },
+    { id: 'disc', type: 'cylinder', icon: <Disc3 size={19} />, defaultParams: { ...discParams(16) } },
+    { id: 'tube', type: 'tube', icon: <Disc size={19} />, defaultParams: { outerRadius: 16, innerRadius: 11, height: 36 } },
+    { id: 'sphere', type: 'sphere', icon: <Circle size={19} />, defaultParams: { radius: 16 } },
+    { id: 'cone', type: 'cone', icon: <Cone size={19} />, defaultParams: { radius: 16, height: 34 } },
+    { id: 'torus', type: 'torus', icon: <Sparkles size={19} />, defaultParams: { outerRadius: 18, tubeRadius: 5.5 } },
+    { id: 'prism', type: 'prism', icon: <Hexagon size={19} />, defaultParams: { radius: 16, height: 28, sides: 6 } },
+    { id: 'text', type: 'text', icon: <Type size={19} /> },
   ];
 
-  const handlePrimitiveClick = async (type: PrimitiveType, params?: Record<string, unknown>) => {
+  const handlePrimitiveClick = async (type: PrimitiveType, params?: Record<string, unknown>, name?: string) => {
     if (type === 'text') {
       if (uiDensity === 'compact') {
         await createPrimitive('text', { text: textDraft.trim() || 'KURA3D', fontSize: 18, height: 6 }, { placement: 'free' });
@@ -104,7 +109,7 @@ export const LeftSidebar: React.FC = () => {
       setShowTextBox((prev) => !prev);
       return;
     }
-    await createPrimitive(type, params, { placement: 'free' });
+    await createPrimitive(type, params, { placement: 'free', ...(name ? { name } : {}) });
   };
 
   const handleCreateText = async (e: React.FormEvent) => {
@@ -225,14 +230,14 @@ export const LeftSidebar: React.FC = () => {
                 <div className="kura-primitive-grid">
                   {primitiveCards.map((item) => (
                     <button
-                      key={item.type}
+                      key={item.id}
                       type="button"
                       className="kura-primitive-card"
-                      title={`${t(language, `sidebar.primitive.${item.type}`)} (+)`}
-                      onClick={() => void handlePrimitiveClick(item.type, item.defaultParams)}
+                      title={`${t(language, `sidebar.primitive.${item.id}` as TranslationKey)} (+)`}
+                      onClick={() => void handlePrimitiveClick(item.type, item.defaultParams, item.id === 'disc' ? t(language, 'menu.shape.disc') : undefined)}
                     >
                       <span className="kura-primitive-icon">{item.icon}</span>
-                      <span>{t(language, `sidebar.primitive.${item.type}`)}</span>
+                      <span>{t(language, `sidebar.primitive.${item.id}` as TranslationKey)}</span>
                     </button>
                   ))}
                 </div>

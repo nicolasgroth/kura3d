@@ -13,8 +13,16 @@ import type { PrimitiveParams, PrimitiveType, SceneObject } from '../../types/ku
 export const PIECE_SIZE_RATIO = 0.4;
 export const PIECE_MIN_MM = 4;
 
-/** Formas que el menú puede agregar como pieza. `svg` e `import` abren su propio flujo. */
-export type PieceShape = PrimitiveType | 'svg' | 'import';
+/** Altura del disco como fracción de su diámetro (es un cilindro bajo, no una primitiva nueva). */
+export const DISC_HEIGHT_RATIO = 0.1;
+
+/** Parámetros del disco (cilindro bajo) de radio `radius` mm: alto = 10 % del diámetro. */
+export function discParams(radius: number): PrimitiveParams {
+  return { radius, height: Math.max(0.2, 2 * radius * DISC_HEIGHT_RATIO), segments: 32 };
+}
+
+/** Formas que el menú puede agregar como pieza. `disc` es un cilindro bajo; `svg` e `import` abren su propio flujo. */
+export type PieceShape = PrimitiveType | 'disc' | 'svg' | 'import';
 
 /** Dimensiones del objeto en mm con su escala aplicada (ejes internos: Y es la altura). */
 export function scaledDimensions(target: SceneObject): [number, number, number] {

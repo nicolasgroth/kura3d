@@ -57,6 +57,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
       buildSceneObject({ name, source: 'imported', mesh, position, color: color || PRINT_COLOR_PALETTE[0], isHole }),
     exportFiles: (args) => ctx.runEngineDetached('export', args),
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
+    openSimplify: (id) => get().requestSimplifyPanel(id),
     bedSize: () => activeBedSize(get()),
   });
 

@@ -34,7 +34,7 @@ describe('ObjectContextMenu', () => {
   it('ordena las acciones en grupos con título y role=menu', () => {
     setup();
     expect(screen.getByRole('menu', { name: /Pieza A/ })).toBeTruthy();
-    const titles = ['Agregar', 'Tipo', 'Geometría', 'Analizar', 'Objeto', 'Ayuda'];
+    const titles = ['Agregar', 'Tipo', 'Geometría', 'Posición', 'Analizar', 'Objeto', 'Ayuda'];
     for (const title of titles) expect(screen.getByRole('group', { name: title })).toBeTruthy();
     const add = screen.getByRole('group', { name: 'Agregar' });
     expect(within(add).getByRole('menuitem', { name: /Agregar pieza$/ }).getAttribute('aria-haspopup')).toBe('menu');
@@ -44,7 +44,7 @@ describe('ObjectContextMenu', () => {
     expect(screen.queryByText(/Alternar Sólido/)).toBeNull();
   });
 
-  it('enfoca el primer ítem; → abre el submenú con las 10 formas y ← lo cierra', async () => {
+  it('enfoca el primer ítem; → abre el submenú con las 11 formas (Importar primero) y ← lo cierra', async () => {
     const user = userEvent.setup();
     setup();
     const trigger = screen.getByRole('menuitem', { name: /Agregar pieza$/ });
@@ -52,10 +52,10 @@ describe('ObjectContextMenu', () => {
     await user.keyboard('{ArrowRight}');
     const sub = await screen.findByRole('menu', { name: /Agregar pieza$/ });
     const items = within(sub).getAllByRole('menuitem').map((i) => i.textContent);
-    expect(items).toEqual(['Cubo', 'Cilindro', 'Esfera', 'Cono', 'Toroide', 'Prisma', 'Tubo hueco', 'Texto 3D', 'SVG…', 'Importar STL/3MF…']);
+    expect(items).toEqual(['Importar STL/3MF…', 'Cubo', 'Cilindro', 'Disco', 'Esfera', 'Cono', 'Toroide', 'Prisma', 'Tubo hueco', 'Texto 3D', 'SVG…']);
     expect(document.activeElement).toBe(within(sub).getAllByRole('menuitem')[0]);
     await user.keyboard('{ArrowDown}');
-    expect(document.activeElement?.textContent).toBe('Cilindro');
+    expect(document.activeElement?.textContent).toBe('Cubo');
     await user.keyboard('{ArrowLeft}');
     expect(screen.queryByRole('menu', { name: /Agregar pieza$/ })).toBeNull();
     expect(document.activeElement).toBe(trigger);
@@ -71,7 +71,7 @@ describe('ObjectContextMenu', () => {
     screen.getByRole('menuitem', { name: /Agregar pieza negativa/ }).focus();
     await user.keyboard('{ArrowRight}');
     await screen.findByRole('menuitem', { name: 'Esfera' });
-    await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}{Enter}');
     expect(add).toHaveBeenCalledWith('sphere', 'negative', 'a');
     expect(onClose).toHaveBeenCalled();
   });
@@ -100,9 +100,81 @@ describe('ObjectContextMenu', () => {
   it('Espejar abre los ejes del usuario (Z = altura)', async () => {
     const user = userEvent.setup();
     setup();
-    await user.click(screen.getByRole('menuitem', { name: /^Espejar/ }));
+    screen.getByRole('menuitem', { name: /^Transformar/ }).focus();
+    await user.keyboard('{ArrowRight}');
+    await screen.findByRole('menuitem', { name: /^Espejar/ });
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{ArrowRight}');
     const sub = await screen.findByRole('menu', { name: /^Espejar/ });
     expect(within(sub).getAllByRole('menuitem').map((i) => i.textContent)).toEqual(['Eje X', 'Eje Y', 'Eje Z']);
+  });
+});
+
+describe('ObjectContextMenu: ideas de los laminadores', () => {
+  beforeEach(() => onClose.mockClear());
+
+  it('Centrar en la cama está junto a Apoyar en la cama y llama al store con la selección', async () => {
+    const user = userEvent.setup();
+    const center = vi.fn().mockReturnValue(true);
+    useKuraStore.setState({ centerSelectionOnBed: center } as never);
+    setup();
+    const position = screen.getByRole('group', { name: 'Posición' });
+    expect(within(position).getByRole('menuitem', { name: /Apoyar en cama/ })).toBeTruthy();
+    within(position).getByRole('menuitem', { name: /Centrar en la cama/ }).focus();
+    await user.keyboard('{Enter}');
+    expect(center).toHaveBeenCalledWith(['a']);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('Transformar ofrece Mover, Rotar, Escalar con su atajo, Espejar y los restablecer', async () => {
+    const user = userEvent.setup();
+    setup();
+    screen.getByRole('menuitem', { name: /^Transformar/ }).focus();
+    await user.keyboard('{ArrowRight}');
+    const sub = await screen.findByRole('menu', { name: /^Transformar/ });
+    expect(within(sub).getAllByRole('menuitem').map((i) => i.textContent?.replace(/[MRS]$/, ''))).toEqual([
+      'Mover', 'Rotar', 'Escalar', 'Espejar', 'Restablecer rotación', 'Restablecer escala',
+    ]);
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(useKuraStore.getState().transformMode).toBe('rotate');
+  });
+
+  it('Alinear y distribuir está deshabilitado con 1 objeto y explica el motivo', () => {
+    setup();
+    const item = screen.getByRole('menuitem', { name: /Alinear y distribuir/ }) as HTMLButtonElement;
+    expect(item.disabled).toBe(true);
+    expect(item.title).toMatch(/2 o más objetos/);
+  });
+
+  it('Alinear y distribuir se habilita con 2 objetos seleccionados', () => {
+    const obj = fakeBox('a', 'Pieza A');
+    useKuraStore.setState({ objects: [obj, fakeBox('b', 'Pieza B')], selectedIds: ['a', 'b'] } as never);
+    render(
+      <div className="kura-viewport-wrap">
+        <ObjectContextMenu menu={{ objectId: 'a', x: 10, y: 10 }} target={obj} onClose={onClose} />
+      </div>,
+    );
+    expect((screen.getByRole('menuitem', { name: /Alinear y distribuir/ }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('Más ▸ Exportar selección como un STL abre la exportación con STL y alcance selección', async () => {
+    const user = userEvent.setup();
+    setup();
+    screen.getByRole('menuitem', { name: /^Más/ }).focus();
+    await user.keyboard('{ArrowRight}');
+    await screen.findByRole('menuitem', { name: /Exportar selección como un STL/ });
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(useKuraStore.getState().activeDialog).toBe('export');
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('Más ▸ Ocultar deja el objeto fuera de lo exportable', async () => {
+    const user = userEvent.setup();
+    setup();
+    screen.getByRole('menuitem', { name: /^Más/ }).focus();
+    await user.keyboard('{ArrowRight}');
+    await screen.findByRole('menuitem', { name: /Ocultar \(no se exporta\)/ });
+    await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+    expect(useKuraStore.getState().objects.find((o) => o.id === 'a')?.visible).toBe(false);
   });
 });
 

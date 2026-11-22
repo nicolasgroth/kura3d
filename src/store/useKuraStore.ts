@@ -28,6 +28,7 @@ import { createSplitJointsSlice } from './slices/splitJointsSlice';
 import { createSplitPrefsSlice } from './slices/splitPrefsSlice';
 import { createUiSlice } from './slices/uiSlice';
 import { createQuickActionsSlice } from './slices/quickActionsSlice';
+import { createMenuIdeasSlice } from './slices/menuIdeasSlice';
 
 export type {
   ActiveDialogType,
@@ -73,6 +74,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createSplitSlice(ctx),
     ...createSplitJointsSlice(ctx),
     ...createSplitPrefsSlice(ctx),
+    ...createMenuIdeasSlice(ctx),
   } as Partial<KuraStoreState>;
   return {
     ...base,

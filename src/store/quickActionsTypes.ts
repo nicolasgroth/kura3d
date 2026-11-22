@@ -24,7 +24,8 @@ export type RepeatRecord =
   | { kind: 'addPiece'; shape: PieceShape; mode: PieceMode }
   | { kind: 'simplify'; toleranceMm: number }
   | { kind: 'color'; color: string }
-  | { kind: 'setType'; isHole: boolean };
+  | { kind: 'setType'; isHole: boolean }
+  | { kind: 'centerOnBed' };
 
 export type RepeatOutcome = 'done' | 'none' | 'notApplicable';
 

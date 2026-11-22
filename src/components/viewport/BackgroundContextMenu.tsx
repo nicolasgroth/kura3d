@@ -12,11 +12,15 @@ import { PlusCircle, Repeat2 } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { repeatLabel } from '../../store/repeatLabel';
+import { discParams } from '../../core/scene/pieceSizing';
 import { type ContextMenuState } from './viewportHelpers';
 import { MenuGroup, MenuItem, MenuSurface, SubMenu } from './contextMenu/MenuKit';
 import { PieceShapeItems } from './contextMenu/PieceShapeItems';
 
-const BACKGROUND_SHAPES = ['box', 'cylinder', 'sphere', 'cone', 'torus', 'prism', 'tube', 'text', 'svg'] as const;
+/** Radio inicial del disco: diámetro 32 mm, alto 3,2 mm (10 %). */
+const DEFAULT_DISC_RADIUS_MM = 16;
+
+const BACKGROUND_SHAPES = ['box', 'cylinder', 'disc', 'sphere', 'cone', 'torus', 'prism', 'tube', 'text', 'svg'] as const;
 
 export const BackgroundContextMenu: React.FC<{ menu: ContextMenuState; onClose: () => void }> = ({ menu, onClose }) => {
   const language = useKuraStore((s) => s.language);
@@ -35,6 +39,7 @@ export const BackgroundContextMenu: React.FC<{ menu: ContextMenuState; onClose: 
             onPick={(shape) => {
               onClose();
               if (shape === 'svg') setActiveDialog('svg');
+              else if (shape === 'disc') void createPrimitive('cylinder', discParams(DEFAULT_DISC_RADIUS_MM), { placement: 'free', name: t(language, 'menu.shape.disc') });
               else if (shape !== 'import') void createPrimitive(shape, undefined, { placement: 'free' });
             }}
           />
