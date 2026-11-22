@@ -6,7 +6,12 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 ## En desarrollo
 
-Nada en este momento.
+| Funcionalidad | Estado |
+|---|---|
+| Separar por colores: cada color como sólido cerrado imprimible (hoy salen cáscaras abiertas; único bloqueo de la ronda 5) | En corrección |
+| Dividir: vista previa con el número real de uniones con conector; archivos por pieza centrados; nombres de mitades y de roscas | En corrección |
+| SVG con un solo lector en importación, proyección y MCP; memoria liberada en errores; parámetros del proyecto acotados | En corrección |
+| Reglas de producto en código (marca, almacenamiento) y pruebas sin umbrales de tiempo | En corrección |
 
 ## En QA
 
@@ -24,9 +29,9 @@ Nada en este momento.
 
 ## En evaluación
 
-Quinta ronda en curso (22-nov, 16:00): evaluadores de código y funcional trabajando a ciegas sobre todo el producto; y desde las 16:15 el de usabilidad, con el menú contextual ordenado (Agregar pieza ▸ / Agregar pieza negativa ▸ / Cambiar tipo ▸) y las teclas F2 renombrar, F3 buscar, F4 repetir la última acción y Mayús+F5 recalcular, ya integrados. Incluye por primera vez Z como altura, la división siempre armable con sus uniones a la vista, las preferencias de división, la pintura reescrita y las operaciones en el Worker.
+Quinta ronda (22-nov). Notas globales recibidas: **código 85** (ronda 4: 79) y **funcional 86** (ronda 4: 76); falta usabilidad, en curso. Es la primera vez que dos evaluadores alcanzan el mínimo de 85.
 
-Antes de evaluar se corrigió lo último que encontró QA en la división: mensajes del refuerzo, placas estimadas y marca de pareja visible por unión.
+Funcional por bloque: dividir 88, armado 87, corte por plano 92, roscas y caja 85, multicolor 68, importar y exportar 88, ahuecado/moldes/booleanas 90, texto/proyección/relieve/SVG 86, análisis/simplificar/alinear/segmentar 88, chat local 86, MCP 90. Un bloqueo: separar por colores entrega piezas abiertas.
 
 ## Lista
 
