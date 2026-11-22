@@ -42,7 +42,14 @@ export function decodeXmlEntities(text: string): string {
 
 /** Normaliza una ruta de parte OPC a clave de archivo ZIP (sin '/' inicial). */
 export function normalizePartPath(path: string): string {
-  return decodeURIComponent(path.trim()).replace(/\\/g, '/').replace(/^\/+/, '');
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(path.trim());
+  } catch {
+    // Un escape URI inválido en una referencia del paquete es un archivo dañado, no un error sin tipar
+    throw new ModelImportError('corrupt', `ruta de parte inválida: ${path.slice(0, 120)}`);
+  }
+  return decoded.replace(/\\/g, '/').replace(/^\/+/, '');
 }
 
 /** Configuración de laminador asociada a un objeto raíz o a una pieza (componente). */
