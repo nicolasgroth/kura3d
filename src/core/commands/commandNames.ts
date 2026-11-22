@@ -18,6 +18,7 @@ export type KuraCommandName =
   | 'boolean_operation'
   | 'hollow_object'
   | 'plane_cut'
+  | 'split_for_bed'
   | 'split_disconnected'
   | 'split_by_color'
   | 'apply_texture'

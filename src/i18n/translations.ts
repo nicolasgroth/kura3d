@@ -1112,6 +1112,15 @@ export const TRANSLATIONS_ES = {
   'printWarning.THIN_WALL': 'Hay paredes de {thickness} mm, más delgadas que el mínimo de {min} mm; pueden no imprimirse.',
   'printWarning.INVERTED_NORMALS': 'La malla tiene las normales invertidas (volumen negativo); reoriéntala antes de imprimir.',
   'printWarning.BELOW_BED': 'El objeto queda {depth} mm bajo la cama (Y < 0); apóyalo antes de imprimir.',
+  'engineError.SPLIT_TOO_MANY_PIECES': 'Harían falta unas {needed} piezas para que todo quepa en la cama (máximo {max}). Usa una cama más grande, sube el máximo o escala el modelo.',
+  'engineError.SPLIT_AXIS_BLOCKED': 'El modelo mide {size} mm en {axis} y la cama útil {usable} mm, pero no se permite cortar en ese eje.',
+  'engineWarning.SPLIT_JOINT_NO_CONNECTOR': 'La unión {label} ({a}–{b}) quedó sin conector: su sección no tiene espacio macizo suficiente.',
+  'engineWarning.SPLIT_CONNECTOR_REDUCED': 'En la unión {label} ({a}–{b}) el conector se redujo a {count} de {size} mm para que cupiera.',
+  'engineWarning.SPLIT_LABEL_SKIPPED': 'La unión {label} ({a}–{b}) no tiene espacio para una marca legible de {min} mm: se omitió.',
+  'engineWarning.SPLIT_EMPTY_CELLS': 'Celdas de la rejilla sin material: {count}. Se omitieron.',
+  'progress.op.split_for_bed': 'Dividiendo para la cama',
+  'toast.splitForBedDone': 'Modelo dividido en {count} piezas con {joints} uniones',
+  'toast.splitForBedFits': 'El modelo ya cabe en la cama: no hace falta dividirlo',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2184,6 +2193,15 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'printWarning.THIN_WALL': 'Some walls are {thickness} mm, thinner than the {min} mm minimum; they may not print.',
   'printWarning.INVERTED_NORMALS': 'The mesh has inverted normals (negative volume); reorient it before printing.',
   'printWarning.BELOW_BED': 'The object sits {depth} mm below the bed (Y < 0); place it on the bed before printing.',
+  'engineError.SPLIT_TOO_MANY_PIECES': 'About {needed} pieces would be needed to fit the bed (maximum {max}). Use a larger bed, raise the maximum or scale the model.',
+  'engineError.SPLIT_AXIS_BLOCKED': 'The model is {size} mm along {axis} and the usable bed is {usable} mm, but cutting along that axis is not allowed.',
+  'engineWarning.SPLIT_JOINT_NO_CONNECTOR': 'Joint {label} ({a}–{b}) has no connector: its section lacks enough solid area.',
+  'engineWarning.SPLIT_CONNECTOR_REDUCED': 'At joint {label} ({a}–{b}) the connector was reduced to {count} of {size} mm so it fits.',
+  'engineWarning.SPLIT_LABEL_SKIPPED': 'Joint {label} ({a}–{b}) has no room for a legible {min} mm mark: skipped.',
+  'engineWarning.SPLIT_EMPTY_CELLS': 'Grid cells without material: {count}. They were skipped.',
+  'progress.op.split_for_bed': 'Splitting for the bed',
+  'toast.splitForBedDone': 'Model split into {count} pieces with {joints} joints',
+  'toast.splitForBedFits': 'The model already fits the bed: no split needed',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

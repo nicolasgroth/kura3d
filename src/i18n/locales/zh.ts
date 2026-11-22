@@ -1105,4 +1105,13 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'printWarning.THIN_WALL': '部分壁厚为 {thickness} mm，低于最小值 {min} mm，可能无法打印。',
   'printWarning.INVERTED_NORMALS': '网格法线反向（体积为负），打印前请重新定向。',
   'printWarning.BELOW_BED': '对象位于打印床下方 {depth} mm（Y < 0），打印前请将其放到床面上。',
+  'engineError.SPLIT_TOO_MANY_PIECES': '需要约 {needed} 个零件才能放进打印平台（最多 {max} 个）。请使用更大的平台、提高上限或缩放模型。',
+  'engineError.SPLIT_AXIS_BLOCKED': '模型在 {axis} 方向为 {size} mm，可用平台为 {usable} mm，但不允许沿该轴切割。',
+  'engineWarning.SPLIT_JOINT_NO_CONNECTOR': '接合 {label}（{a}–{b}）没有连接件：其截面的实心面积不足。',
+  'engineWarning.SPLIT_CONNECTOR_REDUCED': '接合 {label}（{a}–{b}）的连接件已缩减为 {count} 个 {size} mm 以便放下。',
+  'engineWarning.SPLIT_LABEL_SKIPPED': '接合 {label}（{a}–{b}）没有空间放置 {min} mm 的可读标记：已省略。',
+  'engineWarning.SPLIT_EMPTY_CELLS': '没有材料的网格单元：{count} 个，已省略。',
+  'progress.op.split_for_bed': '正在按打印平台分割',
+  'toast.splitForBedDone': '模型已分割为 {count} 个零件，共 {joints} 处接合',
+  'toast.splitForBedFits': '模型已能放进打印平台，无需分割',
 };

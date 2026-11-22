@@ -19,6 +19,7 @@ import { CommandError, type CommandErrorCode } from './commandErrors';
 import { selectExportTargets } from './exportTargets';
 import * as schema from './commandSchemas';
 import { parseUpdatePrimitiveParams } from './parametricCommandSchemas';
+import { parseSplitForBed } from './splitCommandSchemas';
 import type { OperationErrorTracker } from './operationErrors';
 import type { RawParams } from './commandValidation';
 import type { CommandSourceType, KuraStoreState } from './useKuraStore';
@@ -137,6 +138,18 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   plane_cut: async (p, { get }, command) => {
     const { target, options } = schema.parsePlaneCut(get(), p);
     return required(await get().planeCutObject(target.id, options), command).map(brief);
+  },
+
+  split_for_bed: async (p, { get }, command) => {
+    const { target, ...request } = parseSplitForBed(get(), p);
+    const out = required(await get().splitObjectForBed(target.id, request), command);
+    return {
+      dryRun: request.dryRun,
+      plan: out.plan,
+      parts: out.parts.map((o) => ({ ...brief(o), code: o.metadata?.split?.code, plate: o.metadata?.split?.print.plate })),
+      joints: out.joints.map((j) => ({ label: j.label, axis: j.axis, a: j.a, b: j.b, connectors: j.connectorCenters.length, labelEngraved: j.labelEngraved })),
+      plateCount: out.plateCount,
+    };
   },
 
   split_disconnected: async (p, { get }, command) => {

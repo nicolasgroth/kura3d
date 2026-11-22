@@ -179,7 +179,7 @@ export function createEngineClient(factory: () => WorkerLike | null = defaultWor
         const promise = new Promise<EngineTaskResult<typeof name>>((resolve, reject) => {
           rejectJob = reject;
           onProgress?.('compute');
-          runEngineTaskInProcess(ctx, name, args).then(
+          runEngineTaskInProcess(onProgress ? { ...ctx, onProgress } : ctx, name, args).then(
             (r) => (cancelled ? undefined : resolve(r)),
             (e) => (cancelled ? undefined : reject(e)),
           );

@@ -17,6 +17,7 @@ import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../../src/engine/operation
 import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
 import { resolveExportPath } from './exportPaths.js';
 import { registerParametricTools } from './parametricTools.js';
+import { registerSplitTools } from './splitTools.js';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
 import { HeadlessCommandError } from './headlessSupport.js';
 import {
@@ -243,6 +244,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   );
 
   registerParametricTools(server, ctx);
+  registerSplitTools(server, ctx);
 
   // 3. Transformación de objetos
   server.registerTool(
