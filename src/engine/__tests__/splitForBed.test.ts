@@ -203,7 +203,7 @@ describe('executeBedSplitGeometry', () => {
     const res = await executeBedSplitGeometry(obj, plan);
     expect(res.parts.length).toBe(plan.counts.y);
     for (const j of res.joints) {
-      const warned = res.warnings.some((w) => (w.code === 'SPLIT_JOINT_NO_CONNECTOR' || w.code === 'SPLIT_JOINT_GLUE_ONLY') && w.params.label === j.label);
+      const warned = res.warnings.some((w) => (w.code === 'SPLIT_JOINT_NO_CONNECTOR' || w.code === 'SPLIT_JOINT_GLUE_ONLY' || w.code === 'ASSEMBLY_JOINT_GLUED_FOR_CLASH') && w.params.label === j.label);
       expect(j.connector !== null || warned).toBe(true);
       if (j.connector) expect(j.connector.size).toBeLessThanOrEqual(4);
     }
