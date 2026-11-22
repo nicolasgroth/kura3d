@@ -23,6 +23,7 @@ import * as schema from './commandSchemas';
 import * as groupSchema from './groupCommandSchemas';
 import { parseUpdatePrimitiveParams } from './parametricCommandSchemas';
 import { parseSplitForBed, parseValidateAssembly } from './splitCommandSchemas';
+import { MEASURE_HANDLERS } from './measureCommands';
 import type { OperationErrorTracker } from './operationErrors';
 import type { RawParams } from './commandValidation';
 import type { CommandSourceType, KuraStoreState } from './useKuraStore';
@@ -87,6 +88,7 @@ const triangles = (objs: SceneObject[]) => objs.reduce((acc, o) => acc + o.stats
 const headless = () => typeof document === 'undefined';
 
 const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
+  ...MEASURE_HANDLERS,
   get_scene_state: (_p, { get }) => {
     const s = get();
     return {
