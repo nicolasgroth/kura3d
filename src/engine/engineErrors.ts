@@ -72,6 +72,8 @@ export const ENGINE_WARNING_CODES = [
   'SPLIT_EMPTY_CELLS',
   'SPLIT_FRAGMENT_KEPT',
   'SPLIT_PLANE_THIN_SECTION',
+  'SPLIT_JOINT_GLUE_ONLY',
+  'SPLIT_GLUE_SUMMARY',
 ] as const;
 
 export type EngineWarningCode = (typeof ENGINE_WARNING_CODES)[number];

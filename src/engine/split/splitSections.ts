@@ -14,6 +14,7 @@ import type { CrossSection, Manifold } from 'manifold-3d';
 import type { Vec3 } from '../../types/kura';
 import { connectorFootprintRadius } from '../cutConnectorLayout';
 import { CONNECTOR_MIN_WALL_MM } from '../cutConnectorChecks';
+import { OPERATION_DEFAULTS } from '../operationLimits';
 import type { SplitAxis, SplitConnectorOptions } from './splitTypes';
 
 export const AXIS_INDEX: Record<SplitAxis, 0 | 1 | 2> = { x: 0, y: 1, z: 2 };
@@ -42,6 +43,9 @@ export function connectorMargin(c: SplitConnectorOptions): number {
 
 /** Ancho bajo el cual una isla sin agujero cuenta como tira (pared cortada a lo largo), mm. */
 export const STRIP_WIDTH_MM = 8;
+
+/** Espesor mínimo por defecto para poner conector (`OPERATION_DEFAULTS.split`), mm. */
+const MIN_WALL_FOR_CONNECTOR_MM = OPERATION_DEFAULTS.split.minWallForConnectorMm;
 
 /** Perímetro total de los contornos de una sección. */
 export function sectionPerimeter(cs: CrossSection): number {
@@ -82,7 +86,8 @@ export function measureSection(oriented: Manifold, coord: number, connector: Spl
       const a = p.area();
       smallest = Math.min(smallest, a);
       if (isStrip(p, a)) strips++;
-      if (connector && !admits) {
+      // Isla más delgada que el mínimo para conector: queda para pegar
+      if (connector && !admits && islandWidth(p, a) >= (connector.minWallForConnectorMm ?? MIN_WALL_FOR_CONNECTOR_MM)) {
         const safe = p.offset(-margin, 'Round');
         admits = !safe.isEmpty();
         safe.delete();

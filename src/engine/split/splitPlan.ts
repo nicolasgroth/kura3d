@@ -14,7 +14,7 @@ import type { Manifold } from 'manifold-3d';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { EngineError, engineWarning } from '../engineErrors';
 import { initManifoldEngine, meshDataToManifold } from '../manifoldKernel';
-import { OPERATION_DEFAULTS } from '../operationLimits';
+import { OPERATION_DEFAULTS, SPLIT_HARD_MAX_PIECES } from '../operationLimits';
 import { applyTransformToMesh } from '../primitives';
 import {
   AXIS_INDEX,
@@ -63,7 +63,7 @@ export function splitPartCode(cell: [number, number, number], zCount: number): s
 /** Saliente del macho más allá de la cara de unión (mm). */
 export function connectorProtrusion(c: SplitConnectorOptions | null): number {
   if (!c) return 0;
-  const lap = c.type === 'lap' || (c.thinWall ?? 'lap') === 'lap' ? (c.lapHeightMm ?? SPLIT_DEFAULTS.lapHeightMm) : 0;
+  const lap = c.type === 'lap' ? (c.lapHeightMm ?? SPLIT_DEFAULTS.lapHeightMm) : 0;
   return Math.max(0.8, c.type === 'lap' ? 0 : c.depth, lap);
 }
 
@@ -100,8 +100,7 @@ function chooseCounts(size: Vec3, usable: Vec3, axes: Set<SplitAxis>, maxPieces:
   return best ? { counts: best.counts, rot: best.rot } : null;
 }
 
-/** Tope duro de piezas con `maxPieces: 'auto'`. */
-export const SPLIT_HARD_MAX_PIECES = 400;
+export { SPLIT_HARD_MAX_PIECES };
 
 /**
  * Puntaje de una sección (menor es mejor). Pesa, de más a menos: islas diminutas, tiras (pared
@@ -112,8 +111,8 @@ export const SPLIT_HARD_MAX_PIECES = 400;
 function sectionScore(s: SectionStats, maxArea: number, shift: number, window: number, connector: SplitConnectorOptions | null, change: number): number {
   const tinyLimit = connector ? Math.max(100, 2 * Math.PI * connectorMargin(connector) ** 2) : 100;
   const tiny = s.islands > 0 && s.smallestIslandMm2 < tinyLimit ? 100 : 0;
-  const lapFallback = !connector || connector.type === 'lap' || (connector.thinWall ?? 'lap') === 'lap';
-  const noConnector = connector && !s.admitsConnectors ? (lapFallback ? 5 : 50) : 0;
+  // Sin conector la unión queda para pegar (válido): penalización leve
+  const noConnector = connector && connector.type !== 'lap' && !s.admitsConnectors ? 5 : 0;
   return (
     tiny +
     40 * s.strips +
@@ -126,6 +125,12 @@ function sectionScore(s: SectionStats, maxArea: number, shift: number, window: n
 }
 
 type Sample = { pos: number; s: SectionStats };
+
+/** La sección admite unión: algún conector cabe o se eligió solape de borde. */
+function admitsJoint(s: SectionStats, connector: SplitConnectorOptions | null): boolean {
+  if (!connector || s.islands === 0) return false;
+  return s.admitsConnectors || connector.type === 'lap';
+}
 
 /** Muestras equiespaciadas en [lo, hi]. */
 function sampleWindow(oriented: Manifold, lo: number, hi: number, count: number, connector: SplitConnectorOptions | null): Sample[] {
@@ -188,7 +193,7 @@ function placePlanes(
         islands: s.islands,
         strips: s.strips,
         smallestIslandMm2: s.smallestIslandMm2,
-        admitsConnectors: s.admitsConnectors,
+        admitsConnectors: admitsJoint(s, connector),
       });
       prevForced = pos;
     });
@@ -227,7 +232,7 @@ function placePlanes(
       islands: pick.s.islands,
       strips: pick.s.strips,
       smallestIslandMm2: pick.s.smallestIslandMm2,
-      admitsConnectors: pick.s.admitsConnectors,
+      admitsConnectors: admitsJoint(pick.s, connector),
       ...(fallback ? { fallback } : {}),
     });
     prev = pick.pos;

@@ -112,4 +112,19 @@ describe('SplitForBedPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: new RegExp(t('es', 'split.resetPlanes')), hidden: true }));
     expect(request.mock.calls.at(-1)![2].planePositions).toEqual({});
   });
+
+  it('con el tope superado ofrece continuar con las piezas necesarias y pide maxPieces auto', () => {
+    render(<SplitForBedPanel open onClose={() => undefined} />);
+    expect(request.mock.calls.at(-1)![2].connector).toMatchObject({ type: 'dowel', minWallForConnectorMm: 8 });
+    act(() =>
+      useKuraStore.setState({
+        splitPlanPreview: {
+          objectId: 'a', status: 'error', plan: null, bed: { widthMm: 256, depthMm: 256, heightMm: 256 },
+          error: 'Harían falta unas 125 piezas', errorCode: 'SPLIT_TOO_MANY_PIECES', errorParams: { needed: 125, max: 64 },
+        },
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: t('es', 'split.continueWith', { count: 125 }), hidden: true }));
+    expect(request.mock.calls.at(-1)![2].maxPieces).toBe('auto');
+  });
 });

@@ -32,7 +32,9 @@ export interface SplitBounds {
 
 /**
  * Conector de las uniones (un tipo y medidas para todo el lote; el motor lo reduce si no cabe).
- * `lap` = solape de borde (lengüeta/ranura por la línea media de la pared) en todas las uniones.
+ * `lap` = solape de borde (lengüeta/ranura por la línea media de la pared) en todas las uniones: modifica
+ * la forma en la unión y solo se usa si el usuario lo elige. El enchufe para tubos (`socket`: boca
+ * ensanchada y pieza alargada) está declarado en `SplitJointKind` pero PENDIENTE: aún no se implementa.
  */
 export interface SplitConnectorOptions {
   type: Exclude<CutConnectorType, 'none'> | 'lap';
@@ -44,13 +46,19 @@ export interface SplitConnectorOptions {
   /** Conectores por unión (por isla de la sección, ver `cutConnectorLayout.ts`). */
   count: number;
   /**
-   * Islas donde el conector no cabe (pared delgada): `'lap'` (por defecto) les pone solape de borde,
-   * `'none'` las deja sin unión con aviso.
+   * Espesor mínimo de la sección para poner conector (mm, por defecto 8). Más delgada (anillo o
+   * lámina de pared fina): la unión queda como corte liso para pegar (`kind: 'glue'`), sin deformar.
    */
-  thinWall?: 'lap' | 'none';
-  /** Alto del solape (mm, por defecto 6). */
+  minWallForConnectorMm?: number;
+  /** Alto del solape (mm, por defecto 6), solo con `type: 'lap'`. */
   lapHeightMm?: number;
 }
+
+/**
+ * Tipo de unión resultante: conectores, corte liso para pegar (pared delgada o sin espacio), solape
+ * de borde o enchufe (`socket`, pendiente: el motor aún no lo produce).
+ */
+export type SplitJointKind = 'connector' | 'glue' | 'lap' | 'socket';
 
 /** Solape de borde aplicado a una unión. */
 export interface SplitLapInfo {
@@ -106,7 +114,7 @@ export interface SplitPlane {
   fallback?: boolean;
   /** Área de la isla más pequeña (mm²); 0 si no hay sección. */
   smallestIslandMm2: number;
-  /** Si al menos una isla admite el conector previsto (siempre `false` sin conector). */
+  /** Si la sección admite la unión: cabe el conector o, en pared delgada, el solape de borde (siempre `false` sin conector). */
   admitsConnectors: boolean;
 }
 
@@ -188,7 +196,9 @@ export interface SplitJoint {
   connector: SplitConnectorOptions | null;
   /** Centros (mundo) de los conectores. */
   connectorCenters: Vec3[];
-  /** Solape de borde aplicado (islas de pared delgada) o `null`. */
+  /** Tipo de unión resultante. */
+  kind: SplitJointKind;
+  /** Solape de borde aplicado (solo con `type: 'lap'`) o `null`. */
   lap: SplitLapInfo | null;
   /** Área de contacto real entre las dos piezas (mm²). */
   contactAreaMm2: number;
@@ -228,6 +238,8 @@ export interface BedSplitResult {
   clearanceVolumeMm3: number;
   /** Volumen quitado por las etiquetas grabadas (mm³). */
   engravedVolumeMm3: number;
+  /** Uniones que quedaron como corte liso para pegar. */
+  glueJoints: number;
   warnings: EngineWarning[];
   elapsedMs: number;
 }

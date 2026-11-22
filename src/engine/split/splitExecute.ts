@@ -13,7 +13,7 @@
 
 import type { Manifold } from 'manifold-3d';
 import type { SceneObject, Vec3 } from '../../types/kura';
-import type { EngineWarning } from '../engineErrors';
+import { engineWarning, type EngineWarning } from '../engineErrors';
 import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../manifoldKernel';
 import { applyTransformToMesh, normalizeMeshToBed } from '../primitives';
 import { buildBodies, cellKey, contactSection, MIN_CONTACT_MM2, type Cell } from './splitBodies';
@@ -122,7 +122,7 @@ export async function executeBedSplitGeometry(
             high.labels.push(label);
             joints.push({
               label, axis, position: coord, low: low.id, high: hid, connector: out.used, connectorCenters: out.centers,
-              lap: out.lap, contactAreaMm2: area, labelEngraved: out.labelPlacement !== null,
+              kind: out.kind, lap: out.lap, contactAreaMm2: area, labelEngraved: out.labelPlacement !== null,
               labelPlacement: out.labelPlacement, labelHeightMm: out.labelHeightMm,
             });
           } finally {
@@ -170,9 +170,12 @@ export async function executeBedSplitGeometry(
       a: { part: index.get(low)!, code: bodies.get(low)!.code, face: sign(j.axis, '+') },
       b: { part: index.get(high)!, code: bodies.get(high)!.code, face: sign(j.axis, '-') },
     }));
+    const glueJoints = outJoints.filter((j) => j.kind === 'glue').length;
+    if (glueJoints > 0 && connector) warnings.push(engineWarning('SPLIT_GLUE_SUMMARY', { count: glueJoints, total: outJoints.length }));
     return {
       parts,
       joints: outJoints,
+      glueJoints,
       sourceVolumeMm3: sourceVolume,
       clearanceVolumeMm3: clearance,
       engravedVolumeMm3: engraved,

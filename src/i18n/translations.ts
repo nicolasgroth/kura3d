@@ -1209,8 +1209,8 @@ export const TRANSLATIONS_ES = {
   'export.split.zipDone': '{count} piezas exportadas en {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'La pieza {code} trae un fragmento suelto de {volume} mm³ que no se pudo fusionar con una vecina: queda como pieza propia.',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} plano(s) ({planes}) no encontraron una sección que evite cortar paredes a lo largo: se dejó la posición uniforme.',
-  'split.joint.auto': 'Automática (elige según el espesor)',
-  'split.joint.lap': 'Solape de borde',
+  'split.joint.auto': 'Conectores donde quepan; corte liso para pegar donde no',
+  'split.joint.lap': 'Solape de borde (modifica la forma)',
   'split.lapHeight': 'Alto del solape',
   'split.labelPlacement': 'Ubicación de la marca',
   'split.labelPlacementTip': 'Dónde se graba la marca: en la cara de unión o por fuera junto al borde',
@@ -1219,6 +1219,11 @@ export const TRANSLATIONS_ES = {
   'split.labelPlacement.outside': 'Por fuera',
   'split.continueWith': 'Continuar con {count} piezas',
   'split.continueWithTip': 'Sube el tope de piezas para este plan (máximo {max})',
+  'engineWarning.SPLIT_JOINT_GLUE_ONLY': 'Esta unión es demasiado delgada para un conector: quedó como corte liso para pegar ({label}: {a}–{b}).',
+  'engineWarning.SPLIT_GLUE_SUMMARY': '{count} de {total} uniones quedaron solo para pegar.',
+  'split.minWall': 'Espesor mínimo para conector',
+  'split.minWallTip': 'Más delgada que esto, la unión queda como corte liso para pegar',
+  'split.lapShapeNote': 'Modifica la forma en la unión: lengüeta en una pieza y ranura en la otra.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2388,8 +2393,8 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'export.split.zipDone': '{count} pieces exported to {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'Piece {code} has a loose {volume} mm³ fragment that could not be merged with a neighbour: it stays as its own piece.',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} plane(s) ({planes}) found no section that avoids cutting walls lengthwise: the uniform position was kept.',
-  'split.joint.auto': 'Automatic (chosen by wall thickness)',
-  'split.joint.lap': 'Edge lap',
+  'split.joint.auto': 'Connectors where they fit; plain cut for gluing elsewhere',
+  'split.joint.lap': 'Edge lap (changes the shape)',
   'split.lapHeight': 'Lap height',
   'split.labelPlacement': 'Mark placement',
   'split.labelPlacementTip': 'Where the mark is engraved: on the joint face or outside next to the edge',
@@ -2398,6 +2403,11 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'split.labelPlacement.outside': 'Outside',
   'split.continueWith': 'Continue with {count} pieces',
   'split.continueWithTip': 'Raise the piece limit for this plan (maximum {max})',
+  'engineWarning.SPLIT_JOINT_GLUE_ONLY': 'This joint is too thin for a connector: it was left as a plain cut for gluing ({label}: {a}–{b}).',
+  'engineWarning.SPLIT_GLUE_SUMMARY': '{count} of {total} joints are glue-only.',
+  'split.minWall': 'Minimum thickness for connector',
+  'split.minWallTip': 'Thinner than this, the joint is left as a plain cut for gluing',
+  'split.lapShapeNote': 'Changes the shape at the joint: tongue on one piece and groove on the other.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

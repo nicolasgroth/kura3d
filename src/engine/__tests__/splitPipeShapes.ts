@@ -107,6 +107,7 @@ export function checkAllParts(w: ManifoldToplevel, res: BedSplitResult, usable =
     return t;
   });
   let interference = 0;
+  let maxPair = 0;
   try {
     for (let i = 0; i < placed.length; i++) {
       for (let j = i + 1; j < placed.length; j++) {
@@ -114,7 +115,13 @@ export function checkAllParts(w: ManifoldToplevel, res: BedSplitResult, usable =
         const B = res.parts[j].bounds;
         if ([0, 1, 2].some((a) => A.max[a] < B.min[a] - 1e-3 || B.max[a] < A.min[a] - 1e-3)) continue;
         const inter = placed[i].intersect(placed[j]);
-        interference += inter.volume();
+        // Caras coplanares de una unión: el redondeo a Float32 de la malla deja láminas de ~1e-6 mm de
+        // espesor (≈1e-3 mm³ por par). Se cuenta como interferencia real lo que pasa de esa lámina.
+        const v = inter.volume();
+        const bb = inter.boundingBox();
+        const thin = inter.isEmpty() || Math.min(...[0, 1, 2].map((a) => bb.max[a] - bb.min[a])) < 1e-3;
+        if (!thin) interference += v;
+        maxPair = Math.max(maxPair, v);
         inter.delete();
       }
     }
@@ -122,8 +129,9 @@ export function checkAllParts(w: ManifoldToplevel, res: BedSplitResult, usable =
     for (const m of placed) m.delete();
   }
   expect(interference).toBeLessThan(0.1);
+  expect(maxPair).toBeLessThan(0.1);
   const sum = res.parts.reduce((s, p) => s + p.volumeMm3, 0);
   const expected = res.sourceVolumeMm3 - res.clearanceVolumeMm3 - res.engravedVolumeMm3;
   expect(Math.abs(sum - expected) / res.sourceVolumeMm3).toBeLessThan(1e-4);
-  return { interference };
+  return { interference, maxPair };
 }

@@ -24,7 +24,9 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         'Divide un objeto grande en piezas que caben en la cama (por defecto la del perfil activo), con conectores en cada unión, ' +
         'nombre por rejilla ("Objeto · A1": letra = columna X, número = nivel Y, minúscula = fila Z) y marcas de pareja grabadas ' +
         'opcionales. Los planos se desplazan hacia la sección más simple. Con dryRun=true solo devuelve el plan (planos y piezas estimadas) ' +
-        'sin cambiar la escena. Error SPLIT_TOO_MANY_PIECES si harían falta más de maxPieces.',
+        'sin cambiar la escena. Error SPLIT_TOO_MANY_PIECES (con needed = piezas necesarias) si harían falta más de maxPieces; ' +
+        'maxPieces="auto" sube el tope hasta 400. Una sección más delgada que minWallForConnectorMm queda como corte liso para pegar ' +
+        '(kind="glue", con aviso); connectorType="lap" (solape de borde, modifica la forma en la unión) lo usa en todas las uniones.',
       inputSchema: {
         objectId: idSchema.describe('ID del objeto a dividir.'),
         dryRun: z.boolean().default(false).describe('true = solo plan, sin cortar.'),
@@ -33,9 +35,11 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         bedHeightMm: rangeSchema(OR.split.bedMm).optional().describe('Alto Y útil de impresión.'),
         marginMm: rangeSchema(OR.split.marginMm).default(d.marginMm).describe('Margen por lado que se descuenta de la cama.'),
         axes: z.array(z.enum(['x', 'y', 'z'])).min(1).max(3).optional().describe('Ejes donde se permite cortar (por defecto los tres).'),
-        maxPieces: rangeSchema(OR.split.maxPieces).default(d.maxPieces),
+        maxPieces: z.union([rangeSchema(OR.split.maxPieces), z.literal('auto')]).default(d.maxPieces),
         allowRotation: z.boolean().default(true).describe('Permite girar 90° una pieza para que quepa.'),
-        connectorType: z.enum(['none', 'dowel', 'peg', 'dovetail']).default('dowel'),
+        connectorType: z.enum(['none', 'dowel', 'peg', 'dovetail', 'lap']).default('dowel'),
+        minWallForConnectorMm: rangeSchema(OR.split.minWallForConnectorMm).default(d.minWallForConnectorMm).describe('Espesor mínimo de la sección para poner conector; más delgada queda para pegar.'),
+        lapHeightMm: rangeSchema(OR.split.lapHeightMm).default(d.lapHeightMm).describe('Alto del solape de borde en mm.'),
         connectorSize: rangeSchema(OR.cut.connectorSize).default(4).describe('Radio/semiancho del conector en mm.'),
         connectorDepth: rangeSchema(OR.cut.connectorDepth).default(6),
         tolerance: rangeSchema(OR.cut.tolerance).default(0.25).describe('Holgura de encaje en mm.'),
@@ -43,13 +47,18 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         labels: z.enum(['none', 'engraved']).default('none').describe('Marcas de pareja grabadas en las caras de unión.'),
         labelDepthMm: rangeSchema(OR.split.labelDepthMm).default(d.labelDepthMm),
         labelMinHeightMm: rangeSchema(OR.split.labelMinHeightMm).default(d.labelMinHeightMm),
+        labelPlacement: z.enum(['auto', 'joint', 'outside']).default('auto').describe('Marca en la cara de unión, por fuera junto al borde o automática.'),
+        minFragmentMm3: rangeSchema(OR.split.minFragmentMm3).default(d.minFragmentMm3).describe('Cuerpos sueltos menores se funden con la pieza vecina.'),
       },
     },
     async (args) => {
       const connector =
         args.connectorType === 'none'
           ? null
-          : { type: args.connectorType, size: args.connectorSize, depth: args.connectorDepth, tolerance: args.tolerance, count: Math.max(1, args.connectorCount) };
+          : {
+              type: args.connectorType, size: args.connectorSize, depth: args.connectorDepth, tolerance: args.tolerance,
+              count: Math.max(1, args.connectorCount), minWallForConnectorMm: args.minWallForConnectorMm, lapHeightMm: args.lapHeightMm,
+            };
       return dispatchWithFallback(ctx, 'split_for_bed', { ...args, id: args.objectId }, () =>
         ctx.headless.splitForBed(args.objectId, {
           // Medidas omitidas: las del perfil activo
@@ -57,7 +66,10 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
             Object.entries({ widthMm: args.bedWidthMm, depthMm: args.bedDepthMm, heightMm: args.bedHeightMm }).filter(([, v]) => v !== undefined),
           ),
           plan: { marginMm: args.marginMm, axes: args.axes, maxPieces: args.maxPieces, allowRotation: args.allowRotation, connector },
-          execute: { connector, labels: args.labels, labelDepthMm: args.labelDepthMm, labelMinHeightMm: args.labelMinHeightMm },
+          execute: {
+            connector, labels: args.labels, labelDepthMm: args.labelDepthMm, labelMinHeightMm: args.labelMinHeightMm,
+            labelPlacement: args.labelPlacement, minFragmentMm3: args.minFragmentMm3,
+          },
           dryRun: args.dryRun,
         }),
       );

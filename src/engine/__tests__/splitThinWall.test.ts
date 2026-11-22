@@ -2,8 +2,9 @@
  * @file src/engine/__tests__/splitThinWall.test.ts
  * @description Pruebas medidas de "dividir para imprimir" en pared delgada (tuberías en L y en T de
  * 1 m, tubo Ø1000), uniones sin contacto real (dos columnas), cuerpos sueltos (estatua con brazo
- * fino), errores con el parámetro culpable y tope de piezas automático. Criterio: toda unión lleva
- * conector o solape y marca en ambas piezas, piezas de un cuerpo, 0 aristas sueltas, sin interferencia.
+ * fino), errores con el parámetro culpable y tope de piezas automático. Criterio: por defecto toda
+ * unión de pared delgada queda para pegar (con aviso) y con `lap` lleva solape; siempre marca en
+ * ambas piezas, piezas de un cuerpo, 0 aristas sueltas, sin interferencia y volumen conservado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,7 +13,14 @@
 import type { Manifold } from 'manifold-3d';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initManifoldEngine } from '../manifoldKernel';
-import { executeBedSplitGeometry, planBedSplit, type BedSplitResult, type SplitBed } from '../split';
+import {
+  executeBedSplitGeometry,
+  planBedSplit,
+  type BedSplitResult,
+  type SplitBed,
+  type SplitConnectorOptions,
+  type SplitJointKind,
+} from '../split';
 import { bigTube, checkAllParts, lPipe, objFrom, tPipe, twoColumns } from './splitPipeShapes';
 
 type Wasm = Awaited<ReturnType<typeof initManifoldEngine>>;
@@ -23,37 +31,49 @@ beforeAll(async () => {
   wasm = await initManifoldEngine();
 });
 
-/** Toda unión con conector o solape y marca grabada en ambas piezas. */
-function checkJoints(res: BedSplitResult) {
-  const bare = res.joints.filter((j) => !j.connector && !j.lap);
-  const unlabeled = res.joints.filter((j) => !j.labelEngraved);
-  expect(bare.map((j) => j.label)).toEqual([]);
-  expect(unlabeled.map((j) => j.label)).toEqual([]);
+/** Toda unión del tipo esperado, con su aviso si es para pegar, y marca grabada en ambas piezas. */
+function checkJoints(res: BedSplitResult, kind: SplitJointKind) {
+  expect(res.joints.filter((j) => j.kind !== kind).map((j) => `${j.label}:${j.kind}`)).toEqual([]);
+  expect(res.joints.filter((j) => !j.labelEngraved).map((j) => j.label)).toEqual([]);
+  if (kind === 'glue') {
+    const warned = new Set(res.warnings.filter((w) => w.code === 'SPLIT_JOINT_GLUE_ONLY').map((w) => w.params.label));
+    expect(res.joints.every((j) => warned.has(j.label))).toBe(true);
+    expect(res.glueJoints).toBe(res.joints.length);
+    expect(res.warnings.some((w) => w.code === 'SPLIT_GLUE_SUMMARY')).toBe(true);
+  }
+  if (kind === 'lap') {
+    for (const j of res.joints) {
+      expect(j.lap!.heightMm).toBeCloseTo(6, 6);
+      expect(j.lap!.clearanceMm).toBeGreaterThan(0);
+    }
+    expect(res.clearanceVolumeMm3).toBeGreaterThan(0);
+  }
 }
 
-async function run(m: Manifold, name: string) {
+const LAP: SplitConnectorOptions = { type: 'lap', size: 4, depth: 6, tolerance: 0.2, count: 1, lapHeightMm: 6 };
+
+async function run(m: Manifold, name: string, connector?: SplitConnectorOptions) {
   const obj = objFrom(m, name);
-  const plan = await planBedSplit(obj, BED, { maxPieces: 'auto' });
+  const plan = await planBedSplit(obj, BED, { maxPieces: 'auto', ...(connector ? { connector } : {}) });
   const res = await executeBedSplitGeometry(obj, plan, { labels: 'engraved' });
-  const laps = res.joints.filter((j) => j.lap).length;
   const outside = res.joints.filter((j) => j.labelPlacement === 'outside').length;
   console.info(
-    `[split] ${name}: plan ${plan.elapsedMs.toFixed(0)} ms, ejecución ${res.elapsedMs.toFixed(0)} ms, ` +
-      `${res.parts.length} piezas, ${res.joints.length} uniones (${laps} solape), ${outside} marcas por fuera`,
+    `[split] ${name}${connector ? ' (solape)' : ''}: plan ${plan.elapsedMs.toFixed(0)} ms, ejecución ${res.elapsedMs.toFixed(0)} ms, ` +
+      `${res.parts.length} piezas, ${res.joints.length} uniones (${res.glueJoints} para pegar), ${outside} marcas por fuera`,
   );
-  return { plan, res };
+  return { obj, plan, res };
 }
 
 describe('dividir tuberías de pared delgada', () => {
-  it('tubería en L de 1 m, Ø150, pared 5: solape y marca en toda unión, piezas de un cuerpo', async () => {
+  it('tubería en L de 1 m, Ø150, pared 5: por defecto uniones para pegar con marca; con lap, solape en todas', async () => {
     const { plan, res } = await run(lPipe(wasm, 150, 5), 'L');
     expect(plan.counts.z).toBe(1);
     expect(res.joints.length).toBeGreaterThan(0);
-    checkJoints(res);
-    const lap = res.joints.find((j) => j.lap)!;
-    expect(lap.lap!.heightMm).toBeCloseTo(6, 6);
-    expect(lap.lap!.clearanceMm).toBeGreaterThan(0);
+    checkJoints(res, 'glue');
     checkAllParts(wasm, res);
+    const lap = await run(lPipe(wasm, 150, 5), 'L', LAP);
+    checkJoints(lap.res, 'lap');
+    checkAllParts(wasm, lap.res);
   }, 120_000);
 
   it('tubería en T de 1 m, Ø150, pared 4: los planos no parten el tubo vertical a lo largo', async () => {
@@ -61,15 +81,21 @@ describe('dividir tuberías de pared delgada', () => {
     // Ningún plano X cae dentro del tubo vertical (|x| < 75 + margen) pudiendo quedarse fuera
     for (const p of plan.planes.filter((q) => q.axis === 'x')) expect(Math.abs(p.position)).toBeGreaterThan(85);
     expect(plan.planes.every((p) => p.strips === 0)).toBe(true);
-    checkJoints(res);
+    checkJoints(res, 'glue');
     checkAllParts(wasm, res);
+    const lap = await run(tPipe(wasm, 150, 4), 'T', LAP);
+    checkJoints(lap.res, 'lap');
+    checkAllParts(wasm, lap.res);
   }, 180_000);
 
-  it('tubo Ø1000 × 1000, pared 4: tope automático, unión y marca en todas', async () => {
+  it('tubo Ø1000 × 1000, pared 4: tope automático, unión clasificada y marca en todas', async () => {
     const { plan, res } = await run(bigTube(wasm, 1000, 1000, 4), 'tubo1000');
     expect(plan.pieces.length).toBeGreaterThan(64);
-    checkJoints(res);
+    checkJoints(res, 'glue');
     checkAllParts(wasm, res);
+    const lap = await run(bigTube(wasm, 1000, 1000, 4), 'tubo1000', LAP);
+    checkJoints(lap.res, 'lap');
+    checkAllParts(wasm, lap.res);
   }, 400_000);
 });
 
