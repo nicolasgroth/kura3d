@@ -205,7 +205,7 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
   } else if (connectorKind && fit === 'bad') {
     if (suggestion && !suggestion.feasible) reason = t(language, 'dialog.cut.reason.none');
     else if (suggestion && connectorSize > suggestion.maxSize + 1e-6)
-      reason = t(language, 'dialog.cut.reason.size', { max: fmt(suggestion.maxSize) });
+      reason = t(language, 'dialog.cut.reason.size', { max: `Ø${fmt(2 * suggestion.maxSize)}` });
     else if (suggestion && connectorDepth > suggestion.maxDepth + 1e-6)
       reason = t(language, 'dialog.cut.reason.depth', { max: fmt(suggestion.maxDepth) });
     else if (suggestion && connectorCount > suggestion.maxCount)
@@ -349,21 +349,22 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
         </div>
 
         <div className="kura-form-field">
-          <label htmlFor="cut-size">{t(language, 'dialog.cut.connectorSize')} (mm)</label>
+          {/* Se muestra el diámetro Ø, como en Dividir; el contrato interno (`connectorSize`) sigue en radio. */}
+          <label htmlFor="cut-size">{t(language, 'split.size.label')} (mm)</label>
           <PrecisionNumberInput
             id="cut-size"
-            ariaLabel={`${t(language, 'dialog.cut.connectorSize')} (mm)`}
-            min={CONNECTOR_SIZE_RANGE_MM.min}
-            max={CONNECTOR_SIZE_RANGE_MM.max}
-            step={0.5}
+            ariaLabel={`${t(language, 'split.size.label')} (mm)`}
+            min={2 * CONNECTOR_SIZE_RANGE_MM.min}
+            max={2 * CONNECTOR_SIZE_RANGE_MM.max}
+            step={1}
             precision={1}
-            defaultValue={4}
-            value={connectorSize}
-            onChange={setConnectorSize}
+            defaultValue={8}
+            value={2 * connectorSize}
+            onChange={(diameter) => setConnectorSize(diameter / 2)}
           />
           {showMax && (
             <small id="cut-size-max" className="kura-cut-hint">
-              {t(language, 'dialog.cut.maxFor', { max: fmt(showMax.maxSize) })}
+              {t(language, 'dialog.cut.maxDiameterFor', { max: fmt(2 * showMax.maxSize) })}
             </small>
           )}
         </div>

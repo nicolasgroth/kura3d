@@ -74,7 +74,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const changeScope = (nextScope: ExportScope) => {
     setScope(nextScope);
     if (!nameEditedRef.current) {
-      setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix')));
+      setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix'), t(language, 'export.piecesSuffix')));
     }
   };
 
@@ -86,7 +86,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     setScope(nextScope);
     nameEditedRef.current = false;
     formatPickedRef.current = false;
-    setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix')));
+    setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix'), t(language, 'export.piecesSuffix')));
     // Solo al abrir: los cambios de selección posteriores no pisan lo que escribió el usuario.
   }, [open]);
 

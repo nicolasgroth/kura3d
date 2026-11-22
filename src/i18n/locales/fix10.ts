@@ -1,7 +1,8 @@
 /**
  * @file src/i18n/locales/fix10.ts
  * @description Textos de la ronda de correcciones 10 en los 6 idiomas: error de SVG con solo trazos sin
- * relleno y máximo del conector del corte por plano expresado como diámetro Ø. Cada clave se escribe una
+ * relleno, máximo del conector del corte por plano expresado como diámetro Ø y sufijo del nombre al
+ * exportar piezas de una división. Cada clave se escribe una
  * vez con sus 6 idiomas; `FIX10_<IDIOMA>` se mezcla en cada diccionario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -22,6 +23,9 @@ const FIX10 = {
   'dialog.cut.maxDiameterFor': {
     es: 'Máximo para esta pieza: Ø{max} mm', en: 'Maximum for this part: Ø{max} mm', de: 'Maximum für dieses Teil: Ø{max} mm',
     fr: 'Maximum pour cette pièce : Ø{max} mm', hi: 'इस भाग के लिए अधिकतम: Ø{max} mm', zh: '此部件最大值：Ø{max} mm',
+  },
+  'export.piecesSuffix': {
+    es: 'piezas', en: 'pieces', de: 'teile', fr: 'pieces', hi: 'भाग', zh: '部件',
   },
 } as const satisfies Record<string, Row>;
 
