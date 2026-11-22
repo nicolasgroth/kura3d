@@ -11,6 +11,7 @@
 import React, { useMemo, useState } from 'react';
 import { AlertTriangle, Grid3x3 } from 'lucide-react';
 import { t } from '../../i18n';
+import { toUserSize } from '../../core/scene/displayAxes';
 import { exceedsBed } from '../../core/scene/splitGroups';
 import { activeBed } from '../../store/splitCommandSchemas';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -41,7 +42,8 @@ export const SplitFitNotice: React.FC = () => {
   }, [obj]);
   const bed = activeBed({ printerProfile, customBedDimensions: customBed });
   if (!obj || !size || activeDialog === 'splitForBed' || !exceedsBed(size, bed)) return null;
-  const dims = size.map((v) => formatNumber(language, v, { maximumFractionDigits: 0 })).join(' × ');
+  // `size` está en ejes del motor (Y arriba): se muestra en los del usuario (X × Y × Z, Z = altura)
+  const dims = toUserSize(size).map((v) => formatNumber(language, v, { maximumFractionDigits: 0 })).join(' × ');
 
   return (
     <div className="kura-split-notice" role="status" data-collapsed={collapsed || undefined}>
