@@ -150,6 +150,9 @@ const GROUPS_TABLE = {
   'groups.inspector.applyRotate': ['Girar el conjunto', 'Rotate the set', 'Gruppe drehen', 'Pivoter l’ensemble', 'सेट घुमाएँ', '旋转整体'],
   'groups.inspector.applyScale': ['Escalar el conjunto', 'Scale the set', 'Gruppe skalieren', 'Mettre l’ensemble à l’échelle', 'सेट स्केल करें', '缩放整体'],
 
+  'groups.export.legend': ['Grupo «{name}»', 'Group “{name}”', 'Gruppe „{name}“', 'Groupe « {name} »', 'समूह “{name}”', '组“{name}”'],
+  'groups.export.single': ['Un archivo con todo el grupo', 'One file with the whole group', 'Eine Datei mit der ganzen Gruppe', 'Un fichier avec tout le groupe', 'पूरे समूह की एक फ़ाइल', '整个组一个文件'],
+  'groups.export.perObject': ['Un archivo por objeto (ZIP)', 'One file per object (ZIP)', 'Eine Datei pro Objekt (ZIP)', 'Un fichier par objet (ZIP)', 'हर ऑब्जेक्ट की एक फ़ाइल (ZIP)', '每个对象一个文件(ZIP)'],
   'dialog.shortcuts.group': ['Agrupar la selección', 'Group the selection', 'Auswahl gruppieren', 'Grouper la sélection', 'चयन को समूह बनाएँ', '编组所选'],
   'dialog.shortcuts.ungroup': ['Desagrupar', 'Ungroup', 'Gruppierung aufheben', 'Dégrouper', 'समूह हटाएँ', '取消编组'],
   'dialog.shortcuts.enterGroup': ['Entrar al grupo (doble clic) / salir (Esc)', 'Enter the group (double-click) / exit (Esc)', 'Gruppe betreten (Doppelklick) / verlassen (Esc)', 'Entrer dans le groupe (double-clic) / sortir (Échap)', 'समूह में जाएँ (डबल-क्लिक) / बाहर (Esc)', '进入组(双击)/ 退出(Esc)'],

@@ -18,6 +18,8 @@ import type { ExportFormat, ExportScope } from '../store/modelIoActions';
 import { defaultExportBase, sanitizeFileBase } from '../utils/exportNaming';
 import { NativeModal } from './NativeModal';
 import { SplitExportOptions } from './split/SplitExportOptions';
+import { GroupExportOptions } from './dialogs/GroupExportOptions';
+import { selectedGroup } from '../core/scene/groups';
 import { hasSplitParts, type SplitExportMode } from '../store/splitExport';
 import '../styles/modelIo.css';
 
@@ -68,6 +70,8 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const [fileName, setFileName] = useState('');
   const [busy, setBusy] = useState(false);
   const [splitMode, setSplitMode] = useState<SplitExportMode | null>(null);
+  const [perObject, setPerObject] = useState(false);
+  const groupSel = useKuraStore((s) => selectedGroup(s.objects, s.groups, s.selectedIds));
   // Si el usuario no ha editado el nombre, seguir el alcance elegido.
   const nameEditedRef = useRef(false);
   // Solo una elección explícita del formato en el diálogo se recuerda; un atajo no la pisa.
@@ -98,6 +102,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const base = sanitizeFileBase(fileName) || t(language, 'export.defaultName');
   const splitTargets = hasSplitParts(targets);
   const effectiveSplit = splitTargets && (splitMode === 'perPiece' || (splitMode === 'printLayout' && format === '3mf')) ? splitMode : null;
+  const groupPerObject = Boolean(groupSel) && scope === 'selection' && !splitTargets && perObject;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -105,7 +110,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     setBusy(true);
     try {
       if (formatPickedRef.current) storeFormat(format);
-      const ok = await exportModel({ format, scope, fileName: base, splitMode: effectiveSplit ?? undefined });
+      const ok = await exportModel({ format, scope, fileName: base, splitMode: effectiveSplit ?? undefined, perObject: groupPerObject });
       if (ok) onClose();
     } finally {
       setBusy(false);
@@ -124,7 +129,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
           </button>
           <button type="submit" form={formId} className="kura-btn kura-btn-primary" disabled={busy || targets.length === 0}>
             <Download size={14} aria-hidden="true" />
-            <span>{t(language, 'dialog.export.execute')} {base}.{effectiveSplit === 'perPiece' ? 'zip' : format}</span>
+            <span>{t(language, 'dialog.export.execute')} {base}.{effectiveSplit === 'perPiece' || groupPerObject ? 'zip' : format}</span>
           </button>
         </>
       }
@@ -183,6 +188,10 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
         </div>
 
         {format === '3mf' && <p className="kura-export-info">{t(language, 'dialog.export3mf.standardNote')}</p>}
+
+        {groupSel && scope === 'selection' && !splitTargets && (
+          <GroupExportOptions language={language} groupName={groupSel.name} perObject={perObject} onChange={setPerObject} />
+        )}
 
         {splitTargets && (
           <SplitExportOptions
