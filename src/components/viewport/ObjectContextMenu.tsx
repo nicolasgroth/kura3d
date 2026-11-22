@@ -1,6 +1,8 @@
 /**
  * @file src/components/viewport/ObjectContextMenu.tsx
- * @description Menú contextual (clic derecho) sobre un objeto del visor.
+ * @description Menú contextual (clic derecho) sobre un objeto del visor, ordenado como en los laminadores:
+ * Agregar (pieza / pieza negativa), Tipo, Geometría, Analizar, Objeto y Ayuda. Cada acción cierra el menú
+ * antes de ejecutarse. La estructura y el teclado viven en `contextMenu/MenuKit`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,11 +14,14 @@ import {
   Box,
   Combine,
   Copy,
-  FileUp,
   FlipHorizontal2,
   HelpCircle,
   MinusCircle,
   PaintBucket,
+  PencilLine,
+  PlusCircle,
+  Repeat2,
+  RefreshCw,
   ScanSearch,
   Scissors,
   ShieldCheck,
@@ -25,260 +30,145 @@ import {
   Type,
 } from 'lucide-react';
 import { t } from '../../i18n';
+import { userAxisLabel } from '../../core/scene/displayAxes';
+import { parametricStateOf } from '../../core/scene/parametric';
 import { useKuraStore } from '../../store/useKuraStore';
+import { repeatLabel } from '../../store/repeatLabel';
+import { isTauriRuntime } from '../../utils/platformBridge';
 import { type ContextMenuState } from './viewportHelpers';
 import { type SceneObject } from '../../types/kura';
+import { MenuGroup, MenuItem, MenuSurface, SubMenu } from './contextMenu/MenuKit';
+import { PieceShapeItems } from './contextMenu/PieceShapeItems';
+
+/** Ejes del usuario (Z = altura) con su eje interno del motor. */
+const MIRROR_AXES = [
+  { internal: 'x', user: 'x' },
+  { internal: 'z', user: 'y' },
+  { internal: 'y', user: 'z' },
+] as const;
 
 /** Menú contextual sobre un objeto 3D; cada acción cierra el menú antes de ejecutarse. */
 export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: SceneObject; onClose: () => void }> = ({ menu, target, onClose }) => {
   const language = useKuraStore((s) => s.language);
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
+  const lastRepeatable = useKuraStore((s) => s.lastRepeatable);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
-  const addSubtractHelperPrimitive = useKuraStore((s) => s.addSubtractHelperPrimitive);
-  const importModelAsModuleFromDialog = useKuraStore((s) => s.importModelAsModuleFromDialog);
+  const addPieceToObject = useKuraStore((s) => s.addPieceToObject);
+  const setObjectsHole = useKuraStore((s) => s.setObjectsHole);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const runBooleanOnSelection = useKuraStore((s) => s.runBooleanOnSelection);
   const hollowObject = useKuraStore((s) => s.hollowObject);
   const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
-  const updateObjectMeta = useKuraStore((s) => s.updateObjectMeta);
   const duplicateObjects = useKuraStore((s) => s.duplicateObjects);
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
   const deleteObjects = useKuraStore((s) => s.deleteObjects);
   const mirrorObject = useKuraStore((s) => s.mirrorObject);
   const detectObjectStructures = useKuraStore((s) => s.detectObjectStructures);
+  const requestRename = useKuraStore((s) => s.requestRename);
+  const recomputeSelected = useKuraStore((s) => s.recomputeSelected);
+  const repeatLastAction = useKuraStore((s) => s.repeatLastAction);
+  const addToast = useKuraStore((s) => s.addToast);
   const holeCount = objects.filter((o) => o.isHole && o.visible).length;
   const solidCount = objects.filter((o) => !o.isHole && o.visible).length;
+  const typeIds = selectedIds.includes(target.id) ? selectedIds : [target.id];
+  const isParametric = ['primitive', 'thread'].includes(parametricStateOf(target).status);
+  // F5 recarga la página en el navegador: solo se anuncia como atajo en escritorio.
+  const recomputeKey = isTauriRuntime() ? 'F5' : 'Shift+F5';
+  const run = (fn: () => void) => () => {
+    onClose();
+    fn();
+  };
 
   return (
-    <div
-      className="kura-context-menu"
-      style={{ left: menu.x, top: menu.y }}
-      role="menu"
-    >
-      <div className="kura-context-header">{target.name}</div>
+    <MenuSurface x={menu.x} y={menu.y} label={t(language, 'menu.label', { name: target.name })} title={target.name}>
+      <MenuGroup title={t(language, 'menu.group.add')}>
+        <SubMenu icon={<PlusCircle size={14} aria-hidden="true" style={{ color: 'var(--accent-green)' }} />} label={t(language, 'menu.addPart')} tip={t(language, 'menu.addPart.tip')}>
+          <PieceShapeItems language={language} onPick={(shape) => run(() => void addPieceToObject(shape, 'positive', target.id))()} />
+        </SubMenu>
+        <SubMenu icon={<MinusCircle size={14} aria-hidden="true" style={{ color: 'var(--accent-amber)' }} />} label={t(language, 'menu.addNegative')} tip={t(language, 'menu.addNegative.tip')}>
+          <PieceShapeItems language={language} onPick={(shape) => run(() => void addPieceToObject(shape, 'negative', target.id))()} />
+        </SubMenu>
+      </MenuGroup>
 
-      <button
-        type="button"
-        className="kura-context-item"
-        title={t(language, 'inspector.op.subtractSphereTip')}
-        onClick={() => {
-          onClose();
-          void addSubtractHelperPrimitive('sphere', target.id);
-        }}
-      >
-        <MinusCircle size={14} style={{ color: 'var(--accent-amber)' }} />
-        <span>{t(language, 'ctx.subtractSphere')}</span>
-      </button>
+      <div className="kura-context-sep" role="separator" />
+      <MenuGroup title={t(language, 'menu.group.type')}>
+        <SubMenu icon={<ToggleLeft size={14} aria-hidden="true" />} label={t(language, 'menu.changeType')} tip={t(language, 'menu.changeType.tip')}>
+          <MenuItem
+            label={t(language, 'menu.type.solid')}
+            checked={!target.isHole}
+            checkedLabel={t(language, 'menu.type.current')}
+            keys="H"
+            onSelect={run(() => setObjectsHole(typeIds, false))}
+          />
+          <MenuItem
+            label={t(language, 'menu.type.negative')}
+            checked={target.isHole}
+            checkedLabel={t(language, 'menu.type.current')}
+            keys="H"
+            onSelect={run(() => setObjectsHole(typeIds, true))}
+          />
+        </SubMenu>
+      </MenuGroup>
 
-      <button
-        type="button"
-        className="kura-context-item"
-        title={t(language, 'inspector.op.subtractCylinderTip')}
-        onClick={() => {
-          onClose();
-          void addSubtractHelperPrimitive('cylinder', target.id);
-        }}
-      >
-        <MinusCircle size={14} style={{ color: 'var(--accent-amber)' }} />
-        <span>{t(language, 'ctx.subtractCylinder')}</span>
-      </button>
+      <div className="kura-context-sep" role="separator" />
+      <MenuGroup title={t(language, 'menu.group.geometry')}>
+        <MenuItem icon={<Box size={14} aria-hidden="true" />} label={t(language, 'ctx.hollow')} disabled={target.locked} onSelect={run(() => void hollowObject(target.id, { enabled: true, wallThickness: 2.2 }))} />
+        <MenuItem icon={<Scissors size={14} aria-hidden="true" />} label={t(language, 'ctx.planeCut')} disabled={target.locked} keys="C" onSelect={run(() => setActiveDialog('cut'))} />
+        <MenuItem icon={<PaintBucket size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.generateMold')} keys="Shift+M" onSelect={run(() => setActiveDialog('mold'))} />
+        <MenuItem icon={<Type size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.projectSurface')} disabled={target.locked} onSelect={run(() => setActiveDialog('project'))} />
+        <SubMenu icon={<FlipHorizontal2 size={14} aria-hidden="true" />} label={t(language, 'menu.mirror')} disabled={target.locked}>
+          {MIRROR_AXES.map(({ internal, user }) => (
+            <MenuItem key={user} label={t(language, 'menu.mirror.axis', { axis: userAxisLabel(internal) })} onSelect={run(() => mirrorObject(target.id, internal))} />
+          ))}
+        </SubMenu>
+        {holeCount > 0 && solidCount > 0 && (
+          <MenuItem icon={<Combine size={14} aria-hidden="true" />} label={t(language, 'ctx.applyHoles')} accent onSelect={run(() => void applyHolesOnSolids())} />
+        )}
+        {selectedIds.length >= 2 && (
+          <MenuItem icon={<Combine size={14} aria-hidden="true" />} label={t(language, 'ctx.unionSelection')} onSelect={run(() => void runBooleanOnSelection('union'))} />
+        )}
+      </MenuGroup>
 
-      <button
-        type="button"
-        className="kura-context-item"
-        onClick={() => {
-          onClose();
-          void importModelAsModuleFromDialog('negative', target.id);
-        }}
-      >
-        <FileUp size={14} style={{ color: 'var(--accent-amber)' }} />
-        <span>{t(language, 'ctx.importModuleSub')}</span>
-      </button>
+      <div className="kura-context-sep" role="separator" />
+      <MenuGroup title={t(language, 'menu.group.analyze')}>
+        <MenuItem icon={<ShieldCheck size={14} aria-hidden="true" style={{ color: 'var(--accent-green)' }} />} label={t(language, 'ctx.validatePrint')} onSelect={run(() => void runPrintabilityCheck(target.id))} />
+        <MenuItem icon={<ScanSearch size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.detectStructures')} onSelect={run(() => void detectObjectStructures(target.id))} />
+      </MenuGroup>
 
-      <button
-        type="button"
-        className="kura-context-item"
-        onClick={() => {
-          onClose();
-          updateObjectMeta(target.id, { isHole: !target.isHole });
-        }}
-      >
-        <ToggleLeft size={14} />
-        <span>{t(language, 'ctx.toggleHole')}</span>
-      </button>
+      <div className="kura-context-sep" role="separator" />
+      <MenuGroup title={t(language, 'menu.group.object')}>
+        <MenuItem icon={<PencilLine size={14} aria-hidden="true" />} label={t(language, 'menu.rename')} shortcut="F2" keys="F2" disabled={target.locked} onSelect={run(() => void requestRename(target.id))} />
+        <MenuItem icon={<Copy size={14} aria-hidden="true" />} label={t(language, 'ctx.duplicate')} onSelect={run(() => duplicateObjects([target.id]))} />
+        <MenuItem icon={<ArrowDownToLine size={14} aria-hidden="true" />} label={t(language, 'ctx.dropToBed')} keys="L" disabled={target.locked} onSelect={run(() => dropObjectToBed(target.id))} />
+        {isParametric && (
+          <MenuItem
+            icon={<RefreshCw size={14} aria-hidden="true" />}
+            label={t(language, 'menu.recompute')}
+            tip={t(language, 'menu.recompute.tip')}
+            shortcut={recomputeKey}
+            keys={`${recomputeKey} Shift+F5`}
+            disabled={target.locked}
+            onSelect={run(() => void recomputeSelected().then((n) => addToast(n > 0 ? t(language, 'menu.recompute.done', { count: n }) : t(language, 'menu.recompute.none'), n > 0 ? 'success' : 'info')))}
+          />
+        )}
+        {lastRepeatable && (
+          <MenuItem
+            icon={<Repeat2 size={14} aria-hidden="true" />}
+            label={t(language, 'repeat.label', { name: repeatLabel(language, lastRepeatable) })}
+            tip={t(language, 'repeat.tip')}
+            shortcut="F4"
+            keys="F4"
+            onSelect={run(() => void repeatLastAction())}
+          />
+        )}
+        <MenuItem icon={<Trash2 size={14} aria-hidden="true" />} label={t(language, 'ctx.delete')} danger disabled={target.locked} onSelect={run(() => deleteObjects([target.id]))} />
+      </MenuGroup>
 
-      {holeCount > 0 && solidCount > 0 && (
-        <button
-          type="button"
-          className="kura-context-item is-accent"
-          onClick={() => {
-            onClose();
-            void applyHolesOnSolids();
-          }}
-        >
-          <Combine size={14} />
-          <span>{t(language, 'ctx.applyHoles')}</span>
-        </button>
-      )}
-
-      {selectedIds.length >= 2 && (
-        <button
-          type="button"
-          className="kura-context-item"
-          onClick={() => {
-            onClose();
-            void runBooleanOnSelection('union');
-          }}
-        >
-          <Combine size={14} />
-          <span>{t(language, 'ctx.unionSelection')}</span>
-        </button>
-      )}
-
-      <div className="kura-context-sep" />
-
-      <button
-        type="button"
-        className="kura-context-item"
-        disabled={target.locked}
-        onClick={() => {
-          onClose();
-          void hollowObject(target.id, { enabled: true, wallThickness: 2.2 });
-        }}
-      >
-        <Box size={14} />
-        <span>{t(language, 'ctx.hollow')}</span>
-      </button>
-
-      <button
-        type="button"
-        className="kura-context-item"
-        disabled={target.locked}
-        onClick={() => {
-          onClose();
-          setActiveDialog('cut');
-        }}
-      >
-        <Scissors size={14} />
-        <span>{t(language, 'ctx.planeCut')}</span>
-      </button>
-
-      <button
-        type="button"
-        className="kura-context-item"
-        onClick={() => {
-          onClose();
-          setActiveDialog('mold');
-        }}
-      >
-        <PaintBucket size={14} style={{ color: 'var(--accent-cyan)' }} />
-        <span>{t(language, 'ctx.generateMold')}</span>
-      </button>
-
-      <button
-        type="button"
-        className="kura-context-item"
-        disabled={target.locked}
-        onClick={() => {
-          onClose();
-          setActiveDialog('project');
-        }}
-      >
-        <Type size={14} style={{ color: 'var(--accent-cyan)' }} />
-        <span>{t(language, 'ctx.projectSurface')}</span>
-      </button>
-
-      <button
-        type="button"
-        className="kura-context-item"
-        onClick={() => {
-          onClose();
-          runPrintabilityCheck(target.id);
-        }}
-      >
-        <ShieldCheck size={14} style={{ color: 'var(--accent-green)' }} />
-        <span>{t(language, 'ctx.validatePrint')}</span>
-      </button>
-
-      <button
-        type="button"
-        className="kura-context-item"
-        onClick={() => {
-          onClose();
-          void detectObjectStructures(target.id);
-        }}
-      >
-        <ScanSearch size={14} style={{ color: 'var(--accent-cyan)' }} />
-        <span>{t(language, 'ctx.detectStructures')}</span>
-      </button>
-
-      <button
-        type="button"
-        className="kura-context-item"
-        disabled={target.locked}
-        onClick={() => {
-          onClose();
-          mirrorObject(target.id, 'x');
-        }}
-      >
-        <FlipHorizontal2 size={14} />
-        <span>{t(language, 'ctx.mirrorX')}</span>
-      </button>
-
-      <div className="kura-context-sep" />
-
-      <button
-        type="button"
-        className="kura-context-item"
-        onClick={() => {
-          onClose();
-          duplicateObjects([target.id]);
-        }}
-      >
-        <Copy size={14} />
-        <span>{t(language, 'ctx.duplicate')}</span>
-      </button>
-
-      <button
-        type="button"
-        className="kura-context-item"
-        disabled={target.locked}
-        onClick={() => {
-          onClose();
-          dropObjectToBed(target.id);
-        }}
-      >
-        <ArrowDownToLine size={14} />
-        <span>{t(language, 'ctx.dropToBed')}</span>
-      </button>
-
-      <button
-        type="button"
-        className="kura-context-item is-danger"
-        disabled={target.locked}
-        onClick={() => {
-          onClose();
-          deleteObjects([target.id]);
-        }}
-      >
-        <Trash2 size={14} />
-        <span>{t(language, 'ctx.delete')}</span>
-      </button>
-
-      <div className="kura-context-sep" />
-
-      <button
-        type="button"
-        className="kura-context-item"
-        onClick={() => {
-          onClose();
-          setActiveDialog('shortcuts');
-        }}
-      >
-        <HelpCircle size={14} style={{ color: 'var(--accent-cyan)' }} />
-        <span>{t(language, 'ctx.shortcuts')}</span>
-      </button>
-    </div>
+      <div className="kura-context-sep" role="separator" />
+      <MenuGroup title={t(language, 'menu.group.help')}>
+        <MenuItem icon={<HelpCircle size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.shortcuts')} keys="F1" onSelect={run(() => setActiveDialog('shortcuts'))} />
+      </MenuGroup>
+    </MenuSurface>
   );
 };

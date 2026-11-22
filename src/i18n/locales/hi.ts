@@ -8,6 +8,7 @@
  */
 
 import type { TranslationKey } from '../translations';
+import { MENU_HI } from './menuKeys';
 import { PREVIEW_HI } from './preview';
 import { SPLITJOINTS_HI } from './splitJoints';
 import { SPLITPREFS_HI } from './splitPrefs';
@@ -17,6 +18,7 @@ import { SPLITCOUPLING_HI } from './splitCoupling';
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
  */
 export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
+  ...MENU_HI,
   ...PREVIEW_HI,
   ...SPLITJOINTS_HI,
   ...SPLITPREFS_HI,

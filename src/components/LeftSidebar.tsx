@@ -35,10 +35,12 @@ import type { PrimitiveType } from '../types/kura';
 import { colorName, colorNameWithHex } from '../utils/colorNames';
 import { tCount } from '../utils/plural';
 import { SceneObjectList } from './scene/SceneObjectList';
+import { SceneSearch, useRevealSceneOnRequest } from './scene/SceneSearch';
 import '../styles/panelEdge.css';
 
 export const LeftSidebar: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'shapes' | 'scene'>('shapes');
+  useRevealSceneOnRequest(() => setActiveTab('scene'));
   const [textDraft, setTextDraft] = useState('KURA3D');
   const [showTextBox, setShowTextBox] = useState(false);
 
@@ -348,7 +350,10 @@ export const LeftSidebar: React.FC = () => {
                   {t(language, 'sidebar.scene.empty')}
                 </div>
               ) : (
-                <SceneObjectList />
+                <>
+                  <SceneSearch />
+                  <SceneObjectList />
+                </>
               )}
             </div>
           )}

@@ -1,0 +1,38 @@
+/**
+ * @file src/styles/sceneSearch.css
+ * @description Campo de búsqueda de la lista de escena (F3).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-scene-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kura-scene-search-icon {
+  position: absolute;
+  left: 8px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.kura-scene-search .kura-scene-search-input {
+  flex: 1;
+  min-width: 0;
+  padding-left: 28px;
+}
+
+.kura-scene-search-input:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+.kura-scene-search-none {
+  flex: none;
+  font-size: 11px;
+  color: var(--text-secondary);
+}

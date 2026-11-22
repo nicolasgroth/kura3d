@@ -8,6 +8,7 @@
  */
 
 import type { TranslationKey } from '../translations';
+import { MENU_ZH } from './menuKeys';
 import { PREVIEW_ZH } from './preview';
 import { SPLITJOINTS_ZH } from './splitJoints';
 import { SPLITPREFS_ZH } from './splitPrefs';
@@ -17,6 +18,7 @@ import { SPLITCOUPLING_ZH } from './splitCoupling';
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
  */
 export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
+  ...MENU_ZH,
   ...PREVIEW_ZH,
   ...SPLITJOINTS_ZH,
   ...SPLITPREFS_ZH,

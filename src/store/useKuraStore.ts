@@ -27,6 +27,7 @@ import { createSplitSlice } from './slices/splitSlice';
 import { createSplitJointsSlice } from './slices/splitJointsSlice';
 import { createSplitPrefsSlice } from './slices/splitPrefsSlice';
 import { createUiSlice } from './slices/uiSlice';
+import { createQuickActionsSlice } from './slices/quickActionsSlice';
 
 export type {
   ActiveDialogType,
@@ -57,7 +58,7 @@ function uint8ToBase64(bytes: Uint8Array): string {
 
 export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
   const ctx = createStoreContext(rawSet, get);
-  return {
+  const base = {
     ...createDocumentSlice(ctx),
     ...createUiSlice(ctx),
     ...createAiMcpSlice(ctx),
@@ -72,6 +73,10 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createSplitSlice(ctx),
     ...createSplitJointsSlice(ctx),
     ...createSplitPrefsSlice(ctx),
+  } as Partial<KuraStoreState>;
+  return {
+    ...base,
+    ...createQuickActionsSlice(ctx, base),
     executeCommand: createCommandBus({
       get,
       setSelectedIds: (ids) => ctx.set({ selectedIds: ids }),

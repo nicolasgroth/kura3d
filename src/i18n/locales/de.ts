@@ -8,6 +8,7 @@
  */
 
 import type { TranslationKey } from '../translations';
+import { MENU_DE } from './menuKeys';
 import { PREVIEW_DE } from './preview';
 import { SPLITJOINTS_DE } from './splitJoints';
 import { SPLITPREFS_DE } from './splitPrefs';
@@ -17,6 +18,7 @@ import { SPLITCOUPLING_DE } from './splitCoupling';
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
  */
 export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
+  ...MENU_DE,
   ...PREVIEW_DE,
   ...SPLITJOINTS_DE,
   ...SPLITPREFS_DE,
