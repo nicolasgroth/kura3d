@@ -467,7 +467,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
       />
 
       {invalid && (
-        <span id={errorId} role="alert" className="kura-precision-error">
+        <span id={errorId} role="alert" className="kura-precision-error" title={errorText}>
           {errorText}
         </span>
       )}

@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import '../../styles/hudCubeClearance.css';
 import React, { useMemo } from 'react';
 import {
   Camera,

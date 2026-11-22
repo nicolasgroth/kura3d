@@ -97,3 +97,10 @@
   gap: 4px;
   padding: 0 6px;
 }
+
+/* El selector nativo de la barra es transparente: el foco se dibuja en su cara visible. */
+.kura-lang-select-wrap:has(.kura-lang-select-native:focus-visible) {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 6px);
+}

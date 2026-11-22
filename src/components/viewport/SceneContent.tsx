@@ -283,11 +283,11 @@ export const SceneContent: React.FC<{
       {/* Cubo de orientación 3D interactivo estilo CAD */}
       <GizmoHelper alignment="top-right" margin={[62, 118]}>
         <GizmoViewcube
-          color={isViewDark ? '#17202e' : '#f1f5f9'}
+          color={isViewDark ? '#17202e' : '#dbe4ee'}
           textColor={isViewDark ? '#e2e8f0' : '#0f172a'}
-          strokeColor={isViewDark ? '#38bdf8' : '#0284c7'}
+          strokeColor={isViewDark ? '#38bdf8' : '#075985'}
           hoverColor="#38bdf8"
-          opacity={0.92}
+          opacity={1}
           faces={
             language === 'en'
               ? ['Right', 'Left', 'Top', 'Bottom', 'Front', 'Back']

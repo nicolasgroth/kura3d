@@ -1,0 +1,14 @@
+/**
+ * @file src/styles/hudCubeClearance.css
+ * @description Reserva la columna del cubo de navegación (arriba a la derecha) para que las barras
+ * flotantes del visor, también en Zen, no lo tapen.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+@media (min-width: 521px) {
+  .kura-app .kura-hud-top-stack {
+    right: 184px;
+  }
+}

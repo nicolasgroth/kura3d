@@ -118,6 +118,8 @@ export const LeftSidebar: React.FC = () => {
         type="button"
         className="kura-panel-edge-btn is-left"
         onClick={toggleLeftSidebar}
+        aria-expanded={!leftCollapsed}
+        aria-controls="kura-shapes-panel"
         title={
           leftCollapsed
             ? t(language, 'ui.panel.expandLeft')

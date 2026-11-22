@@ -23,6 +23,8 @@ export const InspectorEdgeToggle: React.FC = () => {
       type="button"
       className="kura-panel-edge-btn is-right"
       onClick={toggleRightInspector}
+      aria-expanded={!rightCollapsed}
+      aria-controls="kura-inspector-panel"
       title={
         rightCollapsed
           ? t(language, 'ui.panel.expandRight')
