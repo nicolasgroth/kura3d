@@ -75,6 +75,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
     setClearKey(false);
     setRememberKey(keyStore.rememberInSession());
     void loadAllowedHosts().then((hosts) => setHostsText(hosts.join('\n')), () => undefined);
+    // El borrador se reinicia solo al abrir, no cuando cambia la configuración mientras se edita.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -205,6 +206,7 @@ export const AiSettingsPanel: React.FC<{ open: boolean; onSaved: () => void }> =
       resumeRef.current = true;
       openSettings('ai');
     })();
+    // Solo al abrir/cerrar; el guardado y la reanudación se leen por refs para no reabrir el aviso.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 

@@ -153,7 +153,8 @@ const PieceBox: React.FC<{ piece: PlannedPiece; dimmed: boolean }> = ({ piece, d
   const { min, max } = piece.bounds;
   const size: [number, number, number] = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
   const center: [number, number, number] = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
-  const edges = useMemo(() => new THREE.EdgesGeometry(new THREE.BoxGeometry(...size)), [size[0], size[1], size[2]]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [sizeX, sizeY, sizeZ] = size;
+  const edges = useMemo(() => new THREE.EdgesGeometry(new THREE.BoxGeometry(sizeX, sizeY, sizeZ)), [sizeX, sizeY, sizeZ]);
   useEffect(() => () => edges.dispose(), [edges]);
   return (
     <group position={center}>

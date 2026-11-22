@@ -101,6 +101,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
       .then((w) => { if (!cancelled && !widthEdited.current) setWidthMm(w); })
       .catch(() => { /* sin sugerencia: se conserva el ancho actual */ });
     return () => { cancelled = true; };
+    // Solo cambian la cara, el tipo o la pieza; el texto se lee por ref para no recalcular al teclear.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, targetId, axis, kind]);
 
