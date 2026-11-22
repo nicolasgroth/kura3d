@@ -19,8 +19,8 @@ import { regionIdForFace } from '../../utils/segmentHighlight';
 import { buildViewportGeometry } from './creasedGeometry';
 import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
 import { hasLiveStroke, queueLiveSample, startLiveStroke } from './livePaintStroke';
-import { afterPointerRelease, confirmPaintOnParametric, paintWouldDropParameters } from './paintParametricGuard';
 import { brushQueryFromEvent, strokeNeedsEdgeRefine, usePaintRaycastAcceleration } from './paintPointer';
+import { continueStorePaintStroke, startStorePaintStroke } from './paintStrokeController';
 
 /** Renderiza un SceneObject con caché de BufferGeometry, materiales PBR, sección Rayos X y voladizos. */
 export const SceneMeshItem: React.FC<{
@@ -55,8 +55,6 @@ export const SceneMeshItem: React.FC<{
     // Con una unión señalada en la lista, el resto de las piezas del grupo se atenúa.
     const jointDimmed = useSplitJointDimmed(obj);
     const selectObject = useKuraStore((s) => s.selectObject);
-    const paintObjectSurface = useKuraStore((s) => s.paintObjectSurface);
-    const beginPaintStroke = useKuraStore((s) => s.beginPaintStroke);
     const eraseSphereOnObject = useKuraStore((s) => s.eraseSphereOnObject);
     const setSelectedRegionId = useKuraStore((s) => s.setSelectedRegionId);
 
@@ -208,22 +206,9 @@ export const SceneMeshItem: React.FC<{
         const firstPoint = meshRef.current
           ? meshRef.current.worldToLocal(e.point.clone())
           : e.point.clone();
-        // Primer trazo que refinará la malla de una primitiva/rosca: antes se avisa que dejará de ser paramétrica.
-        if (paintMode === 'brush' && paintWouldDropParameters(obj, refine)) {
-          const faceIndex = e.faceIndex ?? null;
-          void afterPointerRelease().then(() => confirmPaintOnParametric(obj, state.language)).then((ok) => {
-            if (ok) paintObjectSurface(obj.id, [firstPoint.x, firstPoint.y, firstPoint.z], faceIndex);
-          });
-          return;
-        }
-        beginPaintStroke();
         lastPaintMoveAtRef.current = performance.now();
-        const localPt = firstPoint;
-        paintObjectSurface(
-          obj.id,
-          [localPt.x, localPt.y, localPt.z],
-          e.faceIndex ?? null,
-        );
+        // Abre UN trazo de historial; sobre una primitiva/rosca lo retiene hasta el aviso (nada cambia antes).
+        void startStorePaintStroke(obj, [firstPoint.x, firstPoint.y, firstPoint.z], e.faceIndex ?? null, refine);
         return;
       }
 
@@ -266,11 +251,7 @@ export const SceneMeshItem: React.FC<{
       const localPt = meshRef.current
         ? meshRef.current.worldToLocal(e.point.clone())
         : e.point.clone();
-      paintObjectSurface(
-        obj.id,
-        [localPt.x, localPt.y, localPt.z],
-        e.faceIndex ?? null,
-      );
+      continueStorePaintStroke(obj.id, [localPt.x, localPt.y, localPt.z], e.faceIndex ?? null);
     };
 
     const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {

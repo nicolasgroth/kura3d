@@ -360,6 +360,8 @@ export interface KuraStoreState {
   /** Abre un trazo de pincel: las muestras siguientes comparten un único paso de historial. */
   beginPaintStroke: () => void;
   endPaintStroke: () => void;
+  /** true mientras haya un trazo de pincel abierto (entre beginPaintStroke y endPaintStroke). */
+  isPaintStrokeOpen: () => boolean;
   /**
    * Trazo en vivo del visor: deja la malla lista para pintar (con colores por cara, sin historial)
    * y devuelve esa malla; `null` si el objeto no se puede pintar ahora.
