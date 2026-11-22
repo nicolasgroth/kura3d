@@ -19,11 +19,18 @@ export interface DistanceMeshInput {
 export interface MeshDistanceField {
   /** Distancia con signo: positiva dentro del sólido, negativa fuera (convención de `Manifold.levelSet`). */
   signedDistance(x: number, y: number, z: number): number;
+  /**
+   * Distancia con signo exacta si |d| < `cap`; si no, `±cap` con el signo por paridad de rayos.
+   * Evita la búsqueda completa del BVH en puntos lejanos (p. ej. el centro de una esfera).
+   */
+  boundedSignedDistance(x: number, y: number, z: number, cap: number): number;
   /** Distancia sin signo a la superficie; devuelve `maxDistance` si no hay nada más cerca. */
   unsignedDistance(x: number, y: number, z: number, maxDistance?: number): number;
   /** Caja envolvente `[minX, minY, minZ, maxX, maxY, maxZ]`. */
   bounds: [number, number, number, number, number, number];
 }
+
+import { createEdgeNormalTable, selectNth } from './meshDistanceSupport';
 
 const LEAF_SIZE = 4;
 
@@ -40,8 +47,7 @@ export function buildMeshDistanceField(mesh: DistanceMeshInput): MeshDistanceFie
   // Normales de cara y pseudo-normales de vértice (ponderadas por ángulo) y de arista
   const faceN = new Float64Array(triCount * 3);
   const vertN = new Float64Array(vertCount * 3);
-  const edgeN = new Map<number, [number, number, number]>();
-  const edgeKey = (a: number, b: number): number => (a < b ? a * vertCount + b : b * vertCount + a);
+  const edgeN = createEdgeNormalTable(triCount * 2);
 
   for (let t = 0; t < triCount; t++) {
     const ia = I[t * 3];
@@ -76,15 +82,7 @@ export function buildMeshDistanceField(mesh: DistanceMeshInput): MeshDistanceFie
       vertN[v * 3 + 1] += ny * angle;
       vertN[v * 3 + 2] += nz * angle;
 
-      const key = edgeKey(v, v1);
-      const acc = edgeN.get(key);
-      if (acc) {
-        acc[0] += nx;
-        acc[1] += ny;
-        acc[2] += nz;
-      } else {
-        edgeN.set(key, [nx, ny, nz]);
-      }
+      edgeN.add(v, v1, nx, ny, nz);
     }
   }
 
@@ -147,10 +145,8 @@ export function buildMeshDistanceField(mesh: DistanceMeshInput): MeshDistanceFie
     }
     const sx = cmxx - cmnx, sy = cmxy - cmny, sz = cmxz - cmnz;
     const axis = sx >= sy && sx >= sz ? 0 : sy >= sz ? 1 : 2;
-    const sub = Array.from(order.subarray(start, end));
-    sub.sort((a, b) => centroid[a * 3 + axis] - centroid[b * 3 + axis]);
-    order.set(sub, start);
     const mid = start + (count >> 1);
+    selectNth(order, start, end, mid, (t) => centroid[t * 3 + axis]);
     const left = build(start, mid);
     const right = build(mid, end);
     nodeA[node] = left;
@@ -274,15 +270,77 @@ export function buildMeshDistanceField(mesh: DistanceMeshInput): MeshDistanceFie
       const k = bestRegion - 4;
       const a = I[t * 3 + k];
       const b = I[t * 3 + ((k + 1) % 3)];
-      const acc = edgeN.get(edgeKey(a, b));
-      if (acc) {
-        nx = acc[0]; ny = acc[1]; nz = acc[2];
+      const o = edgeN.find(a, b);
+      if (o >= 0) {
+        nx = edgeN.normals[o]; ny = edgeN.normals[o + 1]; nz = edgeN.normals[o + 2];
       } else {
         nx = faceN[t * 3]; ny = faceN[t * 3 + 1]; nz = faceN[t * 3 + 2];
       }
     }
     const dot = (x - bestPx) * nx + (y - bestPy) * ny + (z - bestPz) * nz;
     return dot > 0 ? -1 : 1; // normal saliente => fuera negativo
+  };
+
+  /**
+   * Paridad de cruces de un rayo (Möller–Trumbore sobre el BVH). Devuelve el número de cruces o
+   * -1 si algún cruce cae casi sobre una arista/vértice (ambiguo: se reintenta con otra dirección).
+   */
+  const rayCrossings = (x: number, y: number, z: number, dx: number, dy: number, dz: number): number => {
+    const ix = 1 / dx, iy = 1 / dy, iz = 1 / dz;
+    let hits = 0;
+    let sp = 0;
+    stack[sp++] = 0;
+    while (sp > 0) {
+      const node = stack[--sp];
+      const o = node * 6;
+      let t1 = (nodeBox[o] - x) * ix, t2 = (nodeBox[o + 3] - x) * ix;
+      let tmin = Math.min(t1, t2), tmax = Math.max(t1, t2);
+      t1 = (nodeBox[o + 1] - y) * iy; t2 = (nodeBox[o + 4] - y) * iy;
+      tmin = Math.max(tmin, Math.min(t1, t2)); tmax = Math.min(tmax, Math.max(t1, t2));
+      t1 = (nodeBox[o + 2] - z) * iz; t2 = (nodeBox[o + 5] - z) * iz;
+      tmin = Math.max(tmin, Math.min(t1, t2)); tmax = Math.min(tmax, Math.max(t1, t2));
+      if (tmax < Math.max(0, tmin)) continue;
+      const b = nodeB[node];
+      if (b > 0) {
+        stack[sp++] = nodeA[node];
+        stack[sp++] = b;
+        continue;
+      }
+      const start = nodeA[node];
+      for (let i = start; i < start - b; i++) {
+        const t = order[i];
+        const ia = I[t * 3] * 3, ib = I[t * 3 + 1] * 3, ic = I[t * 3 + 2] * 3;
+        const e1x = P[ib] - P[ia], e1y = P[ib + 1] - P[ia + 1], e1z = P[ib + 2] - P[ia + 2];
+        const e2x = P[ic] - P[ia], e2y = P[ic + 1] - P[ia + 1], e2z = P[ic + 2] - P[ia + 2];
+        const px = dy * e2z - dz * e2y, py = dz * e2x - dx * e2z, pz = dx * e2y - dy * e2x;
+        const det = e1x * px + e1y * py + e1z * pz;
+        if (Math.abs(det) < 1e-14) continue;
+        const inv = 1 / det;
+        const sx = x - P[ia], sy = y - P[ia + 1], sz = z - P[ia + 2];
+        const u = (sx * px + sy * py + sz * pz) * inv;
+        if (u < -1e-9 || u > 1 + 1e-9) continue;
+        const qx = sy * e1z - sz * e1y, qy = sz * e1x - sx * e1z, qz = sx * e1y - sy * e1x;
+        const v = (dx * qx + dy * qy + dz * qz) * inv;
+        if (v < -1e-9 || u + v > 1 + 1e-9) continue;
+        const dist = (e2x * qx + e2y * qy + e2z * qz) * inv;
+        if (dist <= 0) continue;
+        if (u < 1e-7 || v < 1e-7 || u + v > 1 - 1e-7) return -1;
+        hits++;
+      }
+    }
+    return hits;
+  };
+
+  // Direcciones sin alinear con ejes ni diagonales (evitan cruces exactos sobre aristas de grillas).
+  const RAY_DIRS: ReadonlyArray<[number, number, number]> = [
+    [0.5773, 0.6197, 0.5317], [-0.4127, 0.7913, -0.4512], [0.8231, -0.3119, 0.4746], [-0.2671, -0.5893, 0.7625],
+  ];
+  const insideByRay = (x: number, y: number, z: number): boolean => {
+    for (const [dx, dy, dz] of RAY_DIRS) {
+      const hits = rayCrossings(x, y, z, dx, dy, dz);
+      if (hits >= 0) return (hits & 1) === 1;
+    }
+    return false;
   };
 
   const rootBox = triCount > 0 ? Array.from(nodeBox.subarray(0, 6)) : [0, 0, 0, 0, 0, 0];
@@ -293,6 +351,12 @@ export function buildMeshDistanceField(mesh: DistanceMeshInput): MeshDistanceFie
       nearest(x, y, z, Infinity);
       if (bestTri < 0) return -Infinity;
       return Math.sqrt(bestD2) * signOfBest(x, y, z);
+    },
+    boundedSignedDistance(x, y, z, cap) {
+      nearest(x, y, z, cap * cap);
+      if (bestTri >= 0) return Math.sqrt(bestD2) * signOfBest(x, y, z);
+      if (triCount === 0) return -cap;
+      return insideByRay(x, y, z) ? cap : -cap;
     },
     unsignedDistance(x, y, z, maxDistance = Infinity) {
       nearest(x, y, z, maxDistance === Infinity ? Infinity : maxDistance * maxDistance);

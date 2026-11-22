@@ -98,7 +98,9 @@ export async function hollowMeshDetailed(
       throw new EngineError('HOLLOW_WALL_TOO_THICK', { thickness: t, minDim });
     }
 
-    const offset = inwardOffset(wasm, outer, t);
+    // Un solo campo de distancia para el offset y para la verificación de pared.
+    const field = distanceFieldOfManifold(outer);
+    const offset = inwardOffset(wasm, outer, t, undefined, field);
     const inner = own(offset.inner);
     if (inner.isEmpty() || inner.volume() < 1e-6) {
       throw new EngineError('HOLLOW_WALL_TOO_THICK', { thickness: t, minDim });
@@ -106,7 +108,6 @@ export async function hollowMeshDetailed(
 
     // Verificación: la cavidad debe quedar dentro y a ≥ t (menos tolerancia de mundo) de la superficie
     const tolerance = Math.max(0.02, t * 0.05);
-    const field = distanceFieldOfManifold(outer);
     const wall = measureWallThickness(field, inner);
     const escaped = own(inner.subtract(outer)).volume();
     if (wall.minMm < t - tolerance || escaped > 1e-6 * Math.max(1, outer.volume())) {
