@@ -19,9 +19,11 @@ import { buildConnectorSolid } from '../cutConnectorSolid';
 import { engineWarning, type EngineWarning } from '../engineErrors';
 import type { SplitBody } from './splitBodies';
 import { buildLapSolids, type LapRejection } from './splitLap';
-import { buildLooseDowelHoles, layoutType } from './splitLooseDowel';
+import { buildLooseDowelHoles, layoutType, looseDowelHoleDepth } from './splitLooseDowel';
+import type { Capsule } from './assemblyConnectors';
+import type { ConnectorRoom } from './splitConnectorRoom';
 import { recommendedConnectorRadius, reinforcementCap } from './assemblyConnectors';
-import { classifyIslands } from './splitJointIslands';
+import { classifyContactIslands } from './splitJointIslands';
 import { buildJointLabel, orientedToWorld } from './splitLabels';
 import { buildOutsideDots, buildOutsideLabel } from './splitOutsideLabel';
 import { ASSEMBLY_LIMITS, OPERATION_DEFAULTS } from '../operationLimits';
@@ -98,6 +100,51 @@ export interface JointInput {
   labelMinHeightMm: number;
   /** Firmeza activa: agranda o agrega conectores bajo el radio recomendado (ver `BedSplitExecuteOptions`). */
   reinforce?: boolean;
+  /** Conectores ya puestos en otras uniones: el nuevo debe dejarles la pared mínima (y al exterior). */
+  room?: ConnectorRoom;
+}
+
+/** Pared extra con la que se reintenta la ubicación para alejar los centros del borde (mm). */
+const RETRY_EXTRA_WALL_MM = 2;
+
+/**
+ * Ubica los conectores `c` en la cara: resta la zona prohibida por los conectores de otras uniones y
+ * exige, con el modelo de la validación de armado, la pared mínima al exterior y a lo ya puesto. Si no
+ * cumple, reintenta con más margen al borde (mueve los centros hacia adentro). `null` si no cabe.
+ */
+function placeRung(
+  wasm: ManifoldToplevel, j: JointInput, face: Manifold, c: SplitConnectorOptions,
+  lt: ReturnType<typeof layoutType>, handles: Array<{ delete: () => void }>,
+): { centers: Vec3[]; caps: Capsule[] } | null {
+  const a = AXIS_INDEX[j.axis];
+  const from = j.coord - (c.type === 'loose-dowel' ? looseDowelHoleDepth(c) : 0.5);
+  const to = j.coord + holeDepth(c);
+  for (const wall of [CONNECTOR_MIN_WALL_MM, CONNECTOR_MIN_WALL_MM + RETRY_EXTRA_WALL_MM]) {
+    let target = face;
+    if (j.room) {
+      const margin = connectorFootprintRadius(lt, c.size, c.tolerance + wall) + 0.02;
+      const ko = j.room.keepOut(wasm, j.axis, from, to, connectorFootprintRadius(lt, c.size, c.tolerance), margin);
+      if (ko) {
+        handles.push(ko);
+        target = face.subtract(ko);
+        handles.push(target);
+      }
+    }
+    const layout = layoutForCut(target, j.axis, j.coord + 0.01, { ...c, type: lt }, wall);
+    if (!(layout.centers.length > 0 && layout.enoughRoom && layout.skippedIslands < layout.islands)) {
+      if (!j.room) return null;
+      continue;
+    }
+    const centers = layout.centers.map((p) => {
+      const q = [...p] as Vec3;
+      q[a] = j.coord;
+      return q;
+    });
+    if (!j.room) return { centers, caps: [] };
+    const caps = j.room.capsulesFor(j.label, j.axis, j.coord, c, centers, j.low, j.high);
+    if (j.room.check(caps, j.low, j.high).every(Boolean)) return { centers, caps };
+  }
+  return null;
 }
 
 /** Medida mayor de la pieza más chica (por volumen) de la unión, para la regla de firmeza. */
@@ -156,15 +203,13 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
       const width = Math.max(0, ...islands.map((isl) => islandWidth(isl)).filter((wd) => wd >= minWall));
       const cap = reinforcementCap(connector.size, width, connector.depth);
       const ladder = connectorLadder(connector, j.reinforce ? (n) => Math.min(cap, recommendedConnectorRadius(area, n, dim)) : undefined);
+      const lt = layoutType(connector.type);
       for (const c of ladder) {
-        const layout = layoutForCut(face, axis, coord + 0.01, { ...c, type: layoutType(connector.type) }, CONNECTOR_MIN_WALL_MM);
-        if (layout.centers.length > 0 && layout.enoughRoom && layout.skippedIslands < layout.islands) {
+        const found = placeRung(wasm, j, face, c, lt, handles);
+        if (found) {
           used = c;
-          centers = layout.centers.map((p) => {
-            const q = [...p] as Vec3;
-            q[a] = coord;
-            return q;
-          });
+          centers = found.centers;
+          j.room?.add(found.caps);
           break;
         }
       }
@@ -225,7 +270,7 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     }
     const kind: SplitJointKind = used ? 'connector' : lap ? 'lap' : 'glue';
     if (connector && kind === 'glue') warnings.push(engineWarning(thinOnly ? 'SPLIT_JOINT_GLUE_ONLY' : 'SPLIT_JOINT_NO_CONNECTOR', pair));
-    const islandInfo = classifyIslands(islands, axis, centers, lap ? lapAccepted : undefined);
+    const islandInfo = classifyContactIslands(j.contact, islands, axis, centers, lap ? lapAccepted : undefined);
     const glued = islandInfo.filter((i) => i.kind === 'glue').length;
     // Unas islas con conector o solape y otras no: esas partes son solo para pegar
     if (kind !== 'glue' && glued > 0) {

@@ -1251,6 +1251,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'Chaque pièce posée sur son plateau (côte à côte), sans déplacer la scène',
   'export.split.zipDone': '{count} pièces exportées dans {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'La pièce {code} contient un fragment détaché de {volume} mm³ qui n\'a pas pu être fusionné avec une voisine : il reste une pièce à part.',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'La pièce {code} a absorbé un fragment détaché de {volume} mm³ de la cellule voisine et dépasse de {protrusion} mm le plan de coupe (voulu ; avec un seuil de fragment de 0, il reste une pièce à part).',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} plan(s) ({planes}) n\'ont trouvé aucune section évitant de couper des parois dans la longueur : la position uniforme a été conservée.',
   'split.joint.auto': 'Connecteurs là où ils tiennent ; sinon coupe lisse à coller',
   'split.joint.lap': 'Recouvrement de bord (modifie la forme)',

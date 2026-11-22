@@ -28,6 +28,15 @@ const SIDE_EPS = 0.01;
 const AXES: SplitAxis[] = ['x', 'y', 'z'];
 
 /** Pieza en construcción: cuerpo, su celda, sólidos a sumar/restar y etiquetas. */
+/** Cuánto sobresale una caja de la caja de su celda (mm, 0 si queda dentro). */
+function protrusion(bb: { min: ArrayLike<number>; max: ArrayLike<number> }, cell: Cell, bounds: number[][]): number {
+  let out = 0;
+  for (let a = 0; a < 3; a++) {
+    out = Math.max(out, bb.max[a] - bounds[a][cell[a] + 1], bounds[a][cell[a]] - bb.min[a]);
+  }
+  return out;
+}
+
 export interface SplitBody {
   id: number;
   cell: Cell;
@@ -156,6 +165,13 @@ export function buildBodies(
         if (!single || !fittingRotation(size, opts.usable, true)) {
           u.delete();
           continue;
+        }
+        // La pieza que absorbe el fragmento cruza el plano de corte a propósito: se informa cuánto
+        const out = protrusion(bb, target.cell, bounds);
+        if (out > 1e-3) {
+          warnings.push(engineWarning('SPLIT_FRAGMENT_MERGED', {
+            code: opts.codeOf(target.cell), volume: Math.round(frag.m.volume()), protrusion: Math.round(out * 100) / 100,
+          }));
         }
         target.m.delete();
         target.m = u;

@@ -1251,6 +1251,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'Jedes Teil liegt auf seiner Platte (nebeneinander), ohne die Szene zu ändern',
   'export.split.zipDone': '{count} Teile nach {name} exportiert',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'Teil {code} enthält ein loses Fragment von {volume} mm³, das mit keinem Nachbarn verschmolzen werden konnte: es bleibt ein eigenes Teil.',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'Teil {code} hat ein loses Fragment von {volume} mm³ aus der Nachbarzelle aufgenommen und ragt {protrusion} mm über die Schnittebene hinaus (beabsichtigt; mit Fragment-Schwelle 0 bleibt es ein eigenes Teil).',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} Ebene(n) ({planes}) fanden keinen Schnitt, der Wände nicht der Länge nach teilt: die gleichmäßige Position wurde beibehalten.',
   'split.joint.auto': 'Verbinder, wo sie passen; sonst glatter Schnitt zum Kleben',
   'split.joint.lap': 'Randüberlappung (ändert die Form)',

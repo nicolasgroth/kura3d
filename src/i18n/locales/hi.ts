@@ -1251,6 +1251,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'हर टुकड़ा अपनी प्लेट पर (अगल-बगल), दृश्य हिलाए बिना',
   'export.split.zipDone': '{count} टुकड़े {name} में निर्यात',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'भाग {code} में {volume} mm³ का एक अलग टुकड़ा है जिसे किसी पड़ोसी से नहीं जोड़ा जा सका: यह अलग भाग रहेगा।',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'भाग {code} ने पड़ोसी सेल का {volume} mm³ का एक अलग टुकड़ा जोड़ लिया है और कट प्लेन से {protrusion} mm बाहर निकलता है (जानबूझकर; टुकड़ा सीमा 0 होने पर यह अलग भाग रहता है)।',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} तल ({planes}) को ऐसा खंड नहीं मिला जो दीवारों को लंबाई में न काटे: समान स्थिति रखी गई।',
   'split.joint.auto': 'जहाँ फिट हों वहाँ कनेक्टर; बाकी जगह चिपकाने के लिए सपाट कट',
   'split.joint.lap': 'किनारा ओवरलैप (आकार बदलता है)',
