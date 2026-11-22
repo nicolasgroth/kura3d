@@ -12,6 +12,7 @@ import { trimHistoryForFile } from '../project/historyBudget';
 import type { ProjectDocument } from '../project/projectSchema';
 import { makeId } from '../core/scene/sceneObjects';
 import type { SceneObject, Vec3 } from '../types/kura';
+import { deltaSourceOf, isPaintDeltaStep, keepDeltaSource, materializeHistory, type HistoryStep } from './historySteps';
 import type { KuraStoreState, SceneSnapshot } from './storeTypes';
 
 const sceneRevisions = new WeakMap<SceneObject[], symbol>();
@@ -24,10 +25,13 @@ export function sceneRevision(objects: SceneObject[]): symbol {
   return revision;
 }
 
-function sameHistory(a: SceneSnapshot[], b: SceneSnapshot[]): boolean {
-  return a === b || (a.length === b.length && a.every((snapshot, i) =>
-    sceneRevision(snapshot.objects) === sceneRevision(b[i].objects),
-  ));
+/** Historial guardado (instantáneas) frente al vigente (instantáneas o deltas de pintura). */
+function sameHistory(a: SceneSnapshot[], b: HistoryStep[]): boolean {
+  return (a as HistoryStep[]) === b || (a.length === b.length && a.every((snapshot, i) => {
+    const step = b[i];
+    if (isPaintDeltaStep(step)) return deltaSourceOf(snapshot) === step;
+    return sceneRevision(snapshot.objects) === sceneRevision(step.objects);
+  }));
 }
 
 /** Selección sin ids huérfanos ni duplicados: guardar no debe fallar por una selección vieja. */
@@ -39,13 +43,13 @@ function liveSelection(objects: SceneObject[], selectedIds: string[]): string[] 
 
 function cleanSnapshotSelection<T extends { objects: SceneObject[]; selectedIds: string[] }>(snapshot: T): T {
   const selectedIds = liveSelection(snapshot.objects, snapshot.selectedIds);
-  return selectedIds === snapshot.selectedIds ? snapshot : { ...snapshot, selectedIds };
+  return selectedIds === snapshot.selectedIds ? snapshot : keepDeltaSource(snapshot, { ...snapshot, selectedIds });
 }
 
-const fileHistoryCache = new WeakMap<SceneSnapshot[], { future: SceneSnapshot[]; value: { past: SceneSnapshot[]; future: SceneSnapshot[] } }>();
+const fileHistoryCache = new WeakMap<HistoryStep[], { future: HistoryStep[]; value: { past: HistoryStep[]; future: HistoryStep[] } }>();
 
 /** Historial que viaja en el `.kura` (los pasos más recientes que caben en su presupuesto), memoizado. */
-function fileHistory(past: SceneSnapshot[], future: SceneSnapshot[]) {
+function fileHistory(past: HistoryStep[], future: HistoryStep[]) {
   const cached = fileHistoryCache.get(past);
   if (cached && cached.future === future) return cached.value;
   const value = trimHistoryForFile(past, future);
@@ -54,7 +58,9 @@ function fileHistory(past: SceneSnapshot[], future: SceneSnapshot[]) {
 }
 
 export function captureProject(state: KuraStoreState): ProjectDocument {
-  const history = fileHistory(state.past, state.future);
+  const trimmed = fileHistory(state.past, state.future);
+  // Los deltas de pintura viajan al archivo como instantáneas completas.
+  const history = materializeHistory(state.objects, state.selectedIds, trimmed.past, trimmed.future);
   return {
     objects: state.objects,
     selectedIds: liveSelection(state.objects, state.selectedIds),

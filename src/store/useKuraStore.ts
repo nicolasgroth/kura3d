@@ -19,6 +19,7 @@ import { createDocumentSlice } from './slices/documentSlice';
 import { createGeometrySlice } from './slices/geometrySlice';
 import { createHistorySlice } from './slices/historySlice';
 import { createIoSlice } from './slices/ioSlice';
+import { createPaintSlice } from './slices/paintSlice';
 import { createPartsSlice } from './slices/partsSlice';
 import { clearPreviewOnSelectionChange, createPreviewSlice } from './slices/previewSlice';
 import { createSelectionSlice } from './slices/selectionSlice';
@@ -63,6 +64,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createSelectionSlice(ctx),
     ...createCreationSlice(ctx),
     ...createGeometrySlice(ctx),
+    ...createPaintSlice(ctx),
     ...createPartsSlice(ctx),
     ...createIoSlice(ctx),
     ...createPreviewSlice(ctx),

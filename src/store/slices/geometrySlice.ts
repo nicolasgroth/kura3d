@@ -1,8 +1,8 @@
 /**
  * @file src/store/slices/geometrySlice.ts
  * @description Slice de operaciones geométricas sobre objetos existentes: booleanas, aplicar
- * huecos, ahuecar, simplificar, refinar, envolvente, reflejar, textura, goma, proyección,
- * imprimibilidad y pintado. Cada acción valida bloqueos, delega en `src/core/operations` y
+ * huecos, ahuecar, simplificar, refinar, envolvente, reflejar, textura, goma, proyección e
+ * imprimibilidad (la pintura vive en `paintSlice`). Cada acción valida bloqueos, delega en `src/core/operations` y
  * aplica el `SceneChange` con historial y aviso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -225,40 +225,6 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         reportOperationError(err);
         return null;
       }
-    },
-
-    paintObjectSurface: (id, localPoint, faceIndex, modeOverride) => {
-      const state = get();
-      const obj = editable(id);
-      // Durante una operación en curso (o un arrastre sin confirmar) no se pinta: el resultado la pisaría.
-      if (!obj || rejectWhileLocked()) return;
-      const mode = modeOverride ?? state.paintMode;
-      const color = state.paintColor;
-      let change: ops.SceneChange | null;
-      if (mode === 'whole') {
-        change = ops.paintWholeObject(opCtx(), obj, color, false);
-      } else if (mode === 'smart_fill' && faceIndex !== null) {
-        change = ops.paintRegion(opCtx(), obj, faceIndex, color);
-      } else if (localPoint) {
-        change = ops.paintBrushSample(opCtx(), obj, localPoint, state.paintRadiusMm, color, { refineEdge: state.paintRefineEdge });
-      } else {
-        return;
-      }
-      // Sin cambios de color (pasar el pincel sobre caras ya pintadas): ni historial ni render.
-      if (!change || change.patches.length === 0) return;
-      const stroke = runtime.paintStroke;
-      if (!stroke.open || !stroke.recorded) {
-        pushHistory();
-        stroke.recorded = true;
-      }
-      set((prev) => ({ objects: ops.applySceneChange(prev.objects, change) }));
-    },
-
-    beginPaintStroke: () => {
-      runtime.paintStroke = { open: true, recorded: false };
-    },
-    endPaintStroke: () => {
-      runtime.paintStroke = { open: false, recorded: false };
     },
   };
 }
