@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { Bolt, Eye, EyeOff, PaintBucket, ShieldCheck, Type } from 'lucide-react';
-import { t } from '../../i18n';
+import { t, type TranslationKey } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { StructureDetectionPanel } from './StructureDetectionPanel';
@@ -147,10 +147,10 @@ export const MakerToolsSection: React.FC<InspectorSectionProps> = ({ primary, ui
             </button>
           )}
 
-          {currentReport.warnings.length > 0 ? (
+          {currentReport.issues.length > 0 ? (
             <ul className="kura-warning-list">
-              {currentReport.warnings.map((w, idx) => (
-                <li key={idx}>{w}</li>
+              {currentReport.issues.map((w) => (
+                <li key={w.code}>{t(language, `printWarning.${w.code}` as TranslationKey, w.params)}</li>
               ))}
             </ul>
           ) : (

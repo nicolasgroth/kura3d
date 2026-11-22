@@ -1091,4 +1091,5 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'printWarning.HIGH_DENSITY': '网格过密（> 50 000 个三角形），建议简化。',
   'printWarning.THIN_WALL': '部分壁厚为 {thickness} mm，低于最小值 {min} mm，可能无法打印。',
   'printWarning.INVERTED_NORMALS': '网格法线反向（体积为负），打印前请重新定向。',
+  'printWarning.BELOW_BED': '对象位于打印床下方 {depth} mm（Y < 0），打印前请将其放到床面上。',
 };

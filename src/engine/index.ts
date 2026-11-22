@@ -90,6 +90,10 @@ export {
   simplifyMesh,
 } from './analysis';
 
+export { localizePrintWarning, PRINT_FILAMENT_DIAMETER_MM, PRINT_SHELL_FRACTION } from './printability';
+
+export { flipTriangleWinding, orientationState, signedVolumeMm3, type OrientationState } from './meshOrientation';
+
 export {
   createMetricThread,
   generateCylindricalLithophane,

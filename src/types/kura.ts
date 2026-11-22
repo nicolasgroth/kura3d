@@ -561,8 +561,53 @@ export interface PrintabilityReport {
   estimatedFilamentMeters: number;
   triangleCount: number;
   densityQuality: 'low' | 'optimal' | 'high';
+  /** Avisos en español (compatibilidad con consumidores de texto, p. ej. MCP). La interfaz usa `issues`. */
   warnings: string[];
+  /** Avisos tipados con código y parámetros; se traducen al mostrarse (`printWarning.<código>`). */
+  issues: PrintWarning[];
   score: number;
+  /** El punto más bajo está bajo la cama (Y < 0). */
+  isBelowBed: boolean;
+  /** Volumen con signo negativo: las normales apuntan hacia dentro. */
+  normalsInverted: boolean;
+  /** Área en voladizo y área total de la superficie, en mm². `overhangPercent` es su razón. */
+  overhangAreaMm2: number;
+  surfaceAreaMm2: number;
+  /** Espesor mínimo de pared exigido (mm) y el menor espesor medido por muestreo (null si no se midió). */
+  minWallMm: number;
+  minWallThicknessMm: number | null;
+  /** Porcentaje del área muestreada más delgada que `minWallMm`. */
+  thinWallAreaPercent: number;
+  /** Supuestos del cálculo de peso, para mostrarlos junto al resultado. */
+  weightAssumptions: PrintWeightAssumptions;
+}
+
+/** Códigos de aviso del informe de imprimibilidad (claves i18n `printWarning.<código>`). */
+export type PrintWarningCode =
+  | 'NOT_MANIFOLD'
+  | 'EXCEEDS_BED'
+  | 'BELOW_BED'
+  | 'FLOATING'
+  | 'OVERHANG'
+  | 'LOW_DENSITY'
+  | 'HIGH_DENSITY'
+  | 'THIN_WALL'
+  | 'INVERTED_NORMALS';
+
+/** Aviso tipado del informe de imprimibilidad. */
+export interface PrintWarning {
+  code: PrintWarningCode;
+  params: Record<string, string | number>;
+}
+
+/** Supuestos con que se estima el peso y el filamento. */
+export interface PrintWeightAssumptions {
+  materialId: MaterialPresetId;
+  densityGCm3: number;
+  infillPercent: number;
+  /** Fracción del volumen que se asume sólida por perímetros y tapas (0..1). */
+  shellFraction: number;
+  filamentDiameterMm: number;
 }
 
 /** Arquetipos geométricos reconocidos de forma 100 % determinística local (sin IA externa). */

@@ -1091,4 +1091,5 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'printWarning.HIGH_DENSITY': 'Sehr dichtes Netz (> 50 000 Dreiecke); erwäge, es zu vereinfachen.',
   'printWarning.THIN_WALL': 'Einige Wände sind {thickness} mm dick, dünner als das Minimum von {min} mm; sie werden evtl. nicht gedruckt.',
   'printWarning.INVERTED_NORMALS': 'Das Netz hat invertierte Normalen (negatives Volumen); richte es vor dem Druck neu aus.',
+  'printWarning.BELOW_BED': 'Das Objekt liegt {depth} mm unter dem Druckbett (Y < 0); setze es vor dem Druck auf das Bett.',
 };

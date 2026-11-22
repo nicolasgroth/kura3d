@@ -1,8 +1,6 @@
 /**
  * @file src/engine/analysis.ts
- * @description Validador estructural de imprimibilidad 3D (detección de voladizos críticos,
- * ajuste en cama, objetos flotantes, peso realista por material PBR y longitud de filamento),
- * simplificación topológica, refinamiento/suavizado adaptativo y envolvente convexa (Convex Hull)
+ * @description Simplificación topológica, refinamiento/suavizado adaptativo y envolvente convexa (Convex Hull)
  * sobre el núcleo Manifold-3D en Kura3D.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -10,15 +8,7 @@
  */
 
 import type { Manifold } from 'manifold-3d';
-import {
-  MATERIAL_PRESETS,
-  type MaterialPresetId,
-  type MeshData,
-  type PrintabilityReport,
-  type PrinterProfile,
-  type SceneObject,
-  type Vec3,
-} from '../types/kura';
+import type { MeshData, SceneObject, Vec3 } from '../types/kura';
 import {
   createColorRegistry,
   initManifoldEngine,
@@ -28,11 +18,7 @@ import {
 import { EngineError, requireOperationRange } from './engineErrors';
 import { OPERATION_RANGES } from './operationLimits';
 import { refineMeshDetailed } from './refine';
-import {
-  applyTransformToMesh,
-  computeMeshStats,
-  normalizeMeshToBed,
-} from './primitives';
+import { applyTransformToMesh, normalizeMeshToBed } from './primitives';
 
 /**
  * Extrae el centro-base mundial `[cx, minY, cz]` de una malla y normaliza sus
@@ -70,198 +56,8 @@ function extractPositionAndNormalize(mesh: MeshData): {
   };
 }
 
-/**
- * Ejecuta un análisis completo de imprimibilidad 3D en espacio mundial para `obj`
- * frente al perfil de impresora `bed`, estimando:
- * - Cierre topológico 2-manifold (`isManifold`).
- * - Encaje físico dentro del volumen de construcción (`fitsInBed`).
- * - Contacto con la cama de impresión (`isFloating` cuando `minYWorldMm > 0.25`).
- * - Escaneo de voladizos críticos por normal mundial (`ny < -cos(overhangAngleDeg)`),
- *   excluyendo las caras inferiores apoyadas directamente sobre la base (`y <= minY + 0.2`).
- * - Volumen en cm³, peso estimado realista (perímetros + relleno) y metros de filamento 1.75 mm.
- * - Puntuación global de imprimibilidad `0..100` y advertencias claras en español.
- *
- * @param obj Objeto de escena a validar.
- * @param bed Perfil de impresora 3D destino.
- * @param materialId Material PBR para densidad (por defecto `'pla_matte'`).
- * @param infillPercent Porcentaje de relleno 0..100 (por defecto 20%).
- * @param overhangAngleDeg Ángulo crítico de voladizo en grados desde la vertical (por defecto 45°).
- * @returns Informe detallado `PrintabilityReport`.
- */
-export function analyzePrintability(
-  obj: SceneObject,
-  bed: PrinterProfile,
-  materialId: MaterialPresetId = 'pla_matte',
-  infillPercent = 20,
-  overhangAngleDeg = 45
-): PrintabilityReport {
-  const worldMesh = applyTransformToMesh(
-    obj.mesh,
-    obj.position,
-    obj.rotation,
-    obj.scale
-  );
-  const stats = computeMeshStats(worldMesh);
-
-  const vertCount = Math.floor(worldMesh.positions.length / 3);
-  const triCount = Math.floor(worldMesh.indices.length / 3);
-
-  let minX = Infinity;
-  let minY = Infinity;
-  let minZ = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  let maxZ = -Infinity;
-
-  for (let i = 0; i < vertCount; i++) {
-    const x = worldMesh.positions[i * 3];
-    const y = worldMesh.positions[i * 3 + 1];
-    const z = worldMesh.positions[i * 3 + 2];
-    if (x < minX) minX = x;
-    if (y < minY) minY = y;
-    if (z < minZ) minZ = z;
-    if (x > maxX) maxX = x;
-    if (y > maxY) maxY = y;
-    if (z > maxZ) maxZ = z;
-  }
-
-  if (vertCount === 0) {
-    minX = minY = minZ = maxX = maxY = maxZ = 0;
-  }
-
-  const halfW = bed.bedWidthMm * 0.5;
-  const halfD = bed.bedDepthMm * 0.5;
-  const eps = 0.05;
-
-  const fitsInBed =
-    minX >= -halfW - eps &&
-    maxX <= halfW + eps &&
-    minZ >= -halfD - eps &&
-    maxZ <= halfD + eps &&
-    minY >= -eps &&
-    maxY <= bed.maxHeightMm + eps;
-
-  const isFloating = minY > 0.25;
-
-  // Umbral del componente Y de la normal saliente para detectar voladizos descendentes
-  const nyThreshold = -Math.cos((overhangAngleDeg * Math.PI) / 180);
-  const overhangFaceIndices: number[] = [];
-  const baseCutoffY = minY + 0.2;
-
-  for (let t = 0; t < triCount; t++) {
-    const i0 = worldMesh.indices[t * 3] * 3;
-    const i1 = worldMesh.indices[t * 3 + 1] * 3;
-    const i2 = worldMesh.indices[t * 3 + 2] * 3;
-
-    const y0 = worldMesh.positions[i0 + 1];
-    const y1 = worldMesh.positions[i1 + 1];
-    const y2 = worldMesh.positions[i2 + 1];
-
-    // Excluir caras planas apoyadas directamente sobre la base/cama del objeto
-    if (y0 <= baseCutoffY && y1 <= baseCutoffY && y2 <= baseCutoffY) {
-      continue;
-    }
-
-    const e1x = worldMesh.positions[i1] - worldMesh.positions[i0];
-    const e1y = y1 - y0;
-    const e1z = worldMesh.positions[i1 + 2] - worldMesh.positions[i0 + 2];
-
-    const e2x = worldMesh.positions[i2] - worldMesh.positions[i0];
-    const e2y = y2 - y0;
-    const e2z = worldMesh.positions[i2 + 2] - worldMesh.positions[i0 + 2];
-
-    const nx = e1y * e2z - e1z * e2y;
-    const ny = e1z * e2x - e1x * e2z;
-    const nz = e1x * e2y - e1y * e2x;
-    const len = Math.hypot(nx, ny, nz);
-
-    if (len > 1e-12 && ny / len < nyThreshold) {
-      overhangFaceIndices.push(t);
-    }
-  }
-
-  const overhangFaceCount = overhangFaceIndices.length;
-  const overhangPercent =
-    triCount > 0 ? (overhangFaceCount / triCount) * 100 : 0;
-
-  // Cálculo realista de peso (perímetros/tapas ~22% sólido + interior según % infill)
-  const preset = MATERIAL_PRESETS[materialId] ?? MATERIAL_PRESETS.pla_matte;
-  const clampedInfill = requireOperationRange('infillPercent', infillPercent, OPERATION_RANGES.printability.infillPercent) / 100;
-  const effectiveFillRatio = Math.min(1, 0.22 + 0.78 * clampedInfill);
-  const volumeCm3 = stats.volumeMm3 / 1000;
-  const effectiveVolumeCm3 = volumeCm3 * effectiveFillRatio;
-  const estimatedWeightGrams = effectiveVolumeCm3 * preset.densityGCm3;
-
-  // Longitud de filamento estándar de 1.75 mm (sección transversal = π * 0.875² ≈ 2.40528 mm²)
-  const filamentAreaMm2 = Math.PI * 0.875 * 0.875;
-  const effectiveVolumeMm3 = effectiveVolumeCm3 * 1000;
-  const estimatedFilamentMeters = effectiveVolumeMm3 / filamentAreaMm2 / 1000;
-
-  const densityQuality: PrintabilityReport['densityQuality'] =
-    triCount < 100 ? 'low' : triCount > 50000 ? 'high' : 'optimal';
-
-  const warnings: string[] = [];
-  let score = 100;
-
-  if (!stats.isManifold) {
-    warnings.push(
-      'La malla no es cerrada (no-manifold); puede presentar huecos o errores al laminar.'
-    );
-    score -= 35;
-  }
-
-  if (!fitsInBed) {
-    warnings.push(
-      `El objeto excede los límites de impresión (${bed.bedWidthMm}×${bed.bedDepthMm}×${bed.maxHeightMm} mm).`
-    );
-    score -= 25;
-  }
-
-  if (isFloating) {
-    warnings.push(
-      `El objeto está flotando a ${minY.toFixed(2)} mm sobre la cama de impresión.`
-    );
-    score -= 20;
-  }
-
-  if (overhangPercent > 5) {
-    warnings.push(
-      `Se detectó ${overhangPercent.toFixed(1)}% de caras en voladizo (> ${overhangAngleDeg}°); considere activar soportes.`
-    );
-  }
-  score -= Math.min(25, Math.round(overhangPercent * 0.55));
-
-  if (densityQuality === 'low') {
-    warnings.push(
-      'Baja densidad poligonal (< 100 triángulos); las curvas pueden lucir facetadas.'
-    );
-  } else if (densityQuality === 'high') {
-    warnings.push(
-      'Malla muy densa (> 50 000 triángulos); considere simplificar para agilizar el laminado.'
-    );
-  }
-
-  score = Math.max(0, Math.min(100, score));
-
-  return {
-    objectId: obj.id,
-    isManifold: stats.isManifold,
-    fitsInBed,
-    isFloating,
-    minYWorldMm: minY,
-    overhangFaceCount,
-    overhangPercent,
-    overhangFaceIndices,
-    overhangAngleDeg,
-    volumeCm3,
-    estimatedWeightGrams,
-    estimatedFilamentMeters,
-    triangleCount: triCount,
-    densityQuality,
-    warnings,
-    score,
-  };
-}
+/** El informe de imprimibilidad vive en `printability.ts`; se reexporta por compatibilidad. */
+export { analyzePrintability } from './printability';
 
 /**
  * Reduce la densidad poligonal de un objeto mediante decimación topológica nativa

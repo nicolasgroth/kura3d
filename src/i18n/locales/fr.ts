@@ -1091,4 +1091,5 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'printWarning.HIGH_DENSITY': 'Maillage très dense (> 50 000 triangles) ; pensez à le simplifier.',
   'printWarning.THIN_WALL': 'Certaines parois font {thickness} mm, moins que le minimum de {min} mm ; elles risquent de ne pas s\'imprimer.',
   'printWarning.INVERTED_NORMALS': 'Le maillage a des normales inversées (volume négatif) ; réorientez-le avant d\'imprimer.',
+  'printWarning.BELOW_BED': 'L\'objet est {depth} mm sous le plateau (Y < 0) ; posez-le sur le plateau avant d\'imprimer.',
 };

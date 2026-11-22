@@ -1091,4 +1091,5 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'printWarning.HIGH_DENSITY': 'बहुत घना मेश (> 50 000 त्रिभुज); इसे सरल करने पर विचार करें।',
   'printWarning.THIN_WALL': 'कुछ दीवारें {thickness} mm की हैं, न्यूनतम {min} mm से पतली; वे प्रिंट न हो सकें।',
   'printWarning.INVERTED_NORMALS': 'मेश के नॉर्मल उलटे हैं (ऋणात्मक आयतन); प्रिंट से पहले इसे फिर से उन्मुख करें।',
+  'printWarning.BELOW_BED': 'ऑब्जेक्ट बेड से {depth} mm नीचे है (Y < 0); प्रिंट से पहले इसे बेड पर रखें।',
 };

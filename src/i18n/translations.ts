@@ -1098,6 +1098,7 @@ export const TRANSLATIONS_ES = {
   'printWarning.HIGH_DENSITY': 'Malla muy densa (> 50 000 triángulos); considera simplificarla.',
   'printWarning.THIN_WALL': 'Hay paredes de {thickness} mm, más delgadas que el mínimo de {min} mm; pueden no imprimirse.',
   'printWarning.INVERTED_NORMALS': 'La malla tiene las normales invertidas (volumen negativo); reoriéntala antes de imprimir.',
+  'printWarning.BELOW_BED': 'El objeto queda {depth} mm bajo la cama (Y < 0); apóyalo antes de imprimir.',
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2156,6 +2157,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'printWarning.HIGH_DENSITY': 'Very dense mesh (> 50,000 triangles); consider simplifying it.',
   'printWarning.THIN_WALL': 'Some walls are {thickness} mm, thinner than the {min} mm minimum; they may not print.',
   'printWarning.INVERTED_NORMALS': 'The mesh has inverted normals (negative volume); reorient it before printing.',
+  'printWarning.BELOW_BED': 'The object sits {depth} mm below the bed (Y < 0); place it on the bed before printing.',
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

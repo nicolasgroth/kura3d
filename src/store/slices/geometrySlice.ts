@@ -187,12 +187,22 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       });
     },
 
-    runPrintabilityCheck: (id, infillPercent = 18, overhangAngleDeg = 45) => {
+    runPrintabilityCheck: async (id, infillPercent = 18, overhangAngleDeg = 45, minWallMm) => {
       const { objects, printerProfile } = get();
       const obj = objects.find((o) => o.id === id);
       if (!obj) return null;
       try {
-        const report = engine.analyzePrintability(obj, printerProfile, obj.materialPreset ?? 'pla_matte', infillPercent, overhangAngleDeg);
+        // Solo lectura: corre en el Worker sin tomar el bloqueo de operaciones.
+        const report = await ctx.runEngineDetached('printability', {
+          obj,
+          bed: printerProfile,
+          materialId: obj.materialPreset ?? 'pla_matte',
+          infillPercent,
+          overhangAngleDeg,
+          minWallMm,
+        });
+        // Si el objeto cambió mientras se analizaba, el informe ya no corresponde: no se muestra.
+        if (get().objects.find((o) => o.id === id) !== obj) return report;
         set({ activePrintReport: report, showOverhangs: report.overhangFaceCount > 0 });
         get().addToast(
           tr('toast.printabilityDone', { score: report.score, weight: report.estimatedWeightGrams.toFixed(1) }),
