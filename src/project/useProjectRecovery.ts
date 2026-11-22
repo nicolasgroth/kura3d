@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { t } from '../i18n';
+import { guardUnsavedChanges } from '../utils/unsavedGuard';
 import { useKuraStore } from '../store/useKuraStore';
 import { askDecision } from '../utils/confirmDialog';
 import { isTauriRuntime } from '../utils/platformBridge';
@@ -77,7 +78,7 @@ export function useProjectRecovery() {
 
   function restore(draft: RecoveryDraftInfo) {
     void runAction(async () => {
-      await useKuraStore.getState().recoverProject(draft);
+      await guardUnsavedChanges(() => useKuraStore.getState().recoverProject(draft));
     });
   }
 

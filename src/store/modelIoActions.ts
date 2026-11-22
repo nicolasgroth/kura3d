@@ -13,8 +13,9 @@ import * as THREE from 'three';
 import * as engine from '../engine';
 import type { TranslationKey } from '../i18n';
 import { ProjectCodecError } from '../project/projectSchema';
-import type { MeshData, SceneObject, SlicerTarget, Vec3 } from '../types/kura';
+import type { LanguageCode, MeshData, SceneObject, SlicerTarget, Vec3 } from '../types/kura';
 import { FileSaveError, LocalFileError, saveFileSet, type SaveSetEntry } from '../utils/platformBridge';
+import { tCount } from '../utils/plural';
 import { exportFileBase } from '../utils/exportNaming';
 import { selectExportTargets } from './exportTargets';
 
@@ -44,6 +45,7 @@ type Translate = (key: TranslationKey, params?: Record<string, string | number>)
 
 /** Estado mínimo del store que usan estas acciones. */
 interface IoState {
+  language: LanguageCode;
   objects: SceneObject[];
   selectedIds: string[];
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
@@ -182,7 +184,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
       );
     }
     if (failures.length > 0) {
-      get().addToast(tr('import.partialFailed', { count: failures.length, list: failures.join(' · ') }), 'error');
+      get().addToast(tCount(get().language, { one: 'import.partialFailed.one', other: 'import.partialFailed.other' }, failures.length, { list: failures.join(' · ') }), 'error');
     }
     return true;
   }
@@ -191,7 +193,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
   function exportTargets(scope: ExportScope): SceneObject[] {
     const { objects, selectedIds } = get();
     const { targets, skippedHoles } = selectExportTargets(objects, selectedIds, scope === 'selection');
-    if (targets.length > 0 && skippedHoles > 0) get().addToast(tr('export.holesSkipped', { count: skippedHoles }), 'info');
+    if (targets.length > 0 && skippedHoles > 0) get().addToast(tCount(get().language, { one: 'export.holesSkipped.one', other: 'export.holesSkipped.other' }, skippedHoles), 'info');
     return targets;
   }
 

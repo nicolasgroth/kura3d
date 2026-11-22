@@ -30,8 +30,13 @@ import { applyTransformToMesh, normalizeMeshToBed } from './primitives';
 import { inwardOffset } from './solidOffset';
 
 /** Resultado individual de cada pieza generada por el generador de moldes. */
+export type MoldPartLabel = 'single' | 'halfA' | 'halfB' | 'motherBox' | 'positive' | 'outer' | 'core';
+
 export interface GeneratedMoldPart {
+  /** Rótulo en español para consumidores sin i18n (MCP headless); la interfaz usa `label`. */
   nameSuffix: string;
+  /** Identificador del rótulo traducible (`mold.part.<label>`). */
+  label: MoldPartLabel;
   color: string;
   materialPreset: MaterialPresetId;
   mesh: MeshData;
@@ -306,6 +311,7 @@ export async function generateMold(
       return [
         {
           nameSuffix: 'Molde (1 Parte)',
+          label: 'single',
           color: '#22c55e',
           materialPreset: 'silicone',
           mesh: norm.mesh,
@@ -410,6 +416,7 @@ export async function generateMold(
       return [
         {
           nameSuffix: 'Molde Mitad A',
+          label: 'halfA',
           color: '#22c55e',
           materialPreset: 'silicone',
           mesh: normA.mesh,
@@ -421,6 +428,7 @@ export async function generateMold(
         },
         {
           nameSuffix: 'Molde Mitad B',
+          label: 'halfB',
           color: '#10b981',
           materialPreset: 'silicone',
           mesh: normB.mesh,
@@ -496,6 +504,7 @@ export async function generateMold(
       return [
         {
           nameSuffix: 'Caja Madre (Silicona)',
+          label: 'motherBox',
           color: '#38bdf8',
           materialPreset: 'petg_clear',
           mesh: normBox.mesh,
@@ -503,6 +512,7 @@ export async function generateMold(
         },
         {
           nameSuffix: 'Positivo Maestro',
+          label: 'positive',
           color: '#f97316',
           materialPreset: 'wax_candle',
           mesh: normMaster.mesh,
@@ -543,6 +553,7 @@ export async function generateMold(
     return [
       {
         nameSuffix: 'Molde Exterior',
+          label: 'outer',
         color: '#22c55e',
         materialPreset: 'silicone',
         mesh: normOuter.mesh,
@@ -550,6 +561,7 @@ export async function generateMold(
       },
       {
         nameSuffix: 'Núcleo Interior',
+          label: 'core',
         color: '#38bdf8',
         materialPreset: 'petg_clear',
         mesh: normCore.mesh,

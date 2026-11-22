@@ -45,7 +45,7 @@ describe('Límites de transformación en .kura', () => {
     let error: unknown;
     try { encodeProject(doc(patch)); } catch (err) { error = err; }
     expect(error).toBeInstanceOf(ProjectCodecError);
-    expect((error as ProjectCodecError).detail).toMatch(/"a"/);
+    expect((error as ProjectCodecError).detail).toBe("object:a");
   });
 
   it('acepta escala negativa dentro del rango (espejo)', () => {

@@ -1719,6 +1719,7 @@ export async function splitAllDetectedStructures(
   segmentation: StructuralSegmentationResult
 ): Promise<
   Array<{
+    regionId: string;
     labelEs: string;
     labelEn: string;
     color: string;
@@ -1727,6 +1728,7 @@ export async function splitAllDetectedStructures(
   }>
 > {
   const parts: Array<{
+    regionId: string;
     labelEs: string;
     labelEn: string;
     color: string;
@@ -1741,6 +1743,7 @@ export async function splitAllDetectedStructures(
     if (triCount === 0) continue;
 
     parts.push({
+      regionId: region.id,
       labelEs: region.labelEs,
       labelEn: region.labelEn,
       color: region.color,

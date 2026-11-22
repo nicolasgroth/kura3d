@@ -64,6 +64,7 @@ import '../styles/inspectorFit.css';
 import { colorName, colorNameWithHex } from '../utils/colorNames';
 import { computeSelectionBounds } from '../utils/selectionBounds';
 import { formatNumber, tCount } from '../utils/plural';
+import { structureLabel } from '../utils/structureLabels';
 import {
   formatDimension,
   formatVolume,
@@ -1093,9 +1094,11 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
               <div className="kura-struct-results">
                 <div className="kura-field-row">
                   <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>
-                    {t(language, 'inspector.struct.regionsCount', {
-                      count: activeSegmentation.regions.length,
-                    })}
+                    {tCount(
+                      language,
+                      { one: 'inspector.struct.regionsCount.one', other: 'inspector.struct.regionsCount.other' },
+                      activeSegmentation.regions.length,
+                    )}
                   </span>
                 </div>
 
@@ -1130,7 +1133,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
 
                     <div className="kura-struct-list">
                       {activeSegmentation.regions.map((region) => {
-                        const label = language === 'es' ? region.labelEs : region.labelEn;
+                        const label = structureLabel(language, activeSegmentation.regions, region.id);
                         return (
                           <div key={region.id} className="kura-struct-item">
                             <div className="kura-struct-item-head">
@@ -1149,11 +1152,6 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
                                 <span className="kura-struct-label" title={label}>
                                   {label}
                                 </span>
-                              </span>
-                              <span className="kura-struct-badge">
-                                {t(language, 'inspector.struct.confidence', {
-                                  pct: Math.round(region.confidence),
-                                })}
                               </span>
                             </div>
 
@@ -1356,7 +1354,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
                 onClick={() => void applyHolesOnSolids()}
               >
                 <Combine size={13} />
-                <span>{t(language, 'inspector.op.applyBooleansN', { count: holeCount })}</span>
+                <span>{tCount(language, { one: 'inspector.op.applyBooleansN.one', other: 'inspector.op.applyBooleansN.other' }, holeCount)}</span>
               </button>
             )}
           </div>

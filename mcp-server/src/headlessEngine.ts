@@ -216,8 +216,8 @@ export class KuraHeadlessEngine {
     const obj = this.requireEditable(objectId);
     const result = await engine.planeCutWithConnectors(obj, options);
     const halves = [
-      { part: result.positive, suffix: '(+)' },
-      { part: result.negative, suffix: '(-)' },
+      { part: result.positive, suffix: 'mitad A' },
+      { part: result.negative, suffix: 'mitad B' },
     ].filter((h) => h.part !== null);
     if (halves.length === 0) {
       throw new Error('El plano de corte no intersecta el objeto: no se generaron piezas.');
@@ -227,7 +227,7 @@ export class KuraHeadlessEngine {
     const parts = halves.map(({ part, suffix }) =>
       summarizeObject(
         this.add({
-          name: `${obj.name} ${suffix}`,
+          name: `${obj.name} — ${suffix}`,
           source: 'cut_part',
           mesh: part!.mesh,
           position: part!.position,
@@ -444,7 +444,7 @@ export class KuraHeadlessEngine {
     const parts = generated.map((part) =>
       summarizeObject(
         this.add({
-          name: `${master.name}${part.nameSuffix}`,
+          name: `${part.nameSuffix} — ${master.name}`,
           source: 'mold',
           mesh: part.mesh,
           position: part.position,

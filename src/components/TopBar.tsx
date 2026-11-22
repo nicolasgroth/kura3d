@@ -296,7 +296,7 @@ export const TopBar: React.FC = () => {
     ) : (
       <Zap size={13} />
     );
-  const aiShort = language === 'es' || language === 'fr' ? 'IA' : 'AI';
+  const aiShort = t(language, 'topbar.aiShort');
   const aiTip = `${t(language, 'topbar.aiChatTip')} — ${aiBadge.label}: ${aiBadge.tooltip}`;
   const showMore = hidden.size > 0;
 
@@ -337,7 +337,7 @@ export const TopBar: React.FC = () => {
       {/* Herramientas principales del estudio */}
       <div className="kura-topbar-group kura-topbar-center">
         {!isHidden('tools') && (
-          <div className="kura-segmented" role="group" aria-label="Herramientas">
+          <div className="kura-segmented" role="group" aria-label={t(language, 'topbar.toolsGroup')}>
             {tools.map((tool) => toolButton(tool, false))}
           </div>
         )}

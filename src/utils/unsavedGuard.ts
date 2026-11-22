@@ -1,9 +1,8 @@
 /**
  * @file src/utils/unsavedGuard.ts
  * @description Protege acciones que reemplazan el proyecto (nuevo, abrir): si hay cambios sin guardar pregunta
- * con el diálogo propio (Guardar / Descartar / Cancelar) en vez de `confirm()` nativo. El store aún llama a
- * `window.confirm` al reemplazar un proyecto sucio; tras la decisión del usuario se acepta esa llamada de forma
- * acotada (solo mientras corre la acción protegida).
+ * con el diálogo propio (Guardar / Descartar / Cancelar) en vez de `confirm()` nativo. El store ya no pregunta:
+ * la confirmación vive solo aquí.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,18 +11,6 @@
 import { t } from '../i18n';
 import { isProjectDirty, useKuraStore } from '../store/useKuraStore';
 import { askDecision } from './confirmDialog';
-
-/** Ejecuta `action` con `window.confirm` aceptado: el usuario ya decidió en el diálogo propio. */
-async function runWithDiscardAccepted<T>(action: () => T | Promise<T>): Promise<T> {
-  if (typeof window === 'undefined') return action();
-  const original = window.confirm;
-  window.confirm = () => true;
-  try {
-    return await action();
-  } finally {
-    window.confirm = original;
-  }
-}
 
 /**
  * Corre `proceed` tras resolver los cambios sin guardar. Devuelve false si el usuario canceló o si el
@@ -47,7 +34,7 @@ export async function guardUnsavedChanges(proceed: () => unknown | Promise<unkno
     ],
   });
   if (decision === 'discard') {
-    await runWithDiscardAccepted(proceed);
+    await proceed();
     return true;
   }
   if (decision !== 'save') return false;

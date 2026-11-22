@@ -345,8 +345,8 @@ describe('Evaluación Funcional E2E de Kura3D (13 áreas funcionales)', () => {
           const halves = useKuraStore.getState().objects;
           expect(halves).toHaveLength(2);
 
-          const posHalf = halves.find((h) => h.name.includes('(+)'))!;
-          const negHalf = halves.find((h) => h.name.includes('(-)'))!;
+          const posHalf = halves.find((h) => h.name.endsWith('mitad A'))!;
+          const negHalf = halves.find((h) => h.name.endsWith('mitad B'))!;
           expect(posHalf).toBeDefined();
           expect(negHalf).toBeDefined();
 

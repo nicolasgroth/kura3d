@@ -147,24 +147,19 @@ describe('local project workspace', () => {
     expect(vi.mocked(saveProjectFile).mock.lastCall?.[2]).toBeUndefined();
   });
 
-  it('preserves the active document after a corrupt file, cancellation or denied replacement', async () => {
+  it('preserves the active document after a corrupt file or a cancelled picker', async () => {
     vi.mocked(saveProjectFile).mockResolvedValueOnce({ name: 'Original.kura' });
     await get().saveProject();
     const bytes = await requestedBytes();
     const [cube] = get().objects;
     get().updateObjectMeta(cube.id, { name: 'Sin guardar' });
-    const confirm = vi.fn(() => false);
-    vi.stubGlobal('window', { confirm });
 
+    // La confirmación de cambios sin guardar vive en `guardUnsavedChanges` (diálogo propio), no en el store.
     vi.mocked(openProjectFile)
       .mockResolvedValueOnce({ name: 'Dañado.kura', bytes: new Uint8Array([7, 7]) })
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ name: 'Original.kura', bytes });
+      .mockResolvedValueOnce(null);
     expect(await get().openProject()).toBe(false);
     expect(await get().openProject()).toBe(false);
-    expect(confirm).not.toHaveBeenCalled();
-    expect(await get().openProject()).toBe(false);
-    expect(confirm).toHaveBeenCalledOnce();
     expect(get().objects[0].name).toBe('Sin guardar');
     expect(get().projectName).toBe('Original.kura');
     expect(get().projectBusy).toBe(false);
@@ -196,14 +191,10 @@ describe('local project workspace', () => {
 
   it('keeps discard protection when the browser only requests a download', async () => {
     get().updateObjectMeta(get().objects[0].id, { name: 'Versión única' });
-    const confirm = vi.fn(() => false);
-    vi.stubGlobal('window', { confirm });
     vi.mocked(saveProjectFile).mockResolvedValueOnce({ name: 'Escena.kura', viaDownload: true });
 
     expect(await get().saveProject()).toBe(true);
     expect(isProjectDirty(get())).toBe(true);
-    expect(get().newProject()).toBe(false);
-    expect(confirm).toHaveBeenCalledOnce();
     expect(get().objects[0].name).toBe('Versión única');
   });
 });

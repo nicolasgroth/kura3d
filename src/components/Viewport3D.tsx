@@ -69,6 +69,8 @@ import { PaintToolbar } from './viewport/PaintToolbar';
 import { ToastStack } from './ToastStack';
 import { computeSelectionBounds } from '../utils/selectionBounds';
 import { formatDimension } from '../utils/units';
+import { tCount } from '../utils/plural';
+import { guardUnsavedChanges } from '../utils/unsavedGuard';
 
 interface ContextMenuState {
   objectId: string;
@@ -1399,7 +1401,7 @@ export const Viewport3D: React.FC = () => {
               type="button"
               className="kura-btn"
               disabled={emptyActionsBlocked}
-              onClick={() => void openProject()}
+              onClick={() => void guardUnsavedChanges(() => openProject())}
             >
               <FolderOpen size={15} aria-hidden="true" />
               {t(language, 'fileProject.open')}
@@ -1548,10 +1550,10 @@ export const Viewport3D: React.FC = () => {
             className="kura-hud-card kura-boolean-fab"
             disabled={Boolean(busyOperation)}
             onClick={() => void applyHolesOnSolids()}
-            title={t(language, 'inspector.op.applyBooleansN', { count: holeCount })}
+            title={tCount(language, { one: 'inspector.op.applyBooleansN.one', other: 'inspector.op.applyBooleansN.other' }, holeCount)}
           >
             <Scissors size={14} />
-            <span>{t(language, 'inspector.op.applyBooleansN', { count: holeCount })}</span>
+            <span>{tCount(language, { one: 'inspector.op.applyBooleansN.one', other: 'inspector.op.applyBooleansN.other' }, holeCount)}</span>
           </button>
         )}
 

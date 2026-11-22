@@ -60,6 +60,9 @@ import {
 } from '../types/kura';
 import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { openLocalFile, openLocalFiles } from '../utils/platformBridge';
+import { colorName } from '../utils/colorNames';
+import { formatNumber, tCount } from '../utils/plural';
+import { structureLabel } from '../utils/structureLabels';
 import {
   createModelIoActions,
   type ExportRequest,
@@ -842,8 +845,13 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
   const projectErrorMessage = (error: unknown) => {
     if (error instanceof ProjectCodecError) {
       const message = tr(error.code === 'too-large' ? 'fileProject.tooLarge' : `fileProject.${error.code}`);
-      // La causa técnica (campo u objeto) ayuda a saber qué impidió guardar o abrir.
-      return error.detail ? `${message} (${error.detail})` : message;
+      // La causa (objeto o selección) ayuda a saber qué impidió guardar o abrir; llega como `tipo:valor`.
+      const sep = error.detail ? error.detail.indexOf(':') : -1;
+      const kind = sep > 0 ? error.detail!.slice(0, sep) : '';
+      const value = sep > 0 ? error.detail!.slice(sep + 1) : '';
+      if (kind === 'object') return `${message} (${tr('fileProject.detail.object', { name: value })})`;
+      if (kind === 'selection') return `${message} (${tr('fileProject.detail.selection', { id: value })})`;
+      return message;
     }
     return error instanceof Error ? error.message : String(error);
   };
@@ -868,10 +876,6 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     const state = get();
     return state.engineReady && !state.busyOperation && !state.aiBusy && !transformSnapshotBeforeDrag;
   };
-
-  const confirmReplacement = () =>
-    !isProjectDirty(get()) ||
-    (typeof window !== 'undefined' && window.confirm(tr('fileProject.discard')));
 
   const replaceProject = (
     document: ProjectDocument,
@@ -918,7 +922,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     projectBusy: false,
 
     newProject: () => {
-      if (get().projectBusy || !canChangeDocument() || !confirmReplacement()) return false;
+      if (get().projectBusy || !canChangeDocument()) return false;
       replaceProject({
         ...captureProject(get()),
         objects: [],
@@ -938,7 +942,6 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
         if (!file) return false;
         const document = await decodeProjectAsync(file.bytes);
         if (!canChangeDocument()) throw new Error(tr('fileProject.busy'));
-        if (!confirmReplacement()) return false;
         replaceProject(document, file.name, { location: file.location });
         get().addToast(tr('fileProject.opened', { name: file.name }), 'success');
         return true;
@@ -960,7 +963,6 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
         }
         const document = await decodeProjectAsync(stored.bytes);
         if (!canChangeDocument()) throw new Error(tr('fileProject.busy'));
-        if (!confirmReplacement()) return false;
 
         const previousState = get();
         const previousDocument = captureProject(previousState);
@@ -1766,7 +1768,10 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
             ? null
             : state.activeSegmentation,
       }));
-      get().addToast(tr('toast.deleted'), 'info');
+      get().addToast(
+        tCount(get().language, { one: 'toast.deleted.one', other: 'toast.deleted.other' }, removableIds.size),
+        'info',
+      );
     },
 
     nudgeSelectedObjects: (deltaMm) => {
@@ -1877,7 +1882,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
         let currentTarget: SceneObject = targetObj;
         const firstRes = await engine.runBooleanOperation(currentTarget, toolObj, op);
         currentTarget = buildSceneObject({
-          name: `${targetObj.name} [${op}]`,
+          name: targetObj.name,
           source: 'boolean',
           mesh: firstRes.mesh,
           position: firstRes.position,
@@ -1901,6 +1906,13 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
           consumedIds.add(nextTool.id);
         }
 
+        // Nombre legible: "A − B" para la resta; "Unión/Intersección de N piezas" para el resto.
+        const resultName =
+          op === 'subtract'
+            ? inputs.map((o) => o.name).join(' − ')
+            : tr(op === 'union' ? 'object.name.union' : 'object.name.intersect', { count: inputs.length });
+        currentTarget = { ...currentTarget, name: resultName };
+
         assertInputsCurrent(get().objects, inputs, tr);
         pushHistory();
         set((state) => ({
@@ -1908,7 +1920,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
           selectedIds: [currentTarget.id],
         }));
 
-        get().addToast(tr('toast.booleanDone', { op }), 'success');
+        get().addToast(tr(`toast.booleanDone.${op}`), 'success');
         return currentTarget;
       });
     },
@@ -1961,7 +1973,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
           ],
           selectedIds: updatedSolids.map((s) => s.id),
         }));
-        get().addToast(tr('toast.booleanDone', { op: 'subtract' }), 'success');
+        get().addToast(tr('toast.booleanDone.subtract'), 'success');
       });
     },
 
@@ -2011,7 +2023,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
         if (result.positive) {
           created.push(
             buildSceneObject({
-              name: `${obj.name} (+)`,
+              name: `${obj.name} — ${tr('cut.half.a')}`,
               source: 'cut_part',
               mesh: result.positive.mesh,
               position: result.positive.position,
@@ -2024,7 +2036,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
         if (result.negative) {
           created.push(
             buildSceneObject({
-              name: `${obj.name} (-)`,
+              name: `${obj.name} — ${tr('cut.half.b')}`,
               source: 'cut_part',
               mesh: result.negative.mesh,
               position: result.negative.position,
@@ -2062,7 +2074,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
 
         const created = parts.map((part, idx) =>
           buildSceneObject({
-            name: `${obj.name} #${idx + 1}`,
+            name: `${obj.name} — ${tr('object.name.piece', { n: idx + 1 })}`,
             source: 'cut_part',
             mesh: part.mesh,
             position: part.position,
@@ -2092,7 +2104,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
 
         const created = parts.map((part, idx) =>
           buildSceneObject({
-            name: `${obj.name} (${part.color}) #${idx + 1}`,
+            name: `${obj.name} — ${colorName(get().language, part.color)}`,
             source: 'color_split',
             mesh: part.mesh,
             position: part.position,
@@ -2239,7 +2251,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
 
         const created = parts.map((part) =>
           buildSceneObject({
-            name: `${obj.name}${part.nameSuffix}`,
+            name: `${tr(`mold.part.${part.label}`)} — ${obj.name}`,
             source: 'mold',
             mesh: part.mesh,
             position: part.position,
@@ -2258,7 +2270,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
           selectedIds: created.map((c) => c.id),
           spawnedAtById: { ...state.spawnedAtById, ...spawnedPatch },
         }));
-        get().addToast(tr('toast.moldDone', { count: created.length }), 'success');
+        get().addToast(tCount(get().language, { one: 'toast.moldDone.one', other: 'toast.moldDone.other' }, created.length), 'success');
         return created;
       });
     },
@@ -2341,7 +2353,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
           ),
         }));
         get().addToast(
-          tr('toast.simplifyDone', { tris: stats.triangles.toLocaleString() }),
+          tr('toast.simplifyDone', { tris: formatNumber(get().language, stats.triangles) }),
           'success',
         );
         return true;
@@ -2366,7 +2378,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
           ),
         }));
         get().addToast(
-          tr('toast.refineDone', { tris: stats.triangles.toLocaleString() }),
+          tr('toast.refineDone', { tris: formatNumber(get().language, stats.triangles) }),
           'success',
         );
         reportEngineWarnings(refined.warnings);
@@ -2384,7 +2396,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
         await get().initEngine();
         const res = await engine.computeConvexHull(targetObjs);
         const created = buildSceneObject({
-          name: `Hull (${targetObjs.length})`,
+          name: tr('object.name.hull', { count: targetObjs.length }),
           source: 'hull',
           mesh: res.mesh,
           position: res.position,
@@ -2465,7 +2477,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
           positions[item.id] ? { ...item, position: positions[item.id] } : item,
         ),
       }));
-      get().addToast(tr('toast.alignedDone', { mode }), 'success');
+      get().addToast(tr(`toast.alignedDone.${mode}`), 'success');
       if (!fitsBed) {
         get().addToast(
           tr('store.align.overflow', { width: printerProfile.bedWidthMm, depth: printerProfile.bedDepthMm }),
@@ -2494,7 +2506,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
         });
         set({ activeSegmentation: result });
         get().addToast(
-          tr('toast.structuresDetected', { count: result.regions.length }),
+          tCount(get().language, { one: 'toast.structuresDetected.one', other: 'toast.structuresDetected.other' }, result.regions.length),
           'success',
         );
         return result;
@@ -2554,9 +2566,9 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
         await get().initEngine();
         const res = await engine.extractStructuralRegion(obj, region, removeFromSource);
         assertInputsCurrent(get().objects, [obj], tr);
-        const regionLabel = state.language === 'en' ? region.labelEn : region.labelEs;
+        const regionLabel = structureLabel(get().language, seg.regions, region.id);
         const extractedObj = buildSceneObject({
-          name: `${obj.name} · ${regionLabel}`,
+          name: `${obj.name} — ${regionLabel}`,
           source: 'segmented_part',
           mesh: res.extracted.mesh,
           position: res.extracted.position,
@@ -2634,9 +2646,9 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
         assertInputsCurrent(get().objects, [obj], tr);
 
         const created = parts.map((part) => {
-          const label = get().language === 'en' ? part.labelEn : part.labelEs;
+          const label = structureLabel(get().language, segmentation.regions, part.regionId);
           return buildSceneObject({
-            name: `${obj.name} · ${label}`,
+            name: `${obj.name} — ${label}`,
             source: 'segmented_part',
             mesh: part.mesh,
             position: part.position,
