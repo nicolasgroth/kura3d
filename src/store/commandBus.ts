@@ -26,16 +26,17 @@ import type { RawParams } from './commandValidation';
 import type { CommandSourceType, KuraStoreState } from './useKuraStore';
 import {
   alignModeFromUser,
+  assemblyResponseToUser,
   axisFromUser,
-  axisToUser,
+  splitJointToUser,
   splitPlanToUser,
+  structureRegionToUser,
   keepModeFromUser,
   planeFromUser,
   projectionAxisFromUser,
   rotationFromUser,
   scaleFromUser,
   statsToUser,
-  toUserSize,
   toUserVector,
   transformToUser,
   vecFromUser,
@@ -179,7 +180,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       dryRun: request.dryRun,
       plan: splitPlanToUser(out.plan),
       parts: out.parts.map((o) => ({ ...brief(o), code: o.metadata?.split?.code, plate: o.metadata?.split?.print.plate })),
-      joints: out.joints.map((j) => ({ label: j.label, axis: axisToUser(j.axis), a: j.a, b: j.b, connectors: j.connectorCenters.length, labelEngraved: j.labelEngraved })),
+      joints: out.joints.map(splitJointToUser),
       ...(out.looseDowels && out.looseDowels.length > 0 ? { looseDowels: out.looseDowels } : {}),
       plateCount: out.plateCount,
       ...(out.assembly ? { assembly: out.assembly } : {}),
@@ -188,7 +189,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
 
   validate_assembly: async (p, { get }, command) => {
     const targets = parseValidateAssembly(get(), p);
-    return required(await get().validateSplitAssembly(targets), command);
+    return assemblyResponseToUser(required(await get().validateSplitAssembly(targets), command));
   },
 
   split_disconnected: async (p, { get }, command) => {
@@ -287,10 +288,10 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       objectId: seg.objectId,
       method: seg.method,
       totalTriangles: seg.totalTriangles,
-      regions: seg.regions.map((r) => ({
+      regions: seg.regions.map((r) => structureRegionToUser({
         id: r.id, labelEs: r.labelEs, labelEn: r.labelEn, archetype: r.archetype, color: r.color,
-        triangleCount: r.triangleCount, percentOfModel: r.percentOfModel, dimensionsMm: toUserSize(r.dimensionsMm),
-        centerMm: toUserVector(r.centerMm), confidence: r.confidence, isDisconnectedShell: r.isDisconnectedShell,
+        triangleCount: r.triangleCount, percentOfModel: r.percentOfModel, dimensionsMm: r.dimensionsMm,
+        centerMm: r.centerMm, confidence: r.confidence, isDisconnectedShell: r.isDisconnectedShell,
       })),
     };
   },
