@@ -1253,6 +1253,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'split.labelPlacement.joint': 'Auf der Verbindung',
   'split.labelPlacement.outside': 'Außen',
   'split.continueWith': 'Mit {count} Teilen fortfahren',
+  'mcp.setup.pathPlaceholder': 'Beispiel: C:\\pfad\\zu\\kura3d',
   'ai.local.failed': 'Das ging nicht ({action}): {error}. Ich habe dort angehalten.',
   'ai.local.failedNoReason': 'Das ging nicht ({action}). Ich habe dort angehalten.',
   'ai.local.error.badValue': 'einer der Werte liegt außerhalb dessen, was diese Operation erlaubt',

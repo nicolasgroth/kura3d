@@ -123,7 +123,7 @@ export function McpSetupPanel() {
           autoComplete="off"
           value={repoPath}
           aria-describedby="mcp-repo-path-note"
-          placeholder="C:\proyectos\kura3d"
+          placeholder={t(language, 'mcp.setup.pathPlaceholder')}
           onChange={(event) => updatePath(event.target.value)}
         />
         {!normalizeRepoPath(repoPath) && (
@@ -133,19 +133,30 @@ export function McpSetupPanel() {
         )}
       </div>
 
+      {/* Probar conexión y su resultado van juntos, antes del bloque de configuración (no bajo el pliegue). */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm"
+          disabled={testing}
+          title={t(language, 'dialog.settings.testConnection')}
+          aria-describedby="mcp-test-result"
+          onClick={() => void runTest()}
+        >
+          {t(language, 'dialog.settings.testConnection')}
+        </button>
+        <div id="mcp-test-result" role="status" aria-live="polite" style={{ flex: '1 1 200px', minHeight: 18 }}>
+          {testText && (
+            <span className={`kura-callout ${testText.ok ? 'is-local' : 'is-warning'}`} style={{ display: 'flex', fontWeight: 600 }}>
+              {testText.ok ? '✓ ' : '✕ '}{testText.text}
+            </span>
+          )}
+        </div>
+      </div>
+
       <pre style={CODE_STYLE} tabIndex={0}>{shown}</pre>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <CopyButton text={snippet} label={copyLabel} copiedLabel={copiedLabel} />
-        <button type="button" className="kura-btn kura-btn-sm" disabled={testing} onClick={() => void runTest()}>
-          {t(language, 'dialog.settings.testConnection')}
-        </button>
-      </div>
-      <div role="status" aria-live="polite" style={{ minHeight: 18 }}>
-        {testText && (
-          <span className={`kura-callout ${testText.ok ? 'is-local' : 'is-warning'}`} style={{ display: 'flex', fontWeight: 600 }}>
-            {testText.ok ? '✓ ' : '✕ '}{testText.text}
-          </span>
-        )}
       </div>
 
       {showHelp && (

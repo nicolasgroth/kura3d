@@ -64,7 +64,12 @@ export interface SplitLayoutOptions {
   gapMm?: number;
   /** Margen al borde de la cama (mm, por defecto 5). */
   marginMm?: number;
+  /** Alto ÷ lado menor de la huella sobre el que una pieza de pie se considera inestable (por defecto 3). */
+  maxSlenderness?: number;
 }
+
+/** Más esbelta que esto (alto ÷ lado menor de la huella), una pieza de pie se acuesta si cabe. */
+export const MAX_STABLE_SLENDERNESS = 3;
 
 export interface SplitLayoutResult {
   /** Ubicación por pieza (posición relativa a su placa, cama centrada en el origen). */
@@ -84,14 +89,22 @@ export function layoutSplitParts(parts: Array<Pick<SplitPart, 'mesh'>>, bed: Spl
   const W = bed.widthMm - 2 * margin;
   const D = bed.depthMm - 2 * margin;
   const oversized: number[] = [];
+  const maxSlender = options.maxSlenderness ?? MAX_STABLE_SLENDERNESS;
   const oriented = parts.map((part, i) => {
     const ranked = DOWN_ROTATIONS.map((o) => ({ ...o, area: supportArea(part.mesh, o.dir) }))
       .sort((p, q) => q.area - p.area);
-    for (const o of ranked) {
-      const b = rotatedBounds(part.mesh, o.rot);
-      const size: Vec3 = [b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]];
-      if (size[1] <= bed.heightMm && size[0] <= W && size[2] <= D) return { i, o, b, size };
-    }
+    const fitting = ranked
+      .map((o) => {
+        const b = rotatedBounds(part.mesh, o.rot);
+        const size: Vec3 = [b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]];
+        return { i, o, b, size, slender: size[1] / Math.max(1e-6, Math.min(size[0], size[2])) };
+      })
+      .filter((c) => c.size[1] <= bed.heightMm && c.size[0] <= W && c.size[2] <= D);
+    // La cara plana más grande abajo, salvo que deje la pieza esbelta (alta y angosta, p. ej. un
+    // tramo de tubo de 28 × 206 mm): entonces se prefiere la orientación estable más baja que quepa.
+    const stable = fitting.filter((c) => c.slender <= maxSlender);
+    if (stable.length > 0) return stable[0];
+    if (fitting.length > 0) return [...fitting].sort((p, q) => p.size[1] - q.size[1] || q.o.area - p.o.area)[0];
     oversized.push(i);
     const o = ranked[0];
     const b = rotatedBounds(part.mesh, o.rot);

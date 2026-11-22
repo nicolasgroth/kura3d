@@ -254,7 +254,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       {canRaise && (
         <button
           type="button"
-          className="kura-btn kura-btn-sm"
+          className="kura-btn kura-btn-sm kura-split-continue"
           title={t(language, 'split.continueWithTip', { max: SPLIT_HARD_MAX_PIECES })}
           onClick={() => setMaxPieces('auto')}
         >

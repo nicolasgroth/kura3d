@@ -1253,6 +1253,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.labelPlacement.joint': 'जोड़ पर',
   'split.labelPlacement.outside': 'बाहर',
   'split.continueWith': '{count} भागों के साथ जारी रखें',
+  'mcp.setup.pathPlaceholder': 'उदाहरण: C:\\path\\to\\kura3d',
   'ai.local.failed': '{action} नहीं हो सका: {error}। मैं वहीं रुक गया।',
   'ai.local.failedNoReason': '{action} नहीं हो सका। मैं वहीं रुक गया।',
   'ai.local.error.badValue': 'कोई एक मान इस ऑपरेशन की अनुमत सीमा से बाहर है',

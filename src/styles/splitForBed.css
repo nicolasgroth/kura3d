@@ -158,6 +158,26 @@
   color: var(--text-primary);
 }
 
+/* Acción secundaria destacada ("Continuar con N piezas"): borde y texto de acento. */
+.kura-btn.kura-split-continue {
+  align-self: flex-start;
+  margin: 4px 0 8px;
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: var(--bg-elevated);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.kura-btn.kura-split-continue:hover:not(:disabled) {
+  border-color: var(--accent-cyan);
+  background: var(--bg-hover);
+}
+
+.kura-btn.kura-split-continue:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
 .kura-split-glue-options {
   display: flex;
   flex-wrap: wrap;
