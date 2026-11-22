@@ -47,6 +47,7 @@ import { openExportDialog } from './ExportDialog';
 import { ImportMenuButton } from './ImportMenuButton';
 import { ProjectMenu } from './ProjectMenu';
 import { TopBarOverflowMenu } from './TopBarOverflowMenu';
+import { naturalRowWidth, pickTopbarLevel, recordTopbarWidth } from './topbarFit';
 import '../styles/topbarOverflow.css';
 import '../styles/statusFit.css';
 
@@ -85,6 +86,16 @@ const HIDE_ORDER = [
   'brand',
 ] as const;
 type HideId = (typeof HIDE_ORDER)[number];
+
+/** Observa la barra y cada control de sus grupos (los controles cambian al subir o bajar de nivel). */
+function observeTopbar(el: HTMLElement | null, observer: ResizeObserver | null): void {
+  if (!el || !observer) return;
+  observer.disconnect();
+  observer.observe(el);
+  for (const group of Array.from(el.children)) {
+    for (const item of Array.from(group.children)) observer.observe(item);
+  }
+}
 
 export const TopBar: React.FC = () => {
   const language = useKuraStore((s) => s.language);
@@ -148,30 +159,43 @@ export const TopBar: React.FC = () => {
   const hidden = new Set<HideId>(level >= 2 ? HIDE_ORDER.slice(0, level - 1) : []);
   const isHidden = (id: HideId) => hidden.has(id);
 
-  // Reinicia la medición cuando cambia el ancho o el contenido que afecta al ancho.
-  useEffect(() => {
+  // Anchos naturales medidos por nivel; se invalidan cuando el contenido cambia.
+  const levelRef = useRef(level);
+  levelRef.current = level;
+  const widthsRef = useRef<Array<number | undefined>>([]);
+  const observerRef = useRef<ResizeObserver | null>(null);
+
+  // Mide el nivel actual y elige el que cabe (sube o baja). Se llama tras cada render y en cada
+  // cambio de tamaño de la barra o de sus controles (título, idioma, chat, carga de proyecto).
+  const refit = React.useCallback(() => {
     const el = headerRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    let lastWidth = el.clientWidth;
-    const observer = new ResizeObserver(() => {
-      if (el.clientWidth !== lastWidth) {
-        lastWidth = el.clientWidth;
-        setLevel(0);
-      }
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+    if (!el) return;
+    const current = levelRef.current;
+    widthsRef.current = recordTopbarWidth(widthsRef.current, current, naturalRowWidth(el));
+    const next = pickTopbarLevel(el.clientWidth, widthsRef.current, maxLevel);
+    if (next !== current) setLevel(next);
+  }, [maxLevel]);
+
   useEffect(() => {
-    setLevel(0);
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => refit());
+    observerRef.current = observer;
+    observeTopbar(headerRef.current, observer);
+    return () => {
+      observer.disconnect();
+      observerRef.current = null;
+    };
+  }, [refit]);
+
+  // Cambios que alteran anchos de otros niveles: se descartan las mediciones guardadas.
+  useLayoutEffect(() => {
+    widthsRef.current = [];
   }, [language, uiDensity, bridgeStatus.phase, mcpConfig.enabled, mcpConfig.requireAuth, aiDrawerOpen, aiConfig]);
 
-  // Si aún desborda, oculta un control más (se resuelve antes de pintar).
+  // Tras cada render: vuelve a observar la barra y sus controles, y reajusta antes de pintar.
   useLayoutEffect(() => {
-    const el = headerRef.current;
-    if (el && el.scrollWidth > el.clientWidth + 1 && level < maxLevel) {
-      setLevel((v) => v + 1);
-    }
+    observeTopbar(headerRef.current, observerRef.current);
+    refit();
   });
 
   const mcpView = describeMcpBridge(language, mcpConfig.enabled, bridgeStatus);
