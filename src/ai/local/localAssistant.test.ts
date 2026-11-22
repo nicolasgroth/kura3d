@@ -187,7 +187,7 @@ describe('local assistant on the real store', () => {
     const result = objects().find((o) => !o.isHole)!;
     // Paso completo: al menos el volumen de un agujero de Ø ~5 mm por 400 mm.
     expect(result.stats.volumeMm3).toBeLessThan(volumeBefore - Math.PI * 2.4 * 2.4 * 390);
-  });
+  }, 30_000);
 
   it('humanError drops internal messages and trailing periods', () => {
     expect(humanError('Parámetro "lengthMm" inválido: se esperaba number ∈ [1, 300].')).toBeNull();

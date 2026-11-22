@@ -1253,6 +1253,8 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'split.labelPlacement.joint': '在接合面',
   'split.labelPlacement.outside': '外侧',
   'split.continueWith': '以 {count} 个零件继续',
+  'split.noticeCollapse': '收起提示',
+  'split.noticeExpand': '超出打印床：显示提示',
   'mcp.setup.pathPlaceholder': '示例：C:\\path\\to\\kura3d',
   'ai.local.failed': '无法{action}：{error}。已在此停止。',
   'ai.local.failedNoReason': '无法{action}。已在此停止。',

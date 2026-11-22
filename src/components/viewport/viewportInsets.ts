@@ -2,8 +2,7 @@
  * @file src/components/viewport/viewportInsets.ts
  * @description Mide qué franjas del lienzo del visor tapan la interfaz flotante (barras del visor,
  * avisos de cama, control de armado y paneles de operación) para que el encuadre trabaje dentro del
- * área libre real. Un elemento ancho (≥ 50 % del lienzo) cuenta como franja superior o inferior; uno
- * angosto, como franja lateral. Cualquier elemento puede sumarse con `data-viewport-occluder`.
+ * área libre real. Cada elemento cuenta como franja del borde por el que menos área libre quita. Cualquier elemento puede sumarse con `data-viewport-occluder`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -32,14 +31,16 @@ export function measureViewportInsets(canvas: HTMLElement | null): ViewInsets {
     const top = Math.max(c.top, r.top);
     const bottom = Math.min(c.bottom, r.bottom);
     if (right - left < 2 || bottom - top < 2) continue;
-    if (right - left >= c.width * 0.5) {
-      if ((top + bottom) / 2 < c.top + c.height / 2) out.top = Math.max(out.top, (bottom - c.top) / c.height);
-      else out.bottom = Math.max(out.bottom, (c.bottom - top) / c.height);
-    } else if ((left + right) / 2 < c.left + c.width / 2) {
-      out.left = Math.max(out.left, (right - c.left) / c.width);
-    } else {
-      out.right = Math.max(out.right, (c.right - left) / c.width);
-    }
+    // Se descuenta por el borde que menos área libre quita: una barra arriba cuenta como franja
+    // superior aunque toque la esquina; un panel alto a la derecha, como franja derecha.
+    const cost = {
+      top: (bottom - c.top) / c.height,
+      bottom: (c.bottom - top) / c.height,
+      left: (right - c.left) / c.width,
+      right: (c.right - left) / c.width,
+    };
+    const edge = (Object.keys(cost) as Array<keyof typeof cost>).reduce((a, b) => (cost[b] < cost[a] ? b : a));
+    out[edge] = Math.max(out[edge], cost[edge]);
   }
   return out;
 }

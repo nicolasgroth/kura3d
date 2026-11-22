@@ -34,7 +34,7 @@ const MIN_DISTANCE = 18;
 /** Ventana en la que un encuadre explícito del store manda sobre el automático por objetos nuevos. */
 const EXPLICIT_WINDOW_MS = 250;
 /** Con el área libre medida, el margen extra para las barras flotantes ya no hace falta entero. */
-const INSET_MARGIN = 1.25;
+const INSET_MARGIN = 1.4;
 
 function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);

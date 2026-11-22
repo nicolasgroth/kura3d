@@ -1253,6 +1253,8 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'split.labelPlacement.joint': 'Sur la jonction',
   'split.labelPlacement.outside': 'À l\'extérieur',
   'split.continueWith': 'Continuer avec {count} pièces',
+  'split.noticeCollapse': 'Replier l’avis',
+  'split.noticeExpand': 'Ne tient pas sur le plateau : afficher l’avis',
   'mcp.setup.pathPlaceholder': 'Exemple : C:\\chemin\\vers\\kura3d',
   'ai.local.failed': 'Je n’ai pas pu {action} : {error}. Je me suis arrêté là.',
   'ai.local.failedNoReason': 'Je n’ai pas pu {action}. Je me suis arrêté là.',
