@@ -14,6 +14,7 @@ import type { BedSplitPlan } from '../../engine';
 import type { SplitPlanSummary } from '../../core/scene/splitPlanSummary';
 import { useKuraStore } from '../../store/useKuraStore';
 import { formatNumber } from '../../utils/plural';
+import { userAxisLabel } from '../../core/scene/displayAxes';
 
 export const SplitPlanSummaryView: React.FC<{
   summary: SplitPlanSummary | null;
@@ -35,7 +36,7 @@ export const SplitPlanSummaryView: React.FC<{
   if (summary && plan) {
     const min = fmt1(summary.minWallForConnectorMm ?? 0);
     for (const p of glueOnly) {
-      const plane = t(language, 'split.planeName', { axis: p.axis.toUpperCase(), n: p.number });
+      const plane = t(language, 'split.planeName', { axis: userAxisLabel(p.axis), n: p.number });
       warnings.push(
         p.wallMm !== null
           ? t(language, 'split.warn.planeGlueOnly', { plane, wall: fmt1(p.wallMm), min })

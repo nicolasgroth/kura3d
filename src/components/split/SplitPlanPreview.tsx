@@ -18,6 +18,7 @@ import type { PlannedPiece, SplitAxis, SplitPlane } from '../../engine';
 import { useKuraStore } from '../../store/useKuraStore';
 import { closestAxisParam } from '../viewport/cutPlaneDrag';
 import { emitSplitPlaneMove, planeKey } from './splitPlaneDrag';
+import { userAxisLabel } from '../../core/scene/displayAxes';
 
 const AXIS_INDEX: Record<SplitAxis, number> = { x: 0, y: 1, z: 2 };
 const AXIS_DIR: Record<SplitAxis, THREE.Vector3> = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
@@ -137,7 +138,7 @@ const PlaneSheet: React.FC<{
       </lineSegments>
       <Html position={[w / 2, h / 2, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
         <span className="kura-split-plane-tag" data-no-joint={noJoint || undefined} data-active={active || undefined}>
-          {t(language, 'split.planeName', { axis: plane.axis.toUpperCase(), n: plane.index + 1 })}
+          {t(language, 'split.planeName', { axis: userAxisLabel(plane.axis), n: plane.index + 1 })}
           {noJoint ? ` · ${t(language, 'split.noJoint')}` : ''}
           {dragPos !== null ? ` · ${Math.round(dragPos)} mm` : ''}
         </span>

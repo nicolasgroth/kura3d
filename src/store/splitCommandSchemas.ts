@@ -16,6 +16,7 @@ import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../engine/operationL
 import type { SceneObject } from '../types/kura';
 import { resolveTarget, type SceneView } from './commandTargets';
 import { pick, readBoolean, readEnum, readRange, type RawParams } from './commandValidation';
+import { internalAxisOfUser } from '../core/scene/displayAxes';
 
 const AXES = ['x', 'y', 'z'] as const;
 
@@ -55,7 +56,8 @@ function readAxes(p: RawParams): SplitAxis[] | undefined {
   const found = pick(p, 'axes');
   if (!found) return undefined;
   const list = Array.isArray(found[1]) ? found[1] : [found[1]];
-  return list.map((v) => readEnum({ axes: v }, AXES, 'axes')!);
+  // Ejes del usuario (Z = altura) → internos.
+  return list.map((v) => internalAxisOfUser(readEnum({ axes: v }, AXES, 'axes')!).axis);
 }
 
 export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): SplitForBedRequest {

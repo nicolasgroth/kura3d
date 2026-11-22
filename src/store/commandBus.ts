@@ -26,6 +26,8 @@ import type { CommandSourceType, KuraStoreState } from './useKuraStore';
 import {
   alignModeFromUser,
   axisFromUser,
+  axisToUser,
+  splitPlanToUser,
   planeFromUser,
   projectionAxisFromUser,
   rotationFromUser,
@@ -169,9 +171,9 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     const out = required(await get().splitObjectForBed(target.id, request), command);
     return {
       dryRun: request.dryRun,
-      plan: out.plan,
+      plan: splitPlanToUser(out.plan),
       parts: out.parts.map((o) => ({ ...brief(o), code: o.metadata?.split?.code, plate: o.metadata?.split?.print.plate })),
-      joints: out.joints.map((j) => ({ label: j.label, axis: j.axis, a: j.a, b: j.b, connectors: j.connectorCenters.length, labelEngraved: j.labelEngraved })),
+      joints: out.joints.map((j) => ({ label: j.label, axis: axisToUser(j.axis), a: j.a, b: j.b, connectors: j.connectorCenters.length, labelEngraved: j.labelEngraved })),
       plateCount: out.plateCount,
       ...(out.assembly ? { assembly: out.assembly } : {}),
     };

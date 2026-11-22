@@ -86,7 +86,8 @@ describe('placement', () => {
     expect(a.result).toMatchObject({ position: [0, 0, 0] });
     const b = await run('create_primitive', { type: 'box', width: 30, height: 30, depth: 30, placement: 'free' });
     const pos = (b.result as { position: number[] }).position;
-    expect(Math.hypot(pos[0], pos[2])).toBeGreaterThanOrEqual(35 - 1e-6);
+    // La posición del bus está en ejes del usuario: el plano de la cama es X, Y.
+    expect(Math.hypot(pos[0], pos[1])).toBeGreaterThanOrEqual(35 - 1e-6);
     const [first, second] = store().objects;
     const fa = footprintOf(first.mesh, first.position, first.rotation, first.scale)!;
     const fb = footprintOf(second.mesh, second.position, second.rotation, second.scale)!;

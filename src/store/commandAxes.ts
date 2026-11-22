@@ -15,6 +15,7 @@ import {
   fromUserVector,
   internalAxisOfUser,
   internalDirectionOfUser,
+  toUserBox,
   toUserRotation,
   toUserScale,
   toUserSize,
@@ -74,3 +75,37 @@ export function transformToUser(o: Pick<SceneObject, 'position' | 'rotation' | '
 }
 
 export { toUserVector, toUserSize };
+
+/** Plan de división (tipos mínimos que se convierten; el resto de campos pasa igual). */
+interface PlanLike {
+  bounds: { min: Vec3; max: Vec3 };
+  usableMm: Vec3;
+  counts: { x: number; y: number; z: number };
+  planes: { axis: AxisName; position: number; uniformPosition: number }[];
+  pieces: { cell: [number, number, number]; bounds: { min: Vec3; max: Vec3 }; sizeMm: Vec3; printRotation: Vec3 }[];
+}
+
+/**
+ * Plan de "dividir para la cama" en ejes del usuario: planos (`'z'` = horizontal), cajas, tramos y
+ * medidas. `cell` de cada pieza queda en el orden del usuario [X, Y, Z]; el código de pieza no cambia
+ * (letra = columna en X, número = nivel en altura Z, minúscula = fila en Y).
+ */
+export function splitPlanToUser<T extends PlanLike>(plan: T): T {
+  return {
+    ...plan,
+    bounds: toUserBox(plan.bounds),
+    usableMm: toUserSize(plan.usableMm),
+    counts: { x: plan.counts.x, y: plan.counts.z, z: plan.counts.y },
+    planes: plan.planes.map((p) => {
+      const { axis, sign } = userAxisOfInternal(p.axis);
+      return { ...p, axis, position: p.position * sign + 0, uniformPosition: p.uniformPosition * sign + 0 };
+    }),
+    pieces: plan.pieces.map((piece) => ({
+      ...piece,
+      cell: [piece.cell[0], piece.cell[2], piece.cell[1]] as [number, number, number],
+      bounds: toUserBox(piece.bounds),
+      sizeMm: toUserSize(piece.sizeMm),
+      printRotation: toUserRotation(piece.printRotation),
+    })),
+  };
+}

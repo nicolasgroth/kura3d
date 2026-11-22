@@ -27,6 +27,7 @@ import { keyboardFocusInViewport } from '../viewport/cutPlaneDrag';
 import { onSplitPlaneMove, planeKey } from './splitPlaneDrag';
 import { SplitPlanSummaryView } from './SplitPlanSummaryView';
 import '../../styles/splitForBed.css';
+import { userAxisLabel } from '../../core/scene/displayAxes';
 
 /** `auto` = espigas donde quepan y corte liso para pegar donde no (por defecto). */
 type ConnectorKind = 'none' | 'auto' | SplitConnectorOptions['type'];
@@ -286,9 +287,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         <legend>{t(language, 'split.axes')}</legend>
         <div className="kura-split-checks">
           {AXES.map((a) => (
-            <label key={a} className="kura-split-check" title={t(language, 'split.axisTip', { axis: a.toUpperCase() })}>
+            <label key={a} className="kura-split-check" title={t(language, 'split.axisTip', { axis: userAxisLabel(a) })}>
               <input type="checkbox" checked={axes[a]} onChange={(e) => setAxes((s) => ({ ...s, [a]: e.target.checked }))} />
-              <span>{a.toUpperCase()}</span>
+              <span>{userAxisLabel(a)}</span>
             </label>
           ))}
         </div>
@@ -366,7 +367,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
               {plan.planes.map((p) => {
                 const key = planeKey(p.axis, p.index);
                 const a = AXES.indexOf(p.axis);
-                const name = t(language, 'split.planeName', { axis: p.axis.toUpperCase(), n: p.index + 1 });
+                const name = t(language, 'split.planeName', { axis: userAxisLabel(p.axis), n: p.index + 1 });
                 const noJoint = Boolean(connector) && !p.admitsConnectors;
                 return (
                   <li key={key} className={activePlane === key ? 'is-active' : undefined} data-no-joint={noJoint || undefined}>
@@ -387,9 +388,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
                       type="button"
                       className={`kura-btn kura-btn-sm kura-split-plane-pick${activePlane === key ? ' is-active' : ''}`}
                       aria-pressed={activePlane === key}
-                      aria-label={t(language, 'split.planePickLabel', { axis: p.axis.toUpperCase(), n: p.index + 1 })}
+                      aria-label={t(language, 'split.planePickLabel', { axis: userAxisLabel(p.axis), n: p.index + 1 })}
                       data-split-pick={key}
-                      title={t(language, 'split.planePickTip', { axis: p.axis.toUpperCase(), n: p.index + 1 })}
+                      title={t(language, 'split.planePickTip', { axis: userAxisLabel(p.axis), n: p.index + 1 })}
                       onClick={() => setActivePlane(activePlane === key ? null : key)}
                     >
                       {t(language, 'split.planePick')}

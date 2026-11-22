@@ -123,7 +123,7 @@ describe('SplitForBedPanel', () => {
   it('cada "Elegir" tiene nombre propio y, tras elegir, ↑/↓ (Mayús ×10) mueven el plano con el foco en el botón', () => {
     render(<SplitForBedPanel open onClose={() => undefined} />);
     ready(PLAN);
-    const pick = screen.getByRole('button', { name: t('es', 'split.planePickLabel', { axis: 'Y', n: 2 }), hidden: true });
+    const pick = screen.getByRole('button', { name: t('es', 'split.planePickLabel', { axis: 'Z', n: 2 }), hidden: true });
     expect(screen.getAllByRole('button', { name: new RegExp(t('es', 'split.planePick')), hidden: true }).length).toBe(4);
     expect(pick.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(pick);
