@@ -14,7 +14,17 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { type CameraPresetType, useKuraStore } from '../../store/useKuraStore';
-import { boxForObjects, framePose, isBoxInView, type FrameBox, type Vec3 } from '../../core/scene/cameraFraming';
+import {
+  boxForObjects,
+  candidateViewDirs,
+  chooseUnoccludedViewDir,
+  framePose,
+  isBoxInView,
+  needsReframeAfterEdit,
+  type FrameBox,
+  type Vec3,
+} from '../../core/scene/cameraFraming';
+import { measureViewportInsets } from './viewportInsets';
 import { explodedSplitPositions, splitGroupOf } from '../../core/scene/splitGroups';
 import type { SceneObject } from '../../types/kura';
 
@@ -23,6 +33,8 @@ const TRANSITION_MS = 380;
 const MIN_DISTANCE = 18;
 /** Ventana en la que un encuadre explícito del store manda sobre el automático por objetos nuevos. */
 const EXPLICIT_WINDOW_MS = 250;
+/** Con el área libre medida, el margen extra para las barras flotantes ya no hace falta entero. */
+const INSET_MARGIN = 1.25;
 
 function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
@@ -39,7 +51,7 @@ interface Transition {
 export const CameraController: React.FC<{
   orbitRef: React.RefObject<OrbitControlsImpl | null>;
 }> = ({ orbitRef }) => {
-  const { camera, size } = useThree();
+  const { camera, size, gl } = useThree();
   const cameraRequest = useKuraStore((s) => s.cameraRequest);
   const objects = useKuraStore((s) => s.objects);
   const splitExplode = useKuraStore((s) => s.splitExplode);
@@ -78,8 +90,11 @@ export const CameraController: React.FC<{
     };
   };
 
-  /** Encuadra la caja. En modo `ensure` no hace nada si ya está entera a la vista. */
-  const frameBox = (box: FrameBox, mode: 'fit' | 'ensure' | 'scene') => {
+  /**
+   * Encuadra la caja dentro del área libre del visor. `ensure`: no hace nada si ya está entera a la
+   * vista. `focus`: encuadra siempre y busca una dirección desde la que `blockers` no la tapen.
+   */
+  const frameBox = (box: FrameBox, mode: 'fit' | 'ensure' | 'scene' | 'focus', blockers: FrameBox[] = []) => {
     const persp = camera as THREE.PerspectiveCamera;
     const aspect = sizeRef.current.height > 0 ? sizeRef.current.width / sizeRef.current.height : persp.aspect;
     if (mode === 'ensure') {
@@ -87,17 +102,22 @@ export const CameraController: React.FC<{
       const vp = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
       if (isBoxInView(box, vp.elements)) return;
     }
-    const dir = mode === 'scene'
-      ? ISO_DIR
-      : (camera.position.clone().sub(currentTarget()).toArray() as Vec3);
-    const pose = framePose({
+    const fit = {
       box,
-      viewDir: dir,
       fovDeg: persp.fov ?? 42,
       aspect,
+      insets: measureViewportInsets(gl.domElement),
+      margin: INSET_MARGIN,
       minDistance: Math.max(MIN_DISTANCE, orbitRef.current?.minDistance ?? 0),
       maxDistance: orbitRef.current?.maxDistance ?? Infinity,
-    });
+    };
+    const current = camera.position.clone().sub(currentTarget()).toArray() as Vec3;
+    const dir = mode === 'scene'
+      ? ISO_DIR
+      : mode === 'focus'
+        ? chooseUnoccludedViewDir({ ...fit, candidates: candidateViewDirs(current), blockers })
+        : current;
+    const pose = framePose({ ...fit, viewDir: dir });
     moveTo(pose.position, pose.target);
   };
 
@@ -132,6 +152,18 @@ export const CameraController: React.FC<{
     lastExplicitAt.current = performance.now();
     const { objects: cur, selectedIds, printerProfile } = useKuraStore.getState();
     const preset: CameraPresetType = cameraRequest.preset;
+
+    if (preset === 'focus') {
+      const ids = new Set(cameraRequest.ids ?? []);
+      const box = boxForObjects(cur.filter((o) => ids.has(o.id)));
+      if (!box) return;
+      const blockers = cur
+        .filter((o) => !ids.has(o.id) && o.visible !== false)
+        .map((o) => boxForObjects([o]))
+        .filter((b): b is FrameBox => b !== null);
+      frameBox(box, 'focus', blockers);
+      return;
+    }
 
     if (preset === 'fit' || preset === 'scene' || preset === 'ensure') {
       const ids = cameraRequest.ids;
@@ -169,21 +201,33 @@ export const CameraController: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameraRequest, camera, orbitRef]);
 
-  // Encuadre automático: piezas nuevas (crear, importar, cortar, dividir, proyectar, molde, chat)
-  // o con malla cambiada que hayan quedado fuera de cuadro.
-  const prevRef = useRef<Map<string, SceneObject['mesh']> | null>(null);
+  // Encuadre automático. Piezas nuevas (crear, importar, cortar, proyectar, molde, chat): se
+  // aseguran a la vista. Objetos editados (malla, escala o giro): la cámara no salta salvo que el
+  // objeto quede fuera de proporción (cámara dentro de su caja, > 150 % o < 3 % del encuadre).
+  const prevRef = useRef<Map<string, Pick<SceneObject, 'mesh' | 'scale' | 'rotation'>> | null>(null);
   useEffect(() => {
     const prev = prevRef.current;
-    const next = new Map(objects.map((o) => [o.id, o.mesh] as const));
-    prevRef.current = next;
+    prevRef.current = new Map(objects.map((o) => [o.id, { mesh: o.mesh, scale: o.scale, rotation: o.rotation }] as const));
     if (!prev) return;
-    const affected = objects.filter((o) => prev.get(o.id) !== o.mesh);
-    if (affected.length === 0) return;
+    const added = objects.filter((o) => !prev.has(o.id));
+    const edited = objects.filter((o) => {
+      const p = prev.get(o.id);
+      return p !== undefined && (p.mesh !== o.mesh || p.scale !== o.scale || p.rotation !== o.rotation);
+    });
+    if (added.length === 0 && edited.length === 0) return;
     const wasEmpty = prev.size === 0;
     const handle = requestAnimationFrame(() => {
       if (performance.now() - lastExplicitAt.current < EXPLICIT_WINDOW_MS) return;
-      const box = boxForObjects(affected);
-      if (box) frameBox(box, wasEmpty ? 'fit' : 'ensure');
+      if (added.length > 0) {
+        const box = boxForObjects(added);
+        if (box) frameBox(box, wasEmpty ? 'fit' : 'ensure');
+        return;
+      }
+      const box = boxForObjects(edited);
+      if (!box) return;
+      camera.updateMatrixWorld();
+      const vp = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      if (needsReframeAfterEdit(box, camera.position.toArray() as Vec3, vp.elements)) frameBox(box, 'fit');
     });
     return () => cancelAnimationFrame(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps

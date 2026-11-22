@@ -72,8 +72,11 @@ export type SettingsTabType = 'appearance' | 'project' | 'ai' | 'mcp' | 'about';
 export type MeasuresFocus = 'unit' | 'printer';
 export type CommandSourceType = 'ui' | 'mcp' | 'ai';
 export type PaintBrushMode = 'brush' | 'smart_fill' | 'whole';
-/** 'fit': selección o escena; 'scene': toda la escena (abrir/recuperar); 'ensure': mostrar `ids` solo si no están a la vista. */
-export type CameraPresetType = 'iso' | 'top' | 'front' | 'right' | 'fit' | 'scene' | 'ensure';
+/**
+ * 'fit': selección o escena; 'scene': toda la escena (abrir/recuperar); 'ensure': mostrar `ids` solo
+ * si no están a la vista; 'focus': encuadrar siempre `ids` desde una vista que otros objetos no tapen.
+ */
+export type CameraPresetType = 'iso' | 'top' | 'front' | 'right' | 'fit' | 'scene' | 'ensure' | 'focus';
 
 export interface ToastMessage {
   id: string;

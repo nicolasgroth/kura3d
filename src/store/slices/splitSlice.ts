@@ -123,7 +123,8 @@ export function createSplitSlice(ctx: StoreContext): Partial<KuraStoreState> {
       if (patches.length === 0) return true;
       commitChange(change({ patches }));
       get().addToast(tr(mode === 'print' ? 'split.toast.arrangedPrint' : 'split.toast.arrangedAssembly', { count: group.parts.length }), 'success');
-      get().requestCameraPreset('ensure', group.parts.map((p) => p.id));
+      // Las piezas (las placas, en modo imprimir) se encuadran siempre, sin quedar tapadas por otros objetos.
+      get().requestCameraPreset('focus', group.parts.map((p) => p.id));
       return true;
     },
   };
