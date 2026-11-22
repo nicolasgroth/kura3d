@@ -8,11 +8,7 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 | Funcionalidad | Estado |
 |---|---|
-| Pintura sobre primitivas: "Cancelar" del aviso no cancelaba el trazo y un trazo costaba 5 pasos de deshacer (QA los encontró el 22-nov a las 17:45) | En corrección |
-| Separar por colores en superficies curvas: revisar la limpieza de la malla (aristas compartidas de más en la esfera) | En corrección |
-| Menores de QA: aviso "No cabe en la cama" con ejes cambiados, `<use href>` de SVG 2, corte por plano en Ø, reencuadre al deshacer una división | En corrección |
-| Grupos y árbol de escena: agrupar objetos para moverlos y escalarlos juntos, grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ocultar, bloquear, renombrar, arrastrar), y "Combinar en un objeto" para exportar varios como un solo STL sin fusionar la geometría | Pedido el 22-nov; parte al terminar el lote del menú, porque tocan los mismos archivos |
-| Ideas tomadas del menú de OrcaSlicer: Centrar en la cama, Transformar ▸ y Alinear ▸ como submenús, forma Disco, Reemplazar por archivo, Exportar selección como un STL, objeto imprimible sí/no, aviso de malla pesada al importar con acceso a Simplificar | Pedido el 22-nov; en curso |
+| Grupos y árbol de escena: Agrupar / Desagrupar (Ctrl+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ocultar, bloquear, renombrar, arrastrar), "Combinar en un objeto" y "Separar cuerpos" | En curso desde las 18:25 |
 
 ## En QA
 
@@ -28,6 +24,9 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Menú contextual ordenado y teclas F2, F3, F4, Mayús+F5 | Evaluado en la ronda 5 (85 y 72); F2 corregido; QA en curso |
 | Pintura por caras rápida; operaciones de creación en el Worker | QA aprobó sin bloqueos; falta medir el pincel con GPU real |
 | Grabar sobre un relieve ya no da el error falso de profundidad; 3MF determinista (misma escena, mismos bytes); auditoría de secretos: claves de IA y token MCP nunca van a `localStorage` ni a logs, ahora con prueba que lo hace cumplir | Implementado con pruebas; sin QA en navegador |
+| Pintura sobre primitivas: el arrastre no modifica nada hasta aceptar el aviso, "Cancelar" deja el cubo intacto, un trazo = un paso también con refinado | Corregido tras el rechazo de QA; verificado por el desarrollador en navegador; falta QA independiente |
+| Separar por colores en superficies curvas: malla limpia (el defecto que midió QA en la esfera era real y quedó corregido) | Corregido con pruebas; falta QA |
+| Menú del objeto con ideas de OrcaSlicer: Centrar en la cama, Transformar ▸, Alinear y distribuir ▸, forma Disco, Reemplazar por archivo, Exportar selección como un STL, "Ocultar (no se exporta)", aviso de malla pesada con acceso a Simplificar | Implementado; verificado por el desarrollador en navegador; falta QA |
 | Proyectos recientes y seguridad en escritorio (CSP, llavero, permisos, proxy de IA, confirmación al sobrescribir) | Probado en web y con pruebas; falta verificar en la app instalada |
 
 ## En evaluación
