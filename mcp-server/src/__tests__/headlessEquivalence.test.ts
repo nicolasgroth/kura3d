@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { BRAND } from '../../../src/brand';
 import * as engine from '../../../src/engine/index';
 import type { MeshData, SceneObject } from '../../../src/types/kura';
 import { KuraHeadlessEngine } from '../headlessEngine.js';
@@ -325,7 +326,7 @@ describe('Equivalencia headless ↔ src/engine', () => {
     // El exportador declara el color base por objeto (pindex) y solo marca p1 en caras pintadas distinto.
     expect(new Set([...model.matchAll(/(?:pindex|p1)="(\d+)"/g)].map((m) => m[1])).size).toBe(2);
 
-    const refBytes = engine.exportSceneTo3MF([h.getObject(a.id), h.getObject(b.id)], 'mm');
+    const refBytes = engine.exportSceneTo3MF([h.getObject(a.id), h.getObject(b.id)], 'mm', undefined, BRAND);
     expect(model).toBe(strFromU8(unzipSync(refBytes)['3D/3dmodel.model']));
   });
 });

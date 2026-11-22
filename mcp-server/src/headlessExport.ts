@@ -91,7 +91,7 @@ export async function write3mfFile(
   units: UnitSystem
 ): Promise<ExportFileResult> {
   const solids = exportableObjects(targets);
-  const bytes = exportSceneTo3MF(solids, units);
+  const bytes = exportSceneTo3MF(solids, units, undefined, BRAND);
 
   // Lee de vuelta el modelo escrito por el motor para informar exactamente lo exportado
   const modelXml = strFromU8(unzipSync(bytes, { filter: (f) => f.name === '3D/3dmodel.model' })['3D/3dmodel.model']);

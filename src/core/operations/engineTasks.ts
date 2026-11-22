@@ -64,16 +64,16 @@ export async function exportSceneFiles(a: ExportTaskArgs): Promise<ExportTaskRes
     case 'stl':
       return { files: [{ suffix: '.stl', data: engine.exportSceneToBinarySTL(a.targets, engine.stlBrandHeader(BRAND)) }] };
     case '3mf':
-      return { files: [{ suffix: '.3mf', data: engine.exportSceneTo3MF(a.targets, a.unitSystem) }] };
+      return { files: [{ suffix: '.3mf', data: engine.exportSceneTo3MF(a.targets, a.unitSystem, undefined, BRAND) }] };
     case 'obj': {
-      const { obj, mtl } = engine.exportSceneToOBJ(a.targets, a.baseName);
+      const { obj, mtl } = engine.exportSceneToOBJ(a.targets, a.baseName, BRAND);
       const enc = new TextEncoder();
       return { files: [{ suffix: '.obj', data: enc.encode(obj) }, { suffix: '.mtl', data: enc.encode(mtl) }] };
     }
     case 'glb':
-      return { files: [{ suffix: '.glb', data: await engine.exportSceneToGLB(a.targets) }] };
+      return { files: [{ suffix: '.glb', data: await engine.exportSceneToGLB(a.targets, BRAND) }] };
     case 'ply':
-      return { files: [{ suffix: '.ply', data: engine.exportSceneToPLY(a.targets) }] };
+      return { files: [{ suffix: '.ply', data: engine.exportSceneToPLY(a.targets, BRAND) }] };
   }
 }
 

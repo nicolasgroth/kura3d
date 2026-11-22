@@ -47,6 +47,8 @@ function walk(dir: string, exts: readonly string[], out: string[] = []): string[
 }
 
 const rel = (p: string) => relative(ROOT, p).replaceAll('\\', '/');
+const isTestFile = (f: string) => /\.test\.tsx?$/.test(f) || f.includes('__tests__');
+const stripComments = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 describe('reglas del repositorio', () => {
   it('BRAND.version coincide con package.json', () => {
@@ -73,12 +75,23 @@ describe('reglas del repositorio', () => {
     expect(missing).toEqual([]);
   });
 
+  it('los lectores y escritores de formatos no importan la marca ni la escriben literal (la reciben por parámetro)', () => {
+    const files = walk(join(ROOT, 'src', 'engine', 'io'), ['.ts']).filter((f) => !isTestFile(f));
+    expect(files.length).toBeGreaterThan(10);
+    const offenders = files
+      .filter((f) => {
+        const code = stripComments(readFileSync(f, 'utf8'));
+        return /from ['"][./]*brand['"]/.test(code) || new RegExp(BRAND.name, 'i').test(code);
+      })
+      .map(rel);
+    expect(offenders).toEqual([]);
+  });
+
   it('componentes y store no usan localStorage/sessionStorage directamente', () => {
     const files = [
       ...walk(join(ROOT, 'src', 'components'), ['.ts', '.tsx']),
       ...walk(join(ROOT, 'src', 'store'), ['.ts', '.tsx']),
-    ].filter((f) => !/\.test\.tsx?$/.test(f) && !f.includes('__tests__') && !f.endsWith('preferencesStorage.ts'));
-    const stripComments = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+    ].filter((f) => !isTestFile(f) && !f.endsWith('preferencesStorage.ts'));
     const offenders = files
       .filter((f) => /\b(localStorage|sessionStorage)\b/.test(stripComments(readFileSync(f, 'utf8'))))
       .map(rel);

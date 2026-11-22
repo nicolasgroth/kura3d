@@ -16,6 +16,7 @@ import { ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits
 import type { ImportedModel } from './importTypes';
 import { GrowableUint32, finishMesh, hexToRgb01, normalizeHexColor, rgbToHex } from './meshBuffers';
 import { exportableObjects } from './stl';
+import { brandSignature, type ExportBrand } from './exportBrand';
 
 type ScalarType = 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'uint32' | 'float32' | 'float64';
 
@@ -246,9 +247,10 @@ export function readPLY(buffer: ArrayBuffer, fileName = 'model.ply', limitsInput
 
 /**
  * Exporta los objetos visibles y sólidos a PLY binario little endian (mm, Z-up) con colores por
- * vértice: cada vértice se duplica por cada color de cara que lo usa.
+ * vértice: cada vértice se duplica por cada color de cara que lo usa. `brand` (desde quien llama)
+ * firma el comentario de cabecera.
  */
-export function exportSceneToPLY(objects: SceneObject[]): Uint8Array {
+export function exportSceneToPLY(objects: SceneObject[], brand?: ExportBrand): Uint8Array {
   const verts: number[] = [];
   const colors: number[] = [];
   const faceList: number[] = [];
@@ -280,8 +282,10 @@ export function exportSceneToPLY(objects: SceneObject[]): Uint8Array {
   }
   const vertexCount = verts.length / 3;
   const faceCount = faceList.length / 3;
+  // Un salto de línea en la marca rompería la cabecera PLY
+  const signature = brandSignature(brand)?.replace(/[\r\n]+/g, ' ');
   const header =
-    'ply\nformat binary_little_endian 1.0\ncomment Kura3D export (units: mm, Z-up)\n' +
+    `ply\nformat binary_little_endian 1.0\ncomment ${signature ? `${signature} ` : ''}export (units: mm, Z-up)\n` +
     `element vertex ${vertexCount}\nproperty float x\nproperty float y\nproperty float z\n` +
     'property uchar red\nproperty uchar green\nproperty uchar blue\n' +
     `element face ${faceCount}\nproperty list uchar int vertex_indices\n` +

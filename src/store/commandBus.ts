@@ -339,7 +339,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     const input = schema.parseExport(p);
     if (input.wantsBytes || headless()) {
       const { targets, skippedHoles } = exportTargets(deps, input.onlySelected);
-      const bytes = engine.exportSceneTo3MF(targets, deps.get().unitSystem);
+      const bytes = engine.exportSceneTo3MF(targets, deps.get().unitSystem, undefined, BRAND);
       return { format: '3mf', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles };
     }
     required(await deps.get().exportScene3mf(input.onlySelected), command);

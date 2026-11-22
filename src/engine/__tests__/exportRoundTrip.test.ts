@@ -71,7 +71,8 @@ describe('ida y vuelta de exportación', () => {
       const a = exportSceneTo3MF(scene, 'mm');
       vi.setSystemTime(new Date(2031, 6, 15, 23, 59, 58));
       const b = exportSceneTo3MF(scene, 'mm');
-      expect(Buffer.from(a).equals(Buffer.from(b))).toBe(true);
+      expect(a.length).toBe(b.length);
+      expect(a.every((byte, i) => byte === b[i])).toBe(true);
     } finally {
       vi.useRealTimers();
     }

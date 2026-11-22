@@ -31,8 +31,11 @@ function linearColor(hex: string): [number, number, number, number] {
   return [ch(16), ch(8), ch(0), 1];
 }
 
-/** Construye el contenedor GLB. */
-export function writeGlb(meshes: GlbMeshInput[], sceneName = 'Kura3D'): Uint8Array {
+/**
+ * Construye el contenedor GLB. `sceneName` y `generator` los entrega quien exporta (la marca de la
+ * app); por omisión son neutros.
+ */
+export function writeGlb(meshes: GlbMeshInput[], sceneName = 'Scene', generator = 'glTF 2.0 writer'): Uint8Array {
   const chunks: Uint8Array[] = [];
   let binLength = 0;
   const bufferViews: Record<string, unknown>[] = [];
@@ -87,7 +90,7 @@ export function writeGlb(meshes: GlbMeshInput[], sceneName = 'Kura3D'): Uint8Arr
   }
 
   const json = {
-    asset: { version: '2.0', generator: 'Kura3D' },
+    asset: { version: '2.0', generator },
     scene: 0,
     scenes: [{ name: sceneName, nodes: nodes.map((_, i) => i) }],
     nodes,
