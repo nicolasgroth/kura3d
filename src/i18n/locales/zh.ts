@@ -855,6 +855,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'toast.deleted.other': '已删除 {count} 个对象',
   'toast.booleanDone.union': '合并完成',
   'toast.booleanDone.subtract': '减法完成',
+  'toast.booleanNoContact': '零件互不接触：此操作不会产生任何变化。请移动它们直到相互重叠。',
   'toast.booleanDone.intersect': '相交完成',
   'toast.alignedDone.minX': '已按左边缘对齐',
   'toast.alignedDone.centerX': '已在 X 轴居中',

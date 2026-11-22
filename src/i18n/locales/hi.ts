@@ -855,6 +855,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'toast.deleted.other': '{count} वस्तुएँ हटाई गईं',
   'toast.booleanDone.union': 'संयोजन पूर्ण',
   'toast.booleanDone.subtract': 'घटाव पूर्ण',
+  'toast.booleanNoContact': 'भाग एक-दूसरे को नहीं छूते: ऑपरेशन से कुछ नहीं बदलेगा। उन्हें तब तक पास लाएँ जब तक वे एक-दूसरे में न घुसें।',
   'toast.booleanDone.intersect': 'प्रतिच्छेदन पूर्ण',
   'toast.alignedDone.minX': 'बाएँ किनारे पर संरेखित',
   'toast.alignedDone.centerX': 'X अक्ष पर केंद्रित',

@@ -14,6 +14,8 @@ import type { BooleanOpType, SceneObject } from '../../types/kura';
 export interface BooleanPreviewApi {
   base: SceneObject | undefined;
   tool: SceneObject | undefined;
+  /** Herramientas adicionales seleccionadas además de `tool` (en orden de selección). */
+  extraTools: SceneObject[];
   busy: boolean;
   previewStatus: string;
   /** Hay una vista previa booleana en curso o mostrada. */
@@ -59,6 +61,7 @@ export function useBooleanPreview(): BooleanPreviewApi {
   return {
     base: objects.find((o) => o.id === selectedIds[0]),
     tool: objects.find((o) => o.id === selectedIds[1]),
+    extraTools: selectedIds.slice(2).map((id) => objects.find((o) => o.id === id)).filter((o): o is SceneObject => Boolean(o)),
     busy,
     previewStatus,
     previewing: previewKey?.startsWith('boolean:') ?? false,

@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { boxesOverlap, sameVolume } from '../../core/scene/overlap';
 import * as engine from '../../engine';
 import * as ops from '../../core/operations';
 import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets } from '../../core/scene/sceneRules';
@@ -37,6 +38,12 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         get().addToast(tr('store.error.locked'), 'error');
         return null;
       }
+      // Restar o intersectar piezas que no se tocan no cambia nada: se avisa sin crear paso de historial.
+      const tools = [inputs.tool, ...inputs.extras];
+      if (op !== 'union' && !tools.some((tool) => boxesOverlap(inputs.target, tool))) {
+        get().addToast(tr('toast.booleanNoContact'), 'info');
+        return null;
+      }
       return runExclusive(`boolean:${op}`, null, async () => {
         const { result, change } = await runEngine('boolean', {
           target: inputs.target,
@@ -45,6 +52,11 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
           name: opCtx().naming.booleanResult(op, all),
         });
         assertCurrent(all);
+        const unscaled = inputs.target.scale.every((v) => v === 1);
+        if (op === 'subtract' && unscaled && sameVolume(result.stats.volumeMm3, inputs.target.stats.volumeMm3)) {
+          get().addToast(tr('toast.booleanNoContact'), 'info');
+          return null;
+        }
         commitChange(change, { select: [result.id] });
         get().addToast(tr(`toast.booleanDone.${op}`), 'success');
         return result;

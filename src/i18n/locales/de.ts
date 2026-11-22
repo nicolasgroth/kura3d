@@ -855,6 +855,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'toast.deleted.other': '{count} Objekte gelöscht',
   'toast.booleanDone.union': 'Vereinigung abgeschlossen',
   'toast.booleanDone.subtract': 'Subtraktion abgeschlossen',
+  'toast.booleanNoContact': 'Die Teile berühren sich nicht: Die Operation würde nichts ändern. Schiebe sie zusammen, bis sie sich überschneiden.',
   'toast.booleanDone.intersect': 'Schnittmenge abgeschlossen',
   'toast.alignedDone.minX': 'Am linken Rand ausgerichtet',
   'toast.alignedDone.centerX': 'Auf der X-Achse zentriert',
