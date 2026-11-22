@@ -42,9 +42,8 @@ export function ProjectRecoveryBanner({ drafts, busy, onRestore, onDiscard }: Pr
         <button
           type="button"
           className="kura-btn kura-btn-sm"
-          aria-controls={bodyId}
-          aria-expanded={!collapsed}
           aria-label={t(language, collapsed ? 'recovery.banner.show' : 'recovery.banner.later')}
+          title={t(language, collapsed ? 'recovery.banner.show' : 'recovery.banner.later')}
           onClick={() => setCollapsed((previous) => !previous)}
         >
           <span className="kura-recovery-toggle-text">

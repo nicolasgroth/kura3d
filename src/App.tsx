@@ -206,6 +206,13 @@ export const App: React.FC = () => {
         return;
       }
 
+      // Escape también sale del modo Zen (sin diálogos abiertos: esos ya consumen Escape).
+      if (e.key === 'Escape' && !mod && state.uiDensity === 'zen') {
+        e.preventDefault();
+        state.toggleZenMode();
+        return;
+      }
+
       if (mod && key === 'z') {
         e.preventDefault();
         if (e.shiftKey) {

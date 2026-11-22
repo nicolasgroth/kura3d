@@ -10,6 +10,7 @@ import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import '../../styles/panelEdge.css';
 
 /** Botón de borde para colapsar o expandir el inspector. */
 export const InspectorEdgeToggle: React.FC = () => {

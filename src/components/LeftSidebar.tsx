@@ -35,6 +35,7 @@ import type { PrimitiveType } from '../types/kura';
 import { colorName, colorNameWithHex } from '../utils/colorNames';
 import { tCount } from '../utils/plural';
 import { SceneObjectList } from './scene/SceneObjectList';
+import '../styles/panelEdge.css';
 
 export const LeftSidebar: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'shapes' | 'scene'>('shapes');

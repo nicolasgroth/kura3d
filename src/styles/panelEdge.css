@@ -1,0 +1,35 @@
+/**
+ * @file src/styles/panelEdge.css
+ * @description Asas para reabrir/colapsar paneles: 24 px visibles y área táctil de 44 × 44 px.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-panel-edge-btn {
+  width: 24px;
+}
+
+.kura-panel-edge-btn.is-left {
+  right: -24px;
+}
+
+.kura-panel-edge-btn.is-right {
+  left: -24px;
+}
+
+/* Área táctil ampliada sin cambiar el aspecto. */
+.kura-panel-edge-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+
+.kura-panel-edge-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
