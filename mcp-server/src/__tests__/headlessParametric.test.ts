@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/__tests__/headlessParametric.test.ts
- * @description MCP headless: `kura_create_primitive` con `placement: 'free'` no se solapa y
+ * @description MCP headless: `kura_create_primitive` (colocación libre por defecto) no se solapa y
  * devuelve la posición; `kura_update_primitive_params` regenera la primitiva (malla cerrada,
  * medidas nuevas) conservando id y posición, y falla si la malla ya cambió por una operación.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -32,7 +32,7 @@ async function session() {
 }
 
 describe('MCP headless: primitivas paramétricas', () => {
-  it("placement 'free' coloca sin solaparse; por defecto queda en el origen", async () => {
+  it("placement 'free' coloca sin solaparse; la primera pieza queda en el centro de la cama vacía", async () => {
     const call = await session();
     const box = { primitiveType: 'box', params: { width: 30, height: 30, depth: 30 } };
     const first = JSON.parse((await call('kura_create_primitive', box)).text);

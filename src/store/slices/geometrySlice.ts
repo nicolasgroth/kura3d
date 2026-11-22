@@ -9,11 +9,12 @@
  * @license MIT
  */
 
-import { boxesOverlap, sameVolume } from '../../core/scene/overlap';
+import { boxesOverlap } from '../../core/scene/overlap';
 import * as engine from '../../engine';
 import * as ops from '../../core/operations';
 import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets } from '../../core/scene/sceneRules';
 import type { MeshData } from '../../types/kura';
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { formatNumber } from '../../utils/plural';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
@@ -52,9 +53,9 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
           name: opCtx().naming.booleanResult(op, all),
         });
         assertCurrent(all);
-        const unscaled = inputs.target.scale.every((v) => v === 1);
-        if (op === 'subtract' && unscaled && sameVolume(result.stats.volumeMm3, inputs.target.stats.volumeMm3)) {
-          get().addToast(tr('toast.booleanNoContact'), 'info');
+        // Piezas que no se tocan: aviso BOOLEAN_NO_EFFECT, sin cambio de escena ni historial.
+        if (!result) {
+          reportEngineWarnings(change.warnings);
           return null;
         }
         commitChange(change, { select: [result.id] });
@@ -187,7 +188,11 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       });
     },
 
-    runPrintabilityCheck: (id, infillPercent = 18, overhangAngleDeg = 45) => {
+    runPrintabilityCheck: (
+      id,
+      infillPercent: number = OPERATION_DEFAULTS.printability.infillPercent,
+      overhangAngleDeg: number = OPERATION_DEFAULTS.printability.overhangAngleDeg,
+    ) => {
       const { objects, printerProfile } = get();
       const obj = objects.find((o) => o.id === id);
       if (!obj) return null;

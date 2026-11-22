@@ -8,23 +8,51 @@
  */
 
 import * as engine from '../../engine';
-import { isEngineError } from '../../engine/engineErrors';
+import { engineWarning, isEngineError } from '../../engine/engineErrors';
 import type { BooleanOpType, MeshData, SceneObject, Vec3 } from '../../types/kura';
 import { buildSceneObject } from '../scene/sceneObjects';
 import { buildWith, change, type OperationContext, type SceneChange } from './operationTypes';
 
 /**
+ * Booleana de un paso. `null` cuando no tiene efecto porque las piezas no se tocan: resta que no
+ * quita volumen o intersección vacía.
+ */
+async function booleanStep(
+  current: SceneObject,
+  tool: SceneObject,
+  op: BooleanOpType,
+): Promise<{ mesh: MeshData; position: Vec3 } | null> {
+  try {
+    const res = await engine.runBooleanOperation(current, tool, op);
+    return res.noEffect ? null : res;
+  } catch (err) {
+    if (op === 'intersect' && isEngineError(err) && err.code === 'BOOLEAN_EMPTY_RESULT') return null;
+    throw err;
+  }
+}
+
+/**
  * Booleana `op` de `target` con cada herramienta en orden. Consume objetivo y herramientas salvo
- * `keepTools`. El nombre sale de `naming.booleanResult` salvo que se indique `name`.
+ * `keepTools`. El nombre sale de `naming.booleanResult` salvo que se indique `name`. Si una resta o
+ * intersección no cambia nada (piezas que no se tocan) devuelve `result: null`, un cambio vacío
+ * (sin paso de historial) y el aviso `BOOLEAN_NO_EFFECT`.
  */
 export async function booleanOperation(
   ctx: OperationContext,
   input: { target: SceneObject; tools: SceneObject[]; op: BooleanOpType; keepTools?: boolean; name?: string },
-): Promise<{ result: SceneObject; change: SceneChange }> {
+): Promise<{ result: SceneObject | null; change: SceneChange }> {
   const { target, tools, op } = input;
+  const noEffect = () => ({ result: null, change: change({ warnings: [engineWarning('BOOLEAN_NO_EFFECT', { op })] }) });
   let current: SceneObject = target;
+  let changed = false;
   for (const tool of tools) {
-    const res = await engine.runBooleanOperation(current, tool, op);
+    const res = await booleanStep(current, tool, op);
+    if (!res) {
+      // Intersección sin contacto vaciaría la pieza: no se aplica. Una resta sin contacto se salta.
+      if (op === 'intersect') return noEffect();
+      continue;
+    }
+    changed = true;
     // Paso intermedio: solo importa su malla y posición; el resultado final recibe ID nuevo.
     current = buildSceneObject({
       id: target.id,
@@ -36,6 +64,7 @@ export async function booleanOperation(
       materialPreset: target.materialPreset,
     }, ctx.policy);
   }
+  if (!changed) return noEffect();
   const result = buildWith(ctx, {
     name: input.name ?? ctx.naming.booleanResult(op, [target, ...tools]),
     source: 'boolean',

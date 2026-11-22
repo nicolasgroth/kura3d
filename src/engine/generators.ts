@@ -345,13 +345,17 @@ export async function generateSilhouetteOrCutterFromImage(
       // Cortador: pestaña exterior de agarre + cuchilla perimetral
       const baseH = requireOperationRange('baseThicknessMm', options.baseThicknessMm, IR.cutterBaseMm, 2);
       const bladeH = requireOperationRange('reliefHeightMm', options.reliefHeightMm, IR.cutterBladeMm, 12);
+      // Un solo sólido tallado: bloque exterior menos el hueco de la figura menos el anillo sobre
+      // la pestaña. Las herramientas sobresalen de las caras del bloque, así ninguna cara queda
+      // coincidente (unir pestaña y cuchilla dejaba vértices duplicados en la pared interior).
+      const totalH = baseH + bladeH;
       const outerWallCs = own(baseCs.offset(wallW, 'Round'));
-      const wallCs = own(outerWallCs.subtract(baseCs));
       const flangeOuterCs = own(baseCs.offset(margin, 'Round'));
-      const flangeCs = own(flangeOuterCs.subtract(baseCs));
-      const flange = own(flangeCs.extrude(baseH, 0, 0, [1, 1], false));
-      const wall = own(wallCs.extrude(baseH + bladeH, 0, 0, [1, 1], false));
-      combinedZ = own(flange.add(wall));
+      const block = own(flangeOuterCs.extrude(totalH, 0, 0, [1, 1], false));
+      const hole = own(own(baseCs.extrude(totalH + 2, 0, 0, [1, 1], false)).translate([0, 0, -1]));
+      const aboveFlangeCs = own(own(flangeOuterCs.offset(1, 'Round')).subtract(outerWallCs));
+      const aboveFlange = own(own(aboveFlangeCs.extrude(bladeH + 1, 0, 0, [1, 1], false)).translate([0, 0, baseH]));
+      combinedZ = own(own(block.subtract(hole)).subtract(aboveFlange));
     }
 
     const rotatedY = own(combinedZ.rotate([-90, 0, 0]));

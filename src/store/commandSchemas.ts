@@ -30,7 +30,7 @@ import {
 import {
   PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, primitiveRangeFor, type PrimitiveRangeKey,
 } from '../engine/primitiveLimits';
-import { OPERATION_RANGES as OR } from '../engine/operationLimits';
+import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../engine/operationLimits';
 import { CommandError } from './commandErrors';
 import {
   findObject, resolveIdsOrSelection, resolveObjects, resolveTarget, selectedObjects, type SceneView,
@@ -337,8 +337,8 @@ export function parseProjection(
 export function parsePrintability(scene: SceneView, p: RawParams) {
   return {
     target: resolveTarget(scene, p),
-    infillPercent: readRange(p, OR.printability.infillPercent, 'infillPercent') ?? 18,
-    overhangAngleDeg: readRange(p, OR.printability.overhangAngleDeg, 'overhangAngleDeg') ?? 45,
+    infillPercent: readRange(p, OR.printability.infillPercent, 'infillPercent') ?? OPERATION_DEFAULTS.printability.infillPercent,
+    overhangAngleDeg: readRange(p, OR.printability.overhangAngleDeg, 'overhangAngleDeg') ?? OPERATION_DEFAULTS.printability.overhangAngleDeg,
   };
 }
 

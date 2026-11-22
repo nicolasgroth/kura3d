@@ -108,7 +108,7 @@ describe('Equivalencia headless ↔ src/engine', () => {
     expectSameMetrics(got, metricsOfResult(ref));
   });
 
-  it('intersección de cuerpos disjuntos falla en vez de devolver el objetivo intacto', async () => {
+  it('intersección de cuerpos disjuntos avisa BOOLEAN_NO_EFFECT y no cambia la escena', async () => {
     const h = new KuraHeadlessEngine();
     const a = await h.createPrimitive({ primitiveType: 'box', params: { width: 10, height: 10, depth: 10 } });
     const b = await h.createPrimitive({
@@ -116,7 +116,9 @@ describe('Equivalencia headless ↔ src/engine', () => {
       params: { width: 10, height: 10, depth: 10 },
       position: [50, 0, 0],
     });
-    await expect(h.booleanOperation({ targetId: a.id, toolIds: [b.id], operation: 'intersect' })).rejects.toThrow();
+    const res = await h.booleanOperation({ targetId: a.id, toolIds: [b.id], operation: 'intersect' });
+    expect(res.resultId).toBeNull();
+    expect(res.warnings.map((w) => w.code)).toEqual(['BOOLEAN_NO_EFFECT']);
     expect(h.getSceneState().objectCount).toBe(2);
   });
 

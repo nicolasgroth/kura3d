@@ -3,8 +3,8 @@
  * @description Cliente del Worker del motor: un único Worker reutilizable (Manifold se inicializa
  * una vez), entradas copiadas y transferidas, resultados transferidos de vuelta, nombres
  * resueltos con el `ResultNaming` real, progreso por fase y cancelación (descarta el resultado y,
- * como Manifold no se puede interrumpir, termina el Worker y lo recrea al pedir la siguiente
- * tarea). Sin `Worker` (Node, Vitest, MCP headless) ejecuta la misma tarea en proceso.
+ * como Manifold no se puede interrumpir, termina el Worker y reencola las demás tareas pendientes
+ * en uno nuevo). Sin `Worker` (Node, Vitest, MCP headless) ejecuta la misma tarea en proceso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -57,6 +57,9 @@ interface Pending {
   onProgress?: (phase: string) => void;
   ctx: OperationContext;
   known: SceneObject[];
+  /** Tarea y argumentos originales (intactos: se envía una copia) para reencolar en un Worker nuevo. */
+  task: EngineTaskName;
+  args: unknown;
 }
 
 /** Objetos de escena alcanzables en los argumentos (para resolver nombres). */
@@ -106,6 +109,29 @@ export function createEngineClient(factory: () => WorkerLike | null = defaultWor
   const resetWorker = () => {
     worker?.terminate();
     worker = null;
+  };
+
+  /** Envía la tarea al Worker; si `postMessage` lanza (p. ej. DataCloneError) la rechaza y la limpia. */
+  const post = (w: WorkerLike, id: number, p: Pending): void => {
+    try {
+      const payload = copyForTransfer(p.args);
+      const request: EngineTaskRequest = { type: 'run', id, task: p.task, args: payload, policy: { ...p.ctx.policy } };
+      w.postMessage(request, collectTransferables(payload));
+    } catch (err) {
+      pending.delete(id);
+      p.reject(err);
+    }
+  };
+
+  /** Tras terminar el Worker por una cancelación, reenvía las demás tareas pendientes al Worker nuevo. */
+  const requeuePending = (): void => {
+    if (pending.size === 0) return;
+    const w = ensureWorker();
+    if (!w) {
+      failAll(new Error('Engine worker unavailable'));
+      return;
+    }
+    for (const [id, p] of [...pending]) post(w, id, p);
   };
 
   const ensureWorker = (): WorkerLike | null => {
@@ -161,10 +187,9 @@ export function createEngineClient(factory: () => WorkerLike | null = defaultWor
         return { id, inWorker: false, promise, cancel: () => { cancelled = true; rejectJob(new EngineCancelledError()); } };
       }
       const promise = new Promise<EngineTaskResult<typeof name>>((resolve, reject) => {
-        pending.set(id, { resolve: resolve as (v: unknown) => void, reject, onProgress, ctx, known: sceneObjectsIn(args) });
-        const payload = copyForTransfer(args);
-        const request: EngineTaskRequest = { type: 'run', id, task: name, args: payload, policy: { ...ctx.policy } };
-        w.postMessage(request, collectTransferables(payload));
+        const entry: Pending = { resolve: resolve as (v: unknown) => void, reject, onProgress, ctx, known: sceneObjectsIn(args), task: name, args };
+        pending.set(id, entry);
+        post(w, id, entry);
       });
       return {
         id,
@@ -174,10 +199,11 @@ export function createEngineClient(factory: () => WorkerLike | null = defaultWor
           const p = pending.get(id);
           if (!p) return;
           pending.delete(id);
-          // Manifold no se interrumpe: se termina el Worker y se recrea en la próxima tarea.
+          // Manifold no se interrumpe: se termina el Worker; solo se rechaza esta tarea y las demás
+          // pendientes se reencolan en un Worker nuevo.
           resetWorker();
           p.reject(new EngineCancelledError());
-          failAll(new EngineCancelledError());
+          requeuePending();
         },
       };
     },

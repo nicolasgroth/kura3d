@@ -26,7 +26,7 @@ import { uiCommandResponseSchema, uiControlMessageSchema } from './schemas.js';
 import { READ_COMMANDS, isReadCommand } from '../../src/core/commands/commandPolicy';
 import type { KuraCommandName, KuraCommandRequest, KuraCommandResponse } from './types.js';
 
-/** Comandos permitidos en modo Solo Lectura (derivado de `toolPolicy.ts`). */
+/** Comandos permitidos en modo Solo Lectura (derivado de `src/core/commands/commandPolicy.ts`). */
 export const READ_ONLY_COMMANDS: ReadonlySet<KuraCommandName> = new Set(READ_COMMANDS);
 
 /** Versión del protocolo de control del puente (mensajes `type`). */
@@ -401,6 +401,8 @@ export class KuraBridgeServer {
   /** Registra la sesión de la UI, aplica la preferencia de solo lectura y envía el saludo. */
   private handleConnection(socket: WebSocket, req: IncomingMessage): void {
     if (this.activeClient && this.activeClient !== socket) {
+      // Las solicitudes en vuelo eran del cliente anterior: se rechazan ya, sin esperar el timeout.
+      this.rejectAllPending(new Error('La instancia de Kura3D fue reemplazada por otra antes de responder.'));
       try {
         this.activeClient.close(1000, 'Reemplazado por nueva instancia de Kura3D');
       } catch {

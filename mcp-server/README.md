@@ -60,7 +60,7 @@ Prioridad: argumentos CLI > variables de entorno > valores por defecto.
 
 ### Solo Lectura: una sola fuente de verdad
 
-`src/toolPolicy.ts` declara cada comando como `read` o `write`. De ahí salen el rechazo en servidor (herramientas MCP y puente), la anotación `readOnlyHint` de cada herramienta en `tools/list` y la validación del cliente del puente en la UI (que importa el mismo módulo). Solo son de lectura `kura_get_scene_state`, `kura_capture_viewport`, `kura_analyze_printability` y `kura_detect_structures`; las exportaciones cuentan como escritura.
+`src/core/commands/commandPolicy.ts` (en la raíz del repositorio) declara cada comando como `read` o `write`. De ahí salen el rechazo en servidor (herramientas MCP y puente), la anotación `readOnlyHint` de cada herramienta en `tools/list` y la validación del cliente del puente en la UI (que importa el mismo módulo). Solo son de lectura `kura_get_scene_state`, `kura_capture_viewport`, `kura_analyze_printability` y `kura_detect_structures`; las exportaciones cuentan como escritura.
 
 Solo Lectura efectivo = impuesto por el servidor (CLI/env) **o** pedido por la UI en el handshake (`readOnly=1`, el interruptor de Ajustes). La petición de la UI se conserva aunque la UI se desconecte. Las herramientas de escritura siguen listadas, pero el servidor las **rechaza** con un error que menciona "Solo Lectura" y nunca las reenvía a la UI.
 
@@ -151,40 +151,47 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 
 ---
 
-## Catálogo de Herramientas MCP (`kura_*` — 30 herramientas)
+## Catálogo de Herramientas MCP (`kura_*` — 31 herramientas)
 
 | Herramienta | Descripción |
 | :--- | :--- |
 | `kura_get_scene_state` | Lista objetos, dimensiones en mm, unidades activas y perfil de impresora. |
-| `kura_create_primitive` | Crea primitivas (`box`, `cylinder`, `tube`, `sphere`, `cone`, `torus`, `prism`, `text`). |
+| `kura_create_primitive` | Crea primitivas (`box`, `cylinder`, `tube`, `sphere`, `cone`, `torus`, `prism`, `text`). Acepta `placement` (ver más abajo). |
 | `kura_transform_object` | Modifica posición `[x,y,z]`, rotación Euler, escala o propiedades del objeto. |
 | `kura_delete_object` | Elimina un objeto de la escena por ID. |
-| `kura_boolean_operation` | Ejecuta operaciones CSG (`union`, `subtract`, `intersect`). |
+| `kura_boolean_operation` | Ejecuta operaciones CSG (`union`, `subtract`, `intersect`). Si una resta o intersección no cambia nada porque las piezas no se tocan, devuelve `resultId: null` y el aviso `BOOLEAN_NO_EFFECT` sin tocar la escena. |
 | `kura_hollow_object` | Ahueca un sólido indicando grosor de pared en mm y drenaje opcional. |
-| `kura_plane_cut` | Corta un modelo por plano (`x`, `y`, `z`) con conectores (`dowel`, `peg`, `dovetail`). |
+| `kura_plane_cut` | Corta un modelo por plano (`x`, `y`, `z`) con conectores (`dowel`, `peg`, `dovetail`). En headless las mitades se separan en X/Z para que no se solapen. |
 | `kura_split_disconnected` | Separa islas geométricas desconectadas en objetos independientes. |
 | `kura_split_by_color` | Divide una malla pintada por color para impresión multimaterial. |
 | `kura_apply_texture` | Aplica textura superficial (`fuzzy`, `knurling`, `waves`, `honeycomb`, `grid`). |
 | `kura_paint_object` | Pinta un objeto con un color hexadecimal (`#rrggbb`). |
-| `kura_import_svg` | Extruye contenido vectorial SVG a un sólido 3D. |
+| `kura_import_svg` | Extruye contenido vectorial SVG a un sólido 3D. Acepta `placement`. |
 | `kura_set_units` | Cambia unidades de visualización (`mm`, `cm`, `m`, `in`, `ft`). |
 | `kura_set_printer_profile` | Activa uno de los 12 perfiles multi-marca (`elegoo-centauri-carbon-2`, `elegoo-centauri-carbon-1`, `bambu-p1s-x1c-a1`, `bambu-a1-mini`, `bambu-h2d`, `snapmaker-artisan`, `snapmaker-j1s`, `flashforge-ad5m`, `flashforge-ad5x`, `generic-220`, `generic-300`, `free-studio`). |
 | `kura_export_stl` | Exporta un archivo `.stl` binario o ASCII directamente en disco. |
 | `kura_export_3mf` | Exporta un paquete `.3mf` Multi-Slicer con `Metadata/model_settings.config` (`generic`, `elegoo`, `bambu`, `snapmaker`, `flashforge`). |
 | `kura_capture_viewport` | Captura una imagen PNG del viewport 3D en modo Live Bridge. |
-| `kura_generate_mold` | *(Pro)* Genera moldes/contra-moldes (`direct_1part`, `direct_2part`, `silicone_master`, `core_cavity`) con llaves y embudo. |
+| `kura_generate_mold` | *(Pro)* Genera moldes/contra-moldes (`direct_1part`, `direct_2part`, `silicone_master`, `core_cavity`) con llaves y embudo. Acepta `placement`; en headless las piezas se reparten sin solaparse. |
 | `kura_project_on_surface` | *(Pro)* Proyecta texto o SVG sobre una superficie o cilindro (`emboss`, `deboss`, `flush_inlay`). |
 | `kura_analyze_printability` | *(Pro · Solo Lectura)* Analiza encaje en cama, contacto `Y=0`, voladizos, volumen, peso en gramos y advertencias. |
 | `kura_simplify_mesh` | *(Pro)* Simplifica la densidad de triángulos según tolerancia geométrica en mm. |
 | `kura_refine_mesh` | *(Pro)* Refina/subdivide aristas de la malla con suavizado opcional. |
-| `kura_create_thread` | *(Pro)* Crea roscas métricas ISO (`bolt`, `nut`, `hole`) con diámetro, paso, longitud y holgura. |
+| `kura_create_thread` | *(Pro)* Crea roscas métricas ISO (`bolt`, `nut`, `hole`) con diámetro, paso, longitud y holgura. Acepta `placement`. |
 | `kura_convex_hull` | *(Pro)* Genera la envolvente convexa cerrada de uno o más objetos. |
 | `kura_align_objects` | *(Pro)* Alinea objetos (`minX`..`maxZ`) o los distribuye en grilla sobre la cama (`arrange_grid`). |
 | `kura_set_material` | *(Pro)* Asigna un preset de material físico/visual PBR (`pla_matte`, `pla_silk`, `petg_clear`, `abs`, `carbon_fiber`, `silicone`, `wax_candle`, `metallic`). |
 | `kura_detect_structures` | *(Solo Lectura)* Detecta y clasifica sub-estructuras geométricas (tanques, tubos, cúpulas, bloques, cuerpo principal) devolviendo sus `regionId` y dimensiones. |
 | `kura_colorize_structures` | Detecta las sub-estructuras del modelo y les asigna colores diferenciados para inspección o impresión multicolor. |
 | `kura_extract_structure` | Extrae una sub-estructura (`regionId`) como objeto independiente, con opción de removerla del objeto origen (`removeFromSource`). |
+| `kura_update_primitive_params` | Regenera una primitiva o rosca paramétrica con parámetros nuevos, conservando id y posición. |
 | `kura_mirror_object` | Refleja especularmente un objeto sobre el eje `x`, `y` o `z`, invirtiendo vértices y winding de triángulos para mantener normales válidas. |
+
+### Colocación en espacio libre (headless)
+
+Las herramientas que crean piezas (`kura_create_primitive`, incluido `text`, `kura_create_thread`, `kura_import_svg` y `kura_generate_mold`) colocan la pieza nueva, por defecto, en el primer hueco libre de la cama del perfil activo, sin solapar las cajas envolventes de las piezas visibles (`placement: 'free'`). Con `placement: 'origin'` la pieza queda en el centro aunque esté ocupado (útil para preparar una resta), y una `position` explícita manda sobre ambos. Tras `kura_plane_cut` y `kura_generate_mold`, las piezas resultantes se reparten una a una en huecos libres, así una escena exportada a 3MF no trae piezas superpuestas. La respuesta trae siempre la posición final.
+
+Las llamadas concurrentes al motor headless se ejecutan en orden de llegada (cola FIFO): una operación que espera al motor no ve la escena cambiada a mitad de camino.
 
 ### Recursos MCP expuestos
 
