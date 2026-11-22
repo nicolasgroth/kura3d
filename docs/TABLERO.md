@@ -95,6 +95,9 @@ Ordenadas por prioridad dentro de cada grupo.
 | Grupo | Funcionalidad |
 |---|---|
 | Base | Pruebas E2E reales con Playwright y pruebas de regresión geométrica |
+| Dividir para imprimir | Validación de armado: todo cierra, los conectores no chocan y existe un orden de montaje; con el orden numerado |
+| Dividir para imprimir | Uniones firmes: tamaño mínimo de conector y de pared según la sección |
+| Dividir para imprimir | Cortes por las partes naturales de la figura (estrechamientos), además de la rejilla |
 | Dividir para imprimir | Uniones vinculadas entre mitades (mover una mueve su pareja) |
 | Dividir para imprimir | Unión de enchufe para tubos: una boca se ensancha y la otra pieza se alarga para conservar el largo total (opción del usuario, modifica la forma) |
 | Dividir para imprimir | Cortes inclinados y más de un plano por eje ajustados a mano; mostrar u ocultar los cortes para ver solo las piezas |

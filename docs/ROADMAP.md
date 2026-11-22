@@ -99,6 +99,10 @@ Principios que salen de estos pedidos: la interfaz debe ser **didáctica** (cada
 | Mostrar u ocultar los cortes, moverlos, inclinarlos, y recién entonces aplicar | Mover ya existe; inclinar y ocultar: SPLIT-04 (nuevo) |
 | Esfera hueca con patrón de perforaciones | GEO-07 (nuevo), para más adelante |
 | Límite de deshacer y rehacer | HIST-02 (nuevo): configurable según memoria |
+| Validar que lo dividido se puede armar: que todo cierre, que los conectores no choquen entre sí, y que exista un orden en que cada pieza pueda entrar | ASSY-02 (nuevo), prioridad alta: es parte de dar por buena una división |
+| Uniones firmes: conector y pared a su alrededor con un tamaño mínimo según la sección, para que no se rompa | ASSY-03 (nuevo), junto con ASSY-02 |
+| Ver el modelo armado con los conectores a la vista | ASSY-02 |
+| Cortar por las partes naturales de la figura (la mano con la lanza, un brazo) en vez de solo por una rejilla | SPLIT-05 (nuevo): cortes sugeridos en los estrechamientos, usando la detección de estructuras |
 
 ## Automatizaciones
 
