@@ -28,3 +28,5 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-22 | Refuerzo de uniones débiles | Es elección del usuario, porque cambia el radio del conector y puede modificar la pieza. La app explica qué cambiaría y el usuario decide. Si no se refuerza, se mantiene el aviso de unión débil para que lo tenga presente al imprimir. |
 | 2026-11-22 | Cola de milano pasante | Como abre la superficie de la pieza, nunca se aplica sola: es una opción explícita, apagada por defecto. |
 | 2026-11-22 | Tablero | Se actualiza cada vez que algo cambia de etapa, no solo al cerrar una ronda. |
+| 2026-11-22 | Holgura por defecto de los conectores | Se mantiene en 0,25 mm; quien quiera otro valor lo configura. |
+| 2026-11-22 | Verificar los 3MF en un slicer | El asistente puede abrirlos en OrcaSlicer (el más avanzado de los dos instalados) como prueba controlada, hacia el final. Con cuidado: el equipo se bloqueó alguna vez, así que se vigila que la aplicación no quede pegada y se cierra si no responde. El aviso inicial del controlador Nahimic es solo una advertencia: se acepta y la aplicación sigue. |
