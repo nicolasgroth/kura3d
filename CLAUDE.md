@@ -6,6 +6,7 @@ Estudio de modelado 3D para impresión (web + escritorio). Autor: Nicolás Groth
 
 - El nombre es **Kura3D**: junto, sin "Pro", "Ultra" ni versiones de marketing. En código TS/TSX usa `BRAND` de `src/brand.ts`; no escribas el literal.
 - Foco: **modelado y preparación geométrica** para imprimir. Fuera de alcance: laminado, G-code, boquillas, parámetros de slicer, control de impresoras. Estimaciones de material son un extra posterior.
+- Algoritmos antes que IA: los problemas del producto (validar armado, ubicar conectores, dividir, reparar mallas) se resuelven con geometría, reglas y algoritmos conocidos. La IA es un asistente opcional encima, nunca el mecanismo del que depende una función.
 - Dependencias: solo código abierto con licencia permisiva (MIT, Apache-2.0, BSD, ISC, MPL-2.0). GPL/AGPL prohibidas; LGPL solo con aprobación explícita del usuario. Antes de escribir algo complejo, busca una librería abierta que lo resuelva.
 - Todo archivo de código lleva cabecera `@file / @description / @author Nicolás Groth <ngroth@gmail.com> / @organization ISGROTH — Innovación y Soluciones GROTH / @license MIT` (en Rust, el estilo `// Autor:` de `src-tauri/src/lib.rs`).
 - Textos de interfaz: siempre por i18n, con paridad en los 6 idiomas (`src/i18n/`).
