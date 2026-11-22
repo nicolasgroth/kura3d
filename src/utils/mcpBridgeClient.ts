@@ -98,8 +98,15 @@ export interface McpBridgeOptions {
   probe?: (port: number) => Promise<boolean>;
 }
 
-const MIN_RECONNECT_MS = 3000;
-const MAX_RECONNECT_MS = 20000;
+const MIN_RECONNECT_MS = 5000;
+const MAX_RECONNECT_MS = 60000;
+const RECONNECT_FACTOR = 2;
+
+/** Siguiente espera de reconexión: crece de forma exponencial hasta el tope (menos ruido en consola). */
+export function nextReconnectDelay(currentMs: number): number {
+  return Math.min(MAX_RECONNECT_MS, Math.round(currentMs * RECONNECT_FACTOR));
+}
+export const RECONNECT_DELAYS = { min: MIN_RECONNECT_MS, max: MAX_RECONNECT_MS } as const;
 /** Reconexión rápida tras una rotación de token (código de cierre 4001 del servidor). */
 const ROTATION_RECONNECT_MS = 300;
 const CLOSE_TOKEN_ROTATED = 4001;
@@ -225,6 +232,8 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
   let socket: WebSocket | null = null;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   let backoffMs = MIN_RECONNECT_MS;
+  /** Un solo sondeo por caída: los siguientes fallos no repiten la petición (ni su error en consola). */
+  let probedOutage = false;
   let disposed = false;
 
   const scheduleReconnect = (delayMs = backoffMs) => {
@@ -235,7 +244,7 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
       reconnectTimer = null;
       connect();
     }, delayMs);
-    backoffMs = Math.min(MAX_RECONNECT_MS, Math.round(backoffMs * 1.6));
+    backoffMs = nextReconnectDelay(backoffMs);
   };
 
   const connect = () => {
@@ -276,6 +285,7 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
         return;
       }
       backoffMs = MIN_RECONNECT_MS;
+      probedOutage = false;
       opened = true;
       activeSocket = current;
       options.onStatusChange?.(true);
@@ -364,7 +374,8 @@ export function startMcpBridgeClient(options: McpBridgeOptions): () => void {
       settleRotation('failed');
       if (opened) {
         setStatus({ phase: 'connecting', error: null });
-      } else {
+      } else if (!probedOutage) {
+        probedOutage = true;
         // Sin apertura: o no hay servidor, o rechazó el token/origen (el navegador oculta el 401).
         void probe(port).then((listening) => {
           if (disposed) return;

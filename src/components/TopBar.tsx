@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Bot,
   ChevronDown,
@@ -48,6 +48,8 @@ import { describeMcpBridge } from '../utils/mcpBridgeHealth';
 import { openExportDialog } from './ExportDialog';
 import { ImportMenuButton } from './ImportMenuButton';
 import { ProjectMenu } from './ProjectMenu';
+import { TopBarOverflowMenu } from './TopBarOverflowMenu';
+import '../styles/topbarOverflow.css';
 
 const UNIT_OPTIONS: UnitSystem[] = ['mm', 'cm', 'm', 'in', 'ft'];
 
@@ -68,6 +70,25 @@ function useSystemPrefersDark(): boolean {
 
   return prefersDark;
 }
+
+/**
+ * Controles opcionales, del primero al último en pasar al menú "Más".
+ * Proyecto, Importar, Exportar, Deshacer/Rehacer y Ajustes nunca se ocultan.
+ */
+const HIDE_ORDER = [
+  'density',
+  'palette',
+  'lang',
+  'themes',
+  'unit',
+  'printer',
+  'theme',
+  'mcp',
+  'ai',
+  'tools',
+  'brand',
+] as const;
+type HideId = (typeof HIDE_ORDER)[number];
 
 export const TopBar: React.FC = () => {
   const language = useKuraStore((s) => s.language);
@@ -128,6 +149,39 @@ export const TopBar: React.FC = () => {
     { id: 'erase', icon: <Eraser size={13} />, labelKey: 'erase' },
   ];
 
+  // Nivel de ahorro de espacio: 0 = completo, 1 = etiquetas compactas, 2+ = oculta controles en orden.
+  const headerRef = useRef<HTMLElement>(null);
+  const [level, setLevel] = useState(0);
+  const maxLevel = HIDE_ORDER.length + 1;
+  const hidden = new Set<HideId>(level >= 2 ? HIDE_ORDER.slice(0, level - 1) : []);
+  const isHidden = (id: HideId) => hidden.has(id);
+
+  // Reinicia la medición cuando cambia el ancho o el contenido que afecta al ancho.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    let lastWidth = el.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (el.clientWidth !== lastWidth) {
+        lastWidth = el.clientWidth;
+        setLevel(0);
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    setLevel(0);
+  }, [language, uiDensity, bridgeStatus.phase, mcpConfig.enabled, mcpConfig.requireAuth, aiDrawerOpen, aiConfig]);
+
+  // Si aún desborda, oculta un control más (se resuelve antes de pintar).
+  useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (el && el.scrollWidth > el.clientWidth + 1 && level < maxLevel) {
+      setLevel((v) => v + 1);
+    }
+  });
+
   const mcpView = describeMcpBridge(language, mcpConfig.enabled, bridgeStatus);
   const mcpLabel = mcpView.short;
 
@@ -148,21 +202,111 @@ export const TopBar: React.FC = () => {
 
   const densityLabel = t(language, `ui.density.${uiDensity}`);
 
-  return (
-    <header className="kura-topbar">
-      {/* Marca oficial Kura3D v0.5.0 + Archivo rápido + Undo/Redo */}
-      <div className="kura-topbar-group kura-topbar-left">
-        <div className="kura-brand" title={t(language, 'app.tagline')}>
-          <img
-            src="/branding/kura3d-icon.png"
-            alt="Kura3D"
-            className="kura-brand-icon-img"
-            width={26}
-            height={26}
-          />
+  const brandEl = (
+    <div className="kura-brand" title={t(language, 'app.tagline')}>
+      <img
+        src="/branding/kura3d-icon.png"
+        alt="Kura3D"
+        className="kura-brand-icon-img"
+        width={26}
+        height={26}
+      />
+      {!isHidden('brand') && (
+        <>
           <span className="kura-brand-title">Kura3D</span>
           <span className="kura-brand-badge">0.5</span>
-        </div>
+        </>
+      )}
+    </div>
+  );
+
+  const toolButton = (tool: (typeof tools)[number], inMenu: boolean) => (
+    <button
+      key={tool.id}
+      type="button"
+      role={inMenu ? 'menuitemradio' : undefined}
+      aria-checked={inMenu ? activeTool === tool.id : undefined}
+      aria-pressed={inMenu ? undefined : activeTool === tool.id}
+      className={`kura-btn ${activeTool === tool.id ? 'is-active' : ''}`}
+      onClick={() => setActiveTool(tool.id)}
+      title={t(language, `topbar.tool.${tool.labelKey}Tip`)}
+      aria-label={t(language, `topbar.tool.${tool.labelKey}`)}
+    >
+      {tool.icon}
+      <span className="kura-tool-label">{t(language, `topbar.tool.${tool.labelKey}`)}</span>
+    </button>
+  );
+
+  const printerSelect = (
+    <select
+      className="kura-select kura-printer-select"
+      value={printerProfile.id}
+      onChange={(e) => setPrinterProfile(e.target.value)}
+      aria-label={t(language, 'topbar.printerProfile')}
+      title={getLocalizedPrinterName(language, printerProfile)}
+    >
+      {DEFAULT_PRINTER_PROFILES.map((profile) => (
+        <option key={profile.id} value={profile.id}>
+          {getLocalizedPrinterName(language, profile)}
+        </option>
+      ))}
+    </select>
+  );
+
+  const unitSelect = (
+    <select
+      className="kura-select kura-unit-select"
+      value={unitSystem}
+      onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
+      aria-label={t(language, 'topbar.unitLabel')}
+      title={t(language, 'topbar.unitLabel')}
+    >
+      {UNIT_OPTIONS.map((u) => (
+        <option key={u} value={u}>
+          {u}
+        </option>
+      ))}
+    </select>
+  );
+
+  const langSelect = (
+    <select
+      className="kura-lang-select-native"
+      value={language}
+      onChange={(e) => setLanguage(e.target.value as LanguageCode)}
+      aria-label={t(language, 'topbar.languageSelect')}
+    >
+      {SUPPORTED_LANGUAGES.map((spec) => (
+        <option key={spec.code} value={spec.code}>
+          {spec.shortLabel} — {spec.nativeName}
+        </option>
+      ))}
+    </select>
+  );
+
+  const themeTip = isRenderedDark
+    ? t(language, 'topbar.theme.switchToLight')
+    : t(language, 'topbar.theme.switchToDark');
+  const aiIcon =
+    aiBadge.mode === 'external' ? (
+      <Cloud size={13} />
+    ) : aiBadge.mode === 'ollama' ? (
+      <Bot size={13} />
+    ) : (
+      <Zap size={13} />
+    );
+  const aiShort = language === 'es' || language === 'fr' ? 'IA' : 'AI';
+  const aiTip = `${t(language, 'topbar.aiChatTip')} — ${aiBadge.label}: ${aiBadge.tooltip}`;
+  const showMore = hidden.size > 0;
+
+  return (
+    <header
+      ref={headerRef}
+      className={`kura-topbar kura-topbar-adaptive ${level >= 1 ? 'is-compact' : ''} ${level >= 9 ? 'is-narrow' : ''}`}
+    >
+      {/* Marca oficial Kura3D v0.5.0 + Archivo rápido + Undo/Redo */}
+      <div className="kura-topbar-group kura-topbar-left">
+        {brandEl}
 
         <ImportMenuButton />
 
@@ -191,51 +335,14 @@ export const TopBar: React.FC = () => {
 
       {/* Herramientas principales del estudio */}
       <div className="kura-topbar-group kura-topbar-center">
-        <div className="kura-segmented" role="group" aria-label="Herramientas">
-          {tools.map((tool) => (
-            <button
-              key={tool.id}
-              type="button"
-              className={`kura-btn ${activeTool === tool.id ? 'is-active' : ''}`}
-              onClick={() => setActiveTool(tool.id)}
-              title={t(language, `topbar.tool.${tool.labelKey}Tip`)}
-              aria-label={t(language, `topbar.tool.${tool.labelKey}`)}
-            >
-              {tool.icon}
-              <span className="kura-tool-label">
-                {t(language, `topbar.tool.${tool.labelKey}`)}
-              </span>
-            </button>
-          ))}
-        </div>
+        {!isHidden('tools') && (
+          <div className="kura-segmented" role="group" aria-label="Herramientas">
+            {tools.map((tool) => toolButton(tool, false))}
+          </div>
+        )}
 
-        <select
-          className="kura-select kura-printer-select"
-          value={printerProfile.id}
-          onChange={(e) => setPrinterProfile(e.target.value)}
-          aria-label={t(language, 'topbar.printerProfile')}
-          title={getLocalizedPrinterName(language, printerProfile)}
-        >
-          {DEFAULT_PRINTER_PROFILES.map((profile) => (
-            <option key={profile.id} value={profile.id}>
-              {getLocalizedPrinterName(language, profile)}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className="kura-select kura-unit-select"
-          value={unitSystem}
-          onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
-          aria-label={t(language, 'topbar.unitLabel')}
-          title={t(language, 'topbar.unitLabel')}
-        >
-          {UNIT_OPTIONS.map((u) => (
-            <option key={u} value={u}>
-              {u}
-            </option>
-          ))}
-        </select>
+        {!isHidden('printer') && printerSelect}
+        {!isHidden('unit') && unitSelect}
 
         <button
           type="button"
@@ -251,111 +358,199 @@ export const TopBar: React.FC = () => {
 
       {/* Grupo de utilidades fijado a la derecha */}
       <div className="kura-topbar-group kura-topbar-right">
-        <button
-          type="button"
-          className={`kura-btn kura-btn-sm ${uiDensity !== 'full' ? 'is-active' : ''}`}
-          onClick={cycleUiDensity}
-          title={`${t(language, 'ui.density.cycleTip')} (${densityLabel})`}
-          aria-label={t(language, 'ui.density.cycleTip')}
-        >
-          {densityIcon}
-          <span className="kura-btn-label">{densityLabel}</span>
-        </button>
-
-        <button
-          type="button"
-          className="kura-btn kura-btn-icon kura-btn-sm"
-          onClick={() => setCommandPaletteOpen(true)}
-          title={t(language, 'topbar.cmdPaletteTip')}
-          aria-label={t(language, 'topbar.cmdPalette')}
-        >
-          <Search size={13} />
-        </button>
-
-        <div
-          className="kura-lang-select-wrap"
-          title={`${t(language, 'topbar.languageSelect')}: ${currentLangSpec.nativeName}`}
-        >
-          <span className="kura-lang-select-face" aria-hidden="true">
-            <span>{currentLangSpec.shortLabel}</span>
-            <ChevronDown size={11} />
-          </span>
-          <select
-            className="kura-lang-select-native"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as LanguageCode)}
-            aria-label={t(language, 'topbar.languageSelect')}
+        {!isHidden('density') && (
+          <button
+            type="button"
+            className={`kura-btn kura-btn-sm ${uiDensity !== 'full' ? 'is-active' : ''}`}
+            onClick={cycleUiDensity}
+            title={`${t(language, 'ui.density.cycleTip')} (${densityLabel})`}
+            aria-label={t(language, 'ui.density.cycleTip')}
           >
-            {SUPPORTED_LANGUAGES.map((spec) => (
-              <option key={spec.code} value={spec.code}>
-                {spec.shortLabel} — {spec.nativeName}
-              </option>
-            ))}
-          </select>
-        </div>
+            {densityIcon}
+            <span className="kura-btn-label">{densityLabel}</span>
+          </button>
+        )}
 
-        <button
-          type="button"
-          className="kura-btn kura-btn-icon kura-btn-sm"
-          onClick={() => openSettings('appearance')}
-          title={t(language, 'topbar.themesShortcut')}
-          aria-label={t(language, 'topbar.themesShortcut')}
-        >
-          <Palette size={13} />
-        </button>
+        {!isHidden('palette') && (
+          <button
+            type="button"
+            className="kura-btn kura-btn-icon kura-btn-sm"
+            onClick={() => setCommandPaletteOpen(true)}
+            title={t(language, 'topbar.cmdPaletteTip')}
+            aria-label={t(language, 'topbar.cmdPalette')}
+          >
+            <Search size={13} />
+          </button>
+        )}
 
-        <button
-          type="button"
-          className="kura-btn kura-btn-icon kura-btn-sm"
-          onClick={handleToggleTheme}
-          title={
-            isRenderedDark
-              ? t(language, 'topbar.theme.switchToLight')
-              : t(language, 'topbar.theme.switchToDark')
-          }
-          aria-label={
-            isRenderedDark
-              ? t(language, 'topbar.theme.switchToLight')
-              : t(language, 'topbar.theme.switchToDark')
-          }
-        >
-          {isRenderedDark ? <Sun size={13} /> : <Moon size={13} />}
-        </button>
+        {!isHidden('lang') && (
+          <div
+            className="kura-lang-select-wrap"
+            title={`${t(language, 'topbar.languageSelect')}: ${currentLangSpec.nativeName}`}
+          >
+            <span className="kura-lang-select-face" aria-hidden="true">
+              <span>{currentLangSpec.shortLabel}</span>
+              <ChevronDown size={11} />
+            </span>
+            {langSelect}
+          </div>
+        )}
 
-        <button
-          type="button"
-          className={`kura-pill is-${mcpView.tone}`}
-          onClick={() => openSettings('mcp')}
-          title={mcpTooltip}
-          aria-label={mcpTooltip}
-        >
-          <span className="kura-dot" />
-          <span className="kura-mcp-label">{mcpLabel}</span>
-          {mcpConfig.enabled && mcpConfig.requireAuth && (
-            <Lock size={10} aria-hidden="true" />
-          )}
-        </button>
+        {!isHidden('themes') && (
+          <button
+            type="button"
+            className="kura-btn kura-btn-icon kura-btn-sm"
+            onClick={() => openSettings('appearance')}
+            title={t(language, 'topbar.themesShortcut')}
+            aria-label={t(language, 'topbar.themesShortcut')}
+          >
+            <Palette size={13} />
+          </button>
+        )}
 
-        <button
-          type="button"
-          className={`kura-btn kura-btn-sm kura-ai-toggle-btn tone-${aiBadge.cssTone} ${
-            aiDrawerOpen ? 'is-active' : ''
-          }`}
-          onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
-          title={`${t(language, 'topbar.aiChatTip')} — ${aiBadge.label}: ${aiBadge.tooltip}`}
-          aria-label={t(language, 'topbar.aiChat')}
-        >
-          {aiBadge.mode === 'external' ? (
-            <Cloud size={13} />
-          ) : aiBadge.mode === 'ollama' ? (
-            <Bot size={13} />
-          ) : (
-            <Zap size={13} />
-          )}
-          <span className="kura-btn-label">
-            {language === 'es' || language === 'fr' ? 'IA' : 'AI'}
-          </span>
-        </button>
+        {!isHidden('theme') && (
+          <button
+            type="button"
+            className="kura-btn kura-btn-icon kura-btn-sm"
+            onClick={handleToggleTheme}
+            title={themeTip}
+            aria-label={themeTip}
+          >
+            {isRenderedDark ? <Sun size={13} /> : <Moon size={13} />}
+          </button>
+        )}
+
+        {!isHidden('mcp') && (
+          <button
+            type="button"
+            className={`kura-pill is-${mcpView.tone}`}
+            onClick={() => openSettings('mcp')}
+            title={mcpTooltip}
+            aria-label={mcpTooltip}
+          >
+            <span className="kura-dot" />
+            <span className="kura-mcp-label">{mcpLabel}</span>
+            {mcpConfig.enabled && mcpConfig.requireAuth && <Lock size={10} aria-hidden="true" />}
+          </button>
+        )}
+
+        {!isHidden('ai') && (
+          <button
+            type="button"
+            className={`kura-btn kura-btn-sm kura-ai-toggle-btn tone-${aiBadge.cssTone} ${
+              aiDrawerOpen ? 'is-active' : ''
+            }`}
+            onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
+            title={aiTip}
+            aria-label={t(language, 'topbar.aiChat')}
+            aria-pressed={aiDrawerOpen}
+          >
+            {aiIcon}
+            <span className="kura-btn-label">{aiShort}</span>
+          </button>
+        )}
+
+        {showMore && (
+          <TopBarOverflowMenu
+            label={t(language, 'topbar.more')}
+            tooltip={t(language, 'topbar.moreTip')}
+          >
+            {isHidden('tools') &&
+              tools.map((tool) => <React.Fragment key={tool.id}>{toolButton(tool, true)}</React.Fragment>)}
+            {isHidden('printer') && (
+              <label className="kura-topbar-more-row">
+                {t(language, 'topbar.printerProfile')}
+                {printerSelect}
+              </label>
+            )}
+            {isHidden('unit') && (
+              <label className="kura-topbar-more-row">
+                {t(language, 'topbar.unitLabel')}
+                {unitSelect}
+              </label>
+            )}
+            {isHidden('lang') && (
+              <label className="kura-topbar-more-row">
+                {t(language, 'topbar.languageSelect')}
+                {langSelect}
+              </label>
+            )}
+            {isHidden('density') && (
+              <button
+                type="button"
+                role="menuitem"
+                className="kura-btn kura-btn-sm"
+                onClick={cycleUiDensity}
+                title={t(language, 'ui.density.cycleTip')}
+              >
+                {densityIcon}
+                <span>{`${t(language, 'ui.density.cycleTip')} (${densityLabel})`}</span>
+              </button>
+            )}
+            {isHidden('palette') && (
+              <button
+                type="button"
+                role="menuitem"
+                className="kura-btn kura-btn-sm"
+                onClick={() => setCommandPaletteOpen(true)}
+                title={t(language, 'topbar.cmdPaletteTip')}
+              >
+                <Search size={13} />
+                <span>{t(language, 'topbar.cmdPalette')}</span>
+              </button>
+            )}
+            {isHidden('themes') && (
+              <button
+                type="button"
+                role="menuitem"
+                className="kura-btn kura-btn-sm"
+                onClick={() => openSettings('appearance')}
+                title={t(language, 'topbar.themesShortcut')}
+              >
+                <Palette size={13} />
+                <span>{t(language, 'topbar.themesShortcut')}</span>
+              </button>
+            )}
+            {isHidden('theme') && (
+              <button
+                type="button"
+                role="menuitem"
+                className="kura-btn kura-btn-sm"
+                onClick={handleToggleTheme}
+                title={themeTip}
+              >
+                {isRenderedDark ? <Sun size={13} /> : <Moon size={13} />}
+                <span>{themeTip}</span>
+              </button>
+            )}
+            {isHidden('mcp') && (
+              <button
+                type="button"
+                role="menuitem"
+                className="kura-btn kura-btn-sm"
+                onClick={() => openSettings('mcp')}
+                title={mcpTooltip}
+              >
+                <span className="kura-dot" aria-hidden="true" />
+                <span>{mcpLabel}</span>
+                {mcpConfig.enabled && mcpConfig.requireAuth && <Lock size={10} aria-hidden="true" />}
+              </button>
+            )}
+            {isHidden('ai') && (
+              <button
+                type="button"
+                role="menuitemcheckbox"
+                aria-checked={aiDrawerOpen}
+                className={`kura-btn kura-btn-sm ${aiDrawerOpen ? 'is-active' : ''}`}
+                onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
+                title={aiTip}
+              >
+                {aiIcon}
+                <span>{t(language, 'topbar.aiChat')}</span>
+              </button>
+            )}
+          </TopBarOverflowMenu>
+        )}
 
         <button
           type="button"

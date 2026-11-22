@@ -305,6 +305,8 @@ export interface KuraStoreState {
     recordHistory?: boolean,
   ) => void;
   commitTransformSnapshot: () => void;
+  /** Cancela un arrastre en curso: restaura la escena previa y no deja paso en el historial. */
+  cancelTransformSnapshot: () => void;
   dropObjectToBed: (id: string) => void;
   centerObjectOnBed: (id: string) => void;
   resetObjectOrientation: (id: string) => void;
@@ -1240,9 +1242,10 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
       set((state) => ({
         toasts: [...state.toasts.slice(-4), { id, text, kind }],
       }));
+      // Los errores permanecen más tiempo para poder leerse (el usuario también puede cerrarlos).
       setTimeout(() => {
         get().dismissToast(id);
-      }, 4200);
+      }, kind === 'error' ? 12000 : 4200);
     },
 
     dismissToast: (id) =>
@@ -1606,6 +1609,13 @@ export const useKuraStore = create<KuraStoreState>((set, get) => {
         past: [...state.past, snap].slice(-MAX_UNDO_HISTORY),
         future: [],
       }));
+    },
+
+    cancelTransformSnapshot: () => {
+      if (!transformSnapshotBeforeDrag) return;
+      const snap = transformSnapshotBeforeDrag;
+      transformSnapshotBeforeDrag = null;
+      set({ objects: snap.objects, selectedIds: snap.selectedIds });
     },
 
     dropObjectToBed: (id) => {

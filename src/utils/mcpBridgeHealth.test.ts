@@ -72,7 +72,7 @@ describe('estado del puente MCP', () => {
     expect(err.label).toBe(t('en', 'mcp.status.error', { reason: t('en', 'mcp.error.tokenTooShort') }));
     expect(err.tone).toBe('error');
     for (const phase of ['connecting', 'waiting', 'error'] as const) {
-      expect(describeMcpBridge('es', true, { phase, error: null }).short).not.toBe(t('es', 'topbar.mcpLocal'));
+      expect(describeMcpBridge('es', true, { phase, error: null }).short).not.toBe('MCP Local');
     }
   });
 

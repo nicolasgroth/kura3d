@@ -8,13 +8,13 @@
  * @license MIT
  */
 
-import React, { useEffect, useId, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Download } from 'lucide-react';
 import { t, type TranslationKey } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import type { ExportFormat, ExportScope } from '../store/modelIoActions';
 import type { SlicerTarget } from '../types/kura';
-import { exportFileBase, sanitizeFileBase } from '../utils/exportNaming';
+import { defaultExportBase, sanitizeFileBase } from '../utils/exportNaming';
 import { NativeModal } from './NativeModal';
 import '../styles/modelIo.css';
 
@@ -73,6 +73,15 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const [fileName, setFileName] = useState('');
   const [slicer, setSlicer] = useState<SlicerTarget>(printerProfile.brand);
   const [busy, setBusy] = useState(false);
+  // Si el usuario no ha editado el nombre, seguir el alcance elegido.
+  const nameEditedRef = useRef(false);
+
+  const changeScope = (nextScope: ExportScope) => {
+    setScope(nextScope);
+    if (!nameEditedRef.current) {
+      setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName')));
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -81,7 +90,8 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     pendingFormat = null;
     setScope(nextScope);
     setSlicer(printerProfile.brand);
-    setFileName(exportFileBase(undefined, projectName, nextScope === 'selection' ? selected : exportable, t(language, 'export.defaultName')));
+    nameEditedRef.current = false;
+    setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName')));
     // Solo al abrir: los cambios de selección posteriores no pisan lo que escribió el usuario.
   }, [open]);
 
@@ -140,12 +150,12 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
               name={`${formId}-scope`}
               checked={scope === 'selection'}
               disabled={selected.length === 0}
-              onChange={() => setScope('selection')}
+              onChange={() => changeScope('selection')}
             />
             {t(language, 'dialog.export.scope.selection', { count: selected.length })}
           </label>
           <label>
-            <input type="radio" name={`${formId}-scope`} checked={scope === 'scene'} onChange={() => setScope('scene')} />
+            <input type="radio" name={`${formId}-scope`} checked={scope === 'scene'} onChange={() => changeScope('scene')} />
             {t(language, 'dialog.export.scope.scene', { count: exportable.length })}
           </label>
         </fieldset>
@@ -159,7 +169,10 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
               value={fileName}
               maxLength={120}
               spellCheck={false}
-              onChange={(e) => setFileName(e.target.value)}
+              onChange={(e) => {
+                nameEditedRef.current = true;
+                setFileName(e.target.value);
+              }}
             />
             <span aria-hidden="true">.{format}</span>
           </div>

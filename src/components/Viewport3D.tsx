@@ -66,6 +66,8 @@ import { registerViewportCapture } from '../utils/mcpBridgeClient';
 import { updateGeometryFaceColors } from '../engine/paintColorAttribute';
 import { hidePaintCursor, PaintBrushCursor, updatePaintCursor } from './viewport/PaintBrushCursor';
 import { PaintToolbar } from './viewport/PaintToolbar';
+import { ToastStack } from './ToastStack';
+import { computeSelectionBounds } from '../utils/selectionBounds';
 import { formatDimension } from '../utils/units';
 
 interface ContextMenuState {
@@ -902,6 +904,7 @@ const SceneContent: React.FC<{
   const groupRefs = useRef<Map<string, THREE.Group>>(new Map());
 
   const [isTransforming, setIsTransforming] = useState(false);
+  const [gizmoEpoch, setGizmoEpoch] = useState(0);
   const [isPaintingDrag, setIsPaintingDrag] = useState(false);
   const [activeTargetGroup, setActiveTargetGroup] = useState<THREE.Group | null>(null);
   const [ctrlHeld, setCtrlHeld] = useState(false);
@@ -928,6 +931,7 @@ const SceneContent: React.FC<{
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const setObjectTransform = useKuraStore((s) => s.setObjectTransform);
   const commitTransformSnapshot = useKuraStore((s) => s.commitTransformSnapshot);
+  const cancelTransformSnapshot = useKuraStore((s) => s.cancelTransformSnapshot);
   const altCloneForDrag = useKuraStore((s) => s.altCloneForDrag);
 
   // Rastrea Shift / Ctrl / Alt en tiempo real para modificadores de Gizmo (snap, escala uniforme, Alt-clon)
@@ -979,7 +983,10 @@ const SceneContent: React.FC<{
     if (group) {
       groupRefs.current.set(id, group);
     } else {
+      const removed = groupRefs.current.get(id);
       groupRefs.current.delete(id);
+      // Desacopla el gizmo si su objeto deja de existir en la escena.
+      setActiveTargetGroup((prev) => (prev && prev === removed ? null : prev));
     }
     if (id === primaryIdRef.current) {
       setActiveTargetGroup(group);
@@ -989,6 +996,34 @@ const SceneContent: React.FC<{
   useEffect(() => {
     setActiveTargetGroup(primaryId ? groupRefs.current.get(primaryId) ?? null : null);
   }, [primaryId]);
+
+  // Cancelar arrastre del gizmo: Escape, o cambio de herramienta/modo a mitad de arrastre.
+  const isTransformingRef = useRef(false);
+  isTransformingRef.current = isTransforming;
+  const cancelGizmoDrag = useCallback(() => {
+    if (!isTransformingRef.current) return;
+    isTransformingRef.current = false;
+    cancelTransformSnapshot();
+    dragStartScaleRef.current = null;
+    setIsTransforming(false);
+    // Remonta el gizmo para abortar el arrastre interno de TransformControls.
+    setGizmoEpoch((n) => n + 1);
+  }, [cancelTransformSnapshot]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isTransformingRef.current) {
+        e.preventDefault();
+        cancelGizmoDrag();
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [cancelGizmoDrag]);
+
+  useEffect(() => {
+    cancelGizmoDrag();
+  }, [activeTool, transformMode, cancelGizmoDrag]);
 
   useEffect(() => {
     const onGlobalPointerUp = () => {
@@ -1006,7 +1041,9 @@ const SceneContent: React.FC<{
     Boolean(primaryObj) &&
     Boolean(activeTargetGroup) &&
     !primaryObj?.locked &&
-    primaryObj?.visible;
+    primaryObj?.visible &&
+    // El grupo debe seguir dentro del grafo de escena (TransformControls lo exige).
+    activeTargetGroup?.parent != null;
 
   const shadowsKey = `${objects.length}:${pastCount}:${printerProfile.id}`;
 
@@ -1083,7 +1120,7 @@ const SceneContent: React.FC<{
 
       {showGizmo && primaryObj && activeTargetGroup && (
         <TransformControls
-          key={primaryObj.id}
+          key={`${primaryObj.id}:${gizmoEpoch}`}
           object={activeTargetGroup}
           mode={transformMode}
           size={0.78}
@@ -1239,8 +1276,6 @@ export const Viewport3D: React.FC = () => {
   const deleteObjects = useKuraStore((s) => s.deleteObjects);
   const mirrorObject = useKuraStore((s) => s.mirrorObject);
   const detectObjectStructures = useKuraStore((s) => s.detectObjectStructures);
-  const toasts = useKuraStore((s) => s.toasts);
-  const dismissToast = useKuraStore((s) => s.dismissToast);
 
   const selectedObj = objects.find((o) => o.id === selectedIds[0]) ?? null;
   const localizedPrinterName = getLocalizedPrinterName(language, printerProfile);
@@ -1303,13 +1338,24 @@ export const Viewport3D: React.FC = () => {
     if (!selectedObj) {
       return t(language, 'viewport.noSelection');
     }
+    if (selectedIds.length > 1) {
+      // Selección múltiple: caja envolvente de todos los objetos seleccionados.
+      const bounds = computeSelectionBounds(objects.filter((o) => selectedIds.includes(o.id)));
+      if (bounds) {
+        const [bx, by, bz] = bounds.size;
+        return t(language, 'viewport.dimensionsMulti', {
+          size: `${formatDimension(bx, unitSystem)} × ${formatDimension(by, unitSystem)} × ${formatDimension(bz, unitSystem)}`,
+          count: selectedIds.length,
+        });
+      }
+    }
     const [dx, dy, dz] = selectedObj.stats.dimensionsMm;
     const [sx, sy, sz] = selectedObj.scale;
     return `${formatDimension(dx * sx, unitSystem)} × ${formatDimension(
       dy * sy,
       unitSystem,
     )} × ${formatDimension(dz * sz, unitSystem)}`;
-  }, [selectedObj, unitSystem, language]);
+  }, [selectedObj, selectedIds, objects, unitSystem, language]);
 
   const ctxTarget = contextMenu
     ? objects.find((o) => o.id === contextMenu.objectId) ?? null
@@ -1546,23 +1592,7 @@ export const Viewport3D: React.FC = () => {
           </div>
         )}
 
-        {toasts.length > 0 && (
-          <div className="kura-toast-stack" aria-live="polite">
-            {toasts.map((toast) => (
-              <div key={toast.id} className={`kura-toast ${toast.kind}`}>
-                <span>{toast.text}</span>
-                <button
-                  type="button"
-                  className="kura-mini-icon-btn"
-                  onClick={() => dismissToast(toast.id)}
-                  aria-label={t(language, 'common.close')}
-                >
-                  <X size={13} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        <ToastStack />
       </div>
 
       {/* Menú contextual clic derecho sobre objeto 3D */}
