@@ -52,7 +52,7 @@ describe('F2: renombrar en línea', () => {
     await user.keyboard('Otro{Escape}');
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(objects()[0].name).toBe('Cilindro Pivote');
-    expect(document.activeElement).toBe(screen.getByRole('listbox'));
+    expect(document.activeElement).toBe(screen.getByRole('tree'));
   });
 });
 
@@ -70,7 +70,7 @@ describe('F3: búsqueda de escena', () => {
     await user.click(input);
     await user.keyboard('al{Escape}');
     expect(useKuraStore.getState().sceneFilter).toBe('');
-    expect(document.activeElement).toBe(screen.getByRole('listbox'));
+    expect(document.activeElement).toBe(screen.getByRole('tree'));
   });
 });
 

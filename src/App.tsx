@@ -33,6 +33,7 @@ import { useFunctionKeys } from './components/useFunctionKeys';
 import { guardUnsavedChanges } from './utils/unsavedGuard';
 import { LOG_TAG } from './brand';
 import { ConfirmDialogHost } from './components/ConfirmDialogHost';
+import { confirmDeleteSelection } from './components/scene/confirmDeleteSelection';
 import { NarrowPanelBar } from './components/NarrowPanelBar';
 import { requestLeftPanelTab } from './components/leftPanelTabRequest';
 import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest';
@@ -244,6 +245,19 @@ export const App: React.FC = () => {
       }
 
       // Escape también sale del modo Zen (sin diálogos abiertos: esos ya consumen Escape).
+      // Escape sale un nivel del grupo en el que se entró; Enter entra al grupo del objeto elegido.
+      if (e.key === 'Escape' && !mod && !e.shiftKey && state.groupContextId) {
+        e.preventDefault();
+        state.exitGroup();
+        return;
+      }
+      if (e.key === 'Enter' && !mod && !e.shiftKey && !e.altKey && state.groups.length > 0 && state.selectedIds.length > 1) {
+        if (state.enterGroup()) {
+          e.preventDefault();
+          return;
+        }
+      }
+
       if (e.key === 'Escape' && !mod && state.uiDensity === 'zen') {
         e.preventDefault();
         state.toggleZenMode();
@@ -272,12 +286,20 @@ export const App: React.FC = () => {
         return;
       }
 
-      if (mod && key === 'g') {
+      // Ctrl/⌘+G agrupa y Ctrl/⌘+Mayús+G desagrupa (convención general).
+      if (mod && !e.altKey && key === 'g') {
         e.preventDefault();
-        const primaryId = state.selectedIds[0] ?? state.objects[0]?.id;
-        if (e.shiftKey) {
-          if (primaryId) void state.splitDisconnectedObject(primaryId);
-        } else {
+        if (e.repeat) return;
+        if (e.shiftKey) state.ungroupObjects();
+        else state.groupObjects();
+        return;
+      }
+
+      // Ctrl/⌘+Mayús+U: aplicar restas o unir sólidos (antes Ctrl+G).
+      if (mod && e.shiftKey && !e.altKey && key === 'u') {
+        e.preventDefault();
+        if (e.repeat) return;
+        {
           const selectedObjs = state.objects.filter((o) => state.selectedIds.includes(o.id));
           const selHasHole = selectedObjs.some((o) => o.isHole && o.visible);
           const selHasSolid = selectedObjs.some((o) => !o.isHole && o.visible);
@@ -401,7 +423,7 @@ export const App: React.FC = () => {
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         if (state.selectedIds.length > 0) {
           e.preventDefault();
-          state.deleteObjects();
+          void confirmDeleteSelection();
         }
       }
     };

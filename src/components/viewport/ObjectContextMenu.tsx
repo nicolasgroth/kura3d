@@ -1,7 +1,7 @@
 /**
  * @file src/components/viewport/ObjectContextMenu.tsx
  * @description Menú contextual (clic derecho) sobre un objeto del visor, ordenado como en los laminadores:
- * Agregar (pieza / pieza negativa), Tipo, Geometría, Analizar, Objeto y Ayuda. Cada acción cierra el menú
+ * Agregar (pieza / pieza negativa), Tipo, Geometría, Posición, Organizar, Analizar, Objeto y Ayuda. Cada acción cierra el menú
  * antes de ejecutarse. La estructura y el teclado viven en `contextMenu/MenuKit`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -38,6 +38,8 @@ import { MenuGroup, MenuItem, MenuSurface, SubMenu } from './contextMenu/MenuKit
 import { PieceShapeItems } from './contextMenu/PieceShapeItems';
 import { ObjectMenuMore } from './contextMenu/ObjectMenuMore';
 import { ObjectMenuPosition } from './contextMenu/ObjectMenuPosition';
+import { ObjectMenuOrganize } from './contextMenu/ObjectMenuOrganize';
+import { confirmDeleteSelection } from '../scene/confirmDeleteSelection';
 import { openHollowPanel } from '../inspector/hollowPanelRequest';
 
 const MOD = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform ?? '') ? '⌘' : 'Ctrl';
@@ -52,10 +54,8 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
   const addPieceToObject = useKuraStore((s) => s.addPieceToObject);
   const setObjectsHole = useKuraStore((s) => s.setObjectsHole);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
-  const runBooleanOnSelection = useKuraStore((s) => s.runBooleanOnSelection);
   const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
   const duplicateObjects = useKuraStore((s) => s.duplicateObjects);
-  const deleteObjects = useKuraStore((s) => s.deleteObjects);
   const detectObjectStructures = useKuraStore((s) => s.detectObjectStructures);
   const requestRename = useKuraStore((s) => s.requestRename);
   const recomputeSelected = useKuraStore((s) => s.recomputeSelected);
@@ -112,10 +112,10 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
         {holeCount > 0 && solidCount > 0 && (
           <MenuItem icon={<Combine size={14} aria-hidden="true" />} label={t(language, 'ctx.applyHoles')} accent onSelect={run(() => void applyHolesOnSolids())} />
         )}
-        {selectedIds.length >= 2 && (
-          <MenuItem icon={<Combine size={14} aria-hidden="true" />} label={t(language, 'ctx.unionSelection')} onSelect={run(() => void runBooleanOnSelection('union'))} />
-        )}
       </MenuGroup>
+
+      <div className="kura-context-sep" role="separator" />
+      <ObjectMenuOrganize target={target} run={run} />
 
       <div className="kura-context-sep" role="separator" />
       <MenuGroup title={t(language, 'menu.group.position')}>
@@ -154,7 +154,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
           />
         )}
         <ObjectMenuMore target={target} run={run} />
-        <MenuItem icon={<Trash2 size={14} aria-hidden="true" />} label={t(language, 'ctx.delete')} shortcut="Del" keys="Delete" danger disabled={target.locked} onSelect={run(() => deleteObjects([target.id]))} />
+        <MenuItem icon={<Trash2 size={14} aria-hidden="true" />} label={t(language, 'ctx.delete')} shortcut="Del" keys="Delete" danger disabled={target.locked} onSelect={run(() => void confirmDeleteSelection(selectedIds.includes(target.id) ? selectedIds : [target.id]))} />
       </MenuGroup>
 
       <div className="kura-context-sep" role="separator" />

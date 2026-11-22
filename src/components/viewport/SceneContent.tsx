@@ -31,6 +31,7 @@ import { PrinterBedOverlay } from './PrinterBedOverlay';
 import { PreviewLayers } from './PreviewLayers';
 import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
+import { GroupTransformGizmo } from './GroupTransformGizmo';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
 import { usePaintStroke } from './usePaintStroke';
 
@@ -121,6 +122,14 @@ export const SceneContent: React.FC<{
     primaryObj?.visible &&
     // El grupo debe seguir dentro del grafo de escena (TransformControls lo exige).
     activeTargetGroup?.parent != null;
+
+  // Grupo o selección múltiple: un manipulador para todo el conjunto (cuerpo rígido).
+  const showGroupGizmo =
+    activeTool === 'select' &&
+    !pickingSurface &&
+    !operationOpen &&
+    selectedIds.length >= 2 &&
+    objects.some((o) => selectedIds.includes(o.id) && o.visible && !o.locked);
 
   const shadowsKey = `${objects.length}:${pastCount}:${printerProfile.id}`;
 
@@ -275,6 +284,10 @@ export const SceneContent: React.FC<{
             );
           }}
         />
+      )}
+
+      {showGroupGizmo && (
+        <GroupTransformGizmo epoch={gizmoEpoch} ctrlHeld={ctrlHeld} onDragChange={setIsTransforming} />
       )}
 
       <OrbitControls
