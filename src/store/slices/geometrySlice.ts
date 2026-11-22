@@ -10,10 +10,8 @@
  */
 
 import { boxesOverlap } from '../../core/scene/overlap';
-import * as engine from '../../engine';
 import * as ops from '../../core/operations';
 import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets } from '../../core/scene/sceneRules';
-import type { MeshData } from '../../types/kura';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { formatNumber } from '../../utils/plural';
 import type { StoreContext } from '../storeContext';
@@ -230,27 +228,29 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
 
     paintObjectSurface: (id, localPoint, faceIndex, modeOverride) => {
       const state = get();
-      const obj = state.objects.find((o) => o.id === id);
-      if (!obj || obj.locked) return;
+      const obj = editable(id);
+      // Durante una operación en curso (o un arrastre sin confirmar) no se pinta: el resultado la pisaría.
+      if (!obj || rejectWhileLocked()) return;
       const mode = modeOverride ?? state.paintMode;
-      let nextMesh: MeshData;
+      const color = state.paintColor;
+      let change: ops.SceneChange | null;
       if (mode === 'whole') {
-        nextMesh = engine.paintEntireMesh(obj.mesh, state.paintColor);
+        change = ops.paintWholeObject(opCtx(), obj, color, false);
       } else if (mode === 'smart_fill' && faceIndex !== null) {
-        nextMesh = engine.paintFloodFillConnectedFaces(obj.mesh, faceIndex, state.paintColor, 35, obj.color);
+        change = ops.paintRegion(opCtx(), obj, faceIndex, color);
       } else if (localPoint) {
-        nextMesh = engine.paintMeshFacesInSphere(obj, localPoint, state.paintRadiusMm, state.paintColor);
+        change = ops.paintBrushSample(opCtx(), obj, localPoint, state.paintRadiusMm, color, { refineEdge: state.paintRefineEdge });
       } else {
         return;
       }
       // Sin cambios de color (pasar el pincel sobre caras ya pintadas): ni historial ni render.
-      if (nextMesh === obj.mesh) return;
+      if (!change || change.patches.length === 0) return;
       const stroke = runtime.paintStroke;
       if (!stroke.open || !stroke.recorded) {
         pushHistory();
         stroke.recorded = true;
       }
-      set((prev) => ({ objects: prev.objects.map((item) => (item.id === id ? { ...item, mesh: nextMesh } : item)) }));
+      set((prev) => ({ objects: ops.applySceneChange(prev.objects, change) }));
     },
 
     beginPaintStroke: () => {

@@ -145,6 +145,8 @@ export interface KuraStoreState {
   paintColor: string;
   paintRadiusMm: number;
   paintMode: PaintBrushMode;
+  /** El pincel subdivide los triángulos del borde del trazo para que el color siga el círculo. */
+  paintRefineEdge: boolean;
   eraseRadiusMm: number;
   cameraRequest: { preset: CameraPresetType; nonce: number; ids?: string[] } | null;
 
@@ -215,7 +217,7 @@ export interface KuraStoreState {
   setHoveredRegionId: (id: string | null) => void;
   setSelectedRegionId: (id: string | null) => void;
   setPaintSettings: (
-    patch: Partial<{ paintColor: string; paintRadiusMm: number; paintMode: PaintBrushMode }>,
+    patch: Partial<{ paintColor: string; paintRadiusMm: number; paintMode: PaintBrushMode; paintRefineEdge: boolean }>,
   ) => void;
   setEraseRadiusMm: (radiusMm: number) => void;
   requestCameraPreset: (preset: CameraPresetType, ids?: string[]) => void;

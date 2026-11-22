@@ -133,3 +133,42 @@ describe('paint history', () => {
     expect(new Set(colors)).toEqual(new Set(['#ff0000', '#abcdef']));
   });
 });
+
+describe('paint without empty steps', () => {
+  it('painting the whole object or filling with the current color adds no history step', async () => {
+    useKuraStore.setState({ engineReady: true, objects: [], selectedIds: [], past: [], future: [], paintMode: 'whole' });
+    const obj = await useKuraStore.getState().createPrimitive('box', { width: 20, height: 20, depth: 20 }, { color: '#abcdef' });
+    useKuraStore.getState().setPaintSettings({ paintColor: '#ff0000' });
+    useKuraStore.getState().paintObjectSurface(obj!.id, null, null);
+    const base = useKuraStore.getState().past.length;
+    const mesh = useKuraStore.getState().objects[0].mesh;
+    useKuraStore.getState().paintObjectSurface(obj!.id, null, null);
+    useKuraStore.getState().setPaintSettings({ paintMode: 'smart_fill' });
+    useKuraStore.getState().paintObjectSurface(obj!.id, null, 0);
+    expect(useKuraStore.getState().past.length).toBe(base);
+    expect(useKuraStore.getState().objects[0].mesh).toBe(mesh);
+  });
+
+  it('does not paint while another operation is running', async () => {
+    useKuraStore.setState({ engineReady: true, objects: [], selectedIds: [], past: [], future: [], paintMode: 'whole' });
+    const obj = await useKuraStore.getState().createPrimitive('box', { width: 20, height: 20, depth: 20 });
+    const mesh = useKuraStore.getState().objects[0].mesh;
+    useKuraStore.setState({ busyOperation: 'hollow' });
+    useKuraStore.getState().paintObjectSurface(obj!.id, null, null);
+    useKuraStore.setState({ busyOperation: null });
+    expect(useKuraStore.getState().objects[0].mesh).toBe(mesh);
+  });
+
+  it('refines the stroke edge on a low-poly box and keeps the volume', async () => {
+    useKuraStore.setState({
+      engineReady: true, objects: [], selectedIds: [], past: [], future: [], paintMode: 'brush', paintRadiusMm: 4, paintRefineEdge: true,
+    });
+    const obj = await useKuraStore.getState().createPrimitive('box', { width: 20, height: 20, depth: 20 });
+    const before = useKuraStore.getState().objects[0];
+    useKuraStore.getState().setPaintSettings({ paintColor: '#ff0000' });
+    useKuraStore.getState().paintObjectSurface(obj!.id, [0, 20, 0], null);
+    const after = useKuraStore.getState().objects[0];
+    expect(after.stats.triangles).toBeGreaterThan(before.stats.triangles);
+    expect(after.stats.volumeMm3).toBeCloseTo(before.stats.volumeMm3, 3);
+  });
+});

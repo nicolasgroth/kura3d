@@ -52,6 +52,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     paintColor: PRINT_COLOR_PALETTE[1],
     paintRadiusMm: 5,
     paintMode: 'brush',
+    paintRefineEdge: true,
     eraseRadiusMm: 6,
     cameraRequest: null,
 
