@@ -1,0 +1,55 @@
+/**
+ * @file src/styles/printCheckPanel.css
+ * @description Estilos del validador de imprimibilidad: avisos con icono y acción, línea plegable
+ * de supuestos del peso y campo de pared mínima.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-printcheck-issues {
+  list-style: none;
+  padding-left: 0;
+}
+
+.kura-printcheck-issue {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  column-gap: 6px;
+  row-gap: 4px;
+  align-items: start;
+}
+
+.kura-printcheck-issue > svg {
+  margin-top: 1px;
+}
+
+.kura-printcheck-issue .kura-btn {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.kura-printcheck-how {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.kura-printcheck-how summary {
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.kura-printcheck-how summary:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-printcheck-how p {
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+.kura-printcheck-ok {
+  font-size: 11px;
+  color: var(--accent-green);
+}

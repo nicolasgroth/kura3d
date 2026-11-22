@@ -26,33 +26,55 @@ const fieldLabel = (language: Parameters<typeof t>[0], key: string) =>
   t(language, `inspector.params.field.${key}` as TranslationKey);
 
 /** Campo de texto que confirma con Enter o al salir. */
-const TextParam: React.FC<{ label: string; value: string; maxLength: number; disabled: boolean; onCommit: (v: string) => void }> = ({
-  label, value, maxLength, disabled, onCommit,
+const TextParam: React.FC<{
+  label: string; value: string; maxLength: number; multiline: boolean; disabled: boolean; onCommit: (v: string) => void;
+}> = ({
+  label, value, maxLength, multiline, disabled, onCommit,
 }) => {
   const [draft, setDraft] = useState(value);
   useEffect(() => setDraft(value), [value]);
   const commit = () => {
-    const next = draft.trim();
-    if (next && next !== value) onCommit(next);
+    const next = multiline ? draft.replace(/\r/g, '').replace(/^\n+|\n+$/g, '') : draft.trim();
+    if (next.trim() && next !== value) onCommit(next);
     else setDraft(value);
   };
   return (
     <div className="kura-field-row">
       <span className="kura-field-label">{label}</span>
-      <input
-        type="text"
-        className="kura-input"
-        aria-label={label}
-        value={draft}
-        maxLength={maxLength}
-        disabled={disabled}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') commit();
-          if (e.key === 'Escape') setDraft(value);
-        }}
-      />
+      {multiline ? (
+        <textarea
+          className="kura-textarea kura-param-textarea"
+          aria-label={label}
+          title={label}
+          rows={2}
+          value={draft}
+          maxLength={maxLength}
+          disabled={disabled}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            // Enter inserta un salto de línea; Ctrl/Cmd+Enter confirma.
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commit(); }
+            if (e.key === 'Escape') setDraft(value);
+          }}
+        />
+      ) : (
+        <input
+          type="text"
+          className="kura-input"
+          aria-label={label}
+          title={label}
+          value={draft}
+          maxLength={maxLength}
+          disabled={disabled}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commit();
+            if (e.key === 'Escape') setDraft(value);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -110,9 +132,37 @@ export const ParametersSection: React.FC<{ primary: SceneObject }> = ({ primary 
               label={label}
               value={String(values.text ?? field.defaultValue)}
               maxLength={field.maxLength}
+              multiline={field.multiline}
               disabled={disabled}
               onCommit={(v) => void commit('text', v)}
             />
+          );
+        }
+        if (field.kind === 'select') {
+          const sel = typeof values[field.key] === 'string' ? String(values[field.key]) : field.defaultValue;
+          return (
+            <div className="kura-field-row" key={field.key}>
+              <span className="kura-field-label">{label}</span>
+              <div className="kura-param-segmented" role="radiogroup" aria-label={label}>
+                {field.options.map((opt) => {
+                  const optLabel = t(language, `inspector.params.align.${opt}` as TranslationKey);
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      role="radio"
+                      aria-checked={sel === opt}
+                      className={`kura-param-seg${sel === opt ? ' is-active' : ''}`}
+                      title={optLabel}
+                      disabled={disabled}
+                      onClick={() => void commit(field.key, opt)}
+                    >
+                      {sel === opt ? '✓ ' : ''}{optLabel}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           );
         }
         const current = typeof values[field.key] === 'number' ? (values[field.key] as number) : field.defaultValue;

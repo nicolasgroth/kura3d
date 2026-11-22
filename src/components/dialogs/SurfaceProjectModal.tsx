@@ -7,9 +7,11 @@
  * @license MIT
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import '../../styles/surfaceProject.css';
 import { Crosshair, FileUp, Type } from 'lucide-react';
 import { t } from '../../i18n';
+import { suggestProjectionFace, suggestProjectionWidth } from '../../engine/projectionSuggest';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
@@ -21,6 +23,7 @@ import {
   type SurfaceProjectionOptions,
 } from '../../types/kura';
 import { openLocalFile } from '../../utils/platformBridge';
+import { currentCameraPosition } from '../viewport/viewCameraRegistry';
 import { SVG_PRESETS } from './dialogPresets';
 
 /** Modal 5: Proyección Conformal de Texto o SVG sobre cualquier superficie 3D. */
@@ -54,6 +57,10 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
   const surfacePick = useKuraStore((s) => s.surfacePick);
   const setSurfacePick = useKuraStore((s) => s.setSurfacePick);
   const picking = Boolean(open && surfacePick && surfacePick.objectId === targetId);
+  // Si el usuario ya fijó el ancho a mano, la sugerencia por cara no lo pisa.
+  const widthEdited = useRef(false);
+  const textRef = useRef(text);
+  textRef.current = text;
   const content = kind === 'text' ? text.trim() : svgContent.trim();
 
   const options: SurfaceProjectionOptions = {
@@ -69,6 +76,26 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
     offsetV,
   };
   const signature = JSON.stringify(options);
+
+  // Al abrir (o cambiar de pieza): cara más grande que mira a la cámara y ancho que quepa.
+  useEffect(() => {
+    if (!open || !target) return;
+    widthEdited.current = false;
+    setAxis(suggestProjectionFace(target, { cameraPosition: currentCameraPosition() }));
+    // Solo al abrir o cambiar de pieza, no en cada edición de la malla.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, targetId]);
+
+  // Ancho sugerido para la cara elegida (se recalcula al cambiar de cara hasta que el usuario lo edite).
+  useEffect(() => {
+    if (!open || !target || kind !== 'text' || widthEdited.current) return;
+    let cancelled = false;
+    void suggestProjectionWidth(target, axis, textRef.current.trim() || 'KURA3D')
+      .then((w) => { if (!cancelled && !widthEdited.current) setWidthMm(w); })
+      .catch(() => { /* sin sugerencia: se conserva el ancho actual */ });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, targetId, axis, kind]);
 
   // Vista previa en vivo sobre la pieza (debounce y descarte de obsoletos en el store).
   useEffect(() => {
@@ -265,7 +292,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
             precision={1}
             defaultValue={18}
             value={widthMm}
-            onChange={setWidthMm}
+            onChange={(v) => { widthEdited.current = true; setWidthMm(v); }}
           />
         </div>
 
@@ -283,9 +310,9 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
           />
         </div>
 
-        <div className="kura-form-field">
+        <div className="kura-form-field kura-proj-color-field">
           <label>{t(language, 'dialog.project.color')}</label>
-          <div className="kura-swatch-row">
+          <div className="kura-swatch-row kura-proj-swatches">
             {PRINT_COLOR_PALETTE.slice(0, 6).map((hex) => (
               <button
                 key={hex}
@@ -294,12 +321,16 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
                 style={{ backgroundColor: hex }}
                 onClick={() => setColorHex(hex)}
                 aria-label={hex}
+                aria-pressed={colorHex === hex}
+                title={hex}
               />
             ))}
             <input
               type="color"
               className="kura-swatch-custom"
               value={colorHex}
+              aria-label={t(language, 'dialog.project.color')}
+              title={t(language, 'dialog.project.color')}
               onChange={(e) => setColorHex(e.target.value)}
             />
           </div>

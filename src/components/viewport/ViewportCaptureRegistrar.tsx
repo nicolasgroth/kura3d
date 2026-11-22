@@ -9,6 +9,7 @@
 import React, { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { registerViewportCapture } from '../../utils/mcpBridgeClient';
+import { registerViewCamera } from './viewCameraRegistry';
 
 /** Registra el callback de captura PNG del canvas WebGL para el servidor MCP. */
 export const ViewportCaptureRegistrar: React.FC = () => {
@@ -21,6 +22,11 @@ export const ViewportCaptureRegistrar: React.FC = () => {
     });
     return () => registerViewportCapture(null);
   }, [gl, scene, camera]);
+
+  useEffect(() => {
+    registerViewCamera(() => [camera.position.x, camera.position.y, camera.position.z]);
+    return () => registerViewCamera(null);
+  }, [camera]);
 
   return null;
 };

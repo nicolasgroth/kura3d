@@ -1,0 +1,180 @@
+/**
+ * @file src/components/inspector/PrintCheckPanel.tsx
+ * @description Validador de imprimibilidad del inspector: pared mínima, botón de validar, informe
+ * con puntaje, peso (y cómo se calcula), voladizos y avisos traducidos con icono y, cuando aplica,
+ * una acción directa (apoyar en la cama, ver voladizos).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import React, { useState } from 'react';
+import {
+  AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Boxes, Eye, EyeOff, FlipVertical, Grid3x3,
+  Layers, Maximize2, Ruler, ShieldAlert, ShieldCheck, type LucideIcon,
+} from 'lucide-react';
+import '../../styles/printCheckPanel.css';
+import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../../engine/operationLimits';
+import { t, type TranslationKey } from '../../i18n';
+import { useKuraStore } from '../../store/useKuraStore';
+import type { PrintWarningCode, SceneObject } from '../../types/kura';
+import { PrecisionNumberInput } from '../PrecisionNumberInput';
+
+/** Icono de cada aviso (el estado no depende solo del color). */
+const ISSUE_ICONS: Record<PrintWarningCode, LucideIcon> = {
+  NOT_MANIFOLD: ShieldAlert,
+  EXCEEDS_BED: Maximize2,
+  BELOW_BED: ArrowDownToLine,
+  FLOATING: ArrowUpFromLine,
+  OVERHANG: Layers,
+  LOW_DENSITY: Grid3x3,
+  HIGH_DENSITY: Boxes,
+  THIN_WALL: Ruler,
+  INVERTED_NORMALS: FlipVertical,
+};
+
+const WALL = OPERATION_RANGES.printability.minWallMm;
+
+export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => {
+  const language = useKuraStore((s) => s.language);
+  const busyOperation = useKuraStore((s) => s.busyOperation);
+  const activePrintReport = useKuraStore((s) => s.activePrintReport);
+  const showOverhangs = useKuraStore((s) => s.showOverhangs);
+  const setShowOverhangs = useKuraStore((s) => s.setShowOverhangs);
+  const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
+  const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
+  const [minWall, setMinWall] = useState<number>(OPERATION_DEFAULTS.printability.minWallMm);
+  const isBusy = Boolean(busyOperation);
+  const report = activePrintReport && activePrintReport.objectId === primary.id ? activePrintReport : null;
+
+  const validate = (wall = minWall) => void runPrintabilityCheck(primary.id, undefined, undefined, wall);
+  const dropAndRevalidate = () => {
+    dropObjectToBed(primary.id);
+    // El objeto cambió de posición: se vuelve a validar sobre el estado nuevo.
+    setTimeout(() => validate(), 0);
+  };
+  const rangeTip = t(language, 'precision.rangeTip', { min: String(WALL.min), max: `${WALL.max} mm` });
+  const assumptions = report?.weightAssumptions;
+
+  return (
+    <>
+      <div className="kura-field-row kura-printcheck-wall">
+        <label className="kura-field-label" htmlFor="kura-print-minwall">
+          {t(language, 'inspector.pro.minWall')}
+          <span className="kura-param-range" title={rangeTip}>{`${WALL.min}–${WALL.max} mm`}</span>
+        </label>
+        <PrecisionNumberInput
+          id="kura-print-minwall"
+          style={{ width: 104 }}
+          value={minWall}
+          min={WALL.min}
+          max={WALL.max}
+          step={0.1}
+          precision={2}
+          suffix="mm"
+          defaultValue={OPERATION_DEFAULTS.printability.minWallMm}
+          commitOnBlur
+          strictRange
+          ariaLabel={t(language, 'inspector.pro.minWall')}
+          title={rangeTip}
+          onChange={setMinWall}
+          onCommit={(v) => { setMinWall(v); if (report) validate(v); }}
+        />
+      </div>
+
+      <button type="button" className="kura-btn kura-btn-sm" disabled={isBusy} onClick={() => validate()}>
+        <ShieldCheck size={13} style={{ color: 'var(--accent-green)' }} />
+        <span>{t(language, 'inspector.pro.validate')}</span>
+      </button>
+
+      {report && (
+        <div className="kura-report-card">
+          <div className="kura-field-row">
+            <span className="kura-field-label">{t(language, 'inspector.pro.score')}</span>
+            <span className={`kura-score-pill ${report.score >= 80 ? 'is-good' : report.score >= 55 ? 'is-warn' : 'is-bad'}`}>
+              {report.score}/100
+            </span>
+          </div>
+
+          <div className="kura-stats-grid">
+            <div className="kura-stat-box">
+              <div className="kura-stat-title">{t(language, 'inspector.pro.weight')}</div>
+              <div className="kura-stat-val">{report.estimatedWeightGrams.toFixed(1)} g</div>
+            </div>
+            <div className="kura-stat-box">
+              <div className="kura-stat-title">{t(language, 'inspector.pro.filament')}</div>
+              <div className="kura-stat-val">{report.estimatedFilamentMeters.toFixed(2)} m</div>
+            </div>
+            <div className="kura-stat-box">
+              <div className="kura-stat-title">{t(language, 'inspector.pro.overhangs')}</div>
+              <div className="kura-stat-val">{report.overhangPercent.toFixed(1)}%</div>
+            </div>
+            <div className="kura-stat-box">
+              <div className="kura-stat-title">{t(language, 'viewport.bedLabel')}</div>
+              <div className={`kura-stat-val ${report.fitsInBed && !report.isFloating ? 'kura-badge-ok' : 'kura-badge-warn'}`}>
+                {!report.fitsInBed
+                  ? t(language, 'inspector.pro.outOfBed')
+                  : report.isFloating
+                    ? t(language, 'inspector.pro.floating', { mm: report.minYWorldMm.toFixed(1) })
+                    : t(language, 'inspector.pro.grounded')}
+              </div>
+            </div>
+          </div>
+
+          {assumptions && (
+            <details className="kura-printcheck-how">
+              <summary>{t(language, 'inspector.pro.howCalculated')}</summary>
+              <p>
+                {t(language, 'inspector.pro.assumptions', {
+                  material: t(language, `material.${assumptions.materialId}` as TranslationKey),
+                  density: assumptions.densityGCm3.toFixed(2),
+                  infill: String(assumptions.infillPercent),
+                  shell: String(Math.round(assumptions.shellFraction * 100)),
+                  filament: String(assumptions.filamentDiameterMm),
+                })}
+              </p>
+            </details>
+          )}
+
+          {report.overhangFaceCount > 0 && (
+            <button
+              type="button"
+              className={`kura-btn kura-btn-sm ${showOverhangs ? 'is-active' : ''}`}
+              aria-pressed={showOverhangs}
+              onClick={() => setShowOverhangs(!showOverhangs)}
+            >
+              {showOverhangs ? <EyeOff size={13} /> : <Eye size={13} />}
+              <span>{showOverhangs ? t(language, 'inspector.pro.hideOverhangs') : t(language, 'inspector.pro.showOverhangs')}</span>
+            </button>
+          )}
+
+          {report.issues.length > 0 ? (
+            <ul className="kura-warning-list kura-printcheck-issues">
+              {report.issues.map((w) => {
+                const Icon = ISSUE_ICONS[w.code] ?? AlertTriangle;
+                return (
+                  <li key={w.code} className="kura-printcheck-issue">
+                    <Icon size={14} aria-hidden="true" />
+                    <span className="kura-printcheck-issue-text">{t(language, `printWarning.${w.code}` as TranslationKey, w.params)}</span>
+                    {w.code === 'BELOW_BED' && (
+                      <button type="button" className="kura-btn kura-btn-sm" disabled={isBusy || primary.locked} onClick={dropAndRevalidate}>
+                        {t(language, 'inspector.pro.actionDropToBed')}
+                      </button>
+                    )}
+                    {w.code === 'OVERHANG' && report.overhangFaceCount > 0 && (
+                      <button type="button" className="kura-btn kura-btn-sm" aria-pressed={showOverhangs} onClick={() => setShowOverhangs(true)}>
+                        {t(language, 'inspector.pro.actionShowOverhangs')}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <span className="kura-printcheck-ok">{t(language, 'inspector.pro.noWarnings')}</span>
+          )}
+        </div>
+      )}
+    </>
+  );
+};

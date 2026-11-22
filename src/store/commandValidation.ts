@@ -114,7 +114,9 @@ export function readString(p: RawParams, maxLength: number, ...keys: string[]): 
   if (typeof value !== 'string' || value.length > maxLength) throw invalid(key, `string (≤ ${maxLength})`);
   // Los SVG legítimos llevan saltos de línea y tabulaciones; el resto de textos no.
   const allowsWhitespace = key === 'svgContent';
-  const bad = allowsWhitespace ? /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/ : CONTROL_CHARS;
+  // El texto 3D admite saltos de línea (varias líneas); el resto de controles no.
+  const bad = allowsWhitespace ? /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/
+    : key === 'text' ? /[\u0000-\u0009\u000b-\u001f\u007f]/ : CONTROL_CHARS;
   if (bad.test(value)) throw invalid(key, 'string without control characters');
   return value;
 }

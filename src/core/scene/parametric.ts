@@ -10,7 +10,7 @@
 
 import { computeMeshFingerprint } from '../../engine/meshFingerprint';
 import { OPERATION_RANGES } from '../../engine/operationLimits';
-import { PRIMITIVE_LIMITS, primitiveRangeFor, type ParamRange } from '../../engine/primitiveLimits';
+import { PRIMITIVE_LIMITS, primitiveRangeFor, TEXT_ALIGN_OPTIONS, type ParamRange } from '../../engine/primitiveLimits';
 import type { MeshData, ParametricOrigin, PrimitiveParams, PrimitiveType, SceneObject, ThreadOptions } from '../../types/kura';
 
 /** Campo numérico editable: clave, rango y valor por defecto que usa el motor cuando falta. */
@@ -27,9 +27,19 @@ export interface TextParamField {
   kind: 'text';
   maxLength: number;
   defaultValue: string;
+  /** Admite varias líneas (el motor acepta saltos de línea). */
+  multiline: boolean;
 }
 
-export type ParamField = NumericParamField | TextParamField;
+/** Campo de elección entre opciones cerradas (alineación del texto). */
+export interface SelectParamField {
+  key: 'textAlign';
+  kind: 'select';
+  options: readonly string[];
+  defaultValue: string;
+}
+
+export type ParamField = NumericParamField | TextParamField | SelectParamField;
 
 const len = (type: PrimitiveType, key: Parameters<typeof primitiveRangeFor>[1], defaultValue: number): NumericParamField =>
   ({ key, kind: 'length', range: primitiveRangeFor(type, key), defaultValue });
@@ -47,9 +57,11 @@ export function primitiveParamFields(type: PrimitiveType): ParamField[] {
     case 'torus': return [len(type, 'outerRadius', 14), len(type, 'tubeRadius', 4), count(type, 'segments', 32)];
     case 'prism': return [len(type, 'radius', 12), len(type, 'height', 20), count(type, 'sides', 6)];
     case 'text': return [
-      { key: 'text', kind: 'text', maxLength: PRIMITIVE_LIMITS.maxTextLength, defaultValue: 'KURA' },
+      { key: 'text', kind: 'text', maxLength: PRIMITIVE_LIMITS.maxTextLength, defaultValue: 'KURA', multiline: true },
       len(type, 'fontSize', 16),
       len(type, 'height', 4),
+      len(type, 'letterSpacing', 0),
+      { key: 'textAlign', kind: 'select', options: TEXT_ALIGN_OPTIONS, defaultValue: 'left' },
     ];
   }
 }

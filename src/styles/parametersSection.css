@@ -20,3 +20,39 @@
   letter-spacing: 0;
   text-transform: none;
 }
+
+.kura-param-textarea {
+  width: 100%;
+  min-height: 44px;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.35;
+}
+
+.kura-param-segmented {
+  display: inline-flex;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.kura-param-seg {
+  padding: 3px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.kura-param-seg.is-active {
+  font-weight: 600;
+  border-color: var(--accent-cyan);
+  background: color-mix(in srgb, var(--accent-cyan) 18%, transparent);
+}
+
+.kura-param-seg:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
