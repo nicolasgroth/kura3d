@@ -354,6 +354,9 @@ export class KuraHeadlessEngine {
     const { overhangFaceIndices: _omitted, ...rest } = report;
     return {
       ...rest,
+      // `warnings` (español) se mantiene por compatibilidad; `issues` trae código y parámetros.
+      warnings: report.issues.map((w) => engine.localizePrintWarning('es', w)),
+      issues: report.issues.map((w) => ({ code: w.code, params: { ...w.params } })),
       dimensionsMm: engine.computeMeshStats(world).dimensionsMm,
       materialPreset,
       infillPercent,

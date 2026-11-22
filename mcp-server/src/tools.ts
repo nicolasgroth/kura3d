@@ -825,7 +825,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     {
       title: 'Analizar imprimibilidad 3D',
       description:
-        'Evalúa encaje en la cama activa, contacto con el plano Y=0, voladizos críticos, volumen, peso estimado y advertencias de impresión. Seguro en modo Solo Lectura.',
+        'Evalúa encaje en la cama activa, contacto con el plano Y=0, voladizos críticos, volumen, peso estimado y advertencias de impresión (`warnings` en español e `issues` con código y parámetros). Seguro en modo Solo Lectura.',
       inputSchema: {
         objectId: idSchema.describe('ID del objeto a inspeccionar.'),
         materialPreset: z

@@ -141,7 +141,7 @@ export const ParametersSection: React.FC<{ primary: SceneObject }> = ({ primary 
         if (field.kind === 'select') {
           const sel = typeof values[field.key] === 'string' ? String(values[field.key]) : field.defaultValue;
           return (
-            <div className="kura-field-row" key={field.key}>
+            <div className="kura-field-row kura-param-select-row" key={field.key}>
               <span className="kura-field-label">{label}</span>
               <div className="kura-param-segmented" role="radiogroup" aria-label={label}>
                 {field.options.map((opt) => {

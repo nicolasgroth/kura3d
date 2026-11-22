@@ -298,8 +298,26 @@ export interface PrintabilityReport {
   materialPreset: MaterialPresetId;
   infillPercent: number;
   printerProfileId: string;
+  /** Avisos en español (compatibilidad). Para tratarlos por programa, usa `issues`. */
   warnings: string[];
+  /** Avisos tipados: `code` estable (p. ej. `THIN_WALL`, `BELOW_BED`) y `params` con los números del aviso. */
+  issues: PrintabilityIssue[];
   score: number;
+}
+
+/** Aviso de imprimibilidad con código estable y parámetros (independiente del idioma). */
+export interface PrintabilityIssue {
+  code:
+    | 'NOT_MANIFOLD'
+    | 'EXCEEDS_BED'
+    | 'BELOW_BED'
+    | 'FLOATING'
+    | 'OVERHANG'
+    | 'LOW_DENSITY'
+    | 'HIGH_DENSITY'
+    | 'THIN_WALL'
+    | 'INVERTED_NORMALS';
+  params: Record<string, string | number>;
 }
 
 /** Perfil de impresora 3D / cama de impresión multi-marca. */

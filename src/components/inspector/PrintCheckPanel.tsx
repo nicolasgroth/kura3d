@@ -58,7 +58,7 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
 
   return (
     <>
-      <div className="kura-field-row kura-printcheck-wall">
+      <div className="kura-field-row kura-param-row kura-printcheck-wall">
         <label className="kura-field-label" htmlFor="kura-print-minwall">
           {t(language, 'inspector.pro.minWall')}
           <span className="kura-param-range" title={rangeTip}>{`${WALL.min}–${WALL.max} mm`}</span>

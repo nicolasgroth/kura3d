@@ -604,6 +604,37 @@ describe('Kura3D MCP Server', () => {
     expect(printReport.estimatedWeightGrams).toBeGreaterThan(0);
   });
 
+  it('expone los avisos de imprimibilidad como `warnings` en español y como `issues` con código y parámetros', async () => {
+    const { client, server, bridge } = await setupInMemoryPair();
+    cleanupTasks.push(async () => {
+      await client.close();
+      await server.close();
+      await bridge.close();
+    });
+    const analyze = async (params: Record<string, number>) => {
+      const created = await client.callTool({
+        name: 'kura_create_primitive',
+        arguments: { primitiveType: 'box', params, position: [0, 0, 0] },
+      });
+      const obj = JSON.parse((created.content[0] as { text: string }).text);
+      const res = await client.callTool({ name: 'kura_analyze_printability', arguments: { objectId: obj.id } });
+      return JSON.parse((res.content[0] as { text: string }).text);
+    };
+
+    const plate = await analyze({ width: 60, height: 0.2, depth: 40 });
+    const thin = plate.issues.find((i: { code: string }) => i.code === 'THIN_WALL');
+    expect(thin).toBeDefined();
+    expect(thin.params).toMatchObject({ min: 0.8 });
+    expect(typeof thin.params.thickness).toBe('number');
+    // Compatibilidad: `warnings` sigue siendo texto en español, uno por aviso.
+    expect(plate.warnings).toHaveLength(plate.issues.length);
+    expect(plate.warnings.join(' ')).toContain('paredes');
+
+    const cube = await analyze({ width: 20, height: 20, depth: 20 });
+    expect(cube.issues).toEqual([]);
+    expect(cube.warnings).toEqual([]);
+  });
+
   it('soporta segmentación estructural y mirror en modo headless preservando winding positivo', async () => {
     const { client, server, bridge, headless } = await setupInMemoryPair();
     cleanupTasks.push(async () => {
