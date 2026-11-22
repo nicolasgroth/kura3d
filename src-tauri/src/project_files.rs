@@ -5,7 +5,7 @@
 // autorización de rutas por sesión, escritura atómica y límite de tamaño.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::{Component, Path, PathBuf};
@@ -22,27 +22,64 @@ const MAX_METADATA_BYTES: usize = 64 * 1024;
 const TOO_LARGE: &str = "kura-project-too-large";
 
 /// Tracks files chosen in the main window for the lifetime of the desktop process.
+/// Locations that came from the recents registry (no native dialog) are flagged until the
+/// user confirms overwriting them in a native dialog (see `save_confirmation`).
 #[derive(Default)]
-pub struct ProjectLocations(Mutex<HashMap<String, PathBuf>>);
+pub struct ProjectLocations(Mutex<LocationState>);
+
+#[derive(Default)]
+struct LocationState {
+    paths: HashMap<String, PathBuf>,
+    unconfirmed: HashSet<String>,
+}
 
 impl ProjectLocations {
-    fn remember(&self, target: PathBuf) -> Result<String, String> {
-        let mut locations = self.0.lock().map_err(|err| err.to_string())?;
-        if let Some((location, _)) = locations.iter().find(|(_, path)| **path == target) {
-            return Ok(location.clone());
+    /// Registers a path the user picked in a native dialog: writable without further asking.
+    pub(crate) fn remember(&self, target: PathBuf) -> Result<String, String> {
+        self.remember_with(target, true)
+    }
+
+    /// Registers a path reopened from the recents registry. A path already chosen in a
+    /// dialog this session stays confirmed; otherwise it needs confirmation before saving.
+    pub(crate) fn remember_from_recent(&self, target: PathBuf) -> Result<String, String> {
+        self.remember_with(target, false)
+    }
+
+    fn remember_with(&self, target: PathBuf, confirmed: bool) -> Result<String, String> {
+        let mut state = self.0.lock().map_err(|err| err.to_string())?;
+        let existing = state.paths.iter().find(|(_, path)| **path == target).map(|(l, _)| l.clone());
+        let Some(location) = existing else {
+            let location = Uuid::new_v4().to_string();
+            state.paths.insert(location.clone(), target);
+            if !confirmed {
+                state.unconfirmed.insert(location.clone());
+            }
+            return Ok(location);
+        };
+        if confirmed {
+            state.unconfirmed.remove(&location);
         }
-        let location = Uuid::new_v4().to_string();
-        locations.insert(location.clone(), target);
         Ok(location)
     }
 
-    fn resolve(&self, location: &str) -> Result<PathBuf, String> {
+    pub(crate) fn resolve(&self, location: &str) -> Result<PathBuf, String> {
         self.0
             .lock()
             .map_err(|err| err.to_string())?
+            .paths
             .get(location)
             .cloned()
             .ok_or_else(|| "El destino original de este proyecto ya no está disponible.".into())
+    }
+
+    pub(crate) fn needs_confirmation(&self, location: &str) -> bool {
+        self.0.lock().map(|state| state.unconfirmed.contains(location)).unwrap_or(true)
+    }
+
+    pub(crate) fn confirm(&self, location: &str) {
+        if let Ok(mut state) = self.0.lock() {
+            state.unconfirmed.remove(location);
+        }
     }
 }
 
@@ -173,11 +210,20 @@ pub(crate) fn validate_project_file(target: &Path, max_bytes: u64) -> Result<fs:
 
 /// Reads the project at `target` and builds the IPC response (length-prefixed JSON
 /// metadata followed by the raw project bytes), registering its session location.
-pub(crate) fn project_response(window: &WebviewWindow, target: PathBuf) -> Result<Response, String> {
+pub(crate) fn project_response(
+    window: &WebviewWindow,
+    target: PathBuf,
+    from_recent: bool,
+) -> Result<Response, String> {
     let metadata = validate_project_file(&target, MAX_PROJECT_BYTES as u64)?;
     let file = File::open(&target).map_err(|err| err.to_string())?;
     let name = file_name(&target)?;
-    let location = window.state::<ProjectLocations>().remember(target.clone())?;
+    let locations = window.state::<ProjectLocations>();
+    let location = if from_recent {
+        locations.remember_from_recent(target.clone())?
+    } else {
+        locations.remember(target.clone())?
+    };
     let metadata_bytes =
         serde_json::to_vec(&ProjectFile { name, location }).map_err(|err| err.to_string())?;
     let prefix_len = 4 + metadata_bytes.len();
@@ -199,7 +245,7 @@ pub async fn open_kura_project(window: WebviewWindow) -> Result<Response, String
     let Some(selected) = project_dialog(&window)?.blocking_pick_file() else {
         return Ok(Response::new(Vec::<u8>::new()));
     };
-    project_response(&window, selected_path(selected)?)
+    project_response(&window, selected_path(selected)?, false)
 }
 
 #[tauri::command]
@@ -211,7 +257,19 @@ pub async fn save_kura_project(
     let (request, bytes) = read_save_request(request.body())?;
     let locations = window.state::<ProjectLocations>();
     let target = if let Some(location) = request.location {
-        locations.resolve(&location)?
+        let target = locations.resolve(&location)?;
+        // Locations reopened from Recents need a native confirmation before the first write.
+        if locations.needs_confirmation(&location) {
+            let (win, path) = (window.clone(), target.clone());
+            tauri::async_runtime::spawn_blocking(move || {
+                let state = win.state::<ProjectLocations>();
+                let confirmer = crate::save_confirmation::NativeConfirmer(&win);
+                crate::save_confirmation::authorize_save(&state, &location, &path, &confirmer)
+            })
+            .await
+            .map_err(|err| err.to_string())??;
+        }
+        target
     } else {
         validate_new_project_name(&request.name)?;
         let Some(selected) = dialog.set_file_name(request.name).blocking_save_file() else {
@@ -343,5 +401,25 @@ mod tests {
         let location = locations.remember(path.clone()).unwrap();
         assert_eq!(locations.resolve(&location).unwrap(), path);
         assert_eq!(locations.remember(path).unwrap(), location);
+    }
+
+    #[test]
+    fn recent_locations_are_flagged_until_confirmed_or_chosen_in_a_dialog() {
+        let locations = ProjectLocations::default();
+        let recent = locations.remember_from_recent(PathBuf::from("a.kura")).unwrap();
+        assert!(locations.needs_confirmation(&recent));
+        locations.confirm(&recent);
+        assert!(!locations.needs_confirmation(&recent));
+
+        let other = locations.remember_from_recent(PathBuf::from("b.kura")).unwrap();
+        assert!(locations.needs_confirmation(&other));
+        // Picking the same file in a native dialog confirms it.
+        assert_eq!(locations.remember(PathBuf::from("b.kura")).unwrap(), other);
+        assert!(!locations.needs_confirmation(&other));
+
+        // Reopening from Recents never downgrades a dialog-chosen path.
+        let chosen = locations.remember(PathBuf::from("c.kura")).unwrap();
+        assert_eq!(locations.remember_from_recent(PathBuf::from("c.kura")).unwrap(), chosen);
+        assert!(!locations.needs_confirmation(&chosen));
     }
 }

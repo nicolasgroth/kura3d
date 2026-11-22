@@ -50,12 +50,23 @@ function normalizeFileName(defaultName: string): string {
   return name.toLowerCase().endsWith(EXTENSION) ? name : `${name}${EXTENSION}`;
 }
 
+const NATIVE_SAVE_NOT_CONFIRMED = 'kura-save-not-confirmed';
+
+/** El usuario canceló la confirmación nativa de guardar un proyecto abierto desde Recientes: no es un fallo. */
+export class SaveNotConfirmedError extends Error {
+  constructor() {
+    super(NATIVE_SAVE_NOT_CONFIRMED);
+    this.name = 'SaveNotConfirmedError';
+  }
+}
+
 export async function invokeProject<T>(command: string, payload?: Uint8Array | Record<string, unknown>): Promise<T> {
   try {
     const { invoke } = await import('@tauri-apps/api/core');
     return await invoke<T>(command, payload);
   } catch (error) {
     if (error === NATIVE_TOO_LARGE) throw new ProjectCodecError('too-large');
+    if (error === NATIVE_SAVE_NOT_CONFIRMED) throw new SaveNotConfirmedError();
     if (error instanceof Error) throw error;
     throw new Error(String(error));
   }

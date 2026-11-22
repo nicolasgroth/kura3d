@@ -12,7 +12,11 @@ import { isProjectDirty, useKuraStore } from '../store/useKuraStore';
 import { decodeProject } from './projectCodec';
 import { openProjectFile, saveProjectFile } from './projectFiles';
 
-vi.mock('./projectFiles', () => ({ openProjectFile: vi.fn(), saveProjectFile: vi.fn() }));
+vi.mock('./projectFiles', async (importActual) => ({
+  ...(await importActual<typeof import('./projectFiles')>()),
+  openProjectFile: vi.fn(),
+  saveProjectFile: vi.fn(),
+}));
 
 describe('local project workspace', () => {
   const get = useKuraStore.getState;

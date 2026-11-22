@@ -11,6 +11,7 @@ mod ai_proxy;
 mod mcp_credentials;
 mod project_files;
 mod recent_projects;
+mod save_confirmation;
 
 /// Inicializa y ejecuta la aplicación Tauri v2 registrando plugins nativos y comandos IPC.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
