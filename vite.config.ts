@@ -21,6 +21,8 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    // Los worktrees de agentes y los temporales de QA no deben recargar la app en desarrollo.
+    watch: { ignored: ['**/.claude/**', '**/.eval-tmp/**', '**/.playwright-mcp/**', '**/src-tauri/target/**'] },
     host: tauriDevHost || false,
     hmr: tauriDevHost
       ? {
