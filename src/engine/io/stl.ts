@@ -179,12 +179,20 @@ function writeTriangles(view: DataView, offset: number, mesh: MeshData): number 
   return offset;
 }
 
+/** Cabecera por omisión: neutra. La marca la pone quien exporta (`stlBrandHeader(BRAND)`). */
+const DEFAULT_STL_HEADER = 'Binary STL';
+
+/** Cabecera de autoría para un STL a partir de la marca que entrega quien llama. */
+export function stlBrandHeader(brand: { name: string; author: string }): string {
+  return `${brand.name} by ${brand.author}`;
+}
+
 function allocateStl(triCount: number, headerText: string): { bytes: Uint8Array; view: DataView } {
   const buffer = new ArrayBuffer(84 + triCount * 50);
   const bytes = new Uint8Array(buffer);
   const view = new DataView(buffer);
   // La cabecera no debe comenzar con "solid" para no confundirse con STL ASCII.
-  const safeHeader = headerText.trimStart().toLowerCase().startsWith('solid') ? `Kura3D ${headerText}` : headerText;
+  const safeHeader = headerText.trimStart().toLowerCase().startsWith('solid') ? `STL ${headerText.trimStart()}` : headerText;
   bytes.set(strToU8(safeHeader).subarray(0, 80), 0);
   view.setUint32(80, triCount, true);
   return { bytes, view };
@@ -193,7 +201,7 @@ function allocateStl(triCount: number, headerText: string): { bytes: Uint8Array;
 /**
  * Exporta una malla `MeshData` (Y-up en mm) a STL binario IEEE-754 (Z-up).
  */
-export function exportMeshToBinarySTL(mesh: MeshData, headerText = 'Kura3D by Nicolas Groth'): Uint8Array {
+export function exportMeshToBinarySTL(mesh: MeshData, headerText = DEFAULT_STL_HEADER): Uint8Array {
   const triCount = Math.floor(mesh.indices.length / 3);
   const { bytes, view } = allocateStl(triCount, headerText);
   writeTriangles(view, 84, mesh);
@@ -208,12 +216,12 @@ export function exportableObjects(objects: SceneObject[]): SceneObject[] {
 /**
  * Fusiona los objetos visibles y sólidos con sus transformaciones mundiales en un STL binario.
  */
-export function exportSceneToBinarySTL(objects: SceneObject[], headerText?: string): Uint8Array {
+export function exportSceneToBinarySTL(objects: SceneObject[], headerText = DEFAULT_STL_HEADER): Uint8Array {
   const worlds = exportableObjects(objects).map((obj) =>
     applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale),
   );
   const triCount = worlds.reduce((acc, mesh) => acc + Math.floor(mesh.indices.length / 3), 0);
-  const { bytes, view } = allocateStl(triCount, headerText ?? 'Kura3D by Nicolas Groth');
+  const { bytes, view } = allocateStl(triCount, headerText);
   let offset = 84;
   for (const mesh of worlds) offset = writeTriangles(view, offset, mesh);
   return bytes;

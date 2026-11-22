@@ -17,7 +17,7 @@ import { readOBJ } from './io/obj';
 import { readSTL } from './io/stl';
 import { read3MF } from './io/threeMfImport';
 
-export { exportMeshToBinarySTL, exportSceneToBinarySTL, readSTL } from './io/stl';
+export { exportMeshToBinarySTL, exportSceneToBinarySTL, readSTL, stlBrandHeader } from './io/stl';
 export { exportMeshToOBJ, exportSceneToOBJ, objMaterialLibraries, parseMtlColors, readOBJ, readOBJBuffer } from './io/obj';
 export { exportSceneToPLY, readPLY } from './io/ply';
 export { exportSceneTo3MF } from './io/threeMfExport';
