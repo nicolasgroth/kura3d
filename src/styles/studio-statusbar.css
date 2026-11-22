@@ -1,0 +1,177 @@
+/**
+ * @file src/styles/studio-statusbar.css
+ * @description Barra de estado inferior, toasts y adaptación a ventanas compactas. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* ============================================================================
+ * 9. Barra de Estado Inferior & Stack de Notificaciones Toast
+ * ============================================================================ */
+.kura-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-subtle);
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.kura-statusbar-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kura-toast-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: center;
+  gap: 8px;
+  max-width: 100%;
+  max-height: min(24vh, 10rem);
+  overflow-y: auto;
+}
+
+.kura-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+  width: min(100%, 380px);
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-hud);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kura-toast > span {
+  overflow-wrap: anywhere;
+}
+
+.kura-toast.success {
+  border-left: 4px solid var(--accent-green);
+}
+
+.kura-toast.error {
+  border-left: 4px solid var(--accent-red);
+}
+
+.kura-toast.info {
+  border-left: 4px solid var(--accent-cyan);
+}
+
+/* Adaptación en ventanas compactas */
+@media (max-width: 1240px) {
+  .kura-topbar .kura-btn-label,
+  .kura-topbar .kura-tool-label,
+  .kura-topbar .kura-mcp-label {
+    display: none;
+  }
+  .kura-topbar .kura-select {
+    max-width: 145px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .kura-sidebar-left {
+    width: 230px;
+  }
+  .kura-sidebar-right {
+    width: 270px;
+  }
+  .kura-ai-drawer {
+    width: 280px;
+  }
+}
+
+@media (900px < width <= 1240px) {
+  .kura-workspace[data-narrow-panel="ai"] > .kura-sidebar-right {
+    display: none;
+  }
+}
+
+@media (max-width: 950px) {
+  .kura-topbar {
+    justify-content: flex-start;
+  }
+
+  .kura-topbar-center {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .kura-app:not([data-density="zen"]) .kura-workspace {
+    flex-direction: column;
+  }
+
+  .kura-app:not([data-density="zen"]) .kura-narrow-panel-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 6px;
+    padding: 4px 10px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-panel);
+  }
+
+  .kura-workspace > :is(.kura-sidebar-left, .kura-sidebar-right, .kura-ai-drawer),
+  .kura-workspace .kura-panel-edge-btn {
+    display: none;
+  }
+
+  .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-panel="left"] > .kura-sidebar-left,
+  .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-panel="right"] > .kura-sidebar-right,
+  .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-panel="ai"] > .kura-ai-drawer {
+    display: flex;
+    order: 1;
+    flex: 0 0 38%;
+    width: 100%;
+    border-inline: 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .kura-hud-bar > .kura-hud-card {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  .kura-statusbar-group:first-child {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .kura-statusbar-group:last-child > span:last-child {
+    display: none;
+  }
+}
+
+/* Modal lateral no obstructivo para Vista Previa Láser 3D en Corte por Plano */
+dialog.kura-dialog-side {
+  width: min(370px, 92vw);
+  margin: auto auto auto clamp(16px, 236px, 20vw);
+}
+
+dialog.kura-dialog-side[open]:where(:not([data-closing]))::backdrop {
+  background-color: rgba(2, 6, 23, 0.14);
+  backdrop-filter: none;
+}
+
+/* Mantener select de impresora en una sola línea limpia dentro del TopBar */
+.kura-topbar .kura-select {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -14,7 +14,11 @@ interface NodeFs {
   readFileSync: (path: URL, encoding: 'utf8') => string;
 }
 const nodeFs = (globalThis as unknown as { process: { getBuiltinModule: (id: string) => NodeFs } }).process.getBuiltinModule('node:fs');
-const css = nodeFs.readFileSync(new URL('./studio.css', import.meta.url), 'utf8');
+// studio.css es un índice de @import: se lee cada hoja en el mismo orden de la cascada.
+const studioIndex = nodeFs.readFileSync(new URL('./studio.css', import.meta.url), 'utf8');
+const css = Array.from(studioIndex.matchAll(/@import '\.\/([^']+)';/g))
+  .map((m) => nodeFs.readFileSync(new URL(`./${m[1]}`, import.meta.url), 'utf8'))
+  .join('\n');
 
 
 function parseBlock(selector: RegExp): Record<string, string> {

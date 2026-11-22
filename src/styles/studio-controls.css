@@ -1,0 +1,274 @@
+/**
+ * @file src/styles/studio-controls.css
+ * @description Botones y controles compactos estilo CAD, píldora de estado MCP y badges. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* Botones y controles compactos estilo CAD */
+.kura-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.14s ease, border-color 0.14s ease, transform 0.1s ease;
+}
+
+.kura-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.kura-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.kura-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.kura-btn-icon {
+  width: 32px;
+  padding: 0;
+}
+
+.kura-btn-sm {
+  height: 28px;
+  padding: 0 8px;
+  font-size: 11.5px;
+}
+
+.kura-btn-primary {
+  background: var(--accent-cyan);
+  color: var(--accent-cyan-fg);
+  border-color: transparent;
+}
+
+.kura-btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-cyan) 88%, white);
+  border-color: transparent;
+}
+
+.kura-btn-amber {
+  background: var(--accent-amber);
+  color: var(--accent-amber-fg);
+  border-color: transparent;
+}
+
+/* El hover se aleja del color del texto para no bajar del contraste 4.5:1. */
+.kura-btn-amber:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-amber) 88%, light-dark(black, white));
+}
+
+.kura-btn-danger {
+  color: var(--accent-red);
+  border-color: color-mix(in srgb, var(--accent-red) 35%, transparent);
+}
+
+.kura-btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-red) 14%, transparent);
+}
+
+.kura-btn.is-active {
+  background: color-mix(in srgb, var(--tool-accent) 18%, var(--bg-elevated));
+  border-color: var(--tool-accent);
+  /* Texto primario sobre el tinte: el acento como texto no llegaba a 4.5:1 en todos los temas. */
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.kura-segmented {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.kura-segmented .kura-btn {
+  border: none;
+  background: transparent;
+  height: 26px;
+  padding: 0 8px;
+}
+
+.kura-segmented .kura-btn.is-active {
+  background: var(--tool-accent);
+  color: var(--tool-accent-fg);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--tool-accent) 32%, transparent);
+}
+
+.kura-select,
+.kura-input,
+.kura-textarea {
+  height: 30px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.kura-textarea {
+  height: auto;
+  padding: 8px;
+  resize: vertical;
+}
+
+.kura-select:hover,
+.kura-input:hover {
+  border-color: var(--border-strong);
+}
+
+/* Pill de estado MCP y badges Local vs IA Externa */
+.kura-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.kura-pill.is-online {
+  border-color: color-mix(in srgb, var(--accent-green) 48%, transparent);
+  background: color-mix(in srgb, var(--accent-green) 14%, transparent);
+  color: var(--accent-green);
+}
+
+.kura-pill.is-off {
+  opacity: 0.72;
+}
+
+.kura-pill.is-waiting {
+  border-color: color-mix(in srgb, var(--accent-amber) 48%, transparent);
+  color: var(--accent-amber);
+}
+
+.kura-pill.is-error {
+  border-color: color-mix(in srgb, var(--accent-red) 52%, transparent);
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
+  color: var(--accent-red);
+}
+
+.kura-source-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.kura-source-pill.is-local {
+  background: color-mix(in srgb, var(--accent-green) 15%, transparent);
+  color: var(--accent-green);
+  border: 1px solid color-mix(in srgb, var(--accent-green) 36%, transparent);
+}
+
+.kura-source-pill.is-ai {
+  background: color-mix(in srgb, var(--accent-amber) 16%, transparent);
+  color: var(--accent-amber);
+  border: 1px solid color-mix(in srgb, var(--accent-amber) 40%, transparent);
+}
+
+.kura-ai-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.kura-ai-status-pill.tone-emerald {
+  background: color-mix(in srgb, var(--accent-green) 16%, transparent);
+  color: var(--accent-green);
+}
+
+.kura-ai-status-pill.tone-amber {
+  background: color-mix(in srgb, var(--accent-amber) 18%, transparent);
+  color: var(--accent-amber);
+}
+
+.kura-ai-status-pill.tone-cyan {
+  background: color-mix(in srgb, var(--accent-cyan) 16%, transparent);
+  color: var(--accent-cyan);
+}
+
+.kura-privacy-strip {
+  padding: 6px 12px;
+  font-size: 10.5px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  background: var(--bg-canvas);
+}
+
+.kura-privacy-strip.tone-amber {
+  color: var(--accent-amber);
+}
+
+.kura-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.kura-callout.is-warning {
+  background: color-mix(in srgb, var(--accent-amber) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-amber) 40%, transparent);
+  color: var(--text-primary);
+}
+
+.kura-callout.is-local {
+  background: color-mix(in srgb, var(--accent-green) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-green) 36%, transparent);
+  color: var(--text-primary);
+}
+
+.kura-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kura-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}

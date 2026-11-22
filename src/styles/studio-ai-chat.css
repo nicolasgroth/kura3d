@@ -1,0 +1,105 @@
+/**
+ * @file src/styles/studio-ai-chat.css
+ * @description Cajón del chat IA. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* ============================================================================
+ * 7. Chat IA Drawer
+ * ============================================================================ */
+.kura-chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: thin;
+}
+
+.kura-chat-bubble {
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  line-height: 1.45;
+  max-width: 94%;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.kura-chat-bubble.user {
+  align-self: flex-end;
+  background: var(--accent-cyan);
+  color: var(--accent-cyan-fg);
+}
+
+.kura-chat-bubble.assistant {
+  align-self: flex-start;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.kura-chat-bubble.tool {
+  align-self: flex-start;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  background: color-mix(in srgb, var(--accent-green) 10%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--accent-green) 32%, transparent);
+  color: var(--text-secondary);
+  white-space: normal;
+  word-break: normal;
+}
+
+.kura-tool-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.kura-tool-json {
+  margin: 6px 0 0 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  white-space: pre;
+  max-width: 100%;
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+.kura-chat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.kura-chip {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.kura-chip:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.kura-chat-form {
+  display: flex;
+  gap: 6px;
+  padding: 10px;
+  border-top: 1px solid var(--border-subtle);
+}

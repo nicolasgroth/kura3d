@@ -1,0 +1,196 @@
+/**
+ * @file src/styles/studio-inspector.css
+ * @description Inspector derecho: tarjetas, matrices X/Y/Z y operaciones. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* ============================================================================
+ * 6. Inspector Derecho (Tarjetas, Matrices X/Y/Z, Operaciones)
+ * ============================================================================ */
+.kura-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.kura-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kura-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kura-field-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.kura-vec3-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.kura-transform-group {
+  padding: 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.kura-transform-mode {
+  min-width: 0;
+  max-width: 65%;
+}
+
+.kura-transform-scale-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kura-transform-scale-actions .kura-transform-mode {
+  max-width: 100%;
+}
+
+.kura-transform-note {
+  margin: 0 0 3px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.kura-precision-apply {
+  align-self: flex-end;
+}
+
+.kura-axis-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0 6px;
+  height: 28px;
+}
+
+.kura-axis-tag {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.kura-axis-tag.x {
+  color: #ef4444;
+}
+
+.kura-axis-tag.y {
+  color: #22c55e;
+}
+
+.kura-axis-tag.z {
+  color: #38bdf8;
+}
+
+.kura-axis-input input {
+  width: 100%;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-family: ui-monospace, monospace;
+  outline: none;
+}
+
+.kura-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.kura-swatch-row {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 5px;
+  align-items: center;
+}
+
+.kura-swatch {
+  width: 100%;
+  min-width: 20px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.kura-swatch-custom {
+  width: 100%;
+  min-width: 22px;
+  height: 22px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.kura-swatch:hover {
+  transform: scale(1.08);
+}
+
+.kura-swatch.is-active {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--accent-cyan);
+}
+
+.kura-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.kura-stat-box {
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+}
+
+.kura-stat-title {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.kura-stat-val {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+}
+
+.kura-badge-ok {
+  color: var(--accent-green);
+}
+
+.kura-badge-warn {
+  color: var(--accent-amber);
+}

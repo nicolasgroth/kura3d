@@ -1,0 +1,196 @@
+/**
+ * @file src/styles/studio-topbar.css
+ * @description Barra superior y selector de idioma. Parte de studio.css (se importa en orden desde allí).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* ============================================================================
+ * 3. TopBar
+ * ============================================================================ */
+.kura-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 20;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.kura-topbar-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.kura-topbar-center {
+  flex: 1 0 auto;
+  min-width: max-content;
+  justify-content: center;
+}
+
+.kura-topbar-left,
+.kura-topbar-right {
+  flex-shrink: 0;
+}
+
+.kura-project-name {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-project-dirty {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent-amber);
+}
+
+.kura-project-popover {
+  position: fixed;
+  inset: 58px auto auto 10px;
+  margin: 0;
+  width: min(320px, calc(100vw - 20px));
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-hud);
+}
+
+.kura-project-popover:popover-open {
+  display: grid;
+  gap: 5px;
+}
+
+.kura-project-popover strong {
+  overflow-wrap: anywhere;
+}
+
+.kura-project-popover .kura-btn {
+  justify-content: flex-start;
+}
+
+.kura-project-unsaved {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.kura-printer-select {
+  max-width: 175px;
+  min-width: 110px;
+  text-overflow: ellipsis;
+}
+
+.kura-unit-select {
+  width: 56px;
+}
+
+@media (max-width: 1220px) {
+  .kura-tool-label {
+    display: none;
+  }
+}
+
+.kura-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-right: 10px;
+  border-right: 1px solid var(--border-subtle);
+  user-select: none;
+}
+
+.kura-brand-icon-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+}
+
+.kura-brand-title {
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.kura-brand-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-cyan) 16%, transparent);
+  color: var(--accent-cyan);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 35%, transparent);
+}
+
+/* Selector compacto de 6 idiomas en TopBar (muestra sigla ES/EN/DE/FR/HI/ZH y despliega nombres nativos) */
+.kura-lang-select-wrap {
+  position: relative;
+  width: 56px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.kura-lang-select-face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  padding: 0 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 700;
+  pointer-events: none;
+  transition: background-color 0.14s ease, border-color 0.14s ease;
+}
+
+.kura-lang-select-wrap:hover .kura-lang-select-face {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.kura-lang-select-wrap:focus-within .kura-lang-select-face {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-lang-select-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+}
+
+.kura-divider-v {
+  width: 1px;
+  height: 22px;
+  background: var(--border-subtle);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
