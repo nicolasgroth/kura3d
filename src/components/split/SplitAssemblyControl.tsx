@@ -11,6 +11,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Boxes, Pause, Play, Printer } from 'lucide-react';
 import { t } from '../../i18n';
+import { tCount } from '../../utils/plural';
 import { splitArrangementOf, splitGroupOf, splitPlateCount } from '../../core/scene/splitGroups';
 import { activeBed } from '../../store/splitCommandSchemas';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -76,7 +77,7 @@ export const SplitAssemblyControl: React.FC = () => {
     <section className="kura-split-assembly" aria-label={t(language, 'split.assembly.title')}>
       <div className="kura-split-assembly-head">
         <strong>{t(language, 'split.assembly.title')}</strong>
-        <span className="kura-cut-hint">{t(language, 'split.assembly.count', { count: group.parts.length, plates })}</span>
+        <span className="kura-cut-hint">{tCount(language, { one: 'splitUx.parts.one', other: 'splitUx.parts.other' }, group.parts.length)} · {tCount(language, { one: 'splitUx.plates.one', other: 'splitUx.plates.other' }, plates)}</span>
       </div>
       <div className="kura-split-assembly-row">
         <button
@@ -91,7 +92,7 @@ export const SplitAssemblyControl: React.FC = () => {
           {playing ? <Pause size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}
         </button>
         <label htmlFor={`${uid}-explode`} className="sr-only">
-          {t(language, 'split.assembly.slider')}
+          {t(language, 'splitUx.explode.label')}
         </label>
         <input
           id={`${uid}-explode`}
@@ -101,6 +102,7 @@ export const SplitAssemblyControl: React.FC = () => {
           step={1}
           value={pct}
           disabled={!canExplode}
+          aria-label={t(language, 'splitUx.explode.label')}
           aria-valuetext={t(language, 'split.assembly.valueText', { pct })}
           title={t(language, canExplode ? 'split.assembly.sliderTip' : 'split.assembly.onlyAssembled')}
           onChange={(e) => {

@@ -15,6 +15,7 @@ import { SPLITJOINTS_FR } from './splitJoints';
 import { SPLITPREFS_FR } from './splitPrefs';
 import { SPLITCOUPLING_FR } from './splitCoupling';
 import { A11YUX_FR } from './a11yUx';
+import { SPLITUX_FR } from './splitUx';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -27,6 +28,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...SPLITPREFS_FR,
   ...SPLITCOUPLING_FR,
   ...A11YUX_FR,
+  ...SPLITUX_FR,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
@@ -1180,7 +1182,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineError.SPLIT_TOO_MANY_PIECES': 'Il faudrait environ {needed} pièces pour tenir sur le plateau (maximum {max}). Utilise un plateau plus grand, augmente le maximum ou mets le modèle à l\'échelle.',
   'engineError.SPLIT_AXIS_BLOCKED': 'Le modèle mesure {size} mm en {axis} et le plateau utile {usable} mm, mais couper sur cet axe n\'est pas autorisé.',
   'engineWarning.SPLIT_JOINT_NO_CONNECTOR': 'La jonction {label} ({a}–{b}) n\'a pas de connecteur : sa section manque de surface pleine.',
-  'engineWarning.SPLIT_CONNECTOR_REDUCED': 'À la jonction {label} ({a}–{b}), le connecteur a été réduit à {count} de {size} mm pour tenir.',
+  'engineWarning.SPLIT_CONNECTOR_REDUCED': 'À la jonction {label} ({a}–{b}), le connecteur a été réduit à {count} de Ø{size} mm pour tenir.',
   'engineWarning.SPLIT_LABEL_SKIPPED': 'La jonction {label} ({a}–{b}) n\'a pas la place pour une marque lisible de {min} mm : omise.',
   'engineWarning.SPLIT_EMPTY_CELLS': 'Cellules de la grille sans matière : {count}. Elles ont été omises.',
   'progress.op.split_for_bed': 'Découpe pour le plateau',
@@ -1270,7 +1272,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'export.split.zipDone': '{count} pièces exportées dans {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'La pièce {code} contient un fragment détaché de {volume} mm³ qui n\'a pas pu être fusionné avec une voisine : il reste une pièce à part.',
   'engineWarning.SPLIT_FRAGMENT_MERGED': 'La pièce {code} a absorbé un fragment détaché de {volume} mm³ de la cellule voisine et dépasse de {protrusion} mm le plan de coupe (voulu ; avec un seuil de fragment de 0, il reste une pièce à part).',
-  'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} plan(s) ({planes}) n\'ont trouvé aucune section évitant de couper des parois dans la longueur : la position uniforme a été conservée.',
+  'engineWarning.SPLIT_PLANE_THIN_SECTION': 'Plans ({planes}) sans section évitant de couper des parois dans la longueur ; au total : {count}. La position uniforme a été conservée.',
   'split.joint.auto': 'Connecteurs là où ils tiennent ; sinon coupe lisse à coller',
   'split.joint.lap': 'Recouvrement de bord (modifie la forme)',
   'split.lapHeight': 'Hauteur du recouvrement',
@@ -1339,7 +1341,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_CONNECTOR_CLASH': 'Un connecteur de la jonction {label} heurte {other} ou en est trop proche : paroi {distance} mm, minimum {required} mm.',
   'engineWarning.ASSEMBLY_BLOCKED': 'La pièce {code} ne peut entrer dans aucun ordre : connecteurs {joints}, bute sur {parts}.',
   'engineWarning.ASSEMBLY_JOINT_GLUED_FOR_ORDER': 'La jonction {label} ({a}–{b}) est passée à coller pour que l\'assemblage ait un ordre possible.',
-  'engineWarning.ASSEMBLY_WEAK_JOINT': 'Le connecteur de la jonction {label} est fragile : {measured} mm, {recommended} mm recommandés.',
+  'engineWarning.ASSEMBLY_WEAK_JOINT': 'Le connecteur de la jonction {label} est fragile : Ø{measured} mm, Ø{recommended} mm recommandés.',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'Le recouvrement de la jonction {label} n\'est pas imprimable (languette {tongue} mm, paroi de rainure {groove} mm ; minimum {min} mm) : la jonction est à coller.',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Le repère {label} a été gravé à {depth} mm (demandé {requested} mm) pour ne pas percer la paroi de {wall} mm.',
   'dialog.thread.presetCommon': 'Courants (M3–M20)',

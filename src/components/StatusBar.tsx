@@ -15,6 +15,7 @@ import { useKuraStore } from '../store/useKuraStore';
 import { formatNumber } from '../utils/plural';
 import { isTauriRuntime } from '../utils/platformBridge';
 import { StatusBarMeasures } from './StatusBarMeasures';
+import { operationLabel } from './viewport/OperationProgressBar';
 
 export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recoveryStatus = 'idle' }) => {
   const language = useKuraStore((s) => s.language);
@@ -65,7 +66,7 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recov
         >
           ● {projectBusy
             ? t(language, 'fileProject.working')
-            : busyOperation ? `${engineLabel} (${busyOperation})` : engineLabel}
+            : busyOperation ? `${engineLabel} (${operationLabel(language, busyOperation)})` : engineLabel}
         </span>
 
         <StatusBarMeasures />

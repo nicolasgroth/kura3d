@@ -56,8 +56,24 @@ export function localizeEngineErrorForUser(lang: LanguageCode, err: unknown): st
   return localizeEngineError(lang, err);
 }
 
+/** Parámetros en radio (mm) de los avisos de conectores, que se muestran como diámetro. */
+const DIAMETER_PARAMS: Partial<Record<EngineWarning['code'], string[]>> = {
+  ASSEMBLY_WEAK_JOINT: ['measured', 'recommended'],
+  SPLIT_CONNECTOR_REDUCED: ['size'],
+  SPLIT_CONNECTOR_REINFORCED: ['requested', 'size'],
+};
+
 /** Aviso del motor con los ejes del usuario en sus parámetros (p. ej. plano "Y2" interno → "Z2"). */
 export function userWarning(warning: EngineWarning): EngineWarning {
+  // El motor mide los conectores en radio; el usuario los ve siempre en diámetro Ø (una sola forma de nombrarlos).
+  if (DIAMETER_PARAMS[warning.code]) {
+    const params = { ...warning.params };
+    for (const key of DIAMETER_PARAMS[warning.code]!) {
+      const radius = Number(params[key]);
+      if (Number.isFinite(radius)) params[key] = Math.round(2 * radius * 10) / 10;
+    }
+    return { ...warning, params };
+  }
   if (warning.code !== 'SPLIT_PLANE_THIN_SECTION' || typeof warning.params.planes !== 'string') return warning;
   const planes = warning.params.planes.replace(
     /(^|, )([XYZ])(\d+)/g,

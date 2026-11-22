@@ -55,6 +55,19 @@ function connectorLadder(c: SplitConnectorOptions, recommended?: (count: number)
   return out;
 }
 
+/**
+ * Pedido de una unión con tamaño automático: radio recomendado para su contacto y la pieza que sostiene,
+ * sin pasar de la cuarta parte de la isla más ancha ni de la profundidad (el mismo tope de la firmeza activa),
+ * y sin bajar del mínimo recomendado cuando la sección lo permite. Devuelve el conector sin la marca `sizeAuto`.
+ */
+function autoRequest(c: SplitConnectorOptions, area: number, dim: number, width: number): SplitConnectorOptions {
+  const { sizeAuto: _auto, ...rest } = c;
+  const rec = recommendedConnectorRadius(area, c.count, dim);
+  const cap = Math.min(ASSEMBLY_LIMITS.maxReinforceWidthFraction * width, c.depth);
+  const size = Math.max(Math.min(rec, cap), Math.min(rec, ASSEMBLY_LIMITS.minConnectorRadiusMm));
+  return { ...rest, size };
+}
+
 /** Alcance de lo que sale de una cara hacia la celda vecina (conector o solape), mm. */
 export function jointReach(c: SplitConnectorOptions | null, lapHeight: number): number {
   if (!c) return 0;
@@ -198,11 +211,13 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     const roomBelow = connector?.type !== 'loose-dowel' || holeDepth(connector) < lowSpan;
     if (connector && connector.type !== 'lap' && !thinOnly && roomBelow && holeDepth(connector) < j.span && !face.isEmpty()) {
       const area = j.contact.area();
-      const dim = j.reinforce ? smallerPieceDim(low, high) : 0;
+      const dim = j.reinforce || connector.sizeAuto ? smallerPieceDim(low, high) : 0;
       // Tope relativo a la sección: la isla más ancha que admite conector
       const width = Math.max(0, ...islands.map((isl) => islandWidth(isl)).filter((wd) => wd >= minWall));
-      const cap = reinforcementCap(connector.size, width, connector.depth);
-      const ladder = connectorLadder(connector, j.reinforce ? (n) => Math.min(cap, recommendedConnectorRadius(area, n, dim)) : undefined);
+      // Tamaño automático: el pedido de esta unión es su radio recomendado (acotado por la sección y la profundidad)
+      const requested = connector.sizeAuto ? autoRequest(connector, area, dim, width) : connector;
+      const cap = reinforcementCap(requested.size, width, requested.depth);
+      const ladder = connectorLadder(requested, j.reinforce ? (n) => Math.min(cap, recommendedConnectorRadius(area, n, dim)) : undefined);
       const lt = layoutType(connector.type);
       for (const c of ladder) {
         const found = placeRung(wasm, j, face, c, lt, handles);
@@ -213,12 +228,12 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
           break;
         }
       }
-      const reduced = used && used !== connector && (used.size < connector.size || used.count < connector.count);
+      const reduced = used && used !== requested && (used.size < requested.size || used.count < requested.count);
       if (used && reduced) warnings.push(engineWarning('SPLIT_CONNECTOR_REDUCED', { ...pair, count: used.count, size: used.size }));
-      const reinforced = used && (used.size > connector.size + 1e-6 || used.count > connector.count);
+      const reinforced = used && (used.size > requested.size + 1e-6 || used.count > requested.count);
       if (used && reinforced) {
         warnings.push(engineWarning('SPLIT_CONNECTOR_REINFORCED', {
-          ...pair, requested: connector.size, size: used.size, requestedCount: connector.count, count: used.count,
+          ...pair, requested: requested.size, size: used.size, requestedCount: requested.count, count: used.count,
         }));
       }
     }

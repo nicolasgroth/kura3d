@@ -9,7 +9,7 @@
 import React, { useMemo, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useKuraStore } from '../store/useKuraStore';
-import { checkObjectsOutOfBounds } from './viewport/viewportHelpers';
+import { bedStatusOf } from './split/splitAssembledStatus';
 import { SceneContent } from './viewport/SceneContent';
 import { useObjectContextMenu } from './viewport/useObjectContextMenu';
 import { EmptySceneOverlay } from './viewport/EmptySceneOverlay';
@@ -26,7 +26,7 @@ export const Viewport3D: React.FC = () => {
   const objects = useKuraStore((s) => s.objects);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const isOutOfBounds = useMemo(
-    () => checkObjectsOutOfBounds(objects, printerProfile),
+    () => bedStatusOf(objects, printerProfile) === 'outOfBounds',
     [objects, printerProfile],
   );
 

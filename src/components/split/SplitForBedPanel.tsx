@@ -14,7 +14,7 @@ import React, { useEffect, useId, useMemo, useState } from 'react';
 import { AlertTriangle, Grid3x3, RotateCcw } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
-import { activeBed } from '../../store/splitCommandSchemas';
+import { activeBed, FALLBACK_CONNECTOR_SIZE_MM } from '../../store/splitCommandSchemas';
 import type { BedSplitPlanOptions, SplitAxis, SplitBed, SplitConnectorOptions } from '../../engine';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR, SPLIT_HARD_MAX_PIECES } from '../../engine/operationLimits';
 import { summarizeSplitPlan } from '../../core/scene/splitPlanSummary';
@@ -66,7 +66,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const [kind, setKind] = useState<ConnectorKind>(prefs.connectorType);
   const [lapHeight, setLapHeight] = useState<number>(D.lapHeightMm);
   const [minWall, setMinWall] = useState<number>(D.minWallForConnectorMm);
-  const [size, setSize] = useState(4);
+  /** Radio fijo del conector (mm); la interfaz lo muestra como diámetro Ø. */
+  const [size, setSize] = useState(FALLBACK_CONNECTOR_SIZE_MM);
+  const [sizeAuto, setSizeAuto] = useState(prefs.connectorSize === 'auto');
   const [depth, setDepth] = useState(6);
   const [tolerance, setTolerance] = useState(prefs.tolerance);
   const [reinforce, setReinforce] = useState(prefs.reinforceWeakJoints);
@@ -92,6 +94,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
     setKind(p.connectorType);
     setTolerance(p.tolerance);
     setReinforce(p.reinforceWeakJoints);
+    setSizeAuto(p.connectorSize === 'auto');
+    setSize(p.connectorSize === 'auto' ? FALLBACK_CONNECTOR_SIZE_MM : p.connectorSize);
   }, [open]);
   useEffect(() => {
     setOverrides({});
@@ -105,10 +109,11 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         : {
             type: kind === 'auto' ? 'dowel' : kind,
             size, depth, tolerance, count,
+            ...(sizeAuto ? { sizeAuto: true } : {}),
             minWallForConnectorMm: minWall,
             lapHeightMm: lapHeight,
           },
-    [kind, size, depth, tolerance, count, lapHeight, minWall],
+    [kind, size, sizeAuto, depth, tolerance, count, lapHeight, minWall],
   );
   const allowedAxes = useMemo(() => AXES.filter((a) => axes[a]), [axes]);
   const planOptions = useMemo<BedSplitPlanOptions>(
@@ -343,11 +348,25 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         {kind === 'lap' &&
           num('laph', `${t(language, 'split.lapHeight')} (mm)`, lapHeight, setLapHeight, OR.split.lapHeightMm, { step: 0.5, def: D.lapHeightMm })}
         <div className="kura-split-row2">
-          {num('size', `${t(language, 'dialog.cut.connectorSize')} (mm)`, size, setSize, { min: OR.cut.connectorSize.min, max: 50 }, { step: 0.5, disabled: !connector || kind === 'lap', def: 4 })}
+          {kind !== 'none' && kind !== 'lap' && (
+            <label className="kura-split-check kura-split-size-auto" title={t(language, 'split.size.autoTip')}>
+              <input
+                type="checkbox"
+                checked={sizeAuto}
+                aria-describedby={`${uid}-size-help`}
+                onChange={(e) => setSizeAuto(e.target.checked)}
+              />
+              <span>{t(language, 'split.size.auto')}</span>
+            </label>
+          )}
+          {num('size', `${t(language, 'split.size.label')} (mm)`, 2 * size, (v) => setSize(v / 2), { min: 2 * OR.cut.connectorSize.min, max: 100 }, { step: 1, disabled: !connector || kind === 'lap' || sizeAuto, def: 2 * FALLBACK_CONNECTOR_SIZE_MM, hint: t(language, 'split.size.help') })}
           {num('depth', `${t(language, 'dialog.cut.connectorDepth')} (mm)`, depth, setDepth, { min: OR.cut.connectorDepth.min, max: 50 }, { step: 0.5, disabled: !connector || kind === 'lap', def: 6 })}
           {num('tol', `${t(language, 'dialog.cut.tolerance')} (mm)`, tolerance, setTolerance, OR.cut.tolerance, { step: 0.05, precision: 2, disabled: !connector, def: 0.25 })}
           {num('count', t(language, 'dialog.cut.connectorCount'), count, (v) => setCount(Math.round(v)), { min: 1, max: OR.cut.connectorCount.max }, { precision: 0, disabled: !connector || kind === 'lap', def: 2 })}
         </div>
+        {kind !== 'none' && kind !== 'lap' && (
+          <p className="kura-split-target" id={`${uid}-size-help`}>{sizeAuto ? t(language, 'split.size.autoHelp') : t(language, 'split.size.help')}</p>
+        )}
         {kind !== 'none' && kind !== 'lap' && (
           <>
             <label className="kura-split-check" title={t(language, 'split.reinforceTip')}>

@@ -15,6 +15,7 @@ import { SPLITJOINTS_DE } from './splitJoints';
 import { SPLITPREFS_DE } from './splitPrefs';
 import { SPLITCOUPLING_DE } from './splitCoupling';
 import { A11YUX_DE } from './a11yUx';
+import { SPLITUX_DE } from './splitUx';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -27,6 +28,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...SPLITPREFS_DE,
   ...SPLITCOUPLING_DE,
   ...A11YUX_DE,
+  ...SPLITUX_DE,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
@@ -1180,7 +1182,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineError.SPLIT_TOO_MANY_PIECES': 'Es wären etwa {needed} Teile nötig, damit alles aufs Druckbett passt (maximal {max}). Nimm ein größeres Bett, erhöhe das Maximum oder skaliere das Modell.',
   'engineError.SPLIT_AXIS_BLOCKED': 'Das Modell misst {size} mm in {axis}, das nutzbare Bett {usable} mm, aber Schnitte in dieser Achse sind nicht erlaubt.',
   'engineWarning.SPLIT_JOINT_NO_CONNECTOR': 'Verbindung {label} ({a}–{b}) hat keinen Verbinder: ihr Querschnitt hat zu wenig massive Fläche.',
-  'engineWarning.SPLIT_CONNECTOR_REDUCED': 'An Verbindung {label} ({a}–{b}) wurde der Verbinder auf {count} mit {size} mm verkleinert, damit er passt.',
+  'engineWarning.SPLIT_CONNECTOR_REDUCED': 'An Verbindung {label} ({a}–{b}) wurde der Verbinder auf {count} mit Ø{size} mm verkleinert, damit er passt.',
   'engineWarning.SPLIT_LABEL_SKIPPED': 'Verbindung {label} ({a}–{b}) hat keinen Platz für eine lesbare Markierung von {min} mm: ausgelassen.',
   'engineWarning.SPLIT_EMPTY_CELLS': 'Rasterzellen ohne Material: {count}. Sie wurden ausgelassen.',
   'progress.op.split_for_bed': 'Wird fürs Druckbett geteilt',
@@ -1270,7 +1272,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'export.split.zipDone': '{count} Teile nach {name} exportiert',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'Teil {code} enthält ein loses Fragment von {volume} mm³, das mit keinem Nachbarn verschmolzen werden konnte: es bleibt ein eigenes Teil.',
   'engineWarning.SPLIT_FRAGMENT_MERGED': 'Teil {code} hat ein loses Fragment von {volume} mm³ aus der Nachbarzelle aufgenommen und ragt {protrusion} mm über die Schnittebene hinaus (beabsichtigt; mit Fragment-Schwelle 0 bleibt es ein eigenes Teil).',
-  'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} Ebene(n) ({planes}) fanden keinen Schnitt, der Wände nicht der Länge nach teilt: die gleichmäßige Position wurde beibehalten.',
+  'engineWarning.SPLIT_PLANE_THIN_SECTION': 'Ebenen ({planes}) ohne Schnitt, der Wände nicht der Länge nach teilt; insgesamt: {count}. Die gleichmäßige Position wurde beibehalten.',
   'split.joint.auto': 'Verbinder, wo sie passen; sonst glatter Schnitt zum Kleben',
   'split.joint.lap': 'Randüberlappung (ändert die Form)',
   'split.lapHeight': 'Höhe der Überlappung',
@@ -1339,7 +1341,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_CONNECTOR_CLASH': 'Ein Verbinder der Verbindung {label} kollidiert mit {other} oder liegt zu nah: Wand {distance} mm, Minimum {required} mm.',
   'engineWarning.ASSEMBLY_BLOCKED': 'Teil {code} lässt sich in keiner Reihenfolge einsetzen: Verbinder {joints}, stößt an {parts}.',
   'engineWarning.ASSEMBLY_JOINT_GLUED_FOR_ORDER': 'Verbindung {label} ({a}–{b}) wurde auf Kleben umgestellt, damit eine Montagereihenfolge möglich ist.',
-  'engineWarning.ASSEMBLY_WEAK_JOINT': 'Der Verbinder der Verbindung {label} ist schwach: {measured} mm, empfohlen {recommended} mm.',
+  'engineWarning.ASSEMBLY_WEAK_JOINT': 'Der Verbinder der Verbindung {label} ist schwach: Ø{measured} mm, empfohlen Ø{recommended} mm.',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': 'Die Überlappung der Verbindung {label} ist nicht druckbar (Feder {tongue} mm, Nutwand {groove} mm; Minimum {min} mm): die Verbindung wird geklebt.',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': 'Markierung {label} wurde {depth} mm tief graviert (angefragt {requested} mm), um die {wall} mm Wand nicht zu durchstoßen.',
   'dialog.thread.presetCommon': 'Gängig (M3–M20)',

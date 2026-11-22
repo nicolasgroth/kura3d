@@ -321,7 +321,8 @@ export interface PrintabilityIssue {
     | 'LOW_DENSITY'
     | 'HIGH_DENSITY'
     | 'THIN_WALL'
-    | 'INVERTED_NORMALS';
+    | 'INVERTED_NORMALS'
+    | 'SEALED_CAVITY';
   params: Record<string, string | number>;
 }
 

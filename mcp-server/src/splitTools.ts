@@ -45,7 +45,8 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
           .describe('dowel = fixed peg on one part; loose-dowel = blind holes in both parts plus separate printed dowels (no protrusions).'),
         minWallForConnectorMm: rangeSchema(OR.split.minWallForConnectorMm).default(d.minWallForConnectorMm).describe('Minimum section thickness to place a connector; thinner sections are left for gluing.'),
         lapHeightMm: rangeSchema(OR.split.lapHeightMm).default(d.lapHeightMm).describe('Edge overlap height in mm.'),
-        connectorSize: rangeSchema(OR.cut.connectorSize).default(4).describe('Connector radius/half-width in mm.'),
+        connectorSize: z.union([rangeSchema(OR.cut.connectorSize), z.literal('auto')]).default(d.connectorSize)
+          .describe("Connector radius/half-width in mm, or 'auto' (default): each joint uses its own recommended radius for its contact area and the part it holds. A number is respected as given (a joint under the recommended radius is reported as weak)."),
         connectorDepth: rangeSchema(OR.cut.connectorDepth).default(6),
         tolerance: rangeSchema(OR.cut.tolerance).default(0.25).describe('Fit clearance in mm.'),
         connectorCount: rangeSchema(OR.cut.connectorCount).default(2),
@@ -62,7 +63,7 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         args.connectorType === 'none'
           ? null
           : {
-              type: args.connectorType, size: args.connectorSize, depth: args.connectorDepth, tolerance: args.tolerance,
+              type: args.connectorType, size: args.connectorSize === 'auto' ? 4 : args.connectorSize, ...(args.connectorSize === 'auto' ? { sizeAuto: true } : {}), depth: args.connectorDepth, tolerance: args.tolerance,
               count: Math.max(1, args.connectorCount), minWallForConnectorMm: args.minWallForConnectorMm, lapHeightMm: args.lapHeightMm,
             };
       return dispatchWithFallback(ctx, 'split_for_bed', { ...args, id: args.objectId }, () =>

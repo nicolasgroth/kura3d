@@ -41,6 +41,15 @@ export const OperationsSection: React.FC<InspectorSectionProps> = ({ primary, ui
         </span>
       </div>
 
+      {/* Pieza de una división: uniones y armado primero; las booleanas y demás operaciones, después */}
+      {primary.metadata?.split && (
+        <>
+          <SplitPartInfo primary={primary} />
+          <SplitJointsSection primary={primary} />
+          <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', width: '100%' }} />
+        </>
+      )}
+
       {/* Módulos dinámicos (+ / −) para cualquier forma o STL/3MF importado */}
       <ModulesPanel primary={primary} ui={ui} />
 
@@ -74,8 +83,6 @@ export const OperationsSection: React.FC<InspectorSectionProps> = ({ primary, ui
           <Grid3x3 size={13} />
           <span>{t(language, 'split.open')}</span>
         </button>
-        <SplitPartInfo primary={primary} />
-        <SplitJointsSection primary={primary} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <button
             type="button"

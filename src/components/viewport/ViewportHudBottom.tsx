@@ -7,13 +7,14 @@
  */
 
 import React, { useMemo } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Boxes } from 'lucide-react';
+import '../../styles/splitUx.css';
 import { getLocalizedPrinterName, t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { computeSelectionBounds } from '../../utils/selectionBounds';
 import { formatDimension } from '../../utils/units';
 import { toUserSize } from '../../core/scene/displayAxes';
-import { checkObjectsOutOfBounds } from './viewportHelpers';
+import { bedStatusOf } from '../split/splitAssembledStatus';
 
 /** HUD inferior en una sola línea. */
 export const ViewportHudBottom: React.FC = () => {
@@ -24,10 +25,7 @@ export const ViewportHudBottom: React.FC = () => {
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const selectedObj = objects.find((o) => o.id === selectedIds[0]) ?? null;
   const localizedPrinterName = getLocalizedPrinterName(language, printerProfile);
-  const isOutOfBounds = useMemo(
-    () => checkObjectsOutOfBounds(objects, printerProfile),
-    [objects, printerProfile],
-  );
+  const bedStatus = useMemo(() => bedStatusOf(objects, printerProfile), [objects, printerProfile]);
   const activeDimensionsText = useMemo(() => {
     if (!selectedObj) {
       return t(language, 'viewport.noSelection');
@@ -76,10 +74,16 @@ export const ViewportHudBottom: React.FC = () => {
               )})`
             : localizedPrinterName}
         </span>
-        {isOutOfBounds && (
+        {bedStatus === 'outOfBounds' && (
           <span className="kura-oob-badge">
             <AlertTriangle size={11} />
             <span>{t(language, 'viewport.bed.outOfBounds')}</span>
+          </span>
+        )}
+        {bedStatus === 'assembled' && (
+          <span className="kura-assembled-badge" role="status" title={t(language, 'splitUx.assembled.status')}>
+            <Boxes size={11} aria-hidden="true" />
+            <span>{t(language, 'splitUx.assembled.status')}</span>
           </span>
         )}
       </div>

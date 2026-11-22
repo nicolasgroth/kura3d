@@ -30,6 +30,20 @@ describe('split_for_bed', () => {
     expect(req({ reinforceWeakJoints: true }).execute.reinforceWeakJoints).toBe(true);
   });
 
+  it('el tamaño del conector es automático por defecto; un número se respeta tal cual y un valor inválido es error', async () => {
+    const box = await addBox(300);
+    const req = (extra: Record<string, unknown> = {}) =>
+      parseSplitForBed(store(), { id: box.id, bedWidthMm: 200, bedDepthMm: 200, bedHeightMm: 200, ...extra });
+    expect(OPERATION_DEFAULTS.split.connectorSize).toBe('auto');
+    expect(req().execute.connector?.sizeAuto).toBe(true);
+    expect(req({ connectorSize: 'auto' }).execute.connector?.sizeAuto).toBe(true);
+    const fixed = req({ connectorSize: 6 }).execute.connector;
+    expect(fixed?.size).toBe(6);
+    expect(fixed?.sizeAuto).toBeUndefined();
+    expect(() => req({ connectorSize: 'grande' })).toThrow();
+    expect(req({ connectorType: 'none' }).execute.connector).toBeNull();
+  });
+
   it('dryRun devuelve el plan sin tocar la escena; la ejecución deja piezas con metadata', async () => {
     const box = await addBox(300);
     const bed = { bedWidthMm: 200, bedDepthMm: 200, bedHeightMm: 200 };

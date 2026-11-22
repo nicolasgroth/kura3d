@@ -79,16 +79,31 @@ export function parseValidateAssembly(scene: SceneView, p: RawParams): SceneObje
   }
 }
 
+/** Tamaño de referencia (radio, mm) con el que se planifica cuando el tamaño es automático. */
+export const FALLBACK_CONNECTOR_SIZE_MM = 4;
+
+/**
+ * `connectorSize` de "dividir para imprimir": `'auto'` (o, si se omite, el valor de fábrica de
+ * `OPERATION_DEFAULTS.split.connectorSize`) = cada unión usa su radio recomendado; un número se respeta tal cual.
+ */
+function readConnectorSizeAuto(p: RawParams): boolean {
+  const given = pick(p, 'connectorSize');
+  if (given) return given[1] === 'auto';
+  return OPERATION_DEFAULTS.split.connectorSize === 'auto';
+}
+
 export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): SplitForBedRequest {
   const target = resolveTarget(scene, p, { unlocked: true });
   const bed = activeBed(scene);
   const type = readEnum(p, ['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel'] as const, 'connectorType') ?? 'dowel';
+  const sizeAuto = readConnectorSizeAuto(p);
   const connector: SplitConnectorOptions | null =
     type === 'none'
       ? null
       : {
           type,
-          size: readRange(p, OR.cut.connectorSize, 'connectorSize') ?? 4,
+          size: sizeAuto ? FALLBACK_CONNECTOR_SIZE_MM : (readRange(p, OR.cut.connectorSize, 'connectorSize') ?? FALLBACK_CONNECTOR_SIZE_MM),
+          ...(sizeAuto ? { sizeAuto: true } : {}),
           depth: readRange(p, OR.cut.connectorDepth, 'connectorDepth') ?? 6,
           tolerance: readRange(p, OR.cut.tolerance, 'tolerance') ?? 0.25,
           count: Math.max(1, readRange(p, OR.cut.connectorCount, 'connectorCount') ?? 2),

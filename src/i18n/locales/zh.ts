@@ -15,6 +15,7 @@ import { SPLITJOINTS_ZH } from './splitJoints';
 import { SPLITPREFS_ZH } from './splitPrefs';
 import { SPLITCOUPLING_ZH } from './splitCoupling';
 import { A11YUX_ZH } from './a11yUx';
+import { SPLITUX_ZH } from './splitUx';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -27,6 +28,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...SPLITPREFS_ZH,
   ...SPLITCOUPLING_ZH,
   ...A11YUX_ZH,
+  ...SPLITUX_ZH,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
@@ -1180,7 +1182,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineError.SPLIT_TOO_MANY_PIECES': '需要约 {needed} 个零件才能放进打印平台（最多 {max} 个）。请使用更大的平台、提高上限或缩放模型。',
   'engineError.SPLIT_AXIS_BLOCKED': '模型在 {axis} 方向为 {size} mm，可用平台为 {usable} mm，但不允许沿该轴切割。',
   'engineWarning.SPLIT_JOINT_NO_CONNECTOR': '接合 {label}（{a}–{b}）没有连接件：其截面的实心面积不足。',
-  'engineWarning.SPLIT_CONNECTOR_REDUCED': '接合 {label}（{a}–{b}）的连接件已缩减为 {count} 个 {size} mm 以便放下。',
+  'engineWarning.SPLIT_CONNECTOR_REDUCED': '接合 {label}（{a}–{b}）的连接件已缩减为 {count} 个 Ø{size} mm 以便放下。',
   'engineWarning.SPLIT_LABEL_SKIPPED': '接合 {label}（{a}–{b}）没有空间放置 {min} mm 的可读标记：已省略。',
   'engineWarning.SPLIT_EMPTY_CELLS': '没有材料的网格单元：{count} 个，已省略。',
   'progress.op.split_for_bed': '正在按打印平台分割',
@@ -1339,7 +1341,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineWarning.ASSEMBLY_CONNECTOR_CLASH': '接合 {label} 的一个连接件与 {other} 碰撞或过近：壁厚 {distance} mm，最小 {required} mm。',
   'engineWarning.ASSEMBLY_BLOCKED': '零件 {code} 无论按何种顺序都无法装入：连接件 {joints}，与 {parts} 相撞。',
   'engineWarning.ASSEMBLY_JOINT_GLUED_FOR_ORDER': '接合 {label}（{a}–{b}）已改为仅粘合，以便存在可行的组装顺序。',
-  'engineWarning.ASSEMBLY_WEAK_JOINT': '接合 {label} 的连接件强度不足：{measured} mm，建议 {recommended} mm。',
+  'engineWarning.ASSEMBLY_WEAK_JOINT': '接合 {label} 的连接件强度不足：Ø{measured} mm，建议 Ø{recommended} mm。',
   'engineWarning.SPLIT_LAP_NOT_PRINTABLE': '接合 {label} 的搭接无法打印（榫舌 {tongue} mm，槽壁 {groove} mm；最小 {min} mm）：该接合改为粘合。',
   'engineWarning.SPLIT_LABEL_DEPTH_CLAMPED': '标记 {label} 雕刻深度为 {depth} mm（请求 {requested} mm），以免穿透 {wall} mm 的壁。',
   'dialog.thread.presetCommon': '常用 (M3–M20)',

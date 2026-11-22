@@ -23,6 +23,8 @@ export interface SplitPreferences {
   connectorType: SplitPrefConnector;
   /** Holgura de ajuste en mm. */
   tolerance: number;
+  /** Tamaño del conector: `'auto'` (cada unión usa su radio recomendado) o el radio fijo en mm (se muestra como diámetro Ø). */
+  connectorSize: 'auto' | number;
   /** Casilla "Reforzar uniones débiles" al abrir el panel. */
   reinforceWeakJoints: boolean;
 }
@@ -31,6 +33,7 @@ const D = OPERATION_DEFAULTS.split;
 export const DEFAULT_SPLIT_PREFERENCES: SplitPreferences = {
   connectorType: D.prefConnectorType,
   tolerance: D.prefTolerance,
+  connectorSize: D.prefConnectorSize,
   reinforceWeakJoints: D.reinforceWeakJoints,
 };
 
@@ -39,7 +42,13 @@ export function sanitizeSplitPreferences(raw: unknown, base: SplitPreferences = 
   const r = (raw && typeof raw === 'object' ? raw : {}) as Partial<Record<keyof SplitPreferences, unknown>>;
   const { min, max } = OPERATION_RANGES.cut.tolerance;
   const tol = typeof r.tolerance === 'number' && Number.isFinite(r.tolerance) ? Math.min(max, Math.max(min, r.tolerance)) : base.tolerance;
+  const size = OPERATION_RANGES.cut.connectorSize;
+  const connectorSize =
+    r.connectorSize === 'auto' ? 'auto'
+      : typeof r.connectorSize === 'number' && Number.isFinite(r.connectorSize) ? Math.round(Math.min(size.max, Math.max(size.min, r.connectorSize)) * 100) / 100
+        : base.connectorSize;
   return {
+    connectorSize,
     connectorType: SPLIT_PREF_CONNECTORS.includes(r.connectorType as SplitPrefConnector) ? (r.connectorType as SplitPrefConnector) : base.connectorType,
     tolerance: Math.round(tol * 100) / 100,
     reinforceWeakJoints: typeof r.reinforceWeakJoints === 'boolean' ? r.reinforceWeakJoints : base.reinforceWeakJoints,

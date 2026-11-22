@@ -45,6 +45,12 @@ export interface SplitConnectorOptions {
   type: SplitConnectorType;
   /** Radio (dowel, loose-dowel) o semiancho (peg/dovetail) en mm. */
   size: number;
+  /**
+   * Tamaño automático (`size: 'auto'` en el bus y el MCP): cada unión usa su radio recomendado
+   * (`recommendedConnectorRadius`) en vez de `size`, que queda como valor de referencia. El conector aplicado
+   * (`SplitJointRecord.connector`) lleva siempre el radio real en `size` y no lleva esta marca.
+   */
+  sizeAuto?: boolean;
   depth: number;
   /** Holgura de encaje en mm. */
   tolerance: number;

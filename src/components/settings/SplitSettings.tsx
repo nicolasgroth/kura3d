@@ -12,6 +12,7 @@ import React from 'react';
 import { t } from '../../i18n';
 import { OPERATION_RANGES } from '../../engine/operationLimits';
 import { SPLIT_PREF_CONNECTORS, type SplitPrefConnector } from '../../store/splitPreferences';
+import { FALLBACK_CONNECTOR_SIZE_MM } from '../../store/splitCommandSchemas';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import '../../styles/statusMeasures.css';
@@ -51,6 +52,36 @@ export const SplitSettings: React.FC<{ idPrefix: string }> = ({ idPrefix }) => {
             <option key={type} value={type}>{t(language, SPLIT_PREF_CONNECTOR_LABEL[type] as Parameters<typeof t>[1])}</option>
           ))}
         </select>
+      </div>
+      <div className="kura-measures-field">
+        <label className="kura-field-label" htmlFor={`${idPrefix}-size-auto`} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input
+            id={`${idPrefix}-size-auto`}
+            type="checkbox"
+            checked={prefs.connectorSize === 'auto'}
+            aria-describedby={`${idPrefix}-size-help`}
+            title={t(language, 'split.size.autoTip')}
+            onChange={(e) => setSplitPrefs({ connectorSize: e.target.checked ? 'auto' : FALLBACK_CONNECTOR_SIZE_MM })}
+          />
+          <span>{t(language, 'settings.split.size')}: {t(language, 'settings.split.sizeAuto')}</span>
+        </label>
+        {prefs.connectorSize !== 'auto' && (
+          <>
+            <label className="kura-field-label" htmlFor={`${idPrefix}-size`}>{t(language, 'settings.split.sizeValue')}</label>
+            <PrecisionNumberInput
+              id={`${idPrefix}-size`}
+              ariaLabel={t(language, 'settings.split.sizeValue')}
+              title={t(language, 'split.size.help')}
+              min={2 * OPERATION_RANGES.cut.connectorSize.min}
+              max={100}
+              step={1}
+              precision={1}
+              value={2 * prefs.connectorSize}
+              onChange={(v) => setSplitPrefs({ connectorSize: v / 2 })}
+            />
+          </>
+        )}
+        <span id={`${idPrefix}-size-help`} className="kura-measures-help">{t(language, 'settings.split.sizeHelp')}</span>
       </div>
       <div className="kura-measures-field">
         <label className="kura-field-label" htmlFor={`${idPrefix}-tolerance`}>{t(language, 'settings.split.tolerance')}</label>

@@ -12,6 +12,7 @@ import * as THREE from 'three';
 import { X } from 'lucide-react';
 import { useKuraStore } from '../../store/useKuraStore';
 import { useSplitExplodedPosition } from '../split/useSplitExplode';
+import { useSplitJointDimmed } from '../split/SplitJointHighlight';
 import { MATERIAL_PRESETS, type SceneObject, type Vec3 } from '../../types/kura';
 import { updateGeometryFaceColors } from '../../engine/paintColorAttribute';
 import { regionIdForFace } from '../../utils/segmentHighlight';
@@ -51,6 +52,8 @@ export const SceneMeshItem: React.FC<{
     const paintMode = useKuraStore((s) => s.paintMode);
     const spawnedAt = useKuraStore((s) => s.spawnedAtById[obj.id]);
     const displayPosition = useSplitExplodedPosition(obj);
+    // Con una unión señalada en la lista, el resto de las piezas del grupo se atenúa.
+    const jointDimmed = useSplitJointDimmed(obj);
     const selectObject = useKuraStore((s) => s.selectObject);
     const paintObjectSurface = useKuraStore((s) => s.paintObjectSurface);
     const beginPaintStroke = useKuraStore((s) => s.beginPaintStroke);
@@ -312,9 +315,9 @@ export const SceneMeshItem: React.FC<{
               vertexColors={hasVertexColors}
               roughness={matPreset.roughness}
               metalness={matPreset.metalness}
-              opacity={matPreset.opacity}
-              transparent={matPreset.transparent}
-              depthWrite={!matPreset.transparent || matPreset.opacity >= 0.99}
+              opacity={jointDimmed ? Math.min(matPreset.opacity, 0.22) : matPreset.opacity}
+              transparent={matPreset.transparent || jointDimmed}
+              depthWrite={!jointDimmed && (!matPreset.transparent || matPreset.opacity >= 0.99)}
               side={clipPlane ? THREE.DoubleSide : THREE.FrontSide}
               clippingPlanes={activeClipPlanes}
             />
