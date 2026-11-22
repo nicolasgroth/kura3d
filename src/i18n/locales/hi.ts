@@ -1006,6 +1006,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.export.format.ply': 'PLY: प्रति-शीर्ष रंग',
   'dialog.export.scope': 'क्या निर्यात करें',
   'dialog.export.scope.selection': 'चयन ({count})',
+  'dialog.export.scope.selectionEmptyTip': 'केवल उन्हें निर्यात करने के लिए व्यूपोर्ट या सूची में भाग चुनें',
   'dialog.export.scope.scene': 'पूरा दृश्य ({count})',
   'dialog.export.fileName': 'फ़ाइल का नाम',
   'dialog.export.execute': 'निर्यात करें',

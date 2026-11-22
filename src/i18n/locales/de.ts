@@ -1006,6 +1006,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.export.format.ply': 'PLY: Farben pro Eckpunkt',
   'dialog.export.scope': 'Was exportieren',
   'dialog.export.scope.selection': 'Auswahl ({count})',
+  'dialog.export.scope.selectionEmptyTip': 'Wähle Teile in der Ansicht oder Liste, um nur diese zu exportieren',
   'dialog.export.scope.scene': 'Gesamte Szene ({count})',
   'dialog.export.fileName': 'Dateiname',
   'dialog.export.execute': 'Exportieren',

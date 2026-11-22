@@ -79,6 +79,8 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const [splitMode, setSplitMode] = useState<SplitExportMode | null>(null);
   // Si el usuario no ha editado el nombre, seguir el alcance elegido.
   const nameEditedRef = useRef(false);
+  // Solo una elección explícita del formato en el diálogo se recuerda; un atajo no la pisa.
+  const formatPickedRef = useRef(false);
 
   const changeScope = (nextScope: ExportScope) => {
     setScope(nextScope);
@@ -95,6 +97,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     setScope(nextScope);
     setSlicer(printerProfile.brand);
     nameEditedRef.current = false;
+    formatPickedRef.current = false;
     setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'export.defaultName'), t(language, 'export.selectionSuffix')));
     // Solo al abrir: los cambios de selección posteriores no pisan lo que escribió el usuario.
   }, [open]);
@@ -109,7 +112,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     if (busy || targets.length === 0) return;
     setBusy(true);
     try {
-      storeFormat(format);
+      if (formatPickedRef.current) storeFormat(format);
       const ok = await exportModel({ format, scope, fileName: base, slicerTarget: slicer, splitMode: effectiveSplit ?? undefined });
       if (ok) onClose();
     } finally {
@@ -141,7 +144,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
           <legend>{t(language, 'dialog.export.format')}</legend>
           {FORMATS.map((f) => (
             <label key={f} className={`kura-export-option ${format === f ? 'is-active' : ''}`}>
-              <input type="radio" name={`${formId}-format`} value={f} checked={format === f} onChange={() => setFormat(f)} />
+              <input type="radio" name={`${formId}-format`} value={f} checked={format === f} onChange={() => { formatPickedRef.current = true; setFormat(f); }} />
               <span className="kura-export-option-title">{f.toUpperCase()}</span>
               <span className="kura-export-option-hint">{t(language, `dialog.export.format.${f}` as TranslationKey)}</span>
             </label>
@@ -150,11 +153,14 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
 
         <fieldset className="kura-export-scope">
           <legend>{t(language, 'dialog.export.scope')}</legend>
-          <label>
+          <label
+            className={selected.length === 0 ? 'is-disabled' : undefined}
+            title={selected.length === 0 ? t(language, 'dialog.export.scope.selectionEmptyTip') : undefined}
+          >
             <input
               type="radio"
               name={`${formId}-scope`}
-              checked={scope === 'selection'}
+              checked={scope === 'selection' && selected.length > 0}
               disabled={selected.length === 0}
               onChange={() => changeScope('selection')}
             />

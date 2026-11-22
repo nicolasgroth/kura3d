@@ -14,6 +14,9 @@ export function sanitizeFileBase(raw: string): string {
     .replace(/\.(kura|stl|3mf|obj|glb|ply|mtl)$/i, '')
     .replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '_')
     .replace(/\s+/g, '_')
+    // Separadores tipográficos de nombres compuestos ("Cilindro 1 · A1") no van en un archivo.
+    .replace(/[\u00b7\u2022\u2013\u2014\u2026]+/g, '_')
+    .replace(/_{2,}/g, '_')
     .replace(/^[._]+|[._]+$/g, '')
     .slice(0, 120);
 }

@@ -149,3 +149,8 @@
   grid-column: 2;
   color: var(--text-secondary);
 }
+
+.kura-export-scope label.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

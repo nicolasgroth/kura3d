@@ -1006,6 +1006,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.export.format.ply': 'PLY：逐顶点颜色',
   'dialog.export.scope': '导出范围',
   'dialog.export.scope.selection': '所选对象（{count}）',
+  'dialog.export.scope.selectionEmptyTip': '在视图或列表中选择零件，即可只导出这些零件',
   'dialog.export.scope.scene': '整个场景（{count}）',
   'dialog.export.fileName': '文件名',
   'dialog.export.execute': '导出',
