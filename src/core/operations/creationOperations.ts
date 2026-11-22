@@ -154,15 +154,39 @@ export async function regenerateParametric(ctx: OperationContext, obj: SceneObje
     const params: PrimitiveParams = { ...state.params, ...edit.params };
     const mesh = engine.normalizeMeshToBed(await engine.createPrimitiveMesh(state.type, params));
     return change({
-      patches: [{ id: obj.id, patch: { ...meshPatch(ctx, obj, mesh), primitiveParams: params, parametric: parametricOrigin('primitive', mesh) } }],
+      patches: [{ id: obj.id, patch: { ...meshPatch(ctx, obj, mesh, keepBase(obj, mesh)), primitiveParams: params, parametric: parametricOrigin('primitive', mesh) } }],
     });
   }
   if (state.status === 'thread' && edit.kind === 'thread') {
     const options: ThreadOptions = { ...state.options, ...edit.options };
     const mesh = engine.normalizeMeshToBed(await engine.createMetricThread(options));
-    return change({ patches: [{ id: obj.id, patch: { ...meshPatch(ctx, obj, mesh), parametric: parametricOrigin('thread', mesh, options) } }] });
+    return change({ patches: [{ id: obj.id, patch: { ...meshPatch(ctx, obj, mesh, keepBase(obj, mesh)), parametric: parametricOrigin('thread', mesh, options) } }] });
   }
   throw new engine.EngineError('INVALID_PARAMETER', { name: 'parametric', value: state.status, min: 0, max: 0 });
+}
+
+/** Tolerancia (mm) para considerar que un objeto está apoyado en la cama. */
+const ON_BED_EPS_MM = 0.01;
+
+/** Y mínima en mundo de `mesh` con la transformación de `obj`. */
+function worldMinY(obj: SceneObject, mesh: MeshData): number {
+  const world = engine.applyTransformToMesh(mesh, obj.position, obj.rotation, obj.scale);
+  let min = Infinity;
+  for (let i = 1; i < world.positions.length; i += 3) if (world.positions[i] < min) min = world.positions[i];
+  return Number.isFinite(min) ? min : 0;
+}
+
+/**
+ * Posición que conserva la base tras regenerar: si el objeto estaba apoyado (|minY| < 0,01 mm)
+ * vuelve a quedar apoyado; si estaba elevado, su punto más bajo queda a la misma altura. Con
+ * rotación, el punto más bajo depende de las medidas nuevas, por eso se recalcula.
+ */
+function keepBase(obj: SceneObject, mesh: MeshData): { position: Vec3 } | Record<string, never> {
+  const before = worldMinY(obj, obj.mesh);
+  const target = Math.abs(before) < ON_BED_EPS_MM ? 0 : before;
+  const dy = target - worldMinY(obj, mesh);
+  if (Math.abs(dy) < 1e-9) return {};
+  return { position: [obj.position[0], obj.position[1] + dy, obj.position[2]] };
 }
 
 /** Extruye los contornos de un SVG. */
