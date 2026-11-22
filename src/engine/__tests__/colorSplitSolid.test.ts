@@ -7,7 +7,10 @@
  * @license MIT
  */
 
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
+// Booleanas pesadas: el tope por defecto (5 s) no alcanza con la máquina cargada.
+vi.setConfig({ testTimeout: 60_000 });
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
 import { splitMeshByColorSolid, type SolidColorPart } from '../colorSplitSolid';
 import { initManifoldEngine, meshDataToManifold } from '../manifoldKernel';
