@@ -2,10 +2,11 @@
  * @file src/components/scene/SceneObjectList.tsx
  * @description Árbol de la escena como capas (`tree` multiselección): grupos anidados con sangría, piezas de
  * una división bajo un nodo plegable, ojo y candado por fila (en un grupo aplican a todo) y búsqueda que
- * muestra los ancestros de lo encontrado. Teclado: flechas (Inicio/Fin), ←/→ pliegan y despliegan, Shift
- * para rango, Ctrl mueve el foco sin seleccionar, Espacio alterna, Ctrl+A todo, Supr elimina (un grupo pide
- * confirmación), F2 o doble clic en el nombre renombra, Enter pliega un grupo, Alt+↑/↓ reordena, Alt+→ mete
- * en el grupo de arriba y Alt+← saca. Con ratón: clic, Ctrl+clic, Shift+clic y arrastrar y soltar.
+ * muestra los ancestros de lo encontrado. Teclado: ↑/↓ mueven, Inicio/Fin, → despliega o entra, ← pliega o
+ * sube al padre, Shift para rango, Ctrl mueve el foco sin seleccionar, Enter selecciona, Espacio alterna,
+ * Ctrl+A todo, Supr elimina (un grupo pide confirmación), F2 o doble clic en el nombre renombra, Mayús+H
+ * oculta/muestra, Mayús+L bloquea, Alt+↑/↓ reordena, Alt+→ mete en el grupo de arriba (lo despliega y el
+ * foco sigue en lo movido) y Alt+← saca. Con ratón: clic, Ctrl+clic, Shift+clic y arrastrar y soltar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,7 +15,7 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { t } from '../../i18n';
-import { buildSceneTree, type TreeKey } from '../../core/scene/groups';
+import { buildSceneTree, descendantObjectIds, type TreeKey } from '../../core/scene/groups';
 import { useKuraStore } from '../../store/useKuraStore';
 import { matchSceneObjects } from '../../store/slices/quickActionsSlice';
 import { REQUEST_FRESH_MS } from './SceneSearch';
@@ -182,6 +183,27 @@ export const SceneObjectList: React.FC = () => {
     else if (row.node.kind === 'object') updateObjectMeta(row.node.object.id, { locked: !row.node.object.locked });
   };
 
+  /**
+   * Tras meter o sacar un nodo por teclado: despliega los grupos que ahora lo contienen y deja el foco
+   * y la selección en el nodo movido.
+   */
+  const revealMoved = (key: TreeKey) => {
+    const st = useKuraStore.getState();
+    let gid = key.startsWith('g:')
+      ? st.groups.find((g) => g.id === key.slice(2))?.parentId
+      : st.objects.find((o) => o.id === key.slice(2))?.groupRef;
+    while (gid) {
+      st.setGroupCollapsed(gid, false);
+      gid = st.groups.find((g) => g.id === gid)?.parentId;
+    }
+    const fresh = useKuraStore.getState();
+    const ids = key.startsWith('g:') ? descendantObjectIds(fresh.objects, fresh.groups, key.slice(2)) : key.startsWith('o:') ? [key.slice(2)] : null;
+    if (ids) setSelection(ids);
+    setActiveKey(key);
+    setAnchorKey(key);
+    listRef.current?.focus();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (renamingKey || !active) return;
     const mods = { shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey };
@@ -200,8 +222,15 @@ export const SceneObjectList: React.FC = () => {
                 : null;
       if (ok !== null) {
         handled();
-        setActiveKey(key);
+        if (ok) revealMoved(key);
       }
+      return;
+    }
+    // Acciones de la fila activa (también son botones en la fila): Mayús+H ojo, Mayús+L candado.
+    if (e.shiftKey && !e.ctrlKey && !e.metaKey && (e.key === 'H' || e.key === 'h' || e.key === 'L' || e.key === 'l')) {
+      handled();
+      if (e.key.toLowerCase() === 'h') toggleVisible(active);
+      else toggleLock(active);
       return;
     }
     switch (e.key) {
@@ -233,10 +262,10 @@ export const SceneObjectList: React.FC = () => {
         focusIndex(rows.length - 1, mods);
         break;
       case 'Enter':
-        if (active.expanded !== undefined) {
-          handled();
-          setExpanded(active, !active.expanded);
-        }
+        // Enter selecciona la fila activa (plegar y desplegar van con ←/→).
+        handled();
+        selectRow(active);
+        setAnchorKey(active.key);
         break;
       case ' ':
         handled();

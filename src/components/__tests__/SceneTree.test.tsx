@@ -66,6 +66,69 @@ describe('árbol de la escena', () => {
     expect(st().objects.map((o) => o.id)).toEqual(['a', 'b', 'd', 'c']);
   });
 
+  it('Alt+→ hacia un grupo plegado lo despliega y el foco y la selección siguen en lo movido', async () => {
+    const user = userEvent.setup();
+    st().setGroupCollapsed(st().groups[0].id, true);
+    render(<SceneObjectList />);
+    expect(names()).toEqual(['Par', 'Gamma', 'Delta']);
+    await user.click(items()[1]); // Gamma
+    const tree = screen.getByRole('tree');
+    tree.focus();
+    await user.keyboard('{Alt>}{ArrowRight}{/Alt}');
+    expect(st().objects.find((o) => o.id === 'c')!.groupRef).toBe(st().groups[0].id);
+    expect(names()).toEqual(['Par', 'Alfa', 'Beta', 'Gamma', 'Delta']);
+    expect(st().selectedIds).toEqual(['c']);
+    expect(document.activeElement).toBe(tree);
+    const activeId = tree.getAttribute('aria-activedescendant')!;
+    expect(document.getElementById(activeId)!.getAttribute('title')).toBe('Gamma');
+    await user.keyboard('{Alt>}{ArrowLeft}{/Alt}');
+    expect(st().objects.find((o) => o.id === 'c')!.groupRef).toBeUndefined();
+    expect(document.getElementById(tree.getAttribute('aria-activedescendant')!)!.getAttribute('title')).toBe('Gamma');
+  });
+
+  it('navegación solo con teclado: ↑/↓, →/←, Inicio/Fin, Enter selecciona y Espacio alterna', async () => {
+    const user = userEvent.setup();
+    render(<SceneObjectList />);
+    const tree = screen.getByRole('tree');
+    tree.focus();
+    const activeName = () => document.getElementById(tree.getAttribute('aria-activedescendant')!)!.getAttribute('title');
+    await user.keyboard('{End}');
+    expect(activeName()).toBe('Delta');
+    expect(st().selectedIds).toEqual(['d']);
+    await user.keyboard('{Home}');
+    expect(activeName()).toBe('Par');
+    await user.keyboard('{ArrowLeft}'); // pliega
+    expect(names()).toEqual(['Par', 'Gamma', 'Delta']);
+    await user.keyboard('{ArrowRight}'); // despliega
+    await user.keyboard('{ArrowRight}'); // entra al primer hijo
+    expect(activeName()).toBe('Alfa');
+    await user.keyboard('{ArrowLeft}'); // sube al padre
+    expect(activeName()).toBe('Par');
+    await user.keyboard('{Control>}{ArrowDown}{ArrowDown}{ArrowDown}{/Control}'); // foco sin seleccionar
+    expect(activeName()).toBe('Gamma');
+    await user.keyboard('{Enter}');
+    expect(st().selectedIds).toEqual(['c']);
+    await user.keyboard('{Control>}{ArrowDown}{/Control} ');
+    expect([...st().selectedIds].sort()).toEqual(['c', 'd']);
+    await user.keyboard(' ');
+    expect(st().selectedIds).toEqual(['c']);
+  });
+
+  it('las acciones de cada fila tienen nombre accesible y atajo sobre la fila activa', async () => {
+    const user = userEvent.setup();
+    render(<SceneObjectList />);
+    expect(screen.getByRole('button', { name: 'Ocultar Gamma' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Bloquear Par' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Duplicar Delta' }).getAttribute('aria-keyshortcuts')).toBe('Control+D');
+    await user.click(items()[3]); // Gamma
+    screen.getByRole('tree').focus();
+    await user.keyboard('{Shift>}H{/Shift}');
+    expect(st().objects.find((o) => o.id === 'c')!.visible).toBe(false);
+    expect(screen.getByRole('button', { name: 'Mostrar Gamma' })).toBeTruthy();
+    await user.keyboard('{Shift>}L{/Shift}');
+    expect(st().objects.find((o) => o.id === 'c')!.locked).toBe(true);
+  });
+
   it('el ojo y el candado del grupo afectan a todos sus miembros', async () => {
     const user = userEvent.setup();
     render(<SceneObjectList />);
