@@ -11,6 +11,7 @@
 import * as ops from '../../core/operations';
 import { computeBedPositionY, copySceneObject, makeId } from '../../core/scene/sceneObjects';
 import { resolveAlignTargets } from '../../core/scene/sceneRules';
+import { duplicateGroupStructure, pickSelection } from '../../core/scene/groups';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { tCount } from '../../utils/plural';
 import { cloneSnapshot } from '../projectDocument';
@@ -37,11 +38,20 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
         return { selectedIds: [...new Set(ids)].filter((id) => known.has(id)) };
       }),
 
+    // Un objeto agrupado elige su grupo de nivel superior (o el hijo del grupo en el que se entró).
     selectObject: (id, additive = false) =>
       set((state) => {
-        if (!additive) return { selectedIds: [id] };
-        const exists = state.selectedIds.includes(id);
-        return { selectedIds: exists ? state.selectedIds.filter((item) => item !== id) : [...state.selectedIds, id] };
+        const picked = state.groups.length
+          ? pickSelection(state.objects, state.groups, id, state.groupContextId)
+          : { ids: [id], context: state.groupContextId };
+        const ids = picked.ids.length ? picked.ids : [id];
+        const base = { groupContextId: picked.context, lastPickedId: id };
+        if (!additive) return { ...base, selectedIds: ids };
+        const exists = ids.every((x) => state.selectedIds.includes(x));
+        return {
+          ...base,
+          selectedIds: exists ? state.selectedIds.filter((item) => !ids.includes(item)) : [...new Set([...state.selectedIds, ...ids])],
+        };
       }),
 
     selectAll: () => set((state) => ({ selectedIds: state.objects.map((o) => o.id) })),
@@ -74,7 +84,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
         pushHistory();
       } else if (!runtime.transformSnapshotBeforeDrag) {
         const s = get();
-        runtime.transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds);
+        runtime.transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds, s.groups);
       }
       set((state) => ({
         objects: state.objects.map((obj) => {
@@ -108,12 +118,26 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       if (sourceObjs.length === 0 || rejectWhileLocked()) return [];
       pushHistory();
       const copySuffix = tr('store.copySuffix');
-      const created = sourceObjs.map((src) => copySceneObject(src, {
-        id: makeId('mesh'),
-        name: `${src.name} ${copySuffix}`,
-        position: [src.position[0] + 15, src.position[1], src.position[2] + 15],
+      const pairs = sourceObjs.map((src) => ({
+        sourceId: src.id,
+        copy: {
+          ...copySceneObject(src, {
+            id: makeId('mesh'),
+            name: `${src.name} ${copySuffix}`,
+            position: [src.position[0] + 15, src.position[1], src.position[2] + 15],
+          }),
+          ...(src.groupRef ? { groupRef: src.groupRef } : {}),
+        },
       }));
-      set((state) => ({ objects: [...state.objects, ...created], selectedIds: created.map((c) => c.id) }));
+      const created = pairs.map((p) => p.copy);
+      // Duplicar un grupo duplica su estructura (las copias cuelgan de un grupo gemelo).
+      const next = duplicateGroupStructure(
+        { objects: [...get().objects, ...created], groups: get().groups },
+        pairs,
+        () => makeId('grp'),
+        (name) => `${name} ${copySuffix}`,
+      );
+      set({ objects: next.objects, groups: next.groups, selectedIds: created.map((c) => c.id) });
       get().addToast(tr('toast.duplicated'), 'info');
       return created;
     },
@@ -159,7 +183,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       if (!src || src.locked) return null;
       // Estado previo al Alt-arrastre: Ctrl+Z deshace clonación y movimiento en un paso.
       if (!runtime.transformSnapshotBeforeDrag) {
-        runtime.transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds);
+        runtime.transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds, s.groups);
       }
       // Copia estacionaria en la posición original; la malla arrastrada pasa a ser la copia, así
       // TransformControls mantiene el puntero enganchado.

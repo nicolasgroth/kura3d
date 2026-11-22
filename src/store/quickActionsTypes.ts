@@ -25,7 +25,9 @@ export type RepeatRecord =
   | { kind: 'simplify'; toleranceMm: number }
   | { kind: 'color'; color: string }
   | { kind: 'setType'; isHole: boolean }
-  | { kind: 'centerOnBed' };
+  | { kind: 'centerOnBed' }
+  | { kind: 'group' }
+  | { kind: 'combine' };
 
 export type RepeatOutcome = 'done' | 'none' | 'notApplicable';
 

@@ -15,6 +15,7 @@ import { TRANSLATIONS_HI } from './locales/hi';
 import { TRANSLATIONS_ZH } from './locales/zh';
 import { MENU_EN, MENU_ES } from './locales/menuKeys';
 import { MENU_IDEAS_EN, MENU_IDEAS_ES } from './locales/menuIdeas';
+import { GROUPS_EN, GROUPS_ES } from './locales/groups';
 import { FLOWUX_EN, FLOWUX_ES } from './locales/flowUx';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
 import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
@@ -33,6 +34,7 @@ import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
 export const TRANSLATIONS_ES = {
   ...MENU_ES,
   ...MENU_IDEAS_ES,
+  ...GROUPS_ES,
   ...FLOWUX_ES,
   ...PREVIEW_ES,
   ...SPLITJOINTS_ES,
@@ -1400,6 +1402,7 @@ export type TranslationKey = keyof typeof TRANSLATIONS_ES;
 export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...MENU_EN,
   ...MENU_IDEAS_EN,
+  ...GROUPS_EN,
   ...FLOWUX_EN,
   ...PREVIEW_EN,
   ...SPLITJOINTS_EN,

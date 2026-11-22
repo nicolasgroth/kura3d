@@ -13,6 +13,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { type AlignMode } from '../../types/kura';
 import { InspectorEdgeToggle } from './InspectorEdgeToggle';
 import { FilamentLegendCard } from './FilamentLegendCard';
+import { GroupTransformCard } from './GroupTransformCard';
 import { SplitJointsSection } from '../split/SplitJointsSection';
 import { BooleanRoles } from '../booleanPreview/BooleanRoles';
 import { useBooleanPreview } from '../booleanPreview/useBooleanPreview';
@@ -53,6 +54,8 @@ export const InspectorMulti: React.FC = () => {
             {t(language, 'inspector.multiDesc')}
           </p>
         </div>
+
+        <GroupTransformCard />
 
         {primary?.metadata?.split && (
           <div className="kura-card">

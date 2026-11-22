@@ -97,6 +97,19 @@ describe('exportación desde el store', () => {
     expect(new DataView(entry.data.buffer, entry.data.byteOffset).getUint32(80, true)).toBe(box.stats.triangles);
   });
 
+  it('un grupo: un archivo con todo (por defecto) o un ZIP con un archivo por objeto', async () => {
+    vi.mocked(saveFileSet).mockResolvedValue(true);
+    const [box, sphere] = get().objects;
+    get().groupObjects([box.id, sphere.id], 'Base');
+    await get().exportModel({ format: 'stl', scope: 'selection', fileName: 'base' });
+    expect(vi.mocked(saveFileSet).mock.calls[0][0].map((e) => e.name)).toEqual(['base.stl']);
+    await get().exportModel({ format: 'stl', scope: 'selection', fileName: 'base', perObject: true });
+    const [zip] = vi.mocked(saveFileSet).mock.calls[1][0];
+    expect(zip.name).toBe('base.zip');
+    const text = new TextDecoder('latin1').decode(zip.data);
+    expect(text).toMatch(/_Base_-_/);
+  });
+
   it('informa el fallo de guardado y devuelve false', async () => {
     vi.mocked(saveFileSet).mockRejectedValue(new FileSaveError('Soporte_cámara.3mf', new Error('disco lleno')));
     expect(await get().exportModel({ format: '3mf', scope: 'scene' })).toBe(false);

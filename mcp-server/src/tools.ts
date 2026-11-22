@@ -467,6 +467,59 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       )
   );
 
+  // 8b. Organizar: grupos y combinar (requieren la app abierta; el modo sin interfaz no guarda grupos)
+  const needsApp = (what: string) => () => {
+    throw new Error(`${what} needs the Kura3D app connected through the local bridge (headless mode has no groups).`);
+  };
+  server.registerTool(
+    'kura_group_objects',
+    {
+      title: 'Group objects',
+      description:
+        'Groups objects so they are selected, moved, rotated and scaled together as one set. The objects stay ' +
+        'independent (nothing is merged). Groups can be nested. Use kura_ungroup to undo.',
+      inputSchema: {
+        objectIds: z.array(idSchema).max(256).min(1).describe('IDs of the objects to group.'),
+        name: z.string().max(80).optional().describe('Group name (optional).'),
+      },
+    },
+    async (args) => dispatchWithFallback(ctx, 'group_objects', { ids: args.objectIds, name: args.name }, needsApp('Grouping'))
+  );
+  server.registerTool(
+    'kura_ungroup',
+    {
+      title: 'Ungroup',
+      description: 'Removes a group; its objects (and subgroups) move to the parent group. The objects are not changed.',
+      inputSchema: { groupId: idSchema.describe('ID of the group (from kura_get_scene_state.groups).') },
+    },
+    async (args) => dispatchWithFallback(ctx, 'ungroup', { groupId: args.groupId }, needsApp('Ungrouping'))
+  );
+  server.registerTool(
+    'kura_combine_objects',
+    {
+      title: 'Combine into one object',
+      description:
+        'Combines 2 or more objects into ONE object with several bodies, without boolean operations: the geometry ' +
+        'is not merged and the total volume is the sum. Exports as a single STL. Use kura_separate_bodies to split it ' +
+        'again, or kura_boolean_operation (union) to really merge geometry.',
+      inputSchema: {
+        objectIds: z.array(idSchema).max(256).min(2).describe('IDs of the objects to combine.'),
+        name: z.string().max(80).optional().describe('Name of the combined object (optional).'),
+      },
+    },
+    async (args) => dispatchWithFallback(ctx, 'combine_objects', { ids: args.objectIds, name: args.name }, needsApp('Combining'))
+  );
+  server.registerTool(
+    'kura_separate_bodies',
+    {
+      title: 'Separate bodies',
+      description: 'Splits an object made of several loose bodies (for example a combined object) into separate objects.',
+      inputSchema: { objectId: idSchema.describe('ID of the object to separate.') },
+    },
+    async (args) =>
+      dispatchWithFallback(ctx, 'separate_bodies', { id: args.objectId }, () => ctx.headless.splitDisconnected(args.objectId))
+  );
+
   // 9. Separar por colores pintados
   server.registerTool(
     'kura_split_by_color',

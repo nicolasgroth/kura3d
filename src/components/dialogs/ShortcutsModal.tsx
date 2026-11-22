@@ -62,8 +62,10 @@ export const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = 
     {
       title: t(language, 'dialog.shortcuts.secCad'),
       items: [
-        { keys: ['Ctrl+G'], label: t(language, 'dialog.shortcuts.smartGroup') },
-        { keys: ['Ctrl+Shift+G'], label: t(language, 'dialog.shortcuts.splitIslands') },
+        { keys: ['Ctrl/⌘+G'], label: t(language, 'dialog.shortcuts.group') },
+        { keys: ['Ctrl/⌘+Shift+G'], label: t(language, 'dialog.shortcuts.ungroup') },
+        { keys: ['Enter', 'Esc'], label: t(language, 'dialog.shortcuts.enterGroup') },
+        { keys: ['Ctrl/⌘+Shift+U'], label: t(language, 'dialog.shortcuts.smartGroup') },
         { keys: ['Shift+M'], label: t(language, 'dialog.shortcuts.openMold') },
         { keys: ['X'], label: t(language, 'dialog.shortcuts.toggleXray') },
         { keys: ['P'], label: t(language, 'dialog.shortcuts.togglePaint') },

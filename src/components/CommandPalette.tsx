@@ -60,6 +60,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { Boxes as BoxesIcon, Group as GroupIcon, Merge as MergeIcon, Ungroup as UngroupIcon } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { SUPPORTED_LANGUAGES } from '../types/kura';
@@ -487,6 +488,7 @@ export const CommandPalette: React.FC = () => {
         label: t(language, 'inspector.op.applyHoles'),
         category: catOps,
         keywords: 'aplicar restas huecos boolean subtract',
+        shortcut: `${MOD}+Shift+U`,
         kind: 'local',
         icon: <Combine size={15} />,
         run: () => void applyHolesOnSolids(),
@@ -499,6 +501,44 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <Combine size={15} />,
         run: () => void runBooleanOnSelection('union'),
+      },
+      {
+        id: 'org-group',
+        label: t(language, 'groups.action.group'),
+        category: t(language, 'menu.group.organize'),
+        keywords: 'agrupar grupo capas group layer',
+        shortcut: `${MOD}+G`,
+        kind: 'local',
+        icon: <GroupIcon size={15} />,
+        run: () => void useKuraStore.getState().groupObjects(),
+      },
+      {
+        id: 'org-ungroup',
+        label: t(language, 'groups.action.ungroup'),
+        category: t(language, 'menu.group.organize'),
+        keywords: 'desagrupar ungroup',
+        shortcut: `${MOD}+Shift+G`,
+        kind: 'local',
+        icon: <UngroupIcon size={15} />,
+        run: () => void useKuraStore.getState().ungroupObjects(),
+      },
+      {
+        id: 'org-combine',
+        label: t(language, 'groups.action.combine'),
+        category: t(language, 'menu.group.organize'),
+        keywords: 'combinar un objeto stl cuerpos combine merge bodies',
+        kind: 'local',
+        icon: <BoxesIcon size={15} />,
+        run: () => void useKuraStore.getState().combineObjects(),
+      },
+      {
+        id: 'org-separate',
+        label: t(language, 'groups.action.separate'),
+        category: t(language, 'menu.group.organize'),
+        keywords: 'separar cuerpos piezas sueltas islas separate bodies',
+        kind: 'local',
+        icon: <MergeIcon size={15} />,
+        run: () => void useKuraStore.getState().separateBodies(primaryId ?? undefined),
       },
       {
         id: 'op-hollow',

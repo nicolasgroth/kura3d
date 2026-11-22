@@ -22,6 +22,7 @@ import { selectExportTargets } from './exportTargets';
 import { placeGroupInFreeSpot, type BedSize } from '../core/scene/freeSpot';
 import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
 import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } from './splitExport';
+import { objectAncestors } from '../core/scene/groups';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 export type ExportScope = 'selection' | 'scene';
@@ -34,6 +35,8 @@ export interface ExportRequest {
   fileName?: string;
   /** Piezas de una división: un archivo por pieza (ZIP) o un 3MF en disposición de impresión. */
   splitMode?: SplitExportMode;
+  /** Grupo: un archivo por objeto en un ZIP, con el nombre del árbol (`Grupo - Objeto`). */
+  perObject?: boolean;
 }
 
 /** Fuente de un archivo a importar (lectura diferida para fallar por archivo). */
@@ -53,6 +56,8 @@ interface IoState {
   language: LanguageCode;
   objects: SceneObject[];
   selectedIds: string[];
+  /** Grupos de la escena (nombres del árbol al exportar un archivo por objeto). */
+  groups?: import('../types/kura').SceneGroup[];
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
   printerProfile: { bedWidthMm?: number };
   customBedDimensions?: { width: number } | null;
@@ -239,14 +244,18 @@ export function createModelIoActions(deps: ModelIoDeps) {
     const base = exportFileBase(request.fileName, state.projectName, targets, tr('export.defaultName'));
     const fileName = `${base}.${request.format}`;
     const exportFiles = deps.exportFiles ?? exportSceneFiles;
-    const splitMode = hasSplitParts(targets) ? request.splitMode : undefined;
+    const splitMode = hasSplitParts(targets) ? request.splitMode : request.perObject ? 'perPiece' : undefined;
     try {
       if (splitMode === 'perPiece') {
         const zipName = `${base}.zip`;
         // Dentro del ZIP: <proyecto>_<código>; sin proyecto, el nombre del modelo original.
         const firstPart = targets.find((o) => o.metadata?.split);
         const pieceBase = state.projectName?.trim() || firstPart?.name.split(' · ')[0] || base;
-        const { data, count } = await zipPerPiece(targets, pieceBase, {
+        // Un archivo por objeto de un grupo: el nombre lleva la ruta del árbol.
+        const named = request.perObject && !hasSplitParts(targets)
+          ? targets.map((o) => ({ ...o, name: [...objectAncestors(state.groups ?? [], o).reverse().map((g) => g.name), o.name].join(' - ') }))
+          : targets;
+        const { data, count } = await zipPerPiece(named, pieceBase, {
           format: request.format,
           unitSystem: state.unitSystem,
         }, exportFiles);

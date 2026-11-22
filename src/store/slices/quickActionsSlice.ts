@@ -140,6 +140,10 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       }
       case 'centerOnBed':
         return s.centerSelectionOnBed() ? 'done' : 'notApplicable';
+      case 'group':
+        return s.selectedIds.length > 0 && s.groupObjects() ? 'done' : 'notApplicable';
+      case 'combine':
+        return s.selectedIds.length > 1 && s.combineObjects() ? 'done' : 'notApplicable';
       case 'setType': {
         if (!first) return 'notApplicable';
         s.setObjectsHole(targets.map((o) => o.id), rec.isHole);

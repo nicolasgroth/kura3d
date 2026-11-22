@@ -1,0 +1,189 @@
+/**
+ * @file src/styles/sceneTree.css
+ * @description Árbol de la escena (capas): sangría por nivel, flecha de plegar, icono por tipo, contador
+ * de miembros, marcas de soltar al arrastrar, aviso de grupo en el que se entró, áreas táctiles de 44 px en
+ * pantallas estrechas; ayuda del grupo «Organizar» del menú y tarjeta del conjunto en el inspector.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-scene-tree .kura-tree-row {
+  position: relative;
+  padding-left: calc(4px + var(--tree-level, 0) * 16px);
+}
+
+/* Guía de nivel: una línea a la izquierda de las filas anidadas (además de la sangría). */
+.kura-scene-tree .kura-tree-row[aria-level]:not([aria-level='1'])::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: calc(var(--tree-level, 0) * 16px - 6px);
+  border-left: 1px solid var(--border-subtle);
+}
+
+.kura-tree-chevron,
+.kura-tree-chevron-space {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+
+.kura-tree-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.kura-tree-chevron:hover {
+  background: var(--bg-hover, color-mix(in srgb, var(--text-primary) 10%, transparent));
+  color: var(--text-primary);
+}
+
+.kura-tree-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+}
+
+.kura-tree-count {
+  flex: 0 0 auto;
+  min-width: 18px;
+  padding: 0 5px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+/* Marcas al arrastrar: línea antes/después o contorno al soltar dentro de un grupo. */
+.kura-tree-row.is-drop-before {
+  box-shadow: inset 0 2px 0 var(--accent-cyan);
+}
+
+.kura-tree-row.is-drop-after {
+  box-shadow: inset 0 -2px 0 var(--accent-cyan);
+}
+
+.kura-tree-row.is-drop-inside {
+  outline: 2px dashed var(--accent-cyan);
+  outline-offset: -2px;
+}
+
+.kura-tree-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 4px 6px 4px 8px;
+  border: 1px dashed var(--accent-cyan);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Pantallas estrechas (hoja inferior): filas y botones de 44 px para el dedo. */
+@media (max-width: 900px) {
+  .kura-scene-tree .kura-tree-row {
+    min-height: 44px;
+  }
+
+  .kura-scene-tree .kura-tree-chevron {
+    width: 44px;
+    height: 44px;
+    margin-left: -12px;
+    margin-right: -10px;
+  }
+
+  .kura-scene-tree .kura-scene-actions .kura-mini-icon-btn,
+  .kura-tree-context .kura-mini-icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Menú contextual: línea de ayuda que distingue Agrupar, Combinar y Unir. */
+.kura-context-help {
+  margin: 0 8px 3px;
+  max-width: 260px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted);
+  white-space: normal;
+}
+
+/* Tarjeta del conjunto en el inspector. */
+.kura-group-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kura-group-card-name {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.kura-group-card-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.kura-group-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kura-group-card-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.kura-group-card-row legend {
+  width: 100%;
+  margin-bottom: 3px;
+  padding: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.kura-group-card-row > .kura-input {
+  flex: 1 1 60px;
+  min-width: 0;
+}
+
+.kura-group-card-field {
+  display: flex;
+  flex: 1 1 52px;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.kura-group-card-field .kura-input {
+  min-width: 0;
+  width: 100%;
+}

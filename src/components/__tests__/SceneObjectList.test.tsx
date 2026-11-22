@@ -18,7 +18,7 @@ const selected = () => useKuraStore.getState().selectedIds;
 function setup() {
   useKuraStore.setState({ objects: [fakeBox('a', 'Alfa'), fakeBox('b', 'Beta'), fakeBox('c', 'Gamma')], selectedIds: [] } as never);
   render(<SceneObjectList />);
-  return { list: screen.getByRole('listbox'), options: screen.getAllByRole('option') };
+  return { list: screen.getByRole('tree'), options: screen.getAllByRole('treeitem') };
 }
 
 describe('SceneObjectList', () => {
@@ -27,9 +27,9 @@ describe('SceneObjectList', () => {
     const { options } = setup();
     await user.click(options[1]);
     expect(selected()).toEqual(['b']);
-    expect(screen.getAllByRole('option')[1].getAttribute('aria-selected')).toBe('true');
+    expect(screen.getAllByRole('treeitem')[1].getAttribute('aria-selected')).toBe('true');
     await user.keyboard('{Control>}');
-    await user.click(screen.getAllByRole('option')[2]);
+    await user.click(screen.getAllByRole('treeitem')[2]);
     await user.keyboard('{/Control}');
     expect(selected()).toEqual(['b', 'c']);
   });

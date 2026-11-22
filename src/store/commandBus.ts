@@ -20,6 +20,7 @@ import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClien
 import { CommandError, type CommandErrorCode } from './commandErrors';
 import { selectExportTargets } from './exportTargets';
 import * as schema from './commandSchemas';
+import * as groupSchema from './groupCommandSchemas';
 import { parseUpdatePrimitiveParams } from './parametricCommandSchemas';
 import { parseSplitForBed, parseValidateAssembly } from './splitCommandSchemas';
 import type { OperationErrorTracker } from './operationErrors';
@@ -99,8 +100,9 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
         id: o.id, name: o.name, source: o.source, primitiveType: o.primitiveType,
         ...transformToUser(o), color: o.color,
         materialPreset: o.materialPreset ?? 'pla_matte', isHole: o.isHole, visible: o.visible,
-        locked: o.locked, stats: worldStats(o),
+        locked: o.locked, stats: worldStats(o), groupId: o.groupRef ?? null,
       })),
+      groups: groupSchema.groupHierarchy(s),
     };
   },
 
@@ -202,6 +204,30 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   split_disconnected: async (p, { get }, command) => {
     const { id } = schema.parseEditableTarget(get(), p);
     return required(await get().splitDisconnectedObject(id), command).map(brief);
+  },
+
+  group_objects: (p, { get }, command) => {
+    const { objects, name } = groupSchema.parseGroupObjects(get(), p);
+    const group = required(get().groupObjects(objects.map((o) => o.id), name), command);
+    return { id: group.id, name: group.name, objectIds: objects.map((o) => o.id) };
+  },
+
+  ungroup: (p, { get }) => {
+    const groupId = groupSchema.parseUngroup(get(), p);
+    const count = get().ungroupObjects(groupId);
+    if (count === 0) throw new CommandError('precondition', 'groups.toast.noGroup');
+    return { ungrouped: count };
+  },
+
+  combine_objects: (p, { get }, command) => {
+    const { objects, name } = groupSchema.parseCombine(get(), p);
+    const obj = required(get().combineObjects(objects.map((o) => o.id), name), command);
+    return { ...brief(obj), volumeMm3: obj.stats.volumeMm3 };
+  },
+
+  separate_bodies: async (p, { get }, command) => {
+    const target = groupSchema.parseSeparate(get(), p);
+    return required(await get().separateBodies(target.id), command).map(brief);
   },
 
   split_by_color: async (p, { get }, command) => {
