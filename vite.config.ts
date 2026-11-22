@@ -38,6 +38,12 @@ export default defineConfig({
     exclude: ['manifold-3d'],
   },
 
+  // Los Workers ya se crean con `type: 'module'`; en formato ES pueden cargar trozos diferidos
+  // (p. ej. opentype.js y la fuente del texto 3D solo al crear el primer texto).
+  worker: {
+    format: 'es',
+  },
+
   build: {
     target: 'esnext',
     sourcemap: true,

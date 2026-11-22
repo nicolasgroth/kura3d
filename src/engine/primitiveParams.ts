@@ -14,8 +14,10 @@ import {
   MIN_SEGMENTS_BY_TYPE,
   PRIMITIVE_LIMITS,
   PRIMITIVE_PARAM_RANGES,
+  TEXT_ALIGN_OPTIONS,
   TEXT_DEPTH_RANGE,
   TORUS_MIN_MAJOR_RADIUS,
+  type TextAlignOption,
   TUBE_MIN_OUTER_RADIUS,
 } from './primitiveLimits';
 
@@ -75,6 +77,13 @@ export const resolvePrism = (p: PrimitiveParams) => ({
   h: size('height', p.height, 20),
 });
 
+/** Valida la alineación del texto 3D (por defecto `left`). */
+function resolveTextAlign(value: unknown): TextAlignOption {
+  if (value === undefined) return 'left';
+  if (typeof value === 'string' && (TEXT_ALIGN_OPTIONS as readonly string[]).includes(value)) return value as TextAlignOption;
+  throw new EngineError('INVALID_PARAMETER', { name: 'textAlign', value: String(value), min: 0, max: TEXT_ALIGN_OPTIONS.length - 1 });
+}
+
 export function resolveText(p: PrimitiveParams) {
   const text = p.text ?? 'KURA';
   if (typeof text !== 'string' || text.trim().length === 0 || text.length > PRIMITIVE_LIMITS.maxTextLength) {
@@ -89,5 +98,7 @@ export function resolveText(p: PrimitiveParams) {
     text,
     fontSize: requireNumberInRange('fontSize', p.fontSize, PRIMITIVE_PARAM_RANGES.fontSize.min, PRIMITIVE_PARAM_RANGES.fontSize.max, 16),
     depth: requireNumberInRange(p.height !== undefined ? 'height' : 'depth', p.height ?? p.depth, TEXT_DEPTH_RANGE.min, TEXT_DEPTH_RANGE.max, 4),
+    letterSpacing: requireNumberInRange('letterSpacing', p.letterSpacing, PRIMITIVE_PARAM_RANGES.letterSpacing.min, PRIMITIVE_PARAM_RANGES.letterSpacing.max, 0),
+    textAlign: resolveTextAlign(p.textAlign),
   };
 }

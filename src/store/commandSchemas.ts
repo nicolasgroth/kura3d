@@ -28,7 +28,7 @@ import {
   type Vec3,
 } from '../types/kura';
 import {
-  PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, primitiveRangeFor, type PrimitiveRangeKey,
+  PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, TEXT_ALIGN_OPTIONS, primitiveRangeFor, type PrimitiveRangeKey,
 } from '../engine/primitiveLimits';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../engine/operationLimits';
 import { CommandError } from './commandErrors';
@@ -86,6 +86,7 @@ export function readPrimitiveParams(raw: RawParams, type: PrimitiveType): Primit
   }
   set('bevel', readNumber(raw, nonNegative(1000), 'bevel'));
   set('text', readString(raw, PRIMITIVE_LIMITS.maxTextLength, 'text'));
+  set('textAlign', readEnum(raw, TEXT_ALIGN_OPTIONS, 'textAlign'));
   return out;
 }
 

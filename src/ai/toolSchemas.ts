@@ -10,7 +10,7 @@
 import {
   OPERATION_RANGES as OR, TRANSFORM_RANGES, type OperationRange,
 } from '../engine/operationLimits';
-import { PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, type PrimitiveRangeKey } from '../engine/primitiveLimits';
+import { PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, TEXT_ALIGN_OPTIONS, type PrimitiveRangeKey } from '../engine/primitiveLimits';
 import type { KuraCommandRequest } from '../types/kura';
 
 /** Propiedad numérica de primitiva con `minimum`/`maximum` tomados del motor (fuente única). */
@@ -78,6 +78,9 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
         outerRadius: dim('outerRadius', 'Radio exterior en mm (tube/torus).'),
         innerRadius: dim('innerRadius', 'Radio interior en mm (tube).'),
         text: { type: 'string', description: 'Texto a extruir si type=text.', maxLength: PRIMITIVE_LIMITS.maxTextLength },
+        fontSize: dim('fontSize', 'Alto de mayúscula del texto en mm (type=text).'),
+        letterSpacing: dim('letterSpacing', 'Espacio extra entre letras en mm (type=text).'),
+        textAlign: { type: 'string', enum: [...TEXT_ALIGN_OPTIONS], description: 'Alineación de las líneas del texto (type=text).' },
         name: { type: 'string', description: 'Nombre descriptivo opcional.' },
         color: { type: 'string', description: 'Color hexadecimal #rrggbb opcional.' },
         placement: {
@@ -106,7 +109,9 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
         tubeRadius: dim('tubeRadius', 'Radio del tubo del toro en mm.'),
         segments: dim('segments', 'Segmentos de la circunferencia.'),
         sides: dim('sides', 'Lados del prisma.'),
-        fontSize: dim('fontSize', 'Tamaño de letra del texto en mm.'),
+        fontSize: dim('fontSize', 'Alto de mayúscula del texto en mm.'),
+        letterSpacing: dim('letterSpacing', 'Espacio extra entre letras del texto en mm.'),
+        textAlign: { type: 'string', enum: [...TEXT_ALIGN_OPTIONS], description: 'Alineación de las líneas del texto.' },
         text: { type: 'string', description: 'Texto nuevo si es texto 3D.', maxLength: PRIMITIVE_LIMITS.maxTextLength },
         diameterMm: ranged(OR.thread.diameterMm, 'Diámetro nominal de la rosca en mm.'),
         pitchMm: ranged(OR.thread.pitchMm, 'Paso de la rosca en mm.'),

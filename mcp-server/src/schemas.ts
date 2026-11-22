@@ -12,6 +12,7 @@ import { z } from 'zod';
 import {
   PRIMITIVE_LIMITS,
   PRIMITIVE_PARAM_RANGES,
+  TEXT_ALIGN_OPTIONS,
   type ParamRange,
 } from '../../src/engine/primitiveLimits';
 import { TRANSFORM_RANGES, type OperationRange } from '../../src/engine/operationLimits';
@@ -62,6 +63,8 @@ export const primitiveParamsSchema = z.object({
   sides: ranged(PRIMITIVE_PARAM_RANGES.sides),
   text: shortTextSchema.pipe(z.string().max(PRIMITIVE_LIMITS.maxTextLength)).optional(),
   fontSize: ranged(PRIMITIVE_PARAM_RANGES.fontSize),
+  letterSpacing: ranged(PRIMITIVE_PARAM_RANGES.letterSpacing),
+  textAlign: z.enum(TEXT_ALIGN_OPTIONS).optional(),
   bevel: z.number().min(0).max(1000).optional(),
 });
 

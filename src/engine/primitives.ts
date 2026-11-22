@@ -10,7 +10,7 @@
 
 import * as THREE from 'three';
 import { EngineError } from './engineErrors';
-import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';
+import type { Manifold } from 'manifold-3d';
 import type {
   MeshData,
   PrimitiveParams,
@@ -33,6 +33,7 @@ import {
   resolveTorus,
   resolveTube,
 } from './primitiveParams';
+import { buildTextCrossSection } from './text/textCrossSection';
 
 /**
  * Normaliza una malla para que quede centrada horizontalmente en (X=0, Z=0)
@@ -405,152 +406,6 @@ export function createBufferGeometryFromMeshData(
   return geometry;
 }
 
-// ============================================================================
-// Generación determinista de glifos vectoriales 2D para la primitiva 'text'
-// ============================================================================
-
-/** Segmento vectorial en grilla normalizada [0..4] x [0..6] (origen abajo-izquierda). */
-type StrokeSegment = [number, number, number, number];
-
-/**
- * Definición geométrica por trazos vectoriales (en grilla 4x6) para caracteres ASCII
- * imprimibles. Garantiza funcionamiento 100% offline en Node y navegador sin archivos de fuente.
- */
-const VECTOR_FONT_GLYPHS: Record<string, StrokeSegment[]> = {
-  A: [[0, 0, 2, 6], [2, 6, 4, 0], [0.8, 2.2, 3.2, 2.2]],
-  B: [[0, 0, 0, 6], [0, 6, 3, 6], [3, 6, 3.8, 5], [3.8, 5, 3, 3.2], [0, 3.2, 3, 3.2], [3, 3.2, 4, 2], [4, 2, 3, 0], [3, 0, 0, 0]],
-  C: [[4, 5, 3, 6], [3, 6, 1, 6], [1, 6, 0, 5], [0, 5, 0, 1], [0, 1, 1, 0], [1, 0, 3, 0], [3, 0, 4, 1]],
-  D: [[0, 0, 0, 6], [0, 6, 2.8, 6], [2.8, 6, 4, 4.5], [4, 4.5, 4, 1.5], [4, 1.5, 2.8, 0], [2.8, 0, 0, 0]],
-  E: [[0, 0, 0, 6], [0, 6, 4, 6], [0, 3.1, 3.2, 3.1], [0, 0, 4, 0]],
-  F: [[0, 0, 0, 6], [0, 6, 4, 6], [0, 3.1, 3.2, 3.1]],
-  G: [[4, 5, 3, 6], [3, 6, 1, 6], [1, 6, 0, 5], [0, 5, 0, 1], [0, 1, 1, 0], [1, 0, 3.2, 0], [3.2, 0, 4, 1], [4, 1, 4, 2.8], [4, 2.8, 2.2, 2.8]],
-  H: [[0, 0, 0, 6], [4, 0, 4, 6], [0, 3.1, 4, 3.1]],
-  I: [[0.8, 6, 3.2, 6], [2, 0, 2, 6], [0.8, 0, 3.2, 0]],
-  J: [[1, 6, 4, 6], [3.5, 6, 3.5, 1], [3.5, 1, 2.5, 0], [2.5, 0, 1, 0], [1, 0, 0, 1.2]],
-  K: [[0, 0, 0, 6], [3.8, 6, 0.2, 2.8], [1.4, 3.8, 4, 0]],
-  L: [[0, 6, 0, 0], [0, 0, 4, 0]],
-  M: [[0, 0, 0, 6], [0, 6, 2, 2.5], [2, 2.5, 4, 6], [4, 6, 4, 0]],
-  N: [[0, 0, 0, 6], [0, 6, 4, 0], [4, 0, 4, 6]],
-  O: [[1, 0, 3, 0], [3, 0, 4, 1.2], [4, 1.2, 4, 4.8], [4, 4.8, 3, 6], [3, 6, 1, 6], [1, 6, 0, 4.8], [0, 4.8, 0, 1.2], [0, 1.2, 1, 0]],
-  P: [[0, 0, 0, 6], [0, 6, 3, 6], [3, 6, 4, 5], [4, 5, 4, 4], [4, 4, 3, 3], [3, 3, 0, 3]],
-  Q: [[1, 0, 3, 0], [3, 0, 4, 1.2], [4, 1.2, 4, 4.8], [4, 4.8, 3, 6], [3, 6, 1, 6], [1, 6, 0, 4.8], [0, 4.8, 0, 1.2], [0, 1.2, 1, 0], [2.4, 1.6, 4.2, -0.4]],
-  R: [[0, 0, 0, 6], [0, 6, 3, 6], [3, 6, 4, 5], [4, 5, 4, 4], [4, 4, 3, 3], [3, 3, 0, 3], [2, 3, 4, 0]],
-  S: [[4, 5, 3, 6], [3, 6, 1, 6], [1, 6, 0, 5], [0, 5, 0, 4], [0, 4, 1, 3.1], [1, 3.1, 3, 3.1], [3, 3.1, 4, 2.1], [4, 2.1, 4, 1], [4, 1, 3, 0], [3, 0, 1, 0], [1, 0, 0, 1]],
-  T: [[0, 6, 4, 6], [2, 0, 2, 6]],
-  U: [[0, 6, 0, 1], [0, 1, 1, 0], [1, 0, 3, 0], [3, 0, 4, 1], [4, 1, 4, 6]],
-  V: [[0, 6, 2, 0], [2, 0, 4, 6]],
-  W: [[0, 6, 1, 0], [1, 0, 2, 3.2], [2, 3.2, 3, 0], [3, 0, 4, 6]],
-  X: [[0, 0, 4, 6], [0, 6, 4, 0]],
-  Y: [[0, 6, 2, 3], [4, 6, 2, 3], [2, 3, 2, 0]],
-  Z: [[0, 6, 4, 6], [4, 6, 0, 0], [0, 0, 4, 0]],
-  '0': [[1, 0, 3, 0], [3, 0, 4, 1.2], [4, 1.2, 4, 4.8], [4, 4.8, 3, 6], [3, 6, 1, 6], [1, 6, 0, 4.8], [0, 4.8, 0, 1.2], [0, 1.2, 1, 0], [0.6, 1, 3.4, 5]],
-  '1': [[0.8, 4.5, 2.2, 6], [2.2, 6, 2.2, 0], [0.8, 0, 3.6, 0]],
-  '2': [[0, 4.8, 1, 6], [1, 6, 3, 6], [3, 6, 4, 4.8], [4, 4.8, 4, 3.6], [4, 3.6, 0, 0], [0, 0, 4, 0]],
-  '3': [[0, 5, 1, 6], [1, 6, 3, 6], [3, 6, 4, 5], [4, 5, 4, 4], [4, 4, 3, 3.1], [1.5, 3.1, 3, 3.1], [3, 3.1, 4, 2.1], [4, 2.1, 4, 1], [4, 1, 3, 0], [3, 0, 1, 0], [1, 0, 0, 1]],
-  '4': [[3.2, 0, 3.2, 6], [3.2, 6, 0, 2], [0, 2, 4, 2]],
-  '5': [[4, 6, 0, 6], [0, 6, 0, 3.3], [0, 3.3, 3, 3.3], [3, 3.3, 4, 2.2], [4, 2.2, 4, 1], [4, 1, 3, 0], [3, 0, 1, 0], [1, 0, 0, 1]],
-  '6': [[3.6, 5.2, 2.8, 6], [2.8, 6, 1, 6], [1, 6, 0, 4.8], [0, 4.8, 0, 1], [0, 1, 1, 0], [1, 0, 3, 0], [3, 0, 4, 1], [4, 1, 4, 2.2], [4, 2.2, 3, 3.2], [3, 3.2, 0, 3.2]],
-  '7': [[0, 6, 4, 6], [4, 6, 1.4, 0]],
-  '8': [[1, 3.1, 3, 3.1], [3, 3.1, 4, 4.2], [4, 4.2, 4, 5], [4, 5, 3, 6], [3, 6, 1, 6], [1, 6, 0, 5], [0, 5, 0, 4.2], [0, 4.2, 1, 3.1], [0, 2, 0, 1], [0, 1, 1, 0], [1, 0, 3, 0], [3, 0, 4, 1], [4, 1, 4, 2], [4, 2, 3, 3.1], [1, 3.1, 0, 2]],
-  '9': [[4, 2.8, 1, 2.8], [1, 2.8, 0, 3.8], [0, 3.8, 0, 5], [0, 5, 1, 6], [1, 6, 3, 6], [3, 6, 4, 5], [4, 5, 4, 1.2], [4, 1.2, 3, 0], [3, 0, 1, 0], [1, 0, 0.4, 0.8]],
-  '-': [[0.6, 3, 3.4, 3]],
-  '_': [[0, 0, 4, 0]],
-  '.': [[1.8, 0, 2.2, 0]],
-  '+': [[0.5, 3, 3.5, 3], [2, 1.5, 2, 4.5]],
-  '!': [[2, 2, 2, 6], [2, 0, 2, 0.4]],
-  ':': [[2, 4, 2, 4.4], [2, 1, 2, 1.4]],
-};
-
-/**
- * Genera un polígono rectangular CCW con tapas extendidas alrededor de un segmento 2D
- * para que los trazos se superpongan limpiamente en las esquinas sin vértices "pinch".
- */
-function buildStrokeQuad(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  thickness: number
-): [number, number][] {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const len = Math.hypot(dx, dy);
-  const hw = thickness * 0.5;
-
-  if (len < 1e-6) {
-    return [
-      [x1 - hw, y1 - hw],
-      [x1 + hw, y1 - hw],
-      [x1 + hw, y1 + hw],
-      [x1 - hw, y1 + hw],
-    ];
-  }
-
-  const ux = dx / len;
-  const uy = dy / len;
-  const px = -uy;
-  const py = ux;
-  const ext = hw * 0.9;
-
-  const sx = x1 - ux * ext;
-  const sy = y1 - uy * ext;
-  const ex = x2 + ux * ext;
-  const ey = y2 + uy * ext;
-
-  return [
-    [sx - px * hw, sy - py * hw],
-    [ex - px * hw, ey - py * hw],
-    [ex + px * hw, ey + py * hw],
-    [sx + px * hw, sy + py * hw],
-  ];
-}
-
-/**
- * Construye una `CrossSection` 2D para un texto dado combinando trazos vectoriales
- * deterministas sin depender de tipografías externas.
- */
-function buildTextCrossSection(
-  wasm: ManifoldToplevel,
-  rawText: string,
-  fontSize: number
-): CrossSection {
-  const text = rawText.toUpperCase();
-  const scale = Math.max(1, fontSize) / 6;
-  const strokeThickness = 1.05 * scale;
-  const charWidth = 4 * scale;
-  const spacing = 2.0 * scale;
-  const quads: [number, number][][] = [];
-
-  let cursorX = 0;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (ch === ' ') {
-      cursorX += charWidth * 0.8 + spacing;
-      continue;
-    }
-
-    const segments = VECTOR_FONT_GLYPHS[ch] ?? VECTOR_FONT_GLYPHS['-'];
-    for (const [x1, y1, x2, y2] of segments) {
-      quads.push(
-        buildStrokeQuad(
-          cursorX + x1 * scale,
-          y1 * scale,
-          cursorX + x2 * scale,
-          y2 * scale,
-          strokeThickness
-        )
-      );
-    }
-    cursorX += charWidth + spacing;
-  }
-
-  if (quads.length === 0) {
-    return wasm.CrossSection.square([fontSize, fontSize * 0.4], true);
-  }
-
-  return wasm.CrossSection.ofPolygons(quads, 'Positive');
-}
-
 /**
  * Crea una primitiva paramétrica 3D cerrada (2-manifold watertight) centrada en X=0, Z=0
  * y apoyada sobre la cama en Y=0.
@@ -638,8 +493,9 @@ export async function createPrimitiveMesh(
       }
 
       case 'text': {
-        const { text, fontSize, depth: extrudeDepth } = resolveText(params);
-        const cs = buildTextCrossSection(wasm, text, fontSize);
+        // Fuente real (Roboto Bold): `fontSize` es el alto de mayúscula en mm.
+        const { text, fontSize, depth: extrudeDepth, letterSpacing, textAlign } = resolveText(params);
+        const cs = await buildTextCrossSection(wasm, text, { size: fontSize, letterSpacing, align: textAlign });
         tempHandles.push(cs);
         const extruded = cs.extrude(extrudeDepth, 0, 0, [1, 1], false);
         tempHandles.push(extruded);

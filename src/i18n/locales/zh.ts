@@ -993,6 +993,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineError.MESH_EMPTY': '“{operation}”操作得到了空网格；对象未被修改。',
   'engineError.MESH_INVALID': '网格不是有效的封闭实体（{cause}）。',
   'engineError.CUT_PLANE_OUTSIDE': '位于 {axis} = {offset} mm 的切割平面没有穿过对象（内部范围 {min} 到 {max} mm）。',
+  'engineError.TEXT_GLYPH_MISSING': '字体中没有这些字符：{chars}。请删除或替换它们（内置字体仅覆盖拉丁字母）。',
   'engineWarning.REFINE_LENGTH_CLAMPED': '为不超过 {maxTriangles} 个三角形，使用了 {effective} mm 边长而非 {requested} mm。',
   'engineWarning.REFINE_NO_CHANGE': '网格边长已不大于 {edge} mm：未添加三角形（{triangles}）。',
   'engineWarning.REFINE_SMOOTH_REVERTED': '平滑会使尺寸变化 {deviation} mm（公差 {tolerance} mm）；仅应用了细分。',

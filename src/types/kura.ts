@@ -388,7 +388,12 @@ export interface PrimitiveParams {
   segments?: number;
   sides?: number;
   text?: string;
+  /** Texto 3D: alto de mayúscula en mm. */
   fontSize?: number;
+  /** Texto 3D: espacio extra entre letras en mm. */
+  letterSpacing?: number;
+  /** Texto 3D: alineación de las líneas (por defecto `left`). */
+  textAlign?: 'left' | 'center' | 'right';
   bevel?: number;
 }
 
