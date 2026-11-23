@@ -214,6 +214,7 @@ Sin compromiso todavía; se evalúan antes de planificarlas.
 
 | Idea |
 |---|
+| Generador de cajas y carcasas (pedido el 23-nov): caja con tapa a partir de medidas o de una pieza ahuecada; tapa atornillada, a presión, deslizante o con imanes; orejas para fijar al muro; esquinas rectas o redondeadas; ranuras de ventilación; torretas para tornillos e insertos. Todo por parámetros y reglas, y disponible para la IA por MCP. Referencias a revisar: SolidCraft (CAD paramétrico), Modly (imagen a 3D local) y los sitios de generadores que indique el autor |
 | Extensiones de terceros con permisos acotados |
 | Evaluador externo de otro proveedor (Codex, Gemini) al cerrar cada versión |
 | Uso para modelos de videojuegos (GLB con UV y texturas) |
