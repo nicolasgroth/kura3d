@@ -214,7 +214,19 @@ Sin compromiso todavía; se evalúan antes de planificarlas.
 
 | Idea |
 |---|
-| Generador de cajas y carcasas (pedido el 23-nov): caja con tapa a partir de medidas o de una pieza ahuecada; tapa atornillada, a presión, deslizante o con imanes; orejas para fijar al muro; esquinas rectas o redondeadas; ranuras de ventilación; torretas para tornillos e insertos. Todo por parámetros y reglas, y disponible para la IA por MCP. Referencias a revisar: SolidCraft (CAD paramétrico), Modly (imagen a 3D local) y los sitios de generadores que indique el autor |
+| Vista sin cama (pedido el 23-nov): ocultar la cama y dejar los objetos flotando para ver cómo se conectan entre sí |
+| Barra lateral izquierda con tres estados (iconos y texto, solo iconos, oculta), independiente del modo de pantalla completa sin distracciones |
+| Ajustar a la impresora: elegir la impresora de una lista de perfiles (o una propia) y escalar el modelo en proporción para que quepa en su cama; enlaza con Dividir cuando no se quiere escalar |
+| Suavizar: redondear o achaflanar aristas elegidas, y suavizar la malla completa o solo la zona marcada con el pincel |
+| Dividir: numerar las caras de unión de cada pieza para saber cuál va con cuál al armar |
+| Cajas y carcasas: caja desde medidas o desde cualquier forma ahuecada; tapa por dentro, por fuera o sobre el borde; cierre con tornillos, insertos roscados, a presión, deslizante o imanes; esquinas rectas o redondeadas; ranuras de ventilación; paso de cable |
+| Agregados aplicables a cualquier objeto: orejas u ojos de cerradura para fijar al muro, alojamiento de imán, torreta para tornillo o inserto, compartimento con tapa (pilas, etiqueta NFC), gancho de encaje, paso de cable |
+| Recetas (macros): encadenar pasos con parámetros (por ejemplo ahuecar, crear tapa, agregar tornillos, agregar fijación al muro), guardarlas y aplicarlas a otra pieza; disponibles también por MCP |
+| Parámetros editables después: una pieza generada recuerda sus medidas y se puede cambiar una sin rehacerla |
+| Biblioteca paramétrica: tornillos, tuercas y arandelas; engranajes; bisagras impresas en sitio; rejilla Gridfinity; panel perforado de pared con sus ganchos; soportes rectos y esquineros para barras y tubos; portapilas 18650 y 21700; bandejas y organizadores de cajón; jarrones y pantallas de lámpara; cortador de galletas; código QR |
+| Desde imagen: llaveros multicolor (imagen o QR), letreros de letras retroiluminadas y cajas de luz, losetas de patrón hexagonal o Voronoi |
+| Fuera de foco por ahora (referencia): calculadora de precio de impresión, estimación de filamento, mapas 3D de ciudades, generación de modelos con IA |
+| Sitios revisados el 23-nov como fuente de ideas (se toma el concepto, la implementación es propia): SolidCraft, Modly, Split3MF, Layerling, ShaperLab, 3DKoneko |
 | Extensiones de terceros con permisos acotados |
 | Evaluador externo de otro proveedor (Codex, Gemini) al cerrar cada versión |
 | Uso para modelos de videojuegos (GLB con UV y texturas) |
