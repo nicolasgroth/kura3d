@@ -15,6 +15,7 @@ import {
   hasPaintedFaces, parametricStateOf, primitiveParamFields, THREAD_PARAM_FIELDS, type ParamField,
 } from '../../core/scene/parametric';
 import { t, type TranslationKey } from '../../i18n';
+import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject, UnitSystem } from '../../types/kura';
 import { askDecision } from '../../utils/confirmDialog';
@@ -208,7 +209,7 @@ const ParamNumber: React.FC<{
     if (burstRef.current) clearTimeout(burstRef.current);
   }, []);
   const precision = isCount ? 0 : 2;
-  const fmt = (n: number) => String(Number(n.toFixed(precision)));
+  const fmt = (n: number) => formatLocaleNumber(language, n, { maxFrac: precision });
   const suffix = isCount ? '' : ' mm';
   const rangeText = `${fmt(min)}–${fmt(max)}${suffix}`;
   const rangeTip = t(language, 'precision.rangeTip', { min: fmt(min), max: `${fmt(max)}${suffix}` });

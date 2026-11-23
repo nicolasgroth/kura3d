@@ -179,7 +179,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
       ...reconcileGroups({ objects: [...prev.objects, ...grouping.objects], groups: [...(prev.groups ?? []), ...grouping.groups] }),
       selectedIds: created.map((o) => o.id),
     }));
-    if (wasEmpty || placement === 'original') get().requestCameraPreset('fit');
+    if (wasEmpty || placement === 'original') get().requestCameraPreset('fit', created.map((o) => o.id));
     else get().requestCameraPreset('ensure', created.map((o) => o.id));
 
     const pieces = created.length;

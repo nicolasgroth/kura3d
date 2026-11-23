@@ -24,6 +24,8 @@ export default defineConfig({
   outputDir: '.eval-tmp/playwright-results',
   use: {
     baseURL: process.env.KURA_URL,
+    // Sin preferencia guardada la app sigue el idioma del navegador: los specs en español lo fijan aquí.
+    locale: 'es-CL',
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

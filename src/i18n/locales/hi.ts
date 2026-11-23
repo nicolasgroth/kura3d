@@ -21,6 +21,7 @@ import { A11YUX_HI } from './a11yUx';
 import { UXMOVIL_HI } from './uxMovil';
 import { SPLITUX_HI } from './splitUx';
 import { UXTEXTO_HI } from './uxTexto';
+import { UX3F_HI } from './ux3Forma';
 import { FIX10_HI } from './fix10';
 import { OPNOTES_HI } from './operationNotes';
 import { IMPORTREAL_HI } from './importReal';
@@ -46,6 +47,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...UXMOVIL_HI,
   ...SPLITUX_HI,
   ...UXTEXTO_HI,
+  ...UX3F_HI,
   ...FIX10_HI,
   ...OPNOTES_HI,
   ...IMPORTREAL_HI,
@@ -620,7 +622,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.img.generate': '3D मेश बनाएं',
 
   // Modal Corte por Plano
-  'dialog.cut.title': '3D कनेक्टर के साथ समतल कट',
+  'dialog.cut.title': 'समतल कट + कनेक्टर',
   'dialog.cut.axis': 'कट समतल अक्ष',
   'dialog.cut.offset': 'केंद्र से ऑफ़सेट',
   'dialog.cut.connectorType': 'कनेक्टर प्रकार',
@@ -695,7 +697,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.export3mf.execute': '.3MF फ़ाइल डाउनलोड करें',
 
   // Modal Ajustes & MCP
-  'dialog.settings.title': 'Kura3D सेटिंग्स और MCP ब्रिज',
+  'dialog.settings.title': 'Kura3D सेटिंग्स',
   'dialog.settings.tab.ai': 'AI प्रदाता',
   'dialog.settings.tab.mcp': 'MCP सर्वर',
   'dialog.settings.tab.appearance': 'रूप और थीम',

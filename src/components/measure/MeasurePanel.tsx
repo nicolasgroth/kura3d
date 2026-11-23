@@ -24,6 +24,7 @@ import { OperationPanel } from '../OperationPanel';
 import { MeasureCapacityPanel } from './MeasureCapacityPanel';
 import { copyMeasureValue } from './measureClipboard';
 import { useNarrowViewport } from './useNarrowViewport';
+import { useCoarsePointer } from './useCoarsePointer';
 import '../../styles/measure.css';
 
 const MODES: MeasureMode[] = ['distance', 'angle', 'area', 'capacity'];
@@ -56,17 +57,18 @@ function describeFresh(m: ResolvedMeasurement, unit: UnitSystem, lang: LanguageC
   }
 }
 
-function useHint(lang: LanguageCode): string {
+function useHint(lang: LanguageCode, coarse: boolean): string {
   const mode = useMeasureStore((s) => s.mode);
   const angleInput = useMeasureStore((s) => s.angleInput);
   const n = useMeasureStore((s) => s.pending.length);
   switch (mode) {
     case 'distance':
+      if (coarse) return t(lang, n === 0 ? 'measure.hint.distance0Touch' : 'measure.hint.distance1Touch');
       return t(lang, n === 0 ? 'measure.hint.distance0' : 'measure.hint.distance1');
     case 'angle':
       return angleInput === 'points' ? t(lang, 'measure.hint.anglePoints', { n }) : t(lang, 'measure.hint.angleFaces', { n });
     case 'area':
-      return t(lang, 'measure.hint.area');
+      return t(lang, coarse ? 'measure.hint.areaTouch' : 'measure.hint.area');
     case 'capacity':
       return t(lang, 'measure.hint.capacity');
   }
@@ -99,7 +101,10 @@ export const MeasurePanel: React.FC = () => {
   const measurements = useMemo(() => resolveMeasurements(allMeasurements, objects), [allMeasurements, objects]);
   const remove = useMeasureStore((s) => s.remove);
   const clearAll = useMeasureStore((s) => s.clearAll);
-  const hint = useHint(lang);
+  const coarse = useCoarsePointer();
+  const hint = useHint(lang, coarse);
+  const pendingCount = useMeasureStore((s) => s.pending.length);
+  const cancelPending = useMeasureStore((s) => s.cancelPending);
 
   // Esc cancela el punto en curso antes que cualquier otro atajo.
   useEffect(() => {
@@ -140,7 +145,13 @@ export const MeasurePanel: React.FC = () => {
         </div>
       )}
       <p className="kura-measure-hint" role="status" aria-live="polite">{hint}</p>
-      {(mode === 'distance' || mode === 'angle') && <p className="kura-measure-hint">{t(lang, 'measure.hint.snap')}</p>}
+      {coarse && pendingCount > 0 && mode !== 'capacity' && (
+        <button type="button" className="kura-btn kura-btn-sm kura-measure-cancel" title={t(lang, 'measure.cancelPointTip')} onClick={() => cancelPending()}>
+          <X size={12} aria-hidden />
+          <span>{t(lang, 'measure.cancelPoint')}</span>
+        </button>
+      )}
+      {(mode === 'distance' || mode === 'angle') && <p className="kura-measure-hint">{t(lang, coarse ? 'measure.hint.snapTouch' : 'measure.hint.snap')}</p>}
       {mode === 'capacity' ? <MeasureCapacityPanel /> : <ObjectTotals lang={lang} unit={unit} />}
 
       {mode !== 'capacity' && (

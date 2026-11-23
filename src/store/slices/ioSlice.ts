@@ -57,7 +57,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     tr,
     pushHistory: () => pushHistory(),
     buildObject: ({ name, mesh, position, color, isHole }) =>
-      buildSceneObject({ name, source: 'imported', mesh, position, color: color || PRINT_COLOR_PALETTE[0], isHole }),
+      buildSceneObject({ name, source: 'imported', mesh, position, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole }),
     exportFiles: (args) => ctx.runEngineDetached('export', args),
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
     openSimplify: (id) => get().requestSimplifyPanel(id),
@@ -87,7 +87,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     set((state) => ({ objects: [...state.objects, obj], selectedIds: [obj.id] }));
     get().addToast(tr(toastKey, { name: obj.name }), 'success');
     if (!fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
-    if (!fits || wasEmpty) get().requestCameraPreset('fit');
+    if (!fits || wasEmpty) get().requestCameraPreset('fit', [obj.id]);
     else get().requestCameraPreset('ensure', [obj.id]);
     return obj;
   };

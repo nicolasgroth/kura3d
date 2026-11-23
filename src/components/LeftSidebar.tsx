@@ -340,7 +340,7 @@ export const LeftSidebar: React.FC = () => {
               {/* Resumen de filamentos/colores activos en la escena */}
               {filamentColors.length > 0 && (
                 <div className="kura-card" style={{ padding: 8, gap: 5 }}>
-                  <div className="kura-field-row" style={{ fontSize: 10.5 }}>
+                  <div className="kura-field-row" style={{ fontSize: 11 }}>
                     <span className="kura-field-label">{t(language, 'scene.filamentLegend')}</span>
                     <span style={{ color: 'var(--text-muted)' }}>
                       {tCount(language, { one: 'scene.colorsCount.one', other: 'scene.colorsCount' }, filamentColors.length)}

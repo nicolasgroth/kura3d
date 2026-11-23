@@ -61,7 +61,7 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
     // El objeto cambió de posición: se vuelve a validar sobre el estado nuevo.
     setTimeout(() => validate(), 0);
   };
-  const rangeTip = t(language, 'precision.rangeTip', { min: String(WALL.min), max: `${WALL.max} mm` });
+  const rangeTip = t(language, 'precision.rangeTip', { min: formatLocaleNumber(language, WALL.min), max: `${formatLocaleNumber(language, WALL.max)} mm` });
   const assumptions = report?.weightAssumptions;
 
   return (
@@ -69,7 +69,7 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
       <div className="kura-field-row kura-param-row kura-printcheck-wall">
         <label className="kura-field-label" htmlFor="kura-print-minwall">
           {t(language, 'inspector.pro.minWall')}
-          <span className="kura-param-range" title={rangeTip}>{`${WALL.min}–${WALL.max} mm`}</span>
+          <span className="kura-param-range" title={rangeTip}>{`${formatLocaleNumber(language, WALL.min)}–${formatLocaleNumber(language, WALL.max)} mm`}</span>
         </label>
         <PrecisionNumberInput
           id="kura-print-minwall"

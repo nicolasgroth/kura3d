@@ -2,7 +2,8 @@
  * @file src/components/ToastStack.tsx
  * @description Pila de notificaciones: los errores usan `role="alert"` y los informativos
  * `role="status"`; todas se pueden cerrar con el botón (teclado) o con Escape estando enfocadas.
- * Muestra como máximo las 3 más recientes; las anteriores quedan plegadas en un botón «+N».
+ * Muestra como máximo las 3 más recientes; las anteriores quedan plegadas en un botón «+N» y «Cerrar todos»
+ * las descarta. Los informativos se cierran solos (`ToastItem`); los de error esperan al usuario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,10 +15,10 @@ import '../styles/mobileHud.css';
 import '../styles/toastStack.css';
 import '../styles/toastNarrow.css';
 import '../styles/toastModal.css';
-import { X } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { useTopModal } from './useTopModal';
+import { ToastItem } from './ToastItem';
 
 const MAX_VISIBLE = 3;
 
@@ -25,6 +26,7 @@ export const ToastStack: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const toasts = useKuraStore((s) => s.toasts);
   const dismissToast = useKuraStore((s) => s.dismissToast);
+  const dismissAllToasts = useKuraStore((s) => s.dismissAllToasts);
   const [expanded, setExpanded] = useState(false);
   const modal = useTopModal();
   const stackRef = useRef<HTMLDivElement | null>(null);
@@ -77,42 +79,19 @@ export const ToastStack: React.FC = () => {
         </button>
       )}
       {visible.map((toast) => (
-        <div
-          key={toast.id}
-          className={`kura-toast ${toast.kind}`}
-          role={toast.kind === 'error' ? 'alert' : 'status'}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              e.stopPropagation();
-              dismissToast(toast.id);
-            }
-          }}
-        >
-          <span>{toast.text}</span>
-          {toast.action && (
-            <button
-              type="button"
-              className="kura-btn kura-btn-sm kura-toast-action"
-              onClick={() => {
-                const { run } = toast.action!;
-                dismissToast(toast.id);
-                run();
-              }}
-            >
-              {toast.action.label}
-            </button>
-          )}
-          <button
-            type="button"
-            className="kura-mini-icon-btn"
-            onClick={() => dismissToast(toast.id)}
-            aria-label={t(language, 'common.close')}
-            title={t(language, 'common.close')}
-          >
-            <X size={13} aria-hidden="true" />
-          </button>
-        </div>
+        <ToastItem key={toast.id} toast={toast} language={language} onDismiss={dismissToast} />
       ))}
+      {toasts.length > 1 && (
+        <button
+          type="button"
+          className="kura-toast-more kura-toast-close-all"
+          onClick={dismissAllToasts}
+          title={t(language, 'toast.closeAllTip')}
+          aria-label={t(language, 'toast.closeAllTip')}
+        >
+          {t(language, 'toast.closeAll')}
+        </button>
+      )}
     </div>
   );
   return modal ? createPortal(stack, modal) : stack;

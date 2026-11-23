@@ -26,6 +26,7 @@ import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
 import { UXMOVIL_EN, UXMOVIL_ES } from './locales/uxMovil';
 import { SPLITUX_EN, SPLITUX_ES } from './locales/splitUx';
 import { UXTEXTO_EN, UXTEXTO_ES } from './locales/uxTexto';
+import { UX3F_EN, UX3F_ES } from './locales/ux3Forma';
 import { FIX10_EN, FIX10_ES } from './locales/fix10';
 import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
 import { IMPORTREAL_EN, IMPORTREAL_ES } from './locales/importReal';
@@ -53,6 +54,7 @@ export const TRANSLATIONS_ES = {
   ...UXMOVIL_ES,
   ...SPLITUX_ES,
   ...UXTEXTO_ES,
+  ...UX3F_ES,
   ...FIX10_ES,
   ...OPNOTES_ES,
   ...IMPORTREAL_ES,
@@ -627,7 +629,7 @@ export const TRANSLATIONS_ES = {
   'dialog.img.generate': 'Generar Malla 3D',
 
   // Modal Corte por Plano
-  'dialog.cut.title': 'Corte por Plano con Conectores 3D',
+  'dialog.cut.title': 'Corte por plano + uniones',
   'dialog.cut.axis': 'Eje del plano de corte',
   'dialog.cut.offset': 'Desplazamiento desde el centro',
   'dialog.cut.connectorType': 'Tipo de conector',
@@ -702,7 +704,7 @@ export const TRANSLATIONS_ES = {
   'dialog.export3mf.execute': 'Descargar archivo .3MF',
 
   // Modal Ajustes & MCP
-  'dialog.settings.title': 'Ajustes de Kura3D y Puente MCP',
+  'dialog.settings.title': 'Ajustes de Kura3D',
   'dialog.settings.tab.ai': 'Proveedor IA',
   'dialog.settings.tab.mcp': 'Servidor MCP',
   'dialog.settings.tab.appearance': 'Apariencia y Temas',
@@ -1429,6 +1431,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UXMOVIL_EN,
   ...SPLITUX_EN,
   ...UXTEXTO_EN,
+  ...UX3F_EN,
   ...FIX10_EN,
   ...OPNOTES_EN,
   ...IMPORTREAL_EN,
@@ -1575,7 +1578,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'sidebar.primitive.text': '3D Text',
   'sidebar.textPrompt': 'Text to extrude in 3D:',
   'sidebar.textDefault': 'KURA3D',
-  'sidebar.scene.empty': 'Build plate is empty. Add a shape or import an STL/3MF/OBJ file.',
+  'sidebar.scene.empty': 'The bed is empty. Add a shape or import an STL/3MF/OBJ file.',
   'sidebar.scene.objectsCount': '{count} objects',
   'sidebar.scene.selectedCount': '{count} selected',
   'sidebar.scene.holeBadge': 'NEGATIVE',
@@ -1583,7 +1586,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'sidebar.scene.toggleVisible': 'Show or hide object',
   'sidebar.scene.toggleLock': 'Lock or unlock editing',
   'sidebar.scene.duplicate': 'Duplicate (Ctrl+D)',
-  'sidebar.scene.dropToBed': 'Drop to build plate (Z=0)',
+  'sidebar.scene.dropToBed': 'Drop to bed (Z=0)',
   'sidebar.scene.delete': 'Delete (Del)',
   'sidebar.scene.multiSelectHint': 'Ctrl+Click for multi-selection',
   'scene.filamentLegend': 'Scene filaments',
@@ -1780,7 +1783,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'ctx.detectStructures': 'Detect sub-structures (Local)',
   'ctx.shortcuts': 'Keyboard shortcuts',
   'ctx.duplicate': 'Duplicate',
-  'ctx.dropToBed': 'Drop to build plate (Z=0)',
+  'ctx.dropToBed': 'Drop to bed (Z=0)',
   'ctx.delete': 'Delete',
 
   'cmd.title': 'Kura3D Command Palette',
@@ -1851,8 +1854,8 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'ai.local.rotated': 'Rotated “{name}” {degrees}° around {axis}.',
   'ai.local.hollowed': 'Hollowed “{name}” with a {wall} mm wall ({dims}).',
   'ai.local.hollowedDrain': 'Hollowed “{name}” with a {wall} mm wall and a drain hole ({dims}).',
-  'ai.local.centered': 'Centered “{name}” on the build plate.',
-  'ai.local.dropped': 'Dropped “{name}” onto the build plate.',
+  'ai.local.centered': 'Centered “{name}” on the bed.',
+  'ai.local.dropped': 'Dropped “{name}” onto the bed.',
   'ai.local.duplicated': 'Duplicated “{name}” as “{copy}”.',
   'ai.local.deleted': 'Deleted {names}.',
   'ai.local.textured': 'Applied the “{pattern}” texture to “{name}”.',
@@ -1879,8 +1882,8 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'ai.local.plan.hollowDrain': 'hollow with a {wall} mm wall and a drain hole',
   'ai.local.plan.texture': 'apply {pattern} texture',
   'ai.local.plan.threadHole': 'make a through {size} threaded hole in the center',
-  'ai.local.plan.center': 'center on the build plate',
-  'ai.local.plan.drop': 'drop to the build plate',
+  'ai.local.plan.center': 'center on the bed',
+  'ai.local.plan.drop': 'drop to the bed',
   'ai.local.plan.duplicate': 'duplicate',
   'ai.local.plan.delete': 'delete',
   'ai.local.plan.cut': 'cut at half height with 2 dowels',
@@ -1983,7 +1986,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.img.invert': 'Lithophane mode (darker = thicker)',
   'dialog.img.generate': 'Generate 3D Mesh',
 
-  'dialog.cut.title': 'Plane Cut with 3D Connectors',
+  'dialog.cut.title': 'Plane cut + connectors',
   'dialog.cut.axis': 'Cut plane axis',
   'dialog.cut.offset': 'Offset from center',
   'dialog.cut.connectorType': 'Connector type',
@@ -2053,7 +2056,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.export3mf.onlySelected': 'Export selected objects only',
   'dialog.export3mf.execute': 'Download .3MF File',
 
-  'dialog.settings.title': 'Kura3D Settings & MCP Bridge',
+  'dialog.settings.title': 'Kura3D Settings',
   'dialog.settings.tab.ai': 'AI Provider',
   'dialog.settings.tab.mcp': 'MCP Server',
   'dialog.settings.tab.appearance': 'Appearance & Themes',

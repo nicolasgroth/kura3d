@@ -40,7 +40,7 @@ export const FilamentLegendCard: React.FC = () => {
         <span className="kura-section-label" style={{ margin: 0 }}>
           {t(language, 'scene.filamentLegend')}
         </span>
-        <span style={{ fontSize: 10.5, color: 'var(--text-secondary)' }}>
+        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
           {tCount(language, { one: 'scene.colorsCount.one', other: 'scene.colorsCount' }, sceneColors.length)}
         </span>
       </div>
