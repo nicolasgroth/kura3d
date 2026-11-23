@@ -10,6 +10,10 @@
 
 import type * as engine from '../../engine';
 import { formatNumber } from '../../utils/plural';
+import { focusById } from '../../utils/focusById';
+
+/** Id de la tarjeta de estadísticas de geometría del inspector (destino de «Ver detalles»). */
+export const GEOMETRY_STATS_ID = 'kura-geometry-stats';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -63,7 +67,15 @@ export function createRepairSlice(ctx: StoreContext): Partial<KuraStoreState> {
           return report;
         }
         commitChange(change, { extra: { meshDiagnosis: null } });
-        get().addToast(tr('toast.repairDone', { summary: repairSummaryText(tr, get().language, report) }), 'success');
+        // El aviso dice qué se reparó y cómo cambió la malla, y lleva a las estadísticas del inspector.
+        const lang = get().language;
+        const after = get().objects.find((o) => o.id === id)?.stats.triangles ?? obj.stats.triangles;
+        const tris = tr('ux3.repair.tris', { before: formatNumber(lang, obj.stats.triangles), after: formatNumber(lang, after) });
+        get().addToast(
+          `${tr('toast.repairDone', { summary: repairSummaryText(tr, lang, report) })} · ${tris}`,
+          'success',
+          { label: tr('toast.printabilityDetails'), run: () => void focusById(GEOMETRY_STATS_ID) },
+        );
         reportEngineWarnings(change.warnings);
         return report;
       });

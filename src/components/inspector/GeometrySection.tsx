@@ -15,6 +15,7 @@ import { formatNumber } from '../../utils/plural';
 import { formatDimension, formatVolume } from '../../utils/units';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { toUserSize } from '../../core/scene/displayAxes';
+import { GEOMETRY_STATS_ID } from '../../store/slices/repairSlice';
 
 /** Sección 3: geometría y métricas. */
 export const GeometrySection: React.FC<Pick<InspectorSectionProps, 'primary'>> = ({ primary }) => {
@@ -34,7 +35,7 @@ export const GeometrySection: React.FC<Pick<InspectorSectionProps, 'primary'>> =
     primary.stats.volumeMm3 * primary.scale[0] * primary.scale[1] * primary.scale[2];
 
   return (
-    <section className="kura-card">
+    <section className="kura-card" id={GEOMETRY_STATS_ID} tabIndex={-1}>
       <h3 className="kura-section-label">{t(language, 'inspector.section.stats')}</h3>
       <div className="kura-stats-grid">
         <div className="kura-stat-box" style={{ gridColumn: '1 / -1' }}>

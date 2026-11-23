@@ -74,6 +74,7 @@ const UX3_EDICION_TABLE = {
     'चिह्नित फ़ील्ड ठीक करें: गैर-संख्यात्मक या सीमा से बाहर का मान लागू नहीं होता।',
     '请修正标记的字段:非数字或超出范围的值不会被应用。',
   ],
+  'ux3.repair.tris': ['triángulos: {before} → {after}', 'triangles: {before} → {after}', 'Dreiecke: {before} → {after}', 'triangles : {before} → {after}', 'त्रिभुज: {before} → {after}', '三角形:{before} → {after}'],
 } as const satisfies Record<string, Row>;
 
 type Ux3EdicionKey = keyof typeof UX3_EDICION_TABLE;
