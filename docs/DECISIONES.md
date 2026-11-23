@@ -67,3 +67,5 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-23 | Dónde van las consultas | Todas las preguntas para el autor se dejan en `docs/CONSULTAS_PROYECTO.md`, en un solo lugar, aunque también se comenten en la conversación. |
 | 2026-11-23 | Borradores de recuperación antiguos | Se borran solos los que llevan más de 30 días sin tocarse. |
 | 2026-11-23 | Largo de las guías públicas | Quedan como están; mientras sean guías paso a paso, el largo actual está bien. |
+| 2026-11-23 | Distribución de la interfaz | Se adopta el diseño clásico de aplicación: barra superior con archivo a la izquierda y ajustes a la derecha, barra vertical de herramientas junto al visor con iconos más grandes, y una sola barra de vista agrupada. Importar y Exportar conservan su texto. Un botón oculta o muestra todos los rótulos de una vez (solo iconos). Estándares: patrón de barra de herramientas de WAI-ARIA, WCAG 2.2, 44 px en táctil. Se implementa después de recibir la evaluación de usabilidad en curso. |
+| 2026-11-23 | Historial de acciones | Junto a deshacer y rehacer, un desplegable con la historia de lo hecho para volver a cualquier punto. |

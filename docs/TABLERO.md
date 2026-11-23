@@ -157,6 +157,8 @@ Ordenadas por prioridad dentro de cada grupo.
 
 | Grupo | Funcionalidad |
 |---|---|
+| Interfaz | Diseño clásico de aplicación (decidido el 23-nov): barra superior de archivo y ajustes, barra vertical de herramientas con iconos más grandes, una sola barra de vista agrupada, botón para ocultar todos los rótulos, y desplegable de historial junto a deshacer y rehacer. Empieza al recibir la evaluación de usabilidad en curso |
+| Pintura | Para más adelante (pedido el 23-nov): cursor que muestra el área afectada también en esculpir y borrar; pincel de borde duro o suave a elección; relleno hasta el borde que encuentre, con tolerancia ajustable; profundidad del pintado como parte de la configuración del pincel (por ejemplo una capa de 0,5 mm); y, si la pieza queda pintada entera de un color, opción de que sea de ese color en todo su volumen y no solo en la superficie |
 | Asistentes | Objetos de referencia (pedido el 23-nov): un tercer tipo de objeto que se ve, incluso semitransparente, pero no se imprime ni se exporta (la placa del Arduino, cables, un tornillo), y comprobación de encaje entre referencias y piezas (interferencias y holguras), disponible también para la IA por MCP. En análisis: `docs/diseno/OBJETOS_DE_REFERENCIA.md` |
 | Asistentes | Diseños en análisis el 23-nov: formato de recetas de los asistentes (`docs/diseno/ASISTENTES.md`) y geometría de agregados, cajas, suavizar y ajustar a la impresora (`docs/diseno/AGREGADOS_Y_PREPARACION.md`) |
 | Preparación | Ajustar a la impresora (perfiles de cama y escala proporcional) y Suavizar (aristas, malla completa o zona marcada) |
