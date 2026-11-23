@@ -17,16 +17,33 @@ export interface UnitChoiceRequest {
   hint: UnitHint;
 }
 
+/** Diagnóstico guardado por objeto importado: el inspector ofrece «¿Unidad equivocada?» mientras su escala no cambie. */
+export interface UnitDoubt {
+  request: UnitChoiceRequest;
+  scale: readonly [number, number, number];
+}
+
 interface UnitChoiceState {
   request: UnitChoiceRequest | null;
+  doubts: Record<string, UnitDoubt>;
   open: (request: UnitChoiceRequest) => void;
   close: () => void;
+  /** Recuerda el diagnóstico de unas piezas recién importadas (con su escala de partida). */
+  remember: (request: UnitChoiceRequest, scales: Record<string, readonly [number, number, number]>) => void;
 }
 
 export const useUnitChoiceStore = create<UnitChoiceState>((set) => ({
   request: null,
+  doubts: {},
   open: (request) => set({ request }),
   close: () => set({ request: null }),
+  remember: (request, scales) =>
+    set((s) => ({
+      doubts: {
+        ...s.doubts,
+        ...Object.fromEntries(request.ids.filter((id) => scales[id]).map((id) => [id, { request, scale: scales[id] }])),
+      },
+    })),
 }));
 
 /** Tamaño mínimo y máximo aceptados para «ajustar el lado mayor a N mm». */

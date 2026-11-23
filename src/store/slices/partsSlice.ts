@@ -26,6 +26,7 @@ import type { Vec3 } from '../../types/kura';
 import { activeBedSize } from '../bedSize';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
+import { colorName } from '../../utils/colorNames';
 
 export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, runExclusive, opCtx, assertCurrent, commitChange, currentSegmentationFor, runEngine } = ctx;
@@ -185,8 +186,10 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         assertCurrent([obj]);
         const cleared = clearOfOthers(change);
         commitChange(cleared, { select: parts.map((c) => c.id) });
+        // El aviso nombra los colores resultantes («Separado en 2 piezas: Blanco mate, Naranja»).
+        const colors = [...new Set(parts.map((c) => colorName(get().language, c.color)))].join(', ');
         get().addToast(
-          tCount(get().language, { one: 'genUi.splitColorsDone.one', other: 'genUi.splitColorsDone.other' }, parts.length),
+          `${tCount(get().language, { one: 'genUi.splitColorsDone.one', other: 'genUi.splitColorsDone.other' }, parts.length)}: ${colors}`,
           'success',
         );
         reportEngineWarnings(change.warnings);

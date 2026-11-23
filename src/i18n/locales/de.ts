@@ -803,7 +803,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
 
   // Barra de estado inferior (StatusBar)
   'status.runtime.tauri': 'Nativ (Tauri v2)',
-  'status.runtime.web': 'Web Studio',
+  'status.runtime.web': 'Web-Studio',
   'status.engine.loading': 'Manifold WASM wird geladen...',
   'status.engine.ready': 'Manifold WASM Bereit',
   'status.engine.error': 'Kern-Fehler',

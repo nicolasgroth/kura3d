@@ -37,6 +37,32 @@ const UX7 = {
   },
   // Menú contextual con varios objetos
   'ux7.menu.objects': { es: '{count} {count?objeto|objetos}', en: '{count} {count?object|objects}', de: '{count} {count?Objekt|Objekte}', fr: '{count} {count?objet|objets}', hi: '{count} {count?ऑब्जेक्ट|ऑब्जेक्ट}', zh: '{count} 个对象' },
+  // Inspector: unidades dudosas
+  'ux7.unit.link': { es: '¿Unidad equivocada?', en: 'Wrong unit?', de: 'Falsche Einheit?', fr: 'Mauvaise unité ?', hi: 'गलत इकाई?', zh: '单位不对?' },
+  'ux7.unit.linkTip': {
+    es: '«{name}» tiene un tamaño dudoso: elige en qué unidad está el modelo',
+    en: '“{name}” has a doubtful size: choose which unit the model is in',
+    de: '„{name}“ hat eine fragliche Größe: wähle, in welcher Einheit das Modell ist',
+    fr: '« {name} » a une taille douteuse : choisis l’unité du modèle',
+    hi: '“{name}” का आकार संदिग्ध है: चुनें कि मॉडल किस इकाई में है',
+    zh: '“{name}” 的尺寸可疑:请选择模型使用的单位',
+  },
+  // Exportar: lo que no se exporta
+  'ux7.export.excluded': {
+    es: '{count} de {total}: {list} no {excluded?se exporta|se exportan}',
+    en: '{count} of {total}: {list} {excluded?is|are} not exported',
+    de: '{count} von {total}: {list} {excluded?wird|werden} nicht exportiert',
+    fr: '{count} sur {total} : {list} {excluded?n’est pas exporté|ne sont pas exportés}',
+    hi: '{total} में से {count}: {list} निर्यात नहीं होते',
+    zh: '{total} 个中的 {count} 个:{list}不会导出',
+  },
+  'ux7.export.hidden': { es: '{count} {count?oculto|ocultos}', en: '{count} hidden', de: '{count} {count?ausgeblendetes|ausgeblendete}', fr: '{count} {count?masqué|masqués}', hi: '{count} छिपे हुए', zh: '{count} 个隐藏对象' },
+  'ux7.export.negatives': { es: '{count} {count?negativo|negativos}', en: '{count} {count?negative|negatives}', de: '{count} {count?Negativ|Negative}', fr: '{count} {count?négatif|négatifs}', hi: '{count} नेगेटिव', zh: '{count} 个负形' },
+  'ux7.export.and': { es: ' y ', en: ' and ', de: ' und ', fr: ' et ', hi: ' और ', zh: '和' },
+  // Recuperación
+  'ux7.recovery.savedAgo': { es: 'Guardado {ago}', en: 'Saved {ago}', de: 'Gespeichert {ago}', fr: 'Enregistré {ago}', hi: '{ago} सहेजा गया', zh: '{ago}保存' },
+  // Filamentos en escena
+  'ux7.filament.pieces': { es: '{count} {count?pieza|piezas}', en: '{count} {count?part|parts}', de: '{count} {count?Teil|Teile}', fr: '{count} {count?pièce|pièces}', hi: '{count} भाग', zh: '{count} 个零件' },
 } as const satisfies Record<string, Row>;
 
 type Lang = keyof Row;

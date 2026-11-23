@@ -810,7 +810,7 @@ export const TRANSLATIONS_ES = {
 
   // Barra de estado inferior (StatusBar)
   'status.runtime.tauri': 'Nativo (Tauri v2)',
-  'status.runtime.web': 'Web Studio',
+  'status.runtime.web': 'Estudio web',
   'status.engine.loading': 'Iniciando Manifold WASM...',
   'status.engine.ready': 'Manifold WASM Listo',
   'status.engine.error': 'Error de motor',
@@ -2120,7 +2120,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.shortcuts.help': 'Open this shortcuts guide',
 
   'status.runtime.tauri': 'Native (Tauri v2)',
-  'status.runtime.web': 'Web Studio',
+  'status.runtime.web': 'Web studio',
   'status.engine.loading': 'Loading Manifold WASM...',
   'status.engine.ready': 'Manifold WASM Ready',
   'status.engine.error': 'Engine error',

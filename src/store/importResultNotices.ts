@@ -53,6 +53,11 @@ export function registerUnitChoice(entries: readonly ImportedEntry[], deps: Pick
     if (!hint) continue;
     const size = new Intl.NumberFormat(deps.language, { maximumFractionDigits: hint.maxDimensionMm < 10 ? 2 : 0 }).format(hint.maxDimensionMm);
     const ids = list.map((e) => e.object.id);
+    // El inspector conserva el acceso al diálogo aunque el aviso se cierre.
+    useUnitChoiceStore.getState().remember(
+      { fileName, ids, hint },
+      Object.fromEntries(list.map((e) => [e.object.id, [...e.object.scale] as [number, number, number]])),
+    );
     registerSecondaryAction(deps.tr('realesMotor.unitDoubt', { name: fileName, size }), {
       label: deps.tr('ux6.unit.other'),
       run: () => useUnitChoiceStore.getState().open({ fileName, ids, hint }),
