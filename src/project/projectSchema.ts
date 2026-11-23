@@ -180,6 +180,8 @@ const settingsFields = {
     id, name: str, brand: oneOf('generic', 'elegoo', 'bambu', 'snapmaker', 'flashforge'),
     bedWidthMm: positive, bedDepthMm: positive, maxHeightMm: positive, showPrintVolume: bool,
     colorSlots: (v) => nat(v) && v > 0, purgeZoneMm: optional(nonnegative),
+    // Camas del usuario: margen por lado (opcional; los proyectos anteriores no lo traen).
+    marginMm: optional((v) => nonnegative(v) && (v as number) <= 50),
   } satisfies Record<keyof PrinterProfile, Rule>),
   customBedDimensions: (v) => v === null || shape({ width: positive, depth: positive, height: positive })(v),
   sectionPlane: shape({ enabled: bool, heightMm: finite }),

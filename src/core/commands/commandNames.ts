@@ -19,6 +19,7 @@ export type KuraCommandName =
   | 'hollow_object'
   | 'plane_cut'
   | 'split_for_bed'
+  | 'fit_to_bed'
   | 'split_disconnected'
   | 'group_objects'
   | 'ungroup'
