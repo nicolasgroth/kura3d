@@ -14,6 +14,8 @@ import { parametricStateOf } from '../../core/scene/parametric';
 import { resolveModuleTarget } from '../../core/scene/sceneRules';
 import { PRINT_COLOR_PALETTE, type SceneObject, type Vec3 } from '../../types/kura';
 import { BRAND } from '../../brand';
+import { attachToTarget, negativeOnTopFace } from '../../core/scene/attachPiece';
+import { withoutModulePrefix } from '../../core/scene/resultNames';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -41,6 +43,14 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
     if (!fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
     if (!fits || wasEmpty) get().requestCameraPreset('fit', [newId]);
     else get().requestCameraPreset('ensure', [newId]);
+  };
+
+  /** Objeto a perforar por un macho negativo: el pedido por id o el único seleccionado (sin bloquear). */
+  const negativeTarget = (targetId?: string): SceneObject | null => {
+    const { objects, selectedIds } = get();
+    const ok = (o: SceneObject | undefined) => (o && !o.locked && !o.isHole ? o : null);
+    if (targetId) return ok(objects.find((o) => o.id === targetId));
+    return selectedIds.length === 1 ? ok(objects.find((o) => o.id === selectedIds[0])) : null;
   };
 
   /** Agrega un objeto recién creado con animación de aparición. */
@@ -116,9 +126,25 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
       });
     },
 
-    createThreadObject: async (options) =>
+    createThreadObject: async (options, extra = {}) =>
       runExclusive('create_thread', null, async () => {
         await get().initEngine();
+        const target = options.kind === 'hole' ? negativeTarget(extra.targetId) : null;
+        if (target) {
+          const created = await ctx.runEngine('thread', { options, placement: { position: [0, 0, 0] } });
+          const obj = { ...created, position: negativeOnTopFace(target, created.mesh) };
+          pushHistory();
+          let grouped = false;
+          set((s) => {
+            const next = attachToTarget(s, obj, target.id);
+            grouped = next.grouped;
+            return { objects: next.objects, groups: next.groups, selectedIds: [obj.id], spawnedAtById: { ...s.spawnedAtById, [obj.id]: Date.now() } };
+          });
+          get().addToast(grouped
+            ? tr('toast.pieceNegativeGrouped', { name: obj.name, target: withoutModulePrefix(target.name) })
+            : tr('toast.created', { name: obj.name }), 'success');
+          return obj;
+        }
         const wasEmpty = get().objects.length === 0;
         const free = freePlacer();
         // La rosca se genera en el Worker en el origen y se ubica después en un espacio libre.

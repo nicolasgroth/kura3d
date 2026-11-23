@@ -1027,6 +1027,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         lengthMm: rangeSchema(OR.thread.lengthMm).default(20).describe('Threaded length in mm.'),
         clearanceMm: rangeSchema(OR.thread.clearanceMm).optional().describe('Radial print clearance in mm. If omitted, it is calculated from the pitch.'),
         includeHead: z.boolean().optional().describe('Include hexagonal head when kind === "bolt".'),
+        targetId: z.string().optional().describe('kind === "hole" only: object to drill. The cavity is centered on its top face, going down, and grouped with it (app only).'),
         name: nameSchema.optional().describe('Optional name of the generated part.'),
         placement: placementSchema,
       },

@@ -114,6 +114,11 @@ export function parseCreatePrimitive(p: RawParams): CreatePrimitiveInput {
   };
 }
 
+/** Objeto sobre el que se coloca un agujero roscado (opcional). */
+export function readThreadTarget(p: RawParams): string | undefined {
+  return readId(p, 'targetId');
+}
+
 export function parseThread(p: RawParams): ThreadOptions {
   return {
     kind: readEnum(p, ['bolt', 'nut', 'hole'] as const, 'kind') ?? 'bolt',

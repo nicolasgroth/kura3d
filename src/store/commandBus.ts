@@ -145,7 +145,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   },
 
   create_thread: async (p, { get }, command) =>
-    withStats(required(await get().createThreadObject(schema.parseThread(p)), command)),
+    withStats(required(await get().createThreadObject(schema.parseThread(p), { targetId: schema.readThreadTarget(p) }), command)),
 
   import_svg: async (p, { get }, command) =>
     brief(required(await get().importSvgModel(schema.parseImportSvg(p)), command)),
