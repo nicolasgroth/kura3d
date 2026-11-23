@@ -12,7 +12,7 @@
 import type { SceneObject } from '../../types/kura';
 import { weldVertices } from '../manifoldKernel';
 import { applyTransformToMesh } from '../primitives';
-import { ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
+import { MAX_PART_NAME, ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
 import type { ImportedModel } from './importTypes';
 import { GrowableUint32, finishMesh, hexToRgb01, normalizeHexColor, rgbToHex } from './meshBuffers';
 import { exportableObjects } from './stl';
@@ -132,13 +132,21 @@ function binaryReader(view: DataView, start: number, little: boolean): ValueRead
   };
 }
 
+/**
+ * Tokens ASCII leídos de a uno por índice (sin arreglo intermedio): solo se recorre hasta el último
+ * valor que piden los elementos declarados; lo que sobre al final no se lee.
+ */
 function asciiReader(text: string): ValueReader {
-  const tokens = text.split(/\s+/).filter(Boolean);
   let i = 0;
+  const n = text.length;
+  const isSpace = (c: number) => c === 32 || (c >= 9 && c <= 13);
   return {
     read() {
-      if (i >= tokens.length) throw new ModelImportError('truncated');
-      return Number(tokens[i++]);
+      while (i < n && isSpace(text.charCodeAt(i))) i++;
+      if (i >= n) throw new ModelImportError('truncated');
+      const start = i;
+      while (i < n && !isSpace(text.charCodeAt(i))) i++;
+      return Number(text.slice(start, i));
     },
   };
 }
@@ -162,6 +170,11 @@ export function readPLY(buffer: ArrayBuffer, fileName = 'model.ply', limitsInput
 
   for (const element of elements) {
     if (element.name === 'vertex') {
+      // x, y, z deben ser escalares antes de reservar `count * 3` floats.
+      for (const axis of ['x', 'y', 'z']) {
+        const prop = element.properties.find((p) => p.name === axis);
+        if (!prop || prop.countType) throw new ModelImportError('corrupt', `propiedad ${axis} del vértice ausente o no escalar`);
+      }
       positions = new Float32Array(element.count * 3);
       const names = element.properties.map((p) => p.name);
       const hasColor = ['red', 'green', 'blue'].every((n) => names.includes(n));
@@ -194,6 +207,10 @@ export function readPLY(buffer: ArrayBuffer, fileName = 'model.ply', limitsInput
         for (const prop of element.properties) {
           if (prop.countType) {
             const n = reader.read(prop.countType);
+            // Tope antes de abrir el abanico: una cara de N vértices da N − 2 triángulos.
+            if (!Number.isInteger(n) || n < 0 || faces.length / 3 + Math.max(0, n - 2) > limits.maxTriangles) {
+              throw new ModelImportError(Number.isInteger(n) && n >= 0 ? 'too-many-triangles' : 'corrupt', `cara ${f + 1}`);
+            }
             const list: number[] = [];
             for (let k = 0; k < n; k++) list.push(reader.read(prop.type));
             if (prop.name === 'vertex_indices' || prop.name === 'vertex_index') face = list;
@@ -241,7 +258,7 @@ export function readPLY(buffer: ArrayBuffer, fileName = 'model.ply', limitsInput
     fileName,
     format: 'ply',
     hasPlacement: false,
-    parts: [{ name: fileName.replace(/\.ply$/i, ''), color: dominant, mesh: finished.mesh, group: 0, openEdges: finished.openEdges }],
+    parts: [{ name: fileName.replace(/\.ply$/i, '').slice(0, MAX_PART_NAME), color: dominant, mesh: finished.mesh, group: 0, openEdges: finished.openEdges }],
   };
 }
 

@@ -22,7 +22,7 @@ import { selectExportTargets } from './exportTargets';
 import { placeGroupInFreeSpot, type BedSize } from '../core/scene/freeSpot';
 import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
 import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } from './splitExport';
-import { objectAncestors, reconcileGroups } from '../core/scene/groups';
+import { MAX_GROUP_NAME, objectAncestors, reconcileGroups } from '../core/scene/groups';
 import { groupImported } from './importGrouping';
 import { exportNotices, tooLargeMessage } from './modelImportNotices';
 
@@ -181,7 +181,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
     }
     const created = placed.map((p) =>
       buildObject({
-        name: p.part.name || p.fileName,
+        name: (p.part.name || p.fileName).slice(0, MAX_GROUP_NAME),
         mesh: p.mesh,
         position: p.position,
         color: p.part.isHole ? '#f97316' : p.part.color ?? '',

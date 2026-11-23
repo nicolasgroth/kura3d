@@ -43,6 +43,9 @@ export interface ModelImportLimits {
   maxSceneNodes: number;
 }
 
+/** Largo máximo del nombre de una pieza importada (el mismo que el de un grupo de escena). */
+export const MAX_PART_NAME = 80;
+
 /** Límites por defecto: tamaño, triángulos y bytes descomprimidos salen de `MODEL_IO_LIMITS` (fuente única). */
 export const DEFAULT_IMPORT_LIMITS: ModelImportLimits = {
   maxFileBytes: MODEL_IO_LIMITS.maxFileBytes,

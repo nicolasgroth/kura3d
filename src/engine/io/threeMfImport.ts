@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
+import { MAX_PART_NAME, ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
 import type { ImportedModel, ImportedPart } from './importTypes';
 import { GrowableFloat32, GrowableUint32, finishMesh, normalizeHexColor } from './meshBuffers';
 import { normalizePartPath, open3MFPackage, parseXmlAttrs, type ThreeMfPackage } from './threeMfPackage';
@@ -362,7 +362,7 @@ export function read3MF(
       inst.rootName ??
       `${baseName} ${parts.length + 1}`;
     parts.push({
-      name,
+      name: name.slice(0, MAX_PART_NAME),
       color,
       mesh: finished.mesh,
       isHole: subtype === 'negative_part' || undefined,
