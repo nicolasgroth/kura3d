@@ -16,7 +16,7 @@ import type {
   SceneObject,
   StructuralSegmentationResult,
 } from '../../types/kura';
-import { userAxisOfInternal } from '../scene/displayAxes';
+import { userAxisLabel, userAxisOfInternal } from '../scene/displayAxes';
 import { worldBaked } from '../scene/sceneObjects';
 import { buildWith, change, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
 
@@ -36,7 +36,7 @@ export async function planeCut(
     { part: result.negative, half: positiveIsUserPositive ? ('a' as const) : ('b' as const) },
   ].filter((h) => h.part !== null);
   const parts = halves.map(({ part, half }) => buildWith(ctx, {
-    name: ctx.naming.cutHalf(obj, half),
+    name: ctx.naming.cutHalf(obj, half, userAxisLabel(options.axis)),
     source: 'cut_part',
     mesh: part!.mesh,
     position: part!.position,

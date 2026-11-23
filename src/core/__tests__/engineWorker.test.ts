@@ -111,7 +111,7 @@ describe('Worker del motor: equivalencia con la ruta en proceso', () => {
     expect(remote.parts.length).toBe(2);
     expect(summary(remote.parts)).toEqual(summary(local.parts));
     // Eje Y del motor = Z del usuario: la mitad positiva (arriba) es la B.
-    expect(remote.parts[0].name).toBe('A — cut.half.b');
+    expect(remote.parts[0].name).toBe('A — cut.half.b{"axis":"Z"}');
     // `parts` y `change.added` siguen siendo los mismos objetos tras clonar.
     expect(remote.change.added[0]).toBe(remote.parts[0]);
   });

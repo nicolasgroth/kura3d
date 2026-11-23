@@ -2,7 +2,7 @@
  * @file src/components/split/SplitPlanPreview.tsx
  * @description Vista previa del plan de división en el visor, sin tocar la escena: planos de corte
  * como láminas translúcidas con borde (los que no admiten unión, con borde discontinuo y rótulo de
- * aviso), cajas de cada pieza prevista con su código flotante (las que irán acostadas, marcadas).
+ * aviso), cajas de cada pieza prevista (su código lo rotula `SplitLabels`; las que irán acostadas, marcadas).
  * Cada plano se arrastra a lo largo de su eje y publica la posición al panel por `splitPlaneDrag`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -149,7 +149,6 @@ const PlaneSheet: React.FC<{
 
 /** Caja de una pieza prevista con su código. */
 const PieceBox: React.FC<{ piece: PlannedPiece; dimmed: boolean }> = ({ piece, dimmed }) => {
-  const language = useKuraStore((s) => s.language);
   const { min, max } = piece.bounds;
   const size: [number, number, number] = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
   const center: [number, number, number] = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
@@ -161,16 +160,6 @@ const PieceBox: React.FC<{ piece: PlannedPiece; dimmed: boolean }> = ({ piece, d
       <lineSegments geometry={edges} renderOrder={19} raycast={() => null}>
         <lineBasicMaterial color="#22d3ee" transparent opacity={dimmed ? 0.25 : 0.55} depthWrite={false} />
       </lineSegments>
-      <Html center zIndexRange={[21, 0]} style={{ pointerEvents: 'none' }}>
-        <span
-          className="kura-split-piece-tag"
-          data-rotated={piece.rotated || undefined}
-          title={piece.rotated ? t(language, 'split.rotatedTip') : undefined}
-        >
-          {piece.code}
-          {piece.rotated && <span className="kura-split-piece-rot"> ↻ {t(language, 'split.rotated')}</span>}
-        </span>
-      </Html>
     </group>
   );
 };

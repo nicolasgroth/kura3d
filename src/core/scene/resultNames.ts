@@ -24,7 +24,8 @@ export interface ResultNaming {
   modulePrefix(isHole: boolean): string;
   primitiveLabel(type: PrimitiveType): string;
   booleanResult(op: BooleanOpType, inputs: SceneObject[]): string;
-  cutHalf(source: SceneObject, half: 'a' | 'b'): string;
+  /** `axis` es el eje de corte como lo ve el usuario (X, Y o Z): la mitad A es su lado − y la B su lado +. */
+  cutHalf(source: SceneObject, half: 'a' | 'b', axis: 'X' | 'Y' | 'Z'): string;
   piece(source: SceneObject, index: number): string;
   colorPart(source: SceneObject, color: string, index: number): string;
   moldPart(source: SceneObject, part: { label: string; nameSuffix: string }): string;
@@ -74,7 +75,7 @@ export function createKeyedNaming(
       op === 'subtract'
         ? inputs.map((o, i) => (i === 0 ? o.name : withoutModulePrefix(o.name))).join(' − ')
         : tr(op === 'union' ? 'object.name.union' : 'object.name.intersect', { count: inputs.length }),
-    cutHalf: (src, half) => `${src.name} — ${tr(half === 'a' ? 'cut.half.a' : 'cut.half.b')}`,
+    cutHalf: (src, half, axis) => `${src.name} — ${tr(half === 'a' ? 'cut.half.a' : 'cut.half.b', { axis })}`,
     piece: (src, i) => `${src.name} — ${tr('object.name.piece', { n: i + 1 })}`,
     colorPart: (src, color) => `${src.name} — ${labels.color(color)}`,
     moldPart: (src, part) => `${tr(`mold.part.${part.label}` as TranslationKey)} — ${src.name}`,

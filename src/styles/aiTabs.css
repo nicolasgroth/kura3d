@@ -1,0 +1,77 @@
+/**
+ * Pestañas «Inspector | Asistente» (ventanas de 901 a 1240 px). El chat de IA se superpone a la columna del
+ * inspector, que sigue accesible con su pestaña; el visor no cambia de tamaño. Fuera de ese rango no se ven.
+ */
+.kura-ai-tabs {
+  display: none;
+}
+
+@media (901px <= width <= 1240px) {
+  .kura-app .kura-workspace > .kura-ai-tabs {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 31;
+    display: flex;
+    width: min(296px, calc(100% - 16px));
+    height: 34px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--bg-panel);
+    box-shadow: var(--shadow-hud);
+    overflow: hidden;
+  }
+
+  .kura-ai-tab {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .kura-ai-tab:hover {
+    background: var(--bg-hover, rgba(127, 127, 127, 0.12));
+  }
+
+  .kura-ai-tab:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: -3px;
+  }
+
+  /* Activa: subrayado grueso, negrita y fondo propio (no depende solo del color). */
+  .kura-ai-tab[aria-selected='true'] {
+    border-bottom-color: var(--accent-cyan);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+
+  /* El chat queda bajo las pestañas. */
+  .kura-app .kura-workspace[data-narrow-panel='ai'] > .kura-ai-drawer {
+    top: 48px;
+  }
+
+  /* Pestaña Inspector: el chat se oculta (conserva sus mensajes) y el inspector vuelve, bajo las pestañas. */
+  .kura-app .kura-workspace[data-narrow-panel='ai']:has(> .kura-ai-tabs[data-active='inspector']) > .kura-ai-drawer {
+    display: none;
+  }
+
+  .kura-app .kura-workspace[data-narrow-panel='ai']:has(> .kura-ai-tabs[data-active='inspector']) > .kura-sidebar-right {
+    visibility: visible;
+    padding-top: 44px;
+    box-sizing: border-box;
+  }
+
+  .kura-ai-drawer .kura-ai-fold-btn {
+    display: none;
+  }
+}

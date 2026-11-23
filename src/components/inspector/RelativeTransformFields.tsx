@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { type Vec3 } from '../../types/kura';
 import { AXES } from './inspectorConstants';
+import { useInvalidFields } from '../useInvalidFields';
 
 export function RelativeTransformFields({
   label,
@@ -17,6 +18,7 @@ export function RelativeTransformFields({
   step,
   precision,
   disabled,
+  limit,
   onApply,
 }: {
   label: string;
@@ -24,9 +26,12 @@ export function RelativeTransformFields({
   step: number;
   precision: number;
   disabled: boolean;
+  /** Máximo valor absoluto de cada Δ; fuera de él el campo se marca y no se aplica. */
+  limit: number;
   onApply: (delta: Vec3) => void;
 }) {
   const [delta, setDelta] = useState<Vec3>([0, 0, 0]);
+  const invalid = useInvalidFields();
 
   return (
     <>
@@ -38,6 +43,10 @@ export function RelativeTransformFields({
             axisTone={axis}
             step={step}
             precision={precision}
+            min={-limit}
+            max={limit}
+            strictRange
+            onInvalidChange={invalid.track(axis)}
             defaultValue={0}
             disabled={disabled}
             value={delta[index]}
@@ -53,7 +62,7 @@ export function RelativeTransformFields({
       <button
         type="button"
         className="kura-btn kura-btn-sm kura-precision-apply"
-        disabled={disabled || delta.every((value) => value === 0)}
+        disabled={disabled || invalid.blocked || delta.every((value) => value === 0)}
         onClick={() => {
           onApply(delta);
           setDelta([0, 0, 0]);

@@ -17,7 +17,7 @@ Vocabulario único para los textos visibles (público: makers aficionados, no in
 | Manipulador 3D del visor | **manipulador** | "gizmo" | |
 | Consejo | **Consejo** | "Tip", "Pro Tips" | |
 | Superficie de impresión | **cama** (en inglés: **bed**) | "placa", "build plate" | Una sola palabra en todos los idiomas; el rótulo "Placa 1" de Preparar para imprimir nombra una cama concreta |
-| Corte con un plano | **Corte por plano + uniones** (en inglés: Plane cut + connectors) | "con Conectores 3D" | Mismo nombre en el menú, el inspector y el título del diálogo; el resultado se llama **mitad A / mitad B** |
+| Corte con un plano | **Corte por plano + uniones** (en inglés: Plane cut + connectors) | "con Conectores 3D" | Mismo nombre en el menú, el inspector y el título del diálogo; el resultado se llama **mitad A (X−) / mitad B (X+)**, con el eje de corte entre paréntesis |
 | Piezas de Dividir para imprimir | **pieza** con código **A1, A2, B1a…** | "mitad" | Los códigos rotulan cada pieza; "mitad A/B" es solo el resultado del corte por plano |
 | Ventana de preferencias | **Ajustes** (en inglés: Settings) | "Ajustes y Puente MCP" | El puente MCP es una pestaña de Ajustes, no parte del título |
 | Nombre del producto | **Kura3D** | "Pro", "Ultra", "Maker Pro" | Ver `src/brand.ts` |

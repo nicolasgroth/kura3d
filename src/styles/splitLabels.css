@@ -1,0 +1,35 @@
+/**
+ * Rótulos de pieza y de placa del visor de Dividir (capa HTML propia, ver SplitLabelLayer).
+ * Legibles en ambos temas: fondo y texto del panel, borde de 2 px; tamaño acotado con puntos suspensivos.
+ */
+.kura-split-label-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.kura-split-label-layer .kura-split-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  will-change: transform;
+}
+
+.kura-split-label-layer .kura-split-label[data-dimmed='true'] {
+  opacity: 0.6;
+}
+
+/* Casilla "Mostrar rótulos de pieza" */
+.kura-split-labels-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}

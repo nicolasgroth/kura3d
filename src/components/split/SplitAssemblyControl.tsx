@@ -15,6 +15,7 @@ import { tCount } from '../../utils/plural';
 import { splitArrangementOf, splitGroupOf, splitPlateCount } from '../../core/scene/splitGroups';
 import { activeBed } from '../../store/splitCommandSchemas';
 import { useKuraStore } from '../../store/useKuraStore';
+import { SplitLabelsToggle } from './SplitLabelsToggle';
 
 /** Duración de una ida (armado → explosionado) en ms. */
 const HALF_CYCLE_MS = 1600;
@@ -142,6 +143,7 @@ export const SplitAssemblyControl: React.FC = () => {
           <span>{t(language, 'split.assembly.assemble')}</span>
         </button>
       </div>
+      <SplitLabelsToggle />
     </section>
   );
 };

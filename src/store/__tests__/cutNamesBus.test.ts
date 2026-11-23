@@ -30,7 +30,7 @@ async function box() {
 async function userCenters(): Promise<Record<string, number[]>> {
   const res = await run('get_scene_state', {});
   const objs = (res.result as { objects: Array<{ name: string; position: number[]; stats: { dimensionsMm: number[] } }> }).objects;
-  return Object.fromEntries(objs.map((o) => [o.name.slice(-1), o.position]));
+  return Object.fromEntries(objs.map((o) => [(o.name.match(/ ([AB]) \(/)?.[1] ?? '?'), o.position]));
 }
 
 describe('nombres de corte y resta', () => {
@@ -45,7 +45,7 @@ describe('nombres de corte y resta', () => {
     const i = { x: 0, y: 1, z: 2 }[axis];
     if (axis === 'z') {
       // La mitad de arriba (B) va a la cama: se compara por la altura de su base antes del acomodo.
-      expect(store().objects.find((o) => o.name.endsWith('B'))).toBeDefined();
+      expect(store().objects.find((o) => /B \(.\+\)$/.test(o.name))).toBeDefined();
     } else {
       expect(c.A[i]).toBeLessThan(c.B[i]);
     }
@@ -56,7 +56,7 @@ describe('nombres de corte y resta', () => {
     const res = await run('plane_cut', { id: b.id, axis: 'z', offset: 0, connectorType: 'none', keepMode: 'positive' });
     expect(res.ok, JSON.stringify(res)).toBe(true);
     const [half] = store().objects;
-    expect(half.name.endsWith('B')).toBe(true);
+    expect(/B \(.\+\)$/.test(half.name)).toBe(true);
     // Contrato vigente (planeCutDialogAxes, qa6Bus): la mitad conservada queda de su lado del plano.
     expect(half.position[1]).toBeCloseTo(20, 4);
   });

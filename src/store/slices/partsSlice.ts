@@ -13,6 +13,7 @@ import * as engine from '../../engine';
 import * as ops from '../../core/operations';
 import { keepClearOfOthers, placePartsInFreeSpot, separateCutHalves } from '../../core/scene/freeSpot';
 import type { SceneChange } from '../../core/operations/operationTypes';
+import { userAxisLabel } from '../../core/scene/displayAxes';
 import { resolveStructureTarget } from '../../core/scene/sceneRules';
 import { attachNotesToParts, buildGroupNotes } from '../../core/scene/splitGroupNotes';
 import { segmentationMatchesMesh } from '../../engine/segmentationGuards';
@@ -70,7 +71,11 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
           activeTool: state.activeTool === 'cut' ? 'select' : state.activeTool,
           cutPreview: { ...state.cutPreview, active: false, objectId: null },
         }));
-        get().addToast(tr('toast.cutDone'), 'success');
+        const axis = userAxisLabel(options.axis);
+        get().addToast(
+          tr('toast.cutDone', { a: tr('cut.half.a', { axis }), b: tr('cut.half.b', { axis }) }),
+          'success',
+        );
         if (!separated.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
         return cleared.added;
       });

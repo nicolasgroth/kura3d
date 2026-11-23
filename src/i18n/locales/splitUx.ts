@@ -80,14 +80,6 @@ const UX = {
     hi: 'पतला कनेक्टर जोड़ते समय या उपयोग में टूट सकता है। “मज़बूत करें और फिर विभाजित करें” इसे अनुशंसित व्यास तक बड़ा करता है (विभाजन पूर्ववत करके दोहराता है)। आप “स्वचालित आकार (अनुशंसित)” से भी फिर विभाजित कर सकते हैं।',
     zh: '较细的连接件在装配或使用时可能断裂。“加固并重新分割”会把它放大到推荐直径（撤销分割后重做）。也可以用“自动尺寸（推荐）”重新分割。',
   },
-  'splitUx.weak.adviceLimit': {
-    es: 'Ya se reforzó, pero un conector más grande dejaría la pared demasiado delgada. Pega estas caras con adhesivo, imprime con más perímetros o mueve el plano de corte a una sección más ancha.',
-    en: 'It was already reinforced, but a larger connector would leave the wall too thin. Glue these faces, print with more perimeters or move the cut plane to a wider section.',
-    de: 'Es wurde bereits verstärkt, aber ein größerer Verbinder würde die Wand zu dünn machen. Klebe diese Flächen, drucke mit mehr Wänden oder verschiebe die Schnittebene an einen breiteren Querschnitt.',
-    fr: 'Déjà renforcé, mais un connecteur plus grand laisserait la paroi trop fine. Colle ces faces, imprime avec plus de périmètres ou déplace le plan de coupe vers une section plus large.',
-    hi: 'पहले ही मज़बूत किया जा चुका है, पर बड़ा कनेक्टर दीवार को बहुत पतला कर देगा। इन सतहों को चिपकाएँ, अधिक परिधि से प्रिंट करें या कट प्लेन को चौड़े भाग में ले जाएँ।',
-    zh: '已经加固过，但更大的连接件会使壁过薄。请用胶水粘合这些面，增加打印外壳层数，或把切割面移到更宽的截面。',
-  },
   'splitUx.weak.short': {
     es: 'Débil · Ø{measured}, recomendado Ø{recommended}', en: 'Weak · Ø{measured}, recommended Ø{recommended}', de: 'Schwach · Ø{measured}, empfohlen Ø{recommended}',
     fr: 'Fragile · Ø{measured}, recommandé Ø{recommended}', hi: 'कमज़ोर · Ø{measured}, अनुशंसित Ø{recommended}', zh: '较弱 · Ø{measured}，推荐 Ø{recommended}',
@@ -183,9 +175,6 @@ const UX = {
   },
 
   // --- Armado ---
-  'splitUx.assembled.badge': {
-    es: 'Armado', en: 'Assembled', de: 'Zusammengebaut', fr: 'Assemblé', hi: 'जुड़ा हुआ', zh: '已装配',
-  },
   'splitUx.assembled.status': {
     es: 'Armado: usa «Preparar para imprimir» para ver las placas', en: 'Assembled: use "Prepare to print" to see the plates',
     de: 'Zusammengebaut: Mit „Zum Drucken vorbereiten“ siehst du die Platten', fr: 'Assemblé : utilise « Préparer pour imprimer » pour voir les plateaux',

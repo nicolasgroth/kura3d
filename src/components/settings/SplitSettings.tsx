@@ -74,6 +74,7 @@ export const SplitSettings: React.FC<{ idPrefix: string }> = ({ idPrefix }) => {
               title={t(language, 'split.size.help')}
               min={2 * OPERATION_RANGES.cut.connectorSize.min}
               max={100}
+              strictRange
               step={1}
               precision={1}
               value={2 * prefs.connectorSize}
@@ -91,6 +92,7 @@ export const SplitSettings: React.FC<{ idPrefix: string }> = ({ idPrefix }) => {
           title={t(language, 'settings.split.toleranceHelp')}
           min={range.min}
           max={range.max}
+          strictRange
           step={0.05}
           precision={2}
           value={prefs.tolerance}
