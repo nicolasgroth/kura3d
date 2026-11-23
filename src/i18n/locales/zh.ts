@@ -21,6 +21,7 @@ import { A11YUX_ZH } from './a11yUx';
 import { SPLITUX_ZH } from './splitUx';
 import { FIX10_ZH } from './fix10';
 import { OPNOTES_ZH } from './operationNotes';
+import { IMPORTREAL_ZH } from './importReal';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -39,6 +40,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...SPLITUX_ZH,
   ...FIX10_ZH,
   ...OPNOTES_ZH,
+  ...IMPORTREAL_ZH,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',

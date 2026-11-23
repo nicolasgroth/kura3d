@@ -21,6 +21,7 @@ import { A11YUX_DE } from './a11yUx';
 import { SPLITUX_DE } from './splitUx';
 import { FIX10_DE } from './fix10';
 import { OPNOTES_DE } from './operationNotes';
+import { IMPORTREAL_DE } from './importReal';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -39,6 +40,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...SPLITUX_DE,
   ...FIX10_DE,
   ...OPNOTES_DE,
+  ...IMPORTREAL_DE,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',

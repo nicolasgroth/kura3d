@@ -21,6 +21,7 @@ import { A11YUX_HI } from './a11yUx';
 import { SPLITUX_HI } from './splitUx';
 import { FIX10_HI } from './fix10';
 import { OPNOTES_HI } from './operationNotes';
+import { IMPORTREAL_HI } from './importReal';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -39,6 +40,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...SPLITUX_HI,
   ...FIX10_HI,
   ...OPNOTES_HI,
+  ...IMPORTREAL_HI,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',

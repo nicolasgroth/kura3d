@@ -23,6 +23,7 @@ import { placeGroupInFreeSpot, type BedSize } from '../core/scene/freeSpot';
 import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
 import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } from './splitExport';
 import { objectAncestors } from '../core/scene/groups';
+import { exportNotices, tooLargeMessage } from './modelImportNotices';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 export type ExportScope = 'selection' | 'scene';
@@ -112,8 +113,9 @@ export function sceneFootprint(objects: SceneObject[]): engine.FootprintXZ | nul
 }
 
 /** Mensaje traducido de un fallo de importación que nombra el archivo. */
-export function importErrorMessage(error: unknown, fileName: string, tr: Translate): string {
+export function importErrorMessage(error: unknown, fileName: string, tr: Translate, language: LanguageCode = 'es'): string {
   if (error instanceof engine.ModelImportError) {
+    if (error.code === 'too-large' && error.size) return tooLargeMessage(error.fileName ?? fileName, error.size, tr, language);
     const base = tr(`importError.${error.code}` as TranslationKey, { name: error.fileName ?? fileName });
     return error.detail && error.code !== 'unsupported' ? `${base.replace(/[.。।]$/, '')} (${error.detail})` : base;
   }
@@ -146,7 +148,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
       try {
         mtls.set(file.name.toLowerCase(), new TextDecoder('utf-8').decode(await file.read()));
       } catch (error) {
-        failures.push(importErrorMessage(error, file.name, tr));
+        failures.push(importErrorMessage(error, file.name, tr, get().language));
       }
     }
 
@@ -158,7 +160,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         const mtlText = /\.obj$/i.test(file.name) ? matchMtl(buffer, mtls) : undefined;
         models.push(await engine.parseModelFileAsync(file.name, buffer, { mtlText }));
       } catch (error) {
-        failures.push(importErrorMessage(error, file.name, tr));
+        failures.push(importErrorMessage(error, file.name, tr, get().language));
       }
     }
 
@@ -281,7 +283,12 @@ export function createModelIoActions(deps: ModelIoDeps) {
         filters: f.suffix === '.mtl' ? [{ name: 'Wavefront MTL', extensions: ['mtl'] }] : filters,
       }));
       const saved = await saveFileSet(entries);
-      if (saved) get().addToast(tr('toast.exported', { name: entries.map((e) => e.name).join(' + ') }), 'success');
+      if (saved) {
+        get().addToast(tr('toast.exported', { name: entries.map((e) => e.name).join(' + ') }), 'success');
+        const triangles = layoutTargets.reduce((acc, o) => acc + Math.floor(o.mesh.indices.length / 3), 0);
+        const sized = entries.filter((e) => !e.name.endsWith('.mtl')).map((e) => ({ name: e.name, bytes: e.data.byteLength }));
+        for (const notice of exportNotices(sized, triangles, tr, get().language)) get().addToast(notice, 'info');
+      }
       return saved;
     } catch (error) {
       const name = error instanceof FileSaveError ? error.fileName : fileName;

@@ -7,7 +7,7 @@
  * @license MIT
  */
 
-import { ModelImportError, type ModelImportErrorCode } from './importErrors';
+import { ModelImportError, type ImportSizeInfo, type ModelImportErrorCode } from './importErrors';
 import type { ImportedModel, ModelParseOptions } from './importTypes';
 
 export interface ModelImportRequest {
@@ -18,7 +18,7 @@ export interface ModelImportRequest {
 
 export type ModelImportResponse =
   | { ok: true; model: ImportedModel }
-  | { ok: false; code: ModelImportErrorCode; detail?: string; message: string };
+  | { ok: false; code: ModelImportErrorCode; detail?: string; size?: ImportSizeInfo; message: string };
 
 /** Tiempo máximo que se espera al worker antes de terminarlo (ms). */
 export const DEFAULT_IMPORT_TIMEOUT_MS = 120_000;
@@ -50,7 +50,7 @@ export async function parseModelFileAsync(
       timer = setTimeout(() => reject(new ModelImportError('timeout', `${timeoutMs} ms`, fileName)), timeoutMs);
       worker.onmessage = ({ data }: MessageEvent<ModelImportResponse>) => {
         if (data.ok) resolve(data.model);
-        else reject(new ModelImportError(data.code, data.detail, fileName));
+        else reject(new ModelImportError(data.code, data.detail, fileName, data.size));
       };
       worker.onerror = (event) => {
         event.preventDefault();

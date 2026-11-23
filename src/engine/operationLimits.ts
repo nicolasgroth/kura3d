@@ -5,7 +5,8 @@
  * dependencias, para que el motor, la IA (`toolSchemas`/`toolValidation`), el Command Bus
  * (`commandSchemas`) y el servidor MCP (`mcp-server/src/schemas.ts`) apliquen los mismos números:
  * un valor fuera de rango es un error tipado en todas las capas, nunca una corrección silenciosa.
- * Los rangos de primitivas viven en `primitiveLimits.ts`.
+ * Los rangos de primitivas viven en `primitiveLimits.ts`. También fija los límites de archivos de
+ * modelo (`MODEL_IO_LIMITS`), compartidos por importación y exportación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -186,6 +187,27 @@ export const OPERATION_DEFAULTS = {
     prefTolerance: 0.25,
     prefConnectorSize: 'auto',
   },
+} as const;
+
+/** Triángulos máximos de un archivo de modelo (importación) y referencia del aviso al exportar. */
+const MODEL_MAX_TRIANGLES = 12_000_000;
+
+/**
+ * Límites de lectura/escritura de modelos: fuente única para que lo que la app exporta se pueda
+ * volver a importar. El tamaño de archivo sale del formato más voluminoso que la app escribe por
+ * triángulo (STL binario: 84 bytes de cabecera + 50 por triángulo), así que un STL exportado con
+ * hasta `maxTriangles` siempre se puede reabrir. Memoria: leer el máximo pide del orden de
+ * 600 MB del archivo + ~36 B/triángulo de vértices sin soldar + la malla soldada (~1,5 GB pico).
+ */
+export const MODEL_IO_LIMITS = {
+  maxTriangles: MODEL_MAX_TRIANGLES,
+  maxFileBytes: 84 + 50 * MODEL_MAX_TRIANGLES,
+  /** Bytes descomprimidos de un 3MF (el XML pesa ~65 B/triángulo: unos 8 M triángulos). */
+  maxUncompressedBytes: 512 * 1024 * 1024,
+  /** Coordenada absoluta máxima en mm (1 km): más allá es un vértice suelto o una escala errada. */
+  maxAbsCoordinateMm: 1_000_000,
+  /** Al exportar, sobre este tamaño se avisa: varios laminadores y sitios de modelos rechazan archivos así. */
+  exportWarnBytes: 100 * 1024 * 1024,
 } as const;
 
 /** Tope duro de piezas de "dividir para imprimir" con `maxPieces: 'auto'`. */

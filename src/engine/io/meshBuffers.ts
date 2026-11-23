@@ -10,6 +10,7 @@
 
 import type { MeshData } from '../../types/kura';
 import { computeVertexNormals } from '../manifoldKernel';
+import { MODEL_IO_LIMITS } from '../operationLimits';
 import { ModelImportError } from './importErrors';
 
 /** Arreglo Float32 que crece por duplicación (evita `number[]` en mallas grandes). */
@@ -95,10 +96,17 @@ export function rgbToHex(r: number, g: number, b: number, bytes = false): string
   return `#${to(r)}${to(g)}${to(b)}`;
 }
 
-/** Comprueba que todas las coordenadas sean finitas. */
-export function assertFinite(positions: Float32Array): void {
+/**
+ * Comprueba que todas las coordenadas sean finitas y estén dentro de ±`maxAbs` mm (un vértice en 1e30
+ * es un vértice suelto o una escala errada: rompería el análisis y la colocación sin avisar).
+ */
+export function assertFinite(positions: Float32Array, maxAbs: number = MODEL_IO_LIMITS.maxAbsCoordinateMm): void {
   for (let i = 0; i < positions.length; i++) {
-    if (!Number.isFinite(positions[i])) throw new ModelImportError('non-finite');
+    const v = positions[i];
+    if (v > maxAbs || v < -maxAbs) {
+      throw new ModelImportError('out-of-range', `vértice ${Math.floor(i / 3) + 1}: ${v.toExponential(2)} mm`);
+    }
+    if (!Number.isFinite(v)) throw new ModelImportError('non-finite');
   }
 }
 
