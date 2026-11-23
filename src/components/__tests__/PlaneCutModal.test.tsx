@@ -54,7 +54,7 @@ describe('PlaneCutModal', () => {
     expect(panel.getAttribute('aria-modal')).toBe('false');
     const offsetInput = screen.getByLabelText(`${t('es', 'dialog.cut.offset')} (mm)`) as HTMLInputElement;
     act(() => emitCutPlaneDrag(7.5));
-    await waitFor(() => expect(offsetInput.value).toBe('7.5'));
+    await waitFor(() => expect(offsetInput.value).toBe('7,5'));
     act(() => emitCutPlaneDrag(99)); // se limita a la pieza
     await waitFor(() => expect(offsetInput.value).toBe('10'));
     fireEvent.keyDown(document.body, { key: 'ArrowDown' });

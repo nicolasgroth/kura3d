@@ -14,7 +14,7 @@ import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { formatLocaleNumber } from '../i18n/numberLocale';
-import type { UnitSystem } from '../types/kura';
+import type { LanguageCode, UnitSystem } from '../types/kura';
 import { evaluateExpression, unitFromSuffix, type ExpressionFailure } from '../utils/numericExpression';
 import '../styles/precisionInput.css';
 
@@ -89,10 +89,10 @@ function clampAndClean(raw: number, min?: number, max?: number, precision = 4): 
 }
 
 /** Formatea el número sin ceros finales innecesarios para lectura rápida CAD. */
-function formatDisplayValue(val: number, precision: number): string {
+function formatDisplayValue(val: number, precision: number, language: LanguageCode): string {
   if (!Number.isFinite(val)) return '0';
   const rounded = Number(val.toFixed(precision));
-  return String(Object.is(rounded, -0) ? 0 : rounded);
+  return formatLocaleNumber(language, Object.is(rounded, -0) ? 0 : rounded, { maxFrac: Math.max(precision, 0) });
 }
 
 /** Calcula el multiplicador de precisión según teclas modificadoras activas. */
@@ -138,7 +138,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   // Estado local del texto mientras el usuario escribe manualmente sin perder formato intermedio (ej. "-", "12.")
   const [isFocused, setIsFocused] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
-  const [draft, setDraft] = useState<string>(() => formatDisplayValue(value, precision));
+  const [draft, setDraft] = useState<string>(() => formatDisplayValue(value, precision, language));
   const [invalid, setInvalid] = useState<ExpressionFailure | 'range' | null>(null);
   const errorId = useId();
   const activeUnit = unit === undefined ? unitFromSuffix(suffix) : unit;
@@ -163,7 +163,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   // Sincroniza el texto mostrado cuando el valor cambia externamente (gizmos, Undo/Redo, escala proporcional)
   useEffect(() => {
     if (!isFocused && !invalid) {
-      setDraft(formatDisplayValue(value, precision));
+      setDraft(formatDisplayValue(value, precision, language));
     }
   }, [value, precision, isFocused, invalid]);
 
@@ -193,12 +193,12 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
           const parsed = evaluateExpression(text, { unit: unitRef.current });
           const base = parsed.ok ? parsed.value : cur.value;
           const next = clampAndClean(base + delta, cur.min, cur.max, cur.precision);
-          return formatDisplayValue(next, cur.precision);
+          return formatDisplayValue(next, cur.precision, language);
         });
         return;
       }
       const next = clampAndClean(cur.value + delta, cur.min, cur.max, cur.precision);
-      setDraft(formatDisplayValue(next, cur.precision));
+      setDraft(formatDisplayValue(next, cur.precision, language));
       cur.onChange(next, {
         shiftKey: modSource.shiftKey,
         ctrlKey: modSource.ctrlKey,
@@ -248,14 +248,14 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
       } else if (parsed.ok) {
         setInvalid(null);
         const clamped = clampAndClean(parsed.value, min, max, precision);
-        setDraft(formatDisplayValue(clamped, precision));
+        setDraft(formatDisplayValue(clamped, precision, language));
         if (clamped !== value) {
           onChange(clamped, modifiers);
         }
         onCommit?.(clamped);
       } else if (parsed.reason === 'empty') {
         setInvalid(null);
-        setDraft(formatDisplayValue(value, precision));
+        setDraft(formatDisplayValue(value, precision, language));
       } else {
         // No se revierte en silencio: se conserva el texto, se marca el error y Escape restaura.
         setInvalid(parsed.reason);
@@ -268,7 +268,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
     setIsFocused(true);
     initialFocusValueRef.current = value;
     draftEditedRef.current = false;
-    if (!invalid) setDraft(formatDisplayValue(value, precision));
+    if (!invalid) setDraft(formatDisplayValue(value, precision, language));
     e.currentTarget.select();
   };
 
@@ -307,14 +307,14 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
       e.stopPropagation();
       setInvalid(null);
       escapedRef.current = true;
-      setDraft(formatDisplayValue(initialFocusValueRef.current, precision));
+      setDraft(formatDisplayValue(initialFocusValueRef.current, precision, language));
       if (commitOnBlur) {
         draftEditedRef.current = false;
         inputRef.current?.blur();
         return;
       }
       const prev = clampAndClean(initialFocusValueRef.current, min, max, precision);
-      setDraft(formatDisplayValue(prev, precision));
+      setDraft(formatDisplayValue(prev, precision, language));
       if (prev !== value) {
         onChange(prev);
       }
@@ -357,7 +357,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
           : rawNext;
 
     draftEditedRef.current = false;
-    setDraft(formatDisplayValue(clamped, precision));
+    setDraft(formatDisplayValue(clamped, precision, language));
     onChange(clamped, {
       shiftKey: e.shiftKey,
       ctrlKey: e.ctrlKey || e.metaKey,
@@ -382,7 +382,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
     if (disabled || defaultValue === undefined) return;
     const clamped = clampAndClean(defaultValue, min, max, precision);
     draftEditedRef.current = false;
-    setDraft(formatDisplayValue(clamped, precision));
+    setDraft(formatDisplayValue(clamped, precision, language));
     onChange(clamped);
     onCommit?.(clamped);
   };
@@ -449,10 +449,14 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
         id={id}
         type="text"
         inputMode="decimal"
+        role="spinbutton"
+        aria-valuenow={Number.isFinite(value) ? value : undefined}
+        aria-valuemin={typeof min === 'number' ? min : undefined}
+        aria-valuemax={typeof max === 'number' ? max : undefined}
         className="kura-precision-field"
         disabled={disabled}
         data-commit-on-blur={commitOnBlur || undefined}
-        value={isFocused || invalid ? draft : formatDisplayValue(value, precision)}
+        value={isFocused || invalid ? draft : formatDisplayValue(value, precision, language)}
         aria-label={ariaLabel ?? prefix}
         aria-invalid={invalid ? true : undefined}
         aria-describedby={invalid ? errorId : undefined}

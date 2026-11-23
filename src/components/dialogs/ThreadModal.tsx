@@ -9,6 +9,7 @@
 import React, { useId, useState } from 'react';
 import { Bolt } from 'lucide-react';
 import { t } from '../../i18n';
+import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
@@ -134,7 +135,7 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
                       applyPitch(preset.pitchMm);
                     }}
                   >
-                    {preset.label} ({preset.pitchMm})
+                    {preset.label} ({formatLocaleNumber(language, preset.pitchMm)})
                   </button>
                 );
               })}
