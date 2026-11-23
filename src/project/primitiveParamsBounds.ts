@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import { PRIMITIVE_PARAM_RANGES, primitiveRangeFor, type PrimitiveRangeKey } from '../engine/primitiveLimits';
+import { EDGE_SCOPES_BY_TYPE, PRIMITIVE_PARAM_RANGES, primitiveRangeFor, type PrimitiveRangeKey } from '../engine/primitiveLimits';
 import type { SceneObject } from '../types/kura';
 
 type PrimitiveParams = NonNullable<SceneObject['primitiveParams']>;
@@ -22,6 +22,11 @@ const isRangeKey = (key: string): key is PrimitiveRangeKey => Object.hasOwn(PRIM
  */
 export function boundPrimitiveParams(type: string | undefined, params: PrimitiveParams): PrimitiveParams {
   let out: Record<string, unknown> | null = null;
+  // Un alcance de borde que la primitiva no admite se descarta: vale el de por defecto.
+  if (params.edgeScope !== undefined && !(EDGE_SCOPES_BY_TYPE[type ?? ''] ?? []).includes(params.edgeScope)) {
+    out = { ...params };
+    delete out.edgeScope;
+  }
   for (const [key, value] of Object.entries(params)) {
     if (typeof value !== 'number' || !isRangeKey(key)) continue;
     const range = primitiveRangeFor(type ?? '', key);
