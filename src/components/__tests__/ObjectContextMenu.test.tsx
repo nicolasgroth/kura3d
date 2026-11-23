@@ -28,6 +28,17 @@ function setup(isHole = false) {
   );
 }
 
+/**
+ * Abre el submenú del ítem enfocado y espera a que el foco pase a su primer ítem.
+ * El submenú toma el foco en el siguiente cuadro de animación: sin esta espera, la tecla siguiente
+ * puede llegar al menú padre (pasa en máquinas lentas, como las del CI).
+ */
+async function openSub(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  const before = document.activeElement;
+  await user.keyboard('{ArrowRight}');
+  await waitFor(() => expect(document.activeElement).not.toBe(before));
+}
+
 describe('ObjectContextMenu', () => {
   beforeEach(() => onClose.mockClear());
 
@@ -49,7 +60,7 @@ describe('ObjectContextMenu', () => {
     setup();
     const trigger = screen.getByRole('menuitem', { name: /Agregar pieza$/ });
     expect(document.activeElement).toBe(trigger);
-    await user.keyboard('{ArrowRight}');
+    await openSub(user);
     const sub = await screen.findByRole('menu', { name: /Agregar pieza$/ });
     const items = within(sub).getAllByRole('menuitem').map((i) => i.textContent);
     expect(items).toEqual(['Importar STL/3MF…', 'Cubo', 'Cilindro', 'Disco', 'Esfera', 'Cono', 'Toroide', 'Prisma', 'Tubo hueco', 'Texto 3D', 'SVG…']);
@@ -69,7 +80,7 @@ describe('ObjectContextMenu', () => {
     setup();
     // Teclado: → abre el submenú, ↓↓ llega a Esfera y Enter la elige.
     screen.getByRole('menuitem', { name: /Agregar pieza negativa/ }).focus();
-    await user.keyboard('{ArrowRight}');
+    await openSub(user);
     await screen.findByRole('menuitem', { name: 'Esfera' });
     await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}{Enter}');
     expect(add).toHaveBeenCalledWith('sphere', 'negative', 'a');
@@ -80,7 +91,7 @@ describe('ObjectContextMenu', () => {
     const user = userEvent.setup();
     setup();
     screen.getByRole('menuitem', { name: /Cambiar tipo/ }).focus();
-    await user.keyboard('{ArrowRight}');
+    await openSub(user);
     const solid = await screen.findByRole('menuitemradio', { name: /Sólido/ });
     const neg = screen.getByRole('menuitemradio', { name: /Negativo/ });
     expect(solid.getAttribute('aria-checked')).toBe('true');
@@ -101,9 +112,10 @@ describe('ObjectContextMenu', () => {
     const user = userEvent.setup();
     setup();
     screen.getByRole('menuitem', { name: /^Transformar/ }).focus();
-    await user.keyboard('{ArrowRight}');
+    await openSub(user);
     await screen.findByRole('menuitem', { name: /^Espejar/ });
-    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{ArrowRight}');
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}');
+    await openSub(user);
     const sub = await screen.findByRole('menu', { name: /^Espejar/ });
     expect(within(sub).getAllByRole('menuitem').map((i) => i.textContent)).toEqual(['Eje X', 'Eje Y', 'Eje Z']);
   });
@@ -129,13 +141,11 @@ describe('ObjectContextMenu: ideas de los laminadores', () => {
     const user = userEvent.setup();
     setup();
     screen.getByRole('menuitem', { name: /^Transformar/ }).focus();
-    await user.keyboard('{ArrowRight}');
+    await openSub(user);
     const sub = await screen.findByRole('menu', { name: /^Transformar/ });
     expect(within(sub).getAllByRole('menuitem').map((i) => i.textContent?.replace(/[MRS]$/, ''))).toEqual([
       'Mover', 'Rotar', 'Escalar', 'Espejar', 'Restablecer rotación', 'Restablecer escala',
     ]);
-    // El submenú enfoca su primer ítem tras abrirse: se espera ese foco antes de bajar con la flecha.
-    await waitFor(() => expect(document.activeElement).toBe(within(sub).getAllByRole('menuitem')[0]));
     await user.keyboard('{ArrowDown}{Enter}');
     expect(useKuraStore.getState().transformMode).toBe('rotate');
   });
@@ -162,7 +172,7 @@ describe('ObjectContextMenu: ideas de los laminadores', () => {
     const user = userEvent.setup();
     setup();
     screen.getByRole('menuitem', { name: /^Más/ }).focus();
-    await user.keyboard('{ArrowRight}');
+    await openSub(user);
     await screen.findByRole('menuitem', { name: /Exportar selección como un STL/ });
     await user.keyboard('{ArrowDown}{Enter}');
     expect(useKuraStore.getState().activeDialog).toBe('export');
@@ -173,7 +183,7 @@ describe('ObjectContextMenu: ideas de los laminadores', () => {
     const user = userEvent.setup();
     setup();
     screen.getByRole('menuitem', { name: /^Más/ }).focus();
-    await user.keyboard('{ArrowRight}');
+    await openSub(user);
     await screen.findByRole('menuitem', { name: /Ocultar \(no se exporta\)/ });
     await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
     expect(useKuraStore.getState().objects.find((o) => o.id === 'a')?.visible).toBe(false);
