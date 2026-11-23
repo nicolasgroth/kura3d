@@ -98,9 +98,14 @@ class ByteChunks {
   }
 }
 
-const num = (n: number) => {
+/** Número con hasta 5 decimales, sin ceros finales (sin expresiones regulares: va por cada coordenada). */
+export const num = (n: number) => {
   const s = n.toFixed(5);
-  return s.includes('.') ? s.replace(/0+$/, '').replace(/\.$/, '') : s;
+  if (s.indexOf('.') < 0) return s;
+  let end = s.length;
+  while (s.charCodeAt(end - 1) === 48) end--; // '0'
+  if (s.charCodeAt(end - 1) === 46) end--; // '.'
+  return end === s.length ? s : s.slice(0, end);
 };
 
 /**
@@ -251,9 +256,15 @@ export function exportSceneTo3MF(
       'Metadata/model_settings.config': strToU8(settings),
       ...sceneMeta,
     },
-    { mtime: ZIP_FIXED_MTIME },
+    { mtime: ZIP_FIXED_MTIME, level: ZIP_LEVEL },
   );
 }
+
+/**
+ * Nivel de deflate. Con DAFFY (290 MB de XML) el nivel 6 de fflate tardaba 23,7 s y daba 52,8 MB; el
+ * nivel 1 tarda 5,9 s y da 57,5 MB (+9 %). El 3MF sigue siendo ZIP/deflate estándar para los laminadores.
+ */
+const ZIP_LEVEL = 1;
 
 /** Fecha de las entradas del ZIP (la mínima del formato DOS): salida determinista. */
 const ZIP_FIXED_MTIME = new Date(1980, 0, 1, 0, 0, 0);
