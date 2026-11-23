@@ -59,6 +59,14 @@ const REALES_MOTOR_TABLE = {
     'सुधारी और बंद की गई मेश: {total} में से {closed} ({pieces} भाग)। बंद नहीं हो सकीं: {list}; इंस्पेक्टर में देखें।',
     '已修复并封闭的网格:{closed}/{total}({pieces} 个零件)。无法封闭:{list};请在检查器中查看。',
   ],
+  'realesMotor.recoveryPending': [
+    'Borrador pendiente: operación en curso',
+    'Draft pending: operation in progress',
+    'Entwurf ausstehend: Vorgang läuft',
+    'Brouillon en attente : opération en cours',
+    'ड्राफ़्ट बाकी: कार्य चल रहा है',
+    '草稿待保存:操作进行中',
+  ],
   'realesMotor.repairAll': ['Reparar todas', 'Repair all', 'Alle reparieren', 'Tout réparer', 'सभी सुधारें', '全部修复'],
   'realesMotor.unitDoubt': [
     '«{name}» mide {size} mm en su lado mayor: puede que el archivo esté en otra unidad.',
