@@ -63,10 +63,15 @@ function roughCount(cells: Array<{ cell: Cell; m: Manifold }>, plan: OccupancyIn
  * Conteo de piezas y uniones que dará la ejecución del plan. No consume `m`.
  * `minFragmentMm3` debe ser el mismo de la ejecución para que el conteo coincida.
  */
-export function measureOccupancy(wasm: ManifoldToplevel, m: Manifold, plan: OccupancyInput, minFragmentMm3: number): SplitPlanOccupancy {
+export function measureOccupancy(
+  wasm: ManifoldToplevel, m: Manifold, plan: OccupancyInput, minFragmentMm3: number,
+  /** Recibe las celdas recién cortadas (sin consumirlas), p. ej. para reutilizarlas en la ejecución. */
+  onCells?: (cells: Array<{ cell: Cell; m: Manifold }>) => void,
+): SplitPlanOccupancy {
   const { planesBy, bounds } = gridOf(plan);
   const counts = [plan.counts.x, plan.counts.y, plan.counts.z];
   const cells = cutIntoCells(m.translate([0, 0, 0]), planesBy);
+  onCells?.(cells);
   if (counts[0] * counts[1] * counts[2] > OCCUPANCY_EXACT_MAX_CELLS) return roughCount(cells, plan);
   const discard: EngineWarning[] = [];
   const { bodies, byCell, cache } = buildBodies(wasm, cells, bounds, { minFragmentMm3, usable: plan.usableMm, codeOf: () => '' }, discard);

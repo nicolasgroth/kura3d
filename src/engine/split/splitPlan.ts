@@ -16,7 +16,9 @@ import { EngineError, engineWarning } from '../engineErrors';
 import { initManifoldEngine, meshDataToManifold } from '../manifoldKernel';
 import { OPERATION_DEFAULTS, SPLIT_HARD_MAX_PIECES } from '../operationLimits';
 import { applyTransformToMesh } from '../primitives';
+import { gridOf } from './splitCells';
 import { measureOccupancy } from './splitOccupancy';
+import { cutKey, rememberCut } from './splitCutCache';
 import {
   AXIS_INDEX,
   connectorMargin,
@@ -369,7 +371,11 @@ export async function planBedSplit(obj: SceneObject, bed: SplitBed, options: Bed
     const plan = planFromManifold(m, bed, options);
     const occupancy = plan.fitsWithoutCuts || options.countOccupancy === false
       ? undefined
-      : measureOccupancy(wasm, m, { ...plan, protrusionMm: connectorProtrusion(plan.connector) }, options.minFragmentMm3 ?? SPLIT_DEFAULTS.minFragmentMm3);
+      : measureOccupancy(
+        wasm, m, { ...plan, protrusionMm: connectorProtrusion(plan.connector) }, options.minFragmentMm3 ?? SPLIT_DEFAULTS.minFragmentMm3,
+        // La ejecución del mismo plan reutiliza este corte (`splitCutCache.ts`)
+        (cells) => rememberCut(cutKey(world, obj.color, gridOf(plan).bounds), m.volume(), cells),
+      );
     return { ...plan, ...(occupancy ? { occupancy } : {}), elapsedMs: performance.now() - t0 };
   } finally {
     m.delete();

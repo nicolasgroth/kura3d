@@ -362,6 +362,8 @@ export interface BedSplitResult {
   assembly?: AssemblyReport;
   warnings: EngineWarning[];
   elapsedMs: number;
+  /** Milisegundos por etapa (`cut`, `bodies`, `joints`, `preAssembly`, `finish`, `settle`, `dowels`). */
+  stageMs?: Record<string, number>;
 }
 
 /** Ubicación de impresión de una pieza. */

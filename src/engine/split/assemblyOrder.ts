@@ -15,7 +15,8 @@
  *
  * Arreglo (`greedyFix`): construcción voraz desde la base; en cada paso elige la pieza y dirección
  * libres de barrido que obligan a pegar menos uniones, y pasa esas uniones a "para pegar". Cuando cada
- * pieza tiene a lo más un vecino por eje (rejillas) alcanza el mínimo: uniones − (piezas − 1).
+ * pieza tiene a lo más un vecino por eje (rejillas 2×2×2) alcanza el mínimo: uniones − (piezas − 1); con
+ * hasta `EXACT_FIX_MAX_PARTS` piezas, solo pegar usa además el óptimo exacto (`assemblyOrderExact.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -25,6 +26,7 @@ import { alternativeType, jointDirections, restricts } from './assemblyConnector
 import type { SplitConnectorType } from './splitTypes';
 import type { AssemblyBlocked, AssemblyDirection, AssemblyJointInput, AssemblyStep } from './assemblyTypes';
 import { DIRECTIONS } from './assemblyVoxels';
+import { exactGlueFix } from './assemblyOrderExact';
 
 export interface OrderInput {
   codes: string[];
@@ -151,7 +153,20 @@ export function greedyFix(
   input: OrderInput,
   allowChange = false,
   allowSurface = true,
-): { glued: Set<string>; changed: Map<string, SplitConnectorType>; blocked: AssemblyBlocked[]; order: AssemblyStep[] } {
+): FixOutcome {
+  const greedy = greedyBuild(input, allowChange, allowSurface);
+  // Solo pegar y pocas piezas: el óptimo exacto, si pega menos (p. ej. 16 en vez de 17 de 33 en 3×2×3)
+  if (allowChange) return greedy;
+  const exact = exactGlueFix(input);
+  if (exact && (greedy.blocked.length > 0 || exact.glued.size < greedy.glued.size)) {
+    return { glued: exact.glued, changed: new Map(), blocked: [], order: exact.order };
+  }
+  return greedy;
+}
+
+type FixOutcome = { glued: Set<string>; changed: Map<string, SplitConnectorType>; blocked: AssemblyBlocked[]; order: AssemblyStep[] };
+
+function greedyBuild(input: OrderInput, allowChange: boolean, allowSurface: boolean): FixOutcome {
   const n = input.codes.length;
   // Copias: un cambio de tipo modifica las direcciones de las evaluaciones siguientes
   const own = input.joints.map((j) => ({ ...j }));

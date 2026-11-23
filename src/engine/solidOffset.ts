@@ -2,7 +2,9 @@
  * @file src/engine/solidOffset.ts
  * @description Offset interior real (erosión) de sólidos Manifold con pared uniforme:
  * se evalúa la distancia con signo exacta a la malla (`meshDistance.ts`) y se extrae la
- * isosuperficie `d = espesor` con `Manifold.levelSet` (tetraedros marchantes sobre grilla BCC).
+ * isosuperficie `d = espesor` con `Manifold.levelSet` (tetraedros marchantes sobre grilla BCC), con
+ * los vértices proyectados al nivel exacto (`hollowLevelProjection.ts`) para que la rejilla gruesa de
+ * una pieza grande no engruese la pared.
  * Incluye la medición del espesor mínimo/máximo de pared resultante para detectar
  * perforaciones. Usado por el ahuecado y por el núcleo de los moldes.
  *
@@ -16,6 +18,7 @@
 
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import { buildMeshDistanceField, type MeshDistanceField } from './meshDistance';
+import { snapToLevel } from './hollowLevelProjection';
 import { deleteOnThrow, useThenDelete } from './wasmScope';
 
 /** Resultado del offset interior. */
@@ -139,16 +142,19 @@ export function offsetGridFor(size: readonly number[], thickness: number, sample
   // La simplificación posterior puede mover la superficie hasta `simplifyTol`.
   const simplifyTolMm = Math.min(0.03, thickness * 0.02);
   const worstMarginMm = Math.min(thickness * 0.5, (gridEdgeMm * gridEdgeMm) / (6 * thickness)) + simplifyTolMm;
-  return { gridEdgeMm, simplifyTolMm, worstMarginMm };
+  // Con los vértices proyectados al nivel exacto sobre la malla refinada ×4 (`hollowLevelProjection.ts`)
+  // solo queda la flecha de cuerda de media arista: (arista/2)²/(8·espesor)
+  const expectedMarginMm = Math.min(thickness * 0.5, (gridEdgeMm * gridEdgeMm) / (32 * thickness)) + simplifyTolMm;
+  return { gridEdgeMm, simplifyTolMm, worstMarginMm, expectedMarginMm };
 }
 
 /**
  * Pared que puede salir al ahuecar una pieza no convexa de caja `size` (mm), antes de aplicar: con
- * rejilla gruesa crece hasta `thickness + worstMarginMm`. `coarse` si supera el pedido en más de 10 %.
+ * rejilla gruesa crece hasta `thickness + expectedMarginMm`. `coarse` si supera el pedido en más de 10 %.
  */
 export function estimateHollowWall(size: readonly number[], thickness: number) {
   const g = offsetGridFor(size, thickness);
-  const maxWallMm = thickness + g.worstMarginMm;
+  const maxWallMm = thickness + g.expectedMarginMm;
   return { gridEdgeMm: g.gridEdgeMm, maxWallMm, coarse: maxWallMm > thickness * 1.1 };
 }
 
@@ -196,8 +202,12 @@ export function inwardOffset(
       gridEdge,
       level
     );
+    // Lleva los vértices a la isosuperficie exacta (la interpolación lineal de la grilla gruesa los deja corto o largo)
+    // Solo con rejilla gruesa (flecha del peor caso > 5 % de la pared): en piezas chicas la grilla ya es fina
+    const coarse = (gridEdge * gridEdge) / (6 * thickness) > 0.05 * thickness;
+    const snapped = coarse ? useThenDelete(raw, (m) => snapToLevel(m, field, level, gridEdge)) : raw;
     // Funde triángulos coplanares de la grilla sin mover la superficie más que una fracción del espesor
-    return useThenDelete(raw, (m) => m.simplify(simplifyTol));
+    return useThenDelete(snapped, (m) => m.simplify(simplifyTol));
   };
 
   // Margen adaptativo: un margen fijo para el peor caso (cuerdas sobre zonas cóncavas de la
