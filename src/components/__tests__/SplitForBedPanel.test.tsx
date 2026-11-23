@@ -94,7 +94,7 @@ describe('SplitForBedPanel', () => {
     expect(screen.getByTestId('split-piece-count').textContent).toContain('5');
     const text = document.body.textContent ?? '';
     // Sin medir el armado, las uniones con conector son un máximo (el armado puede dejar alguna para pegar).
-    expect(text).toContain(t('es', 'split.sum.jointsUpToValue', { count: 4, with: 3 }));
+    expect(text).toContain(t('es', 'ux7.split.jointsUpTo', { count: 4, with: 3 }));
     ready({ ...PLAN, assemblyPreview: { joints: 4, glueJoints: 1 } });
     expect(document.body.textContent).toContain(t('es', 'split.sum.jointsGlueValue', { count: 4, with: 3, glue: 1 }));
     expect(text).toContain('solo para pegar');
