@@ -179,6 +179,14 @@ export const OPERATION_DEFAULTS = {
     /** Ángulo de pliegue del relleno por región; el visor suaviza con el mismo (`CREASE_ANGLE_DEG`). */
     regionAngleDeg: 35,
   },
+  /**
+   * Ahuecar: cavidades que quedan macizas. Una malla autointersecada (bustos de terceros) deja, además
+   * de la cavidad principal, decenas de bolsas mínimas que no alivianan nada y con drenaje recibirían
+   * cada una su orificio. Se descarta la que mide menos de `minCavityFraction` del volumen de la mayor
+   * (0,5 %) o cuya caja es más angosta que `minCavityNozzleMm` en algún eje (no le cabe una esfera del
+   * diámetro de una boquilla típica de 0,4 mm: el laminador la rellena igual).
+   */
+  hollow: { minCavityFraction: 0.005, minCavityNozzleMm: 0.4 },
   split: { marginMm: 5, maxPieces: 64, shiftWindow: 0.15, labelDepthMm: 0.4, labelMinHeightMm: 4, lapHeightMm: 6, minFragmentMm3: 2000, minWallForConnectorMm: 8,
     /** Firmeza activa de las uniones: apagada por defecto en todas las rutas (app, bus y MCP); el usuario la elige. */
     reinforceWeakJoints: false,

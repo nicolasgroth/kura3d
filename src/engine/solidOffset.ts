@@ -21,6 +21,7 @@ import { buildMeshDistanceField, type MeshDistanceField } from './meshDistance';
 import { snapToLevel } from './hollowLevelProjection';
 import { consistentSignField } from './distanceSignCheck';
 import { deleteOnThrow, useThenDelete } from './wasmScope';
+import { createLevelSampleCache } from './levelSampleCache';
 
 /** Resultado del offset interior. */
 export interface InwardOffsetResult {
@@ -196,13 +197,15 @@ export function inwardOffset(
 
   const pad = thickness * 0.5;
   const { gridEdgeMm: gridEdge, simplifyTolMm: simplifyTol, worstMarginMm: worstCase } = offsetGridFor([sx, sy, sz], thickness, sampleBudget);
+  // Las extracciones del margen adaptativo usan la misma rejilla: se reutilizan sus muestras.
+  let samples = createLevelSampleCache((x, y, z, c) => field.boundedSignedDistance(x, y, z, c), gridEdge);
   const extract = (level: number): Manifold => {
     // Lipschitz: si |d − nivel| > arista de grilla, ninguna arista que toque ese punto cruza el
     // nivel, así que basta el lado correcto. Con el tope se evita recorrer todo el BVH en puntos
     // hondos (el centro de una esfera equidista de todos sus triángulos).
     const cap = level + 2 * gridEdge;
     const raw = wasm.Manifold.levelSet(
-      (p) => field.boundedSignedDistance(p[0], p[1], p[2], cap),
+      (p) => samples.sample(p[0], p[1], p[2], level, cap),
       {
         min: [bbox.min[0] + pad, bbox.min[1] + pad, bbox.min[2] + pad],
         max: [bbox.max[0] - pad, bbox.max[1] - pad, bbox.max[2] - pad],
@@ -237,6 +240,7 @@ export function inwardOffset(
     // contradictorio (autointersección que el muestreo no vio). Se cambia el signo y se reintenta.
     if (wall.minMm < 0 && field.signMode !== 'winding') {
       field = field.withSignMode('winding');
+      samples = createLevelSampleCache((x, y, z, c) => field.boundedSignedDistance(x, y, z, c), gridEdge);
       attempt = -1;
       margin = simplifyTol;
       continue;

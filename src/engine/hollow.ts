@@ -3,7 +3,8 @@
  * @description Ahuecado (hollow shell) con pared uniforme real: la cavidad es el offset
  * interior exacto (`solidOffset.ts`) calculado en unidades de mundo (respeta `obj.scale`),
  * se verifica que ninguna zona quede más delgada que el espesor pedido (pared perforada)
- * y los orificios de drenaje se ubican en el punto más bajo de cada cavidad real.
+ * y los orificios de drenaje se ubican en el punto más bajo de cada cavidad real (las bolsas
+ * diminutas quedan macizas: `hollowCavities.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -35,6 +36,7 @@ import {
   type WallThicknessStats,
 } from './solidOffset';
 import { assertHollowEffective, hollowMaxWallMm } from './hollowVerify';
+import { selectCavities } from './hollowCavities';
 
 /** Resultado detallado del ahuecado. */
 export interface HollowResult {
@@ -46,6 +48,8 @@ export interface HollowResult {
   cavityVolumeMm3: number;
   /** Cantidad de cavidades independientes (cada una recibe su drenaje). */
   cavityCount: number;
+  /** Bolsas diminutas descartadas, que quedan macizas (`OPERATION_DEFAULTS.hollow`). */
+  discardedCavities: number;
   warnings: EngineWarning[];
 }
 
@@ -133,17 +137,17 @@ export async function hollowMeshDetailed(
       warnings.push(engineWarning('HOLLOW_COARSE_GRID', { thickness: t, maxWall: hollowMaxWallMm([dx, dy, dz], t) }));
     }
 
+    // Bolsas diminutas (mallas autointersecadas): quedan macizas y sin drenaje propio.
+    const { kept: cavities, carve, discarded } = selectCavities(wasm, inner, junkVolume(outer.volume()), own);
+    if (discarded > 0) warnings.push(engineWarning('HOLLOW_POCKETS_FILLED', { count: discarded }));
+
     // Con una malla que se cruza a sí misma la resta de Manifold no es fiable (dejaba la pieza igual). La
     // cavidad está a ≥ t de toda superficie, sin cruces: la diferencia es exactamente la pieza más la
     // cavidad invertida, sin booleana.
     const carved = offset.selfIntersecting
-      ? own(joinDisjoint(wasm, [outer, own(insideOut(wasm, inner))], registry, obj.color))
-      : own(outer.subtract(inner));
+      ? own(joinDisjoint(wasm, [outer, own(insideOut(wasm, carve))], registry, obj.color))
+      : own(outer.subtract(carve));
     let result = own(withoutJunkShells(wasm, carved, outer.volume(), registry, obj.color));
-    const cavities = inner.decompose().filter((c) => {
-      own(c);
-      return Math.abs(c.volume()) > junkVolume(outer.volume());
-    });
 
     if (options.drainHole) {
       const defaultR = Math.max(0.5, Math.min(dx, dz) * 0.06);
@@ -182,15 +186,16 @@ export async function hollowMeshDetailed(
       thickness: t,
       volumeBefore: outer.volume(),
       volumeAfter: result.volume(),
-      cavityVolume: inner.volume(),
+      cavityVolume: carve.volume(),
       wall,
       expectedMaxWallMm: estimateHollowWall([dx, dy, dz], t).maxWallMm,
     });
     return {
       mesh,
       wall,
-      cavityVolumeMm3: inner.volume(),
+      cavityVolumeMm3: carve.volume(),
       cavityCount: cavities.length,
+      discardedCavities: discarded,
       warnings,
     };
   } finally {
