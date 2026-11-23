@@ -21,6 +21,7 @@ for (const gen of ['texto', 'svg', 'imagen', 'rosca', 'molde'] as const) {
       await s.createPrimitive('box', { width: 40, height: 40, depth: 40 }, { placement: 'free' });
     });
     const antes = (await cajas(page)).length;
+    const nonceAntes = await page.evaluate(() => (window as any).__s.getState().cameraRequest?.nonce ?? 0);
     await page.evaluate(
       async ({ g, svg }) => {
         const s = (window as any).__s.getState();
@@ -44,6 +45,30 @@ for (const gen of ['texto', 'svg', 'imagen', 'rosca', 'molde'] as const) {
     const boxes = await cajas(page);
     expect(boxes.length).toBeGreaterThan(antes);
     const sol = solapes(boxes);
+    expect(sol, sol.join(' | ')).toEqual([]);
+    // Encuadre: se pidió a la cámara asegurar o encuadrar lo nuevo.
+    const cam = await page.evaluate(() => (window as any).__s.getState().cameraRequest);
+    expect(cam.nonce).toBeGreaterThan(nonceAntes);
+    expect(['fit', 'ensure', 'focus']).toContain(cam.preset);
+    const nuevos = boxes.slice(antes).map((b) => b.id);
+    expect(nuevos.some((id) => (cam.ids ?? []).includes(id))).toBe(true);
+  });
+}
+
+// Mismo recorrido pero desde los diálogos reales (botón de crear), con la caja ya en escena.
+for (const dlg of ['svg', 'image', 'thread'] as const) {
+  test(`diálogo ${dlg}: lo creado no pisa la caja`, async ({ page }) => {
+    await abrir(page);
+    await page.evaluate(async () => {
+      const s = (window as any).__s.getState();
+      await s.createPrimitive('box', { width: 40, height: 40, depth: 40 }, { placement: 'free' });
+    });
+    await page.evaluate((d) => (window as any).__s.getState().setActiveDialog(d), dlg);
+    const panel = page.getByRole('dialog');
+    const boton = { svg: /Extruir SVG/, image: /Generar Malla 3D/, thread: /Crear Rosca/ }[dlg];
+    await panel.getByRole('button', { name: boton }).click();
+    await expect.poll(async () => (await cajas(page)).length, { timeout: 30000 }).toBe(2);
+    const sol = solapes(await cajas(page));
     expect(sol, sol.join(' | ')).toEqual([]);
   });
 }

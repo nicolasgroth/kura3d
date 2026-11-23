@@ -16,6 +16,7 @@ import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { useInvalidFields } from '../useInvalidFields';
 import { OperationPanel } from '../OperationPanel';
 import { PreviewButton } from '../preview/PreviewButton';
+import { MoldModeHelp, moldModeFields } from './MoldModeHelp';
 import { type MoldMode } from '../../types/kura';
 
 /** Modal 4: Generador Automático de Moldes y Contra-Moldes (Velas, Silicona, Resina). */
@@ -26,7 +27,7 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
   const objects = useKuraStore((s) => s.objects);
   const generateMoldForObject = useKuraStore((s) => s.generateMoldForObject);
 
-  const [mode, setMode] = useState<MoldMode>('silicone_master');
+  const [mode, setMode] = useState<MoldMode>('direct_2part');
   const [wallMarginMm, setWallMarginMm] = useState(6);
   const [boxWallMm, setBoxWallMm] = useState(3);
   const [splitAxis, setSplitAxis] = useState<'x' | 'z'>('x');
@@ -37,6 +38,7 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
   const failure = useOperationFailure(open);
 
   const { targetId } = useBoundOperationTarget(open, onClose);
+  const fields = moldModeFields(mode);
 
   const moldOptions = {
     mode,
@@ -95,12 +97,13 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           value={mode}
           onChange={(e) => setMode(e.target.value as MoldMode)}
         >
-          <option value="direct_1part">{t(language, 'dialog.mold.modeDirect1')}</option>
           <option value="direct_2part">{t(language, 'dialog.mold.modeDirect2')}</option>
+          <option value="direct_1part">{t(language, 'dialog.mold.modeDirect1')}</option>
           <option value="silicone_master">{t(language, 'dialog.mold.modeSilicone')}</option>
           <option value="core_cavity">{t(language, 'dialog.mold.modeCoreCavity')}</option>
         </select>
       </div>
+      <MoldModeHelp mode={mode} />
 
       <div className="kura-form-grid">
         <div className="kura-form-field">
@@ -119,7 +122,7 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           />
         </div>
 
-        {mode === 'silicone_master' && (
+        {fields.boxWall && (
           <div className="kura-form-field">
             <label htmlFor="mold-boxwall">{t(language, 'dialog.mold.boxWall')}</label>
             <PrecisionNumberInput
@@ -137,7 +140,7 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           </div>
         )}
 
-        {(mode === 'direct_2part' || mode === 'silicone_master') && (
+        {(fields.splitAxis || fields.keyTolerance) && (
           <>
             <div className="kura-form-field">
               <label htmlFor="mold-split">{t(language, 'dialog.mold.splitAxis')}</label>
@@ -170,7 +173,7 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           </>
         )}
 
-        {mode === 'core_cavity' && (
+        {fields.cavityWall && (
           <div className="kura-form-field">
             <label htmlFor="mold-cavwall">{t(language, 'dialog.mold.cavityWall')}</label>
             <PrecisionNumberInput
@@ -189,6 +192,7 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
         )}
       </div>
 
+      {fields.pourSpout && (
       <div className="kura-form-grid" style={{ alignItems: 'center' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
           <input
@@ -217,6 +221,7 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           </div>
         )}
       </div>
+      )}
     </OperationPanel>
   );
 };
