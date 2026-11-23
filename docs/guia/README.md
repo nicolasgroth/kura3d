@@ -7,6 +7,7 @@ Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una ti
 | [Primeros pasos](primeros-pasos.md) | La pantalla, los ejes, crear piezas, moverlas, girarlas, escalarlas y deshacer |
 | [Importar y reparar](importar-y-reparar.md) | Abrir STL, 3MF, OBJ o PLY; avisos de unidades; estado de la malla; reparar y simplificar |
 | [Dividir para imprimir](dividir-para-imprimir.md) | Partir una pieza más grande que tu cama, con uniones, códigos de pieza y armado |
+| [Ajustar a la impresora](ajustar-a-la-impresora.md) | Escalar, girar o dividir para que la pieza quepa en tu cama; tus propias camas |
 | [Cortar y ahuecar](cortar-y-ahuecar.md) | Corte con un plano, dónde dejar la mitad que conservas, ahuecar |
 | [Sólidos negativos y restas](solidos-negativos-y-restas.md) | Agujeros y rebajes con negativos; unir, restar e intersectar |
 | [Grupos y escena](grupos-y-escena.md) | Agrupar piezas y ordenarlas en el panel Escena |

@@ -72,6 +72,8 @@ export type FitUnavailableReason =
   | 'noOrientationFits'
   /** Girar sin escalar ya cabe: girar y escalar daría lo mismo. */
   | 'sameAsRotate'
+  /** La mejor orientación es la actual: girar y escalar daría lo mismo que escalar. */
+  | 'sameAsScale'
   /** Cabe a tamaño real (girando): no hace falta dividir. */
   | 'fitsWithoutSplit';
 

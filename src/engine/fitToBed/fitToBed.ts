@@ -160,10 +160,12 @@ export function analyzeFitToBed(
     split.reason = 'alreadyFits';
   } else {
     if (rotate.available) Object.assign(rotateScale, { available: false, reason: 'sameAsRotate' });
+    // Si la mejor orientación es la actual (o rinde lo mismo), girar y escalar no aporta: se oculta.
+    else if (bestFactor <= scaleFactor) Object.assign(rotateScale, { available: false, reason: 'sameAsScale' });
     // Una sola sugerencia: girar si cabe a tamaño real; si no, dividir bajo la escala mínima; si no, el mayor factor.
     if (rotate.available) rotate.recommended = true;
     else if (bestFactor < opts.minScale) split.recommended = true;
-    else rotateScale.recommended = true;
+    else (rotateScale.available ? rotateScale : scale).recommended = true;
   }
   return { sizeMm, usableMm: usable, fitsAsIs, alternatives: [scale, rotate, rotateScale, split] };
 }

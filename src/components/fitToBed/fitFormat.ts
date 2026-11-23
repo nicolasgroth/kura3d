@@ -21,12 +21,19 @@ export function useFitFormat() {
   const num = (v: number, maxFrac = 1) => formatLocaleNumber(language, v, { maxFrac });
   // Hacia abajo: el porcentaje mostrado nunca promete más de lo que cabe.
   const pct = (factor: number) => num(Math.floor(factor * 1000 + 1e-6) / 10, 1);
-  const size = (s: Readonly<Vec3>) => s.map((v) => formatDimension(v, unit, 1, language)).join(' × ');
+  // El motor de ajuste ya entrega X, Y, Z del usuario: no se pasa por `toUserSize` (permutaría otra vez).
+  const size = (s: Readonly<Vec3>) => {
+    const [x, y, z] = s.map((v) => formatDimension(v, unit, 1, language));
+    return `${x} × ${y} × ${z}`;
+  };
   const title = (alt: FitAlternative) => {
     if (alt.kind === 'scale') return t(language, 'fit.alt.scale', { pct: pct(alt.factor) });
     if (alt.kind === 'rotateScale') return t(language, 'fit.alt.rotateScale', { pct: pct(alt.factor) });
     return t(language, alt.kind === 'rotate' ? 'fit.alt.rotate' : 'fit.alt.split');
   };
+  /** Nombre sin porcentaje (para las opciones no disponibles). */
+  const name = (alt: FitAlternative) =>
+    alt.kind === 'rotateScale' ? t(language, 'fit.alt.rotateScaleName') : alt.kind === 'scale' ? t(language, 'fit.alt.scale', { pct: 100 }) : title(alt);
   const steps = (alt: FitAlternative) =>
     alt.orientation.steps.length === 0
       ? t(language, 'fit.alt.noRotation')
@@ -47,5 +54,5 @@ export function useFitFormat() {
       scaled: typeof p.scaledMm === 'number' ? num(p.scaledMm, 2) : '',
     });
   };
-  return { num, pct, size, title, steps, face, warning };
+  return { num, pct, size, title, name, steps, face, warning };
 }

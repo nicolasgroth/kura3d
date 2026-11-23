@@ -99,6 +99,9 @@ describe('analyzeFitToBed', () => {
     expect(rs.factor).toBeCloseTo(0.725, 4);
     const scale = r.alternatives.find((a) => a.kind === 'scale')!;
     expect(scale.factor).toBeCloseTo(0.725, 4);
+    // La mejor orientación es la actual: girar y escalar no aporta nada y se marca como igual a escalar.
+    expect(rs).toMatchObject({ available: false, reason: 'sameAsScale' });
+    expect(scale.recommended).toBe(true);
     expect(r.alternatives.find((a) => a.kind === 'split')!.available).toBe(true);
     expect(scale.warnings.map((w) => w.code)).toContain('FIT_THIN_WALLS');
   });

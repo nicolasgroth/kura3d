@@ -85,13 +85,15 @@ test('girar sin escalar acuesta la pieza alta; el teclado elige la opción', asy
   expect((await estado(page, id)).rotation).toEqual([0, 0, 0]);
 });
 
-test('girar y escalar mejora a solo escalar; dividir abre Dividir para imprimir', async ({ page }) => {
+test('bajo la escala mínima sugiere Dividir y abre Dividir para imprimir', async ({ page }) => {
   await caja(page, 40, 40, 600);
   await page.evaluate(() => (window as any).__s.getState().openFitToBed());
   const dialog = page.getByRole('dialog', { name: 'Ajustar a la impresora' });
   // Fondo 600: solo escalar = 246/600 = 41 %; girar no cabe en 246 ni acostada.
   await expect(dialog.getByTestId('fit-alt-scale')).toContainText('41 %');
-  await expect(dialog.getByTestId('fit-alt-rotateScale')).toContainText('Girar y escalar a 41 %');
+  // Girar no mejora el factor (todas las orientaciones dan 41 %): no se repite como opción.
+  await expect(dialog.getByTestId('fit-alt-rotateScale')).toHaveCount(0);
+  await expect(dialog).toContainText('Girar no mejora el factor');
   const dividir = dialog.getByTestId('fit-alt-split');
   await expect(dividir).toContainText('Dividir en piezas');
   // Bajo el 50 %: Dividir es la sugerida.

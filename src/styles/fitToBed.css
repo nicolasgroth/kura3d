@@ -7,8 +7,16 @@
  * @license MIT
  */
 
-dialog.kura-fit-dialog {
-  width: min(560px, calc(100vw - 24px));
+/* A un costado y sin desenfoque: el fantasma de la vista previa tiene que verse en el visor. */
+dialog.kura-dialog.kura-fit-dialog {
+  width: min(480px, calc(100vw - 24px));
+  margin: auto 16px auto auto;
+}
+
+dialog.kura-dialog.kura-fit-dialog::backdrop,
+dialog.kura-dialog.kura-fit-dialog[open]::backdrop {
+  backdrop-filter: none;
+  background: rgb(0 0 0 / 0.12);
 }
 
 .kura-fit-body {
@@ -194,7 +202,7 @@ dialog.kura-fit-dialog {
 
 /* Móvil: hoja inferior. */
 @media (max-width: 640px) {
-  dialog.kura-fit-dialog {
+  dialog.kura-dialog.kura-fit-dialog {
     width: 100vw;
     max-width: 100vw;
     margin: auto 0 0;

@@ -139,7 +139,7 @@ export const FitToBedDialog: React.FC = () => {
             <ul className="kura-fit-unavailable" aria-label={t(language, 'fit.choose')}>
               {unavailable.map((alt) => (
                 <li key={alt.kind}>
-                  {fmt.title(alt)}: {t(language, `fit.unavailable.${alt.reason}` as TranslationKey)}
+                  {fmt.name(alt)}: {t(language, `fit.unavailable.${alt.reason}` as TranslationKey)}
                 </li>
               ))}
             </ul>

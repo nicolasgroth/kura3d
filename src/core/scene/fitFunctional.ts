@@ -52,7 +52,9 @@ export function detectFunctionalFeatures(objects: readonly SceneObject[]): Funct
 /** Avisos `FIT_FUNCTIONAL_SCALED` de un factor (vacío si no escala). */
 export function functionalWarnings(features: readonly FunctionalFeature[], factor: number): FitWarning[] {
   if (!(factor < 1)) return [];
-  return features.map((f) => ({
+  // Las primitivas con parámetros se informan en `functional`, pero no como aviso: toda primitiva lo es
+  // y el tamaño resultante ya se muestra. El aviso queda para medidas que dejan de ser estándar.
+  return features.filter((f) => f.kind !== 'parametricPrimitive').map((f) => ({
     code: 'FIT_FUNCTIONAL_SCALED' as const,
     params: {
       objectId: f.objectId, feature: f.kind, label: f.label, factor,
