@@ -10,6 +10,7 @@
  * @license MIT
  */
 
+import { SPLIT_JOINTS_ID } from '../../store/splitGlueSummary';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Ban, CheckCircle2, CircleDot, Paperclip, RefreshCw, ShieldCheck } from 'lucide-react';
 import { t } from '../../i18n';
@@ -180,7 +181,7 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
   };
 
   return (
-    <section className="kura-split-joints-section" aria-labelledby={`${uid}-title`}>
+    <section className="kura-split-joints-section" id={SPLIT_JOINTS_ID} tabIndex={-1} aria-labelledby={`${uid}-title`}>
       <SplitAssemblyStatus language={language} notes={notes} validation={report} />
       <h3 id={`${uid}-title`} className="kura-section-label">{t(language, 'splitJoints.title')} ({rows.length})</h3>
       {weakRows.length > 0 && (

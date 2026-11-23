@@ -9,6 +9,8 @@
  * @license MIT
  */
 
+import { collapseGlueWarnings, SPLIT_JOINTS_ID } from '../splitGlueSummary';
+import { focusById } from '../../utils/focusById';
 import * as engine from '../../engine';
 import * as ops from '../../core/operations';
 import { keepClearOfOthers, placePartsInFreeSpot, separateCutHalves } from '../../core/scene/freeSpot';
@@ -121,7 +123,17 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         // El grupo dividido se encuadra siempre (aunque haya otros objetos en escena).
         get().requestCameraPreset('focus', result.parts.map((p) => p.id));
         get().addToast(tr('toast.splitForBedDone', { count: result.parts.length, joints: result.joints.length }), 'success');
-        reportEngineWarnings(change.warnings);
+        // Las uniones que pasan a "para pegar" se resumen en un solo aviso con "Ver uniones".
+        const glue = collapseGlueWarnings(change.warnings, result.joints.length);
+        reportEngineWarnings(glue.rest);
+        // El bus (MCP) sigue recibiendo el detalle por unión.
+        ctx.recordEngineWarnings((change.warnings ?? []).filter((w) => !glue.rest.includes(w)));
+        if (glue.count > 0) {
+          get().addToast(tr('realesUi.split.glueSummary', { count: glue.count, total: glue.total }), 'info', {
+            label: tr('realesUi.split.showJoints'),
+            run: () => void focusById(SPLIT_JOINTS_ID),
+          });
+        }
         get().setSplitNotes(obj.id, notes);
         get().setSplitRequest(obj.id, { objectId: obj.id, request, historyDepth: get().past.length });
         return { plan, parts: result.parts, joints: result.joints, looseDowels: result.looseDowels, plateCount: result.plateCount, assembly: result.assembly };

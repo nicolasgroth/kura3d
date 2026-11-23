@@ -75,6 +75,8 @@ export interface StoreContext {
   operationErrors: ReturnType<typeof createOperationErrorTracker>;
   reportOperationError: (err: unknown) => void;
   reportEngineWarnings: (warnings: readonly engine.EngineWarning[] | undefined) => void;
+  /** Guarda avisos para la respuesta del bus sin mostrarlos (la interfaz los resume aparte). */
+  recordEngineWarnings: (warnings: readonly engine.EngineWarning[]) => void;
   currentSegmentationFor: (obj: SceneObject) => KuraStoreState['activeSegmentation'];
   projectErrorMessage: (error: unknown) => string;
   /** Contexto de `src/core/operations` con la política, IDs y nombres de la app. */
@@ -194,6 +196,9 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
       busWarnings = [];
       return out;
     },
+  };
+  const recordEngineWarnings = (warnings: readonly engine.EngineWarning[]) => {
+    busWarnings.push(...warnings);
   };
   const reportEngineWarnings = (warnings: readonly engine.EngineWarning[] | undefined) => {
     if (warnings) busWarnings.push(...warnings);
@@ -318,7 +323,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
 
   return {
     set, get, runtime, tr, pushHistory, pushHistoryStep, limitHistory, isHistoryLocked, rejectWhileLocked, runExclusive, operationErrors,
-    reportOperationError, reportEngineWarnings, currentSegmentationFor, projectErrorMessage, opCtx, assertCurrent, commitChange,
+    reportOperationError, reportEngineWarnings, recordEngineWarnings, currentSegmentationFor, projectErrorMessage, opCtx, assertCurrent, commitChange,
     runEngine, cancelBusyOperation, runEngineDetached, engineWarnings,
   };
 }

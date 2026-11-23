@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { occupiedPieces } from '../../core/scene/splitOccupiedPieces';
 import React, { useMemo } from 'react';
 import { t } from '../../i18n';
 import {
@@ -51,9 +52,11 @@ export const SplitLabels: React.FC = () => {
 
     if (show) {
       const plan = preview.plan;
-      if (plan && preview.status !== 'idle' && plan.pieces.length > 1) {
+      // Solo las celdas con material: los rótulos corresponden a las piezas que resultarán.
+      const pieces = plan ? occupiedPieces(plan) : [];
+      if (plan && preview.status !== 'idle' && pieces.length > 1) {
         const dimmed = preview.status === 'pending';
-        for (const piece of plan.pieces) {
+        for (const piece of pieces) {
           const { min, max } = piece.bounds;
           out.push({
             id: `plan:${piece.code}`,

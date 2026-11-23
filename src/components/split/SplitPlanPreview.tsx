@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { occupiedPieces } from '../../core/scene/splitOccupiedPieces';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Html } from '@react-three/drei';
 import { type ThreeEvent, useThree } from '@react-three/fiber';
@@ -174,6 +175,8 @@ export const SplitPlanPreview: React.FC = () => {
   }, [plan]);
   if (!plan || !bounds || preview.status === 'idle') return null;
   const dimmed = preview.status === 'pending';
+  // Solo las celdas con material: las cajas corresponden a las piezas que resultarán.
+  const pieces = occupiedPieces(plan);
   return (
     <group>
       {plan.planes.map((p) => (
@@ -187,7 +190,7 @@ export const SplitPlanPreview: React.FC = () => {
           dimmed={dimmed}
         />
       ))}
-      {plan.pieces.length > 1 && plan.pieces.map((piece) => <PieceBox key={piece.code} piece={piece} dimmed={dimmed} />)}
+      {pieces.length > 1 && pieces.map((piece) => <PieceBox key={piece.code} piece={piece} dimmed={dimmed} />)}
     </group>
   );
 };
