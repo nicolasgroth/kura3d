@@ -153,7 +153,7 @@ Ordenadas por prioridad dentro de cada grupo.
 | Documentación | Guías públicas en GitHub: README al día, una guía paso a paso con capturas o animación por funcionalidad (`docs/guia/`), y cómo usar el servidor MCP con sus reglas (`docs/MCP.md`). Flujo permanente: se actualiza con cada cambio (decidido el 23-nov) |
 | Interfaz | Vista sin cama (objetos flotando) y barra lateral izquierda de tres estados (iconos y texto, solo iconos, oculta), independiente de la pantalla completa. Entran en la próxima iteración de usabilidad |
 | Preparación | Ajustar a la impresora (perfiles de cama y escala proporcional) y Suavizar (aristas, malla completa o zona marcada) |
-| Asistentes | Sección de asistentes de creación paso a paso. Primero: agregados (fijación al muro, imán, torreta, compartimento con tapa), caja con tapa y recetas guardables. Se presenta el diseño antes de implementar |
+| Asistentes | Sección de asistentes de creación paso a paso. Primero: agregados (fijación al muro, imán, torreta, compartimento con tapa), caja con tapa y recetas guardables. Cada asistente es una receta configurable (parámetros, reglas y pasos) en el mismo formato que usarán las extensiones, para que la gente cree y comparta los suyos. Se presenta el diseño antes de implementar |
 | Proyecto | Datos del proyecto: nombre editable, descripción y notas, fecha de creación y de última modificación (y, si aporta, autor y tiempo de trabajo), guardados en el `.kura` y visibles al abrir y en recientes (pedido del autor, 23-nov) |
 | Edición | Instancias: copias vinculadas de un objeto que cambian todas juntas al editar una (idea tomada de OrcaSlicer) |
 | Edición | Recargar un objeto desde su archivo de origen cuando este cambia en disco |
