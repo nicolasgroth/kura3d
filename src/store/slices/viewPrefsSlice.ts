@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import { readStorage, writeStorage } from '../preferencesStorage';
+import { readSessionStorage as readSession, readStorage, writeSessionStorage as writeSession, writeStorage } from '../preferencesStorage';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -17,7 +17,7 @@ export type LeftSidebarMode = 'full' | 'compact' | 'hidden';
 
 export const LEFT_SIDEBAR_MODES: readonly LeftSidebarMode[] = ['full', 'compact', 'hidden'];
 export const STORAGE_LEFT_SIDEBAR_KEY = 'kura3d-left-sidebar';
-/** En `sessionStorage`: la vista sin cama dura lo que la pestaña, como el resto de la vista. */
+/** En la sesión de la pestaña: la vista sin cama dura lo que la pestaña, como el resto de la vista. */
 export const SESSION_SHOW_BED_KEY = 'kura3d-show-bed';
 
 export interface ViewPrefsSliceState {
@@ -36,24 +36,6 @@ export interface ViewPrefsSliceState {
 /** Siguiente estado del recorrido del tirador. */
 export function nextLeftSidebarMode(mode: LeftSidebarMode): LeftSidebarMode {
   return LEFT_SIDEBAR_MODES[(LEFT_SIDEBAR_MODES.indexOf(mode) + 1) % LEFT_SIDEBAR_MODES.length];
-}
-
-function readSession(key: string): string | null {
-  try {
-    return typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(key) : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeSession(key: string, value: string | null): void {
-  try {
-    if (typeof sessionStorage === 'undefined') return;
-    if (value === null) sessionStorage.removeItem(key);
-    else sessionStorage.setItem(key, value);
-  } catch {
-    // Almacenamiento bloqueado: la preferencia vive solo en memoria.
-  }
 }
 
 export function loadInitialLeftSidebarMode(): LeftSidebarMode {

@@ -155,3 +155,23 @@ export function loadInitialHistoryLimits(): HistoryLimits {
 export function saveHistoryLimits(limits: HistoryLimits): void {
   writeStorage(STORAGE_HISTORY_LIMITS_KEY, JSON.stringify(limits));
 }
+
+/** Como `readStorage`, en `sessionStorage` (preferencias que duran lo que la pestaña). */
+export function readSessionStorage(key: string): string | null {
+  try {
+    return typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(key) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Como `writeStorage`, en `sessionStorage`; `null` borra la clave. */
+export function writeSessionStorage(key: string, value: string | null): void {
+  try {
+    if (typeof sessionStorage === 'undefined') return;
+    if (value === null) sessionStorage.removeItem(key);
+    else sessionStorage.setItem(key, value);
+  } catch {
+    // Almacenamiento bloqueado: la preferencia vive solo en memoria.
+  }
+}
