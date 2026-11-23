@@ -76,6 +76,15 @@ export function getManifoldModule(): ManifoldToplevel {
   return cachedModule;
 }
 
+/** Finalizador de murmur3 (fmix32): mezcla no lineal de 32 bits. */
+function fmix32(v: number): number {
+  v ^= v >>> 16;
+  v = Math.imul(v, 0x85ebca6b);
+  v ^= v >>> 13;
+  v = Math.imul(v, 0xc2b2ae35);
+  return v ^ (v >>> 16);
+}
+
 /**
  * Suelda vértices duplicados o casi coincidentes dentro de una tolerancia dada (en mm)
  * y elimina triángulos degenerados para garantizar topología cerrada (watertight).
@@ -112,11 +121,12 @@ export function weldVertices(
     const qy = Math.round(y * invTol);
     const qz = Math.round(z * invTol);
 
-    // Hash entero de 32 bits estable para valores cuantizados (incluso fuera del rango int32).
-    let h = Math.imul((qx | 0) ^ Math.floor(qx / 4294967296), 0x9e3779b1);
-    h ^= Math.imul((qy | 0) ^ Math.floor(qy / 4294967296), 0x85ebca77);
-    h ^= Math.imul((qz | 0) ^ Math.floor(qz / 4294967296), 0xc2b2ae3d);
-    h ^= h >>> 15;
+    // Hash de 32 bits de los valores cuantizados (incluso fuera del rango int32). Cada coordenada pasa por
+    // el finalizador de murmur3 encadenado: con la combinación XOR de multiplicaciones (invertible) se
+    // podían fabricar colisiones y volver cuadrático el sondeo lineal.
+    let h = fmix32(((qx | 0) ^ Math.floor(qx / 4294967296)) ^ 0x9e3779b1);
+    h = fmix32(h ^ ((qy | 0) ^ Math.floor(qy / 4294967296)));
+    h = fmix32(h ^ ((qz | 0) ^ Math.floor(qz / 4294967296)));
     let slot = h & mask;
 
     let mapped = -1;

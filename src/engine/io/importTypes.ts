@@ -9,6 +9,7 @@
 
 import type { MeshData } from '../../types/kura';
 import type { EngineWarning } from '../engineErrors';
+import type { ImportCluster } from './importClusters';
 import type { ModelImportLimits } from './importErrors';
 
 /** Formatos de modelo que Kura3D sabe leer. */
@@ -31,6 +32,12 @@ export interface ImportedPart {
   openEdges: number;
 }
 
+/** Placa del laminador (Bambu/Orca): nombre declarado y grupos (`ImportedPart.group`) que lleva. */
+export interface ImportedPlate {
+  name?: string;
+  groups: number[];
+}
+
 /** Resultado de leer un archivo de modelo. */
 export interface ImportedModel {
   fileName: string;
@@ -41,6 +48,10 @@ export interface ImportedModel {
    * transformación). Si es false, los grupos se colocan sin solaparse.
    */
   hasPlacement: boolean;
+  /** Placas del laminador, solo si el archivo trae dos o más con piezas. */
+  plates?: ImportedPlate[];
+  /** Conjuntos (placas, montajes) calculados al leer, en el Worker (`importClusters.ts`). */
+  clusters?: ImportCluster[];
   /** Ajustes hechos al leer (p. ej. normales invertidas reorientadas), con el nombre del archivo. */
   warnings?: EngineWarning[];
 }

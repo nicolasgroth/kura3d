@@ -32,6 +32,7 @@ self.onmessage = ({ data }: MessageEvent<ModelImportRequest>) => {
       ok: false,
       code: typed?.code ?? 'corrupt',
       detail: typed?.detail,
+      size: typed?.size,
       message: error instanceof Error ? error.message : String(error),
     });
   }

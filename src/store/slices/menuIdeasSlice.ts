@@ -87,7 +87,7 @@ export function createMenuIdeasSlice(ctx: StoreContext): Partial<KuraStoreState>
             if (!engine.detectModelFormat(file.name)) throw new engine.ModelImportError('unsupported', undefined, file.name);
             model = await engine.parseModelFileAsync(file.name, file.buffer);
           } catch (error) {
-            get().addToast(importErrorMessage(error, file.name, tr), 'error');
+            get().addToast(importErrorMessage(error, file.name, tr, get().language), 'error');
             return false;
           }
           const part = model.parts[0];

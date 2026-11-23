@@ -12,7 +12,7 @@ import { strToU8 } from 'fflate';
 import type { MeshData, SceneObject } from '../../types/kura';
 import { weldVertices } from '../manifoldKernel';
 import { applyTransformToMesh } from '../primitives';
-import { ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
+import { MAX_PART_NAME, ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
 import type { ImportedModel } from './importTypes';
 import { GrowableFloat32, finishMesh } from './meshBuffers';
 
@@ -124,7 +124,7 @@ export function readSTL(
     format: 'stl',
     hasPlacement: false,
     parts: [{
-      name: fileName.replace(/\.stl$/i, ''),
+      name: fileName.replace(/\.stl$/i, '').slice(0, MAX_PART_NAME),
       mesh: finished.mesh,
       group: 0,
       openEdges: finished.openEdges,

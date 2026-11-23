@@ -11,8 +11,21 @@
 
 import { ModelImportError } from './importErrors';
 
-/** Longitud máxima de una etiqueta de apertura (atributos incluidos). */
-export const MAX_XML_TAG_LENGTH = 1 << 20;
+/** Longitud máxima de una etiqueta de apertura (atributos incluidos): 64 KiB sobra para 3MF reales. */
+export const MAX_XML_TAG_LENGTH = 64 * 1024;
+
+/**
+ * Si en `lt` empieza un comentario `<!-- … -->` o una sección `<![CDATA[ … ]]>`, devuelve el índice
+ * siguiente a su cierre (se saltan enteros: lo que haya dentro no es geometría); si no, -1. Sin cierre
+ * es archivo dañado. Cada carácter se examina una vez.
+ */
+export function skipCommentOrCdata(xml: string, lt: number): number {
+  const open = xml.startsWith('<!--', lt) ? '-->' : xml.startsWith('<![CDATA[', lt) ? ']]>' : null;
+  if (!open) return -1;
+  const close = xml.indexOf(open, lt + 4);
+  if (close < 0) throw new ModelImportError('corrupt', open === '-->' ? 'comentario sin cerrar' : 'CDATA sin cerrar');
+  return close + open.length;
+}
 
 /** Elemento encontrado: atributos crudos y cuerpo (null en hojas o etiquetas autocerradas). */
 export interface XmlElementMatch {
@@ -34,6 +47,24 @@ function isNameEnd(code: number): boolean {
   return code === 32 || code === 9 || code === 10 || code === 13 || code === 47 || code === 62;
 }
 
+/** true si el nombre local (tras el último `:`) de `xml[from..to)` es `target` (ASCII, minúsculas). */
+function localNameIs(xml: string, from: number, to: number, target: string): boolean {
+  let start = from;
+  for (let k = to - 1; k >= from; k--) {
+    if (xml.charCodeAt(k) === 58) {
+      start = k + 1;
+      break;
+    }
+  }
+  if (to - start !== target.length) return false;
+  for (let k = 0; k < target.length; k++) {
+    let c = xml.charCodeAt(start + k);
+    if (c >= 65 && c <= 90) c += 32;
+    if (c !== target.charCodeAt(k)) return false;
+  }
+  return true;
+}
+
 /**
  * Visita cada elemento cuyo nombre local (sin prefijo de espacio de nombres) coincide con `local`
  * (sin distinguir mayúsculas). `visit` puede devolver `false` para detener el recorrido.
@@ -52,20 +83,26 @@ export function forEachElement(
     const lt = xml.indexOf('<', pos);
     if (lt < 0) return;
     const first = xml.charCodeAt(lt + 1);
-    // Cierres, comentarios, declaraciones e instrucciones de proceso no son aperturas.
+    if (first === 33) {
+      const after = skipCommentOrCdata(xml, lt);
+      if (after >= 0) {
+        pos = after;
+        continue;
+      }
+    }
+    // Cierres, declaraciones e instrucciones de proceso no son aperturas.
     if (first === 47 || first === 33 || first === 63) {
       pos = lt + 1;
       continue;
     }
     let nameEnd = lt + 1;
     while (nameEnd < n && !isNameEnd(xml.charCodeAt(nameEnd)) && xml.charCodeAt(nameEnd) !== 60) nameEnd++;
-    const qname = xml.slice(lt + 1, nameEnd);
-    const colon = qname.lastIndexOf(':');
-    const name = (colon >= 0 ? qname.slice(colon + 1) : qname).toLowerCase();
-    if (name !== target) {
+    // Comparación sin cortar la cadena: en un 3MF grande se recorren millones de etiquetas por pasada.
+    if (!localNameIs(xml, lt + 1, nameEnd, target)) {
       pos = nameEnd;
       continue;
     }
+    const qname = xml.slice(lt + 1, nameEnd);
     const gt = xml.indexOf('>', nameEnd);
     if (gt < 0 || gt - lt > MAX_XML_TAG_LENGTH) {
       throw new ModelImportError('corrupt', `etiqueta <${qname.slice(0, 40)}> sin cerrar`);

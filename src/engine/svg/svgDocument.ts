@@ -41,14 +41,38 @@ function styleDeclaration(decls: Record<string, string>): Record<string, string>
 }
 
 /** Reglas `selector { … }` de un bloque `<style>` en la forma que lee `SVGLoader` (`type 1`). */
-function parseStyleSheet(css: string): { cssRules: { type: number; selectorText: string; style: Record<string, string> }[] } {
-  const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
+export function parseStyleSheet(css: string): { cssRules: { type: number; selectorText: string; style: Record<string, string> }[] } {
+  // Recorrido lineal (las regex anteriores eran cuadráticas con `/*` sin cerrar o texto sin `{`).
+  let clean = '';
+  for (let at = 0; at < css.length;) {
+    const open = css.indexOf('/*', at);
+    if (open < 0) {
+      clean += css.slice(at);
+      break;
+    }
+    clean += css.slice(at, open);
+    const close = css.indexOf('*/', open + 2);
+    if (close < 0) break; // comentario sin cerrar: el resto se descarta
+    at = close + 2;
+  }
   const cssRules: { type: number; selectorText: string; style: Record<string, string> }[] = [];
-  const ruleRegex = /([^{}@]+)\{([^{}]*)\}/g;
-  let m: RegExpExecArray | null;
-  while ((m = ruleRegex.exec(clean)) !== null) {
-    const selectorText = m[1].trim();
-    if (selectorText) cssRules.push({ type: 1, selectorText, style: parseDeclarations(m[2]) });
+  // Regla = texto sin `{`, `}` ni `@` justo antes de `{`, y cuerpo sin llaves hasta `}`.
+  let boundary = 0;
+  for (let i = 0; i < clean.length; i++) {
+    const c = clean[i];
+    if (c === '}' || c === '@') boundary = i + 1;
+    if (c !== '{') continue;
+    const selectorText = clean.slice(boundary, i).trim();
+    let end = i + 1;
+    while (end < clean.length && clean[end] !== '{' && clean[end] !== '}') end++;
+    if (end < clean.length && clean[end] === '}' && selectorText) {
+      cssRules.push({ type: 1, selectorText, style: parseDeclarations(clean.slice(i + 1, end)) });
+      i = end;
+      boundary = end + 1;
+    } else {
+      boundary = i + 1;
+      i = end - 1;
+    }
   }
   return { cssRules };
 }

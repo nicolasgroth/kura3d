@@ -10,6 +10,8 @@
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';
+import { clustersOf } from './importClusters';
+import { ModelImportError } from './importErrors';
 import type { ImportedModel, ImportedPart } from './importTypes';
 import { boundsOf, centerMeshOnBed } from './meshBuffers';
 
@@ -53,23 +55,46 @@ function unionBounds(parts: ImportedPart[]): Block['bounds'] {
   return out;
 }
 
-/** Divide los modelos en bloques rígidos según si traen posiciones con significado. */
+/**
+ * Divide los modelos en bloques rígidos: cada placa del laminador es un bloque; un archivo con
+ * posiciones con significado es un bloque; si no, cada conjunto montado (piezas que se solapan) es un
+ * bloque y el resto de las piezas se agrupa por `group`.
+ */
 function toBlocks(models: ImportedModel[]): Block[] {
   const blocks: Block[] = [];
+  const push = (fileName: string, parts: ImportedPart[]) => {
+    if (parts.length > 0) blocks.push({ fileName, parts, bounds: unionBounds(parts) });
+  };
   for (const model of models) {
-    if (model.hasPlacement) {
-      blocks.push({ fileName: model.fileName, parts: model.parts, bounds: unionBounds(model.parts) });
+    const clusters = clustersOf(model);
+    const plates = clusters.filter((c) => c.kind === 'plate');
+    if (plates.length > 0 || !model.hasPlacement) {
+      // Cada pieza se coloca una sola vez aunque dos conjuntos la nombren.
+      const taken = new Set<number>();
+      for (const cluster of clusters) {
+        const fresh: number[] = [];
+        for (const i of cluster.parts) {
+          if (i < 0 || i >= model.parts.length || taken.has(i)) continue;
+          taken.add(i);
+          fresh.push(i);
+        }
+        push(model.fileName, fresh.map((i) => model.parts[i]));
+      }
+      const rest = model.parts.filter((_, i) => !taken.has(i));
+      if (model.hasPlacement) {
+        push(model.fileName, rest);
+        continue;
+      }
+      const groups = new Map<number, ImportedPart[]>();
+      for (const part of rest) {
+        const list = groups.get(part.group) ?? [];
+        list.push(part);
+        groups.set(part.group, list);
+      }
+      for (const parts of groups.values()) push(model.fileName, parts);
       continue;
     }
-    const groups = new Map<number, ImportedPart[]>();
-    for (const part of model.parts) {
-      const list = groups.get(part.group) ?? [];
-      list.push(part);
-      groups.set(part.group, list);
-    }
-    for (const parts of groups.values()) {
-      blocks.push({ fileName: model.fileName, parts, bounds: unionBounds(parts) });
-    }
+    push(model.fileName, model.parts);
   }
   return blocks;
 }
@@ -148,5 +173,7 @@ export function placeImportedModels(
       });
     }
   });
+  // Invariante: cada pieza leída se coloca a lo sumo una vez (el lector ya aplicó maxParts y maxTriangles).
+  if (placed.length > models.reduce((acc, m) => acc + m.parts.length, 0)) throw new ModelImportError('too-many-parts');
   return placed;
 }

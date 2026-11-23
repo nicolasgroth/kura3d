@@ -26,6 +26,7 @@ import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
 import { SPLITUX_EN, SPLITUX_ES } from './locales/splitUx';
 import { FIX10_EN, FIX10_ES } from './locales/fix10';
 import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
+import { IMPORTREAL_EN, IMPORTREAL_ES } from './locales/importReal';
 import { REPAIR_EN, REPAIR_ES } from './locales/repair';
 
 /**
@@ -47,6 +48,7 @@ export const TRANSLATIONS_ES = {
   ...SPLITUX_ES,
   ...FIX10_ES,
   ...OPNOTES_ES,
+  ...IMPORTREAL_ES,
   ...REPAIR_ES,
   // Marca y shell principal
   'app.name': 'Kura3D',
@@ -1417,6 +1419,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...SPLITUX_EN,
   ...FIX10_EN,
   ...OPNOTES_EN,
+  ...IMPORTREAL_EN,
   ...REPAIR_EN,
   'app.name': 'Kura3D',
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',

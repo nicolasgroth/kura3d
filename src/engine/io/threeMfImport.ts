@@ -10,10 +10,12 @@
  * @license MIT
  */
 
-import { ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
+import { MAX_PART_NAME, ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
 import type { ImportedModel, ImportedPart } from './importTypes';
 import { GrowableFloat32, GrowableUint32, finishMesh, normalizeHexColor } from './meshBuffers';
 import { normalizePartPath, open3MFPackage, parseXmlAttrs, type ThreeMfPackage } from './threeMfPackage';
+import { scanTriangles, scanVertices } from './threeMfMeshScan';
+import { platesOf, readSlicerPlates } from './threeMfPlates';
 import { findElement, forEachElement, forEachLeaf } from './xmlScan';
 
 /** Atributos crudos del primer elemento hoja con ese nombre local, o null. */
@@ -116,28 +118,21 @@ function parseModelDoc(xml: string, path: string): ModelDoc {
   const unit = (parseXmlAttrs(modelTag).unit ?? 'millimeter').toLowerCase();
   const unitScale = MF3_UNIT_TO_MM[unit] ?? 1;
 
-  const materials = new Map<string, string[]>();
-  forEachElement(xml, 'basematerials', ({ attrs, body }) => {
-    const id = parseXmlAttrs(attrs).id;
-    const colors: string[] = [];
-    forEachLeaf(body ?? '', 'base', (a) => { colors.push(normalizeHexColor(parseXmlAttrs(a).displaycolor)); });
-    if (id) materials.set(id, colors);
-  });
-  forEachElement(xml, 'colorgroup', ({ attrs, body }) => {
-    const id = parseXmlAttrs(attrs).id;
-    const colors: string[] = [];
-    forEachLeaf(body ?? '', 'color', (a) => { colors.push(normalizeHexColor(parseXmlAttrs(a).color)); });
-    if (id) materials.set(id, colors);
-  });
-
+  // Las pasadas por nombre recorren cada etiqueta: materiales y build se buscan en el texto que queda
+  // fuera de los <object> (y los componentes, fuera de la <mesh>), no entre millones de vértices.
   const objects = new Map<string, ObjectDef>();
-  forEachElement(xml, 'object', ({ attrs: rawAttrs, body: rawBody }) => {
+  let outside = '';
+  let cursor = 0;
+  forEachElement(xml, 'object', ({ attrs: rawAttrs, body: rawBody, start, end }) => {
+    outside += xml.slice(cursor, start);
+    cursor = end;
     const attrs = parseXmlAttrs(rawAttrs);
     if (!attrs.id) return;
     const body = rawBody ?? '';
     const meshMatch = findElement(body, 'mesh');
+    const nonMesh = meshMatch ? body.slice(0, meshMatch.start) + body.slice(meshMatch.end) : body;
     const components: ComponentRef[] = [];
-    forEachLeaf(body, 'component', (raw) => {
+    forEachLeaf(nonMesh, 'component', (raw) => {
       const ca = parseXmlAttrs(raw);
       if (!ca.objectid) return;
       const compPath = attrLocal(ca, 'path');
@@ -157,9 +152,24 @@ function parseModelDoc(xml: string, path: string): ModelDoc {
       components,
     });
   });
+  outside += xml.slice(cursor);
+
+  const materials = new Map<string, string[]>();
+  forEachElement(outside, 'basematerials', ({ attrs, body }) => {
+    const id = parseXmlAttrs(attrs).id;
+    const colors: string[] = [];
+    forEachLeaf(body ?? '', 'base', (a) => { colors.push(normalizeHexColor(parseXmlAttrs(a).displaycolor)); });
+    if (id) materials.set(id, colors);
+  });
+  forEachElement(outside, 'colorgroup', ({ attrs, body }) => {
+    const id = parseXmlAttrs(attrs).id;
+    const colors: string[] = [];
+    forEachLeaf(body ?? '', 'color', (a) => { colors.push(normalizeHexColor(parseXmlAttrs(a).color)); });
+    if (id) materials.set(id, colors);
+  });
 
   const build: ModelDoc['build'] = [];
-  const buildMatch = findElement(xml, 'build');
+  const buildMatch = findElement(outside, 'build');
   if (buildMatch) {
     forEachLeaf(buildMatch.body ?? '', 'item', (raw) => {
       const attrs = parseXmlAttrs(raw);
@@ -175,42 +185,27 @@ function parseModelDoc(xml: string, path: string): ModelDoc {
   return { path, unitScale, objects, materials, build };
 }
 
-const COORD_RE = /\b([xyz])\s*=\s*"([^"]*)"/g;
-
 function parseGeometry(doc: ModelDoc, obj: ObjectDef): CachedGeometry {
   const body = obj.meshBody ?? '';
   const vertBlock = findElement(body, 'vertices')?.body ?? '';
   const triBlock = findElement(body, 'triangles')?.body ?? '';
 
   const coords = new GrowableFloat32(4096);
-  let vertexCount = 0;
-  forEachLeaf(vertBlock, 'vertex', (raw) => {
-    let x = NaN, y = NaN, z = NaN;
-    COORD_RE.lastIndex = 0;
-    let c: RegExpExecArray | null;
-    while ((c = COORD_RE.exec(raw)) !== null) {
-      const v = Number(c[2]);
-      if (c[1] === 'x') x = v;
-      else if (c[1] === 'y') y = v;
-      else z = v;
-    }
+  const vertexCount = scanVertices(vertBlock, (x, y, z, index) => {
     if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
-      throw new ModelImportError('non-finite', `objeto ${obj.id}, vértice ${vertexCount}`);
+      throw new ModelImportError('non-finite', `objeto ${obj.id}, vértice ${index}`);
     }
     coords.push3(x, y, z);
-    vertexCount++;
   });
 
   const baseColor = obj.pid ? doc.materials.get(obj.pid)?.[obj.pindex] : undefined;
   const indices = new GrowableUint32(4096);
   const colors: (string | undefined)[] = [];
-  forEachLeaf(triBlock, 'triangle', (raw) => {
-    const attrs = parseXmlAttrs(raw);
-    const v1 = Number(attrs.v1), v2 = Number(attrs.v2), v3 = Number(attrs.v3);
-    for (const v of [v1, v2, v3]) {
-      if (!Number.isInteger(v) || v < 0 || v >= vertexCount) {
-        throw new ModelImportError('invalid-index', `objeto ${obj.id}: ${attrs.v1},${attrs.v2},${attrs.v3} (${vertexCount} vértices)`);
-      }
+  const toIndex = (raw: string) => (raw === '' ? NaN : Number(raw));
+  scanTriangles(triBlock, (attrs) => {
+    const v1 = toIndex(attrs.v1), v2 = toIndex(attrs.v2), v3 = toIndex(attrs.v3);
+    if (!validIndex(v1, vertexCount) || !validIndex(v2, vertexCount) || !validIndex(v3, vertexCount)) {
+      throw new ModelImportError('invalid-index', `objeto ${obj.id}: ${attrs.v1},${attrs.v2},${attrs.v3} (${vertexCount} vértices)`);
     }
     indices.push3(v1, v2, v3);
     const pid = attrs.pid ?? obj.pid;
@@ -219,6 +214,8 @@ function parseGeometry(doc: ModelDoc, obj: ObjectDef): CachedGeometry {
   });
   return { positions: coords.toArray(), indices: indices.toArray(), colors, baseColor };
 }
+
+const validIndex = (v: number, count: number) => Number.isInteger(v) && v >= 0 && v < count;
 
 interface Instance {
   doc: ModelDoc;
@@ -355,15 +352,17 @@ export function read3MF(
 
     const finished = finishMesh(positions, indices, faceColors, color);
     const single = (multiInRoot.get(`${inst.group}`) ?? 1) === 1;
+    // Con una sola pieza, el nombre del objeto es el que muestra el laminador (el de la pieza suele ser
+    // el STL original repetido, p. ej. «figura.stl» en cada objeto).
     const name =
-      partCfg?.name ??
       (single ? objCfg?.name : undefined) ??
+      partCfg?.name ??
       inst.obj.name ??
       objCfg?.name ??
       inst.rootName ??
       `${baseName} ${parts.length + 1}`;
     parts.push({
-      name,
+      name: name.slice(0, MAX_PART_NAME),
       color,
       mesh: finished.mesh,
       isHole: subtype === 'negative_part' || undefined,
@@ -381,5 +380,7 @@ export function read3MF(
     if (n > 1) part.name = `${part.name} (${n})`;
   }
   const explicit = root.build.some((item) => item.transform !== null);
-  return { fileName, format: '3mf', parts, hasPlacement: explicit || items.length <= 1 };
+  const plates = pkg.config.settingsXml ? platesOf(readSlicerPlates(pkg.config.settingsXml), items, parts) : undefined;
+  return { fileName, format: '3mf', parts, hasPlacement: explicit || items.length <= 1, ...(plates ? { plates } : {}) };
 }
+

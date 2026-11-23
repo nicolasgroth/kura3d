@@ -10,6 +10,8 @@
 import { useEffect, useState } from 'react';
 import { FileUp } from 'lucide-react';
 import { t } from '../i18n';
+import * as engine from '../engine';
+import { MODEL_IO_LIMITS } from '../engine/operationLimits';
 import { MAX_PROJECT_BYTES, ProjectCodecError } from '../project/projectSchema';
 import { useKuraStore } from '../store/useKuraStore';
 import { isTauriRuntime } from '../utils/platformBridge';
@@ -19,11 +21,15 @@ import '../styles/projectDrop.css';
 
 interface DroppedFile {
   name: string;
-  read: (remaining: number) => Promise<ArrayBuffer>;
+  /** `model`: el archivo es un modelo (el error de tamaño lleva el tamaño y el máximo). */
+  read: (maximum: number, model?: boolean) => Promise<ArrayBuffer>;
 }
 
-function verifySize(size: number, maximum: number) {
-  if (size > maximum) throw new ProjectCodecError('too-large');
+/** Proyectos: `ProjectCodecError`; modelos: `ModelImportError` con el tamaño y el máximo (mensaje claro). */
+function verifySize(size: number, maximum: number, name: string, model = false) {
+  if (size <= maximum) return;
+  if (model) throw new engine.ModelImportError('too-large', undefined, name, { bytes: size, maxBytes: maximum });
+  throw new ProjectCodecError('too-large');
 }
 
 async function acceptDrop(files: DroppedFile[]) {
@@ -51,13 +57,13 @@ async function acceptDrop(files: DroppedFile[]) {
     return;
   }
 
-  let remaining = MAX_PROJECT_BYTES;
+  // Cada modelo puede pesar lo que la app sabe exportar y reabrir (`MODEL_IO_LIMITS`), no el tope de proyectos.
+  const maximum = MODEL_IO_LIMITS.maxFileBytes;
   await state.importModelFiles(files.map((file) => ({
     name: file.name,
     async read() {
-      const buffer = await file.read(remaining);
-      verifySize(buffer.byteLength, remaining);
-      remaining -= buffer.byteLength;
+      const buffer = await file.read(maximum, true);
+      verifySize(buffer.byteLength, maximum, file.name, true);
       return buffer;
     },
   })));
@@ -85,12 +91,13 @@ export function ProjectDropTarget() {
           setDragging(false);
           void acceptDrop(payload.paths.map((path) => ({
             name: path.split(/[\\/]/).at(-1) ?? '',
-            async read(remaining) {
+            async read(maximum, model) {
+              const name = path.split(/[\\/]/).at(-1) ?? '';
               const info = await stat(path);
               if (!info.isFile) throw new Error(t(useKuraStore.getState().language, 'dropProject.notFile'));
-              verifySize(info.size, remaining);
+              verifySize(info.size, maximum, name, model);
               const bytes = await readFile(path);
-              verifySize(bytes.byteLength, remaining);
+              verifySize(bytes.byteLength, maximum, name, model);
               return new Uint8Array(bytes).buffer;
             },
           })));
@@ -134,8 +141,8 @@ export function ProjectDropTarget() {
       event.preventDefault();
       void acceptDrop(files.map((file) => ({
         name: file.name,
-        read(remaining) {
-          verifySize(file.size, remaining);
+        read(maximum, model) {
+          verifySize(file.size, maximum, file.name, model);
           return file.arrayBuffer();
         },
       })));

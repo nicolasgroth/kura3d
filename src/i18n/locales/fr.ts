@@ -21,6 +21,7 @@ import { A11YUX_FR } from './a11yUx';
 import { SPLITUX_FR } from './splitUx';
 import { FIX10_FR } from './fix10';
 import { OPNOTES_FR } from './operationNotes';
+import { IMPORTREAL_FR } from './importReal';
 import { REPAIR_FR } from './repair';
 
 /**
@@ -40,6 +41,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...SPLITUX_FR,
   ...FIX10_FR,
   ...OPNOTES_FR,
+  ...IMPORTREAL_FR,
   ...REPAIR_FR,
   // Marca y shell principal
   'app.name': 'Kura3D',

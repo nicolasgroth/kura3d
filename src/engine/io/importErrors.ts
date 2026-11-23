@@ -7,6 +7,8 @@
  * @license MIT
  */
 
+import { MODEL_IO_LIMITS } from '../operationLimits';
+
 /** Códigos estables de fallo de importación (la interfaz los traduce como `importError.<código>`). */
 export type ModelImportErrorCode =
   | 'empty'
@@ -19,6 +21,7 @@ export type ModelImportErrorCode =
   | 'no-geometry'
   | 'invalid-index'
   | 'non-finite'
+  | 'out-of-range'
   | 'too-many-triangles'
   | 'too-many-parts'
   | 'component-cycle'
@@ -40,10 +43,14 @@ export interface ModelImportLimits {
   maxSceneNodes: number;
 }
 
+/** Largo máximo del nombre de una pieza importada (el mismo que el de un grupo de escena). */
+export const MAX_PART_NAME = 80;
+
+/** Límites por defecto: tamaño, triángulos y bytes descomprimidos salen de `MODEL_IO_LIMITS` (fuente única). */
 export const DEFAULT_IMPORT_LIMITS: ModelImportLimits = {
-  maxFileBytes: 128 * 1024 * 1024,
-  maxUncompressedBytes: 512 * 1024 * 1024,
-  maxTriangles: 12_000_000,
+  maxFileBytes: MODEL_IO_LIMITS.maxFileBytes,
+  maxUncompressedBytes: MODEL_IO_LIMITS.maxUncompressedBytes,
+  maxTriangles: MODEL_IO_LIMITS.maxTriangles,
   maxParts: 2_000,
   maxComponentDepth: 16,
   maxSceneNodes: 100_000,
@@ -65,25 +72,35 @@ const DEFAULT_MESSAGES: Record<ModelImportErrorCode, string> = {
   'no-geometry': 'El archivo no contiene geometría válida.',
   'invalid-index': 'Un triángulo referencia un vértice inexistente.',
   'non-finite': 'El archivo contiene coordenadas no numéricas (NaN o infinito).',
+  'out-of-range': 'El archivo contiene coordenadas fuera de rango (más de 1 km desde el origen).',
   'too-many-triangles': 'El modelo supera el número máximo de triángulos permitido.',
   'too-many-parts': 'El modelo supera el número máximo de piezas permitido.',
   'component-cycle': 'Los componentes 3MF forman un ciclo o anidan demasiado.',
   timeout: 'La lectura del archivo tardó demasiado y se canceló.',
 };
 
+/** Tamaño del archivo rechazado y máximo aceptado (para un mensaje con ambos números). */
+export interface ImportSizeInfo {
+  bytes: number;
+  maxBytes: number;
+}
+
 /** Error de importación con código estable y nombre de archivo opcional. */
 export class ModelImportError extends Error {
   readonly code: ModelImportErrorCode;
   fileName?: string;
   readonly detail?: string;
+  /** Solo en `too-large`: tamaño del archivo y máximo. */
+  readonly size?: ImportSizeInfo;
 
-  constructor(code: ModelImportErrorCode, detail?: string, fileName?: string) {
+  constructor(code: ModelImportErrorCode, detail?: string, fileName?: string, size?: ImportSizeInfo) {
     const base = DEFAULT_MESSAGES[code];
     super(detail ? `${base} (${detail})` : base);
     this.name = 'ModelImportError';
     this.code = code;
     this.detail = detail;
     this.fileName = fileName;
+    if (size) this.size = size;
   }
 }
 
@@ -100,5 +117,7 @@ export function attachFileName(error: unknown, fileName: string): ModelImportErr
 /** Lanza `too-large`/`empty` según el tamaño de un buffer de entrada. */
 export function checkInputSize(byteLength: number, limits: ModelImportLimits): void {
   if (byteLength === 0) throw new ModelImportError('empty');
-  if (byteLength > limits.maxFileBytes) throw new ModelImportError('too-large');
+  if (byteLength > limits.maxFileBytes) {
+    throw new ModelImportError('too-large', undefined, undefined, { bytes: byteLength, maxBytes: limits.maxFileBytes });
+  }
 }

@@ -2,7 +2,7 @@
  * @file src/store/modelIoActions.ts
  * @description Acciones de importación y exportación de modelos del store: lote parcial (importa
  * los archivos válidos y nombra los que fallaron), lectura en Worker, colocación en la cama
- * (conjunto apoyado o posición original), aviso de malla abierta y de normales reorientadas, y exportación única
+ * (conjunto apoyado o posición original), grupos por placa del laminador y por conjunto montado, aviso de malla abierta y de normales reorientadas, y exportación única
  * STL/3MF/OBJ+MTL/GLB/PLY de la selección o la escena con nombre elegido.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -22,7 +22,9 @@ import { selectExportTargets } from './exportTargets';
 import { placeGroupInFreeSpot, type BedSize } from '../core/scene/freeSpot';
 import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
 import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } from './splitExport';
-import { objectAncestors } from '../core/scene/groups';
+import { MAX_GROUP_NAME, objectAncestors, reconcileGroups } from '../core/scene/groups';
+import { groupImported } from './importGrouping';
+import { exportNotices, tooLargeMessage } from './modelImportNotices';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 export type ExportScope = 'selection' | 'scene';
@@ -112,12 +114,16 @@ export function sceneFootprint(objects: SceneObject[]): engine.FootprintXZ | nul
 }
 
 /** Mensaje traducido de un fallo de importación que nombra el archivo. */
-export function importErrorMessage(error: unknown, fileName: string, tr: Translate): string {
+export function importErrorMessage(error: unknown, fileName: string, tr: Translate, language: LanguageCode = 'es'): string {
   if (error instanceof engine.ModelImportError) {
+    if (error.code === 'too-large' && error.size) return tooLargeMessage(error.fileName ?? fileName, error.size, tr, language);
     const base = tr(`importError.${error.code}` as TranslationKey, { name: error.fileName ?? fileName });
     return error.detail && error.code !== 'unsupported' ? `${base.replace(/[.。।]$/, '')} (${error.detail})` : base;
   }
-  if (error instanceof LocalFileError) return tr(`importError.${error.reason}` as TranslationKey, { name: error.fileName });
+  if (error instanceof LocalFileError) {
+    if (error.reason === 'too-large' && error.size) return tooLargeMessage(error.fileName, error.size, tr, language);
+    return tr(`importError.${error.reason}` as TranslationKey, { name: error.fileName });
+  }
   if (error instanceof ProjectCodecError && error.code === 'too-large') return tr('importError.too-large', { name: fileName });
   const detail = error instanceof Error ? error.message : String(error);
   return tr('importError.corrupt', { name: fileName }) + (detail ? ` (${detail})` : '');
@@ -146,7 +152,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
       try {
         mtls.set(file.name.toLowerCase(), new TextDecoder('utf-8').decode(await file.read()));
       } catch (error) {
-        failures.push(importErrorMessage(error, file.name, tr));
+        failures.push(importErrorMessage(error, file.name, tr, get().language));
       }
     }
 
@@ -158,7 +164,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         const mtlText = /\.obj$/i.test(file.name) ? matchMtl(buffer, mtls) : undefined;
         models.push(await engine.parseModelFileAsync(file.name, buffer, { mtlText }));
       } catch (error) {
-        failures.push(importErrorMessage(error, file.name, tr));
+        failures.push(importErrorMessage(error, file.name, tr, get().language));
       }
     }
 
@@ -178,15 +184,20 @@ export function createModelIoActions(deps: ModelIoDeps) {
     }
     const created = placed.map((p) =>
       buildObject({
-        name: p.part.name || p.fileName,
+        name: (p.part.name || p.fileName).slice(0, MAX_GROUP_NAME),
         mesh: p.mesh,
         position: p.position,
         color: p.part.isHole ? '#f97316' : p.part.color ?? '',
         isHole: p.part.isHole,
       }),
     );
+    // Placas del laminador y conjuntos montados quedan agrupados, en el mismo paso deshacible.
+    const grouping = groupImported(models, placed, created, state.groups?.length ?? 0, deps.bedSize?.() ?? null, tr);
     pushHistory();
-    set((prev) => ({ objects: [...prev.objects, ...created], selectedIds: created.map((o) => o.id) }));
+    set((prev) => ({
+      ...reconcileGroups({ objects: [...prev.objects, ...grouping.objects], groups: [...(prev.groups ?? []), ...grouping.groups] }),
+      selectedIds: created.map((o) => o.id),
+    }));
     if (wasEmpty || placement === 'original') get().requestCameraPreset('fit');
     else get().requestCameraPreset('ensure', created.map((o) => o.id));
 
@@ -199,6 +210,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         : tr('import.importedParts', { name: models[0].fileName, count: pieces })
       : tr('import.importedFiles', { count: models.length, parts: pieces });
     get().addToast(`${summary} · ${trisText}`, 'success');
+    for (const notice of grouping.notices) get().addToast(notice, 'info');
     const heavy = created.find((o) => o.stats.triangles >= OPERATION_DEFAULTS.heavyMesh.warnTriangles);
     if (heavy) {
       const fmt = new Intl.NumberFormat(get().language).format(heavy.stats.triangles);
@@ -281,7 +293,12 @@ export function createModelIoActions(deps: ModelIoDeps) {
         filters: f.suffix === '.mtl' ? [{ name: 'Wavefront MTL', extensions: ['mtl'] }] : filters,
       }));
       const saved = await saveFileSet(entries);
-      if (saved) get().addToast(tr('toast.exported', { name: entries.map((e) => e.name).join(' + ') }), 'success');
+      if (saved) {
+        get().addToast(tr('toast.exported', { name: entries.map((e) => e.name).join(' + ') }), 'success');
+        const triangles = layoutTargets.reduce((acc, o) => acc + Math.floor(o.mesh.indices.length / 3), 0);
+        const sized = entries.filter((e) => !e.name.endsWith('.mtl')).map((e) => ({ name: e.name, bytes: e.data.byteLength }));
+        for (const notice of exportNotices(sized, triangles, tr, get().language)) get().addToast(notice, 'info');
+      }
       return saved;
     } catch (error) {
       const name = error instanceof FileSaveError ? error.fileName : fileName;
