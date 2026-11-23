@@ -123,7 +123,10 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         const counts = { before: formatNumber(lang, before), tris: formatNumber(lang, tris) };
         // Menos de 1 % de reducción no se anuncia como éxito.
         if (outcome === 'marginal') get().addToast(tr('toast.simplifyMarginal', counts), 'info');
-        else get().addToast(tr('toast.simplifyDone', counts), 'success');
+        // Siempre: triángulos antes -> después y cambio de volumen en % (el aviso de > 2 % sigue aparte).
+        const pct = change.simplify?.volumeChangePct ?? 0;
+        const delta = new Intl.NumberFormat(lang, { maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(Math.round(pct * 100) / 100);
+        get().addToast(tr('realesMotor.simplifyResult', { before: counts.before, after: counts.tris, delta }), outcome === 'marginal' ? 'info' : 'success');
         return true;
       });
     },

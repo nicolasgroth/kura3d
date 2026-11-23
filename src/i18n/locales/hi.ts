@@ -1171,7 +1171,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'printWarning.FLOATING': 'ऑब्जेक्ट प्रिंट बेड से {gap} mm ऊपर तैर रहा है।',
   'printWarning.OVERHANG': 'सतह के {percent}% हिस्से में {angle}° से अधिक ओवरहैंग है; स्लाइस करते समय सपोर्ट की ज़रूरत पड़ सकती है।',
   'printWarning.LOW_DENSITY': 'वक्र सतहों पर कम पॉलीगॉन घनत्व; वे कोणीय दिख सकती हैं।',
-  'printWarning.HIGH_DENSITY': 'बहुत घना मेश (> 50 000 त्रिभुज); इसे सरल करने पर विचार करें।',
+  'printWarning.HIGH_DENSITY': 'बहुत घना मेश (300 000 या अधिक त्रिभुज): धीमा चल सकता है; इसे सरल करने पर विचार करें।',
   'printWarning.THIN_WALL': 'कुछ दीवारें {thickness} mm की हैं, न्यूनतम {min} mm से पतली; वे प्रिंट न हो सकें।',
   'printWarning.INVERTED_NORMALS': 'मेश के नॉर्मल उलटे हैं (ऋणात्मक आयतन); प्रिंट से पहले इसे फिर से उन्मुख करें।',
   'printWarning.BELOW_BED': 'ऑब्जेक्ट बेड से {depth} mm नीचे है (Z < 0); प्रिंट से पहले इसे बेड पर रखें।',

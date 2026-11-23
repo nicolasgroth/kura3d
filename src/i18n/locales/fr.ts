@@ -1171,7 +1171,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'printWarning.FLOATING': 'L\'objet flotte à {gap} mm au-dessus du plateau.',
   'printWarning.OVERHANG': 'Surplomb de plus de {angle}° sur {percent} % de la surface ; un support peut être nécessaire au découpage.',
   'printWarning.LOW_DENSITY': 'Faible densité de polygones sur les surfaces courbes ; elles peuvent paraître facettées.',
-  'printWarning.HIGH_DENSITY': 'Maillage très dense (> 50 000 triangles) ; pensez à le simplifier.',
+  'printWarning.HIGH_DENSITY': 'Maillage très dense (300 000 triangles ou plus) : peut être lent ; pensez à le simplifier.',
   'printWarning.THIN_WALL': 'Certaines parois font {thickness} mm, moins que le minimum de {min} mm ; elles risquent de ne pas s\'imprimer.',
   'printWarning.INVERTED_NORMALS': 'Le maillage a des normales inversées (volume négatif) ; réorientez-le avant d\'imprimer.',
   'printWarning.BELOW_BED': 'L\'objet est {depth} mm sous le plateau (Z < 0) ; posez-le sur le plateau avant d\'imprimer.',

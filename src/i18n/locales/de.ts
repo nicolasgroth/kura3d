@@ -1171,7 +1171,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'printWarning.FLOATING': 'Das Objekt schwebt {gap} mm über dem Druckbett.',
   'printWarning.OVERHANG': 'Überhang von mehr als {angle}° auf {percent} % der Oberfläche; beim Slicen kann Stütze nötig sein.',
   'printWarning.LOW_DENSITY': 'Geringe Polygondichte auf gekrümmten Flächen; sie können facettiert wirken.',
-  'printWarning.HIGH_DENSITY': 'Sehr dichtes Netz (> 50 000 Dreiecke); erwäge, es zu vereinfachen.',
+  'printWarning.HIGH_DENSITY': 'Sehr dichtes Netz (300 000 Dreiecke oder mehr): kann langsam laufen; erwäge, es zu vereinfachen.',
   'printWarning.THIN_WALL': 'Einige Wände sind {thickness} mm dick, dünner als das Minimum von {min} mm; sie werden evtl. nicht gedruckt.',
   'printWarning.INVERTED_NORMALS': 'Das Netz hat invertierte Normalen (negatives Volumen); richte es vor dem Druck neu aus.',
   'printWarning.BELOW_BED': 'Das Objekt liegt {depth} mm unter dem Druckbett (Z < 0); setze es vor dem Druck auf das Bett.',

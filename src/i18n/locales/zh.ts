@@ -1171,7 +1171,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'printWarning.FLOATING': '对象悬浮在打印床上方 {gap} mm。',
   'printWarning.OVERHANG': '{percent}% 的表面悬垂超过 {angle}°；切片时可能需要支撑。',
   'printWarning.LOW_DENSITY': '曲面多边形密度低，可能出现明显棱面。',
-  'printWarning.HIGH_DENSITY': '网格过密（> 50 000 个三角形），建议简化。',
+  'printWarning.HIGH_DENSITY': '网格过密（30 万个三角形或以上），可能运行缓慢，建议简化。',
   'printWarning.THIN_WALL': '部分壁厚为 {thickness} mm，低于最小值 {min} mm，可能无法打印。',
   'printWarning.INVERTED_NORMALS': '网格法线反向（体积为负），打印前请重新定向。',
   'printWarning.BELOW_BED': '对象位于打印床下方 {depth} mm（Z < 0），打印前请将其放到床面上。',
