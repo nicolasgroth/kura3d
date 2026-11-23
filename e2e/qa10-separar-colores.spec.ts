@@ -38,7 +38,7 @@ async function abrir(page: Page) {
 
 async function crearCubo(page: Page, dims: [string, string][]) {
   await page.getByRole('button', { name: 'Cubo', exact: true }).click();
-  for (const [n, v] of dims) { const t = page.getByRole('textbox', { name: n, exact: true }).first(); await t.fill(v); await t.press('Enter'); }
+  for (const [n, v] of dims) { const t = page.getByRole('spinbutton', { name: n, exact: true }).first(); await t.fill(v); await t.press('Enter'); }
   await page.waitForTimeout(500);
 }
 
@@ -80,7 +80,7 @@ test('corte por plano: mitad A es el lado − y B el lado + en X', async ({ page
   const d = page.getByRole('dialog');
   await d.getByRole('combobox').nth(0).selectOption({ label: 'X (vertical)' });
   await d.getByRole('combobox').nth(1).selectOption({ label: 'Sin conectores (corte limpio)' });
-  const o = d.getByRole('textbox').first(); await o.fill('5'); await o.press('Tab');
+  const o = d.getByRole('spinbutton').first(); await o.fill('5'); await o.press('Tab');
   await d.getByRole('button', { name: 'Ejecutar Corte' }).click();
   await page.waitForFunction(() => (window as any).__s.getState().objects.length === 2, null, { timeout: 30000 });
   const r = await page.evaluate(() => (window as any).__s.getState().objects.map((x: any) => ({ n: x.name, w: x.stats.dimensionsMm[0] })));
