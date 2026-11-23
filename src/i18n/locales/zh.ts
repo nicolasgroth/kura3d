@@ -33,6 +33,7 @@ import { UXCIERRE_ZH } from './uxCierre';
 import { UX3_EDICION_ZH } from './ux3Edicion';
 import { UX4_ZH } from './ux4';
 import { CORTEMITAD_ZH } from './corteMitad';
+import { REALESMOTOR_ZH } from './realesMotor';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -63,6 +64,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...UX3_EDICION_ZH,
   ...UX4_ZH,
   ...CORTEMITAD_ZH,
+  ...REALESMOTOR_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
   'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',
@@ -1169,7 +1171,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'printWarning.FLOATING': '对象悬浮在打印床上方 {gap} mm。',
   'printWarning.OVERHANG': '{percent}% 的表面悬垂超过 {angle}°；切片时可能需要支撑。',
   'printWarning.LOW_DENSITY': '曲面多边形密度低，可能出现明显棱面。',
-  'printWarning.HIGH_DENSITY': '网格过密（> 50 000 个三角形），建议简化。',
+  'printWarning.HIGH_DENSITY': '网格过密（30 万个三角形或以上），可能运行缓慢，建议简化。',
   'printWarning.THIN_WALL': '部分壁厚为 {thickness} mm，低于最小值 {min} mm，可能无法打印。',
   'printWarning.INVERTED_NORMALS': '网格法线反向（体积为负），打印前请重新定向。',
   'printWarning.BELOW_BED': '对象位于打印床下方 {depth} mm（Z < 0），打印前请将其放到床面上。',

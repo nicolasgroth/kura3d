@@ -20,6 +20,7 @@ import type {
   PrimitiveParams,
   PrimitiveType,
   PrinterProfile,
+  SceneGroup,
   SceneObject,
   StructuralSegmentationResult,
   SurfaceProjectionOptions,
@@ -42,6 +43,11 @@ export interface ExportTaskArgs {
   targets: SceneObject[];
   baseName: string;
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
+  /**
+   * 3MF de escena completa: grupos de la escena. `targets` trae entonces TODOS los objetos (también
+   * ocultos y huecos) y el archivo lleva los metadatos de Kura3D para restaurarla tal cual.
+   */
+  sceneGroups?: SceneGroup[];
 }
 
 /** Argumentos del informe de imprimibilidad (solo lectura; no modifica la escena). */
@@ -71,7 +77,7 @@ export async function exportSceneFiles(a: ExportTaskArgs): Promise<ExportTaskRes
     case 'stl':
       return { files: [{ suffix: '.stl', data: engine.exportSceneToBinarySTL(a.targets, engine.stlBrandHeader(BRAND)) }] };
     case '3mf':
-      return { files: [{ suffix: '.3mf', data: engine.exportSceneTo3MF(a.targets, a.unitSystem, undefined, BRAND) }] };
+      return { files: [{ suffix: '.3mf', data: engine.exportSceneTo3MF(a.targets, a.unitSystem, undefined, BRAND, a.sceneGroups ? { groups: a.sceneGroups } : undefined) }] };
     case 'obj': {
       const { obj, mtl } = engine.exportSceneToOBJ(a.targets, a.baseName, BRAND);
       const enc = new TextEncoder();

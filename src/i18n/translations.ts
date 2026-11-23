@@ -38,6 +38,7 @@ import { UXCIERRE_EN, UXCIERRE_ES } from './locales/uxCierre';
 import { UX3_EDICION_EN, UX3_EDICION_ES } from './locales/ux3Edicion';
 import { UX4_EN, UX4_ES } from './locales/ux4';
 import { CORTEMITAD_EN, CORTEMITAD_ES } from './locales/corteMitad';
+import { REALESMOTOR_EN, REALESMOTOR_ES } from './locales/realesMotor';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -70,6 +71,7 @@ export const TRANSLATIONS_ES = {
   ...UX3_EDICION_ES,
   ...UX4_ES,
   ...CORTEMITAD_ES,
+  ...REALESMOTOR_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -1176,7 +1178,7 @@ export const TRANSLATIONS_ES = {
   'printWarning.FLOATING': 'El objeto está flotando a {gap} mm sobre la cama de impresión.',
   'printWarning.OVERHANG': 'Voladizo de más de {angle}° en el {percent} % de la superficie; puede necesitar soporte al laminar.',
   'printWarning.LOW_DENSITY': 'Baja densidad poligonal en superficies curvas; pueden verse facetadas.',
-  'printWarning.HIGH_DENSITY': 'Malla muy densa (> 50 000 triángulos); considera simplificarla.',
+  'printWarning.HIGH_DENSITY': 'Malla muy densa (300 000 triángulos o más): puede ir lento; considera simplificarla.',
   'printWarning.THIN_WALL': 'Hay paredes de {thickness} mm, más delgadas que el mínimo de {min} mm; pueden no imprimirse.',
   'printWarning.INVERTED_NORMALS': 'La malla tiene las normales invertidas (volumen negativo); reoriéntala antes de imprimir.',
   'printWarning.BELOW_BED': 'El objeto queda {depth} mm bajo la cama (Z < 0); apóyalo antes de imprimir.',
@@ -1403,6 +1405,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UX3_EDICION_EN,
   ...UX4_EN,
   ...CORTEMITAD_EN,
+  ...REALESMOTOR_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
@@ -2481,7 +2484,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'printWarning.FLOATING': 'The object floats {gap} mm above the print bed.',
   'printWarning.OVERHANG': 'Overhang beyond {angle}° on {percent}% of the surface; it may need support when slicing.',
   'printWarning.LOW_DENSITY': 'Low polygon density on curved surfaces; they may look faceted.',
-  'printWarning.HIGH_DENSITY': 'Very dense mesh (> 50,000 triangles); consider simplifying it.',
+  'printWarning.HIGH_DENSITY': 'Very dense mesh (300,000 triangles or more): it may run slowly; consider simplifying it.',
   'printWarning.THIN_WALL': 'Some walls are {thickness} mm, thinner than the {min} mm minimum; they may not print.',
   'printWarning.INVERTED_NORMALS': 'The mesh has inverted normals (negative volume); reorient it before printing.',
   'printWarning.BELOW_BED': 'The object sits {depth} mm below the bed (Z < 0); place it on the bed before printing.',

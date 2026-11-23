@@ -10,7 +10,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { overlapsOthers, keepClearOfOthers } from '../../core/scene/freeSpot';
-import { countMeshBodies } from '../../core/scene/meshBodies';
+import { countMeshBodies } from '../../engine/io/meshBodies';
 import { addBox, byId, resetStore, store } from './storeTestUtils';
 
 function cubesStl(centers: Array<[number, number, number]>, size: number): ArrayBuffer {

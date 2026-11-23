@@ -51,13 +51,24 @@ export async function repairObject(
 export async function simplifyObject(ctx: OperationContext, obj: SceneObject, toleranceMm: number): Promise<SceneChange> {
   const simplified = await engine.simplifyMesh(obj, toleranceMm);
   // Volumen en coordenadas locales: la escala del objeto no cambia el porcentaje.
-  const before = engine.computeMeshStats(obj.mesh).volumeMm3;
-  const after = engine.computeMeshStats(simplified).volumeMm3;
+  const statsBefore = engine.computeMeshStats(obj.mesh);
+  const statsAfter = engine.computeMeshStats(simplified);
+  const before = statsBefore.volumeMm3;
+  const after = statsAfter.volumeMm3;
   const pct = before > 0 ? (100 * (after - before)) / before : 0;
   const warnings = Math.abs(pct) > OPERATION_DEFAULTS.simplify.volumeWarnPct
     ? [engineWarning('SIMPLIFY_VOLUME_CHANGED', { pct: Math.round(pct * 10) / 10 })]
     : [];
-  return patchOf(obj, meshPatch(ctx, obj, simplified), warnings);
+  return {
+    ...patchOf(obj, meshPatch(ctx, obj, simplified), warnings),
+    simplify: {
+      trianglesBefore: statsBefore.triangles,
+      trianglesAfter: statsAfter.triangles,
+      volumeBeforeMm3: before,
+      volumeAfterMm3: after,
+      volumeChangePct: pct,
+    },
+  };
 }
 
 /** Refina (y suaviza opcionalmente) la malla. */

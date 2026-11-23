@@ -10,11 +10,41 @@
  */
 
 import { strToU8, zipSync } from 'fflate';
-import type { SceneObject, SlicerTarget, UnitSystem } from '../../types/kura';
+import type { SceneGroup, SceneObject, SlicerTarget, UnitSystem } from '../../types/kura';
 import { applyTransformToMesh } from '../primitives';
 import { brandSignature, type ExportBrand } from './exportBrand';
 import { normalizeHexColor } from './meshBuffers';
+import { buildKuraSceneMeta, KURA_SCENE_PATH } from './kuraSceneMeta';
 import { exportableObjects } from './stl';
+
+/** Opciones de la exportación de escena completa (ida y vuelta exacta con Kura3D). */
+export interface ThreeMfSceneOptions {
+  /**
+   * Árbol de grupos de la escena. Si se pasa, `objects` es la escena entera: lo visible y sólido va al
+   * `<build>` (lo que imprimen los laminadores); lo oculto y los huecos quedan como recursos sin ítem
+   * de build, y `Metadata/kura_scene.json` guarda transformaciones, estado y grupos para restaurarla.
+   */
+  groups: readonly SceneGroup[];
+}
+
+/** Placas del laminador: una por grupo raíz si hay dos o más y cada objeto impreso cae en alguno. */
+function scenePlates(printed: readonly SceneObject[], groups: readonly SceneGroup[]): Array<{ name: string; members: Set<number> }> | null {
+  const byId = new Map(groups.map((g) => [g.id, g]));
+  const rootOf = (id: string | undefined): SceneGroup | undefined => {
+    let g = id !== undefined ? byId.get(id) : undefined;
+    for (let steps = 0; g?.parentId !== undefined && byId.has(g.parentId) && steps < groups.length; steps++) g = byId.get(g.parentId);
+    return g;
+  };
+  const plates = new Map<string, { name: string; members: Set<number> }>();
+  for (let i = 0; i < printed.length; i++) {
+    const root = rootOf(printed[i].groupRef);
+    if (!root) return null;
+    let plate = plates.get(root.id);
+    if (!plate) plates.set(root.id, (plate = { name: root.name, members: new Set() }));
+    plate.members.add(i);
+  }
+  return plates.size >= 2 ? [...plates.values()] : null;
+}
 
 /** Factores de conversión de milímetros hacia la unidad destino. */
 const UNIT_TO_3MF: Record<UnitSystem, { xmlName: string; scaleFromMm: number }> = {
@@ -85,8 +115,12 @@ export function exportSceneTo3MF(
   unit: UnitSystem = 'mm',
   _deprecatedSlicerTarget?: SlicerTarget,
   brand?: ExportBrand,
+  sceneOptions?: ThreeMfSceneOptions,
 ): Uint8Array {
   const solidObjects = exportableObjects(objects);
+  // Escena completa: lo no impreso (oculto, huecos) se escribe después, sin ítem de build.
+  const extraObjects = sceneOptions ? objects.filter((o) => !solidObjects.includes(o)) : [];
+  const written = [...solidObjects, ...extraObjects];
   const unitSpec = UNIT_TO_3MF[unit] ?? UNIT_TO_3MF.mm;
 
   // Paleta global única para <basematerials id="1">.
@@ -102,12 +136,16 @@ export function exportSceneTo3MF(
     }
     return idx;
   };
-  for (const obj of solidObjects) {
+  const registerObject = (obj: SceneObject) => {
     const base = normalizeHexColor(obj.color);
     registerColor(base);
     obj.mesh.faceColors?.forEach((c) => registerColor(c, base));
-  }
+  };
+  solidObjects.forEach(registerObject);
   if (palette.length === 0) registerColor('#38bdf8');
+  // Filamentos que ven los laminadores: solo los de lo impreso (los colores de huecos/ocultos van después).
+  const filamentCount = palette.length;
+  extraObjects.forEach(registerObject);
 
   const signature = brandSignature(brand);
   const model = new ByteChunks();
@@ -126,9 +164,11 @@ export function exportSceneTo3MF(
   const buildItems: string[] = [];
   const configObjects: string[] = [];
   const configInstances: string[] = [];
+  const plates = sceneOptions ? scenePlates(solidObjects, sceneOptions.groups) : null;
 
-  solidObjects.forEach((obj, objIdx) => {
+  written.forEach((obj, objIdx) => {
     const objId = objIdx + 2;
+    const printed = objIdx < solidObjects.length;
     const world = applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale);
     const base = normalizeHexColor(obj.color);
     const baseIdx = registerColor(base);
@@ -152,6 +192,7 @@ export function exportSceneTo3MF(
       model.write(`          <triangle v1="${idx[t * 3]}" v2="${idx[t * 3 + 1]}" v3="${idx[t * 3 + 2]}"${props} />\n`);
     }
     model.write(`        </triangles>\n      </mesh>\n    </object>\n`);
+    if (!printed) return; // oculto o hueco: solo Kura3D lo restaura (los laminadores no lo ven)
     buildItems.push(`    <item objectid="${objId}" />`);
 
     // Mapeo de extrusores (base 1..N) para Bambu/Orca/Elegoo/FlashForge/Snapmaker.
@@ -167,26 +208,34 @@ export function exportSceneTo3MF(
       `      <metadata key="extruder" value="${extruder}"/>\n` +
       `    </part>\n  </object>`,
     );
-    configInstances.push(
+    configInstances[objIdx] =
       `    <model_instance>\n      <metadata key="object_id" value="${objId}"/>\n` +
-      `      <metadata key="instance_id" value="0"/>\n    </model_instance>`,
-    );
+      `      <metadata key="instance_id" value="0"/>\n    </model_instance>`;
   });
   model.write(`  </resources>\n  <build>\n${buildItems.join('\n')}\n  </build>\n</model>\n`);
 
+  const plateXml = (id: number, name: string, members: number[]) =>
+    `  <plate>\n    <metadata key="plater_id" value="${id}"/>\n    <metadata key="plater_name" value="${escapeXml(name)}"/>\n` +
+    `${members.map((i) => configInstances[i]).join('\n')}\n  </plate>`;
+  const platesXml = plates
+    ? plates.map((p, i) => plateXml(i + 1, p.name, [...p.members])).join('\n')
+    : plateXml(1, brand?.name ? `${brand.name}_Bed` : 'Plate_1', solidObjects.map((_, i) => i));
   const settings =
     `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n` +
-    `  <metadata key="filament_count" value="${palette.length}"/>\n` +
-    `${configObjects.join('\n')}\n  <plate>\n` +
-    `    <metadata key="plater_id" value="1"/>\n    <metadata key="plater_name" value="${escapeXml(brand?.name ? `${brand.name}_Bed` : 'Plate_1')}"/>\n` +
-    `${configInstances.join('\n')}\n  </plate>\n</config>\n`;
+    `  <metadata key="filament_count" value="${filamentCount}"/>\n` +
+    `${configObjects.join('\n')}\n${platesXml}\n</config>\n`;
+  const sceneMeta: Record<string, Uint8Array> = sceneOptions
+    ? { [KURA_SCENE_PATH]: strToU8(JSON.stringify(buildKuraSceneMeta(written, written.map((_, i) => String(i + 2)), sceneOptions.groups))) }
+    : {};
 
   const contentTypes =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n` +
     `  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />\n` +
     `  <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml" />\n` +
-    `  <Default Extension="config" ContentType="text/xml" />\n</Types>\n`;
+    `  <Default Extension="config" ContentType="text/xml" />\n` +
+    (sceneOptions ? `  <Default Extension="json" ContentType="application/json" />\n` : '') +
+    `</Types>\n`;
   const rels =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n` +
@@ -200,6 +249,7 @@ export function exportSceneTo3MF(
       '_rels/.rels': strToU8(rels),
       '3D/3dmodel.model': model.toBytes(),
       'Metadata/model_settings.config': strToU8(settings),
+      ...sceneMeta,
     },
     { mtime: ZIP_FIXED_MTIME },
   );

@@ -22,6 +22,18 @@ export interface SceneChange {
   /** Campos a fusionar sobre objetos existentes (por ID). */
   patches: Array<{ id: string; patch: Partial<SceneObject> }>;
   warnings: EngineWarning[];
+  /** Resultado de simplificar: triángulos y volumen (local, mm³) antes y después, para mostrarlo siempre. */
+  simplify?: SimplifyOutcome;
+}
+
+/** Medidas de una simplificación (volumen en coordenadas locales: la escala no cambia el porcentaje). */
+export interface SimplifyOutcome {
+  trianglesBefore: number;
+  trianglesAfter: number;
+  volumeBeforeMm3: number;
+  volumeAfterMm3: number;
+  /** Cambio de volumen en % (positivo = creció). */
+  volumeChangePct: number;
 }
 
 /** Dependencias de una operación: política de construcción, IDs y nombres. */

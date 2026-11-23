@@ -26,6 +26,9 @@ import { applyTransformToMesh, computeMeshStats } from './primitives';
 import { measureSealedCavities } from './printabilityCavities';
 import { faceGeometry, hasFacetedCurvature, measureOverhang, sampleWallThickness } from './printabilityChecks';
 
+/** Sobre este conteo no se busca faceteado (malla ya fina y la comprobación sería cara). */
+const FACETED_CHECK_MAX_TRIANGLES = 50_000;
+
 /** Fracción sólida asumida por perímetros y tapas en la estimación de peso. */
 export const PRINT_SHELL_FRACTION = 0.22;
 /** Diámetro de filamento asumido (mm). */
@@ -112,8 +115,10 @@ export function analyzePrintability(
   const filamentRadius = PRINT_FILAMENT_DIAMETER_MM / 2;
   const estimatedFilamentMeters = (effectiveVolumeCm3 * 1000) / (Math.PI * filamentRadius * filamentRadius) / 1000;
 
-  const faceted = triCount > 0 && triCount <= 50000 && hasFacetedCurvature(world, geo);
-  const densityQuality: PrintabilityReport['densityQuality'] = faceted ? 'low' : triCount > 50000 ? 'high' : 'optimal';
+  // Faceteado: solo se busca en mallas livianas (la comprobación recorre la curvatura).
+  const faceted = triCount > 0 && triCount <= FACETED_CHECK_MAX_TRIANGLES && hasFacetedCurvature(world, geo);
+  // Densa: la misma fuente que el aviso al importar (`OPERATION_DEFAULTS.heavyMesh`).
+  const densityQuality: PrintabilityReport['densityQuality'] = faceted ? 'low' : triCount >= OPERATION_DEFAULTS.heavyMesh.warnTriangles ? 'high' : 'optimal';
 
   const issues: PrintWarning[] = [];
   let score = 100;

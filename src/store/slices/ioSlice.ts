@@ -56,12 +56,16 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     set: (updater) => set((state) => updater(state) as Partial<KuraStoreState>),
     tr,
     pushHistory: () => pushHistory(),
-    buildObject: ({ name, mesh, position, color, isHole }) =>
-      buildSceneObject({ name, source: 'imported', mesh, position, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole }),
+    buildObject: ({ name, mesh, position, color, isHole, rotation, scale, stats }) =>
+      buildSceneObject({ name, source: 'imported', mesh, position, rotation, scale, stats, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole }),
+    onBuildProgress: (done, total) => {
+      const progress = get().busyProgress;
+      if (progress) set({ busyProgress: { ...progress, phase: 'build', done, total } });
+    },
     exportFiles: (args) => ctx.runEngineDetached('export', args),
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
     openSimplify: (id) => get().requestSimplifyPanel(id),
-    repairMesh: (id) => void get().repairObjectMesh(id),
+    repairMesh: (id) => get().repairObjectMesh(id),
     separateBodies: (id) => void get().splitDisconnectedObject(id),
     bedSize: () => activeBedSize(get()),
     // Antes de un modelo grande: si hay cambios sin guardar, el borrador de recuperación queda escrito.
@@ -172,6 +176,8 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
       }
       if (files.length > 0) await get().importModelFiles(files, { placement });
     },
+
+    rescaleObjects: (ids, factor) => (rejectWhileBusy() ? false : modelIo.rescaleObjects(ids, factor)),
 
     importModelFiles: async (files, options) => {
       if (files.length === 0) return false;

@@ -13,6 +13,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { computeMeshStats, initManifoldEngine } from '../index';
 import { ModelImportError, import3MFBuffer, parseModelFile, read3MF } from '../ioFormats';
 import { boundsOf } from '../io/meshBuffers';
+import { partBounds } from '../io/partGeometry';
 import { cubeMeshXml, modelXml, pack3mf, translate } from './ioFixtures';
 
 const errorCode = (fn: () => unknown) => {
@@ -26,6 +27,8 @@ const errorCode = (fn: () => unknown) => {
 
 /** Caja [minX,minY,minZ,maxX,maxY,maxZ] de una pieza en Y-up. */
 const box = (positions: Float32Array) => boundsOf(positions).map((n) => Math.round(n * 1000) / 1000);
+/** Caja de la pieza en el archivo (malla compartida + su traslación). */
+const partBox = (part: Parameters<typeof partBounds>[0]) => partBounds(part).map((n) => Math.round(n * 1000) / 1000);
 
 describe('lector 3MF: componentes, instancias y build', () => {
   beforeAll(async () => {
@@ -44,9 +47,9 @@ describe('lector 3MF: componentes, instancias y build', () => {
     expect(model.parts).toHaveLength(3);
     expect(model.hasPlacement).toBe(true);
     // Z-up (x, y, z) -> Y-up (x, z, -y)
-    expect(box(model.parts[0].mesh.positions)).toEqual([100, 0, -60, 110, 10, -50]);
-    expect(box(model.parts[1].mesh.positions)).toEqual([120, 0, -60, 130, 10, -50]);
-    expect(box(model.parts[2].mesh.positions)).toEqual([100, 5, -90, 110, 15, -80]);
+    expect(partBox(model.parts[0])).toEqual([100, 0, -60, 110, 10, -50]);
+    expect(partBox(model.parts[1])).toEqual([120, 0, -60, 130, 10, -50]);
+    expect(partBox(model.parts[2])).toEqual([100, 5, -90, 110, 15, -80]);
     for (const part of model.parts) {
       expect(part.group).toBe(0);
       expect(part.openEdges).toBe(0);
@@ -61,7 +64,9 @@ describe('lector 3MF: componentes, instancias y build', () => {
     );
     const parts = read3MF(pack3mf({ '3D/3dmodel.model': xml })).parts;
     expect(parts.map((p) => p.name)).toEqual(['Clavija', 'Clavija (2)', 'Clavija (3)']);
-    expect(parts.map((p) => box(p.mesh.positions)[0])).toEqual([0, 12, 24]);
+    expect(parts.map((p) => partBox(p)[0])).toEqual([0, 12, 24]);
+    // Las tres instancias comparten la misma malla (referencia), sin copias.
+    expect(new Set(parts.map((p) => p.mesh)).size).toBe(1);
     expect(new Set(parts.map((p) => p.group)).size).toBe(3);
   });
 

@@ -11,7 +11,7 @@
 
 import type { MeshData } from '../types/kura';
 import { computeVertexNormals } from './manifoldKernel';
-import { centerMeshOnBed } from './io/meshBuffers';
+import { centerMeshOnBed, translateMesh } from './io/meshBuffers';
 import type { ImportedPart } from './io/importTypes';
 import { readOBJ } from './io/obj';
 import { readSTL } from './io/stl';
@@ -36,6 +36,7 @@ export {
   type ModelImportLimits,
 } from './io/importErrors';
 export type { ImportedModel, ImportedPart, ModelImportFormat, ModelParseOptions } from './io/importTypes';
+export { unitHintForSize, type UnitHint, type UnitSuggestion, type UnitSuggestionKind } from './io/unitHint';
 
 /** Opciones de las funciones históricas de importación. */
 export interface MeshImportOptions {
@@ -99,7 +100,8 @@ export function import3MFBuffer(
   return read3MF(buffer).parts.map((part) => ({
     name: part.name,
     color: part.color ?? '#38bdf8',
-    mesh: placeMesh(part.mesh, options),
+    // Instancias que comparten malla: con posición preservada, cada una lleva su traslación.
+    mesh: placeMesh(part.translation && options?.preservePlacement ? translateMesh(part.mesh, ...part.translation) : part.mesh, options),
     ...(part.isHole ? { isHole: true } : {}),
   }));
 }

@@ -33,6 +33,7 @@ import { UXCIERRE_FR } from './uxCierre';
 import { UX3_EDICION_FR } from './ux3Edicion';
 import { UX4_FR } from './ux4';
 import { CORTEMITAD_FR } from './corteMitad';
+import { REALESMOTOR_FR } from './realesMotor';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -63,6 +64,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...UX3_EDICION_FR,
   ...UX4_FR,
   ...CORTEMITAD_FR,
+  ...REALESMOTOR_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',
@@ -1169,7 +1171,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'printWarning.FLOATING': 'L\'objet flotte à {gap} mm au-dessus du plateau.',
   'printWarning.OVERHANG': 'Surplomb de plus de {angle}° sur {percent} % de la surface ; un support peut être nécessaire au découpage.',
   'printWarning.LOW_DENSITY': 'Faible densité de polygones sur les surfaces courbes ; elles peuvent paraître facettées.',
-  'printWarning.HIGH_DENSITY': 'Maillage très dense (> 50 000 triangles) ; pensez à le simplifier.',
+  'printWarning.HIGH_DENSITY': 'Maillage très dense (300 000 triangles ou plus) : peut être lent ; pensez à le simplifier.',
   'printWarning.THIN_WALL': 'Certaines parois font {thickness} mm, moins que le minimum de {min} mm ; elles risquent de ne pas s\'imprimer.',
   'printWarning.INVERTED_NORMALS': 'Le maillage a des normales inversées (volume négatif) ; réorientez-le avant d\'imprimer.',
   'printWarning.BELOW_BED': 'L\'objet est {depth} mm sous le plateau (Z < 0) ; posez-le sur le plateau avant d\'imprimer.',
