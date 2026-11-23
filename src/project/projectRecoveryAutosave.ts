@@ -92,7 +92,8 @@ export function startProjectRecovery(
     schedule();
   }
 
-  async function process() {
+  /** `force`: escribe aunque la app esté ocupada (borrador pedido antes de una operación pesada). */
+  async function process(force = false) {
     for (const id of obsoleteIds) {
       if (stopped) return;
       obsoleteIds.delete(id);
@@ -105,7 +106,7 @@ export function startProjectRecovery(
     }
 
     const state = store.getState();
-    if (stopped || checkpointDue === null || Date.now() < checkpointDue || isBusy(state)) return;
+    if (stopped || checkpointDue === null || Date.now() < checkpointDue || (!force && isBusy(state))) return;
     checkpointDue = null;
     if (!isProjectDirty(state)) return;
 
@@ -163,6 +164,23 @@ export function startProjectRecovery(
 
   return {
     stop,
+    /**
+     * Escribe ya el borrador de los cambios pendientes, aunque la app esté ocupada; no hace nada si no
+     * hay cambios sin guardar o el último ya está escrito. Los fallos se informan como siempre.
+     */
+    async flushNow() {
+      if (stopped) return;
+      if (running) await running;
+      if (stopped || checkpointDue === null || !isProjectDirty(store.getState())) return;
+      clearTimeout(timer);
+      timer = undefined;
+      checkpointDue = Date.now();
+      running = process(true).finally(() => {
+        running = null;
+        schedule();
+      });
+      await running;
+    },
     checkpointSoon() {
       if (stopped || !isProjectDirty(store.getState())) return;
       // Do not rewrite an unchanged checkpoint whenever the tab loses focus.

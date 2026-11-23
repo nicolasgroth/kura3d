@@ -17,7 +17,9 @@ import { PRINT_COLOR_PALETTE, type ImageTo3DOptions, type MeshData, type SceneOb
 
 type ImageShapeMode = NonNullable<ImageTo3DOptions['shapeMode']>;
 import { MAX_MODEL_FILE_BYTES, openLocalFile, openLocalFiles } from '../../utils/platformBridge';
+import { flushRecoveryDraft } from '../../project/recoveryFlush';
 import { activeBedSize } from '../bedSize';
+import { isProjectDirty } from '../projectDocument';
 import { createModelIoActions, type ModelImportSource } from '../modelIoActions';
 import { loadInitialImportPlacement, STORAGE_IMPORT_PLACEMENT_KEY, writeStorage } from '../preferencesStorage';
 import type { StoreContext } from '../storeContext';
@@ -59,6 +61,10 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
     openSimplify: (id) => get().requestSimplifyPanel(id),
     bedSize: () => activeBedSize(get()),
+    // Antes de un modelo grande: si hay cambios sin guardar, el borrador de recuperación queda escrito.
+    ensureRecoveryDraft: async () => {
+      if (isProjectDirty(get())) await flushRecoveryDraft();
+    },
   });
 
   /** Colocador en el primer hueco libre; recuerda si cupo en la cama y si la escena estaba vacía. */
