@@ -1,6 +1,6 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 06:35, al cierre de la jornada nocturna.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 07:35, con las decisiones del autor del 23 de noviembre.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
@@ -16,16 +16,17 @@ Estado de `main`: 2099 pruebas del frontend, 136 del servidor MCP y 37 de Rust e
 | Rendimiento | Dividir un busto de 2,4 millones de triángulos: de 172 a 78 s. Importarlo: la mitad de memoria. Separar por colores tras pintar: de 94 a 1,4 s |
 | Seguridad | El lector de archivos pasó dos revisiones independientes: 13 hallazgos corregidos, cada uno con una prueba de archivo malicioso |
 | GitHub | El CI fallaba en cada push por una configuración incompleta; corregido. Dependabot quedó mensual y agrupado. No hay terceros con acceso |
-| Espera tu decisión | Seis consultas en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md): dependencias, mitad del corte, OrcaSlicer, token MCP, modelos reales en pantalla y método para llegar a 85 en usabilidad |
+| Decidido el 23-nov | Actualizar todas las dependencias; preguntar qué hacer con la mitad conservada de un corte; token MCP como está; seguir iterando usabilidad. Quedan dos pendientes prácticos en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) |
 
 ## En desarrollo
 
 | Funcionalidad | Estado |
 |---|---|
+| Actualización de dependencias: three.js 0.176 → 0.187, Vite 6 → 8 con su plugin de React, TypeScript 5.9 → 7, lucide-react, jsdom y acciones de GitHub; corregir lo que rompan (la lectura de SVG con three.js nuevo) | Decidido el 23-nov; en curso |
+| Corte por plano: al conservar una sola mitad, preguntar si queda donde está, se apoya en la cama o va a un lugar libre | Decidido el 23-nov; en curso |
 | Separar por colores sobre texto 3D pintado: algunas piezas pueden salir abiertas (se avisa cuáles y se ofrece reparar); grabar dos veces el mismo texto en el mismo lugar de un cilindro (da un error claro) | Límites conocidos; pendiente |
 | Imagen a 3D: ocultar los parámetros que no aplican en cada modo; aviso de cuánto crece la pieza al aplicar una textura; vista previa en vivo del texto 3D | Pendiente |
 | Armado por subconjuntos (filas, luego capas, luego apilar) para conservar todos los conectores en rejillas; hoy el orden pieza a pieza ya es el óptimo demostrado | Pendiente; cambia el modelo de pasos de armado |
-| Dependencias: TypeScript 7 y lucide-react listos en la rama local `chore/deps-2026-11` | Esperando la decisión del autor (consulta 1) |
 
 ## En QA
 
