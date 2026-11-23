@@ -1313,7 +1313,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.sum.jointsGlueValue': '{count}: {with} कनेक्टर सहित, {glue} केवल चिपकाने हेतु',
   'split.sum.jointsAllValue': '{count}, सभी कनेक्टर सहित',
   'split.sum.jointsNoneValue': '{count}, केवल चिपकाने हेतु (बिना कनेक्टर)',
-  'split.sum.margin': 'सबसे कम मार्जिन',
+  'split.sum.margin': 'न्यूनतम खाली जगह',
   'split.sum.marginValue': 'बेड से {mm} mm ({code})',
   'split.glueOptions': 'कनेक्टर पाने के लिए:',
   'split.glueLowerMin': 'न्यूनतम दीवार घटाएँ',

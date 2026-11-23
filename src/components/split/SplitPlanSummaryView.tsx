@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import '../../styles/splitSection.css';
 import React from 'react';
 import { t } from '../../i18n';
 import type { BedSplitPlan } from '../../engine';
@@ -113,8 +114,11 @@ export const SplitPlanSummaryView: React.FC<{
             )}
             {summary.tightest && (
               <>
-                <dt>{t(language, 'split.sum.margin')}</dt>
-                <dd>{t(language, 'split.sum.marginValue', { code: summary.tightest.code, mm: fmt1(summary.tightest.marginMm) })}</dd>
+                <dt title={t(language, 'split.sum.marginHelp')}>{t(language, 'split.sum.margin')}</dt>
+                <dd>
+                  {t(language, 'split.sum.marginValue', { code: summary.tightest.code, mm: fmt1(summary.tightest.marginMm) })}
+                  <small className="kura-split-margin-help">{t(language, 'split.sum.marginHelp')}</small>
+                </dd>
               </>
             )}
           </dl>

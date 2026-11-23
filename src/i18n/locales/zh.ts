@@ -1313,7 +1313,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'split.sum.jointsGlueValue': '{count}：{with} 处带连接件，{glue} 处仅胶合',
   'split.sum.jointsAllValue': '{count}，全部带连接件',
   'split.sum.jointsNoneValue': '{count}，仅胶合（无连接件）',
-  'split.sum.margin': '最小余量',
+  'split.sum.margin': '最小剩余空间',
   'split.sum.marginValue': '距打印床 {mm} mm（{code}）',
   'split.glueOptions': '若要连接件：',
   'split.glueLowerMin': '降低最小壁厚',

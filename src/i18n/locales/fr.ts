@@ -1313,7 +1313,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'split.sum.jointsGlueValue': '{count} : {with} avec connecteur, {glue} à coller seulement',
   'split.sum.jointsAllValue': '{count}, toutes avec connecteur',
   'split.sum.jointsNoneValue': '{count}, à coller seulement (sans connecteurs)',
-  'split.sum.margin': 'Marge la plus juste',
+  'split.sum.margin': 'Espace libre minimal',
   'split.sum.marginValue': '{mm} mm jusqu’au bord du plateau ({code})',
   'split.glueOptions': 'Pour avoir des connecteurs :',
   'split.glueLowerMin': 'Baisser le minimum de paroi',

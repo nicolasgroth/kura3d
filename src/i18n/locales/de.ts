@@ -1313,7 +1313,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'split.sum.jointsGlueValue': '{count}: {with} mit Verbinder, {glue} nur zum Kleben',
   'split.sum.jointsAllValue': '{count}, alle mit Verbinder',
   'split.sum.jointsNoneValue': '{count}, nur zum Kleben (ohne Verbinder)',
-  'split.sum.margin': 'Knappster Rand',
+  'split.sum.margin': 'Geringster Freiraum',
   'split.sum.marginValue': '{mm} mm zum Druckbett ({code})',
   'split.glueOptions': 'Für Verbinder:',
   'split.glueLowerMin': 'Wandminimum senken',
