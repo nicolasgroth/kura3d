@@ -357,3 +357,34 @@ Problemas principales, todos en corrección con una prueba de navegador por cada
 Observación sobre el método: cada evaluador nuevo encuentra problemas distintos de los anteriores (de los diez de esta ronda, ocho no habían sido señalados antes), y los que se corrigen no reaparecen. La nota sube, pero cada pasada descubre una capa más de pulido. No evaluó en ninguna de las tres rondas: texto 3D, SVG, imagen a 3D, roscas, molde, proyectar y separar por colores, por falta de tiempo.
 
 Consumo desde la reevaluación anterior (modelo · duración · tokens): escena (Opus · 76 min · 327 k), móvil y barra (Sonnet · 77 min · 293 k), idioma y menús (Sonnet · 68 min · 327 k), ahuecado y división (Opus · 83 min · 312 k), cierre (Sonnet · 69 min · 271 k), QA (Sonnet · 29 min · 203 k), tercera evaluación (Opus · 20 min · 248 k).
+
+## Cuarta evaluación de usabilidad · 23 de noviembre de 2026, 16:15 · `main` (commit `ba5ddca`)
+
+Evaluador nuevo, a ciegas, tras la QA aprobada con modelos reales. **Nota global: 78** (mínimo 85). Sin bloqueos duros: la consola no mostró errores y recargar no perdió datos (se recuperaron los 16 objetos).
+
+| Área | Nota |
+|---|---|
+| 1. Primer contacto e interfaz general | 80 |
+| 2. Crear y editar | 82 |
+| 3. Importar y reparar | 74 |
+| 4. Escena y grupos | 77 |
+| 5. Cortar y ahuecar | 80 |
+| 6. Dividir para imprimir | 76 |
+| 7. Medir | 80 |
+| 8. Colores | 81 |
+| 9. Exportar y guardar | 85 |
+
+Cuatro problemas transversales que explican la nota:
+
+1. Los avisos que traen un botón de acción ("Escalar ×100", "Reparar todas") se cierran solos en unos 30 s y la acción no queda en el historial de Avisos.
+2. El inspector es un desplazamiento muy largo con todas las herramientas apiladas; Cortar y Ahuecar quedan enterradas.
+3. Tras importar un modelo diminuto, cortar o dividir, la cámara no encuadra el resultado.
+4. En 390 px la app es usable pero queda recortada (barra de vistas, pie, pestañas duplicadas).
+
+Otros hallazgos: la barra del visor se parte en 3 filas a 1440 px en español; el panel de Avisos se sale del borde; tras Ctrl+G, F2 renombra un hijo y no el grupo; la pieza negativa nueva cae al lado y no encima; el menú contextual con 2 objetos se titula con el nombre de uno; el campo de ahuecar no dice "grosor de pared"; en Dividir el árbol usa números y el visor A1a/B2b, y "Preparar para imprimir" pone 10 placas en fila; Capacidad no dice qué objeto midió; exportar dice "Escena completa (15)" con 16 en el árbol sin explicar el oculto.
+
+No alcanzó a mirar: ángulo, simplificar en malla grande, exportar 3MF, guardar y abrir `.kura`, recorrido solo con teclado en el visor, 1024 px en modo claro.
+
+Serie de usabilidad: 76 → 75 → 79 → 78. Como en las rondas anteriores, casi todos los hallazgos son nuevos y los corregidos no reaparecen. La respuesta acordada con el autor es estructural: rediseño clásico de la interfaz (barras agrupadas, herramientas fuera del inspector) más los cuatro puntos transversales.
+
+Consumo desde la evaluación anterior (modelo · duración · tokens): dependencias (Opus · 103 min · 226 k), modelos reales motor (Opus · 60 min · 300 k), modelos reales interfaz (Opus · 73 min · 364 k), QA18 (Sonnet · 49 min · 158 k), correcciones QA18 (Opus · 67 min · 252 k), recorridos e2e (Sonnet · 39 min · 103 k), documentación pública (Sonnet · 46 min · 341 k), importación fluida (Opus · 69 min · 295 k), usabilidad sexta tanda (Opus · 67 min · 386 k), QA19 (Sonnet · 52 min · 181 k), pulido (Sonnet · 58 min · 248 k), tres diseños (Opus · 7, 11 y 12 min · 129 k, 152 k y 133 k), evaluador (Opus · 18 min · 202 k).

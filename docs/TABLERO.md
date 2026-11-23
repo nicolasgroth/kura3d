@@ -10,7 +10,7 @@ Estado de `main`: 2189 pruebas del frontend, 138 del servidor MCP y 37 de Rust e
 
 | Qué | Resultado |
 |---|---|
-| Notas | Usabilidad 79 (antes 76 y 75) · código 85 · funcional 86. Usabilidad sigue bajo el mínimo de 85: espera tu decisión (consulta 6) |
+| Notas | Usabilidad 78 en la cuarta evaluación del 23-nov (antes 76, 75 y 79; mínimo 85) · código 85 · funcional 86. Sin bloqueos. La respuesta es el rediseño clásico de la interfaz más cuatro puntos transversales (ver En desarrollo) |
 | Nuevo esta noche | Herramienta Medir con capacidad de recipientes, grupos y árbol de escena, reparar malla, importación de 3MF reales de slicer, rótulos de pieza en Dividir |
 | Corregido | Tres rondas de hallazgos de usabilidad (30 puntos), cada uno con su prueba de navegador; los generadores, revisados por primera vez |
 | Rendimiento | Dividir un busto de 2,4 millones de triángulos: de 172 a 78 s. Importarlo: la mitad de memoria. Separar por colores tras pintar: de 94 a 1,4 s |
@@ -22,6 +22,7 @@ Estado de `main`: 2189 pruebas del frontend, 138 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
+| Cuarta evaluación de usabilidad (78): avisos con acción que no se pierdan y queden en el historial; encuadre tras importar, cortar, dividir y al ver la sección; grupo recién creado seleccionado; negativo nuevo sobre el objeto; rótulos de pieza iguales en árbol y visor y placas en cuadrícula; Capacidad que nombra el objeto; conteos de exportación explicados; diseño a 390 px sin recortes | En corrección desde el 23-nov |
 | Ajustar a la impresora: alternativas a elegir (solo escalar, girar, girar y escalar, dividir), perfiles de cama propios guardados también en el proyecto, por interfaz y por MCP | En desarrollo desde el 23-nov |
 | Bordes redondeados y chaflanes exactos en las primitivas (cubo, cilindro, prisma), base de las cajas | En desarrollo desde el 23-nov |
 | Recetas de asistentes, primer lote: formato `kura.recipe/1`, validación estricta y expresiones acotadas, con los tres ejemplos (caja, enchufe, llavero) | En desarrollo desde el 23-nov |
