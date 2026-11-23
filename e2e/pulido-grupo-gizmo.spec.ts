@@ -58,23 +58,36 @@ test('escala del grupo: los 7 puntos de agarre responden al arrastre real', asyn
   await grupoDeDosCubos(page, 'scale');
   const nombres: Array<[string, string]> = [['X', 'X'], ['Y', 'Y'], ['Z', 'Z'], ['XY', 'XY'], ['YZ', 'YZ'], ['XZ', 'XZ'], ['centro', 'XYZX']];
   for (const [etiqueta, nombre] of nombres) {
+    // Gizmo listo: la posición del agarre es estable en dos lecturas seguidas (sin esperas fijas).
+    let previo: number[] | null = null;
+    await expect.poll(async () => {
+      const lectura = (await agarres(page)).out[nombre];
+      const estable = Boolean(lectura) && previo !== null && Math.hypot(lectura[0] - previo[0], lectura[1] - previo[1]) < 0.5;
+      previo = lectura ?? null;
+      return estable;
+    }, { message: `agarre ${etiqueta} estable` }).toBe(true);
     const { out, pivot } = await agarres(page);
     const [x, y] = out[nombre];
     const dx = x - pivot[0], dy = y - pivot[1];
     const len = Math.hypot(dx, dy) || 1;
     const antes = await escalas(page);
     await page.mouse.move(x, y);
+    // Con el puntero sobre el agarre, el manipulador resalta su selector antes de aceptar el arrastre.
+    await expect.poll(() => page.evaluate(() => {
+      const st = (window as any).__r3f.getState();
+      let g: any = null;
+      st.scene.traverse((o: any) => { if (o.constructor?.name === 'TransformControlsGizmo') g = o; });
+      return Boolean(g?.parent?.axis);
+    }), { message: `puntero sobre el agarre ${etiqueta}` }).toBe(true);
     await page.mouse.down();
     await page.mouse.move(x + (dx / len) * 25, y + (dy / len) * 25, { steps: 5 });
     await page.mouse.move(x + (dx / len) * 60, y + (dy / len) * 60, { steps: 5 });
     await page.mouse.up();
-    await page.waitForTimeout(150);
+    await expect.poll(async () => (await escalas(page))[0], { message: `agarre ${etiqueta}: el grupo debe escalar` }).not.toBeCloseTo(antes[0], 3);
     const despues = await escalas(page);
-    expect(despues[0], `agarre ${etiqueta}: el grupo debe escalar`).not.toBeCloseTo(antes[0], 3);
     expect(despues[1]).toBeCloseTo(despues[0], 6); // bloque rígido: ambos miembros con el mismo factor
     await page.keyboard.press('Control+z'); // un arrastre = un paso de deshacer
-    await page.waitForTimeout(100);
-    expect(await escalas(page)).toEqual(antes);
+    await expect.poll(() => escalas(page)).toEqual(antes);
   }
 });
 
