@@ -1,19 +1,22 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 17:25, con las correcciones de la quinta ronda integradas.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 21:00, tras la prueba con modelos reales del autor.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## En desarrollo
 
+Tres lotes en paralelo, dos de ellos nacidos de la prueba con modelos reales:
+
 | Funcionalidad | Estado |
 |---|---|
-| Herramienta Medir: distancia entre dos puntos (con imán a vértices y centros), ángulo, área de una cara o región, volumen, y capacidad de un recipiente hasta su nivel de rebalse, en mm/cm/pulgadas y mL/litros | Pedido el 22-nov; en curso desde las 19:50 |
-| Pincel: una prueba de navegador muestra que pinta caras de atrás en una placa de 1 mm (antes no lo hacía) | Detectado el 22-nov a las 20:35 al ejecutar por primera vez la suite de navegador; por corregir |
+| Importar 3MF reales de slicer: un 3MF válido de 42 MB se rechazaba como dañado (bloqueo); límites de tamaño coherentes entre exportar e importar; aviso y agrupación de archivos con varias placas; conjuntos montados conservan su armado; importación de mallas grandes más rápida | En corrección desde las 20:55 |
+| Reparar malla (nueva): diagnosticar y cerrar agujeros, normales y caras defectuosas, con los bordes abiertos resaltados; hoy un busto real con 13 aristas abiertas queda inutilizable | En desarrollo desde las 20:55 |
+| Ahuecado más preciso en piezas grandes (pared pedida 2 mm salía 3 mm en una pieza de 150 mm) y avisos que no se pierden por MCP; una sola definición de malla cerrada | En el mismo lote |
 
 ## En QA
 
-Prueba con modelos reales del autor (bustos en STL de hasta 2,4 millones de triángulos y 3MF de slicer multipieza): importar, ida y vuelta, simplificar, analizar, dividir, ahuecar y cortar. En curso desde las 20:10.
+Prueba con modelos reales del autor (9 archivos: bustos en STL de hasta 2,4 millones de triángulos y 3MF de slicer): **rechazada** por un bloqueo de importación y cinco fallos mayores, hoy en desarrollo. Lo que funcionó: importar y medir los STL, ida y vuelta por 3MF sin pérdida de piezas, colores ni volumen, simplificar 2,4 M de triángulos en 38 s, dividir un modelo real a 600 mm en 23 piezas cerradas dentro de la cama, análisis con avisos razonables, y rechazo tipado de archivos corruptos sin cuelgues.
 
 QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintura sobre primitivas (ver En desarrollo). Confirmó corregidos F2/F3/F4, la vista previa de uniones (7 con conector y 5 para pegar, igual al resultado), el conector automático, el ZIP centrado, los nombres de mitades, el aviso de cavidad cerrada, el vocabulario y la accesibilidad; y separar por colores en cubo y placa (piezas cerradas, suma exacta, 3MF con colores).
 
@@ -28,6 +31,8 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Pintura por caras rápida; operaciones de creación en el Worker | QA aprobó sin bloqueos; falta medir el pincel con GPU real |
 | Grabar sobre un relieve ya no da el error falso de profundidad; 3MF determinista (misma escena, mismos bytes); auditoría de secretos: claves de IA y token MCP nunca van a `localStorage` ni a logs, ahora con prueba que lo hace cumplir | Implementado con pruebas; sin QA en navegador |
 | Grupos y árbol de escena: Agrupar (Ctrl+G) y Desagrupar (Ctrl+Mayús+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ojo, candado, renombrar, arrastrar, teclado), manipulador del conjunto con escala proporcional, "Combinar en un objeto" y "Separar cuerpos", exportar un grupo como un archivo o uno por objeto, comandos de bus y MCP | Los 4 fallos que rechazó QA están corregidos y cubiertos por pruebas de navegador (colores al separar cuerpos, escala con el gizmo, renombrar, teclado del árbol); falta la re-verificación de QA. Ya aprobado antes: agrupar, anidar, deshacer, guardar y reabrir, combinar, exportar, atajos, 390 px, piezas de división en el árbol |
+| Herramienta Medir (tecla D): distancia con imán, ángulo, área, volumen y capacidad de un recipiente hasta su rebalse, en mm/cm/pulgadas y mL/litros; también por MCP | Implementado; verificado por el desarrollador en navegador (vaso: 48,83 mL frente a 48,86 calculado); falta QA independiente |
+| Pincel: una sola regla de visibilidad en todos sus caminos (rápido, con refinado, diferido y por comando); ya no atraviesa placas delgadas | Corregido; la prueba de navegador que lo detectó pasa |
 | Pintura sobre primitivas: el arrastre no modifica nada hasta aceptar el aviso, "Cancelar" deja el cubo intacto, un trazo = un paso también con refinado | Corregido y confirmado por QA con arrastre largo |
 | Separar por colores en superficies curvas: malla limpia (el defecto que midió QA en la esfera era real y quedó corregido) | Confirmado por QA en esfera y cilindro; queda afinar triángulos casi degenerados en bordes irregulares |
 | Menú del objeto con ideas de OrcaSlicer: Centrar en la cama, Transformar ▸, Alinear y distribuir ▸, forma Disco, Reemplazar por archivo, Exportar selección como un STL, "Ocultar (no se exporta)", aviso de malla pesada con acceso a Simplificar | Confirmado por QA |

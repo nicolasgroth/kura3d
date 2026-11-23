@@ -37,7 +37,7 @@ export function createPaintSlice(ctx: StoreContext): Partial<KuraStoreState> {
   };
 
   return {
-    paintObjectSurface: (id, localPoint, faceIndex, modeOverride) => {
+    paintObjectSurface: (id, localPoint, faceIndex, modeOverride, view) => {
       const state = get();
       const obj = editable(id);
       // Durante una operación en curso (o un arrastre sin confirmar) no se pinta: el resultado la pisaría.
@@ -50,7 +50,10 @@ export function createPaintSlice(ctx: StoreContext): Partial<KuraStoreState> {
       } else if (mode === 'smart_fill' && faceIndex !== null) {
         change = ops.paintRegion(opCtx(), obj, faceIndex, color);
       } else if (localPoint) {
-        change = ops.paintBrushSample(opCtx(), obj, localPoint, state.paintRadiusMm, color, { refineEdge: state.paintRefineEdge });
+        change = ops.paintBrushSample(opCtx(), obj, localPoint, state.paintRadiusMm, color, {
+          refineEdge: state.paintRefineEdge,
+          view: { ...view, seedFace: faceIndex },
+        });
       } else {
         return;
       }

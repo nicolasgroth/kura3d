@@ -65,7 +65,6 @@ describe('equivalencia con la pintura anterior (sin subdivisión)', () => {
     ['caja', () => box, [2, 20, 0], 6, [1, 1, 1]],
     ['caja escalada', () => box, [2, 20, 0], 6, [0.5, 1, 2]],
     ['esfera', () => sphere, [0, 24, 0], 6, [1, 1, 1]],
-    ['esfera radio grande', () => sphere, [3, 10, -2], 15, [1.5, 1, 1]],
     ['nada en el radio', () => sphere, [500, 0, 0], 1, [1, 1, 1]],
   ];
   it.each(brushCases)('pincel en %s', (_name, mesh, center, radius, scale) => {
@@ -76,6 +75,25 @@ describe('equivalencia con la pintura anterior (sin subdivisión)', () => {
     // Segunda pasada sobre lo ya pintado: mismo resultado y misma referencia.
     const again = paintMeshFacesInSphere(sceneObject(after, scale), center, radius, '#ff0000', { refineEdge: false });
     expect(again).toBe(after);
+  });
+
+  it('radio mayor que la pieza: sin vista, solo lo anterior que mira como la cara más cercana', () => {
+    const obj = sceneObject(sphere, [1.5, 1, 1]);
+    const center: Vec3 = [0, 24, 0];
+    const before = legacyPaintSphere(obj, center, 20, '#FF0000').faceColors!;
+    const after = paintMeshFacesInSphere(obj, center, 20, '#FF0000', { refineEdge: false }).faceColors!;
+    const P = sphere.positions, I = sphere.indices;
+    let painted = 0;
+    for (let t = 0; t < after.length; t++) {
+      if (after[t] !== '#ff0000') continue;
+      painted++;
+      expect(before[t]).toBe('#ff0000');
+      // Cara más cercana = polo norte (normal +Y): nada pintado de espaldas a ella.
+      const ys = [0, 1, 2].map((k) => P[I[t * 3 + k] * 3 + 1]);
+      expect(Math.max(...ys)).toBeGreaterThan(11.9);
+    }
+    expect(painted).toBeGreaterThan(0);
+    expect(painted).toBeLessThan(before.filter((c) => c === '#ff0000').length);
   });
 
   it('relleno por región igual al anterior (caja, esfera, malla ya pintada)', () => {

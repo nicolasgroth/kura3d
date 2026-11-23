@@ -3,23 +3,28 @@
  * @description Trazo del pincel por el store (camino con borde fino o relleno): abre UN trazo de
  * historial en el pointerdown y solo pinta mientras ese trazo siga abierto. Sobre una primitiva o rosca
  * que el trazo dejaría sin parámetros, el arrastre no modifica nada: se capturan los puntos, se pregunta
- * al soltar y solo con consentimiento se aplica el trazo capturado (en un solo paso de historial).
+ * al soltar y solo con consentimiento se aplica el trazo capturado (en un solo paso de historial). Cada
+ * muestra lleva su vista (cámara y cara bajo el puntero), así el trazo diferido respeta la misma regla
+ * de visibilidad que el inmediato.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import { useKuraStore } from '../../store/useKuraStore';
+import type { BrushView } from '../../engine/paint/brushSelect';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { afterPointerRelease, confirmPaintOnParametric, paintWouldDropParameters } from './paintParametricGuard';
 
-interface Sample {
+/** Muestra del trazo: punto local, cara bajo el puntero y vista desde la que se pintó. */
+export interface StrokeSample {
   point: Vec3;
   faceIndex: number | null;
+  view?: BrushView;
 }
 
 /** Trazo retenido a la espera del consentimiento (objeto y muestras capturadas). */
-let held: { objectId: string; samples: Sample[] } | null = null;
+let held: { objectId: string; samples: StrokeSample[] } | null = null;
 
 /**
  * Empieza el trazo. Devuelve una promesa solo si quedó retenido esperando el aviso (se resuelve al
@@ -27,14 +32,13 @@ let held: { objectId: string; samples: Sample[] } | null = null;
  */
 export function startStorePaintStroke(
   obj: SceneObject,
-  point: Vec3,
-  faceIndex: number | null,
+  sample: StrokeSample,
   refine: boolean,
   waitRelease: () => Promise<void> = afterPointerRelease,
 ): Promise<void> | undefined {
   const store = useKuraStore.getState();
   if (store.paintMode === 'brush' && paintWouldDropParameters(obj, refine)) {
-    const capture = { objectId: obj.id, samples: [{ point, faceIndex }] };
+    const capture = { objectId: obj.id, samples: [sample] };
     held = capture;
     const language = store.language;
     return waitRelease()
@@ -46,27 +50,30 @@ export function startStorePaintStroke(
   }
   held = null;
   store.beginPaintStroke();
-  store.paintObjectSurface(obj.id, point, faceIndex);
+  paintSample(obj.id, sample);
   return undefined;
 }
 
 /** Muestra siguiente del arrastre: se captura si el trazo está retenido; si no hay trazo abierto, se ignora. */
-export function continueStorePaintStroke(objectId: string, point: Vec3, faceIndex: number | null): void {
+export function continueStorePaintStroke(objectId: string, sample: StrokeSample): void {
   if (held) {
-    if (held.objectId === objectId) held.samples.push({ point, faceIndex });
+    if (held.objectId === objectId) held.samples.push(sample);
     return;
   }
-  const store = useKuraStore.getState();
-  if (!store.isPaintStrokeOpen()) return;
-  store.paintObjectSurface(objectId, point, faceIndex);
+  if (!useKuraStore.getState().isPaintStrokeOpen()) return;
+  paintSample(objectId, sample);
+}
+
+function paintSample(objectId: string, s: StrokeSample): void {
+  useKuraStore.getState().paintObjectSurface(objectId, s.point, s.faceIndex, undefined, s.view);
 }
 
 /** Aplica de una vez un trazo capturado, como un único paso de historial. */
-function applySamples(objectId: string, samples: Sample[]): void {
+function applySamples(objectId: string, samples: StrokeSample[]): void {
   const store = useKuraStore.getState();
   store.beginPaintStroke();
   try {
-    for (const s of samples) useKuraStore.getState().paintObjectSurface(objectId, s.point, s.faceIndex);
+    for (const s of samples) paintSample(objectId, s);
   } finally {
     useKuraStore.getState().endPaintStroke();
   }
