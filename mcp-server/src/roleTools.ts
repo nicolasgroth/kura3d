@@ -12,17 +12,15 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { OBJECT_ROLES, REFERENCE_OPACITY } from '../../src/core/scene/objectRole';
-import { idSchema } from './schemas.js';
+import { OPERATION_RANGES as OR } from '../../src/engine/operationLimits';
+import { idSchema, rangeSchema } from './schemas.js';
 import { dispatchWithFallback, type KuraToolContext } from './tools.js';
 
 export const roleSchema = z
   .enum(OBJECT_ROLES as unknown as [string, ...string[]])
   .describe("Object role: 'solid' is printed, 'negative' is subtracted from solids it touches, 'reference' is only shown and measured (never printed, exported, subtracted or used in booleans).");
 
-export const referenceOpacitySchema = z
-  .number()
-  .min(REFERENCE_OPACITY.min)
-  .max(REFERENCE_OPACITY.max)
+export const referenceOpacitySchema = rangeSchema(OR.reference.opacity)
   .describe(`Own opacity of a reference (${REFERENCE_OPACITY.min}–${REFERENCE_OPACITY.max}); without it the global default from Settings is used.`);
 
 export function registerRoleTools(server: Pick<McpServer, 'registerTool'>, ctx: KuraToolContext): void {

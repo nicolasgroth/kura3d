@@ -987,7 +987,8 @@ export interface KuraCommandRequest {
     | 'colorize_structures'
     | 'extract_structure'
     | 'mirror_object'
-    | 'validate_assembly';
+    | 'validate_assembly'
+    | 'set_object_role';
   params: Record<string, unknown>;
 }
 

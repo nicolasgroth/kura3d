@@ -83,7 +83,9 @@ export function touchingHoleScope(solids: SceneObject[], holes: SceneObject[]): 
 /** Objetos de la envolvente convexa:los indicados (2+) o la selección. */
 export function resolveHullTargets(objects: SceneObject[], selectedIds: string[], ids?: string[]): SceneObject[] {
   const targetIds = ids && ids.length >= 2 ? ids : selectedIds;
-  return objects.filter((o) => targetIds.includes(o.id) && participatesInBooleans(o));
+  const targets = objects.filter((o) => targetIds.includes(o.id));
+  // Una referencia en la entrada rechaza la operación entera (no se ignora en silencio).
+  return targets.every(participatesInBooleans) ? targets : [];
 }
 
 /** Objetos a alinear (desbloqueados); `arrange_grid` sin selección múltiple usa los visibles. */

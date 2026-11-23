@@ -9,13 +9,18 @@
  */
 
 import type { ObjectRole } from '../../types/kura';
+import { OPERATION_RANGES } from '../../engine/operationLimits';
 
 export type { ObjectRole };
 
 export const OBJECT_ROLES: readonly ObjectRole[] = ['solid', 'negative', 'reference'];
 
 /** Opacidad de una referencia: límites del deslizador y valor inicial del ajuste global. */
-export const REFERENCE_OPACITY = { min: 0.15, max: 1, default: 0.35 } as const;
+export const REFERENCE_OPACITY = {
+  min: OPERATION_RANGES.reference.opacity.min,
+  max: OPERATION_RANGES.reference.opacity.max,
+  default: 0.35,
+} as const;
 
 interface HasRole { role: ObjectRole }
 interface HasRoleAndVisibility extends HasRole { visible: boolean }

@@ -42,6 +42,10 @@ export const TRANSFORM_RANGES = {
 
 /** Rangos por operación y parámetro. */
 export const OPERATION_RANGES = {
+  /** Opacidad de un objeto de referencia (propia o la global de Ajustes). */
+  reference: {
+    opacity: closed(0.15, 1),
+  },
   /** Medir: nivel de llenado sobre la base (mm) y cavidad elegida. */
   measure: {
     levelMm: closed(0, 100_000),

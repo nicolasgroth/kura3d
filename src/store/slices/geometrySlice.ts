@@ -159,7 +159,11 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
     runConvexHull: async (ids) => {
       const { objects, selectedIds } = get();
       const targetObjs = resolveHullTargets(objects, selectedIds, ids);
-      if (targetObjs.length === 0) return null;
+      if (targetObjs.length === 0) {
+        const asked = ids && ids.length >= 2 ? ids : selectedIds;
+        if (objects.some((o) => asked.includes(o.id) && isReference(o))) get().addToast(tr('reference.toast.notAllowed'), 'info');
+        return null;
+      }
       return runExclusive('convex_hull', null, async () => {
         await get().initEngine();
         const { result, change } = await runEngine('convexHull', { targets: targetObjs });
