@@ -64,6 +64,8 @@ for (const scheme of ['light', 'dark'] as const) {
 test('pie de página: con una pieza oculta cuenta visibles y total', async ({ page }) => {
   await abrir(page);
   await importarStl(page, 'dos.stl', stlCubes([[0, 20, 0]], 40));
+  // Una importación nueva se rechaza mientras otra sigue en curso: esperar a que la primera termine.
+  await expect.poll(() => page.evaluate(() => { const st = (window as any).__s.getState(); return st.objects.length === 1 && !st.busyOperation; }), { timeout: 30000 }).toBe(true);
   await importarStl(page, 'otro.stl', stlCubes([[0, 20, 0]], 40));
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length), { timeout: 30000 }).toBe(2);
   const count = page.getByTestId('status-count');

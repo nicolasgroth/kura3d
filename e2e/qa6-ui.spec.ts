@@ -84,11 +84,37 @@ for (const [axis, label, idx] of [['X', 'X (vertical)', 0], ['Y', 'Y (vertical)'
     await page.locator('#cut-axis').selectOption({ label });
     await page.locator('#cut-conn').selectOption({ index: 0 });
     await page.locator('#cut-keep').selectOption({ label: 'Solo mitad positiva (+)' });
+    // Solo el corte horizontal deja la mitad flotando: ahí el diálogo pregunta dónde dejarla y se elige
+    // "donde está" para comprobar el lado conservado. Los cortes verticales apoyan en la cama sin preguntar.
+    if (idx === 2) await page.getByRole('radio', { name: /^Dejarla donde está/ }).check();
+    else await expect(page.getByRole('radio', { name: /^Dejarla donde está/ })).toHaveCount(0);
     await page.getByRole('button', { name: 'Ejecutar Corte' }).click();
     await expect(page.locator('footer')).toContainText('1 objs');
     const b = await exportarStl(page, info.outputDir);
     const mid = idx === 2 ? 15 : 0;
     expect(b.min[idx]).toBeGreaterThanOrEqual(mid - 0.01);
+  });
+
+  test(`corte por plano eje ${axis}: "solo mitad positiva" apoyada en la cama queda en Z=0 con la misma forma`, async ({ page }, info) => {
+    test.skip(idx !== 2, 'Solo el corte horizontal pregunta dónde dejar la mitad; los verticales ya quedan apoyados.');
+    await page.goto(URL);
+    await importar(page, 'caja.stl', boxStl(10, 20, 30));
+    await page.getByRole('button', { name: 'Corte por plano + uniones' }).first().click();
+    await page.locator('#cut-axis').selectOption({ label });
+    await page.locator('#cut-conn').selectOption({ index: 0 });
+    await page.locator('#cut-keep').selectOption({ label: 'Solo mitad positiva (+)' });
+    await page.getByRole('radio', { name: /^(✓ )?Apoyarla en la cama/ }).check();
+    await page.getByRole('button', { name: 'Ejecutar Corte' }).click();
+    await expect(page.locator('footer')).toContainText('1 objs');
+    const b = await exportarStl(page, info.outputDir);
+    // Apoyada: la base queda en Z=0 (en el STL exportado, Z del usuario = eje 2).
+    expect(b.min[2]).toBeCloseTo(0, 1);
+    // Misma forma que la mitad conservada: la dimensión cortada se reduce a la mitad.
+    const dims = [10, 20, 30];
+    const size = [0, 1, 2].map((i) => b.max[i] - b.min[i]);
+    const cortada = [...size].sort((a, c) => a - c);
+    const esperado = [...dims.map((d, i) => (i === idx ? d / 2 : d))].sort((a, c) => a - c);
+    cortada.forEach((v, i) => expect(v).toBeCloseTo(esperado[i], 1));
   });
 }
 
