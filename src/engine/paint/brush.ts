@@ -1,25 +1,28 @@
 /**
  * @file src/engine/paint/brush.ts
  * @description Pincel esférico 3D: pinta los triángulos a menos de `radiusMm` (mm de mundo, con la
- * escala del objeto) del centro. Usa la rejilla en caché para visitar solo los triángulos cercanos y
- * el escritor diferido para no copiar colores si nada cambia. Con `refineEdge`, subdivide antes los
- * triángulos del borde para que el color siga el círculo del pincel.
+ * escala del objeto) del centro que cumplen la regla de visibilidad y conexión (`brushVisibility`):
+ * de frente a la vista (o, sin vista, a la normal de la cara más cercana) y conectados a la semilla.
+ * Con `refineEdge`, subdivide antes solo los triángulos visibles del borde para que el color siga el
+ * círculo del pincel. Usa el escritor diferido para no copiar colores si nada cambia.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
+import { selectBrushFaces } from './brushSelect';
+import { facesViewer, prepareBrush, type BrushQuery, type BrushView } from './brushVisibility';
 import { DEFAULT_MAX_NEW_TRIANGLES, refineBrushEdge } from './edgeRefine';
 import { FaceColorWriter, withFaceColors } from './faceColors';
-import { scaledTriangleDistanceSq } from './triangleDistance';
-import { forEachTriangleNearBox, getTriangleGrid } from './triangleGrid';
 
 export interface BrushOptions {
   /** Subdivide los triángulos del borde del trazo (por defecto no). */
   refineEdge?: boolean;
   /** Tope de triángulos nuevos por muestra (por defecto 2000). */
   maxNewTriangles?: number;
+  /** Cámara o dirección de vista y cara bajo el puntero; sin ella, se usa la cara más cercana. */
+  view?: BrushView;
 }
 
 /**
@@ -39,20 +42,19 @@ export function paintMeshFacesInSphere(
   const r = radiusMm;
   const hex = colorHex.toLowerCase();
   const base = obj.color.toLowerCase();
+  const query: BrushQuery = { ...options.view, center: localCenter, radiusMm, scale: obj.scale ?? [1, 1, 1] };
+  // La vista se resuelve una vez sobre la malla original y vale igual para la subdividida.
+  const prepared = prepareBrush(obj.mesh, query);
 
   const mesh = options.refineEdge
-    ? refineBrushEdge(obj.mesh, s, c, r, options.maxNewTriangles ?? DEFAULT_MAX_NEW_TRIANGLES)
+    ? refineBrushEdge(obj.mesh, s, c, r, options.maxNewTriangles ?? DEFAULT_MAX_NEW_TRIANGLES, (m, t) => facesViewer(m, t, prepared))
     : obj.mesh;
   const refined = mesh !== obj.mesh;
   const { positions: P, indices: I } = mesh;
   const rSq = r * r;
-  const lo: Vec3 = [(c[0] - r) / s[0], (c[1] - r) / s[1], (c[2] - r) / s[2]];
-  const hi: Vec3 = [(c[0] + r) / s[0], (c[1] + r) / s[1], (c[2] + r) / s[2]];
 
-  const touched: number[] = [];
-  forEachTriangleNearBox(getTriangleGrid(mesh), lo, hi, (t) => {
-    if (scaledTriangleDistanceSq(P, I, t, s, c) <= rSq) touched.push(t);
-  });
+  // Subdividir renumera las caras: la semilla del puntero ya no aplica (se toma la más cercana).
+  const touched = Array.from(selectBrushFaces(mesh, refined ? { ...query, seedFace: null } : query, prepared));
   // Con el borde subdividido se pinta por centroide (el color sigue el círculo); si el pincel es
   // más chico que todo triángulo tocado, se vuelve a "pintar lo que toca".
   let paint = touched;
