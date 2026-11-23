@@ -68,6 +68,8 @@ export const EdgeParamsGroup: React.FC<{
   const resolved = safe(() => resolveEdges(type, params), null);
   const max = safe(() => maxEdgeSize(type, params), 0);
   const fmt = (n: number) => formatLocaleNumber(language, n, { maxFrac: 2 });
+  // El tope se muestra truncado a centésimas: redondeado diría «10 mm» cuando cabe 9,995.
+  const down = (n: number) => Math.floor(n * 100 + 1e-9) / 100;
   const title = t(language, 'inspector.params.edges.title');
   const sizeLabel = t(language, style === 'chamfer' ? 'inspector.params.edges.sizeChamfer' : 'inspector.params.edges.sizeRound');
 
@@ -90,7 +92,7 @@ export const EdgeParamsGroup: React.FC<{
             value={size}
             min={PRIMITIVE_PARAM_RANGES.edgeSize.min}
             max={PRIMITIVE_PARAM_RANGES.edgeSize.max}
-            displayMax={max}
+            displayMax={down(max)}
             isCount={false}
             unit={unit}
             disabled={disabled}
@@ -98,7 +100,7 @@ export const EdgeParamsGroup: React.FC<{
           />
           {resolved?.clamped && (
             <p className="kura-param-note" role="status" data-testid="params-edges-clamped">
-              {t(language, 'inspector.params.edges.clamped', { size: fmt(resolved.size), requested: fmt(resolved.requested) })}
+              {t(language, 'inspector.params.edges.clamped', { size: fmt(down(resolved.size)), requested: fmt(resolved.requested) })}
             </p>
           )}
           {scopes.length > 1 && (
