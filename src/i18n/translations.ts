@@ -24,6 +24,7 @@ import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
 import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
 import { SPLITUX_EN, SPLITUX_ES } from './locales/splitUx';
+import { UXTEXTO_EN, UXTEXTO_ES } from './locales/uxTexto';
 import { FIX10_EN, FIX10_ES } from './locales/fix10';
 import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
 import { IMPORTREAL_EN, IMPORTREAL_ES } from './locales/importReal';
@@ -46,6 +47,7 @@ export const TRANSLATIONS_ES = {
   ...SPLITCOUPLING_ES,
   ...A11YUX_ES,
   ...SPLITUX_ES,
+  ...UXTEXTO_ES,
   ...FIX10_ES,
   ...OPNOTES_ES,
   ...IMPORTREAL_ES,
@@ -398,7 +400,7 @@ export const TRANSLATIONS_ES = {
   'badge.localNoAiTip': 'Modo offline determinista: ningún dato sale de tu equipo',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': 'Aplicar restas ahora',
+  'ctx.applyHoles': 'Aplicar restas',
   'ctx.unionSelection': 'Unir selección',
   'ctx.hollow': 'Ahuecar pieza',
   'ctx.planeCut': 'Corte por plano + uniones',
@@ -1417,6 +1419,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...SPLITCOUPLING_EN,
   ...A11YUX_EN,
   ...SPLITUX_EN,
+  ...UXTEXTO_EN,
   ...FIX10_EN,
   ...OPNOTES_EN,
   ...IMPORTREAL_EN,
@@ -1755,7 +1758,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'badge.localNoAi': 'Local (No external AI)',
   'badge.localNoAiTip': 'Offline deterministic mode: zero data leaves your device',
 
-  'ctx.applyHoles': 'Apply subtractions now',
+  'ctx.applyHoles': 'Apply subtractions',
   'ctx.unionSelection': 'Union selection',
   'ctx.hollow': 'Hollow out part',
   'ctx.planeCut': 'Plane cut + connectors',

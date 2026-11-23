@@ -19,6 +19,7 @@ import { SPLITPREFS_FR } from './splitPrefs';
 import { SPLITCOUPLING_FR } from './splitCoupling';
 import { A11YUX_FR } from './a11yUx';
 import { SPLITUX_FR } from './splitUx';
+import { UXTEXTO_FR } from './uxTexto';
 import { FIX10_FR } from './fix10';
 import { OPNOTES_FR } from './operationNotes';
 import { IMPORTREAL_FR } from './importReal';
@@ -39,6 +40,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...SPLITCOUPLING_FR,
   ...A11YUX_FR,
   ...SPLITUX_FR,
+  ...UXTEXTO_FR,
   ...FIX10_FR,
   ...OPNOTES_FR,
   ...IMPORTREAL_FR,

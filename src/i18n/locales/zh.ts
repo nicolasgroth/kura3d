@@ -19,6 +19,7 @@ import { SPLITPREFS_ZH } from './splitPrefs';
 import { SPLITCOUPLING_ZH } from './splitCoupling';
 import { A11YUX_ZH } from './a11yUx';
 import { SPLITUX_ZH } from './splitUx';
+import { UXTEXTO_ZH } from './uxTexto';
 import { FIX10_ZH } from './fix10';
 import { OPNOTES_ZH } from './operationNotes';
 import { IMPORTREAL_ZH } from './importReal';
@@ -39,6 +40,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...SPLITCOUPLING_ZH,
   ...A11YUX_ZH,
   ...SPLITUX_ZH,
+  ...UXTEXTO_ZH,
   ...FIX10_ZH,
   ...OPNOTES_ZH,
   ...IMPORTREAL_ZH,
@@ -391,7 +393,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'badge.localNoAiTip': '离线确定性模式：无任何数据离开您的设备',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': '立即应用减法',
+  'ctx.applyHoles': '应用减法',
   'ctx.unionSelection': '合并选中对象',
   'ctx.hollow': '抽壳（镂空零件）',
   'ctx.planeCut': '平面切割 + 连接件',

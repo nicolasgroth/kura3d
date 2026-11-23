@@ -1,0 +1,57 @@
+/**
+ * @file src/styles/contextMenuFit.css
+ * @description Menú contextual sin rótulos truncados (más ancho y los textos largos pasan a otra línea) y con
+ * sombras que indican que hay más contenido cuando el menú no cabe en alto y se desplaza por dentro.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-context-menu {
+  width: 300px;
+}
+
+.kura-context-menu .kura-context-label {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
+.kura-context-menu .kura-context-item {
+  height: auto;
+  min-height: 28px;
+}
+
+.kura-context-menu.is-scroll {
+  overscroll-behavior: contain;
+}
+
+.kura-context-menu.has-more-above::before,
+.kura-context-menu.has-more-below::after {
+  content: '';
+  position: sticky;
+  flex: none;
+  height: 22px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.kura-context-menu.has-more-above::before {
+  top: -6px;
+  margin-bottom: -22px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
+}
+
+.kura-context-menu.has-more-below::after {
+  bottom: -6px;
+  margin-top: -22px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+}
+
+@media (max-width: 600px) {
+  .kura-context-menu {
+    width: min(300px, calc(100% - 16px));
+  }
+}

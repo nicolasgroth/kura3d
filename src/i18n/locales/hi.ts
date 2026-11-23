@@ -19,6 +19,7 @@ import { SPLITPREFS_HI } from './splitPrefs';
 import { SPLITCOUPLING_HI } from './splitCoupling';
 import { A11YUX_HI } from './a11yUx';
 import { SPLITUX_HI } from './splitUx';
+import { UXTEXTO_HI } from './uxTexto';
 import { FIX10_HI } from './fix10';
 import { OPNOTES_HI } from './operationNotes';
 import { IMPORTREAL_HI } from './importReal';
@@ -39,6 +40,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...SPLITCOUPLING_HI,
   ...A11YUX_HI,
   ...SPLITUX_HI,
+  ...UXTEXTO_HI,
   ...FIX10_HI,
   ...OPNOTES_HI,
   ...IMPORTREAL_HI,
@@ -391,7 +393,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'badge.localNoAiTip': 'ऑफ़लाइन नियतात्मक मोड: कोई भी डेटा आपके डिवाइस से बाहर नहीं जाता',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': 'घटाव अभी लागू करें',
+  'ctx.applyHoles': 'घटाव लागू करें',
   'ctx.unionSelection': 'चयन को जोड़ें',
   'ctx.hollow': 'भाग को खोखला करें (शेल)',
   'ctx.planeCut': 'समतल कट + कनेक्टर',

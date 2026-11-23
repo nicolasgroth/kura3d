@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { markContextMenuHandled } from './contextMenu/handledEvents';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { type ThreeEvent, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -265,6 +266,7 @@ export const SceneMeshItem: React.FC<{
     const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
       e.nativeEvent.preventDefault();
+      markContextMenuHandled(e.nativeEvent);
       if (activeTool === 'measure' && onMeasureContextMenu()) return;
       onObjectContextMenu(obj.id, e.nativeEvent.clientX, e.nativeEvent.clientY);
     };

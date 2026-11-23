@@ -19,6 +19,7 @@ import { SPLITPREFS_DE } from './splitPrefs';
 import { SPLITCOUPLING_DE } from './splitCoupling';
 import { A11YUX_DE } from './a11yUx';
 import { SPLITUX_DE } from './splitUx';
+import { UXTEXTO_DE } from './uxTexto';
 import { FIX10_DE } from './fix10';
 import { OPNOTES_DE } from './operationNotes';
 import { IMPORTREAL_DE } from './importReal';
@@ -39,6 +40,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...SPLITCOUPLING_DE,
   ...A11YUX_DE,
   ...SPLITUX_DE,
+  ...UXTEXTO_DE,
   ...FIX10_DE,
   ...OPNOTES_DE,
   ...IMPORTREAL_DE,
@@ -391,7 +393,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'badge.localNoAiTip': 'Deterministischer Offline-Modus: Keine Daten verlassen Ihr Gerät',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': 'Subtraktionen jetzt anwenden',
+  'ctx.applyHoles': 'Abzüge anwenden',
   'ctx.unionSelection': 'Auswahl vereinigen',
   'ctx.hollow': 'Teil aushöhlen (Schale)',
   'ctx.planeCut': 'Ebenenschnitt + Verbinder',
