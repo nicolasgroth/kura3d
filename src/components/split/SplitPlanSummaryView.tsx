@@ -32,6 +32,10 @@ export const SplitPlanSummaryView: React.FC<{
   const fmt1 = (n: number) => formatNumber(language, n, { maximumFractionDigits: 1 });
   const dims = (v: readonly number[]) => v.map(fmt).join(' × ');
 
+  // Modelo pesado (aviso SPLIT_HEAVY_MESH del plan): se propone simplificar antes, con botón.
+  const primaryId = useKuraStore((s) => s.selectedIds[0]);
+  const requestSimplifyPanel = useKuraStore((s) => s.requestSimplifyPanel);
+  const heavy = plan?.warnings?.find((w) => w.code === 'SPLIT_HEAVY_MESH');
   const warnings: string[] = [];
   const glueOnly = summary && plan?.connector ? summary.planesWithoutConnector : [];
   if (summary && plan) {
@@ -122,6 +126,16 @@ export const SplitPlanSummaryView: React.FC<{
                 <li key={w}>{w}</li>
               ))}
             </ul>
+          )}
+          {heavy && (
+            <p className="kura-split-glue-options" data-testid="split-heavy-mesh">
+              <span>{t(language, 'engineWarning.SPLIT_HEAVY_MESH', { tris: fmt(Number(heavy.params.tris)) })}</span>
+              {primaryId && (
+                <button type="button" className="kura-btn kura-btn-sm" onClick={() => requestSimplifyPanel(primaryId)}>
+                  {t(language, 'import.heavy.action')}
+                </button>
+              )}
+            </p>
           )}
           {glueOnly.length > 0 && (onLowerMinWall || onUseLap) && (
             <p className="kura-split-glue-options">
