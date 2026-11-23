@@ -9,6 +9,7 @@
  */
 
 import type { EngineWarning } from '../engine';
+import type { SplitJointRow } from '../core/scene/splitJointStatus';
 
 /** Id de la sección de uniones del inspector (destino de "Ver uniones"). */
 export const SPLIT_JOINTS_ID = 'kura-split-joints';
@@ -32,4 +33,12 @@ export function collapseGlueWarnings(warnings: readonly EngineWarning[] | undefi
   }
   const count = Math.max(summary?.count ?? 0, labels.size);
   return { rest, count, total: Math.max(summary?.total ?? joints, count) };
+}
+
+/** Uniones para pegar y total. Una sola cifra para el aviso, la cabecera del inspector y la lista de avisos repetidos. */
+export interface GlueCount { count: number; total: number }
+
+/** Cuenta, sobre las filas del inspector, las uniones que se pegan (por cualquier causa). */
+export function glueCountOf(rows: readonly Pick<SplitJointRow, 'status'>[]): GlueCount {
+  return { count: rows.filter((r) => r.status === 'glue').length, total: rows.length };
 }

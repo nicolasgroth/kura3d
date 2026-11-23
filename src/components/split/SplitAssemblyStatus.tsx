@@ -18,21 +18,28 @@ import type { LanguageCode } from '../../types/kura';
 import { tCount } from '../../utils/plural';
 import '../../styles/splitAssemblyStatus.css';
 
+import type { GlueCount } from '../../store/splitGlueSummary';
+
 interface Props {
   language: LanguageCode;
   notes: SplitGroupNotes | null;
   validation: SplitValidationReport | null;
+  /** Uniones para pegar del grupo (todas las causas) y total de uniones: la cifra única del aviso, la cabecera y la lista. */
+  glue?: GlueCount;
 }
 
 /** Frase de los arreglos del motor: solo nombra lo que ocurrió (nada de «0 uniones») y respeta el singular. */
-export function fixedSummary(language: LanguageCode, glued: number, changed: number): string {
+export function fixedSummary(language: LanguageCode, glued: number, changed: number, glue?: GlueCount): string {
   const parts: string[] = [];
-  if (glued > 0) parts.push(tCount(language, { one: 'splitUx.fixed.glued.one', other: 'splitUx.fixed.glued.other' }, glued));
+  // Con el total de uniones para pegar a mano (la misma cifra del aviso y de la lista), se nombra completo:
+  // «19 de 26 para pegar (2 por impedir el montaje)» y no solo las 2 que arregló el motor.
+  if (glued > 0 && glue && glue.count > glued) parts.push(t(language, 'splitUx.fixed.glued.ofTotal', { glue: glue.count, total: glue.total, count: glued }));
+  else if (glued > 0) parts.push(tCount(language, { one: 'splitUx.fixed.glued.one', other: 'splitUx.fixed.glued.other' }, glued));
   if (changed > 0) parts.push(tCount(language, { one: 'splitUx.fixed.changed.one', other: 'splitUx.fixed.changed.other' }, changed));
   return t(language, 'splitUx.fixed.intro', { actions: parts.join(t(language, 'splitUx.fixed.and')) });
 }
 
-export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validation }) => {
+export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validation, glue }) => {
   const base = validation
     ? {
         ok: validation.ok,
@@ -74,7 +81,7 @@ export const SplitAssemblyStatus: React.FC<Props> = ({ language, notes, validati
         <p className="kura-split-assembly-alert" data-kind="info">
           <Info size={14} aria-hidden="true" />
           <span>
-            {fixedSummary(language, notes?.gluedByFix.length ?? 0, notes?.changedByFix.length ?? 0)}
+            {fixedSummary(language, notes?.gluedByFix.length ?? 0, notes?.changedByFix.length ?? 0, glue)}
           </span>
         </p>
       )}

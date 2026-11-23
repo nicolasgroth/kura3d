@@ -144,6 +144,14 @@ const UX = {
     es: 'dejó {count} uniones para pegar', en: 'left {count} joints for gluing', de: 'hat {count} Verbindungen zum Kleben belassen',
     fr: 'a laissé {count} jonctions à coller', hi: '{count} जोड़ चिपकाने के लिए छोड़े', zh: '将 {count} 个接合改为粘合',
   },
+  'splitUx.fixed.glued.ofTotal': {
+    es: 'dejó {glue} de {total} uniones para pegar ({count} por impedir el montaje)',
+    en: 'left {glue} of {total} joints for gluing ({count} because they blocked assembly)',
+    de: 'hat {glue} von {total} Verbindungen zum Kleben belassen ({count} wegen blockierter Montage)',
+    fr: 'a laissé {glue} jonctions sur {total} à coller ({count} car elles bloquaient le montage)',
+    hi: '{total} में से {glue} जोड़ चिपकाने के लिए छोड़े ({count} असेंबली रोकने के कारण)',
+    zh: '将 {total} 个接合中的 {glue} 个改为粘合（其中 {count} 个因妨碍装配）',
+  },
   'splitUx.fixed.changed.one': {
     es: 'cambió el tipo de conector en {count} unión', en: 'changed the connector type on {count} joint', de: 'hat bei {count} Verbindung den Verbindertyp geändert',
     fr: 'a changé le type de connecteur sur {count} jonction', hi: '{count} जोड़ पर कनेक्टर प्रकार बदला', zh: '更换了 {count} 个接合的连接件类型',
