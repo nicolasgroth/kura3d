@@ -62,7 +62,7 @@ describe('ParametersSection', () => {
       act(() => input.blur());
       expect(input.getAttribute('aria-invalid')).toBe('true');
       expect(input.value).toBe(bad);
-      expect(screen.getByRole('alert').textContent).toContain('0.1');
+      expect(screen.getByRole('alert').textContent).toContain('0,1');
       act(() => input.focus());
       fireEvent.keyDown(input, { key: 'Escape' });
       expect(input.getAttribute('aria-invalid')).toBeNull();
