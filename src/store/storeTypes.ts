@@ -104,11 +104,27 @@ export interface ToastHistoryEntry {
   text: string;
   kind: ToastMessage['kind'];
   at: number;
+  /** Acciones del aviso: siguen operables desde el historial mientras sean válidas. */
+  actions?: ToastAction[];
+  /** La acción ya se ejecutó (desde el aviso o el historial). */
+  applied?: boolean;
 }
 
 export interface ToastAction {
   label: string;
   run: () => void;
+  /** Objetos sobre los que actúa: si ya no existe ninguno, la acción deja de ser aplicable. */
+  targetIds?: readonly string[];
+  /**
+   * Deja de aplicar cuando cambia la malla (reparar, simplificar, separar) o la escala (unidades) de todos los
+   * `targetIds`: `addToast` guarda el valor de partida en `watched`.
+   */
+  watch?: 'mesh' | 'scale';
+  watched?: ReadonlyMap<string, unknown>;
+  /** Validez propia además de `targetIds` (p. ej. Deshacer: nada cambió desde el aviso). */
+  applicable?: () => boolean;
+  /** Acción de conveniencia (Deshacer): el aviso caduca solo como uno informativo. */
+  transient?: boolean;
 }
 
 export type SceneSnapshot = ProjectSceneSnapshot;
@@ -275,6 +291,8 @@ export interface KuraStoreState {
   clearToastHistory: () => void;
   dismissErrorToasts: () => void;
   dismissToast: (id: string) => void;
+  /** Ejecuta una acción de un aviso (visible o del historial): lo cierra y la marca como aplicada. */
+  runToastAction: (id: string, action: ToastAction) => void;
   dismissAllToasts: () => void;
 
   // Selección e historial

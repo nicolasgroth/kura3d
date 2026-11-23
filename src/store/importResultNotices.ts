@@ -19,6 +19,7 @@ import { unitHintOf } from '../engine/io/unitHint';
 import type { ImportedModel } from '../engine/io/importTypes';
 import { registerSecondaryAction } from './toastEnhancers';
 import { useUnitChoiceStore } from './unitChoiceStore';
+import type { ToastAction } from './storeTypes';
 
 /** Objeto creado y la pieza leída de la que viene. */
 export interface ImportedEntry {
@@ -30,7 +31,7 @@ export interface ImportedEntry {
 export interface ImportNoticeDeps {
   tr: Translate;
   language: LanguageCode;
-  addToast: (text: string, kind?: 'info' | 'success' | 'error', action?: { label: string; run: () => void }) => void;
+  addToast: (text: string, kind?: 'info' | 'success' | 'error', action?: ToastAction) => void;
   openSimplify?: (id: string) => void;
   /** Repara un objeto; si devuelve una promesa, las reparaciones en lote van una tras otra. */
   repairMesh?: (id: string) => void | Promise<unknown>;
@@ -55,6 +56,8 @@ export function registerUnitChoice(entries: readonly ImportedEntry[], deps: Pick
     registerSecondaryAction(deps.tr('realesMotor.unitDoubt', { name: fileName, size }), {
       label: deps.tr('ux6.unit.other'),
       run: () => useUnitChoiceStore.getState().open({ fileName, ids, hint }),
+      targetIds: ids,
+      watch: 'scale',
     });
   }
 }
@@ -92,7 +95,7 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
     addToast(
       tr('import.heavy', { tris: fmt(Math.floor(heavy.mesh.indices.length / 3)) }),
       'info',
-      deps.openSimplify ? { label: tr('import.heavy.action'), run: () => deps.openSimplify?.(id) } : undefined,
+      deps.openSimplify ? { label: tr('import.heavy.action'), run: () => deps.openSimplify?.(id), targetIds: [id], watch: 'mesh' } : undefined,
     );
   }
   // Un archivo con varios cuerpos sueltos en una sola pieza: se avisa y se ofrece separarlos.
@@ -103,7 +106,7 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
     addToast(
       tr('uxEscena.multiBody', { name: object.name, count: bodies }),
       'info',
-      deps.separateBodies ? { label: tr('uxEscena.multiBody.action'), run: () => deps.separateBodies?.(object.id) } : undefined,
+      deps.separateBodies ? { label: tr('uxEscena.multiBody.action'), run: () => deps.separateBodies?.(object.id), targetIds: [object.id], watch: 'mesh' } : undefined,
     );
     break;
   }
@@ -132,8 +135,8 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
         : tr('realesMotor.openMeshShared', { name: label(u.entries[0]), count: ids.length, edges }),
       'info',
       ids.length === 1
-        ? deps.repairMesh ? { label: tr('repair.action'), run: () => void deps.repairMesh?.(ids[0]) } : undefined
-        : canRepair ? { label: tr('realesMotor.repairAll'), run: repairAll([ids]) } : undefined,
+        ? deps.repairMesh ? { label: tr('repair.action'), run: () => void deps.repairMesh?.(ids[0]), targetIds: ids, watch: 'mesh' } : undefined
+        : canRepair ? { label: tr('realesMotor.repairAll'), run: repairAll([ids]), targetIds: ids, watch: 'mesh' } : undefined,
     );
     return;
   }
@@ -142,6 +145,6 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
   addToast(
     tr('import.openMeshMany', { count: open.length, list: names.slice(0, 3).join(', ') + (names.length > 3 ? '…' : '') }),
     'info',
-    canRepair ? { label: tr('realesMotor.repairAll'), run: repairAll(groups) } : undefined,
+    canRepair ? { label: tr('realesMotor.repairAll'), run: repairAll(groups), targetIds: groups.flat(), watch: 'mesh' } : undefined,
   );
 }

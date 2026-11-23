@@ -239,7 +239,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         get().addToast(
           `${tr('toast.printabilityDone', { score: report.score, weight: formatLocaleNumber(get().language, report.estimatedWeightGrams, { maxFrac: 1, minFrac: 1 }) })} ${tr('toast.printabilityHelp')}`,
           report.score >= 70 ? 'success' : 'info',
-          { label: tr('toast.printabilityDetails'), run: () => void focusById('kura-print-report') },
+          { label: tr('toast.printabilityDetails'), run: () => void focusById('kura-print-report'), targetIds: [id], transient: true },
         );
         return report;
       } catch (err) {

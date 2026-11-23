@@ -181,7 +181,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     get().addToast(
       tr('toast.errorPrefix', { message }),
       'error',
-      repairable ? { label: tr('repair.action'), run: () => void get().repairObjectMesh(target) } : undefined,
+      repairable ? { label: tr('repair.action'), run: () => void get().repairObjectMesh(target), targetIds: [target], watch: 'mesh' } : undefined,
       inDialog ? { historyOnly: true } : undefined,
     );
   };

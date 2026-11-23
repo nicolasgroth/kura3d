@@ -132,6 +132,8 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
           get().addToast(tr('realesUi.split.glueSummary', { count: glue.count, total: glue.total }), 'info', {
             label: tr('realesUi.split.showJoints'),
             run: () => void focusById(SPLIT_JOINTS_ID),
+            targetIds: result.parts.map((p) => p.id),
+            transient: true,
           });
         }
         get().setSplitNotes(obj.id, notes);

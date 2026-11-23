@@ -27,7 +27,7 @@ import {
   type Vec3,
 } from '../../core/scene/cameraFraming';
 import { measureViewportInsets } from './viewportInsets';
-import { clipPlanesFor, isViewPreset, VIEW_PRESET_DIRS } from '../../core/scene/viewPresets';
+import { clipPlanesFor, isViewPreset, minFrameDistance, VIEW_PRESET_DIRS } from '../../core/scene/viewPresets';
 import { explodedSplitPositions, splitGroupOf } from '../../core/scene/splitGroups';
 import type { SceneObject } from '../../types/kura';
 
@@ -126,15 +126,18 @@ export const CameraController: React.FC<{
         width,
         height,
       };
-      if (isBoxInView(box, vp.elements, undefined, free)) return;
+      // A la vista y de un tamaño legible: no se mueve. Diminuta (< 3 % del encuadre), se encuadra.
+      if (isBoxInView(box, vp.elements, undefined, free) && !needsReframeAfterEdit(box, camera.position.toArray() as Vec3, vp.elements)) return;
     }
+    const diagonal = Math.hypot(box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]);
     const fit = {
       box,
       fovDeg: persp.fov ?? 42,
       aspect,
       insets: measureViewportInsets(gl.domElement),
       margin,
-      minDistance: Math.max(MIN_DISTANCE, orbitRef.current?.minDistance ?? 0),
+      // La distancia y los planos de recorte siguen a la caja real: 0,9 mm o 2 m.
+      minDistance: minFrameDistance(diagonal, MIN_DISTANCE),
       maxDistance: orbitRef.current?.maxDistance ?? Infinity,
     };
     const current = camera.position.clone().sub(currentTarget()).toArray() as Vec3;

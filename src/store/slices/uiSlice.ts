@@ -31,7 +31,8 @@ import {
 } from '../preferencesStorage';
 import type { StoreContext } from '../storeContext';
 import { takeSecondaryAction } from '../toastEnhancers';
-import type { KuraStoreState } from '../storeTypes';
+import type { KuraStoreState, ToastAction, ToastMessage } from '../storeTypes';
+import { indexObjects, snapshotWatch, toastIsSticky } from '../toastActionState';
 
 export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr } = ctx;
@@ -175,25 +176,41 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     setCommandPaletteOpen: (commandPaletteOpen) => set({ commandPaletteOpen }),
     setCutPreview: (patch) => set((state) => ({ cutPreview: { ...state.cutPreview, ...patch } })),
 
-    addToast: (text, kind = 'info', action, options) => {
+    addToast: (text, kind = 'info', rawAction, options) => {
       const id = makeId('toast');
-      // Historial corto (8): también lo que se mostró solo dentro de un diálogo.
-      set((state) => ({ toastHistory: [...state.toastHistory.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, at: Date.now() }].slice(-8) }));
-      if (options?.historyOnly) return;
+      const index = indexObjects(get().objects);
+      const action = rawAction ? snapshotWatch(rawAction, index) : undefined;
       // Segunda acción: la pedida o la que un módulo dejó registrada para este texto (`toastEnhancers.ts`).
-      const secondaryAction = options?.secondaryAction ?? takeSecondaryAction(text);
+      const rawSecondary = options?.historyOnly ? options?.secondaryAction : options?.secondaryAction ?? takeSecondaryAction(text);
+      const secondaryAction = rawSecondary ? snapshotWatch(rawSecondary, index) : undefined;
+      const actions = [action, secondaryAction].filter((a): a is ToastAction => Boolean(a));
+      // Historial corto (8): también lo que se mostró solo dentro de un diálogo, con sus acciones operables.
+      set((state) => ({ toastHistory: [...state.toastHistory.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, at: Date.now(), ...(actions.length > 0 ? { actions } : {}) }].slice(-8) }));
+      if (options?.historyOnly) return;
       // Un aviso por acción: uno idéntico (mismo texto y tipo) se reemplaza en vez de apilarse.
       set((state) => {
         const next = [...state.toasts.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, ...(action ? { action } : {}), ...(secondaryAction ? { secondaryAction } : {}) }];
-        // Como máximo 3 a la vista: los informativos más viejos se descartan; los errores esperan al usuario.
-        for (let i = 0; i < next.length && next.length > 3; ) {
-          if (next[i].kind !== 'error' && i < next.length - 1) next.splice(i, 1);
-          else i += 1;
+        // Como máximo 3 a la vista: salen primero los informativos sin acción pendiente, luego los que la tienen
+        // (siguen en el historial con su botón); los errores esperan al usuario.
+        const objs = indexObjects(state.objects);
+        const sticky = (x: ToastMessage) => toastIsSticky([x.action, x.secondaryAction].filter((a): a is ToastAction => Boolean(a)), objs);
+        for (const pass of [false, true]) {
+          for (let i = 0; i < next.length - 1 && next.length > 3; ) {
+            if (next[i].kind !== 'error' && sticky(next[i]) === pass) next.splice(i, 1);
+            else i += 1;
+          }
         }
         return { toasts: next.slice(-8) };
       });
-      // El cierre automático de los informativos lo temporiza `ToastItem` (con pausa al pasar el cursor o el
-      // foco); los errores caducan a los 12 s y siguen en el historial de la barra de estado.
+      // El cierre automático lo temporiza `ToastItem` (con pausa al pasar el cursor o el foco); un aviso con
+      // una acción aún aplicable no caduca solo.
+    },
+    runToastAction: (id, action) => {
+      set((state) => ({
+        toasts: state.toasts.filter((toast) => toast.id !== id),
+        toastHistory: state.toastHistory.map((x) => (x.id === id ? { ...x, applied: true } : x)),
+      }));
+      action.run();
     },
     dismissAllToasts: () => set({ toasts: [] }),
     clearToastHistory: () => set({ toastHistory: [] }),
