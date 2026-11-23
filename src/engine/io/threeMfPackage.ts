@@ -13,33 +13,10 @@ import { strFromU8 } from 'fflate';
 import { unzipBounded } from './boundedUnzip';
 import { ModelImportError, type ModelImportLimits } from './importErrors';
 import { normalizeHexColor } from './meshBuffers';
+import { parseXmlAttrs } from './xmlAttrs';
 import { forEachElement, forEachLeaf } from './xmlScan';
 
-/** Extrae atributos XML de una etiqueta sin depender de DOMParser (disponible en Workers). */
-export function parseXmlAttrs(attrString: string): Record<string, string> {
-  const result: Record<string, string> = {};
-  const re = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(attrString)) !== null) {
-    result[m[1]] = decodeXmlEntities(m[2] ?? m[3] ?? '');
-  }
-  return result;
-}
-
-/** Decodifica las entidades XML básicas y numéricas. */
-export function decodeXmlEntities(text: string): string {
-  if (!text.includes('&')) return text;
-  return text.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi, (_, e: string) => {
-    const lower = e.toLowerCase();
-    if (lower === 'amp') return '&';
-    if (lower === 'lt') return '<';
-    if (lower === 'gt') return '>';
-    if (lower === 'quot') return '"';
-    if (lower === 'apos') return "'";
-    const code = lower.startsWith('#x') ? parseInt(lower.slice(2), 16) : parseInt(lower.slice(1), 10);
-    return Number.isFinite(code) && code > 0 && code < 0x110000 ? String.fromCodePoint(code) : '';
-  });
-}
+export { decodeXmlEntities, parseXmlAttrs } from './xmlAttrs';
 
 /** Normaliza una ruta de parte OPC a clave de archivo ZIP (sin '/' inicial). */
 export function normalizePartPath(path: string): string {

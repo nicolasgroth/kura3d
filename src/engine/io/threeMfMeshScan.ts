@@ -10,42 +10,11 @@
  */
 
 import { ModelImportError } from './importErrors';
-import { decodeXmlEntities } from './threeMfPackage';
-import { MAX_XML_TAG_LENGTH } from './xmlScan';
+import { decodeXmlEntities, eachAttr } from './xmlAttrs';
+import { MAX_XML_TAG_LENGTH, skipCommentOrCdata } from './xmlScan';
 
 const isSpace = (c: number) => c === 32 || c === 9 || c === 10 || c === 13;
 const isNameEnd = (c: number) => isSpace(c) || c === 47 || c === 62;
-
-/**
- * Llama a `visit(name, value)` por cada atributo de la etiqueta `xml[from..to)`. `value` viene sin
- * decodificar (el llamador decide si le hacen falta entidades).
- */
-function eachAttr(xml: string, from: number, to: number, visit: (name: string, value: string) => void): void {
-  let i = from;
-  while (i < to) {
-    while (i < to && isSpace(xml.charCodeAt(i))) i++;
-    const nameStart = i;
-    while (i < to && xml.charCodeAt(i) !== 61 && !isSpace(xml.charCodeAt(i)) && xml.charCodeAt(i) !== 47) i++;
-    if (i === nameStart) {
-      i++;
-      continue;
-    }
-    const name = xml.slice(nameStart, i);
-    while (i < to && isSpace(xml.charCodeAt(i))) i++;
-    if (xml.charCodeAt(i) !== 61) continue; // atributo sin valor: se ignora
-    i++;
-    while (i < to && isSpace(xml.charCodeAt(i))) i++;
-    const quote = xml.charCodeAt(i);
-    if (quote !== 34 && quote !== 39) continue;
-    // La comilla de cierre se busca solo dentro de la etiqueta: buscarla en el resto del documento haría
-    // el recorrido cuadrático con atributos sin cerrar.
-    let close = i + 1;
-    while (close < to && xml.charCodeAt(close) !== quote) close++;
-    if (close >= to) return;
-    visit(name, xml.slice(i + 1, close));
-    i = close + 1;
-  }
-}
 
 /**
  * Recorre los elementos hoja con nombre local `local` (en minúsculas) y entrega el rango de sus
@@ -59,6 +28,13 @@ function eachLeaf(xml: string, local: string, visit: (from: number, to: number) 
     const lt = xml.indexOf('<', pos);
     if (lt < 0) break;
     const first = xml.charCodeAt(lt + 1);
+    if (first === 33) {
+      const after = skipCommentOrCdata(xml, lt);
+      if (after >= 0) {
+        pos = after;
+        continue;
+      }
+    }
     if (first === 47 || first === 33 || first === 63) {
       pos = lt + 1;
       continue;

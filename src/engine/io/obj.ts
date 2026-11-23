@@ -36,10 +36,15 @@ export function parseMtlColors(text: string): Map<string, string> {
 
 /** Nombres de archivo MTL declarados con `mtllib` en un OBJ. */
 export function objMaterialLibraries(text: string): string[] {
+  // Línea por línea, sin regex con retroceso (`^\s*…\s*$` era cuadrático con mucho espacio en blanco).
   const libs: string[] = [];
-  const re = /^\s*mtllib\s+(.+?)\s*$/gm;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(text)) !== null) libs.push(m[1].trim());
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    if (line.length > 6 && line.startsWith('mtllib') && /\s/.test(line[6])) {
+      const name = line.slice(7).trim();
+      if (name) libs.push(name);
+    }
+  }
   return libs;
 }
 

@@ -11,8 +11,21 @@
 
 import { ModelImportError } from './importErrors';
 
-/** Longitud máxima de una etiqueta de apertura (atributos incluidos). */
-export const MAX_XML_TAG_LENGTH = 1 << 20;
+/** Longitud máxima de una etiqueta de apertura (atributos incluidos): 64 KiB sobra para 3MF reales. */
+export const MAX_XML_TAG_LENGTH = 64 * 1024;
+
+/**
+ * Si en `lt` empieza un comentario `<!-- … -->` o una sección `<![CDATA[ … ]]>`, devuelve el índice
+ * siguiente a su cierre (se saltan enteros: lo que haya dentro no es geometría); si no, -1. Sin cierre
+ * es archivo dañado. Cada carácter se examina una vez.
+ */
+export function skipCommentOrCdata(xml: string, lt: number): number {
+  const open = xml.startsWith('<!--', lt) ? '-->' : xml.startsWith('<![CDATA[', lt) ? ']]>' : null;
+  if (!open) return -1;
+  const close = xml.indexOf(open, lt + 4);
+  if (close < 0) throw new ModelImportError('corrupt', open === '-->' ? 'comentario sin cerrar' : 'CDATA sin cerrar');
+  return close + open.length;
+}
 
 /** Elemento encontrado: atributos crudos y cuerpo (null en hojas o etiquetas autocerradas). */
 export interface XmlElementMatch {
@@ -70,7 +83,14 @@ export function forEachElement(
     const lt = xml.indexOf('<', pos);
     if (lt < 0) return;
     const first = xml.charCodeAt(lt + 1);
-    // Cierres, comentarios, declaraciones e instrucciones de proceso no son aperturas.
+    if (first === 33) {
+      const after = skipCommentOrCdata(xml, lt);
+      if (after >= 0) {
+        pos = after;
+        continue;
+      }
+    }
+    // Cierres, declaraciones e instrucciones de proceso no son aperturas.
     if (first === 47 || first === 33 || first === 63) {
       pos = lt + 1;
       continue;
