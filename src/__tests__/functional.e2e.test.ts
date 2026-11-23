@@ -348,8 +348,8 @@ describe('Evaluación Funcional E2E de Kura3D (13 áreas funcionales)', () => {
           // Mitad A = lado negativo del eje del usuario. El lado positivo del motor (el que recibe las
           // cavidades) es el positivo del usuario en X y Z, y el negativo en Y (Y del usuario = −Z del motor).
           const [posName, negName] = axis === 'y' ? ['mitad A', 'mitad B'] : ['mitad B', 'mitad A'];
-          const posHalf = halves.find((h) => h.name.endsWith(posName))!;
-          const negHalf = halves.find((h) => h.name.endsWith(negName))!;
+          const posHalf = halves.find((h) => h.name.includes(`${posName} (`))!;
+          const negHalf = halves.find((h) => h.name.includes(`${negName} (`))!;
           expect(posHalf).toBeDefined();
           expect(negHalf).toBeDefined();
 
