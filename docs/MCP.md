@@ -62,7 +62,7 @@ Ejemplos de configuración para Claude Desktop, Codex CLI y Antigravity están e
 La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre coincide con lo que recibe el agente. Las descripciones están en inglés porque son las que el cliente MCP entrega al modelo. Los parámetros marcados con `*` son obligatorios; el esquema completo de cada herramienta lo entrega el servidor al cliente.
 
 <!-- TABLA-HERRAMIENTAS:INICIO -->
-<!-- Generada por `npm run docs:mcp` desde el servidor real (44 herramientas). No la edites a mano. -->
+<!-- Generada por `npm run docs:mcp` desde el servidor real (45 herramientas). No la edites a mano. -->
 
 | Herramienta | Acceso | Qué hace | Parámetros principales (`*` = obligatorio) |
 | :--- | :--- | :--- | :--- |
@@ -71,6 +71,7 @@ La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre
 | `kura_apply_texture` | escritura | Applies procedural surface displacement (fuzzy skin, knurling, waves, honeycomb, grid or none). | `objectId`* (string), `pattern`* (`none` · `fuzzy` · `knurling` · `waves` · `honeycomb` · `grid`), `depth` (number), `scale` (number) |
 | `kura_boolean_operation` | escritura | Performs union, subtraction or intersection between a target object and one or more tool objects. | `targetId`* (string), `toolIds`* (lista de string), `operation`* (`union` · `subtract` · `intersect`), `keepTools` (boolean), `resultName` (string) |
 | `kura_capture_viewport` | lectura | Captures a PNG image of the 3D viewport when the Kura3D graphical app is connected via Live Bridge. | `width` (integer), `height` (integer) |
+| `kura_check_fit` | lectura | Read-only. Checks whether parts collide or how much clearance is left between them: printable solids against each other and reference objects (real parts such as a board, screw or magnet) against solids; reference–reference pairs are skipped and loose negatives are not parts. By default each solid first gets its pending negatives subtracted (in a copy) so holes not yet applied are honored. Per pair: status interferes \| tight (clearance below clearanceTargetMm) \| ok \| far, overlap volume in mm³ with its zone box and a representative point, minimum clearance with the two closest points, approximate=true when a mesh is not closed, and a rule-based recommendation with numbers and a user direction (+x right, +y back, +z up), marked as estimate. Also a summary (pairs checked, overlapping, tight, worst pair) and notes. Iterate: move with kura_transform_object, then check again. Default objects: the app selection, else all visible. | `objectIds` (lista de string), `applyPendingSubtractions` (boolean), `clearanceTargetMm` (number), `searchMm` (number), `maxPairs` (integer) |
 | `kura_colorize_structures` | escritura | Detects the structural regions of the model and assigns distinct colors per sub-structure for visual inspection or multicolor printing. | `objectId`* (string), `creaseAngleDeg` (number) |
 | `kura_combine_objects` | escritura | Combines 2 or more objects into ONE object with several bodies, without boolean operations: the geometry is not merged and the total volume is the sum. Exports as a single STL. Use kura_separate_bodies to split it again, or kura_boolean_operation (union) to really merge geometry. | `objectIds`* (lista de string), `name` (string) |
 | `kura_convex_hull` | escritura | Creates a closed solid that convexly wraps one or more selected objects. | `objectIds`* (lista de string), `name` (string) |
@@ -198,6 +199,27 @@ kura_create_primitive { "primitiveType": "box", "name": "Caja redondeada", "plac
 kura_update_primitive_params { "objectId": "<id>", "params": { "edgeSize": 40 } }
 // → edgeSizeApplied 14.995, edgeSizeClamped true (el radio no cabe: se acota a la mitad del lado menor)
 ```
+
+### 5. Comprobar encaje
+
+`kura_check_fit` es de solo lectura: dice si dos piezas se cruzan (volumen en mm³, caja de la zona y un punto) o cuánta holgura queda entre ellas (distancia mínima y los dos puntos más cercanos), con una recomendación con cifras. Antes de comparar, aplica en copia los negativos todavía sin aplicar (`applyPendingSubtractions`, por defecto sí). Los pares referencia–referencia no se revisan. Si una malla no cierra, el resultado va con `approximate: true`.
+
+```jsonc
+kura_create_primitive { "primitiveType": "box", "name": "Carcasa", "placement": "origin", "position": [100, 0, 0], "params": { "width": 40, "depth": 30, "height": 15 } }
+kura_create_primitive { "primitiveType": "box", "name": "Bolsillo", "role": "negative", "position": [100, 0, 3], "params": { "width": 30, "depth": 20, "height": 15 } }
+kura_create_primitive { "primitiveType": "box", "name": "Placa", "role": "reference", "position": [100, 0, 4], "params": { "width": 30.6, "depth": 20.6, "height": 1.6 } }
+
+kura_check_fit { "objectIds": ["<carcasa>", "<placa>"] }
+// → pairs[0]: status "interferes", interference.volumeMm3 48.576,
+//   recommendation.key "fitCheck.rec.enlarge", params.perSideMm 0.55, params.axes "X, Y"
+//   text: "Placa" does not fit in "Carcasa" … Enlarge the pocket about 0.55 mm per side in X, Y …
+
+kura_update_primitive_params { "objectId": "<bolsillo>", "params": { "width": 31.2, "depth": 21.2 } }
+kura_check_fit { "objectIds": ["<carcasa>", "<placa>"] }
+// → pairs[0]: status "ok", clearanceMm 0.3
+```
+
+Estados: `interferes` (se cruzan), `tight` (holgura menor que `clearanceTargetMm`, 0,25 mm por defecto), `ok` y `far` (más lejos que `searchMm`). Las direcciones (`+x` derecha, `+y` fondo, `+z` arriba) y las cifras de "separar" o "agrandar" son estimaciones y así se marcan (`estimate: true`).
 
 ## Límites conocidos
 

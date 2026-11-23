@@ -91,6 +91,8 @@ export interface StoreContext {
   cancelBusyOperation: () => boolean;
   /** Igual que `runEngine` pero sin tomar el bloqueo ni registrarse como cancelable (exportar). */
   runEngineDetached: <N extends EngineTaskName>(name: N, args: EngineTaskArgs<N>) => Promise<EngineTaskResult<N>>;
+  /** Tarea propia, cancelable y con progreso, que no toma el bloqueo (lecturas largas: Comprobar encaje). */
+  startEngineJob: <N extends EngineTaskName>(name: N, args: EngineTaskArgs<N>, onProgress?: (phase: string) => void) => EngineJob<EngineTaskResult<N>>;
   /** Avisos del motor mostrados desde el último comando del bus (los toma `createCommandBus`). */
   engineWarnings: { clear: () => void; take: () => engine.EngineWarning[] };
 }
@@ -315,6 +317,9 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   const runEngineDetached = <N extends EngineTaskName>(name: N, args: EngineTaskArgs<N>) =>
     (engineClientOverride ?? getEngineClient()).run(opCtx(), name, args).promise;
 
+  const startEngineJob = <N extends EngineTaskName>(name: N, args: EngineTaskArgs<N>, onProgress?: (phase: string) => void) =>
+    (engineClientOverride ?? getEngineClient()).run(opCtx(), name, args, onProgress);
+
   const cancelBusyOperation = () => {
     const job = runtime.activeJob;
     if (!job) return false;
@@ -326,6 +331,6 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   return {
     set, get, runtime, tr, pushHistory, pushHistoryStep, limitHistory, isHistoryLocked, rejectWhileLocked, runExclusive, operationErrors,
     reportOperationError, reportEngineWarnings, recordEngineWarnings, currentSegmentationFor, projectErrorMessage, opCtx, assertCurrent, commitChange,
-    runEngine, cancelBusyOperation, runEngineDetached, engineWarnings,
+    runEngine, cancelBusyOperation, runEngineDetached, startEngineJob, engineWarnings,
   };
 }

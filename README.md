@@ -90,7 +90,7 @@ Las capturas de abajo y las de las [guías](docs/guia/README.md) se generan desd
 **Inteligencia artificial (opcional)**
 - Asistente local sin conexión que entiende órdenes simples en español e inglés.
 - Proveedores externos: Anthropic, OpenAI, Gemini, Ollama y **cualquier API compatible con OpenAI** (DeepSeek, Qwen, OpenRouter, LM Studio). En escritorio las claves se guardan en el llavero del sistema.
-- **Servidor MCP** con 44 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
+- **Servidor MCP** con 45 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
 
 ## Guías
 

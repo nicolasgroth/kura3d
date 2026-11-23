@@ -27,6 +27,7 @@ import { createSplitSlice } from './slices/splitSlice';
 import { createSplitJointsSlice } from './slices/splitJointsSlice';
 import { createSplitPrefsSlice } from './slices/splitPrefsSlice';
 import { createFitToBedSlice } from './slices/fitToBedSlice';
+import { createFitCheckSlice, invalidateFitCheckOnSceneChange } from './slices/fitCheckSlice';
 import { createBedProfilesSlice } from './slices/bedProfilesSlice';
 import { createUiSlice } from './slices/uiSlice';
 import { createQuickActionsSlice } from './slices/quickActionsSlice';
@@ -80,6 +81,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createSplitJointsSlice(ctx),
     ...createSplitPrefsSlice(ctx),
     ...createFitToBedSlice(ctx),
+    ...createFitCheckSlice(ctx),
     ...createBedProfilesSlice(ctx),
     ...createMenuIdeasSlice(ctx),
     ...createGroupsSlice(ctx),
@@ -103,3 +105,4 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
 
 hydrateSecrets(useKuraStore);
 clearPreviewOnSelectionChange(useKuraStore);
+invalidateFitCheckOnSceneChange(useKuraStore);

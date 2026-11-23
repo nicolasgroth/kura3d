@@ -106,6 +106,11 @@ export class KuraHeadlessEngine {
     };
   }
 
+  /** Objetos de la escena sin copiar (solo lectura: comprobaciones que no cambian la escena). */
+  readonlyObjects(): readonly HeadlessSceneObject[] {
+    return Array.from(this.objects.values());
+  }
+
   /** Copia profunda de un objeto de escena (malla incluida) para inspección o verificación. */
   getObject(objectId: string): HeadlessSceneObject {
     return structuredClone(this.requireObject(objectId));

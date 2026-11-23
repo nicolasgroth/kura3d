@@ -10,6 +10,7 @@
 import type { TranslationKey } from '../translations';
 import { MENU_DE } from './menuKeys';
 import { REFERENCE_DE } from './referencia';
+import { FIT_CHECK_DE } from './encaje';
 import { MENU_IDEAS_DE } from './menuIdeas';
 import { GROUPS_DE } from './groups';
 import { MEASURE_DE } from './measure';
@@ -49,6 +50,7 @@ import { REDISENO_DE } from './rediseno';
 export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...MENU_DE,
   ...REFERENCE_DE,
+  ...FIT_CHECK_DE,
   ...MENU_IDEAS_DE,
   ...GROUPS_DE,
   ...MEASURE_DE,

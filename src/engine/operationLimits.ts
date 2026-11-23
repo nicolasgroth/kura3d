@@ -155,6 +155,14 @@ export const OPERATION_RANGES = {
     minFragmentMm3: closed(0, 1_000_000),
     minWallForConnectorMm: closed(0, 50),
   },
+  /** Comprobar encaje (`check_fit`). */
+  fitCheck: {
+    clearanceTargetMm: closed(0, 10),
+    searchMm: closed(0.1, 100),
+    maxPairs: int(1, 20_000),
+    maxTrianglesPerPair: int(1000, 20_000_000),
+    timeBudgetMs: int(100, 600_000),
+  },
 } as const satisfies Record<string, Record<string, OperationRange>>;
 
 /**
@@ -191,6 +199,11 @@ export const OPERATION_DEFAULTS = {
    * diámetro de una boquilla típica de 0,4 mm: el laminador la rellena igual).
    */
   hollow: { minCavityFraction: 0.005, minCavityNozzleMm: 0.4 },
+  /**
+   * Comprobar encaje: holgura deseada = la tolerancia de encaje del proyecto (0,25 mm, la misma de los
+   * conectores); tope de búsqueda = max(4 · holgura, 2 mm); pares, triángulos por par y tiempo acotados.
+   */
+  fitCheck: { clearanceTargetMm: 0.25, searchFactor: 4, minSearchMm: 2, maxPairs: 1000, maxTrianglesPerPair: 400_000, timeBudgetMs: 30_000 },
   split: { marginMm: 5, maxPieces: 64, shiftWindow: 0.15, labelDepthMm: 0.4, labelMinHeightMm: 4, lapHeightMm: 6, minFragmentMm3: 2000, minWallForConnectorMm: 8,
     /** Firmeza activa de las uniones: apagada por defecto en todas las rutas (app, bus y MCP); el usuario la elige. */
     reinforceWeakJoints: false,

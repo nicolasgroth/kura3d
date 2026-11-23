@@ -25,6 +25,7 @@ import { registerSplitTools } from './splitTools.js';
 import { registerFitTools } from './fitTools.js';
 import { registerMeasureTools } from './measureTools.js';
 import { registerRepairTools } from './repairTools.js';
+import { registerFitCheckTools } from './fitCheckTools.js';
 import { registerRoleTools, roleSchema } from './roleTools.js';
 import type { ObjectRole } from '../../src/types/kura';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
@@ -331,6 +332,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerFitTools(server, ctx);
   registerMeasureTools(server, ctx);
   registerRepairTools(server, ctx);
+  registerFitCheckTools(server, ctx);
   registerRoleTools(server, ctx);
 
   // 3. Transformación de objetos
