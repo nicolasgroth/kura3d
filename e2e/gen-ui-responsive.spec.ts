@@ -33,7 +33,9 @@ for (const tam of TAMANOS) {
       });
       for (const dlg of ['image', 'svg', 'mold', 'thread', 'project'] as const) {
         await page.evaluate((d) => (window as any).__s.getState().setActiveDialog(d), dlg);
+        // El diálogo anterior puede seguir cerrándose un instante: se espera a que quede uno solo.
         const panel = page.getByRole('dialog');
+        await expect(panel).toHaveCount(1);
         await expect(panel).toBeVisible();
         // Sin desborde horizontal de la página.
         const ancho = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }));
