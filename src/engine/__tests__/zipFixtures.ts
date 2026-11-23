@@ -43,6 +43,8 @@ export interface FixtureEntry {
   declaredSize?: number;
   /** Nombre que lleva la cabecera local (por defecto, el mismo). */
   localName?: string;
+  /** Flujo deflate ya comprimido (por defecto, `deflateStored(data)`). */
+  compressed?: Uint8Array;
 }
 
 export interface FixtureOptions {
@@ -67,7 +69,7 @@ export function buildZip(entries: FixtureEntry[], options: FixtureOptions = {}):
   for (const entry of entries) {
     const enc = new TextEncoder().encode(entry.name);
     const localEnc = new TextEncoder().encode(entry.localName ?? entry.name);
-    const comp = deflateStored(entry.data);
+    const comp = entry.compressed ?? deflateStored(entry.data);
     const crc = crc32(entry.data);
     const size = entry.declaredSize ?? entry.data.length;
     const inLocal = options.descriptor ? [0, 0, 0] : [crc, comp.length, entry.data.length];

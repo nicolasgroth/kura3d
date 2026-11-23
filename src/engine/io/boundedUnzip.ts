@@ -28,8 +28,12 @@ export const DEFAULT_MAX_ZIP_ENTRIES = 10_000;
  */
 const MAX_DEFLATE_RATIO = 1100;
 const RATIO_CHECK_FROM_BYTES = 1 << 20;
-/** Parte de datos comprimidos entregada a cada `push`: acota la memoria temporal del inflado. */
-const INFLATE_CHUNK = 1 << 20;
+/**
+ * Parte máxima de datos comprimidos por `push`. Cada parte se acota además a lo que falta por salir
+ * dividido por la razón máxima de deflate: así la salida de un `push` nunca excede (salvo ~1 KiB) lo
+ * declarado, y una entrada que miente se corta ANTES de reservar la memoria que pediría inflarla.
+ */
+const INFLATE_CHUNK_MAX = 64 * 1024;
 
 /**
  * Extrae las entradas cuyo nombre acepta `keep`, con a lo sumo `maxBytes` descomprimidos en total.
@@ -76,15 +80,20 @@ function extract(bytes: Uint8Array, entry: ZipEntry, budget: number): Uint8Array
   const output = new Uint8Array(entry.uncompressedSize);
   let size = 0;
   let ended = false;
+  const limit = Math.min(entry.uncompressedSize, budget);
   const inflater = new Inflate((chunk, final) => {
-    if (size + chunk.length > entry.uncompressedSize || size + chunk.length > budget) throw new ModelImportError('archive-too-large');
+    if (size + chunk.length > limit) throw new ModelImportError('archive-too-large');
     output.set(chunk, size);
     size += chunk.length;
     if (final) ended = true;
   });
   try {
-    for (let at = 0; at < raw.length; at += INFLATE_CHUNK) {
-      inflater.push(raw.subarray(at, Math.min(raw.length, at + INFLATE_CHUNK)), at + INFLATE_CHUNK >= raw.length);
+    let at = 0;
+    while (at < raw.length) {
+      const step = Math.max(1, Math.min(INFLATE_CHUNK_MAX, Math.floor((limit - size) / MAX_DEFLATE_RATIO)));
+      const end = Math.min(raw.length, at + step);
+      inflater.push(raw.subarray(at, end), end >= raw.length);
+      at = end;
     }
     if (raw.length === 0) inflater.push(raw, true);
   } catch (error) {
