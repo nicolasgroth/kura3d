@@ -13,6 +13,7 @@ import { t } from '../../i18n';
 import { type PaintBrushMode, useKuraStore } from '../../store/useKuraStore';
 import { PRINT_COLOR_PALETTE } from '../../types/kura';
 import { colorName, colorNameWithHex } from '../../utils/colorNames';
+import { contrastingPaintColor } from '../../utils/paintContrast';
 import { PaintRefineHint } from './PaintRefineHint';
 import { PAINT_RADIUS_MAX_MM, PAINT_RADIUS_MIN_MM, usePaintRadiusKeys } from './usePaintRadiusKeys';
 import '../../styles/paintTools.css';
@@ -43,6 +44,17 @@ export const PaintToolbar: React.FC = () => {
     if (eraser && baseColor) setPaintSettings({ paintColor: baseColor });
   }, [eraser, baseColor, setPaintSettings]);
 
+  // Al entrar a Pintar (o cambiar de objeto): si el pincel es igual o casi igual al objeto, el primer trazo no se
+  // vería; se pasa al siguiente color de la paleta que contraste.
+  useEffect(() => {
+    if (eraser || !baseColor) return;
+    const current = useKuraStore.getState().paintColor;
+    const next = contrastingPaintColor(current, baseColor, PRINT_COLOR_PALETTE);
+    if (next !== current) setPaintSettings({ paintColor: next });
+    // Solo al entrar o al cambiar el objeto, no al elegir un color a mano.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseColor]);
+
   // Al salir de la herramienta con la goma activa se recupera el color de pincel anterior.
   useEffect(() => () => {
     const previous = colorBeforeEraser.current;
@@ -69,6 +81,7 @@ export const PaintToolbar: React.FC = () => {
   return (
     <div
       className={`kura-hud-card kura-paint-toolbar ${folded ? 'is-folded' : ''}`}
+      data-viewport-occluder
       role="toolbar"
       aria-label={t(language, 'viewport.paint.toolbar')}
     >
