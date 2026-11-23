@@ -7,6 +7,7 @@
  * @license MIT
  */
 
+import { attachViewportShading } from './importShading';
 import { MtlLibrary, errorReply, runModelImport, type ModelImportWorkerMessage, type ModelImportWorkerReply } from './modelImportTask';
 
 const library = new MtlLibrary();
@@ -23,7 +24,8 @@ self.onmessage = async ({ data }: MessageEvent<ModelImportWorkerMessage>) => {
   }
   try {
     const model = await runModelImport(library, data);
-    const transfer = new Set<ArrayBuffer>();
+    // El sombreado del visor se calcula aquí: montarlo en el hilo principal congelaba la pestaña.
+    const transfer = new Set<ArrayBuffer>(attachViewportShading(model));
     for (const part of model.parts) {
       for (const attr of [part.mesh.positions, part.mesh.indices, part.mesh.normals]) {
         if (attr?.buffer instanceof ArrayBuffer) transfer.add(attr.buffer);

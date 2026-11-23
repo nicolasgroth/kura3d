@@ -1,9 +1,9 @@
 /**
  * @file src/store/__tests__/importMainThreadWork.test.ts
  * @description Trabajo del hilo principal al importar: las estadísticas y los cuerpos llegan hechos
- * desde el Worker (una vez por malla única) y el store construye los objetos de a una pieza, cediendo
- * el bucle de eventos entre piezas e informando el avance real («7 de 19»). Se mide contando trabajo
- * síncrono por tramo, no con reloj.
+ * desde el Worker (una vez por malla única) y las piezas entran a la escena por tandas acotadas en
+ * triángulos, cediendo hasta el pintado entre tandas e informando el avance real («7 de 19»), con un solo
+ * paso de deshacer; cancelar a mitad deja la escena como estaba. Se cuenta, no se mide con reloj.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -40,44 +40,64 @@ describe('importación: trabajo del hilo principal', () => {
     }
   });
 
-  it('construye de a una pieza cediendo el bucle entre piezas, con avance real y sin recalcular estadísticas', async () => {
+  /** Store mínimo en memoria con contadores de historial y cesiones. */
+  function harness(initial: SceneObject[] = [], extra: { signal?: AbortSignal; onYield?: (n: number) => void } = {}) {
     const model = parseModelFile('p.3mf', file3mf());
-    const objects: SceneObject[] = [];
     let state = {
-      language: 'es' as const, objects, groups: [], selectedIds: [] as string[], unitSystem: 'mm', printerProfile: {}, projectName: null,
-      importPlacementMode: 'bed' as const, addToast: () => {}, requestCameraPreset: () => {},
+      language: 'es' as const, objects: initial, groups: [], selectedIds: initial.map((o) => o.id), unitSystem: 'mm', printerProfile: {}, projectName: null,
+      importPlacementMode: 'bed' as const, addToast: (text: string) => void toasts.push(text), requestCameraPreset: () => {},
     };
-    // Reloj lógico: cuenta los turnos del bucle de eventos que corren mientras se importa.
-    let ticks = 0;
-    let ticking = true;
-    const tick = () => {
-      ticks++;
-      if (ticking) setTimeout(tick, 0);
-    };
-    setTimeout(tick, 0);
-    const builtAtTick: number[] = [];
+    const toasts: string[] = [];
+    const history: Array<{ objects: SceneObject[] } | undefined> = [];
     const progress: Array<[number, number]> = [];
+    const sceneAtYield: number[] = [];
     let statsProvided = 0;
     const io = createModelIoActions({
       get: () => state as never,
       set: (updater) => { state = { ...state, ...updater(state as never) } as typeof state; },
       tr: tr as never,
-      pushHistory: () => {},
+      pushHistory: (before) => void history.push(before),
       buildObject: (p) => {
-        builtAtTick.push(ticks);
         if (p.stats) statsProvided++;
         return buildSceneObject({ ...p, source: 'imported' });
       },
       onBuildProgress: (done, total) => progress.push([done, total]),
+      // Cesión simulada (sin reloj): registra cuántos objetos hay en la escena en cada pintado.
+      yieldFrame: async () => {
+        sceneAtYield.push(state.objects.length);
+        extra.onYield?.(sceneAtYield.length);
+      },
+      batchTriangles: 12 * 5,
       createImportSession: () => ({ parse: async () => model, dispose: () => {} }),
     });
-    expect(await io.importModelFiles([{ name: 'p.3mf', read: async () => new ArrayBuffer(0) }])).toBe(true);
-    ticking = false;
-    expect(builtAtTick).toHaveLength(PARTS);
-    // Entre una pieza y la siguiente corrió al menos un turno del bucle: ninguna racha síncrona de 2+ piezas.
-    for (let i = 1; i < builtAtTick.length; i++) expect(builtAtTick[i]).toBeGreaterThan(builtAtTick[i - 1]);
-    expect(progress).toEqual(Array.from({ length: PARTS }, (_, i) => [i + 1, PARTS]));
-    expect(statsProvided).toBe(PARTS);
-    expect((state as { objects: SceneObject[] }).objects).toHaveLength(PARTS);
+    const run = () => io.importModelFiles([{ name: 'p.3mf', read: async () => new ArrayBuffer(0) }], { signal: extra.signal });
+    return { run, history, progress, sceneAtYield, toasts, get state() { return state; }, get statsProvided() { return statsProvided; } };
+  }
+
+  it('entra a la escena por tandas acotadas, pintando entre tandas, con avance real y un solo paso de deshacer', async () => {
+    const h = harness();
+    expect(await h.run()).toBe(true);
+    // 19 cubos de 12 triángulos en tandas de 60: 5 + 5 + 5 + 4; se pinta tras cada tanda intermedia.
+    expect(h.sceneAtYield).toEqual([5, 10, 15]);
+    expect(h.progress).toEqual([[5, PARTS], [10, PARTS], [15, PARTS], [PARTS, PARTS]]);
+    expect(h.history).toHaveLength(1);
+    expect(h.history[0]?.objects).toEqual([]);
+    expect(h.state.objects).toHaveLength(PARTS);
+    expect(h.state.selectedIds).toEqual(h.state.objects.map((o) => o.id));
+    expect(h.statsProvided).toBe(PARTS);
+  });
+
+  it('cancelar a mitad deja la escena como estaba y sin paso de deshacer', async () => {
+    const existing = buildSceneObject({ name: 'previo', source: 'imported', mesh: parseModelFile('p.3mf', file3mf()).parts[0].mesh, position: [0, 0, 0], color: '#fff' });
+    const controller = new AbortController();
+    const h = harness([existing], { signal: controller.signal, onYield: (n) => n === 2 && controller.abort() });
+    const objectsBefore = h.state.objects;
+    expect(await h.run()).toBe(false);
+    expect(h.sceneAtYield).toEqual([6, 11]);
+    expect(h.state.objects).toBe(objectsBefore);
+    expect(h.state.selectedIds).toEqual([existing.id]);
+    expect(h.state.groups).toEqual([]);
+    expect(h.history).toHaveLength(0);
+    expect(h.toasts.some((t) => /cancel/i.test(t))).toBe(true);
   });
 });

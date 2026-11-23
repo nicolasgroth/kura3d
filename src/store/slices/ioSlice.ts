@@ -20,7 +20,7 @@ type ImageShapeMode = NonNullable<ImageTo3DOptions['shapeMode']>;
 import { MAX_MODEL_FILE_BYTES, openLocalFile, openLocalFiles } from '../../utils/platformBridge';
 import { flushRecoveryDraft } from '../../project/recoveryFlush';
 import { activeBedSize } from '../bedSize';
-import { isProjectDirty } from '../projectDocument';
+import { cloneSnapshot, isProjectDirty } from '../projectDocument';
 import { createModelIoActions, type ModelImportSource } from '../modelIoActions';
 import { loadInitialImportPlacement, STORAGE_IMPORT_PLACEMENT_KEY, writeStorage } from '../preferencesStorage';
 import type { EngineJob } from '../../core/operations/engineClient';
@@ -66,7 +66,8 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     get: () => ({ ...get(), requestCameraPreset: fitImported }),
     set: (updater) => set((state) => updater(state) as Partial<KuraStoreState>),
     tr,
-    pushHistory: () => pushHistory(),
+    // La importación entra por tandas: su paso de deshacer guarda la escena de antes de empezar.
+    pushHistory: (before) => (before ? ctx.pushHistoryStep(cloneSnapshot(before.objects, before.selectedIds, before.groups)) : pushHistory()),
     buildObject: ({ name, mesh, position, color, isHole, rotation, scale, stats }) =>
       (setImportStage('place'), buildSceneObject({ name, source: 'imported', mesh, position, rotation, scale, stats, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole })),
     onBuildProgress: (done, total) => {

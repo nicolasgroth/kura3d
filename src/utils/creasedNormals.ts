@@ -4,6 +4,8 @@
  * umbral quedan vivas y las menores se suavizan. Devuelve una malla indexada donde solo se duplican los
  * vértices que están sobre un pliegue (poca memoria) y conserva el orden de los triángulos (el índice de
  * cara de un clic sigue siendo el de la malla original). Con caché por identidad del buffer de índices.
+ * El cálculo puede hacerse en un Worker (`computeCreasedShading`, sin posiciones: invariante a la
+ * traslación) y sembrarse luego en la caché sobre la malla ya colocada (`primeCreasedMesh`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,6 +16,9 @@ import { OPERATION_DEFAULTS } from '../engine/operationLimits';
 /** Ángulo diedro (grados) a partir del cual una arista queda viva. */
 export const CREASE_ANGLE_DEG = OPERATION_DEFAULTS.paint.regionAngleDeg;
 
+/** Sobre este tamaño el visor conserva las normales de la malla (el cálculo con pliegue sería lento). */
+export const MAX_CREASED_TRIANGLES = 600_000;
+
 export interface CreasedMesh {
   positions: Float32Array;
   normals: Float32Array;
@@ -21,15 +26,44 @@ export interface CreasedMesh {
   indices: Uint32Array;
 }
 
-/**
- * Calcula normales con pliegue. Los vértices coincidentes en posición se sueldan solo para decidir qué
- * caras se suavizan juntas, así que también sirve con mallas importadas sin índices compartidos.
- */
+/** Sombreado con pliegue sin posiciones: `source[v]` es el vértice de entrada del vértice de salida `v`. */
+export interface CreasedShading {
+  normals: Float32Array;
+  /** Mismo largo y orden de triángulos que los índices de entrada. */
+  indices: Uint32Array;
+  source: Uint32Array;
+}
+
+/** Normales con pliegue (ver `computeCreasedShading`) con las posiciones de salida ya armadas. */
 export function computeCreasedMesh(
   positions: ArrayLike<number>,
   indices: ArrayLike<number>,
   creaseAngleDeg: number = CREASE_ANGLE_DEG,
 ): CreasedMesh {
+  const shading = computeCreasedShading(positions, indices, creaseAngleDeg);
+  return { positions: gatherPositions(positions, shading.source), normals: shading.normals, indices: shading.indices };
+}
+
+function gatherPositions(positions: ArrayLike<number>, source: Uint32Array): Float32Array {
+  const out = new Float32Array(source.length * 3);
+  for (let v = 0; v < source.length; v++) {
+    const s = source[v] * 3;
+    out[v * 3] = positions[s];
+    out[v * 3 + 1] = positions[s + 1];
+    out[v * 3 + 2] = positions[s + 2];
+  }
+  return out;
+}
+
+/**
+ * Calcula normales con pliegue. Los vértices coincidentes en posición se sueldan solo para decidir qué
+ * caras se suavizan juntas, así que también sirve con mallas importadas sin índices compartidos.
+ */
+export function computeCreasedShading(
+  positions: ArrayLike<number>,
+  indices: ArrayLike<number>,
+  creaseAngleDeg: number = CREASE_ANGLE_DEG,
+): CreasedShading {
   const triCount = Math.floor(indices.length / 3);
   const vertCount = Math.floor(positions.length / 3);
   const cosLimit = Math.cos((creaseAngleDeg * Math.PI) / 180);
@@ -77,15 +111,34 @@ export function computeCreasedMesh(
   }
   const diag = Math.hypot(maxX - minX, maxY - minY, maxZ - minZ) || 1;
   const q = 1 / (diag * 1e-6);
+  // Tabla hash abierta sobre la posición cuantizada (relativa al mínimo: cabe en int32 y no depende
+  // de la traslación de la malla). Mucho más rápida que un Map con claves de texto.
   const canon = new Int32Array(vertCount);
-  const seen = new Map<string, number>();
+  let tableSize = 4;
+  while (tableSize < vertCount * 2) tableSize <<= 1;
+  const mask = tableSize - 1;
+  const slotId = new Int32Array(tableSize).fill(-1);
+  const slotKey = new Int32Array(tableSize * 3);
   let canonCount = 0;
   for (let v = 0; v < vertCount; v++) {
-    const key = `${Math.round(positions[v * 3] * q)},${Math.round(positions[v * 3 + 1] * q)},${Math.round(positions[v * 3 + 2] * q)}`;
-    let id = seen.get(key);
-    if (id === undefined) {
+    const kx = Math.round((positions[v * 3] - minX) * q) | 0;
+    const ky = Math.round((positions[v * 3 + 1] - minY) * q) | 0;
+    const kz = Math.round((positions[v * 3 + 2] - minZ) * q) | 0;
+    let h = (Math.imul(kx, 73856093) ^ Math.imul(ky, 19349663) ^ Math.imul(kz, 83492791)) & mask;
+    let id = -1;
+    while (slotId[h] !== -1) {
+      if (slotKey[h * 3] === kx && slotKey[h * 3 + 1] === ky && slotKey[h * 3 + 2] === kz) {
+        id = slotId[h];
+        break;
+      }
+      h = (h + 1) & mask;
+    }
+    if (id < 0) {
       id = canonCount++;
-      seen.set(key, id);
+      slotId[h] = id;
+      slotKey[h * 3] = kx;
+      slotKey[h * 3 + 1] = ky;
+      slotKey[h * 3 + 2] = kz;
     }
     canon[v] = id;
   }
@@ -100,7 +153,7 @@ export function computeCreasedMesh(
   for (let c = 0; c < cornerCount; c++) cornersOf[fill[canon[indices[c]]]++] = c;
 
   // Cota superior de vértices de salida: uno por esquina.
-  const outPos = new Float32Array(cornerCount * 3);
+  const outSrc = new Uint32Array(cornerCount);
   const outNrm = new Float32Array(cornerCount * 3);
   const outIdx = new Uint32Array(cornerCount);
   let outCount = 0;
@@ -170,10 +223,7 @@ export function computeCreasedMesh(
         clusterAcc[found * 3] = 0;
         clusterAcc[found * 3 + 1] = 0;
         clusterAcc[found * 3 + 2] = 0;
-        const o = clusterOut[found] * 3;
-        outPos[o] = positions[p];
-        outPos[o + 1] = positions[p + 1];
-        outPos[o + 2] = positions[p + 2];
+        outSrc[clusterOut[found]] = indices[corner];
       }
       clusterAcc[found * 3] += fx * weight;
       clusterAcc[found * 3 + 1] += fy * weight;
@@ -193,13 +243,25 @@ export function computeCreasedMesh(
   }
 
   return {
-    positions: outPos.slice(0, outCount * 3),
     normals: outNrm.slice(0, outCount * 3),
     indices: outIdx,
+    source: outSrc.slice(0, outCount),
   };
 }
 
 const cache = new WeakMap<object, { positions: unknown; mesh: CreasedMesh }>();
+
+/**
+ * Siembra la caché con un sombreado calculado en otro hilo para esta malla (misma topología; las
+ * posiciones pueden estar trasladadas). Un sombreado que no calza con los índices se ignora.
+ */
+export function primeCreasedMesh(positions: ArrayLike<number> & object, indices: ArrayLike<number> & object, shading: CreasedShading): void {
+  const vertCount = Math.floor(positions.length / 3);
+  if (shading.indices.length !== indices.length || shading.normals.length !== shading.source.length * 3) return;
+  for (let v = 0; v < shading.source.length; v++) if (shading.source[v] >= vertCount) return;
+  const mesh = { positions: gatherPositions(positions, shading.source), normals: shading.normals, indices: shading.indices };
+  cache.set(indices, { positions, mesh });
+}
 
 /** Igual que `computeCreasedMesh`, memoizado por identidad del buffer de índices (y de posiciones). */
 export function getCreasedMesh(positions: ArrayLike<number> & object, indices: ArrayLike<number> & object): CreasedMesh {
