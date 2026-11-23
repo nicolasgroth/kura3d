@@ -28,6 +28,15 @@ export const MAX_LOCAL_FILE_BYTES = MAX_PROJECT_BYTES;
 /** Tope de lectura de modelos (STL/3MF/OBJ/PLY): lo que la app puede exportar y reabrir. */
 export const MAX_MODEL_FILE_BYTES = MODEL_IO_LIMITS.maxFileBytes;
 
+/**
+ * ArrayBuffer con exactamente los bytes de `bytes`, sin copiar cuando la vista ya cubre su buffer
+ * entero (lo normal en `readFile` de Tauri). Solo copia si la vista es un tramo de un buffer mayor.
+ */
+export function exactArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  if (bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength && bytes.buffer instanceof ArrayBuffer) return bytes.buffer;
+  return bytes.slice().buffer as ArrayBuffer;
+}
+
 /** Extensiones (sin punto, en minúsculas) aceptadas por un conjunto de filtros de diálogo. */
 export function filterExtensions(filters: FileDialogFilter[]): string[] {
   return filters.flatMap((filter) => filter.extensions.map((ext) => ext.toLowerCase()));
@@ -179,10 +188,15 @@ function downloadInBrowser(defaultName: string, data: Uint8Array): boolean {
   }
 }
 
-/** Archivo elegido por el usuario, leído bajo demanda (permite reportar fallos por archivo). */
+/**
+ * Archivo elegido por el usuario, leído bajo demanda (permite reportar fallos por archivo). En la web
+ * `read` entrega el propio `File` (se lee dentro del Worker); en escritorio, el ArrayBuffer del disco.
+ */
 export interface LocalFileHandle {
   name: string;
-  read: () => Promise<ArrayBuffer>;
+  /** Tamaño en bytes, conocido antes de leer. */
+  size?: number;
+  read: () => Promise<ArrayBuffer | Blob>;
 }
 
 /** Error de lectura de un archivo local concreto (tamaño excesivo o no es un archivo normal). */
@@ -216,22 +230,24 @@ export async function openLocalFiles(accept: string, maxBytes: number = MAX_LOCA
         directory: false,
         filters: extensions.length > 0 ? [{ name: 'Archivos soportados', extensions }] : undefined,
       });
-      const paths = selected === null ? [] : Array.isArray(selected) ? selected : [selected];
-      return paths
-        .filter((path) => hasAllowedExtension(path, extensions))
-        .map((path) => {
-          const name = path.split(/[\\/]/).pop() || 'model';
-          return {
-            name,
-            async read() {
-              const info = await plugins.fsMod.stat(path);
-              if (!info.isFile) throw new LocalFileError(name, 'not-file');
-              if (info.size > maxBytes) throw new LocalFileError(name, 'too-large', { bytes: info.size, maxBytes });
-              const bytes = await plugins.fsMod.readFile(path);
-              return new Uint8Array(bytes).buffer;
-            },
-          };
-        });
+      const paths = (selected === null ? [] : Array.isArray(selected) ? selected : [selected])
+        .filter((path) => hasAllowedExtension(path, extensions));
+      // Tamaños antes de leer: el lote aplica su tope total sin cargar nada en memoria.
+      const sizes = await Promise.all(paths.map((path) => plugins.fsMod.stat(path).then((info) => info.size, () => undefined)));
+      return paths.map((path, index) => {
+        const name = path.split(/[\\/]/).pop() || 'model';
+        return {
+          name,
+          size: sizes[index],
+          async read() {
+            const info = await plugins.fsMod.stat(path);
+            if (!info.isFile) throw new LocalFileError(name, 'not-file');
+            if (info.size > maxBytes) throw new LocalFileError(name, 'too-large', { bytes: info.size, maxBytes });
+            // Sin copia: el buffer de `readFile` se transfiere tal cual al Worker.
+            return exactArrayBuffer(await plugins.fsMod.readFile(path));
+          },
+        };
+      });
     }
   }
 
@@ -249,13 +265,11 @@ export async function openLocalFiles(accept: string, maxBytes: number = MAX_LOCA
       input.remove();
       resolve(files.map((file) => ({
         name: file.name,
+        size: file.size,
+        // El `File` mismo: se lee dentro del Worker, nunca entero en el hilo principal.
         async read() {
           if (file.size > maxBytes) throw new LocalFileError(file.name, 'too-large', { bytes: file.size, maxBytes });
-          try {
-            return await file.arrayBuffer();
-          } catch {
-            throw new LocalFileError(file.name, 'unreadable');
-          }
+          return file;
         },
       })));
     };
@@ -307,15 +321,13 @@ export async function openLocalFile(accept: string): Promise<OpenedLocalFile | n
         return null;
       }
 
-      const bytes = await fsMod.readFile(selected);
-      const copy = new Uint8Array(bytes.byteLength);
-      copy.set(bytes);
+      const buffer = exactArrayBuffer(await fsMod.readFile(selected));
       const segments = selected.split(/[\\/]/);
       const name = segments[segments.length - 1] || 'model';
 
       return {
         name,
-        buffer: copy.buffer,
+        buffer,
       };
     } catch (err) {
       console.warn(`${LOG_TAG} Fallback a selector web tras error Tauri:`, err);

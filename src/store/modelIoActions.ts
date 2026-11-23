@@ -13,9 +13,8 @@ import * as THREE from 'three';
 import * as engine from '../engine';
 import { OPERATION_DEFAULTS } from '../engine/operationLimits';
 import type { TranslationKey } from '../i18n';
-import { ProjectCodecError } from '../project/projectSchema';
 import type { LanguageCode, MeshData, SceneObject, Vec3 } from '../types/kura';
-import { FileSaveError, LocalFileError, saveFileSet, type SaveSetEntry } from '../utils/platformBridge';
+import { FileSaveError, saveFileSet, type SaveSetEntry } from '../utils/platformBridge';
 import { tCount } from '../utils/plural';
 import { exportFileBase, sanitizeFileBase } from '../utils/exportNaming';
 import { selectExportTargets } from './exportTargets';
@@ -24,7 +23,10 @@ import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '..
 import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } from './splitExport';
 import { MAX_GROUP_NAME, objectAncestors, reconcileGroups } from '../core/scene/groups';
 import { groupImported } from './importGrouping';
-import { exportNotices, tooLargeMessage } from './modelImportNotices';
+import { exportNotices, importErrorMessage } from './modelImportNotices';
+import { readModelBatch } from './modelImportBatch';
+
+export { importErrorMessage };
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 export type ExportScope = 'selection' | 'scene';
@@ -41,10 +43,15 @@ export interface ExportRequest {
   perObject?: boolean;
 }
 
-/** Fuente de un archivo a importar (lectura diferida para fallar por archivo). */
+/**
+ * Fuente de un archivo a importar (lectura diferida para fallar por archivo). En la web `read` entrega
+ * el propio `File` (Blob), que se lee dentro del Worker; en escritorio, el ArrayBuffer leído del disco.
+ */
 export interface ModelImportSource {
   name: string;
-  read: () => Promise<ArrayBuffer>;
+  /** Tamaño en bytes si se conoce antes de leer (tope del lote y borrador de recuperación). */
+  size?: number;
+  read: () => Promise<ArrayBuffer | Blob>;
 }
 
 export interface ModelImportOptions {
@@ -83,6 +90,10 @@ export interface ModelIoDeps {
   reportWarnings?: (warnings: readonly engine.EngineWarning[]) => void;
   /** Abre el panel Simplificar para un objeto (acción del aviso de malla pesada). */
   openSimplify?: (id: string) => void;
+  /** Asegura un borrador de recuperación (si hay cambios sin guardar) antes de leer un archivo grande. */
+  ensureRecoveryDraft?: () => Promise<void>;
+  /** Sesión de lectura del lote (pruebas); por defecto el Worker de importación. */
+  createImportSession?: (mtls: readonly engine.MtlSource[]) => engine.ModelImportSession;
 }
 
 const EXPORT_FILTERS: Record<ExportFormat, { name: string; extensions: string[] }> = {
@@ -113,60 +124,18 @@ export function sceneFootprint(objects: SceneObject[]): engine.FootprintXZ | nul
   return any ? { minX: box.min.x, maxX: box.max.x, minZ: box.min.z, maxZ: box.max.z } : null;
 }
 
-/** Mensaje traducido de un fallo de importación que nombra el archivo. */
-export function importErrorMessage(error: unknown, fileName: string, tr: Translate, language: LanguageCode = 'es'): string {
-  if (error instanceof engine.ModelImportError) {
-    if (error.code === 'too-large' && error.size) return tooLargeMessage(error.fileName ?? fileName, error.size, tr, language);
-    const base = tr(`importError.${error.code}` as TranslationKey, { name: error.fileName ?? fileName });
-    return error.detail && error.code !== 'unsupported' ? `${base.replace(/[.。।]$/, '')} (${error.detail})` : base;
-  }
-  if (error instanceof LocalFileError) {
-    if (error.reason === 'too-large' && error.size) return tooLargeMessage(error.fileName, error.size, tr, language);
-    return tr(`importError.${error.reason}` as TranslationKey, { name: error.fileName });
-  }
-  if (error instanceof ProjectCodecError && error.code === 'too-large') return tr('importError.too-large', { name: fileName });
-  const detail = error instanceof Error ? error.message : String(error);
-  return tr('importError.corrupt', { name: fileName }) + (detail ? ` (${detail})` : '');
-}
-
-/** Busca el texto MTL que corresponde a un OBJ (por `mtllib` o, si hay uno solo, ese). */
-function matchMtl(objBuffer: ArrayBuffer, mtls: Map<string, string>): string | undefined {
-  if (mtls.size === 0) return undefined;
-  const head = new TextDecoder('utf-8').decode(objBuffer.slice(0, 1 << 16));
-  for (const lib of engine.objMaterialLibraries(head)) {
-    const found = mtls.get(lib.split(/[\\/]/).pop()!.toLowerCase());
-    if (found) return found;
-  }
-  return mtls.size === 1 ? [...mtls.values()][0] : undefined;
-}
-
 export function createModelIoActions(deps: ModelIoDeps) {
   const { get, set, tr, pushHistory, buildObject } = deps;
 
   /** Importa un lote: los archivos válidos entran en un solo paso deshacible; los demás se informan. */
   async function importModelFiles(files: ModelImportSource[], options: ModelImportOptions = {}): Promise<boolean> {
     const placement = options.placement ?? get().importPlacementMode;
-    const failures: string[] = [];
-    const mtls = new Map<string, string>();
-    for (const file of files.filter((f) => /\.mtl$/i.test(f.name))) {
-      try {
-        mtls.set(file.name.toLowerCase(), new TextDecoder('utf-8').decode(await file.read()));
-      } catch (error) {
-        failures.push(importErrorMessage(error, file.name, tr, get().language));
-      }
-    }
-
-    const models: engine.ImportedModel[] = [];
-    for (const file of files.filter((f) => !/\.mtl$/i.test(f.name))) {
-      try {
-        if (!engine.detectModelFormat(file.name)) throw new engine.ModelImportError('unsupported', undefined, file.name);
-        const buffer = await file.read();
-        const mtlText = /\.obj$/i.test(file.name) ? matchMtl(buffer, mtls) : undefined;
-        models.push(await engine.parseModelFileAsync(file.name, buffer, { mtlText }));
-      } catch (error) {
-        failures.push(importErrorMessage(error, file.name, tr, get().language));
-      }
-    }
+    const { models, failures } = await readModelBatch(files, {
+      tr,
+      language: get().language,
+      createSession: deps.createImportSession,
+      ensureRecoveryDraft: deps.ensureRecoveryDraft,
+    });
 
     if (models.length === 0) {
       get().addToast(failures.length > 0 ? failures.join(' · ') : tr('importError.no-geometry', { name: files[0]?.name ?? '' }), 'error');
