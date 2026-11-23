@@ -11,8 +11,12 @@ import { ChevronDown, ChevronUp, History } from 'lucide-react';
 import { t } from '../i18n';
 import { recoveryDraftLabel, recoveryDraftTime } from '../project/projectRecoveryLabels';
 import type { RecoveryDraftInfo } from '../project/projectRecoveryStorage';
+import { readStorage, writeStorage } from '../store/preferencesStorage';
 import { useKuraStore } from '../store/useKuraStore';
 import '../styles/projectRecovery.css';
+
+/** Recuerda si el usuario plegó el aviso (solo una preferencia visual, sin datos del proyecto). */
+const COLLAPSED_KEY = 'kura3d-recovery-banner-collapsed';
 
 interface ProjectRecoveryBannerProps {
   drafts: readonly RecoveryDraftInfo[];
@@ -25,7 +29,7 @@ export function ProjectRecoveryBanner({ drafts, busy, onRestore, onDiscard }: Pr
   const language = useKuraStore((state) => state.language);
   const headingId = useId();
   const bodyId = useId();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => readStorage(COLLAPSED_KEY) === '1');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const draft = drafts.find((candidate) => candidate.id === selectedId) ?? drafts[0];
   if (!draft) return null;
@@ -44,7 +48,10 @@ export function ProjectRecoveryBanner({ drafts, busy, onRestore, onDiscard }: Pr
           className="kura-btn kura-btn-sm"
           aria-label={t(language, collapsed ? 'recovery.banner.show' : 'recovery.banner.later')}
           title={t(language, collapsed ? 'recovery.banner.show' : 'recovery.banner.later')}
-          onClick={() => setCollapsed((previous) => !previous)}
+          onClick={() => setCollapsed((previous) => {
+            writeStorage(COLLAPSED_KEY, !previous ? '1' : '0');
+            return !previous;
+          })}
         >
           <span className="kura-recovery-toggle-text">
             {t(language, collapsed ? 'recovery.banner.show' : 'recovery.banner.later')}

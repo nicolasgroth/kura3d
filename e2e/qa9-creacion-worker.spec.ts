@@ -47,12 +47,12 @@ test('Texto 3D: emoji y chino dan error claro; Kura3D se crea y deshacer lo revi
   const inp = page.locator('#kura-text3d-input');
   for (const t of ['😀🚀', '你好世界']) {
     await inp.fill(t);
-    await page.getByRole('button', { name: 'OK', exact: true }).click();
+    await page.getByRole('button', { name: 'Crear texto', exact: true }).click();
     await expect(page.getByText(/La fuente no tiene estos caracteres/).first()).toBeVisible();
     expect(await objs(page)).toBe('0');
   }
   await inp.fill('Kura3D');
-  await page.getByRole('button', { name: 'OK', exact: true }).click();
+  await page.getByRole('button', { name: 'Crear texto', exact: true }).click();
   await expect.poll(() => objs(page)).toBe('1');
   await page.getByRole('button', { name: 'Deshacer' }).click();
   await expect.poll(() => objs(page)).toBe('0');

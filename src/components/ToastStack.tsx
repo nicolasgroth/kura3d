@@ -15,6 +15,7 @@ import '../styles/mobileHud.css';
 import '../styles/toastStack.css';
 import '../styles/toastNarrow.css';
 import '../styles/toastModal.css';
+import '../styles/toastZone.css';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { useTopModal } from './useTopModal';
@@ -94,5 +95,9 @@ export const ToastStack: React.FC = () => {
       )}
     </div>
   );
-  return modal ? createPortal(stack, modal) : stack;
+  if (modal) return createPortal(stack, modal);
+  // Zona de avisos reservada: esquina inferior del visor, fuera de las barras superiores (herramientas activas,
+  // «No cabe en la cama»). Sin visor (pruebas) quedan en línea.
+  const zone = typeof document === 'undefined' ? null : document.querySelector('.kura-viewport-wrap');
+  return zone ? createPortal(stack, zone) : stack;
 };

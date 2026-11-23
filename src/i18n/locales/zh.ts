@@ -21,6 +21,7 @@ import { A11YUX_ZH } from './a11yUx';
 import { UXMOVIL_ZH } from './uxMovil';
 import { SPLITUX_ZH } from './splitUx';
 import { UXTEXTO_ZH } from './uxTexto';
+import { GENUI_ZH } from './genUi';
 import { UX3F_ZH } from './ux3Forma';
 import { FIX10_ZH } from './fix10';
 import { OPNOTES_ZH } from './operationNotes';
@@ -48,6 +49,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...UXMOVIL_ZH,
   ...SPLITUX_ZH,
   ...UXTEXTO_ZH,
+  ...GENUI_ZH,
   ...UX3F_ZH,
   ...FIX10_ZH,
   ...OPNOTES_ZH,

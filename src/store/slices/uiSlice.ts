@@ -91,6 +91,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
     spawnedAtById: {},
     toasts: [],
+    toastHistory: [],
 
     setUiDensity: (mode) => {
       if (mode !== 'zen') writeStorage(STORAGE_UI_DENSITY_KEY, mode);
@@ -175,8 +176,11 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     setCommandPaletteOpen: (commandPaletteOpen) => set({ commandPaletteOpen }),
     setCutPreview: (patch) => set((state) => ({ cutPreview: { ...state.cutPreview, ...patch } })),
 
-    addToast: (text, kind = 'info', action) => {
+    addToast: (text, kind = 'info', action, options) => {
       const id = makeId('toast');
+      // Historial corto (8): también lo que se mostró solo dentro de un diálogo.
+      set((state) => ({ toastHistory: [...state.toastHistory.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, at: Date.now() }].slice(-8) }));
+      if (options?.historyOnly) return;
       // Un aviso por acción: uno idéntico (mismo texto y tipo) se reemplaza en vez de apilarse.
       set((state) => {
         const next = [...state.toasts.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, ...(action ? { action } : {}) }];
@@ -188,9 +192,11 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
         return { toasts: next.slice(-8) };
       });
       // El cierre automático de los informativos lo temporiza `ToastItem` (con pausa al pasar el cursor o el
-      // foco); los errores permanecen hasta que el usuario los cierra.
+      // foco); los errores caducan a los 12 s y siguen en el historial de la barra de estado.
     },
     dismissAllToasts: () => set({ toasts: [] }),
+    clearToastHistory: () => set({ toastHistory: [] }),
+    dismissErrorToasts: () => set((state) => (state.toasts.some((x) => x.kind === 'error') ? { toasts: state.toasts.filter((x) => x.kind !== 'error') } : state)),
     dismissToast: (id) => set((state) => ({ toasts: state.toasts.filter((toast) => toast.id !== id) })),
   };
 }

@@ -1,0 +1,119 @@
+/**
+ * @file src/styles/genUiDialogs.css
+ * @description Estilos de los diálogos de generadores: vista previa con tablero de ajedrez para transparencias,
+ * dato de solo lectura, texto 3D, esquema de molde e historial de avisos.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-img-preview {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  /* Tablero de ajedrez: una imagen con transparencias se distingue del fondo del diálogo. */
+  background-color: #cbd5e1;
+  background-image:
+    linear-gradient(45deg, #94a3b8 25%, transparent 25%, transparent 75%, #94a3b8 75%),
+    linear-gradient(45deg, #94a3b8 25%, transparent 25%, transparent 75%, #94a3b8 75%);
+  background-size: 14px 14px;
+  background-position: 0 0, 7px 7px;
+}
+
+.kura-readonly-value {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px dashed var(--border-subtle);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
+.kura-field-hint {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.kura-gen-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.kura-gen-warn {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-amber);
+  background: color-mix(in srgb, var(--accent-amber) 14%, transparent);
+  font-size: 12px;
+}
+
+.kura-gen-error {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--accent-red);
+}
+
+.kura-text-create-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.kura-mold-help {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+
+.kura-mold-help svg {
+  flex: 0 0 auto;
+  width: 96px;
+  height: 64px;
+  color: var(--accent-cyan);
+}
+
+.kura-toast-history {
+  position: fixed;
+  right: 8px;
+  bottom: 30px;
+  z-index: 70;
+  width: min(360px, calc(100vw - 16px));
+  max-height: 40vh;
+  overflow: auto;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-hud);
+  font-size: 12px;
+}
+
+.kura-toast-history ul {
+  margin: 6px 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-toast-history li.is-error {
+  border-left: 3px solid var(--accent-red);
+  padding-left: 6px;
+}
