@@ -1,8 +1,22 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 06:00, con las correcciones de los generadores integradas.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 06:35, al cierre de la jornada nocturna.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
+
+## Resumen de la noche del 22 al 23 de noviembre
+
+Estado de `main`: 2099 pruebas del frontend, 136 del servidor MCP y 37 de Rust en verde; 151 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
+
+| Qué | Resultado |
+|---|---|
+| Notas | Usabilidad 79 (antes 76 y 75) · código 85 · funcional 86. Usabilidad sigue bajo el mínimo de 85: espera tu decisión (consulta 6) |
+| Nuevo esta noche | Herramienta Medir con capacidad de recipientes, grupos y árbol de escena, reparar malla, importación de 3MF reales de slicer, rótulos de pieza en Dividir |
+| Corregido | Tres rondas de hallazgos de usabilidad (30 puntos), cada uno con su prueba de navegador; los generadores, revisados por primera vez |
+| Rendimiento | Dividir un busto de 2,4 millones de triángulos: de 172 a 78 s. Importarlo: la mitad de memoria. Separar por colores tras pintar: de 94 a 1,4 s |
+| Seguridad | El lector de archivos pasó dos revisiones independientes: 13 hallazgos corregidos, cada uno con una prueba de archivo malicioso |
+| GitHub | El CI fallaba en cada push por una configuración incompleta; corregido. Dependabot quedó mensual y agrupado. No hay terceros con acceso |
+| Espera tu decisión | Seis consultas en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md): dependencias, mitad del corte, OrcaSlicer, token MCP, modelos reales en pantalla y método para llegar a 85 en usabilidad |
 
 ## En desarrollo
 
