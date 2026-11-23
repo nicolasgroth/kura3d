@@ -31,6 +31,8 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   measure_object: 'read',
   measure_capacity: 'read',
   diagnose_mesh: 'read',
+  // Comprobar encaje: calcula choques y holguras sin cambiar la escena.
+  check_fit: 'read',
   create_primitive: 'write',
   update_primitive_params: 'write',
   transform_object: 'write',
@@ -134,6 +136,7 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_measure_capacity: 'measure_capacity',
   kura_repair_mesh: 'repair_mesh',
   kura_diagnose_mesh: 'diagnose_mesh',
+  kura_check_fit: 'check_fit',
   kura_set_object_role: 'set_object_role',
 });
 
