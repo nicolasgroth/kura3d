@@ -55,3 +55,15 @@
     width: min(300px, calc(100% - 16px));
   }
 }
+
+/* En un menú con scroll interno los bloques no se encogen (el título con overflow oculto quedaba aplastado). */
+.kura-context-menu > * {
+  flex-shrink: 0;
+}
+
+.kura-context-menu > .kura-context-header {
+  flex: none;
+  min-height: 26px;
+  line-height: 1.5;
+  overflow: visible;
+}
