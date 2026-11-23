@@ -52,7 +52,9 @@ test('distancia: arista 40, diagonal de cara 56,57, diagonal del cubo 69,28; Med
   await clicMundo(page, V(19, 40, 19));
   await page.evaluate(() => (window as any).__s.getState().requestCameraPreset('bottom'));
   await page.waitForTimeout(1200);
-  await clicMundo(page, V(-19, 0, -19));
+  // 0,5 mm hacia dentro: con el panel de Medir más angosto el encuadre desde abajo agranda el cubo y
+  // 1 mm en diagonal ya supera los 14 px del imán.
+  await clicMundo(page, V(-19.5, 0, -19.5));
   m = await medidas(page);
   expect(m[2].mm).toBeCloseTo(69.28, 1);
   expect(Math.abs(m[2].delta[2])).toBeCloseTo(40, 1);
