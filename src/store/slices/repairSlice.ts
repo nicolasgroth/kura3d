@@ -37,17 +37,35 @@ export function createRepairSlice(ctx: StoreContext): Partial<KuraStoreState> {
     meshDiagnosis: null,
     clearMeshDiagnosis: () => set({ meshDiagnosis: null }),
 
-    diagnoseObjectMesh: async (id) => {
+    diagnoseObjectMesh: async (id, options) => {
       const obj = get().objects.find((o) => o.id === id);
       if (!obj) return null;
       try {
         const diagnosis = await ctx.runEngineDetached('diagnoseMesh', { mesh: { positions: obj.mesh.positions, indices: obj.mesh.indices } });
-        if (get().objects.find((o) => o.id === id)?.mesh === obj.mesh) set({ meshDiagnosis: { objectId: id, mesh: obj.mesh, diagnosis } });
+        if (get().objects.find((o) => o.id === id)?.mesh === obj.mesh) {
+          // Un diagnóstico solo informativo no apaga un resaltado ya pedido para esa misma malla.
+          const prev = get().meshDiagnosis;
+          const keep = prev?.objectId === id && prev.mesh === obj.mesh && prev.highlight !== false;
+          const highlight = options?.highlight === false && !keep ? false : undefined;
+          set({ meshDiagnosis: { objectId: id, mesh: obj.mesh, diagnosis, ...(highlight === false ? { highlight } : {}) } });
+        }
         return diagnosis;
       } catch (err) {
         reportOperationError(err);
         return null;
       }
+    },
+
+    setOpenEdgesVisible: async (id, visible) => {
+      const obj = get().objects.find((o) => o.id === id);
+      const prev = get().meshDiagnosis;
+      if (!obj) return;
+      if (prev && prev.objectId === id && prev.mesh === obj.mesh) {
+        set({ meshDiagnosis: { ...prev, highlight: visible } });
+        return;
+      }
+      if (!visible) return;
+      await get().diagnoseObjectMesh(id);
     },
 
     repairObjectMesh: async (id, options) => {

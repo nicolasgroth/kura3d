@@ -16,7 +16,7 @@ const OPEN_EDGE_COLOR = '#ff3b6b';
 export const OpenEdgesOverlay: React.FC = () => {
   const state = useKuraStore((s) => s.meshDiagnosis);
   const obj = useKuraStore((s) => (state ? s.objects.find((o) => o.id === state.objectId) : undefined));
-  const valid = state && obj && obj.mesh === state.mesh && state.diagnosis.openEdgeSegments.length > 0;
+  const valid = state && state.highlight !== false && obj && obj.mesh === state.mesh && state.diagnosis.openEdgeSegments.length > 0;
   const geometry = useMemo(() => {
     if (!valid) return null;
     const g = new THREE.BufferGeometry();

@@ -16,6 +16,7 @@ import { formatDimension, formatVolume } from '../../utils/units';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { toUserSize } from '../../core/scene/displayAxes';
 import { GEOMETRY_STATS_ID } from '../../store/slices/repairSlice';
+import { MeshStatusStat } from './MeshStatusStat';
 
 /** Sección 3: geometría y métricas. */
 export const GeometrySection: React.FC<Pick<InspectorSectionProps, 'primary'>> = ({ primary }) => {
@@ -58,18 +59,7 @@ export const GeometrySection: React.FC<Pick<InspectorSectionProps, 'primary'>> =
           <div className="kura-stat-title">{t(language, 'inspector.stats.vertices')}</div>
           <div className="kura-stat-val">{formatNumber(language, primary.stats.vertices)}</div>
         </div>
-        <div className="kura-stat-box">
-          <div className="kura-stat-title">{t(language, 'inspector.stats.manifold')}</div>
-          <div
-            className={`kura-stat-val ${
-              primary.stats.isManifold ? 'kura-badge-ok' : 'kura-badge-warn'
-            }`}
-          >
-            {primary.stats.isManifold
-              ? t(language, 'inspector.stats.watertight')
-              : t(language, 'inspector.stats.nonManifold')}
-          </div>
-        </div>
+        <MeshStatusStat primary={primary} />
       </div>
     </section>
   );
