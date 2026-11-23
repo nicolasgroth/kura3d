@@ -24,8 +24,12 @@ export interface WeldMap {
   unique: number;
 }
 
-/** Suelda por cuadrícula de lado `tol` mm (hash abierto, sin strings). */
-export function weldGrid(positions: ArrayLike<number>, tol: number): WeldMap {
+/**
+ * Suelda por cuadrícula de lado `tol` mm (hash abierto, sin strings). `divide` cuantiza con `x / tol`
+ * (la expresión de `countUnpairedEdges`) en vez de `x · (1/tol)`; pueden diferir en un ulp justo en el
+ * borde de una celda, así que cada definición conserva la suya.
+ */
+export function weldGrid(positions: ArrayLike<number>, tol: number, divide = false): WeldMap {
   const n = Math.floor(positions.length / 3);
   const inv = 1 / tol;
   let cap = 16;
@@ -37,9 +41,9 @@ export function weldGrid(positions: ArrayLike<number>, tol: number): WeldMap {
   const first = new Uint32Array(n);
   let unique = 0;
   for (let i = 0; i < n; i++) {
-    const qx = Math.round(positions[i * 3] * inv);
-    const qy = Math.round(positions[i * 3 + 1] * inv);
-    const qz = Math.round(positions[i * 3 + 2] * inv);
+    const qx = Math.round(divide ? positions[i * 3] / tol : positions[i * 3] * inv);
+    const qy = Math.round(divide ? positions[i * 3 + 1] / tol : positions[i * 3 + 1] * inv);
+    const qz = Math.round(divide ? positions[i * 3 + 2] / tol : positions[i * 3 + 2] * inv);
     let h = Math.imul((qx | 0) ^ Math.floor(qx / 4294967296), 0x9e3779b1);
     h ^= Math.imul((qy | 0) ^ Math.floor(qy / 4294967296), 0x85ebca77);
     h ^= Math.imul((qz | 0) ^ Math.floor(qz / 4294967296), 0xc2b2ae3d);
@@ -139,6 +143,60 @@ export function buildEdgeTable(tris: ArrayLike<number>, skip?: Uint8Array): Edge
     edgeOfHe[h] = e;
   }
   return { numEdges, count, he0, he1, extra, edgeOfHe, lo, hi };
+}
+
+/**
+ * Aristas dirigidas no pareadas de triángulos ya soldados: cada arista dirigida distinta `a→b` (sin las
+ * colapsadas `a = b`) cuenta si aparece más de una vez o si su gemela `b→a` no aparece exactamente una.
+ * Lineal, con hash abierto sobre pares numéricos (sin claves string).
+ */
+export function countUnpairedDirectedEdges(tris: ArrayLike<number>): number {
+  const nHe = tris.length - (tris.length % 3);
+  let cap = 16;
+  while (cap < nHe * 2) cap *= 2;
+  const mask = cap - 1;
+  const table = new Int32Array(cap);
+  const from = new Uint32Array(nHe);
+  const to = new Uint32Array(nHe);
+  const count = new Uint32Array(nHe);
+  let edges = 0;
+  const slotOf = (a: number, b: number): number => {
+    let h = Math.imul(a, 0x9e3779b1) ^ Math.imul(b, 0x85ebca77);
+    h ^= h >>> 15;
+    let slot = h & mask;
+    while (table[slot] !== 0) {
+      const e = table[slot] - 1;
+      if (from[e] === a && to[e] === b) return slot;
+      slot = (slot + 1) & mask;
+    }
+    return slot;
+  };
+  for (let t = 0; t < nHe; t += 3) {
+    for (let c = 0; c < 3; c++) {
+      const a = tris[t + c];
+      const b = tris[t + ((c + 1) % 3)];
+      if (a === b) continue;
+      const slot = slotOf(a, b);
+      let e = table[slot] - 1;
+      if (e < 0) {
+        e = edges++;
+        table[slot] = e + 1;
+        from[e] = a;
+        to[e] = b;
+      }
+      count[e]++;
+    }
+  }
+  let unpaired = 0;
+  for (let e = 0; e < edges; e++) {
+    if (count[e] !== 1) {
+      unpaired++;
+      continue;
+    }
+    const r = table[slotOf(to[e], from[e])] - 1;
+    if (r < 0 || count[r] !== 1) unpaired++;
+  }
+  return unpaired;
 }
 
 /** Conteos topológicos de cierre. */

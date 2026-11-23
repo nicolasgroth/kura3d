@@ -14,8 +14,7 @@
 
 import type { CrossSection, Manifold } from 'manifold-3d';
 import type { CutConnectorType, Vec3 } from '../types/kura';
-
-type Vec2 = [number, number];
+import { EvenOddIndex, SegmentDistanceIndex, type Vec2 } from './cutConnectorPolygonIndex';
 
 /** Radio (mm) del círculo que circunscribe la huella del conector en el plano de corte. */
 export function connectorFootprintRadius(
@@ -71,35 +70,6 @@ export function allocateConnectors(islands: IslandCapacity[], count: number): nu
   return alloc;
 }
 
-/** Punto dentro de los polígonos (regla par-impar, válida con agujeros). */
-function insidePolygons(p: Vec2, polys: Vec2[][]): boolean {
-  let inside = false;
-  for (const poly of polys) {
-    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-      const [xi, yi] = poly[i];
-      const [xj, yj] = poly[j];
-      if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) inside = !inside;
-    }
-  }
-  return inside;
-}
-
-/** Distancia de `p` al borde de los polígonos. */
-function distanceToBoundary(p: Vec2, polys: Vec2[][]): number {
-  let best = Infinity;
-  for (const poly of polys) {
-    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-      const [ax, ay] = poly[j];
-      const dx = poly[i][0] - ax;
-      const dy = poly[i][1] - ay;
-      const len2 = dx * dx + dy * dy;
-      const t = len2 > 0 ? Math.max(0, Math.min(1, ((p[0] - ax) * dx + (p[1] - ay) * dy) / len2)) : 0;
-      best = Math.min(best, Math.hypot(p[0] - ax - t * dx, p[1] - ay - t * dy));
-    }
-  }
-  return best;
-}
-
 const dist = (a: Vec2, b: Vec2) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 const GRID_STEPS = 40;
 
@@ -108,10 +78,11 @@ function sampleCandidates(safe: CrossSection): Vec2[] {
   const polys = safe.toPolygons() as Vec2[][];
   const b = safe.bounds();
   const step = Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1], 1e-6) / GRID_STEPS;
+  const inside = new EvenOddIndex(polys);
   const out: Vec2[] = [];
   for (let u = b.min[0]; u <= b.max[0] + 1e-9; u += step) {
     for (let v = b.min[1]; v <= b.max[1] + 1e-9; v += step) {
-      if (insidePolygons([u, v], polys)) out.push([u, v]);
+      if (inside.contains([u, v])) out.push([u, v]);
     }
   }
   for (const poly of polys) for (const p of poly) out.push([p[0], p[1]]);
@@ -121,43 +92,52 @@ function sampleCandidates(safe: CrossSection): Vec2[] {
 /**
  * Orden de muestreo del punto más lejano: el primero es el polo (más alejado del borde de la isla);
  * para dos o más se toma el par más separado y luego el candidato más lejano de los ya elegidos.
- * `capacity` es cuántos de ese orden quedan a ≥ `separation` entre sí.
+ * `capacity` es cuántos de ese orden quedan a ≥ `separation` entre sí. La distancia al borde usa la
+ * rejilla de segmentos y la distancia a los elegidos se mantiene por candidato (O(k·n)).
  */
-function farthestPointOrder(
+export function farthestPointOrder(
   candidates: Vec2[],
   islandPolys: Vec2[][],
   maxCount: number,
   separation: number
 ): { pole: Vec2; order: Vec2[]; capacity: number } {
+  const boundary = new SegmentDistanceIndex(islandPolys);
   let pole = candidates[0];
   let poleD = -Infinity;
   for (const c of candidates) {
-    const d = distanceToBoundary(c, islandPolys);
+    const d = boundary.distance(c);
     if (d > poleD) {
       poleD = d;
       pole = c;
     }
   }
-  const farthestFrom = (pts: Vec2[]) => {
+  const n = candidates.length;
+  const minD = new Float64Array(n);
+  /** Reinicia (`reset`) o acota la distancia mínima a los elegidos con `p` y devuelve el más lejano. */
+  const farthestAfter = (p: Vec2, reset: boolean) => {
     let best = candidates[0];
     let bestD = -Infinity;
-    for (const c of candidates) {
-      const d = Math.min(...pts.map((p) => dist(c, p)));
-      if (d > bestD) {
-        bestD = d;
-        best = c;
+    for (let k = 0; k < n; k++) {
+      const d = dist(candidates[k], p);
+      const m = reset ? d : Math.min(minD[k], d);
+      minD[k] = m;
+      if (m > bestD) {
+        bestD = m;
+        best = candidates[k];
       }
     }
     return { best, bestD };
   };
-  let p2 = farthestFrom([pole]).best;
-  const p1 = farthestFrom([p2]).best;
-  p2 = farthestFrom([p1]).best;
-  const order: Vec2[] = [p1, p2];
-  let capacity = dist(p1, p2) >= separation ? 2 : 1;
+  const a = farthestAfter(pole, true).best;
+  const p1 = farthestAfter(a, true).best;
+  let last = farthestAfter(p1, true).best;
+  const order: Vec2[] = [p1, last];
+  let capacity = dist(p1, last) >= separation ? 2 : 1;
   while (order.length < maxCount) {
-    const { best, bestD } = farthestFrom(order);
+    // `minD` ya tiene la distancia a los elegidos salvo el último: basta acotar con él
+    const { best, bestD } = farthestAfter(last, false);
     order.push(best);
+    last = best;
     if (capacity === order.length - 1 && bestD >= separation) capacity = order.length;
   }
   return { pole, order, capacity };
