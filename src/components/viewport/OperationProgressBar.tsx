@@ -16,6 +16,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import type { LanguageCode } from '../../types/kura';
 import { formatNumber } from '../../utils/plural';
 import { parseCutPhase, progressPhaseLabel } from '../split/splitProgress';
+import { importPhaseLabel, parseImportParts } from './importProgress';
 import '../../styles/operationPreview.css';
 import '../../styles/splitForBed.css';
 
@@ -64,8 +65,9 @@ export const OperationProgressBar: React.FC = () => {
   if (!view || view.elapsedMs < PROGRESS_SHOW_DELAY_MS) return null;
 
   const label = operationLabel(language, view.name);
-  const phaseText = progressPhaseLabel(language, view.phase);
-  const cut = parseCutPhase(view.phase);
+  const phaseText = progressPhaseLabel(language, view.phase) ?? importPhaseLabel(language, view.phase);
+  // Barra determinada si la fase trae avance (cortes de Dividir o piezas importadas); si no, indeterminada.
+  const cut = parseCutPhase(view.phase) ?? parseImportParts(view.phase);
   const seconds = formatNumber(language, view.elapsedMs / 1000, { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 
   return (

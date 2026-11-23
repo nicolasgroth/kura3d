@@ -55,6 +55,9 @@ export function sceneFootprints(objects: readonly SceneObject[]): FootprintXZ[] 
 }
 
 const EPS = 1e-6;
+/** Peso de la distancia hacia el frente (+Z, hacia la cámara inicial) y hacia el fondo al elegir hueco. */
+const FRONT_WEIGHT = 9;
+const BACK_WEIGHT = 4;
 
 function overlaps(x: number, z: number, hw: number, hd: number, r: FootprintXZ, gap: number): boolean {
   return x - hw < r.maxX + gap - EPS && x + hw > r.minX - gap + EPS
@@ -96,7 +99,9 @@ export function findFreeSpot(
   let bestDist = Infinity;
   for (const x of xs) {
     for (const z of zs) {
-      const dist = x * x + z * z;
+      // Se prefiere el costado (X) al frente o al fondo: desde la vista inicial (de frente y arriba)
+      // una pieza delante (+Z interno) tapa al modelo y parece caer encima; detrás queda oculta.
+      const dist = x * x + z * z * (z > EPS ? FRONT_WEIGHT : z < -EPS ? BACK_WEIGHT : 1);
       if (dist >= bestDist || !insideBed(x, z)) continue;
       if (occupied.some((r) => overlaps(x, z, hw, hd, r, gap))) continue;
       best = { x, z, fits: true };

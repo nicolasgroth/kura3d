@@ -34,6 +34,7 @@ import { UX3_EDICION_ZH } from './ux3Edicion';
 import { UX4_ZH } from './ux4';
 import { CORTEMITAD_ZH } from './corteMitad';
 import { REALESMOTOR_ZH } from './realesMotor';
+import { REALESUI_ZH } from './realesUi';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -65,6 +66,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...UX4_ZH,
   ...CORTEMITAD_ZH,
   ...REALESMOTOR_ZH,
+  ...REALESUI_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
   'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',
@@ -1080,7 +1082,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineWarning.REFINE_SMOOTH_REVERTED': '平滑会使尺寸变化 {deviation} mm（公差 {tolerance} mm）；仅应用了细分。',
   'engineWarning.HOLLOW_COARSE_GRID': '大型零件：壁厚可能达到 {maxWall} mm（要求 {thickness} mm）。',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': '按颜色拆分出的不封闭零件数量：{count}。打印前请检查。',
-  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': '切割面上未放置连接件的区域：{islands} 个中的 {skipped} 个。放不下带壁厚的 {size} mm 连接件。',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': '切割面 {islands} 个区域中有 {skipped} 个放不下带壁厚的 Ø{diameter} mm 连接件:这些区域保持平整,用于粘合。',
   'project.recent.title': '最近的项目',
   'project.recent.empty': '暂无最近的项目',
   'project.recent.clear': '清除最近项目',

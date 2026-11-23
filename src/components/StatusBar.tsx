@@ -10,28 +10,26 @@
 import React, { useMemo } from 'react';
 import { HelpCircle } from 'lucide-react';
 import { t } from '../i18n';
-import type { RecoveryStatus } from '../project/projectRecoveryAutosave';
+import type { RecoveryFailure, RecoveryStatus } from '../project/projectRecoveryAutosave';
 import { useKuraStore } from '../store/useKuraStore';
-import { formatNumber } from '../utils/plural';
 import { isTauriRuntime } from '../utils/platformBridge';
+import { RecoveryStatusNotice } from './RecoveryStatusNotice';
+import { StatusBarCount } from './StatusBarCount';
 import { StatusBarMeasures } from './StatusBarMeasures';
 import { ToastHistoryButton } from './ToastHistoryButton';
 import { operationLabel } from './viewport/OperationProgressBar';
 
-export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recoveryStatus = 'idle' }) => {
+export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus; recoveryFailure?: RecoveryFailure | null }> = ({
+  recoveryStatus = 'idle', recoveryFailure = null,
+}) => {
   const language = useKuraStore((s) => s.language);
   const engineReady = useKuraStore((s) => s.engineReady);
   const engineError = useKuraStore((s) => s.engineError);
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const projectBusy = useKuraStore((s) => s.projectBusy);
-  const objects = useKuraStore((s) => s.objects);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
 
   const isNative = useMemo(() => isTauriRuntime(), []);
-  const totalTriangles = useMemo(
-    () => objects.reduce((acc, obj) => acc + obj.stats.triangles, 0),
-    [objects],
-  );
 
   const engineLabel = engineError
     ? t(language, 'status.engine.error')
@@ -39,11 +37,6 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recov
       ? t(language, 'status.engine.ready')
       : t(language, 'status.engine.loading');
 
-  const recoveryLabel = recoveryStatus === 'ready'
-    ? t(language, 'recovery.status.ready')
-    : recoveryStatus === 'unavailable'
-      ? t(language, 'recovery.status.unavailable')
-      : recoveryStatus === 'idle' ? null : t(language, 'recovery.status.working');
 
   return (
     <footer className="kura-statusbar">
@@ -71,14 +64,11 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recov
         </span>
 
         <StatusBarMeasures />
-        <span>
-          {t(language, 'status.objects', { count: objects.length })} ·{' '}
-          {t(language, 'status.triangles', { count: formatNumber(language, totalTriangles) })}
-        </span>
+        <StatusBarCount />
       </div>
 
       <div className="kura-statusbar-group">
-        {recoveryLabel && <span role="status">{recoveryLabel}</span>}
+        <RecoveryStatusNotice status={recoveryStatus} failure={recoveryFailure} />
         <ToastHistoryButton />
         <span className="kura-statusbar-hint" style={{ opacity: 0.78 }}>
           {t(language, 'status.shortcuts')}

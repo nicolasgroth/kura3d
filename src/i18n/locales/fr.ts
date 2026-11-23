@@ -34,6 +34,7 @@ import { UX3_EDICION_FR } from './ux3Edicion';
 import { UX4_FR } from './ux4';
 import { CORTEMITAD_FR } from './corteMitad';
 import { REALESMOTOR_FR } from './realesMotor';
+import { REALESUI_FR } from './realesUi';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -65,6 +66,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...UX4_FR,
   ...CORTEMITAD_FR,
   ...REALESMOTOR_FR,
+  ...REALESUI_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',
@@ -1080,7 +1082,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Le lissage modifiait les dimensions de {deviation} mm (tolérance {tolerance} mm) ; seul le raffinage a été appliqué.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Grande pièce : la paroi peut atteindre {maxWall} mm (demandé {thickness} mm).',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': 'Pièces séparées par couleur qui ne sont pas des solides fermés : {count}. Vérifie-les avant d\'imprimer.',
-  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'Zones de la face de coupe sans connecteur : {skipped} sur {islands}. Un connecteur de {size} mm n\'y tient pas avec sa paroi.',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'Dans {skipped} des {islands} zones de la face de coupe, un connecteur de Ø{diameter} mm ne tient pas avec sa paroi : ces zones restent lisses, à coller.',
   'project.recent.title': 'Projets récents',
   'project.recent.empty': 'Aucun projet récent pour l’instant',
   'project.recent.clear': 'Effacer les récents',

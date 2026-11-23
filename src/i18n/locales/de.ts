@@ -34,6 +34,7 @@ import { UX3_EDICION_DE } from './ux3Edicion';
 import { UX4_DE } from './ux4';
 import { CORTEMITAD_DE } from './corteMitad';
 import { REALESMOTOR_DE } from './realesMotor';
+import { REALESUI_DE } from './realesUi';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -65,6 +66,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...UX4_DE,
   ...CORTEMITAD_DE,
   ...REALESMOTOR_DE,
+  ...REALESUI_DE,
   // Marca y shell principal
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
   'app.docTitle': 'Kura3D v0.5.0 — Natives 3D-Modellierungsstudio',
@@ -1080,7 +1082,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Das Glätten veränderte die Maße um {deviation} mm (Toleranz {tolerance} mm); nur die Verfeinerung wurde angewendet.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Großes Teil: die Wand kann bis zu {maxWall} mm erreichen (gefordert {thickness} mm).',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': 'Nach Farbe getrennte Teile, die keine geschlossenen Körper sind: {count}. Vor dem Druck prüfen.',
-  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'Bereiche der Schnittfläche ohne Verbinder: {skipped} von {islands}. Einer mit {size} mm passt samt Wand nicht hinein.',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'In {skipped} von {islands} Bereichen der Schnittfläche passt kein Verbinder mit Ø{diameter} mm samt Wand: Diese Bereiche bleiben glatt, zum Kleben.',
   'project.recent.title': 'Zuletzt verwendet',
   'project.recent.empty': 'Noch keine zuletzt verwendeten Projekte',
   'project.recent.clear': 'Liste leeren',

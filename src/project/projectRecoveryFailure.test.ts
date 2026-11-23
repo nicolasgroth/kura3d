@@ -10,13 +10,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from 'zustand/vanilla';
 import { captureProject, useKuraStore, type KuraStoreState } from '../store/useKuraStore';
-import { encodeProjectAsync } from './projectCodecClient';
+import { cleanupRecoveryStorage, RecoveryQuotaError, writeRecoveryDocument } from './recoveryDraftStore';
 import { classifyRecoveryFailure, startProjectRecovery } from './projectRecoveryAutosave';
-import { discardRecoveryDraft, writeRecoveryDraft } from './projectRecoveryStorage';
+import { discardRecoveryDraft } from './projectRecoveryStorage';
 import { ProjectCodecError } from './projectSchema';
 
-vi.mock('./projectCodecClient', () => ({ encodeProjectAsync: vi.fn() }));
-vi.mock('./projectRecoveryStorage', () => ({ discardRecoveryDraft: vi.fn(), writeRecoveryDraft: vi.fn() }));
+vi.mock('./recoveryDraftStore', async (original) => ({
+  ...(await original<typeof import('./recoveryDraftStore')>()), writeRecoveryDocument: vi.fn(), cleanupRecoveryStorage: vi.fn(),
+}));
+vi.mock('./projectRecoveryStorage', () => ({ discardRecoveryDraft: vi.fn() }));
 
 function cleanStore() {
   const initial = { ...useKuraStore.getInitialState(), engineReady: true };
@@ -27,30 +29,41 @@ describe('causa del fallo del autoguardado', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.resetAllMocks();
-    vi.mocked(encodeProjectAsync).mockResolvedValue(new Uint8Array([1]));
-    vi.mocked(writeRecoveryDraft).mockResolvedValue(undefined);
+    vi.mocked(writeRecoveryDocument).mockResolvedValue({ blocksWritten: 0, bytesWritten: 0, historyDropped: false });
+    vi.mocked(cleanupRecoveryStorage).mockResolvedValue({ removedBlocks: 0, removedDrafts: 0 });
     vi.mocked(discardRecoveryDraft).mockResolvedValue(true);
   });
 
   afterEach(() => vi.useRealTimers());
 
-  it('un proyecto demasiado grande informa too-large en la etapa de codificación', async () => {
+  it('un documento inválido informa su causa del códec', async () => {
     const store = cleanStore();
     const status = vi.fn();
     const failure = vi.fn();
-    vi.mocked(encodeProjectAsync).mockRejectedValueOnce(new ProjectCodecError('too-large'));
+    vi.mocked(writeRecoveryDocument).mockRejectedValueOnce(new ProjectCodecError('invalid'));
     const controller = startProjectRecovery(status, store, undefined, failure);
     store.setState({ unitSystem: 'cm' });
     await vi.advanceTimersByTimeAsync(1500);
     expect(status).toHaveBeenLastCalledWith('unavailable');
-    expect(failure).toHaveBeenCalledExactlyOnceWith({ cause: 'too-large', stage: 'encode' });
+    expect(failure).toHaveBeenCalledExactlyOnceWith({ cause: 'invalid', stage: 'write' });
+    controller.stop();
+  });
+
+  it('la cuota del navegador insuficiente informa quota con las cifras', async () => {
+    const store = cleanStore();
+    const failure = vi.fn();
+    vi.mocked(writeRecoveryDocument).mockRejectedValueOnce(new RecoveryQuotaError(300e6, 120e6));
+    const controller = startProjectRecovery(vi.fn(), store, undefined, failure);
+    store.setState({ unitSystem: 'cm' });
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(failure).toHaveBeenCalledExactlyOnceWith({ cause: 'quota', stage: 'write', neededBytes: 300e6, availableBytes: 120e6 });
     controller.stop();
   });
 
   it('la cuota agotada al escribir informa quota', async () => {
     const store = cleanStore();
     const failure = vi.fn();
-    vi.mocked(writeRecoveryDraft).mockRejectedValueOnce(new DOMException('full', 'QuotaExceededError'));
+    vi.mocked(writeRecoveryDocument).mockRejectedValueOnce(new DOMException('full', 'QuotaExceededError'));
     const controller = startProjectRecovery(vi.fn(), store, undefined, failure);
     store.setState({ unitSystem: 'cm' });
     await vi.advanceTimersByTimeAsync(1500);

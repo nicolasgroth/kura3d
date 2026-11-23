@@ -267,6 +267,8 @@ export async function planeCutWithConnectors(
             skipped: layout.skippedIslands,
             islands: layout.islands,
             size,
+            // El diálogo muestra el diámetro (Ø); el aviso habla en la misma medida.
+            diameter: Math.round(size * 2 * 100) / 100,
           })
         );
       }

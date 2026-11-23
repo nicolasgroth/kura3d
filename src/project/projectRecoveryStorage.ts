@@ -1,6 +1,9 @@
 /**
  * @file src/project/projectRecoveryStorage.ts
- * @description Almacenamiento local en IndexedDB de borradores de recuperación de proyectos.
+ * @description Almacenamiento local en IndexedDB de borradores de recuperación de proyectos. Esquema v2:
+ * `drafts` (metadatos), `projectBytes` (borradores antiguos: un .kura entero, solo lectura y migración),
+ * `draftManifests` (borrador nuevo: escena e historial sin geometría) y `meshBlocks` (cada bloque de
+ * geometría una sola vez, binario, con clave por huella de contenido; ver `recoveryDraftStore.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -21,15 +24,25 @@ export interface RecoveryDraft extends RecoveryDraftInfo {
 const DATABASE = 'kura3d-project-recovery';
 const INFO = 'drafts';
 const DATA = 'projectBytes';
+/** Manifiesto del borrador v2 (escena, historial y ajustes; la geometría va por referencia). */
+export const MANIFESTS = 'draftManifests';
+/** Bloques binarios de geometría compartidos entre borradores (clave = huella de contenido). */
+export const BLOCKS = 'meshBlocks';
+const DB_VERSION = 2;
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (!globalThis.indexedDB) throw new Error('Local recovery storage is unavailable.');
-    const request = indexedDB.open(DATABASE, 1);
+    const request = indexedDB.open(DATABASE, DB_VERSION);
     let blocked = false;
     request.onupgradeneeded = () => {
-      request.result.createObjectStore(INFO, { keyPath: 'id' });
-      request.result.createObjectStore(DATA);
+      // Migración aditiva: los borradores v1 (`projectBytes`) se conservan y se siguen leyendo.
+      const db = request.result;
+      const names = db.objectStoreNames;
+      if (!names?.contains?.(INFO)) db.createObjectStore(INFO, { keyPath: 'id' });
+      if (!names?.contains?.(DATA)) db.createObjectStore(DATA);
+      if (!names?.contains?.(MANIFESTS)) db.createObjectStore(MANIFESTS);
+      if (!names?.contains?.(BLOCKS)) db.createObjectStore(BLOCKS);
     };
     request.onblocked = () => {
       blocked = true;
@@ -48,14 +61,14 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-function result<T>(request: IDBRequest<T>): Promise<T> {
+export function result<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
 }
 
-async function transaction<T>(
+export async function transaction<T>(
   stores: string[], mode: IDBTransactionMode, work: (tx: IDBTransaction) => Promise<T>,
 ): Promise<T> {
   const db = await openDatabase();
@@ -79,7 +92,7 @@ async function transaction<T>(
   }
 }
 
-function checkInfo({ id, name, updatedAt }: RecoveryDraftInfo) {
+export function checkInfo({ id, name, updatedAt }: RecoveryDraftInfo) {
   if (typeof id !== 'string' || !id.length || id.length > 256 || /[/\\\u0000]/.test(id)
     || !(name === null || (typeof name === 'string' && !/[/\\\u0000]/.test(name)))
     || !Number.isSafeInteger(updatedAt) || updatedAt < 0) {
@@ -123,25 +136,37 @@ export async function writeRecoveryDraft({ id, name, updatedAt, bytes }: Recover
 }
 
 export function discardRecoveryDraft(id: string, expectedUpdatedAt?: number): Promise<boolean> {
-  return transaction([INFO, DATA], 'readwrite', async tx => {
+  return transaction([INFO, DATA, MANIFESTS], 'readwrite', async tx => {
     const metadata = tx.objectStore(INFO);
     const info: RecoveryDraftInfo | undefined = await result(metadata.get(id));
     if (!info || (expectedUpdatedAt !== undefined && info.updatedAt !== expectedUpdatedAt)) return false;
     metadata.delete(id);
     tx.objectStore(DATA).delete(id);
+    // Los bloques de geometría que queden sin referencia los limpia `recoveryDraftStore`.
+    tx.objectStore(MANIFESTS).delete(id);
     return true;
   });
 }
 
 export function moveRecoveryDraft(from: { id: string; updatedAt: number }, destinationId: string): Promise<boolean> {
-  return transaction([INFO, DATA], 'readwrite', async tx => {
+  return transaction([INFO, DATA, MANIFESTS], 'readwrite', async tx => {
     const metadata = tx.objectStore(INFO);
     const data = tx.objectStore(DATA);
+    const manifests = tx.objectStore(MANIFESTS);
     const info: RecoveryDraftInfo | undefined = await result(metadata.get(from.id));
     if (!info || info.updatedAt !== from.updatedAt) return false;
     if (from.id === destinationId) return true;
     const destination = { id: destinationId, name: info.name, updatedAt: info.updatedAt };
     checkInfo(destination);
+    const manifest: unknown = await result(manifests.get(from.id));
+    if (manifest !== undefined) {
+      // Borrador v2: se mueve solo el manifiesto; los bloques de geometría son compartidos.
+      metadata.add(destination);
+      manifests.add(manifest, destinationId);
+      metadata.delete(from.id);
+      manifests.delete(from.id);
+      return true;
+    }
     const bytes: unknown = await result(data.get(from.id));
     checkBytes(bytes);
     metadata.add(destination);
