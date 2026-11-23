@@ -65,3 +65,5 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-23 | Comprobar encaje | Es bajo pedido (menú contextual: comprobar el objeto o la estructura), aplica las restas pendientes para ser fiel aunque sea más lento, y entrega un chequeo general con recomendaciones de dónde está cada problema. |
 | 2026-11-23 | Objetos de referencia al exportar | Se omiten siempre del 3MF y de cualquier exportación; solo viven en el `.kura`. |
 | 2026-11-23 | Dónde van las consultas | Todas las preguntas para el autor se dejan en `docs/CONSULTAS_PROYECTO.md`, en un solo lugar, aunque también se comenten en la conversación. |
+| 2026-11-23 | Borradores de recuperación antiguos | Se borran solos los que llevan más de 30 días sin tocarse. |
+| 2026-11-23 | Largo de las guías públicas | Quedan como están; mientras sean guías paso a paso, el largo actual está bien. |
