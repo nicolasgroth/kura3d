@@ -107,7 +107,15 @@ export function explodedSplitPositions(group: SplitGroup, factor: number, spread
       bounds: { min: [p[0] - dx / 2, p[1], p[2] - dz / 2] as Vec3, max: [p[0] + dx / 2, p[1] + dy, p[2] + dz / 2] as Vec3 },
     };
   });
+  const transforms = explodedTransforms(items, factor, spread);
+  // Ninguna pieza queda bajo la cama (Z=0 del usuario): separar hacia abajo levanta todo el conjunto,
+  // y un armado que ya dejaba una pieza bajo la cama se apoya en ella.
+  let lowest = Infinity;
+  transforms.forEach((tr, i) => {
+    lowest = Math.min(lowest, items[i].bounds.min[1] + (tr.position[1] - items[i].assembly.position[1]));
+  });
+  const lift = Number.isFinite(lowest) && lowest < 0 ? -lowest : 0;
   const out = new Map<string, Vec3>();
-  explodedTransforms(items, factor, spread).forEach((tr, i) => out.set(group.parts[i].id, tr.position));
+  transforms.forEach((tr, i) => out.set(group.parts[i].id, [tr.position[0], tr.position[1] + lift, tr.position[2]]));
   return out;
 }
