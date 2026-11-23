@@ -35,6 +35,8 @@ import {
   resolveTube,
 } from './primitiveParams';
 import { buildTextCrossSection } from './text/textCrossSection';
+import { buildEdgedPrism, buildEdgedRevolution, rectangleFootprint, regularFootprint } from './edgedSolids';
+import { resolveEdges } from './primitiveEdges';
 
 /**
  * Normaliza una malla para que quede centrada horizontalmente en (X=0, Z=0)
@@ -284,15 +286,28 @@ export async function createPrimitiveMesh(
   const tempHandles: Array<{ delete: () => void }> = [];
 
   try {
+    // Bordes redondeados o achaflanados (Caja, Cilindro, Tubo, Prisma); `null` = aristas rectas.
+    const edges = resolveEdges(type, params);
+    // Las construcciones con bordes van en Z arriba; se rotan a Y arriba como el resto.
+    const upright = (raw: Manifold): Manifold => {
+      tempHandles.push(raw);
+      return raw.rotate([-90, 0, 0]);
+    };
     switch (type) {
       case 'box': {
         const { w, h, d } = resolveBox(params);
-        manifold = wasm.Manifold.cube([w, h, d], true);
+        manifold = edges
+          ? upright(buildEdgedPrism(wasm, rectangleFootprint(w, d), h, edges))
+          : wasm.Manifold.cube([w, h, d], true);
         break;
       }
 
       case 'cylinder': {
         const { r, h, seg } = resolveCylinder(params);
+        if (edges) {
+          manifold = upright(buildEdgedRevolution(wasm, 0, r, h, seg, edges));
+          break;
+        }
         // Manifold.cylinder extruye a lo largo de Z; rotamos -90° en X para alinear con Y-up
         const raw = wasm.Manifold.cylinder(h, r, r, seg, false);
         tempHandles.push(raw);
@@ -302,7 +317,10 @@ export async function createPrimitiveMesh(
 
       case 'tube': {
         const { outerR, innerR, h, seg } = resolveTube(params);
-
+        if (edges) {
+          manifold = upright(buildEdgedRevolution(wasm, innerR, outerR, h, seg, edges));
+          break;
+        }
         const outer = wasm.Manifold.cylinder(h, outerR, outerR, seg, false);
         tempHandles.push(outer);
         // El cilindro interno sobresale 1 mm por ambos extremos para evitar coplanaridad
@@ -346,6 +364,10 @@ export async function createPrimitiveMesh(
 
       case 'prism': {
         const { sides, r, h } = resolvePrism(params);
+        if (edges) {
+          manifold = upright(buildEdgedPrism(wasm, regularFootprint(r, sides), h, edges));
+          break;
+        }
         const raw = wasm.Manifold.cylinder(h, r, r, sides, false);
         tempHandles.push(raw);
         manifold = raw.rotate([-90, 0, 0]);
