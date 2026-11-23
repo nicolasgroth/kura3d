@@ -53,11 +53,11 @@ export const Text3DCreateCard: React.FC<{ onCreated: () => void }> = ({ onCreate
 
   return (
     <form className="kura-card" style={{ marginTop: 8 }} onSubmit={(e) => void submit(e)}>
-      <label className="kura-field-label" htmlFor={`${uid}-text`}>
+      <label className="kura-field-label" htmlFor="kura-text3d-input">
         {t(language, 'sidebar.textPrompt')}
       </label>
       <input
-        id={`${uid}-text`}
+        id="kura-text3d-input"
         className="kura-input"
         value={text}
         maxLength={PRIMITIVE_LIMITS.maxTextLength}

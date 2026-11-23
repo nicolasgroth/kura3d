@@ -97,8 +97,8 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           value={mode}
           onChange={(e) => setMode(e.target.value as MoldMode)}
         >
-          <option value="direct_2part">{t(language, 'dialog.mold.modeDirect2')}</option>
           <option value="direct_1part">{t(language, 'dialog.mold.modeDirect1')}</option>
+          <option value="direct_2part">{t(language, 'dialog.mold.modeDirect2')}</option>
           <option value="silicone_master">{t(language, 'dialog.mold.modeSilicone')}</option>
           <option value="core_cavity">{t(language, 'dialog.mold.modeCoreCavity')}</option>
         </select>
