@@ -80,12 +80,15 @@ export function scanJson(root: unknown, options: ScanOptions = {}): ScanStats {
     }
     if (typeof value !== 'object') throw new RecipeError('format.json', path, { detail: typeof value });
     if (Array.isArray(value)) {
+      // El tope se comprueba ANTES de apilar: una lista enorme no debe reservar memoria ni armar rutas.
+      if (stats.nodes + stack.length + value.length > maxNodes) throw new RecipeError('format.nodes', path, { max: maxNodes });
       for (let k = value.length - 1; k >= 0; k--) stack.push({ value: value[k], path: joinPath(path, k), depth: depth + 1, assetData: false });
       continue;
     }
     if (!isPlainObject(value)) throw new RecipeError('format.json', path, { detail: 'object' });
     // Claves propias, incluidas las no enumerables: `JSON.parse` crea `__proto__` como propiedad propia.
     const keys = Reflect.ownKeys(value);
+    if (stats.nodes + stack.length + keys.length > maxNodes) throw new RecipeError('format.nodes', path, { max: maxNodes });
     const inAssets = /^assets\[\d+\]$/.test(path);
     for (let k = keys.length - 1; k >= 0; k--) {
       const key = keys[k];

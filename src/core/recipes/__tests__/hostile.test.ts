@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { RECIPE_LIMITS, EXPRESSION_LIMITS } from '../limits';
 import { resolveRecipe } from '../resolve/resolveRecipe';
 import { parseRecipeText, validateRecipe } from '../validate/validateRecipe';
+import { scanJson } from '../scan';
 import { minimal } from './fixtures';
 
 const codesOf = (issues: readonly { code: string; path: string }[]) => issues.map((i) => `${i.code} @ ${i.path}`);
@@ -172,6 +173,19 @@ describe('hostil: valores', () => {
     expect(validateRecipe(parseNested(5000)).issues.map((i) => i.code)).toEqual(['format.depth']);
     const many = { ...minimal(), tags: Array.from({ length: RECIPE_LIMITS.maxJsonNodes + 1 }, () => 'a') };
     expect(validateRecipe(many).issues.map((i) => i.code)).toEqual(['format.nodes']);
+  });
+
+  it('una lista o un objeto enormes se rechazan antes de recorrerlos (el tope se revisa antes de apilar)', () => {
+    // Un `Proxy` cuenta los accesos: si el lector apilara todos los elementos antes de comprobar el tope,
+    // leería cada índice. Debe rechazar leyendo solo la longitud.
+    let reads = 0;
+    const huge = new Proxy(new Array(5_000_000).fill('a'), { get: (t, k, r) => { if (typeof k === 'string' && /^\d+$/.test(k)) reads += 1; return Reflect.get(t, k, r); } });
+    expect(() => scanJson({ tags: huge })).toThrow();
+    expect(reads).toBe(0);
+    const wide: Record<string, number> = {};
+    for (let i = 0; i <= RECIPE_LIMITS.maxJsonNodes; i++) wide['k' + i] = 1;
+    expect(() => scanJson(wide)).toThrow();
+    expect(validateRecipe(wide).issues.map((i) => i.code)).toEqual(['format.nodes']);
   });
 
   it('JSON inválido y formato ajeno', () => {
