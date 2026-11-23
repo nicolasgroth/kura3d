@@ -9,7 +9,7 @@
 
 import { createModulePrimitive, createPrimitive, type PlaceMesh } from '../../core/operations';
 import { activeBedSize } from '../bedSize';
-import { placeInFreeSpot } from '../../core/scene/freeSpot';
+import { overlapsOthers, placeInFreeSpot } from '../../core/scene/freeSpot';
 import { parametricStateOf } from '../../core/scene/parametric';
 import { resolveModuleTarget } from '../../core/scene/sceneRules';
 import { PRINT_COLOR_PALETTE, type SceneObject, type Vec3 } from '../../types/kura';
@@ -155,7 +155,17 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
           change.patches[0].patch.name = obj.name.split(oldText).join(newText.trim());
         }
         // Un solo paso de deshacer por edición confirmada (commitChange guarda el historial).
+        const others = get().objects.filter((o) => o.id !== id);
+        const overlappedBefore = overlapsOthers(others, [obj]);
         commitChange(change, { select: [obj.id] });
+        // Si al crecer pisa a otro objeto (y antes no), va a un hueco libre en el mismo paso de deshacer.
+        const grown = get().objects.find((o) => o.id === id);
+        if (grown && !overlappedBefore && overlapsOthers(others, [grown])) {
+          const spot = placeInFreeSpot(others, grown.mesh, grown.rotation, grown.scale, activeBed());
+          set((st) => ({ objects: st.objects.map((o) => (o.id === id ? { ...o, position: spot.position } : o)) }));
+          get().addToast(tr(spot.fits ? 'uxEscena.grewMoved' : 'toast.placedOutsideBed'), 'info');
+          get().requestCameraPreset('ensure', [id]);
+        }
         return get().objects.find((o) => o.id === id) ?? null;
       });
     },

@@ -156,7 +156,12 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     },
 
     saveProject: async (saveAs = false) => {
-      if (get().projectBusy || !canChangeDocument()) return false;
+      if (get().projectBusy) return false;
+      if (!canChangeDocument()) {
+        // Nunca en silencio: el usuario pidió guardar y debe saber por qué no ocurrió.
+        get().addToast(tr('fileProject.busy'), 'info');
+        return false;
+      }
       set({ projectBusy: true });
       try {
         const state = get();
@@ -167,10 +172,13 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
           () => encodeProjectAsync(document),
           saveAs ? undefined : state.projectLocation,
         );
-        if (!saved) return false;
+        if (!saved) {
+          get().addToast(tr('uxEscena.saveCancelled'), 'info');
+          return false;
+        }
         if (saved.viaDownload) {
           set({ pendingDownloadSave: { name: saved.name, document } });
-          get().addToast(tr('fileProject.downloadRequested', { name: saved.name }), 'info');
+          get().addToast(tr('uxEscena.savedDownload', { name: saved.name }), 'info');
           return true;
         }
         set({ projectName: saved.name, projectLocation: saved.location, savedProject: document, projectRecovered: false, pendingDownloadSave: null });

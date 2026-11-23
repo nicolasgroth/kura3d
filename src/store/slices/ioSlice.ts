@@ -22,6 +22,7 @@ import { activeBedSize } from '../bedSize';
 import { isProjectDirty } from '../projectDocument';
 import { createModelIoActions, type ModelImportSource } from '../modelIoActions';
 import { loadInitialImportPlacement, STORAGE_IMPORT_PLACEMENT_KEY, writeStorage } from '../preferencesStorage';
+import type { EngineJob } from '../../core/operations/engineClient';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -61,6 +62,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
     openSimplify: (id) => get().requestSimplifyPanel(id),
     repairMesh: (id) => void get().repairObjectMesh(id),
+    separateBodies: (id) => void get().splitDisconnectedObject(id),
     bedSize: () => activeBedSize(get()),
     // Antes de un modelo grande: si hay cambios sin guardar, el borrador de recuperación queda escrito.
     ensureRecoveryDraft: async () => {
@@ -179,7 +181,19 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
         false,
         async () => {
           await get().initEngine();
-          return modelIo.importModelFiles(files, options);
+          // La lectura corre en su propio Worker: la barra de progreso la puede cancelar (botón o Esc).
+          const controller = new AbortController();
+          const job: EngineJob<unknown> = { id: -1, inWorker: true, promise: Promise.resolve(), cancel: () => controller.abort() };
+          ctx.runtime.activeJob = job;
+          const progress = get().busyProgress;
+          if (progress) set({ busyProgress: { ...progress, cancellable: true } });
+          try {
+            return await modelIo.importModelFiles(files, { ...options, signal: controller.signal });
+          } finally {
+            if (ctx.runtime.activeJob === job) ctx.runtime.activeJob = null;
+            const current = get().busyProgress;
+            if (current) set({ busyProgress: { ...current, cancellable: false } });
+          }
         },
         { onError: (err) => get().addToast(tr('toast.errorPrefix', { message: projectErrorMessage(err) }), 'error') },
       );

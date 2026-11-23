@@ -22,6 +22,7 @@ import { GeometrySection } from './inspector/GeometrySection';
 import { ParametersSection } from './inspector/ParametersSection';
 import { MakerToolsSection } from './inspector/MakerToolsSection';
 import { OperationsSection } from './inspector/OperationsSection';
+import { useScrollTopOnSelection } from './inspector/useScrollTopOnSelection';
 import '../styles/inspectorFit.css';
 
 /** Estado local que sobrevive a cambios de selección: vive en el contenedor y baja a las secciones. */
@@ -51,6 +52,7 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const selectedObjects = objects.filter((o) => selectedIds.includes(o.id));
   const primary = selectedObjects[0] ?? null;
+  const scrollRef = useScrollTopOnSelection(primary?.id ?? null);
 
   useLayoutEffect(() => {
     if (!precisionRequest) return;
@@ -75,7 +77,6 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
       aria-label={t(language, 'inspector.title')}
     >
       <InspectorEdgeToggle />
-    
       <div className="kura-panel-header">
         <span>{t(language, 'inspector.title')}</span>
         <span
@@ -86,9 +87,8 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
         </span>
       </div>
 
-      <div className="kura-scroll-area">
+      <div className="kura-scroll-area" ref={scrollRef}>
         <IdentitySection primary={primary} />
-
         <FilamentLegendCard />
 
         <ParametersSection primary={primary} />

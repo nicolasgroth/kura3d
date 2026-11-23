@@ -16,6 +16,7 @@ import * as THREE from 'three';
 import { gizmoRigidDelta, selectionPivot } from '../../core/scene/groupTransform';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject, Vec3 } from '../../types/kura';
+import { useUserAxisGizmoColors } from './gizmoAxisColors';
 
 type Baseline = Array<Pick<SceneObject, 'id' | 'position' | 'rotation' | 'scale'>>;
 
@@ -24,6 +25,7 @@ export const GroupTransformGizmo: React.FC<{
   ctrlHeld: boolean;
   onDragChange: (dragging: boolean) => void;
 }> = ({ epoch, ctrlHeld, onDragChange }) => {
+  const gizmoAxesRef = useUserAxisGizmoColors();
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const transformMode = useKuraStore((s) => s.transformMode);
@@ -53,6 +55,7 @@ export const GroupTransformGizmo: React.FC<{
       {proxy && proxy.parent && (
         <TransformControls
           key={epoch}
+          ref={gizmoAxesRef}
           object={proxy}
           mode={transformMode}
           size={0.78}

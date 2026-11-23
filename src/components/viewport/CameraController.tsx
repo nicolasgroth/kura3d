@@ -25,10 +25,11 @@ import {
   type Vec3,
 } from '../../core/scene/cameraFraming';
 import { measureViewportInsets } from './viewportInsets';
+import { clipPlanesFor, isViewPreset, VIEW_PRESET_DIRS } from '../../core/scene/viewPresets';
 import { explodedSplitPositions, splitGroupOf } from '../../core/scene/splitGroups';
 import type { SceneObject } from '../../types/kura';
 
-const ISO_DIR: Vec3 = [0.72, 0.62, 0.85];
+const ISO_DIR: Vec3 = VIEW_PRESET_DIRS.iso;
 const TRANSITION_MS = 380;
 const MIN_DISTANCE = 18;
 /** Ventana en la que un encuadre explícito del store manda sobre el automático por objetos nuevos. */
@@ -60,17 +61,29 @@ export const CameraController: React.FC<{
   const sizeRef = useRef(size);
   sizeRef.current = size;
 
+  /** Radio de la escena visible (con la cama) para ajustar los planos de recorte. */
+  const sceneRadius = (): number => {
+    const { objects: cur, printerProfile } = useKuraStore.getState();
+    const box = boxForObjects(cur);
+    const bed = Math.hypot(printerProfile.bedWidthMm, printerProfile.bedDepthMm) / 2;
+    if (!box) return bed;
+    return Math.max(bed, ...box.min.map(Math.abs), ...box.max.map(Math.abs));
+  };
+
   const currentTarget = (): THREE.Vector3 =>
     orbitRef.current ? orbitRef.current.target.clone() : new THREE.Vector3(0, 15, 0);
 
   const moveTo = (position: Vec3, target: Vec3) => {
     const toPos = new THREE.Vector3(...position);
     const toTarget = new THREE.Vector3(...target);
-    const distance = toPos.distanceTo(toTarget);
     const persp = camera as THREE.PerspectiveCamera;
-    if (persp.isPerspectiveCamera && persp.far < distance * 4) {
-      persp.far = distance * 4;
-      persp.updateProjectionMatrix();
+    if (persp.isPerspectiveCamera) {
+      const clip = clipPlanesFor(toPos.distanceTo(toTarget), sceneRadius());
+      if (Math.abs(persp.near - clip.near) > 1e-6 || Math.abs(persp.far - clip.far) > 1e-6) {
+        persp.near = clip.near;
+        persp.far = clip.far;
+        persp.updateProjectionMatrix();
+      }
     }
     if (prefersReducedMotion()) {
       transition.current = null;
@@ -182,32 +195,28 @@ export const CameraController: React.FC<{
       if (preset === 'ensure') return;
     }
 
-    const target: Vec3 = [0, 15, 0];
-    const distance = Math.max(130, printerProfile.bedWidthMm * 0.65);
-    let position: Vec3;
-    switch (preset) {
-      case 'top':
-        position = [target[0], target[1] + distance * 1.3, target[2] + 0.01];
-        break;
-      case 'front':
-        position = [target[0], target[1] + distance * 0.15, target[2] + distance * 1.25];
-        break;
-      case 'right':
-        position = [target[0] + distance * 1.25, target[1] + distance * 0.15, target[2]];
-        break;
-      case 'left':
-        position = [target[0] - distance * 1.25, target[1] + distance * 0.15, target[2]];
-        break;
-      case 'back':
-        position = [target[0], target[1] + distance * 0.15, target[2] - distance * 1.25];
-        break;
-      case 'bottom':
-        position = [target[0], target[1] - distance * 1.3, target[2] + 0.01];
-        break;
-      default:
-        position = [target[0] + distance * 0.72, target[1] + distance * 0.62, target[2] + distance * 0.85];
-    }
-    moveTo(position, target);
+    if (!isViewPreset(preset)) return;
+    const dir = VIEW_PRESET_DIRS[preset];
+    // Cambiar de vista encuadra la selección (o toda la escena) desde esa dirección, con margen.
+    const selected = cur.filter((o) => selectedIds.includes(o.id) && o.visible !== false);
+    const content = boxForObjects(selected.length > 0 ? selected : cur.filter((o) => o.visible !== false));
+    const halfW = printerProfile.bedWidthMm / 2;
+    const halfD = printerProfile.bedDepthMm / 2;
+    // Sin objetos: la cama entera.
+    const box: FrameBox = content ?? { min: [-halfW, 0, -halfD], max: [halfW, 30, halfD] };
+    const persp = camera as THREE.PerspectiveCamera;
+    const aspect = sizeRef.current.height > 0 ? sizeRef.current.width / sizeRef.current.height : persp.aspect;
+    const pose = framePose({
+      box,
+      viewDir: dir,
+      fovDeg: persp.fov ?? 42,
+      aspect,
+      insets: measureViewportInsets(gl.domElement),
+      margin: INSET_MARGIN,
+      minDistance: Math.max(MIN_DISTANCE, orbitRef.current?.minDistance ?? 0),
+      maxDistance: orbitRef.current?.maxDistance ?? Infinity,
+    });
+    moveTo(pose.position, pose.target);
     // frameBox/moveTo leen refs estables; solo la petición dispara el efecto.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameraRequest, camera, orbitRef]);

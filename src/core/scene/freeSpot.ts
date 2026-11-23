@@ -134,15 +134,16 @@ export function placeInFreeSpot(
 
 /**
  * Desplazamiento XZ para mover un grupo de piezas (con posiciones ya en mundo) como un bloque al
- * primer hueco libre, sin solapar los objetos visibles ni separar las piezas entre sí.
+ * primer hueco libre, sin solapar los objetos visibles ni separar las piezas entre sí. Usa el giro y
+ * la escala de cada pieza si los trae.
  */
 export function placeGroupInFreeSpot(
   objects: readonly SceneObject[],
-  items: ReadonlyArray<{ mesh: MeshData; position: Vec3 }>,
+  items: ReadonlyArray<{ mesh: MeshData; position: Vec3; rotation?: Vec3; scale?: Vec3 }>,
   bed: BedSize | null = null,
 ): { offset: Vec3; fits: boolean } {
   const fps = items
-    .map((it) => footprintOf(it.mesh, it.position, [0, 0, 0], [1, 1, 1]))
+    .map((it) => footprintOf(it.mesh, it.position, it.rotation ?? [0, 0, 0], it.scale ?? [1, 1, 1]))
     .filter((f): f is FootprintXZ => f !== null);
   if (fps.length === 0) return { offset: [0, 0, 0], fits: true };
   const union = {
@@ -224,4 +225,32 @@ export function separateCutHalves<T extends Placeable>(
     return { ...p, position };
   };
   return { parts: [shift(upper, 1), shift(lower, -1)], fits: true };
+}
+
+/** true si alguna de las piezas pisa (en planta) la huella de alguno de los objetos visibles `others`. */
+export function overlapsOthers(others: readonly SceneObject[], parts: readonly Placeable[]): boolean {
+  const occupied = sceneFootprints(others);
+  return parts.some((part) => {
+    const fp = footprintOf(part.mesh, part.position, part.rotation, part.scale);
+    return fp !== null && occupied.some((other) => overlapsXZ(fp, other));
+  });
+}
+
+/**
+ * Resultados de una operación (mitades, piezas separadas o extraídas, duplicados): si alguno pisa a
+ * OTRO objeto, el conjunto se mueve como bloque al primer hueco libre (entre sí no se separan).
+ * @param others objetos de la escena que no forman parte del resultado (ni la pieza de origen si se reemplaza).
+ */
+export function keepClearOfOthers<T extends Placeable>(
+  others: readonly SceneObject[],
+  parts: readonly T[],
+  bed: BedSize | null = null,
+): { parts: T[]; fits: boolean; moved: boolean } {
+  if (parts.length === 0 || !overlapsOthers(others, parts)) return { parts: [...parts], fits: true, moved: false };
+  const group = placeGroupInFreeSpot(others, parts, bed);
+  return {
+    parts: parts.map((p) => ({ ...p, position: [p.position[0] + group.offset[0], p.position[1], p.position[2] + group.offset[2]] as Vec3 })),
+    fits: group.fits,
+    moved: true,
+  };
 }

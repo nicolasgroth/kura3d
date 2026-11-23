@@ -11,6 +11,8 @@
 import * as ops from '../../core/operations';
 import { computeBedPositionY, copySceneObject, makeId } from '../../core/scene/sceneObjects';
 import { resolveAlignTargets } from '../../core/scene/sceneRules';
+import { keepClearOfOthers } from '../../core/scene/freeSpot';
+import { activeBedSize } from '../bedSize';
 import { duplicateGroupStructure, pickSelection } from '../../core/scene/groups';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { tCount } from '../../utils/plural';
@@ -132,6 +134,11 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
           ...(src.groupRef ? { groupRef: src.groupRef } : {}),
         },
       }));
+      // Las copias quedan corridas 15 mm; si así pisan al original o a otro objeto, van juntas al primer hueco libre.
+      const spot = keepClearOfOthers(get().objects, pairs.map((p) => p.copy), activeBedSize(get()));
+      pairs.forEach((p, i) => {
+        p.copy.position = spot.parts[i].position;
+      });
       const created = pairs.map((p) => p.copy);
       // Duplicar un grupo duplica su estructura (las copias cuelgan de un grupo gemelo).
       const next = duplicateGroupStructure(
@@ -142,6 +149,8 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       );
       set({ objects: next.objects, groups: next.groups, selectedIds: created.map((c) => c.id) });
       get().addToast(tr('toast.duplicated'), 'info');
+      if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+      if (spot.moved) get().requestCameraPreset('ensure', created.map((c) => c.id));
       return created;
     },
 

@@ -11,7 +11,8 @@
 
 import * as engine from '../../engine';
 import * as ops from '../../core/operations';
-import { placePartsInFreeSpot, separateCutHalves } from '../../core/scene/freeSpot';
+import { keepClearOfOthers, placePartsInFreeSpot, separateCutHalves } from '../../core/scene/freeSpot';
+import type { SceneChange } from '../../core/operations/operationTypes';
 import { resolveStructureTarget } from '../../core/scene/sceneRules';
 import { attachNotesToParts, buildGroupNotes } from '../../core/scene/splitGroupNotes';
 import { segmentationMatchesMesh } from '../../engine/segmentationGuards';
@@ -24,6 +25,24 @@ import type { KuraStoreState } from '../storeTypes';
 export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, runExclusive, opCtx, assertCurrent, commitChange, currentSegmentationFor, runEngine } = ctx;
   const { reportOperationError, reportEngineWarnings } = ctx;
+
+  /**
+   * Resultado de una operación que pisa a OTROS objetos (no a la pieza que reemplaza): se mueve como
+   * bloque al primer hueco libre y se avisa si no cupo en la cama. Las piezas entre sí no se separan.
+   */
+  const clearOfOthers = (change: SceneChange): SceneChange => {
+    const added = change.added ?? [];
+    if (added.length === 0) return change;
+    // La pieza de origen (quitada, o recortada a su remanente) no cuenta: las piezas salen de ella.
+    const source = new Set([...(change.removedIds ?? []), ...(change.patches ?? []).map((p) => p.id)]);
+    const others = get().objects.filter((o) => !source.has(o.id));
+    const result = keepClearOfOthers(others, added, activeBedSize(get()));
+    if (!result.moved) return change;
+    if (!result.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+    get().requestCameraPreset('ensure', result.parts.map((p) => p.id));
+    return { ...change, added: result.parts };
+  };
+  const byIds = (change: SceneChange, ids: readonly string[]) => change.added.filter((o) => ids.includes(o.id));
 
   const editable = (id: string) => {
     const obj = get().objects.find((o) => o.id === id);
@@ -43,7 +62,9 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         // Las mitades no quedan encimadas: se separan unos milímetros o la superior va a la cama.
         const others = get().objects.filter((o) => o.id !== obj.id);
         const separated = separateCutHalves(others, parts, options.axis, activeBedSize(get()));
-        commitChange({ ...change, added: separated.parts }, { select: separated.parts.map((c) => c.id) });
+        // Y si aun así una mitad pisa a otro objeto, el par se mueve junto a un hueco libre.
+        const cleared = clearOfOthers({ ...change, added: separated.parts });
+        commitChange(cleared, { select: cleared.added.map((c) => c.id) });
         // El corte terminó: se vuelve a Seleccionar y se apaga la vista previa del plano.
         set((state) => ({
           activeTool: state.activeTool === 'cut' ? 'select' : state.activeTool,
@@ -51,7 +72,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         }));
         get().addToast(tr('toast.cutDone'), 'success');
         if (!separated.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
-        return separated.parts;
+        return cleared.added;
       });
     },
 
@@ -101,9 +122,10 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
           return [obj];
         }
         assertCurrent([obj]);
-        commitChange(change, { select: parts.map((c) => c.id) });
+        const cleared = clearOfOthers(change);
+        commitChange(cleared, { select: parts.map((c) => c.id) });
         get().addToast(tr('toast.splitPartsDone', { count: parts.length }), 'success');
-        return parts;
+        return byIds(cleared, parts.map((c) => c.id));
       });
     },
 
@@ -114,10 +136,11 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         const { parts, change } = await runEngine('splitByColor', { obj, options });
         if (parts.length === 0) return [];
         assertCurrent([obj]);
-        commitChange(change, { select: parts.map((c) => c.id) });
+        const cleared = clearOfOthers(change);
+        commitChange(cleared, { select: parts.map((c) => c.id) });
         get().addToast(tr('toast.splitColorsDone', { count: parts.length }), 'success');
         reportEngineWarnings(change.warnings);
-        return parts;
+        return byIds(cleared, parts.map((c) => c.id));
       });
     },
 
@@ -196,13 +219,16 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         await get().initEngine();
         const { extracted, change } = await runEngine('extractStructure', { obj, segmentation: seg, region, removeFromSource });
         assertCurrent([obj]);
-        commitChange(change, {
-          select: [extracted.id],
-          spawned: [extracted],
+        // La pieza extraída no queda dentro del objeto de origen: va a un hueco libre.
+        const cleared = clearOfOthers(change);
+        const placed = byIds(cleared, [extracted.id])[0] ?? extracted;
+        commitChange(cleared, {
+          select: [placed.id],
+          spawned: [placed],
           extra: removeFromSource ? { activeSegmentation: null } : {},
         });
-        get().addToast(tr('toast.structureExtracted', { name: extracted.name }), 'success');
-        return extracted;
+        get().addToast(tr('toast.structureExtracted', { name: placed.name }), 'success');
+        return placed;
       });
     },
 
@@ -218,9 +244,11 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         const { parts, change } = await runEngine('splitStructures', { obj, segmentation });
         if (parts.length === 0) return [];
         assertCurrent([obj]);
-        commitChange(change, { select: parts.map((c) => c.id), spawned: parts, extra: { activeSegmentation: null } });
+        const cleared = clearOfOthers(change);
+        const placed = byIds(cleared, parts.map((c) => c.id));
+        commitChange(cleared, { select: placed.map((c) => c.id), spawned: placed, extra: { activeSegmentation: null } });
         get().addToast(tr('toast.structuresSplitAll', { count: parts.length }), 'success');
-        return parts;
+        return placed;
       });
     },
   };
