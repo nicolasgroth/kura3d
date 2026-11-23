@@ -30,6 +30,8 @@ export const SplitFitNotice: React.FC = () => {
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const customBed = useKuraStore((s) => s.customBedDimensions);
   const activeDialog = useKuraStore((s) => s.activeDialog);
+  // Con la cama oculta («Sin cama») el aviso de tamaño no se muestra como alarma; reaparece al mostrarla.
+  const showBed = useKuraStore((s) => s.showBed);
   const busy = useKuraStore((s) => Boolean(s.busyOperation));
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
 
@@ -41,7 +43,7 @@ export const SplitFitNotice: React.FC = () => {
     return [b.maxX - b.minX, b.maxY - b.minY, b.maxZ - b.minZ];
   }, [obj]);
   const bed = activeBed({ printerProfile, customBedDimensions: customBed });
-  if (!obj || !size || activeDialog === 'splitForBed' || !exceedsBed(size, bed)) return null;
+  if (!obj || !size || activeDialog === 'splitForBed' || !showBed || !exceedsBed(size, bed)) return null;
   // `size` está en ejes del motor (Y arriba): se muestra en los del usuario (X × Y × Z, Z = altura)
   const dims = toUserSize(size).map((v) => formatNumber(language, v, { maximumFractionDigits: 0 })).join(' × ');
 

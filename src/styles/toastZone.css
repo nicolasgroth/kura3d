@@ -12,7 +12,8 @@
   .kura-viewport-wrap > .kura-toast-stack:not(.kura-toast-stack-modal) {
     position: absolute;
     right: 12px;
-    bottom: 76px;
+    /* Por encima de la píldora de Consejo (a 84 px del fondo y ~40 px de alto) y de su margen */
+    bottom: 132px;
     left: auto;
     top: auto;
     z-index: 35;

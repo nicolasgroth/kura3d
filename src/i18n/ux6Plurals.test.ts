@@ -31,6 +31,9 @@ const CASES: Array<[TranslationKey, string]> = [
   ['realesUi.recovery.reminder', 'count'],
   ['realesUi.split.glueSummary', 'count'],
   ['import.openMeshMany', 'count'],
+  ['engineWarning.HOLLOW_POCKETS_FILLED', 'count'],
+  ['measure.panel.count', 'n'],
+  ['measure.item.areaRegions', 'n'],
 ];
 
 const params = (driver: string, n: number) => ({
@@ -47,6 +50,13 @@ describe('plurales de los avisos de reparación e importación', () => {
       expect(two, `${lang} ${key}`).not.toMatch(/\{\w+(\?[^}]*)?\}/);
       if (['es', 'en', 'de', 'fr'].includes(lang)) expect(one, `${lang} ${key}`).not.toBe(two.replace(/\b2\b/g, '1'));
     }
+  });
+
+  it('bolsas diminutas y mediciones en singular', () => {
+    expect(t('es', 'engineWarning.HOLLOW_POCKETS_FILLED', { count: 1 })).toContain('Se dejó maciza 1 bolsa diminuta');
+    expect(t('es', 'engineWarning.HOLLOW_POCKETS_FILLED', { count: 3 })).toContain('Se dejaron macizas 3 bolsas diminutas');
+    expect(t('es', 'measure.panel.count', { n: 1 })).toBe('1 medición');
+    expect(t('es', 'measure.panel.count', { n: 2 })).toBe('2 mediciones');
   });
 
   it('textos concretos en singular', () => {

@@ -24,6 +24,12 @@ import { hasLiveStroke, queueLiveSample, startLiveStroke } from './livePaintStro
 import { brushQueryFromEvent, strokeNeedsEdgeRefine, strokeSampleFromEvent, usePaintRaycastAcceleration } from './paintPointer';
 import { continueStorePaintStroke, startStorePaintStroke } from './paintStrokeController';
 
+/** Margen total del contorno de selección sobre la pieza y tamaño mínimo, en mm de mundo (no de espacio local). */
+const SELECTION_MARGIN_MM = 0.8;
+const SELECTION_MIN_MM = 0.5;
+/** Aristas de un cubo unitario compartido por todos los contornos; cada uno lo escala a su pieza. */
+const UNIT_BOX_EDGES = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1));
+
 /** Renderiza un SceneObject con caché de BufferGeometry, materiales PBR, sección Rayos X y voladizos. */
 export const SceneMeshItem: React.FC<{
   obj: SceneObject;
@@ -144,33 +150,29 @@ export const SceneMeshItem: React.FC<{
       };
     }, [overhangGeo]);
 
-    const selectionBoxGeo = useMemo(() => {
+    // Tamaño local de la pieza; el margen del contorno se aplica en espacio de mundo (ver selectionBoxScale)
+    const selectionSize = useMemo(() => {
       if (!isSelected) return null;
       geometry.computeBoundingBox();
       const bb = geometry.boundingBox;
-      if (!bb) return null;
-      const size = bb.getSize(new THREE.Vector3());
-      const box = new THREE.BoxGeometry(
-        Math.max(0.5, size.x + 0.8),
-        Math.max(0.5, size.y + 0.8),
-        Math.max(0.5, size.z + 0.8),
-      );
-      const edges = new THREE.EdgesGeometry(box);
-      box.dispose();
-      return edges;
+      return bb ? bb.getSize(new THREE.Vector3()) : null;
     }, [isSelected, geometry]);
+    // El contorno vive dentro del grupo escalado: su margen se divide entre la escala del objeto para que
+    // sobre siempre ~0,4 mm por lado en pantalla, sea la escala 1 o 100.
+    const selectionBoxScale = useMemo((): Vec3 | null => {
+      if (!selectionSize) return null;
+      const axis = (size: number, scale: number): number => {
+        const k = Math.max(Math.abs(scale), 1e-6);
+        return Math.max(SELECTION_MIN_MM / k, size + SELECTION_MARGIN_MM / k);
+      };
+      return [axis(selectionSize.x, obj.scale[0]), axis(selectionSize.y, obj.scale[1]), axis(selectionSize.z, obj.scale[2])];
+    }, [selectionSize, obj.scale]);
 
     const selectionCenter = useMemo(() => {
       if (!isSelected || !geometry.boundingBox) return [0, 0, 0] as Vec3;
       const c = geometry.boundingBox.getCenter(new THREE.Vector3());
       return [c.x, c.y, c.z] as Vec3;
     }, [isSelected, geometry]);
-
-    useEffect(() => {
-      return () => {
-        selectionBoxGeo?.dispose();
-      };
-    }, [selectionBoxGeo]);
 
     const handleGroupRef = useCallback(
       (node: THREE.Group | null) => {
@@ -345,8 +347,8 @@ export const SceneMeshItem: React.FC<{
           </mesh>
         )}
 
-        {isSelected && selectionBoxGeo && (
-          <lineSegments geometry={selectionBoxGeo} position={selectionCenter}>
+        {isSelected && selectionBoxScale && (
+          <lineSegments geometry={UNIT_BOX_EDGES} position={selectionCenter} scale={selectionBoxScale}>
             <lineBasicMaterial
               color={isPrimarySelected ? '#38bdf8' : '#f97316'}
               transparent

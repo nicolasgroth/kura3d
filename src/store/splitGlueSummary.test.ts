@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 import { t } from '../i18n';
 import type { EngineWarning } from '../engine';
-import { collapseGlueWarnings } from './splitGlueSummary';
+import { collapseGlueWarnings, glueCountOf } from './splitGlueSummary';
 import { occupiedPieces } from '../core/scene/splitOccupiedPieces';
 
 const w = (code: string, params: Record<string, unknown> = {}) => ({ code, params }) as unknown as EngineWarning;
@@ -41,5 +41,12 @@ describe('resumen de uniones para pegar', () => {
     const plan = { pieces: [piece([0, 0, 0]), piece([1, 0, 0])], occupancy: { cells: [[1, 0, 0]] } } as never;
     expect(occupiedPieces(plan).map((p) => p.code)).toEqual(['100']);
     expect(occupiedPieces({ pieces: [piece([0, 0, 0])] } as never)).toHaveLength(1);
+  });
+});
+
+describe('cifra única de uniones para pegar', () => {
+  it('cuenta las filas "glue" sobre el total, sea cual sea la causa', () => {
+    const rows = [{ status: 'glue' }, { status: 'ok' }, { status: 'glue' }, { status: 'changed' }] as const;
+    expect(glueCountOf(rows)).toEqual({ count: 2, total: 4 });
   });
 });

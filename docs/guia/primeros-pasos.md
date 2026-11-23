@@ -45,7 +45,7 @@ En la barra compacta cada icono muestra su nombre al pasar el cursor. La pestañ
 
 ## Vista sin cama
 
-Para ver cómo encajan las piezas entre sí sin la cama de por medio, pulsa **Sin cama** en la barra de vistas del visor (o la tecla **B**, o clic derecho en el fondo del visor → *Vista sin cama*). Se ocultan la rejilla, la cama, el rótulo de la impresora, el volumen de impresión y las sombras; las piezas quedan flotando y puedes girar la vista por debajo para mirarlas desde abajo. Es solo una forma de ver: no cambia tus piezas ni lo que se exporta, y no se guarda en el proyecto. Si algo queda fuera del volumen de impresión, el aviso sigue en la línea inferior del visor. Vuelve a pulsar **Sin cama** (o **B**) para ver la cama otra vez.
+Para ver cómo encajan las piezas entre sí sin la cama de por medio, pulsa **Sin cama** en la barra de vistas del visor (o la tecla **B**, o clic derecho en el fondo del visor → *Vista sin cama*). Se ocultan la rejilla, la cama, el rótulo de la impresora, el volumen de impresión y las sombras; las piezas quedan flotando y puedes girar la vista por debajo para mirarlas desde abajo. Es solo una forma de ver: no cambia tus piezas ni lo que se exporta, y no se guarda en el proyecto. En la línea inferior el chip de la cama pasa a **Cama oculta** (púlsalo para volver a mostrarla); mientras está oculta no se avisa de piezas fuera del volumen de impresión, pero el aviso reaparece apenas vuelve la cama. Vuelve a pulsar **Sin cama** (o **B**) para ver la cama otra vez.
 
 ![Vista sin cama: las tres piezas flotando sobre un fondo neutro](img/primeros-pasos-06-sin-cama.png)
 

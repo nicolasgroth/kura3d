@@ -15,6 +15,7 @@ import { computeSelectionBounds } from '../../utils/selectionBounds';
 import { formatDimension } from '../../utils/units';
 import { toUserSize } from '../../core/scene/displayAxes';
 import { bedStatusOf } from '../split/splitAssembledStatus';
+import { BedHiddenChip } from './BedHiddenChip';
 
 /** HUD inferior en una sola línea. */
 export const ViewportHudBottom: React.FC = () => {
@@ -23,6 +24,7 @@ export const ViewportHudBottom: React.FC = () => {
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const printerProfile = useKuraStore((s) => s.printerProfile);
+  const showBed = useKuraStore((s) => s.showBed);
   const selectedObj = objects.find((o) => o.id === selectedIds[0]) ?? null;
   const localizedPrinterName = getLocalizedPrinterName(language, printerProfile);
   const bedStatus = useMemo(() => bedStatusOf(objects, printerProfile), [objects, printerProfile]);
@@ -58,32 +60,34 @@ export const ViewportHudBottom: React.FC = () => {
         <span className="kura-dims-badge">{activeDimensionsText}</span>
       </div>
 
-      <div className="kura-hud-card kura-hud-pill-nowrap">
-        <span className="kura-field-label">{t(language, 'viewport.bedLabel')}:</span>
-        <span className="kura-dims-badge">
-          {printerProfile.showPrintVolume
-            ? `${localizedPrinterName} (${formatDimension(
-                printerProfile.bedWidthMm,
-                unitSystem,
-                1, language)} × ${formatDimension(printerProfile.bedDepthMm, unitSystem, 1, language)} × ${formatDimension(
-                printerProfile.maxHeightMm,
-                unitSystem,
-                1, language)})`
-            : localizedPrinterName}
-        </span>
-        {bedStatus === 'outOfBounds' && (
-          <span className="kura-oob-badge">
-            <AlertTriangle size={11} />
-            <span>{t(language, 'viewport.bed.outOfBounds')}</span>
+      {!showBed ? <BedHiddenChip /> : (
+        <div className="kura-hud-card kura-hud-pill-nowrap">
+          <span className="kura-field-label">{t(language, 'viewport.bedLabel')}:</span>
+          <span className="kura-dims-badge">
+            {printerProfile.showPrintVolume
+              ? `${localizedPrinterName} (${formatDimension(
+                  printerProfile.bedWidthMm,
+                  unitSystem,
+                  1, language)} × ${formatDimension(printerProfile.bedDepthMm, unitSystem, 1, language)} × ${formatDimension(
+                  printerProfile.maxHeightMm,
+                  unitSystem,
+                  1, language)})`
+              : localizedPrinterName}
           </span>
-        )}
-        {bedStatus === 'assembled' && (
-          <span className="kura-assembled-badge" role="status" title={t(language, 'splitUx.assembled.status')}>
-            <Boxes size={11} aria-hidden="true" />
-            <span>{t(language, 'splitUx.assembled.status')}</span>
-          </span>
-        )}
-      </div>
+          {bedStatus === 'outOfBounds' && (
+            <span className="kura-oob-badge">
+              <AlertTriangle size={11} />
+              <span>{t(language, 'viewport.bed.outOfBounds')}</span>
+            </span>
+          )}
+          {bedStatus === 'assembled' && (
+            <span className="kura-assembled-badge" role="status" title={t(language, 'splitUx.assembled.status')}>
+              <Boxes size={11} aria-hidden="true" />
+              <span>{t(language, 'splitUx.assembled.status')}</span>
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 };
