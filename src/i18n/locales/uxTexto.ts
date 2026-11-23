@@ -8,6 +8,7 @@
  */
 
 export const UXTEXTO_ES = {
+  'dialog.cut.sizeRecommended': 'Recomendado para esta sección (como el modo Automático de Dividir): se recalcula al mover el plano o cambiar el conector. Puedes editarlo.',
   'split.section.bedCuts': 'Cama y cortes',
   'split.section.joints': 'Uniones',
   'split.section.marks': 'Marcas',
@@ -25,6 +26,7 @@ export const UXTEXTO_ES = {
 };
 
 export const UXTEXTO_EN = {
+  'dialog.cut.sizeRecommended': 'Recommended for this section (like the Automatic mode of Split): it is recalculated when you move the plane or change the connector. You can edit it.',
   'split.section.bedCuts': 'Bed and cuts',
   'split.section.joints': 'Joints',
   'split.section.marks': 'Marks',
@@ -42,6 +44,7 @@ export const UXTEXTO_EN = {
 };
 
 export const UXTEXTO_DE = {
+  'dialog.cut.sizeRecommended': 'Für diesen Querschnitt empfohlen (wie der Automatikmodus von Teilen): wird beim Verschieben der Ebene oder Ändern des Verbinders neu berechnet. Du kannst ihn ändern.',
   'split.section.bedCuts': 'Druckbett und Schnitte',
   'split.section.joints': 'Verbindungen',
   'split.section.marks': 'Markierungen',
@@ -59,6 +62,7 @@ export const UXTEXTO_DE = {
 };
 
 export const UXTEXTO_FR = {
+  'dialog.cut.sizeRecommended': 'Recommandé pour cette section (comme le mode Automatique de Diviser) : recalculé quand tu déplaces le plan ou changes le connecteur. Tu peux le modifier.',
   'split.section.bedCuts': 'Plateau et coupes',
   'split.section.joints': 'Jonctions',
   'split.section.marks': 'Repères',
@@ -76,6 +80,7 @@ export const UXTEXTO_FR = {
 };
 
 export const UXTEXTO_HI = {
+  'dialog.cut.sizeRecommended': 'इस सेक्शन के लिए अनुशंसित (Dividir के स्वचालित मोड जैसा): तल हिलाने या कनेक्टर बदलने पर दोबारा गणना होती है। आप इसे बदल सकते हैं।',
   'split.section.bedCuts': 'बेड और कट',
   'split.section.joints': 'जोड़',
   'split.section.marks': 'निशान',
@@ -93,6 +98,7 @@ export const UXTEXTO_HI = {
 };
 
 export const UXTEXTO_ZH = {
+  'dialog.cut.sizeRecommended': '为此截面推荐的值（与“分割”的自动模式一致）：移动平面或更换连接件时会重新计算，你也可以手动修改。',
   'split.section.bedCuts': '打印床与切割',
   'split.section.joints': '接合',
   'split.section.marks': '标记',

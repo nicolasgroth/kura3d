@@ -96,7 +96,7 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
       </button>
 
       {report && (
-        <div className="kura-report-card">
+        <div className="kura-report-card" id="kura-print-report" tabIndex={-1}>
           <div className="kura-field-row">
             <span className="kura-field-label">{t(language, 'inspector.pro.score')}</span>
             <span className={`kura-score-pill ${report.score >= 80 ? 'is-good' : report.score >= 55 ? 'is-warn' : 'is-bad'}`}>

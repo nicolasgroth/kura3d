@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { focusById } from '../../utils/focusById';
 import { boxesOverlap } from '../../core/scene/overlap';
 import * as ops from '../../core/operations';
 import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets } from '../../core/scene/sceneRules';
@@ -226,8 +227,9 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         if (get().objects.find((o) => o.id === id) !== obj) return report;
         set({ activePrintReport: report, printReportSource: obj, showOverhangs: report.overhangFaceCount > 0 });
         get().addToast(
-          tr('toast.printabilityDone', { score: report.score, weight: formatLocaleNumber(get().language, report.estimatedWeightGrams, { maxFrac: 1, minFrac: 1 }) }),
+          `${tr('toast.printabilityDone', { score: report.score, weight: formatLocaleNumber(get().language, report.estimatedWeightGrams, { maxFrac: 1, minFrac: 1 }) })} ${tr('toast.printabilityHelp')}`,
           report.score >= 70 ? 'success' : 'info',
+          { label: tr('toast.printabilityDetails'), run: () => void focusById('kura-print-report') },
         );
         return report;
       } catch (err) {
