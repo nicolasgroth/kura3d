@@ -76,6 +76,7 @@ import { REFINE_UI_DEFAULTS } from './refineDefaults';
 import { recomputeWithToast, repeatWithToast } from './useFunctionKeys';
 import { repeatLabel } from '../store/repeatLabel';
 import { isTauriRuntime } from '../utils/platformBridge';
+import { openActionPanel } from './shell/actionRunners';
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform ?? '');
 const MOD = isMac ? '⌘' : 'Ctrl';
@@ -371,7 +372,10 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <ShieldCheck size={15} />,
         run: () => {
-          if (primaryId) runPrintabilityCheck(primaryId);
+          if (!primaryId) return;
+          runPrintabilityCheck(primaryId);
+          // El informe se lee en las opciones de la revisión del panel derecho.
+          openActionPanel('validate');
         },
       },
       {
@@ -382,7 +386,9 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <ScanSearch size={15} />,
         run: () => {
-          if (primaryId) void detectObjectStructures(primaryId);
+          if (!primaryId) return;
+          void detectObjectStructures(primaryId);
+          openActionPanel('detect');
         },
       },
       {

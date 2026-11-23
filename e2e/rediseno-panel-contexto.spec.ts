@@ -29,9 +29,21 @@ async function abrirAcciones(page: Page) {
   return menu;
 }
 
+let errores: string[] = [];
+
 test.beforeEach(async ({ page }) => {
+  errores = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') errores.push(m.text());
+  });
+  page.on('pageerror', (e) => errores.push(e.message));
   await page.setViewportSize({ width: 1440, height: 900 });
   await abrir(page);
+});
+
+// Cero errores en la consola del navegador durante cada recorrido.
+test.afterEach(() => {
+  expect(errores).toEqual([]);
 });
 
 test('sin selección muestra el proyecto; con un objeto, su resumen', async ({ page }) => {
