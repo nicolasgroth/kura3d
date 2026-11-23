@@ -13,7 +13,7 @@ import type { MeshData, Vec3 } from '../../types/kura';
 import { clustersOf } from './importClusters';
 import { ModelImportError } from './importErrors';
 import type { ImportedModel, ImportedPart } from './importTypes';
-import { boundsOf, centerMeshOnBed } from './meshBuffers';
+import { centerPartOnBed, partBounds } from './partGeometry';
 
 /** Modo de colocación elegido por el usuario. */
 export type ImportPlacementMode = 'bed' | 'original';
@@ -46,7 +46,7 @@ interface Block {
 function unionBounds(parts: ImportedPart[]): Block['bounds'] {
   const out: Block['bounds'] = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
   for (const part of parts) {
-    const b = boundsOf(part.mesh.positions);
+    const b = partBounds(part);
     for (let k = 0; k < 3; k++) {
       out[k] = Math.min(out[k], b[k]);
       out[k + 3] = Math.max(out[k + 3], b[k + 3]);
@@ -144,7 +144,7 @@ export function placeImportedModels(
   if (mode === 'original') {
     for (const model of models) {
       for (const part of model.parts) {
-        const { mesh, offset } = centerMeshOnBed(part.mesh);
+        const { mesh, offset } = centerPartOnBed(part);
         placed.push({ part, fileName: model.fileName, mesh, position: offset });
       }
     }
@@ -164,7 +164,7 @@ export function placeImportedModels(
     const dz = originZ + layout.centers[i][1] - (minZ + maxZ) / 2;
     const dy = -minY;
     for (const part of block.parts) {
-      const { mesh, offset } = centerMeshOnBed(part.mesh);
+      const { mesh, offset } = centerPartOnBed(part);
       placed.push({
         part,
         fileName: block.fileName,

@@ -15,7 +15,7 @@ import type { ImportedModel } from './importTypes';
 export function clustersOf(model: ImportedModel): ImportCluster[] {
   return model.clusters ?? findImportClusters(model);
 }
-import { boundsOf } from './meshBuffers';
+import { partBounds } from './partGeometry';
 
 /** Conjunto de piezas (índices en `model.parts`). */
 export type ImportCluster =
@@ -75,7 +75,7 @@ export function findImportClusters(model: ImportedModel): ImportCluster[] {
     else union(first, i);
   });
   // Barrido ordenado por X (sort-and-sweep): solo se comparan cajas cuyo tramo X se cruza.
-  const boxes = model.parts.map((p) => boundsOf(p.mesh.positions) as Box);
+  const boxes = model.parts.map((p) => partBounds(p) as Box);
   const order = boxes.map((_, i) => i).sort((a, b) => boxes[a][0] - boxes[b][0]);
   let active: number[] = [];
   for (const i of order) {

@@ -324,6 +324,14 @@ export function read3MF(
   for (const inst of instances) multiInRoot.set(`${inst.group}`, (multiInRoot.get(`${inst.group}`) ?? 0) + 1);
 
   const parts: ImportedPart[] = [];
+  const sharedMeshes = new Map<string, { mesh: ImportedPart['mesh']; openEdges: number; origin: [number, number, number] }>();
+  // Con una sola pieza, el nombre del objeto es el que muestra el laminador (el de la pieza suele ser
+  // el STL original repetido, p. ej. «figura.stl» en cada objeto).
+  const partIdentity = (inst: Instance, partName: string | undefined, objName: string | undefined, index: number) => {
+    const single = (multiInRoot.get(`${inst.group}`) ?? 1) === 1;
+    const name = (single ? objName : undefined) ?? partName ?? inst.obj.name ?? objName ?? inst.rootName ?? `${baseName} ${index + 1}`;
+    return { name: name.slice(0, MAX_PART_NAME) };
+  };
   for (const inst of instances) {
     const partCfg = cfgParts.get(`${inst.rootId}/${inst.obj.id}`);
     const objCfg = cfgObjects.get(inst.rootId);
@@ -333,6 +341,29 @@ export function read3MF(
     const geometry = geometryOf(inst.doc, inst.obj);
     const scale = inst.doc.unitScale;
     const t = inst.transform;
+    // Color: material declarado > extrusor de la pieza/objeto > color dominante de los triángulos.
+    const cfgColor = extruderColor(partCfg?.extruder) ?? extruderColor(objCfg?.extruder);
+    const counts = new Map<string, number>();
+    for (const c of geometry.colors) if (c) counts.set(c, (counts.get(c) ?? 0) + 1);
+    const dominant = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    const color = geometry.baseColor ?? (counts.size > 0 ? dominant : cfgColor);
+
+    // Instancias repetidas (misma malla, misma rotación/escala, mismo color): comparten la MISMA malla
+    // inmutable; cada una aporta solo su traslación.
+    const shareKey = `${inst.doc.path}#${inst.obj.id}|${color ?? ''}|${scale}|${Array.prototype.join.call(t.subarray(0, 9), ',')}`;
+    const shared = sharedMeshes.get(shareKey);
+    if (shared) {
+      parts.push({
+        ...partIdentity(inst, partCfg?.name, objCfg?.name, parts.length),
+        color,
+        mesh: shared.mesh,
+        isHole: subtype === 'negative_part' || undefined,
+        group: inst.group,
+        openEdges: shared.openEdges,
+        translation: [(t[9] - shared.origin[0]) * scale, (t[11] - shared.origin[2]) * scale, -(t[10] - shared.origin[1]) * scale],
+      });
+      continue;
+    }
     const src = geometry.positions;
     const positions = new Float32Array(src.length);
     for (let i = 0; i < src.length; i += 3) {
@@ -354,27 +385,12 @@ export function read3MF(
       }
     }
 
-    // Color: material declarado > extrusor de la pieza/objeto > color dominante de los triángulos.
-    const cfgColor = extruderColor(partCfg?.extruder) ?? extruderColor(objCfg?.extruder);
-    const counts = new Map<string, number>();
-    for (const c of geometry.colors) if (c) counts.set(c, (counts.get(c) ?? 0) + 1);
-    const dominant = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
-    const color = geometry.baseColor ?? (counts.size > 0 ? dominant : cfgColor);
     const faceColors = counts.size > 0 ? geometry.colors.map((c) => c ?? color ?? '#38bdf8') : undefined;
 
     const finished = finishMesh(positions, indices, faceColors, color);
-    const single = (multiInRoot.get(`${inst.group}`) ?? 1) === 1;
-    // Con una sola pieza, el nombre del objeto es el que muestra el laminador (el de la pieza suele ser
-    // el STL original repetido, p. ej. «figura.stl» en cada objeto).
-    const name =
-      (single ? objCfg?.name : undefined) ??
-      partCfg?.name ??
-      inst.obj.name ??
-      objCfg?.name ??
-      inst.rootName ??
-      `${baseName} ${parts.length + 1}`;
+    sharedMeshes.set(shareKey, { mesh: finished.mesh, openEdges: finished.openEdges, origin: [t[9], t[10], t[11]] });
     parts.push({
-      name: name.slice(0, MAX_PART_NAME),
+      ...partIdentity(inst, partCfg?.name, objCfg?.name, parts.length),
       color,
       mesh: finished.mesh,
       isHole: subtype === 'negative_part' || undefined,

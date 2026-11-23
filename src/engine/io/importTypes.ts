@@ -35,6 +35,11 @@ export interface ImportedPart {
   openEdges: number;
   /** Estado exacto del objeto si el 3MF lo exportó Kura3D (`mesh` es entonces la malla LOCAL). */
   kura?: KuraSceneObjectMeta;
+  /**
+   * Traslación (mm, Y-up) de esta pieza respecto de `mesh`, si la malla se comparte con otras piezas
+   * (instancias repetidas de un 3MF): la malla es la misma referencia inmutable, sin copiar.
+   */
+  translation?: [number, number, number];
   /** Estadísticas y cuerpos calculados en el Worker (compartidos por las piezas de la misma malla). */
   analysis?: ImportedMeshAnalysis;
 }

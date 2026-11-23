@@ -10,7 +10,7 @@
  */
 
 import type { ImportedModel } from './importTypes';
-import { boundsOf } from './meshBuffers';
+import { partBounds } from './partGeometry';
 
 /** Bajo este tamaño (mm, mayor dimensión) el modelo probablemente viene en otra unidad. */
 export const UNIT_HINT_MIN_MM = 2;
@@ -61,7 +61,7 @@ export function unitHintOf(model: ImportedModel): UnitHint | null {
   if (model.format === '3mf') return null; // el 3MF declara su unidad (`unit`) y se respeta
   let minX = Infinity, minY = Infinity, minZ = Infinity, maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
   for (const part of model.parts) {
-    const b = boundsOf(part.mesh.positions);
+    const b = partBounds(part);
     minX = Math.min(minX, b[0]); minY = Math.min(minY, b[1]); minZ = Math.min(minZ, b[2]);
     maxX = Math.max(maxX, b[3]); maxY = Math.max(maxY, b[4]); maxZ = Math.max(maxZ, b[5]);
   }
