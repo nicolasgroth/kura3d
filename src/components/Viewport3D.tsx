@@ -34,7 +34,8 @@ export const Viewport3D: React.FC = () => {
     <main ref={viewportRef} className="kura-viewport-wrap" onPointerDownCapture={handleBackgroundPointerDown} onContextMenu={handleBackgroundContextMenu}>
       <Canvas
         className={activeTool === 'paint' ? 'kura-viewport-canvas is-painting' : 'kura-viewport-canvas'}
-        shadows
+        // three r182+: PCFSoftShadowMap (el `shadows` por defecto de r3f) ya no existe en WebGL y PCFShadowMap es suave.
+        shadows="percentage"
         dpr={[1, 2]}
         camera={{ position: [115, 95, 130], fov: 42, near: 0.5, far: 4000 }}
         gl={{ preserveDrawingBuffer: true, antialias: true, localClippingEnabled: true }}
