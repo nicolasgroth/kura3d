@@ -59,8 +59,8 @@ export const MeasureCapacityPanel: React.FC = () => {
     schedule(mm >= basin.overflowHeightMm ? undefined : mm, result!.basinIndex);
   };
 
-  const max = basin ? formatCapacity(basin.maxCapacityMm3, unit, cups) : null;
-  const filled = result ? formatCapacity(result.filledMm3, unit, cups) : null;
+  const max = basin ? formatCapacity(basin.maxCapacityMm3, unit, cups, lang) : null;
+  const filled = result ? formatCapacity(result.filledMm3, unit, cups, lang) : null;
 
   return (
     <div className="kura-measure-capacity" data-testid="measure-capacity">
@@ -102,7 +102,7 @@ export const MeasureCapacityPanel: React.FC = () => {
           >
             {result.basins.map((b, i) => (
               <option key={i} value={i}>
-                {t(lang, 'measure.capacity.basin', { n: i + 1 })} · {formatCapacity(b.maxCapacityMm3, unit, cups).liquid}
+                {t(lang, 'measure.capacity.basin', { n: i + 1 })} · {formatCapacity(b.maxCapacityMm3, unit, cups, lang).liquid}
               </option>
             ))}
           </select>
@@ -115,7 +115,7 @@ export const MeasureCapacityPanel: React.FC = () => {
             <span className="kura-measure-row-text">
               {t(lang, 'measure.capacity.max')}: <span className="kura-measure-value" data-testid="capacity-max">{max.liquid}</span>
               <span className="kura-measure-row-sub">{max.solid}{max.us ? ` · ${max.us}` : ''}</span>
-              <span className="kura-measure-row-sub">{t(lang, 'measure.capacity.overflow', { height: formatLength(basin.overflowHeightMm, unit) })}</span>
+              <span className="kura-measure-row-sub">{t(lang, 'measure.capacity.overflow', { height: formatLength(basin.overflowHeightMm, unit, lang) })}</span>
             </span>
             <button type="button" className="kura-btn kura-btn-sm kura-btn-icon" aria-label={t(lang, 'measure.copy', { value: max.liquid })} title={t(lang, 'measure.copy', { value: max.liquid })} onClick={() => void copyMeasureValue(max.liquid)}>
               <Copy size={12} aria-hidden />
@@ -161,7 +161,7 @@ export const MeasureCapacityPanel: React.FC = () => {
 
       {result?.sealedCavitiesMm3.map((v, i) => (
         <p key={i} className="kura-measure-hint">
-          {t(lang, 'measure.capacity.sealed', { volume: formatCapacity(v, unit, cups).liquid })}
+          {t(lang, 'measure.capacity.sealed', { volume: formatCapacity(v, unit, cups, lang).liquid })}
         </p>
       ))}
     </div>

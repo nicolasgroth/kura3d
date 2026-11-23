@@ -109,6 +109,18 @@ const MEASURE_TABLE = {
   'measure.item.faceAngle': ['Ángulo entre caras', 'Angle between faces', 'Winkel zwischen Flächen', 'Angle entre faces', 'सतहों के बीच कोण', '面夹角'],
   'measure.item.area': ['Área de {name}', 'Area of {name}', 'Fläche von {name}', 'Surface de {name}', '{name} का क्षेत्रफल', '{name} 的面积'],
   'measure.item.areaRegions': ['{n} caras', '{n} faces', '{n} Flächen', '{n} faces', '{n} सतहें', '{n} 个面'],
+  'measure.item.stale': [
+    'Desactualizada: el objeto cambió o ya no está',
+    'Out of date: the object changed or is gone',
+    'Veraltet: Das Objekt hat sich geändert oder ist weg',
+    'Obsolète : l’objet a changé ou n’existe plus',
+    'पुरानी: ऑब्जेक्ट बदल गया या हट गया',
+    '已过期:对象已更改或已删除',
+  ],
+  'measure.item.staleTitle': ['{title} (desactualizada)', '{title} (out of date)', '{title} (veraltet)', '{title} (obsolète)', '{title} (पुरानी)', '{title}(已过期)'],
+  'measure.panel.collapse': ['Plegar el panel de medición', 'Collapse the measure panel', 'Messfenster einklappen', 'Replier le panneau de mesure', 'माप पैनल समेटें', '收起测量面板'],
+  'measure.panel.expand': ['Desplegar el panel de medición', 'Expand the measure panel', 'Messfenster ausklappen', 'Déplier le panneau de mesure', 'माप पैनल खोलें', '展开测量面板'],
+  'measure.panel.count': ['{n} mediciones', '{n} measurements', '{n} Messungen', '{n} mesures', '{n} माप', '{n} 项测量'],
   'measure.object.total': [
     '{name}: superficie {area} · volumen {volume} ({liquid})',
     '{name}: surface {area} · volume {volume} ({liquid})',

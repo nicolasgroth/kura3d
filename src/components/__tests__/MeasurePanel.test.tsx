@@ -70,7 +70,7 @@ describe('MeasurePanel', () => {
     expect(screen.getByText(t('es', 'measure.hint.distance1'))).toBeTruthy();
     act(() => useMeasureStore.getState().pick(cube, [max[0] - 1, max[1], max[2] - 1], top, opts));
     const list = screen.getByTestId('measure-list');
-    expect(list.textContent).toContain('56.57 mm');
+    expect(list.textContent).toContain('56,57 mm');
     // ΔX = 40, ΔY (fondo) = 40, ΔZ (altura) = 0 en ejes del usuario.
     expect(list.textContent).toContain('ΔX 40 mm');
     expect(list.textContent).toContain('ΔZ 0 mm');
@@ -80,7 +80,7 @@ describe('MeasurePanel', () => {
     expect(store().savedProject).toBe(before.saved);
 
     act(() => useKuraStore.setState({ unitSystem: 'cm' } as never));
-    expect(screen.getByTestId('measure-list').textContent).toContain('5.66 cm');
+    expect(screen.getByTestId('measure-list').textContent).toContain('5,66 cm');
   });
 
   it('Esc cancela el punto en curso; borrar una y borrar todas', () => {
@@ -110,10 +110,10 @@ describe('MeasurePanel', () => {
     const top = faceWith(cube, [0, 1, 0]);
     const side = faceWith(cube, [1, 0, 0]);
     act(() => useMeasureStore.getState().pick(cube, [0, 40, 0], top, { snapRadiusMm: 0, noSnap: false, additive: false }));
-    expect(screen.getByTestId('measure-list').textContent).toContain('1600 mm²');
+    expect(screen.getByTestId('measure-list').textContent).toContain('1.600 mm²');
     act(() => useMeasureStore.getState().pick(cube, [20, 20, 0], side, { snapRadiusMm: 0, noSnap: false, additive: true }));
     const text = screen.getByTestId('measure-list').textContent ?? '';
-    expect(text).toContain('3200 mm²');
+    expect(text).toContain('3.200 mm²');
     expect(text).toContain(t('es', 'measure.item.areaRegions', { n: 2 }));
   });
 
@@ -134,22 +134,34 @@ describe('MeasurePanel', () => {
     expect(screen.getByTestId('measure-list').textContent).toContain(`${t('es', 'measure.item.faceAngle')}: 90°`);
   });
 
-  it('una medición deja de mostrarse si su objeto se borra', () => {
+  it('si su objeto se borra, la medición queda desactualizada (sin valor) y vuelve al deshacer', () => {
     render(<MeasurePanel />);
     const top = faceWith(cube, [0, 1, 0]);
     const o = { snapRadiusMm: 0, noSnap: true, additive: false };
     act(() => useMeasureStore.getState().pick(cube, [0, 40, 0], top, o));
     act(() => useMeasureStore.getState().pick(cube, [10, 40, 0], top, o));
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByTestId('measure-list').textContent).toContain('10 mm');
     act(() => useKuraStore.setState({ objects: [] } as never));
-    expect(screen.queryByTestId('measure-list')).toBeNull();
+    const row = screen.getByRole('listitem');
+    expect(row.getAttribute('data-stale')).toBe('true');
+    expect(row.textContent).toContain(t('es', 'measure.item.stale'));
+    expect(row.textContent).not.toContain('10 mm');
+    // Se puede borrar desde su fila.
+    const label = t('es', 'measure.item.staleTitle', { title: t('es', 'measure.item.distance') });
+    expect(screen.getByRole('button', { name: t('es', 'measure.remove', { label }) })).toBeTruthy();
+    // Deshacer devuelve el objeto idéntico: la medición vuelve a ser válida.
+    act(() => useKuraStore.setState({ objects: [cube] } as never));
+    expect(screen.getByRole('listitem').getAttribute('data-stale')).toBeNull();
+    expect(screen.getByTestId('measure-list').textContent).toContain('10 mm');
   });
 
   it('muestra los totales del objeto seleccionado (superficie y volumen en mL)', () => {
     act(() => store().selectObject(cube.id, false));
     render(<MeasurePanel />);
     const totals = screen.getByTestId('measure-object-totals').textContent ?? '';
-    expect(totals).toContain('9600 mm²');
-    expect(totals).toContain('64 mL');
+    expect(totals).toContain('9.600 mm²');
+    // Sin decimales sobrantes y con el separador de miles del idioma.
+    expect(totals).toContain('64.000 mm³ (64 mL)');
   });
 });

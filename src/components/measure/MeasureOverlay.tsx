@@ -11,10 +11,12 @@
 import React, { useEffect, useMemo } from 'react';
 import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
-import { liveMeasurements, useMeasureStore, type Measurement } from '../../store/measureStore';
+import { useMeasureStore } from '../../store/measureStore';
+import { resolveMeasurements, type ResolvedMeasurement } from '../../store/measureResolve';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { MeshData, Vec3 } from '../../types/kura';
 import { formatAngle, formatArea, formatLength } from '../../utils/measureUnits';
+import '../../store/measureSceneSync';
 import '../../styles/measure.css';
 
 const LINE = '#f59e0b';
@@ -87,8 +89,9 @@ const Liquid: React.FC<{ mesh: MeshData }> = ({ mesh }) => {
   );
 };
 
-const MeasurementShape: React.FC<{ m: Measurement }> = ({ m }) => {
+const MeasurementShape: React.FC<{ m: ResolvedMeasurement }> = ({ m }) => {
   const unit = useKuraStore((s) => s.unitSystem);
+  const lang = useKuraStore((s) => s.language);
   switch (m.kind) {
     case 'distance':
       return (
@@ -96,7 +99,7 @@ const MeasurementShape: React.FC<{ m: Measurement }> = ({ m }) => {
           <Dot at={m.a} color={LINE} size={0.6} />
           <Dot at={m.b} color={LINE} size={0.6} />
           <Seg points={[m.a, m.b]} />
-          <Label at={mid(m.a, m.b)} text={formatLength(m.distanceMm, unit)} />
+          <Label at={mid(m.a, m.b)} text={formatLength(m.distanceMm, unit, lang)} />
         </group>
       );
     case 'angle':
@@ -104,7 +107,7 @@ const MeasurementShape: React.FC<{ m: Measurement }> = ({ m }) => {
         <group>
           {m.points.map((p, i) => <Dot key={i} at={p} color={LINE} size={0.6} />)}
           <Seg points={[m.points[0], m.points[1], m.points[2]]} />
-          <Label at={m.points[1]} text={formatAngle(m.deg)} />
+          <Label at={m.points[1]} text={formatAngle(m.deg, lang)} />
         </group>
       );
     case 'faceAngle':
@@ -112,14 +115,14 @@ const MeasurementShape: React.FC<{ m: Measurement }> = ({ m }) => {
         <group>
           {m.points.map((p, i) => <Dot key={i} at={p} color={LINE} size={0.6} />)}
           <Seg points={m.points} dashed />
-          <Label at={mid(m.points[0], m.points[1])} text={formatAngle(m.deg)} />
+          <Label at={mid(m.points[0], m.points[1])} text={formatAngle(m.deg, lang)} />
         </group>
       );
     case 'area':
       return (
         <group>
           <AreaHighlight positions={m.highlight} />
-          <Label at={m.centroid} text={formatArea(m.areaMm2, unit)} />
+          <Label at={m.centroid} text={formatArea(m.areaMm2, unit, lang)} />
         </group>
       );
   }
@@ -132,8 +135,11 @@ export const MeasureOverlay: React.FC = () => {
   const mode = useMeasureStore((s) => s.mode);
   const capacity = useMeasureStore((s) => s.capacity);
   const objects = useKuraStore((s) => s.objects);
-  // En Capacidad solo se ve el líquido; las mediciones de objetos borrados no se dibujan.
-  const measurements = mode === 'capacity' ? [] : liveMeasurements(all, objects);
+  // En Capacidad solo se ve el líquido; las mediciones desactualizadas no se dibujan (no hay valor fiable).
+  const measurements = useMemo(
+    () => (mode === 'capacity' ? [] : resolveMeasurements(all, objects).filter((m) => !m.stale)),
+    [all, objects, mode],
+  );
   const current = capacity ? objects.find((o) => o.id === capacity.objectId) : undefined;
   const showLiquid = mode === 'capacity' && capacity?.liquid && current === capacity.source;
 

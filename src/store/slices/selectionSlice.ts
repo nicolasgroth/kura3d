@@ -14,6 +14,7 @@ import { resolveAlignTargets } from '../../core/scene/sceneRules';
 import { duplicateGroupStructure, pickSelection } from '../../core/scene/groups';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { tCount } from '../../utils/plural';
+import { useMeasureStore } from '../measureStore';
 import { cloneSnapshot } from '../projectDocument';
 import type { StoreContext } from '../storeContext';
 import { sanitizeTransformPatch } from '../transformLimits';
@@ -62,6 +63,8 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       if (count === 0) return;
       pushHistory();
       set({ objects: [], selectedIds: [], activePrintReport: null, showOverhangs: false, activeSegmentation: null });
+      // Vaciar la cama deja sin objetos que medir: las mediciones y la capacidad se descartan.
+      useMeasureStore.getState().reset();
       get().addToast(tCount(get().language, { one: 'toast.sceneCleared.one', other: 'toast.sceneCleared.other' }, count), 'info', { label: tr('toast.undo'), run: () => get().undo() });
     },
 
