@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useKuraStore } from '../../store/useKuraStore';
+import { useGizmoDragStore } from '../../store/gizmoDragStore';
 import type { Vec3 } from '../../types/kura';
 
 /** Rastrea Shift / Ctrl / Alt en tiempo real para modificadores de Gizmo (snap, escala uniforme, Alt-clon). */
@@ -57,7 +58,13 @@ export function useGizmoDrag() {
   const activeTool = useKuraStore((s) => s.activeTool);
   const transformMode = useKuraStore((s) => s.transformMode);
   const cancelTransformSnapshot = useKuraStore((s) => s.cancelTransformSnapshot);
-  const [isTransforming, setIsTransforming] = useState(false);
+  const [isTransforming, setTransformingState] = useState(false);
+  // El arrastre también alimenta la lectura del cambio junto al cursor (ΔX/ΔY/ΔZ, grados, %).
+  const setIsTransforming = useCallback((dragging: boolean) => {
+    if (dragging) useGizmoDragStore.getState().begin();
+    else useGizmoDragStore.getState().end();
+    setTransformingState(dragging);
+  }, []);
   const [gizmoEpoch, setGizmoEpoch] = useState(0);
   const dragStartScaleRef = useRef<Vec3 | null>(null);
 
@@ -71,7 +78,7 @@ export function useGizmoDrag() {
     setIsTransforming(false);
     // Remonta el gizmo para abortar el arrastre interno de TransformControls.
     setGizmoEpoch((n) => n + 1);
-  }, [cancelTransformSnapshot]);
+  }, [cancelTransformSnapshot, setIsTransforming]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
