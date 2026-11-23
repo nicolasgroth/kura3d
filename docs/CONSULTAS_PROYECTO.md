@@ -35,3 +35,8 @@ Ya la autorizaste con cuidado. Necesito que estés presente para aprobar el acce
 Hoy se guarda en `sessionStorage` (se borra al cerrar la pestaña). Nunca va a `localStorage` ni a los registros.
 - **Opciones:** (a) dejarlo así; (b) solo en memoria salvo que marques "recordar en esta sesión", igual que las claves de IA.
 - **Mientras tanto:** queda como está.
+
+### 5. Probar tus modelos reales en pantalla
+La herramienta que maneja el navegador de pruebas solo puede subir archivos que estén dentro de la carpeta del proyecto, y tus modelos están en `G:\proyectosecursos\modelos_3d_ejemplo`. La prueba en pantalla con ellos no se pudo hacer; a nivel de motor sí están probados (importar, reparar, simplificar, dividir, ahuecar, cortar).
+- **Opciones:** (a) copias tú esa carpeta a `G:\proyectos\kura3d\.eval-tmp\modelos` (esa carpeta está excluida de git, no se sube nada) y relanzo la prueba; (b) me autorizas a copiarlos yo ahí; (c) lo pruebas tú a mano con la lista de qué mirar que te dejo.
+- **Mientras tanto:** queda pendiente solo la parte visual (fluidez, avisos en pantalla, colores y grupos de los 3MF).

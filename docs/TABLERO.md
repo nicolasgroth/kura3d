@@ -40,7 +40,7 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Menú del objeto con ideas de OrcaSlicer: Centrar en la cama, Transformar ▸, Alinear y distribuir ▸, forma Disco, Reemplazar por archivo, Exportar selección como un STL, "Ocultar (no se exporta)", aviso de malla pesada con acceso a Simplificar | Confirmado por QA |
 | Pruebas de navegador ejecutables con `npm run test:e2e` (Playwright como dependencia de desarrollo) | Funcionando: 17 pasan, 6 se saltan por falta de archivos de prueba antiguos, 1 falla (pincel en placa delgada) |
 | Las caras nuevas de una resta toman el color del sólido (antes heredaban el de la pieza negativa y aparecía un filamento de más) | Corregido con prueba |
-| Modelos reales del autor en pantalla (9 archivos): importación, avisos, fluidez y recorridos completos de reparar, dividir, medir, pintar y ahuecar | QA en navegador en curso desde las 23:10 |
+| Modelos reales del autor en pantalla (9 archivos): importación, avisos, fluidez y recorridos completos de reparar, dividir, medir, pintar y ahuecar | No se pudo hacer: el navegador de pruebas no puede leer archivos fuera de la carpeta del proyecto. A nivel de motor sí están probados. Esperando al autor (consulta 5) |
 | Proyectos recientes y seguridad en escritorio (CSP, llavero, permisos, proxy de IA, confirmación al sobrescribir) | Probado en web y con pruebas; falta verificar en la app instalada |
 
 ## En evaluación
