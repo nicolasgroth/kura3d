@@ -12,7 +12,7 @@
 import { focusById } from '../../utils/focusById';
 import { boxesOverlap } from '../../core/scene/overlap';
 import * as ops from '../../core/operations';
-import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets } from '../../core/scene/sceneRules';
+import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets, touchingHoleScope } from '../../core/scene/sceneRules';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { classifySimplifyResult } from '../../core/operations/simplifyOutcome';
 import { formatNumber } from '../../utils/plural';
@@ -69,8 +69,15 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
     applyHolesOnSolids: async () => {
       const { objects, selectedIds } = get();
       // Los objetos bloqueados ni se recortan ni se consumen.
-      const { solids, holes } = resolveHoleScope(objects, selectedIds);
-      if (solids.length === 0 || holes.length === 0 || rejectWhileLocked()) return;
+      const scope = resolveHoleScope(objects, selectedIds);
+      if (scope.solids.length === 0 || scope.holes.length === 0 || rejectWhileLocked()) return;
+      // Solo se recortan los sólidos que algún negativo toca, y solo se consumen esos negativos: los
+      // objetos ajenos no se reconstruyen ni quedan seleccionados (evita una segunda resta por error).
+      const { solids, holes } = touchingHoleScope(scope.solids, scope.holes);
+      if (solids.length === 0) {
+        get().addToast(tr('toast.booleanNoContact'), 'info');
+        return;
+      }
       return runExclusive('apply_holes', undefined, async () => {
         const { updated, change } = await runEngine('applyHoles', { solids, holes });
         assertCurrent([...solids, ...holes]);

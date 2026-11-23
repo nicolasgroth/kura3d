@@ -9,6 +9,7 @@
  */
 
 import type { AlignMode, SceneObject } from '../../types/kura';
+import { boxesOverlap } from './overlap';
 
 /** Un objeto bloqueado no se modifica ni se consume en operaciones. */
 export const isEditable = (obj: SceneObject | undefined): obj is SceneObject => Boolean(obj && !obj.locked);
@@ -64,7 +65,18 @@ export function resolveHoleScope(objects: SceneObject[], selectedIds: string[]):
   };
 }
 
-/** Objetos de la envolvente convexa: los indicados (2+) o la selección. */
+/**
+ * Recorta el alcance de "Aplicar restas" a lo que realmente se toca: sólidos con algún negativo encima
+ * y negativos que tocan algún sólido. El resto queda intacto (sin reconstruir, sin consumir).
+ */
+export function touchingHoleScope(solids: SceneObject[], holes: SceneObject[]): { solids: SceneObject[]; holes: SceneObject[] } {
+  return {
+    solids: solids.filter((s) => holes.some((h) => boxesOverlap(s, h))),
+    holes: holes.filter((h) => solids.some((s) => boxesOverlap(s, h))),
+  };
+}
+
+/** Objetos de la envolvente convexa:los indicados (2+) o la selección. */
 export function resolveHullTargets(objects: SceneObject[], selectedIds: string[], ids?: string[]): SceneObject[] {
   const targetIds = ids && ids.length >= 2 ? ids : selectedIds;
   return objects.filter((o) => targetIds.includes(o.id));

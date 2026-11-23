@@ -131,6 +131,18 @@ describe('Resta vacía detectada por geometría', () => {
     expect(byId(other.id)).toBeDefined();
     expect(store().objects.some((o) => o.isHole)).toBe(false);
   });
+
+  it('tras aplicar restas queda seleccionado solo el sólido recortado; el ajeno no se toca', async () => {
+    const target = await addBox(20, [0, 0, 0]);
+    const hole = await addBox(6, [0, 0, 0], { isHole: true });
+    const other = await addBox(10, [-60, 0, 0]);
+    const otherMesh = byId(other.id)!.mesh;
+    useKuraStore.setState({ selectedIds: [hole.id] });
+    await store().applyHolesOnSolids();
+    expect(store().selectedIds).toEqual([target.id]);
+    expect(byId(other.id)!.mesh).toBe(otherMesh);
+    expect(byId(hole.id)).toBeUndefined();
+  });
 });
 
 describe('Límite común de historial e i18n', () => {
