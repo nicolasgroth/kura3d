@@ -137,13 +137,17 @@ const PlaneSheet: React.FC<{
           <lineBasicMaterial color={color} transparent opacity={emphasis ? 1 : 0.8} depthWrite={false} />
         )}
       </lineSegments>
-      <Html position={[w / 2, h / 2, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
-        <span className="kura-split-plane-tag" data-no-joint={noJoint || undefined} data-active={active || undefined}>
-          {t(language, 'split.planeName', { axis: userAxisLabel(plane.axis), n: plane.index + 1 })}
-          {noJoint ? ` · ${t(language, 'split.noJoint')}` : ''}
-          {dragPos !== null ? ` · ${Math.round(dragPos)} mm` : ''}
-        </span>
-      </Html>
+      {/* En reposo el rótulo del plano va en la capa de rótulos (`SplitLabels`), que evita solapes; al
+          arrastrar se muestra aquí con la posición. */}
+      {dragPos !== null && (
+        <Html position={[w / 2, h / 2, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
+          <span className="kura-split-plane-tag" data-no-joint={noJoint || undefined} data-active={active || undefined}>
+            {t(language, 'split.planeName', { axis: userAxisLabel(plane.axis), n: plane.index + 1 })}
+            {noJoint ? ` · ${t(language, 'split.noJoint')}` : ''}
+            {` · ${Math.round(dragPos)} mm`}
+          </span>
+        </Html>
+      )}
     </group>
   );
 };

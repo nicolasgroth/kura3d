@@ -69,7 +69,11 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
   const node = row.node;
   const obj = node.kind === 'object' ? node.object : null;
   const group = node.kind === 'group' ? node.group : null;
-  const name = obj?.name ?? group?.name ?? t(language, 'groups.tree.splitNode', { name: splitName ?? '' });
+  const code = obj?.metadata?.split?.code;
+  // Piezas de una división: el mismo rótulo que el visor y Armado va primero («A1a · nombre»).
+  const name = code && obj
+    ? `${code} · ${obj.name.replace(new RegExp(`\\s*${code}$`), '') || obj.name}`
+    : obj?.name ?? group?.name ?? t(language, 'groups.tree.splitNode', { name: splitName ?? '' });
   const visible = obj ? obj.visible : group ? group.visible : true;
   const locked = obj ? obj.locked : group ? group.locked : false;
   const count = node.kind === 'object' ? 0 : node.objectCount;

@@ -22,6 +22,8 @@ export interface ProjectedLabel {
   /** `true` para los que nunca se ocultan (placas): solo se acomodan dentro del cuadro. */
   pinned: boolean;
   behind: boolean;
+  /** Prioridad entre los no fijados: los planos de corte (2) van antes que las piezas (1). */
+  rank?: number;
 }
 
 export interface PlacedLabel {
@@ -49,10 +51,10 @@ const overlaps = (a: PlacedLabel & { w: number; h: number }, b: PlacedLabel & { 
 export function layoutLabels(items: ProjectedLabel[], width: number, height: number): Map<string, PlacedLabel> {
   const placed: Array<PlacedLabel & { w: number; h: number }> = [];
   const out = new Map<string, PlacedLabel>();
-  const order = [...items].sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.radiusPx - a.radiusPx || a.id.localeCompare(b.id));
+  const order = [...items].sort((a, b) => Number(b.pinned) - Number(a.pinned) || (b.rank ?? 1) - (a.rank ?? 1) || b.radiusPx - a.radiusPx || a.id.localeCompare(b.id));
   for (const item of order) {
     if (item.behind) continue;
-    if (!item.pinned && item.radiusPx < MIN_PIECE_RADIUS_PX) continue;
+    if (!item.pinned && (item.rank ?? 1) < 2 && item.radiusPx < MIN_PIECE_RADIUS_PX) continue;
     const lift = item.pinned ? LIFT_BASE_PX : Math.min(LIFT_MAX_PX, LIFT_BASE_PX + item.radiusPx * 0.35);
     let left = item.x - item.w / 2;
     let top = item.y - lift - item.h;
@@ -63,10 +65,21 @@ export function layoutLabels(items: ProjectedLabel[], width: number, height: num
       // Pieza rotulada solo si su rótulo cabe entero en el cuadro.
       continue;
     }
-    const box = { id: item.id, left, top, w: item.w, h: item.h };
-    if (!item.pinned && placed.some((p) => overlaps(box, p))) continue;
+    // Si choca con otro ya colocado, se prueba una fila más arriba o más abajo antes de omitirlo.
+    const step = item.h + LABEL_GAP_PX;
+    const tries = item.pinned ? [0] : [0, -step, step, -2 * step, 2 * step];
+    let box: (PlacedLabel & { w: number; h: number }) | null = null;
+    for (const dy of tries) {
+      const cand = { id: item.id, left, top: top + dy, w: item.w, h: item.h };
+      if (!item.pinned && (cand.top < 0 || cand.top + cand.h > height)) continue;
+      if (item.pinned || !placed.some((p) => overlaps(cand, p))) {
+        box = cand;
+        break;
+      }
+    }
+    if (!box) continue;
     placed.push(box);
-    out.set(item.id, { id: item.id, left, top });
+    out.set(item.id, { id: item.id, left: box.left, top: box.top });
   }
   return out;
 }
