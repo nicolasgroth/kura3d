@@ -113,8 +113,8 @@ describe('Kura3D MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(43);
-    expect(toolNames).toHaveLength(43);
+    expect(EXPECTED_TOOLS).toHaveLength(44);
+    expect(toolNames).toHaveLength(44);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }

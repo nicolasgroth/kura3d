@@ -16,6 +16,7 @@ import { computeMeshFingerprint } from '../engine/meshFingerprint';
 import { DEFAULT_PRINTER_PROFILES, type PrimitiveParams, type PrimitiveType, type SceneObject } from '../types/kura';
 import { boundPrimitiveParams } from './primitiveParamsBounds';
 import { decodeProject, encodeProject, type ProjectDocument } from './projectCodec';
+import { toLegacyKura } from './__tests__/legacyKura';
 
 beforeAll(async () => {
   await engine.initManifoldEngine();
@@ -52,16 +53,15 @@ describe('.kura: bordes de primitivas', () => {
     const legacyParams = { width: 20, depth: 20, height: 10 };
     const old = await primitive('old', 'box', legacyParams);
     // v2 sin campos nuevos: sigue paramétrico y la regeneración coincide con la malla guardada.
-    const v2 = decodeProject(encodeProject(doc([old])));
+    const v2 = decodeProject(toLegacyKura(encodeProject(doc([old])), 2));
     expect(v2.objects[0].primitiveParams).toEqual(legacyParams);
     expect(parametricStateOf(v2.objects[0]).status).toBe('primitive');
     const regenerated = engine.normalizeMeshToBed(await engine.createPrimitiveMesh('box', v2.objects[0].primitiveParams));
     expect(computeMeshFingerprint(regenerated)).toBe(old.parametric?.meshFingerprint);
     // v1 (sin `parametric`): abre igual, con los mismos parámetros y sin campos de borde.
     const { parametric: _omit, ...legacy } = old;
-    const bytes = encodeProject(doc([legacy as SceneObject]));
-    new DataView(bytes.buffer, bytes.byteOffset).setUint32(4, 1, true);
-    const v1 = decodeProject(bytes);
+    // Desde la versión 3 el tipo de objeto va en `role`: el archivo antiguo se arma con el ayudante de formato previo.
+    const v1 = decodeProject(toLegacyKura(encodeProject(doc([legacy as SceneObject])), 1));
     expect(v1.objects[0].primitiveParams).toEqual(legacyParams);
     expect(v1.objects[0].primitiveParams?.edgeStyle).toBeUndefined();
   });
