@@ -2,7 +2,7 @@
  * @file src/store/modelIoActions.ts
  * @description Acciones de importación y exportación de modelos del store: lote parcial (importa
  * los archivos válidos y nombra los que fallaron), lectura en Worker, colocación en la cama
- * (conjunto apoyado o posición original), grupos por placa del laminador y por conjunto montado, aviso de malla abierta y de normales reorientadas, y exportación única
+ * (conjunto apoyado o posición original), grupos por placa del laminador y por conjunto montado, aviso de malla abierta (con botón «Reparar malla») y de normales reorientadas, y exportación única
  * STL/3MF/OBJ+MTL/GLB/PLY de la selección o la escena con nombre elegido.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -90,6 +90,8 @@ export interface ModelIoDeps {
   reportWarnings?: (warnings: readonly engine.EngineWarning[]) => void;
   /** Abre el panel Simplificar para un objeto (acción del aviso de malla pesada). */
   openSimplify?: (id: string) => void;
+  /** Repara la malla de un objeto (acción del aviso de malla abierta). */
+  repairMesh?: (id: string) => void;
   /** Asegura un borrador de recuperación (si hay cambios sin guardar) antes de leer un archivo grande. */
   ensureRecoveryDraft?: () => Promise<void>;
   /** Sesión de lectura del lote (pruebas); por defecto el Worker de importación. */
@@ -189,14 +191,17 @@ export function createModelIoActions(deps: ModelIoDeps) {
         deps.openSimplify ? { label: tr('import.heavy.action'), run: () => deps.openSimplify?.(heavy.id) } : undefined,
       );
     }
-    const open = placed.filter((p) => p.part.openEdges > 0);
+    const open = placed.flatMap((p, index) => (p.part.openEdges > 0 ? [{ placed: p, object: created[index] }] : []));
     if (open.length > 0) {
-      const names = [...new Set(open.map((p) => p.part.name || p.fileName))];
+      const names = [...new Set(open.map(({ placed: p }) => p.part.name || p.fileName))];
+      // Una sola pieza abierta: el aviso trae el botón que la repara (varias: se reparan desde cada objeto).
+      const target = open.length === 1 ? open[0].object.id : null;
       get().addToast(
         open.length === 1
-          ? tr('import.openMesh', { name: names[0], edges: open[0].part.openEdges })
+          ? tr('import.openMesh', { name: names[0], edges: open[0].placed.part.openEdges })
           : tr('import.openMeshMany', { count: open.length, list: names.slice(0, 3).join(', ') + (names.length > 3 ? '…' : '') }),
         'info',
+        target && deps.repairMesh ? { label: tr('repair.action'), run: () => deps.repairMesh?.(target) } : undefined,
       );
     }
     deps.reportWarnings?.(models.flatMap((m) => m.warnings ?? []));

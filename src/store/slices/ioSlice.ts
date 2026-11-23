@@ -60,6 +60,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     exportFiles: (args) => ctx.runEngineDetached('export', args),
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
     openSimplify: (id) => get().requestSimplifyPanel(id),
+    repairMesh: (id) => void get().repairObjectMesh(id),
     bedSize: () => activeBedSize(get()),
     // Antes de un modelo grande: si hay cambios sin guardar, el borrador de recuperación queda escrito.
     ensureRecoveryDraft: async () => {
