@@ -8,6 +8,7 @@
  */
 
 import { ModelImportError, attachFileName } from './importErrors';
+import { findImportClusters } from './importClusters';
 import { fixImportedOrientation } from './importOrientation';
 import type { ImportedModel, ModelImportFormat, ModelParseOptions } from './importTypes';
 import { readOBJBuffer } from './obj';
@@ -32,7 +33,9 @@ export function detectModelFormat(fileName: string): ModelImportFormat | null {
  * con normales invertidas se reorientan y el modelo trae el aviso en `warnings`.
  */
 export function parseModelFile(fileName: string, buffer: ArrayBuffer, options: ModelParseOptions = {}): ImportedModel {
-  return fixImportedOrientation(readModelFile(fileName, buffer, options));
+  const model = fixImportedOrientation(readModelFile(fileName, buffer, options));
+  // Conjuntos calculados una vez, aquí (en el Worker): colocación y agrupación los reutilizan.
+  return { ...model, clusters: findImportClusters(model) };
 }
 
 function readModelFile(fileName: string, buffer: ArrayBuffer, options: ModelParseOptions): ImportedModel {

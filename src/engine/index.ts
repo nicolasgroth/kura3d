@@ -68,6 +68,7 @@ export {
   objMaterialLibraries,
   parseModelFile,
   parseModelFileAsync,
+  clustersOf,
   findImportClusters,
   placeImportedModels,
   read3MF,

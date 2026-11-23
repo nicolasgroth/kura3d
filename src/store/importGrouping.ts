@@ -57,13 +57,16 @@ export function groupImported(
   const notices: string[] = [];
   const indexOf = new Map<engine.ImportedPart, number>();
   placed.forEach((p, i) => indexOf.set(p.part, i));
+  const grouped = new Set<number>();
 
   for (const model of models) {
-    const clusters = engine.findImportClusters(model);
+    const clusters = engine.clustersOf(model);
     const base = model.fileName.replace(/\.[^.]+$/, '');
     let assemblies = 0;
     for (const cluster of clusters) {
-      const members = cluster.parts.map((i) => indexOf.get(model.parts[i])).filter((i): i is number => i !== undefined);
+      const members = cluster.parts
+        .map((i) => indexOf.get(model.parts[i]))
+        .filter((i): i is number => i !== undefined && !grouped.has(i) && (grouped.add(i), true));
       if (members.length === 0 || (cluster.kind === 'assembly' && members.length < 2)) continue;
       if (existingGroups + groups.length >= MAX_GROUPS) break;
       const name = cluster.kind === 'plate'

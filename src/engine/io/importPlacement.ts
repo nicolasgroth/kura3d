@@ -10,7 +10,8 @@
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';
-import { findImportClusters } from './importClusters';
+import { clustersOf } from './importClusters';
+import { ModelImportError } from './importErrors';
 import type { ImportedModel, ImportedPart } from './importTypes';
 import { boundsOf, centerMeshOnBed } from './meshBuffers';
 
@@ -65,13 +66,19 @@ function toBlocks(models: ImportedModel[]): Block[] {
     if (parts.length > 0) blocks.push({ fileName, parts, bounds: unionBounds(parts) });
   };
   for (const model of models) {
-    const clusters = findImportClusters(model);
+    const clusters = clustersOf(model);
     const plates = clusters.filter((c) => c.kind === 'plate');
     if (plates.length > 0 || !model.hasPlacement) {
+      // Cada pieza se coloca una sola vez aunque dos conjuntos la nombren.
       const taken = new Set<number>();
       for (const cluster of clusters) {
-        push(model.fileName, cluster.parts.map((i) => model.parts[i]));
-        cluster.parts.forEach((i) => taken.add(i));
+        const fresh: number[] = [];
+        for (const i of cluster.parts) {
+          if (i < 0 || i >= model.parts.length || taken.has(i)) continue;
+          taken.add(i);
+          fresh.push(i);
+        }
+        push(model.fileName, fresh.map((i) => model.parts[i]));
       }
       const rest = model.parts.filter((_, i) => !taken.has(i));
       if (model.hasPlacement) {
@@ -166,5 +173,7 @@ export function placeImportedModels(
       });
     }
   });
+  // Invariante: cada pieza leída se coloca a lo sumo una vez (el lector ya aplicó maxParts y maxTriangles).
+  if (placed.length > models.reduce((acc, m) => acc + m.parts.length, 0)) throw new ModelImportError('too-many-parts');
   return placed;
 }

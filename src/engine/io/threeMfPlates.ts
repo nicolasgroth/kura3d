@@ -54,7 +54,8 @@ export function readSlicerPlates(xml: string): SlicerPlate[] {
 
 /**
  * Placas del laminador expresadas como grupos de ítems de `<build>` (la n-ésima aparición de un
- * objeto es su `instance_id` n). Solo se devuelven si hay dos o más placas con piezas.
+ * objeto es su `instance_id` n). Solo se devuelven si hay dos o más placas con piezas; cada ítem va en
+ * una sola placa.
  */
 export function platesOf(
   slicerPlates: SlicerPlate[],
@@ -70,13 +71,21 @@ export function platesOf(
     itemOf.set(`${item.objectId}#${n}`, index);
   });
   const withParts = new Set(parts.map((p) => p.group));
-  const plates = slicerPlates
-    .map((plate) => ({
-      name: plate.name,
-      groups: [...new Set(plate.instances.map((i) => itemOf.get(`${i.objectId}#${i.instanceId}`)))]
-        .filter((g): g is number => g !== undefined && withParts.has(g))
-        .sort((a, b) => a - b),
-    }))
-    .filter((plate) => plate.groups.length > 0);
+  // Cada ítem pertenece a UNA placa (la primera que lo declara): placas repetidas o que apuntan a la
+  // misma instancia no duplican piezas. Las placas que quedan vacías se descartan, así que nunca hay
+  // más placas que ítems.
+  const owner = new Map<number, number>();
+  const plates: ImportedPlate[] = [];
+  for (const plate of slicerPlates) {
+    if (plates.length >= items.length) break;
+    const groups: number[] = [];
+    for (const inst of plate.instances) {
+      const g = itemOf.get(`${inst.objectId}#${inst.instanceId}`);
+      if (g === undefined || !withParts.has(g) || owner.has(g)) continue;
+      owner.set(g, plates.length);
+      groups.push(g);
+    }
+    if (groups.length > 0) plates.push({ name: plate.name, groups: groups.sort((a, b) => a - b) });
+  }
   return plates.length >= 2 ? plates : undefined;
 }

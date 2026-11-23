@@ -10,6 +10,11 @@
  */
 
 import type { ImportedModel } from './importTypes';
+
+/** Conjuntos ya calculados al leer (en el Worker) o, si faltan, calculados ahora. */
+export function clustersOf(model: ImportedModel): ImportCluster[] {
+  return model.clusters ?? findImportClusters(model);
+}
 import { boundsOf } from './meshBuffers';
 
 /** Conjunto de piezas (índices en `model.parts`). */
@@ -36,12 +41,16 @@ function overlaps(a: Box, b: Box): boolean {
  */
 export function findImportClusters(model: ImportedModel): ImportCluster[] {
   if (model.plates && model.plates.length >= 2) {
-    return model.plates.map((plate, i) => ({
-      kind: 'plate' as const,
-      name: plate.name,
-      plateNumber: i + 1,
-      parts: model.parts.flatMap((part, index) => (plate.groups.includes(part.group) ? [index] : [])),
-    }));
+    // Cada pieza en una sola placa (la primera), aunque el modelo llegue con placas que se repiten.
+    const taken = new Set<number>();
+    const clusters: ImportCluster[] = [];
+    model.plates.forEach((plate, i) => {
+      const groups = new Set(plate.groups);
+      const parts = model.parts.flatMap((part, index) => (groups.has(part.group) && !taken.has(index) ? [index] : []));
+      parts.forEach((index) => taken.add(index));
+      if (parts.length > 0) clusters.push({ kind: 'plate', name: plate.name, plateNumber: i + 1, parts });
+    });
+    return clusters;
   }
   const n = model.parts.length;
   if (n < 2) return [];
@@ -58,11 +67,24 @@ export function findImportClusters(model: ImportedModel): ImportCluster[] {
     const rb = find(b);
     if (ra !== rb) parent[Math.max(ra, rb)] = Math.min(ra, rb);
   };
+  // Piezas del mismo bloque van juntas (unión lineal por grupo).
+  const firstOfGroup = new Map<number, number>();
+  model.parts.forEach((part, i) => {
+    const first = firstOfGroup.get(part.group);
+    if (first === undefined) firstOfGroup.set(part.group, i);
+    else union(first, i);
+  });
+  // Barrido ordenado por X (sort-and-sweep): solo se comparan cajas cuyo tramo X se cruza.
   const boxes = model.parts.map((p) => boundsOf(p.mesh.positions) as Box);
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      if (model.parts[i].group === model.parts[j].group || overlaps(boxes[i], boxes[j])) union(i, j);
+  const order = boxes.map((_, i) => i).sort((a, b) => boxes[a][0] - boxes[b][0]);
+  let active: number[] = [];
+  for (const i of order) {
+    const minX = boxes[i][0] - TOUCH_MM;
+    active = active.filter((j) => boxes[j][3] >= minX);
+    for (const j of active) {
+      if (find(i) !== find(j) && overlaps(boxes[i], boxes[j])) union(i, j);
     }
+    active.push(i);
   }
   const members = new Map<number, number[]>();
   for (let i = 0; i < n; i++) {

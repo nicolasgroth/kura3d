@@ -9,6 +9,7 @@
 
 import type { MeshData } from '../../types/kura';
 import type { EngineWarning } from '../engineErrors';
+import type { ImportCluster } from './importClusters';
 import type { ModelImportLimits } from './importErrors';
 
 /** Formatos de modelo que Kura3D sabe leer. */
@@ -49,6 +50,8 @@ export interface ImportedModel {
   hasPlacement: boolean;
   /** Placas del laminador, solo si el archivo trae dos o más con piezas. */
   plates?: ImportedPlate[];
+  /** Conjuntos (placas, montajes) calculados al leer, en el Worker (`importClusters.ts`). */
+  clusters?: ImportCluster[];
   /** Ajustes hechos al leer (p. ej. normales invertidas reorientadas), con el nombre del archivo. */
   warnings?: EngineWarning[];
 }

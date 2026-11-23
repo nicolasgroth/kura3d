@@ -12,7 +12,7 @@
 import type { MeshData, SceneObject } from '../../types/kura';
 import { weldVertices } from '../manifoldKernel';
 import { applyTransformToMesh } from '../primitives';
-import { ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
+import { MAX_PART_NAME, ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
 import type { ImportedModel, ImportedPart } from './importTypes';
 import { GrowableFloat32, GrowableUint32, finishMesh, hexToRgb01, normalizeHexColor, rgbToHex } from './meshBuffers';
 import { exportableObjects } from './stl';
@@ -71,10 +71,12 @@ export function readOBJ(
 
   const ensurePart = (name?: string) => {
     if (!current || (name !== undefined && current.faces.length > 0)) {
-      current = { name: name ?? baseName, faces: new GrowableUint32(1024), faceColors: [] };
+      if (parts.length >= limits.maxParts) throw new ModelImportError('too-many-parts', `${parts.length + 1} objetos`);
+      // Capacidad inicial mínima: miles de `o` vacíos o chicos no reservan memoria de más.
+      current = { name: (name ?? baseName).slice(0, MAX_PART_NAME), faces: new GrowableUint32(16), faceColors: [] };
       parts.push(current);
     } else if (name !== undefined) {
-      current.name = name;
+      current.name = name.slice(0, MAX_PART_NAME);
     }
     return current;
   };
@@ -115,6 +117,8 @@ export function readOBJ(
         }
         face.push(idx);
       }
+      // Tope antes de abrir el abanico: una cara de N vértices da N − 2 triángulos.
+      if (triangles + Math.max(0, face.length - 2) > limits.maxTriangles) throw new ModelImportError('too-many-triangles');
       for (let k = 1; k + 1 < face.length; k++) {
         part.faces.push3(face[0], face[k], face[k + 1]);
         part.faceColors.push(currentColor ?? vertexColors[face[0]]);
