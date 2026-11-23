@@ -10,8 +10,8 @@
 
 import { booleanOperation, convexHull } from '../../../operations/csgOperations';
 import { combineObjects } from '../../../operations/organizeOperations';
-import { parseBoolean, parseHull } from '../../../../store/commandSchemas';
-import { parseCombine } from '../../../../store/groupCommandSchemas';
+import { parseBoolean, parseHull } from '../../../bus/commandSchemas';
+import { parseCombine } from '../../../bus/groupCommandSchemas';
 import { joinPath } from '../../errors';
 import { objectsOf, oneObject } from '../args';
 import { guarded, viewOf, type OpRunner } from './opSupport';

@@ -9,8 +9,8 @@
  */
 
 import { createPrimitive, createThread, importSvg, primitiveMesh } from '../../../operations/creationOperations';
-import { parseCreatePrimitive, parseImportSvg, parseThread } from '../../../../store/commandSchemas';
-import { readVec3 } from '../../../../store/commandValidation';
+import { parseCreatePrimitive, parseImportSvg, parseThread } from '../../../bus/commandSchemas';
+import { readVec3 } from '../../../bus/commandValidation';
 import { plainArgs } from '../args';
 import { guarded, positionFromUser, rotationFromUserDeg, scaleFromUserAxes, type OpRunner } from './opSupport';
 

@@ -13,7 +13,7 @@ import { hollowObject, mirrorObject } from '../../../operations/meshOperations';
 import { planeCut } from '../../../operations/partOperations';
 import { computeBedPositionY } from '../../../scene/sceneObjects';
 import { alignModeFromUser, axisFromUser, keepModeFromUser, planeFromUser } from '../../../scene/userAxesContract';
-import { parseAlign, parseHollow, parseMirror, parsePlaneCut, parseTransform } from '../../../../store/commandSchemas';
+import { parseAlign, parseHollow, parseMirror, parsePlaneCut, parseTransform } from '../../../bus/commandSchemas';
 import type { Vec3 } from '../../../../types/kura';
 import { joinPath } from '../../errors';
 import { objectsOf, oneObject, plainArgs } from '../args';

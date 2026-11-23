@@ -119,10 +119,12 @@ async function finish(
     const at = joinPath(joinPath('outputs', k), 'ref');
     const objects = scene.get(output.ref, at);
     if (objects.length === 0) throw new RecipeError('run.emptyOutput', at, { detail: output.ref });
+    // Un nombre calculado vacío (llavero sin texto) cae en el id del paso.
+    const base = output.name.trim() || output.ref;
     const ids: string[] = [];
     objects.forEach((obj, i) => {
       const final = derivedCopy(ctx, obj, {
-        name: objects.length > 1 ? `${output.name} ${i + 1}` : output.name,
+        name: objects.length > 1 ? `${base} ${i + 1}` : base,
         color: output.color ?? obj.color,
         role: output.role ?? 'solid',
         metadata: { recipe: provenanceFor(recipe, hash, stored, output.ref, input.options?.variant) },

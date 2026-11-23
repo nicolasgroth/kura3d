@@ -10,7 +10,7 @@
 
 import { isEngineError, type EngineWarning } from '../../../../engine/engineErrors';
 import { t, type TranslationKey } from '../../../../i18n';
-import { CommandError } from '../../../../store/commandErrors';
+import { CommandError } from '../../../bus/commandErrors';
 import type { LanguageCode, PrinterProfile, SceneObject, Vec3 } from '../../../../types/kura';
 import { statsFor, type OperationContext, type SceneChange } from '../../../operations/operationTypes';
 import { fromUserRotation, fromUserScale, fromUserVector } from '../../../scene/displayAxes';
