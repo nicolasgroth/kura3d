@@ -1,12 +1,12 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 09:40, con la actualización de dependencias integrada.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 10:45, con las correcciones de modelos reales integradas y en QA.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## Resumen de la noche del 22 al 23 de noviembre
 
-Estado de `main`: 2120 pruebas del frontend, 138 del servidor MCP y 37 de Rust en verde; 157 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
+Estado de `main`: 2150 pruebas del frontend, 138 del servidor MCP y 37 de Rust en verde; 157 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
 
 | Qué | Resultado |
 |---|---|
@@ -22,7 +22,6 @@ Estado de `main`: 2120 pruebas del frontend, 138 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
-| Modelos reales en pantalla (QA del 23-nov con 23 archivos del autor): al exportar una escena a 3MF y reimportarla se pierden los grupos por placa y cambian las posiciones relativas; un STL en unidades normalizadas entra midiendo 0,8 mm sin aviso; un 3MF de 3,3 millones de triángulos tarda 44 s y congela 9 s al final; con escenas pesadas el autoguardado deja de funcionar sin explicarlo | Por corregir, apenas se integre la actualización de dependencias |
 | Separar por colores sobre texto 3D pintado: algunas piezas pueden salir abiertas (se avisa cuáles y se ofrece reparar); grabar dos veces el mismo texto en el mismo lugar de un cilindro (da un error claro) | Límites conocidos; pendiente |
 | Imagen a 3D: ocultar los parámetros que no aplican en cada modo; aviso de cuánto crece la pieza al aplicar una textura; vista previa en vivo del texto 3D | Pendiente |
 | Armado por subconjuntos (filas, luego capas, luego apilar) para conservar todos los conectores en rejillas; hoy el orden pieza a pieza ya es el óptimo demostrado | Pendiente; cambia el modelo de pasos de armado |
@@ -35,6 +34,7 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 
 | Funcionalidad | Estado |
 |---|---|
+| Modelos reales (correcciones de la QA del 23-nov): la ida y vuelta por 3MF conserva piezas, grupos, colores y posiciones exactas; aviso de unidades dudosas con escala sugerida; las piezas repetidas comparten malla (llaveros: de 61 a 3 MB); importación que no bloquea, con etapas y avance por piezas; borrador de recuperación por bloques que sí cabe con escenas pesadas y explica cuando no; inspector con estado de malla, "Reparar malla" y "Ver bordes"; lo nuevo cae al costado y la cámara encuadra lo importado; pie con visibles de total; un solo umbral de malla densa; ahuecar con cáscaras solapadas | Integrado el 23-nov con pruebas; QA en navegador en curso con los modelos del autor |
 | Dependencias al día: three.js 0.187, Vite 8 con su plugin de React 6, TypeScript 7, lucide-react 1.78, jsdom 31, acciones de GitHub y crates de Rust. Compilar tipos bajó de 18 a 3,5 s y construir la web de 30 a 5 s; la carga inicial pesa 90 KB menos. Queda sin subir Playwright (pide un Chromium que no está instalado) | Integrado el 23-nov con todas las suites en verde; falta confirmar la corrida en GitHub |
 | Separar por colores: cada color sale como sólido cerrado, con profundidad configurable (era el bloqueo de la ronda 5) | Implementado con pruebas; QA en curso |
 | Dividir para imprimir: tamaño de conector "Automático (recomendado)" por defecto, diámetro como única medida, vista previa con las uniones reales con conector y para pegar, consejo de unión débil una sola vez, resaltado y encuadre de la unión, estado "Armado", ZIP por pieza centrado | QA en curso |
