@@ -57,6 +57,26 @@
   margin-top: 6px;
 }
 
+/* Medir: pista junto al cursor cuando el clic cae en el vacío o el suelo. */
+.kura-measure-miss-hint {
+  position: absolute;
+  z-index: 30;
+  pointer-events: none;
+  padding: 4px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+}
+
+.kura-measure-miss-hint[hidden] {
+  display: none;
+}
+
 /* Corte por plano: nota de superposición propia bajo "Apoyarla en la cama". */
 .kura-kept-note {
   display: flex;

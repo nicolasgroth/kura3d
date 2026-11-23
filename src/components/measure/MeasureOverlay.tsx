@@ -18,6 +18,7 @@ import type { MeshData, Vec3 } from '../../types/kura';
 import { formatAngle, formatArea, formatLength } from '../../utils/measureUnits';
 import '../../store/measureSceneSync';
 import '../../styles/measure.css';
+import { MeasureMissHint } from './MeasureMissHint';
 
 const LINE = '#f59e0b';
 const SNAP_COLORS = { vertex: '#ef4444', 'edge-mid': '#22c55e', 'face-center': '#3b82f6', surface: '#f59e0b' } as const;
@@ -150,6 +151,7 @@ export const MeasureOverlay: React.FC = () => {
       {pending.length > 0 && hover && mode !== 'area' && <Seg points={[pending[pending.length - 1].point, hover.point]} dashed />}
       {hover && <Dot at={hover.point} color={SNAP_COLORS[hover.kind]} size={hover.kind === 'surface' ? 0.5 : 0.9} />}
       {showLiquid && <Liquid mesh={capacity!.liquid!} />}
+      <MeasureMissHint />
     </group>
   );
 };

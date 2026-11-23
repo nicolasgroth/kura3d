@@ -26,14 +26,16 @@ export const ToastHistoryButton: React.FC = () => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    const onDown = (e: MouseEvent) => {
+    // `pointerdown` en captura: el visor 3D cancela el puntero y el navegador ya no emite `mousedown`,
+    // así que un clic sobre el visor o el inspector no cerraba el historial.
+    const onDown = (e: PointerEvent) => {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
     };
     window.addEventListener('keydown', onKey);
-    window.addEventListener('mousedown', onDown);
+    window.addEventListener('pointerdown', onDown, true);
     return () => {
       window.removeEventListener('keydown', onKey);
-      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('pointerdown', onDown, true);
     };
   }, [open]);
 
@@ -64,7 +66,15 @@ export const ToastHistoryButton: React.FC = () => {
                   </li>
                 ))}
               </ul>
-              <button type="button" className="kura-btn kura-btn-sm" onClick={clearToastHistory}>
+              <button
+                type="button"
+                className="kura-btn kura-btn-sm"
+                onClick={() => {
+                  // Elegir una acción cierra el historial.
+                  clearToastHistory();
+                  setOpen(false);
+                }}
+              >
                 {t(language, 'genUi.toast.historyClear')}
               </button>
             </>

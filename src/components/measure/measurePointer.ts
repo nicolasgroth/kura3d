@@ -31,7 +31,12 @@ export function snapRadiusMm(e: ThreeEvent<PointerEvent | MouseEvent>): number {
 
 const pointOf = (e: ThreeEvent<PointerEvent>): Vec3 => [e.point.x, e.point.y, e.point.z];
 
+/** Último `pointerdown` que tocó una pieza con Medir (para avisar cuando el clic cae en el vacío). */
+let lastHitEvent: Event | null = null;
+export const measureHitFor = (event: Event) => lastHitEvent === event;
+
 export function onMeasurePointerDown(obj: SceneObject, e: ThreeEvent<PointerEvent>): void {
+  lastHitEvent = e.nativeEvent;
   const measure = useMeasureStore.getState();
   if (measure.mode === 'capacity') {
     useKuraStore.getState().selectObject(obj.id, false);
