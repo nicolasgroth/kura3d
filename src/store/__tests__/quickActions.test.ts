@@ -53,6 +53,20 @@ describe('Agregar pieza desde el menú contextual', () => {
     expect(byId(box.id)!.isHole).toBe(false);
   });
 
+  it('la pieza queda agrupada con su objeto (grupo con su nombre) y el aviso lo dice', async () => {
+    const box = await addBox(30);
+    const piece = await store().addPieceToObject('sphere', 'negative', box.id);
+    const groupId = byId(box.id)!.groupRef;
+    expect(groupId).toBeTruthy();
+    expect(byId(piece!.id)!.groupRef).toBe(groupId);
+    expect(store().groups.find((g) => g.id === groupId)!.name).toBe(box.name);
+    expect(store().toasts.at(-1)!.text).toContain(box.name);
+    // Una segunda pieza entra en el mismo grupo.
+    const second = await store().addPieceToObject('box', 'positive', box.id);
+    expect(byId(second!.id)!.groupRef).toBe(groupId);
+    expect(store().groups).toHaveLength(1);
+  });
+
   it('agregar pieza es un solo paso de deshacer', async () => {
     const box = await addBox(20);
     const before = store().past.length;

@@ -2,7 +2,7 @@
  * @file src/utils/mcpConfigSnippet.ts
  * @description Genera el JSON de configuración del servidor MCP para copiar en un cliente MCP y el comando de
  * registro para Claude Code. La ruta del servidor es absoluta cuando se conoce el repositorio y, si no, un
- * marcador `<RUTA_AL_REPOSITORIO>` visible (un cliente MCP no puede resolver una ruta relativa).
+ * marcador `<REPO_PATH>` visible (un cliente MCP no puede resolver una ruta relativa).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -10,7 +10,7 @@
 
 import type { McpConfig } from '../types/kura';
 
-export const MCP_REPO_PLACEHOLDER = '<RUTA_AL_REPOSITORIO>';
+export const MCP_REPO_PLACEHOLDER = '<REPO_PATH>';
 const SERVER_RELATIVE = 'mcp-server/dist/index.js';
 export const MCP_REPO_PATH_KEY = 'kura3d-mcp-repo-path';
 

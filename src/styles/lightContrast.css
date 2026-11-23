@@ -1,0 +1,54 @@
+/**
+ * @file src/styles/lightContrast.css
+ * @description Contraste y tamaño mínimo de los textos pequeños: rótulos de ejes, sufijos, insignias y títulos de
+ * estadística a 11 px o más y con el color del tema (4,5:1 como mínimo en claro y oscuro); las muestras de color
+ * llevan un borde interior para que el blanco no desaparezca en el tema claro.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-axis-tag,
+.kura-precision-prefix,
+.kura-precision-suffix,
+.kura-stat-title,
+.kura-brand-badge,
+.kura-struct-badge,
+.kura-source-pill,
+.kura-context-group-title,
+.kura-context-kbd {
+  font-size: 11px;
+}
+
+.kura-axis-tag.x {
+  color: var(--accent-red);
+}
+
+.kura-axis-tag.y {
+  color: var(--accent-green);
+}
+
+.kura-axis-tag.z {
+  color: var(--accent-cyan);
+}
+
+.kura-stat-title,
+.kura-precision-suffix {
+  color: var(--text-secondary);
+}
+
+/* "100 % Local" y similares: texto con el color pleno del acento (no mezclado con el fondo). */
+.kura-source-pill.is-local {
+  color: var(--accent-green);
+  background: color-mix(in srgb, var(--accent-green) 10%, var(--bg-panel));
+}
+
+.kura-source-pill.is-ai {
+  color: var(--accent-amber);
+  background: color-mix(in srgb, var(--accent-amber) 10%, var(--bg-panel));
+}
+
+/* Muestra de color: el borde interior mantiene visible el blanco sobre paneles claros. */
+.kura-swatch {
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}

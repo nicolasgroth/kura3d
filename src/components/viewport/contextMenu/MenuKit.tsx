@@ -12,6 +12,7 @@
 import React, { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Check, ChevronRight } from 'lucide-react';
 import '../../../styles/contextMenu.css';
+import '../../../styles/contextMenuFit.css';
 
 const InlineContext = createContext(false);
 
@@ -35,6 +36,7 @@ export const MenuSurface: React.FC<{
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [top, setTop] = useState(y);
   const [scroll, setScroll] = useState(false);
+  const [more, setMore] = useState({ above: false, below: false });
   const narrow = typeof window !== 'undefined' && window.matchMedia?.(NARROW_QUERY).matches === true;
 
   // Ajusta al área del visor: sube el menú si se sale por abajo; si no cabe entero, scroll con submenús en línea.
@@ -51,9 +53,22 @@ export const MenuSurface: React.FC<{
     }
   }, [y]);
 
+  /** Indica con sombras si hay contenido por encima o por debajo (solo con scroll interno). */
+  const updateMore = () => {
+    const el = rootRef.current;
+    if (!el) return;
+    const above = el.scrollTop > 2;
+    const below = el.scrollTop + el.clientHeight < el.scrollHeight - 2;
+    setMore((prev) => (prev.above === above && prev.below === below ? prev : { above, below }));
+  };
+
+  useLayoutEffect(updateMore, [scroll, top]);
+
   useEffect(() => {
     const first = rootRef.current ? itemsOf(rootRef.current)[0] : null;
-    first?.focus();
+    // Sin desplazar: el menú abre mostrando su inicio completo (con el título), no recortado arriba.
+    first?.focus({ preventScroll: true });
+    if (rootRef.current) rootRef.current.scrollTop = 0;
   }, []);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -85,7 +100,8 @@ export const MenuSurface: React.FC<{
     <InlineContext.Provider value={inline}>
       <div
         ref={rootRef}
-        className={`kura-context-menu${scroll ? ' is-scroll' : ''}`}
+        className={`kura-context-menu${scroll ? ' is-scroll' : ''}${more.above ? ' has-more-above' : ''}${more.below ? ' has-more-below' : ''}`}
+        onScroll={updateMore}
         style={{ left: x, top }}
         role="menu"
         aria-label={label}

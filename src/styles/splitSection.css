@@ -1,0 +1,63 @@
+/**
+ * @file src/styles/splitSection.css
+ * @description Secciones plegables del panel Dividir y ayuda de "Espacio libre mínimo".
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-split-section {
+  border: 1px solid var(--border-subtle, rgba(127, 127, 127, 0.3));
+  border-radius: 8px;
+  padding: 0 8px;
+  margin: 6px 0;
+}
+
+.kura-split-section-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 6px;
+}
+
+.kura-split-section-summary::-webkit-details-marker {
+  display: none;
+}
+
+.kura-split-section-summary:focus-visible {
+  outline: 2px solid var(--accent-cyan, #0ea5e9);
+  outline-offset: 1px;
+}
+
+.kura-split-section-chevron {
+  flex: none;
+  transition: transform 0.12s ease;
+}
+
+.kura-split-section[open] > .kura-split-section-summary .kura-split-section-chevron {
+  transform: rotate(90deg);
+}
+
+.kura-split-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 2px 0 8px;
+}
+
+.kura-split-section-hint {
+  display: block;
+  padding-bottom: 6px;
+}
+
+.kura-split-margin-help {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}

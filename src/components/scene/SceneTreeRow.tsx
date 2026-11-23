@@ -38,6 +38,8 @@ export interface SceneTreeRowProps {
   onRenameField: (el: HTMLInputElement | null) => void;
   onClick: (e: React.MouseEvent) => void;
   onDoubleClick: () => void;
+  /** Clic derecho sobre la fila (coordenadas de pantalla). */
+  onContextMenu?: (x: number, y: number) => void;
   onToggleExpand: () => void;
   onToggleVisible: () => void;
   onToggleLock: () => void;
@@ -94,6 +96,11 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
       style={{ '--tree-level': row.level - 1 } as React.CSSProperties}
       onClick={props.onClick}
       onDoubleClick={props.onDoubleClick}
+      onContextMenu={(e) => {
+        if (!props.onContextMenu || renaming) return;
+        e.preventDefault();
+        props.onContextMenu(e.clientX, e.clientY);
+      }}
       {...props.dragHandlers}
     >
       <div className="kura-scene-item-main">

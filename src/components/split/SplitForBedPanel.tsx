@@ -26,6 +26,7 @@ import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { keyboardFocusInViewport } from '../viewport/cutPlaneDrag';
 import { onSplitPlaneMove, planeKey } from './splitPlaneDrag';
 import { SplitPlanSummaryView } from './SplitPlanSummaryView';
+import { SplitSection } from './SplitSection';
 import '../../styles/splitForBed.css';
 import { userAxisLabel } from '../../core/scene/displayAxes';
 
@@ -287,6 +288,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       )}
       {target && <p className="kura-split-target">{t(language, 'split.target', { name: target.name })}</p>}
 
+      <SplitSection title={t(language, 'split.section.bedCuts')} defaultOpen>
       <fieldset className="kura-split-group">
         <legend>{t(language, 'split.bed')}</legend>
         <div className="kura-split-row3">
@@ -325,9 +327,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
           <span>{t(language, 'split.allowDiagonal')}</span>
         </label>
       </fieldset>
+      </SplitSection>
 
-      <fieldset className="kura-split-group">
-        <legend>{t(language, 'split.joint')}</legend>
+      <SplitSection title={t(language, 'split.section.joints')} defaultOpen>
         <div className="kura-form-field">
           <label htmlFor={`${uid}-kind`}>{t(language, 'dialog.cut.connectorType')}</label>
           <select id={`${uid}-kind`} className="kura-select" value={kind} title={t(language, 'split.connectorTip')} aria-describedby={kind === 'loose-dowel' ? `${uid}-dowel-help` : undefined} onChange={(e) => setKind(e.target.value as ConnectorKind)}>
@@ -386,10 +388,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
             <p className="kura-split-target" id={`${uid}-reinforce-help`}>{t(language, 'split.reinforceHelp')}</p>
           </>
         )}
-      </fieldset>
+      </SplitSection>
 
-      <fieldset className="kura-split-group">
-        <legend>{t(language, 'split.labels')}</legend>
+      <SplitSection title={t(language, 'split.section.marks')} hint={t(language, 'split.section.marksHint')}>
         <div className="kura-split-row2">
           <div className="kura-form-field">
             <label htmlFor={`${uid}-labels`}>{t(language, 'split.labelsMode')}</label>
@@ -415,10 +416,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
             </select>
           </div>
         </div>
-      </fieldset>
+      </SplitSection>
 
-      <fieldset className="kura-split-group">
-        <legend>{t(language, 'split.planes')}</legend>
+      <SplitSection title={t(language, 'split.section.advanced')} hint={t(language, 'split.section.advancedHint')}>
         {plan && plan.planes.length > 0 ? (
           <>
             <small className="kura-cut-hint">{t(language, 'split.planesHint')}</small>
@@ -477,7 +477,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         ) : (
           <small className="kura-cut-hint">{t(language, plan?.fitsWithoutCuts ? 'split.reason.fits' : 'split.planesNone')}</small>
         )}
-      </fieldset>
+      </SplitSection>
 
       <SplitPlanSummaryView
         summary={summary}

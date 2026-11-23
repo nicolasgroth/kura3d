@@ -362,6 +362,9 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
             value={2 * connectorSize}
             onChange={(diameter) => setConnectorSize(diameter / 2)}
           />
+          {suggestion?.feasible && (
+            <small id="cut-size-recommended" className="kura-cut-hint">{t(language, 'dialog.cut.sizeRecommended')}</small>
+          )}
           {showMax && (
             <small id="cut-size-max" className="kura-cut-hint">
               {t(language, 'dialog.cut.maxDiameterFor', { max: fmt(2 * showMax.maxSize) })}

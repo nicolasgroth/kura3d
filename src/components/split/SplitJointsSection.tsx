@@ -99,6 +99,21 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
     return () => setFocus(null);
   }, [groupId, setFocus]);
 
+  // Al terminar "Validar armado" el resultado puede quedar fuera de vista: se desplaza hasta él y recibe el foco.
+  const resultRef = useRef<HTMLDivElement>(null);
+  const prevStatus = useRef(validation?.status);
+  const status = validation?.status;
+  useEffect(() => {
+    const before = prevStatus.current;
+    prevStatus.current = status;
+    if (before !== 'running' || !status || status === 'running') return;
+    const el = resultRef.current;
+    if (!el) return;
+    const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView?.({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+    el.focus({ preventScroll: true });
+  }, [status]);
+
   if (!group || !groupId) return null;
   const fmt = (n: number, d = 1) => formatNumber(language, n, { maximumFractionDigits: d });
   const hasSteps = order.some((o) => o.step !== null);
@@ -331,7 +346,15 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
         <ShieldCheck size={13} aria-hidden="true" />
         <span>{t(language, running ? 'splitJoints.validating' : 'splitJoints.validate')}</span>
       </button>
-      <div className="kura-split-validation" role="status" aria-live="polite">
+      <div
+        ref={resultRef}
+        className="kura-split-validation"
+        role="status"
+        aria-live="polite"
+        tabIndex={-1}
+        aria-label={t(language, 'splitJoints.result.region')}
+        data-testid="split-validation-result"
+      >
         {validation?.status === 'error' && <p data-kind="warn">{t(language, 'splitJoints.result.error')}</p>}
         {validation?.status === 'nodata' && <p data-kind="warn">{t(language, 'splitJoints.result.noData')}</p>}
         {report && (

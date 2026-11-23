@@ -15,6 +15,7 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { formatNumber } from '../../utils/plural';
+import { formatLocaleNumber } from '../../i18n/numberLocale';
 
 export const MeshRepairSummary: React.FC<{ primary: SceneObject }> = ({ primary }) => {
   const language = useKuraStore((s) => s.language);
@@ -34,7 +35,7 @@ export const MeshRepairSummary: React.FC<{ primary: SceneObject }> = ({ primary 
   const lines: string[] = [];
   if (current) {
     if (current.boundaryEdges > 0) {
-      lines.push(t(language, 'repair.diag.open', { edges: n(current.boundaryEdges), holes: n(current.holeCount), sizeMm: (current.holes[0]?.sizeMm ?? 0).toFixed(2) }));
+      lines.push(t(language, 'repair.diag.open', { edges: n(current.boundaryEdges), holes: n(current.holeCount), sizeMm: formatLocaleNumber(language, current.holes[0]?.sizeMm ?? 0, { maxFrac: 2, minFrac: 2 }) }));
     }
     if (current.nonManifoldEdges > 0) lines.push(t(language, 'repair.diag.nonManifold', { count: n(current.nonManifoldEdges) }));
     if (current.duplicateFaces + current.degenerateFaces > 0) lines.push(t(language, 'repair.diag.faces', { count: n(current.duplicateFaces + current.degenerateFaces) }));

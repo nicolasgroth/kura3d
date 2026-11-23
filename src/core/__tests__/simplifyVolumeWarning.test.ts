@@ -29,7 +29,7 @@ describe('simplificar con pérdida de volumen', () => {
     const pct = (100 * (computeMeshStats(after).volumeMm3 - computeMeshStats(mesh).volumeMm3)) / computeMeshStats(mesh).volumeMm3;
     expect(Math.abs(pct)).toBeGreaterThan(OPERATION_DEFAULTS.simplify.volumeWarnPct);
     expect(change.warnings).toEqual([{ code: 'SIMPLIFY_VOLUME_CHANGED', params: { pct: Math.round(pct * 10) / 10 } }]);
-    expect(localizeEngineWarning('es', change.warnings[0])).toContain(String(Math.round(pct * 10) / 10));
+    expect(localizeEngineWarning('es', change.warnings[0])).toContain(String(Math.round(pct * 10) / 10).replace('.', ','));
   });
 
   it('no avisa si el volumen casi no cambia', async () => {

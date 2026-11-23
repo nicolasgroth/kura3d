@@ -19,6 +19,7 @@ import { SPLITPREFS_HI } from './splitPrefs';
 import { SPLITCOUPLING_HI } from './splitCoupling';
 import { A11YUX_HI } from './a11yUx';
 import { SPLITUX_HI } from './splitUx';
+import { UXTEXTO_HI } from './uxTexto';
 import { FIX10_HI } from './fix10';
 import { OPNOTES_HI } from './operationNotes';
 import { IMPORTREAL_HI } from './importReal';
@@ -39,6 +40,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...SPLITCOUPLING_HI,
   ...A11YUX_HI,
   ...SPLITUX_HI,
+  ...UXTEXTO_HI,
   ...FIX10_HI,
   ...OPNOTES_HI,
   ...IMPORTREAL_HI,
@@ -391,7 +393,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'badge.localNoAiTip': 'ऑफ़लाइन नियतात्मक मोड: कोई भी डेटा आपके डिवाइस से बाहर नहीं जाता',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': 'घटाव अभी लागू करें',
+  'ctx.applyHoles': 'घटाव लागू करें',
   'ctx.unionSelection': 'चयन को जोड़ें',
   'ctx.hollow': 'भाग को खोखला करें (शेल)',
   'ctx.planeCut': 'समतल कट + कनेक्टर',
@@ -1141,7 +1143,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.settings.test.url': 'मान्य बेस URL आवश्यक है।',
   'dialog.settings.test.local': 'स्थानीय मोड: जाँचने के लिए कोई बाहरी कनेक्शन नहीं है।',
   'mcp.setup.pathLabel': 'आपकी Kura3D प्रति का पथ (वैकल्पिक)',
-  'mcp.setup.pathNote': 'ऐप को आपकी Kura3D प्रति की जगह नहीं पता। यहाँ पथ लिखें या <RUTA_AL_REPOSITORIO> हाथ से बदलें।',
+  'mcp.setup.pathNote': 'ऐप को आपकी Kura3D प्रति की जगह नहीं पता। यहाँ पथ लिखें या <REPO_PATH> हाथ से बदलें।',
   'mcp.setup.helpTitle': 'MCP सर्वर अभी उत्तर नहीं दे रहा: चरण',
   'mcp.setup.step1': '1. Kura3D फ़ोल्डर से सर्वर एक बार बनाएँ:',
   'mcp.setup.step2': '2. इसे अपने MCP क्लाइंट में पंजीकृत करें। Claude Code में (<TOKEN> को ऊपर के टोकन से बदलें):',
@@ -1311,7 +1313,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.sum.jointsGlueValue': '{count}: {with} कनेक्टर सहित, {glue} केवल चिपकाने हेतु',
   'split.sum.jointsAllValue': '{count}, सभी कनेक्टर सहित',
   'split.sum.jointsNoneValue': '{count}, केवल चिपकाने हेतु (बिना कनेक्टर)',
-  'split.sum.margin': 'सबसे कम मार्जिन',
+  'split.sum.margin': 'न्यूनतम खाली जगह',
   'split.sum.marginValue': 'बेड से {mm} mm ({code})',
   'split.glueOptions': 'कनेक्टर पाने के लिए:',
   'split.glueLowerMin': 'न्यूनतम दीवार घटाएँ',

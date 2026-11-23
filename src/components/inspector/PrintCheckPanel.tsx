@@ -21,6 +21,7 @@ import { currentPrintReport } from '../../store/printReportSelectors';
 import type { PrintWarningCode, SceneObject } from '../../types/kura';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { MeshRepairSummary } from './MeshRepairSummary';
+import { formatLocaleNumber, formatQuantity } from '../../i18n/numberLocale';
 
 /** Icono de cada aviso (el estado no depende solo del color). */
 const ISSUE_ICONS: Record<PrintWarningCode, LucideIcon> = {
@@ -95,7 +96,7 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
       </button>
 
       {report && (
-        <div className="kura-report-card">
+        <div className="kura-report-card" id="kura-print-report" tabIndex={-1}>
           <div className="kura-field-row">
             <span className="kura-field-label">{t(language, 'inspector.pro.score')}</span>
             <span className={`kura-score-pill ${report.score >= 80 ? 'is-good' : report.score >= 55 ? 'is-warn' : 'is-bad'}`}>
@@ -106,7 +107,7 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
           <div className="kura-stats-grid">
             <div className="kura-stat-box">
               <div className="kura-stat-title">{t(language, 'inspector.pro.overhangs')}</div>
-              <div className="kura-stat-val">{report.overhangPercent.toFixed(1)}%</div>
+              <div className="kura-stat-val">{formatQuantity(language, report.overhangPercent, '%', { maxFrac: 1, minFrac: 1 })}</div>
             </div>
             <div className="kura-stat-box">
               <div className="kura-stat-title">{t(language, 'viewport.bedLabel')}</div>
@@ -114,7 +115,7 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
                 {!report.fitsInBed
                   ? t(language, 'inspector.pro.outOfBed')
                   : report.isFloating
-                    ? t(language, 'inspector.pro.floating', { mm: report.minYWorldMm.toFixed(1) })
+                    ? t(language, 'inspector.pro.floating', { mm: formatLocaleNumber(language, report.minYWorldMm, { maxFrac: 1, minFrac: 1 }) })
                     : t(language, 'inspector.pro.grounded')}
               </div>
             </div>
@@ -122,8 +123,8 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
 
           <div className="kura-printcheck-estimate" data-testid="print-material-estimate">
             <span>
-              {t(language, 'inspector.pro.weight')} ≈ {report.estimatedWeightGrams.toFixed(1)} g · {t(language, 'inspector.pro.filament')} ≈{' '}
-              {report.estimatedFilamentMeters.toFixed(1)} m
+              {t(language, 'inspector.pro.weight')} ≈ {formatQuantity(language, report.estimatedWeightGrams, 'g', { maxFrac: 1, minFrac: 1 })} · {t(language, 'inspector.pro.filament')} ≈{' '}
+              {formatQuantity(language, report.estimatedFilamentMeters, 'm', { maxFrac: 1, minFrac: 1 })}
             </span>
             <span className="kura-printcheck-estimate-note">{t(language, 'inspector.pro.estimateNote')}</span>
           </div>
@@ -134,10 +135,10 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
               <p>
                 {t(language, 'inspector.pro.assumptions', {
                   material: t(language, `material.${assumptions.materialId}` as TranslationKey),
-                  density: assumptions.densityGCm3.toFixed(2),
+                  density: formatLocaleNumber(language, assumptions.densityGCm3, { maxFrac: 2, minFrac: 2 }),
                   infill: String(assumptions.infillPercent),
                   shell: String(Math.round(assumptions.shellFraction * 100)),
-                  filament: String(assumptions.filamentDiameterMm),
+                  filament: formatLocaleNumber(language, assumptions.filamentDiameterMm, { maxFrac: 2 }),
                 })}
               </p>
             </details>

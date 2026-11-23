@@ -7,7 +7,9 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useContextMenuRequest } from '../../store/contextMenuRequest';
 import { useKuraStore } from '../../store/useKuraStore';
+import { isContextMenuHandled } from './contextMenu/handledEvents';
 import { type ContextMenuState } from './viewportHelpers';
 
 /** Estado y lógica del menú contextual sobre objetos del visor. */
@@ -26,7 +28,7 @@ export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | 
 
       const rawX = clientX - rect.left;
       const rawY = clientY - rect.top;
-      const clampedX = Math.max(8, Math.min(rawX, Math.max(8, rect.width - 256)));
+      const clampedX = Math.max(8, Math.min(rawX, Math.max(8, rect.width - 308)));
       const clampedY = Math.max(8, Math.min(rawY, Math.max(8, rect.height - 490)));
       setContextMenu({ objectId, x: clampedX, y: clampedY });
     },
@@ -40,20 +42,41 @@ export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | 
   }, []);
   const handleBackgroundContextMenu = useCallback(
     (e: React.MouseEvent) => {
-      // Un objeto bajo el cursor ya atendió el evento (R3F llama a preventDefault).
-      if (e.defaultPrevented || (e.target as HTMLElement).tagName !== 'CANVAS') return;
+      // Un objeto bajo el cursor ya atendió el evento (lo marca SceneMeshItem). No sirve `defaultPrevented`:
+      // OrbitControls lo activa en todo clic derecho del lienzo.
+      if (isContextMenuHandled(e.nativeEvent) || (e.target as HTMLElement).tagName !== 'CANVAS') return;
       e.preventDefault();
       const down = rightDown.current;
       rightDown.current = null;
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) return;
       const rect = viewportRef.current?.getBoundingClientRect();
       if (!rect) return;
-      const x = Math.max(8, Math.min(e.clientX - rect.left, Math.max(8, rect.width - 256)));
+      const x = Math.max(8, Math.min(e.clientX - rect.left, Math.max(8, rect.width - 308)));
       const y = Math.max(8, Math.min(e.clientY - rect.top, Math.max(8, rect.height - 120)));
       setContextMenu({ objectId: null, x, y });
     },
     [viewportRef],
   );
+
+  // Menú pedido desde el árbol de Escena (clic derecho o teclado en una fila): mismas acciones que el del objeto.
+  const request = useContextMenuRequest((s) => s.request);
+  const returnFocus = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!request) return;
+    useContextMenuRequest.getState().clear();
+    const rect = viewportRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    returnFocus.current = request.returnFocus;
+    const x = Math.max(8, Math.min(request.x - rect.left, Math.max(8, rect.width - 308)));
+    const y = Math.max(8, Math.min(request.y - rect.top, Math.max(8, rect.height - 490)));
+    setContextMenu({ objectId: request.objectId, x, y });
+  }, [request, viewportRef]);
+  useEffect(() => {
+    if (contextMenu || !returnFocus.current) return;
+    const el = returnFocus.current;
+    returnFocus.current = null;
+    if (el.isConnected) el.focus({ preventScroll: true });
+  }, [contextMenu]);
 
   // Cerrar menú contextual con Escape o clic externo
   useEffect(() => {

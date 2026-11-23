@@ -19,6 +19,7 @@ import { buildSceneTree, descendantObjectIds, type TreeKey } from '../../core/sc
 import { useKuraStore } from '../../store/useKuraStore';
 import { matchSceneObjects } from '../../store/slices/quickActionsSlice';
 import { REQUEST_FRESH_MS } from './SceneSearch';
+import { useContextMenuRequest } from '../../store/contextMenuRequest';
 import { SceneTreeRow, type DropPlace } from './SceneTreeRow';
 import { visibleTreeRows, type TreeRow } from './sceneTreeRows';
 import { confirmDeleteSelection } from './confirmDeleteSelection';
@@ -204,6 +205,15 @@ export const SceneObjectList: React.FC = () => {
     listRef.current?.focus();
   };
 
+  /** Abre el menú del objeto de la fila (selecciona el objeto si no lo estaba). Los grupos no tienen menú. */
+  const openRowMenu = (row: TreeRow, x: number, y: number, returnFocus: HTMLElement | null) => {
+    if (row.node.kind !== 'object') return;
+    const id = row.node.object.id;
+    if (!useKuraStore.getState().selectedIds.includes(id)) setSelection([id]);
+    setActiveKey(row.key);
+    useContextMenuRequest.getState().open({ objectId: id, x, y, returnFocus });
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (renamingKey || !active) return;
     const mods = { shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey };
@@ -212,6 +222,14 @@ export const SceneObjectList: React.FC = () => {
       e.stopPropagation();
     };
     const st = useKuraStore.getState();
+    // Menú contextual de la fila activa: tecla Menú o Mayús+F10.
+    if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) {
+      handled();
+      const rowEl = document.getElementById(rowId(active.key));
+      const box = rowEl?.getBoundingClientRect();
+      openRowMenu(active, box ? box.left + 32 : 8, box ? box.bottom : 8, listRef.current);
+      return;
+    }
     if (e.altKey && !e.ctrlKey && !e.metaKey) {
       const key = active.key;
       const ok =
@@ -377,7 +395,7 @@ export const SceneObjectList: React.FC = () => {
         className="kura-scene-list kura-scene-tree"
         role="tree"
         aria-multiselectable="true"
-        aria-keyshortcuts="F2 Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight Alt+ArrowLeft"
+        aria-keyshortcuts="F2 Shift+F10 ContextMenu Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight Alt+ArrowLeft"
         aria-label={t(language, 'sidebar.scene.listLabel')}
         aria-describedby={`${baseId}-hint`}
         aria-activedescendant={active ? rowId(active.key) : undefined}
@@ -401,6 +419,7 @@ export const SceneObjectList: React.FC = () => {
             onCancelRename={cancelRename}
             onRenameField={focusRenameField}
             onClick={(e) => handleClick(e, row)}
+            onContextMenu={(x, y) => openRowMenu(row, x, y, listRef.current)}
             onDoubleClick={() => {
               const start = rows.find((r) => r.key === clickStart.current) ?? row;
               setActiveKey(start.key);

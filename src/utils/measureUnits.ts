@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import { formatLocaleNumber } from '../i18n/numberLocale';
 import type { LanguageCode, UnitSystem } from '../types/kura';
 import { fromMm } from './units';
 
@@ -18,8 +19,6 @@ export const US_CUP_ML = 236.5882365;
 
 const isImperial = (unit: UnitSystem) => unit === 'in' || unit === 'ft';
 
-const LOCALES: Record<LanguageCode, string> = { es: 'es-CL', en: 'en-US', de: 'de-DE', fr: 'fr-FR', hi: 'hi-IN', zh: 'zh-CN' };
-const formatters = new Map<string, Intl.NumberFormat>();
 
 /**
  * Número sin decimales sobrantes ("64000", "56.57", "0"). Con idioma usa el separador de miles y
@@ -28,13 +27,7 @@ const formatters = new Map<string, Intl.NumberFormat>();
 const trim = (value: number, decimals: number, lang?: LanguageCode) => {
   const safe = Math.abs(value) < 1e-12 || Math.abs(Number(value.toFixed(decimals))) === 0 ? 0 : value;
   if (!lang) return String(Number(safe.toFixed(decimals)));
-  const key = `${lang}:${decimals}`;
-  let f = formatters.get(key);
-  if (!f) {
-    f = new Intl.NumberFormat(LOCALES[lang], { maximumFractionDigits: decimals, minimumFractionDigits: 0, useGrouping: true });
-    formatters.set(key, f);
-  }
-  return f.format(safe);
+  return formatLocaleNumber(lang, safe, { maxFrac: decimals, grouping: true });
 };
 
 /** Longitud en la unidad activa con decimales por unidad. */

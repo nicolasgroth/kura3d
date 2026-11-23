@@ -144,7 +144,7 @@ export const ViewportHudTop: React.FC = () => {
                   aria-label={t(language, 'viewport.section.height')}
                 />
                 <span style={{ fontFamily: 'monospace', minWidth: 46 }}>
-                  {formatDimension(sectionPlane.heightMm, unitSystem, 1)}
+                  {formatDimension(sectionPlane.heightMm, unitSystem, 1, language)}
                 </span>
               </label>
             )}

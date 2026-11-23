@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import { formatQuantity } from '../i18n/numberLocale';
 import * as engine from '../engine';
 import { MODEL_IO_LIMITS } from '../engine/operationLimits';
 import type { TranslationKey } from '../i18n';
@@ -21,7 +22,7 @@ export type Translate = (key: TranslationKey, params?: Record<string, string | n
 export function formatMegabytes(bytes: number, language: LanguageCode): string {
   const mb = bytes / (1024 * 1024);
   const digits = mb < 10 ? 1 : 0;
-  return `${new Intl.NumberFormat(language, { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(mb)} MB`;
+  return formatQuantity(language, mb, 'MB', { maxFrac: digits, minFrac: digits });
 }
 
 /** Mensaje de archivo demasiado grande con el tamaño y el máximo. */

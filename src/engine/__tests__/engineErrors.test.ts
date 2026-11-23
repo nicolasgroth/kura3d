@@ -38,6 +38,6 @@ describe('Errores tipados del motor (engineErrors.ts)', () => {
     expect(localizeEngineError('en', err)).toContain('Invalid thread pitch');
     expect(localizeEngineError('de', new Error('x'))).toBe('x');
     const w = engineWarning('REFINE_LENGTH_CLAMPED', { requested: 0.2, effective: 1.23456, maxTriangles: 120000 });
-    expect(localizeEngineWarning('es', w)).toContain('1.23');
+    expect(localizeEngineWarning('es', w)).toContain('1,23');
   });
 });

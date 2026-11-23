@@ -18,6 +18,7 @@ export const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = 
   onClose,
 }) => {
   const language = useKuraStore((s) => s.language);
+  const historyMaxSteps = useKuraStore((s) => s.historyLimits.maxSteps);
 
   const sections: Array<{
     title: string;
@@ -26,8 +27,7 @@ export const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = 
     {
       title: t(language, 'dialog.shortcuts.secTransform'),
       items: [
-        { keys: ['M'], label: t(language, 'precision.moveInspectorHelp') },
-        { keys: ['G', 'W'], label: t(language, 'dialog.shortcuts.moveGizmo') },
+        { keys: ['M'], label: t(language, 'dialog.shortcuts.moveAll') },
         { keys: ['R'], label: t(language, 'dialog.shortcuts.rotateGizmo') },
         { keys: ['S'], label: t(language, 'dialog.shortcuts.scaleGizmo') },
         { keys: ['V'], label: t(language, 'dialog.shortcuts.selectTool') },
@@ -81,7 +81,7 @@ export const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = 
       title: t(language, 'dialog.shortcuts.secPalette'),
       items: [
         { keys: ['Ctrl+K'], label: t(language, 'dialog.shortcuts.cmdPalette') },
-        { keys: ['Ctrl+Z / Y'], label: t(language, 'dialog.shortcuts.undoRedo') },
+        { keys: ['Ctrl+Z / Y'], label: t(language, 'dialog.shortcuts.undoRedoMax', { max: historyMaxSteps }) },
         { keys: ['Ctrl/Shift+D'], label: t(language, 'dialog.shortcuts.duplicate') },
         { keys: ['Del'], label: t(language, 'dialog.shortcuts.delete') },
         { keys: ['F2'], label: t(language, 'dialog.shortcuts.rename') },

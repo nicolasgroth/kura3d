@@ -19,6 +19,7 @@ import { SPLITPREFS_ZH } from './splitPrefs';
 import { SPLITCOUPLING_ZH } from './splitCoupling';
 import { A11YUX_ZH } from './a11yUx';
 import { SPLITUX_ZH } from './splitUx';
+import { UXTEXTO_ZH } from './uxTexto';
 import { FIX10_ZH } from './fix10';
 import { OPNOTES_ZH } from './operationNotes';
 import { IMPORTREAL_ZH } from './importReal';
@@ -39,6 +40,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...SPLITCOUPLING_ZH,
   ...A11YUX_ZH,
   ...SPLITUX_ZH,
+  ...UXTEXTO_ZH,
   ...FIX10_ZH,
   ...OPNOTES_ZH,
   ...IMPORTREAL_ZH,
@@ -391,7 +393,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'badge.localNoAiTip': '离线确定性模式：无任何数据离开您的设备',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': '立即应用减法',
+  'ctx.applyHoles': '应用减法',
   'ctx.unionSelection': '合并选中对象',
   'ctx.hollow': '抽壳（镂空零件）',
   'ctx.planeCut': '平面切割 + 连接件',
@@ -1141,7 +1143,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.settings.test.url': '需要有效的基础 URL。',
   'dialog.settings.test.local': '本地模式：没有需要测试的外部连接。',
   'mcp.setup.pathLabel': 'Kura3D 副本路径（可选）',
-  'mcp.setup.pathNote': '应用无法得知 Kura3D 副本的位置。请在此输入路径，或手动替换 <RUTA_AL_REPOSITORIO>。',
+  'mcp.setup.pathNote': '应用无法得知 Kura3D 副本的位置。请在此输入路径，或手动替换 <REPO_PATH>。',
   'mcp.setup.helpTitle': 'MCP 服务器尚未响应：步骤',
   'mcp.setup.step1': '1. 在 Kura3D 文件夹中构建一次服务器：',
   'mcp.setup.step2': '2. 在 MCP 客户端中注册。使用 Claude Code（将 <TOKEN> 替换为上方令牌）：',
@@ -1311,7 +1313,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'split.sum.jointsGlueValue': '{count}：{with} 处带连接件，{glue} 处仅胶合',
   'split.sum.jointsAllValue': '{count}，全部带连接件',
   'split.sum.jointsNoneValue': '{count}，仅胶合（无连接件）',
-  'split.sum.margin': '最小余量',
+  'split.sum.margin': '最小剩余空间',
   'split.sum.marginValue': '距打印床 {mm} mm（{code}）',
   'split.glueOptions': '若要连接件：',
   'split.glueLowerMin': '降低最小壁厚',

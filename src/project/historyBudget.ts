@@ -9,6 +9,8 @@
  * @license MIT
  */
 
+import { formatLocaleNumber } from '../i18n/numberLocale';
+import type { LanguageCode } from '../types/kura';
 import { faceColorDeltaBytes } from '../engine/paint/colorDelta';
 import type { MeshData } from '../types/kura';
 import { isPaintDeltaStep, type HistoryStep } from '../store/historySteps';
@@ -166,9 +168,9 @@ export function defaultHistoryLimits(env?: { deviceMemory?: number; width?: numb
 }
 
 /** Megabytes legibles: un decimal bajo 10 MB, enteros desde ahí. */
-export function formatMb(bytes: number): string {
+export function formatMb(bytes: number, lang: LanguageCode = 'es'): string {
   const mb = bytes / MB;
-  return mb < 10 ? mb.toFixed(1) : String(Math.round(mb));
+  return mb < 10 ? formatLocaleNumber(lang, mb, { maxFrac: 1, minFrac: 1 }) : formatLocaleNumber(lang, Math.round(mb), { maxFrac: 0 });
 }
 
 /**

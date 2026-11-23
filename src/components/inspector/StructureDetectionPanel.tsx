@@ -15,6 +15,7 @@ import { structureLabel } from '../../utils/structureLabels';
 import { formatDimension } from '../../utils/units';
 import { type InspectorSectionProps } from './inspectorTypes';
 import '../../styles/structure-highlight.css';
+import { formatQuantity } from '../../i18n/numberLocale';
 
 /** Detección de estructuras dentro de Herramientas Maker. */
 /** Grosor mínimo (mm) para listar una región como parte. */
@@ -186,11 +187,11 @@ export const StructureDetectionPanel: React.FC<InspectorSectionProps> = ({ prima
 
                       <div className="kura-struct-meta">
                         <span>
-                          {formatDimension(region.dimensionsMm[0], unitSystem, 1)} ×{' '}
-                          {formatDimension(region.dimensionsMm[2], unitSystem, 1)} ×{' '}
-                          {formatDimension(region.dimensionsMm[1], unitSystem, 1)}
+                          {formatDimension(region.dimensionsMm[0], unitSystem, 1, language)} ×{' '}
+                          {formatDimension(region.dimensionsMm[2], unitSystem, 1, language)} ×{' '}
+                          {formatDimension(region.dimensionsMm[1], unitSystem, 1, language)}
                         </span>
-                        <span>{region.percentOfModel.toFixed(1)}%</span>
+                        <span>{formatQuantity(language, region.percentOfModel, '%', { maxFrac: 1, minFrac: 1 })}</span>
                       </div>
 
                       <div className="kura-struct-actions">
