@@ -46,6 +46,25 @@ test('clic al centro de la fila selecciona y no oculta; botones a la derecha al 
   expect(errs).toEqual([]);
 });
 
+for (const [ancho, alto, tema] of [[1024, 768, 'dark'], [390, 844, 'light']] as const) {
+  test(`a ${ancho} px (${tema}) el clic en la zona del nombre selecciona sin ocultar`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: tema });
+    const errs = await abrir(page, ancho, alto);
+    await page.evaluate((t) => (window as any).__s.getState().setColorScheme(t), tema);
+    await crear(page, 'box', { width: 30, height: 30, depth: 30 }, [-40, 15, 0]);
+    await crear(page, 'sphere', undefined, [40, 15, 0]);
+    await page.evaluate(() => (window as any).__s.getState().setSelection([]));
+    if (ancho < 900) await page.getByRole('button', { name: 'Formas', exact: true }).click();
+    await page.getByRole('tab', { name: /Escena/ }).click();
+    const cubo = fila(page, /Cubo/);
+    await cubo.click({ position: { x: 40, y: 12 } });
+    expect(await seleccion(page)).toEqual([expect.stringMatching(/Cubo/)]);
+    expect(await page.evaluate(() => (window as any).__s.getState().objects.every((o: any) => o.visible))).toBe(true);
+    await page.screenshot({ path: `${SHOTS}/4-fila-${ancho}-${tema}.png` });
+    expect(errs).toEqual([]);
+  });
+}
+
 test('Mayús+clic agrega un rango y Ctrl+clic alterna un elemento', async ({ page }) => {
   const errs = await abrir(page, 1440, 900);
   await preparar(page);
