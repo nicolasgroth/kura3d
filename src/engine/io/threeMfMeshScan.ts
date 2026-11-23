@@ -49,9 +49,10 @@ function eachLeaf(xml: string, local: string, visit: (from: number, to: number) 
     }
     const gt = xml.indexOf('>', nameEnd);
     if (gt < 0 || gt - lt > MAX_XML_TAG_LENGTH) throw new ModelImportError('corrupt', `etiqueta <${local}> sin cerrar`);
-    for (let k = nameEnd; k < gt; k++) {
-      if (xml.charCodeAt(k) === 60) throw new ModelImportError('corrupt', `etiqueta <${local}> sin cerrar`);
-    }
+    // `indexOf` nativo: se detiene en el próximo `<`, que en un archivo sano está justo tras `>`; como el
+    // recorrido sigue desde `gt + 1`, cada carácter se examina a lo sumo dos veces (lineal).
+    const nextLt = xml.indexOf('<', nameEnd);
+    if (nextLt >= 0 && nextLt < gt) throw new ModelImportError('corrupt', `etiqueta <${local}> sin cerrar`);
     visit(nameEnd, xml.charCodeAt(gt - 1) === 47 ? gt - 1 : gt);
     count++;
     pos = gt + 1;
