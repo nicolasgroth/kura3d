@@ -48,9 +48,13 @@ function accepted(wasm: ManifoldToplevel, mesh: MeshData): boolean {
  * para que el llamador avise. No modifica `mesh`.
  */
 export function closeSplitMesh(wasm: ManifoldToplevel, mesh: MeshData): ClosedSplitMesh {
-  if (closedBoth(mesh)) return { mesh, closed: true };
+  // La definición única sobre la malla original se calcula una sola vez (la usan la primera prueba y el respaldo)
+  let originalClosed: boolean | undefined;
+  const closedByDefinition = () => (originalClosed ??= isMeshClosed(mesh.positions, mesh.indices));
+  if (countUnpairedEdges(mesh) === 0 && closedByDefinition()) return { mesh, closed: true };
   const collapsed = collapseShortEdges(mesh);
-  if (closedBoth(collapsed)) return { mesh: collapsed, closed: true };
+  // Sin vértices fundidos es la misma malla: ya se sabe que no cierra
+  if (collapsed !== mesh && closedBoth(collapsed)) return { mesh: collapsed, closed: true };
   try {
     const solid = meshDataToManifold(wasm, collapsed);
     try {
@@ -63,7 +67,7 @@ export function closeSplitMesh(wasm: ManifoldToplevel, mesh: MeshData): ClosedSp
     // Sin reconstrucción posible: se sigue con la definición única y la reparación.
   }
   // Las micro-aristas que solo se abren al soldar a 1e-4 no impiden imprimir: vale la definición única.
-  if (isMeshClosed(mesh.positions, mesh.indices) && accepted(wasm, mesh)) return { mesh, closed: true };
+  if (closedByDefinition() && accepted(wasm, mesh)) return { mesh, closed: true };
   const fixed = repairMeshData(mesh);
   if (fixed.report.after.closed && accepted(wasm, fixed.mesh)) return { mesh: fixed.mesh, closed: true, repaired: true };
   return { mesh, closed: false };
