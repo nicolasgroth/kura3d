@@ -34,11 +34,13 @@ describe('Ahuecado: motivos y basura', () => {
     await expect(hollowMeshDetailed(makeObject('b', box), { enabled: true, wallThickness: 6 })).rejects.toMatchObject({ code: 'HOLLOW_WALL_TOO_THICK' });
   });
 
-  it('estimación previa de la pared: 150 mm con pared 2 avisa ~2,8 mm; 30 mm no avisa', () => {
+  it('estimación previa de la pared: con la proyección al nivel exacto 150 mm con pared 2 ya no avisa; 600 mm con pared 1 sí', () => {
     const big = estimateHollowWall([150, 150, 150], 2);
-    expect(big.coarse).toBe(true);
-    expect(big.maxWallMm).toBeGreaterThan(2.5);
-    expect(big.maxWallMm).toBeLessThan(3.1);
+    expect(big.coarse).toBe(false);
+    expect(big.maxWallMm).toBeLessThanOrEqual(2.2);
+    const huge = estimateHollowWall([600, 600, 600], 1);
+    expect(huge.coarse).toBe(true);
+    expect(huge.maxWallMm).toBeGreaterThan(1.1);
     expect(estimateHollowWall([30, 30, 30], 2).coarse).toBe(false);
   });
 
