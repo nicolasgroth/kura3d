@@ -4,7 +4,7 @@ Dos operaciones para preparar una pieza: partirla con un plano (con o sin conect
 
 ## Cortar con un plano
 
-1. Selecciona la pieza y pulsa **C** (o el botón **Cortar** de la barra superior, o *Corte por plano + uniones* en el inspector). Se abre el panel *Corte por plano + uniones* y aparece el **plano naranja** en el visor.
+1. Selecciona la pieza y pulsa **C** (o el botón **Cortar** de la barra superior, o *Corte por plano + uniones* en el resumen del objeto, panel derecho). Se abre el panel *Corte por plano + uniones* y aparece el **plano naranja** en el visor.
 2. Elige el **Eje del plano de corte**: *Z (horizontal)* corta en altura; X e Y cortan en vertical.
 3. Mueve el plano: arrástralo en el visor, usa el deslizador o escribe el **Desplazamiento desde el centro (mm)**. Con el foco en el visor, las flechas ↑/↓ también lo mueven. Los puntos azules marcan dónde irán los conectores.
 4. Elige el **Tipo de conector** (por ejemplo *Tarugo cilíndrico*) o *Sin conectores (corte limpio)*. Kura3D recomienda un diámetro según la sección; puedes editarlo, junto con la profundidad de encastre, la tolerancia de impresión y la cantidad.
@@ -21,12 +21,12 @@ Si conservas una sola mitad y quedaría flotando sobre la cama, el diálogo preg
 
 ## Ahuecar
 
-1. Selecciona un sólido. En el inspector busca **Grosor de pared (mm)**, en Operaciones 3D.
+1. Selecciona un sólido y elige **Acciones › Ahuecar…** (o **Ahuecar…** en el resumen del objeto del panel derecho, o *Ahuecar* en el menú del clic derecho). El panel derecho muestra solo las opciones de Ahuecar, con el foco en **Grosor de pared (mm)**; **Volver** o **Esc** regresan al resumen.
 2. Elige el grosor (campo o deslizador, por defecto 2,2 mm). Si la pieza es muy grande para ese grosor, un aviso te dice cuál es el máximo.
 3. Opcional: marca **Orificio de drenaje inferior** para poder sacar el material sobrante (resina o polvo).
 4. **Ver interior** te deja mirar dentro de la pieza (la cámara la encuadra); **Aplicar ahuecado** la vacía. Tras cortar por plano, la cámara también encuadra las mitades.
 
-![Panel Ahuecar en el inspector](img/cortar-y-ahuecar-03-ahuecar.png)
+![Opciones de Ahuecar en el panel derecho](img/cortar-y-ahuecar-03-ahuecar.png)
 
 ## Problemas frecuentes
 

@@ -7,16 +7,21 @@ Esta guía te lleva de la pantalla vacía a una escena con tres piezas que puede
 ![Kura3D recién abierto, con la escena vacía](img/primeros-pasos-01-vacio.png)
 
 - **Barra superior:** a la izquierda el grupo *Archivo* (**Importar**, *Proyecto* y **Exportar**), *Deshacer*, *Rehacer* y el **historial** (el reloj: lista lo que hiciste y te deja volver a cualquier punto), y el menú **Acciones**. A la derecha: búsqueda de comandos, idioma, temas, tema claro u oscuro, **Rótulos**, el estado del puente MCP, el asistente *IA* y *Ajustes*.
-- **Barra de herramientas (vertical, junto al visor):** *Seleccionar*, *Mover*, *Rotar* y *Escalar* (el modo del manipulador), y después *Pintar*, *Cortar*, *Esculpir / Borrar* y *Medir*. La herramienta activa queda marcada con fondo y una raya al costado. Con el teclado es una sola parada de **Tab**; las flechas recorren los botones.
-- **Barra de vista (arriba del visor, en una sola fila):** vistas *Iso*, *Superior*, *Frente* y *Derecha* (el icono del cubo marca la cara que miras), *Encuadrar*, *Sin cama*, *Rayos X* y la *Rejilla*. Si falta espacio, quedan solo los iconos.
+- **Barra de herramientas (vertical, junto al visor):** *Seleccionar*, *Mover*, *Rotar* y *Escalar* (el modo del manipulador), y después *Pintar*, *Cortar*, *Esculpir* (esculpir o borrar volumen; el nombre completo sale en la ayuda) y *Medir*. La herramienta activa queda marcada con fondo y una raya al costado. Con el teclado es una sola parada de **Tab**; las flechas recorren los botones.
+- **Barra de vista (arriba del visor, en una sola fila):** vistas *Iso*, *Superior*, *Frente* y *Derecha* (el icono del cubo marca la cara que miras), *Encuadrar*, *Sin cama*, *Rayos X* y la *Rejilla*. Si falta espacio, primero las vistas y luego el resto quedan solo con su icono.
 - **Panel izquierdo:** la pestaña *Formas* (piezas para crear) y la pestaña *Escena* (lista de todo lo que hay). Tiene tres estados (ver más abajo).
 - **Visor 3D:** la cama de tu impresora con la rejilla. Abajo ves el tamaño de la selección y la cama activa.
-- **Inspector (derecha):** nombre, color, medidas y posición del objeto seleccionado.
+- **Panel derecho (contextual):** muestra una sola cosa según lo que estés haciendo:
+  - **Sin selección, el *Proyecto*:** nombre, si hay cambios sin guardar, cantidad de objetos, cama activa y unidades (con **Cambiar unidades o cama**).
+  - **Con un objeto, su resumen:** nombre, tipo de volumen, material y color, parámetros, posición, rotación y escala, medidas y estado de la malla, y debajo los accesos a sus operaciones (*Ahuecar…*, *Simplificar…*, *Textura superficial…*, *Módulos…*, revisar e imprimir, detectar estructuras, cortar, dividir, ajustar a la impresora, molde, proyectar y rosca). Con varios objetos, las booleanas y la alineación.
+  - **Con una operación activa, solo sus opciones:** el título, sobre qué objeto actúa, su botón de aplicar y **Volver** (o **Esc**) para regresar al resumen. Al abrir una operación el foco pasa al panel y, al volver, regresa al botón desde el que la abriste. Cortar, Dividir para imprimir, Ajustar a la impresora, Molde, Proyectar, Rosca y Medir abren su propio panel en el mismo lugar.
+  - **Ancho y plegado:** arrastra el borde izquierdo del panel (o enfócalo con **Tab** y usa **←** / **→**; **Inicio** y **Fin** van al mínimo y al máximo) para ensancharlo o reducirlo. El botón **›** del borde lo pliega a una tira y **‹** lo vuelve a abrir; ancho y estado se recuerdan. Si eliges una operación con el panel plegado, se abre solo.
+  - En el teléfono el mismo contenido va en la hoja inferior (botón **Inspector**).
 - **Barra de estado:** unidad (mm), impresora, cantidad de objetos y triángulos, y *Atajos*. Al pasar el cursor o el foco por cualquier botón de las barras, el centro de la barra de estado explica qué hace y su atajo.
 
 ### Menú Acciones
 
-Reúne las operaciones sobre la selección que no son herramientas de puntero: *Ahuecar*, *Dividir para imprimir*, *Ajustar a la impresora*, *Generar molde*, *Reparar malla*, *Simplificar*, *Separar por colores*, *Separar piezas sueltas*, *Agrupar*, *Combinar*, *Aplicar restas*, *Convertir en ▸*, *Apoyar* y *Centrar en la cama*, *Alinear y distribuir ▸* y las revisiones. Cada una hace lo mismo que en el menú contextual o la paleta. Si una sale gris, debajo dice por qué (por ejemplo «Selecciona un objeto primero»).
+Reúne las operaciones sobre la selección que no son herramientas de puntero: *Ahuecar*, *Dividir para imprimir*, *Ajustar a la impresora*, *Generar molde*, *Módulos*, *Reparar malla*, *Simplificar*, *Textura superficial*, *Separar por colores*, *Separar piezas sueltas*, *Agrupar*, *Combinar*, *Aplicar restas*, *Convertir en ▸*, *Apoyar* y *Centrar en la cama*, *Alinear y distribuir ▸* y las revisiones. Cada una hace lo mismo que en el menú contextual o la paleta; las que tienen opciones (Ahuecar, Simplificar, Textura, Módulos, las revisiones) las muestran en el panel derecho. Si una sale gris, debajo dice por qué (por ejemplo «Selecciona un objeto primero»).
 
 ### Rótulos: iconos con texto o solo iconos
 

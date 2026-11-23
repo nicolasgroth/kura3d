@@ -16,7 +16,7 @@ En la versión web, guardar descarga el archivo `.kura` a tu carpeta de descarga
 
 Mientras trabajas, la barra de estado muestra «Guardando borrador…» y luego «Borrador local guardado». Es una copia de seguridad automática en tu navegador o equipo, no un reemplazo de guardar el proyecto.
 
-1. Si cierras la pestaña o la app sin guardar y vuelves a abrir Kura3D, aparece arriba el aviso **Borradores locales** con la fecha del borrador.
+1. Si cierras la pestaña o la app sin guardar y vuelves a abrir Kura3D, aparece arriba el aviso **Borradores locales** con la fecha del borrador y cuántos objetos trae (los borradores guardados con versiones anteriores no lo indican).
 2. Pulsa **Recuperar** para volver a tu escena, **Descartar** para borrarlo o **Posponer** para decidir después.
 3. Si hay varios borradores, **Elegir borrador** te deja escoger.
 

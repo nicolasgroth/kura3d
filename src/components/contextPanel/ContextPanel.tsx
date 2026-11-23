@@ -50,13 +50,11 @@ function announcement(language: LanguageCode, ctx: PanelContext, objects: SceneO
 /** Anuncia el contexto nuevo (no el inicial) en una región viva discreta. */
 function useContextAnnouncement(language: LanguageCode, ctx: PanelContext, objects: SceneObject[]): string {
   const key = panelContextKey(ctx);
-  const first = useRef(true);
+  const previous = useRef(key);
   const [text, setText] = useState('');
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
+    if (previous.current === key) return;
+    previous.current = key;
     setText(announcement(language, ctx, objects));
     // Solo cuando cambia el contexto, no con cada edición del objeto.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,7 +143,7 @@ export const ContextPanel: React.FC<{ ui: InspectorLocalState }> = ({ ui }) => {
     >
       <InspectorEdgeToggle />
       {!rightCollapsed && <PanelResizer />}
-      <div className="kura-sr-only" role="status" aria-live="polite" data-testid="panel-live">
+      <div className="kura-ctx-live" role="status" aria-live="polite" data-testid="panel-live">
         {live}
       </div>
       {body}

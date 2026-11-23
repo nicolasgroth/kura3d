@@ -1,6 +1,7 @@
 /**
  * @file src/components/__tests__/recoveryBannerCollapsed.test.tsx
- * @description El aviso de «Borradores locales» recuerda que el usuario lo plegó al volver a montarse.
+ * @description El aviso de «Borradores locales» recuerda que el usuario lo plegó al volver a montarse y dice
+ * cuántos objetos trae el borrador (si el borrador lo guardó).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -35,5 +36,14 @@ describe('ProjectRecoveryBanner: recuerda el estado plegado', () => {
     const third = render(<ProjectRecoveryBanner {...props} />);
     expect((third.container.querySelector('.kura-recovery-body') as HTMLElement).hidden).toBe(false);
     expect(screen.getByText('Mi pieza')).toBeTruthy();
+  });
+
+  it('dice cuántos objetos trae el borrador, y nada si es un borrador anterior sin el dato', () => {
+    const withCount = { ...draft, objectCount: 3 } as RecoveryDraftInfo;
+    const first = render(<ProjectRecoveryBanner {...props} drafts={[withCount]} />);
+    expect(screen.getByTestId('recovery-object-count').textContent).toBe('3 objetos');
+    first.unmount();
+    render(<ProjectRecoveryBanner {...props} />);
+    expect(screen.queryByTestId('recovery-object-count')).toBeNull();
   });
 });

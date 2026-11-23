@@ -26,10 +26,10 @@ Un STL no dice en qué unidad está. Si el tamaño no parece razonable (por ejem
 
 ## Estado de la malla y reparación
 
-En el inspector, la sección *Geometría y métricas* muestra dimensiones, volumen, triángulos, vértices y el estado de la **malla**: *Cerrada* (lista para imprimir) o con bordes libres.
+En el resumen del objeto (panel derecho), la sección *Geometría y métricas* muestra dimensiones, volumen, triángulos, vértices y el estado de la **malla**: *Cerrada* (lista para imprimir) o con bordes libres.
 
 1. Si la malla tiene agujeros, al importar aparece un aviso con el número de **bordes libres** y el botón **Reparar malla**.
-2. Pulsa **Reparar malla**. También está en el menú del objeto (clic derecho), en la paleta `Ctrl+K` («Reparar malla del objeto») y en las herramientas de preparación del inspector.
+2. Pulsa **Reparar malla**. También está en el menú del objeto (clic derecho), en la paleta `Ctrl+K` («Reparar malla del objeto») y en **Acciones › Reparar malla**.
 3. Kura3D cierra los agujeros, quita caras duplicadas y corrige las normales. El aviso resume lo hecho («Malla reparada: 1 agujero cerrado · triángulos: 10 → 12») con un botón **Ver detalles**.
 
 ![Un cubo al que le falta una cara: aviso de malla abierta con el botón Reparar malla](img/importar-y-reparar-03-malla-abierta.png)
@@ -38,7 +38,7 @@ En el inspector, la sección *Geometría y métricas* muestra dimensiones, volum
 
 ## Simplificar
 
-Un modelo con millones de triángulos pesa y tarda. Selecciónalo y, en *Optimizar / Remallar* del inspector, elige la **Tolerancia** (en mm) y pulsa **Simplificar**. A mayor tolerancia, menos triángulos y menos detalle. Con más de 300 mil triángulos Kura3D te lo sugiere en un aviso.
+Un modelo con millones de triángulos pesa y tarda. Selecciónalo y elige **Acciones › Simplificar…** (o **Simplificar…** en el resumen del objeto): el panel derecho muestra solo *Optimizar / Remallar*. Elige la **Tolerancia** (en mm) y pulsa **Simplificar**. A mayor tolerancia, menos triángulos y menos detalle. Con más de 300 mil triángulos Kura3D te lo sugiere en un aviso.
 
 ## Problemas frecuentes
 
