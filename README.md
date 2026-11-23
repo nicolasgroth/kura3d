@@ -27,21 +27,23 @@ El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kura3
 
 ## Capturas
 
-![Estudio con un perno M8, su tuerca, un toroide pintado en dos colores y texto 3D](docs/screenshots/01-estudio.png)
+Las capturas de abajo y las de las [guías](docs/guia/README.md) se generan desde la propia app con `npm run docs:capturas`, así no quedan desactualizadas.
 
-*Estudio en tema oscuro: piezas paramétricas, pintura por colores de filamento y el inspector con sus parámetros.*
+![Estudio con una caja seleccionada, un cilindro y una esfera, y el inspector con sus parámetros](docs/guia/img/primeros-pasos-02-interfaz.png)
 
-![Corte por plano con conectores](docs/screenshots/02-corte-con-uniones.png)
+*El estudio: formas y escena a la izquierda, visor 3D con la cama de tu impresora y el inspector con medidas exactas a la derecha.*
+
+![Dividir para imprimir: dos piezas A1 y B1 con el control de armado y las uniones](docs/guia/img/dividir-para-imprimir-02-resultado.png)
+
+*Dividir para imprimir: una pieza más grande que la cama queda en piezas con código, uniones y animación de armado.*
+
+![Medir la capacidad de un vaso: 48,8 mL](docs/guia/img/medir-03-capacidad.png)
+
+*Medir: distancias, ángulos, áreas, volumen y cuánto líquido cabe en un recipiente.*
+
+![Corte por plano con conectores](docs/guia/img/cortar-y-ahuecar-01-corte.png)
 
 *Corte por plano con uniones: el plano naranja y los puntos azules marcan dónde irán los conectores.*
-
-![Resta booleana con vista previa](docs/screenshots/03-booleana-vista-previa.png)
-
-*Booleanas con vista previa fantasma y rótulos Base y Herramienta antes de aplicar la operación.*
-
-![Dividir para imprimir: planos de corte y códigos de pieza sobre una pieza más grande que la cama](docs/screenshots/06-dividir-para-imprimir.png)
-
-*Dividir para imprimir: el plan se dibuja en el visor con sus planos arrastrables y el código de cada pieza; el panel resume piezas, placas y uniones.*
 
 ![Ajustes en tema claro e inglés](docs/screenshots/04-temas-e-idiomas.png)
 
@@ -56,11 +58,16 @@ El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kura3
 **Proyecto**
 - Proyectos `.kura` con escena, materiales, pintura e historial de deshacer. Autoguardado y recuperación de borradores. En escritorio, la lista de recientes recuerda las rutas y reabre con un clic (se puede desactivar en Ajustes).
 - Importar **STL, 3MF, OBJ y PLY**, varios archivos a la vez, por diálogo o arrastrando. Lee los 3MF de slicers (componentes, instancias, colores de filamento) conservando las posiciones.
-- Exportar **3MF, STL, OBJ con colores, GLB y PLY**, la escena completa o la selección.
+- **Ida y vuelta por 3MF exacta:** piezas, grupos, colores y posiciones se conservan al exportar y volver a abrir.
+- **Aviso de unidades dudosas** al importar, con la corrección sugerida (por ejemplo «Escalar ×100») y un solo Deshacer.
+- **Estado de la malla y Reparar malla:** el inspector dice si la malla está cerrada; si tiene agujeros o caras repetidas, un botón la repara y resume lo hecho.
+- Exportar **3MF, STL, OBJ con colores, GLB y PLY**, la escena completa o la selección; un grupo como un archivo o uno por objeto.
+- **Grupos y panel Escena** como árbol de capas: agrupar (`Ctrl+G`), plegar, ocultar, bloquear, renombrar y arrastrar.
 
 **Modelado**
-- Primitivas, texto 3D, unión, resta e intersección.
-- **Corte por plano con conectores** (espiga, pasador, cola de milano) con holgura configurable, también en aros y piezas en L.
+- Primitivas, texto 3D, unión, resta e intersección; **negativos** (`H`) que se restan todos juntos con «Aplicar restas».
+- **Medir** (`D`): distancia con imán, ángulo, área, volumen y **capacidad de un recipiente** hasta su rebalse, en mm, cm o pulgadas y mL o litros.
+- **Corte por plano con conectores** (espiga, pasador, cola de milano) con holgura configurable, también en aros y piezas en L; al conservar una sola mitad, tú eliges dónde dejarla.
 - **Ahuecado** con pared uniforme y orificio de drenaje.
 - **Moldes** de 1 pieza, 2 mitades, caja madre y núcleo/cavidad.
 - **Roscas ISO M3–M64** con paso y holgura automáticos según la norma.
@@ -69,6 +76,7 @@ El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kura3
 - Simplificar y refinar mallas, alinear y distribuir en la cama.
 
 **Preparación para imprimir**
+- **Dividir para imprimir:** parte un modelo más grande que tu cama en piezas con código (A1, B1…), uniones, marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza.
 - Pintura 3D por caras para impresión multicolor, con separación por color.
 - Detección de estructuras para separar un modelo en partes.
 - Análisis de imprimibilidad: malla cerrada, voladizos, tamaño de cama y peso aproximado.
@@ -82,18 +90,22 @@ El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kura3
 **Inteligencia artificial (opcional)**
 - Asistente local sin conexión que entiende órdenes simples en español e inglés.
 - Proveedores externos: Anthropic, OpenAI, Gemini, Ollama y **cualquier API compatible con OpenAI** (DeepSeek, Qwen, OpenRouter, LM Studio). En escritorio las claves se guardan en el llavero del sistema.
-- **Servidor MCP** con 30 herramientas para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Ver [mcp-server/README.md](mcp-server/README.md).
+- **Servidor MCP** con 42 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
+
+## Guías
+
+Paso a paso con capturas, para quien imprime y no programa: [**índice de guías**](docs/guia/README.md).
+
+[Primeros pasos](docs/guia/primeros-pasos.md) · [Importar y reparar](docs/guia/importar-y-reparar.md) · [Dividir para imprimir](docs/guia/dividir-para-imprimir.md) · [Cortar y ahuecar](docs/guia/cortar-y-ahuecar.md) · [Sólidos negativos y restas](docs/guia/solidos-negativos-y-restas.md) · [Grupos y escena](docs/guia/grupos-y-escena.md) · [Medir](docs/guia/medir.md) · [Colores y pintura](docs/guia/colores-y-pintura.md) · [Generadores](docs/guia/generadores.md) · [Exportar](docs/guia/exportar.md) · [Guardar y recuperar](docs/guia/guardar-y-recuperar.md) · [Servidor MCP](docs/MCP.md)
 
 ## Hacia dónde va
 
 El orden de trabajo está en el [roadmap](docs/ROADMAP.md). Lo siguiente:
 
-1. **Dividir para imprimir:** partir un modelo grande según el tamaño de tu cama, con uniones, piezas nombradas, marcas de pareja y animación de armado.
-2. **Vista previa en el visor** antes de aplicar cada operación.
-3. **Placas** como parte del proyecto y exportación por placa.
-4. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
-5. **Estudio configurable:** paneles móviles, pestañas de proyecto, clic derecho y línea de comandos.
-6. **Extensiones de terceros**, con las reglas ya escritas en [docs/EXTENSIONES.md](docs/EXTENSIONES.md).
+1. **Placas** como parte del proyecto y exportación por placa.
+2. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
+3. **Estudio configurable:** paneles móviles, pestañas de proyecto, clic derecho y línea de comandos.
+4. **Extensiones de terceros**, con las reglas ya escritas en [docs/EXTENSIONES.md](docs/EXTENSIONES.md).
 
 ## Instalación y desarrollo
 
@@ -133,6 +145,7 @@ Kura3D se desarrolla con agentes de IA organizados en tres equipos independiente
 
 ## Documentación
 
+- [Guías de uso](docs/guia/README.md) · [Servidor MCP: guía](docs/MCP.md)
 - [Tablero de funcionalidades](docs/TABLERO.md)
 - [Roadmap y prioridades](docs/ROADMAP.md)
 - [Registro de funcionalidades](docs/FUNCIONALIDADES.md)

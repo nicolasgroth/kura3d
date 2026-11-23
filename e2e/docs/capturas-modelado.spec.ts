@@ -20,8 +20,9 @@ test('medir', async ({ page }) => {
   await page.waitForTimeout(500);
   await captura(page, 'medir-01-herramienta');
   const b = await cajaMundo(page, caja.id);
-  await clicMundo(page, [b.min[0], b.max[1], b.max[2]]);
+  // Dos esquinas de la cara frontal derecha (visibles: el panel Medir tapa el lado izquierdo del visor).
   await clicMundo(page, [b.max[0], b.max[1], b.max[2]]);
+  await clicMundo(page, [(b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2, b.max[2]]);
   await page.waitForTimeout(500);
   await captura(page, 'medir-02-distancia');
   // Capacidad de un recipiente: vaso (cilindro menos un cilindro negativo).
@@ -76,15 +77,16 @@ test('cortar-y-ahuecar', async ({ page }) => {
   const caja = await cmd(page, 'create_primitive', { type: 'box', width: 50, height: 50, depth: 50, name: 'Cubo', position: [0, 0, 0] });
   await seleccionar(page, [caja.id]);
   await encuadrar(page, 'fit');
-  const ahuecar = page.getByRole('button', { name: /^Ahuecar/ }).first();
+  const ahuecar = page.locator('.kura-form-field', { has: page.locator('label', { hasText: /^Ahuecar$/ }) }).first();
   await ahuecar.scrollIntoViewIfNeeded();
   await page.waitForTimeout(400);
-  await captura(page, 'cortar-y-ahuecar-03-ahuecar', DER);
+  await captura(page, 'cortar-y-ahuecar-03-ahuecar', ahuecar);
+  expect(DER.x).toBeGreaterThan(0);
 });
 
 test('solidos-negativos-y-restas', async ({ page }) => {
   await abrir(page);
-  const base = await cmd(page, 'create_primitive', { type: 'box', width: 60, height: 60, depth: 30, name: 'Base', position: [0, 0, 0] });
+  const base = await cmd(page, 'create_primitive', { type: 'box', width: 60, height: 30, depth: 60, name: 'Base', position: [0, 0, 0] });
   const agujero = await cmd(page, 'create_primitive', { type: 'cylinder', radius: 8, height: 50, name: 'Agujero', isHole: true, position: [0, 0, 0] });
   await encuadrar(page, 'scene');
   await seleccionar(page, [agujero.id]);
@@ -114,19 +116,24 @@ test('grupos-y-escena', async ({ page }) => {
 
 test('colores-y-pintura', async ({ page }) => {
   await abrir(page);
-  const caja = await cmd(page, 'create_primitive', { type: 'box', width: 60, height: 40, depth: 30, name: 'Placa', position: [0, 0, 0] });
+  const caja = await cmd(page, 'create_primitive', { type: 'sphere', radius: 25, name: 'Bola', position: [0, 0, 0] });
   await encuadrar(page, 'scene');
   await seleccionar(page, [caja.id]);
+  // Dos colores por caras (mitad superior naranja, inferior verde), como dejaría el pincel.
   await page.evaluate(() => {
     const s = (window as any).__s;
     const st = s.getState();
     const o = st.objects[0];
     const p = o.mesh.positions;
     const ix = o.mesh.indices;
+    let lo = Infinity;
+    let hi = -Infinity;
+    for (let i = 1; i < p.length; i += 3) { lo = Math.min(lo, p[i]); hi = Math.max(hi, p[i]); }
+    const mid = (lo + hi) / 2;
     const fc: string[] = [];
     for (let t = 0; t < ix.length / 3; t++) {
       const cy = (p[3 * ix[3 * t] + 1] + p[3 * ix[3 * t + 1] + 1] + p[3 * ix[3 * t + 2] + 1]) / 3;
-      fc.push(cy > 0 ? '#f97316' : '#22c55e');
+      fc.push(cy > mid ? '#f97316' : '#22c55e');
     }
     s.setState({ objects: st.objects.map((x: any, i: number) => (i === 0 ? { ...x, mesh: { ...x.mesh, faceColors: fc } } : x)) });
   });

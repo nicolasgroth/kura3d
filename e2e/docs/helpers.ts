@@ -60,7 +60,7 @@ export async function encuadrar(page: Page, preset: 'fit' | 'scene' | 'iso' = 's
 
 /** Cierra los avisos flotantes para que no tapen lo que se explica. */
 export async function sinAvisos(page: Page): Promise<void> {
-  await page.evaluate(() => (window as any).__s.setState({ toasts: [] }));
+  await page.evaluate(() => (window as any).__s?.setState({ toasts: [] }));
   await page.waitForTimeout(200);
 }
 
