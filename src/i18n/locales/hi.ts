@@ -33,6 +33,7 @@ import { UXCIERRE_HI } from './uxCierre';
 import { UX3_EDICION_HI } from './ux3Edicion';
 import { UX4_HI } from './ux4';
 import { CORTEMITAD_HI } from './corteMitad';
+import { REALESMOTOR_HI } from './realesMotor';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -63,6 +64,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...UX3_EDICION_HI,
   ...UX4_HI,
   ...CORTEMITAD_HI,
+  ...REALESMOTOR_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',

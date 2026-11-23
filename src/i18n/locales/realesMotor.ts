@@ -1,0 +1,69 @@
+/**
+ * @file src/i18n/locales/realesMotor.ts
+ * @description Textos del lote de modelos reales (motor): escena restaurada desde un 3MF de la app,
+ * aviso de unidades dudosas con su reescalado, malla abierta compartida por varias piezas y resultado
+ * de simplificar (triángulos y volumen). Cada clave lleva [es, en, de, fr, hi, zh].
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+type Row = readonly [es: string, en: string, de: string, fr: string, hi: string, zh: string];
+
+const REALES_MOTOR_TABLE = {
+  'realesMotor.sceneRestored': [
+    'Escena restaurada tal como se exportó desde «{name}»: {count} objetos y {groups} grupos.',
+    'Scene restored exactly as exported from “{name}”: {count} objects and {groups} groups.',
+    'Szene genau wie aus „{name}“ exportiert wiederhergestellt: {count} Objekte und {groups} Gruppen.',
+    'Scène restaurée telle qu’exportée depuis « {name} » : {count} objets et {groups} groupes.',
+    '«{name}» से निर्यात की गई दृश्य जैसा था वैसा बहाल: {count} वस्तुएँ और {groups} समूह।',
+    '已按「{name}」导出时的原样恢复场景:{count} 个对象、{groups} 个组。',
+  ],
+  'realesMotor.openMeshShared': [
+    'La malla «{name}», usada en {count} piezas, está abierta ({edges} bordes sueltos).',
+    'The mesh “{name}”, used in {count} parts, is open ({edges} loose edges).',
+    'Das Netz „{name}“, verwendet in {count} Teilen, ist offen ({edges} lose Kanten).',
+    'Le maillage « {name} », utilisé dans {count} pièces, est ouvert ({edges} arêtes libres).',
+    'मेश «{name}», जो {count} भागों में उपयोग हुई है, खुली है ({edges} खुले किनारे)।',
+    '网格「{name}」被 {count} 个零件使用,且未封闭({edges} 条开放边)。',
+  ],
+  'realesMotor.repairAll': ['Reparar todas', 'Repair all', 'Alle reparieren', 'Tout réparer', 'सभी सुधारें', '全部修复'],
+  'realesMotor.unitDoubt': [
+    '«{name}» mide {size} mm en su lado mayor: puede que el archivo esté en otra unidad.',
+    '“{name}” measures {size} mm on its longest side: the file may use another unit.',
+    '„{name}“ misst an der längsten Seite {size} mm: Die Datei nutzt vielleicht eine andere Einheit.',
+    '« {name} » mesure {size} mm sur son plus grand côté : le fichier utilise peut-être une autre unité.',
+    '«{name}» की सबसे लंबी भुजा {size} mm है: फ़ाइल शायद किसी और इकाई में है।',
+    '「{name}」最长边为 {size} mm:文件可能使用了其他单位。',
+  ],
+  'realesMotor.unitScale': ['Escalar ×{factor}', 'Scale ×{factor}', 'Skalieren ×{factor}', 'Mettre à l’échelle ×{factor}', '×{factor} स्केल करें', '缩放 ×{factor}'],
+  'realesMotor.unitFit': ['Ajustar a {mm} mm', 'Fit to {mm} mm', 'Auf {mm} mm anpassen', 'Ajuster à {mm} mm', '{mm} mm पर फ़िट करें', '调整为 {mm} mm'],
+  'realesMotor.unitRescaled': [
+    '«{name}» escalado ×{factor}: ahora mide {size} mm en su lado mayor.',
+    '“{name}” scaled ×{factor}: its longest side is now {size} mm.',
+    '„{name}“ ×{factor} skaliert: Die längste Seite misst jetzt {size} mm.',
+    '« {name} » mis à l’échelle ×{factor} : son plus grand côté mesure maintenant {size} mm.',
+    '«{name}» को ×{factor} स्केल किया: अब सबसे लंबी भुजा {size} mm है।',
+    '「{name}」已缩放 ×{factor}:最长边现为 {size} mm。',
+  ],
+  'realesMotor.simplifyResult': [
+    'Simplificado: {before} → {after} triángulos · volumen {delta} %.',
+    'Simplified: {before} → {after} triangles · volume {delta} %.',
+    'Vereinfacht: {before} → {after} Dreiecke · Volumen {delta} %.',
+    'Simplifié : {before} → {after} triangles · volume {delta} %.',
+    'सरल किया: {before} → {after} त्रिभुज · आयतन {delta} %।',
+    '已简化:{before} → {after} 个三角形 · 体积 {delta} %。',
+  ],
+} as const satisfies Record<string, Row>;
+
+type RealesMotorKey = keyof typeof REALES_MOTOR_TABLE;
+
+const pick = (index: number): Record<RealesMotorKey, string> =>
+  Object.fromEntries(Object.entries(REALES_MOTOR_TABLE).map(([key, row]) => [key, row[index]])) as Record<RealesMotorKey, string>;
+
+export const REALESMOTOR_ES = pick(0);
+export const REALESMOTOR_EN = pick(1);
+export const REALESMOTOR_DE = pick(2);
+export const REALESMOTOR_FR = pick(3);
+export const REALESMOTOR_HI = pick(4);
+export const REALESMOTOR_ZH = pick(5);

@@ -11,7 +11,6 @@
 
 import * as THREE from 'three';
 import * as engine from '../engine';
-import { OPERATION_DEFAULTS } from '../engine/operationLimits';
 import type { TranslationKey } from '../i18n';
 import type { LanguageCode, MeshData, SceneObject, Vec3 } from '../types/kura';
 import { FileSaveError, saveFileSet, type SaveSetEntry } from '../utils/platformBridge';
@@ -25,7 +24,8 @@ import { MAX_GROUP_NAME, objectAncestors, reconcileGroups } from '../core/scene/
 import { groupImported } from './importGrouping';
 import { exportNotices, importErrorMessage } from './modelImportNotices';
 import { readModelBatch } from './modelImportBatch';
-import { countMeshBodies } from '../core/scene/meshBodies';
+import { isKuraScene, restoreKuraScene } from './kuraSceneRestore';
+import { reportImportNotices, type ImportedEntry } from './importResultNotices';
 
 export { importErrorMessage };
 
@@ -84,7 +84,7 @@ export interface ModelIoDeps {
   set: (updater: (state: IoState) => Partial<IoState> & Record<string, unknown>) => void;
   tr: Translate;
   pushHistory: () => void;
-  buildObject: (params: { name: string; mesh: MeshData; position: Vec3; color: string; isHole?: boolean }) => SceneObject;
+  buildObject: (params: { name: string; mesh: MeshData; position: Vec3; color: string; isHole?: boolean; rotation?: Vec3; scale?: Vec3 }) => SceneObject;
   /** Cama activa para buscar el hueco libre de las piezas importadas (null = sin límite). */
   bedSize?: () => BedSize | null;
   /** Genera los archivos de exportación (la app usa el Worker del motor; por defecto en proceso). */
@@ -94,7 +94,7 @@ export interface ModelIoDeps {
   /** Abre el panel Simplificar para un objeto (acción del aviso de malla pesada). */
   openSimplify?: (id: string) => void;
   /** Repara la malla de un objeto (acción del aviso de malla abierta). */
-  repairMesh?: (id: string) => void;
+  repairMesh?: (id: string) => void | Promise<unknown>;
   /** Separa los cuerpos sueltos de un objeto en piezas (acción del aviso de varios cuerpos). */
   separateBodies?: (id: string) => void;
   /** Asegura un borrador de recuperación (si hay cambios sin guardar) antes de leer un archivo grande. */
@@ -156,10 +156,14 @@ export function createModelIoActions(deps: ModelIoDeps) {
 
     const state = get();
     const wasEmpty = state.objects.length === 0;
+    const bed = deps.bedSize?.() ?? null;
+    // Escenas exportadas por Kura3D: se restauran tal cual (sin reacomodo ni conjuntos).
+    const sceneModels = models.filter(isKuraScene);
+    const plainModels = models.filter((m) => !isKuraScene(m));
     // El conjunto se arma centrado y luego se mueve como bloque al primer hueco libre de la cama.
-    const placed = engine.placeImportedModels(models, placement, null);
-    if (placement === 'bed' && !wasEmpty) {
-      const spot = placeGroupInFreeSpot(state.objects, placed, deps.bedSize?.() ?? null);
+    const placed = engine.placeImportedModels(plainModels, placement, null);
+    if (placement === 'bed' && !wasEmpty && placed.length > 0) {
+      const spot = placeGroupInFreeSpot(state.objects, placed, bed);
       for (const p of placed) p.position = [p.position[0] + spot.offset[0], p.position[1], p.position[2] + spot.offset[2]];
       if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
     }
@@ -173,58 +177,38 @@ export function createModelIoActions(deps: ModelIoDeps) {
       }),
     );
     // Placas del laminador y conjuntos montados quedan agrupados, en el mismo paso deshacible.
-    const grouping = groupImported(models, placed, created, state.groups?.length ?? 0, deps.bedSize?.() ?? null, tr);
+    const grouping = groupImported(plainModels, placed, created, state.groups?.length ?? 0, bed, tr);
+    const entries: ImportedEntry[] = placed.map((p, i) => ({ object: grouping.objects[i], part: p.part, fileName: p.fileName }));
+    const newGroups = [...grouping.groups];
+    const notices = [...grouping.notices];
+    for (const model of sceneModels) {
+      const others = [...state.objects, ...entries.map((e) => e.object)];
+      // Con la escena ya ocupada (y colocación en cama), el bloque entero va a un hueco libre.
+      let offset: Vec3 = [0, 0, 0];
+      if (placement === 'bed' && others.length > 0) {
+        const items = model.parts.map((p) => ({ mesh: p.mesh, position: p.kura!.position, rotation: p.kura!.rotation, scale: p.kura!.scale }));
+        const spot = placeGroupInFreeSpot(others, items, bed);
+        offset = [spot.offset[0], 0, spot.offset[2]];
+        if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+      }
+      const restored = restoreKuraScene(model, buildObject, offset);
+      restored.objects.forEach((object, i) => entries.push({ object, part: model.parts[i], fileName: model.fileName }));
+      newGroups.push(...restored.groups);
+      notices.push(tr('realesMotor.sceneRestored', { name: model.fileName, count: restored.objects.length, groups: restored.groups.length }));
+    }
+    const createdObjects = entries.map((e) => e.object);
+    const createdIds = createdObjects.map((o) => o.id);
     pushHistory();
     set((prev) => ({
-      ...reconcileGroups({ objects: [...prev.objects, ...grouping.objects], groups: [...(prev.groups ?? []), ...grouping.groups] }),
-      selectedIds: created.map((o) => o.id),
+      ...reconcileGroups({ objects: [...prev.objects, ...createdObjects], groups: [...(prev.groups ?? []), ...newGroups] }),
+      selectedIds: createdIds,
     }));
-    if (wasEmpty || placement === 'original') get().requestCameraPreset('fit', created.map((o) => o.id));
-    else get().requestCameraPreset('ensure', created.map((o) => o.id));
+    if (wasEmpty || placement === 'original') get().requestCameraPreset('fit', createdIds);
+    else get().requestCameraPreset('ensure', createdIds);
 
-    const pieces = created.length;
-    const tris = created.reduce((acc, o) => acc + Math.floor(o.mesh.indices.length / 3), 0);
-    const trisText = tr('import.trisSuffix', { tris: new Intl.NumberFormat(get().language).format(tris) });
-    const summary = models.length === 1
-      ? pieces === 1
-        ? tr('import.importedOne', { name: models[0].fileName })
-        : tr('import.importedParts', { name: models[0].fileName, count: pieces })
-      : tr('import.importedFiles', { count: models.length, parts: pieces });
-    get().addToast(`${summary} · ${trisText}`, 'success');
-    for (const notice of grouping.notices) get().addToast(notice, 'info');
-    const heavy = created.find((o) => o.stats.triangles >= OPERATION_DEFAULTS.heavyMesh.warnTriangles);
-    if (heavy) {
-      const fmt = new Intl.NumberFormat(get().language).format(heavy.stats.triangles);
-      get().addToast(
-        tr('import.heavy', { tris: fmt }),
-        'info',
-        deps.openSimplify ? { label: tr('import.heavy.action'), run: () => deps.openSimplify?.(heavy.id) } : undefined,
-      );
-    }
-    // Un archivo con varios cuerpos sueltos en una sola pieza: se avisa y se ofrece separarlos.
-    const multi = created
-      .map((o) => ({ object: o, bodies: countMeshBodies(o.mesh) ?? 1 }))
-      .find((entry) => entry.bodies > 1);
-    if (multi) {
-      get().addToast(
-        tr('uxEscena.multiBody', { name: multi.object.name, count: multi.bodies }),
-        'info',
-        deps.separateBodies ? { label: tr('uxEscena.multiBody.action'), run: () => deps.separateBodies?.(multi.object.id) } : undefined,
-      );
-    }
-    const open = placed.flatMap((p, index) => (p.part.openEdges > 0 ? [{ placed: p, object: created[index] }] : []));
-    if (open.length > 0) {
-      const names = [...new Set(open.map(({ placed: p }) => p.part.name || p.fileName))];
-      // Una sola pieza abierta: el aviso trae el botón que la repara (varias: se reparan desde cada objeto).
-      const target = open.length === 1 ? open[0].object.id : null;
-      get().addToast(
-        open.length === 1
-          ? tr('import.openMesh', { name: names[0], edges: open[0].placed.part.openEdges })
-          : tr('import.openMeshMany', { count: open.length, list: names.slice(0, 3).join(', ') + (names.length > 3 ? '…' : '') }),
-        'info',
-        target && deps.repairMesh ? { label: tr('repair.action'), run: () => deps.repairMesh?.(target) } : undefined,
-      );
-    }
+    const noticeDeps = { tr, language: get().language, addToast: get().addToast, openSimplify: deps.openSimplify, repairMesh: deps.repairMesh, separateBodies: deps.separateBodies };
+    reportImportNotices(entries, models.length, models[0].fileName, noticeDeps);
+    for (const notice of notices) get().addToast(notice, 'info');
     deps.reportWarnings?.(models.flatMap((m) => m.warnings ?? []));
     if (failures.length > 0) {
       get().addToast(tCount(get().language, { one: 'import.partialFailed.one', other: 'import.partialFailed.other' }, failures.length, { list: failures.join(' · ') }), 'error');
@@ -276,11 +260,15 @@ export function createModelIoActions(deps: ModelIoDeps) {
       const bedWidth = state.customBedDimensions?.width ?? state.printerProfile.bedWidthMm ?? 256;
       const layoutTargets = splitMode === 'printLayout' && request.format === '3mf' ? printLayoutTargets(targets, bedWidth) : targets;
       const filters = [EXPORT_FILTERS[request.format]];
+      // 3MF de la escena completa: viajan todos los objetos (ocultos y huecos sin ítem de build) y los
+      // grupos, para que Kura3D la restaure tal cual al volver a abrirla.
+      const fullScene = request.format === '3mf' && request.scope === 'scene' && !splitMode;
       const { files } = await exportFiles({
         format: request.format,
-        targets: layoutTargets,
+        targets: fullScene ? state.objects : layoutTargets,
         baseName: base,
         unitSystem: state.unitSystem,
+        ...(fullScene ? { sceneGroups: state.groups ?? [] } : {}),
       });
       const entries: SaveSetEntry[] = files.map((f) => ({
         name: `${base}${f.suffix}`,

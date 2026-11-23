@@ -56,12 +56,12 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     set: (updater) => set((state) => updater(state) as Partial<KuraStoreState>),
     tr,
     pushHistory: () => pushHistory(),
-    buildObject: ({ name, mesh, position, color, isHole }) =>
-      buildSceneObject({ name, source: 'imported', mesh, position, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole }),
+    buildObject: ({ name, mesh, position, color, isHole, rotation, scale }) =>
+      buildSceneObject({ name, source: 'imported', mesh, position, rotation, scale, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole }),
     exportFiles: (args) => ctx.runEngineDetached('export', args),
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
     openSimplify: (id) => get().requestSimplifyPanel(id),
-    repairMesh: (id) => void get().repairObjectMesh(id),
+    repairMesh: (id) => get().repairObjectMesh(id),
     separateBodies: (id) => void get().splitDisconnectedObject(id),
     bedSize: () => activeBedSize(get()),
     // Antes de un modelo grande: si hay cambios sin guardar, el borrador de recuperación queda escrito.

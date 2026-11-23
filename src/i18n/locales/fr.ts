@@ -33,6 +33,7 @@ import { UXCIERRE_FR } from './uxCierre';
 import { UX3_EDICION_FR } from './ux3Edicion';
 import { UX4_FR } from './ux4';
 import { CORTEMITAD_FR } from './corteMitad';
+import { REALESMOTOR_FR } from './realesMotor';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -63,6 +64,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...UX3_EDICION_FR,
   ...UX4_FR,
   ...CORTEMITAD_FR,
+  ...REALESMOTOR_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',

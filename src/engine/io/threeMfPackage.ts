@@ -13,6 +13,7 @@ import { strFromU8 } from 'fflate';
 import { unzipBounded } from './boundedUnzip';
 import { ModelImportError, type ModelImportLimits } from './importErrors';
 import { normalizeHexColor } from './meshBuffers';
+import { KURA_SCENE_MAX_BYTES, KURA_SCENE_PATH } from './kuraSceneMeta';
 import { parseXmlAttrs } from './xmlAttrs';
 import { forEachElement, forEachLeaf } from './xmlScan';
 
@@ -51,9 +52,11 @@ export interface ThreeMfPackage {
     /** XML de `Metadata/model_settings.config` (placas, ver `threeMfPlates.ts`), o null si falta. */
     settingsXml: string | null;
   };
+  /** Texto de `Metadata/Kura3D_scene.json` (escena exportada por Kura3D), o null si falta o excede su tope. */
+  kuraSceneText: string | null;
 }
 
-const USEFUL_PART = /(\.model|\.rels|model_settings\.config|project_settings\.config)$/i;
+const USEFUL_PART = /(\.model|\.rels|model_settings\.config|project_settings\.config|Kura3D_scene\.json)$/i;
 
 /** Abre un paquete 3MF con límites de tamaño. */
 export function open3MFPackage(buffer: ArrayBuffer, limits: ModelImportLimits): ThreeMfPackage {
@@ -90,8 +93,11 @@ export function open3MFPackage(buffer: ArrayBuffer, limits: ModelImportLimits): 
   if (!rootPath) throw new ModelImportError('missing-model');
 
   const config = readSlicerConfig(archive, find);
+  const kuraKey = find(KURA_SCENE_PATH);
+  const kuraBytes = kuraKey ? archive[kuraKey] : undefined;
   return {
     rootPath,
+    kuraSceneText: kuraBytes && kuraBytes.length <= KURA_SCENE_MAX_BYTES ? strFromU8(kuraBytes) : null,
     readModel(path) {
       const key = find(path);
       return key ? strFromU8(archive[key]) : null;

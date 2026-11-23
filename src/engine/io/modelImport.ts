@@ -33,7 +33,10 @@ export function detectModelFormat(fileName: string): ModelImportFormat | null {
  * con normales invertidas se reorientan y el modelo trae el aviso en `warnings`.
  */
 export function parseModelFile(fileName: string, buffer: ArrayBuffer, options: ModelParseOptions = {}): ImportedModel {
-  const model = fixImportedOrientation(readModelFile(fileName, buffer, options));
+  const read = readModelFile(fileName, buffer, options);
+  // Una escena de Kura3D vuelve exacta: sin reorientar normales ni buscar conjuntos.
+  if (read.kuraScene) return { ...read, clusters: [] };
+  const model = fixImportedOrientation(read);
   // Conjuntos calculados una vez, aquí (en el Worker): colocación y agrupación los reutilizan.
   return { ...model, clusters: findImportClusters(model) };
 }

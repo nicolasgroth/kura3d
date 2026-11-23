@@ -16,6 +16,8 @@ import { GrowableFloat32, GrowableUint32, finishMesh, normalizeHexColor } from '
 import { normalizePartPath, open3MFPackage, parseXmlAttrs, type ThreeMfPackage } from './threeMfPackage';
 import { scanTriangles, scanVertices } from './threeMfMeshScan';
 import { platesOf, readSlicerPlates } from './threeMfPlates';
+import { parseKuraSceneMeta } from './kuraSceneMeta';
+import { readKuraScene } from './threeMfKuraScene';
 import { findElement, forEachElement, forEachLeaf } from './xmlScan';
 
 /** Atributos crudos del primer elemento hoja con ese nombre local, o null. */
@@ -264,6 +266,16 @@ export function read3MF(
     }
     return geometry;
   };
+
+  // Escena exportada por Kura3D: se restaura tal cual (sin build, placas ni conjuntos).
+  const kuraMeta = pkg.kuraSceneText ? parseKuraSceneMeta(pkg.kuraSceneText, limits.maxParts) : null;
+  if (kuraMeta) {
+    const restored = readKuraScene(kuraMeta, (id) => {
+      const obj = root.objects.get(id);
+      return obj && obj.meshBody !== undefined && obj.components.length === 0 ? geometryOf(root, obj) : null;
+    }, root.unitScale, fileName, limits);
+    if (restored) return restored;
+  }
 
   const walk = (
     doc: ModelDoc, objectId: string, transform: Affine, depth: number, stack: string[],

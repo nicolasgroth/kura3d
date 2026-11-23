@@ -33,6 +33,7 @@ import { UXCIERRE_ZH } from './uxCierre';
 import { UX3_EDICION_ZH } from './ux3Edicion';
 import { UX4_ZH } from './ux4';
 import { CORTEMITAD_ZH } from './corteMitad';
+import { REALESMOTOR_ZH } from './realesMotor';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -63,6 +64,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...UX3_EDICION_ZH,
   ...UX4_ZH,
   ...CORTEMITAD_ZH,
+  ...REALESMOTOR_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
   'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',
