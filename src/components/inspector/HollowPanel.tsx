@@ -10,6 +10,7 @@ import React, { useEffect, useRef } from 'react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { estimateHollowWall } from '../../engine/solidOffset';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { HOLLOW_REQUEST_FRESH_MS, useHollowRequest } from './hollowPanelRequest';
 
@@ -23,6 +24,9 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
   const isBusy = Boolean(busyOperation);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const request = useHollowRequest();
+  // Antes de aplicar: en piezas grandes la rejilla del offset engrosa la pared; se dice cuánto.
+  const worldSize = primary.stats.dimensionsMm.map((d, i) => d * Math.abs(primary.scale[i]));
+  const estimate = estimateHollowWall(worldSize, wallThicknessMm);
 
   // Abierto desde el menú contextual: el panel entra a la vista y el grosor queda enfocado.
   useEffect(() => {
@@ -62,6 +66,11 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
         onDoubleClick={() => setWallThicknessMm(2.2)}
         onChange={(e) => setWallThicknessMm(Number(e.target.value))}
       />
+      {estimate.coarse && (
+        <p className="kura-cut-hint" data-testid="hollow-expected-wall" role="note">
+          {t(language, 'hollow.expectedWall', { maxWall: estimate.maxWallMm.toFixed(1), thickness: wallThicknessMm.toFixed(1) })}
+        </p>
+      )}
       <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5 }}>
         <input
           type="checkbox"

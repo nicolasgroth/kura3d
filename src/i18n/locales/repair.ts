@@ -107,6 +107,14 @@ const REPAIR_TABLE = {
     'मेश बंद नहीं है इसलिए दीवार नहीं मापी जा सकी: “मेश ठीक करें” से ठीक करें।',
     '网格未封闭，无法测量壁厚：请使用“修复网格”修复。',
   ],
+  'hollow.expectedWall': [
+    'Pieza grande: con la precisión disponible la pared puede salir de hasta {maxWall} mm (pedido {thickness} mm).',
+    'Large part: at the available precision the wall may come out up to {maxWall} mm (requested {thickness} mm).',
+    'Großes Teil: bei der verfügbaren Genauigkeit kann die Wand bis zu {maxWall} mm dick werden (gefordert {thickness} mm).',
+    'Grande pièce : avec la précision disponible, la paroi peut atteindre {maxWall} mm (demandé {thickness} mm).',
+    'बड़ा भाग: उपलब्ध सटीकता पर दीवार {maxWall} mm तक बन सकती है (माँगी {thickness} mm)।',
+    '大型零件：在可用精度下壁厚可能达到 {maxWall} mm（要求 {thickness} mm）。',
+  ],
   'engineWarning.SPLIT_HEAVY_MESH': [
     'Modelo de {tris} triángulos: dividirlo puede tardar minutos. Simplifícalo antes para acelerar.',
     '{tris}-triangle model: splitting it may take minutes. Simplify it first to speed up.',
