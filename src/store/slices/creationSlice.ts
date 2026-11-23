@@ -45,12 +45,16 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
     else get().requestCameraPreset('ensure', [newId]);
   };
 
-  /** Objeto a perforar por un macho negativo: el pedido por id o el único seleccionado (sin bloquear). */
+  /**
+   * Objeto a perforar por un macho negativo: el pedido por id o el único seleccionado (sin bloquear).
+   * Por selección no se perfora otra pieza roscada (recién creada queda seleccionada: perno, tuerca).
+   */
   const negativeTarget = (targetId?: string): SceneObject | null => {
     const { objects, selectedIds } = get();
     const ok = (o: SceneObject | undefined) => (o && !o.locked && !o.isHole ? o : null);
     if (targetId) return ok(objects.find((o) => o.id === targetId));
-    return selectedIds.length === 1 ? ok(objects.find((o) => o.id === selectedIds[0])) : null;
+    const selected = selectedIds.length === 1 ? ok(objects.find((o) => o.id === selectedIds[0])) : null;
+    return selected && selected.parametric?.kind !== 'thread' ? selected : null;
   };
 
   /** Agrega un objeto recién creado con animación de aparición. */

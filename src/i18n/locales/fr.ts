@@ -986,7 +986,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.mold.axisY': 'Y (avant / fond)',
   'object.name.union': 'Union de {count} pièces',
   'object.name.intersect': 'Intersection de {count} pièces',
-  'object.name.hull': 'Enveloppe de {count} pièces',
+  'object.name.hull': 'Enveloppe de {count} {count?pièce|pièces}',
   'object.name.piece': 'pièce {n}',
   'mold.part.single': 'Moule en 1 partie',
   'mold.part.halfA': 'Moule A',
