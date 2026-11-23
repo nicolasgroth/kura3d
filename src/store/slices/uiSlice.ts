@@ -30,6 +30,7 @@ import {
   writeStorage,
 } from '../preferencesStorage';
 import type { StoreContext } from '../storeContext';
+import { takeSecondaryAction } from '../toastEnhancers';
 import type { KuraStoreState } from '../storeTypes';
 
 export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
@@ -179,9 +180,11 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       // Historial corto (8): también lo que se mostró solo dentro de un diálogo.
       set((state) => ({ toastHistory: [...state.toastHistory.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, at: Date.now() }].slice(-8) }));
       if (options?.historyOnly) return;
+      // Segunda acción: la pedida o la que un módulo dejó registrada para este texto (`toastEnhancers.ts`).
+      const secondaryAction = options?.secondaryAction ?? takeSecondaryAction(text);
       // Un aviso por acción: uno idéntico (mismo texto y tipo) se reemplaza en vez de apilarse.
       set((state) => {
-        const next = [...state.toasts.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, ...(action ? { action } : {}) }];
+        const next = [...state.toasts.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, ...(action ? { action } : {}), ...(secondaryAction ? { secondaryAction } : {}) }];
         // Como máximo 3 a la vista: los informativos más viejos se descartan; los errores esperan al usuario.
         for (let i = 0; i < next.length && next.length > 3; ) {
           if (next[i].kind !== 'error' && i < next.length - 1) next.splice(i, 1);

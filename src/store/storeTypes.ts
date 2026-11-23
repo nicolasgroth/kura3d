@@ -94,6 +94,8 @@ export interface ToastMessage {
   kind: 'info' | 'success' | 'error';
   /** Acción opcional del aviso (p. ej. «Deshacer»); al ejecutarla el aviso se cierra. */
   action?: ToastAction;
+  /** Segunda acción, secundaria (p. ej. «Otra unidad…»); también cierra el aviso. */
+  secondaryAction?: ToastAction;
 }
 
 /** Entrada del historial corto de avisos (consultable desde la barra de estado). */
@@ -269,7 +271,7 @@ export interface KuraStoreState {
   clearAiMessages: () => void;
   setAiBusy: (busy: boolean) => void;
   setMcpConnected: (connected: boolean) => void;
-  addToast: (text: string, kind?: ToastMessage['kind'], action?: ToastAction, options?: { historyOnly?: boolean }) => void;
+  addToast: (text: string, kind?: ToastMessage['kind'], action?: ToastAction, options?: { historyOnly?: boolean; secondaryAction?: ToastAction }) => void;
   clearToastHistory: () => void;
   dismissErrorToasts: () => void;
   dismissToast: (id: string) => void;

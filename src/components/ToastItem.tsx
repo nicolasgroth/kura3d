@@ -72,6 +72,19 @@ export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
           {toast.action.label}
         </button>
       )}
+      {toast.secondaryAction && (
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm kura-btn-ghost kura-toast-action is-secondary"
+          onClick={() => {
+            const { run } = toast.secondaryAction!;
+            onDismiss(toast.id);
+            run();
+          }}
+        >
+          {toast.secondaryAction.label}
+        </button>
+      )}
       <button
         type="button"
         className="kura-mini-icon-btn"

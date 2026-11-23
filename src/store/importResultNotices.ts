@@ -3,7 +3,8 @@
  * @description Avisos tras importar: resumen (piezas y triángulos), malla pesada (con «Simplificar»),
  * varios cuerpos en una pieza (con «Separar») y malla abierta. Las piezas que comparten la misma malla
  * de origen (instancias repetidas de un 3MF) cuentan una sola vez: un aviso por malla única («usada en
- * N piezas») con un botón que las repara todas.
+ * N piezas») con un botón que las repara todas. Al aviso de unidades dudosas (que emite la importación)
+ * le deja registrada la segunda acción «Otra unidad…», que abre el diálogo con todas las sugerencias.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,6 +15,10 @@ import { OPERATION_DEFAULTS } from '../engine/operationLimits';
 import { countMeshBodies } from '../engine/io/meshBodies';
 import type { LanguageCode, MeshData, SceneObject } from '../types/kura';
 import type { Translate } from './modelImportNotices';
+import { unitHintOf } from '../engine/io/unitHint';
+import type { ImportedModel } from '../engine/io/importTypes';
+import { registerSecondaryAction } from './toastEnhancers';
+import { useUnitChoiceStore } from './unitChoiceStore';
 
 /** Objeto creado y la pieza leída de la que viene. */
 export interface ImportedEntry {
@@ -32,6 +37,26 @@ export interface ImportNoticeDeps {
   /** «Reparar todas»: grupos de piezas que comparten malla; cada malla se repara una vez y se resume. */
   repairMeshes?: (groups: string[][]) => void | Promise<unknown>;
   separateBodies?: (id: string) => void;
+}
+
+/**
+ * Por cada archivo sin unidad con tamaño dudoso, registra «Otra unidad…» para el aviso de unidades que la
+ * importación emite a continuación (mismo texto exacto: mismo nombre y tamaño con el mismo formato).
+ */
+export function registerUnitChoice(entries: readonly ImportedEntry[], deps: Pick<ImportNoticeDeps, 'tr' | 'language'>): void {
+  const byFile = new Map<string, ImportedEntry[]>();
+  for (const e of entries) byFile.set(e.fileName, [...(byFile.get(e.fileName) ?? []), e]);
+  for (const [fileName, list] of byFile) {
+    const format = (fileName.split('.').pop() ?? '').toLowerCase() as ImportedModel['format'];
+    const hint = unitHintOf({ format, parts: list.map((e) => e.part) } as ImportedModel);
+    if (!hint) continue;
+    const size = new Intl.NumberFormat(deps.language, { maximumFractionDigits: hint.maxDimensionMm < 10 ? 2 : 0 }).format(hint.maxDimensionMm);
+    const ids = list.map((e) => e.object.id);
+    registerSecondaryAction(deps.tr('realesMotor.unitDoubt', { name: fileName, size }), {
+      label: deps.tr('ux6.unit.other'),
+      run: () => useUnitChoiceStore.getState().open({ fileName, ids, hint }),
+    });
+  }
 }
 
 /** Piezas agrupadas por su malla de origen (misma referencia = misma malla del archivo). */
@@ -58,6 +83,7 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
       : tr('import.importedParts', { name: firstFileName, count: pieces })
     : tr('import.importedFiles', { count: modelCount, parts: pieces });
   addToast(`${summary} · ${trisText}`, 'success');
+  registerUnitChoice(entries, deps);
 
   const unique = uniqueMeshes(entries);
   const heavy = unique.find((u) => u.mesh.indices.length / 3 >= OPERATION_DEFAULTS.heavyMesh.warnTriangles);
