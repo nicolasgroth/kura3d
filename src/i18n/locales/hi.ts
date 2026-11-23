@@ -29,6 +29,7 @@ import { REPAIR_HI } from './repair';
 import { UXESCENA_HI } from './uxEscena';
 import { UXCIERRE_HI } from './uxCierre';
 import { UX3_EDICION_HI } from './ux3Edicion';
+import { UX4_HI } from './ux4';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -55,6 +56,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...UXESCENA_HI,
   ...UXCIERRE_HI,
   ...UX3_EDICION_HI,
+  ...UX4_HI,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',

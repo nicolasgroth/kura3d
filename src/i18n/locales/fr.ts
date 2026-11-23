@@ -29,6 +29,7 @@ import { REPAIR_FR } from './repair';
 import { UXESCENA_FR } from './uxEscena';
 import { UXCIERRE_FR } from './uxCierre';
 import { UX3_EDICION_FR } from './ux3Edicion';
+import { UX4_FR } from './ux4';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -55,6 +56,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...UXESCENA_FR,
   ...UXCIERRE_FR,
   ...UX3_EDICION_FR,
+  ...UX4_FR,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',

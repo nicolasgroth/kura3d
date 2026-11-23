@@ -28,6 +28,7 @@ import { keyboardFocusInViewport } from '../viewport/cutPlaneDrag';
 import { onSplitPlaneMove, planeKey } from './splitPlaneDrag';
 import { SplitPlanSummaryView } from './SplitPlanSummaryView';
 import { SplitSection } from './SplitSection';
+import { SplitLabelsToggle } from './SplitLabelsToggle';
 import '../../styles/splitForBed.css';
 import { userAxisLabel } from '../../core/scene/displayAxes';
 
@@ -331,6 +332,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
           <input type="checkbox" checked={allowDiagonal} onChange={(e) => setAllowDiagonal(e.target.checked)} />
           <span>{t(language, 'split.allowDiagonal')}</span>
         </label>
+        <SplitLabelsToggle />
       </fieldset>
       </SplitSection>
 

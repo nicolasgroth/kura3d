@@ -19,6 +19,7 @@ import { LaserCutPreview } from './LaserCutPreview';
 import { SplitPlanPreview } from '../split/SplitPlanPreview';
 import { SplitJointHighlight } from '../split/SplitJointHighlight';
 import { SplitPlateGuides } from '../split/SplitPlateGuides';
+import { SplitLabels } from '../split/SplitLabels';
 
 const ROLE_COLOR: Record<PreviewRole, string> = { result: '#22d3ee', base: '#38bdf8', tool: '#f43f5e' };
 
@@ -105,6 +106,7 @@ export const PreviewLayers: React.FC = () => {
       <LaserCutPreview />
       <SplitPlanPreview />
       <SplitPlateGuides />
+      <SplitLabels />
       <SplitJointHighlight />
       {pickId && <SurfacePickCatcher objectId={pickId} />}
       {preview.ghosts.map((g) => (

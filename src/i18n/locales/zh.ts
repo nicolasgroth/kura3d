@@ -29,6 +29,7 @@ import { REPAIR_ZH } from './repair';
 import { UXESCENA_ZH } from './uxEscena';
 import { UXCIERRE_ZH } from './uxCierre';
 import { UX3_EDICION_ZH } from './ux3Edicion';
+import { UX4_ZH } from './ux4';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -55,6 +56,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...UXESCENA_ZH,
   ...UXCIERRE_ZH,
   ...UX3_EDICION_ZH,
+  ...UX4_ZH,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
