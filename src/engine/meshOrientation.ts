@@ -10,6 +10,7 @@
  */
 
 import type { MeshData } from '../types/kura';
+import { quantizedHash, tableCapacity } from './positionHash';
 
 /** Mínimo de malla que necesitan estas funciones. */
 export interface OrientableMesh {
@@ -39,40 +40,98 @@ export function signedVolumeMm3(mesh: OrientableMesh): number {
  */
 export type OrientationState = 'consistent' | 'inconsistent' | 'open';
 
-/** Revisa la consistencia de orientación soldando vértices por posición (tolerancia 1e-5 mm). */
+/** Suelda por posición cuantizada (1e-5 mm): id de cada vértice y cantidad de posiciones distintas. */
+function weldByPosition(p: ArrayLike<number>, vertCount: number): { weld: Uint32Array; count: number } {
+  const inv = 1e5;
+  const weld = new Uint32Array(vertCount);
+  // Vértice representante de cada id: se compara su posición cuantizada (sin claves string).
+  const rep = new Uint32Array(vertCount);
+  const capacity = tableCapacity(vertCount);
+  const mask = capacity - 1;
+  const table = new Int32Array(capacity);
+  let count = 0;
+  for (let i = 0; i < vertCount; i++) {
+    const qx = Math.round(p[i * 3] * inv);
+    const qy = Math.round(p[i * 3 + 1] * inv);
+    const qz = Math.round(p[i * 3 + 2] * inv);
+    let slot = quantizedHash(qx, qy, qz) & mask;
+    let id = -1;
+    while (table[slot] !== 0) {
+      const candidate = table[slot] - 1;
+      const r = rep[candidate] * 3;
+      if (Math.round(p[r] * inv) === qx && Math.round(p[r + 1] * inv) === qy && Math.round(p[r + 2] * inv) === qz) {
+        id = candidate;
+        break;
+      }
+      slot = (slot + 1) & mask;
+    }
+    if (id < 0) {
+      id = count++;
+      table[slot] = id + 1;
+      rep[id] = i;
+    }
+    weld[i] = id;
+  }
+  return { weld, count };
+}
+
+/** true si `target` está en `sorted[from..to)` (búsqueda binaria). */
+function contains(sorted: Uint32Array, from: number, to: number, target: number): boolean {
+  let lo = from;
+  let hi = to - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >>> 1;
+    const value = sorted[mid];
+    if (value === target) return true;
+    if (value < target) lo = mid + 1;
+    else hi = mid - 1;
+  }
+  return false;
+}
+
+/**
+ * Revisa la consistencia de orientación soldando vértices por posición (tolerancia 1e-5 mm). Aristas
+ * dirigidas agrupadas por su origen (CSR, O(n)) en arreglos tipados: sin claves string ni `Map`.
+ * Una arista repetida en cualquier parte da `inconsistent` aunque también haya bordes abiertos.
+ */
 export function orientationState(mesh: OrientableMesh): OrientationState {
   const p = mesh.positions;
   const idx = mesh.indices;
   const vertCount = Math.floor(p.length / 3);
-  const weld = new Uint32Array(vertCount);
-  const keys = new Map<string, number>();
-  const inv = 1e5;
-  for (let i = 0; i < vertCount; i++) {
-    const key = `${Math.round(p[i * 3] * inv)},${Math.round(p[i * 3 + 1] * inv)},${Math.round(p[i * 3 + 2] * inv)}`;
-    let id = keys.get(key);
-    if (id === undefined) {
-      id = keys.size;
-      keys.set(key, id);
+  const { weld, count: n } = weldByPosition(p, vertCount);
+  const triCount = Math.floor(idx.length / 3);
+
+  const offsets = new Uint32Array(n + 1);
+  for (let t = 0; t < triCount * 3; t += 3) {
+    for (let e = 0; e < 3; e++) {
+      const u = weld[idx[t + e]];
+      if (u !== weld[idx[t + ((e + 1) % 3)]]) offsets[u + 1]++;
     }
-    weld[i] = id;
   }
-  const n = keys.size;
-  const directed = new Map<number, number>();
-  for (let t = 0; t + 2 < idx.length; t += 3) {
+  for (let v = 0; v < n; v++) offsets[v + 1] += offsets[v];
+  const fill = offsets.slice(0, n);
+  const targets = new Uint32Array(offsets[n]);
+  for (let t = 0; t < triCount * 3; t += 3) {
     for (let e = 0; e < 3; e++) {
       const u = weld[idx[t + e]];
       const v = weld[idx[t + ((e + 1) % 3)]];
-      if (u === v) continue;
-      const k = u * n + v;
-      const count = (directed.get(k) ?? 0) + 1;
-      if (count > 1) return 'inconsistent';
-      directed.set(k, count);
+      if (u !== v) targets[fill[u]++] = v;
     }
   }
-  for (const k of directed.keys()) {
-    const u = Math.floor(k / n);
-    const v = k - u * n;
-    if (!directed.has(v * n + u)) return 'open';
+
+  // Arista dirigida repetida = mismo destino dos veces en el grupo de su origen.
+  for (let u = 0; u < n; u++) {
+    const from = offsets[u];
+    const to = offsets[u + 1];
+    if (to - from > 1) targets.subarray(from, to).sort();
+    for (let i = from + 1; i < to; i++) if (targets[i] === targets[i - 1]) return 'inconsistent';
+  }
+  // Borde abierto = arista u→v sin su inversa v→u.
+  for (let u = 0; u < n; u++) {
+    for (let i = offsets[u]; i < offsets[u + 1]; i++) {
+      const v = targets[i];
+      if (!contains(targets, offsets[v], offsets[v + 1], u)) return 'open';
+    }
   }
   return 'consistent';
 }
