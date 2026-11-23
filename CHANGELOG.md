@@ -10,6 +10,11 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Ajustar a la impresora.** Cuando algo no cabe, el programa calcula las alternativas (escalar, girar, girar y escalar, o dividir) y tú eliges, con vista previa. Camas propias con margen, guardadas también en el proyecto.
+- **Bordes redondeados y chaflanes.** Caja, cilindro, tubo y prisma con bordes rectos, redondeados o achaflanados, exactos.
+- **Objetos de referencia.** Un tercer tipo de objeto que se ve, semitransparente, pero no se imprime ni se exporta: para comprobar cómo calza una placa, un tornillo o un imán. El formato del proyecto pasa a la versión 3; los proyectos anteriores se abren y migran solos.
+- **Avisos que no se pierden.** Un aviso con un botón de acción ya no se cierra solo mientras la acción sirva, y queda en el historial de avisos con su botón.
+- **Recetas (base de los asistentes).** Formato declarativo para generar piezas a partir de parámetros y reglas, con validación estricta; documentado para terceros.
 - **Vista sin cama y barra lateral de tres estados.** Con la tecla B la cama se oculta y los objetos quedan flotando para ver cómo calzan. La barra izquierda pasa entre completa, solo iconos y oculta, sin depender del modo sin distracciones.
 - **Ahuecado fiable en modelos reales.** Las mallas que se cruzan a sí mismas ahora se ahuecan de verdad; si el volumen no baja, se informa el error y la pieza queda intacta. Las bolsas diminutas quedan macizas.
 - **Importar y exportar más fluido.** Un 3MF grande entra por tandas con avance por piezas, sin congelar la pestaña; exportar la escena a 3MF tarda un tercio.

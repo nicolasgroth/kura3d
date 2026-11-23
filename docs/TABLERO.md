@@ -1,12 +1,12 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 14:00, con la segunda ronda de correcciones de modelos reales y la iteración de usabilidad integradas y en QA.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 18:00, con cinco lotes nuevos integrados y el rediseño de la interfaz en curso.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## Resumen de la noche del 22 al 23 de noviembre
 
-Estado de `main`: 2189 pruebas del frontend, 138 del servidor MCP y 37 de Rust en verde; 157 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
+Estado de `main`: 2406 pruebas del frontend, 143 del servidor MCP y 37 de Rust en verde; 157 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
 
 | Qué | Resultado |
 |---|---|
@@ -22,10 +22,10 @@ Estado de `main`: 2189 pruebas del frontend, 138 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
-| Cuarta evaluación de usabilidad (78): avisos con acción que no se pierdan y queden en el historial; encuadre tras importar, cortar, dividir y al ver la sección; grupo recién creado seleccionado; negativo nuevo sobre el objeto; rótulos de pieza iguales en árbol y visor y placas en cuadrícula; Capacidad que nombra el objeto; conteos de exportación explicados; diseño a 390 px sin recortes | En corrección desde el 23-nov |
-| Ajustar a la impresora: alternativas a elegir (solo escalar, girar, girar y escalar, dividir), perfiles de cama propios guardados también en el proyecto, por interfaz y por MCP | En desarrollo desde el 23-nov |
-| Bordes redondeados y chaflanes exactos en las primitivas (cubo, cilindro, prisma), base de las cajas | En desarrollo desde el 23-nov |
-| Recetas de asistentes, primer lote: formato `kura.recipe/1`, validación estricta y expresiones acotadas, con los tres ejemplos (caja, enchufe, llavero) | En desarrollo desde el 23-nov |
+| Rediseño clásico de la interfaz, lote 1: barra superior de archivo y ajustes, barra vertical de herramientas, una sola barra de vista, menú Acciones, historial junto a deshacer, rótulos conmutables con tooltips y barra de estado que explica cada control | En desarrollo desde el 23-nov |
+| Recetas, segundo lote: ejecutor (caja con tapa, llavero y placa de enchufe generados de verdad) y herramientas MCP para listar, validar y ejecutar recetas | En desarrollo desde el 23-nov |
+| Comprobar encaje, motor y MCP: interferencias y holguras entre piezas y referencias, con las restas pendientes aplicadas y recomendaciones con medidas | En desarrollo desde el 23-nov |
+| Pendiente del rediseño, lote 2: panel derecho contextual y adaptable (solo las opciones de la herramienta o acción activa; información del proyecto sin selección). Pendiente de usabilidad: Capacidad que nombra el objeto medido, número de objetos en el aviso de recuperación, capturas de guías por regenerar | Después del lote 1 |
 | Pendientes vistos en capturas: el contorno de selección queda inflado tras escalar ×100; "Cerrar todos" ilegible en tema oscuro; los avisos tapan un diálogo en 390 px y la barra de Consejo; "Sin cama" queda fuera de pantalla en móvil; por MCP, restar dos piezas recién creadas falla porque cada una cae en un lugar libre, y el plan de dividir sin aplicar informa 0 uniones; ahuecar un busto denso tarda cerca de 30 s | Para la próxima tanda |
 | Separar por colores sobre texto 3D pintado: algunas piezas pueden salir abiertas (se avisa cuáles y se ofrece reparar); grabar dos veces el mismo texto en el mismo lugar de un cilindro (da un error claro) | Límites conocidos; pendiente |
 | Imagen a 3D: ocultar los parámetros que no aplican en cada modo; aviso de cuánto crece la pieza al aplicar una textura; vista previa en vivo del texto 3D | Pendiente |
@@ -39,6 +39,11 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 
 | Funcionalidad | Estado |
 |---|---|
+| Ajustar a la impresora: alternativas a elegir (escalar, girar, girar y escalar, dividir) con vista previa, camas propias con margen, aviso al abrir un proyecto con otra cama, herramienta MCP y guía | Integrado el 23-nov con pruebas de navegador; falta QA independiente |
+| Bordes redondeados y chaflanes exactos en caja, cilindro, tubo y prisma, con alcance (todas, verticales, superior) | Integrado el 23-nov con pruebas; falta QA independiente |
+| Objetos de referencia, lote 1: tercer tipo de objeto que se ve pero no se imprime ni se exporta, opacidad por objeto, proyecto en formato 3 con migración | Integrado el 23-nov con una prueba por cada exclusión; falta QA independiente |
+| Recetas de asistentes, lote 1: formato, validación estricta y expresiones acotadas, con 136 pruebas | Integrado el 23-nov; sin interfaz todavía |
+| Usabilidad, séptima tanda (respuesta a la evaluación de 78): avisos con acción que no caducan y quedan operables en el historial, encuadre de modelos diminutos y tras cortar, placas en cuadrícula, grupo recién creado seleccionado, negativo nuevo sobre el objeto, rótulos de pieza en el árbol, conteos de exportación explicados | Integrado el 23-nov con pruebas de navegador; falta QA y nueva evaluación |
 | Segunda ronda de modelos reales: ahuecar genera la cavidad en mallas que se cruzan a sí mismas (Anubis: de 741.934 a 312.276 mm³) y da error si el volumen no baja; las bolsas diminutas quedan macizas; importar un 3MF grande entra por tandas (mayor bloqueo de 3,9 s a 0,5 s) y muestra "N de 19 piezas"; exportar la escena a 3MF bajó de 37 a 12 s; una sola cuenta de aristas abiertas; "Reparar todas" resume todas las mallas | **QA en navegador aprobada el 23-nov** con los modelos del autor, sin bloqueos: Anubis ahuecado de 741.934 a 312.334 mm³ y el STL reimportado lo conserva; DAFFY con mayor bloqueo de 0,9 s (antes 7 s) y "N de 19 piezas"; exportar 17,8 s; ida y vuelta idéntica; llaveros con las 95 piezas cerradas tras "Reparar todas" |
 | Usabilidad, sexta tanda: vista sin cama (botón y tecla B), barra lateral izquierda de tres estados independiente del modo sin distracciones, panel de Medir plegable y movible, plurales correctos, diálogo "¿En qué unidad está este modelo?", inspector que muestra el estado de la malla tras reparar; guías actualizadas | **QA en navegador aprobada el 23-nov**; seis fallos menores en corrección (dos plurales, "Cerrar todos" en tema oscuro, chip de la cama visible sin cama, avisos sobre el Consejo, tres conteos distintos de uniones para pegar). Falta la evaluación a ciegas |
 | Documentación pública: README al día, 11 guías paso a paso con 27 capturas que se regeneran con `npm run docs:capturas`, y `docs/MCP.md` con la tabla de las 42 herramientas generada desde el servidor y tres ejemplos ejecutados | Primera versión publicada el 23-nov, solo en español; flujo permanente. Pendiente: capturas de tema oscuro y móvil, y revisar que el video se vea en GitHub |
