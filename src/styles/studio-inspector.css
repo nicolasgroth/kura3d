@@ -91,7 +91,7 @@
 }
 
 .kura-axis-tag {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -176,7 +176,7 @@
 }
 
 .kura-stat-title {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-secondary);
   text-transform: uppercase;
 }

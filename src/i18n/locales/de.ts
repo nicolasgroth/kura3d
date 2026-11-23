@@ -620,7 +620,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.img.generate': '3D-Netz erzeugen',
 
   // Modal Corte por Plano
-  'dialog.cut.title': 'Ebenenschnitt mit 3D-Verbindern',
+  'dialog.cut.title': 'Ebenenschnitt + Verbinder',
   'dialog.cut.axis': 'Achse der Schnittebene',
   'dialog.cut.offset': 'Versatz vom Zentrum',
   'dialog.cut.connectorType': 'Verbindertyp',
@@ -695,7 +695,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.export3mf.execute': '.3MF-Datei herunterladen',
 
   // Modal Ajustes & MCP
-  'dialog.settings.title': 'Kura3D-Einstellungen & MCP-Brücke',
+  'dialog.settings.title': 'Kura3D-Einstellungen',
   'dialog.settings.tab.ai': 'KI-Anbieter',
   'dialog.settings.tab.mcp': 'MCP-Server',
   'dialog.settings.tab.appearance': 'Design & Themen',

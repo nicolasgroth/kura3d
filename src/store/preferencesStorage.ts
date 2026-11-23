@@ -80,9 +80,25 @@ export function loadInitialColorScheme(): ColorSchemePreference {
 
 const LANGUAGES: readonly LanguageCode[] = ['es', 'en', 'de', 'fr', 'hi', 'zh'];
 
-export function loadInitialLanguage(): LanguageCode {
+/** Primer idioma disponible de la lista de preferencias del navegador (`es-CL` → `es`), o `null` si ninguno coincide. */
+export function languageFromPreferences(preferred: readonly string[]): LanguageCode | null {
+  for (const tag of preferred) {
+    const primary = String(tag).toLowerCase().split(/[-_]/)[0];
+    const found = LANGUAGES.find((code) => code === primary);
+    if (found) return found;
+  }
+  return null;
+}
+
+/**
+ * Idioma al abrir: la preferencia guardada manda siempre; sin ella (primer uso) se elige entre los 6 con
+ * `navigator.languages`, y español si ninguno coincide. Las pruebas unitarias no consultan el navegador.
+ */
+export function loadInitialLanguage(preferred?: readonly string[]): LanguageCode {
   const stored = readStorage(STORAGE_LANGUAGE_KEY);
-  return LANGUAGES.includes(stored as LanguageCode) ? (stored as LanguageCode) : 'es';
+  if (LANGUAGES.includes(stored as LanguageCode)) return stored as LanguageCode;
+  const list = preferred ?? (import.meta.env.MODE === 'test' || typeof navigator === 'undefined' ? [] : (navigator.languages ?? [navigator.language]));
+  return languageFromPreferences(list.filter(Boolean)) ?? 'es';
 }
 
 export function loadInitialThemePreset(): ThemePresetId {

@@ -620,7 +620,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.img.generate': '生成 3D 网格',
 
   // Modal Corte por Plano
-  'dialog.cut.title': '带 3D 连接件的平面切割',
+  'dialog.cut.title': '平面切割 + 连接件',
   'dialog.cut.axis': '切割平面法线轴',
   'dialog.cut.offset': '距中心偏移量',
   'dialog.cut.connectorType': '连接件类型',
@@ -695,7 +695,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.export3mf.execute': '下载 .3MF 文件',
 
   // Modal Ajustes & MCP
-  'dialog.settings.title': 'Kura3D 设置与 MCP 桥接',
+  'dialog.settings.title': 'Kura3D 设置',
   'dialog.settings.tab.ai': 'AI 提供商',
   'dialog.settings.tab.mcp': 'MCP 服务器',
   'dialog.settings.tab.appearance': '外观与主题',

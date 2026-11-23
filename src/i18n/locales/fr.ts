@@ -620,7 +620,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.img.generate': 'Générer le Maillage 3D',
 
   // Modal Corte por Plano
-  'dialog.cut.title': 'Coupe par Plan avec Connecteurs 3D',
+  'dialog.cut.title': 'Coupe par plan + connecteurs',
   'dialog.cut.axis': 'Axe du plan de coupe',
   'dialog.cut.offset': 'Décalage depuis le centre',
   'dialog.cut.connectorType': 'Type de connecteur',
@@ -695,7 +695,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.export3mf.execute': 'Télécharger le fichier .3MF',
 
   // Modal Ajustes & MCP
-  'dialog.settings.title': 'Paramètres Kura3D & Pont MCP',
+  'dialog.settings.title': 'Paramètres Kura3D',
   'dialog.settings.tab.ai': 'Fournisseur IA',
   'dialog.settings.tab.mcp': 'Serveur MCP',
   'dialog.settings.tab.appearance': 'Apparence & Thèmes',
