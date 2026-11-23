@@ -20,7 +20,7 @@ import { onMeasureContextMenu, onMeasurePointerDown, onMeasurePointerMove, onMea
 import { buildViewportGeometry } from './creasedGeometry';
 import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
 import { hasLiveStroke, queueLiveSample, startLiveStroke } from './livePaintStroke';
-import { brushQueryFromEvent, strokeNeedsEdgeRefine, usePaintRaycastAcceleration } from './paintPointer';
+import { brushQueryFromEvent, strokeNeedsEdgeRefine, strokeSampleFromEvent, usePaintRaycastAcceleration } from './paintPointer';
 import { continueStorePaintStroke, startStorePaintStroke } from './paintStrokeController';
 
 /** Renderiza un SceneObject con caché de BufferGeometry, materiales PBR, sección Rayos X y voladizos. */
@@ -208,12 +208,9 @@ export const SceneMeshItem: React.FC<{
           }
           return;
         }
-        const firstPoint = meshRef.current
-          ? meshRef.current.worldToLocal(e.point.clone())
-          : e.point.clone();
         lastPaintMoveAtRef.current = performance.now();
         // Abre UN trazo de historial; sobre una primitiva/rosca lo retiene hasta el aviso (nada cambia antes).
-        void startStorePaintStroke(obj, [firstPoint.x, firstPoint.y, firstPoint.z], e.faceIndex ?? null, refine);
+        void startStorePaintStroke(obj, strokeSampleFromEvent(e, meshRef.current, obj.scale), refine);
         return;
       }
 
@@ -262,10 +259,7 @@ export const SceneMeshItem: React.FC<{
       if (now - lastPaintMoveAtRef.current < 45) return;
       lastPaintMoveAtRef.current = now;
 
-      const localPt = meshRef.current
-        ? meshRef.current.worldToLocal(e.point.clone())
-        : e.point.clone();
-      continueStorePaintStroke(obj.id, [localPt.x, localPt.y, localPt.z], e.faceIndex ?? null);
+      continueStorePaintStroke(obj.id, strokeSampleFromEvent(e, meshRef.current, obj.scale));
     };
 
     const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {

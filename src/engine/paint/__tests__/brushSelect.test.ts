@@ -1,8 +1,8 @@
 /**
  * @file src/engine/paint/__tests__/brushSelect.test.ts
  * @description Selección de caras del pincel: la rejilla da lo mismo que la fuerza bruta en mallas
- * aleatorias, solo caras de frente a la cámara (no atraviesa una placa delgada) y solo las conectadas
- * a la cara bajo el puntero.
+ * aleatorias, solo caras de frente a la cámara (no atraviesa una placa delgada; sin cámara, según la
+ * cara más cercana) y solo las conectadas a la cara bajo el puntero (o a la más cercana).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -44,15 +44,20 @@ describe('el pincel no atraviesa la pieza', () => {
   const plate = thinPlate(20, 0.6, 20); // caras de 1 mm, 800 triángulos por lado
   const half = plate.indices.length / 6;
 
-  it('sin cámara alcanza ambas caras; con cámara arriba, solo la superior', () => {
+  it('sin cámara usa la normal de la cara más cercana; con cámara arriba (o vista ortográfica), solo la superior', () => {
     const base = { center: [0, 0.3, 0] as Vec3, radiusMm: 2, scale: [1, 1, 1] as Vec3 };
     const blind = selectBrushFaces(plate, base);
-    expect(blind.some((t) => t >= half)).toBe(true);
+    expect(blind.length).toBeGreaterThan(0);
+    expect(blind.every((t) => t < half)).toBe(true);
+    const fromBelow = selectBrushFaces(plate, { ...base, center: [0, -0.3, 0] });
+    expect(fromBelow.length).toBeGreaterThan(0);
+    expect(fromBelow.every((t) => t >= half)).toBe(true);
     const fromTop = selectBrushFaces(plate, { ...base, eye: [0, 50, 0] });
     expect(fromTop.length).toBeGreaterThan(0);
     expect(fromTop.every((t) => t < half)).toBe(true);
     const ortho = selectBrushFaces(plate, { ...base, viewDir: [0, -1, 0] });
     expect(Array.from(ortho)).toEqual(Array.from(fromTop));
+    expect(Array.from(blind)).toEqual(Array.from(fromTop));
   });
 
   it('con escala que estira el espesor, la cara inferior sigue fuera', () => {
@@ -73,10 +78,15 @@ describe('el pincel no atraviesa la pieza', () => {
     const mesh = { positions: pos, indices: idx };
     const q = { center: [0, 0.2, 0] as Vec3, radiusMm: 1.5, scale: [1, 1, 1] as Vec3, eye: [0, 50, 0] as Vec3 };
     const firstPlateTris = a.indices.length / 3;
-    const loose = selectBrushFaces(mesh, q);
-    expect(loose.some((t) => t >= firstPlateTris)).toBe(true);
-    const seeded = selectBrushFaces(mesh, { ...q, seedFace: loose[0] });
-    expect(seeded.length).toBeGreaterThan(0);
-    expect(seeded.every((t) => t < firstPlateTris)).toBe(true);
+    // Sin semilla, la más cercana (placa de arriba) define la superficie.
+    const nearest = selectBrushFaces(mesh, q);
+    expect(nearest.length).toBeGreaterThan(0);
+    expect(nearest.every((t) => t < firstPlateTris)).toBe(true);
+    // Con semilla en la placa de abajo (también de frente y dentro del radio), solo esa placa.
+    const lowerTop = firstPlateTris + 110; // cara superior de la placa de abajo, celda (5,5) junto al centro
+    const seeded = selectBrushFaces(mesh, { ...q, seedFace: lowerTop });
+    expect(Array.from(seeded)).toContain(lowerTop);
+    expect(seeded.every((t) => t >= firstPlateTris)).toBe(true);
+    expect(Array.from(seeded)).toEqual(Array.from(selectBrushFacesBruteForce(mesh, { ...q, seedFace: lowerTop })));
   });
 });

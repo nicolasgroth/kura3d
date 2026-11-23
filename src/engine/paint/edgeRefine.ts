@@ -22,12 +22,22 @@ const TARGET_EDGE_RATIO = 0.35;
 const MAX_PASSES = 8;
 
 type V3 = readonly [number, number, number];
+/** Filtro opcional de caras que pueden subdividirse. */
+export type FaceFilter = (mesh: MeshData, t: number) => boolean;
 
 /**
  * Subdivide los triángulos del borde del pincel (esfera de radio `r` en `c`, en espacio escalado por
- * `s`). Devuelve la misma malla si no hay nada que partir.
+ * `s`). Con `accept`, solo se parten los bordes de las caras que acepta (las visibles): las de atrás
+ * no gastan el presupuesto. Devuelve la misma malla si no hay nada que partir.
  */
-export function refineBrushEdge(mesh: MeshData, s: V3, c: V3, r: number, maxNewTriangles = DEFAULT_MAX_NEW_TRIANGLES): MeshData {
+export function refineBrushEdge(
+  mesh: MeshData,
+  s: V3,
+  c: V3,
+  r: number,
+  maxNewTriangles = DEFAULT_MAX_NEW_TRIANGLES,
+  accept?: FaceFilter,
+): MeshData {
   const target = r * TARGET_EDGE_RATIO;
   let current = mesh;
   let budget = maxNewTriangles;
@@ -35,7 +45,7 @@ export function refineBrushEdge(mesh: MeshData, s: V3, c: V3, r: number, maxNewT
   const hi: V3 = [(c[0] + r) / s[0], (c[1] + r) / s[1], (c[2] + r) / s[2]];
   for (let pass = 0; pass < MAX_PASSES && budget >= 2; pass++) {
     const adj = getFaceAdjacency(current);
-    const marked = markBorderEdges(current, adj, s, c, r, target, lo, hi, budget);
+    const marked = markBorderEdges(current, adj, s, c, r, target, lo, hi, budget, accept);
     if (!marked) break;
     const next = splitMarkedEdges(current, adj, marked.edges);
     budget -= triangleCount(next) - triangleCount(current);
@@ -44,7 +54,9 @@ export function refineBrushEdge(mesh: MeshData, s: V3, c: V3, r: number, maxNewT
   return current;
 }
 
-function markBorderEdges(mesh: MeshData, adj: FaceAdjacency, s: V3, c: V3, r: number, target: number, lo: V3, hi: V3, budget: number) {
+function markBorderEdges(
+  mesh: MeshData, adj: FaceAdjacency, s: V3, c: V3, r: number, target: number, lo: V3, hi: V3, budget: number, accept?: FaceFilter,
+) {
   const { positions: P, indices: I } = mesh;
   const rSq = r * r;
   const candidates = new Map<number, number>();
@@ -56,6 +68,7 @@ function markBorderEdges(mesh: MeshData, adj: FaceAdjacency, s: V3, c: V3, r: nu
     if (scaledTriangleDistanceSq(P, I, t, s, c) > rSq) return;
     // Dentro del todo: no es borde.
     if (vertDistSq(I[t * 3]) <= rSq && vertDistSq(I[t * 3 + 1]) <= rSq && vertDistSq(I[t * 3 + 2]) <= rSq) return;
+    if (accept && !accept(mesh, t)) return;
     for (let k = 0; k < 3; k++) {
       const len = sideLength(I[t * 3 + k], I[t * 3 + ((k + 1) % 3)]);
       if (len > target) candidates.set(adj.sideEdge[t * 3 + k], len);

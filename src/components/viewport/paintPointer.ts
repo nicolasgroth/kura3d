@@ -14,6 +14,7 @@ import * as THREE from 'three';
 import { acceleratedRaycast, MeshBVH, type MeshBVHOptions } from 'three-mesh-bvh';
 import type { BrushQuery } from '../../engine/paint/brushSelect';
 import type { MeshData, Vec3 } from '../../types/kura';
+import type { StrokeSample } from './paintStrokeController';
 import { longestEdgeMm } from '../../utils/paintCoarseness';
 
 /** `indirect` existe en three-mesh-bvh 0.8 aunque sus tipos no lo declaran. */
@@ -51,6 +52,17 @@ export function brushQueryFromEvent(e: ThreeEvent<PointerEvent>, mesh: THREE.Mes
     query.eye = toVec3(mesh.worldToLocal(camera.getWorldPosition(tmpVec)));
   }
   return query;
+}
+
+/**
+ * Muestra del trazo por el store (borde fino, trazo diferido) con la misma vista que el trazo en vivo:
+ * punto local, cara bajo el puntero y cámara. Sin malla montada, solo el punto (la vista se deduce).
+ */
+export function strokeSampleFromEvent(e: ThreeEvent<PointerEvent>, mesh: THREE.Mesh | null, scale: Vec3): StrokeSample {
+  const faceIndex = e.faceIndex ?? null;
+  if (!mesh) return { point: toVec3(e.point), faceIndex };
+  const { center, eye, viewDir } = brushQueryFromEvent(e, mesh, scale, 0);
+  return { point: center, faceIndex, view: { eye, viewDir } };
 }
 
 type BvhGeometry = THREE.BufferGeometry & { boundsTree?: MeshBVH };
