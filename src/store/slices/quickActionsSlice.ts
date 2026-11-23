@@ -23,6 +23,7 @@ import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 import type { PieceMode, RepeatOutcome, RepeatRecord } from '../quickActionsTypes';
 import { sanitizeTransformPatch } from '../transformLimits';
+import { negativeSpotFor } from '../negativeSpawn';
 
 /** Objetos cuyo nombre contiene `filter` (sin distinguir mayúsculas ni tildes). */
 export function matchSceneObjects(objects: SceneObject[], filter: string): SceneObject[] {
@@ -305,7 +306,12 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
     },
 
     updateObjectMeta: (id, patch) => {
+      // Pasar a Negativo una pieza recién creada junto al sólido que estaba seleccionado la lleva sobre él.
+      const obj = patch.isHole === true ? get().objects.find((o) => o.id === id && !o.isHole) : undefined;
+      const spot = obj ? negativeSpotFor(obj, get().objects) : null;
       base.updateObjectMeta!(id, patch);
+      // Mismo paso de deshacer que el cambio de tipo (el historial ya se guardó arriba).
+      if (spot) set((s) => ({ objects: s.objects.map((o) => (o.id === id ? { ...o, position: spot } : o)) }));
       const keys = Object.keys(patch);
       if (keys.length !== 1) return;
       if (patch.color) record({ kind: 'color', color: patch.color });
@@ -318,7 +324,8 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       if (changing.length === 0) return;
       pushHistory();
       const changeIds = new Set(changing.map((o) => o.id));
-      set((s) => ({ objects: s.objects.map((o) => (changeIds.has(o.id) ? { ...o, isHole } : o)) }));
+      const spots = new Map(isHole ? changing.map((o) => [o.id, negativeSpotFor(o, get().objects)] as const) : []);
+      set((s) => ({ objects: s.objects.map((o) => (changeIds.has(o.id) ? { ...o, isHole, position: spots.get(o.id) ?? o.position } : o)) }));
       record({ kind: 'setType', isHole });
     },
 

@@ -7,15 +7,16 @@
  * Ctrl+A todo, Supr elimina (un grupo pide confirmación), F2 o doble clic en el nombre renombra, Mayús+H
  * oculta/muestra, Mayús+L bloquea, Alt+↑/↓ reordena, Alt+→ mete en el grupo de arriba (lo despliega y el
  * foco sigue en lo movido) y Alt+← saca. Con ratón: clic, Ctrl+clic, Shift+clic y arrastrar y soltar.
+ * Al agrupar, la fila activa pasa al grupo nuevo (F2 lo renombra). Los atajos se leen con el botón «?».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { LogOut } from 'lucide-react';
+import { HelpCircle, LogOut } from 'lucide-react';
 import { t } from '../../i18n';
-import { buildSceneTree, descendantObjectIds, type TreeKey } from '../../core/scene/groups';
+import { buildSceneTree, descendantObjectIds, selectedGroup, type TreeKey } from '../../core/scene/groups';
 import { useKuraStore } from '../../store/useKuraStore';
 import { matchSceneObjects } from '../../store/slices/quickActionsSlice';
 import { REQUEST_FRESH_MS } from './SceneSearch';
@@ -26,6 +27,7 @@ import { confirmDeleteSelection } from './confirmDeleteSelection';
 import '../../styles/sceneList.css';
 import '../../styles/sceneTree.css';
 import '../../styles/splitJoints.css';
+import '../../styles/sceneTreeUx7.css';
 
 const MAX_NAME = 80;
 
@@ -61,6 +63,21 @@ export const SceneObjectList: React.FC = () => {
   const renameDone = useRef(false);
 
   const selected = useMemo(() => new Set(selectedIds), [selectedIds]);
+  // Un grupo recién creado (Ctrl+G) con todo su contenido seleccionado pasa a ser la fila activa: F2 lo
+  // renombra a él y no a uno de sus hijos.
+  const groupCount = groups.length;
+  const prevGroupCount = useRef(groupCount);
+  useEffect(() => {
+    const grew = groupCount > prevGroupCount.current;
+    prevGroupCount.current = groupCount;
+    if (!grew) return;
+    const st = useKuraStore.getState();
+    const whole = selectedGroup(st.objects, st.groups, st.selectedIds);
+    if (whole) {
+      setActiveKey(`g:${whole.id}` as TreeKey);
+      setAnchorKey(`g:${whole.id}` as TreeKey);
+    }
+  }, [groupCount]);
   const isRowSelected = (row: TreeRow) => row.objectIds.length > 0 && row.objectIds.every((id) => selected.has(id));
   // La fila activa siempre existe: si se borró, pasa a la primera seleccionada o a la primera.
   const active = rows.find((r) => r.key === activeKey) ?? rows.find(isRowSelected) ?? rows[0];
@@ -314,10 +331,18 @@ export const SceneObjectList: React.FC = () => {
         if (ids.length) void confirmDeleteSelection(ids);
         break;
       }
-      case 'F2':
+      case 'F2': {
         handled();
-        startRename(active);
+        // Con un grupo entero seleccionado se renombra el grupo, aunque la fila activa sea uno de sus hijos.
+        const whole = selectedGroup(allObjects, groups, selectedIds);
+        const groupRow = whole ? rows.find((r) => r.key === `g:${whole.id}`) : undefined;
+        if (groupRow && !isRowSelected(active)) startRename(active);
+        else if (groupRow) {
+          setActiveKey(groupRow.key);
+          startRename(groupRow);
+        } else startRename(active);
         break;
+      }
       case 'Escape':
         if (selectedIds.length) {
           handled();
@@ -452,9 +477,22 @@ export const SceneObjectList: React.FC = () => {
           </button>
         </div>
       )}
-      <p id={`${baseId}-hint`} className="kura-scene-hint">
+      {/* Los atajos del árbol se describen a lectores de pantalla; a la vista, un botón «?» abre la ayuda. */}
+      <p id={`${baseId}-hint`} className="sr-only">
         {t(language, 'sidebar.scene.keyboardHint')} · {t(language, 'groups.tree.hint')}
       </p>
+      <div className="kura-scene-help-row">
+        <button
+          type="button"
+          className="kura-mini-icon-btn kura-scene-help"
+          aria-label={t(language, 'ux7.tree.help')}
+          title={`${t(language, 'ux7.tree.help')}: ${t(language, 'sidebar.scene.keyboardHint')} · ${t(language, 'groups.tree.hint')}`}
+          onClick={() => useKuraStore.getState().setActiveDialog('shortcuts')}
+        >
+          <HelpCircle size={14} aria-hidden="true" />
+          <span aria-hidden="true">?</span>
+        </button>
+      </div>
     </>
   );
 };

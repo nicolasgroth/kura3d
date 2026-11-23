@@ -18,6 +18,7 @@ import { attachToTarget, negativeOnTopFace } from '../../core/scene/attachPiece'
 import { withoutModulePrefix } from '../../core/scene/resultNames';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
+import { negativeSpotFor, rememberSpawnTarget } from '../negativeSpawn';
 
 export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, pushHistory, runExclusive, opCtx, assertCurrent, commitChange, rejectWhileLocked } = ctx;
@@ -74,6 +75,8 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
         await get().initEngine();
         const op = opCtx();
         const count = get().objects.length;
+        // Sólido seleccionado al crear: un negativo va sobre él (excepción a «lo nuevo no cae encima»).
+        const solid = options?.position ? null : negativeTarget();
         // El texto 3D (maquetado y extrusión de glifos) se genera en el Worker; las demás primitivas son
         // instantáneas y se generan aquí.
         const mesh = type === 'text' ? await ctx.runEngine('primitiveMesh', { type, params }) : undefined;
@@ -91,10 +94,14 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
           materialPreset: options?.materialPreset,
           isHole: options?.isHole,
         });
-        addSpawned(obj, [obj.id]);
-        get().addToast(tr('toast.created', { name: obj.name }), 'success');
-        if (free) afterFreePlacement(free.result.fits, count === 0, obj.id);
-        return obj;
+        if (solid) rememberSpawnTarget(obj, solid.id);
+        const over = solid && obj.isHole ? negativeSpotFor(obj, get().objects) : null;
+        const placed = over ? { ...obj, position: over } : obj;
+        addSpawned(placed, [placed.id]);
+        get().addToast(tr('toast.created', { name: placed.name }), 'success');
+        if (over) get().requestCameraPreset('ensure', [placed.id]);
+        else if (free) afterFreePlacement(free.result.fits, count === 0, placed.id);
+        return placed;
       }),
 
     addSubtractHelperPrimitive: async (type, targetId) => get().addModularPrimitive(type, 'negative', targetId),
