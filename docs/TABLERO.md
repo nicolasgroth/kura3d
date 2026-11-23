@@ -150,6 +150,10 @@ Ordenadas por prioridad dentro de cada grupo.
 
 | Grupo | Funcionalidad |
 |---|---|
+| Documentación | Guías públicas en GitHub: README al día, una guía paso a paso con capturas o animación por funcionalidad (`docs/guia/`), y cómo usar el servidor MCP con sus reglas (`docs/MCP.md`). Flujo permanente: se actualiza con cada cambio (decidido el 23-nov) |
+| Interfaz | Vista sin cama (objetos flotando) y barra lateral izquierda de tres estados (iconos y texto, solo iconos, oculta), independiente de la pantalla completa. Entran en la próxima iteración de usabilidad |
+| Preparación | Ajustar a la impresora (perfiles de cama y escala proporcional) y Suavizar (aristas, malla completa o zona marcada) |
+| Asistentes | Sección de asistentes de creación paso a paso. Primero: agregados (fijación al muro, imán, torreta, compartimento con tapa), caja con tapa y recetas guardables. Se presenta el diseño antes de implementar |
 | Proyecto | Datos del proyecto: nombre editable, descripción y notas, fecha de creación y de última modificación (y, si aporta, autor y tiempo de trabajo), guardados en el `.kura` y visibles al abrir y en recientes (pedido del autor, 23-nov) |
 | Edición | Instancias: copias vinculadas de un objeto que cambian todas juntas al editar una (idea tomada de OrcaSlicer) |
 | Edición | Recargar un objeto desde su archivo de origen cuando este cambia en disco |
@@ -214,10 +218,6 @@ Sin compromiso todavía; se evalúan antes de planificarlas.
 
 | Idea |
 |---|
-| Vista sin cama (pedido el 23-nov): ocultar la cama y dejar los objetos flotando para ver cómo se conectan entre sí |
-| Barra lateral izquierda con tres estados (iconos y texto, solo iconos, oculta), independiente del modo de pantalla completa sin distracciones |
-| Ajustar a la impresora: elegir la impresora de una lista de perfiles (o una propia) y escalar el modelo en proporción para que quepa en su cama; enlaza con Dividir cuando no se quiere escalar |
-| Suavizar: redondear o achaflanar aristas elegidas, y suavizar la malla completa o solo la zona marcada con el pincel |
 | Dividir: numerar las caras de unión de cada pieza para saber cuál va con cuál al armar |
 | Cajas y carcasas: caja desde medidas o desde cualquier forma ahuecada; tapa por dentro, por fuera o sobre el borde; cierre con tornillos, insertos roscados, a presión, deslizante o imanes; esquinas rectas o redondeadas; ranuras de ventilación; paso de cable |
 | Agregados aplicables a cualquier objeto: orejas u ojos de cerradura para fijar al muro, alojamiento de imán, torreta para tornillo o inserto, compartimento con tapa (pilas, etiqueta NFC), gancho de encaje, paso de cable |

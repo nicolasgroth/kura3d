@@ -36,6 +36,7 @@ Las pruebas se hacen sobre la versión **web** en una pestaña (Playwright o el 
 - `docs/EVALUACIONES.md` — registro de notas por lote.
 - `docs/CONSULTAS_PROYECTO.md` — dudas abiertas para el autor; `docs/DECISIONES.md` — histórico de lo ya decidido.
 - `docs/TABLERO.md` — tablero con título y etapa de cada funcionalidad; se actualiza cada vez que un lote cambia de etapa.
+- `docs/guia/` — guías de uso públicas con capturas (una por funcionalidad); `docs/MCP.md` — cómo usar el servidor MCP y sus herramientas.
 
 ## Flujo de trabajo: desarrollo → QA → evaluación
 
@@ -61,6 +62,7 @@ Reglas:
 6. El orquestador (no el evaluador) aplica el umbral: mínimo 85 en cada evaluador, meta 90. Bajo el mínimo, se corrige y se reevalúa con un evaluador nuevo. Tras 3 rondas bajo el mínimo, se consulta al usuario.
 7. Al cerrar una versión: evaluación global de todas las funcionalidades activas y, opcionalmente, **evaluador externo** con Codex CLI (`codex exec`, solo lectura) como tercera opinión de otro proveedor.
 8. Cada cierre actualiza `docs/FUNCIONALIDADES.md`, `docs/EVALUACIONES.md` y `CHANGELOG.md`.
+9. **Documentación pública al día.** Es un flujo propio, no un extra: toda funcionalidad que llega a `main` y cambia lo que ve o hace el usuario actualiza en el mismo lote su guía en `docs/guia/` (paso a paso con capturas o animación generadas desde la app web, nunca armadas a mano), el `README.md` si cambia la lista de funciones, y `docs/MCP.md` si cambia una herramienta `kura_*` o las reglas de uso del servidor MCP. Una captura que ya no coincide con la interfaz es un fallo de QA.
 
 Uso de tokens: da a cada agente solo las rutas y el criterio de su lote; pídele informes breves; no lances evaluadores para cambios mecánicos.
 

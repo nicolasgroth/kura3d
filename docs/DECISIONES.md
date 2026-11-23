@@ -43,3 +43,6 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-23 | LGPL indirecta (sharp / libvips) | Aceptada como dependencia solo de desarrollo y anotada en `THIRD_PARTY_NOTICES.md`. No se distribuye; si pasara a distribuirse se revisa de nuevo. |
 | 2026-11-23 | Node local | Actualizarlo a la última 22.x (jsdom 31 pide 22.22.2 o superior). Lo hace el asistente. |
 | 2026-11-23 | Prueba de 3MF en OrcaSlicer | Se posterga para más adelante, cuando el producto esté más avanzado. Sigue autorizada. |
+| 2026-11-23 | Ideas tomadas de otros sitios | Se toma el concepto y la implementación es propia, llevándola más lejos. Orden aprobado: (1) vista sin cama y barra lateral de tres estados, (2) ajustar a la impresora y suavizar, (3) agregados, cajas con tapa y recetas, (4) biblioteca paramétrica. |
+| 2026-11-23 | Asistentes de creación | Los generadores (caja, tapa, soportes…) se presentan en una sección propia de asistentes paso a paso, con prototipos pequeños que se van sumando. |
+| 2026-11-23 | Documentación pública | Flujo aparte y permanente: README y guías en GitHub con ejemplos, paso a paso, capturas y animaciones de cada funcionalidad, más las reglas de uso del MCP. Se actualiza con cada cambio. |
