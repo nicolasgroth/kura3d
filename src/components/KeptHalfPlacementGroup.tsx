@@ -13,7 +13,9 @@ import React, { useId } from 'react';
 import { t, type TranslationKey } from '../i18n';
 import type { LanguageCode } from '../types/kura';
 import type { KeptHalfPlacement } from '../core/scene/keptHalf';
+import { AlertTriangle } from 'lucide-react';
 import '../styles/keptHalf.css';
+import '../styles/realesUi.css';
 
 interface Props {
   language: LanguageCode;
@@ -60,7 +62,8 @@ export const KeptHalfPlacementGroup: React.FC<Props> = ({ language, value, onCha
   const uid = useId();
   const labelId = `${uid}-label`;
   const name = `${uid}-kept`;
-  const overlapText = overlapNames.length > 0 ? t(language, 'corteMitad.overlap', { names: overlapNames.join(', ') }) : null;
+  const overlapText = overlapNames.length > 0 ? t(language, 'realesUi.cut.overlap', { names: overlapNames.join(', ') }) : null;
+  const noteId = `${uid}-overlap-note`;
   return (
     <div className="kura-form-field kura-kept-field">
       <span id={labelId} className="kura-kept-label">{t(language, 'corteMitad.group')}</span>
@@ -70,8 +73,8 @@ export const KeptHalfPlacementGroup: React.FC<Props> = ({ language, value, onCha
           const warn = opt.id === 'dropToBed' ? overlapText : null;
           const descId = `${uid}-${opt.id}-desc`;
           return (
+            <React.Fragment key={opt.id}>
             <label
-              key={opt.id}
               className={`kura-kept-option${checked ? ' is-checked' : ''}`}
               title={t(language, opt.desc)}
             >
@@ -80,7 +83,7 @@ export const KeptHalfPlacementGroup: React.FC<Props> = ({ language, value, onCha
                 name={name}
                 value={opt.id}
                 checked={checked}
-                aria-describedby={descId}
+                aria-describedby={warn ? `${descId} ${noteId}` : descId}
                 onChange={() => onChange(opt.id)}
               />
               <Schema id={opt.id} />
@@ -91,10 +94,27 @@ export const KeptHalfPlacementGroup: React.FC<Props> = ({ language, value, onCha
                 </span>
                 <small id={descId} className="kura-cut-hint">
                   {t(language, opt.desc)}
-                  {warn && <strong className="kura-kept-warn"> {warn}</strong>}
                 </small>
               </span>
             </label>
+            {warn && (
+              // Nota de advertencia propia bajo la opción, con un enlace que elige directamente la tercera.
+              <div id={noteId} className="kura-kept-note" role="note" data-testid="kept-overlap-note">
+                <AlertTriangle size={14} aria-hidden="true" className="kura-kept-note-icon" />
+                <span className="kura-kept-note-body">
+                  <span>{warn}</span>
+                  <button
+                    type="button"
+                    className="kura-kept-note-link"
+                    title={t(language, 'corteMitad.freeDesc')}
+                    onClick={() => onChange('freeSpot')}
+                  >
+                    {t(language, 'realesUi.cut.useFreeSpot')}
+                  </button>
+                </span>
+              </div>
+            )}
+            </React.Fragment>
           );
         })}
       </div>

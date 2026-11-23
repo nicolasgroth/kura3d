@@ -94,7 +94,10 @@ describe('PlaneCutModal: dónde dejar la mitad conservada', () => {
     } as never);
     render(<PlaneCutModal open onClose={() => undefined} />);
     fireEvent.change(keepSelect(), { target: { value: 'positive' } });
-    expect(screen.getByText(t('es', 'corteMitad.overlap', { names: 'Debajo' }))).toBeTruthy();
+    expect(screen.getByText(t('es', 'realesUi.cut.overlap', { names: 'Debajo' }))).toBeTruthy();
+    // La nota trae un enlace que elige directamente «Apoyarla en un lugar libre».
+    fireEvent.click(screen.getByRole('button', { name: t('es', 'realesUi.cut.useFreeSpot') }));
+    expect(radio('corteMitad.free').checked).toBe(true);
   });
 
   it('con ambas mitades manda inPlace (no cambia el comportamiento actual)', async () => {

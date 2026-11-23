@@ -57,6 +57,52 @@
   margin-top: 6px;
 }
 
+/* Corte por plano: nota de superposición propia bajo "Apoyarla en la cama". */
+.kura-kept-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: -2px 0 2px 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--accent-amber);
+  border-left-width: 3px;
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.kura-kept-note-icon {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--accent-amber);
+}
+
+.kura-kept-note-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: baseline;
+}
+
+.kura-kept-note-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-cyan);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.kura-kept-note-link:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 @media (max-width: 480px) {
   /* El resto de estados del borrador se ocultan en el teléfono; el fallo no: sin él se pierde trabajo. */
   .kura-statusbar-group:last-child > span.kura-recovery-notice[role="status"] {
