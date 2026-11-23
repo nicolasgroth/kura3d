@@ -1,0 +1,101 @@
+/**
+ * @file src/styles/ux3Edicion.css
+ * @description Estilos de la tercera revisión de edición: fila del árbol de Escena en una línea con los botones
+ * agrupados al borde derecho (aparecen al pasar el cursor o con foco; oculto y bloqueado siempre visibles),
+ * descripciones del menú «Organizar», menú contextual opaco y avisos de campos fuera de rango.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* «Más acciones» solo existe en el diseño de escritorio (en táctil se ven todos los botones). */
+.kura-scene-actions .kura-row-more {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 901px) {
+  .kura-scene-tree .kura-tree-row {
+    flex-wrap: nowrap;
+    min-height: 32px;
+  }
+
+  /* Grupo de botones pegado al borde derecho, separado de la zona de selección por una línea. */
+  .kura-scene-tree .kura-tree-row .kura-scene-actions {
+    flex: 0 0 auto;
+    gap: 2px;
+    margin-left: auto;
+  }
+
+  .kura-scene-tree .kura-tree-row .kura-scene-actions .kura-row-extra {
+    display: none;
+  }
+
+  .kura-scene-tree .kura-tree-row .kura-scene-actions .kura-mini-icon-btn {
+    display: none;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+  }
+
+  /* Estado activo (oculto, bloqueado): siempre visible, para que se vea sin pasar el cursor. */
+  .kura-scene-tree .kura-tree-row .kura-scene-actions .kura-mini-icon-btn.is-state-on {
+    display: inline-flex;
+  }
+
+  .kura-scene-tree .kura-tree-row:hover .kura-scene-actions,
+  .kura-scene-tree .kura-tree-row:focus-within .kura-scene-actions,
+  .kura-scene-tree:focus-visible .kura-tree-row.is-active-option .kura-scene-actions {
+    padding-left: 6px;
+    border-left: 1px solid var(--border-subtle);
+  }
+
+  .kura-scene-tree .kura-tree-row:hover .kura-scene-actions .kura-mini-icon-btn:not(.kura-row-extra),
+  .kura-scene-tree .kura-tree-row:focus-within .kura-scene-actions .kura-mini-icon-btn:not(.kura-row-extra),
+  .kura-scene-tree:focus-visible .kura-tree-row.is-active-option .kura-scene-actions .kura-mini-icon-btn:not(.kura-row-extra) {
+    display: inline-flex;
+  }
+}
+
+/* Menú contextual opaco: el color del modelo no se cuela detrás del texto (contraste AA en ambos temas).
+   Clase doble para ganar a `studio-viewport.css`, que se carga después. */
+.kura-context-menu.kura-context-menu,
+.kura-context-sub.kura-context-sub:not(.is-inline) {
+  background: var(--bg-panel);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Ítem con descripción: etiqueta y una línea breve debajo. */
+.kura-context-item.has-desc {
+  align-items: flex-start;
+}
+
+.kura-context-item.has-desc > svg {
+  margin-top: 2px;
+}
+
+.kura-context-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.kura-context-desc {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--text-secondary);
+  white-space: normal;
+}
+
+.kura-scene-actions .kura-mini-icon-btn.is-state-on {
+  color: var(--text-primary);
+}
+
+.kura-scene-actions .kura-mini-icon-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}

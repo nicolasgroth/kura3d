@@ -167,8 +167,13 @@ describe('menú contextual: Organizar', () => {
     const target = st().objects.find((o) => o.id === 'c')!;
     render(<ObjectContextMenu menu={{ objectId: 'c', x: 10, y: 10 }} target={target} onClose={() => {}} />);
     const group = screen.getByRole('group', { name: 'Organizar' });
-    expect(group.textContent).toContain('Combinar: un objeto sin fundir');
+    // Cada forma de juntar objetos lleva su descripción bajo la opción (descripción accesible).
     const agrupar = screen.getByRole('menuitem', { name: /^Agrupar/ });
+    const desc = (el: HTMLElement) => document.getElementById(el.getAttribute('aria-describedby') ?? '')?.textContent;
+    expect(desc(agrupar)).toBe('Se mueven juntos; siguen siendo objetos separados');
+    expect(desc(screen.getByRole('menuitem', { name: /Combinar en un objeto/ }))).toMatch(/sin fundirlas/);
+    expect(desc(screen.getByRole('menuitem', { name: /Unir selección/ }))).toMatch(/un solo sólido/);
+    expect(group.textContent).toContain('Funde los volúmenes');
     expect(agrupar.getAttribute('aria-keyshortcuts')).toContain('Control+G');
     expect(screen.getByRole('menuitem', { name: /Desagrupar/ })).toBeTruthy();
     expect(screen.getByRole('menuitem', { name: /Combinar en un objeto/ })).toBeTruthy();
