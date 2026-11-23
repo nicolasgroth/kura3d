@@ -25,6 +25,7 @@ import { MAX_GROUP_NAME, objectAncestors, reconcileGroups } from '../core/scene/
 import { groupImported } from './importGrouping';
 import { exportNotices, importErrorMessage } from './modelImportNotices';
 import { readModelBatch } from './modelImportBatch';
+import { countMeshBodies } from '../core/scene/meshBodies';
 
 export { importErrorMessage };
 
@@ -56,6 +57,8 @@ export interface ModelImportSource {
 
 export interface ModelImportOptions {
   placement?: engine.ImportPlacementMode;
+  /** Cancelación del usuario (botón Cancelar o Esc en la barra de progreso). */
+  signal?: AbortSignal;
 }
 
 type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
@@ -92,6 +95,8 @@ export interface ModelIoDeps {
   openSimplify?: (id: string) => void;
   /** Repara la malla de un objeto (acción del aviso de malla abierta). */
   repairMesh?: (id: string) => void;
+  /** Separa los cuerpos sueltos de un objeto en piezas (acción del aviso de varios cuerpos). */
+  separateBodies?: (id: string) => void;
   /** Asegura un borrador de recuperación (si hay cambios sin guardar) antes de leer un archivo grande. */
   ensureRecoveryDraft?: () => Promise<void>;
   /** Sesión de lectura del lote (pruebas); por defecto el Worker de importación. */
@@ -132,12 +137,17 @@ export function createModelIoActions(deps: ModelIoDeps) {
   /** Importa un lote: los archivos válidos entran en un solo paso deshacible; los demás se informan. */
   async function importModelFiles(files: ModelImportSource[], options: ModelImportOptions = {}): Promise<boolean> {
     const placement = options.placement ?? get().importPlacementMode;
-    const { models, failures } = await readModelBatch(files, {
+    const { models, failures, cancelled } = await readModelBatch(files, {
       tr,
       language: get().language,
       createSession: deps.createImportSession,
       ensureRecoveryDraft: deps.ensureRecoveryDraft,
+      signal: options.signal,
     });
+    if (cancelled) {
+      get().addToast(tr('uxEscena.importCancelled'), 'info');
+      return false;
+    }
 
     if (models.length === 0) {
       get().addToast(failures.length > 0 ? failures.join(' · ') : tr('importError.no-geometry', { name: files[0]?.name ?? '' }), 'error');
@@ -189,6 +199,17 @@ export function createModelIoActions(deps: ModelIoDeps) {
         tr('import.heavy', { tris: fmt }),
         'info',
         deps.openSimplify ? { label: tr('import.heavy.action'), run: () => deps.openSimplify?.(heavy.id) } : undefined,
+      );
+    }
+    // Un archivo con varios cuerpos sueltos en una sola pieza: se avisa y se ofrece separarlos.
+    const multi = created
+      .map((o) => ({ object: o, bodies: countMeshBodies(o.mesh) ?? 1 }))
+      .find((entry) => entry.bodies > 1);
+    if (multi) {
+      get().addToast(
+        tr('uxEscena.multiBody', { name: multi.object.name, count: multi.bodies }),
+        'info',
+        deps.separateBodies ? { label: tr('uxEscena.multiBody.action'), run: () => deps.separateBodies?.(multi.object.id) } : undefined,
       );
     }
     const open = placed.flatMap((p, index) => (p.part.openEdges > 0 ? [{ placed: p, object: created[index] }] : []));

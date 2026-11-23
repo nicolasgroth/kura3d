@@ -168,8 +168,8 @@ describe('Aviso de malla pesada al importar', () => {
     }
   });
 
-  it('no avisa con un modelo liviano y el umbral por defecto es de un millón', async () => {
-    expect(OPERATION_DEFAULTS.heavyMesh.warnTriangles).toBe(1_000_000);
+  it('no avisa con un modelo liviano y el umbral por defecto es de 300 000 triángulos', async () => {
+    expect(OPERATION_DEFAULTS.heavyMesh.warnTriangles).toBe(300_000);
     await store().importModelFiles([{ name: 'caja.stl', read: async () => boxStl(10, 10, 10) }]);
     expect(store().toasts.some((x) => x.text.includes('puede ir lento'))).toBe(false);
   });

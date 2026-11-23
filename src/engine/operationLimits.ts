@@ -164,8 +164,8 @@ export const OPERATION_DEFAULTS = {
   colorSplit: { depthMm: 1 },
   /** Simplificar avisa (`SIMPLIFY_VOLUME_CHANGED`) cuando el volumen cambia más que este porcentaje. */
   simplify: { volumeWarnPct: 2 },
-  /** Aviso no bloqueante al importar un modelo con más triángulos que esto (puede ir lento; se ofrece Simplificar). */
-  heavyMesh: { warnTriangles: 1_000_000 },
+  /** Aviso no bloqueante al importar un modelo con más triángulos que esto (desde ~300 000 la vista y las operaciones ya se sienten lentas; se ofrece Simplificar). */
+  heavyMesh: { warnTriangles: 300_000 },
   /**
    * Corte por plano (`plane_cut`) cuando el llamador omite el conector: igual en el bus y en el MCP (con y sin
    * interfaz). Sin conector por defecto: un corte de una pieza chica no falla por un conector que no pidió.
