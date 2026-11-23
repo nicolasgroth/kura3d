@@ -129,26 +129,42 @@ const OPEN_EDGE_SCAN_LIMIT = 4_000_000;
 export function countOpenEdges(indices: Uint32Array, vertexCount: number): number {
   const triCount = Math.floor(indices.length / 3);
   if (triCount > OPEN_EDGE_SCAN_LIMIT) return -1;
-  const keys = new Float64Array(triCount * 3);
+  // Aristas agrupadas por su vértice menor (CSR, O(n)): cada cubeta es chica y se cuenta sin ordenar
+  // el arreglo completo (antes, un sort de 3 claves por triángulo era casi un segundo en 2 M triángulos).
+  const offsets = new Uint32Array(vertexCount + 1);
   for (let t = 0; t < triCount; t++) {
     for (let e = 0; e < 3; e++) {
       const a = indices[t * 3 + e];
       const b = indices[t * 3 + ((e + 1) % 3)];
-      keys[t * 3 + e] = a < b ? a * vertexCount + b : b * vertexCount + a;
+      offsets[(a < b ? a : b) + 1]++;
     }
   }
-  keys.sort();
+  for (let v = 0; v < vertexCount; v++) offsets[v + 1] += offsets[v];
+  const fill = offsets.slice(0, vertexCount);
+  const others = new Uint32Array(triCount * 3);
+  for (let t = 0; t < triCount; t++) {
+    for (let e = 0; e < 3; e++) {
+      const a = indices[t * 3 + e];
+      const b = indices[t * 3 + ((e + 1) % 3)];
+      others[fill[a < b ? a : b]++] = a < b ? b : a;
+    }
+  }
   let open = 0;
-  let run = 1;
-  for (let i = 1; i <= keys.length; i++) {
-    if (i < keys.length && keys[i] === keys[i - 1]) {
-      run++;
-    } else {
-      if (run !== 2) open++;
-      run = 1;
+  for (let v = 0; v < vertexCount; v++) {
+    const from = offsets[v];
+    const to = offsets[v + 1];
+    if (to - from > 1) others.subarray(from, to).sort();
+    let run = 1;
+    for (let i = from + 1; i <= to; i++) {
+      if (i < to && others[i] === others[i - 1]) {
+        run++;
+      } else {
+        if (i > from && run !== 2) open++;
+        run = 1;
+      }
     }
   }
-  return keys.length === 0 ? 0 : open;
+  return open;
 }
 
 /** Malla importada con su diagnóstico de cierre. */

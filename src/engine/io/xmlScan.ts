@@ -34,6 +34,24 @@ function isNameEnd(code: number): boolean {
   return code === 32 || code === 9 || code === 10 || code === 13 || code === 47 || code === 62;
 }
 
+/** true si el nombre local (tras el último `:`) de `xml[from..to)` es `target` (ASCII, minúsculas). */
+function localNameIs(xml: string, from: number, to: number, target: string): boolean {
+  let start = from;
+  for (let k = to - 1; k >= from; k--) {
+    if (xml.charCodeAt(k) === 58) {
+      start = k + 1;
+      break;
+    }
+  }
+  if (to - start !== target.length) return false;
+  for (let k = 0; k < target.length; k++) {
+    let c = xml.charCodeAt(start + k);
+    if (c >= 65 && c <= 90) c += 32;
+    if (c !== target.charCodeAt(k)) return false;
+  }
+  return true;
+}
+
 /**
  * Visita cada elemento cuyo nombre local (sin prefijo de espacio de nombres) coincide con `local`
  * (sin distinguir mayúsculas). `visit` puede devolver `false` para detener el recorrido.
@@ -59,13 +77,12 @@ export function forEachElement(
     }
     let nameEnd = lt + 1;
     while (nameEnd < n && !isNameEnd(xml.charCodeAt(nameEnd)) && xml.charCodeAt(nameEnd) !== 60) nameEnd++;
-    const qname = xml.slice(lt + 1, nameEnd);
-    const colon = qname.lastIndexOf(':');
-    const name = (colon >= 0 ? qname.slice(colon + 1) : qname).toLowerCase();
-    if (name !== target) {
+    // Comparación sin cortar la cadena: en un 3MF grande se recorren millones de etiquetas por pasada.
+    if (!localNameIs(xml, lt + 1, nameEnd, target)) {
       pos = nameEnd;
       continue;
     }
+    const qname = xml.slice(lt + 1, nameEnd);
     const gt = xml.indexOf('>', nameEnd);
     if (gt < 0 || gt - lt > MAX_XML_TAG_LENGTH) {
       throw new ModelImportError('corrupt', `etiqueta <${qname.slice(0, 40)}> sin cerrar`);
