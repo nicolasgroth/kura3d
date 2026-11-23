@@ -19,6 +19,7 @@ import {
 } from './manifoldKernel';
 import { EngineError, requireOperationRange } from './engineErrors';
 import { OPERATION_RANGES } from './operationLimits';
+import { cylindricalLithophaneSize, preserveLuminanceRange } from './imageReliefParams';
 import { detectForeground, validateImageBuffer } from './imageInput';
 import { normalizeMeshToBed } from './primitives';
 
@@ -67,6 +68,7 @@ function sampleLuminanceGrid(
   }
 
   const passes = Math.max(0, Math.min(5, Math.round(options.smoothing)));
+  const unsmoothed = grid;
   for (let pass = 0; pass < passes; pass++) {
     const next = new Float32Array(cols * rows);
     for (let r = 0; r < rows; r++) {
@@ -88,6 +90,8 @@ function sampleLuminanceGrid(
     }
     grid = next;
   }
+  // El suavizado no debe bajar el alto pedido: se conserva el rango de luminancia original.
+  if (passes > 0) preserveLuminanceRange(unsmoothed, grid);
 
   return { grid, cols, rows };
 }
@@ -107,21 +111,16 @@ export function generateCylindricalLithophane(
   validateImageBuffer(options);
   const { grid, cols, rows } = sampleLuminanceGrid(options, 256);
 
-  // Fuera de rango es un error tipado (nunca se acota en silencio); `??` respeta un 0 explícito.
-  const L = OPERATION_RANGES.lithophane;
-  const arcDeg = requireOperationRange('arcDegrees', options.arcDegrees, L.arcDegrees, 180);
+  // Fuente única del tamaño (`cylindricalLithophaneSize`): mandan radio y arco; el ancho físico no
+  // aplica en este modo. Fuera de rango es un error tipado (nunca se acota en silencio).
+  const size = cylindricalLithophaneSize(options);
+  const arcDeg = size.arcDegrees;
   const isFullCircle = arcDeg >= 359.9;
   const arcRad = (arcDeg * Math.PI) / 180;
-  const widthMm = requireOperationRange('widthMm', options.widthMm, L.widthMm, 60);
-  const rInner = requireOperationRange(
-    'cylinderRadiusMm',
-    options.cylinderRadiusMm,
-    L.cylinderRadiusMm,
-    Math.min(L.cylinderRadiusMm.max, Math.max(8, widthMm / arcRad))
-  );
-  const heightMm = requireOperationRange('depthMm', options.depthMm, L.heightMm, widthMm);
-  const baseMm = requireOperationRange('baseThicknessMm', options.baseThicknessMm, L.baseThicknessMm, 1.2);
-  const reliefMm = requireOperationRange('reliefHeightMm', options.reliefHeightMm, L.reliefHeightMm, 2.4);
+  const rInner = size.radiusMm;
+  const heightMm = size.heightMm;
+  const baseMm = size.baseThicknessMm;
+  const reliefMm = size.reliefHeightMm;
 
   const positions: number[] = [];
   const indices: number[] = [];

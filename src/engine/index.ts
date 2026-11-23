@@ -120,6 +120,13 @@ export {
   generateCylindricalLithophane,
   generateSilhouetteOrCutterFromImage,
 } from './generators';
+export {
+  cylindricalLithophaneSize,
+  IMAGE_RELIEF_APPLICABLE_PARAMS,
+  type CylindricalLithophaneSize,
+  type ImageReliefParam,
+  type ImageShapeMode,
+} from './imageReliefParams';
 
 export { computeAlignmentPositions } from './alignment';
 

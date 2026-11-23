@@ -10,6 +10,7 @@
 import type { ImageTo3DOptions, MeshData } from '../types/kura';
 import { computeVertexNormals } from './manifoldKernel';
 import { validateImageBuffer } from './imageInput';
+import { preserveLuminanceRange } from './imageReliefParams';
 /**
  * Genera una malla 3D sólida, completamente cerrada (watertight) y libre de T-junctions
  * a partir de una imagen RGBA (modo relieve o litofanía invertida), descansando sobre Y=0.
@@ -44,6 +45,7 @@ export function generateReliefFromImage(options: ImageTo3DOptions): MeshData {
 
   // Pasadas deterministas de suavizado 3x3 si se solicita
   const passes = Math.max(0, Math.min(5, Math.round(options.smoothing)));
+  const unsmoothed = grid;
   for (let pass = 0; pass < passes; pass++) {
     const next = new Float32Array(cols * rows);
     for (let r = 0; r < rows; r++) {
@@ -65,6 +67,8 @@ export function generateReliefFromImage(options: ImageTo3DOptions): MeshData {
     }
     grid = next;
   }
+  // El suavizado no debe bajar el alto pedido: se conserva el rango de luminancia original.
+  if (passes > 0) preserveLuminanceRange(unsmoothed, grid);
 
   const widthMm = Math.max(1, options.widthMm);
   const depthMm = Math.max(1, options.depthMm);
