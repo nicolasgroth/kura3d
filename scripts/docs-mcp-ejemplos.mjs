@@ -2,7 +2,7 @@
  * @file scripts/docs-mcp-ejemplos.mjs
  * @description Ejecuta contra el motor sin interfaz (servidor MCP real por stdio, `mcp-server/dist/index.js`)
  * los ejemplos de punta a punta de `docs/MCP.md`: caja con agujero, dividir un modelo grande, medir un
- * volumen y caja con esquinas redondeadas. Imprime cada llamada y un resumen de la respuesta; sale con código 1 si algún resultado difiere
+ * volumen, caja con esquinas redondeadas y comprobar encaje. Imprime cada llamada y un resumen de la respuesta; sale con código 1 si algún resultado difiere
  * de lo documentado. Uso: `npm run mcp:build && node scripts/docs-mcp-ejemplos.mjs`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -81,6 +81,20 @@ esperar(JSON.stringify(redonda.stats?.dimensionsMm) === JSON.stringify([40, 30, 
 esperar(Math.abs(redonda.stats?.volumeMm3 - esperado) / esperado < 0.002, `volumen ≈ ${Math.round(esperado)} mm³ (obtenido ${redonda.stats?.volumeMm3})`);
 const acotada = await llamar('kura_update_primitive_params', { objectId: redonda.id, params: { edgeSize: 40 } });
 esperar(acotada.edgeSizeClamped === true && acotada.edgeSizeApplied < 15, `radio acotado a ${acotada.edgeSizeApplied} mm`);
+
+console.log('\n== Ejemplo 5: comprobar encaje ==');
+const carcasa = await llamar('kura_create_primitive', { primitiveType: 'box', name: 'Carcasa', placement: 'origin', position: [100, 0, 0], params: { width: 40, depth: 30, height: 15 } });
+const bolsillo = await llamar('kura_create_primitive', { primitiveType: 'box', name: 'Bolsillo', role: 'negative', position: [100, 0, 3], params: { width: 30, depth: 20, height: 15 } });
+const placa = await llamar('kura_create_primitive', { primitiveType: 'box', name: 'Placa', role: 'reference', position: [100, 0, 4], params: { width: 30.6, depth: 20.6, height: 1.6 } });
+const ids = [carcasa.id, placa.id];
+const encaje = await llamar('kura_check_fit', { objectIds: ids });
+const par = encaje.pairs?.[0];
+esperar(par?.status === 'interferes' && par.recommendation?.key === 'fitCheck.rec.enlarge', 'la placa no cabe: recomienda agrandar el bolsillo');
+esperar(Math.abs((par?.recommendation?.params?.perSideMm ?? 0) - 0.55) < 0.01, `agrandar ≈ 0,55 mm por lado (obtenido ${par?.recommendation?.params?.perSideMm})`);
+console.log('  ' + par?.recommendation?.text);
+await llamar('kura_update_primitive_params', { objectId: bolsillo.id, params: { width: 31.2, depth: 21.2 } });
+const otra = await llamar('kura_check_fit', { objectIds: ids });
+esperar(otra.pairs?.[0]?.status === 'ok' && Math.abs(otra.pairs[0].clearanceMm - 0.3) < 0.01, `ahora cabe con 0,3 mm de holgura (obtenido ${otra.pairs?.[0]?.clearanceMm})`);
 
 await client.close();
 console.log(fallos ? `\n${fallos} comprobación(es) fallaron.` : '\nTodos los ejemplos se ejecutaron.');
