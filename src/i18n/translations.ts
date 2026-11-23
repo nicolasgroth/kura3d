@@ -26,6 +26,7 @@ import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
 import { UXMOVIL_EN, UXMOVIL_ES } from './locales/uxMovil';
 import { SPLITUX_EN, SPLITUX_ES } from './locales/splitUx';
 import { UXTEXTO_EN, UXTEXTO_ES } from './locales/uxTexto';
+import { GENUI_EN, GENUI_ES } from './locales/genUi';
 import { UX3F_EN, UX3F_ES } from './locales/ux3Forma';
 import { FIX10_EN, FIX10_ES } from './locales/fix10';
 import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
@@ -54,6 +55,7 @@ export const TRANSLATIONS_ES = {
   ...UXMOVIL_ES,
   ...SPLITUX_ES,
   ...UXTEXTO_ES,
+  ...GENUI_ES,
   ...UX3F_ES,
   ...FIX10_ES,
   ...OPNOTES_ES,
@@ -1431,6 +1433,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UXMOVIL_EN,
   ...SPLITUX_EN,
   ...UXTEXTO_EN,
+  ...GENUI_EN,
   ...UX3F_EN,
   ...FIX10_EN,
   ...OPNOTES_EN,

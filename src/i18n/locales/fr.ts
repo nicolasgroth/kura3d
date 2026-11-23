@@ -21,6 +21,7 @@ import { A11YUX_FR } from './a11yUx';
 import { UXMOVIL_FR } from './uxMovil';
 import { SPLITUX_FR } from './splitUx';
 import { UXTEXTO_FR } from './uxTexto';
+import { GENUI_FR } from './genUi';
 import { UX3F_FR } from './ux3Forma';
 import { FIX10_FR } from './fix10';
 import { OPNOTES_FR } from './operationNotes';
@@ -47,6 +48,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...UXMOVIL_FR,
   ...SPLITUX_FR,
   ...UXTEXTO_FR,
+  ...GENUI_FR,
   ...UX3F_FR,
   ...FIX10_FR,
   ...OPNOTES_FR,

@@ -9,6 +9,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FileUp, Sparkles } from 'lucide-react';
 import { t } from '../../i18n';
+import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
@@ -16,6 +17,8 @@ import { useInvalidFields } from '../useInvalidFields';
 import { OperationPanel } from '../OperationPanel';
 import { type ImageTo3DOptions } from '../../types/kura';
 import { openLocalFile } from '../../utils/platformBridge';
+import { detectImageFormat } from './imageFormat';
+import '../../styles/genUiDialogs.css';
 
 /** Modal 2: Imagen → 3D (Relieve plano, Litofanía Cilíndrica Curva, Silueta 3D y Cortador/Sello). */
 export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = ({
@@ -47,7 +50,15 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
     h: number;
   } | null>(null);
 
+  // Error de carga visible dentro del diálogo (archivo vacío, formato no soportado o imagen dañada).
+  const [imageError, setImageError] = useState<string | null>(null);
+  const sampleLoaded = useRef(false);
+
+  // Litofanía cilíndrica: el ancho lo da el arco (radio × ángulo); no se pide aparte.
+  const developedWidthMm = cylinderRadiusMm * (arcDegrees * Math.PI) / 180;
+
   const drawSamplePattern = () => {
+    setImageError(null);
     const w = 110;
     const h = 110;
     const offscreen = document.createElement('canvas');
@@ -79,16 +90,27 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
     setRgbaBuffer({ rgba: imgData.data, w, h });
   };
 
+  // El patrón de prueba se carga una vez al abrir; una imagen rechazada no lo vuelve a poner en silencio.
   useEffect(() => {
-    if (open && !rgbaBuffer) {
+    if (!open) {
+      sampleLoaded.current = false;
+      return;
+    }
+    if (!sampleLoaded.current && !rgbaBuffer) {
+      sampleLoaded.current = true;
       drawSamplePattern();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, rgbaBuffer]);
 
   useEffect(() => {
-    if (!rgbaBuffer || !canvasRef.current) return;
+    if (!canvasRef.current) return;
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
+    if (!rgbaBuffer) {
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      return;
+    }
     canvasRef.current.width = rgbaBuffer.w;
     canvasRef.current.height = rgbaBuffer.h;
     const imgData = new ImageData(
@@ -99,19 +121,34 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
     ctx.putImageData(imgData, 0, 0);
   }, [rgbaBuffer]);
 
+  /** Rechaza el archivo: sin imagen cargada el botón de crear queda deshabilitado y el motivo se ve en el diálogo. */
+  const rejectImage = (messageKey: 'genUi.img.errEmpty' | 'genUi.img.errFormat' | 'genUi.img.errCorrupt') => {
+    setRgbaBuffer(null);
+    setImageError(t(language, messageKey));
+  };
+
   const handleUploadImage = async () => {
     const file = await openLocalFile('image/png,image/jpeg,image/webp,image/bmp');
     if (!file) return;
 
-    const blob = new Blob([file.buffer]);
+    if (file.buffer.byteLength === 0) return rejectImage('genUi.img.errEmpty');
+    const format = detectImageFormat(new Uint8Array(file.buffer));
+    if (!format) return rejectImage('genUi.img.errFormat');
+
+    const blob = new Blob([file.buffer], { type: format });
     const url = URL.createObjectURL(blob);
     try {
       const img = new Image();
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error('Imagen no válida'));
-        img.src = url;
-      });
+      try {
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('decode'));
+          img.src = url;
+        });
+      } catch {
+        return rejectImage('genUi.img.errCorrupt');
+      }
+      if (!(img.width > 0 && img.height > 0)) return rejectImage('genUi.img.errCorrupt');
 
       const maxDim = 140;
       const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
@@ -122,10 +159,11 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
       offscreen.width = w;
       offscreen.height = h;
       const ctx = offscreen.getContext('2d');
-      if (!ctx) return;
+      if (!ctx) return rejectImage('genUi.img.errCorrupt');
       ctx.drawImage(img, 0, 0, w, h);
       const data = ctx.getImageData(0, 0, w, h);
 
+      setImageError(null);
       setRgbaBuffer({ rgba: data.data, w, h });
       setName(file.name.replace(/\.[^.]+$/, ''));
       setDepthMm(Math.max(20, Math.round((widthMm * h) / w)));
@@ -178,7 +216,10 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
         </>
       }
     >
-      <OperationFailureAlert message={failure.error} />
+      <OperationFailureAlert message={failure.error || imageError} />
+      {!rgbaBuffer && !imageError && (
+        <p className="kura-cut-reason" role="status">{t(language, 'genUi.img.needImage')}</p>
+      )}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button type="button" className="kura-btn kura-btn-sm" onClick={() => void handleUploadImage()}>
           <FileUp size={13} />
@@ -211,14 +252,9 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
       <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
         <canvas
           ref={canvasRef}
-          style={{
-            width: 110,
-            height: 110,
-            objectFit: 'contain',
-            borderRadius: 8,
-            border: '1px solid var(--border-subtle)',
-            background: '#0f172a',
-          }}
+          className="kura-img-preview"
+          role="img"
+          aria-label={t(language, 'genUi.img.previewAlt')}
         />
         <div className="kura-form-grid" style={{ flex: 1 }}>
           <div className="kura-form-field" style={{ gridColumn: '1 / -1' }}>
@@ -230,6 +266,15 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
               onChange={(e) => setName(e.target.value)}
             />
           </div>
+          {shapeMode === 'cylindrical' ? (
+            <div className="kura-form-field" title={t(language, 'genUi.img.devWidthTip')}>
+              <label htmlFor="img-dev-w">{t(language, 'genUi.img.devWidth')} (mm)</label>
+              <output id="img-dev-w" className="kura-readonly-value" aria-describedby="img-dev-w-tip">
+                {formatLocaleNumber(language, developedWidthMm, { maxFrac: 1 })}
+              </output>
+              <span id="img-dev-w-tip" className="kura-field-hint">{t(language, 'genUi.img.devWidthTip')}</span>
+            </div>
+          ) : (
           <div className="kura-form-field">
             <label htmlFor="img-w">{t(language, 'dialog.img.width')} (mm)</label>
             <PrecisionNumberInput
@@ -245,6 +290,7 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
               onChange={setWidthMm}
             />
           </div>
+          )}
           <div className="kura-form-field">
             <label htmlFor="img-d">{t(language, 'dialog.img.depth')} (mm)</label>
             <PrecisionNumberInput

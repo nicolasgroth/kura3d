@@ -21,6 +21,7 @@ import { A11YUX_HI } from './a11yUx';
 import { UXMOVIL_HI } from './uxMovil';
 import { SPLITUX_HI } from './splitUx';
 import { UXTEXTO_HI } from './uxTexto';
+import { GENUI_HI } from './genUi';
 import { UX3F_HI } from './ux3Forma';
 import { FIX10_HI } from './fix10';
 import { OPNOTES_HI } from './operationNotes';
@@ -47,6 +48,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...UXMOVIL_HI,
   ...SPLITUX_HI,
   ...UXTEXTO_HI,
+  ...GENUI_HI,
   ...UX3F_HI,
   ...FIX10_HI,
   ...OPNOTES_HI,
