@@ -10,6 +10,7 @@
 
 import { useCallback } from 'react';
 import * as THREE from 'three';
+import { orientGizmoToUserAxes } from './gizmoUserAxes';
 
 const GREEN = 0x00ff00;
 const BLUE = 0x0000ff;
@@ -40,10 +41,13 @@ export function swapGizmoAxisColors(root: THREE.Object3D | null | undefined): nu
   return swapped;
 }
 
-/** Ref de callback para `<TransformControls>`: aplica los colores de los ejes del usuario al montar. */
+/** Ref de callback para `<TransformControls>`: aplica los colores y el sentido de los ejes del usuario al montar. */
 export function useUserAxisGizmoColors() {
   return useCallback((controls: THREE.Object3D | null) => {
     // `gizmo` es privado en los tipos de three-stdlib, pero es el contenedor de las manijas.
-    if (controls) swapGizmoAxisColors((controls as unknown as { gizmo?: THREE.Object3D }).gizmo ?? controls);
+    if (!controls) return;
+    swapGizmoAxisColors((controls as unknown as { gizmo?: THREE.Object3D }).gizmo ?? controls);
+    // Flechas hacia el lado positivo de los ejes del usuario (Y+ = fondo), no hacia la cámara.
+    orientGizmoToUserAxes(controls);
   }, []);
 }
