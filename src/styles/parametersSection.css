@@ -92,6 +92,13 @@
   min-width: 0;
 }
 
+/* «✓ Redondeados» o «✓ Solo verticales» no caben en un tercio: se parten en dos líneas. */
+.kura-param-edges .kura-param-select-row .kura-param-seg {
+  white-space: normal;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
 .kura-param-edges > legend {
   padding: 0;
 }
