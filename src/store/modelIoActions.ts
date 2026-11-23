@@ -2,7 +2,7 @@
  * @file src/store/modelIoActions.ts
  * @description Acciones de importación y exportación de modelos del store: lote parcial (importa
  * los archivos válidos y nombra los que fallaron), lectura en Worker, colocación en la cama
- * (conjunto apoyado o posición original), aviso de malla abierta y de normales reorientadas, y exportación única
+ * (conjunto apoyado o posición original), grupos por placa del laminador y por conjunto montado, aviso de malla abierta y de normales reorientadas, y exportación única
  * STL/3MF/OBJ+MTL/GLB/PLY de la selección o la escena con nombre elegido.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -22,7 +22,8 @@ import { selectExportTargets } from './exportTargets';
 import { placeGroupInFreeSpot, type BedSize } from '../core/scene/freeSpot';
 import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
 import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } from './splitExport';
-import { objectAncestors } from '../core/scene/groups';
+import { objectAncestors, reconcileGroups } from '../core/scene/groups';
+import { groupImported } from './importGrouping';
 import { exportNotices, tooLargeMessage } from './modelImportNotices';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
@@ -187,8 +188,13 @@ export function createModelIoActions(deps: ModelIoDeps) {
         isHole: p.part.isHole,
       }),
     );
+    // Placas del laminador y conjuntos montados quedan agrupados, en el mismo paso deshacible.
+    const grouping = groupImported(models, placed, created, state.groups?.length ?? 0, deps.bedSize?.() ?? null, tr);
     pushHistory();
-    set((prev) => ({ objects: [...prev.objects, ...created], selectedIds: created.map((o) => o.id) }));
+    set((prev) => ({
+      ...reconcileGroups({ objects: [...prev.objects, ...grouping.objects], groups: [...(prev.groups ?? []), ...grouping.groups] }),
+      selectedIds: created.map((o) => o.id),
+    }));
     if (wasEmpty || placement === 'original') get().requestCameraPreset('fit');
     else get().requestCameraPreset('ensure', created.map((o) => o.id));
 
@@ -201,6 +207,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         : tr('import.importedParts', { name: models[0].fileName, count: pieces })
       : tr('import.importedFiles', { count: models.length, parts: pieces });
     get().addToast(`${summary} · ${trisText}`, 'success');
+    for (const notice of grouping.notices) get().addToast(notice, 'info');
     const heavy = created.find((o) => o.stats.triangles >= OPERATION_DEFAULTS.heavyMesh.warnTriangles);
     if (heavy) {
       const fmt = new Intl.NumberFormat(get().language).format(heavy.stats.triangles);
