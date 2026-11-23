@@ -4,7 +4,7 @@ La herramienta **Medir** responde preguntas sin tocar tu modelo: cuánto mide al
 
 ## Activarla
 
-Pulsa **Medir** en la barra superior o la tecla **D**. Para volver a la selección, **D** o **V** otra vez. El panel *Medir* aparece arriba a la izquierda del visor, con cuatro modos: **Distancia**, **Ángulo**, **Área** y **Capacidad**, y un resumen de la pieza (superficie y volumen).
+Pulsa **Medir** en la barra superior o la tecla **D**. Para volver a la selección, **D** o **V** otra vez. El panel *Medir* aparece acoplado al borde izquierdo del visor, bajo la barra de vistas, con cuatro modos: **Distancia**, **Ángulo**, **Área** y **Capacidad**, y un resumen de la pieza (superficie y volumen). Es angosto y, si tu modelo queda detrás, la cámara lo corre al área libre. En su título tienes dos botones: **mover el panel al otro borde** (izquierdo o derecho; Kura3D recuerda tu elección mientras la app está abierta) y **plegar** (deja solo el título).
 
 ![Herramienta Medir con la primera esquina marcada](img/medir-01-herramienta.png)
 
@@ -34,8 +34,8 @@ Pulsa **Medir** en la barra superior o la tecla **D**. Para volver a la selecci�
 
 ## Problemas frecuentes
 
-- **«Toca un punto de la pieza»:** el clic cayó fuera del modelo; apunta sobre la pieza.
-- **El panel tapa parte del modelo:** pliega el panel con la flecha de su título o gira la vista (**1**, **2**, **3**, **7**).
+- **«Haz clic en un punto de la pieza»** (en pantallas táctiles, «Toca un punto de la pieza»): el clic cayó fuera del modelo; apunta sobre la pieza.
+- **El panel tapa parte del modelo:** muévelo al otro borde con el botón de su título, pliégalo con la flecha o gira la vista (**1**, **2**, **3**, **7**).
 - **Capacidad 0:** el objeto es macizo, o su orientación actual no retiene nada; prueba girarlo.
 - **Cierres sellados dentro de la pieza:** se informan aparte y no cuentan como capacidad.
 

@@ -7,7 +7,7 @@ Esta guía te lleva de la pantalla vacía a una escena con tres piezas que puede
 ![Kura3D recién abierto, con la escena vacía](img/primeros-pasos-01-vacio.png)
 
 - **Barra superior:** importar, deshacer y rehacer, el menú *Proyecto*, las herramientas (*Seleccionar*, *Pintar*, *Cortar*, *Esculpir / Borrar*, *Medir*) y *Exportar*. A la derecha: búsqueda de comandos, idioma, tema claro u oscuro, el estado del puente MCP, el asistente *IA*, el menú *Más* y *Ajustes*.
-- **Panel izquierdo:** la pestaña *Formas* (piezas para crear) y la pestaña *Escena* (lista de todo lo que hay).
+- **Panel izquierdo:** la pestaña *Formas* (piezas para crear) y la pestaña *Escena* (lista de todo lo que hay). Tiene tres estados (ver más abajo).
 - **Visor 3D:** la cama de tu impresora con la rejilla. Abajo ves el tamaño de la selección y la cama activa.
 - **Inspector (derecha):** nombre, color, medidas y posición del objeto seleccionado.
 - **Barra de estado:** unidad (mm), impresora, cantidad de objetos y triángulos, y *Atajos*.
@@ -34,6 +34,20 @@ Kura3D usa los mismos ejes que los laminadores: **X hacia la derecha, Y hacia el
 ## Mover la cámara
 
 Arrastra para orbitar y usa la rueda para acercar. Las teclas **1** (frente), **2** (derecha), **3** (isométrica) y **7** (superior) cambian la vista, y **F** encuadra lo seleccionado o toda la escena. El cubo de vistas de la esquina superior derecha también sirve.
+
+## Barra lateral: completa, compacta u oculta
+
+El tirador del borde del panel izquierdo (la pestaña con la flecha) recorre tres estados con cada clic: **completa** (iconos y texto), **compacta** (solo iconos, una columna angosta) y **oculta**. Con clic derecho sobre el tirador, o `Mayús+F10` con el foco en él, eliges uno directamente. También están en la paleta de comandos (**Ctrl+K**, «Barra lateral»). Kura3D recuerda tu elección, y el modo sin distracciones (**Ctrl+Mayús+Enter**) no la cambia.
+
+En la barra compacta cada icono muestra su nombre al pasar el cursor. La pestaña *Escena* no cabe en ella: pulsa su icono y luego **Expandir la barra** para ver la lista.
+
+![Barra lateral compacta: solo iconos de formas, generadores y acciones](img/primeros-pasos-05-barra-compacta.png)
+
+## Vista sin cama
+
+Para ver cómo encajan las piezas entre sí sin la cama de por medio, pulsa **Sin cama** en la barra de vistas del visor (o la tecla **B**, o clic derecho en el fondo del visor → *Vista sin cama*). Se ocultan la rejilla, la cama, el rótulo de la impresora, el volumen de impresión y las sombras; las piezas quedan flotando y puedes girar la vista por debajo para mirarlas desde abajo. Es solo una forma de ver: no cambia tus piezas ni lo que se exporta, y no se guarda en el proyecto. Si algo queda fuera del volumen de impresión, el aviso sigue en la línea inferior del visor. Vuelve a pulsar **Sin cama** (o **B**) para ver la cama otra vez.
+
+![Vista sin cama: las tres piezas flotando sobre un fondo neutro](img/primeros-pasos-06-sin-cama.png)
 
 ## Problemas frecuentes
 
