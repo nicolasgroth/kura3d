@@ -43,7 +43,26 @@ export const PRIMITIVE_PARAM_RANGES = {
   letterSpacing: { min: -10, max: 100 },
   /** Bisel del texto 3D en mm (se guarda en el proyecto; 0 = sin bisel). */
   bevel: { min: 0, max: 1000 },
+  /**
+   * Radio o chaflán de las aristas (Caja, Cilindro, Tubo, Prisma), en mm. El tope real depende de
+   * las medidas de la pieza (`maxEdgeSize` en `primitiveEdges.ts`): por encima se acota con aviso.
+   */
+  edgeSize: { min: 0, max: 1000 },
 } as const satisfies Record<string, ParamRange>;
+
+/** Acabado de las aristas de una primitiva: rectas, redondeadas (radio) o achaflanadas (45°). */
+export const EDGE_STYLES = ['sharp', 'round', 'chamfer'] as const;
+export type EdgeStyle = (typeof EDGE_STYLES)[number];
+/** Aristas afectadas: todas, solo las verticales (esquinas en planta) o solo el borde superior. */
+export const EDGE_SCOPES = ['all', 'vertical', 'top'] as const;
+export type EdgeScope = (typeof EDGE_SCOPES)[number];
+/** Alcances válidos por primitiva (las demás no admiten bordes). */
+export const EDGE_SCOPES_BY_TYPE: Readonly<Record<string, readonly EdgeScope[]>> = {
+  box: EDGE_SCOPES,
+  prism: EDGE_SCOPES,
+  cylinder: ['all', 'top'],
+  tube: ['all', 'top'],
+};
 
 export type PrimitiveRangeKey = keyof typeof PRIMITIVE_PARAM_RANGES;
 

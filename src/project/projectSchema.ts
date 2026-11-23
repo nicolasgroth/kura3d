@@ -7,6 +7,7 @@
  */
 
 import { TRANSFORM_LIMITS } from '../engine/operationLimits';
+import { EDGE_SCOPES, EDGE_STYLES, TEXT_ALIGN_OPTIONS } from '../engine/primitiveLimits';
 import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
 
@@ -82,6 +83,9 @@ const params = shape({
   width: numberOption, height: numberOption, depth: numberOption, radius: numberOption,
   outerRadius: numberOption, innerRadius: numberOption, tubeRadius: numberOption,
   segments: numberOption, sides: numberOption, text: optional(str), fontSize: numberOption, bevel: numberOption,
+  letterSpacing: numberOption, textAlign: optional(oneOf(...TEXT_ALIGN_OPTIONS)),
+  // Bordes (Caja, Cilindro, Tubo, Prisma); sin campos = aristas rectas, como en proyectos anteriores.
+  edgeStyle: optional(oneOf(...EDGE_STYLES)), edgeSize: numberOption, edgeScope: optional(oneOf(...EDGE_SCOPES)),
 });
 
 // Desde la versión 2 del formato: origen paramétrico (huella de malla y opciones de rosca).

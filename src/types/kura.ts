@@ -395,6 +395,12 @@ export interface PrimitiveParams {
   /** Texto 3D: alineación de las líneas (por defecto `left`). */
   textAlign?: 'left' | 'center' | 'right';
   bevel?: number;
+  /** Caja, Cilindro, Tubo y Prisma: acabado de las aristas (sin valor = `sharp`, como antes). */
+  edgeStyle?: 'sharp' | 'round' | 'chamfer';
+  /** Radio o chaflán de las aristas en mm (se acota a lo que permiten las medidas). */
+  edgeSize?: number;
+  /** Aristas afectadas: todas, solo verticales (esquinas en planta) o solo el borde superior. */
+  edgeScope?: 'all' | 'vertical' | 'top';
 }
 
 /** Parámetros de ahuecado (hollow shell). */

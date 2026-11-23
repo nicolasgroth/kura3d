@@ -37,6 +37,7 @@ import { REALESMOTOR_ZH } from './realesMotor';
 import { REALESUI_ZH } from './realesUi';
 import { UX6_ZH } from './ux6';
 import { RECETAS_ZH } from './recetas';
+import { BORDES_ZH } from './bordesPrimitivas';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -71,6 +72,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...REALESUI_ZH,
   ...UX6_ZH,
   ...RECETAS_ZH,
+  ...BORDES_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
   'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',

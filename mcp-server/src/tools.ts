@@ -283,7 +283,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     {
       title: 'Create parametric 3D primitive',
       description:
-        'Creates a closed solid primitive (box, cylinder, tube, sphere, cone, torus, prism or text) in millimeters.',
+        'Creates a closed solid primitive (box, cylinder, tube, sphere, cone, torus, prism or text) in millimeters. ' +
+        'Box, cylinder, tube and prism accept exact rounded or chamfered edges (params.edgeStyle, edgeSize, edgeScope).',
       inputSchema: {
         primitiveType: z
           .enum(['box', 'cylinder', 'tube', 'sphere', 'cone', 'torus', 'prism', 'text'])

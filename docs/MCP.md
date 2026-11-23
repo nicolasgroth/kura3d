@@ -74,7 +74,7 @@ La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre
 | `kura_colorize_structures` | escritura | Detects the structural regions of the model and assigns distinct colors per sub-structure for visual inspection or multicolor printing. | `objectId`* (string), `creaseAngleDeg` (number) |
 | `kura_combine_objects` | escritura | Combines 2 or more objects into ONE object with several bodies, without boolean operations: the geometry is not merged and the total volume is the sum. Exports as a single STL. Use kura_separate_bodies to split it again, or kura_boolean_operation (union) to really merge geometry. | `objectIds`* (lista de string), `name` (string) |
 | `kura_convex_hull` | escritura | Creates a closed solid that convexly wraps one or more selected objects. | `objectIds`* (lista de string), `name` (string) |
-| `kura_create_primitive` | escritura | Creates a closed solid primitive (box, cylinder, tube, sphere, cone, torus, prism or text) in millimeters. | `primitiveType`* (`box` · `cylinder` · `tube` · `sphere` · `cone` · `torus` · `prism` · `text`), `name` (string), `params` (objeto), `position` (lista), `rotation` (lista), `scale` (lista), … (+3) |
+| `kura_create_primitive` | escritura | Creates a closed solid primitive (box, cylinder, tube, sphere, cone, torus, prism or text) in millimeters. Box, cylinder, tube and prism accept exact rounded or chamfered edges (params.edgeStyle, edgeSize, edgeScope). | `primitiveType`* (`box` · `cylinder` · `tube` · `sphere` · `cone` · `torus` · `prism` · `text`), `name` (string), `params` (objeto), `position` (lista), `rotation` (lista), `scale` (lista), … (+3) |
 | `kura_create_thread` | escritura | Generates a threaded bolt, hexagonal nut or negative threaded cavity with calibrated clearance for 3D printing. | `kind`* (`bolt` · `nut` · `hole`), `diameterMm` (number), `pitchMm` (number), `lengthMm` (number), `clearanceMm` (number), `includeHead` (boolean), … (+3) |
 | `kura_delete_object` | escritura | Permanently deletes an object from the scene by its identifier. | `objectId`* (string) |
 | `kura_detect_structures` | lectura | Analyzes disconnected islands, dihedral folds and proportions of the object to detect geometric sub-structures (tanks, tubes, domes, blocks, main body). Safe in Read-only mode. | `objectId`* (string), `creaseAngleDeg` (number), `minRegionPercent` (number), `maxRegions` (integer) |
@@ -113,7 +113,7 @@ La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre
 
 ## Ejemplos de punta a punta
 
-Los tres ejemplos se ejecutaron contra el motor sin interfaz el 23 de noviembre de 2026 con `node scripts/docs-mcp-ejemplos.mjs` (necesita `npm run mcp:build`). Los identificadores (`id`) son distintos en cada corrida; los volúmenes y las medidas deberían repetirse. Las llamadas se muestran en JSON, como las envía un cliente.
+Los ejemplos se ejecutaron contra el motor sin interfaz el 23 de noviembre de 2026 con `node scripts/docs-mcp-ejemplos.mjs` (necesita `npm run mcp:build`). Los identificadores (`id`) son distintos en cada corrida; los volúmenes y las medidas deberían repetirse. Las llamadas se muestran en JSON, como las envía un cliente.
 
 ### 1. Una caja con un agujero
 
@@ -182,6 +182,20 @@ kura_measure_capacity { "objectId": "<resultId>" }
 ```
 
 La capacidad depende de la orientación actual del objeto: gira la pieza para medirla inclinada. Con `levelMm` se pregunta cuánto cabe hasta cierta altura.
+
+### 4. Caja con esquinas redondeadas
+
+Caja, Cilindro, Tubo y Prisma aceptan bordes exactos: `edgeStyle` (`sharp`, `round` o `chamfer`), `edgeSize` en mm y `edgeScope` (`all`, `vertical` o `top`; cilindro y tubo, `all` o `top`). Las medidas exteriores no cambian.
+
+```jsonc
+kura_create_primitive { "primitiveType": "box", "name": "Caja redondeada", "placement": "origin",
+  "params": { "width": 40, "depth": 30, "height": 20, "edgeStyle": "round", "edgeSize": 5, "edgeScope": "vertical" } }
+// → dimensionsMm [40, 30, 20], volumeMm3 ≈ 23561 (fórmula: 20·(40·30 − (4 − π)·5²) ≈ 23571),
+//   edgeSizeApplied 5, edgeSizeMax 14.995, edgeSizeClamped false
+
+kura_update_primitive_params { "objectId": "<id>", "params": { "edgeSize": 40 } }
+// → edgeSizeApplied 14.995, edgeSizeClamped true (el radio no cabe: se acota a la mitad del lado menor)
+```
 
 ## Límites conocidos
 

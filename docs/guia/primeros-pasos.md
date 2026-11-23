@@ -31,6 +31,18 @@ Kura3D usa los mismos ejes que los laminadores: **X hacia la derecha, Y hacia el
 
 ![Inspector de la caja seleccionada](img/primeros-pasos-04-inspector.png)
 
+## Bordes redondeados y chaflanes
+
+**Cubo**, **Cilindro**, **Tubo** y **Prisma** tienen un grupo *Bordes* al final de sus parámetros en el inspector:
+
+1. En *Acabado* elige **Redondeados** (con radio) o **Achaflanados** (corte a 45°). **Rectos** los deja como estaban.
+2. Escribe el *Radio* o el *Chaflán* en mm (acepta coma decimal). Junto a la etiqueta se ve el máximo que permiten las medidas de la pieza; si pides más, se aplica el máximo y una nota bajo el campo lo dice.
+3. En *Aristas* elige **Solo verticales** (las esquinas vistas desde arriba: la base queda plana y se imprime sin voladizo; es lo habitual en cajas), **Solo superior** (el borde de arriba) o **Todas**. Cilindro y tubo ofrecen *Todas* y *Solo superior*.
+
+Las medidas exteriores no cambian: una caja de 40 × 30 × 20 mm con las esquinas redondeadas sigue midiendo 40 × 30 × 20 mm, y su volumen baja justo lo que quitan las esquinas. Cada cambio se deshace en un paso (**Ctrl+Z**). Como el resto de los parámetros, los bordes dejan de editarse si después restas o unes la pieza: ahí deja de ser paramétrica.
+
+![Caja con las esquinas verticales redondeadas y el grupo Bordes del inspector](img/primeros-pasos-07-bordes.png)
+
 ## Mover la cámara
 
 Arrastra para orbitar y usa la rueda para acercar. Las teclas **1** (frente), **2** (derecha), **3** (isométrica) y **7** (superior) cambian la vista, y **F** encuadra lo seleccionado o toda la escena. El cubo de vistas de la esquina superior derecha también sirve.

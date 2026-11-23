@@ -10,6 +10,8 @@
 
 import { z } from 'zod';
 import {
+  EDGE_SCOPES,
+  EDGE_STYLES,
   PRIMITIVE_LIMITS,
   PRIMITIVE_PARAM_RANGES,
   TEXT_ALIGN_OPTIONS,
@@ -66,6 +68,17 @@ export const primitiveParamsSchema = z.object({
   letterSpacing: ranged(PRIMITIVE_PARAM_RANGES.letterSpacing),
   textAlign: z.enum(TEXT_ALIGN_OPTIONS).optional(),
   bevel: ranged(PRIMITIVE_PARAM_RANGES.bevel),
+  edgeStyle: z
+    .enum(EDGE_STYLES)
+    .optional()
+    .describe("Edges of box, cylinder, tube and prism: 'sharp' (default), 'round' (radius) or 'chamfer' (45°). Outer size does not change."),
+  edgeSize: ranged(PRIMITIVE_PARAM_RANGES.edgeSize).describe(
+    'Edge radius or chamfer in mm (default 2). Above half the smallest affected size it is clamped; the response reports edgeSizeApplied, edgeSizeMax and edgeSizeClamped.'
+  ),
+  edgeScope: z
+    .enum(EDGE_SCOPES)
+    .optional()
+    .describe("Which edges: 'all'; 'vertical' (plan corners only, box and prism, default there: no overhang at the base); 'top' (top rim only, default for cylinder and tube). Cylinder and tube accept 'all' and 'top'."),
 });
 
 /** Contenido SVG acotado a 2 MB (se parsea como datos, nunca se ejecuta). */

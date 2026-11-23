@@ -13,6 +13,7 @@ import { isReadCommand } from '../core/commands/commandPolicy';
 import { BRAND } from '../brand';
 import * as engine from '../engine';
 import { isEngineError, type EngineErrorCode } from '../engine/engineErrors';
+import { edgeReport } from '../engine/primitiveEdges';
 import { localizeEngineErrorForUser } from './userEngineMessages';
 import type { TranslationKey } from '../i18n';
 import type { KuraCommandRequest, KuraCommandResponse, SceneObject } from '../types/kura';
@@ -131,7 +132,8 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       rotation: rotationFromUser(options.rotation),
       scale: scaleFromUser(options.scale),
     }), command);
-    return { ...withStats(obj), ...transformToUser(obj) };
+    // Bordes: tamaño aplicado y si se acotó al tope de las medidas (nunca en silencio).
+    return { ...withStats(obj), ...transformToUser(obj), ...edgeReport(obj.primitiveType, obj.primitiveParams) };
   },
 
   update_primitive_params: async (p, { get }, command) => {
@@ -140,7 +142,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     return {
       ...withStats(obj),
       primitiveType: obj.primitiveType,
-      ...(edit.kind === 'primitive' ? { primitiveParams: obj.primitiveParams } : { thread: obj.parametric?.thread }),
+      ...(edit.kind === 'primitive' ? { primitiveParams: obj.primitiveParams, ...edgeReport(obj.primitiveType, obj.primitiveParams) } : { thread: obj.parametric?.thread }),
     };
   },
 

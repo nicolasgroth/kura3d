@@ -37,6 +37,7 @@ import { REALESMOTOR_DE } from './realesMotor';
 import { REALESUI_DE } from './realesUi';
 import { UX6_DE } from './ux6';
 import { RECETAS_DE } from './recetas';
+import { BORDES_DE } from './bordesPrimitivas';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -71,6 +72,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...REALESUI_DE,
   ...UX6_DE,
   ...RECETAS_DE,
+  ...BORDES_DE,
   // Marca y shell principal
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
   'app.docTitle': 'Kura3D v0.5.0 — Natives 3D-Modellierungsstudio',
