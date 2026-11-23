@@ -22,6 +22,7 @@ import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
 import { resolveExportPath } from './exportPaths.js';
 import { registerParametricTools } from './parametricTools.js';
 import { registerSplitTools } from './splitTools.js';
+import { registerFitTools } from './fitTools.js';
 import { registerMeasureTools } from './measureTools.js';
 import { registerRepairTools } from './repairTools.js';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
@@ -323,6 +324,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
 
   registerParametricTools(server, ctx);
   registerSplitTools(server, ctx);
+  registerFitTools(server, ctx);
   registerMeasureTools(server, ctx);
   registerRepairTools(server, ctx);
 

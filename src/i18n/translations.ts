@@ -21,6 +21,7 @@ import { FLOWUX_EN, FLOWUX_ES } from './locales/flowUx';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
 import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
 import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
+import { AJUSTAR_EN, AJUSTAR_ES } from './locales/ajustarImpresora';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
 import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
 import { UXMOVIL_EN, UXMOVIL_ES } from './locales/uxMovil';
@@ -58,6 +59,7 @@ export const TRANSLATIONS_ES = {
   ...PREVIEW_ES,
   ...SPLITJOINTS_ES,
   ...SPLITPREFS_ES,
+  ...AJUSTAR_ES,
   ...SPLITCOUPLING_ES,
   ...A11YUX_ES,
   ...UXMOVIL_ES,
@@ -1396,6 +1398,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PREVIEW_EN,
   ...SPLITJOINTS_EN,
   ...SPLITPREFS_EN,
+  ...AJUSTAR_EN,
   ...SPLITCOUPLING_EN,
   ...A11YUX_EN,
   ...UXMOVIL_EN,

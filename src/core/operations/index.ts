@@ -14,6 +14,7 @@ export * from './partOperations';
 export * from './creationOperations';
 export * from './alignOperations';
 export * from './splitOperations';
+export * from './fitOperations';
 export * from './paintOperations';
 export * from './organizeOperations';
 export * from './repairReport';

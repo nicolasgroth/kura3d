@@ -24,6 +24,7 @@ import * as schema from './commandSchemas';
 import * as groupSchema from './groupCommandSchemas';
 import { parseUpdatePrimitiveParams } from './parametricCommandSchemas';
 import { parseSplitForBed, parseValidateAssembly } from './splitCommandSchemas';
+import { fitAnalysisToUser, parseFitToBed } from './fitCommandSchemas';
 import { MEASURE_HANDLERS } from './measureCommands';
 import { REPAIR_HANDLERS } from './repairCommands';
 import { userWarning } from '../core/scene/userEngineMessages';
@@ -212,6 +213,14 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       plateCount: out.plateCount,
       ...(out.assembly ? { assembly: out.assembly } : {}),
     };
+  },
+
+  fit_to_bed: async (p, { get }, command) => {
+    const { targets, bed, dryRun, alternative } = parseFitToBed(get(), p);
+    const ids = targets.map((o) => o.id);
+    if (dryRun || !alternative) return { dryRun: true, ...fitAnalysisToUser(required(await get().analyzeFitToBed(ids, bed), command)) };
+    const out = required(await get().applyFitToBed(ids, alternative, bed), command);
+    return { dryRun: false, applied: alternative, factor: out.applied.factor, ...fitAnalysisToUser(out.analysis) };
   },
 
   validate_assembly: async (p, { get }, command) => {

@@ -16,6 +16,7 @@ import { formatDimension } from '../../utils/units';
 import { toUserSize } from '../../core/scene/displayAxes';
 import { bedStatusOf } from '../split/splitAssembledStatus';
 import { BedHiddenChip } from './BedHiddenChip';
+import { FitOutOfBoundsButton } from '../fitToBed/FitOutOfBoundsButton';
 
 /** HUD inferior en una sola línea. */
 export const ViewportHudBottom: React.FC = () => {
@@ -74,12 +75,7 @@ export const ViewportHudBottom: React.FC = () => {
                   1, language)})`
               : localizedPrinterName}
           </span>
-          {bedStatus === 'outOfBounds' && (
-            <span className="kura-oob-badge">
-              <AlertTriangle size={11} />
-              <span>{t(language, 'viewport.bed.outOfBounds')}</span>
-            </span>
-          )}
+          {bedStatus === 'outOfBounds' && <FitOutOfBoundsButton />}
           {bedStatus === 'assembled' && (
             <span className="kura-assembled-badge" role="status" title={t(language, 'splitUx.assembled.status')}>
               <Boxes size={11} aria-hidden="true" />

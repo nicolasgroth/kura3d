@@ -880,6 +880,11 @@ export interface PrinterProfile {
   colorSlots: number;
   /** Zona de purga frontal en mm (referencia visual sobre la placa). */
   purgeZoneMm?: number;
+  /**
+   * Margen por lado (mm) para "Ajustar a la impresora". Solo en camas del usuario; ausente = 5 mm.
+   * Se escribe en el `.kura` únicamente si está definido (proyectos con camas de fábrica no cambian).
+   */
+  marginMm?: number;
 }
 
 /** Proveedores de IA soportados por el chat nativo integrado. */
@@ -957,6 +962,7 @@ export interface KuraCommandRequest {
     | 'hollow_object'
     | 'plane_cut'
     | 'split_for_bed'
+    | 'fit_to_bed'
     | 'split_disconnected'
     | 'group_objects'
     | 'ungroup'

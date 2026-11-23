@@ -31,6 +31,7 @@ import {
 } from '../preferencesStorage';
 import type { StoreContext } from '../storeContext';
 import { takeSecondaryAction } from '../toastEnhancers';
+import { findBedProfile, loadUserBedProfiles } from '../bedProfiles';
 import type { KuraStoreState } from '../storeTypes';
 
 export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
@@ -71,7 +72,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     colorScheme: initialScheme,
     themePreset: initialThemePreset,
     previewThemePreset: null,
-    printerProfile: loadInitialPrinterProfile(),
+    printerProfile: loadInitialPrinterProfile(loadUserBedProfiles()),
     customBedDimensions: null,
 
     activeDialog: null,
@@ -144,7 +145,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       set({ colorScheme: scheme, themePreset, previewThemePreset: null });
     },
     setPrinterProfile: (profileId) => {
-      const found = DEFAULT_PRINTER_PROFILES.find((p) => p.id === profileId);
+      const found = findBedProfile(profileId, get().userBedProfiles ?? []);
       if (!found) return;
       writeStorage(STORAGE_PRINTER_KEY, found.id);
       set({ printerProfile: found });

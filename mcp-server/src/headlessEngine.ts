@@ -26,6 +26,7 @@ import { write3mfFile, writeStlFile, type ExportFileResult } from './headlessExp
 import { freePlacer, spreadPartsInFreeSpace, type HeadlessPlacement } from './headlessPlacement.js';
 import { headlessPrintabilityReport, type PrintabilityInput } from './headlessPrintability.js';
 import { SerialQueue } from './headlessQueue.js';
+import { headlessFitToBed, type HeadlessFitInput } from './headlessFit.js';
 import {
   assertUnlocked,
   HeadlessCommandError,
@@ -417,6 +418,12 @@ export class KuraHeadlessEngine {
     options: PrintabilityInput = {}
   ): PrintabilityReport {
     return headlessPrintabilityReport(this.requireObject(objectId), this.printerProfile, options);
+  }
+
+  /** Ajustar a la impresora como bloque (`fit_to_bed`): analiza y, si se pide, aplica una alternativa. */
+  fitToBed(objectIds: string[], input: HeadlessFitInput) {
+    if (objectIds.length === 0) throw new Error('At least one object is required in `objectIds`.');
+    return headlessFitToBed(objectIds.map((id) => this.requireEditable(id)), this.printerProfile, input, (c) => this.apply(c));
   }
 
   /** Alinea o distribuye en grilla con `computeAlignmentPositions` del motor. */

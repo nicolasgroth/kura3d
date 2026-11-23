@@ -107,6 +107,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         if (!canChangeDocument()) throw new Error(tr('fileProject.busy'));
         replaceProject(document, file.name, { location: file.location });
         get().addToast(tr('fileProject.opened', { name: file.name }), 'success');
+        get().offerPreferredBed();
         return true;
       } catch (error) {
         get().addToast(tr('fileProject.openError', { message: projectErrorMessage(error) }), 'error');

@@ -113,9 +113,10 @@ export function loadInitialUnits(): UnitSystem {
   return UNITS.includes(stored as UnitSystem) ? (stored as UnitSystem) : 'mm';
 }
 
-export function loadInitialPrinterProfile(): PrinterProfile {
+/** Perfil guardado por id (de fábrica o de `user`, las camas del usuario); si no existe, el primero. */
+export function loadInitialPrinterProfile(user: readonly PrinterProfile[] = []): PrinterProfile {
   const storedId = readStorage(STORAGE_PRINTER_KEY);
-  return DEFAULT_PRINTER_PROFILES.find((p) => p.id === storedId) ?? DEFAULT_PRINTER_PROFILES[0];
+  return DEFAULT_PRINTER_PROFILES.find((p) => p.id === storedId) ?? user.find((p) => p.id === storedId) ?? DEFAULT_PRINTER_PROFILES[0];
 }
 
 export function loadInitialImportPlacement(): engine.ImportPlacementMode {

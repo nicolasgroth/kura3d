@@ -41,6 +41,8 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   plane_cut: 'write',
   // Con dryRun solo planifica, pero el comando es de escritura (la ejecución reemplaza el objeto).
   split_for_bed: 'write',
+  // Con dryRun solo analiza; aplicar cambia la transformación del bloque (un paso de deshacer).
+  fit_to_bed: 'write',
   split_disconnected: 'write',
   group_objects: 'write',
   ungroup: 'write',
@@ -97,6 +99,7 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_hollow_object: 'hollow_object',
   kura_plane_cut: 'plane_cut',
   kura_split_for_bed: 'split_for_bed',
+  kura_fit_to_bed: 'fit_to_bed',
   kura_split_disconnected: 'split_disconnected',
   kura_group_objects: 'group_objects',
   kura_ungroup: 'ungroup',
