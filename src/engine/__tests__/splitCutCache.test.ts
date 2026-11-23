@@ -46,7 +46,7 @@ describe('dividir para imprimir: corte reutilizado entre plan y ejecución', () 
     expect(summary(reused)).toEqual(summary(fresh));
     expect(reused.sourceVolumeMm3).toBeCloseTo(fresh.sourceVolumeMm3, 6);
     reused.parts.forEach((p, i) => expect(Math.abs(p.volumeMm3 / fresh.parts[i].volumeMm3 - 1)).toBeLessThan(1e-4));
-    expect(reused.stageMs?.cut).toBeLessThan(fresh.stageMs!.cut);
+    // La ganancia de tiempo se mide en las pruebas perf: con mallas chicas la diferencia es de milisegundos y no es estable.
   }, 60_000);
 
   it('si la malla cambió tras el plan, la ejecución corta la malla nueva', async () => {
