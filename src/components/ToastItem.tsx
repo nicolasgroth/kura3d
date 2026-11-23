@@ -1,7 +1,7 @@
 /**
  * @file src/components/ToastItem.tsx
- * @description Un aviso de la pila: los informativos se cierran solos a los ~4 s (9 s si traen acción) y el temporizador
- * se pausa mientras el cursor o el foco están sobre el aviso; los de error permanecen hasta cerrarlos.
+ * @description Un aviso de la pila: los informativos se cierran solos a los ~4 s (9 s si traen acción), los de error a los 12 s,
+ * y el temporizador se pausa mientras el cursor o el foco están sobre el aviso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -15,6 +15,8 @@ import type { ToastMessage } from '../store/storeTypes';
 
 export const TOAST_INFO_MS = 4000;
 export const TOAST_ACTION_MS = 9000;
+/** Los errores caducan a los 12 s (siguen en el historial de avisos de la barra de estado). */
+export const TOAST_ERROR_MS = 12000;
 
 interface Props {
   toast: ToastMessage;
@@ -22,20 +24,22 @@ interface Props {
   onDismiss: (id: string) => void;
 }
 
+const isErrorKind = (toast: ToastMessage) => toast.kind === 'error';
+
 export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
   const [paused, setPaused] = useState(false);
-  const remaining = useRef(toast.action ? TOAST_ACTION_MS : TOAST_INFO_MS);
+  const remaining = useRef(isErrorKind(toast) ? TOAST_ERROR_MS : toast.action ? TOAST_ACTION_MS : TOAST_INFO_MS);
   const isError = toast.kind === 'error';
 
   useEffect(() => {
-    if (isError || paused) return undefined;
+    if (paused) return undefined;
     const started = Date.now();
     const timer = window.setTimeout(() => onDismiss(toast.id), remaining.current);
     return () => {
       window.clearTimeout(timer);
       remaining.current = Math.max(800, remaining.current - (Date.now() - started));
     };
-  }, [isError, paused, toast.id, onDismiss]);
+  }, [paused, toast.id, onDismiss]);
 
   return (
     <div

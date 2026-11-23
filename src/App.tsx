@@ -201,6 +201,10 @@ export const App: React.FC = () => {
         return;
       }
 
+      // Con un diálogo modal abierto los atajos globales (Ctrl+Z, flechas, borrar…) no tocan la escena: dentro de
+      // un campo de texto ya se retiraron arriba y ahí Ctrl+Z deshace la edición del propio campo.
+      if (document.querySelector('dialog[open]:modal')) return;
+
       if (mod && key === 'k') {
         e.preventDefault();
         if (state.activeDialog === null) {

@@ -95,6 +95,14 @@ export interface ToastMessage {
   action?: ToastAction;
 }
 
+/** Entrada del historial corto de avisos (consultable desde la barra de estado). */
+export interface ToastHistoryEntry {
+  id: string;
+  text: string;
+  kind: ToastMessage['kind'];
+  at: number;
+}
+
 export interface ToastAction {
   label: string;
   run: () => void;
@@ -209,6 +217,8 @@ export interface KuraStoreState {
   cutPreview: CutPreviewState;
   spawnedAtById: Record<string, number>;
   toasts: ToastMessage[];
+  /** Últimos avisos y errores (aunque ya se hayan cerrado o se hayan mostrado dentro de un diálogo). */
+  toastHistory: ToastHistoryEntry[];
 
   // Acciones de inicialización, densidad y preferencias
   initEngine: () => Promise<void>;
@@ -255,7 +265,9 @@ export interface KuraStoreState {
   clearAiMessages: () => void;
   setAiBusy: (busy: boolean) => void;
   setMcpConnected: (connected: boolean) => void;
-  addToast: (text: string, kind?: ToastMessage['kind'], action?: ToastAction) => void;
+  addToast: (text: string, kind?: ToastMessage['kind'], action?: ToastAction, options?: { historyOnly?: boolean }) => void;
+  clearToastHistory: () => void;
+  dismissErrorToasts: () => void;
   dismissToast: (id: string) => void;
   dismissAllToasts: () => void;
 

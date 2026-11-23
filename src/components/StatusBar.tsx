@@ -15,6 +15,7 @@ import { useKuraStore } from '../store/useKuraStore';
 import { formatNumber } from '../utils/plural';
 import { isTauriRuntime } from '../utils/platformBridge';
 import { StatusBarMeasures } from './StatusBarMeasures';
+import { ToastHistoryButton } from './ToastHistoryButton';
 import { operationLabel } from './viewport/OperationProgressBar';
 
 export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recoveryStatus = 'idle' }) => {
@@ -78,6 +79,7 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recov
 
       <div className="kura-statusbar-group">
         {recoveryLabel && <span role="status">{recoveryLabel}</span>}
+        <ToastHistoryButton />
         <span className="kura-statusbar-hint" style={{ opacity: 0.78 }}>
           {t(language, 'status.shortcuts')}
         </span>

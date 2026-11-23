@@ -32,6 +32,9 @@ import { createOperationErrorTracker, localizeWarnings } from './operationErrors
 import { cloneSnapshot } from './projectDocument';
 import type { HistoryStep, KuraStoreState, SceneSnapshot } from './storeTypes';
 
+/** Diálogos y paneles que muestran el fallo de su operación dentro de sí (`OperationFailureAlert`). */
+const DIALOG_SHOWS_FAILURE: ReadonlySet<string> = new Set(['svg', 'image', 'thread', 'mold', 'project', 'cut', 'splitForBed']);
+
 type SetState = StoreApi<KuraStoreState>['setState'];
 type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
 
@@ -171,10 +174,13 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     // Malla inválida: el aviso ofrece repararla (objeto principal de la selección).
     const target = get().selectedIds[0];
     const repairable = isEngineError(err) && err.code === 'MESH_INVALID' && target && get().objects.some((o) => o.id === target);
+    // Si el error pertenece a un diálogo abierto se muestra solo dentro de él (sin toast); queda en el historial.
+    const inDialog = DIALOG_SHOWS_FAILURE.has(get().activeDialog ?? '');
     get().addToast(
       tr('toast.errorPrefix', { message }),
       'error',
       repairable ? { label: tr('repair.action'), run: () => void get().repairObjectMesh(target) } : undefined,
+      inDialog ? { historyOnly: true } : undefined,
     );
   };
   // Avisos mostrados desde el último comando del bus: el bus los devuelve en la respuesta.
@@ -205,6 +211,8 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     isLocked: isHistoryLocked,
     setBusy: (name) => {
       if (name === null) runtime.activeJob = null;
+      // Una nueva acción deja atrás los errores anteriores: el aviso no se queda tapando la interfaz.
+      else get().dismissErrorToasts();
       set({
         busyOperation: name,
         busyProgress: name === null ? null : { name, phase: null, startedAt: Date.now(), cancellable: false },
