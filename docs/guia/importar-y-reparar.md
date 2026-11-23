@@ -43,7 +43,7 @@ Un modelo con millones de triángulos pesa y tarda. Selecciónalo y, en *Optimiz
 ## Problemas frecuentes
 
 - **El archivo no entra:** hay un tope de 256 MiB por archivo y 512 MiB por lote. Si falta memoria, el error lo dice.
-- **El modelo aparece enorme o diminuto:** es la unidad; usa el aviso o escala en el inspector.
+- **El modelo aparece enorme o diminuto:** es la unidad; usa el aviso, el enlace **¿Unidad equivocada?** junto a la escala en el inspector, o escala a mano. Un aviso con una acción pendiente no se cierra solo, y si lo cierras su botón sigue en **Avisos** (barra de estado) hasta que se aplique.
 - **Tras reparar sigue un aviso de «agujeros grandes cerrados con una tapa»:** revisa que la forma sea la esperada; un agujero real (un asa, por ejemplo) no debería taparse.
 - **Se importó apoyado en la cama y lo quería donde estaba:** deshaz e importa con *conservando la posición original*.
 

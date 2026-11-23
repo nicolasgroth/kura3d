@@ -18,7 +18,7 @@ Cuando una pieza es más grande que la cama de tu impresora, **Dividir para impr
 Tras dividir, el control **Armado** del visor deja ver cómo encajan:
 
 1. Pulsa **Reproducir el armado** o arrastra el deslizador (0 % armado, 100 % explosionado; solo es una vista).
-2. Pulsa **Preparar para imprimir** para apoyar cada pieza y acomodarla en placas; **Volver a armar** la devuelve a su sitio (un solo Deshacer).
+2. Pulsa **Preparar para imprimir** para apoyar cada pieza y acomodarla en placas (en filas de cuatro, con la cámara sobre el conjunto); **Volver a armar** la devuelve a su sitio (un solo Deshacer).
 3. En el inspector, la sección **Uniones** lista cada unión (*Firme* o débil) y el **Orden de montaje**. **Validar armado** vuelve a comprobarlo.
 4. Para imprimir, **Exportar** ofrece *Un archivo por pieza (ZIP)* o *Un 3MF con todas las piezas en su disposición de impresión*.
 
