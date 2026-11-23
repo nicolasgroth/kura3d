@@ -69,6 +69,8 @@ export const SceneContent: React.FC<{
   const printReportSource = useKuraStore((s) => s.printReportSource);
   const language = useKuraStore((s) => s.language);
   const colorScheme = useKuraStore((s) => s.colorScheme);
+  // Vista sin cama: sin placa, rejilla, rótulo, volumen ni sombras de contacto; la órbita pasa bajo Z=0.
+  const showBed = useKuraStore((s) => s.showBed);
   const setObjectTransform = useKuraStore((s) => s.setObjectTransform);
   const commitTransformSnapshot = useKuraStore((s) => s.commitTransformSnapshot);
   const altCloneForDrag = useKuraStore((s) => s.altCloneForDrag);
@@ -155,17 +157,19 @@ export const SceneContent: React.FC<{
       <directionalLight position={[-120, 80, -100]} intensity={0.52} color="#bae6fd" />
       <directionalLight position={[0, -80, 90]} intensity={0.25} color="#fed7aa" />
 
-      <PrinterBedOverlay isOutOfBounds={isOutOfBounds} />
+      {showBed && <PrinterBedOverlay isOutOfBounds={isOutOfBounds} />}
 
-      <ContactShadows
-        key={shadowsKey}
-        frames={1}
-        position={[0, 0.01, 0]}
-        opacity={0.35}
-        scale={280}
-        blur={1.8}
-        far={90}
-      />
+      {showBed && (
+        <ContactShadows
+          key={shadowsKey}
+          frames={1}
+          position={[0, 0.01, 0]}
+          opacity={0.35}
+          scale={280}
+          blur={1.8}
+          far={90}
+        />
+      )}
 
       {objects.map((obj) => (
         <SceneMeshItem
@@ -303,7 +307,7 @@ export const SceneContent: React.FC<{
         dampingFactor={0.08}
         minDistance={18}
         maxDistance={8000}
-        maxPolarAngle={Math.PI * 0.92}
+        maxPolarAngle={showBed ? Math.PI * 0.92 : Math.PI}
       />
 
       {/* Cubo de orientación 3D interactivo estilo CAD */}

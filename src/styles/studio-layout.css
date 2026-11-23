@@ -59,10 +59,6 @@ body,
   display: none;
 }
 
-.kura-app[data-density="compact"] .kura-sidebar-left:not(.is-collapsed) {
-  width: 56px;
-}
-
 .kura-app[data-density="compact"] .kura-sidebar-right:not(.is-collapsed) {
   width: 264px;
 }

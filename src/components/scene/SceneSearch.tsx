@@ -93,15 +93,16 @@ export const SceneSearch: React.FC = () => {
 export function useRevealSceneOnRequest(showSceneTab: () => void): void {
   const renameRequest = useKuraStore((s) => s.renameRequest);
   const focusRequest = useKuraStore((s) => s.searchFocusRequest);
-  const leftCollapsed = useKuraStore((s) => s.leftCollapsed);
-  const toggleLeftSidebar = useKuraStore((s) => s.toggleLeftSidebar);
+  const leftSidebarMode = useKuraStore((s) => s.leftSidebarMode);
+  const setLeftSidebarMode = useKuraStore((s) => s.setLeftSidebarMode);
   const at = Math.max(renameRequest?.at ?? 0, focusRequest?.at ?? 0);
   const n = (renameRequest?.n ?? 0) + (focusRequest?.n ?? 0);
 
   useEffect(() => {
     if (!at || Date.now() - at > REQUEST_FRESH_MS) return;
     showSceneTab();
-    if (leftCollapsed) toggleLeftSidebar();
+    // La lista solo está en la barra completa (la compacta muestra iconos).
+    if (leftSidebarMode !== 'full') setLeftSidebarMode('full');
     // Solo al llegar una petición nueva (`n`); el resto de valores se leen vigentes en ese momento.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [n]);

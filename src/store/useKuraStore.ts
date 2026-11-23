@@ -31,6 +31,7 @@ import { createQuickActionsSlice } from './slices/quickActionsSlice';
 import { createMenuIdeasSlice } from './slices/menuIdeasSlice';
 import { createGroupsSlice } from './slices/groupsSlice';
 import { createRepairSlice } from './slices/repairSlice';
+import { createViewPrefsSlice } from './slices/viewPrefsSlice';
 
 export type {
   ActiveDialogType,
@@ -79,6 +80,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createMenuIdeasSlice(ctx),
     ...createGroupsSlice(ctx),
     ...createRepairSlice(ctx),
+    ...createViewPrefsSlice(ctx),
   } as Partial<KuraStoreState>;
   return {
     ...base,

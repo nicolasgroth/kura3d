@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import { PlusCircle, Repeat2 } from 'lucide-react';
+import { Grid2x2X, PlusCircle, Repeat2 } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { repeatLabel } from '../../store/repeatLabel';
@@ -28,6 +28,8 @@ export const BackgroundContextMenu: React.FC<{ menu: ContextMenuState; onClose: 
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const lastRepeatable = useKuraStore((s) => s.lastRepeatable);
   const repeatLastAction = useKuraStore((s) => s.repeatLastAction);
+  const showBed = useKuraStore((s) => s.showBed);
+  const toggleShowBed = useKuraStore((s) => s.toggleShowBed);
 
   return (
     <MenuSurface x={menu.x} y={menu.y} label={t(language, 'menu.bg.label')}>
@@ -57,6 +59,19 @@ export const BackgroundContextMenu: React.FC<{ menu: ContextMenuState; onClose: 
             }}
           />
         )}
+      </MenuGroup>
+      <MenuGroup title={t(language, 'ux6.menu.view')}>
+        <MenuItem
+          icon={<Grid2x2X size={14} aria-hidden="true" />}
+          label={t(language, showBed ? 'ux6.bed.cmdHide' : 'ux6.bed.cmdShow')}
+          tip={t(language, 'ux6.bed.toggleTip')}
+          shortcut="B"
+          keys="B"
+          onSelect={() => {
+            onClose();
+            toggleShowBed();
+          }}
+        />
       </MenuGroup>
     </MenuSurface>
   );

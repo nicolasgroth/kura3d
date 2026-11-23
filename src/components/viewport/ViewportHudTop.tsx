@@ -22,6 +22,7 @@ import {
 import { t } from '../../i18n';
 import { type CameraPresetType, useKuraStore } from '../../store/useKuraStore';
 import { PaintToolbar } from './PaintToolbar';
+import { BedToggleButton } from './BedToggleButton';
 import { MeasurePanel } from '../measure/MeasurePanel';
 import { ToastStack } from '../ToastStack';
 import { SectionViewNotice } from './SectionViewNotice';
@@ -100,6 +101,7 @@ export const ViewportHudTop: React.FC = () => {
               <Maximize2 size={13} />
               <span>{t(language, 'viewport.camera.fit')}</span>
             </button>
+            <BedToggleButton />
           </div>
 
           <div className="kura-hud-card">

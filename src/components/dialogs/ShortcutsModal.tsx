@@ -56,6 +56,7 @@ export const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = 
         { keys: ['3'], label: t(language, 'dialog.shortcuts.camIso') },
         { keys: ['7'], label: t(language, 'dialog.shortcuts.camTop') },
         { keys: ['F'], label: t(language, 'dialog.shortcuts.camFit') },
+        { keys: ['B'], label: t(language, 'ux6.bed.shortcut') },
         { keys: ['Ctrl/⌘+Shift+Enter'], label: t(language, 'dialog.shortcuts.zenMode') },
       ],
     },

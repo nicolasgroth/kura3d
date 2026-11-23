@@ -1,7 +1,8 @@
 /**
  * @file src/components/LeftSidebar.tsx
  * @description Panel lateral izquierdo de Kura3D:
- * - Adaptable a modo Expandido (268px), Compacto (rail vertical de íconos 56px con tooltips) y colapsado.
+ * - Tres estados propios (completa 268 px, compacta 56 px de iconos con tooltips en `LeftSidebarRail`, oculta),
+ *   que recorre el tirador `LeftSidebarHandle`; independientes del modo sin distracciones.
  * - Pestaña Formas: Primitivas paramétricas + Generadores 2D/Pro → 3D (SVG, Imagen, Rosca ISO M3–M64).
  * - Pestaña Escena (Outliner): resumen de filamentos/colores y lista de objetos operable con teclado
  *   (`scene/SceneObjectList.tsx`).
@@ -14,8 +15,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Bolt,
   Box,
-  ChevronLeft,
-  ChevronRight,
   Circle,
   Cone,
   Cylinder,
@@ -41,6 +40,9 @@ import { SceneSearch, useRevealSceneOnRequest } from './scene/SceneSearch';
 import { Text3DCreateCard } from './text3d/Text3DCreateCard';
 import { confirmClearScene } from './confirmClearScene';
 import { useLeftTabRequest } from './leftPanelTabRequest';
+import { LeftSidebarHandle } from './LeftSidebarHandle';
+import { LeftSidebarRail } from './LeftSidebarRail';
+import { useNarrowViewport } from './measure/useNarrowViewport';
 import '../styles/panelEdge.css';
 
 export const LeftSidebar: React.FC = () => {
@@ -55,9 +57,9 @@ export const LeftSidebar: React.FC = () => {
   const [showTextBox, setShowTextBox] = useState(false);
 
   const language = useKuraStore((s) => s.language);
-  const uiDensity = useKuraStore((s) => s.uiDensity);
-  const leftCollapsed = useKuraStore((s) => s.leftCollapsed);
-  const toggleLeftSidebar = useKuraStore((s) => s.toggleLeftSidebar);
+  const leftSidebarMode = useKuraStore((s) => s.leftSidebarMode);
+  // En pantalla angosta la barra es una hoja inferior: los tres estados no aplican.
+  const narrow = useNarrowViewport();
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const createPrimitive = useKuraStore((s) => s.createPrimitive);
@@ -102,7 +104,7 @@ export const LeftSidebar: React.FC = () => {
 
   const handlePrimitiveClick = async (type: PrimitiveType, params?: Record<string, unknown>, label?: string) => {
     if (type === 'text') {
-      if (uiDensity === 'compact') {
+      if (isCompactRail) {
         await createPrimitive('text', { text: 'KURA3D', fontSize: 18, height: 6 }, { placement: 'free' });
         return;
       }
@@ -112,80 +114,27 @@ export const LeftSidebar: React.FC = () => {
     await createPrimitive(type, params, { placement: 'free', ...(label ? { label } : {}) });
   };
 
-  const isCompactRail = uiDensity === 'compact';
+  const isCompactRail = !narrow && leftSidebarMode === 'compact';
 
   return (
     <aside
       id="kura-shapes-panel"
-      className={`kura-sidebar-left ${leftCollapsed ? 'is-collapsed' : ''}`}
+      className={`kura-sidebar-left ${leftSidebarMode === 'hidden' ? 'is-collapsed' : ''}`}
+      data-mode={leftSidebarMode}
       aria-label={t(language, 'sidebar.tab.shapes')}
     >
-      {/* Botón delgado en el borde para colapsar/expandir independientemente */}
-      <button
-        type="button"
-        className="kura-panel-edge-btn is-left"
-        onClick={toggleLeftSidebar}
-        aria-expanded={!leftCollapsed}
-        aria-controls="kura-shapes-panel"
-        title={
-          leftCollapsed
-            ? t(language, 'ui.panel.expandLeft')
-            : t(language, 'ui.panel.collapseLeft')
-        }
-        aria-label={
-          leftCollapsed
-            ? t(language, 'ui.panel.expandLeft')
-            : t(language, 'ui.panel.collapseLeft')
-        }
-      >
-        {leftCollapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
-      </button>
+      <LeftSidebarHandle />
 
       {isCompactRail ? (
-        <div className="kura-compact-rail">
-          {primitiveCards.map((item) => (
-            <button
-              key={item.type}
-              type="button"
-              className="kura-btn kura-btn-icon"
-              title={`${t(language, `sidebar.primitive.${item.type}`)} (+)`}
-              aria-label={t(language, `sidebar.primitive.${item.type}`)}
-              onClick={() => void handlePrimitiveClick(item.type, item.defaultParams)}
-            >
-              <span className="kura-primitive-icon">{item.icon}</span>
-            </button>
-          ))}
-
-          <div className="kura-compact-rail-sep" />
-
-          <button
-            type="button"
-            className="kura-btn kura-btn-icon"
-            title={t(language, 'topbar.importSvgTip')}
-            aria-label={t(language, 'topbar.importSvg')}
-            onClick={() => setActiveDialog('svg')}
-          >
-            <FileCode2 size={16} />
-          </button>
-          <button
-            type="button"
-            className="kura-btn kura-btn-icon"
-            title={t(language, 'topbar.imageTo3dTip')}
-            aria-label={t(language, 'topbar.imageTo3d')}
-            onClick={() => setActiveDialog('image')}
-          >
-            <ImageIcon size={16} />
-          </button>
-          <button
-            type="button"
-            className="kura-btn kura-btn-icon"
-            title={t(language, 'sidebar.generators.threadTip')}
-            aria-label={t(language, 'sidebar.generators.thread')}
-            onClick={() => setActiveDialog('thread')}
-          >
-            <Bolt size={16} />
-          </button>
-        </div>
+        <LeftSidebarRail
+          activeTab={activeTab}
+          onTab={setActiveTab}
+          primitives={primitiveCards.map((item) => ({
+            id: item.id,
+            icon: item.icon,
+            onCreate: () => void handlePrimitiveClick(item.type, item.defaultParams, item.id === 'disc' ? t(language, 'menu.shape.disc') : undefined),
+          }))}
+        />
       ) : (
         <>
           <div className="kura-tabs" role="tablist">

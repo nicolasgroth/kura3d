@@ -21,7 +21,13 @@ test('importar-y-reparar', async ({ page }) => {
   await page.waitForTimeout(600);
   await page.mouse.move(720, 890);
   await page.screenshot({ path: 'docs/guia/img/importar-y-reparar-02-unidades.png' });
-  await page.getByRole('button', { name: 'Escalar ×100' }).first().click();
+  // «Otra unidad…»: diálogo con todas las opciones; se aplica la primera (×100).
+  await page.getByRole('button', { name: 'Otra unidad…' }).first().click();
+  const dialogo = page.getByRole('dialog', { name: '¿En qué unidad está este modelo?' });
+  await expect(dialogo).toBeVisible();
+  await page.waitForTimeout(400);
+  await captura(page, 'importar-y-reparar-05-otra-unidad', dialogo);
+  await page.getByTestId('unit-apply').click();
   await page.waitForTimeout(800);
   // Malla abierta: cubo sin una cara.
   await page.evaluate(() => (window as any).__s.setState({ objects: [], selectedIds: [] }));

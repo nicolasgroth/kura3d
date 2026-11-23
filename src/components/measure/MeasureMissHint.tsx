@@ -1,7 +1,8 @@
 /**
  * @file src/components/measure/MeasureMissHint.tsx
  * @description Con Medir activo, un clic (sin arrastrar) sobre el vacío o el suelo muestra una pista
- * breve junto al cursor: "Toca un punto de la pieza". Es una sola pista que se reemplaza (no apila
+ * breve junto al cursor: "Haz clic en un punto de la pieza" con ratón, "Toca un punto de la pieza" con
+ * dedo o lápiz. Es una sola pista que se reemplaza (no apila
  * avisos) y se anuncia por una región `status`. Vive dentro del lienzo 3D y crea su elemento DOM.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -42,7 +43,9 @@ export const MeasureMissHint: React.FC = () => {
       down = null;
       if (!start || measureHitFor(start.event) || Math.hypot(e.clientX - start.x, e.clientY - start.y) > CLICK_SLOP_PX) return;
       const rect = host.getBoundingClientRect();
-      hint.textContent = t(useKuraStore.getState().language, 'realesUi.measure.hint');
+      // Con ratón «Haz clic…»; con dedo o lápiz «Toca…» (según el puntero que hizo el clic).
+      const lang = useKuraStore.getState().language;
+      hint.textContent = e.pointerType === 'mouse' ? t(lang, 'ux6.measure.missClick') : t(lang, 'realesUi.measure.hint');
       hint.style.left = `${e.clientX - rect.left + 14}px`;
       hint.style.top = `${e.clientY - rect.top + 14}px`;
       hint.hidden = false;

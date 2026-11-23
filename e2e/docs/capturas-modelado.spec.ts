@@ -20,7 +20,7 @@ test('medir', async ({ page }) => {
   await page.waitForTimeout(500);
   await captura(page, 'medir-01-herramienta');
   const b = await cajaMundo(page, caja.id);
-  // Dos esquinas de la cara frontal derecha (visibles: el panel Medir tapa el lado izquierdo del visor).
+  // Dos esquinas de la cara frontal derecha (la cámara deja la pieza fuera del panel Medir).
   await clicMundo(page, [b.max[0], b.max[1], b.max[2]]);
   await clicMundo(page, [(b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2, b.max[2]]);
   await page.waitForTimeout(500);

@@ -12,7 +12,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp, Copy, Ruler, Trash2, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Copy, PanelLeft, PanelRight, Ruler, Trash2, X } from 'lucide-react';
 import { t, type TranslationKey } from '../../i18n';
 import { measureObject } from '../../engine/measure';
 import { useMeasureStore, type MeasureMode } from '../../store/measureStore';
@@ -26,6 +26,10 @@ import { copyMeasureValue } from './measureClipboard';
 import { useNarrowViewport } from './useNarrowViewport';
 import { useCoarsePointer } from './useCoarsePointer';
 import '../../styles/measure.css';
+import '../../styles/ux6.css';
+
+/** Borde elegido para el panel (dura mientras la app está abierta, aunque se cierre Medir). */
+let lastSide: 'left' | 'right' = 'left';
 
 const MODES: MeasureMode[] = ['distance', 'angle', 'area', 'capacity'];
 
@@ -92,6 +96,7 @@ export const MeasurePanel: React.FC = () => {
   const setActiveTool = useKuraStore((s) => s.setActiveTool);
   const narrow = useNarrowViewport();
   const [collapsed, setCollapsed] = useState(false);
+  const [side, setSide] = useState<'left' | 'right'>(lastSide);
   const mode = useMeasureStore((s) => s.mode);
   const setMode = useMeasureStore((s) => s.setMode);
   const angleInput = useMeasureStore((s) => s.angleInput);
@@ -117,6 +122,18 @@ export const MeasurePanel: React.FC = () => {
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
   }, []);
+  // Al abrir, plegar o cambiar de borde: si el modelo quedó detrás del panel, la cámara lo trae al área libre
+  // (el panel es un `data-viewport-occluder`); si ya se ve entero no se mueve.
+  useEffect(() => {
+    lastSide = side;
+    if (narrow) return undefined;
+    const frame = requestAnimationFrame(() => {
+      const s = useKuraStore.getState();
+      const ids = s.selectedIds.length > 0 ? s.selectedIds : s.objects.filter((o) => o.visible !== false).map((o) => o.id);
+      if (ids.length > 0) s.requestCameraPreset('ensure', ids);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [side, collapsed, narrow]);
   // Al salir de la herramienta se descarta lo que estaba a medio marcar.
   useEffect(() => () => useMeasureStore.setState({ pending: [], hover: null }), []);
 
@@ -207,12 +224,16 @@ export const MeasurePanel: React.FC = () => {
   }
 
   const toggleLabel = t(lang, collapsed ? 'measure.panel.expand' : 'measure.panel.collapse');
+  const dockLabel = t(lang, side === 'left' ? 'ux6.measure.dockRight' : 'ux6.measure.dockLeft');
   return (
-    <section className={`kura-hud-card kura-measure-panel ${collapsed ? 'is-collapsed' : ''}`} aria-label={t(lang, 'measure.title')} data-testid="measure-panel" data-viewport-occluder>
+    <section className={`kura-hud-card kura-measure-panel is-docked is-${side} ${collapsed ? 'is-collapsed' : ''}`} aria-label={t(lang, 'measure.title')} data-testid="measure-panel" data-viewport-occluder>
       <div className="kura-measure-head">
         <Ruler size={13} aria-hidden />
         <strong className="kura-measure-row-text">{t(lang, 'measure.title')}</strong>
         {collapsed && measurements.length > 0 && <span className="kura-measure-hint">{t(lang, 'measure.panel.count', { n: measurements.length })}</span>}
+        <button type="button" className="kura-btn kura-btn-sm kura-btn-icon" aria-label={dockLabel} title={dockLabel} data-testid="measure-dock" onClick={() => setSide((v) => (v === 'left' ? 'right' : 'left'))}>
+          {side === 'left' ? <PanelRight size={13} aria-hidden /> : <PanelLeft size={13} aria-hidden />}
+        </button>
         <button type="button" className="kura-btn kura-btn-sm kura-btn-icon" aria-expanded={!collapsed} aria-label={toggleLabel} title={toggleLabel} onClick={() => setCollapsed((c) => !c)}>
           {collapsed ? <ChevronDown size={13} aria-hidden /> : <ChevronUp size={13} aria-hidden />}
         </button>

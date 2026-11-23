@@ -33,6 +33,7 @@ import { useFunctionKeys } from './components/useFunctionKeys';
 import { guardUnsavedChanges } from './utils/unsavedGuard';
 import { LOG_TAG } from './brand';
 import { ConfirmDialogHost } from './components/ConfirmDialogHost';
+import { UnitChoiceDialog } from './components/dialogs/UnitChoiceDialog';
 import { RowContextMenuHost } from './components/scene/RowContextMenuHost';
 import { confirmDeleteSelection } from './components/scene/confirmDeleteSelection';
 import { NarrowPanelBar } from './components/NarrowPanelBar';
@@ -54,6 +55,7 @@ export const App: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const activeTool = useKuraStore((s) => s.activeTool);
   const uiDensity = useKuraStore((s) => s.uiDensity);
+  const showBed = useKuraStore((s) => s.showBed);
   const projectName = useKuraStore((s) => s.projectName);
   const projectDirty = useKuraStore(isProjectDirty);
   const mcpConfig = useKuraStore((s) => s.mcpConfig);
@@ -393,6 +395,8 @@ export const App: React.FC = () => {
         }
       } else if (key === 'm' && e.shiftKey) {
         if (state.objects.length > 0) state.setActiveDialog('mold');
+      } else if (key === 'b' && !e.shiftKey) {
+        state.toggleShowBed();
       } else if (key === 'x') {
         state.setSectionPlane({ enabled: !state.sectionPlane.enabled });
       } else if (key === 'p') {
@@ -420,7 +424,7 @@ export const App: React.FC = () => {
   }, [sheets.reveal]);
 
   return (
-    <div className="kura-app" data-tool={activeTool} data-density={uiDensity}>
+    <div className="kura-app" data-tool={activeTool} data-density={uiDensity} data-bed={showBed ? 'on' : 'off'}>
       <SkipLinks />
       <TopBar />
       <DownloadSaveNotice />
@@ -458,6 +462,7 @@ export const App: React.FC = () => {
       <StatusBar recoveryStatus={recovery.status} recoveryFailure={recovery.failure} />
       <Dialogs />
       <ConfirmDialogHost />
+      <UnitChoiceDialog />
       <RowContextMenuHost />
       <CommandPalette />
       <SplashScreen />

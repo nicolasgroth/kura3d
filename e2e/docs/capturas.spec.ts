@@ -26,6 +26,15 @@ test('primeros-pasos', async ({ page }) => {
   await captura(page, 'primeros-pasos-02-interfaz');
   await captura(page, 'primeros-pasos-03-formas', IZQ);
   await captura(page, 'primeros-pasos-04-inspector', DER);
+  // Barra lateral compacta (con el tirador) y vista sin cama; al final se dejan como estaban.
+  await page.getByTestId('left-sidebar-handle').click();
+  await page.waitForTimeout(300);
+  await captura(page, 'primeros-pasos-05-barra-compacta', { x: 0, y: 0, width: 720, height: 520 });
+  await page.evaluate(() => (window as any).__s.getState().setLeftSidebarMode('full'));
+  await page.getByTestId('bed-toggle').click();
+  await page.waitForTimeout(500);
+  await captura(page, 'primeros-pasos-06-sin-cama');
+  await page.getByTestId('bed-toggle').click();
 });
 
 test('dividir-para-imprimir', async ({ page }) => {
