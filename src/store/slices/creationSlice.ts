@@ -39,7 +39,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
    */
   const afterFreePlacement = (fits: boolean, wasEmpty: boolean, newId: string) => {
     if (!fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
-    if (!fits || wasEmpty) get().requestCameraPreset('fit');
+    if (!fits || wasEmpty) get().requestCameraPreset('fit', [newId]);
     else get().requestCameraPreset('ensure', [newId]);
   };
 

@@ -15,6 +15,7 @@ import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
 import { toolLabel } from '../utils/aiToolLabels';
+import { useAiDrawerLayout } from './useAiDrawerLayout';
 import '../styles/aiDrawer.css';
 
 export const AiChatDrawer: React.FC = () => {
@@ -35,6 +36,8 @@ export const AiChatDrawer: React.FC = () => {
   const setAiBusy = useKuraStore((s) => s.setAiBusy);
   const executeCommand = useKuraStore((s) => s.executeCommand);
   const openSettings = useKuraStore((s) => s.openSettings);
+
+  useAiDrawerLayout(aiDrawerOpen);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -131,7 +134,7 @@ export const AiChatDrawer: React.FC = () => {
         ];
 
   return (
-    <aside className={`kura-ai-drawer${folded ? ' is-folded' : ''}`} aria-label={t(language, 'ai.title')}>
+    <aside className={`kura-ai-drawer${folded ? ' is-folded' : ''}`} aria-label={t(language, 'ai.title')} data-viewport-occluder>
       <div className="kura-panel-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
           <Bot size={16} style={{ color: 'var(--tool-accent)', flexShrink: 0 }} />

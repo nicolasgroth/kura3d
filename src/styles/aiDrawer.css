@@ -8,14 +8,15 @@
  */
 
 @media (min-width: 901px) {
+  /* Panel flotante junto al inspector (no lo cubre ni su botón de borde), bajo el cubo de vistas y los controles del visor. */
   .kura-workspace > .kura-ai-drawer {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 192px;
+    right: calc(var(--kura-ai-inspector-w, 296px) + 30px);
     bottom: 8px;
     z-index: 30;
-    width: min(380px, calc(100% - 16px));
-    max-width: 380px;
+    width: clamp(280px, 28vw, 360px);
+    max-width: 360px;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-hud);
@@ -31,13 +32,30 @@
     display: none;
   }
 
-  /* El inspector queda detrás del panel flotante: se oculta mientras el chat está desplegado. */
-  .kura-workspace[data-narrow-panel="ai"] > .kura-sidebar-right {
-    display: none;
+  /* Los controles de la franja inferior del visor y el consejo se apartan del panel. */
+  .kura-workspace[data-narrow-panel="ai"] .kura-hud-bottom,
+  .kura-workspace[data-narrow-panel="ai"] .kura-protip-wrap {
+    right: calc(12px + var(--kura-ai-reserve, 0px));
+  }
+}
+
+/* Ventanas medias: no cabe el inspector junto al chat; el chat ocupa su columna (sin cambiar el tamaño del
+   visor, así la cámara no salta) y el inspector vuelve al cerrarlo. */
+@media (901px <= width <= 1240px) {
+  .kura-app .kura-workspace[data-narrow-panel="ai"] > .kura-sidebar-right {
+    display: flex;
+    visibility: hidden;
   }
 
-  .kura-workspace[data-narrow-panel="ai"]:has(> .kura-ai-drawer.is-folded) > .kura-sidebar-right {
-    display: flex;
+  .kura-app .kura-workspace > .kura-ai-drawer {
+    top: 8px;
+    right: 8px;
+    width: min(296px, calc(100% - 16px));
+  }
+
+  .kura-app .kura-workspace[data-narrow-panel="ai"] .kura-hud-bottom,
+  .kura-app .kura-workspace[data-narrow-panel="ai"] .kura-protip-wrap {
+    right: 12px;
   }
 }
 

@@ -87,7 +87,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     set((state) => ({ objects: [...state.objects, obj], selectedIds: [obj.id] }));
     get().addToast(tr(toastKey, { name: obj.name }), 'success');
     if (!fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
-    if (!fits || wasEmpty) get().requestCameraPreset('fit');
+    if (!fits || wasEmpty) get().requestCameraPreset('fit', [obj.id]);
     else get().requestCameraPreset('ensure', [obj.id]);
     return obj;
   };

@@ -1,7 +1,9 @@
 /**
  * @file src/components/viewport/CameraController.tsx
  * @description Controlador de cámara del visor: presets de vista, encuadre exacto (campo de visión y
- * aspecto reales) y encuadre automático tras operaciones que crean, importan o mueven geometría,
+ * aspecto reales). La cámara solo se mueve por: crear o importar (encuadre con margen), cambiar de vista,
+ * Encuadrar (F), enfocar una unión o pieza nueva, y cuando lo nuevo o editado queda fuera de vista. Abrir
+ * paneles no la mueve. Incluye el encuadre automático tras operaciones que crean, importan o mueven geometría,
  * con una transición corta que respeta `prefers-reduced-motion`. La política vive en
  * `core/scene/cameraFraming.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -36,6 +38,8 @@ const MIN_DISTANCE = 18;
 const EXPLICIT_WINDOW_MS = 250;
 /** Con el área libre medida, el margen extra para las barras flotantes ya no hace falta entero. */
 const INSET_MARGIN = 1.4;
+/** Al crear o importar, el objeto nuevo ocupa ~45 % del visor (margen generoso en vez de pegarlo a los bordes). */
+const NEW_OBJECT_MARGIN = 2.2;
 
 function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
@@ -107,14 +111,21 @@ export const CameraController: React.FC<{
    * Encuadra la caja dentro del área libre del visor. `ensure`: no hace nada si ya está entera a la
    * vista. `focus`: encuadra siempre y busca una dirección desde la que `blockers` no la tapen.
    */
-  const frameBox = (box: FrameBox, mode: 'fit' | 'ensure' | 'scene' | 'focus', blockers: FrameBox[] = []) => {
+  const frameBox = (box: FrameBox, mode: 'fit' | 'ensure' | 'scene' | 'focus', blockers: FrameBox[] = [], margin = INSET_MARGIN) => {
     const persp = camera as THREE.PerspectiveCamera;
     const aspect = sizeRef.current.height > 0 ? sizeRef.current.width / sizeRef.current.height : persp.aspect;
     if (mode === 'ensure') {
       camera.updateMatrixWorld();
       const vp = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
       // Visible = entera en el área que no tapan los paneles (no basta con estar en el lienzo).
-      const free = { insets: measureViewportInsets(gl.domElement), width: sizeRef.current.width, height: sizeRef.current.height };
+      // `measureViewportInsets` devuelve fracciones del lienzo; `isBoxInView` las espera en píxeles.
+      const { width, height } = sizeRef.current;
+      const frac = measureViewportInsets(gl.domElement);
+      const free = {
+        insets: { top: frac.top * height, bottom: frac.bottom * height, left: frac.left * width, right: frac.right * width },
+        width,
+        height,
+      };
       if (isBoxInView(box, vp.elements, undefined, free)) return;
     }
     const fit = {
@@ -122,7 +133,7 @@ export const CameraController: React.FC<{
       fovDeg: persp.fov ?? 42,
       aspect,
       insets: measureViewportInsets(gl.domElement),
-      margin: INSET_MARGIN,
+      margin,
       minDistance: Math.max(MIN_DISTANCE, orbitRef.current?.minDistance ?? 0),
       maxDistance: orbitRef.current?.maxDistance ?? Infinity,
     };
@@ -182,14 +193,16 @@ export const CameraController: React.FC<{
 
     if (preset === 'fit' || preset === 'scene' || preset === 'ensure') {
       const ids = cameraRequest.ids;
-      const focus = preset === 'ensure' && ids
+      // `fit` con ids = objeto recién creado o importado: se encuadra con margen generoso.
+      const fitNew = preset === 'fit' && Boolean(ids && ids.length > 0);
+      const focus = (preset === 'ensure' || fitNew) && ids
         ? cur.filter((o) => ids.includes(o.id))
         : preset === 'fit' && selectedIds.length > 0
           ? cur.filter((o) => selectedIds.includes(o.id))
           : cur;
       const box = boxForObjects(focus);
       if (box) {
-        frameBox(box, preset);
+        frameBox(box, preset, [], fitNew ? NEW_OBJECT_MARGIN : INSET_MARGIN);
         return;
       }
       if (preset === 'ensure') return;
@@ -240,7 +253,7 @@ export const CameraController: React.FC<{
       if (performance.now() - lastExplicitAt.current < EXPLICIT_WINDOW_MS) return;
       if (added.length > 0) {
         const box = boxForObjects(added);
-        if (box) frameBox(box, wasEmpty ? 'fit' : 'ensure');
+        if (box) frameBox(box, wasEmpty ? 'fit' : 'ensure', [], NEW_OBJECT_MARGIN);
         return;
       }
       const box = boxForObjects(edited);
