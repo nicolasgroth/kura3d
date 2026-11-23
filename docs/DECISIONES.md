@@ -47,3 +47,12 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-23 | Asistentes de creación | Los generadores (caja, tapa, soportes…) se presentan en una sección propia de asistentes paso a paso, con prototipos pequeños que se van sumando. |
 | 2026-11-23 | Documentación pública | Flujo aparte y permanente: README y guías en GitHub con ejemplos, paso a paso, capturas y animaciones de cada funcionalidad, más las reglas de uso del MCP. Se actualiza con cada cambio. |
 | 2026-11-23 | Generadores y asistentes como extensiones | Los asistentes (cajas, llaveros, soportes…) se definen como recetas configurables: parámetros que pide al usuario, reglas y condiciones, y pasos sobre las operaciones del programa. Los propios de Kura3D se escriben en ese mismo formato, para que cualquiera pueda crear y compartir los suyos como extensión. El formato se diseña y se presenta antes de implementar. |
+| 2026-11-23 | Recetas: librerías | Aprobadas `jsep` (lectura de expresiones) y `zod` (validación), ambas MIT. |
+| 2026-11-23 | Recetas: copia en el proyecto | El `.kura` guarda una copia completa de la receta que generó cada objeto, para poder regenerarlo aunque la extensión no esté instalada. |
+| 2026-11-23 | Objetos de referencia: almacenamiento | La malla de la referencia va siempre dentro del `.kura`, no como enlace. |
+| 2026-11-23 | Agregados al escalar | Los agregados funcionales (torreta para tornillo, alojamiento de imán) se reconstruyen a su medida real al escalar la pieza; no se escalan con ella. |
+| 2026-11-23 | Imanes e insertos por defecto | Imán de 6 × 2 mm por ahora. El valor por defecto se configura en las preferencias de cada persona, y cada proyecto o sección puede usar uno distinto. |
+| 2026-11-23 | Ajustar a la impresora | El usuario elige: solo escalar, o permitir además girar la pieza para que quepa. Se muestran todas las alternativas. |
+| 2026-11-23 | Placas de enchufe | Buscar medidas reales en fuentes públicas para Chile (primero), España y Estados Unidos; hasta verificarlas quedan marcadas "por verificar". |
+| 2026-11-23 | Recetas de terceros: recursos | Una receta puede traer imágenes, SVG o modelos propios embebidos (por ejemplo la marca de quien la creó), con los mismos límites y validación que una importación. |
+| 2026-11-23 | Regenerar un objeto editado a mano | Por defecto regenerar descarta las ediciones hechas a mano, avisando antes; se ofrece "dejar fijo" para conservar el objeto tal como está. Criterio del asistente, delegado por el autor. |
