@@ -28,7 +28,7 @@ describe('HistorySettings', () => {
     seedHistory(37);
     render(<HistorySettings idPrefix="h" />);
     const usage = screen.getByTestId('history-usage').textContent ?? '';
-    expect(usage).toMatch(/^37 pasos · [\d.]+ MB de 256 MB$/);
+    expect(usage).toMatch(/^37 pasos · [\d.,]+ MB de 256 MB$/);
   });
 
   it('cambiar presupuesto y máximo de pasos actualiza el store y acota el rango', async () => {
