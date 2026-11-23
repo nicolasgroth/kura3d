@@ -111,6 +111,40 @@ describe('F4: repetir la última acción', () => {
     expect(xs).toEqual([0, 15, 30, 45, 60]);
   });
 
+  it('apoyar en la cama (L) reemplaza a Agrupar como última acción y F4 la repite en otro objeto', async () => {
+    const a = await addBox(10, [0, 20, 0], { name: 'A' });
+    const b = await addBox(10, [40, 30, 0], { name: 'B' });
+    const c = await addBox(10, [80, 0, 0], { name: 'C' });
+    store().groupObjects([a.id, c.id]);
+    expect(store().lastRepeatable).toEqual({ kind: 'group' });
+    store().dropObjectToBed(a.id);
+    expect(store().lastRepeatable).toEqual({ kind: 'dropToBed' });
+    // Las acciones no repetibles no borran la última repetible.
+    store().deleteObjects([c.id]);
+    expect(store().lastRepeatable).toEqual({ kind: 'dropToBed' });
+    useKuraStore.setState({ selectedIds: [b.id] });
+    expect(await store().repeatLastAction()).toBe('done');
+    expect(byId(b.id)!.position[1]).toBeCloseTo(0, 3);
+  });
+
+  it('restablecer, alinear, centrar y material quedan registrados como última acción', async () => {
+    const a = await addBox(10, [0, 0, 0]);
+    const b = await addBox(10, [30, 0, 0]);
+    store().setObjectTransform(a.id, { rotation: [0, 0.5, 0] }, true);
+    store().resetObjectsRotation([a.id]);
+    expect(store().lastRepeatable).toEqual({ kind: 'resetRotation' });
+    useKuraStore.setState({ selectedIds: [a.id, b.id] });
+    store().alignSelectedObjects('minX');
+    expect(store().lastRepeatable).toEqual({ kind: 'align', mode: 'minX' });
+    store().centerObjectOnBed(a.id);
+    expect(store().lastRepeatable).toEqual({ kind: 'centerObjectOnBed' });
+    store().setObjectMaterial(a.id, 'abs');
+    expect(store().lastRepeatable).toEqual({ kind: 'material', materialPreset: 'abs' });
+    useKuraStore.setState({ selectedIds: [b.id] });
+    expect(await store().repeatLastAction()).toBe('done');
+    expect(byId(b.id)!.materialPreset).toBe('abs');
+  });
+
   it('ahuecar con el mismo grosor se reaplica a otro objeto', async () => {
     const a = await addBox(30, [0, 0, 0], { name: 'A' });
     const b = await addBox(30, [60, 0, 0], { name: 'B' });

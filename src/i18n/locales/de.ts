@@ -27,6 +27,7 @@ import { IMPORTREAL_DE } from './importReal';
 import { REPAIR_DE } from './repair';
 import { UXESCENA_DE } from './uxEscena';
 import { UXCIERRE_DE } from './uxCierre';
+import { UX3_EDICION_DE } from './ux3Edicion';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -51,6 +52,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...REPAIR_DE,
   ...UXESCENA_DE,
   ...UXCIERRE_DE,
+  ...UX3_EDICION_DE,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
