@@ -67,7 +67,7 @@ export interface ImportedModel {
   /** Ajustes hechos al leer (p. ej. normales invertidas reorientadas), con el nombre del archivo. */
   warnings?: EngineWarning[];
   /**
-   * Escena exportada por Kura3D (metadatos `Metadata/Kura3D_scene.json`): se restaura tal cual, sin
+   * Escena exportada por Kura3D (metadatos `Metadata/kura_scene.json`): se restaura tal cual, sin
    * reacomodo ni conjuntos. Cada pieza trae su estado en `part.kura`.
    */
   kuraScene?: { groups: KuraSceneGroupMeta[] };

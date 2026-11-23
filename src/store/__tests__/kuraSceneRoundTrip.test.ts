@@ -140,7 +140,7 @@ describe('3MF de Kura3D: ida y vuelta exacta de la escena', () => {
 
 describe('metadatos de escena hostiles', () => {
   const valid = () => ({
-    namespace: 'https://kura3d.app/3mf/scene/1',
+    namespace: 'urn:kura:3mf:scene:1',
     objects: [{ objectId: '2', name: 'a', position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1], color: '#fff', visible: true, locked: false, isHole: false, vertices: 3, triangles: 1 }],
     groups: [] as unknown[],
   });

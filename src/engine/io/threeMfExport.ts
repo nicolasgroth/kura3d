@@ -22,7 +22,7 @@ export interface ThreeMfSceneOptions {
   /**
    * Árbol de grupos de la escena. Si se pasa, `objects` es la escena entera: lo visible y sólido va al
    * `<build>` (lo que imprimen los laminadores); lo oculto y los huecos quedan como recursos sin ítem
-   * de build, y `Metadata/Kura3D_scene.json` guarda transformaciones, estado y grupos para restaurarla.
+   * de build, y `Metadata/kura_scene.json` guarda transformaciones, estado y grupos para restaurarla.
    */
   groups: readonly SceneGroup[];
 }

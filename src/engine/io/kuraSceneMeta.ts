@@ -1,6 +1,6 @@
 /**
  * @file src/engine/io/kuraSceneMeta.ts
- * @description Metadatos propios de Kura3D dentro de un 3MF (`Metadata/Kura3D_scene.json`, espacio de
+ * @description Metadatos propios de Kura3D dentro de un 3MF (`Metadata/kura_scene.json`, espacio de
  * nombres `KURA_SCENE_NAMESPACE`): por cada objeto del modelo, su transformación exacta (posición,
  * rotación, escala), nombre, color, visibilidad, bloqueo, hueco y grupo; y el árbol de grupos (anidados,
  * plegado, visible, bloqueado). Con ellos, la ida y vuelta por 3MF de Kura3D restaura la escena tal cual,
@@ -16,9 +16,9 @@ import type { SceneGroup, SceneObject, Vec3 } from '../../types/kura';
 import { MAX_PART_NAME } from './importErrors';
 
 /** Ruta del archivo dentro del paquete. */
-export const KURA_SCENE_PATH = 'Metadata/Kura3D_scene.json';
+export const KURA_SCENE_PATH = 'Metadata/kura_scene.json';
 /** Identificador del formato (versión 1). */
-export const KURA_SCENE_NAMESPACE = 'https://kura3d.app/3mf/scene/1';
+export const KURA_SCENE_NAMESPACE = 'urn:kura:3mf:scene:1';
 /** Tope de bytes del JSON (una escena de 2 000 objetos con grupos ocupa mucho menos). */
 export const KURA_SCENE_MAX_BYTES = 4 * 1024 * 1024;
 /** Tope de grupos aceptados al leer. */

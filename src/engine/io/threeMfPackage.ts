@@ -52,11 +52,11 @@ export interface ThreeMfPackage {
     /** XML de `Metadata/model_settings.config` (placas, ver `threeMfPlates.ts`), o null si falta. */
     settingsXml: string | null;
   };
-  /** Texto de `Metadata/Kura3D_scene.json` (escena exportada por Kura3D), o null si falta o excede su tope. */
+  /** Texto de `Metadata/kura_scene.json` (escena exportada por Kura3D), o null si falta o excede su tope. */
   kuraSceneText: string | null;
 }
 
-const USEFUL_PART = /(\.model|\.rels|model_settings\.config|project_settings\.config|Kura3D_scene\.json)$/i;
+const USEFUL_PART = /(\.model|\.rels|model_settings\.config|project_settings\.config|kura_scene\.json)$/i;
 
 /** Abre un paquete 3MF con límites de tamaño. */
 export function open3MFPackage(buffer: ArrayBuffer, limits: ModelImportLimits): ThreeMfPackage {
