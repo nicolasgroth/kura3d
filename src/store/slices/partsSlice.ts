@@ -14,6 +14,7 @@ import * as ops from '../../core/operations';
 import { keepClearOfOthers, placePartsInFreeSpot, separateCutHalves } from '../../core/scene/freeSpot';
 import type { SceneChange } from '../../core/operations/operationTypes';
 import { resolveStructureTarget } from '../../core/scene/sceneRules';
+import { hasPaintedFaces } from '../../core/scene/parametric';
 import { attachNotesToParts, buildGroupNotes } from '../../core/scene/splitGroupNotes';
 import { segmentationMatchesMesh } from '../../engine/segmentationGuards';
 import { tCount } from '../../utils/plural';
@@ -132,13 +133,21 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
     splitObjectByColor: async (id, options = {}) => {
       const obj = editable(id);
       if (!obj) return [];
+      // Sin zonas pintadas no hay nada que separar: se guía al usuario en vez de «Separado en 1 piezas».
+      if (!hasPaintedFaces(obj.mesh)) {
+        get().addToast(tr('genUi.splitColors.none'), 'info');
+        return [];
+      }
       return runExclusive('split_colors', [], async () => {
         const { parts, change } = await runEngine('splitByColor', { obj, options });
         if (parts.length === 0) return [];
         assertCurrent([obj]);
         const cleared = clearOfOthers(change);
         commitChange(cleared, { select: parts.map((c) => c.id) });
-        get().addToast(tr('toast.splitColorsDone', { count: parts.length }), 'success');
+        get().addToast(
+          tCount(get().language, { one: 'genUi.splitColorsDone.one', other: 'genUi.splitColorsDone.other' }, parts.length),
+          'success',
+        );
         reportEngineWarnings(change.warnings);
         return byIds(cleared, parts.map((c) => c.id));
       });

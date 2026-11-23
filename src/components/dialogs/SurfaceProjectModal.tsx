@@ -27,6 +27,7 @@ import {
 import { openLocalFile } from '../../utils/platformBridge';
 import { currentCameraPosition } from '../viewport/viewCameraRegistry';
 import { SVG_PRESETS } from './dialogPresets';
+import '../../styles/genUiDialogs.css';
 import {
   faceOfInternalDirection,
   userDirectionOfInternal,
@@ -280,6 +281,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
           <select
             id="proj-axis"
             className="kura-select"
+            aria-describedby="proj-axis-hint"
             value={axis}
             onChange={(e) => setAxis(e.target.value as SurfaceProjectionAxis)}
           >
@@ -291,6 +293,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
             ))}
             <option value="cylindrical">{t(language, 'dialog.project.axisCyl')}</option>
           </select>
+          <span id="proj-axis-hint" className="kura-field-hint">{t(language, 'genUi.proj.faceHint')}</span>
         </div>
 
         <div className="kura-form-field">

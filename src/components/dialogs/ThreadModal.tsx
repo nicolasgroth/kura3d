@@ -6,7 +6,7 @@
  * @license MIT
  */
 
-import React, { useId, useState } from 'react';
+import React, { useId, useRef, useState } from 'react';
 import { Bolt } from 'lucide-react';
 import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
@@ -23,6 +23,7 @@ import {
   THREAD_MIN_DIAMETER_MM,
 } from '../../engine/threads';
 import { ISO_THREAD_PRESET_GROUPS } from './dialogPresets';
+import { defaultThreadLength } from './threadLengthDefaults';
 
 /** Modal 6: Generador Paramétrico de Roscas Métricas ISO (M3–M64). */
 export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
@@ -35,6 +36,11 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
   const [lengthMm, setLengthMm] = useState(20);
   const [clearanceMm, setClearanceMm] = useState(() => defaultThreadClearance(1.25));
   const [includeHead, setIncludeHead] = useState(true);
+  // El largo por defecto sigue al diámetro y al tipo (perno ≈ 2,5·d, tuerca ≈ 0,8·d) hasta que el usuario lo edite.
+  const lengthEdited = useRef(false);
+  const syncLength = (diameter: number, nextKind: ThreadOptions['kind']) => {
+    if (!lengthEdited.current) setLengthMm(defaultThreadLength(nextKind, diameter));
+  };
   const failure = useOperationFailure(open);
   const uid = useId();
   // Campos con texto no numérico o fuera de rango: no se crea con el valor anterior en silencio.
@@ -133,6 +139,7 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
                     onClick={() => {
                       setDiameterMm(preset.diameterMm);
                       applyPitch(preset.pitchMm);
+                      syncLength(preset.diameterMm, kind);
                     }}
                   >
                     {preset.label} ({formatLocaleNumber(language, preset.pitchMm)})
@@ -151,7 +158,11 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
             id="thread-kind"
             className="kura-select"
             value={kind}
-            onChange={(e) => setKind(e.target.value as ThreadOptions['kind'])}
+            onChange={(e) => {
+              const next = e.target.value as ThreadOptions['kind'];
+              setKind(next);
+              syncLength(diameterMm, next);
+            }}
           >
             <option value="bolt">{t(language, 'dialog.thread.kindBolt')}</option>
             <option value="nut">{t(language, 'dialog.thread.kindNut')}</option>
@@ -175,6 +186,7 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
               // Paso ISO 261 grueso automático al cambiar el diámetro (editable después)
               setDiameterMm(value);
               applyPitch(isoCoarsePitch(value));
+              syncLength(value, kind);
             }}
           />
         </div>
@@ -207,7 +219,10 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
             precision={1}
             defaultValue={20}
             value={lengthMm}
-            onChange={setLengthMm}
+            onChange={(value) => {
+              lengthEdited.current = true;
+              setLengthMm(value);
+            }}
           />
         </div>
 
