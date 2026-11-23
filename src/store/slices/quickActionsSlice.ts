@@ -131,6 +131,10 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         for (const o of targets) ok = s.mirrorObject(o.id, rec.axis) || ok;
         return ok ? 'done' : 'notApplicable';
       }
+      case 'planeCut': {
+        if (!first || s.busyOperation) return 'notApplicable';
+        return (await s.planeCutObject(first.id, rec.options)).length > 0 ? 'done' : 'notApplicable';
+      }
       case 'applyHoles': {
         const scope = resolveHoleScope(s.objects, s.selectedIds);
         if (scope.solids.length === 0 || scope.holes.length === 0) return 'notApplicable';
@@ -228,6 +232,13 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       const ok = await base.hollowObject!(id, options);
       if (ok && options.enabled) record({ kind: 'hollow', wallThickness: options.wallThickness });
       return ok;
+    },
+
+    // F4 repite el corte con la misma elección (eje, desplazamiento, mitad y dónde dejar la mitad conservada).
+    planeCutObject: async (id, options) => {
+      const parts = await base.planeCutObject!(id, options);
+      if (parts.length > 0) record({ kind: 'planeCut', options: { ...options } });
+      return parts;
     },
 
     mirrorObject: (id, axis) => {

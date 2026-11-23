@@ -19,6 +19,7 @@ export function repeatLabel(language: LanguageCode, rec: RepeatRecord): string {
       return t(language, rec.part === 'position' ? 'repeat.name.move' : rec.part === 'rotation' ? 'repeat.name.rotate' : 'repeat.name.scale');
     case 'hollow': return t(language, 'repeat.name.hollow', { mm: rec.wallThickness });
     case 'mirror': return t(language, 'repeat.name.mirror', { axis: userAxisLabel(rec.axis) });
+    case 'planeCut': return t(language, 'dialog.cut.title');
     case 'applyHoles': return t(language, 'repeat.name.applyHoles');
     case 'addPiece':
       return t(language, rec.mode === 'negative' ? 'repeat.name.addNegative' : 'repeat.name.addPart', {

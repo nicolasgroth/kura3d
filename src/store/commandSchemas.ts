@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { DEFAULT_KEPT_HALF_PLACEMENT, KEPT_HALF_PLACEMENTS } from '../core/scene/keptHalf';
 import {
   DEFAULT_PRINTER_PROFILES,
   MATERIAL_PRESETS,
@@ -303,6 +304,7 @@ export function parsePlaneCut(scene: SceneView, p: RawParams): { target: SceneOb
       tolerance: readRange(p, OR.cut.tolerance, 'tolerance') ?? CUT_DEFAULTS.tolerance,
       connectorCount: readRange(p, OR.cut.connectorCount, 'connectorCount') ?? CUT_DEFAULTS.connectorCount,
       keepMode: readEnum(p, ['both', 'positive', 'negative'] as const, 'keepMode') ?? 'both',
+      keptHalfPlacement: readEnum(p, KEPT_HALF_PLACEMENTS, 'keptHalfPlacement') ?? DEFAULT_KEPT_HALF_PLACEMENT,
     },
   };
 }

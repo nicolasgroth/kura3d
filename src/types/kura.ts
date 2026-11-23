@@ -434,6 +434,11 @@ export interface PlaneCutOptions {
   connectorCount: number;
   /** Mantener ambas mitades o descartar una. */
   keepMode: 'both' | 'positive' | 'negative';
+  /**
+   * Con UNA sola mitad conservada que no queda apoyada en la cama: `inPlace` (por defecto) la deja donde
+   * está, `dropToBed` la baja hasta tocar la cama en el mismo lugar y `freeSpot` la apoya en un hueco libre.
+   */
+  keptHalfPlacement?: 'inPlace' | 'dropToBed' | 'freeSpot';
 }
 
 /** Opciones del generador automático de moldes y contra-moldes (velas, silicona, resina). */

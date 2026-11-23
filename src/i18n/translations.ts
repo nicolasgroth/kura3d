@@ -37,6 +37,7 @@ import { UXESCENA_EN, UXESCENA_ES } from './locales/uxEscena';
 import { UXCIERRE_EN, UXCIERRE_ES } from './locales/uxCierre';
 import { UX3_EDICION_EN, UX3_EDICION_ES } from './locales/ux3Edicion';
 import { UX4_EN, UX4_ES } from './locales/ux4';
+import { CORTEMITAD_EN, CORTEMITAD_ES } from './locales/corteMitad';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -68,6 +69,7 @@ export const TRANSLATIONS_ES = {
   ...UXCIERRE_ES,
   ...UX3_EDICION_ES,
   ...UX4_ES,
+  ...CORTEMITAD_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -1400,6 +1402,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UXCIERRE_EN,
   ...UX3_EDICION_EN,
   ...UX4_EN,
+  ...CORTEMITAD_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',

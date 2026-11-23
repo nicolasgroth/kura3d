@@ -32,6 +32,7 @@ import { UXESCENA_DE } from './uxEscena';
 import { UXCIERRE_DE } from './uxCierre';
 import { UX3_EDICION_DE } from './ux3Edicion';
 import { UX4_DE } from './ux4';
+import { CORTEMITAD_DE } from './corteMitad';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -61,6 +62,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...UXCIERRE_DE,
   ...UX3_EDICION_DE,
   ...UX4_DE,
+  ...CORTEMITAD_DE,
   // Marca y shell principal
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
   'app.docTitle': 'Kura3D v0.5.0 — Natives 3D-Modellierungsstudio',

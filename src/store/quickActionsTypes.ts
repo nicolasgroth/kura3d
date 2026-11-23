@@ -9,7 +9,7 @@
  */
 
 import type { PieceShape } from '../core/scene/pieceSizing';
-import type { AlignMode, MaterialPresetId, SceneObject, Vec3 } from '../types/kura';
+import type { AlignMode, MaterialPresetId, PlaneCutOptions, SceneObject, Vec3 } from '../types/kura';
 
 export type PieceMode = 'positive' | 'negative';
 
@@ -21,6 +21,7 @@ export type RepeatRecord =
   | { kind: 'hollow'; wallThickness: number }
   | { kind: 'mirror'; axis: 'x' | 'y' | 'z' }
   | { kind: 'applyHoles' }
+  | { kind: 'planeCut'; options: PlaneCutOptions }
   | { kind: 'addPiece'; shape: PieceShape; mode: PieceMode }
   | { kind: 'simplify'; toleranceMm: number }
   | { kind: 'color'; color: string }

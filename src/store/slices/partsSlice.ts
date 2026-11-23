@@ -13,7 +13,8 @@ import * as engine from '../../engine';
 import * as ops from '../../core/operations';
 import { keepClearOfOthers, placePartsInFreeSpot, separateCutHalves } from '../../core/scene/freeSpot';
 import type { SceneChange } from '../../core/operations/operationTypes';
-import { userAxisLabel } from '../../core/scene/displayAxes';
+import { resolveKeptHalf } from '../../core/scene/keptHalf';
+import { userAxisLabel, userAxisOfInternal } from '../../core/scene/displayAxes';
 import { resolveStructureTarget } from '../../core/scene/sceneRules';
 import { hasPaintedFaces } from '../../core/scene/parametric';
 import { attachNotesToParts, buildGroupNotes } from '../../core/scene/splitGroupNotes';
@@ -64,8 +65,13 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         // Las mitades no quedan encimadas: se separan unos milímetros o la superior va a la cama.
         const others = get().objects.filter((o) => o.id !== obj.id);
         const separated = separateCutHalves(others, parts, options.axis, activeBedSize(get()));
-        // Y si aun así una mitad pisa a otro objeto, el par se mueve junto a un hueco libre.
-        const cleared = clearOfOthers({ ...change, added: separated.parts });
+        // Con una sola mitad conservada que no queda en la cama, se aplica lo que eligió el usuario.
+        const kept = resolveKeptHalf(others, separated.parts, options, activeBedSize(get()));
+        // Si no, y aun así una mitad pisa a otro objeto, el par se mueve junto a un hueco libre.
+        // Con `dropToBed` se respeta la elección (aunque se superponga: se avisa).
+        const cleared = kept
+          ? { ...change, added: [kept.part] }
+          : clearOfOthers({ ...change, added: separated.parts });
         commitChange(cleared, { select: cleared.added.map((c) => c.id) });
         // El corte terminó: se vuelve a Seleccionar y se apaga la vista previa del plano.
         set((state) => ({
@@ -73,6 +79,20 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
           cutPreview: { ...state.cutPreview, active: false, objectId: null },
         }));
         const axis = userAxisLabel(options.axis);
+        if (kept) {
+          // La mitad conservada es la B (lado + del usuario) o la A (lado −), según el eje.
+          const isB = (options.keepMode === 'positive') === (userAxisOfInternal(options.axis).sign > 0);
+          const half = tr(isB ? 'cut.half.b' : 'cut.half.a', { axis });
+          get().addToast(
+            tr(kept.applied === 'freeSpot' ? 'toast.cutKeptFreeSpot' : 'toast.cutKeptDropped', { half }),
+            'success',
+          );
+          if (kept.overlaps.length > 0) {
+            get().addToast(tr('toast.cutKeptOverlaps', { half, names: kept.overlaps.join(', ') }), 'info');
+          }
+          if (!kept.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+          return cleared.added;
+        }
         get().addToast(
           tr('toast.cutDone', { a: tr('cut.half.a', { axis }), b: tr('cut.half.b', { axis }) }),
           'success',
