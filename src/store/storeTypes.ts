@@ -21,6 +21,7 @@ import type { QuickActionsSliceState } from './quickActionsTypes';
 import type { MenuIdeasSliceState } from './menuIdeasTypes';
 import type { GroupsSliceState } from './groupsTypes';
 import type { RepairSliceState } from './repairTypes';
+import type { ViewPrefsSliceState } from './slices/viewPrefsSlice';
 import type {
   ActiveTool,
   AiChatMessage,
@@ -128,7 +129,7 @@ export interface BusyProgress {
 
 /** Vista previa de operaciones (declarada en `slices/previewSlice.ts`), fusionada al estado. */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface KuraStoreState extends PreviewSliceState, SplitSliceState, SplitJointsSliceState, SplitPrefsSliceState, QuickActionsSliceState, MenuIdeasSliceState, GroupsSliceState, RepairSliceState {}
+export interface KuraStoreState extends PreviewSliceState, SplitSliceState, SplitJointsSliceState, SplitPrefsSliceState, QuickActionsSliceState, MenuIdeasSliceState, GroupsSliceState, RepairSliceState, ViewPrefsSliceState {}
 
 export interface KuraStoreState {
   // Estado del motor geométrico

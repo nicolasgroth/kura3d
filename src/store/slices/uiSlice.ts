@@ -43,7 +43,6 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
   return {
     uiDensity: initialDensity,
     lastNonZenDensity: initialDensity === 'compact' ? 'compact' : 'full',
-    leftCollapsed: false,
     rightCollapsed: false,
 
     activeTool: 'select',
@@ -106,7 +105,6 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const { uiDensity, lastNonZenDensity } = get();
       get().setUiDensity(uiDensity === 'zen' ? lastNonZenDensity : 'zen');
     },
-    toggleLeftSidebar: () => set((state) => ({ leftCollapsed: !state.leftCollapsed })),
     toggleRightInspector: () => set((state) => ({ rightCollapsed: !state.rightCollapsed })),
     setSectionPlane: (patch) => set((state) => ({ sectionPlane: { ...state.sectionPlane, ...patch } })),
     setShowOverhangs: (showOverhangs) => set({ showOverhangs }),

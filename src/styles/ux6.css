@@ -1,0 +1,109 @@
+/*
+ * @file src/styles/ux6.css
+ * @description Estilos del lote ux6: vista sin cama (fondo neutro y conmutador marcado también por forma),
+ * barra lateral izquierda compacta (rail de 56 px) y oculta, menú de estados del tirador y acople del
+ * panel de Medir a un borde del visor.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* Vista sin cama: fondo plano, sin el degradado que sugiere un suelo. */
+.kura-app[data-bed='off'] .kura-viewport-wrap {
+  background: var(--viewport-bg-edge);
+}
+
+/* Activo: además del color, un borde inferior grueso (el estado no depende solo del color). */
+.kura-bed-toggle[aria-pressed='true'] {
+  box-shadow: inset 0 -3px 0 var(--accent-cyan);
+}
+
+/* ---- Barra lateral izquierda de tres estados (solo escritorio; en móvil van las hojas) ---- */
+@media (width > 900px) {
+  .kura-app .kura-sidebar-left[data-mode='compact'] {
+    width: 56px;
+  }
+
+  /* Con la barra oculta su contenido se esconde, pero el menú del tirador debe verse. */
+  .kura-app .kura-sidebar-left.is-collapsed > .kura-sidebar-mode-menu {
+    display: flex;
+  }
+
+  .kura-app .kura-sidebar-left[data-mode='compact'] .kura-compact-rail .kura-btn-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.kura-compact-rail [role='tab'][aria-selected='true'] {
+  box-shadow: inset 3px 0 0 var(--accent-cyan);
+}
+
+.kura-sidebar-mode-menu {
+  position: absolute;
+  top: calc(50% + 28px);
+  left: calc(100% + 4px);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 4px;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-hud);
+}
+
+.kura-sidebar-mode-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kura-sidebar-mode-menu button:hover,
+.kura-sidebar-mode-menu button:focus-visible {
+  background: var(--bg-hover);
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: -2px;
+}
+
+.kura-sidebar-mode-menu .kura-mode-check {
+  width: 14px;
+  display: inline-flex;
+}
+
+/* ---- Medir: panel acoplado al borde elegido, angosto y con la lista desplazable ---- */
+@media (width > 900px) {
+  .kura-measure-panel.is-docked {
+    position: absolute;
+    top: var(--kura-measure-top, 52px);
+    width: 232px;
+    max-width: 232px;
+    max-height: calc(100% - var(--kura-measure-top, 52px) - 64px);
+    z-index: 12;
+  }
+
+  .kura-measure-panel.is-docked.is-left {
+    left: 0;
+  }
+
+  .kura-measure-panel.is-docked.is-right {
+    right: 0;
+    /* Debajo del cubo de vistas. */
+    top: 150px;
+  }
+
+  .kura-measure-panel.is-docked.is-collapsed {
+    width: auto;
+    min-width: 0;
+  }
+}

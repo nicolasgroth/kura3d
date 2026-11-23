@@ -61,6 +61,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { viewPrefsPaletteItems } from './viewPrefsPaletteItems';
 import { Boxes as BoxesIcon, Group as GroupIcon, Merge as MergeIcon, Ungroup as UngroupIcon } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
@@ -108,6 +109,7 @@ export const CommandPalette: React.FC = () => {
   const setUiDensity = useKuraStore((s) => s.setUiDensity);
   const toggleZenMode = useKuraStore((s) => s.toggleZenMode);
   const sectionPlane = useKuraStore((s) => s.sectionPlane);
+  const showBed = useKuraStore((s) => s.showBed);
   const setSectionPlane = useKuraStore((s) => s.setSectionPlane);
   const aiConfig = useKuraStore((s) => s.aiConfig);
   const selectedIds = useKuraStore((s) => s.selectedIds);
@@ -739,6 +741,7 @@ export const CommandPalette: React.FC = () => {
         icon: <Columns2 size={15} />,
         run: () => setUiDensity(uiDensity === 'compact' ? 'full' : 'compact'),
       },
+      ...viewPrefsPaletteItems(language, catView, showBed),
       {
         id: 'view-zen',
         label: t(language, 'cmd.view.zen'),
@@ -887,6 +890,7 @@ export const CommandPalette: React.FC = () => {
     colorScheme,
     uiDensity,
     sectionPlane.enabled,
+    showBed,
     createPrimitive,
     addSubtractHelperPrimitive,
     applyHolesOnSolids,
