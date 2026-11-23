@@ -1,6 +1,6 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 23:10, con el pulido de Medir integrado.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 23:25, con la reevaluación de usabilidad en curso.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
@@ -8,7 +8,6 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 | Funcionalidad | Estado |
 |---|---|
-| Importación, memoria: leer el archivo dentro del Worker sin copias, tope práctico de 256 MiB por archivo y tope por lote, borrador de recuperación antes de procesar un archivo grande, tope propio para `.mtl`, botón "Reparar malla" en el aviso de modelo abierto | En curso desde las 22:45 |
 | Dependencias: de las 9 actualizaciones que propone Dependabot, 2 pasan todo y aportan (TypeScript 7 y lucide-react); están en la rama local `chore/deps-2026-11` | Esperando la decisión del autor (ver CONSULTAS_PROYECTO.md) |
 | Ahuecado con rejilla adaptativa en piezas grandes y dividir más rápido en modelos de millones de triángulos | Pendiente |
 
@@ -29,6 +28,7 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Pintura por caras rápida; operaciones de creación en el Worker | QA aprobó sin bloqueos; falta medir el pincel con GPU real |
 | Grabar sobre un relieve ya no da el error falso de profundidad; 3MF determinista (misma escena, mismos bytes); auditoría de secretos: claves de IA y token MCP nunca van a `localStorage` ni a logs, ahora con prueba que lo hace cumplir | Implementado con pruebas; sin QA en navegador |
 | Grupos y árbol de escena: Agrupar (Ctrl+G) y Desagrupar (Ctrl+Mayús+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ojo, candado, renombrar, arrastrar, teclado), manipulador del conjunto con escala proporcional, "Combinar en un objeto" y "Separar cuerpos", exportar un grupo como un archivo o uno por objeto, comandos de bus y MCP | QA re-verificó: renombrar, teclado del árbol, ojo del grupo y reglas, corregidos. Sin veredicto: escalar con el gizmo (no logró arrastrar el tirador) y separar cuerpos con colores (no lo alcanzó; lo cubre una prueba de navegador). Ya aprobado antes: agrupar, anidar, deshacer, guardar y reabrir, combinar, exportar, atajos, 390 px, piezas de división en el árbol |
+| Importación con memoria acotada: el archivo se lee dentro del Worker sin copias, tope de 256 MiB por archivo y 512 MiB por lote, borrador de recuperación antes de un archivo grande, error claro si falta memoria, botón "Reparar malla" en el aviso de modelo abierto. Importar el busto de 113 MB bajó de 386 a unos 178 MB de memoria y de 2,4 a 1,6 s | Integrado con pruebas; sin verificar en navegador ni en escritorio |
 | Importar 3MF reales de slicer: lee archivos grandes de Bambu y Orca (el de 42 MB que se rechazaba), agrupa por placas con los nombres del slicer, conserva conjuntos montados, rechaza coordenadas absurdas | Integrado tras dos revisiones de seguridad independientes (13 hallazgos corregidos, cada uno con su prueba hostil); falta QA en navegador |
 | Integración continua en GitHub: fallaba en cada push por dependencias a medio instalar; corregida, con cancelación de corridas superadas y sin correr por cambios solo de documentación. Dependabot mensual y agrupado | Corregido; confirmando la primera corrida completa en verde |
 | Reparar malla (nueva): diagnóstico de agujeros, aristas con más de dos caras, caras duplicadas o degeneradas y normales; reparación por etapas verificada por el motor; bordes abiertos resaltados; botón en el error de malla inválida, menú, paleta y panel de análisis; también por MCP. El busto real con 13 aristas abiertas queda utilizable en 5 s | Implementado con pruebas; sin verificación visual; falta QA |
@@ -45,7 +45,7 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 
 ## En evaluación
 
-Quinta ronda cerrada el 22-nov: **usabilidad 76 · código 85 · funcional 86** (ronda 4: 70 · 79 · 76). Código y funcional alcanzan por primera vez el mínimo de 85; usabilidad no. Detalle por bloque en [EVALUACIONES.md](EVALUACIONES.md). Tras las correcciones se reevalúa usabilidad con un evaluador nuevo.
+Reevaluación de usabilidad en curso desde las 23:15 (evaluador nuevo, a ciegas, 20 bloques que incluyen grupos, Medir, reparar malla y el menú nuevo). Quinta ronda: **usabilidad 76 · código 85 · funcional 86**; el mínimo es 85 en los tres. Detalle en [EVALUACIONES.md](EVALUACIONES.md).
 
 ## Lista
 
