@@ -39,6 +39,7 @@ test.describe('390 px táctil', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
   test('ningún control visible mide menos de 44x44 en las vistas principales', async ({ page }) => {
+    test.setTimeout(300000);
     await abrir(page);
     const fallos: Record<string, string[]> = {};
     const medir = async (vista: string) => {

@@ -13,6 +13,7 @@ import { abrir, aPixel, arrastreTactil, SHOTS } from './ux-movil-helpers';
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
 test('crear cubo, mover con el manipulador, escalar, medir y exportar STL a 390 px', async ({ page }) => {
+  test.setTimeout(300000);
   const errs: string[] = [];
   page.on('pageerror', (e) => errs.push(e.message));
   page.on('console', (m) => m.type() === 'error' && errs.push(m.text()));

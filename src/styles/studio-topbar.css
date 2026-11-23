@@ -87,11 +87,7 @@
   font-size: 12px;
 }
 
-@media (max-width: 1220px) {
-  .kura-tool-label {
-    display: none;
-  }
-}
+/* Los rótulos de herramientas los quita `TopBar` (clase is-compact) solo cuando no caben. */
 
 .kura-brand {
   display: flex;
