@@ -28,11 +28,13 @@ import {
 import { applyTransformToMesh, normalizeMeshToBed } from './primitives';
 import {
   distanceFieldOfManifold,
+  estimateHollowWall,
   inwardOffset,
   lowestPoint,
   measureWallThickness,
   type WallThicknessStats,
 } from './solidOffset';
+import { assertHollowEffective, hollowMaxWallMm } from './hollowVerify';
 
 /** Resultado detallado del ahuecado. */
 export interface HollowResult {
@@ -109,6 +111,7 @@ export async function hollowMeshDetailed(
     const field = distanceFieldOfManifold(outer);
     const offset = inwardOffset(wasm, outer, t, undefined, field);
     const inner = own(offset.inner);
+    const measureField = offset.field ?? field;
     if (inner.isEmpty() || inner.volume() < 1e-6) {
       // La caja admitía la pared, pero la forma es más delgada que dos paredes en todas partes.
       throw new EngineError('HOLLOW_NO_CAVITY', { thickness: t, minDim });
@@ -116,7 +119,7 @@ export async function hollowMeshDetailed(
 
     // Verificación: la cavidad debe quedar dentro y a ≥ t (menos tolerancia de mundo) de la superficie
     const tolerance = Math.max(0.02, t * 0.05);
-    const wall = offset.wall ?? measureWallThickness(field, inner);
+    const wall = offset.wall ?? measureWallThickness(measureField, inner);
     const escaped = own(inner.subtract(outer)).volume();
     if (wall.minMm < t - tolerance || escaped > 1e-6 * Math.max(1, outer.volume())) {
       throw new EngineError('HOLLOW_WALL_BREACH', { thickness: t, measured: wall.minMm });
@@ -124,11 +127,19 @@ export async function hollowMeshDetailed(
 
     const warnings: EngineWarning[] = [];
     if (mergedShells) warnings.push(engineWarning('HOLLOW_SHELLS_MERGED', { count: shells.length }));
+    if (offset.selfIntersecting) warnings.push(engineWarning('HOLLOW_SELF_INTERSECTING', {}));
     if (offset.levelMarginMm > t * 0.1) {
-      warnings.push(engineWarning('HOLLOW_COARSE_GRID', { thickness: t, maxWall: wall.maxMm }));
+      // Misma fuente que el panel (`estimateHollowWall`): el aviso y la estimación previa no se contradicen.
+      warnings.push(engineWarning('HOLLOW_COARSE_GRID', { thickness: t, maxWall: hollowMaxWallMm([dx, dy, dz], t) }));
     }
 
-    let result = own(withoutJunkShells(wasm, own(outer.subtract(inner)), outer.volume()));
+    // Con una malla que se cruza a sí misma la resta de Manifold no es fiable (dejaba la pieza igual). La
+    // cavidad está a ≥ t de toda superficie, sin cruces: la diferencia es exactamente la pieza más la
+    // cavidad invertida, sin booleana.
+    const carved = offset.selfIntersecting
+      ? own(joinDisjoint(wasm, [outer, own(insideOut(wasm, inner))], registry, obj.color))
+      : own(outer.subtract(inner));
+    let result = own(withoutJunkShells(wasm, carved, outer.volume(), registry, obj.color));
     const cavities = inner.decompose().filter((c) => {
       own(c);
       return Math.abs(c.volume()) > junkVolume(outer.volume());
@@ -161,10 +172,20 @@ export async function hollowMeshDetailed(
     }
 
     // Colapsa triángulos colineales residuales de la grilla (área nula) sin mover la superficie
-    result = own(withoutJunkShells(wasm, own(result.simplify(1e-4)), outer.volume()));
+    result = own(withoutJunkShells(wasm, own(result.simplify(1e-4)), outer.volume(), registry, obj.color));
     // Volvemos al espacio local del objeto
     const local = own(result.scale([1 / obj.scale[0], 1 / obj.scale[1], 1 / obj.scale[2]]));
     const mesh = normalizeMeshToBed(manifoldToMeshData(local, registry?.idToColor));
+    // Nunca informar éxito sin cavidad real: el volumen debe bajar lo que mide la cavidad y la pared
+    // medida debe parecerse a la pedida (si no, la pieza queda igual y se dice por qué).
+    assertHollowEffective({
+      thickness: t,
+      volumeBefore: outer.volume(),
+      volumeAfter: result.volume(),
+      cavityVolume: inner.volume(),
+      wall,
+      expectedMaxWallMm: estimateHollowWall([dx, dy, dz], t).maxWallMm,
+    });
     return {
       mesh,
       wall,
@@ -177,18 +198,70 @@ export async function hollowMeshDetailed(
   }
 }
 
+/** Mismo sólido con la orientación invertida (volumen negativo): una cavidad lista para componer. */
+function insideOut(wasm: Awaited<ReturnType<typeof initManifoldEngine>>, m: Manifold): Manifold {
+  const mesh = m.getMesh();
+  const tri = new Uint32Array(mesh.triVerts);
+  for (let i = 0; i < tri.length; i += 3) {
+    const b = tri[i + 1];
+    tri[i + 1] = tri[i + 2];
+    tri[i + 2] = b;
+  }
+  return new wasm.Manifold(new wasm.Mesh({ numProp: mesh.numProp, vertProperties: mesh.vertProperties, triVerts: tri }));
+}
+
+/**
+ * Une componentes disjuntas en un solo Manifold armándolo desde sus mallas. `Manifold.compose` descarta
+ * las de volumen negativo (cavidades): con él, quitar un casco basura o sumar la cavidad invertida dejaba
+ * la pieza maciza con "Ahuecado aplicado". Conserva los colores de cara.
+ */
+function joinDisjoint(
+  wasm: Awaited<ReturnType<typeof initManifoldEngine>>,
+  parts: Manifold[],
+  registry: ReturnType<typeof createColorRegistry> | null,
+  color: string
+): Manifold {
+  const meshes = parts.map((p) => manifoldToMeshData(p, registry?.idToColor));
+  const vTotal = meshes.reduce((n, m) => n + m.positions.length, 0);
+  const iTotal = meshes.reduce((n, m) => n + m.indices.length, 0);
+  const positions = new Float32Array(vTotal);
+  const indices = new Uint32Array(iTotal);
+  const withColors = registry !== null;
+  const faceColors: string[] = [];
+  let vo = 0;
+  let io = 0;
+  for (const m of meshes) {
+    positions.set(m.positions, vo);
+    const base = vo / 3;
+    for (let i = 0; i < m.indices.length; i++) indices[io + i] = m.indices[i] + base;
+    if (withColors) {
+      const n = m.indices.length / 3;
+      for (let f = 0; f < n; f++) faceColors.push(m.faceColors?.[f] ?? color);
+    }
+    vo += m.positions.length;
+    io += m.indices.length;
+  }
+  return meshDataToManifold(wasm, { positions, indices, ...(withColors ? { faceColors } : {}) }, registry?.colorToId, color);
+}
+
 /** Volumen bajo el cual un cuerpo del ahuecado es basura numérica (cascos planos de volumen ~0). */
 const junkVolume = (total: number) => Math.max(1e-3, 1e-9 * Math.abs(total));
 
 /** Quita cuerpos de volumen nulo (p. ej. un casco de 6 triángulos que deja la grilla). */
-function withoutJunkShells(wasm: Awaited<ReturnType<typeof initManifoldEngine>>, m: Manifold, total: number): Manifold {
+function withoutJunkShells(
+  wasm: Awaited<ReturnType<typeof initManifoldEngine>>,
+  m: Manifold,
+  total: number,
+  registry: ReturnType<typeof createColorRegistry> | null,
+  color: string
+): Manifold {
   const parts = m.decompose();
   const keep = parts.filter((p) => Math.abs(p.volume()) > junkVolume(total));
   if (keep.length === parts.length) {
     for (const p of parts) p.delete();
     return m.translate([0, 0, 0]);
   }
-  const out = wasm.Manifold.compose(keep);
+  const out = joinDisjoint(wasm, keep, registry, color);
   for (const p of parts) p.delete();
   return out;
 }

@@ -39,6 +39,8 @@ export const RecoveryStatusNotice: React.FC<{ status: RecoveryStatus; failure: R
   const language = useKuraStore((s) => s.language);
   const saveProject = useKuraStore((s) => s.saveProject);
   const projectBusy = useKuraStore((s) => s.projectBusy);
+  // Con una operación en curso la escena está por cambiar: el borrador no puede darse por guardado.
+  const operationRunning = useKuraStore((s) => Boolean(s.busyOperation));
   const unavailable = status === 'unavailable';
   const changes = useRef(0);
 
@@ -66,7 +68,7 @@ export const RecoveryStatusNotice: React.FC<{ status: RecoveryStatus; failure: R
   if (!unavailable) {
     return (
       <span role="status">
-        {t(language, status === 'ready' ? 'recovery.status.ready' : 'recovery.status.working')}
+        {t(language, status !== 'ready' ? 'recovery.status.working' : operationRunning ? 'realesMotor.recoveryPending' : 'recovery.status.ready')}
       </span>
     );
   }

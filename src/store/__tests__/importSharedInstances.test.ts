@@ -54,18 +54,9 @@ describe('instancias repetidas de un 3MF', () => {
     a.slice(1).forEach((p, i) => expect(p.translation?.[0]).toBeCloseTo((i + 1) * 15, 5));
   });
 
-  it('en la escena las piezas comparten malla, un aviso por malla única y «Reparar todas» repara en serie', async () => {
-    const order: string[] = [];
-    let running = 0;
-    const repairObjectMesh = vi.fn(async (id: string) => {
-      expect(running).toBe(0);
-      running++;
-      order.push(id);
-      await new Promise((r) => setTimeout(r, 0));
-      running--;
-      return null;
-    });
-    useKuraStore.setState({ repairObjectMesh });
+  it('en la escena las piezas comparten malla, un aviso por malla única y «Reparar todas» repara la malla una vez', async () => {
+    const repairObjectMeshes = vi.fn(async () => null);
+    useKuraStore.setState({ repairObjectMeshes });
     await get().importModelFiles([{ name: 'llaveros.3mf', read: async () => llaveros() }], { placement: 'original' });
     const objects = get().objects;
     expect(objects).toHaveLength(A_COUNT + B_COUNT);
@@ -80,8 +71,35 @@ describe('instancias repetidas de un 3MF', () => {
     expect(openToasts[0].text).toContain(`usada en ${A_COUNT} piezas`);
     expect(openToasts[0].action?.label).toBe('Reparar todas');
     openToasts[0].action!.run();
-    await vi.waitFor(() => expect(order).toHaveLength(A_COUNT));
-    expect(new Set(order)).toEqual(new Set(llavero.map((o) => o.id)));
+    // Un solo grupo: las 30 piezas que comparten la malla abierta.
+    expect(repairObjectMeshes).toHaveBeenCalledExactlyOnceWith([llavero.map((o) => o.id)]);
+  });
+
+  it('«Reparar todas» con varias mallas abiertas: cada malla se repara una vez, todas quedan cerradas y un aviso resume', async () => {
+    const twoOpen = pack3mf({
+      '3D/3dmodel.model': modelXml(
+        `<object id="1" name="Llavero">${openTetraXml(10)}</object><object id="2" name="Dije">${openTetraXml(6)}</object>`,
+        [0, 1, 2].map((i) => `<item objectid="1" transform="${translate(i * 15, 0, 0)}"/>`).join('') +
+          `<item objectid="2" transform="${translate(0, 40, 0)}"/>`,
+      ),
+    });
+    await get().importModelFiles([{ name: 'dos.3mf', read: async () => twoOpen }], { placement: 'original' });
+    const toast = get().toasts.find((t) => t.action?.label === 'Reparar todas');
+    expect(toast).toBeTruthy();
+    toast!.action!.run();
+    await vi.waitFor(() => expect(get().toasts.some((t) => t.text.includes('Mallas reparadas y cerradas'))).toBe(true));
+    const summary = get().toasts.find((t) => t.text.includes('Mallas reparadas y cerradas'))!;
+    expect(summary.text).toContain('2 de 2 (4 piezas)');
+    expect(summary.kind).toBe('success');
+    // Un solo aviso de reparación (no uno por pieza)
+    expect(get().toasts.filter((t) => t.text.startsWith('Malla reparada:'))).toHaveLength(0);
+    const objects = get().objects;
+    const llaveros3 = objects.filter((o) => o.name.startsWith('Llavero'));
+    expect(new Set(llaveros3.map((o) => o.mesh)).size).toBe(1);
+    for (const o of objects) {
+      const d = await get().diagnoseObjectMesh(o.id, { highlight: false });
+      expect(d?.closed, o.name).toBe(true);
+    }
   });
 
   it('modificar una pieza no toca la malla compartida de las demás', async () => {

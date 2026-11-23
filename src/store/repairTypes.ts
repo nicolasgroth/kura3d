@@ -28,5 +28,10 @@ export interface RepairSliceState {
   setOpenEdgesVisible: (id: string, visible: boolean) => Promise<void>;
   /** Repara la malla del objeto en el Worker; un paso de deshacer. `null` si falló o no aplica. */
   repairObjectMesh: (id: string, options?: Omit<engine.MeshRepairOptions, 'onProgress'>) => Promise<engine.MeshRepairReport | null>;
+  /**
+   * «Reparar todas»: repara cada grupo de piezas que comparten malla una sola vez, aplica el resultado a
+   * todas en un paso de deshacer y avisa con un resumen (cerradas / no cerradas). `null` si no aplica.
+   */
+  repairObjectMeshes: (groups: string[][]) => Promise<{ closed: number; total: number; failed: string[] } | null>;
   clearMeshDiagnosis: () => void;
 }

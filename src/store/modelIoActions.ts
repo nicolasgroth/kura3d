@@ -102,6 +102,7 @@ export interface ModelIoDeps {
   openSimplify?: (id: string) => void;
   /** Repara la malla de un objeto (acción del aviso de malla abierta). */
   repairMesh?: (id: string) => void | Promise<unknown>;
+  repairMeshes?: (groups: string[][]) => void | Promise<unknown>;
   /** Separa los cuerpos sueltos de un objeto en piezas (acción del aviso de varios cuerpos). */
   separateBodies?: (id: string) => void;
   /** Asegura un borrador de recuperación (si hay cambios sin guardar) antes de leer un archivo grande. */
@@ -221,7 +222,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
     if (wasEmpty || placement === 'original') get().requestCameraPreset('fit', createdIds);
     else get().requestCameraPreset('ensure', createdIds);
 
-    const noticeDeps = { tr, language: get().language, addToast: get().addToast, openSimplify: deps.openSimplify, repairMesh: deps.repairMesh, separateBodies: deps.separateBodies };
+    const noticeDeps = { tr, language: get().language, addToast: get().addToast, openSimplify: deps.openSimplify, repairMesh: deps.repairMesh, repairMeshes: deps.repairMeshes, separateBodies: deps.separateBodies };
     reportImportNotices(entries, models.length, models[0].fileName, noticeDeps);
     for (const notice of notices) get().addToast(notice, 'info');
     reportUnitHint(plainModels, entries);

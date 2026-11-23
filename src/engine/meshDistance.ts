@@ -2,7 +2,8 @@
  * @file src/engine/meshDistance.ts
  * @description Campo de distancia con signo (SDF) exacto de una malla triangular cerrada:
  * BVH de triángulos en arreglos planos, punto más cercano por triángulo (Ericson) y signo
- * robusto por pseudo-normales ponderadas por ángulo (Bærentzen & Aanæs). Base del offset
+ * robusto por pseudo-normales ponderadas por ángulo (Bærentzen & Aanæs) o, en mallas que se
+ * autointersecan, por número de vueltas de un rayo (regla no nula = unión). Base del offset
  * real (ahuecado y núcleos de molde) y de la medición de espesor mínimo de pared.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -28,17 +29,31 @@ export interface MeshDistanceField {
   unsignedDistance(x: number, y: number, z: number, maxDistance?: number): number;
   /** Caja envolvente `[minX, minY, minZ, maxX, maxY, maxZ]`. */
   bounds: [number, number, number, number, number, number];
+  /** Criterio de signo en uso. */
+  signMode: DistanceSignMode;
+  /** Interior por número de vueltas ≠ 0 (robusto ante autointersecciones; un rayo por consulta). */
+  insideByWinding(x: number, y: number, z: number): boolean;
+  /** El mismo campo (comparte el BVH) con otro criterio de signo. */
+  withSignMode(mode: DistanceSignMode): MeshDistanceField;
 }
 
-import { createEdgeNormalTable, selectNth } from './meshDistanceSupport';
+import { createEdgeNormalTable, createSignBallCache, selectNth } from './meshDistanceSupport';
 
 const LEAF_SIZE = 4;
+
+/**
+ * Cómo se decide dentro/fuera. `pseudoNormal` (por defecto) es exacto y barato en mallas sin
+ * autointersecciones; `winding` cuenta los cruces con signo de un rayo y trata como interior todo
+ * punto con número de vueltas ≠ 0, así una cáscara que se cruza a sí misma (bustos de terceros
+ * "reparados") se lee como la unión de lo que encierra, sin regiones de signo contradictorio.
+ */
+export type DistanceSignMode = 'pseudoNormal' | 'winding';
 
 /**
  * Construye el campo de distancia de una malla 2-manifold cerrada y orientada (normales salientes).
  * Coste de construcción O(n log n); cada consulta es ~O(log n).
  */
-export function buildMeshDistanceField(mesh: DistanceMeshInput): MeshDistanceField {
+export function buildMeshDistanceField(mesh: DistanceMeshInput, signMode: DistanceSignMode = 'pseudoNormal'): MeshDistanceField {
   const triCount = Math.floor(mesh.indices.length / 3);
   const vertCount = Math.floor(mesh.positions.length / 3);
   const P = Float64Array.from(mesh.positions as ArrayLike<number>);
@@ -282,10 +297,11 @@ export function buildMeshDistanceField(mesh: DistanceMeshInput): MeshDistanceFie
   };
 
   /**
-   * Paridad de cruces de un rayo (Möller–Trumbore sobre el BVH). Devuelve el número de cruces o
-   * -1 si algún cruce cae casi sobre una arista/vértice (ambiguo: se reintenta con otra dirección).
+   * Cruces con signo de un rayo (Möller–Trumbore sobre el BVH): +1 al salir por una cara saliente,
+   * −1 al entrar. Su suma es el número de vueltas (su paridad, la de los cruces). Devuelve NaN si algún
+   * cruce cae casi sobre una arista/vértice (ambiguo: se reintenta con otra dirección).
    */
-  const rayCrossings = (x: number, y: number, z: number, dx: number, dy: number, dz: number): number => {
+  const rayWinding = (x: number, y: number, z: number, dx: number, dy: number, dz: number): number => {
     const ix = 1 / dx, iy = 1 / dy, iz = 1 / dz;
     let hits = 0;
     let sp = 0;
@@ -324,8 +340,8 @@ export function buildMeshDistanceField(mesh: DistanceMeshInput): MeshDistanceFie
         if (v < -1e-9 || u + v > 1 + 1e-9) continue;
         const dist = (e2x * qx + e2y * qy + e2z * qz) * inv;
         if (dist <= 0) continue;
-        if (u < 1e-7 || v < 1e-7 || u + v > 1 - 1e-7) return -1;
-        hits++;
+        if (u < 1e-7 || v < 1e-7 || u + v > 1 - 1e-7) return NaN;
+        hits += det > 0 ? -1 : 1;
       }
     }
     return hits;
@@ -335,32 +351,50 @@ export function buildMeshDistanceField(mesh: DistanceMeshInput): MeshDistanceFie
   const RAY_DIRS: ReadonlyArray<[number, number, number]> = [
     [0.5773, 0.6197, 0.5317], [-0.4127, 0.7913, -0.4512], [0.8231, -0.3119, 0.4746], [-0.2671, -0.5893, 0.7625],
   ];
-  const insideByRay = (x: number, y: number, z: number): boolean => {
+  const insideByRay = (x: number, y: number, z: number, mode: DistanceSignMode): boolean => {
     for (const [dx, dy, dz] of RAY_DIRS) {
-      const hits = rayCrossings(x, y, z, dx, dy, dz);
-      if (hits >= 0) return (hits & 1) === 1;
+      const w = rayWinding(x, y, z, dx, dy, dz);
+      if (!Number.isNaN(w)) return mode === 'winding' ? w !== 0 : (Math.abs(w) & 1) === 1;
     }
     return false;
   };
 
   const rootBox = triCount > 0 ? Array.from(nodeBox.subarray(0, 6)) : [0, 0, 0, 0, 0, 0];
 
-  return {
-    bounds: rootBox as [number, number, number, number, number, number],
-    signedDistance(x, y, z) {
-      nearest(x, y, z, Infinity);
-      if (bestTri < 0) return -Infinity;
-      return Math.sqrt(bestD2) * signOfBest(x, y, z);
-    },
-    boundedSignedDistance(x, y, z, cap) {
-      nearest(x, y, z, cap * cap);
-      if (bestTri >= 0) return Math.sqrt(bestD2) * signOfBest(x, y, z);
-      if (triCount === 0) return -cap;
-      return insideByRay(x, y, z) ? cap : -cap;
-    },
-    unsignedDistance(x, y, z, maxDistance = Infinity) {
-      nearest(x, y, z, maxDistance === Infinity ? Infinity : maxDistance * maxDistance);
-      return bestTri < 0 ? maxDistance : Math.sqrt(bestD2);
-    },
+  const fieldFor = (mode: DistanceSignMode): MeshDistanceField => {
+    // Con número de vueltas, un rayo por consulta: la caché de bolas vacías evita casi todos.
+    const balls = mode === 'winding' ? createSignBallCache() : null;
+    const windingSign = (x: number, y: number, z: number, d: number): number => {
+      const known = balls!.lookup(x, y, z);
+      if (known !== 0) return known;
+      const s = insideByRay(x, y, z, mode) ? 1 : -1;
+      balls!.store(x, y, z, d, s);
+      return s;
+    };
+    const signAt = (x: number, y: number, z: number): number =>
+      balls ? windingSign(x, y, z, Math.sqrt(bestD2)) : signOfBest(x, y, z);
+    return {
+      bounds: rootBox as [number, number, number, number, number, number],
+      signMode: mode,
+      signedDistance(x, y, z) {
+        nearest(x, y, z, Infinity);
+        if (bestTri < 0) return -Infinity;
+        return Math.sqrt(bestD2) * signAt(x, y, z);
+      },
+      boundedSignedDistance(x, y, z, cap) {
+        nearest(x, y, z, cap * cap);
+        if (bestTri >= 0) return Math.sqrt(bestD2) * signAt(x, y, z);
+        if (triCount === 0) return -cap;
+        return (balls ? windingSign(x, y, z, cap) : insideByRay(x, y, z, mode) ? 1 : -1) * cap;
+      },
+      unsignedDistance(x, y, z, maxDistance = Infinity) {
+        nearest(x, y, z, maxDistance === Infinity ? Infinity : maxDistance * maxDistance);
+        return bestTri < 0 ? maxDistance : Math.sqrt(bestD2);
+      },
+      insideByWinding: (x, y, z) => insideByRay(x, y, z, 'winding'),
+      withSignMode: (next) => (next === mode ? self : fieldFor(next)),
+    };
   };
+  const self = fieldFor(signMode);
+  return self;
 }

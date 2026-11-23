@@ -85,3 +85,40 @@ export function selectNth(order: Uint32Array, start: number, end: number, nth: n
     else return;
   }
 }
+
+/**
+ * Caché de signo por bolas vacías: si un punto `p` está a distancia sin signo `d` de la superficie,
+ * todo `q` con |q − p| < d tiene su mismo signo (la bola no toca la malla). Guarda las últimas
+ * `size` consultas; el level-set y la medición recorren puntos vecinos en orden, así que casi todas
+ * las consultas lejos de la superficie se resuelven sin lanzar un rayo.
+ */
+export function createSignBallCache(size = 32) {
+  const data = new Float64Array(size * 5); // x, y, z, r², signo
+  let count = 0;
+  let next = 0;
+  return {
+    /** Signo conocido para (x, y, z) o 0 si ninguna bola guardada lo contiene. */
+    lookup(x: number, y: number, z: number): number {
+      for (let k = 0; k < count; k++) {
+        const o = k * 5;
+        const dx = x - data[o], dy = y - data[o + 1], dz = z - data[o + 2];
+        if (dx * dx + dy * dy + dz * dz < data[o + 3]) return data[o + 4];
+      }
+      return 0;
+    },
+    /** Registra la bola de radio `d` (distancia sin signo exacta o cota inferior) con su signo. */
+    store(x: number, y: number, z: number, d: number, sign: number): void {
+      // Margen relativo: evita reutilizar en el borde exacto de la bola por redondeo.
+      const r = d * (1 - 1e-6);
+      if (!(r > 0)) return;
+      const o = next * 5;
+      data[o] = x;
+      data[o + 1] = y;
+      data[o + 2] = z;
+      data[o + 3] = r * r;
+      data[o + 4] = sign;
+      next = (next + 1) % size;
+      if (count < size) count++;
+    },
+  };
+}
