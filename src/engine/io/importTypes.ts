@@ -12,6 +12,7 @@ import type { EngineWarning } from '../engineErrors';
 import type { ImportCluster } from './importClusters';
 import type { ModelImportLimits } from './importErrors';
 import type { KuraSceneGroupMeta, KuraSceneObjectMeta } from './kuraSceneMeta';
+import type { UnitHint } from './unitHint';
 
 /** Formatos de modelo que Kura3D sabe leer. */
 export type ModelImportFormat = 'stl' | 'obj' | '3mf' | 'ply';
@@ -62,6 +63,8 @@ export interface ImportedModel {
    * reacomodo ni conjuntos. Cada pieza trae su estado en `part.kura`.
    */
   kuraScene?: { groups: KuraSceneGroupMeta[] };
+  /** Unidades dudosas (STL/OBJ/PLY diminuto o enorme): escalas sugeridas; no se aplica ninguna sola. */
+  unitHint?: UnitHint;
 }
 
 /** Opciones comunes de lectura. */

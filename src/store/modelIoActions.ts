@@ -26,6 +26,7 @@ import { exportNotices, importErrorMessage } from './modelImportNotices';
 import { readModelBatch } from './modelImportBatch';
 import { isKuraScene, restoreKuraScene } from './kuraSceneRestore';
 import { reportImportNotices, type ImportedEntry } from './importResultNotices';
+import { maxDimension, rescaleAsBlock } from './unitRescale';
 
 export { importErrorMessage };
 
@@ -209,11 +210,50 @@ export function createModelIoActions(deps: ModelIoDeps) {
     const noticeDeps = { tr, language: get().language, addToast: get().addToast, openSimplify: deps.openSimplify, repairMesh: deps.repairMesh, separateBodies: deps.separateBodies };
     reportImportNotices(entries, models.length, models[0].fileName, noticeDeps);
     for (const notice of notices) get().addToast(notice, 'info');
+    reportUnitHint(plainModels, entries);
     deps.reportWarnings?.(models.flatMap((m) => m.warnings ?? []));
     if (failures.length > 0) {
       get().addToast(tCount(get().language, { one: 'import.partialFailed.one', other: 'import.partialFailed.other' }, failures.length, { list: failures.join(' · ') }), 'error');
     }
     return true;
+  }
+
+  /**
+   * Reescala ×`factor` los objetos como un bloque, en un paso deshacible (corrección de unidades).
+   * Devuelve false si no queda ninguno de esos objetos o el factor no es válido.
+   */
+  function rescaleObjects(ids: readonly string[], factor: number): boolean {
+    const wanted = new Set(ids);
+    const targets = get().objects.filter((o) => wanted.has(o.id));
+    if (targets.length === 0 || !Number.isFinite(factor) || factor <= 0) return false;
+    const scaled = new Map(rescaleAsBlock(targets, factor).map((o) => [o.id, o]));
+    pushHistory();
+    set((prev) => ({ objects: prev.objects.map((o) => scaled.get(o.id) ?? o) }));
+    const fmt = new Intl.NumberFormat(get().language, { maximumFractionDigits: 2 });
+    get().addToast(tr('realesMotor.unitRescaled', { name: targets[0].name, factor: fmt.format(factor), size: fmt.format(maxDimension([...scaled.values()])) }), 'success');
+    get().requestCameraPreset('fit', [...scaled.keys()]);
+    return true;
+  }
+
+  /** Unidades dudosas del primer archivo sin unidad que las tenga: aviso con la escala más probable. */
+  function reportUnitHint(models: readonly engine.ImportedModel[], entries: readonly ImportedEntry[]) {
+    const model = models.find((m) => m.unitHint);
+    const hint = model?.unitHint;
+    if (!model || !hint) return;
+    const ids = entries.filter((e) => model.parts.includes(e.part)).map((e) => e.object.id);
+    const best = hint.suggestions[0];
+    const fmt = new Intl.NumberFormat(get().language, { maximumFractionDigits: hint.maxDimensionMm < 10 ? 2 : 0 });
+    const factorFmt = new Intl.NumberFormat(get().language, { maximumFractionDigits: 3 });
+    get().addToast(
+      tr('realesMotor.unitDoubt', { name: model.fileName, size: fmt.format(hint.maxDimensionMm) }),
+      'info',
+      {
+        label: best.kind === 'fit'
+          ? tr('realesMotor.unitFit', { mm: Math.round(best.resultMm) })
+          : tr('realesMotor.unitScale', { factor: factorFmt.format(best.factor) }),
+        run: () => void rescaleObjects(ids, best.factor),
+      },
+    );
   }
 
   /** Objetos a exportar según el alcance (selector compartido con el Command Bus). */
@@ -290,5 +330,5 @@ export function createModelIoActions(deps: ModelIoDeps) {
     }
   }
 
-  return { importModelFiles, exportModel };
+  return { importModelFiles, exportModel, rescaleObjects };
 }

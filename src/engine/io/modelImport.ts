@@ -15,6 +15,7 @@ import { readOBJBuffer } from './obj';
 import { readPLY } from './ply';
 import { readSTL } from './stl';
 import { read3MF } from './threeMfImport';
+import { unitHintOf } from './unitHint';
 
 /** Extensiones de modelo importables (sin punto). */
 export const MODEL_IMPORT_EXTENSIONS: ModelImportFormat[] = ['stl', '3mf', 'obj', 'ply'];
@@ -37,8 +38,9 @@ export function parseModelFile(fileName: string, buffer: ArrayBuffer, options: M
   // Una escena de Kura3D vuelve exacta: sin reorientar normales ni buscar conjuntos.
   if (read.kuraScene) return { ...read, clusters: [] };
   const model = fixImportedOrientation(read);
-  // Conjuntos calculados una vez, aquí (en el Worker): colocación y agrupación los reutilizan.
-  return { ...model, clusters: findImportClusters(model) };
+  // Conjuntos y diagnóstico de unidades calculados una vez, aquí (en el Worker).
+  const unitHint = unitHintOf(model);
+  return { ...model, clusters: findImportClusters(model), ...(unitHint ? { unitHint } : {}) };
 }
 
 function readModelFile(fileName: string, buffer: ArrayBuffer, options: ModelParseOptions): ImportedModel {

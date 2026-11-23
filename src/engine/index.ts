@@ -90,6 +90,10 @@ export {
   type ModelImportErrorCode,
   type ModelParseOptions,
   type PlacedPart,
+  unitHintForSize,
+  type UnitHint,
+  type UnitSuggestion,
+  type UnitSuggestionKind,
 } from './ioFormats';
 
 export { generateMold, generateMoldDetailed, safeSpoutRadius, type GeneratedMold, type GeneratedMoldPart } from './molds';

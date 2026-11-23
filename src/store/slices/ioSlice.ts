@@ -173,6 +173,8 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
       if (files.length > 0) await get().importModelFiles(files, { placement });
     },
 
+    rescaleObjects: (ids, factor) => (rejectWhileBusy() ? false : modelIo.rescaleObjects(ids, factor)),
+
     importModelFiles: async (files, options) => {
       if (files.length === 0) return false;
       if (rejectWhileBusy()) return false;

@@ -439,6 +439,8 @@ export interface KuraStoreState {
   setImportPlacementMode: (mode: engine.ImportPlacementMode) => void;
   importMeshFromDialog: (placement?: engine.ImportPlacementMode) => Promise<void>;
   importModelFiles: (files: ModelImportSource[], options?: ModelImportOptions) => Promise<boolean>;
+  /** Reescala unos objetos ×factor como bloque, en un paso deshacible (corrección de unidades al importar). */
+  rescaleObjects: (ids: readonly string[], factor: number) => boolean;
   /** Exportación única (STL, 3MF, OBJ+MTL, GLB, PLY) de la selección o la escena. */
   exportModel: (request: ExportRequest) => Promise<boolean>;
   exportSceneStl: (onlySelected?: boolean) => Promise<boolean>;

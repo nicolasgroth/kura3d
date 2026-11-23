@@ -36,6 +36,7 @@ export {
   type ModelImportLimits,
 } from './io/importErrors';
 export type { ImportedModel, ImportedPart, ModelImportFormat, ModelParseOptions } from './io/importTypes';
+export { unitHintForSize, type UnitHint, type UnitSuggestion, type UnitSuggestionKind } from './io/unitHint';
 
 /** Opciones de las funciones históricas de importación. */
 export interface MeshImportOptions {
