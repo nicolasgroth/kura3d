@@ -21,13 +21,14 @@ const MODES: ReadonlyArray<{ mode: TransformMode; key: 'translate' | 'rotate' | 
   { mode: 'scale', key: 'scale', Icon: Scale3d },
 ];
 
-export const MobileTransformBar: React.FC = () => {
+/** `hidden`: con la hoja a altura completa no hay visor útil y la barra se solaparía con la cámara del HUD. */
+export const MobileTransformBar: React.FC<{ hidden?: boolean }> = ({ hidden = false }) => {
   const language = useKuraStore((s) => s.language);
   const transformMode = useKuraStore((s) => s.transformMode);
   const setTransformMode = useKuraStore((s) => s.setTransformMode);
   const activeTool = useKuraStore((s) => s.activeTool);
   const hasSelection = useKuraStore((s) => s.selectedIds.length > 0);
-  if (!hasSelection || activeTool === 'paint' || activeTool === 'measure') return null;
+  if (hidden || !hasSelection || activeTool === 'paint' || activeTool === 'measure') return null;
 
   return (
     <div className="kura-mobile-transform" role="toolbar" aria-label={t(language, 'uxm.transform.group')}>

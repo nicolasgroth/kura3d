@@ -105,9 +105,11 @@
 
 /* Textos que se cortaban: el aviso de rango y el consejo del visor ahora bajan de línea. */
 .kura-precision-input .kura-precision-error {
-  left: auto;
+  /* Del ancho del campo y pegado a su borde izquierdo: en una columna estrecha baja de línea en vez de salirse. */
+  left: 0;
   right: 0;
-  max-width: min(260px, 80vw);
+  width: auto;
+  max-width: none;
   white-space: normal;
   overflow: visible;
   text-overflow: clip;

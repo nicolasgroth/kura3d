@@ -205,13 +205,20 @@ export const SceneObjectList: React.FC = () => {
     listRef.current?.focus();
   };
 
-  /** Abre el menú del objeto de la fila (selecciona el objeto si no lo estaba). Los grupos no tienen menú. */
+  /** Abre el menú de la fila junto a ella (objeto o grupo); selecciona lo que no estuviera seleccionado. */
   const openRowMenu = (row: TreeRow, x: number, y: number, returnFocus: HTMLElement | null) => {
-    if (row.node.kind !== 'object') return;
-    const id = row.node.object.id;
-    if (!useKuraStore.getState().selectedIds.includes(id)) setSelection([id]);
+    if (row.node.kind === 'split') return;
+    if (row.node.kind === 'object') {
+      const id = row.node.object.id;
+      if (!useKuraStore.getState().selectedIds.includes(id)) setSelection([id]);
+      setActiveKey(row.key);
+      useContextMenuRequest.getState().open({ objectId: id, x, y, returnFocus });
+      return;
+    }
+    const group = row.node.group;
+    useKuraStore.getState().selectGroup(group.id);
     setActiveKey(row.key);
-    useContextMenuRequest.getState().open({ objectId: id, x, y, returnFocus });
+    useContextMenuRequest.getState().open({ objectId: null, groupId: group.id, x, y, returnFocus });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {

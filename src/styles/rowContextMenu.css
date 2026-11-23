@@ -1,0 +1,19 @@
+/**
+ * @file src/styles/rowContextMenu.css
+ * @description Capa del menú contextual de las filas del árbol de Escena: cubre la ventana (sin capturar
+ * eventos fuera del menú) para que el menú se ubique con coordenadas de pantalla junto a la fila.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-row-menu-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  pointer-events: none;
+}
+
+.kura-row-menu-layer > .kura-context-menu {
+  pointer-events: auto;
+}

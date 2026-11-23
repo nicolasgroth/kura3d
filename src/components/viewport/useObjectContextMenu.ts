@@ -7,7 +7,6 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useContextMenuRequest } from '../../store/contextMenuRequest';
 import { useKuraStore } from '../../store/useKuraStore';
 import { isContextMenuHandled } from './contextMenu/handledEvents';
 import { type ContextMenuState } from './viewportHelpers';
@@ -57,26 +56,6 @@ export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | 
     },
     [viewportRef],
   );
-
-  // Menú pedido desde el árbol de Escena (clic derecho o teclado en una fila): mismas acciones que el del objeto.
-  const request = useContextMenuRequest((s) => s.request);
-  const returnFocus = useRef<HTMLElement | null>(null);
-  useEffect(() => {
-    if (!request) return;
-    useContextMenuRequest.getState().clear();
-    const rect = viewportRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    returnFocus.current = request.returnFocus;
-    const x = Math.max(8, Math.min(request.x - rect.left, Math.max(8, rect.width - 308)));
-    const y = Math.max(8, Math.min(request.y - rect.top, Math.max(8, rect.height - 490)));
-    setContextMenu({ objectId: request.objectId, x, y });
-  }, [request, viewportRef]);
-  useEffect(() => {
-    if (contextMenu || !returnFocus.current) return;
-    const el = returnFocus.current;
-    returnFocus.current = null;
-    if (el.isConnected) el.focus({ preventScroll: true });
-  }, [contextMenu]);
 
   // Cerrar menú contextual con Escape o clic externo
   useEffect(() => {

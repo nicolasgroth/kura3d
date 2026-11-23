@@ -13,6 +13,7 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import { formatLocaleNumber } from '../i18n/numberLocale';
 import type { UnitSystem } from '../types/kura';
 import { evaluateExpression, unitFromSuffix, type ExpressionFailure } from '../utils/numericExpression';
 import '../styles/precisionInput.css';
@@ -407,7 +408,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
 
   const hasRange = typeof min === 'number' && typeof max === 'number';
   const rangeParams = hasRange
-    ? { min: formatDisplayValue(min, precision), max: formatDisplayValue(max, precision) }
+    ? { min: formatLocaleNumber(language, min, { maxFrac: precision }), max: formatLocaleNumber(language, max, { maxFrac: precision }) }
     : null;
   const errorText = invalid === 'range' && rangeParams
     ? t(language, 'precision.outOfRange', rangeParams)

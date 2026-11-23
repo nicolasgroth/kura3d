@@ -33,6 +33,7 @@ import { useFunctionKeys } from './components/useFunctionKeys';
 import { guardUnsavedChanges } from './utils/unsavedGuard';
 import { LOG_TAG } from './brand';
 import { ConfirmDialogHost } from './components/ConfirmDialogHost';
+import { RowContextMenuHost } from './components/scene/RowContextMenuHost';
 import { confirmDeleteSelection } from './components/scene/confirmDeleteSelection';
 import { NarrowPanelBar } from './components/NarrowPanelBar';
 import { useNarrowSheets } from './components/narrow/useNarrowSheets';
@@ -442,7 +443,7 @@ export const App: React.FC = () => {
         />
         <LeftSidebar />
         <Viewport3D />
-        <MobileTransformBar />
+        <MobileTransformBar hidden={visibleNarrowPanel !== null && sheets.height === 'full'} />
         <RightInspector precisionRequest={precisionRequest} />
         {/* Destino de los paneles de operación: en escritorio ocupan el lugar del inspector. */}
         <div id="kura-op-slot" className="kura-op-slot" />
@@ -453,6 +454,7 @@ export const App: React.FC = () => {
       <StatusBar recoveryStatus={recovery.status} />
       <Dialogs />
       <ConfirmDialogHost />
+      <RowContextMenuHost />
       <CommandPalette />
       <SplashScreen />
     </div>

@@ -10,6 +10,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useKuraStore } from '../../store/useKuraStore';
+import { useMeasureStore } from '../../store/measureStore';
 import { requestLeftPanelTab } from '../leftPanelTabRequest';
 import type { SheetHeight } from './sheetHeight';
 
@@ -75,6 +76,9 @@ export function useNarrowSheets() {
     const onPointerEnd = () => {
       if (!armed) return;
       armed = false;
+      // Con un punto de medición pendiente la hoja conserva su altura: plegarla cambiaría el tamaño del
+      // visor entre los dos toques y desplazaría el segundo punto.
+      if (useMeasureStore.getState().pending.length > 0) return;
       setHeight('folded');
     };
     window.addEventListener('pointerdown', onPointerDown, true);

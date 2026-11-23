@@ -75,7 +75,7 @@ function useSystemPrefersDark(): boolean {
 /**
  * Pasos de ahorro de espacio, en el orden en que se aplican al faltar ancho. Primero pasan al menú "Más"
  * los controles menos usados; los rótulos (`compact`) se quitan solo después; al final, el resto.
- * Proyecto, Importar, Exportar, Deshacer/Rehacer y Ajustes nunca se ocultan.
+ * Proyecto, Importar, Exportar, Deshacer/Rehacer y Ajustes nunca se ocultan; el logo es lo último en irse (solo a ~390 px).
  */
 const FIT_STEPS = [
   'density',
@@ -88,6 +88,7 @@ const FIT_STEPS = [
   'ai',
   'tools',
   'brand',
+  'logo',
 ] as const;
 type FitStep = (typeof FIT_STEPS)[number];
 type HideId = Exclude<FitStep, 'compact'>;
@@ -305,7 +306,7 @@ export const TopBar: React.FC = () => {
     >
       {/* Marca oficial Kura3D v0.5.0 + Archivo rápido + Undo/Redo */}
       <div className="kura-topbar-group kura-topbar-left">
-        {brandEl}
+        {!isHidden('logo') && brandEl}
 
         <ImportMenuButton />
 

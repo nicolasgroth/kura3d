@@ -183,8 +183,10 @@ export const SubMenu: React.FC<{
   // Voltea a la izquierda o sube si el submenú no cabe en el visor.
   useLayoutEffect(() => {
     const panel = panelRef.current;
-    const bounds = (panel?.closest('.kura-viewport-wrap') as HTMLElement | null)?.getBoundingClientRect();
-    if (!open || inline || !panel || !bounds) return;
+    // Dentro del visor se acota a él; el menú de una fila del árbol (fuera del visor) se acota a la ventana.
+    const wrap = panel?.closest('.kura-viewport-wrap') as HTMLElement | null;
+    const bounds = wrap ? wrap.getBoundingClientRect() : { right: window.innerWidth, bottom: window.innerHeight };
+    if (!open || inline || !panel) return;
     const r = panel.getBoundingClientRect();
     setPlacement({ flip: r.right > bounds.right - 4, shift: Math.min(0, bounds.bottom - 4 - r.bottom) });
   }, [open, inline]);
