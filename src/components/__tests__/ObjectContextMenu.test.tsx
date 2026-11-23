@@ -7,7 +7,7 @@
  * @license MIT
  */
 
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -134,6 +134,8 @@ describe('ObjectContextMenu: ideas de los laminadores', () => {
     expect(within(sub).getAllByRole('menuitem').map((i) => i.textContent?.replace(/[MRS]$/, ''))).toEqual([
       'Mover', 'Rotar', 'Escalar', 'Espejar', 'Restablecer rotación', 'Restablecer escala',
     ]);
+    // El submenú enfoca su primer ítem tras abrirse: se espera ese foco antes de bajar con la flecha.
+    await waitFor(() => expect(document.activeElement).toBe(within(sub).getAllByRole('menuitem')[0]));
     await user.keyboard('{ArrowDown}{Enter}');
     expect(useKuraStore.getState().transformMode).toBe('rotate');
   });
