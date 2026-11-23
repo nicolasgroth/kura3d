@@ -15,6 +15,9 @@ import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import type { MeshData, SceneObject, Vec3 } from '../types/kura';
 import { engineWarning, requireOperationRange, type EngineWarning } from './engineErrors';
 import { cleanColorPartMesh } from './colorSplitCleanup';
+import { closeColorPart, concatMeshes, directPiecesValid, manifoldOfMesh } from './colorSplitFinish';
+import { isMeshClosed } from './repair/meshTopology';
+import { thickenColorRegions } from './colorSplitThicken';
 import { checkerboardVertices, pinchPlug } from './colorSplitPinch';
 import { initManifoldEngine, meshDataToManifold, weldVertices } from './manifoldKernel';
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from './operationLimits';
@@ -33,6 +36,8 @@ export interface SolidColorPart {
   mesh: MeshData;
   position: Vec3;
   volumeMm3: number;
+  /** Cerrada según la definición única del inspector (`computeMeshStats().isManifold`). */
+  closed: boolean;
 }
 
 export interface SolidColorSplitResult {
@@ -87,8 +92,9 @@ export async function splitMeshByColorSolid(
     const solid = meshDataToManifold(wasm, { positions: P, indices: I });
     try {
       const unclean: string[] = [];
-      const part = toPart(wasm, solid, only, unclean);
-      return { parts: [part], warnings: uncleanWarnings(unclean) };
+      const repaired: string[] = [];
+      const part = toPart(wasm, solid, only, unclean, repaired);
+      return { parts: [part], warnings: uncleanWarnings(unclean, repaired) };
     } finally {
       solid.delete();
     }
@@ -101,10 +107,17 @@ export async function splitMeshByColorSolid(
     list.push(m);
     byColor.set(color, list);
   };
+  // Piezas del camino directo (mallas ya cerradas, sin booleanas) por color.
+  const direct = new Map<string, MeshData[]>();
+  const addDirect = (color: string, mesh: MeshData) => direct.set(color, [...(direct.get(color) ?? []), mesh]);
 
   const offsets = vertexOffsets(P, I);
   for (const body of connectedBodies(P, I, colors)) {
     const bodyMesh = subMesh(P, I, body.tris);
+    if (body.areaByColor.size === 1 && isMeshClosed(bodyMesh.positions, bodyMesh.indices, 0)) {
+      addDirect([...body.areaByColor.keys()][0], bodyMesh);
+      continue;
+    }
     const solid = meshDataToManifold(wasm, bodyMesh);
     if (body.areaByColor.size === 1) {
       push([...body.areaByColor.keys()][0], solid);
@@ -114,6 +127,13 @@ export async function splitMeshByColorSolid(
     // mayor área, toman su capa; así un detalle chico no queda tapado por uno grande en un solape.
     const ranked = [...body.areaByColor.entries()].sort((a, b) => b[1] - a[1] || Number(b[0] === base) - Number(a[0] === base) || a[0].localeCompare(b[0]));
     const bodyBase = ranked[0][0];
+    // Camino directo: engrosado construido a mano, lineal y cerrado por construcción.
+    const thick = thickenColorRegions(P, I, body.tris, colors, bodyBase, offsets, depth);
+    if (thick && directPiecesValid(wasm, solid, thick, bodyBase, EMPTY_VOLUME_MM3)) {
+      solid.delete();
+      for (const [color, mesh] of thick) addDirect(color, mesh);
+      continue;
+    }
     const layered = ranked.slice(1).reverse().map(([c]) => c);
     let remaining = solid;
     for (const color of layered) {
@@ -130,31 +150,57 @@ export async function splitMeshByColorSolid(
 
   const parts: SolidColorPart[] = [];
   const unclean: string[] = [];
+  const repaired: string[] = [];
   for (const color of [...distinct].sort((a, b) => Number(b === base) - Number(a === base) || a.localeCompare(b))) {
+    const meshes = direct.get(color) ?? [];
+    if (meshes.length > 0 && !byColor.has(color)) {
+      // Cuerpos conexos distintos (letras de un texto): sus mallas cerradas se juntan sin booleanas.
+      parts.push(finishPart(wasm, concatMeshes(meshes), color, unclean, repaired));
+      continue;
+    }
+    // Si el mismo color además salió del camino con booleanas, se une todo con Manifold.
+    for (const mesh of meshes) {
+      const m = manifoldOfMesh(wasm, mesh);
+      if (m) push(color, m);
+    }
     const list = byColor.get(color);
     if (!list) continue;
     const merged = dropEmptyComponents(wasm, list.length === 1 ? list[0] : wasm.Manifold.union(list));
     if (list.length > 1) for (const m of list) m.delete();
     if (merged.isEmpty()) { merged.delete(); byColor.delete(color); continue; }
-    parts.push(toPart(wasm, merged, color, unclean));
+    parts.push(toPart(wasm, merged, color, unclean, repaired));
     merged.delete();
   }
-  const lost = [...distinct].filter((c) => !byColor.has(c));
+  const lost = [...distinct].filter((c) => !byColor.has(c) && !direct.has(c));
   const warnings = lost.length > 0 ? [engineWarning('SPLIT_COLOR_ABSORBED', { colors: lost.join(', '), count: lost.length })] : [];
-  return { parts, warnings: [...warnings, ...uncleanWarnings(unclean)] };
+  return { parts, warnings: [...warnings, ...uncleanWarnings(unclean, repaired)] };
 }
 
-/** Aviso tipado si alguna pieza no quedó limpia como STL tras la limpieza (se entrega igual, cerrada). */
-function uncleanWarnings(colors: string[]): EngineWarning[] {
-  return colors.length ? [engineWarning('SPLIT_COLOR_MESH_DEFECTS', { colors: colors.join(', '), count: colors.length })] : [];
+/**
+ * Avisos tipados coherentes con el estado real: piezas que no cierran según la definición del
+ * inspector (con sus colores, para ofrecer Reparar) y piezas que cerraron tras la reparación.
+ */
+function uncleanWarnings(colors: string[], repaired: string[] = []): EngineWarning[] {
+  const out: EngineWarning[] = [];
+  if (colors.length) out.push(engineWarning('SPLIT_COLOR_MESH_DEFECTS', { colors: colors.join(', '), count: colors.length }));
+  if (repaired.length) out.push(engineWarning('SPLIT_COLOR_PART_REPAIRED', { colors: repaired.join(', '), count: repaired.length }));
+  return out;
 }
 
-function toPart(wasm: ManifoldToplevel, m: Manifold, color: string, unclean?: string[]): SolidColorPart {
-  const { mesh, clean } = cleanColorPartMesh(wasm, m);
-  if (!clean) unclean?.push(color);
-  const normalized = extractPositionAndNormalize({ ...mesh, faceColors: new Array(mesh.indices.length / 3).fill(color) });
-  // Volumen de la malla entregada (ya limpia), no del sólido previo: así calza con lo que se exporta.
-  return { color, mesh: normalized.mesh, position: normalized.position, volumeMm3: computeMeshStats(normalized.mesh).volumeMm3 };
+function toPart(wasm: ManifoldToplevel, m: Manifold, color: string, unclean: string[], repaired: string[]): SolidColorPart {
+  return finishPart(wasm, cleanColorPartMesh(wasm, m).mesh, color, unclean, repaired);
+}
+
+/** Veredicto con la definición del inspector (con reparación si hace falta), normalizado a la cama. */
+function finishPart(wasm: ManifoldToplevel, raw: MeshData, color: string, unclean: string[], repaired: string[]): SolidColorPart {
+  const closed = closeColorPart(wasm, raw);
+  const normalized = extractPositionAndNormalize({ ...closed.mesh, faceColors: new Array(closed.mesh.indices.length / 3).fill(color) });
+  // El veredicto es el del inspector sobre la malla que se entrega (ya normalizada a la cama).
+  const stats = computeMeshStats(normalized.mesh);
+  if (!stats.isManifold) unclean.push(color);
+  else if (closed.repaired) repaired.push(color);
+  // Volumen de la malla entregada, no del sólido previo: así calza con lo que se exporta.
+  return { color, mesh: normalized.mesh, position: normalized.position, volumeMm3: stats.volumeMm3, closed: stats.isManifold };
 }
 
 /** Quita de una pieza los componentes de volumen nulo (aletas degeneradas que dejan las booleanas). */

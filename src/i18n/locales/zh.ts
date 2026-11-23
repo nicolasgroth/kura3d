@@ -26,6 +26,7 @@ import { FIX10_ZH } from './fix10';
 import { OPNOTES_ZH } from './operationNotes';
 import { IMPORTREAL_ZH } from './importReal';
 import { REPAIR_ZH } from './repair';
+import { GEN_MOTOR_ZH } from './genMotor';
 import { UXESCENA_ZH } from './uxEscena';
 import { UXCIERRE_ZH } from './uxCierre';
 import { UX3_EDICION_ZH } from './ux3Edicion';
@@ -52,6 +53,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...OPNOTES_ZH,
   ...IMPORTREAL_ZH,
   ...REPAIR_ZH,
+  ...GEN_MOTOR_ZH,
   ...UXESCENA_ZH,
   ...UXCIERRE_ZH,
   ...UX3_EDICION_ZH,
