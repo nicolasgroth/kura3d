@@ -65,6 +65,7 @@ const EXPECTED_TOOLS = [
   'kura_measure_distance',
   'kura_measure_object',
   'kura_measure_capacity',
+  'kura_check_fit',
 ];
 
 /** Token de prueba con longitud suficiente para habilitar el puente (mínimo 16). */
@@ -113,8 +114,8 @@ describe('Kura3D MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(44);
-    expect(toolNames).toHaveLength(44);
+    expect(EXPECTED_TOOLS).toHaveLength(45);
+    expect(toolNames).toHaveLength(45);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }
