@@ -1,19 +1,16 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 23:45, tras la reevaluación de usabilidad.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a la 01:00, con las correcciones de la reevaluación de usabilidad integradas.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## En desarrollo
 
-Tres lotes de corrección de la reevaluación de usabilidad y uno de motor, en paralelo desde las 23:40:
-
 | Funcionalidad | Estado |
 |---|---|
-| Escena: flecha Y del gizmo hacia el fondo, lo nuevo nunca encima de lo existente, vistas que reencuadran escenas grandes, lectura del delta al arrastrar, aviso al guardar, cancelar una importación, aviso de malla pesada y de varios cuerpos | En corrección |
-| Móvil y barra superior: una sola hoja a la vez con el visor siempre visible, mover/rotar/escalar y exportar a la vista, barra superior que no pierde rótulos al seleccionar | En corrección |
-| Idioma, formato y menús: sin español en la interfaz en inglés, un solo formato de números, errores dentro del diálogo, menú contextual completo en pantalla, también en el fondo y en el árbol de Escena, panel de Dividir por secciones | En corrección |
-| Ahuecado preciso en piezas grandes, dividir más rápido en modelos de millones de triángulos y menos uniones para pegar por orden de armado | En curso |
+| Dividir modelos de millones de triángulos: bajó de 172 a 132 s en el busto de 2,4 M; la meta de menos de 90 s requiere optimizar la ubicación de conectores | Pendiente |
+| Armado por subconjuntos (filas, luego capas, luego apilar) para conservar todos los conectores en rejillas; hoy el orden pieza a pieza ya es el óptimo demostrado | Pendiente; cambia el modelo de pasos de armado |
+| Recorrido táctil completo en móvil (mover con el gizmo usando el dedo): sin veredicto | Por verificar |
 | Dependencias: TypeScript 7 y lucide-react listos en la rama local `chore/deps-2026-11` | Esperando la decisión del autor (consulta 1) |
 
 ## En QA
@@ -33,6 +30,10 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Pintura por caras rápida; operaciones de creación en el Worker | QA aprobó sin bloqueos; falta medir el pincel con GPU real |
 | Grabar sobre un relieve ya no da el error falso de profundidad; 3MF determinista (misma escena, mismos bytes); auditoría de secretos: claves de IA y token MCP nunca van a `localStorage` ni a logs, ahora con prueba que lo hace cumplir | Implementado con pruebas; sin QA en navegador |
 | Grupos y árbol de escena: Agrupar (Ctrl+G) y Desagrupar (Ctrl+Mayús+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ojo, candado, renombrar, arrastrar, teclado), manipulador del conjunto con escala proporcional, "Combinar en un objeto" y "Separar cuerpos", exportar un grupo como un archivo o uno por objeto, comandos de bus y MCP | QA re-verificó: renombrar, teclado del árbol, ojo del grupo y reglas, corregidos. Sin veredicto: escalar con el gizmo (no logró arrastrar el tirador) y separar cuerpos con colores (no lo alcanzó; lo cubre una prueba de navegador). Ya aprobado antes: agrupar, anidar, deshacer, guardar y reabrir, combinar, exportar, atajos, 390 px, piezas de división en el árbol |
+| Escena: flechas del gizmo hacia el lado positivo (Y al fondo), nada nuevo se coloca encima de otro objeto (duplicar, cambiar tamaño, mitades de corte, piezas separadas), las vistas reencuadran escenas grandes, lectura del desplazamiento al arrastrar, aviso al guardar o cancelar, cancelar una importación, aviso de malla pesada desde 300 mil triángulos y de varios cuerpos | Integrado con pruebas de navegador propias (13 recorridos); falta QA independiente |
+| Móvil y barra superior: una sola hoja a la vez con tres alturas y el visor siempre visible, barra de mover/rotar/escalar, atajos ocultos en pantallas táctiles, áreas de 44 px, barra superior con rótulos a 1440 px en los 6 idiomas, panel de IA flotante y plegable | Integrado; el recorrido táctil completo quedó sin veredicto |
+| Idioma, formato y menús: sin español en la interfaz en inglés, un solo formato de números por idioma, plurales, errores dentro del diálogo, menú contextual en el fondo y en el árbol de Escena, pieza agregada agrupada con su objeto, panel de Dividir por secciones, contraste en tema claro | Integrado con pruebas; falta QA independiente |
+| Ahuecado preciso en piezas grandes: pared pedida de 2 mm en una pieza de 150 mm pasó de 3,0 a 2,06 mm de media | Integrado con pruebas |
 | Importación con memoria acotada: el archivo se lee dentro del Worker sin copias, tope de 256 MiB por archivo y 512 MiB por lote, borrador de recuperación antes de un archivo grande, error claro si falta memoria, botón "Reparar malla" en el aviso de modelo abierto. Importar el busto de 113 MB bajó de 386 a unos 178 MB de memoria y de 2,4 a 1,6 s | Integrado con pruebas; sin verificar en navegador ni en escritorio |
 | Importar 3MF reales de slicer: lee archivos grandes de Bambu y Orca (el de 42 MB que se rechazaba), agrupa por placas con los nombres del slicer, conserva conjuntos montados, rechaza coordenadas absurdas | Integrado tras dos revisiones de seguridad independientes (13 hallazgos corregidos, cada uno con su prueba hostil); falta QA en navegador |
 | Integración continua en GitHub: fallaba en cada push por dependencias a medio instalar; corregida, con cancelación de corridas superadas y sin correr por cambios solo de documentación. Dependabot mensual y agrupado | Corregido; confirmando la primera corrida completa en verde |
