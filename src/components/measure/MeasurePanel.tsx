@@ -197,7 +197,7 @@ export const MeasurePanel: React.FC = () => {
 
   const toggleLabel = t(lang, collapsed ? 'measure.panel.expand' : 'measure.panel.collapse');
   return (
-    <section className={`kura-hud-card kura-measure-panel ${collapsed ? 'is-collapsed' : ''}`} aria-label={t(lang, 'measure.title')} data-testid="measure-panel">
+    <section className={`kura-hud-card kura-measure-panel ${collapsed ? 'is-collapsed' : ''}`} aria-label={t(lang, 'measure.title')} data-testid="measure-panel" data-viewport-occluder>
       <div className="kura-measure-head">
         <Ruler size={13} aria-hidden />
         <strong className="kura-measure-row-text">{t(lang, 'measure.title')}</strong>
