@@ -37,8 +37,11 @@ function eachAttr(xml: string, from: number, to: number, visit: (name: string, v
     while (i < to && isSpace(xml.charCodeAt(i))) i++;
     const quote = xml.charCodeAt(i);
     if (quote !== 34 && quote !== 39) continue;
-    const close = xml.indexOf(quote === 34 ? '"' : "'", i + 1);
-    if (close < 0 || close >= to) return;
+    // La comilla de cierre se busca solo dentro de la etiqueta: buscarla en el resto del documento haría
+    // el recorrido cuadrático con atributos sin cerrar.
+    let close = i + 1;
+    while (close < to && xml.charCodeAt(close) !== quote) close++;
+    if (close >= to) return;
     visit(name, xml.slice(i + 1, close));
     i = close + 1;
   }
@@ -70,8 +73,9 @@ function eachLeaf(xml: string, local: string, visit: (from: number, to: number) 
     }
     const gt = xml.indexOf('>', nameEnd);
     if (gt < 0 || gt - lt > MAX_XML_TAG_LENGTH) throw new ModelImportError('corrupt', `etiqueta <${local}> sin cerrar`);
-    const lt2 = xml.indexOf('<', nameEnd);
-    if (lt2 >= 0 && lt2 < gt) throw new ModelImportError('corrupt', `etiqueta <${local}> sin cerrar`);
+    for (let k = nameEnd; k < gt; k++) {
+      if (xml.charCodeAt(k) === 60) throw new ModelImportError('corrupt', `etiqueta <${local}> sin cerrar`);
+    }
     visit(nameEnd, xml.charCodeAt(gt - 1) === 47 ? gt - 1 : gt);
     count++;
     pos = gt + 1;
