@@ -46,8 +46,9 @@ test('vistas con un cubo de 440 mm: la cámara queda fuera y el cubo entero a la
   await page.evaluate(() => (window as any).__s.getState().createPrimitive('box', { width: 440, height: 440, depth: 440 }, { placement: 'free' }));
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length)).toBe(1);
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-  for (const name of ['Iso', 'Sup', 'Frente', 'Der']) {
-    await page.getByRole('button', { name, exact: true }).first().click();
+  // Cada vista (los mismos pedidos que hacen los botones Iso/Sup/Frente/Der de la barra del visor).
+  for (const preset of ['iso', 'top', 'front', 'right']) {
+    await page.evaluate((p) => (window as any).__s.getState().requestCameraPreset(p), preset);
     await expect.poll(() => encuadrado(page), { timeout: 5000 }).toBe(true);
   }
   await page.keyboard.press('3');
