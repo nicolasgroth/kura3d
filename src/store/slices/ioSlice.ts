@@ -51,8 +51,11 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     return false;
   };
 
+  // Tras importar se encuadra SIEMPRE todo lo importado (con margen y descontando paneles): con
+  // `ensure` un conjunto grande que ya asomaba en pantalla quedaba diminuto o a medias.
+  const fitImported = (_preset: 'fit' | 'ensure', ids?: string[]) => get().requestCameraPreset('fit', ids);
   const modelIo = createModelIoActions({
-    get: () => get(),
+    get: () => ({ ...get(), requestCameraPreset: fitImported }),
     set: (updater) => set((state) => updater(state) as Partial<KuraStoreState>),
     tr,
     pushHistory: () => pushHistory(),
