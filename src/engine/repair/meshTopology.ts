@@ -153,16 +153,18 @@ export interface ClosureCounts {
   collapsedTriangles: number;
 }
 
-/** Conteos de cierre de `positions/indices` soldados a `weldMm`. */
+/** Conteos de cierre de `positions/indices` soldados a `weldMm` (0 = solo por índice, sin soldar). */
 export function closureCounts(
   positions: ArrayLike<number>,
   indices: ArrayLike<number>,
   weldMm = CLOSURE_WELD_MM,
 ): ClosureCounts {
-  const { canon } = weldGrid(positions, weldMm);
   const tris = new Uint32Array(indices.length);
+  if (weldMm > 0) {
+    const { canon } = weldGrid(positions, weldMm);
+    for (let i = 0; i < indices.length; i++) tris[i] = canon[indices[i]];
+  } else tris.set(indices);
   let collapsedTriangles = 0;
-  for (let i = 0; i < indices.length; i++) tris[i] = canon[indices[i]];
   for (let t = 0; t < tris.length; t += 3) {
     if (tris[t] === tris[t + 1] || tris[t + 1] === tris[t + 2] || tris[t] === tris[t + 2]) collapsedTriangles++;
   }
@@ -179,9 +181,15 @@ export function closureCounts(
   return { boundaryEdges, nonManifoldEdges, misorientedEdges, collapsedTriangles };
 }
 
-/** Definición única de malla cerrada (estadísticas, avisos, exportación y división). */
+const clean = (c: ClosureCounts) =>
+  c.boundaryEdges === 0 && c.nonManifoldEdges === 0 && c.misorientedEdges === 0 && c.collapsedTriangles === 0;
+
+/**
+ * Definición única de malla cerrada (estadísticas, avisos, exportación y división): cerrada por índice
+ * (lo que garantiza Manifold, que admite vértices distintos en la misma posición donde dos partes se
+ * tocan) o, si no, cerrada uniendo posiciones idénticas (STL sin índices compartidos).
+ */
 export function isMeshClosed(positions: ArrayLike<number>, indices: ArrayLike<number>, weldMm = CLOSURE_WELD_MM): boolean {
   if (indices.length < 12 || indices.length % 3 !== 0) return false;
-  const c = closureCounts(positions, indices, weldMm);
-  return c.boundaryEdges === 0 && c.nonManifoldEdges === 0 && c.misorientedEdges === 0 && c.collapsedTriangles === 0;
+  return clean(closureCounts(positions, indices, 0)) || clean(closureCounts(positions, indices, weldMm));
 }

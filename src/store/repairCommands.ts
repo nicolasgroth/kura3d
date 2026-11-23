@@ -11,7 +11,8 @@
 import { diagnosisToUser, repairReportToUser } from '../core/operations/repairReport';
 import { CommandError } from './commandErrors';
 import { resolveTarget } from './commandTargets';
-import { readBoolean, readNumber, type RawParams } from './commandValidation';
+import { OPERATION_RANGES as OR } from '../engine/operationLimits';
+import { readBoolean, readRange, type RawParams } from './commandValidation';
 import type { KuraStoreState } from './useKuraStore';
 
 type Deps = { get: () => KuraStoreState };
@@ -19,8 +20,8 @@ type Deps = { get: () => KuraStoreState };
 /** Lee las opciones de `repair_mesh` (compartido con las pruebas de paridad). */
 export function parseRepairMesh(p: RawParams) {
   return {
-    maxHoleMm: readNumber(p, { gt: 0, max: 100000 }, 'maxHoleMm'),
-    weldMm: readNumber(p, { min: 1e-6, max: 1 }, 'weldMm'),
+    maxHoleMm: readRange(p, OR.repair.maxHoleMm, 'maxHoleMm'),
+    weldMm: readRange(p, OR.repair.weldMm, 'weldMm'),
     removeTinyShells: readBoolean(p, 'removeTinyShells'),
   };
 }

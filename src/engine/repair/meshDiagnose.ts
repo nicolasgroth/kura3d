@@ -9,7 +9,7 @@
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';
-import { buildEdgeTable, CLOSURE_WELD_MM, heFrom, weldGrid } from './meshTopology';
+import { buildEdgeTable, CLOSURE_WELD_MM, heFrom, isMeshClosed, weldGrid } from './meshTopology';
 import { boundaryLoops, labelShells, nestingDepth, shellVolumes } from './meshShells';
 
 /** Agujero (bucle de borde) en coordenadas locales de la malla. */
@@ -93,7 +93,6 @@ export function diagnoseMesh(mesh: Pick<MeshData, 'positions' | 'indices'>, weld
   for (let i = 0; i < nT * 3; i++) tris[i] = canon[mesh.indices[i]];
   const skip = new Uint8Array(nT);
   let degenerateFaces = 0;
-  let collapsed = 0;
   let duplicateFaces = 0;
   const seen = new Set<string>();
   for (let t = 0; t < nT; t++) {
@@ -102,7 +101,6 @@ export function diagnoseMesh(mesh: Pick<MeshData, 'positions' | 'indices'>, weld
     const c = tris[t * 3 + 2];
     if (a === b || b === c || a === c) {
       degenerateFaces++;
-      collapsed++;
       skip[t] = 1;
       continue;
     }
@@ -161,11 +159,12 @@ export function diagnoseMesh(mesh: Pick<MeshData, 'positions' | 'indices'>, weld
   let invertedShells = 0;
   for (let s = 0; s < count; s++) if (closedShell[s] && (vol[s] < 0) !== (depth[s] % 2 === 1)) invertedShells++;
 
+  // Misma definición que `isMeshClosed`; `clean` además exige sin duplicadas, degeneradas ni invertidas.
+  const closed = isMeshClosed(mesh.positions, mesh.indices);
   return {
     triangles: nT,
-    // Misma definición que `isMeshClosed`; `clean` además exige sin duplicadas, degeneradas ni invertidas.
-    closed: boundaryEdges === 0 && nonManifoldEdges === 0 && misorientedEdges === 0 && collapsed === 0 && nT >= 4,
-    clean: boundaryEdges === 0 && nonManifoldEdges === 0 && misorientedEdges === 0 && degenerateFaces === 0 && duplicateFaces === 0 && invertedShells === 0 && nT >= 4,
+    closed,
+    clean: closed && degenerateFaces === 0 && duplicateFaces === 0 && invertedShells === 0,
     boundaryEdges,
     holeCount: loops.length,
     holes: holes.slice(0, MAX_LISTED_HOLES),

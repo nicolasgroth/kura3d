@@ -10,7 +10,8 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { idSchema } from './schemas.js';
+import { OPERATION_RANGES as OR } from '../../src/engine/operationLimits';
+import { idSchema, rangeSchema } from './schemas.js';
 import { dispatchWithFallback, type KuraToolContext } from './tools.js';
 
 export function registerRepairTools(server: Pick<McpServer, 'registerTool'>, ctx: KuraToolContext): void {
@@ -40,9 +41,9 @@ export function registerRepairTools(server: Pick<McpServer, 'registerTool'>, ctx
         'larger than maxHoleMm) and engine warnings. Fails with MESH_REPAIR_FAILED if the result is still not a valid solid.',
       inputSchema: {
         objectId: idSchema.describe('ID of the object to repair.'),
-        maxHoleMm: z.number().finite().positive().max(100000).optional()
+        maxHoleMm: rangeSchema(OR.repair.maxHoleMm).optional()
           .describe('Holes whose largest side exceeds this size (mm) are left open and reported. Default: close all.'),
-        weldMm: z.number().finite().min(1e-6).max(1).optional().describe('Vertex weld tolerance in mm (default 0.001).'),
+        weldMm: rangeSchema(OR.repair.weldMm).optional().describe('Vertex weld tolerance in mm (default 0.001).'),
         removeTinyShells: z.boolean().optional().describe('Remove loose bodies smaller than 1 % of the model (default true).'),
       },
     },
