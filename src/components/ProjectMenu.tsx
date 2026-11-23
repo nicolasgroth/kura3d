@@ -127,7 +127,9 @@ export function ProjectMenu() {
         <FolderRoot size={13} aria-hidden="true" />
         <span className="kura-btn-label">{label}</span>
         {name && <span className="kura-project-name">{name}</span>}
-        {dirty && <span className="kura-project-dirty" aria-hidden="true" />}
+        {/* El punto reserva su sitio aunque no haya cambios: la barra no cambia de ancho al editar. */}
+        <span className={dirty ? 'kura-project-dirty' : 'kura-project-dirty is-clean'} aria-hidden="true" />
+
       </button>
       <div className="kura-project-popover" id={menuId} popover="auto" ref={popover} onToggle={onToggle}>
         <div className="kura-project-head">

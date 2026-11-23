@@ -23,6 +23,7 @@ import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
 import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
 import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
+import { UXMOVIL_EN, UXMOVIL_ES } from './locales/uxMovil';
 import { SPLITUX_EN, SPLITUX_ES } from './locales/splitUx';
 import { UXTEXTO_EN, UXTEXTO_ES } from './locales/uxTexto';
 import { FIX10_EN, FIX10_ES } from './locales/fix10';
@@ -46,6 +47,7 @@ export const TRANSLATIONS_ES = {
   ...SPLITPREFS_ES,
   ...SPLITCOUPLING_ES,
   ...A11YUX_ES,
+  ...UXMOVIL_ES,
   ...SPLITUX_ES,
   ...UXTEXTO_ES,
   ...FIX10_ES,
@@ -1418,6 +1420,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...SPLITPREFS_EN,
   ...SPLITCOUPLING_EN,
   ...A11YUX_EN,
+  ...UXMOVIL_EN,
   ...SPLITUX_EN,
   ...UXTEXTO_EN,
   ...FIX10_EN,

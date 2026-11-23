@@ -18,6 +18,7 @@ import { SPLITJOINTS_HI } from './splitJoints';
 import { SPLITPREFS_HI } from './splitPrefs';
 import { SPLITCOUPLING_HI } from './splitCoupling';
 import { A11YUX_HI } from './a11yUx';
+import { UXMOVIL_HI } from './uxMovil';
 import { SPLITUX_HI } from './splitUx';
 import { UXTEXTO_HI } from './uxTexto';
 import { FIX10_HI } from './fix10';
@@ -39,6 +40,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...SPLITPREFS_HI,
   ...SPLITCOUPLING_HI,
   ...A11YUX_HI,
+  ...UXMOVIL_HI,
   ...SPLITUX_HI,
   ...UXTEXTO_HI,
   ...FIX10_HI,

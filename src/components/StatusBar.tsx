@@ -83,7 +83,7 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus }> = ({ recov
         </span>
         <button
           type="button"
-          className="kura-statusbar-btn"
+          className="kura-statusbar-btn kura-statusbar-shortcuts"
           onClick={() => setActiveDialog('shortcuts')}
           title={t(language, 'cmd.view.shortcuts')}
         >

@@ -74,12 +74,8 @@
 }
 
 /* Adaptación en ventanas compactas */
+/* Los rótulos de la barra superior los quita `TopBar` (clase is-compact) solo si no caben al medirla. */
 @media (max-width: 1240px) {
-  .kura-topbar .kura-btn-label,
-  .kura-topbar .kura-tool-label,
-  .kura-topbar .kura-mcp-label {
-    display: none;
-  }
   .kura-topbar .kura-select {
     max-width: 145px;
   }
