@@ -1,27 +1,48 @@
 /**
  * @file src/styles/aiDrawer.css
- * @description Panel de chat IA como superposición flotante en ventanas de menos de 1280 px, para no encoger
- * el visor 3D por debajo de un ancho útil. Por debajo de 900 px sigue el diseño de panel apilado de studio.css.
+ * @description Panel de chat IA como superposición flotante (máx. 380 px, plegable a su cabecera) en
+ * ventanas de más de 900 px, para no encoger el visor 3D. Por debajo de 900 px es una hoja inferior.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-@media (900px < width < 1280px) {
+@media (min-width: 901px) {
   .kura-workspace > .kura-ai-drawer {
     position: absolute;
     top: 8px;
     right: 8px;
     bottom: 8px;
     z-index: 30;
-    width: min(340px, calc(100% - 16px));
+    width: min(380px, calc(100% - 16px));
+    max-width: 380px;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-hud);
   }
 
-  /* El inspector queda detrás del panel flotante: se oculta mientras el chat está abierto. */
+  /* Plegado: solo la cabecera. */
+  .kura-workspace > .kura-ai-drawer.is-folded {
+    bottom: auto;
+    width: min(300px, calc(100% - 16px));
+  }
+
+  .kura-ai-drawer.is-folded > :not(.kura-panel-header) {
+    display: none;
+  }
+
+  /* El inspector queda detrás del panel flotante: se oculta mientras el chat está desplegado. */
   .kura-workspace[data-narrow-panel="ai"] > .kura-sidebar-right {
+    display: none;
+  }
+
+  .kura-workspace[data-narrow-panel="ai"]:has(> .kura-ai-drawer.is-folded) > .kura-sidebar-right {
+    display: flex;
+  }
+}
+
+@media (max-width: 900px) {
+  .kura-ai-fold-btn {
     display: none;
   }
 }

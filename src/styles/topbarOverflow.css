@@ -104,3 +104,8 @@
   outline-offset: 2px;
   border-radius: var(--radius-sm, 6px);
 }
+
+/* Punto de cambios sin guardar: reserva su espacio para que la barra no cambie al editar. */
+.kura-project-dirty.is-clean {
+  visibility: hidden;
+}

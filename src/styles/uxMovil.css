@@ -65,4 +65,44 @@
   .kura-context-kbd {
     display: none;
   }
+
+  /* "Atajos (?)" de la barra de estado no aplica sin teclado. */
+  .kura-statusbar-shortcuts,
+  .kura-statusbar-hint {
+    display: none;
+  }
+}
+
+/*
+ * Áreas táctiles: en móvil (y tabletas táctiles) todo control interactivo visible mide al menos 44x44.
+ * Las casillas y los botones de opción se agrandan por su etiqueta.
+ */
+@media (max-width: 600px), ((max-width: 900px) and (pointer: coarse)) {
+  .kura-app :is(button, select, summary, a[href], [role="button"], [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="tab"], input:not([type="hidden"], [type="checkbox"], [type="radio"])) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* El menú "Más" se monta fuera de .kura-app (portal). */
+  body .kura-topbar-more-menu :is(.kura-btn, select, [role="menuitem"]) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .kura-app label:has(> input:is([type="checkbox"], [type="radio"])) {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Barra superior: ocho botones de 44 px caben en 390 px con separaciones mínimas. */
+  .kura-topbar.kura-topbar-adaptive,
+  .kura-topbar-adaptive .kura-topbar-group {
+    gap: 2px;
+  }
+
+  .kura-topbar-adaptive {
+    padding-inline: 4px;
+  }
 }

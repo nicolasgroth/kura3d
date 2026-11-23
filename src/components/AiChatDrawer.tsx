@@ -9,7 +9,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Bot, Cloud, Send, Settings, Square, Trash2, X, Zap } from 'lucide-react';
+import { Bot, ChevronsDownUp, ChevronsUpDown, Cloud, Send, Settings, Square, Trash2, X, Zap } from 'lucide-react';
 import { sendAiPrompt } from '../ai/aiClient';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
@@ -19,6 +19,7 @@ import '../styles/aiDrawer.css';
 
 export const AiChatDrawer: React.FC = () => {
   const [input, setInput] = useState('');
+  const [folded, setFolded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -130,7 +131,7 @@ export const AiChatDrawer: React.FC = () => {
         ];
 
   return (
-    <aside className="kura-ai-drawer" aria-label={t(language, 'ai.title')}>
+    <aside className={`kura-ai-drawer${folded ? ' is-folded' : ''}`} aria-label={t(language, 'ai.title')}>
       <div className="kura-panel-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
           <Bot size={16} style={{ color: 'var(--tool-accent)', flexShrink: 0 }} />
@@ -153,6 +154,16 @@ export const AiChatDrawer: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button
+            type="button"
+            className="kura-mini-icon-btn kura-ai-fold-btn"
+            aria-expanded={!folded}
+            onClick={() => setFolded((v) => !v)}
+            aria-label={t(language, folded ? 'uxm.ai.expand' : 'uxm.ai.collapse')}
+            title={t(language, folded ? 'uxm.ai.expand' : 'uxm.ai.collapse')}
+          >
+            {folded ? <ChevronsUpDown size={14} aria-hidden="true" /> : <ChevronsDownUp size={14} aria-hidden="true" />}
+          </button>
           <button
             type="button"
             className="kura-mini-icon-btn"
