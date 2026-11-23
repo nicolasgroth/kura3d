@@ -38,7 +38,8 @@ test('Medir: un clic en el vacío muestra una pista breve junto al cursor, sin a
   const hint = page.getByTestId('measure-miss-hint');
   await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.2);
   await expect(hint).toBeVisible();
-  await expect(hint).toHaveText('Toca un punto de la pieza');
+  // Con ratón la pista dice «Haz clic…» (con táctil, «Toca…»: ver e2e/ux6-medir.spec.ts).
+  await expect(hint).toHaveText('Haz clic en un punto de la pieza');
   await page.mouse.click(box.x + box.width * 0.6, box.y + box.height * 0.25);
   await expect(page.getByTestId('measure-miss-hint')).toHaveCount(1);
   await page.screenshot({ path: `${SHOTS}/medir-pista.png` });

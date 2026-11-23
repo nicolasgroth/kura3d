@@ -81,25 +81,17 @@
   display: inline-flex;
 }
 
-/* ---- Medir: panel acoplado al borde elegido, angosto y con la lista desplazable ---- */
+/* ---- Medir: panel angosto acoplado a un borde del visor (en el flujo del HUD, bajo la barra de vistas),
+ * con la lista desplazable; el borde derecho queda a la izquierda del cubo de vistas. ---- */
 @media (width > 900px) {
   .kura-measure-panel.is-docked {
-    position: absolute;
-    top: var(--kura-measure-top, 52px);
     width: 232px;
     max-width: 232px;
-    max-height: calc(100% - var(--kura-measure-top, 52px) - 64px);
-    z-index: 12;
-  }
-
-  .kura-measure-panel.is-docked.is-left {
-    left: 0;
+    max-height: min(420px, calc(100vh - 260px));
   }
 
   .kura-measure-panel.is-docked.is-right {
-    right: 0;
-    /* Debajo del cubo de vistas. */
-    top: 150px;
+    align-self: flex-end;
   }
 
   .kura-measure-panel.is-docked.is-collapsed {
