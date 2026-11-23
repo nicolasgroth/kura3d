@@ -460,6 +460,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         connectorCount: rangeSchema(OR.cut.connectorCount).default(OPERATION_DEFAULTS.cut.connectorCount),
         keepMode: z.enum(['both', 'positive', 'negative']).default('both')
           .describe('Halves to keep: positive = the +axis side (top for z, back for y), negative = the other one.'),
+        keptHalfPlacement: z.enum(['inPlace', 'dropToBed', 'freeSpot']).default('inPlace')
+          .describe('Only when a single half is kept and it would not rest on the bed (e.g. the upper half of a horizontal cut). inPlace = leave it where it is (may float), dropToBed = lower it onto the bed in the same X/Y place, freeSpot = rest it on a free spot of the bed. Ignored when both halves are kept or the kept half already rests on the bed.'),
       },
     },
     async (args) =>
@@ -477,6 +479,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             tolerance: args.tolerance,
             connectorCount: args.connectorCount,
             keepMode: args.keepMode,
+            keptHalfPlacement: args.keptHalfPlacement,
           })
       )
   );

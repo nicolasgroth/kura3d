@@ -17,6 +17,7 @@ import type { OperationContext, SceneChange } from '../../src/core/operations/in
 import { parametricStateOf } from '../../src/core/scene/parametric';
 import { HEADLESS_BUILD_POLICY } from '../../src/core/scene/sceneObjects';
 import * as engine from '../../src/engine/index';
+import { resolveKeptHalf } from '../../src/core/scene/keptHalf';
 import { OPERATION_DEFAULTS } from '../../src/engine/operationLimits';
 import { resolveAssemblyTargets, ValidateAssemblyTargetError } from '../../src/core/commands/validateAssemblySchema';
 import { createHeadlessNaming } from './headlessNaming.js';
@@ -297,8 +298,11 @@ export class KuraHeadlessEngine {
     if (parts.length === 0) {
       throw new Error('The cut plane does not intersect the object: no pieces were generated.');
     }
+    // Una sola mitad conservada que no queda en la cama: se aplica la elección (misma función que la app).
+    const removed = new Set(change.removedIds);
+    const kept = resolveKeptHalf([...this.objects.values()].filter((o) => !removed.has(o.id)), parts, internal, this.bed());
     // Las mitades se separan sobre la cama para que sus cajas envolventes (y los conectores) no se solapen.
-    const placed = this.spread(parts, change.removedIds);
+    const placed = kept ? [kept.part] : this.spread(parts, change.removedIds);
     this.apply({ ...change, added: placed });
     return { parts: placed.map(userSummary), note: ENGINE_NOTE, warnings: ua.userWarnings(change.warnings) };
   }

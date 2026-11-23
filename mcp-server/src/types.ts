@@ -240,6 +240,8 @@ export interface PlaneCutOptions {
   tolerance: number;
   connectorCount: number;
   keepMode: 'both' | 'positive' | 'negative';
+  /** Con una sola mitad conservada que no queda en la cama: dónde dejarla (por defecto `inPlace`). */
+  keptHalfPlacement?: 'inPlace' | 'dropToBed' | 'freeSpot';
 }
 
 /** Opciones del generador automático de moldes y contra-moldes. */
