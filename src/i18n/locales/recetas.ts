@@ -531,6 +531,15 @@ const RECETAS_TABLE = {
     'रेसिपी चलाने के लिए तैयार नहीं: पहले त्रुटियाँ ठीक करें।',
     '配方尚不能运行:请先修正错误。',
   ],
+  // Nombre de la operación en la barra de progreso (`busyOperation = 'run_recipe'`).
+  'progress.op.run_recipe': [
+    'Receta',
+    'Recipe',
+    'Rezept',
+    'Recette',
+    'रेसिपी',
+    '配方',
+  ],
 } satisfies Record<string, Row>;
 
 type RecetasKey = keyof typeof RECETAS_TABLE;

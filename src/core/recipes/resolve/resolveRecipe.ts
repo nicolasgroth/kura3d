@@ -12,7 +12,7 @@
 import { RecipeError, issue, joinPath, type RecipeIssue } from '../errors';
 import { createBudget } from '../expression/evaluate';
 import { scanJson } from '../scan';
-import { validateRecipe, type ValidatedRecipe } from '../validate/validateRecipe';
+import { parseRecipeText, validateRecipe, type ValidatedRecipe } from '../validate/validateRecipe';
 import { RecipeEnv } from './env';
 import { resolveDerived, resolveParams, resolveRules } from './params';
 import { resolveOutputs, resolveSteps } from './steps';
@@ -53,7 +53,8 @@ function prepareInner(recipe: unknown, answers: unknown, options: ResolveOptions
   let validated: ValidatedRecipe;
   if (isValidated(recipe)) validated = recipe;
   else {
-    const result = validateRecipe(recipe);
+    // Texto (`*.recipe.json`) con su tope de tamaño, u objeto ya leído.
+    const result = typeof recipe === 'string' ? parseRecipeText(recipe) : validateRecipe(recipe);
     work += result.work;
     if (!result.ok) return failed(result.issues, work);
     validated = result.value;

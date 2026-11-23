@@ -69,6 +69,11 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   mirror_object: 'write',
   repair_mesh: 'write',
   set_object_role: 'write',
+  // Recetas: leer, describir y validar no tocan la escena; ejecutar (también con `dryRun`) es escritura.
+  list_recipes: 'read',
+  describe_recipe: 'read',
+  validate_recipe: 'read',
+  run_recipe: 'write',
 });
 
 /** Indica si el nombre corresponde a un comando conocido del Command Bus. */
@@ -135,6 +140,10 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_repair_mesh: 'repair_mesh',
   kura_diagnose_mesh: 'diagnose_mesh',
   kura_set_object_role: 'set_object_role',
+  kura_list_recipes: 'list_recipes',
+  kura_describe_recipe: 'describe_recipe',
+  kura_validate_recipe: 'validate_recipe',
+  kura_run_recipe: 'run_recipe',
 });
 
 /** Acceso de una herramienta MCP; herramientas no declaradas se tratan como escritura. */

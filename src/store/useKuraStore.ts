@@ -27,6 +27,7 @@ import { createSplitSlice } from './slices/splitSlice';
 import { createSplitJointsSlice } from './slices/splitJointsSlice';
 import { createSplitPrefsSlice } from './slices/splitPrefsSlice';
 import { createFitToBedSlice } from './slices/fitToBedSlice';
+import { createRecipesSlice } from './slices/recipesSlice';
 import { createBedProfilesSlice } from './slices/bedProfilesSlice';
 import { createUiSlice } from './slices/uiSlice';
 import { createQuickActionsSlice } from './slices/quickActionsSlice';
@@ -80,6 +81,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createSplitJointsSlice(ctx),
     ...createSplitPrefsSlice(ctx),
     ...createFitToBedSlice(ctx),
+    ...createRecipesSlice(ctx),
     ...createBedProfilesSlice(ctx),
     ...createMenuIdeasSlice(ctx),
     ...createGroupsSlice(ctx),

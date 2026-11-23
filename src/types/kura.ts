@@ -1004,7 +1004,11 @@ export interface KuraCommandRequest {
     | 'extract_structure'
     | 'mirror_object'
     | 'validate_assembly'
-    | 'set_object_role';
+    | 'set_object_role'
+    | 'list_recipes'
+    | 'describe_recipe'
+    | 'validate_recipe'
+    | 'run_recipe';
   params: Record<string, unknown>;
 }
 

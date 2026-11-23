@@ -28,6 +28,7 @@ import { fitAnalysisToUser, parseFitToBed } from './fitCommandSchemas';
 import { MEASURE_HANDLERS } from './measureCommands';
 import { REPAIR_HANDLERS } from './repairCommands';
 import { ROLE_HANDLERS } from './roleCommands';
+import { RECIPE_HANDLERS } from './recipeCommands';
 import { userWarning } from '../core/scene/userEngineMessages';
 import { localizeEngineWarning, type EngineWarning } from '../engine/engineErrors';
 import type { OperationErrorTracker } from './operationErrors';
@@ -107,6 +108,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...MEASURE_HANDLERS,
   ...REPAIR_HANDLERS,
   ...ROLE_HANDLERS,
+  ...RECIPE_HANDLERS,
   get_scene_state: (_p, { get }) => {
     const s = get();
     return {
