@@ -1,6 +1,6 @@
 /**
  * @file src/components/inspector/IdentitySection.tsx
- * @description Sección Identidad del inspector: nombre, material PBR y color.
+ * @description Sección Identidad del inspector: nombre, tipo (sólido / negativo / referencia), material PBR y color.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,6 +12,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { PRINT_COLOR_PALETTE, type MaterialPresetId } from '../../types/kura';
 import { colorName, colorNameWithHex } from '../../utils/colorNames';
 import { MATERIAL_IDS } from './inspectorConstants';
+import { RoleField } from './RoleField';
 import { type InspectorSectionProps } from './inspectorTypes';
 
 /** Sección 1: identidad, material PBR y color. */
@@ -35,26 +36,7 @@ export const IdentitySection: React.FC<Pick<InspectorSectionProps, 'primary'>> =
         />
       </div>
 
-      <div className="kura-field-row">
-        <span className="kura-field-label">{t(language, 'inspector.field.role')}</span>
-        <div className="kura-segmented">
-          <button
-            type="button"
-            className={`kura-btn ${!primary.isHole ? 'is-active' : ''}`}
-            onClick={() => updateObjectMeta(primary.id, { isHole: false })}
-          >
-            {t(language, 'inspector.role.solid')}
-          </button>
-          <button
-            type="button"
-            className={`kura-btn ${primary.isHole ? 'is-active' : ''}`}
-            onClick={() => updateObjectMeta(primary.id, { isHole: true })}
-            title={t(language, 'inspector.role.holeTip')}
-          >
-            {t(language, 'inspector.role.hole')}
-          </button>
-        </div>
-      </div>
+      <RoleField primary={primary} />
 
       <div className="kura-form-field">
         <label htmlFor="kura-obj-material">{t(language, 'material.title')}</label>

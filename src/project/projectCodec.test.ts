@@ -24,7 +24,7 @@ function fixture(): ProjectDocument {
     id: 'part-a', name: 'cúpula 🧊', source: 'primitive', primitiveType: 'text',
     primitiveParams: { text: 'Àrbol 文', width: 22, segments: 18, bevel: 1.5 },
     position: [-1.25, 3, 0], rotation: [0.125, -0.5, 0], scale: [-1, 1, 2],
-    color: '#aBBacf', materialPreset: 'wax_candle', isHole: true, visible: false, locked: true,
+    color: '#aBBacf', materialPreset: 'wax_candle', role: 'negative', visible: false, locked: true,
     hollow: { enabled: true, wallThickness: 1.25, drainHole: true, drainHoleRadius: 0.8 },
     texture: { pattern: 'honeycomb', depth: 1, scale: 3 },
     mesh, stats: computeMeshStats(mesh),
@@ -115,9 +115,9 @@ describe('Kura project v1', () => {
     const broken = bytes.slice();
     broken[broken.length - 1] ^= 1;
     expect(() => decodeProject(broken)).toThrowError(expect.objectContaining({ code: 'invalid' }));
-    broken[4] = 3;
+    broken[4] = 4;
     expect(() => decodeProject(broken)).toThrowError(expect.objectContaining({ code: 'unsupported' }));
-    broken[4] = 2;
+    broken[4] = 3;
     new DataView(broken.buffer).setUint32(8, 16 * 1024 * 1024 + 1, true);
     expect(() => decodeProject(broken)).toThrowError(expect.objectContaining({ code: 'too-large' }));
   });

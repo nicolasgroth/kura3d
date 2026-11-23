@@ -64,7 +64,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         color: isHole ? HOLE_HELPER_COLOR : target.color,
         place: (m) => positionOnTarget(target, m, yOffset),
         materialPreset: target.materialPreset,
-        isHole,
+        role: isHole ? 'negative' : 'solid',
       });
       pushHistory();
       // La pieza queda agrupada con su objeto (grupo con el nombre del objeto) para que se muevan juntos.
@@ -184,7 +184,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         return s.selectedIds.length > 1 && s.combineObjects() ? 'done' : 'notApplicable';
       case 'setType': {
         if (!first) return 'notApplicable';
-        s.setObjectsHole(targets.map((o) => o.id), rec.isHole);
+        s.setObjectsRole(targets.map((o) => o.id), rec.role);
         return 'done';
       }
     }
@@ -309,17 +309,17 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       const keys = Object.keys(patch);
       if (keys.length !== 1) return;
       if (patch.color) record({ kind: 'color', color: patch.color });
-      else if (typeof patch.isHole === 'boolean') record({ kind: 'setType', isHole: patch.isHole });
+      else if (patch.role) record({ kind: 'setType', role: patch.role });
     },
 
-    setObjectsHole: (ids, isHole) => {
+    setObjectsRole: (ids, role) => {
       const set_ = new Set(ids);
-      const changing = get().objects.filter((o) => set_.has(o.id) && !o.locked && o.isHole !== isHole);
+      const changing = get().objects.filter((o) => set_.has(o.id) && !o.locked && o.role !== role);
       if (changing.length === 0) return;
       pushHistory();
       const changeIds = new Set(changing.map((o) => o.id));
-      set((s) => ({ objects: s.objects.map((o) => (changeIds.has(o.id) ? { ...o, isHole } : o)) }));
-      record({ kind: 'setType', isHole });
+      set((s) => ({ objects: s.objects.map((o) => (changeIds.has(o.id) ? { ...o, role } : o)) }));
+      record({ kind: 'setType', role });
     },
 
     // El SVG de una pieza se crea en el diálogo SVG: al terminar se coloca sobre el objeto y se marca el tipo.
@@ -335,7 +335,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
             const isHole = pending.mode === 'negative';
             return {
               ...o,
-              isHole,
+              role: isHole ? 'negative' : 'solid',
               color: isHole ? HOLE_HELPER_COLOR : target.color,
               position: positionOnTarget(target, o.mesh, pieceYOffset(target, pending.mode, o.stats.dimensionsMm[1])),
             };

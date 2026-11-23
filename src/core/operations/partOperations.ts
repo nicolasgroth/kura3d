@@ -16,6 +16,7 @@ import type {
   SceneObject,
   StructuralSegmentationResult,
 } from '../../types/kura';
+import type { ObjectRole } from '../../types/kura';
 import { userAxisLabel, userAxisOfInternal } from '../scene/displayAxes';
 import { worldBaked } from '../scene/sceneObjects';
 import { buildWith, change, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
@@ -138,7 +139,7 @@ export async function extractStructure(
   segmentation: StructuralSegmentationResult,
   region: DetectedStructureRegion,
   removeFromSource: boolean,
-  extra: { isHole?: boolean } = {},
+  extra: { role?: ObjectRole } = {},
 ): Promise<{ extracted: SceneObject; sourceDeleted: boolean; change: SceneChange }> {
   const res = await engine.extractStructuralRegion(obj, region, removeFromSource);
   const extracted = buildWith(ctx, {
@@ -148,7 +149,7 @@ export async function extractStructure(
     position: res.extracted.position,
     color: region.color,
     materialPreset: obj.materialPreset,
-    isHole: extra.isHole,
+    role: extra.role,
   });
   if (!removeFromSource) return { extracted, sourceDeleted: false, change: change({ added: [extracted] }) };
   if (!res.remainder) {

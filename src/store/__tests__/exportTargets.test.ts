@@ -16,7 +16,7 @@ describe('Selección de exportación compartida', () => {
 
   it('excluye huecos de la selección y cuenta los omitidos', async () => {
     const solid = await addBox(10);
-    const hole = await addBox(4, [0, 0, 0], { isHole: true });
+    const hole = await addBox(4, [0, 0, 0], { role: 'negative' });
     const sel = selectExportTargets(store().objects, [solid.id, hole.id], true);
     expect(sel.targets.map((o) => o.id)).toEqual([solid.id]);
     expect(sel.skippedHoles).toBe(1);
@@ -24,7 +24,7 @@ describe('Selección de exportación compartida', () => {
 
   it('el bus no exporta el hueco seleccionado', async () => {
     const solid = await addBox(10);
-    const hole = await addBox(4, [0, 0, 0], { isHole: true });
+    const hole = await addBox(4, [0, 0, 0], { role: 'negative' });
     store().selectObject(solid.id);
     store().selectObject(hole.id, true);
     const res = await store().executeCommand({ id: '1', command: 'export_stl', params: { onlySelected: true, returnBytes: true } });

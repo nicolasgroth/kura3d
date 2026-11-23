@@ -18,6 +18,7 @@ import type { SceneChange } from '../../core/operations/operationTypes';
 import { resolveKeptHalf } from '../../core/scene/keptHalf';
 import { userAxisLabel, userAxisOfInternal } from '../../core/scene/displayAxes';
 import { resolveStructureTarget } from '../../core/scene/sceneRules';
+import { isReference } from '../../core/scene/objectRole';
 import { hasPaintedFaces } from '../../core/scene/parametric';
 import { attachNotesToParts, buildGroupNotes } from '../../core/scene/splitGroupNotes';
 import { segmentationMatchesMesh } from '../../engine/segmentationGuards';
@@ -53,10 +54,19 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
     const obj = get().objects.find((o) => o.id === id);
     return obj && !obj.locked ? obj : null;
   };
+  /** Como `editable`, pero rechaza referencias (no se dividen, ahuecan, cortan ni texturizan) con aviso. */
+  const shapeable = (id: string) => {
+    const obj = editable(id);
+    if (obj && isReference(obj)) {
+      get().addToast(tr('reference.toast.notAllowed'), 'info');
+      return null;
+    }
+    return obj;
+  };
 
   return {
     planeCutObject: async (id, options) => {
-      const obj = editable(id);
+      const obj = shapeable(id);
       if (!obj) return [];
       return runExclusive('plane_cut', [], async () => {
         const { parts, change } = await runEngine('planeCut', { obj, options });
@@ -105,7 +115,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     splitObjectForBed: async (id, request) => {
-      const obj = editable(id);
+      const obj = shapeable(id);
       if (!obj) return null;
       return runExclusive('split_for_bed', null, async () => {
         const plan = await runEngine('splitPlan', { obj, bed: request.bed, options: request.plan });
@@ -151,7 +161,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     splitDisconnectedObject: async (id) => {
-      const obj = editable(id);
+      const obj = shapeable(id);
       if (!obj) return [];
       return runExclusive('split_parts', [], async () => {
         const { pieceCount, parts, change } = await runEngine('splitDisconnected', { obj });
@@ -168,7 +178,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     splitObjectByColor: async (id, options = {}) => {
-      const obj = editable(id);
+      const obj = shapeable(id);
       if (!obj) return [];
       // Sin zonas pintadas no hay nada que separar: se guía al usuario en vez de «Separado en 1 piezas».
       if (!hasPaintedFaces(obj.mesh)) {
@@ -191,7 +201,8 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     generateMoldForObject: async (id, options) => {
-      const obj = get().objects.find((o) => o.id === id);
+      const found = get().objects.find((o) => o.id === id);
+      const obj = found && isReference(found) ? shapeable(id) : found;
       if (!obj) return [];
       return runExclusive('generate_mold', [], async () => {
         await get().initEngine();
@@ -216,6 +227,10 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const state = get();
       const obj = resolveStructureTarget(state.objects, state.selectedIds, id);
       if (!obj) return null;
+      if (isReference(obj)) {
+        get().addToast(tr('reference.toast.notAllowed'), 'info');
+        return null;
+      }
       const angle = typeof creaseAngleDeg === 'number' && Number.isFinite(creaseAngleDeg)
         ? creaseAngleDeg
         : state.segmentationCreaseDeg;
@@ -281,7 +296,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
     splitAllDetectedObjectStructures: async (id) => {
       const state = get();
       const obj = resolveStructureTarget(state.objects, state.selectedIds, id, state.activeSegmentation?.objectId);
-      if (!obj || obj.locked) return [];
+      if (!obj || obj.locked || isReference(obj)) return [];
       const segmentation = currentSegmentationFor(obj) ?? (await get().detectObjectStructures(obj.id));
       if (!segmentation || segmentation.regions.length === 0) return [];
 

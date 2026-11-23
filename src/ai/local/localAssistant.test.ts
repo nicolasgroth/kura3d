@@ -202,8 +202,8 @@ describe('local assistant on the real store', () => {
     const names = done.executedTools.map((t) => t.name);
     expect(names).toEqual(['create_thread', 'transform_object', 'boolean_operation']);
     expect(names).not.toContain('center');
-    const result = objects().find((o) => !o.isHole)!;
-    expect(objects().filter((o) => o.isHole)).toHaveLength(0);
+    const result = objects().find((o) => o.role !== 'negative')!;
+    expect(objects().filter((o) => (o.role === 'negative'))).toHaveLength(0);
     expect(result.stats.volumeMm3).toBeLessThan(volumeBefore - 300);
     expect(done.assistantText).toMatch(/M6×1/);
   });
@@ -218,8 +218,8 @@ describe('local assistant on the real store', () => {
     expect(done.assistantText).not.toMatch(/lengthMm|threadHole|∈|\.\./);
     expect(done.assistantText).toContain(t('es', 'ai.local.threadHoleLimited', { thread: '300', total: '402', max: '300' }));
     expect(done.executedTools.map((x) => x.name)).toEqual(['create_thread', 'transform_object', 'create_primitive', 'transform_object', 'boolean_operation']);
-    expect(objects().filter((o) => o.isHole)).toHaveLength(0);
-    const result = objects().find((o) => !o.isHole)!;
+    expect(objects().filter((o) => (o.role === 'negative'))).toHaveLength(0);
+    const result = objects().find((o) => o.role !== 'negative')!;
     // Paso completo: al menos el volumen de un agujero de Ø ~5 mm por 400 mm.
     expect(result.stats.volumeMm3).toBeLessThan(volumeBefore - Math.PI * 2.4 * 2.4 * 390);
   }, 30_000);

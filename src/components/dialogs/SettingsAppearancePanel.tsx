@@ -10,6 +10,7 @@ import React from 'react';
 import { Check, Monitor, Moon, Sun } from 'lucide-react';
 import { t, type TranslationKey } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import { ReferenceOpacitySetting } from '../settings/ReferenceOpacitySetting';
 import { THEME_PRESETS, type ColorSchemePreference } from '../../types/kura';
 import { useResolvedDarkScheme } from './useResolvedDarkScheme';
 
@@ -58,6 +59,7 @@ export const SettingsAppearancePanel: React.FC = () => {
           ))}
         </div>
       </div>
+      <ReferenceOpacitySetting />
 
       <div className="kura-themes-header">
         <div>

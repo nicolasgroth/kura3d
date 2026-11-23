@@ -10,6 +10,7 @@
  * @license MIT
  */
 
+import { isReference } from '../core/scene/objectRole';
 import type * as engine from '../engine';
 import { OPERATION_DEFAULTS } from '../engine/operationLimits';
 import { countMeshBodies } from '../engine/io/meshBodies';
@@ -95,8 +96,10 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
       deps.openSimplify ? { label: tr('import.heavy.action'), run: () => deps.openSimplify?.(id) } : undefined,
     );
   }
+  // Una referencia no se imprime: ni sus cuerpos sueltos ni su malla abierta son problemas de impresión.
+  const printable = unique.filter((u) => !isReference(u.entries[0].object));
   // Un archivo con varios cuerpos sueltos en una sola pieza: se avisa y se ofrece separarlos.
-  for (const u of unique) {
+  for (const u of printable) {
     const bodies = (u.entries[0].part.analysis ? u.entries[0].part.analysis.bodies : countMeshBodies(u.mesh)) ?? 1;
     if (bodies <= 1) continue;
     const object = u.entries[0].object;
@@ -107,7 +110,7 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
     );
     break;
   }
-  const open = unique.filter((u) => u.entries[0].part.openEdges > 0);
+  const open = printable.filter((u) => u.entries[0].part.openEdges > 0);
   if (open.length === 0) return;
   const label = (e: ImportedEntry) => e.part.name || e.fileName;
   // Una reparación por malla única, aplicada a todas sus piezas, con un aviso resumen; sin la acción por

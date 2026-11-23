@@ -80,7 +80,7 @@ function makeTestObject(
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     color: '#38bdf8',
-    isHole: false,
+    role: 'solid',
     visible: true,
     locked: false,
     mesh,
@@ -305,7 +305,7 @@ describe('Evaluación Funcional E2E de Kura3D (13 áreas funcionales)', () => {
       await s2.createPrimitive(
         'box',
         { width: 20, height: 20, depth: 20 },
-        { position: [10, 0, 0], isHole: true }
+        { position: [10, 0, 0], role: 'negative' }
       );
       s2.selectAll();
       await s2.applyHolesOnSolids();

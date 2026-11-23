@@ -10,6 +10,7 @@
 
 import * as engine from '../../engine';
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
+import { isReference } from '../scene/objectRole';
 import { buildWith, change, type OperationContext, type SceneChange } from './operationTypes';
 
 /** Concatena mallas en mundo; `faceColors` solo si hay colores por cara o colores distintos. */
@@ -63,6 +64,10 @@ export function combineObjects(
   name: string,
 ): { result: SceneObject; change: SceneChange } {
   if (objs.length < 2) throw new engine.EngineError('MESH_EMPTY', { operation: name });
+  // Combinar no mezcla tipos ni consume referencias (el adaptador ya avisa; esto es la red de seguridad).
+  if (objs.some(isReference) || new Set(objs.map((o) => o.role)).size > 1) {
+    throw new engine.EngineError('REFERENCE_NOT_ALLOWED', { operation: name });
+  }
   const world = concatWorldMeshes(objs);
   const position = basePosition(world);
   const mesh = engine.normalizeMeshToBed(world);
@@ -74,7 +79,7 @@ export function combineObjects(
     position,
     color: first.color,
     materialPreset: first.materialPreset,
-    isHole: first.isHole,
+    role: first.role,
   });
   const placed: SceneObject = first.groupRef ? { ...result, groupRef: first.groupRef } : result;
   return { result: placed, change: change({ added: [placed], removedIds: objs.map((o) => o.id) }) };

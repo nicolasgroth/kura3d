@@ -21,7 +21,7 @@ import { toBuffer } from './ioFixtures';
 function sceneObject(mesh: MeshData, scale: Vec3 = [1, 1, 1], color = '#123456'): SceneObject {
   return {
     id: 'p', name: 'p', source: 'primitive', position: [0, 0, 0], rotation: [0, 0, 0], scale,
-    color, isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
+    color, role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
   } as SceneObject;
 }
 

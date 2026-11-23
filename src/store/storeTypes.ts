@@ -59,6 +59,7 @@ import type {
   UnitSystem,
   Vec3,
 } from '../types/kura';
+import type { ObjectRole } from '../types/kura';
 import type { ExportRequest, ModelImportOptions, ModelImportSource } from './modelIoActions';
 import type { PreviewSliceState } from './slices/previewSlice';
 import type { SplitSliceState } from './slices/splitSlice';
@@ -304,7 +305,7 @@ export interface KuraStoreState {
       /** Giro (radianes, Euler XYZ) y escala en ejes internos; el bus los convierte desde los del usuario. */
       rotation?: Vec3;
       scale?: Vec3;
-      isHole?: boolean;
+      role?: ObjectRole;
       materialPreset?: MaterialPresetId;
       /** `free`: primer hueco libre de la cama; `origin` (por defecto): centro de la cama. */
       placement?: 'free' | 'origin';
@@ -335,7 +336,7 @@ export interface KuraStoreState {
   updateObjectMeta: (
     id: string,
     patch: Partial<
-      Pick<SceneObject, 'name' | 'color' | 'isHole' | 'visible' | 'locked' | 'materialPreset'>
+      Pick<SceneObject, 'name' | 'color' | 'role' | 'referenceOpacity' | 'visible' | 'locked' | 'materialPreset'>
     >,
   ) => void;
   setObjectMaterial: (id: string, materialPreset: MaterialPresetId) => void;
@@ -443,7 +444,8 @@ export interface KuraStoreState {
   /** Colocación de importaciones: conjunto apoyado en la cama o posición original del archivo. */
   importPlacementMode: engine.ImportPlacementMode;
   setImportPlacementMode: (mode: engine.ImportPlacementMode) => void;
-  importMeshFromDialog: (placement?: engine.ImportPlacementMode) => Promise<void>;
+  /** `asReference`: lo importado entra como referencia (se ve y se mide, no se imprime). */
+  importMeshFromDialog: (placement?: engine.ImportPlacementMode, options?: { asReference?: boolean }) => Promise<void>;
   importModelFiles: (files: ModelImportSource[], options?: ModelImportOptions) => Promise<boolean>;
   /** Reescala unos objetos ×factor como bloque, en un paso deshacible (corrección de unidades al importar). */
   rescaleObjects: (ids: readonly string[], factor: number) => boolean;

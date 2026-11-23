@@ -14,6 +14,7 @@ import { dirname, resolve } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { exportSceneTo3MF, exportSceneToBinarySTL, stlBrandHeader } from '../../src/engine/index';
 import { BRAND } from '../../src/brand';
+import { isPrintable } from '../../src/core/scene/objectRole';
 import type { HeadlessSceneObject } from './headlessSupport.js';
 import type { UnitSystem } from './types.js';
 
@@ -29,12 +30,15 @@ export interface ExportFileResult {
   bytesWritten: number;
 }
 
-/** Objetos que el motor realmente exporta (visibles y sólidos), con error si no queda ninguno. */
+/**
+ * Objetos que el motor realmente exporta (sólidos visibles; mismo predicado `isPrintable` que la app:
+ * negativos y referencias nunca se exportan), con error si no queda ninguno.
+ */
 function exportableObjects(targets: HeadlessSceneObject[]): HeadlessSceneObject[] {
-  const solids = targets.filter((o) => o.visible && !o.isHole);
+  const solids = targets.filter(isPrintable);
   if (solids.length === 0) {
     throw new Error(
-      'There are no visible solid objects to export (hidden objects or objects marked as holes are not exported).'
+      'There are no visible solid objects to export (hidden objects, negatives and references are not exported).'
     );
   }
   return solids;

@@ -12,7 +12,8 @@
 import type * as engine from '../engine';
 import { MAX_GROUP_NAME } from '../core/scene/groups';
 import { makeId } from '../core/scene/sceneObjects';
-import type { MaterialPresetId, MeshData, SceneGroup, SceneObject, Vec3 } from '../types/kura';
+import type { MaterialPresetId, MeshData, ObjectRole, SceneGroup, SceneObject, Vec3 } from '../types/kura';
+import { roleFromLegacy } from '../core/scene/objectRole';
 
 /** Constructor de objetos del store (calcula estadísticas). */
 export type RestoreBuild = (params: {
@@ -22,7 +23,7 @@ export type RestoreBuild = (params: {
   rotation: Vec3;
   scale: Vec3;
   color: string;
-  isHole?: boolean;
+  role?: ObjectRole;
   stats?: SceneObject['stats'];
 }) => SceneObject;
 
@@ -37,7 +38,7 @@ export function isKuraScene(model: engine.ImportedModel): boolean {
 }
 
 /** Objetos y grupos de la escena guardada, con ids nuevos y el desplazamiento `offset` aplicado. */
-export function restoreKuraScene(model: engine.ImportedModel, build: RestoreBuild, offset: Vec3 = [0, 0, 0]): RestoredScene {
+export function restoreKuraScene(model: engine.ImportedModel, build: RestoreBuild, offset: Vec3 = [0, 0, 0], asReference = false): RestoredScene {
   const metaGroups = model.kuraScene?.groups ?? [];
   const groupIds = metaGroups.map(() => makeId('grp'));
   const objects = model.parts.map((part) => {
@@ -49,7 +50,7 @@ export function restoreKuraScene(model: engine.ImportedModel, build: RestoreBuil
       rotation: [...k.rotation],
       scale: [...k.scale],
       color: k.color || part.color || '',
-      isHole: k.isHole,
+      role: asReference ? 'reference' : roleFromLegacy(k.isHole),
       stats: part.analysis?.stats,
     });
     return {

@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { isReference } from '../../core/scene/objectRole';
 import * as ops from '../../core/operations';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { diffFaceColors } from '../../engine/paint/colorDelta';
@@ -24,9 +25,10 @@ function replaceMesh(objects: SceneObject[], id: string, mesh: MeshData): SceneO
 export function createPaintSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, pushHistory, pushHistoryStep, rejectWhileLocked, opCtx, runtime } = ctx;
 
+  // Una referencia no se pinta (no se imprime: sus colores no llegarían a ningún filamento).
   const editable = (id: string) => {
     const obj = get().objects.find((o) => o.id === id);
-    return obj && !obj.locked ? obj : null;
+    return obj && !obj.locked && !isReference(obj) ? obj : null;
   };
 
   /** Guarda el cambio de colores como delta (misma topología) o como instantánea (si no). */

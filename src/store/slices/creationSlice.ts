@@ -13,6 +13,7 @@ import { overlapsOthers, placeInFreeSpot } from '../../core/scene/freeSpot';
 import { parametricStateOf } from '../../core/scene/parametric';
 import { resolveModuleTarget } from '../../core/scene/sceneRules';
 import { PRINT_COLOR_PALETTE, type SceneObject, type Vec3 } from '../../types/kura';
+import { isReference, isSolid } from '../../core/scene/objectRole';
 import { BRAND } from '../../brand';
 import { attachToTarget, negativeOnTopFace } from '../../core/scene/attachPiece';
 import { withoutModulePrefix } from '../../core/scene/resultNames';
@@ -51,7 +52,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
    */
   const negativeTarget = (targetId?: string): SceneObject | null => {
     const { objects, selectedIds } = get();
-    const ok = (o: SceneObject | undefined) => (o && !o.locked && !o.isHole ? o : null);
+    const ok = (o: SceneObject | undefined) => (o && !o.locked && isSolid(o) ? o : null);
     if (targetId) return ok(objects.find((o) => o.id === targetId));
     const selected = selectedIds.length === 1 ? ok(objects.find((o) => o.id === selectedIds[0])) : null;
     return selected && selected.parametric?.kind !== 'thread' ? selected : null;
@@ -89,7 +90,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
           scale: options?.scale,
           place: free?.place,
           materialPreset: options?.materialPreset,
-          isHole: options?.isHole,
+          role: options?.role,
         });
         addSpawned(obj, [obj.id]);
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
@@ -101,9 +102,9 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
 
     addModularPrimitive: async (type, mode, targetId) => {
       const state = get();
-      const targetObj = resolveModuleTarget(state.objects, state.selectedIds, targetId) ?? state.objects[0];
+      const targetObj = resolveModuleTarget(state.objects, state.selectedIds, targetId) ?? state.objects.find((o) => !isReference(o));
       const isHole = mode === 'negative';
-      if (!targetObj) return get().createPrimitive(type, undefined, { isHole });
+      if (!targetObj) return get().createPrimitive(type, undefined, { role: isHole ? 'negative' : 'solid' });
 
       return runExclusive(`modular_${mode}_${type}`, null, async () => {
         await get().initEngine();

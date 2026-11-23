@@ -694,6 +694,9 @@ export type ObjectSourceType =
   | 'segmented_part'
   | 'combined';
 
+/** Rol de un objeto: se imprime, se resta o solo sirve de referencia visual. Ver `core/scene/objectRole.ts`. */
+export type ObjectRole = 'solid' | 'negative' | 'reference';
+
 /** Nodo de objeto 3D en la escena de Kura3D. */
 export interface SceneObject {
   id: string;
@@ -716,8 +719,14 @@ export interface SceneObject {
   color: string;
   /** Preset de material físico/visual PBR (por defecto 'pla_matte'). */
   materialPreset?: MaterialPresetId;
-  /** Si es true, se comporta como volumen "hueco / resta" estilo Tinkercad. */
-  isHole: boolean;
+  /**
+   * Rol: `solid` se imprime; `negative` se resta de los sólidos que toca (Aplicar restas);
+   * `reference` se ve y se mide pero nunca se imprime, exporta, resta ni entra en booleanas.
+   * Consultar siempre con los predicados de `src/core/scene/objectRole.ts`.
+   */
+  role: ObjectRole;
+  /** Opacidad propia de una referencia (0,15–1); ausente = la global de Ajustes. */
+  referenceOpacity?: number;
   /** Visibilidad en el viewport. */
   visible: boolean;
   /** Bloqueo contra ediciones accidentales. */

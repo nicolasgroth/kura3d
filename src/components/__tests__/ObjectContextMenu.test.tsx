@@ -19,7 +19,7 @@ import { SceneSearch } from '../scene/SceneSearch';
 const onClose = vi.fn();
 
 function setup(isHole = false) {
-  const obj = { ...fakeBox('a', 'Pieza A'), isHole };
+  const obj = { ...fakeBox('a', 'Pieza A'), role: isHole ? ('negative' as const) : ('solid' as const) };
   useKuraStore.setState({ objects: [obj, fakeBox('b', 'Pieza B')], selectedIds: ['a'] } as never);
   render(
     <div className="kura-viewport-wrap">
@@ -87,18 +87,32 @@ describe('ObjectContextMenu', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('Cambiar tipo marca el actual y cambia a Negativo en un paso', async () => {
+  it('Convertir en marca el actual y cambia a Negativo en un paso', async () => {
     const user = userEvent.setup();
     setup();
-    screen.getByRole('menuitem', { name: /Cambiar tipo/ }).focus();
+    screen.getByRole('menuitem', { name: /Convertir en/ }).focus();
     await openSub(user);
     const solid = await screen.findByRole('menuitemradio', { name: /Sólido/ });
     const neg = screen.getByRole('menuitemradio', { name: /Negativo/ });
     expect(solid.getAttribute('aria-checked')).toBe('true');
     expect(neg.getAttribute('aria-checked')).toBe('false');
     await user.keyboard('{ArrowDown}{Enter}');
-    expect(useKuraStore.getState().objects[0].isHole).toBe(true);
+    expect((useKuraStore.getState().objects[0].role === 'negative')).toBe(true);
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('Convertir en ofrece Referencia (sin atajo H) y la aplica en un paso de deshacer', async () => {
+    const user = userEvent.setup();
+    setup();
+    screen.getByRole('menuitem', { name: /Convertir en/ }).focus();
+    await openSub(user);
+    const ref = await screen.findByRole('menuitemradio', { name: /Referencia/ });
+    expect(ref.getAttribute('aria-checked')).toBe('false');
+    expect(ref.getAttribute('aria-keyshortcuts')).toBeNull();
+    await user.click(ref);
+    expect(useKuraStore.getState().objects[0].role).toBe('reference');
+    useKuraStore.getState().undo();
+    expect(useKuraStore.getState().objects[0].role).toBe('solid');
   });
 
   it('muestra "Repetir" solo cuando hay una acción registrada y Renombrar con F2', () => {

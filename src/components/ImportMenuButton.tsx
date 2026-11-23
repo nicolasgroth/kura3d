@@ -8,7 +8,7 @@
  */
 
 import { useId, useRef } from 'react';
-import { ChevronDown, FileUp } from 'lucide-react';
+import { ChevronDown, FileUp, SquareDashed } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import '../styles/modelIo.css';
@@ -69,6 +69,18 @@ export function ImportMenuButton() {
         >
           <FileUp size={14} aria-hidden="true" />
           {t(language, 'import.fromFile')}
+        </button>
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm"
+          title={t(language, 'import.asReference.hint')}
+          onClick={() => {
+            menu.current?.hidePopover();
+            void importMeshFromDialog(undefined, { asReference: true });
+          }}
+        >
+          <SquareDashed size={14} aria-hidden="true" />
+          {t(language, 'import.asReference')}
         </button>
       </div>
     </div>

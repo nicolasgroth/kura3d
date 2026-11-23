@@ -24,7 +24,7 @@ const mesh: MeshData = {
 function doc(patch: Partial<SceneObject> = {}): ProjectDocument {
   const obj: SceneObject = {
     id: 'a', name: 'a', source: 'primitive', position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1],
-    color: '#38bdf8', isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh), ...patch,
+    color: '#38bdf8', role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh), ...patch,
   };
   return {
     objects: [obj], selectedIds: [], past: [], future: [], unitSystem: 'mm',

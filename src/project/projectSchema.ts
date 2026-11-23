@@ -8,6 +8,7 @@
 
 import { TRANSFORM_LIMITS } from '../engine/operationLimits';
 import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
+import { REFERENCE_OPACITY } from '../core/scene/objectRole';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
 
 export const MAX_PROJECT_BYTES = 128 * 1024 * 1024;
@@ -151,7 +152,9 @@ const metadataFields = {
   position: withinAbs(TRANSFORM_LIMITS.maxAbsCoordinate), rotation: withinAbs(TRANSFORM_LIMITS.maxAbsRotation),
   scale: scaleVec, color,
   materialPreset: optional(oneOf(...Object.keys(MATERIAL_PRESETS))),
-  isHole: bool, visible: bool, locked: bool,
+  role: oneOf('solid', 'negative', 'reference'),
+  referenceOpacity: optional((v) => typeof v === 'number' && v >= REFERENCE_OPACITY.min && v <= REFERENCE_OPACITY.max),
+  visible: bool, locked: bool,
   hollow: optional(shape({ enabled: bool, wallThickness: finite, drainHole: optional(bool), drainHoleRadius: numberOption })),
   texture: optional(shape({ pattern: oneOf('none', 'fuzzy', 'knurling', 'waves', 'honeycomb', 'grid'), depth: finite, scale: finite })),
   metadata: optional(objectExtra),

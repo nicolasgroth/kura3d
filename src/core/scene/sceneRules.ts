@@ -10,6 +10,7 @@
 
 import type { AlignMode, SceneObject } from '../../types/kura';
 import { boxesOverlap } from './overlap';
+import { isNegative, isReference, isSolid, participatesInBooleans } from './objectRole';
 
 /** Un objeto bloqueado no se modifica ni se consume en operaciones. */
 export const isEditable = (obj: SceneObject | undefined): obj is SceneObject => Boolean(obj && !obj.locked);
@@ -33,9 +34,10 @@ export function resolveModuleTarget(
   selectedIds: string[],
   targetId?: string,
 ): SceneObject | null {
-  return objects.find((o) => o.id === targetId) ??
-    objects.find((o) => selectedIds.includes(o.id) && !o.isHole) ??
-    objects.find((o) => !o.isHole) ??
+  // Una referencia nunca recibe piezas agregadas.
+  return objects.find((o) => o.id === targetId && participatesInBooleans(o)) ??
+    objects.find((o) => selectedIds.includes(o.id) && isSolid(o)) ??
+    objects.find((o) => isSolid(o)) ??
     null;
 }
 
@@ -53,6 +55,8 @@ export function resolveBooleanInputs(
   const extraIds = !explicitTargetId && explicitTools.length === 0 ? selectedIds.slice(2) : explicitTools.slice(1);
   // Los pasos siguen el orden pedido; el nombre del resultado, el orden de la escena.
   const extras = extraIds.map((id) => objects.find((o) => o.id === id)).filter((o): o is SceneObject => Boolean(o));
+  // Una referencia no es objetivo ni herramienta de booleanas.
+  if (![target, tool, ...extras].every(participatesInBooleans)) return null;
   return { target, tool, extras, extrasInSceneOrder: objects.filter((o) => extraIds.includes(o.id)) };
 }
 
@@ -60,8 +64,8 @@ export function resolveBooleanInputs(
 export function resolveHoleScope(objects: SceneObject[], selectedIds: string[]): { solids: SceneObject[]; holes: SceneObject[] } {
   const scope = selectedIds.length >= 2 ? objects.filter((o) => selectedIds.includes(o.id)) : objects;
   return {
-    solids: scope.filter((o) => !o.isHole && o.visible && !o.locked),
-    holes: scope.filter((o) => o.isHole && o.visible && !o.locked),
+    solids: scope.filter((o) => isSolid(o) && o.visible && !o.locked),
+    holes: scope.filter((o) => isNegative(o) && o.visible && !o.locked),
   };
 }
 
@@ -79,20 +83,20 @@ export function touchingHoleScope(solids: SceneObject[], holes: SceneObject[]): 
 /** Objetos de la envolvente convexa:los indicados (2+) o la selección. */
 export function resolveHullTargets(objects: SceneObject[], selectedIds: string[], ids?: string[]): SceneObject[] {
   const targetIds = ids && ids.length >= 2 ? ids : selectedIds;
-  return objects.filter((o) => targetIds.includes(o.id));
+  return objects.filter((o) => targetIds.includes(o.id) && participatesInBooleans(o));
 }
 
 /** Objetos a alinear (desbloqueados); `arrange_grid` sin selección múltiple usa los visibles. */
 export function resolveAlignTargets(objects: SceneObject[], selectedIds: string[], mode: AlignMode): SceneObject[] {
   return mode === 'arrange_grid' && selectedIds.length < 2
-    ? objects.filter((o) => o.visible && !o.locked)
+    ? objects.filter((o) => o.visible && !o.locked && !isReference(o))
     : objects.filter((o) => selectedIds.includes(o.id) && !o.locked);
 }
 
 /** Huecos visibles que acompañan a los objetivos al distribuir en grilla. */
 export function holeCompanions(objects: SceneObject[], targets: SceneObject[]): SceneObject[] {
   const ids = new Set(targets.map((o) => o.id));
-  return objects.filter((o) => o.isHole && o.visible && !o.locked && !ids.has(o.id));
+  return objects.filter((o) => isNegative(o) && o.visible && !o.locked && !ids.has(o.id));
 }
 
 /** Objeto sobre el que actúa una operación de estructuras: indicado, segmentado, seleccionado o primero. */

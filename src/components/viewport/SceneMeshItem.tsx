@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { isNegative, isReference, isSolid } from '../../core/scene/objectRole';
 import { markContextMenuHandled } from './contextMenu/handledEvents';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { type ThreeEvent, useFrame } from '@react-three/fiber';
@@ -23,6 +24,8 @@ import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
 import { hasLiveStroke, queueLiveSample, startLiveStroke } from './livePaintStroke';
 import { brushQueryFromEvent, strokeNeedsEdgeRefine, strokeSampleFromEvent, usePaintRaycastAcceleration } from './paintPointer';
 import { continueStorePaintStroke, startStorePaintStroke } from './paintStrokeController';
+import { ReferenceMeshMaterial, ReferenceOutline } from './ReferenceMaterial';
+import { effectiveReferenceOpacity, useReferenceOpacityStore } from '../../store/referenceOpacityStore';
 
 /** Margen total del contorno de selección sobre la pieza y tamaño mínimo, en mm de mundo (no de espacio local). */
 const SELECTION_MARGIN_MM = 0.8;
@@ -88,7 +91,8 @@ export const SceneMeshItem: React.FC<{
     // La geometría depende solo de posiciones/índices/normales (inmutables y compartidas al pintar).
     // Pintar cambia `faceColors`: se reescribe en sitio el atributo `color`, sin reconstruir nada.
     const hasFaceColors = Boolean(obj.mesh.faceColors && obj.mesh.faceColors.length > 0);
-    const baseColor = obj.isHole ? '#f97316' : obj.color;
+    const baseColor = isNegative(obj) ? '#f97316' : obj.color;
+    const defaultReferenceOpacity = useReferenceOpacityStore((s) => s.defaultOpacity);
 
     const geometry = useMemo(() => {
       return buildViewportGeometry(obj.mesh, hasFaceColors ? baseColor : undefined);
@@ -283,15 +287,21 @@ export const SceneMeshItem: React.FC<{
         <mesh
           ref={meshRef}
           geometry={geometry}
-          castShadow={!obj.isHole}
-          receiveShadow
-          renderOrder={obj.isHole ? 8 : 0}
+          castShadow={isSolid(obj)}
+          receiveShadow={!isReference(obj)}
+          renderOrder={isNegative(obj) ? 8 : isReference(obj) ? 6 : 0}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerOut={activeTool === 'measure' ? onMeasurePointerOut : hidePaintCursor}
           onContextMenu={handleContextMenu}
         >
-          {obj.isHole ? (
+          {isReference(obj) ? (
+            <ReferenceMeshMaterial
+              opacity={effectiveReferenceOpacity(obj, defaultReferenceOpacity)}
+              doubleSide={Boolean(clipPlane)}
+              clippingPlanes={activeClipPlanes}
+            />
+          ) : isNegative(obj) ? (
             <meshStandardMaterial
               key={`hole_${clipPlane ? 'clip' : 'full'}`}
               color="#f97316"
@@ -334,7 +344,9 @@ export const SceneMeshItem: React.FC<{
         )}
 
         {/* Contorno rayos-X sutil para que volúmenes negativos internos siempre se distingan */}
-        {obj.isHole && (
+        {isReference(obj) && <ReferenceOutline geometry={geometry} clippingPlanes={activeClipPlanes} />}
+
+        {isNegative(obj) && (
           <mesh geometry={geometry} renderOrder={9}>
             <meshBasicMaterial
               color="#fb923c"

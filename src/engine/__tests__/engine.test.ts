@@ -54,7 +54,7 @@ function makeSceneObject(
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     color: '#38bdf8',
-    isHole: false,
+    role: 'solid',
     visible: true,
     locked: false,
     mesh,
@@ -455,7 +455,7 @@ describe('Núcleo Geométrico Kura3D (Manifold-3D + E/S)', () => {
       const box = await createPrimitiveMesh('box', { width: 10, height: 10, depth: 10 });
       const sceneStl = exportSceneToBinarySTL([
         makeSceneObject('solid', box),
-        makeSceneObject('hole', box, { isHole: true }),
+        makeSceneObject('hole', box, { role: 'negative' }),
         makeSceneObject('hidden', box, { visible: false }),
       ]);
       expect(sceneStl.byteLength).toBe(84 + (box.indices.length / 3) * 50);

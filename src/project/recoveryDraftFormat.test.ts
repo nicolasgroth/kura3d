@@ -23,7 +23,7 @@ function mesh(size = 1): MeshData {
 function object(id: string, m: MeshData, x = 0): SceneObject {
   return {
     id, name: id, source: 'imported', position: [x, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1],
-    color: '#336699', isHole: false, visible: true, locked: false, mesh: m, stats: computeMeshStats(m),
+    color: '#336699', role: 'solid', visible: true, locked: false, mesh: m, stats: computeMeshStats(m),
   } as SceneObject;
 }
 

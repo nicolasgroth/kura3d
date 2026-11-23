@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import { isSolid } from '../../core/scene/objectRole';
 import React, { useMemo, useState } from 'react';
 import { AlertTriangle, Grid3x3 } from 'lucide-react';
 import { t } from '../../i18n';
@@ -38,7 +39,7 @@ export const SplitFitNotice: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const obj = selectedIds.length === 1 ? objects.find((o) => o.id === selectedIds[0]) ?? null : null;
   const size = useMemo<Vec3 | null>(() => {
-    if (!obj || obj.isHole || obj.metadata?.split) return null;
+    if (!obj || !isSolid(obj) || obj.metadata?.split) return null;
     const b = computeWorldBounds(obj);
     return [b.maxX - b.minX, b.maxY - b.minY, b.maxZ - b.minZ];
   }, [obj]);

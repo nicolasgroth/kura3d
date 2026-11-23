@@ -20,7 +20,7 @@ async function documentWith(params: SceneObject['primitiveParams'], primitiveTyp
   const object: SceneObject = {
     id: 'c', name: 'c', source: 'primitive', primitiveType, primitiveParams: params,
     position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1], color: '#38bdf8',
-    materialPreset: 'pla_matte', isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
+    materialPreset: 'pla_matte', role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
   };
   return {
     objects: [object], selectedIds: [], past: [], future: [], unitSystem: 'mm',

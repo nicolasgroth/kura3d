@@ -21,7 +21,7 @@ function part(id: string, plate: number, position: Vec3): SceneObject {
   const positions = new Float32Array([-h, 0, -h, h, 0, -h, h, 20, -h, -h, 20, -h, -h, 0, h, h, 0, h, h, 20, h, -h, 20, h]);
   return {
     id, name: id, source: 'cut_part', position, rotation: [0, 0, 0], scale: [1, 1, 1], color: '#38bdf8',
-    isHole: false, visible: true, locked: false,
+    role: 'solid', visible: true, locked: false,
     mesh: { positions, indices: new Uint32Array([0, 1, 2]) },
     stats: { triangles: 12, vertices: 8, isManifold: true, volumeMm3: 8000, dimensionsMm: [20, 20, 20] },
     metadata: {

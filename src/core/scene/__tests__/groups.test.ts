@@ -30,7 +30,7 @@ function obj(id: string, position: Vec3 = [0, 0, 0], extra: Partial<SceneObject>
   const mesh = cube();
   return {
     id, name: id, source: 'primitive', position, rotation: [0, 0, 0], scale: [1, 1, 1], color: '#ff0000',
-    isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh), ...extra,
+    role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh), ...extra,
   };
 }
 

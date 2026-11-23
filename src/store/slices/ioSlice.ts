@@ -68,8 +68,8 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     tr,
     // La importación entra por tandas: su paso de deshacer guarda la escena de antes de empezar.
     pushHistory: (before) => (before ? ctx.pushHistoryStep(cloneSnapshot(before.objects, before.selectedIds, before.groups)) : pushHistory()),
-    buildObject: ({ name, mesh, position, color, isHole, rotation, scale, stats }) =>
-      (setImportStage('place'), buildSceneObject({ name, source: 'imported', mesh, position, rotation, scale, stats, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole })),
+    buildObject: ({ name, mesh, position, color, role, rotation, scale, stats }) =>
+      (setImportStage('place'), buildSceneObject({ name, source: 'imported', mesh, position, rotation, scale, stats, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], role })),
     onBuildProgress: (done, total) => {
       const progress = get().busyProgress;
       if (progress) set({ busyProgress: { ...progress, phase: importPartsPhase(done, total), done, total } });
@@ -132,7 +132,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
             mesh: part.mesh,
             position,
             color: isHole ? HOLE_HELPER_COLOR : part.color || PRINT_COLOR_PALETTE[0],
-            isHole,
+            role: isHole ? 'negative' : 'solid',
           });
         });
 
@@ -182,7 +182,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
       set({ importPlacementMode: mode });
     },
 
-    importMeshFromDialog: async (placement) => {
+    importMeshFromDialog: async (placement, options) => {
       let files: ModelImportSource[];
       try {
         files = await openLocalFiles(engine.MODEL_IMPORT_ACCEPT, MAX_MODEL_FILE_BYTES);
@@ -190,7 +190,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
         get().addToast(tr('toast.errorPrefix', { message: projectErrorMessage(err) }), 'error');
         return;
       }
-      if (files.length > 0) await get().importModelFiles(files, { placement });
+      if (files.length > 0) await get().importModelFiles(files, { placement, asReference: options?.asReference });
     },
 
     rescaleObjects: (ids, factor) => (rejectWhileBusy() ? false : modelIo.rescaleObjects(ids, factor)),

@@ -9,6 +9,7 @@
 import { userAxisLabel } from '../core/scene/displayAxes';
 import { t, type TranslationKey } from '../i18n';
 import type { LanguageCode } from '../types/kura';
+import { ROLE_LABEL_KEY } from './roleLabels';
 import type { RepeatRecord } from './quickActionsTypes';
 
 export function repeatLabel(language: LanguageCode, rec: RepeatRecord): string {
@@ -38,6 +39,6 @@ export function repeatLabel(language: LanguageCode, rec: RepeatRecord): string {
     case 'simplify': return t(language, 'repeat.name.simplify');
     case 'color': return t(language, 'repeat.name.color');
     case 'setType':
-      return t(language, 'repeat.name.setType', { type: t(language, rec.isHole ? 'menu.type.negative' : 'menu.type.solid') });
+      return t(language, 'repeat.name.setType', { type: t(language, ROLE_LABEL_KEY[rec.role]) });
   }
 }

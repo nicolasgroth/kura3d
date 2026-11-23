@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { isNegative, isReference, isSolid } from './core/scene/objectRole';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AiChatDrawer } from './components/AiChatDrawer';
 import { CommandPalette } from './components/CommandPalette';
@@ -288,10 +289,10 @@ export const App: React.FC = () => {
         if (e.repeat) return;
         {
           const selectedObjs = state.objects.filter((o) => state.selectedIds.includes(o.id));
-          const selHasHole = selectedObjs.some((o) => o.isHole && o.visible);
-          const selHasSolid = selectedObjs.some((o) => !o.isHole && o.visible);
-          const sceneHasHole = state.objects.some((o) => o.isHole && o.visible);
-          const sceneHasSolid = state.objects.some((o) => !o.isHole && o.visible);
+          const selHasHole = selectedObjs.some((o) => isNegative(o) && o.visible);
+          const selHasSolid = selectedObjs.some((o) => isSolid(o) && o.visible);
+          const sceneHasHole = state.objects.some((o) => isNegative(o) && o.visible);
+          const sceneHasSolid = state.objects.some((o) => isSolid(o) && o.visible);
           if ((selHasHole && selHasSolid) || (state.selectedIds.length < 2 && sceneHasHole && sceneHasSolid)) {
             void state.applyHolesOnSolids();
           } else if (state.selectedIds.length >= 2) {
@@ -389,8 +390,9 @@ export const App: React.FC = () => {
       } else if (key === 'h') {
         for (const id of state.selectedIds) {
           const obj = state.objects.find((o) => o.id === id);
-          if (obj) {
-            state.updateObjectMeta(id, { isHole: !obj.isHole });
+          // H alterna Sólido / Negativo; una referencia no cambia con H (se convierte desde el menú).
+          if (obj && !isReference(obj)) {
+            state.updateObjectMeta(id, { role: isNegative(obj) ? 'solid' : 'negative' });
           }
         }
       } else if (key === 'm' && e.shiftKey) {

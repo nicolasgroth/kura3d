@@ -96,12 +96,12 @@ describe('Operaciones asíncronas no escriben sobre estado viejo', () => {
 
   it('applyHolesOnSolids no recorta sólidos bloqueados', async () => {
     const solid = await addBox(20, [0, 0, 0]);
-    await addBox(6, [0, 0, 0], { isHole: true });
+    await addBox(6, [0, 0, 0], { role: 'negative' });
     store().updateObjectMeta(solid.id, { locked: true });
     useKuraStore.setState({ selectedIds: [] });
     await store().applyHolesOnSolids();
     expect(byId(solid.id)!.stats.volumeMm3).toBeCloseTo(8000, 0);
-    expect(store().objects.some((o) => o.isHole)).toBe(true);
+    expect(store().objects.some((o) => (o.role === 'negative'))).toBe(true);
   });
 });
 
@@ -110,31 +110,31 @@ describe('Resta vacía detectada por geometría', () => {
 
   it('devuelve null cuando el hueco contiene al sólido', async () => {
     const small = await addBox(5, [0, 0, 0]);
-    const hole = await addBox(30, [0, -5, 0], { isHole: true });
+    const hole = await addBox(30, [0, -5, 0], { role: 'negative' });
     expect(await subtractOrEmpty(small, hole)).toBeNull();
   });
 
   it('devuelve la malla cuando la resta deja volumen', async () => {
     const big = await addBox(20, [0, 0, 0]);
-    const hole = await addBox(5, [0, 0, 0], { isHole: true });
+    const hole = await addBox(5, [0, 0, 0], { role: 'negative' });
     const res = await subtractOrEmpty(big, hole);
     expect(res).not.toBeNull();
   });
 
   it('applyHolesOnSolids elimina el sólido contenido y conserva el resto', async () => {
     const inner = await addBox(4, [100, 0, 0]);
-    await addBox(20, [100, -2, 0], { isHole: true });
+    await addBox(20, [100, -2, 0], { role: 'negative' });
     const other = await addBox(10, [-60, 0, 0]);
     useKuraStore.setState({ selectedIds: [] });
     await store().applyHolesOnSolids();
     expect(byId(inner.id)).toBeUndefined();
     expect(byId(other.id)).toBeDefined();
-    expect(store().objects.some((o) => o.isHole)).toBe(false);
+    expect(store().objects.some((o) => (o.role === 'negative'))).toBe(false);
   });
 
   it('tras aplicar restas queda seleccionado solo el sólido recortado; el ajeno no se toca', async () => {
     const target = await addBox(20, [0, 0, 0]);
-    const hole = await addBox(6, [0, 0, 0], { isHole: true });
+    const hole = await addBox(6, [0, 0, 0], { role: 'negative' });
     const other = await addBox(10, [-60, 0, 0]);
     const otherMesh = byId(other.id)!.mesh;
     useKuraStore.setState({ selectedIds: [hole.id] });

@@ -15,6 +15,7 @@ import {
   PRINT_COLOR_PALETTE,
   type MaterialPresetId,
   type MeshData,
+  type ObjectRole,
   type ObjectSourceType,
   type PrimitiveParams,
   type ParametricOrigin,
@@ -42,7 +43,10 @@ export interface BuildObjectParams {
   scale?: Vec3;
   color?: string;
   materialPreset?: MaterialPresetId;
-  isHole?: boolean;
+  /** Rol del objeto (por defecto `solid`). */
+  role?: ObjectRole;
+  /** Opacidad propia si es referencia. */
+  referenceOpacity?: number;
   primitiveType?: PrimitiveType;
   primitiveParams?: PrimitiveParams;
   parametric?: ParametricOrigin;
@@ -117,7 +121,8 @@ export function buildSceneObject(params: BuildObjectParams, policy: ObjectBuildP
     scale,
     color: params.color ?? PRINT_COLOR_PALETTE[0],
     materialPreset: params.materialPreset ?? 'pla_matte',
-    isHole: Boolean(params.isHole),
+    role: params.role ?? 'solid',
+    ...(params.role === 'reference' && params.referenceOpacity !== undefined ? { referenceOpacity: params.referenceOpacity } : {}),
     visible: true,
     locked: false,
     mesh: params.mesh,

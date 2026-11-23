@@ -41,7 +41,7 @@ beforeAll(async () => {
   scene = [
     obj('o1', painted, { name: 'Pintado', position: [12.5, 3, -40.25], rotation: [0.3, -1.1, 2.0], scale: [1, 1.5, 0.75], groupRef: 'gA' }),
     obj('o2', cyl, { name: 'Bloqueado', position: [-80, 4, 10], rotation: [0, Math.PI / 2, 0], locked: true, color: '#8000ff', groupRef: 'gB' }),
-    obj('o3', box, { name: 'Hueco', position: [-80, 4, 10], isHole: true, color: '#f97316', groupRef: 'gB' }),
+    obj('o3', box, { name: 'Hueco', position: [-80, 4, 10], role: 'negative', color: '#f97316', groupRef: 'gB' }),
     obj('o4', cyl, { name: 'Oculto', position: [150, 4, 120], visible: false, groupRef: 'gC', materialPreset: 'petg_gloss' as SceneObject['materialPreset'] }),
     obj('o5', box, { name: 'Suelto', position: [300, 3, -200], scale: [2, 2, 2], color: '#ffffff', groupRef: 'gC' }),
   ];
@@ -72,7 +72,7 @@ describe('3MF de Kura3D: ida y vuelta exacta de la escena', () => {
       expect(back.color).toBe(original.color);
       expect(back.visible).toBe(original.visible);
       expect(back.locked).toBe(original.locked);
-      expect(back.isHole).toBe(original.isHole);
+      expect((back.role === 'negative')).toBe((original.role === 'negative'));
       expect(back.materialPreset).toBe(original.materialPreset);
       expect(newGroup.get(back.groupRef!)?.name).toBe(oldGroup.get(original.groupRef!)?.name);
       // Malla local: misma topología y vértices dentro de la precisión del XML (5 decimales).
@@ -141,7 +141,7 @@ describe('3MF de Kura3D: ida y vuelta exacta de la escena', () => {
 describe('metadatos de escena hostiles', () => {
   const valid = () => ({
     namespace: 'urn:kura:3mf:scene:1',
-    objects: [{ objectId: '2', name: 'a', position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1], color: '#fff', visible: true, locked: false, isHole: false, vertices: 3, triangles: 1 }],
+    objects: [{ objectId: '2', name: 'a', position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1], color: '#fff', visible: true, locked: false, role: 'solid', vertices: 3, triangles: 1 }],
     groups: [] as unknown[],
   });
   it('rechaza espacio de nombres ajeno, JSON roto, números no finitos y escala cero', () => {

@@ -75,7 +75,7 @@ describe('resta vacía con error tipado', () => {
 
   it('el motor lanza BOOLEAN_EMPTY_RESULT cuando el hueco contiene al sólido', async () => {
     const small = await addBox(5, [0, 0, 0]);
-    const hole = await addBox(30, [0, -5, 0], { isHole: true });
+    const hole = await addBox(30, [0, -5, 0], { role: 'negative' });
     await expect(runBooleanOperation(small, hole, 'subtract')).rejects.toMatchObject({ code: 'BOOLEAN_EMPTY_RESULT' });
     await expect(runBooleanOperation(small, hole, 'subtract')).rejects.toBeInstanceOf(EngineError);
   });

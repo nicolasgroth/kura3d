@@ -16,6 +16,7 @@ import * as ops from '../../src/core/operations/index';
 import type { OperationContext, SceneChange } from '../../src/core/operations/index';
 import { parametricStateOf } from '../../src/core/scene/parametric';
 import { HEADLESS_BUILD_POLICY } from '../../src/core/scene/sceneObjects';
+import { clampReferenceOpacity, isReference, readRoleInput, type ObjectRole } from '../../src/core/scene/objectRole';
 import * as engine from '../../src/engine/index';
 import { resolveKeptHalf } from '../../src/core/scene/keptHalf';
 import { OPERATION_DEFAULTS } from '../../src/engine/operationLimits';
@@ -121,6 +122,8 @@ export class KuraHeadlessEngine {
     scale?: Vec3;
     color?: string;
     materialPreset?: MaterialPresetId;
+    /** Rol del objeto; `isHole` es su alias obsoleto (una versión). */
+    role?: ObjectRole;
     isHole?: boolean;
     /** `free` (por defecto): primer hueco libre de la cama del perfil; `origin`: origen. */
     placement?: HeadlessPlacement;
@@ -138,7 +141,7 @@ export class KuraHeadlessEngine {
       rotation,
       scale,
       materialPreset: input.materialPreset,
-      isHole: input.isHole,
+      role: readRoleInput(input),
     });
     this.objects.set(obj.id, obj);
     return userSummary(obj);
@@ -152,8 +155,12 @@ export class KuraHeadlessEngine {
       rotation?: Vec3;
       scale?: Vec3;
       name?: string;
+      role?: ObjectRole;
+      /** Obsoleto: alias de `role` ('negative' / 'solid'). */
       isHole?: boolean;
       visible?: boolean;
+      /** Opacidad propia de una referencia (0,15–1). */
+      referenceOpacity?: number;
       locked?: boolean;
     }
   ): SceneObjectSummary {
@@ -165,7 +172,9 @@ export class KuraHeadlessEngine {
     if (patch.rotation) obj.rotation = ua.rotationFromUser(patch.rotation)!;
     if (patch.scale) obj.scale = ua.scaleFromUser(patch.scale)!;
     if (patch.name !== undefined) obj.name = patch.name;
-    if (patch.isHole !== undefined) obj.isHole = patch.isHole;
+    const role = readRoleInput(patch);
+    if (role !== undefined) obj.role = role;
+    if (patch.referenceOpacity !== undefined) obj.referenceOpacity = clampReferenceOpacity(patch.referenceOpacity);
     if (patch.visible !== undefined) obj.visible = patch.visible;
     if (patch.locked !== undefined) obj.locked = patch.locked;
     obj.stats = worldStatsOf(obj);
@@ -184,7 +193,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     options: { wallThickness: number; drainHole?: boolean; drainHoleRadius?: number }
   ): Promise<SceneObjectSummary> {
-    const obj = this.requireEditable(objectId);
+    const obj = this.requireShapeable(objectId);
     const hollow = {
       enabled: true,
       wallThickness: options.wallThickness,
@@ -209,11 +218,11 @@ export class KuraHeadlessEngine {
     note: string;
     warnings: ua.UserWarning[];
   }> {
-    const target = this.requireEditable(input.targetId);
+    const target = this.requireShapeable(input.targetId);
     if (input.toolIds.length === 0) {
       throw new Error('At least one tool object is required in `toolIds`.');
     }
-    const tools = input.toolIds.map((id) => this.requireEditable(id));
+    const tools = input.toolIds.map((id) => this.requireShapeable(id));
     if (tools.some((t) => t.id === target.id)) {
       throw new Error('The target object cannot also be a tool of the boolean operation.');
     }
@@ -239,7 +248,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     input: { bed?: Partial<engine.SplitBed>; plan: engine.BedSplitPlanOptions; execute: Omit<engine.BedSplitExecuteOptions, 'onProgress'>; dryRun: boolean }
   ) {
-    const obj = this.requireEditable(objectId);
+    const obj = this.requireShapeable(objectId);
     const p = this.printerProfile;
     const bed: engine.SplitBed = { widthMm: p.bedWidthMm, depthMm: p.bedDepthMm, heightMm: p.maxHeightMm, ...input.bed };
     const axes = input.plan.axes?.map(ua.axisFromUser);
@@ -292,7 +301,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     options: PlaneCutOptions
   ): Promise<{ parts: SceneObjectSummary[]; note: string; warnings: ua.UserWarning[] }> {
-    const obj = this.requireEditable(objectId);
+    const obj = this.requireShapeable(objectId);
     const internal = { ...options, ...ua.planeFromUser(options.axis, options.offset), keepMode: ua.keepModeFromUser(options.axis, options.keepMode) };
     const { parts, change } = await ops.planeCut(this.ctx, obj, internal);
     if (parts.length === 0) {
@@ -309,7 +318,7 @@ export class KuraHeadlessEngine {
 
   /** Separa islas desconectadas con `splitDisconnectedParts` del motor. */
   async splitDisconnected(objectId: string): Promise<{ parts: SceneObjectSummary[]; note: string }> {
-    const obj = this.requireEditable(objectId);
+    const obj = this.requireShapeable(objectId);
     const { parts, change } = await ops.splitDisconnected(this.ctx, obj);
     if (parts.length === 0) {
       return { parts: [userSummary(obj)], note: 'The object is a single connected body; there is nothing to split.' };
@@ -324,7 +333,7 @@ export class KuraHeadlessEngine {
     note: string;
     warnings?: Array<{ code: string; message: string }>;
   }> {
-    const obj = this.requireEditable(objectId);
+    const obj = this.requireShapeable(objectId);
     const { parts, change } = await ops.splitByColor(this.ctx, obj, 2, depthMm === undefined ? {} : { depthMm });
     if (parts.length === 0) {
       return { parts: [userSummary(obj)], note: 'The object has a single color; there is nothing to split.' };
@@ -341,7 +350,7 @@ export class KuraHeadlessEngine {
 
   /** Desplaza la superficie con `applyProceduralTexture` del motor. */
   applyTexture(objectId: string, texture: TextureOptions): SceneObjectSummary {
-    const obj = this.requireEditable(objectId);
+    const obj = this.requireShapeable(objectId);
     this.apply(ops.textureObject(this.ctx, obj, texture));
     return userSummary(obj);
   }
@@ -351,7 +360,7 @@ export class KuraHeadlessEngine {
    * `localPoint` (coordenadas locales del usuario), una pincelada del radio por defecto de la app.
    */
   paintObject(objectId: string, color: string, localPoint?: Vec3): SceneObjectSummary {
-    const obj = this.requireEditable(objectId);
+    const obj = this.requireShapeable(objectId);
     const change = localPoint
       ? ops.paintBrushSample(this.ctx, obj, ua.vecFromUser(localPoint)!, OPERATION_DEFAULTS.paint.brushRadiusMm, color, { refineEdge: true })
       : ops.paintWholeObject(this.ctx, obj, color, OPERATION_DEFAULTS.paint.wholeSetsBaseColor);
@@ -414,7 +423,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     options: PrintabilityInput = {}
   ): PrintabilityReport {
-    return headlessPrintabilityReport(this.requireObject(objectId), this.printerProfile, options);
+    return headlessPrintabilityReport(this.requireNonReference(objectId), this.printerProfile, options);
   }
 
   /** Alinea o distribuye en grilla con `computeAlignmentPositions` del motor. */
@@ -458,7 +467,7 @@ export class KuraHeadlessEngine {
     options: Omit<MoldOptions, 'splitAxis'> & { splitAxis: 'x' | 'y' },
     placement: HeadlessPlacement = 'free'
   ): Promise<{ parts: SceneObjectSummary[]; mode: MoldOptions['mode']; note: string }> {
-    const master = this.requireObject(objectId);
+    const master = this.requireNonReference(objectId);
     const { parts, change } = await ops.generateMold(this.ctx, master, {
       ...options,
       splitAxis: ua.moldSplitAxisFromUser(options.splitAxis),
@@ -477,7 +486,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     options: SurfaceProjectionOptions
   ): Promise<{ object: SceneObjectSummary; mode: SurfaceProjectionOptions['mode']; note: string }> {
-    const target = this.requireEditable(objectId);
+    const target = this.requireShapeable(objectId);
     if (options.kind === 'svg' && !options.svgContent) {
       throw new Error('kind="svg" requires `svgContent`.');
     }
@@ -528,7 +537,7 @@ export class KuraHeadlessEngine {
     if (objectIds.length === 0) {
       throw new Error('At least one object is required in `objectIds` to generate the hull.');
     }
-    const targets = objectIds.map((id) => this.requireObject(id));
+    const targets = objectIds.map((id) => this.requireNonReference(id));
     const { result, change } = await ops.convexHull(this.ctx, targets, name);
     this.apply(change);
     return { object: userSummary(result), sourceObjectIds: objectIds };
@@ -544,7 +553,7 @@ export class KuraHeadlessEngine {
 
   /** Segmentación en ejes internos (la que consumen colorear y extraer). */
   private segment(objectId: string, options: SegmentationOptions = {}): Promise<StructuralSegmentationResult> {
-    return engine.detectStructuralRegions(this.requireObject(objectId), stripUndefined(options));
+    return engine.detectStructuralRegions(this.requireNonReference(objectId), stripUndefined(options));
   }
 
   /** Colorea por cara cada sub-estructura detectada (`applyStructureColorsToMesh`). */
@@ -552,7 +561,7 @@ export class KuraHeadlessEngine {
     objectId: string,
     options: { creaseAngleDeg?: number } = {}
   ): Promise<{ object: SceneObjectSummary; regions: DetectedStructureRegion[]; regionCount: number }> {
-    const obj = this.requireEditable(objectId);
+    const obj = this.requireShapeable(objectId);
     const segmentation = await this.segment(objectId, options);
     if (segmentation.regions.length === 0) {
       throw new Error('No sub-structures were detected to color on the object.');
@@ -573,7 +582,7 @@ export class KuraHeadlessEngine {
     sourceDeleted: boolean;
     region: DetectedStructureRegion;
   }> {
-    const obj = removeFromSource ? this.requireEditable(objectId) : this.requireObject(objectId);
+    const obj = removeFromSource ? this.requireShapeable(objectId) : this.requireNonReference(objectId);
     const segmentation = await this.segment(objectId);
     const region = segmentation.regions.find((r) => r.id === regionId);
     if (!region) {
@@ -584,7 +593,7 @@ export class KuraHeadlessEngine {
     }
 
     const { extracted, sourceDeleted, change } = await ops.extractStructure(
-      this.ctx, obj, segmentation, region, removeFromSource, { isHole: obj.isHole },
+      this.ctx, obj, segmentation, region, removeFromSource, { role: obj.role },
     );
     this.apply(change);
     return {
@@ -671,6 +680,19 @@ export class KuraHeadlessEngine {
     }
     for (const id of change.removedIds) this.objects.delete(id);
     for (const obj of change.added) this.objects.set(obj.id, obj);
+  }
+
+  /** Una referencia no entra en booleanas, divisiones, ahuecado, pintura ni análisis de impresión. */
+  private requireNonReference(id: string): HeadlessSceneObject {
+    const obj = this.requireObject(id);
+    if (isReference(obj)) {
+      throw new Error(`Object "${obj.name}" is a reference: references are never printed, exported or used in this operation. Change its role to "solid" first.`);
+    }
+    return obj;
+  }
+
+  private requireShapeable(id: string): HeadlessSceneObject {
+    return assertUnlocked(this.requireNonReference(id));
   }
 
   private requireEditable(id: string): HeadlessSceneObject {

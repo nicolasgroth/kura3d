@@ -9,6 +9,7 @@
 
 import type { TranslationKey } from '../translations';
 import { MENU_ZH } from './menuKeys';
+import { REFERENCE_ZH } from './referencia';
 import { MENU_IDEAS_ZH } from './menuIdeas';
 import { GROUPS_ZH } from './groups';
 import { MEASURE_ZH } from './measure';
@@ -42,6 +43,7 @@ import { UX6_ZH } from './ux6';
  */
 export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...MENU_ZH,
+  ...REFERENCE_ZH,
   ...MENU_IDEAS_ZH,
   ...GROUPS_ZH,
   ...MEASURE_ZH,

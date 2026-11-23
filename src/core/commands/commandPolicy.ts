@@ -66,6 +66,7 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   extract_structure: 'write',
   mirror_object: 'write',
   repair_mesh: 'write',
+  set_object_role: 'write',
 });
 
 /** Indica si el nombre corresponde a un comando conocido del Command Bus. */
@@ -130,6 +131,7 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_measure_capacity: 'measure_capacity',
   kura_repair_mesh: 'repair_mesh',
   kura_diagnose_mesh: 'diagnose_mesh',
+  kura_set_object_role: 'set_object_role',
 });
 
 /** Acceso de una herramienta MCP; herramientas no declaradas se tratan como escritura. */

@@ -20,7 +20,7 @@ describe('arrange_grid', () => {
 
   it('mueve cada hueco junto a su sólido y no por separado', async () => {
     const solid = await addBox(20, [60, 0, 60]);
-    const hole = await addBox(6, [60, 4, 60], { isHole: true });
+    const hole = await addBox(6, [60, 4, 60], { role: 'negative' });
     const other = await addBox(15, [-70, 0, -40]);
     useKuraStore.setState({ selectedIds: [] });
 
@@ -36,7 +36,7 @@ describe('arrange_grid', () => {
 
   it('con selección explícita arrastra también el hueco no seleccionado', async () => {
     const a = await addBox(20, [80, 0, 0]);
-    const hole = await addBox(6, [80, 2, 0], { isHole: true });
+    const hole = await addBox(6, [80, 2, 0], { role: 'negative' });
     const b = await addBox(20, [-80, 0, 0]);
     useKuraStore.setState({ selectedIds: [a.id, b.id] });
     const holeBefore = byId(hole.id)!.position;
@@ -59,7 +59,7 @@ describe('arrange_grid', () => {
 
   it('computeArrangeLayout deja huecos sueltos como pieza propia y sin solapes', async () => {
     const a = await addBox(20, [0, 0, 0]);
-    const loose = await addBox(8, [200, 0, 200], { isHole: true });
+    const loose = await addBox(8, [200, 0, 200], { role: 'negative' });
     const layout = computeArrangeLayout([byId(a.id)!, byId(loose.id)!], DEFAULT_PRINTER_PROFILES[0]);
     expect(Object.keys(layout.positions).sort()).toEqual([a.id, loose.id].sort());
     const [ax] = layout.positions[a.id];

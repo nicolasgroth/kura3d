@@ -20,7 +20,7 @@ export function fakeBox(id: string, name: string, size = 20): SceneObject {
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     color: '#38bdf8',
-    isHole: false,
+    role: 'solid',
     visible: true,
     locked: false,
     mesh: { positions: new Float32Array(), indices: new Uint32Array() },

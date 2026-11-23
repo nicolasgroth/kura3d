@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { isNegative, isSolid } from '../../core/scene/objectRole';
 import React from 'react';
 import { Combine, FileUp, MinusCircle, PlusCircle } from 'lucide-react';
 import { t } from '../../i18n';
@@ -24,8 +25,8 @@ export const ModulesPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =
   const addModularPrimitive = useKuraStore((s) => s.addModularPrimitive);
   const importModelAsModuleFromDialog = useKuraStore((s) => s.importModelAsModuleFromDialog);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
-  const holeCount = objects.filter((o) => o.isHole && o.visible).length;
-  const solidCount = objects.filter((o) => !o.isHole && o.visible).length;
+  const holeCount = objects.filter((o) => isNegative(o) && o.visible).length;
+  const solidCount = objects.filter((o) => isSolid(o) && o.visible).length;
   const hasAnyHoles = holeCount > 0;
   const isBusy = Boolean(busyOperation);
 

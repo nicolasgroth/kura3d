@@ -14,6 +14,7 @@ import { TRANSLATIONS_FR } from './locales/fr';
 import { TRANSLATIONS_HI } from './locales/hi';
 import { TRANSLATIONS_ZH } from './locales/zh';
 import { MENU_EN, MENU_ES } from './locales/menuKeys';
+import { REFERENCE_EN, REFERENCE_ES } from './locales/referencia';
 import { MENU_IDEAS_EN, MENU_IDEAS_ES } from './locales/menuIdeas';
 import { GROUPS_EN, GROUPS_ES } from './locales/groups';
 import { MEASURE_EN, MEASURE_ES } from './locales/measure';
@@ -49,6 +50,7 @@ import { UX6_EN, UX6_ES } from './locales/ux6';
  */
 export const TRANSLATIONS_ES = {
   ...MENU_ES,
+  ...REFERENCE_ES,
   ...MENU_IDEAS_ES,
   ...GROUPS_ES,
   ...MEASURE_ES,
@@ -1385,6 +1387,7 @@ export type TranslationKey = keyof typeof TRANSLATIONS_ES;
  */
 export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...MENU_EN,
+  ...REFERENCE_EN,
   ...MENU_IDEAS_EN,
   ...GROUPS_EN,
   ...MEASURE_EN,

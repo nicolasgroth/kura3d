@@ -8,7 +8,7 @@
  */
 
 import { initManifoldEngine } from '../../engine';
-import type { LanguageCode, SceneObject, Vec3 } from '../../types/kura';
+import type { LanguageCode, ObjectRole, SceneObject, Vec3 } from '../../types/kura';
 import { useKuraStore } from '../useKuraStore';
 
 export const store = () => useKuraStore.getState();
@@ -37,12 +37,12 @@ export async function resetStore(language: LanguageCode = 'es'): Promise<void> {
 export async function addBox(
   size: number,
   position: Vec3 = [0, 0, 0],
-  options: { isHole?: boolean; name?: string } = {},
+  options: { role?: ObjectRole; name?: string } = {},
 ): Promise<SceneObject> {
   const box = await store().createPrimitive(
     'box',
     { width: size, height: size, depth: size },
-    { position, isHole: options.isHole, name: options.name },
+    { position, role: options.role, name: options.name },
   );
   if (!box) throw new Error('No se pudo crear el cubo de prueba');
   return box;

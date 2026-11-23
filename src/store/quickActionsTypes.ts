@@ -9,7 +9,7 @@
  */
 
 import type { PieceShape } from '../core/scene/pieceSizing';
-import type { AlignMode, MaterialPresetId, PlaneCutOptions, SceneObject, Vec3 } from '../types/kura';
+import type { AlignMode, MaterialPresetId, ObjectRole, PlaneCutOptions, SceneObject, Vec3 } from '../types/kura';
 
 export type PieceMode = 'positive' | 'negative';
 
@@ -25,7 +25,7 @@ export type RepeatRecord =
   | { kind: 'addPiece'; shape: PieceShape; mode: PieceMode }
   | { kind: 'simplify'; toleranceMm: number }
   | { kind: 'color'; color: string }
-  | { kind: 'setType'; isHole: boolean }
+  | { kind: 'setType'; role: ObjectRole }
   | { kind: 'centerOnBed' }
   | { kind: 'centerObjectOnBed' }
   | { kind: 'dropToBed' }
@@ -47,8 +47,8 @@ export interface QuickActionsSliceState {
   addPieceToObject: (shape: PieceShape, mode: PieceMode, targetId?: string) => Promise<SceneObject | null>;
   /** Destino pendiente de la pieza SVG (el diálogo SVG es asíncrono). */
   pendingPiece: { mode: PieceMode; targetId: string } | null;
-  /** Fija el tipo (sólido/negativo) de objetos; un solo paso de deshacer. */
-  setObjectsHole: (ids: string[], isHole: boolean) => void;
+  /** Fija el rol (sólido / negativo / referencia) de objetos; un solo paso de deshacer. */
+  setObjectsRole: (ids: string[], role: ObjectRole) => void;
   /** Regenera los paramétricos seleccionados (F5). Devuelve cuántos se recalcularon. */
   recomputeSelected: () => Promise<number>;
   /** Búsqueda en la escena (F3). */

@@ -25,6 +25,7 @@ import { parseUpdatePrimitiveParams } from './parametricCommandSchemas';
 import { parseSplitForBed, parseValidateAssembly } from './splitCommandSchemas';
 import { MEASURE_HANDLERS } from './measureCommands';
 import { REPAIR_HANDLERS } from './repairCommands';
+import { ROLE_HANDLERS } from './roleCommands';
 import { userWarning } from '../core/scene/userEngineMessages';
 import { localizeEngineWarning, type EngineWarning } from '../engine/engineErrors';
 import type { OperationErrorTracker } from './operationErrors';
@@ -90,7 +91,7 @@ function required<T>(value: T, command: string): NonNullable<T> {
   return value as NonNullable<T>;
 }
 
-function exportTargets(deps: CommandBusDeps, onlySelected: boolean): { targets: SceneObject[]; skippedHoles: number } {
+function exportTargets(deps: CommandBusDeps, onlySelected: boolean): { targets: SceneObject[]; skippedHoles: number; skippedReferences: number } {
   const { objects, selectedIds } = deps.get();
   const selection = selectExportTargets(objects, selectedIds, onlySelected);
   if (selection.targets.length === 0) throw new CommandError('precondition', 'toast.nothingToExport');
@@ -103,6 +104,7 @@ const headless = () => typeof document === 'undefined';
 const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...MEASURE_HANDLERS,
   ...REPAIR_HANDLERS,
+  ...ROLE_HANDLERS,
   get_scene_state: (_p, { get }) => {
     const s = get();
     return {
@@ -115,7 +117,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       objects: s.objects.map((o) => ({
         id: o.id, name: o.name, source: o.source, primitiveType: o.primitiveType,
         ...transformToUser(o), color: o.color,
-        materialPreset: o.materialPreset ?? 'pla_matte', isHole: o.isHole, visible: o.visible,
+        materialPreset: o.materialPreset ?? 'pla_matte', role: o.role, isHole: o.role === 'negative', visible: o.visible,
         locked: o.locked, stats: worldStats(o), groupId: o.groupRef ?? null,
       })),
       groups: groupSchema.groupHierarchy(s),
@@ -368,9 +370,9 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   export_stl: async (p, deps, command) => {
     const { onlySelected, wantsBytes } = schema.parseExport(p);
     if (wantsBytes || headless()) {
-      const { targets, skippedHoles } = exportTargets(deps, onlySelected);
+      const { targets, skippedHoles, skippedReferences } = exportTargets(deps, onlySelected);
       const bytes = engine.exportSceneToBinarySTL(targets, engine.stlBrandHeader(BRAND));
-      return { format: 'stl', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles };
+      return { format: 'stl', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles, skippedReferences };
     }
     required(await deps.get().exportSceneStl(onlySelected), command);
     return { format: 'stl' };
@@ -380,9 +382,9 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   export_3mf: async (p, deps, command) => {
     const input = schema.parseExport(p);
     if (input.wantsBytes || headless()) {
-      const { targets, skippedHoles } = exportTargets(deps, input.onlySelected);
+      const { targets, skippedHoles, skippedReferences } = exportTargets(deps, input.onlySelected);
       const bytes = engine.exportSceneTo3MF(targets, deps.get().unitSystem, undefined, BRAND);
-      return { format: '3mf', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles };
+      return { format: '3mf', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles, skippedReferences };
     }
     required(await deps.get().exportScene3mf(input.onlySelected), command);
     return { format: '3mf' };
