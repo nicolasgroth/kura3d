@@ -24,7 +24,14 @@ export function repeatLabel(language: LanguageCode, rec: RepeatRecord): string {
       return t(language, rec.mode === 'negative' ? 'repeat.name.addNegative' : 'repeat.name.addPart', {
         shape: t(language, `menu.shape.${rec.shape}` as TranslationKey),
       });
-    case 'centerOnBed': return t(language, 'repeat.name.centerOnBed');
+    case 'centerOnBed':
+    case 'centerObjectOnBed': return t(language, 'repeat.name.centerOnBed');
+    case 'dropToBed': return t(language, 'ux3.repeat.dropToBed');
+    case 'resetOrientation': return t(language, 'ux3.repeat.resetOrientation');
+    case 'resetRotation': return t(language, 'ux3.repeat.resetRotation');
+    case 'resetScale': return t(language, 'ux3.repeat.resetScale');
+    case 'align': return t(language, rec.mode === 'arrange_grid' ? 'ux3.repeat.arrange' : 'ux3.repeat.align');
+    case 'material': return t(language, 'ux3.repeat.material');
     case 'group': return t(language, 'groups.action.group');
     case 'combine': return t(language, 'groups.action.combine');
     case 'simplify': return t(language, 'repeat.name.simplify');

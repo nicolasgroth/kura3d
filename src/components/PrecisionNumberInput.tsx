@@ -477,9 +477,11 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
             Number.isFinite(Number(normalized))
           ) {
             const typed = Number(normalized);
-            // Con rango estricto, un número fuera de rango no se aplica (ni se acota a escondidas): se marca al confirmar.
+            // Con rango estricto, un número fuera de rango no se aplica (ni se acota a escondidas): se marca al
+            // momento, para que el panel deshabilite «Aplicar» antes de que se pulse.
             const outside = strictRange && ((typeof min === 'number' && typed < min) || (typeof max === 'number' && typed > max));
-            if (!outside) onChange(clampAndClean(typed, min, max, precision));
+            if (outside) setInvalid('range');
+            else onChange(clampAndClean(typed, min, max, precision));
           }
         }}
       />

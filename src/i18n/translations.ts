@@ -32,6 +32,7 @@ import { IMPORTREAL_EN, IMPORTREAL_ES } from './locales/importReal';
 import { REPAIR_EN, REPAIR_ES } from './locales/repair';
 import { UXESCENA_EN, UXESCENA_ES } from './locales/uxEscena';
 import { UXCIERRE_EN, UXCIERRE_ES } from './locales/uxCierre';
+import { UX3_EDICION_EN, UX3_EDICION_ES } from './locales/ux3Edicion';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -58,6 +59,7 @@ export const TRANSLATIONS_ES = {
   ...REPAIR_ES,
   ...UXESCENA_ES,
   ...UXCIERRE_ES,
+  ...UX3_EDICION_ES,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
@@ -930,8 +932,8 @@ export const TRANSLATIONS_ES = {
   'toast.structuresDetected.other': 'Detectadas {count} sub-estructuras locales',
   'inspector.struct.regionsCount.one': '{count} sub-estructura detectada',
   'inspector.struct.regionsCount.other': '{count} sub-estructuras detectadas',
-  'inspector.op.applyBooleansN.one': 'Aplicar {count} resta booleana',
-  'inspector.op.applyBooleansN.other': 'Aplicar {count} restas booleanas',
+  'inspector.op.applyBooleansN.one': 'Aplicar {count} resta',
+  'inspector.op.applyBooleansN.other': 'Aplicar {count} restas',
   'export.holesSkipped.one': 'Se omitió {count} negativo sin aplicar: réstalo antes para que forme parte de la pieza.',
   'export.holesSkipped.other': 'Se omitieron {count} negativos sin aplicar: réstalos antes para que formen parte de la pieza.',
   'toast.deleted.one': 'Objeto eliminado',
@@ -1433,6 +1435,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...REPAIR_EN,
   ...UXESCENA_EN,
   ...UXCIERRE_EN,
+  ...UX3_EDICION_EN,
   'app.name': 'Kura3D',
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
@@ -2277,8 +2280,8 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'toast.structuresDetected.other': 'Detected {count} local sub-structures',
   'inspector.struct.regionsCount.one': '{count} sub-structure detected',
   'inspector.struct.regionsCount.other': '{count} sub-structures detected',
-  'inspector.op.applyBooleansN.one': 'Apply {count} boolean subtraction',
-  'inspector.op.applyBooleansN.other': 'Apply {count} boolean subtractions',
+  'inspector.op.applyBooleansN.one': 'Apply {count} subtraction',
+  'inspector.op.applyBooleansN.other': 'Apply {count} subtractions',
   'export.holesSkipped.one': '{count} unapplied negative was skipped: subtract it first to make it part of the part.',
   'export.holesSkipped.other': '{count} unapplied negatives were skipped: subtract them first to make them part of the part.',
   'toast.deleted.one': 'Object deleted',

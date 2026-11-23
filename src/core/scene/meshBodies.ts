@@ -55,3 +55,13 @@ export function countMeshBodies(mesh: Pick<MeshData, 'positions' | 'indices'>): 
   for (let i = 0; i < vertexCount; i++) if (used[i] && find(i) === i) bodies++;
   return bodies;
 }
+
+const bodyCountCache = new WeakMap<object, number | null>();
+
+/** `countMeshBodies` recordado por malla (las mallas son inmutables: cada edición crea otra). */
+export function cachedMeshBodies(mesh: Pick<MeshData, 'positions' | 'indices'>): number | null {
+  if (bodyCountCache.has(mesh)) return bodyCountCache.get(mesh) ?? null;
+  const count = countMeshBodies(mesh);
+  bodyCountCache.set(mesh, count);
+  return count;
+}

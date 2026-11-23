@@ -47,4 +47,20 @@ describe('tamaño de conector automático', () => {
     }
     expect(res.assembly!.weak.length).toBeLessThan(weak.assembly!.weak.length);
   }, 120_000);
+
+  it('cubo de 440 mm con tamaño automático: ninguna cara maciza queda débil, aunque solo quepa un conector', async () => {
+    const obj = objFromM(w.Manifold.cube([440, 440, 440], true), 'cubo');
+    const bed = { widthMm: 256, depthMm: 256, heightMm: 256 };
+    for (const depth of [6, 8]) {
+      const plan = await planBedSplit(obj, bed, { connector: { type: 'dowel', size: 4, depth, tolerance: 0.2, count: 2, sizeAuto: true } });
+      const res = await executeBedSplitGeometry(obj, plan, { reinforceWeakJoints: false });
+      expect(res.assembly!.weak).toEqual([]);
+      // Donde solo cabe uno, ese conector lleva el radio recomendado para uno (acotado por la profundidad).
+      const single = res.joints.filter((j) => j.connector && j.connectorCenters.length === 1);
+      for (const j of single) expect(j.connector!.size).toBeGreaterThan(5.6);
+      // Un conector menos aunque más grande se avisa como reducción, no también como refuerzo.
+      const codes = res.warnings.map((x) => x.code);
+      expect(codes).not.toContain('SPLIT_CONNECTOR_REINFORCED');
+    }
+  }, 300_000);
 });

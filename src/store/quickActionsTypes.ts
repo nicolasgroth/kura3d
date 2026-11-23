@@ -9,7 +9,7 @@
  */
 
 import type { PieceShape } from '../core/scene/pieceSizing';
-import type { SceneObject, Vec3 } from '../types/kura';
+import type { AlignMode, MaterialPresetId, SceneObject, Vec3 } from '../types/kura';
 
 export type PieceMode = 'positive' | 'negative';
 
@@ -26,6 +26,13 @@ export type RepeatRecord =
   | { kind: 'color'; color: string }
   | { kind: 'setType'; isHole: boolean }
   | { kind: 'centerOnBed' }
+  | { kind: 'centerObjectOnBed' }
+  | { kind: 'dropToBed' }
+  | { kind: 'resetOrientation' }
+  | { kind: 'resetRotation' }
+  | { kind: 'resetScale' }
+  | { kind: 'align'; mode: AlignMode }
+  | { kind: 'material'; materialPreset: MaterialPresetId }
   | { kind: 'group' }
   | { kind: 'combine' };
 

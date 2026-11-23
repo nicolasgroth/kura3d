@@ -1,7 +1,8 @@
 /**
  * @file src/store/slices/quickActionsSlice.ts
  * @description Acciones rápidas del estudio: registro de la última acción repetible (F4) que envuelve
- * duplicar, mover, ahuecar, espejar, aplicar restas, simplificar, color, tipo y agregar pieza; agregar
+ * duplicar, mover, ahuecar, espejar, aplicar restas, simplificar, color, material, tipo, apoyar, centrar,
+ * restablecer, alinear y agregar pieza en el punto de ejecución (cualquier vía); agregar
  * pieza o pieza negativa desde el menú contextual; recalcular paramétricos (F5); búsqueda en la lista de
  * escena (F3) y petición de renombrar (F2). No registra acciones destructivas ni de archivo.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -39,6 +40,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
   const { set, get, tr, pushHistory, runExclusive, opCtx } = ctx;
 
   const record = (rec: RepeatRecord) => set({ lastRepeatable: rec });
+  const editableById = (id: string) => get().objects.find((o) => o.id === id && !o.locked) ?? null;
   const unlockedSelection = () => {
     const { objects, selectedIds } = get();
     return objects.filter((o) => selectedIds.includes(o.id) && !o.locked);
@@ -167,6 +169,25 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       }
       case 'centerOnBed':
         return s.centerSelectionOnBed() ? 'done' : 'notApplicable';
+      case 'centerObjectOnBed':
+      case 'dropToBed':
+      case 'resetOrientation':
+      case 'material': {
+        if (!first) return 'notApplicable';
+        for (const o of targets) {
+          if (rec.kind === 'dropToBed') s.dropObjectToBed(o.id);
+          else if (rec.kind === 'centerObjectOnBed') s.centerObjectOnBed(o.id);
+          else if (rec.kind === 'resetOrientation') s.resetObjectOrientation(o.id);
+          else s.setObjectMaterial(o.id, rec.materialPreset);
+        }
+        return 'done';
+      }
+      case 'resetRotation':
+        return s.resetObjectsRotation() ? 'done' : 'notApplicable';
+      case 'resetScale':
+        return s.resetObjectsScale() ? 'done' : 'notApplicable';
+      case 'align':
+        return s.alignSelectedObjects(rec.mode) ? 'done' : 'notApplicable';
       case 'group':
         return s.selectedIds.length > 0 && s.groupObjects() ? 'done' : 'notApplicable';
       case 'combine':
@@ -240,6 +261,50 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       const ok = await base.simplifySelectedMesh!(id, toleranceMm);
       if (ok) record({ kind: 'simplify', toleranceMm });
       return ok;
+    },
+
+    // Colocación y restablecer: se registran aquí (punto de ejecución) para que F4 repita lo último hecho
+    // por cualquier vía: tecla L, menú contextual, inspector, paleta o MCP.
+    dropObjectToBed: (id) => {
+      const target = editableById(id);
+      base.dropObjectToBed!(id);
+      if (target) record({ kind: 'dropToBed' });
+    },
+
+    centerObjectOnBed: (id) => {
+      const target = editableById(id);
+      base.centerObjectOnBed!(id);
+      if (target) record({ kind: 'centerObjectOnBed' });
+    },
+
+    resetObjectOrientation: (id) => {
+      const target = editableById(id);
+      base.resetObjectOrientation!(id);
+      if (target) record({ kind: 'resetOrientation' });
+    },
+
+    resetObjectsRotation: (ids) => {
+      const ok = base.resetObjectsRotation!(ids);
+      if (ok) record({ kind: 'resetRotation' });
+      return ok;
+    },
+
+    resetObjectsScale: (ids) => {
+      const ok = base.resetObjectsScale!(ids);
+      if (ok) record({ kind: 'resetScale' });
+      return ok;
+    },
+
+    alignSelectedObjects: (mode) => {
+      const result = base.alignSelectedObjects!(mode);
+      if (result) record({ kind: 'align', mode });
+      return result;
+    },
+
+    setObjectMaterial: (id, materialPreset) => {
+      const target = editableById(id);
+      base.setObjectMaterial!(id, materialPreset);
+      if (target) record({ kind: 'material', materialPreset });
     },
 
     updateObjectMeta: (id, patch) => {

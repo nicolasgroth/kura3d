@@ -13,6 +13,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { useBoundOperationTarget } from '../useBoundOperationTarget';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { useInvalidFields } from '../useInvalidFields';
 import { OperationPanel } from '../OperationPanel';
 import { PreviewButton } from '../preview/PreviewButton';
 import { type MoldMode } from '../../types/kura';
@@ -20,6 +21,8 @@ import { type MoldMode } from '../../types/kura';
 /** Modal 4: Generador Automático de Moldes y Contra-Moldes (Velas, Silicona, Resina). */
 export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const language = useKuraStore((s) => s.language);
+  // Campos fuera de rango o no numéricos: se marcan y la operación no se aplica (nada se acota en silencio).
+  const invalid = useInvalidFields();
   const objects = useKuraStore((s) => s.objects);
   const generateMoldForObject = useKuraStore((s) => s.generateMoldForObject);
 
@@ -65,7 +68,7 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           <button
             type="button"
             className="kura-btn kura-btn-primary"
-            disabled={!targetId}
+            disabled={!targetId || invalid.blocked}
             onClick={() => void handleExecute()}
           >
             <PaintBucket size={14} />
@@ -103,6 +106,8 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
         <div className="kura-form-field">
           <label htmlFor="mold-margin">{t(language, 'dialog.mold.wallMargin')}</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f1')}
             id="mold-margin"
             min={2}
             max={35}
@@ -118,6 +123,8 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           <div className="kura-form-field">
             <label htmlFor="mold-boxwall">{t(language, 'dialog.mold.boxWall')}</label>
             <PrecisionNumberInput
+              strictRange
+              onInvalidChange={invalid.track('f2')}
               id="mold-boxwall"
               min={1.2}
               max={15}
@@ -148,6 +155,8 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
             <div className="kura-form-field">
               <label htmlFor="mold-tol">{t(language, 'dialog.mold.keyTolerance')}</label>
               <PrecisionNumberInput
+                strictRange
+                onInvalidChange={invalid.track('f3')}
                 id="mold-tol"
                 min={0.05}
                 max={1.0}
@@ -165,6 +174,8 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           <div className="kura-form-field">
             <label htmlFor="mold-cavwall">{t(language, 'dialog.mold.cavityWall')}</label>
             <PrecisionNumberInput
+              strictRange
+              onInvalidChange={invalid.track('f4')}
               id="mold-cavwall"
               min={1.0}
               max={20}
@@ -192,6 +203,8 @@ export const MoldModal: React.FC<{ open: boolean; onClose: () => void }> = ({ op
           <div className="kura-form-field">
             <label htmlFor="mold-spout-r">{t(language, 'dialog.mold.pourSpoutRadius')}</label>
             <PrecisionNumberInput
+              strictRange
+              onInvalidChange={invalid.track('f5')}
               id="mold-spout-r"
               min={2}
               max={20}

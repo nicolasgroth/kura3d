@@ -14,12 +14,15 @@ import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../../engine/operationLimi
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { useInvalidFields } from '../useInvalidFields';
 
 const RANGE = OPERATION_RANGES.colorSplit.depthMm;
 const DEFAULT_DEPTH = OPERATION_DEFAULTS.colorSplit.depthMm;
 
 export const ColorSplitControl: React.FC<{ primary: SceneObject }> = ({ primary }) => {
   const language = useKuraStore((s) => s.language);
+  // Campos fuera de rango o no numéricos: se marcan y la operación no se aplica (nada se acota en silencio).
+  const invalid = useInvalidFields();
   const isBusy = useKuraStore((s) => Boolean(s.busyOperation));
   const splitObjectByColor = useKuraStore((s) => s.splitObjectByColor);
   const [depthMm, setDepthMm] = useState<number>(DEFAULT_DEPTH);
@@ -29,6 +32,8 @@ export const ColorSplitControl: React.FC<{ primary: SceneObject }> = ({ primary 
       <div className="kura-field-row" title={t(language, 'inspector.op.colorDepthTip')}>
         <span className="kura-field-label">{t(language, 'inspector.op.colorDepth')}</span>
         <PrecisionNumberInput
+          strictRange
+          onInvalidChange={invalid.track('f1')}
           style={{ width: 92 }}
           min={RANGE.min}
           max={10}
@@ -44,7 +49,7 @@ export const ColorSplitControl: React.FC<{ primary: SceneObject }> = ({ primary 
       <button
         type="button"
         className="kura-btn kura-btn-sm"
-        disabled={isBusy || primary.locked}
+        disabled={isBusy || primary.locked || invalid.blocked}
         title={t(language, 'inspector.op.colorDepthTip')}
         onClick={() => void splitObjectByColor(primary.id, { depthMm })}
       >

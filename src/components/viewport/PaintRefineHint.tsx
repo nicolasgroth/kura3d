@@ -23,13 +23,15 @@ export const PaintRefineHint: React.FC = () => {
   const radius = useKuraStore((s) => s.paintRadiusMm);
   const busy = useKuraStore((s) => s.busyOperation);
   const refineSelectedMesh = useKuraStore((s) => s.refineSelectedMesh);
+  // Con «refinar al pintar» activo el trazo refina la malla: decir que pintará caras enteras sería falso.
+  const refinesWhilePainting = useKuraStore((s) => s.paintRefineEdge);
   const target = useKuraStore((s) => {
     const id = s.selectedIds[0] ?? s.objects[0]?.id;
     return s.objects.find((o) => o.id === id);
   });
   const [, force] = useState(0);
 
-  if (paintMode !== 'brush' || !target || target.locked || handledObjectIds.has(target.id)) return null;
+  if (paintMode !== 'brush' || refinesWhilePainting || !target || target.locked || handledObjectIds.has(target.id)) return null;
   if (!isMeshTooCoarseForBrush(target.mesh.positions, target.mesh.indices, target.scale, radius)) return null;
 
   const dismiss = () => {

@@ -27,6 +27,7 @@ import { IMPORTREAL_HI } from './importReal';
 import { REPAIR_HI } from './repair';
 import { UXESCENA_HI } from './uxEscena';
 import { UXCIERRE_HI } from './uxCierre';
+import { UX3_EDICION_HI } from './ux3Edicion';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -51,6 +52,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...REPAIR_HI,
   ...UXESCENA_HI,
   ...UXCIERRE_HI,
+  ...UX3_EDICION_HI,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
@@ -923,8 +925,8 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'toast.structuresDetected.other': '{count} स्थानीय उप-संरचनाएँ पहचानी गईं',
   'inspector.struct.regionsCount.one': '{count} उप-संरचना मिली',
   'inspector.struct.regionsCount.other': '{count} उप-संरचनाएँ मिलीं',
-  'inspector.op.applyBooleansN.one': '{count} बूलियन घटाव लागू करें',
-  'inspector.op.applyBooleansN.other': '{count} बूलियन घटाव लागू करें',
+  'inspector.op.applyBooleansN.one': '{count} घटाव लागू करें',
+  'inspector.op.applyBooleansN.other': '{count} घटाव लागू करें',
   'export.holesSkipped.one': '{count} बिना लागू छेद छोड़ा गया: उसे भाग का हिस्सा बनाने के लिए पहले घटाएँ।',
   'export.holesSkipped.other': '{count} बिना लागू छेद छोड़े गए: उन्हें भाग का हिस्सा बनाने के लिए पहले घटाएँ।',
   'toast.deleted.one': 'वस्तु हटाई गई',

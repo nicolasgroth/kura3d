@@ -27,6 +27,7 @@ import { IMPORTREAL_FR } from './importReal';
 import { REPAIR_FR } from './repair';
 import { UXESCENA_FR } from './uxEscena';
 import { UXCIERRE_FR } from './uxCierre';
+import { UX3_EDICION_FR } from './ux3Edicion';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -51,6 +52,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...REPAIR_FR,
   ...UXESCENA_FR,
   ...UXCIERRE_FR,
+  ...UX3_EDICION_FR,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
@@ -923,8 +925,8 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'toast.structuresDetected.other': '{count} sous-structures locales détectées',
   'inspector.struct.regionsCount.one': '{count} sous-structure détectée',
   'inspector.struct.regionsCount.other': '{count} sous-structures détectées',
-  'inspector.op.applyBooleansN.one': 'Appliquer {count} soustraction booléenne',
-  'inspector.op.applyBooleansN.other': 'Appliquer {count} soustractions booléennes',
+  'inspector.op.applyBooleansN.one': 'Appliquer {count} soustraction',
+  'inspector.op.applyBooleansN.other': 'Appliquer {count} soustractions',
   'export.holesSkipped.one': '{count} négatif non appliqué ignoré : soustrais-le d’abord pour qu’il fasse partie de la pièce.',
   'export.holesSkipped.other': '{count} négatifs non appliqués ignorés : soustrais-les d’abord pour qu’ils fassent partie de la pièce.',
   'toast.deleted.one': 'Objet supprimé',

@@ -12,6 +12,7 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { useInvalidFields } from '../useInvalidFields';
 import { OperationPanel } from '../OperationPanel';
 import { type ImageTo3DOptions } from '../../types/kura';
 import { openLocalFile } from '../../utils/platformBridge';
@@ -22,6 +23,8 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
   onClose,
 }) => {
   const language = useKuraStore((s) => s.language);
+  // Campos fuera de rango o no numéricos: se marcan y la operación no se aplica (nada se acota en silencio).
+  const invalid = useInvalidFields();
   const generateImageRelief = useKuraStore((s) => s.generateImageRelief);
   const failure = useOperationFailure(open);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -166,7 +169,7 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
           <button
             type="button"
             className="kura-btn kura-btn-primary"
-            disabled={!rgbaBuffer}
+            disabled={!rgbaBuffer || invalid.blocked}
             onClick={() => void handleGenerate()}
           >
             <Sparkles size={14} />
@@ -230,6 +233,8 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
           <div className="kura-form-field">
             <label htmlFor="img-w">{t(language, 'dialog.img.width')} (mm)</label>
             <PrecisionNumberInput
+              strictRange
+              onInvalidChange={invalid.track('f1')}
               id="img-w"
               value={widthMm}
               min={10}
@@ -243,6 +248,8 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
           <div className="kura-form-field">
             <label htmlFor="img-d">{t(language, 'dialog.img.depth')} (mm)</label>
             <PrecisionNumberInput
+              strictRange
+              onInvalidChange={invalid.track('f2')}
               id="img-d"
               value={depthMm}
               min={10}
@@ -260,6 +267,8 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
         <div className="kura-form-field">
           <label htmlFor="img-base">{t(language, 'dialog.img.base')} (mm)</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f3')}
             id="img-base"
             step={0.2}
             min={0.4}
@@ -273,6 +282,8 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
         <div className="kura-form-field">
           <label htmlFor="img-relief">{t(language, 'dialog.img.relief')} (mm)</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f4')}
             id="img-relief"
             step={0.2}
             min={0.4}
@@ -289,6 +300,8 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
             <div className="kura-form-field">
               <label htmlFor="img-cyl-r">{t(language, 'dialog.img.cylRadius')}</label>
               <PrecisionNumberInput
+                strictRange
+                onInvalidChange={invalid.track('f5')}
                 id="img-cyl-r"
                 min={15}
                 max={180}
@@ -302,6 +315,8 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
             <div className="kura-form-field">
               <label htmlFor="img-arc">{t(language, 'dialog.img.arcDegrees')}</label>
               <PrecisionNumberInput
+                strictRange
+                onInvalidChange={invalid.track('f6')}
                 id="img-arc"
                 min={60}
                 max={360}
@@ -319,6 +334,8 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
           <div className="kura-form-field">
             <label htmlFor="img-thresh">{t(language, 'dialog.img.threshold')}</label>
             <PrecisionNumberInput
+              strictRange
+              onInvalidChange={invalid.track('f7')}
               id="img-thresh"
               min={10}
               max={245}
@@ -335,6 +352,8 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
           <div className="kura-form-field">
             <label htmlFor="img-cwall">{t(language, 'dialog.img.cutterWall')}</label>
             <PrecisionNumberInput
+              strictRange
+              onInvalidChange={invalid.track('f8')}
               id="img-cwall"
               min={0.6}
               max={6}
@@ -350,6 +369,8 @@ export const ImageTo3DModal: React.FC<{ open: boolean; onClose: () => void }> = 
         <div className="kura-form-field">
           <label htmlFor="img-smooth">{t(language, 'dialog.img.smoothing')} (0–3)</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f9')}
             id="img-smooth"
             min={0}
             max={3}

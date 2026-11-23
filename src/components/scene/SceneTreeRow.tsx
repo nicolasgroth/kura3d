@@ -12,12 +12,13 @@
 import React from 'react';
 import {
   ArrowDownToLine, Box, Boxes, ChevronDown, ChevronRight, Copy, Eye, EyeOff, Folder, FolderOpen, Lock, MinusSquare,
-  Puzzle, Trash2, Type, Unlock,
+  MoreHorizontal, Puzzle, Trash2, Type, Unlock,
 } from 'lucide-react';
 import { t } from '../../i18n';
 import type { LanguageCode, SceneObject } from '../../types/kura';
 import { tCount } from '../../utils/plural';
 import type { TreeRow } from './sceneTreeRows';
+import '../../styles/ux3Edicion.css';
 
 export type DropPlace = 'before' | 'after' | 'inside';
 
@@ -158,21 +159,39 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
           foco con aria-activedescendant): Mayús+H, Mayús+L, L (cama), Ctrl+D y Supr. */}
       {node.kind !== 'split' && (
         <div className="kura-scene-actions">
-          <button type="button" tabIndex={-1} className="kura-mini-icon-btn" aria-label={t(language, visible ? 'groups.row.hide' : 'groups.row.show', { name })} aria-keyshortcuts="Shift+H" title={t(language, group ? 'groups.tree.toggleVisible' : 'sidebar.scene.toggleVisible')} onClick={(e) => { e.stopPropagation(); props.onToggleVisible(); }}>
+          <button type="button" tabIndex={-1} className={`kura-mini-icon-btn ${visible ? '' : 'is-state-on'}`} aria-label={t(language, visible ? 'groups.row.hide' : 'groups.row.show', { name })} aria-keyshortcuts="Shift+H" title={t(language, group ? 'groups.tree.toggleVisible' : 'sidebar.scene.toggleVisible')} onClick={(e) => { e.stopPropagation(); props.onToggleVisible(); }}>
             {visible ? <Eye size={13} aria-hidden="true" /> : <EyeOff size={13} aria-hidden="true" />}
           </button>
-          <button type="button" tabIndex={-1} className="kura-mini-icon-btn" aria-label={t(language, locked ? 'groups.row.unlock' : 'groups.row.lock', { name })} aria-keyshortcuts="Shift+L" title={t(language, group ? 'groups.tree.toggleLock' : 'sidebar.scene.toggleLock')} onClick={(e) => { e.stopPropagation(); props.onToggleLock(); }}>
+          <button type="button" tabIndex={-1} className={`kura-mini-icon-btn ${locked ? 'is-state-on' : ''}`} aria-label={t(language, locked ? 'groups.row.unlock' : 'groups.row.lock', { name })} aria-keyshortcuts="Shift+L" title={t(language, group ? 'groups.tree.toggleLock' : 'sidebar.scene.toggleLock')} onClick={(e) => { e.stopPropagation(); props.onToggleLock(); }}>
             {locked ? <Lock size={13} aria-hidden="true" /> : <Unlock size={13} aria-hidden="true" />}
           </button>
+          {props.onContextMenu && (
+            <button
+              type="button"
+              tabIndex={-1}
+              className="kura-mini-icon-btn kura-row-more"
+              aria-label={t(language, 'ux3.tree.more', { name })}
+              aria-haspopup="menu"
+              aria-keyshortcuts="Shift+F10"
+              title={t(language, 'ux3.tree.moreTip')}
+              onClick={(e) => {
+                e.stopPropagation();
+                const box = e.currentTarget.getBoundingClientRect();
+                props.onContextMenu?.(box.left, box.bottom);
+              }}
+            >
+              <MoreHorizontal size={13} aria-hidden="true" />
+            </button>
+          )}
           {obj && (
             <>
-              <button type="button" tabIndex={-1} className="kura-mini-icon-btn" aria-label={t(language, 'groups.row.drop', { name })} aria-keyshortcuts="L" title={t(language, 'sidebar.scene.dropToBed')} onClick={(e) => { e.stopPropagation(); props.onDropToBed(obj); }}>
+              <button type="button" tabIndex={-1} className="kura-mini-icon-btn kura-row-extra" aria-label={t(language, 'groups.row.drop', { name })} aria-keyshortcuts="L" title={t(language, 'sidebar.scene.dropToBed')} onClick={(e) => { e.stopPropagation(); props.onDropToBed(obj); }}>
                 <ArrowDownToLine size={13} aria-hidden="true" />
               </button>
-              <button type="button" tabIndex={-1} className="kura-mini-icon-btn" aria-label={t(language, 'groups.row.duplicate', { name })} aria-keyshortcuts="Control+D" title={t(language, 'sidebar.scene.duplicate')} onClick={(e) => { e.stopPropagation(); props.onDuplicate(obj); }}>
+              <button type="button" tabIndex={-1} className="kura-mini-icon-btn kura-row-extra" aria-label={t(language, 'groups.row.duplicate', { name })} aria-keyshortcuts="Control+D" title={t(language, 'sidebar.scene.duplicate')} onClick={(e) => { e.stopPropagation(); props.onDuplicate(obj); }}>
                 <Copy size={13} aria-hidden="true" />
               </button>
-              <button type="button" tabIndex={-1} className="kura-mini-icon-btn" aria-label={t(language, 'groups.row.delete', { name })} aria-keyshortcuts="Delete" title={t(language, 'sidebar.scene.delete')} disabled={obj.locked} onClick={(e) => { e.stopPropagation(); props.onDelete(obj); }}>
+              <button type="button" tabIndex={-1} className="kura-mini-icon-btn kura-row-extra" aria-label={t(language, 'groups.row.delete', { name })} aria-keyshortcuts="Delete" title={t(language, 'sidebar.scene.delete')} disabled={obj.locked} onClick={(e) => { e.stopPropagation(); props.onDelete(obj); }}>
                 <Trash2 size={13} aria-hidden="true" />
               </button>
             </>

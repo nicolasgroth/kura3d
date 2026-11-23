@@ -203,7 +203,9 @@ export function validateAssembly(
     const small = volumes[j.a.part] <= volumes[j.b.part] ? j.a.part : j.b.part;
     const dim = Math.max(...ext[small].map(([lo, hi]) => hi - lo));
     const n = Math.max(1, j.connectorCenters.length);
-    const recommended = recommendedConnectorRadius(j.contactAreaMm2, n, dim);
+    // Lo exigible no pasa de lo que el motor puede dar: ningún conector es más ancho que largo (mismo tope que
+    // la firmeza activa y el tamaño automático, `reinforcementCap`).
+    const recommended = Math.min(recommendedConnectorRadius(j.contactAreaMm2, n, dim), j.connector.depth);
     const measured = j.connector.size;
     const areaFraction = j.contactAreaMm2 > 0 ? (n * Math.PI * measured ** 2) / j.contactAreaMm2 : 0;
     if (measured < recommended - 1e-6) {

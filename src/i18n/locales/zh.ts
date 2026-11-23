@@ -27,6 +27,7 @@ import { IMPORTREAL_ZH } from './importReal';
 import { REPAIR_ZH } from './repair';
 import { UXESCENA_ZH } from './uxEscena';
 import { UXCIERRE_ZH } from './uxCierre';
+import { UX3_EDICION_ZH } from './ux3Edicion';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -51,6 +52,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...REPAIR_ZH,
   ...UXESCENA_ZH,
   ...UXCIERRE_ZH,
+  ...UX3_EDICION_ZH,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
@@ -923,8 +925,8 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'toast.structuresDetected.other': '检测到 {count} 个局部子结构',
   'inspector.struct.regionsCount.one': '检测到 {count} 个子结构',
   'inspector.struct.regionsCount.other': '检测到 {count} 个子结构',
-  'inspector.op.applyBooleansN.one': '应用 {count} 项布尔减法',
-  'inspector.op.applyBooleansN.other': '应用 {count} 项布尔减法',
+  'inspector.op.applyBooleansN.one': '应用 {count} 项减法',
+  'inspector.op.applyBooleansN.other': '应用 {count} 项减法',
   'export.holesSkipped.one': '已跳过 {count} 个未应用的负形:请先减去它,使其成为零件的一部分。',
   'export.holesSkipped.other': '已跳过 {count} 个未应用的负形:请先减去它们,使其成为零件的一部分。',
   'toast.deleted.one': '对象已删除',

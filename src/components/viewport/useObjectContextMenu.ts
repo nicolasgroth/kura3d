@@ -1,6 +1,7 @@
 /**
  * @file src/components/viewport/useObjectContextMenu.ts
- * @description Hook del menú contextual del visor: posición acotada al visor, cierre con Escape o clic externo y objeto destino.
+ * @description Hook del menú contextual del visor: posición acotada al visor, cierre con Escape o clic externo (Escape
+ * devuelve el foco a quien lo abrió o, si era el lienzo, al visor) y objeto destino.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -11,11 +12,22 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { isContextMenuHandled } from './contextMenu/handledEvents';
 import { type ContextMenuState } from './viewportHelpers';
 
+/** Elemento con foco que abre el menú (null si es el cuerpo de la página o el propio menú). */
+function focusedOpener(): HTMLElement | null {
+  const el = document.activeElement as HTMLElement | null;
+  return el && el !== document.body && !el.closest('.kura-context-menu') ? el : null;
+}
+
 /** Estado y lógica del menú contextual sobre objetos del visor. */
 export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | null>) {
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const selectObject = useKuraStore((s) => s.selectObject);
   const objects = useKuraStore((s) => s.objects);
+  // Elemento con foco al abrir el menú: Escape lo devuelve ahí (o al visor si el foco estaba en el cuerpo).
+  const opener = useRef<HTMLElement | null>(null);
+  const rememberOpener = () => {
+    opener.current = focusedOpener();
+  };
 
   const handleObjectContextMenu = useCallback(
     (objectId: string, clientX: number, clientY: number) => {
@@ -29,6 +41,7 @@ export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | 
       const rawY = clientY - rect.top;
       const clampedX = Math.max(8, Math.min(rawX, Math.max(8, rect.width - 308)));
       const clampedY = Math.max(8, Math.min(rawY, Math.max(8, rect.height - 490)));
+      rememberOpener();
       setContextMenu({ objectId, x: clampedX, y: clampedY });
     },
     [selectObject],
@@ -52,6 +65,7 @@ export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | 
       if (!rect) return;
       const x = Math.max(8, Math.min(e.clientX - rect.left, Math.max(8, rect.width - 308)));
       const y = Math.max(8, Math.min(e.clientY - rect.top, Math.max(8, rect.height - 120)));
+      rememberOpener();
       setContextMenu({ objectId: null, x, y });
     },
     [viewportRef],
@@ -61,7 +75,14 @@ export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | 
   useEffect(() => {
     if (!contextMenu) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setContextMenu(null);
+      if (e.key !== 'Escape') return;
+      setContextMenu(null);
+      // El foco vuelve a quien abrió el menú; si era el lienzo (sin foco propio), al visor.
+      const view = viewportRef.current;
+      const back = opener.current?.isConnected ? opener.current : view;
+      opener.current = null;
+      if (back === view && view && !view.hasAttribute('tabindex')) view.tabIndex = -1;
+      back?.focus({ preventScroll: true });
     };
     const onPointerDown = (e: PointerEvent) => {
       const target = e.target as HTMLElement | null;
@@ -75,7 +96,7 @@ export function useObjectContextMenu(viewportRef: React.RefObject<HTMLElement | 
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('pointerdown', onPointerDown);
     };
-  }, [contextMenu]);
+  }, [contextMenu, viewportRef]);
 
   const ctxTarget = contextMenu?.objectId
     ? objects.find((o) => o.id === contextMenu.objectId) ?? null

@@ -13,6 +13,7 @@ import React, { createContext, useContext, useEffect, useId, useLayoutEffect, us
 import { Check, ChevronRight } from 'lucide-react';
 import '../../../styles/contextMenu.css';
 import '../../../styles/contextMenuFit.css';
+import '../../../styles/ux3Edicion.css';
 
 const InlineContext = createContext(false);
 
@@ -24,6 +25,8 @@ function itemsOf(menu: HTMLElement): HTMLElement[] {
 }
 
 const NARROW_QUERY = '(max-width: 600px)';
+/** Demora al abrir o cerrar un submenú con el cursor. */
+const HOVER_DELAY_MS = 180;
 
 /** Superficie del menú: posiciona, enfoca el primer ítem y resuelve el teclado. */
 export const MenuSurface: React.FC<{
@@ -139,26 +142,38 @@ export interface MenuItemProps {
   /** Presente: ítem de opción exclusiva (`menuitemradio`). */
   checked?: boolean;
   checkedLabel?: string;
+  /** Descripción breve bajo la etiqueta (p. ej. para distinguir Agrupar, Combinar y Unir). */
+  description?: string;
   onSelect: () => void;
 }
 
-export const MenuItem: React.FC<MenuItemProps> = ({ icon, label, tip, shortcut, keys, disabled, danger, accent, checked, checkedLabel, onSelect }) => {
+export const MenuItem: React.FC<MenuItemProps> = ({ icon, label, tip, shortcut, keys, disabled, danger, accent, checked, checkedLabel, description, onSelect }) => {
   // Todos los atajos se muestran alineados a la derecha: sin `shortcut` explícito se usa `keys` si es una sola tecla.
   const shownKey = shortcut ?? (keys && !keys.includes(' ') ? keys : undefined);
+  const descId = useId();
   return (
   <button
     type="button"
     role={checked === undefined ? 'menuitem' : 'menuitemradio'}
     aria-checked={checked}
     aria-keyshortcuts={keys}
-    className={`kura-context-item${danger ? ' is-danger' : ''}${accent ? ' is-accent' : ''}`}
+    className={`kura-context-item${danger ? ' is-danger' : ''}${accent ? ' is-accent' : ''}${description ? ' has-desc' : ''}`}
     title={tip ?? label}
     disabled={disabled}
     tabIndex={-1}
+    aria-label={description ? label : undefined}
+    aria-describedby={description ? descId : undefined}
     onClick={onSelect}
   >
     {icon}
-    <span className="kura-context-label">{label}</span>
+    {description ? (
+      <span className="kura-context-text">
+        <span className="kura-context-label">{label}</span>
+        <span id={descId} className="kura-context-desc">{description}</span>
+      </span>
+    ) : (
+      <span className="kura-context-label">{label}</span>
+    )}
     {checked && <Check size={13} aria-hidden="true" />}
     {checked && checkedLabel && <span className="sr-only">, {checkedLabel}</span>}
     {shownKey && <kbd className="kura-context-kbd" aria-hidden="true">{shownKey}</kbd>}
@@ -179,6 +194,21 @@ export const SubMenu: React.FC<{
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [placement, setPlacement] = useState<{ flip: boolean; shift: number }>({ flip: false, shift: 0 });
+  const hoverTimer = useRef<number | null>(null);
+  const narrow = typeof window !== 'undefined' && window.matchMedia?.(NARROW_QUERY).matches === true;
+  const clearHover = () => {
+    if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
+    hoverTimer.current = null;
+  };
+  useEffect(() => clearHover, []);
+  // Pasar el cursor abre el submenú tras una demora corta (también en el menú con scroll); salir lo cierra con
+  // la misma demora (al lado) para no perderlo al cruzar en diagonal. En pantallas estrechas, solo clic o flecha.
+  const onHover = (enter: boolean) => {
+    if (disabled || narrow) return;
+    clearHover();
+    if (!enter && inline) return;
+    hoverTimer.current = window.setTimeout(() => setOpen(enter), HOVER_DELAY_MS);
+  };
 
   // Voltea a la izquierda o sube si el submenú no cabe en el visor.
   useLayoutEffect(() => {
@@ -207,8 +237,8 @@ export const SubMenu: React.FC<{
   return (
     <div
       className="kura-context-subwrap"
-      onMouseEnter={() => !disabled && !inline && setOpen(true)}
-      onMouseLeave={() => !inline && setOpen(false)}
+      onMouseEnter={() => onHover(true)}
+      onMouseLeave={() => onHover(false)}
     >
       <button
         ref={triggerRef}
@@ -221,7 +251,11 @@ export const SubMenu: React.FC<{
         disabled={disabled}
         tabIndex={-1}
         // Con el puntero, pasar encima ya lo abrió: el clic no debe cerrarlo. En línea sí alterna.
-        onClick={() => (open && inline ? setOpen(false) : openAndFocus())}
+        onClick={() => {
+          clearHover();
+          if (open && inline) setOpen(false);
+          else openAndFocus();
+        }}
         onKeyDown={(e) => {
           if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();

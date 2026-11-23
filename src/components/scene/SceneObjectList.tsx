@@ -338,7 +338,8 @@ export const SceneObjectList: React.FC = () => {
     if (e.detail <= 1) clickStart.current = row.key;
     const index = rows.indexOf(row);
     setActiveKey(row.key);
-    if (e.shiftKey) setSelection(rangeIds(anchorKey ?? active?.key ?? row.key, index));
+    // Mayús+clic agrega el rango (desde el ancla) a lo que ya estaba seleccionado.
+    if (e.shiftKey) setSelection([...selectedIds, ...rangeIds(anchorKey ?? active?.key ?? row.key, index)]);
     else if (e.ctrlKey || e.metaKey) {
       toggleRow(row);
       setAnchorKey(row.key);
