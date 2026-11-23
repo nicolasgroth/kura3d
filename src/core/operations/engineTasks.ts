@@ -35,6 +35,7 @@ import { eraseSphere, hollowObject, projectOnSurface, refineObject, repairObject
 import type { OperationContext } from './operationTypes';
 import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnected, splitStructures } from './partOperations';
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
+import { runFitToBed, type FitToBedTaskArgs } from './fitOperations';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 
@@ -132,6 +133,7 @@ export const ENGINE_TASKS = {
   ) => planSplitForBed(ctx, a.obj, a.bed, a.options, a.assemblyPreview),
   splitForBed: (ctx: OperationContext, a: { obj: SceneObject; plan: engine.BedSplitPlan; options: ExecuteBedSplitOptions }) =>
     executeBedSplit(ctx, a.obj, a.plan, a.options),
+  fitToBed: (_ctx: OperationContext, a: FitToBedTaskArgs) => runFitToBed(a),
   validateAssembly: (_ctx: OperationContext, a: { objects: SceneObject[] }) => engine.storedAssemblyResponse(a.objects),
   export: (_ctx: OperationContext, a: ExportTaskArgs) => exportSceneFiles(a),
   printability: (_ctx: OperationContext, a: PrintabilityTaskArgs) =>

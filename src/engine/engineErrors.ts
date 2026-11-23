@@ -55,6 +55,7 @@ export const ENGINE_ERROR_CODES = [
   'MESH_REPAIR_FAILED',
   'HOLLOW_NO_CAVITY',
   'HOLLOW_INEFFECTIVE',
+  'FIT_ALTERNATIVE_UNAVAILABLE',
 ] as const;
 
 export type EngineErrorCode = (typeof ENGINE_ERROR_CODES)[number];

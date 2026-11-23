@@ -16,6 +16,7 @@ import { FLOWUX_DE } from './flowUx';
 import { PREVIEW_DE } from './preview';
 import { SPLITJOINTS_DE } from './splitJoints';
 import { SPLITPREFS_DE } from './splitPrefs';
+import { AJUSTAR_DE } from './ajustarImpresora';
 import { SPLITCOUPLING_DE } from './splitCoupling';
 import { A11YUX_DE } from './a11yUx';
 import { UXMOVIL_DE } from './uxMovil';
@@ -49,6 +50,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...PREVIEW_DE,
   ...SPLITJOINTS_DE,
   ...SPLITPREFS_DE,
+  ...AJUSTAR_DE,
   ...SPLITCOUPLING_DE,
   ...A11YUX_DE,
   ...UXMOVIL_DE,
