@@ -67,7 +67,9 @@ describe('control de armado', () => {
     const at0 = explodedSplitPositions(group, 0);
     for (const o of objects) expect(at0.get(o.id)).toEqual(o.position);
     const at1 = explodedSplitPositions(group, 1);
-    expect(at1.get('a')![1]).toBeLessThan(0);
+    // Separadas, ninguna baja de la cama: la de abajo queda apoyada y las demás se alejan hacia arriba.
+    expect(at1.get('a')![1]).toBeGreaterThanOrEqual(0);
+    expect(at1.get('c')![1] - at1.get('a')![1]).toBeGreaterThan(200);
     expect(at1.get('c')![1]).toBeGreaterThan(200);
   });
 
