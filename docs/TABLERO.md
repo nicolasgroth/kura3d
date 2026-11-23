@@ -1,12 +1,12 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 07:35, con las decisiones del autor del 23 de noviembre.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 09:40, con la actualización de dependencias integrada.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## Resumen de la noche del 22 al 23 de noviembre
 
-Estado de `main`: 2099 pruebas del frontend, 136 del servidor MCP y 37 de Rust en verde; 157 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
+Estado de `main`: 2120 pruebas del frontend, 138 del servidor MCP y 37 de Rust en verde; 157 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
 
 | Qué | Resultado |
 |---|---|
@@ -16,14 +16,13 @@ Estado de `main`: 2099 pruebas del frontend, 136 del servidor MCP y 37 de Rust e
 | Rendimiento | Dividir un busto de 2,4 millones de triángulos: de 172 a 78 s. Importarlo: la mitad de memoria. Separar por colores tras pintar: de 94 a 1,4 s |
 | Seguridad | El lector de archivos pasó dos revisiones independientes: 13 hallazgos corregidos, cada uno con una prueba de archivo malicioso |
 | GitHub | El CI fallaba en cada push por una configuración incompleta; corregido. Dependabot quedó mensual y agrupado. No hay terceros con acceso |
-| Decidido el 23-nov | Actualizar todas las dependencias; preguntar qué hacer con la mitad conservada de un corte; token MCP como está; seguir iterando usabilidad. Quedan dos pendientes prácticos en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) |
+| Decidido el 23-nov | Actualizar todas las dependencias; preguntar qué hacer con la mitad conservada de un corte; token MCP como está; seguir iterando usabilidad. Quedan tres consultas en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md): OrcaSlicer, Node local y una licencia LGPL indirecta |
 
 ## En desarrollo
 
 | Funcionalidad | Estado |
 |---|---|
 | Modelos reales en pantalla (QA del 23-nov con 23 archivos del autor): al exportar una escena a 3MF y reimportarla se pierden los grupos por placa y cambian las posiciones relativas; un STL en unidades normalizadas entra midiendo 0,8 mm sin aviso; un 3MF de 3,3 millones de triángulos tarda 44 s y congela 9 s al final; con escenas pesadas el autoguardado deja de funcionar sin explicarlo | Por corregir, apenas se integre la actualización de dependencias |
-| Actualización de dependencias: three.js 0.176 → 0.187, Vite 6 → 8 con su plugin de React, TypeScript 5.9 → 7, lucide-react, jsdom y acciones de GitHub; corregir lo que rompan (la lectura de SVG con three.js nuevo) | Decidido el 23-nov; en curso |
 | Separar por colores sobre texto 3D pintado: algunas piezas pueden salir abiertas (se avisa cuáles y se ofrece reparar); grabar dos veces el mismo texto en el mismo lugar de un cilindro (da un error claro) | Límites conocidos; pendiente |
 | Imagen a 3D: ocultar los parámetros que no aplican en cada modo; aviso de cuánto crece la pieza al aplicar una textura; vista previa en vivo del texto 3D | Pendiente |
 | Armado por subconjuntos (filas, luego capas, luego apilar) para conservar todos los conectores en rejillas; hoy el orden pieza a pieza ya es el óptimo demostrado | Pendiente; cambia el modelo de pasos de armado |
@@ -36,6 +35,7 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 
 | Funcionalidad | Estado |
 |---|---|
+| Dependencias al día: three.js 0.187, Vite 8 con su plugin de React 6, TypeScript 7, lucide-react 1.78, jsdom 31, acciones de GitHub y crates de Rust. Compilar tipos bajó de 18 a 3,5 s y construir la web de 30 a 5 s; la carga inicial pesa 90 KB menos. Queda sin subir Playwright (pide un Chromium que no está instalado) | Integrado el 23-nov con todas las suites en verde; falta confirmar la corrida en GitHub |
 | Separar por colores: cada color sale como sólido cerrado, con profundidad configurable (era el bloqueo de la ronda 5) | Implementado con pruebas; QA en curso |
 | Dividir para imprimir: tamaño de conector "Automático (recomendado)" por defecto, diámetro como única medida, vista previa con las uniones reales con conector y para pegar, consejo de unión débil una sola vez, resaltado y encuadre de la unión, estado "Armado", ZIP por pieza centrado | QA en curso |
 | Flujo general: F2 reemplaza el nombre, aviso antes de que pintar convierta una primitiva, lo nuevo se encuadra, confirmar "Vaciar cama" con Deshacer, aviso de cavidad cerrada, análisis sin "activar soportes" | QA en curso |
