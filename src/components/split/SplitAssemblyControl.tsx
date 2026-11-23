@@ -36,13 +36,14 @@ export const SplitAssemblyControl: React.FC = () => {
   const arrange = useKuraStore((s) => s.arrangeSplitGroup);
   const busy = useKuraStore((s) => Boolean(s.busyOperation));
   const bedWidth = useKuraStore((s) => activeBed(s).widthMm);
+  const bedDepth = useKuraStore((s) => activeBed(s).depthMm);
   const [playing, setPlaying] = useState(false);
   const raf = useRef<number | null>(null);
   const uid = useId();
 
   const group = splitGroupOf(objects, selectedId);
   const groupId = group?.groupId ?? null;
-  const arrangement = group ? splitArrangementOf(group, bedWidth) : null;
+  const arrangement = group ? splitArrangementOf(group, bedWidth, bedDepth) : null;
   const factor = explode && explode.groupId === groupId ? explode.factor : 0;
 
   // Al salir del grupo, la vista vuelve a armado y la animación se detiene.

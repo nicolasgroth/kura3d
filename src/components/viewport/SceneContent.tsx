@@ -307,8 +307,8 @@ export const SceneContent: React.FC<{
         enabled={!isTransforming && !isPaintingDrag}
         enableDamping
         dampingFactor={0.08}
-        minDistance={18}
-        maxDistance={8000}
+        minDistance={1}
+        maxDistance={20000}
         maxPolarAngle={showBed ? Math.PI * 0.92 : Math.PI}
       />
 

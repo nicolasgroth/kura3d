@@ -21,6 +21,7 @@ import type { LanguageCode, SceneObject } from '../../types/kura';
 import { tCount } from '../../utils/plural';
 import type { TreeRow } from './sceneTreeRows';
 import '../../styles/ux3Edicion.css';
+import { splitPieceDisplayName } from '../../core/scene/splitPieceName';
 
 export type DropPlace = 'before' | 'after' | 'inside';
 
@@ -72,7 +73,10 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
   const node = row.node;
   const obj = node.kind === 'object' ? node.object : null;
   const group = node.kind === 'group' ? node.group : null;
-  const name = obj?.name ?? group?.name ?? t(language, 'groups.tree.splitNode', { name: splitName ?? '' });
+  // Piezas de una división: el mismo rótulo que el visor y Armado va primero («A1a · nombre»).
+  const name = obj?.metadata?.split
+    ? splitPieceDisplayName(obj.name, obj.metadata.split.code)
+    : obj?.name ?? group?.name ?? t(language, 'groups.tree.splitNode', { name: splitName ?? '' });
   const visible = obj ? obj.visible : group ? group.visible : true;
   const locked = obj ? obj.locked : group ? group.locked : false;
   const count = node.kind === 'object' ? 0 : node.objectCount;

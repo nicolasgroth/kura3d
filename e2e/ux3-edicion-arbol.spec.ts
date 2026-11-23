@@ -29,10 +29,12 @@ test('clic al centro de la fila selecciona y no oculta; botones a la derecha al 
   expect(await seleccion(page)).toEqual([expect.stringMatching(/Cubo/)]);
   expect(await page.evaluate(() => (window as any).__s.getState().objects.every((o: any) => o.visible))).toBe(true);
 
-  // Sin cursor encima (ratón lejos), los botones no ocupan la fila; al pasar el cursor quedan al borde derecho.
+  // Sin cursor encima (ratón lejos), los botones de una fila no seleccionada no ocupan la fila; la fila
+  // seleccionada los muestra (ux7); al pasar el cursor quedan al borde derecho.
   await page.mouse.move(700, 450);
   const ojo = cubo.getByRole('button', { name: /Ocultar/ });
-  await expect(ojo).toBeHidden();
+  await expect(ojo).toBeVisible();
+  await expect(fila(page, /Esfera/).getByRole('button', { name: /Ocultar/ })).toBeHidden();
   await cubo.hover({ position: { x: 20, y: caja.height / 2 } });
   await expect(ojo).toBeVisible();
   const ojoCaja = (await ojo.boundingBox())!;

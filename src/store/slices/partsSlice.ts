@@ -27,6 +27,7 @@ import type { Vec3 } from '../../types/kura';
 import { activeBedSize } from '../bedSize';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
+import { colorName } from '../../utils/colorNames';
 
 export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, runExclusive, opCtx, assertCurrent, commitChange, currentSegmentationFor, runEngine } = ctx;
@@ -85,6 +86,8 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
           ? { ...change, added: [kept.part] }
           : clearOfOthers({ ...change, added: separated.parts });
         commitChange(cleared, { select: cleared.added.map((c) => c.id) });
+        // Las mitades (o la conservada) se encuadran siempre, aunque ya estuvieran a la vista.
+        get().requestCameraPreset('focus', cleared.added.map((c) => c.id));
         // El corte terminó: se vuelve a Seleccionar y se apaga la vista previa del plano.
         set((state) => ({
           activeTool: state.activeTool === 'cut' ? 'select' : state.activeTool,
@@ -142,6 +145,8 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
           get().addToast(tr('realesUi.split.glueSummary', { count: glue.count, total: glue.total }), 'info', {
             label: tr('realesUi.split.showJoints'),
             run: () => void focusById(SPLIT_JOINTS_ID),
+            targetIds: result.parts.map((p) => p.id),
+            transient: true,
           });
         }
         get().setSplitNotes(obj.id, notes);
@@ -191,8 +196,10 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         assertCurrent([obj]);
         const cleared = clearOfOthers(change);
         commitChange(cleared, { select: parts.map((c) => c.id) });
+        // El aviso nombra los colores resultantes («Separado en 2 piezas: Blanco mate, Naranja»).
+        const colors = [...new Set(parts.map((c) => colorName(get().language, c.color)))].join(', ');
         get().addToast(
-          tCount(get().language, { one: 'genUi.splitColorsDone.one', other: 'genUi.splitColorsDone.other' }, parts.length),
+          `${tCount(get().language, { one: 'genUi.splitColorsDone.one', other: 'genUi.splitColorsDone.other' }, parts.length)}: ${colors}`,
           'success',
         );
         reportEngineWarnings(change.warnings);

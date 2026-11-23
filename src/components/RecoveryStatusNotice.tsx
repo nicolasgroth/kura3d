@@ -59,6 +59,7 @@ export const RecoveryStatusNotice: React.FC<{ status: RecoveryStatus; failure: R
         state.addToast(t(state.language, 'realesUi.recovery.reminder', { count: formatNumber(state.language, changes.current) }), 'info', {
           label: t(state.language, 'realesUi.recovery.saveNow'),
           run: () => void useKuraStore.getState().saveProject(),
+          transient: true,
         });
       }
     });

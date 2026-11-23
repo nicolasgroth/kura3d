@@ -70,6 +70,8 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
   const holeCount = objects.filter((o) => isNegative(o) && o.visible).length;
   const solidCount = objects.filter((o) => isSolid(o) && o.visible).length;
   const typeIds = selectedIds.includes(target.id) ? selectedIds : [target.id];
+  // Con varios objetos el encabezado dice cuántos, no el nombre de uno de ellos.
+  const menuTitle = typeIds.length > 1 ? t(language, 'ux7.menu.objects', { count: typeIds.length }) : target.name;
   const isParametric = ['primitive', 'thread'].includes(parametricStateOf(target).status);
   // F5 recarga la página en el navegador: solo se anuncia como atajo en escritorio.
   const recomputeKey = isTauriRuntime() ? 'F5' : 'Shift+F5';
@@ -79,7 +81,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
   };
 
   return (
-    <MenuSurface x={menu.x} y={menu.y} label={t(language, 'menu.label', { name: target.name })} title={target.name}>
+    <MenuSurface x={menu.x} y={menu.y} label={t(language, 'menu.label', { name: menuTitle })} title={menuTitle}>
       <MenuGroup title={t(language, 'menu.group.add')}>
         <SubMenu icon={<PlusCircle size={14} aria-hidden="true" style={{ color: 'var(--accent-green)' }} />} label={t(language, 'menu.addPart')} tip={t(language, 'menu.addPart.tip')}>
           <PieceShapeItems language={language} onPick={(shape) => run(() => void addPieceToObject(shape, 'positive', target.id))()} />

@@ -1,0 +1,43 @@
+/**
+ * @file src/styles/sceneTreeUx7.css
+ * @description Árbol de Escena: los botones de fila (ojo, candado, más) también se ven con el foco de teclado
+ * en la fila y con la fila seleccionada, no solo al pasar el cursor; botón «?» de ayuda bajo el árbol en vez
+ * del párrafo permanente de atajos.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+@media (hover: hover) and (pointer: fine) and (min-width: 901px) {
+  .kura-scene-tree:focus .kura-tree-row.is-active-option .kura-scene-actions,
+  .kura-scene-tree .kura-tree-row[aria-selected='true'] .kura-scene-actions {
+    padding-left: 6px;
+    border-left: 1px solid var(--border-subtle);
+  }
+
+  .kura-scene-tree:focus .kura-tree-row.is-active-option .kura-scene-actions .kura-mini-icon-btn:not(.kura-row-extra),
+  .kura-scene-tree .kura-tree-row[aria-selected='true'] .kura-scene-actions .kura-mini-icon-btn:not(.kura-row-extra) {
+    display: inline-flex;
+  }
+}
+
+.kura-scene-help-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.kura-scene-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  width: auto;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kura-scene-help:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}

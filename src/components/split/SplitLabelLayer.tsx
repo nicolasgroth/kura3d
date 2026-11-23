@@ -23,7 +23,9 @@ export interface SplitLabelItem {
   anchor: Vec3;
   /** Radio de la esfera que envuelve la pieza (mm), para su tamaño aparente. */
   radiusMm: number;
-  kind: 'piece' | 'plate';
+  kind: 'piece' | 'plate' | 'plane';
+  /** Plano sin espacio para conector (rótulo de aviso). */
+  noJoint?: boolean;
   /** Texto añadido ("↻ acostada") y su ayuda. */
   extra?: string;
   title?: string;
@@ -39,7 +41,7 @@ export const SplitLabelLayer: React.FC<{ items: SplitLabelItem[] }> = ({ items }
   const itemsRef = useRef(items);
   itemsRef.current = items;
   // Solo cambia lo que se ve (texto, tipo, atenuado), no la posición: así la animación de explosión no remide.
-  const signature = useMemo(() => items.map((i) => `${i.id}|${i.kind}|${i.text}|${i.extra ?? ''}|${i.title ?? ''}|${i.dimmed ? 1 : 0}`).join(';'), [items]);
+  const signature = useMemo(() => items.map((i) => `${i.id}|${i.kind}|${i.noJoint ? 1 : 0}|${i.text}|${i.extra ?? ''}|${i.title ?? ''}|${i.dimmed ? 1 : 0}`).join(';'), [items]);
   const tmp = useMemo(() => ({ v: new THREE.Vector3(), r: new THREE.Vector3(), right: new THREE.Vector3() }), []);
 
   // Contenedor único sobre el lienzo, sin recibir clics.
@@ -81,7 +83,9 @@ export const SplitLabelLayer: React.FC<{ items: SplitLabelItem[] }> = ({ items }
         map.set(item.id, node);
       }
       const { el } = node;
-      el.className = item.kind === 'plate' ? 'kura-split-plate-tag kura-split-label' : 'kura-split-piece-tag kura-split-label';
+      el.className = item.kind === 'plate' ? 'kura-split-plate-tag kura-split-label' : item.kind === 'plane' ? 'kura-split-plane-tag kura-split-label' : 'kura-split-piece-tag kura-split-label';
+      if (item.noJoint) el.setAttribute('data-no-joint', 'true');
+      else el.removeAttribute('data-no-joint');
       el.textContent = item.text;
       if (item.extra) {
         const sub = document.createElement('span');
@@ -133,6 +137,7 @@ export const SplitLabelLayer: React.FC<{ items: SplitLabelItem[] }> = ({ items }
         w: node.w,
         h: node.h,
         pinned: item.kind === 'plate',
+        rank: item.kind === 'plane' ? 2 : 1,
         behind,
       });
     }

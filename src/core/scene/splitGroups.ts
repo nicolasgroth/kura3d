@@ -32,25 +32,39 @@ export function splitGroupOf(objects: SceneObject[], id: string | null | undefin
   return { groupId: meta.groupId, parts };
 }
 
-/** Desplazamiento en X de la placa `plate` (la placa 0 es la cama real, centrada en el origen). */
+/** Placas por fila: con muchas placas se forma una cuadrícula compacta en vez de una fila ilegible. */
+export const SPLIT_PLATE_COLUMNS = 4;
+
+/**
+ * Desplazamiento [X, Z] de la placa `plate` (la placa 0 es la cama real, centrada en el origen): filas de
+ * `SPLIT_PLATE_COLUMNS` placas hacia la derecha y las filas siguientes hacia el fondo.
+ */
+export function plateOffset(plate: number, bedWidthMm: number, bedDepthMm = bedWidthMm): [number, number] {
+  const col = plate % SPLIT_PLATE_COLUMNS;
+  const row = Math.floor(plate / SPLIT_PLATE_COLUMNS);
+  return [col * (bedWidthMm + SPLIT_PLATE_GAP_MM), -row * (bedDepthMm + SPLIT_PLATE_GAP_MM)];
+}
+
+/** Desplazamiento en X de la placa `plate` (ver `plateOffset`). */
 export function plateOffsetX(plate: number, bedWidthMm: number): number {
-  return plate * (bedWidthMm + SPLIT_PLATE_GAP_MM);
+  return plateOffset(plate, bedWidthMm)[0];
 }
 
 /** Transformación de mundo de una pieza en la disposición pedida. */
-export function splitTransformFor(meta: SplitPartMetadata, mode: SplitArrangement, bedWidthMm: number): { position: Vec3; rotation: Vec3 } {
+export function splitTransformFor(meta: SplitPartMetadata, mode: SplitArrangement, bedWidthMm: number, bedDepthMm = bedWidthMm): { position: Vec3; rotation: Vec3 } {
   if (mode === 'assembly') return { position: [...meta.assembly.position] as Vec3, rotation: [...meta.assembly.rotation] as Vec3 };
   const p = meta.print.position;
-  return { position: [p[0] + plateOffsetX(meta.print.plate, bedWidthMm), p[1], p[2]], rotation: [...meta.print.rotation] as Vec3 };
+  const [ox, oz] = plateOffset(meta.print.plate, bedWidthMm, bedDepthMm);
+  return { position: [p[0] + ox, p[1], p[2] + oz], rotation: [...meta.print.rotation] as Vec3 };
 }
 
 const near = (a: readonly number[], b: readonly number[]) => a.every((v, i) => Math.abs(v - b[i]) < 1e-3);
 
 /** Disposición actual del grupo: armado, impresión o `null` si las piezas se movieron a mano. */
-export function splitArrangementOf(group: SplitGroup, bedWidthMm: number): SplitArrangement | null {
+export function splitArrangementOf(group: SplitGroup, bedWidthMm: number, bedDepthMm = bedWidthMm): SplitArrangement | null {
   for (const mode of ['assembly', 'print'] as const) {
     const all = group.parts.every((o) => {
-      const t = splitTransformFor(o.metadata.split, mode, bedWidthMm);
+      const t = splitTransformFor(o.metadata.split, mode, bedWidthMm, bedDepthMm);
       return near(o.position, t.position) && near(o.rotation, t.rotation);
     });
     if (all) return mode;
@@ -63,10 +77,11 @@ export function arrangeSplitGroupPatches(
   group: SplitGroup,
   mode: SplitArrangement,
   bedWidthMm: number,
+  bedDepthMm = bedWidthMm,
 ): Array<{ id: string; patch: { position: Vec3; rotation: Vec3 } }> {
   return group.parts
     .filter((o) => !o.locked)
-    .map((o) => ({ id: o.id, patch: splitTransformFor(o.metadata.split, mode, bedWidthMm) }))
+    .map((o) => ({ id: o.id, patch: splitTransformFor(o.metadata.split, mode, bedWidthMm, bedDepthMm) }))
     .filter(({ id, patch }) => {
       const o = group.parts.find((p) => p.id === id)!;
       return !(near(o.position, patch.position) && near(o.rotation, patch.rotation));

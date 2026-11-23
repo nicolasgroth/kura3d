@@ -14,12 +14,13 @@ import React, { useMemo } from 'react';
 import { t } from '../../i18n';
 import {
   explodedSplitPositions,
-  plateOffsetX,
+  plateOffset,
   splitArrangementOf,
   splitGroupOf,
   splitPlateCount,
 } from '../../core/scene/splitGroups';
 import { activeBed } from '../../store/splitCommandSchemas';
+import { userAxisLabel } from '../../core/scene/displayAxes';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { computeWorldBounds } from '../viewport/viewportHelpers';
@@ -49,6 +50,27 @@ export const SplitLabels: React.FC = () => {
 
   const items = useMemo<SplitLabelItem[]>(() => {
     const out: SplitLabelItem[] = [];
+
+    // Rótulos de los planos de corte: en la misma capa que los de pieza, así no se solapan entre sí.
+    const plan0 = preview.plan;
+    if (plan0 && preview.status !== 'idle') {
+      const [x0, y0, z0] = plan0.bounds.min;
+      const [x1, y1, z1] = plan0.bounds.max;
+      const top = y1 + (y1 - y0) * 0.06;
+      for (const p of plan0.planes) {
+        const anchor: Vec3 = p.axis === 'x' ? [p.position, top, (z0 + z1) / 2] : p.axis === 'z' ? [(x0 + x1) / 2, top, p.position] : [(x0 + x1) / 2, p.position, z1];
+        const noJoint = Boolean(plan0.connector) && !p.admitsConnectors;
+        out.push({
+          id: `plane:${p.axis}${p.index}`,
+          text: `${t(language, 'split.planeName', { axis: userAxisLabel(p.axis), n: p.index + 1 })}${noJoint ? ` · ${t(language, 'split.noJoint')}` : ''}`,
+          anchor,
+          radiusMm: 0,
+          kind: 'plane',
+          noJoint,
+          dimmed: preview.status === 'pending',
+        });
+      }
+    }
 
     if (show) {
       const plan = preview.plan;
@@ -101,13 +123,13 @@ export const SplitLabels: React.FC = () => {
 
     // Placas de impresión del grupo seleccionado (la 1 es la cama real).
     const group = splitGroupOf(objects, selectedId);
-    if (group && splitArrangementOf(group, bed.widthMm) === 'print') {
+    if (group && splitArrangementOf(group, bed.widthMm, bed.depthMm) === 'print') {
       const plates = splitPlateCount(group);
       for (let plate = 0; plate < plates; plate++) {
         out.push({
           id: `plate:${plate}`,
           text: t(language, 'split.plate', { n: plate + 1 }),
-          anchor: [plateOffsetX(plate, bed.widthMm), 0.1, bed.depthMm / 2 + 12],
+          anchor: [plateOffset(plate, bed.widthMm, bed.depthMm)[0], 0.1, plateOffset(plate, bed.widthMm, bed.depthMm)[1] + bed.depthMm / 2 + 12],
           radiusMm: 0,
           kind: 'plate',
         });

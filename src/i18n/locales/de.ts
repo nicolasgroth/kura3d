@@ -40,6 +40,7 @@ import { REALESUI_DE } from './realesUi';
 import { UX6_DE } from './ux6';
 import { RECETAS_DE } from './recetas';
 import { BORDES_DE } from './bordesPrimitivas';
+import { UX7_DE } from './ux7';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -77,6 +78,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...UX6_DE,
   ...RECETAS_DE,
   ...BORDES_DE,
+  ...UX7_DE,
   // Marca y shell principal
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
   'app.docTitle': 'Kura3D v0.5.0 — Natives 3D-Modellierungsstudio',
@@ -809,7 +811,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
 
   // Barra de estado inferior (StatusBar)
   'status.runtime.tauri': 'Nativ (Tauri v2)',
-  'status.runtime.web': 'Web Studio',
+  'status.runtime.web': 'Web-Studio',
   'status.engine.loading': 'Manifold WASM wird geladen...',
   'status.engine.ready': 'Manifold WASM Bereit',
   'status.engine.error': 'Kern-Fehler',

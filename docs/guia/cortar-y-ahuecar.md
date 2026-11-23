@@ -21,10 +21,10 @@ Si conservas una sola mitad y quedaría flotando sobre la cama, el diálogo preg
 
 ## Ahuecar
 
-1. Selecciona un sólido. En el inspector busca **Ahuecar**.
-2. Elige el **grosor de pared** (campo o deslizador, por defecto 2,2 mm). Si la pieza es muy grande para ese grosor, un aviso te dice cuál es el máximo.
+1. Selecciona un sólido. En el inspector busca **Grosor de pared (mm)**, en Operaciones 3D.
+2. Elige el grosor (campo o deslizador, por defecto 2,2 mm). Si la pieza es muy grande para ese grosor, un aviso te dice cuál es el máximo.
 3. Opcional: marca **Orificio de drenaje inferior** para poder sacar el material sobrante (resina o polvo).
-4. **Ver interior** te deja mirar dentro de la pieza; **Aplicar ahuecado** la vacía.
+4. **Ver interior** te deja mirar dentro de la pieza (la cámara la encuadra); **Aplicar ahuecado** la vacía. Tras cortar por plano, la cámara también encuadra las mitades.
 
 ![Panel Ahuecar en el inspector](img/cortar-y-ahuecar-03-ahuecar.png)
 

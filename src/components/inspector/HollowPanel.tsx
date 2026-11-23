@@ -45,7 +45,7 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
   return (
     <div className="kura-form-field" ref={rootRef}>
       <div className="kura-field-row">
-        <label>{t(language, 'inspector.op.hollowTitle')}</label>
+        <label>{t(language, 'inspector.op.wallThickness')} (mm)</label>
         <PrecisionNumberInput
           style={{ width: 92 }}
           min={0.8}

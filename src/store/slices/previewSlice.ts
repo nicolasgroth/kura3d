@@ -222,6 +222,8 @@ export function createPreviewSlice(ctx: StoreContext): PreviewSliceState {
       const h = (obj.stats?.dimensionsMm?.[1] ?? 0) * (obj.scale?.[1] ?? 1);
       get().setSectionPlane({ enabled: true, heightMm: Math.round((obj.position[1] + h / 2) * 10) / 10 });
       set({ temporarySectionView: { objectId, previous } });
+      // El interior se ve de cerca: se encuadra la pieza cortada.
+      get().requestCameraPreset('focus', [objectId]);
     },
 
     exitInteriorSection: () => {

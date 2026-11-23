@@ -8,7 +8,7 @@
 
 import * as THREE from 'three';
 import { X } from 'lucide-react';
-import { plateOffsetX } from '../../core/scene/splitGroups';
+import { plateOffset } from '../../core/scene/splitGroups';
 import { isPrintable } from '../../core/scene/objectRole';
 import { type PrinterProfile, type SceneObject, type SlicerTarget } from '../../types/kura';
 
@@ -74,20 +74,20 @@ export function computeWorldBounds(obj: SceneObject): {
 }
 
 /**
- * Desplazamiento en X de una pieza de una división acomodada para imprimir en su placa (las placas van
- * en fila a un costado de la cama: cada pieza se mide dentro de la suya, no contra la cama real).
- * `0` si no es una pieza dividida o si no está en su lugar de impresión (movida a mano, armada).
+ * Desplazamiento [X, Z] de una pieza de una división acomodada para imprimir en su placa (las placas van
+ * en cuadrícula junto a la cama: cada pieza se mide dentro de la suya, no contra la cama real).
+ * `[0, 0]` si no es una pieza dividida o si no está en su lugar de impresión (movida a mano, armada).
  */
-export function printPlateShiftX(obj: SceneObject, bedWidthMm: number): number {
+export function printPlateShift(obj: SceneObject, bedWidthMm: number, bedDepthMm = bedWidthMm): [number, number] {
   const meta = obj.metadata?.split;
-  if (!meta) return 0;
+  if (!meta) return [0, 0];
   const [px, py, pz] = meta.print.position;
   const near = (a: number, b: number) => Math.abs(a - b) < 1e-3;
   const sameRotation = meta.print.rotation.every((r, i) => near(r, obj.rotation[i]));
-  if (!sameRotation || !near(obj.position[1], py) || !near(obj.position[2], pz)) return 0;
-  const shift = obj.position[0] - px;
+  if (!sameRotation || !near(obj.position[1], py)) return [0, 0];
+  const [ox, oz] = plateOffset(meta.print.plate, bedWidthMm, bedDepthMm);
   // Solo el desplazamiento exacto de su placa; cualquier otro (movida a mano) se mide contra la cama.
-  return near(shift, plateOffsetX(meta.print.plate, bedWidthMm)) ? shift : 0;
+  return near(obj.position[0] - px, ox) && near(obj.position[2] - pz, oz) ? [ox, oz] : [0, 0];
 }
 
 /** Verifica si algún sólido visible excede los límites X, Z o altura máxima Y de la impresora activa. */
@@ -103,9 +103,11 @@ export function checkObjectsOutOfBounds(
   for (const obj of objects) {
     if (!isPrintable(obj)) continue;
     const b = computeWorldBounds(obj);
-    const shift = printPlateShiftX(obj, profile.bedWidthMm);
-    b.minX -= shift;
-    b.maxX -= shift;
+    const [sx, sz] = printPlateShift(obj, profile.bedWidthMm, profile.bedDepthMm);
+    b.minX -= sx;
+    b.maxX -= sx;
+    b.minZ -= sz;
+    b.maxZ -= sz;
     if (
       b.minX < -halfW ||
       b.maxX > halfW ||

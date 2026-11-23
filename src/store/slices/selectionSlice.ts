@@ -21,6 +21,7 @@ import { cloneSnapshot } from '../projectDocument';
 import type { StoreContext } from '../storeContext';
 import { sanitizeTransformPatch } from '../transformLimits';
 import type { KuraStoreState } from '../storeTypes';
+import { undoToastAction } from '../toastActionState';
 
 export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, pushHistory, rejectWhileLocked, runtime } = ctx;
@@ -67,7 +68,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       set({ objects: [], selectedIds: [], activePrintReport: null, showOverhangs: false, activeSegmentation: null });
       // Vaciar la cama deja sin objetos que medir: las mediciones y la capacidad se descartan.
       useMeasureStore.getState().reset();
-      get().addToast(tCount(get().language, { one: 'toast.sceneCleared.one', other: 'toast.sceneCleared.other' }, count), 'info', { label: tr('toast.undo'), run: () => get().undo() });
+      get().addToast(tCount(get().language, { one: 'toast.sceneCleared.one', other: 'toast.sceneCleared.other' }, count), 'info', undoToastAction(tr('toast.undo'), () => get().past, () => get().undo()));
     },
 
     updateObjectMeta: (id, patch) => {
@@ -171,7 +172,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       get().addToast(
         tCount(get().language, { one: 'toast.deleted.one', other: 'toast.deleted.other' }, removableIds.size),
         'info',
-        { label: tr('toast.undo'), run: () => get().undo() },
+        undoToastAction(tr('toast.undo'), () => get().past, () => get().undo()),
       );
     },
 

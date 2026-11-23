@@ -88,7 +88,7 @@ interface IoState {
   customBedDimensions?: { width: number } | null;
   projectName: string | null;
   importPlacementMode: engine.ImportPlacementMode;
-  addToast: (text: string, kind?: 'info' | 'success' | 'error', action?: { label: string; run: () => void }) => void;
+  addToast: (text: string, kind?: 'info' | 'success' | 'error', action?: import('./storeTypes').ToastAction) => void;
   requestCameraPreset: (preset: 'fit' | 'ensure', ids?: string[]) => void;
 }
 
@@ -307,6 +307,8 @@ export function createModelIoActions(deps: ModelIoDeps) {
           ? tr('realesMotor.unitFit', { mm: Math.round(best.resultMm) })
           : tr('realesMotor.unitScale', { factor: factorFmt.format(best.factor) }),
         run: () => void rescaleObjects(ids, best.factor),
+        targetIds: ids,
+        watch: 'scale',
       },
     );
   }

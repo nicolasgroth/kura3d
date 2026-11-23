@@ -9,7 +9,7 @@
 import { useId, useState } from 'react';
 import { ChevronDown, ChevronUp, History } from 'lucide-react';
 import { t } from '../i18n';
-import { recoveryDraftLabel, recoveryDraftTime } from '../project/projectRecoveryLabels';
+import { recoveryDraftLabel, recoveryDraftTime, recoveryDraftAgo } from '../project/projectRecoveryLabels';
 import type { RecoveryDraftInfo } from '../project/projectRecoveryStorage';
 import { readStorage, writeStorage } from '../store/preferencesStorage';
 import { useKuraStore } from '../store/useKuraStore';
@@ -84,7 +84,9 @@ export function ProjectRecoveryBanner({ drafts, busy, onRestore, onDiscard }: Pr
           ) : (
             <strong title={draftName}>{draftName}</strong>
           )}
-          <time dateTime={new Date(draft.updatedAt).toISOString()}>{recoveryDraftTime(draft, language)}</time>
+          <time dateTime={new Date(draft.updatedAt).toISOString()} title={recoveryDraftTime(draft, language)}>
+            {t(language, 'ux7.recovery.savedAgo', { ago: recoveryDraftAgo(draft, language) })} · {recoveryDraftTime(draft, language)}
+          </time>
         </div>
 
         <div className="kura-recovery-actions">

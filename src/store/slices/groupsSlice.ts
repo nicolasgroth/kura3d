@@ -23,6 +23,7 @@ import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 import { sanitizeTransformPatch } from '../transformLimits';
 import { cloneSnapshot } from '../projectDocument';
+import { undoToastAction } from '../toastActionState';
 
 export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, pushHistory, rejectWhileLocked, runtime } = ctx;
@@ -79,10 +80,7 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       }
       commitScene(next, { selectedIds: descendantObjectIds(next.objects, next.groups, id), groupContextId: null, lastRepeatable: { kind: 'group' } });
       const group = get().groups.find((g) => g.id === id) ?? null;
-      get().addToast(tCount(get().language, { one: 'groups.toast.grouped.one', other: 'groups.toast.grouped.other' }, objs.length), 'success', {
-        label: tr('toast.undo'),
-        run: () => get().undo(),
-      });
+      get().addToast(tCount(get().language, { one: 'groups.toast.grouped.one', other: 'groups.toast.grouped.other' }, objs.length), 'success', undoToastAction(tr('toast.undo'), () => get().past, () => get().undo()));
       return group;
     },
 
@@ -119,7 +117,7 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       }
       if (count === 0) return 0;
       commitScene(next, { groupContextId: null });
-      get().addToast(tr('groups.toast.ungrouped'), 'success', { label: tr('toast.undo'), run: () => get().undo() });
+      get().addToast(tr('groups.toast.ungrouped'), 'success', undoToastAction(tr('toast.undo'), () => get().past, () => get().undo()));
       return count;
     },
 
@@ -147,10 +145,7 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const { result, change } = ops.combineObjects(ctx.opCtx(), objs, finalName);
       ctx.commitChange(change, { select: [result.id] });
       set({ lastRepeatable: { kind: 'combine' } });
-      get().addToast(tCount(get().language, { one: 'groups.toast.combined.one', other: 'groups.toast.combined.other' }, objs.length), 'success', {
-        label: tr('toast.undo'),
-        run: () => get().undo(),
-      });
+      get().addToast(tCount(get().language, { one: 'groups.toast.combined.one', other: 'groups.toast.combined.other' }, objs.length), 'success', undoToastAction(tr('toast.undo'), () => get().past, () => get().undo()));
       return get().objects.find((o) => o.id === result.id) ?? null;
     },
 

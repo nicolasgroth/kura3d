@@ -45,6 +45,7 @@ import { REALESUI_EN, REALESUI_ES } from './locales/realesUi';
 import { UX6_EN, UX6_ES } from './locales/ux6';
 import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
 import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
+import { UX7_EN, UX7_ES } from './locales/ux7';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -84,6 +85,7 @@ export const TRANSLATIONS_ES = {
   ...UX6_ES,
   ...RECETAS_ES,
   ...BORDES_ES,
+  ...UX7_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -816,7 +818,7 @@ export const TRANSLATIONS_ES = {
 
   // Barra de estado inferior (StatusBar)
   'status.runtime.tauri': 'Nativo (Tauri v2)',
-  'status.runtime.web': 'Web Studio',
+  'status.runtime.web': 'Estudio web',
   'status.engine.loading': 'Iniciando Manifold WASM...',
   'status.engine.ready': 'Manifold WASM Listo',
   'status.engine.error': 'Error de motor',
@@ -1424,6 +1426,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UX6_EN,
   ...RECETAS_EN,
   ...BORDES_EN,
+  ...UX7_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
@@ -2129,7 +2132,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.shortcuts.help': 'Open this shortcuts guide',
 
   'status.runtime.tauri': 'Native (Tauri v2)',
-  'status.runtime.web': 'Web Studio',
+  'status.runtime.web': 'Web studio',
   'status.engine.loading': 'Loading Manifold WASM...',
   'status.engine.ready': 'Manifold WASM Ready',
   'status.engine.error': 'Engine error',

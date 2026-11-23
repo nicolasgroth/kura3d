@@ -50,7 +50,7 @@ export const FilamentLegendCard: React.FC = () => {
           <span key={hex} className="kura-filament-chip">
             <span className="kura-color-dot" style={{ backgroundColor: hex }} aria-hidden="true" />
             <span title={colorNameWithHex(language, hex)}>{colorName(language, hex)}</span>
-            <span style={{ color: 'var(--text-muted)' }}>×{count}</span>
+            <span style={{ color: 'var(--text-muted)' }}>{t(language, 'ux7.filament.pieces', { count })}</span>
           </span>
         ))}
       </div>

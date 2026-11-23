@@ -128,7 +128,8 @@ export function createSplitSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const state = get();
       const group = splitGroupOf(state.objects, id);
       if (!group) return false;
-      const patches = arrangeSplitGroupPatches(group, mode, activeBed(state).widthMm);
+      const bed = activeBed(state);
+      const patches = arrangeSplitGroupPatches(group, mode, bed.widthMm, bed.depthMm);
       // La vista explosionada se apaga: las piezas quedan donde dice la disposición.
       set({ splitExplode: null });
       if (patches.length === 0) return true;

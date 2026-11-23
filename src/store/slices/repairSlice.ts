@@ -93,7 +93,7 @@ export function createRepairSlice(ctx: StoreContext): Partial<KuraStoreState> {
         get().addToast(
           `${tr('toast.repairDone', { summary: repairSummaryText(tr, lang, report) })} · ${tris}`,
           'success',
-          { label: tr('toast.printabilityDetails'), run: () => void focusById(GEOMETRY_STATS_ID) },
+          { label: tr('toast.printabilityDetails'), run: () => void focusById(GEOMETRY_STATS_ID), targetIds: [id], transient: true },
         );
         reportEngineWarnings(change.warnings);
         return report;

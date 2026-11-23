@@ -16,9 +16,10 @@ Cuando una creación tiene varias piezas (el cuerpo, la chimenea, la cúpula), c
 La pestaña **Escena** del panel izquierdo lista todo como un árbol de capas, con el resumen de filamentos en uso y un buscador (**F3**).
 
 - **Plegar** un grupo con su flecha; **ojo** para ocultarlo (lo oculto no se exporta); **candado** para bloquearlo.
-- **F2** renombra el elemento seleccionado.
+- **F2** renombra el elemento seleccionado. Tras **Ctrl+G** queda seleccionado el grupo nuevo, así que F2 lo renombra a él.
+- Las piezas de una división se ven como «A1a · nombre», con el mismo rótulo que el visor.
 - **Arrastrar** una fila la mueve; los grupos pueden contener otros grupos.
-- Con el teclado: ↑/↓ recorren; →/← despliegan, pliegan o suben un nivel; `Enter` selecciona; `Supr` elimina; `Alt+↑/↓` reordena; `Alt+→` mete la fila en el grupo de arriba y `Alt+←` la saca. El panel recuerda estos atajos al pie.
+- Con el teclado: ↑/↓ recorren; →/← despliegan, pliegan o suben un nivel; `Enter` selecciona; `Supr` elimina; `Alt+↑/↓` reordena; `Alt+→` mete la fila en el grupo de arriba y `Alt+←` la saca. El botón **?** bajo el árbol abre la ayuda con estos atajos.
 - **Entrar a un grupo:** con el grupo seleccionado, `Enter`; `Esc` sale.
 
 ## Combinar y separar

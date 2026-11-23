@@ -36,6 +36,7 @@ import {
 } from '../../core/scene/displayAxes';
 import { RelativeTransformFields } from './RelativeTransformFields';
 import { type InspectorSectionProps } from './inspectorTypes';
+import { UnitDoubtLink } from './UnitDoubtLink';
 
 /** Giro máximo aceptado por campo (grados): 100 vueltas. */
 const ROTATION_LIMIT_DEG = 36000;
@@ -311,6 +312,7 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
             );
           })}
         </div>
+        <UnitDoubtLink object={primary} />
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>

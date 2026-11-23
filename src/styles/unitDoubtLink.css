@@ -1,0 +1,31 @@
+/**
+ * @file src/styles/unitDoubtLink.css
+ * @description Enlace «¿Unidad equivocada?» del inspector, junto a la escala de un objeto importado.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-unit-doubt-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--accent-cyan-fg, var(--accent-cyan));
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.kura-unit-doubt-link:hover {
+  color: var(--text-primary);
+}
+
+.kura-unit-doubt-link:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: 3px;
+}

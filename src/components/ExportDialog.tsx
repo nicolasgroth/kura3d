@@ -23,6 +23,7 @@ import { GroupExportOptions } from './dialogs/GroupExportOptions';
 import { selectedGroup } from '../core/scene/groups';
 import { hasSplitParts, type SplitExportMode } from '../store/splitExport';
 import '../styles/modelIo.css';
+import { ExportExcludedNote } from './ExportExcludedNote';
 
 const FORMATS: ExportFormat[] = ['3mf', 'stl', 'obj', 'glb', 'ply'];
 const FORMAT_STORAGE_KEY = 'kura3d-export-format';
@@ -174,6 +175,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
             <input type="radio" name={`${formId}-scope`} checked={scope === 'scene'} onChange={() => changeScope('scene')} />
             {t(language, 'dialog.export.scope.scene', { count: exportable.length })}
           </label>
+          <ExportExcludedNote objects={objects} exportable={exportable.length} language={language} />
         </fieldset>
 
         <div className="kura-form-field">
