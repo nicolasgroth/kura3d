@@ -65,6 +65,8 @@ export interface PrecisionNumberInputProps {
    * rango permitido y no se aplica (Escape restaura).
    */
   strictRange?: boolean;
+  /** Con `strictRange`, mensaje propio para un valor 0 o negativo fuera de rango (p. ej. escala). */
+  nonPositiveMessage?: string;
   /** Callback opcional al confirmar edición o soltar scrub/stepper. */
   onCommit?: (finalValue: number) => void;
   /**
@@ -129,6 +131,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   style,
   commitOnBlur = false,
   strictRange = false,
+  nonPositiveMessage,
   onCommit,
   onInvalidChange,
 }) => {
@@ -147,6 +150,8 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   const initialFocusValueRef = useRef<number>(value);
   const draftEditedRef = useRef(false);
   const escapedRef = useRef(false);
+  /** Último valor numérico rechazado por salir del rango (para el mensaje de 0 o negativo). */
+  const rejectedRef = useRef<number | null>(null);
 
   // Referencias para el arrastre horizontal a 60fps sin re-renderizar listeners
   const scrubRef = useRef<{
@@ -244,6 +249,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
         && ((typeof min === 'number' && parsed.value < min) || (typeof max === 'number' && parsed.value > max));
       if (parsed.ok && outOfRange) {
         // Fuera de rango: se conserva el texto y se marca con el rango permitido, sin aplicar.
+        rejectedRef.current = parsed.value;
         setInvalid('range');
       } else if (parsed.ok) {
         setInvalid(null);
@@ -410,7 +416,9 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   const rangeParams = hasRange
     ? { min: formatLocaleNumber(language, min, { maxFrac: precision }), max: formatLocaleNumber(language, max, { maxFrac: precision }) }
     : null;
-  const errorText = invalid === 'range' && rangeParams
+  const errorText = invalid === 'range' && nonPositiveMessage && rejectedRef.current !== null && rejectedRef.current <= 0
+    ? nonPositiveMessage
+    : invalid === 'range' && rangeParams
     ? t(language, 'precision.outOfRange', rangeParams)
     : strictRange && rangeParams
       ? t(language, 'precision.invalidRange', rangeParams)
@@ -484,7 +492,10 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
             // Con rango estricto, un número fuera de rango no se aplica (ni se acota a escondidas): se marca al
             // momento, para que el panel deshabilite «Aplicar» antes de que se pulse.
             const outside = strictRange && ((typeof min === 'number' && typed < min) || (typeof max === 'number' && typed > max));
-            if (outside) setInvalid('range');
+            if (outside) {
+              rejectedRef.current = typed;
+              setInvalid('range');
+            }
             else onChange(clampAndClean(typed, min, max, precision));
           }
         }}

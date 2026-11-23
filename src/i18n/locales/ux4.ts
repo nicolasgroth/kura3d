@@ -20,6 +20,14 @@ const UX4_TABLE = {
     'व्यूपोर्ट में हर पीस के ऊपर उसका कोड (A1, B1a…) दिखाता है',
     '在视图中于每个零件上方显示其编号(A1、B1a…)',
   ],
+  'ux4.scale.positive': [
+    'La escala debe ser mayor que 0: un valor cero o negativo no se aplica.',
+    'Scale must be greater than 0: a zero or negative value is not applied.',
+    'Die Skalierung muss größer als 0 sein: Null oder negative Werte werden nicht übernommen.',
+    'L’échelle doit être supérieure à 0 : une valeur nulle ou négative n’est pas appliquée.',
+    'स्केल 0 से अधिक होना चाहिए: शून्य या ऋणात्मक मान लागू नहीं होता।',
+    '缩放必须大于 0:零或负值不会被应用。',
+  ],
 } as const satisfies Record<string, Row>;
 
 type Ux4Key = keyof typeof UX4_TABLE;

@@ -23,6 +23,7 @@ import { PrecisionNumberInput, type PrecisionModifierState } from '../PrecisionN
 import { type Vec3 } from '../../types/kura';
 import { fromMm, getUnitLabel, getUnitStep, toMm } from '../../utils/units';
 import { AXES, MIN_SCALE } from './inspectorConstants';
+import { MAX_ABS_COORDINATE, MAX_SCALE } from '../../store/transformLimits';
 import {
   fromUserPosition,
   fromUserRotation,
@@ -35,6 +36,9 @@ import {
 } from '../../core/scene/displayAxes';
 import { RelativeTransformFields } from './RelativeTransformFields';
 import { type InspectorSectionProps } from './inspectorTypes';
+
+/** Giro máximo aceptado por campo (grados): 100 vueltas. */
+const ROTATION_LIMIT_DEG = 36000;
 
 /** Sección 2: transformación en la unidad activa. */
 export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
@@ -140,6 +144,7 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
             applyLabel={t(language, 'precision.applyDelta')}
             step={stepUnit}
             precision={unitPrecision}
+            limit={fromMm(MAX_ABS_COORDINATE * 2, unitSystem)}
             disabled={transformDisabled}
             onApply={(delta) => {
               const position = userPosition.map(
@@ -161,6 +166,9 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
                 precision={unitPrecision}
                 commitOnBlur
                 unit={unitSystem}
+                min={fromMm(-MAX_ABS_COORDINATE, unitSystem)}
+                max={fromMm(MAX_ABS_COORDINATE, unitSystem)}
+                strictRange
                 defaultValue={0}
                 disabled={transformDisabled}
                 value={Number(fromMm(userPosition[idx], unitSystem).toFixed(unitPrecision))}
@@ -201,6 +209,7 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
               applyLabel={t(language, 'precision.applyDelta')}
               step={5}
               precision={2}
+              limit={ROTATION_LIMIT_DEG}
               disabled={transformDisabled}
               onApply={(delta) => {
                 const rotation = userRotation.map(
@@ -222,6 +231,9 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
                 step={5}
                 precision={2}
                 commitOnBlur
+                min={-ROTATION_LIMIT_DEG}
+                max={ROTATION_LIMIT_DEG}
+                strictRange
                 defaultValue={0}
                 disabled={transformDisabled}
                 value={Number(THREE.MathUtils.radToDeg(userRotation[idx]).toFixed(2))}
@@ -280,6 +292,9 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
                 axisTone={axis}
                 step={scaleBySize ? stepUnit : 0.1}
                 min={scaleBySize ? baseSize * minimumFactor : minimumFactor}
+                max={scaleBySize ? baseSize * MAX_SCALE : MAX_SCALE}
+                strictRange
+                nonPositiveMessage={t(language, 'ux4.scale.positive')}
                 precision={precision}
                 commitOnBlur
                 unit={scaleBySize ? unitSystem : null}
