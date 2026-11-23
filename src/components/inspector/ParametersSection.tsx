@@ -20,65 +20,12 @@ import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject, UnitSystem } from '../../types/kura';
 import { askDecision } from '../../utils/confirmDialog';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { TextParamEditor } from './TextParamEditor';
 
 type Values = Record<string, number | string | boolean | undefined>;
 
 const fieldLabel = (language: Parameters<typeof t>[0], key: string) =>
   t(language, `inspector.params.field.${key}` as TranslationKey);
-
-/** Campo de texto que confirma con Enter o al salir. */
-const TextParam: React.FC<{
-  label: string; value: string; maxLength: number; multiline: boolean; disabled: boolean; onCommit: (v: string) => void;
-}> = ({
-  label, value, maxLength, multiline, disabled, onCommit,
-}) => {
-  const [draft, setDraft] = useState(value);
-  useEffect(() => setDraft(value), [value]);
-  const commit = () => {
-    const next = multiline ? draft.replace(/\r/g, '').replace(/^\n+|\n+$/g, '') : draft.trim();
-    if (next.trim() && next !== value) onCommit(next);
-    else setDraft(value);
-  };
-  return (
-    <div className="kura-field-row">
-      <span className="kura-field-label">{label}</span>
-      {multiline ? (
-        <textarea
-          className="kura-textarea kura-param-textarea"
-          aria-label={label}
-          title={label}
-          rows={2}
-          value={draft}
-          maxLength={maxLength}
-          disabled={disabled}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            // Enter inserta un salto de línea; Ctrl/Cmd+Enter confirma.
-            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commit(); }
-            if (e.key === 'Escape') setDraft(value);
-          }}
-        />
-      ) : (
-        <input
-          type="text"
-          className="kura-input"
-          aria-label={label}
-          title={label}
-          value={draft}
-          maxLength={maxLength}
-          disabled={disabled}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') commit();
-            if (e.key === 'Escape') setDraft(value);
-          }}
-        />
-      )}
-    </div>
-  );
-};
 
 export const ParametersSection: React.FC<{ primary: SceneObject }> = ({ primary }) => {
   const language = useKuraStore((s) => s.language);
@@ -128,14 +75,17 @@ export const ParametersSection: React.FC<{ primary: SceneObject }> = ({ primary 
         const label = fieldLabel(language, field.key);
         if (field.kind === 'text') {
           return (
-            <TextParam
+            <TextParamEditor
               key={field.key}
               label={label}
               value={String(values.text ?? field.defaultValue)}
               maxLength={field.maxLength}
               multiline={field.multiline}
               disabled={disabled}
+              fontSizeMm={typeof values.fontSize === 'number' ? values.fontSize : 16}
+              letterSpacingMm={typeof values.letterSpacing === 'number' ? values.letterSpacing : 0}
               onCommit={(v) => void commit('text', v)}
+              onUseSize={(size) => void commit('fontSize', size)}
             />
           );
         }

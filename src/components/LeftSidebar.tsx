@@ -38,6 +38,7 @@ import { colorName, colorNameWithHex } from '../utils/colorNames';
 import { tCount } from '../utils/plural';
 import { SceneObjectList } from './scene/SceneObjectList';
 import { SceneSearch, useRevealSceneOnRequest } from './scene/SceneSearch';
+import { Text3DCreateCard } from './text3d/Text3DCreateCard';
 import { confirmClearScene } from './confirmClearScene';
 import { useLeftTabRequest } from './leftPanelTabRequest';
 import '../styles/panelEdge.css';
@@ -51,7 +52,6 @@ export const LeftSidebar: React.FC = () => {
     // Solo reacciona a peticiones nuevas.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leftTabRequest.n]);
-  const [textDraft, setTextDraft] = useState('KURA3D');
   const [showTextBox, setShowTextBox] = useState(false);
 
   const language = useKuraStore((s) => s.language);
@@ -103,21 +103,13 @@ export const LeftSidebar: React.FC = () => {
   const handlePrimitiveClick = async (type: PrimitiveType, params?: Record<string, unknown>, label?: string) => {
     if (type === 'text') {
       if (uiDensity === 'compact') {
-        await createPrimitive('text', { text: textDraft.trim() || 'KURA3D', fontSize: 18, height: 6 }, { placement: 'free' });
+        await createPrimitive('text', { text: 'KURA3D', fontSize: 18, height: 6 }, { placement: 'free' });
         return;
       }
       setShowTextBox((prev) => !prev);
       return;
     }
     await createPrimitive(type, params, { placement: 'free', ...(label ? { label } : {}) });
-  };
-
-  const handleCreateText = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleaned = textDraft.trim() || 'KURA3D';
-    const created = await createPrimitive('text', { text: cleaned, fontSize: 18, height: 6 }, { name: `${t(language, 'sidebar.primitive.text')} "${cleaned}"`, placement: 'free' });
-    // Si falla (p. ej. caracteres que la fuente no tiene) el cuadro sigue abierto para corregir el texto.
-    if (created) setShowTextBox(false);
   };
 
   const isCompactRail = uiDensity === 'compact';
@@ -243,26 +235,7 @@ export const LeftSidebar: React.FC = () => {
                   ))}
                 </div>
 
-                {showTextBox && (
-                  <form className="kura-card" style={{ marginTop: 8 }} onSubmit={handleCreateText}>
-                    <label className="kura-field-label" htmlFor="kura-text3d-input">
-                      {t(language, 'sidebar.textPrompt')}
-                    </label>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <input
-                        id="kura-text3d-input"
-                        className="kura-input"
-                        style={{ flex: 1 }}
-                        value={textDraft}
-                        onChange={(e) => setTextDraft(e.target.value)}
-                        maxLength={24}
-                      />
-                      <button type="submit" className="kura-btn kura-btn-sm kura-btn-primary">
-                        OK
-                      </button>
-                    </div>
-                  </form>
-                )}
+                {showTextBox && <Text3DCreateCard onCreated={() => setShowTextBox(false)} />}
               </section>
 
               <section>
