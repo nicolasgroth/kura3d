@@ -79,7 +79,7 @@ test('Molde: esfera sin embudo explica la cavidad sellada; con embudo crea 2 pie
 test('Proyectar texto en cubo: el eje superior crece Z, el frontal crece Y; deshacer restaura', async ({ page }) => {
   await fresh(page);
   await page.getByRole('button', { name: 'Cubo' }).first().click();
-  for (const [index, grows] of [[0, '30 mm × 30 mm × 31.2 mm'], [2, '30 mm × 31.2 mm × 30 mm']] as const) {
+  for (const [index, grows] of [[0, '30 mm × 30 mm × 31,2 mm'], [2, '30 mm × 31,2 mm × 30 mm']] as const) {
     await page.getByRole('button', { name: 'Proyectar Texto/SVG en Superficie' }).click();
     await page.locator('#proj-axis').selectOption({ index });
     await page.getByRole('button', { name: 'Proyectar sobre Modelo' }).click();
