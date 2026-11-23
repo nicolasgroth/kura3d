@@ -170,6 +170,8 @@ export function startProjectRecovery(
   });
 
   if (isProjectDirty(store.getState())) queueCheckpoint();
+  // Al arrancar: borradores de más de 30 días y bloques huérfanos de sesiones anteriores.
+  maybeCleanup();
 
   function stop() {
     if (stopped) return;
