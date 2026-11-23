@@ -1,6 +1,6 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 22:45, con la importación de 3MF reales integrada.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 23:10, con el pulido de Medir integrado.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
@@ -9,8 +9,7 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 | Funcionalidad | Estado |
 |---|---|
 | Importación, memoria: leer el archivo dentro del Worker sin copias, tope práctico de 256 MiB por archivo y tope por lote, borrador de recuperación antes de procesar un archivo grande, tope propio para `.mtl`, botón "Reparar malla" en el aviso de modelo abierto | En curso desde las 22:45 |
-| Pulido de Medir y grupos tras QA: las mediciones siguen al objeto, Medir accesible en móvil, panel compacto, color de las caras que deja una resta, gizmo de grupo | En verificación final |
-| Dependencias: evaluación una por una de las 9 actualizaciones que propone Dependabot (TypeScript 7, three.js, lucide-react, jsdom, plugin de React, tipos de Node, acciones de GitHub) | En curso; no se fusiona nada en GitHub sin el visto bueno del autor |
+| Dependencias: de las 9 actualizaciones que propone Dependabot, 2 pasan todo y aportan (TypeScript 7 y lucide-react); están en la rama local `chore/deps-2026-11` | Esperando la decisión del autor (ver CONSULTAS_PROYECTO.md) |
 | Ahuecado con rejilla adaptativa en piezas grandes y dividir más rápido en modelos de millones de triángulos | Pendiente |
 
 ## En QA
@@ -34,12 +33,14 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Integración continua en GitHub: fallaba en cada push por dependencias a medio instalar; corregida, con cancelación de corridas superadas y sin correr por cambios solo de documentación. Dependabot mensual y agrupado | Corregido; confirmando la primera corrida completa en verde |
 | Reparar malla (nueva): diagnóstico de agujeros, aristas con más de dos caras, caras duplicadas o degeneradas y normales; reparación por etapas verificada por el motor; bordes abiertos resaltados; botón en el error de malla inválida, menú, paleta y panel de análisis; también por MCP. El busto real con 13 aristas abiertas queda utilizable en 5 s | Implementado con pruebas; sin verificación visual; falta QA |
 | Avisos del motor que ya no se pierden por MCP ni por el bus; una sola definición de malla cerrada; análisis que dice cuando no pudo medir la pared | Implementado con pruebas |
-| Herramienta Medir (tecla D): distancia con imán, ángulo, área, volumen y capacidad de un recipiente hasta su rebalse, en mm/cm/pulgadas y mL/litros; también por MCP | **QA aprobó con observaciones**, sin bloqueos: distancias, imanes, ángulo, área, unidades y capacidad correctos (vaso 48,8 mL frente a 48,86; inclinado 20°: 42,1 frente a 42,2; con agujero: rebalsa a 17 mm). Observaciones en corrección |
+| Herramienta Medir (tecla D): distancia con imán, ángulo, área, volumen y capacidad de un recipiente hasta su rebalse, en mm/cm/pulgadas y mL/litros; también por MCP | **QA aprobó con observaciones**, sin bloqueos: distancias, imanes, ángulo, área, unidades y capacidad correctos (vaso 48,8 mL frente a 48,86; inclinado 20°: 42,1 frente a 42,2; con agujero: rebalsa a 17 mm). Observaciones corregidas: las mediciones siguen al objeto al moverlo, rotarlo o escalarlo y se marcan "Desactualizada" si la pieza cambia; panel compacto y plegable; hoja inferior en móvil; valores con el formato del idioma |
 | Pincel: una sola regla de visibilidad en todos sus caminos (rápido, con refinado, diferido y por comando); ya no atraviesa placas delgadas | Corregido; la prueba de navegador que lo detectó pasa |
 | Pintura sobre primitivas: el arrastre no modifica nada hasta aceptar el aviso, "Cancelar" deja el cubo intacto, un trazo = un paso también con refinado | Corregido y confirmado por QA con arrastre largo |
 | Separar por colores en superficies curvas: malla limpia (el defecto que midió QA en la esfera era real y quedó corregido) | Confirmado por QA en esfera y cilindro; queda afinar triángulos casi degenerados en bordes irregulares |
 | Menú del objeto con ideas de OrcaSlicer: Centrar en la cama, Transformar ▸, Alinear y distribuir ▸, forma Disco, Reemplazar por archivo, Exportar selección como un STL, "Ocultar (no se exporta)", aviso de malla pesada con acceso a Simplificar | Confirmado por QA |
 | Pruebas de navegador ejecutables con `npm run test:e2e` (Playwright como dependencia de desarrollo) | Funcionando: 17 pasan, 6 se saltan por falta de archivos de prueba antiguos, 1 falla (pincel en placa delgada) |
+| Las caras nuevas de una resta toman el color del sólido (antes heredaban el de la pieza negativa y aparecía un filamento de más) | Corregido con prueba |
+| Modelos reales del autor en pantalla (9 archivos): importación, avisos, fluidez y recorridos completos de reparar, dividir, medir, pintar y ahuecar | QA en navegador en curso desde las 23:10 |
 | Proyectos recientes y seguridad en escritorio (CSP, llavero, permisos, proxy de IA, confirmación al sobrescribir) | Probado en web y con pruebas; falta verificar en la app instalada |
 
 ## En evaluación
