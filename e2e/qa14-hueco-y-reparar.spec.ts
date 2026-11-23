@@ -32,11 +32,15 @@ test('ahuecar un cubo de 150 mm con pared 2: volumen exacto y aviso de cavidad c
     await t.fill('150');
     await t.press('Enter');
   }
+  // Ahuecar se abre por su acción: el panel contextual muestra solo sus opciones.
+  await insp.getByRole('button', { name: 'Ahuecar…' }).click();
   const pared = insp.locator('input[aria-label="Grosor de pared"]').first();
   await pared.scrollIntoViewIfNeeded();
   await pared.fill('2');
   await pared.press('Enter');
   await insp.getByRole('button', { name: /Aplicar ahuecado/ }).click();
+  // «Volver» regresa al resumen del objeto, donde se lee el volumen.
+  await insp.getByRole('button', { name: 'Volver' }).click();
   await expect(insp.getByText(/262\.864/)).toBeVisible({ timeout: 15000 });
   await expect(page.getByText(/cavidad cerrada/i).first()).toBeVisible();
 });
