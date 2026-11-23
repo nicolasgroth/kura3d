@@ -17,6 +17,8 @@ Un paquete hecho por un tercero que agrega funciones a Kura3D sin modificar su c
 | Panel | Una vista propia dentro del estudio | Segunda etapa |
 | Idioma | Traducción completa | Primera versión, sin código |
 
+El formato de las recetas (comandos sin código) está en [recetas/FORMATO.md](recetas/FORMATO.md).
+
 ## Reglas
 
 1. **Sin acceso por defecto.** Una extensión no ve archivos, red, credenciales ni otras extensiones. Cada permiso se declara en el manifiesto y el usuario lo aprueba al instalar.

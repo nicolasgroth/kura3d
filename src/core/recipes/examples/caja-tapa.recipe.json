@@ -1,0 +1,85 @@
+{
+  "format": "kura.recipe/1",
+  "id": "kura.caja-tapa",
+  "version": "1.0.0",
+  "kura": ">=0.8.0",
+  "title": "$t:title",
+  "description": "$t:description",
+  "author": "Kura3D",
+  "license": "MIT",
+  "category": "cajas",
+  "params": [
+    { "id": "w", "type": "number", "unit": "mm", "min": 10, "max": 400, "default": 80, "label": "$t:w", "page": "medidas" },
+    { "id": "dp", "type": "number", "unit": "mm", "min": 10, "max": 400, "default": 60, "label": "$t:dp", "page": "medidas" },
+    { "id": "h", "type": "number", "unit": "mm", "min": 5, "max": 300, "default": 40, "label": "$t:h", "page": "medidas" },
+    { "id": "wall", "type": "number", "unit": "mm", "min": 1.2, "max": 6, "step": 0.1, "default": 2, "label": "$t:wall", "page": "medidas" },
+    { "id": "r", "type": "number", "unit": "mm", "min": 0, "max": "=min(p.w, p.dp)/4", "default": 0, "label": "$t:r", "page": "forma" },
+    { "id": "fix", "type": "choice", "default": "screw", "label": "$t:fix", "page": "tapa",
+      "options": [{ "value": "screw", "label": "$t:screw" }, { "value": "press", "label": "$t:press" }] },
+    { "id": "screw", "type": "choice", "default": 3, "label": "$t:screwd", "page": "tapa", "visibleWhen": "=p.fix == 'screw'",
+      "options": [{ "value": 2, "label": "M2" }, { "value": 2.5, "label": "M2.5" }, { "value": 3, "label": "M3" }, { "value": 4, "label": "M4" }] },
+    { "id": "vents", "type": "boolean", "default": false, "label": "$t:vents", "page": "forma" },
+    { "id": "ventw", "type": "number", "unit": "mm", "min": 1, "max": 5, "default": 2, "label": "$t:ventw", "page": "forma", "visibleWhen": "=p.vents" }
+  ],
+  "derive": {
+    "ow": "=p.w + 2*p.wall",
+    "od": "=p.dp + 2*p.wall",
+    "lid": "=max(p.wall, 2)",
+    "pr": "=p.fix == 'screw' ? p.screw + 1 : 0",
+    "cw": "=p.w - 2*d.pr",
+    "cd": "=p.dp - 2*d.pr",
+    "vn": "=p.vents ? clamp(floor((p.w - 20) / (p.ventw*2.5)), 0, 40) : 0"
+  },
+  "rules": [
+    { "level": "warning", "when": "=p.wall < 1.6", "message": "$t:thin", "focus": "wall" },
+    { "level": "error", "when": "=p.fix == 'screw' && 4*d.pr > min(p.w, p.dp)", "message": "$t:posts" },
+    { "level": "error", "when": "=p.vents && d.vn < 1", "message": "$t:novents", "focus": "ventw" }
+  ],
+  "steps": [
+    { "id": "outer", "op": "create_primitive", "args": { "type": "box",
+      "params": { "width": "=d.ow", "depth": "=d.od", "height": "=p.h + p.wall", "cornerRadius": "=p.r" } } },
+    { "id": "cavity", "op": "create_primitive", "args": { "type": "box", "position": [0, 0, "=p.wall"],
+      "params": { "width": "=p.w", "depth": "=p.dp", "height": "=p.h + 1", "cornerRadius": "=max(p.r - p.wall, 0)" } } },
+    { "id": "posts", "op": "create_primitive", "when": "=p.fix == 'screw'",
+      "pattern": { "kind": "corners", "width": "=d.cw", "depth": "=d.cd", "max": 4 },
+      "args": { "type": "cylinder", "position": ["=x", "=y", "=p.wall"], "params": { "radius": "=d.pr", "height": "=p.h" } } },
+    { "id": "pilots", "op": "create_primitive", "when": "=p.fix == 'screw'",
+      "pattern": { "kind": "corners", "width": "=d.cw", "depth": "=d.cd", "max": 4 },
+      "args": { "type": "cylinder", "position": ["=x", "=y", "=p.wall + 2"], "params": { "radius": "=p.screw*0.42", "height": "=p.h" } } },
+    { "id": "slots", "op": "create_primitive", "when": "=d.vn > 0",
+      "pattern": { "kind": "linear", "count": "=d.vn", "step": ["=p.ventw*2.5", 0, 0], "centered": true, "max": 40 },
+      "args": { "type": "box", "position": ["=x", 0, "=p.wall + p.h*0.3"], "params": { "width": "=p.ventw", "depth": "=d.od + 2", "height": "=p.h*0.4" } } },
+    { "id": "b1", "op": "boolean_operation", "args": { "op": "subtract", "target": "@outer", "tools": ["@cavity"] } },
+    { "id": "b2", "op": "boolean_operation", "args": { "op": "union", "target": "@b1", "tools": ["@posts"] } },
+    { "id": "box", "op": "boolean_operation", "args": { "op": "subtract", "target": "@b2", "tools": ["@pilots", "@slots"] } },
+    { "id": "plate", "op": "create_primitive", "args": { "type": "box", "position": ["=d.ow + 10", 0, 0],
+      "params": { "width": "=d.ow", "depth": "=d.od", "height": "=d.lid", "cornerRadius": "=p.r" } } },
+    { "id": "lip", "op": "create_primitive", "when": "=p.fix == 'press'", "args": { "type": "box", "position": ["=d.ow + 10", 0, "=d.lid"],
+      "params": { "width": "=p.w - 0.4", "depth": "=p.dp - 0.4", "height": 3, "cornerRadius": "=max(p.r - p.wall - 0.2, 0)" } } },
+    { "id": "holes", "op": "create_primitive", "when": "=p.fix == 'screw'",
+      "pattern": { "kind": "corners", "width": "=d.cw", "depth": "=d.cd", "max": 4 },
+      "args": { "type": "cylinder", "position": ["=d.ow + 10 + x", "=y", -1], "params": { "radius": "=p.screw/2 + 0.2", "height": "=d.lid + 2" } } },
+    { "id": "l1", "op": "boolean_operation", "args": { "op": "union", "target": "@plate", "tools": ["@lip"] } },
+    { "id": "lidout", "op": "boolean_operation", "args": { "op": "subtract", "target": "@l1", "tools": ["@holes"] } }
+  ],
+  "outputs": [{ "ref": "@box", "name": "$t:outBox" }, { "ref": "@lidout", "name": "$t:outLid" }],
+  "checks": [{ "kind": "fits_bed", "refs": ["@box", "@lidout"], "onFail": "offer_split" }],
+  "strings": {
+    "es": {
+      "title": "Caja con tapa", "description": "Caja de medidas interiores con tapa atornillada o a presión.",
+      "w": "Ancho interior", "dp": "Fondo interior", "h": "Alto interior", "wall": "Pared", "r": "Radio de esquinas",
+      "fix": "Cierre de la tapa", "screw": "Tornillos", "press": "A presión", "screwd": "Tornillo",
+      "vents": "Ranuras de ventilación", "ventw": "Ancho de ranura",
+      "thin": "Pared bajo 1,6 mm: puede quedar frágil.", "posts": "Los postes de tornillo no caben en la caja.",
+      "novents": "No caben ranuras con ese ancho.", "outBox": "Caja", "outLid": "Tapa"
+    },
+    "en": {
+      "title": "Box with lid", "description": "Box sized by its inside, with a screwed or press-fit lid.",
+      "w": "Inner width", "dp": "Inner depth", "h": "Inner height", "wall": "Wall", "r": "Corner radius",
+      "fix": "Lid closure", "screw": "Screws", "press": "Press fit", "screwd": "Screw",
+      "vents": "Vent slots", "ventw": "Slot width",
+      "thin": "Wall under 1.6 mm: it may be fragile.", "posts": "The screw posts do not fit in the box.",
+      "novents": "No slots fit with that width.", "outBox": "Box", "outLid": "Lid"
+    }
+  }
+}

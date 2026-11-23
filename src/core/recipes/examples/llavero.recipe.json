@@ -1,0 +1,53 @@
+{
+  "format": "kura.recipe/1",
+  "id": "kura.llavero",
+  "version": "1.0.0",
+  "kura": ">=0.8.0",
+  "title": "$t:title",
+  "author": "Kura3D",
+  "license": "MIT",
+  "category": "regalos",
+  "params": [
+    { "id": "text", "type": "text", "maxLength": 20, "default": "Kura", "label": "$t:text" },
+    { "id": "size", "type": "number", "unit": "mm", "min": 4, "max": 30, "default": 10, "label": "$t:size" },
+    { "id": "mode", "type": "choice", "default": "relief", "label": "$t:mode",
+      "options": [{ "value": "relief", "label": "$t:relief" }, { "value": "engrave", "label": "$t:engrave" }] },
+    { "id": "base", "type": "number", "unit": "mm", "min": 1.6, "max": 6, "default": 3, "label": "$t:base" },
+    { "id": "depth", "type": "number", "unit": "mm", "min": 0.4, "max": 3, "default": 1, "label": "$t:depth" },
+    { "id": "ring", "type": "number", "unit": "mm", "min": 3, "max": 10, "default": 5, "label": "$t:ring" },
+    { "id": "logo", "type": "file", "accept": ["svg"], "maxBytes": 262144, "optional": true, "label": "$t:logo" }
+  ],
+  "rules": [
+    { "level": "error", "when": "=len(p.text) == 0 && !has(p.logo)", "message": "$t:empty", "focus": "text" },
+    { "level": "error", "when": "=p.mode == 'engrave' && p.depth >= p.base - 0.8", "message": "$t:tooDeep", "focus": "depth" }
+  ],
+  "steps": [
+    { "id": "label", "op": "create_primitive", "when": "=len(p.text) > 0",
+      "args": { "type": "text", "params": { "text": "=p.text", "fontSize": "=p.size", "depth": "=p.depth + 0.01", "textAlign": "center" } } },
+    { "id": "icon", "op": "import_svg", "when": "=has(p.logo)", "args": { "svgContent": "=p.logo", "depth": "=p.depth", "targetWidth": "=p.size*1.4" } },
+    { "id": "art", "op": "combine_objects", "args": { "objectIds": ["@icon", "@label"] } },
+    { "id": "art2", "op": "recipe.place", "args": { "target": "@art", "anchor": "bottom-center",
+      "to": [0, 0, "=p.mode == 'relief' ? p.base : p.base - p.depth"] } },
+    { "id": "plate", "op": "create_primitive", "args": { "type": "box", "position": ["=-(p.ring + 3)/2", 0, 0],
+      "params": { "width": "=s.art2.size.x + p.size + p.ring + 3", "depth": "=s.art2.size.y + p.size",
+                  "height": "=p.base", "cornerRadius": "=(s.art2.size.y + p.size)/2 - 0.01" } } },
+    { "id": "eye", "op": "create_primitive", "args": { "type": "cylinder",
+      "position": ["=s.plate.min.x + p.ring/2 + 2.5", 0, -1], "params": { "radius": "=p.ring/2", "height": "=p.base + 2" } } },
+    { "id": "holed", "op": "boolean_operation", "args": { "op": "subtract", "target": "@plate", "tools": ["@eye"] } },
+    { "id": "out", "op": "boolean_operation",
+      "args": { "op": "=p.mode == 'relief' ? 'union' : 'subtract'", "target": "@holed", "tools": ["@art2"] } }
+  ],
+  "outputs": [{ "ref": "@out", "name": "=p.text" }],
+  "strings": {
+    "es": {
+      "title": "Llavero con texto", "text": "Texto", "size": "Tamaño de letra", "mode": "Texto", "relief": "En relieve",
+      "engrave": "Grabado", "base": "Grosor de la base", "depth": "Profundidad del texto", "ring": "Diámetro de la argolla",
+      "logo": "Logo (SVG)", "empty": "Escribe un texto o elige un logo.", "tooDeep": "El grabado atraviesa casi toda la base."
+    },
+    "en": {
+      "title": "Text keychain", "text": "Text", "size": "Letter size", "mode": "Text", "relief": "Raised",
+      "engrave": "Engraved", "base": "Base thickness", "depth": "Text depth", "ring": "Ring diameter",
+      "logo": "Logo (SVG)", "empty": "Type a text or choose a logo.", "tooDeep": "The engraving goes through almost all the base."
+    }
+  }
+}

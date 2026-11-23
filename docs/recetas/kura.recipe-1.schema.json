@@ -1,0 +1,1556 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/nicolasgroth/kura3d/blob/main/docs/recetas/kura.recipe-1.schema.json",
+  "title": "kura.recipe/1",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "const": "kura.recipe/1"
+    },
+    "id": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
+      "description": "autor.nombre en minúsculas, dígitos, puntos y guiones (máx. 64)."
+    },
+    "version": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^\\d{1,4}\\.\\d{1,4}\\.\\d{1,6}(-[0-9A-Za-z.-]{1,20})?$",
+      "description": "Versión semver de la receta."
+    },
+    "kura": {
+      "description": "Versiones de Kura3D compatibles (rango semver simple).",
+      "type": "string",
+      "maxLength": 40,
+      "pattern": "^(>=|>|<=|<|=|\\^|~)?\\d{1,4}\\.\\d{1,4}\\.\\d{1,6}( (>=|>|<=|<|=|\\^|~)?\\d{1,4}\\.\\d{1,4}\\.\\d{1,6})?$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+    },
+    "license": {
+      "type": "string",
+      "enum": [
+        "MIT",
+        "Apache-2.0",
+        "BSD-2-Clause",
+        "BSD-3-Clause",
+        "ISC",
+        "MPL-2.0"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]{1,32}$"
+    },
+    "tags": {
+      "maxItems": 16,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]{1,32}$"
+      }
+    },
+    "extends": {
+      "description": "Receta base (id@rango). Una receta derivada solo cambia default/min/max, presets, reglas y textos.",
+      "type": "string",
+      "maxLength": 80,
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+@[\\^~]?\\d{1,4}(\\.\\d{1,4}){0,2}$"
+    },
+    "overrides": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+        "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "default": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                ]
+              },
+              {
+                "type": "string",
+                "maxLength": 512,
+                "pattern": "^=",
+                "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+              }
+            ]
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "maxLength": 512,
+                "pattern": "^=",
+                "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+              }
+            ]
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "maxLength": 512,
+                "pattern": "^=",
+                "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "params": {
+      "maxItems": 64,
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+                "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "help": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "page": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              "visibleWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "enabledWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "number",
+                  "integer"
+                ]
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "mm",
+                  "deg",
+                  "percent",
+                  "count"
+                ]
+              },
+              "min": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "max": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "step": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "default": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "type",
+              "default"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+                "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "help": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "page": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              "visibleWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "enabledWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "type": {
+                "type": "string",
+                "const": "boolean"
+              },
+              "default": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "type",
+              "default"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+                "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "help": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "page": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              "visibleWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "enabledWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "type": {
+                "type": "string",
+                "const": "choice"
+              },
+              "options": {
+                "minItems": 1,
+                "maxItems": 64,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "maxLength": 64,
+                          "pattern": "^[^=@$]"
+                        }
+                      ]
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+                    }
+                  },
+                  "required": [
+                    "value",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "default": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 64,
+                        "pattern": "^[^=@$]"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "type",
+              "options",
+              "default"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+                "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "help": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "page": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              "visibleWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "enabledWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "type": {
+                "type": "string",
+                "const": "text"
+              },
+              "maxLength": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "multiline": {
+                "type": "boolean"
+              },
+              "default": {
+                "type": "string",
+                "maxLength": 200
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "type",
+              "maxLength",
+              "default"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+                "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "help": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "page": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              "visibleWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "enabledWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "type": {
+                "type": "string",
+                "const": "file"
+              },
+              "accept": {
+                "minItems": 1,
+                "maxItems": 3,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "svg",
+                    "png",
+                    "jpg"
+                  ]
+                }
+              },
+              "maxBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16777216
+              },
+              "optional": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "type",
+              "accept",
+              "maxBytes"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+                "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "help": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "page": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              "visibleWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "enabledWhen": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^=",
+                    "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                  }
+                ]
+              },
+              "type": {
+                "type": "string",
+                "const": "object"
+              },
+              "optional": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "type"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "derive": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+        "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "maxLength": 512,
+                "pattern": "^=",
+                "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+              }
+            ]
+          },
+          {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string",
+                "maxLength": 200
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "tables": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+        "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+      },
+      "additionalProperties": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "maxLength": 200
+            }
+          ]
+        }
+      }
+    },
+    "rules": {
+      "maxItems": 64,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "when": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string",
+                "maxLength": 512,
+                "pattern": "^=",
+                "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+              }
+            ]
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+          },
+          "params": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+              "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "string",
+                      "maxLength": 200
+                    }
+                  ]
+                },
+                {
+                  "type": "string",
+                  "maxLength": 512,
+                  "pattern": "^=",
+                  "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                }
+              ]
+            }
+          },
+          "focus": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+            "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+          }
+        },
+        "required": [
+          "when",
+          "level",
+          "message"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "presets": {
+      "maxItems": 64,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+            "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "values": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+              "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string",
+                  "maxLength": 200
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "verified",
+          "values"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "steps": {
+      "maxItems": 128,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+            "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+          },
+          "op": {
+            "type": "string",
+            "enum": [
+              "create_primitive",
+              "transform_object",
+              "boolean_operation",
+              "convex_hull",
+              "mirror_object",
+              "hollow_object",
+              "create_thread",
+              "import_svg",
+              "plane_cut",
+              "combine_objects",
+              "align_objects",
+              "recipe.place"
+            ]
+          },
+          "args": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+              "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+            },
+            "additionalProperties": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "description": "Argumentos del comando, con los nombres del Command Bus."
+          },
+          "when": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string",
+                "maxLength": 512,
+                "pattern": "^=",
+                "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+              }
+            ]
+          },
+          "pattern": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "linear"
+                  },
+                  "count": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 512,
+                        "pattern": "^=",
+                        "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                      }
+                    ]
+                  },
+                  "step": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "string",
+                            "maxLength": 512,
+                            "pattern": "^=",
+                            "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "string",
+                            "maxLength": 512,
+                            "pattern": "^=",
+                            "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "string",
+                            "maxLength": 512,
+                            "pattern": "^=",
+                            "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                          }
+                        ]
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "centered": {
+                    "type": "boolean"
+                  },
+                  "max": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 256,
+                    "description": "Tope de instancias del patrón (obligatorio, ≤ 256)."
+                  }
+                },
+                "required": [
+                  "kind",
+                  "count",
+                  "step",
+                  "max"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "grid"
+                  },
+                  "nx": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 512,
+                        "pattern": "^=",
+                        "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                      }
+                    ]
+                  },
+                  "ny": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 512,
+                        "pattern": "^=",
+                        "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                      }
+                    ]
+                  },
+                  "dx": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 512,
+                        "pattern": "^=",
+                        "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                      }
+                    ]
+                  },
+                  "dy": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 512,
+                        "pattern": "^=",
+                        "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                      }
+                    ]
+                  },
+                  "centered": {
+                    "type": "boolean"
+                  },
+                  "max": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 256,
+                    "description": "Tope de instancias del patrón (obligatorio, ≤ 256)."
+                  }
+                },
+                "required": [
+                  "kind",
+                  "nx",
+                  "ny",
+                  "dx",
+                  "dy",
+                  "max"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "circular"
+                  },
+                  "count": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 512,
+                        "pattern": "^=",
+                        "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                      }
+                    ]
+                  },
+                  "radius": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 512,
+                        "pattern": "^=",
+                        "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                      }
+                    ]
+                  },
+                  "startDeg": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 512,
+                        "pattern": "^=",
+                        "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                      }
+                    ]
+                  },
+                  "max": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 256,
+                    "description": "Tope de instancias del patrón (obligatorio, ≤ 256)."
+                  }
+                },
+                "required": [
+                  "kind",
+                  "count",
+                  "radius",
+                  "max"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "corners"
+                  },
+                  "width": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 512,
+                        "pattern": "^=",
+                        "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                      }
+                    ]
+                  },
+                  "depth": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 512,
+                        "pattern": "^=",
+                        "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                      }
+                    ]
+                  },
+                  "max": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 256,
+                    "description": "Tope de instancias del patrón (obligatorio, ≤ 256)."
+                  }
+                },
+                "required": [
+                  "kind",
+                  "width",
+                  "depth",
+                  "max"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "points"
+                  },
+                  "points": {
+                    "minItems": 1,
+                    "maxItems": 64,
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "string",
+                              "maxLength": 512,
+                              "pattern": "^=",
+                              "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                            }
+                          ]
+                        },
+                        {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "string",
+                              "maxLength": 512,
+                              "pattern": "^=",
+                              "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                            }
+                          ]
+                        },
+                        {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "string",
+                              "maxLength": 512,
+                              "pattern": "^=",
+                              "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+                            }
+                          ]
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 3,
+                      "maxItems": 3
+                    }
+                  },
+                  "max": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 256,
+                    "description": "Tope de instancias del patrón (obligatorio, ≤ 256)."
+                  }
+                },
+                "required": [
+                  "kind",
+                  "points",
+                  "max"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "op",
+          "args"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "outputs": {
+      "maxItems": 16,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "string",
+            "pattern": "^@[A-Za-z_][A-Za-z0-9_]{0,63}$",
+            "description": "Resultado de un paso anterior: \"@id\"."
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              {
+                "type": "string",
+                "maxLength": 512,
+                "pattern": "^=",
+                "description": "Expresión acotada: empieza con \"=\" (ver docs/recetas/FORMATO.md)."
+              }
+            ]
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "isHole": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ref",
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "checks": {
+      "maxItems": 16,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "fits_bed"
+          },
+          "refs": {
+            "minItems": 1,
+            "maxItems": 16,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^@[A-Za-z_][A-Za-z0-9_]{0,63}$",
+              "description": "Resultado de un paso anterior: \"@id\"."
+            }
+          },
+          "onFail": {
+            "type": "string",
+            "enum": [
+              "offer_split",
+              "warn"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "refs",
+          "onFail"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "assets": {
+      "maxItems": 16,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+            "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "svg",
+              "png",
+              "jpg",
+              "stl",
+              "3mf",
+              "obj"
+            ]
+          },
+          "data": {
+            "type": "string",
+            "maxLength": 22369624
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "data"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "strings": {
+      "type": "object",
+      "properties": {
+        "es": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+          }
+        },
+        "en": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+          }
+        },
+        "de": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+          }
+        },
+        "fr": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+          }
+        },
+        "hi": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+          }
+        },
+        "zh": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "format",
+    "id",
+    "version",
+    "title",
+    "author",
+    "license"
+  ],
+  "additionalProperties": false,
+  "description": "Receta de Kura3D (kura.recipe/1): parámetros, reglas y pasos sobre comandos del programa. Datos, no código.",
+  "$defs": {
+    "__schema0": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string",
+          "maxLength": 512
+        },
+        {
+          "maxItems": 64,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+            "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      ]
+    }
+  }
+}

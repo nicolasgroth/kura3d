@@ -1,0 +1,1518 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`resolveRecipe: caja con tapa > con ventilación y tapa a presión: ranuras centradas y tornillo oculto 1`] = `
+[
+  {
+    "id": "outer",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "cornerRadius": 0,
+            "depth": 64,
+            "height": 42,
+            "width": 84,
+          },
+          "type": "box",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "cavity",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "cornerRadius": 0,
+            "depth": 60,
+            "height": 41,
+            "width": 80,
+          },
+          "position": [
+            0,
+            0,
+            2,
+          ],
+          "type": "box",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "posts",
+    "instances": [],
+    "op": "create_primitive",
+    "skipped": true,
+  },
+  {
+    "id": "pilots",
+    "instances": [],
+    "op": "create_primitive",
+    "skipped": true,
+  },
+  {
+    "id": "slots",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            -27.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 0,
+          "n": 12,
+          "x": -27.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            -22.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 1,
+          "n": 12,
+          "x": -22.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            -17.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 2,
+          "n": 12,
+          "x": -17.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            -12.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 3,
+          "n": 12,
+          "x": -12.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            -7.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 4,
+          "n": 12,
+          "x": -7.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            -2.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 5,
+          "n": 12,
+          "x": -2.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            2.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 6,
+          "n": 12,
+          "x": 2.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            7.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 7,
+          "n": 12,
+          "x": 7.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            12.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 8,
+          "n": 12,
+          "x": 12.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            17.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 9,
+          "n": 12,
+          "x": 17.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            22.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 10,
+          "n": 12,
+          "x": 22.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "depth": 66,
+            "height": 16,
+            "width": 2,
+          },
+          "position": [
+            27.5,
+            0,
+            14,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 11,
+          "n": 12,
+          "x": 27.5,
+          "y": 0,
+          "z": 0,
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "pattern": {
+      "count": 12,
+      "kind": "linear",
+    },
+    "skipped": false,
+  },
+  {
+    "id": "b1",
+    "instances": [
+      {
+        "args": {
+          "op": "subtract",
+          "target": {
+            "$ref": "outer",
+          },
+          "tools": [
+            {
+              "$ref": "cavity",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+  {
+    "id": "b2",
+    "instances": [
+      {
+        "args": {
+          "op": "union",
+          "target": {
+            "$ref": "b1",
+          },
+          "tools": [
+            {
+              "$ref": "posts",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+  {
+    "id": "box",
+    "instances": [
+      {
+        "args": {
+          "op": "subtract",
+          "target": {
+            "$ref": "b2",
+          },
+          "tools": [
+            {
+              "$ref": "pilots",
+            },
+            {
+              "$ref": "slots",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+  {
+    "id": "plate",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "cornerRadius": 0,
+            "depth": 64,
+            "height": 2,
+            "width": 84,
+          },
+          "position": [
+            94,
+            0,
+            0,
+          ],
+          "type": "box",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "lip",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "cornerRadius": 0,
+            "depth": 59.6,
+            "height": 3,
+            "width": 79.6,
+          },
+          "position": [
+            94,
+            0,
+            2,
+          ],
+          "type": "box",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "holes",
+    "instances": [],
+    "op": "create_primitive",
+    "skipped": true,
+  },
+  {
+    "id": "l1",
+    "instances": [
+      {
+        "args": {
+          "op": "union",
+          "target": {
+            "$ref": "plate",
+          },
+          "tools": [
+            {
+              "$ref": "lip",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+  {
+    "id": "lidout",
+    "instances": [
+      {
+        "args": {
+          "op": "subtract",
+          "target": {
+            "$ref": "l1",
+          },
+          "tools": [
+            {
+              "$ref": "holes",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+]
+`;
+
+exports[`resolveRecipe: caja con tapa > valores por defecto: pasos estables 1`] = `
+[
+  {
+    "id": "outer",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "cornerRadius": 0,
+            "depth": 64,
+            "height": 42,
+            "width": 84,
+          },
+          "type": "box",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "cavity",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "cornerRadius": 0,
+            "depth": 60,
+            "height": 41,
+            "width": 80,
+          },
+          "position": [
+            0,
+            0,
+            2,
+          ],
+          "type": "box",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "posts",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "height": 40,
+            "radius": 4,
+          },
+          "position": [
+            -36,
+            -26,
+            2,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 0,
+          "n": 4,
+          "x": -36,
+          "y": -26,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 40,
+            "radius": 4,
+          },
+          "position": [
+            36,
+            -26,
+            2,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 1,
+          "n": 4,
+          "x": 36,
+          "y": -26,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 40,
+            "radius": 4,
+          },
+          "position": [
+            36,
+            26,
+            2,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 2,
+          "n": 4,
+          "x": 36,
+          "y": 26,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 40,
+            "radius": 4,
+          },
+          "position": [
+            -36,
+            26,
+            2,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 3,
+          "n": 4,
+          "x": -36,
+          "y": 26,
+          "z": 0,
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "pattern": {
+      "count": 4,
+      "kind": "corners",
+    },
+    "skipped": false,
+  },
+  {
+    "id": "pilots",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "height": 40,
+            "radius": 1.26,
+          },
+          "position": [
+            -36,
+            -26,
+            4,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 0,
+          "n": 4,
+          "x": -36,
+          "y": -26,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 40,
+            "radius": 1.26,
+          },
+          "position": [
+            36,
+            -26,
+            4,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 1,
+          "n": 4,
+          "x": 36,
+          "y": -26,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 40,
+            "radius": 1.26,
+          },
+          "position": [
+            36,
+            26,
+            4,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 2,
+          "n": 4,
+          "x": 36,
+          "y": 26,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 40,
+            "radius": 1.26,
+          },
+          "position": [
+            -36,
+            26,
+            4,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 3,
+          "n": 4,
+          "x": -36,
+          "y": 26,
+          "z": 0,
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "pattern": {
+      "count": 4,
+      "kind": "corners",
+    },
+    "skipped": false,
+  },
+  {
+    "id": "slots",
+    "instances": [],
+    "op": "create_primitive",
+    "skipped": true,
+  },
+  {
+    "id": "b1",
+    "instances": [
+      {
+        "args": {
+          "op": "subtract",
+          "target": {
+            "$ref": "outer",
+          },
+          "tools": [
+            {
+              "$ref": "cavity",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+  {
+    "id": "b2",
+    "instances": [
+      {
+        "args": {
+          "op": "union",
+          "target": {
+            "$ref": "b1",
+          },
+          "tools": [
+            {
+              "$ref": "posts",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+  {
+    "id": "box",
+    "instances": [
+      {
+        "args": {
+          "op": "subtract",
+          "target": {
+            "$ref": "b2",
+          },
+          "tools": [
+            {
+              "$ref": "pilots",
+            },
+            {
+              "$ref": "slots",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+  {
+    "id": "plate",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "cornerRadius": 0,
+            "depth": 64,
+            "height": 2,
+            "width": 84,
+          },
+          "position": [
+            94,
+            0,
+            0,
+          ],
+          "type": "box",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "lip",
+    "instances": [],
+    "op": "create_primitive",
+    "skipped": true,
+  },
+  {
+    "id": "holes",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "height": 4,
+            "radius": 1.7,
+          },
+          "position": [
+            58,
+            -26,
+            -1,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 0,
+          "n": 4,
+          "x": -36,
+          "y": -26,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 4,
+            "radius": 1.7,
+          },
+          "position": [
+            130,
+            -26,
+            -1,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 1,
+          "n": 4,
+          "x": 36,
+          "y": -26,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 4,
+            "radius": 1.7,
+          },
+          "position": [
+            130,
+            26,
+            -1,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 2,
+          "n": 4,
+          "x": 36,
+          "y": 26,
+          "z": 0,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 4,
+            "radius": 1.7,
+          },
+          "position": [
+            58,
+            26,
+            -1,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 3,
+          "n": 4,
+          "x": -36,
+          "y": 26,
+          "z": 0,
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "pattern": {
+      "count": 4,
+      "kind": "corners",
+    },
+    "skipped": false,
+  },
+  {
+    "id": "l1",
+    "instances": [
+      {
+        "args": {
+          "op": "union",
+          "target": {
+            "$ref": "plate",
+          },
+          "tools": [
+            {
+              "$ref": "lip",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+  {
+    "id": "lidout",
+    "instances": [
+      {
+        "args": {
+          "op": "subtract",
+          "target": {
+            "$ref": "l1",
+          },
+          "tools": [
+            {
+              "$ref": "holes",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+]
+`;
+
+exports[`resolveRecipe: llavero > por defecto: sin logo, el paso del SVG se salta y la caja del arte queda diferida 1`] = `
+[
+  {
+    "id": "label",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "depth": 1.01,
+            "fontSize": 10,
+            "text": "Kura",
+            "textAlign": "center",
+          },
+          "type": "text",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "icon",
+    "instances": [],
+    "op": "import_svg",
+    "skipped": true,
+  },
+  {
+    "id": "art",
+    "instances": [
+      {
+        "args": {
+          "objectIds": [
+            {
+              "$ref": "icon",
+            },
+            {
+              "$ref": "label",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "combine_objects",
+    "skipped": false,
+  },
+  {
+    "id": "art2",
+    "instances": [
+      {
+        "args": {
+          "anchor": "bottom-center",
+          "target": {
+            "$ref": "art",
+          },
+          "to": [
+            0,
+            0,
+            3,
+          ],
+        },
+      },
+    ],
+    "op": "recipe.place",
+    "skipped": false,
+  },
+  {
+    "id": "plate",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "cornerRadius": {
+              "$deferred": "=(s.art2.size.y + p.size)/2 - 0.01",
+              "path": "steps[4].args.params.cornerRadius",
+            },
+            "depth": {
+              "$deferred": "=s.art2.size.y + p.size",
+              "path": "steps[4].args.params.depth",
+            },
+            "height": 3,
+            "width": {
+              "$deferred": "=s.art2.size.x + p.size + p.ring + 3",
+              "path": "steps[4].args.params.width",
+            },
+          },
+          "position": [
+            -4,
+            0,
+            0,
+          ],
+          "type": "box",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "eye",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "height": 5,
+            "radius": 2.5,
+          },
+          "position": [
+            {
+              "$deferred": "=s.plate.min.x + p.ring/2 + 2.5",
+              "path": "steps[5].args.position[0]",
+            },
+            0,
+            -1,
+          ],
+          "type": "cylinder",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "holed",
+    "instances": [
+      {
+        "args": {
+          "op": "subtract",
+          "target": {
+            "$ref": "plate",
+          },
+          "tools": [
+            {
+              "$ref": "eye",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+  {
+    "id": "out",
+    "instances": [
+      {
+        "args": {
+          "op": "union",
+          "target": {
+            "$ref": "holed",
+          },
+          "tools": [
+            {
+              "$ref": "art2",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+]
+`;
+
+exports[`resolveRecipe: placa de enchufe (medidas por verificar) > por defecto: un módulo, tornillos a los lados y aviso de medidas 1`] = `
+[
+  {
+    "id": "plate",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "cornerRadius": 4,
+            "depth": 80,
+            "height": 3,
+            "width": 81,
+          },
+          "type": "box",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "win",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "depth": 45,
+            "height": 5,
+            "width": 40,
+          },
+          "position": [
+            0,
+            0,
+            -1,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 0,
+          "n": 1,
+          "x": 0,
+          "y": 0,
+          "z": 0,
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "pattern": {
+      "count": 1,
+      "kind": "linear",
+    },
+    "skipped": false,
+  },
+  {
+    "id": "holes",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "height": 5,
+            "radius": 1.95,
+          },
+          "position": [
+            -30,
+            0,
+            -1,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 0,
+          "n": 2,
+          "x": -30,
+          "y": 0,
+          "z": -1,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 5,
+            "radius": 1.95,
+          },
+          "position": [
+            30,
+            0,
+            -1,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 1,
+          "n": 2,
+          "x": 30,
+          "y": 0,
+          "z": -1,
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "pattern": {
+      "count": 2,
+      "kind": "points",
+    },
+    "skipped": false,
+  },
+  {
+    "id": "sinks",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "height": 3.5,
+            "radius": 3.5,
+          },
+          "position": [
+            -30,
+            0,
+            3.01,
+          ],
+          "rotation": [
+            180,
+            0,
+            0,
+          ],
+          "type": "cone",
+        },
+        "locals": {
+          "i": 0,
+          "n": 2,
+          "x": -30,
+          "y": 0,
+          "z": 3.01,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 3.5,
+            "radius": 3.5,
+          },
+          "position": [
+            30,
+            0,
+            3.01,
+          ],
+          "rotation": [
+            180,
+            0,
+            0,
+          ],
+          "type": "cone",
+        },
+        "locals": {
+          "i": 1,
+          "n": 2,
+          "x": 30,
+          "y": 0,
+          "z": 3.01,
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "pattern": {
+      "count": 2,
+      "kind": "points",
+    },
+    "skipped": false,
+  },
+  {
+    "id": "out",
+    "instances": [
+      {
+        "args": {
+          "op": "subtract",
+          "target": {
+            "$ref": "plate",
+          },
+          "tools": [
+            {
+              "$ref": "win",
+            },
+            {
+              "$ref": "holes",
+            },
+            {
+              "$ref": "sinks",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+]
+`;
+
+exports[`resolveRecipe: placa de enchufe (medidas por verificar) > variantes: Chile y EE. UU. resuelven; las respuestas mandan sobre la variante 1`] = `
+[
+  {
+    "id": "plate",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "cornerRadius": 4,
+            "depth": 114,
+            "height": 3,
+            "width": 106,
+          },
+          "type": "box",
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "skipped": false,
+  },
+  {
+    "id": "win",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "depth": 67,
+            "height": 5,
+            "width": 35,
+          },
+          "position": [
+            0,
+            0,
+            -1,
+          ],
+          "type": "box",
+        },
+        "locals": {
+          "i": 0,
+          "n": 1,
+          "x": 0,
+          "y": 0,
+          "z": 0,
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "pattern": {
+      "count": 1,
+      "kind": "linear",
+    },
+    "skipped": false,
+  },
+  {
+    "id": "holes",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "height": 5,
+            "radius": 1.95,
+          },
+          "position": [
+            0,
+            -48.5,
+            -1,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 0,
+          "n": 2,
+          "x": 0,
+          "y": -48.5,
+          "z": -1,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 5,
+            "radius": 1.95,
+          },
+          "position": [
+            0,
+            48.5,
+            -1,
+          ],
+          "type": "cylinder",
+        },
+        "locals": {
+          "i": 1,
+          "n": 2,
+          "x": 0,
+          "y": 48.5,
+          "z": -1,
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "pattern": {
+      "count": 2,
+      "kind": "points",
+    },
+    "skipped": false,
+  },
+  {
+    "id": "sinks",
+    "instances": [
+      {
+        "args": {
+          "params": {
+            "height": 3.5,
+            "radius": 3.5,
+          },
+          "position": [
+            0,
+            -48.5,
+            3.01,
+          ],
+          "rotation": [
+            180,
+            0,
+            0,
+          ],
+          "type": "cone",
+        },
+        "locals": {
+          "i": 0,
+          "n": 2,
+          "x": 0,
+          "y": -48.5,
+          "z": 3.01,
+        },
+      },
+      {
+        "args": {
+          "params": {
+            "height": 3.5,
+            "radius": 3.5,
+          },
+          "position": [
+            0,
+            48.5,
+            3.01,
+          ],
+          "rotation": [
+            180,
+            0,
+            0,
+          ],
+          "type": "cone",
+        },
+        "locals": {
+          "i": 1,
+          "n": 2,
+          "x": 0,
+          "y": 48.5,
+          "z": 3.01,
+        },
+      },
+    ],
+    "op": "create_primitive",
+    "pattern": {
+      "count": 2,
+      "kind": "points",
+    },
+    "skipped": false,
+  },
+  {
+    "id": "out",
+    "instances": [
+      {
+        "args": {
+          "op": "subtract",
+          "target": {
+            "$ref": "plate",
+          },
+          "tools": [
+            {
+              "$ref": "win",
+            },
+            {
+              "$ref": "holes",
+            },
+            {
+              "$ref": "sinks",
+            },
+          ],
+        },
+      },
+    ],
+    "op": "boolean_operation",
+    "skipped": false,
+  },
+]
+`;

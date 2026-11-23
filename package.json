@@ -33,7 +33,8 @@
     "mcp:test": "npm --prefix mcp-server run test",
     "docs:capturas": "playwright test -c playwright.docs.config.ts",
     "docs:mcp": "node scripts/docs-mcp-tabla.mjs",
-    "docs:enlaces": "node scripts/docs-comprobar-enlaces.mjs"
+    "docs:enlaces": "node scripts/docs-comprobar-enlaces.mjs",
+    "recetas:schema": "node scripts/recetas-schema.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
@@ -43,6 +44,7 @@
     "@tauri-apps/plugin-fs": "^2.7.1",
     "@xmldom/xmldom": "^0.9.12",
     "fflate": "^0.8.3",
+    "jsep": "1.6.0",
     "lucide-react": "^1.78.0",
     "manifold-3d": "^3.5.5",
     "opentype.js": "^2.0.0",
@@ -50,6 +52,7 @@
     "react-dom": "^19.3.1",
     "three": "^0.187.0",
     "three-mesh-bvh": "^0.9.18",
+    "zod": "4.6.7",
     "zustand": "^5.1.0"
   },
   "devDependencies": {
