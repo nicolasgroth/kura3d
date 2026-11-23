@@ -57,7 +57,7 @@ async function acceptDrop(files: DroppedFile[]) {
     return;
   }
 
-  // Cada modelo puede pesar lo que la app sabe exportar y reabrir (`MODEL_IO_LIMITS`), no el tope de proyectos.
+  // Cada modelo puede pesar lo que la app sabe exportar y reabrir (`MODEL_IO_LIMITS`, 256 MiB), no el tope de proyectos.
   const maximum = MODEL_IO_LIMITS.maxFileBytes;
   await state.importModelFiles(files.map((file) => ({
     name: file.name,

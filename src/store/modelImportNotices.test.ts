@@ -27,13 +27,13 @@ const tr = (key: Parameters<typeof t>[1], params?: Record<string, string | numbe
 describe('mensajes de tamaño', () => {
   it('el error de tamaño dice cuánto pesa el archivo y cuál es el máximo', () => {
     const error = new engine.ModelImportError('too-large', undefined, 'escena.stl', { bytes: 700 * 1024 * 1024, maxBytes: 572 * 1024 * 1024 });
-    expect(importErrorMessage(error, 'escena.stl', tr, 'es')).toBe('escena.stl: pesa 700 MB y el máximo que se puede abrir es 572 MB.');
+    expect(importErrorMessage(error, 'escena.stl', tr, 'es')).toBe('escena.stl: pesa 700 MB y el máximo que se puede abrir es 572 MB. Simplifícalo en el programa de origen o divide el archivo en partes.');
   });
 
   it('el selector de archivos usa el máximo de modelos y su error trae los números', () => {
     expect(MAX_MODEL_FILE_BYTES).toBe(MODEL_IO_LIMITS.maxFileBytes);
     const error = new LocalFileError('enorme.stl', 'too-large', { bytes: 600 * 1024 * 1024, maxBytes: MAX_MODEL_FILE_BYTES });
-    expect(importErrorMessage(error, 'enorme.stl', tr, 'es')).toBe('enorme.stl: pesa 600 MB y el máximo que se puede abrir es 572 MB.');
+    expect(importErrorMessage(error, 'enorme.stl', tr, 'es')).toBe('enorme.stl: pesa 600 MB y el máximo que se puede abrir es 256 MB. Simplifícalo en el programa de origen o divide el archivo en partes.');
   });
 
   it('sin el tamaño se mantiene el mensaje genérico', () => {
@@ -46,7 +46,18 @@ describe('mensajes de tamaño', () => {
     expect(notes).toHaveLength(2);
     expect(notes[0]).toContain('155 MB');
     expect(notes[0]).toContain('100 MB');
-    expect(notes[1]).toContain('12.000.000');
+    expect(notes[1]).toContain('5.368.707');
+  });
+
+  it('tope práctico de 256 MiB: un STL binario del máximo de triángulos se puede reabrir', () => {
+    expect(MODEL_IO_LIMITS.maxFileBytes).toBe(256 * 1024 * 1024);
+    expect(84 + 50 * MODEL_IO_LIMITS.maxTriangles).toBeLessThanOrEqual(MODEL_IO_LIMITS.maxFileBytes);
+    expect(84 + 50 * (MODEL_IO_LIMITS.maxTriangles + 1)).toBeGreaterThan(MODEL_IO_LIMITS.maxFileBytes);
+  });
+
+  it('avisa al exportar un archivo que pesa más de lo que la app puede reabrir (p. ej. OBJ de texto)', () => {
+    const notes = exportNotices([{ name: 'a.obj', bytes: MODEL_IO_LIMITS.maxFileBytes + 1 }], 1000, tr, 'es');
+    expect(notes.some((n) => n.includes('256 MB') && n.includes('a.obj') && n.includes('volver a abrir'))).toBe(true);
   });
 });
 

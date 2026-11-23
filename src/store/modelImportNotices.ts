@@ -39,7 +39,13 @@ export function exportNotices(
   const notices: string[] = [];
   const fmt = new Intl.NumberFormat(language);
   for (const file of files) {
-    if (file.bytes > MODEL_IO_LIMITS.exportWarnBytes) {
+    if (file.bytes > MODEL_IO_LIMITS.maxFileBytes) {
+      notices.push(tr('importReal.exportTooBigToReopen', {
+        name: file.name,
+        size: formatMegabytes(file.bytes, language),
+        max: formatMegabytes(MODEL_IO_LIMITS.maxFileBytes, language),
+      }));
+    } else if (file.bytes > MODEL_IO_LIMITS.exportWarnBytes) {
       notices.push(tr('importReal.exportLarge', {
         name: file.name,
         size: formatMegabytes(file.bytes, language),
