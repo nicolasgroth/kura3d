@@ -11,7 +11,7 @@
 import { t, type TranslationKey } from '../../i18n';
 import type { FitCheckReport, FitMessage, FitPairStatus } from '../../engine/fitCheck';
 import type { LanguageCode } from '../../types/kura';
-import { formatNumber } from '../../utils/plural';
+import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { faceOfUserDirection, type AxisDirection } from './displayAxes';
 
 /** Clave del rótulo de cada estado de un par. */
@@ -34,7 +34,7 @@ export function localizeFitMessage(lang: LanguageCode, msg: FitMessage): string 
     if (k === 'direction' && typeof v === 'string' && DIRECTIONS.has(v)) {
       params[k] = t(lang, `fitCheck.dir.${faceOfUserDirection(v as AxisDirection)}` as TranslationKey);
     } else {
-      params[k] = typeof v === 'number' ? formatNumber(lang, v, { maximumFractionDigits: 2 }) : v;
+      params[k] = typeof v === 'number' ? formatLocaleNumber(lang, v) : v;
     }
   }
   return t(lang, msg.key as TranslationKey, params);
