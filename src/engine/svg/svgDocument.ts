@@ -3,13 +3,15 @@
  * @description Lectura del XML de un SVG con `@xmldom/xmldom` (MIT), igual en navegador, Worker y
  * Node, y adaptación mínima del árbol a lo que `THREE.SVGLoader` espera de un DOM de navegador:
  * `viewportElement.getElementById` para `<use>` (también con `href` de SVG 2), `style` en línea consultable por propiedad y
- * `sheet.cssRules` para bloques `<style>` con selectores simples.
+ * `sheet.cssRules` para bloques `<style>` con selectores simples, y `querySelectorAll`/`querySelector`
+ * mínimos (`svgQuery.ts`) que `parseGradients` usa sobre el documento y los gradientes.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import { DOMParser as XmlDomParser } from '@xmldom/xmldom';
+import { queryMethods } from './svgQuery';
 
 type AnyNode = {
   nodeType: number;
@@ -33,10 +35,24 @@ function parseDeclarations(text: string): Record<string, string> {
   return out;
 }
 
-/** Igual que `CSSStyleDeclaration`: una propiedad ausente vale `''`, no `undefined`. */
+/**
+ * Igual que `CSSStyleDeclaration` en lo que lee `SVGLoader`: una propiedad ausente vale `''` (no
+ * `undefined`), `length` y `style[i]` enumeran los nombres, y `getPropertyValue(nombre)` (r18x recorre
+ * así las reglas de `<style>`).
+ */
 function styleDeclaration(decls: Record<string, string>): Record<string, string> {
+  const names = Object.keys(decls);
+  const getPropertyValue = (name: string) => decls[name] ?? '';
   return new Proxy(decls, {
-    get: (target, prop) => (typeof prop === 'string' ? (target[prop] ?? '') : undefined),
+    get: (target, prop) => {
+      if (typeof prop !== 'string') return undefined;
+      if (prop === 'length') return names.length;
+      if (prop === 'getPropertyValue') return getPropertyValue;
+      if (Object.prototype.hasOwnProperty.call(target, prop)) return target[prop];
+      const index = Number(prop);
+      if (Number.isInteger(index) && index >= 0 && String(index) === prop) return names[index] ?? '';
+      return '';
+    },
   });
 }
 
@@ -66,7 +82,7 @@ export function parseStyleSheet(css: string): { cssRules: { type: number; select
     let end = i + 1;
     while (end < clean.length && clean[end] !== '{' && clean[end] !== '}') end++;
     if (end < clean.length && clean[end] === '}' && selectorText) {
-      cssRules.push({ type: 1, selectorText, style: parseDeclarations(clean.slice(i + 1, end)) });
+      cssRules.push({ type: 1, selectorText, style: styleDeclaration(parseDeclarations(clean.slice(i + 1, end))) });
       i = end;
       boundary = end + 1;
     } else {
@@ -94,6 +110,8 @@ function normalizeHref(node: AnyNode): void {
 function decorate(node: AnyNode, doc: AnyNode): void {
   if (node.nodeType !== 1) return;
   node.viewportElement = doc;
+  node.querySelectorAll = queryMethods.querySelectorAll;
+  node.querySelector = queryMethods.querySelector;
   normalizeHref(node);
   const inline = node.getAttribute('style');
   node.style = styleDeclaration(inline ? parseDeclarations(inline) : {});
@@ -118,6 +136,8 @@ class SvgDomParser {
     }
     const root = doc.documentElement as AnyNode | null;
     if (!root) throw new SvgSyntaxError('SVG without root element');
+    doc.querySelectorAll = queryMethods.querySelectorAll;
+    doc.querySelector = queryMethods.querySelector;
     decorate(root, doc);
     return doc;
   }
