@@ -1009,7 +1009,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'import.trisSuffix': '{tris} triangles',
   'export.selectionSuffix': 'selection',
   'import.openMesh': '{name} a un maillage ouvert ({edges} {edges?arête libre|arêtes libres}) : vérifiez-le avant d’imprimer.',
-  'import.openMeshMany': '{count} pièces ont un maillage ouvert ({list}) : vérifiez-les avant d’imprimer.',
+  'import.openMeshMany': '{count} {count?pièce a un maillage ouvert|pièces ont un maillage ouvert} ({list}) : {count?vérifiez-la|vérifiez-les} avant d’imprimer.',
   'import.partialFailed.one': '{count} fichier non importé : {list}',
   'import.partialFailed.other': '{count} fichiers non importés : {list}',
   'import.menu': 'Options d’importation',

@@ -1009,7 +1009,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'import.trisSuffix': '{tris} Dreiecke',
   'export.selectionSuffix': 'auswahl',
   'import.openMesh': '{name} hat ein offenes Netz ({edges} {edges?freie Kante|freie Kanten}): vor dem Drucken prüfen.',
-  'import.openMeshMany': '{count} Teile haben offene Netze ({list}): vor dem Drucken prüfen.',
+  'import.openMeshMany': '{count} {count?Teil hat ein offenes Netz|Teile haben offene Netze} ({list}): vor dem Drucken prüfen.',
   'import.partialFailed.one': '{count} Datei nicht importiert: {list}',
   'import.partialFailed.other': '{count} Dateien nicht importiert: {list}',
   'import.menu': 'Importoptionen',
