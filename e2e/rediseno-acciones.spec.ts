@@ -85,7 +85,7 @@ test('cada acción hace lo mismo que su entrada anterior y registra la acción a
 
   // Agrupar pide dos objetos: deshabilitado con motivo.
   menu = await abrirMenu(page);
-  await expect(menu.getByRole('menuitem', { name: 'Agrupar' })).toContainText('Selecciona dos o más objetos');
+  await expect(menu.getByRole('menuitem', { name: 'Agrupar', exact: true })).toContainText('Selecciona dos o más objetos');
   await page.screenshot({ path: 'G:/proyectos/kura3d/.eval-tmp/rediseno/acciones-menu.png' });
   await page.keyboard.press('Escape');
 });
