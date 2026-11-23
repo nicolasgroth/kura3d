@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { MODEL_IO_LIMITS } from '../engine/operationLimits';
 import { MAX_PROJECT_BYTES } from '../project/projectSchema';
 import { LOG_TAG } from '../brand';
 
@@ -23,6 +24,9 @@ export interface OpenedLocalFile {
 
 /** Tope de lectura de archivos locales elegidos por el usuario (mismo límite que el arrastre). */
 export const MAX_LOCAL_FILE_BYTES = MAX_PROJECT_BYTES;
+
+/** Tope de lectura de modelos (STL/3MF/OBJ/PLY): lo que la app puede exportar y reabrir. */
+export const MAX_MODEL_FILE_BYTES = MODEL_IO_LIMITS.maxFileBytes;
 
 /** Extensiones (sin punto, en minúsculas) aceptadas por un conjunto de filtros de diálogo. */
 export function filterExtensions(filters: FileDialogFilter[]): string[] {
@@ -183,7 +187,12 @@ export interface LocalFileHandle {
 
 /** Error de lectura de un archivo local concreto (tamaño excesivo o no es un archivo normal). */
 export class LocalFileError extends Error {
-  constructor(readonly fileName: string, readonly reason: 'too-large' | 'not-file' | 'unreadable') {
+  constructor(
+    readonly fileName: string,
+    readonly reason: 'too-large' | 'not-file' | 'unreadable',
+    /** En `too-large`: tamaño del archivo y máximo. */
+    readonly size?: { bytes: number; maxBytes: number },
+  ) {
     super(reason);
     this.name = 'LocalFileError';
   }
@@ -193,7 +202,7 @@ export class LocalFileError extends Error {
  * Abre un selector de varios archivos (Web o Tauri v2). Cada archivo se lee al llamar a `read()`
  * y falla por separado con `LocalFileError`, para que un lote pueda importarse parcialmente.
  */
-export async function openLocalFiles(accept: string): Promise<LocalFileHandle[]> {
+export async function openLocalFiles(accept: string, maxBytes: number = MAX_LOCAL_FILE_BYTES): Promise<LocalFileHandle[]> {
   const extensions = accept
     .split(',')
     .map((ext) => ext.trim().replace(/^\./, '').toLowerCase())
@@ -217,7 +226,7 @@ export async function openLocalFiles(accept: string): Promise<LocalFileHandle[]>
             async read() {
               const info = await plugins.fsMod.stat(path);
               if (!info.isFile) throw new LocalFileError(name, 'not-file');
-              if (info.size > MAX_LOCAL_FILE_BYTES) throw new LocalFileError(name, 'too-large');
+              if (info.size > maxBytes) throw new LocalFileError(name, 'too-large', { bytes: info.size, maxBytes });
               const bytes = await plugins.fsMod.readFile(path);
               return new Uint8Array(bytes).buffer;
             },
@@ -241,7 +250,7 @@ export async function openLocalFiles(accept: string): Promise<LocalFileHandle[]>
       resolve(files.map((file) => ({
         name: file.name,
         async read() {
-          if (file.size > MAX_LOCAL_FILE_BYTES) throw new LocalFileError(file.name, 'too-large');
+          if (file.size > maxBytes) throw new LocalFileError(file.name, 'too-large', { bytes: file.size, maxBytes });
           try {
             return await file.arrayBuffer();
           } catch {

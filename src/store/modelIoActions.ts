@@ -120,7 +120,10 @@ export function importErrorMessage(error: unknown, fileName: string, tr: Transla
     const base = tr(`importError.${error.code}` as TranslationKey, { name: error.fileName ?? fileName });
     return error.detail && error.code !== 'unsupported' ? `${base.replace(/[.。।]$/, '')} (${error.detail})` : base;
   }
-  if (error instanceof LocalFileError) return tr(`importError.${error.reason}` as TranslationKey, { name: error.fileName });
+  if (error instanceof LocalFileError) {
+    if (error.reason === 'too-large' && error.size) return tooLargeMessage(error.fileName, error.size, tr, language);
+    return tr(`importError.${error.reason}` as TranslationKey, { name: error.fileName });
+  }
   if (error instanceof ProjectCodecError && error.code === 'too-large') return tr('importError.too-large', { name: fileName });
   const detail = error instanceof Error ? error.message : String(error);
   return tr('importError.corrupt', { name: fileName }) + (detail ? ` (${detail})` : '');

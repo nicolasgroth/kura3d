@@ -13,7 +13,7 @@ import * as engine from '../engine';
 import { MODEL_IO_LIMITS } from '../engine/operationLimits';
 import { t } from '../i18n';
 import type { SceneObject } from '../types/kura';
-import { saveFileSet } from '../utils/platformBridge';
+import { LocalFileError, MAX_MODEL_FILE_BYTES, saveFileSet } from '../utils/platformBridge';
 import { createModelIoActions, importErrorMessage } from './modelIoActions';
 import { exportNotices } from './modelImportNotices';
 
@@ -28,6 +28,12 @@ describe('mensajes de tamaño', () => {
   it('el error de tamaño dice cuánto pesa el archivo y cuál es el máximo', () => {
     const error = new engine.ModelImportError('too-large', undefined, 'escena.stl', { bytes: 700 * 1024 * 1024, maxBytes: 572 * 1024 * 1024 });
     expect(importErrorMessage(error, 'escena.stl', tr, 'es')).toBe('escena.stl: pesa 700 MB y el máximo que se puede abrir es 572 MB.');
+  });
+
+  it('el selector de archivos usa el máximo de modelos y su error trae los números', () => {
+    expect(MAX_MODEL_FILE_BYTES).toBe(MODEL_IO_LIMITS.maxFileBytes);
+    const error = new LocalFileError('enorme.stl', 'too-large', { bytes: 600 * 1024 * 1024, maxBytes: MAX_MODEL_FILE_BYTES });
+    expect(importErrorMessage(error, 'enorme.stl', tr, 'es')).toBe('enorme.stl: pesa 600 MB y el máximo que se puede abrir es 572 MB.');
   });
 
   it('sin el tamaño se mantiene el mensaje genérico', () => {

@@ -16,7 +16,7 @@ import { resolveModuleTarget } from '../../core/scene/sceneRules';
 import { PRINT_COLOR_PALETTE, type ImageTo3DOptions, type MeshData, type SceneObject, type Vec3 } from '../../types/kura';
 
 type ImageShapeMode = NonNullable<ImageTo3DOptions['shapeMode']>;
-import { openLocalFile, openLocalFiles } from '../../utils/platformBridge';
+import { MAX_MODEL_FILE_BYTES, openLocalFile, openLocalFiles } from '../../utils/platformBridge';
 import { activeBedSize } from '../bedSize';
 import { createModelIoActions, type ModelImportSource } from '../modelIoActions';
 import { loadInitialImportPlacement, STORAGE_IMPORT_PLACEMENT_KEY, writeStorage } from '../preferencesStorage';
@@ -156,7 +156,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     importMeshFromDialog: async (placement) => {
       let files: ModelImportSource[];
       try {
-        files = await openLocalFiles(engine.MODEL_IMPORT_ACCEPT);
+        files = await openLocalFiles(engine.MODEL_IMPORT_ACCEPT, MAX_MODEL_FILE_BYTES);
       } catch (err) {
         get().addToast(tr('toast.errorPrefix', { message: projectErrorMessage(err) }), 'error');
         return;
