@@ -7,7 +7,10 @@
  * @license MIT
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// El tope por defecto (5 s) no alcanza con la máquina cargada (esta prueba recorre el repo o usa el motor).
+vi.setConfig({ testTimeout: 60_000 });
 import { redactSecrets } from './providerSecurity';
 import { validateToolCall } from './toolValidation';
 
