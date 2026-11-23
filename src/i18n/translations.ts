@@ -28,6 +28,7 @@ import { FIX10_EN, FIX10_ES } from './locales/fix10';
 import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
 import { IMPORTREAL_EN, IMPORTREAL_ES } from './locales/importReal';
 import { REPAIR_EN, REPAIR_ES } from './locales/repair';
+import { UXESCENA_EN, UXESCENA_ES } from './locales/uxEscena';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -50,6 +51,7 @@ export const TRANSLATIONS_ES = {
   ...OPNOTES_ES,
   ...IMPORTREAL_ES,
   ...REPAIR_ES,
+  ...UXESCENA_ES,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
@@ -1421,6 +1423,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...OPNOTES_EN,
   ...IMPORTREAL_EN,
   ...REPAIR_EN,
+  ...UXESCENA_EN,
   'app.name': 'Kura3D',
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
