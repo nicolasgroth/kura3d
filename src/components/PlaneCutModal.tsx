@@ -33,6 +33,10 @@ import '../styles/planeCut.css';
 import { userAxisLabel, userAxisOfInternal } from '../core/scene/displayAxes';
 import { planeCutOptionsFromDialog } from './planeCutOptions';
 import { cutConnectorFromPreference } from '../store/splitPreferences';
+import { axisToUser, keepModeFromUser } from '../store/commandAxes';
+import { estimateKeptHalf, overlappingNames, type KeptHalfPlacement } from '../core/scene/keptHalf';
+import { loadKeptHalfChoice, saveKeptHalfChoice } from '../store/keptHalfPreference';
+import { KeptHalfPlacementGroup } from './KeptHalfPlacementGroup';
 
 type Axis = 'x' | 'y' | 'z';
 type FitState = 'idle' | 'checking' | 'ok' | 'bad' | 'plane';
@@ -54,6 +58,7 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
   const [tolerance, setTolerance] = useState(0.25);
   const [connectorCount, setConnectorCount] = useState(2);
   const [keepMode, setKeepMode] = useState<PlaneCutOptions['keepMode']>('both');
+  const [keptChoice, setKeptChoice] = useState<KeptHalfPlacement>(loadKeptHalfChoice);
   const [suggestion, setSuggestion] = useState<CutConnectorSuggestion | null>(null);
   const [fit, setFit] = useState<FitState>('idle');
   const failure = useOperationFailure(open);
@@ -64,6 +69,7 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
     const p = useKuraStore.getState().splitPrefs;
     setConnectorType(cutConnectorFromPreference(p.connectorType));
     setTolerance(p.tolerance);
+    setKeptChoice(loadKeptHalfChoice());
   }, [open]);
 
   const { target, targetId, markConsumed } = useBoundOperationTarget(open, onClose);
@@ -74,6 +80,17 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
   const userRange = userSign > 0 ? range : { min: -range.max + 0, max: -range.min + 0 };
   const connectorKind = connectorType === 'none' ? null : connectorType;
   const fmt = (n: number) => formatNumber(language, n, { maximumFractionDigits: 1 });
+
+  // Con UNA sola mitad conservada: ¿quedaría apoyada en la cama? Si no, se pregunta dónde dejarla.
+  const kept = useMemo(
+    () => (target ? estimateKeptHalf(target, { axis, offset, keepMode: keepModeFromUser(axisToUser(axis), keepMode) }) : null),
+    [target, axis, offset, keepMode],
+  );
+  const askKept = kept !== null && !kept.restsOnBed;
+  const keptOverlaps = useMemo(
+    () => (askKept && target ? overlappingNames(objects.filter((o) => o.id !== target.id), kept.footprint) : []),
+    [askKept, target, objects, kept],
+  );
 
   // El desplazamiento nunca sale de la pieza al cambiar de eje.
   useEffect(() => {
@@ -220,10 +237,11 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
   const handleExecute = async () => {
     if (!targetId) return;
     markConsumed();
+    if (askKept) saveKeptHalfChoice(keptChoice);
     const { failed } = await failure.run(() =>
       planeCutObject(
         targetId,
-        planeCutOptionsFromDialog({ axis, offset, connectorType, connectorSize, connectorDepth, tolerance, connectorCount, keepMode }),
+        planeCutOptionsFromDialog({ axis, offset, connectorType, connectorSize, connectorDepth, tolerance, connectorCount, keepMode, keptHalfPlacement: askKept ? keptChoice : 'inPlace' }),
       ),
     );
     if (!failed) onClose();
@@ -351,7 +369,12 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
             <option value="positive">{t(language, 'dialog.cut.keepPositive')}</option>
             <option value="negative">{t(language, 'dialog.cut.keepNegative')}</option>
           </select>
+          {keepMode === 'both' && <small className="kura-cut-hint">{t(language, 'corteMitad.bothHelp')}</small>}
         </div>
+
+        {askKept && (
+          <KeptHalfPlacementGroup language={language} value={keptChoice} onChange={setKeptChoice} overlapNames={keptOverlaps} />
+        )}
 
         <div className="kura-form-field">
           {/* Se muestra el diámetro Ø, como en Dividir; el contrato interno (`connectorSize`) sigue en radio. */}

@@ -1,0 +1,16 @@
+/* Corte por plano: grupo "¿Dónde dejar la mitad que conservas?" (opciones con esquema lateral). */
+.kura-kept-field { grid-column: 1 / -1; }
+.kura-kept-label { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.kura-kept-group { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.kura-kept-option {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px; cursor: pointer;
+  border: 1px solid var(--border-strong); border-radius: 6px; background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+.kura-kept-option.is-checked { border-width: 2px; padding: 7px 9px; border-color: var(--accent, #2563eb); }
+.kura-kept-option:focus-within { outline: 2px solid var(--accent, #2563eb); outline-offset: 2px; }
+.kura-kept-option input[type='radio'] { flex: 0 0 auto; margin: 0; }
+.kura-kept-schema { flex: 0 0 56px; color: var(--text-secondary); }
+.kura-kept-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kura-kept-title { font-size: 13px; font-weight: 600; }
+.kura-kept-warn { color: var(--text-primary); text-decoration: underline; text-decoration-style: wavy; }
