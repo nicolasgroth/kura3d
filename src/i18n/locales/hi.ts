@@ -36,6 +36,7 @@ import { CORTEMITAD_HI } from './corteMitad';
 import { REALESMOTOR_HI } from './realesMotor';
 import { REALESUI_HI } from './realesUi';
 import { UX6_HI } from './ux6';
+import { BORDES_HI } from './bordesPrimitivas';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -69,6 +70,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...REALESMOTOR_HI,
   ...REALESUI_HI,
   ...UX6_HI,
+  ...BORDES_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',

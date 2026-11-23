@@ -4,22 +4,24 @@
  * (radio, altura, segmentos, texto…) con los rangos del motor. Cada edición confirmada regenera
  * la malla por el Command Bus (`update_primitive_params`) en un solo paso de deshacer; si hay caras
  * pintadas pide confirmación. Si una operación cambió la malla, lo explica en vez de mostrar campos.
+ * Caja, Cilindro, Tubo y Prisma suman el grupo «Bordes» (`EdgeParamsGroup`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo } from 'react';
 import '../../styles/parametersSection.css';
 import {
   hasPaintedFaces, parametricStateOf, primitiveParamFields, THREAD_PARAM_FIELDS, type ParamField,
 } from '../../core/scene/parametric';
+import { supportsEdges } from '../../engine/primitiveEdges';
 import { t, type TranslationKey } from '../../i18n';
-import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { useKuraStore } from '../../store/useKuraStore';
-import type { SceneObject, UnitSystem } from '../../types/kura';
+import type { SceneObject } from '../../types/kura';
 import { askDecision } from '../../utils/confirmDialog';
-import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { EdgeParamsGroup } from './EdgeParamsGroup';
+import { ParamNumber } from './ParamNumber';
 import { TextParamEditor } from './TextParamEditor';
 
 type Values = Record<string, number | string | boolean | undefined>;
@@ -132,77 +134,9 @@ export const ParametersSection: React.FC<{ primary: SceneObject }> = ({ primary 
           />
         );
       })}
+      {state.status === 'primitive' && supportsEdges(state.type) && (
+        <EdgeParamsGroup type={state.type} params={state.params} unit={unitSystem} disabled={disabled} onCommit={(k, v) => void commit(k, v)} />
+      )}
     </section>
-  );
-};
-
-/** Pausa tras la última flecha o paso antes de aplicar la ráfaga como un solo paso de deshacer. */
-const STEP_BURST_MS = 450;
-
-/**
- * Campo numérico con borrador local: lo escrito solo regenera al confirmar (Enter o salir) y un
- * valor fuera de rango se marca sin aplicarse. Flechas, rueda y botones ▲▼ aplican el valor al
- * terminar la ráfaga, en un solo paso de deshacer. Los límites quedan visibles junto a la etiqueta.
- */
-const ParamNumber: React.FC<{
-  label: string; value: number; min: number; max: number; isCount: boolean;
-  unit: UnitSystem | null;
-  disabled: boolean; onCommit: (v: number) => void;
-}> = ({ label, value, min, max, isCount, unit, disabled, onCommit }) => {
-  const language = useKuraStore((s) => s.language);
-  const [draft, setDraft] = useState(value);
-  const burstRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const commitRef = useRef(onCommit);
-  commitRef.current = onCommit;
-  useEffect(() => setDraft(value), [value]);
-  useEffect(() => () => {
-    if (burstRef.current) clearTimeout(burstRef.current);
-  }, []);
-  const precision = isCount ? 0 : 2;
-  const fmt = (n: number) => formatLocaleNumber(language, n, { maxFrac: precision });
-  const suffix = isCount ? '' : ' mm';
-  const rangeText = `${fmt(min)}–${fmt(max)}${suffix}`;
-  const rangeTip = t(language, 'precision.rangeTip', { min: fmt(min), max: `${fmt(max)}${suffix}` });
-
-  const stepped = (next: number) => {
-    setDraft(next);
-    if (burstRef.current) clearTimeout(burstRef.current);
-    burstRef.current = setTimeout(() => {
-      burstRef.current = null;
-      commitRef.current(next);
-    }, STEP_BURST_MS);
-  };
-  const committed = (next: number) => {
-    if (burstRef.current) {
-      clearTimeout(burstRef.current);
-      burstRef.current = null;
-    }
-    onCommit(next);
-  };
-
-  return (
-    <div className="kura-field-row kura-param-row">
-      <span className="kura-field-label">
-        {label}
-        <span className="kura-param-range" title={rangeTip}>{rangeText}</span>
-      </span>
-      <PrecisionNumberInput
-        style={{ width: 104 }}
-        value={draft}
-        min={min}
-        max={max}
-        step={isCount ? 1 : 0.5}
-        precision={precision}
-        suffix={isCount ? undefined : 'mm'}
-        unit={unit}
-        disabled={disabled}
-        commitOnBlur
-        strictRange
-        ariaLabel={label}
-        title={rangeTip}
-        onChange={stepped}
-        onCommit={committed}
-      />
-    </div>
   );
 };

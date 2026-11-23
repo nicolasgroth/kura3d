@@ -1,6 +1,6 @@
 /**
  * @file src/styles/parametersSection.css
- * @description Límites visibles de los campos de la sección "Parámetros" del inspector.
+ * @description Límites visibles de los campos de la sección "Parámetros" del inspector y su grupo «Bordes».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -78,4 +78,27 @@
   padding: 4px 2px;
   font-size: 11px;
   white-space: nowrap;
+}
+
+/* Grupo «Bordes» (Caja, Cilindro, Tubo, Prisma): mismo aspecto que el resto de la tarjeta. */
+.kura-param-edges {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+  min-width: 0;
+}
+
+.kura-param-edges > legend {
+  padding: 0;
+}
+
+.kura-param-note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted);
 }

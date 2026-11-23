@@ -41,6 +41,7 @@ import { CORTEMITAD_EN, CORTEMITAD_ES } from './locales/corteMitad';
 import { REALESMOTOR_EN, REALESMOTOR_ES } from './locales/realesMotor';
 import { REALESUI_EN, REALESUI_ES } from './locales/realesUi';
 import { UX6_EN, UX6_ES } from './locales/ux6';
+import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -76,6 +77,7 @@ export const TRANSLATIONS_ES = {
   ...REALESMOTOR_ES,
   ...REALESUI_ES,
   ...UX6_ES,
+  ...BORDES_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -1412,6 +1414,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...REALESMOTOR_EN,
   ...REALESUI_EN,
   ...UX6_EN,
+  ...BORDES_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
