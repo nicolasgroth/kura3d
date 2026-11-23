@@ -29,6 +29,8 @@ export interface ImportNoticeDeps {
   openSimplify?: (id: string) => void;
   /** Repara un objeto; si devuelve una promesa, las reparaciones en lote van una tras otra. */
   repairMesh?: (id: string) => void | Promise<unknown>;
+  /** «Reparar todas»: grupos de piezas que comparten malla; cada malla se repara una vez y se resume. */
+  repairMeshes?: (groups: string[][]) => void | Promise<unknown>;
   separateBodies?: (id: string) => void;
 }
 
@@ -82,12 +84,18 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
   const open = unique.filter((u) => u.entries[0].part.openEdges > 0);
   if (open.length === 0) return;
   const label = (e: ImportedEntry) => e.part.name || e.fileName;
-  // En serie: cada reparación es una operación exclusiva del motor.
-  const repairAll = (ids: string[]) => () => {
+  // Una reparación por malla única, aplicada a todas sus piezas, con un aviso resumen; sin la acción por
+  // lotes, en serie (cada reparación es una operación exclusiva del motor).
+  const repairAll = (groups: string[][]) => () => {
+    if (deps.repairMeshes) {
+      void deps.repairMeshes(groups);
+      return;
+    }
     void (async () => {
-      for (const id of ids) await deps.repairMesh?.(id);
+      for (const id of groups.flat()) await deps.repairMesh?.(id);
     })();
   };
+  const canRepair = Boolean(deps.repairMesh || deps.repairMeshes);
   if (open.length === 1) {
     const u = open[0];
     const ids = u.entries.map((e) => e.object.id);
@@ -97,15 +105,17 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
         ? tr('import.openMesh', { name: label(u.entries[0]), edges })
         : tr('realesMotor.openMeshShared', { name: label(u.entries[0]), count: ids.length, edges }),
       'info',
-      deps.repairMesh ? { label: ids.length === 1 ? tr('repair.action') : tr('realesMotor.repairAll'), run: repairAll(ids) } : undefined,
+      ids.length === 1
+        ? deps.repairMesh ? { label: tr('repair.action'), run: () => void deps.repairMesh?.(ids[0]) } : undefined
+        : canRepair ? { label: tr('realesMotor.repairAll'), run: repairAll([ids]) } : undefined,
     );
     return;
   }
   const names = open.map((u) => label(u.entries[0]));
-  const ids = open.flatMap((u) => u.entries.map((e) => e.object.id));
+  const groups = open.map((u) => u.entries.map((e) => e.object.id));
   addToast(
     tr('import.openMeshMany', { count: open.length, list: names.slice(0, 3).join(', ') + (names.length > 3 ? '…' : '') }),
     'info',
-    deps.repairMesh ? { label: tr('realesMotor.repairAll'), run: repairAll(ids) } : undefined,
+    canRepair ? { label: tr('realesMotor.repairAll'), run: repairAll(groups) } : undefined,
   );
 }

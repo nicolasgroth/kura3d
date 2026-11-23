@@ -43,6 +43,22 @@ const REALES_MOTOR_TABLE = {
     'मेश ख़ुद को काटती है; गुहा उसके घेरे हुए हिस्से के संघ पर गणना की गई। प्रिंट से पहले सेक्शन देखें।',
     '网格存在自相交;空腔按其包围区域的并集计算。打印前请检查剖面视图。',
   ],
+  'realesMotor.repairAllDone': [
+    'Mallas reparadas y cerradas: {closed} de {total} ({pieces} piezas).',
+    'Meshes repaired and closed: {closed} of {total} ({pieces} parts).',
+    'Netze repariert und geschlossen: {closed} von {total} ({pieces} Teile).',
+    'Maillages réparés et fermés : {closed} sur {total} ({pieces} pièces).',
+    'सुधारी और बंद की गई मेश: {total} में से {closed} ({pieces} भाग)।',
+    '已修复并封闭的网格:{closed}/{total}({pieces} 个零件)。',
+  ],
+  'realesMotor.repairAllPartial': [
+    'Mallas reparadas y cerradas: {closed} de {total} ({pieces} piezas). No se pudieron cerrar: {list}; revísalas en el inspector.',
+    'Meshes repaired and closed: {closed} of {total} ({pieces} parts). Could not be closed: {list}; check them in the inspector.',
+    'Netze repariert und geschlossen: {closed} von {total} ({pieces} Teile). Nicht schließbar: {list}; prüfe sie im Inspektor.',
+    'Maillages réparés et fermés : {closed} sur {total} ({pieces} pièces). Impossible à fermer : {list} ; vérifiez-les dans l’inspecteur.',
+    'सुधारी और बंद की गई मेश: {total} में से {closed} ({pieces} भाग)। बंद नहीं हो सकीं: {list}; इंस्पेक्टर में देखें।',
+    '已修复并封闭的网格:{closed}/{total}({pieces} 个零件)。无法封闭:{list};请在检查器中查看。',
+  ],
   'realesMotor.repairAll': ['Reparar todas', 'Repair all', 'Alle reparieren', 'Tout réparer', 'सभी सुधारें', '全部修复'],
   'realesMotor.unitDoubt': [
     '«{name}» mide {size} mm en su lado mayor: puede que el archivo esté en otra unidad.',

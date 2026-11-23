@@ -9,6 +9,7 @@
  */
 
 import type * as engine from '../../engine';
+import type { SceneChange } from '../../core/operations/operationTypes';
 import { formatNumber } from '../../utils/plural';
 import { focusById } from '../../utils/focusById';
 
@@ -96,6 +97,48 @@ export function createRepairSlice(ctx: StoreContext): Partial<KuraStoreState> {
         );
         reportEngineWarnings(change.warnings);
         return report;
+      });
+    },
+
+    repairObjectMeshes: async (groups) => {
+      // Cada grupo comparte una malla: se repara una vez y el resultado se aplica a todas sus piezas.
+      const targets = groups
+        .map((ids) => ids.map((id) => get().objects.find((o) => o.id === id)).filter((o): o is NonNullable<typeof o> => Boolean(o) && !o!.locked))
+        .filter((objs) => objs.length > 0);
+      if (targets.length === 0) return null;
+      return runExclusive('repair', null, async () => {
+        await get().initEngine();
+        const patches: SceneChange['patches'] = [];
+        const warnings: engine.EngineWarning[] = [];
+        const failed: string[] = [];
+        let closed = 0;
+        let pieces = 0;
+        for (const objs of targets) {
+          const [first, ...rest] = objs;
+          const { report, change } = await runEngine('repair', { obj: first });
+          assertCurrent(objs);
+          warnings.push(...change.warnings);
+          const patch = change.patches.find((p) => p.id === first.id)?.patch;
+          if (patch) {
+            patches.push({ id: first.id, patch });
+            // Las estadísticas son locales a la malla: las comparten todas las piezas que la usan.
+            for (const o of rest) patches.push({ id: o.id, patch });
+          }
+          if (report.after.closed) {
+            closed++;
+            pieces += objs.length;
+          } else failed.push(first.name);
+        }
+        if (patches.length > 0) {
+          commitChange({ added: [], removedIds: [], patches, warnings: [] }, { extra: { meshDiagnosis: null } });
+        }
+        const total = targets.length;
+        const text = failed.length === 0
+          ? tr('realesMotor.repairAllDone', { closed, total, pieces })
+          : tr('realesMotor.repairAllPartial', { closed, total, pieces, list: failed.slice(0, 3).join(', ') + (failed.length > 3 ? '…' : '') });
+        get().addToast(text, failed.length === 0 ? 'success' : 'info');
+        reportEngineWarnings(warnings);
+        return { closed, total, failed };
       });
     },
   };

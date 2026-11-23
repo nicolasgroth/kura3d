@@ -77,6 +77,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
     openSimplify: (id) => get().requestSimplifyPanel(id),
     repairMesh: (id) => get().repairObjectMesh(id),
+    repairMeshes: (groups) => get().repairObjectMeshes(groups),
     separateBodies: (id) => void get().splitDisconnectedObject(id),
     bedSize: () => {
       setImportStage('place');
