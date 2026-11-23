@@ -1,6 +1,6 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 03:55, con las correcciones de la tercera evaluación integradas.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 04:50, tras la QA de los generadores.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
@@ -8,6 +8,8 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 | Funcionalidad | Estado |
 |---|---|
+| Generadores, motor (QA del 23-nov): separar por colores entrega piezas que el inspector marca "revisar malla" cuando se pintó con el pincel, y tarda 25 s; proyectar dos veces el mismo texto en el mismo lugar falla; la litofanía cilíndrica ignora el ancho pedido; tuerca con altura no normalizada; el agujero roscado no se coloca en el objeto seleccionado | En corrección desde las 04:45 |
+| Generadores, interfaz: imagen dañada sin aviso, texto 3D sin validación, lo creado por los generadores cae sobre otros objetos, errores que no caducan, diálogo de molde con todos los campos a la vez | En corrección desde las 04:45 |
 | Rótulos de pieza (A1, B1a…) sobre cada pieza en el visor de Dividir, y el rótulo "Placa 1" que sale cortado tras "Preparar para imprimir" | Pendiente |
 | Panel de IA entre 901 y 1240 px: ocupa la columna del inspector | Pendiente |
 | Armado por subconjuntos (filas, luego capas, luego apilar) para conservar todos los conectores en rejillas; hoy el orden pieza a pieza ya es el óptimo demostrado | Pendiente; cambia el modelo de pasos de armado |
@@ -30,6 +32,7 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Pintura por caras rápida; operaciones de creación en el Worker | QA aprobó sin bloqueos; falta medir el pincel con GPU real |
 | Grabar sobre un relieve ya no da el error falso de profundidad; 3MF determinista (misma escena, mismos bytes); auditoría de secretos: claves de IA y token MCP nunca van a `localStorage` ni a logs, ahora con prueba que lo hace cumplir | Implementado con pruebas; sin QA en navegador |
 | Grupos y árbol de escena: Agrupar (Ctrl+G) y Desagrupar (Ctrl+Mayús+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ojo, candado, renombrar, arrastrar, teclado), manipulador del conjunto con escala proporcional, "Combinar en un objeto" y "Separar cuerpos", exportar un grupo como un archivo o uno por objeto, comandos de bus y MCP | QA re-verificó: renombrar, teclado del árbol, ojo del grupo y reglas, corregidos. Sin veredicto: escalar con el gizmo (no logró arrastrar el tirador) y separar cuerpos con colores (no lo alcanzó; lo cubre una prueba de navegador). Ya aprobado antes: agrupar, anidar, deshacer, guardar y reabrir, combinar, exportar, atajos, 390 px, piezas de división en el árbol |
+| Generadores revisados por QA por primera vez (texto 3D, SVG, imagen a 3D, roscas, molde, proyectar, separar por colores, ahuecar con drenaje, texturas) | SVG, molde y extras: bien. Roscas: bien con reservas. Texto 3D, imagen a 3D, proyectar y separar por colores: con problemas, en corrección |
 | Edición (tercera evaluación): selección correcta tras aplicar restas, F4 repite siempre la última acción, cubo de 440 mm sin uniones débiles falsas, filas del árbol que seleccionan con Mayús+clic y Ctrl+clic, campos que no acotan en silencio, menú contextual opaco con submenús al pasar el cursor, mensajes de Pintar coherentes, confirmación al reparar | Integrado; cada punto con su prueba de navegador (13 recorridos) |
 | Forma (tercera evaluación): coma decimal en los campos numéricos en español, alemán y francés; avisos que no se apilan; idioma inicial según el navegador; panel de IA que no tapa el inspector ni mueve la cámara; Medir en la barra táctil con ayudas táctiles e imán más amplio; encuadre con más margen; textos de 11 px como mínimo | Integrado; con pruebas de navegador (18 recorridos) |
 | Escena: flechas del gizmo hacia el lado positivo (Y al fondo), nada nuevo se coloca encima de otro objeto (duplicar, cambiar tamaño, mitades de corte, piezas separadas), las vistas reencuadran escenas grandes, lectura del desplazamiento al arrastrar, aviso al guardar o cancelar, cancelar una importación, aviso de malla pesada desde 300 mil triángulos y de varios cuerpos | Confirmado por QA independiente en navegador |
