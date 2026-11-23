@@ -8,6 +8,7 @@
  */
 
 export * from './capacity';
+export * from './measureAnchors';
 export * from './measureGeometry';
 export * from './measureSnap';
 export * from './objectMeasure';

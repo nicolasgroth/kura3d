@@ -104,15 +104,22 @@ export async function runBooleanOperation(
     toolObj.scale
   );
 
+  // Resta: las caras nuevas que deja el negativo en el sólido toman el color base del SÓLIDO (un vaso
+  // no queda con el interior del color de la pieza negativa). Hoy no hay forma de saber si el usuario
+  // pintó a propósito el negativo con otro color, así que el color de la herramienta se ignora.
+  const subtractive = op === 'subtract';
+  const toolColor = subtractive ? targetObj.color : toolObj.color;
+  const toolForRuns: MeshData = subtractive ? { positions: toolWorld.positions, indices: toolWorld.indices } : toolWorld;
+
   const trackColors =
     Boolean(targetObj.mesh.faceColors?.length) ||
-    Boolean(toolObj.mesh.faceColors?.length) ||
-    targetObj.color.toLowerCase() !== toolObj.color.toLowerCase();
+    (!subtractive &&
+      (Boolean(toolObj.mesh.faceColors?.length) || targetObj.color.toLowerCase() !== toolObj.color.toLowerCase()));
 
   const registry = trackColors
     ? createColorRegistry(wasm, [
         { color: targetObj.color, faceColors: targetWorld.faceColors },
-        { color: toolObj.color, faceColors: toolWorld.faceColors },
+        { color: toolColor, faceColors: toolForRuns.faceColors },
       ])
     : null;
 
@@ -129,9 +136,9 @@ export async function runBooleanOperation(
     );
     toolManifold = meshDataToManifold(
       wasm,
-      toolWorld,
+      toolForRuns,
       registry?.colorToId,
-      toolObj.color
+      toolColor
     );
 
     if (op === 'union') {

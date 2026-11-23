@@ -171,19 +171,21 @@ describe('detección de formato y soldado', () => {
     expect([...welded.triangleSource]).toEqual([0, 1]);
   });
 
-  it('suelda 200 000 triángulos sin crecer más que ~lineal', () => {
-    // Complejidad: 10× los triángulos no debe costar mucho más de 10× (medido en la misma corrida).
-    const time = (n: number) => {
-      const positions = new Float32Array(n * 9);
-      for (let i = 0; i < positions.length; i++) positions[i] = Math.floor(Math.random() * 400) / 4;
-      const indices = new Uint32Array(n * 3).map((_, i) => i);
-      const start = performance.now();
-      weldVertices(positions, indices, 1e-5);
-      return performance.now() - start;
-    };
-    time(2_000); // calienta
-    const small = Math.min(time(20_000), time(20_000));
-    const large = time(200_000);
-    expect(large).toBeLessThan(Math.max(small, 2) * 40);
+  it('suelda 200 000 triángulos con un resultado coherente (el tiempo lo vigila importMeshLinearity.perf)', () => {
+    // Sin medir tiempo: depende de la carga de la máquina. Datos deterministas (generador fijo).
+    let seed = 12345;
+    const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+    const n = 200_000;
+    const positions = new Float32Array(n * 9);
+    for (let i = 0; i < positions.length; i++) positions[i] = Math.floor(rnd() * 400) / 4;
+    const indices = new Uint32Array(n * 3).map((_, i) => i);
+    const unique = new Set<string>();
+    for (let i = 0; i < positions.length; i += 3) unique.add(`${positions[i]},${positions[i + 1]},${positions[i + 2]}`);
+    const welded = weldVertices(positions, indices, 1e-5);
+    const vertexCount = welded.positions.length / 3;
+    expect(vertexCount).toBeLessThanOrEqual(unique.size);
+    expect(vertexCount).toBeGreaterThan(0);
+    expect(welded.triangleSource.length).toBe(welded.indices.length / 3);
+    expect(welded.indices.every((v) => v < vertexCount)).toBe(true);
   });
 });

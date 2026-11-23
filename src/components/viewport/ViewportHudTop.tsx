@@ -151,8 +151,8 @@ export const ViewportHudTop: React.FC = () => {
           </div>
         </div>
 
-        {/* El gizmo de transformación no aplica mientras se pinta: se oculta para no confundir. */}
-        {activeTool !== 'paint' && (
+        {/* El manipulador no aplica mientras se pinta o se mide: se oculta para no confundir. */}
+        {activeTool !== 'paint' && activeTool !== 'measure' && (
         <div className="kura-hud-card">
           <div className="kura-segmented">
             <button

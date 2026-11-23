@@ -33,6 +33,21 @@ describe('measureUnits', () => {
     expect(formatLiquidUs(236_588.2365)).toBe('8 fl oz · 1 cups');
     expect(formatCapacity(500_000, 'mm').us).toBeUndefined();
     expect(formatCapacity(500_000, 'in').us).toBe('16.9 fl oz · 2.11 cups');
-    expect(formatCapacity(500_000, 'cm').solid).toBe('500.00 cm³');
+    expect(formatCapacity(500_000, 'cm').solid).toBe('500 cm³');
+  });
+
+  it('sin ceros sobrantes, con la unidad activa en el cero y separadores del idioma', () => {
+    expect(formatCapacity(64_000_000, 'mm').solid).toBe('64000000 mm³');
+    expect(formatCapacity(64_000, 'mm', undefined, 'es').solid).toBe('64.000 mm³');
+    expect(formatCapacity(64_000_000, 'mm', undefined, 'es').solid).toBe('64.000.000 mm³');
+    expect(formatCapacity(64_000_000, 'mm', undefined, 'fr').solid.replace(/\s/g, ' ')).toBe('64 000 000 mm³');
+    expect(formatCapacity(64_000_000, 'mm', undefined, 'en').solid).toBe('64,000,000 mm³');
+    expect(formatLiquidMetric(64_000, 'es')).toBe('64 mL');
+    expect(formatLiquidMetric(1_250_000, 'de')).toBe('1,25 L');
+    expect(formatLength(56.5685, 'mm', 'de')).toBe('56,57 mm');
+    expect(formatLength(0, 'mm')).toBe('0 mm');
+    expect(formatLength(-0.0000001, 'cm', 'es')).toBe('0 cm');
+    expect(formatArea(0, 'in', 'en')).toBe('0 in²');
+    expect(formatAngle(0, 'fr')).toBe('0°');
   });
 });

@@ -9,7 +9,10 @@
  * @license MIT
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// El tope por defecto (5 s) no alcanza con la máquina cargada (esta prueba recorre el repo o usa el motor).
+vi.setConfig({ testTimeout: 60_000 });
 import { BRAND } from '../brand';
 
 // El frontend no incluye @types/node: se tipa solo lo que usa esta prueba.

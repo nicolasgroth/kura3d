@@ -10,7 +10,10 @@
  */
 
 import { zipSync } from 'fflate';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
+// El tope por defecto (5 s) no alcanza con la máquina cargada (esta prueba recorre el repo o usa el motor).
+vi.setConfig({ testTimeout: 60_000 });
 import { initManifoldEngine } from '../index';
 import { ModelImportError } from '../ioFormats';
 import { parseModelFile } from '../io/modelImport';

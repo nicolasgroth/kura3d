@@ -29,9 +29,10 @@ test('distancia: arista 40, diagonal de cara 56,57, diagonal del cubo 69,28; Med
   const errs: string[] = [];
   page.on('pageerror', (e) => errs.push(e.message));
   await abrir(page);
+  // Medir primero: el encuadre de `cubo` descuenta el panel flotante y el cubo no queda debajo de él.
+  await page.keyboard.press('d');
   await cubo(page);
   const h0 = await hist(page);
-  await page.keyboard.press('d');
   expect(await page.evaluate(() => (window as any).__s.getState().activeTool)).toBe('measure');
   // Se hace clic 1 mm hacia dentro de la cara: el imán lleva al vértice.
   await clicMundo(page, V(19, 39, 20));
@@ -62,8 +63,9 @@ test('distancia: arista 40, diagonal de cara 56,57, diagonal del cubo 69,28; Med
 
 test('imanes (vértice, punto medio, centro de cara), Alt los desactiva, Escape y clic derecho cancelan', async ({ page }) => {
   await abrir(page);
-  await cubo(page);
+  // Medir primero: el encuadre de `cubo` descuenta el panel flotante y el cubo no queda debajo de él.
   await page.keyboard.press('d');
+  await cubo(page);
   await mover(page, V(19, 39, 20));
   expect((await hover(page)).kind).toBe('vertex');
   await mover(page, V(1, 39.5, 20));
@@ -97,8 +99,9 @@ test('imanes (vértice, punto medio, centro de cara), Alt los desactiva, Escape 
 
 test('ángulo de tres puntos 90° y área de una cara 1600 mm²; borrar una y todas', async ({ page }) => {
   await abrir(page);
-  await cubo(page);
+  // Medir primero: el encuadre de `cubo` descuenta el panel flotante y el cubo no queda debajo de él.
   await page.keyboard.press('d');
+  await cubo(page);
   await page.getByRole('button', { name: 'Ángulo', exact: true }).click();
   await clicMundo(page, V(-19, 39, 20));
   await clicMundo(page, V(19, 39, 20));
