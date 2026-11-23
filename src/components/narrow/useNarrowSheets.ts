@@ -66,13 +66,25 @@ export function useNarrowSheets() {
 
   // Tocar el visor para actuar (medir, pintar, mover) pliega la hoja y deja el visor libre.
   useEffect(() => {
+    // Se pliega al soltar, no al tocar: cambiar el tamaño del visor a mitad de un gesto movería el
+    // manipulador bajo el dedo.
+    let armed = false;
     const onPointerDown = (e: PointerEvent) => {
-      if (!isNarrowViewport()) return;
-      if (!(e.target instanceof Element) || !e.target.closest('canvas')) return;
+      armed = isNarrowViewport() && e.target instanceof Element && Boolean(e.target.closest('canvas'));
+    };
+    const onPointerEnd = () => {
+      if (!armed) return;
+      armed = false;
       setHeight('folded');
     };
     window.addEventListener('pointerdown', onPointerDown, true);
-    return () => window.removeEventListener('pointerdown', onPointerDown, true);
+    window.addEventListener('pointerup', onPointerEnd, true);
+    window.addEventListener('pointercancel', onPointerEnd, true);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown, true);
+      window.removeEventListener('pointerup', onPointerEnd, true);
+      window.removeEventListener('pointercancel', onPointerEnd, true);
+    };
   }, []);
 
   const visible: NarrowSheetKind = aiDrawerOpen ? 'ai' : panel ?? (opTitle !== null ? 'op' : null);
