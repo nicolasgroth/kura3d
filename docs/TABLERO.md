@@ -150,6 +150,8 @@ Ordenadas por prioridad dentro de cada grupo.
 
 | Grupo | Funcionalidad |
 |---|---|
+| Asistentes | Objetos de referencia (pedido el 23-nov): un tercer tipo de objeto que se ve, incluso semitransparente, pero no se imprime ni se exporta (la placa del Arduino, cables, un tornillo), y comprobación de encaje entre referencias y piezas (interferencias y holguras), disponible también para la IA por MCP. En análisis: `docs/diseno/OBJETOS_DE_REFERENCIA.md` |
+| Asistentes | Diseños en análisis el 23-nov: formato de recetas de los asistentes (`docs/diseno/ASISTENTES.md`) y geometría de agregados, cajas, suavizar y ajustar a la impresora (`docs/diseno/AGREGADOS_Y_PREPARACION.md`) |
 | Documentación | Guías públicas en GitHub: README al día, una guía paso a paso con capturas o animación por funcionalidad (`docs/guia/`), y cómo usar el servidor MCP con sus reglas (`docs/MCP.md`). Flujo permanente: se actualiza con cada cambio (decidido el 23-nov) |
 | Interfaz | Vista sin cama (objetos flotando) y barra lateral izquierda de tres estados (iconos y texto, solo iconos, oculta), independiente de la pantalla completa. Entran en la próxima iteración de usabilidad |
 | Preparación | Ajustar a la impresora (perfiles de cama y escala proporcional) y Suavizar (aristas, malla completa o zona marcada) |
