@@ -77,8 +77,10 @@ test('cortar-y-ahuecar', async ({ page }) => {
   const caja = await cmd(page, 'create_primitive', { type: 'box', width: 50, height: 50, depth: 50, name: 'Cubo', position: [0, 0, 0] });
   await seleccionar(page, [caja.id]);
   await encuadrar(page, 'fit');
-  const ahuecar = page.locator('.kura-form-field', { has: page.locator('label', { hasText: /^Ahuecar$/ }) }).first();
-  await ahuecar.scrollIntoViewIfNeeded();
+  // Ahuecar se abre por su acción: el panel contextual muestra solo sus opciones.
+  const ahuecar = page.locator('#kura-inspector-panel');
+  await ahuecar.getByRole('button', { name: 'Ahuecar…' }).click();
+  await ahuecar.getByRole('heading', { name: 'Ahuecar' }).waitFor();
   await page.waitForTimeout(400);
   await captura(page, 'cortar-y-ahuecar-03-ahuecar', ahuecar);
   expect(DER.x).toBeGreaterThan(0);
