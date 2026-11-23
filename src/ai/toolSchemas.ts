@@ -10,7 +10,9 @@
 import {
   OPERATION_RANGES as OR, TRANSFORM_RANGES, type OperationRange,
 } from '../engine/operationLimits';
-import { PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, TEXT_ALIGN_OPTIONS, type PrimitiveRangeKey } from '../engine/primitiveLimits';
+import {
+  EDGE_SCOPES, EDGE_STYLES, PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, TEXT_ALIGN_OPTIONS, type PrimitiveRangeKey,
+} from '../engine/primitiveLimits';
 import type { KuraCommandRequest } from '../types/kura';
 
 /** Propiedad numérica de primitiva con `minimum`/`maximum` tomados del motor (fuente única). */
@@ -20,6 +22,13 @@ const dim = (key: PrimitiveRangeKey, description: string) => ({
   minimum: PRIMITIVE_PARAM_RANGES[key].min,
   maximum: PRIMITIVE_PARAM_RANGES[key].max,
 });
+
+/** Bordes de Caja, Cilindro, Tubo y Prisma (mismos valores que el motor). */
+const EDGE_PROPS = {
+  edgeStyle: { type: 'string', enum: [...EDGE_STYLES], description: "Aristas de box/cylinder/tube/prism: 'sharp' (rectas), 'round' (radio) o 'chamfer' (45°). Las medidas exteriores no cambian." },
+  edgeSize: dim('edgeSize', 'Radio o chaflán de las aristas en mm (por defecto 2); si no cabe en las medidas se acota y la respuesta lo indica.'),
+  edgeScope: { type: 'string', enum: [...EDGE_SCOPES], description: "Qué aristas: 'all'; 'vertical' (esquinas en planta, box/prism; sin voladizo en la base); 'top' (borde superior). Cilindro y tubo: 'all' o 'top'." },
+};
 
 /**
  * Propiedad numérica con el rango de la fuente única (`operationLimits`). Solo emite `minimum`/`maximum`
@@ -81,6 +90,7 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
         fontSize: dim('fontSize', 'Alto de mayúscula del texto en mm (type=text).'),
         letterSpacing: dim('letterSpacing', 'Espacio extra entre letras en mm (type=text).'),
         textAlign: { type: 'string', enum: [...TEXT_ALIGN_OPTIONS], description: 'Alineación de las líneas del texto (type=text).' },
+        ...EDGE_PROPS,
         name: { type: 'string', description: 'Nombre descriptivo opcional.' },
         color: { type: 'string', description: 'Color hexadecimal #rrggbb opcional.' },
         placement: {
@@ -113,6 +123,7 @@ export const KURA_TOOL_SCHEMAS: KuraToolSchema[] = [
         letterSpacing: dim('letterSpacing', 'Espacio extra entre letras del texto en mm.'),
         textAlign: { type: 'string', enum: [...TEXT_ALIGN_OPTIONS], description: 'Alineación de las líneas del texto.' },
         text: { type: 'string', description: 'Texto nuevo si es texto 3D.', maxLength: PRIMITIVE_LIMITS.maxTextLength },
+        ...EDGE_PROPS,
         diameterMm: ranged(OR.thread.diameterMm, 'Diámetro nominal de la rosca en mm.'),
         pitchMm: ranged(OR.thread.pitchMm, 'Paso de la rosca en mm.'),
         lengthMm: ranged(OR.thread.lengthMm, 'Largo roscado en mm.'),

@@ -27,6 +27,7 @@ const USES: Array<[keyof typeof PRIMITIVE_PARAM_RANGES, PrimitiveType]> = [
   ['sides', 'prism'],
   ['fontSize', 'text'],
   ['letterSpacing', 'text'],
+  ['edgeSize', 'box'],
 ];
 
 const busAccepts = (type: PrimitiveType, params: Record<string, unknown>) => {

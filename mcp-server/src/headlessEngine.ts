@@ -19,6 +19,7 @@ import { HEADLESS_BUILD_POLICY } from '../../src/core/scene/sceneObjects';
 import * as engine from '../../src/engine/index';
 import { resolveKeptHalf } from '../../src/core/scene/keptHalf';
 import { OPERATION_DEFAULTS } from '../../src/engine/operationLimits';
+import { edgeReport } from '../../src/engine/primitiveEdges';
 import { resolveAssemblyTargets, ValidateAssemblyTargetError } from '../../src/core/commands/validateAssemblySchema';
 import { createHeadlessNaming } from './headlessNaming.js';
 import { write3mfFile, writeStlFile, type ExportFileResult } from './headlessExport.js';
@@ -141,7 +142,8 @@ export class KuraHeadlessEngine {
       isHole: input.isHole,
     });
     this.objects.set(obj.id, obj);
-    return userSummary(obj);
+    // Bordes: tamaño aplicado, tope y si se acotó (como el bus de la app).
+    return { ...userSummary(obj), ...edgeReport(obj.primitiveType, obj.primitiveParams) };
   }
 
   /** Modifica posición, rotación, escala, nombre o propiedades básicas de un objeto. */
@@ -634,7 +636,8 @@ export class KuraHeadlessEngine {
       edit = { kind: 'thread', options: stripUndefined({ diameterMm, pitchMm, lengthMm, clearanceMm, includeHead }) as ThreadOptions };
     } else throw new Error(`Object '${obj.name}' is no longer parametric: an operation changed its mesh.`);
     this.apply(await ops.regenerateParametric(this.ctx, obj, edit));
-    return userSummary(this.requireObject(objectId));
+    const updated = this.requireObject(objectId);
+    return { ...userSummary(updated), ...edgeReport(updated.primitiveType, updated.primitiveParams) };
   }
 
   private bed() {

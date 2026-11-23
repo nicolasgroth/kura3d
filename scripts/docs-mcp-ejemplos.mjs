@@ -1,8 +1,8 @@
 /**
  * @file scripts/docs-mcp-ejemplos.mjs
  * @description Ejecuta contra el motor sin interfaz (servidor MCP real por stdio, `mcp-server/dist/index.js`)
- * los tres ejemplos de punta a punta de `docs/MCP.md`: caja con agujero, dividir un modelo grande y medir un
- * volumen. Imprime cada llamada y un resumen de la respuesta; sale con código 1 si algún resultado difiere
+ * los ejemplos de punta a punta de `docs/MCP.md`: caja con agujero, dividir un modelo grande, medir un
+ * volumen y caja con esquinas redondeadas. Imprime cada llamada y un resumen de la respuesta; sale con código 1 si algún resultado difiere
  * de lo documentado. Uso: `npm run mcp:build && node scripts/docs-mcp-ejemplos.mjs`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -70,6 +70,17 @@ const vasoHueco = await llamar('kura_boolean_operation', { targetId: vaso.id, to
 const cap = await llamar('kura_measure_capacity', { objectId: vasoHueco.resultId ?? vasoHueco.id });
 const ml = cap.maxCapacityMl ?? cap.capacity?.ml ?? cap.capacityMl;
 console.log('  capacidad (mL):', ml);
+
+console.log('\n== Ejemplo 4: caja con esquinas redondeadas ==');
+const redonda = await llamar('kura_create_primitive', {
+  primitiveType: 'box', name: 'Caja redondeada', placement: 'origin',
+  params: { width: 40, depth: 30, height: 20, edgeStyle: 'round', edgeSize: 5, edgeScope: 'vertical' },
+});
+const esperado = 20 * (40 * 30 - (4 - Math.PI) * 25);
+esperar(JSON.stringify(redonda.stats?.dimensionsMm) === JSON.stringify([40, 30, 20]), 'mide 40 × 30 × 20 como la caja recta');
+esperar(Math.abs(redonda.stats?.volumeMm3 - esperado) / esperado < 0.002, `volumen ≈ ${Math.round(esperado)} mm³ (obtenido ${redonda.stats?.volumeMm3})`);
+const acotada = await llamar('kura_update_primitive_params', { objectId: redonda.id, params: { edgeSize: 40 } });
+esperar(acotada.edgeSizeClamped === true && acotada.edgeSizeApplied < 15, `radio acotado a ${acotada.edgeSizeApplied} mm`);
 
 await client.close();
 console.log(fallos ? `\n${fallos} comprobación(es) fallaron.` : '\nTodos los ejemplos se ejecutaron.');

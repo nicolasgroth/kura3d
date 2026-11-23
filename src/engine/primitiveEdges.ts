@@ -104,6 +104,17 @@ export function maxEdgeSize(type: PrimitiveType, params: PrimitiveParams): numbe
   return Math.max(0, geometricMax(type, params, style, scope) - EDGE_SIZE_MARGIN_MM);
 }
 
+/** Resumen para respuestas del bus y del MCP: tamaño aplicado, tope y si se acotó (o `undefined` si son rectos). */
+export function edgeReport(type: PrimitiveType | undefined, params: PrimitiveParams | undefined) {
+  if (!type || !params) return undefined;
+  try {
+    const edges = resolveEdges(type, params);
+    return edges ? { edgeSizeApplied: edges.size, edgeSizeMax: edges.max, edgeSizeClamped: edges.clamped } : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Bordes de `params` para `type`, o `null` si son rectos (sin campos, `sharp` o tamaño efectivo 0).
  * Lanza `INVALID_PARAMETER` si el estilo, el alcance o el tamaño no son válidos para la primitiva.

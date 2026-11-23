@@ -28,7 +28,8 @@ import {
   type Vec3,
 } from '../types/kura';
 import {
-  PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, TEXT_ALIGN_OPTIONS, primitiveRangeFor, type PrimitiveRangeKey,
+  EDGE_SCOPES_BY_TYPE, EDGE_STYLES, PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, TEXT_ALIGN_OPTIONS, primitiveRangeFor,
+  type PrimitiveRangeKey,
 } from '../engine/primitiveLimits';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../engine/operationLimits';
 import { threadDefaults } from '../engine/threadDefaults';
@@ -92,6 +93,9 @@ export function readPrimitiveParams(raw: RawParams, type: PrimitiveType): Primit
   }
   set('text', readString(raw, PRIMITIVE_LIMITS.maxTextLength, 'text'));
   set('textAlign', readEnum(raw, TEXT_ALIGN_OPTIONS, 'textAlign'));
+  // Bordes: solo Caja, Cilindro, Tubo y Prisma; el alcance, el que admite cada una.
+  set('edgeStyle', readEnum(raw, EDGE_SCOPES_BY_TYPE[type] ? EDGE_STYLES : (['sharp'] as const), 'edgeStyle'));
+  set('edgeScope', readEnum(raw, EDGE_SCOPES_BY_TYPE[type] ?? [], 'edgeScope'));
   return out;
 }
 
