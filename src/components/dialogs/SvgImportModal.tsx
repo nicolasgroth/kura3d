@@ -23,7 +23,7 @@ export const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = 
   const language = useKuraStore((s) => s.language);
   const importSvgModel = useKuraStore((s) => s.importSvgModel);
 
-  const [name, setName] = useState('Emblema Kura');
+  const [name, setName] = useState(() => t(useKuraStore.getState().language, 'dialog.svg.presetBadge'));
   const [depth, setDepth] = useState(6);
   const [targetWidth, setTargetWidth] = useState(60);
   const [curveSegments, setCurveSegments] = useState(12);
@@ -84,7 +84,7 @@ export const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = 
           className="kura-chip"
           onClick={() => {
             setSvgContent(SVG_PRESETS.star);
-            setName('Estrella SVG');
+            setName(t(language, 'dialog.svg.presetStar'));
           }}
         >
           {t(language, 'dialog.svg.presetStar')}
@@ -94,7 +94,7 @@ export const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = 
           className="kura-chip"
           onClick={() => {
             setSvgContent(SVG_PRESETS.badge);
-            setName('Emblema Kura');
+            setName(t(language, 'dialog.svg.presetBadge'));
           }}
         >
           {t(language, 'dialog.svg.presetBadge')}
@@ -104,7 +104,7 @@ export const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = 
           className="kura-chip"
           onClick={() => {
             setSvgContent(SVG_PRESETS.gear);
-            setName('Engranaje SVG');
+            setName(t(language, 'dialog.svg.presetGear'));
           }}
         >
           {t(language, 'dialog.svg.presetGear')}

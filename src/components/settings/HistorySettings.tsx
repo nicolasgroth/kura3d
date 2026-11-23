@@ -96,7 +96,7 @@ export const HistorySettings: React.FC<{ idPrefix: string }> = ({ idPrefix }) =>
       </div>
       <div className="kura-measures-field">
         <span role="status" aria-live="polite" data-testid="history-usage">
-          {t(language, 'settings.history.usage', { steps: usage.steps, used: formatMb(usage.bytes), budget: limits.budgetMb })}
+          {t(language, 'settings.history.usage', { steps: usage.steps, used: formatMb(usage.bytes, language), budget: limits.budgetMb })}
         </span>
         <button type="button" className="kura-btn kura-btn-sm" disabled={usage.steps === 0} onClick={() => void handleClear()}>
           {t(language, 'settings.history.clear')}

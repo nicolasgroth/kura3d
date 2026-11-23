@@ -1,7 +1,7 @@
 /**
  * @file src/components/settings/McpSetupPanel.tsx
  * @description Bloque de configuración del cliente MCP en Ajustes: JSON copiable con ruta absoluta del servidor
- * (o marcador `<RUTA_AL_REPOSITORIO>` con nota), ayuda paso a paso cuando el estado es "Esperando servidor" y
+ * (o marcador `<REPO_PATH>` con nota), ayuda paso a paso cuando el estado es "Esperando servidor" y
  * botón "Probar conexión" que distingue servidor apagado, token rechazado y conectado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH

@@ -1141,7 +1141,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.settings.test.url': 'Une URL de base valide est requise.',
   'dialog.settings.test.local': 'Mode local : aucune connexion externe à tester.',
   'mcp.setup.pathLabel': 'Chemin de votre copie de Kura3D (facultatif)',
-  'mcp.setup.pathNote': 'L’application ne connaît pas l’emplacement de votre copie de Kura3D. Saisissez le chemin ici ou remplacez <RUTA_AL_REPOSITORIO> à la main.',
+  'mcp.setup.pathNote': 'L’application ne connaît pas l’emplacement de votre copie de Kura3D. Saisissez le chemin ici ou remplacez <REPO_PATH> à la main.',
   'mcp.setup.helpTitle': 'Le serveur MCP ne répond pas encore : étapes',
   'mcp.setup.step1': '1. Compilez le serveur une fois, depuis le dossier Kura3D :',
   'mcp.setup.step2': '2. Enregistrez-le dans votre client MCP. Avec Claude Code (remplacez <TOKEN> par le jeton ci-dessus) :',

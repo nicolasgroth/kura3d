@@ -40,14 +40,14 @@ export const GeometrySection: React.FC<Pick<InspectorSectionProps, 'primary'>> =
         <div className="kura-stat-box" style={{ gridColumn: '1 / -1' }}>
           <div className="kura-stat-title">{worldBounds ? t(language, 'inspector.stats.dimensionsWorld') : t(language, 'inspector.stats.dimensions')}</div>
           <div className="kura-stat-val">
-            {formatDimension(shownDims[0], unitSystem)} ×{' '}
-            {formatDimension(shownDims[1], unitSystem)} ×{' '}
-            {formatDimension(shownDims[2], unitSystem)}
+            {formatDimension(shownDims[0], unitSystem, undefined, language)} ×{' '}
+            {formatDimension(shownDims[1], unitSystem, undefined, language)} ×{' '}
+            {formatDimension(shownDims[2], unitSystem, undefined, language)}
           </div>
         </div>
         <div className="kura-stat-box">
           <div className="kura-stat-title">{t(language, 'inspector.stats.volume')}</div>
-          <div className="kura-stat-val">{formatVolume(scaledVolumeMm3, unitSystem)}</div>
+          <div className="kura-stat-val">{formatVolume(scaledVolumeMm3, unitSystem, language)}</div>
         </div>
         <div className="kura-stat-box">
           <div className="kura-stat-title">{t(language, 'inspector.stats.triangles')}</div>

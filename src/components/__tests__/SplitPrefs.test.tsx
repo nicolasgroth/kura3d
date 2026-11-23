@@ -188,7 +188,7 @@ describe('avisos con medidas', () => {
     for (const lang of ['es', 'en', 'de', 'fr', 'hi', 'zh'] as const) {
       const text = t(lang, 'engineWarning.SPLIT_CONNECTOR_REINFORCED', { label: '1', a: 'A1', b: 'A2', requested: 1.5, requestedCount: 1, size: 3, count: 2 });
       expect(text).toContain('→');
-      expect(text).toContain('1.5');
+      expect(text).toContain(lang === 'en' || lang === 'hi' || lang === 'zh' ? '1.5' : '1,5');
       expect(text).toContain('3');
     }
   });

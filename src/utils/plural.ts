@@ -8,16 +8,8 @@
  */
 
 import { t, type TranslationKey } from '../i18n';
+import { LOCALE_BY_LANG } from '../i18n/numberLocale';
 import type { LanguageCode } from '../types/kura';
-
-const LOCALE_BY_LANG: Record<LanguageCode, string> = {
-  es: 'es-CL',
-  en: 'en-US',
-  de: 'de-DE',
-  fr: 'fr-FR',
-  hi: 'hi-IN',
-  zh: 'zh-CN',
-};
 
 /** Categoría plural CLDR (`one`, `other`, …) de `count` en el idioma dado. */
 export function pluralCategory(lang: LanguageCode, count: number): Intl.LDMLPluralRule {

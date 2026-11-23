@@ -1141,7 +1141,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.settings.test.url': '需要有效的基础 URL。',
   'dialog.settings.test.local': '本地模式：没有需要测试的外部连接。',
   'mcp.setup.pathLabel': 'Kura3D 副本路径（可选）',
-  'mcp.setup.pathNote': '应用无法得知 Kura3D 副本的位置。请在此输入路径，或手动替换 <RUTA_AL_REPOSITORIO>。',
+  'mcp.setup.pathNote': '应用无法得知 Kura3D 副本的位置。请在此输入路径，或手动替换 <REPO_PATH>。',
   'mcp.setup.helpTitle': 'MCP 服务器尚未响应：步骤',
   'mcp.setup.step1': '1. 在 Kura3D 文件夹中构建一次服务器：',
   'mcp.setup.step2': '2. 在 MCP 客户端中注册。使用 Claude Code（将 <TOKEN> 替换为上方令牌）：',

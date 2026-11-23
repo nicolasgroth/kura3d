@@ -7,7 +7,8 @@
  * @license MIT
  */
 
-import type { UnitSystem } from '../types/kura';
+import { formatQuantity } from '../i18n/numberLocale';
+import type { LanguageCode, UnitSystem } from '../types/kura';
 
 /** Factores exactos de conversión: cuántos milímetros equivale 1 unidad del sistema elegido. */
 const MM_PER_UNIT: Record<UnitSystem, number> = {
@@ -73,18 +74,20 @@ export function formatDimension(
   valueMm: number,
   unit: UnitSystem,
   decimals?: number,
+  lang?: LanguageCode,
 ): string {
   const converted = fromMm(valueMm, unit);
   const precision = decimals ?? DEFAULT_DECIMALS_BY_UNIT[unit] ?? 2;
   // Evita mostrar "-0.00" por redondeos de punto flotante cercanos a cero.
   const safeValue = Math.abs(converted) < 1e-9 ? 0 : converted;
+  if (lang) return formatQuantity(lang, safeValue, unit, { maxFrac: precision });
   return `${Number(safeValue.toFixed(precision))} ${unit}`;
 }
 
 /**
  * Formatea un volumen expresado internamente en mm³ hacia la unidad cúbica correspondiente.
  */
-export function formatVolume(volumeMm3: number, unit: UnitSystem): string {
+export function formatVolume(volumeMm3: number, unit: UnitSystem, lang?: LanguageCode): string {
   const linearFactor = MM_PER_UNIT[unit] ?? 1;
   const cubicFactor = linearFactor * linearFactor * linearFactor;
   const converted = volumeMm3 / cubicFactor;
@@ -99,5 +102,6 @@ export function formatVolume(volumeMm3: number, unit: UnitSystem): string {
   }
 
   const safeValue = Math.abs(converted) < 1e-12 ? 0 : converted;
+  if (lang) return formatQuantity(lang, safeValue, `${unit}³`, { maxFrac: precision });
   return `${safeValue.toFixed(precision)} ${unit}³`;
 }

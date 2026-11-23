@@ -36,7 +36,7 @@ export const ViewportHudBottom: React.FC = () => {
       if (bounds) {
         const [bx, by, bz] = toUserSize(bounds.size);
         return t(language, 'viewport.dimensionsMulti', {
-          size: `${formatDimension(bx, unitSystem)} × ${formatDimension(by, unitSystem)} × ${formatDimension(bz, unitSystem)}`,
+          size: `${formatDimension(bx, unitSystem, undefined, language)} × ${formatDimension(by, unitSystem, undefined, language)} × ${formatDimension(bz, unitSystem, undefined, language)}`,
           count: selectedIds.length,
         });
       }
@@ -44,10 +44,9 @@ export const ViewportHudBottom: React.FC = () => {
     // Ejes del usuario: X × Y × Z con Z = altura.
     const [dx, dy, dz] = toUserSize(selectedObj.stats.dimensionsMm);
     const [sx, sy, sz] = toUserSize(selectedObj.scale);
-    return `${formatDimension(dx * sx, unitSystem)} × ${formatDimension(
+    return `${formatDimension(dx * sx, unitSystem, undefined, language)} × ${formatDimension(
       dy * sy,
-      unitSystem,
-    )} × ${formatDimension(dz * sz, unitSystem)}`;
+      unitSystem, undefined, language)} × ${formatDimension(dz * sz, unitSystem, undefined, language)}`;
   }, [selectedObj, selectedIds, objects, unitSystem, language]);
 
   return (
@@ -66,12 +65,10 @@ export const ViewportHudBottom: React.FC = () => {
             ? `${localizedPrinterName} (${formatDimension(
                 printerProfile.bedWidthMm,
                 unitSystem,
-                1,
-              )} × ${formatDimension(printerProfile.bedDepthMm, unitSystem, 1)} × ${formatDimension(
+                1, language)} × ${formatDimension(printerProfile.bedDepthMm, unitSystem, 1, language)} × ${formatDimension(
                 printerProfile.maxHeightMm,
                 unitSystem,
-                1,
-              )})`
+                1, language)})`
             : localizedPrinterName}
         </span>
         {bedStatus === 'outOfBounds' && (

@@ -9,6 +9,7 @@
  */
 
 import type { LanguageCode, MaterialPresetId, PrinterProfile } from '../types/kura';
+import { formatLocaleNumber } from './numberLocale';
 import { TRANSLATIONS, type TranslationKey } from './translations';
 
 export type { TranslationKey };
@@ -45,7 +46,12 @@ export function t(
   }
 
   for (const [paramKey, paramValue] of Object.entries(params)) {
-    template = template.replaceAll(`{${paramKey}}`, String(paramValue));
+    // Un decimal numérico sale con el separador del idioma ("2,5" en es); los enteros quedan tal cual.
+    const text =
+      typeof paramValue === 'number' && Number.isFinite(paramValue) && !Number.isInteger(paramValue)
+        ? formatLocaleNumber(lang, paramValue, { maxFrac: 3 })
+        : String(paramValue);
+    template = template.replaceAll(`{${paramKey}}`, text);
   }
 
   return template;

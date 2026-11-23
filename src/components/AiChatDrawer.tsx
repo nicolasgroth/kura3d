@@ -216,7 +216,7 @@ export const AiChatDrawer: React.FC = () => {
           }
           return (
             <div key={msg.id} className={`kura-chat-bubble ${msg.role}`}>
-              {msg.content}
+              {msg.id === 'welcome' ? t(language, 'ai.welcome') : msg.content}
             </div>
           );
         })}

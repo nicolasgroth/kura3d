@@ -115,7 +115,7 @@ describe('analyzePrintability', () => {
     const w = r.issues.find((i) => i.code === 'THIN_WALL')!;
     const es = localizePrintWarning('es', w);
     const en = localizePrintWarning('en', w);
-    expect(es).toContain('0.2');
+    expect(es).toContain('0,2');
     expect(en).toContain('0.2');
     expect(es).not.toBe(en);
     expect(r.warnings).toContain(es);

@@ -13,6 +13,7 @@ import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { estimateHollowWall } from '../../engine/solidOffset';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { HOLLOW_REQUEST_FRESH_MS, useHollowRequest } from './hollowPanelRequest';
+import { formatLocaleNumber } from '../../i18n/numberLocale';
 
 /** Ahuecar con grosor de pared y orificio de drenaje. */
 export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
@@ -68,7 +69,7 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
       />
       {estimate.coarse && (
         <p className="kura-cut-hint" data-testid="hollow-expected-wall" role="note">
-          {t(language, 'hollow.expectedWall', { maxWall: estimate.maxWallMm.toFixed(1), thickness: wallThicknessMm.toFixed(1) })}
+          {t(language, 'hollow.expectedWall', { maxWall: formatLocaleNumber(language, estimate.maxWallMm, { maxFrac: 1, minFrac: 1 }), thickness: formatLocaleNumber(language, wallThicknessMm, { maxFrac: 1, minFrac: 1 }) })}
         </p>
       )}
       <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5 }}>

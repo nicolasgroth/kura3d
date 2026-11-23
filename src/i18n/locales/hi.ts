@@ -1141,7 +1141,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.settings.test.url': 'मान्य बेस URL आवश्यक है।',
   'dialog.settings.test.local': 'स्थानीय मोड: जाँचने के लिए कोई बाहरी कनेक्शन नहीं है।',
   'mcp.setup.pathLabel': 'आपकी Kura3D प्रति का पथ (वैकल्पिक)',
-  'mcp.setup.pathNote': 'ऐप को आपकी Kura3D प्रति की जगह नहीं पता। यहाँ पथ लिखें या <RUTA_AL_REPOSITORIO> हाथ से बदलें।',
+  'mcp.setup.pathNote': 'ऐप को आपकी Kura3D प्रति की जगह नहीं पता। यहाँ पथ लिखें या <REPO_PATH> हाथ से बदलें।',
   'mcp.setup.helpTitle': 'MCP सर्वर अभी उत्तर नहीं दे रहा: चरण',
   'mcp.setup.step1': '1. Kura3D फ़ोल्डर से सर्वर एक बार बनाएँ:',
   'mcp.setup.step2': '2. इसे अपने MCP क्लाइंट में पंजीकृत करें। Claude Code में (<TOKEN> को ऊपर के टोकन से बदलें):',
