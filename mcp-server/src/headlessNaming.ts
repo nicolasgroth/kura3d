@@ -25,7 +25,7 @@ export function createHeadlessNaming(counter: () => number): ResultNaming {
     modulePrefix: (isHole) => (isHole ? '−' : '+'),
     primitiveLabel: capitalize,
     booleanResult: (op, inputs) => `${inputs[0].name} (${op})`,
-    cutHalf: (src, half) => `${src.name} — half ${half === 'a' ? 'A' : 'B'}`,
+    cutHalf: (src, half, axis) => `${src.name} — half ${half === 'a' ? `A (${axis}−)` : `B (${axis}+)`}`,
     piece: (src, i) => `${src.name} #${i + 1}`,
     colorPart: (src, color, i) => `${src.name} (${color}) #${i + 1}`,
     moldPart: (src, part) => `${MOLD_PARTS[part.label] ?? part.label} — ${src.name}`,
