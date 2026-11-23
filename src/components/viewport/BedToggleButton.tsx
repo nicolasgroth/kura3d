@@ -13,6 +13,7 @@ import { Grid2x2X } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import '../../styles/ux6.css';
+import '../../styles/bedHiddenChip.css';
 
 export const BedToggleButton: React.FC = () => {
   const language = useKuraStore((s) => s.language);
@@ -26,11 +27,12 @@ export const BedToggleButton: React.FC = () => {
       aria-pressed={!showBed}
       aria-keyshortcuts="B"
       title={tip}
+      aria-label={t(language, 'ux6.bed.toggle')}
       data-testid="bed-toggle"
       onClick={toggleShowBed}
     >
       <Grid2x2X size={13} aria-hidden="true" />
-      <span>{t(language, 'ux6.bed.toggle')}</span>
+      <span className="kura-hud-label-wide">{t(language, 'ux6.bed.toggle')}</span>
     </button>
   );
 };

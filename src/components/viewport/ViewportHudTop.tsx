@@ -97,9 +97,10 @@ export const ViewportHudTop: React.FC = () => {
               className="kura-btn kura-btn-sm"
               onClick={() => requestCameraPreset('fit')}
               title={t(language, 'viewport.camera.fit')}
+              aria-label={t(language, 'viewport.camera.fit')}
             >
               <Maximize2 size={13} />
-              <span>{t(language, 'viewport.camera.fit')}</span>
+              <span className="kura-hud-label-wide">{t(language, 'viewport.camera.fit')}</span>
             </button>
             <BedToggleButton />
           </div>
