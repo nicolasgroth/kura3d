@@ -60,13 +60,40 @@ test('crear cubo, mover con el manipulador, escalar, medir y exportar STL a 390 
   await expect.poll(() => store<string>('activeTool')).toBe('measure');
   await page.evaluate(() => (window as any).__s.getState().requestCameraPreset('fit'));
   await page.waitForTimeout(900);
-  const p = await store<number[]>('objects[0].position');
-  const s = await store<number[]>('objects[0].scale');
-  const alto = 40 * s[1];
-  const a = await aPixel(page, [p[0] - 18 * s[0], p[1] + alto, p[2] + 18 * s[2]]);
-  const b = await aPixel(page, [p[0] + 18 * s[0], p[1] + alto, p[2] + 18 * s[2]]);
+  // Dos puntos sobre la cara superior visible del cubo, tomados de su caja real en la escena 3D (el eje
+  // vertical de la escena no es el del store: se lee de la geometría, no se supone).
+  const caja = await page.evaluate(() => {
+    const st = (window as any).__r3f.getState();
+    let mejor: any = null;
+    st.scene.traverse((n: any) => {
+      if (!n.isMesh || !n.geometry?.attributes?.position || n.geometry.attributes.position.count < 8) return;
+      const THREE = n.position.constructor;
+      const min = new THREE(Infinity, Infinity, Infinity);
+      const max = new THREE(-Infinity, -Infinity, -Infinity);
+      const v = new THREE();
+      const pos = n.geometry.attributes.position;
+      n.updateWorldMatrix(true, false);
+      for (let k = 0; k < pos.count; k++) {
+        v.fromBufferAttribute(pos, k).applyMatrix4(n.matrixWorld);
+        min.min(v);
+        max.max(v);
+      }
+      const vol = (max.x - min.x) * (max.y - min.y) * (max.z - min.z);
+      if (vol > 1000 && (!mejor || vol > mejor.vol)) mejor = { vol, min: [min.x, min.y, min.z], max: [max.x, max.y, max.z] };
+    });
+    return mejor as { min: number[]; max: number[] };
+  });
+  const c = [0, 1, 2].map((k) => (caja.min[k] + caja.max[k]) / 2);
+  const d = [0, 1, 2].map((k) => (caja.max[k] - caja.min[k]) * 0.25);
+  const a = await aPixel(page, [c[0] - d[0], caja.max[1], c[2]] as [number, number, number]);
+  const b = await aPixel(page, [c[0] + d[0], caja.max[1], c[2]] as [number, number, number]);
+  const altoVisor = () => page.evaluate(() => document.querySelector('canvas')!.getBoundingClientRect().height);
+  const alto0 = await altoVisor();
   await page.touchscreen.tap(a.x, a.y);
-  await page.waitForTimeout(250);
+  await page.waitForTimeout(400);
+  // Con un punto pendiente la hoja de Medir no se pliega: el visor conserva su tamaño entre los dos toques.
+  expect(await page.evaluate(() => (window as any).__m.getState().pending.length)).toBe(1);
+  expect(await altoVisor()).toBe(alto0);
   await page.touchscreen.tap(b.x, b.y);
   await page.waitForTimeout(500);
   const medidas = await page.evaluate(() => (window as any).__m.getState().measurements?.length ?? 0);
