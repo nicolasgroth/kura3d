@@ -1,15 +1,20 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 23:25, con la reevaluación de usabilidad en curso.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 23:45, tras la reevaluación de usabilidad.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## En desarrollo
 
+Tres lotes de corrección de la reevaluación de usabilidad y uno de motor, en paralelo desde las 23:40:
+
 | Funcionalidad | Estado |
 |---|---|
-| Dependencias: de las 9 actualizaciones que propone Dependabot, 2 pasan todo y aportan (TypeScript 7 y lucide-react); están en la rama local `chore/deps-2026-11` | Esperando la decisión del autor (ver CONSULTAS_PROYECTO.md) |
-| Ahuecado con rejilla adaptativa en piezas grandes y dividir más rápido en modelos de millones de triángulos | Pendiente |
+| Escena: flecha Y del gizmo hacia el fondo, lo nuevo nunca encima de lo existente, vistas que reencuadran escenas grandes, lectura del delta al arrastrar, aviso al guardar, cancelar una importación, aviso de malla pesada y de varios cuerpos | En corrección |
+| Móvil y barra superior: una sola hoja a la vez con el visor siempre visible, mover/rotar/escalar y exportar a la vista, barra superior que no pierde rótulos al seleccionar | En corrección |
+| Idioma, formato y menús: sin español en la interfaz en inglés, un solo formato de números, errores dentro del diálogo, menú contextual completo en pantalla, también en el fondo y en el árbol de Escena, panel de Dividir por secciones | En corrección |
+| Ahuecado preciso en piezas grandes, dividir más rápido en modelos de millones de triángulos y menos uniones para pegar por orden de armado | En curso |
+| Dependencias: TypeScript 7 y lucide-react listos en la rama local `chore/deps-2026-11` | Esperando la decisión del autor (consulta 1) |
 
 ## En QA
 
@@ -45,7 +50,7 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 
 ## En evaluación
 
-Reevaluación de usabilidad en curso desde las 23:15 (evaluador nuevo, a ciegas, 20 bloques que incluyen grupos, Medir, reparar malla y el menú nuevo). Quinta ronda: **usabilidad 76 · código 85 · funcional 86**; el mínimo es 85 en los tres. Detalle en [EVALUACIONES.md](EVALUACIONES.md).
+Nada en este momento. Últimas notas: **usabilidad 75** (reevaluación del 22-nov a las 23:40; antes 76) · **código 85** · **funcional 86**. El mínimo es 85 en los tres. Usabilidad lleva dos evaluaciones bajo el mínimo: lo nuevo quedó bien (dividir 82, uniones 83, Medir 82, teclas F 88), pero pesan problemas transversales (gizmo, colocación, móvil, idiomas y formatos). Detalle en [EVALUACIONES.md](EVALUACIONES.md).
 
 ## Lista
 

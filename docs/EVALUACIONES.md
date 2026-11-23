@@ -283,3 +283,40 @@ Todo lo anterior está en corrección en seis lotes. Tras corregir, QA y reevalu
 Consumo de agentes desde la QA previa (modelo · duración · tokens): costura de la división (Opus · 32 min · 289 k), preferencias de división (Sonnet · 17 min · 229 k), pintura (Opus · 33 min · 282 k), deuda de motor (Opus · 31 min · 263 k), QA re-verificación (Sonnet · 55 min · 171 k), corrección QA7 (Sonnet · 23 min · 218 k), QA pintura (Sonnet · 21 min · 131 k, incompleta por tiempo), QA operaciones en Worker (Sonnet · 18 min · 168 k), menú contextual y teclas F (Sonnet · 25 min · 287 k), evaluador de código (Opus · 15 min · 167 k), evaluador funcional (Opus · 23 min · 264 k), evaluador de usabilidad (Opus · 17 min · 221 k).
 
 Aprendizajes de proceso: un encargo de QA con tres áreas no alcanza en 55 minutos (se dividió); los evaluadores comparten el navegador de pruebas y uno operó sobre la pestaña de otro (en adelante, uno a la vez en navegador o perfiles separados); un evaluador dejó un servidor sin detener (se detuvo al cerrar).
+
+## Reevaluación de usabilidad · 22 de noviembre de 2026, 23:40 · `main`
+
+Evaluador Opus nuevo, a ciegas, sobre 20 bloques que incluyen lo agregado después de la ronda 5 (grupos, Medir, reparar malla, menú ampliado, conector automático). **Nota global: 75** (ronda 5: 76). Sigue bajo el mínimo de 85. Es la segunda evaluación de usabilidad consecutiva bajo el mínimo; a la tercera corresponde consultar al autor.
+
+| Bloque | Nota | | Bloque | Nota |
+|---|---|---|---|---|
+| Teclas F y atajos | 88 | | Booleanas y corte | 78 |
+| Primer uso | 84 | | Reparar e imprimibilidad | 78 |
+| Uniones y armado | 83 | | Importar y exportar | 76 |
+| Dividir para imprimir | 82 | | Grupos y Escena | 75 |
+| Medir | 82 | | Menú contextual | 74 |
+| Pintar | 82 | | Proyecto | 72 |
+| Primitivas y texto | 80 | | IA y MCP | 72 |
+| Ajustes | 80 | | Transformar | 70 |
+| Accesibilidad | 80 | | Retroalimentación y consistencia | 70 |
+| | | | Ahuecar, molde, SVG y otros | 65 |
+| | | | Móvil 390 px | 55 |
+
+Sin bloqueos duros. Lo nuevo quedó bien evaluado (dividir 72 → 82, uniones 76 → 83, teclas F 72 → 88, Medir 82), pero la nota global no sube por problemas transversales que afectan a todo el producto:
+
+1. La flecha Y del gizmo apunta al lado negativo: contradice "Y = fondo".
+2. Lo nuevo se coloca encima de lo existente (primitivas, importados, mitades de un corte). Un lote anterior lo había dado por resuelto sin comprobarlo en pantalla.
+3. En móvil las hojas se apilan y dejan entre 80 y 250 px de visor; mover, rotar y escalar no están a la vista.
+4. La barra superior pierde los rótulos en español a 1440 px al seleccionar un objeto.
+5. Los errores de un diálogo quedan ocultos detrás de su velo.
+6. Idiomas mezclados con la interfaz en inglés y formatos numéricos distintos según el panel.
+7. La vista Iso no reencuadra escenas grandes y la cámara queda dentro del objeto.
+8. No hay menú contextual en el fondo ni en el árbol de Escena.
+9. Importar algo pesado no se puede cancelar.
+10. Guardar en la web no dio señal visible.
+
+Aprendizaje de proceso: dos de estos puntos (colocación de lo nuevo y aviso al guardar) figuraban como corregidos por informes de desarrollo que no los verificaron en pantalla. En adelante, lo que un evaluador marcó no se da por corregido sin una prueba de navegador que lo reproduzca.
+
+En corrección en tres lotes (escena, móvil y barra, idioma y menús), cada uno con pruebas de navegador propias.
+
+Consumo de agentes desde la ronda 5 (modelo · duración · tokens): seis lotes de corrección de la ronda 5 (Opus y Sonnet · 25–50 min · 190–330 k cada uno), cabos sueltos (Opus · 44 min · 282 k), corrección de pintura y colores (Opus · 37 min · 277 k), ideas del menú (Sonnet · 23 min · 292 k), grupos (Opus · 43 min · 399 k), corrección de grupos (Opus · 60 min · 312 k), Medir (Opus · 48 min · 366 k), pincel (Opus · 16 min · 178 k), importación de 3MF con tres rondas de seguridad (Opus · 27 + 17 + 27 min · 382 k), reparar malla (Opus · 40 min · 391 k), memoria de importación (Opus · 37 min · 258 k), pulido de Medir (Sonnet · 52 min · 380 k), dependencias (Sonnet · 34 min · 105 k), revisión de seguridad (Opus · 13 + 3 min · 206 k), cinco QA (Sonnet · 25–43 min · 131–308 k cada una; una no pudo ejecutarse), prueba con modelos reales (Sonnet · 37 min · 265 k), reevaluación de usabilidad (Opus · 22 min · 258 k).
