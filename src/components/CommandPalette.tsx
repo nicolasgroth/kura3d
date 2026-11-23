@@ -743,7 +743,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'view-compact',
-        label: t(language, 'cmd.view.compact'),
+        label: t(language, 'rediseno.labels.palette'),
         category: catView,
         keywords: 'compacto densidad laptop rail sidebar compact',
         kind: 'local',

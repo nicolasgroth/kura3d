@@ -10,6 +10,7 @@
  * @license MIT
  */
 
+import { tagLastPushedStep } from '../historyLabels';
 import { attachToTarget } from '../../core/scene/attachPiece';
 import { withoutModulePrefix } from '../../core/scene/resultNames';
 import { createPrimitive as createPrimitiveObject, positionOnTarget } from '../../core/operations';
@@ -40,7 +41,11 @@ const isZero = (v: Vec3) => v.every((x) => Math.abs(x) < 1e-9);
 export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraStoreState>): Partial<KuraStoreState> {
   const { set, get, tr, pushHistory, runExclusive, opCtx } = ctx;
 
-  const record = (rec: RepeatRecord) => set({ lastRepeatable: rec });
+  const record = (rec: RepeatRecord) => {
+    // El paso recién registrado en el historial toma el nombre de la acción (desplegable del historial).
+    tagLastPushedStep(rec, get().past);
+    set({ lastRepeatable: rec });
+  };
   const editableById = (id: string) => get().objects.find((o) => o.id === id && !o.locked) ?? null;
   const unlockedSelection = () => {
     const { objects, selectedIds } = get();

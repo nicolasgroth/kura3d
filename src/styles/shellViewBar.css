@@ -1,0 +1,171 @@
+/**
+ * @file src/styles/shellViewBar.css
+ * @description Barra de vista única sobre el visor: una sola fila (nunca se parte), grupos con divisores,
+ * botones de al menos 32 px (44 en táctil), solo iconos cuando no caben los rótulos o están ocultos, y menú de
+ * vistas. En móvil va abajo como el resto del HUD superior.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-hud-top-bar:has(> .kura-viewbar) {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.kura-viewbar {
+  pointer-events: auto;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 6px;
+  border-radius: var(--radius-md);
+  background: var(--hud-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-hud);
+  white-space: nowrap;
+}
+
+.kura-viewbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.kura-viewbar-sep {
+  width: 1px;
+  height: 22px;
+  background: var(--border-strong);
+  flex-shrink: 0;
+}
+
+.kura-viewbar .kura-btn {
+  height: 32px;
+  min-width: 32px;
+  white-space: nowrap;
+}
+
+.kura-viewbar-btn .kura-view-icon {
+  flex-shrink: 0;
+}
+
+.kura-viewbar.is-view-icons .kura-viewbar-view-label,
+.kura-viewbar.is-icons .kura-viewbar-label,
+.kura-viewbar.is-icons .kura-hud-label-wide {
+  display: none;
+}
+
+.kura-viewbar.is-icons .kura-btn {
+  padding: 0 7px;
+}
+
+.kura-viewbar-bed {
+  display: inline-flex;
+}
+
+.kura-viewbar-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.kura-viewbar-range input[type='range'] {
+  width: 96px;
+}
+
+.kura-viewbar-value {
+  font-family: var(--font-mono, monospace);
+  min-width: 46px;
+}
+
+.kura-viewbar-snap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.kura-viewbar-snap .kura-select {
+  height: 30px;
+}
+
+.kura-viewbar-menu-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.kura-viewbar-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  padding: 4px;
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-hud);
+}
+
+.kura-viewbar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kura-viewbar-menu-item:hover,
+.kura-viewbar-menu-item:focus-visible {
+  background: var(--bg-hover);
+}
+
+.kura-viewbar-menu-item kbd {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+@media (pointer: coarse) {
+  .kura-viewbar .kura-btn,
+  .kura-viewbar-snap .kura-select {
+    height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Móvil: la barra va abajo (HUD superior abajo) y el menú de vistas se abre hacia arriba. */
+@media (max-width: 520px) {
+  .kura-viewbar {
+    gap: 4px;
+    padding: 3px 4px;
+  }
+
+  .kura-viewbar-menu {
+    top: auto;
+    bottom: calc(100% + 6px);
+  }
+
+  .kura-viewbar-range input[type='range'] {
+    width: 72px;
+  }
+}

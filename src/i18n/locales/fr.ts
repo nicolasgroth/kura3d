@@ -41,6 +41,7 @@ import { UX6_FR } from './ux6';
 import { RECETAS_FR } from './recetas';
 import { BORDES_FR } from './bordesPrimitivas';
 import { UX7_FR } from './ux7';
+import { REDISENO_FR } from './rediseno';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -79,6 +80,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...RECETAS_FR,
   ...BORDES_FR,
   ...UX7_FR,
+  ...REDISENO_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',

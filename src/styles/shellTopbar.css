@@ -1,0 +1,45 @@
+/**
+ * @file src/styles/shellTopbar.css
+ * @description Barra superior de aplicación: grupos Archivo y Edición con separación visual, Importar y Exportar
+ * con texto siempre (también con los rótulos ocultos), menú Acciones y botón de rótulos.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-topbar-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding-left: 6px;
+  margin-left: 2px;
+  border-left: 1px solid var(--border-subtle);
+}
+
+/* Importar y Exportar son las acciones principales: su texto no se oculta con «solo iconos». */
+.kura-app .kura-topbar .kura-btn-label.kura-label-keep,
+.kura-app[data-density='compact'] .kura-topbar .kura-btn-label.kura-label-keep,
+.kura-topbar-adaptive.is-compact .kura-btn-label.kura-label-keep {
+  display: inline;
+}
+
+.kura-actions-trigger {
+  gap: 5px;
+}
+
+.kura-labels-toggle.is-active {
+  font-weight: 700;
+}
+
+.kura-history-trigger {
+  width: 28px;
+}
+
+@media (pointer: coarse) {
+  .kura-topbar .kura-history-trigger,
+  .kura-topbar .kura-labels-toggle {
+    width: 44px;
+    height: 44px;
+  }
+}

@@ -16,6 +16,7 @@ import { t } from '../i18n';
 import type { LanguageCode } from '../types/kura';
 import { nearestSheetHeight, nextSheetHeight, sheetPx, type SheetHeight } from './narrow/sheetHeight';
 import type { NarrowSheetKind } from './narrow/useNarrowSheets';
+import { requestLeftPanelTab, useLeftTabRequest } from './leftPanelTabRequest';
 
 export type NarrowPanel = NarrowSheetKind;
 
@@ -102,6 +103,9 @@ export const NarrowPanelBar: React.FC<Props> = ({ language, panel, opTitle, heig
     }
   };
 
+  const leftTab = useLeftTabRequest((s) => s.tab);
+  const shapesOpen = panel === 'left' && leftTab !== 'scene';
+  const sceneOpen = panel === 'left' && leftTab === 'scene';
   const stateLabel = t(language, `uxm.sheet.${height}`);
   const gripLabel = t(language, 'uxm.sheet.grip', { state: stateLabel });
   const titleText = panel === 'ai' ? t(language, 'topbar.aiChat') : opTitle;
@@ -120,13 +124,31 @@ export const NarrowPanelBar: React.FC<Props> = ({ language, panel, opTitle, heig
       <span className="kura-narrow-grip" aria-hidden="true" />
       <button
         type="button"
-        className={`kura-btn kura-btn-sm ${panel === 'left' ? 'is-active' : ''}`}
+        className={`kura-btn kura-btn-sm ${shapesOpen ? 'is-active' : ''}`}
         aria-controls="kura-shapes-panel"
-        aria-expanded={panel === 'left'}
+        aria-expanded={shapesOpen}
         title={t(language, 'narrow.bar.shapesTip')}
-        onClick={() => onToggle('left')}
+        onClick={() => (panel === 'left' && !shapesOpen ? requestLeftPanelTab('shapes') : onToggle('left'))}
       >
         {t(language, 'sidebar.tab.shapes')}
+      </button>
+      {/* Escena es su propio botón: la hoja no repite las pestañas Formas / Escena (ver narrowPanelBar.css). */}
+      <button
+        type="button"
+        className={`kura-btn kura-btn-sm ${sceneOpen ? 'is-active' : ''}`}
+        aria-controls="kura-shapes-panel"
+        aria-expanded={sceneOpen}
+        onClick={() => {
+          if (sceneOpen) {
+            onToggle('left');
+            return;
+          }
+          if (panel !== 'left') onToggle('left');
+          // Después de abrir (que pide Formas), se pide Escena.
+          requestLeftPanelTab('scene');
+        }}
+      >
+        {t(language, 'sidebar.tab.scene')}
       </button>
       <button
         type="button"

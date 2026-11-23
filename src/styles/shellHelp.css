@@ -1,0 +1,95 @@
+/**
+ * @file src/styles/shellHelp.css
+ * @description Tooltip propio de las barras (nombre, qué hace y atajo) y zona de ayuda de la barra de estado.
+ * El tooltip no tapa el control (se coloca al lado), respeta `prefers-reduced-motion` y el modo de alto contraste.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-help-tooltip {
+  position: fixed;
+  z-index: 1300;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 280px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-hud);
+  font-size: 12px;
+  line-height: 1.35;
+  animation: kura-help-in 0.12s ease-out;
+}
+
+.kura-help-tooltip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.kura-help-tooltip kbd {
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.kura-help-tooltip-desc {
+  color: var(--text-secondary);
+}
+
+@keyframes kura-help-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-help-tooltip {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .kura-help-tooltip {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* Barra de estado: zona propia en el centro; se recorta sin mover los datos fijos de los lados. */
+.kura-statusbar-help {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.kura-statusbar-help.is-help {
+  color: var(--text-primary);
+}
+
+.kura-statusbar-help-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-statusbar > .kura-statusbar-group {
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .kura-statusbar-help {
+    display: none;
+  }
+}

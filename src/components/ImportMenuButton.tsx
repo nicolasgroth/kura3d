@@ -32,7 +32,7 @@ export function ImportMenuButton() {
         aria-label={t(language, 'topbar.importModel')}
       >
         <FileUp size={13} aria-hidden="true" />
-        <span className="kura-btn-label">{t(language, 'topbar.importShort')}</span>
+        <span className="kura-btn-label kura-label-keep">{t(language, 'topbar.importShort')}</span>
       </button>
       <button
         type="button"

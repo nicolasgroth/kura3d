@@ -32,6 +32,8 @@ export const Viewport3D: React.FC = () => {
 
   return (
     <main ref={viewportRef} className="kura-viewport-wrap" onPointerDownCapture={handleBackgroundPointerDown} onContextMenu={handleBackgroundContextMenu}>
+      {/* La barra de vista va antes del lienzo: en el orden de tabulación, vista → visor. */}
+      <ViewportHudTop />
       <Canvas
         className={activeTool === 'paint' ? 'kura-viewport-canvas is-painting' : 'kura-viewport-canvas'}
         // three r182+: PCFSoftShadowMap (el `shadows` por defecto de r3f) ya no existe en WebGL y PCFShadowMap es suave.
@@ -53,8 +55,6 @@ export const Viewport3D: React.FC = () => {
       </Canvas>
 
       {objects.length === 0 && <EmptySceneOverlay />}
-
-      <ViewportHudTop />
 
       {contextMenu && ctxTarget && (
         <ObjectContextMenu menu={contextMenu} target={ctxTarget} onClose={() => setContextMenu(null)} />

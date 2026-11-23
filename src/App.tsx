@@ -42,6 +42,8 @@ import { NarrowPanelBar } from './components/NarrowPanelBar';
 import { useNarrowSheets } from './components/narrow/useNarrowSheets';
 import { MobileTransformBar } from './components/narrow/MobileTransformBar';
 import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest';
+import { ToolRail } from './components/shell/ToolRail';
+import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
 import { useSimplifyRequestRelay } from './components/inspector/simplifyPanelRequest';
 
 const TRANSFORM_SHORTCUTS = new Map<string, TransformMode>([
@@ -443,6 +445,9 @@ export const App: React.FC = () => {
         data-narrow-panel={visibleNarrowPanel ?? undefined}
         data-sheet={visibleNarrowPanel ? sheets.height : undefined}
       >
+        {/* Antes de la barra lateral en el orden de tabulación (barra superior → herramientas → vista → visor →
+            paneles); el CSS la dibuja entre la barra lateral y el visor. */}
+        <ToolRail />
         <NarrowPanelBar
           language={language}
           panel={visibleNarrowPanel}
@@ -469,6 +474,7 @@ export const App: React.FC = () => {
       <FitToBedDialog />
       <RowContextMenuHost />
       <CommandPalette />
+      <HelpTooltipLayer />
       <SplashScreen />
     </div>
   );

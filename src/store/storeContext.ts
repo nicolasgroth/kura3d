@@ -30,6 +30,7 @@ import { StoreOperationError } from './commandErrors';
 import { createExclusiveRunner } from './exclusiveOperation';
 import { createOperationErrorTracker, localizeWarnings } from './operationErrors';
 import { cloneSnapshot } from './projectDocument';
+import { notePushedStep } from './historyLabels';
 import type { HistoryStep, KuraStoreState, SceneSnapshot } from './storeTypes';
 
 /** Diálogos y paneles que muestran el fallo de su operación dentro de sí (`OperationFailureAlert`). */
@@ -162,6 +163,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   };
 
   const pushHistoryStep = (step: HistoryStep) => {
+    notePushedStep(step);
     set(limitHistory([...get().past, step], []));
   };
   const pushHistory = () => {

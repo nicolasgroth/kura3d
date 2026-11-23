@@ -58,7 +58,7 @@ async function abrir(page: Page, name: string, buf: Buffer) {
 test('el pincel no pinta la cara trasera de una placa de 1 mm', async ({ page }) => {
   // Nota: el motor es Y-up (la altura STL Z queda en Y de la malla local).
   await abrir(page, 'placa.stl', plate(60, 60, 1, 60));
-  await page.getByRole('button', { name: 'Vista superior', exact: true }).filter({ hasText: /^Sup$/ }).click();
+  await page.locator('.kura-viewbar').getByRole('button', { name: 'Vista superior', exact: true }).click();
   await page.getByRole('button', { name: 'Pintar', exact: true }).first().click();
   await page.waitForTimeout(800);
   // El punto del trazo se calcula sobre la placa real (centro de su cara superior), no con coordenadas fijas:
