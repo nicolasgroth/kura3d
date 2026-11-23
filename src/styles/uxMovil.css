@@ -1,0 +1,68 @@
+/**
+ * @file src/styles/uxMovil.css
+ * @description Móvil y tableta (<= 900 px): barra Mover/Rotar/Escalar sobre el visor, atajos de teclado
+ * ocultos en dispositivos táctiles sin teclado, avisos bajo la barra de transformación, y áreas táctiles
+ * de 44x44 en los controles de la barra superior y de la hoja.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-mobile-transform {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .kura-app:not([data-density="zen"]) .kura-mobile-transform {
+    display: flex;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 26;
+    gap: 2px;
+    padding: 2px;
+    background: var(--bg-elevated, var(--bg-panel));
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md, 8px);
+    box-shadow: var(--shadow-hud);
+  }
+
+  .kura-mobile-transform .kura-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    position: relative;
+  }
+
+  /* Estado activo: color y marcador inferior (no depende solo del color). */
+  .kura-mobile-transform .kura-btn.is-active::after {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 3px;
+    height: 3px;
+    border-radius: 2px;
+    background: currentColor;
+  }
+
+  /* La fila de modos del HUD sobra: la barra compacta la reemplaza. */
+  .kura-app:not([data-density="zen"]) .kura-hud-top-bar > .kura-hud-card:has(.kura-segmented) {
+    display: none;
+  }
+
+  /* Los avisos van bajo la barra de transformación y no la tapan. */
+  .kura-app:has(.kura-mobile-transform) .kura-toast-stack {
+    top: 112px;
+  }
+}
+
+/* Dispositivos sin teclado: los menús no muestran atajos de teclado. */
+@media (hover: none) and (pointer: coarse) {
+  kbd.kura-menu-kbd,
+  .kura-context-kbd {
+    display: none;
+  }
+}

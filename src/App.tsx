@@ -35,7 +35,8 @@ import { LOG_TAG } from './brand';
 import { ConfirmDialogHost } from './components/ConfirmDialogHost';
 import { confirmDeleteSelection } from './components/scene/confirmDeleteSelection';
 import { NarrowPanelBar } from './components/NarrowPanelBar';
-import { requestLeftPanelTab } from './components/leftPanelTabRequest';
+import { useNarrowSheets } from './components/narrow/useNarrowSheets';
+import { MobileTransformBar } from './components/narrow/MobileTransformBar';
 import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest';
 import { useSimplifyRequestRelay } from './components/inspector/simplifyPanelRequest';
 
@@ -54,52 +55,31 @@ export const App: React.FC = () => {
   const uiDensity = useKuraStore((s) => s.uiDensity);
   const projectName = useKuraStore((s) => s.projectName);
   const projectDirty = useKuraStore(isProjectDirty);
-  const aiDrawerOpen = useKuraStore((s) => s.aiDrawerOpen);
-  const setAiDrawerOpen = useKuraStore((s) => s.setAiDrawerOpen);
   const mcpConfig = useKuraStore((s) => s.mcpConfig);
   const initEngine = useKuraStore((s) => s.initEngine);
   const executeCommand = useKuraStore((s) => s.executeCommand);
   const setMcpConnected = useKuraStore((s) => s.setMcpConnected);
   const syncColorSchemeFromDom = useKuraStore((s) => s.syncColorSchemeFromDom);
-  const [narrowPanel, setNarrowPanel] = useState<'left' | 'right' | null>(null);
   const [precisionRequest, setPrecisionRequest] = useState<{ mode: TransformMode } | null>(null);
-  const visibleNarrowPanel = aiDrawerOpen ? 'ai' : narrowPanel;
+  const sheets = useNarrowSheets();
+  const visibleNarrowPanel = sheets.visible;
   const recovery = useProjectRecovery();
   const discardRecoveryOnClose = recovery.discardOnClose;
-
-  const [narrowTall, setNarrowTall] = useState(false);
 
   // F2/F3 necesitan la lista de escena: en pantallas estrechas el panel izquierdo es un cajón.
   const revealLeftPanel = useCallback(() => {
     if (window.matchMedia('(max-width: 900px)').matches) {
-      if (useKuraStore.getState().aiDrawerOpen) useKuraStore.getState().setAiDrawerOpen(false);
-      setNarrowPanel('left');
+      sheets.reveal('left');
     }
-  }, []);
+  }, [sheets.reveal]);
   useFunctionKeys({ revealLeftPanel });
 
   // El menú contextual pide abrir el inspector (panel Ahuecar): en pantallas estrechas es una hoja.
   useEffect(() => {
-    const onOpenInspector = () => {
-      if (useKuraStore.getState().aiDrawerOpen) useKuraStore.getState().setAiDrawerOpen(false);
-      setNarrowPanel('right');
-    };
+    const onOpenInspector = () => sheets.reveal('right');
     window.addEventListener(OPEN_INSPECTOR_EVENT, onOpenInspector);
     return () => window.removeEventListener(OPEN_INSPECTOR_EVENT, onOpenInspector);
-  }, []);
-
-  function toggleNarrowPanel(panel: 'left' | 'right') {
-    if (aiDrawerOpen) setAiDrawerOpen(false);
-    // «Formas» abre la pestaña Formas, no la última visitada (Escena).
-    if (panel === 'left' && visibleNarrowPanel !== 'left') requestLeftPanelTab('shapes');
-    setNarrowPanel(visibleNarrowPanel === panel ? null : panel);
-  }
-
-  const closeNarrowPanel = useCallback(() => {
-    if (useKuraStore.getState().aiDrawerOpen) useKuraStore.getState().setAiDrawerOpen(false);
-    setNarrowPanel(null);
-    setNarrowTall(false);
-  }, []);
+  }, [sheets.reveal]);
 
   // Sincroniza título del documento e idioma del elemento <html>
   useEffect(() => {
@@ -380,7 +360,7 @@ export const App: React.FC = () => {
           if (state.aiDrawerOpen && window.matchMedia('(max-width: 1240px)').matches) {
             state.setAiDrawerOpen(false);
           }
-          if (narrow) setNarrowPanel('right');
+          if (narrow) sheets.reveal('right');
           else if (state.rightCollapsed) state.toggleRightInspector();
           setPrecisionRequest({ mode: transformMode });
         }
@@ -432,7 +412,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [sheets.reveal]);
 
   return (
     <div className="kura-app" data-tool={activeTool} data-density={uiDensity}>
@@ -449,18 +429,20 @@ export const App: React.FC = () => {
       <div
         className="kura-workspace"
         data-narrow-panel={visibleNarrowPanel ?? undefined}
-        data-narrow-tall={visibleNarrowPanel && narrowTall ? '' : undefined}
+        data-sheet={visibleNarrowPanel ? sheets.height : undefined}
       >
         <NarrowPanelBar
           language={language}
           panel={visibleNarrowPanel}
-          tall={narrowTall}
-          onToggle={toggleNarrowPanel}
-          onClose={closeNarrowPanel}
-          onTallChange={setNarrowTall}
+          opTitle={sheets.opTitle}
+          height={sheets.height}
+          onToggle={sheets.toggle}
+          onClose={sheets.close}
+          onHeightChange={sheets.setHeight}
         />
         <LeftSidebar />
         <Viewport3D />
+        <MobileTransformBar />
         <RightInspector precisionRequest={precisionRequest} />
         {/* Destino de los paneles de operación: en escritorio ocupan el lugar del inspector. */}
         <div id="kura-op-slot" className="kura-op-slot" />

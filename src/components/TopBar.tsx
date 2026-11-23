@@ -73,21 +73,24 @@ function useSystemPrefersDark(): boolean {
 }
 
 /**
- * Controles opcionales, del primero al último en pasar al menú "Más".
+ * Pasos de ahorro de espacio, en el orden en que se aplican al faltar ancho. Primero pasan al menú "Más"
+ * los controles menos usados; los rótulos (`compact`) se quitan solo después; al final, el resto.
  * Proyecto, Importar, Exportar, Deshacer/Rehacer y Ajustes nunca se ocultan.
  */
-const HIDE_ORDER = [
+const FIT_STEPS = [
   'density',
   'palette',
-  'lang',
   'themes',
+  'compact',
+  'lang',
   'theme',
   'mcp',
   'ai',
   'tools',
   'brand',
 ] as const;
-type HideId = (typeof HIDE_ORDER)[number];
+type FitStep = (typeof FIT_STEPS)[number];
+type HideId = Exclude<FitStep, 'compact'>;
 
 /** Observa la barra y cada control de sus grupos (los controles cambian al subir o bajar de nivel). */
 function observeTopbar(el: HTMLElement | null, observer: ResizeObserver | null): void {
@@ -165,8 +168,10 @@ export const TopBar: React.FC = () => {
   // Nivel de ahorro de espacio: 0 = completo, 1 = etiquetas compactas, 2+ = oculta controles en orden.
   const headerRef = useRef<HTMLElement>(null);
   const [level, setLevel] = useState(0);
-  const maxLevel = HIDE_ORDER.length + 1;
-  const hidden = new Set<HideId>(level >= 2 ? HIDE_ORDER.slice(0, level - 1) : []);
+  const maxLevel = FIT_STEPS.length;
+  const applied = FIT_STEPS.slice(0, level);
+  const compact = applied.includes('compact');
+  const hidden = new Set<HideId>(applied.filter((step): step is HideId => step !== 'compact'));
   const isHidden = (id: HideId) => hidden.has(id);
 
   // Anchos naturales medidos por nivel; se invalidan cuando el contenido cambia.
@@ -296,7 +301,7 @@ export const TopBar: React.FC = () => {
   return (
     <header
       ref={headerRef}
-      className={`kura-topbar kura-topbar-adaptive ${level >= 1 ? 'is-compact' : ''} ${level >= 9 ? 'is-narrow' : ''}`}
+      className={`kura-topbar kura-topbar-adaptive ${compact ? 'is-compact' : ''} ${hidden.has('tools') ? 'is-narrow' : ''}`}
     >
       {/* Marca oficial Kura3D v0.5.0 + Archivo rápido + Undo/Redo */}
       <div className="kura-topbar-group kura-topbar-left">

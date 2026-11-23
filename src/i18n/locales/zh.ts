@@ -18,6 +18,7 @@ import { SPLITJOINTS_ZH } from './splitJoints';
 import { SPLITPREFS_ZH } from './splitPrefs';
 import { SPLITCOUPLING_ZH } from './splitCoupling';
 import { A11YUX_ZH } from './a11yUx';
+import { UXMOVIL_ZH } from './uxMovil';
 import { SPLITUX_ZH } from './splitUx';
 import { FIX10_ZH } from './fix10';
 import { OPNOTES_ZH } from './operationNotes';
@@ -38,6 +39,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...SPLITPREFS_ZH,
   ...SPLITCOUPLING_ZH,
   ...A11YUX_ZH,
+  ...UXMOVIL_ZH,
   ...SPLITUX_ZH,
   ...FIX10_ZH,
   ...OPNOTES_ZH,

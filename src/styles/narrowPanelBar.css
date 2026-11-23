@@ -9,6 +9,16 @@
  */
 
 @media (max-width: 900px) {
+  .kura-workspace {
+    --sheet-half: min(38vh, calc(55vh - 136px));
+    --sheet-full: 70vh;
+  }
+
+  .kura-workspace[data-sheet="half"] { --sheet-h: var(--sheet-half); }
+  .kura-workspace[data-sheet="full"] { --sheet-h: var(--sheet-full); }
+  .kura-workspace[data-sheet="folded"] { --sheet-h: 0px; }
+  .kura-workspace[data-sheet-drag] { --sheet-h: var(--sheet-drag-px, 0px); }
+
   .kura-app:not([data-density="zen"]) .kura-workspace > .kura-narrow-panel-actions {
     order: 1;
     align-items: center;
@@ -16,11 +26,17 @@
     border-top: 1px solid var(--border-subtle);
     border-bottom: 0;
     touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     padding-top: 10px;
+    min-height: 56px;
+    box-sizing: border-box;
   }
 
   .kura-app:not([data-density="zen"]) .kura-workspace > .kura-narrow-panel-actions .kura-btn {
-    min-height: 32px;
+    min-height: 44px;
+    min-width: 44px;
   }
 
   .kura-narrow-grip {
@@ -37,20 +53,54 @@
 
   .kura-narrow-size {
     margin-left: auto;
+    touch-action: none;
   }
 
+  .kura-narrow-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-primary);
+    padding-inline: 4px;
+  }
+
+  /* Una sola hoja a la vez: Formas, Inspector, IA o un panel de operación (Medir, Cortar...). */
   body .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-panel="left"] > .kura-sidebar-left,
   body .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-panel="right"] > .kura-sidebar-right,
-  body .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-panel="ai"] > .kura-ai-drawer {
+  body .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-panel="ai"] > .kura-ai-drawer,
+  body .kura-app:not([data-density="zen"]) .kura-workspace[data-sheet] > .kura-op-slot > .kura-op-panel {
     order: 2;
-    flex: 0 0 min(30%, 26vh);
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    flex: 0 0 var(--sheet-h, var(--sheet-half));
+    height: auto;
+    width: 100%;
+    max-height: none;
     min-height: 0;
     border-top: 0;
+    border-radius: 0;
+    animation: none;
     transition: flex-basis 160ms ease;
   }
 
-  body .kura-app:not([data-density="zen"]) .kura-workspace[data-narrow-tall] > :is(.kura-sidebar-left, .kura-sidebar-right, .kura-ai-drawer) {
-    flex-basis: min(45%, 45vh);
+  body .kura-app:not([data-density="zen"]) .kura-workspace[data-sheet="folded"] > :is(.kura-sidebar-left, .kura-sidebar-right, .kura-ai-drawer, .kura-op-slot > .kura-op-panel) {
+    display: none;
+  }
+
+  body .kura-app:not([data-density="zen"]) .kura-workspace[data-sheet][data-sheet-drag] > :is(.kura-sidebar-left, .kura-sidebar-right, .kura-ai-drawer, .kura-op-slot > .kura-op-panel) {
+    transition: none;
+  }
+
+  body .kura-app:not([data-density="zen"]) .kura-workspace[data-sheet-drag][data-narrow-panel="left"] > .kura-sidebar-left,
+  body .kura-app:not([data-density="zen"]) .kura-workspace[data-sheet-drag][data-narrow-panel="right"] > .kura-sidebar-right,
+  body .kura-app:not([data-density="zen"]) .kura-workspace[data-sheet-drag][data-narrow-panel="ai"] > .kura-ai-drawer,
+  body .kura-app:not([data-density="zen"]) .kura-workspace[data-sheet-drag] > .kura-op-slot > .kura-op-panel {
+    display: flex;
   }
 
   .kura-workspace > .kura-op-slot:not(:empty) {
