@@ -42,7 +42,7 @@ async function escenaPesada(page: Page, n = 775) {
     s.setState((st: any) => ({
       objects: [...st.objects, {
         id: 'pesado', name: 'Rejilla pesada', source: 'imported', position: [-77, 0, -77], rotation: [0, 0, 0],
-        scale: [1, 1, 1], color: '#3388cc', isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
+        scale: [1, 1, 1], color: '#3388cc', role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
       }],
     }));
   }, n);

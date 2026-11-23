@@ -29,7 +29,7 @@ async function snapshot(page: Page) {
           const v = P[i + k] * o.scale[k] + o.position[k];
           mn[k] = Math.min(mn[k], v); mx[k] = Math.max(mx[k], v);
         }
-        return { name: o.name, color: o.color, hole: !!o.isHole, vis: o.visible, lock: o.locked,
+        return { name: o.name, color: o.color, hole: o.role === 'negative', vis: o.visible, lock: o.locked,
           grp: o.groupRef ? gname.get(o.groupRef)?.name : null, min: mn, max: mx, tris: o.mesh.indices.length / 3 };
       }),
     };
@@ -51,7 +51,7 @@ test('3MF de escena completa: ida y vuelta conserva piezas, grupos anidados y ba
     const a = await mk('box', 'Cubo rojo', '#ff0000', [-60, 0, 0]);
     const b = await mk('sphere', 'Esfera verde', '#00aa00', [-20, 0, 0]);
     const c = await mk('cylinder', 'Cilindro azul', '#0000ff', [20, 0, 0]);
-    const d = await mk('box', 'Negativo', '#888888', [20, 5, 0], { isHole: true });
+    const d = await mk('box', 'Negativo', '#888888', [20, 5, 0], { role: 'negative' });
     const e = await mk('cone', 'Cono oculto', '#ffaa00', [60, 0, 0]);
     const f = await mk('box', 'Bloqueado', '#aa00aa', [100, 0, 0]);
     const g1 = st().groupObjects([a, b], 'Grupo Externo');

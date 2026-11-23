@@ -14,7 +14,7 @@ test.use({ viewport: { width: 1440, height: 900 } });
 /** Volumen firmado (mm³) de las piezas sólidas, calculado sobre la malla del store. */
 async function volumenFirmado(page: Page): Promise<number[]> {
   return page.evaluate(() =>
-    (window as any).__s.getState().objects.filter((o: any) => !o.isHole).map((o: any) => {
+    (window as any).__s.getState().objects.filter((o: any) => o.role === 'solid').map((o: any) => {
       const P = o.mesh.positions, I = o.mesh.indices;
       let v = 0;
       for (let i = 0; i < I.length; i += 3) {
