@@ -581,6 +581,8 @@ export interface PrintabilityReport {
   /** Espesor mínimo de pared exigido (mm) y el menor espesor medido por muestreo (null si no se midió). */
   minWallMm: number;
   minWallThicknessMm: number | null;
+  /** false si la pared no se midió (malla no cerrada): `minWallThicknessMm` y el % no valen. */
+  wallMeasured?: boolean;
   /** Porcentaje del área muestreada más delgada que `minWallMm`. */
   thinWallAreaPercent: number;
   /** Supuestos del cálculo de peso, para mostrarlos junto al resultado. */
@@ -590,6 +592,7 @@ export interface PrintabilityReport {
 /** Códigos de aviso del informe de imprimibilidad (claves i18n `printWarning.<código>`). */
 export type PrintWarningCode =
   | 'NOT_MANIFOLD'
+  | 'WALL_NOT_MEASURED'
   | 'EXCEEDS_BED'
   | 'BELOW_BED'
   | 'FLOATING'

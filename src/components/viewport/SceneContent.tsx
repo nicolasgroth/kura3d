@@ -32,6 +32,7 @@ import { PrinterBedOverlay } from './PrinterBedOverlay';
 import { PreviewLayers } from './PreviewLayers';
 import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
+import { OpenEdgesOverlay } from './OpenEdgesOverlay';
 import { GroupTransformGizmo } from './GroupTransformGizmo';
 import { GroupEnterOnDoubleClick } from './GroupEnterOnDoubleClick';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
@@ -203,6 +204,7 @@ export const SceneContent: React.FC<{
 
       <PreviewLayers />
       <SegmentHighlight />
+      <OpenEdgesOverlay />
 
       {activeTool === 'paint' && <PaintBrushCursor />}
       {activeTool === 'measure' && <MeasureOverlay />}

@@ -99,7 +99,7 @@ const REPAIR_TABLE = {
     'काटने के बाद हिस्सा {code} का मेश खुला था और देने से पहले ठीक किया गया।',
     '零件 {code} 切割后网格开放，交付前已修复。',
   ],
-  'engineWarning.PRINTABILITY_WALL_NOT_MEASURED': [
+  'printWarning.WALL_NOT_MEASURED': [
     'No se pudo medir la pared porque la malla no está cerrada: repárala con «Reparar malla».',
     'The wall could not be measured because the mesh is not closed: repair it with “Repair mesh”.',
     'Die Wand konnte nicht gemessen werden, weil das Netz nicht geschlossen ist: repariere es mit „Netz reparieren“.',
