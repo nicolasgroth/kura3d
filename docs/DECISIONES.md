@@ -56,3 +56,12 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-23 | Placas de enchufe | Buscar medidas reales en fuentes públicas para Chile (primero), España y Estados Unidos; hasta verificarlas quedan marcadas "por verificar". |
 | 2026-11-23 | Recetas de terceros: recursos | Una receta puede traer imágenes, SVG o modelos propios embebidos (por ejemplo la marca de quien la creó), con los mismos límites y validación que una importación. |
 | 2026-11-23 | Regenerar un objeto editado a mano | Por defecto regenerar descarta las ediciones hechas a mano, avisando antes; se ofrece "dejar fijo" para conservar el objeto tal como está. Criterio del asistente, delegado por el autor. |
+| 2026-11-23 | Agregados al escalar (precisa la decisión anterior) | Al reescalar una pieza con agregados funcionales (agujeros de inserto, roscas, alojamientos de imán) se le pregunta al usuario: escalarlos con la pieza o dejarlos aparte en su medida real. Después de reescalar se corre un chequeo de consistencia que avisa si algo quedó chocando o sin pared suficiente. |
+| 2026-11-23 | Redondear aristas elegidas | Se deja para un lote posterior; no es prioritario. |
+| 2026-11-23 | Perfiles de cama | Se guardan también dentro del `.kura`. Al abrir un proyecto con otra cama, se ofrece cambiarla por la del usuario. |
+| 2026-11-23 | Ajustar a la impresora (precisa la decisión anterior) | Se ofrecen las alternativas al usuario: solo escalar con la orientación actual, permitir girar, o cambiar la cara apoyada. |
+| 2026-11-23 | Objetos de referencia: opacidad | Por objeto, con un valor global por defecto en Ajustes. Cada referencia se puede ocultar. |
+| 2026-11-23 | Objetos de referencia: bloqueo | Quedan móviles al importarlas (no bloqueadas); el usuario las bloquea si quiere. Criterio del asistente, delegado por el autor. |
+| 2026-11-23 | Comprobar encaje | Es bajo pedido (menú contextual: comprobar el objeto o la estructura), aplica las restas pendientes para ser fiel aunque sea más lento, y entrega un chequeo general con recomendaciones de dónde está cada problema. |
+| 2026-11-23 | Objetos de referencia al exportar | Se omiten siempre del 3MF y de cualquier exportación; solo viven en el `.kura`. |
+| 2026-11-23 | Dónde van las consultas | Todas las preguntas para el autor se dejan en `docs/CONSULTAS_PROYECTO.md`, en un solo lugar, aunque también se comenten en la conversación. |
