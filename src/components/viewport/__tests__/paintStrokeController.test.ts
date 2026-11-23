@@ -37,8 +37,8 @@ async function newCube() {
 
 /** Arrastre sobre la cara superior (Y local = 20) desde x=-4 hasta x=4. */
 function drag(): Promise<void> | void {
-  const first = startStorePaintStroke(obj(), [-4, 20, 0], null, true, () => Promise.resolve());
-  for (let x = -3; x <= 4; x++) continueStorePaintStroke(obj().id, [x, 20, 0], null);
+  const first = startStorePaintStroke(obj(), { point: [-4, 20, 0], faceIndex: null }, true, () => Promise.resolve());
+  for (let x = -3; x <= 4; x++) continueStorePaintStroke(obj().id, { point: [x, 20, 0], faceIndex: null });
   return first;
 }
 
@@ -77,9 +77,9 @@ describe('trazo del pincel sobre una primitiva', () => {
     expect(pastLen()).toBe(base + 1);
 
     // Segundo trazo (ya aceptado) con varias muestras: también un solo paso.
-    const second = startStorePaintStroke(obj(), [-4, 0, 0], null, true);
+    const second = startStorePaintStroke(obj(), { point: [-4, 0, 0], faceIndex: null }, true);
     expect(second).toBeUndefined();
-    for (let x = -3; x <= 4; x++) continueStorePaintStroke(obj().id, [x, 0, 0], null);
+    for (let x = -3; x <= 4; x++) continueStorePaintStroke(obj().id, { point: [x, 0, 0], faceIndex: null });
     release();
     expect(pastLen()).toBe(base + 2);
     useKuraStore.getState().undo();
@@ -89,7 +89,7 @@ describe('trazo del pincel sobre una primitiva', () => {
 
   it('sin trazo abierto, mover con el botón apretado no pinta ni agrega historial', () => {
     const base = pastLen();
-    continueStorePaintStroke(obj().id, [0, 20, 0], null);
+    continueStorePaintStroke(obj().id, { point: [0, 20, 0], faceIndex: null });
     expect(tris()).toBe(12);
     expect(pastLen()).toBe(base);
   });

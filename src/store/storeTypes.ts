@@ -16,6 +16,7 @@ import type { RecoveryDraftInfo } from '../project/projectRecoveryStorage';
 import type { HistoryLimits } from '../project/historyBudget';
 import type { ProjectDocument, ProjectSceneSnapshot } from '../project/projectSchema';
 import type { HistoryStep } from './historySteps';
+import type { BrushView } from '../engine/paint/brushSelect';
 import type { QuickActionsSliceState } from './quickActionsTypes';
 import type { MenuIdeasSliceState } from './menuIdeasTypes';
 import type { GroupsSliceState } from './groupsTypes';
@@ -361,6 +362,8 @@ export interface KuraStoreState {
     localPoint: Vec3 | null,
     faceIndex: number | null,
     modeOverride?: PaintBrushMode,
+    /** Cámara o dirección de vista del pincel; sin ella se usa la normal de la cara más cercana. */
+    view?: BrushView,
   ) => void;
   /** Abre un trazo de pincel: las muestras siguientes comparten un único paso de historial. */
   beginPaintStroke: () => void;

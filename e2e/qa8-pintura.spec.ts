@@ -63,16 +63,19 @@ test('el pincel no pinta la cara trasera de una placa de 1 mm', async ({ page })
   await page.waitForTimeout(800);
   await page.mouse.move(706, 470); await page.mouse.down(); await page.mouse.move(710, 470); await page.mouse.up();
   await page.waitForTimeout(300);
-  const bottom = await page.evaluate(() => {
+  const { bottom, painted } = await page.evaluate(() => {
     const o = (window as any).__s.getState().objects[0]; const fc: string[] = o.mesh.faceColors ?? [];
-    const base = o.color.toLowerCase(); const P = o.mesh.positions, I = o.mesh.indices; let bot = 0;
+    const base = o.color.toLowerCase(); const P = o.mesh.positions, I = o.mesh.indices; let bot = 0, all = 0;
     for (let i = 0; i < fc.length; i++) {
       if (fc[i].toLowerCase() === base) continue;
+      all++;
       const ys = [0, 1, 2].map((k) => P[3 * I[3 * i + k] + 1]);
       if (ys.every((y: number) => y < 0.1)) bot++;
     }
-    return bot;
+    return { bottom: bot, painted: all };
   });
+  // El trazo sí pintó (la cara superior) y nada de la inferior.
+  expect(painted).toBeGreaterThan(0);
   expect(bottom).toBe(0);
 });
 
