@@ -145,5 +145,19 @@ export function runEngineTaskInProcess<N extends EngineTaskName>(
   args: EngineTaskArgs<N>,
 ): Promise<EngineTaskResult<N>> {
   const task = ENGINE_TASKS[name] as (c: OperationContext, a: EngineTaskArgs<N>) => Promise<EngineTaskResult<N>>;
-  return Promise.resolve(task(ctx, args));
+  engine.takeImplicitWeldWarning();
+  return Promise.resolve(task(ctx, args)).then((result) => attachImplicitWeldWarning(result));
+}
+
+/**
+ * Si la tarea solo funcionó porque el motor soldó vértices en silencio, agrega `MESH_WELDED_IMPLICITLY`
+ * a los avisos de su `SceneChange` (directo o en `change`). Una sola definición para app y headless.
+ */
+export function attachImplicitWeldWarning<T>(result: T): T {
+  const warning = engine.takeImplicitWeldWarning();
+  if (!warning || result === null || typeof result !== 'object') return result;
+  const r = result as { warnings?: unknown; change?: { warnings?: unknown } };
+  const list = Array.isArray(r.warnings) ? r.warnings : Array.isArray(r.change?.warnings) ? r.change!.warnings : null;
+  if (list) (list as engine.EngineWarning[]).push(warning);
+  return result;
 }

@@ -145,33 +145,64 @@ function nudgeCopies(w: Work, created: number[]): void {
   });
 }
 
-/** Separa vértices compartidos por cáscaras distintas y quita caras sobrantes de aristas con >2 caras. */
+/**
+ * Abanicos de cada vértice: las esquinas (triángulo, vértice) unidas a través de aristas de exactamente
+ * dos caras. Un vértice con más de un abanico está "pellizcado" (dos láminas que se tocan en una arista
+ * o un punto, sean o no del mismo cuerpo) y recibe una copia por abanico.
+ */
+function splitPinchedVertices(w: Work, edges: ReturnType<typeof buildEdgeTable>): number[] {
+  const nC = w.tris.length;
+  const parent = new Int32Array(nC);
+  for (let i = 0; i < nC; i++) parent[i] = i;
+  const find = (x: number): number => {
+    while (parent[x] !== x) {
+      parent[x] = parent[parent[x]];
+      x = parent[x];
+    }
+    return x;
+  };
+  const union = (a: number, b: number) => {
+    const ra = find(a);
+    const rb = find(b);
+    if (ra !== rb) parent[ra < rb ? rb : ra] = ra < rb ? ra : rb;
+  };
+  const cornerOf = (t: number, v: number) => {
+    for (let c = 0; c < 3; c++) if (w.tris[t * 3 + c] === v) return t * 3 + c;
+    return -1;
+  };
+  for (let e = 0; e < edges.numEdges; e++) {
+    if (edges.count[e] !== 2) continue;
+    const t1 = (edges.he0[e] / 3) | 0;
+    const t2 = (edges.he1[e] / 3) | 0;
+    for (const v of [edges.lo[e], edges.hi[e]]) union(cornerOf(t1, v), cornerOf(t2, v));
+  }
+  const fanOf = new Int32Array(w.p.length / 3).fill(-1);
+  const copyOfRoot = new Map<number, number>();
+  const created: number[] = [];
+  for (let k = 0; k < nC; k++) {
+    const v = w.tris[k];
+    const root = find(k);
+    if (fanOf[v] < 0) fanOf[v] = root;
+    if (fanOf[v] === root) continue;
+    let copy = copyOfRoot.get(root);
+    if (copy === undefined) {
+      copy = w.p.length / 3;
+      w.p.push(w.p[v * 3], w.p[v * 3 + 1], w.p[v * 3 + 2]);
+      copyOfRoot.set(root, copy);
+      created.push(copy);
+    }
+    w.tris[k] = copy;
+  }
+  return created;
+}
+
+/** Separa vértices pellizcados (un abanico por copia) y quita caras sobrantes de aristas con >2 caras. */
 function resolveNonManifold(w: Work): { split: number; dropped: number } {
   let edges = buildEdgeTable(w.tris);
   let split = 0;
   {
-    // Un vértice tocado por dos cáscaras (aristas o vértices "pellizcados") recibe una copia por cáscara.
-    const { shell } = labelShells(w.tris, edges);
-    const firstShell = new Int32Array(w.p.length / 3).fill(-1);
-    const copies = new Map<string, number>();
-    const created: number[] = [];
-    for (let t = 0; t < shell.length; t++) {
-      for (let c = 0; c < 3; c++) {
-        const v = w.tris[t * 3 + c];
-        if (firstShell[v] < 0) firstShell[v] = shell[t];
-        if (firstShell[v] === shell[t]) continue;
-        const key = `${v}:${shell[t]}`;
-        let copy = copies.get(key);
-        if (copy === undefined) {
-          copy = w.p.length / 3;
-          w.p.push(w.p[v * 3], w.p[v * 3 + 1], w.p[v * 3 + 2]);
-          copies.set(key, copy);
-          created.push(copy);
-          split++;
-        }
-        w.tris[t * 3 + c] = copy;
-      }
-    }
+    const created = splitPinchedVertices(w, edges);
+    split = created.length;
     if (split > 0) {
       nudgeCopies(w, created);
       edges = buildEdgeTable(w.tris);

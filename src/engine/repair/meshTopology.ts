@@ -2,15 +2,20 @@
  * @file src/engine/repair/meshTopology.ts
  * @description Topología de malla en arreglos tipados (sin claves string): soldadura por cuadrícula,
  * tabla de aristas con sus semi-aristas y la definición única de "malla cerrada" de Kura3D. Una malla
- * es cerrada si, soldada a `CLOSURE_WELD_MM` (lo mismo que hace un lector de STL), no tiene triángulos
- * colapsados y cada arista tiene exactamente dos semi-aristas opuestas. Lineal en memoria y tiempo.
+ * es cerrada si, uniendo los vértices con la misma posición (`CLOSURE_WELD_MM` = 1 nm, por debajo de la
+ * resolución float32 del archivo: lo que ve un laminador), no tiene triángulos colapsados y cada arista
+ * tiene exactamente dos semi-aristas opuestas. Lineal en memoria y tiempo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-/** Tolerancia de soldadura de la definición única de malla cerrada (igual a los lectores STL). */
-export const CLOSURE_WELD_MM = 1e-4;
+/**
+ * Tolerancia de la definición única de malla cerrada: 1e-6 mm, en la práctica posición idéntica. Una
+ * cuadrícula más gruesa (1e-4) colapsaría las micro-aristas válidas que deja Manifold y daría por
+ * abiertas piezas que el laminador acepta.
+ */
+export const CLOSURE_WELD_MM = 1e-6;
 
 /** Vértices soldados: `canon[v]` es el vértice único de `v`; `first[u]` un vértice original de `u`. */
 export interface WeldMap {

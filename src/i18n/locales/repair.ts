@@ -68,12 +68,12 @@ const REPAIR_TABLE = {
     '{thickness} mm 的壁厚不会留下内部空腔：零件各处都比两层壁薄。请尝试更薄的壁厚。',
   ],
   'engineWarning.MESH_WELDED_IMPLICITLY': [
-    'La malla tenía {edges} bordes abiertos que se cerraron al soldar vértices cercanos (hasta {tol} mm). Usa «Reparar malla» para dejarla corregida.',
-    'The mesh had {edges} open edges that closed when welding nearby vertices (up to {tol} mm). Use “Repair mesh” to keep it fixed.',
-    'Das Netz hatte {edges} offene Kanten, die sich beim Verschweißen naher Eckpunkte (bis {tol} mm) schlossen. Nutze „Netz reparieren“, um es dauerhaft zu korrigieren.',
-    'Le maillage avait {edges} arêtes ouvertes, fermées en soudant des sommets proches (jusqu’à {tol} mm). Utilisez « Réparer le maillage » pour le corriger durablement.',
-    'मेश में {edges} खुले किनारे थे जो पास के शीर्ष ({tol} mm तक) जोड़ने पर बंद हुए। इसे स्थायी रूप से ठीक करने के लिए “मेश ठीक करें” चुनें।',
-    '网格有 {edges} 条开放边，在焊接邻近顶点（最多 {tol} mm）后闭合。使用“修复网格”可永久修正。',
+    'La malla tenía {edges} defectos de cierre (bordes abiertos, aristas con más de dos caras o caras colapsadas) que el motor corrigió soldando vértices cercanos (hasta {tol} mm). Usa «Reparar malla» para dejarla corregida.',
+    'The mesh had {edges} closure defects (open edges, edges with more than two faces or collapsed faces) that the engine fixed by welding nearby vertices (up to {tol} mm). Use “Repair mesh” to keep it fixed.',
+    'Das Netz hatte {edges} Schließfehler (offene Kanten, Kanten mit mehr als zwei Flächen oder kollabierte Flächen), die die Engine durch Verschweißen naher Eckpunkte (bis {tol} mm) behob. Nutze „Netz reparieren“, um es dauerhaft zu korrigieren.',
+    'Le maillage avait {edges} défauts de fermeture (arêtes ouvertes, arêtes à plus de deux faces ou faces effondrées) corrigés par le moteur en soudant des sommets proches (jusqu’à {tol} mm). Utilisez « Réparer le maillage » pour le corriger durablement.',
+    'मेश में {edges} बंद होने की खामियाँ थीं (खुले किनारे, दो से अधिक फलकों वाले किनारे या ढहे फलक) जिन्हें इंजन ने पास के शीर्ष ({tol} mm तक) जोड़कर ठीक किया। स्थायी रूप से ठीक करने के लिए “मेश ठीक करें” चुनें।',
+    '网格有 {edges} 处闭合缺陷（开放边、多于两面的边或塌陷面），引擎已通过焊接邻近顶点（最多 {tol} mm）修正。使用“修复网格”可永久修正。',
   ],
   'engineWarning.REPAIR_HOLES_LEFT': [
     'Quedaron {count} agujeros sin cerrar (el mayor de {sizeMm} mm): revisa el modelo.',

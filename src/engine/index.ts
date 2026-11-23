@@ -16,6 +16,7 @@ export {
   isManifoldReady,
   manifoldToMeshData,
   meshDataToManifold,
+  takeImplicitWeldWarning,
   weldVertices,
 } from './manifoldKernel';
 

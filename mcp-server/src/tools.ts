@@ -13,6 +13,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { isEngineError, type EngineWarning } from '../../src/engine/engineErrors';
+import { takeImplicitWeldWarning } from '../../src/engine/manifoldKernel';
 import { userWarnings } from './headlessUserAxes.js';
 import { localizeEngineErrorForUser, userErrorParams } from '../../src/core/scene/userEngineMessages';
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../../src/engine/operationLimits';
@@ -196,8 +197,10 @@ export async function dispatchWithFallback(
     // Cola FIFO: dos llamadas concurrentes no se intercalan sobre la escena headless.
     const result = await ctx.headless.queue.run(async () => {
       ctx.headless.takeWarnings();
+      takeImplicitWeldWarning();
       const value = await headlessHandler();
-      return withEngineWarnings(value, ctx.headless.takeWarnings());
+      const weld = takeImplicitWeldWarning();
+      return withEngineWarnings(value, [...ctx.headless.takeWarnings(), ...(weld ? [weld] : [])]);
     });
     return okJson(shape(result));
   } catch (err) {

@@ -24,6 +24,7 @@ import type { SplitPart } from './splitTypes';
 interface Built {
   mesh: MeshData;
   closed: boolean;
+  repaired?: boolean;
   min: Vec3;
   max: Vec3;
   volume: number;
@@ -43,9 +44,9 @@ function buildBody(wasm: ManifoldToplevel, b: SplitBody): Built {
     m = r;
   }
   try {
-    const { mesh, closed } = closeSplitMesh(wasm, normalizeMeshToBed(manifoldToMeshData(m)));
+    const { mesh, closed, repaired } = closeSplitMesh(wasm, normalizeMeshToBed(manifoldToMeshData(m)));
     const bb = m.boundingBox();
-    return { mesh, closed, min: bb.min as Vec3, max: bb.max as Vec3, volume: m.volume() };
+    return { mesh, closed, repaired, min: bb.min as Vec3, max: bb.max as Vec3, volume: m.volume() };
   } finally {
     if (m !== b.m) m.delete();
   }
@@ -81,6 +82,7 @@ export function finishParts(
   for (const b of order) {
     const r = built.get(b.id)!;
     if (!r.closed) warnings.push(engineWarning('SPLIT_PART_NOT_CLOSED', { code: b.code }));
+    else if (r.repaired) warnings.push(engineWarning('SPLIT_PART_REPAIRED', { code: b.code }));
     index.set(b.id, parts.length);
     parts.push(toPart(b, r));
   }
@@ -112,6 +114,7 @@ export function rebuildParts(
     const b = bodies.get(id)!;
     const r = buildBody(wasm, b);
     if (!r.closed) warnings.push(engineWarning('SPLIT_PART_NOT_CLOSED', { code: b.code }));
+    else if (r.repaired) warnings.push(engineWarning('SPLIT_PART_REPAIRED', { code: b.code }));
     parts[index.get(id)!] = toPart(b, r);
   }
 }
