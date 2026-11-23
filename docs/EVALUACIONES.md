@@ -320,3 +320,40 @@ Aprendizaje de proceso: dos de estos puntos (colocación de lo nuevo y aviso al 
 En corrección en tres lotes (escena, móvil y barra, idioma y menús), cada uno con pruebas de navegador propias.
 
 Consumo de agentes desde la ronda 5 (modelo · duración · tokens): seis lotes de corrección de la ronda 5 (Opus y Sonnet · 25–50 min · 190–330 k cada uno), cabos sueltos (Opus · 44 min · 282 k), corrección de pintura y colores (Opus · 37 min · 277 k), ideas del menú (Sonnet · 23 min · 292 k), grupos (Opus · 43 min · 399 k), corrección de grupos (Opus · 60 min · 312 k), Medir (Opus · 48 min · 366 k), pincel (Opus · 16 min · 178 k), importación de 3MF con tres rondas de seguridad (Opus · 27 + 17 + 27 min · 382 k), reparar malla (Opus · 40 min · 391 k), memoria de importación (Opus · 37 min · 258 k), pulido de Medir (Sonnet · 52 min · 380 k), dependencias (Sonnet · 34 min · 105 k), revisión de seguridad (Opus · 13 + 3 min · 206 k), cinco QA (Sonnet · 25–43 min · 131–308 k cada una; una no pudo ejecutarse), prueba con modelos reales (Sonnet · 37 min · 265 k), reevaluación de usabilidad (Opus · 22 min · 258 k).
+
+## Tercera evaluación de usabilidad · 23 de noviembre de 2026, 02:45 · `main`
+
+Evaluador Opus nuevo, a ciegas, después de corregir los diez problemas de la anterior y de una QA independiente que los confirmó. **Nota global: 79** (76 → 75 → 79). Sin bloqueos duros. Es la tercera evaluación de usabilidad bajo el mínimo de 85: según la regla del proyecto, corresponde consultar al autor antes de seguir iterando evaluaciones (consulta 6).
+
+| Bloque | Nota | | Bloque | Nota |
+|---|---|---|---|---|
+| Importar y exportar | 88 | | Uniones y armado | 80 |
+| Dividir para imprimir | 87 | | IA y MCP | 80 |
+| Medir | 86 | | Reparar y analizar | 78 |
+| Proyecto | 85 | | Accesibilidad | 78 |
+| Primitivas y texto | 85 | | Pintar | 76 |
+| Ajustes | 85 | | Grupos y árbol | 75 |
+| Primer uso | 84 | | Booleanas y negativas | 74 |
+| Transformar | 84 | | Retroalimentación y consistencia | 74 |
+| Menú contextual | 80 | | Teclas F y atajos | 72 |
+| | | | Ahuecar, corte y otros | 70 |
+| | | | Móvil 390 px | 68 |
+
+El recorrido central (crear, transformar, importar y exportar, dividir, uniones, medir) queda en torno a 85. Lo que baja la nota es la edición (booleanas, árbol, atajos, pintar, ahuecar: ~74) y móvil con accesibilidad (~73).
+
+Problemas principales, todos en corrección con una prueba de navegador por cada uno:
+
+1. Tras aplicar una resta quedan seleccionados el sólido y la pieza negativa, con "Restar" a un clic.
+2. F4 repitió una acción anterior en vez de la última (no todas las vías registran la acción).
+3. Aviso contradictorio de unión débil en una cara maciza, que además ofrece reforzar cuando ya no aplica.
+4. Un clic al centro de una fila del árbol cae sobre el ojo y oculta el objeto; Mayús+clic reemplaza la selección.
+5. Formato de números mixto: los textos usan coma y los campos y rangos, punto.
+6. Mensajes de Pintar que se contradicen, y el pincel por defecto del mismo color que el objeto.
+7. En móvil la hoja se abre y cierra entre toques al medir; textos de ayuda que piden "clic derecho o Esc".
+8. Ahuecar acota en silencio un valor fuera de rango.
+9. Menú contextual translúcido y largo.
+10. El panel de IA tapa controles y mueve la cámara al abrirse.
+
+Observación sobre el método: cada evaluador nuevo encuentra problemas distintos de los anteriores (de los diez de esta ronda, ocho no habían sido señalados antes), y los que se corrigen no reaparecen. La nota sube, pero cada pasada descubre una capa más de pulido. No evaluó en ninguna de las tres rondas: texto 3D, SVG, imagen a 3D, roscas, molde, proyectar y separar por colores, por falta de tiempo.
+
+Consumo desde la reevaluación anterior (modelo · duración · tokens): escena (Opus · 76 min · 327 k), móvil y barra (Sonnet · 77 min · 293 k), idioma y menús (Sonnet · 68 min · 327 k), ahuecado y división (Opus · 83 min · 312 k), cierre (Sonnet · 69 min · 271 k), QA (Sonnet · 29 min · 203 k), tercera evaluación (Opus · 20 min · 248 k).

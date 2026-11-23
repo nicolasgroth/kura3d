@@ -1,6 +1,6 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 02:25, con la tercera evaluación de usabilidad en curso.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 02:55, tras la tercera evaluación de usabilidad.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
@@ -8,6 +8,8 @@ Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA
 
 | Funcionalidad | Estado |
 |---|---|
+| Edición, tras la tercera evaluación: selección correcta después de restar, F4 repite siempre la última acción, aviso de unión débil veraz, filas del árbol que seleccionan (el ojo al borde) con Mayús+clic y Ctrl+clic, mensajes de Pintar coherentes, ahuecar que no acota en silencio, menú contextual opaco, confirmación al reparar | En corrección desde las 02:50, con una prueba de navegador por punto |
+| Forma, tras la tercera evaluación: coma decimal también en los campos numéricos, vocabulario único en inglés, avisos que no se apilan, idioma inicial según el navegador, panel de IA que no tapa ni mueve la cámara, ayudas táctiles en móvil, encuadre con más margen, rótulos de pieza en el visor de Dividir | En corrección desde las 02:50 |
 | Dividir modelos de millones de triángulos: bajó de 172 a 132 s en el busto de 2,4 M; optimizando la ubicación de conectores para bajar de 90 s | En curso desde las 02:25 |
 | Armado por subconjuntos (filas, luego capas, luego apilar) para conservar todos los conectores en rejillas; hoy el orden pieza a pieza ya es el óptimo demostrado | Pendiente; cambia el modelo de pasos de armado |
 | Dependencias: TypeScript 7 y lucide-react listos en la rama local `chore/deps-2026-11` | Esperando la decisión del autor (consulta 1) |
@@ -50,7 +52,7 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 
 ## En evaluación
 
-Tercera evaluación de usabilidad en curso desde las 02:20 (evaluador nuevo, a ciegas). Antes de lanzarla: QA independiente aprobó con reservas las diez correcciones, y la suite de navegador quedó con 71 recorridos en verde. Notas vigentes: usabilidad 75 · código 85 · funcional 86; el mínimo es 85 en los tres.
+Nada en este momento. Notas vigentes: **usabilidad 79** (tercera evaluación, 23-nov 02:45; antes 76 y 75) · **código 85** · **funcional 86**. El mínimo es 85 en los tres. Usabilidad lleva tres evaluaciones bajo el mínimo: por la regla del proyecto no se lanza una cuarta sin consultar al autor (consulta 6 en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md)). Detalle en [EVALUACIONES.md](EVALUACIONES.md).
 
 ## Lista
 
