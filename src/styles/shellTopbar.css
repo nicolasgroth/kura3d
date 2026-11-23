@@ -43,3 +43,16 @@
     height: 44px;
   }
 }
+
+/* Móvil: Importar y Exportar quedan como iconos (su nombre accesible no cambia) para que la barra no desborde a 390 px. */
+@media (max-width: 600px) {
+  .kura-topbar-adaptive.is-narrow .kura-btn-label.kura-label-keep {
+    display: none;
+  }
+
+  .kura-topbar-adaptive.is-narrow .kura-topbar-cluster {
+    gap: 0;
+    padding-left: 2px;
+    margin-left: 0;
+  }
+}
