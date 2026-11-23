@@ -34,6 +34,17 @@ const RATIO_CHECK_FROM_BYTES = 1 << 20;
  * declarado, y una entrada que miente se corta ANTES de reservar la memoria que pediría inflarla.
  */
 const INFLATE_CHUNK_MAX = 64 * 1024;
+/**
+ * Parte mínima por `push`: evita que un archivo malicioso fuerce millones de llamadas de 1 byte cuando
+ * queda poco presupuesto. Cota de memoria: un `push` produce a lo sumo ~`INFLATE_CHUNK_MIN` × 1032 ≈ 4 MiB
+ * de salida temporal antes de que el callback corte al superar el límite.
+ */
+const INFLATE_CHUNK_MIN = 4096;
+
+/** true si el tamaño comprimido es imposible para deflate (crece a lo sumo ~5 B cada 64 KiB + cabecera). */
+export function isImplausibleDeflateGrowth(compressedSize: number, uncompressedSize: number): boolean {
+  return compressedSize > uncompressedSize + uncompressedSize / 16 + 1024;
+}
 
 /**
  * Extrae las entradas cuyo nombre acepta `keep`, con a lo sumo `maxBytes` descomprimidos en total.
@@ -56,6 +67,9 @@ export function unzipBounded(
     if (entry.method !== 0 && entry.method !== 8) throw new ModelImportError('corrupt', `método de compresión ${entry.method} en ${entry.name.slice(0, 60)}`);
     if (entry.uncompressedSize > RATIO_CHECK_FROM_BYTES && entry.uncompressedSize > entry.compressedSize * MAX_DEFLATE_RATIO) {
       throw new ModelImportError('archive-too-large', `razón de compresión imposible en ${entry.name.slice(0, 60)}`);
+    }
+    if (entry.method === 8 && isImplausibleDeflateGrowth(entry.compressedSize, entry.uncompressedSize)) {
+      throw new ModelImportError('archive-too-large', `tamaño declarado menor que el comprimido en ${entry.name.slice(0, 60)}`);
     }
   }
 
@@ -87,10 +101,14 @@ function extract(bytes: Uint8Array, entry: ZipEntry, budget: number): Uint8Array
     size += chunk.length;
     if (final) ended = true;
   });
+  // Defensa adicional: llamadas a `push` acotadas por el tamaño comprimido y el paso mínimo.
+  const maxPushes = Math.ceil(raw.length / INFLATE_CHUNK_MIN) + 1;
+  let pushes = 0;
   try {
     let at = 0;
     while (at < raw.length) {
-      const step = Math.max(1, Math.min(INFLATE_CHUNK_MAX, Math.floor((limit - size) / MAX_DEFLATE_RATIO)));
+      if (++pushes > maxPushes) throw new ModelImportError('corrupt', `${entry.name.slice(0, 60)}: demasiadas partes`);
+      const step = Math.max(INFLATE_CHUNK_MIN, Math.min(INFLATE_CHUNK_MAX, Math.floor((limit - size) / MAX_DEFLATE_RATIO)));
       const end = Math.min(raw.length, at + step);
       inflater.push(raw.subarray(at, end), end >= raw.length);
       at = end;
