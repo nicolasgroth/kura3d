@@ -314,6 +314,7 @@ export interface PrintabilityReport {
 export interface PrintabilityIssue {
   code:
     | 'NOT_MANIFOLD'
+    | 'WALL_NOT_MEASURED'
     | 'EXCEEDS_BED'
     | 'BELOW_BED'
     | 'FLOATING'

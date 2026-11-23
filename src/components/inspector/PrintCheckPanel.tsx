@@ -20,10 +20,12 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { currentPrintReport } from '../../store/printReportSelectors';
 import type { PrintWarningCode, SceneObject } from '../../types/kura';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { MeshRepairSummary } from './MeshRepairSummary';
 
 /** Icono de cada aviso (el estado no depende solo del color). */
 const ISSUE_ICONS: Record<PrintWarningCode, LucideIcon> = {
   NOT_MANIFOLD: ShieldAlert,
+  WALL_NOT_MEASURED: Ruler,
   EXCEEDS_BED: Maximize2,
   BELOW_BED: ArrowDownToLine,
   FLOATING: ArrowUpFromLine,
@@ -152,6 +154,8 @@ export const PrintCheckPanel: React.FC<{ primary: SceneObject }> = ({ primary })
               <span>{showOverhangs ? t(language, 'inspector.pro.hideOverhangs') : t(language, 'inspector.pro.showOverhangs')}</span>
             </button>
           )}
+
+          {!report.isManifold && <MeshRepairSummary primary={primary} />}
 
           {report.issues.length > 0 ? (
             <ul className="kura-warning-list kura-printcheck-issues">

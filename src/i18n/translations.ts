@@ -27,6 +27,7 @@ import { SPLITUX_EN, SPLITUX_ES } from './locales/splitUx';
 import { FIX10_EN, FIX10_ES } from './locales/fix10';
 import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
 import { IMPORTREAL_EN, IMPORTREAL_ES } from './locales/importReal';
+import { REPAIR_EN, REPAIR_ES } from './locales/repair';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -48,6 +49,7 @@ export const TRANSLATIONS_ES = {
   ...FIX10_ES,
   ...OPNOTES_ES,
   ...IMPORTREAL_ES,
+  ...REPAIR_ES,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
@@ -1095,7 +1097,7 @@ export const TRANSLATIONS_ES = {
   'engineError.PROJECTION_EMPTY_SVG': 'Se requiere contenido SVG válido para proyectar un gráfico SVG.',
   'engineError.GLB_EXPORT_FAILED': 'No se pudo generar el archivo GLB binario.',
   'engineError.MESH_EMPTY': 'La operación «{operation}» dejó una malla vacía; el objeto no se modificó.',
-  'engineError.MESH_INVALID': 'La malla no es un sólido cerrado válido ({cause}).',
+  'engineError.MESH_INVALID': 'La malla no es un sólido cerrado válido ({cause}): usa «Reparar malla».',
   'engineError.CUT_PLANE_OUTSIDE': 'El plano de corte en {axis} = {offset} mm no atraviesa el objeto (interior entre {min} y {max} mm).',
   'engineError.TEXT_GLYPH_MISSING': 'La fuente no tiene estos caracteres: {chars}. Quítalos o reemplázalos (la fuente incluida cubre el alfabeto latino).',
   'engineWarning.REFINE_LENGTH_CLAMPED': 'Se usó una arista de {effective} mm en vez de {requested} mm para no superar {maxTriangles} triángulos.',
@@ -1418,6 +1420,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...FIX10_EN,
   ...OPNOTES_EN,
   ...IMPORTREAL_EN,
+  ...REPAIR_EN,
   'app.name': 'Kura3D',
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
@@ -2437,7 +2440,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'engineError.PROJECTION_EMPTY_SVG': 'Valid SVG content is required to project an SVG graphic.',
   'engineError.GLB_EXPORT_FAILED': 'The binary GLB file could not be generated.',
   'engineError.MESH_EMPTY': 'The "{operation}" operation left an empty mesh; the object was not changed.',
-  'engineError.MESH_INVALID': 'The mesh is not a valid closed solid ({cause}).',
+  'engineError.MESH_INVALID': 'The mesh is not a valid closed solid ({cause}): use “Repair mesh”.',
   'engineError.CUT_PLANE_OUTSIDE': 'The cut plane at {axis} = {offset} mm does not cross the object (interior between {min} and {max} mm).',
   'engineError.TEXT_GLYPH_MISSING': 'The font has no glyphs for: {chars}. Remove or replace them (the bundled font covers the Latin alphabet).',
   'engineWarning.REFINE_LENGTH_CLAMPED': 'Used a {effective} mm edge instead of {requested} mm to stay under {maxTriangles} triangles.',

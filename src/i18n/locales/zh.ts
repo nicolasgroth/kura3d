@@ -22,6 +22,7 @@ import { SPLITUX_ZH } from './splitUx';
 import { FIX10_ZH } from './fix10';
 import { OPNOTES_ZH } from './operationNotes';
 import { IMPORTREAL_ZH } from './importReal';
+import { REPAIR_ZH } from './repair';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -41,6 +42,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...FIX10_ZH,
   ...OPNOTES_ZH,
   ...IMPORTREAL_ZH,
+  ...REPAIR_ZH,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
@@ -1088,7 +1090,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'engineError.PROJECTION_EMPTY_SVG': '投影 SVG 图形需要有效的 SVG 内容。',
   'engineError.GLB_EXPORT_FAILED': '无法生成二进制 GLB 文件。',
   'engineError.MESH_EMPTY': '“{operation}”操作得到了空网格；对象未被修改。',
-  'engineError.MESH_INVALID': '网格不是有效的封闭实体（{cause}）。',
+  'engineError.MESH_INVALID': '网格不是有效的封闭实体（{cause}）：请使用“修复网格”。',
   'engineError.CUT_PLANE_OUTSIDE': '位于 {axis} = {offset} mm 的切割平面没有穿过对象（内部范围 {min} 到 {max} mm）。',
   'engineError.TEXT_GLYPH_MISSING': '字体中没有这些字符：{chars}。请删除或替换它们（内置字体仅覆盖拉丁字母）。',
   'engineWarning.REFINE_LENGTH_CLAMPED': '为不超过 {maxTriangles} 个三角形，使用了 {effective} mm 边长而非 {requested} mm。',

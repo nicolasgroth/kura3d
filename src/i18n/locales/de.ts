@@ -22,6 +22,7 @@ import { SPLITUX_DE } from './splitUx';
 import { FIX10_DE } from './fix10';
 import { OPNOTES_DE } from './operationNotes';
 import { IMPORTREAL_DE } from './importReal';
+import { REPAIR_DE } from './repair';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -41,6 +42,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...FIX10_DE,
   ...OPNOTES_DE,
   ...IMPORTREAL_DE,
+  ...REPAIR_DE,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
@@ -1088,7 +1090,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'engineError.PROJECTION_EMPTY_SVG': 'Zum Projizieren einer SVG-Grafik ist gültiger SVG-Inhalt erforderlich.',
   'engineError.GLB_EXPORT_FAILED': 'Die binäre GLB-Datei konnte nicht erzeugt werden.',
   'engineError.MESH_EMPTY': 'Die Operation „{operation}“ ergab ein leeres Netz; das Objekt wurde nicht verändert.',
-  'engineError.MESH_INVALID': 'Das Netz ist kein gültiger geschlossener Körper ({cause}).',
+  'engineError.MESH_INVALID': 'Das Netz ist kein gültiger geschlossener Körper ({cause}): nutze „Netz reparieren“.',
   'engineError.CUT_PLANE_OUTSIDE': 'Die Schnittebene bei {axis} = {offset} mm schneidet das Objekt nicht (Innenbereich {min} bis {max} mm).',
   'engineError.TEXT_GLYPH_MISSING': 'Die Schrift enthält diese Zeichen nicht: {chars}. Entferne oder ersetze sie (die mitgelieferte Schrift deckt das lateinische Alphabet ab).',
   'engineWarning.REFINE_LENGTH_CLAMPED': 'Statt {requested} mm wurde eine Kante von {effective} mm verwendet, um {maxTriangles} Dreiecke nicht zu überschreiten.',

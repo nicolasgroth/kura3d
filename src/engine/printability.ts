@@ -119,6 +119,8 @@ export function analyzePrintability(
   let score = 100;
   if (!stats.isManifold) {
     issues.push(printWarning('NOT_MANIFOLD'));
+    // Sin malla cerrada no hay interior: la pared no se mide, y se dice en vez de informar 0 %.
+    issues.push(printWarning('WALL_NOT_MEASURED'));
     score -= 35;
   }
   if (normalsInverted) {
@@ -171,6 +173,7 @@ export function analyzePrintability(
     surfaceAreaMm2: geo.totalArea,
     minWallMm: minWall,
     minWallThicknessMm: minThickness,
+    wallMeasured: thickness !== null,
     thinWallAreaPercent: thickness?.thinAreaPercent ?? 0,
     volumeCm3,
     estimatedWeightGrams,

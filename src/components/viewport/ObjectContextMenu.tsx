@@ -26,6 +26,7 @@ import {
   ToggleLeft,
   Trash2,
   Type,
+  Wrench,
 } from 'lucide-react';
 import { t } from '../../i18n';
 import { parametricStateOf } from '../../core/scene/parametric';
@@ -55,6 +56,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
   const setObjectsHole = useKuraStore((s) => s.setObjectsHole);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
+  const repairObjectMesh = useKuraStore((s) => s.repairObjectMesh);
   const duplicateObjects = useKuraStore((s) => s.duplicateObjects);
   const detectObjectStructures = useKuraStore((s) => s.detectObjectStructures);
   const requestRename = useKuraStore((s) => s.requestRename);
@@ -126,6 +128,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
       <MenuGroup title={t(language, 'menu.group.analyze')}>
         <MenuItem icon={<ShieldCheck size={14} aria-hidden="true" style={{ color: 'var(--accent-green)' }} />} label={t(language, 'ctx.validatePrint')} onSelect={run(() => void runPrintabilityCheck(target.id))} />
         <MenuItem icon={<ScanSearch size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.detectStructures')} onSelect={run(() => void detectObjectStructures(target.id))} />
+        <MenuItem icon={<Wrench size={14} aria-hidden="true" />} label={t(language, 'repair.action')} tip={t(language, 'repair.actionTip')} disabled={target.locked} onSelect={run(() => void repairObjectMesh(target.id))} />
       </MenuGroup>
 
       <div className="kura-context-sep" role="separator" />

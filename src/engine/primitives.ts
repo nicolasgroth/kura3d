@@ -10,6 +10,7 @@
 
 import * as THREE from 'three';
 import { EngineError } from './engineErrors';
+import { isMeshClosed } from './repair/meshTopology';
 import type { Manifold } from 'manifold-3d';
 import type {
   MeshData,
@@ -184,49 +185,6 @@ export function computeMeshStats(mesh: MeshData): SceneObject['stats'] {
   // Volumen por teorema de divergencia: sum( v0 · (v1 x v2) ) / 6
   let signedVolume6 = 0;
 
-  /**
-   * Verifica la condición necesaria de 2-manifold cerrado (cada semi-arista u->v
-   * debe aparecer exactamente 1 vez y tener su opuesta v->u exactamente 1 vez).
-   */
-  const checkClosedTopology = (remapVertex?: Uint32Array): boolean => {
-    if (triCount < 4) return false;
-    const halfEdges = new Map<string, number>();
-    for (let t = 0; t < triCount; t++) {
-      const r0 = mesh.indices[t * 3];
-      const r1 = mesh.indices[t * 3 + 1];
-      const r2 = mesh.indices[t * 3 + 2];
-      const a = remapVertex ? remapVertex[r0] : r0;
-      const b = remapVertex ? remapVertex[r1] : r1;
-      const c = remapVertex ? remapVertex[r2] : r2;
-
-      if (a === b || b === c || c === a) {
-        return false;
-      }
-
-      const edges: [number, number][] = [
-        [a, b],
-        [b, c],
-        [c, a],
-      ];
-      for (const [u, v] of edges) {
-        const edgeKey = `${u}->${v}`;
-        const count = (halfEdges.get(edgeKey) ?? 0) + 1;
-        if (count > 1) return false;
-        halfEdges.set(edgeKey, count);
-      }
-    }
-
-    for (const edgeKey of halfEdges.keys()) {
-      const sep = edgeKey.indexOf('->');
-      const u = edgeKey.slice(0, sep);
-      const v = edgeKey.slice(sep + 2);
-      if (halfEdges.get(`${v}->${u}`) !== 1) {
-        return false;
-      }
-    }
-    return true;
-  };
-
   for (let i = 0; i < vertCount; i++) {
     const x = mesh.positions[i * 3];
     const y = mesh.positions[i * 3 + 1];
@@ -263,24 +221,8 @@ export function computeMeshStats(mesh: MeshData): SceneObject['stats'] {
     signedVolume6 += x0 * cx + y0 * cy + z0 * cz;
   }
 
-  // Primero valida topología exacta por índices (preserva micro-aristas válidas de Manifold);
-  // si existen vértices duplicados en costuras (STL sin soldar), aplica soldadura espacial fina (1e-5 mm).
-  let topologyValid = checkClosedTopology();
-  if (!topologyValid && triCount >= 4) {
-    const invTol = 1e5; // 0.00001 mm
-    const posKeyMap = new Map<string, number>();
-    const weldedId = new Uint32Array(vertCount);
-    for (let i = 0; i < vertCount; i++) {
-      const key = `${Math.round(mesh.positions[i * 3] * invTol)},${Math.round(mesh.positions[i * 3 + 1] * invTol)},${Math.round(mesh.positions[i * 3 + 2] * invTol)}`;
-      let id = posKeyMap.get(key);
-      if (id === undefined) {
-        id = posKeyMap.size;
-        posKeyMap.set(key, id);
-      }
-      weldedId[i] = id;
-    }
-    topologyValid = checkClosedTopology(weldedId);
-  }
+  // Definición única de malla cerrada (la misma de avisos, división y exportación).
+  const topologyValid = isMeshClosed(mesh.positions, mesh.indices);
 
   return {
     triangles: triCount,

@@ -54,6 +54,7 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
+  Wrench,
   Split,
   Type,
   Wand2,
@@ -121,6 +122,7 @@ export const CommandPalette: React.FC = () => {
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
   const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
   const simplifySelectedMesh = useKuraStore((s) => s.simplifySelectedMesh);
+  const repairObjectMesh = useKuraStore((s) => s.repairObjectMesh);
   const refineSelectedMesh = useKuraStore((s) => s.refineSelectedMesh);
   const runConvexHull = useKuraStore((s) => s.runConvexHull);
   const alignSelectedObjects = useKuraStore((s) => s.alignSelectedObjects);
@@ -412,6 +414,17 @@ export const CommandPalette: React.FC = () => {
         icon: <Sparkles size={15} />,
         run: () => {
           if (primaryId) void simplifySelectedMesh(primaryId, 0.15);
+        },
+      },
+      {
+        id: 'op-repair-mesh',
+        label: t(language, 'cmd.repairMesh'),
+        category: catOps,
+        keywords: 'reparar malla agujeros cerrar abierta manifold repair mesh holes fix',
+        kind: 'local',
+        icon: <Wrench size={15} />,
+        run: () => {
+          if (primaryId) void repairObjectMesh(primaryId);
         },
       },
       {
@@ -884,6 +897,7 @@ export const CommandPalette: React.FC = () => {
     dropObjectToBed,
     runPrintabilityCheck,
     simplifySelectedMesh,
+    repairObjectMesh,
     refineSelectedMesh,
     runConvexHull,
     alignSelectedObjects,

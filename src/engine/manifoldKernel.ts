@@ -13,7 +13,8 @@ import Module, {
   type Mesh as ManifoldMesh,
 } from 'manifold-3d';
 import type { MeshData } from '../types/kura';
-import { EngineError } from './engineErrors';
+import { EngineError, engineWarning, type EngineWarning } from './engineErrors';
+import { closureCounts } from './repair/meshTopology';
 
 /** Promesa singleton cacheada para evitar múltiples cargas del módulo WASM. */
 let manifoldPromise: Promise<ManifoldToplevel> | null = null;
@@ -342,12 +343,22 @@ export function meshDataToManifold(
   });
 
   // Asegura la fusión topológica de vértices coincidentes si la malla venía sin índices compartidos
-  manifoldMesh.merge();
+  const mergedOpenEdges = manifoldMesh.merge();
 
-  let manifold = constructManifold(wasm, manifoldMesh);
-  if (manifold.status() !== 'NoError') {
+  let first: Manifold | null = null;
+  try {
+    first = constructManifold(wasm, manifoldMesh);
+  } catch {
+    // El WASM rechazó la malla tal cual: se reintenta soldando (abajo).
+  }
+  let manifold: Manifold;
+  if (first && first.status() === 'NoError') {
+    manifold = first;
+    // `merge` cerró bordes que no coinciden exactamente: también es una reparación implícita.
+    if (mergedOpenEdges) implicitWeldEdges += defectCount(mesh);
+  } else {
     // Segundo intento soldando explícitamente vértices cercanos (útil para STL/OBJ importados con tolerancia)
-    manifold.delete();
+    first?.delete();
     const welded = weldVertices(mesh.positions, mesh.indices, 1e-4);
     const retryMesh = new wasm.Mesh({
       numProp: 3,
@@ -361,9 +372,27 @@ export function meshDataToManifold(
       manifold.delete();
       throw new EngineError('MESH_INVALID', { cause: String(status) });
     }
+    // La malla solo cerró soldando vértices cercanos: se deja dicho (aviso MESH_WELDED_IMPLICITLY).
+    implicitWeldEdges += defectCount(mesh);
   }
 
   return manifold;
+}
+
+/** Defectos de cierre (definición única) que el motor corrigió soldando en silencio. */
+function defectCount(mesh: MeshData): number {
+  const c = closureCounts(mesh.positions, mesh.indices);
+  return c.boundaryEdges + c.nonManifoldEdges + c.misorientedEdges + c.collapsedTriangles;
+}
+
+/** Defectos que el motor cerró soldando en silencio desde la última lectura. */
+let implicitWeldEdges = 0;
+
+/** Lee y limpia el aviso de soldadura implícita (`null` si no hubo). */
+export function takeImplicitWeldWarning(): EngineWarning | null {
+  const edges = implicitWeldEdges;
+  implicitWeldEdges = 0;
+  return edges > 0 ? engineWarning('MESH_WELDED_IMPLICITLY', { edges, tol: 1e-4 }) : null;
 }
 
 /**

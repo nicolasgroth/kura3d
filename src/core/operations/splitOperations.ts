@@ -10,6 +10,8 @@
  */
 
 import * as engine from '../../engine';
+import { engineWarning } from '../../engine/engineErrors';
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import type { SceneObject, SplitDowelMetadata, SplitPartMetadata } from '../../types/kura';
 import { buildWith, change, type OperationContext, type SceneChange } from './operationTypes';
 
@@ -43,7 +45,12 @@ export async function planSplitForBed(
   options: engine.BedSplitPlanOptions = {},
   assemblyPreview?: Omit<engine.BedSplitExecuteOptions, 'onProgress'>,
 ): Promise<engine.BedSplitPlan> {
-  const plan = await engine.planBedSplit(obj, bed, options);
+  const planned = await engine.planBedSplit(obj, bed, options);
+  // Modelos muy pesados: dividir tarda minutos; se propone simplificar antes (no se hace solo).
+  const tris = obj.mesh.indices.length / 3;
+  const plan = !planned.fitsWithoutCuts && tris >= OPERATION_DEFAULTS.heavyMesh.warnTriangles
+    ? { ...planned, warnings: [...(planned.warnings ?? []), engineWarning('SPLIT_HEAVY_MESH', { tris })] }
+    : planned;
   if (!assemblyPreview || !cheapToExecute(obj, plan, assemblyPreview)) return plan;
   // Previa fiel: corre la división completa (sin tocar la escena) para contar las uniones que el
   // cierre de armado deja para pegar por orden de montaje o choque de conectores.

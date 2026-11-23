@@ -30,7 +30,7 @@ import type {
 import { measureObjectCapacity, type CapacityOptions } from '../../engine/measure';
 import { applyHoles, booleanOperation, convexHull } from './csgOperations';
 import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
-import { eraseSphere, hollowObject, projectOnSurface, refineObject, simplifyObject } from './meshOperations';
+import { eraseSphere, hollowObject, projectOnSurface, refineObject, repairObject, simplifyObject } from './meshOperations';
 import type { OperationContext } from './operationTypes';
 import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnected, splitStructures } from './partOperations';
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
@@ -91,6 +91,9 @@ export const ENGINE_TASKS = {
   convexHull: (ctx: OperationContext, a: { targets: SceneObject[]; name?: string }) => convexHull(ctx, a.targets, a.name),
   hollow: (ctx: OperationContext, a: { obj: SceneObject; options: HollowOptions }) => hollowObject(ctx, a.obj, a.options),
   simplify: (ctx: OperationContext, a: { obj: SceneObject; toleranceMm: number }) => simplifyObject(ctx, a.obj, a.toleranceMm),
+  repair: (ctx: OperationContext, a: { obj: SceneObject; options?: Omit<engine.MeshRepairOptions, 'onProgress'> }) =>
+    repairObject(ctx, a.obj, a.options),
+  diagnoseMesh: (_ctx: OperationContext, a: { mesh: Pick<SceneObject['mesh'], 'positions' | 'indices'> }) => engine.diagnoseMesh(a.mesh),
   refine: (ctx: OperationContext, a: { obj: SceneObject; edgeMm: number; smooth: boolean }) =>
     refineObject(ctx, a.obj, a.edgeMm, a.smooth),
   erase: (ctx: OperationContext, a: { obj: SceneObject; center: Vec3; radiusMm: number }) =>
@@ -142,5 +145,19 @@ export function runEngineTaskInProcess<N extends EngineTaskName>(
   args: EngineTaskArgs<N>,
 ): Promise<EngineTaskResult<N>> {
   const task = ENGINE_TASKS[name] as (c: OperationContext, a: EngineTaskArgs<N>) => Promise<EngineTaskResult<N>>;
-  return Promise.resolve(task(ctx, args));
+  engine.takeImplicitWeldWarning();
+  return Promise.resolve(task(ctx, args)).then((result) => attachImplicitWeldWarning(result));
+}
+
+/**
+ * Si la tarea solo funcionó porque el motor soldó vértices en silencio, agrega `MESH_WELDED_IMPLICITLY`
+ * a los avisos de su `SceneChange` (directo o en `change`). Una sola definición para app y headless.
+ */
+export function attachImplicitWeldWarning<T>(result: T): T {
+  const warning = engine.takeImplicitWeldWarning();
+  if (!warning || result === null || typeof result !== 'object') return result;
+  const r = result as { warnings?: unknown; change?: { warnings?: unknown } };
+  const list = Array.isArray(r.warnings) ? r.warnings : Array.isArray(r.change?.warnings) ? r.change!.warnings : null;
+  if (list) (list as engine.EngineWarning[]).push(warning);
+  return result;
 }

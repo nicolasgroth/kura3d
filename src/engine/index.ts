@@ -16,6 +16,7 @@ export {
   isManifoldReady,
   manifoldToMeshData,
   meshDataToManifold,
+  takeImplicitWeldWarning,
   weldVertices,
 } from './manifoldKernel';
 
@@ -147,6 +148,23 @@ export { refineMeshDetailed, type RefineResult } from './refine';
 export { splitMeshByColorSolid, type ColorSplitOptions, type SolidColorPart, type SolidColorSplitResult } from './colorSplitSolid';
 
 export { isClosedMesh } from './meshClosure';
+
+export {
+  diagnoseMesh,
+  repairMeshData,
+  repairMeshVerified,
+  manifoldAccepts,
+  isMeshClosed,
+  closureCounts,
+  CLOSURE_WELD_MM,
+  DEFAULT_REPAIR_WELD_MM,
+  type MeshDiagnosis,
+  type MeshDiagnosisSummary,
+  type MeshHole,
+  type MeshRepairOptions,
+  type MeshRepairReport,
+  type VerifiedRepair,
+} from './repair';
 
 export {
   OPERATION_RANGES,

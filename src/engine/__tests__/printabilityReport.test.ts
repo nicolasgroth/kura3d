@@ -29,6 +29,19 @@ describe('analyzePrintability', () => {
     expect(r.minWallThicknessMm).toBeCloseTo(20, 3);
   });
 
+  it('malla abierta: dice que la pared no se midió en vez de informar 0 % de pared delgada', async () => {
+    const cube = await createPrimitiveMesh('box', { width: 20, height: 20, depth: 20 });
+    const open = { ...cube, indices: cube.indices.slice(6) };
+    const r = analyzePrintability(makeObject('abierta', open), bed);
+    expect(r.isManifold).toBe(false);
+    expect(r.wallMeasured).toBe(false);
+    expect(r.minWallThicknessMm).toBeNull();
+    expect(codes(r)).toEqual(expect.arrayContaining(['NOT_MANIFOLD', 'WALL_NOT_MEASURED']));
+    expect(localizePrintWarning('es', r.issues.find((i) => i.code === 'WALL_NOT_MEASURED')!)).toMatch(/no se pudo medir la pared/i);
+    const closed = analyzePrintability(makeObject('cubo', cube), bed);
+    expect(closed.wallMeasured).toBe(true);
+  });
+
   it('placa de 0,2 mm: avisa pared delgada con el espesor medido y baja la nota', async () => {
     const plate = await createPrimitiveMesh('box', { width: 50, height: 0.2, depth: 50 });
     const r = analyzePrintability(makeObject('placa', plate), bed);

@@ -47,6 +47,11 @@ export const OPERATION_RANGES = {
     levelMm: closed(0, 100_000),
     cavityIndex: int(0, 64),
   },
+  /** Reparar malla: tamaño máximo de agujero a cerrar y tolerancia de soldadura (mm). */
+  repair: {
+    maxHoleMm: closed(0.01, 100_000),
+    weldMm: closed(1e-6, 1),
+  },
   hollow: {
     wallThickness: closed(0.2, 100),
     drainHoleRadius: closed(0.3, 100),

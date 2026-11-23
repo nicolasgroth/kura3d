@@ -1,18 +1,16 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 21:00, tras la prueba con modelos reales del autor.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 22 de noviembre de 2026 a las 22:15, con Reparar malla integrada.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## En desarrollo
 
-Tres lotes en paralelo, dos de ellos nacidos de la prueba con modelos reales:
-
 | Funcionalidad | Estado |
 |---|---|
-| Importar 3MF reales de slicer: un 3MF válido de 42 MB se rechazaba como dañado (bloqueo); límites de tamaño coherentes entre exportar e importar; aviso y agrupación de archivos con varias placas; conjuntos montados conservan su armado; importación de mallas grandes más rápida | En corrección desde las 20:55 |
-| Reparar malla (nueva): diagnosticar y cerrar agujeros, normales y caras defectuosas, con los bordes abiertos resaltados; hoy un busto real con 13 aristas abiertas queda inutilizable | En desarrollo desde las 20:55 |
-| Ahuecado más preciso en piezas grandes (pared pedida 2 mm salía 3 mm en una pieza de 150 mm) y avisos que no se pierden por MCP; una sola definición de malla cerrada | En el mismo lote |
+| Importar 3MF reales de slicer: ya lee el 3MF de 42 MB, agrupa por placas y conserva conjuntos montados; **detenido antes de integrar** por una revisión de seguridad independiente (dos hallazgos altos: placas duplicadas que multiplican el modelo y OBJ con miles de objetos que congela la app; dos medios y siete bajos) | En corrección desde las 22:00 |
+| Pulido de Medir y grupos tras QA: las mediciones siguen al objeto al moverlo (hoy quedan fijas), Medir accesible en móvil, panel más compacto, color de las caras que deja una resta, rotar un grupo con el gizmo | En corrección desde las 22:25 |
+| Ahuecado con rejilla adaptativa en piezas grandes (hoy avisa la pared real antes de aplicar, pero no la corrige) y dividir más rápido en modelos de millones de triángulos (hoy avisa y ofrece simplificar) | Pendiente |
 
 ## En QA
 
@@ -30,8 +28,10 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Menú contextual ordenado y teclas F2, F3, F4, Mayús+F5 | Evaluado en la ronda 5 (85 y 72); F2 corregido; QA en curso |
 | Pintura por caras rápida; operaciones de creación en el Worker | QA aprobó sin bloqueos; falta medir el pincel con GPU real |
 | Grabar sobre un relieve ya no da el error falso de profundidad; 3MF determinista (misma escena, mismos bytes); auditoría de secretos: claves de IA y token MCP nunca van a `localStorage` ni a logs, ahora con prueba que lo hace cumplir | Implementado con pruebas; sin QA en navegador |
-| Grupos y árbol de escena: Agrupar (Ctrl+G) y Desagrupar (Ctrl+Mayús+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ojo, candado, renombrar, arrastrar, teclado), manipulador del conjunto con escala proporcional, "Combinar en un objeto" y "Separar cuerpos", exportar un grupo como un archivo o uno por objeto, comandos de bus y MCP | Los 4 fallos que rechazó QA están corregidos y cubiertos por pruebas de navegador (colores al separar cuerpos, escala con el gizmo, renombrar, teclado del árbol); falta la re-verificación de QA. Ya aprobado antes: agrupar, anidar, deshacer, guardar y reabrir, combinar, exportar, atajos, 390 px, piezas de división en el árbol |
-| Herramienta Medir (tecla D): distancia con imán, ángulo, área, volumen y capacidad de un recipiente hasta su rebalse, en mm/cm/pulgadas y mL/litros; también por MCP | Implementado; verificado por el desarrollador en navegador (vaso: 48,83 mL frente a 48,86 calculado); falta QA independiente |
+| Grupos y árbol de escena: Agrupar (Ctrl+G) y Desagrupar (Ctrl+Mayús+G), grupos dentro de grupos, panel Escena como árbol tipo capas (plegar, ojo, candado, renombrar, arrastrar, teclado), manipulador del conjunto con escala proporcional, "Combinar en un objeto" y "Separar cuerpos", exportar un grupo como un archivo o uno por objeto, comandos de bus y MCP | QA re-verificó: renombrar, teclado del árbol, ojo del grupo y reglas, corregidos. Sin veredicto: escalar con el gizmo (no logró arrastrar el tirador) y separar cuerpos con colores (no lo alcanzó; lo cubre una prueba de navegador). Ya aprobado antes: agrupar, anidar, deshacer, guardar y reabrir, combinar, exportar, atajos, 390 px, piezas de división en el árbol |
+| Reparar malla (nueva): diagnóstico de agujeros, aristas con más de dos caras, caras duplicadas o degeneradas y normales; reparación por etapas verificada por el motor; bordes abiertos resaltados; botón en el error de malla inválida, menú, paleta y panel de análisis; también por MCP. El busto real con 13 aristas abiertas queda utilizable en 5 s | Implementado con pruebas; sin verificación visual; falta QA |
+| Avisos del motor que ya no se pierden por MCP ni por el bus; una sola definición de malla cerrada; análisis que dice cuando no pudo medir la pared | Implementado con pruebas |
+| Herramienta Medir (tecla D): distancia con imán, ángulo, área, volumen y capacidad de un recipiente hasta su rebalse, en mm/cm/pulgadas y mL/litros; también por MCP | **QA aprobó con observaciones**, sin bloqueos: distancias, imanes, ángulo, área, unidades y capacidad correctos (vaso 48,8 mL frente a 48,86; inclinado 20°: 42,1 frente a 42,2; con agujero: rebalsa a 17 mm). Observaciones en corrección |
 | Pincel: una sola regla de visibilidad en todos sus caminos (rápido, con refinado, diferido y por comando); ya no atraviesa placas delgadas | Corregido; la prueba de navegador que lo detectó pasa |
 | Pintura sobre primitivas: el arrastre no modifica nada hasta aceptar el aviso, "Cancelar" deja el cubo intacto, un trazo = un paso también con refinado | Corregido y confirmado por QA con arrastre largo |
 | Separar por colores en superficies curvas: malla limpia (el defecto que midió QA en la esfera era real y quedó corregido) | Confirmado por QA en esfera y cilindro; queda afinar triángulos casi degenerados en bordes irregulares |

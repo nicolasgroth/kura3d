@@ -103,7 +103,8 @@ export async function hollowMeshDetailed(
     const offset = inwardOffset(wasm, outer, t, undefined, field);
     const inner = own(offset.inner);
     if (inner.isEmpty() || inner.volume() < 1e-6) {
-      throw new EngineError('HOLLOW_WALL_TOO_THICK', { thickness: t, minDim });
+      // La caja admitía la pared, pero la forma es más delgada que dos paredes en todas partes.
+      throw new EngineError('HOLLOW_NO_CAVITY', { thickness: t, minDim });
     }
 
     // Verificación: la cavidad debe quedar dentro y a ≥ t (menos tolerancia de mundo) de la superficie
@@ -119,9 +120,11 @@ export async function hollowMeshDetailed(
       warnings.push(engineWarning('HOLLOW_COARSE_GRID', { thickness: t, maxWall: wall.maxMm }));
     }
 
-    let result = own(outer.subtract(inner));
-    const cavities = inner.decompose();
-    for (const c of cavities) own(c);
+    let result = own(withoutJunkShells(wasm, own(outer.subtract(inner)), outer.volume()));
+    const cavities = inner.decompose().filter((c) => {
+      own(c);
+      return Math.abs(c.volume()) > junkVolume(outer.volume());
+    });
 
     if (options.drainHole) {
       const defaultR = Math.max(0.5, Math.min(dx, dz) * 0.06);
@@ -150,7 +153,7 @@ export async function hollowMeshDetailed(
     }
 
     // Colapsa triángulos colineales residuales de la grilla (área nula) sin mover la superficie
-    result = own(result.simplify(1e-4));
+    result = own(withoutJunkShells(wasm, own(result.simplify(1e-4)), outer.volume()));
     // Volvemos al espacio local del objeto
     const local = own(result.scale([1 / obj.scale[0], 1 / obj.scale[1], 1 / obj.scale[2]]));
     const mesh = normalizeMeshToBed(manifoldToMeshData(local, registry?.idToColor));
@@ -164,6 +167,22 @@ export async function hollowMeshDetailed(
   } finally {
     for (const h of handles) h.delete();
   }
+}
+
+/** Volumen bajo el cual un cuerpo del ahuecado es basura numérica (cascos planos de volumen ~0). */
+const junkVolume = (total: number) => Math.max(1e-3, 1e-9 * Math.abs(total));
+
+/** Quita cuerpos de volumen nulo (p. ej. un casco de 6 triángulos que deja la grilla). */
+function withoutJunkShells(wasm: Awaited<ReturnType<typeof initManifoldEngine>>, m: Manifold, total: number): Manifold {
+  const parts = m.decompose();
+  const keep = parts.filter((p) => Math.abs(p.volume()) > junkVolume(total));
+  if (keep.length === parts.length) {
+    for (const p of parts) p.delete();
+    return m.translate([0, 0, 0]);
+  }
+  const out = wasm.Manifold.compose(keep);
+  for (const p of parts) p.delete();
+  return out;
 }
 
 /**

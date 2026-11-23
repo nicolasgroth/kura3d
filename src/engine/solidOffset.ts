@@ -124,6 +124,35 @@ export function convexInwardOffset(
 }
 
 /**
+ * Rejilla del offset para una caja de lados `size` (mm) y pared `thickness`: arista de la grilla BCC
+ * según el presupuesto de muestras, tolerancia de simplificación y margen del peor caso. Fuente única
+ * del cálculo y de la estimación previa de la pared real (`estimateHollowWall`).
+ */
+export function offsetGridFor(size: readonly number[], thickness: number, sampleBudget = DEFAULT_SAMPLE_BUDGET) {
+  // La cavidad solo existe a ≥ thickness del borde: acotamos la grilla a la caja contraída
+  const pad = thickness * 0.5;
+  const [bx, by, bz] = size.map((s) => Math.max(0, s - 2 * pad));
+  // Grilla BCC: ~2 puntos por celda cúbica de lado `edge`
+  const volume = Math.max(1e-9, (bx + thickness) * (by + thickness) * (bz + thickness));
+  const budgetEdge = Math.cbrt((2 * volume) / Math.max(10_000, sampleBudget));
+  const gridEdgeMm = Math.max(thickness / 4, budgetEdge);
+  // La simplificación posterior puede mover la superficie hasta `simplifyTol`.
+  const simplifyTolMm = Math.min(0.03, thickness * 0.02);
+  const worstMarginMm = Math.min(thickness * 0.5, (gridEdgeMm * gridEdgeMm) / (6 * thickness)) + simplifyTolMm;
+  return { gridEdgeMm, simplifyTolMm, worstMarginMm };
+}
+
+/**
+ * Pared que puede salir al ahuecar una pieza no convexa de caja `size` (mm), antes de aplicar: con
+ * rejilla gruesa crece hasta `thickness + worstMarginMm`. `coarse` si supera el pedido en más de 10 %.
+ */
+export function estimateHollowWall(size: readonly number[], thickness: number) {
+  const g = offsetGridFor(size, thickness);
+  const maxWallMm = thickness + g.worstMarginMm;
+  return { gridEdgeMm: g.gridEdgeMm, maxWallMm, coarse: maxWallMm > thickness * 1.1 };
+}
+
+/**
  * Erosiona `solid` una distancia `thickness` hacia adentro con pared uniforme.
  * El resultado queda siempre contenido en `solid` y a una distancia ≥ `thickness`
  * de su superficie (salvo el error residual que mide `measureWallThickness`).
@@ -151,18 +180,8 @@ export function inwardOffset(
   const sy = bbox.max[1] - bbox.min[1];
   const sz = bbox.max[2] - bbox.min[2];
 
-  // La cavidad solo existe a ≥ thickness del borde: acotamos la grilla a la caja contraída
   const pad = thickness * 0.5;
-  const bx = Math.max(0, sx - 2 * pad);
-  const by = Math.max(0, sy - 2 * pad);
-  const bz = Math.max(0, sz - 2 * pad);
-  // Grilla BCC: ~2 puntos por celda cúbica de lado `edge`
-  const volume = Math.max(1e-9, (bx + thickness) * (by + thickness) * (bz + thickness));
-  const budgetEdge = Math.cbrt((2 * volume) / Math.max(10_000, sampleBudget));
-  const gridEdge = Math.max(thickness / 4, budgetEdge);
-
-  // La simplificación posterior puede mover la superficie hasta `simplifyTol`.
-  const simplifyTol = Math.min(0.03, thickness * 0.02);
+  const { gridEdgeMm: gridEdge, simplifyTolMm: simplifyTol, worstMarginMm: worstCase } = offsetGridFor([sx, sy, sz], thickness, sampleBudget);
   const extract = (level: number): Manifold => {
     // Lipschitz: si |d − nivel| > arista de grilla, ninguna arista que toque ese punto cruza el
     // nivel, así que basta el lado correcto. Con el tope se evita recorrer todo el BVH en puntos
@@ -195,7 +214,6 @@ export function inwardOffset(
     inner.delete();
     margin += (thickness - wall.minMm) * 1.15 + thickness * 0.002;
   }
-  const worstCase = Math.min(thickness * 0.5, (gridEdge * gridEdge) / (6 * thickness)) + simplifyTol;
   const levelMargin = Math.max(worstCase, margin);
   return { inner: extract(thickness + levelMargin), gridEdgeMm: gridEdge, levelMarginMm: levelMargin };
 }
