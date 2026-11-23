@@ -15,6 +15,7 @@ import { computeSelectionBounds } from '../../utils/selectionBounds';
 import { formatDimension } from '../../utils/units';
 import { toUserSize } from '../../core/scene/displayAxes';
 import { bedStatusOf } from '../split/splitAssembledStatus';
+import { FitOutOfBoundsButton } from '../fitToBed/FitOutOfBoundsButton';
 
 /** HUD inferior en una sola línea. */
 export const ViewportHudBottom: React.FC = () => {
@@ -77,6 +78,7 @@ export const ViewportHudBottom: React.FC = () => {
             <span>{t(language, 'viewport.bed.outOfBounds')}</span>
           </span>
         )}
+        {bedStatus === 'outOfBounds' && <FitOutOfBoundsButton />}
         {bedStatus === 'assembled' && (
           <span className="kura-assembled-badge" role="status" title={t(language, 'splitUx.assembled.status')}>
             <Boxes size={11} aria-hidden="true" />

@@ -589,6 +589,15 @@ export const CommandPalette: React.FC = () => {
         run: () => setActiveDialog('splitForBed'),
       },
       {
+        id: 'op-fit-to-bed',
+        label: t(language, 'fit.open'),
+        category: catOps,
+        keywords: 'ajustar impresora cama escalar girar caber fit printer bed scale rotate',
+        kind: 'local',
+        icon: <Minimize2 size={15} />,
+        run: () => void useKuraStore.getState().openFitToBed(),
+      },
+      {
         id: 'op-split-parts',
         label: t(language, 'inspector.op.splitParts'),
         category: catOps,

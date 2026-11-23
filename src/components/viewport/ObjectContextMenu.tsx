@@ -21,6 +21,7 @@ import {
   Repeat2,
   RefreshCw,
   ScanSearch,
+  Minimize2,
   Scissors,
   ShieldCheck,
   ToggleLeft,
@@ -63,6 +64,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
   const recomputeSelected = useKuraStore((s) => s.recomputeSelected);
   const repeatLastAction = useKuraStore((s) => s.repeatLastAction);
   const addToast = useKuraStore((s) => s.addToast);
+  const openFitToBed = useKuraStore((s) => s.openFitToBed);
   const holeCount = objects.filter((o) => o.isHole && o.visible).length;
   const solidCount = objects.filter((o) => !o.isHole && o.visible).length;
   const typeIds = selectedIds.includes(target.id) ? selectedIds : [target.id];
@@ -109,6 +111,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
       <MenuGroup title={t(language, 'menu.group.geometry')}>
         <MenuItem icon={<Box size={14} aria-hidden="true" />} label={t(language, 'ctx.hollowOpen')} tip={t(language, 'ctx.hollowOpenTip')} disabled={target.locked} onSelect={run(() => openHollowPanel(target.id))} />
         <MenuItem icon={<Scissors size={14} aria-hidden="true" />} label={t(language, 'ctx.planeCut')} disabled={target.locked} keys="C" onSelect={run(() => setActiveDialog('cut'))} />
+        <MenuItem icon={<Minimize2 size={14} aria-hidden="true" />} label={t(language, 'fit.open')} tip={t(language, 'fit.openTip')} disabled={target.locked} onSelect={run(() => void openFitToBed(typeIds))} />
         <MenuItem icon={<PaintBucket size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.generateMold')} keys="Shift+M" onSelect={run(() => setActiveDialog('mold'))} />
         <MenuItem icon={<Type size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.projectSurface')} disabled={target.locked} onSelect={run(() => setActiveDialog('project'))} />
         {holeCount > 0 && solidCount > 0 && (
