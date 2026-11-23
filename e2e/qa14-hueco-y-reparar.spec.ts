@@ -52,5 +52,8 @@ test('reparar un STL con un agujero lo deja cerrado con volumen 8000 mm³', asyn
   await page.locator('[role=treeitem]', { hasText: 'cubo_agujero' }).click({ button: 'right', position: { x: 60, y: 20 } });
   await page.getByRole('menuitem', { name: /Reparar malla/ }).click();
   await expect(insp.getByText(/8\.000/)).toBeVisible({ timeout: 15000 });
-  await expect(insp.locator('.kura-badge-ok', { hasText: 'Malla cerrada' })).toBeVisible();
+  const estado = insp.getByTestId('mesh-status');
+  await expect(estado).toContainText('Malla');
+  await expect(estado.locator('.kura-badge-ok')).toHaveText('Cerrada');
+  await expect(estado.getByRole('button', { name: 'Reparar malla' })).toHaveCount(0);
 });

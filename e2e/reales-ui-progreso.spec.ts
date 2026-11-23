@@ -36,7 +36,19 @@ test('la importación informa sus etapas en orden', async ({ page }) => {
   await importarStl(page, 'pesado.stl', stlBinario(200_000));
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length), { timeout: 60000 }).toBe(1);
   const phases: string[] = await page.evaluate(() => (window as any).__phases);
-  expect(phases.filter((p) => p.startsWith('import:'))).toEqual(['import:read', 'import:parse', 'import:place']);
+  const imp = phases.filter((p) => p.startsWith('import:'));
+  // Tres etapas en orden y, después, cero o más avances por piezas `import:parts:d/t` con `d` creciente hasta `t`.
+  expect(imp.slice(0, 3)).toEqual(['import:read', 'import:parse', 'import:place']);
+  const partes = imp.slice(3).map((p) => /^import:parts:(\d+)\/(\d+)$/.exec(p));
+  expect(partes.every((m) => m !== null)).toBe(true);
+  const hechas = partes.map((m) => Number(m![1]));
+  expect(hechas).toEqual([...hechas].sort((a, b) => a - b));
+  expect(new Set(hechas).size).toBe(hechas.length);
+  if (partes.length) {
+    const total = Number(partes[0]![2]);
+    expect(partes.every((m) => Number(m![2]) === total)).toBe(true);
+    expect(hechas[hechas.length - 1]).toBe(total);
+  }
 });
 
 test('con avance por piezas la barra dice "N de M piezas" y es determinada', async ({ page }) => {
