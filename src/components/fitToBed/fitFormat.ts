@@ -19,7 +19,8 @@ export function useFitFormat() {
   const unit = useKuraStore((s) => s.unitSystem);
   const objects = useKuraStore((s) => s.objects);
   const num = (v: number, maxFrac = 1) => formatLocaleNumber(language, v, { maxFrac });
-  const pct = (factor: number) => num(factor * 100, 1);
+  // Hacia abajo: el porcentaje mostrado nunca promete más de lo que cabe.
+  const pct = (factor: number) => num(Math.floor(factor * 1000 + 1e-6) / 10, 1);
   const size = (s: Readonly<Vec3>) => s.map((v) => formatDimension(v, unit, 1, language)).join(' × ');
   const title = (alt: FitAlternative) => {
     if (alt.kind === 'scale') return t(language, 'fit.alt.scale', { pct: pct(alt.factor) });
