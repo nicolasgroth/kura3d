@@ -43,13 +43,16 @@ export const holeDepth = (c: SplitConnectorOptions) => Math.max(0.8, c.depth + c
  * activa, ya acotado por `reinforcementCap`) y un conector bajo ese radio, antes prueba agrandarlo al
  * recomendado y luego agregar uno más.
  */
-function connectorLadder(c: SplitConnectorOptions, recommended?: (count: number) => number): SplitConnectorOptions[] {
+function connectorLadder(c: SplitConnectorOptions, recommended?: (count: number) => number, autoSingleSize?: number): SplitConnectorOptions[] {
   const out: SplitConnectorOptions[] = [];
   if (recommended && c.size < recommended(c.count) - 1e-6) {
     out.push({ ...c, size: recommended(c.count) });
     out.push({ ...c, size: Math.max(c.size, recommended(c.count + 1)), count: c.count + 1 });
   }
   out.push(c);
+  // Tamaño automático: si solo cabe un conector, ese uno lleva el radio recomendado para uno solo (más grande),
+  // no el que se calculó para repartir el área entre varios (si no, la unión queda débil sin necesidad).
+  if (c.count > 1 && autoSingleSize !== undefined && autoSingleSize > c.size + 1e-6) out.push({ ...c, count: 1, size: autoSingleSize });
   if (c.count > 1) out.push({ ...c, count: 1 });
   for (const f of [0.75, 0.5]) if (c.size * f >= 1.5) out.push({ ...c, size: c.size * f, count: 1 });
   return out;
@@ -217,7 +220,8 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
       // Tamaño automático: el pedido de esta unión es su radio recomendado (acotado por la sección y la profundidad)
       const requested = connector.sizeAuto ? autoRequest(connector, area, dim, width) : connector;
       const cap = reinforcementCap(requested.size, width, requested.depth);
-      const ladder = connectorLadder(requested, j.reinforce ? (n) => Math.min(cap, recommendedConnectorRadius(area, n, dim)) : undefined);
+      const autoSingle = connector.sizeAuto ? autoRequest({ ...connector, count: 1 }, area, dim, width).size : undefined;
+      const ladder = connectorLadder(requested, j.reinforce ? (n) => Math.min(cap, recommendedConnectorRadius(area, n, dim)) : undefined, autoSingle);
       const lt = layoutType(connector.type);
       for (const c of ladder) {
         const found = placeRung(wasm, j, face, c, lt, handles);
@@ -230,7 +234,8 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
       }
       const reduced = used && used !== requested && (used.size < requested.size || used.count < requested.count);
       if (used && reduced) warnings.push(engineWarning('SPLIT_CONNECTOR_REDUCED', { ...pair, count: used.count, size: used.size }));
-      const reinforced = used && (used.size > requested.size + 1e-6 || used.count > requested.count);
+      // Menos conectores aunque más grandes es una reducción (ya avisada), no un refuerzo.
+      const reinforced = used && used.count >= requested.count && (used.size > requested.size + 1e-6 || used.count > requested.count);
       if (used && reinforced) {
         warnings.push(engineWarning('SPLIT_CONNECTOR_REINFORCED', {
           ...pair, requested: requested.size, size: used.size, requestedCount: requested.count, count: used.count,

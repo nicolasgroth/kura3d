@@ -189,8 +189,9 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
             <AlertTriangle size={13} aria-hidden="true" />
             <strong>{tCount(language, { one: 'splitUx.weak.summary.one', other: 'splitUx.weak.summary.other' }, weakRows.length)}</strong>
           </p>
-          <p>{t(language, limited ? 'splitUx.weak.adviceLimit' : 'splitUx.weak.advice')}</p>
-          {canReinforce ? (
+          <p>{t(language, limited ? 'ux3.split.weakLimit' : 'splitUx.weak.advice')}</p>
+          {/* Con tamaño automático o ya reforzado, agrandar más no ayuda: no se ofrece reforzar. */}
+          {limited ? null : canReinforce ? (
             <button
               type="button"
               className="kura-btn kura-btn-sm"
@@ -236,7 +237,7 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
             const own = (rowTexts.get(row.label) ?? []).filter((text) => !commonSet.has(text));
             const mark = markText(row);
             const weakShort = row.weak
-              ? t(language, reinforced || row.reinforced ? 'splitUx.weak.shortLimit' : 'splitUx.weak.short', { measured: fmt(2 * row.weak.measuredMm), recommended: fmt(2 * row.weak.recommendedMm) })
+              ? t(language, reinforced || autoSized || row.reinforced ? 'splitUx.weak.shortLimit' : 'splitUx.weak.short', { measured: fmt(2 * row.weak.measuredMm), recommended: fmt(2 * row.weak.recommendedMm) })
               : null;
             const noteId = `${uid}-n-${row.label}`;
             const hasDetail = own.length > 0 || Boolean(mark) || row.status === 'blocked';

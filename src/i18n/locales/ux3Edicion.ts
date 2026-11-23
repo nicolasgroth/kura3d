@@ -58,6 +58,14 @@ const UX3_EDICION_TABLE = {
     'इस ऑब्जेक्ट में एक ही बॉडी है: अलग करने को कुछ नहीं',
     '该对象只有一个实体:无可分离',
   ],
+  'ux3.split.weakLimit': [
+    'El conector ya tiene el mayor tamaño que cabe en esta unión: lo limitan su profundidad, el ancho de la sección o el espacio junto a otros conectores. Para más firmeza, pega estas caras o mueve el plano de corte a una sección más ancha.',
+    'The connector is already the largest that fits this joint: its depth, the section width or the room next to other connectors limit it. For a stronger joint, glue these faces or move the cut plane to a wider section.',
+    'Der Verbinder hat bereits die größte Größe, die in diese Verbindung passt: Seine Tiefe, die Breite des Querschnitts oder der Platz neben anderen Verbindern begrenzen ihn. Für mehr Halt klebe diese Flächen oder verschiebe die Schnittebene an einen breiteren Querschnitt.',
+    'Le connecteur a déjà la plus grande taille possible pour cette jonction : sa profondeur, la largeur de la section ou la place près des autres connecteurs le limitent. Pour plus de solidité, colle ces faces ou déplace le plan de coupe vers une section plus large.',
+    'कनेक्टर पहले से इस जोड़ में समाने वाला सबसे बड़ा आकार है: उसकी गहराई, सेक्शन की चौड़ाई या दूसरे कनेक्टरों के पास की जगह उसे सीमित करती है। अधिक मज़बूती के लिए इन सतहों को चिपकाएँ या कट प्लेन को चौड़े सेक्शन में ले जाएँ।',
+    '连接件已是此接合能容纳的最大尺寸:受其深度、截面宽度或与其他连接件之间的空间限制。若需更牢固,请粘合这些面或把切割面移到更宽的截面。',
+  ],
 } as const satisfies Record<string, Row>;
 
 type Ux3EdicionKey = keyof typeof UX3_EDICION_TABLE;
