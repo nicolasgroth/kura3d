@@ -45,7 +45,28 @@ async function pintarTrazo(page: Page) {
   await page.getByRole('button', { name: 'Pintar' }).first().click();
   const aviso = page.getByRole('button', { name: /Pintar igual/ }).first();
   const trazo = async () => {
-    const pts = [[650, 450], [665, 470], [680, 455], [695, 490], [700, 520], [690, 550], [670, 540], [655, 510]];
+    // El trazo se dibuja alrededor del centro real de la pieza en pantalla (no en píxeles fijos): el encuadre
+    // cambia cuando cambian los paneles del visor y un punto fijo deja de caer sobre una esfera.
+    const c = await page.evaluate(async () => {
+      const w = window as any;
+      const urls = performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /react-three_fiber/.test(n));
+      let st: any = null;
+      for (const u of urls) { const m = await import(/* @vite-ignore */ u); if (m._roots) st = [...m._roots.values()][0].store.getState(); }
+      const o = w.__s.getState().objects[0]; const P = o.mesh.positions as number[];
+      let minY = 1e9, maxY = -1e9; for (let i = 1; i < P.length; i += 3) { minY = Math.min(minY, P[i]); maxY = Math.max(maxY, P[i]); }
+      const cam = st.camera; cam.updateMatrixWorld();
+      const V = cam.position.constructor;
+      const mid = o.position[1] + ((minY + maxY) / 2) * o.scale[1];
+      const a = new V(o.position[0], mid, o.position[2]).project(cam);
+      const b = new V(o.position[0], o.position[1] + maxY * o.scale[1], o.position[2]).project(cam);
+      const r = st.gl.domElement.getBoundingClientRect();
+      const px = (v: any) => ({ x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height });
+      const pa = px(a), pb = px(b);
+      return { x: pa.x, y: pa.y, radio: Math.abs(pa.y - pb.y) };
+    });
+    const k = Math.min(1, (c.radio * 0.45) / 50);
+    const base = [[-25, -50], [-10, -30], [5, -45], [20, -10], [25, 20], [15, 50], [-5, 40], [-20, 10]];
+    const pts = base.map(([dx, dy]) => [c.x + dx * k, c.y + dy * k]);
     await page.mouse.move(pts[0][0], pts[0][1]); await page.mouse.down();
     for (const p of pts.slice(1)) await page.mouse.move(p[0], p[1], { steps: 6 });
     await page.mouse.up();
