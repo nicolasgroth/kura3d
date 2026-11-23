@@ -156,22 +156,34 @@ export function exteriorWall(cap: Capsule, world: Float64Array[], meshes: MeshDa
   const lo = [0, 1, 2].map((i) => Math.min(cap.p[i], cap.q[i]) - reach);
   const hi = [0, 1, 2].map((i) => Math.max(cap.p[i], cap.q[i]) + reach);
   const samples: Vec3[] = [0.15, 0.5, 0.85].map((t) => [0, 1, 2].map((i) => cap.p[i] + (cap.q[i] - cap.p[i]) * t) as Vec3);
+  // Ejes radiales del cilindro (sin el de la unión ni el de deslizamiento de la cola de milano)
+  const radialAxes = [0, 1, 2].filter((i) => i !== a && i !== cap.slide);
+  const alongLo = Math.min(cap.p[a], cap.q[a]) - 0.35, alongHi = Math.max(cap.p[a], cap.q[a]) + 0.35;
+  const ownOf = (w: Float64Array, o: number) => {
+    // Mismo `Math.hypot` que antes (resultado idéntico en los casos límite)
+    const radial = radialAxes.length === 2
+      ? Math.hypot(w[o + radialAxes[0]] - cap.p[radialAxes[0]], w[o + radialAxes[1]] - cap.p[radialAxes[1]])
+      : Math.hypot(...radialAxes.map((i) => w[o + i] - cap.p[i]));
+    const along = w[o + a];
+    return radial <= cap.r + 0.35 && along >= alongLo && along <= alongHi;
+  };
   let best = Infinity;
   for (const part of cap.parts) {
     const w = world[part];
     const idx = meshes[part].indices;
     for (let t = 0; t < idx.length; t += 3) {
       const A = idx[t] * 3, B = idx[t + 1] * 3, C = idx[t + 2] * 3;
-      const v = [A, B, C].map((o) => [w[o], w[o + 1], w[o + 2]] as Vec3);
-      if ([0, 1, 2].some((i) => Math.max(v[0][i], v[1][i], v[2][i]) < lo[i] || Math.min(v[0][i], v[1][i], v[2][i]) > hi[i])) continue;
+      // Descarte por caja sin crear arreglos (es el bucle caliente: todas las caras de ambas piezas)
+      let out = false;
+      for (let i = 0; i < 3 && !out; i++) {
+        const x = w[A + i], y = w[B + i], z = w[C + i];
+        out = (x > y ? (x > z ? x : z) : (y > z ? y : z)) < lo[i] || (x < y ? (x < z ? x : z) : (y < z ? y : z)) > hi[i];
+      }
+      if (out) continue;
       // Cara de unión (coplanar al plano) y caras del propio conector (dentro de su cilindro y tramo)
-      if (v.every((p) => Math.abs(p[a] - cap.plane) < 0.05)) continue;
-      const own = v.every((p) => {
-        const along = p[a];
-        const radial = Math.hypot(...[0, 1, 2].filter((i) => i !== a && i !== cap.slide).map((i) => p[i] - cap.p[i]));
-        return radial <= cap.r + 0.35 && along >= Math.min(cap.p[a], cap.q[a]) - 0.35 && along <= Math.max(cap.p[a], cap.q[a]) + 0.35;
-      });
-      if (own) continue;
+      if (Math.abs(w[A + a] - cap.plane) < 0.05 && Math.abs(w[B + a] - cap.plane) < 0.05 && Math.abs(w[C + a] - cap.plane) < 0.05) continue;
+      if (ownOf(w, A) && ownOf(w, B) && ownOf(w, C)) continue;
+      const v = [A, B, C].map((o) => [w[o], w[o + 1], w[o + 2]] as Vec3);
       for (const s of samples) best = Math.min(best, pointTriangle(s, v[0], v[1], v[2]) - cap.r);
     }
   }

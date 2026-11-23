@@ -52,8 +52,13 @@ function jointGap(j: AssemblyJointInput, world: Float64Array[]): number | null {
   const wa = world[j.a.part], wb = world[j.b.part];
   if (!wa || !wb) return null;
   let top = -Infinity;
+  // Ejes del plano de la unión (sin crear arreglos por vértice: es el bucle caliente)
+  const u = a === 0 ? 1 : 0, v = a === 2 ? 1 : 2;
+  const centers = r > 0 ? j.connectorCenters : [];
   for (let i = 0; i < wa.length; i += 3) {
-    if (r > 0 && j.connectorCenters.some((c) => Math.hypot(...[0, 1, 2].filter((k) => k !== a).map((k) => wa[i + k] - c[k])) <= r)) continue;
+    let inside = false;
+    for (let c = 0; c < centers.length && !inside; c++) inside = Math.hypot(wa[i + u] - centers[c][u], wa[i + v] - centers[c][v]) <= r;
+    if (inside) continue;
     top = Math.max(top, wa[i + a]);
   }
   const [bottom] = extent(wb, a);

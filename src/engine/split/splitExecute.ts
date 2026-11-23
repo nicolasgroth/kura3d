@@ -24,6 +24,8 @@ import { buildLooseDowelBatch, looseDowelLength } from './splitLooseDowel';
 import { fixAssemblyBeforeConnectors, type PendingJoint } from './splitAssembly';
 import { settleAssembly } from './splitAssemblyRepair';
 import { ConnectorRoom } from './splitConnectorRoom';
+import { cutKey, recallCut, releaseCutCache, type CutCells } from './splitCutCache';
+import { StageClock } from './splitStageClock';
 import type { AssemblyFix, AssemblySuggestion } from './assemblyTypes';
 import { SPLIT_DEFAULTS, splitPartCode } from './splitPlan';
 import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitResult, SplitAxis, SplitJoint, SplitLooseDowel } from './splitTypes';
@@ -69,9 +71,8 @@ export async function executeBedSplitGeometry(
   const lapHeight = connector?.lapHeightMm ?? SPLIT_DEFAULTS.lapHeightMm;
   const minFragment = options.minFragmentMm3 ?? SPLIT_DEFAULTS.minFragmentMm3;
   const warnings: EngineWarning[] = [];
+  const clock = new StageClock();
   const world = applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale);
-  const source = meshDataToManifold(wasm, world, undefined, obj.color);
-  const sourceVolume = source.volume();
   const counts = [plan.counts.x, plan.counts.y, plan.counts.z];
   const { planesBy, bounds } = gridOf(plan);
   const totalCuts = planesBy[0].length + planesBy[1].length * counts[0] + planesBy[2].length * counts[0] * counts[1];
@@ -79,9 +80,24 @@ export async function executeBedSplitGeometry(
   const tick = () => options.onProgress?.(++done, totalCuts);
   const codeOf = (c: Cell) => splitPartCode(c, counts[2]);
 
-  // 1. Cortes en secuencia y piezas de un solo cuerpo
-  const cells = cutIntoCells(source, planesBy, tick);
+  // 1. Cortes en secuencia (o los del plan, si es el mismo sólido y la misma rejilla) y piezas de un solo cuerpo
+  const recalled = recallCut(cutKey(world, obj.color, bounds));
+  let sourceVolume: number;
+  let cells: CutCells;
+  if (recalled) {
+    sourceVolume = recalled.sourceVolume;
+    cells = recalled.cells;
+    // El avance por corte se informa igual (los cortes ya están hechos)
+    for (let i = 0; i < totalCuts; i++) tick();
+  } else {
+    const source = meshDataToManifold(wasm, world, undefined, obj.color);
+    sourceVolume = source.volume();
+    cells = cutIntoCells(source, planesBy, tick);
+  }
+  releaseCutCache();
+  clock.lap('cut');
   const { bodies, byCell, cache } = buildBodies(wasm, cells, bounds, { minFragmentMm3: minFragment, usable: plan.usableMm, codeOf }, warnings);
+  clock.lap('bodies');
 
   try {
     // 2. Uniones entre piezas con contacto real
@@ -136,6 +152,7 @@ export async function executeBedSplitGeometry(
       }
     }
 
+    clock.lap('joints');
     // 2b. Montaje posible en algún orden: si no, las uniones que traban pasan a "para pegar"
     const check = options.validateAssembly !== false;
     let fix: AssemblyFix | null = null;
@@ -150,10 +167,12 @@ export async function executeBedSplitGeometry(
       clearance += r.clearanceDelta;
     }
 
+    clock.lap('preAssembly');
     // 3. Aplicar conectores, solapes y marcas, y pasar a mallas cerradas (si no cierra: para pegar)
     const finished = finishParts(wasm, order, joints, warnings);
     const { parts, index } = finished;
     clearance += finished.clearanceDelta;
+    clock.lap('finish');
     const sign = (axis: SplitAxis, s: '+' | '-') => `${s}${axis}` as SplitJoint['a']['face'];
     const toJoints = (): SplitJoint[] => joints.map(({ low, high, clearance: _c, solids: _s, ...j }) => ({
       ...j,
@@ -171,6 +190,7 @@ export async function executeBedSplitGeometry(
       clearance += settled.clearanceDelta;
       assembly = settled.report;
     }
+    clock.lap('settle');
     const outJoints = toJoints();
     // Un aviso de conector reforzado o reducido solo vale si la unión terminó con conector
     const noConnector = new Set(outJoints.filter((j) => j.kind !== 'connector').map((j) => j.label));
@@ -187,6 +207,7 @@ export async function executeBedSplitGeometry(
       const used = warnings.some((w) => w.code === 'ASSEMBLY_JOINT_TYPE_CHANGED' && w.params.to === 'dovetail');
       if (!used) warnings.push(engineWarning('SPLIT_SURFACE_CHANGE_UNUSED'));
     }
+    clock.lap('dowels');
     return {
       parts,
       looseDowels,
@@ -198,6 +219,7 @@ export async function executeBedSplitGeometry(
       engravedVolumeMm3: engraved,
       warnings,
       elapsedMs: performance.now() - t0,
+      stageMs: clock.ms,
     };
   } finally {
     cache.dispose();

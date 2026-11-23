@@ -28,14 +28,19 @@ const DOWN_ROTATIONS: Array<{ face: SplitFace; dir: Vec3; rot: Vec3 }> = [
 /** Área (mm²) de triángulos planos en el extremo de la malla en la dirección `dir`. */
 export function supportArea(mesh: MeshData, dir: Vec3, tol = 0.05): number {
   const p = mesh.positions;
+  // Altura de cada vértice en `dir`, una vez (antes se recalculaba en un cierre por triángulo)
+  const h = new Float64Array(p.length / 3);
   let extreme = -Infinity;
-  for (let i = 0; i < p.length; i += 3) extreme = Math.max(extreme, p[i] * dir[0] + p[i + 1] * dir[1] + p[i + 2] * dir[2]);
+  for (let i = 0, v = 0; i < p.length; i += 3, v++) {
+    h[v] = p[i] * dir[0] + p[i + 1] * dir[1] + p[i + 2] * dir[2];
+    extreme = Math.max(extreme, h[v]);
+  }
+  const floor = extreme - tol;
   let area = 0;
   const idx = mesh.indices;
   for (let t = 0; t < idx.length; t += 3) {
+    if (h[idx[t]] < floor || h[idx[t + 1]] < floor || h[idx[t + 2]] < floor) continue;
     const a = idx[t] * 3, b = idx[t + 1] * 3, c = idx[t + 2] * 3;
-    const on = (v: number) => p[v] * dir[0] + p[v + 1] * dir[1] + p[v + 2] * dir[2] >= extreme - tol;
-    if (!on(a) || !on(b) || !on(c)) continue;
     const ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2];
     const vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
     const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
