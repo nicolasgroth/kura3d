@@ -30,7 +30,7 @@
       "to": [0, 0, "=p.mode == 'relief' ? p.base : p.base - p.depth"] } },
     { "id": "plate", "op": "create_primitive", "args": { "type": "box", "position": ["=-(p.ring + 3)/2", 0, 0],
       "params": { "width": "=s.art2.size.x + p.size + p.ring + 3", "depth": "=s.art2.size.y + p.size",
-                  "height": "=p.base", "cornerRadius": "=(s.art2.size.y + p.size)/2 - 0.01" } } },
+                  "height": "=p.base", "edgeStyle": "round", "edgeScope": "vertical", "edgeSize": "=(s.art2.size.y + p.size)/2 - 0.01" } } },
     { "id": "eye", "op": "create_primitive", "args": { "type": "cylinder",
       "position": ["=s.plate.min.x + p.ring/2 + 2.5", 0, -1], "params": { "radius": "=p.ring/2", "height": "=p.base + 2" } } },
     { "id": "holed", "op": "boolean_operation", "args": { "op": "subtract", "target": "@plate", "tools": ["@eye"] } },

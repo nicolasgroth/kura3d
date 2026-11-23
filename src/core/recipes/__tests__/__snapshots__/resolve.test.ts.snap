@@ -8,8 +8,10 @@ exports[`resolveRecipe: caja con tapa > con ventilación y tapa a presión: ranu
       {
         "args": {
           "params": {
-            "cornerRadius": 0,
             "depth": 64,
+            "edgeScope": "vertical",
+            "edgeSize": 0,
+            "edgeStyle": "sharp",
             "height": 42,
             "width": 84,
           },
@@ -26,8 +28,10 @@ exports[`resolveRecipe: caja con tapa > con ventilación y tapa a presión: ranu
       {
         "args": {
           "params": {
-            "cornerRadius": 0,
             "depth": 60,
+            "edgeScope": "vertical",
+            "edgeSize": 0,
+            "edgeStyle": "sharp",
             "height": 41,
             "width": 80,
           },
@@ -399,8 +403,10 @@ exports[`resolveRecipe: caja con tapa > con ventilación y tapa a presión: ranu
       {
         "args": {
           "params": {
-            "cornerRadius": 0,
             "depth": 64,
+            "edgeScope": "vertical",
+            "edgeSize": 0,
+            "edgeStyle": "sharp",
             "height": 2,
             "width": 84,
           },
@@ -422,8 +428,10 @@ exports[`resolveRecipe: caja con tapa > con ventilación y tapa a presión: ranu
       {
         "args": {
           "params": {
-            "cornerRadius": 0,
             "depth": 59.6,
+            "edgeScope": "vertical",
+            "edgeSize": 0,
+            "edgeStyle": "sharp",
             "height": 3,
             "width": 79.6,
           },
@@ -496,8 +504,10 @@ exports[`resolveRecipe: caja con tapa > valores por defecto: pasos estables 1`] 
       {
         "args": {
           "params": {
-            "cornerRadius": 0,
             "depth": 64,
+            "edgeScope": "vertical",
+            "edgeSize": 0,
+            "edgeStyle": "sharp",
             "height": 42,
             "width": 84,
           },
@@ -514,8 +524,10 @@ exports[`resolveRecipe: caja con tapa > valores por defecto: pasos estables 1`] 
       {
         "args": {
           "params": {
-            "cornerRadius": 0,
             "depth": 60,
+            "edgeScope": "vertical",
+            "edgeSize": 0,
+            "edgeStyle": "sharp",
             "height": 41,
             "width": 80,
           },
@@ -796,8 +808,10 @@ exports[`resolveRecipe: caja con tapa > valores por defecto: pasos estables 1`] 
       {
         "args": {
           "params": {
-            "cornerRadius": 0,
             "depth": 64,
+            "edgeScope": "vertical",
+            "edgeSize": 0,
+            "edgeStyle": "sharp",
             "height": 2,
             "width": 84,
           },
@@ -1028,14 +1042,16 @@ exports[`resolveRecipe: llavero > por defecto: sin logo, el paso del SVG se salt
       {
         "args": {
           "params": {
-            "cornerRadius": {
-              "$deferred": "=(s.art2.size.y + p.size)/2 - 0.01",
-              "path": "steps[4].args.params.cornerRadius",
-            },
             "depth": {
               "$deferred": "=s.art2.size.y + p.size",
               "path": "steps[4].args.params.depth",
             },
+            "edgeScope": "vertical",
+            "edgeSize": {
+              "$deferred": "=(s.art2.size.y + p.size)/2 - 0.01",
+              "path": "steps[4].args.params.edgeSize",
+            },
+            "edgeStyle": "round",
             "height": 3,
             "width": {
               "$deferred": "=s.art2.size.x + p.size + p.ring + 3",
@@ -1129,8 +1145,10 @@ exports[`resolveRecipe: placa de enchufe (medidas por verificar) > por defecto: 
       {
         "args": {
           "params": {
-            "cornerRadius": 4,
             "depth": 80,
+            "edgeScope": "vertical",
+            "edgeSize": 4,
+            "edgeStyle": "round",
             "height": 3,
             "width": 81,
           },
@@ -1327,8 +1345,10 @@ exports[`resolveRecipe: placa de enchufe (medidas por verificar) > variantes: Ch
       {
         "args": {
           "params": {
-            "cornerRadius": 4,
             "depth": 114,
+            "edgeScope": "vertical",
+            "edgeSize": 4,
+            "edgeStyle": "round",
             "height": 3,
             "width": 106,
           },

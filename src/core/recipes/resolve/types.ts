@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import type { ObjectRole } from '../../../types/kura';
 import type { RecipeIssue } from '../errors';
 import type { ExprValue } from '../expression/evaluate';
 import type { RecipeLanguage } from '../limits';
@@ -90,7 +91,7 @@ export interface ResolvedOutput {
   readonly ref: string;
   readonly name: string;
   readonly color?: string;
-  readonly isHole?: boolean;
+  readonly role?: ObjectRole;
 }
 
 export interface ResolveResult {

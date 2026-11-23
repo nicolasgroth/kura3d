@@ -165,6 +165,12 @@ describe('resolveRecipe: respuestas y patrones', () => {
     expect(codes(resolveRecipe({ ...minimal(), derive: { half: '=bed.w' } }))).toEqual(['expr.scope @ derive.half']);
   });
 
+  it('el rol de una salida pasa tal cual (sólido, negativo o referencia)', () => {
+    const recipe = minimal();
+    (recipe.outputs as Array<Record<string, unknown>>)[0].role = 'negative';
+    expect(resolveRecipe(recipe).outputs).toEqual([{ ref: 'cube', name: 'Cubo', role: 'negative' }]);
+  });
+
   it('es pura: la misma entrada da la misma salida y no modifica la receta', () => {
     const recipe = clone(EXAMPLES.caja);
     const before = JSON.stringify(recipe);

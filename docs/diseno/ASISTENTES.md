@@ -65,7 +65,7 @@ Un parámetro oculto toma su `default` y no se valida.
 
 **Repetición acotada** (`pattern`): `linear { count, step:[x,y,z], centered }`, `grid { nx, ny, dx, dy, centered }`, `circular { count, radius, startDeg }`, `corners { width, depth }` (4 puntos) y `points [[x,y,z]…]` (≤ 64). Cada patrón exige `max` (≤ 256). Tope total: 1 024 instancias por receta. El paso devuelve una lista que `tools` acepta (se aplana).
 
-**Salidas y chequeos**: `outputs: [{ ref, name, color?, isHole? }]` (≤ 16), agrupadas si hay más de una. `checks: [{ kind: "fits_bed", refs, onFail: "offer_split" | "warn" }]`. `offer_split` abre Dividir para imprimir con el resultado, no lo divide solo.
+**Salidas y chequeos**: `outputs: [{ ref, name, color?, role? }]` (`role`: `solid` | `negative` | `reference`) (≤ 16), agrupadas si hay más de una. `checks: [{ kind: "fits_bed", refs, onFail: "offer_split" | "warn" }]`. `offer_split` abre Dividir para imprimir con el resultado, no lo divide solo.
 
 **Variantes**: `presets: [{ id, label, values, verified }]` rellenan respuestas y el usuario puede ajustarlas. `verified: false` se ve como "medidas por verificar". `extends: "kura.placa-enchufe@^1"` crea una receta derivada que solo puede cambiar `default/min/max` (campo `overrides: { <param>: {…} }`), agregar presets, reglas y textos. Cambiar pasos es hacer una copia (fork) con otro `id`.
 
@@ -131,9 +131,9 @@ Coordenadas en ejes del usuario. Por ahora `position` sigue la convención del b
   ],
   "steps": [
     { "id": "outer", "op": "create_primitive", "args": { "type": "box",
-      "params": { "width": "=d.ow", "depth": "=d.od", "height": "=p.h + p.wall", "cornerRadius": "=p.r" } } },
+      "params": { "width": "=d.ow", "depth": "=d.od", "height": "=p.h + p.wall", "edgeStyle": "=p.r > 0 ? 'round' : 'sharp'", "edgeScope": "vertical", "edgeSize": "=p.r" } } },
     { "id": "cavity", "op": "create_primitive", "args": { "type": "box", "position": [0, 0, "=p.wall"],
-      "params": { "width": "=p.w", "depth": "=p.dp", "height": "=p.h + 1", "cornerRadius": "=max(p.r - p.wall, 0)" } } },
+      "params": { "width": "=p.w", "depth": "=p.dp", "height": "=p.h + 1", "edgeStyle": "=p.r > p.wall ? 'round' : 'sharp'", "edgeScope": "vertical", "edgeSize": "=max(p.r - p.wall, 0)" } } },
     { "id": "posts", "op": "create_primitive", "when": "=p.fix == 'screw'",
       "pattern": { "kind": "corners", "width": "=d.cw", "depth": "=d.cd", "max": 4 },
       "args": { "type": "cylinder", "position": ["=x", "=y", "=p.wall"], "params": { "radius": "=d.pr", "height": "=p.h" } } },
@@ -147,9 +147,9 @@ Coordenadas en ejes del usuario. Por ahora `position` sigue la convención del b
     { "id": "b2", "op": "boolean_operation", "args": { "op": "union", "target": "@b1", "tools": ["@posts"] } },
     { "id": "box", "op": "boolean_operation", "args": { "op": "subtract", "target": "@b2", "tools": ["@pilots", "@slots"] } },
     { "id": "plate", "op": "create_primitive", "args": { "type": "box", "position": ["=d.ow + 10", 0, 0],
-      "params": { "width": "=d.ow", "depth": "=d.od", "height": "=d.lid", "cornerRadius": "=p.r" } } },
+      "params": { "width": "=d.ow", "depth": "=d.od", "height": "=d.lid", "edgeStyle": "=p.r > 0 ? 'round' : 'sharp'", "edgeScope": "vertical", "edgeSize": "=p.r" } } },
     { "id": "lip", "op": "create_primitive", "when": "=p.fix == 'press'", "args": { "type": "box", "position": ["=d.ow + 10", 0, "=d.lid"],
-      "params": { "width": "=p.w - 0.4", "depth": "=p.dp - 0.4", "height": 3, "cornerRadius": "=max(p.r - p.wall - 0.2, 0)" } } },
+      "params": { "width": "=p.w - 0.4", "depth": "=p.dp - 0.4", "height": 3, "edgeStyle": "=p.r > p.wall + 0.2 ? 'round' : 'sharp'", "edgeScope": "vertical", "edgeSize": "=max(p.r - p.wall - 0.2, 0)" } } },
     { "id": "holes", "op": "create_primitive", "when": "=p.fix == 'screw'",
       "pattern": { "kind": "corners", "width": "=d.cw", "depth": "=d.cd", "max": 4 },
       "args": { "type": "cylinder", "position": ["=d.ow + 10 + x", "=y", -1], "params": { "radius": "=p.screw/2 + 0.2", "height": "=d.lid + 2" } } },
@@ -164,7 +164,7 @@ Coordenadas en ejes del usuario. Por ahora `position` sigue la convención del b
 
 | Paso | Operación | Estado |
 |---|---|---|
-| `outer`, `cavity`, `plate`, `lip` | `create_primitive` box | Existe; **falta `cornerRadius`** |
+| `outer`, `cavity`, `plate`, `lip` | `create_primitive` box | Existe; esquinas con `edgeStyle: round`, `edgeScope: vertical`, `edgeSize` |
 | `posts`, `pilots`, `holes`, `slots` | `create_primitive` cylinder/box + `pattern` | Primitiva existe; `pattern` es del ejecutor (nuevo) |
 | `b1`, `b2`, `box`, `l1`, `lidout` | `boolean_operation` | Existe (con `toolIds`); falta la pasada sin herramientas (ejecutor) |
 | `checks.fits_bed` | — | Nuevo en el ejecutor (`split_for_bed` con `dryRun` ya existe para la oferta) |
@@ -204,7 +204,7 @@ Coordenadas en ejes del usuario. Por ahora `position` sigue la convención del b
     { "level": "info", "when": "=true", "message": "$t:unverified" }
   ],
   "steps": [
-    { "id": "plate", "op": "create_primitive", "args": { "type": "box", "params": { "width": "=d.pw", "depth": "=p.ph", "height": "=p.t", "cornerRadius": 4 } } },
+    { "id": "plate", "op": "create_primitive", "args": { "type": "box", "params": { "width": "=d.pw", "depth": "=p.ph", "height": "=p.t", "edgeStyle": "round", "edgeScope": "vertical", "edgeSize": 4 } } },
     { "id": "win", "op": "create_primitive",
       "pattern": { "kind": "linear", "count": "=p.modules", "step": ["=p.mw", 0, 0], "centered": true, "max": 3 },
       "args": { "type": "box", "position": ["=x", 0, -1], "params": { "width": "=p.winw", "depth": "=p.winh", "height": "=p.t + 2" } } },
@@ -237,7 +237,7 @@ Variante de un tercero (solo datos):
 
 | Paso | Operación | Estado |
 |---|---|---|
-| `plate` | `create_primitive` box | Existe; falta `cornerRadius` |
+| `plate` | `create_primitive` box | Existe (`edgeStyle`/`edgeScope`/`edgeSize`) |
 | `win`, `holes` | `create_primitive` + `pattern` | Existe + ejecutor |
 | `sinks` (avellanado) | `create_primitive` cone con `rotation` | Existe (cono con punta; la orientación hay que verificarla) |
 | `out` | `boolean_operation` subtract | Existe |
@@ -271,7 +271,7 @@ Variante de un tercero (solo datos):
       "to": [0, 0, "=p.mode == 'relief' ? p.base : p.base - p.depth"] } },
     { "id": "plate", "op": "create_primitive", "args": { "type": "box", "position": ["=-(p.ring + 3)/2", 0, 0],
       "params": { "width": "=s.art2.size.x + p.size + p.ring + 3", "depth": "=s.art2.size.y + p.size",
-                  "height": "=p.base", "cornerRadius": "=(s.art2.size.y + p.size)/2 - 0.01" } } },
+                  "height": "=p.base", "edgeStyle": "round", "edgeScope": "vertical", "edgeSize": "=(s.art2.size.y + p.size)/2 - 0.01" } } },
     { "id": "eye", "op": "create_primitive", "args": { "type": "cylinder",
       "position": ["=s.plate.min.x + p.ring/2 + 2.5", 0, -1], "params": { "radius": "=p.ring/2", "height": "=p.base + 2" } } },
     { "id": "holed", "op": "boolean_operation", "args": { "op": "subtract", "target": "@plate", "tools": ["@eye"] } },
@@ -289,13 +289,13 @@ Variante de un tercero (solo datos):
 | `icon` | `import_svg` | Existe; el `file` lo entrega el ejecutor como `svgContent` |
 | `art` | `combine_objects` | Existe; falta aceptar una lista con un solo elemento (ejecutor) |
 | `art2` | `recipe.place` | Nuevo, del ejecutor (traslada por caja envolvente) |
-| `plate`, `eye` | `create_primitive` | Existe; falta `cornerRadius` |
+| `plate`, `eye` | `create_primitive` | Existe (`edgeStyle`/`edgeScope`/`edgeSize`) |
 | `holed`, `out` | `boolean_operation` | Existe |
 
 ## 7. Operaciones que faltan (por prioridad)
 
 1. **Ejecutor de recetas** (`src/core/recipes/`): escena de trabajo, `@ref`, `pattern`, pasada sin herramientas, listas aplanadas, `recipe.place`, cajas envolventes `s.*`, topes y cancelación en el Worker.
-2. **`cornerRadius` en la caja**: `CrossSection.square` → `offset` redondo → `extrude` (Manifold). Se valida en `projectSchema` y `PRIMITIVE_PARAM_RANGES`.
+2. ~~Esquinas redondeadas en la caja~~: ya existe como `edgeStyle`/`edgeScope`/`edgeSize` de la primitiva (no hay `cornerRadius`).
 3. **Chequeo `fits_bed`** como lectura pura, reutilizando el cálculo de `align_objects`/`split_for_bed` `dryRun`.
 4. **Comando para imagen a 3D** (relieve, silueta, litofanía) en el bus y el MCP. Hoy solo existe en la interfaz (`ioSlice`).
 5. **Conector suelto** (tarugo, espiga, cola de milano) como comando, extraído de `src/engine/split/`: útil para tapas encastradas y módulos.
@@ -306,7 +306,7 @@ Variante de un tercero (solo datos):
 | Lote | Objetivos (≤ 8) |
 |---|---|
 | RCP-01 Formato | Esquema `kura.recipe/1`; validador estricto; parser + intérprete de expresiones con presupuesto; orden de `derive` y ciclos; JSON Schema exportable; pruebas hostiles (prototipo, profundidad, tamaños). |
-| MOT-RB Caja redondeada | `cornerRadius` en motor, rangos, `.kura`, bus, MCP, pruebas de malla cerrada, volumen y medidas. |
+| MOT-RB Caja redondeada | Hecho antes de las recetas como bordes de primitiva (`edgeStyle`/`edgeScope`/`edgeSize`). |
 | RCP-02 Ejecutor | Escena de trabajo; whitelist de `op`; `@ref` y listas; `pattern`; `recipe.place`; topes de triángulos, instancias y tiempo; un `SceneChange`; prueba de la caja (a) con volumen y medidas. |
 | RCP-03 Persistencia | `metadata.recipe` y `recipes[hash]` en `.kura` (versión 3); regenerar conservando transformaciones; detección por huella; "Dejar fijo"; F4 `kind: 'recipe'`. |
 | RCP-04 MCP | `kura_list_recipes`, `kura_describe_recipe`, `kura_validate_recipe`, `kura_run_recipe` (puente y sin interfaz); política de solo lectura. |

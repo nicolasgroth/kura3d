@@ -1336,8 +1336,13 @@
             "type": "string",
             "pattern": "^#[0-9a-fA-F]{6}$"
           },
-          "isHole": {
-            "type": "boolean"
+          "role": {
+            "type": "string",
+            "enum": [
+              "solid",
+              "negative",
+              "reference"
+            ]
           }
         },
         "required": [

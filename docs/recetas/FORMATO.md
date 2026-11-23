@@ -26,7 +26,7 @@ Todo objeto es estricto: un campo desconocido es un error.
 | `rules` | no | reglas `{ when, level, message, params?, focus? }` (≤ 64) |
 | `presets` | no | variantes `{ id, label, verified, values }` (≤ 64) |
 | `steps` | sí* | pasos `{ id, op, args, when?, pattern? }` (≤ 128) |
-| `outputs` | sí* | `{ ref: "@paso", name, color?, isHole? }` (≤ 16) |
+| `outputs` | sí* | `{ ref: "@paso", name, color?, role? }` (≤ 16); `role` ∈ `solid` (por defecto), `negative`, `reference` |
 | `checks` | no | `{ kind: "fits_bed", refs, onFail: "offer_split" \| "warn" }` |
 | `assets` | no | recursos embebidos `{ id, kind, data, label? }` (≤ 16) |
 | `strings` | no | `{ es: {clave: texto}, en: {…}, de, fr, hi, zh }` |
