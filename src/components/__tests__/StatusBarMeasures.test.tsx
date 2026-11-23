@@ -24,6 +24,10 @@ beforeAll(() => {
   proto.hidePopover = function hidePopover(this: HTMLElement) {
     this.removeAttribute('data-open');
   };
+  // jsdom 27+ oculta `[popover]` sin `:popover-open` (y lo oculto no recibe foco): el abierto aquí se ve.
+  const shown = document.createElement('style');
+  shown.textContent = '[popover][data-open] { display: block; }';
+  document.head.appendChild(shown);
 });
 
 describe('StatusBarMeasures', () => {
@@ -58,8 +62,11 @@ describe('StatusBarMeasures', () => {
     useKuraStore.setState({ language: 'es' } as never);
     const user = userEvent.setup();
     render(<StatusBarMeasures />);
+    // Como en el navegador, el selector solo recibe foco con el popover abierto (jsdom 27+ no enfoca lo oculto).
+    act(() => (document.querySelector('.kura-measures-popover') as HTMLElement).showPopover());
     const unit = screen.getByLabelText(t('es', 'dialog.settings.unitLabel'));
     unit.focus();
+    expect(document.activeElement).toBe(unit);
     await user.keyboard('{Escape}');
     expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Unidad / }));
   });
