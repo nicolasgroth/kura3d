@@ -13,6 +13,7 @@ import type { FootprintXZ } from '../../engine/io/importPlacement';
 import { PLACEMENT_GAP_MM } from '../../engine/io/importPlacement';
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
 import { computeBedPositionY } from './sceneObjects';
+import { occupiesBed } from './objectRole';
 
 export type { FootprintXZ };
 
@@ -43,11 +44,11 @@ export function footprintOf(mesh: MeshData, position: Vec3, rotation: Vec3, scal
   return { minX: box.min.x, maxX: box.max.x, minZ: box.min.z, maxZ: box.max.z };
 }
 
-/** Huellas de los objetos visibles de la escena. */
+/** Huellas de los objetos visibles de la escena (las referencias no ocupan cama). */
 export function sceneFootprints(objects: readonly SceneObject[]): FootprintXZ[] {
   const out: FootprintXZ[] = [];
   for (const obj of objects) {
-    if (!obj.visible) continue;
+    if (!obj.visible || (obj.role !== undefined && !occupiesBed(obj))) continue;
     const fp = footprintOf(obj.mesh, obj.position, obj.rotation, obj.scale);
     if (fp) out.push(fp);
   }

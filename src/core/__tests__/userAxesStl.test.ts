@@ -80,7 +80,7 @@ describe('ejes del usuario con STL', () => {
 
     const obj = {
       id: 'caja', name: 'caja', source: 'import', position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1],
-      color: '#cccccc', isHole: false, visible: true, locked: false, mesh, stats,
+      color: '#cccccc', role: 'solid', visible: true, locked: false, mesh, stats,
     } as unknown as SceneObject;
     const bytes = exportSceneToBinarySTL([obj]);
     expect(stlExtent(bytes)).toEqual([10, 20, 30]);

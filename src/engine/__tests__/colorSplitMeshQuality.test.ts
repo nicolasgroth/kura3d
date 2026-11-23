@@ -25,7 +25,7 @@ const RED = '#ff0000';
 function obj(mesh: MeshData): SceneObject {
   return {
     id: 'o', name: 'o', source: 'primitive', position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1],
-    color: WHITE, isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
+    color: WHITE, role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
   };
 }
 

@@ -131,7 +131,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
         .getState()
         .addModularPrimitive('cylinder', 'positive', base!.id);
       expect(posMod).not.toBeNull();
-      expect(posMod!.isHole).toBe(false);
+      expect(posMod!.role).toBe('solid');
       expect(posMod!.name.startsWith('+')).toBe(true);
       expect(posMod!.stats.isManifold).toBe(true);
 
@@ -148,7 +148,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
         .getState()
         .addModularPrimitive('cylinder', 'negative', fusedPositive!.id);
       expect(negMod).not.toBeNull();
-      expect(negMod!.isHole).toBe(true);
+      expect(negMod!.role).toBe('negative');
       expect(negMod!.name.startsWith('−')).toBe(true);
 
       // Generamos un STL binario real y lo importamos como módulo positivo y como módulo negativo
@@ -161,7 +161,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
         rotation: [0, 0, 0],
         scale: [1, 1, 1],
         color: '#38bdf8',
-        isHole: false,
+        role: 'solid',
         visible: true,
         locked: false,
         mesh: rawPeg,
@@ -177,7 +177,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
         .getState()
         .importModelAsModule({ name: 'anclaje.stl', buffer: stlArrayBuffer }, 'positive', fusedPositive!.id);
       expect(importedPos).not.toBeNull();
-      expect(importedPos!.isHole).toBe(false);
+      expect(importedPos!.role).toBe('solid');
       expect(importedPos!.name.startsWith('+')).toBe(true);
       expect(importedPos!.stats.isManifold).toBe(true);
 
@@ -193,7 +193,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
         .getState()
         .importModelAsModule({ name: 'calado.stl', buffer: stlArrayBuffer }, 'negative', fusedWithStl!.id);
       expect(importedNeg).not.toBeNull();
-      expect(importedNeg!.isHole).toBe(true);
+      expect(importedNeg!.role).toBe('negative');
       expect(importedNeg!.name.startsWith('−')).toBe(true);
       useKuraStore.getState().setObjectTransform(importedNeg!.id, {
         position: [8, importedNeg!.position[1], 0],
@@ -206,7 +206,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
       await useKuraStore.getState().applyHolesOnSolids();
 
       const afterObjects = useKuraStore.getState().objects;
-      expect(afterObjects.some((o) => o.isHole)).toBe(false);
+      expect(afterObjects.some((o) => (o.role === 'negative'))).toBe(false);
 
       const updatedSolid = afterObjects.find((o) => o.id === fusedWithStl!.id);
       expect(updatedSolid).toBeDefined();
@@ -479,7 +479,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
       });
       expect(bolt).not.toBeNull();
       expect(bolt!.source).toBe('thread');
-      expect(bolt!.isHole).toBe(false);
+      expect(bolt!.role).toBe('solid');
       expect(bolt!.stats.isManifold).toBe(true);
       expect(bolt!.position[0]).toBe(0);
 
@@ -492,7 +492,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
         clearanceMm: 0.25,
       });
       expect(nut).not.toBeNull();
-      expect(nut!.isHole).toBe(false);
+      expect(nut!.role).toBe('solid');
       expect(nut!.stats.isManifold).toBe(true);
       // Colocación en espacio libre: la tuerca no comparte lugar con el perno.
       expect(Math.hypot(nut!.position[0], nut!.position[2])).toBeGreaterThan(0);
@@ -505,7 +505,7 @@ describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command 
         clearanceMm: 0.3,
       });
       expect(holeTap).not.toBeNull();
-      expect(holeTap!.isHole).toBe(true);
+      expect(holeTap!.role).toBe('negative');
       expect(holeTap!.stats.isManifold).toBe(true);
       expect(holeTap!.position).not.toEqual(nut!.position);
       expect(Math.hypot(holeTap!.position[0], holeTap!.position[2])).toBeGreaterThan(0);

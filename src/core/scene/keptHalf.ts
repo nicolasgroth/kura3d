@@ -14,6 +14,7 @@ import * as THREE from 'three';
 import type { PlaneCutOptions, SceneObject, Vec3 } from '../../types/kura';
 import { footprintOf, placeInFreeSpot, type BedSize, type FootprintXZ } from './freeSpot';
 import { computeBedPositionY } from './sceneObjects';
+import { occupiesBed } from './objectRole';
 
 /** Dónde queda la mitad conservada: donde está, apoyada en la cama o en un hueco libre. */
 export type KeptHalfPlacement = 'inPlace' | 'dropToBed' | 'freeSpot';
@@ -35,7 +36,7 @@ const overlapsXZ = (a: FootprintXZ, b: FootprintXZ) =>
 export function overlappingNames(others: readonly SceneObject[], footprint: FootprintXZ | null): string[] {
   if (!footprint) return [];
   return others
-    .filter((o) => o.visible)
+    .filter((o) => o.visible && occupiesBed(o))
     .filter((o) => {
       const fp = footprintOf(o.mesh, o.position, o.rotation, o.scale);
       return fp !== null && overlapsXZ(footprint, fp);

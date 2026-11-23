@@ -43,7 +43,7 @@ describe('agujero roscado sobre el objeto seleccionado', () => {
     expect(h.max[1]).toBeGreaterThan(c.max[1]);
     expect(h.max[1] - c.max[1]).toBeLessThan(1);
     expect(h.min[1]).toBeCloseTo(h.max[1] - 10, 0);
-    expect(byId(hole!.id)!.isHole).toBe(true);
+    expect(byId(hole!.id)!.role).toBe('negative');
     expect(byId(hole!.id)!.groupRef).toBeDefined();
     expect(byId(hole!.id)!.groupRef).toBe(byId(cube.id)!.groupRef);
   });
@@ -53,7 +53,7 @@ describe('agujero roscado sobre el objeto seleccionado', () => {
     useSelection();
     const res = await store().executeCommand({ id: 't', command: 'create_thread', params: { ...HOLE, targetId: cube.id } }, 'ai');
     expect(res.ok).toBe(true);
-    const hole = store().objects.find((o) => o.isHole)!;
+    const hole = store().objects.find((o) => (o.role === 'negative'))!;
     const h = computeWorldBoundingBox(hole);
     const c = computeWorldBoundingBox(byId(cube.id)!);
     expect((h.min[0] + h.max[0]) / 2).toBeCloseTo((c.min[0] + c.max[0]) / 2, 3);

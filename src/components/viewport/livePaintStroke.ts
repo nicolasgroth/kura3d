@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { isNegative } from '../../core/scene/objectRole';
 import type * as THREE from 'three';
 import type { BrushQuery } from '../../engine/paint/brushSelect';
 import { PaintStrokeSession } from '../../engine/paint/strokeSession';
@@ -62,7 +63,7 @@ export function startLiveStroke(objectId: string, getGeometry: () => THREE.Buffe
   const mesh = store.preparePaintStroke(objectId);
   const obj = store.objects.find((o) => o.id === objectId);
   if (!mesh || !obj) return false;
-  const baseHex = obj.isHole ? '#f97316' : obj.color;
+  const baseHex = isNegative(obj) ? '#f97316' : obj.color;
   active = {
     objectId,
     baseHex,

@@ -10,13 +10,14 @@
 import React from 'react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import { isPrintable } from '../../core/scene/objectRole';
 import { checkObjectsOutOfBounds } from '../viewport/viewportHelpers';
 
 export const FitOutOfBoundsButton: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const open = () => {
     const { objects, selectedIds, printerProfile, openFitToBed } = useKuraStore.getState();
-    const outside = objects.filter((o) => !o.isHole && o.visible && checkObjectsOutOfBounds([o], printerProfile)).map((o) => o.id);
+    const outside = objects.filter((o) => isPrintable(o) && o.visible && checkObjectsOutOfBounds([o], printerProfile)).map((o) => o.id);
     openFitToBed(selectedIds.length > 0 ? selectedIds : outside);
   };
   return (

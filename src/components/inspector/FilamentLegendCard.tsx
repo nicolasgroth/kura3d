@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { isSolid } from '../../core/scene/objectRole';
 import React, { useMemo } from 'react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -20,7 +21,7 @@ export const FilamentLegendCard: React.FC = () => {
   const sceneColors = useMemo(() => {
     const map = new Map<string, number>();
     for (const obj of objects) {
-      if (obj.isHole) continue;
+      if (!isSolid(obj)) continue;
       if (obj.mesh.faceColors && obj.mesh.faceColors.length > 0) {
         const distinct = new Set(obj.mesh.faceColors.map((c) => c.toLowerCase()));
         for (const c of distinct) {

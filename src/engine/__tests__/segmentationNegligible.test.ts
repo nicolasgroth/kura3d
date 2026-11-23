@@ -24,7 +24,7 @@ import { isNegligibleRegionBox, NEGLIGIBLE_THICKNESS_REL, NEGLIGIBLE_VOLUME_REL 
 
 const object = (mesh: MeshData): SceneObject => ({
   id: 'steps', name: 'steps', source: 'primitive', position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1],
-  color: '#38bdf8', isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
+  color: '#38bdf8', role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
 });
 
 async function steps(): Promise<MeshData> {

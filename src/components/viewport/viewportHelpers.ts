@@ -9,6 +9,7 @@
 import * as THREE from 'three';
 import { X } from 'lucide-react';
 import { plateOffsetX } from '../../core/scene/splitGroups';
+import { isPrintable } from '../../core/scene/objectRole';
 import { type PrinterProfile, type SceneObject, type SlicerTarget } from '../../types/kura';
 
 export interface ContextMenuState {
@@ -100,7 +101,7 @@ export function checkObjectsOutOfBounds(
   const maxH = profile.maxHeightMm + 0.05;
 
   for (const obj of objects) {
-    if (!obj.visible || obj.isHole) continue;
+    if (!isPrintable(obj)) continue;
     const b = computeWorldBounds(obj);
     const shift = printPlateShiftX(obj, profile.bedWidthMm);
     b.minX -= shift;

@@ -26,7 +26,7 @@ import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
 function sceneObject(mesh: MeshData, scale: Vec3 = [1, 1, 1]): SceneObject {
   return {
     id: 'p', name: 'p', source: 'primitive', position: [0, 0, 0], rotation: [0, 0, 0], scale,
-    color: '#123456', isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
+    color: '#123456', role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
   } as SceneObject;
 }
 

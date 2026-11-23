@@ -7,6 +7,7 @@
  * @license MIT
  */
 
+import { isPrintable } from '../../../core/scene/objectRole';
 import React from 'react';
 import { Download, EyeOff, FileInput, MoreHorizontal } from 'lucide-react';
 import { t } from '../../../i18n';
@@ -27,7 +28,7 @@ export const ObjectMenuMore: React.FC<{
   const setSelection = useKuraStore((s) => s.setSelection);
   const updateObjectMeta = useKuraStore((s) => s.updateObjectMeta);
   const ids = selectedIds.includes(target.id) ? selectedIds : [target.id];
-  const hasExportable = objects.some((o) => ids.includes(o.id) && o.visible && !o.isHole);
+  const hasExportable = objects.some((o) => ids.includes(o.id) && isPrintable(o));
 
   return (
     <SubMenu icon={<MoreHorizontal size={14} aria-hidden="true" />} label={t(language, 'menu.more')} tip={t(language, 'menu.more.tip')}>

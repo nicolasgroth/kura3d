@@ -11,6 +11,7 @@
 
 import type { AlignMode, PrinterProfile, SceneObject, Vec3 } from '../types/kura';
 import { applyTransformToMesh } from './primitives';
+import { isNegative } from '../core/scene/objectRole';
 
 /** Límites AABB en espacio mundial de un objeto de escena. */
 interface WorldBoundsEntry {
@@ -250,7 +251,7 @@ function addMember(group: ArrangeGroup, entry: WorldBoundsEntry): void {
 
 /**
  * Distribuye piezas en filas sobre la cama con 8 mm de separación y sin solapes. Los modificadores
- * `isHole` que tocan un sólido se mueven junto a él (mismo desplazamiento) en vez de colocarse por
+ * negativos que tocan un sólido se mueven junto a él (mismo desplazamiento) en vez de colocarse por
  * separado; `companions` son huecos fuera de la selección que solo se mueven si perforan una pieza
  * distribuida. Informa si la huella resultante no cabe en la cama.
  */
@@ -264,14 +265,14 @@ export function computeArrangeLayout(
 
   const spacing = 8;
   const entries = objects.map(computeObjectWorldBounds);
-  const solids = entries.filter((e) => !e.obj.isHole);
+  const solids = entries.filter((e) => !isNegative(e.obj));
   const groups = new Map<string, ArrangeGroup>(solids.map((s) => [s.obj.id, makeGroup(s)]));
-  for (const hole of entries.filter((e) => e.obj.isHole)) {
+  for (const hole of entries.filter((e) => isNegative(e.obj))) {
     const host = hostFor(hole, solids);
     if (host) addMember(groups.get(host.obj.id)!, hole);
     else groups.set(hole.obj.id, makeGroup(hole));
   }
-  for (const hole of companions.filter((o) => o.isHole).map(computeObjectWorldBounds)) {
+  for (const hole of companions.filter(isNegative).map(computeObjectWorldBounds)) {
     const host = hostFor(hole, solids);
     if (host) addMember(groups.get(host.obj.id)!, hole);
   }

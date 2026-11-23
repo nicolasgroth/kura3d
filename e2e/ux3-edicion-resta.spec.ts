@@ -31,7 +31,7 @@ test('aplicar restas deja seleccionado solo el objeto resultante', async ({ page
   await expect(page.getByRole('button', { name: 'Restar', exact: true })).toHaveCount(0);
   const despues = await page.evaluate(() => {
     const s = (window as any).__s.getState();
-    return { n: s.objects.length, holes: s.objects.filter((o: any) => o.isHole).length, cubo: s.objects.find((o: any) => /Cubo/.test(o.name))?.mesh.positions.length };
+    return { n: s.objects.length, holes: s.objects.filter((o: any) => o.role === 'negative').length, cubo: s.objects.find((o: any) => /Cubo/.test(o.name))?.mesh.positions.length };
   });
   expect(despues).toEqual({ n: 2, holes: 0, cubo: cuboMesh });
   await page.screenshot({ path: `${SHOTS}/1-resta-seleccion.png` });

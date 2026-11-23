@@ -25,6 +25,8 @@ import { registerSplitTools } from './splitTools.js';
 import { registerFitTools } from './fitTools.js';
 import { registerMeasureTools } from './measureTools.js';
 import { registerRepairTools } from './repairTools.js';
+import { registerRoleTools, roleSchema } from './roleTools.js';
+import type { ObjectRole } from '../../src/types/kura';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
 import { HeadlessCommandError } from './headlessSupport.js';
 import {
@@ -298,7 +300,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         rotation: rotationSchema.optional(),
         scale: scaleSchema.optional(),
         color: hexColorSchema.optional().describe('Hexadecimal color, for example #38bdf8.'),
-        isHole: z.boolean().optional().describe('If true, marks the part as a subtraction volume.'),
+        role: roleSchema.optional(),
+        isHole: z.boolean().optional().describe("Deprecated alias of role: true = 'negative'."),
         placement: placementSchema,
       },
     },
@@ -316,6 +319,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             rotation: args.rotation,
             scale: args.scale,
             color: args.color,
+            role: args.role as ObjectRole | undefined,
             isHole: args.isHole,
             placement: args.placement,
           })
@@ -327,6 +331,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerFitTools(server, ctx);
   registerMeasureTools(server, ctx);
   registerRepairTools(server, ctx);
+  registerRoleTools(server, ctx);
 
   // 3. Transformación de objetos
   server.registerTool(

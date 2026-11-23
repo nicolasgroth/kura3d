@@ -14,6 +14,7 @@
 
 import type { SceneGroup, SceneObject, Vec3 } from '../../types/kura';
 import { MAX_PART_NAME } from './importErrors';
+import { isNegative } from '../../core/scene/objectRole';
 
 /** Ruta del archivo dentro del paquete. */
 export const KURA_SCENE_PATH = 'Metadata/kura_scene.json';
@@ -88,7 +89,7 @@ export function buildKuraSceneMeta(
       color: o.color,
       visible: o.visible,
       locked: o.locked,
-      isHole: o.isHole,
+      isHole: isNegative(o),
       ...(o.materialPreset ? { materialPreset: o.materialPreset } : {}),
       ...(o.groupRef !== undefined && groupIndex.has(o.groupRef) ? { group: groupIndex.get(o.groupRef) } : {}),
       vertices: Math.floor(o.mesh.positions.length / 3),

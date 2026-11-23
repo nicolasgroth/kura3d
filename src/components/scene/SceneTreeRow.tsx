@@ -12,8 +12,10 @@
 import React from 'react';
 import {
   ArrowDownToLine, Box, Boxes, ChevronDown, ChevronRight, Copy, Eye, EyeOff, Folder, FolderOpen, Lock, MinusSquare,
-  MoreHorizontal, Puzzle, Trash2, Type, Unlock,
+  MoreHorizontal, Puzzle, SquareDashed, Trash2, Type, Unlock,
 } from 'lucide-react';
+import { isNegative, isReference, isSolid } from '../../core/scene/objectRole';
+import '../../styles/reference.css';
 import { t } from '../../i18n';
 import type { LanguageCode, SceneObject } from '../../types/kura';
 import { tCount } from '../../utils/plural';
@@ -57,7 +59,8 @@ function typeOf(row: TreeRow): { icon: React.ReactNode; label: string } {
   }
   if (node.kind === 'split') return { icon: <Puzzle size={14} />, label: 'groups.tree.type.split' };
   const o = node.object;
-  if (o.isHole) return { icon: <MinusSquare size={14} />, label: 'groups.tree.type.negative' };
+  if (isReference(o)) return { icon: <SquareDashed size={14} />, label: 'groups.tree.type.reference' };
+  if (isNegative(o)) return { icon: <MinusSquare size={14} />, label: 'groups.tree.type.negative' };
   if (o.metadata?.split) return { icon: <Puzzle size={14} />, label: 'groups.tree.type.split' };
   if (o.primitiveType === 'text') return { icon: <Type size={14} />, label: 'groups.tree.type.text' };
   if (o.source === 'combined') return { icon: <Boxes size={14} />, label: 'groups.tree.type.combined' };
@@ -122,7 +125,7 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
         ) : (
           <span className="kura-tree-chevron-space" aria-hidden="true" />
         )}
-        <span className="kura-tree-icon" aria-hidden="true" style={obj && !obj.isHole ? { color: obj.color } : undefined}>
+        <span className="kura-tree-icon" aria-hidden="true" style={obj && isSolid(obj) ? { color: obj.color } : undefined}>
           {type.icon}
         </span>
         {renaming ? (
@@ -151,7 +154,8 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
             <span aria-hidden="true">{obj.metadata.split.assemblyStep}</span>
           </span>
         )}
-        {obj?.isHole && <span className="kura-hole-tag" aria-hidden="true">{t(language, 'sidebar.scene.holeBadge')}</span>}
+        {obj && isNegative(obj) && <span className="kura-hole-tag" aria-hidden="true">{t(language, 'sidebar.scene.holeBadge')}</span>}
+        {obj && isReference(obj) && <span className="kura-hole-tag kura-reference-tag" aria-hidden="true">{t(language, 'sidebar.scene.referenceBadge')}</span>}
         <span className="sr-only">, {states.join(', ')}</span>
       </div>
 

@@ -138,7 +138,7 @@ test('agujero roscado con un cubo seleccionado: centrado arriba, agrupado y "Apl
   await largo.fill('10'); await largo.press('Tab');
   await page.getByRole('button', { name: /Crear Rosca/ }).click();
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length), { timeout: 20000 }).toBe(2);
-  const g = await page.evaluate(() => (window as any).__s.getState().objects.map((o: any) => [o.groupRef, o.isHole, o.position]));
+  const g = await page.evaluate(() => (window as any).__s.getState().objects.map((o: any) => [o.groupRef, o.role === 'negative', o.position]));
   expect(g[0][0]).toBeTruthy();
   expect(g[0][0]).toBe(g[1][0]);
   expect(g[1][1]).toBe(true);

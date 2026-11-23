@@ -16,6 +16,8 @@ import type {
   TextureOptions,
   Vec3,
 } from '../../types/kura';
+import type { ObjectRole } from '../../types/kura';
+import { isNegative } from './objectRole';
 
 /** Resumen serializable de un objeto de escena. */
 export interface SceneObjectSummary {
@@ -28,7 +30,11 @@ export interface SceneObjectSummary {
   scale: Vec3;
   color: string;
   materialPreset: MaterialPresetId;
+  role: ObjectRole;
+  /** Obsoleto: `role === 'negative'`. Se mantiene una versión para clientes MCP antiguos. */
   isHole: boolean;
+  /** Opacidad propia de una referencia (si la tiene). */
+  referenceOpacity?: number;
   visible: boolean;
   locked: boolean;
   hollow?: HollowOptions;
@@ -50,7 +56,9 @@ export function summarizeObject(obj: SceneObject): SceneObjectSummary {
     scale: [...obj.scale],
     color: obj.color,
     materialPreset: obj.materialPreset ?? 'pla_matte',
-    isHole: obj.isHole,
+    role: obj.role,
+    isHole: isNegative(obj),
+    ...(obj.referenceOpacity !== undefined ? { referenceOpacity: obj.referenceOpacity } : {}),
     visible: obj.visible,
     locked: obj.locked,
     hollow: obj.hollow ? { ...obj.hollow } : undefined,

@@ -17,6 +17,7 @@ import {
 import { rigidPivot, rigidTransformPatches } from '../../core/scene/groupTransform';
 import { makeId } from '../../core/scene/sceneObjects';
 import type { SceneObject } from '../../types/kura';
+import { isReference } from '../../core/scene/objectRole';
 import { tCount } from '../../utils/plural';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
@@ -134,7 +135,11 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         get().addToast(tr('groups.toast.locked'), 'info');
         return null;
       }
-      if (new Set(objs.map((o) => o.isHole)).size > 1) {
+      if (objs.some(isReference)) {
+        get().addToast(tr('reference.toast.notAllowed'), 'info');
+        return null;
+      }
+      if (new Set(objs.map((o) => o.role)).size > 1) {
         get().addToast(tr('groups.toast.combineMixed'), 'error');
         return null;
       }

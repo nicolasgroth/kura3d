@@ -11,6 +11,7 @@
 
 import { focusById } from '../../utils/focusById';
 import { boxesOverlap } from '../../core/scene/overlap';
+import { isReference } from '../../core/scene/objectRole';
 import * as ops from '../../core/operations';
 import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets, touchingHoleScope } from '../../core/scene/sceneRules';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
@@ -28,6 +29,15 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
   const editable = (id: string) => {
     const obj = get().objects.find((o) => o.id === id);
     return obj && !obj.locked ? obj : null;
+  };
+  /** Como `editable`, pero rechaza referencias (no se dividen, ahuecan, cortan ni texturizan) con aviso. */
+  const shapeable = (id: string) => {
+    const obj = editable(id);
+    if (obj && isReference(obj)) {
+      get().addToast(tr('reference.toast.notAllowed'), 'info');
+      return null;
+    }
+    return obj;
   };
 
   return {
@@ -87,7 +97,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
     },
 
     hollowObject: async (id, options) => {
-      const obj = editable(id);
+      const obj = shapeable(id);
       if (!obj) return false;
       return runExclusive('hollow', false, async () => {
         const change = await runEngine('hollow', { obj, options });
@@ -149,7 +159,11 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
     runConvexHull: async (ids) => {
       const { objects, selectedIds } = get();
       const targetObjs = resolveHullTargets(objects, selectedIds, ids);
-      if (targetObjs.length === 0) return null;
+      if (targetObjs.length === 0) {
+        const asked = ids && ids.length >= 2 ? ids : selectedIds;
+        if (objects.some((o) => asked.includes(o.id) && isReference(o))) get().addToast(tr('reference.toast.notAllowed'), 'info');
+        return null;
+      }
       return runExclusive('convex_hull', null, async () => {
         await get().initEngine();
         const { result, change } = await runEngine('convexHull', { targets: targetObjs });
@@ -177,7 +191,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
     },
 
     applyTextureToObject: (id, options) => {
-      const obj = editable(id);
+      const obj = shapeable(id);
       if (!obj) return false;
       try {
         commitChange(ops.textureObject(opCtx(), obj, options));
@@ -190,7 +204,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
     },
 
     eraseSphereOnObject: async (id, worldCenter, radiusMm) => {
-      const obj = editable(id);
+      const obj = shapeable(id);
       if (!obj) return;
       return runExclusive('erase', undefined, async () => {
         const change = await runEngine('erase', { obj, center: worldCenter, radiusMm: radiusMm ?? get().eraseRadiusMm });
@@ -201,7 +215,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
     },
 
     projectOnObjectSurface: async (id, options) => {
-      const obj = editable(id);
+      const obj = shapeable(id);
       if (!obj) return null;
       return runExclusive('project_surface', null, async () => {
         await get().initEngine();
@@ -223,6 +237,10 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       const { objects, printerProfile } = get();
       const obj = objects.find((o) => o.id === id);
       if (!obj) return null;
+      if (isReference(obj)) {
+        get().addToast(tr('reference.toast.notAllowed'), 'info');
+        return null;
+      }
       try {
         // Solo lectura: corre en el Worker sin tomar el bloqueo de operaciones.
         const report = await ctx.runEngineDetached('printability', {

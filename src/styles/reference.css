@@ -1,0 +1,32 @@
+/*
+ * @file src/styles/reference.css
+ * @description Estilos de los objetos de referencia: etiqueta del árbol (borde discontinuo, no solo
+ * color) y deslizador de opacidad del inspector y de Ajustes.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-reference-tag {
+  background: color-mix(in srgb, var(--text-secondary, #64748b) 12%, transparent);
+  color: var(--text-secondary, #64748b);
+  border: 1px dashed currentColor;
+}
+
+.kura-reference-opacity-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kura-reference-opacity-row input[type='range'] {
+  flex: 1;
+  min-width: 0;
+}
+
+.kura-reference-opacity-row output {
+  min-width: 4ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}

@@ -52,4 +52,5 @@ export type KuraCommandName =
   | 'measure_object'
   | 'measure_capacity'
   | 'repair_mesh'
-  | 'diagnose_mesh';
+  | 'diagnose_mesh'
+  | 'set_object_role';

@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { isNegative } from '../../core/scene/objectRole';
 import React from 'react';
 import { AlignCenter, Box, Combine, Grid } from 'lucide-react';
 import { t } from '../../i18n';
@@ -31,7 +32,7 @@ export const InspectorMulti: React.FC = () => {
   const alignSelectedObjects = useKuraStore((s) => s.alignSelectedObjects);
   const selectedObjects = objects.filter((o) => selectedIds.includes(o.id));
   const primary = selectedObjects[0] ?? null;
-  const holeCount = objects.filter((o) => o.isHole && o.visible).length;
+  const holeCount = objects.filter((o) => isNegative(o) && o.visible).length;
   const hasAnyHoles = holeCount > 0;
   const isBusy = Boolean(busyOperation);
   // Filas en ejes del usuario: X (izq → der), Y (frente → fondo = Z interno máx → mín), Z (abajo → arriba = Y interno).

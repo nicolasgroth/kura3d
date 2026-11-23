@@ -16,6 +16,7 @@ import { brandSignature, type ExportBrand } from './exportBrand';
 import { normalizeHexColor } from './meshBuffers';
 import { buildKuraSceneMeta, KURA_SCENE_PATH } from './kuraSceneMeta';
 import { exportableObjects } from './stl';
+import { isReference } from '../../core/scene/objectRole';
 
 /** Opciones de la exportación de escena completa (ida y vuelta exacta con Kura3D). */
 export interface ThreeMfSceneOptions {
@@ -123,8 +124,9 @@ export function exportSceneTo3MF(
   sceneOptions?: ThreeMfSceneOptions,
 ): Uint8Array {
   const solidObjects = exportableObjects(objects);
-  // Escena completa: lo no impreso (oculto, huecos) se escribe después, sin ítem de build.
-  const extraObjects = sceneOptions ? objects.filter((o) => !solidObjects.includes(o)) : [];
+  // Escena completa: lo no impreso (oculto, negativos) se escribe después, sin ítem de build. Las
+  // referencias se omiten siempre: solo viven en el `.kura` (una versión vieja las leería como sólidos).
+  const extraObjects = sceneOptions ? objects.filter((o) => !solidObjects.includes(o) && !isReference(o)) : [];
   const written = [...solidObjects, ...extraObjects];
   const unitSpec = UNIT_TO_3MF[unit] ?? UNIT_TO_3MF.mm;
 

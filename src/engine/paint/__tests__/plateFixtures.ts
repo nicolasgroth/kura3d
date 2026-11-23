@@ -37,7 +37,7 @@ export function closedPlate(): MeshData {
 export function plateObject(mesh: MeshData): SceneObject {
   return {
     id: 'placa', name: 'placa', source: 'imported', position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1],
-    color: '#cccccc', isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
+    color: '#cccccc', role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
   } as SceneObject;
 }
 

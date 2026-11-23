@@ -27,7 +27,7 @@ import { toBuffer } from './ioFixtures';
 function sceneObject(name: string, mesh: MeshData, color: string, position: Vec3, extra: Partial<SceneObject> = {}): SceneObject {
   return {
     id: name, name, source: 'primitive', position, rotation: [0, 0, 0], scale: [1, 1, 1], color,
-    isHole: false, visible: true, locked: false, mesh,
+    role: 'solid', visible: true, locked: false, mesh,
     stats: { triangles: mesh.indices.length / 3, vertices: mesh.positions.length / 3, volumeMm3: 0, surfaceAreaMm2: 0, dimensionsMm: [0, 0, 0], isManifold: true },
     ...extra,
   } as SceneObject;
@@ -47,7 +47,7 @@ beforeAll(async () => {
   scene = [
     sceneObject('Cubo pintado', painted, '#0000ff', [20, 5, -10]),
     sceneObject('Cilindro', cyl, '#ffaa00', [-15, 0, 8]),
-    sceneObject('Hueco', cube, '#999999', [0, 0, 0], { isHole: true }),
+    sceneObject('Hueco', cube, '#999999', [0, 0, 0], { role: 'negative' }),
   ];
 });
 

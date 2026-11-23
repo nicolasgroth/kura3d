@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { isNegative } from '../../core/scene/objectRole';
 import React from 'react';
 import { Combine, Grid } from 'lucide-react';
 import { t } from '../../i18n';
@@ -21,7 +22,7 @@ export const InspectorEmpty: React.FC = () => {
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const alignSelectedObjects = useKuraStore((s) => s.alignSelectedObjects);
-  const holeCount = objects.filter((o) => o.isHole && o.visible).length;
+  const holeCount = objects.filter((o) => isNegative(o) && o.visible).length;
   const hasAnyHoles = holeCount > 0;
   const isBusy = Boolean(busyOperation);
 

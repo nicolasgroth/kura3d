@@ -65,7 +65,7 @@ describe('exportModel avisa al superar el tamaño que otros programas rechazan',
   it('exporta y agrega el aviso', async () => {
     const toasts: Array<[string, string | undefined]> = [];
     const mesh = { positions: new Float32Array(9), indices: new Uint32Array([0, 1, 2]), normals: new Float32Array(9) };
-    const obj = { id: 'o1', name: 'Pieza', visible: true, mesh, position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] } as unknown as SceneObject;
+    const obj = { id: 'o1', name: 'Pieza', role: 'solid', visible: true, mesh, position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] } as unknown as SceneObject;
     const big = new Uint8Array(4);
     Object.defineProperty(big, 'byteLength', { value: 160 * 1024 * 1024 });
     const state = {

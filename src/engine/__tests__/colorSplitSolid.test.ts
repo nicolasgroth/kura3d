@@ -24,7 +24,7 @@ const BLUE = '#0000ff';
 function obj(mesh: MeshData, position: Vec3 = [0, 0, 0]): SceneObject {
   return {
     id: 'o', name: 'o', source: 'primitive', position, rotation: [0, 0, 0], scale: [1, 1, 1],
-    color: WHITE, isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
+    color: WHITE, role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
   };
 }
 

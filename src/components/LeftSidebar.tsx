@@ -11,6 +11,7 @@
  * @license MIT
  */
 
+import { isSolid } from '../core/scene/objectRole';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Bolt,
@@ -70,7 +71,7 @@ export const LeftSidebar: React.FC = () => {
   const filamentColors = useMemo(() => {
     const counts = new Map<string, number>();
     for (const obj of objects) {
-      if (obj.isHole) continue;
+      if (!isSolid(obj)) continue;
       if (obj.mesh.faceColors && obj.mesh.faceColors.length > 0) {
         const distinct = new Set(obj.mesh.faceColors.map((c) => c.toLowerCase()));
         for (const hex of distinct) {

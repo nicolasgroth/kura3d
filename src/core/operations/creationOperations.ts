@@ -21,6 +21,7 @@ import type {
   ThreadOptions,
   Vec3,
 } from '../../types/kura';
+import type { ObjectRole } from '../../types/kura';
 import { parametricOrigin, parametricStateOf } from '../scene/parametric';
 import { computeLocalMeshCenter, computeObjectWorldCenter } from '../scene/sceneObjects';
 import { buildWith, change, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
@@ -44,7 +45,7 @@ export async function createPrimitive(
     place?: PlaceMesh;
     rotation?: Vec3;
     scale?: Vec3;
-    isHole?: boolean;
+    role?: ObjectRole;
     materialPreset?: MaterialPresetId;
     /** Malla ya generada con `primitiveMesh` (p. ej. en el Worker); si falta se genera aquí. */
     mesh?: MeshData;
@@ -60,7 +61,7 @@ export async function createPrimitive(
     scale: input.scale,
     color: input.color,
     materialPreset: input.materialPreset,
-    isHole: input.isHole,
+    role: input.role,
     primitiveType: input.type,
     primitiveParams: input.params,
     parametric: parametricOrigin('primitive', mesh),
@@ -120,7 +121,7 @@ export async function createModulePrimitive(
     position,
     color: isHole ? HOLE_HELPER_COLOR : target.color,
     materialPreset: target.materialPreset,
-    isHole,
+    role: isHole ? 'negative' : 'solid',
     primitiveType: type,
     primitiveParams: params,
     parametric: parametricOrigin('primitive', mesh),
@@ -142,7 +143,7 @@ export async function createThread(
     position: placement.position ?? placement.place?.(mesh),
     color: isHole ? HOLE_HELPER_COLOR : '#94a3b8',
     materialPreset: isHole ? 'pla_matte' : 'metallic',
-    isHole,
+    role: isHole ? 'negative' : 'solid',
     parametric: parametricOrigin('thread', mesh, options),
   });
 }

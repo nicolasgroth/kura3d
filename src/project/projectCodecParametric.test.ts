@@ -13,6 +13,7 @@ import { parametricOrigin, parametricStateOf } from '../core/scene/parametric';
 import { buildSceneObject } from '../core/scene/sceneObjects';
 import { DEFAULT_PRINTER_PROFILES, type SceneObject } from '../types/kura';
 import { decodeProject, encodeProject, type ProjectDocument } from './projectCodec';
+import { toLegacyKura } from './__tests__/legacyKura';
 
 let cyl: SceneObject;
 let thread: SceneObject;
@@ -40,7 +41,7 @@ const versionOf = (bytes: Uint8Array) => new DataView(bytes.buffer, bytes.byteOf
 describe('.kura v2: parámetros de origen', () => {
   it('escribe v2 y recupera parámetros y huella en escena e historial', () => {
     const bytes = encodeProject(doc([cyl, thread], [[cyl]]));
-    expect(versionOf(bytes)).toBe(2);
+    expect(versionOf(bytes)).toBe(3);
     const back = decodeProject(bytes);
     expect(back.objects[0].parametric).toEqual(cyl.parametric);
     expect(back.objects[1].parametric?.thread).toMatchObject({ diameterMm: 6, pitchMm: 1, lengthMm: 10 });
@@ -52,9 +53,8 @@ describe('.kura v2: parámetros de origen', () => {
 
   it('abre un .kura v1 anterior sin el campo (los objetos no quedan paramétricos)', () => {
     const { parametric: _omit, ...legacy } = cyl;
-    const bytes = encodeProject(doc([legacy as SceneObject]));
-    // Fixture v1: misma estructura, versión 1 en la cabecera (la cabecera no entra al CRC).
-    new DataView(bytes.buffer, bytes.byteOffset).setUint32(4, 1, true);
+    // Fixture v1: misma estructura con `isHole` en vez de `role` y versión 1 en la cabecera.
+    const bytes = toLegacyKura(encodeProject(doc([legacy as SceneObject])), 1);
     const back = decodeProject(bytes);
     expect(back.objects[0]).toMatchObject({ id: 'c1', primitiveType: 'cylinder', primitiveParams: { radius: 5, height: 12 } });
     expect(back.objects[0].parametric).toBeUndefined();
@@ -62,8 +62,7 @@ describe('.kura v2: parámetros de origen', () => {
   });
 
   it('rechaza un v1 que trae el campo de v2 y un `parametric` mal formado', () => {
-    const v1 = encodeProject(doc([cyl]));
-    new DataView(v1.buffer, v1.byteOffset).setUint32(4, 1, true);
+    const v1 = toLegacyKura(encodeProject(doc([cyl])), 1);
     expect(() => decodeProject(v1)).toThrowError(expect.objectContaining({ code: 'invalid' }));
     const bad = { ...cyl, parametric: { kind: 'primitive', meshFingerprint: 'x', extra: 1 } } as unknown as SceneObject;
     expect(() => encodeProject(doc([bad]))).toThrowError(expect.objectContaining({ code: 'invalid' }));

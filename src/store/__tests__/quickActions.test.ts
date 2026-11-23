@@ -32,7 +32,7 @@ describe('Agregar pieza desde el menú contextual', () => {
     const cyl = await store().createPrimitive('cylinder', { radius: 10, height: 40 }, { position: [0, 0, 0] });
     const piece = await store().addPieceToObject('sphere', 'negative', cyl!.id);
     expect(piece).not.toBeNull();
-    expect(piece!.isHole).toBe(true);
+    expect(piece!.role).toBe('negative');
     expect(store().selectedIds).toEqual([piece!.id]);
     // Dimensión menor del cilindro: 20 mm (diámetro) -> lado 8 mm.
     expect(piece!.stats.dimensionsMm[0]).toBeCloseTo(8, 0);
@@ -46,11 +46,11 @@ describe('Agregar pieza desde el menú contextual', () => {
   it('pieza positiva: sólido apoyado sobre la cara superior del objeto', async () => {
     const box = await addBox(30);
     const piece = await store().addPieceToObject('box', 'positive', box.id);
-    expect(piece!.isHole).toBe(false);
+    expect(piece!.role).toBe('solid');
     expect(piece!.stats.dimensionsMm[1]).toBeCloseTo(12, 0);
     // La base de la pieza queda en la cara superior (Y = 30).
     expect(piece!.position[1]).toBeCloseTo(30, 0);
-    expect(byId(box.id)!.isHole).toBe(false);
+    expect(byId(box.id)!.role).toBe('solid');
   });
 
   it('la pieza queda agrupada con su objeto (grupo con su nombre) y el aviso lo dice', async () => {
@@ -79,13 +79,13 @@ describe('Agregar pieza desde el menú contextual', () => {
   it('cambiar tipo: explícito, un paso de deshacer y sin cambio si ya es ese tipo', async () => {
     const box = await addBox(20);
     const before = store().past.length;
-    store().setObjectsHole([box.id], true);
-    expect(byId(box.id)!.isHole).toBe(true);
+    store().setObjectsRole([box.id], 'negative');
+    expect(byId(box.id)!.role).toBe('negative');
     expect(store().past.length).toBe(before + 1);
-    store().setObjectsHole([box.id], true);
+    store().setObjectsRole([box.id], 'negative');
     expect(store().past.length).toBe(before + 1);
     store().undo();
-    expect(byId(box.id)!.isHole).toBe(false);
+    expect(byId(box.id)!.role).toBe('solid');
   });
 });
 
@@ -174,7 +174,7 @@ describe('F4: repetir la última acción', () => {
     await store().addPieceToObject('sphere', 'negative', a.id);
     store().selectObject(b.id);
     await store().repeatLastAction();
-    const holes = store().objects.filter((o) => o.isHole);
+    const holes = store().objects.filter((o) => (o.role === 'negative'));
     expect(holes).toHaveLength(2);
   });
 

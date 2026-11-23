@@ -8,6 +8,8 @@
  * @license MIT
  */
 
+import { isNegative, isSolid, OBJECT_ROLES } from '../../core/scene/objectRole';
+import { ROLE_LABEL_KEY } from '../../store/roleLabels';
 import React from 'react';
 import {
   Box,
@@ -54,7 +56,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
   const lastRepeatable = useKuraStore((s) => s.lastRepeatable);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const addPieceToObject = useKuraStore((s) => s.addPieceToObject);
-  const setObjectsHole = useKuraStore((s) => s.setObjectsHole);
+  const setObjectsRole = useKuraStore((s) => s.setObjectsRole);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
   const repairObjectMesh = useKuraStore((s) => s.repairObjectMesh);
@@ -65,8 +67,8 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
   const repeatLastAction = useKuraStore((s) => s.repeatLastAction);
   const addToast = useKuraStore((s) => s.addToast);
   const openFitToBed = useKuraStore((s) => s.openFitToBed);
-  const holeCount = objects.filter((o) => o.isHole && o.visible).length;
-  const solidCount = objects.filter((o) => !o.isHole && o.visible).length;
+  const holeCount = objects.filter((o) => isNegative(o) && o.visible).length;
+  const solidCount = objects.filter((o) => isSolid(o) && o.visible).length;
   const typeIds = selectedIds.includes(target.id) ? selectedIds : [target.id];
   const isParametric = ['primitive', 'thread'].includes(parametricStateOf(target).status);
   // F5 recarga la página en el navegador: solo se anuncia como atajo en escritorio.
@@ -90,20 +92,16 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
       <div className="kura-context-sep" role="separator" />
       <MenuGroup title={t(language, 'menu.group.type')}>
         <SubMenu icon={<ToggleLeft size={14} aria-hidden="true" />} label={t(language, 'menu.changeType')} tip={t(language, 'menu.changeType.tip')}>
-          <MenuItem
-            label={t(language, 'menu.type.solid')}
-            checked={!target.isHole}
-            checkedLabel={t(language, 'menu.type.current')}
-            keys="H"
-            onSelect={run(() => setObjectsHole(typeIds, false))}
-          />
-          <MenuItem
-            label={t(language, 'menu.type.negative')}
-            checked={target.isHole}
-            checkedLabel={t(language, 'menu.type.current')}
-            keys="H"
-            onSelect={run(() => setObjectsHole(typeIds, true))}
-          />
+          {OBJECT_ROLES.map((role) => (
+            <MenuItem
+              key={role}
+              label={t(language, ROLE_LABEL_KEY[role])}
+              checked={target.role === role}
+              checkedLabel={t(language, 'menu.type.current')}
+              keys={role === 'reference' ? undefined : 'H'}
+              onSelect={run(() => setObjectsRole(typeIds, role))}
+            />
+          ))}
         </SubMenu>
       </MenuGroup>
 

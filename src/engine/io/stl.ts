@@ -15,6 +15,7 @@ import { MAX_PART_NAME, ModelImportError, checkInputSize, resolveLimits, type Mo
 import type { ImportedModel } from './importTypes';
 import { GrowableFloat32, finishMesh } from './meshBuffers';
 import { weldTriangleSoup } from './soupWeld';
+import { isPrintable } from '../../core/scene/objectRole';
 
 const PRINTABLE_SAMPLE = 512;
 
@@ -207,9 +208,9 @@ export function exportMeshToBinarySTL(mesh: MeshData, headerText = DEFAULT_STL_H
   return bytes;
 }
 
-/** Objetos exportables: visibles y sólidos (los huecos no se imprimen). */
-export function exportableObjects(objects: SceneObject[]): SceneObject[] {
-  return objects.filter((o) => o.visible && !o.isHole);
+/** Objetos exportables: sólidos visibles (negativos y referencias nunca se imprimen ni exportan). */
+export function exportableObjects(objects: readonly SceneObject[]): SceneObject[] {
+  return objects.filter(isPrintable);
 }
 
 /**

@@ -12,7 +12,8 @@
 import * as THREE from 'three';
 import * as engine from '../engine';
 import type { TranslationKey } from '../i18n';
-import type { LanguageCode, MeshData, SceneObject, Vec3 } from '../types/kura';
+import type { LanguageCode, MeshData, ObjectRole, SceneObject, Vec3 } from '../types/kura';
+import { isReference, roleFromLegacy } from '../core/scene/objectRole';
 import { FileSaveError, saveFileSet, type SaveSetEntry } from '../utils/platformBridge';
 import { tCount } from '../utils/plural';
 import { exportFileBase, sanitizeFileBase } from '../utils/exportNaming';
@@ -69,6 +70,8 @@ export interface ModelImportOptions {
   placement?: engine.ImportPlacementMode;
   /** Cancelación del usuario (botón Cancelar o Esc en la barra de progreso). */
   signal?: AbortSignal;
+  /** Lo importado entra como referencia (se ve y se mide; nunca se imprime ni exporta). */
+  asReference?: boolean;
 }
 
 type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
@@ -96,7 +99,7 @@ export interface ModelIoDeps {
   /** Paso de deshacer; con `before`, el estado previo es ese (la importación ya lo cambió por tandas). */
   pushHistory: (before?: HistoryBase) => void;
   buildObject: (params: {
-    name: string; mesh: MeshData; position: Vec3; color: string; isHole?: boolean; rotation?: Vec3; scale?: Vec3;
+    name: string; mesh: MeshData; position: Vec3; color: string; role?: ObjectRole; rotation?: Vec3; scale?: Vec3;
     /** Estadísticas locales calculadas en el Worker (evita recorrer la malla en el hilo principal). */
     stats?: SceneObject['stats'];
   }) => SceneObject;
@@ -210,8 +213,8 @@ export function createModelIoActions(deps: ModelIoDeps) {
         name: (p.part.name || p.fileName).slice(0, MAX_GROUP_NAME),
         mesh: p.mesh,
         position: p.position,
-        color: p.part.isHole ? '#f97316' : p.part.color ?? '',
-        isHole: p.part.isHole,
+        color: p.part.isHole && !options.asReference ? '#f97316' : p.part.color ?? '',
+        role: options.asReference ? 'reference' : roleFromLegacy(p.part.isHole),
         stats: p.part.analysis?.stats,
       }));
     }
@@ -231,7 +234,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
       }
       for (const part of model.parts) primeImportedShading(part.mesh, part);
-      const restored = restoreKuraScene(model, buildObject, offset);
+      const restored = restoreKuraScene(model, buildObject, offset, options.asReference);
       restored.objects.forEach((object, i) => entries.push({ object, part: model.parts[i], fileName: model.fileName }));
       newGroups.push(...restored.groups);
       notices.push(tr('realesMotor.sceneRestored', { name: model.fileName, count: restored.objects.length, groups: restored.groups.length }));
@@ -311,8 +314,9 @@ export function createModelIoActions(deps: ModelIoDeps) {
   /** Objetos a exportar según el alcance (selector compartido con el Command Bus). */
   function exportTargets(scope: ExportScope): SceneObject[] {
     const { objects, selectedIds } = get();
-    const { targets, skippedHoles } = selectExportTargets(objects, selectedIds, scope === 'selection');
+    const { targets, skippedHoles, skippedReferences } = selectExportTargets(objects, selectedIds, scope === 'selection');
     if (targets.length > 0 && skippedHoles > 0) get().addToast(tCount(get().language, { one: 'export.holesSkipped.one', other: 'export.holesSkipped.other' }, skippedHoles), 'info');
+    if (skippedReferences > 0) get().addToast(tCount(get().language, { one: 'reference.export.skipped.one', other: 'reference.export.skipped.other' }, skippedReferences), 'info');
     return targets;
   }
 
@@ -352,12 +356,12 @@ export function createModelIoActions(deps: ModelIoDeps) {
       const bedWidth = state.customBedDimensions?.width ?? state.printerProfile.bedWidthMm ?? 256;
       const layoutTargets = splitMode === 'printLayout' && request.format === '3mf' ? printLayoutTargets(targets, bedWidth) : targets;
       const filters = [EXPORT_FILTERS[request.format]];
-      // 3MF de la escena completa: viajan todos los objetos (ocultos y huecos sin ítem de build) y los
-      // grupos, para que Kura3D la restaure tal cual al volver a abrirla.
+      // 3MF de la escena completa: viajan los objetos (ocultos y negativos sin ítem de build) y los grupos,
+      // para que Kura3D la restaure tal cual al volver a abrirla. Las referencias nunca: solo en el `.kura`.
       const fullScene = request.format === '3mf' && request.scope === 'scene' && !splitMode;
       const { files } = await exportFiles({
         format: request.format,
-        targets: fullScene ? state.objects : layoutTargets,
+        targets: fullScene ? state.objects.filter((o) => !isReference(o)) : layoutTargets,
         baseName: base,
         unitSystem: state.unitSystem,
         ...(fullScene ? { sceneGroups: state.groups ?? [] } : {}),

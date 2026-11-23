@@ -17,7 +17,7 @@ const prim = (page: Page, type: string, params: P, opts: P = {}) =>
 
 async function vaso(page: Page, extra: P = {}) {
   const id = await prim(page, 'cylinder', { radius: 20, height: 50, segments: 128 }, { position: [0, 0, 0] });
-  await prim(page, 'cylinder', { radius: 18, height: 48, segments: 128 }, { isHole: true, position: [0, 2, 0], ...extra });
+  await prim(page, 'cylinder', { radius: 18, height: 48, segments: 128 }, { role: 'negative', position: [0, 2, 0], ...extra });
   await page.evaluate(() => (window as any).__s.getState().applyHolesOnSolids());
   await page.waitForTimeout(1500);
   return page.evaluate(() => (window as any).__s.getState().objects.map((o: any) => o.id));
@@ -73,7 +73,7 @@ test('vaso con agujero en la pared: rebalsa a esa altura; cubo macizo da 0 con m
   await abrir(page);
   const ids = await vaso(page);
   // agujero horizontal r3 a 20 mm de la base (a través de la pared en X)
-  await prim(page, 'cylinder', { radius: 3, height: 60, segments: 32 }, { isHole: true, position: [0, 20, 0], rotation: [0, 0, Math.PI / 2] });
+  await prim(page, 'cylinder', { radius: 3, height: 60, segments: 32 }, { role: 'negative', position: [0, 20, 0], rotation: [0, 0, Math.PI / 2] });
   await page.evaluate(() => (window as any).__s.getState().applyHolesOnSolids());
   await page.waitForTimeout(1500);
   const oid = await page.evaluate(() => (window as any).__s.getState().objects[0].id);

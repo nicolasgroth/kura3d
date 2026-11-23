@@ -27,6 +27,8 @@ import {
   type UnitSystem,
   type Vec3,
 } from '../types/kura';
+import type { ObjectRole } from '../types/kura';
+import { OBJECT_ROLES, readRoleInput } from '../core/scene/objectRole';
 import {
   EDGE_SCOPES_BY_TYPE, EDGE_STYLES, PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, TEXT_ALIGN_OPTIONS, primitiveRangeFor,
   type PrimitiveRangeKey,
@@ -77,7 +79,7 @@ export interface CreatePrimitiveInput {
   /** Ejes del usuario: grados (Euler XYZ) y factores por eje. */
   rotation?: Vec3;
   scale?: Vec3;
-  isHole?: boolean;
+  role?: ObjectRole;
   materialPreset?: MaterialPresetId;
   placement: 'free' | 'origin';
 }
@@ -113,7 +115,8 @@ export function parseCreatePrimitive(p: RawParams): CreatePrimitiveInput {
     // Giro (grados) y escala en ejes del usuario (Z = altura), como `transform_object` y el modo sin interfaz.
     rotation: readVec3(p, 'rotation'),
     scale: readScale(p, 'scale'),
-    isHole: readBoolean(p, 'isHole'),
+    // `isHole` es alias obsoleto de `role` (una versión).
+    role: readRoleInput({ role: readEnum(p, OBJECT_ROLES, 'role'), isHole: readBoolean(p, 'isHole') }),
     materialPreset: readEnum(p, MATERIALS, 'materialPreset'),
     // Por defecto 'origin' (comportamiento previo del bus); 'free' busca el primer hueco libre.
     placement: readEnum(p, ['free', 'origin'] as const, 'placement') ?? 'origin',

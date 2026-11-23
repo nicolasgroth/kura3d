@@ -20,7 +20,7 @@ async function box(id: string, w: number, h: number, d: number, extra: Partial<S
   const mesh = await engine.createPrimitiveMesh('box', { width: w, height: h, depth: d });
   return {
     id, name: id, source: 'primitive', primitiveType: 'box', position: [0, h / 2, 0], rotation: [0, 0, 0], scale: [1, 1, 1],
-    color: '#ffffff', isHole: false, visible: true, locked: false, mesh, stats: engine.computeMeshStats(mesh), ...extra,
+    color: '#ffffff', role: 'solid', visible: true, locked: false, mesh, stats: engine.computeMeshStats(mesh), ...extra,
   };
 }
 

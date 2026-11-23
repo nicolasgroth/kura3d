@@ -25,7 +25,7 @@ beforeAll(() => {
     indices: new Uint32Array(t.flat()),
   };
   const painted: MeshData = { ...cube, faceColors: Array.from({ length: cube.indices.length / 3 }, (_, t) => (t < 2 ? '#ff0000' : '#3366ff')) };
-  const base = { source: 'primitive', rotation: [0, 0, 0], scale: [1, 1, 1], isHole: false, visible: true, locked: false } as const;
+  const base = { source: 'primitive', rotation: [0, 0, 0], scale: [1, 1, 1], role: 'solid', visible: true, locked: false } as const;
   objects = [
     { ...base, id: 'a', name: 'Cubo', position: [20, 0, 0], color: '#3366ff', mesh: painted } as unknown as SceneObject,
     { ...base, id: 'b', name: 'Gris', position: [-20, 4, 0], color: '#808080', mesh: cube } as unknown as SceneObject,

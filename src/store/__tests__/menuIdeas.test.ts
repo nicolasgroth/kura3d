@@ -92,7 +92,7 @@ describe('Reemplazar por archivo', () => {
   it('conserva nombre, posición, rotación, color y tipo; cambia la malla en un solo paso', async () => {
     const box = await addBox(10, [30, 4, -12], { name: 'Mi pieza' });
     useKuraStore.setState((s) => ({
-      objects: s.objects.map((o) => (o.id === box.id ? { ...o, rotation: [0, 0.7, 0], color: '#123456', isHole: true } : o)),
+      objects: s.objects.map((o) => (o.id === box.id ? { ...o, rotation: [0, 0.7, 0], color: '#123456', role: 'negative' } : o)),
       selectedIds: [box.id],
     }));
     const oldMesh = byId(box.id)!.mesh;
@@ -103,7 +103,7 @@ describe('Reemplazar por archivo', () => {
     expect(o.position).toEqual([30, 4, -12]);
     expect(o.rotation).toEqual([0, 0.7, 0]);
     expect(o.color).toBe('#123456');
-    expect(o.isHole).toBe(true);
+    expect((o.role === 'negative')).toBe(true);
     expect(o.mesh).not.toBe(oldMesh);
     expect(o.stats.dimensionsMm.map((v) => Math.round(v))).toEqual([20, 30, 8]);
     expect(o.primitiveType).toBeUndefined();
@@ -192,6 +192,6 @@ describe('Forma Disco', () => {
   it('como pieza negativa queda marcada como Negativo', async () => {
     const box = await addBox(50);
     const piece = await store().addPieceToObject('disc', 'negative', box.id);
-    expect(piece!.isHole).toBe(true);
+    expect(piece!.role).toBe('negative');
   });
 });

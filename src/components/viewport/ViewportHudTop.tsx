@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { isNegative, isSolid } from '../../core/scene/objectRole';
 import '../../styles/hudCubeClearance.css';
 import React, { useMemo } from 'react';
 import {
@@ -52,8 +53,8 @@ export const ViewportHudTop: React.FC = () => {
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const selectedObj = objects.find((o) => o.id === selectedIds[0]) ?? null;
-  const holeCount = objects.filter((o) => o.isHole && o.visible).length;
-  const solidCount = objects.filter((o) => !o.isHole && o.visible).length;
+  const holeCount = objects.filter((o) => isNegative(o) && o.visible).length;
+  const solidCount = objects.filter((o) => isSolid(o) && o.visible).length;
   const maxSceneHeight = useMemo(() => {
     let maxH = printerProfile.maxHeightMm;
     for (const obj of objects) {

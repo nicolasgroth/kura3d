@@ -20,7 +20,7 @@ const GREEN = '#22c55e';
 function obj(id: string, mesh: MeshData, overrides: Partial<SceneObject> = {}): SceneObject {
   return {
     id, name: id, source: 'primitive', position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1],
-    color: BLUE, isHole: false, visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
+    color: BLUE, role: 'solid', visible: true, locked: false, mesh, stats: computeMeshStats(mesh),
     ...overrides,
   } as SceneObject;
 }
@@ -32,7 +32,7 @@ describe('resta con pieza negativa de otro color', () => {
     const box = await createPrimitiveMesh('box', { width: 30, height: 30, depth: 30 });
     const cyl = await createPrimitiveMesh('cylinder', { radius: 8, height: 20 });
     const solid = obj('solido', box, { color: BLUE });
-    const negative = obj('negativo', cyl, { color: ORANGE, isHole: true, position: [0, 15, 0] });
+    const negative = obj('negativo', cyl, { color: ORANGE, role: 'negative', position: [0, 15, 0] });
 
     const res = await runBooleanOperation(solid, negative, 'subtract');
     expect(computeMeshStats(res.mesh).isManifold).toBe(true);
@@ -47,7 +47,7 @@ describe('resta con pieza negativa de otro color', () => {
     const triangles = box.indices.length / 3;
     const painted: MeshData = { ...box, faceColors: Array.from({ length: triangles }, (_, i) => (i < 2 ? GREEN : BLUE)) };
     const cylPainted: MeshData = { ...cyl, faceColors: Array.from({ length: cyl.indices.length / 3 }, () => ORANGE) };
-    const res = await runBooleanOperation(obj('s', painted, { color: BLUE }), obj('n', cylPainted, { color: ORANGE, isHole: true, position: [0, 15, 0] }), 'subtract');
+    const res = await runBooleanOperation(obj('s', painted, { color: BLUE }), obj('n', cylPainted, { color: ORANGE, role: 'negative', position: [0, 15, 0] }), 'subtract');
     const colors = colorsOf(res.mesh);
     expect(colors.has(ORANGE)).toBe(false);
     expect(colors.has(GREEN)).toBe(true);

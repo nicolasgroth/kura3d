@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { isPrintable } from '../core/scene/objectRole';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Download } from 'lucide-react';
 import { t, type TranslationKey } from '../i18n';
@@ -59,7 +60,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const formId = useId();
   const nameId = useId();
 
-  const exportable = useMemo(() => objects.filter((o) => o.visible && !o.isHole), [objects]);
+  const exportable = useMemo(() => objects.filter(isPrintable), [objects]);
   const selected = useMemo(
     () => exportable.filter((o) => selectedIds.includes(o.id)),
     [exportable, selectedIds],

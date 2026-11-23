@@ -49,6 +49,7 @@ const EXPECTED_TOOLS = [
   'kura_project_on_surface',
   'kura_analyze_printability',
   'kura_diagnose_mesh',
+  'kura_set_object_role',
   'kura_repair_mesh',
   'kura_simplify_mesh',
   'kura_refine_mesh',
