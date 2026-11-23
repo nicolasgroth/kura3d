@@ -19,6 +19,7 @@
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import { buildMeshDistanceField, type MeshDistanceField } from './meshDistance';
 import { snapToLevel } from './hollowLevelProjection';
+import { consistentSignField } from './distanceSignCheck';
 import { deleteOnThrow, useThenDelete } from './wasmScope';
 
 /** Resultado del offset interior. */
@@ -31,6 +32,10 @@ export interface InwardOffsetResult {
   levelMarginMm: number;
   /** Pared medida de `inner` si ya se midió al ajustar el margen (evita medir dos veces). */
   wall?: WallThicknessStats;
+  /** Campo usado (puede ser la variante por número de vueltas del recibido); medir con este. */
+  field?: MeshDistanceField;
+  /** true si la malla se autointerseca y se usó el signo por número de vueltas (unión de lo encerrado). */
+  selfIntersecting?: boolean;
 }
 
 /** Fracción del espesor que la pared mínima puede quedar por debajo del pedido (0,5 %). */
@@ -180,7 +185,10 @@ export function inwardOffset(
   if (exact) {
     return { inner: exact, gridEdgeMm: 0, levelMarginMm: 0 };
   }
-  const field = solidField ?? distanceFieldOfManifold(solid);
+  // Una malla que se cruza a sí misma tiene regiones de signo contradictorio por pseudo-normales: el
+  // level-set crea superficies espurias, la pared "medida" sale negativa y el margen adaptativo se dispara
+  // hasta dejar una cavidad de volumen ~0 (busto real de 325 k triángulos). Se usa el número de vueltas.
+  let field = consistentSignField(solidField ?? distanceFieldOfManifold(solid));
   const bbox = solid.boundingBox();
   const sx = bbox.max[0] - bbox.min[0];
   const sy = bbox.max[1] - bbox.min[1];
@@ -216,16 +224,27 @@ export function inwardOffset(
   // nivel lo que falte, hasta `MAX_LEVEL_TRIES` intentos; si no alcanza, se usa el margen fijo.
   const minAccepted = thickness * (1 - WALL_UNDERSHOOT_REL);
   let margin = simplifyTol;
+  const done = (r: Omit<InwardOffsetResult, 'gridEdgeMm' | 'field' | 'selfIntersecting'>): InwardOffsetResult => ({
+    ...r, gridEdgeMm: gridEdge, field, selfIntersecting: field.signMode === 'winding',
+  });
   for (let attempt = 0; attempt < MAX_LEVEL_TRIES; attempt++) {
     const inner = extract(thickness + margin);
-    if (inner.isEmpty()) return { inner, gridEdgeMm: gridEdge, levelMarginMm: margin };
+    if (inner.isEmpty()) return done({ inner, levelMarginMm: margin });
     const wall = deleteOnThrow(inner, (m) => measureWallThickness(field, m));
-    if (wall.minMm >= minAccepted) return { inner, gridEdgeMm: gridEdge, levelMarginMm: margin, wall };
+    if (wall.minMm >= minAccepted) return done({ inner, levelMarginMm: margin, wall });
     inner.delete();
+    // La cavidad sale del nivel `d = espesor > 0`: una pared medida negativa solo es posible con signo
+    // contradictorio (autointersección que el muestreo no vio). Se cambia el signo y se reintenta.
+    if (wall.minMm < 0 && field.signMode !== 'winding') {
+      field = field.withSignMode('winding');
+      attempt = -1;
+      margin = simplifyTol;
+      continue;
+    }
     margin += (thickness - wall.minMm) * 1.15 + thickness * 0.002;
   }
   const levelMargin = Math.max(worstCase, margin);
-  return { inner: extract(thickness + levelMargin), gridEdgeMm: gridEdge, levelMarginMm: levelMargin };
+  return done({ inner: extract(thickness + levelMargin), levelMarginMm: levelMargin });
 }
 
 /**

@@ -101,7 +101,12 @@ describe('Sin fugas WASM cuando Manifold lanza a mitad de camino', () => {
     big.delete();
     hole.delete();
     const field = distanceFieldOfManifold(solid);
-    const failing = Object.create(field, { signedDistance: { value: () => { throw new Error('sdf falla'); } } });
+    // `signMode: 'winding'` salta la comprobación previa de signo (que también usa `signedDistance`):
+    // así el fallo llega al medir la pared, después de extraer la cavidad.
+    const failing = Object.create(field, {
+      signedDistance: { value: () => { throw new Error('sdf falla'); } },
+      signMode: { value: 'winding' },
+    });
     const proto = Object.getPrototypeOf(solid) as Manifold;
     const deleted = trackDeletes(proto);
     const extracted: unknown[] = [];

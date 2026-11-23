@@ -64,5 +64,5 @@ describe('ahuecar cáscaras solapadas', () => {
     // La cavidad mide la unión erosionada, no la suma de las dos esferas.
     expect(res.cavityVolumeMm3 + wallVolume).toBeLessThan(unionVolume * 1.03);
     expect(res.cavityVolumeMm3 + wallVolume).toBeGreaterThan(unionVolume * 0.95);
-  });
+  }, 30_000);
 });

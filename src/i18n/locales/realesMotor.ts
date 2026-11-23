@@ -27,6 +27,22 @@ const REALES_MOTOR_TABLE = {
     'मेश «{name}», जो {count} भागों में उपयोग हुई है, खुली है ({edges} खुले किनारे)।',
     '网格「{name}」被 {count} 个零件使用,且未封闭({edges} 条开放边)。',
   ],
+  'engineError.HOLLOW_INEFFECTIVE': [
+    'El ahuecado no dejó una cavidad coherente con la pared de {thickness} mm (pared media medida {measured} mm, volumen quitado {removedPct} %), así que la pieza no se modificó. Suele pasar con mallas que se cruzan a sí mismas: prueba «Separar cuerpos» o «Reparar malla» y vuelve a ahuecar, o usa una pared mayor.',
+    'Hollowing did not leave a cavity consistent with the {thickness} mm wall (measured mean wall {measured} mm, volume removed {removedPct} %), so the part was not changed. This usually happens with self-intersecting meshes: try “Separate bodies” or “Repair mesh” and hollow again, or use a thicker wall.',
+    'Das Aushöhlen ergab keinen zur Wand von {thickness} mm passenden Hohlraum (gemessene mittlere Wand {measured} mm, entferntes Volumen {removedPct} %), daher wurde das Teil nicht verändert. Das passiert meist bei sich selbst schneidenden Netzen: versuche „Körper trennen“ oder „Netz reparieren“ und höhle erneut aus, oder nimm eine dickere Wand.',
+    'L’évidement n’a pas laissé de cavité cohérente avec la paroi de {thickness} mm (paroi moyenne mesurée {measured} mm, volume retiré {removedPct} %) ; la pièce n’a donc pas été modifiée. Cela arrive surtout avec des maillages qui s’auto-intersectent : essayez « Séparer les corps » ou « Réparer le maillage » puis évidez à nouveau, ou utilisez une paroi plus épaisse.',
+    'खोखला करने से {thickness} mm दीवार के अनुरूप गुहा नहीं बनी (मापी गई औसत दीवार {measured} mm, हटाया गया आयतन {removedPct} %), इसलिए भाग नहीं बदला गया। यह अक्सर ख़ुद को काटती मेश में होता है: «बॉडी अलग करें» या «मेश ठीक करें» आज़माएँ और फिर खोखला करें, या मोटी दीवार लें।',
+    '抽壳未形成与 {thickness} mm 壁厚相符的空腔(实测平均壁厚 {measured} mm,去除体积 {removedPct} %),因此零件未被修改。这通常发生在自相交的网格上:请尝试「分离实体」或「修复网格」后再抽壳,或使用更厚的壁。',
+  ],
+  'engineWarning.HOLLOW_SELF_INTERSECTING': [
+    'La malla se cruza a sí misma; la cavidad se calculó sobre la unión de lo que encierra. Revisa la sección antes de imprimir.',
+    'The mesh intersects itself; the cavity was computed on the union of what it encloses. Check the section view before printing.',
+    'Das Netz schneidet sich selbst; der Hohlraum wurde über die Vereinigung des Umschlossenen berechnet. Prüfe die Schnittansicht vor dem Druck.',
+    'Le maillage s’auto-intersecte ; la cavité a été calculée sur l’union de ce qu’il enferme. Vérifiez la vue en coupe avant d’imprimer.',
+    'मेश ख़ुद को काटती है; गुहा उसके घेरे हुए हिस्से के संघ पर गणना की गई। प्रिंट से पहले सेक्शन देखें।',
+    '网格存在自相交;空腔按其包围区域的并集计算。打印前请检查剖面视图。',
+  ],
   'realesMotor.repairAll': ['Reparar todas', 'Repair all', 'Alle reparieren', 'Tout réparer', 'सभी सुधारें', '全部修复'],
   'realesMotor.unitDoubt': [
     '«{name}» mide {size} mm en su lado mayor: puede que el archivo esté en otra unidad.',
