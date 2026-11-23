@@ -127,6 +127,7 @@ export {
   type ImageReliefParam,
   type ImageShapeMode,
 } from './imageReliefParams';
+export { BOLT_LENGTH_RATIO, NUT_HEIGHT_RATIO, threadDefaults, type ThreadDefaults } from './threadDefaults';
 
 export { computeAlignmentPositions } from './alignment';
 

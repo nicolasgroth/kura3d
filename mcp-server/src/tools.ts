@@ -17,6 +17,7 @@ import { takeImplicitWeldWarning } from '../../src/engine/manifoldKernel';
 import { userWarnings } from './headlessUserAxes.js';
 import { localizeEngineErrorForUser, userErrorParams } from '../../src/core/scene/userEngineMessages';
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../../src/engine/operationLimits';
+import { threadDefaults } from '../../src/engine/threadDefaults';
 import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
 import { resolveExportPath } from './exportPaths.js';
 import { registerParametricTools } from './parametricTools.js';
@@ -1023,8 +1024,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       inputSchema: {
         kind: z.enum(['bolt', 'nut', 'hole']).describe('Threaded element type.'),
         diameterMm: rangeSchema(OR.thread.diameterMm).default(8).describe('Nominal metric diameter in mm (e.g. 8 for M8; M3–M64).'),
-        pitchMm: rangeSchema(OR.thread.pitchMm).default(1.25).describe('Thread pitch in mm (maximum d/4).'),
-        lengthMm: rangeSchema(OR.thread.lengthMm).default(20).describe('Threaded length in mm.'),
+        pitchMm: rangeSchema(OR.thread.pitchMm).optional().describe('Thread pitch in mm (maximum d/4). If omitted, ISO coarse pitch for the diameter.'),
+        lengthMm: rangeSchema(OR.thread.lengthMm).optional().describe('Threaded length in mm (nut: height). If omitted: nut 0.8·d (≈ ISO 4032), bolt/hole 2.5·d.'),
         clearanceMm: rangeSchema(OR.thread.clearanceMm).optional().describe('Radial print clearance in mm. If omitted, it is calculated from the pitch.'),
         includeHead: z.boolean().optional().describe('Include hexagonal head when kind === "bolt".'),
         targetId: z.string().optional().describe('kind === "hole" only: object to drill. The cavity is centered on its top face, going down, and grouped with it (app only).'),
@@ -1037,8 +1038,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         ctx.headless.createThread({
           kind: args.kind,
           diameterMm: args.diameterMm,
-          pitchMm: args.pitchMm,
-          lengthMm: args.lengthMm,
+          pitchMm: args.pitchMm ?? threadDefaults(args.diameterMm, args.kind).pitchMm,
+          lengthMm: args.lengthMm ?? threadDefaults(args.diameterMm, args.kind).lengthMm,
           clearanceMm: args.clearanceMm,
           includeHead: args.includeHead,
           name: args.name,

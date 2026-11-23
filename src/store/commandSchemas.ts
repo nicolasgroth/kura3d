@@ -30,6 +30,7 @@ import {
   PRIMITIVE_LIMITS, PRIMITIVE_PARAM_RANGES, TEXT_ALIGN_OPTIONS, primitiveRangeFor, type PrimitiveRangeKey,
 } from '../engine/primitiveLimits';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../engine/operationLimits';
+import { threadDefaults } from '../engine/threadDefaults';
 import { ARRANGE_GRID_SPACING_MM } from '../core/operations/alignOperations';
 import { CommandError } from './commandErrors';
 import {
@@ -120,11 +121,15 @@ export function readThreadTarget(p: RawParams): string | undefined {
 }
 
 export function parseThread(p: RawParams): ThreadOptions {
+  const kind = readEnum(p, ['bolt', 'nut', 'hole'] as const, 'kind') ?? 'bolt';
+  const diameterMm = readRange(p, OR.thread.diameterMm, 'diameterMm') ?? 8;
+  // Sin paso o largo: los del diámetro (paso grueso ISO, tuerca ≈ ISO 4032, perno 2,5·d).
+  const defaults = threadDefaults(diameterMm, kind);
   return {
-    kind: readEnum(p, ['bolt', 'nut', 'hole'] as const, 'kind') ?? 'bolt',
-    diameterMm: readRange(p, OR.thread.diameterMm, 'diameterMm') ?? 8,
-    pitchMm: readRange(p, OR.thread.pitchMm, 'pitchMm') ?? 1.25,
-    lengthMm: readRange(p, OR.thread.lengthMm, 'lengthMm') ?? 20,
+    kind,
+    diameterMm,
+    pitchMm: readRange(p, OR.thread.pitchMm, 'pitchMm') ?? defaults.pitchMm,
+    lengthMm: readRange(p, OR.thread.lengthMm, 'lengthMm') ?? defaults.lengthMm,
     clearanceMm: readRange(p, OR.thread.clearanceMm, 'clearanceMm'),
     includeHead: readBoolean(p, 'includeHead') ?? true,
   };
