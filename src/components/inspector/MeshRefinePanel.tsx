@@ -11,6 +11,7 @@ import { Box, Wand2 } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { useInvalidFields } from '../useInvalidFields';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { SIMPLIFY_REQUEST_FRESH_MS } from './simplifyPanelRequest';
 
@@ -18,6 +19,8 @@ import { SIMPLIFY_REQUEST_FRESH_MS } from './simplifyPanelRequest';
 export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
   const { simplifyTolMm, setSimplifyTolMm, refineEdgeMm, setRefineEdgeMm, refineSmooth, setRefineSmooth } = ui;
   const language = useKuraStore((s) => s.language);
+  // Campos fuera de rango o no numéricos: se marcan y la operación no se aplica (nada se acota en silencio).
+  const invalid = useInvalidFields();
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const simplifySelectedMesh = useKuraStore((s) => s.simplifySelectedMesh);
   const refineSelectedMesh = useKuraStore((s) => s.refineSelectedMesh);
@@ -43,6 +46,8 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
         <span className="kura-field-label">{t(language, 'inspector.pro.simplifyTol')}</span>
         <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f1')}
             style={{ width: 92 }}
             min={0.01}
             max={5}
@@ -56,7 +61,7 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
           <button
             type="button"
             className="kura-btn kura-btn-sm"
-            disabled={isBusy || primary.locked}
+            disabled={isBusy || primary.locked || invalid.blocked}
             onClick={() => void simplifySelectedMesh(primary.id, simplifyTolMm)}
           >
             {t(language, 'inspector.pro.simplifyBtn')}
@@ -68,6 +73,8 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
         <span className="kura-field-label">{t(language, 'inspector.pro.refineEdge')}</span>
         <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f2')}
             style={{ width: 92 }}
             min={0.2}
             max={10}
@@ -81,7 +88,7 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
           <button
             type="button"
             className="kura-btn kura-btn-sm"
-            disabled={isBusy || primary.locked}
+            disabled={isBusy || primary.locked || invalid.blocked}
             onClick={() => void refineSelectedMesh(primary.id, refineEdgeMm, refineSmooth)}
           >
             <Wand2 size={12} />

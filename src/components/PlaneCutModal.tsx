@@ -27,6 +27,7 @@ import { formatNumber } from '../utils/plural';
 import { OperationPanel } from './OperationPanel';
 import { OperationFailureAlert, useOperationFailure } from './OperationFailureAlert';
 import { PrecisionNumberInput } from './PrecisionNumberInput';
+import { useInvalidFields } from './useInvalidFields';
 import { keyboardFocusInViewport, onCutPlaneDrag } from './viewport/cutPlaneDrag';
 import '../styles/planeCut.css';
 import { userAxisLabel, userAxisOfInternal } from '../core/scene/displayAxes';
@@ -38,6 +39,8 @@ type FitState = 'idle' | 'checking' | 'ok' | 'bad' | 'plane';
 
 export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const language = useKuraStore((s) => s.language);
+  // Campos fuera de rango o no numéricos: se marcan y la operación no se aplica (nada se acota en silencio).
+  const invalid = useInvalidFields();
   const objects = useKuraStore((s) => s.objects);
   const planeCutObject = useKuraStore((s) => s.planeCutObject);
   const setCutPreview = useKuraStore((s) => s.setCutPreview);
@@ -243,7 +246,7 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
           <button
             type="button"
             className="kura-btn kura-btn-primary"
-            disabled={!targetId || Boolean(reason) || checking}
+            disabled={!targetId || Boolean(reason) || checking || invalid.blocked}
             aria-describedby={reason ? reasonId : undefined}
             title={reason ?? t(language, 'dialog.cut.execute')}
             onClick={() => void handleExecute()}
@@ -299,6 +302,8 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
               onChange={(e) => setOffset(Number(e.target.value) * userSign)}
             />
             <PrecisionNumberInput
+              strictRange
+              onInvalidChange={invalid.track('f1')}
               id="cut-offset-number"
               ariaLabel={`${t(language, 'dialog.cut.offset')} (mm)`}
               min={userRange.min}
@@ -352,6 +357,8 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
           {/* Se muestra el diámetro Ø, como en Dividir; el contrato interno (`connectorSize`) sigue en radio. */}
           <label htmlFor="cut-size">{t(language, 'split.size.label')} (mm)</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f2')}
             id="cut-size"
             ariaLabel={`${t(language, 'split.size.label')} (mm)`}
             min={2 * CONNECTOR_SIZE_RANGE_MM.min}
@@ -375,6 +382,8 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
         <div className="kura-form-field">
           <label htmlFor="cut-depth">{t(language, 'dialog.cut.connectorDepth')} (mm)</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f3')}
             id="cut-depth"
             ariaLabel={`${t(language, 'dialog.cut.connectorDepth')} (mm)`}
             min={CONNECTOR_DEPTH_RANGE_MM.min}
@@ -395,6 +404,8 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
         <div className="kura-form-field">
           <label htmlFor="cut-tol">{t(language, 'dialog.cut.tolerance')} (mm)</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f4')}
             id="cut-tol"
             ariaLabel={`${t(language, 'dialog.cut.tolerance')} (mm)`}
             min={0.05}
@@ -410,6 +421,8 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
         <div className="kura-form-field">
           <label htmlFor="cut-count">{t(language, 'dialog.cut.connectorCount')}</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f5')}
             id="cut-count"
             ariaLabel={t(language, 'dialog.cut.connectorCount')}
             min={1}

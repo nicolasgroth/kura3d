@@ -23,6 +23,7 @@ import { OperationPanel } from '../OperationPanel';
 import { useBoundOperationTarget } from '../useBoundOperationTarget';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { useInvalidFields } from '../useInvalidFields';
 import { keyboardFocusInViewport } from '../viewport/cutPlaneDrag';
 import { onSplitPlaneMove, planeKey } from './splitPlaneDrag';
 import { SplitPlanSummaryView } from './SplitPlanSummaryView';
@@ -41,6 +42,8 @@ const D = OPERATION_DEFAULTS.split;
 
 export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const language = useKuraStore((s) => s.language);
+  // Campos fuera de rango o no numéricos: se marcan y la operación no se aplica (nada se acota en silencio).
+  const invalid = useInvalidFields();
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const customBed = useKuraStore((s) => s.customBedDimensions);
   const preview = useKuraStore((s) => s.splitPlanPreview);
@@ -230,6 +233,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
     <div className="kura-form-field">
       <label htmlFor={`${uid}-${id}`}>{label}</label>
       <PrecisionNumberInput
+        strictRange
+        onInvalidChange={invalid.track('f1')}
         id={`${uid}-${id}`}
         ariaLabel={label}
         title={opts.hint ?? t(language, 'split.rangeTip', { min: fmt(range.min, 2), max: fmt(range.max, 2) })}
@@ -259,7 +264,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
           <button
             type="button"
             className="kura-btn kura-btn-primary"
-            disabled={Boolean(reason) || checking || busy}
+            disabled={Boolean(reason) || checking || busy || invalid.blocked}
             aria-describedby={reason ? reasonId : undefined}
             title={reason ?? t(language, 'split.executeTip')}
             onClick={() => void handleSplit()}
@@ -432,6 +437,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
                   <li key={key} className={activePlane === key ? 'is-active' : undefined} data-no-joint={noJoint || undefined}>
                     <label htmlFor={`${uid}-plane-${key}`}>{name}</label>
                     <PrecisionNumberInput
+                      strictRange
+                      onInvalidChange={invalid.track('f2')}
                       id={`${uid}-plane-${key}`}
                       ariaLabel={`${name} (mm)`}
                       title={t(language, 'split.planeTip')}

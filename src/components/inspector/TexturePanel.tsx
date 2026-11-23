@@ -11,6 +11,7 @@ import { Sparkles } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { useInvalidFields } from '../useInvalidFields';
 import { type TexturePatternType } from '../../types/kura';
 import { type InspectorSectionProps } from './inspectorTypes';
 
@@ -18,6 +19,8 @@ import { type InspectorSectionProps } from './inspectorTypes';
 export const TexturePanel: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
   const { texturePattern, setTexturePattern, textureDepthMm, setTextureDepthMm, textureScaleMm, setTextureScaleMm } = ui;
   const language = useKuraStore((s) => s.language);
+  // Campos fuera de rango o no numéricos: se marcan y la operación no se aplica (nada se acota en silencio).
+  const invalid = useInvalidFields();
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const applyTextureToObject = useKuraStore((s) => s.applyTextureToObject);
   const isBusy = Boolean(busyOperation);
@@ -43,6 +46,8 @@ export const TexturePanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =
           {t(language, 'inspector.op.textureDepth')}
         </span>
         <PrecisionNumberInput
+          strictRange
+          onInvalidChange={invalid.track('f1')}
           style={{ width: 88 }}
           min={0.1}
           max={2.5}
@@ -72,6 +77,8 @@ export const TexturePanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =
           {t(language, 'inspector.op.textureScale')}
         </span>
         <PrecisionNumberInput
+          strictRange
+          onInvalidChange={invalid.track('f2')}
           style={{ width: 88 }}
           min={1}
           max={16}
@@ -99,7 +106,7 @@ export const TexturePanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =
       <button
         type="button"
         className="kura-btn kura-btn-sm"
-        disabled={isBusy || primary.locked}
+        disabled={isBusy || primary.locked || invalid.blocked}
         onClick={() =>
           applyTextureToObject(primary.id, {
             pattern: texturePattern,

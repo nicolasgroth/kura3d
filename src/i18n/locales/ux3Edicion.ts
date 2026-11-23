@@ -66,6 +66,14 @@ const UX3_EDICION_TABLE = {
     'कनेक्टर पहले से इस जोड़ में समाने वाला सबसे बड़ा आकार है: उसकी गहराई, सेक्शन की चौड़ाई या दूसरे कनेक्टरों के पास की जगह उसे सीमित करती है। अधिक मज़बूती के लिए इन सतहों को चिपकाएँ या कट प्लेन को चौड़े सेक्शन में ले जाएँ।',
     '连接件已是此接合能容纳的最大尺寸:受其深度、截面宽度或与其他连接件之间的空间限制。若需更牢固,请粘合这些面或把切割面移到更宽的截面。',
   ],
+  'ux3.op.invalidFields': [
+    'Corrige los campos marcados: un valor no numérico o fuera de rango no se aplica.',
+    'Fix the marked fields: a non-numeric or out-of-range value is not applied.',
+    'Korrigiere die markierten Felder: Ein nicht numerischer Wert oder einer außerhalb des Bereichs wird nicht übernommen.',
+    'Corrige les champs signalés : une valeur non numérique ou hors plage n’est pas appliquée.',
+    'चिह्नित फ़ील्ड ठीक करें: गैर-संख्यात्मक या सीमा से बाहर का मान लागू नहीं होता।',
+    '请修正标记的字段:非数字或超出范围的值不会被应用。',
+  ],
 } as const satisfies Record<string, Row>;
 
 type Ux3EdicionKey = keyof typeof UX3_EDICION_TABLE;

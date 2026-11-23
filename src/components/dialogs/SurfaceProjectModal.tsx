@@ -16,6 +16,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { useBoundOperationTarget } from '../useBoundOperationTarget';
 import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { useInvalidFields } from '../useInvalidFields';
 import { OperationPanel } from '../OperationPanel';
 import {
   PRINT_COLOR_PALETTE,
@@ -41,6 +42,8 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
   onClose,
 }) => {
   const language = useKuraStore((s) => s.language);
+  // Campos fuera de rango o no numéricos: se marcan y la operación no se aplica (nada se acota en silencio).
+  const invalid = useInvalidFields();
   const objects = useKuraStore((s) => s.objects);
   const projectOnObjectSurface = useKuraStore((s) => s.projectOnObjectSurface);
   const failure = useOperationFailure(open);
@@ -172,7 +175,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
           <button
             type="button"
             className="kura-btn kura-btn-primary"
-            disabled={!targetId || (kind === 'text' ? !text.trim() : !svgContent.trim())}
+            disabled={!targetId || (kind === 'text' ? !text.trim() : !svgContent.trim()) || invalid.blocked}
             onClick={() => void handleExecute()}
           >
             <Type size={14} />
@@ -187,7 +190,7 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
           type="button"
           className="kura-btn kura-btn-sm"
           aria-pressed={picking}
-          disabled={!targetId}
+          disabled={!targetId || invalid.blocked}
           title={t(language, 'projectPreview.pickTip')}
           onClick={() => setSurfacePick(picking || !targetId ? null : targetId)}
         >
@@ -293,6 +296,8 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
         <div className="kura-form-field">
           <label htmlFor="proj-width">{t(language, 'dialog.project.width')}</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f1')}
             id="proj-width"
             min={4}
             max={200}
@@ -307,6 +312,8 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
         <div className="kura-form-field">
           <label htmlFor="proj-depth">{t(language, 'dialog.project.depth')}</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f2')}
             id="proj-depth"
             min={0.3}
             max={15}
@@ -347,6 +354,8 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
         <div className="kura-form-field">
           <label htmlFor="proj-u">{t(language, 'dialog.project.offsetU')}</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f3')}
             id="proj-u"
             step={0.5}
             precision={1}
@@ -359,6 +368,8 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
         <div className="kura-form-field">
           <label htmlFor="proj-v">{t(language, 'dialog.project.offsetV')}</label>
           <PrecisionNumberInput
+            strictRange
+            onInvalidChange={invalid.track('f4')}
             id="proj-v"
             step={0.5}
             precision={1}

@@ -10,6 +10,7 @@ import React, { useEffect, useRef } from 'react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { useInvalidFields } from '../useInvalidFields';
 import { estimateHollowWall } from '../../engine/solidOffset';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { HOLLOW_REQUEST_FRESH_MS, useHollowRequest } from './hollowPanelRequest';
@@ -25,6 +26,8 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
   const isBusy = Boolean(busyOperation);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const request = useHollowRequest();
+  // Un grosor fuera de rango o no numérico no se acota en silencio: el campo lo marca y «Aplicar» espera.
+  const invalid = useInvalidFields();
   // Antes de aplicar: en piezas grandes la rejilla del offset engrosa la pared; se dice cuánto.
   const worldSize = primary.stats.dimensionsMm.map((d, i) => d * Math.abs(primary.scale[i]));
   const estimate = estimateHollowWall(worldSize, wallThicknessMm);
@@ -53,6 +56,8 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
           suffix="mm"
           value={wallThicknessMm}
           onChange={setWallThicknessMm}
+          strictRange
+          onInvalidChange={invalid.track('wall')}
           ariaLabel={t(language, 'inspector.op.wallThickness')}
         />
       </div>
@@ -93,6 +98,8 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
             suffix="mm"
             value={drainRadiusMm}
             onChange={setDrainRadiusMm}
+            strictRange
+            onInvalidChange={invalid.track('drain')}
             ariaLabel={t(language, 'inspector.op.drainRadius')}
           />
         </div>
@@ -100,7 +107,8 @@ export const HollowPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =>
       <button
         type="button"
         className="kura-btn kura-btn-sm kura-btn-primary"
-        disabled={isBusy || primary.locked}
+        disabled={isBusy || primary.locked || invalid.blocked}
+        title={invalid.blocked ? t(language, 'ux3.op.invalidFields') : undefined}
         onClick={() =>
           void hollowObject(primary.id, {
             enabled: true,
