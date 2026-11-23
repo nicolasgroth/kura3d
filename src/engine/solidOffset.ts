@@ -203,7 +203,9 @@ export function inwardOffset(
       level
     );
     // Lleva los vértices a la isosuperficie exacta (la interpolación lineal de la grilla gruesa los deja corto o largo)
-    const snapped = useThenDelete(raw, (m) => snapToLevel(m, field, level, gridEdge));
+    // Solo con rejilla gruesa (flecha del peor caso > 5 % de la pared): en piezas chicas la grilla ya es fina
+    const coarse = (gridEdge * gridEdge) / (6 * thickness) > 0.05 * thickness;
+    const snapped = coarse ? useThenDelete(raw, (m) => snapToLevel(m, field, level, gridEdge)) : raw;
     // Funde triángulos coplanares de la grilla sin mover la superficie más que una fracción del espesor
     return useThenDelete(snapped, (m) => m.simplify(simplifyTol));
   };
