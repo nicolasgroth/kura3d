@@ -75,6 +75,8 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
           ? { ...change, added: [kept.part] }
           : clearOfOthers({ ...change, added: separated.parts });
         commitChange(cleared, { select: cleared.added.map((c) => c.id) });
+        // Las mitades (o la conservada) se encuadran siempre, aunque ya estuvieran a la vista.
+        get().requestCameraPreset('focus', cleared.added.map((c) => c.id));
         // El corte terminó: se vuelve a Seleccionar y se apaga la vista previa del plano.
         set((state) => ({
           activeTool: state.activeTool === 'cut' ? 'select' : state.activeTool,

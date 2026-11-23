@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { plateOffsetX } from '../../core/scene/splitGroups';
+import { plateOffset, plateOffsetX } from '../../core/scene/splitGroups';
 import { DEFAULT_PRINTER_PROFILES, type SceneObject, type Vec3 } from '../../types/kura';
 import { checkObjectsOutOfBounds } from '../viewport/viewportHelpers';
 
@@ -34,8 +34,11 @@ function part(id: string, plate: number, position: Vec3): SceneObject {
 }
 
 describe('indicador Fuera de volumen con piezas en placas', () => {
-  it('ocho placas en fila no alarman: cada pieza cabe en su placa', () => {
-    const objects = Array.from({ length: 8 }, (_, i) => part(`P${i}`, i, [10 + plateOffsetX(i, profile.bedWidthMm), 0, 5]));
+  it('ocho placas en cuadrícula no alarman: cada pieza cabe en su placa', () => {
+    const objects = Array.from({ length: 8 }, (_, i) => {
+      const [ox, oz] = plateOffset(i, profile.bedWidthMm, profile.bedDepthMm);
+      return part(`P${i}`, i, [10 + ox, 0, 5 + oz]);
+    });
     expect(checkObjectsOutOfBounds(objects, profile)).toBe(false);
   });
 

@@ -14,7 +14,7 @@ import React, { useMemo } from 'react';
 import { t } from '../../i18n';
 import {
   explodedSplitPositions,
-  plateOffsetX,
+  plateOffset,
   splitArrangementOf,
   splitGroupOf,
   splitPlateCount,
@@ -101,13 +101,13 @@ export const SplitLabels: React.FC = () => {
 
     // Placas de impresión del grupo seleccionado (la 1 es la cama real).
     const group = splitGroupOf(objects, selectedId);
-    if (group && splitArrangementOf(group, bed.widthMm) === 'print') {
+    if (group && splitArrangementOf(group, bed.widthMm, bed.depthMm) === 'print') {
       const plates = splitPlateCount(group);
       for (let plate = 0; plate < plates; plate++) {
         out.push({
           id: `plate:${plate}`,
           text: t(language, 'split.plate', { n: plate + 1 }),
-          anchor: [plateOffsetX(plate, bed.widthMm), 0.1, bed.depthMm / 2 + 12],
+          anchor: [plateOffset(plate, bed.widthMm, bed.depthMm)[0], 0.1, plateOffset(plate, bed.widthMm, bed.depthMm)[1] + bed.depthMm / 2 + 12],
           radiusMm: 0,
           kind: 'plate',
         });
