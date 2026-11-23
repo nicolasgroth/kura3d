@@ -9,7 +9,7 @@
  */
 
 import type { LanguageCode, MaterialPresetId, PrinterProfile } from '../types/kura';
-import { formatLocaleNumber } from './numberLocale';
+import { formatLocaleNumber, LOCALE_BY_LANG } from './numberLocale';
 import { TRANSLATIONS, type TranslationKey } from './translations';
 
 export type { TranslationKey };
@@ -29,6 +29,16 @@ const MATERIAL_TRANSLATION_KEYS: Record<MaterialPresetId, TranslationKey> = {
   metallic: 'material.metallic',
 };
 
+const PLURAL_RE = /\{(\w+)\?([^|{}]*)\|([^{}]*)\}/g;
+
+function pluralCategory(lang: LanguageCode, n: number): Intl.LDMLPluralRule {
+  try {
+    return new Intl.PluralRules(LOCALE_BY_LANG[lang] ?? 'es-CL').select(n);
+  } catch {
+    return 'other';
+  }
+}
+
 /**
  * Traduce una clave de texto al idioma solicitado (`es`, `en`, `de`, `fr`, `hi`, `zh`)
  * e interpola variables `{clave}`. Si falta la clave o el idioma no existe, hace fallback seguro al español.
@@ -43,6 +53,16 @@ export function t(
 
   if (!params) {
     return template;
+  }
+
+  // Plural en línea: `{count?uno|otros}` elige la forma según el número `count` y las reglas del idioma.
+  if (template.includes('?')) {
+    template = template.replace(PLURAL_RE, (whole, name: string, one: string, other: string) => {
+      const raw = params[name];
+      const n = typeof raw === 'number' ? raw : Number(String(raw ?? '').replace(/[.,\s]/g, ''));
+      if (!Number.isFinite(n)) return whole;
+      return pluralCategory(lang, n) === 'one' ? one : other;
+    });
   }
 
   for (const [paramKey, paramValue] of Object.entries(params)) {
