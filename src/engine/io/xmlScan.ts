@@ -3,7 +3,8 @@
  * @description Escáner XML lineal (indexOf) para los lectores 3MF: recorre elementos por nombre local
  * sin expresiones regulares con retroceso, de modo que etiquetas sin cerrar o sin `>` no provoquen
  * tiempo cuadrático. Las etiquetas contenedoras sin cierre y las aperturas sin `>` se rechazan como
- * archivo dañado.
+ * archivo dañado. En las pasadas de metadatos (`skipOversized`), una etiqueta legítima de más de
+ * 64 KiB (p. ej. una miniatura en base64 dentro de un atributo) se salta sin reservar su contenido.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -11,7 +12,11 @@
 
 import { ModelImportError } from './importErrors';
 
-/** Longitud máxima de una etiqueta de apertura (atributos incluidos): 64 KiB sobra para 3MF reales. */
+/**
+ * Longitud máxima de una etiqueta de apertura (atributos incluidos). Medido en 3MF reales de Bambu
+ * Studio/OrcaSlicer/PrusaSlicer: la más larga ronda 0,5 KB (`<model>` con sus espacios de nombres);
+ * las miniaturas van como PNG aparte y las descripciones como texto, no como atributo.
+ */
 export const MAX_XML_TAG_LENGTH = 64 * 1024;
 
 /**
@@ -40,6 +45,11 @@ export interface XmlElementMatch {
 interface ScanOptions {
   /** true: elemento hoja (no se busca el cierre ni se devuelve cuerpo). */
   leaf?: boolean;
+  /**
+   * true: una apertura bien cerrada de más de `MAX_XML_TAG_LENGTH` se salta (no se visita ni se copia)
+   * en vez de rechazar el archivo. Solo para pasadas de metadatos; la geometría nunca se salta.
+   */
+  skipOversized?: boolean;
 }
 
 function isNameEnd(code: number): boolean {
@@ -104,8 +114,15 @@ export function forEachElement(
     }
     const qname = xml.slice(lt + 1, nameEnd);
     const gt = xml.indexOf('>', nameEnd);
-    if (gt < 0 || gt - lt > MAX_XML_TAG_LENGTH) {
-      throw new ModelImportError('corrupt', `etiqueta <${qname.slice(0, 40)}> sin cerrar`);
+    if (gt < 0) throw new ModelImportError('corrupt', `etiqueta <${qname.slice(0, 40)}> sin cerrar`);
+    if (gt - lt > MAX_XML_TAG_LENGTH) {
+      // Un `<` antes del `>` es una apertura sin cerrar: dañado. Si no, es una etiqueta larga legítima.
+      const nextLt = xml.indexOf('<', nameEnd);
+      if (!options.skipOversized || (nextLt >= 0 && nextLt < gt)) {
+        throw new ModelImportError('corrupt', `etiqueta <${qname.slice(0, 40)}> sin cerrar`);
+      }
+      pos = gt + 1;
+      continue;
     }
     const selfClosing = xml.charCodeAt(gt - 1) === 47;
     const attrs = xml.slice(nameEnd, selfClosing ? gt - 1 : gt);
@@ -140,7 +157,12 @@ export function findElement(xml: string, local: string): XmlElementMatch | null 
   return found;
 }
 
-/** Atributos crudos de cada elemento hoja con ese nombre local. */
-export function forEachLeaf(xml: string, local: string, visit: (attrs: string) => void | boolean): void {
-  forEachElement(xml, local, (match) => visit(match.attrs), { leaf: true });
+/** Atributos crudos de cada elemento hoja con ese nombre local (`skipOversized`: ver `ScanOptions`). */
+export function forEachLeaf(
+  xml: string,
+  local: string,
+  visit: (attrs: string) => void | boolean,
+  options: { skipOversized?: boolean } = {},
+): void {
+  forEachElement(xml, local, (match) => visit(match.attrs), { leaf: true, skipOversized: options.skipOversized });
 }
