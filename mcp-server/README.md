@@ -68,7 +68,7 @@ Solo Lectura efectivo = impuesto por el servidor (CLI/env) **o** pedido por la U
 
 El botón **Regenerar token** de Ajustes envía `{"type":"rotate_token"}` por la sesión ya autenticada. El servidor adopta el token nuevo, revoca el anterior (todo handshake con él recibe `401`), cierra las sesiones abiertas con el código `4001` y la UI se reconecta con el token nuevo mostrando "Reconectando…". Si el servidor tiene `--token-file`, la rotación se persiste; si solo usa `KURA_BRIDGE_TOKEN`, dura hasta reiniciar el servidor, y la UI pide actualizar la configuración del cliente MCP. Si la UI no está conectada, el token nuevo solo se guarda en Ajustes y hay que configurarlo en el servidor.
 
-**Límite conocido:** la UI web guarda el token del puente en `localStorage` (hace falta para reconectar tras reiniciar la app). Es una credencial aleatoria de 128 bits válida solo en loopback, pero no está cifrada en reposo. La alternativa correcta es el llavero del sistema operativo vía Tauri, fuera del alcance de este servidor.
+**Dónde vive el token:** en la aplicación de escritorio se guarda en el llavero del sistema operativo. En la versión web queda solo en `sessionStorage`: dura lo que dura la pestaña y hay que volver a pegarlo al abrir otra. Nunca se escribe en `localStorage`, en archivos de proyecto ni en logs. Es una credencial aleatoria válida solo en loopback.
 
 ### Exportaciones confinadas
 
@@ -151,7 +151,9 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 
 ---
 
-## Catálogo de Herramientas MCP (`kura_*` — 33 herramientas)
+## Catálogo de Herramientas MCP (`kura_*`)
+
+La tabla completa y al día (42 herramientas, generada desde el servidor con `npm run docs:mcp`) está en [docs/MCP.md](../docs/MCP.md). Lo que sigue es un resumen que puede no incluir las más nuevas (medir, reparar, grupos).
 
 | Herramienta | Descripción |
 | :--- | :--- |
