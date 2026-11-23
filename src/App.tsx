@@ -33,6 +33,7 @@ import { useFunctionKeys } from './components/useFunctionKeys';
 import { guardUnsavedChanges } from './utils/unsavedGuard';
 import { LOG_TAG } from './brand';
 import { ConfirmDialogHost } from './components/ConfirmDialogHost';
+import { RowContextMenuHost } from './components/scene/RowContextMenuHost';
 import { confirmDeleteSelection } from './components/scene/confirmDeleteSelection';
 import { NarrowPanelBar } from './components/NarrowPanelBar';
 import { useNarrowSheets } from './components/narrow/useNarrowSheets';
@@ -453,6 +454,7 @@ export const App: React.FC = () => {
       <StatusBar recoveryStatus={recovery.status} />
       <Dialogs />
       <ConfirmDialogHost />
+      <RowContextMenuHost />
       <CommandPalette />
       <SplashScreen />
     </div>

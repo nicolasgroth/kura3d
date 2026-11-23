@@ -1,7 +1,7 @@
 /**
  * @file src/store/contextMenuRequest.ts
- * @description Petición de abrir el menú contextual de un objeto desde fuera del visor (filas del árbol de
- * Escena: clic derecho, Mayús+F10 o tecla Menú). El visor la atiende con las mismas acciones del menú del objeto.
+ * @description Petición de abrir el menú contextual de un objeto o grupo desde una fila del árbol de Escena (filas del árbol de
+ * Escena: clic derecho, Mayús+F10 o tecla Menú). `RowContextMenuHost` la atiende junto a la fila, con las mismas acciones del menú del objeto o las del menú de grupo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -10,7 +10,10 @@
 import { create } from 'zustand';
 
 export interface ContextMenuRequest {
-  objectId: string;
+  /** Objeto de la fila; `null` cuando la fila es un grupo (ver `groupId`). */
+  objectId: string | null;
+  /** Grupo de la fila (menú de grupo). */
+  groupId?: string;
   /** Coordenadas de pantalla (clientX/clientY) del origen: el puntero o la fila con foco. */
   x: number;
   y: number;
