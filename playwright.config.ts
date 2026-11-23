@@ -16,6 +16,8 @@ process.env.KURA_URL ??= `http://127.0.0.1:${PORT}/`;
 
 export default defineConfig({
   testDir: './e2e',
+  // El generador de capturas de la documentación (e2e/docs/) tiene su propia config: `npm run docs:capturas`.
+  testIgnore: ['docs/**'],
   timeout: 120_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,

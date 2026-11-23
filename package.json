@@ -30,7 +30,10 @@
     "tauri:build": "tauri build",
     "mcp:build": "npm --prefix mcp-server run build",
     "mcp:start": "npm --prefix mcp-server run start",
-    "mcp:test": "npm --prefix mcp-server run test"
+    "mcp:test": "npm --prefix mcp-server run test",
+    "docs:capturas": "playwright test -c playwright.docs.config.ts",
+    "docs:mcp": "node scripts/docs-mcp-tabla.mjs",
+    "docs:enlaces": "node scripts/docs-comprobar-enlaces.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
