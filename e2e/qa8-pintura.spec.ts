@@ -61,7 +61,22 @@ test('el pincel no pinta la cara trasera de una placa de 1 mm', async ({ page })
   await page.getByRole('button', { name: 'Vista superior', exact: true }).filter({ hasText: /^Sup$/ }).click();
   await page.getByRole('button', { name: 'Pintar', exact: true }).first().click();
   await page.waitForTimeout(800);
-  await page.mouse.move(706, 470); await page.mouse.down(); await page.mouse.move(710, 470); await page.mouse.up();
+  // El punto del trazo se calcula sobre la placa real (centro de su cara superior), no con coordenadas fijas:
+  // el encuadre puede cambiar y un punto fijo de pantalla deja de caer sobre la pieza.
+  const punto = await page.evaluate(async () => {
+    const w = window as any;
+    const urls = performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /react-three_fiber/.test(n));
+    let st: any = null;
+    for (const u of urls) { const m = await import(/* @vite-ignore */ u); if (m._roots) st = [...m._roots.values()][0].store.getState(); }
+    const o = w.__s.getState().objects[0]; const P = o.mesh.positions as number[];
+    let maxY = -1e9; for (let i = 1; i < P.length; i += 3) maxY = Math.max(maxY, P[i]);
+    const cam = st.camera; cam.updateMatrixWorld();
+    const v = new (cam.position.constructor)(o.position[0], o.position[1] + maxY * o.scale[1], o.position[2]).project(cam);
+    const r = st.gl.domElement.getBoundingClientRect();
+    return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height };
+  });
+  expect(await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.tagName, [punto.x, punto.y])).toBe('CANVAS');
+  await page.mouse.move(punto.x - 2, punto.y); await page.mouse.down(); await page.mouse.move(punto.x + 2, punto.y, { steps: 3 }); await page.mouse.up();
   await page.waitForTimeout(300);
   const { bottom, painted } = await page.evaluate(() => {
     const o = (window as any).__s.getState().objects[0]; const fc: string[] = o.mesh.faceColors ?? [];
