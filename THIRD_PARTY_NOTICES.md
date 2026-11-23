@@ -33,3 +33,17 @@ repositorio o que tienen avisos que deben acompañar la distribución.
 - Versión: 0.9.x. Repositorio: https://github.com/xmldom/xmldom
 - Licencia: MIT. Copyright 2019 - present Christopher J. Brody and other contributors;
   Copyright 2012 - 2017 @jindw and other contributors.
+
+## Dependencias solo de desarrollo con licencia LGPL
+
+### sharp y libvips
+
+- Uso: ninguno directo. Llega de forma indirecta por `manifold-3d` → `@gltf-transform/functions` →
+  `ndarray-pixels` → `sharp`. Kura3D no lo importa ni lo ejecuta.
+- Alcance: solo queda en `node_modules` al desarrollar. No entra en el paquete web, en el servidor
+  MCP publicado ni en el instalador de escritorio.
+- Licencias: `sharp` es Apache-2.0. Sus binarios precompilados (`@img/sharp-win32-x64`,
+  `@img/sharp-wasm32` y equivalentes de otras plataformas) incluyen libvips, con licencia
+  LGPL-3.0-or-later. Repositorios: https://github.com/lovell/sharp y https://github.com/libvips/libvips
+- Aprobación: aceptado por el autor el 23 de noviembre de 2026 como dependencia de desarrollo
+  (ver `docs/DECISIONES.md`). Si alguna vez pasara a distribuirse, hay que revisarlo de nuevo.

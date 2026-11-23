@@ -40,3 +40,6 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-23 | Prueba de 3MF en OrcaSlicer | Autorizada; se hace con el autor presente. |
 | 2026-11-23 | Modelos reales para pruebas en pantalla | El autor los copia a `.eval-tmp\modelos`, que está excluida de git. |
 | 2026-11-23 | Usabilidad bajo el mínimo | Seguir con un par de iteraciones más de corregir y evaluar, después de actualizar las dependencias. |
+| 2026-11-23 | LGPL indirecta (sharp / libvips) | Aceptada como dependencia solo de desarrollo y anotada en `THIRD_PARTY_NOTICES.md`. No se distribuye; si pasara a distribuirse se revisa de nuevo. |
+| 2026-11-23 | Node local | Actualizarlo a la última 22.x (jsdom 31 pide 22.22.2 o superior). Lo hace el asistente. |
+| 2026-11-23 | Prueba de 3MF en OrcaSlicer | Se posterga para más adelante, cuando el producto esté más avanzado. Sigue autorizada. |

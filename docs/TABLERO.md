@@ -16,7 +16,7 @@ Estado de `main`: 2120 pruebas del frontend, 138 del servidor MCP y 37 de Rust e
 | Rendimiento | Dividir un busto de 2,4 millones de triángulos: de 172 a 78 s. Importarlo: la mitad de memoria. Separar por colores tras pintar: de 94 a 1,4 s |
 | Seguridad | El lector de archivos pasó dos revisiones independientes: 13 hallazgos corregidos, cada uno con una prueba de archivo malicioso |
 | GitHub | El CI fallaba en cada push por una configuración incompleta; corregido. Dependabot quedó mensual y agrupado. No hay terceros con acceso |
-| Decidido el 23-nov | Actualizar todas las dependencias; preguntar qué hacer con la mitad conservada de un corte; token MCP como está; seguir iterando usabilidad. Quedan tres consultas en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md): OrcaSlicer, Node local y una licencia LGPL indirecta |
+| Decidido el 23-nov | Actualizar todas las dependencias; preguntar qué hacer con la mitad conservada de un corte; token MCP como está; seguir iterando usabilidad. Sin consultas abiertas: la licencia LGPL indirecta quedó aceptada para desarrollo, Node local se actualiza y OrcaSlicer se posterga |
 
 ## En desarrollo
 
