@@ -18,6 +18,16 @@ const perfProjects = process.env.KURA_PERF
   ? [{ extends: true, test: { name: 'perf', environment: 'node' as const, include: ['src/**/*.perf.test.ts'] } }]
   : [];
 
+/** Divide el bundle web por proveedor para mejorar la carga inicial (`null`: lo decide Rolldown). */
+function vendorChunk(id: string): string | null {
+  const path = id.replaceAll('\\', '/');
+  if (path.includes('node_modules/three') || path.includes('node_modules/@react-three')) return 'three-vendor';
+  if (path.includes('node_modules/react') || path.includes('node_modules/zustand')) return 'react-vendor';
+  if (path.includes('node_modules/manifold-3d') || path.includes('node_modules/fflate')) return 'geometry-vendor';
+  if (path.includes('node_modules/lucide-react')) return 'icons-vendor';
+  return null;
+}
+
 export default defineConfig({
   plugins: [react()],
 
@@ -53,23 +63,12 @@ export default defineConfig({
   build: {
     target: 'esnext',
     sourcemap: true,
-    rollupOptions: {
+    // Vite 8 empaqueta con Rolldown: `rollupOptions` pasa a `rolldownOptions` y `manualChunks`
+    // (obsoleto) a `codeSplitting.groups`, con la misma división por proveedor de antes.
+    rolldownOptions: {
       output: {
-        // Divide el bundle web por proveedor para mejorar la carga inicial
-        manualChunks(id) {
-          if (id.includes('node_modules/three') || id.includes('node_modules/@react-three')) {
-            return 'three-vendor';
-          }
-          if (id.includes('node_modules/react') || id.includes('node_modules/zustand')) {
-            return 'react-vendor';
-          }
-          if (id.includes('node_modules/manifold-3d') || id.includes('node_modules/fflate')) {
-            return 'geometry-vendor';
-          }
-          if (id.includes('node_modules/lucide-react')) {
-            return 'icons-vendor';
-          }
-          return undefined;
+        codeSplitting: {
+          groups: [{ name: vendorChunk, debugName: 'vendors' }],
         },
       },
     },
