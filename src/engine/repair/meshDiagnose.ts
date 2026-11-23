@@ -9,7 +9,8 @@
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';
-import { buildEdgeTable, CLOSURE_WELD_MM, heFrom, isMeshClosed, weldGrid } from './meshTopology';
+import { buildEdgeTable, CLOSURE_WELD_MM, heFrom, isMeshClosed } from './meshTopology';
+import { countEdgesByUse, weldedTriangles } from './boundaryEdges';
 import { boundaryLoops, labelShells, nestingDepth, shellVolumes } from './meshShells';
 
 /** Agujero (bucle de borde) en coordenadas locales de la malla. */
@@ -85,13 +86,11 @@ export function extentOf(p: ArrayLike<number>, verts: Iterable<number>): { size:
 
 /** Diagnostica la malla (coordenadas locales). `weldMm` = tolerancia de soldadura. */
 export function diagnoseMesh(mesh: Pick<MeshData, 'positions' | 'indices'>, weldMm = CLOSURE_WELD_MM): MeshDiagnosis {
-  const { canon, first, unique } = weldGrid(mesh.positions, weldMm);
+  // Soldadura y degenerados: los mismos que el aviso de importación (`boundaryEdges.ts`).
+  const { tris, skip, first, unique } = weldedTriangles(mesh.positions, mesh.indices, weldMm);
   const p = new Float64Array(unique * 3);
   for (let u = 0; u < unique; u++) for (let k = 0; k < 3; k++) p[u * 3 + k] = mesh.positions[first[u] * 3 + k];
   const nT = Math.floor(mesh.indices.length / 3);
-  const tris = new Uint32Array(nT * 3);
-  for (let i = 0; i < nT * 3; i++) tris[i] = canon[mesh.indices[i]];
-  const skip = new Uint8Array(nT);
   let degenerateFaces = 0;
   let duplicateFaces = 0;
   const seen = new Set<string>();
@@ -99,9 +98,8 @@ export function diagnoseMesh(mesh: Pick<MeshData, 'positions' | 'indices'>, weld
     const a = tris[t * 3];
     const b = tris[t * 3 + 1];
     const c = tris[t * 3 + 2];
-    if (a === b || b === c || a === c) {
+    if (skip[t]) {
       degenerateFaces++;
-      skip[t] = 1;
       continue;
     }
     // Sin área pero con vértices distintos: topológicamente válido, se informa y se quita al reparar.
@@ -111,14 +109,14 @@ export function diagnoseMesh(mesh: Pick<MeshData, 'positions' | 'indices'>, weld
     else seen.add(key);
   }
   const edges = buildEdgeTable(tris, skip);
-  let boundaryEdges = 0;
+  // Definición única de arista abierta (aviso de importación e inspector dicen la misma cifra).
+  const boundaryEdges = countEdgesByUse(tris, unique, { boundaryOnly: true, skip });
   let nonManifoldEdges = 0;
   let misorientedEdges = 0;
   const segs: number[] = [];
   for (let e = 0; e < edges.numEdges; e++) {
     const c = edges.count[e];
     if (c === 1) {
-      boundaryEdges++;
       if (segs.length < MAX_HIGHLIGHT_EDGES * 6) {
         for (const v of [edges.lo[e], edges.hi[e]]) segs.push(p[v * 3], p[v * 3 + 1], p[v * 3 + 2]);
       }

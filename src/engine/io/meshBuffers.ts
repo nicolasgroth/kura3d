@@ -12,6 +12,7 @@ import type { MeshData } from '../../types/kura';
 import { computeVertexNormals } from '../manifoldKernel';
 import { MODEL_IO_LIMITS } from '../operationLimits';
 import { ModelImportError } from './importErrors';
+import { countBoundaryEdges, countEdgesByUse } from '../repair/boundaryEdges';
 
 /** Arreglo Float32 que crece por duplicación (evita `number[]` en mallas grandes). */
 export class GrowableFloat32 {
@@ -124,47 +125,11 @@ const OPEN_EDGE_SCAN_LIMIT = 4_000_000;
 
 /**
  * Cuenta aristas que no son compartidas por exactamente dos triángulos (bordes abiertos o
- * no-manifold). Devuelve -1 si la malla es demasiado grande para analizarla aquí.
+ * no-manifold), sobre los índices tal cual. Devuelve -1 si la malla es demasiado grande.
  */
 export function countOpenEdges(indices: Uint32Array, vertexCount: number): number {
-  const triCount = Math.floor(indices.length / 3);
-  if (triCount > OPEN_EDGE_SCAN_LIMIT) return -1;
-  // Aristas agrupadas por su vértice menor (CSR, O(n)): cada cubeta es chica y se cuenta sin ordenar
-  // el arreglo completo (antes, un sort de 3 claves por triángulo era casi un segundo en 2 M triángulos).
-  const offsets = new Uint32Array(vertexCount + 1);
-  for (let t = 0; t < triCount; t++) {
-    for (let e = 0; e < 3; e++) {
-      const a = indices[t * 3 + e];
-      const b = indices[t * 3 + ((e + 1) % 3)];
-      offsets[(a < b ? a : b) + 1]++;
-    }
-  }
-  for (let v = 0; v < vertexCount; v++) offsets[v + 1] += offsets[v];
-  const fill = offsets.slice(0, vertexCount);
-  const others = new Uint32Array(triCount * 3);
-  for (let t = 0; t < triCount; t++) {
-    for (let e = 0; e < 3; e++) {
-      const a = indices[t * 3 + e];
-      const b = indices[t * 3 + ((e + 1) % 3)];
-      others[fill[a < b ? a : b]++] = a < b ? b : a;
-    }
-  }
-  let open = 0;
-  for (let v = 0; v < vertexCount; v++) {
-    const from = offsets[v];
-    const to = offsets[v + 1];
-    if (to - from > 1) others.subarray(from, to).sort();
-    let run = 1;
-    for (let i = from + 1; i <= to; i++) {
-      if (i < to && others[i] === others[i - 1]) {
-        run++;
-      } else {
-        if (i > from && run !== 2) open++;
-        run = 1;
-      }
-    }
-  }
-  return open;
+  if (Math.floor(indices.length / 3) > OPEN_EDGE_SCAN_LIMIT) return -1;
+  return countEdgesByUse(indices, vertexCount, { boundaryOnly: false });
 }
 
 /** Malla importada con su diagnóstico de cierre. */
@@ -193,7 +158,8 @@ export function finishMesh(
     faceColors.some((color) => color !== (baseColor ?? faceColors[0]));
   return {
     mesh: { positions, indices, normals, ...(keepColors ? { faceColors } : {}) },
-    openEdges: countOpenEdges(indices, vertexCount),
+    // Misma definición que el inspector (`diagnoseMesh`): aristas de un solo triángulo tras soldar.
+    openEdges: Math.floor(indices.length / 3) > OPEN_EDGE_SCAN_LIMIT ? -1 : countBoundaryEdges(positions, indices),
   };
 }
 
