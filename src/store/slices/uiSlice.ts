@@ -179,12 +179,18 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const id = makeId('toast');
       // Un aviso por acción: uno idéntico (mismo texto y tipo) se reemplaza en vez de apilarse.
       set((state) => {
-        const rest = state.toasts.filter((x) => !(x.text === text && x.kind === kind));
-        return { toasts: [...rest.slice(-4), { id, text, kind, ...(action ? { action } : {}) }] };
+        const next = [...state.toasts.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, ...(action ? { action } : {}) }];
+        // Como máximo 3 a la vista: los informativos más viejos se descartan; los errores esperan al usuario.
+        for (let i = 0; i < next.length && next.length > 3; ) {
+          if (next[i].kind !== 'error' && i < next.length - 1) next.splice(i, 1);
+          else i += 1;
+        }
+        return { toasts: next.slice(-8) };
       });
-      // Los errores y los avisos con acción permanecen más tiempo para poder leerse o usarse.
-      setTimeout(() => get().dismissToast(id), kind === 'error' ? 12000 : action ? 9000 : 4200);
+      // El cierre automático de los informativos lo temporiza `ToastItem` (con pausa al pasar el cursor o el
+      // foco); los errores permanecen hasta que el usuario los cierra.
     },
+    dismissAllToasts: () => set({ toasts: [] }),
     dismissToast: (id) => set((state) => ({ toasts: state.toasts.filter((toast) => toast.id !== id) })),
   };
 }

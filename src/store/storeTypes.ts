@@ -257,6 +257,7 @@ export interface KuraStoreState {
   setMcpConnected: (connected: boolean) => void;
   addToast: (text: string, kind?: ToastMessage['kind'], action?: ToastAction) => void;
   dismissToast: (id: string) => void;
+  dismissAllToasts: () => void;
 
   // Selección e historial
   selectObject: (id: string, additive?: boolean) => void;
