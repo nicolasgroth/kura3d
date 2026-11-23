@@ -2,7 +2,7 @@
  * @file src/engine/__tests__/threeMfMeshScan.test.ts
  * @description Escáner rápido de vértices/triángulos 3MF: lee comillas simples o dobles y entidades,
  * rechaza etiquetas con `<` dentro, y con miles de atributos sin comilla de cierre sigue siendo lineal
- * (la comilla se busca solo dentro de la etiqueta; con N y 2N etiquetas el tiempo crece < 3×).
+ * (la comilla se busca solo dentro de la etiqueta). La razón de tiempos N/2N está en `threeMfMeshScan.perf.test.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -31,21 +31,10 @@ describe('scanVertices / scanTriangles', () => {
     expect(() => scanVertices('<vertex x="1" <vertex/>', () => {})).toThrow(expect.objectContaining({ code: 'corrupt' }));
   });
 
-  it('miles de atributos sin comilla de cierre: tiempo lineal', () => {
-    const doc = (n: number) => `<vertex x='1 y="2" z="3"/>\n`.repeat(n);
-    const time = (xml: string) => {
-      let best = Infinity;
-      for (let r = 0; r < 3; r++) {
-        const t0 = performance.now();
-        scanVertices(xml, () => {});
-        best = Math.min(best, performance.now() - t0);
-      }
-      return best;
-    };
-    const small = doc(40_000); // ~1 MB
-    const large = doc(80_000);
-    time(small); // calentamiento
-    const ratio = time(large) / Math.max(time(small), 0.5);
-    expect(ratio).toBeLessThan(3);
-  });
+  it('miles de atributos sin comilla de cierre: termina (un recorrido cuadrático tardaría minutos)', () => {
+    let count = 0;
+    scanVertices(`<vertex x='1 y="2" z="3"/>
+`.repeat(200_000), () => { count++; });
+    expect(count).toBe(200_000);
+  }, 10_000);
 });
