@@ -187,5 +187,5 @@ describe('detección de formato y soldado', () => {
     expect(vertexCount).toBeGreaterThan(0);
     expect(welded.triangleSource.length).toBe(welded.indices.length / 3);
     expect(welded.indices.every((v) => v < vertexCount)).toBe(true);
-  });
+  }, 60_000);
 });

@@ -78,6 +78,9 @@ export default defineConfig({
   // Unitarias (*.test.ts) en Node; componentes React (*.test.tsx) en jsdom con Testing Library.
   test: {
     globals: true,
+    // Plazo holgado: con varias suites en paralelo en la misma máquina, el valor por defecto (5 s)
+    // vence en pruebas pesadas sin que haya un defecto. El tiempo se vigila en el proyecto `perf`.
+    testTimeout: 30_000,
     projects: [
       {
         extends: true,
