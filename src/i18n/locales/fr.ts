@@ -43,6 +43,7 @@ import { RECETAS_FR } from './recetas';
 import { BORDES_FR } from './bordesPrimitivas';
 import { UX7_FR } from './ux7';
 import { REDISENO_FR } from './rediseno';
+import { PANEL_FR } from './panel';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -83,6 +84,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...BORDES_FR,
   ...UX7_FR,
   ...REDISENO_FR,
+  ...PANEL_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',
@@ -297,7 +299,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   // Inspector derecho (RightInspector)
   'inspector.title': 'Inspecteur',
   'inspector.emptyTitle': 'Aucun objet sélectionné',
-  'inspector.emptyDesc': 'Cliquez sur un objet dans la vue 3D ou l’arbre de scène pour modifier ses dimensions, son matériau et ses opérations Manifold.',
   'inspector.multiTitle': '{count} objets sélectionnés',
   'inspector.multiDesc': 'Exécutez des opérations booléennes CSG, une enveloppe convexe ou alignez la sélection sur le plateau.',
   'inspector.section.identity': 'Identité & Matériau',

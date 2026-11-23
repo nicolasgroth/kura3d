@@ -1,14 +1,20 @@
 /**
  * @file src/styles/hudCubeClearance.css
  * @description Reserva la columna del cubo de navegación (arriba a la derecha) para que las barras
- * flotantes del visor, también en Zen, no lo tapen.
+ * flotantes del visor, también en Zen, no lo tapen. La primera fila (la barra de vista) queda por encima
+ * del cubo (que empieza unos 60 px más abajo), así que usa todo el ancho y sus rótulos caben cuando hay
+ * espacio real; lo que va debajo, y la barra cuando la desplaza la píldora de Zen, sí reserva la columna.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 @media (min-width: 521px) {
-  .kura-app .kura-hud-top-stack {
-    right: 184px;
+  .kura-app .kura-hud-top-stack > * {
+    margin-right: 172px;
+  }
+
+  .kura-app .kura-hud-top-stack > .kura-hud-top-bar:first-child {
+    margin-right: 0;
   }
 }

@@ -1,0 +1,171 @@
+/**
+ * @file src/styles/contextPanel.css
+ * @description Panel derecho contextual: ancho que elige el usuario (variable `--kura-right-w`, acotada al
+ * 45 % de la ventana), separador de redimensionado con foco visible, encabezado de acción con «Volver»,
+ * ficha de datos del proyecto y rejilla de accesos del objeto. En pantallas estrechas el panel es la hoja
+ * inferior: el separador se oculta y el ancho es el de la hoja.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+@media (width > 900px) {
+  .kura-app .kura-workspace > .kura-sidebar-right.kura-ctx-panel:not(.is-collapsed) {
+    width: min(var(--kura-right-w, 296px), 45vw);
+  }
+}
+
+.kura-ctx-panel .kura-ctx-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -3px;
+  width: 7px;
+  z-index: 24;
+  cursor: col-resize;
+  touch-action: none;
+  background: transparent;
+}
+
+/* Línea guía al pasar o enfocar (además del cursor: no depende solo del color). */
+.kura-ctx-panel .kura-ctx-resizer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 1px;
+  background: transparent;
+  transition: background-color 0.12s ease, width 0.12s ease;
+}
+
+.kura-ctx-panel .kura-ctx-resizer:hover::before,
+.kura-ctx-panel .kura-ctx-resizer:focus-visible::before {
+  left: 2px;
+  width: 3px;
+  background: var(--accent-cyan);
+}
+
+.kura-ctx-panel .kura-ctx-resizer:focus-visible {
+  outline: 2px dashed var(--accent-cyan);
+  outline-offset: 0;
+}
+
+@media (max-width: 900px) {
+  .kura-ctx-panel .kura-ctx-resizer {
+    display: none;
+  }
+}
+
+.kura-ctx-panel .kura-ctx-heading {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-ctx-panel .kura-ctx-heading:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-ctx-panel .kura-ctx-source {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.kura-ctx-panel .kura-ctx-action {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.kura-ctx-panel .kura-ctx-header {
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.kura-ctx-panel .kura-ctx-header .kura-ctx-back {
+  width: auto;
+  flex-shrink: 0;
+}
+
+.kura-ctx-panel .kura-ctx-target {
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-ctx-panel .kura-ctx-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 10px;
+  margin: 0;
+  font-size: 12px;
+}
+
+.kura-ctx-panel .kura-ctx-facts dt {
+  color: var(--text-secondary);
+}
+
+.kura-ctx-panel .kura-ctx-facts dd {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.kura-ctx-panel .kura-ctx-sub {
+  display: block;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.kura-ctx-panel .kura-ctx-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.kura-ctx-panel .kura-ctx-ops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: 6px;
+}
+
+.kura-ctx-panel .kura-ctx-ops-grid .kura-btn {
+  min-width: 0;
+  justify-content: flex-start;
+  text-align: start;
+}
+
+.kura-ctx-panel .kura-ctx-ops-grid .kura-btn > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Anuncio del cambio de contexto: solo para lectores de pantalla. */
+.kura-ctx-panel .kura-ctx-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

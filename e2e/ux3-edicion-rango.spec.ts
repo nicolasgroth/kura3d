@@ -14,6 +14,8 @@ test('Ahuecar: un grosor fuera de rango se marca y no se aplica', async ({ page 
   const id = await crear(page, 'box', { width: 40, height: 40, depth: 40 }, [0, 20, 0]);
   await page.evaluate((x) => (window as any).__s.getState().setSelection([x]), id);
   const insp = page.getByRole('complementary', { name: 'Inspector' });
+  // Ahuecar se abre por su acción: el panel contextual muestra solo sus opciones.
+  await insp.getByRole('button', { name: 'Ahuecar…' }).click();
   const pared = insp.locator('input[aria-label="Grosor de pared"]').first();
   await pared.scrollIntoViewIfNeeded();
   const aplicar = insp.getByRole('button', { name: /Aplicar ahuecado/ });

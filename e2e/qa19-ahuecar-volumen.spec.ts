@@ -40,11 +40,15 @@ async function cuboDe(page: Page, lado: string) {
 test('ahuecar un cubo de 40 mm con pared 2: volumen exacto y sobrevive a exportar + reimportar', async ({ page }) => {
   await abrir(page);
   const insp = await cuboDe(page, '40');
+  // Ahuecar se abre por su acción: el panel contextual muestra solo sus opciones.
+  await insp.getByRole('button', { name: 'Ahuecar…' }).click();
   const pared = insp.locator('input[aria-label="Grosor de pared"]').first();
   await pared.scrollIntoViewIfNeeded();
   await pared.fill('2');
   await pared.press('Enter');
   await insp.getByRole('button', { name: /Aplicar ahuecado/ }).click();
+  // «Volver» regresa al resumen del objeto, donde se lee el volumen.
+  await insp.getByRole('button', { name: 'Volver' }).click();
   await expect(insp.getByText(/17\.344/)).toBeVisible({ timeout: 20000 });
   expect(await volumenFirmado(page)).toEqual([17344]);
 
@@ -65,6 +69,8 @@ test('ahuecar un cubo de 40 mm con pared 2: volumen exacto y sobrevive a exporta
 test('ahuecar con una pared igual a la mitad de la pieza da error claro y no toca la pieza', async ({ page }) => {
   await abrir(page);
   const insp = await cuboDe(page, '20');
+  // Ahuecar se abre por su acción: el panel contextual muestra solo sus opciones.
+  await insp.getByRole('button', { name: 'Ahuecar…' }).click();
   const pared = insp.locator('input[aria-label="Grosor de pared"]').first();
   await pared.scrollIntoViewIfNeeded();
   await pared.fill('10');

@@ -45,6 +45,7 @@ import { ObjectMenuPosition } from './contextMenu/ObjectMenuPosition';
 import { ObjectMenuOrganize } from './contextMenu/ObjectMenuOrganize';
 import { confirmDeleteSelection } from '../scene/confirmDeleteSelection';
 import { openHollowPanel } from '../inspector/hollowPanelRequest';
+import { openActionPanel } from '../shell/actionRunners';
 
 const MOD = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform ?? '') ? '⌘' : 'Ctrl';
 
@@ -129,8 +130,8 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
 
       <div className="kura-context-sep" role="separator" />
       <MenuGroup title={t(language, 'menu.group.analyze')}>
-        <MenuItem icon={<ShieldCheck size={14} aria-hidden="true" style={{ color: 'var(--accent-green)' }} />} label={t(language, 'ctx.validatePrint')} onSelect={run(() => void runPrintabilityCheck(target.id))} />
-        <MenuItem icon={<ScanSearch size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.detectStructures')} onSelect={run(() => void detectObjectStructures(target.id))} />
+        <MenuItem icon={<ShieldCheck size={14} aria-hidden="true" style={{ color: 'var(--accent-green)' }} />} label={t(language, 'ctx.validatePrint')} onSelect={run(() => { void runPrintabilityCheck(target.id); openActionPanel('validate'); })} />
+        <MenuItem icon={<ScanSearch size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />} label={t(language, 'ctx.detectStructures')} onSelect={run(() => { void detectObjectStructures(target.id); openActionPanel('detect'); })} />
         <MenuItem icon={<Wrench size={14} aria-hidden="true" />} label={t(language, 'repair.action')} tip={t(language, 'repair.actionTip')} disabled={target.locked} onSelect={run(() => void repairObjectMesh(target.id))} />
       </MenuGroup>
 

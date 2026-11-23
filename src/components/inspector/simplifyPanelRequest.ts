@@ -22,10 +22,12 @@ export function openSimplifyPanel(id: string): void {
   const state = useKuraStore.getState();
   if (!state.objects.some((o) => o.id === id)) return;
   if (state.selectedIds.length !== 1 || state.selectedIds[0] !== id) state.setSelection([id]);
+  // El panel contextual muestra solo las opciones de Simplificar / Refinar.
+  if (useKuraStore.getState().activeAction !== 'simplify') useKuraStore.getState().setActiveAction('simplify');
   if (state.uiDensity === 'zen') state.toggleZenMode();
   if (typeof window !== 'undefined' && window.matchMedia?.('(max-width: 900px)').matches) {
     window.dispatchEvent(new Event(OPEN_INSPECTOR_EVENT));
-  } else if (state.rightCollapsed) {
+  } else if (useKuraStore.getState().rightCollapsed) {
     state.toggleRightInspector();
   }
   state.addToast(t(state.language, 'toast.simplifyPanelOpened'), 'info');

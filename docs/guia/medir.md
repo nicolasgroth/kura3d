@@ -25,7 +25,7 @@ Pulsa **Medir** en la barra superior o la tecla **D**. Para volver a la selecci�
 
 ## Capacidad de un recipiente
 
-1. Selecciona el vaso, jarro o caja ahuecada y elige **Capacidad**.
+1. Selecciona el vaso, jarro o caja ahuecada y elige **Capacidad**. El panel dice qué objeto mide (*Objeto medido: …*).
 2. Pulsa **Calcular capacidad**. Kura3D calcula cuánto cabe en la orientación **actual** de la pieza, hasta el nivel de **rebalse**.
 3. Lee la **capacidad máxima** (por ejemplo «48,8 mL») y la altura de rebalse. Con el deslizador *Nivel* o el campo *Altura del líquido* ves cuánto cabe hasta cierto nivel.
 4. Para medir inclinado, gira la pieza y vuelve a calcular. Si hay varias cavidades puedes elegir cuál.

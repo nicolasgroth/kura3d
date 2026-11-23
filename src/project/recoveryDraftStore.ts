@@ -109,7 +109,7 @@ export async function writeRecoveryDocument(info: RecoveryDraftInfo, document: P
     await yieldToUi();
   }
   await transaction(['drafts', 'projectBytes', MANIFESTS], 'readwrite', async (tx) => {
-    tx.objectStore('drafts').put({ id: info.id, name: info.name, updatedAt: info.updatedAt });
+    tx.objectStore('drafts').put({ id: info.id, name: info.name, updatedAt: info.updatedAt, ...(info.objectCount === undefined ? {} : { objectCount: info.objectCount }) });
     tx.objectStore(MANIFESTS).put(split.manifest, info.id);
     // Migración: un borrador v1 con el mismo id queda reemplazado por el v2.
     tx.objectStore('projectBytes').delete(info.id);

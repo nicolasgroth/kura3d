@@ -9,10 +9,28 @@
  */
 
 import type { AlignMode, ObjectRole } from '../../types/kura';
-import type { ActionId } from '../../store/actionsCatalog';
+import { actionHasPanel, type ActionId } from '../../store/actionsCatalog';
 import { useKuraStore } from '../../store/useKuraStore';
-import { openHollowPanel } from '../inspector/hollowPanelRequest';
+import { openHollowPanel, OPEN_INSPECTOR_EVENT } from '../inspector/hollowPanelRequest';
 import { REFINE_UI_DEFAULTS } from '../refineDefaults';
+
+/**
+ * Deja a la vista el panel derecho para una acción con opciones: sale del modo sin distracciones y, en
+ * pantallas estrechas, abre la hoja del inspector (en escritorio el store ya despliega el panel plegado).
+ */
+export function revealContextPanel(): void {
+  const state = useKuraStore.getState();
+  if (state.uiDensity === 'zen') state.toggleZenMode();
+  if (typeof window !== 'undefined' && window.matchMedia?.('(max-width: 900px)').matches) {
+    window.dispatchEvent(new Event(OPEN_INSPECTOR_EVENT));
+  }
+}
+
+/** Abre solo las opciones de una acción en el panel, sin ejecutarla (accesos del resumen del objeto). */
+export function openActionPanel(id: ActionId): void {
+  useKuraStore.getState().setActiveAction(id);
+  revealContextPanel();
+}
 
 /** Ejecuta la acción sobre la selección actual (la disponibilidad ya se comprobó al pintar el menú). */
 export function runAction(id: ActionId): void {
@@ -20,6 +38,7 @@ export function runAction(id: ActionId): void {
   const ids = state.selectedIds;
   const primary = ids[0];
   state.setActiveAction(id);
+  if (actionHasPanel(id) && id !== 'hollow' && id !== 'simplify') revealContextPanel();
   switch (id) {
     case 'hollow':
       if (primary) openHollowPanel(primary);
@@ -44,6 +63,10 @@ export function runAction(id: ActionId): void {
       return;
     case 'refine':
       if (primary) void state.refineSelectedMesh(primary, REFINE_UI_DEFAULTS.edgeMm, REFINE_UI_DEFAULTS.smooth);
+      return;
+    case 'texture':
+    case 'modules':
+      // Solo opciones: el panel contextual muestra su sección y el usuario aplica desde allí.
       return;
     case 'hull':
       void state.runConvexHull();

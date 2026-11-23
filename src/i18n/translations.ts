@@ -48,6 +48,7 @@ import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
 import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
 import { REDISENO_EN, REDISENO_ES } from './locales/rediseno';
+import { PANEL_EN, PANEL_ES } from './locales/panel';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -90,6 +91,7 @@ export const TRANSLATIONS_ES = {
   ...BORDES_ES,
   ...UX7_ES,
   ...REDISENO_ES,
+  ...PANEL_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -304,7 +306,6 @@ export const TRANSLATIONS_ES = {
   // Inspector derecho (RightInspector)
   'inspector.title': 'Inspector',
   'inspector.emptyTitle': 'Ningún objeto seleccionado',
-  'inspector.emptyDesc': 'Haz clic en un objeto del visor 3D o de la lista de escena para editar sus dimensiones, material y operaciones Manifold.',
   'inspector.multiTitle': '{count} objetos seleccionados',
   'inspector.multiDesc': 'Con varios objetos puedes unir, restar o intersectar, crear la envolvente convexa o alinear la selección sobre la cama.',
   'inspector.section.identity': 'Identidad y Material',
@@ -1433,6 +1434,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...BORDES_EN,
   ...UX7_EN,
   ...REDISENO_EN,
+  ...PANEL_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
@@ -1637,7 +1639,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
 
   'inspector.title': 'Inspector',
   'inspector.emptyTitle': 'No object selected',
-  'inspector.emptyDesc': 'Click an object in the 3D viewport or Scene tree to edit dimensions, material and Manifold operations.',
   'inspector.multiTitle': '{count} objects selected',
   'inspector.multiDesc': 'With several objects you can join, subtract or intersect, build the convex hull, or align the selection on the bed.',
   'inspector.section.identity': 'Identity & Material',

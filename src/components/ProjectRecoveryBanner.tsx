@@ -87,6 +87,9 @@ export function ProjectRecoveryBanner({ drafts, busy, onRestore, onDiscard }: Pr
           <time dateTime={new Date(draft.updatedAt).toISOString()} title={recoveryDraftTime(draft, language)}>
             {t(language, 'ux7.recovery.savedAgo', { ago: recoveryDraftAgo(draft, language) })} · {recoveryDraftTime(draft, language)}
           </time>
+          {typeof draft.objectCount === 'number' && (
+            <span className="kura-recovery-count" data-testid="recovery-object-count">{t(language, 'rediseno2.recovery.objects', { count: draft.objectCount })}</span>
+          )}
         </div>
 
         <div className="kura-recovery-actions">

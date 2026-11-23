@@ -1,6 +1,7 @@
 /**
  * @file src/components/inspector/InspectorMulti.tsx
- * @description Inspector con selección múltiple: booleanas CSG, envolvente convexa y alineación.
+ * @description Contenido del panel contextual con selección múltiple: transformación del grupo, booleanas CSG,
+ * envolvente convexa y alineación (el panel pone el contenedor y el encabezado).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,7 +13,6 @@ import { AlignCenter, Box, Combine, Grid } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { type AlignMode } from '../../types/kura';
-import { InspectorEdgeToggle } from './InspectorEdgeToggle';
 import { FilamentLegendCard } from './FilamentLegendCard';
 import { GroupTransformCard } from './GroupTransformCard';
 import { SplitJointsSection } from '../split/SplitJointsSection';
@@ -22,7 +22,6 @@ import { useBooleanPreview } from '../booleanPreview/useBooleanPreview';
 /** Panel del inspector con 2 o más objetos seleccionados. */
 export const InspectorMulti: React.FC = () => {
   const language = useKuraStore((s) => s.language);
-  const rightCollapsed = useKuraStore((s) => s.rightCollapsed);
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const busyOperation = useKuraStore((s) => s.busyOperation);
@@ -39,14 +38,7 @@ export const InspectorMulti: React.FC = () => {
   const alignButtons = ['minX', 'centerX', 'maxX', 'maxZ', 'centerZ', 'minZ', 'minY', 'centerY', 'maxY'] as const satisfies readonly AlignMode[];
 
   return (
-    <aside
-      id="kura-inspector-panel"
-      className={`kura-sidebar-right ${rightCollapsed ? 'is-collapsed' : ''}`}
-      aria-label={t(language, 'inspector.title')}
-    >
-      <InspectorEdgeToggle />
-      <div className="kura-panel-header">{t(language, 'inspector.title')}</div>
-      <div className="kura-scroll-area">
+    <>
         <div className="kura-card">
           <strong>
             {t(language, 'inspector.multiTitle', { count: selectedObjects.length })}
@@ -150,7 +142,6 @@ export const InspectorMulti: React.FC = () => {
             <span>{t(language, 'inspector.pro.arrangeGrid')}</span>
           </button>
         </div>
-      </div>
-    </aside>
+    </>
   );
 };

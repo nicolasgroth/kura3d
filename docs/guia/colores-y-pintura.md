@@ -16,7 +16,7 @@ Si el modelo tiene pocos triángulos (un cubo, por ejemplo), el pincel pinta car
 
 ## Separar por colores
 
-1. Con el objeto pintado seleccionado, en el inspector pulsa **Separar por colores**.
+1. Con el objeto pintado seleccionado, pulsa **Separar por colores** en el resumen del objeto (panel derecho, grupo *Corte y Separación*) o elige **Acciones › Separar por colores**.
 2. Kura3D entrega **un sólido cerrado por color**: el color base conserva el resto y cada color adicional toma una capa hacia adentro desde la superficie pintada (la profundidad es configurable). Los volúmenes suman el del original.
 3. Cada pieza aparece en la pestaña **Escena** con su color («Bola — Verde», «Bola — Naranja») y el resumen *Filamentos en escena* cuenta cuántos hay.
 4. Si no te convence, **Ctrl+Z** lo deshace en un paso.
