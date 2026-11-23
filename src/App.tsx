@@ -443,7 +443,7 @@ export const App: React.FC = () => {
         />
         <LeftSidebar />
         <Viewport3D />
-        <MobileTransformBar />
+        <MobileTransformBar hidden={visibleNarrowPanel !== null && sheets.height === 'full'} />
         <RightInspector precisionRequest={precisionRequest} />
         {/* Destino de los paneles de operación: en escritorio ocupan el lugar del inspector. */}
         <div id="kura-op-slot" className="kura-op-slot" />
