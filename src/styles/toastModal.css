@@ -1,13 +1,14 @@
 /**
  * @file src/styles/toastModal.css
- * @description Avisos con un diálogo modal abierto: la pila va dentro del <dialog> como popover (capa
- * superior), anclada abajo y centrada, para no quedar bajo el velo del diálogo.
+ * @description Avisos con un diálogo modal abierto: si queda una franja libre bajo o sobre el diálogo, la pila
+ * va dentro del <dialog> como popover (capa superior), centrada en esa franja; si no, queda detrás del velo y nunca
+ * se dibuja sobre el diálogo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-.kura-toast-stack.kura-toast-stack-modal {
+html .kura-toast-stack.kura-toast-stack-modal[data-slot] {
   position: fixed;
   inset: auto 12px 16px 12px;
   margin: 0 auto;
@@ -21,6 +22,10 @@
   overflow: visible;
   pointer-events: none;
   z-index: 2147483647;
+}
+
+html .kura-toast-stack.kura-toast-stack-modal[data-slot="top"] {
+  inset: 8px 12px auto 12px;
 }
 
 .kura-toast-stack-modal .kura-toast,
