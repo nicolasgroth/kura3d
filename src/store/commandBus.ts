@@ -24,6 +24,9 @@ import * as groupSchema from './groupCommandSchemas';
 import { parseUpdatePrimitiveParams } from './parametricCommandSchemas';
 import { parseSplitForBed, parseValidateAssembly } from './splitCommandSchemas';
 import { MEASURE_HANDLERS } from './measureCommands';
+import { REPAIR_HANDLERS } from './repairCommands';
+import { userWarning } from '../core/scene/userEngineMessages';
+import { localizeEngineWarning, type EngineWarning } from '../engine/engineErrors';
 import type { OperationErrorTracker } from './operationErrors';
 import type { RawParams } from './commandValidation';
 import type { CommandSourceType, KuraStoreState } from './useKuraStore';
@@ -55,6 +58,16 @@ export interface CommandBusDeps {
   toBase64: (bytes: Uint8Array) => string;
   /** Último error de operación del store: aporta el código del `EngineError` a `errorCode`. */
   operationErrors?: OperationErrorTracker;
+  /** Avisos del motor que mostraron las acciones del store: viajan en la respuesta (`warnings`). */
+  engineWarnings?: { clear: () => void; take: () => EngineWarning[] };
+}
+
+/** Avisos en ejes del usuario con mensaje en inglés (misma forma que el MCP sin interfaz). */
+function responseWarnings(warnings: readonly EngineWarning[]): KuraCommandResponse['warnings'] {
+  return warnings.map((w) => {
+    const u = userWarning(w);
+    return { code: u.code, params: u.params, message: localizeEngineWarning('en', u) };
+  });
 }
 
 type Handler = (p: RawParams, deps: CommandBusDeps, command: string) => Promise<unknown> | unknown;
@@ -89,6 +102,7 @@ const headless = () => typeof document === 'undefined';
 
 const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...MEASURE_HANDLERS,
+  ...REPAIR_HANDLERS,
   get_scene_state: (_p, { get }) => {
     const s = get();
     return {
@@ -393,6 +407,7 @@ export function createCommandBus(deps: CommandBusDeps) {
   return async (req: KuraCommandRequest, source: CommandSourceType = 'ui'): Promise<CommandBusResponse> => {
     const command = String(req.command);
     deps.operationErrors?.clear();
+    deps.engineWarnings?.clear();
     try {
       // Un comando inexistente es `unknown-command` desde cualquier origen, antes de la política de solo lectura.
       const handler = Object.prototype.hasOwnProperty.call(HANDLERS, command)
@@ -410,7 +425,8 @@ export function createCommandBus(deps: CommandBusDeps) {
         throw new CommandError('invalid-params', 'bus.error.invalidParam', { param: 'params', expected: 'object' });
       }
       const result = await handler((params ?? {}) as RawParams, deps, command);
-      return { id: req.id, ok: true, result };
+      const warnings = deps.engineWarnings?.take() ?? [];
+      return warnings.length > 0 ? { id: req.id, ok: true, result, warnings: responseWarnings(warnings) } : { id: req.id, ok: true, result };
     } catch (err) {
       // Una acción del store que devolvió vacío tras un error del motor: se usa ese error tipado.
       const failure = deps.operationErrors?.take();

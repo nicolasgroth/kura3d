@@ -21,6 +21,7 @@ import { A11YUX_FR } from './a11yUx';
 import { SPLITUX_FR } from './splitUx';
 import { FIX10_FR } from './fix10';
 import { OPNOTES_FR } from './operationNotes';
+import { REPAIR_FR } from './repair';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -39,6 +40,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...SPLITUX_FR,
   ...FIX10_FR,
   ...OPNOTES_FR,
+  ...REPAIR_FR,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
@@ -1086,7 +1088,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'engineError.PROJECTION_EMPTY_SVG': 'Un contenu SVG valide est nécessaire pour projeter un graphique SVG.',
   'engineError.GLB_EXPORT_FAILED': 'Impossible de générer le fichier GLB binaire.',
   'engineError.MESH_EMPTY': 'L\'opération « {operation} » a produit un maillage vide ; l\'objet n\'a pas été modifié.',
-  'engineError.MESH_INVALID': 'Le maillage n\'est pas un solide fermé valide ({cause}).',
+  'engineError.MESH_INVALID': 'Le maillage n\'est pas un solide fermé valide ({cause}) : utilisez « Réparer le maillage ».',
   'engineError.CUT_PLANE_OUTSIDE': 'Le plan de coupe {axis} = {offset} mm ne traverse pas l\'objet (intérieur entre {min} et {max} mm).',
   'engineError.TEXT_GLYPH_MISSING': 'La police ne contient pas ces caractères : {chars}. Supprime-les ou remplace-les (la police incluse couvre l\'alphabet latin).',
   'engineWarning.REFINE_LENGTH_CLAMPED': 'Arête de {effective} mm utilisée au lieu de {requested} mm pour ne pas dépasser {maxTriangles} triangles.',

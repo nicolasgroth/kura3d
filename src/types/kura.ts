@@ -980,6 +980,8 @@ export interface KuraCommandResponse {
   ok: boolean;
   result?: unknown;
   error?: string;
+  /** Avisos del motor que dejó el comando (código, parámetros en ejes del usuario y mensaje en inglés). */
+  warnings?: Array<{ code: string; params: Record<string, string | number>; message: string }>;
 }
 
 /**

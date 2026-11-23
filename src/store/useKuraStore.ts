@@ -30,6 +30,7 @@ import { createUiSlice } from './slices/uiSlice';
 import { createQuickActionsSlice } from './slices/quickActionsSlice';
 import { createMenuIdeasSlice } from './slices/menuIdeasSlice';
 import { createGroupsSlice } from './slices/groupsSlice';
+import { createRepairSlice } from './slices/repairSlice';
 
 export type {
   ActiveDialogType,
@@ -77,6 +78,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createSplitPrefsSlice(ctx),
     ...createMenuIdeasSlice(ctx),
     ...createGroupsSlice(ctx),
+    ...createRepairSlice(ctx),
   } as Partial<KuraStoreState>;
   return {
     ...base,
@@ -88,6 +90,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
       tr: ctx.tr,
       toBase64: uint8ToBase64,
       operationErrors: ctx.operationErrors,
+      engineWarnings: ctx.engineWarnings,
     }),
   } as KuraStoreState;
 });

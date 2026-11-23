@@ -146,6 +146,23 @@ export { splitMeshByColorSolid, type ColorSplitOptions, type SolidColorPart, typ
 export { isClosedMesh } from './meshClosure';
 
 export {
+  diagnoseMesh,
+  repairMeshData,
+  repairMeshVerified,
+  manifoldAccepts,
+  isMeshClosed,
+  closureCounts,
+  CLOSURE_WELD_MM,
+  DEFAULT_REPAIR_WELD_MM,
+  type MeshDiagnosis,
+  type MeshDiagnosisSummary,
+  type MeshHole,
+  type MeshRepairOptions,
+  type MeshRepairReport,
+  type VerifiedRepair,
+} from './repair';
+
+export {
   OPERATION_RANGES,
   TRANSFORM_LIMITS,
   TRANSFORM_RANGES,

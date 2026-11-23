@@ -33,6 +33,20 @@ export async function hollowObject(ctx: OperationContext, obj: SceneObject, opti
   return patchOf(obj, { ...meshPatch(ctx, obj, detailed.mesh), hollow: { ...options } }, detailed.warnings);
 }
 
+/**
+ * Repara la malla (soldar, quitar degeneradas y duplicadas, orientar, cerrar agujeros, quitar astillas)
+ * y verifica que Manifold la acepte. Si no había nada que reparar, el cambio no trae parches.
+ */
+export async function repairObject(
+  ctx: OperationContext,
+  obj: SceneObject,
+  options: Omit<engine.MeshRepairOptions, 'onProgress'> = {},
+): Promise<{ report: engine.MeshRepairReport; change: SceneChange }> {
+  const res = await engine.repairMeshVerified(obj.mesh, { ...options, onProgress: ctx.onProgress });
+  if (!res.report.changed) return { report: res.report, change: change({ warnings: res.warnings }) };
+  return { report: res.report, change: patchOf(obj, meshPatch(ctx, obj, res.mesh), res.warnings) };
+}
+
 /** Decima la malla (Manifold `simplify`). */
 export async function simplifyObject(ctx: OperationContext, obj: SceneObject, toleranceMm: number): Promise<SceneChange> {
   const simplified = await engine.simplifyMesh(obj, toleranceMm);

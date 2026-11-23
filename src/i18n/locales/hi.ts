@@ -21,6 +21,7 @@ import { A11YUX_HI } from './a11yUx';
 import { SPLITUX_HI } from './splitUx';
 import { FIX10_HI } from './fix10';
 import { OPNOTES_HI } from './operationNotes';
+import { REPAIR_HI } from './repair';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -39,6 +40,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...SPLITUX_HI,
   ...FIX10_HI,
   ...OPNOTES_HI,
+  ...REPAIR_HI,
   // Marca y shell principal
   'app.name': 'Kura3D',
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
@@ -1086,7 +1088,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'engineError.PROJECTION_EMPTY_SVG': 'SVG ग्राफ़िक प्रोजेक्ट करने के लिए मान्य SVG सामग्री चाहिए।',
   'engineError.GLB_EXPORT_FAILED': 'बाइनरी GLB फ़ाइल नहीं बन सकी।',
   'engineError.MESH_EMPTY': '"{operation}" ऑपरेशन से खाली मेश बना; ऑब्जेक्ट नहीं बदला गया।',
-  'engineError.MESH_INVALID': 'मेश एक मान्य बंद ठोस नहीं है ({cause})।',
+  'engineError.MESH_INVALID': 'मेश एक मान्य बंद ठोस नहीं है ({cause}): “मेश ठीक करें” इस्तेमाल करें।',
   'engineError.CUT_PLANE_OUTSIDE': '{axis} = {offset} mm पर कट प्लेन ऑब्जेक्ट को पार नहीं करता (भीतरी सीमा {min} से {max} mm)।',
   'engineError.TEXT_GLYPH_MISSING': 'फ़ॉन्ट में ये अक्षर नहीं हैं: {chars}। इन्हें हटाएँ या बदलें (शामिल फ़ॉन्ट लैटिन वर्णमाला को कवर करता है)।',
   'engineWarning.REFINE_LENGTH_CLAMPED': '{maxTriangles} त्रिभुजों से अधिक न हो, इसलिए {requested} mm के बजाय {effective} mm किनारा उपयोग हुआ।',

@@ -12,7 +12,8 @@ import { writeFile } from 'node:fs/promises';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
-import { isEngineError } from '../../src/engine/engineErrors';
+import { isEngineError, type EngineWarning } from '../../src/engine/engineErrors';
+import { userWarnings } from './headlessUserAxes.js';
 import { localizeEngineErrorForUser, userErrorParams } from '../../src/core/scene/userEngineMessages';
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../../src/engine/operationLimits';
 import { READ_ONLY_COMMANDS, type KuraBridgeServer } from './bridge.js';
@@ -20,6 +21,7 @@ import { resolveExportPath } from './exportPaths.js';
 import { registerParametricTools } from './parametricTools.js';
 import { registerSplitTools } from './splitTools.js';
 import { registerMeasureTools } from './measureTools.js';
+import { registerRepairTools } from './repairTools.js';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
 import { HeadlessCommandError } from './headlessSupport.js';
 import {
@@ -187,16 +189,40 @@ export async function dispatchWithFallback(
       return okJson({
         mode: 'live-bridge',
         command,
-        result: shape(response.result ?? { ok: true }),
+        result: shape(mergeWarnings(response.result ?? { ok: true }, (response as { warnings?: Parameters<typeof mergeWarnings>[1] }).warnings)),
       });
     }
 
     // Cola FIFO: dos llamadas concurrentes no se intercalan sobre la escena headless.
-    const result = await ctx.headless.queue.run(headlessHandler);
+    const result = await ctx.headless.queue.run(async () => {
+      ctx.headless.takeWarnings();
+      const value = await headlessHandler();
+      return withEngineWarnings(value, ctx.headless.takeWarnings());
+    });
     return okJson(shape(result));
   } catch (err) {
     return failError(err);
   }
+}
+
+/**
+ * Agrega a la respuesta los avisos del motor que dejó la operación (sin repetir los que la respuesta ya
+ * trae). Ninguna herramienta sin interfaz los pierde aunque su método no los devuelva.
+ */
+export function withEngineWarnings(value: unknown, pending: readonly EngineWarning[]): unknown {
+  return pending.length === 0 ? value : mergeWarnings(value, userWarnings(pending));
+}
+
+/** Agrega avisos ya en forma de usuario (`code`, `params`, `message`) sin duplicar los presentes. */
+export function mergeWarnings(value: unknown, extra: ReadonlyArray<{ code: string; params?: unknown; message: string }> | undefined): unknown {
+  if (!extra || extra.length === 0 || value === null || typeof value !== 'object' || Array.isArray(value)) return value;
+  const current = (value as { warnings?: unknown }).warnings;
+  const existing: Array<{ code: string; params?: unknown }> = Array.isArray(current) ? current : [];
+  const key = (w: { code: string; params?: unknown }) => `${w.code}|${JSON.stringify(w.params ?? {})}`;
+  const seen = new Set(existing.map(key));
+  const added = extra.filter((w) => !seen.has(key(w)));
+  if (added.length === 0) return value;
+  return { ...value, warnings: [...existing, ...added] };
 }
 
 /** Error MCP con código estable (mismo formato en headless y en el puente vivo). */
@@ -293,6 +319,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerParametricTools(server, ctx);
   registerSplitTools(server, ctx);
   registerMeasureTools(server, ctx);
+  registerRepairTools(server, ctx);
 
   // 3. Transformación de objetos
   server.registerTool(

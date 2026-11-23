@@ -16,3 +16,4 @@ export * from './alignOperations';
 export * from './splitOperations';
 export * from './paintOperations';
 export * from './organizeOperations';
+export * from './repairReport';

@@ -30,7 +30,7 @@ import type {
 import { measureObjectCapacity, type CapacityOptions } from '../../engine/measure';
 import { applyHoles, booleanOperation, convexHull } from './csgOperations';
 import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
-import { eraseSphere, hollowObject, projectOnSurface, refineObject, simplifyObject } from './meshOperations';
+import { eraseSphere, hollowObject, projectOnSurface, refineObject, repairObject, simplifyObject } from './meshOperations';
 import type { OperationContext } from './operationTypes';
 import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnected, splitStructures } from './partOperations';
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
@@ -91,6 +91,9 @@ export const ENGINE_TASKS = {
   convexHull: (ctx: OperationContext, a: { targets: SceneObject[]; name?: string }) => convexHull(ctx, a.targets, a.name),
   hollow: (ctx: OperationContext, a: { obj: SceneObject; options: HollowOptions }) => hollowObject(ctx, a.obj, a.options),
   simplify: (ctx: OperationContext, a: { obj: SceneObject; toleranceMm: number }) => simplifyObject(ctx, a.obj, a.toleranceMm),
+  repair: (ctx: OperationContext, a: { obj: SceneObject; options?: Omit<engine.MeshRepairOptions, 'onProgress'> }) =>
+    repairObject(ctx, a.obj, a.options),
+  diagnoseMesh: (_ctx: OperationContext, a: { mesh: Pick<SceneObject['mesh'], 'positions' | 'indices'> }) => engine.diagnoseMesh(a.mesh),
   refine: (ctx: OperationContext, a: { obj: SceneObject; edgeMm: number; smooth: boolean }) =>
     refineObject(ctx, a.obj, a.edgeMm, a.smooth),
   erase: (ctx: OperationContext, a: { obj: SceneObject; center: Vec3; radiusMm: number }) =>

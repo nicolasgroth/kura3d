@@ -80,6 +80,7 @@ export class KuraHeadlessEngine {
   private units: UnitSystem = 'mm';
   private printerProfile: PrinterProfile = { ...DEFAULT_PRINTER_PROFILES[0] };
   private counter = 0;
+  private pendingWarnings: engine.EngineWarning[] = [];
   /** Cola FIFO: las llamadas MCP concurrentes se ejecutan de a una (ver `dispatchWithFallback`). */
   readonly queue = new SerialQueue();
   /** Contexto de las operaciones compartidas: estadísticas de mundo, IDs `kura_N_*` y nombres fijos. */
@@ -480,6 +481,16 @@ export class KuraHeadlessEngine {
     return { object: userSummary(target), mode: options.mode, note: ENGINE_NOTE };
   }
 
+  /** Repara la malla (misma operación que la app); con `dryRun` solo diagnostica. */
+  async repairMesh(objectId: string, options: { maxHoleMm?: number; weldMm?: number; removeTinyShells?: boolean; dryRun?: boolean } = {}) {
+    const { dryRun, ...opts } = options;
+    if (dryRun) return { dryRun: true, diagnosis: ops.diagnosisToUser(engine.diagnoseMesh(this.requireObject(objectId).mesh)) };
+    const obj = this.requireEditable(objectId);
+    const { report, change } = await ops.repairObject(this.ctx, obj, stripUndefined(opts));
+    this.apply(change);
+    return { dryRun: false, object: userSummary(obj), ...ops.repairReportToUser(report), note: ENGINE_NOTE };
+  }
+
   /** Decima la malla con `simplifyMesh` del motor (Manifold `simplify`). */
   async simplifyMesh(
     objectId: string,
@@ -637,8 +648,19 @@ export class KuraHeadlessEngine {
     return spreadPartsInFreeSpace([...this.objects.values()].filter((o) => !removed.has(o.id)), parts, this.bed());
   }
 
+  /**
+   * Avisos del motor acumulados por `apply` desde la última lectura. `dispatchWithFallback` los toma
+   * tras cada herramienta y los agrega a la respuesta: así ninguna operación los descarta.
+   */
+  takeWarnings(): engine.EngineWarning[] {
+    const out = this.pendingWarnings;
+    this.pendingWarnings = [];
+    return out;
+  }
+
   /** Aplica un `SceneChange` en el mapa: parches in situ, bajas y altas al final (orden de inserción). */
   private apply(change: SceneChange): void {
+    this.pendingWarnings.push(...change.warnings);
     for (const { id, patch } of change.patches) {
       const obj = this.objects.get(id);
       if (obj) Object.assign(obj, patch);

@@ -49,4 +49,6 @@ export type KuraCommandName =
   | 'validate_assembly'
   | 'measure_distance'
   | 'measure_object'
-  | 'measure_capacity';
+  | 'measure_capacity'
+  | 'repair_mesh'
+  | 'diagnose_mesh';

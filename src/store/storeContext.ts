@@ -11,6 +11,7 @@
 
 import type { StoreApi } from 'zustand';
 import type * as engine from '../engine';
+import { isEngineError } from '../engine/engineErrors';
 import { segmentationMatchesMesh } from '../engine/segmentationGuards';
 import { t, type TranslationKey } from '../i18n';
 import { limitsToBytes, trimHistory } from '../project/historyBudget';
@@ -84,6 +85,8 @@ export interface StoreContext {
   cancelBusyOperation: () => boolean;
   /** Igual que `runEngine` pero sin tomar el bloqueo ni registrarse como cancelable (exportar). */
   runEngineDetached: <N extends EngineTaskName>(name: N, args: EngineTaskArgs<N>) => Promise<EngineTaskResult<N>>;
+  /** Avisos del motor mostrados desde el último comando del bus (los toma `createCommandBus`). */
+  engineWarnings: { clear: () => void; take: () => engine.EngineWarning[] };
 }
 
 export interface CommitOptions {
@@ -165,9 +168,29 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   const reportOperationError = (err: unknown) => {
     const message = operationErrors.record(err, get().language);
     set({ lastOperationError: message });
-    get().addToast(tr('toast.errorPrefix', { message }), 'error');
+    // Malla inválida: el aviso ofrece repararla (objeto principal de la selección).
+    const target = get().selectedIds[0];
+    const repairable = isEngineError(err) && err.code === 'MESH_INVALID' && target && get().objects.some((o) => o.id === target);
+    get().addToast(
+      tr('toast.errorPrefix', { message }),
+      'error',
+      repairable ? { label: tr('repair.action'), run: () => void get().repairObjectMesh(target) } : undefined,
+    );
+  };
+  // Avisos mostrados desde el último comando del bus: el bus los devuelve en la respuesta.
+  let busWarnings: engine.EngineWarning[] = [];
+  const engineWarnings = {
+    clear: () => {
+      busWarnings = [];
+    },
+    take: () => {
+      const out = busWarnings;
+      busWarnings = [];
+      return out;
+    },
   };
   const reportEngineWarnings = (warnings: readonly engine.EngineWarning[] | undefined) => {
+    if (warnings) busWarnings.push(...warnings);
     for (const text of localizeWarnings(get().language, warnings)) get().addToast(text, 'info');
   };
 
@@ -288,6 +311,6 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   return {
     set, get, runtime, tr, pushHistory, pushHistoryStep, limitHistory, isHistoryLocked, rejectWhileLocked, runExclusive, operationErrors,
     reportOperationError, reportEngineWarnings, currentSegmentationFor, projectErrorMessage, opCtx, assertCurrent, commitChange,
-    runEngine, cancelBusyOperation, runEngineDetached,
+    runEngine, cancelBusyOperation, runEngineDetached, engineWarnings,
   };
 }

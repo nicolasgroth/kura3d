@@ -30,6 +30,7 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   measure_distance: 'read',
   measure_object: 'read',
   measure_capacity: 'read',
+  diagnose_mesh: 'read',
   create_primitive: 'write',
   update_primitive_params: 'write',
   transform_object: 'write',
@@ -64,6 +65,7 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   colorize_structures: 'write',
   extract_structure: 'write',
   mirror_object: 'write',
+  repair_mesh: 'write',
 });
 
 /** Indica si el nombre corresponde a un comando conocido del Command Bus. */
@@ -126,6 +128,8 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_measure_distance: 'measure_distance',
   kura_measure_object: 'measure_object',
   kura_measure_capacity: 'measure_capacity',
+  kura_repair_mesh: 'repair_mesh',
+  kura_diagnose_mesh: 'diagnose_mesh',
 });
 
 /** Acceso de una herramienta MCP; herramientas no declaradas se tratan como escritura. */
