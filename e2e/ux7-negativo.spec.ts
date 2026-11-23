@@ -40,7 +40,7 @@ test('sin selección, pasar a Negativo no mueve la pieza', async ({ page }) => {
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length)).toBe(2);
   const antes = await page.evaluate(() => (window as any).__s.getState().objects[1].position);
   await page.getByRole('button', { name: 'Negativo', exact: true }).first().click();
-  await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects[1].isHole)).toBe(true);
+  await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects[1].role)).toBe('negative');
   expect(await page.evaluate(() => (window as any).__s.getState().objects[1].position)).toEqual(antes);
   expect(solapes(await cajas(page))).toEqual([]);
 });
