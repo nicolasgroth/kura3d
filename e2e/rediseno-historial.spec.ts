@@ -44,7 +44,8 @@ test('saltar a un paso del historial y volver', async ({ page }) => {
   await page.evaluate(() => {
     const w = window as any;
     w.__cambios = 0;
-    w.__unsub = w.__s.subscribe(() => (w.__cambios += 1));
+    // Cuenta cambios de la escena (la cámara y el foco aparte): saltar debe ser un solo cambio.
+    w.__unsub = w.__s.subscribe((s: any, p: any) => { if (s.objects !== p.objects) w.__cambios += 1; });
   });
   await opciones.first().click();
   cambios = await page.evaluate(() => (window as any).__cambios);

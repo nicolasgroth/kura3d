@@ -52,7 +52,7 @@ test('390 px: la pestaña «Formas» no se duplica al abrir la hoja', async ({ p
     return n;
   };
   expect(await visibles()).toBeLessThanOrEqual(1);
-  await page.locator('.kura-narrow-panel-bar').getByRole('button').first().tap().catch(() => undefined);
+  await page.getByRole('button', { name: 'Formas', exact: true }).tap();
   await page.waitForTimeout(400);
   expect(await visibles()).toBeLessThanOrEqual(1);
   await page.screenshot({ path: 'G:/proyectos/kura3d/.eval-tmp/rediseno/movil-formas.png' });
