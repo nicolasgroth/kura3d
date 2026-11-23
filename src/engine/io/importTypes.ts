@@ -13,6 +13,7 @@ import type { ImportCluster } from './importClusters';
 import type { ModelImportLimits } from './importErrors';
 import type { KuraSceneGroupMeta, KuraSceneObjectMeta } from './kuraSceneMeta';
 import type { UnitHint } from './unitHint';
+import type { ImportedMeshAnalysis } from './importAnalysis';
 
 /** Formatos de modelo que Kura3D sabe leer. */
 export type ModelImportFormat = 'stl' | 'obj' | '3mf' | 'ply';
@@ -34,6 +35,8 @@ export interface ImportedPart {
   openEdges: number;
   /** Estado exacto del objeto si el 3MF lo exportó Kura3D (`mesh` es entonces la malla LOCAL). */
   kura?: KuraSceneObjectMeta;
+  /** Estadísticas y cuerpos calculados en el Worker (compartidos por las piezas de la misma malla). */
+  analysis?: ImportedMeshAnalysis;
 }
 
 /** Placa del laminador (Bambu/Orca): nombre declarado y grupos (`ImportedPart.group`) que lleva. */

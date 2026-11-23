@@ -23,6 +23,7 @@ export type RestoreBuild = (params: {
   scale: Vec3;
   color: string;
   isHole?: boolean;
+  stats?: SceneObject['stats'];
 }) => SceneObject;
 
 export interface RestoredScene {
@@ -49,6 +50,7 @@ export function restoreKuraScene(model: engine.ImportedModel, build: RestoreBuil
       scale: [...k.scale],
       color: k.color || part.color || '',
       isHole: k.isHole,
+      stats: part.analysis?.stats,
     });
     return {
       ...built,

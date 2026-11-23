@@ -11,7 +11,7 @@
 
 import type * as engine from '../engine';
 import { OPERATION_DEFAULTS } from '../engine/operationLimits';
-import { countMeshBodies } from '../core/scene/meshBodies';
+import { countMeshBodies } from '../engine/io/meshBodies';
 import type { LanguageCode, MeshData, SceneObject } from '../types/kura';
 import type { Translate } from './modelImportNotices';
 
@@ -69,7 +69,7 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
   }
   // Un archivo con varios cuerpos sueltos en una sola pieza: se avisa y se ofrece separarlos.
   for (const u of unique) {
-    const bodies = countMeshBodies(u.mesh) ?? 1;
+    const bodies = (u.entries[0].part.analysis ? u.entries[0].part.analysis.bodies : countMeshBodies(u.mesh)) ?? 1;
     if (bodies <= 1) continue;
     const object = u.entries[0].object;
     addToast(

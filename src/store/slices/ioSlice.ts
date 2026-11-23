@@ -56,8 +56,12 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     set: (updater) => set((state) => updater(state) as Partial<KuraStoreState>),
     tr,
     pushHistory: () => pushHistory(),
-    buildObject: ({ name, mesh, position, color, isHole, rotation, scale }) =>
-      buildSceneObject({ name, source: 'imported', mesh, position, rotation, scale, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole }),
+    buildObject: ({ name, mesh, position, color, isHole, rotation, scale, stats }) =>
+      buildSceneObject({ name, source: 'imported', mesh, position, rotation, scale, stats, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole }),
+    onBuildProgress: (done, total) => {
+      const progress = get().busyProgress;
+      if (progress) set({ busyProgress: { ...progress, phase: 'build', done, total } });
+    },
     exportFiles: (args) => ctx.runEngineDetached('export', args),
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
     openSimplify: (id) => get().requestSimplifyPanel(id),

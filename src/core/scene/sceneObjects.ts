@@ -46,6 +46,11 @@ export interface BuildObjectParams {
   primitiveType?: PrimitiveType;
   primitiveParams?: PrimitiveParams;
   parametric?: ParametricOrigin;
+  /**
+   * Estadísticas LOCALES ya calculadas (p. ej. en el Worker de importación): con la política `local` se
+   * usan tal cual y no se recorre la malla en el hilo principal.
+   */
+  stats?: SceneObject['stats'];
 }
 
 /**
@@ -94,7 +99,9 @@ export function buildSceneObject(params: BuildObjectParams, policy: ObjectBuildP
   const scale: Vec3 = params.scale ? [...params.scale] : [1, 1, 1];
   const stats = policy.stats === 'world'
     ? computeWorldStats(params.mesh, rotation, scale)
-    : computeMeshStats(params.mesh);
+    : params.stats
+      ? { ...params.stats, dimensionsMm: [...params.stats.dimensionsMm] as Vec3 }
+      : computeMeshStats(params.mesh);
   const defaultPosition: Vec3 = policy.defaultPosition === 'bed'
     ? [0, computeBedPositionY(params.mesh, rotation, scale), 0]
     : [0, 0, 0];

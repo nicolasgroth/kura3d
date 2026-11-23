@@ -85,7 +85,13 @@ export interface ModelIoDeps {
   set: (updater: (state: IoState) => Partial<IoState> & Record<string, unknown>) => void;
   tr: Translate;
   pushHistory: () => void;
-  buildObject: (params: { name: string; mesh: MeshData; position: Vec3; color: string; isHole?: boolean; rotation?: Vec3; scale?: Vec3 }) => SceneObject;
+  buildObject: (params: {
+    name: string; mesh: MeshData; position: Vec3; color: string; isHole?: boolean; rotation?: Vec3; scale?: Vec3;
+    /** Estadísticas locales calculadas en el Worker (evita recorrer la malla en el hilo principal). */
+    stats?: SceneObject['stats'];
+  }) => SceneObject;
+  /** Avance de la construcción de objetos tras leer (pieza `done` de `total`). */
+  onBuildProgress?: (done: number, total: number) => void;
   /** Cama activa para buscar el hueco libre de las piezas importadas (null = sin límite). */
   bedSize?: () => BedSize | null;
   /** Genera los archivos de exportación (la app usa el Worker del motor; por defecto en proceso). */
@@ -132,6 +138,9 @@ export function sceneFootprint(objects: SceneObject[]): engine.FootprintXZ | nul
   return any ? { minX: box.min.x, maxX: box.max.x, minZ: box.min.z, maxZ: box.max.z } : null;
 }
 
+/** Cede el hilo principal (un ciclo del bucle de eventos) entre trozos de trabajo. */
+export const yieldToMain = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
 export function createModelIoActions(deps: ModelIoDeps) {
   const { get, set, tr, pushHistory, buildObject } = deps;
 
@@ -168,15 +177,20 @@ export function createModelIoActions(deps: ModelIoDeps) {
       for (const p of placed) p.position = [p.position[0] + spot.offset[0], p.position[1], p.position[2] + spot.offset[2]];
       if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
     }
-    const created = placed.map((p) =>
-      buildObject({
+    // Una pieza por vez, cediendo el hilo entre piezas: la interfaz no se congela y el avance es real.
+    const created: SceneObject[] = [];
+    for (const p of placed) {
+      if (created.length > 0) await yieldToMain();
+      created.push(buildObject({
         name: (p.part.name || p.fileName).slice(0, MAX_GROUP_NAME),
         mesh: p.mesh,
         position: p.position,
         color: p.part.isHole ? '#f97316' : p.part.color ?? '',
         isHole: p.part.isHole,
-      }),
-    );
+        stats: p.part.analysis?.stats,
+      }));
+      deps.onBuildProgress?.(created.length, placed.length);
+    }
     // Placas del laminador y conjuntos montados quedan agrupados, en el mismo paso deshacible.
     const grouping = groupImported(plainModels, placed, created, state.groups?.length ?? 0, bed, tr);
     const entries: ImportedEntry[] = placed.map((p, i) => ({ object: grouping.objects[i], part: p.part, fileName: p.fileName }));

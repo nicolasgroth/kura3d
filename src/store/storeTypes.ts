@@ -121,6 +121,9 @@ export interface BusyProgress {
   startedAt: number;
   /** true mientras una tarea del motor puede cancelarse con `cancelBusyOperation`. */
   cancellable: boolean;
+  /** Avance contable si se conoce (p. ej. pieza 7 de 19 al construir lo importado). */
+  done?: number;
+  total?: number;
 }
 
 /** Vista previa de operaciones (declarada en `slices/previewSlice.ts`), fusionada al estado. */
