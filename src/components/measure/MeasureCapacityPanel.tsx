@@ -64,6 +64,9 @@ export const MeasureCapacityPanel: React.FC = () => {
 
   return (
     <div className="kura-measure-capacity" data-testid="measure-capacity">
+      <p className="kura-measure-hint" data-testid="capacity-target" title={obj.name}>
+        {t(lang, 'rediseno2.capacity.target', { name: obj.name })}
+      </p>
       <div className="kura-measure-row">
         <button
           type="button"

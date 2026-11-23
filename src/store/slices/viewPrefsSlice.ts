@@ -2,7 +2,8 @@
  * @file src/store/slices/viewPrefsSlice.ts
  * @description Preferencias de vista que no son del proyecto: mostrar u ocultar la cama (rejilla, placa,
  * rótulo y volumen de impresión; se recuerda en la sesión de la pestaña) y el estado de la barra lateral
- * izquierda (completa, compacta u oculta; se recuerda entre sesiones como preferencia de interfaz). Ninguna
+ * izquierda (completa, compacta u oculta; se recuerda entre sesiones como preferencia de interfaz) y el ancho
+ * del panel derecho contextual. Ninguna
  * entra en el historial ni en el `.kura`, ni cambia la geometría. Independientes del modo sin distracciones.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -11,6 +12,7 @@
 
 import { readSessionStorage as readSession, readStorage, writeSessionStorage as writeSession, writeStorage } from '../preferencesStorage';
 import type { StoreContext } from '../storeContext';
+import { clampRightPanelWidth, loadRightPanelWidth, saveRightPanelWidth } from '../rightPanelPrefs';
 import type { KuraStoreState } from '../storeTypes';
 
 export type LeftSidebarMode = 'full' | 'compact' | 'hidden';
@@ -31,6 +33,9 @@ export interface ViewPrefsSliceState {
   setLeftSidebarMode: (mode: LeftSidebarMode) => void;
   /** Completa → compacta → oculta → completa. */
   cycleLeftSidebar: () => void;
+  /** Ancho del panel derecho contextual en escritorio (px, acotado; se recuerda entre sesiones). */
+  rightPanelWidth: number;
+  setRightPanelWidth: (px: number) => void;
 }
 
 /** Siguiente estado del recorrido del tirador. */
@@ -67,6 +72,13 @@ export function createViewPrefsSlice(ctx: StoreContext): Partial<KuraStoreState>
       }));
     },
     cycleLeftSidebar: () => get().setLeftSidebarMode(nextLeftSidebarMode(get().leftSidebarMode)),
+    rightPanelWidth: loadRightPanelWidth(),
+    setRightPanelWidth: (px) => {
+      const width = clampRightPanelWidth(px);
+      if (width === get().rightPanelWidth) return;
+      saveRightPanelWidth(width);
+      set({ rightPanelWidth: width });
+    },
     // Mostrar/ocultar (búsqueda de escena, atajos antiguos): vuelve al último estado visible.
     toggleLeftSidebar: () => {
       const { leftSidebarMode, lastVisibleLeftMode } = get();

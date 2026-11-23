@@ -43,6 +43,7 @@ import { RECETAS_ZH } from './recetas';
 import { BORDES_ZH } from './bordesPrimitivas';
 import { UX7_ZH } from './ux7';
 import { REDISENO_ZH } from './rediseno';
+import { PANEL_ZH } from './panel';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -83,6 +84,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...BORDES_ZH,
   ...UX7_ZH,
   ...REDISENO_ZH,
+  ...PANEL_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
   'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',
@@ -297,7 +299,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   // Inspector derecho (RightInspector)
   'inspector.title': '属性检查器',
   'inspector.emptyTitle': '未选择任何对象',
-  'inspector.emptyDesc': '在 3D 视口或场景列表中点击对象，即可编辑尺寸、材质和 Manifold 几何操作。',
   'inspector.multiTitle': '已选中 {count} 个对象',
   'inspector.multiDesc': '可对选中对象执行 CSG 布尔运算、凸包生成或打印床智能对齐。',
   'inspector.section.identity': '标识与材质',

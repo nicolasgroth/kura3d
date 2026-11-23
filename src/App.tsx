@@ -19,6 +19,7 @@ import { ProjectDropTarget } from './components/ProjectDropTarget';
 import { ProjectRecoveryBanner } from './components/ProjectRecoveryBanner';
 import { DownloadSaveNotice } from './components/DownloadSaveNotice';
 import { RightInspector } from './components/RightInspector';
+import { requestLeftPanelTab } from './components/leftPanelTabRequest';
 import { SplashScreen } from './components/SplashScreen';
 import { StatusBar } from './components/StatusBar';
 import { SkipLinks } from './components/SkipLinks';
@@ -73,10 +74,12 @@ export const App: React.FC = () => {
   const recovery = useProjectRecovery();
   const discardRecoveryOnClose = recovery.discardOnClose;
 
-  // F2/F3 necesitan la lista de escena: en pantallas estrechas el panel izquierdo es un cajón.
+  // F2/F3 necesitan la lista de escena: en pantallas estrechas el panel izquierdo es un cajón, y se pide la
+  // pestaña Escena para que el botón Formas / Escena de la barra inferior marque la que se ve.
   const revealLeftPanel = useCallback(() => {
     if (window.matchMedia('(max-width: 900px)').matches) {
       sheets.reveal('left');
+      requestLeftPanelTab('scene');
     }
   }, [sheets.reveal]);
   useFunctionKeys({ revealLeftPanel });

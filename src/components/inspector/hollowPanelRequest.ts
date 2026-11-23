@@ -29,10 +29,12 @@ export function openHollowPanel(id: string): void {
   const state = useKuraStore.getState();
   if (!state.objects.some((o) => o.id === id)) return;
   if (state.selectedIds.length !== 1 || state.selectedIds[0] !== id) state.setSelection([id]);
+  // El panel contextual muestra solo las opciones de Ahuecar (también desde el menú contextual).
+  if (useKuraStore.getState().activeAction !== 'hollow') useKuraStore.getState().setActiveAction('hollow');
   if (state.uiDensity === 'zen') state.toggleZenMode();
   if (typeof window !== 'undefined' && window.matchMedia?.('(max-width: 900px)').matches) {
     window.dispatchEvent(new Event(OPEN_INSPECTOR_EVENT));
-  } else if (state.rightCollapsed) {
+  } else if (useKuraStore.getState().rightCollapsed) {
     state.toggleRightInspector();
   }
   useHollowRequest.setState((s) => ({ n: s.n + 1, at: Date.now() }));

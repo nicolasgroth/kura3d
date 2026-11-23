@@ -18,8 +18,8 @@ import type { TranslationKey } from '../i18n';
 import type { KuraStoreState } from './storeTypes';
 
 export const ACTION_GROUPS = [
-  { id: 'prepare', items: ['hollow', 'splitForBed', 'fitToBed', 'mold', 'project'] },
-  { id: 'mesh', items: ['repair', 'simplify', 'refine', 'hull'] },
+  { id: 'prepare', items: ['hollow', 'splitForBed', 'fitToBed', 'mold', 'project', 'modules'] },
+  { id: 'mesh', items: ['repair', 'simplify', 'refine', 'texture', 'hull'] },
   { id: 'organize', items: ['splitColors', 'splitParts', 'group', 'ungroup', 'combine', 'union', 'applyHoles'] },
   { id: 'position', items: ['convert', 'dropToBed', 'centerOnBed', 'align'] },
   { id: 'analyze', items: ['validate', 'detect'] },
@@ -89,6 +89,17 @@ export function actionAvailability(state: StateSlice, id: ActionId): ActionAvail
     default:
       return primary.locked ? no('rediseno.reason.locked') : ok;
   }
+}
+
+/**
+ * Acciones con opciones propias en el panel derecho contextual (el resto se ejecuta directo o abre su propio
+ * panel de operación). Punto de extensión: una acción nueva que necesite opciones se agrega aquí y registra su
+ * contenido en `components/contextPanel/panelRegistry.tsx`. Todas operan sobre un objeto seleccionado.
+ */
+export const PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['hollow', 'simplify', 'refine', 'texture', 'modules', 'validate', 'detect']);
+
+export function actionHasPanel(id: ActionId): boolean {
+  return PANEL_ACTIONS.has(id);
 }
 
 /** Acción o herramienta activa: el único lugar que dice qué opciones debe mostrar el panel contextual. */

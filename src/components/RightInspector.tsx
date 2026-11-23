@@ -1,28 +1,18 @@
 /**
  * @file src/components/RightInspector.tsx
- * @description Inspector paramétrico derecho de Kura3D: contenedor colapsable que elige el panel según la selección (ninguna, múltiple o un objeto) y compone sus secciones desde `./inspector/`.
+ * @description Inspector derecho de Kura3D: guarda el estado local de las secciones (sobrevive a cambios de
+ * selección y de contexto), atiende la petición de foco de precisión y delega en el panel contextual
+ * (`./contextPanel/ContextPanel.tsx`), que elige qué mostrar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import React, { useLayoutEffect, useState } from 'react';
-import { t, type TranslationKey } from '../i18n';
-import { useKuraStore } from '../store/useKuraStore';
 import { type PrimitiveType, type TexturePatternType, type TransformMode } from '../types/kura';
 import { REFINE_UI_DEFAULTS } from './refineDefaults';
 import { type InspectorLocalState } from './inspector/inspectorTypes';
-import { InspectorEdgeToggle } from './inspector/InspectorEdgeToggle';
-import { FilamentLegendCard } from './inspector/FilamentLegendCard';
-import { InspectorEmpty } from './inspector/InspectorEmpty';
-import { InspectorMulti } from './inspector/InspectorMulti';
-import { IdentitySection } from './inspector/IdentitySection';
-import { TransformSection } from './inspector/TransformSection';
-import { GeometrySection } from './inspector/GeometrySection';
-import { ParametersSection } from './inspector/ParametersSection';
-import { MakerToolsSection } from './inspector/MakerToolsSection';
-import { OperationsSection } from './inspector/OperationsSection';
-import { useScrollTopOnSelection } from './inspector/useScrollTopOnSelection';
+import { ContextPanel } from './contextPanel/ContextPanel';
 import '../styles/inspectorFit.css';
 
 /** Estado local que sobrevive a cambios de selección: vive en el contenedor y baja a las secciones. */
@@ -46,13 +36,6 @@ function useInspectorLocalState(): InspectorLocalState {
 
 export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode } | null }> = ({ precisionRequest }) => {
   const ui = useInspectorLocalState();
-  const language = useKuraStore((s) => s.language);
-  const rightCollapsed = useKuraStore((s) => s.rightCollapsed);
-  const objects = useKuraStore((s) => s.objects);
-  const selectedIds = useKuraStore((s) => s.selectedIds);
-  const selectedObjects = objects.filter((o) => selectedIds.includes(o.id));
-  const primary = selectedObjects[0] ?? null;
-  const scrollRef = useScrollTopOnSelection(primary?.id ?? null);
 
   useLayoutEffect(() => {
     if (!precisionRequest) return;
@@ -61,46 +44,5 @@ export const RightInspector: React.FC<{ precisionRequest?: { mode: TransformMode
     group?.scrollIntoView({ block: 'nearest' });
   }, [precisionRequest]);
 
-  // Sin selección
-  if (selectedObjects.length === 0) return <InspectorEmpty />;
-
-  // Multi-selección (2+ objetos): Booleanas CSG, Convex Hull y Alineación
-  if (selectedObjects.length >= 2) return <InspectorMulti />;
-
-  // Un solo objeto seleccionado
-  if (!primary) return null;
-
-  return (
-    <aside
-      id="kura-inspector-panel"
-      className={`kura-sidebar-right ${rightCollapsed ? 'is-collapsed' : ''}`}
-      aria-label={t(language, 'inspector.title')}
-    >
-      <InspectorEdgeToggle />
-      <div className="kura-panel-header">
-        <span>{t(language, 'inspector.title')}</span>
-        <span
-          style={{ fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase' }}
-          title={t(language, 'inspector.sourceLabel', { source: t(language, `inspector.source.${primary.source}` as TranslationKey) })}
-        >
-          {t(language, `inspector.source.${primary.source}` as TranslationKey)}
-        </span>
-      </div>
-
-      <div className="kura-scroll-area" ref={scrollRef}>
-        <IdentitySection primary={primary} />
-        <FilamentLegendCard />
-
-        <ParametersSection primary={primary} />
-
-        <TransformSection primary={primary} ui={ui} />
-
-        <GeometrySection primary={primary} />
-
-        <MakerToolsSection primary={primary} ui={ui} />
-
-        <OperationsSection primary={primary} ui={ui} />
-      </div>
-    </aside>
-  );
+  return <ContextPanel ui={ui} />;
 };

@@ -43,6 +43,7 @@ import { RECETAS_DE } from './recetas';
 import { BORDES_DE } from './bordesPrimitivas';
 import { UX7_DE } from './ux7';
 import { REDISENO_DE } from './rediseno';
+import { PANEL_DE } from './panel';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -83,6 +84,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...BORDES_DE,
   ...UX7_DE,
   ...REDISENO_DE,
+  ...PANEL_DE,
   // Marca y shell principal
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
   'app.docTitle': 'Kura3D v0.5.0 — Natives 3D-Modellierungsstudio',
@@ -297,7 +299,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   // Inspector derecho (RightInspector)
   'inspector.title': 'Inspektor',
   'inspector.emptyTitle': 'Kein Objekt ausgewählt',
-  'inspector.emptyDesc': 'Klicken Sie im 3D-Viewport oder Szenenbaum auf ein Objekt, um Abmessungen, Material und Manifold-Operationen zu bearbeiten.',
   'inspector.multiTitle': '{count} Objekte ausgewählt',
   'inspector.multiDesc': 'Führen Sie CSG-Boolesche Operationen, konvexe Hülle oder Ausrichtung auf dem Druckbett aus.',
   'inspector.section.identity': 'Identität & Material',

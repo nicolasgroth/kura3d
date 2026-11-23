@@ -22,6 +22,8 @@ interface ControlHelpDef {
   shortcut?: string;
   /** Atajo para `aria-keyshortcuts`. */
   keys?: string;
+  /** Rótulo visible corto cuando el nombre no cabe en una línea (debe ser parte del nombre accesible). */
+  label?: TranslationKey;
 }
 
 export const CONTROL_HELP = {
@@ -31,7 +33,7 @@ export const CONTROL_HELP = {
   'tool.scale': { name: 'rediseno.tool.scale', desc: 'rediseno.help.scale', shortcut: 'S', keys: 'S' },
   'tool.paint': { name: 'topbar.tool.paint', desc: 'rediseno.help.paint', shortcut: 'P', keys: 'P' },
   'tool.cut': { name: 'topbar.tool.cut', desc: 'rediseno.help.cut', shortcut: 'C', keys: 'C' },
-  'tool.erase': { name: 'topbar.tool.erase', desc: 'rediseno.help.erase' },
+  'tool.erase': { name: 'topbar.tool.erase', desc: 'rediseno.help.erase', label: 'rediseno.tool.eraseShort' },
   'tool.measure': { name: 'topbar.tool.measure', desc: 'rediseno.help.measure', shortcut: 'D', keys: 'D' },
   'view.iso': { name: 'viewcube.view.iso', desc: 'rediseno.help.viewIso', shortcut: '3', keys: '3' },
   'view.top': { name: 'viewcube.view.top', desc: 'rediseno.help.viewTop', shortcut: '7', keys: '7' },
@@ -58,6 +60,9 @@ export const CONTROL_HELP = {
   'top.mcp': { name: 'rediseno.top.mcp', desc: 'rediseno.help.mcp' },
   'top.ai': { name: 'topbar.aiChat', desc: 'rediseno.help.ai' },
   'top.settings': { name: 'topbar.settings', desc: 'rediseno.help.settings', shortcut: 'Mod+,', keys: 'Control+,' },
+  'panel.resize': { name: 'panel.resize', desc: 'panel.help.resize' },
+  'panel.collapse': { name: 'ui.panel.collapseRight', desc: 'panel.help.collapse' },
+  'panel.back': { name: 'panel.action.back', desc: 'panel.help.back', shortcut: 'Esc', keys: 'Escape' },
 } as const satisfies Record<string, ControlHelpDef>;
 
 export type HelpId = keyof typeof CONTROL_HELP;
@@ -80,6 +85,12 @@ export function helpText(language: LanguageCode, id: HelpId): HelpText {
     desc: t(language, def.desc),
     ...(def.shortcut ? { shortcut: def.shortcut.replace('Mod', MOD_LABEL) } : {}),
   };
+}
+
+/** Rótulo visible del control: el corto si lo tiene, si no el nombre. */
+export function helpLabel(language: LanguageCode, id: HelpId): string {
+  const def: ControlHelpDef = CONTROL_HELP[id];
+  return t(language, def.label ?? def.name);
 }
 
 /** Línea de la barra de estado: «Nombre — qué hace · Atajo: X». */

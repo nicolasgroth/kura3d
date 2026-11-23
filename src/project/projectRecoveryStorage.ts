@@ -15,6 +15,8 @@ export interface RecoveryDraftInfo {
   id: string;
   name: string | null;
   updatedAt: number;
+  /** Objetos de la escena al escribir el borrador (los borradores anteriores no lo traen). */
+  objectCount?: number;
 }
 
 export interface RecoveryDraft extends RecoveryDraftInfo {
@@ -92,7 +94,10 @@ export async function transaction<T>(
   }
 }
 
-export function checkInfo({ id, name, updatedAt }: RecoveryDraftInfo) {
+export function checkInfo({ id, name, updatedAt, objectCount }: RecoveryDraftInfo) {
+  if (!(objectCount === undefined || (Number.isSafeInteger(objectCount) && objectCount >= 0))) {
+    throw new Error('Invalid recovery draft metadata.');
+  }
   if (typeof id !== 'string' || !id.length || id.length > 256 || /[/\\\u0000]/.test(id)
     || !(name === null || (typeof name === 'string' && !/[/\\\u0000]/.test(name)))
     || !Number.isSafeInteger(updatedAt) || updatedAt < 0) {

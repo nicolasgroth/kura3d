@@ -16,7 +16,7 @@ import { Eraser, MousePointer, Move, Paintbrush, RotateCw, Ruler, Scale3d, Sciss
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { ActiveTool, TransformMode } from '../../types/kura';
-import { CONTROL_HELP, helpAttrs, type HelpId } from './controlHelp';
+import { CONTROL_HELP, helpAttrs, helpLabel, type HelpId } from './controlHelp';
 import '../../styles/shellRail.css';
 
 interface RailItem {
@@ -116,7 +116,7 @@ export const ToolRail: React.FC = () => {
                 {...helpAttrs(item.help, language)}
               >
                 {item.icon}
-                <span className="kura-tool-rail-label" aria-hidden="true">{name}</span>
+                <span className="kura-tool-rail-label" aria-hidden="true">{helpLabel(language, item.help)}</span>
               </button>
             );
           })}

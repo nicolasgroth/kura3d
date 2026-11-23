@@ -34,6 +34,8 @@ import { takeSecondaryAction } from '../toastEnhancers';
 import { findBedProfile, loadUserBedProfiles } from '../bedProfiles';
 import type { KuraStoreState, ToastAction, ToastMessage } from '../storeTypes';
 import { indexObjects, snapshotWatch, toastIsSticky } from '../toastActionState';
+import { actionHasPanel } from '../actionsCatalog';
+import { loadRightPanelCollapsed, saveRightPanelCollapsed } from '../rightPanelPrefs';
 
 export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr } = ctx;
@@ -46,7 +48,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
   return {
     uiDensity: initialDensity,
     lastNonZenDensity: initialDensity === 'compact' ? 'compact' : 'full',
-    rightCollapsed: false,
+    rightCollapsed: loadRightPanelCollapsed(),
 
     activeTool: 'select',
     activeAction: null,
@@ -109,7 +111,11 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const { uiDensity, lastNonZenDensity } = get();
       get().setUiDensity(uiDensity === 'zen' ? lastNonZenDensity : 'zen');
     },
-    toggleRightInspector: () => set((state) => ({ rightCollapsed: !state.rightCollapsed })),
+    toggleRightInspector: () => {
+      const rightCollapsed = !get().rightCollapsed;
+      saveRightPanelCollapsed(rightCollapsed);
+      set({ rightCollapsed });
+    },
     setSectionPlane: (patch) => set((state) => ({ sectionPlane: { ...state.sectionPlane, ...patch } })),
     setShowOverhangs: (showOverhangs) => set({ showOverhangs }),
     clearPrintReport: () => set({ activePrintReport: null, printReportSource: null, showOverhangs: false }),
@@ -157,7 +163,15 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       set({ activeTool, activeAction: null });
       if (activeTool === 'cut' && get().selectedIds.length > 0) set({ activeDialog: 'cut' });
     },
-    setActiveAction: (activeAction) => set({ activeAction }),
+    setActiveAction: (activeAction) => {
+      // Una acción con opciones propias abre el panel derecho si estaba plegado (lo recuerda así).
+      if (activeAction && actionHasPanel(activeAction) && get().rightCollapsed) {
+        saveRightPanelCollapsed(false);
+        set({ activeAction, rightCollapsed: false });
+        return;
+      }
+      set({ activeAction });
+    },
     setTransformMode: (transformMode) => set({ transformMode }),
     setProportionalScale: (proportionalScale) => set({ proportionalScale }),
     toggleProportionalScale: () => set((state) => ({ proportionalScale: !state.proportionalScale })),

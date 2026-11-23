@@ -43,6 +43,7 @@ import { RECETAS_HI } from './recetas';
 import { BORDES_HI } from './bordesPrimitivas';
 import { UX7_HI } from './ux7';
 import { REDISENO_HI } from './rediseno';
+import { PANEL_HI } from './panel';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -83,6 +84,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...BORDES_HI,
   ...UX7_HI,
   ...REDISENO_HI,
+  ...PANEL_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',
@@ -297,7 +299,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   // Inspector derecho (RightInspector)
   'inspector.title': 'इंस्पेक्टर',
   'inspector.emptyTitle': 'कोई वस्तु चयनित नहीं',
-  'inspector.emptyDesc': 'आयाम, सामग्री और Manifold संचालन संपादित करने के लिए 3D व्यूपोर्ट या दृश्य सूची में किसी वस्तु पर क्लिक करें।',
   'inspector.multiTitle': '{count} वस्तुएं चयनित',
   'inspector.multiDesc': 'चयनित वस्तुओं पर CSG बूलियन संचालन, उत्तल आवरण (Hull) या बेड संरेखण चलाएं।',
   'inspector.section.identity': 'पहचान और सामग्री',

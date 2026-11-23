@@ -152,3 +152,10 @@
     padding-inline: 8px;
   }
 }
+
+/* Cantidad de objetos del borrador (rediseño, lote 2). */
+.kura-recovery-details .kura-recovery-count {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-secondary);
+}

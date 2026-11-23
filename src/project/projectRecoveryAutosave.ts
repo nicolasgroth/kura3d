@@ -123,7 +123,7 @@ export function startProjectRecovery(
     try {
       const updatedAt = Math.max(Date.now(), lastWrittenAt + 1);
       const document = captureProject(state);
-      await writeRecoveryDocument({ id: state.projectDraftId, name: state.projectName, updatedAt }, document);
+      await writeRecoveryDocument({ id: state.projectDraftId, name: state.projectName, updatedAt, objectCount: document.objects.length }, document);
       lastWrittenAt = updatedAt;
       const current = store.getState();
       if (stopped) return;
