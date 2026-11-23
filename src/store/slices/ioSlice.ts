@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import { importStagePhase, parseImportParts, type ImportStage } from '../importPhase';
 import * as engine from '../../engine';
 import { HOLE_HELPER_COLOR, importSvg, imageRelief, positionOnTarget, readSvgContours } from '../../core/operations';
 import { placeInFreeSpot } from '../../core/scene/freeSpot';
@@ -53,20 +54,29 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
   // Tras importar se encuadra SIEMPRE todo lo importado (con margen y descontando paneles): con
   // `ensure` un conjunto grande que ya asomaba en pantalla quedaba diminuto o a medias.
+  /** Fase de la importación en la barra de progreso (no pisa un avance por piezas del motor). */
+  const setImportStage = (stage: ImportStage) => {
+    const progress = get().busyProgress;
+    if (!progress || progress.name !== 'import_mesh' || parseImportParts(progress.phase)) return;
+    const phase = importStagePhase(stage);
+    if (progress.phase !== phase) set({ busyProgress: { ...progress, phase } });
+  };
   const fitImported = (_preset: 'fit' | 'ensure', ids?: string[]) => get().requestCameraPreset('fit', ids);
   const modelIo = createModelIoActions({
     get: () => ({ ...get(), requestCameraPreset: fitImported }),
     set: (updater) => set((state) => updater(state) as Partial<KuraStoreState>),
     tr,
     pushHistory: () => pushHistory(),
-    buildObject: ({ name, mesh, position, color, isHole }) =>
-      buildSceneObject({ name, source: 'imported', mesh, position, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole }),
+    buildObject: ({ name, mesh, position, color, isHole }) => (setImportStage('place'), buildSceneObject({ name, source: 'imported', mesh, position, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], isHole })),
     exportFiles: (args) => ctx.runEngineDetached('export', args),
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
     openSimplify: (id) => get().requestSimplifyPanel(id),
     repairMesh: (id) => void get().repairObjectMesh(id),
     separateBodies: (id) => void get().splitDisconnectedObject(id),
-    bedSize: () => activeBedSize(get()),
+    bedSize: () => {
+      setImportStage('place');
+      return activeBedSize(get());
+    },
     // Antes de un modelo grande: si hay cambios sin guardar, el borrador de recuperación queda escrito.
     ensureRecoveryDraft: async () => {
       if (isProjectDirty(get())) await flushRecoveryDraft();
@@ -191,7 +201,18 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
           const progress = get().busyProgress;
           if (progress) set({ busyProgress: { ...progress, cancellable: true } });
           try {
-            return await modelIo.importModelFiles(files, { ...options, signal: controller.signal });
+            // Etapas visibles en la barra: leer el archivo, interpretarlo (Worker) y colocarlo en la escena.
+            setImportStage('read');
+            const staged = files.map((file) => ({
+              ...file,
+              read: async () => {
+                setImportStage('read');
+                const data = await file.read();
+                setImportStage('parse');
+                return data;
+              },
+            }));
+            return await modelIo.importModelFiles(staged, { ...options, signal: controller.signal });
           } finally {
             if (ctx.runtime.activeJob === job) ctx.runtime.activeJob = null;
             const current = get().busyProgress;
