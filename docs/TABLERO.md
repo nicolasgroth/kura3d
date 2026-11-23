@@ -149,6 +149,7 @@ Ordenadas por prioridad dentro de cada grupo.
 
 | Grupo | Funcionalidad |
 |---|---|
+| Proyecto | Datos del proyecto: nombre editable, descripción y notas, fecha de creación y de última modificación (y, si aporta, autor y tiempo de trabajo), guardados en el `.kura` y visibles al abrir y en recientes (pedido del autor, 23-nov) |
 | Edición | Instancias: copias vinculadas de un objeto que cambian todas juntas al editar una (idea tomada de OrcaSlicer) |
 | Edición | Recargar un objeto desde su archivo de origen cuando este cambia en disco |
 | Base | Pruebas E2E reales con Playwright y pruebas de regresión geométrica |
