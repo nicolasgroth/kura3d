@@ -1,19 +1,22 @@
 /**
  * @file src/project/projectRecoveryAutosave.ts
  * @description Autoguardado de recuperación: agrupa ediciones y serializa escrituras y limpieza
- * de borradores del editor activo.
+ * de borradores del editor activo. Escribe el borrador v2 (`recoveryDraftStore`): solo los bloques
+ * de geometría nuevos, así mover o pintar un objeto no reescribe sus mallas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import { captureProject, isProjectDirty, type KuraStoreState, useKuraStore } from '../store/useKuraStore';
-import { encodeProjectAsync } from './projectCodecClient';
-import { discardRecoveryDraft, writeRecoveryDraft } from './projectRecoveryStorage';
+import { discardRecoveryDraft } from './projectRecoveryStorage';
 import { ProjectCodecError } from './projectSchema';
+import { cleanupRecoveryStorage, RecoveryQuotaError, writeRecoveryDocument } from './recoveryDraftStore';
 
 const IDLE_WAIT_MS = 1500;
 const MAX_WAIT_MS = 8000;
+/** Limpieza de bloques huérfanos y borradores viejos, como mucho una vez por minuto. */
+const CLEANUP_EVERY_MS = 60_000;
 
 export type RecoveryStatus = 'idle' | 'pending' | 'saving' | 'ready' | 'unavailable';
 
@@ -24,11 +27,17 @@ export type RecoveryFailureStage = 'encode' | 'write' | 'cleanup';
 export interface RecoveryFailure {
   cause: RecoveryFailureCause;
   stage: RecoveryFailureStage;
+  /** Con `quota`, si se conocen: bytes que hacía falta escribir y bytes que el navegador deja libres. */
+  neededBytes?: number;
+  availableBytes?: number;
 }
 
 /** Traduce un error de codificación o almacenamiento a su causa tipada (sin el mensaje técnico). */
 export function classifyRecoveryFailure(error: unknown, stage: RecoveryFailureStage): RecoveryFailure {
   if (error instanceof ProjectCodecError) return { cause: error.code, stage };
+  if (error instanceof RecoveryQuotaError) {
+    return { cause: 'quota', stage, neededBytes: error.neededBytes, availableBytes: error.availableBytes };
+  }
   const name = error instanceof Error || (typeof DOMException !== 'undefined' && error instanceof DOMException)
     ? (error as { name: string }).name
     : '';
@@ -111,25 +120,32 @@ export function startProjectRecovery(
     if (!isProjectDirty(state)) return;
 
     report('saving');
-    let bytes: Uint8Array;
     try {
-      bytes = await encodeProjectAsync(captureProject(state));
-    } catch (error) {
-      fail(error, 'encode');
-      return;
-    }
-    try {
-      const current = store.getState();
-      if (stopped || obsoleteIds.has(state.projectDraftId) ||
-          current.projectDraftId !== state.projectDraftId || !isProjectDirty(current)) return;
       const updatedAt = Math.max(Date.now(), lastWrittenAt + 1);
-      await writeRecoveryDraft({ id: state.projectDraftId, name: state.projectName, updatedAt, bytes });
+      const document = captureProject(state);
+      await writeRecoveryDocument({ id: state.projectDraftId, name: state.projectName, updatedAt }, document);
       lastWrittenAt = updatedAt;
+      const current = store.getState();
+      if (stopped) return;
+      if (obsoleteIds.has(state.projectDraftId) || current.projectDraftId !== state.projectDraftId || !isProjectDirty(current)) {
+        // La escena quedó guardada o cambió de proyecto mientras se escribía: ese borrador sobra.
+        obsoleteIds.add(state.projectDraftId);
+        return;
+      }
       if (checkpointDue !== null) report('pending');
-      else if (!obsoleteIds.has(state.projectDraftId)) report('ready');
+      else report('ready');
+      maybeCleanup();
     } catch (error) {
       fail(error, 'write');
     }
+  }
+
+  let lastCleanup = 0;
+  function maybeCleanup() {
+    const now = Date.now();
+    if (now - lastCleanup < CLEANUP_EVERY_MS) return;
+    lastCleanup = now;
+    void cleanupRecoveryStorage().catch(() => undefined);
   }
 
   function pump() {

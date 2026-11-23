@@ -33,6 +33,7 @@ import { UXCIERRE_HI } from './uxCierre';
 import { UX3_EDICION_HI } from './ux3Edicion';
 import { UX4_HI } from './ux4';
 import { CORTEMITAD_HI } from './corteMitad';
+import { REALESUI_HI } from './realesUi';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -63,6 +64,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...UX3_EDICION_HI,
   ...UX4_HI,
   ...CORTEMITAD_HI,
+  ...REALESUI_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',
@@ -1078,7 +1080,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'engineWarning.REFINE_SMOOTH_REVERTED': 'स्मूदिंग से माप {deviation} mm बदल रहे थे (सहनशीलता {tolerance} mm); केवल रिफ़ाइन लागू हुआ।',
   'engineWarning.HOLLOW_COARSE_GRID': 'बड़ा भाग: दीवार {maxWall} mm तक हो सकती है (माँगी {thickness} mm)।',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': 'रंग से अलग किए गए भाग जो बंद ठोस नहीं हैं: {count}। प्रिंट से पहले जाँचें।',
-  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'कट सतह के बिना कनेक्टर वाले क्षेत्र: {islands} में से {skipped}। दीवार सहित {size} mm का कनेक्टर नहीं समाता।',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'कट सतह के {islands} में से {skipped} क्षेत्रों में दीवार सहित Ø{diameter} mm का कनेक्टर नहीं समाता: वे क्षेत्र चिपकाने के लिए समतल छोड़े गए।',
   'project.recent.title': 'हाल के प्रोजेक्ट',
   'project.recent.empty': 'अभी कोई हाल का प्रोजेक्ट नहीं',
   'project.recent.clear': 'हाल की सूची साफ़ करें',

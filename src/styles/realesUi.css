@@ -1,0 +1,75 @@
+/**
+ * @file src/styles/realesUi.css
+ * @description Estilos de las correcciones tras la QA con modelos reales: aviso del borrador
+ * automático en el pie (motivo + "Guardar proyecto ahora") y estado de la malla en el inspector.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-recovery-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: min(46vw, 560px);
+  color: var(--accent-amber);
+  font-weight: 600;
+}
+
+.kura-recovery-notice > svg {
+  flex: 0 0 auto;
+}
+
+.kura-recovery-notice-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kura-recovery-save {
+  flex: 0 0 auto;
+  border-color: var(--accent-amber);
+}
+
+.kura-statusbar-btn:focus-visible,
+.kura-mesh-status-actions .kura-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+@media (max-width: 640px) {
+  /* En el teléfono queda el icono y el botón; el motivo completo va en el tooltip y en el lector. */
+  .kura-recovery-notice-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+.kura-mesh-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+@media (max-width: 480px) {
+  /* El resto de estados del borrador se ocultan en el teléfono; el fallo no: sin él se pierde trabajo. */
+  .kura-statusbar-group:last-child > span.kura-recovery-notice[role="status"] {
+    display: inline-flex;
+  }
+
+  /* Solo el icono de guardar: el nombre accesible y el tooltip conservan el texto completo. */
+  .kura-recovery-save > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

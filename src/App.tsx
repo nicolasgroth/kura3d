@@ -455,7 +455,7 @@ export const App: React.FC = () => {
         <ProjectDropTarget />
       </div>
 
-      <StatusBar recoveryStatus={recovery.status} />
+      <StatusBar recoveryStatus={recovery.status} recoveryFailure={recovery.failure} />
       <Dialogs />
       <ConfirmDialogHost />
       <RowContextMenuHost />

@@ -102,7 +102,7 @@ describe('local project recovery storage', () => {
     const { tx, db, metadata, data, flush } = database();
     const result = moveRecoveryDraft(info, 'next');
     await flush();
-    expect(db.transaction.mock.calls).toEqual([[['drafts', 'projectBytes'], 'readwrite', { durability: 'strict' }]]);
+    expect(db.transaction.mock.calls).toEqual([[['drafts', 'projectBytes', 'draftManifests'], 'readwrite', { durability: 'strict' }]]);
     expect(metadata.add).toHaveBeenCalledExactlyOnceWith({ ...info, id: 'next' });
     expect(data.add).toHaveBeenCalledExactlyOnceWith(new Uint8Array([1, 2, 3]), 'next');
     expect(metadata.delete).toHaveBeenCalledExactlyOnceWith(info.id);

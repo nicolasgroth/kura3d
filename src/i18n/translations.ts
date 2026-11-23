@@ -38,6 +38,7 @@ import { UXCIERRE_EN, UXCIERRE_ES } from './locales/uxCierre';
 import { UX3_EDICION_EN, UX3_EDICION_ES } from './locales/ux3Edicion';
 import { UX4_EN, UX4_ES } from './locales/ux4';
 import { CORTEMITAD_EN, CORTEMITAD_ES } from './locales/corteMitad';
+import { REALESUI_EN, REALESUI_ES } from './locales/realesUi';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -70,6 +71,7 @@ export const TRANSLATIONS_ES = {
   ...UX3_EDICION_ES,
   ...UX4_ES,
   ...CORTEMITAD_ES,
+  ...REALESUI_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -1085,7 +1087,7 @@ export const TRANSLATIONS_ES = {
   'engineWarning.REFINE_SMOOTH_REVERTED': 'El suavizado cambiaba las medidas en {deviation} mm (tolerancia {tolerance} mm); se aplicó solo el refinado.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Pieza grande: la pared puede llegar a {maxWall} mm (pedido {thickness} mm).',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': 'Piezas separadas por color que no son sólidos cerrados: {count}. Revísalas antes de imprimir.',
-  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'Zonas de la cara de corte sin conector: {skipped} de {islands}. No cabe uno de {size} mm con su pared.',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'En {skipped} de {islands} zonas de la cara de corte no cabe un conector de Ø{diameter} mm con su pared: esas zonas quedaron lisas, para pegar.',
   'project.recent.title': 'Proyectos recientes',
   'project.recent.empty': 'Aún no hay proyectos recientes',
   'project.recent.clear': 'Limpiar recientes',
@@ -1403,6 +1405,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UX3_EDICION_EN,
   ...UX4_EN,
   ...CORTEMITAD_EN,
+  ...REALESUI_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
@@ -2390,7 +2393,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'engineWarning.REFINE_SMOOTH_REVERTED': 'Smoothing changed the dimensions by {deviation} mm (tolerance {tolerance} mm); only refinement was applied.',
   'engineWarning.HOLLOW_COARSE_GRID': 'Large part: the wall may reach {maxWall} mm (requested {thickness} mm).',
   'engineWarning.SPLIT_COLOR_NON_MANIFOLD': 'Color-split parts that are not closed solids: {count}. Check them before printing.',
-  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'Cut-face regions without a connector: {skipped} of {islands}. A {size} mm one does not fit with its wall.',
+  'engineWarning.CUT_CONNECTOR_ISLAND_SKIPPED': 'In {skipped} of {islands} cut-face regions a Ø{diameter} mm connector does not fit with its wall: those regions were left flat, for gluing.',
   'project.recent.title': 'Recent projects',
   'project.recent.empty': 'No recent projects yet',
   'project.recent.clear': 'Clear recent',

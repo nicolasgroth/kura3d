@@ -10,7 +10,8 @@
 import * as engine from '../../engine';
 import { decodeProjectAsync, encodeProjectAsync } from '../../project/projectCodecClient';
 import { openProjectFile, saveProjectFile, SaveNotConfirmedError } from '../../project/projectFiles';
-import { moveRecoveryDraft, readRecoveryDraft } from '../../project/projectRecoveryStorage';
+import { moveRecoveryDraft } from '../../project/projectRecoveryStorage';
+import { loadRecoveryDocument } from '../../project/recoveryDraftStore';
 import type { ProjectDocument } from '../../project/projectSchema';
 import { captureProject, hasProjectChanged, makeProjectDraftId } from '../projectDocument';
 import type { StoreContext } from '../storeContext';
@@ -119,11 +120,12 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
       if (get().projectBusy || !canChangeDocument()) return false;
       set({ projectBusy: true });
       try {
-        const stored = await readRecoveryDraft(draft.id);
+        // Lee el borrador v2 (manifiesto + bloques) o uno antiguo v1 (un .kura entero).
+        const stored = await loadRecoveryDocument(draft.id);
         if (!stored || stored.updatedAt !== draft.updatedAt) {
           throw new Error(tr('recovery.status.changedElsewhere'));
         }
-        const document = await decodeProjectAsync(stored.bytes);
+        const { document } = stored;
         if (!canChangeDocument()) throw new Error(tr('fileProject.busy'));
 
         const previousState = get();

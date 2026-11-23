@@ -9,12 +9,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from 'zustand/vanilla';
 import { captureProject, useKuraStore, type KuraStoreState } from '../store/useKuraStore';
-import { encodeProjectAsync } from './projectCodecClient';
+import { cleanupRecoveryStorage, writeRecoveryDocument } from './recoveryDraftStore';
 import { startProjectRecovery } from './projectRecoveryAutosave';
-import { discardRecoveryDraft, writeRecoveryDraft } from './projectRecoveryStorage';
+import { discardRecoveryDraft } from './projectRecoveryStorage';
 
-vi.mock('./projectCodecClient', () => ({ encodeProjectAsync: vi.fn() }));
-vi.mock('./projectRecoveryStorage', () => ({ discardRecoveryDraft: vi.fn(), writeRecoveryDraft: vi.fn() }));
+vi.mock('./recoveryDraftStore', async (original) => ({
+  ...(await original<typeof import('./recoveryDraftStore')>()), writeRecoveryDocument: vi.fn(), cleanupRecoveryStorage: vi.fn(),
+}));
+vi.mock('./projectRecoveryStorage', () => ({ discardRecoveryDraft: vi.fn() }));
 
 describe('project recovery autosave', () => {
   function cleanStore() {
@@ -25,8 +27,8 @@ describe('project recovery autosave', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.resetAllMocks();
-    vi.mocked(encodeProjectAsync).mockResolvedValue(new Uint8Array([1, 2]));
-    vi.mocked(writeRecoveryDraft).mockResolvedValue(undefined);
+    vi.mocked(writeRecoveryDocument).mockResolvedValue({ blocksWritten: 0, bytesWritten: 0, historyDropped: false });
+    vi.mocked(cleanupRecoveryStorage).mockResolvedValue({ removedBlocks: 0, removedDrafts: 0 });
     vi.mocked(discardRecoveryDraft).mockResolvedValue(true);
   });
 
@@ -41,30 +43,30 @@ describe('project recovery autosave', () => {
     await vi.advanceTimersByTimeAsync(1000);
     store.setState({ unitSystem: 'in' });
     await vi.advanceTimersByTimeAsync(1499);
-    expect(writeRecoveryDraft).not.toHaveBeenCalled();
+    expect(writeRecoveryDocument).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
-    expect(encodeProjectAsync).toHaveBeenCalledWith(expect.objectContaining({ unitSystem: 'in' }));
-    expect(writeRecoveryDraft).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      id: store.getState().projectDraftId, bytes: new Uint8Array([1, 2]),
-    }));
+    expect(writeRecoveryDocument).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ id: store.getState().projectDraftId }),
+      expect.objectContaining({ unitSystem: 'in' }),
+    );
     expect(status).toHaveBeenLastCalledWith('ready');
     controller.stop();
   });
 
-  it('never writes an encoded draft after a confirmed save leaves that scene clean', async () => {
+  it('discards the draft it was writing when a confirmed save leaves that scene clean', async () => {
     const store = cleanStore();
     const controller = startProjectRecovery(vi.fn(), store);
-    let finishEncoding!: (bytes: Uint8Array) => void;
-    vi.mocked(encodeProjectAsync).mockImplementationOnce(() => new Promise((resolve) => {
-      finishEncoding = resolve;
+    let finishWriting!: () => void;
+    vi.mocked(writeRecoveryDocument).mockImplementationOnce(() => new Promise((resolve) => {
+      finishWriting = () => resolve({ blocksWritten: 0, bytesWritten: 0, historyDropped: false });
     }));
 
     store.setState({ unitSystem: 'cm' });
     await vi.advanceTimersByTimeAsync(1500);
     store.setState({ savedProject: captureProject(store.getState()) });
-    finishEncoding(new Uint8Array([8]));
+    finishWriting();
     await vi.runAllTimersAsync();
-    expect(writeRecoveryDraft).not.toHaveBeenCalled();
+    expect(writeRecoveryDocument).toHaveBeenCalledOnce();
     expect(discardRecoveryDraft).toHaveBeenCalledExactlyOnceWith(store.getState().projectDraftId);
     controller.stop();
   });
@@ -73,7 +75,7 @@ describe('project recovery autosave', () => {
     const store = cleanStore();
     const status = vi.fn();
     const controller = startProjectRecovery(status, store);
-    vi.mocked(writeRecoveryDraft).mockRejectedValueOnce(new Error('QuotaExceededError'));
+    vi.mocked(writeRecoveryDocument).mockRejectedValueOnce(new Error('QuotaExceededError'));
 
     store.setState({ unitSystem: 'cm' });
     await vi.advanceTimersByTimeAsync(1500);
@@ -81,7 +83,7 @@ describe('project recovery autosave', () => {
     expect(discardRecoveryDraft).not.toHaveBeenCalled();
     store.setState({ unitSystem: 'in' });
     await vi.advanceTimersByTimeAsync(1500);
-    expect(writeRecoveryDraft).toHaveBeenCalledTimes(2);
+    expect(writeRecoveryDocument).toHaveBeenCalledTimes(2);
     expect(status).toHaveBeenLastCalledWith('ready');
     controller.stop();
   });
@@ -90,10 +92,10 @@ describe('project recovery autosave', () => {
     const store = cleanStore();
     const controller = startProjectRecovery(vi.fn(), store);
     let commit!: () => void;
-    vi.mocked(writeRecoveryDraft).mockImplementationOnce(() => new Promise(resolve => { commit = resolve; }));
+    vi.mocked(writeRecoveryDocument).mockImplementationOnce(() => new Promise(resolve => { commit = () => resolve({ blocksWritten: 0, bytesWritten: 0, historyDropped: false }); }));
     store.setState({ unitSystem: 'cm' });
     await vi.advanceTimersByTimeAsync(1500);
-    expect(writeRecoveryDraft).toHaveBeenCalledOnce();
+    expect(writeRecoveryDocument).toHaveBeenCalledOnce();
 
     const closing = controller.discardOnClose();
     expect(discardRecoveryDraft).not.toHaveBeenCalled();
@@ -101,6 +103,6 @@ describe('project recovery autosave', () => {
     await closing;
     expect(discardRecoveryDraft).toHaveBeenCalledExactlyOnceWith(store.getState().projectDraftId);
     await vi.runAllTimersAsync();
-    expect(writeRecoveryDraft).toHaveBeenCalledOnce();
+    expect(writeRecoveryDocument).toHaveBeenCalledOnce();
   });
 });

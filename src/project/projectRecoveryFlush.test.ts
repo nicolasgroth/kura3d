@@ -11,13 +11,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from 'zustand/vanilla';
 import { captureProject, useKuraStore, type KuraStoreState } from '../store/useKuraStore';
-import { encodeProjectAsync } from './projectCodecClient';
+import { cleanupRecoveryStorage, writeRecoveryDocument } from './recoveryDraftStore';
 import { startProjectRecovery } from './projectRecoveryAutosave';
 import { flushRecoveryDraft, registerRecoveryFlush } from './recoveryFlush';
-import { discardRecoveryDraft, writeRecoveryDraft } from './projectRecoveryStorage';
+import { discardRecoveryDraft } from './projectRecoveryStorage';
 
-vi.mock('./projectCodecClient', () => ({ encodeProjectAsync: vi.fn() }));
-vi.mock('./projectRecoveryStorage', () => ({ discardRecoveryDraft: vi.fn(), writeRecoveryDraft: vi.fn() }));
+vi.mock('./recoveryDraftStore', async (original) => ({
+  ...(await original<typeof import('./recoveryDraftStore')>()), writeRecoveryDocument: vi.fn(), cleanupRecoveryStorage: vi.fn(),
+}));
+vi.mock('./projectRecoveryStorage', () => ({ discardRecoveryDraft: vi.fn() }));
 
 function cleanStore() {
   const initial = { ...useKuraStore.getInitialState(), engineReady: true };
@@ -27,8 +29,8 @@ function cleanStore() {
 beforeEach(() => {
   vi.useFakeTimers();
   vi.resetAllMocks();
-  vi.mocked(encodeProjectAsync).mockResolvedValue(new Uint8Array([1, 2]));
-  vi.mocked(writeRecoveryDraft).mockResolvedValue(undefined);
+  vi.mocked(writeRecoveryDocument).mockResolvedValue({ blocksWritten: 0, bytesWritten: 0, historyDropped: false });
+    vi.mocked(cleanupRecoveryStorage).mockResolvedValue({ removedBlocks: 0, removedDrafts: 0 });
   vi.mocked(discardRecoveryDraft).mockResolvedValue(true);
 });
 
@@ -42,14 +44,14 @@ describe('borrador de recuperación a pedido', () => {
     const store = cleanStore();
     const controller = startProjectRecovery(vi.fn(), store);
     store.setState({ unitSystem: 'cm', busyOperation: 'import_mesh' } as Partial<KuraStoreState>);
-    expect(writeRecoveryDraft).not.toHaveBeenCalled();
+    expect(writeRecoveryDocument).not.toHaveBeenCalled();
     await controller.flushNow();
-    expect(writeRecoveryDraft).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: store.getState().projectDraftId }));
+    expect(writeRecoveryDocument).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: store.getState().projectDraftId }), expect.anything());
     // Ya escrito: no se repite ni al pedirlo otra vez ni al vencer el plazo normal.
     await controller.flushNow();
     store.setState({ busyOperation: null } as Partial<KuraStoreState>);
     await vi.runAllTimersAsync();
-    expect(writeRecoveryDraft).toHaveBeenCalledTimes(1);
+    expect(writeRecoveryDocument).toHaveBeenCalledTimes(1);
     controller.stop();
   });
 
@@ -57,7 +59,7 @@ describe('borrador de recuperación a pedido', () => {
     const store = cleanStore();
     const controller = startProjectRecovery(vi.fn(), store);
     await controller.flushNow();
-    expect(encodeProjectAsync).not.toHaveBeenCalled();
+    expect(writeRecoveryDocument).not.toHaveBeenCalled();
     controller.stop();
   });
 
