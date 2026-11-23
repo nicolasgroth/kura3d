@@ -15,6 +15,7 @@ import { isNegative, isSolid } from '../../core/scene/objectRole';
 import { getLocalizedPrinterName, t } from '../../i18n';
 import { isProjectDirty, useKuraStore } from '../../store/useKuraStore';
 import { formatDimension } from '../../utils/units';
+import { toUserSize } from '../../core/scene/displayAxes';
 import { FilamentLegendCard } from '../inspector/FilamentLegendCard';
 
 export const ProjectSummary: React.FC = () => {
@@ -33,7 +34,8 @@ export const ProjectSummary: React.FC = () => {
 
   const visible = objects.filter((o) => o.visible);
   const canApplyHoles = visible.some(isNegative) && visible.some(isSolid);
-  const bed = custom ? [custom.width, custom.depth, custom.height] : [printerProfile.bedWidthMm, printerProfile.bedDepthMm, printerProfile.maxHeightMm];
+  // Tamaño interno [x, y(alto), z]; toUserSize lo entrega como ancho × fondo × alto del usuario.
+  const bed = toUserSize(custom ? [custom.width, custom.height, custom.depth] : [printerProfile.bedWidthMm, printerProfile.maxHeightMm, printerProfile.bedDepthMm]);
   const bedSize = bed.map((mm) => formatDimension(mm, unitSystem, 0, language)).join(' × ');
   const name = projectName ?? t(language, 'app.untitled');
 
