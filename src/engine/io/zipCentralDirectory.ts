@@ -38,15 +38,15 @@ function u64(view: DataView, at: number): number {
   return value;
 }
 
-/** Busca el registro final (EOCD) desde el final, saltando un comentario de hasta 64 KiB. */
+/** Busca el registro final (EOCD) cuyo comentario declarado termina justo al final del archivo. */
 function findEocd(view: DataView): number {
   const min = Math.max(0, view.byteLength - 22 - MAX_COMMENT);
   for (let at = view.byteLength - 22; at >= min; at--) {
     if (view.getUint32(at, true) === SIG_EOCD && at + 22 + view.getUint16(at + 20, true) === view.byteLength) return at;
   }
-  // Algunos escritores dejan bytes tras el comentario: se acepta la última firma, sin exigir el largo exacto.
-  for (let at = view.byteLength - 22; at >= min; at--) if (view.getUint32(at, true) === SIG_EOCD) return at;
-  throw corrupt('falta el directorio central');
+  // El registro final debe terminar exactamente al final del archivo (con su comentario): bytes de más
+  // tras él, o una firma suelta, son un archivo ambiguo y se rechazan.
+  throw corrupt('falta el directorio central o hay bytes tras su registro final');
 }
 
 /** Ruta insegura o ambigua: absoluta, con unidad, con `..` o con caracteres de control. */
@@ -96,7 +96,8 @@ export function readZipDirectory(bytes: Uint8Array, maxEntries: number): ZipEntr
     const next = at + 46 + nameLen + extraLen + commentLen;
     if (next > cdOffset + cdSize) throw corrupt(`entrada ${i + 1} sale del directorio central`);
     const rawName = bytes.subarray(at + 46, at + 46 + nameLen);
-    const name = new TextDecoder(flags & 0x800 ? 'utf-8' : 'latin1').decode(rawName);
+    // Sin la bandera UTF-8 (bit 11), la especificación ZIP manda CP437, no latin1.
+    const name = flags & 0x800 ? new TextDecoder('utf-8').decode(rawName) : decodeCp437(rawName);
     // Campo extra zip64: solo trae los valores que en la cabecera valen 0xFFFFFFFF, en este orden.
     if (uncompressedSize === 0xffffffff || compressedSize === 0xffffffff || localOffset === 0xffffffff) {
       let e = at + 46 + nameLen;
@@ -125,8 +126,10 @@ export function readZipDirectory(bytes: Uint8Array, maxEntries: number): ZipEntr
     }
     at = next;
     if (name.endsWith('/') || isUnsafeEntryName(name)) continue;
-    if (names.has(name)) throw corrupt(`entrada repetida ${name.slice(0, 60)}`);
-    names.add(name);
+    // Repetidas sin distinguir mayúsculas: el paquete se busca así, y ganaría una al azar.
+    const key = name.toLowerCase();
+    if (names.has(key)) throw corrupt(`entrada repetida ${name.slice(0, 60)}`);
+    names.add(key);
     if (flags & 1) throw corrupt(`entrada cifrada ${name.slice(0, 60)}`);
 
     // Cabecera local: misma firma, mismo nombre y mismo método; sus datos terminan antes del directorio.
@@ -142,6 +145,16 @@ export function readZipDirectory(bytes: Uint8Array, maxEntries: number): ZipEntr
     entries.push({ name, method, compressedSize, uncompressedSize, dataOffset });
   }
   return entries;
+}
+
+/** Mitad alta de la página de códigos 437 (0x80–0xFF); la baja es ASCII. */
+const CP437_HIGH = 'ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■\u00a0';
+
+/** Decodifica un nombre en CP437. */
+export function decodeCp437(bytes: Uint8Array): string {
+  let out = '';
+  for (let i = 0; i < bytes.length; i++) out += bytes[i] < 128 ? String.fromCharCode(bytes[i]) : CP437_HIGH[bytes[i] - 128];
+  return out;
 }
 
 function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
