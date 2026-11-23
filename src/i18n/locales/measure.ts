@@ -136,7 +136,6 @@ const MEASURE_TABLE = {
   'measure.capacity.needSelection': ['Selecciona un objeto para medir su capacidad', 'Select an object to measure its capacity', 'Wähle ein Objekt, um sein Fassungsvermögen zu messen', 'Sélectionnez un objet pour mesurer sa contenance', 'क्षमता मापने के लिए ऑब्जेक्ट चुनें', '选择一个对象来测量容量'],
   'measure.capacity.max': ['Capacidad máxima', 'Maximum capacity', 'Maximales Fassungsvermögen', 'Contenance maximale', 'अधिकतम क्षमता', '最大容量'],
   'measure.capacity.overflow': ['Rebalsa a {height} de altura', 'Overflows at {height} high', 'Läuft bei {height} Höhe über', 'Déborde à {height} de hauteur', '{height} ऊँचाई पर छलकता है', '在 {height} 高处溢出'],
-  'measure.capacity.level': ['Nivel de llenado', 'Fill level', 'Füllhöhe', 'Niveau de remplissage', 'भराव स्तर', '灌注高度'],
   'measure.capacity.levelPercent': ['Nivel (% del rebalse)', 'Level (% of overflow)', 'Füllhöhe (% bis Überlauf)', 'Niveau (% du débordement)', 'स्तर (छलकने का %)', '高度(溢出的 %)'],
   'measure.capacity.levelMm': ['Altura del líquido', 'Liquid height', 'Flüssigkeitshöhe', 'Hauteur du liquide', 'तरल की ऊँचाई', '液面高度'],
   'measure.capacity.filled': ['Cabe hasta ese nivel', 'Holds up to that level', 'Fasst bis zu dieser Höhe', 'Contient jusqu’à ce niveau', 'उस स्तर तक आता है', '到该高度可容纳'],

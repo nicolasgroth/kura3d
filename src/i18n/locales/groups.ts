@@ -60,14 +60,6 @@ const GROUPS_TABLE = {
     '将几何融合为一个实体(只能撤销恢复)',
   ],
   'menu.group.organize': ['Organizar', 'Organize', 'Organisieren', 'Organiser', 'व्यवस्थित करें', '整理'],
-  'groups.menu.help': [
-    'Agrupar: siguen separados · Combinar: un objeto sin fundir · Unir: funde la geometría',
-    'Group: they stay separate · Combine: one object, not merged · Union: merges the geometry',
-    'Gruppieren: bleiben getrennt · Kombinieren: ein Objekt, nicht verschmolzen · Vereinigen: verschmilzt',
-    'Grouper : restent séparés · Combiner : un objet non fusionné · Unir : fusionne la géométrie',
-    'समूह: अलग रहते हैं · मिलाएँ: एक ऑब्जेक्ट, बिना जोड़े · जोड़ें: ज्यामिति मिलती है',
-    '编组:保持独立 · 合并:一个对象,不融合 · 并集:融合几何',
-  ],
 
   'groups.toast.needSelection': ['Selecciona uno o más objetos', 'Select one or more objects', 'Wähle ein oder mehrere Objekte', 'Sélectionne un ou plusieurs objets', 'एक या अधिक ऑब्जेक्ट चुनें', '请选择一个或多个对象'],
   'groups.toast.locked': ['Hay objetos bloqueados en la selección', 'The selection has locked objects', 'Die Auswahl enthält gesperrte Objekte', 'La sélection contient des objets verrouillés', 'चयन में लॉक ऑब्जेक्ट हैं', '所选内容包含已锁定对象'],
@@ -105,7 +97,6 @@ const GROUPS_TABLE = {
     'सफ़ाई के बाद मेश दोष वाले रंग भाग ({count}): {colors}। ये बंद ठोस हैं, पर प्रिंट से पहले जाँचें।',
     '清理后仍有网格缺陷的颜色件({count}):{colors}。它们是封闭实体,但打印前请检查。',
   ],
-  'groups.tree.label': ['Árbol de la escena', 'Scene tree', 'Szenenbaum', 'Arborescence de la scène', 'दृश्य ट्री', '场景树'],
   'groups.tree.members.one': ['{count} objeto', '{count} object', '{count} Objekt', '{count} objet', '{count} ऑब्जेक्ट', '{count} 个对象'],
   'groups.tree.members.other': ['{count} objetos', '{count} objects', '{count} Objekte', '{count} objets', '{count} ऑब्जेक्ट', '{count} 个对象'],
   'groups.tree.splitNode': ['División de {name}', 'Split of {name}', 'Teilung von {name}', 'Découpe de {name}', '{name} का विभाजन', '{name} 的分割'],

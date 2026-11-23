@@ -16,7 +16,6 @@ export const UX3F_ES = {
   'measure.cancelPointTip': 'Descartar el punto marcado y empezar de nuevo',
   'toast.closeAll': 'Cerrar todos',
   'toast.closeAllTip': 'Cerrar todos los avisos',
-  'toast.region': 'Avisos',
 };
 
 export const UX3F_EN = {
@@ -28,7 +27,6 @@ export const UX3F_EN = {
   'measure.cancelPointTip': 'Discard the marked point and start over',
   'toast.closeAll': 'Close all',
   'toast.closeAllTip': 'Close all notices',
-  'toast.region': 'Notices',
 };
 
 export const UX3F_DE = {
@@ -40,7 +38,6 @@ export const UX3F_DE = {
   'measure.cancelPointTip': 'Den markierten Punkt verwerfen und neu beginnen',
   'toast.closeAll': 'Alle schließen',
   'toast.closeAllTip': 'Alle Hinweise schließen',
-  'toast.region': 'Hinweise',
 };
 
 export const UX3F_FR = {
@@ -52,7 +49,6 @@ export const UX3F_FR = {
   'measure.cancelPointTip': 'Abandonner le point marqué et recommencer',
   'toast.closeAll': 'Tout fermer',
   'toast.closeAllTip': 'Fermer tous les avis',
-  'toast.region': 'Avis',
 };
 
 export const UX3F_HI = {
@@ -64,7 +60,6 @@ export const UX3F_HI = {
   'measure.cancelPointTip': 'चिह्नित बिंदु हटाएँ और फिर से शुरू करें',
   'toast.closeAll': 'सभी बंद करें',
   'toast.closeAllTip': 'सभी सूचनाएँ बंद करें',
-  'toast.region': 'सूचनाएँ',
 };
 
 export const UX3F_ZH = {
@@ -76,5 +71,4 @@ export const UX3F_ZH = {
   'measure.cancelPointTip': '放弃已标记的点并重新开始',
   'toast.closeAll': '全部关闭',
   'toast.closeAllTip': '关闭所有通知',
-  'toast.region': '通知',
 };
