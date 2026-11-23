@@ -94,6 +94,14 @@ const REALES_MOTOR_TABLE = {
     'मेश में {count} ओवरलैप होती खोलें थीं जो जुड़ी नहीं थीं; खोखला करने से पहले उन्हें जोड़ा गया ताकि गुहा सही बने।',
     '网格中有 {count} 个相互重叠但未合并的外壳;已在抽壳前合并,以确保空腔正确。',
   ],
+  'engineWarning.HOLLOW_POCKETS_FILLED': [
+    'Se dejaron macizas {count} bolsas diminutas del interior (sin drenaje propio): no alivianan la pieza.',
+    '{count} tiny inner pockets were left solid (no drain hole of their own): they would not make the part lighter.',
+    '{count} winzige innere Taschen wurden massiv gelassen (ohne eigene Ablauföffnung): sie machen das Teil nicht leichter.',
+    '{count} minuscules poches intérieures ont été laissées pleines (sans trou de vidange propre) : elles n’allégeraient pas la pièce.',
+    'भीतर की {count} बहुत छोटी जेबें ठोस छोड़ी गईं (अपना निकास छेद नहीं): इनसे हिस्सा हल्का नहीं होता।',
+    '内部 {count} 个微小空腔已保留为实心(不单独开排液孔):它们不会减轻零件重量。',
+  ],
   'realesMotor.simplifyResult': [
     'Simplificado: {before} → {after} triángulos · volumen {delta} %.',
     'Simplified: {before} → {after} triangles · volume {delta} %.',

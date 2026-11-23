@@ -10,6 +10,7 @@
  */
 
 import type { MeshData, SceneObject } from '../../types/kura';
+import type { CreasedShading } from '../../utils/creasedNormals';
 import { computeMeshStats } from '../meshStats';
 import type { ImportedModel } from './importTypes';
 import { countMeshBodies } from './meshBodies';
@@ -19,6 +20,8 @@ export interface ImportedMeshAnalysis {
   stats: SceneObject['stats'];
   /** Cuerpos sueltos (null si la malla es demasiado grande para contarlos). */
   bodies: number | null;
+  /** Sombreado con pliegue para el visor (solo lo adjunta el Worker; ver `importShading`). */
+  shading?: CreasedShading;
 }
 
 /** Adjunta `analysis` a cada pieza, calculando una vez por malla (misma referencia = misma malla). */

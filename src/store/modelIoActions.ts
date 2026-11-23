@@ -27,6 +27,15 @@ import { readModelBatch } from './modelImportBatch';
 import { isKuraScene, restoreKuraScene } from './kuraSceneRestore';
 import { reportImportNotices, type ImportedEntry } from './importResultNotices';
 import { maxDimension, rescaleAsBlock } from './unitRescale';
+import { IMPORT_BATCH_TRIANGLES, insertImportedObjects, yieldToMain } from './importInsertion';
+import { primeCreasedMesh } from '../utils/creasedNormals';
+
+/** Escena previa a una importación (para su paso de deshacer). */
+export interface HistoryBase {
+  objects: SceneObject[];
+  selectedIds: string[];
+  groups: import('../types/kura').SceneGroup[];
+}
 
 export { importErrorMessage };
 
@@ -84,14 +93,19 @@ export interface ModelIoDeps {
   get: () => IoState;
   set: (updater: (state: IoState) => Partial<IoState> & Record<string, unknown>) => void;
   tr: Translate;
-  pushHistory: () => void;
+  /** Paso de deshacer; con `before`, el estado previo es ese (la importación ya lo cambió por tandas). */
+  pushHistory: (before?: HistoryBase) => void;
   buildObject: (params: {
     name: string; mesh: MeshData; position: Vec3; color: string; isHole?: boolean; rotation?: Vec3; scale?: Vec3;
     /** Estadísticas locales calculadas en el Worker (evita recorrer la malla en el hilo principal). */
     stats?: SceneObject['stats'];
   }) => SceneObject;
-  /** Avance de la construcción de objetos tras leer (pieza `done` de `total`). */
+  /** Avance de la entrada a la escena tras leer (pieza `done` de `total` ya en la escena). */
   onBuildProgress?: (done: number, total: number) => void;
+  /** Cesión entre tandas de inserción (pruebas); por defecto, hasta el próximo pintado. */
+  yieldFrame?: () => Promise<void>;
+  /** Triángulos por tanda de inserción (pruebas); por defecto `IMPORT_BATCH_TRIANGLES`. */
+  batchTriangles?: number;
   /** Cama activa para buscar el hueco libre de las piezas importadas (null = sin límite). */
   bedSize?: () => BedSize | null;
   /** Genera los archivos de exportación (la app usa el Worker del motor; por defecto en proceso). */
@@ -139,8 +153,11 @@ export function sceneFootprint(objects: SceneObject[]): engine.FootprintXZ | nul
   return any ? { minX: box.min.x, maxX: box.max.x, minZ: box.min.z, maxZ: box.max.z } : null;
 }
 
-/** Cede el hilo principal (un ciclo del bucle de eventos) entre trozos de trabajo. */
-export const yieldToMain = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+/** Siembra el sombreado con pliegue calculado en el Worker para la malla ya colocada de la pieza. */
+function primeImportedShading(mesh: MeshData, part: engine.ImportedPart) {
+  const shading = part.analysis?.shading;
+  if (shading) primeCreasedMesh(mesh.positions, mesh.indices, shading);
+}
 
 export function createModelIoActions(deps: ModelIoDeps) {
   const { get, set, tr, pushHistory, buildObject } = deps;
@@ -178,10 +195,17 @@ export function createModelIoActions(deps: ModelIoDeps) {
       for (const p of placed) p.position = [p.position[0] + spot.offset[0], p.position[1], p.position[2] + spot.offset[2]];
       if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
     }
-    // Una pieza por vez, cediendo el hilo entre piezas: la interfaz no se congela y el avance es real.
+    // Objetos construidos por tramos acotados en triángulos (cediendo el hilo entre tramos). El
+    // sombreado del visor llega hecho desde el Worker y se siembra en su caché antes de montar.
     const created: SceneObject[] = [];
+    let sliceTriangles = 0;
     for (const p of placed) {
-      if (created.length > 0) await yieldToMain();
+      if (sliceTriangles >= (deps.batchTriangles ?? IMPORT_BATCH_TRIANGLES)) {
+        sliceTriangles = 0;
+        await yieldToMain();
+      }
+      sliceTriangles += Math.floor(p.mesh.indices.length / 3);
+      primeImportedShading(p.mesh, p.part);
       created.push(buildObject({
         name: (p.part.name || p.fileName).slice(0, MAX_GROUP_NAME),
         mesh: p.mesh,
@@ -190,7 +214,6 @@ export function createModelIoActions(deps: ModelIoDeps) {
         isHole: p.part.isHole,
         stats: p.part.analysis?.stats,
       }));
-      deps.onBuildProgress?.(created.length, placed.length);
     }
     // Placas del laminador y conjuntos montados quedan agrupados, en el mismo paso deshacible.
     const grouping = groupImported(plainModels, placed, created, state.groups?.length ?? 0, bed, tr);
@@ -207,6 +230,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         offset = [spot.offset[0], 0, spot.offset[2]];
         if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
       }
+      for (const part of model.parts) primeImportedShading(part.mesh, part);
       const restored = restoreKuraScene(model, buildObject, offset);
       restored.objects.forEach((object, i) => entries.push({ object, part: model.parts[i], fileName: model.fileName }));
       newGroups.push(...restored.groups);
@@ -214,11 +238,24 @@ export function createModelIoActions(deps: ModelIoDeps) {
     }
     const createdObjects = entries.map((e) => e.object);
     const createdIds = createdObjects.map((o) => o.id);
-    pushHistory();
-    set((prev) => ({
+    // Entran a la escena por tandas, pintando entre una y otra; un solo paso deshacible al final.
+    const before = { objects: state.objects, selectedIds: state.selectedIds, groups: state.groups ?? [] };
+    const inserted = await insertImportedObjects(createdObjects, (prev) => ({
       ...reconcileGroups({ objects: [...prev.objects, ...createdObjects], groups: [...(prev.groups ?? []), ...newGroups] }),
       selectedIds: createdIds,
-    }));
+    }), {
+      get: () => get(),
+      set: (patch) => set((prev) => patch(prev)),
+      onProgress: deps.onBuildProgress,
+      yieldFrame: deps.yieldFrame,
+      signal: options.signal,
+      budget: deps.batchTriangles,
+    });
+    if (!inserted) {
+      get().addToast(tr('uxEscena.importCancelled'), 'info');
+      return false;
+    }
+    pushHistory(before);
     if (wasEmpty || placement === 'original') get().requestCameraPreset('fit', createdIds);
     else get().requestCameraPreset('ensure', createdIds);
 

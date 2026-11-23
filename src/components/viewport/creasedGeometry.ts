@@ -11,10 +11,7 @@
 import * as THREE from 'three';
 import * as engine from '../../engine';
 import type { MeshData } from '../../types/kura';
-import { getCreasedMesh } from '../../utils/creasedNormals';
-
-/** Sobre este tamaño se conservan las normales de la malla (el cálculo con pliegue sería lento). */
-const MAX_CREASED_TRIANGLES = 600_000;
+import { getCreasedMesh, MAX_CREASED_TRIANGLES } from '../../utils/creasedNormals';
 
 export function buildViewportGeometry(mesh: MeshData, paintBaseColor?: string): THREE.BufferGeometry {
   const triCount = Math.floor(mesh.indices.length / 3);

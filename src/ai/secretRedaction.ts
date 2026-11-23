@@ -76,7 +76,13 @@ function hashOf(codes: Uint16Array, from: number, len: number): number {
   return h;
 }
 
-function sameRun(a: Uint16Array, ai: number, b: Uint16Array, bi: number, len: number): boolean {
+/** Contador opcional de trabajo (caracteres comparados en verificaciones), para probar la linealidad sin reloj. */
+export interface ScanWork {
+  compared: number;
+}
+
+function sameRun(a: Uint16Array, ai: number, b: Uint16Array, bi: number, len: number, work?: ScanWork): boolean {
+  if (work) work.compared += len;
   for (let k = 0; k < len; k++) if (a[ai + k] !== b[bi + k]) return false;
   return true;
 }
@@ -85,7 +91,7 @@ function sameRun(a: Uint16Array, ai: number, b: Uint16Array, bi: number, len: nu
  * Rangos `[inicio, fin)` del texto original que contienen la clave o un fragmento suyo de `WINDOW`
  * caracteres. Hash rodante sobre el texto compactado: O(n + m), sin importar si la clave repite letras.
  */
-function knownSecretRanges(text: string, secret: string): Array<[number, number]> {
+export function knownSecretRanges(text: string, secret: string, work?: ScanWork): Array<[number, number]> {
   const key = compactCodes(secret);
   if (key.length < MIN_SPLIT_LENGTH) return exactRanges(text, secret);
   const hay = compactCodes(text);
@@ -98,7 +104,7 @@ function knownSecretRanges(text: string, secret: string): Array<[number, number]
     const h = hashOf(key.codes, i, w);
     const list = windows.get(h);
     if (!list) windows.set(h, [i]);
-    else if (list.length < 4 && !list.some((j) => sameRun(key.codes, j, key.codes, i, w))) list.push(i);
+    else if (list.length < 4 && !list.some((j) => sameRun(key.codes, j, key.codes, i, w, work))) list.push(i);
   }
 
   let pow = 1;
@@ -112,7 +118,7 @@ function knownSecretRanges(text: string, secret: string): Array<[number, number]
       h = (Math.imul((h - out) >>> 0, BASE) + codes[i + w - 1]) >>> 0;
     }
     const candidates = windows.get(h);
-    if (!candidates || !candidates.some((j) => sameRun(key.codes, j, codes, i, w))) continue;
+    if (!candidates || !candidates.some((j) => sameRun(key.codes, j, codes, i, w, work))) continue;
     const start = hay.origin[i];
     const end = hay.origin[i + w - 1] + 1;
     const last = ranges[ranges.length - 1];

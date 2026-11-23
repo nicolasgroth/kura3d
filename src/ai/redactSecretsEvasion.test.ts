@@ -12,6 +12,7 @@ import { describe, expect, it, vi } from 'vitest';
 // El tope por defecto (5 s) no alcanza con la máquina cargada (esta prueba recorre el repo o usa el motor).
 vi.setConfig({ testTimeout: 60_000 });
 import { redactSecrets } from './providerSecurity';
+import { knownSecretRanges } from './secretRedaction';
 import { validateToolCall } from './toolValidation';
 
 const KEY = 'mistralKEY0123456789abcdefghijklmn';
@@ -97,18 +98,26 @@ describe('redactSecrets: credenciales de otros proveedores sin la clave conocida
     expect(redactSecrets('ab'.repeat(50_000), 'ab'.repeat(30) + 'c')).not.toContain('ab'.repeat(8));
   });
 
-  it('crece de forma lineal: duplicar la entrada no cuadruplica el tiempo', () => {
-    const time = (n: number) => {
-      const text = 's'.repeat(n);
-      const t0 = performance.now();
-      redactSecrets(text, 'ssssssssssssssssssssss');
-      return performance.now() - t0;
-    };
-    time(200_000); // calentamiento del JIT
-    const small = Math.min(time(500_000), time(500_000));
-    const big = Math.min(time(1_000_000), time(1_000_000));
-    // Lineal ≈ 2×; cuadrático ≈ 4×. Margen amplio contra el ruido y piso de 5 ms.
-    expect(big).toBeLessThan(Math.max(5, small) * 3.5);
+  it('crece de forma lineal: duplicar la entrada duplica el trabajo (conteo, sin reloj)', () => {
+    // Entradas adversarias: texto y clave de un solo carácter repetido (cada ventana es candidata),
+    // y patrones periódicos. La versión con reloj vive en redactSecretsLinear.perf.test.ts.
+    const cases: Array<[(n: number) => string, string]> = [
+      [(n) => 's'.repeat(n), 'ssssssssssssssssssssss'],
+      [(n) => 'ab'.repeat(n / 2), 'ab'.repeat(15)],
+      [(n) => 'abc '.repeat(n / 4), 'abcabcabcabcabcabcab'],
+    ];
+    for (const [make, secret] of cases) {
+      const work = (n: number) => {
+        const counter = { compared: 0 };
+        knownSecretRanges(make(n), secret, counter);
+        return counter.compared;
+      };
+      const small = work(100_000);
+      const big = work(200_000);
+      expect(small).toBeGreaterThan(0);
+      // Lineal ≈ 2×; cuadrático ≈ 4×.
+      expect(big / small).toBeLessThan(2.2);
+    }
   });
 });
 
