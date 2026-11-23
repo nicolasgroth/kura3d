@@ -16,11 +16,14 @@ import { useKuraStore } from '../store/useKuraStore';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
 import { toolLabel } from '../utils/aiToolLabels';
 import { useAiDrawerLayout } from './useAiDrawerLayout';
+import { AiPanelTabs, type AiPanelTab } from './AiPanelTabs';
 import '../styles/aiDrawer.css';
 
 export const AiChatDrawer: React.FC = () => {
   const [input, setInput] = useState('');
   const [folded, setFolded] = useState(false);
+  // Pestaña activa de la columna derecha en ventanas medias (901–1240 px); en otros anchos no se muestra.
+  const [tab, setTab] = useState<AiPanelTab>('assistant');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -47,6 +50,14 @@ export const AiChatDrawer: React.FC = () => {
   useEffect(() => {
     if (aiDrawerOpen && !aiBusy) inputRef.current?.focus();
   }, [aiDrawerOpen, aiBusy]);
+
+  // Cada vez que se abre, el chat es la pestaña activa y no queda plegado.
+  useEffect(() => {
+    if (aiDrawerOpen) {
+      setTab('assistant');
+      setFolded(false);
+    }
+  }, [aiDrawerOpen]);
 
   // Cerrar el panel cancela la solicitud en curso.
   useEffect(() => {
@@ -134,6 +145,8 @@ export const AiChatDrawer: React.FC = () => {
         ];
 
   return (
+    <>
+    <AiPanelTabs active={tab} onChange={setTab} />
     <aside className={`kura-ai-drawer${folded ? ' is-folded' : ''}`} aria-label={t(language, 'ai.title')} data-viewport-occluder>
       <div className="kura-panel-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
@@ -290,5 +303,6 @@ export const AiChatDrawer: React.FC = () => {
         )}
       </form>
     </aside>
+    </>
   );
 };

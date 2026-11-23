@@ -28,6 +28,25 @@ const UX4_TABLE = {
     'स्केल 0 से अधिक होना चाहिए: शून्य या ऋणात्मक मान लागू नहीं होता।',
     '缩放必须大于 0:零或负值不会被应用。',
   ],
+  'ux4.tabs.label': ['Panel derecho', 'Right panel', 'Rechtes Panel', 'Panneau de droite', 'दायाँ पैनल', '右侧面板'],
+  'ux4.tabs.inspector': ['Inspector', 'Inspector', 'Inspektor', 'Inspecteur', 'इंस्पेक्टर', '检查器'],
+  'ux4.tabs.assistant': ['Asistente', 'Assistant', 'Assistent', 'Assistant', 'सहायक', '助手'],
+  'ux4.tabs.inspectorTip': [
+    'Ver el inspector del objeto seleccionado',
+    'Show the inspector of the selected object',
+    'Inspektor des gewählten Objekts anzeigen',
+    'Afficher l’inspecteur de l’objet sélectionné',
+    'चयनित ऑब्जेक्ट का इंस्पेक्टर दिखाएँ',
+    '显示所选对象的检查器',
+  ],
+  'ux4.tabs.assistantTip': [
+    'Ver el chat del asistente de IA (la conversación se conserva)',
+    'Show the AI assistant chat (the conversation is kept)',
+    'AI-Assistenten-Chat anzeigen (die Unterhaltung bleibt erhalten)',
+    'Afficher le chat de l’assistant IA (la conversation est conservée)',
+    'AI सहायक चैट दिखाएँ (बातचीत सुरक्षित रहती है)',
+    '显示 AI 助手聊天(对话会保留)',
+  ],
 } as const satisfies Record<string, Row>;
 
 type Ux4Key = keyof typeof UX4_TABLE;
