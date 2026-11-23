@@ -20,6 +20,25 @@ export function svgCurveSegments(options: Pick<SvgImportOptions, 'curveSegments'
   return Math.max(4, Math.round(options.curveSegments || 12));
 }
 
+/** Estilo que `SVGLoader` deja en `path.userData.style` (en los tipos de three es `unknown`). */
+type SvgPathStyle = { fill?: string; fillOpacity?: number; stroke?: string; strokeOpacity?: number; strokeWidth?: number };
+
+/** Lee el estilo con los tipos verificados campo a campo (los valores vienen de un archivo ajeno). */
+function pathStyle(path: { userData?: Record<string, unknown> }): SvgPathStyle | undefined {
+  const raw = path.userData?.style;
+  if (!raw || typeof raw !== 'object') return undefined;
+  const r = raw as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === 'string' ? v : undefined);
+  const num = (v: unknown) => (typeof v === 'number' ? v : undefined);
+  return {
+    fill: str(r.fill),
+    fillOpacity: num(r.fillOpacity),
+    stroke: str(r.stroke),
+    strokeOpacity: num(r.strokeOpacity),
+    strokeWidth: num(r.strokeWidth),
+  };
+}
+
 /** Un elemento sin relleno visible no aporta sólido (el trazo no se convierte en volumen). */
 function isFilled(style: { fill?: string; fillOpacity?: number } | undefined): boolean {
   const fill = style?.fill?.trim().toLowerCase();
@@ -44,7 +63,7 @@ export function svgHasStrokes(svgContent: string): boolean {
   } catch {
     return false;
   }
-  return parsed.paths.some((path) => path.subPaths.length > 0 && isStroked(path.userData?.style));
+  return parsed.paths.some((path) => path.subPaths.length > 0 && isStroked(pathStyle(path)));
 }
 
 /**
@@ -64,8 +83,9 @@ export function extractSvgElementGroups(svgContent: string, curveSegments: numbe
 
   const groups: SvgContourGroups = [];
   for (const path of parsed.paths) {
-    if (!isFilled(path.userData?.style)) continue;
-    for (const shape of SVGLoader.createShapes(path)) {
+    if (!isFilled(pathStyle(path))) continue;
+    // `SVGLoader.createShapes` quedó obsoleto en r185 y ahora solo delega en `ShapePath.toShapes()`.
+    for (const shape of path.toShapes()) {
       const pts = shape.extractPoints(curveSegments);
       const group: [number, number][][] = [];
       if (pts.shape.length >= 3) group.push(pts.shape.map((p) => [p.x, -p.y]));
