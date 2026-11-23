@@ -46,6 +46,7 @@ import { UX6_EN, UX6_ES } from './locales/ux6';
 import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
 import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
+import { REDISENO_EN, REDISENO_ES } from './locales/rediseno';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -86,6 +87,7 @@ export const TRANSLATIONS_ES = {
   ...RECETAS_ES,
   ...BORDES_ES,
   ...UX7_ES,
+  ...REDISENO_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -1427,6 +1429,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...RECETAS_EN,
   ...BORDES_EN,
   ...UX7_EN,
+  ...REDISENO_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',

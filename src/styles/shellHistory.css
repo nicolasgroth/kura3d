@@ -1,0 +1,102 @@
+/**
+ * @file src/styles/shellHistory.css
+ * @description Desplegable del historial de deshacer: lista con desplazamiento, paso actual con marca y rótulo
+ * («estado actual»), pasos deshechos atenuados y rotulados («deshecho»): nada depende solo del color.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-history-pop {
+  position: fixed;
+  z-index: 1200;
+  width: min(320px, calc(100vw - 16px));
+  padding: 6px;
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-hud);
+  color: var(--text-primary);
+}
+
+.kura-history-title {
+  padding: 4px 8px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.kura-history-older {
+  padding: 2px 8px 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.kura-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  border-radius: var(--radius-sm);
+}
+
+.kura-history-list:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+.kura-history-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.kura-history-item.is-active {
+  background: var(--bg-hover);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+
+.kura-history-item.is-current {
+  font-weight: 700;
+}
+
+.kura-history-item.is-undone .kura-history-label {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.kura-history-mark {
+  display: inline-flex;
+  width: 14px;
+  flex-shrink: 0;
+  color: var(--accent-cyan);
+}
+
+.kura-history-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-history-tag {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+@media (pointer: coarse) {
+  .kura-history-item {
+    min-height: 44px;
+  }
+}

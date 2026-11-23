@@ -41,6 +41,7 @@ import { UX6_HI } from './ux6';
 import { RECETAS_HI } from './recetas';
 import { BORDES_HI } from './bordesPrimitivas';
 import { UX7_HI } from './ux7';
+import { REDISENO_HI } from './rediseno';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -79,6 +80,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...RECETAS_HI,
   ...BORDES_HI,
   ...UX7_HI,
+  ...REDISENO_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',

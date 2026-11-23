@@ -23,6 +23,11 @@ function focusViewport(): void {
   document.querySelector<HTMLElement>('.kura-viewport-wrap canvas')?.focus();
 }
 
+/** Enfoca la herramienta activa de la barra vertical (su única parada de tabulación). */
+function focusTools(): void {
+  document.querySelector<HTMLElement>('#kura-tool-rail [tabindex="0"]')?.focus();
+}
+
 /** Enfoca el primer control del inspector (o el panel si no tiene controles). */
 function focusInspector(): void {
   const panel = document.getElementById('kura-inspector-panel');
@@ -48,6 +53,9 @@ export const SkipLinks: React.FC = () => {
   return (
     <>
       <nav className="kura-skip-links" aria-label={t(language, 'skip.nav')}>
+        <a href="#kura-tool-rail" className="kura-skip-link" onClick={jump(focusTools)}>
+          {t(language, 'rediseno.skip.tools')}
+        </a>
         <a href="#kura-viewport" className="kura-skip-link" onClick={jump(focusViewport)}>
           {t(language, 'skip.viewport')}
         </a>

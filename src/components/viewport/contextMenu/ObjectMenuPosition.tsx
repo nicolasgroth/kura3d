@@ -34,7 +34,7 @@ const MIRROR_AXES = [
 ] as const;
 
 /** Modos de alinear en el orden del inspector: X, Y (frente a fondo) y Z (altura). */
-const ALIGN_MODES = ['minX', 'centerX', 'maxX', 'maxZ', 'centerZ', 'minZ', 'minY', 'centerY', 'maxY'] as const satisfies readonly AlignMode[];
+export const ALIGN_MODES = ['minX', 'centerX', 'maxX', 'maxZ', 'centerZ', 'minZ', 'minY', 'centerY', 'maxY'] as const satisfies readonly AlignMode[];
 
 const TRANSFORM_ITEMS: ReadonlyArray<{ mode: TransformMode; key: 'move' | 'rotate' | 'scale'; shortcut: string; icon: React.ReactNode }> = [
   { mode: 'translate', key: 'move', shortcut: 'M', icon: <Move size={14} aria-hidden="true" /> },

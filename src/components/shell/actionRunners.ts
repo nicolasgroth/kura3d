@@ -1,0 +1,101 @@
+/**
+ * @file src/components/shell/actionRunners.ts
+ * @description Qué hace cada acción del menú «Acciones»: exactamente lo mismo que su entrada actual (menú
+ * contextual, paleta o inspector): abre su diálogo, lleva el inspector a su panel o lanza la operación del
+ * store sobre la selección. Antes registra la acción como activa (`setActiveAction`) para el panel contextual.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import type { AlignMode, ObjectRole } from '../../types/kura';
+import type { ActionId } from '../../store/actionsCatalog';
+import { useKuraStore } from '../../store/useKuraStore';
+import { openHollowPanel } from '../inspector/hollowPanelRequest';
+import { REFINE_UI_DEFAULTS } from '../refineDefaults';
+
+/** Ejecuta la acción sobre la selección actual (la disponibilidad ya se comprobó al pintar el menú). */
+export function runAction(id: ActionId): void {
+  const state = useKuraStore.getState();
+  const ids = state.selectedIds;
+  const primary = ids[0];
+  state.setActiveAction(id);
+  switch (id) {
+    case 'hollow':
+      if (primary) openHollowPanel(primary);
+      return;
+    case 'splitForBed':
+      state.setActiveDialog('splitForBed');
+      return;
+    case 'fitToBed':
+      void state.openFitToBed(ids);
+      return;
+    case 'mold':
+      state.setActiveDialog('mold');
+      return;
+    case 'project':
+      state.setActiveDialog('project');
+      return;
+    case 'repair':
+      if (primary) void state.repairObjectMesh(primary);
+      return;
+    case 'simplify':
+      if (primary) state.requestSimplifyPanel(primary);
+      return;
+    case 'refine':
+      if (primary) void state.refineSelectedMesh(primary, REFINE_UI_DEFAULTS.edgeMm, REFINE_UI_DEFAULTS.smooth);
+      return;
+    case 'hull':
+      void state.runConvexHull();
+      return;
+    case 'splitColors':
+      if (primary) void state.splitObjectByColor(primary);
+      return;
+    case 'splitParts':
+      if (primary) void state.splitDisconnectedObject(primary);
+      return;
+    case 'group':
+      state.groupObjects(ids);
+      return;
+    case 'ungroup':
+      state.ungroupObjects();
+      return;
+    case 'combine':
+      state.combineObjects(ids);
+      return;
+    case 'union':
+      void state.runBooleanOnSelection('union');
+      return;
+    case 'applyHoles':
+      void state.applyHolesOnSolids();
+      return;
+    case 'dropToBed':
+      for (const objectId of ids) state.dropObjectToBed(objectId);
+      return;
+    case 'centerOnBed':
+      state.centerSelectionOnBed(ids);
+      return;
+    case 'validate':
+      if (primary) void state.runPrintabilityCheck(primary);
+      return;
+    case 'detect':
+      if (primary) void state.detectObjectStructures(primary);
+      return;
+    case 'convert':
+    case 'align':
+      // Tienen submenú: se ejecutan con `runConvert` o `runAlign`.
+      return;
+  }
+}
+
+export function runConvert(role: ObjectRole): void {
+  const state = useKuraStore.getState();
+  state.setActiveAction('convert');
+  state.setObjectsRole(state.selectedIds, role);
+}
+
+export function runAlign(mode: AlignMode): void {
+  const state = useKuraStore.getState();
+  state.setActiveAction('align');
+  state.alignSelectedObjects(mode);
+}

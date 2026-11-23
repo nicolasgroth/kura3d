@@ -1,0 +1,145 @@
+/**
+ * @file src/styles/shellRail.css
+ * @description Barra vertical de herramientas junto al visor: botones de 44 px (48 en táctil) con icono de 20 px,
+ * rótulo opcional bajo el icono (densidad Expandido), marca lateral en la herramienta activa (no solo color) y
+ * separador entre manipulador y herramientas de puntero. Se oculta en pantallas estrechas y en el modo sin
+ * distracciones. Va visualmente entre la barra lateral y el visor (`order`), aunque en el DOM va antes.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-app {
+  --kura-rail-w: 76px;
+}
+
+.kura-app[data-density='compact'] {
+  --kura-rail-w: 56px;
+}
+
+.kura-app .kura-sidebar-left {
+  order: -1;
+}
+
+/* El tirador de la barra lateral se corre al otro lado de la barra de herramientas (no tapa botones). */
+@media (min-width: 901px) {
+  .kura-app:not([data-density='zen']) .kura-panel-edge-btn.is-left {
+    right: calc(-24px - var(--kura-rail-w));
+  }
+}
+
+.kura-tool-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  flex-shrink: 0;
+  width: var(--kura-rail-w);
+  padding: 8px 6px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  scrollbar-width: none;
+  z-index: 5;
+}
+
+.kura-tool-rail-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 44px;
+  padding: 6px 2px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.kura-tool-rail-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.kura-tool-rail-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+.kura-tool-rail-label {
+  max-width: 100%;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.kura-app[data-density='compact'] .kura-tool-rail-label {
+  display: none;
+}
+
+/* Activa: fondo con el acento de la herramienta, borde y una barra lateral (la marca no depende solo del color). */
+.kura-tool-rail-btn.is-active {
+  background: var(--tool-accent);
+  color: var(--tool-accent-fg);
+  border-color: var(--tool-accent);
+}
+
+.kura-tool-rail-btn.is-active::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--text-primary);
+}
+
+/* Modo del manipulador elegido (con Seleccionar activo): tinte suave y la misma marca lateral. */
+.kura-tool-rail-btn.is-mode.is-active {
+  background: color-mix(in srgb, var(--tool-accent) 18%, var(--bg-elevated));
+  color: var(--text-primary);
+}
+
+.kura-tool-rail-sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border-subtle);
+  flex-shrink: 0;
+}
+
+@media (pointer: coarse) {
+  .kura-tool-rail-btn {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 900px) {
+  .kura-tool-rail {
+    display: none;
+  }
+}
+
+.kura-app[data-density='zen'] .kura-tool-rail {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-tool-rail-btn {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .kura-tool-rail-btn.is-active {
+    border: 2px solid Highlight;
+  }
+}

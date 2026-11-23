@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import type { ActionId } from './actionsCatalog';
 import type * as engine from '../engine';
 import type { ParametricEdit } from '../core/operations/creationOperations';
 import type { SplitForBedOutcome, SplitForBedRequest } from './splitCommandSchemas';
@@ -192,6 +193,9 @@ export interface KuraStoreState {
 
   // Herramientas y viewport
   activeTool: ActiveTool;
+  /** Acción del menú «Acciones» elegida en último lugar (`null` = ninguna; elegir una herramienta la limpia).
+   * Junto con `activeTool` dice qué está activo (`activeContextOf` en `actionsCatalog.ts`). */
+  activeAction: ActionId | null;
   transformMode: TransformMode;
   proportionalScale: boolean;
   snapGridMm: number;
@@ -263,6 +267,7 @@ export interface KuraStoreState {
   syncColorSchemeFromDom: () => void;
   setPrinterProfile: (profileId: string) => void;
   setActiveTool: (tool: ActiveTool) => void;
+  setActiveAction: (action: ActionId | null) => void;
   setTransformMode: (mode: TransformMode) => void;
   setProportionalScale: (locked: boolean) => void;
   toggleProportionalScale: () => void;
@@ -306,6 +311,8 @@ export interface KuraStoreState {
   clearSelection: () => void;
   undo: () => void;
   redo: () => void;
+  /** Vuelve a la posición `position` del historial (0 = inicio, `past.length` = actual) en un solo cambio. */
+  jumpToHistory: (position: number) => void;
   /** Límites del historial de deshacer (presupuesto de memoria y máximo de pasos); preferencia global. */
   historyLimits: HistoryLimits;
   setHistoryLimits: (limits: Partial<HistoryLimits>) => void;

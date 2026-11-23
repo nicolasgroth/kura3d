@@ -1,7 +1,8 @@
 /**
  * @file src/components/StatusBar.tsx
  * @description Barra de estado inferior de Kura3D con estado de runtime (Tauri/Web),
- * motor Manifold WASM, indicador de unidad e impresora (popover), conteo de triángulos y atajos rápidos.
+ * motor Manifold WASM, indicador de unidad e impresora (popover), conteo de triángulos, línea de ayuda del
+ * control bajo el cursor o el foco (zona propia en el centro) y atajos rápidos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -17,6 +18,7 @@ import { RecoveryStatusNotice } from './RecoveryStatusNotice';
 import { StatusBarCount } from './StatusBarCount';
 import { StatusBarMeasures } from './StatusBarMeasures';
 import { ToastHistoryButton } from './ToastHistoryButton';
+import { StatusHelpLine } from './shell/StatusHelpLine';
 import { operationLabel } from './viewport/OperationProgressBar';
 
 export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus; recoveryFailure?: RecoveryFailure | null }> = ({
@@ -67,12 +69,11 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus; recoveryFail
         <StatusBarCount />
       </div>
 
+      <StatusHelpLine />
+
       <div className="kura-statusbar-group">
         <RecoveryStatusNotice status={recoveryStatus} failure={recoveryFailure} />
         <ToastHistoryButton />
-        <span className="kura-statusbar-hint" style={{ opacity: 0.78 }}>
-          {t(language, 'status.shortcuts')}
-        </span>
         <button
           type="button"
           className="kura-statusbar-btn kura-statusbar-shortcuts"

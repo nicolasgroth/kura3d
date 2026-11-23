@@ -49,6 +49,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     rightCollapsed: false,
 
     activeTool: 'select',
+    activeAction: null,
     transformMode: 'translate',
     proportionalScale: true,
     snapGridMm: 1,
@@ -153,9 +154,10 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     setActiveTool: (activeTool) => {
-      set({ activeTool });
+      set({ activeTool, activeAction: null });
       if (activeTool === 'cut' && get().selectedIds.length > 0) set({ activeDialog: 'cut' });
     },
+    setActiveAction: (activeAction) => set({ activeAction }),
     setTransformMode: (transformMode) => set({ transformMode }),
     setProportionalScale: (proportionalScale) => set({ proportionalScale }),
     toggleProportionalScale: () => set((state) => ({ proportionalScale: !state.proportionalScale })),

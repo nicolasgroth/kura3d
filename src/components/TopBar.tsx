@@ -1,10 +1,10 @@
 /**
  * @file src/components/TopBar.tsx
- * @description Barra superior principal de Kura3D v0.5.0: marca oficial con ícono y versión,
- * importación/exportación Multi-Slicer (STL/3MF), Undo/Redo, selector de herramientas, perfil de
- * selector compacto de 6 idiomas, acceso directo a temas WCAG,
- * toggle de densidad adaptativa (Expandido / Compacto / Zen), paleta Ctrl+K, estado MCP seguro
- * y acceso al Asistente IA.
+ * @description Barra superior de aplicación (una fila): a la izquierda marca y versión, grupo Archivo
+ * (Importar, Proyecto, Exportar: Importar y Exportar con texto siempre), Edición (Deshacer, Rehacer e historial)
+ * y el menú Acciones; a la derecha paleta, idioma, temas, tema claro/oscuro, rótulos, MCP, IA y Ajustes. Si
+ * falta ancho, pasa al menú «Más» lo menos usado y después quita rótulos. Las herramientas viven en la barra
+ * vertical junto al visor; en pantallas estrechas (sin barra vertical) siguen en el menú «Más».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,13 +14,11 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Bot,
   ChevronDown,
+  CaseSensitive,
   Cloud,
-  Columns2,
   Download,
   Eraser,
-  LayoutGrid,
   Lock,
-  Maximize2,
   Moon,
   MousePointer,
   Paintbrush,
@@ -50,6 +48,10 @@ import { ImportMenuButton } from './ImportMenuButton';
 import { ProjectMenu } from './ProjectMenu';
 import { TopBarOverflowMenu } from './TopBarOverflowMenu';
 import { naturalRowWidth, pickTopbarLevel, recordTopbarWidth } from './topbarFit';
+import { ActionsMenu } from './shell/ActionsMenu';
+import { HistoryMenu } from './shell/HistoryMenu';
+import { helpAttrs } from './shell/controlHelp';
+import '../styles/shellTopbar.css';
 import '../styles/topbarOverflow.css';
 import '../styles/statusFit.css';
 
@@ -75,10 +77,10 @@ function useSystemPrefersDark(): boolean {
 /**
  * Pasos de ahorro de espacio, en el orden en que se aplican al faltar ancho. Primero pasan al menú "Más"
  * los controles menos usados; los rótulos (`compact`) se quitan solo después; al final, el resto.
- * Proyecto, Importar, Exportar, Deshacer/Rehacer y Ajustes nunca se ocultan; el logo es lo último en irse (solo a ~390 px).
+ * Importar, Proyecto, Exportar, Deshacer/Rehacer, Acciones y Ajustes nunca se ocultan; el logo es lo último en irse (solo a ~390 px).
  */
 const FIT_STEPS = [
-  'density',
+  'labels',
   'palette',
   'themes',
   'compact',
@@ -86,10 +88,25 @@ const FIT_STEPS = [
   'theme',
   'mcp',
   'ai',
-  'tools',
+  'history',
   'brand',
   'logo',
 ] as const;
+
+/** Sin barra vertical de herramientas (pantallas estrechas): las herramientas van al menú «Más». */
+const NARROW_QUERY = '(max-width: 900px)';
+
+function useNarrowScreen(): boolean {
+  const [narrow, setNarrow] = useState(() => typeof window !== 'undefined' && window.matchMedia?.(NARROW_QUERY).matches === true);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia(NARROW_QUERY);
+    const onChange = (e: MediaQueryListEvent) => setNarrow(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return narrow;
+}
 type FitStep = (typeof FIT_STEPS)[number];
 type HideId = Exclude<FitStep, 'compact'>;
 
@@ -109,12 +126,13 @@ export const TopBar: React.FC = () => {
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const setColorScheme = useKuraStore((s) => s.setColorScheme);
   const uiDensity = useKuraStore((s) => s.uiDensity);
-  const cycleUiDensity = useKuraStore((s) => s.cycleUiDensity);
+  const setUiDensity = useKuraStore((s) => s.setUiDensity);
+  const narrowScreen = useNarrowScreen();
   const activeTool = useKuraStore((s) => s.activeTool);
   const setActiveTool = useKuraStore((s) => s.setActiveTool);
   const pastCount = useKuraStore((s) => s.past.length);
   const futureCount = useKuraStore((s) => s.future.length);
-  /** Tooltip de deshacer/rehacer con los pasos disponibles ("Deshacer (Ctrl+Z) · 37 pasos"). */
+  /** Título de deshacer/rehacer con los pasos disponibles ("Deshacer (Ctrl+Z) · 37 pasos"). */
   const stepTip = (base: 'topbar.undoTip' | 'topbar.redoTip', counted: 'topbar.undoTipCount' | 'topbar.redoTipCount', count: number) =>
     count === 0
       ? t(language, base)
@@ -206,7 +224,7 @@ export const TopBar: React.FC = () => {
   // Cambios que alteran anchos de otros niveles: se descartan las mediciones guardadas.
   useLayoutEffect(() => {
     widthsRef.current = [];
-  }, [language, uiDensity, bridgeStatus.phase, mcpConfig.enabled, mcpConfig.requireAuth, aiDrawerOpen, aiConfig]);
+  }, [language, uiDensity, narrowScreen, bridgeStatus.phase, mcpConfig.enabled, mcpConfig.requireAuth, aiDrawerOpen, aiConfig]);
 
   // Tras cada render: vuelve a observar la barra y sus controles, y reajusta antes de pintar.
   useLayoutEffect(() => {
@@ -223,16 +241,10 @@ export const TopBar: React.FC = () => {
         mcpConfig.requireAuth ? ` · ${t(language, 'topbar.mcpAuthTip')}` : ''
       }`;
 
-  const densityIcon =
-    uiDensity === 'full' ? (
-      <LayoutGrid size={13} />
-    ) : uiDensity === 'compact' ? (
-      <Columns2 size={13} />
-    ) : (
-      <Maximize2 size={13} />
-    );
-
-  const densityLabel = t(language, `ui.density.${uiDensity}`);
+  // Rótulos: una sola preferencia (densidad Expandido = con texto, Compacto = solo iconos) para todas las barras.
+  const labelsShown = uiDensity !== 'compact';
+  const labelsName = t(language, labelsShown ? 'rediseno.labels.hide' : 'rediseno.labels.show');
+  const toggleLabels = () => setUiDensity(labelsShown ? 'compact' : 'full');
 
   const brandEl = (
     <div className="kura-brand" title={t(language, 'app.tagline')}>
@@ -297,84 +309,70 @@ export const TopBar: React.FC = () => {
     );
   const aiShort = t(language, 'topbar.aiShort');
   const aiTip = `${t(language, 'topbar.aiChatTip')} — ${aiBadge.label}: ${aiBadge.tooltip}`;
-  const showMore = hidden.size > 0;
+  const showMore = hidden.size > 0 || narrowScreen;
 
   return (
     <header
       ref={headerRef}
-      className={`kura-topbar kura-topbar-adaptive ${compact ? 'is-compact' : ''} ${hidden.has('tools') ? 'is-narrow' : ''}`}
+      className={`kura-topbar kura-topbar-adaptive ${compact ? 'is-compact' : ''} ${narrowScreen ? 'is-narrow' : ''}`}
     >
-      {/* Marca oficial Kura3D v0.5.0 + Archivo rápido + Undo/Redo */}
+      {/* Marca, Archivo, Edición (deshacer, rehacer, historial) y Acciones */}
       <div className="kura-topbar-group kura-topbar-left">
         {!isHidden('logo') && brandEl}
 
-        <ImportMenuButton />
+        <div className="kura-topbar-cluster" role="group" aria-label={t(language, 'rediseno.top.file')}>
+          <ImportMenuButton />
+          <ProjectMenu />
+          <button
+            type="button"
+            className="kura-btn kura-btn-sm kura-btn-primary"
+            onClick={() => openExportDialog()}
+            aria-label={t(language, 'topbar.export')}
+            {...helpAttrs('top.export', language)}
+          >
+            <Download size={13} aria-hidden="true" />
+            <span className="kura-btn-label kura-label-keep">{t(language, 'topbar.export')}</span>
+          </button>
+        </div>
 
-        <button
-          type="button"
-          className="kura-btn kura-btn-icon kura-btn-sm"
-          disabled={pastCount === 0}
-          onClick={undo}
-          title={stepTip('topbar.undoTip', 'topbar.undoTipCount', pastCount)}
-          aria-label={t(language, 'topbar.undo')}
-        >
-          <Undo2 size={13} />
-        </button>
-        <button
-          type="button"
-          className="kura-btn kura-btn-icon kura-btn-sm"
-          disabled={futureCount === 0}
-          onClick={redo}
-          title={stepTip('topbar.redoTip', 'topbar.redoTipCount', futureCount)}
-          aria-label={t(language, 'topbar.redo')}
-        >
-          <Redo2 size={13} />
-        </button>
-        <ProjectMenu />
-      </div>
+        <div className="kura-topbar-cluster" role="group" aria-label={t(language, 'rediseno.top.edit')}>
+          <button
+            type="button"
+            className="kura-btn kura-btn-icon kura-btn-sm"
+            disabled={pastCount === 0}
+            onClick={undo}
+            aria-label={t(language, 'topbar.undo')}
+            {...helpAttrs('top.undo', language)}
+            title={stepTip('topbar.undoTip', 'topbar.undoTipCount', pastCount)}
+          >
+            <Undo2 size={14} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="kura-btn kura-btn-icon kura-btn-sm"
+            disabled={futureCount === 0}
+            onClick={redo}
+            aria-label={t(language, 'topbar.redo')}
+            {...helpAttrs('top.redo', language)}
+            title={stepTip('topbar.redoTip', 'topbar.redoTipCount', futureCount)}
+          >
+            <Redo2 size={14} aria-hidden="true" />
+          </button>
+          {!isHidden('history') && <HistoryMenu />}
+        </div>
 
-      {/* Herramientas principales del estudio */}
-      <div className="kura-topbar-group kura-topbar-center">
-        {!isHidden('tools') && (
-          <div className="kura-segmented" role="group" aria-label={t(language, 'topbar.toolsGroup')}>
-            {tools.map((tool) => toolButton(tool, false))}
-          </div>
-        )}
-
-        <button
-          type="button"
-          className="kura-btn kura-btn-sm kura-btn-primary"
-          onClick={() => openExportDialog()}
-          title={t(language, 'topbar.exportTip')}
-          aria-label={t(language, 'topbar.export')}
-        >
-          <Download size={13} aria-hidden="true" />
-          <span className="kura-btn-label">{t(language, 'topbar.export')}</span>
-        </button>
+        <ActionsMenu showLabel={!compact} />
       </div>
 
       {/* Grupo de utilidades fijado a la derecha */}
       <div className="kura-topbar-group kura-topbar-right">
-        {!isHidden('density') && (
-          <button
-            type="button"
-            className={`kura-btn kura-btn-sm ${uiDensity !== 'full' ? 'is-active' : ''}`}
-            onClick={cycleUiDensity}
-            title={`${t(language, 'ui.density.cycleTip')} (${densityLabel})`}
-            aria-label={t(language, 'ui.density.cycleTip')}
-          >
-            {densityIcon}
-            <span className="kura-btn-label">{densityLabel}</span>
-          </button>
-        )}
-
         {!isHidden('palette') && (
           <button
             type="button"
             className="kura-btn kura-btn-icon kura-btn-sm"
             onClick={() => setCommandPaletteOpen(true)}
-            title={t(language, 'topbar.cmdPaletteTip')}
             aria-label={t(language, 'topbar.cmdPalette')}
+            {...helpAttrs('top.palette', language)}
           >
             <Search size={13} />
           </button>
@@ -383,6 +381,7 @@ export const TopBar: React.FC = () => {
         {!isHidden('lang') && (
           <div
             className="kura-lang-select-wrap"
+            {...helpAttrs('top.language', language)}
             title={`${t(language, 'topbar.languageSelect')}: ${currentLangSpec.nativeName}`}
           >
             <span className="kura-lang-select-face" aria-hidden="true">
@@ -398,8 +397,8 @@ export const TopBar: React.FC = () => {
             type="button"
             className="kura-btn kura-btn-icon kura-btn-sm"
             onClick={() => openSettings('appearance')}
-            title={t(language, 'topbar.themesShortcut')}
             aria-label={t(language, 'topbar.themesShortcut')}
+            {...helpAttrs('top.themes', language)}
           >
             <Palette size={13} />
           </button>
@@ -410,10 +409,24 @@ export const TopBar: React.FC = () => {
             type="button"
             className="kura-btn kura-btn-icon kura-btn-sm"
             onClick={handleToggleTheme}
-            title={themeTip}
             aria-label={themeTip}
+            {...helpAttrs('top.theme', language)}
+            title={themeTip}
           >
             {isRenderedDark ? <Sun size={13} /> : <Moon size={13} />}
+          </button>
+        )}
+
+        {!isHidden('labels') && (
+          <button
+            type="button"
+            className={`kura-btn kura-btn-icon kura-btn-sm kura-labels-toggle ${labelsShown ? 'is-active' : ''}`}
+            onClick={toggleLabels}
+            aria-pressed={labelsShown}
+            aria-label={t(language, 'rediseno.labels.toggle')}
+            {...helpAttrs('top.labels', language)}
+          >
+            <CaseSensitive size={15} aria-hidden="true" />
           </button>
         )}
 
@@ -422,8 +435,9 @@ export const TopBar: React.FC = () => {
             type="button"
             className={`kura-pill is-${mcpView.tone}`}
             onClick={() => openSettings('mcp')}
-            title={mcpTooltip}
             aria-label={mcpTooltip}
+            {...helpAttrs('top.mcp', language)}
+            title={mcpTooltip}
           >
             <span className="kura-dot" />
             <span className="kura-mcp-label">{mcpLabel}</span>
@@ -438,9 +452,10 @@ export const TopBar: React.FC = () => {
               aiDrawerOpen ? 'is-active' : ''
             }`}
             onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
-            title={aiTip}
             aria-label={t(language, 'topbar.aiChat')}
             aria-pressed={aiDrawerOpen}
+            {...helpAttrs('top.ai', language)}
+            title={aiTip}
           >
             {aiIcon}
             <span className="kura-btn-label">{aiShort}</span>
@@ -452,7 +467,7 @@ export const TopBar: React.FC = () => {
             label={t(language, 'topbar.more')}
             tooltip={t(language, 'topbar.moreTip')}
           >
-            {isHidden('tools') &&
+            {narrowScreen &&
               tools.map((tool) => <React.Fragment key={tool.id}>{toolButton(tool, true)}</React.Fragment>)}
             {isHidden('lang') && (
               <label className="kura-topbar-more-row">
@@ -460,16 +475,17 @@ export const TopBar: React.FC = () => {
                 {langSelect}
               </label>
             )}
-            {isHidden('density') && (
+            {isHidden('labels') && (
               <button
                 type="button"
-                role="menuitem"
+                role="menuitemcheckbox"
+                aria-checked={labelsShown}
                 className="kura-btn kura-btn-sm"
-                onClick={cycleUiDensity}
-                title={t(language, 'ui.density.cycleTip')}
+                onClick={toggleLabels}
+                title={t(language, 'rediseno.help.labels')}
               >
-                {densityIcon}
-                <span>{`${t(language, 'ui.density.cycleTip')} (${densityLabel})`}</span>
+                <CaseSensitive size={13} aria-hidden="true" />
+                <span>{labelsName}</span>
               </button>
             )}
             {isHidden('palette') && (
@@ -541,8 +557,8 @@ export const TopBar: React.FC = () => {
           type="button"
           className="kura-btn kura-btn-icon kura-btn-sm"
           onClick={() => openSettings('appearance')}
-          title={t(language, 'topbar.settingsTip')}
           aria-label={t(language, 'topbar.settings')}
+          {...helpAttrs('top.settings', language)}
         >
           <Settings size={13} />
         </button>
