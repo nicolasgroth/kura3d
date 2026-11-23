@@ -12,6 +12,7 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { NativeModal } from '../NativeModal';
+import { OperationFailureAlert, useOperationFailure } from '../OperationFailureAlert';
 import { openLocalFile } from '../../utils/platformBridge';
 import { SVG_PRESETS } from './dialogPresets';
 
@@ -23,6 +24,7 @@ export const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = 
   const language = useKuraStore((s) => s.language);
   const importSvgModel = useKuraStore((s) => s.importSvgModel);
 
+  const failure = useOperationFailure(open);
   const [name, setName] = useState(() => t(useKuraStore.getState().language, 'dialog.svg.presetBadge'));
   const [depth, setDepth] = useState(6);
   const [targetWidth, setTargetWidth] = useState(60);
@@ -38,14 +40,17 @@ export const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = 
   };
 
   const handleGenerate = async () => {
-    const created = await importSvgModel({
-      svgContent,
-      name,
-      depth,
-      targetWidth,
-      curveSegments,
-    });
-    if (created) onClose();
+    // El fallo se muestra dentro del diálogo y este queda abierto con sus valores.
+    const { result: created, failed } = await failure.run(() =>
+      importSvgModel({
+        svgContent,
+        name,
+        depth,
+        targetWidth,
+        curveSegments,
+      }),
+    );
+    if (created && !failed) onClose();
   };
 
   return (
@@ -70,6 +75,7 @@ export const SvgImportModal: React.FC<{ open: boolean; onClose: () => void }> = 
         </>
       }
     >
+      <OperationFailureAlert message={failure.error} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
         <button type="button" className="kura-btn kura-btn-sm" onClick={() => void handleUploadSvg()}>
           <FileUp size={13} />

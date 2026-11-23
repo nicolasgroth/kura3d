@@ -8,13 +8,16 @@
  * @license MIT
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import '../styles/mobileHud.css';
 import '../styles/toastStack.css';
 import '../styles/toastNarrow.css';
+import '../styles/toastModal.css';
 import { X } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import { useTopModal } from './useTopModal';
 
 const MAX_VISIBLE = 3;
 
@@ -23,13 +26,33 @@ export const ToastStack: React.FC = () => {
   const toasts = useKuraStore((s) => s.toasts);
   const dismissToast = useKuraStore((s) => s.dismissToast);
   const [expanded, setExpanded] = useState(false);
+  const modal = useTopModal();
+  const stackRef = useRef<HTMLDivElement | null>(null);
+  const toastCount = toasts.length;
+
+  // Con un diálogo modal abierto los avisos se pintan dentro de él como popover: así quedan en la capa
+  // superior, por encima del velo. Cada aviso nuevo vuelve a mostrarlo para ponerlo al frente.
+  useEffect(() => {
+    const el = stackRef.current as (HTMLDivElement & { showPopover?: () => void; hidePopover?: () => void }) | null;
+    if (!modal || !el || typeof el.showPopover !== 'function') return;
+    try {
+      if (el.matches(':popover-open')) el.hidePopover?.();
+      el.showPopover();
+    } catch {
+      /* sin Popover API: el aviso queda en línea */
+    }
+  }, [modal, toastCount]);
 
   if (toasts.length === 0) return null;
   const hidden = expanded ? 0 : Math.max(0, toasts.length - MAX_VISIBLE);
   const visible = toasts.slice(hidden);
 
-  return (
-    <div className="kura-toast-stack">
+  const stack = (
+    <div
+      className={modal ? 'kura-toast-stack kura-toast-stack-modal' : 'kura-toast-stack'}
+      ref={stackRef}
+      {...(modal ? ({ popover: 'manual' } as Record<string, string>) : {})}
+    >
       {hidden > 0 && (
         <button
           type="button"
@@ -92,4 +115,5 @@ export const ToastStack: React.FC = () => {
       ))}
     </div>
   );
+  return modal ? createPortal(stack, modal) : stack;
 };
