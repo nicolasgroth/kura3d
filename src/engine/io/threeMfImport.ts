@@ -14,6 +14,7 @@ import { ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits
 import type { ImportedModel, ImportedPart } from './importTypes';
 import { GrowableFloat32, GrowableUint32, finishMesh, normalizeHexColor } from './meshBuffers';
 import { normalizePartPath, open3MFPackage, parseXmlAttrs, type ThreeMfPackage } from './threeMfPackage';
+import { platesOf, readSlicerPlates } from './threeMfPlates';
 import { findElement, forEachElement, forEachLeaf } from './xmlScan';
 
 /** Atributos crudos del primer elemento hoja con ese nombre local, o null. */
@@ -355,9 +356,11 @@ export function read3MF(
 
     const finished = finishMesh(positions, indices, faceColors, color);
     const single = (multiInRoot.get(`${inst.group}`) ?? 1) === 1;
+    // Con una sola pieza, el nombre del objeto es el que muestra el laminador (el de la pieza suele ser
+    // el STL original repetido, p. ej. «figura.stl» en cada objeto).
     const name =
-      partCfg?.name ??
       (single ? objCfg?.name : undefined) ??
+      partCfg?.name ??
       inst.obj.name ??
       objCfg?.name ??
       inst.rootName ??
@@ -381,5 +384,7 @@ export function read3MF(
     if (n > 1) part.name = `${part.name} (${n})`;
   }
   const explicit = root.build.some((item) => item.transform !== null);
-  return { fileName, format: '3mf', parts, hasPlacement: explicit || items.length <= 1 };
+  const plates = pkg.config.settingsXml ? platesOf(readSlicerPlates(pkg.config.settingsXml), items, parts) : undefined;
+  return { fileName, format: '3mf', parts, hasPlacement: explicit || items.length <= 1, ...(plates ? { plates } : {}) };
 }
+

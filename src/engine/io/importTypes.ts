@@ -31,6 +31,12 @@ export interface ImportedPart {
   openEdges: number;
 }
 
+/** Placa del laminador (Bambu/Orca): nombre declarado y grupos (`ImportedPart.group`) que lleva. */
+export interface ImportedPlate {
+  name?: string;
+  groups: number[];
+}
+
 /** Resultado de leer un archivo de modelo. */
 export interface ImportedModel {
   fileName: string;
@@ -41,6 +47,8 @@ export interface ImportedModel {
    * transformación). Si es false, los grupos se colocan sin solaparse.
    */
   hasPlacement: boolean;
+  /** Placas del laminador, solo si el archivo trae dos o más con piezas. */
+  plates?: ImportedPlate[];
   /** Ajustes hechos al leer (p. ej. normales invertidas reorientadas), con el nombre del archivo. */
   warnings?: EngineWarning[];
 }

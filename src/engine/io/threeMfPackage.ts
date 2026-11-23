@@ -3,7 +3,7 @@
  * @description Apertura segura de paquetes 3MF (ZIP): límite de tamaño descomprimido declarado
  * (protección contra zip bomb), selección de partes útiles, localización del modelo raíz vía
  * `_rels/.rels` y lectura de la configuración de Bambu Studio / OrcaSlicer (nombres, extrusores,
- * subtipos de pieza y colores de filamento).
+ * subtipos de pieza y colores de filamento; las placas se leen en `threeMfPlates.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -71,6 +71,8 @@ export interface ThreeMfPackage {
     objects: Map<string, SlicerPartConfig>;
     parts: Map<string, SlicerPartConfig>;
     filamentColors: string[];
+    /** XML de `Metadata/model_settings.config` (placas, ver `threeMfPlates.ts`), o null si falta. */
+    settingsXml: string | null;
   };
 }
 
@@ -128,6 +130,7 @@ function readSlicerConfig(
   const objects = new Map<string, SlicerPartConfig>();
   const parts = new Map<string, SlicerPartConfig>();
   const filamentColors: string[] = [];
+  let settingsXml: string | null = null;
 
   const settingsKey = find('Metadata/model_settings.config');
   if (settingsKey) {
@@ -147,6 +150,7 @@ function readSlicerConfig(
       });
       objects.set(objId, readMetadata(own + body.slice(cursor)));
     });
+    settingsXml = xml;
   }
 
   const projectKey = find('Metadata/project_settings.config');
@@ -160,7 +164,7 @@ function readSlicerConfig(
       // Configuración ilegible: se ignora (los colores son opcionales).
     }
   }
-  return { objects, parts, filamentColors };
+  return { objects, parts, filamentColors, settingsXml };
 }
 
 function readMetadata(body: string): SlicerPartConfig {
