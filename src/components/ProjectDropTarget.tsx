@@ -14,15 +14,22 @@ import * as engine from '../engine';
 import { MODEL_IO_LIMITS } from '../engine/operationLimits';
 import { MAX_PROJECT_BYTES, ProjectCodecError } from '../project/projectSchema';
 import { useKuraStore } from '../store/useKuraStore';
-import { isTauriRuntime } from '../utils/platformBridge';
+import { exactArrayBuffer, isTauriRuntime } from '../utils/platformBridge';
 import { guardUnsavedChanges } from '../utils/unsavedGuard';
 import { LOG_TAG } from '../brand';
 import '../styles/projectDrop.css';
 
 interface DroppedFile {
   name: string;
-  /** `model`: el archivo es un modelo (el error de tamaño lleva el tamaño y el máximo). */
-  read: (maximum: number, model?: boolean) => Promise<ArrayBuffer>;
+  /** Tamaño en bytes si se conoce antes de leer (tope total del lote). */
+  size?: number;
+  /** Lee un proyecto completo. */
+  read: (maximum: number) => Promise<ArrayBuffer>;
+  /**
+   * Contenido de un modelo para el Worker: en la web el propio `File` (se lee allá); en escritorio el
+   * buffer del disco sin copiar. El error de tamaño lleva el tamaño y el máximo.
+   */
+  readModel: (maximum: number) => Promise<ArrayBuffer | Blob>;
 }
 
 /** Proyectos: `ProjectCodecError`; modelos: `ModelImportError` con el tamaño y el máximo (mensaje claro). */
@@ -57,15 +64,12 @@ async function acceptDrop(files: DroppedFile[]) {
     return;
   }
 
-  // Cada modelo puede pesar lo que la app sabe exportar y reabrir (`MODEL_IO_LIMITS`), no el tope de proyectos.
+  // Cada modelo puede pesar lo que la app sabe exportar y reabrir (`MODEL_IO_LIMITS`, 256 MiB), no el tope de proyectos.
   const maximum = MODEL_IO_LIMITS.maxFileBytes;
   await state.importModelFiles(files.map((file) => ({
     name: file.name,
-    async read() {
-      const buffer = await file.read(maximum, true);
-      verifySize(buffer.byteLength, maximum, file.name, true);
-      return buffer;
-    },
+    size: file.size,
+    read: () => file.readModel(maximum),
   })));
 }
 
@@ -89,18 +93,26 @@ export function ProjectDropTarget() {
             return;
           }
           setDragging(false);
-          void acceptDrop(payload.paths.map((path) => ({
-            name: path.split(/[\\/]/).at(-1) ?? '',
-            async read(maximum, model) {
+          void (async () => {
+            // Tamaños antes de leer: el lote aplica su tope total sin cargar nada en memoria.
+            const sizes = await Promise.all(payload.paths.map((path) => stat(path).then((info) => info.size, () => undefined)));
+            const readPath = async (path: string, maximum: number, model: boolean) => {
               const name = path.split(/[\\/]/).at(-1) ?? '';
               const info = await stat(path);
               if (!info.isFile) throw new Error(t(useKuraStore.getState().language, 'dropProject.notFile'));
               verifySize(info.size, maximum, name, model);
               const bytes = await readFile(path);
               verifySize(bytes.byteLength, maximum, name, model);
-              return new Uint8Array(bytes).buffer;
-            },
-          })));
+              // Sin copia: el buffer de `readFile` se transfiere tal cual al Worker.
+              return exactArrayBuffer(bytes);
+            };
+            await acceptDrop(payload.paths.map((path, index) => ({
+              name: path.split(/[\\/]/).at(-1) ?? '',
+              size: sizes[index],
+              read: (maximum) => readPath(path, maximum, false),
+              readModel: (maximum) => readPath(path, maximum, true),
+            })));
+          })().catch((error) => console.error(`${LOG_TAG} File drop:`, error));
         });
         if (disposed) unlisten();
         else stopListening = unlisten;
@@ -141,9 +153,14 @@ export function ProjectDropTarget() {
       event.preventDefault();
       void acceptDrop(files.map((file) => ({
         name: file.name,
-        read(maximum, model) {
-          verifySize(file.size, maximum, file.name, model);
+        size: file.size,
+        read(maximum) {
+          verifySize(file.size, maximum, file.name);
           return file.arrayBuffer();
+        },
+        async readModel(maximum) {
+          verifySize(file.size, maximum, file.name, true);
+          return file;
         },
       })));
     };

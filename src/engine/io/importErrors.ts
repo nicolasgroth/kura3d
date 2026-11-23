@@ -25,7 +25,8 @@ export type ModelImportErrorCode =
   | 'too-many-triangles'
   | 'too-many-parts'
   | 'component-cycle'
-  | 'timeout';
+  | 'timeout'
+  | 'out-of-memory';
 
 /** Límites de entrada aplicados por todos los lectores. */
 export interface ModelImportLimits {
@@ -77,7 +78,13 @@ const DEFAULT_MESSAGES: Record<ModelImportErrorCode, string> = {
   'too-many-parts': 'El modelo supera el número máximo de piezas permitido.',
   'component-cycle': 'Los componentes 3MF forman un ciclo o anidan demasiado.',
   timeout: 'La lectura del archivo tardó demasiado y se canceló.',
+  'out-of-memory': 'No hay memoria suficiente para este modelo.',
 };
+
+/** RangeError de V8/SpiderMonkey al no poder reservar un buffer o un arreglo tipado. */
+function isAllocationFailure(error: unknown): boolean {
+  return error instanceof RangeError && /alloc|memory|invalid (typed )?array length|array buffer/i.test(error.message);
+}
 
 /** Tamaño del archivo rechazado y máximo aceptado (para un mensaje con ambos números). */
 export interface ImportSizeInfo {
@@ -111,7 +118,7 @@ export function attachFileName(error: unknown, fileName: string): ModelImportErr
     return error;
   }
   const detail = error instanceof Error ? error.message : String(error);
-  return new ModelImportError('corrupt', detail, fileName);
+  return new ModelImportError(isAllocationFailure(error) ? 'out-of-memory' : 'corrupt', detail, fileName);
 }
 
 /** Lanza `too-large`/`empty` según el tamaño de un buffer de entrada. */

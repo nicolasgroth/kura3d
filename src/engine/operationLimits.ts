@@ -194,19 +194,26 @@ export const OPERATION_DEFAULTS = {
   },
 } as const;
 
-/** Triángulos máximos de un archivo de modelo (importación) y referencia del aviso al exportar. */
-const MODEL_MAX_TRIANGLES = 12_000_000;
-
 /**
- * Límites de lectura/escritura de modelos: fuente única para que lo que la app exporta se pueda
- * volver a importar. El tamaño de archivo sale del formato más voluminoso que la app escribe por
- * triángulo (STL binario: 84 bytes de cabecera + 50 por triángulo), así que un STL exportado con
- * hasta `maxTriangles` siempre se puede reabrir. Memoria: leer el máximo pide del orden de
- * 600 MB del archivo + ~36 B/triángulo de vértices sin soldar + la malla soldada (~1,5 GB pico).
+ * Tope práctico de un archivo de modelo (256 MiB) mientras la soldadura de vértices no sea en
+ * streaming: leer un STL de este tamaño ya pide del orden de 1 GB en el Worker (archivo + vértices
+ * sin soldar + tabla de soldadura + malla final). Los triángulos máximos salen del formato más
+ * voluminoso por triángulo que la app escribe (STL binario: 84 bytes de cabecera + 50 por
+ * triángulo), así que un STL exportado con hasta `maxTriangles` siempre se puede reabrir.
  */
+const MODEL_MAX_FILE_BYTES = 256 * 1024 * 1024;
+const MODEL_MAX_TRIANGLES = Math.floor((MODEL_MAX_FILE_BYTES - 84) / 50);
+
+/** Límites de lectura/escritura de modelos: fuente única para que lo que la app exporta se pueda volver a importar. */
 export const MODEL_IO_LIMITS = {
   maxTriangles: MODEL_MAX_TRIANGLES,
-  maxFileBytes: 84 + 50 * MODEL_MAX_TRIANGLES,
+  maxFileBytes: MODEL_MAX_FILE_BYTES,
+  /** Suma de tamaños de un lote arrastrado o elegido de una vez (las mallas leídas se acumulan en memoria). */
+  maxBatchBytes: 2 * MODEL_MAX_FILE_BYTES,
+  /** Un `.mtl` es texto de materiales: unos pocos KB; 8 MiB sobra y evita decodificar archivos absurdos. */
+  maxMtlBytes: 8 * 1024 * 1024,
+  /** Sobre este tamaño, antes de leer se asegura un borrador de recuperación si hay cambios sin guardar. */
+  recoveryBeforeBytes: 64 * 1024 * 1024,
   /** Bytes descomprimidos de un 3MF (el XML pesa ~65 B/triángulo: unos 8 M triángulos). */
   maxUncompressedBytes: 512 * 1024 * 1024,
   /** Coordenada absoluta máxima en mm (1 km): más allá es un vértice suelto o una escala errada. */

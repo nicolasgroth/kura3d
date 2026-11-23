@@ -64,6 +64,24 @@ describe('importación desde el store', () => {
     expect(get().toasts.some((toast) => toast.kind === 'info' && toast.text.includes('plano'))).toBe(true);
   });
 
+  it('el aviso de malla abierta ofrece «Reparar malla» y repara ese objeto', async () => {
+    const repairObjectMesh = vi.fn(async () => null);
+    useKuraStore.setState({ repairObjectMesh });
+    await get().importModelFiles([file('plano.obj', 'v 0 0 0\nv 3 0 0\nv 0 3 0\nf 1 2 3\n')]);
+    const toast = get().toasts.find((item) => item.kind === 'info' && item.text.includes('plano'));
+    expect(toast?.action?.label).toBe('Reparar malla');
+    toast!.action!.run();
+    expect(repairObjectMesh).toHaveBeenCalledExactlyOnceWith(get().objects[0].id);
+  });
+
+  it('con varias piezas abiertas el aviso no ofrece una reparación ambigua', async () => {
+    const tri = 'v 0 0 0\nv 3 0 0\nv 0 3 0\nf 1 2 3\n';
+    await get().importModelFiles([file('a.obj', tri), file('b.obj', tri)]);
+    const toast = get().toasts.find((item) => item.kind === 'info' && item.text.includes('a'));
+    expect(toast).toBeTruthy();
+    expect(get().toasts.filter((item) => item.action?.label === 'Reparar malla')).toHaveLength(0);
+  });
+
   it('aplica los colores del MTL que acompaña al OBJ en el mismo lote', async () => {
     const obj = 'mtllib colores.mtl\no Pieza\nv 0 0 0\nv 3 0 0\nv 0 3 0\nv 0 0 3\nusemtl rojo\nf 1 3 2\nf 1 2 4\nf 2 3 4\nf 3 1 4\n';
     await get().importModelFiles([file('pieza.obj', obj), file('colores.mtl', 'newmtl rojo\nKd 1 0 0\n')]);

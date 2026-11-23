@@ -10,11 +10,11 @@
 
 import { strToU8 } from 'fflate';
 import type { MeshData, SceneObject } from '../../types/kura';
-import { weldVertices } from '../manifoldKernel';
 import { applyTransformToMesh } from '../primitives';
 import { MAX_PART_NAME, ModelImportError, checkInputSize, resolveLimits, type ModelImportLimits } from './importErrors';
 import type { ImportedModel } from './importTypes';
 import { GrowableFloat32, finishMesh } from './meshBuffers';
+import { weldTriangleSoup } from './soupWeld';
 
 const PRINTABLE_SAMPLE = 512;
 
@@ -114,9 +114,8 @@ export function readSTL(
   }
 
   if (raw.length === 0) throw new ModelImportError('no-geometry');
-  const sequential = new Uint32Array(raw.length / 3);
-  for (let i = 0; i < sequential.length; i++) sequential[i] = i;
-  const welded = weldVertices(raw, sequential, 1e-5);
+  // Soldadura en sitio (consume `raw`): sin índices secuenciales ni copia cuantizada (ver soupWeld).
+  const welded = weldTriangleSoup(raw, 1e-5);
   if (welded.indices.length === 0) throw new ModelImportError('no-geometry');
   const finished = finishMesh(welded.positions, welded.indices);
   return {

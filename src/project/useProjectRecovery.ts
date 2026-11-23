@@ -15,6 +15,7 @@ import { askDecision } from '../utils/confirmDialog';
 import { isTauriRuntime } from '../utils/platformBridge';
 import { startProjectRecovery, type RecoveryFailure, type RecoveryStatus } from './projectRecoveryAutosave';
 import { recoveryDraftLabel } from './projectRecoveryLabels';
+import { registerRecoveryFlush } from './recoveryFlush';
 import { discardRecoveryDraft, listRecoveryDrafts, type RecoveryDraftInfo } from './projectRecoveryStorage';
 
 export function useProjectRecovery() {
@@ -53,6 +54,7 @@ export function useProjectRecovery() {
     };
     const controller = startProjectRecovery(onStatus, useKuraStore, () => void refresh(), setFailure);
     controllerRef.current = controller;
+    registerRecoveryFlush(() => controller.flushNow());
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') controller.checkpointSoon();
     };
@@ -63,6 +65,7 @@ export function useProjectRecovery() {
     return () => {
       listRequest.current += 1;
       controller.stop();
+      registerRecoveryFlush(null);
       controllerRef.current = null;
       document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('focus', onFocus);

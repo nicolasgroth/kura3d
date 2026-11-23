@@ -25,6 +25,8 @@ export { read3MF } from './io/threeMfImport';
 export { exportSceneToGLB, buildGltfScene, GLTF_METERS_PER_MM } from './io/glb';
 export { detectModelFormat, MODEL_IMPORT_ACCEPT, MODEL_IMPORT_EXTENSIONS, parseModelFile } from './io/modelImport';
 export { parseModelFileAsync } from './io/modelImportClient';
+export { createModelImportSession, type ModelImportSession } from './io/modelImportSession';
+export { sourceBytes, type ModelSourceData, type MtlSource } from './io/modelImportTask';
 export { clustersOf, findImportClusters, type ImportCluster } from './io/importClusters';
 export { placeImportedModels, PLACEMENT_GAP_MM, type FootprintXZ, type ImportPlacementMode, type PlacedPart } from './io/importPlacement';
 export {

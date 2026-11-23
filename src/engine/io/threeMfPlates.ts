@@ -38,14 +38,14 @@ export function readSlicerPlates(xml: string): SlicerPlate[] {
         const attrs = parseXmlAttrs(raw);
         if (attrs.key === 'object_id' && attrs.value) objectId = attrs.value;
         if (attrs.key === 'instance_id') instanceId = parseInt(attrs.value ?? '', 10) || 0;
-      });
+      }, { skipOversized: true });
       if (objectId) instances.push({ objectId, instanceId });
     });
     forEachLeaf(own + body.slice(cursor), 'metadata', (raw) => {
       const attrs = parseXmlAttrs(raw);
       if (attrs.key === 'plater_id') id = parseInt(attrs.value ?? '', 10) || id;
       if (attrs.key === 'plater_name' && attrs.value?.trim()) name = attrs.value.trim().slice(0, 80);
-    });
+    }, { skipOversized: true });
     plates.push({ id, name, instances });
   });
   plates.sort((a, b) => a.id - b.id);

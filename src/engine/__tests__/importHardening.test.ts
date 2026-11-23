@@ -88,7 +88,7 @@ describe('PLY: la cabecera no puede pedir más de lo que cabe en el archivo', ()
     };
     // 2^40 vértices: antes reventaba con RangeError al reservar; ahora es un error tipado.
     expect(codeOf(() => readPLY(binary(2 ** 40)))).toBe('too-many-triangles');
-    expect(codeOf(() => readPLY(binary(20_000_000)))).toBe('truncated');
+    expect(codeOf(() => readPLY(binary(10_000_000)))).toBe('truncated');
   });
 
   it('rechaza conteos ASCII imposibles para el tamaño del texto', () => {
@@ -142,7 +142,8 @@ describe('cliente del worker de importación: tiempo límite', () => {
     vi.stubGlobal('Worker', SilentWorker);
     const promise = parseModelFileAsync('lento.stl', new ArrayBuffer(8), undefined, 30);
     await expect(promise).rejects.toBeInstanceOf(ModelImportError);
-    await expect(promise).rejects.toMatchObject({ code: 'timeout', fileName: 'lento.stl' });
+    // Un Worker que no responde suele estar sin memoria: el mensaje lo dice y el Worker se termina.
+    await expect(promise).rejects.toMatchObject({ code: 'out-of-memory', fileName: 'lento.stl' });
     expect(terminate).toHaveBeenCalled();
   });
 });

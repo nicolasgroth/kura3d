@@ -8,9 +8,12 @@
  * @license MIT
  */
 
+import * as engine from '../engine';
 import { MODEL_IO_LIMITS } from '../engine/operationLimits';
 import type { TranslationKey } from '../i18n';
+import { ProjectCodecError } from '../project/projectSchema';
 import type { LanguageCode } from '../types/kura';
+import { LocalFileError } from '../utils/platformBridge';
 
 export type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
 
@@ -26,6 +29,23 @@ export function tooLargeMessage(name: string, size: { bytes: number; maxBytes: n
   return tr('importReal.tooLarge', { name, size: formatMegabytes(size.bytes, language), max: formatMegabytes(size.maxBytes, language) });
 }
 
+/** Mensaje traducido de un fallo de importación que nombra el archivo. */
+export function importErrorMessage(error: unknown, fileName: string, tr: Translate, language: LanguageCode = 'es'): string {
+  if (error instanceof engine.ModelImportError) {
+    if (error.code === 'too-large' && error.size) return tooLargeMessage(error.fileName ?? fileName, error.size, tr, language);
+    const base = tr(`importError.${error.code}` as TranslationKey, { name: error.fileName ?? fileName });
+    // Sin detalle técnico donde el texto ya lo dice todo (formato no soportado, falta de memoria).
+    return error.detail && error.code !== 'unsupported' && error.code !== 'out-of-memory' ? `${base.replace(/[.。।]$/, '')} (${error.detail})` : base;
+  }
+  if (error instanceof LocalFileError) {
+    if (error.reason === 'too-large' && error.size) return tooLargeMessage(error.fileName, error.size, tr, language);
+    return tr(`importError.${error.reason}` as TranslationKey, { name: error.fileName });
+  }
+  if (error instanceof ProjectCodecError && error.code === 'too-large') return tr('importError.too-large', { name: fileName });
+  const detail = error instanceof Error ? error.message : String(error);
+  return tr('importError.corrupt', { name: fileName }) + (detail ? ` (${detail})` : '');
+}
+
 /**
  * Avisos tras exportar: archivo sobre el tamaño que varios laminadores y sitios rechazan, y escena con
  * más triángulos de los que la app puede volver a importar.
@@ -39,7 +59,13 @@ export function exportNotices(
   const notices: string[] = [];
   const fmt = new Intl.NumberFormat(language);
   for (const file of files) {
-    if (file.bytes > MODEL_IO_LIMITS.exportWarnBytes) {
+    if (file.bytes > MODEL_IO_LIMITS.maxFileBytes) {
+      notices.push(tr('importReal.exportTooBigToReopen', {
+        name: file.name,
+        size: formatMegabytes(file.bytes, language),
+        max: formatMegabytes(MODEL_IO_LIMITS.maxFileBytes, language),
+      }));
+    } else if (file.bytes > MODEL_IO_LIMITS.exportWarnBytes) {
       notices.push(tr('importReal.exportLarge', {
         name: file.name,
         size: formatMegabytes(file.bytes, language),

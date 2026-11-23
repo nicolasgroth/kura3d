@@ -153,6 +153,6 @@ function readMetadata(body: string): SlicerPartConfig {
       const n = parseInt(attrs.value ?? '', 10);
       if (Number.isInteger(n) && n > 0) out.extruder = n;
     }
-  });
+  }, { skipOversized: true });
   return out;
 }
