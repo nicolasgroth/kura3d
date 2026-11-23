@@ -46,6 +46,14 @@ const REALES_MOTOR_TABLE = {
     '«{name}» को ×{factor} स्केल किया: अब सबसे लंबी भुजा {size} mm है।',
     '「{name}」已缩放 ×{factor}:最长边现为 {size} mm。',
   ],
+  'engineWarning.HOLLOW_SHELLS_MERGED': [
+    'La malla traía {count} cáscaras que se solapan sin unir; se unieron antes de ahuecar para que la cavidad quede bien.',
+    'The mesh had {count} overlapping shells that were not joined; they were merged before hollowing so the cavity comes out right.',
+    'Das Netz hatte {count} sich überlappende, nicht verbundene Hüllen; sie wurden vor dem Aushöhlen vereinigt, damit der Hohlraum stimmt.',
+    'Le maillage avait {count} coques qui se chevauchent sans être unies ; elles ont été fusionnées avant l’évidement pour que la cavité soit correcte.',
+    'मेश में {count} ओवरलैप होती खोलें थीं जो जुड़ी नहीं थीं; खोखला करने से पहले उन्हें जोड़ा गया ताकि गुहा सही बने।',
+    '网格中有 {count} 个相互重叠但未合并的外壳;已在抽壳前合并,以确保空腔正确。',
+  ],
   'realesMotor.simplifyResult': [
     'Simplificado: {before} → {after} triángulos · volumen {delta} %.',
     'Simplified: {before} → {after} triangles · volume {delta} %.',

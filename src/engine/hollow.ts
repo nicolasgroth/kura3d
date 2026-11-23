@@ -88,7 +88,14 @@ export async function hollowMeshDetailed(
   };
 
   try {
-    const outer = own(meshDataToManifold(wasm, scaled, registry?.colorToId, obj.color));
+    // Cáscaras cerradas que se solapan sin estar unidas (frecuente en bustos y figuras de terceros):
+    // el offset y la resta asumen un sólido sin autointersecciones, y con ellas la cavidad se pierde o
+    // se fragmenta. Se unen antes (la unión de cuerpos separados no cambia nada).
+    const raw = own(meshDataToManifold(wasm, scaled, registry?.colorToId, obj.color));
+    const shells = raw.decompose();
+    shells.forEach((s) => own(s));
+    const outer = shells.length > 1 ? own(wasm.Manifold.union(shells)) : raw;
+    const mergedShells = shells.length > 1 && Math.abs(outer.volume() - shells.reduce((acc, s) => acc + s.volume(), 0)) > junkVolume(outer.volume());
     const bbox = outer.boundingBox();
     const dx = bbox.max[0] - bbox.min[0];
     const dy = bbox.max[1] - bbox.min[1];
@@ -116,6 +123,7 @@ export async function hollowMeshDetailed(
     }
 
     const warnings: EngineWarning[] = [];
+    if (mergedShells) warnings.push(engineWarning('HOLLOW_SHELLS_MERGED', { count: shells.length }));
     if (offset.levelMarginMm > t * 0.1) {
       warnings.push(engineWarning('HOLLOW_COARSE_GRID', { thickness: t, maxWall: wall.maxMm }));
     }
