@@ -58,7 +58,7 @@ describe('PlaneCutModal', () => {
     act(() => emitCutPlaneDrag(99)); // se limita a la pieza
     await waitFor(() => expect(offsetInput.value).toBe('10'));
     fireEvent.keyDown(document.body, { key: 'ArrowDown' });
-    await waitFor(() => expect(offsetInput.value).toBe('9.5'));
+    await waitFor(() => expect(offsetInput.value).toBe('9,5'));
     await waitFor(() => expect(useKuraStore.getState().cutPreview.offset).toBe(9.5));
     fireEvent.keyDown(panel, { key: 'Escape' });
     expect(onClose).toHaveBeenCalled();
