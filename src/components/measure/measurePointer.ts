@@ -15,16 +15,18 @@ import { useMeasureStore } from '../../store/measureStore';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject, Vec3 } from '../../types/kura';
 
-/** Radio del imán en píxeles de pantalla. */
+/** Radio del imán en píxeles de pantalla; con el dedo es mayor porque la yema tapa y no apunta con precisión. */
 const SNAP_PX = 14;
+export const SNAP_PX_TOUCH = 24;
 
 /** Radio en mm que ocupa `SNAP_PX` a la distancia del punto tocado. */
 export function snapRadiusMm(e: ThreeEvent<PointerEvent | MouseEvent>): number {
   const cam = e.camera as THREE.PerspectiveCamera & THREE.OrthographicCamera;
   const heightPx = (e.nativeEvent.target as HTMLElement | null)?.clientHeight || 800;
-  if (cam.isOrthographicCamera) return ((cam.top - cam.bottom) / cam.zoom / heightPx) * SNAP_PX;
+  const snapPx = (e.nativeEvent as PointerEvent).pointerType === 'touch' ? SNAP_PX_TOUCH : SNAP_PX;
+  if (cam.isOrthographicCamera) return ((cam.top - cam.bottom) / cam.zoom / heightPx) * snapPx;
   const fov = ((cam.fov ?? 50) * Math.PI) / 180;
-  return ((2 * e.distance * Math.tan(fov / 2)) / heightPx) * SNAP_PX;
+  return ((2 * e.distance * Math.tan(fov / 2)) / heightPx) * snapPx;
 }
 
 const pointOf = (e: ThreeEvent<PointerEvent>): Vec3 => [e.point.x, e.point.y, e.point.z];

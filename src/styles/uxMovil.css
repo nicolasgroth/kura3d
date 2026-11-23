@@ -36,6 +36,13 @@
     position: relative;
   }
 
+  .kura-mobile-transform-sep {
+    align-self: stretch;
+    width: 1px;
+    margin: 6px 3px;
+    background: var(--border-strong);
+  }
+
   /* Estado activo: color y marcador inferior (no depende solo del color). */
   .kura-mobile-transform .kura-btn.is-active::after {
     content: '';
