@@ -143,3 +143,10 @@
     border: 2px solid Highlight;
   }
 }
+
+/* Móvil: la barra inferior ya trae Formas y Escena; la hoja no repite las pestañas. */
+@media (max-width: 900px) {
+  .kura-app .kura-sidebar-left .kura-tabs {
+    display: none;
+  }
+}

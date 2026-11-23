@@ -52,7 +52,7 @@ test.describe('390 px táctil', () => {
     await medir('objeto seleccionado');
     await page.getByRole('button', { name: 'Formas', exact: true }).tap();
     await medir('hoja Formas');
-    await page.getByRole('tab', { name: /Escena/ }).tap({ timeout: 4000 }).catch(() => undefined);
+    await page.getByRole('button', { name: 'Escena', exact: true }).tap({ timeout: 4000 }).catch(() => undefined);
     await medir('hoja Escena');
     await page.getByRole('button', { name: 'Inspector', exact: true }).tap();
     await medir('hoja Inspector');

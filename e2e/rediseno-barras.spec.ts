@@ -33,7 +33,7 @@ test('la barra superior agrupa Archivo, Edición y Acciones; Importar y Exportar
   await expect(barra.getByRole('group', { name: 'Archivo' }).getByRole('button', { name: 'Exportar' })).toContainText('Exportar');
   await expect(barra.getByRole('group', { name: 'Edición' }).getByRole('button', { name: 'Deshacer' })).toBeVisible();
   await expect(barra.getByRole('button', { name: 'Historial de acciones' })).toBeVisible();
-  await expect(barra.getByRole('button', { name: 'Acciones' })).toHaveAttribute('aria-haspopup', 'menu');
+  await expect(barra.getByRole('button', { name: 'Acciones', exact: true })).toHaveAttribute('aria-haspopup', 'menu');
   // Ninguna herramienta queda en la barra superior ni en un menú «Más» en escritorio.
   await expect(barra.getByRole('button', { name: 'Pintar' })).toHaveCount(0);
   const unaFila = await barra.evaluate((el) => el.scrollWidth <= el.clientWidth + 1 && el.getBoundingClientRect().height <= 60);
@@ -120,7 +120,7 @@ test('rótulos conmutables: un solo botón, todas las barras, se recuerda al rec
   await expect(toggle).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('.kura-tool-rail-label').first()).toBeHidden();
   await expect(page.locator('.kura-viewbar')).toHaveClass(/is-icons/);
-  await expect(page.getByRole('button', { name: 'Acciones' }).locator('.kura-btn-label')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Acciones', exact: true }).locator('.kura-btn-label')).toBeHidden();
   await page.reload();
   await page.getByText('Manifold WASM Listo').waitFor({ timeout: 60000 });
   await expect(page.getByRole('button', { name: 'Rótulos' })).toHaveAttribute('aria-pressed', 'false');

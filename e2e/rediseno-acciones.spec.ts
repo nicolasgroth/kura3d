@@ -16,7 +16,7 @@ import { abrir } from './ux-escena-helpers';
 const st = (page: Page, key: string) => page.evaluate((k) => (window as any).__s.getState()[k], key);
 
 async function abrirMenu(page: Page) {
-  await page.getByRole('button', { name: 'Acciones' }).click();
+  await page.getByRole('button', { name: 'Acciones', exact: true }).click();
   const menu = page.getByRole('menu', { name: 'Acciones' });
   await expect(menu).toBeVisible();
   return menu;
@@ -28,7 +28,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('sin selección: ítems deshabilitados con el motivo; teclado y Esc', async ({ page }) => {
-  const trigger = page.getByRole('button', { name: 'Acciones' });
+  const trigger = page.getByRole('button', { name: 'Acciones', exact: true });
   const menu = await abrirMenu(page);
   for (const group of ['Preparar para imprimir', 'Malla', 'Separar y combinar', 'Posición y tipo', 'Analizar']) {
     await expect(menu.getByRole('group', { name: group })).toBeVisible();

@@ -6,11 +6,21 @@ Esta guía te lleva de la pantalla vacía a una escena con tres piezas que puede
 
 ![Kura3D recién abierto, con la escena vacía](img/primeros-pasos-01-vacio.png)
 
-- **Barra superior:** importar, deshacer y rehacer, el menú *Proyecto*, las herramientas (*Seleccionar*, *Pintar*, *Cortar*, *Esculpir / Borrar*, *Medir*) y *Exportar*. A la derecha: búsqueda de comandos, idioma, tema claro u oscuro, el estado del puente MCP, el asistente *IA*, el menú *Más* y *Ajustes*.
+- **Barra superior:** a la izquierda el grupo *Archivo* (**Importar**, *Proyecto* y **Exportar**), *Deshacer*, *Rehacer* y el **historial** (el reloj: lista lo que hiciste y te deja volver a cualquier punto), y el menú **Acciones**. A la derecha: búsqueda de comandos, idioma, temas, tema claro u oscuro, **Rótulos**, el estado del puente MCP, el asistente *IA* y *Ajustes*.
+- **Barra de herramientas (vertical, junto al visor):** *Seleccionar*, *Mover*, *Rotar* y *Escalar* (el modo del manipulador), y después *Pintar*, *Cortar*, *Esculpir / Borrar* y *Medir*. La herramienta activa queda marcada con fondo y una raya al costado. Con el teclado es una sola parada de **Tab**; las flechas recorren los botones.
+- **Barra de vista (arriba del visor, en una sola fila):** vistas *Iso*, *Superior*, *Frente* y *Derecha* (el icono del cubo marca la cara que miras), *Encuadrar*, *Sin cama*, *Rayos X* y la *Rejilla*. Si falta espacio, quedan solo los iconos.
 - **Panel izquierdo:** la pestaña *Formas* (piezas para crear) y la pestaña *Escena* (lista de todo lo que hay). Tiene tres estados (ver más abajo).
 - **Visor 3D:** la cama de tu impresora con la rejilla. Abajo ves el tamaño de la selección y la cama activa.
 - **Inspector (derecha):** nombre, color, medidas y posición del objeto seleccionado.
-- **Barra de estado:** unidad (mm), impresora, cantidad de objetos y triángulos, y *Atajos*.
+- **Barra de estado:** unidad (mm), impresora, cantidad de objetos y triángulos, y *Atajos*. Al pasar el cursor o el foco por cualquier botón de las barras, el centro de la barra de estado explica qué hace y su atajo.
+
+### Menú Acciones
+
+Reúne las operaciones sobre la selección que no son herramientas de puntero: *Ahuecar*, *Dividir para imprimir*, *Ajustar a la impresora*, *Generar molde*, *Reparar malla*, *Simplificar*, *Separar por colores*, *Separar piezas sueltas*, *Agrupar*, *Combinar*, *Aplicar restas*, *Convertir en ▸*, *Apoyar* y *Centrar en la cama*, *Alinear y distribuir ▸* y las revisiones. Cada una hace lo mismo que en el menú contextual o la paleta. Si una sale gris, debajo dice por qué (por ejemplo «Selecciona un objeto primero»).
+
+### Rótulos: iconos con texto o solo iconos
+
+El botón **Rótulos** (*Aa*) alterna todas las barras a la vez entre iconos con texto e iconos solos; la elección se recuerda (también está en la paleta: «Mostrar u ocultar rótulos»). *Importar* y *Exportar* conservan su texto siempre. En modo solo iconos, cada icono muestra un tooltip con su nombre, qué hace y su atajo, con el cursor o con el foco del teclado; **Esc** lo cierra.
 
 ## Los ejes
 
@@ -20,10 +30,10 @@ Kura3D usa los mismos ejes que los laminadores: **X hacia la derecha, Y hacia el
 
 1. En *Formas* pulsa **Cubo**, **Cilindro** y **Esfera**. Cada pieza nueva aparece en un lugar libre de la cama, sin quedar encima de otra.
 2. Haz clic en una pieza para seleccionarla. El inspector muestra su nombre, su color y sus parámetros (por ejemplo *Ancho*, *Fondo* y *Alto*): cámbialos escribiendo un valor.
-3. Elige el modo con la barra del visor o con el teclado: **M** mover, **R** rotar, **S** escalar. Arrastra las flechas del manipulador.
+3. Elige el modo en la barra de herramientas o con el teclado: **M** mover, **R** rotar, **S** escalar. Arrastra las flechas del manipulador.
 4. Para valores exactos, escribe en *Posición*, *Rotación* y *Escala* del inspector. Los campos aceptan operaciones y unidades (`10+5`, `2cm`).
 5. Con una pieza seleccionada, las flechas del teclado la mueven en X e Y, y `Re Pág` / `Av Pág` la suben y bajan en Z. `Alt` + arrastrar la clona; `Mayús` escala en proporción; `Ctrl` ajusta el giro a 15°.
-6. Para volver atrás: **Ctrl+Z** deshace y **Ctrl+Y** rehace (también los botones de la barra superior).
+6. Para volver atrás: **Ctrl+Z** deshace y **Ctrl+Y** rehace (también los botones de la barra superior). El botón del historial, junto a ellos, lista los pasos con nombre: elige uno para volver a ese punto de una vez.
 
 ![Escena con una caja seleccionada, un cilindro y una esfera](img/primeros-pasos-02-interfaz.png)
 

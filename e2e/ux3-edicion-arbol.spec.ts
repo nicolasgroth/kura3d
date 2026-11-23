@@ -56,8 +56,9 @@ for (const [ancho, alto, tema] of [[1024, 768, 'dark'], [390, 844, 'light']] as 
     await crear(page, 'box', { width: 30, height: 30, depth: 30 }, [-40, 15, 0]);
     await crear(page, 'sphere', undefined, [40, 15, 0]);
     await page.evaluate(() => (window as any).__s.getState().setSelection([]));
-    if (ancho < 900) await page.getByRole('button', { name: 'Formas', exact: true }).click();
-    await page.getByRole('tab', { name: /Escena/ }).click();
+    // En pantallas estrechas «Escena» es un botón de la barra inferior (la hoja no repite las pestañas).
+    if (ancho < 900) await page.getByRole('button', { name: 'Escena', exact: true }).click();
+    else await page.getByRole('tab', { name: /Escena/ }).click();
     const cubo = fila(page, /Cubo/);
     await cubo.click({ position: { x: 40, y: 12 } });
     expect(await seleccion(page)).toEqual([expect.stringMatching(/Cubo/)]);

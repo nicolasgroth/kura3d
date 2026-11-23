@@ -13,7 +13,7 @@ import { abrir, crearCubo, SHOTS } from './ux-movil-helpers';
 const forma = (page: Page) =>
   page.evaluate(() => {
     const bar = document.querySelector('.kura-topbar')!;
-    const labels = [...bar.querySelectorAll('.kura-tool-label')].map((el) => getComputedStyle(el).display !== 'none');
+    const labels = [...bar.querySelectorAll('.kura-tool-label, .kura-btn-label')].map((el) => getComputedStyle(el).display !== 'none');
     return { compact: bar.classList.contains('is-compact'), labelsVisible: labels.every(Boolean) && labels.length > 0, more: !!bar.querySelector('.kura-topbar-more') };
   });
 
