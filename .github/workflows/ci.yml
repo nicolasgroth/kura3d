@@ -7,8 +7,18 @@ name: Kura3D CI
 on:
   push:
     branches: [main]
+    # Los cambios que son solo de documentación no gastan una corrida.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '.claude/**'
   pull_request:
     branches: [main]
+
+# Un push nuevo cancela la corrida anterior de la misma rama: menos minutos y menos correos.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -26,12 +36,19 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mcp-server/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
+      # El typecheck del repositorio incluye el servidor MCP, que tiene sus propias dependencias.
+      - name: Install MCP dependencies
+        run: npm --prefix mcp-server ci
+
       - name: TypeScript typecheck
-        run: npx tsc --noEmit
+        run: npx tsc -b
 
       - name: Run unit & functional E2E tests
         run: npm test
@@ -51,7 +68,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: mcp-server/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            mcp-server/package-lock.json
+
+      # El servidor MCP compila el motor compartido de src/engine, que usa dependencias de la raíz.
+      - name: Install root dependencies
+        run: npm ci
 
       - name: Install MCP dependencies
         run: npm --prefix mcp-server ci
