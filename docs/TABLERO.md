@@ -22,6 +22,9 @@ Estado de `main`: 2189 pruebas del frontend, 138 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
+| Ajustar a la impresora: alternativas a elegir (solo escalar, girar, girar y escalar, dividir), perfiles de cama propios guardados también en el proyecto, por interfaz y por MCP | En desarrollo desde el 23-nov |
+| Bordes redondeados y chaflanes exactos en las primitivas (cubo, cilindro, prisma), base de las cajas | En desarrollo desde el 23-nov |
+| Recetas de asistentes, primer lote: formato `kura.recipe/1`, validación estricta y expresiones acotadas, con los tres ejemplos (caja, enchufe, llavero) | En desarrollo desde el 23-nov |
 | Pendientes vistos en capturas: el contorno de selección queda inflado tras escalar ×100; "Cerrar todos" ilegible en tema oscuro; los avisos tapan un diálogo en 390 px y la barra de Consejo; "Sin cama" queda fuera de pantalla en móvil; por MCP, restar dos piezas recién creadas falla porque cada una cae en un lugar libre, y el plan de dividir sin aplicar informa 0 uniones; ahuecar un busto denso tarda cerca de 30 s | Para la próxima tanda |
 | Separar por colores sobre texto 3D pintado: algunas piezas pueden salir abiertas (se avisa cuáles y se ofrece reparar); grabar dos veces el mismo texto en el mismo lugar de un cilindro (da un error claro) | Límites conocidos; pendiente |
 | Imagen a 3D: ocultar los parámetros que no aplican en cada modo; aviso de cuánto crece la pieza al aplicar una textura; vista previa en vivo del texto 3D | Pendiente |
