@@ -36,6 +36,7 @@ import type { OperationContext } from './operationTypes';
 import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnected, splitStructures } from './partOperations';
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
 import { runFitToBed, type FitToBedTaskArgs } from './fitOperations';
+import { runFitCheck, type FitCheckInput } from '../../engine/fitCheck';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 
@@ -135,6 +136,8 @@ export const ENGINE_TASKS = {
     executeBedSplit(ctx, a.obj, a.plan, a.options),
   fitToBed: (_ctx: OperationContext, a: FitToBedTaskArgs) => runFitToBed(a),
   validateAssembly: (_ctx: OperationContext, a: { objects: SceneObject[] }) => engine.storedAssemblyResponse(a.objects),
+  // Comprobar encaje: solo lectura; cancelar termina el Worker (en proceso, descarta el resultado).
+  fitCheck: (ctx: OperationContext, a: FitCheckInput) => runFitCheck(a, { onProgress: ctx.onProgress }),
   export: (_ctx: OperationContext, a: ExportTaskArgs) => exportSceneFiles(a),
   printability: (_ctx: OperationContext, a: PrintabilityTaskArgs) =>
     engine.analyzePrintability(a.obj, a.bed, a.materialId, a.infillPercent, a.overhangAngleDeg, a.minWallMm),
