@@ -54,10 +54,9 @@ test('hueco de una caja 30 mm: volumen = 30³ − 25,6³ y deshacer lo revierte 
   await expect.poll(vol).toBe('27,000 mm³');
 });
 
-// FALLO CONOCIDO (qa15): proyectar dos veces el mismo texto de 20 mm sobre la cara +Z entrega
-// "The projection produced an open mesh" en el segundo intento. Cuando se corrija, quitar test.fail().
+// qa15: proyectar dos veces el mismo texto de 20 mm sobre la cara +Z daba "open mesh" en el segundo
+// intento (paredes coincidentes). El motor reintenta con el gráfico girado una fracción ínfima.
 test('proyectar dos veces el mismo texto en el mismo lugar no debe fallar', async ({ page }) => {
-  test.fail();
   await page.goto(URL);
   await page.locator('button.kura-primitive-card', { hasText: 'Box' }).click();
   const ins = page.locator('[aria-label="Inspector"]');

@@ -38,6 +38,7 @@ import { extrudeSvgToMesh } from './svg/svgExtrude';
 import { useThenDelete } from './wasmScope';
 import { composeFlushInlaySurface } from './inlaySurface';
 import { firstSolidThickness } from './projectionThickness';
+import { PERTURB_ATTEMPTS, perturbGraphicUV } from './projectionPerturb';
 import { closeComposedProjectionMesh, closedProjectionMesh, dropProjectionDebris } from './projectionCleanup';
 
 /** Malla gráfica normalizada en coordenadas locales `(u, v, w)` antes de proyectar. */
@@ -483,6 +484,23 @@ export async function projectGraphicOntoSurface(
   targetObj: SceneObject,
   options: SurfaceProjectionOptions
 ): Promise<{ mesh: MeshData; position: Vec3 }> {
+  // Paredes coincidentes con una proyección idéntica anterior: se reintenta con el gráfico girado
+  // una fracción ínfima (determinístico). Si ni así cierra, el error nombra la causa probable.
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await projectGraphicAttempt(targetObj, options, attempt);
+    } catch (err) {
+      if (!(err instanceof EngineError) || err.code !== 'PROJECTION_NON_MANIFOLD') throw err;
+      if (attempt >= PERTURB_ATTEMPTS) throw new EngineError('PROJECTION_COINCIDENT');
+    }
+  }
+}
+
+async function projectGraphicAttempt(
+  targetObj: SceneObject,
+  options: SurfaceProjectionOptions,
+  attempt: number
+): Promise<{ mesh: MeshData; position: Vec3 }> {
   const wasm = await initManifoldEngine();
 
   const R = OPERATION_RANGES.projection;
@@ -524,6 +542,7 @@ export async function projectGraphicOntoSurface(
     normalizeGraphicToUV(rawGraphic, widthMm),
     maxEdgeMm
   );
+  perturbGraphicUV(uvGraphic.coords, attempt);
 
   // 2) Hornear el objeto objetivo a espacio mundial y preparar el Raycaster
   const targetWorld = applyTransformToMesh(
