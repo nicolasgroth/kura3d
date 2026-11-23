@@ -1,6 +1,28 @@
 # Asistentes de creación: formato de recetas
 
-**Estado: diseño propuesto (23-nov-2026), pendiente de aprobación del autor.** No hay código. Complementa `docs/EXTENSIONES.md` (una receta es el tipo de contribución "Comando/Generador" sin código) y la decisión del 23-nov en `docs/DECISIONES.md`.
+**Estado: diseño aprobado (23-nov-2026); implementación en curso, ver la tabla de estado.** Complementa `docs/EXTENSIONES.md` (una receta es el tipo de contribución "Comando/Generador" sin código) y la decisión del 23-nov en `docs/DECISIONES.md`.
+
+## Estado de implementación (23-nov-2026)
+
+| Lote | Estado | Dónde |
+|---|---|---|
+| RCP-01 Formato | Hecho | `src/core/recipes/{schema,validate,expression,resolve}` |
+| MOT-RB Caja redondeada | Hecho antes, como bordes de primitiva | `edgeStyle`/`edgeScope`/`edgeSize` |
+| RCP-02 Ejecutor | Hecho | `src/core/recipes/run/` (tarea `runRecipe` del Worker), comando `run_recipe` |
+| RCP-04 MCP | Hecho | `mcp-server/src/recipeTools.ts`: `kura_list_recipes`, `kura_describe_recipe`, `kura_validate_recipe`, `kura_run_recipe` |
+| RCP-03 Persistencia | Parcial: `metadata.recipe` se guarda y valida en el `.kura`; falta `recipes[hash]`, regenerar, huella y F4 | `src/types/recipeProvenance.ts`, `projectSchema.ts` |
+| RCP-05, RCP-06, EXT-01a | Pendientes | — |
+
+**Cambios respecto del diseño**
+
+- Las salidas usan `role` (`solid` \| `negative` \| `reference`), no `isHole`: el producto pasó al rol del objeto.
+- No hay `cornerRadius`: las esquinas redondeadas son `edgeStyle: "round"`, `edgeScope: "vertical"`, `edgeSize`.
+- `rotation` en los pasos va en grados (el bus usa radianes); el ejecutor convierte.
+- `boolean_operation`, `transform_object` y demás usan `target`, `tools` y `objectIds` con `"@paso"`; la tabla única `RECIPE_OP_TABLE` (`run/opTable.ts`) los traduce a los ids del bus y rechaza argumentos que no nombra.
+- `metadata.recipe` guarda `{ id, version, hash, answers, variant?, output, omitted? }`: sin `meshFingerprint` todavía (llega con la regeneración, RCP-03) y sin el contenido de archivos u objetos elegidos (van en `omitted`).
+- Topes de ejecución: 512 objetos de trabajo, 512 MiB de mallas, 30 s y `MODEL_IO_LIMITS.maxTriangles`. La cancelación es cooperativa (entre operaciones): una booleana larga de Manifold no se interrumpe a la mitad; en la app la tarea del Worker se puede cancelar desde la barra de progreso.
+- Varias salidas no se agrupan todavía (entran como objetos sueltos, seleccionados).
+- Solo un SVG tiene paso que lo use (`import_svg`). Recursos `png`/`jpg`/`stl`/`3mf`/`obj` se validan pero no se pueden usar en esta versión.
 
 ## 1. Qué hay hoy y qué falta
 

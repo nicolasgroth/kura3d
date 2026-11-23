@@ -92,6 +92,44 @@ Un texto que empieza con `=` (`"=p.w + 2*p.wall"`). Resultado tipado: número, b
 
 Todo exceso es un error con código, ruta del campo y mensaje traducido (por ejemplo `expr.tooDeep @ derive.ow`), nunca un cuelgue. Un `NaN` o infinito (división por cero) también es error.
 
+## Ejecución
+
+Kura3D ejecuta la receta sobre una **escena de trabajo aislada**: nada entra a tu escena hasta que todos los pasos terminan bien, y entonces entran solo las salidas (`outputs`), juntas, como un único paso de deshacer. Si algo falla o se pasa un tope, no entra nada y el error trae código y ruta (`run.triangles @ steps[4].args`).
+
+**Coordenadas.** Ejes del usuario (Z arriba), en mm, con el origen en el centro de la cama. `position` es el centro de la base del objeto creado; `rotation` va en **grados** (Euler XYZ, igual que `sin`/`cos`); `scale` es un factor por eje. `s.<paso>` es la caja envolvente del resultado del paso en esos mismos ejes.
+
+**Operaciones** (`op`) y sus argumentos. Los nombres y rangos son los del Command Bus; donde el bus pide ids, la receta da `"@paso"`:
+
+| `op` | Comando del bus | Argumentos |
+|---|---|---|
+| `create_primitive` | `create_primitive` | `type`, `params` (incluye bordes: `edgeStyle`, `edgeSize`, `edgeScope`), `position`, `rotation`, `scale` |
+| `transform_object` | `transform_object` | `target`, `position`, `rotation`, `scale`, `dropToBed` |
+| `boolean_operation` | `boolean_operation` | `op` (`union` \| `subtract` \| `intersect`), `target` (un objeto), `tools` (lista; vacía = devuelve `target` igual) |
+| `convex_hull` | `convex_hull` | `objectIds` |
+| `mirror_object` | `mirror_object` | `target`, `axis` |
+| `hollow_object` | `hollow_object` | `target`, `wallThickness`, `drainHole`, `drainHoleRadius` |
+| `create_thread` | `create_thread` | `kind`, `diameterMm`, `pitchMm`, `lengthMm`, `clearanceMm`, `includeHead`, `position` |
+| `import_svg` | `import_svg` | `svgContent` (`"$asset:id"` o `"=p.archivo"`), `depth`, `targetWidth`, `curveSegments`, `position` |
+| `plane_cut` | `plane_cut` | `target`, `axis`, `offset`, `connectorType`, `connectorSize`, `connectorDepth`, `tolerance`, `connectorCount`, `keepMode` |
+| `combine_objects` | `combine_objects` | `objectIds` (una lista de un elemento pasa igual) |
+| `align_objects` | `align_objects` | `objectIds`, `mode` |
+| `recipe.place` | — (del ejecutor) | `target`, `anchor` (`center`, `bottom-center`, `top-center`, `min`, `max`), `to: [x,y,z]`, `relativeTo` (`"@paso"`), `relativeAnchor` |
+
+Un argumento que la tabla no nombra es error (`run.badArgs`). Las listas de referencias se aplanan (`tools: ["@pilotos", "@ranuras"]`). Ninguna operación modifica un resultado anterior: cada paso produce objetos nuevos. Un SVG (`$asset` o parámetro `file`) pasa por el mismo lector del motor que una importación; los recursos de otros tipos (`png`, `stl`…) se validan pero todavía no hay paso que los use.
+
+**Topes de ejecución** (además de los de la tabla de límites):
+
+| Tope | Valor |
+|---|---|
+| Triángulos sumados en la escena de trabajo | 5 368 707 (los mismos que un STL que Kura3D puede reabrir) |
+| Objetos de trabajo (instancias, intermedios y salidas) | 512 |
+| Memoria de mallas | 512 MiB |
+| Tiempo de pared | 30 s (se revisa antes y después de cada operación) |
+
+**Chequeos.** `fits_bed` compara cada salida con la cama activa y, si no cabe, devuelve un aviso (`offer_split` o `warn`); no divide nada por su cuenta.
+
+**Procedencia.** Cada objeto generado guarda `metadata.recipe = { id, version, hash, answers, variant?, output, omitted? }`: `hash` es el SHA-256 del JSON canónico de la receta (claves ordenadas) y `answers`, las respuestas simples que diste. Los archivos y objetos elegidos se nombran en `omitted`. La copia de la receta dentro del proyecto y "Editar asistente" llegan en un lote posterior.
+
 ## Ejemplo mínimo
 
 ```jsonc
@@ -124,4 +162,4 @@ Todo exceso es un error con código, ruta del campo y mensaje traducido (por eje
 }
 ```
 
-(Los comentarios `//` son solo para esta guía: el archivo real es JSON estricto.)
+(Los comentarios `//` son solo para esta guía: el archivo real es JSON estricto.) Para probarla sin interfaz: `kura_validate_recipe` y luego `kura_run_recipe` con `recipe` en línea y `dryRun: true` (ver [docs/MCP.md](../MCP.md)).
