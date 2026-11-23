@@ -26,6 +26,7 @@ import { settleAssembly } from './splitAssemblyRepair';
 import { ConnectorRoom } from './splitConnectorRoom';
 import { cutKey, recallCut, releaseCutCache, type CutCells } from './splitCutCache';
 import { StageClock } from './splitStageClock';
+import { forgetVoxelCache } from './validateAssembly';
 import type { AssemblyFix, AssemblySuggestion } from './assemblyTypes';
 import { SPLIT_DEFAULTS, splitPartCode } from './splitPlan';
 import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitResult, SplitAxis, SplitJoint, SplitLooseDowel } from './splitTypes';
@@ -222,6 +223,7 @@ export async function executeBedSplitGeometry(
       stageMs: clock.ms,
     };
   } finally {
+    forgetVoxelCache();
     cache.dispose();
     for (const b of bodies.values()) {
       b.m.delete();

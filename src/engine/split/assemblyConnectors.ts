@@ -149,8 +149,28 @@ function pointTriangle(p: Vec3, a: Vec3, b: Vec3, c: Vec3): number {
   return near([a[0] + ab[0] * v + ac[0] * w, a[1] + ab[1] * v + ac[1] * w, a[2] + ab[2] * v + ac[2] * w]);
 }
 
+/**
+ * Pared por pieza ya medida: la validación se repite con las mismas piezas (arreglo del armado, comprobación
+ * de sugerencias) y cambia una unión a la vez. Clave: arreglo de posiciones de la pieza + cápsula + pared.
+ */
+const wallMemo = new WeakMap<Float64Array, Map<string, number>>();
+
 /** Pared libre de un conector hasta la superficie de sus dos piezas (mm), sin contar sus propias caras. */
 export function exteriorWall(cap: Capsule, world: Float64Array[], meshes: MeshData[], wall: number): number {
+  const key = [...cap.p, ...cap.q, cap.r, cap.axis, cap.plane, cap.slide ?? '-', wall].join('|');
+  let best = Infinity;
+  for (const part of cap.parts) {
+    const w = world[part];
+    let memo = wallMemo.get(w);
+    if (!memo) wallMemo.set(w, (memo = new Map()));
+    let d = memo.get(key);
+    if (d === undefined) memo.set(key, (d = partWall(cap, w, meshes[part], wall)));
+    best = Math.min(best, d);
+  }
+  return best;
+}
+
+function partWall(cap: Capsule, w: Float64Array, mesh: MeshData, wall: number): number {
   const a = AXIS_INDEX[cap.axis];
   const reach = cap.r + wall + 1;
   const lo = [0, 1, 2].map((i) => Math.min(cap.p[i], cap.q[i]) - reach);
@@ -168,9 +188,8 @@ export function exteriorWall(cap: Capsule, world: Float64Array[], meshes: MeshDa
     return radial <= cap.r + 0.35 && along >= alongLo && along <= alongHi;
   };
   let best = Infinity;
-  for (const part of cap.parts) {
-    const w = world[part];
-    const idx = meshes[part].indices;
+  {
+    const idx = mesh.indices;
     for (let t = 0; t < idx.length; t += 3) {
       const A = idx[t] * 3, B = idx[t + 1] * 3, C = idx[t + 2] * 3;
       // Descarte por caja sin crear arreglos (es el bucle caliente: todas las caras de ambas piezas)

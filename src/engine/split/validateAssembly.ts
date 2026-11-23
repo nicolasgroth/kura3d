@@ -65,6 +65,35 @@ function jointGap(j: AssemblyJointInput, world: Float64Array[]): number | null {
   return Number.isFinite(top) ? bottom - top : null;
 }
 
+/**
+ * Posiciones de mundo por malla y transformación, reutilizadas entre validaciones de las mismas piezas
+ * (el arreglo del armado y la comprobación de sugerencias validan varias veces): así también se
+ * reutiliza la pared medida por conector (`exteriorWall`), que se memoriza por arreglo de posiciones.
+ */
+const worldMemo = new WeakMap<MeshData, { key: string; world: Float64Array }>();
+function cachedWorld(p: AssemblyPartInput): Float64Array {
+  const key = [...p.assembly.position, ...p.assembly.rotation].join('|');
+  const hit = worldMemo.get(p.mesh);
+  if (hit && hit.key === key) return hit.world;
+  const world = worldPositions(p.mesh, p.assembly.position, p.assembly.rotation);
+  worldMemo.set(p.mesh, { key, world });
+  return world;
+}
+
+/** Última rejilla de vóxeles y sus sombras de barrido: se reutiliza si las piezas (mismos arreglos) y el paso coinciden. */
+let lastVoxels: { world: Float64Array[]; meshes: MeshData[]; h: number; grid: ReturnType<typeof voxelize>; shadows: ReturnType<typeof sweepShadows> } | null = null;
+/** Suelta la rejilla guardada (la ejecución de la división la suelta al terminar). */
+export function forgetVoxelCache(): void {
+  lastVoxels = null;
+}
+function cachedVoxels(world: Float64Array[], meshes: MeshData[], h: number) {
+  const l = lastVoxels;
+  if (l && l.h === h && l.world.length === world.length && l.world.every((w, i) => w === world[i] && l.meshes[i] === meshes[i])) return l;
+  const grid = voxelize(world, meshes, h);
+  lastVoxels = { world, meshes, h, grid, shadows: sweepShadows(grid, world.length) };
+  return lastVoxels;
+}
+
 /** Valida que las piezas cierren, que los conectores no choquen, que exista un orden de montaje y que las uniones sean firmes. */
 export function validateAssembly(
   parts: AssemblyPartInput[],
@@ -76,7 +105,7 @@ export function validateAssembly(
   const wall = options.minWallMm ?? L.minWallMm;
   const warnings: EngineWarning[] = [];
   const meshes = parts.map((p) => p.mesh);
-  const world = parts.map((p) => worldPositions(p.mesh, p.assembly.position, p.assembly.rotation));
+  const world = parts.map(cachedWorld);
   const codes = parts.map((p) => p.code);
   const volumes = parts.map((p, i) => p.volumeMm3 ?? signedVolume(world[i], p.mesh));
   const ext = world.map((w) => [0, 1, 2].map((a) => extent(w, a)));
@@ -86,7 +115,8 @@ export function validateAssembly(
     maxDim = Math.max(maxDim, hi - lo);
   }
   const h = options.voxelMm ?? Math.max(maxDim / L.voxelsPerSide, 0.05);
-  const grid = parts.length > 0 ? voxelize(world, meshes, h) : null;
+  const voxels = parts.length > 0 ? cachedVoxels(world, meshes, h) : null;
+  const grid = voxels?.grid ?? null;
 
   // (a) Cierre
   const interference = grid
@@ -125,7 +155,7 @@ export function validateAssembly(
   for (let p = 1; p < parts.length; p++) {
     if (minY[p] < minY[base] - 1e-6 || (Math.abs(minY[p] - minY[base]) <= 1e-6 && volumes[p] > volumes[base])) base = p;
   }
-  const input = { codes, minY, joints, base, shadows: grid ? sweepShadows(grid, parts.length) : [] };
+  const input = { codes, minY, joints, base, shadows: voxels?.shadows ?? [] };
   let outcome = findOrder(input);
   let fix: AssemblyFix = { glueJoints: [], changeType: [], applied: false };
   const suggestions: AssemblySuggestion[] = [];
