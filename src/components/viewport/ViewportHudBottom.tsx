@@ -75,6 +75,12 @@ export const ViewportHudBottom: React.FC = () => {
                   1, language)})`
               : localizedPrinterName}
           </span>
+          {bedStatus === 'outOfBounds' && (
+            <span className="kura-oob-badge">
+              <AlertTriangle size={11} />
+              <span>{t(language, 'viewport.bed.outOfBounds')}</span>
+            </span>
+          )}
           {bedStatus === 'outOfBounds' && <FitOutOfBoundsButton />}
           {bedStatus === 'assembled' && (
             <span className="kura-assembled-badge" role="status" title={t(language, 'splitUx.assembled.status')}>
