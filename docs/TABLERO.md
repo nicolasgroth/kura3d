@@ -1,12 +1,12 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 18:00, con cinco lotes nuevos integrados y el rediseño de la interfaz en curso.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 19:30, con el primer lote del rediseño, el ejecutor de recetas y el motor de comprobar encaje integrados, y el panel contextual en desarrollo.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## Resumen de la noche del 22 al 23 de noviembre
 
-Estado de `main`: 2406 pruebas del frontend, 143 del servidor MCP y 37 de Rust en verde; 157 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
+Estado de `main`: 2473 pruebas del frontend, 151 del servidor MCP y 37 de Rust en verde; 157 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
 
 | Qué | Resultado |
 |---|---|
@@ -22,10 +22,9 @@ Estado de `main`: 2406 pruebas del frontend, 143 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
-| Rediseño clásico de la interfaz, lote 1: barra superior de archivo y ajustes, barra vertical de herramientas, una sola barra de vista, menú Acciones, historial junto a deshacer, rótulos conmutables con tooltips y barra de estado que explica cada control | En desarrollo desde el 23-nov |
-| Recetas, segundo lote: ejecutor (caja con tapa, llavero y placa de enchufe generados de verdad) y herramientas MCP para listar, validar y ejecutar recetas | En desarrollo desde el 23-nov |
-| Comprobar encaje, motor y MCP: interferencias y holguras entre piezas y referencias, con las restas pendientes aplicadas y recomendaciones con medidas | En desarrollo desde el 23-nov |
-| Pendiente del rediseño, lote 2: panel derecho contextual y adaptable (solo las opciones de la herramienta o acción activa; información del proyecto sin selección). Pendiente de usabilidad: Capacidad que nombra el objeto medido, número de objetos en el aviso de recuperación, capturas de guías por regenerar | Después del lote 1 |
+| Rediseño clásico, lote 2: panel derecho contextual y adaptable (proyecto sin selección, resumen del objeto, o solo las opciones de la herramienta o acción activa; se ensancha, reduce y pliega). Incluye pendientes del lote 1 (rótulos de la barra de vista a 1280 y 1440, "Esculpir / Borrar" en una línea, estado del botón Escena en móvil) y de usabilidad (Capacidad que nombra el objeto, cantidad de objetos en el aviso de recuperación) | En desarrollo desde el 23-nov 19:20 |
+| Comprobar encaje, interfaz: entrada en Acciones y menú contextual, panel de pares, resaltado de la zona, cota de holgura, avance y cancelar, guía; conectar la comprobación al diálogo de Ajustar a la impresora | Pendiente; va después del panel contextual |
+| Recetas, lo que sigue: copia de la receta en el `.kura`, regenerar y "dejar fijo", repetir con F4, agrupar las salidas, interfaz de Asistentes | Pendiente |
 | Pendientes vistos en capturas: el contorno de selección queda inflado tras escalar ×100; "Cerrar todos" ilegible en tema oscuro; los avisos tapan un diálogo en 390 px y la barra de Consejo; "Sin cama" queda fuera de pantalla en móvil; por MCP, restar dos piezas recién creadas falla porque cada una cae en un lugar libre, y el plan de dividir sin aplicar informa 0 uniones; ahuecar un busto denso tarda cerca de 30 s | Para la próxima tanda |
 | Separar por colores sobre texto 3D pintado: algunas piezas pueden salir abiertas (se avisa cuáles y se ofrece reparar); grabar dos veces el mismo texto en el mismo lugar de un cilindro (da un error claro) | Límites conocidos; pendiente |
 | Imagen a 3D: ocultar los parámetros que no aplican en cada modo; aviso de cuánto crece la pieza al aplicar una textura; vista previa en vivo del texto 3D | Pendiente |
@@ -39,6 +38,9 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 
 | Funcionalidad | Estado |
 |---|---|
+| Rediseño clásico, lote 1: barra superior con Archivo, Edición y menú Acciones; barra vertical de herramientas; una sola barra de vista en una fila; historial desplegable junto a deshacer; botón Rótulos; tooltips y barra de estado que explican cada control; Escena como botón en móvil | Integrado el 23-nov con 16 recorridos propios en verde; suite completa de navegador en curso; capturas de guías por regenerar; falta QA independiente |
+| Recetas, segundo lote: la caja con tapa, el llavero y la placa de enchufe se generan de verdad, con topes de triángulos, objetos, memoria y tiempo, un solo paso de deshacer y procedencia guardada en el `.kura`; cuatro herramientas MCP (listar, describir, validar, ejecutar) | Integrado el 23-nov con pruebas (incluye 15 casos hostiles); sin interfaz; falta probar en el Worker del navegador |
+| Comprobar encaje, motor y MCP: choque exacto entre mallas cerradas (volumen y zona), holgura mínima con sus dos puntos, restas pendientes aplicadas en copia, recomendaciones con cifras marcadas como estimación; herramienta `kura_check_fit` | Integrado el 23-nov con pruebas; sin interfaz; falta probar en el Worker del navegador |
 | Ajustar a la impresora: alternativas a elegir (escalar, girar, girar y escalar, dividir) con vista previa, camas propias con margen, aviso al abrir un proyecto con otra cama, herramienta MCP y guía | Integrado el 23-nov con pruebas de navegador; falta QA independiente |
 | Bordes redondeados y chaflanes exactos en caja, cilindro, tubo y prisma, con alcance (todas, verticales, superior) | Integrado el 23-nov con pruebas; falta QA independiente |
 | Objetos de referencia, lote 1: tercer tipo de objeto que se ve pero no se imprime ni se exporta, opacidad por objeto, proyecto en formato 3 con migración | Integrado el 23-nov con una prueba por cada exclusión; falta QA independiente |
