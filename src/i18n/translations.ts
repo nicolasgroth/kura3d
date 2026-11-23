@@ -32,6 +32,7 @@ import { FIX10_EN, FIX10_ES } from './locales/fix10';
 import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
 import { IMPORTREAL_EN, IMPORTREAL_ES } from './locales/importReal';
 import { REPAIR_EN, REPAIR_ES } from './locales/repair';
+import { GEN_MOTOR_EN, GEN_MOTOR_ES } from './locales/genMotor';
 import { UXESCENA_EN, UXESCENA_ES } from './locales/uxEscena';
 import { UXCIERRE_EN, UXCIERRE_ES } from './locales/uxCierre';
 import { UX3_EDICION_EN, UX3_EDICION_ES } from './locales/ux3Edicion';
@@ -62,6 +63,7 @@ export const TRANSLATIONS_ES = {
   ...OPNOTES_ES,
   ...IMPORTREAL_ES,
   ...REPAIR_ES,
+  ...GEN_MOTOR_ES,
   ...UXESCENA_ES,
   ...UXCIERRE_ES,
   ...UX3_EDICION_ES,
@@ -955,7 +957,7 @@ export const TRANSLATIONS_ES = {
   'dialog.mold.axisY': 'Y (frente / fondo)',
   'object.name.union': 'Unión de {count} piezas',
   'object.name.intersect': 'Intersección de {count} piezas',
-  'object.name.hull': 'Envolvente de {count} piezas',
+  'object.name.hull': 'Envolvente de {count} {count?pieza|piezas}',
   'object.name.piece': 'pieza {n}',
   'mold.part.single': 'Molde de 1 parte',
   'mold.part.halfA': 'Molde A',
@@ -1393,6 +1395,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...OPNOTES_EN,
   ...IMPORTREAL_EN,
   ...REPAIR_EN,
+  ...GEN_MOTOR_EN,
   ...UXESCENA_EN,
   ...UXCIERRE_EN,
   ...UX3_EDICION_EN,
@@ -2258,7 +2261,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.mold.axisY': 'Y (front / back)',
   'object.name.union': 'Union of {count} parts',
   'object.name.intersect': 'Intersection of {count} parts',
-  'object.name.hull': 'Hull of {count} parts',
+  'object.name.hull': 'Hull of {count} {count?part|parts}',
   'object.name.piece': 'part {n}',
   'mold.part.single': 'One-part mold',
   'mold.part.halfA': 'Mold A',

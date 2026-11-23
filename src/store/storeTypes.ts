@@ -411,7 +411,12 @@ export interface KuraStoreState {
     smooth?: boolean,
   ) => Promise<boolean>;
   runConvexHull: (ids?: string[]) => Promise<SceneObject | null>;
-  createThreadObject: (options: ThreadOptions) => Promise<SceneObject | null>;
+  /**
+   * Crea una pieza roscada. Un agujero (`kind: 'hole'`) con `targetId` (o con un único objeto
+   * seleccionado) se coloca centrado en la cara superior de ese objeto, entrando hacia abajo, y queda
+   * agrupado con él; sin objeto, va a un hueco libre.
+   */
+  createThreadObject: (options: ThreadOptions, extra?: { targetId?: string }) => Promise<SceneObject | null>;
   alignSelectedObjects: (mode: AlignMode) => { moved: number; fitsBed: boolean } | null;
 
   // Detección estructural local y separación de sub-partes

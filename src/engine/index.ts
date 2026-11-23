@@ -120,6 +120,14 @@ export {
   generateCylindricalLithophane,
   generateSilhouetteOrCutterFromImage,
 } from './generators';
+export {
+  cylindricalLithophaneSize,
+  IMAGE_RELIEF_APPLICABLE_PARAMS,
+  type CylindricalLithophaneSize,
+  type ImageReliefParam,
+  type ImageShapeMode,
+} from './imageReliefParams';
+export { BOLT_LENGTH_RATIO, NUT_HEIGHT_RATIO, threadDefaults, type ThreadDefaults } from './threadDefaults';
 
 export { computeAlignmentPositions } from './alignment';
 

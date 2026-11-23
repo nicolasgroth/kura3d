@@ -27,6 +27,7 @@ import { FIX10_FR } from './fix10';
 import { OPNOTES_FR } from './operationNotes';
 import { IMPORTREAL_FR } from './importReal';
 import { REPAIR_FR } from './repair';
+import { GEN_MOTOR_FR } from './genMotor';
 import { UXESCENA_FR } from './uxEscena';
 import { UXCIERRE_FR } from './uxCierre';
 import { UX3_EDICION_FR } from './ux3Edicion';
@@ -55,6 +56,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...OPNOTES_FR,
   ...IMPORTREAL_FR,
   ...REPAIR_FR,
+  ...GEN_MOTOR_FR,
   ...UXESCENA_FR,
   ...UXCIERRE_FR,
   ...UX3_EDICION_FR,
@@ -948,7 +950,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.mold.axisY': 'Y (avant / fond)',
   'object.name.union': 'Union de {count} pièces',
   'object.name.intersect': 'Intersection de {count} pièces',
-  'object.name.hull': 'Enveloppe de {count} pièces',
+  'object.name.hull': 'Enveloppe de {count} {count?pièce|pièces}',
   'object.name.piece': 'pièce {n}',
   'mold.part.single': 'Moule en 1 partie',
   'mold.part.halfA': 'Moule A',

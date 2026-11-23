@@ -90,12 +90,12 @@ const GROUPS_TABLE = {
   'groups.toast.combined.other': ['{count} objetos combinados en uno', '{count} objects combined into one', '{count} Objekte zu einem kombiniert', '{count} objets combinés en un', '{count} ऑब्जेक्ट एक में मिले', '已将 {count} 个对象合并为一个'],
 
   'engineWarning.SPLIT_COLOR_MESH_DEFECTS': [
-    'Piezas de color con defectos de malla tras la limpieza ({count}): {colors}. Son sólidos cerrados, pero revísalas antes de imprimir.',
-    'Color pieces with mesh defects after cleanup ({count}): {colors}. They are closed solids, but check them before printing.',
-    'Farbteile mit Netzfehlern nach der Bereinigung ({count}): {colors}. Es sind geschlossene Körper, prüfe sie aber vor dem Druck.',
-    'Pièces de couleur avec défauts de maillage après nettoyage ({count}) : {colors}. Ce sont des solides fermés, mais vérifie-les avant d’imprimer.',
-    'सफ़ाई के बाद मेश दोष वाले रंग भाग ({count}): {colors}। ये बंद ठोस हैं, पर प्रिंट से पहले जाँचें।',
-    '清理后仍有网格缺陷的颜色件({count}):{colors}。它们是封闭实体,但打印前请检查。',
+    'Piezas de color que no quedaron cerradas ({count}): {colors}. Selecciónalas y usa «Reparar malla» antes de imprimir, o separa con otra profundidad.',
+    'Color pieces that are not closed ({count}): {colors}. Select them and use "Repair mesh" before printing, or split with another depth.',
+    'Farbteile, die nicht geschlossen sind ({count}): {colors}. Wähle sie aus und nutze „Netz reparieren“ vor dem Druck oder teile mit anderer Tiefe.',
+    'Pièces de couleur non fermées ({count}) : {colors}. Sélectionne-les et utilise « Réparer le maillage » avant d’imprimer, ou sépare avec une autre profondeur.',
+    'बंद न हुए रंग भाग ({count}): {colors}। प्रिंट से पहले इन्हें चुनकर «मेश ठीक करें» चलाएँ, या दूसरी गहराई से अलग करें।',
+    '未封闭的颜色件({count}):{colors}。打印前请选中它们并使用"修复网格",或换一个深度重新分离。',
   ],
   'groups.tree.members.one': ['{count} objeto', '{count} object', '{count} Objekt', '{count} objet', '{count} ऑब्जेक्ट', '{count} 个对象'],
   'groups.tree.members.other': ['{count} objetos', '{count} objects', '{count} Objekte', '{count} objets', '{count} ऑब्जेक्ट', '{count} 个对象'],

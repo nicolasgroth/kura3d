@@ -10,8 +10,7 @@
  * @license MIT
  */
 
-import { groupSelection } from '../../core/scene/groups';
-import { makeId } from '../../core/scene/sceneObjects';
+import { attachToTarget } from '../../core/scene/attachPiece';
 import { withoutModulePrefix } from '../../core/scene/resultNames';
 import { createPrimitive as createPrimitiveObject, positionOnTarget } from '../../core/operations';
 import { HOLE_HELPER_COLOR } from '../../core/operations/creationOperations';
@@ -71,24 +70,11 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       // La pieza queda agrupada con su objeto (grupo con el nombre del objeto) para que se muevan juntos.
       let grouped = false;
       set((s) => {
-        const liveTarget = s.objects.find((o) => o.id === target.id);
-        let objects = [...s.objects, obj];
-        let groups = s.groups;
-        if (liveTarget?.groupRef) {
-          // El objeto ya está en un grupo: la pieza entra en él.
-          objects = objects.map((o) => (o.id === obj.id ? { ...o, groupRef: liveTarget.groupRef } : o));
-          grouped = true;
-        } else if (liveTarget) {
-          const next = groupSelection({ objects, groups }, [target.id, obj.id], { id: makeId('grp'), name: target.name });
-          if (next) {
-            objects = next.objects;
-            groups = next.groups;
-            grouped = true;
-          }
-        }
+        const next = attachToTarget(s, obj, target.id);
+        grouped = next.grouped;
         return {
-          objects,
-          groups,
+          objects: next.objects,
+          groups: next.groups,
           selectedIds: [obj.id],
           spawnedAtById: { ...s.spawnedAtById, [obj.id]: Date.now() },
         };
