@@ -21,7 +21,7 @@ const pequenos = (page: Page) =>
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0) return;
       const size = parseFloat(getComputedStyle(el).fontSize);
-      if (size < 11 && !el.closest('.kura-scene-tree, .kura-context-menu, [role=menu]')) {
+      if (size < 11) {
         out.push(`${el.tagName}.${el.className} ${size}px "${(el.textContent ?? '').trim().slice(0, 30)}"`);
       }
     });

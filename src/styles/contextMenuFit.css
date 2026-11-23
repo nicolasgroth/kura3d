@@ -65,5 +65,8 @@
   flex: none;
   min-height: 26px;
   line-height: 1.5;
-  overflow: visible;
+  /* Un nombre largo se corta con puntos suspensivos en vez de salirse del menú. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
