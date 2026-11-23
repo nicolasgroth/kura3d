@@ -10,6 +10,7 @@ import { TRANSFORM_LIMITS } from '../engine/operationLimits';
 import { EDGE_SCOPES, EDGE_STYLES, TEXT_ALIGN_OPTIONS } from '../engine/primitiveLimits';
 import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
 import { REFERENCE_OPACITY } from '../core/scene/objectRole';
+import { RECIPE_PROVENANCE_LIMITS } from '../types/recipeProvenance';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
 
 export const MAX_PROJECT_BYTES = 128 * 1024 * 1024;
@@ -143,7 +144,20 @@ const splitMetadata = shape({
   groupNotes: optional(splitNotes),
 });
 const splitDowelMetadata = shape({ groupId: id, diameterMm: positive, lengthMm: positive, count: (v) => nat(v) && v > 0 && v <= 100_000 });
-const objectExtra = shape({ split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata) });
+// Procedencia de una receta (`metadata.recipe`, `src/types/recipeProvenance.ts`): solo datos simples y acotados.
+const RP = RECIPE_PROVENANCE_LIMITS;
+const recipeAnswer = (v: unknown) => finite(v) || bool(v) || short(RP.maxTextAnswer)(v);
+const recipeMetadata = shape({
+  id: (v) => short(RP.maxIdLength)(v) && /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(v as string),
+  version: (v) => short(RP.maxVersionLength)(v) && (v as string).length > 0,
+  hash: (v) => typeof v === 'string' && /^[0-9a-f]{64}$/.test(v),
+  answers: (v) => record(v) && Object.keys(v).length <= RP.maxAnswers
+    && Object.entries(v).every(([k, x]) => k.length > 0 && k.length <= RP.maxIdLength && recipeAnswer(x)),
+  variant: optional(short(RP.maxIdLength)),
+  output: (v) => short(RP.maxIdLength)(v) && (v as string).length > 0,
+  omitted: optional(shortList(RP.maxAnswers, RP.maxIdLength)),
+});
+const objectExtra = shape({ split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata), recipe: optional(recipeMetadata) });
 
 export type ObjectMetadata = Omit<SceneObject, 'mesh' | 'stats'>;
 const metadataFields = {

@@ -12,7 +12,7 @@
 import { RecipeError, issue, joinPath, type RecipeIssue } from '../errors';
 import { createBudget } from '../expression/evaluate';
 import { scanJson } from '../scan';
-import { validateRecipe, type ValidatedRecipe } from '../validate/validateRecipe';
+import { parseRecipeText, validateRecipe, type ValidatedRecipe } from '../validate/validateRecipe';
 import { RecipeEnv } from './env';
 import { resolveDerived, resolveParams, resolveRules } from './params';
 import { resolveOutputs, resolveSteps } from './steps';
@@ -29,12 +29,32 @@ function isValidated(value: unknown): value is ValidatedRecipe {
   return typeof value === 'object' && value !== null && 'exprs' in value && (value as ValidatedRecipe).exprs instanceof Map;
 }
 
+/**
+ * Resolución lista para ejecutar: el resultado y, si salió bien, el entorno de evaluación (mismo presupuesto de
+ * expresiones) con que el ejecutor evalúa los `$deferred` (`s.<paso>`, `bed`). Solo lo usa `src/core/recipes/run`.
+ */
+export interface PreparedRecipe {
+  readonly result: ResolveResult;
+  readonly recipe?: ValidatedRecipe;
+  readonly env?: RecipeEnv;
+}
+
 export function resolveRecipe(recipe: unknown, answers: unknown = {}, options: ResolveOptions = {}): ResolveResult {
+  return prepareRecipe(recipe, answers, options).result;
+}
+
+export function prepareRecipe(recipe: unknown, answers: unknown = {}, options: ResolveOptions = {}): PreparedRecipe {
+  const prepared = prepareInner(recipe, answers, options);
+  return 'result' in prepared ? prepared : { result: prepared };
+}
+
+function prepareInner(recipe: unknown, answers: unknown, options: ResolveOptions): ResolveResult | PreparedRecipe {
   let work = 0;
   let validated: ValidatedRecipe;
   if (isValidated(recipe)) validated = recipe;
   else {
-    const result = validateRecipe(recipe);
+    // Texto (`*.recipe.json`) con su tope de tamaño, u objeto ya leído.
+    const result = typeof recipe === 'string' ? parseRecipeText(recipe) : validateRecipe(recipe);
     work += result.work;
     if (!result.ok) return failed(result.issues, work);
     validated = result.value;
@@ -73,7 +93,8 @@ export function resolveRecipe(recipe: unknown, answers: unknown = {}, options: R
     const steps = resolveSteps(env);
     const outputs = resolveOutputs(env);
     const checks = (r.checks ?? []).map((c) => ({ kind: c.kind, refs: c.refs.map((ref) => ref.slice(1)), onFail: c.onFail }));
-    return { ok: true, errors: [], messages, params, derived, steps, outputs, checks, work: work + budget.used };
+    const result: ResolveResult = { ok: true, errors: [], messages, params, derived, steps, outputs, checks, work: work + budget.used };
+    return { result, recipe: validated, env };
   } catch (error) {
     if (!(error instanceof RecipeError)) throw error;
     return failed([error.issue], work + budget.used, { messages, params, derived: Object.fromEntries(env.derived) });

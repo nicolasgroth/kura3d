@@ -2,7 +2,7 @@
  * @file scripts/docs-mcp-ejemplos.mjs
  * @description Ejecuta contra el motor sin interfaz (servidor MCP real por stdio, `mcp-server/dist/index.js`)
  * los ejemplos de punta a punta de `docs/MCP.md`: caja con agujero, dividir un modelo grande, medir un
- * volumen, caja con esquinas redondeadas y comprobar encaje. Imprime cada llamada y un resumen de la respuesta; sale con código 1 si algún resultado difiere
+ * volumen, caja con esquinas redondeadas comprobar encaje y receta de caja con tapa. Imprime cada llamada y un resumen de la respuesta; sale con código 1 si algún resultado difiere
  * de lo documentado. Uso: `npm run mcp:build && node scripts/docs-mcp-ejemplos.mjs`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -95,6 +95,13 @@ console.log('  ' + par?.recommendation?.text);
 await llamar('kura_update_primitive_params', { objectId: bolsillo.id, params: { width: 31.2, depth: 21.2 } });
 const otra = await llamar('kura_check_fit', { objectIds: ids });
 esperar(otra.pairs?.[0]?.status === 'ok' && Math.abs(otra.pairs[0].clearanceMm - 0.3) < 0.01, `ahora cabe con 0,3 mm de holgura (obtenido ${otra.pairs?.[0]?.clearanceMm})`);
+console.log('\n== Ejemplo 6: receta de caja con tapa ==');
+const analisis = await llamar('kura_run_recipe', { recipeId: 'kura.caja-tapa', answers: { w: 60, dp: 40, h: 30 }, dryRun: true });
+esperar(analisis.ok === true && analisis.derived?.ow === 64, 'dryRun: exterior calculado 64 mm, sin tocar la escena');
+const receta = await llamar('kura_run_recipe', { recipeId: 'kura.caja-tapa', answers: { w: 60, dp: 40, h: 30 } });
+const [cajaR, tapaR] = receta.objects ?? [];
+esperar(JSON.stringify(cajaR?.stats?.dimensionsMm) === JSON.stringify([64, 44, 32]), `caja de 64 × 44 × 32 (obtenido ${JSON.stringify(cajaR?.stats?.dimensionsMm)})`);
+esperar(tapaR?.name === 'Tapa' && tapaR?.stats?.isManifold === true, 'tapa cerrada');
 
 await client.close();
 console.log(fallos ? `\n${fallos} comprobación(es) fallaron.` : '\nTodos los ejemplos se ejecutaron.');

@@ -35,7 +35,7 @@
     { "level": "info", "when": "=true", "message": "$t:unverified" }
   ],
   "steps": [
-    { "id": "plate", "op": "create_primitive", "args": { "type": "box", "params": { "width": "=d.pw", "depth": "=p.ph", "height": "=p.t", "cornerRadius": 4 } } },
+    { "id": "plate", "op": "create_primitive", "args": { "type": "box", "params": { "width": "=d.pw", "depth": "=p.ph", "height": "=p.t", "edgeStyle": "round", "edgeScope": "vertical", "edgeSize": 4 } } },
     { "id": "win", "op": "create_primitive",
       "pattern": { "kind": "linear", "count": "=p.modules", "step": ["=p.mw", 0, 0], "centered": true, "max": 3 },
       "args": { "type": "box", "position": ["=x", 0, -1], "params": { "width": "=p.winw", "depth": "=p.winh", "height": "=p.t + 2" } } },

@@ -8,6 +8,8 @@
  * @license MIT
  */
 
+import type { RecipeProvenance } from './recipeProvenance';
+
 /** Idiomas soportados nativamente en Kura3D (6 idiomas internacionales). */
 export type LanguageCode = 'es' | 'en' | 'de' | 'fr' | 'hi' | 'zh';
 
@@ -784,6 +786,8 @@ export interface SceneObjectMetadata {
   split?: SplitPartMetadata;
   /** Lote de tarugos sueltos de una división (`loose-dowel`): se imprimen aparte. */
   splitDowel?: SplitDowelMetadata;
+  /** Receta que generó el objeto (`src/types/recipeProvenance.ts`). */
+  recipe?: RecipeProvenance;
 }
 
 /** Lote de tarugos sueltos de "dividir para imprimir": medida y cantidad. */
@@ -1000,7 +1004,11 @@ export interface KuraCommandRequest {
     | 'extract_structure'
     | 'mirror_object'
     | 'validate_assembly'
-    | 'set_object_role';
+    | 'set_object_role'
+    | 'list_recipes'
+    | 'describe_recipe'
+    | 'validate_recipe'
+    | 'run_recipe';
   params: Record<string, unknown>;
 }
 

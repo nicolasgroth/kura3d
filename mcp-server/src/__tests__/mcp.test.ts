@@ -50,6 +50,10 @@ const EXPECTED_TOOLS = [
   'kura_analyze_printability',
   'kura_diagnose_mesh',
   'kura_set_object_role',
+  'kura_list_recipes',
+  'kura_describe_recipe',
+  'kura_validate_recipe',
+  'kura_run_recipe',
   'kura_repair_mesh',
   'kura_simplify_mesh',
   'kura_refine_mesh',
@@ -114,8 +118,8 @@ describe('Kura3D MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(45);
-    expect(toolNames).toHaveLength(45);
+    expect(EXPECTED_TOOLS).toHaveLength(49);
+    expect(toolNames).toHaveLength(49);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }

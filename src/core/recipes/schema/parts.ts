@@ -9,6 +9,7 @@
  */
 
 import { z } from 'zod';
+import { OBJECT_ROLES, type ObjectRole } from '../../scene/objectRole';
 import { RECIPE_ASSET_MAX_BYTES, RECIPE_LANGUAGES, RECIPE_LIMITS } from '../limits';
 import { Args, BoolOrExpr, Expr, Literal, NumOrExpr, SafeName, StepRef, StringKey, Text, Vec3 } from './values';
 
@@ -127,7 +128,8 @@ export const Output = z.strictObject({
   ref: StepRef,
   name: z.union([Text, Expr]),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  isHole: z.boolean().optional(),
+  /** Rol del objeto generado (el mismo de la escena): `solid` se imprime, `negative` se resta, `reference` solo se ve. */
+  role: z.enum(OBJECT_ROLES as unknown as [ObjectRole, ...ObjectRole[]]).optional(),
 });
 
 export const Check = z.strictObject({

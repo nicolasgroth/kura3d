@@ -62,7 +62,7 @@ Ejemplos de configuración para Claude Desktop, Codex CLI y Antigravity están e
 La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre coincide con lo que recibe el agente. Las descripciones están en inglés porque son las que el cliente MCP entrega al modelo. Los parámetros marcados con `*` son obligatorios; el esquema completo de cada herramienta lo entrega el servidor al cliente.
 
 <!-- TABLA-HERRAMIENTAS:INICIO -->
-<!-- Generada por `npm run docs:mcp` desde el servidor real (45 herramientas). No la edites a mano. -->
+<!-- Generada por `npm run docs:mcp` desde el servidor real (49 herramientas). No la edites a mano. -->
 
 | Herramienta | Acceso | Qué hace | Parámetros principales (`*` = obligatorio) |
 | :--- | :--- | :--- | :--- |
@@ -78,6 +78,7 @@ La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre
 | `kura_create_primitive` | escritura | Creates a closed solid primitive (box, cylinder, tube, sphere, cone, torus, prism or text) in millimeters. Box, cylinder, tube and prism accept exact rounded or chamfered edges (params.edgeStyle, edgeSize, edgeScope). | `primitiveType`* (`box` · `cylinder` · `tube` · `sphere` · `cone` · `torus` · `prism` · `text`), `name` (string), `params` (objeto), `position` (lista), `rotation` (lista), `scale` (lista), … (+4) |
 | `kura_create_thread` | escritura | Generates a threaded bolt, hexagonal nut or negative threaded cavity with calibrated clearance for 3D printing. | `kind`* (`bolt` · `nut` · `hole`), `diameterMm` (number), `pitchMm` (number), `lengthMm` (number), `clearanceMm` (number), `includeHead` (boolean), … (+3) |
 | `kura_delete_object` | escritura | Permanently deletes an object from the scene by its identifier. | `objectId`* (string) |
+| `kura_describe_recipe` | lectura | Describes a recipe: parameters with type, unit (mm), effective min/max and default, choice options, presets (variants, with "verified"), rules, steps and outputs, with texts in the requested language. Give recipeId or an inline recipe. | `recipeId` (string), `recipe` (varios), `language` (`es` · `en` · `de` · `fr` · `hi` · `zh`) |
 | `kura_detect_structures` | lectura | Analyzes disconnected islands, dihedral folds and proportions of the object to detect geometric sub-structures (tanks, tubes, domes, blocks, main body). Safe in Read-only mode. | `objectId`* (string), `creaseAngleDeg` (number), `minRegionPercent` (number), `maxRegions` (integer) |
 | `kura_diagnose_mesh` | lectura | Read-only. Checks whether an object mesh is a closed printable solid: open edges grouped into holes (size and object-local center in user axes, Z up), edges shared by more than two faces, duplicate or degenerate faces, inconsistent or inverted normals and tiny loose bodies. Does not change the scene. | `objectId`* (string) |
 | `kura_export_3mf` | escritura | Exports the indicated objects (or the whole visible scene) as one standard 3MF with per-triangle colors, readable by OrcaSlicer, Bambu Studio, PrusaSlicer and Cura. The former `slicerTarget` argument is obsolete and ignored. | `outputPath`* (string), `objectIds` (lista de string) |
@@ -89,6 +90,7 @@ La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre
 | `kura_group_objects` | escritura | Groups objects so they are selected, moved, rotated and scaled together as one set. The objects stay independent (nothing is merged). Groups can be nested. Use kura_ungroup to undo. | `objectIds`* (lista de string), `name` (string) |
 | `kura_hollow_object` | escritura | Converts a solid into a hollow shell with wall thickness in millimeters and an optional drain hole. | `objectId`* (string), `wallThickness`* (number), `drainHole` (boolean), `drainHoleRadius` (number) |
 | `kura_import_svg` | escritura | Converts SVG vector strokes into an extruded 3D solid. | `svgContent`* (string), `name` (string), `depth` (number), `targetWidth` (number), `curveSegments` (integer), `placement` (`free` · `origin`) |
+| `kura_list_recipes` | lectura | Lists the built-in recipes (parametric wizards such as a box with lid, a keychain or a wall plate) with id, version, title and license. | `language` (`es` · `en` · `de` · `fr` · `hi` · `zh`) |
 | `kura_measure_capacity` | lectura | Read-only. How much liquid (or food, sand…) the object holds as a container in its CURRENT orientation: the empty space retained by the solid below a fill level. Returns the overflow height (the highest level before it spills, above the object base, Z up), the maximum capacity (mm³ and mL), what fits up to levelMm if given, every separate cavity (cavityIndex picks one; largest first) and closed hollows sealed inside (reported apart, not as capacity). A solid object returns capacity 0. Rotate the object to measure another tilt. Does not change the scene. | `objectId`* (string), `levelMm` (number), `cavityIndex` (integer) |
 | `kura_measure_distance` | lectura | Read-only. Straight-line distance in mm between two points given in user axes (X right, Y back, Z up), plus the components deltaMm = [ΔX, ΔY, ΔZ] from A to B. Does not change the scene. | `pointA`* (lista), `pointB`* (lista) |
 | `kura_measure_object` | lectura | Read-only. Total surface area (mm²), volume (mm³ and mL; 1 cm³ = 1 mL), whether the mesh is closed, and the world bounding box and size in user axes (Z up) of one object, with its rotation and scale applied. Does not change the scene. | `objectId`* (string) |
@@ -98,6 +100,7 @@ La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre
 | `kura_project_on_surface` | escritura | Projects text or SVG graphics onto a face or cylinder of the object as raised relief (emboss), engraving (deboss) or flush multicolor inlay (flush_inlay). | `objectId`* (string), `kind`* (`text` · `svg`), `mode`* (`emboss` · `deboss` · `flush_inlay`), `text` (string), `svgContent` (string), `axis` (`+z` · `-z` · `+x` · `-x` · `+y` · `-y` · `cylindrical`), … (+5) |
 | `kura_refine_mesh` | escritura | Subdivides and optionally smooths the mesh down to the target edge length in mm. | `objectId`* (string), `targetEdgeLengthMm` (number), `smooth` (boolean) |
 | `kura_repair_mesh` | escritura | Repairs an object mesh so it becomes a closed solid accepted by the geometry engine: welds nearby vertices, removes degenerate and duplicate faces, separates edges with more than two faces, orients normals consistently, closes holes by triangulating their boundary and drops tiny slivers. Returns what was done, what could not be fixed (e.g. holes larger than maxHoleMm) and engine warnings. Fails with MESH_REPAIR_FAILED if the result is still not a valid solid. | `objectId`* (string), `maxHoleMm` (number), `weldMm` (number), `removeTinyShells` (boolean) |
+| `kura_run_recipe` | escritura | Runs a recipe (built-in by recipeId, or inline) with the given answers and optional variant. With dryRun: true it only validates and resolves it (effective parameters, rules, steps with their engine command, estimate) and changes nothing. Otherwise the outputs are added to the scene as ONE undo step; on any error nothing is added. Limits: triangles, objects, memory and 30 s wall time. Write tool (blocked in read-only mode). | `recipeId` (string), `recipe` (varios), `answers` (objeto), `variant` (string), `dryRun` (boolean), `files` (objeto), … (+1) |
 | `kura_separate_bodies` | escritura | Splits an object made of several loose bodies (for example a combined object) into separate objects. | `objectId`* (string) |
 | `kura_set_material` | escritura | Sets the physical/visual material preset of the object (pla_matte, pla_silk, petg_clear, abs, carbon_fiber, silicone, wax_candle, metallic). | `objectId`* (string), `materialPreset`* (`pla_matte` · `pla_silk` · `petg_clear` · `abs` · `carbon_fiber` · `silicone` · `wax_candle` · `metallic`) |
 | `kura_set_object_role` | escritura | Sets the role of one or more objects in one undo step: 'solid', 'negative' or 'reference'. A reference (e.g. an imported board or screw to check fit) stays visible and measurable but is never printed, exported, subtracted, combined or split. Optionally sets the reference opacity. | `objectIds`* (lista de string), `role` (`solid` · `negative` · `reference`), `referenceOpacity` (number) |
@@ -111,6 +114,7 @@ La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre
 | `kura_ungroup` | escritura | Removes a group; its objects (and subgroups) move to the parent group. The objects are not changed. | `groupId`* (string) |
 | `kura_update_primitive_params` | escritura | Regenerates a primitive (radius, height, segments, text…) or a thread (diameter, pitch, length, clearance) with new parameters, keeping id, name, position, rotation, scale, color and material. Fails if an operation has already changed the mesh. If the part had painted faces, the paint is lost. | `objectId`* (string), `params`* (objeto) |
 | `kura_validate_assembly` | lectura | Read-only. Revalidates the assembly of a split group (parts from kura_split_for_bed) using the joints saved in each part: closure (volume, interference, gaps), connector clashes, an assembly order with insertion directions, blocked parts and, per blocking joint, the options (`glue` or `change-type:<type>`), plus weak joints (measured vs recommended radius). Pass groupId (the id of the original object) for the whole group, or ids for a selection of parts of the same group (only joints between selected parts are checked). Does not change the scene. | `groupId` (string), `ids` (lista de string) |
+| `kura_validate_recipe` | lectura | Validates a full recipe written by the agent (kura.recipe/1) without running it. Returns ok and every error with its code, field path (e.g. steps[2].args.position[0]) and message. Read-only. | `recipe`* (varios), `language` (`es` · `en` · `de` · `fr` · `hi` · `zh`) |
 
 <!-- TABLA-HERRAMIENTAS:FIN -->
 
@@ -220,6 +224,18 @@ kura_check_fit { "objectIds": ["<carcasa>", "<placa>"] }
 ```
 
 Estados: `interferes` (se cruzan), `tight` (holgura menor que `clearanceTargetMm`, 0,25 mm por defecto), `ok` y `far` (más lejos que `searchMm`). Las direcciones (`+x` derecha, `+y` fondo, `+z` arriba) y las cifras de "separar" o "agrandar" son estimaciones y así se marcan (`estimate: true`).
+
+### 6. Recetas
+
+Una receta (`kura.recipe/1`, ver [docs/recetas/FORMATO.md](recetas/FORMATO.md)) es un asistente hecho de datos: parámetros, reglas y pasos sobre las mismas operaciones del motor. `kura_list_recipes` y `kura_describe_recipe` muestran las incorporadas (caja con tapa, llavero, placa de enchufe) con sus rangos y variantes; `kura_validate_recipe` revisa una receta escrita por el agente y devuelve cada error con su ruta; `kura_run_recipe` la ejecuta (por `recipeId` o en línea en `recipe`). Con `dryRun: true` solo la analiza. Al aplicar, todas las salidas entran juntas (un paso de deshacer en la app) y, si algo falla o pasa un tope, no entra nada.
+
+```jsonc
+kura_run_recipe { "recipeId": "kura.caja-tapa", "answers": { "w": 60, "dp": 40, "h": 30 }, "dryRun": true }
+// → ok true, derived.ow 64 (60 + 2·pared), estimate.outputs 2; la escena no cambia
+
+kura_run_recipe { "recipeId": "kura.caja-tapa", "answers": { "w": 60, "dp": 40, "h": 30 } }
+// → objects: Caja [64, 44, 32] y Tapa [64, 44, 2], cerradas, con metadata.recipe (id, versión, huella, respuestas)
+```
 
 ## Límites conocidos
 

@@ -49,6 +49,8 @@ describe('validador: rechazos con código y ruta', () => {
     ['campo desconocido en un parámetro', (r) => (r.params[0].onChange = '=1'), 'schema.unknownField @ params[0].onChange'],
     ['campo desconocido en un paso', (r) => (r.steps[0].script = 'x'), 'schema.unknownField @ steps[0].script'],
     ['op fuera de la lista blanca', (r) => (r.steps[0].op = 'export_stl'), 'schema.invalid @ steps[0].op'],
+    ['salida con el antiguo isHole', (r) => (r.outputs[0].isHole = true), 'schema.unknownField @ outputs[0].isHole'],
+    ['salida con rol desconocido', (r) => (r.outputs[0].role = 'hole'), 'schema.invalid @ outputs[0].role'],
     ['op que borra objetos', (r) => (r.steps[0].op = 'delete_object'), 'schema.invalid @ steps[0].op'],
     ['licencia no permisiva', (r) => (r.license = 'GPL-3.0'), 'schema.invalid @ license'],
     ['id con mayúsculas', (r) => (r.id = 'Test.Mal'), 'schema.invalid @ id'],

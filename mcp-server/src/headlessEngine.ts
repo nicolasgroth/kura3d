@@ -22,6 +22,8 @@ import { resolveKeptHalf } from '../../src/core/scene/keptHalf';
 import { OPERATION_DEFAULTS } from '../../src/engine/operationLimits';
 import { edgeReport } from '../../src/engine/primitiveEdges';
 import { resolveAssemblyTargets, ValidateAssemblyTargetError } from '../../src/core/commands/validateAssemblySchema';
+import { runRecipe } from '../../src/core/recipes/run/executeRecipe';
+import type { RecipeRunResult, RunInput } from '../../src/core/recipes/run/types';
 import { createHeadlessNaming } from './headlessNaming.js';
 import { write3mfFile, writeStlFile, type ExportFileResult } from './headlessExport.js';
 import { freePlacer, spreadPartsInFreeSpace, type HeadlessPlacement } from './headlessPlacement.js';
@@ -61,6 +63,9 @@ import {
 } from './types.js';
 
 export type { ExportFileResult } from './headlessExport.js';
+
+/** Receta para el modo sin interfaz: la cama sale del perfil activo y los objetos elegibles, de la escena. */
+export type HeadlessRecipeInput = Pick<RunInput, 'recipe' | 'answers' | 'files'> & { options?: Omit<NonNullable<RunInput['options']>, 'bed'> };
 export { HeadlessUnsupportedError, type SceneObjectSummary } from './headlessSupport.js';
 
 /** Separación fija entre piezas de `arrange_grid` (la misma que en la app). */
@@ -684,6 +689,21 @@ export class KuraHeadlessEngine {
     const out = this.pendingWarnings;
     this.pendingWarnings = [];
     return out;
+  }
+
+  /**
+   * Ejecuta una receta con el ejecutor compartido (`src/core/recipes/run`) sobre una escena de trabajo, con la
+   * cama del perfil activo; si sale bien agrega todas sus salidas de una vez y si falla no agrega nada.
+   */
+  async runRecipe(input: HeadlessRecipeInput): Promise<RecipeRunResult> {
+    const p = this.printerProfile;
+    const result = await runRecipe(this.ctx, {
+      ...input,
+      options: { ...input.options, bed: { w: p.bedWidthMm, d: p.bedDepthMm, h: p.maxHeightMm } },
+      sceneObjects: Array.from(this.objects.values()),
+    });
+    if (result.ok) this.apply(result.change);
+    return result;
   }
 
   /** Aplica un `SceneChange` en el mapa: parches in situ, bajas y altas al final (orden de inserción). */

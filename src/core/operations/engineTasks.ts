@@ -37,6 +37,8 @@ import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnect
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
 import { runFitToBed, type FitToBedTaskArgs } from './fitOperations';
 import { runFitCheck, type FitCheckInput } from '../../engine/fitCheck';
+import { runRecipe } from '../recipes/run/executeRecipe';
+import type { RunInput } from '../recipes/run/types';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
 
@@ -135,6 +137,8 @@ export const ENGINE_TASKS = {
   splitForBed: (ctx: OperationContext, a: { obj: SceneObject; plan: engine.BedSplitPlan; options: ExecuteBedSplitOptions }) =>
     executeBedSplit(ctx, a.obj, a.plan, a.options),
   fitToBed: (_ctx: OperationContext, a: FitToBedTaskArgs) => runFitToBed(a),
+  // Receta completa (validar → resolver → escena de trabajo → salidas): el resultado es un SceneChange de solo objetos nuevos.
+  runRecipe: (ctx: OperationContext, a: Omit<RunInput, 'signal' | 'now'>) => runRecipe(ctx, a),
   validateAssembly: (_ctx: OperationContext, a: { objects: SceneObject[] }) => engine.storedAssemblyResponse(a.objects),
   // Comprobar encaje: solo lectura; cancelar termina el Worker (en proceso, descarta el resultado).
   fitCheck: (ctx: OperationContext, a: FitCheckInput) => runFitCheck(a, { onProgress: ctx.onProgress }),

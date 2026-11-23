@@ -62,6 +62,21 @@ export const RECIPE_ERROR_KEYS = {
   'variant.unknown': 'recipe.error.variant.unknown',
   'rule.failed': 'recipe.error.rule.failed',
   'extends.unresolved': 'recipe.error.extends.unresolved',
+  // Ejecución (`src/core/recipes/run`): nada entra a la escena si aparece uno de estos.
+  'run.unknownOp': 'recipe.error.run.unknownOp',
+  'run.badArgs': 'recipe.error.run.badArgs',
+  'run.refArity': 'recipe.error.run.refArity',
+  'run.refMissing': 'recipe.error.run.refMissing',
+  'run.engine': 'recipe.error.run.engine',
+  'run.asset': 'recipe.error.run.asset',
+  'run.file': 'recipe.error.run.file',
+  'run.triangles': 'recipe.error.run.triangles',
+  'run.objects': 'recipe.error.run.objects',
+  'run.memory': 'recipe.error.run.memory',
+  'run.timeout': 'recipe.error.run.timeout',
+  'run.aborted': 'recipe.error.run.aborted',
+  'run.emptyOutput': 'recipe.error.run.emptyOutput',
+  'run.notReady': 'recipe.error.run.notReady',
 } as const satisfies Record<string, TranslationKey>;
 
 export type RecipeErrorCode = keyof typeof RECIPE_ERROR_KEYS;

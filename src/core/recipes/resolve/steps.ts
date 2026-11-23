@@ -79,7 +79,7 @@ export function resolveOutputs(env: RecipeEnv): ResolvedOutput[] {
       ref: output.ref.slice(1),
       name,
       ...(output.color !== undefined ? { color: output.color } : {}),
-      ...(output.isHole !== undefined ? { isHole: output.isHole } : {}),
+      ...(output.role !== undefined ? { role: output.role } : {}),
     };
   });
 }
