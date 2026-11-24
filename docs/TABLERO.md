@@ -236,6 +236,7 @@ Sin compromiso todavía; se evalúan antes de planificarlas.
 
 | Idea |
 |---|
+| Modelos con cientos o miles de colores (impresoras que mezclan): paleta, leyenda de filamentos y separar por colores preparados para muchos colores, con agrupación por parecido |
 | Dividir: numerar las caras de unión de cada pieza para saber cuál va con cuál al armar |
 | Cajas y carcasas: caja desde medidas o desde cualquier forma ahuecada; tapa por dentro, por fuera o sobre el borde; cierre con tornillos, insertos roscados, a presión, deslizante o imanes; esquinas rectas o redondeadas; ranuras de ventilación; paso de cable |
 | Agregados aplicables a cualquier objeto: orejas u ojos de cerradura para fijar al muro, alojamiento de imán, torreta para tornillo o inserto, compartimento con tapa (pilas, etiqueta NFC), gancho de encaje, paso de cable |
