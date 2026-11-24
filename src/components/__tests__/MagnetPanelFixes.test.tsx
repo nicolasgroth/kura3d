@@ -141,6 +141,26 @@ describe('campos del panel', () => {
 });
 
 describe('eliminar un preajuste propio', () => {
+  it('si el almacenamiento falla al borrar, avisa y el preajuste sigue', async () => {
+    const user = userEvent.setup();
+    render(<MagnetPanel />);
+    act(() => {
+      openMagnetPanel();
+      setMagnetParams({ sizeMm: 12, heightMm: 4 });
+    });
+    await user.type(screen.getByTestId('magnet-preset-name'), 'Tapa 12');
+    await user.click(screen.getByTestId('magnet-preset-save'));
+    // Al borrar el último, el almacenamiento se vacía con removeItem.
+    const spy = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => { throw new Error('bloqueado'); });
+    try {
+      await user.click(screen.getByTestId('magnet-preset-delete'));
+    } finally {
+      spy.mockRestore();
+    }
+    expect(useMagnetPresets.getState().presets).toHaveLength(1);
+    expect(store().toasts.some((x) => x.text === t('es', 'magnet.preset.storageFailed') && x.kind === 'error')).toBe(true);
+  });
+
   it('devuelve el foco al selector y ofrece Deshacer', async () => {
     const user = userEvent.setup();
     render(<MagnetPanel />);

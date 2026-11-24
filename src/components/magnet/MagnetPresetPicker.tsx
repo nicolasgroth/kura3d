@@ -77,7 +77,11 @@ export const MagnetPresetPicker: React.FC = () => {
     const gone = useMagnetPresets.getState().remove(mine.id);
     // El botón queda deshabilitado al eliminar: el foco vuelve al selector de preajuste, no al body.
     selectRef.current?.focus();
-    if (!gone) return;
+    if (!gone) {
+      // Si el preajuste sigue ahí, no se pudo escribir en el almacenamiento del navegador.
+      if (useMagnetPresets.getState().presets.some((p) => p.id === mine.id)) useKuraStore.getState().addToast(t(language, 'magnet.preset.storageFailed'), 'error');
+      return;
+    }
     useKuraStore.getState().addToast(t(language, 'magnet.preset.deleted', { name: gone.name }), 'info', {
       label: t(language, 'topbar.undo'),
       ariaLabel: t(language, 'magnet.preset.undoDelete', { name: gone.name }),

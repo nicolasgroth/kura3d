@@ -162,7 +162,7 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
             <span aria-hidden="true">{obj.metadata.split.assemblyStep}</span>
           </span>
         )}
-        {obj && isNegative(obj) && <span className="kura-hole-tag" aria-hidden="true">{t(language, 'sidebar.scene.holeBadge')}</span>}
+        {obj && isNegative(obj) && <span className="kura-hole-tag" aria-hidden="true" title={t(language, 'sidebar.scene.holeBadge')}><span className="kura-hole-tag-text">{t(language, 'sidebar.scene.holeBadge')}</span><MinusSquare className="kura-hole-tag-icon" size={12} /></span>}
         {obj && isReference(obj) && <span className="kura-hole-tag kura-reference-tag" aria-hidden="true">{t(language, 'sidebar.scene.referenceBadge')}</span>}
         {obj && <SceneColorSwatch obj={obj} language={language} part="spoken" />}
         <span className="sr-only">, {states.join(', ')}</span>

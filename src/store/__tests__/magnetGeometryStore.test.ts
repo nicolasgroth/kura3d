@@ -120,14 +120,11 @@ describe('imán más grande que la pieza', () => {
     expect(placed!.fill).toBeLessThan(0.2);
   });
 
-  it('imán más ancho que la cara pero bajo (40 × 10 en un cubo de 30): queda material, se coloca y se asoma', async () => {
+  it('imán más ancho que la cara aunque bajo (40 × 10 en un cubo de 30): sale por lados opuestos, no se coloca', async () => {
     const box = (await store().createPrimitive('box', { width: 30, height: 30, depth: 30 }, { position: [0, 0, 0] }))!;
     const params = { ...MAGNET_DEFAULTS, sizeMm: 40, heightMm: 10 };
     const placed = await store().addMagnetPocket({ hostId: box.id, params, point: [0, 30, 0], normal: [0, 1, 0] });
-    expect(placed).not.toBeNull();
-    // Dentro de la pieza: 30 × 30 × 10,2 de 27 000 mm³ ≈ 0,34 (el resto del negativo queda en el aire).
-    expect(placed!.fill).toBeGreaterThan(0.28);
-    expect(placed!.fill).toBeLessThan(0.4);
-    expect(placed!.wall.through).toBe(true);
+    expect(placed).toBeNull();
+    expect(store().toasts.some((t) => t.kind === 'error' && /más grande que la pieza/.test(t.text))).toBe(true);
   });
 });

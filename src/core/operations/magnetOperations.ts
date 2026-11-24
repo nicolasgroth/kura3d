@@ -11,7 +11,7 @@
 
 import * as engine from '../../engine';
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
-import { invalidMagnetFields, type MagnetParams } from '../addons/magnetPocket';
+import { invalidMagnetFields, MAGNET_RANGES, type MagnetParams } from '../addons/magnetPocket';
 import { analyzePocket } from '../addons/pocketAnalysis';
 import type { PocketWallReport } from '../addons/pocketWall';
 import { parametricOrigin } from '../scene/parametric';
@@ -42,6 +42,8 @@ export interface MagnetPocketResult {
   wall: PocketWallReport;
   /** Volumen del hueco dentro de la pieza / volumen de la pieza (aprox.): sobre `MAX_POCKET_FILL` no se coloca. */
   fill: number;
+  /** La boca del hueco es más ancha que la pieza en esa cara (sale por lados opuestos): no se coloca. */
+  spansFace: boolean;
 }
 
 const toWorld = (o: PlacedMesh): MeshData =>
@@ -49,7 +51,11 @@ const toWorld = (o: PlacedMesh): MeshData =>
 
 export async function createMagnetPocket(ctx: OperationContext, input: MagnetPocketInput): Promise<MagnetPocketResult> {
   const { host, params } = input;
-  if (invalidMagnetFields(params).length > 0) throw new engine.EngineError('INVALID_PARAMETER', { name: 'magnet' });
+  const [badField] = invalidMagnetFields(params);
+  if (badField) {
+    const { min, max } = MAGNET_RANGES[badField];
+    throw new engine.EngineError('INVALID_PARAMETER', { name: badField, value: String(params[badField]), min, max });
+  }
   const world = toWorld(host);
   const others = (input.pendingNegatives ?? []).map(toWorld);
   const analysis = analyzePocket(world, params, input.point, input.normal, others);
@@ -72,5 +78,5 @@ export async function createMagnetPocket(ctx: OperationContext, input: MagnetPoc
     ...built,
     metadata: { addon: { kind: 'magnet_pocket', params: { ...params }, hostId: host.id } },
   };
-  return { obj, wall: analysis.wall, fill: analysis.fill };
+  return { obj, wall: analysis.wall, fill: analysis.fill, spansFace: analysis.spansFace };
 }
