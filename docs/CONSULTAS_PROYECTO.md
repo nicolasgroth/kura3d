@@ -13,9 +13,3 @@ Para los valores por defecto de los agregados. Quedaste en averiguar cuáles usa
 
 ### 2. Prueba de los 3MF en OrcaSlicer
 Postergada por decisión tuya; sigue autorizada. Se hace contigo presente cuando me avises.
-
-### 3. Arrastrar para mover quedó en 84 de usabilidad tras tres rondas (24-nov)
-Código 88 y funcional 85; usabilidad 84, un punto bajo el mínimo. Lo que resta: en vista Frente, agarrar la pieza por su mitad superior no la mueve y no se dice por qué (el plano de movimiento es siempre el horizontal, como pediste, y desde el frente queda casi de canto). Ya está en `main`. Opciones:
-- **A:** dejarlo así por ahora y resolverlo cuando se haga la elección del plano según la vista, que es lo que de verdad lo arregla. Recomendada.
-- **B:** parche chico ahora: un aviso en pantalla cuando el arrastre no puede seguir al cursor por el ángulo de la vista, y separar el consejo de «Alt+arrastrar clona».
-- **C:** adelantar la elección del plano según la vista (en vista frontal o lateral, mover en el plano vertical).
