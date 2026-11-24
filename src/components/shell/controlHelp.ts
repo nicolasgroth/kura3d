@@ -63,6 +63,11 @@ export const CONTROL_HELP = {
   'panel.resize': { name: 'panel.resize', desc: 'panel.help.resize' },
   'panel.collapse': { name: 'ui.panel.collapseRight', desc: 'panel.help.collapse' },
   'panel.back': { name: 'panel.action.back', desc: 'panel.help.back', shortcut: 'Esc', keys: 'Escape' },
+  'fitCheck.clearance': { name: 'fitCheck.ui.clearance', desc: 'fitCheck.help.clearance' },
+  'fitCheck.applyNegatives': { name: 'fitCheck.ui.applyNegatives', desc: 'fitCheck.help.applyNegatives' },
+  'fitCheck.run': { name: 'fitCheck.ui.run', desc: 'fitCheck.help.run' },
+  'fitCheck.cancel': { name: 'fitCheck.ui.cancel', desc: 'fitCheck.help.cancel' },
+  'fitCheck.pair': { name: 'fitCheck.ui.list', desc: 'fitCheck.help.pair', shortcut: 'Enter', keys: 'Enter' },
 } as const satisfies Record<string, ControlHelpDef>;
 
 export type HelpId = keyof typeof CONTROL_HELP;

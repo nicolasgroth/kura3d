@@ -11,6 +11,7 @@ Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una ti
 | [Cortar y ahuecar](cortar-y-ahuecar.md) | Corte con un plano, dónde dejar la mitad que conservas, ahuecar |
 | [Sólidos negativos y restas](solidos-negativos-y-restas.md) | Agujeros y rebajes con negativos; unir, restar e intersectar |
 | [Objetos de referencia](objetos-de-referencia.md) | Importar una pieza real (placa, tornillo) para diseñar a su medida, sin imprimirla ni exportarla |
+| [Comprobar encaje](comprobar-encaje.md) | Saber si una placa entra en su bolsillo o una tapa cierra: choques y holguras entre piezas y referencias |
 | [Grupos y escena](grupos-y-escena.md) | Agrupar piezas y ordenarlas en el panel Escena |
 | [Medir](medir.md) | Distancias, ángulos, áreas, volumen y capacidad de un recipiente |
 | [Colores y pintura](colores-y-pintura.md) | Pintar caras y separar por colores para multicolor |

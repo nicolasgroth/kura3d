@@ -21,6 +21,7 @@ import { NativeModal } from '../NativeModal';
 import { BedProfileSelect } from './BedProfileSelect';
 import { FitAlternativeCard } from './FitAlternativeCard';
 import { useFitFormat } from './fitFormat';
+import { offerFitCheckAfterFit } from '../fitCheck/offerFitCheck';
 import '../../styles/fitToBed.css';
 
 export const FitToBedDialog: React.FC = () => {
@@ -85,7 +86,10 @@ export const FitToBedDialog: React.FC = () => {
       return;
     }
     const done = await store.applyFitToBed(activeIds, selected.kind);
-    if (done) close();
+    if (!done) return;
+    close();
+    // Comprobación final opcional: con referencias o medidas funcionales, ofrece revisar el encaje.
+    offerFitCheckAfterFit(activeIds, done.analysis.functional.length, done.applied.factor);
   };
 
   const nameOf = (id: string) => objects.find((o) => o.id === id)?.name ?? id;

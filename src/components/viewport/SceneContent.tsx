@@ -34,6 +34,7 @@ import { FitPreviewGhost } from '../fitToBed/FitPreviewGhost';
 import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
 import { OpenEdgesOverlay } from './OpenEdgesOverlay';
+import { FitCheckHighlight } from '../fitCheck/FitCheckHighlight';
 import { GroupTransformGizmo } from './GroupTransformGizmo';
 import { GroupEnterOnDoubleClick } from './GroupEnterOnDoubleClick';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
@@ -211,6 +212,7 @@ export const SceneContent: React.FC<{
       <FitPreviewGhost />
       <SegmentHighlight />
       <OpenEdgesOverlay />
+      <FitCheckHighlight />
 
       {activeTool === 'paint' && <PaintBrushCursor />}
       {activeTool === 'measure' && <MeasureOverlay />}

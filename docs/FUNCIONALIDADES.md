@@ -29,6 +29,7 @@ Estados: **Activa** (disponible al usuario), **Parcial** (existe con límites co
 | F-MCP | Servidor MCP | 49 herramientas para agentes externos sobre el mismo motor de la app | Activa; token obligatorio | `mcp-server/` |
 | F-DIVIDIR | Dividir para imprimir | Partir un modelo grande en piezas que caben en la cama, con uniones, nombre por pieza, marcas de pareja grabadas y planos ajustables; exportar un archivo por pieza | Activa | `src/engine/split/`, `src/components/split/` |
 | F-ARMADO | Vista explosionada y armado | Animación de armado, "Preparar para imprimir" por placas y "Volver a armar" | Activa | `src/components/split/`, `src/core/scene/splitGroups.ts` |
+| F-ENCAJE | Comprobar encaje | Bajo pedido (menú Acciones y clic derecho), sin cambiar la escena: choques (volumen) y holguras entre piezas y referencias, con las restas pendientes aplicadas en copia, recomendación por par, resaltado de la zona o la cota en el visor y aviso tras Ajustar a la impresora | Activa | `src/engine/fitCheck/`, `src/components/fitCheck/` |
 | F-MULTI | Multimaterial verificado | 3MF comprobado en slicers reales | Planificada | — |
 | F-IMG3D | Imagen a modelo 3D | Generar malla desde imagen | Planificada | — |
 

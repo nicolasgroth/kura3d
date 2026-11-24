@@ -13,6 +13,7 @@ import React from 'react';
 import type { TranslationKey } from '../../i18n';
 import type { ActionId } from '../../store/actionsCatalog';
 import type { InspectorSectionProps } from '../inspector/inspectorTypes';
+import { FitCheckPanel } from '../fitCheck/FitCheckPanel';
 import { HollowPanel } from '../inspector/HollowPanel';
 import { MeshRefinePanel } from '../inspector/MeshRefinePanel';
 import { ModulesPanel } from '../inspector/ModulesPanel';
@@ -24,7 +25,9 @@ export interface PanelContentEntry {
   /** Título del panel (y del anuncio). */
   title: TranslationKey;
   /** Opciones de la acción sobre el objeto (incluyen su botón de aplicar). */
-  render: (props: InspectorSectionProps) => React.ReactNode;
+  render?: (props: InspectorSectionProps) => React.ReactNode;
+  /** Contenido de una acción de escena (`SCENE_PANEL_ACTIONS`): no depende de un objeto; trae su propio destino. */
+  renderScene?: () => React.ReactNode;
 }
 
 const PANEL_CONTENT = new Map<ActionId, PanelContentEntry>([
@@ -35,6 +38,7 @@ const PANEL_CONTENT = new Map<ActionId, PanelContentEntry>([
   ['modules', { title: 'panel.title.modules', render: (p) => <ModulesPanel {...p} /> }],
   ['validate', { title: 'panel.title.validate', render: (p) => <PrintCheckPanel primary={p.primary} /> }],
   ['detect', { title: 'panel.title.detect', render: (p) => <StructureDetectionPanel {...p} /> }],
+  ['fitCheck', { title: 'fitCheck.ui.title', renderScene: () => <FitCheckPanel /> }],
 ]);
 
 /** Registra (o reemplaza) el contenido de una acción del panel. */

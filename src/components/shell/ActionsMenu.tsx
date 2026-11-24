@@ -26,6 +26,7 @@ import {
   Minimize2,
   PaintBucket,
   Puzzle,
+  Ruler,
   ScanSearch,
   ShieldCheck,
   Sparkles,
@@ -74,6 +75,7 @@ const ICONS: Record<ActionId, React.ReactNode> = {
   align: <AlignCenter size={14} aria-hidden="true" />,
   validate: <ShieldCheck size={14} aria-hidden="true" />,
   detect: <ScanSearch size={14} aria-hidden="true" />,
+  fitCheck: <Ruler size={14} aria-hidden="true" />,
 };
 
 /** Ancho del menú para acotarlo a la ventana (coincide con `contextMenuFit.css`). */
