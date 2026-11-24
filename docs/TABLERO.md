@@ -166,17 +166,13 @@ Ordenadas por prioridad dentro de cada grupo.
 
 | Grupo | Funcionalidad |
 |---|---|
-| Interfaz | Diseño clásico de aplicación (decidido el 23-nov): barra superior de archivo y ajustes, barra vertical de herramientas con iconos más grandes, una sola barra de vista agrupada, botón para ocultar todos los rótulos, y desplegable de historial junto a deshacer y rehacer. Empieza al recibir la evaluación de usabilidad en curso |
 | Pintura | Para más adelante (pedido el 23-nov): cursor que muestra el área afectada también en esculpir y borrar; pincel de borde duro o suave a elección; relleno hasta el borde que encuentre, con tolerancia ajustable; profundidad del pintado como parte de la configuración del pincel (por ejemplo una capa de 0,5 mm); y, si la pieza queda pintada entera de un color, opción de que sea de ese color en todo su volumen y no solo en la superficie. Criterio del autor: separar por colores es opcional; con impresoras multicabezal o multifilamento la pieza pintada se imprime entera, así que cortar, dividir y exportar deben conservar los colores sin obligar a separarlos |
-| Asistentes | Objetos de referencia (pedido el 23-nov): un tercer tipo de objeto que se ve, incluso semitransparente, pero no se imprime ni se exporta (la placa del Arduino, cables, un tornillo), y comprobación de encaje entre referencias y piezas (interferencias y holguras), disponible también para la IA por MCP. En análisis: `docs/diseno/OBJETOS_DE_REFERENCIA.md` |
-| Asistentes | Diseños en análisis el 23-nov: formato de recetas de los asistentes (`docs/diseno/ASISTENTES.md`) y geometría de agregados, cajas, suavizar y ajustar a la impresora (`docs/diseno/AGREGADOS_Y_PREPARACION.md`) |
-| Preparación | Ajustar a la impresora (perfiles de cama y escala proporcional) y Suavizar (aristas, malla completa o zona marcada) |
+| Preparación | Suavizar: aristas, malla completa o zona marcada (ajustar a la impresora ya está hecho) |
 | Asistentes | Sección de asistentes de creación paso a paso. Primero: agregados (fijación al muro, imán, torreta, compartimento con tapa), caja con tapa y recetas guardables. Cada asistente es una receta configurable (parámetros, reglas y pasos) en el mismo formato que usarán las extensiones, para que la gente cree y comparta los suyos. Se presenta el diseño antes de implementar |
-| Proyecto | Datos del proyecto: nombre editable, descripción y notas, fecha de creación y de última modificación (y, si aporta, autor y tiempo de trabajo), guardados en el `.kura` y visibles al abrir y en recientes (pedido del autor, 23-nov) |
+| Proyecto | Datos del proyecto (el nombre ya es editable): descripción y notas, fecha de creación y de última modificación (y, si aporta, autor y tiempo de trabajo), guardados en el `.kura` y visibles al abrir y en recientes (pedido del autor, 23-nov) |
 | Edición | Instancias: copias vinculadas de un objeto que cambian todas juntas al editar una (idea tomada de OrcaSlicer) |
 | Edición | Recargar un objeto desde su archivo de origen cuando este cambia en disco |
-| Base | Pruebas E2E reales con Playwright y pruebas de regresión geométrica |
-| Dividir para imprimir | Validación de armado: todo cierra, los conectores no chocan y existe un orden de montaje; con el orden numerado |
+| Base | Pruebas de regresión geométrica (las pruebas E2E con Playwright ya existen) |
 | Dividir para imprimir | Uniones firmes: tamaño mínimo de conector y de pared según la sección |
 | Dividir para imprimir | Cortes por las partes naturales de la figura (estrechamientos), además de la rejilla |
 | Dividir para imprimir | Uniones vinculadas entre mitades (mover una mueve su pareja) |
@@ -186,20 +182,16 @@ Ordenadas por prioridad dentro de cada grupo.
 | Dividir para imprimir | Flujo inteligente: separar primero por color y después dividir solo las piezas que no caben |
 | Dividir para imprimir | Vista sin camas: las piezas flotando entre armado y desarmado, con todas las placas a la vista |
 | Dividir para imprimir | Guía de uniones: previsualizar, editar y confirmar |
-| Placas y escena | Placas como entidad del proyecto y camas personalizadas |
+| Placas y escena | Placas como entidad del proyecto (las camas personalizadas ya existen) |
 | Placas y escena | Asistente de importación con 11 modos de distribución |
-| Placas y escena | Árbol de escena con grupos, instancias, filtros y búsqueda |
+| Placas y escena | Árbol de escena: instancias, filtros y búsqueda (los grupos ya existen) |
 | Placas y escena | Arrastrar la pieza seleccionada sobre la bandeja; clic fuera mueve la cámara |
 | Encajes | Tapa roscada y roscas emparejadas |
 | Encajes | Acoples de tubería macho/hembra |
 | Encajes | Clips, tornillos, insertos, imanes; biblioteca de conectores |
-| Encajes | Detección de colisiones, holguras e interferencias |
-| Color y material | Separar por color o región para imprimir aparte |
 | Color y material | 3MF multimaterial verificado en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura |
-| Estudio | Paneles móviles, minimizables y que se agregan o quitan, con un menú fijo para reabrir cualquiera |
 | Estudio | Guardar, cargar y restablecer la disposición del escritorio (perfiles de layout por usuario) |
 | Estudio | Pestañas de proyecto |
-| Estudio | Menú de clic derecho en visor y árbol (agregar, quitar, mostrar, ocultar, operar) |
 | Estudio | Atajos editables y uso completo por teclado |
 | Estudio | Entrada numérica flotante junto al cursor al pulsar M, R o S |
 | Estudio | Línea de comandos integrada |
@@ -222,7 +214,6 @@ Ordenadas por prioridad dentro de cada grupo.
 | IA e integraciones | Dictado por voz en español e inglés |
 | IA e integraciones | Imagen a modelo 3D |
 | IA e integraciones | Adjuntar imágenes y archivos de referencia en el chat |
-| Automatización | Al importar: revisar la malla, avisar defectos y ofrecer repararla |
 | Automatización | Orientar la pieza sola para minimizar voladizos y apoyar la mejor cara |
 | Automatización | Acomodar las piezas en la cama, y repartir en varias placas si no caben |
 | Automatización | Recetas: guardar una secuencia de pasos y repetirla sobre otra pieza o un lote |
