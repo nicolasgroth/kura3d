@@ -1,7 +1,7 @@
 /**
  * @file src/components/ProjectButton.tsx
  * @description Botón «Proyecto» de la barra superior: no abre un menú; muestra el panel derecho «Proyecto»
- * (`showProjectPanel`: quita la selección, abre el panel si estaba plegado y, en pantallas estrechas, su hoja) y
+ * (`showProjectPanel`: lo fija sin quitar la selección ni la herramienta, abre el panel si estaba plegado y, en pantallas estrechas, su hoja) y
  * lleva el foco a su título. Muestra el nombre del proyecto y un punto de cambios sin guardar que reserva su
  * sitio (la barra no cambia de ancho al editar). Las acciones de archivo y sus atajos viven en ese panel.
  * @author Nicolás Groth <ngroth@gmail.com>

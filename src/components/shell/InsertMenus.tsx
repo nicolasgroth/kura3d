@@ -1,8 +1,8 @@
 /**
  * @file src/components/shell/InsertMenus.tsx
  * @description Menús para agregar a la escena, ambos sobre el catálogo `store/insertCatalog.ts`:
- * - `AddRailButton`: botón «Agregar» de la barra vertical; abre a su derecha un menú con las primitivas
- *   (Caja … Texto 3D) con icono y nombre. → abre, ↑/↓ recorren, Enter elige, Esc cierra y devuelve el foco.
+ * - `AddRailButton`: botón «Agregar» de la barra vertical; abre a su derecha el mismo menú que «Insertar»
+ *   (formas y generadores) con icono y nombre. → abre, ↑/↓ recorren, Enter elige, Esc cierra y devuelve el foco.
  * - `InsertMenu`: menú «Insertar» de la barra superior con las mismas formas y los generadores (Importar SVG,
  *   Imagen → 3D, Rosca ISO, Cubo de calibración).
  * Mientras el motor no está listo o hay una operación en curso, las entradas quedan deshabilitadas con su motivo.
@@ -48,6 +48,17 @@ function useItems(pick: (fn: () => unknown) => () => void) {
   };
 }
 
+/** Formas y generadores del catálogo: el mismo contenido para «Agregar» y para «Insertar». */
+const InsertSections: React.FC<{ item: (id: InsertId) => React.ReactNode }> = ({ item }) => {
+  const language = useKuraStore((s) => s.language);
+  return (
+    <>
+      <MenuGroup title={t(language, 'r3a.insert.shapes' as TranslationKey)}>{SHAPES.map((shape) => item(shape.id))}</MenuGroup>
+      <MenuGroup title={t(language, 'r3a.insert.generators')}>{GENERATORS.map((id) => item(id))}</MenuGroup>
+    </>
+  );
+};
+
 export const AddRailButton: React.FC<{
   tabIndex: number;
   buttonRef: (el: HTMLButtonElement | null) => void;
@@ -76,7 +87,7 @@ export const AddRailButton: React.FC<{
         <SquarePlus size={20} aria-hidden="true" />
         <span className="kura-tool-rail-label" aria-hidden="true">{name}</span>
       </button>
-      {menu.render(t(language, 'r3a.add.menu'), SHAPES.map((shape) => item(shape.id)))}
+      {menu.render(t(language, 'r3a.add.menu'), <InsertSections item={item} />)}
     </>
   );
 };
@@ -99,13 +110,7 @@ export const InsertMenu: React.FC<{ showLabel: boolean }> = ({ showLabel }) => {
         {showLabel && <span className="kura-btn-label">{label}</span>}
         <ChevronDown size={11} aria-hidden="true" />
       </button>
-      {menu.render(
-        label,
-        <>
-          <MenuGroup title={t(language, 'r3a.insert.shapes' as TranslationKey)}>{SHAPES.map((shape) => item(shape.id))}</MenuGroup>
-          <MenuGroup title={t(language, 'r3a.insert.generators')}>{GENERATORS.map((id) => item(id))}</MenuGroup>
-        </>,
-      )}
+      {menu.render(label, <InsertSections item={item} />)}
     </>
   );
 };

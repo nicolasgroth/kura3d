@@ -13,7 +13,7 @@ import type { AxisDirection } from '../../core/scene/displayAxes';
 import type { ObjectRole, SceneObject, Vec3 } from '../../types/kura';
 
 /** Lo mínimo de un objeto para comprobar el encaje (malla local + transformación interna). */
-export type FitCheckBody = Pick<SceneObject, 'id' | 'name' | 'role' | 'mesh' | 'position' | 'rotation' | 'scale'>;
+export type FitCheckBody = Pick<SceneObject, 'id' | 'name' | 'role' | 'mesh' | 'position' | 'rotation' | 'scale'> & Partial<Pick<SceneObject, 'metadata'>>;
 
 export interface FitCheckOptions {
   /** Aplica (en copia) las restas pendientes de cada sólido antes de comparar. Por defecto `true`. */
@@ -48,8 +48,11 @@ export interface FitCheckHooks {
   shouldCancel?: () => boolean;
 }
 
-/** Estado de un par: se cruzan, holgura menor que la deseada, holgura suficiente, lejos (fuera de búsqueda). */
-export type FitPairStatus = 'interferes' | 'tight' | 'ok' | 'far';
+/**
+ * Estado de un par: se cruzan, holgura menor que la deseada, holgura suficiente, lejos (fuera de búsqueda) o
+ * unión del corte (dos piezas de Dividir en posición de armado que se tocan a propósito: no es un problema).
+ */
+export type FitPairStatus = 'interferes' | 'tight' | 'ok' | 'far' | 'cutJoint';
 export type FitPairKind = 'reference-solid' | 'solid-solid';
 
 /** Texto por regla: clave i18n y parámetros (números en mm, direcciones `+x`… del usuario). */
@@ -111,6 +114,8 @@ export interface FitCheckSummary {
   interferes: number;
   tight: number;
   ok: number;
+  /** Uniones del corte: piezas de Dividir que se tocan a propósito (no cuentan como justas ni como choque). */
+  cutJoints: number;
   /** Lejos: descartados por la fase ancha o con holgura mayor que el tope de búsqueda. */
   far: number;
   /** Candidatos sin revisar por `maxPairs` o por el tope de tiempo. */

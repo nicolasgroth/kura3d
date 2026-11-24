@@ -23,7 +23,7 @@ describe('Panel Proyecto', () => {
     useKuraStore.setState({ projectName: 'Tapa.kura', projectRenamed: false, projectRecovered: false, savedProject: null, objects: [], busyOperation: null, projectBusy: false } as never);
   });
 
-  it('el botón Proyecto no es un menú: muestra el panel, quita la selección y lo abre si estaba plegado', async () => {
+  it('el botón Proyecto no es un menú: muestra el panel sin quitar la selección y lo abre si estaba plegado', async () => {
     useKuraStore.setState({ selectedIds: ['a'], rightCollapsed: true, activeAction: 'hollow' } as never);
     const user = userEvent.setup();
     render(<ProjectButton />);
@@ -31,8 +31,8 @@ describe('Panel Proyecto', () => {
     expect(button.getAttribute('aria-haspopup')).toBeNull();
     await user.click(button);
     const s = useKuraStore.getState();
-    expect(s.selectedIds).toEqual([]);
-    expect(s.activeAction).toBeNull();
+    expect(s.selectedIds).toEqual(['a']);
+    expect(s.projectPanelPin).not.toBeNull();
     expect(s.rightCollapsed).toBe(false);
   });
 

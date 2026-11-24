@@ -49,6 +49,7 @@ import { BORDES_FR } from './bordesPrimitivas';
 import { UX7_FR } from './ux7';
 import { UX8_FR } from './ux8';
 import { UX10_FR } from './ux10';
+import { UX9_FR } from './ux9';
 import { REDISENO_FR } from './rediseno';
 import { PANEL_FR } from './panel';
 import { ENCAJE_UI_FR } from './encajeUi';
@@ -101,6 +102,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...UX7_FR,
   ...UX8_FR,
   ...UX10_FR,
+  ...UX9_FR,
   ...REDISENO_FR,
   ...PANEL_FR,
   ...ENCAJE_UI_FR,
@@ -1282,7 +1284,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'Chaque pièce posée sur son plateau (côte à côte), sans déplacer la scène',
   'export.split.zipDone': '{count} pièces exportées dans {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'La pièce {code} contient un fragment détaché de {volume} mm³ qui n\'a pas pu être fusionné avec une voisine : il reste une pièce à part.',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': 'La pièce {code} a absorbé un fragment détaché de {volume} mm³ de la cellule voisine et dépasse de {protrusion} mm le plan de coupe (voulu ; avec un seuil de fragment de 0, il reste une pièce à part).',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'La pièce {code} inclut un petit morceau détaché de {volume} mm³ resté du découpage voisin, elle dépasse donc de {protrusion} mm le plan de coupe. C’est voulu : cela évite une minuscule pièce à part.',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': 'Plans ({planes}) sans section évitant de couper des parois dans la longueur ; au total : {count}. La position uniforme a été conservée.',
   'split.joint.auto': 'Connecteurs là où ils tiennent ; sinon coupe lisse à coller',
   'split.joint.lap': 'Recouvrement de bord (modifie la forme)',

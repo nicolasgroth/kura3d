@@ -44,6 +44,11 @@ describe('QA22: acciones del catálogo en la paleta', () => {
     expect(items.some((i) => i.id === 'action-texture')).toBe(true);
   });
 
+  it('«Comprobar encaje» se encuentra buscando «holgura»', () => {
+    const item = actionPaletteItems('es', state(['a', 'b']) as never, []).find((i) => i.id === 'action-fitCheck');
+    expect(item?.keywords).toContain('holgura');
+  });
+
   it('una acción apagada lleva su motivo', () => {
     const items = actionPaletteItems('es', state([]) as never, []);
     expect(items.find((i) => i.id === 'action-union')?.unavailable).toBeTruthy();

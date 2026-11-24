@@ -49,6 +49,7 @@ import { BORDES_HI } from './bordesPrimitivas';
 import { UX7_HI } from './ux7';
 import { UX8_HI } from './ux8';
 import { UX10_HI } from './ux10';
+import { UX9_HI } from './ux9';
 import { REDISENO_HI } from './rediseno';
 import { PANEL_HI } from './panel';
 import { ENCAJE_UI_HI } from './encajeUi';
@@ -101,6 +102,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...UX7_HI,
   ...UX8_HI,
   ...UX10_HI,
+  ...UX9_HI,
   ...REDISENO_HI,
   ...PANEL_HI,
   ...ENCAJE_UI_HI,
@@ -1282,7 +1284,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'हर टुकड़ा अपनी प्लेट पर (अगल-बगल), दृश्य हिलाए बिना',
   'export.split.zipDone': '{count} टुकड़े {name} में निर्यात',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'भाग {code} में {volume} mm³ का एक अलग टुकड़ा है जिसे किसी पड़ोसी से नहीं जोड़ा जा सका: यह अलग भाग रहेगा।',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': 'भाग {code} ने पड़ोसी सेल का {volume} mm³ का एक अलग टुकड़ा जोड़ लिया है और कट प्लेन से {protrusion} mm बाहर निकलता है (जानबूझकर; टुकड़ा सीमा 0 होने पर यह अलग भाग रहता है)।',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'भाग {code} में पड़ोसी कट से बचा {volume} mm³ का एक छोटा अलग टुकड़ा शामिल है, इसलिए यह कट प्लेन से {protrusion} mm बाहर निकलता है। यह जानबूझकर है: इससे एक नन्हा अलग भाग नहीं बनता।',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} तल ({planes}) को ऐसा खंड नहीं मिला जो दीवारों को लंबाई में न काटे: समान स्थिति रखी गई।',
   'split.joint.auto': 'जहाँ फिट हों वहाँ कनेक्टर; बाकी जगह चिपकाने के लिए सपाट कट',
   'split.joint.lap': 'किनारा ओवरलैप (आकार बदलता है)',

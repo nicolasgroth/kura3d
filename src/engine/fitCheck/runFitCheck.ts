@@ -17,6 +17,7 @@ import { initManifoldEngine } from '../manifoldKernel';
 import { requireOperationRange } from '../engineErrors';
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../operationLimits';
 import { broadPhasePairs, possiblePairCount } from './broadPhase';
+import { areCutJointPartners, CUT_JOINT_MAX_OVERLAP_MM } from './cutJoint';
 import { disposeBodies, FIT_SIMPLIFY_TOLERANCE_MM, manifoldForPair, prepareBodies, type PreparedBody } from './fitBodies';
 import type {
   FitCheckHooks, FitCheckInput, FitCheckOptions, FitCheckReport, FitMessage, FitPairResult, FitPairStatus, ResolvedFitCheckOptions,
@@ -74,7 +75,10 @@ function evaluatePair(a: PreparedBody, b: PreparedBody, opts: ResolvedFitCheckOp
     kind: a.reference || b.reference ? 'reference-solid' as const : 'solid-solid' as const,
     approximate: !exact, simplified: simplify,
   };
-  if (inter) {
+  const partners = areCutJointPartners(a.cut, b.cut);
+  const zoneSize = inter ? inter.zone.getSize(inter.zone.min.clone()) : null;
+  const faceContact = partners && zoneSize !== null && Math.min(zoneSize.x, zoneSize.y, zoneSize.z) <= CUT_JOINT_MAX_OVERLAP_MM;
+  if (inter && !faceContact) {
     const size = inter.zone.getSize(inter.zone.min.clone());
     const center = inter.zone.getCenter(inter.zone.min.clone());
     const point = vec(center);
@@ -90,8 +94,10 @@ function evaluatePair(a: PreparedBody, b: PreparedBody, opts: ResolvedFitCheckOp
     };
   }
   const near = closestPoints(a, b, opts.searchMm);
+  if (faceContact) return { ...base, status: 'cutJoint', interference: null, clearanceMm: 0, closest: null, recommendation: null };
   if (!near) return { ...base, status: 'far', interference: null, clearanceMm: null, closest: null, recommendation: null };
-  const status: FitPairStatus = near.distance < opts.clearanceTargetMm ? 'tight' : 'ok';
+  // Pareja del mismo corte en posición de armado: se tocan a propósito, no es un problema de holgura.
+  const status: FitPairStatus = near.distance < opts.clearanceTargetMm ? (partners ? 'cutJoint' : 'tight') : 'ok';
   const mid = near.onA.clone().add(near.onB).multiplyScalar(0.5);
   return {
     ...base, status, interference: null, clearanceMm: r3(near.distance),
@@ -102,7 +108,7 @@ function evaluatePair(a: PreparedBody, b: PreparedBody, opts: ResolvedFitCheckOp
   };
 }
 
-const RANK: Record<FitPairStatus, number> = { interferes: 0, tight: 1, ok: 2, far: 3 };
+const RANK: Record<FitPairStatus, number> = { interferes: 0, tight: 1, cutJoint: 2, ok: 3, far: 4 };
 function comparePairs(p: FitPairResult, q: FitPairResult): number {
   if (RANK[p.status] !== RANK[q.status]) return RANK[p.status] - RANK[q.status];
   if (p.status === 'interferes') return q.interference!.volumeMm3 - p.interference!.volumeMm3;
@@ -158,6 +164,7 @@ export async function runFitCheck(input: FitCheckInput, hooks: FitCheckHooks = {
         interferes: count('interferes'),
         tight: count('tight'),
         ok: count('ok'),
+        cutJoints: count('cutJoint'),
         far: possiblePairs - candidates.length + count('far'),
         skipped,
         worst: worstPair(pairs),

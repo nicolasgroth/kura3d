@@ -70,7 +70,7 @@ describe('plurales de los avisos de reparación e importación', () => {
       '1 large hole (30 mm) was closed with a cap: check the shape is what you expect.',
     );
     expect(t('es', 'engineWarning.REPAIR_HOLES_LEFT', { count: 1, sizeMm: 4 })).toBe('Quedó 1 agujero sin cerrar (de 4 mm): revisa el modelo.');
-    expect(t('es', 'realesMotor.repairAllDone', { closed: 1, total: 1, pieces: 1 })).toBe('Mallas reparadas y cerradas: 1 de 1 (1 pieza).');
+    expect(t('es', 'realesMotor.repairAllDone', { closed: 1, total: 1, pieces: 1 })).toBe('Se repararon y cerraron 1 malla (las usan 1 pieza).');
     expect(t('es', 'realesUi.import.parts', { done: 1, total: 1 })).toBe('1 de 1 pieza');
     expect(t('es', 'realesUi.mesh.openOther', { count: 1 })).toBe('Abierta: 1 borde libre');
     expect(t('es', 'import.openMeshMany', { count: 4, list: 'a' })).toBe('4 piezas tienen la malla abierta (a): revísalas antes de imprimir.');

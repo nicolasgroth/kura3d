@@ -36,9 +36,20 @@ describe('diagnóstico de unidades', () => {
     expect(model.unitHint!.suggestions[0]).toMatchObject({ kind: 'times100', factor: 100 });
   });
 
+  it('un cubo de 2 mm ofrece las conversiones habituales con su resultado', () => {
+    const hint = unitHintForSize(2)!;
+    expect(hint.direction).toBe('tiny');
+    const by = Object.fromEntries(hint.suggestions.map((s) => [s.kind, s]));
+    expect(by.inches).toMatchObject({ factor: 25.4 });
+    expect(by.inches.resultMm).toBeCloseTo(50.8, 5);
+    expect(by.centimeters.resultMm).toBeCloseTo(20, 5);
+    expect(by.meters.resultMm).toBeCloseTo(2000, 5);
+    expect(unitHintForSize(4.9)).not.toBeNull();
+  });
+
   it('tamaños razonables no avisan; enormes sí; el 3MF respeta su unidad', () => {
     expect(parseModelFile('ok.stl', cubeStlBinary(40)).unitHint).toBeUndefined();
-    expect(unitHintForSize(2)).toBeNull();
+    expect(unitHintForSize(5)).toBeNull();
     expect(unitHintForSize(5000)).toBeNull();
     expect(unitHintForSize(Number.NaN)).toBeNull();
     expect(unitHintForSize(0)).toBeNull();

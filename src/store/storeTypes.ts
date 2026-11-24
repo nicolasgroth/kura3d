@@ -260,6 +260,8 @@ export interface KuraStoreState {
   toasts: ToastMessage[];
   /** Últimos avisos y errores (aunque ya se hayan cerrado o se hayan mostrado dentro de un diálogo). */
   toastHistory: ToastHistoryEntry[];
+  /** Panel «Proyecto» fijado desde la barra superior sin tocar la selección; vale mientras no cambie el contexto. */
+  projectPanelPin: import('./panelContext').ProjectPanelPin | null;
 
   // Acciones de inicialización, densidad y preferencias
   initEngine: () => Promise<void>;
@@ -268,7 +270,7 @@ export interface KuraStoreState {
   toggleZenMode: () => void;
   toggleLeftSidebar: () => void;
   toggleRightInspector: () => void;
-  /** Muestra el contexto «Proyecto» del panel derecho: quita la selección y la acción activa y abre el panel. */
+  /** Muestra el contexto «Proyecto» del panel derecho: lo fija sin quitar la selección ni la herramienta y abre el panel. */
   showProjectPanel: () => void;
   setSectionPlane: (patch: Partial<{ enabled: boolean; heightMm: number }>) => void;
   setShowOverhangs: (show: boolean) => void;

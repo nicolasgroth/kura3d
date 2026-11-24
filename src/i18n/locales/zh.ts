@@ -49,6 +49,7 @@ import { BORDES_ZH } from './bordesPrimitivas';
 import { UX7_ZH } from './ux7';
 import { UX8_ZH } from './ux8';
 import { UX10_ZH } from './ux10';
+import { UX9_ZH } from './ux9';
 import { REDISENO_ZH } from './rediseno';
 import { PANEL_ZH } from './panel';
 import { ENCAJE_UI_ZH } from './encajeUi';
@@ -101,6 +102,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...UX7_ZH,
   ...UX8_ZH,
   ...UX10_ZH,
+  ...UX9_ZH,
   ...REDISENO_ZH,
   ...PANEL_ZH,
   ...ENCAJE_UI_ZH,
@@ -1282,7 +1284,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': '每个零件放在其批次平台上（并排），不改动场景',
   'export.split.zipDone': '已将 {count} 个零件导出到 {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': '零件 {code} 带有一个 {volume} mm³ 的游离碎块，无法与相邻零件合并：保留为单独零件。',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': '零件 {code} 合并了相邻单元中 {volume} mm³ 的游离碎块，超出切割平面 {protrusion} mm（有意为之；碎块阈值为 0 时保留为单独零件）。',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': '零件 {code} 包含相邻切割遗留的 {volume} mm³ 小碎块，因此超出切割平面 {protrusion} mm。这是有意为之：避免产生一个很小的单独零件。',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} 个平面（{planes}）找不到不沿长度方向切开壁的截面：保留均匀位置。',
   'split.joint.auto': '能放下处用连接件；其余为平切面，用于粘合',
   'split.joint.lap': '边缘搭接（会改变形状）',

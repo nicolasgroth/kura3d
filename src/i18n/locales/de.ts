@@ -49,6 +49,7 @@ import { BORDES_DE } from './bordesPrimitivas';
 import { UX7_DE } from './ux7';
 import { UX8_DE } from './ux8';
 import { UX10_DE } from './ux10';
+import { UX9_DE } from './ux9';
 import { REDISENO_DE } from './rediseno';
 import { PANEL_DE } from './panel';
 import { ENCAJE_UI_DE } from './encajeUi';
@@ -101,6 +102,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...UX7_DE,
   ...UX8_DE,
   ...UX10_DE,
+  ...UX9_DE,
   ...REDISENO_DE,
   ...PANEL_DE,
   ...ENCAJE_UI_DE,
@@ -1282,7 +1284,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'Jedes Teil liegt auf seiner Platte (nebeneinander), ohne die Szene zu ändern',
   'export.split.zipDone': '{count} Teile nach {name} exportiert',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'Teil {code} enthält ein loses Fragment von {volume} mm³, das mit keinem Nachbarn verschmolzen werden konnte: es bleibt ein eigenes Teil.',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': 'Teil {code} hat ein loses Fragment von {volume} mm³ aus der Nachbarzelle aufgenommen und ragt {protrusion} mm über die Schnittebene hinaus (beabsichtigt; mit Fragment-Schwelle 0 bleibt es ein eigenes Teil).',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'Teil {code} enthält ein kleines loses Stück von {volume} mm³ vom benachbarten Schnitt und ragt deshalb {protrusion} mm über die Schnittebene hinaus. Das ist Absicht: So entsteht kein winziges Einzelteil.',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': 'Ebenen ({planes}) ohne Schnitt, der Wände nicht der Länge nach teilt; insgesamt: {count}. Die gleichmäßige Position wurde beibehalten.',
   'split.joint.auto': 'Verbinder, wo sie passen; sonst glatter Schnitt zum Kleben',
   'split.joint.lap': 'Randüberlappung (ändert die Form)',

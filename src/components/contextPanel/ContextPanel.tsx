@@ -114,9 +114,10 @@ export const ContextPanel: React.FC<{ ui: InspectorLocalState }> = ({ ui }) => {
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const objects = useKuraStore((s) => s.objects);
   const transformFocus = useKuraStore((s) => s.transformFocus);
+  const projectPanelPin = useKuraStore((s) => s.projectPanelPin);
   const ctx = useMemo(
-    () => panelContextOf({ activeAction, activeTool, selectedIds, objects, transformFocus }),
-    [activeAction, activeTool, selectedIds, objects, transformFocus],
+    () => panelContextOf({ activeAction, activeTool, selectedIds, objects, transformFocus, projectPanelPin }),
+    [activeAction, activeTool, selectedIds, objects, transformFocus, projectPanelPin],
   );
   const live = useContextAnnouncement(language, ctx, objects);
 

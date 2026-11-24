@@ -54,6 +54,7 @@ import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
 import { UX8_EN, UX8_ES } from './locales/ux8';
 import { UX10_EN, UX10_ES } from './locales/ux10';
+import { UX9_EN, UX9_ES } from './locales/ux9';
 import { REDISENO_EN, REDISENO_ES } from './locales/rediseno';
 import { PANEL_EN, PANEL_ES } from './locales/panel';
 import { ENCAJE_UI_EN, ENCAJE_UI_ES } from './locales/encajeUi';
@@ -108,6 +109,7 @@ export const TRANSLATIONS_ES = {
   ...UX7_ES,
   ...UX8_ES,
   ...UX10_ES,
+  ...UX9_ES,
   ...REDISENO_ES,
   ...PANEL_ES,
   ...ENCAJE_UI_ES,
@@ -1289,7 +1291,7 @@ export const TRANSLATIONS_ES = {
   'export.split.printLayoutTip': 'Cada pieza apoyada en su placa (placas una al lado de otra), sin mover la escena',
   'export.split.zipDone': '{count} piezas exportadas en {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'La pieza {code} trae un fragmento suelto de {volume} mm³ que no se pudo fusionar con una vecina: queda como pieza propia.',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': 'La pieza {code} absorbió un fragmento suelto de {volume} mm³ de la celda vecina y sobresale {protrusion} mm del plano de corte (es intencional; con umbral de fragmento 0 queda como pieza propia).',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'La pieza {code} incluye un trocito suelto de {volume} mm³ que quedó del corte vecino, por eso sobresale {protrusion} mm del plano de corte. Es a propósito: así no queda una pieza minúscula aparte.',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': 'Planos ({planes}) sin una sección que evite cortar paredes a lo largo; en total: {count}. Se dejó la posición uniforme.',
   'split.joint.auto': 'Conectores donde quepan; corte liso para pegar donde no',
   'split.joint.lap': 'Solape de borde (modifica la forma)',
@@ -1443,6 +1445,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UX7_EN,
   ...UX8_EN,
   ...UX10_EN,
+  ...UX9_EN,
   ...REDISENO_EN,
   ...PANEL_EN,
   ...ENCAJE_UI_EN,
@@ -2596,7 +2599,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'Each piece laid on its plate (plates side by side), without moving the scene',
   'export.split.zipDone': '{count} pieces exported to {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'Piece {code} has a loose {volume} mm³ fragment that could not be merged with a neighbour: it stays as its own piece.',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': 'Piece {code} absorbed a loose {volume} mm³ fragment from the neighbouring cell and extends {protrusion} mm past the cut plane (intended; with a fragment threshold of 0 it stays as its own piece).',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'Piece {code} includes a small loose chunk of {volume} mm³ left over from the neighbouring cut, so it sticks out {protrusion} mm past the cut plane. This is intended: it avoids a tiny separate piece.',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': 'Planes ({planes}) with no section that avoids cutting walls lengthwise; total: {count}. The uniform position was kept.',
   'split.joint.auto': 'Connectors where they fit; plain cut for gluing elsewhere',
   'split.joint.lap': 'Edge lap (changes the shape)',

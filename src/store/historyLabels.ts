@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { t } from '../i18n';
+import { t, type TranslationKey } from '../i18n';
 import type { LanguageCode, SceneObject } from '../types/kura';
 import type { ProjectSceneSnapshot } from '../project/projectSchema';
 import { isPaintDeltaStep, type HistoryStep } from './historySteps';
@@ -100,7 +100,7 @@ export function describeChange(
   for (const o of after) {
     const prev = beforeById.get(o.id);
     if (!prev || prev === o) continue;
-    const kind = prev.mesh !== o.mesh
+    const kind = specificPropKind(prev, o) ?? (prev.mesh !== o.mesh
       ? 'mesh'
       : differs(prev.position, o.position)
         ? 'move'
@@ -110,7 +110,7 @@ export function describeChange(
             ? 'scale'
             : propsDiffer(prev, o)
               ? 'props'
-              : null;
+              : null);
     if (!kind) continue;
     changed = [...changed, o];
     kinds.add(kind);
@@ -121,9 +121,66 @@ export function describeChange(
   const name = changed.length === 1 ? changed[0].name : many(changed.length);
   if (kinds.size === 1) {
     const [kind] = [...kinds];
+    if (kind.startsWith('param:')) {
+      const field = t(language, `inspector.params.field.${kind.slice(6)}` as TranslationKey);
+      return changed.length === 1
+        ? t(language, 'ux9.history.param', { param: lowerForSentence(language, field), name })
+        : t(language, 'ux9.history.paramsMany', { count: changed.length });
+    }
+    if (kind in SPECIFIC_KEYS) {
+      const keys = SPECIFIC_KEYS[kind as keyof typeof SPECIFIC_KEYS];
+      return changed.length === 1
+        ? t(language, keys.one, { name: changed[0].name })
+        : t(language, keys.many, { count: changed.length });
+    }
     return t(language, `rediseno.history.step.${kind}` as 'rediseno.history.step.move', { name });
   }
   return t(language, 'rediseno.history.step.many', { count: changed.length });
+}
+
+/** Rótulos de los cambios que dicen su acción real (uno o varios objetos). */
+const SPECIFIC_KEYS = {
+  rename: { one: 'ux9.history.rename', many: 'ux9.history.renameMany' },
+  hide: { one: 'ux9.history.hide', many: 'ux9.history.hideMany' },
+  show: { one: 'ux9.history.show', many: 'ux9.history.showMany' },
+  lock: { one: 'ux9.history.lock', many: 'ux9.history.lockMany' },
+  unlock: { one: 'ux9.history.unlock', many: 'ux9.history.unlockMany' },
+  group: { one: 'ux9.history.groupOne', many: 'ux9.history.groupMany' },
+  ungroup: { one: 'ux9.history.ungroupOne', many: 'ux9.history.ungroupMany' },
+  color: { one: 'ux9.history.color', many: 'ux9.history.colorMany' },
+  param: { one: 'ux9.history.params', many: 'ux9.history.paramsMany' },
+} as const satisfies Record<string, { one: TranslationKey; many: TranslationKey }>;
+
+/** En español, inglés y francés los nombres de campo van en minúscula dentro de la frase («Cambiar ancho de…»). */
+const lowerForSentence = (language: LanguageCode, text: string) => (language === 'es' || language === 'en' || language === 'fr' ? text.toLocaleLowerCase(language) : text);
+
+/** Parámetros de primitiva con rótulo propio en el inspector (`inspector.params.field.*`). */
+const PARAM_LABELLED: ReadonlySet<string> = new Set(['width', 'height', 'depth', 'radius', 'outerRadius', 'innerRadius', 'tubeRadius', 'segments', 'sides', 'text', 'fontSize', 'letterSpacing', 'textAlign']);
+
+const sameJson = (a: unknown, b: unknown) => a === b || JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * Cambio con nombre propio entre dos versiones del mismo objeto: parámetro de primitiva, nombre, visibilidad,
+ * bloqueo, pertenencia a un grupo o color. `null` si no es ninguno de ellos (o si cambiaron varias cosas a la vez).
+ */
+function specificPropKind(a: SceneObject, b: SceneObject): string | null {
+  if (!sameJson(a.primitiveParams, b.primitiveParams)) {
+    const keys = [...new Set([...Object.keys(a.primitiveParams ?? {}), ...Object.keys(b.primitiveParams ?? {})])] as Array<keyof NonNullable<SceneObject['primitiveParams']>>;
+    const diffKeys = keys.filter((k) => !sameJson(a.primitiveParams?.[k], b.primitiveParams?.[k]));
+    return diffKeys.length === 1 && PARAM_LABELLED.has(diffKeys[0]) ? `param:${diffKeys[0]}` : 'param';
+  }
+  if (a.mesh !== b.mesh || differs(a.position, b.position) || differs(a.rotation, b.rotation) || differs(a.scale, b.scale)) return null;
+  const rest = [...new Set([...Object.keys(a), ...Object.keys(b)])].filter((k) => !SKIP_KEYS.has(k) && !sameJson((a as unknown as Record<string, unknown>)[k], (b as unknown as Record<string, unknown>)[k]));
+  if (rest.length === 0) return null;
+  if (rest.length === 1 || (rest.length === 2 && rest.includes('color') && rest.includes('materialPreset'))) {
+    const key = rest[0];
+    if (key === 'name') return 'rename';
+    if (key === 'visible') return b.visible ? 'show' : 'hide';
+    if (key === 'locked') return b.locked ? 'lock' : 'unlock';
+    if (key === 'groupRef') return b.groupRef ? 'group' : 'ungroup';
+    if (key === 'color' || key === 'materialPreset') return 'color';
+  }
+  return null;
 }
 
 export interface HistoryTimelineEntry {
