@@ -74,6 +74,10 @@ export interface PrecisionNumberInputProps {
    * `strictRange`) y cuando deja de estarlo, para que el diálogo no actúe con el valor anterior.
    */
   onInvalidChange?: (invalid: boolean) => void;
+  /** El llamador valida el valor (p. ej. un asistente): marca el campo con `aria-invalid`. */
+  externalInvalid?: boolean;
+  /** Ids de los textos que describen el campo (ayuda, avisos del llamador); se usan mientras no haya error propio. */
+  describedBy?: string;
 }
 
 /** Limita un número al rango [min, max] y elimina ruido binario de punto flotante. */
@@ -134,6 +138,8 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   nonPositiveMessage,
   onCommit,
   onInvalidChange,
+  externalInvalid = false,
+  describedBy,
 }) => {
   const language = useKuraStore((s) => s.language);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -466,8 +472,8 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
         data-commit-on-blur={commitOnBlur || undefined}
         value={isFocused || invalid ? draft : formatDisplayValue(value, precision, language)}
         aria-label={ariaLabel ?? prefix}
-        aria-invalid={invalid ? true : undefined}
-        aria-describedby={invalid ? errorId : undefined}
+        aria-invalid={invalid || externalInvalid ? true : undefined}
+        aria-describedby={invalid ? (describedBy ? `${errorId} ${describedBy}` : errorId) : describedBy}
         onFocus={handleFocus}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}

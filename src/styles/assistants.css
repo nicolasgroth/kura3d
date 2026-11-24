@@ -1,0 +1,263 @@
+/**
+ * @file src/styles/assistants.css
+ * @description Estilos del panel «Asistentes»: lista de recetas, formulario generado (campos, grupos, avisos con icono
+ * y rótulo para no depender solo del color) y barra de acciones fija. Objetivos táctiles de 44 px en puntero grueso y
+ * en pantallas angostas.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-asis-list-wrap,
+.kura-asis-form-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.kura-asis-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kura-asis-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.kura-asis-card:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.kura-asis-card:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-asis-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.kura-asis-card-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.kura-asis-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.kura-asis-card-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.kura-asis-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.kura-asis-title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.kura-asis-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kura-asis-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.kura-asis-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.kura-asis-group-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.kura-asis-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.kura-asis-field .kura-input,
+.kura-asis-field .kura-select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.kura-asis-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.kura-asis-check {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.kura-asis-optional {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.kura-asis-file {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kura-asis-file-name {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+/* Avisos: icono + rótulo (Error / Aviso / Nota) + borde, no solo color. */
+.kura-asis-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 2px 0 0;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-primary);
+  border-left: 3px solid var(--border-strong);
+  border-radius: 2px;
+  background: var(--bg-elevated);
+}
+
+.kura-asis-note > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.kura-asis-note.is-error {
+  border-left-color: var(--accent-red);
+}
+
+.kura-asis-note.is-error > svg {
+  color: var(--accent-red);
+}
+
+.kura-asis-note.is-warning {
+  border-left-color: var(--accent-amber);
+}
+
+.kura-asis-note.is-info {
+  border-left-color: var(--accent-cyan);
+}
+
+.kura-asis-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-asis-problems {
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid var(--accent-red);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+}
+
+.kura-asis-problems ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.kura-asis-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 0 2px;
+  background: var(--bg-panel);
+}
+
+.kura-asis-status {
+  flex: 1 1 100%;
+  min-height: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.kura-asis-status:empty {
+  display: none;
+}
+
+@media (pointer: coarse), (max-width: 760px) {
+  .kura-asis-card,
+  .kura-asis-panel .kura-btn,
+  .kura-asis-panel .kura-select,
+  .kura-asis-panel .kura-input,
+  .kura-asis-panel .kura-precision-input,
+  .kura-asis-panel .kura-precision-field,
+  .kura-asis-panel .kura-mini-icon-btn,
+  .kura-asis-check-row {
+    min-height: 44px;
+  }
+
+  .kura-asis-panel .kura-mini-icon-btn {
+    min-width: 44px;
+  }
+
+  .kura-asis-check {
+    width: 24px;
+    height: 24px;
+  }
+}

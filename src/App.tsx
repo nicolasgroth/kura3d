@@ -45,6 +45,7 @@ import { MobileTransformBar } from './components/narrow/MobileTransformBar';
 import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest';
 import { ToolRail } from './components/shell/ToolRail';
 import { Text3DPanel } from './components/text3d/Text3DPanel';
+import { AssistantsPanel } from './components/assistants/AssistantsPanel';
 import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
 import { activateRailTool, toggleRailTool } from './store/toolActivation';
 import { useSimplifyRequestRelay } from './components/inspector/simplifyPanelRequest';
@@ -473,6 +474,7 @@ export const App: React.FC = () => {
         {/* Destino de los paneles de operación: en escritorio ocupan el lugar del inspector. */}
         <div id="kura-op-slot" className="kura-op-slot" />
         <Text3DPanel />
+        <AssistantsPanel />
         <AiChatDrawer />
         <ProjectDropTarget />
       </div>

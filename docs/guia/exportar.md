@@ -32,4 +32,4 @@ Cómo sacar tu modelo de Kura3D para abrirlo en tu laminador (OrcaSlicer, Bambu 
 - **En el navegador el archivo se descarga:** en la versión web el archivo va a tu carpeta de descargas, y un aviso lo confirma; en escritorio eliges la carpeta.
 - **No está verificado en todos los laminadores:** el 3MF multicolor se comprobará en OrcaSlicer, Bambu Studio, PrusaSlicer y Cura según el [roadmap](../ROADMAP.md).
 
-Anterior: [Generadores](generadores.md) · Siguiente: [Guardar y recuperar](guardar-y-recuperar.md) · [Índice](README.md)
+Anterior: [Asistentes](asistentes.md) · Siguiente: [Guardar y recuperar](guardar-y-recuperar.md) · [Índice](README.md)

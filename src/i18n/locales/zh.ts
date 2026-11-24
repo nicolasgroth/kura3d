@@ -40,6 +40,7 @@ import { REALESMOTOR_ZH } from './realesMotor';
 import { REALESUI_ZH } from './realesUi';
 import { UX6_ZH } from './ux6';
 import { RECETAS_ZH } from './recetas';
+import { ASISTENTES_ZH } from './asistentes';
 import { BORDES_ZH } from './bordesPrimitivas';
 import { UX7_ZH } from './ux7';
 import { UX8_ZH } from './ux8';
@@ -86,6 +87,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...REALESUI_ZH,
   ...UX6_ZH,
   ...RECETAS_ZH,
+  ...ASISTENTES_ZH,
   ...BORDES_ZH,
   ...UX7_ZH,
   ...UX8_ZH,
