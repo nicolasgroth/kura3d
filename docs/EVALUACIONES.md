@@ -417,3 +417,5 @@ Fallos de la QA21:
 Pasaron: panel Proyecto (nombre, cama, unidades, Nuevo con confirmación), Agregar (8 formas, deshacer en un paso), panel por herramienta, paleta (agregar, quitar, persistir, tope de 256), barra izquierda e idiomas es, en y de. Sin verificar por lentitud del servidor: menús a 1440 px, acciones apagadas con motivo, matriz de herramientas con uno y varios objetos, idiomas fr, hi y zh. Dejó `e2e/qa21-ajustes.spec.ts` (42 recorridos, 6 fallan hasta corregir).
 
 Consumo (modelo · duración · tokens): recorridos e2e al día (Sonnet · 47 min · 225 k), QA21 (Sonnet · 57 min · 178 k; pasó su tope de 40 min por el servidor lento).
+
+Correcciones de QA21 integradas el 24-nov 04:00 (`1d431cb`): los 42 recorridos de `qa21-ajustes` pasan, más `qa11-grupos` y `ux-escena-colocacion` (49 de 49). Consumo: correcciones QA21 (Sonnet · 69 min · 195 k; pasó su tope de 60 min).
