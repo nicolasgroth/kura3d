@@ -11,8 +11,7 @@ Ninguna detiene el trabajo.
 ### 1. Prueba de los 3MF en OrcaSlicer
 Postergada por decisión tuya; sigue autorizada. Se hace contigo presente cuando me avises.
 
-### 2. Alojamiento de imán: usabilidad en 84 tras tres rondas (24-nov)
-Código 86 y funcional 88; usabilidad 84, un punto bajo el mínimo. Sin bloqueos. Está en la rama `feat/iman`, subida a GitHub, sin fusionar. Opciones:
-- **A (recomendada):** corregir los defectos concretos que quedaron (botones ▼ que no se pueden pulsar a 390 px, nombres de imanes cortados en el árbol, aviso viejo tras deshacer, mensaje con `{value}` sin rellenar, lámina suelta del modo oculto en esferas chicas), verificar con pruebas y navegador, y fusionar a `main` sin una cuarta evaluación.
-- **B:** lo mismo, más una cuarta evaluación a ciegas antes de fusionar.
-- **C:** fusionar ya como está y dejar esos puntos para cuando se retome usabilidad.
+### 2. Ancho mínimo de pantalla (24-nov)
+Dijiste que el teléfono (390 px) genera la mayor parte de los problemas de usabilidad y que tal vez la app no es para ese tipo de pantalla. Lo dejé así por ahora: la QA y las evaluaciones dejan de exigir 390 px, y lo que ya existe para pantallas angostas se conserva tal cual, sin trabajo nuevo. Falta que confirmes dos cosas:
+- **Mínimo soportado:** 1024 px (recomendado: ya se prueba a ese ancho y cubre notebooks y tablets en horizontal) u 800 px.
+- **Bajo el mínimo:** mostrar un aviso («Kura3D está pensado para pantallas de al menos 1024 px») y dejar usar la app igual (recomendado), o no mostrar nada.

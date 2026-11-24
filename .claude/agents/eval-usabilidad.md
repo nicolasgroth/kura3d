@@ -13,7 +13,7 @@ Recibes una lista de funcionalidades y cómo abrir la app. Para cada una, úsala
 
 - ¿Se descubre sin ayuda? ¿Cuántos pasos toma? ¿El resultado es el esperado?
 - Retroalimentación, estados de carga, mensajes de error útiles, deshacer.
-- Teclado completo, foco visible, nombres accesibles, contraste, 390 px y escritorio, claro y oscuro.
+- Teclado completo, foco visible, nombres accesibles, contraste, 1024 px y escritorio, claro y oscuro (el teléfono, 390 px, no es requisito: no lo evalúes ni restes puntos por él).
 - Consistencia visual y de vocabulario con el resto de la app.
 
 Formato de salida, por cada funcionalidad y luego una global:
