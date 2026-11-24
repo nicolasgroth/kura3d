@@ -399,3 +399,5 @@ QA independiente del rediseño (barras y panel contextual), Comprobar encaje, Aj
 - Hallazgos menores: acción del panel que queda activa tras borrar su objeto; cancelar Comprobar encaje tarda segundos con un modelo de 478 mil triángulos; «Ver encaje» sigue disponible tras deshacer; barra de estado recortada a 390 px.
 - No alcanzó: tooltips y línea de ayuda con teclado, redimensionar y plegar el panel, encaje con mallas abiertas, camas propias y las alternativas de girar y dividir, guardar y abrir `.kura` por la interfaz, reparar, cortar, dividir y pintar con modelos reales, y 1024 px.
 - Dejó 7 recorridos `e2e/qa20-*.spec.ts`.
+
+Consumo de los ajustes al rediseño (modelo · duración · tokens): lote A (Opus · 103 min · 421 k), lote B (Opus · 108 min · 351 k).
