@@ -39,7 +39,9 @@ export interface AssistantRunRequest {
 export type AssistantRunOutcome =
   | { readonly status: 'created'; readonly names: readonly string[] }
   | { readonly status: 'invalid'; readonly errors: readonly RecipeIssue[] }
-  /** El motor estaba ocupado o falló: no cambió nada y el aviso ya se mostró. */
+  /** La receta se ejecutó pero no produjo piezas: no cambió nada y ya se avisó. */
+  | { readonly status: 'empty' }
+  /** El motor estaba ocupado o falló: no cambió nada. El aviso ya lo mostró `runRecipe` (una sola vez). */
   | { readonly status: 'failed' };
 
 /** Crea las piezas de la receta como un solo paso de deshacer, las deja seleccionadas y encuadradas y avisa. */
@@ -51,16 +53,20 @@ export async function runAssistant(request: AssistantRunRequest): Promise<Assist
     ...(request.variant !== undefined ? { variant: request.variant } : {}),
     ...(request.files ? { files: request.files } : {}),
   });
-  const { language } = useKuraStore.getState();
-  if (!result) {
-    store.addToast(t(language, 'asis.failed'), 'error');
-    return { status: 'failed' };
-  }
+  // `runRecipe` ya avisó si el motor estaba ocupado o falló (aviso único): aquí no se repite.
+  if (!result) return { status: 'failed' };
   if (!result.ok) return { status: 'invalid', errors: result.errors };
+  const { language } = useKuraStore.getState();
+  if (result.change.added.length === 0) {
+    store.addToast(t(language, 'asis.empty'), 'info');
+    return { status: 'empty' };
+  }
   const ids = result.change.added.map((o) => o.id);
   const names = result.change.added.map((o) => o.name);
   store.requestCameraPreset('fit', ids);
   store.addToast(t(language, 'asis.created', { names: names.join(', ') }), 'success');
-  if (result.checks.length > 0) store.addToast(t(language, 'asis.fitsBed'), 'info');
+  // Cada tipo de chequeo con su mensaje; un mismo mensaje no se repite.
+  const messages = new Set(result.checks.map((c) => (c.kind === 'fits_bed' ? 'asis.fitsBed' : 'asis.checkOther')));
+  for (const key of messages) store.addToast(t(language, key), 'info');
   return { status: 'created', names };
 }

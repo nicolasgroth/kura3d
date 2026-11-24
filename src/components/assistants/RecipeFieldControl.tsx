@@ -9,15 +9,16 @@
  * @license MIT
  */
 
-import React, { useId, useRef } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { AlertTriangle, CircleAlert, Info, X } from 'lucide-react';
 import type { FileAnswer, ObjectAnswer } from '../../core/recipes/resolve/types';
 import { toUserBox } from '../../core/scene/displayAxes';
 import { worldBox } from '../../core/scene/overlap';
-import { t } from '../../i18n';
+import { t, type TranslationKey } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
+import { DEFAULT_FILE_MAX_BYTES, sniffFileKind } from './fileKind';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import type { FieldNote, FormField } from './recipeFormModel';
 
@@ -56,10 +57,60 @@ function objectAnswer(obj: SceneObject): ObjectAnswer | null {
   return { objectId: obj.id, box: { min: user.min, max: user.max } };
 }
 
-function kindOf(file: File): string {
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-  return ext === 'jpeg' ? 'jpg' : ext;
+function sameBox(a: ObjectAnswer['box'], b: ObjectAnswer['box']): boolean {
+  return a.min.every((v, i) => v === b.min[i]) && a.max.every((v, i) => v === b.max[i]);
 }
+
+/**
+ * Selector de objeto de la escena. Es el único campo que lee `objects` del store; la respuesta guarda una copia de
+ * la caja del objeto, así que si éste se mueve, cambia o se borra la respuesta se actualiza o se limpia.
+ */
+const ObjectField: React.FC<{
+  field: FormField;
+  inputId: string;
+  disabled: boolean;
+  aria: { 'aria-describedby': string | undefined; 'aria-invalid': true | undefined };
+  onChange: (change: FieldChange) => void;
+}> = ({ field, inputId, disabled, aria, onChange }) => {
+  const language = useKuraStore((s) => s.language);
+  const objects = useKuraStore((s) => s.objects);
+  const answer = field.value && typeof field.value === 'object' && 'objectId' in field.value ? field.value : null;
+  const current = answer ? answer.objectId : '';
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  useEffect(() => {
+    if (!answer) return;
+    const obj = objects.find((o) => o.id === answer.objectId);
+    const fresh = obj ? objectAnswer(obj) : null;
+    if (!fresh) onChangeRef.current({ value: undefined });
+    else if (!sameBox(fresh.box, answer.box)) onChangeRef.current({ value: fresh });
+  }, [objects, answer]);
+
+  return (
+    <>
+      <select
+        id={inputId}
+        className="kura-select"
+        value={objects.some((o) => o.id === current) ? current : ''}
+        disabled={disabled || objects.length === 0}
+        {...aria}
+        onChange={(e) => {
+          const obj = objects.find((o) => o.id === e.target.value);
+          onChange({ value: obj ? (objectAnswer(obj) ?? undefined) : undefined });
+        }}
+      >
+        <option value="">{t(language, field.optional ? 'asis.object.none' : 'asis.object.pick')}</option>
+        {objects.map((o) => (
+          <option key={o.id} value={o.id}>
+            {o.name}
+          </option>
+        ))}
+      </select>
+      {objects.length === 0 && <p className="kura-field-hint">{t(language, 'asis.object.empty')}</p>}
+    </>
+  );
+};
 
 interface Props {
   readonly field: FormField;
@@ -71,7 +122,7 @@ interface Props {
 
 export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onInvalid, onFileError }) => {
   const language = useKuraStore((s) => s.language);
-  const objects = useKuraStore((s) => s.objects);
+  const [fileMessage, setFileMessage] = useState<string | null>(null);
   const uid = useId();
   const inputId = `${uid}-in`;
   const hintId = `${uid}-hint`;
@@ -86,7 +137,7 @@ export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onI
   const accept = field.accept ? t(language, 'asis.file.formats', { types: field.accept.map((a) => a.toUpperCase()).join(', ') }) : undefined;
   const hint = [field.help, range, accept].filter(Boolean).join(' · ');
   const describedBy =
-    [hint ? hintId : '', ...field.notes.map((_, k) => `${uid}-note-${k}`)].filter(Boolean).join(' ') || undefined;
+    [hint ? hintId : '', fileMessage ? `${uid}-file-msg` : '', ...field.notes.map((_, k) => `${uid}-note-${k}`)].filter(Boolean).join(' ') || undefined;
   const aria = { 'aria-describedby': describedBy, 'aria-invalid': hasError ? true : undefined } as const;
   const label = (
     <>
@@ -168,42 +219,37 @@ export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onI
       );
       break;
     }
-    case 'object': {
-      const current = field.value && typeof field.value === 'object' && 'objectId' in field.value ? field.value.objectId : '';
-      control = (
-        <select
-          id={inputId}
-          className="kura-select"
-          value={current}
-          disabled={disabled || objects.length === 0}
-          {...aria}
-          onChange={(e) => {
-            const obj = objects.find((o) => o.id === e.target.value);
-            onChange({ value: obj ? (objectAnswer(obj) ?? undefined) : undefined });
-          }}
-        >
-          <option value="">{t(language, field.optional ? 'asis.object.none' : 'asis.object.pick')}</option>
-          {objects.map((o) => (
-            <option key={o.id} value={o.id}>
-              {o.name}
-            </option>
-          ))}
-        </select>
-      );
+    case 'object':
+      control = <ObjectField field={field} inputId={inputId} disabled={disabled} aria={aria} onChange={onChange} />;
       break;
-    }
     case 'file': {
       const answer = field.value && typeof field.value === 'object' && 'kind' in field.value ? field.value : null;
+      const reject = (key: TranslationKey, params?: Record<string, string | number>) => {
+        if (fileInput.current) fileInput.current.value = '';
+        setFileMessage(t(language, key, params));
+        onFileError(true);
+        onChange({ value: undefined, file: null });
+      };
       const pick = async (file: File | undefined) => {
         if (!file) return;
-        const kind = kindOf(file);
+        const limit = field.maxBytes ?? DEFAULT_FILE_MAX_BYTES;
+        if (file.size > limit) {
+          reject('asis.file.tooBig', { max: formatLocaleNumber(language, limit / (1024 * 1024), { maxFrac: 1 }) });
+          return;
+        }
         try {
-          // Un archivo sobre el tope no se lee: la resolución ya lo marca con su mensaje.
-          const tooBig = field.maxBytes !== undefined && file.size > field.maxBytes;
-          const content = tooBig ? '' : kind === 'svg' ? await file.text() : new Uint8Array(await file.arrayBuffer());
+          const bytes = new Uint8Array(await file.arrayBuffer());
+          const kind = sniffFileKind(bytes);
+          if (!kind || (field.accept && !field.accept.includes(kind))) {
+            reject('asis.file.badType', { types: (field.accept ?? []).map((a) => a.toUpperCase()).join(', ') });
+            return;
+          }
+          const content = kind === 'svg' ? new TextDecoder().decode(bytes) : bytes;
+          setFileMessage(null);
           onFileError(false);
-          onChange({ value: { kind: kind as FileAnswer['kind'], bytes: file.size, name: file.name.slice(0, 200) }, file: content });
+          onChange({ value: { kind, bytes: file.size, name: file.name.slice(0, 200) }, file: content });
         } catch {
+          setFileMessage(null);
           onFileError(true);
         }
       };
@@ -230,6 +276,7 @@ export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onI
               title={t(language, 'asis.file.remove')}
               onClick={() => {
                 if (fileInput.current) fileInput.current.value = '';
+                setFileMessage(null);
                 onFileError(false);
                 onChange({ value: undefined, file: null });
               }}
@@ -273,7 +320,12 @@ export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onI
           {hint}
         </span>
       )}
-      {field.type === 'object' && objects.length === 0 && <p className="kura-field-hint">{t(language, 'asis.object.empty')}</p>}
+      {fileMessage && (
+        <p id={`${uid}-file-msg`} className="kura-asis-note is-error" role="alert">
+          <CircleAlert size={13} aria-hidden="true" />
+          <span>{fileMessage}</span>
+        </p>
+      )}
       <FieldNotes notes={field.notes} idPrefix={uid} />
     </div>
   );

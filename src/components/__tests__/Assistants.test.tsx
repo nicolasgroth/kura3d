@@ -248,13 +248,15 @@ describe('Asistentes: crear', () => {
     expect(useAssistantsPanel.getState().open).toBe(true);
   });
 
-  it('si el motor no responde (null) avisa y no cambia la escena', async () => {
+  it('si el motor no responde (null) no cambia la escena y no agrega un segundo aviso', async () => {
     const user = userEvent.setup();
     useKuraStore.setState({ runRecipe: vi.fn().mockResolvedValue(null) } as never);
     openForm(CAJA);
     await user.click(createButton());
-    await waitFor(() => expect(store().toasts.some((x) => x.text === t('es', 'asis.failed') && x.kind === 'error')).toBe(true));
+    await waitFor(() => expect(createButton().disabled).toBe(false));
+    expect(store().toasts).toHaveLength(0);
     expect(store().objects).toHaveLength(0);
+    expect(useAssistantsPanel.getState().open).toBe(true);
   });
 });
 

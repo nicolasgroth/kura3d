@@ -230,14 +230,52 @@
 }
 
 .kura-asis-status {
-  flex: 1 1 100%;
-  min-height: 0;
-  font-size: 12px;
-  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .kura-asis-status:empty {
   display: none;
+}
+
+.kura-asis-spin {
+  flex: none;
+  color: var(--accent-cyan);
+  animation: kura-asis-spin 0.9s linear infinite;
+}
+
+@keyframes kura-asis-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-asis-spin {
+    animation: none;
+  }
+}
+
+/* Espacio para que el último campo no quede tapado por el pie fijo con «Crear» (también al enfocarlo). */
+.kura-asis-fields {
+  padding-bottom: 16px;
+}
+
+.kura-asis-panel .kura-op-panel-body {
+  scroll-padding-bottom: 96px;
+}
+
+/* Hoja estrecha: el asistente necesita más alto que la hoja media por defecto para ver más de un campo. */
+@media (max-width: 900px) {
+  .kura-workspace[data-sheet="half"]:has(.kura-asis-panel) {
+    --sheet-h: min(60vh, 520px);
+  }
 }
 
 @media (pointer: coarse), (max-width: 760px) {
