@@ -21,7 +21,7 @@ import { ToastStack } from '../ToastStack';
 import { SectionViewNotice } from './SectionViewNotice';
 import '../../styles/sectionNotice.css';
 import '../../styles/toolPanel.css';
-import { tCount } from '../../utils/plural';
+import { applyHolesLabel } from '../../store/holeScopeLabel';
 
 /** Stack superior del HUD (evita colisiones cuando se envuelven controles). */
 export const ViewportHudTop: React.FC = () => {
@@ -65,10 +65,10 @@ export const ViewportHudTop: React.FC = () => {
           className="kura-hud-card kura-boolean-fab"
           disabled={Boolean(busyOperation)}
           onClick={() => void applyHolesOnSolids()}
-          title={tCount(language, { one: 'inspector.op.applyBooleansN.one', other: 'inspector.op.applyBooleansN.other' }, holeCount)}
+          title={applyHolesLabel(language, objects, selectedIds)}
         >
           <Scissors size={14} />
-          <span>{tCount(language, { one: 'inspector.op.applyBooleansN.one', other: 'inspector.op.applyBooleansN.other' }, holeCount)}</span>
+          <span>{applyHolesLabel(language, objects, selectedIds)}</span>
         </button>
       )}
 

@@ -12,7 +12,7 @@ import { Combine, FileUp, MinusCircle, PlusCircle } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { type PrimitiveType } from '../../types/kura';
-import { tCount } from '../../utils/plural';
+import { applyHolesLabel } from '../../store/holeScopeLabel';
 import { MODULAR_PRIMITIVES } from './inspectorConstants';
 import { type InspectorSectionProps } from './inspectorTypes';
 
@@ -24,6 +24,7 @@ export const ModulesPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const addModularPrimitive = useKuraStore((s) => s.addModularPrimitive);
   const importModelAsModuleFromDialog = useKuraStore((s) => s.importModelAsModuleFromDialog);
+  const selectedIds = useKuraStore((s) => s.selectedIds);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const holeCount = objects.filter((o) => isNegative(o) && o.visible).length;
   const solidCount = objects.filter((o) => isSolid(o) && o.visible).length;
@@ -97,7 +98,7 @@ export const ModulesPanel: React.FC<InspectorSectionProps> = ({ primary, ui }) =
           onClick={() => void applyHolesOnSolids()}
         >
           <Combine size={13} />
-          <span>{tCount(language, { one: 'inspector.op.applyBooleansN.one', other: 'inspector.op.applyBooleansN.other' }, holeCount)}</span>
+          <span>{applyHolesLabel(language, objects, selectedIds)}</span>
         </button>
       )}
     </div>

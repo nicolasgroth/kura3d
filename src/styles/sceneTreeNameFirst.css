@@ -1,0 +1,24 @@
+/**
+ * @file src/styles/sceneTreeNameFirst.css
+ * @description Fila del árbol de Escena: el nombre del objeto nunca desaparece. Conserva un ancho mínimo y las
+ * insignias (NEGATIVO, paso de armado) ceden espacio antes que él, recortándose con «…»; los botones de la fila
+ * seleccionada no empujan el nombre fuera de la vista.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-tree-row .kura-scene-name.kura-mid-ellipsis {
+  flex: 1 1 auto;
+  min-width: 7ch;
+}
+
+.kura-tree-row .kura-hole-tag,
+.kura-tree-row .kura-step-tag {
+  flex: 0 4 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

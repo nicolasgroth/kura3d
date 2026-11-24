@@ -42,6 +42,7 @@ import { UX6_ZH } from './ux6';
 import { RECETAS_ZH } from './recetas';
 import { ASISTENTES_ZH } from './asistentes';
 import { IMAN_ZH } from './iman';
+import { IMAN_UI3_ZH } from './imanUi3';
 import { BORDES_ZH } from './bordesPrimitivas';
 import { UX7_ZH } from './ux7';
 import { UX8_ZH } from './ux8';
@@ -91,6 +92,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...RECETAS_ZH,
   ...ASISTENTES_ZH,
   ...IMAN_ZH,
+  ...IMAN_UI3_ZH,
   ...BORDES_ZH,
   ...UX7_ZH,
   ...UX8_ZH,

@@ -80,6 +80,7 @@ export const MagnetPresetPicker: React.FC = () => {
     if (!gone) return;
     useKuraStore.getState().addToast(t(language, 'magnet.preset.deleted', { name: gone.name }), 'info', {
       label: t(language, 'topbar.undo'),
+      ariaLabel: t(language, 'magnet.preset.undoDelete', { name: gone.name }),
       transient: true,
       run: () => {
         if (useMagnetPresets.getState().restore(gone, index)) selectRef.current?.focus();
