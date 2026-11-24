@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { t } from '../../i18n';
@@ -159,6 +159,10 @@ describe('Asistentes: campo de archivo', () => {
     await waitFor(() => expect(field('logo').textContent).toContain('SVG'));
     expect(field('logo').querySelector('[role="alert"]')?.textContent).toContain('no es de un tipo admitido');
     expect(createButton().disabled).toBe(true);
+    // El archivo es opcional: «quitar» limpia el error y deja crear sin archivo.
+    await user.click(within(field('logo')).getByRole('button', { name: t('es', 'asis.file.remove') }));
+    expect(field('logo').querySelector('[role="alert"]')).toBeNull();
+    expect(createButton().disabled).toBe(false);
   });
 
   it('un archivo sobre el tope no se lee y avisa junto al campo; quitarlo no es necesario para corregir', async () => {

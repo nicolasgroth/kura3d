@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import type { FileAnswer } from '../../core/recipes/resolve/types';
 import { t, type TranslationKey } from '../../i18n';
@@ -35,6 +35,9 @@ export const FileField: React.FC<Props> = ({ field, inputId, disabled, aria, onC
   const fileInput = useRef<HTMLInputElement | null>(null);
   // Cada elección (y cada «quitar») sube el token; una lectura solo vale si su token sigue siendo el último.
   const token = useRef(0);
+  // Tras un rechazo no hay respuesta, pero el campo queda en error: «quitar» también debe poder limpiarlo, o un
+  // archivo opcional dejaría «Crear» bloqueado sin salida.
+  const [failed, setFailed] = useState(false);
   const answer = field.value && typeof field.value === 'object' && 'kind' in field.value ? (field.value as FileAnswer) : null;
 
   const clearInput = () => {
@@ -43,6 +46,7 @@ export const FileField: React.FC<Props> = ({ field, inputId, disabled, aria, onC
   const reject = (key: TranslationKey, params?: Record<string, string | number>) => {
     clearInput();
     onMessage(t(language, key, params));
+    setFailed(true);
     onFileError(true);
     onChange({ value: undefined, file: null });
   };
@@ -65,6 +69,7 @@ export const FileField: React.FC<Props> = ({ field, inputId, disabled, aria, onC
       }
       const content = kind === 'svg' ? new TextDecoder().decode(bytes) : bytes;
       onMessage(null);
+      setFailed(false);
       onFileError(false);
       onChange({ value: { kind, bytes: file.size, name: file.name.slice(0, 200) }, file: content });
     } catch {
@@ -72,6 +77,7 @@ export const FileField: React.FC<Props> = ({ field, inputId, disabled, aria, onC
       // La lectura falló: no deben quedar la respuesta ni el archivo anteriores.
       clearInput();
       onMessage(null);
+      setFailed(true);
       onFileError(true);
       onChange({ value: undefined, file: null });
     }
@@ -91,7 +97,7 @@ export const FileField: React.FC<Props> = ({ field, inputId, disabled, aria, onC
         {t(language, 'asis.file.choose')}
       </button>
       <span className="kura-asis-file-name">{answer?.name ?? t(language, 'asis.file.none')}</span>
-      {answer && (
+      {(answer || failed) && (
         <button
           type="button"
           className="kura-mini-icon-btn"
@@ -102,6 +108,7 @@ export const FileField: React.FC<Props> = ({ field, inputId, disabled, aria, onC
             token.current += 1;
             clearInput();
             onMessage(null);
+            setFailed(false);
             onFileError(false);
             onChange({ value: undefined, file: null });
           }}
