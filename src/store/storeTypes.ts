@@ -378,6 +378,11 @@ export interface KuraStoreState {
       Pick<SceneObject, 'name' | 'color' | 'role' | 'referenceOpacity' | 'visible' | 'locked' | 'materialPreset'>
     >,
   ) => void;
+  /**
+   * Mayús+H en el visor: oculta la selección (o la muestra si ya estaba toda oculta); sin selección,
+   * muestra todo lo oculto. Un solo paso de deshacer; devuelve los ids cambiados.
+   */
+  toggleSelectionVisibility: () => string[];
   setObjectMaterial: (id: string, materialPreset: MaterialPresetId) => void;
   setObjectTransform: (
     id: string,

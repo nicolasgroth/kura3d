@@ -76,6 +76,18 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       set((state) => ({ objects: state.objects.map((obj) => (obj.id === id ? { ...obj, ...patch } : obj)) }));
     },
 
+    toggleSelectionVisibility: () => {
+      const { objects, selectedIds } = get();
+      const selected = objects.filter((o) => selectedIds.includes(o.id));
+      const targets = selected.length > 0 ? selected : objects.filter((o) => !o.visible);
+      if (targets.length === 0) return [];
+      const visible = selected.length > 0 ? selected.every((o) => !o.visible) : true;
+      const ids = new Set(targets.map((o) => o.id));
+      pushHistory();
+      set((state) => ({ objects: state.objects.map((o) => (ids.has(o.id) ? { ...o, visible } : o)) }));
+      return [...ids];
+    },
+
     setObjectMaterial: (id, materialPreset) => {
       pushHistory();
       set((state) => ({ objects: state.objects.map((obj) => (obj.id === id ? { ...obj, materialPreset } : obj)) }));

@@ -240,7 +240,7 @@ export const AJUSTAR_DE: Dict = {
 
 export const AJUSTAR_FR: Dict = {
   'fit.title': "Ajuster à l'imprimante",
-  'fit.open': "Ajuster à l'imprimante…",
+  'fit.open': 'Ajuster à l’imprimante…',
   'fit.openTip': 'Mettre à l’échelle, tourner ou diviser pour que ça tienne sur le lit',
   'fit.bed': 'Lit',
   'fit.bedSize': 'Espace utile {size} (marge de {margin} mm par côté)',
@@ -316,7 +316,7 @@ export const AJUSTAR_FR: Dict = {
 
 export const AJUSTAR_HI: Dict = {
   'fit.title': 'प्रिंटर के अनुसार ढालें',
-  'fit.open': 'प्रिंटर के अनुसार ढालें…',
+  'fit.open': 'प्रिंटर में फ़िट करें…',
   'fit.openTip': 'बेड पर समाने के लिए स्केल करें, घुमाएँ या बाँटें',
   'fit.bed': 'बेड',
   'fit.bedSize': 'उपयोगी जगह {size} (हर ओर {margin} mm हाशिया)',

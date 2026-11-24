@@ -35,7 +35,9 @@ export const OperationPanel: React.FC<{
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
-}> = ({ open, onClose, title, children, footer, className }) => {
+  /** Selector (dentro del cuerpo) del control que recibe el foco al abrir; sin él, el primer control enfocable. */
+  initialFocus?: string;
+}> = ({ open, onClose, title, children, footer, className, initialFocus }) => {
   const language = useKuraStore((s) => s.language);
   const panelRef = useRef<HTMLElement | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
@@ -55,13 +57,14 @@ export const OperationPanel: React.FC<{
     if (!open) return;
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const panel = panelRef.current;
-    const first = panel?.querySelector<HTMLElement>(`.kura-op-panel-body ${FOCUSABLE}`) ?? panel;
+    const wanted = initialFocus ? panel?.querySelector<HTMLElement>(`.kura-op-panel-body ${initialFocus}`) : null;
+    const first = wanted ?? panel?.querySelector<HTMLElement>(`.kura-op-panel-body ${FOCUSABLE}`) ?? panel;
     first?.focus({ preventScroll: true });
     return () => {
       const back = returnFocusRef.current;
       if (back && back.isConnected) back.focus({ preventScroll: true });
     };
-  }, [open]);
+  }, [open, initialFocus]);
 
   // Escape con el foco en el visor también cierra el panel (salvo que haya algo que cancelar).
   useEffect(() => {

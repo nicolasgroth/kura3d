@@ -20,7 +20,6 @@ const REPAIR_TABLE = {
     'छेद बंद करता है, दोहरे या खराब फलक हटाता है और नॉर्मल सही करता है ताकि मेश प्रिंट योग्य ठोस बने',
     '封闭孔洞、删除重复或退化面并统一法线方向，使网格成为可打印的实体',
   ],
-  'cmd.repairMesh': ['Reparar malla del objeto', 'Repair object mesh', 'Netz des Objekts reparieren', 'Réparer le maillage de l’objet', 'ऑब्जेक्ट का मेश ठीक करें', '修复对象网格'],
   'toast.repairDone': ['Malla reparada: {summary}', 'Mesh repaired: {summary}', 'Netz repariert: {summary}', 'Maillage réparé : {summary}', 'मेश ठीक हुआ: {summary}', '网格已修复：{summary}'],
   'toast.repairNothing': [
     'La malla ya era un sólido cerrado: no hubo nada que reparar.',

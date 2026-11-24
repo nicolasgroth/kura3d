@@ -2,7 +2,7 @@
  * @file src/components/ToastStack.tsx
  * @description Pila de notificaciones: los errores usan `role="alert"` y los informativos
  * `role="status"`; todas se pueden cerrar con el botón (teclado) o con Escape estando enfocadas.
- * Muestra como máximo las 3 más recientes; las anteriores quedan plegadas en un botón «+N» y «Cerrar todos»
+ * Muestra como máximo las 2 más recientes; las anteriores quedan plegadas en un botón «N avisos más» (siguen en el historial de «Avisos») y «Cerrar todos»
  * las descarta. Los informativos se cierran solos (`ToastItem`); los de error esperan al usuario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -21,7 +21,7 @@ import { useKuraStore } from '../store/useKuraStore';
 import { useTopModal } from './useTopModal';
 import { ToastItem } from './ToastItem';
 
-const MAX_VISIBLE = 3;
+const MAX_VISIBLE = 2;
 /** Holgura entre la pila y el diálogo o el borde de la ventana (px). */
 const GAP = 8;
 
@@ -93,9 +93,8 @@ export const ToastStack: React.FC = () => {
           aria-expanded={false}
           onClick={() => setExpanded(true)}
           title={t(language, 'toast.moreTip', { count: hidden })}
-          aria-label={t(language, 'toast.moreTip', { count: hidden })}
         >
-          +{hidden}
+          {t(language, 'ux8.toast.more', { count: hidden })}
         </button>
       )}
       {expanded && toasts.length > MAX_VISIBLE && (

@@ -105,6 +105,14 @@ describe('exportación desde el store', () => {
     expect(new TextDecoder().decode(entries[0].data)).toContain('mtllib Soporte_cámara.mtl');
   });
 
+  it('proyecto sin nombre: la escena se exporta con el nombre visible del proyecto, no uno genérico', async () => {
+    vi.mocked(saveFileSet).mockResolvedValue(true);
+    useKuraStore.setState({ projectName: null, language: 'es' });
+    expect(await get().exportModel({ format: 'stl', scope: 'scene' })).toBe(true);
+    const [entry] = vi.mocked(saveFileSet).mock.calls.at(-1)![0];
+    expect(entry.name).toBe('Escena_sin_título.stl');
+  });
+
   it('exporta solo la selección cuando se pide y respeta el nombre elegido', async () => {
     vi.mocked(saveFileSet).mockResolvedValue(true);
     const [box] = get().objects;

@@ -1,8 +1,8 @@
 /**
  * @file e2e/ux3-edicion-menu.spec.ts
- * @description Menú contextual del objeto: fondo opaco (token de superficie) en tema claro y oscuro, «Organizar»
- * con una descripción bajo Agrupar, Combinar y Unir, «Separar cuerpos» deshabilitado con motivo si hay un solo
- * cuerpo, submenús que abren al pasar el cursor y Escape que devuelve el foco a quien abrió el menú.
+ * @description Menú contextual del objeto: fondo opaco (token de superficie) en tema claro y oscuro, «Separar y
+ * combinar» (grupo del menú «Acciones») con una descripción bajo Agrupar, Combinar y Unir, «Separar piezas sueltas»
+ * deshabilitado con motivo si hay un solo cuerpo, submenús que abren al pasar el cursor y Escape que devuelve el foco a quien abrió el menú.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,8 +12,10 @@ import { aPixel } from './ux-movil-helpers';
 import { abrir, crear, SHOTS } from './ux3-edicion-helpers';
 
 async function abrirMenu(page: Page): Promise<void> {
-  await crear(page, 'box', { width: 40, height: 40, depth: 40 }, [0, 20, 0]);
-  await crear(page, 'cylinder', undefined, [50, 15, 0]);
+  const a = await crear(page, 'box', { width: 40, height: 40, depth: 40 }, [0, 20, 0]);
+  const b = await crear(page, 'cylinder', undefined, [50, 15, 0]);
+  // Con los dos objetos seleccionados, Agrupar, Combinar y Unir están disponibles y muestran su descripción.
+  await page.evaluate((ids) => (window as any).__s.getState().setSelection(ids), [a, b]);
   await page.evaluate(() => (window as any).__s.getState().requestCameraPreset('fit'));
   await page.waitForTimeout(900);
   const p = await aPixel(page, [0, 20, 0]);
@@ -31,14 +33,15 @@ for (const tema of ['light', 'dark'] as const) {
     const fondo = await menu.evaluate((m) => getComputedStyle(m).backgroundColor);
     // Opaco: sin canal alfa parcial.
     expect(fondo).toMatch(/^rgb\(/);
-    const organizar = page.getByRole('group', { name: 'Organizar' });
+    await menu.getByRole('menuitem', { name: 'Separar y combinar' }).click();
+    const organizar = page.getByRole('menu', { name: 'Separar y combinar' });
     await organizar.scrollIntoViewIfNeeded();
     await expect(organizar.getByText('Se mueven juntos; siguen siendo objetos separados')).toBeVisible();
     await expect(organizar.getByText('Un solo objeto con varias piezas, sin fundirlas')).toBeVisible();
     await expect(organizar.getByText('Funde los volúmenes en un solo sólido')).toBeVisible();
-    const separar = organizar.getByRole('menuitem', { name: 'Separar cuerpos' });
+    const separar = organizar.getByRole('menuitem', { name: 'Separar piezas sueltas' });
     await expect(separar).toBeDisabled();
-    await expect(organizar.getByText(/tiene un solo cuerpo/)).toBeVisible();
+    await expect(organizar.getByText(/una sola pieza/)).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/7-menu-${tema}.png` });
     expect(errs).toEqual([]);
   });
@@ -47,7 +50,7 @@ for (const tema of ['light', 'dark'] as const) {
 test('los submenús abren al pasar el cursor y Escape devuelve el foco', async ({ page }) => {
   const errs = await abrir(page, 1440, 900);
   await abrirMenu(page);
-  const sub = page.getByRole('menuitem', { name: /Transformar/ }).first();
+  const sub = page.getByRole('menuitem', { name: 'Posición y tipo' }).first();
   await sub.hover();
   await expect(sub).toHaveAttribute('aria-expanded', 'true');
   await page.keyboard.press('Escape');

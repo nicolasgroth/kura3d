@@ -47,11 +47,13 @@ import { UX6_EN, UX6_ES } from './locales/ux6';
 import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
 import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
+import { UX8_EN, UX8_ES } from './locales/ux8';
 import { REDISENO_EN, REDISENO_ES } from './locales/rediseno';
 import { PANEL_EN, PANEL_ES } from './locales/panel';
 import { ENCAJE_UI_EN, ENCAJE_UI_ES } from './locales/encajeUi';
 import { REDISENO3A_EN, REDISENO3A_ES } from './locales/rediseno3a';
 import { REDISENO3B_EN, REDISENO3B_ES } from './locales/rediseno3b';
+import { UX8_MENU_EN, UX8_MENU_ES } from './locales/ux8Menu';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -93,11 +95,13 @@ export const TRANSLATIONS_ES = {
   ...RECETAS_ES,
   ...BORDES_ES,
   ...UX7_ES,
+  ...UX8_ES,
   ...REDISENO_ES,
   ...PANEL_ES,
   ...ENCAJE_UI_ES,
   ...REDISENO3A_ES,
   ...REDISENO3B_ES,
+  ...UX8_MENU_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -326,7 +330,7 @@ export const TRANSLATIONS_ES = {
   'inspector.mirror.x': 'Espejar X',
   'inspector.mirror.y': 'Espejar Y',
   'inspector.mirror.z': 'Espejar Z',
-  'inspector.action.dropToBed': 'Apoyar en cama',
+  'inspector.action.dropToBed': 'Apoyar en la cama',
   'inspector.action.centerBed': 'Centrar en cama',
   'inspector.action.resetTransform': 'Reiniciar rot/escala',
   'inspector.section.stats': 'Geometría y Métricas',
@@ -351,7 +355,7 @@ export const TRANSLATIONS_ES = {
   'inspector.op.applyHoles': 'Aplicar restas',
   'inspector.op.cutAndSplitTitle': 'Corte y Separación',
   'inspector.op.planeCut': 'Corte por plano + uniones',
-  'inspector.op.splitParts': 'Separar piezas (islas)',
+  'inspector.op.splitParts': 'Separar piezas sueltas',
   'inspector.op.splitColors': 'Separar por colores',
   'inspector.op.textureTitle': 'Textura Superficial',
   'inspector.op.textureDepth': 'Profundidad',
@@ -424,16 +428,9 @@ export const TRANSLATIONS_ES = {
   'badge.localNoAiTip': 'Modo offline determinista: ningún dato sale de tu equipo',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': 'Aplicar restas',
-  'ctx.unionSelection': 'Unir selección',
   'ctx.planeCut': 'Corte por plano + uniones',
-  'ctx.generateMold': 'Generar Molde / Silicona',
-  'ctx.projectSurface': 'Proyectar Texto/SVG en Superficie',
-  'ctx.validatePrint': 'Validar Estructura 3D',
-  'ctx.detectStructures': 'Detectar sub-estructuras (Local)',
   'ctx.shortcuts': 'Atajos de teclado',
   'ctx.duplicate': 'Duplicar',
-  'ctx.dropToBed': 'Apoyar en cama (Z=0)',
   'ctx.delete': 'Eliminar',
 
   // Paleta de comandos (Ctrl+K)
@@ -447,15 +444,8 @@ export const TRANSLATIONS_ES = {
   'cmd.cat.export': 'Importar y Exportar',
   'cmd.cat.view': 'Vista, Unidades y Tema',
   'cmd.cat.settings': 'Ajustes, MCP e IA',
-  'cmd.pro.mold': 'Generar Molde / Caja de Silicona',
-  'cmd.pro.project': 'Proyectar Texto o SVG en Superficie',
   'cmd.pro.thread': 'Crear Rosca Métrica ISO (M3–M64)',
-  'cmd.pro.validate': 'Validar Imprimibilidad (Voladizos y Peso)',
-  'cmd.pro.simplify': 'Simplificar Malla (Reducir Triángulos)',
-  'cmd.pro.refine': 'Refinar Malla (Subdividir y Suavizar)',
-  'cmd.pro.hull': 'Envolvente convexa',
   'cmd.pro.arrangeGrid': 'Distribuir Piezas en Cama (Auto)',
-  'cmd.pro.detectStructures': 'Detectar Sub-Estructuras 3D (Local)',
   'cmd.pro.colorizeStructures': 'Colorear Sub-Estructuras Detectadas (3MF)',
   'cmd.pro.mirrorX': 'Espejar Objeto en Eje X',
   'cmd.view.compact': 'Alternar Modo Compacto',
@@ -1434,11 +1424,13 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...RECETAS_EN,
   ...BORDES_EN,
   ...UX7_EN,
+  ...UX8_EN,
   ...REDISENO_EN,
   ...PANEL_EN,
   ...ENCAJE_UI_EN,
   ...REDISENO3A_EN,
   ...REDISENO3B_EN,
+  ...UX8_MENU_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
@@ -1682,7 +1674,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'inspector.op.applyHoles': 'Apply subtractions',
   'inspector.op.cutAndSplitTitle': 'Cut & Split',
   'inspector.op.planeCut': 'Plane cut + connectors',
-  'inspector.op.splitParts': 'Split parts (islands)',
+  'inspector.op.splitParts': 'Separate loose parts',
   'inspector.op.splitColors': 'Split by colors',
   'inspector.op.textureTitle': 'Surface Texture',
   'inspector.op.textureDepth': 'Depth',
@@ -1751,16 +1743,9 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'badge.localNoAi': 'Local (No external AI)',
   'badge.localNoAiTip': 'Offline deterministic mode: zero data leaves your device',
 
-  'ctx.applyHoles': 'Apply subtractions',
-  'ctx.unionSelection': 'Union selection',
   'ctx.planeCut': 'Plane cut + connectors',
-  'ctx.generateMold': 'Generate Mold / Silicone',
-  'ctx.projectSurface': 'Project Text/SVG onto Surface',
-  'ctx.validatePrint': 'Validate 3D Structure',
-  'ctx.detectStructures': 'Detect sub-structures (Local)',
   'ctx.shortcuts': 'Keyboard shortcuts',
   'ctx.duplicate': 'Duplicate',
-  'ctx.dropToBed': 'Drop to bed (Z=0)',
   'ctx.delete': 'Delete',
 
   'cmd.title': 'Kura3D Command Palette',
@@ -1773,15 +1758,8 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'cmd.cat.export': 'Import & Export',
   'cmd.cat.view': 'View, Units & Theme',
   'cmd.cat.settings': 'Settings, MCP & AI',
-  'cmd.pro.mold': 'Generate Mold / Silicone Box',
-  'cmd.pro.project': 'Project Text or SVG onto Surface',
   'cmd.pro.thread': 'Create Metric ISO Thread (M3–M64)',
-  'cmd.pro.validate': 'Validate Printability (Overhangs & Weight)',
-  'cmd.pro.simplify': 'Simplify Mesh (Reduce Triangles)',
-  'cmd.pro.refine': 'Refine Mesh (Subdivide & Smooth)',
-  'cmd.pro.hull': 'Convex hull',
   'cmd.pro.arrangeGrid': 'Arrange Parts on Bed (Auto)',
-  'cmd.pro.detectStructures': 'Detect 3D Sub-Structures (Local)',
   'cmd.pro.colorizeStructures': 'Colorize Detected Sub-Structures (3MF)',
   'cmd.pro.mirrorX': 'Mirror Object along X Axis',
   'cmd.view.compact': 'Toggle Compact Mode',

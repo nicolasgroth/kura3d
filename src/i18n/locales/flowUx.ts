@@ -23,7 +23,6 @@ export const FLOWUX_ES = {
   'toast.undo': 'Deshacer',
   'printWarning.SEALED_CAVITY': 'Cavidad cerrada sin salida ({volume} cm³ encerrados): no se puede vaciar ni limpiar. Agrega un orificio de drenaje si necesitas sacar material.',
   'toast.hollowSealed': 'Queda una cavidad cerrada, sin salida. Si necesitas vaciarla, ahueca con orificio de drenaje.',
-  'ctx.hollowOpen': 'Ahuecar pieza…',
   'ctx.hollowOpenTip': 'Abre el panel de ahuecado con la pared por defecto (2,2 mm)',
   'toast.hollowPanelOpened': 'Ajusta la pared y pulsa «Ahuecar». Sin orificio de drenaje queda una cavidad cerrada.',
 };
@@ -43,7 +42,6 @@ export const FLOWUX_EN = {
   'toast.undo': 'Undo',
   'printWarning.SEALED_CAVITY': 'Closed cavity with no way out ({volume} cm³ enclosed): it cannot be emptied or cleaned. Add a drain hole if you need to get material out.',
   'toast.hollowSealed': 'A closed cavity with no way out remains. If you need to empty it, hollow with a drain hole.',
-  'ctx.hollowOpen': 'Hollow out…',
   'ctx.hollowOpenTip': 'Opens the hollow panel with the default wall (2.2 mm)',
   'toast.hollowPanelOpened': 'Set the wall and press "Hollow". Without a drain hole a closed cavity remains.',
 };
@@ -63,7 +61,6 @@ export const FLOWUX_DE = {
   'toast.undo': 'Rückgängig',
   'printWarning.SEALED_CAVITY': 'Geschlossener Hohlraum ohne Ausgang ({volume} cm³ eingeschlossen): er lässt sich nicht leeren oder reinigen. Füge ein Ablaufloch hinzu, wenn Material heraus muss.',
   'toast.hollowSealed': 'Es bleibt ein geschlossener Hohlraum ohne Ausgang. Zum Entleeren aushöhlen mit Ablaufloch.',
-  'ctx.hollowOpen': 'Aushöhlen…',
   'ctx.hollowOpenTip': 'Öffnet das Aushöhl-Panel mit der Standardwand (2,2 mm)',
   'toast.hollowPanelOpened': 'Wand einstellen und „Aushöhlen“ drücken. Ohne Ablaufloch bleibt ein geschlossener Hohlraum.',
 };
@@ -83,7 +80,6 @@ export const FLOWUX_FR = {
   'toast.undo': 'Annuler',
   'printWarning.SEALED_CAVITY': 'Cavité fermée sans issue ({volume} cm³ enfermés) : impossible de la vider ou de la nettoyer. Ajoutez un trou de drainage si vous devez évacuer de la matière.',
   'toast.hollowSealed': 'Il reste une cavité fermée sans issue. Pour la vider, évidez avec un trou de drainage.',
-  'ctx.hollowOpen': 'Évider la pièce…',
   'ctx.hollowOpenTip': 'Ouvre le panneau d’évidement avec la paroi par défaut (2,2 mm)',
   'toast.hollowPanelOpened': 'Réglez la paroi et appuyez sur « Évider ». Sans trou de drainage, une cavité fermée reste.',
 };
@@ -103,7 +99,6 @@ export const FLOWUX_HI = {
   'toast.undo': 'पूर्ववत करें',
   'printWarning.SEALED_CAVITY': 'बिना निकास की बंद गुहा ({volume} cm³ बंद): इसे खाली या साफ़ नहीं किया जा सकता। सामग्री निकालनी हो तो ड्रेन होल जोड़ें।',
   'toast.hollowSealed': 'बिना निकास की एक बंद गुहा बची है। खाली करनी हो तो ड्रेन होल के साथ खोखला करें।',
-  'ctx.hollowOpen': 'पुर्ज़ा खोखला करें…',
   'ctx.hollowOpenTip': 'डिफ़ॉल्ट दीवार (2,2 mm) के साथ खोखला करने का पैनल खोलता है',
   'toast.hollowPanelOpened': 'दीवार तय करें और «खोखला करें» दबाएँ। ड्रेन होल के बिना बंद गुहा बचती है।',
 };
@@ -123,7 +118,6 @@ export const FLOWUX_ZH = {
   'toast.undo': '撤销',
   'printWarning.SEALED_CAVITY': '存在无出口的封闭空腔（封闭 {volume} cm³）：无法清空或清理。如需排出材料，请添加排料孔。',
   'toast.hollowSealed': '仍留有无出口的封闭空腔。如需清空，请带排料孔抽壳。',
-  'ctx.hollowOpen': '抽壳…',
   'ctx.hollowOpenTip': '打开抽壳面板，默认壁厚 2.2 mm',
   'toast.hollowPanelOpened': '设置壁厚并点击“抽壳”。没有排料孔时会留下封闭空腔。',
 };

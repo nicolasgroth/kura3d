@@ -23,6 +23,7 @@ import type { TreeRow } from './sceneTreeRows';
 import '../../styles/ux3Edicion.css';
 import { splitPieceDisplayName } from '../../core/scene/splitPieceName';
 import { SceneColorSwatch } from './SceneColorSwatch';
+import { MiddleEllipsisName } from './MiddleEllipsisName';
 
 export type DropPlace = 'before' | 'after' | 'inside';
 
@@ -151,7 +152,7 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
             }}
           />
         ) : (
-          <span className="kura-scene-name" title={name}>{name}</span>
+          <MiddleEllipsisName name={name} />
         )}
         {count > 0 && <span className="kura-tree-count" aria-hidden="true">{count}</span>}
         {obj?.metadata?.split?.assemblyStep != null && (

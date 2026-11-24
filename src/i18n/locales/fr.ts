@@ -42,11 +42,13 @@ import { UX6_FR } from './ux6';
 import { RECETAS_FR } from './recetas';
 import { BORDES_FR } from './bordesPrimitivas';
 import { UX7_FR } from './ux7';
+import { UX8_FR } from './ux8';
 import { REDISENO_FR } from './rediseno';
 import { PANEL_FR } from './panel';
 import { ENCAJE_UI_FR } from './encajeUi';
 import { REDISENO3A_FR } from './rediseno3a';
 import { REDISENO3B_FR } from './rediseno3b';
+import { UX8_MENU_FR } from './ux8Menu';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -86,11 +88,13 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...RECETAS_FR,
   ...BORDES_FR,
   ...UX7_FR,
+  ...UX8_FR,
   ...REDISENO_FR,
   ...PANEL_FR,
   ...ENCAJE_UI_FR,
   ...REDISENO3A_FR,
   ...REDISENO3B_FR,
+  ...UX8_MENU_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',
@@ -319,7 +323,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'inspector.mirror.x': 'Miroir X',
   'inspector.mirror.y': 'Miroir Y',
   'inspector.mirror.z': 'Miroir Z',
-  'inspector.action.dropToBed': 'Poser sur plateau',
+  'inspector.action.dropToBed': 'Poser sur le plateau',
   'inspector.action.centerBed': 'Centrer sur plateau',
   'inspector.action.resetTransform': 'Réinit. rot/échelle',
   'inspector.section.stats': 'Géométrie & Métriques',
@@ -344,7 +348,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'inspector.op.applyHoles': 'Appliquer les soustractions',
   'inspector.op.cutAndSplitTitle': 'Coupe & Séparation',
   'inspector.op.planeCut': 'Coupe par plan + connecteurs',
-  'inspector.op.splitParts': 'Séparer les pièces (îlots)',
+  'inspector.op.splitParts': 'Séparer les pièces détachées',
   'inspector.op.splitColors': 'Séparer par couleurs',
   'inspector.op.textureTitle': 'Texture de Surface',
   'inspector.op.textureDepth': 'Profondeur',
@@ -417,16 +421,9 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'badge.localNoAiTip': 'Mode hors ligne déterministe : aucune donnée ne quitte votre appareil',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': 'Appliquer les soustractions',
-  'ctx.unionSelection': 'Unir la sélection',
   'ctx.planeCut': 'Coupe par plan + connecteurs',
-  'ctx.generateMold': 'Générer Moule / Silicone',
-  'ctx.projectSurface': 'Projeter Texte/SVG sur Surface',
-  'ctx.validatePrint': 'Valider la structure 3D',
-  'ctx.detectStructures': 'Détecter les sous-structures (Local)',
   'ctx.shortcuts': 'Raccourcis clavier',
   'ctx.duplicate': 'Dupliquer',
-  'ctx.dropToBed': 'Poser sur le plateau (Z=0)',
   'ctx.delete': 'Supprimer',
 
   // Paleta de comandos (Ctrl+K)
@@ -440,15 +437,8 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'cmd.cat.export': 'Import & Export',
   'cmd.cat.view': 'Vue, Unités & Thème',
   'cmd.cat.settings': 'Paramètres, MCP & IA',
-  'cmd.pro.mold': 'Générer un Moule / Coffrage Silicone',
-  'cmd.pro.project': 'Projeter un Texte ou SVG sur Surface',
   'cmd.pro.thread': 'Créer un Filetage Métrique ISO (M3–M64)',
-  'cmd.pro.validate': 'Valider l’Imprimabilité (Porte-à-faux & Poids)',
-  'cmd.pro.simplify': 'Simplifier le Maillage (Réduire les Triangles)',
-  'cmd.pro.refine': 'Affiner le Maillage (Subdiviser & Lisser)',
-  'cmd.pro.hull': 'Enveloppe convexe',
   'cmd.pro.arrangeGrid': 'Disposer les Pièces sur le Plateau (Auto)',
-  'cmd.pro.detectStructures': 'Détecter les Sous-Structures 3D (Local)',
   'cmd.pro.colorizeStructures': 'Coloriser les Sous-Structures Détectées (3MF)',
   'cmd.pro.mirrorX': 'Miroir de l’Objet sur l’Axe X',
   'cmd.view.compact': 'Basculer en Mode Compact',

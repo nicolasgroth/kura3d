@@ -87,6 +87,28 @@ describe('trazo del pincel sobre una primitiva', () => {
     expect(tris()).toBe(12);
   });
 
+  it('tras confirmar, un clic suelto (una sola muestra) y el trazo siguiente también pintan', async () => {
+    const base = pastLen();
+    // Primer toque: una sola muestra retenida hasta responder el aviso.
+    const pending = startStorePaintStroke(obj(), { point: [0, 20, 0], faceIndex: null }, true, () => Promise.resolve());
+    release();
+    await flush();
+    settleDecision('paint');
+    await pending;
+    await flush();
+    expect(pastLen()).toBe(base + 1);
+    expect(useKuraStore.getState().isPaintStrokeOpen()).toBe(false);
+    const afterFirst = tris();
+    expect(afterFirst).toBeGreaterThan(12);
+    // Trazo siguiente en otra zona: sin aviso, pinta y es un paso más de historial.
+    const second = startStorePaintStroke(obj(), { point: [8, 20, 8], faceIndex: null }, true);
+    expect(second).toBeUndefined();
+    continueStorePaintStroke(obj().id, { point: [9, 20, 8], faceIndex: null });
+    release();
+    expect(pastLen()).toBe(base + 2);
+    expect(tris()).toBeGreaterThan(afterFirst);
+  });
+
   it('sin trazo abierto, mover con el botón apretado no pinta ni agrega historial', () => {
     const base = pastLen();
     continueStorePaintStroke(obj().id, { point: [0, 20, 0], faceIndex: null });

@@ -458,3 +458,57 @@ Consumo: evaluador (Opus · ~22 min).
 Suite completa de navegador sobre `e60ef2a` (24-nov, 05:35 · 1,3 h): 353 recorridos pasan, 12 omitidos, 1 falla (`ux-texto-menu`, menú de clic derecho sobre el fondo). Aislado pasa 3 de 3; la prueba medía el lienzo antes de que tomara su tamaño y ahora espera a que ocupe el visor (causa probable, no confirmada con la traza). Capturas de las guías regeneradas (17 de 17) y enlaces sin roturas.
 
 Hallazgo 1 de la quinta evaluación, corregido el 24-nov (05:50) por el orquestador: el motor sí detecta los choques con selección (3 pares, 3 choques con tres primitivas superpuestas). Lo engañoso era el panel: tras cambiar la selección seguía mostrando el informe anterior junto al alcance nuevo, y con 0 pares cercanos decía «Todo calza». Ahora el informe se oculta al cambiar la selección y pide volver a comprobar, y sin pares cercanos dice que no hubo nada que comparar. Dos pruebas nuevas del panel; 2537 pruebas del frontend pasan; comprobado en el navegador.
+
+## QA22 · 24 de noviembre de 2026, 10:00 · rama `fix/ux8-usabilidad` · aprobada con observaciones
+
+Lote con los hallazgos pendientes de la quinta evaluación, en tres ramas integradas. La QA probó 12 puntos en navegador real; 10 sin fallos (colocación, borradores, nombres, Mayús+H, avisos, árbol, barra, Dividir, Medir, encaje). La pérdida del primer trazo de pintura no se pudo reproducir (cubo con color previo y STL real, clic y arrastre). 28 de 28 recorridos existentes pasan.
+
+Fallos y su corrección (orquestador, `c546fb7`):
+
+1. La paleta de comandos no ofrecía varias acciones del catálogo con su nombre (Comprobar encaje, Convertir en, Alinear, Unir selección, Textura, Módulos). Ahora toda acción del catálogo tiene entrada con el nombre canónico; prueba en los 6 idiomas.
+2. Escape dentro de un submenú cerraba todo el menú. Ahora cierra solo el submenú.
+3. Encontrado al corregir: a 390 px, desplegar un submenú en línea sacaba el menú de la ventana sin scroll. El menú se reajusta al crecer.
+
+Tras las correcciones: 2582 pruebas del frontend y 151 del servidor MCP pasan; los recorridos de paleta, teclado del menú (1440 y 390 px) y pintura pasan. Capturas de las guías regeneradas (17 de 17).
+
+No probado por la QA: SVG, imagen a 3D y molde en la colocación; el nombre del proyecto al exportar; tema oscuro y 390 px fuera de los recorridos del desarrollo; las acciones de Malla, Separar y combinar y Más (solo que abren).
+
+Consumo (modelo · duración · tokens): escena y borradores (Opus · 47 min · 261 k), avisos, árbol y barra (Sonnet · 60 min · 258 k), menú de clic derecho (Sonnet · 67 min · 320 k), QA22 (Sonnet · 50 min · 207 k; una primera corrida se cortó por el reinicio del equipo).
+
+## Sexta evaluación de usabilidad · 24 de noviembre de 2026, 11:00 · rama `fix/ux8-usabilidad` (`b44075a`)
+
+Evaluador nuevo, a ciegas, tras el lote con los hallazgos de la quinta. **Nota global: 81** (mínimo 85). Sin bloqueos duros confirmados: consola sin errores, sin pérdida de datos (recuperó 125 objetos tras recargar).
+
+| Área | Sexta | Quinta |
+|---|---|---|
+| 1. Primer contacto e interfaz general | 80 | 80 |
+| 2. Crear y editar | 80 | 82 |
+| 3. Importar y reparar | 79 | 85 |
+| 4. Escena y grupos | 78 | 78 |
+| 5. Cortar y ahuecar | 85 | 86 |
+| 6. Dividir y ajustar a la impresora | 86 | 80 |
+| 7. Medir y comprobar encaje | 79 | 72 |
+| 8. Colores y pintura | 83 | 82 |
+| 9. Exportar, guardar y recuperar | 78 | 85 |
+
+Hallazgos, de mayor a menor impacto:
+
+1. Un aviso no se puede cerrar: «…trae 4 cuerpos… Separar cuerpos» vuelve tras «Cerrar todos» y en cada acción, y tapa el panel de armado y el diálogo de exportar (importar llaveros.3mf, cerrar todos, cortar o dividir).
+2. Lo nuevo sigue apareciendo encima de lo existente (cubo, perno, Texto 3D, STL importado) en una escena de 20 objetos recuperada. La corrección del lote (al costado y no detrás) no bastó en una escena cargada.
+3. El botón «Proyecto» no abre un menú: deselecciona para mostrar el panel Proyecto; con Pintar activa borra la selección y el panel no cambia.
+4. Árbol: el recorte por el medio deja nombres sin sentido a 1024 px; los iconos de la fila acortan más el nombre; el nombre accesible mezcla las acciones de la fila; la cabecera «Escena» no queda fija; nombres por defecto en idiomas mezclados («Group 1» y «Grupo 1», «Box 19 — Green», «3D Text»).
+5. Comprobar encaje marca «Justo, holgura 0 mm» en las caras de corte de piezas recién divididas; no aparece en la paleta al buscar «holgura».
+6. Historial poco descriptivo («Cambiar 2 objetos» por agrupar, «Editar malla» por un cambio de parámetro).
+7. Un cubo de 2 mm importado no ofrece convertir desde pulgadas o cm.
+8. «Agregar» e «Insertar» ofrecen cosas distintas (Rosca y SVG solo en Insertar); dos filamentos «Amarillo» distintos.
+9. Al cortar, la cámara salta a la vista trasera; el inspector y el panel flotante de Medir piden cosas distintas.
+10. Avisos técnicos («umbral de fragmento 0», «Reparadas 4 de 4 (60 piezas)»).
+11. La barra diagonal de los botones deshabilitados tacha su etiqueta; botones de Operaciones 3D solo con icono.
+
+A verificar a mano: «Guardar proyecto» y Ctrl+S no dieron descarga ni aviso en la prueba automatizada; la app usa el selector nativo de archivos, que Playwright no ve, así que no es atribuible con certeza.
+
+No evaluado: guardar y abrir `.kura`, arrastrar el manipulador, ángulo/área/capacidad, Mayús+L, desagrupar, arrastrar en el árbol, archivos muy pesados, contraste medido, lector de pantalla real, OBJ/GLB/PLY.
+
+Serie de usabilidad: 76 → 75 → 79 → 78 → 80 → 81. Sexta ronda bajo el mínimo: se consulta de nuevo al autor.
+
+Consumo: evaluador (Opus · 17 min).

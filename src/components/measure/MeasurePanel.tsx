@@ -27,6 +27,7 @@ import { useNarrowViewport } from './useNarrowViewport';
 import { useCoarsePointer } from './useCoarsePointer';
 import '../../styles/measure.css';
 import '../../styles/ux6.css';
+import '../../styles/measureHierarchy.css';
 
 /** Borde elegido para el panel (dura mientras la app está abierta, aunque se cierre Medir). */
 let lastSide: 'left' | 'right' = 'left';
@@ -84,9 +85,12 @@ const ObjectTotals: React.FC<{ lang: LanguageCode; unit: UnitSystem }> = ({ lang
   if (!obj || !m) return null;
   const cap = formatCapacity(m.volumeMm3, unit, undefined, lang);
   return (
+    <div className="kura-measure-section" data-testid="measure-section-object">
+    <h3 className="kura-measure-sub">{t(lang, 'ux8.measure.object')}</h3>
     <p className="kura-measure-hint" data-testid="measure-object-totals">
       {t(lang, 'measure.object.total', { name: obj.name, area: formatArea(m.surfaceAreaMm2, unit, lang), volume: cap.solid, liquid: cap.liquid })}
     </p>
+    </div>
   );
 };
 
@@ -122,18 +126,11 @@ export const MeasurePanel: React.FC = () => {
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
   }, []);
-  // Al abrir, plegar o cambiar de borde: si el modelo quedó detrás del panel, la cámara lo trae al área libre
-  // (el panel es un `data-viewport-occluder`); si ya se ve entero no se mueve.
+  // Recordar el borde elegido. La cámara no se mueve sola al abrir, plegar o cambiar de borde: el usuario encuadra
+  // con «Encuadrar» si el modelo queda detrás del panel.
   useEffect(() => {
     lastSide = side;
-    if (narrow) return undefined;
-    const frame = requestAnimationFrame(() => {
-      const s = useKuraStore.getState();
-      const ids = s.selectedIds.length > 0 ? s.selectedIds : s.objects.filter((o) => o.visible !== false).map((o) => o.id);
-      if (ids.length > 0) s.requestCameraPreset('ensure', ids);
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [side, collapsed, narrow]);
+  }, [side]);
   // Al salir de la herramienta se descarta lo que estaba a medio marcar.
   useEffect(() => () => useMeasureStore.setState({ pending: [], hover: null }), []);
 
@@ -161,20 +158,20 @@ export const MeasurePanel: React.FC = () => {
           ))}
         </div>
       )}
-      <p className="kura-measure-hint" role="status" aria-live="polite">{hint}</p>
+      <p className="kura-measure-step" role="status" aria-live="polite" data-testid="measure-step">{hint}</p>
       {coarse && pendingCount > 0 && mode !== 'capacity' && (
         <button type="button" className="kura-btn kura-btn-sm kura-measure-cancel" title={t(lang, 'measure.cancelPointTip')} onClick={() => cancelPending()}>
           <X size={12} aria-hidden />
           <span>{t(lang, 'measure.cancelPoint')}</span>
         </button>
       )}
-      {(mode === 'distance' || mode === 'angle') && <p className="kura-measure-hint">{t(lang, coarse ? 'measure.hint.snapTouch' : 'measure.hint.snap')}</p>}
+      {(mode === 'distance' || mode === 'angle') && <p className="kura-measure-hint kura-measure-note">{t(lang, coarse ? 'measure.hint.snapTouch' : 'measure.hint.snap')}</p>}
       {mode === 'capacity' ? <MeasureCapacityPanel /> : <ObjectTotals lang={lang} unit={unit} />}
 
       {mode !== 'capacity' && (
-        <div>
+        <div className="kura-measure-section" data-testid="measure-section-list">
           <div className="kura-measure-row">
-            <strong className="kura-measure-row-text">{t(lang, 'measure.list.title')}</strong>
+            <h3 className="kura-measure-sub kura-measure-row-text">{t(lang, 'measure.list.title')}</h3>
             {measurements.length > 0 && (
               <button type="button" className="kura-btn kura-btn-sm" onClick={clearAll}>
                 <Trash2 size={12} aria-hidden />
@@ -208,7 +205,7 @@ export const MeasurePanel: React.FC = () => {
               })}
             </ul>
           )}
-          <p className="kura-measure-hint">{t(lang, 'measure.list.session')}</p>
+          <p className="kura-measure-hint kura-measure-note">{t(lang, 'measure.list.session')}</p>
         </div>
       )}
     </>

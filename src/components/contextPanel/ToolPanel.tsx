@@ -14,6 +14,7 @@ import { ListTree, Scissors } from 'lucide-react';
 import { isSolid } from '../../core/scene/objectRole';
 import { t, type TranslationKey } from '../../i18n';
 import type { PanelToolId } from '../../store/panelContext';
+import { paintTargetText } from '../../store/paintTarget';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { TransformMode } from '../../types/kura';
 import { ColorSplitControl } from '../inspector/ColorSplitControl';
@@ -53,11 +54,14 @@ export function toolPanelTitle(tool: PanelToolId): TranslationKey {
 export const ToolPanel: React.FC<{ tool: PanelToolId; objectId: string | null; ui: InspectorLocalState }> = ({ tool, objectId, ui }) => {
   const language = useKuraStore((s) => s.language);
   const primary = useKuraStore((s) => (objectId ? s.objects.find((o) => o.id === objectId) ?? null : null));
+  const objects = useKuraStore((s) => s.objects);
+  const selectedIds = useKuraStore((s) => s.selectedIds);
   const eraseRadiusMm = useKuraStore((s) => s.eraseRadiusMm);
   const setEraseRadiusMm = useKuraStore((s) => s.setEraseRadiusMm);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const setTransformFocus = useKuraStore((s) => s.setTransformFocus);
   const focus = FOCUS[tool];
+  const paintTarget = paintTargetText(language, objects, selectedIds);
 
   let body: React.ReactNode = null;
   if (tool === 'paint') {
@@ -136,11 +140,14 @@ export const ToolPanel: React.FC<{ tool: PanelToolId; objectId: string | null; u
       <div className="kura-panel-header">
         <h2 className="kura-ctx-heading" tabIndex={-1}>{t(language, TITLE[tool])}</h2>
       </div>
-      <p className={`kura-ctx-target ${primary ? '' : 'is-empty'}`} title={primary?.name}>
-        {primary
-          ? t(language, 'panel.action.target', { name: primary.name })
-          : t(language, tool === 'paint' ? 'viewport.paint.noTarget' : 'rediseno3b.panel.pickObject')}
-      </p>
+      {tool === 'paint' ? (
+        // Pintar: la misma frase que la barra del visor, con cualquier selección (ninguno, uno o varios).
+        <p className={`kura-ctx-target ${paintTarget.name ? '' : 'is-empty'}`} title={paintTarget.name ?? undefined}>{paintTarget.text}</p>
+      ) : (
+        <p className={`kura-ctx-target ${primary ? '' : 'is-empty'}`} title={primary?.name}>
+          {primary ? t(language, 'panel.action.target', { name: primary.name }) : t(language, 'rediseno3b.panel.pickObject')}
+        </p>
+      )}
       <div className="kura-scroll-area kura-ctx-body">
         <p className="kura-ctx-hint kura-tool-panel-help">{t(language, HELP[tool])}</p>
         {body}
