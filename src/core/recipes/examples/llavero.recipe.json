@@ -10,7 +10,7 @@
   "category": "regalos",
   "params": [
     { "id": "text", "type": "text", "maxLength": 20, "default": "Kura", "label": "$t:text" },
-    { "id": "size", "type": "number", "unit": "mm", "min": 4, "max": 30, "default": 10, "label": "$t:size" },
+    { "id": "size", "type": "number", "unit": "mm", "min": 5, "max": 30, "default": 10, "label": "$t:size" },
     { "id": "mode", "type": "choice", "default": "relief", "label": "$t:mode",
       "options": [{ "value": "relief", "label": "$t:relief" }, { "value": "engrave", "label": "$t:engrave" }] },
     { "id": "base", "type": "number", "unit": "mm", "min": 1.6, "max": 6, "default": 3, "label": "$t:base" },
