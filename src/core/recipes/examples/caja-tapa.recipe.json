@@ -67,6 +67,7 @@
   "strings": {
     "es": {
       "title": "Caja con tapa", "description": "Caja de medidas interiores con tapa atornillada o a presión.",
+      "page.medidas": "Medidas", "page.forma": "Forma", "page.tapa": "Tapa",
       "w": "Ancho interior", "dp": "Fondo interior", "h": "Alto interior", "wall": "Pared", "r": "Radio de esquinas",
       "fix": "Cierre de la tapa", "screw": "Tornillos", "press": "A presión", "screwd": "Tornillo",
       "vents": "Ranuras de ventilación", "ventw": "Ancho de ranura",
@@ -75,6 +76,7 @@
     },
     "en": {
       "title": "Box with lid", "description": "Box sized by its inside, with a screwed or press-fit lid.",
+      "page.medidas": "Dimensions", "page.forma": "Shape", "page.tapa": "Lid",
       "w": "Inner width", "dp": "Inner depth", "h": "Inner height", "wall": "Wall", "r": "Corner radius",
       "fix": "Lid closure", "screw": "Screws", "press": "Press fit", "screwd": "Screw",
       "vents": "Vent slots", "ventw": "Slot width",

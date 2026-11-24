@@ -80,10 +80,10 @@ describe('resolveRecipe: placa de enchufe (medidas por verificar)', () => {
     expect(us.steps).toMatchSnapshot();
   });
 
-  it('las variantes de Italia y España del diseño no calzan con su propio rango de ventana (winw ≤ mw − 2)', () => {
-    for (const variant of ['it', 'es']) {
+  it('todas las variantes respetan el rango de la ventana (winw ≤ mw − 2) y resuelven sin errores', () => {
+    for (const variant of ['cl', 'it', 'es', 'us']) {
       const result = resolveRecipe(clone(EXAMPLES.placa), {}, { variant });
-      expect(codes(result)).toEqual(['param.outOfRange @ params[2]']);
+      expect(codes(result), variant).toEqual([]);
     }
   });
 

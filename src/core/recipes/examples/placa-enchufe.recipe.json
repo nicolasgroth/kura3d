@@ -23,8 +23,8 @@
   ],
   "presets": [
     { "id": "cl", "label": "$t:cl", "verified": false, "values": { "mw": 45, "winw": 40, "winh": 45, "ph": 80, "screwAxis": "x", "screw": 3.5 } },
-    { "id": "it", "label": "$t:it", "verified": false, "values": { "mw": 22.5, "winw": 21, "winh": 45, "ph": 80, "screwAxis": "x", "screw": 3.5 } },
-    { "id": "es", "label": "$t:es", "verified": false, "values": { "modules": 1, "mw": 50, "winw": 50, "winh": 50, "ph": 80, "screwAxis": "x", "spacing": 60 } },
+    { "id": "it", "label": "$t:it", "verified": false, "values": { "mw": 22.5, "winw": 20.5, "winh": 45, "ph": 80, "screwAxis": "x", "screw": 3.5 } },
+    { "id": "es", "label": "$t:es", "verified": false, "values": { "modules": 1, "mw": 50, "winw": 48, "winh": 50, "ph": 80, "screwAxis": "x", "spacing": 60 } },
     { "id": "us", "label": "$t:us", "verified": false, "values": { "modules": 1, "mw": 70, "winw": 35, "winh": 67, "ph": 114, "screwAxis": "y", "spacing": 97 } }
   ],
   "derive": { "pw": "=p.modules*p.mw + 2*p.margin", "sh": "=p.spacing/2" },
