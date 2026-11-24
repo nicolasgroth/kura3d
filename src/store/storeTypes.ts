@@ -199,6 +199,9 @@ export interface KuraStoreState {
    * Junto con `activeTool` dice qué está activo (`activeContextOf` en `actionsCatalog.ts`). */
   activeAction: ActionId | null;
   transformMode: TransformMode;
+  /** Mover, Rotar o Escalar elegidos a propósito en la barra o con su atajo (`null` = Seleccionar u otra
+   * herramienta): el panel derecho pone arriba solo esa parte de la transformación (`panelContextOf`). */
+  transformFocus: TransformMode | null;
   proportionalScale: boolean;
   snapGridMm: number;
   paintColor: string;
@@ -271,6 +274,7 @@ export interface KuraStoreState {
   setActiveTool: (tool: ActiveTool) => void;
   setActiveAction: (action: ActionId | null) => void;
   setTransformMode: (mode: TransformMode) => void;
+  setTransformFocus: (mode: TransformMode | null) => void;
   setProportionalScale: (locked: boolean) => void;
   toggleProportionalScale: () => void;
   setSnapGridMm: (snapMm: number) => void;

@@ -1,0 +1,142 @@
+/**
+ * @file src/styles/paintPalette.css
+ * @description Opciones de Pintar compartidas por el panel derecho y la barra del visor: disposición de los
+ * controles, paleta personalizable (agregar, opciones) y su ventana flotante de edición. En escritorio la barra
+ * del visor no repite los controles salvo con el panel derecho plegado.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-paint-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.kura-paint-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* La barra del visor muestra los controles solo en pantallas estrechas o con el panel plegado. */
+.kura-paint-hud-controls {
+  display: none;
+}
+
+.kura-paint-toolbar.has-controls .kura-paint-hud-controls {
+  display: contents;
+}
+
+@media (max-width: 900px) {
+  .kura-paint-hud-controls {
+    display: contents;
+  }
+}
+
+.kura-paint-palette {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.kura-paint-palette .kura-swatch-row {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Con todas las muestras a la vista, la fila se desplaza en vez de crecer sin fin. */
+.kura-paint-palette .kura-swatch-row.is-expanded {
+  max-height: 168px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.kura-palette-toggle {
+  height: 26px;
+  font-size: 11px;
+}
+
+.kura-palette-toggle:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-palette-add,
+.kura-palette-more {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  justify-content: center;
+}
+
+.kura-palette-add[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.kura-palette-add:focus-visible,
+.kura-palette-more:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-palette-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+  max-width: min(280px, calc(100vw - 32px));
+  padding: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg-panel, var(--bg-elevated, #ffffff));
+  color: var(--text-primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  font-size: 12px;
+}
+
+.kura-palette-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kura-palette-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kura-palette-field input[type='color'] {
+  width: 36px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: transparent;
+}
+
+.kura-palette-field input[type='color']:focus-visible,
+.kura-palette-popover select:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-palette-field code {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Panel derecho: la ventana flotante no se sale del panel por la derecha. */
+.kura-ctx-panel .kura-palette-popover {
+  left: 0;
+  right: auto;
+}

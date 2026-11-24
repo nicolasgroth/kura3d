@@ -45,6 +45,7 @@ import { UX7_FR } from './ux7';
 import { REDISENO_FR } from './rediseno';
 import { PANEL_FR } from './panel';
 import { ENCAJE_UI_FR } from './encajeUi';
+import { REDISENO3B_FR } from './rediseno3b';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -87,6 +88,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...REDISENO_FR,
   ...PANEL_FR,
   ...ENCAJE_UI_FR,
+  ...REDISENO3B_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',
@@ -275,7 +277,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'viewport.paint.color': 'Filament',
   'viewport.paint.hint': 'Cliquez ou glissez sur le modèle pour peindre les faces 3MF',
   'viewport.paint.target': 'Peinture sur : {name}',
-  'viewport.paint.noTarget': 'Aucun objet actif : cliquez sur un objet pour le choisir, puis peignez',
+  'viewport.paint.noTarget': 'Aucun objet choisi : passe le pinceau sur un objet pour le peindre directement',
   'viewport.erase.radius': 'Rayon de sculpture',
   'viewport.erase.hint': 'Cliquez sur la surface du modèle pour soustraire une sphère',
   'viewport.cut.hint': 'Ouvrez la fenêtre Coupe par Plan pour diviser avec connecteurs automatiques',

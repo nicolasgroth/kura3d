@@ -45,6 +45,7 @@ import { UX7_HI } from './ux7';
 import { REDISENO_HI } from './rediseno';
 import { PANEL_HI } from './panel';
 import { ENCAJE_UI_HI } from './encajeUi';
+import { REDISENO3B_HI } from './rediseno3b';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -87,6 +88,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...REDISENO_HI,
   ...PANEL_HI,
   ...ENCAJE_UI_HI,
+  ...REDISENO3B_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',
@@ -275,7 +277,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'viewport.paint.color': 'फ़िलामेंट',
   'viewport.paint.hint': '3MF सतहों को रंगने के लिए मॉडल पर क्लिक करें या खींचें',
   'viewport.paint.target': 'रंगा जा रहा है: {name}',
-  'viewport.paint.noTarget': 'कोई सक्रिय वस्तु नहीं: चुनने के लिए किसी वस्तु पर क्लिक करें, फिर रंगें',
+  'viewport.paint.noTarget': 'कोई वस्तु चुनी नहीं: किसी वस्तु पर ब्रश ले जाकर सीधे रंगें',
   'viewport.erase.radius': 'तराशने की त्रिज्या',
   'viewport.erase.hint': 'गोला घटाने के लिए मॉडल की सतह पर क्लिक करें',
   'viewport.cut.hint': 'स्वचालित कनेक्टर के साथ विभाजित करने के लिए समतल कट संवाद खोलें',

@@ -62,6 +62,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { viewPrefsPaletteItems } from './viewPrefsPaletteItems';
+import { toolPaletteItems } from './toolPaletteItems';
 import { Boxes as BoxesIcon, Group as GroupIcon, Merge as MergeIcon, Ungroup as UngroupIcon } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
@@ -90,6 +91,8 @@ interface PaletteActionItem {
   kind: 'local' | 'ai';
   icon: React.ReactNode;
   run: () => void | Promise<void>;
+  /** Motivo si no se puede usar ahora (herramienta apagada). */
+  unavailable?: string;
 }
 
 export const CommandPalette: React.FC = () => {
@@ -777,16 +780,7 @@ export const CommandPalette: React.FC = () => {
         icon: <Layers size={15} />,
         run: () => setSectionPlane({ enabled: !sectionPlane.enabled }),
       },
-      {
-        id: 'tool-measure',
-        shortcut: 'D',
-        label: t(language, 'cmd.tool.measure'),
-        category: catView,
-        keywords: 'medir regla distancia area angulo capacidad volumen litros recipiente measure ruler distance angle capacity volume',
-        kind: 'local',
-        icon: <Ruler size={15} />,
-        run: () => useKuraStore.getState().setActiveTool('measure'),
-      },
+      ...toolPaletteItems(language, catView, objects, selectedIds),
       {
         id: 'view-fit',
         label: t(language, 'viewport.camera.fit'),
@@ -895,6 +889,8 @@ export const CommandPalette: React.FC = () => {
       },
     ];
   }, [
+    objects,
+    selectedIds,
     newProject,
     openProject,
     saveProject,
@@ -943,10 +939,11 @@ export const CommandPalette: React.FC = () => {
 
   /** Crear, operar o importar mientras otra operación corre se bloquea (la exclusión del store la rechazaría). */
   const blockedByBusy = (item: PaletteActionItem) =>
-    sceneBusy &&
+    Boolean(item.unavailable) ||
+    (sceneBusy &&
     (item.category === t(language, 'cmd.cat.primitives') ||
       item.category === t(language, 'cmd.cat.operations') ||
-      item.id.startsWith('io-import'));
+      item.id.startsWith('io-import')));
 
   const executeItem = (item: PaletteActionItem | undefined) => {
     if (!item || blockedByBusy(item)) return;
@@ -1033,7 +1030,7 @@ export const CommandPalette: React.FC = () => {
               tabIndex={-1}
               aria-selected={idx === activeIndex}
               aria-disabled={blockedByBusy(item) || undefined}
-              title={blockedByBusy(item) ? t(language, 'store.error.busy') : undefined}
+              title={item.unavailable ?? (blockedByBusy(item) ? t(language, 'store.error.busy') : undefined)}
               className={`kura-palette-item ${idx === activeIndex ? 'is-active' : ''} ${blockedByBusy(item) ? 'is-disabled' : ''}`}
               onMouseEnter={() => setActiveIndex(idx)}
               onClick={() => executeItem(item)}

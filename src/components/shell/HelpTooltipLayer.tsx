@@ -73,7 +73,10 @@ export const HelpTooltipLayer: React.FC = () => {
     const enter = (el: HTMLElement, delay: number) => {
       const lang = useKuraStore.getState().language;
       const id = el.dataset.help;
-      useStatusHelp.setState({ line: isHelpId(id) ? helpLine(lang, id) : fallbackLine(el) });
+      const base = isHelpId(id) ? helpLine(lang, id) : fallbackLine(el);
+      // Un control apagado dice por qué (`data-help-reason`), también en la barra de estado.
+      const reason = el.dataset.helpReason;
+      useStatusHelp.setState({ line: reason ? `${reason} · ${base ?? ''}` : base });
       clearTimers();
       if (!isHelpId(id)) {
         setShown(null);
@@ -203,6 +206,7 @@ export const HelpTooltipLayer: React.FC = () => {
         <strong>{help.name}</strong>
         {help.shortcut && <kbd>{help.shortcut}</kbd>}
       </span>
+      {shown.el.dataset.helpReason && <span className="kura-help-tooltip-reason">{shown.el.dataset.helpReason}</span>}
       <span className="kura-help-tooltip-desc">{help.desc}</span>
     </div>
   );

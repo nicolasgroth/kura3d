@@ -45,6 +45,7 @@ import { MobileTransformBar } from './components/narrow/MobileTransformBar';
 import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest';
 import { ToolRail } from './components/shell/ToolRail';
 import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
+import { activateRailTool, toggleRailTool } from './store/toolActivation';
 import { useSimplifyRequestRelay } from './components/inspector/simplifyPanelRequest';
 
 const TRANSFORM_SHORTCUTS = new Map<string, TransformMode>([
@@ -365,10 +366,11 @@ export const App: React.FC = () => {
       const transformMode = TRANSFORM_SHORTCUTS.get(key);
       if (transformMode && !(key === 'm' && e.shiftKey)) {
         e.preventDefault();
-        state.setActiveTool('select');
-        state.setTransformMode(transformMode);
+        // Misma regla que la barra: sin selección toma los objetos visibles sin candado; escena vacía: avisa.
+        const applied = activateRailTool(transformMode === 'translate' ? 'move' : transformMode);
+        if (!applied.enabled) return;
         const opensInspector = key === 'm' || key === 'r' || key === 's';
-        if (opensInspector && !e.shiftKey && !e.repeat && state.selectedIds.length === 1) {
+        if (opensInspector && !e.shiftKey && !e.repeat && useKuraStore.getState().selectedIds.length === 1) {
           const narrow = window.matchMedia('(max-width: 900px)').matches;
           if (state.uiDensity === 'zen') state.toggleZenMode();
           if (state.aiDrawerOpen && window.matchMedia('(max-width: 1240px)').matches) {
@@ -390,7 +392,7 @@ export const App: React.FC = () => {
       } else if (key === '7') {
         state.requestCameraPreset('top');
       } else if (key === 'v') {
-        state.setActiveTool('select');
+        activateRailTool('select');
       } else if (key === 'f') {
         state.requestCameraPreset('fit');
       } else if (key === 'h') {
@@ -408,9 +410,9 @@ export const App: React.FC = () => {
       } else if (key === 'x') {
         state.setSectionPlane({ enabled: !state.sectionPlane.enabled });
       } else if (key === 'p') {
-        state.setActiveTool(state.activeTool === 'paint' ? 'select' : 'paint');
+        toggleRailTool('paint');
       } else if (key === 'd' && !e.shiftKey) {
-        state.setActiveTool(state.activeTool === 'measure' ? 'select' : 'measure');
+        toggleRailTool('measure');
       } else if (key === 'c' && e.shiftKey) {
         if (state.selectedIds.length > 0) state.setActiveDialog('splitForBed');
       } else if (key === 'c') {

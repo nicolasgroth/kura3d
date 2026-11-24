@@ -1,7 +1,8 @@
 /**
  * @file src/components/contextPanel/ContextPanel.tsx
  * @description Panel derecho contextual: muestra una sola cosa según `panelContextOf` (proyecto, resumen de un
- * objeto, selección múltiple u opciones de la acción activa). Se ensancha o reduce con el separador del borde,
+ * objeto, selección múltiple, opciones de la acción activa u opciones de la herramienta activa). Las secciones del
+ * resumen del objeto se pliegan y lo recuerdan (`PanelFold`). Se ensancha o reduce con el separador del borde,
  * se pliega con el botón ‹ / › (ancho y estado se recuerdan) y anuncia el cambio de contexto en una región
  * `aria-live` discreta. En pantallas estrechas el mismo contenido va en la hoja inferior.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -10,6 +11,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { parametricStateOf } from '../../core/scene/parametric';
 import { t, type TranslationKey } from '../../i18n';
 import { panelContextKey, panelContextOf, type PanelContext } from '../../store/panelContext';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -30,6 +32,8 @@ import { ObjectOperations } from './ObjectOperations';
 import { panelContentOf } from './panelRegistry';
 import { PanelResizer } from './PanelResizer';
 import { ProjectSummary } from './ProjectSummary';
+import { PanelFold } from './PanelFold';
+import { ToolPanel, toolPanelTitle } from './ToolPanel';
 import '../../styles/contextPanel.css';
 
 function announcement(language: LanguageCode, ctx: PanelContext, objects: SceneObject[]): string {
@@ -44,6 +48,8 @@ function announcement(language: LanguageCode, ctx: PanelContext, objects: SceneO
       const entry = panelContentOf(ctx.id);
       return t(language, 'panel.announce.action', { name: entry ? t(language, entry.title) : ctx.id });
     }
+    case 'tool':
+      return t(language, 'panel.announce.action', { name: t(language, toolPanelTitle(ctx.tool)) });
   }
 }
 
@@ -66,6 +72,8 @@ const ObjectSummary: React.FC<{ primary: SceneObject; ui: InspectorLocalState }>
   const language = useKuraStore((s) => s.language);
   const scrollRef = useScrollTopOnSelection(primary.id);
   const sourceLabel = t(language, `inspector.source.${primary.source}` as TranslationKey);
+  // La huella paramétrica solo cambia con el objeto: no se recalcula en cada render.
+  const hasParams = useMemo(() => parametricStateOf(primary).status !== 'none', [primary]);
   return (
     <>
       <div className="kura-panel-header">
@@ -81,10 +89,12 @@ const ObjectSummary: React.FC<{ primary: SceneObject; ui: InspectorLocalState }>
             <SplitJointsSection primary={primary} />
           </section>
         )}
-        <IdentitySection primary={primary} />
-        <ParametersSection primary={primary} />
-        <TransformSection primary={primary} ui={ui} />
-        <GeometrySection primary={primary} />
+        <PanelFold id="identity" title="inspector.section.identity"><IdentitySection primary={primary} /></PanelFold>
+        {hasParams && (
+          <PanelFold id="parameters" title="rediseno3b.fold.parameters"><ParametersSection primary={primary} /></PanelFold>
+        )}
+        <PanelFold id="transform" title="rediseno3b.fold.transform"><TransformSection primary={primary} ui={ui} /></PanelFold>
+        <PanelFold id="geometry" title="inspector.section.stats"><GeometrySection primary={primary} /></PanelFold>
         <ObjectOperations primary={primary} />
         <FilamentLegendCard />
       </div>
@@ -100,7 +110,11 @@ export const ContextPanel: React.FC<{ ui: InspectorLocalState }> = ({ ui }) => {
   const activeTool = useKuraStore((s) => s.activeTool);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const objects = useKuraStore((s) => s.objects);
-  const ctx = useMemo(() => panelContextOf({ activeAction, activeTool, selectedIds, objects }), [activeAction, activeTool, selectedIds, objects]);
+  const transformFocus = useKuraStore((s) => s.transformFocus);
+  const ctx = useMemo(
+    () => panelContextOf({ activeAction, activeTool, selectedIds, objects, transformFocus }),
+    [activeAction, activeTool, selectedIds, objects, transformFocus],
+  );
   const live = useContextAnnouncement(language, ctx, objects);
 
   let body: React.ReactNode;
@@ -126,6 +140,8 @@ export const ContextPanel: React.FC<{ ui: InspectorLocalState }> = ({ ui }) => {
         </div>
       </>
     );
+  } else if (ctx.kind === 'tool') {
+    body = <ToolPanel tool={ctx.tool} objectId={ctx.objectId} ui={ui} />;
   } else if (ctx.kind === 'action' && panelContentOf(ctx.id)?.renderScene) {
     body = <ActionPanel id={ctx.id} primary={objects.find((o) => o.id === ctx.objectId) ?? null} ui={ui} />;
   } else {
