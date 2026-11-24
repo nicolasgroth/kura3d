@@ -43,14 +43,6 @@ const TABLE = {
     'पैनल का आकार बदलें',
     '调整面板大小',
   ],
-  'uxm.sheet.resizeState': [
-    'Altura actual: {state}',
-    'Current height: {state}',
-    'Aktuelle Höhe: {state}',
-    'Hauteur actuelle : {state}',
-    'वर्तमान ऊँचाई: {state}',
-    '当前高度：{state}',
-  ],
 } satisfies Record<string, Row>;
 
 type Ui3Key = keyof typeof TABLE;

@@ -17,7 +17,7 @@ Kura3D solo prepara la geometría. No lamina, así que tampoco inserta la pausa 
 - **Preajuste**: los incluidos son redondos de 5 × 2, 6 × 3, 8 × 3 y 10 × 3 mm, y uno cuadrado de 5 × 5 × 2 mm. Al elegir uno se cargan sus medidas.
 - **Forma**: *Redondo* (diámetro × alto) o *Cuadrado* (lado × alto).
 - **Diámetro** o **Lado**, y **Alto** del imán, en milímetros. Puedes escribir con coma decimal (`6,5`).
-- **Holgura de ancho** y **Holgura de profundidad**: lo que se agrega al diámetro o lado y a la profundidad para que el imán entre. Por defecto son 0,2 mm, así que un imán de 5 × 2 deja un hueco de 5,2 × 2,2 mm. Se ajustan de 0 a 0,6 mm: 0,2 suele entrar a presión; súbelo si lo vas a pegar.
+- **Holgura de ancho** y **Holgura de profundidad**: lo que se agrega al diámetro o lado y a la profundidad para que el imán entre. Por defecto son 0,2 mm, así que un imán de 5 × 2 deja un hueco de 5,2 × 2,2 mm. Se ajustan de 0 a 0,6 mm. Los 0,2 mm son un **punto de partida por verificar**, no una garantía: los agujeros impresos en FDM suelen salir más chicos que el modelo, así que si el imán no entra, prueba con 0,3 a 0,4 mm; si lo vas a pegar, también conviene subirlo. Imprime antes una pieza de prueba chica con la misma holgura.
 - Un valor fuera de rango queda marcado junto a su campo y, mientras no lo corrijas, el panel no coloca nada.
 - Debajo de los campos ves el tamaño real del hueco, por ejemplo *Hueco: Ø 5,2 × 2,2 mm*; mientras un campo tenga error dice que es inválido en vez de mostrar el último valor bueno.
 
@@ -49,6 +49,11 @@ Cada alojamiento es un paso de deshacer: `Ctrl+Z` quita solo el último.
 ### Pared mínima
 
 Al colocar, Kura3D mide con rayos cuánto material queda entre el hueco y las otras caras de la pieza (al fondo y a los costados). Si queda menos de **1,2 mm** (unos tres perímetros de 0,4 mm), te avisa con la medida. Si el hueco atraviesa la pieza o se asoma por otra cara, también te lo dice. El aviso no impide colocarlo: decides tú si lo mueves o usas un imán más bajo. El panel muestra la pared mínima del último que colocaste.
+
+### Caras curvas y piezas escaladas
+
+- **En una cara curva** (un cilindro, una esfera) el imán puede **sobresalir** de la superficie, y con *Oculto bajo la cara* la tapa de 0,6 mm no queda pareja. Kura3D lo avisa al colocar. La vista previa naranja muestra la forma, las medidas y el eje del hueco, pero no cuánto sobresale: en una cara cóncava el hueco real sobresale más de lo que dibuja la vista previa.
+- **Escalar la pieza no cambia el tamaño del imán.** El hueco se crea con las medidas reales del imán que elegiste, aunque la pieza esté escalada. Pero si después escalas el grupo o el negativo, el hueco se escala con ellos y deja de coincidir con tu imán: en ese caso borra el alojamiento y vuelve a colocarlo con la pieza ya escalada.
 
 ## Abrir los huecos
 

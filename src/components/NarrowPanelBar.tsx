@@ -107,7 +107,7 @@ export const NarrowPanelBar: React.FC<Props> = ({ language, panel, opTitle, heig
   const shapesOpen = panel === 'left' && leftTab !== 'scene';
   const sceneOpen = panel === 'left' && leftTab === 'scene';
   const stateLabel = t(language, `uxm.sheet.${height}`);
-  const gripLabel = t(language, 'uxm.sheet.grip', { state: stateLabel });
+  const stateId = 'kura-sheet-size-state';
   const titleText = panel === 'ai' ? t(language, 'topbar.aiChat') : opTitle;
 
   return (
@@ -171,7 +171,8 @@ export const NarrowPanelBar: React.FC<Props> = ({ language, panel, opTitle, heig
           data-sheet-grip=""
           className="kura-btn kura-btn-icon kura-narrow-size"
           aria-expanded={height !== 'folded'}
-          aria-label={gripLabel}
+          aria-label={t(language, 'uxm.sheet.resize')}
+          aria-describedby={stateId}
           title={t(language, 'uxm.sheet.gripTip')}
           onClick={(e) => {
             if (e.detail === 0) onHeightChange(nextSheetHeight(height));
@@ -180,6 +181,8 @@ export const NarrowPanelBar: React.FC<Props> = ({ language, panel, opTitle, heig
           <ChevronsUpDown size={18} aria-hidden="true" />
         </button>
       )}
+      {/* Estado actual de la hoja (plegada, media, completa) como descripción del botón de tamaño. */}
+      {panel && <span id={stateId} className="sr-only">{t(language, 'uxm.sheet.grip', { state: stateLabel })}</span>}
     </div>
   );
 };

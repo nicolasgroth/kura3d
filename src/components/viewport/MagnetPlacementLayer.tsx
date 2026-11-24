@@ -3,7 +3,8 @@
  * @description Capa del visor para el alojamiento de imán (solo con su panel abierto): una copia invisible y apenas
  * agrandada de cada pieza sólida recibe el cursor antes que la pieza (como «colocar con clic» de Proyectar), y la
  * vista previa del hueco (el negativo que se crearía) se dibuja sobre la cara bajo el cursor, visible a través
- * de la pieza.
+ * de la pieza, con un contorno de alto contraste (línea oscura y línea clara) para que se distinga sobre cualquier
+ * color de pieza y en ambos temas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -17,7 +18,7 @@ import { useMagnetPanel } from '../../store/magnetPanel';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { useMagnetCursor } from './magnetCursor';
-import { pocketGhostGeometry } from './pocketGhostGeometry';
+import { pocketGhostEdges, pocketGhostGeometry } from './pocketGhostGeometry';
 import { useMagnetPlacement } from './useMagnetPlacement';
 
 const NO_RAYCAST = () => null;
@@ -58,16 +59,32 @@ const PocketGhost: React.FC = () => {
   const params = useMagnetPanel((s) => s.params);
   const blocked = useMagnetPanel((s) => s.blocked);
   const plan = hover && !blocked ? placePocket(params, hover.point, hover.normal) : null;
-  // Misma primitiva que crea el negativo: la vista previa no puede divergir del resultado.
+  // Comparte con el negativo que se crearía la forma, las medidas y el eje (misma primitiva). NO comparte el largo de
+  // la sobresalida: en una cara cóncava el hueco real sobresale más (lo calcula el Worker); aquí es la mínima.
   const primitive = plan?.primitive;
-  const key = primitive ? `${primitive.type}:${JSON.stringify(primitive.params)}` : null;
-  const geometry = useMemo(() => (primitive ? pocketGhostGeometry(primitive) : null), [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  const type = primitive?.type;
+  const { height, radius, segments, width, depth } = primitive?.params ?? {};
+  const geometry = useMemo(
+    () => (type ? pocketGhostGeometry({ type, params: { height, radius, segments, width, depth } }) : null),
+    [type, height, radius, segments, width, depth],
+  );
+  const edges = useMemo(() => (geometry ? pocketGhostEdges(geometry) : null), [geometry]);
   useEffect(() => () => geometry?.dispose(), [geometry]);
-  if (!plan || !geometry) return null;
+  useEffect(() => () => edges?.dispose(), [edges]);
+  if (!plan || !geometry || !edges) return null;
   return (
-    <mesh geometry={geometry} position={plan.position} rotation={plan.rotation} raycast={NO_RAYCAST} renderOrder={40}>
-      <meshBasicMaterial color="#f97316" transparent opacity={0.55} depthTest={false} depthWrite={false} />
-    </mesh>
+    <group position={plan.position} rotation={plan.rotation} renderOrder={40}>
+      <mesh geometry={geometry} raycast={NO_RAYCAST} renderOrder={40}>
+        <meshBasicMaterial color="#f97316" transparent opacity={0.55} depthTest={false} depthWrite={false} />
+      </mesh>
+      {/* Contorno doble: una línea clara apenas más ancha y una oscura encima; una de las dos contrasta con cualquier fondo. */}
+      <lineSegments geometry={edges} scale={[1.06, 1, 1.06]} raycast={NO_RAYCAST} renderOrder={41}>
+        <lineBasicMaterial color="#ffffff" depthTest={false} depthWrite={false} />
+      </lineSegments>
+      <lineSegments geometry={edges} raycast={NO_RAYCAST} renderOrder={42}>
+        <lineBasicMaterial color="#111827" depthTest={false} depthWrite={false} />
+      </lineSegments>
+    </group>
   );
 };
 

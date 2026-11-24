@@ -8,15 +8,14 @@
  * @license MIT
  */
 
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { fakeBox } from '../../test/fakeObjects';
 import type { SceneObject } from '../../types/kura';
 import { SceneTreeRow, type SceneTreeRowProps } from '../scene/SceneTreeRow';
 
-const css = readFileSync(resolve(process.cwd(), 'src/styles/sceneTreeNameFirst.css'), 'utf8');
+const proc = (globalThis as unknown as { process: { cwd: () => string; getBuiltinModule: (id: string) => { readFileSync: (path: string, encoding: 'utf8') => string } } }).process;
+const css = proc.getBuiltinModule('node:fs').readFileSync(`${proc.cwd()}/src/styles/sceneTreeNameFirst.css`, 'utf8');
 
 function rule(selector: RegExp): string {
   const match = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].find((m) => selector.test(m[1]));
