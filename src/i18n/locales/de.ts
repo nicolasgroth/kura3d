@@ -44,6 +44,7 @@ import { ASISTENTES_DE } from './asistentes';
 import { BORDES_DE } from './bordesPrimitivas';
 import { UX7_DE } from './ux7';
 import { UX8_DE } from './ux8';
+import { UX10_DE } from './ux10';
 import { REDISENO_DE } from './rediseno';
 import { PANEL_DE } from './panel';
 import { ENCAJE_UI_DE } from './encajeUi';
@@ -91,6 +92,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...BORDES_DE,
   ...UX7_DE,
   ...UX8_DE,
+  ...UX10_DE,
   ...REDISENO_DE,
   ...PANEL_DE,
   ...ENCAJE_UI_DE,
@@ -286,7 +288,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'viewport.erase.hint': 'Auf die Modelloberfläche klicken, um eine Kugel zu subtrahieren',
   'viewport.cut.hint': 'Öffnen Sie den Ebenenschnitt-Dialog für automatische Verbinder',
   'viewport.cut.openDialog': 'Ebenenschnitt konfigurieren',
-  'viewport.protip.select': 'Tipp: Alt+Ziehen klont · Shift proportional skalieren · Strg 15°-Raster · ↑↓←→ bewegt',
+  'viewport.protip.select': 'Tipp: Gewähltes Objekt ziehen verschiebt es · Alt+Ziehen klont · Shift proportional skalieren · Strg 15°-Raster · ↑↓←→ bewegt',
   'viewport.protip.paint': 'Tipp: Klicken/Ziehen bemalt 3MF-Flächen · P kehrt zur Auswahl zurück',
   'viewport.protip.erase': 'Tipp: Auf Modell klicken zum Schnitzen · Radius oben anpassen',
   'viewport.protip.cut': 'Tipp: Achse & Verbinder konfigurieren · X schaltet Röntgen um',
