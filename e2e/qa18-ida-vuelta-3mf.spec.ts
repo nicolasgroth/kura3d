@@ -64,7 +64,7 @@ test('3MF de escena completa: ida y vuelta conserva piezas, grupos anidados y ba
   expect(antes.objs).toHaveLength(6);
 
   const file = join(mkdtempSync(join(tmpdir(), 'qa18-')), 'escena.3mf');
-  await page.mouse.click(762, 26);
+  await page.getByRole('button', { name: 'Exportar', exact: true }).first().click();
   const dlg = page.getByRole('dialog');
   await dlg.getByRole('radio', { name: /^3MF/ }).check();
   await dlg.getByRole('radio', { name: /Escena completa/ }).check();
