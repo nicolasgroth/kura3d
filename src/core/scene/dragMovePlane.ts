@@ -14,8 +14,29 @@ import type { Vec3 } from '../../types/kura';
 export const DRAG_MOVE_THRESHOLD_PX = 4;
 /** Seno mínimo entre el rayo y el plano (~3,4°): por debajo, la intersección se dispara al infinito. */
 export const DRAG_MIN_RAY_SLOPE = 0.06;
-/** Desplazamiento horizontal máximo desde el punto agarrado, en mm. */
+/** Desplazamiento horizontal máximo desde el punto agarrado, en mm, cuando no hay cama conocida. */
 export const DRAG_MAX_REACH_MM = 2000;
+/** Seno del rayo a partir del cual el desplazamiento ya no se atenúa (~11,5°). */
+export const DRAG_FULL_RAY_SLOPE = 0.2;
+
+/** Límites de la posición final: semiancho en X y Z, centrados en el origen (la cama está centrada). */
+export interface DragBounds {
+  halfX: number;
+  halfZ: number;
+}
+
+/** Cama + un margen igual a su lado mayor por cada lado; null si no hay cama. */
+export function dragBoundsForBed(bed: { width: number; depth: number } | null): DragBounds | null {
+  if (!bed || !(bed.width > 0) || !(bed.depth > 0)) return null;
+  const margin = Math.max(bed.width, bed.depth);
+  return { halfX: bed.width / 2 + margin, halfZ: bed.depth / 2 + margin };
+}
+
+/** Factor 0..1 (suavizado) que reduce el desplazamiento cuando el rayo se acerca al plano. */
+export function dragGrazingFactor(slope: number): number {
+  const u = Math.min(1, Math.max(0, (Math.abs(slope) - DRAG_MIN_RAY_SLOPE) / (DRAG_FULL_RAY_SLOPE - DRAG_MIN_RAY_SLOPE)));
+  return u * u * (3 - 2 * u);
+}
 
 /** Paso de rejilla efectivo: el de la rejilla si está activa; con rejilla libre, Ctrl/Cmd ajusta a 1 mm. */
 export function dragSnapMm(gridMm: number, ctrlOrMeta: boolean): number {
@@ -33,6 +54,8 @@ export interface DragMoveInput {
   /** Paso de rejilla en mm; 0 = libre. */
   snapMm: number;
   maxReachMm?: number;
+  /** Si se da, la posición final del objeto de referencia no sale de estos límites (salvo que ya estuviera fuera). */
+  bounds?: DragBounds | null;
 }
 
 /** Punto donde el rayo corta el plano horizontal `y = planeY`; null si es casi paralelo o queda detrás. */
@@ -53,13 +76,22 @@ export function rayHorizontalPlanePoint(origin: Vec3, dir: Vec3, planeY: number)
 export function dragMoveDelta(input: DragMoveInput): Vec3 | null {
   const hit = rayHorizontalPlanePoint(input.rayOrigin, input.rayDir, input.grab[1]);
   if (!hit) return null;
-  let dx = hit[0] - input.grab[0];
-  let dz = hit[2] - input.grab[2];
+  const len = Math.hypot(...input.rayDir);
+  const factor = dragGrazingFactor(input.rayDir[1] / len);
+  let dx = (hit[0] - input.grab[0]) * factor;
+  let dz = (hit[2] - input.grab[2]) * factor;
   const reach = input.maxReachMm ?? DRAG_MAX_REACH_MM;
   const dist = Math.hypot(dx, dz);
   if (dist > reach) {
     dx *= reach / dist;
     dz *= reach / dist;
+  }
+  if (input.bounds) {
+    const { halfX, halfZ } = input.bounds;
+    const fx = input.reference[0] + dx;
+    const fz = input.reference[2] + dz;
+    dx = Math.min(Math.max(fx, Math.min(-halfX, input.reference[0])), Math.max(halfX, input.reference[0])) - input.reference[0];
+    dz = Math.min(Math.max(fz, Math.min(-halfZ, input.reference[2])), Math.max(halfZ, input.reference[2])) - input.reference[2];
   }
   if (input.snapMm > 0) {
     const s = input.snapMm;

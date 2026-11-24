@@ -271,20 +271,30 @@ export const SceneMeshItem: React.FC<{
         onStartMoveDrag(e, pickAndInspect);
         return;
       }
-      // Hay otra selección: un arrastre que orbita la cámara no debe cambiarla; solo un clic sin movimiento.
-      if (!isSelected && !nothingSelected && !additive && activeTool === 'select') {
+      // Pieza no seleccionada (con otra selección, o sin ninguna): un arrastre que orbita la cámara no debe
+      // seleccionar ni cambiar la selección; solo un clic sin movimiento.
+      if (!isSelected && !additive && activeTool === 'select') {
         onStartMoveDrag(e, pickAndInspect, { moveEnabled: false });
         return;
       }
       pickAndInspect();
     };
 
-    const canGrab = isSelected && activeTool === 'select' && transformMode === 'translate';
+    const baseGrab = isSelected && activeTool === 'select' && transformMode === 'translate';
+    // Cursor de arrastre: «agarrar» si hay algo movible; «not-allowed» si todo lo seleccionado está bloqueado;
+    // normal mientras el motor está ocupado (el arrastre no empezaría).
+    const grabCursor = (): string => {
+      const st = useKuraStore.getState();
+      if (!baseGrab || st.busyOperation) return '';
+      const anyMovable = st.objects.some((o) => st.selectedIds.includes(o.id) && !o.locked);
+      return anyMovable ? 'grab' : 'not-allowed';
+    };
+    const isGrabCursor = (c: string) => c === 'grab' || c === 'not-allowed';
     const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
       // El objeto pudo quedar seleccionado con el puntero ya encima: no habrá `pointerover` nuevo.
-      if (canGrab && e.buttons === 0 && !useGizmoDragStore.getState().start) {
+      if (baseGrab && e.buttons === 0 && !useGizmoDragStore.getState().start) {
         const canvas = e.nativeEvent.target as HTMLElement | null;
-        if (canvas && canvas.style.cursor === '') canvas.style.cursor = 'grab';
+        if (canvas && canvas.style.cursor === '') canvas.style.cursor = grabCursor();
       }
       if (activeTool === 'measure') {
         onMeasurePointerMove(obj, e);
@@ -313,11 +323,11 @@ export const SceneMeshItem: React.FC<{
 
     const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
       const canvas = e.nativeEvent.target as HTMLElement | null;
-      if (canGrab && canvas && !useGizmoDragStore.getState().start && e.buttons === 0) canvas.style.cursor = 'grab';
+      if (baseGrab && canvas && !useGizmoDragStore.getState().start && e.buttons === 0) canvas.style.cursor = grabCursor();
     };
     const handlePointerOut = (e: ThreeEvent<PointerEvent>) => {
       const canvas = e.nativeEvent.target as HTMLElement | null;
-      if (canvas && canvas.style.cursor === 'grab') canvas.style.cursor = '';
+      if (canvas && isGrabCursor(canvas.style.cursor)) canvas.style.cursor = '';
       if (activeTool === 'measure') onMeasurePointerOut();
       else hidePaintCursor();
     };

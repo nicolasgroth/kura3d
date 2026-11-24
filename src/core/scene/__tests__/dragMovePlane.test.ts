@@ -7,7 +7,16 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { dragMoveDelta, dragSnapMm, rayHorizontalPlanePoint, DRAG_MAX_REACH_MM } from '../dragMovePlane';
+import {
+  dragBoundsForBed,
+  dragGrazingFactor,
+  dragMoveDelta,
+  dragSnapMm,
+  rayHorizontalPlanePoint,
+  DRAG_FULL_RAY_SLOPE,
+  DRAG_MAX_REACH_MM,
+  DRAG_MIN_RAY_SLOPE,
+} from '../dragMovePlane';
 import type { Vec3 } from '../../../types/kura';
 
 const norm = (v: Vec3): Vec3 => {
@@ -65,5 +74,38 @@ describe('dragSnapMm', () => {
     expect(dragSnapMm(5, true)).toBe(5);
     expect(dragSnapMm(0, true)).toBe(1);
     expect(dragSnapMm(0, false)).toBe(0);
+  });
+});
+
+describe('límites por cama y atenuación rasante', () => {
+  const base = { reference: [0, 0, 0] as Vec3, snapMm: 0 };
+  it('dragBoundsForBed: cama + margen igual al lado mayor', () => {
+    expect(dragBoundsForBed({ width: 256, depth: 200 })).toEqual({ halfX: 128 + 256, halfZ: 100 + 256 });
+    expect(dragBoundsForBed(null)).toBeNull();
+    expect(dragBoundsForBed({ width: 0, depth: 200 })).toBeNull();
+  });
+  it('la posición final no sale de la cama + margen, en X y Z', () => {
+    const bounds = dragBoundsForBed({ width: 256, depth: 256 });
+    const d = dragMoveDelta({ ...base, bounds, rayOrigin: [900, 300, -900], rayDir: norm([0, -1, 0]), grab: [0, 0, 0] })!;
+    expect(d).toEqual([384, 0, -384]);
+  });
+  it('un objeto que ya estaba fuera de los límites no es arrastrado de vuelta de golpe', () => {
+    const bounds = { halfX: 100, halfZ: 100 };
+    const common = { reference: [500, 0, 0] as Vec3, snapMm: 0, bounds, rayDir: norm([0, -1, 0]), grab: [500, 0, 0] as Vec3 };
+    expect(dragMoveDelta({ ...common, rayOrigin: [510, 300, 0] })![0]).toBe(0);
+    expect(dragMoveDelta({ ...common, rayOrigin: [300, 300, 0] })![0]).toBe(-200);
+  });
+  it('dragGrazingFactor: 0 en el umbral, 1 desde 0,2 y suave entre medias', () => {
+    expect(dragGrazingFactor(DRAG_MIN_RAY_SLOPE)).toBe(0);
+    expect(dragGrazingFactor(DRAG_FULL_RAY_SLOPE)).toBe(1);
+    expect(dragGrazingFactor(-0.5)).toBe(1);
+    expect(dragGrazingFactor(0.13)).toBeCloseTo(0.5, 6);
+  });
+  it('cerca del ángulo rasante el desplazamiento por píxel queda atenuado', () => {
+    // Pendiente 0,13: factor 0,5; el corte del plano está a 100/0,13 mm de distancia horizontal.
+    const dir = norm([Math.sqrt(1 - 0.13 * 0.13), -0.13, 0]);
+    const hit = rayHorizontalPlanePoint([0, 100, 0], dir, 0)!;
+    const d = dragMoveDelta({ ...base, rayOrigin: [0, 100, 0], rayDir: dir, grab: [0, 0, 0] })!;
+    expect(d[0]).toBeCloseTo(hit[0] * 0.5, 6);
   });
 });
