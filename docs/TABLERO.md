@@ -22,6 +22,7 @@ Estado de `main`: 2497 pruebas del frontend, 151 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
+| Hallazgos de la QA del 23-nov (aprobada con observaciones): una acción del panel queda activa tras borrar su objeto (en corrección con el lote B); cancelar Comprobar encaje con un modelo de 478 mil triángulos tarda unos 9 s y la comprobación cerca de 1 min con la máquina cargada; el aviso "Ver encaje" sigue disponible tras deshacer el ajuste; la barra de estado recorta "Avisos" a 390 px | Pendiente |
 | Ajustes al rediseño pedidos por el autor (lote A): el botón Proyecto ya no abre un submenú, sus acciones (nuevo, abrir, guardar, guardar como, recientes) van como botones con icono en el panel Proyecto; nombre editable con lápiz; unidades y cama se cambian en el mismo panel; «Agregar» con las primitivas en la barra vertical; menú «Insertar» con los generadores; «Acciones» con submenús; la barra izquierda queda solo con la Escena y se puede ocultar; MCP conserva su texto; banderas con el nombre del idioma | En desarrollo desde el 23-nov 22:15 |
 | Ajustes al rediseño pedidos por el autor (lote B): herramientas que necesitan selección apagadas con motivo o que seleccionan solas (Mover, Rotar, Escalar); pintar directo sobre el objeto; el panel derecho muestra solo lo de la herramienta activa (al pintar, sin transformación ni geometría); paleta de pintura personalizable (cambiar un color, elegir paletas, colores que trae el 3MF) | En desarrollo desde el 23-nov 22:15 |
 | Pendientes del rediseño: a 1280 px las vistas quedan solo con icono y a 1024 px toda la barra de vista; los avisos tapan el agarre X del manipulador de escala a 1280×720; descripción y fechas del proyecto (cambia el `.kura`); Cortar, Dividir, Ajustar, Molde, Proyectar, Rosca y Medir siguen con su panel propio; Comprobar encaje en la paleta de comandos y en pulgadas | Pendiente |
@@ -236,6 +237,7 @@ Sin compromiso todavía; se evalúan antes de planificarlas.
 
 | Idea |
 |---|
+| Modelos con cientos o miles de colores (impresoras que mezclan): paleta, leyenda de filamentos y separar por colores preparados para muchos colores, con agrupación por parecido |
 | Dividir: numerar las caras de unión de cada pieza para saber cuál va con cuál al armar |
 | Cajas y carcasas: caja desde medidas o desde cualquier forma ahuecada; tapa por dentro, por fuera o sobre el borde; cierre con tornillos, insertos roscados, a presión, deslizante o imanes; esquinas rectas o redondeadas; ranuras de ventilación; paso de cable |
 | Agregados aplicables a cualquier objeto: orejas u ojos de cerradura para fijar al muro, alojamiento de imán, torreta para tornillo o inserto, compartimento con tapa (pilas, etiqueta NFC), gancho de encaje, paso de cable |
