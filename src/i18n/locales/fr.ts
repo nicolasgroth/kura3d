@@ -18,6 +18,7 @@ import { FLOWUX_FR } from './flowUx';
 import { PREVIEW_FR } from './preview';
 import { SPLITJOINTS_FR } from './splitJoints';
 import { SPLITPREFS_FR } from './splitPrefs';
+import { UNIONES_FIRMES_FR } from './unionesFirmes';
 import { AJUSTAR_FR } from './ajustarImpresora';
 import { SPLITCOUPLING_FR } from './splitCoupling';
 import { A11YUX_FR } from './a11yUx';
@@ -66,6 +67,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...PREVIEW_FR,
   ...SPLITJOINTS_FR,
   ...SPLITPREFS_FR,
+  ...UNIONES_FIRMES_FR,
   ...AJUSTAR_FR,
   ...SPLITCOUPLING_FR,
   ...A11YUX_FR,

@@ -34,6 +34,9 @@ import { OPERATION_DEFAULTS } from '../operationLimits';
 
 const AXES = SPLIT_AXES;
 
+/** Avisos que solo valen si la unión terminó con conector. */
+const CONNECTOR_ONLY_WARNINGS = new Set<string>(['SPLIT_CONNECTOR_REINFORCED', 'SPLIT_CONNECTOR_REDUCED', 'SPLIT_CONNECTOR_DEPTH_REDUCED', 'SPLIT_JOINT_WEAK']);
+
 /** Tarugos sueltos de las uniones que los conservan, en un lote por medida. */
 function buildLooseDowels(wasm: Awaited<ReturnType<typeof initManifoldEngine>>, joints: SplitJoint[]): SplitLooseDowel[] {
   const groups = new Map<string, { c: NonNullable<SplitJoint['connector']>; count: number }>();
@@ -144,7 +147,7 @@ export async function executeBedSplitGeometry(
             joints.push({
               label, axis, position: coord, low: low.id, high: hid, connector: out.used, connectorCenters: out.centers,
               kind: out.kind, lap: out.lap, islands: out.islands, contactAreaMm2: area, labelEngraved: out.labelPlacement !== null,
-              labelPlacement: out.labelPlacement, labelHeightMm: out.labelHeightMm, clearance: out.clearance, solids,
+              labelPlacement: out.labelPlacement, labelHeightMm: out.labelHeightMm, strength: out.strength, clearance: out.clearance, solids,
             });
           } finally {
             contact.delete();
@@ -197,8 +200,10 @@ export async function executeBedSplitGeometry(
     const noConnector = new Set(outJoints.filter((j) => j.kind !== 'connector').map((j) => j.label));
     for (let i = warnings.length - 1; i >= 0; i--) {
       const w = warnings[i];
-      if ((w.code === 'SPLIT_CONNECTOR_REINFORCED' || w.code === 'SPLIT_CONNECTOR_REDUCED') && noConnector.has(String(w.params.label))) warnings.splice(i, 1);
+      if (CONNECTOR_ONLY_WARNINGS.has(w.code) && noConnector.has(String(w.params.label))) warnings.splice(i, 1);
     }
+    // Una unión que el armado pasó a pegar ya no tiene la firmeza de sus conectores
+    for (const j of outJoints) if (j.kind === 'glue' && j.strength && j.strength.level !== 'glue') j.strength = { ...j.strength, level: 'glue', reasons: ['no-connector'], count: 0, sizeMm: 0, depthMm: 0, areaRatio: 0 };
     const looseDowels = buildLooseDowels(wasm, outJoints);
     const glueJoints = outJoints.filter((j) => j.kind === 'glue').length;
     if (glueJoints > 0 && connector) warnings.push(engineWarning('SPLIT_GLUE_SUMMARY', { count: glueJoints, total: outJoints.length }));

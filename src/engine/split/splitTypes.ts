@@ -94,6 +94,25 @@ export interface SplitJointIsland {
 }
 
 /**
+ * Firmeza de una unión (`splitJointStrength.ts`, reglas en `jointRules.ts`): nivel con sus motivos,
+ * conectores finales, qué se achicó (tamaño, cantidad, profundidad) y qué islas quedaron solo para pegar.
+ * `areaRatio` = área de los machos / área de contacto.
+ */
+export interface SplitJointStrength {
+  level: 'firm' | 'fair' | 'weak' | 'glue';
+  reasons: Array<'no-connector' | 'single-connector' | 'low-area' | 'shallow' | 'islands-uncovered' | 'below-useful'>;
+  count: number;
+  /** Radio del conector (mm), como `SplitConnectorOptions.size`. */
+  sizeMm: number;
+  depthMm: number;
+  areaRatio: number;
+  islands: number;
+  islandsCovered: number;
+  shrunk: Array<{ reason: 'section-width' | 'count' | 'depth'; fromMm: number; toMm: number }>;
+  discarded: Array<{ island: number; reason: 'section-narrow'; measuredMm: number }>;
+}
+
+/**
  * Dónde quedó la marca de pareja: `joint` = texto en la cara de unión; `outside` = texto en la cara
  * exterior junto al borde; `dots` = marca mínima de puntos por fuera (`splitDotCode.ts`), cuando el
  * texto no cabe.
@@ -311,6 +330,8 @@ export interface SplitJoint {
   labelPlacement: SplitLabelPlacement | null;
   /** Altura de letra usada (mm), 0 si no se grabó. */
   labelHeightMm: number;
+  /** Firmeza de la unión (uniones firmes); ausente en registros guardados antes de existir. */
+  strength?: SplitJointStrength;
 }
 
 /**
