@@ -10,6 +10,7 @@
  */
 import { existsSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { itemAccion } from './acciones-helpers';
 import { abrir } from './ux-escena-helpers';
 
 const DIR = process.env.QA20_MODELOS ?? 'G:/proyectos/kura3d/.eval-tmp/modelos';
@@ -66,8 +67,8 @@ test('encaje con un modelo real pesado: la interfaz responde, se cancela y la es
   };
   const antes = await page.evaluate(huella);
 
-  await page.getByRole('button', { name: 'Acciones', exact: true }).first().click();
-  await page.getByRole('menuitem', { name: /Comprobar encaje/ }).click();
+  // «Comprobar encaje…» vive en el submenú «Analizar» del menú Acciones.
+  await (await itemAccion(page, 'Comprobar encaje…')).click();
   const panel = page.locator('#kura-inspector-panel');
   await page.evaluate(() => ((window as any).__gap = 0));
   const t0 = Date.now();

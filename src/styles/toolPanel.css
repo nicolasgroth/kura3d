@@ -88,6 +88,46 @@
   padding-right: 32px;
 }
 
+/* Táctil o pantalla estrecha: el botón de plegar mide al menos 44 × 44 px y el título le deja sitio. */
+@media (pointer: coarse), (max-width: 760px) {
+  .kura-fold > .kura-btn.kura-fold-toggle,
+  .kura-sidebar-right .kura-fold > .kura-btn.kura-fold-toggle:not(.kura-segmented .kura-btn) {
+    top: 0;
+    right: 0;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .kura-fold.is-folded {
+    padding-top: 0;
+    padding-bottom: 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .kura-fold.is-folded > .kura-section-label,
+  .kura-fold > .kura-card > .kura-section-label:first-child {
+    padding-right: 48px;
+  }
+
+  .kura-fold.is-folded > .kura-section-label {
+    flex: 1;
+    margin: 0;
+    text-align: left;
+  }
+
+  /* La fila del título ocupa el alto del botón para que no tape el primer campo de la tarjeta. */
+  .kura-fold > .kura-card > .kura-section-label:first-child {
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    margin-top: -10px;
+  }
+}
+
 /* Operaciones: una fila de botones con icono. */
 .kura-ctx-ops-row {
   display: flex;
