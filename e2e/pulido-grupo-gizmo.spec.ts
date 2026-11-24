@@ -26,6 +26,8 @@ async function grupoDeDosCubos(page: Page, modo: 'rotate' | 'scale') {
     s().selectGroup(s().groups[0].id);
     s().setActiveTool('select');
     s().setTransformMode(modoGizmo);
+    // Los avisos «Creado…» viven en la esquina del visor y, en ventanas bajas, tapan un agarre del manipulador.
+    s().dismissAllToasts();
     await new Promise((r) => setTimeout(r, 600));
   }, modo);
 }

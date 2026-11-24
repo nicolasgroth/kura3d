@@ -469,6 +469,18 @@ export const TopBar: React.FC = () => {
           >
             {narrowScreen &&
               tools.map((tool) => <React.Fragment key={tool.id}>{toolButton(tool, true)}</React.Fragment>)}
+            {narrowScreen && (
+              <button
+                type="button"
+                role="menuitem"
+                className="kura-btn kura-btn-sm"
+                onClick={() => openSettings('appearance')}
+                title={t(language, 'topbar.settings')}
+              >
+                <Settings size={13} aria-hidden="true" />
+                <span>{t(language, 'topbar.settings')}</span>
+              </button>
+            )}
             {isHidden('lang') && (
               <label className="kura-topbar-more-row">
                 {t(language, 'topbar.languageSelect')}
@@ -553,15 +565,17 @@ export const TopBar: React.FC = () => {
           </TopBarOverflowMenu>
         )}
 
-        <button
-          type="button"
-          className="kura-btn kura-btn-icon kura-btn-sm"
-          onClick={() => openSettings('appearance')}
-          aria-label={t(language, 'topbar.settings')}
-          {...helpAttrs('top.settings', language)}
-        >
-          <Settings size={13} />
-        </button>
+        {!narrowScreen && (
+          <button
+            type="button"
+            className="kura-btn kura-btn-icon kura-btn-sm"
+            onClick={() => openSettings('appearance')}
+            aria-label={t(language, 'topbar.settings')}
+            {...helpAttrs('top.settings', language)}
+          >
+            <Settings size={13} />
+          </button>
+        )}
       </div>
     </header>
   );

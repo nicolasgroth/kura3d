@@ -12,7 +12,7 @@ import { abrir } from './ux-movil-helpers';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-test('los avisos no cubren la barra de transformar y la fila de vistas es desplazable', async ({ page }) => {
+test('los avisos no cubren la barra de transformar y la barra de vistas cabe completa', async ({ page }) => {
   await abrir(page);
   await page.getByRole('button', { name: 'Formas', exact: true }).tap();
   const lateral = page.locator('.kura-sidebar-left');
@@ -24,20 +24,24 @@ test('los avisos no cubren la barra de transformar y la fila de vistas es despla
     const bar = document.querySelector('.kura-mobile-transform')!.getBoundingClientRect();
     const toasts = [...document.querySelectorAll('.kura-toast')].map((t) => t.getBoundingClientRect());
     const fila = document.querySelector('.kura-hud-top-bar') as HTMLElement;
-    const cs = getComputedStyle(fila);
-    return {
+        return {
       barraAbajo: bar.bottom,
       avisosArriba: toasts.map((t) => t.top),
-      overflowX: cs.overflowX,
-      mascara: cs.maskImage || cs.webkitMaskImage,
       desborda: fila.scrollWidth > fila.clientWidth,
-      snap: cs.scrollSnapType,
+      paginaDesborda: document.documentElement.scrollWidth > window.innerWidth,
+      fueraDePantalla: [...fila.querySelectorAll('.kura-viewbar button')]
+        .filter((el) => (el as HTMLElement).getClientRects().length > 0)
+        .map((el) => ({ el, b: el.getBoundingClientRect() }))
+        .filter(({ b }) => b.right > window.innerWidth + 0.5 || b.left < -0.5)
+        .map(({ el }) => el.getAttribute('aria-label') ?? el.outerHTML.slice(0, 60)),
+      botonesVista: fila.querySelectorAll('.kura-viewbar button').length,
     };
   });
   expect(r.avisosArriba.length).toBeGreaterThan(0);
   for (const top of r.avisosArriba) expect(top).toBeGreaterThanOrEqual(r.barraAbajo);
-  expect(r.overflowX).toBe('auto');
-  expect(r.desborda).toBe(true);
-  expect(r.mascara).not.toBe('none');
-  expect(r.snap).toMatch(/x/);
+  // La barra de vista se compacta por niveles: completa y alcanzable a 390 px sin desplazamiento horizontal.
+  expect(r.botonesVista).toBeGreaterThan(0);
+  expect(r.desborda).toBe(false);
+  expect(r.paginaDesborda).toBe(false);
+  expect(r.fueraDePantalla).toEqual([]);
 });
