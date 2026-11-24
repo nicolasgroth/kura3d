@@ -626,3 +626,21 @@ Decisión del orquestador (estaba como pregunta abierta en el diseño): un imán
 Segunda ronda de corrección en curso (dos lotes: geometría y ciclo de vida; panel, accesibilidad y pruebas).
 
 Consumo (modelo · duración · tokens): usabilidad (Opus · 6 min · 146 k), código (Opus · 3 min · 120 k), funcional (Opus · 5 min · 133 k).
+
+## Alojamiento de imán · segunda ronda a ciegas · 24 de noviembre de 2026, 17:45 · rama `feat/iman`
+
+Evaluadores nuevos tras dos lotes de corrección (geometría y ciclo de vida; panel, móvil y pruebas). 2849 pruebas del frontend y 12 recorridos en navegador pasan.
+
+| Usabilidad | Código | Funcional | Primera ronda |
+|---|---|---|---|
+| 80 | 86 | 84 | 82 / 84 / 77 |
+
+Sin bloqueos duros. Hallazgos nuevos:
+
+- **Funcional (84).** Planas exactas en toda orientación; cóncavas abren limpio; escalar, deshacer, rehacer y `.kura` conservan el imán. Fallas: imán oculto en cara convexa con tapa de 0,16 mm o abierta, sin aviso propio; hueco que se sale por el borde avisa «curva» en una cara plana; duplicar solo la pieza no copia sus imanes; un imán más grande que la pieza la elimina al restar.
+- **Código (86).** Sobre el mínimo. Restan: vista previa más corta que el hueco real en cóncavas; el seguimiento no cubre rotar o mover la pieza sola; rayos sin BVH; `userPresets.restore` sin validar.
+- **Usabilidad (80).** Validación y preajustes a buen nivel; contraste del error corregido (6,4:1). Restan: aviso de «curva» en un cubo; la fila de un negativo seleccionado pierde su nombre en el árbol; «Aplicar 4 restas» aplicó 3; colocar cambia la selección; dos botones «Deshacer» con el mismo nombre accesible; el botón de la hoja móvil con rótulo de escritorio.
+
+Tercera ronda de corrección en curso (dos lotes). Es la tercera del lote: si alguna nota sigue bajo 85, se consulta al autor.
+
+Consumo (modelo · duración · tokens): geometría ronda 2 (Opus · 23 min · 226 k), panel ronda 2 (Sonnet · 9 min · 183 k), usabilidad (Opus · 6 min · 147 k), código (Opus · 3 min · 134 k), funcional (Opus · 4 min · 127 k).
