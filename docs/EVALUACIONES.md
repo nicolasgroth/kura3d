@@ -644,3 +644,21 @@ Sin bloqueos duros. Hallazgos nuevos:
 Tercera ronda de corrección en curso (dos lotes). Es la tercera del lote: si alguna nota sigue bajo 85, se consulta al autor.
 
 Consumo (modelo · duración · tokens): geometría ronda 2 (Opus · 23 min · 226 k), panel ronda 2 (Sonnet · 9 min · 183 k), usabilidad (Opus · 6 min · 147 k), código (Opus · 3 min · 134 k), funcional (Opus · 4 min · 127 k).
+
+## Alojamiento de imán · tercera ronda a ciegas · 24 de noviembre de 2026, 18:40 · rama `feat/iman`
+
+Evaluadores nuevos tras la tercera ronda de corrección. 2892 pruebas del frontend y 12 recorridos en navegador pasan.
+
+| Usabilidad | Código | Funcional | Segunda ronda | Primera ronda |
+|---|---|---|---|---|
+| 84 | 86 | 88 | 80 / 86 / 84 | 82 / 84 / 77 |
+
+Sin bloqueos. Código y funcional sobre el mínimo; usabilidad a un punto, tras tres rondas: se consulta al autor (consulta 2).
+
+- **Funcional (88).** Unos 90 casos con motor y store reales: medidas exactas en toda orientación (46,759 mm³), convexas y cóncavas abren limpio, avisos correctos de pared, borde, vecinos, tapa del oculto e imán demasiado grande; el imán sigue a la pieza al moverla, girarla o escalarla; duplicar, borrar, deshacer, rehacer y `.kura` correctos. Restan: oculto en esfera de R ≤ 5 deja una lámina suelta dentro del hueco y el aviso solo dice «a la vista»; un imán más ancho que la cara (60 × 0,5 en cubo de 8) solo da el aviso genérico; «sobresale por la curva» aún aparece en una cara plana cuando la boca cae justo en la arista; el mensaje de parámetro inválido sale con `{value}`, `{min}` y `{max}` sin rellenar; una malla abierta avisa «atraviesa» en vez de «malla defectuosa».
+- **Código (86).** Restan: avisos de colocación manejados en dos capas; el rayo de la vista previa sin BVH; el esquema `.kura` exige holguras que el saneo acepta ausentes; sin aviso si falla el almacenamiento al borrar un preajuste.
+- **Usabilidad (84).** Avisos creíbles, preajustes con Deshacer, escalar/duplicar/borrar correctos. Restan: a 390 px los botones ▼ de los campos quedan bajo la etiqueta siguiente y no se pueden pulsar; en el árbol los nombres de los imanes se cortan y no se distinguen; tras deshacer queda el aviso de «se superpone» de un imán que ya no existe; avisos de colocación largos; grupo de un solo hijo tras aplicar restas.
+
+Incidente previo a esta ronda, corregido: los avisos de «imán agregado» se apilaban sobre el visor y el tercer clic seguido caía sobre un aviso (lo detectó un recorrido de la QA). Cada colocación reemplaza ahora el aviso anterior.
+
+Consumo (modelo · duración · tokens): geometría ronda 3 (Opus · 18 min · 211 k), interfaz ronda 3 (Sonnet · 14 min · 231 k), usabilidad (Opus · 7 min · 153 k), código (Opus · 3 min · 137 k), funcional (Opus · 6 min · ~130 k).
