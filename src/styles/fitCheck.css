@@ -1,0 +1,337 @@
+/**
+ * @file src/styles/fitCheck.css
+ * @description Estilos del panel «Comprobar encaje»: campos, avance, resumen, lista de pares (estado con icono,
+ * borde y texto: nunca solo color), marcas y notas. Usa los tokens del tema (claro y oscuro) y se ajusta a la
+ * hoja inferior en pantallas estrechas sin recortes.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-fitcheck {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kura-fitcheck-scope {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kura-fitcheck-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.kura-fitcheck-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kura-fitcheck-number {
+  width: 84px;
+  flex: none;
+  text-align: right;
+}
+
+.kura-fitcheck-number[aria-invalid='true'] {
+  border-color: var(--accent-red);
+}
+
+.kura-fitcheck-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  min-height: 28px;
+}
+
+.kura-fitcheck-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kura-fitcheck-live:empty {
+  display: none;
+}
+
+.kura-fitcheck-running {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.kura-fitcheck-phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kura-fitcheck-spin {
+  animation: kura-fitcheck-spin 1s linear infinite;
+}
+
+@keyframes kura-fitcheck-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-fitcheck-spin {
+    animation: none;
+  }
+}
+
+.kura-fitcheck-progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--accent-cyan);
+}
+
+.kura-fitcheck-stale,
+.kura-fitcheck-clean,
+.kura-fitcheck-message {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.kura-fitcheck-stale {
+  padding: 6px 8px;
+  border: 1px dashed var(--accent-amber);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.kura-fitcheck-stale svg {
+  color: var(--accent-amber);
+  flex: none;
+  margin-top: 1px;
+}
+
+.kura-fitcheck-clean svg {
+  color: var(--accent-green);
+  flex: none;
+  margin-top: 1px;
+}
+
+.kura-fitcheck-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+}
+
+.kura-fitcheck-summary {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.kura-fitcheck-summary > div {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  min-width: 0;
+}
+
+.kura-fitcheck-summary dt {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+}
+
+.kura-fitcheck-summary dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.kura-fitcheck-summary > .is-interferes {
+  border-color: var(--accent-red);
+  border-width: 2px;
+}
+
+.kura-fitcheck-summary > .is-tight {
+  border-color: var(--accent-amber);
+  border-width: 2px;
+  border-style: dashed;
+}
+
+.kura-fitcheck-summary > .kura-fitcheck-worst {
+  grid-column: 1 / -1;
+}
+
+.kura-fitcheck-summary > .kura-fitcheck-worst dd {
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.kura-fitcheck-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-fitcheck-pair {
+  border: 1px solid var(--border-subtle);
+  border-left-width: 4px;
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+  background: var(--bg-elevated);
+  min-width: 0;
+}
+
+.kura-fitcheck-pair:hover {
+  border-color: var(--accent-cyan);
+}
+
+.kura-fitcheck-pair:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-fitcheck-pair.is-selected {
+  box-shadow: inset 0 0 0 1px var(--accent-cyan);
+  background: color-mix(in srgb, var(--accent-cyan) 10%, var(--bg-elevated));
+}
+
+.kura-fitcheck-pair.is-interferes {
+  border-left-color: var(--accent-red);
+}
+
+.kura-fitcheck-pair.is-tight {
+  border-left-color: var(--accent-amber);
+  border-left-style: dashed;
+}
+
+.kura-fitcheck-pair.is-ok {
+  border-left-color: var(--accent-green);
+}
+
+.kura-fitcheck-pair.is-far {
+  border-left-color: var(--text-muted);
+  border-left-style: dotted;
+}
+
+.kura-fitcheck-pair-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kura-fitcheck-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.is-interferes .kura-fitcheck-status svg {
+  color: var(--accent-red);
+}
+
+.is-tight .kura-fitcheck-status svg {
+  color: var(--accent-amber);
+}
+
+.is-ok .kura-fitcheck-status svg {
+  color: var(--accent-green);
+}
+
+.is-far .kura-fitcheck-status svg {
+  color: var(--text-muted);
+}
+
+.kura-fitcheck-figure {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.kura-fitcheck-names {
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.kura-fitcheck-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.kura-fitcheck-mark {
+  font-size: 10.5px;
+  padding: 0 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  color: var(--text-secondary);
+}
+
+.kura-fitcheck-rec {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.kura-fitcheck-notes h3 {
+  margin: 0 0 4px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.kura-fitcheck-notes ul {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.kura-fitcheck-notes .is-warning {
+  font-weight: 600;
+}
+
+/* Etiqueta de la cota de holgura en el visor. */
+.kura-fitcheck-label {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #0b1220;
+  background: #fde68a;
+  border: 1px solid #92400e;
+}

@@ -104,6 +104,9 @@ export function runAction(id: ActionId): void {
     case 'detect':
       if (primary) void state.detectObjectStructures(primary);
       return;
+    case 'fitCheck':
+      // Bajo pedido: el panel muestra las opciones y el usuario comprueba desde allí.
+      return;
     case 'convert':
     case 'align':
       // Tienen submenú: se ejecutan con `runConvert` o `runAlign`.

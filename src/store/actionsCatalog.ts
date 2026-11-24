@@ -14,6 +14,7 @@
 import { selectedGroup } from '../core/scene/groups';
 import { cachedMeshBodies } from '../core/scene/meshBodies';
 import { isNegative, isSolid } from '../core/scene/objectRole';
+import { fitCheckTargets } from './fitCheckTargets';
 import type { TranslationKey } from '../i18n';
 import type { KuraStoreState } from './storeTypes';
 
@@ -22,7 +23,7 @@ export const ACTION_GROUPS = [
   { id: 'mesh', items: ['repair', 'simplify', 'refine', 'texture', 'hull'] },
   { id: 'organize', items: ['splitColors', 'splitParts', 'group', 'ungroup', 'combine', 'union', 'applyHoles'] },
   { id: 'position', items: ['convert', 'dropToBed', 'centerOnBed', 'align'] },
-  { id: 'analyze', items: ['validate', 'detect'] },
+  { id: 'analyze', items: ['validate', 'detect', 'fitCheck'] },
 ] as const;
 
 export type ActionGroupId = (typeof ACTION_GROUPS)[number]['id'];
@@ -64,6 +65,7 @@ export function actionAvailability(state: StateSlice, id: ActionId): ActionAvail
     const visible = objects.filter((o) => o.visible);
     return visible.some(isNegative) && visible.some(isSolid) ? ok : no('rediseno.reason.noSubtractions');
   }
+  if (id === 'fitCheck') return fitCheckTargets(objects, selectedIds).ids.length >= 2 ? ok : no('fitCheck.ui.reason.needTwo');
   if (!primary) return no('rediseno.reason.noSelection');
   switch (id) {
     case 'group':
@@ -94,9 +96,13 @@ export function actionAvailability(state: StateSlice, id: ActionId): ActionAvail
 /**
  * Acciones con opciones propias en el panel derecho contextual (el resto se ejecuta directo o abre su propio
  * panel de operación). Punto de extensión: una acción nueva que necesite opciones se agrega aquí y registra su
- * contenido en `components/contextPanel/panelRegistry.tsx`. Todas operan sobre un objeto seleccionado.
+ * contenido en `components/contextPanel/panelRegistry.tsx`. Operan sobre un objeto seleccionado, salvo las de
+ * `SCENE_PANEL_ACTIONS`.
  */
-export const PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['hollow', 'simplify', 'refine', 'texture', 'modules', 'validate', 'detect']);
+export const PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['hollow', 'simplify', 'refine', 'texture', 'modules', 'validate', 'detect', 'fitCheck']);
+
+/** Acciones del panel que trabajan sobre la escena (varios objetos o todo lo visible), no sobre uno solo. */
+export const SCENE_PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['fitCheck']);
 
 export function actionHasPanel(id: ActionId): boolean {
   return PANEL_ACTIONS.has(id);

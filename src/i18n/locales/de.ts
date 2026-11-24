@@ -44,6 +44,7 @@ import { BORDES_DE } from './bordesPrimitivas';
 import { UX7_DE } from './ux7';
 import { REDISENO_DE } from './rediseno';
 import { PANEL_DE } from './panel';
+import { ENCAJE_UI_DE } from './encajeUi';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -85,6 +86,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...UX7_DE,
   ...REDISENO_DE,
   ...PANEL_DE,
+  ...ENCAJE_UI_DE,
   // Marca y shell principal
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
   'app.docTitle': 'Kura3D v0.5.0 — Natives 3D-Modellierungsstudio',

@@ -26,7 +26,8 @@ export function focusPanelHeading(): void {
   document.querySelector<HTMLElement>('#kura-inspector-panel .kura-ctx-heading')?.focus({ preventScroll: true });
 }
 
-export const ActionPanel: React.FC<{ id: ActionId; primary: SceneObject; ui: InspectorLocalState }> = ({ id, primary, ui }) => {
+/** `primary` es `null` en una acción de escena: su contenido (`renderScene`) dice sobre qué actúa. */
+export const ActionPanel: React.FC<{ id: ActionId; primary: SceneObject | null; ui: InspectorLocalState }> = ({ id, primary, ui }) => {
   const language = useKuraStore((s) => s.language);
   const setActiveAction = useKuraStore((s) => s.setActiveAction);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -103,9 +104,11 @@ export const ActionPanel: React.FC<{ id: ActionId; primary: SceneObject; ui: Ins
         </button>
         <h2 className="kura-ctx-heading" tabIndex={-1}>{title}</h2>
       </div>
-      <p className="kura-ctx-target" title={primary.name}>{t(language, 'panel.action.target', { name: primary.name })}</p>
+      {!entry.renderScene && primary && (
+        <p className="kura-ctx-target" title={primary.name}>{t(language, 'panel.action.target', { name: primary.name })}</p>
+      )}
       <div className="kura-scroll-area kura-ctx-body">
-        <section className="kura-card">{entry.render({ primary, ui })}</section>
+        <section className="kura-card">{entry.renderScene ? entry.renderScene() : primary && entry.render?.({ primary, ui })}</section>
       </div>
     </div>
   );

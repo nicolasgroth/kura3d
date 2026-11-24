@@ -126,6 +126,8 @@ export const ContextPanel: React.FC<{ ui: InspectorLocalState }> = ({ ui }) => {
         </div>
       </>
     );
+  } else if (ctx.kind === 'action' && panelContentOf(ctx.id)?.renderScene) {
+    body = <ActionPanel id={ctx.id} primary={objects.find((o) => o.id === ctx.objectId) ?? null} ui={ui} />;
   } else {
     const primary = objects.find((o) => o.id === (ctx.kind === 'object' ? ctx.id : ctx.objectId));
     if (primary) {

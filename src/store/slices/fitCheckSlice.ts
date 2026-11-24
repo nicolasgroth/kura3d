@@ -29,11 +29,14 @@ export interface FitCheckSliceState {
   /** Comprobación en curso (fase legible por máquina, `prepare:i/n` o `pair:i/n`). */
   fitCheckRunning: { phase: string | null } | null;
   fitCheckHighlight: FitCheckPairRef | null;
+  /** El último informe se descartó porque la escena cambió (el panel ofrece volver a comprobar). */
+  fitCheckStale: boolean;
   /** Comprueba `ids` (o la selección, o todo lo visible). `null` si se canceló o falló (el error ya se avisó). */
   checkFit: (request?: { ids?: string[]; options?: FitCheckOptions }) => Promise<FitCheckReport | null>;
   cancelFitCheck: () => void;
   setFitCheckHighlight: (pair: FitCheckPairRef | null) => void;
-  clearFitCheck: () => void;
+  /** Descarta el informe; `'stale'` lo marca como desactualizado por un cambio en la escena. */
+  clearFitCheck: (reason?: 'stale') => void;
 }
 
 export function createFitCheckSlice(ctx: StoreContext): Partial<KuraStoreState> {
@@ -45,6 +48,7 @@ export function createFitCheckSlice(ctx: StoreContext): Partial<KuraStoreState> 
     fitCheck: null,
     fitCheckRunning: null,
     fitCheckHighlight: null,
+    fitCheckStale: false,
 
     checkFit: async (request = {}) => {
       job?.cancel();
@@ -64,7 +68,10 @@ export function createFitCheckSlice(ctx: StoreContext): Partial<KuraStoreState> 
         job = null;
         // Si la escena cambió mientras se calculaba, el informe ya no corresponde: no se guarda.
         const valid = fitCheckIsCurrent(inputs, get().objects);
-        set({ fitCheckRunning: null, ...(valid ? { fitCheck: { report, inputs }, fitCheckHighlight: null } : {}) });
+        set({
+          fitCheckRunning: null,
+          ...(valid ? { fitCheck: { report, inputs }, fitCheckHighlight: null, fitCheckStale: false } : { fitCheckStale: true }),
+        });
         return report;
       } catch (err) {
         if (job === current) {
@@ -89,7 +96,7 @@ export function createFitCheckSlice(ctx: StoreContext): Partial<KuraStoreState> 
       set({ fitCheckHighlight: known ? pair : null });
     },
 
-    clearFitCheck: () => set({ fitCheck: null, fitCheckHighlight: null }),
+    clearFitCheck: (reason) => set({ fitCheck: null, fitCheckHighlight: null, fitCheckStale: reason === 'stale' }),
   };
 }
 
@@ -99,6 +106,6 @@ export function invalidateFitCheckOnSceneChange(store: {
 }): () => void {
   return store.subscribe((state, prev) => {
     if (state.objects === prev.objects || !state.fitCheck) return;
-    if (!fitCheckIsCurrent(state.fitCheck.inputs, state.objects)) state.clearFitCheck();
+    if (!fitCheckIsCurrent(state.fitCheck.inputs, state.objects)) state.clearFitCheck('stale');
   });
 }
