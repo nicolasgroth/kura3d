@@ -7,7 +7,8 @@
  * @license MIT
  */
 
-import { createModulePrimitive, createPrimitive, type PlaceMesh } from '../../core/operations';
+import { createModulePrimitive, createPrimitive } from '../../core/operations';
+import { announceFreePlacement, createFreePlacer, type FreePlacer } from '../freePlacement';
 import { activeBedSize } from '../bedSize';
 import { overlapsOthers, placeInFreeSpot } from '../../core/scene/freeSpot';
 import { parametricStateOf } from '../../core/scene/parametric';
@@ -16,7 +17,7 @@ import { PRINT_COLOR_PALETTE, type SceneObject, type Vec3 } from '../../types/ku
 import { isNegative, isReference, isSolid } from '../../core/scene/objectRole';
 import { BRAND } from '../../brand';
 import { attachToTarget, negativeOnTopFace } from '../../core/scene/attachPiece';
-import { withoutModulePrefix } from '../../core/scene/resultNames';
+import { nextNumberedName, withoutModulePrefix } from '../../core/scene/resultNames';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 import { negativeSpotFor, rememberSpawnTarget } from '../negativeSpawn';
@@ -26,26 +27,8 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
 
   const activeBed = () => activeBedSize(get());
 
-  /** Colocador en el primer hueco libre; recuerda si la pieza cupo en la cama. */
-  const freePlacer = (rotation: Vec3 = [0, 0, 0], scale: Vec3 = [1, 1, 1]) => {
-    const result = { fits: true };
-    const place: PlaceMesh = (mesh) => {
-      const spot = placeInFreeSpot(get().objects, mesh, rotation, scale, activeBed());
-      result.fits = spot.fits;
-      return spot.position;
-    };
-    return { place, result };
-  };
-
-  /**
-   * Tras colocar en espacio libre: avisa si no cupo en la cama y encuadra. Escena vacía o fuera de la
-   * cama: encuadre de toda la escena; si ya había objetos, se asegura que la pieza nueva quede a la vista.
-   */
-  const afterFreePlacement = (fits: boolean, wasEmpty: boolean, newId: string) => {
-    if (!fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
-    if (!fits || wasEmpty) get().requestCameraPreset('fit', [newId]);
-    else get().requestCameraPreset('ensure', [newId]);
-  };
+  const freePlacer = (rotation?: Vec3, scale?: Vec3) => createFreePlacer(get, rotation, scale);
+  const afterFreePlacement = (free: FreePlacer, newId: string) => announceFreePlacement(get(), tr, free.result, newId);
 
   /**
    * Objeto a perforar por un macho negativo: el pedido por id o el único seleccionado (sin bloquear).
@@ -86,7 +69,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
           mesh,
           type,
           params,
-          name: options?.name ?? (options?.label ? `${options.label} ${count + 1}` : op.naming.primitive(type, count)),
+          name: options?.name ?? nextNumberedName(options?.label ?? op.naming.primitiveLabel(type), get().objects.map((o) => o.name)),
           color: options?.color ?? PRINT_COLOR_PALETTE[count % PRINT_COLOR_PALETTE.length],
           position: options?.position,
           rotation: options?.rotation,
@@ -101,7 +84,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
         addSpawned(placed, [placed.id]);
         get().addToast(tr('toast.created', { name: placed.name }), 'success');
         if (over) get().requestCameraPreset('ensure', [placed.id]);
-        else if (free) afterFreePlacement(free.result.fits, count === 0, placed.id);
+        else if (free) afterFreePlacement(free, placed.id);
         return placed;
       }),
 
@@ -157,14 +140,13 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
             : tr('toast.created', { name: obj.name }), 'success');
           return obj;
         }
-        const wasEmpty = get().objects.length === 0;
         const free = freePlacer();
         // La rosca se genera en el Worker en el origen y se ubica después en un espacio libre.
         const created = await ctx.runEngine('thread', { options, placement: { position: [0, 0, 0] } });
         const obj = { ...created, position: free.place(created.mesh) };
         addSpawned(obj, [obj.id]);
         get().addToast(tr('toast.created', { name: obj.name }), 'success');
-        afterFreePlacement(free.result.fits, wasEmpty, obj.id);
+        afterFreePlacement(free, obj.id);
         return obj;
       }),
 

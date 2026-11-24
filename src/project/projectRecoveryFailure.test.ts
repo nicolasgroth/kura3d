@@ -9,6 +9,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from 'zustand/vanilla';
+import { fakeBox } from '../test/fakeObjects';
 import { captureProject, useKuraStore, type KuraStoreState } from '../store/useKuraStore';
 import { cleanupRecoveryStorage, RecoveryQuotaError, writeRecoveryDocument } from './recoveryDraftStore';
 import { classifyRecoveryFailure, startProjectRecovery } from './projectRecoveryAutosave';
@@ -21,7 +22,8 @@ vi.mock('./recoveryDraftStore', async (original) => ({
 vi.mock('./projectRecoveryStorage', () => ({ discardRecoveryDraft: vi.fn() }));
 
 function cleanStore() {
-  const initial = { ...useKuraStore.getInitialState(), engineReady: true };
+  // Un objeto: una escena vacía no escribe borrador (recoveryEmptyDraft.test.ts).
+  const initial = { ...useKuraStore.getInitialState(), engineReady: true, objects: [fakeBox('a', 'Caja 1')] };
   return createStore<KuraStoreState>()(() => ({ ...initial, savedProject: captureProject(initial) }));
 }
 

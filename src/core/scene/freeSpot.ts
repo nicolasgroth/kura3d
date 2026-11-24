@@ -56,9 +56,13 @@ export function sceneFootprints(objects: readonly SceneObject[]): FootprintXZ[] 
 }
 
 const EPS = 1e-6;
-/** Peso de la distancia hacia el frente (+Z, hacia la cámara inicial) y hacia el fondo al elegir hueco. */
-const FRONT_WEIGHT = 9;
-const BACK_WEIGHT = 4;
+/**
+ * Peso de la distancia hacia el frente (+Z, hacia la cámara inicial) y hacia el fondo al elegir hueco.
+ * Ambos altos: desde la vista inicial una pieza delante tapa al modelo y una detrás queda oculta tras
+ * él, y en los dos casos parece caer encima. Solo se usa otra fila cuando el costado queda lejos.
+ */
+const FRONT_WEIGHT = 25;
+const BACK_WEIGHT = 16;
 
 function overlaps(x: number, z: number, hw: number, hd: number, r: FootprintXZ, gap: number): boolean {
   return x - hw < r.maxX + gap - EPS && x + hw > r.minX - gap + EPS

@@ -118,6 +118,13 @@ export function startProjectRecovery(
     if (stopped || checkpointDue === null || Date.now() < checkpointDue || (!force && isBusy(state))) return;
     checkpointDue = null;
     if (!isProjectDirty(state)) return;
+    if (state.objects.length === 0) {
+      // Una escena sin objetos no aporta nada que recuperar: no se guarda y su borrador previo sobra.
+      // (El `schedule` que sigue a cada pasada lo descarta.)
+      obsoleteIds.add(state.projectDraftId);
+      report('idle');
+      return;
+    }
 
     report('saving');
     try {

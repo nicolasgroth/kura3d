@@ -396,6 +396,9 @@ export const App: React.FC = () => {
         activateRailTool('select');
       } else if (key === 'f') {
         state.requestCameraPreset('fit');
+      } else if (key === 'h' && e.shiftKey) {
+        // Mayús+H: oculta la selección o la vuelve a mostrar; sin selección, muestra todo lo oculto.
+        state.toggleSelectionVisibility();
       } else if (key === 'h') {
         for (const id of state.selectedIds) {
           const obj = state.objects.find((o) => o.id === id);

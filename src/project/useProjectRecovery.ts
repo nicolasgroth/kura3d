@@ -17,6 +17,7 @@ import { startProjectRecovery, type RecoveryFailure, type RecoveryStatus } from 
 import { recoveryDraftLabel } from './projectRecoveryLabels';
 import { registerRecoveryFlush } from './recoveryFlush';
 import { discardRecoveryDraft, listRecoveryDrafts, type RecoveryDraftInfo } from './projectRecoveryStorage';
+import { offerableRecoveryDrafts } from './recoveryOffer';
 
 export function useProjectRecovery() {
   const [drafts, setDrafts] = useState<RecoveryDraftInfo[]>([]);
@@ -25,6 +26,8 @@ export function useProjectRecovery() {
   const [failure, setFailure] = useState<RecoveryFailure | null>(null);
   const [listFailed, setListFailed] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
+  // Tras recuperar o descartar un borrador el aviso se cierra en esta sesión (los demás siguen guardados).
+  const [dismissed, setDismissed] = useState(false);
   const projectDraftId = useKuraStore((state) => state.projectDraftId);
   const workspaceBusy = useKuraStore((state) => !state.engineReady || state.projectBusy ||
     Boolean(state.busyOperation) || state.aiBusy);
@@ -39,7 +42,7 @@ export function useProjectRecovery() {
       const next = await listRecoveryDrafts();
       if (request === listRequest.current) {
         const activeNow = useKuraStore.getState().projectDraftId;
-        setDrafts(next.filter((draft) => draft.id !== activeAtStart && draft.id !== activeNow));
+        setDrafts(offerableRecoveryDrafts(next, [activeAtStart, activeNow]));
         setListFailed(false);
       }
     } catch {
@@ -87,7 +90,11 @@ export function useProjectRecovery() {
 
   function restore(draft: RecoveryDraftInfo) {
     void runAction(async () => {
-      await guardUnsavedChanges(() => useKuraStore.getState().recoverProject(draft));
+      let recovered = false;
+      await guardUnsavedChanges(async () => {
+        recovered = await useKuraStore.getState().recoverProject(draft);
+      });
+      if (recovered) setDismissed(true);
     });
   }
 
@@ -114,6 +121,8 @@ export function useProjectRecovery() {
         if (!accepted) return;
         if (!(await discardRecoveryDraft(draft.id, draft.updatedAt))) {
           addToast(t(language, 'recovery.status.changedElsewhere'), 'info');
+        } else {
+          setDismissed(true);
         }
       } catch {
         addToast(t(language, 'recovery.status.discardFailed'), 'error');
@@ -131,7 +140,7 @@ export function useProjectRecovery() {
   }, []);
 
   return {
-    drafts: drafts.filter((draft) => draft.id !== projectDraftId),
+    drafts: dismissed ? [] : drafts.filter((draft) => draft.id !== projectDraftId),
     busy: actionBusy || workspaceBusy,
     status: listFailed ? 'unavailable' as const : status,
     failure,

@@ -330,7 +330,8 @@ export function createModelIoActions(deps: ModelIoDeps) {
       return false;
     }
     const state = get();
-    const base = exportFileBase(request.fileName, state.projectName, targets, tr('export.defaultName'));
+    // Proyecto sin nombre: el nombre visible («Escena sin título»), no uno genérico de la app.
+    const base = exportFileBase(request.fileName, state.projectName, targets, tr('app.untitled'));
     const fileName = `${base}.${request.format}`;
     const exportFiles = deps.exportFiles ?? exportSceneFiles;
     const splitMode = hasSplitParts(targets) ? request.splitMode : request.perObject ? 'perPiece' : undefined;
