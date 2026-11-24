@@ -26,10 +26,3 @@ Pediste varios ajustes y en algunos dejaste dos caminos. Elegí uno en cada caso
 - **Paneles flotantes:** descartados por ti el 23-nov; queda el panel que abre y cierra.
 - **Paleta de pintura, «colores del proyecto» (24-nov):** el botón reemplazaba tu paleta por los colores del proyecto y perdías los tuyos. Lo cambié a **sumar** los que falten, sin duplicar. Si prefieres que reemplace (o tener las dos opciones), dime.
 
-### 4. Usabilidad en 80 tras cinco rondas (24-nov): ¿cómo seguimos?
-La serie va 76 → 75 → 79 → 78 → 80 y el mínimo es 85. No hay bloqueos, y el rediseño subió importar (74 → 85), cortar (80 → 86) y dividir (76 → 80). Cada evaluador nuevo encuentra cosas distintas, así que la nota sube de a poco. Opciones:
-- **A (recomendada):** un lote más con los 8 hallazgos de la quinta evaluación (detalle en `docs/EVALUACIONES.md`) y una sexta evaluación.
-- **B:** corregir solo lo serio (el «Todo encaja» engañoso de Comprobar encaje y la colocación de objetos nuevos) y pasar a funcionalidades nuevas (Asistentes, agregados), dejando usabilidad en 80 por ahora.
-- **C:** bajar el mínimo de usabilidad a 80 para esta etapa y retomarlo al cierre de la versión.
-
-

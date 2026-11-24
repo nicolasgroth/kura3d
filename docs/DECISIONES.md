@@ -74,3 +74,4 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-23 | Iconos, tooltips y barra de estado | Con solo iconos, cada uno lleva un tooltip claro (nombre, qué hace y atajo). Además, al pasar el cursor o el foco sobre un control, la barra de estado inferior explica qué hace, al estilo de las aplicaciones clásicas de escritorio. Si un icono no se explica solo, lleva texto. |
 | 2026-11-23 | Paneles flotantes | Descartados. El panel derecho que se ensancha, reduce y pliega basta. |
 | 2026-11-23 | Muchos colores por modelo | A futuro los modelos pueden traer cientos o miles de colores (impresoras que mezclan). No se implementa ahora, pero la paleta y la preparación de colores no deben suponer un tope chico. |
+| 2026-11-24 | Usabilidad en 80 tras cinco rondas | Se hace un lote más con los hallazgos pendientes de la quinta evaluación y una sexta evaluación a ciegas. El mínimo sigue en 85. |
