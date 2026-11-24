@@ -1,12 +1,12 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 19:30, con el primer lote del rediseño, el ejecutor de recetas y el motor de comprobar encaje integrados, y el panel contextual en desarrollo.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 23 de noviembre de 2026 a las 22:00, con el rediseño completo (barras y panel contextual), recetas ejecutables y Comprobar encaje con interfaz integrados; QA independiente y quinta evaluación de usabilidad en curso.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
 ## Resumen de la noche del 22 al 23 de noviembre
 
-Estado de `main`: 2473 pruebas del frontend, 151 del servidor MCP y 37 de Rust en verde; 157 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
+Estado de `main`: 2497 pruebas del frontend, 151 del servidor MCP y 37 de Rust en verde; 157 recorridos de navegador en verde (`npm run test:e2e`); integración continua de GitHub en verde.
 
 | Qué | Resultado |
 |---|---|
@@ -22,8 +22,7 @@ Estado de `main`: 2473 pruebas del frontend, 151 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
-| Rediseño clásico, lote 2: panel derecho contextual y adaptable (proyecto sin selección, resumen del objeto, o solo las opciones de la herramienta o acción activa; se ensancha, reduce y pliega). Incluye pendientes del lote 1 (rótulos de la barra de vista a 1280 y 1440, "Esculpir / Borrar" en una línea, estado del botón Escena en móvil) y de usabilidad (Capacidad que nombra el objeto, cantidad de objetos en el aviso de recuperación) | En desarrollo desde el 23-nov 19:20 |
-| Comprobar encaje, interfaz: entrada en Acciones y menú contextual, panel de pares, resaltado de la zona, cota de holgura, avance y cancelar, guía; conectar la comprobación al diálogo de Ajustar a la impresora | Pendiente; va después del panel contextual |
+| Pendientes del rediseño: a 1280 px las vistas quedan solo con icono y a 1024 px toda la barra de vista; los avisos tapan el agarre X del manipulador de escala a 1280×720; descripción y fechas del proyecto (cambia el `.kura`); Cortar, Dividir, Ajustar, Molde, Proyectar, Rosca y Medir siguen con su panel propio; Comprobar encaje en la paleta de comandos y en pulgadas | Pendiente |
 | Recetas, lo que sigue: copia de la receta en el `.kura`, regenerar y "dejar fijo", repetir con F4, agrupar las salidas, interfaz de Asistentes | Pendiente |
 | Pendientes vistos en capturas: el contorno de selección queda inflado tras escalar ×100; "Cerrar todos" ilegible en tema oscuro; los avisos tapan un diálogo en 390 px y la barra de Consejo; "Sin cama" queda fuera de pantalla en móvil; por MCP, restar dos piezas recién creadas falla porque cada una cae en un lugar libre, y el plan de dividir sin aplicar informa 0 uniones; ahuecar un busto denso tarda cerca de 30 s | Para la próxima tanda |
 | Separar por colores sobre texto 3D pintado: algunas piezas pueden salir abiertas (se avisa cuáles y se ofrece reparar); grabar dos veces el mismo texto en el mismo lugar de un cilindro (da un error claro) | Límites conocidos; pendiente |
@@ -38,9 +37,9 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 
 | Funcionalidad | Estado |
 |---|---|
-| Rediseño clásico, lote 1: barra superior con Archivo, Edición y menú Acciones; barra vertical de herramientas; una sola barra de vista en una fila; historial desplegable junto a deshacer; botón Rótulos; tooltips y barra de estado que explican cada control; Escena como botón en móvil | Integrado el 23-nov con 16 recorridos propios en verde; suite completa de navegador en curso; capturas de guías por regenerar; falta QA independiente |
+| Rediseño clásico de la interfaz: barra superior con Archivo, Edición (historial desplegable) y menú Acciones; barra vertical de herramientas; una sola barra de vista; botón Rótulos; tooltips y barra de estado que explican cada control; panel derecho contextual (proyecto, resumen del objeto o solo las opciones de la acción activa) que se ensancha, reduce y pliega; barra superior sin desborde a 390 px | Integrado el 23-nov; 262 de 266 recorridos pasaban antes del panel y los 4 fallidos se corrigieron; suite completa y QA independiente en curso; guías con capturas regeneradas |
+| Comprobar encaje: acción en Acciones y menú contextual, panel con pares ordenados por gravedad, zona de choque o cota de holgura resaltada en el visor, aviso "la escena cambió", oferta tras Ajustar a la impresora, guía; motor exacto entre mallas cerradas y herramienta `kura_check_fit` | Integrado el 23-nov con pruebas y un recorrido con el Worker real; QA independiente en curso; el aviso tras Ajustar no tiene recorrido propio |
 | Recetas, segundo lote: la caja con tapa, el llavero y la placa de enchufe se generan de verdad, con topes de triángulos, objetos, memoria y tiempo, un solo paso de deshacer y procedencia guardada en el `.kura`; cuatro herramientas MCP (listar, describir, validar, ejecutar) | Integrado el 23-nov con pruebas (incluye 15 casos hostiles); sin interfaz; falta probar en el Worker del navegador |
-| Comprobar encaje, motor y MCP: choque exacto entre mallas cerradas (volumen y zona), holgura mínima con sus dos puntos, restas pendientes aplicadas en copia, recomendaciones con cifras marcadas como estimación; herramienta `kura_check_fit` | Integrado el 23-nov con pruebas; sin interfaz; falta probar en el Worker del navegador |
 | Ajustar a la impresora: alternativas a elegir (escalar, girar, girar y escalar, dividir) con vista previa, camas propias con margen, aviso al abrir un proyecto con otra cama, herramienta MCP y guía | Integrado el 23-nov con pruebas de navegador; falta QA independiente |
 | Bordes redondeados y chaflanes exactos en caja, cilindro, tubo y prisma, con alcance (todas, verticales, superior) | Integrado el 23-nov con pruebas; falta QA independiente |
 | Objetos de referencia, lote 1: tercer tipo de objeto que se ve pero no se imprime ni se exporta, opacidad por objeto, proyecto en formato 3 con migración | Integrado el 23-nov con una prueba por cada exclusión; falta QA independiente |
