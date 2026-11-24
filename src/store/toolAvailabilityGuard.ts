@@ -19,8 +19,14 @@ export function activeToolUnavailable(state: Pick<KuraStoreState, 'activeTool' |
   return !toolAvailability(state, state.activeTool as RailToolId).enabled;
 }
 
+/**
+ * Solo reacciona cuando la herramienta pasa de disponible a no disponible con la escena (el objeto se borró, se
+ * ocultó o se bloqueó): no corrige una herramienta elegida a propósito antes de que exista el objeto (p. ej. un
+ * script que crea la pieza y elige Pintar sin esperar).
+ */
 export function resetToolWhenUnavailable(store: UseBoundStore<StoreApi<KuraStoreState>>): void {
-  store.subscribe((state) => {
-    if (activeToolUnavailable(state)) state.setActiveTool('select');
+  store.subscribe((state, prev) => {
+    if (state.activeTool === 'select' || state.activeTool !== prev.activeTool) return;
+    if (activeToolUnavailable(state) && !activeToolUnavailable(prev)) state.setActiveTool('select');
   });
 }

@@ -14,6 +14,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { existsSync } from 'node:fs';
 import { agregarForma } from './agregar-helpers';
+import { enlazarStores } from './store-link';
 import { abrir as abrirBase } from './ux-escena-helpers';
 
 const OUT = 'G:/proyectos/kura3d/.eval-tmp/qa21';
@@ -24,20 +25,10 @@ const panel = (page: Page) => page.locator('#kura-inspector-panel');
 const rail = (page: Page) => page.locator('#kura-tool-rail');
 
 
-/**
- * Enlaza `__s` con la instancia de store que usa la app. Si Vite sirvió el módulo con `?t=` (tras un HMR) un
- * `import()` sin la marca crea un segundo store y los specs leen un estado ajeno; se importa la URL exacta.
- */
-async function enlazar(page: Page): Promise<void> {
-  await page.evaluate(async () => {
-    const urls = performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /\/useKuraStore\.ts/.test(n));
-    const url = urls.length ? urls[urls.length - 1] : '/src/store/useKuraStore.ts';
-    (window as any).__s = (await import(/* @vite-ignore */ url)).useKuraStore;
-  });
-}
+/** Enlaza `__s` con la instancia exacta del store de la app (ver `store-link.ts`). */
+const enlazar = (page: Page) => enlazarStores(page);
 async function abrir(page: Page): Promise<void> {
   await abrirBase(page);
-  await enlazar(page);
 }
 
 let errores: string[] = [];

@@ -2,7 +2,7 @@
  * @file src/components/shell/usePortalMenu.tsx
  * @description Menú desplegable de un botón de barra (patrón «menu button» de WAI-ARIA): abre una `MenuSurface`
  * en un portal, debajo del botón o a su derecha (barra vertical), acotada a la ventana. Esc cierra y devuelve el
- * foco al botón; un clic fuera cierra sin robar el foco. Lo comparten «Acciones», «Insertar» y «Agregar».
+ * foco al botón; Tab y Mayús+Tab cierran y dejan seguir el foco desde el botón; un clic fuera cierra sin robar el foco. Lo comparten «Acciones», «Insertar» y «Agregar».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -34,6 +34,11 @@ export function usePortalMenu(placement: MenuPlacement = 'below') {
       if (e.key === 'Escape') {
         // En captura: Esc cierra el menú antes de que los atajos globales lo usen (salir de un grupo…).
         e.preventDefault();
+        e.stopPropagation();
+        close();
+      } else if (e.key === 'Tab' && !e.altKey && !e.ctrlKey && !e.metaKey) {
+        // Patrón de menú WAI-ARIA: Tab y Mayús+Tab cierran el menú y el foco sigue desde el botón (siguiente o
+        // anterior). Se corta aquí para que el menú no lo trague; el movimiento del foco lo hace el navegador.
         e.stopPropagation();
         close();
       }

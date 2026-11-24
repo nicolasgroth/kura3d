@@ -7,6 +7,7 @@
  * @license MIT
  */
 import type { Page } from '@playwright/test';
+import { enlazarStores } from './store-link';
 
 export const URL = process.env.KURA_URL ?? 'http://127.0.0.1:5217/';
 
@@ -15,10 +16,7 @@ export async function abrir(page: Page): Promise<void> {
   await page.getByText('Manifold WASM Listo').waitFor({ timeout: 60000 });
   const discard = page.getByRole('button', { name: 'Descartar' });
   if (await discard.count()) await discard.first().click().catch(() => undefined);
-  await page.evaluate(async () => {
-    const w = window as any;
-    w.__s = (await import('/src/store/useKuraStore.ts')).useKuraStore;
-  });
+  await enlazarStores(page);
 }
 
 /** STL ASCII con un cubo de lado `size` por cada centro (mm, ejes internos x, y, z). */

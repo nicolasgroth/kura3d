@@ -8,6 +8,7 @@
  * @license MIT
  */
 import type { Page } from '@playwright/test';
+import { enlazarStores } from './store-link';
 
 export const URL = process.env.KURA_URL ?? 'http://127.0.0.1:5213/';
 export const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/qa12';
@@ -15,10 +16,9 @@ export const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/qa12';
 export async function abrir(page: Page): Promise<void> {
   await page.goto(URL);
   await page.getByText('Manifold WASM Listo').waitFor({ timeout: 60000 });
+  await enlazarStores(page, { medicion: true });
   await page.evaluate(async () => {
     const w = window as any;
-    w.__s = (await import('/src/store/useKuraStore.ts')).useKuraStore;
-    w.__m = (await import('/src/store/measureStore.ts')).useMeasureStore;
     const urls = performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /react-three_fiber/.test(n));
     for (const u of urls) {
       const m = await import(/* @vite-ignore */ u);

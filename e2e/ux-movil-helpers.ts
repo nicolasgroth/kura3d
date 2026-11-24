@@ -7,6 +7,7 @@
  * @license MIT
  */
 import type { Page } from '@playwright/test';
+import { enlazarStores } from './store-link';
 
 export const URL = process.env.KURA_URL ?? 'http://127.0.0.1:5218/';
 export const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/ux-movil';
@@ -20,10 +21,9 @@ export async function abrir(page: Page, lang = 'es'): Promise<void> {
   await page.goto(URL);
   await page.locator('.kura-app').waitFor({ timeout: 60000 });
   await page.waitForFunction(() => /Manifold/i.test(document.body.innerText), undefined, { timeout: 60000 });
+  await enlazarStores(page, { medicion: true });
   await page.evaluate(async (l) => {
     const w = window as any;
-    w.__s = (await import('/src/store/useKuraStore.ts')).useKuraStore;
-    w.__m = (await import('/src/store/measureStore.ts')).useMeasureStore;
     if (l) w.__s.getState().setLanguage(l);
     const urls = performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /react-three_fiber/.test(n));
     for (const u of urls) {
