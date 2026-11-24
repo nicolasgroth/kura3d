@@ -33,6 +33,7 @@ import { applyHoles, booleanOperation, convexHull } from './csgOperations';
 import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
 import { eraseSphere, hollowObject, projectOnSurface, refineObject, repairObject, simplifyObject } from './meshOperations';
 import type { OperationContext } from './operationTypes';
+import { smoothObject, type SmoothTaskOptions } from './smoothOperations';
 import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnected, splitStructures } from './partOperations';
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
 import { runFitToBed, type FitToBedTaskArgs } from './fitOperations';
@@ -108,6 +109,7 @@ export const ENGINE_TASKS = {
   diagnoseMesh: (_ctx: OperationContext, a: { mesh: Pick<SceneObject['mesh'], 'positions' | 'indices'> }) => engine.diagnoseMesh(a.mesh),
   refine: (ctx: OperationContext, a: { obj: SceneObject; edgeMm: number; smooth: boolean }) =>
     refineObject(ctx, a.obj, a.edgeMm, a.smooth),
+  smooth: (ctx: OperationContext, a: { obj: SceneObject; options?: SmoothTaskOptions }) => smoothObject(ctx, a.obj, a.options),
   erase: (ctx: OperationContext, a: { obj: SceneObject; center: Vec3; radiusMm: number }) =>
     eraseSphere(ctx, a.obj, a.center, a.radiusMm),
   projectSurface: (ctx: OperationContext, a: { obj: SceneObject; options: SurfaceProjectionOptions }) =>

@@ -57,6 +57,7 @@ export const ENGINE_ERROR_CODES = [
   'HOLLOW_NO_CAVITY',
   'HOLLOW_INEFFECTIVE',
   'FIT_ALTERNATIVE_UNAVAILABLE',
+  'SMOOTH_DAMAGE',
 ] as const;
 
 export type EngineErrorCode = (typeof ENGINE_ERROR_CODES)[number];
@@ -113,6 +114,9 @@ export const ENGINE_WARNING_CODES = [
   'REPAIR_LARGE_HOLES_FILLED',
   'SPLIT_PART_REPAIRED',
   'SPLIT_HEAVY_MESH',
+  'SMOOTH_STRENGTH_REDUCED',
+  'SMOOTH_VOLUME_CHANGED',
+  'SMOOTH_NO_EFFECT',
 ] as const;
 
 export type EngineWarningCode = (typeof ENGINE_WARNING_CODES)[number];
