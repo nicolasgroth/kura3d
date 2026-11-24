@@ -49,7 +49,7 @@ describe('MCP: recetas (headless)', () => {
     const list = json(await client.callTool({ name: 'kura_list_recipes', arguments: { language: 'en' } }));
     expect(list.recipes.map((r: { id: string }) => r.id)).toEqual(['kura.caja-tapa', 'kura.llavero', 'kura.placa-enchufe']);
     const placa = json(await client.callTool({ name: 'kura_describe_recipe', arguments: { recipeId: 'kura.placa-enchufe', language: 'en' } }));
-    expect(placa.title).toBe('Wall plate');
+    expect(placa.title).toBe('Outlet / switch plate');
     expect(placa.presets.map((p: { id: string; verified: boolean }) => [p.id, p.verified])).toContainEqual(['cl', false]);
     expect(placa.params.find((p: { id: string }) => p.id === 'modules')).toMatchObject({ min: 1, max: 3, default: 1 });
   });
