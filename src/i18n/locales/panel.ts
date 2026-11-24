@@ -23,7 +23,6 @@ const PANEL = {
   'panel.project.saved': { es: 'Guardado', en: 'Saved', de: 'Gespeichert', fr: 'Enregistré', hi: 'सहेजा गया', zh: '已保存' },
   'panel.project.unsaved': { es: 'Cambios sin guardar', en: 'Unsaved changes', de: 'Ungespeicherte Änderungen', fr: 'Modifications non enregistrées', hi: 'बिना सहेजे बदलाव', zh: '有未保存的更改' },
   'panel.project.location': { es: 'Archivo', en: 'File', de: 'Datei', fr: 'Fichier', hi: 'फ़ाइल', zh: '文件' },
-  'panel.project.change': { es: 'Cambiar unidades o cama', en: 'Change units or bed', de: 'Einheiten oder Bett ändern', fr: 'Changer d’unités ou de plateau', hi: 'इकाइयाँ या बेड बदलें', zh: '更改单位或打印床' },
   'panel.project.hint': { es: 'Selecciona un objeto para ver sus propiedades, o elige una operación en el menú Acciones.', en: 'Select an object to see its properties, or pick an operation from the Actions menu.', de: 'Wähle ein Objekt, um seine Eigenschaften zu sehen, oder eine Operation im Menü Aktionen.', fr: 'Sélectionne un objet pour voir ses propriétés, ou choisis une opération dans le menu Actions.', hi: 'गुण देखने के लिए ऑब्जेक्ट चुनें, या Actions मेनू से कोई क्रिया चुनें।', zh: '选择一个对象以查看其属性,或在“操作”菜单中选择一项操作。' },
 
   // Contexto objeto

@@ -211,11 +211,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'topbar.moreTip': 'Weitere Steuerelemente der oberen Leiste',
 
   // Barra lateral izquierda (LeftSidebar)
-  'sidebar.tab.shapes': 'Formen',
   'sidebar.tab.scene': 'Szene',
-  'sidebar.shapes.primitivesTitle': 'Parametrische Grundkörper',
-  'sidebar.shapes.generatorsTitle': '2D → 3D-Generatoren',
-  'sidebar.shapes.quickActionsTitle': 'Schnellszene',
   'sidebar.shapes.createStarter': '30-mm-Kalibrierwürfel',
   'sidebar.shapes.clearScene': 'Druckbett leeren',
   'sidebar.generators.thread': 'ISO-Gewinde (M3–M64)',
@@ -912,7 +908,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'toast.less': 'Weniger anzeigen',
   'toast.lessTip': 'Frühere Hinweise einklappen',
   'narrow.bar.label': 'Bereiche',
-  'narrow.bar.shapesTip': 'Formen-Blatt öffnen oder schließen (Escape schließt)',
   'narrow.bar.inspectorTip': 'Inspektor-Blatt öffnen oder schließen (Escape schließt)',
   'toast.refineDone': 'Netz verfeinert ({tris} Dreiecke)',
   'toast.hullDone': 'Konvexe Hülle erzeugt',

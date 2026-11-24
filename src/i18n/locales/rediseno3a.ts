@@ -27,8 +27,6 @@ const REDISENO3A = {
   'r3a.name.field': { es: 'Nombre del proyecto', en: 'Project name', de: 'Projektname', fr: 'Nom du projet', hi: 'प्रोजेक्ट का नाम', zh: '项目名称' },
   'r3a.name.hint': { es: 'Enter confirma · Esc cancela. Se usa al guardar.', en: 'Enter confirms · Esc cancels. Used when saving.', de: 'Enter bestätigt · Esc bricht ab. Wird beim Speichern verwendet.', fr: 'Entrée valide · Échap annule. Utilisé à l’enregistrement.', hi: 'Enter पुष्टि · Esc रद्द। सहेजते समय उपयोग होता है।', zh: 'Enter 确认 · Esc 取消。保存时使用。' },
   'r3a.name.empty': { es: 'El nombre no puede quedar vacío.', en: 'The name cannot be empty.', de: 'Der Name darf nicht leer sein.', fr: 'Le nom ne peut pas être vide.', hi: 'नाम खाली नहीं हो सकता।', zh: '名称不能为空。' },
-  'r3a.name.confirm': { es: 'Confirmar nombre', en: 'Confirm name', de: 'Namen bestätigen', fr: 'Valider le nom', hi: 'नाम की पुष्टि करें', zh: '确认名称' },
-  'r3a.name.cancel': { es: 'Cancelar cambio de nombre', en: 'Cancel rename', de: 'Umbenennen abbrechen', fr: 'Annuler le renommage', hi: 'नाम बदलना रद्द करें', zh: '取消重命名' },
   'r3a.name.renamed': { es: 'Proyecto renombrado a {name}. Guarda para conservarlo.', en: 'Project renamed to {name}. Save to keep it.', de: 'Projekt in {name} umbenannt. Speichern, um es zu behalten.', fr: 'Projet renommé en {name}. Enregistre pour le conserver.', hi: 'प्रोजेक्ट का नाम {name} किया गया। रखने के लिए सहेजें।', zh: '项目已重命名为 {name}。请保存以保留。' },
 
   // Cama y unidades en línea

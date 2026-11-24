@@ -211,11 +211,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'topbar.moreTip': '顶部栏的更多控件',
 
   // Barra lateral izquierda (LeftSidebar)
-  'sidebar.tab.shapes': '形状',
   'sidebar.tab.scene': '场景',
-  'sidebar.shapes.primitivesTitle': '参数化基本体',
-  'sidebar.shapes.generatorsTitle': '2D → 3D 生成器',
-  'sidebar.shapes.quickActionsTitle': '快速场景',
   'sidebar.shapes.createStarter': '30 mm 校准方块',
   'sidebar.shapes.clearScene': '清空打印床',
   'sidebar.generators.thread': 'ISO 公制螺纹 (M3–M64)',
@@ -912,7 +908,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'toast.less': '收起',
   'toast.lessTip': '收起之前的提示',
   'narrow.bar.label': '面板',
-  'narrow.bar.shapesTip': '打开或关闭“形状”面板（Esc 关闭）',
   'narrow.bar.inspectorTip': '打开或关闭“检查器”面板（Esc 关闭）',
   'toast.refineDone': '网格已细分（{tris} 个三角面）',
   'toast.hullDone': '已生成凸包',

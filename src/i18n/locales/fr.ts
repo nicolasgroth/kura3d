@@ -211,11 +211,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'topbar.moreTip': 'Plus de commandes de la barre supérieure',
 
   // Barra lateral izquierda (LeftSidebar)
-  'sidebar.tab.shapes': 'Formes',
   'sidebar.tab.scene': 'Scène',
-  'sidebar.shapes.primitivesTitle': 'Primitives Paramétriques',
-  'sidebar.shapes.generatorsTitle': 'Générateurs 2D → 3D',
-  'sidebar.shapes.quickActionsTitle': 'Scène Rapide',
   'sidebar.shapes.createStarter': 'Cube de calibration 30 mm',
   'sidebar.shapes.clearScene': 'Vider le plateau',
   'sidebar.generators.thread': 'Filetage ISO (M3–M64)',
@@ -912,7 +908,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'toast.less': 'Voir moins',
   'toast.lessTip': 'Replier les avis précédents',
   'narrow.bar.label': 'Panneaux',
-  'narrow.bar.shapesTip': 'Ouvrir ou fermer la feuille Formes (Échap ferme)',
   'narrow.bar.inspectorTip': 'Ouvrir ou fermer la feuille Inspecteur (Échap ferme)',
   'toast.refineDone': 'Maillage affiné ({tris} triangles)',
   'toast.hullDone': 'Enveloppe convexe générée',
