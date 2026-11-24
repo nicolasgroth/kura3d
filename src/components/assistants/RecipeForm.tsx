@@ -116,15 +116,17 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
   const submitRef = useRef(submit);
   submitRef.current = submit;
 
+  // Escape (en captura, para que el campo numérico no lo absorba al revertir su texto) vuelve a la lista; el panel
+  // se cierra con su botón X o con Escape desde la lista.
+  const onEscape = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Escape' || busy) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onBack();
+  };
+
+  // El campo numérico confirma con Enter sin enviar el formulario: se envía con el valor ya confirmado.
   const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape' && !e.defaultPrevented && !busy) {
-      // Primero vuelve a la lista; el panel cierra con el botón X o con Escape desde la lista.
-      e.preventDefault();
-      e.stopPropagation();
-      onBack();
-      return;
-    }
-    // El campo numérico confirma con Enter sin enviar el formulario: se envía con el valor ya confirmado.
     if (e.key === 'Enter' && e.target instanceof HTMLInputElement && e.target.getAttribute('role') === 'spinbutton') {
       window.setTimeout(() => void submitRef.current(), 0);
     }
@@ -132,7 +134,7 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
 
   const formId = `${uid}-form`;
   return (
-    <div ref={rootRef} className="kura-asis-form-wrap" onKeyDown={onKeyDown}>
+    <div ref={rootRef} className="kura-asis-form-wrap" onKeyDownCapture={onEscape} onKeyDown={onKeyDown}>
       <div className="kura-asis-head">
         <button
           type="button"
