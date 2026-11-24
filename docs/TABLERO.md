@@ -22,6 +22,10 @@ Estado de `main`: 2526 pruebas del frontend, 151 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
+| Asistentes: vista previa en el visor mientras se llena el formulario, y «Editar con el asistente» para reabrir una pieza creada con sus parámetros | En desarrollo desde el 24-nov (19:00) |
+| Usabilidad, pendientes serios de la sexta evaluación: aviso que no se puede cerrar, botón Proyecto que borra la selección, falso «Justo» tras Dividir, historial descriptivo, unidades al importar algo diminuto, Agregar e Insertar con el mismo catálogo, filamentos con nombre repetido, avisos con jerga | En desarrollo desde el 24-nov (19:00) |
+| Diseño de placas, modo libre y vista armada (pedido del autor): modelo de datos, modos de vista y plan por lotes | Diseño en curso desde el 24-nov (19:00); termina en una propuesta para decidir |
+| Investigación: reemplazar zonas de una malla por figuras simples para bajar triángulos (enfoques, librerías con licencia permisiva, etapas) | Investigación en curso desde el 24-nov (19:00); termina en un documento para decidir |
 | Suavizar malla: Taubin sin encogimiento, proteger aristas vivas, zona con atenuación, detección de daño | Motor en desarrollo desde el 24-nov (18:30), en paralelo y sin interfaz todavía |
 | Orientar para imprimir: orientaciones que reducen o evitan soportes, con medidas y motivo de cada una | Motor en desarrollo desde el 24-nov (18:30), en paralelo y sin interfaz todavía |
 | Dividir, uniones firmes: tamaño, tipo y cantidad de conectores según la sección real del corte | Motor en desarrollo desde el 24-nov (18:30), en paralelo y sin interfaz todavía |
