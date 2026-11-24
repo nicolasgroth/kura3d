@@ -138,6 +138,11 @@ function evalCall(name: string, args: readonly ExprNode[], env: ExprEnv, at: str
       if (typeof value !== 'string') typeError(at, 'string', value);
       return value.length;
     }
+    case 'trim': {
+      const value = evalNode(args[0], env, at);
+      if (typeof value !== 'string') typeError(at, 'string', value);
+      return value.trim();
+    }
     case 'lookup': {
       const table = args[0];
       if (table.type !== 'lit' || typeof table.value !== 'string') throw new RecipeError('expr.forbiddenNode', at, { detail: 'lookup' });

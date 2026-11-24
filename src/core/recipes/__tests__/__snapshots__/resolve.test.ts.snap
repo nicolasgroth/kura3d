@@ -998,13 +998,19 @@ exports[`resolveRecipe: llavero > por defecto: sin logo, el paso del SVG se salt
     "skipped": true,
   },
   {
+    "id": "iconAt",
+    "instances": [],
+    "op": "recipe.place",
+    "skipped": true,
+  },
+  {
     "id": "art",
     "instances": [
       {
         "args": {
           "objectIds": [
             {
-              "$ref": "icon",
+              "$ref": "iconAt",
             },
             {
               "$ref": "label",
@@ -1043,19 +1049,19 @@ exports[`resolveRecipe: llavero > por defecto: sin logo, el paso del SVG se salt
         "args": {
           "params": {
             "depth": {
-              "$deferred": "=s.art2.size.y + p.size",
-              "path": "steps[4].args.params.depth",
+              "$deferred": "=max(s.art2.size.y + p.size, d.pd)",
+              "path": "steps[5].args.params.depth",
             },
             "edgeScope": "vertical",
             "edgeSize": {
-              "$deferred": "=(s.art2.size.y + p.size)/2 - 0.01",
-              "path": "steps[4].args.params.edgeSize",
+              "$deferred": "=max(s.art2.size.y + p.size, d.pd)/2 - 0.01",
+              "path": "steps[5].args.params.edgeSize",
             },
             "edgeStyle": "round",
             "height": 3,
             "width": {
               "$deferred": "=s.art2.size.x + p.size + p.ring + 3",
-              "path": "steps[4].args.params.width",
+              "path": "steps[5].args.params.width",
             },
           },
           "position": [
@@ -1082,7 +1088,7 @@ exports[`resolveRecipe: llavero > por defecto: sin logo, el paso del SVG se salt
           "position": [
             {
               "$deferred": "=s.plate.min.x + p.ring/2 + 2.5",
-              "path": "steps[5].args.position[0]",
+              "path": "steps[6].args.position[0]",
             },
             0,
             -1,
