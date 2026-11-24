@@ -28,3 +28,10 @@ Pediste varios ajustes y en algunos dejaste dos caminos. Elegí uno en cada caso
 
 ### 4. Arrastrar el cuerpo del objeto en modo Mover (24-nov)
 Hoy, con la herramienta Mover activa, arrastrar el cuerpo del objeto orbita la cámara; solo las flechas del manipulador lo mueven. El evaluador esperaba que arrastrar el cuerpo moviera el objeto sobre la cama. ¿Lo cambiamos? Opciones: **A** arrastrar el cuerpo mueve el objeto sobre el plano de la cama (como en los laminadores; orbitar queda para el fondo y el botón derecho); **B** dejarlo como está y agregar un consejo en pantalla. No entra en el lote en curso.
+
+### 5. Usabilidad en 81 tras seis rondas (24-nov): ¿cómo seguimos?
+La serie va 76 → 75 → 79 → 78 → 80 → 81 y el mínimo es 85. Cada evaluador nuevo recorre la app distinto y encuentra cosas distintas; lo corregido casi no reaparece, pero la nota sube un punto por ronda. Detalle en `docs/EVALUACIONES.md`. Opciones:
+- **A:** corregir solo lo serio de la sexta (el aviso que no se puede cerrar, la colocación en escenas cargadas, el botón «Proyecto» que borra la selección y el falso «Justo» tras Dividir) y pasar a funcionalidades nuevas con usabilidad en 81. Recomendada.
+- **B:** otro lote completo con los 11 hallazgos y una séptima evaluación.
+- **C:** cambiar el método: en vez de un evaluador nuevo cada vez, fijar una lista de recorridos y criterios y medir siempre contra ella, para que la nota sea comparable entre rondas.
+A y C se pueden combinar.
