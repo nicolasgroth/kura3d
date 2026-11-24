@@ -50,8 +50,9 @@ test('barra de herramientas: patrón toolbar con una parada de tabulación, flec
   const rail = page.getByRole('toolbar', { name: 'Herramientas' });
   await expect(rail).toHaveAttribute('aria-orientation', 'vertical');
   const botones = rail.getByRole('button');
-  await expect(botones).toHaveCount(8);
-  for (const name of ['Seleccionar', 'Mover', 'Rotar', 'Escalar', 'Pintar', 'Cortar', 'Esculpir / Borrar', 'Medir']) {
+  // «Agregar» (menú de formas) encabeza la barra, antes de las 8 herramientas.
+  await expect(botones).toHaveCount(9);
+  for (const name of ['Agregar', 'Seleccionar', 'Mover', 'Rotar', 'Escalar', 'Pintar', 'Cortar', 'Esculpir / Borrar', 'Medir']) {
     await expect(rail.getByRole('button', { name, exact: true })).toBeVisible();
   }
   // Un solo botón con tabindex=0.
@@ -67,7 +68,7 @@ test('barra de herramientas: patrón toolbar con una parada de tabulación, flec
   await page.keyboard.press('End');
   await expect(rail.getByRole('button', { name: 'Medir' })).toBeFocused();
   await page.keyboard.press('Home');
-  await expect(rail.getByRole('button', { name: 'Seleccionar' })).toBeFocused();
+  await expect(rail.getByRole('button', { name: 'Agregar' })).toBeFocused();
   await page.keyboard.press('ArrowUp');
   await expect(rail.getByRole('button', { name: 'Medir' })).toBeFocused();
   // Las flechas no empujan el objeto seleccionado mientras se recorre la barra.

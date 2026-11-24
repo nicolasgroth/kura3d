@@ -43,7 +43,7 @@ test.afterEach(() => {
 
 test('sin selección muestra el proyecto; con un objeto, su resumen', async ({ page }) => {
   await expect(panel(page)).toHaveAttribute('data-context', 'project');
-  await expect(panel(page).getByRole('heading', { name: 'Proyecto' })).toBeVisible();
+  await expect(panel(page).getByRole('heading', { name: 'Proyecto', exact: true })).toBeVisible();
   await expect(page.getByTestId('panel-project-count')).toHaveText('0');
   await expect(panel(page).getByText('Cama activa')).toBeVisible();
   await page.screenshot({ path: `${OUT}/proyecto-1440.png` });
