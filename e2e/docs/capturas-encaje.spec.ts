@@ -9,6 +9,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { abrir, cmd, sinAvisos } from './helpers';
+import { itemAccion } from '../acciones-helpers';
 
 test('encaje', async ({ page }) => {
   await abrir(page);
@@ -18,8 +19,7 @@ test('encaje', async ({ page }) => {
   await page.evaluate(() => (window as any).__s.setState({ selectedIds: [] }));
   await sinAvisos(page);
 
-  await page.getByRole('button', { name: 'Acciones', exact: true }).click();
-  await page.getByRole('menuitem', { name: /Comprobar encaje/ }).click();
+  await (await itemAccion(page, 'Comprobar encaje…')).click();
   const panel = page.locator('#kura-inspector-panel');
   await panel.getByRole('button', { name: 'Comprobar', exact: true }).click();
   await expect(panel.getByTestId('fit-check-result')).toBeVisible({ timeout: 60_000 });
