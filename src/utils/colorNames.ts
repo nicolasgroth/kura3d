@@ -80,3 +80,24 @@ export function colorNameWithHex(lang: LanguageCode, hex: string): string {
   const name = near.exact ? t(lang, near.key) : t(lang, 'viewport.paint.swatch.near', { name: t(lang, near.key) });
   return `${name} (${hex.toUpperCase()})`;
 }
+
+/**
+ * Nombres de una lista de colores (leyenda de filamentos): dos colores distintos no comparten nombre; al segundo
+ * y siguientes de un nombre repetido se les agrega el código («Amarillo · #FFFF00»).
+ */
+export function distinctColorNames(lang: LanguageCode, hexes: readonly string[]): Map<string, string> {
+  const out = new Map<string, string>();
+  const taken = new Set<string>();
+  for (const hex of hexes) {
+    const key = hex.toLowerCase();
+    if (out.has(key)) continue;
+    const base = colorName(lang, hex);
+    if (!taken.has(base)) {
+      taken.add(base);
+      out.set(key, base);
+    } else {
+      out.set(key, `${base} · ${hex.toUpperCase()}`);
+    }
+  }
+  return out;
+}

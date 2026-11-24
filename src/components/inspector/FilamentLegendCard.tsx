@@ -10,7 +10,7 @@ import { isSolid } from '../../core/scene/objectRole';
 import React, { useMemo } from 'react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
-import { colorName, colorNameWithHex } from '../../utils/colorNames';
+import { colorNameWithHex, distinctColorNames } from '../../utils/colorNames';
 import { tCount } from '../../utils/plural';
 
 /** Tarjeta con los colores de filamento presentes en la escena. */
@@ -35,6 +35,8 @@ export const FilamentLegendCard: React.FC = () => {
     return Array.from(map.entries());
   }, [objects]);
 
+  const legendNames = useMemo(() => distinctColorNames(language, sceneColors.map(([hex]) => hex)), [language, sceneColors]);
+
   return sceneColors.length > 0 && (
     <section className="kura-card">
       <div className="kura-field-row">
@@ -49,7 +51,7 @@ export const FilamentLegendCard: React.FC = () => {
         {sceneColors.map(([hex, count]) => (
           <span key={hex} className="kura-filament-chip">
             <span className="kura-color-dot" style={{ backgroundColor: hex }} aria-hidden="true" />
-            <span title={colorNameWithHex(language, hex)}>{colorName(language, hex)}</span>
+            <span title={colorNameWithHex(language, hex)}>{legendNames.get(hex.toLowerCase())}</span>
             <span style={{ color: 'var(--text-muted)' }}>{t(language, 'ux7.filament.pieces', { count })}</span>
           </span>
         ))}
