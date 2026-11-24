@@ -14,6 +14,7 @@ import { panelContextOf } from '../panelContext';
 import { activateRailTool } from '../toolActivation';
 import { toolAvailability } from '../toolAvailability';
 import { useKuraStore } from '../useKuraStore';
+import { addBox, resetStore } from './storeTestUtils';
 
 const box = (id: string, extra: Partial<SceneObject> = {}): SceneObject => ({ ...fakeBox(id, id), ...extra });
 
@@ -133,5 +134,36 @@ describe('panelContextOf por herramienta', () => {
 
   it('una acción con opciones manda sobre la herramienta', () => {
     expect(panelContextOf({ ...base, activeTool: 'paint', activeAction: 'hollow' })).toEqual({ kind: 'action', id: 'hollow', objectId: 'a' });
+  });
+});
+
+describe('herramienta activa que deja de estar disponible', () => {
+  beforeEach(() => {
+    useKuraStore.setState({ language: 'es', objects: [box('a')], selectedIds: ['a'], activeTool: 'select', activeAction: null, toasts: [] } as never);
+  });
+
+  it.each(['paint', 'cut', 'erase', 'measure'] as const)('borrar el objeto con %s activo vuelve a Seleccionar', (tool) => {
+    useKuraStore.getState().setActiveTool(tool);
+    expect(useKuraStore.getState().activeTool).toBe(tool);
+    useKuraStore.getState().deleteObjects();
+    expect(useKuraStore.getState().activeTool).toBe('select');
+  });
+
+  it('ocultar el único objeto con Medir activo vuelve a Seleccionar; con otro disponible se queda', () => {
+    useKuraStore.setState({ objects: [box('a'), box('b')], selectedIds: [] } as never);
+    useKuraStore.getState().setActiveTool('measure');
+    useKuraStore.setState({ objects: [box('a', { visible: false }), box('b')] } as never);
+    expect(useKuraStore.getState().activeTool).toBe('measure');
+    useKuraStore.setState({ objects: [box('a', { visible: false }), box('b', { visible: false })] } as never);
+    expect(useKuraStore.getState().activeTool).toBe('select');
+  });
+
+  it('deshacer la creación del objeto también devuelve a Seleccionar', async () => {
+    await resetStore();
+    await addBox(10);
+    useKuraStore.getState().setActiveTool('paint');
+    useKuraStore.getState().undo();
+    expect(useKuraStore.getState().objects).toHaveLength(0);
+    expect(useKuraStore.getState().activeTool).toBe('select');
   });
 });

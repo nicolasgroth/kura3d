@@ -44,6 +44,9 @@ async function readSaveBytes(data: ProjectBytes): Promise<Uint8Array> {
   return bytes;
 }
 
+/** Largo máximo del nombre de proyecto que se escribe (sin la extensión); lo comparten el campo y el store. */
+export const PROJECT_NAME_MAX = 120;
+
 /** Nombre de archivo `.kura` válido (sin caracteres prohibidos ni puntos finales, con la extensión). */
 export function normalizeFileName(defaultName: string): string {
   const name = defaultName.trim().replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').replace(/[. ]+$/, '');

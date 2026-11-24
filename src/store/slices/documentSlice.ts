@@ -9,7 +9,7 @@
 
 import * as engine from '../../engine';
 import { decodeProjectAsync, encodeProjectAsync } from '../../project/projectCodecClient';
-import { normalizeFileName, openProjectFile, saveProjectFile, SaveNotConfirmedError } from '../../project/projectFiles';
+import { normalizeFileName, openProjectFile, PROJECT_NAME_MAX, saveProjectFile, SaveNotConfirmedError } from '../../project/projectFiles';
 import { moveRecoveryDraft } from '../../project/projectRecoveryStorage';
 import { loadRecoveryDocument } from '../../project/recoveryDraftStore';
 import type { ProjectDocument } from '../../project/projectSchema';
@@ -87,7 +87,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
 
     renameProject: (input) => {
       if (get().projectBusy || !input.trim()) return false;
-      const name = normalizeFileName(input);
+      const name = normalizeFileName(input.trim().slice(0, PROJECT_NAME_MAX));
       if (name === get().projectName) return true;
       // Otro nombre es otro archivo: el próximo guardado pregunta dónde (no sobrescribe el anterior).
       set({ projectName: name, projectLocation: undefined, projectRenamed: true });

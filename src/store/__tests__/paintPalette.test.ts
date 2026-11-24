@@ -13,6 +13,7 @@ import {
   addColor,
   applyPreset,
   DEFAULT_PALETTE,
+  fromProjectColors,
   normalizeHex,
   PALETTE_MAX,
   PALETTE_PRESET_IDS,
@@ -64,5 +65,17 @@ describe('paleta de pintura', () => {
     expect(colors.length).toBeGreaterThan(1);
     expect(colors.length).toBeLessThanOrEqual(PALETTE_MAX);
     expect(PALETTE_MAX).toBeGreaterThanOrEqual(200);
+  });
+
+  it('fromProjectColors suma sin duplicar, conserva los anteriores y respeta PALETTE_MAX', () => {
+    const a = { ...fakeBox('a', 'A'), color: '#abcdef' };
+    const base = { preset: 'custom' as const, colors: ['#111111', '#abcdef'] };
+    expect(fromProjectColors(base, [a])).toBe(base);
+    const b = { ...fakeBox('b', 'B'), color: '#123456' };
+    expect(fromProjectColors(base, [a, b]).colors).toEqual(['#111111', '#abcdef', '#123456']);
+    const lleno = { preset: 'custom' as const, colors: Array.from({ length: PALETTE_MAX }, (_, i) => `#${i.toString(16).padStart(6, '0')}`) };
+    expect(fromProjectColors(lleno, [b])).toBe(lleno);
+    const casi = { preset: 'custom' as const, colors: lleno.colors.slice(0, PALETTE_MAX - 1) };
+    expect(fromProjectColors(casi, [b]).colors).toHaveLength(PALETTE_MAX);
   });
 });
