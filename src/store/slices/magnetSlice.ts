@@ -3,7 +3,7 @@
  * @description Alojamiento de imán en el store: pide al Worker el negativo orientado por la cara y su informe (pared,
  * curvatura, huecos vecinos), lo agrega como UN paso de deshacer (agrupado con su pieza, como el macho de una rosca)
  * y avisa; si la pared queda bajo el mínimo, el hueco atraviesa, el imán sobresale o queda pegado a otro hueco, lo
- * dice (no bloquea). Al Worker viaja solo la malla y la transformación de la pieza y de los negativos cercanos.
+ * dice (no bloquea). Un imán que ocuparía casi toda la pieza (la resta la eliminaría) no se coloca. Al Worker viaja solo la malla y la transformación de la pieza y de los negativos cercanos.
  * La resta llega con «Aplicar restas».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -12,6 +12,7 @@
 
 import { MIN_WALL_MM, type MagnetParams } from '../../core/addons/magnetPocket';
 import { magnetSizeLabel } from '../../core/addons/magnetPresets';
+import { MAX_POCKET_FILL } from '../../core/addons/pocketAnalysis';
 import type { PocketWallReport } from '../../core/addons/pocketWall';
 import type { PlacedMesh } from '../../core/operations/magnetOperations';
 import { attachToTarget } from '../../core/scene/attachPiece';
@@ -33,7 +34,7 @@ export interface MagnetPocketRequest {
 
 export interface MagnetSliceState {
   /** Agrega el negativo del alojamiento; null si la pieza no sirve, el motor estaba ocupado o falló (ya se avisó). */
-  addMagnetPocket: (request: MagnetPocketRequest) => Promise<{ obj: SceneObject; wall: PocketWallReport } | null>;
+  addMagnetPocket: (request: MagnetPocketRequest) => Promise<{ obj: SceneObject; wall: PocketWallReport; fill: number } | null>;
 }
 
 const placed = (o: SceneObject): PlacedMesh => ({
@@ -74,6 +75,11 @@ export function createMagnetSlice(ctx: StoreContext): Partial<KuraStoreState> {
           host: { id: host.id, ...placed(host) }, params: request.params, point: request.point, normal: request.normal, name, pendingNegatives,
         });
         ctx.assertCurrent([host]);
+        // Un hueco que ocupa casi toda la pieza la haría desaparecer al restar: no se coloca.
+        if (made.fill > MAX_POCKET_FILL) {
+          get().addToast(tr('magnet.error.tooBig'), 'error');
+          return null;
+        }
         const obj = made.obj;
         pushHistory();
         set((s) => {
