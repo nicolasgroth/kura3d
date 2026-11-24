@@ -101,7 +101,7 @@ export const LeftSidebar: React.FC = () => {
                   <span key={hex} className="kura-filament-chip" title={`${colorNameWithHex(language, hex)} (${count})`}>
                     <span className="kura-color-dot" style={{ backgroundColor: hex }} aria-hidden="true" />
                     <span>{colorName(language, hex)}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>×{count}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{t(language, 'ux7.filament.pieces', { count })}</span>
                   </span>
                 ))}
               </div>

@@ -30,7 +30,11 @@ export function objectColors(obj: SceneObject): string[] {
   return distinct;
 }
 
-export const SceneColorSwatch: React.FC<{ obj: SceneObject; language: LanguageCode }> = ({ obj, language }) => {
+/**
+ * `part`: «visual» pinta solo la muestra (decorativa) y «spoken» solo el texto accesible. La fila del árbol los
+ * separa para que el nombre accesible empiece por el rótulo de la pieza y el color se anuncie después.
+ */
+export const SceneColorSwatch: React.FC<{ obj: SceneObject; language: LanguageCode; part?: 'both' | 'visual' | 'spoken' }> = ({ obj, language, part = 'both' }) => {
   const colors = objectColors(obj);
   const names = colors.slice(0, MAX_DOTS).map((hex) => colorName(language, hex));
   const extra = colors.length - MAX_DOTS;
@@ -55,8 +59,8 @@ export const SceneColorSwatch: React.FC<{ obj: SceneObject; language: LanguageCo
 
   return (
     <>
-      <span className="kura-tree-swatch-wrap" aria-hidden="true" title={spoken}>{visual}</span>
-      <span className="sr-only">, {spoken}</span>
+      {part !== 'spoken' && <span className="kura-tree-swatch-wrap" aria-hidden="true" title={spoken}>{visual}</span>}
+      {part !== 'visual' && <span className="sr-only">, {spoken}</span>}
     </>
   );
 };

@@ -16,7 +16,7 @@ const URL = process.env.KURA_URL ?? 'http://127.0.0.1:5189/';
 
 test('SVG solo de líneas: el error sale dentro del diálogo y no crea objetos', async ({ page }) => {
   await page.goto(URL);
-  await page.locator('button.kura-btn[title*="SVG"]').click();
+  await agregarForma(page, 'Import SVG');
   const dlg = page.getByRole('dialog');
   await dlg.locator('textarea').fill(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><line x1="0" y1="0" x2="100" y2="100" stroke="black" fill="none"/></svg>',
@@ -28,7 +28,7 @@ test('SVG solo de líneas: el error sale dentro del diálogo y no crea objetos',
 
 test('rosca ISO: valores fuera de rango deshabilitan Crear con mensaje de rango', async ({ page }) => {
   await page.goto(URL);
-  await page.locator('button[title*="metric ISO bolt"]').click();
+  await agregarForma(page, /ISO Thread/);
   const dlg = page.getByRole('dialog');
   const create = dlg.getByRole('button', { name: /Create ISO Thread/ });
   const fields = dlg.locator('input[type=text]');
@@ -44,12 +44,16 @@ test('rosca ISO: valores fuera de rango deshabilitan Crear con mensaje de rango'
 test('hueco de una caja 30 mm: volumen = 30³ − 25,6³ y deshacer lo revierte en un paso', async ({ page }) => {
   await page.goto(URL);
   await agregarForma(page, 'Box');
-  const ins = page.locator('[aria-label="Inspector"]');
+  const ins = page.locator('#kura-inspector-panel');
   const vol = async () => ((await ins.innerText()).match(/VOLUME\n([^\n]*)/) ?? [])[1];
   await expect.poll(vol).toBe('27,000 mm³');
+  // «Hollow out…» abre su panel en el lado derecho; allí está el botón de aplicar.
+  await ins.locator('[data-panel-action="hollow"]').click();
   const apply = ins.getByRole('button', { name: 'Apply hollowing' });
   await apply.scrollIntoViewIfNeeded();
   await apply.click();
+  // El volumen se lee en el resumen del objeto: «Back» regresa del panel de la operación.
+  await ins.getByRole('button', { name: 'Back' }).click();
   await expect.poll(vol, { timeout: 15000 }).toBe('10,222.8 mm³');
   await page.keyboard.press('Control+z');
   await expect.poll(vol).toBe('27,000 mm³');
@@ -60,7 +64,7 @@ test('hueco de una caja 30 mm: volumen = 30³ − 25,6³ y deshacer lo revierte 
 test('proyectar dos veces el mismo texto en el mismo lugar no debe fallar', async ({ page }) => {
   await page.goto(URL);
   await agregarForma(page, 'Box');
-  const ins = page.locator('[aria-label="Inspector"]');
+  const ins = page.locator('#kura-inspector-panel');
   for (let i = 0; i < 2; i++) {
     const open = ins.getByRole('button', { name: /Project Text\/SVG/ });
     await open.scrollIntoViewIfNeeded();

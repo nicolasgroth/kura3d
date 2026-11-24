@@ -82,7 +82,7 @@ async function pintarTrazo(page: Page) {
 for (const forma of ['Cilindro', 'Esfera']) {
   test(`separar por colores tras pintar (${forma}): piezas cerradas, volumen conservado y deshacer en un paso`, async ({ page }) => {
     await abrir(page);
-    await page.getByRole('button', { name: forma, exact: true }).click();
+    await agregarForma(page, forma);
     await page.waitForTimeout(800);
     await pintarTrazo(page);
     const antes = await page.evaluate(() => (window as any).__an((window as any).__s.getState().objects[0]));

@@ -133,7 +133,7 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
         <span className="kura-tree-icon" aria-hidden="true" style={obj && isSolid(obj) ? { color: obj.color } : undefined}>
           {type.icon}
         </span>
-        {obj && <SceneColorSwatch obj={obj} language={language} />}
+        {obj && <SceneColorSwatch obj={obj} language={language} part="visual" />}
         {renaming ? (
           <input
             className="kura-input kura-scene-rename"
@@ -162,6 +162,7 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
         )}
         {obj && isNegative(obj) && <span className="kura-hole-tag" aria-hidden="true">{t(language, 'sidebar.scene.holeBadge')}</span>}
         {obj && isReference(obj) && <span className="kura-hole-tag kura-reference-tag" aria-hidden="true">{t(language, 'sidebar.scene.referenceBadge')}</span>}
+        {obj && <SceneColorSwatch obj={obj} language={language} part="spoken" />}
         <span className="sr-only">, {states.join(', ')}</span>
       </div>
 
