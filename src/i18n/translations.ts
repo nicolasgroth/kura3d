@@ -51,6 +51,7 @@ import { REDISENO_EN, REDISENO_ES } from './locales/rediseno';
 import { PANEL_EN, PANEL_ES } from './locales/panel';
 import { ENCAJE_UI_EN, ENCAJE_UI_ES } from './locales/encajeUi';
 import { REDISENO3A_EN, REDISENO3A_ES } from './locales/rediseno3a';
+import { REDISENO3B_EN, REDISENO3B_ES } from './locales/rediseno3b';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -96,6 +97,7 @@ export const TRANSLATIONS_ES = {
   ...PANEL_ES,
   ...ENCAJE_UI_ES,
   ...REDISENO3A_ES,
+  ...REDISENO3B_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -280,7 +282,7 @@ export const TRANSLATIONS_ES = {
   'viewport.paint.color': 'Filamento',
   'viewport.paint.hint': 'Haz clic o arrastra sobre el modelo para pintar caras 3MF',
   'viewport.paint.target': 'Pintando: {name}',
-  'viewport.paint.noTarget': 'Sin objeto activo: haz clic en uno para elegirlo y luego pinta',
+  'viewport.paint.noTarget': 'Sin objeto elegido: pasa el pincel sobre un objeto y píntalo directo',
   'viewport.erase.radius': 'Radio de tallado',
   'viewport.erase.hint': 'Haz clic sobre la superficie del objeto para sustraer una esfera',
   'viewport.cut.hint': 'Usa el diálogo de Corte por Plano para dividir con encastres automáticos',
@@ -1436,6 +1438,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PANEL_EN,
   ...ENCAJE_UI_EN,
   ...REDISENO3A_EN,
+  ...REDISENO3B_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
@@ -1612,7 +1615,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'viewport.paint.color': 'Filament',
   'viewport.paint.hint': 'Click or drag on model surface to paint 3MF faces',
   'viewport.paint.target': 'Painting: {name}',
-  'viewport.paint.noTarget': 'No active object: click one to choose it, then paint',
+  'viewport.paint.noTarget': 'No object chosen: move the brush over an object and paint it directly',
   'viewport.erase.radius': 'Carve radius',
   'viewport.erase.hint': 'Click on model surface to subtract a sphere',
   'viewport.cut.hint': 'Open the Plane Cut dialog to split with automatic connectors',

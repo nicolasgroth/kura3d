@@ -21,6 +21,7 @@ import { regionIdForFace } from '../../utils/segmentHighlight';
 import { onMeasureContextMenu, onMeasurePointerDown, onMeasurePointerMove, onMeasurePointerOut } from '../measure/measurePointer';
 import { buildViewportGeometry } from './creasedGeometry';
 import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
+import { ensureVisiblePaintColor } from '../paint/paintEraser';
 import { hasLiveStroke, queueLiveSample, startLiveStroke } from './livePaintStroke';
 import { brushQueryFromEvent, strokeNeedsEdgeRefine, strokeSampleFromEvent, usePaintRaycastAcceleration } from './paintPointer';
 import { continueStorePaintStroke, startStorePaintStroke } from './paintStrokeController';
@@ -61,6 +62,9 @@ export const SceneMeshItem: React.FC<{
 
     const activeTool = useKuraStore((s) => s.activeTool);
     const paintMode = useKuraStore((s) => s.paintMode);
+    // Sin selección, el pincel pinta directo el objeto bajo el cursor (el primer trazo lo selecciona).
+    const nothingSelected = useKuraStore((s) => s.selectedIds.length === 0);
+    const paintTarget = isPrimarySelected || (nothingSelected && !obj.locked && !isReference(obj));
     const spawnedAt = useKuraStore((s) => s.spawnedAtById[obj.id]);
     const displayPosition = useSplitExplodedPosition(obj);
     // Con una unión señalada en la lista, el resto de las piezas del grupo se atenúa.
@@ -114,7 +118,7 @@ export const SceneMeshItem: React.FC<{
     usePaintRaycastAcceleration(
       meshRef,
       geometry,
-      obj.visible && ((activeTool === 'paint' && isPrimarySelected) || activeTool === 'measure'),
+      obj.visible && ((activeTool === 'paint' && paintTarget) || activeTool === 'measure'),
     );
 
     // Malla superpuesta liviana para resaltar en rojo los triángulos en voladizo (> 45°)
@@ -200,10 +204,16 @@ export const SceneMeshItem: React.FC<{
 
       if (activeTool === 'paint') {
         if (obj.locked) return;
-        // Se pinta solo el objeto seleccionado: sin selección (u otro objeto), el clic lo elige.
-        if (!isPrimarySelected) {
+        // Se pinta el objeto seleccionado; sin selección, el que está bajo el pincel (y queda seleccionado).
+        // Con otro objeto seleccionado, el clic solo cambia la selección.
+        if (!paintTarget) {
           selectObject(obj.id, false);
           return;
+        }
+        if (!isPrimarySelected) {
+          selectObject(obj.id, false);
+          // Pintura directa: el primer trazo ya debe verse sobre el color del objeto.
+          ensureVisiblePaintColor(obj.color);
         }
         onStartPaintDrag();
         const state = useKuraStore.getState();
@@ -249,7 +259,7 @@ export const SceneMeshItem: React.FC<{
         return;
       }
       if (activeTool !== 'paint' || paintMode !== 'brush' || obj.locked) return;
-      if (!isPrimarySelected) {
+      if (!paintTarget) {
         hidePaintCursor();
         return;
       }

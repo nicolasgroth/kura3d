@@ -49,13 +49,14 @@ test('borrar el objeto con su acción abierta: la acción no reaparece al selecc
     s.deleteObjects([s.objects[0].id]);
   });
   await expect.poll(async () => (await S(page)).n).toBe(1);
-  console.log('tras borrar', JSON.stringify(await S(page)), await ctx(page));
+  // La acción se cierra con su objeto.
+  expect((await S(page)).action).toBeNull();
+  await expect.poll(() => ctx(page)).toBe('project');
   await page.evaluate(() => {
     const s = (window as any).__s.getState();
     s.setSelection([s.objects[0].id]);
   });
-  console.log('tras seleccionar otro', JSON.stringify(await S(page)), await ctx(page));
-  expect(await ctx(page)).toBe('object');
+  await expect.poll(() => ctx(page)).toBe('object');
 });
 
 test('cambiar la selección con una acción abierta', async ({ page }) => {
@@ -69,14 +70,17 @@ test('cambiar la selección con una acción abierta', async ({ page }) => {
     const s = (window as any).__s.getState();
     s.setSelection([s.objects[1].id]);
   });
-  console.log('otro objeto', JSON.stringify(await S(page)), await ctx(page));
+  // Otro objeto: la acción se cierra y el panel muestra su resumen.
+  expect((await S(page)).action).toBeNull();
+  await expect.poll(() => ctx(page)).toBe('object');
   await page.evaluate(() => (window as any).__s.getState().setSelection([]));
-  console.log('sin selección', JSON.stringify(await S(page)), await ctx(page));
+  await expect.poll(() => ctx(page)).toBe('project');
   await page.evaluate(() => {
     const s = (window as any).__s.getState();
     s.setSelection([s.objects[0].id, s.objects[1].id]);
   });
-  console.log('multi', JSON.stringify(await S(page)), await ctx(page));
+  await expect.poll(() => ctx(page)).toBe('multi');
+  expect((await S(page)).action).toBeNull();
 });
 
 test('deshacer con una acción abierta', async ({ page }) => {
@@ -85,12 +89,24 @@ test('deshacer con una acción abierta', async ({ page }) => {
     s.setSelection([s.objects[0].id]);
     s.setActiveAction('hollow');
   });
+  // Coherencia en cada paso: si la acción sigue abierta, el panel la muestra; si su objeto se fue, se cerró.
+  const coherente = async () => {
+    const s = await S(page);
+    if (s.action) {
+      expect(s.sel).toBe(1);
+      await expect.poll(() => ctx(page)).toBe('action');
+    } else {
+      expect(await ctx(page)).not.toBe('action');
+    }
+  };
   await page.keyboard.press('Control+z');
-  console.log('undo con acción', JSON.stringify(await S(page)), await ctx(page));
+  await coherente();
   await page.evaluate(() => (window as any).__s.getState().undo());
-  console.log('undo x2', JSON.stringify(await S(page)), await ctx(page));
+  await coherente();
   await page.evaluate(() => (window as any).__s.getState().undo());
-  console.log('undo x3', JSON.stringify(await S(page)), await ctx(page));
+  await coherente();
+  // Con la escena vacía la acción ya no está; rehacer no la vuelve a abrir.
+  if ((await S(page)).n === 0) expect((await S(page)).action).toBeNull();
   await page.evaluate(() => (window as any).__s.getState().redo());
-  console.log('redo', JSON.stringify(await S(page)), await ctx(page));
+  await coherente();
 });

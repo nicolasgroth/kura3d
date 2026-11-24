@@ -20,6 +20,7 @@ import { ViewBar } from '../shell/ViewBar';
 import { ToastStack } from '../ToastStack';
 import { SectionViewNotice } from './SectionViewNotice';
 import '../../styles/sectionNotice.css';
+import '../../styles/toolPanel.css';
 import { tCount } from '../../utils/plural';
 
 /** Stack superior del HUD (evita colisiones cuando se envuelven controles). */
@@ -35,6 +36,7 @@ export const ViewportHudTop: React.FC = () => {
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
   const selectedObj = objects.find((o) => o.id === selectedIds[0]) ?? null;
+  const panelHidden = useKuraStore((s) => s.rightCollapsed || s.uiDensity === 'zen');
   const holeCount = objects.filter((o) => isNegative(o) && o.visible).length;
   const solidCount = objects.filter((o) => isSolid(o) && o.visible).length;
 
@@ -74,8 +76,9 @@ export const ViewportHudTop: React.FC = () => {
       {activeTool === 'paint' && <PaintToolbar />}
       {activeTool === 'measure' && <MeasurePanel />}
 
+      {/* Con el panel derecho a la vista (escritorio) estas opciones están allí; aquí solo en pantallas estrechas. */}
       {activeTool === 'erase' && (
-        <div className="kura-hud-card" style={{ gap: 10, alignSelf: 'flex-start' }}>
+        <div className={`kura-hud-card kura-tool-hud-options ${panelHidden ? 'has-controls' : ''}`} style={{ gap: 10, alignSelf: 'flex-start' }}>
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11.5 }}>
             <span>{t(language, 'viewport.erase.radius')}: {eraseRadiusMm} mm</span>
             <input
@@ -94,7 +97,7 @@ export const ViewportHudTop: React.FC = () => {
       )}
 
       {activeTool === 'cut' && (
-        <div className="kura-hud-card" style={{ gap: 10, alignSelf: 'flex-start' }}>
+        <div className={`kura-hud-card kura-tool-hud-options ${panelHidden ? 'has-controls' : ''}`} style={{ gap: 10, alignSelf: 'flex-start' }}>
           <span style={{ fontSize: 11.5 }}>{t(language, 'viewport.cut.hint')}</span>
           <button
             type="button"

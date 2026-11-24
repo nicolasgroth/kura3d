@@ -53,6 +53,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     activeTool: 'select',
     activeAction: null,
     transformMode: 'translate',
+    transformFocus: null,
     proportionalScale: true,
     snapGridMm: 1,
     paintColor: PRINT_COLOR_PALETTE[1],
@@ -164,7 +165,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     setActiveTool: (activeTool) => {
-      set({ activeTool, activeAction: null });
+      set({ activeTool, activeAction: null, transformFocus: null });
       if (activeTool === 'cut' && get().selectedIds.length > 0) set({ activeDialog: 'cut' });
     },
     setActiveAction: (activeAction) => {
@@ -177,6 +178,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       set({ activeAction });
     },
     setTransformMode: (transformMode) => set({ transformMode }),
+    setTransformFocus: (transformFocus) => set({ transformFocus }),
     setProportionalScale: (proportionalScale) => set({ proportionalScale }),
     toggleProportionalScale: () => set((state) => ({ proportionalScale: !state.proportionalScale })),
     setSnapGridMm: (snapGridMm) => set({ snapGridMm }),

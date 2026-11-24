@@ -46,6 +46,7 @@ import { REDISENO_DE } from './rediseno';
 import { PANEL_DE } from './panel';
 import { ENCAJE_UI_DE } from './encajeUi';
 import { REDISENO3A_DE } from './rediseno3a';
+import { REDISENO3B_DE } from './rediseno3b';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -89,6 +90,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...PANEL_DE,
   ...ENCAJE_UI_DE,
   ...REDISENO3A_DE,
+  ...REDISENO3B_DE,
   // Marca y shell principal
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
   'app.docTitle': 'Kura3D v0.5.0 — Natives 3D-Modellierungsstudio',
@@ -273,7 +275,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'viewport.paint.color': 'Filament',
   'viewport.paint.hint': 'Auf das Modell klicken oder ziehen, um 3MF-Flächen zu bemalen',
   'viewport.paint.target': 'Bemalt wird: {name}',
-  'viewport.paint.noTarget': 'Kein aktives Objekt: eines anklicken, um es zu wählen, dann bemalen',
+  'viewport.paint.noTarget': 'Kein Objekt gewählt: mit dem Pinsel über ein Objekt fahren und direkt bemalen',
   'viewport.erase.radius': 'Schnitzradius',
   'viewport.erase.hint': 'Auf die Modelloberfläche klicken, um eine Kugel zu subtrahieren',
   'viewport.cut.hint': 'Öffnen Sie den Ebenenschnitt-Dialog für automatische Verbinder',

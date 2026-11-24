@@ -46,6 +46,7 @@ import { REDISENO_ZH } from './rediseno';
 import { PANEL_ZH } from './panel';
 import { ENCAJE_UI_ZH } from './encajeUi';
 import { REDISENO3A_ZH } from './rediseno3a';
+import { REDISENO3B_ZH } from './rediseno3b';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -89,6 +90,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PANEL_ZH,
   ...ENCAJE_UI_ZH,
   ...REDISENO3A_ZH,
+  ...REDISENO3B_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
   'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',
@@ -273,7 +275,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'viewport.paint.color': '耗材',
   'viewport.paint.hint': '在模型表面点击或拖动以绘制 3MF 颜色面',
   'viewport.paint.target': '正在上色：{name}',
-  'viewport.paint.noTarget': '没有活动对象：先点击一个对象选中，再上色',
+  'viewport.paint.noTarget': '未选择对象：将画笔移到任意对象上即可直接上色',
   'viewport.erase.radius': '雕刻半径',
   'viewport.erase.hint': '点击模型表面以减去一个球体体积',
   'viewport.cut.hint': '打开平面切割对话框以使用自动连接件分割模型',

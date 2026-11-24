@@ -1,7 +1,8 @@
 /**
  * @file src/components/inspector/TransformSection.tsx
  * @description Sección Transformación del inspector: posición, rotación y escala en la unidad activa.
- * Muestra y recibe los valores en los ejes del usuario (Z = altura) vía `core/scene/displayAxes`.
+ * Muestra y recibe los valores en los ejes del usuario (Z = altura) vía `core/scene/displayAxes`. Con `focus`
+ * (herramienta Mover, Rotar o Escalar activa) solo se ve ese grupo de campos (`styles/toolPanel.css`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -20,7 +21,7 @@ import {
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PrecisionNumberInput, type PrecisionModifierState } from '../PrecisionNumberInput';
-import { type Vec3 } from '../../types/kura';
+import { type TransformMode, type Vec3 } from '../../types/kura';
 import { fromMm, getUnitLabel, getUnitStep, toMm } from '../../utils/units';
 import { AXES, MIN_SCALE } from './inspectorConstants';
 import { MAX_ABS_COORDINATE, MAX_SCALE } from '../../store/transformLimits';
@@ -42,7 +43,7 @@ import { UnitDoubtLink } from './UnitDoubtLink';
 const ROTATION_LIMIT_DEG = 36000;
 
 /** Sección 2: transformación en la unidad activa. */
-export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
+export const TransformSection: React.FC<InspectorSectionProps & { focus?: TransformMode }> = ({ primary, ui, focus }) => {
   const { positionRelative, setPositionRelative, rotationRelative, setRotationRelative, scaleBySize, setScaleBySize } = ui;
   const language = useKuraStore((s) => s.language);
   const unitSystem = useKuraStore((s) => s.unitSystem);
@@ -114,7 +115,7 @@ export const TransformSection: React.FC<InspectorSectionProps> = ({ primary, ui 
   };
 
   return (
-    <section className="kura-card">
+    <section className="kura-card" data-transform-focus={focus}>
       <h3 className="kura-section-label">
         {t(language, 'inspector.section.transform', { unit: unitLabel })}
       </h3>
