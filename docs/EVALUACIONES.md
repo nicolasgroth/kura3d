@@ -568,3 +568,22 @@ Sin bloqueos. Cuatro de seis notas siguen bajo 85, por hallazgos distintos de lo
 Tercera ronda de corrección en curso (dos lotes). Quedan fuera, como mejoras posteriores: vista previa en vivo, reabrir un asistente con los parámetros de lo creado, plano vertical al arrastrar en vista frontal y guía visual del plano.
 
 Consumo (modelo · duración · tokens): correcciones de código (Sonnet · 11 min · 174 k), recetas con casos reales (Opus · 13 min · 169 k), usabilidad (Opus · 8 min · 180 k), código (Opus · 5 min · 154 k), funcional (Opus · 8 min · 147 k).
+
+## Arrastrar para mover y Asistentes · tercera ronda a ciegas · 24 de noviembre de 2026, 14:00 · rama `feat/asistentes-y-arrastrar`
+
+Evaluadores nuevos tras la tercera ronda de corrección. 2781 pruebas del frontend, 151 del servidor MCP y 34 recorridos en navegador pasan. A los evaluadores se les indicó qué queda fuera de esta versión (elegir el plano de arrastre según la vista, vista previa en vivo, reabrir un asistente con sus parámetros).
+
+| Funcionalidad | Usabilidad | Código | Funcional | Segunda ronda | Primera ronda |
+|---|---|---|---|---|---|
+| Arrastrar para mover | 84 | 88 | 85 | 86 / 86 / 84 | 83 / 80 / 86 |
+| Asistentes | 86 | 85 | 86 | 84 / 83 / 82 | 81 / 83 / 70 |
+| Global del evaluador | 85 | 86 | 85 | | |
+
+Sin bloqueos. Asistentes queda sobre el mínimo en los tres evaluadores. Arrastrar queda en 84 en usabilidad (un punto bajo el mínimo) tras tres rondas: se consulta al autor (consulta 3).
+
+- **Arrastrar, usabilidad (84).** En vista Frente, agarrar la mitad superior de la pieza no la mueve y no se explica por qué (el rayo queda casi paralelo al plano horizontal); el consejo «Alt+arrastrar clona» está junto al de arrastrar y solo vale para el manipulador; el evaluador no vio cambiar el cursor sobre lo arrastrable.
+- **Arrastrar, código (88) y funcional (85).** Ctrl+Z a mitad del gesto sin manejar; el límite de alcance solo se aplica al primer objeto; sin aviso al dejar la pieza fuera de la cama.
+- **Asistentes.** Código: un archivo opcional rechazado dejaba «Crear» bloqueado (corregido en `d4d55b8`). Funcional: holgura de la tapa a presión fija en 0,2 mm; logo muy ancho y bajo con detalle de 0,14 mm sin aviso; llavero que no cabe solo avisa. Usabilidad: cambiar de variante pisa lo editado en los campos que la variante define, sin avisar; el texto del llavero se valida al crear y no al salir del campo; los botones ▲▼ no llevan el nombre de su campo.
+- **Incidente durante la evaluación de usabilidad:** el orquestador editó `FileField.tsx` con el servidor en uso y por unos segundos la app quedó en blanco (`useState is not defined`) hasta completar la importación. No se repitió tras recargar. Queda como regla: no editar la rama servida mientras un evaluador usa el navegador. El evaluador anotó además que falta una barrera de errores: un fallo en un campo se lleva la app entera.
+
+Consumo (modelo · duración · tokens): recetas ronda 3 (Opus · 18 min · 202 k), interfaz ronda 3 (Sonnet · 9 min · 178 k), usabilidad (Opus · 9 min · 195 k), código (Opus · 5 min · 154 k), funcional (Opus · 7 min · 135 k).

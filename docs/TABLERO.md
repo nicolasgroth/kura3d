@@ -22,8 +22,6 @@ Estado de `main`: 2526 pruebas del frontend, 151 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
-| Arrastrar el objeto seleccionado para moverlo sobre su plano horizontal (decisión del autor del 24-nov); orbitar queda para el fondo | Segunda ronda a ciegas del 24-nov: arrastrar 86/86/84 y Asistentes 84/83/82 (usabilidad/código/funcional; mínimo 85), sin bloqueos. Tercera ronda de corrección en curso |
-| Asistentes: sección para crear piezas paso a paso desde las recetas incorporadas (caja con tapa, llavero, placa de enchufe), con formulario generado desde la receta | Segunda ronda a ciegas del 24-nov: arrastrar 86/86/84 y Asistentes 84/83/82 (usabilidad/código/funcional; mínimo 85), sin bloqueos. Tercera ronda de corrección en curso |
 | Quinta evaluación de usabilidad (80): «Todo encaja» con 0 pares comprobados (corregido el 24-nov: era el resultado anterior que seguía visible al cambiar la selección); objetos nuevos e importados solapados o fuera de la cama; borrador vacío que se sigue ofreciendo; avisos sobre paneles; nombres truncados en el árbol; menú de clic derecho largo y vocabulario mezclado; dos herramientas pulsadas a la vez; Dividir sin indicador de recálculo | Integrado en `main` el 24-nov (11:10). QA22 aprobada con observaciones y corregida. Sexta evaluación: 81 (mínimo 85), sin bloqueos; quedan 11 hallazgos nuevos (aviso que no se cierra, colocación en escenas cargadas, botón Proyecto, árbol). El autor aceptó 81 de forma temporal el 24-nov para avanzar con funcionalidades; los 11 hallazgos quedan pendientes y se retoman después |
 | Hallazgos de la QA del 23-nov (aprobada con observaciones): cancelar Comprobar encaje con un modelo de 478 mil triángulos tarda unos 9 s y la comprobación cerca de 1 min con la máquina cargada; el aviso "Ver encaje" sigue disponible tras deshacer el ajuste; la barra de estado recorta "Avisos" a 390 px | Pendiente |
 | Pendientes del rediseño: a 1280 px las vistas quedan solo con icono y a 1024 px toda la barra de vista; los avisos tapan el agarre X del manipulador de escala a 1280×720; descripción y fechas del proyecto (cambia el `.kura`); Cortar, Dividir, Ajustar, Molde, Proyectar, Rosca y Medir siguen con su panel propio; Comprobar encaje en la paleta de comandos y en pulgadas | Pendiente |
@@ -132,6 +130,8 @@ Trabajo terminado y verificado con pruebas automáticas; lo marcado con ✔ adem
 
 | Qué | Verificación |
 |---|---|
+| Arrastrar el objeto seleccionado para moverlo sobre su plano horizontal (decisión del autor del 24-nov); orbitar queda para el fondo | ✔ En `main` desde el 24-nov. Tres rondas a ciegas (usabilidad/código/funcional): arrastrar 84/88/85; en usabilidad queda un punto bajo el mínimo, consultado al autor |
+| Asistentes: sección para crear piezas paso a paso desde las recetas incorporadas (caja con tapa, llavero, placa de enchufe), con formulario generado desde la receta | ✔ En `main` desde el 24-nov. Tres rondas a ciegas (usabilidad/código/funcional): Asistentes 86/85/86 |
 | Nombre único Kura3D, marca centralizada y autoría en todo el código | Pruebas |
 | Agentes de desarrollo, QA y evaluación a ciegas; control de agentes con latido | En uso |
 | Seguridad: CSP en escritorio, sin comandos de disco arbitrario, claves de IA fuera del navegador | ✔ web |
