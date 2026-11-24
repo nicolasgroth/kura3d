@@ -21,9 +21,9 @@ async function prepararGrupo(page: Page, estrecho = false): Promise<void> {
     const ids = (window as any).__s.getState().objects.map((o: any) => o.id);
     (window as any).__s.getState().groupObjects(ids, 'Conjunto');
   });
-  // En pantallas estrechas «Escena» es un botón de la barra inferior (la hoja no repite las pestañas).
+  // En pantallas estrechas «Escena» es un botón de la barra inferior .
   if (estrecho) await page.getByRole('button', { name: 'Escena', exact: true }).click();
-  else await page.getByRole('tab', { name: /Escena/ }).click();
+  // En escritorio la barra lateral ya muestra la Escena.
 }
 
 const ITEMS = [/Renombrar/, /Desagrupar/, /Combinar en un objeto/, /Duplicar/, /Ocultar Conjunto/, /Bloquear Conjunto/, /Exportar grupo/, /Eliminar/];

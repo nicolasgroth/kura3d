@@ -9,6 +9,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import { abrir } from './ux-escena-helpers';
+import { agregarForma } from './agregar-helpers';
 
 test.use({ viewport: { width: 1280, height: 720 } });
 
@@ -25,7 +26,7 @@ async function exportarStl(page: Page, ruta: string) {
 
 test('Sin cama: botón, atajo B, paleta y menú del fondo; B no actúa al escribir; exportación idéntica', async ({ page }) => {
   await abrir(page);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
+  await agregarForma(page, 'Cubo');
   await expect(page.getByTestId('bed-toggle')).toHaveAttribute('aria-pressed', 'false');
   const con = test.info().outputPath('con.stl');
   await exportarStl(page, con);
@@ -60,7 +61,6 @@ test('Sin cama: botón, atajo B, paleta y menú del fondo; B no actúa al escrib
   await page.keyboard.type('b');
   await page.keyboard.press('Escape');
   expect(await cama(page)).toBe(false);
-  await page.getByRole('tab', { name: /Escena/ }).click();
   await page.locator('[role=treeitem]').first().dblclick();
   await page.keyboard.type('bb');
   await page.keyboard.press('Enter');

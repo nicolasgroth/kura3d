@@ -42,7 +42,7 @@ export const InlineFactEditor: React.FC<{
   return (
     <>
       <span className="kura-project-name-row">
-        <span className="kura-project-name-text" title={title}>{value}</span>
+        <span className="kura-project-name-text kura-fact-value" title={title}>{value}</span>
         <button
           ref={pencilRef}
           type="button"

@@ -10,7 +10,7 @@ Para hacer agujeros, ranuras y rebajes no se "taladra": se coloca un **negativo*
 
 ## Hacer un agujero
 
-1. Crea el sólido (por ejemplo un **Cubo**) y, desde *Formas*, un **Cilindro** que lo atraviese.
+1. Crea el sólido (por ejemplo un **Cubo**) y, desde **Agregar**, un **Cilindro** que lo atraviese.
 2. Selecciona el cilindro y pulsa **H**, o elige **Negativo** en *Tipo de volumen* del inspector. El cilindro pasa a malla naranja.
 3. Coloca el negativo donde quieres el agujero (ver [Primeros pasos](primeros-pasos.md)). Debe cruzar el sólido: si no se tocan, la resta no hace nada y Kura3D avisa.
 4. Pulsa **Aplicar 1 resta** (botón naranja arriba a la izquierda del visor, o `Ctrl+K` → *Aplicar restas*). Con varios negativos dice «Aplicar 3 restas».

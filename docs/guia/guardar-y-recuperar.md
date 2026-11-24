@@ -4,13 +4,13 @@ Tu trabajo se guarda en un **proyecto `.kura`**, que conserva la escena, los mat
 
 ## Guardar un proyecto
 
-1. Abre el menú **Proyecto** (barra superior). Arriba ves el nombre («Escena sin título») y si hay *Cambios sin guardar*; un punto rojo junto al botón avisa lo mismo.
-2. Elige **Guardar proyecto** (**Ctrl+S**). La primera vez te pide un nombre. **Guardar proyecto como…** (**Ctrl+Mayús+S**) crea una copia con otro nombre.
-3. **Nuevo proyecto** (**Ctrl+N**) y **Abrir proyecto…** (**Ctrl+O**) te preguntan antes si hay cambios sin guardar.
+1. Pulsa **Proyecto** en la barra superior: el panel derecho muestra el proyecto con su nombre («Escena sin título») y si hay *Cambios sin guardar*; un punto rojo junto al botón avisa lo mismo. Para cambiar el nombre, pulsa el lápiz junto a él (o **F2** con el foco en el lápiz), escribe y pulsa **Enter** (**Esc** cancela); el nombre nuevo se usa al guardar.
+2. Pulsa **Guardar** (**Ctrl+S**, funciona en cualquier momento). La primera vez te pide un nombre. **Guardar como** (**Ctrl+Mayús+S**) crea una copia con otro nombre.
+3. **Nuevo** (**Ctrl+N**) y **Abrir** (**Ctrl+O**) te preguntan antes si hay cambios sin guardar.
 
-En la versión web, guardar descarga el archivo `.kura` a tu carpeta de descargas y un aviso lo confirma; para abrirlo, usa **Abrir proyecto…** o arrástralo al visor. En la aplicación de escritorio, el menú también lista los **Proyectos recientes** (se puede desactivar en *Ajustes*).
+En la versión web, guardar descarga el archivo `.kura` a tu carpeta de descargas y un aviso lo confirma; para abrirlo, usa **Abrir** o arrástralo al visor. Debajo de los botones, el panel lista los **Proyectos recientes** (se puede desactivar en *Ajustes*).
 
-![Menú Proyecto con nuevo, abrir, guardar y guardar como](img/guardar-y-recuperar-01-menu.png)
+![Panel Proyecto con nuevo, abrir, guardar y guardar como](img/guardar-y-recuperar-01-menu.png)
 
 ## El borrador de recuperación
 

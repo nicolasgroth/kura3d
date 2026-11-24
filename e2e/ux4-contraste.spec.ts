@@ -83,7 +83,6 @@ for (const tema of ['light', 'dark'] as const) {
     await page.waitForTimeout(900);
 
     // Árbol de Escena.
-    await page.getByRole('tab', { name: /Escena/ }).first().click();
     await page.waitForTimeout(400);
     const arbol = await medir(page, '.kura-sidebar-left');
     await page.screenshot({ path: `${SHOTS}/4-arbol-${tema}.png` });

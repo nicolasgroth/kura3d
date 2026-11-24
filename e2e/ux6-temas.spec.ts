@@ -1,6 +1,6 @@
 /**
  * @file e2e/ux6-temas.spec.ts
- * @description Recorrido visual del lote ux6 en 1440, 1024 y 390 px, tema claro y oscuro: barra compacta,
+ * @description Recorrido visual del lote ux6 en 1440, 1024 y 390 px, tema claro y oscuro: barra oculta,
  * vista sin cama, panel de Medir y diálogo de unidades, sin errores en la consola del navegador. Guarda
  * capturas en `.eval-tmp/ux6/`. Ejecuta con `KURA_URL=… npx playwright test e2e/ux6-temas.spec.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -22,7 +22,7 @@ for (const scheme of ['light', 'dark'] as const) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
       await abrir(page);
       await page.evaluate((s) => (window as any).__s.getState().setColorScheme(s), scheme);
-      await page.evaluate(() => (window as any).__s.getState().setLeftSidebarMode('compact'));
+      await page.evaluate(() => (window as any).__s.getState().setLeftSidebarMode('hidden'));
       await importarStl(page, 'diminuto.stl', stlCubes([[0, 0, 0]], 0.9));
       await expect(page.getByText(/mide 0,9 mm en su lado mayor/).first()).toBeVisible({ timeout: 30000 });
       await page.locator('.kura-toast', { hasText: 'mide 0,9 mm' }).first().getByRole('button', { name: 'Otra unidad…' }).click();

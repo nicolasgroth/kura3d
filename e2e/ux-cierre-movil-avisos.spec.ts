@@ -9,15 +9,14 @@
  */
 import { test, expect } from '@playwright/test';
 import { abrir } from './ux-movil-helpers';
+import { agregarForma } from './agregar-helpers';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
 test('los avisos no cubren la barra de transformar y la barra de vistas cabe completa', async ({ page }) => {
   await abrir(page);
-  await page.getByRole('button', { name: 'Formas', exact: true }).tap();
-  const lateral = page.locator('.kura-sidebar-left');
-  await lateral.getByRole('button', { name: 'Cubo', exact: true }).first().tap();
-  await lateral.getByRole('button', { name: 'Esfera', exact: true }).first().tap();
+  await agregarForma(page, 'Cubo', { tap: true });
+  await agregarForma(page, 'Esfera', { tap: true });
   await expect(page.locator('.kura-toast').first()).toBeVisible();
   await page.waitForTimeout(500);
   const r = await page.evaluate(() => {

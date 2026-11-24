@@ -8,6 +8,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import { abrir, importarStl } from './ux-escena-helpers';
+import { agregarForma } from './agregar-helpers';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -27,7 +28,7 @@ async function volumenFirmado(page: Page): Promise<number[]> {
 }
 
 async function cuboDe(page: Page, lado: string) {
-  await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
+  await agregarForma(page, 'Cubo');
   const insp = page.getByRole('complementary', { name: 'Inspector' });
   for (const l of ['Ancho', 'Fondo', 'Alto']) {
     const t = insp.locator(`input[aria-label="${l}"]`).first();

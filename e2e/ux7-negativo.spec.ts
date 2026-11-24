@@ -11,6 +11,7 @@
 import { test, expect } from '@playwright/test';
 import { abrir, cajas, solapes } from './ux-escena-helpers';
 import { SHOTS } from './ux7-helpers';
+import { agregarForma } from './agregar-helpers';
 
 test('con un sólido seleccionado, el negativo nuevo queda sobre él', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -19,7 +20,7 @@ test('con un sólido seleccionado, el negativo nuevo queda sobre él', async ({ 
     await (window as any).__s.getState().createPrimitive('box', { width: 30, height: 30, depth: 30 }, { name: 'Base', placement: 'free' });
   });
   // Con «Base» seleccionada se crea un cilindro desde Formas: como sólido cae al lado, sin solaparse.
-  await page.getByRole('button', { name: /^Cilindro/ }).first().click();
+  await agregarForma(page, /^Cilindro/);
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length)).toBe(2);
   expect(solapes(await cajas(page))).toEqual([]);
   // Pasarlo a Negativo lo lleva sobre «Base».
@@ -36,7 +37,7 @@ test('sin selección, pasar a Negativo no mueve la pieza', async ({ page }) => {
     await s.createPrimitive('box', { width: 30, height: 30, depth: 30 }, { name: 'Base', placement: 'free' });
     s.setSelection([]);
   });
-  await page.getByRole('button', { name: /^Cilindro/ }).first().click();
+  await agregarForma(page, /^Cilindro/);
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length)).toBe(2);
   const antes = await page.evaluate(() => (window as any).__s.getState().objects[1].position);
   await page.getByRole('button', { name: 'Negativo', exact: true }).first().click();

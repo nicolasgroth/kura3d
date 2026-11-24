@@ -8,6 +8,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';
+import { agregarForma } from './agregar-helpers';
 
 test.use({ locale: 'es-CL' });
 
@@ -43,15 +44,12 @@ for (const tam of TAMANOS) {
         if (dlg === 'image' || dlg === 'mold') await page.screenshot({ path: `${SHOTS}/r-${dlg}-${tam.nombre}-${tema}.png` });
         await page.evaluate(() => (window as any).__s.getState().setActiveDialog(null));
       }
-      // Texto 3D desde Formas (en móvil el panel de Formas es una hoja).
+      // Texto 3D desde Agregar (en móvil, la hoja Agregar): abre su panel de creación.
       await page.evaluate(() => (window as any).__s.getState().setActiveDialog(null));
-      const abrirFormas = page.getByRole('button', { name: 'Formas' });
-      if (tam.width <= 900 && (await abrirFormas.count())) await abrirFormas.first().click().catch(() => undefined);
-      const texto3d = page.getByRole('button', { name: 'Texto 3D' });
-      if (await texto3d.first().isVisible().catch(() => false)) {
-        await texto3d.first().click();
-        await page.screenshot({ path: `${SHOTS}/r-texto-${tam.nombre}-${tema}.png` });
-      }
+      await agregarForma(page, 'Texto 3D');
+      await expect(page.getByRole('button', { name: 'Crear texto' })).toBeVisible();
+      await page.screenshot({ path: `${SHOTS}/r-texto-${tam.nombre}-${tema}.png` });
+      await page.keyboard.press('Escape');
       expect(errores.filter((e) => !/404/.test(e))).toEqual([]);
     });
   }

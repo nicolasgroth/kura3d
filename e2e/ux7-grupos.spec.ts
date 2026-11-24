@@ -21,7 +21,6 @@ async function dosCubos(page: Page) {
 }
 
 async function abrirEscena(page: Page) {
-  await page.getByRole('tab', { name: /Escena/ }).first().click();
   await expect(page.getByRole('tree')).toBeVisible();
 }
 

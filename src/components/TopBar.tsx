@@ -230,8 +230,6 @@ export const TopBar: React.FC = () => {
 
   const mcpView = describeMcpBridge(language, mcpConfig.enabled, bridgeStatus);
   const mcpLabel = mcpView.short;
-  // Sin rótulos el pill conserva «MCP» (y su indicador): nunca queda un botón sin icono ni texto.
-  const mcpText = compact ? t(language, 'r3a.mcp.short') : mcpLabel;
 
   const mcpTooltip = !mcpConfig.enabled
     ? t(language, 'topbar.mcpDisabledTip')
@@ -243,6 +241,8 @@ export const TopBar: React.FC = () => {
   const labelsShown = uiDensity !== 'compact';
   const labelsName = t(language, labelsShown ? 'rediseno.labels.hide' : 'rediseno.labels.show');
   const toggleLabels = () => setUiDensity(labelsShown ? 'compact' : 'full');
+  // Sin rótulos (preferencia o falta de ancho) el pill conserva «MCP» y su indicador: nunca queda vacío.
+  const mcpText = compact || !labelsShown ? t(language, 'r3a.mcp.short') : mcpLabel;
 
   const brandEl = (
     <div className="kura-brand" title={t(language, 'app.tagline')}>

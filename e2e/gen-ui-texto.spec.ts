@@ -9,6 +9,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';
+import { agregarForma } from './agregar-helpers';
 
 test.use({ locale: 'es-CL', viewport: { width: 1440, height: 900 } });
 
@@ -27,7 +28,7 @@ test('crear texto 3D: validación, contador, fuente y aviso de cama', async ({ p
   const errores: string[] = [];
   page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
   await abrir(page);
-  await page.getByRole('button', { name: 'Texto 3D' }).click();
+  await agregarForma(page, 'Texto 3D');
   const card = page.locator('form.kura-card').filter({ hasText: 'Crear texto' });
   const texto = card.locator('input.kura-input');
   const alto = card.locator('input[role=spinbutton]');

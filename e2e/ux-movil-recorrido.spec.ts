@@ -1,6 +1,6 @@
 /**
  * @file e2e/ux-movil-recorrido.spec.ts
- * @description Recorrido completo a 390 px con pantalla táctil: crear un cubo desde Formas, moverlo con el
+ * @description Recorrido completo a 390 px con pantalla táctil: crear un cubo desde la hoja Agregar, moverlo con el
  * manipulador (arrastre táctil), escalarlo por el inspector, medir dos puntos y exportar STL (descarga
  * recibida). Falla si algún paso no se puede completar con el dedo. Capturas en .eval-tmp/ux-movil.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -9,6 +9,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { abrir, aPixel, arrastreTactil, SHOTS } from './ux-movil-helpers';
+import { agregarForma } from './agregar-helpers';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
@@ -21,9 +22,8 @@ test('crear cubo, mover con el manipulador, escalar, medir y exportar STL a 390 
   const store = <T,>(path: string) =>
     page.evaluate((p) => p.split(/[.[\]]+/).filter(Boolean).reduce((o: any, k) => o?.[k], (window as any).__s.getState()), path) as Promise<T>;
 
-  // 1. Crear un cubo desde la hoja Formas.
-  await page.getByRole('button', { name: 'Formas', exact: true }).tap();
-  await page.locator('#kura-shapes-panel, .kura-sidebar-left').getByRole('button', { name: 'Cubo', exact: true }).first().tap();
+  // 1. Crear un cubo desde la hoja Agregar.
+  await agregarForma(page, 'Cubo', { tap: true });
   await expect.poll(() => store<number>('objects.length')).toBe(1);
   await page.waitForTimeout(500);
   await page.evaluate(() => (window as any).__s.getState().requestCameraPreset('fit'));

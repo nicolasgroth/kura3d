@@ -9,6 +9,7 @@
  * @license MIT
  */
 import { test, expect, type Page } from '@playwright/test';
+import { agregarForma } from './agregar-helpers';
 
 test.use({ locale: 'es-CL', viewport: { width: 1440, height: 900 } });
 
@@ -103,7 +104,7 @@ for (const forma of ['Cilindro', 'Esfera']) {
 
 test('separar por colores sin pintar da un mensaje guía y no crea piezas', async ({ page }) => {
   await abrir(page);
-  await page.getByRole('button', { name: 'Esfera', exact: true }).click();
+  await agregarForma(page, 'Esfera');
   const sep = page.getByRole('button', { name: /Separar por colores/ }).first();
   await sep.scrollIntoViewIfNeeded();
   await sep.click();
@@ -113,7 +114,7 @@ test('separar por colores sin pintar da un mensaje guía y no crea piezas', asyn
 
 test('proyectar dos veces el mismo texto sobre un cubo de 30 mm deja la malla cerrada', async ({ page }) => {
   await abrir(page);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).click();
+  await agregarForma(page, 'Cubo');
   for (const n of ['Ancho', 'Fondo', 'Alto']) { const t = page.getByRole('spinbutton', { name: n, exact: true }).first(); await t.fill('30'); await t.press('Enter'); }
   for (let i = 0; i < 2; i++) {
     const b = page.getByRole('button', { name: /Proyectar Texto\/SVG/ });
@@ -130,8 +131,8 @@ test('proyectar dos veces el mismo texto sobre un cubo de 30 mm deja la malla ce
 
 test('agujero roscado con un cubo seleccionado: centrado arriba, agrupado y "Aplicar restas" lo deja en el cubo', async ({ page }) => {
   await abrir(page);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).click();
-  await page.getByRole('button', { name: /Rosca ISO/ }).click();
+  await agregarForma(page, 'Cubo');
+  await agregarForma(page, /Rosca ISO/);
   const slot = page.locator('.kura-op-slot').first();
   await slot.locator('select').first().selectOption('hole');
   const largo = slot.getByRole('spinbutton').nth(2);
@@ -151,7 +152,7 @@ test('agujero roscado con un cubo seleccionado: centrado arriba, agrupado y "Apl
 
 test('rosca: el largo por defecto sigue al diámetro (perno ≈ 2,5·d, tuerca ≈ 0,8·d)', async ({ page }) => {
   await abrir(page);
-  await page.getByRole('button', { name: /Rosca ISO/ }).click();
+  await agregarForma(page, /Rosca ISO/);
   const slot = page.locator('.kura-op-slot').first();
   const largo = async () => Number((await slot.getByRole('spinbutton').nth(2).inputValue()).replace(',', '.'));
   await slot.locator('select').first().selectOption('bolt');

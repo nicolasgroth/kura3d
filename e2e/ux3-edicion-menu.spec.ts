@@ -56,7 +56,6 @@ test('los submenús abren al pasar el cursor y Escape devuelve el foco', async (
   expect(await page.evaluate(() => document.activeElement?.closest('.kura-viewport-wrap') !== null)).toBe(true);
 
   // Desde la fila del árbol (Mayús+F10), Escape vuelve al árbol.
-  await page.getByRole('tab', { name: /Escena/ }).click();
   const arbol = page.getByRole('tree');
   await arbol.focus();
   await page.keyboard.press('Home');

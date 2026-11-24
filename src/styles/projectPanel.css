@@ -46,6 +46,11 @@
   white-space: nowrap;
 }
 
+.kura-project-name-text.kura-fact-value {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .kura-fact-edit {
   flex-shrink: 0;
   min-width: 28px;

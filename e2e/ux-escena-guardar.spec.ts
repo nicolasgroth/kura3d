@@ -9,10 +9,11 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';
+import { agregarForma } from './agregar-helpers';
 
 async function conCubo(page: Page) {
   await abrir(page);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
+  await agregarForma(page, 'Cubo');
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length)).toBe(1);
   await expect.poll(() => page.title()).toMatch(/^\* /);
   // El foco fuera de campos de texto, como tras crear con el ratón.

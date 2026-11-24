@@ -31,7 +31,6 @@ test('reparar malla deja un aviso con el resumen y «Ver detalles» lleva a las 
   const insp = page.getByRole('complementary', { name: 'Inspector' });
   const stats = insp.locator('#kura-geometry-stats');
   await expect(stats).toContainText('11');
-  await page.getByRole('tab', { name: /Escena/ }).click();
   await page.locator('[role=treeitem]', { hasText: 'cubo_agujero' }).click({ button: 'right', position: { x: 60, y: 12 } });
   await page.getByRole('menuitem', { name: /Reparar malla/ }).click();
   const aviso = page.getByText(/Malla reparada: .*agujero.*triángulos: 11 → 12/);

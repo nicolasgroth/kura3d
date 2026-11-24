@@ -15,7 +15,6 @@ async function preparar(page: Page): Promise<void> {
   await crear(page, 'cylinder', undefined, [0, 15, 0]);
   await crear(page, 'sphere', undefined, [40, 15, 0]);
   await page.evaluate(() => (window as any).__s.getState().setSelection([]));
-  await page.getByRole('tab', { name: /Escena/ }).click();
 }
 
 const fila = (page: Page, nombre: RegExp) => page.getByRole('treeitem', { name: nombre }).first();
@@ -56,9 +55,9 @@ for (const [ancho, alto, tema] of [[1024, 768, 'dark'], [390, 844, 'light']] as 
     await crear(page, 'box', { width: 30, height: 30, depth: 30 }, [-40, 15, 0]);
     await crear(page, 'sphere', undefined, [40, 15, 0]);
     await page.evaluate(() => (window as any).__s.getState().setSelection([]));
-    // En pantallas estrechas «Escena» es un botón de la barra inferior (la hoja no repite las pestañas).
+    // En pantallas estrechas «Escena» es un botón de la barra inferior .
     if (ancho < 900) await page.getByRole('button', { name: 'Escena', exact: true }).click();
-    else await page.getByRole('tab', { name: /Escena/ }).click();
+    // En escritorio la barra lateral ya muestra la Escena.
     const cubo = fila(page, /Cubo/);
     await cubo.click({ position: { x: 40, y: 12 } });
     expect(await seleccion(page)).toEqual([expect.stringMatching(/Cubo/)]);

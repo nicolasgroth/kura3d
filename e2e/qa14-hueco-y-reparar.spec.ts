@@ -8,6 +8,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';
+import { agregarForma } from './agregar-helpers';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -25,7 +26,7 @@ function stlCuboAbierto(lado: number): string {
 
 test('ahuecar un cubo de 150 mm con pared 2: volumen exacto y aviso de cavidad cerrada', async ({ page }) => {
   await abrir(page);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).click();
+  await agregarForma(page, 'Cubo');
   const insp = page.getByRole('complementary', { name: 'Inspector' });
   for (const l of ['Ancho', 'Fondo', 'Alto']) {
     const t = insp.locator(`input[aria-label="${l}"]`).first();
@@ -52,7 +53,6 @@ test('reparar un STL con un agujero lo deja cerrado con volumen 8000 mm³', asyn
   (await chooser).setFiles({ name: 'cubo_agujero.stl', mimeType: 'model/stl', buffer: Buffer.from(stlCuboAbierto(20)) });
   const insp = page.getByRole('complementary', { name: 'Inspector' });
   await expect(insp.getByText(/6\.666,7/)).toBeVisible({ timeout: 15000 });
-  await page.getByRole('tab', { name: /Escena/ }).click();
   await page.locator('[role=treeitem]', { hasText: 'cubo_agujero' }).click({ button: 'right', position: { x: 60, y: 20 } });
   await page.getByRole('menuitem', { name: /Reparar malla/ }).click();
   await expect(insp.getByText(/8\.000/)).toBeVisible({ timeout: 15000 });

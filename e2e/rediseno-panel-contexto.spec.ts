@@ -11,6 +11,7 @@
  * @license MIT
  */
 import { test, expect, type Page } from '@playwright/test';
+import { itemAccion } from './acciones-helpers';
 import { abrir } from './ux-escena-helpers';
 
 const OUT = 'G:/proyectos/kura3d/.eval-tmp/rediseno-2';
@@ -22,12 +23,6 @@ async function cubo(page: Page) {
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().selectedIds.length)).toBe(1);
 }
 
-async function abrirAcciones(page: Page) {
-  await page.getByRole('button', { name: 'Acciones', exact: true }).click();
-  const menu = page.getByRole('menu', { name: 'Acciones' });
-  await expect(menu).toBeVisible();
-  return menu;
-}
 
 let errores: string[] = [];
 
@@ -70,8 +65,7 @@ test('sin selección muestra el proyecto; con un objeto, su resumen', async ({ p
 test('una acción muestra solo sus opciones; Esc vuelve y devuelve el foco', async ({ page }) => {
   await cubo(page);
   const trigger = page.getByRole('button', { name: 'Acciones', exact: true });
-  const menu = await abrirAcciones(page);
-  await menu.getByRole('menuitem', { name: 'Ahuecar…' }).click();
+  await (await itemAccion(page, 'Ahuecar…')).click();
   await expect(panel(page)).toHaveAttribute('data-context', 'action');
   await expect(panel(page).getByRole('heading', { name: 'Ahuecar' })).toBeVisible();
   await expect(panel(page).locator('#kura-obj-name')).toHaveCount(0);
@@ -141,8 +135,7 @@ test('ancho con teclado (se recuerda), plegar y abrir solo al activar una acció
   await expect.poll(() => panel(page).evaluate((el) => el.getBoundingClientRect().width)).toBeLessThan(30);
   expect(await page.evaluate(() => localStorage.getItem('kura3d-right-panel-collapsed'))).toBe('1');
   // Una acción con opciones lo abre solo.
-  const menu = await abrirAcciones(page);
-  await menu.getByRole('menuitem', { name: 'Detectar estructuras' }).click();
+  await (await itemAccion(page, 'Detectar estructuras')).click();
   await expect.poll(() => panel(page).evaluate((el) => el.getBoundingClientRect().width)).toBeGreaterThan(200);
   await expect(panel(page).getByRole('heading', { name: 'Detectar estructuras' })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('kura3d-right-panel-collapsed'))).toBe(null);

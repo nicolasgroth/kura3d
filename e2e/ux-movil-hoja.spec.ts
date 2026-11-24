@@ -29,13 +29,13 @@ test('una sola hoja a la vez; media deja >= 45 % al visor; se pliega al tocar el
   await abrir(page);
   await crearCubo(page);
 
-  await page.getByRole('button', { name: 'Formas', exact: true }).tap();
+  await page.getByRole('button', { name: 'Agregar', exact: true }).tap();
   await expect.poll(() => visibles(page)).toEqual(['.kura-sidebar-left']);
   expect(await page.locator('.kura-workspace').getAttribute('data-sheet')).toBe('half');
   expect(await altoVisor(page)).toBeGreaterThanOrEqual(844 * 0.45);
   await page.screenshot({ path: `${SHOTS}/hoja-1-formas-media.png` });
 
-  // Medir reemplaza a Formas (no se apilan).
+  // Medir reemplaza a Agregar (no se apilan).
   await page.evaluate(() => (window as any).__s.getState().setActiveTool('measure'));
   await expect.poll(() => visibles(page)).toEqual(['#kura-op-slot .kura-op-panel']);
   expect(await altoVisor(page)).toBeGreaterThanOrEqual(844 * 0.45);

@@ -11,6 +11,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import { abrir, importarStl } from './ux-escena-helpers';
+import { agregarForma } from './agregar-helpers';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -40,7 +41,7 @@ async function fijar(insp: ReturnType<Page['getByRole']>, etiqueta: string, valo
 
 test('cubo con verticales redondeadas a 5 mm: tamaño igual, volumen exacto, deshacer y STL de ida y vuelta', async ({ page }) => {
   await abrir(page);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
+  await agregarForma(page, 'Cubo');
   const insp = page.getByRole('complementary', { name: 'Inspector' });
   await fijar(insp, 'Ancho', '40');
   await fijar(insp, 'Fondo', '30');
@@ -87,7 +88,7 @@ test('cubo con verticales redondeadas a 5 mm: tamaño igual, volumen exacto, des
 
 test('un radio que no cabe se acota con nota visible y la pieza sigue cerrada', async ({ page }) => {
   await abrir(page);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
+  await agregarForma(page, 'Cubo');
   const insp = page.getByRole('complementary', { name: 'Inspector' });
   for (const l of ['Ancho', 'Fondo', 'Alto']) await fijar(insp, l, '20');
   await expect.poll(() => volumenes(page)).toEqual([8000]);
