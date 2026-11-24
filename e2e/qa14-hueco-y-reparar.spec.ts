@@ -54,6 +54,8 @@ test('reparar un STL con un agujero lo deja cerrado con volumen 8000 mm³', asyn
   const insp = page.getByRole('complementary', { name: 'Inspector' });
   await expect(insp.getByText(/6\.666,7/)).toBeVisible({ timeout: 15000 });
   await page.locator('[role=treeitem]', { hasText: 'cubo_agujero' }).click({ button: 'right', position: { x: 60, y: 20 } });
+  // Menú del objeto: «Reparar malla» está en el submenú «Malla» (los mismos grupos que el menú «Acciones»).
+  await page.getByRole('menuitem', { name: 'Malla', exact: true }).click();
   await page.getByRole('menuitem', { name: /Reparar malla/ }).click();
   await expect(insp.getByText(/8\.000/)).toBeVisible({ timeout: 15000 });
   const estado = insp.getByTestId('mesh-status');
