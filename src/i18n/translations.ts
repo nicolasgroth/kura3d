@@ -48,6 +48,7 @@ import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
 import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
 import { UX8_EN, UX8_ES } from './locales/ux8';
+import { UX10_EN, UX10_ES } from './locales/ux10';
 import { REDISENO_EN, REDISENO_ES } from './locales/rediseno';
 import { PANEL_EN, PANEL_ES } from './locales/panel';
 import { ENCAJE_UI_EN, ENCAJE_UI_ES } from './locales/encajeUi';
@@ -96,6 +97,7 @@ export const TRANSLATIONS_ES = {
   ...BORDES_ES,
   ...UX7_ES,
   ...UX8_ES,
+  ...UX10_ES,
   ...REDISENO_ES,
   ...PANEL_ES,
   ...ENCAJE_UI_ES,
@@ -291,7 +293,7 @@ export const TRANSLATIONS_ES = {
   'viewport.erase.hint': 'Haz clic sobre la superficie del objeto para sustraer una esfera',
   'viewport.cut.hint': 'Usa el diálogo de Corte por Plano para dividir con encastres automáticos',
   'viewport.cut.openDialog': 'Configurar Corte por Plano',
-  'viewport.protip.select': 'Consejo: Alt+arrastrar clona · Shift escala proporcional · Ctrl ajusta a 15° · ↑↓←→ mueve',
+  'viewport.protip.select': 'Consejo: arrastrar un objeto seleccionado lo mueve · Alt+arrastrar clona · Shift escala proporcional · Ctrl ajusta a 15° · ↑↓←→ mueve',
   'viewport.protip.paint': 'Consejo: haz clic o arrastra para pintar caras 3MF · P vuelve a Selección',
   'viewport.protip.erase': 'Consejo: haz clic en el modelo para tallar una esfera · Ajusta el radio arriba',
   'viewport.protip.cut': 'Consejo: configura el eje y los conectores · X activa Rayos X',
@@ -1425,6 +1427,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...BORDES_EN,
   ...UX7_EN,
   ...UX8_EN,
+  ...UX10_EN,
   ...REDISENO_EN,
   ...PANEL_EN,
   ...ENCAJE_UI_EN,
@@ -1612,7 +1615,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'viewport.erase.hint': 'Click on model surface to subtract a sphere',
   'viewport.cut.hint': 'Open the Plane Cut dialog to split with automatic connectors',
   'viewport.cut.openDialog': 'Configure Plane Cut',
-  'viewport.protip.select': 'Tip: Alt+drag clones · Shift proportional scale · Ctrl 15° snap · ↑↓←→ nudges',
+  'viewport.protip.select': 'Tip: dragging a selected object moves it · Alt+drag clones · Shift proportional scale · Ctrl 15° snap · ↑↓←→ nudges',
   'viewport.protip.paint': 'Tip: Click or drag to paint 3MF faces · P returns to Select',
   'viewport.protip.erase': 'Tip: Click model to carve sphere · Adjust radius above',
   'viewport.protip.cut': 'Tip: Configure axis & connectors · X toggles X-Ray',

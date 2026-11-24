@@ -43,6 +43,7 @@ import { RECETAS_ZH } from './recetas';
 import { BORDES_ZH } from './bordesPrimitivas';
 import { UX7_ZH } from './ux7';
 import { UX8_ZH } from './ux8';
+import { UX10_ZH } from './ux10';
 import { REDISENO_ZH } from './rediseno';
 import { PANEL_ZH } from './panel';
 import { ENCAJE_UI_ZH } from './encajeUi';
@@ -89,6 +90,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...BORDES_ZH,
   ...UX7_ZH,
   ...UX8_ZH,
+  ...UX10_ZH,
   ...REDISENO_ZH,
   ...PANEL_ZH,
   ...ENCAJE_UI_ZH,
@@ -284,7 +286,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'viewport.erase.hint': '点击模型表面以减去一个球体体积',
   'viewport.cut.hint': '打开平面切割对话框以使用自动连接件分割模型',
   'viewport.cut.openDialog': '配置平面切割',
-  'viewport.protip.select': '提示：Alt+拖动克隆 · Shift 等比缩放 · Ctrl 15° 吸附 · ↑↓←→ 微移',
+  'viewport.protip.select': '提示：拖动已选对象即可移动 · Alt+拖动克隆 · Shift 等比缩放 · Ctrl 15° 吸附 · ↑↓←→ 微移',
   'viewport.protip.paint': '提示：点击或拖动绘制 3MF 表面 · 按 P 返回选择模式',
   'viewport.protip.erase': '提示：点击模型雕刻球体 · 可在上方调整半径',
   'viewport.protip.cut': '提示：配置切割轴与连接件 · 按 X 切换 X 光剖面',

@@ -1,0 +1,65 @@
+/**
+ * @file src/core/scene/dragMovePlane.ts
+ * @description Matemática pura del arrastre de objetos en el visor: intersecta el rayo de la cámara con el
+ * plano horizontal que pasa por el punto agarrado y devuelve el desplazamiento (sin saltos al empezar, con
+ * paso de rejilla y con límites para vistas casi rasantes). El eje vertical del visor es Y.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import type { Vec3 } from '../../types/kura';
+
+/** Distancia en píxeles que el puntero debe recorrer para que un clic pase a ser arrastre. */
+export const DRAG_MOVE_THRESHOLD_PX = 4;
+/** Seno mínimo entre el rayo y el plano (~3,4°): por debajo, la intersección se dispara al infinito. */
+export const DRAG_MIN_RAY_SLOPE = 0.06;
+/** Desplazamiento horizontal máximo desde el punto agarrado, en mm. */
+export const DRAG_MAX_REACH_MM = 2000;
+
+export interface DragMoveInput {
+  rayOrigin: Vec3;
+  rayDir: Vec3;
+  /** Punto del objeto donde se agarró; su altura define el plano. */
+  grab: Vec3;
+  /** Posición inicial del objeto de referencia: la rejilla se aplica a su posición final. */
+  reference: Vec3;
+  /** Paso de rejilla en mm; 0 = libre. */
+  snapMm: number;
+  maxReachMm?: number;
+}
+
+/** Punto donde el rayo corta el plano horizontal `y = planeY`; null si es casi paralelo o queda detrás. */
+export function rayHorizontalPlanePoint(origin: Vec3, dir: Vec3, planeY: number): Vec3 | null {
+  const len = Math.hypot(dir[0], dir[1], dir[2]);
+  if (len < 1e-9) return null;
+  const slope = dir[1] / len;
+  if (Math.abs(slope) < DRAG_MIN_RAY_SLOPE) return null;
+  const t = (planeY - origin[1]) / dir[1];
+  if (!Number.isFinite(t) || t <= 0) return null;
+  return [origin[0] + dir[0] * t, planeY, origin[2] + dir[2] * t];
+}
+
+/**
+ * Desplazamiento `[dx, 0, dz]` que lleva el punto agarrado bajo el cursor. Devuelve null si no hay una
+ * intersección fiable (vista rasante o rayo que no alcanza el plano): quien llama conserva el último valor.
+ */
+export function dragMoveDelta(input: DragMoveInput): Vec3 | null {
+  const hit = rayHorizontalPlanePoint(input.rayOrigin, input.rayDir, input.grab[1]);
+  if (!hit) return null;
+  let dx = hit[0] - input.grab[0];
+  let dz = hit[2] - input.grab[2];
+  const reach = input.maxReachMm ?? DRAG_MAX_REACH_MM;
+  const dist = Math.hypot(dx, dz);
+  if (dist > reach) {
+    dx *= reach / dist;
+    dz *= reach / dist;
+  }
+  if (input.snapMm > 0) {
+    const s = input.snapMm;
+    dx = Math.round((input.reference[0] + dx) / s) * s - input.reference[0];
+    dz = Math.round((input.reference[2] + dz) / s) * s - input.reference[2];
+  }
+  if (!Number.isFinite(dx) || !Number.isFinite(dz)) return null;
+  return [dx, 0, dz];
+}
