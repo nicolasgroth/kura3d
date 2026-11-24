@@ -156,6 +156,9 @@ const recipeMetadata = shape({
   variant: optional(short(RP.maxIdLength)),
   output: (v) => short(RP.maxIdLength)(v) && (v as string).length > 0,
   omitted: optional(shortList(RP.maxAnswers, RP.maxIdLength)),
+  run: optional(short(RP.maxIdLength)),
+  name: optional(short(RP.maxTextAnswer)),
+  meshFingerprint: optional(short(RP.maxIdLength)),
 });
 const objectExtra = shape({ split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata), recipe: optional(recipeMetadata) });
 

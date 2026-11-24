@@ -2,7 +2,8 @@
  * @file src/components/viewport/contextMenu/ObjectMenuMore.tsx
  * @description Submenú «Más» del menú contextual del objeto: lo que no tiene sitio en el primer nivel ni en los
  * grupos del catálogo de acciones. Agregar pieza y pieza negativa (con sus formas), Reemplazar por archivo…,
- * Exportar selección como un STL…, Repetir la última acción, Recalcular (solo objetos paramétricos) y Atajos.
+ * Exportar selección como un STL…, Repetir la última acción, Recalcular (solo objetos paramétricos), «Editar con el
+ * asistente» (solo piezas creadas por un asistente) y Atajos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -11,12 +12,13 @@
 import { isPrintable } from '../../../core/scene/objectRole';
 import { parametricStateOf } from '../../../core/scene/parametric';
 import React from 'react';
-import { Download, FileInput, HelpCircle, MinusCircle, MoreHorizontal, PlusCircle, RefreshCw, Repeat2 } from 'lucide-react';
+import { Download, FileInput, HelpCircle, MinusCircle, MoreHorizontal, PlusCircle, RefreshCw, Repeat2, WandSparkles } from 'lucide-react';
 import { t } from '../../../i18n';
 import { useKuraStore } from '../../../store/useKuraStore';
 import { repeatLabel } from '../../../store/repeatLabel';
 import { isTauriRuntime } from '../../../utils/platformBridge';
 import type { SceneObject } from '../../../types/kura';
+import { openAssistantEdit, isAssistantPiece } from '../../assistants/editActions';
 import { openExportDialog } from '../../ExportDialog';
 import { MenuItem, SubMenu } from './MenuKit';
 import { PieceShapeItems } from './PieceShapeItems';
@@ -51,6 +53,15 @@ export const ObjectMenuMore: React.FC<{
       <SubMenu icon={<MinusCircle size={14} aria-hidden="true" style={{ color: 'var(--accent-amber)' }} />} label={t(language, 'menu.addNegative')} tip={t(language, 'menu.addNegative.tip')}>
         <PieceShapeItems language={language} onPick={(shape) => run(() => void addPieceToObject(shape, 'negative', target.id))()} />
       </SubMenu>
+      {isAssistantPiece(target) && (
+        <MenuItem
+          icon={<WandSparkles size={14} aria-hidden="true" style={{ color: 'var(--accent-cyan)' }} />}
+          label={t(language, 'asis.edit.action')}
+          tip={t(language, 'asis.edit.tip')}
+          disabled={target.locked || busy}
+          onSelect={run(() => void openAssistantEdit(target.id))}
+        />
+      )}
       <MenuItem
         icon={<FileInput size={14} aria-hidden="true" />}
         label={t(language, 'menu.more.replace')}

@@ -1,0 +1,59 @@
+/*
+ * @file src/styles/assistantsPreview.css
+ * @description Estilos de la barra «Vista previa» del asistente y de la ficha «Creada con un asistente» del inspector.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-asis-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 6px 0;
+}
+
+.kura-asis-preview-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.kura-asis-preview-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.kura-asis-preview-status:empty {
+  display: none;
+}
+
+.kura-asis-preview-status.is-warn {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.kura-asis-preview-status.is-warn svg {
+  color: var(--accent-amber);
+}
+
+.kura-asis-edit-note {
+  margin: 0 0 6px;
+}
+
+.kura-asis-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

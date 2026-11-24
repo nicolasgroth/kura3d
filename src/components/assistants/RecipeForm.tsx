@@ -4,39 +4,45 @@
  * agrupado por página, reglas aplicadas en vivo (`resolveRecipe` en cada cambio) y botón «Crear», que ejecuta la
  * receta en el motor mediante el store. Mientras corre, los campos quedan deshabilitados y un `role="status"` lo
  * anuncia; los errores de la receta salen junto al campo o arriba, sin tocar la escena. Enter crea; Escape vuelve a
- * la lista.
+ * la lista. Muestra la vista previa en el visor (`AssistantPreviewBar`) y, con `edit`, reabre una pieza creada: trae sus
+ * respuestas, avisa si el juego se modificó y «Actualizar» lo reemplaza en un solo paso de deshacer.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, LoaderCircle, WandSparkles } from 'lucide-react';
+import { ArrowLeft, LoaderCircle, RefreshCw, WandSparkles } from 'lucide-react';
 import type { RecipeIssue } from '../../core/recipes/errors';
 import type { AnswerValue } from '../../core/recipes/resolve/types';
 import { resolveText } from '../../core/recipes/validate/strings';
 import { languageOf } from '../../core/recipes/catalog';
 import { t } from '../../i18n';
+import { clearAssistantPreview, requestAssistantPreview } from '../../store/assistantPreview';
 import { runAssistant } from '../../store/assistantsPanel';
+import { isRecipeRunModified } from '../../store/recipeRuns';
 import { recipeBed } from '../../store/slices/recipesSlice';
 import { useKuraStore } from '../../store/useKuraStore';
+import { askDecision } from '../../utils/confirmDialog';
 import { useInvalidFields } from '../useInvalidFields';
+import { AssistantPreviewBar } from './AssistantPreviewBar';
+import type { AssistantEditSession } from './editPlan';
 import { FieldNotes, RecipeFieldControl, type FieldChange } from './RecipeFieldControl';
 import { buildFormModel, type AssistantRecipe, type FieldNote } from './recipeFormModel';
 import '../../styles/assistants.css';
 
 const FIELD_CONTROLS = '.kura-asis-fields :is(input, select, textarea, button):not([disabled]):not([type="file"])';
 
-export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; onCreated: () => void }> = ({ entry, onBack, onCreated }) => {
+export const RecipeForm: React.FC<{ entry: AssistantRecipe; edit?: AssistantEditSession; onBack: () => void; onCreated: () => void }> = ({ entry, edit, onBack, onCreated }) => {
   const language = useKuraStore((s) => s.language);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const customBed = useKuraStore((s) => s.customBedDimensions);
   const uid = useId();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const createRef = useRef<HTMLButtonElement | null>(null);
-  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>(() => ({ ...(edit?.answers ?? {}) }));
   const [files, setFiles] = useState<Record<string, string | Uint8Array>>({});
-  const [variant, setVariant] = useState<string | undefined>(undefined);
+  const [variant, setVariant] = useState<string | undefined>(edit?.variant);
   const [busy, setBusy] = useState(false);
   const [runErrors, setRunErrors] = useState<readonly RecipeIssue[]>([]);
   const [fileErrors, setFileErrors] = useState<ReadonlySet<string>>(() => new Set());
@@ -63,6 +69,30 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
   }
   const otherRunErrors = runErrors.filter((e) => !focusOf(e));
   const blocked = !model.canCreate || invalid.blocked || fileErrors.size > 0;
+  const labelOf = (id: string) => {
+    const param = recipe.params?.find((p) => p.id === id);
+    return param ? resolveText(recipe, param.label, languageOf(language)) : id;
+  };
+  const editNotes: FieldNote[] = [];
+  if (edit && edit.dropped.length > 0) editNotes.push({ level: 'warning', text: t(language, 'asis.edit.dropped', { names: edit.dropped.map(labelOf).join(', ') }) });
+  if (edit && edit.omitted.length > 0) editNotes.push({ level: 'info', text: t(language, 'asis.edit.omitted', { names: edit.omitted.map(labelOf).join(', ') }) });
+
+  // Lo que se pide a la receta: lo mismo para la vista previa y para crear (así crear reutiliza lo calculado).
+  const request = useMemo(
+    () => ({
+      recipe: entry.raw,
+      answers,
+      ...(variant !== undefined ? { variant } : {}),
+      files: Object.fromEntries(Object.entries(files).filter(([id]) => id in answers)),
+    }),
+    [entry.raw, answers, variant, files],
+  );
+  const previewValid = !blocked;
+  // Vista previa en el visor: se recalcula al cambiar un campo (con espera) y se retira al salir del formulario.
+  useEffect(() => {
+    requestAssistantPreview({ recipeId: entry.id, request, ...(edit ? { targetIds: edit.objectIds } : {}), valid: previewValid });
+  }, [entry.id, request, edit, previewValid, bed, language]);
+  useEffect(() => () => clearAssistantPreview(), []);
 
   // Foco inicial en el primer campo (tras el foco que el panel pone al abrir).
   useEffect(() => {
@@ -119,8 +149,27 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
     setRunErrors([]);
     let created = false;
     try {
-      const used = Object.fromEntries(Object.entries(files).filter(([id]) => id in answers));
-      const outcome = await runAssistant({ recipe: entry.raw, answers, ...(variant !== undefined ? { variant } : {}), files: used });
+      if (edit) {
+        // Reabrir: solo se reemplaza lo que sigue en la escena; si el juego se modificó, se avisa antes de perderlo.
+        const present = useKuraStore.getState().objects.filter((o) => edit.objectIds.includes(o.id));
+        if (present.length === 0) {
+          useKuraStore.getState().addToast(t(language, 'asis.edit.gone'), 'error');
+          return;
+        }
+        if (isRecipeRunModified(present)) {
+          const decision = await askDecision({
+            title: t(language, 'asis.edit.confirmTitle'),
+            message: t(language, 'asis.edit.confirmMessage'),
+            safeId: 'cancel',
+            actions: [
+              { id: 'regenerate', label: t(language, 'asis.edit.confirmOk'), tone: 'danger' },
+              { id: 'cancel', label: t(language, 'asis.edit.confirmCancel') },
+            ],
+          });
+          if (decision !== 'regenerate') return;
+        }
+      }
+      const outcome = await runAssistant({ ...request, recipeId: entry.id, ...(edit ? { replaceIds: edit.objectIds } : {}) });
       if (outcome.status === 'created') {
         created = true;
         onCreated();
@@ -171,6 +220,11 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
         </button>
         <h3 className="kura-asis-title">{title}</h3>
         {description && <p className="kura-gen-note">{description}</p>}
+        {edit && (
+          <p className="kura-gen-note kura-asis-edit-note" id={`${uid}-edit`}>
+            {t(language, 'asis.edit.banner', { count: edit.objectIds.length })}
+          </p>
+        )}
       </div>
       <form
         id={formId}
@@ -208,9 +262,9 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
               </span>
             </div>
           )}
-          {model.notes.length > 0 && (
+          {(editNotes.length > 0 || model.notes.length > 0) && (
             <div className="kura-asis-notes">
-              <FieldNotes notes={model.notes} idPrefix={`${uid}-top`} />
+              <FieldNotes notes={[...editNotes, ...model.notes]} idPrefix={`${uid}-top`} />
             </div>
           )}
           {model.groups.map((group) => {
@@ -251,12 +305,13 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
             </ul>
           </div>
         )}
+        <AssistantPreviewBar />
         <div className="kura-asis-actions">
           <div className="kura-asis-status" role="status" aria-live="polite">
             {busy && (
               <>
                 <LoaderCircle size={15} className="kura-asis-spin" aria-hidden="true" />
-                <span>{t(language, 'asis.running', { name: title })}</span>
+                <span>{t(language, edit ? 'asis.edit.running' : 'asis.running', { name: title })}</span>
               </>
             )}
           </div>
@@ -266,11 +321,11 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
             type="submit"
             className="kura-btn kura-btn-primary kura-asis-create"
             disabled={blocked || busy}
-            title={blocked ? t(language, 'asis.createBlocked') : t(language, 'asis.createTip')}
+            title={blocked ? t(language, 'asis.createBlocked') : t(language, edit ? 'asis.edit.updateTip' : 'asis.createTip')}
             aria-keyshortcuts="Enter"
           >
-            <WandSparkles size={13} aria-hidden="true" />
-            <span>{t(language, 'asis.create')}</span>
+            {edit ? <RefreshCw size={13} aria-hidden="true" /> : <WandSparkles size={13} aria-hidden="true" />}
+            <span>{t(language, edit ? 'asis.edit.update' : 'asis.create')}</span>
           </button>
         </div>
       </form>
