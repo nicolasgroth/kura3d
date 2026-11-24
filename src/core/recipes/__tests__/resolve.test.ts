@@ -100,7 +100,7 @@ describe('resolveRecipe: llavero', () => {
     const plate = result.steps.find((s) => s.id === 'plate');
     expect((plate?.instances[0].args.params as Record<string, unknown>).width).toEqual({
       $deferred: '=s.art2.size.x + p.size + p.ring + 3',
-      path: 'steps[4].args.params.width',
+      path: 'steps[5].args.params.width',
     });
     expect(result.outputs).toEqual([{ ref: 'out', name: 'Kura' }]);
     expect(result.steps).toMatchSnapshot();

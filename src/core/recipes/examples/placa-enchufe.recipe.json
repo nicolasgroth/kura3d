@@ -27,11 +27,20 @@
     { "id": "es", "label": "$t:es", "verified": false, "values": { "modules": 1, "mw": 50, "winw": 48, "winh": 50, "ph": 80, "screwAxis": "x", "spacing": 60 } },
     { "id": "us", "label": "$t:us", "verified": false, "values": { "modules": 1, "mw": 70, "winw": 35, "winh": 67, "ph": 114, "screwAxis": "y", "spacing": 97 } }
   ],
-  "derive": { "pw": "=p.modules*p.mw + 2*p.margin", "sh": "=p.spacing/2" },
+  "derive": {
+    "pw": "=p.modules*p.mw + 2*p.margin", "sh": "=p.spacing/2",
+    "edge": "=p.screwAxis == 'x' ? d.pw/2 : p.ph/2",
+    "inner": "=p.screwAxis == 'x' ? p.modules*p.mw/2 : p.winh/2",
+    "spMin": "=floor(2*(d.inner + p.screw)) + 1",
+    "spMax": "=ceil(2*(d.edge - p.screw)) - 1"
+  },
   "rules": [
     { "level": "error", "when": "=p.winh >= p.ph - 8", "message": "$t:winTooTall", "focus": "winh" },
-    { "level": "error", "when": "=p.screwAxis == 'x' && d.sh + p.screw >= d.pw/2", "message": "$t:screwOut", "focus": "spacing" },
-    { "level": "error", "when": "=p.screwAxis == 'x' && d.sh - p.screw <= p.modules*p.mw/2", "message": "$t:screwInWindow", "focus": "spacing" },
+    { "level": "error", "when": "=d.spMin > d.spMax", "message": "$t:screwNoRoom", "focus": "screwAxis" },
+    { "level": "error", "when": "=d.spMin <= d.spMax && d.sh + p.screw >= d.edge", "message": "$t:screwOut",
+      "params": { "min": "=d.spMin", "max": "=d.spMax" }, "focus": "spacing" },
+    { "level": "error", "when": "=d.spMin <= d.spMax && d.sh - p.screw <= d.inner", "message": "$t:screwInWindow",
+      "params": { "min": "=d.spMin", "max": "=d.spMax" }, "focus": "spacing" },
     { "level": "info", "when": "=true", "message": "$t:unverified" }
   ],
   "steps": [
@@ -60,8 +69,9 @@
       "margin": "Margen lateral", "t": "Grosor", "screwAxis": "Tornillos", "sides": "A los lados", "topBottom": "Arriba y abajo",
       "spacing": "Distancia entre tornillos", "screw": "Diámetro de tornillo",
       "cl": "Chile", "it": "Italia", "es": "España", "us": "EE. UU.",
-      "winTooTall": "La ventana es casi tan alta como la placa.", "screwOut": "Los tornillos quedan fuera de la placa.",
-      "screwInWindow": "Los tornillos caen dentro de la ventana.",
+      "winTooTall": "La ventana es casi tan alta como la placa.", "screwOut": "Los tornillos quedan fuera de la placa: usa una distancia entre {min} y {max} mm.",
+      "screwInWindow": "Los tornillos caen dentro de la ventana: usa una distancia entre {min} y {max} mm.",
+      "screwNoRoom": "No queda espacio para los tornillos entre la ventana y el borde: agranda la placa, achica la ventana o cambia el lado de los tornillos.",
       "unverified": "Medidas de ejemplo: mide tu caja antes de imprimir.", "outPlate": "Placa"
     },
     "en": {
@@ -71,8 +81,9 @@
       "margin": "Side margin", "t": "Thickness", "screwAxis": "Screws", "sides": "On the sides", "topBottom": "Top and bottom",
       "spacing": "Screw spacing", "screw": "Screw diameter",
       "cl": "Chile", "it": "Italy", "es": "Spain", "us": "USA",
-      "winTooTall": "The window is almost as tall as the plate.", "screwOut": "The screws fall outside the plate.",
-      "screwInWindow": "The screws fall inside the window.",
+      "winTooTall": "The window is almost as tall as the plate.", "screwOut": "The screws fall outside the plate: use a spacing between {min} and {max} mm.",
+      "screwInWindow": "The screws fall inside the window: use a spacing between {min} and {max} mm.",
+      "screwNoRoom": "There is no room for the screws between the window and the edge: enlarge the plate, shrink the window or move the screws to the other side.",
       "unverified": "Example sizes: measure your box before printing.", "outPlate": "Plate"
     }
   }

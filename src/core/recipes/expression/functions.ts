@@ -1,7 +1,7 @@
 /**
  * @file src/core/recipes/expression/functions.ts
  * @description Lista blanca de funciones y operadores del lenguaje de expresiones de recetas. Funciones puras sobre
- * números; los ángulos van en grados. `if`, `has`, `len` y `lookup` son especiales y los resuelve el intérprete.
+ * números; los ángulos van en grados. `if`, `has`, `len`, `trim` y `lookup` son especiales y los resuelve el intérprete.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -47,6 +47,7 @@ export const SPECIAL_FUNCTIONS: Readonly<Record<string, { minArgs: number; maxAr
     if: { minArgs: 3, maxArgs: 3 },
     has: { minArgs: 1, maxArgs: 1 },
     len: { minArgs: 1, maxArgs: 1 },
+    trim: { minArgs: 1, maxArgs: 1 },
     lookup: { minArgs: 2, maxArgs: 2 },
   }),
 );

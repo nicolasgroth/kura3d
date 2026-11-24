@@ -76,7 +76,7 @@ Un texto que empieza con `=` (`"=p.w + 2*p.wall"`). Resultado tipado: número, b
 - **Lecturas**: `p.<param>` (respuestas), `d.<derivado>`, `bed.w|d|h` (cama activa), `s.<paso>.min|max|size|center.x|y|z` (caja de un paso anterior, solo en `args`), `i n x y z` (solo dentro de un `pattern`), constante `pi`.
 - **Dónde se puede leer qué**: parámetros → `p`, `bed`; `derive` y reglas → `p`, `d`, `bed`; `when` y campos de `pattern` → `p`, `d`, `bed`; `args` → todo; nombre de salida → `p`, `d`.
 - **Operadores**: `+ - * / %`, `== != < > <= >=`, `&& || !`, `c ? a : b`. `+` también une textos.
-- **Funciones**: `min max abs floor ceil round sqrt pow clamp`, `sin cos tan atan2` (grados), `if(c, a, b)`, `len(texto)`, `has(p.archivo)`, `lookup('tabla', clave)`.
+- **Funciones**: `min max abs floor ceil round sqrt pow clamp`, `sin cos tan atan2` (grados), `if(c, a, b)`, `len(texto)`, `trim(texto)` (sin espacios al inicio ni al final: `len(trim(p.text)) == 0` detecta un texto en blanco), `has(p.archivo)`, `lookup('tabla', clave)`.
 - **Prohibido**: llamar métodos (`p.w.toFixed()`), índices (`p['w']`), `this`, asignar, secuencias, listas, cualquier otro nombre o función, y las claves `__proto__`, `constructor`, `prototype` (ni en expresiones ni en el JSON).
 
 ## Límites

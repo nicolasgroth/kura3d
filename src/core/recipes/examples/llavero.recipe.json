@@ -1,7 +1,7 @@
 {
   "format": "kura.recipe/1",
   "id": "kura.llavero",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "kura": ">=0.8.0",
   "title": "$t:title",
   "description": "$t:description",
@@ -18,20 +18,35 @@
     { "id": "ring", "type": "number", "unit": "mm", "min": 3, "max": 10, "default": 5, "label": "$t:ring" },
     { "id": "logo", "type": "file", "accept": ["svg"], "maxBytes": 262144, "optional": true, "label": "$t:logo" }
   ],
+  "derive": {
+    "txt": "=len(trim(p.text)) > 0",
+    "stroke": "=p.size*0.155",
+    "pd": "=p.size*1.7",
+    "gap": "=max(2, p.size*0.3)",
+    "maxRing": "=floor(p.size*1.7 - 4)",
+    "minSize": "=ceil((p.ring + 4)/1.7)"
+  },
   "rules": [
-    { "level": "error", "when": "=len(p.text) == 0 && !has(p.logo)", "message": "$t:empty", "focus": "text" },
-    { "level": "error", "when": "=p.mode == 'engrave' && p.depth >= p.base - 0.8", "message": "$t:tooDeep", "focus": "depth" }
+    { "level": "error", "when": "=!d.txt && !has(p.logo)", "message": "$t:empty", "focus": "text" },
+    { "level": "error", "when": "=p.mode == 'engrave' && p.depth >= p.base - 0.8", "message": "$t:tooDeep", "focus": "depth" },
+    { "level": "error", "when": "=p.ring + 4 > d.pd && d.maxRing >= 3", "message": "$t:ringBig",
+      "params": { "ring": "=p.ring", "maxRing": "=d.maxRing", "minSize": "=d.minSize" }, "focus": "ring" },
+    { "level": "error", "when": "=p.ring + 4 > d.pd && d.maxRing < 3", "message": "$t:ringBigSize",
+      "params": { "ring": "=p.ring", "minSize": "=d.minSize" }, "focus": "ring" },
+    { "level": "warning", "when": "=d.txt && d.stroke < 0.9", "message": "$t:thin", "focus": "size" }
   ],
   "steps": [
-    { "id": "label", "op": "create_primitive", "when": "=len(p.text) > 0",
+    { "id": "label", "op": "create_primitive", "when": "=d.txt",
       "args": { "type": "text", "params": { "text": "=p.text", "fontSize": "=p.size", "depth": "=p.depth + 0.01", "textAlign": "center" } } },
     { "id": "icon", "op": "import_svg", "when": "=has(p.logo)", "args": { "svgContent": "=p.logo", "depth": "=p.depth", "targetWidth": "=p.size*1.4" } },
-    { "id": "art", "op": "combine_objects", "args": { "objectIds": ["@icon", "@label"] } },
+    { "id": "iconAt", "op": "recipe.place", "when": "=has(p.logo)", "args": { "target": "@icon", "anchor": "center",
+      "to": ["=d.txt ? s.label.min.x - d.gap - s.icon.size.x/2 : 0", "=d.txt ? s.label.center.y : 0", "=s.icon.center.z"] } },
+    { "id": "art", "op": "combine_objects", "args": { "objectIds": ["@iconAt", "@label"] } },
     { "id": "art2", "op": "recipe.place", "args": { "target": "@art", "anchor": "bottom-center",
       "to": [0, 0, "=p.mode == 'relief' ? p.base : p.base - p.depth"] } },
     { "id": "plate", "op": "create_primitive", "args": { "type": "box", "position": ["=-(p.ring + 3)/2", 0, 0],
-      "params": { "width": "=s.art2.size.x + p.size + p.ring + 3", "depth": "=s.art2.size.y + p.size",
-                  "height": "=p.base", "edgeStyle": "round", "edgeScope": "vertical", "edgeSize": "=(s.art2.size.y + p.size)/2 - 0.01" } } },
+      "params": { "width": "=s.art2.size.x + p.size + p.ring + 3", "depth": "=max(s.art2.size.y + p.size, d.pd)",
+                  "height": "=p.base", "edgeStyle": "round", "edgeScope": "vertical", "edgeSize": "=max(s.art2.size.y + p.size, d.pd)/2 - 0.01" } } },
     { "id": "eye", "op": "create_primitive", "args": { "type": "cylinder",
       "position": ["=s.plate.min.x + p.ring/2 + 2.5", 0, -1], "params": { "radius": "=p.ring/2", "height": "=p.base + 2" } } },
     { "id": "holed", "op": "boolean_operation", "args": { "op": "subtract", "target": "@plate", "tools": ["@eye"] } },
@@ -39,16 +54,25 @@
       "args": { "op": "=p.mode == 'relief' ? 'union' : 'subtract'", "target": "@holed", "tools": ["@art2"] } }
   ],
   "outputs": [{ "ref": "@out", "name": "=p.text" }],
+  "checks": [{ "kind": "fits_bed", "refs": ["@out"], "onFail": "warn" }],
   "strings": {
     "es": {
-      "title": "Llavero con texto", "description": "Placa con tu texto en relieve o grabado y agujero para la argolla.", "text": "Texto", "size": "Tamaño de letra", "mode": "Texto", "relief": "En relieve",
+      "title": "Llavero con texto", "description": "Placa con tu texto (y tu logo, si quieres) en relieve o grabado y agujero para la argolla.",
+      "text": "Texto", "size": "Tamaño de letra", "mode": "Acabado del texto", "relief": "En relieve",
       "engrave": "Grabado", "base": "Grosor de la base", "depth": "Profundidad del texto", "ring": "Diámetro de la argolla",
-      "logo": "Logo (SVG)", "empty": "Escribe un texto o elige un logo.", "tooDeep": "El grabado atraviesa casi toda la base."
+      "logo": "Logo (SVG)", "empty": "Escribe un texto o elige un logo.", "tooDeep": "El grabado atraviesa casi toda la base.",
+      "ringBig": "La argolla de {ring} mm deja menos de 2 mm de placa alrededor: usa una argolla de hasta {maxRing} mm o sube la letra a {minSize} mm.",
+      "ringBigSize": "La argolla de {ring} mm deja menos de 2 mm de placa alrededor: sube la letra a {minSize} mm o más.",
+      "thin": "Trazo de la letra bajo 0,9 mm: fino para una boquilla de 0,4 mm. Sube la letra a 6 mm o más."
     },
     "en": {
-      "title": "Text keychain", "description": "Tag with your text raised or engraved and a ring hole.", "text": "Text", "size": "Letter size", "mode": "Text", "relief": "Raised",
+      "title": "Text keychain", "description": "Tag with your text (and your logo, if you want) raised or engraved and a ring hole.",
+      "text": "Text", "size": "Letter size", "mode": "Text finish", "relief": "Raised",
       "engrave": "Engraved", "base": "Base thickness", "depth": "Text depth", "ring": "Ring diameter",
-      "logo": "Logo (SVG)", "empty": "Type a text or choose a logo.", "tooDeep": "The engraving goes through almost all the base."
+      "logo": "Logo (SVG)", "empty": "Type a text or choose a logo.", "tooDeep": "The engraving goes through almost all the base.",
+      "ringBig": "The {ring} mm ring leaves less than 2 mm of tag around it: use a ring up to {maxRing} mm or raise the letter size to {minSize} mm.",
+      "ringBigSize": "The {ring} mm ring leaves less than 2 mm of tag around it: raise the letter size to {minSize} mm or more.",
+      "thin": "Letter stroke under 0.9 mm: thin for a 0.4 mm nozzle. Raise the letter size to 6 mm or more."
     }
   }
 }
