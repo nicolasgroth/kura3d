@@ -15,6 +15,7 @@ import { MAGNET_PRESET_KIND } from '../core/addons/magnetPresets';
 import type { PocketWallReport } from '../core/addons/pocketWall';
 import { isSolid } from '../core/scene/objectRole';
 import { t } from '../i18n';
+import { magnetWarnings, magnetWarningText, type MagnetWarning } from './magnetWarnings';
 import type { Vec3 } from '../types/kura';
 import { createUserPresetsStore } from './userPresets';
 import { useKuraStore } from './useKuraStore';
@@ -120,12 +121,43 @@ export function setMagnetHover(hover: MagnetHover | null): void {
   });
 }
 
-/** Coloca un alojamiento con el imán vigente sobre la cara indicada. */
+/** Con el panel abierto un clic en el visor coloca imanes: la pieza real no se selecciona ni se mueve. */
+export function isMagnetPlacementActive(): boolean {
+  return useMagnetPanel.getState().open;
+}
+
+/** Orden de gravedad de los avisos (de más a menos grave). */
+const WARNING_RANK: readonly string[] = ['magnet.warn.through', 'magnet.warn.wall', 'magnet.warn.overlap', 'magnet.warn.near', 'magnet.warn.protrude'];
+
+/** El aviso más grave de la lista (o null si está vacía). */
+export function mostSevereMagnetWarning(warnings: readonly MagnetWarning[]): MagnetWarning | null {
+  const rank = (w: MagnetWarning) => WARNING_RANK.indexOf(w.key);
+  return [...warnings].sort((a, b) => rank(a) - rank(b))[0] ?? null;
+}
+
+/**
+ * Coloca un alojamiento con el imán vigente sobre la cara indicada. No altera la selección que había y deja un solo
+ * aviso por colocación: «agregado» más la advertencia más grave (el detalle completo queda en el panel).
+ */
 export async function placeMagnetAt(hostId: string, point: Vec3, normal: Vec3): Promise<boolean> {
   const { params, blocked } = useMagnetPanel.getState();
   if (blocked) return false;
-  const result = await useKuraStore.getState().addMagnetPocket({ hostId, params, point, normal });
+  const store = useKuraStore.getState();
+  const selection = store.selectedIds;
+  const knownToasts = new Set([...store.toasts.map((x) => x.id), ...store.toastHistory.map((x) => x.id)]);
+  const result = await store.addMagnetPocket({ hostId, params, point, normal });
+  const after = useKuraStore.getState();
+  // Colocar no cambia lo que estaba seleccionado.
+  if (after.selectedIds !== selection && (after.selectedIds.length !== selection.length || after.selectedIds.some((id, i) => id !== selection[i]))) {
+    useKuraStore.setState({ selectedIds: selection });
+  }
   if (!result) return false;
+  // Un aviso por clic: se retiran los que emitió la colocación y se publica uno solo.
+  const mine = (x: { id: string }) => !knownToasts.has(x.id);
+  useKuraStore.setState((s) => ({ toasts: s.toasts.filter((x) => !mine(x)), toastHistory: s.toastHistory.filter((x) => !mine(x)) }));
+  const warning = mostSevereMagnetWarning(magnetWarnings(result.wall, after.language));
+  const created = t(after.language, 'magnet.created', { name: result.obj.name });
+  after.addToast(warning ? `${created} ${magnetWarningText(warning, after.language)}` : created, warning ? 'info' : 'success');
   useMagnetPanel.setState({ lastWall: result.wall });
   return true;
 }

@@ -47,6 +47,7 @@ import { UX6_EN, UX6_ES } from './locales/ux6';
 import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
 import { ASISTENTES_EN, ASISTENTES_ES } from './locales/asistentes';
 import { IMAN_EN, IMAN_ES } from './locales/iman';
+import { IMAN_UI3_EN, IMAN_UI3_ES } from './locales/imanUi3';
 import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
 import { UX8_EN, UX8_ES } from './locales/ux8';
@@ -98,6 +99,7 @@ export const TRANSLATIONS_ES = {
   ...RECETAS_ES,
   ...ASISTENTES_ES,
   ...IMAN_ES,
+  ...IMAN_UI3_ES,
   ...BORDES_ES,
   ...UX7_ES,
   ...UX8_ES,
@@ -1430,6 +1432,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...RECETAS_EN,
   ...ASISTENTES_EN,
   ...IMAN_EN,
+  ...IMAN_UI3_EN,
   ...BORDES_EN,
   ...UX7_EN,
   ...UX8_EN,

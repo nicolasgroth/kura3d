@@ -42,6 +42,7 @@ import { UX6_HI } from './ux6';
 import { RECETAS_HI } from './recetas';
 import { ASISTENTES_HI } from './asistentes';
 import { IMAN_HI } from './iman';
+import { IMAN_UI3_HI } from './imanUi3';
 import { BORDES_HI } from './bordesPrimitivas';
 import { UX7_HI } from './ux7';
 import { UX8_HI } from './ux8';
@@ -91,6 +92,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...RECETAS_HI,
   ...ASISTENTES_HI,
   ...IMAN_HI,
+  ...IMAN_UI3_HI,
   ...BORDES_HI,
   ...UX7_HI,
   ...UX8_HI,

@@ -77,6 +77,7 @@ export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
         <button
           type="button"
           className="kura-btn kura-btn-sm kura-toast-action"
+          aria-label={toast.action.ariaLabel}
           onClick={() => runToastAction(toast.id, toast.action!)}
         >
           {toast.action.label}
@@ -86,6 +87,7 @@ export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
         <button
           type="button"
           className="kura-btn kura-btn-sm kura-btn-ghost kura-toast-action is-secondary"
+          aria-label={toast.secondaryAction.ariaLabel}
           onClick={() => runToastAction(toast.id, toast.secondaryAction!)}
         >
           {toast.secondaryAction.label}

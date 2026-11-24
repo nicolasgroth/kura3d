@@ -42,6 +42,7 @@ import { UX6_DE } from './ux6';
 import { RECETAS_DE } from './recetas';
 import { ASISTENTES_DE } from './asistentes';
 import { IMAN_DE } from './iman';
+import { IMAN_UI3_DE } from './imanUi3';
 import { BORDES_DE } from './bordesPrimitivas';
 import { UX7_DE } from './ux7';
 import { UX8_DE } from './ux8';
@@ -91,6 +92,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...RECETAS_DE,
   ...ASISTENTES_DE,
   ...IMAN_DE,
+  ...IMAN_UI3_DE,
   ...BORDES_DE,
   ...UX7_DE,
   ...UX8_DE,
