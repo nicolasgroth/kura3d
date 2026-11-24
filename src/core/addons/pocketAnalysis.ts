@@ -24,6 +24,8 @@ export interface PocketAnalysis {
   wall: PocketWallReport;
   /** Volumen del hueco dentro de la pieza / volumen de la pieza (0–1, aproximado por muestreo). */
   fill: number;
+  /** La boca sale por lados opuestos de la cara: el imán es más ancho que la pieza ahí. */
+  spansFace: boolean;
 }
 
 /**
@@ -57,5 +59,6 @@ export function analyzePocket(
       neighbor,
     },
     fill,
+    spansFace: surface.spansFace,
   };
 }

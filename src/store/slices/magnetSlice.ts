@@ -30,11 +30,13 @@ export interface MagnetPocketRequest {
   /** Punto de mundo sobre la cara y normal de mundo hacia afuera. */
   point: Vec3;
   normal: Vec3;
+  /** No emite avisos de «agregado» ni de advertencias: quien llama publica el suyo (los errores sí se avisan). */
+  silent?: boolean;
 }
 
 export interface MagnetSliceState {
   /** Agrega el negativo del alojamiento; null si la pieza no sirve, el motor estaba ocupado o falló (ya se avisó). */
-  addMagnetPocket: (request: MagnetPocketRequest) => Promise<{ obj: SceneObject; wall: PocketWallReport; fill: number } | null>;
+  addMagnetPocket: (request: MagnetPocketRequest) => Promise<{ obj: SceneObject; wall: PocketWallReport; fill: number; spansFace: boolean } | null>;
 }
 
 const placed = (o: SceneObject): PlacedMesh => ({
@@ -76,7 +78,7 @@ export function createMagnetSlice(ctx: StoreContext): Partial<KuraStoreState> {
         });
         ctx.assertCurrent([host]);
         // Un hueco que ocupa casi toda la pieza la haría desaparecer al restar: no se coloca.
-        if (made.fill > MAX_POCKET_FILL) {
+        if (made.fill > MAX_POCKET_FILL || made.spansFace) {
           get().addToast(tr('magnet.error.tooBig'), 'error');
           return null;
         }
@@ -89,6 +91,7 @@ export function createMagnetSlice(ctx: StoreContext): Partial<KuraStoreState> {
         return made;
       });
       if (!result) return null;
+      if (request.silent) return result;
       get().addToast(tr('magnet.created', { name: result.obj.name }), 'success');
       for (const w of magnetWarnings(result.wall, get().language)) get().addToast(magnetWarningText(w, get().language), 'info');
       return result;

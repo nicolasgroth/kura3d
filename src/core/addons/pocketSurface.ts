@@ -91,6 +91,8 @@ export interface MouthSurface {
   edgeExit: boolean;
   /** Altura de la superficie en el borde del hueco, por dirección (`MOUTH_DIRECTIONS`); 0 donde sale por el borde. */
   rimHeights: number[];
+  /** El borde del hueco sale de la pieza en direcciones opuestas: la boca es más ancha que la cara. */
+  spansFace: boolean;
 }
 
 /** Mide la superficie alrededor de la boca de un hueco con boca en `point` (sobre la cara clicada). */
@@ -111,9 +113,11 @@ export function measureMouthSurface(world: MeshData, point: Vec3, frame: PocketF
   let minAtRim = Infinity;
   let edgeExit = false;
   const rimHeights: number[] = [];
+  const rimEdge: boolean[] = [];
   for (let k = 0; k < MOUTH_DIRECTIONS; k++) {
     const atRim = sampleAt(k, holeHalf, true);
     const atMagnet = sampleAt(k, p.sizeMm / 2, true);
+    rimEdge.push(atRim.edge || atMagnet.edge);
     // Donde falta pieza (borde), no hay curva: no cuenta para la sobresalida, y la pared se mide ahí (atraviesa).
     edgeExit ||= atRim.edge || atMagnet.edge;
     rimHeights.push(atRim.edge ? 0 : atRim.height);
@@ -126,5 +130,7 @@ export function measureMouthSurface(world: MeshData, point: Vec3, frame: PocketF
   const lack = p.heightMm - usefulDepthMm;
   const protrudeMm = !p.hidden && lack >= PROTRUDE_TOLERANCE_MM ? lack : 0;
   const coverMm = p.hidden ? HIDDEN_COVER_MM + Math.min(0, Number.isFinite(minAtRim) ? minAtRim : 0) : null;
-  return { overshootMm, usefulDepthMm, protrudeMm, coverMm, edgeExit, rimHeights };
+  const half = MOUTH_DIRECTIONS / 2;
+  const spansFace = rimEdge.some((e, k) => e && rimEdge[(k + half) % MOUTH_DIRECTIONS]);
+  return { overshootMm, usefulDepthMm, protrudeMm, coverMm, edgeExit, rimHeights, spansFace };
 }

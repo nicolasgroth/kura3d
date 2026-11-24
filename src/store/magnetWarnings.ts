@@ -43,7 +43,8 @@ export function magnetWarnings(report: PocketWallReport, language: LanguageCode)
   const out: MagnetWarning[] = [];
   const wall = wallWarningKey(report);
   if (wall) out.push({ kind: 'wall', key: wall, params: { wall: fmt(report.minWallMm), min } });
-  if (report.protrudeMm > 0) out.push({ kind: 'protrude', key: 'magnet.warn.protrude', params: { mm: fmt(report.protrudeMm) } });
+  // Si el hueco atraviesa o se asoma por el borde, el aviso de curva sobra: el problema es otro.
+  if (report.protrudeMm > 0 && wall !== 'magnet.warn.through') out.push({ kind: 'protrude', key: 'magnet.warn.protrude', params: { mm: fmt(report.protrudeMm) } });
   const cover = coverWarningKey(report);
   if (cover) {
     const mm = (report.coverMm ?? 0).toLocaleString(language, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -57,4 +58,8 @@ export function magnetWarnings(report: PocketWallReport, language: LanguageCode)
   return out;
 }
 
-export const magnetWarningText = (w: MagnetWarning, language: LanguageCode) => t(language, w.key, w.params);
+/** Resumen de pocas palabras de un aviso (para el aviso emergente; el detalle queda en el panel). */
+export const magnetWarningShortText = (w: MagnetWarning, language: LanguageCode) =>
+  t(language, w.key.replace('magnet.warn.', 'magnet.short.') as TranslationKey);
+
+export const magnetWarningText =(w: MagnetWarning, language: LanguageCode) => t(language, w.key, w.params);
