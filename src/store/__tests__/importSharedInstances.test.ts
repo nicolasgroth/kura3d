@@ -87,9 +87,9 @@ describe('instancias repetidas de un 3MF', () => {
     const toast = get().toasts.find((t) => t.action?.label === 'Reparar todas');
     expect(toast).toBeTruthy();
     toast!.action!.run();
-    await vi.waitFor(() => expect(get().toasts.some((t) => t.text.includes('Mallas reparadas y cerradas'))).toBe(true));
-    const summary = get().toasts.find((t) => t.text.includes('Mallas reparadas y cerradas'))!;
-    expect(summary.text).toContain('2 de 2 (4 piezas)');
+    await vi.waitFor(() => expect(get().toasts.some((t) => t.text.includes('Se repararon y cerraron'))).toBe(true));
+    const summary = get().toasts.find((t) => t.text.includes('Se repararon y cerraron'))!;
+    expect(summary.text).toContain('2 mallas (las usan 4 piezas)');
     expect(summary.kind).toBe('success');
     // Un solo aviso de reparación (no uno por pieza)
     expect(get().toasts.filter((t) => t.text.startsWith('Malla reparada:'))).toHaveLength(0);

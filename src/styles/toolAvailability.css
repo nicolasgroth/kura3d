@@ -1,28 +1,32 @@
 /**
  * @file src/styles/toolAvailability.css
  * @description Herramientas apagadas de la barra vertical (`aria-disabled`: conservan foco y tooltip) y el motivo
- * en el tooltip de ayuda. El estado no depende solo del color: atenuado más una raya diagonal y el motivo escrito.
+ * en el tooltip de ayuda. El estado no depende solo del color: el icono se atenúa y lleva una raya diagonal
+ * propia; la etiqueta NO se tacha ni se atenúa con opacidad (queda legible, con color secundario) y el motivo
+ * va escrito en el tooltip.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 .kura-tool-rail-btn.is-unavailable {
-  position: relative;
-  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.kura-tool-rail-btn.is-unavailable::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 22%;
-  right: 22%;
-  height: 0;
-  border-top: 2px solid currentColor;
-  transform: rotate(-35deg);
-  pointer-events: none;
+/* Solo el icono se atenúa y se corta con una diagonal (degradado dentro de su caja, sin tocar la etiqueta). */
+.kura-tool-rail-btn.is-unavailable > svg {
+  opacity: 0.55;
+  background: linear-gradient(
+    to top right,
+    transparent calc(50% - 1px),
+    currentColor calc(50% - 1px),
+    currentColor calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
+}
+
+.kura-tool-rail-btn.is-unavailable .kura-tool-rail-label {
+  color: var(--text-secondary);
 }
 
 .kura-tool-rail-btn.is-unavailable:hover {
