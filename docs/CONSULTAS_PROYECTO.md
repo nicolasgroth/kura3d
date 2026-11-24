@@ -24,3 +24,5 @@ Pediste varios ajustes y en algunos dejaste dos caminos. Elegí uno en cada caso
 - **Banderas de idioma:** bandera más el nombre del idioma en su propio idioma (Español, English, Deutsch…), porque una bandera sola confunde (el español no es solo España). Inglés con la bandera del Reino Unido. Las banderas se dibujan como SVG propios, porque Windows no muestra las banderas emoji.
 - **MCP sin rótulo:** conserva el texto «MCP» aunque se oculten los rótulos.
 - **Paneles flotantes:** descartados por ti el 23-nov; queda el panel que abre y cierra.
+- **Paleta de pintura, «colores del proyecto» (24-nov):** el botón reemplazaba tu paleta por los colores del proyecto y perdías los tuyos. Lo cambié a **sumar** los que falten, sin duplicar. Si prefieres que reemplace (o tener las dos opciones), dime.
+

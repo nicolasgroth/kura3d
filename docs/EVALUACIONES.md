@@ -401,3 +401,19 @@ QA independiente del rediseño (barras y panel contextual), Comprobar encaje, Aj
 - Dejó 7 recorridos `e2e/qa20-*.spec.ts`.
 
 Consumo de los ajustes al rediseño (modelo · duración · tokens): lote A (Opus · 103 min · 421 k), lote B (Opus · 108 min · 351 k).
+
+## QA21 · 24 de noviembre de 2026, 02:50 · `main` (commit `22518e0`): rechazada
+
+QA independiente de los ajustes al rediseño (lotes A y B). Antes, la suite completa de navegador sobre `733cab7` dio 292 recorridos que pasan y 20 que fallan: 17 eran recorridos viejos (botones que cambiaron de lugar) y 3 defectos reales, ya corregidos: botón de plegar secciones de 24×28 px en el teléfono (ahora 44×44), resumen de filamentos de la Escena sin el conteo de piezas, y fila del árbol que anunciaba el color antes del nombre.
+
+Fallos de la QA21:
+
+1. Mayor: borrar el objeto con Pintar, Cortar, Esculpir o Medir activo deja la herramienta activa y el panel sin objeto.
+2. Mayor: a 1024 px el submenú «Separar y combinar» de Acciones se sale 89 px de la ventana.
+3. Menor: Tab dentro del menú Agregar no lo cierra.
+4. Menor: «Usar los colores del proyecto» reemplaza la paleta de pintura en vez de sumar.
+5. Menor: `renameProject` acepta nombres de 300 caracteres fuera de la interfaz.
+
+Pasaron: panel Proyecto (nombre, cama, unidades, Nuevo con confirmación), Agregar (8 formas, deshacer en un paso), panel por herramienta, paleta (agregar, quitar, persistir, tope de 256), barra izquierda e idiomas es, en y de. Sin verificar por lentitud del servidor: menús a 1440 px, acciones apagadas con motivo, matriz de herramientas con uno y varios objetos, idiomas fr, hi y zh. Dejó `e2e/qa21-ajustes.spec.ts` (42 recorridos, 6 fallan hasta corregir).
+
+Consumo (modelo · duración · tokens): recorridos e2e al día (Sonnet · 47 min · 225 k), QA21 (Sonnet · 57 min · 178 k; pasó su tope de 40 min por el servidor lento).
