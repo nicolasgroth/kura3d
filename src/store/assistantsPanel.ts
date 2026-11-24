@@ -56,7 +56,7 @@ export interface AssistantRunRequest {
 }
 
 export type AssistantRunOutcome =
-  | { readonly status: 'created'; readonly names: readonly string[]; readonly updated: boolean }
+  | { readonly status: 'created'; readonly names: readonly string[]; readonly updated?: true }
   | { readonly status: 'invalid'; readonly errors: readonly RecipeIssue[] }
   /** La receta se ejecutó pero no produjo piezas: no cambió nada y ya se avisó. */
   | { readonly status: 'empty' }
@@ -93,5 +93,5 @@ export async function runAssistant(request: AssistantRunRequest): Promise<Assist
   // Cada tipo de chequeo con su mensaje; un mismo mensaje no se repite.
   const messages = new Set(result.checks.map((c) => (c.kind === 'fits_bed' ? 'asis.fitsBed' : 'asis.checkOther')));
   for (const key of messages) store.addToast(t(language, key), 'info');
-  return { status: 'created', names, updated };
+  return { status: 'created', names, ...(updated ? { updated: true as const } : {}) };
 }

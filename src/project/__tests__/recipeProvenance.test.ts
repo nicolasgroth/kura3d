@@ -31,6 +31,12 @@ describe('procedencia de recetas en el .kura', () => {
     expect(reopened[0].metadata?.recipe).toMatchObject({ id: 'kura.caja-tapa', answers: { w: 60, fix: 'press' }, output: 'box' });
   });
 
+  it('la ejecución, el nombre y la huella de la malla viajan en el .kura y se reabren', async () => {
+    const box = await addBox(10);
+    const recipe = { id: 'kura.caja-tapa', version: '1.0.0', hash: 'a'.repeat(64), answers: { w: 60 }, output: 'box', run: 'run_1', name: 'Caja', meshFingerprint: '12:0badc0de' };
+    expect(roundTrip([{ ...box, metadata: { recipe } }])[0].metadata?.recipe).toEqual(recipe);
+  });
+
   it('un proyecto sin procedencia abre igual', async () => {
     const box = await addBox(10);
     expect(roundTrip([box])[0].metadata).toBeUndefined();
@@ -41,6 +47,8 @@ describe('procedencia de recetas en el .kura', () => {
     ['respuesta que no es simple', { answers: { w: { evil: 1 } } }],
     ['demasiadas respuestas', { answers: Object.fromEntries(Array.from({ length: 65 }, (_, i) => [`a${i}`, i])) }],
     ['campo desconocido', { script: 'x' }],
+    ['ejecución demasiado larga', { run: 'r'.repeat(65) }],
+    ['nombre que no es texto', { name: 5 }],
     ['id inválido', { id: 'SinPunto' }],
   ])('rechaza una procedencia con %s', async (_name, patch) => {
     const box = await addBox(10);
