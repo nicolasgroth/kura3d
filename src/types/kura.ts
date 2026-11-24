@@ -792,17 +792,26 @@ export interface SceneObjectMetadata {
   addon?: AddonMetadata;
 }
 
+/**
+ * Imán pedido para un alojamiento: `sizeMm` es el diámetro (redondo) o el lado (cuadrado); `heightMm` su alto.
+ * Única definición: `MagnetParams` de `core/addons/magnetPocket` es este mismo tipo.
+ */
+export interface MagnetPocketParams {
+  shape: 'round' | 'square';
+  sizeMm: number;
+  heightMm: number;
+  /** Holgura sumada al diámetro o lado. */
+  clearanceMm: number;
+  /** Holgura sumada a la profundidad. */
+  depthClearanceMm: number;
+  /** Oculto bajo la cara (queda material encima; requiere pausar la impresión). */
+  hidden: boolean;
+}
+
 /** Agregado colocado sobre una cara (hoy, alojamiento de imán como pieza negativa). */
 export interface AddonMetadata {
   kind: 'magnet_pocket';
-  params: {
-    shape: 'round' | 'square';
-    sizeMm: number;
-    heightMm: number;
-    clearanceMm: number;
-    depthClearanceMm: number;
-    hidden: boolean;
-  };
+  params: MagnetPocketParams;
   /** Pieza sobre la que se colocó (puede ya no existir). */
   hostId?: string;
 }
