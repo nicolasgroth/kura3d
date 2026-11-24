@@ -608,3 +608,21 @@ Observaciones abiertas: duplicar la pieza no duplica sus imanes y borrarla deja 
 Lección de proceso: tras editar la rama servida, el servidor de desarrollo sirve módulos con marca de recarga y las pruebas que enlazan el store quedan con una copia distinta (8 fallas falsas). Se reinicia el servidor antes de cada corrida de verificación.
 
 Consumo (modelo · duración · tokens): alojamiento de imán (Opus · 32 min · 297 k), QA24 (Sonnet · 49 min · 241 k).
+
+## Alojamiento de imán · primera ronda a ciegas · 24 de noviembre de 2026, 16:45 · rama `feat/iman` (`323b765`)
+
+| Usabilidad | Código | Funcional |
+|---|---|---|
+| 82 | 84 | 77 |
+
+Sin bloqueos duros. Las tres bajo el mínimo (85): se corrige y se reevalúa.
+
+- **Funcional (77).** El hueco mide exacto en todas las orientaciones (46,759 mm³ removidos; 5,2 mm entre caras planas) y los avisos de pared y de hueco pasante funcionan en piezas planas. Fallas: al escalar la pieza después de colocar, el hueco se escala con ella (10,4 × 4,4 para un imán de 5 × 2) sin aviso; dos huecos pegados o superpuestos no avisan; en cara cóncava quedan láminas de hasta 0,29 mm sobre la boca; en cara convexa el imán no asienta completo y el aviso no lo explica; la guía del modo oculto no dice a qué altura pausar.
+- **Código (84).** Núcleo puro y correcto, preajustes de verdad genéricos, saneo en `localStorage` y `.kura`. Restan: caras curvas sin cubrir ni probar; tipos de parámetros duplicados; la vista previa reconstruye su geometría; cursor pegado al cerrar; escritura al store en cada movimiento; e2e con esperas fijas y aserciones blandas.
+- **Usabilidad (82).** Fácil de encontrar y de usar en cubo, cilindro y esfera; formulario sólido. Restan: avisos falsos de «atraviesa» y «poca pared» en superficies curvas; móvil apenas usable (la barra Unir/Restar tapa el visor, hoja plegada sin avisos ni «Listo»); contraste del error en tema oscuro (~2,5:1); el resumen muestra el último valor válido con un campo en error; eliminar un preajuste sin deshacer y con foco perdido; flechas de los campos sin nombre propio.
+
+Decisión del orquestador (estaba como pregunta abierta en el diseño): un imán conserva su medida real al escalar la pieza y solo se mueve para seguir a su cara. Informada al autor.
+
+Segunda ronda de corrección en curso (dos lotes: geometría y ciclo de vida; panel, accesibilidad y pruebas).
+
+Consumo (modelo · duración · tokens): usabilidad (Opus · 6 min · 146 k), código (Opus · 3 min · 120 k), funcional (Opus · 5 min · 133 k).
