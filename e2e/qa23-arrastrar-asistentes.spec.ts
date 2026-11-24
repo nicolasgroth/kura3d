@@ -113,10 +113,9 @@ test.describe('A. arrastrar para mover', () => {
 
   for (const modo of ['rotate', 'scale']) {
     test(`con ${modo} activo el cuerpo no mueve; al volver a Mover sí`, async ({ page }) => {
-      const [a] = await escena(page, [[0, 15, 0]]);
+      let [a] = await escena(page, [[0, 15, 0]]);
       await sel(page, [a]);
       await page.evaluate((m) => (window as any).__s.getState().setTransformMode(m), modo);
-      const base = await pasos(page);
       // Arrastre sobre una zona del cuerpo alejada del centro (el manipulador ocupa el centro).
       const c = await aPixel(page, [0, 15, 0]);
       const borde = await aPixel(page, [13, 28, 13]);
@@ -126,8 +125,16 @@ test.describe('A. arrastrar para mover', () => {
       await page.mouse.up();
       expect(await pos(page, a)).toEqual([0, 15, 0]);
       await page.evaluate(() => (window as any).__s.getState().setTransformMode('translate'));
-      // El arrastre en Rotar/Escalar pudo agarrar un asa del manipulador (legítimo): se deshace antes de volver a Mover.
-      await page.evaluate((n) => { const g = (window as any).__s.getState(); while (g.past.length > n && (window as any).__s.getState().past.length > n) (window as any).__s.getState().undo(); }, base);
+      // El arrastre en Rotar/Escalar pudo agarrar un asa del manipulador (legítimo y asíncrono): se recrea el cubo limpio.
+      a = await page.evaluate(async () => {
+        const g = () => (window as any).__s.getState();
+        g().deleteObjects(g().objects.map((x: any) => x.id));
+        const o = await g().createPrimitive('box', { width: 30, height: 30, depth: 30 }, { position: [0, 15, 0] });
+        g().setSelection([o.id]);
+        g().setTransformMode('translate');
+        return o.id as string;
+      });
+      await page.waitForTimeout(300);
       const estado = await page.evaluate(() => { const g = (window as any).__s.getState(); return { sel: g.selectedIds, modo: g.transformMode, tool: g.activeTool, past: g.past.length }; });
       await arrastrar(page, [0, 15, 0], 80, 30);
       const d = Math.hypot(...(await pos(page, a)).map((v, i) => (i === 1 ? 0 : v)));
