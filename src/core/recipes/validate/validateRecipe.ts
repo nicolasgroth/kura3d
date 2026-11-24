@@ -139,6 +139,10 @@ function semanticIssues(recipe: Recipe): { issues: RecipeIssue[]; value?: Valida
   (recipe.rules ?? []).forEach((rule, k) => {
     if (rule.focus !== undefined && !params.has(rule.focus)) out.push(issue('ref.unknownParam', joinPath(joinPath('rules', k), 'focus'), { detail: rule.focus }));
   });
+  (recipe.steps ?? []).forEach((step, k) => {
+    const focus = step.onError?.focus;
+    if (focus !== undefined && !params.has(focus)) out.push(issue('ref.unknownParam', joinPath(joinPath(joinPath('steps', k), 'onError'), 'focus'), { detail: focus }));
+  });
   (recipe.outputs ?? []).forEach((o, k) => {
     if (!stepIndex.has(o.ref.slice(1))) out.push(issue('ref.unknownStep', joinPath(joinPath('outputs', k), 'ref'), { detail: o.ref }));
   });

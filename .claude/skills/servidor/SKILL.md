@@ -37,9 +37,10 @@ Un servidor que lleva horas o que sirvió varias ramas se reinicia antes de una 
 ```
 powershell -NoProfile -File .claude/skills/servidor/procesos.ps1 -Cerrar
 powershell -NoProfile -File .claude/skills/servidor/procesos.ps1 -Cerrar -Conservar 5189
+powershell -NoProfile -File .claude/skills/servidor/procesos.ps1 -Cerrar -Solo 5291
 ```
 
-La primera forma cierra todo; la segunda deja el servidor de QA. El script termina cada árbol de procesos por PID y falla si queda un puerto abierto. Después de un `TaskStop` sobre un servidor o una corrida, corre siempre `-Cerrar`: el `TaskStop` solo no basta.
+La primera forma cierra todo; la segunda deja el servidor de QA; la tercera cierra **solo** el servidor de ese puerto, y es la única que usa un agente (con su propio puerto) mientras haya otros trabajando. Ninguna termina corridas de vitest: pueden ser de otro agente, así que solo se listan. El script termina cada árbol de procesos por PID y falla si queda un puerto abierto. Después de un `TaskStop` sobre un servidor o una corrida, corre siempre `-Cerrar`: el `TaskStop` solo no basta.
 
 ## Cuándo revisar
 
@@ -51,4 +52,4 @@ La primera forma cierra todo; la segunda deja el servidor de QA. El script termi
 
 Copia estas líneas en todo encargo que use navegador o Playwright:
 
-> Un solo proceso pesado a la vez. Playwright siempre con `KURA_URL=http://127.0.0.1:<puerto>/` y `--workers=1`, nunca dos corridas a la vez. No levantes otro servidor. Al terminar, cierra el navegador y corre `powershell -NoProfile -File G:/proyectos/kura3d/.claude/skills/servidor/procesos.ps1`; si queda algo que tú lanzaste, ciérralo por PID y dilo en el informe.
+> Un solo proceso pesado a la vez. Playwright siempre con `KURA_URL=http://127.0.0.1:<puerto>/` y `--workers=1`, nunca dos corridas a la vez. No levantes otro servidor. Al terminar, cierra el navegador y corre `powershell -NoProfile -File G:/proyectos/kura3d/.claude/skills/servidor/procesos.ps1`; si queda algo que tú lanzaste, ciérralo por PID (tu servidor: `procesos.ps1 -Cerrar -Solo <tu puerto>`; nunca `-Cerrar` a secas) y dilo en el informe.

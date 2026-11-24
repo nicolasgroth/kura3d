@@ -31,6 +31,8 @@ Estados: **Activa** (disponible al usuario), **Parcial** (existe con límites co
 | F-ARMADO | Vista explosionada y armado | Animación de armado, "Preparar para imprimir" por placas y "Volver a armar" | Activa | `src/components/split/`, `src/core/scene/splitGroups.ts` |
 | F-ENCAJE | Comprobar encaje | Bajo pedido (menú Acciones y clic derecho), sin cambiar la escena: choques (volumen) y holguras entre piezas y referencias, con las restas pendientes aplicadas en copia, recomendación por par, resaltado de la zona o la cota en el visor y aviso tras Ajustar a la impresora | Activa | `src/engine/fitCheck/`, `src/components/fitCheck/` |
 | F-MULTI | Multimaterial verificado | 3MF comprobado en slicers reales | Planificada | — |
+| F-ASIS | Asistentes | Crear piezas paso a paso desde recetas (caja con tapa, llavero con texto, placa de enchufe) con formulario generado desde la receta | Activa | `src/components/assistants/`, `src/core/recipes/` |
+| F-DRAG | Arrastrar para mover | Arrastrar el objeto seleccionado lo mueve sobre su plano horizontal | Activa | `src/components/viewport/useDragMoveSelected.ts`, `src/core/scene/dragMovePlane.ts` |
 | F-IMG3D | Imagen a modelo 3D | Generar malla desde imagen | Planificada | — |
 
 Las notas de cada funcionalidad por ronda están en [EVALUACIONES.md](EVALUACIONES.md).

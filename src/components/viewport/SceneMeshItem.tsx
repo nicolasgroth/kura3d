@@ -13,6 +13,7 @@ import { type ThreeEvent, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { X } from 'lucide-react';
 import { useKuraStore } from '../../store/useKuraStore';
+import { useGizmoDragStore } from '../../store/gizmoDragStore';
 import { useSplitExplodedPosition } from '../split/useSplitExplode';
 import { useSplitJointDimmed } from '../split/SplitJointHighlight';
 import { MATERIAL_PRESETS, type SceneObject, type Vec3 } from '../../types/kura';
@@ -42,6 +43,8 @@ export const SceneMeshItem: React.FC<{
   clipPlane: THREE.Plane | null;
   overhangFaces: number[] | null;
   onStartPaintDrag: () => void;
+  /** Arrastrar el cuerpo de un objeto ya seleccionado lo mueve; `onClick` corre si el gesto no llega a arrastre. */
+  onStartMoveDrag: (e: ThreeEvent<PointerEvent>, onClick: () => void, options?: { moveEnabled?: boolean }) => void;
   onObjectContextMenu: (id: string, clientX: number, clientY: number) => void;
   registerGroupRef: (id: string, group: THREE.Group | null) => void;
 }> = React.memo(
@@ -52,6 +55,7 @@ export const SceneMeshItem: React.FC<{
     clipPlane,
     overhangFaces,
     onStartPaintDrag,
+    onStartMoveDrag,
     onObjectContextMenu,
     registerGroupRef,
   }) => {
@@ -62,6 +66,7 @@ export const SceneMeshItem: React.FC<{
 
     const activeTool = useKuraStore((s) => s.activeTool);
     const paintMode = useKuraStore((s) => s.paintMode);
+    const transformMode = useKuraStore((s) => s.transformMode);
     // Sin selección, el pincel pinta directo el objeto bajo el cursor (el primer trazo lo selecciona).
     const nothingSelected = useKuraStore((s) => s.selectedIds.length === 0);
     const paintTarget = isPrimarySelected || (nothingSelected && !obj.locked && !isReference(obj));
@@ -243,17 +248,54 @@ export const SceneMeshItem: React.FC<{
       }
 
       const additive = e.ctrlKey || e.metaKey || e.shiftKey;
-      selectObject(obj.id, additive);
+      const pickAndInspect = () => {
+        selectObject(obj.id, additive);
 
-      // Con la lista de estructuras abierta, un clic en el visor elige la estructura en la lista.
-      const seg = useKuraStore.getState().activeSegmentation;
-      if (seg && seg.objectId === obj.id && e.faceIndex != null) {
-        const regionId = regionIdForFace(seg.regions, e.faceIndex);
-        if (regionId) setSelectedRegionId(regionId);
+        // Con la lista de estructuras abierta, un clic en el visor elige la estructura en la lista.
+        const seg = useKuraStore.getState().activeSegmentation;
+        if (seg && seg.objectId === obj.id && e.faceIndex != null) {
+          const regionId = regionIdForFace(seg.regions, e.faceIndex);
+          if (regionId) setSelectedRegionId(regionId);
+        }
+      };
+
+      // Objeto ya seleccionado: arrastrarlo lo mueve; sin arrastre, el clic conserva su efecto. El manipulador
+      // (si ya tomó el gesto) tiene prioridad sobre el cuerpo.
+      if (
+        isSelected &&
+        !additive &&
+        activeTool === 'select' &&
+        transformMode === 'translate' &&
+        !useGizmoDragStore.getState().start
+      ) {
+        onStartMoveDrag(e, pickAndInspect);
+        return;
       }
+      // Pieza no seleccionada (con otra selección, o sin ninguna): un arrastre que orbita la cámara no debe
+      // seleccionar ni cambiar la selección; solo un clic sin movimiento.
+      if (!isSelected && !additive && activeTool === 'select') {
+        onStartMoveDrag(e, pickAndInspect, { moveEnabled: false });
+        return;
+      }
+      pickAndInspect();
     };
 
+    const baseGrab = isSelected && activeTool === 'select' && transformMode === 'translate';
+    // Cursor de arrastre: «agarrar» si hay algo movible; «not-allowed» si todo lo seleccionado está bloqueado;
+    // normal mientras el motor está ocupado (el arrastre no empezaría).
+    const grabCursor = (): string => {
+      const st = useKuraStore.getState();
+      if (!baseGrab || st.busyOperation) return '';
+      const anyMovable = st.objects.some((o) => st.selectedIds.includes(o.id) && !o.locked);
+      return anyMovable ? 'grab' : 'not-allowed';
+    };
+    const isGrabCursor = (c: string) => c === 'grab' || c === 'not-allowed';
     const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
+      // El objeto pudo quedar seleccionado con el puntero ya encima: no habrá `pointerover` nuevo.
+      if (baseGrab && e.buttons === 0 && !useGizmoDragStore.getState().start) {
+        const canvas = e.nativeEvent.target as HTMLElement | null;
+        if (canvas && canvas.style.cursor === '') canvas.style.cursor = grabCursor();
+      }
       if (activeTool === 'measure') {
         onMeasurePointerMove(obj, e);
         return;
@@ -279,6 +321,17 @@ export const SceneMeshItem: React.FC<{
       continueStorePaintStroke(obj.id, strokeSampleFromEvent(e, meshRef.current, obj.scale));
     };
 
+    const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
+      const canvas = e.nativeEvent.target as HTMLElement | null;
+      if (baseGrab && canvas && !useGizmoDragStore.getState().start && e.buttons === 0) canvas.style.cursor = grabCursor();
+    };
+    const handlePointerOut = (e: ThreeEvent<PointerEvent>) => {
+      const canvas = e.nativeEvent.target as HTMLElement | null;
+      if (canvas && isGrabCursor(canvas.style.cursor)) canvas.style.cursor = '';
+      if (activeTool === 'measure') onMeasurePointerOut();
+      else hidePaintCursor();
+    };
+
     const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
       e.nativeEvent.preventDefault();
@@ -302,7 +355,8 @@ export const SceneMeshItem: React.FC<{
           renderOrder={isNegative(obj) ? 8 : isReference(obj) ? 6 : 0}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
-          onPointerOut={activeTool === 'measure' ? onMeasurePointerOut : hidePaintCursor}
+          onPointerOver={handlePointerOver}
+          onPointerOut={handlePointerOut}
           onContextMenu={handleContextMenu}
         >
           {isReference(obj) ? (

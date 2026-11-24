@@ -22,6 +22,7 @@ import { opSpec } from './opTable';
 import { derivedCopy, guarded } from './ops/opSupport';
 import { provenanceFor, recipeHash, storedAnswers } from './provenance';
 import { assetSvgText, fileSvgText } from './resources';
+import { stepInputFailure } from './stepFailure';
 import type { RecipeCheckWarning, RecipeRunResult, RunInput } from './types';
 import { WorkScene } from './workScene';
 
@@ -66,8 +67,10 @@ export async function executeRecipe(ctx: OperationContext, prepared: PreparedRec
     },
   };
   let instances = 0;
+  let current = -1;
   try {
     for (let k = 0; k < result.steps.length; k++) {
+      current = k;
       const step = result.steps[k];
       const base = joinPath('steps', k);
       scene.checkTime(base);
@@ -95,6 +98,9 @@ export async function executeRecipe(ctx: OperationContext, prepared: PreparedRec
     }
     return await finish(ctx, prepared, input, scene, warnings, profile, instances);
   } catch (error) {
+    // Un rechazo del motor en un paso con `onError` va junto al campo del usuario, no como error técnico.
+    const input = current >= 0 ? stepInputFailure(recipe, result.steps[current].id, current, error, lang) : null;
+    if (input) return { ok: false, errors: [input.issue], messages: [...result.messages, input.message], params: result.params };
     if (error instanceof RecipeError) return failure(prepared, [error.issue]);
     throw error;
   }

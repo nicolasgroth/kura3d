@@ -512,3 +512,78 @@ No evaluado: guardar y abrir `.kura`, arrastrar el manipulador, ángulo/área/ca
 Serie de usabilidad: 76 → 75 → 79 → 78 → 80 → 81. Sexta ronda bajo el mínimo: se consulta de nuevo al autor.
 
 Consumo: evaluador (Opus · 17 min).
+
+## QA23 · 24 de noviembre de 2026, 12:15 · rama `feat/asistentes-y-arrastrar` · rechazada, corregida
+
+Dos funcionalidades nuevas: arrastrar el objeto seleccionado para moverlo sobre su plano horizontal, y la sección Asistentes (caja con tapa, llavero, placa de enchufe).
+
+**Arrastrar para mover:** sin fallos. Objeto apoyado y elevado, varias vistas incluida la rasante, varios seleccionados, bloqueados, Escape, un solo paso de deshacer, rejilla, grupos; no actúa con Pintar, Cortar, Borrar ni Medir. Con Rotar o Escalar activos el cuerpo no mueve el objeto (decisión del desarrollo). Con un STL de 253 mil triángulos no congela, pero va a unas 4 imágenes por segundo, un 50 % más lento que orbitar. Sin probar: táctil y lápiz.
+
+**Asistentes:** rechazada por dos fallos mayores, corregidos por el orquestador:
+
+1. Crear dos veces el mismo asistente apilaba el segundo juego sobre el primero. Ahora las salidas de una receta se llevan como bloque al primer hueco libre de la cama.
+2. Con la cama por defecto la tapa quedaba 8 mm fuera de la cama y el aviso no lo decía. Con la colocación en bloque el juego queda centrado dentro de la cama, y si no cabe sale el aviso habitual.
+
+Menores corregidos: el llavero no tenía descripción; las variantes de la placa decían «(por verificar) (sin verificar)». Menor pendiente: a 390 px la hoja de Asistentes abre muy baja (se ve un solo campo). Antes de la QA se corrigieron dos variantes de la placa (Italia y España) que no respetaban su propio rango.
+
+Lo demás pasó: lista, foco, teclado, paleta, rangos con mensaje junto al campo, coma decimal, las 4 variantes de la placa, medidas de la caja (84 × 64 × 42 exterior para 80 × 60 × 40 interior con pared 2), un solo deshacer, inglés, 390/1024/1440 px sin scroll horizontal. Recorridos vecinos: 19 de 19.
+
+Tras las correcciones: 2638 pruebas del frontend pasan; el recorrido de doble creación pasa en navegador (su medición comparaba la altura en vez del fondo y se corrigió).
+
+No probado: tema oscuro real, táctil y lápiz, 1280×720, contenido de los archivos exportados, «Comprobar encaje» de la caja con la tapa montada, idiomas de, fr, hi y zh.
+
+Consumo (modelo · duración · tokens): arrastrar para mover (Sonnet · 24 min · 190 k), Asistentes (Sonnet · 22 min · 283 k), QA23 (Sonnet · 39 min · 176 k).
+
+## Evaluación a ciegas de arrastrar para mover y Asistentes · 24 de noviembre de 2026, 12:45 · rama `feat/asistentes-y-arrastrar` (`f31e584`) · primera ronda
+
+| Funcionalidad | Usabilidad | Código | Funcional |
+|---|---|---|---|
+| Arrastrar para mover | 83 | 80 | 86 |
+| Asistentes | 81 | 83 | 70 |
+
+Sin bloqueos duros en ninguna. Bajo el mínimo (85) en cinco de las seis notas: se corrige y se reevalúa con evaluadores nuevos.
+
+**Arrastrar para mover.** Usabilidad: arrastrar sobre un objeto no seleccionado gira la vista pero al soltar lo deja seleccionado; el cursor no cambia al pasar sobre lo arrastrable; la cámara encuadra muy pegada; sin marca del plano en objetos elevados. Código: el gesto no tiene pruebas unitarias; la prueba del alcance máximo no ejercita el recorte; si el objeto se desmonta a mitad del gesto la cámara queda apagada; cada movimiento escribe en el estado sin agrupar por cuadro. Funcional: cumple lo prometido; falta avisar al soltar fuera de la cama.
+
+**Asistentes.** Funcional (70): la caja con tapa sale bien (tapa a presión con 0,2 mm de holgura por lado; pilotos de 2,52 mm para M3; sólidos cerrados), pero con valores válidos hay piezas inútiles sin aviso: placa con tornillos arriba y abajo que pierde los agujeros; llavero con logo y texto superpuestos y en dos piezas; argolla grande con letra chica que parte el llavero; llavero de 569 mm sin chequeo de cama; texto en blanco que da un error del motor; el juego caja + tapa no cabe como bloque desde 120 mm. Usabilidad: «Volver a la lista» pierde el foco; dos controles «Texto» en el llavero; la variante Chile no cambia nada; sin vista previa ni edición posterior; a 390 px el pie tapa campos. Código: aviso de fallo duplicado; aviso de cama ante cualquier chequeo; formulario que se redibuja con cada cambio de escena; archivo sin tope de lectura.
+
+Fuera de esta ronda (quedan como mejoras): vista previa antes de crear, reabrir un asistente con los parámetros de lo creado, labio de la tapa en reborde, avellanado de tornillos, medidas reales por país de la placa, marca del plano de arrastre.
+
+Consumo (modelo · duración · tokens): usabilidad (Opus · 6 min · 161 k), código (Opus · 5 min · 140 k), funcional (Opus · 6 min · 129 k).
+
+## Arrastrar para mover y Asistentes · segunda ronda a ciegas · 24 de noviembre de 2026, 13:20 · rama `feat/asistentes-y-arrastrar` (`a1a5d1d`)
+
+Evaluadores nuevos tras dos lotes de corrección (recetas con casos reales; código y usabilidad). 2688 pruebas del frontend y 34 recorridos en navegador pasan.
+
+| Funcionalidad | Usabilidad | Código | Funcional | Primera ronda |
+|---|---|---|---|---|
+| Arrastrar para mover | 86 | 86 | 84 | 83 / 80 / 86 |
+| Asistentes | 84 | 83 | 82 | 81 / 83 / 70 |
+
+Sin bloqueos. Cuatro de seis notas siguen bajo 85, por hallazgos distintos de los ya corregidos:
+
+- **Arrastrar.** Funcional: alcance de 2000 mm fijo en vista casi rasante; sin selección, presionar una pieza la selecciona aunque luego se gire la vista. Código: las pruebas del gesto no verifican sentido ni magnitud; paso de deshacer vacío con desplazamiento cero; sin aviso con el motor ocupado. Usabilidad: en vista Frente la pieza no sigue al cursor (el plano sigue siendo horizontal); cursor «grab» sobre piezas bloqueadas; sin guía visual del plano.
+- **Asistentes.** Código: las recetas traen textos solo en español e inglés y la prueba de paridad no lo detecta; carrera al cargar archivos; `submit` sin `try/finally`. Funcional: emoji o SVG de solo trazo terminan en un error técnico del motor; caja chica con postes que tapan el interior; pestaña de la tapa a presión que resta altura sin decirlo; logo alto que deja un llavero de 290 mm; avellanado que atraviesa placas delgadas. Usabilidad: mensajes viejos junto a un valor inválido; texto cortado en silencio a 20 caracteres; cambiar de variante borra lo ingresado; «Crear» tapa un campo a 390 px; sin vista previa ni reedición.
+
+Tercera ronda de corrección en curso (dos lotes). Quedan fuera, como mejoras posteriores: vista previa en vivo, reabrir un asistente con los parámetros de lo creado, plano vertical al arrastrar en vista frontal y guía visual del plano.
+
+Consumo (modelo · duración · tokens): correcciones de código (Sonnet · 11 min · 174 k), recetas con casos reales (Opus · 13 min · 169 k), usabilidad (Opus · 8 min · 180 k), código (Opus · 5 min · 154 k), funcional (Opus · 8 min · 147 k).
+
+## Arrastrar para mover y Asistentes · tercera ronda a ciegas · 24 de noviembre de 2026, 14:00 · rama `feat/asistentes-y-arrastrar`
+
+Evaluadores nuevos tras la tercera ronda de corrección. 2781 pruebas del frontend, 151 del servidor MCP y 34 recorridos en navegador pasan. A los evaluadores se les indicó qué queda fuera de esta versión (elegir el plano de arrastre según la vista, vista previa en vivo, reabrir un asistente con sus parámetros).
+
+| Funcionalidad | Usabilidad | Código | Funcional | Segunda ronda | Primera ronda |
+|---|---|---|---|---|---|
+| Arrastrar para mover | 84 | 88 | 85 | 86 / 86 / 84 | 83 / 80 / 86 |
+| Asistentes | 86 | 85 | 86 | 84 / 83 / 82 | 81 / 83 / 70 |
+| Global del evaluador | 85 | 86 | 85 | | |
+
+Sin bloqueos. Asistentes queda sobre el mínimo en los tres evaluadores. Arrastrar queda en 84 en usabilidad (un punto bajo el mínimo) tras tres rondas: se consulta al autor (consulta 3).
+
+- **Arrastrar, usabilidad (84).** En vista Frente, agarrar la mitad superior de la pieza no la mueve y no se explica por qué (el rayo queda casi paralelo al plano horizontal); el consejo «Alt+arrastrar clona» está junto al de arrastrar y solo vale para el manipulador; el evaluador no vio cambiar el cursor sobre lo arrastrable.
+- **Arrastrar, código (88) y funcional (85).** Ctrl+Z a mitad del gesto sin manejar; el límite de alcance solo se aplica al primer objeto; sin aviso al dejar la pieza fuera de la cama.
+- **Asistentes.** Código: un archivo opcional rechazado dejaba «Crear» bloqueado (corregido en `d4d55b8`). Funcional: holgura de la tapa a presión fija en 0,2 mm; logo muy ancho y bajo con detalle de 0,14 mm sin aviso; llavero que no cabe solo avisa. Usabilidad: cambiar de variante pisa lo editado en los campos que la variante define, sin avisar; el texto del llavero se valida al crear y no al salir del campo; los botones ▲▼ no llevan el nombre de su campo.
+- **Incidente durante la evaluación de usabilidad:** el orquestador editó `FileField.tsx` con el servidor en uso y por unos segundos la app quedó en blanco (`useState is not defined`) hasta completar la importación. No se repitió tras recargar. Queda como regla: no editar la rama servida mientras un evaluador usa el navegador. El evaluador anotó además que falta una barrera de errores: un fallo en un campo se lleva la app entera.
+
+Consumo (modelo · duración · tokens): recetas ronda 3 (Opus · 18 min · 202 k), interfaz ronda 3 (Sonnet · 9 min · 178 k), usabilidad (Opus · 9 min · 195 k), código (Opus · 5 min · 154 k), funcional (Opus · 7 min · 135 k).

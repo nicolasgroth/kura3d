@@ -75,6 +75,9 @@ describe('expresiones: ruta feliz', () => {
   it('texto, len, has, lookup y variables de patrón', () => {
     expect(run('=len(p.text)')).toBe(4);
     expect(run("=p.text + '!'")).toBe('Kura!');
+    expect(run("=len(trim('  a b  '))")).toBe(3);
+    expect(run("=trim('   ') == ''")).toBe(true);
+    expect(() => run('=trim(3)')).toThrow();
     expect(run('=has(p.logo)')).toBe(false);
     expect(run("=lookup('m', 3)")).toBe(0.5);
     expect(run('=x + y + i*n')).toBe(7.5);

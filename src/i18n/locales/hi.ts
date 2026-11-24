@@ -40,9 +40,11 @@ import { REALESMOTOR_HI } from './realesMotor';
 import { REALESUI_HI } from './realesUi';
 import { UX6_HI } from './ux6';
 import { RECETAS_HI } from './recetas';
+import { ASISTENTES_HI } from './asistentes';
 import { BORDES_HI } from './bordesPrimitivas';
 import { UX7_HI } from './ux7';
 import { UX8_HI } from './ux8';
+import { UX10_HI } from './ux10';
 import { REDISENO_HI } from './rediseno';
 import { PANEL_HI } from './panel';
 import { ENCAJE_UI_HI } from './encajeUi';
@@ -86,9 +88,11 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...REALESUI_HI,
   ...UX6_HI,
   ...RECETAS_HI,
+  ...ASISTENTES_HI,
   ...BORDES_HI,
   ...UX7_HI,
   ...UX8_HI,
+  ...UX10_HI,
   ...REDISENO_HI,
   ...PANEL_HI,
   ...ENCAJE_UI_HI,
@@ -284,7 +288,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'viewport.erase.hint': 'गोला घटाने के लिए मॉडल की सतह पर क्लिक करें',
   'viewport.cut.hint': 'स्वचालित कनेक्टर के साथ विभाजित करने के लिए समतल कट संवाद खोलें',
   'viewport.cut.openDialog': 'समतल कट कॉन्फ़िगर करें',
-  'viewport.protip.select': 'सुझाव: Alt+ड्रैग क्लोन · Shift समानुपातिक स्केल · Ctrl 15° स्नैप · ↑↓←→ खिसकाएं',
+  'viewport.protip.select': 'सुझाव: चुने ऑब्जेक्ट को ड्रैग करके खिसकाएं · Alt+ड्रैग क्लोन · Shift समानुपातिक स्केल · Ctrl 15° स्नैप · ↑↓←→ खिसकाएं',
   'viewport.protip.paint': 'सुझाव: 3MF सतह रंगने के लिए क्लिक/ड्रैग करें · P से चयन पर लौटें',
   'viewport.protip.erase': 'सुझाव: गोला तराशने के लिए मॉडल पर क्लिक करें · ऊपर त्रिज्या बदलें',
   'viewport.protip.cut': 'सुझाव: अक्ष और कनेक्टर सेट करें · X से एक्स-रे टॉगल करें',

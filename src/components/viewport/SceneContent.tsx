@@ -39,6 +39,7 @@ import { GroupTransformGizmo } from './GroupTransformGizmo';
 import { GroupEnterOnDoubleClick } from './GroupEnterOnDoubleClick';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
 import { usePaintStroke } from './usePaintStroke';
+import { useDragMoveSelected } from './useDragMoveSelected';
 
 /** Caras del cubo de vistas en el orden de drei (+X, −X, +Y, −Y, +Z, −Z internos = der, izq, sup, inf, frente, fondo). */
 const VIEWCUBE_FACES = ['right', 'left', 'top', 'bottom', 'front', 'back'] as const;
@@ -53,6 +54,7 @@ export const SceneContent: React.FC<{
 
   const { isTransforming, setIsTransforming, gizmoEpoch, dragStartScaleRef } = useGizmoDrag();
   const { isPaintingDrag, setIsPaintingDrag } = usePaintStroke();
+  const { startDragMove } = useDragMoveSelected(orbitRef);
   const { modifiersRef, ctrlHeld } = useGizmoModifiers();
   const gizmoColorsRef = useUserAxisGizmoColors();
   const [activeTargetGroup, setActiveTargetGroup] = useState<THREE.Group | null>(null);
@@ -185,6 +187,7 @@ export const SceneContent: React.FC<{
             obj.id,
           )}
           onStartPaintDrag={() => setIsPaintingDrag(true)}
+          onStartMoveDrag={startDragMove}
           onObjectContextMenu={onObjectContextMenu}
           registerGroupRef={registerGroupRef}
         />

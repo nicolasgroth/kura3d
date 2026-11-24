@@ -81,7 +81,7 @@ describe('ejecutor: caja con tapa atornillada (valores por defecto)', () => {
     const answers = { w: 70 };
     const result = expectOk(await runRecipe(testContext(), { recipe: clone(EXAMPLES.caja), answers }));
     const meta = result.change.added.map((o) => o.metadata?.recipe);
-    expect(meta[0]).toMatchObject({ id: 'kura.caja-tapa', version: '1.0.0', answers: { w: 70 }, output: 'box' });
+    expect(meta[0]).toMatchObject({ id: 'kura.caja-tapa', version: '1.1.0', answers: { w: 70 }, output: 'box' });
     expect(meta[1]?.output).toBe('lidout');
     expect(meta[0]?.hash).toMatch(/^[0-9a-f]{64}$/);
     expect(meta[0]?.hash).toBe(meta[1]?.hash);

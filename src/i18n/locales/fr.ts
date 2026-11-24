@@ -40,9 +40,11 @@ import { REALESMOTOR_FR } from './realesMotor';
 import { REALESUI_FR } from './realesUi';
 import { UX6_FR } from './ux6';
 import { RECETAS_FR } from './recetas';
+import { ASISTENTES_FR } from './asistentes';
 import { BORDES_FR } from './bordesPrimitivas';
 import { UX7_FR } from './ux7';
 import { UX8_FR } from './ux8';
+import { UX10_FR } from './ux10';
 import { REDISENO_FR } from './rediseno';
 import { PANEL_FR } from './panel';
 import { ENCAJE_UI_FR } from './encajeUi';
@@ -86,9 +88,11 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...REALESUI_FR,
   ...UX6_FR,
   ...RECETAS_FR,
+  ...ASISTENTES_FR,
   ...BORDES_FR,
   ...UX7_FR,
   ...UX8_FR,
+  ...UX10_FR,
   ...REDISENO_FR,
   ...PANEL_FR,
   ...ENCAJE_UI_FR,
@@ -284,7 +288,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'viewport.erase.hint': 'Cliquez sur la surface du modèle pour soustraire une sphère',
   'viewport.cut.hint': 'Ouvrez la fenêtre Coupe par Plan pour diviser avec connecteurs automatiques',
   'viewport.cut.openDialog': 'Configurer la Coupe par Plan',
-  'viewport.protip.select': 'Astuce : Alt+glisser clone · Shift échelle prop. · Ctrl pas 15° · ↑↓←→ déplace',
+  'viewport.protip.select': 'Astuce : glisser un objet sélectionné le déplace · Alt+glisser clone · Shift échelle prop. · Ctrl pas 15° · ↑↓←→ déplace',
   'viewport.protip.paint': 'Astuce : Cliquez ou glissez pour peindre en 3MF · P revient à Sélection',
   'viewport.protip.erase': 'Astuce : Cliquez sur le modèle pour sculpter · Réglez le rayon ci-dessus',
   'viewport.protip.cut': 'Astuce : Configurez l’axe et les connecteurs · X active Rayons X',
