@@ -4,7 +4,8 @@
  * una sola parada de tabulación, foco itinerante con flechas, Inicio y Fin). Seleccionar y los modos del
  * manipulador (Mover, Rotar, Escalar), y las herramientas de puntero (Pintar, Cortar, Esculpir / Borrar, Medir).
  * El botón activo lleva `aria-pressed` y una marca lateral además del color. Los atajos de teclado globales
- * (V, M/G/W, R, S, P, C, D) siguen en `App`. En pantallas estrechas se oculta: las herramientas siguen en el
+ * (V, M/G/W, R, S, P, C, D) siguen en `App`. Arriba, el botón «Agregar» (`AddRailButton`) abre a su derecha el
+ * menú de primitivas; es la primera parada del recorrido con flechas. En pantallas estrechas se oculta: las herramientas siguen en el
  * menú «Más» de la barra superior y en la barra de transformación inferior.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -17,6 +18,7 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { ActiveTool, TransformMode } from '../../types/kura';
 import { CONTROL_HELP, helpAttrs, helpLabel, type HelpId } from './controlHelp';
+import { AddRailButton } from './InsertMenus';
 import '../../styles/shellRail.css';
 
 interface RailItem {
@@ -46,6 +48,8 @@ export const RAIL_GROUPS: ReadonlyArray<ReadonlyArray<RailItem>> = [
 ];
 
 const FLAT = RAIL_GROUPS.flat();
+/** Paradas del recorrido con flechas: «Agregar» (índice 0) y luego cada herramienta. */
+const STOPS = FLAT.length + 1;
 
 export const ToolRail: React.FC = () => {
   const language = useKuraStore((s) => s.language);
@@ -66,12 +70,12 @@ export const ToolRail: React.FC = () => {
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const keys: Record<string, number | undefined> = {
-      ArrowDown: (focusIndex + 1) % FLAT.length,
-      ArrowRight: (focusIndex + 1) % FLAT.length,
-      ArrowUp: (focusIndex - 1 + FLAT.length) % FLAT.length,
-      ArrowLeft: (focusIndex - 1 + FLAT.length) % FLAT.length,
+      ArrowDown: (focusIndex + 1) % STOPS,
+      ArrowRight: (focusIndex + 1) % STOPS,
+      ArrowUp: (focusIndex - 1 + STOPS) % STOPS,
+      ArrowLeft: (focusIndex - 1 + STOPS) % STOPS,
       Home: 0,
-      End: FLAT.length - 1,
+      End: STOPS - 1,
     };
     const next = keys[e.key];
     if (next === undefined) return;
@@ -82,7 +86,7 @@ export const ToolRail: React.FC = () => {
     refs.current[next]?.focus();
   };
 
-  let index = -1;
+  let index = 0;
   return (
     <div
       className="kura-tool-rail"
@@ -92,9 +96,16 @@ export const ToolRail: React.FC = () => {
       id="kura-tool-rail"
       onKeyDown={onKeyDown}
     >
+      <AddRailButton
+        tabIndex={focusIndex === 0 ? 0 : -1}
+        buttonRef={(el) => {
+          refs.current[0] = el;
+        }}
+        onFocus={() => setFocusIndex(0)}
+      />
       {RAIL_GROUPS.map((group, g) => (
         <React.Fragment key={g}>
-          {g > 0 && <div className="kura-tool-rail-sep" role="separator" aria-orientation="horizontal" />}
+          <div className="kura-tool-rail-sep" role="separator" aria-orientation="horizontal" />
           {group.map((item) => {
             index += 1;
             const i = index;

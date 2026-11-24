@@ -50,6 +50,7 @@ import { UX7_EN, UX7_ES } from './locales/ux7';
 import { REDISENO_EN, REDISENO_ES } from './locales/rediseno';
 import { PANEL_EN, PANEL_ES } from './locales/panel';
 import { ENCAJE_UI_EN, ENCAJE_UI_ES } from './locales/encajeUi';
+import { REDISENO3A_EN, REDISENO3A_ES } from './locales/rediseno3a';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -94,6 +95,7 @@ export const TRANSLATIONS_ES = {
   ...REDISENO_ES,
   ...PANEL_ES,
   ...ENCAJE_UI_ES,
+  ...REDISENO3A_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -1438,6 +1440,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...REDISENO_EN,
   ...PANEL_EN,
   ...ENCAJE_UI_EN,
+  ...REDISENO3A_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',

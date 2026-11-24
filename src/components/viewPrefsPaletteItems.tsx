@@ -1,14 +1,14 @@
 /**
  * @file src/components/viewPrefsPaletteItems.tsx
  * @description Entradas de la paleta de comandos para las preferencias de vista: vista sin cama y los
- * tres estados de la barra lateral izquierda. Se leen y cambian en el store al ejecutarse.
+ * dos estados de la barra lateral izquierda (Escena visible u oculta). Se leen y cambian en el store al ejecutarse.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import React from 'react';
-import { EyeOff, Grid2x2X, PanelLeft, PanelLeftClose } from 'lucide-react';
+import { EyeOff, Grid2x2X, PanelLeft } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import type { LanguageCode } from '../types/kura';
@@ -25,7 +25,7 @@ export interface ViewPrefsPaletteItem {
 }
 
 export function viewPrefsPaletteItems(language: LanguageCode, category: string, showBed: boolean): ViewPrefsPaletteItem[] {
-  const set = (mode: 'full' | 'compact' | 'hidden') => () => useKuraStore.getState().setLeftSidebarMode(mode);
+  const set = (mode: 'full' | 'hidden') => () => useKuraStore.getState().setLeftSidebarMode(mode);
   return [
     {
       id: 'view-bed',
@@ -39,21 +39,12 @@ export function viewPrefsPaletteItems(language: LanguageCode, category: string, 
     },
     {
       id: 'view-sidebar-full',
-      label: t(language, 'ux6.sidebar.cmdFull'),
+      label: t(language, 'r3a.sidebar.show'),
       category,
-      keywords: 'barra lateral completa formas escena sidebar full',
+      keywords: 'barra lateral mostrar escena arbol sidebar show scene tree',
       kind: 'local',
       icon: <PanelLeft size={15} />,
       run: set('full'),
-    },
-    {
-      id: 'view-sidebar-compact',
-      label: t(language, 'ux6.sidebar.cmdCompact'),
-      category,
-      keywords: 'barra lateral compacta iconos rail sidebar compact icons',
-      kind: 'local',
-      icon: <PanelLeftClose size={15} />,
-      run: set('compact'),
     },
     {
       id: 'view-sidebar-hidden',

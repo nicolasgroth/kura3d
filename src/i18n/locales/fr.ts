@@ -45,6 +45,7 @@ import { UX7_FR } from './ux7';
 import { REDISENO_FR } from './rediseno';
 import { PANEL_FR } from './panel';
 import { ENCAJE_UI_FR } from './encajeUi';
+import { REDISENO3A_FR } from './rediseno3a';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -87,6 +88,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...REDISENO_FR,
   ...PANEL_FR,
   ...ENCAJE_UI_FR,
+  ...REDISENO3A_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',

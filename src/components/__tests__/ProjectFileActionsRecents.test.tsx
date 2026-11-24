@@ -1,6 +1,6 @@
 /**
- * @file src/components/__tests__/ProjectMenuRecents.test.tsx
- * @description Proyectos recientes en escritorio: la lista muestra nombre, carpeta abreviada y fecha, abre con
+ * @file src/components/__tests__/ProjectFileActionsRecents.test.tsx
+ * @description Proyectos recientes en escritorio (panel Proyecto): la lista muestra nombre, carpeta abreviada y fecha, abre con
  * un clic (por id, nunca por ruta), marca los archivos que ya no existen, permite quitarlos y el ajuste
  * «Recordar proyectos recientes» desactiva y borra el registro.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -44,7 +44,7 @@ vi.mock('../../project/nativeRecents', async (original) => ({
 
 import * as nativeRecents from '../../project/nativeRecents';
 import { RecentProjectsSettings } from '../settings/RecentProjectsSettings';
-import { ProjectMenu } from '../ProjectMenu';
+import { ProjectFileActions } from '../contextPanel/ProjectFileActions';
 
 const ITEMS: NativeRecentList['items'] = [
   { id: 'id-1', name: 'Estatua.kura', folder: 'C:\\Users\\ana\\Documentos\\Modelos', openedAt: 1_700_000_000_000, exists: true },
@@ -58,10 +58,10 @@ describe('Proyectos recientes en escritorio', () => {
   });
 
   it('muestra nombre, carpeta abreviada y marca los que ya no existen', async () => {
-    render(<ProjectMenu />);
-    const open = await screen.findByRole('menuitem', { name: /^Estatua\.kura/, hidden: true });
+    render(<ProjectFileActions />);
+    const open = await screen.findByRole('button', { name: /^Estatua\.kura/ });
     expect(open.textContent).toContain('…/Documentos/Modelos');
-    const lost = screen.getByRole('menuitem', { name: /^Perdido\.kura/, hidden: true });
+    const lost = screen.getByRole('button', { name: /^Perdido\.kura/ });
     expect(lost).toHaveProperty('disabled', true);
     expect(lost.textContent).toContain(t('es', 'project.recent.missingTag'));
   });
@@ -73,18 +73,18 @@ describe('Proyectos recientes en escritorio', () => {
     });
     useKuraStore.setState({ openProject } as never);
     const user = userEvent.setup();
-    render(<ProjectMenu />);
-    await user.click(await screen.findByRole('menuitem', { name: /^Estatua\.kura/, hidden: true }));
+    render(<ProjectFileActions />);
+    await user.click(await screen.findByRole('button', { name: /^Estatua\.kura/ }));
     await waitFor(() => expect(nativeRecents.openNativeRecent).toHaveBeenCalledWith('id-1', 'Estatua.kura'));
     expect(openProject).toHaveBeenCalledTimes(1);
   });
 
   it('permite quitar una entrada de la lista', async () => {
     const user = userEvent.setup();
-    render(<ProjectMenu />);
-    await user.click(await screen.findByRole('menuitem', { name: t('es', 'project.recent.removeOne', { name: 'Perdido.kura' }), hidden: true }));
+    render(<ProjectFileActions />);
+    await user.click(await screen.findByRole('button', { name: t('es', 'project.recent.removeOne', { name: 'Perdido.kura' }) }));
     expect(nativeRecents.removeNativeRecent).toHaveBeenCalledWith('id-2');
-    await waitFor(() => expect(screen.queryByRole('menuitem', { name: /^Perdido\.kura/, hidden: true })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('button', { name: /^Perdido\.kura/ })).toBeNull());
   });
 
   it('el ajuste Recordar proyectos recientes está activado y al desactivarlo borra el registro', async () => {

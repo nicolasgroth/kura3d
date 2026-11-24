@@ -1,7 +1,7 @@
 /**
  * @file src/components/NarrowPanelBar.tsx
  * @description Barra-asa de la hoja inferior en pantallas estrechas (<= 900 px). Elige la hoja abierta
- * (Formas, Inspector; el chat de IA y los paneles de operación muestran su título) y hace de tirador:
+ * (Agregar, Escena, Inspector; el chat de IA y los paneles de operación muestran su título) y hace de tirador:
  * arrastrarlo con el dedo cambia la altura de la hoja (plegada, media, completa) con captura de puntero;
  * el botón del tirador la alterna también con teclado (`aria-expanded`). Escape cierra la hoja.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -127,12 +127,12 @@ export const NarrowPanelBar: React.FC<Props> = ({ language, panel, opTitle, heig
         className={`kura-btn kura-btn-sm ${shapesOpen ? 'is-active' : ''}`}
         aria-controls="kura-shapes-panel"
         aria-expanded={shapesOpen}
-        title={t(language, 'narrow.bar.shapesTip')}
+        title={t(language, 'r3a.sheet.addTip')}
         onClick={() => (panel === 'left' && !shapesOpen ? requestLeftPanelTab('shapes') : onToggle('left'))}
       >
-        {t(language, 'sidebar.tab.shapes')}
+        {t(language, 'r3a.add.button')}
       </button>
-      {/* Escena es su propio botón: la hoja no repite las pestañas Formas / Escena (ver narrowPanelBar.css). */}
+      {/* Escena es su propio botón, junto a Agregar. */}
       <button
         type="button"
         className={`kura-btn kura-btn-sm ${sceneOpen ? 'is-active' : ''}`}

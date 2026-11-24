@@ -1,9 +1,10 @@
 /**
  * @file src/components/TopBar.tsx
  * @description Barra superior de aplicación (una fila): a la izquierda marca y versión, grupo Archivo
- * (Importar, Proyecto, Exportar: Importar y Exportar con texto siempre), Edición (Deshacer, Rehacer e historial)
- * y el menú Acciones; a la derecha paleta, idioma, temas, tema claro/oscuro, rótulos, MCP, IA y Ajustes. Si
- * falta ancho, pasa al menú «Más» lo menos usado y después quita rótulos. Las herramientas viven en la barra
+ * (Importar, Proyecto, Exportar: Importar y Exportar con texto siempre; Proyecto muestra el panel derecho
+ * «Proyecto», sin menú), Edición (Deshacer, Rehacer e historial) y los menús Insertar y Acciones; a la derecha
+ * paleta, idioma (bandera y código), temas, tema claro/oscuro, rótulos, MCP (siempre con el texto «MCP»), IA y
+ * Ajustes. Si falta ancho, pasa al menú «Más» lo menos usado y después quita rótulos. Las herramientas viven en la barra
  * vertical junto al visor; en pantallas estrechas (sin barra vertical) siguen en el menú «Más».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -13,7 +14,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Bot,
-  ChevronDown,
   CaseSensitive,
   Cloud,
   Download,
@@ -35,20 +35,18 @@ import {
 import { t } from '../i18n';
 import { BRAND } from '../brand';
 import { useKuraStore } from '../store/useKuraStore';
-import {
-  SUPPORTED_LANGUAGES,
-  type ActiveTool,
-  type LanguageCode,
-} from '../types/kura';
+import type { ActiveTool } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
 import { useMcpBridgeStatus } from '../utils/mcpBridgeClient';
 import { describeMcpBridge } from '../utils/mcpBridgeHealth';
 import { openExportDialog } from './ExportDialog';
 import { ImportMenuButton } from './ImportMenuButton';
-import { ProjectMenu } from './ProjectMenu';
+import { LanguageMenu, LanguageRadioItems } from './LanguageMenu';
+import { ProjectButton } from './ProjectButton';
 import { TopBarOverflowMenu } from './TopBarOverflowMenu';
 import { naturalRowWidth, pickTopbarLevel, recordTopbarWidth } from './topbarFit';
 import { ActionsMenu } from './shell/ActionsMenu';
+import { InsertMenu } from './shell/InsertMenus';
 import { HistoryMenu } from './shell/HistoryMenu';
 import { helpAttrs } from './shell/controlHelp';
 import '../styles/shellTopbar.css';
@@ -154,8 +152,6 @@ export const TopBar: React.FC = () => {
     colorScheme === 'dark' || (colorScheme === 'system' && systemDark);
 
   const aiBadge = getAiBadgeDescriptor(aiConfig, language);
-  const currentLangSpec =
-    SUPPORTED_LANGUAGES.find((spec) => spec.code === language) ?? SUPPORTED_LANGUAGES[0];
 
   /**
    * Toggle inteligente de 2 estados en barra superior:
@@ -234,6 +230,8 @@ export const TopBar: React.FC = () => {
 
   const mcpView = describeMcpBridge(language, mcpConfig.enabled, bridgeStatus);
   const mcpLabel = mcpView.short;
+  // Sin rótulos el pill conserva «MCP» (y su indicador): nunca queda un botón sin icono ni texto.
+  const mcpText = compact ? t(language, 'r3a.mcp.short') : mcpLabel;
 
   const mcpTooltip = !mcpConfig.enabled
     ? t(language, 'topbar.mcpDisabledTip')
@@ -281,21 +279,6 @@ export const TopBar: React.FC = () => {
     </button>
   );
 
-  const langSelect = (
-    <select
-      className="kura-lang-select-native"
-      value={language}
-      onChange={(e) => setLanguage(e.target.value as LanguageCode)}
-      aria-label={t(language, 'topbar.languageSelect')}
-    >
-      {SUPPORTED_LANGUAGES.map((spec) => (
-        <option key={spec.code} value={spec.code}>
-          {spec.shortLabel} — {spec.nativeName}
-        </option>
-      ))}
-    </select>
-  );
-
   const themeTip = isRenderedDark
     ? t(language, 'topbar.theme.switchToLight')
     : t(language, 'topbar.theme.switchToDark');
@@ -322,7 +305,7 @@ export const TopBar: React.FC = () => {
 
         <div className="kura-topbar-cluster" role="group" aria-label={t(language, 'rediseno.top.file')}>
           <ImportMenuButton />
-          <ProjectMenu />
+          <ProjectButton />
           <button
             type="button"
             className="kura-btn kura-btn-sm kura-btn-primary"
@@ -361,6 +344,7 @@ export const TopBar: React.FC = () => {
           {!isHidden('history') && <HistoryMenu />}
         </div>
 
+        {!narrowScreen && <InsertMenu showLabel={!compact} />}
         <ActionsMenu showLabel={!compact} />
       </div>
 
@@ -378,19 +362,7 @@ export const TopBar: React.FC = () => {
           </button>
         )}
 
-        {!isHidden('lang') && (
-          <div
-            className="kura-lang-select-wrap"
-            {...helpAttrs('top.language', language)}
-            title={`${t(language, 'topbar.languageSelect')}: ${currentLangSpec.nativeName}`}
-          >
-            <span className="kura-lang-select-face" aria-hidden="true">
-              <span>{currentLangSpec.shortLabel}</span>
-              <ChevronDown size={11} />
-            </span>
-            {langSelect}
-          </div>
-        )}
+        {!isHidden('lang') && <LanguageMenu />}
 
         {!isHidden('themes') && (
           <button
@@ -439,8 +411,8 @@ export const TopBar: React.FC = () => {
             {...helpAttrs('top.mcp', language)}
             title={mcpTooltip}
           >
-            <span className="kura-dot" />
-            <span className="kura-mcp-label">{mcpLabel}</span>
+            <span className="kura-dot" aria-hidden="true" />
+            <span className="kura-mcp-text">{mcpText}</span>
             {mcpConfig.enabled && mcpConfig.requireAuth && <Lock size={10} aria-hidden="true" />}
           </button>
         )}
@@ -481,12 +453,7 @@ export const TopBar: React.FC = () => {
                 <span>{t(language, 'topbar.settings')}</span>
               </button>
             )}
-            {isHidden('lang') && (
-              <label className="kura-topbar-more-row">
-                {t(language, 'topbar.languageSelect')}
-                {langSelect}
-              </label>
-            )}
+            {isHidden('lang') && <LanguageRadioItems language={language} onPick={setLanguage} />}
             {isHidden('labels') && (
               <button
                 type="button"

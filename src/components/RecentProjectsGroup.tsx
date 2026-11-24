@@ -1,6 +1,6 @@
 /**
  * @file src/components/RecentProjectsGroup.tsx
- * @description Grupo «Proyectos recientes» del menú Proyecto. En escritorio cada fila muestra nombre,
+ * @description Grupo «Proyectos recientes» del panel Proyecto (botones, no un menú). En escritorio cada fila muestra nombre,
  * carpeta abreviada y fecha, abre con un clic, marca los archivos que ya no existen y permite quitarlos;
  * en web sigue como antes (nombre y fecha; abrir lleva al selector de archivos).
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -19,7 +19,7 @@ interface RecentProjectsGroupProps {
   view: RecentProjectsView;
   blocked: boolean;
   formatDate: (timestamp: number) => string;
-  /** Abre la entrada (el menú la envuelve con `guardUnsavedChanges`). */
+  /** Abre la entrada (el panel la envuelve con `guardUnsavedChanges`). */
   onOpen: (entry: RecentEntry) => void;
   /** Vacía la lista y avisa al usuario. */
   onClear: () => void;
@@ -41,7 +41,6 @@ export function RecentProjectsGroup({ language, view, blocked, formatDate, onOpe
         <div className="kura-recent-row" key={item.id}>
           <button
             type="button"
-            role="menuitem"
             className="kura-btn kura-btn-sm kura-menu-item kura-recent-item"
             disabled={blocked || !item.exists}
             title={
@@ -62,8 +61,7 @@ export function RecentProjectsGroup({ language, view, blocked, formatDate, onOpe
           {desktop && (
             <button
               type="button"
-              role="menuitem"
-              className="kura-btn kura-btn-sm kura-recent-remove"
+                className="kura-btn kura-btn-sm kura-recent-remove"
               aria-label={t(language, 'project.recent.removeOne', { name: item.name })}
               title={t(language, 'project.recent.remove')}
               onClick={() => void view.remove(item.id)}
@@ -74,7 +72,7 @@ export function RecentProjectsGroup({ language, view, blocked, formatDate, onOpe
         </div>
       ))}
       {entries.length > 0 && (
-        <button type="button" role="menuitem" className="kura-btn kura-btn-sm kura-menu-item" onClick={onClear}>
+        <button type="button" className="kura-btn kura-btn-sm kura-menu-item" onClick={onClear}>
           <Trash2 size={14} aria-hidden="true" />
           <span className="kura-menu-item-label">{t(language, 'project.recent.clear')}</span>
         </button>

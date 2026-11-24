@@ -1,0 +1,106 @@
+/**
+ * @file src/styles/projectPanel.css
+ * @description Panel «Proyecto» del panel derecho: botones de archivo con icono y rótulo (rejilla de 2 columnas),
+ * datos editables en línea (nombre, cama, unidades) con su lápiz y el editor desplegado bajo el valor.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-project-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.kura-project-action {
+  justify-content: flex-start;
+  min-height: 34px;
+  min-width: 0;
+}
+
+.kura-project-action > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* El valor editable puede llevar su editor debajo: no se recorta como el resto de datos. */
+.kura-ctx-panel .kura-ctx-facts dd.kura-fact-dd {
+  overflow: visible;
+  white-space: normal;
+}
+
+.kura-project-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.kura-project-name-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-fact-edit {
+  flex-shrink: 0;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.kura-fact-edit:focus-visible,
+.kura-project-name-edit .kura-input:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+/* Abierto: marca además del color (borde). */
+.kura-fact-edit.is-active {
+  border: 1px solid var(--accent-cyan);
+  background: var(--bg-hover);
+}
+
+.kura-project-name-edit {
+  display: grid;
+  gap: 3px;
+  font-weight: 400;
+}
+
+.kura-project-name-edit .kura-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.kura-project-name-edit .kura-field-error {
+  font-size: 11px;
+  color: var(--accent-red, #e5484d);
+}
+
+.kura-project-name-edit .kura-field-error::before {
+  content: '⚠ ';
+}
+
+.kura-fact-editor {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated, var(--bg-panel));
+  font-weight: 400;
+}
+
+.kura-fact-editor .kura-select,
+.kura-fact-editor .kura-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.kura-fact-done {
+  justify-self: end;
+}

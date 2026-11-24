@@ -101,7 +101,7 @@ export function useRevealSceneOnRequest(showSceneTab: () => void): void {
   useEffect(() => {
     if (!at || Date.now() - at > REQUEST_FRESH_MS) return;
     showSceneTab();
-    // La lista solo está en la barra completa (la compacta muestra iconos).
+    // La lista solo se ve con la barra visible.
     if (leftSidebarMode !== 'full') setLeftSidebarMode('full');
     // Solo al llegar una petición nueva (`n`); el resto de valores se leen vigentes en ese momento.
     // eslint-disable-next-line react-hooks/exhaustive-deps

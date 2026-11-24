@@ -116,6 +116,10 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       saveRightPanelCollapsed(rightCollapsed);
       set({ rightCollapsed });
     },
+    showProjectPanel: () => {
+      if (get().rightCollapsed) saveRightPanelCollapsed(false);
+      set({ selectedIds: [], activeAction: null, rightCollapsed: false });
+    },
     setSectionPlane: (patch) => set((state) => ({ sectionPlane: { ...state.sectionPlane, ...patch } })),
     setShowOverhangs: (showOverhangs) => set({ showOverhangs }),
     clearPrintReport: () => set({ activePrintReport: null, printReportSource: null, showOverhangs: false }),

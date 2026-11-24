@@ -1,11 +1,10 @@
 /**
  * @file src/components/LeftSidebar.tsx
- * @description Panel lateral izquierdo de Kura3D:
- * - Tres estados propios (completa 268 px, compacta 56 px de iconos con tooltips en `LeftSidebarRail`, oculta),
- *   que recorre el tirador `LeftSidebarHandle`; independientes del modo sin distracciones.
- * - Pestaña Formas: Primitivas paramétricas + Generadores 2D/Pro → 3D (SVG, Imagen, Rosca ISO M3–M64).
- * - Pestaña Escena (Outliner): resumen de filamentos/colores y lista de objetos operable con teclado
- *   (`scene/SceneObjectList.tsx`).
+ * @description Barra lateral izquierda de Kura3D: solo la Escena (resumen de filamentos, búsqueda y árbol de
+ * objetos operable con teclado, `scene/SceneObjectList.tsx`, y «Vaciar cama» con su confirmación). Se muestra u
+ * oculta con el tirador `LeftSidebarHandle`; oculta, el visor gana ese ancho. Las formas y generadores viven en
+ * «Agregar» (barra vertical) e «Insertar» (barra superior). En pantallas estrechas es la hoja inferior: con la
+ * pestaña «Agregar» muestra `AddSheet` (las mismas entradas) y con «Escena», el árbol.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -13,59 +12,37 @@
 
 import { isSolid } from '../core/scene/objectRole';
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Bolt,
-  Box,
-  Circle,
-  Cone,
-  Cylinder,
-  Disc,
-  Disc3,
-  FileCode2,
-  Hexagon,
-  Image as ImageIcon,
-  Layers,
-  Shapes,
-  Sparkles,
-  Trash2,
-  Type,
-} from 'lucide-react';
-import { t, type TranslationKey } from '../i18n';
-import { discParams } from '../core/scene/pieceSizing';
+import { Layers, Trash2 } from 'lucide-react';
+import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
-import type { PrimitiveType } from '../types/kura';
 import { colorName, colorNameWithHex } from '../utils/colorNames';
 import { tCount } from '../utils/plural';
+import { AddSheet } from './AddSheet';
 import { SceneObjectList } from './scene/SceneObjectList';
 import { SceneSearch, useRevealSceneOnRequest } from './scene/SceneSearch';
-import { Text3DCreateCard } from './text3d/Text3DCreateCard';
 import { confirmClearScene } from './confirmClearScene';
 import { useLeftTabRequest } from './leftPanelTabRequest';
 import { LeftSidebarHandle } from './LeftSidebarHandle';
-import { LeftSidebarRail } from './LeftSidebarRail';
 import { useNarrowViewport } from './measure/useNarrowViewport';
 import '../styles/panelEdge.css';
+import '../styles/leftSidebarScene.css';
 
 export const LeftSidebar: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'shapes' | 'scene'>('shapes');
-  useRevealSceneOnRequest(() => setActiveTab('scene'));
+  // Solo en pantalla estrecha hay dos contenidos (hoja Agregar o Escena); en escritorio siempre es la Escena.
+  const [narrowTab, setNarrowTab] = useState<'shapes' | 'scene'>('shapes');
+  useRevealSceneOnRequest(() => setNarrowTab('scene'));
   const leftTabRequest = useLeftTabRequest();
   useEffect(() => {
-    if (leftTabRequest.tab) setActiveTab(leftTabRequest.tab);
+    if (leftTabRequest.tab) setNarrowTab(leftTabRequest.tab);
     // Solo reacciona a peticiones nuevas.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leftTabRequest.n]);
-  const [showTextBox, setShowTextBox] = useState(false);
 
   const language = useKuraStore((s) => s.language);
   const leftSidebarMode = useKuraStore((s) => s.leftSidebarMode);
-  // En pantalla angosta la barra es una hoja inferior: los tres estados no aplican.
   const narrow = useNarrowViewport();
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
-  const createPrimitive = useKuraStore((s) => s.createPrimitive);
-  const createStarterCube = useKuraStore((s) => s.createStarterCube);
-  const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
 
   // Resumen de colores / filamentos únicos usados en los sólidos visibles de la escena
   const filamentColors = useMemo(() => {
@@ -85,215 +62,72 @@ export const LeftSidebar: React.FC = () => {
     return Array.from(counts.entries());
   }, [objects]);
 
-  const primitiveCards: Array<{
-    /** Identificador de la tarjeta: la forma, o `disc` (cilindro bajo con otros valores por defecto). */
-    id: string;
-    type: PrimitiveType;
-    icon: React.ReactNode;
-    defaultParams?: Record<string, unknown>;
-  }> = [
-    { id: 'box', type: 'box', icon: <Box size={19} />, defaultParams: { width: 30, height: 30, depth: 30 } },
-    { id: 'cylinder', type: 'cylinder', icon: <Cylinder size={19} />, defaultParams: { radius: 14, height: 36 } },
-    { id: 'disc', type: 'cylinder', icon: <Disc3 size={19} />, defaultParams: { ...discParams(16) } },
-    { id: 'tube', type: 'tube', icon: <Disc size={19} />, defaultParams: { outerRadius: 16, innerRadius: 11, height: 36 } },
-    { id: 'sphere', type: 'sphere', icon: <Circle size={19} />, defaultParams: { radius: 16 } },
-    { id: 'cone', type: 'cone', icon: <Cone size={19} />, defaultParams: { radius: 16, height: 34 } },
-    { id: 'torus', type: 'torus', icon: <Sparkles size={19} />, defaultParams: { outerRadius: 18, tubeRadius: 5.5 } },
-    { id: 'prism', type: 'prism', icon: <Hexagon size={19} />, defaultParams: { radius: 16, height: 28, sides: 6 } },
-    { id: 'text', type: 'text', icon: <Type size={19} /> },
-  ];
-
-  const handlePrimitiveClick = async (type: PrimitiveType, params?: Record<string, unknown>, label?: string) => {
-    if (type === 'text') {
-      if (isCompactRail) {
-        await createPrimitive('text', { text: 'KURA3D', fontSize: 18, height: 6 }, { placement: 'free' });
-        return;
-      }
-      setShowTextBox((prev) => !prev);
-      return;
-    }
-    await createPrimitive(type, params, { placement: 'free', ...(label ? { label } : {}) });
-  };
-
-  const isCompactRail = !narrow && leftSidebarMode === 'compact';
+  const showAdd = narrow && narrowTab === 'shapes';
+  const sceneTitle = t(language, 'r3a.sidebar.label');
 
   return (
     <aside
       id="kura-shapes-panel"
       className={`kura-sidebar-left ${leftSidebarMode === 'hidden' ? 'is-collapsed' : ''}`}
       data-mode={leftSidebarMode}
-      aria-label={t(language, 'sidebar.tab.shapes')}
+      aria-label={showAdd ? t(language, 'r3a.add.button') : sceneTitle}
     >
       <LeftSidebarHandle />
 
-      {isCompactRail ? (
-        <LeftSidebarRail
-          activeTab={activeTab}
-          onTab={setActiveTab}
-          primitives={primitiveCards.map((item) => ({
-            id: item.id,
-            icon: item.icon,
-            onCreate: () => void handlePrimitiveClick(item.type, item.defaultParams, item.id === 'disc' ? t(language, 'menu.shape.disc') : undefined),
-          }))}
-        />
+      {showAdd ? (
+        <AddSheet />
       ) : (
-        <>
-          <div className="kura-tabs" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'shapes'}
-              className={`kura-tab-btn ${activeTab === 'shapes' ? 'is-active' : ''}`}
-              onClick={() => setActiveTab('shapes')}
-            >
-              <Shapes size={14} />
-              <span>{t(language, 'sidebar.tab.shapes')}</span>
-            </button>
-
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'scene'}
-              className={`kura-tab-btn ${activeTab === 'scene' ? 'is-active' : ''}`}
-              onClick={() => setActiveTab('scene')}
-            >
-              <Layers size={14} />
-              <span>
-                {t(language, 'sidebar.tab.scene')} ({objects.length})
-              </span>
-            </button>
+        <div className="kura-scroll-area kura-scene-panel">
+          <h2 className="kura-scene-panel-title">
+            <Layers size={14} aria-hidden="true" />
+            <span>{sceneTitle}</span>
+          </h2>
+          <div className="kura-field-row" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+            <span>{tCount(language, { one: 'sidebar.scene.objectsCount.one', other: 'sidebar.scene.objectsCount' }, objects.length)}</span>
+            <span>{tCount(language, { one: 'sidebar.scene.selectedCount.one', other: 'sidebar.scene.selectedCount' }, selectedIds.length)}</span>
           </div>
 
-          {activeTab === 'shapes' ? (
-            <div className="kura-scroll-area">
-              <section>
-                <h2 className="kura-section-label">
-                  {t(language, 'sidebar.shapes.primitivesTitle')}
-                </h2>
-                <div className="kura-primitive-grid">
-                  {primitiveCards.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className="kura-primitive-card"
-                      title={`${t(language, `sidebar.primitive.${item.id}` as TranslationKey)} (+)`}
-                      onClick={() => void handlePrimitiveClick(item.type, item.defaultParams, item.id === 'disc' ? t(language, 'menu.shape.disc') : undefined)}
-                    >
-                      <span className="kura-primitive-icon">{item.icon}</span>
-                      <span>{t(language, `sidebar.primitive.${item.id}` as TranslationKey)}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {showTextBox && <Text3DCreateCard onCreated={() => setShowTextBox(false)} />}
-              </section>
-
-              <section>
-                <h2 className="kura-section-label">
-                  {t(language, 'sidebar.shapes.generatorsTitle')}
-                </h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <button
-                    type="button"
-                    className="kura-btn"
-                    style={{ justifyContent: 'flex-start' }}
-                    title={t(language, 'topbar.importSvgTip')}
-                    onClick={() => setActiveDialog('svg')}
-                  >
-                    <FileCode2 size={15} />
-                    <span>{t(language, 'topbar.importSvg')}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="kura-btn"
-                    style={{ justifyContent: 'flex-start' }}
-                    title={t(language, 'topbar.imageTo3dTip')}
-                    onClick={() => setActiveDialog('image')}
-                  >
-                    <ImageIcon size={15} />
-                    <span>{t(language, 'topbar.imageTo3d')}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="kura-btn"
-                    style={{ justifyContent: 'flex-start' }}
-                    title={t(language, 'sidebar.generators.threadTip')}
-                    onClick={() => setActiveDialog('thread')}
-                  >
-                    <Bolt size={15} style={{ color: 'var(--accent-cyan)' }} />
-                    <span>{t(language, 'sidebar.generators.thread')}</span>
-                  </button>
-                </div>
-              </section>
-
-              <section>
-                <h2 className="kura-section-label">
-                  {t(language, 'sidebar.shapes.quickActionsTitle')}
-                </h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <button
-                    type="button"
-                    className="kura-btn kura-btn-sm"
-                    style={{ justifyContent: 'flex-start' }}
-                    onClick={() => void createStarterCube()}
-                  >
-                    <Box size={14} />
-                    <span>{t(language, 'sidebar.shapes.createStarter')}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="kura-btn kura-btn-sm kura-btn-danger"
-                    style={{ justifyContent: 'flex-start' }}
-                    disabled={objects.length === 0}
-                    onClick={() => void confirmClearScene()}
-                  >
-                    <Trash2 size={14} />
-                    <span>{t(language, 'sidebar.shapes.clearScene')}</span>
-                  </button>
-                </div>
-              </section>
-            </div>
-          ) : (
-            <div className="kura-scroll-area">
-              <div className="kura-field-row" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                <span>{tCount(language, { one: 'sidebar.scene.objectsCount.one', other: 'sidebar.scene.objectsCount' }, objects.length)}</span>
-                <span>{tCount(language, { one: 'sidebar.scene.selectedCount.one', other: 'sidebar.scene.selectedCount' }, selectedIds.length)}</span>
+          {/* Resumen de filamentos/colores activos en la escena */}
+          {filamentColors.length > 0 && (
+            <div className="kura-card" style={{ padding: 8, gap: 5 }}>
+              <div className="kura-field-row" style={{ fontSize: 11 }}>
+                <span className="kura-field-label">{t(language, 'scene.filamentLegend')}</span>
+                <span style={{ color: 'var(--text-muted)' }}>
+                  {tCount(language, { one: 'scene.colorsCount.one', other: 'scene.colorsCount' }, filamentColors.length)}
+                </span>
               </div>
-
-              {/* Resumen de filamentos/colores activos en la escena */}
-              {filamentColors.length > 0 && (
-                <div className="kura-card" style={{ padding: 8, gap: 5 }}>
-                  <div className="kura-field-row" style={{ fontSize: 11 }}>
-                    <span className="kura-field-label">{t(language, 'scene.filamentLegend')}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>
-                      {tCount(language, { one: 'scene.colorsCount.one', other: 'scene.colorsCount' }, filamentColors.length)}
-                    </span>
-                  </div>
-                  <div className="kura-filament-legend">
-                    {filamentColors.map(([hex, count]) => (
-                      <span key={hex} className="kura-filament-chip" title={`${colorNameWithHex(language, hex)} (${count})`}>
-                        <span className="kura-color-dot" style={{ backgroundColor: hex }} aria-hidden="true" />
-                        <span>{colorName(language, hex)}</span>
-                        <span style={{ color: 'var(--text-muted)' }}>×{count}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {objects.length === 0 ? (
-                <div className="kura-card" style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
-                  {t(language, 'sidebar.scene.empty')}
-                </div>
-              ) : (
-                <>
-                  <SceneSearch />
-                  <SceneObjectList />
-                </>
-              )}
+              <div className="kura-filament-legend">
+                {filamentColors.map(([hex, count]) => (
+                  <span key={hex} className="kura-filament-chip" title={`${colorNameWithHex(language, hex)} (${count})`}>
+                    <span className="kura-color-dot" style={{ backgroundColor: hex }} aria-hidden="true" />
+                    <span>{colorName(language, hex)}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>×{count}</span>
+                  </span>
+                ))}
+              </div>
             </div>
           )}
-        </>
+
+          {objects.length === 0 ? (
+            <div className="kura-card" style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
+              {t(language, 'sidebar.scene.empty')}
+            </div>
+          ) : (
+            <>
+              <SceneSearch />
+              <SceneObjectList />
+              <button
+                type="button"
+                className="kura-btn kura-btn-sm kura-btn-danger kura-scene-clear"
+                title={t(language, 'sidebar.shapes.clearScene')}
+                onClick={() => void confirmClearScene()}
+              >
+                <Trash2 size={14} aria-hidden="true" />
+                <span>{t(language, 'sidebar.shapes.clearScene')}</span>
+              </button>
+            </>
+          )}
+        </div>
       )}
     </aside>
   );

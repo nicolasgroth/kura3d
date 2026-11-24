@@ -44,6 +44,7 @@ import { useNarrowSheets } from './components/narrow/useNarrowSheets';
 import { MobileTransformBar } from './components/narrow/MobileTransformBar';
 import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest';
 import { ToolRail } from './components/shell/ToolRail';
+import { Text3DPanel } from './components/text3d/Text3DPanel';
 import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
 import { useSimplifyRequestRelay } from './components/inspector/simplifyPanelRequest';
 
@@ -466,6 +467,7 @@ export const App: React.FC = () => {
         <RightInspector precisionRequest={precisionRequest} />
         {/* Destino de los paneles de operación: en escritorio ocupan el lugar del inspector. */}
         <div id="kura-op-slot" className="kura-op-slot" />
+        <Text3DPanel />
         <AiChatDrawer />
         <ProjectDropTarget />
       </div>
