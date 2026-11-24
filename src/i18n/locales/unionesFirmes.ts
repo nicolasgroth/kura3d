@@ -10,22 +10,22 @@
 
 export const UNIONES_FIRMES_ES = {
   'engineWarning.SPLIT_CONNECTOR_DEPTH_REDUCED': 'En la unión {label} ({a}–{b}) el conector entra {depth} mm en vez de {requested} mm: más hondo no deja la pared mínima hacia el exterior.',
-  'engineWarning.SPLIT_JOINT_WEAK': 'La unión {label} ({a}–{b}) queda débil para su sección: {count} conector(es) cubren el {area} % del contacto. Pégala además o mueve el corte a una zona más ancha.',
+  'engineWarning.SPLIT_JOINT_WEAK': 'La unión {label} ({a}–{b}) queda débil para su sección: los conectores ({count}) cubren el {area} % del contacto. Pégala además o mueve el corte a una zona más ancha.',
 };
 
 export const UNIONES_FIRMES_EN = {
   'engineWarning.SPLIT_CONNECTOR_DEPTH_REDUCED': 'At joint {label} ({a}–{b}) the connector goes {depth} mm deep instead of {requested} mm: any deeper would not leave the minimum wall to the outside.',
-  'engineWarning.SPLIT_JOINT_WEAK': 'Joint {label} ({a}–{b}) is weak for its section: {count} connector(s) cover {area} % of the contact. Glue it as well or move the cut to a wider area.',
+  'engineWarning.SPLIT_JOINT_WEAK': 'Joint {label} ({a}–{b}) is weak for its section: its connectors ({count}) cover {area} % of the contact. Glue it as well or move the cut to a wider area.',
 };
 
 export const UNIONES_FIRMES_DE = {
   'engineWarning.SPLIT_CONNECTOR_DEPTH_REDUCED': 'An Verbindung {label} ({a}–{b}) greift der Verbinder {depth} mm statt {requested} mm tief: tiefer bliebe nicht die Mindestwand nach außen.',
-  'engineWarning.SPLIT_JOINT_WEAK': 'Verbindung {label} ({a}–{b}) ist für ihren Querschnitt schwach: {count} Verbinder decken {area} % der Kontaktfläche. Zusätzlich kleben oder den Schnitt in einen breiteren Bereich verschieben.',
+  'engineWarning.SPLIT_JOINT_WEAK': 'Verbindung {label} ({a}–{b}) ist für ihren Querschnitt schwach: die Verbinder ({count}) decken {area} % der Kontaktfläche. Zusätzlich kleben oder den Schnitt in einen breiteren Bereich verschieben.',
 };
 
 export const UNIONES_FIRMES_FR = {
   'engineWarning.SPLIT_CONNECTOR_DEPTH_REDUCED': 'À la jonction {label} ({a}–{b}), le connecteur entre de {depth} mm au lieu de {requested} mm : plus profond, il ne resterait pas la paroi minimale vers l’extérieur.',
-  'engineWarning.SPLIT_JOINT_WEAK': 'La jonction {label} ({a}–{b}) est faible pour sa section : {count} connecteur(s) couvrent {area} % du contact. Collez-la aussi ou déplacez la coupe vers une zone plus large.',
+  'engineWarning.SPLIT_JOINT_WEAK': 'La jonction {label} ({a}–{b}) est faible pour sa section : les connecteurs ({count}) couvrent {area} % du contact. Collez-la aussi ou déplacez la coupe vers une zone plus large.',
 };
 
 export const UNIONES_FIRMES_HI = {
