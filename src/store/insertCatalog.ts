@@ -14,7 +14,7 @@ import { create } from 'zustand';
 import { discParams } from '../core/scene/pieceSizing';
 import { t, type TranslationKey } from '../i18n';
 import type { PrimitiveType } from '../types/kura';
-import { openAssistants } from './assistantsPanel';
+import { closeAssistants, openAssistants, useAssistantsPanel } from './assistantsPanel';
 import { useKuraStore } from './useKuraStore';
 
 export type ShapeId = 'box' | 'cylinder' | 'disc' | 'tube' | 'sphere' | 'cone' | 'torus' | 'prism' | 'text';
@@ -85,6 +85,14 @@ export const useText3DPanel = create<{ open: boolean }>(() => ({ open: false }))
 export function setText3DPanelOpen(open: boolean): void {
   useText3DPanel.setState({ open });
 }
+
+// Texto 3D y Asistentes comparten el mismo hueco de panel: abrir uno cierra el otro.
+useText3DPanel.subscribe((s, prev) => {
+  if (s.open && !prev.open && useAssistantsPanel.getState().open) closeAssistants();
+});
+useAssistantsPanel.subscribe((s, prev) => {
+  if (s.open && !prev.open && useText3DPanel.getState().open) setText3DPanelOpen(false);
+});
 
 /** Agrega la entrada elegida: crea la primitiva, abre el generador o el panel de Texto 3D. */
 export async function runInsert(id: InsertId): Promise<void> {

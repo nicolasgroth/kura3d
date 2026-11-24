@@ -7,7 +7,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { dragMoveDelta, rayHorizontalPlanePoint, DRAG_MAX_REACH_MM } from '../dragMovePlane';
+import { dragMoveDelta, dragSnapMm, rayHorizontalPlanePoint, DRAG_MAX_REACH_MM } from '../dragMovePlane';
 import type { Vec3 } from '../../../types/kura';
 
 const norm = (v: Vec3): Vec3 => {
@@ -44,9 +44,26 @@ describe('dragMoveDelta', () => {
     expect(d[0]).toBe(0);
     expect(d[2]).toBe(5);
   });
-  it('en vista rasante no mueve (null) y fuera de rango limita el alcance', () => {
+  it('en vista rasante no mueve (null)', () => {
     expect(dragMoveDelta({ ...base, rayOrigin: [0, 100, 0], rayDir: norm([1, -0.02, 0]), grab: [0, 0, 0] })).toBeNull();
-    const far = dragMoveDelta({ ...base, rayOrigin: [0, 100, 0], rayDir: norm([1, -0.07, 0]), grab: [0, 0, 0] })!;
-    expect(Math.hypot(far[0], far[2])).toBeLessThanOrEqual(DRAG_MAX_REACH_MM + 1e-6);
+  });
+  it('recorta el alcance al máximo exacto (la intersección cae a ~3333 mm)', () => {
+    const rayDir = norm([1, -0.3, 0]);
+    const hit = rayHorizontalPlanePoint([0, 1000, 0], rayDir, 0)!;
+    expect(hit[0]).toBeGreaterThan(DRAG_MAX_REACH_MM * 1.5);
+    const far = dragMoveDelta({ ...base, rayOrigin: [0, 1000, 0], rayDir, grab: [0, 0, 0] })!;
+    expect(far[0]).toBeCloseTo(DRAG_MAX_REACH_MM, 6);
+    expect(far[2]).toBeCloseTo(0, 6);
+    const custom = dragMoveDelta({ ...base, rayOrigin: [0, 1000, 0], rayDir, grab: [0, 0, 0], maxReachMm: 500 })!;
+    expect(custom[0]).toBeCloseTo(500, 6);
+  });
+});
+
+describe('dragSnapMm', () => {
+  it('usa la rejilla si está activa y, con rejilla libre, Ctrl/Cmd ajusta a 1 mm', () => {
+    expect(dragSnapMm(5, false)).toBe(5);
+    expect(dragSnapMm(5, true)).toBe(5);
+    expect(dragSnapMm(0, true)).toBe(1);
+    expect(dragSnapMm(0, false)).toBe(0);
   });
 });

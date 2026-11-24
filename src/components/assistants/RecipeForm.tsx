@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, WandSparkles } from 'lucide-react';
+import { ArrowLeft, LoaderCircle, WandSparkles } from 'lucide-react';
 import type { RecipeIssue } from '../../core/recipes/errors';
 import type { Answers } from '../../core/recipes/resolve/types';
 import { resolveText } from '../../core/recipes/validate/strings';
@@ -110,6 +110,7 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
       onCreated();
       return;
     }
+    // 'failed' y 'empty': el aviso ya se mostró y la escena no cambió; el formulario sigue abierto.
     if (outcome.status === 'invalid') setRunErrors(outcome.errors);
     setBusy(false);
   };
@@ -231,7 +232,12 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
         )}
         <div className="kura-asis-actions">
           <div className="kura-asis-status" role="status" aria-live="polite">
-            {busy ? t(language, 'asis.running', { name: title }) : ''}
+            {busy && (
+              <>
+                <LoaderCircle size={15} className="kura-asis-spin" aria-hidden="true" />
+                <span>{t(language, 'asis.running', { name: title })}</span>
+              </>
+            )}
           </div>
           {blocked && !busy && <span className="kura-field-hint">{t(language, 'asis.createBlocked')}</span>}
           <button

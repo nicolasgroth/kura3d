@@ -10,7 +10,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { BUILTIN_RECIPE_IDS } from '../../core/recipes/builtin';
-import { TRANSLATIONS_ES } from '../../i18n/translations';
+import { TRANSLATIONS, TRANSLATIONS_ES } from '../../i18n/translations';
 import { SUPPORTED_LANGUAGES } from '../../types/kura';
 import { assistantRecipes, buildFormModel, recipeCard } from '../assistants/recipeFormModel';
 
@@ -67,8 +67,20 @@ describe('Asistentes: paridad con las recetas incorporadas', () => {
     });
   }
 
-  it('los textos de interfaz de Asistentes existen en español y se usan en los 6 idiomas (paridad la verifica src/i18n)', () => {
-    const keys = Object.keys(TRANSLATIONS_ES).filter((k) => k.startsWith('asis.'));
+  it('cada clave asis.* de español existe en los 6 idiomas, no está vacía y conserva sus {marcadores}', () => {
+    const keys = Object.keys(TRANSLATIONS_ES).filter((k) => k.startsWith('asis.')) as Array<keyof typeof TRANSLATIONS_ES>;
     expect(keys.length).toBeGreaterThan(30);
+    const marks = (text: string) => [...text.matchAll(/\{(\w+)/g)].map((m) => m[1]);
+    const names = (text: string) => [...new Set(marks(text))].sort();
+    for (const lang of LANGS) {
+      const dict = TRANSLATIONS[lang];
+      const own = Object.keys(dict).filter((k) => k.startsWith('asis.')).sort();
+      expect(own, `claves asis.* en ${lang}`).toEqual([...keys].sort());
+      for (const k of keys) {
+        const text = dict[k];
+        expect(text.trim().length, `${lang}:${k} vacío`).toBeGreaterThan(0);
+        expect(names(text), `${lang}:${k} marcadores`).toEqual(names(TRANSLATIONS_ES[k]));
+      }
+    }
   });
 });

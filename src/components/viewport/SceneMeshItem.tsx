@@ -44,7 +44,7 @@ export const SceneMeshItem: React.FC<{
   overhangFaces: number[] | null;
   onStartPaintDrag: () => void;
   /** Arrastrar el cuerpo de un objeto ya seleccionado lo mueve; `onClick` corre si el gesto no llega a arrastre. */
-  onStartMoveDrag: (e: ThreeEvent<PointerEvent>, onClick: () => void) => void;
+  onStartMoveDrag: (e: ThreeEvent<PointerEvent>, onClick: () => void, options?: { moveEnabled?: boolean }) => void;
   onObjectContextMenu: (id: string, clientX: number, clientY: number) => void;
   registerGroupRef: (id: string, group: THREE.Group | null) => void;
 }> = React.memo(
@@ -271,10 +271,21 @@ export const SceneMeshItem: React.FC<{
         onStartMoveDrag(e, pickAndInspect);
         return;
       }
+      // Hay otra selección: un arrastre que orbita la cámara no debe cambiarla; solo un clic sin movimiento.
+      if (!isSelected && !nothingSelected && !additive && activeTool === 'select') {
+        onStartMoveDrag(e, pickAndInspect, { moveEnabled: false });
+        return;
+      }
       pickAndInspect();
     };
 
+    const canGrab = isSelected && activeTool === 'select' && transformMode === 'translate';
     const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
+      // El objeto pudo quedar seleccionado con el puntero ya encima: no habrá `pointerover` nuevo.
+      if (canGrab && e.buttons === 0 && !useGizmoDragStore.getState().start) {
+        const canvas = e.nativeEvent.target as HTMLElement | null;
+        if (canvas && canvas.style.cursor === '') canvas.style.cursor = 'grab';
+      }
       if (activeTool === 'measure') {
         onMeasurePointerMove(obj, e);
         return;
@@ -300,7 +311,6 @@ export const SceneMeshItem: React.FC<{
       continueStorePaintStroke(obj.id, strokeSampleFromEvent(e, meshRef.current, obj.scale));
     };
 
-    const canGrab = isSelected && activeTool === 'select' && transformMode === 'translate';
     const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
       const canvas = e.nativeEvent.target as HTMLElement | null;
       if (canGrab && canvas && !useGizmoDragStore.getState().start && e.buttons === 0) canvas.style.cursor = 'grab';
