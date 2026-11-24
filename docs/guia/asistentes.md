@@ -36,4 +36,4 @@ Algunos asistentes traen **variantes**: conjuntos de medidas ya preparados, como
 - **Un error aparece arriba del formulario, bajo «Corrige esto antes de crear»:** la receta no pudo construir la pieza con esas medidas (por ejemplo, una pieza demasiado compleja). Cambia los valores y vuelve a intentar. La escena no se toca cuando algo falla.
 - **`Esc`:** dentro de un formulario vuelve a la lista; desde la lista cierra el panel. El botón **Volver a la lista** hace lo mismo con el mouse o el dedo.
 
-Anterior: [Generadores](generadores.md) · Siguiente: [Exportar](exportar.md) · [Índice](README.md)
+Anterior: [Generadores](generadores.md) · Siguiente: [Alojamiento de imán](alojamiento-de-iman.md) · [Índice](README.md)
