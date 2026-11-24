@@ -11,7 +11,7 @@ import { abrir } from './ux-movil-helpers';
 
 const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/ux3-forma';
 
-test('avisos: máximo 3, caducan solos, pausan con el cursor, errores persisten, cerrar todos', async ({ page }) => {
+test('avisos: máximo 2, caducan solos, pausan con el cursor, errores persisten, cerrar todos', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await abrir(page, 'es');
   const toasts = page.locator('.kura-toast');
@@ -19,7 +19,7 @@ test('avisos: máximo 3, caducan solos, pausan con el cursor, errores persisten,
     const s = (window as any).__s.getState();
     for (let i = 1; i <= 5; i += 1) s.addToast(`Aviso informativo ${i}`, 'info');
   });
-  await expect(toasts).toHaveCount(3);
+  await expect(toasts).toHaveCount(2);
   await expect(page.getByText('Aviso informativo 5')).toBeVisible();
   await expect(page.getByText('Aviso informativo 1', { exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Cerrar todos los avisos' })).toBeVisible();

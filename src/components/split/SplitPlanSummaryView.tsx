@@ -9,6 +9,7 @@
  */
 
 import '../../styles/splitSection.css';
+import '../../styles/splitStale.css';
 import React from 'react';
 import { t } from '../../i18n';
 import type { BedSplitPlan } from '../../engine';
@@ -57,10 +58,19 @@ export const SplitPlanSummaryView: React.FC<{
   return (
     <section className="kura-split-summary" aria-live="polite" aria-busy={pending} data-pending={pending || undefined}>
       <h3 className="kura-section-label">{t(language, 'split.summary')}</h3>
-      {checking && <p className="kura-cut-hint" role="status">{t(language, 'split.calculating')}</p>}
+      {/* Región de estado siempre montada: así el lector anuncia «Calculando…» al aparecer el texto. */}
+      <p className="kura-cut-hint kura-split-calculating" role="status" data-testid="split-calculating">
+        {checking && (
+          <>
+            <span className="kura-split-spinner" aria-hidden="true" />
+            {t(language, 'split.calculating')} {t(language, 'ux8.split.stale')}
+          </>
+        )}
+      </p>
       {summary && plan && (
         <>
-          <dl className="kura-split-dl">
+          {/* El resultado anterior queda atenuado, marcado como desactualizado y fuera del árbol accesible. */}
+          <dl className="kura-split-dl" aria-hidden={pending || undefined} data-stale={pending || undefined}>
             <dt>{t(language, 'split.sum.pieces')}</dt>
             <dd data-testid="split-piece-count">
               {t(language, summary.exact ? 'split.sum.piecesExactValue' : 'split.sum.piecesValue', {

@@ -82,3 +82,22 @@ export function toolAvailability(state: StateSlice, tool: RailToolId): ToolAvail
 export function allToolAvailability(state: StateSlice): Record<RailToolId, ToolAvailability> {
   return Object.fromEntries(RAIL_TOOL_IDS.map((id) => [id, toolAvailability(state, id)])) as Record<RailToolId, ToolAvailability>;
 }
+
+const MODE_TOOL: Record<TransformMode, RailToolId> = { translate: 'move', rotate: 'rotate', scale: 'scale' };
+
+/**
+ * La única herramienta de la barra que se pinta pulsada. Las de puntero (Pintar, Cortar, Esculpir / Borrar, Medir)
+ * valen mientras estén disponibles; con Seleccionar activo, el modo del manipulador (Mover, Rotar, Escalar) solo
+ * se marca si hay una selección sobre la que actuar, y si no lo está Seleccionar. Nunca devuelve una apagada.
+ */
+export function pressedRailTool(
+  state: Pick<KuraStoreState, 'objects' | 'selectedIds' | 'activeTool' | 'transformMode'>,
+): RailToolId {
+  const { activeTool } = state;
+  if (activeTool !== 'select') {
+    return toolAvailability(state, activeTool as RailToolId).enabled ? (activeTool as RailToolId) : 'select';
+  }
+  const hasSelection = state.selectedIds.some((id) => state.objects.some((o) => o.id === id));
+  const mode = MODE_TOOL[state.transformMode];
+  return hasSelection && toolAvailability(state, mode).enabled ? mode : 'select';
+}

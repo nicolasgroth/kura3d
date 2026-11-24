@@ -1,0 +1,53 @@
+/**
+ * @file src/styles/measureHierarchy.css
+ * @description Jerarquía del panel Medir: modos arriba, el paso actual destacado (barra lateral, no solo color),
+ * secciones con título (objeto, mediciones) separadas por una línea, y las notas fijas atenuadas y pequeñas.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-measure-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kura-measure-step {
+  margin: 0;
+  padding: 6px 8px;
+  border-left: 3px solid var(--accent-cyan);
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.kura-measure-sub {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kura-measure-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.kura-measure-section .kura-measure-row {
+  justify-content: space-between;
+}
+
+.kura-measure-note {
+  font-size: 11px;
+  opacity: 0.85;
+}

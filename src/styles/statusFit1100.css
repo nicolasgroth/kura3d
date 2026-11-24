@@ -1,0 +1,27 @@
+/**
+ * @file src/styles/statusFit1100.css
+ * @description Pie de la ventana entre 901 y 1100 px: el chip de unidad y cama se acorta con «…» (el nombre
+ * completo va en su tooltip) y el copyright pasa a su forma corta, para que nada se corte contra el borde ni
+ * aparezca scroll horizontal. Con la ventana más estrecha mandan las reglas de `statusFit.css`.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-copyright-short {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .kura-statusbar .kura-measures-trigger {
+    max-width: 210px;
+  }
+
+  .kura-statusbar .kura-copyright-full {
+    display: none;
+  }
+
+  .kura-statusbar .kura-copyright-short {
+    display: inline;
+  }
+}

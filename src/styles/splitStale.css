@@ -1,0 +1,47 @@
+/**
+ * @file src/styles/splitStale.css
+ * @description Indicador de recálculo del panel Dividir: giro visible junto al texto «Calculando…» y resultado
+ * anterior atenuado y tachado suavemente mientras no se actualiza (no depende solo del color).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-split-calculating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+  font-weight: 600;
+}
+
+.kura-split-calculating:empty {
+  margin: 0;
+}
+
+.kura-split-spinner {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent-cyan);
+  animation: kura-split-spin 0.9s linear infinite;
+}
+
+.kura-split-dl[data-stale] {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-split-spinner {
+    animation: none;
+  }
+}
+
+@keyframes kura-split-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
