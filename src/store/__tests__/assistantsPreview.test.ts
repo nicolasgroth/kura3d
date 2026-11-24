@@ -59,8 +59,6 @@ function hangingClient() {
 }
 
 beforeEach(async () => {
-  const memory = new Map<string, string>();
-  vi.stubGlobal('sessionStorage', { getItem: (k: string) => memory.get(k) ?? null, setItem: (k: string, v: string) => void memory.set(k, v) });
   await resetStore('es');
   closeAssistants();
   setAssistantPreviewEnabled(true);
@@ -71,7 +69,6 @@ afterEach(() => {
   clearAssistantPreview();
   setStoreEngineClient(null);
   vi.useRealTimers();
-  vi.unstubAllGlobals();
 });
 
 describe('vista previa del asistente (motor real)', () => {
@@ -134,9 +131,9 @@ describe('vista previa del asistente (motor real)', () => {
     expect(status()).toBe('off');
     expect(runs).toHaveLength(0);
     expect(ghosts()).toHaveLength(0);
-    expect(sessionStorage.getItem('kura.assistants.preview')).toBe('0');
+    expect(useAssistantPreview.getState().enabled).toBe(false);
     setAssistantPreviewEnabled(true);
-    expect(sessionStorage.getItem('kura.assistants.preview')).toBe('1');
+    expect(useAssistantPreview.getState().enabled).toBe(true);
   });
 
   it('si el motor está ocupado con otra operación espera su turno', async () => {

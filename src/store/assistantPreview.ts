@@ -23,7 +23,6 @@ export const ASSISTANT_PREVIEW_DEBOUNCE_MS = 300;
 export const ASSISTANT_PREVIEW_HEAVY_MS = 1500;
 /** Holgura extra del primer cálculo de la sesión (arranque del motor). */
 const WARMUP_MS = 4000;
-const STORAGE_KEY = 'kura.assistants.preview';
 
 /** `off`: apagada; `idle`: sin pedir; `invalid`: formulario inválido o la receta no produjo piezas. */
 export type AssistantPreviewStatus = 'off' | 'idle' | 'computing' | 'ready' | 'invalid' | 'heavy' | 'failed';
@@ -33,15 +32,7 @@ interface PreviewState {
   status: AssistantPreviewStatus;
 }
 
-function readEnabled(): boolean {
-  try {
-    return globalThis.sessionStorage?.getItem(STORAGE_KEY) !== '0';
-  } catch {
-    return true;
-  }
-}
-
-export const useAssistantPreview = create<PreviewState>(() => ({ enabled: readEnabled(), status: 'idle' }));
+export const useAssistantPreview = create<PreviewState>(() => ({ enabled: true, status: 'idle' }));
 
 export interface AssistantPreviewInput {
   readonly recipeId: string;
@@ -241,13 +232,8 @@ export function refreshAssistantPreview(): void {
   void compute(input, assistantPreviewSignature(input), gen, false);
 }
 
-/** Interruptor «Vista previa» (se recuerda en la sesión). */
+/** Interruptor «Vista previa»: se recuerda mientras la app siga abierta (solo en memoria; no es dato del proyecto). */
 export function setAssistantPreviewEnabled(enabled: boolean): void {
-  try {
-    globalThis.sessionStorage?.setItem(STORAGE_KEY, enabled ? '1' : '0');
-  } catch {
-    // Sin almacenamiento: el interruptor vale solo para esta pantalla.
-  }
   useAssistantPreview.setState({ enabled });
   if (enabled && lastInput) requestAssistantPreview(lastInput);
   else if (!enabled) {
