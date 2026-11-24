@@ -180,6 +180,12 @@ export const FitCheckPanel: React.FC = () => {
               <dt>{t(language, 'fitCheck.ui.summary.tight')}</dt>
               <dd data-testid="fit-check-count-tight">{report.summary.tight}</dd>
             </div>
+            {report.summary.cutJoints > 0 && (
+              <div>
+                <dt>{t(language, 'fitCheck.ui.summary.cutJoints')}</dt>
+                <dd data-testid="fit-check-count-cutjoints">{report.summary.cutJoints}</dd>
+              </div>
+            )}
             {worst && (
               <div className="kura-fitcheck-worst">
                 <dt>{t(language, 'fitCheck.ui.summary.worst')}</dt>

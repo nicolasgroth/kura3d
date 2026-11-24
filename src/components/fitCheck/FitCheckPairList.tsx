@@ -21,6 +21,7 @@ import { pairFigure, pairKey, pairsBySeverity } from './fitCheckView';
 const STATUS_ICON: Record<FitPairStatus, React.ReactNode> = {
   interferes: <OctagonX size={14} aria-hidden="true" />,
   tight: <AlertTriangle size={14} aria-hidden="true" />,
+  cutJoint: <CheckCircle2 size={14} aria-hidden="true" />,
   ok: <CheckCircle2 size={14} aria-hidden="true" />,
   far: <CircleDashed size={14} aria-hidden="true" />,
 };

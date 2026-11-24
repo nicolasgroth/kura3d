@@ -77,6 +77,7 @@ function report(pairs: FitPairResult[], extra: Partial<FitCheckReport> = {}): Fi
       interferes: count('interferes'),
       tight: count('tight'),
       ok: count('ok'),
+      cutJoints: 0,
       far: count('far'),
       skipped: 0,
       worst: worst ? { aId: worst.aId, bId: worst.bId, status: worst.status } : null,

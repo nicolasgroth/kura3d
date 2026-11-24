@@ -116,6 +116,7 @@ const FIT_CHECK_TABLE = {
   'fitCheck.dir.bottom': ['−Z (abajo)', '−Z (down)', '−Z (unten)', '−Z (bas)', '−Z (नीचे)', '−Z(下)'],
   'fitCheck.status.interferes': ['Choque', 'Overlap', 'Überschneidung', 'Chevauchement', 'टकराव', '重叠'],
   'fitCheck.status.tight': ['Justo', 'Too tight', 'Zu eng', 'Trop juste', 'बहुत तंग', '过紧'],
+  'fitCheck.status.cutJoint': ['Unión del corte', 'Cut joint', 'Schnittverbindung', 'Jonction de coupe', 'कट जोड़', '切口接合'],
   'fitCheck.status.ok': ['Bien', 'OK', 'OK', 'OK', 'ठीक', '合适'],
   'fitCheck.status.far': ['Lejos', 'Apart', 'Entfernt', 'Éloigné', 'दूर', '远离'],
   'fitCheck.estimate': ['Estimado', 'Estimate', 'Geschätzt', 'Estimation', 'अनुमान', '估计'],

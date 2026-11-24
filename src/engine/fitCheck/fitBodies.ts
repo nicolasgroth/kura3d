@@ -16,6 +16,7 @@ import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import type { MeshData } from '../../types/kura';
 import { isNegative, isReference } from '../../core/scene/objectRole';
 import { meshDataToManifold } from '../manifoldKernel';
+import { cutPartInfoOf, type CutPartInfo } from './cutJoint';
 import type { FitCheckBody, FitMessage } from './fitCheckTypes';
 
 /** Tolerancia de la simplificación (solo para el cálculo) de mallas muy densas, en mm. */
@@ -27,6 +28,8 @@ export interface PreparedBody {
   reference: boolean;
   /** Orden en la entrada (desempata quién es A en un par). */
   order: number;
+  /** Datos de Dividir de la pieza (para reconocer la unión del corte). */
+  cut?: CutPartInfo;
   /** Malla efectiva en mundo (ejes internos). */
   positions: Float32Array;
   indices: Uint32Array;
@@ -173,7 +176,8 @@ export function prepareBodies(
         }
       }
       if (!manifold) notes.push({ key: 'fitCheck.note.openMesh', params: { name: obj.name } });
-      bodies.push(finishBody({ id: obj.id, name: obj.name, reference, order: i, positions, indices, manifold }));
+      const cut = cutPartInfoOf(obj);
+      bodies.push(finishBody({ id: obj.id, name: obj.name, reference, order: i, positions, indices, manifold, ...(cut ? { cut } : {}) }));
     });
   } catch (err) {
     disposeBodies(bodies);
