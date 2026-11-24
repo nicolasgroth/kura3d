@@ -390,3 +390,12 @@ Serie de usabilidad: 76 → 75 → 79 → 78. Como en las rondas anteriores, cas
 Consumo desde la evaluación anterior (modelo · duración · tokens): dependencias (Opus · 103 min · 226 k), modelos reales motor (Opus · 60 min · 300 k), modelos reales interfaz (Opus · 73 min · 364 k), QA18 (Sonnet · 49 min · 158 k), correcciones QA18 (Opus · 67 min · 252 k), recorridos e2e (Sonnet · 39 min · 103 k), documentación pública (Sonnet · 46 min · 341 k), importación fluida (Opus · 69 min · 295 k), usabilidad sexta tanda (Opus · 67 min · 386 k), QA19 (Sonnet · 52 min · 181 k), pulido (Sonnet · 58 min · 248 k), tres diseños (Opus · 7, 11 y 12 min · 129 k, 152 k y 133 k), evaluador (Opus · 18 min · 202 k).
 
 Consumo de la tarde del 23-nov tras la cuarta evaluación (modelo · duración · tokens): rediseño lote 1 (Opus · 74 min de trabajo, cortó en su tope de 140 · 368 k), ejecutor de recetas y MCP (Opus · 83 min · 398 k), comprobar encaje motor y MCP (Opus · 76 min · 313 k). Después: rediseño lote 2, panel contextual (Opus · 82 min · 331 k), corrección de recorridos tras el rediseño (Sonnet · 33 min · 134 k), interfaz de Comprobar encaje (Opus · 41 min de agente, 95 con esperas · 285 k).
+
+## QA20 · 23 de noviembre de 2026, 22:50 · `main` (commit `e0e0987`)
+
+QA independiente del rediseño (barras y panel contextual), Comprobar encaje, Ajustar a la impresora, referencias, bordes y recorrido con modelos reales. **Aprobada con observaciones**, sin bloqueos duros (Sonnet · 70 min · 201 k).
+
+- Su hallazgo mayor (la recuperación del borrador no terminaba) era un error de su propio recorrido: buscaba un botón «Restaurar» y se llama «Recuperar». Corregido el recorrido, pasa con los modelos reales (importar 3MF y STL, exportar, reimportar, recargar y recuperar 2 objetos con el mismo volumen).
+- Hallazgos menores: acción del panel que queda activa tras borrar su objeto; cancelar Comprobar encaje tarda segundos con un modelo de 478 mil triángulos; «Ver encaje» sigue disponible tras deshacer; barra de estado recortada a 390 px.
+- No alcanzó: tooltips y línea de ayuda con teclado, redimensionar y plegar el panel, encaje con mallas abiertas, camas propias y las alternativas de girar y dividir, guardar y abrir `.kura` por la interfaz, reparar, cortar, dividir y pintar con modelos reales, y 1024 px.
+- Dejó 7 recorridos `e2e/qa20-*.spec.ts`.

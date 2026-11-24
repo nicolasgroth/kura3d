@@ -85,13 +85,10 @@ test('recorrido principal con modelos reales: importar, exportar 3MF, reimportar
   await expect(conteo).toBeVisible({ timeout: 30_000 });
   console.log('aviso de recuperación:', await conteo.textContent());
   expect(await conteo.textContent()).toMatch(new RegExp(`^${base.n}\\s`));
-  await page.getByRole('button', { name: 'Restaurar' }).first().click();
+  await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click();
   await page.evaluate(async () => {
     (window as any).__s = (await import('/src/store/useKuraStore.ts')).useKuraStore;
   });
-  await page.waitForTimeout(20_000);
-  await page.screenshot({ path: 'G:/proyectos/kura3d/.eval-tmp/qa20/restaurar-20s.png' });
-  console.log('estado a los 20 s', JSON.stringify(await resumen(page)), await page.evaluate(() => (window as any).__s.getState().toasts.map((t: any) => t.message)));
   await expect.poll(async () => (await resumen(page)).n, { timeout: 60_000 }).toBe(base.n);
   expect(errores).toEqual([]);
 });
