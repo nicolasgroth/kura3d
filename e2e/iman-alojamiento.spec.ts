@@ -152,7 +152,7 @@ test('preajuste propio sobrevive a recargar y se elimina', async ({ page }) => {
   await cubo(page);
   await abrirPanel(page);
   await page.getByTestId('magnet-shape-square').click();
-  const lado = page.getByLabel('Lado del imán (mm)');
+  const lado = page.getByLabel('Lado del imán (mm)', { exact: true });
   await lado.fill('6,5');
   await lado.press('Tab');
   await expect(page.getByTestId('magnet-summary')).toHaveText('Hueco: 6,7 × 6,7 × 2,2 mm');
