@@ -12,6 +12,7 @@ El autor trabaja en otras cosas en la misma máquina. Un proceso de desarrollo q
 1. **Un proceso pesado a la vez.** Servidor web + una sola de estas: corrida de Playwright, `npm test`, `npm run build`, un agente con navegador. Nunca dos agentes con navegador ni dos corridas de Playwright en paralelo.
 2. **Un servidor, un puerto.** El servidor de QA y evaluación es el **5189**. Los agentes en worktree no levantan el suyo salvo que su encargo lo pida; en ese caso usan un puerto del rango 5290–5299 que el orquestador asigna y anota.
 3. **Playwright nunca levanta su propio servidor si ya hay uno:** toda corrida lleva `KURA_URL=http://127.0.0.1:5189/` y `--workers=1`.
+5. **No se edita la rama servida mientras un agente usa el navegador.** Vite recarga en caliente cada archivo guardado: un cambio a medias deja la app en blanco frente al evaluador o a la QA. Las correcciones esperan a que entregue, o se hacen en un worktree.
 4. **Nadie mata lo que no lanzó**, salvo el orquestador al cerrar un lote. Los conectores `@playwright/mcp` y `server-pdf` son de la app de Claude: no se tocan.
 
 ## Ver qué hay vivo
