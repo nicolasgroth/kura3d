@@ -52,4 +52,4 @@ Kura3D crea formas a partir de un texto, un dibujo vectorial, una imagen o una n
 - **Grabar dos veces el mismo texto en el mismo lugar de un cilindro** da un error claro; mueve el segundo grabado.
 - **La tuerca no entra en el perno:** usa la misma preset y la holgura por defecto.
 
-Anterior: [Colores y pintura](colores-y-pintura.md) · Siguiente: [Exportar](exportar.md) · [Índice](README.md)
+Anterior: [Colores y pintura](colores-y-pintura.md) · Siguiente: [Asistentes](asistentes.md) · [Índice](README.md)
