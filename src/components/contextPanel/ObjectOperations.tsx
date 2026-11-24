@@ -103,7 +103,7 @@ export const ObjectOperations: React.FC<{ primary: SceneObject }> = ({ primary }
                     type="button"
                     className="kura-btn kura-btn-sm kura-op-variant"
                     aria-expanded={variantsOf === id}
-                    aria-label={t(language, 'rediseno3b.ops.variants', { name: actionName(id) })}
+                    aria-label={t(language, 'rediseno3b.ops.moreVariants')}
                     title={t(language, 'rediseno3b.ops.variants', { name: actionName(id) })}
                     onClick={() => setVariantsOf(variantsOf === id ? null : id)}
                   >
@@ -166,7 +166,7 @@ export const ObjectOperations: React.FC<{ primary: SceneObject }> = ({ primary }
                 type="button"
                 className="kura-btn kura-btn-sm kura-op-variant"
                 aria-expanded={colorSplitOpen}
-                aria-label={t(language, 'rediseno3b.ops.variants', { name: t(language, 'inspector.op.splitColors') })}
+                aria-label={t(language, 'rediseno3b.ops.chooseDepth')}
                 title={t(language, 'rediseno3b.ops.variants', { name: t(language, 'inspector.op.splitColors') })}
                 onClick={() => setColorSplitOpen((v) => !v)}
               >

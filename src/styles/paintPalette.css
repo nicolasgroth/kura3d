@@ -42,9 +42,19 @@
   max-width: 100%;
 }
 
+/* Cuadrícula de celdas fijas: cabe cualquier cantidad de muestras sin aplastar «+» ni «…». */
 .kura-paint-palette .kura-swatch-row {
-  flex-wrap: wrap;
-  align-items: center;
+  grid-template-columns: repeat(auto-fill, 26px);
+  width: 100%;
+  min-width: 0;
+}
+
+.kura-paint-palette {
+  flex: 1 1 220px;
+}
+
+.kura-paint-palette .kura-palette-toggle {
+  grid-column: span 3;
 }
 
 /* Con todas las muestras a la vista, la fila se desplaza en vez de crecer sin fin. */
@@ -66,9 +76,10 @@
 
 .kura-palette-add,
 .kura-palette-more {
+  width: 26px;
   min-width: 26px;
   height: 26px;
-  padding: 0 4px;
+  padding: 0;
   justify-content: center;
 }
 

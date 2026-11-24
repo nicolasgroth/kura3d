@@ -95,9 +95,13 @@ test('una acción muestra solo sus opciones; Esc vuelve y devuelve el foco', asy
   await expect(panel(page)).toHaveAttribute('data-context', 'object');
   await expect(panel(page).getByRole('button', { name: 'Textura superficial…' })).toBeFocused();
 
-  // Elegir una herramienta de la barra vertical vuelve al resumen.
+  // Elegir una herramienta de la barra vertical cierra la acción: Mover muestra su transformación (lote 3b) y
+  // Seleccionar, el resumen.
   await acceso.click();
   await page.getByRole('toolbar', { name: 'Herramientas' }).getByRole('button', { name: 'Mover' }).click();
+  await expect(panel(page)).toHaveAttribute('data-context', 'tool');
+  expect(await st(page, 'activeAction')).toBe(null);
+  await page.getByRole('toolbar', { name: 'Herramientas' }).getByRole('button', { name: 'Seleccionar' }).click();
   await expect(panel(page)).toHaveAttribute('data-context', 'object');
 });
 

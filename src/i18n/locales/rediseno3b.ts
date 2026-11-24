@@ -32,6 +32,8 @@ const REDISENO3B = {
   'rediseno3b.fold.transform': { es: 'Transformación', en: 'Transform', de: 'Transformation', fr: 'Transformation', hi: 'रूपांतरण', zh: '变换' },
 
   // Operaciones compactas
+  'rediseno3b.ops.moreVariants': { es: 'Más variantes', en: 'More variants', de: 'Weitere Varianten', fr: 'Plus de variantes', hi: 'और विकल्प', zh: '更多变体' },
+  'rediseno3b.ops.chooseDepth': { es: 'Elegir la profundidad', en: 'Choose the depth', de: 'Tiefe wählen', fr: 'Choisir la profondeur', hi: 'गहराई चुनें', zh: '选择深度' },
   'rediseno3b.ops.variants': { es: 'Variantes de {name}', en: '{name} variants', de: 'Varianten von {name}', fr: 'Variantes de {name}', hi: '{name} के विकल्प', zh: '{name}的变体' },
 
   // Paleta de pintura
