@@ -75,7 +75,7 @@ export function createKeyedNaming(
       op === 'subtract'
         ? inputs.map((o, i) => (i === 0 ? o.name : withoutModulePrefix(o.name))).join(' − ')
         : tr(op === 'union' ? 'object.name.union' : 'object.name.intersect', { count: inputs.length }),
-    cutHalf: (src, half, axis) => `${src.name} — ${tr(half === 'a' ? 'cut.half.a' : 'cut.half.b', { axis })}`,
+    cutHalf: (src, half, axis) => `${src.name} · ${tr(half === 'a' ? 'cut.half.a' : 'cut.half.b', { axis })}`,
     piece: (src, i) => `${src.name} — ${tr('object.name.piece', { n: i + 1 })}`,
     colorPart: (src, color) => `${src.name} — ${labels.color(color)}`,
     moldPart: (src, part) => `${tr(`mold.part.${part.label}` as TranslationKey)} — ${src.name}`,
@@ -85,6 +85,24 @@ export function createKeyedNaming(
     splitPart: (src, code) => `${src.name} · ${code}`,
     looseDowel: (d, l, count) => tr('object.name.looseDowel', { d: mm(d), l: mm(l), count }),
   };
+}
+
+const escapeRegExp = (v: string) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * «Etiqueta N» con el menor N ≥ 1 que no usa ya otro objeto de la escena con esa misma etiqueta
+ * (así una sola caja se llama «Caja 1» aunque antes se hayan creado y borrado otras).
+ */
+export function nextNumberedName(label: string, existingNames: Iterable<string>): string {
+  const pattern = new RegExp(`^${escapeRegExp(label)} (\\d+)$`);
+  const used = new Set<number>();
+  for (const name of existingNames) {
+    const match = pattern.exec(name);
+    if (match) used.add(Number(match[1]));
+  }
+  let n = 1;
+  while (used.has(n)) n += 1;
+  return `${label} ${n}`;
 }
 
 /** Nombre sin el prefijo de módulo («− Rosca» → «Rosca»): en una resta el signo ya lo pone el « − ». */

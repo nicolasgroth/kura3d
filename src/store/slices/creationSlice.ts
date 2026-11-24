@@ -17,7 +17,7 @@ import { PRINT_COLOR_PALETTE, type SceneObject, type Vec3 } from '../../types/ku
 import { isNegative, isReference, isSolid } from '../../core/scene/objectRole';
 import { BRAND } from '../../brand';
 import { attachToTarget, negativeOnTopFace } from '../../core/scene/attachPiece';
-import { withoutModulePrefix } from '../../core/scene/resultNames';
+import { nextNumberedName, withoutModulePrefix } from '../../core/scene/resultNames';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 import { negativeSpotFor, rememberSpawnTarget } from '../negativeSpawn';
@@ -69,7 +69,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
           mesh,
           type,
           params,
-          name: options?.name ?? (options?.label ? `${options.label} ${count + 1}` : op.naming.primitive(type, count)),
+          name: options?.name ?? nextNumberedName(options?.label ?? op.naming.primitiveLabel(type), get().objects.map((o) => o.name)),
           color: options?.color ?? PRINT_COLOR_PALETTE[count % PRINT_COLOR_PALETTE.length],
           position: options?.position,
           rotation: options?.rotation,
