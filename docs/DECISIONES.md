@@ -75,3 +75,6 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-23 | Paneles flotantes | Descartados. El panel derecho que se ensancha, reduce y pliega basta. |
 | 2026-11-23 | Muchos colores por modelo | A futuro los modelos pueden traer cientos o miles de colores (impresoras que mezclan). No se implementa ahora, pero la paleta y la preparación de colores no deben suponer un tope chico. |
 | 2026-11-24 | Usabilidad en 80 tras cinco rondas | Se hace un lote más con los hallazgos pendientes de la quinta evaluación y una sexta evaluación a ciegas. El mínimo sigue en 85. |
+| 2026-11-24 | Usabilidad en 81 | Se acepta de forma temporal para avanzar con funcionalidades que faltan. El mínimo de 85 no cambia y el tema se retoma después; los 11 hallazgos de la sexta evaluación quedan anotados en el tablero. |
+| 2026-11-24 | Arrastrar el objeto | Con un objeto seleccionado, arrastrarlo con el botón principal lo mueve sobre el plano horizontal en que está (también si está elevado, no solo sobre la cama). Orbitar queda para el fondo. Elegir otro plano de movimiento según la vista se verá más adelante. |
+| 2026-11-24 | Ajustes al rediseño (decisiones tomadas por el orquestador el 23-nov) | Aceptadas por ahora; el autor avisará si quiere ajustar alguna. |
