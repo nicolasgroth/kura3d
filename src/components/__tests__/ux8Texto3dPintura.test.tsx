@@ -2,8 +2,8 @@
  * @file src/components/__tests__/ux8Texto3dPintura.test.tsx
  * @description Lote ux8: el panel de Texto 3D enfoca su campo de texto al abrir (no «Cerrar»); en Pintar la barra
  * del visor y el panel derecho dicen lo mismo del objeto destino con ninguno, uno o varios objetos seleccionados;
- * las muestras de color miden 32×32 px y 44×44 px en táctil (hoja de estilo) y la paleta de comandos nombra las
- * acciones como el menú «Acciones».
+ * y los nombres de acción vienen de la fuente única. El tamaño de las muestras (32×32 y 44×44 px) lo mide
+ * `e2e/ux8-menu-pintura.spec.ts` en el navegador.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -11,8 +11,6 @@
 
 import { act, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { setText3DPanelOpen } from '../../store/insertCatalog';
 import { actionName } from '../../store/actionLabels';
 import { paintTargetText } from '../../store/paintTarget';
@@ -23,7 +21,6 @@ import { Text3DPanel } from '../text3d/Text3DPanel';
 import { PaintToolbar } from '../viewport/PaintToolbar';
 
 const ui = {} as never;
-const paintCss = readFileSync(resolve(process.cwd(), 'src/styles/ux8Paint.css'), 'utf8');
 
 describe('Texto 3D: foco inicial', () => {
   it('al abrir el panel el foco cae en el campo de texto, no en «Cerrar»', async () => {
@@ -73,14 +70,6 @@ describe('Pintar: el mismo destino en la barra y en el panel', () => {
     expect(texto).toContain('Caja 1');
     expect(texto).toMatch(/2 objetos/);
     expect(texto).not.toMatch(/Sin objeto/i);
-  });
-});
-
-describe('Pintar: tamaño de las muestras', () => {
-  it('32×32 px con puntero y 44×44 px en pantallas táctiles', () => {
-    const [fino, tactil] = paintCss.split('@media (pointer: coarse)');
-    expect(fino).toMatch(/\.kura-paint-palette \.kura-swatch,[\s\S]*?width: 32px;[\s\S]*?height: 32px;/);
-    expect(tactil).toMatch(/\.kura-paint-palette \.kura-swatch,[\s\S]*?width: 44px;[\s\S]*?height: 44px;/);
   });
 });
 
