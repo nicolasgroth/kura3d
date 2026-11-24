@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import { Bolt, Box, Circle, Cone, Cylinder, Disc, Disc3, FileCode2, Hexagon, Image as ImageIcon, PackageCheck, Sparkles, Type } from 'lucide-react';
+import { Bolt, Box, Circle, Cone, Cylinder, Disc, Disc3, FileCode2, Hexagon, Image as ImageIcon, PackageCheck, Sparkles, Type, WandSparkles } from 'lucide-react';
 import type { InsertId } from '../../store/insertCatalog';
 
 const ICONS: Record<InsertId, React.FC<{ size?: number; 'aria-hidden'?: boolean | 'true' }>> = {
@@ -25,6 +25,7 @@ const ICONS: Record<InsertId, React.FC<{ size?: number; 'aria-hidden'?: boolean 
   image: ImageIcon,
   thread: Bolt,
   calibration: PackageCheck,
+  assistants: WandSparkles,
 };
 
 export function insertIcon(id: InsertId, size = 15): React.ReactNode {

@@ -14,10 +14,11 @@ import { create } from 'zustand';
 import { discParams } from '../core/scene/pieceSizing';
 import { t, type TranslationKey } from '../i18n';
 import type { PrimitiveType } from '../types/kura';
+import { openAssistants } from './assistantsPanel';
 import { useKuraStore } from './useKuraStore';
 
 export type ShapeId = 'box' | 'cylinder' | 'disc' | 'tube' | 'sphere' | 'cone' | 'torus' | 'prism' | 'text';
-export type GeneratorId = 'svg' | 'image' | 'thread' | 'calibration';
+export type GeneratorId = 'svg' | 'image' | 'thread' | 'calibration' | 'assistants';
 export type InsertId = ShapeId | GeneratorId;
 
 interface ShapeDef {
@@ -40,7 +41,7 @@ export const SHAPES: readonly ShapeDef[] = [
 ];
 
 /** Generadores del menú Insertar (y de la hoja Agregar en móvil). */
-export const GENERATORS: readonly GeneratorId[] = ['svg', 'image', 'thread', 'calibration'];
+export const GENERATORS: readonly GeneratorId[] = ['svg', 'image', 'thread', 'calibration', 'assistants'];
 
 /** Nombre visible de cada entrada. */
 export function insertLabelKey(id: InsertId): TranslationKey {
@@ -53,6 +54,8 @@ export function insertLabelKey(id: InsertId): TranslationKey {
       return 'sidebar.generators.thread';
     case 'calibration':
       return 'sidebar.shapes.createStarter';
+    case 'assistants':
+      return 'asis.title';
     default:
       return `sidebar.primitive.${id}` as TranslationKey;
   }
@@ -69,6 +72,8 @@ export function insertTipKey(id: InsertId): TranslationKey | null {
       return 'sidebar.generators.threadTip';
     case 'text':
       return 'r3a.insert.textTip';
+    case 'assistants':
+      return 'asis.menuTip';
     default:
       return null;
   }
@@ -86,6 +91,10 @@ export async function runInsert(id: InsertId): Promise<void> {
   const state = useKuraStore.getState();
   if (id === 'text') {
     setText3DPanelOpen(true);
+    return;
+  }
+  if (id === 'assistants') {
+    openAssistants();
     return;
   }
   if (id === 'svg' || id === 'image' || id === 'thread') {

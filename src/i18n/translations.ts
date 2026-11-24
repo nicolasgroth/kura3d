@@ -45,6 +45,7 @@ import { REALESMOTOR_EN, REALESMOTOR_ES } from './locales/realesMotor';
 import { REALESUI_EN, REALESUI_ES } from './locales/realesUi';
 import { UX6_EN, UX6_ES } from './locales/ux6';
 import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
+import { ASISTENTES_EN, ASISTENTES_ES } from './locales/asistentes';
 import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
 import { UX8_EN, UX8_ES } from './locales/ux8';
@@ -93,6 +94,7 @@ export const TRANSLATIONS_ES = {
   ...REALESUI_ES,
   ...UX6_ES,
   ...RECETAS_ES,
+  ...ASISTENTES_ES,
   ...BORDES_ES,
   ...UX7_ES,
   ...UX8_ES,
@@ -1422,6 +1424,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...REALESUI_EN,
   ...UX6_EN,
   ...RECETAS_EN,
+  ...ASISTENTES_EN,
   ...BORDES_EN,
   ...UX7_EN,
   ...UX8_EN,
