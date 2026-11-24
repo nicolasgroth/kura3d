@@ -179,10 +179,12 @@ describe('grupos en el store', () => {
     expect(parts.reduce((n, p) => n + p.stats.volumeMm3, 0)).toBeCloseTo(total, 1);
   });
 
-  it('el Disco se numera como las demás primitivas', async () => {
+  it('el Disco se numera como las demás primitivas (menor número libre de su tipo)', async () => {
     await fourBoxes();
     const disc = await store().createPrimitive('cylinder', { radius: 16, height: 2 }, { placement: 'free', label: 'Disco' });
-    expect(disc!.name).toBe('Disco 5');
+    expect(disc!.name).toBe('Disco 1');
+    const second = await store().createPrimitive('cylinder', { radius: 16, height: 2 }, { placement: 'free', label: 'Disco' });
+    expect(second!.name).toBe('Disco 2');
   });
 
   it('separar cuerpos conserva el color de cada cuerpo (combinar → separar)', async () => {
