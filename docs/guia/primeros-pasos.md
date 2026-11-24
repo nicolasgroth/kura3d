@@ -39,7 +39,8 @@ Kura3D usa los mismos ejes que los laminadores: **X hacia la derecha, Y hacia el
 3. Elige el modo en la barra de herramientas o con el teclado: **M** mover, **R** rotar, **S** escalar (sin selección, toman la pieza o todas las visibles). Arrastra las flechas del manipulador. El panel derecho deja arriba solo ese grupo de campos.
 4. Para valores exactos, escribe en *Posición*, *Rotación* y *Escala* del inspector. Los campos aceptan operaciones y unidades (`10+5`, `2cm`).
 5. Con una pieza seleccionada, las flechas del teclado la mueven en X e Y, y `Re Pág` / `Av Pág` la suben y bajan en Z. `Alt` + arrastrar la clona; `Mayús` escala en proporción; `Ctrl` ajusta el giro a 15°.
-6. Para volver atrás: **Ctrl+Z** deshace y **Ctrl+Y** rehace (también los botones de la barra superior). El botón del historial, junto a ellos, lista los pasos con nombre: elige uno para volver a ese punto de una vez.
+6. **Arrastrar para mover:** con una pieza ya seleccionada (herramienta *Seleccionar* o *Mover*), arrastra su cuerpo y se desplaza sobre el plano horizontal a la altura del punto que agarraste, también si está en el aire. Con varias seleccionadas se mueven juntas (las bloqueadas no). Respeta el paso de la rejilla de la barra de vista, **Esc** cancela y soltar es un solo paso de deshacer. Arrastrar el fondo o una pieza no seleccionada gira la cámara, y las flechas del manipulador tienen prioridad.
+7. Para volver atrás: **Ctrl+Z** deshace y **Ctrl+Y** rehace (también los botones de la barra superior). El botón del historial, junto a ellos, lista los pasos con nombre: elige uno para volver a ese punto de una vez.
 
 ![Escena con una caja seleccionada, un cilindro y una esfera](img/primeros-pasos-02-interfaz.png)
 
