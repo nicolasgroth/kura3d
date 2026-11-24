@@ -17,7 +17,7 @@ import React, { useRef, useState } from 'react';
 import { Eraser, MousePointer, Move, Paintbrush, RotateCw, Ruler, Scale3d, Scissors } from 'lucide-react';
 import { t } from '../../i18n';
 import { activateRailTool, toolDisabledText } from '../../store/toolActivation';
-import { allToolAvailability, type RailToolId } from '../../store/toolAvailability';
+import { allToolAvailability, pressedRailTool, type RailToolId } from '../../store/toolAvailability';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { ActiveTool, TransformMode } from '../../types/kura';
 import { CONTROL_HELP, helpAttrs, helpLabel, type HelpId } from './controlHelp';
@@ -66,10 +66,10 @@ export const ToolRail: React.FC = () => {
   const [focusIndex, setFocusIndex] = useState(0);
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  const isPressed = (item: RailItem) =>
-    item.mode ? activeTool === 'select' && transformMode === item.mode : activeTool === item.tool;
-
   const railId = (item: RailItem) => item.help.slice('tool.'.length) as RailToolId;
+  // Exactamente una herramienta pulsada y nunca una apagada (`pressedRailTool`).
+  const pressedTool = pressedRailTool({ objects, selectedIds, activeTool, transformMode });
+  const isPressed = (item: RailItem) => railId(item) === pressedTool;
   const choose = (item: RailItem) => {
     activateRailTool(railId(item));
   };

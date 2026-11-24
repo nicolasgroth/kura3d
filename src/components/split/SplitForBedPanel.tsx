@@ -199,6 +199,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   else if (target.locked) reason = t(language, 'split.reason.locked');
   else if (allowedAxes.length === 0) reason = t(language, 'split.reason.noAxes');
   else if (preview.status === 'error' && preview.objectId === targetId) reason = preview.error ?? t(language, 'split.reason.planFailed');
+  // Mientras recalcula, el plan anterior está desactualizado: sus motivos («cabe entero», «no cabe») no se muestran.
+  else if (pending) reason = null;
   else if (plan?.fitsWithoutCuts) reason = t(language, 'split.reason.fits');
   else if (summary && summary.oversized.length > 0) reason = t(language, 'split.reason.oversized', { codes: summary.oversized.join(', ') });
   const checking = !reason && (pending || !plan);
@@ -484,7 +486,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
             </button>
           </>
         ) : (
-          <small className="kura-cut-hint">{t(language, plan?.fitsWithoutCuts ? 'split.reason.fits' : 'split.planesNone')}</small>
+          <small className="kura-cut-hint">{t(language, pending ? 'split.calculating' : plan?.fitsWithoutCuts ? 'split.reason.fits' : 'split.planesNone')}</small>
         )}
       </SplitSection>
 

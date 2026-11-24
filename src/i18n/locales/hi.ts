@@ -47,6 +47,7 @@ import { PANEL_HI } from './panel';
 import { ENCAJE_UI_HI } from './encajeUi';
 import { REDISENO3A_HI } from './rediseno3a';
 import { REDISENO3B_HI } from './rediseno3b';
+import { UX8_HI } from './ux8';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -91,6 +92,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...ENCAJE_UI_HI,
   ...REDISENO3A_HI,
   ...REDISENO3B_HI,
+  ...UX8_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',

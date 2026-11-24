@@ -14,6 +14,7 @@ import { t } from '../i18n';
 import type { RecoveryFailure, RecoveryStatus } from '../project/projectRecoveryAutosave';
 import { useKuraStore } from '../store/useKuraStore';
 import { isTauriRuntime } from '../utils/platformBridge';
+import '../styles/statusFit1100.css';
 import { RecoveryStatusNotice } from './RecoveryStatusNotice';
 import { StatusBarCount } from './StatusBarCount';
 import { StatusBarMeasures } from './StatusBarMeasures';
@@ -83,7 +84,10 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus; recoveryFail
           <HelpCircle size={12} />
           <span>{t(language, 'status.shortcutsBtn')}</span>
         </button>
-        <span>{t(language, 'status.copyright')}</span>
+        <span className="kura-statusbar-copyright" title={t(language, 'status.copyright')}>
+          <span className="kura-copyright-full">{t(language, 'status.copyright')}</span>
+          <span className="kura-copyright-short" aria-hidden="true">{t(language, 'ux8.status.copyrightShort')}</span>
+        </span>
       </div>
     </footer>
   );

@@ -46,26 +46,29 @@ function announcement(language: LanguageCode, ctx: PanelContext, objects: SceneO
       return t(language, 'panel.announce.multi', { count: ctx.count });
     case 'action': {
       const entry = panelContentOf(ctx.id);
-      return t(language, 'panel.announce.action', { name: entry ? t(language, entry.title) : ctx.id });
+      return t(language, 'panel.announce.action', { name: entry ? t(language, entry.title) : '' });
     }
     case 'tool':
       return t(language, 'panel.announce.action', { name: t(language, toolPanelTitle(ctx.tool)) });
   }
 }
 
-/** Anuncia el contexto nuevo (no el inicial) en una región viva discreta. */
-function useContextAnnouncement(language: LanguageCode, ctx: PanelContext, objects: SceneObject[]): string {
+/**
+ * Anuncia el contexto nuevo (no el inicial) en una región viva discreta. El texto se guarda con el idioma en que se
+ * generó: si el idioma de la interfaz cambia, el anuncio viejo se descarta en vez de leerse en el idioma anterior.
+ */
+export function useContextAnnouncement(language: LanguageCode, ctx: PanelContext, objects: SceneObject[]): string {
   const key = panelContextKey(ctx);
   const previous = useRef(key);
-  const [text, setText] = useState('');
+  const [announced, setAnnounced] = useState<{ text: string; language: LanguageCode }>({ text: '', language });
   useEffect(() => {
     if (previous.current === key) return;
     previous.current = key;
-    setText(announcement(language, ctx, objects));
+    setAnnounced({ text: announcement(language, ctx, objects), language });
     // Solo cuando cambia el contexto, no con cada edición del objeto.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  return text;
+  return announced.language === language ? announced.text : '';
 }
 
 const ObjectSummary: React.FC<{ primary: SceneObject; ui: InspectorLocalState }> = ({ primary, ui }) => {
@@ -161,7 +164,7 @@ export const ContextPanel: React.FC<{ ui: InspectorLocalState }> = ({ ui }) => {
     >
       <InspectorEdgeToggle />
       {!rightCollapsed && <PanelResizer />}
-      <div className="kura-ctx-live" role="status" aria-live="polite" data-testid="panel-live">
+      <div className="kura-ctx-live" role="status" aria-live="polite" lang={language} data-testid="panel-live">
         {live}
       </div>
       {body}

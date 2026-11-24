@@ -1,7 +1,7 @@
 /**
  * @file src/styles/toastZone.css
- * @description Zona reservada para los avisos en escritorio: esquina inferior derecha del visor, por encima de la
- * barra de medidas y de la cama. Así nunca tapan la barra de la herramienta activa (pincel, medir) ni el aviso
+ * @description Zona reservada para los avisos en escritorio: esquina inferior IZQUIERDA del visor (lejos del panel
+ * derecho, del cubo de vista y del manipulador de transformación), por encima de la barra de medidas y del Consejo. Así nunca tapan la barra de la herramienta activa (pincel, medir) ni el aviso
  * «No cabe en la cama», que viven arriba. En pantallas estrechas siguen las reglas de `toastNarrow.css`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -11,16 +11,22 @@
 @media (min-width: 901px) {
   .kura-viewport-wrap > .kura-toast-stack:not(.kura-toast-stack-modal) {
     position: absolute;
-    right: 12px;
+    left: 12px;
     /* Por encima de la píldora de Consejo (a 84 px del fondo y ~40 px de alto) y de su margen */
     bottom: 132px;
-    left: auto;
+    right: auto;
     top: auto;
     z-index: 35;
-    align-items: flex-end;
-    max-width: min(380px, calc(100% - 24px));
+    align-items: flex-start;
+    max-width: min(300px, calc(100% - 24px));
     max-height: 60%;
     overflow: visible;
     pointer-events: none;
+  }
+
+  .kura-viewport-wrap > .kura-toast-stack:not(.kura-toast-stack-modal) .kura-toast {
+    width: 300px;
+    max-width: 100%;
+    padding: 7px 10px;
   }
 }
