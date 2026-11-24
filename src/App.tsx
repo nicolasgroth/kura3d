@@ -46,6 +46,7 @@ import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest'
 import { ToolRail } from './components/shell/ToolRail';
 import { Text3DPanel } from './components/text3d/Text3DPanel';
 import { AssistantsPanel } from './components/assistants/AssistantsPanel';
+import { startPanelExclusion } from './store/insertCatalog';
 import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
 import { activateRailTool, toggleRailTool } from './store/toolActivation';
 import { useSimplifyRequestRelay } from './components/inspector/simplifyPanelRequest';
@@ -75,6 +76,8 @@ export const App: React.FC = () => {
   const sheets = useNarrowSheets();
   const visibleNarrowPanel = sheets.visible;
   const recovery = useProjectRecovery();
+  // Texto 3D y Asistentes comparten hueco: el arranque explícito de su exclusión mutua (una sola vez).
+  useEffect(() => startPanelExclusion(), []);
   const discardRecoveryOnClose = recovery.discardOnClose;
 
   // F2/F3 necesitan la lista de escena: en pantallas estrechas el panel izquierdo es un cajón, y se pide la
