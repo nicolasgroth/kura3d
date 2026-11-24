@@ -458,3 +458,19 @@ Consumo: evaluador (Opus · ~22 min).
 Suite completa de navegador sobre `e60ef2a` (24-nov, 05:35 · 1,3 h): 353 recorridos pasan, 12 omitidos, 1 falla (`ux-texto-menu`, menú de clic derecho sobre el fondo). Aislado pasa 3 de 3; la prueba medía el lienzo antes de que tomara su tamaño y ahora espera a que ocupe el visor (causa probable, no confirmada con la traza). Capturas de las guías regeneradas (17 de 17) y enlaces sin roturas.
 
 Hallazgo 1 de la quinta evaluación, corregido el 24-nov (05:50) por el orquestador: el motor sí detecta los choques con selección (3 pares, 3 choques con tres primitivas superpuestas). Lo engañoso era el panel: tras cambiar la selección seguía mostrando el informe anterior junto al alcance nuevo, y con 0 pares cercanos decía «Todo calza». Ahora el informe se oculta al cambiar la selección y pide volver a comprobar, y sin pares cercanos dice que no hubo nada que comparar. Dos pruebas nuevas del panel; 2537 pruebas del frontend pasan; comprobado en el navegador.
+
+## QA22 · 24 de noviembre de 2026, 10:00 · rama `fix/ux8-usabilidad` · aprobada con observaciones
+
+Lote con los hallazgos pendientes de la quinta evaluación, en tres ramas integradas. La QA probó 12 puntos en navegador real; 10 sin fallos (colocación, borradores, nombres, Mayús+H, avisos, árbol, barra, Dividir, Medir, encaje). La pérdida del primer trazo de pintura no se pudo reproducir (cubo con color previo y STL real, clic y arrastre). 28 de 28 recorridos existentes pasan.
+
+Fallos y su corrección (orquestador, `c546fb7`):
+
+1. La paleta de comandos no ofrecía varias acciones del catálogo con su nombre (Comprobar encaje, Convertir en, Alinear, Unir selección, Textura, Módulos). Ahora toda acción del catálogo tiene entrada con el nombre canónico; prueba en los 6 idiomas.
+2. Escape dentro de un submenú cerraba todo el menú. Ahora cierra solo el submenú.
+3. Encontrado al corregir: a 390 px, desplegar un submenú en línea sacaba el menú de la ventana sin scroll. El menú se reajusta al crecer.
+
+Tras las correcciones: 2582 pruebas del frontend y 151 del servidor MCP pasan; los recorridos de paleta, teclado del menú (1440 y 390 px) y pintura pasan. Capturas de las guías regeneradas (17 de 17).
+
+No probado por la QA: SVG, imagen a 3D y molde en la colocación; el nombre del proyecto al exportar; tema oscuro y 390 px fuera de los recorridos del desarrollo; las acciones de Malla, Separar y combinar y Más (solo que abren).
+
+Consumo (modelo · duración · tokens): escena y borradores (Opus · 47 min · 261 k), avisos, árbol y barra (Sonnet · 60 min · 258 k), menú de clic derecho (Sonnet · 67 min · 320 k), QA22 (Sonnet · 50 min · 207 k; una primera corrida se cortó por el reinicio del equipo).

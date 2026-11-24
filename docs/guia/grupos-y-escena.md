@@ -25,8 +25,8 @@ La pestaña **Escena** del panel izquierdo lista todo como un árbol de capas, c
 ## Combinar y separar
 
 - **Combinar en un objeto** junta varias piezas en un solo objeto con varios cuerpos, sin fusionar su geometría (el volumen total es la suma). Se exporta como un solo archivo.
-- **Separar cuerpos** hace lo contrario.
-- Para fusionar de verdad dos piezas que se tocan, usa **Unir** (ver [Sólidos negativos y restas](solidos-negativos-y-restas.md)).
+- **Separar piezas sueltas** hace lo contrario.
+- Para fusionar de verdad dos piezas que se tocan, usa **Unir selección** (ver [Sólidos negativos y restas](solidos-negativos-y-restas.md)).
 
 ## Problemas frecuentes
 
@@ -36,3 +36,8 @@ La pestaña **Escena** del panel izquierdo lista todo como un árbol de capas, c
 - **Quiero exportar un grupo:** ver [Exportar](exportar.md); se puede como un archivo o uno por objeto.
 
 Anterior: [Sólidos negativos y restas](solidos-negativos-y-restas.md) · Siguiente: [Medir](medir.md) · [Índice](README.md)
+
+## Ocultar y volver a mostrar
+
+- **Mayús+H** en el visor oculta lo seleccionado; al pulsarlo otra vez, lo vuelve a mostrar. Sin nada seleccionado, muestra todo lo oculto.
+- Los nombres largos se recortan por el principio para que se vea el final, que es lo que suele distinguirlos; el nombre completo aparece al pasar el cursor.
