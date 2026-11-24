@@ -173,6 +173,7 @@ Ordenadas por prioridad dentro de cada grupo.
 
 | Grupo | Funcionalidad |
 |---|---|
+| Interfaz | Aviso bajo 1024 px de ancho: «Kura3D está pensado para pantallas de al menos 1024 px», descartable, sin bloquear el uso (decisión del 24-nov). Se hace al fusionar el imán |
 | Dividir para imprimir | Imanes como unión del corte (pedido el 24-nov): al dividir, elegir imanes en vez de conectores macho/hembra, con el par de huecos enfrentados en las dos caras del corte, para una figura desmontable. Reúne el «par de imanes enfrentados» y las uniones firmes |
 | Placas y escena | Modo libre y vista armada (pedido el 24-nov): trabajar sin la cama a la vista, tener las piezas de una figura repartidas en distintas camas y poder verlas todas conectadas como quedará la figura terminada. Se apoya en lo que ya existe (botón «Sin cama», vista armada de Dividir) y en «placas como entidad del proyecto» |
 | Preajustes | Listas de preajustes que el usuario agrega y elimina (pedido el 24-nov). Las camas ya lo tienen («Mis camas», en Ajustar a la impresora y donde se elige la cama). Falta lo mismo para imanes (por defecto redondo de 5 mm de diámetro × 2 mm; también cuadrados) e insertos, y la holgura de encajes a presión (hoy fija en 0,2 mm) |
