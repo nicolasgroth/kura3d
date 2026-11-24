@@ -193,6 +193,30 @@ describe('Comprobar encaje: panel', () => {
     expect(screen.getByRole('option').textContent).toContain('Justo');
   });
 
+  it('sin pares cercanos no dice que todo calza: explica que no hubo nada que comparar', () => {
+    seed(withReport(report([])));
+    render(<RightInspector />);
+    expect(screen.getByTestId('fit-check-count-pairs').textContent).toBe('0');
+    const clean = screen.getByTestId('fit-check-clean').textContent!;
+    expect(clean).not.toContain('Todo calza');
+    expect(clean).toMatch(/^Ningún objeto está a menos de [\d,.]+ mm de otro: no hay pares que comparar\.$/);
+  });
+
+  it('al cambiar la selección el resultado anterior deja de mostrarse y pide volver a comprobar', () => {
+    seed({ ...withReport(report([okPair])), selectedIds: ['caja', 'placa'] });
+    render(<RightInspector />);
+    expect(screen.getByTestId('fit-check-result')).toBeTruthy();
+    act(() => useKuraStore.setState({ selectedIds: ['caja', 'placa', 'tapa'] }));
+    expect(screen.getByTestId('fit-check-scope').textContent).toContain('los 3 objetos seleccionados');
+    expect(screen.queryByTestId('fit-check-result')).toBeNull();
+    expect(screen.getByTestId('fit-check-stale').textContent).toContain('Cambiaste la selección');
+    expect(screen.getByRole('button', { name: 'Volver a comprobar' })).toBeTruthy();
+    // Un informe nuevo (otra referencia) vuelve a mostrarse con el alcance actual.
+    act(() => useKuraStore.setState(withReport(report([clash])) as never));
+    expect(screen.getByTestId('fit-check-count-clashes').textContent).toBe('1');
+    expect(screen.queryByTestId('fit-check-stale')).toBeNull();
+  });
+
   it('todo calza: estado vacío claro y notas visibles (truncado y restas)', () => {
     seed(withReport(report([okPair], { truncated: true, subtractions: { applied: 2, ignored: 0, failed: [] }, notes: [{ key: 'fitCheck.note.openMesh', params: { name: 'Placa' } }] })));
     render(<RightInspector />);

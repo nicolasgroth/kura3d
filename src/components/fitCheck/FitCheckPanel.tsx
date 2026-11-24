@@ -42,11 +42,11 @@ export const FitCheckPanel: React.FC = () => {
   const checkFit = useKuraStore((s) => s.checkFit);
   const cancelFitCheck = useKuraStore((s) => s.cancelFitCheck);
   const setHighlight = useKuraStore((s) => s.setFitCheckHighlight);
-  const report = fitCheck?.report ?? null;
+  const lastReport = fitCheck?.report ?? null;
   const [clearanceText, setClearanceText] = useState(() =>
-    String(report?.options.clearanceTargetMm ?? OPERATION_DEFAULTS.fitCheck.clearanceTargetMm),
+    String(lastReport?.options.clearanceTargetMm ?? OPERATION_DEFAULTS.fitCheck.clearanceTargetMm),
   );
-  const [applyNegatives, setApplyNegatives] = useState(() => report?.options.applyPendingSubtractions ?? true);
+  const [applyNegatives, setApplyNegatives] = useState(() => lastReport?.options.applyPendingSubtractions ?? true);
   const clearanceId = useId();
   const clearanceHintId = useId();
   const negativesHintId = useId();
@@ -55,6 +55,13 @@ export const FitCheckPanel: React.FC = () => {
   useEffect(() => () => setHighlight(null), [setHighlight]);
 
   const targets = useMemo(() => fitCheckTargets(objects, selectedIds), [objects, selectedIds]);
+  // El informe vale para lo que se iba a comprobar cuando llegó: si después cambia la selección, deja de
+  // mostrarse (quedaría el resultado de otros objetos junto al alcance nuevo).
+  const scopeKey = targets.ids.join('|');
+  const [shown, setShown] = useState({ report: lastReport, scopeKey });
+  if (shown.report !== lastReport) setShown({ report: lastReport, scopeKey });
+  const scopeChanged = lastReport !== null && shown.report === lastReport && shown.scopeKey !== scopeKey;
+  const report = scopeChanged ? null : lastReport;
   const clearance = parseClearance(clearanceText);
   const enoughObjects = targets.ids.length >= 2;
   const canRun = enoughObjects && clearance !== null && !running;
@@ -64,7 +71,7 @@ export const FitCheckPanel: React.FC = () => {
     void checkFit({ ids: targets.ids, options: { clearanceTargetMm: clearance, applyPendingSubtractions: applyNegatives } });
   };
 
-  const runLabel = t(language, report || stale ? 'fitCheck.ui.rerun' : 'fitCheck.ui.run');
+  const runLabel = t(language, lastReport || stale ? 'fitCheck.ui.rerun' : 'fitCheck.ui.run');
   const phase = running ?phaseView(language, running.phase) : null;
   const issues = report ? report.summary.interferes + report.summary.tight : 0;
   const worst = report ? worstPairNames(language, report) : null;
@@ -150,10 +157,10 @@ export const FitCheckPanel: React.FC = () => {
             />
           </div>
         )}
-        {!running && stale && !report && (
+        {!running && (stale || scopeChanged) && !report && (
           <p className="kura-fitcheck-stale" data-testid="fit-check-stale">
             <AlertTriangle size={14} aria-hidden="true" />
-            <span>{t(language, 'fitCheck.ui.stale')}</span>
+            <span>{t(language, scopeChanged ? 'fitCheck.ui.scopeChanged' : 'fitCheck.ui.stale')}</span>
           </p>
         )}
       </div>
@@ -183,7 +190,13 @@ export const FitCheckPanel: React.FC = () => {
           {issues === 0 ? (
             <p className="kura-fitcheck-clean" data-testid="fit-check-clean">
               <CheckCircle2 size={14} aria-hidden="true" />
-              <span>{report.summary.possiblePairs > 0 ? t(language, 'fitCheck.ui.allFits') : localizeFitMessage(language, report.summary.message)}</span>
+              <span>
+                {report.summary.possiblePairs === 0
+                  ? localizeFitMessage(language, report.summary.message)
+                  : report.summary.evaluatedPairs === 0
+                    ? t(language, 'fitCheck.ui.nothingNear', { value: formatLocaleNumber(language, report.options.searchMm) })
+                    : t(language, 'fitCheck.ui.allFits')}
+              </span>
             </p>
           ) : null}
           {report.pairs.length > 0 && (

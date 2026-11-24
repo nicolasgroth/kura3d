@@ -27,6 +27,8 @@ Es una revisión **bajo pedido** y **no cambia la escena**: no mueve nada, no ap
 - Debajo de cada par va la **recomendación** en texto: por ejemplo «Agranda el alojamiento unos 1,25 mm por lado en X, Y» o «sepáralas 0,15 mm hacia +Z (arriba)».
 - Las marcas **Aproximado** (una malla no está cerrada), **Estimado** (la cifra de la recomendación es una estimación) y **Copia simplificada** (una malla muy densa se simplificó solo para el cálculo) avisan que el número no es exacto.
 - Si nada choca ni queda justo, el panel dice **Todo calza**.
+- Si ningún objeto está cerca de otro, el panel lo dice y no hay pares que comparar: eso no significa que calcen.
+- Si cambias la selección después de comprobar, el resultado anterior desaparece y el panel te pide **Volver a comprobar**.
 - **Notas:** mallas abiertas, restas que no se pudieron aplicar o un resultado parcial si había demasiados pares.
 
 ## Ver un par en el visor

@@ -456,3 +456,5 @@ Serie de usabilidad: 76 → 75 → 79 → 78 → 80. Quinta ronda bajo el mínim
 Consumo: evaluador (Opus · ~22 min).
 
 Suite completa de navegador sobre `e60ef2a` (24-nov, 05:35 · 1,3 h): 353 recorridos pasan, 12 omitidos, 1 falla (`ux-texto-menu`, menú de clic derecho sobre el fondo). Aislado pasa 3 de 3; la prueba medía el lienzo antes de que tomara su tamaño y ahora espera a que ocupe el visor (causa probable, no confirmada con la traza). Capturas de las guías regeneradas (17 de 17) y enlaces sin roturas.
+
+Hallazgo 1 de la quinta evaluación, corregido el 24-nov (05:50) por el orquestador: el motor sí detecta los choques con selección (3 pares, 3 choques con tres primitivas superpuestas). Lo engañoso era el panel: tras cambiar la selección seguía mostrando el informe anterior junto al alcance nuevo, y con 0 pares cercanos decía «Todo calza». Ahora el informe se oculta al cambiar la selección y pide volver a comprobar, y sin pares cercanos dice que no hubo nada que comparar. Dos pruebas nuevas del panel; 2537 pruebas del frontend pasan; comprobado en el navegador.
