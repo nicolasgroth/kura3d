@@ -14,6 +14,7 @@ import { ConvexHull } from 'three/examples/jsm/math/ConvexHull.js';
 import type { Vec3 } from '../../types/kura';
 import { EngineError } from '../engineErrors';
 import { faceGeometry } from '../printabilityChecks';
+import type { HullFace } from './orientCandidates';
 import type { OrientInput } from './orientTypes';
 
 export interface OrientWorld {
@@ -27,8 +28,8 @@ export interface OrientWorld {
   diag: number;
   /** Vértices del casco convexo intercalados (bastan para huella, extensión y altura). */
   hullPoints: Float64Array;
-  /** Caras del casco: normal hacia fuera y área. */
-  hullFaces: Array<{ normal: Vec3; area: number }>;
+  /** Caras del casco: normal hacia fuera, área y vértices. */
+  hullFaces: HullFace[];
 }
 
 function worldPositions(input: OrientInput): Float64Array {
@@ -75,7 +76,7 @@ function surfaceCentroid(p: Float64Array, idx: ArrayLike<number>, areas: Float64
   return total > 0 ? [c[0] / total, c[1] / total, c[2] / total] : [0, 0, 0];
 }
 
-function hullOf(p: Float64Array): { points: Float64Array; faces: Array<{ normal: Vec3; area: number }> } {
+function hullOf(p: Float64Array): { points: Float64Array; faces: HullFace[] } {
   const pts: THREE.Vector3[] = [];
   for (let i = 0; i < p.length; i += 3) pts.push(new THREE.Vector3(p[i], p[i + 1], p[i + 2]));
   const hull = new ConvexHull();
@@ -85,9 +86,17 @@ function hullOf(p: Float64Array): { points: Float64Array; faces: Array<{ normal:
     // Puntos coplanares o degenerados: sin caras del casco, se usa la nube completa para la huella.
     return { points: p, faces: [] };
   }
-  const points = new Float64Array(hull.vertices.length * 3);
-  hull.vertices.forEach((v, i) => { points[i * 3] = v.point.x; points[i * 3 + 1] = v.point.y; points[i * 3 + 2] = v.point.z; });
-  const faces = hull.faces.map((f) => ({ normal: [f.normal.x, f.normal.y, f.normal.z] as Vec3, area: f.area }));
+  // `hull.vertices` trae toda la nube: los vértices del casco son los de sus caras.
+  const used = new Set<THREE.Vector3>();
+  const faces = hull.faces.map((f) => {
+    const loop: number[] = [];
+    let e = f.edge;
+    do { loop.push(e.vertex.point.x, e.vertex.point.y, e.vertex.point.z); used.add(e.vertex.point); e = e.next; } while (e !== f.edge);
+    return { normal: [f.normal.x, f.normal.y, f.normal.z] as Vec3, area: f.area, loop };
+  });
+  const points = new Float64Array(used.size * 3);
+  let i = 0;
+  for (const v of used) { points[i++] = v.x; points[i++] = v.y; points[i++] = v.z; }
   return { points: points.length >= 12 ? points : p, faces };
 }
 

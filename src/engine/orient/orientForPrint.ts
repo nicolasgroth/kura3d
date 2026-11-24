@@ -13,7 +13,7 @@
 import * as THREE from 'three';
 import type { Vec3 } from '../../types/kura';
 import { EngineError } from '../engineErrors';
-import { directionCandidates } from './orientCandidates';
+import { directionCandidates, groupHullFaces } from './orientCandidates';
 import { baseQuaternion, measureOrientation, type MeasureSettings, type MeasuredOrientation } from './orientMeasure';
 import { ORIENT_EQUIVALENCE, ORIENT_WEIGHTS, orientCost, reasonsFor, vsCurrentOf, type ScoreContext } from './orientScore';
 import type { OrientAnalysis, OrientCandidate, OrientInput, OrientOptions } from './orientTypes';
@@ -25,7 +25,7 @@ export const ORIENT_DEFAULTS = Object.freeze({
   minTipAngleDeg: 10,
   gridCells: 160,
   /** Área mínima del polígono de apoyo: fracción del área total de la pieza (y al menos 1 mm²). */
-  minSupportAreaFraction: 0.005,
+  minSupportAreaFraction: 0.001,
 });
 
 function settingsOf(o: OrientOptions, totalArea: number): MeasureSettings {
@@ -55,18 +55,15 @@ export function analyzeOrientations(input: OrientInput, options: OrientOptions =
   const world = prepareOrientWorld(input);
   const s = settingsOf(options, world.totalArea);
   const maxHull = Math.max(0, Math.round(options.maxHullCandidates ?? ORIENT_DEFAULTS.maxHullCandidates));
-  const dirs = directionCandidates(world.hullFaces, maxHull, s.minSupportAreaMm2);
+  const dirs = directionCandidates(groupHullFaces(world.hullFaces, world.com), maxHull, s.minSupportAreaMm2, s.minTipAngleDeg);
   const scratch = new Float64Array(world.positions.length);
   const measured: Array<{ dir: (typeof dirs)[number]; m: MeasuredOrientation }> = [];
-  let hullKept = 0;
   let cellMm = 0;
   for (const dir of dirs) {
-    if (dir.source === 'hull' && hullKept >= maxHull) continue;
     const q = dir.source === 'current' ? new THREE.Quaternion() : baseQuaternion(dir.down);
     const m = measureOrientation(world, q, s, scratch);
     // Del casco solo quedan los apoyos estables; la actual y los ejes se muestran siempre (marcados).
     if (dir.source === 'hull' && !m.measures.stable) continue;
-    if (dir.source === 'hull') hullKept++;
     if (dir.source === 'current') cellMm = m.supportCellMm;
     measured.push({ dir, m });
   }

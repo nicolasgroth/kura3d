@@ -36,6 +36,7 @@ import type { OperationContext } from './operationTypes';
 import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnected, splitStructures } from './partOperations';
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
 import { runFitToBed, type FitToBedTaskArgs } from './fitOperations';
+import { orientApplyChange, orientForPrint, type OrientApplyTaskArgs, type OrientForPrintTaskArgs } from './orientOperations';
 import { runFitCheck, type FitCheckInput } from '../../engine/fitCheck';
 import { runRecipe } from '../recipes/run/executeRecipe';
 import type { RunInput } from '../recipes/run/types';
@@ -137,6 +138,9 @@ export const ENGINE_TASKS = {
   splitForBed: (ctx: OperationContext, a: { obj: SceneObject; plan: engine.BedSplitPlan; options: ExecuteBedSplitOptions }) =>
     executeBedSplit(ctx, a.obj, a.plan, a.options),
   fitToBed: (_ctx: OperationContext, a: FitToBedTaskArgs) => runFitToBed(a),
+  // Orientar para imprimir: analizar es solo lectura; aplicar devuelve un parche de transformación.
+  orientForPrint: (_ctx: OperationContext, a: OrientForPrintTaskArgs) => orientForPrint(a),
+  orientApply: (_ctx: OperationContext, a: OrientApplyTaskArgs) => orientApplyChange(a),
   // Receta completa (validar → resolver → escena de trabajo → salidas): el resultado es un SceneChange de solo objetos nuevos.
   runRecipe: (ctx: OperationContext, a: Omit<RunInput, 'signal' | 'now'>) => runRecipe(ctx, a),
   validateAssembly: (_ctx: OperationContext, a: { objects: SceneObject[] }) => engine.storedAssemblyResponse(a.objects),
