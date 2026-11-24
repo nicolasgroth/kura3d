@@ -190,7 +190,7 @@ Ordenadas por prioridad dentro de cada grupo.
 | Placas y escena | Árbol de escena: instancias, filtros y búsqueda (los grupos ya existen) |
 | Encajes | Tapa roscada y roscas emparejadas |
 | Encajes | Acoples de tubería macho/hembra |
-| Encajes | Clips, tornillos, insertos, imanes; biblioteca de conectores |
+| Encajes | Clips, tornillos, insertos, imanes; biblioteca de conectores. Imán por defecto redondo de 5 × 2 mm; preajustes de medidas propias que el usuario guarda (redondos y cuadrados), pedido el 24-nov |
 | Color y material | 3MF multimaterial verificado en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura |
 | Estudio | Guardar, cargar y restablecer la disposición del escritorio (perfiles de layout por usuario) |
 | Estudio | Pestañas de proyecto |
