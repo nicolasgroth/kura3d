@@ -419,3 +419,38 @@ Pasaron: panel Proyecto (nombre, cama, unidades, Nuevo con confirmación), Agreg
 Consumo (modelo · duración · tokens): recorridos e2e al día (Sonnet · 47 min · 225 k), QA21 (Sonnet · 57 min · 178 k; pasó su tope de 40 min por el servidor lento).
 
 Correcciones de QA21 integradas el 24-nov 04:00 (`1d431cb`): los 42 recorridos de `qa21-ajustes` pasan, más `qa11-grupos` y `ux-escena-colocacion` (49 de 49). Consumo: correcciones QA21 (Sonnet · 69 min · 195 k; pasó su tope de 60 min).
+
+## Quinta evaluación de usabilidad · 24 de noviembre de 2026, 04:35 · `main` (commit `e1fefd3`)
+
+Evaluador nuevo, a ciegas, tras el rediseño de la interfaz, los ajustes pedidos por el autor y las correcciones de QA21. **Nota global: 80** (mínimo 85). Sin bloqueos duros: consola sin errores, sin pérdida de datos (recuperó 20 objetos con pintura e historial) y todos los recorridos se completaron.
+
+| Área | Nota | Cuarta |
+|---|---|---|
+| 1. Primer contacto e interfaz general | 80 | 80 |
+| 2. Crear y editar | 82 | 82 |
+| 3. Importar y reparar | 85 | 74 |
+| 4. Escena y grupos | 78 | 77 |
+| 5. Cortar y ahuecar | 86 | 80 |
+| 6. Dividir y ajustar a la impresora | 80 | 76 |
+| 7. Medir y comprobar encaje | 72 | 80 (solo medir) |
+| 8. Colores y pintura | 82 | 81 |
+| 9. Exportar, guardar y recuperar | 85 | 85 |
+
+Lo que más resta:
+
+1. Comprobar encaje con 2 o 3 objetos seleccionados que se cruzan dice «Todo encaja» con 0 pares comprobados (con la escena completa sí detecta 5 solapes). Es el hallazgo más serio.
+2. Objetos nuevos (texto 3D, rosca) e importados quedan solapados o fuera de la cama, pese a la opción «sin solaparse».
+3. El aviso de borradores locales ofrece un borrador vacío y sigue visible tras recuperar otro.
+4. Los avisos se apilan sobre paneles (Armado, «Preparar para imprimir»).
+5. Nombres truncados e indistinguibles en el árbol (95 filas «1_Tapa_…», mitades de corte con el mismo nombre).
+6. Menú de clic derecho de unas 40 entradas, y el mismo comando con nombres distintos según el menú.
+7. Barra de herramientas con dos botones pulsados a la vez y Mover apagado y pulsado sin selección.
+8. Dividir: al cambiar la cama, 2 a 4 s con el mensaje viejo y sin indicador de cálculo.
+
+Otros: arrastrar el cuerpo en modo Mover orbita la cámara; foco inicial del diálogo de texto en Cerrar; Medir mueve la cámara al activarse y su panel amontona textos; el primer trazo de pintura se pierde tras la confirmación; muestras de color de 26×22 px; «No object chosen» mientras la barra dice «Painting: Box 19»; la región viva habla en inglés con la interfaz en español; a 1024 px se truncan el chip de cama y el pie; la exportación de escena no usa el nombre del proyecto; Shift+H no vuelve a mostrar lo recién ocultado; «Box 19» con una sola caja.
+
+No alcanzó: insertar SVG e imagen a 3D, aviso de unidades, guardar `.kura` en disco, restas con negativos y referencias, asistente de IA, idiomas de, fr, hi y zh, lector de pantalla real, arrastrar el manipulador.
+
+Serie de usabilidad: 76 → 75 → 79 → 78 → 80. Quinta ronda bajo el mínimo: corresponde consultar al autor (regla 6).
+
+Consumo: evaluador (Opus · ~22 min).
