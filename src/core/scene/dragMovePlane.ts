@@ -17,6 +17,12 @@ export const DRAG_MIN_RAY_SLOPE = 0.06;
 /** Desplazamiento horizontal máximo desde el punto agarrado, en mm. */
 export const DRAG_MAX_REACH_MM = 2000;
 
+/** Paso de rejilla efectivo: el de la rejilla si está activa; con rejilla libre, Ctrl/Cmd ajusta a 1 mm. */
+export function dragSnapMm(gridMm: number, ctrlOrMeta: boolean): number {
+  if (gridMm > 0) return gridMm;
+  return ctrlOrMeta ? 1 : 0;
+}
+
 export interface DragMoveInput {
   rayOrigin: Vec3;
   rayDir: Vec3;
