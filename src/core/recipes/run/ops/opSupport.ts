@@ -47,7 +47,9 @@ export async function guarded<T>(call: Pick<OpCall, 'at' | 'lang'>, fn: () => T 
       throw new RecipeError('run.badArgs', call.at, { detail: t(call.lang, error.key, error.params), bus: error.code });
     }
     if (isEngineError(error)) {
-      throw new RecipeError('run.engine', call.at, { detail: t(call.lang, `engineError.${error.code}` as TranslationKey, error.params), engine: error.code });
+      // Los valores del motor (`chars`…) viajan también, para que `onError.message` de la receta los nombre.
+      const extra = Object.fromEntries(Object.entries(error.params ?? {}).filter(([k, v]) => !['path', 'detail', 'engine'].includes(k) && (typeof v === 'string' || typeof v === 'number')));
+      throw new RecipeError('run.engine', call.at, { ...extra, detail: t(call.lang, `engineError.${error.code}` as TranslationKey, error.params), engine: error.code });
     }
     const message = error instanceof Error ? error.message : String(error);
     throw new RecipeError('run.engine', call.at, { detail: message.slice(0, 200) });

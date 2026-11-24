@@ -42,6 +42,16 @@ describe('Asistentes: paridad con las recetas incorporadas', () => {
         expect(card.title.startsWith('$t:')).toBe(false);
       });
 
+      it.each(LANGS.filter((l) => l !== 'es' && l !== 'en'))('en %s la receta trae sus textos propios (las mismas claves que en español)', (language) => {
+        const strings = (entry.validated.recipe.strings ?? {}) as Record<string, Record<string, string> | undefined>;
+        const es = Object.keys(strings.es ?? {}).sort();
+        expect(es.length).toBeGreaterThan(0);
+        expect(Object.keys(strings[language] ?? {}).sort(), `${entry.id}: claves en ${language}`).toEqual(es);
+        // El título de la tarjeta sale del idioma pedido, no del respaldo en inglés.
+        expect(recipeCard(entry, language).title).toBe(strings[language]?.title);
+        expect(recipeCard(entry, language).title).not.toBe(strings.en?.title);
+      });
+
       it('los campos siguen el orden de la receta y solo faltan los parámetros ocultos', () => {
         const model = buildFormModel(entry, { answers: {}, language: 'es' });
         const shown = model.groups.flatMap((g) => g.fields.map((f) => f.id));

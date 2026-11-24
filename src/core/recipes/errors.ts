@@ -77,6 +77,8 @@ export const RECIPE_ERROR_KEYS = {
   'run.aborted': 'recipe.error.run.aborted',
   'run.emptyOutput': 'recipe.error.run.emptyOutput',
   'run.notReady': 'recipe.error.run.notReady',
+  /** El motor rechazó lo que dio el usuario en un paso con `onError`: ruta `params[N]`, mensaje de la receta. */
+  'run.input': 'recipe.error.run.input',
 } as const satisfies Record<string, TranslationKey>;
 
 export type RecipeErrorCode = keyof typeof RECIPE_ERROR_KEYS;

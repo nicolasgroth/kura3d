@@ -122,6 +122,18 @@ export const Step = z.strictObject({
   args: Args,
   when: BoolOrExpr.optional(),
   pattern: Pattern.optional(),
+  /**
+   * Si el motor rechaza el contenido del paso (un carácter que la fuente no tiene, un SVG sin rellenos), el error
+   * va junto al parámetro `focus` con `message` (`{detail}` y los valores del motor se interpolan). Con `codes`,
+   * `message` solo se usa para esos códigos del motor; con otro código se muestra el texto del motor.
+   */
+  onError: z
+    .strictObject({
+      focus: SafeName,
+      message: Text.optional(),
+      codes: z.array(z.string().regex(/^[A-Z][A-Z0-9_]{0,63}$/)).min(1).max(16).optional(),
+    })
+    .optional(),
 });
 
 export const Output = z.strictObject({

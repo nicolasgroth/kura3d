@@ -12,10 +12,9 @@
 
 import type { RecipeRunResult } from '../../core/recipes/run/types';
 import { placeGroupInFreeSpot, placeInFreeSpot, type BedSize } from '../../core/scene/freeSpot';
-import type { SceneObject } from '../../types/kura';
+import type { LanguageCode, SceneObject } from '../../types/kura';
 import { t } from '../../i18n';
 import { activeBedSize } from '../bedSize';
-import type { LanguageCode } from '../../types/kura';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 

@@ -25,7 +25,7 @@ Todo objeto es estricto: un campo desconocido es un error.
 | `tables` | no | tablas `{ nombre: { clave: literal } }` para `lookup` |
 | `rules` | no | reglas `{ when, level, message, params?, focus? }` (≤ 64) |
 | `presets` | no | variantes `{ id, label, verified, values }` (≤ 64) |
-| `steps` | sí* | pasos `{ id, op, args, when?, pattern? }` (≤ 128) |
+| `steps` | sí* | pasos `{ id, op, args, when?, pattern?, onError? }` (≤ 128) |
 | `outputs` | sí* | `{ ref: "@paso", name, color?, role? }` (≤ 16); `role` ∈ `solid` (por defecto), `negative`, `reference` |
 | `checks` | no | `{ kind: "fits_bed", refs, onFail: "offer_split" \| "warn" }` |
 | `assets` | no | recursos embebidos `{ id, kind, data, label? }` (≤ 16) |
@@ -54,6 +54,8 @@ Valor efectivo: **respuesta del usuario > variante elegida > `default`**. Un par
 - `$asset:` es un recurso embebido (`"$asset:logo"`).
 
 Un paso con `when` falso se salta y vale lista vacía.
+
+**Contenido que el motor rechaza** (`onError`, opcional). Hay entradas que solo el motor puede juzgar: un carácter que la fuente no tiene, un SVG sin áreas rellenas. Si el paso declara `"onError": { "focus": "text", "message": "$t:glyphs", "codes": ["TEXT_GLYPH_MISSING"] }` y el motor rechaza su contenido, el resultado no es un `run.engine` técnico sino `run.input` con la ruta del parámetro (`params[N]`) y un mensaje de error con `focus`, para mostrarlo junto al campo. `focus` debe ser un parámetro de la receta. En `message` se interpolan `{detail}` (el texto del motor) y los valores del motor (`{chars}` con los caracteres que faltan). Con `codes`, `message` se usa solo para esos códigos del motor; con otro código se muestra el texto del motor (siempre con `focus`). Los topes de ejecución y los argumentos inválidos de la receta no pasan por `onError`.
 
 **Repetición** (`pattern`, siempre con `max` entre 1 y 256; la suma de `max` de la receta ≤ 1 024):
 
