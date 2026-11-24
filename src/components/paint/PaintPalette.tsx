@@ -33,6 +33,7 @@ import { colorName, colorNameWithHex } from '../../utils/colorNames';
 import { choosePaintColor, usePaintEraser } from './paintEraser';
 import { PalettePopover } from './PalettePopover';
 import '../../styles/paintPalette.css';
+import '../../styles/ux8Paint.css';
 
 /** Luminancia relativa aproximada: las muestras claras llevan borde para verse sobre fondos claros. */
 export function isLightColor(hex: string): boolean {

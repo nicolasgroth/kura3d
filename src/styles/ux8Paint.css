@@ -1,0 +1,53 @@
+/**
+ * @file src/styles/ux8Paint.css
+ * @description Tamaño táctil de las muestras de color de Pintar y de sus botones «+» y «…»: 32×32 px con puntero
+ * fino y 44×44 px en pantallas táctiles (el borde de selección y el foco no cambian el tamaño).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-paint-palette .kura-swatch-row {
+  grid-template-columns: repeat(auto-fill, 32px);
+  gap: 6px;
+}
+
+.kura-paint-palette .kura-swatch,
+.kura-paint-palette .kura-palette-add,
+.kura-paint-palette .kura-palette-more {
+  box-sizing: border-box;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kura-paint-palette .kura-palette-toggle {
+  min-height: 32px;
+  height: 32px;
+}
+
+@media (pointer: coarse) {
+  .kura-paint-palette .kura-swatch-row {
+    grid-template-columns: repeat(auto-fill, 44px);
+    gap: 8px;
+  }
+
+  .kura-paint-palette .kura-swatch,
+  .kura-paint-palette .kura-palette-add,
+  .kura-paint-palette .kura-palette-more {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .kura-paint-palette .kura-palette-toggle {
+    min-height: 44px;
+    height: 44px;
+  }
+}

@@ -48,6 +48,7 @@ import { PANEL_DE } from './panel';
 import { ENCAJE_UI_DE } from './encajeUi';
 import { REDISENO3A_DE } from './rediseno3a';
 import { REDISENO3B_DE } from './rediseno3b';
+import { UX8_MENU_DE } from './ux8Menu';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -93,6 +94,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...ENCAJE_UI_DE,
   ...REDISENO3A_DE,
   ...REDISENO3B_DE,
+  ...UX8_MENU_DE,
   // Marca y shell principal
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
   'app.docTitle': 'Kura3D v0.5.0 — Natives 3D-Modellierungsstudio',
@@ -321,7 +323,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'inspector.mirror.x': 'Spiegeln X',
   'inspector.mirror.y': 'Spiegeln Y',
   'inspector.mirror.z': 'Spiegeln Z',
-  'inspector.action.dropToBed': 'Auf Bett absetzen',
+  'inspector.action.dropToBed': 'Aufs Bett legen',
   'inspector.action.centerBed': 'Auf Bett zentrieren',
   'inspector.action.resetTransform': 'Rot/Skal. zurücksetzen',
   'inspector.section.stats': 'Geometrie & Metriken',
@@ -343,10 +345,10 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'inspector.op.union': 'Vereinigen',
   'inspector.op.subtract': 'Subtrahieren',
   'inspector.op.intersect': 'Schneiden',
-  'inspector.op.applyHoles': 'Abzüge anwenden',
+  'inspector.op.applyHoles': 'Subtraktionen anwenden',
   'inspector.op.cutAndSplitTitle': 'Schnitt & Trennung',
   'inspector.op.planeCut': 'Ebenenschnitt + Verbinder',
-  'inspector.op.splitParts': 'Teile trennen (Inseln)',
+  'inspector.op.splitParts': 'Lose Teile trennen',
   'inspector.op.splitColors': 'Nach Farben trennen',
   'inspector.op.textureTitle': 'Oberflächentextur',
   'inspector.op.textureDepth': 'Tiefe',
@@ -419,16 +421,9 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'badge.localNoAiTip': 'Deterministischer Offline-Modus: Keine Daten verlassen Ihr Gerät',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': 'Abzüge anwenden',
-  'ctx.unionSelection': 'Auswahl vereinigen',
   'ctx.planeCut': 'Ebenenschnitt + Verbinder',
-  'ctx.generateMold': 'Gießform / Silikon erzeugen',
-  'ctx.projectSurface': 'Text/SVG auf Oberfläche projizieren',
-  'ctx.validatePrint': '3D-Struktur validieren',
-  'ctx.detectStructures': 'Unterstrukturen erkennen (Lokal)',
   'ctx.shortcuts': 'Tastenkürzel',
   'ctx.duplicate': 'Duplizieren',
-  'ctx.dropToBed': 'Auf Druckbett absetzen (Z=0)',
   'ctx.delete': 'Löschen',
 
   // Paleta de comandos (Ctrl+K)
@@ -442,15 +437,8 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'cmd.cat.export': 'Import & Export',
   'cmd.cat.view': 'Ansicht, Einheiten & Thema',
   'cmd.cat.settings': 'Einstellungen, MCP & KI',
-  'cmd.pro.mold': 'Gießform / Silikonbox erzeugen',
-  'cmd.pro.project': 'Text oder SVG auf Oberfläche projizieren',
   'cmd.pro.thread': 'Metrisches ISO-Gewinde erstellen (M3–M64)',
-  'cmd.pro.validate': 'Druckbarkeit prüfen (Überhänge & Gewicht)',
-  'cmd.pro.simplify': 'Netz vereinfachen (Dreiecke reduzieren)',
-  'cmd.pro.refine': 'Netz verfeinern (Unterteilen & Glätten)',
-  'cmd.pro.hull': 'Konvexe Hülle',
   'cmd.pro.arrangeGrid': 'Teile auf Druckbett anordnen (Auto)',
-  'cmd.pro.detectStructures': '3D-Unterstrukturen erkennen (Lokal)',
   'cmd.pro.colorizeStructures': 'Erkannte Unterstrukturen einfärben (3MF)',
   'cmd.pro.mirrorX': 'Objekt an X-Achse spiegeln',
   'cmd.view.compact': 'Kompaktmodus umschalten',

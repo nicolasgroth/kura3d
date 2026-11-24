@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-import { createEvent, fireEvent, render, screen } from '@testing-library/react';
+import { createEvent, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -166,20 +166,22 @@ describe('menú contextual: Organizar', () => {
     useKuraStore.setState({ selectedIds: ['c', 'd'] });
     const target = st().objects.find((o) => o.id === 'c')!;
     render(<ObjectContextMenu menu={{ objectId: 'c', x: 10, y: 10 }} target={target} onClose={() => {}} />);
-    const group = screen.getByRole('group', { name: 'Organizar' });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('menuitem', { name: 'Separar y combinar' }));
+    const group = await screen.findByRole('menu', { name: 'Separar y combinar' });
     // Cada forma de juntar objetos lleva su descripción bajo la opción (descripción accesible).
-    const agrupar = screen.getByRole('menuitem', { name: /^Agrupar/ });
+    const agrupar = within(group).getByRole('menuitem', { name: /^Agrupar/ });
     const desc = (el: HTMLElement) => document.getElementById(el.getAttribute('aria-describedby') ?? '')?.textContent;
     expect(desc(agrupar)).toBe('Se mueven juntos; siguen siendo objetos separados');
-    expect(desc(screen.getByRole('menuitem', { name: /Combinar en un objeto/ }))).toMatch(/sin fundirlas/);
-    expect(desc(screen.getByRole('menuitem', { name: /Unir selección/ }))).toMatch(/un solo sólido/);
+    expect(desc(within(group).getByRole('menuitem', { name: /Combinar en un objeto/ }))).toMatch(/sin fundirlas/);
+    expect(desc(within(group).getByRole('menuitem', { name: /Unir selección/ }))).toMatch(/un solo sólido/);
     expect(group.textContent).toContain('Funde los volúmenes');
     expect(agrupar.getAttribute('aria-keyshortcuts')).toContain('Control+G');
-    expect(screen.getByRole('menuitem', { name: /Desagrupar/ })).toBeTruthy();
-    expect(screen.getByRole('menuitem', { name: /Combinar en un objeto/ })).toBeTruthy();
-    expect(screen.getByRole('menuitem', { name: /Separar cuerpos/ })).toBeTruthy();
-    expect(screen.getByRole('menuitem', { name: /Unir selección/ })).toBeTruthy();
-    await userEvent.setup().click(agrupar);
+    expect(within(group).getByRole('menuitem', { name: /Desagrupar/ })).toBeTruthy();
+    expect(within(group).getByRole('menuitem', { name: /Combinar en un objeto/ })).toBeTruthy();
+    expect(within(group).getByRole('menuitem', { name: /Separar piezas sueltas/ })).toBeTruthy();
+    expect(within(group).getByRole('menuitem', { name: /Unir selección/ })).toBeTruthy();
+    await user.click(agrupar);
     expect(st().groups).toHaveLength(2);
   });
 });

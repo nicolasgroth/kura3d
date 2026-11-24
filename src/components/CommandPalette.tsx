@@ -63,7 +63,7 @@ import {
 } from 'lucide-react';
 import { viewPrefsPaletteItems } from './viewPrefsPaletteItems';
 import { toolPaletteItems } from './toolPaletteItems';
-import { Boxes as BoxesIcon, Group as GroupIcon, Merge as MergeIcon, Ungroup as UngroupIcon } from 'lucide-react';
+import { Boxes as BoxesIcon, Group as GroupIcon, Ungroup as UngroupIcon } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { SUPPORTED_LANGUAGES } from '../types/kura';
@@ -76,6 +76,7 @@ import { rankPaletteItems } from '../utils/paletteRank';
 import { REFINE_UI_DEFAULTS } from './refineDefaults';
 import { recomputeWithToast, repeatWithToast } from './useFunctionKeys';
 import { repeatLabel } from '../store/repeatLabel';
+import { actionName } from '../store/actionLabels';
 import { isTauriRuntime } from '../utils/platformBridge';
 import { openActionPanel } from './shell/actionRunners';
 
@@ -351,7 +352,7 @@ export const CommandPalette: React.FC = () => {
       {
         id: 'op-mold',
         shortcut: 'Shift+M',
-        label: t(language, 'cmd.pro.mold'),
+        label: actionName(language, 'mold'),
         category: catOps,
         keywords: 'molde silicona vela resina contramolde mold silicone candle',
         kind: 'local',
@@ -360,7 +361,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-project',
-        label: t(language, 'cmd.pro.project'),
+        label: actionName(language, 'project'),
         category: catOps,
         keywords: 'proyectar texto svg superficie relieve grabado incrustacion project surface',
         kind: 'local',
@@ -369,7 +370,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-validate',
-        label: t(language, 'cmd.pro.validate'),
+        label: actionName(language, 'validate'),
         category: catOps,
         keywords: 'validar imprimibilidad voladizos peso filamento overhangs printability check',
         kind: 'local',
@@ -383,7 +384,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-detect-structures',
-        label: t(language, 'cmd.pro.detectStructures'),
+        label: actionName(language, 'detect'),
         category: catOps,
         keywords: 'detectar estructuras sub-partes segmentar local pliegues islas detect structures',
         kind: 'local',
@@ -418,7 +419,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-simplify',
-        label: t(language, 'cmd.pro.simplify'),
+        label: actionName(language, 'simplify'),
         category: catOps,
         keywords: 'simplificar reducir triangulos malla decimate simplify mesh',
         kind: 'local',
@@ -429,7 +430,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-repair-mesh',
-        label: t(language, 'cmd.repairMesh'),
+        label: actionName(language, 'repair'),
         category: catOps,
         keywords: 'reparar malla agujeros cerrar abierta manifold repair mesh holes fix',
         kind: 'local',
@@ -440,7 +441,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-refine',
-        label: t(language, 'cmd.pro.refine'),
+        label: actionName(language, 'refine'),
         category: catOps,
         keywords: 'refinar subdividir suavizar malla refine smooth mesh',
         kind: 'local',
@@ -451,7 +452,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-hull',
-        label: t(language, 'cmd.pro.hull'),
+        label: actionName(language, 'hull'),
         category: catOps,
         keywords: 'envolvente convexa convex hull unir',
         kind: 'local',
@@ -509,7 +510,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-apply-holes',
-        label: t(language, 'inspector.op.applyHoles'),
+        label: actionName(language, 'applyHoles'),
         category: catOps,
         keywords: 'aplicar restas huecos boolean subtract',
         shortcut: `${MOD}+Shift+U`,
@@ -528,7 +529,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'org-group',
-        label: t(language, 'groups.action.group'),
+        label: actionName(language, 'group'),
         category: t(language, 'menu.group.organize'),
         keywords: 'agrupar grupo capas group layer',
         shortcut: `${MOD}+G`,
@@ -538,7 +539,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'org-ungroup',
-        label: t(language, 'groups.action.ungroup'),
+        label: actionName(language, 'ungroup'),
         category: t(language, 'menu.group.organize'),
         keywords: 'desagrupar ungroup',
         shortcut: `${MOD}+Shift+G`,
@@ -548,21 +549,12 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'org-combine',
-        label: t(language, 'groups.action.combine'),
+        label: actionName(language, 'combine'),
         category: t(language, 'menu.group.organize'),
         keywords: 'combinar un objeto stl cuerpos combine merge bodies',
         kind: 'local',
         icon: <BoxesIcon size={15} />,
         run: () => void useKuraStore.getState().combineObjects(),
-      },
-      {
-        id: 'org-separate',
-        label: t(language, 'groups.action.separate'),
-        category: t(language, 'menu.group.organize'),
-        keywords: 'separar cuerpos piezas sueltas islas separate bodies',
-        kind: 'local',
-        icon: <MergeIcon size={15} />,
-        run: () => void useKuraStore.getState().separateBodies(primaryId ?? undefined),
       },
       {
         id: 'op-hollow',
@@ -590,7 +582,7 @@ export const CommandPalette: React.FC = () => {
       {
         id: 'op-split-for-bed',
         shortcut: 'Shift+C',
-        label: t(language, 'split.open'),
+        label: actionName(language, 'splitForBed'),
         category: catOps,
         keywords: 'dividir imprimir cama piezas trozos grande split bed tiles print',
         kind: 'local',
@@ -599,7 +591,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-fit-to-bed',
-        label: t(language, 'fit.open'),
+        label: actionName(language, 'fitToBed'),
         category: catOps,
         keywords: 'ajustar impresora cama escalar girar caber fit printer bed scale rotate',
         kind: 'local',
@@ -608,7 +600,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-split-parts',
-        label: t(language, 'inspector.op.splitParts'),
+        label: actionName(language, 'splitParts'),
         category: catOps,
         keywords: 'separar piezas islas split parts',
         kind: 'local',
@@ -619,7 +611,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-split-colors',
-        label: t(language, 'inspector.op.splitColors'),
+        label: actionName(language, 'splitColors'),
         category: catOps,
         keywords: 'separar colores multicolor split colors',
         kind: 'local',
@@ -631,7 +623,7 @@ export const CommandPalette: React.FC = () => {
       {
         id: 'op-drop-bed',
         shortcut: 'L',
-        label: t(language, 'inspector.action.dropToBed'),
+        label: actionName(language, 'dropToBed'),
         category: catOps,
         keywords: 'apoyar cama suelo drop bed y=0',
         kind: 'local',
@@ -642,7 +634,7 @@ export const CommandPalette: React.FC = () => {
       },
       {
         id: 'op-center-bed',
-        label: t(language, 'ctx.centerOnBed'),
+        label: actionName(language, 'centerOnBed'),
         category: catOps,
         keywords: 'centrar cama centro center bed xy',
         kind: 'local',

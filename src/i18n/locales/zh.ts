@@ -48,6 +48,7 @@ import { PANEL_ZH } from './panel';
 import { ENCAJE_UI_ZH } from './encajeUi';
 import { REDISENO3A_ZH } from './rediseno3a';
 import { REDISENO3B_ZH } from './rediseno3b';
+import { UX8_MENU_ZH } from './ux8Menu';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -93,6 +94,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...ENCAJE_UI_ZH,
   ...REDISENO3A_ZH,
   ...REDISENO3B_ZH,
+  ...UX8_MENU_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
   'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',
@@ -321,7 +323,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'inspector.mirror.x': 'X 轴镜像',
   'inspector.mirror.y': 'Y 轴镜像',
   'inspector.mirror.z': 'Z 轴镜像',
-  'inspector.action.dropToBed': '贴合热床',
+  'inspector.action.dropToBed': '放到打印床上',
   'inspector.action.centerBed': '热床居中',
   'inspector.action.resetTransform': '重置旋转/缩放',
   'inspector.section.stats': '几何与度量',
@@ -343,11 +345,11 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'inspector.op.union': '合并',
   'inspector.op.subtract': '差集',
   'inspector.op.intersect': '交集',
-  'inspector.op.applyHoles': '应用减法',
+  'inspector.op.applyHoles': '应用减除',
   'inspector.op.cutAndSplitTitle': '切割与拆分',
   'inspector.op.planeCut': '平面切割 + 连接件',
-  'inspector.op.splitParts': '拆分独立部件（孤岛）',
-  'inspector.op.splitColors': '按颜色拆分',
+  'inspector.op.splitParts': '分离松散零件',
+  'inspector.op.splitColors': '按颜色分离',
   'inspector.op.textureTitle': '表面纹理',
   'inspector.op.textureDepth': '深度',
   'inspector.op.textureScale': '图案缩放',
@@ -419,16 +421,9 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'badge.localNoAiTip': '离线确定性模式：无任何数据离开您的设备',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': '应用减法',
-  'ctx.unionSelection': '合并选中对象',
   'ctx.planeCut': '平面切割 + 连接件',
-  'ctx.generateMold': '生成模具 / 硅胶盒',
-  'ctx.projectSurface': '表面投影文字 / SVG',
-  'ctx.validatePrint': '验证 3D 结构',
-  'ctx.detectStructures': '检测子结构（本地）',
   'ctx.shortcuts': '键盘快捷键',
   'ctx.duplicate': '复制',
-  'ctx.dropToBed': '贴合打印床 (Z=0)',
   'ctx.delete': '删除',
 
   // Paleta de comandos (Ctrl+K)
@@ -442,15 +437,8 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'cmd.cat.export': '导入与导出',
   'cmd.cat.view': '视图、单位与主题',
   'cmd.cat.settings': '设置、MCP 与 AI',
-  'cmd.pro.mold': '生成模具 / 硅胶模盒',
-  'cmd.pro.project': '将文字或 SVG 投影到表面',
   'cmd.pro.thread': '创建 ISO 公制螺纹 (M3–M64)',
-  'cmd.pro.validate': '检查可打印性（悬垂与重量）',
-  'cmd.pro.simplify': '简化网格（减少三角面）',
-  'cmd.pro.refine': '细分网格（细分与平滑）',
-  'cmd.pro.hull': '生成凸包',
   'cmd.pro.arrangeGrid': '热床自动排版零件',
-  'cmd.pro.detectStructures': '检测 3D 子结构（本地）',
   'cmd.pro.colorizeStructures': '为检测到的子结构着色 (3MF)',
   'cmd.pro.mirrorX': '沿 X 轴镜像对象',
   'cmd.view.compact': '切换紧凑模式',
