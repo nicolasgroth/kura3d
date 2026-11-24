@@ -262,6 +262,9 @@ export function clearPreviewOnSelectionChange(store: {
   subscribe: (listener: (state: KuraStoreState, prev: KuraStoreState) => void) => () => void;
 }): () => void {
   return store.subscribe((state, prev) => {
-    if (state.selectedIds !== prev.selectedIds && state.operationPreview.key !== null) state.clearOperationPreview();
+    // La vista previa del asistente no depende de la selección (la lleva el formulario abierto).
+    if (state.selectedIds !== prev.selectedIds && state.operationPreview.key !== null && state.operationPreview.key !== 'assistant') {
+      state.clearOperationPreview();
+    }
   });
 }

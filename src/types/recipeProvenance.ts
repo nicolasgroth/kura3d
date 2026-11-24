@@ -26,6 +26,12 @@ export interface RecipeProvenance {
   output: string;
   /** Parámetros `file`/`object` respondidos que no se guardan (su contenido no viaja en el objeto). */
   omitted?: string[];
+  /** Ejecución que lo creó (todas las salidas de una misma ejecución comparten `run`): permite reabrir el juego. */
+  run?: string;
+  /** Nombre que le dio la receta (para saber si el usuario lo renombró después). */
+  name?: string;
+  /** Huella de la malla al crearse (`computeMeshFingerprint`): si cambió, la pieza se modificó después. */
+  meshFingerprint?: string;
 }
 
 /** Topes de `metadata.recipe` (los usa el validador del `.kura`). */
