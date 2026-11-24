@@ -21,6 +21,7 @@ import {
   projectPaintColors,
   removeColorAt,
   replaceColor,
+  type PaintPaletteState,
 } from '../paintPalette';
 
 describe('paleta de pintura', () => {
@@ -42,7 +43,7 @@ describe('paleta de pintura', () => {
     p = addColor(p, '#123');
     expect(p.colors.at(-1)).toBe('#112233');
     expect(addColor(p, '#112233')).toBe(p);
-    let one = { preset: 'custom' as const, colors: ['#000000'] };
+    let one: PaintPaletteState = { preset: 'custom', colors: ['#000000'] };
     one = removeColorAt(one, 0);
     expect(one.colors).toEqual(['#000000']);
   });

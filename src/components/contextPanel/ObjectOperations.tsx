@@ -3,8 +3,8 @@
  * @description Accesos del resumen de un objeto, compactos: cada sección es una fila de botones con icono (nombre
  * accesible, tooltip y, si está apagado, el motivo). Las acciones con opciones (Ahuecar, Simplificar / Refinar,
  * Textura, Módulos, Revisar, Detectar) abren solo sus opciones en el panel; Cortar, Dividir, Ajustar a la
- * impresora, Molde, Proyectar y Rosca abren su panel de operación; separar piezas se ejecuta directo y separar por
- * colores despliega su profundidad. Donde hay variantes, un pequeño desplegable (▾) las muestra.
+ * impresora, Molde, Proyectar y Rosca abren su panel de operación; separar piezas y separar por colores
+ * (profundidad por defecto) se ejecutan directo; el ▾ de separar por colores despliega su profundidad. Donde hay variantes, un pequeño desplegable (▾) las muestra.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,6 +12,7 @@
 
 import React, { useState } from 'react';
 import { Bolt, Box, ChevronDown, Grid3x3, Minimize2, PaintBucket, Palette, Puzzle, ScanSearch, Scissors, ShieldCheck, Sparkles, Split, Type, Waves } from 'lucide-react';
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { t, type TranslationKey } from '../../i18n';
 import { actionAvailability, type ActionId } from '../../store/actionsCatalog';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -67,6 +68,7 @@ export const ObjectOperations: React.FC<{ primary: SceneObject }> = ({ primary }
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const openFitToBed = useKuraStore((s) => s.openFitToBed);
   const splitDisconnectedObject = useKuraStore((s) => s.splitDisconnectedObject);
+  const splitObjectByColor = useKuraStore((s) => s.splitObjectByColor);
   const [variantsOf, setVariantsOf] = useState<ActionId | null>(null);
   const [colorSplitOpen, setColorSplitOpen] = useState(false);
   const isBusy = Boolean(busyOperation);
@@ -152,13 +154,24 @@ export const ObjectOperations: React.FC<{ primary: SceneObject }> = ({ primary }
             <IconOp name={t(language, 'fit.open')} tip={t(language, 'fit.openTip')} icon={<Minimize2 size={ICON} aria-hidden="true" />} reason={blockedReason} onClick={() => void openFitToBed([primary.id])} />
             {dialogOp('inspector.op.splitParts', <Split size={ICON} aria-hidden="true" />, () => void splitDisconnectedObject(primary.id), blockedReason)}
             <span className="kura-op-cell">
+              {/* Un clic separa con la profundidad por defecto; ▾ muestra la profundidad para elegirla. */}
               <IconOp
                 name={t(language, 'inspector.op.splitColors')}
+                tip={t(language, 'inspector.op.colorDepthTip')}
                 icon={<Palette size={ICON} aria-hidden="true" />}
                 reason={blockedReason}
-                onClick={() => setColorSplitOpen((v) => !v)}
-                extra={{ 'aria-expanded': String(colorSplitOpen) }}
+                onClick={() => void splitObjectByColor(primary.id, { depthMm: OPERATION_DEFAULTS.colorSplit.depthMm })}
               />
+              <button
+                type="button"
+                className="kura-btn kura-btn-sm kura-op-variant"
+                aria-expanded={colorSplitOpen}
+                aria-label={t(language, 'rediseno3b.ops.variants', { name: t(language, 'inspector.op.splitColors') })}
+                title={t(language, 'rediseno3b.ops.variants', { name: t(language, 'inspector.op.splitColors') })}
+                onClick={() => setColorSplitOpen((v) => !v)}
+              >
+                <ChevronDown size={11} aria-hidden="true" />
+              </button>
             </span>
           </div>
           {colorSplitOpen && (
