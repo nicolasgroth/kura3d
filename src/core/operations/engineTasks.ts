@@ -38,6 +38,7 @@ import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from '.
 import { runFitToBed, type FitToBedTaskArgs } from './fitOperations';
 import { runFitCheck, type FitCheckInput } from '../../engine/fitCheck';
 import { runRecipe } from '../recipes/run/executeRecipe';
+import { createMagnetPocket, type MagnetPocketInput } from './magnetOperations';
 import type { RunInput } from '../recipes/run/types';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
@@ -128,6 +129,8 @@ export const ENGINE_TASKS = {
   // Creación: el Worker genera la malla; el hilo principal la ubica en la escena y crea el objeto.
   primitiveMesh: (_ctx: OperationContext, a: { type: PrimitiveType; params?: PrimitiveParams }) => primitiveMesh(a.type, a.params),
   regenerateParametric: (ctx: OperationContext, a: { obj: SceneObject; edit: ParametricEdit }) => regenerateParametric(ctx, a.obj, a.edit),
+  // Alojamiento de imán: negativo orientado por la cara y pared medida con rayos sobre la anfitriona.
+  magnetPocket: (ctx: OperationContext, a: MagnetPocketInput) => createMagnetPocket(ctx, a),
   imageReliefMesh: (_ctx: OperationContext, a: { options: ImageTo3DOptions }) => imageReliefMesh(a.options),
   svgMesh: (_ctx: OperationContext, a: { options: SvgImportOptions; contours: engine.PackedSvgContours }) => svgMesh(a.options, a.contours),
   splitPlan: (

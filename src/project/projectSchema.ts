@@ -10,6 +10,7 @@ import { TRANSFORM_LIMITS } from '../engine/operationLimits';
 import { EDGE_SCOPES, EDGE_STYLES, TEXT_ALIGN_OPTIONS } from '../engine/primitiveLimits';
 import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
 import { REFERENCE_OPACITY } from '../core/scene/objectRole';
+import { sanitizeMagnetParams } from '../core/addons/magnetPocket';
 import { RECIPE_PROVENANCE_LIMITS } from '../types/recipeProvenance';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
 
@@ -157,7 +158,17 @@ const recipeMetadata = shape({
   output: (v) => short(RP.maxIdLength)(v) && (v as string).length > 0,
   omitted: optional(shortList(RP.maxAnswers, RP.maxIdLength)),
 });
-const objectExtra = shape({ split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata), recipe: optional(recipeMetadata) });
+// Agregado (`metadata.addon`): alojamiento de imán con sus medidas; los rangos los valida `sanitizeMagnetParams`.
+const addonMetadata = shape({
+  kind: oneOf('magnet_pocket'),
+  params: (v) => sanitizeMagnetParams(v) !== null && shape({
+    shape: str, sizeMm: finite, heightMm: finite, clearanceMm: finite, depthClearanceMm: finite, hidden: bool,
+  })(v),
+  hostId: optional(id),
+});
+const objectExtra = shape({
+  split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata), recipe: optional(recipeMetadata), addon: optional(addonMetadata),
+});
 
 export type ObjectMetadata = Omit<SceneObject, 'mesh' | 'stats'>;
 const metadataFields = {
