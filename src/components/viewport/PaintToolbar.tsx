@@ -11,6 +11,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { t } from '../../i18n';
+import { paintTargetText } from '../../store/paintTarget';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PaintControls, usePaintToolEffects } from '../paint/PaintControls';
 import { PaintRefineHint } from './PaintRefineHint';
@@ -18,7 +19,9 @@ import '../../styles/paintTools.css';
 
 export const PaintToolbar: React.FC = () => {
   const language = useKuraStore((s) => s.language);
-  const targetName = useKuraStore((s) => s.objects.find((o) => o.id === s.selectedIds[0])?.name ?? null);
+  const objects = useKuraStore((s) => s.objects);
+  const selectedIds = useKuraStore((s) => s.selectedIds);
+  const target = paintTargetText(language, objects, selectedIds);
   // En móvil la barra es una hoja inferior plegable; en escritorio el botón no se muestra.
   const [folded, setFolded] = useState(false);
   // Con el panel derecho plegado (o en modo sin distracciones) las opciones vuelven a la barra del visor.
@@ -46,13 +49,11 @@ export const PaintToolbar: React.FC = () => {
         <PaintControls />
       </div>
       <span
-        className={`kura-paint-target ${targetName ? '' : 'is-empty'}`}
+        className={`kura-paint-target ${target.name ? '' : 'is-empty'}`}
         role="status"
-        title={targetName ?? undefined}
+        title={target.name ?? undefined}
       >
-        {targetName
-          ? t(language, 'viewport.paint.target', { name: targetName })
-          : t(language, 'viewport.paint.noTarget')}
+        {target.text}
       </span>
       <span className="kura-paint-hint">{t(language, 'viewport.paint.hint')}</span>
       <PaintRefineHint />

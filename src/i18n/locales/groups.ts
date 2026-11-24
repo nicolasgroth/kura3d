@@ -18,7 +18,6 @@ const GROUPS_TABLE = {
   'groups.action.group': ['Agrupar', 'Group', 'Gruppieren', 'Grouper', 'समूह बनाएँ', '编组'],
   'groups.action.ungroup': ['Desagrupar', 'Ungroup', 'Gruppierung aufheben', 'Dégrouper', 'समूह हटाएँ', '取消编组'],
   'groups.action.combine': ['Combinar en un objeto', 'Combine into one object', 'Zu einem Objekt kombinieren', 'Combiner en un objet', 'एक ऑब्जेक्ट में मिलाएँ', '合并为一个对象'],
-  'groups.action.separate': ['Separar cuerpos', 'Separate bodies', 'Körper trennen', 'Séparer les corps', 'बॉडी अलग करें', '分离实体'],
   'groups.action.group.tip': [
     'Siguen siendo objetos independientes; se seleccionan, mueven y escalan juntos',
     'They stay independent objects; they are selected, moved and scaled together',

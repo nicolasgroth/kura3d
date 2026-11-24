@@ -20,7 +20,7 @@ export const Text3DPanel: React.FC = () => {
   const open = useText3DPanel((s) => s.open);
   const close = useCallback(() => setText3DPanelOpen(false), []);
   return (
-    <OperationPanel open={open} onClose={close} title={t(language, 'r3a.text.panel')} className="kura-text3d-panel">
+    <OperationPanel open={open} onClose={close} title={t(language, 'r3a.text.panel')} className="kura-text3d-panel" initialFocus="#kura-text3d-input">
       <Text3DCreateCard onCreated={close} />
     </OperationPanel>
   );

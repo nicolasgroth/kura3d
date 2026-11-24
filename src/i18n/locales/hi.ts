@@ -47,6 +47,7 @@ import { PANEL_HI } from './panel';
 import { ENCAJE_UI_HI } from './encajeUi';
 import { REDISENO3A_HI } from './rediseno3a';
 import { REDISENO3B_HI } from './rediseno3b';
+import { UX8_MENU_HI } from './ux8Menu';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -91,6 +92,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...ENCAJE_UI_HI,
   ...REDISENO3A_HI,
   ...REDISENO3B_HI,
+  ...UX8_MENU_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',
@@ -344,8 +346,8 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'inspector.op.applyHoles': 'घटाव लागू करें',
   'inspector.op.cutAndSplitTitle': 'काटें और विभाजित करें',
   'inspector.op.planeCut': 'समतल कट + कनेक्टर',
-  'inspector.op.splitParts': 'भाग अलग करें (द्वीप)',
-  'inspector.op.splitColors': 'रंगों से विभाजित करें',
+  'inspector.op.splitParts': 'ढीले भाग अलग करें',
+  'inspector.op.splitColors': 'रंगों से अलग करें',
   'inspector.op.textureTitle': 'सतह बनावट (टेक्सचर)',
   'inspector.op.textureDepth': 'गहराई',
   'inspector.op.textureScale': 'पैटर्न स्केल',
@@ -417,16 +419,9 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'badge.localNoAiTip': 'ऑफ़लाइन नियतात्मक मोड: कोई भी डेटा आपके डिवाइस से बाहर नहीं जाता',
 
   // Menú contextual clic derecho sobre objeto 3D
-  'ctx.applyHoles': 'घटाव लागू करें',
-  'ctx.unionSelection': 'चयन को जोड़ें',
   'ctx.planeCut': 'समतल कट + कनेक्टर',
-  'ctx.generateMold': 'मोल्ड / सिलिकॉन बनाएं',
-  'ctx.projectSurface': 'सतह पर पाठ/SVG प्रोजेक्ट करें',
-  'ctx.validatePrint': '3D संरचना सत्यापित करें',
-  'ctx.detectStructures': 'उप-संरचनाएं पहचानें (लोकल)',
   'ctx.shortcuts': 'कीबोर्ड शॉर्टकट',
   'ctx.duplicate': 'डुप्लिकेट',
-  'ctx.dropToBed': 'प्रिंट बेड पर रखें (Z=0)',
   'ctx.delete': 'हटाएं',
 
   // Paleta de comandos (Ctrl+K)
@@ -440,15 +435,8 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'cmd.cat.export': 'आयात और निर्यात',
   'cmd.cat.view': 'दृश्य, इकाइयाँ और थीम',
   'cmd.cat.settings': 'सेटिंग्स, MCP और AI',
-  'cmd.pro.mold': 'मोल्ड / सिलिकॉन बॉक्स बनाएं',
-  'cmd.pro.project': 'सतह पर पाठ या SVG प्रोजेक्ट करें',
   'cmd.pro.thread': 'मीट्रिक ISO थ्रेड बनाएं (M3–M64)',
-  'cmd.pro.validate': 'प्रिंट योग्यता जांचें (ओवरहैंग व वजन)',
-  'cmd.pro.simplify': 'मेश सरल करें (त्रिभुज घटाएं)',
-  'cmd.pro.refine': 'मेश परिष्कृत करें (उपविभाजित व चिकना)',
-  'cmd.pro.hull': 'उत्तल आवरण',
   'cmd.pro.arrangeGrid': 'बेड पर भाग व्यवस्थित करें (ऑटो)',
-  'cmd.pro.detectStructures': '3D उप-संरचनाएं पहचानें (लोकल)',
   'cmd.pro.colorizeStructures': 'पहचानी गई उप-संरचनाओं को रंगें (3MF)',
   'cmd.pro.mirrorX': 'X अक्ष पर वस्तु प्रतिबिंबित करें',
   'cmd.view.compact': 'संहत मोड टॉगल करें',
