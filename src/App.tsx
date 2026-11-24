@@ -46,6 +46,7 @@ import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest'
 import { ToolRail } from './components/shell/ToolRail';
 import { Text3DPanel } from './components/text3d/Text3DPanel';
 import { AssistantsPanel } from './components/assistants/AssistantsPanel';
+import { MagnetPanel } from './components/magnet/MagnetPanel';
 import { startPanelExclusion } from './store/insertCatalog';
 import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
 import { activateRailTool, toggleRailTool } from './store/toolActivation';
@@ -478,6 +479,7 @@ export const App: React.FC = () => {
         <div id="kura-op-slot" className="kura-op-slot" />
         <Text3DPanel />
         <AssistantsPanel />
+        <MagnetPanel />
         <AiChatDrawer />
         <ProjectDropTarget />
       </div>

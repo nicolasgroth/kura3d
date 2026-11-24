@@ -1,0 +1,64 @@
+# Alojamiento de imán
+
+Un alojamiento de imán es el hueco donde va un imán de neodimio: para cerrar una tapa, pegar una pieza a una superficie metálica o alinear dos mitades. En Kura3D lo colocas con un clic sobre una cara de una pieza. El hueco queda como **pieza negativa**, orientado según esa cara, y se abre en la pieza cuando aplicas las restas, como cualquier negativo (ver [Sólidos negativos y restas](solidos-negativos-y-restas.md)).
+
+Kura3D solo prepara la geometría. No lamina, así que tampoco inserta la pausa de impresión por ti.
+
+## Abrir el panel
+
+1. Ten al menos una pieza sólida visible en la escena. Si no hay ninguna, Kura3D te avisa y el panel no se abre.
+2. Elige **Insertar › Alojamiento de imán** en la barra superior. También puedes hacer clic derecho sobre la pieza y elegir **Más › Alojamiento de imán**, o abrir la paleta con `Ctrl+K` y escribir *imán*.
+3. El panel **Alojamiento de imán** se abre a la derecha. Viene con un imán **redondo de 5 × 2 mm** (diámetro × alto).
+
+![Panel Alojamiento de imán con el preajuste 5 × 2 y la vista previa del hueco sobre la cara superior de un cubo](img/alojamiento-de-iman-01-panel.png)
+
+## Elegir el imán
+
+- **Preajuste**: los incluidos son redondos de 5 × 2, 6 × 3, 8 × 3 y 10 × 3 mm, y uno cuadrado de 5 × 5 × 2 mm. Al elegir uno se cargan sus medidas.
+- **Forma**: *Redondo* (diámetro × alto) o *Cuadrado* (lado × alto).
+- **Diámetro** o **Lado**, y **Alto** del imán, en milímetros. Puedes escribir con coma decimal (`6,5`).
+- **Holgura de ancho** y **Holgura de profundidad**: lo que se agrega al diámetro o lado y a la profundidad para que el imán entre. Por defecto son 0,2 mm, así que un imán de 5 × 2 deja un hueco de 5,2 × 2,2 mm. Se ajustan de 0 a 0,6 mm: 0,2 suele entrar a presión; súbelo si lo vas a pegar.
+- Un valor fuera de rango queda marcado junto a su campo y, mientras no lo corrijas, el panel no coloca nada.
+- Debajo de los campos ves el tamaño real del hueco, por ejemplo *Hueco: Ø 5,2 × 2,2 mm*.
+
+### Abierto u oculto
+
+Por defecto el hueco es **abierto**: su boca queda a ras de la cara y el imán se pone después de imprimir. Si activas **Oculto bajo la cara**, el hueco queda tapado por 0,6 mm de material: el imán no se ve, pero tienes que **pausar la impresión** a la altura donde se cierra el hueco para meterlo.
+
+### Tus preajustes
+
+1. Ajusta las medidas a tu imán.
+2. Escribe un nombre en *Nombre del preajuste* (hasta 40 caracteres) y pulsa **Guardar preajuste**. Si ya tienes uno con ese nombre, se actualizan sus medidas.
+3. Aparece en la lista bajo *Mis preajustes* y sigue ahí cuando vuelves a abrir Kura3D (se guarda en este navegador, no en el proyecto).
+4. Para borrarlo, elígelo en la lista y pulsa el botón de la papelera.
+
+## Colocar el hueco
+
+1. Con el panel abierto, pasa el cursor sobre la pieza: una vista previa naranja muestra el hueco sobre la cara que está bajo el cursor, perpendicular a ella.
+2. Haz **clic** donde lo quieras. Se agrega un negativo llamado, por ejemplo, **Imán 5 × 2**, agrupado con la pieza para que se muevan juntos. Funciona en caras de arriba, de los costados e inclinadas, también si la pieza está girada o escalada.
+3. Cada clic agrega otro alojamiento. Arrastrar para orbitar la cámara no coloca nada.
+4. Termina con **Listo**, con la X del panel o con `Esc`.
+
+Cada alojamiento es un paso de deshacer: `Ctrl+Z` quita solo el último.
+
+### Pared mínima
+
+Al colocar, Kura3D mide con rayos cuánto material queda entre el hueco y las otras caras de la pieza (al fondo y a los costados). Si queda menos de **1,2 mm** (unos tres perímetros de 0,4 mm), te avisa con la medida. Si el hueco atraviesa la pieza o se asoma por otra cara, también te lo dice. El aviso no impide colocarlo: decides tú si lo mueves o usas un imán más bajo. El panel muestra la pared mínima del último que colocaste.
+
+## Abrir los huecos
+
+1. Cuando tengas todos los alojamientos, elige la pieza y usa **Aplicar restas** (en el inspector, sección de piezas, o con `Ctrl+K`).
+2. Los negativos se restan y la pieza queda como un sólido cerrado con los huecos de las medidas pedidas.
+
+![Cubo con dos alojamientos de imán abiertos, uno arriba y otro en un costado, después de aplicar las restas](img/alojamiento-de-iman-02-resultado.png)
+
+El hueco redondo es un polígono de 64 lados que *rodea* el círculo pedido: su ancho más chico es justo el diámetro del hueco, así el imán siempre entra.
+
+## Si algo no sale
+
+- **El panel no se abre:** no hay ninguna pieza sólida visible. Crea o muestra una pieza, o cambia a *Sólido* una que esté como negativo o referencia.
+- **El clic no coloca nada:** revisa que no haya un campo marcado en rojo; el panel lo indica arriba. Si el motor está ocupado con otra operación, espera a que termine.
+- **El hueco quedó en una cara que no querías:** `Ctrl+Z` y vuelve a hacer clic. También puedes mover el negativo como cualquier pieza antes de aplicar las restas.
+- **El imán no entra o queda suelto:** cambia la holgura. Las medidas de los imanes varían entre marcas; mide el tuyo con un pie de metro antes de imprimir.
+
+Anterior: [Asistentes](asistentes.md) · Siguiente: [Exportar](exportar.md) · [Índice](README.md)

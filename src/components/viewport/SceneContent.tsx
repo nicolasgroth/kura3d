@@ -30,6 +30,7 @@ import { CameraController } from './CameraController';
 import { overhangFacesFor } from '../../store/printReportSelectors';
 import { PrinterBedOverlay } from './PrinterBedOverlay';
 import { PreviewLayers } from './PreviewLayers';
+import { MagnetPlacementLayer } from './MagnetPlacementLayer';
 import { FitPreviewGhost } from '../fitToBed/FitPreviewGhost';
 import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
@@ -212,6 +213,7 @@ export const SceneContent: React.FC<{
       )}
 
       <PreviewLayers />
+      <MagnetPlacementLayer />
       <FitPreviewGhost />
       <SegmentHighlight />
       <OpenEdgesOverlay />

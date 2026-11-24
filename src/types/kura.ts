@@ -788,6 +788,23 @@ export interface SceneObjectMetadata {
   splitDowel?: SplitDowelMetadata;
   /** Receta que generó el objeto (`src/types/recipeProvenance.ts`). */
   recipe?: RecipeProvenance;
+  /** Agregado paramétrico (alojamiento de imán): tipo, parámetros y pieza anfitriona. */
+  addon?: AddonMetadata;
+}
+
+/** Agregado colocado sobre una cara (hoy, alojamiento de imán como pieza negativa). */
+export interface AddonMetadata {
+  kind: 'magnet_pocket';
+  params: {
+    shape: 'round' | 'square';
+    sizeMm: number;
+    heightMm: number;
+    clearanceMm: number;
+    depthClearanceMm: number;
+    hidden: boolean;
+  };
+  /** Pieza sobre la que se colocó (puede ya no existir). */
+  hostId?: string;
 }
 
 /** Lote de tarugos sueltos de "dividir para imprimir": medida y cantidad. */
