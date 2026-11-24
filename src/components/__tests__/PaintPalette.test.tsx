@@ -66,12 +66,12 @@ describe('PaintPalette', () => {
     expect(localStorage.getItem(STORAGE_PAINT_PALETTE_KEY)).toBeNull();
   });
 
-  it('usa los colores del proyecto', () => {
+  it('suma los colores del proyecto a la paleta sin perder los anteriores', () => {
     useKuraStore.setState({ objects: [{ ...fakeBox('a', 'A'), color: '#abcdef' }] } as never);
     render(<PaintPalette />);
     fireEvent.click(screen.getByRole('button', { name: 'Opciones de la paleta' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Usar los colores del proyecto' }));
-    expect(usePaintPalette.getState().colors).toEqual(['#abcdef']);
+    fireEvent.click(screen.getByRole('button', { name: 'Agregar los colores del proyecto' }));
+    expect(usePaintPalette.getState().colors).toEqual([...DEFAULT_PALETTE.colors, '#abcdef']);
   });
 
   it('con muchas muestras dibuja las primeras 24 y el resto bajo «N más»', () => {

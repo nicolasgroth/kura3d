@@ -1,7 +1,7 @@
 /**
  * @file src/store/paintPalette.ts
  * @description Paleta de pintura personalizable: paletas predefinidas (la original, vivos, sobrios, pastel y escala
- * de grises), cambiar, agregar y quitar muestras, usar los colores del proyecto y volver a la original. Es una
+ * de grises), cambiar, agregar y quitar muestras, sumar los colores del proyecto y volver a la original. Es una
  * preferencia del usuario (navegador, vía `preferencesStorage`), no del proyecto; solo guarda códigos de color.
  * Las reglas son funciones puras; `usePaintPalette` las aplica y persiste.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -132,10 +132,13 @@ export function projectPaintColors(objects: readonly SceneObject[]): string[] {
   return [...count.entries()].sort((a, b) => b[1] - a[1]).map(([c]) => c).slice(0, PALETTE_MAX);
 }
 
-/** La paleta con los colores del proyecto; sin colores, no cambia. */
+/** La paleta más los colores del proyecto que le faltan (sin duplicar, hasta `PALETTE_MAX`); sin novedades, no cambia. */
 export function fromProjectColors(state: PaintPaletteState, objects: readonly SceneObject[]): PaintPaletteState {
-  const colors = projectPaintColors(objects);
-  return colors.length >= PALETTE_MIN ? { preset: 'custom', colors } : state;
+  const known = new Set(state.colors);
+  const added = projectPaintColors(objects).filter((c) => !known.has(c));
+  const room = Math.max(0, PALETTE_MAX - state.colors.length);
+  if (added.length === 0 || room === 0) return state;
+  return { preset: 'custom', colors: [...state.colors, ...added.slice(0, room)] };
 }
 
 interface PaintPaletteStore extends PaintPaletteState {

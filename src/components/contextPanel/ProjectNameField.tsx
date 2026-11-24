@@ -12,6 +12,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { t } from '../../i18n';
+import { PROJECT_NAME_MAX } from '../../project/projectFiles';
 import { useKuraStore } from '../../store/useKuraStore';
 import { helpAttrs } from '../shell/controlHelp';
 
@@ -66,7 +67,7 @@ export const ProjectNameField: React.FC = () => {
           ref={inputRef}
           className="kura-input"
           value={draft}
-          maxLength={120}
+          maxLength={PROJECT_NAME_MAX}
           aria-label={t(language, 'r3a.name.field')}
           aria-invalid={empty || undefined}
           aria-describedby={empty ? errorId : hintId}

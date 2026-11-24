@@ -16,7 +16,7 @@ Para imprimir en varios colores (o con varios filamentos) puedes **pintar caras*
 
 - **Cambiar una muestra:** clic derecho sobre ella (o, con el teclado, enfócala y pulsa **Mayús+F10** o la tecla Menú). Se abre su edición: **Cambiar el color** abre el selector de color y **Quitar de la paleta** la elimina (siempre queda al menos una). **Esc** la cierra.
 - **Agregar:** **+** agrega el color actual del pincel (elígelo antes con el selector de color libre).
-- **Opciones de la paleta (…):** elige una paleta predefinida (*Original*, *Vivos*, *Sobrios*, *Pastel*, *Escala de grises*), **Usar los colores del proyecto** (los que ya tienen tus objetos, de más a menos usado) o **Volver a la paleta original**.
+- **Opciones de la paleta (…):** elige una paleta predefinida (*Original*, *Vivos*, *Sobrios*, *Pastel*, *Escala de grises*), **Agregar los colores del proyecto** (suma los que ya tienen tus objetos y le faltan a la paleta, de más a menos usado, sin quitar los tuyos) o **Volver a la paleta original**.
 - La paleta se recuerda en este navegador; no se guarda en el proyecto. Con muchas muestras se ven las primeras 24 y el resto con **N más**.
 
 Si el modelo tiene pocos triángulos (un cubo, por ejemplo), el pincel pinta caras enteras y Kura3D lo avisa con la opción **Refinar malla para pintar con detalle**. Las primitivas paramétricas piden confirmación antes de pintar, porque pintar las convierte en una malla fija.

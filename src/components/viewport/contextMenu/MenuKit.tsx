@@ -27,6 +27,9 @@ function itemsOf(menu: HTMLElement): HTMLElement[] {
 const NARROW_QUERY = '(max-width: 600px)';
 /** Demora al abrir o cerrar un submenú con el cursor. */
 const HOVER_DELAY_MS = 180;
+/** Separación lateral y desfase vertical del submenú respecto de su ítem (coincide con `.kura-context-sub`). */
+const SUB_GAP = 2;
+const SUB_TOP = -6;
 
 /** Superficie del menú: posiciona, enfoca el primer ítem y resuelve el teclado. */
 export const MenuSurface: React.FC<{
@@ -210,15 +213,23 @@ export const SubMenu: React.FC<{
     hoverTimer.current = window.setTimeout(() => setOpen(enter), HOVER_DELAY_MS);
   };
 
-  // Voltea a la izquierda o sube si el submenú no cabe en el visor.
+  // Voltea a la izquierda o sube si el submenú no cabe en el visor o la ventana. Se mide desde el ítem (posición
+  // natural, a su derecha) y no desde el panel ya volteado, así el resultado no depende de la apertura anterior.
   useLayoutEffect(() => {
     const panel = panelRef.current;
-    // Dentro del visor se acota a él; el menú de una fila del árbol (fuera del visor) se acota a la ventana.
-    const wrap = panel?.closest('.kura-viewport-wrap') as HTMLElement | null;
-    const bounds = wrap ? wrap.getBoundingClientRect() : { right: window.innerWidth, bottom: window.innerHeight };
     if (!open || inline || !panel) return;
-    const r = panel.getBoundingClientRect();
-    setPlacement({ flip: r.right > bounds.right - 4, shift: Math.min(0, bounds.bottom - 4 - r.bottom) });
+    // Dentro del visor se acota a él; el menú de una fila del árbol (fuera del visor) se acota a la ventana.
+    const wrap = panel.closest('.kura-viewport-wrap') as HTMLElement | null;
+    const bounds = wrap ? wrap.getBoundingClientRect() : { left: 0, right: window.innerWidth, bottom: window.innerHeight };
+    const host = panel.parentElement?.getBoundingClientRect();
+    if (!host) return;
+    const { width, height } = panel.getBoundingClientRect();
+    const rightEdge = host.right + SUB_GAP + width;
+    const leftEdge = host.left - SUB_GAP - width;
+    // Voltea si a la derecha no cabe y a la izquierda sí (o hay más sitio a la izquierda).
+    const flip = rightEdge > bounds.right - 4 && (leftEdge >= bounds.left + 4 || bounds.right - host.right < host.left - bounds.left);
+    const shift = Math.min(0, bounds.bottom - 4 - (host.top + SUB_TOP + height));
+    setPlacement((prev) => (prev.flip === flip && prev.shift === shift ? prev : { flip, shift }));
   }, [open, inline]);
 
   const openAndFocus = () => {
@@ -278,7 +289,7 @@ export const SubMenu: React.FC<{
           role="menu"
           aria-label={label}
           className={`kura-context-sub${inline ? ' is-inline' : ''}${placement.flip ? ' is-flip' : ''}`}
-          style={placement.shift ? { top: placement.shift } : undefined}
+          style={placement.shift ? { top: SUB_TOP + placement.shift } : undefined}
           onKeyDown={(e) => {
             if (e.key === 'ArrowLeft') {
               e.preventDefault();

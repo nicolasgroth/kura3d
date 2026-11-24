@@ -11,6 +11,7 @@ import { statSync } from 'node:fs';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import type { Locator, Page } from '@playwright/test';
+import { enlazarStores } from '../store-link';
 
 export const URL = process.env.KURA_URL ?? 'http://127.0.0.1:5239/';
 export const IMG_DIR = path.resolve(process.cwd(), 'docs/guia/img');
@@ -22,9 +23,8 @@ export interface Clip { x: number; y: number; width: number; height: number }
 export async function abrir(page: Page): Promise<void> {
   await page.goto(URL);
   await page.getByText('Manifold WASM Listo').waitFor({ timeout: 90_000 });
+  await enlazarStores(page, { medicion: true });
   await page.evaluate(async () => {
-    (window as any).__s = (await import('/src/store/useKuraStore.ts')).useKuraStore;
-    (window as any).__m = (await import('/src/store/measureStore.ts')).useMeasureStore;
     // Cámara del visor (módulo `_roots` de react-three-fiber) para proyectar puntos del mundo a píxeles.
     const urls = performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /react-three_fiber/.test(n));
     for (const u of urls) {
