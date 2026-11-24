@@ -1,7 +1,7 @@
 {
   "format": "kura.recipe/1",
   "id": "kura.placa-enchufe",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "kura": ">=0.8.0",
   "title": "$t:title",
   "description": "$t:description",
@@ -18,7 +18,7 @@
     { "id": "t", "type": "number", "unit": "mm", "min": 1.6, "max": 6, "default": 3, "label": "$t:t" },
     { "id": "screwAxis", "type": "choice", "default": "x", "label": "$t:screwAxis",
       "options": [{ "value": "x", "label": "$t:sides" }, { "value": "y", "label": "$t:topBottom" }] },
-    { "id": "spacing", "type": "number", "unit": "mm", "min": 20, "max": 250, "default": "=p.modules*p.mw + 15", "label": "$t:spacing" },
+    { "id": "spacing", "type": "number", "unit": "mm", "min": 20, "max": 250, "default": "=clamp(p.modules*p.mw + 15, 20, 250)", "label": "$t:spacing" },
     { "id": "screw", "type": "number", "unit": "mm", "min": 2, "max": 5, "default": 3.5, "label": "$t:screw" }
   ],
   "presets": [
@@ -32,7 +32,9 @@
     "edge": "=p.screwAxis == 'x' ? d.pw/2 : p.ph/2",
     "inner": "=p.screwAxis == 'x' ? p.modules*p.mw/2 : p.winh/2",
     "spMin": "=floor(2*(d.inner + p.screw)) + 1",
-    "spMax": "=ceil(2*(d.edge - p.screw)) - 1"
+    "spMax": "=ceil(2*(d.edge - p.screw)) - 1",
+    "hr": "=p.screw/2 + 0.2",
+    "sink": "=min(p.screw, p.t - 0.8 + d.hr)"
   },
   "rules": [
     { "level": "error", "when": "=p.winh >= p.ph - 8", "message": "$t:winTooTall", "focus": "winh" },
@@ -41,6 +43,8 @@
       "params": { "min": "=d.spMin", "max": "=d.spMax" }, "focus": "spacing" },
     { "level": "error", "when": "=d.spMin <= d.spMax && d.sh - p.screw <= d.inner", "message": "$t:screwInWindow",
       "params": { "min": "=d.spMin", "max": "=d.spMax" }, "focus": "spacing" },
+    { "level": "warning", "when": "=d.sink < p.screw", "message": "$t:sinkShallow",
+      "params": { "screw": "=p.screw", "depth": "=round((d.sink - d.hr)*10)/10", "tMin": "=ceil((p.screw - d.hr + 0.8)*10)/10" }, "focus": "t" },
     { "level": "info", "when": "=true", "message": "$t:unverified" }
   ],
   "steps": [
@@ -52,15 +56,16 @@
       "pattern": { "kind": "points", "max": 2, "points": [
         ["=p.screwAxis == 'x' ? -d.sh : 0", "=p.screwAxis == 'y' ? -d.sh : 0", -1],
         ["=p.screwAxis == 'x' ? d.sh : 0", "=p.screwAxis == 'y' ? d.sh : 0", -1]] },
-      "args": { "type": "cylinder", "position": ["=x", "=y", "=z"], "params": { "radius": "=p.screw/2 + 0.2", "height": "=p.t + 2" } } },
+      "args": { "type": "cylinder", "position": ["=x", "=y", "=z"], "params": { "radius": "=d.hr", "height": "=p.t + 2" } } },
     { "id": "sinks", "op": "create_primitive",
       "pattern": { "kind": "points", "max": 2, "points": [
         ["=p.screwAxis == 'x' ? -d.sh : 0", "=p.screwAxis == 'y' ? -d.sh : 0", "=p.t + 0.01"],
         ["=p.screwAxis == 'x' ? d.sh : 0", "=p.screwAxis == 'y' ? d.sh : 0", "=p.t + 0.01"]] },
-      "args": { "type": "cone", "rotation": [180, 0, 0], "position": ["=x", "=y", "=z"], "params": { "radius": "=p.screw", "height": "=p.screw" } } },
+      "args": { "type": "cone", "rotation": [180, 0, 0], "position": ["=x", "=y", "=z"], "params": { "radius": "=d.sink", "height": "=d.sink" } } },
     { "id": "out", "op": "boolean_operation", "args": { "op": "subtract", "target": "@plate", "tools": ["@win", "@holes", "@sinks"] } }
   ],
   "outputs": [{ "ref": "@out", "name": "$t:outPlate" }],
+  "checks": [{ "kind": "fits_bed", "refs": ["@out"], "onFail": "offer_split" }],
   "strings": {
     "es": {
       "title": "Placa de enchufe",
@@ -72,10 +77,11 @@
       "winTooTall": "La ventana es casi tan alta como la placa.", "screwOut": "Los tornillos quedan fuera de la placa: usa una distancia entre {min} y {max} mm.",
       "screwInWindow": "Los tornillos caen dentro de la ventana: usa una distancia entre {min} y {max} mm.",
       "screwNoRoom": "No queda espacio para los tornillos entre la ventana y el borde: agranda la placa, achica la ventana o cambia el lado de los tornillos.",
+      "sinkShallow": "La placa es delgada para avellanar un tornillo de {screw} mm: el avellanado queda en {depth} mm y la cabeza sobresale. Para avellanarlo entero, sube el grosor a {tMin} mm.",
       "unverified": "Medidas de ejemplo: mide tu caja antes de imprimir.", "outPlate": "Placa"
     },
     "en": {
-      "title": "Wall plate",
+      "title": "Outlet / switch plate",
       "description": "Plate with 1 to 3 modules. All sizes are examples still to be verified; they follow no standard.",
       "modules": "Modules", "mw": "Module width", "winw": "Window width", "winh": "Window height", "ph": "Plate height",
       "margin": "Side margin", "t": "Thickness", "screwAxis": "Screws", "sides": "On the sides", "topBottom": "Top and bottom",
@@ -84,7 +90,60 @@
       "winTooTall": "The window is almost as tall as the plate.", "screwOut": "The screws fall outside the plate: use a spacing between {min} and {max} mm.",
       "screwInWindow": "The screws fall inside the window: use a spacing between {min} and {max} mm.",
       "screwNoRoom": "There is no room for the screws between the window and the edge: enlarge the plate, shrink the window or move the screws to the other side.",
+      "sinkShallow": "The plate is thin to countersink a {screw} mm screw: the countersink is {depth} mm deep and the head sticks out. To sink it fully, raise the thickness to {tMin} mm.",
       "unverified": "Example sizes: measure your box before printing.", "outPlate": "Plate"
+    },
+    "de": {
+      "title": "Abdeckplatte für Steckdose / Schalter",
+      "description": "Platte mit 1 bis 3 Modulen. Alle Maße sind Beispiele, noch zu prüfen; sie folgen keiner Norm.",
+      "modules": "Module", "mw": "Modulbreite", "winw": "Fensterbreite", "winh": "Fensterhöhe", "ph": "Plattenhöhe",
+      "margin": "Seitenrand", "t": "Dicke", "screwAxis": "Schrauben", "sides": "Seitlich", "topBottom": "Oben und unten",
+      "spacing": "Schraubenabstand", "screw": "Schraubendurchmesser",
+      "cl": "Chile", "it": "Italien", "es": "Spanien", "us": "USA",
+      "winTooTall": "Das Fenster ist fast so hoch wie die Platte.", "screwOut": "Die Schrauben liegen außerhalb der Platte: Nimm einen Abstand zwischen {min} und {max} mm.",
+      "screwInWindow": "Die Schrauben fallen ins Fenster: Nimm einen Abstand zwischen {min} und {max} mm.",
+      "screwNoRoom": "Zwischen Fenster und Rand ist kein Platz für die Schrauben: Vergrößere die Platte, verkleinere das Fenster oder setze die Schrauben auf die andere Seite.",
+      "sinkShallow": "Die Platte ist zu dünn, um eine {screw}-mm-Schraube zu versenken: Die Senkung ist {depth} mm tief und der Kopf steht vor. Für eine volle Senkung erhöhe die Dicke auf {tMin} mm.",
+      "unverified": "Beispielmaße: Miss deine Dose vor dem Drucken.", "outPlate": "Platte"
+    },
+    "fr": {
+      "title": "Plaque de prise / d’interrupteur",
+      "description": "Plaque de 1 à 3 modules. Toutes les mesures sont des exemples à vérifier ; elles ne suivent aucune norme.",
+      "modules": "Modules", "mw": "Largeur de module", "winw": "Largeur de fenêtre", "winh": "Hauteur de fenêtre", "ph": "Hauteur de plaque",
+      "margin": "Marge latérale", "t": "Épaisseur", "screwAxis": "Vis", "sides": "Sur les côtés", "topBottom": "En haut et en bas",
+      "spacing": "Entraxe des vis", "screw": "Diamètre de vis",
+      "cl": "Chili", "it": "Italie", "es": "Espagne", "us": "États-Unis",
+      "winTooTall": "La fenêtre est presque aussi haute que la plaque.", "screwOut": "Les vis tombent hors de la plaque : utilise un entraxe entre {min} et {max} mm.",
+      "screwInWindow": "Les vis tombent dans la fenêtre : utilise un entraxe entre {min} et {max} mm.",
+      "screwNoRoom": "Il n’y a pas de place pour les vis entre la fenêtre et le bord : agrandis la plaque, réduis la fenêtre ou mets les vis de l’autre côté.",
+      "sinkShallow": "La plaque est trop fine pour fraiser une vis de {screw} mm : la fraisure fait {depth} mm et la tête dépasse. Pour la noyer entièrement, monte l’épaisseur à {tMin} mm.",
+      "unverified": "Mesures d’exemple : mesure ton boîtier avant d’imprimer.", "outPlate": "Plaque"
+    },
+    "hi": {
+      "title": "सॉकेट / स्विच प्लेट",
+      "description": "1 से 3 मॉड्यूल वाली प्लेट। सभी माप उदाहरण हैं, जाँचने बाकी हैं; ये किसी मानक के अनुसार नहीं हैं।",
+      "modules": "मॉड्यूल", "mw": "मॉड्यूल की चौड़ाई", "winw": "खिड़की की चौड़ाई", "winh": "खिड़की की ऊँचाई", "ph": "प्लेट की ऊँचाई",
+      "margin": "किनारे का मार्जिन", "t": "मोटाई", "screwAxis": "पेंच", "sides": "दोनों ओर", "topBottom": "ऊपर और नीचे",
+      "spacing": "पेंचों के बीच की दूरी", "screw": "पेंच का व्यास",
+      "cl": "चिली", "it": "इटली", "es": "स्पेन", "us": "अमेरिका",
+      "winTooTall": "खिड़की लगभग प्लेट जितनी ऊँची है।", "screwOut": "पेंच प्लेट से बाहर पड़ते हैं: {min} से {max} mm के बीच की दूरी रखें।",
+      "screwInWindow": "पेंच खिड़की के अंदर पड़ते हैं: {min} से {max} mm के बीच की दूरी रखें।",
+      "screwNoRoom": "खिड़की और किनारे के बीच पेंचों के लिए जगह नहीं है: प्लेट बड़ी करें, खिड़की छोटी करें या पेंच दूसरी ओर लगाएँ।",
+      "sinkShallow": "{screw} mm पेंच का काउंटरसिंक बनाने के लिए प्लेट पतली है: काउंटरसिंक {depth} mm गहरा रहता है और सिर बाहर निकलता है। पूरा बैठाने के लिए मोटाई {tMin} mm करें।",
+      "unverified": "उदाहरण माप: छापने से पहले अपना बॉक्स नापें।", "outPlate": "प्लेट"
+    },
+    "zh": {
+      "title": "插座 / 开关面板",
+      "description": "1 到 3 个模块的面板。所有尺寸均为示例,尚待核实;不符合任何标准。",
+      "modules": "模块数", "mw": "模块宽度", "winw": "开口宽度", "winh": "开口高度", "ph": "面板高度",
+      "margin": "侧边距", "t": "厚度", "screwAxis": "螺丝位置", "sides": "左右两侧", "topBottom": "上下两端",
+      "spacing": "螺丝间距", "screw": "螺丝直径",
+      "cl": "智利", "it": "意大利", "es": "西班牙", "us": "美国",
+      "winTooTall": "开口几乎和面板一样高。", "screwOut": "螺丝落在面板外:请使用 {min} 到 {max} mm 之间的间距。",
+      "screwInWindow": "螺丝落在开口内:请使用 {min} 到 {max} mm 之间的间距。",
+      "screwNoRoom": "开口和边缘之间没有螺丝的位置:请加大面板、缩小开口或把螺丝换到另一侧。",
+      "sinkShallow": "面板太薄,无法为 {screw} mm 螺丝做完整沉头:沉头孔只有 {depth} mm 深,螺丝头会凸出。要完全沉入,请把厚度提高到 {tMin} mm。",
+      "unverified": "示例尺寸:打印前请测量你的接线盒。", "outPlate": "面板"
     }
   }
 }

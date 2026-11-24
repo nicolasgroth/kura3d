@@ -1295,6 +1295,35 @@
                 "additionalProperties": false
               }
             ]
+          },
+          "onError": {
+            "type": "object",
+            "properties": {
+              "focus": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+                "description": "Identificador: letras, dígitos y _, sin empezar por dígito ni por __ (máx. 64)."
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Texto plano (≤ 200) o \"$t:clave\" buscada en strings.<idioma>."
+              },
+              "codes": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+                }
+              }
+            },
+            "required": [
+              "focus"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [

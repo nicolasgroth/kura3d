@@ -1,7 +1,7 @@
 {
   "format": "kura.recipe/1",
   "id": "kura.llavero",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "kura": ">=0.8.0",
   "title": "$t:title",
   "description": "$t:description",
@@ -24,7 +24,8 @@
     "pd": "=p.size*1.7",
     "gap": "=max(2, p.size*0.3)",
     "maxRing": "=floor(p.size*1.7 - 4)",
-    "minSize": "=ceil((p.ring + 4)/1.7)"
+    "minSize": "=ceil((p.ring + 4)/1.7)",
+    "logoBox": "=p.size*1.4"
   },
   "rules": [
     { "level": "error", "when": "=!d.txt && !has(p.logo)", "message": "$t:empty", "focus": "text" },
@@ -37,10 +38,14 @@
   ],
   "steps": [
     { "id": "label", "op": "create_primitive", "when": "=d.txt",
-      "args": { "type": "text", "params": { "text": "=p.text", "fontSize": "=p.size", "depth": "=p.depth + 0.01", "textAlign": "center" } } },
-    { "id": "icon", "op": "import_svg", "when": "=has(p.logo)", "args": { "svgContent": "=p.logo", "depth": "=p.depth", "targetWidth": "=p.size*1.4" } },
-    { "id": "iconAt", "op": "recipe.place", "when": "=has(p.logo)", "args": { "target": "@icon", "anchor": "center",
-      "to": ["=d.txt ? s.label.min.x - d.gap - s.icon.size.x/2 : 0", "=d.txt ? s.label.center.y : 0", "=s.icon.center.z"] } },
+      "args": { "type": "text", "params": { "text": "=p.text", "fontSize": "=p.size", "depth": "=p.depth + 0.01", "textAlign": "center" } },
+      "onError": { "focus": "text", "message": "$t:glyphs", "codes": ["TEXT_GLYPH_MISSING"] } },
+    { "id": "icon", "op": "import_svg", "when": "=has(p.logo)", "args": { "svgContent": "=p.logo", "depth": "=p.depth", "targetWidth": "=d.logoBox" },
+      "onError": { "focus": "logo", "message": "$t:logoFill", "codes": ["SVG_STROKES_ONLY", "SVG_NO_CONTOURS"] } },
+    { "id": "iconFit", "op": "transform_object", "when": "=has(p.logo)", "args": { "target": "@icon",
+      "scale": ["=min(1, d.logoBox/s.icon.size.y)", "=min(1, d.logoBox/s.icon.size.y)", 1] } },
+    { "id": "iconAt", "op": "recipe.place", "when": "=has(p.logo)", "args": { "target": "@iconFit", "anchor": "center",
+      "to": ["=d.txt ? s.label.min.x - d.gap - s.iconFit.size.x/2 : 0", "=d.txt ? s.label.center.y : 0", "=s.iconFit.center.z"] } },
     { "id": "art", "op": "combine_objects", "args": { "objectIds": ["@iconAt", "@label"] } },
     { "id": "art2", "op": "recipe.place", "args": { "target": "@art", "anchor": "bottom-center",
       "to": [0, 0, "=p.mode == 'relief' ? p.base : p.base - p.depth"] } },
@@ -63,7 +68,9 @@
       "logo": "Logo (SVG)", "empty": "Escribe un texto o elige un logo.", "tooDeep": "El grabado atraviesa casi toda la base.",
       "ringBig": "La argolla de {ring} mm deja menos de 2 mm de placa alrededor: usa una argolla de hasta {maxRing} mm o sube la letra a {minSize} mm.",
       "ringBigSize": "La argolla de {ring} mm deja menos de 2 mm de placa alrededor: sube la letra a {minSize} mm o más.",
-      "thin": "Trazo de la letra bajo 0,9 mm: fino para una boquilla de 0,4 mm. Sube la letra a 6 mm o más."
+      "thin": "Trazo de la letra bajo 0,9 mm: fino para una boquilla de 0,4 mm. Sube la letra a 6 mm o más.",
+      "glyphs": "Este texto tiene caracteres que la fuente no incluye: {chars}. Quítalos o reemplázalos (la fuente cubre el alfabeto latino).",
+      "logoFill": "El logo no tiene áreas rellenas: usa un SVG con relleno (no solo trazos)."
     },
     "en": {
       "title": "Text keychain", "description": "Tag with your text (and your logo, if you want) raised or engraved and a ring hole.",
@@ -72,7 +79,53 @@
       "logo": "Logo (SVG)", "empty": "Type a text or choose a logo.", "tooDeep": "The engraving goes through almost all the base.",
       "ringBig": "The {ring} mm ring leaves less than 2 mm of tag around it: use a ring up to {maxRing} mm or raise the letter size to {minSize} mm.",
       "ringBigSize": "The {ring} mm ring leaves less than 2 mm of tag around it: raise the letter size to {minSize} mm or more.",
-      "thin": "Letter stroke under 0.9 mm: thin for a 0.4 mm nozzle. Raise the letter size to 6 mm or more."
+      "thin": "Letter stroke under 0.9 mm: thin for a 0.4 mm nozzle. Raise the letter size to 6 mm or more.",
+      "glyphs": "This text has characters the font does not include: {chars}. Remove or replace them (the font covers the Latin alphabet).",
+      "logoFill": "The logo has no filled areas: use an SVG with fills (not only strokes)."
+    },
+    "de": {
+      "title": "Schlüsselanhänger mit Text", "description": "Anhänger mit deinem Text (und deinem Logo, wenn du willst) erhaben oder graviert, mit Loch für den Ring.",
+      "text": "Text", "size": "Schriftgröße", "mode": "Textausführung", "relief": "Erhaben",
+      "engrave": "Graviert", "base": "Dicke der Grundplatte", "depth": "Texttiefe", "ring": "Ringdurchmesser",
+      "logo": "Logo (SVG)", "empty": "Gib einen Text ein oder wähle ein Logo.", "tooDeep": "Die Gravur geht fast durch die ganze Grundplatte.",
+      "ringBig": "Der {ring}-mm-Ring lässt weniger als 2 mm Anhänger rundherum: Nimm einen Ring bis {maxRing} mm oder erhöhe die Schrift auf {minSize} mm.",
+      "ringBigSize": "Der {ring}-mm-Ring lässt weniger als 2 mm Anhänger rundherum: Erhöhe die Schrift auf {minSize} mm oder mehr.",
+      "thin": "Strichstärke der Schrift unter 0,9 mm: dünn für eine 0,4-mm-Düse. Erhöhe die Schrift auf 6 mm oder mehr.",
+      "glyphs": "Dieser Text enthält Zeichen, die die Schrift nicht hat: {chars}. Entferne oder ersetze sie (die Schrift deckt das lateinische Alphabet ab).",
+      "logoFill": "Das Logo hat keine gefüllten Flächen: Verwende ein SVG mit Füllung (nicht nur Linien)."
+    },
+    "fr": {
+      "title": "Porte-clés avec texte", "description": "Plaque avec ton texte (et ton logo, si tu veux) en relief ou gravé, avec un trou pour l’anneau.",
+      "text": "Texte", "size": "Taille des lettres", "mode": "Finition du texte", "relief": "En relief",
+      "engrave": "Gravé", "base": "Épaisseur de la base", "depth": "Profondeur du texte", "ring": "Diamètre de l’anneau",
+      "logo": "Logo (SVG)", "empty": "Écris un texte ou choisis un logo.", "tooDeep": "La gravure traverse presque toute la base.",
+      "ringBig": "L’anneau de {ring} mm laisse moins de 2 mm de plaque autour : utilise un anneau de {maxRing} mm au plus ou monte les lettres à {minSize} mm.",
+      "ringBigSize": "L’anneau de {ring} mm laisse moins de 2 mm de plaque autour : monte les lettres à {minSize} mm ou plus.",
+      "thin": "Trait des lettres sous 0,9 mm : fin pour une buse de 0,4 mm. Monte les lettres à 6 mm ou plus.",
+      "glyphs": "Ce texte contient des caractères que la police n’a pas : {chars}. Retire-les ou remplace-les (la police couvre l’alphabet latin).",
+      "logoFill": "Le logo n’a aucune zone remplie : utilise un SVG avec remplissage (pas seulement des traits)."
+    },
+    "hi": {
+      "title": "टेक्स्ट वाला कीचेन", "description": "आपके टेक्स्ट (और चाहें तो आपके लोगो) के साथ उभरी या खुदी हुई प्लेट, छल्ले के छेद के साथ।",
+      "text": "टेक्स्ट", "size": "अक्षरों का आकार", "mode": "टेक्स्ट की फ़िनिश", "relief": "उभरा हुआ",
+      "engrave": "खुदा हुआ", "base": "आधार की मोटाई", "depth": "टेक्स्ट की गहराई", "ring": "छल्ले का व्यास",
+      "logo": "लोगो (SVG)", "empty": "कोई टेक्स्ट लिखें या लोगो चुनें।", "tooDeep": "खुदाई लगभग पूरे आधार के पार जाती है।",
+      "ringBig": "{ring} mm का छल्ला अपने चारों ओर 2 mm से कम प्लेट छोड़ता है: {maxRing} mm तक का छल्ला लें या अक्षर {minSize} mm करें।",
+      "ringBigSize": "{ring} mm का छल्ला अपने चारों ओर 2 mm से कम प्लेट छोड़ता है: अक्षर {minSize} mm या अधिक करें।",
+      "thin": "अक्षरों की रेखा 0.9 mm से कम: 0.4 mm नोज़ल के लिए पतली। अक्षर 6 mm या अधिक करें।",
+      "glyphs": "इस टेक्स्ट में ऐसे अक्षर हैं जो फ़ॉन्ट में नहीं हैं: {chars}। इन्हें हटाएँ या बदलें (फ़ॉन्ट लैटिन वर्णमाला को कवर करता है)।",
+      "logoFill": "लोगो में कोई भरा हुआ हिस्सा नहीं है: भराव वाला SVG इस्तेमाल करें (सिर्फ़ रेखाएँ नहीं)।"
+    },
+    "zh": {
+      "title": "文字钥匙扣", "description": "带有你的文字(以及你想要的标志)的牌子,可凸起或雕刻,并带挂环孔。",
+      "text": "文字", "size": "字号", "mode": "文字效果", "relief": "凸起",
+      "engrave": "雕刻", "base": "底板厚度", "depth": "文字深度", "ring": "挂环直径",
+      "logo": "标志(SVG)", "empty": "请输入文字或选择标志。", "tooDeep": "雕刻几乎穿透整个底板。",
+      "ringBig": "{ring} mm 的挂环周围剩下不到 2 mm 的牌子:请用不超过 {maxRing} mm 的挂环,或把字号提高到 {minSize} mm。",
+      "ringBigSize": "{ring} mm 的挂环周围剩下不到 2 mm 的牌子:请把字号提高到 {minSize} mm 或以上。",
+      "thin": "笔画低于 0.9 mm:对 0.4 mm 喷嘴来说太细。请把字号提高到 6 mm 或以上。",
+      "glyphs": "这段文字包含字体中没有的字符:{chars}。请删除或替换(字体覆盖拉丁字母)。",
+      "logoFill": "标志没有填充区域:请使用带填充的 SVG(不只是线条)。"
     }
   }
 }

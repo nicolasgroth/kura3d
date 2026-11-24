@@ -459,6 +459,7 @@ const RECETAS_TABLE = {
     'इंजन चरण {path} पूरा नहीं कर सका: {detail}।',
     '引擎无法完成步骤 {path}:{detail}。',
   ],
+  'recipe.error.run.input': ['{detail}', '{detail}', '{detail}', '{detail}', '{detail}', '{detail}'],
   'recipe.error.run.asset': [
     'El recurso embebido de {path} no se puede usar: {detail}.',
     'The embedded asset at {path} cannot be used: {detail}.',

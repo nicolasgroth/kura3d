@@ -20,7 +20,7 @@ describe('resolveRecipe: caja con tapa', () => {
     const result = resolveRecipe(clone(EXAMPLES.caja));
     expect(result.errors).toEqual([]);
     expect(result.ok).toBe(true);
-    expect(result.derived).toEqual({ ow: 84, od: 64, lid: 2, pr: 4, cw: 72, cd: 52, vn: 0 });
+    expect(result.derived).toMatchObject({ ow: 84, od: 64, lid: 2, pr: 4, cw: 72, cd: 52, vn: 0, side: 60, lipH: 3, useful: 37 });
     expect(result.steps.filter((s) => s.skipped).map((s) => s.id)).toEqual(['slots', 'lip']);
     const posts = result.steps.find((s) => s.id === 'posts');
     expect(posts?.instances.map((i) => i.args.position)).toEqual([[-36, -26, 2], [36, -26, 2], [36, 26, 2], [-36, 26, 2]]);
@@ -100,7 +100,7 @@ describe('resolveRecipe: llavero', () => {
     const plate = result.steps.find((s) => s.id === 'plate');
     expect((plate?.instances[0].args.params as Record<string, unknown>).width).toEqual({
       $deferred: '=s.art2.size.x + p.size + p.ring + 3',
-      path: 'steps[5].args.params.width',
+      path: 'steps[6].args.params.width',
     });
     expect(result.outputs).toEqual([{ ref: 'out', name: 'Kura' }]);
     expect(result.steps).toMatchSnapshot();
