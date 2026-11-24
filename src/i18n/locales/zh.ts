@@ -42,6 +42,7 @@ import { UX6_ZH } from './ux6';
 import { RECETAS_ZH } from './recetas';
 import { BORDES_ZH } from './bordesPrimitivas';
 import { UX7_ZH } from './ux7';
+import { UX8_ZH } from './ux8';
 import { REDISENO_ZH } from './rediseno';
 import { PANEL_ZH } from './panel';
 import { ENCAJE_UI_ZH } from './encajeUi';
@@ -86,6 +87,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...RECETAS_ZH,
   ...BORDES_ZH,
   ...UX7_ZH,
+  ...UX8_ZH,
   ...REDISENO_ZH,
   ...PANEL_ZH,
   ...ENCAJE_UI_ZH,
