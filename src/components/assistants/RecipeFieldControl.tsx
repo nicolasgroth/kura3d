@@ -10,15 +10,15 @@
  */
 
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { AlertTriangle, CircleAlert, Info, X } from 'lucide-react';
+import { AlertTriangle, CircleAlert, Info } from 'lucide-react';
 import type { FileAnswer, ObjectAnswer } from '../../core/recipes/resolve/types';
 import { toUserBox } from '../../core/scene/displayAxes';
 import { worldBox } from '../../core/scene/overlap';
-import { t, type TranslationKey } from '../../i18n';
+import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
-import { DEFAULT_FILE_MAX_BYTES, sniffFileKind } from './fileKind';
+import { FileField } from './FileField';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import type { FieldNote, FormField } from './recipeFormModel';
 
@@ -126,9 +126,20 @@ export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onI
   const uid = useId();
   const inputId = `${uid}-in`;
   const hintId = `${uid}-hint`;
-  const fileInput = useRef<HTMLInputElement | null>(null);
+  const [typedInvalid, setTypedInvalid] = useState(false);
   const disabled = busy || !field.enabled;
-  const hasError = field.notes.some((n) => n.level === 'error');
+  // Un texto numérico que no se puede leer ya no corresponde al valor resuelto: solo se muestra «valor no válido».
+  // Con un error (p. ej. fuera de rango) se omiten los avisos: estos solo valen cuando el valor es válido.
+  const notes: readonly FieldNote[] = typedInvalid
+    ? [{ level: 'error', text: t(language, 'asis.field.invalidValue') }]
+    : field.notes.some((n) => n.level === 'error')
+      ? field.notes.filter((n) => n.level === 'error')
+      : field.notes;
+  const hasError = notes.some((n) => n.level === 'error');
+  const textLength = field.type === 'text' && typeof field.value === 'string' ? field.value.length : 0;
+  const counterId = `${uid}-count`;
+  const hasCounter = field.type === 'text' && field.maxLength !== undefined;
+  const atLimit = hasCounter && textLength >= (field.maxLength ?? Infinity);
 
   const range =
     field.min !== undefined && field.max !== undefined
@@ -137,7 +148,7 @@ export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onI
   const accept = field.accept ? t(language, 'asis.file.formats', { types: field.accept.map((a) => a.toUpperCase()).join(', ') }) : undefined;
   const hint = [field.help, range, accept].filter(Boolean).join(' · ');
   const describedBy =
-    [hint ? hintId : '', fileMessage ? `${uid}-file-msg` : '', ...field.notes.map((_, k) => `${uid}-note-${k}`)].filter(Boolean).join(' ') || undefined;
+    [hint ? hintId : '', hasCounter ? counterId : '', fileMessage ? `${uid}-file-msg` : '', ...notes.map((_, k) => `${uid}-note-${k}`)].filter(Boolean).join(' ') || undefined;
   const aria = { 'aria-describedby': describedBy, 'aria-invalid': hasError ? true : undefined } as const;
   const label = (
     <>
@@ -162,7 +173,10 @@ export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onI
           disabled={disabled}
           commitOnBlur={false}
           onChange={(v) => onChange({ value: field.type === 'integer' ? Math.round(v) : v })}
-          onInvalidChange={onInvalid}
+          onInvalidChange={(v) => {
+            setTypedInvalid(v);
+            onInvalid(v);
+          }}
           externalInvalid={hasError}
           describedBy={describedBy}
         />
@@ -222,81 +236,11 @@ export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onI
     case 'object':
       control = <ObjectField field={field} inputId={inputId} disabled={disabled} aria={aria} onChange={onChange} />;
       break;
-    case 'file': {
-      const answer = field.value && typeof field.value === 'object' && 'kind' in field.value ? field.value : null;
-      const reject = (key: TranslationKey, params?: Record<string, string | number>) => {
-        if (fileInput.current) fileInput.current.value = '';
-        setFileMessage(t(language, key, params));
-        onFileError(true);
-        onChange({ value: undefined, file: null });
-      };
-      const pick = async (file: File | undefined) => {
-        if (!file) return;
-        const limit = field.maxBytes ?? DEFAULT_FILE_MAX_BYTES;
-        if (file.size > limit) {
-          reject('asis.file.tooBig', { max: formatLocaleNumber(language, limit / (1024 * 1024), { maxFrac: 1 }) });
-          return;
-        }
-        try {
-          const bytes = new Uint8Array(await file.arrayBuffer());
-          const kind = sniffFileKind(bytes);
-          if (!kind || (field.accept && !field.accept.includes(kind))) {
-            reject('asis.file.badType', { types: (field.accept ?? []).map((a) => a.toUpperCase()).join(', ') });
-            return;
-          }
-          const content = kind === 'svg' ? new TextDecoder().decode(bytes) : bytes;
-          setFileMessage(null);
-          onFileError(false);
-          onChange({ value: { kind, bytes: file.size, name: file.name.slice(0, 200) }, file: content });
-        } catch {
-          setFileMessage(null);
-          onFileError(true);
-        }
-      };
+    case 'file':
       control = (
-        <div className="kura-asis-file">
-          <button
-            id={inputId}
-            type="button"
-            className="kura-btn kura-btn-sm"
-            disabled={disabled}
-            title={t(language, 'asis.file.choose')}
-            {...aria}
-            onClick={() => fileInput.current?.click()}
-          >
-            {t(language, 'asis.file.choose')}
-          </button>
-          <span className="kura-asis-file-name">{answer?.name ?? t(language, 'asis.file.none')}</span>
-          {answer && (
-            <button
-              type="button"
-              className="kura-mini-icon-btn"
-              disabled={disabled}
-              aria-label={t(language, 'asis.file.remove')}
-              title={t(language, 'asis.file.remove')}
-              onClick={() => {
-                if (fileInput.current) fileInput.current.value = '';
-                setFileMessage(null);
-                onFileError(false);
-                onChange({ value: undefined, file: null });
-              }}
-            >
-              <X size={14} aria-hidden="true" />
-            </button>
-          )}
-          <input
-            ref={fileInput}
-            type="file"
-            hidden
-            tabIndex={-1}
-            data-testid={`asis-file-${field.id}`}
-            accept={(field.accept ?? []).map((a) => (a === 'jpg' ? '.jpg,.jpeg' : `.${a}`)).join(',')}
-            onChange={(e) => void pick(e.target.files?.[0])}
-          />
-        </div>
+        <FileField field={field} inputId={inputId} disabled={disabled} aria={aria} onChange={onChange} onFileError={onFileError} onMessage={setFileMessage} />
       );
       break;
-    }
   }
 
   const isCheck = field.type === 'boolean';
@@ -326,7 +270,17 @@ export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onI
           <span>{fileMessage}</span>
         </p>
       )}
-      <FieldNotes notes={field.notes} idPrefix={uid} />
+      {hasCounter && (
+        <>
+          <span id={counterId} className={`kura-field-hint kura-asis-counter${atLimit ? ' is-limit' : ''}`}>
+            {t(language, 'asis.text.counter', { count: textLength, max: field.maxLength ?? 0 })}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite">
+            {atLimit ? t(language, 'asis.text.limit', { max: field.maxLength ?? 0 }) : ''}
+          </span>
+        </>
+      )}
+      <FieldNotes notes={notes} idPrefix={uid} />
     </div>
   );
 };

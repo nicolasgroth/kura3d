@@ -13,7 +13,7 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, LoaderCircle, WandSparkles } from 'lucide-react';
 import type { RecipeIssue } from '../../core/recipes/errors';
-import type { Answers } from '../../core/recipes/resolve/types';
+import type { AnswerValue } from '../../core/recipes/resolve/types';
 import { resolveText } from '../../core/recipes/validate/strings';
 import { languageOf } from '../../core/recipes/catalog';
 import { t } from '../../i18n';
@@ -34,7 +34,7 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
   const uid = useId();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const createRef = useRef<HTMLButtonElement | null>(null);
-  const [answers, setAnswers] = useState<Record<string, unknown>>({});
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [files, setFiles] = useState<Record<string, string | Uint8Array>>({});
   const [variant, setVariant] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState(false);
@@ -44,7 +44,7 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
 
   const bed = useMemo(() => recipeBed({ printerProfile, customBedDimensions: customBed }), [printerProfile, customBed]);
   const model = useMemo(
-    () => buildFormModel(entry, { answers: answers as Answers, ...(variant !== undefined ? { variant } : {}), language, bed }),
+    () => buildFormModel(entry, { answers, ...(variant !== undefined ? { variant } : {}), language, bed }),
     [entry, answers, variant, language, bed],
   );
   const recipe = entry.validated.recipe;
@@ -95,8 +95,9 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
 
   const chooseVariant = (id: string) => {
     setVariant(id === '' ? undefined : id);
-    // La variante rellena las medidas: las respuestas previas dejan de taparla.
-    setAnswers({});
+    // La variante rellena sus parámetros: solo las respuestas sobre ellos dejan de taparla. Las demás se conservan.
+    const defined = new Set(Object.keys(entry.validated.recipe.presets?.find((p) => p.id === id)?.values ?? {}));
+    setAnswers((prev) => Object.fromEntries(Object.entries(prev).filter(([key]) => !defined.has(key))));
     setRunErrors([]);
   };
 
@@ -104,15 +105,23 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
     if (busy || blocked) return;
     setBusy(true);
     setRunErrors([]);
-    const used = Object.fromEntries(Object.entries(files).filter(([id]) => id in answers));
-    const outcome = await runAssistant({ recipe: entry.raw, answers, ...(variant !== undefined ? { variant } : {}), files: used });
-    if (outcome.status === 'created') {
-      onCreated();
-      return;
+    let created = false;
+    try {
+      const used = Object.fromEntries(Object.entries(files).filter(([id]) => id in answers));
+      const outcome = await runAssistant({ recipe: entry.raw, answers, ...(variant !== undefined ? { variant } : {}), files: used });
+      if (outcome.status === 'created') {
+        created = true;
+        onCreated();
+        return;
+      }
+      // 'failed' y 'empty': el aviso ya se mostró y la escena no cambió; el formulario sigue abierto.
+      if (outcome.status === 'invalid') setRunErrors(outcome.errors);
+    } catch {
+      useKuraStore.getState().addToast(t(language, 'asis.runFailed'), 'error');
+    } finally {
+      // Pase lo que pase el formulario no queda bloqueado (ni Escape); al crear, el panel se cierra.
+      if (!created) setBusy(false);
     }
-    // 'failed' y 'empty': el aviso ya se mostró y la escena no cambió; el formulario sigue abierto.
-    if (outcome.status === 'invalid') setRunErrors(outcome.errors);
-    setBusy(false);
   };
   const submitRef = useRef(submit);
   submitRef.current = submit;
