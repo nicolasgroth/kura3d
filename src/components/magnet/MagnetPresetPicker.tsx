@@ -63,7 +63,7 @@ export const MagnetPresetPicker: React.FC = () => {
     }
     const result = useMagnetPresets.getState().save(name, params);
     if (!result.ok) {
-      setNameError(t(language, result.reason === 'full' ? 'magnet.preset.full' : 'magnet.preset.valuesInvalid', { max: MAX_USER_PRESETS }));
+      setNameError(t(language, result.reason === 'full' ? 'magnet.preset.full' : result.reason === 'storage' ? 'magnet.preset.storageFailed' : 'magnet.preset.valuesInvalid', { max: MAX_USER_PRESETS }));
       return;
     }
     setNameError(null);
