@@ -40,7 +40,6 @@ test('rótulos de planos sin solapes, resumen claro y piezas rotuladas en el ár
 
   await page.getByRole('button', { name: 'Dividir', exact: true }).click();
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.filter((o: any) => o.metadata?.split).length), { timeout: 120_000 }).toBeGreaterThan(1);
-  await page.getByRole('tab', { name: /Escena/ }).first().click();
   const code = await page.evaluate(() => (window as any).__s.getState().objects.find((o: any) => o.metadata?.split).metadata.split.code as string);
   const fila = page.getByRole('treeitem', { name: new RegExp(`^${code} · Caja`) });
   await expect(fila.first()).toBeVisible();

@@ -11,6 +11,7 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, cajas, importarStl, solapes, stlCubes } from './ux-escena-helpers';
+import { agregarForma } from './agregar-helpers';
 
 const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/reales-ui';
 const cuenta = (page: Page) => page.evaluate(() => (window as any).__s.getState().objects.length);
@@ -40,7 +41,7 @@ test('importar grande descentrado y un conjunto mayor que la cama encuadra lo im
   await page.screenshot({ path: `${SHOTS}/colocacion-conjunto.png` });
 
   const antes = await cuenta(page);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
+  await agregarForma(page, 'Cubo');
   await expect.poll(() => cuenta(page)).toBe(antes + 1);
   expect(solapes(await cajas(page))).toEqual([]);
 });
@@ -50,7 +51,7 @@ test('con un modelo importado en el centro, el cubo nuevo va al costado y no del
   // Más ancho (X) que profundo (Z): antes el hueco más cercano era el frente, que tapa al modelo.
   await importarStl(page, 'ancho.stl', stlCubes([[-30, 60, 0], [30, 60, 0]], 60));
   await expect.poll(() => cuenta(page), { timeout: 30000 }).toBe(1);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
+  await agregarForma(page, 'Cubo');
   await expect.poll(() => cuenta(page)).toBe(2);
   const [modelo, cubo] = await cajas(page);
   expect(solapes([modelo, cubo])).toEqual([]);

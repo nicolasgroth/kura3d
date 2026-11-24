@@ -9,6 +9,7 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';
+import { agregarForma } from './agregar-helpers';
 
 async function conR3f(page: Page) {
   await page.evaluate(async () => {
@@ -58,8 +59,8 @@ test('vistas con un cubo de 440 mm: la cámara queda fuera y el cubo entero a la
 test('inspector: vuelve arriba al cambiar de objeto, no al reseleccionar el mismo', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 600 });
   await abrir(page);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
-  await page.getByRole('button', { name: 'Cilindro', exact: true }).first().click();
+  await agregarForma(page, 'Cubo');
+  await agregarForma(page, 'Cilindro');
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length)).toBe(2);
   const area = page.locator('#kura-inspector-panel .kura-scroll-area');
   const scroll = (top?: number) => area.evaluate((el, t) => { if (t !== undefined) el.scrollTop = t; return el.scrollTop; }, top);
@@ -75,7 +76,7 @@ test('inspector: vuelve arriba al cambiar de objeto, no al reseleccionar el mism
 test('arrastrar el gizmo muestra ΔX/ΔY/ΔZ junto al cursor', async ({ page }) => {
   await abrir(page);
   await conR3f(page);
-  await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
+  await agregarForma(page, 'Cubo');
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length)).toBe(1);
   // Empieza el arrastre por el store del gizmo (el mismo que usa TransformControls al pulsar).
   await page.evaluate(async () => {

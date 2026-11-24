@@ -6,13 +6,13 @@ Esta guía te lleva de la pantalla vacía a una escena con tres piezas que puede
 
 ![Kura3D recién abierto, con la escena vacía](img/primeros-pasos-01-vacio.png)
 
-- **Barra superior:** a la izquierda el grupo *Archivo* (**Importar**, *Proyecto* y **Exportar**), *Deshacer*, *Rehacer* y el **historial** (el reloj: lista lo que hiciste y te deja volver a cualquier punto), y el menú **Acciones**. A la derecha: búsqueda de comandos, idioma, temas, tema claro u oscuro, **Rótulos**, el estado del puente MCP, el asistente *IA* y *Ajustes*.
-- **Barra de herramientas (vertical, junto al visor):** *Seleccionar*, *Mover*, *Rotar* y *Escalar* (el modo del manipulador), y después *Pintar*, *Cortar*, *Esculpir* (esculpir o borrar volumen; el nombre completo sale en la ayuda) y *Medir*. La herramienta activa queda marcada con fondo y una raya al costado. Con el teclado es una sola parada de **Tab**; las flechas recorren los botones.
+- **Barra superior:** a la izquierda el grupo *Archivo* (**Importar**, **Proyecto** —muestra el panel del proyecto a la derecha— y **Exportar**), *Deshacer*, *Rehacer* y el **historial** (el reloj: lista lo que hiciste y te deja volver a cualquier punto), y los menús **Insertar** (formas, Texto 3D, SVG, imagen, rosca y cubo de calibración) y **Acciones**. A la derecha: búsqueda de comandos, idioma (con su bandera), temas, tema claro u oscuro, **Rótulos**, el estado del puente MCP, el asistente *IA* y *Ajustes*.
+- **Barra de herramientas (vertical, junto al visor):** arriba **Agregar** (abre a su lado las formas básicas: Cubo, Cilindro, Disco, Tubo hueco, Esfera, Cono, Toroide, Prisma y Texto 3D), luego *Seleccionar*, *Mover*, *Rotar* y *Escalar* (el modo del manipulador), y después *Pintar*, *Cortar*, *Esculpir* (esculpir o borrar volumen; el nombre completo sale en la ayuda) y *Medir*. La herramienta activa queda marcada con fondo y una raya al costado. Con el teclado es una sola parada de **Tab**; las flechas recorren los botones.
 - **Barra de vista (arriba del visor, en una sola fila):** vistas *Iso*, *Superior*, *Frente* y *Derecha* (el icono del cubo marca la cara que miras), *Encuadrar*, *Sin cama*, *Rayos X* y la *Rejilla*. Si falta espacio, primero las vistas y luego el resto quedan solo con su icono.
-- **Panel izquierdo:** la pestaña *Formas* (piezas para crear) y la pestaña *Escena* (lista de todo lo que hay). Tiene tres estados (ver más abajo).
+- **Panel izquierdo:** la *Escena*, un árbol con todo lo que hay (carpetas para los grupos, icono por tipo y una muestra del color de cada objeto) y **Vaciar cama** al pie. Se muestra u oculta con su tirador (ver más abajo).
 - **Visor 3D:** la cama de tu impresora con la rejilla. Abajo ves el tamaño de la selección y la cama activa.
 - **Panel derecho (contextual):** muestra una sola cosa según lo que estés haciendo:
-  - **Sin selección, el *Proyecto*:** nombre, si hay cambios sin guardar, cantidad de objetos, cama activa y unidades (con **Cambiar unidades o cama**).
+  - **Sin selección (o con el botón *Proyecto*), el *Proyecto*:** nombre (el lápiz lo vuelve editable: **Enter** confirma, **Esc** cancela), si hay cambios sin guardar, cantidad de objetos, y cama activa y unidades, cada una con su lápiz que abre el selector ahí mismo. Debajo, **Nuevo**, **Abrir**, **Guardar** y **Guardar como** (con sus atajos en el tooltip), los proyectos recientes y la nota de rutas.
   - **Con un objeto, su resumen:** nombre, tipo de volumen, material y color, parámetros, posición, rotación y escala, medidas y estado de la malla, y debajo los accesos a sus operaciones (*Ahuecar…*, *Simplificar…*, *Textura superficial…*, *Módulos…*, revisar e imprimir, detectar estructuras, cortar, dividir, ajustar a la impresora, molde, proyectar y rosca). Con varios objetos, las booleanas y la alineación.
   - **Con una operación activa, solo sus opciones:** el título, sobre qué objeto actúa, su botón de aplicar y **Volver** (o **Esc**) para regresar al resumen. Al abrir una operación el foco pasa al panel y, al volver, regresa al botón desde el que la abriste. Cortar, Dividir para imprimir, Ajustar a la impresora, Molde, Proyectar, Rosca y Medir abren su propio panel en el mismo lugar.
   - **Ancho y plegado:** arrastra el borde izquierdo del panel (o enfócalo con **Tab** y usa **←** / **→**; **Inicio** y **Fin** van al mínimo y al máximo) para ensancharlo o reducirlo. El botón **›** del borde lo pliega a una tira y **‹** lo vuelve a abrir; ancho y estado se recuerdan. Si eliges una operación con el panel plegado, se abre solo.
@@ -21,11 +21,11 @@ Esta guía te lleva de la pantalla vacía a una escena con tres piezas que puede
 
 ### Menú Acciones
 
-Reúne las operaciones sobre la selección que no son herramientas de puntero: *Ahuecar*, *Dividir para imprimir*, *Ajustar a la impresora*, *Generar molde*, *Módulos*, *Reparar malla*, *Simplificar*, *Textura superficial*, *Separar por colores*, *Separar piezas sueltas*, *Agrupar*, *Combinar*, *Aplicar restas*, *Convertir en ▸*, *Apoyar* y *Centrar en la cama*, *Alinear y distribuir ▸* y las revisiones. Cada una hace lo mismo que en el menú contextual o la paleta; las que tienen opciones (Ahuecar, Simplificar, Textura, Módulos, las revisiones) las muestran en el panel derecho. Si una sale gris, debajo dice por qué (por ejemplo «Selecciona un objeto primero»).
+Está dividido en submenús, uno por grupo y con su icono (*Preparar para imprimir*, *Malla*, *Separar y combinar*, *Posición y tipo*, *Analizar*): **→** o el cursor abre el grupo y **←** vuelve. Reúne las operaciones sobre la selección que no son herramientas de puntero: *Ahuecar*, *Dividir para imprimir*, *Ajustar a la impresora*, *Generar molde*, *Módulos*, *Reparar malla*, *Simplificar*, *Textura superficial*, *Separar por colores*, *Separar piezas sueltas*, *Agrupar*, *Combinar*, *Aplicar restas*, *Convertir en ▸*, *Apoyar* y *Centrar en la cama*, *Alinear y distribuir ▸* y las revisiones. Cada una hace lo mismo que en el menú contextual o la paleta; las que tienen opciones (Ahuecar, Simplificar, Textura, Módulos, las revisiones) las muestran en el panel derecho. Si una sale gris, debajo dice por qué (por ejemplo «Selecciona un objeto primero»).
 
 ### Rótulos: iconos con texto o solo iconos
 
-El botón **Rótulos** (*Aa*) alterna todas las barras a la vez entre iconos con texto e iconos solos; la elección se recuerda (también está en la paleta: «Mostrar u ocultar rótulos»). *Importar* y *Exportar* conservan su texto siempre. En modo solo iconos, cada icono muestra un tooltip con su nombre, qué hace y su atajo, con el cursor o con el foco del teclado; **Esc** lo cierra.
+El botón **Rótulos** (*Aa*) alterna todas las barras a la vez entre iconos con texto e iconos solos; la elección se recuerda (también está en la paleta: «Mostrar u ocultar rótulos»). *Importar* y *Exportar* conservan su texto siempre, y el estado del puente conserva «MCP» y su indicador. En modo solo iconos, cada icono muestra un tooltip con su nombre, qué hace y su atajo, con el cursor o con el foco del teclado; **Esc** lo cierra.
 
 ## Los ejes
 
@@ -33,7 +33,7 @@ Kura3D usa los mismos ejes que los laminadores: **X hacia la derecha, Y hacia el
 
 ## Crear, mover, girar y escalar
 
-1. En *Formas* pulsa **Cubo**, **Cilindro** y **Esfera**. Cada pieza nueva aparece en un lugar libre de la cama, sin quedar encima de otra.
+1. Pulsa **Agregar** en la barra de herramientas (o **Insertar** en la barra superior) y elige **Cubo**; repite con **Cilindro** y **Esfera**. Con el teclado: enfoca **Agregar**, **→** abre el menú, las flechas recorren y **Enter** crea; **Esc** cierra y vuelve al botón. En el teléfono, la hoja **Agregar** de la barra inferior tiene las mismas piezas. Cada pieza nueva aparece en un lugar libre de la cama, sin quedar encima de otra.
 2. Haz clic en una pieza para seleccionarla. El inspector muestra su nombre, su color y sus parámetros (por ejemplo *Ancho*, *Fondo* y *Alto*): cámbialos escribiendo un valor.
 3. Elige el modo en la barra de herramientas o con el teclado: **M** mover, **R** rotar, **S** escalar. Arrastra las flechas del manipulador.
 4. Para valores exactos, escribe en *Posición*, *Rotación* y *Escala* del inspector. Los campos aceptan operaciones y unidades (`10+5`, `2cm`).
@@ -42,7 +42,7 @@ Kura3D usa los mismos ejes que los laminadores: **X hacia la derecha, Y hacia el
 
 ![Escena con una caja seleccionada, un cilindro y una esfera](img/primeros-pasos-02-interfaz.png)
 
-![Panel Formas: primitivas, generadores y escena rápida](img/primeros-pasos-03-formas.png)
+![Menú Agregar con las formas básicas](img/primeros-pasos-03-formas.png)
 
 ![Inspector de la caja seleccionada](img/primeros-pasos-04-inspector.png)
 
@@ -62,13 +62,11 @@ Las medidas exteriores no cambian: una caja de 40 × 30 × 20 mm con las esquina
 
 Arrastra para orbitar y usa la rueda para acercar. Las teclas **1** (frente), **2** (derecha), **3** (isométrica) y **7** (superior) cambian la vista, y **F** encuadra lo seleccionado o toda la escena. El cubo de vistas de la esquina superior derecha también sirve.
 
-## Barra lateral: completa, compacta u oculta
+## Barra lateral: mostrar u ocultar la Escena
 
-El tirador del borde del panel izquierdo (la pestaña con la flecha) recorre tres estados con cada clic: **completa** (iconos y texto), **compacta** (solo iconos, una columna angosta) y **oculta**. Con clic derecho sobre el tirador, o `Mayús+F10` con el foco en él, eliges uno directamente. También están en la paleta de comandos (**Ctrl+K**, «Barra lateral»). Kura3D recuerda tu elección, y el modo sin distracciones (**Ctrl+Mayús+Enter**) no la cambia.
+El tirador del borde del panel izquierdo (la pestaña con la flecha) muestra u oculta la *Escena* con un clic (o **Enter** con el foco en él); oculta, el visor gana ese ancho. También está en la paleta de comandos (**Ctrl+K**, «Barra lateral»). Kura3D recuerda tu elección, y el modo sin distracciones (**Ctrl+Mayús+Enter**) no la cambia.
 
-En la barra compacta cada icono muestra su nombre al pasar el cursor. La pestaña *Escena* no cabe en ella: pulsa su icono y luego **Expandir la barra** para ver la lista.
-
-![Barra lateral compacta: solo iconos de formas, generadores y acciones](img/primeros-pasos-05-barra-compacta.png)
+![Barra lateral oculta: el visor ocupa el ancho](img/primeros-pasos-05-barra-compacta.png)
 
 ## Vista sin cama
 

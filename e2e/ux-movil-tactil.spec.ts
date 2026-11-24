@@ -1,7 +1,7 @@
 /**
  * @file e2e/ux-movil-tactil.spec.ts
  * @description Áreas táctiles a 390 px: recorre los controles interactivos visibles de las vistas principales
- * (escena vacía, objeto seleccionado, hojas Formas/Inspector/Medir, menú Más, chat de IA) y falla si alguno
+ * (escena vacía, objeto seleccionado, hojas Agregar/Inspector/Medir, menú Más, chat de IA) y falla si alguno
  * mide menos de 44x44; comprueba que los avisos no tapan la hoja ni la barra; panel de IA y visor en
  * escritorio (1280 px). Capturas en .eval-tmp/ux-movil.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -50,8 +50,8 @@ test.describe('390 px táctil', () => {
     await medir('escena vacía');
     await crearCubo(page);
     await medir('objeto seleccionado');
-    await page.getByRole('button', { name: 'Formas', exact: true }).tap();
-    await medir('hoja Formas');
+    await page.getByRole('button', { name: 'Agregar', exact: true }).tap();
+    await medir('hoja Agregar');
     await page.getByRole('button', { name: 'Escena', exact: true }).tap({ timeout: 4000 }).catch(() => undefined);
     await medir('hoja Escena');
     await page.getByRole('button', { name: 'Inspector', exact: true }).tap();

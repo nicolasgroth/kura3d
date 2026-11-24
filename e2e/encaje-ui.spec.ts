@@ -11,6 +11,7 @@
  * @license MIT
  */
 import { expect, test, type Page } from '@playwright/test';
+import { itemAccion } from './acciones-helpers';
 import { abrir } from './ux-escena-helpers';
 
 const cmd = async (page: Page, command: string, params: Record<string, unknown>) => {
@@ -31,8 +32,7 @@ async function escena(page: Page, pocket: number) {
 }
 
 async function abrirEncaje(page: Page) {
-  await page.getByRole('button', { name: 'Acciones', exact: true }).first().click();
-  await page.getByRole('menuitem', { name: /Comprobar encaje/ }).click();
+  await (await itemAccion(page, 'Comprobar encaje…')).click();
   const panel = page.locator('#kura-inspector-panel');
   await expect(panel.getByRole('heading', { name: 'Comprobar encaje' })).toBeVisible();
   return panel;
@@ -48,8 +48,7 @@ test('encaje: choque con recomendación, agrandar el bolsillo, resaltado, cancel
   await abrir(page);
 
   // Sin objetos, la acción está deshabilitada con su motivo.
-  await page.getByRole('button', { name: 'Acciones', exact: true }).first().click();
-  const item = page.getByRole('menuitem', { name: /Comprobar encaje/ });
+  const item = await itemAccion(page, 'Comprobar encaje…');
   await expect(item).toBeDisabled();
   await expect(page.locator('.kura-actions-layer')).toContainText('Hacen falta dos objetos visibles');
   await page.keyboard.press('Escape');

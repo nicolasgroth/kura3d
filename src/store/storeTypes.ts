@@ -176,6 +176,10 @@ export interface KuraStoreState {
   projectLocation?: string;
   projectDraftId: string;
   projectRecovered: boolean;
+  /** El nombre cambió desde el último guardado (no se guarda en el `.kura`: es el nombre del archivo). */
+  projectRenamed: boolean;
+  /** Cambia el nombre del proyecto (se usa al guardar); vacío no se acepta. Marca cambios sin guardar. */
+  renameProject: (name: string) => boolean;
   savedProject: ProjectDocument | null;
   projectBusy: boolean;
   newProject: () => boolean;
@@ -258,6 +262,8 @@ export interface KuraStoreState {
   toggleZenMode: () => void;
   toggleLeftSidebar: () => void;
   toggleRightInspector: () => void;
+  /** Muestra el contexto «Proyecto» del panel derecho: quita la selección y la acción activa y abre el panel. */
+  showProjectPanel: () => void;
   setSectionPlane: (patch: Partial<{ enabled: boolean; heightMm: number }>) => void;
   setShowOverhangs: (show: boolean) => void;
   clearPrintReport: () => void;

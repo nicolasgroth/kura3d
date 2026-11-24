@@ -7,6 +7,7 @@
  * @license MIT
  */
 import { test, expect } from '@playwright/test';
+import { agregarForma } from './agregar-helpers';
 
 const URL = process.env.KURA_URL ?? 'http://127.0.0.1:5189/';
 const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/ux-texto';
@@ -31,7 +32,7 @@ test('menú del fondo, menú del objeto y error de SVG dentro del diálogo', asy
   await page.keyboard.press('Escape');
 
   // Cubo de la barra lateral → menú del objeto: entra completo en la ventana.
-  await page.getByRole('button', { name: /^Cubo$/ }).first().click();
+  await agregarForma(page, /^Cubo$/);
   await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.55, { button: 'right' });
   const objMenu = page.getByRole('menu').first();
   if (await objMenu.isVisible()) {

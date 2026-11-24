@@ -44,7 +44,8 @@ async function readSaveBytes(data: ProjectBytes): Promise<Uint8Array> {
   return bytes;
 }
 
-function normalizeFileName(defaultName: string): string {
+/** Nombre de archivo `.kura` válido (sin caracteres prohibidos ni puntos finales, con la extensión). */
+export function normalizeFileName(defaultName: string): string {
   const name = defaultName.trim().replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').replace(/[. ]+$/, '');
   if (!name) return `Proyecto${EXTENSION}`;
   return name.toLowerCase().endsWith(EXTENSION) ? name : `${name}${EXTENSION}`;

@@ -8,6 +8,7 @@
  * @license MIT
  */
 import { test, expect, type Page } from '@playwright/test';
+import { agregarForma } from './agregar-helpers';
 
 const URL = process.env.KURA_URL ?? 'http://127.0.0.1:5198/';
 
@@ -25,7 +26,7 @@ test('SVG: válido crea sólido; roto, vacío y texto plano dan error y no crean
   await fresh(page);
   const ok = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path fill-rule="evenodd" d="M5 5H55V55H5Z M20 20H40V40H20Z"/><rect x="65" y="65" width="30" height="30"/></svg>';
   const bad = ['<svg xmlns="http://www.w3.org/2000/svg"><path d="M5 5 L', '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>', 'esto no es un svg'];
-  await page.getByRole('button', { name: 'Importar SVG' }).click();
+  await agregarForma(page, 'Importar SVG');
   for (const code of bad) {
     await page.locator('textarea:visible').fill(code);
     await page.getByRole('button', { name: 'Extruir SVG en 3D' }).click();
@@ -43,7 +44,7 @@ test('SVG: válido crea sólido; roto, vacío y texto plano dan error y no crean
 
 test('Texto 3D: emoji y chino dan error claro; Kura3D se crea y deshacer lo revierte', async ({ page }) => {
   await fresh(page);
-  await page.getByRole('button', { name: 'Texto 3D' }).first().click();
+  await agregarForma(page, 'Texto 3D');
   const inp = page.locator('#kura-text3d-input');
   for (const t of ['😀🚀', '你好世界']) {
     await inp.fill(t);
@@ -60,7 +61,7 @@ test('Texto 3D: emoji y chino dan error claro; Kura3D se crea y deshacer lo revi
 
 test('Molde: esfera sin embudo explica la cavidad sellada; con embudo crea 2 piezas y deshacer revierte', async ({ page }) => {
   await fresh(page);
-  await page.getByRole('button', { name: 'Esfera' }).first().click();
+  await agregarForma(page, 'Esfera');
   await page.getByRole('button', { name: 'Generar Molde / Silicona' }).click();
   await page.locator('#mold-split').selectOption({ index: 0 });
   await page.getByRole('combobox', { name: 'Arquitectura del molde' }).selectOption({ index: 1 });
@@ -78,7 +79,7 @@ test('Molde: esfera sin embudo explica la cavidad sellada; con embudo crea 2 pie
 
 test('Proyectar texto en cubo: el eje superior crece Z, el frontal crece Y; deshacer restaura', async ({ page }) => {
   await fresh(page);
-  await page.getByRole('button', { name: 'Cubo' }).first().click();
+  await agregarForma(page, 'Cubo');
   for (const [index, grows] of [[0, '30 mm × 30 mm × 31,2 mm'], [2, '30 mm × 31,2 mm × 30 mm']] as const) {
     await page.getByRole('button', { name: 'Proyectar Texto/SVG en Superficie' }).click();
     await page.locator('#proj-axis').selectOption({ index });

@@ -1,7 +1,7 @@
 /**
  * @file e2e/rediseno-movil.spec.ts
  * @description Rediseño en móvil (390 px): sin desplazamiento horizontal de página, la barra de vista entra
- * entera en la pantalla, no se duplica la pestaña «Formas», las herramientas siguen alcanzables (menú «Más») y
+ * entera en la pantalla, no se duplica la pestaña «Agregar», las herramientas siguen alcanzables (menú «Más») y
  * los controles de las barras miden al menos 44 px en táctil.
  * Ejecuta con `KURA_URL=… npx playwright test e2e/rediseno-movil.spec.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -42,9 +42,9 @@ test('390 px: barra de vista completa, sin scroll horizontal, herramientas alcan
   await page.keyboard.press('Escape');
 });
 
-test('390 px: la pestaña «Formas» no se duplica al abrir la hoja', async ({ page }) => {
+test('390 px: la pestaña «Agregar» no se duplica al abrir la hoja', async ({ page }) => {
   await abrir(page);
-  const formas = page.getByRole('button', { name: /^Formas$/ }).or(page.getByRole('tab', { name: /^Formas$/ }));
+  const formas = page.getByRole('button', { name: /^Agregar$/ }).or(page.getByRole('tab', { name: /^Agregar$/ }));
   const visibles = async () => {
     const all = await formas.all();
     let n = 0;
@@ -52,7 +52,7 @@ test('390 px: la pestaña «Formas» no se duplica al abrir la hoja', async ({ p
     return n;
   };
   expect(await visibles()).toBeLessThanOrEqual(1);
-  await page.getByRole('button', { name: 'Formas', exact: true }).tap();
+  await page.getByRole('button', { name: 'Agregar', exact: true }).tap();
   await page.waitForTimeout(400);
   expect(await visibles()).toBeLessThanOrEqual(1);
   await page.screenshot({ path: 'G:/proyectos/kura3d/.eval-tmp/rediseno/movil-formas.png' });

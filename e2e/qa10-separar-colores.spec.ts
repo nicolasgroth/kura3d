@@ -9,6 +9,7 @@
  * @license MIT
  */
 import { test, expect, type Page } from '@playwright/test';
+import { agregarForma } from './agregar-helpers';
 
 const URL = process.env.KURA_URL ?? 'http://127.0.0.1:5206/';
 
@@ -37,7 +38,7 @@ async function abrir(page: Page) {
 }
 
 async function crearCubo(page: Page, dims: [string, string][]) {
-  await page.getByRole('button', { name: 'Cubo', exact: true }).click();
+  await agregarForma(page, 'Cubo');
   for (const [n, v] of dims) { const t = page.getByRole('spinbutton', { name: n, exact: true }).first(); await t.fill(v); await t.press('Enter'); }
   await page.waitForTimeout(500);
 }

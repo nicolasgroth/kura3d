@@ -65,7 +65,7 @@ test('390 px: F3 abre la Escena y el botón Escena queda marcado', async ({ page
   await page.keyboard.press('F3');
   const barra = page.getByRole('toolbar', { name: 'Paneles' });
   await expect(barra.getByRole('button', { name: 'Escena' })).toHaveAttribute('aria-expanded', 'true');
-  await expect(barra.getByRole('button', { name: 'Formas' })).toHaveAttribute('aria-expanded', 'false');
+  await expect(barra.getByRole('button', { name: 'Agregar' })).toHaveAttribute('aria-expanded', 'false');
 });
 
 test('1024 px: el panel lateral sigue el contexto (claro y oscuro)', async ({ page }) => {

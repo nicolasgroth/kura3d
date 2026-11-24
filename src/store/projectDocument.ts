@@ -91,7 +91,7 @@ function sameGroups(a: SceneGroup[] | undefined, b: SceneGroup[] | undefined): b
 }
 
 export function isProjectDirty(state: KuraStoreState): boolean {
-  if (state.projectRecovered) return true;
+  if (state.projectRecovered || state.projectRenamed) return true;
   return state.savedProject ? hasProjectChanged(state.savedProject, state) : state.objects.length > 0;
 }
 

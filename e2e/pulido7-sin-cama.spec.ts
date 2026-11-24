@@ -9,6 +9,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';
+import { agregarForma } from './agregar-helpers';
 
 const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/pulido7';
 
@@ -17,7 +18,7 @@ test.describe('escritorio', () => {
 
   test('con la cama oculta el chip dice «Cama oculta», no alarma y al pulsarlo vuelve la cama', async ({ page }) => {
     await abrir(page);
-    await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
+    await agregarForma(page, 'Cubo');
     // Un objeto más ancho que la cama: fuera de volumen
     await page.evaluate(() => { const s = (window as any).__s.getState(); s.setObjectTransform(s.objects[0].id, { scale: [20, 1, 1] }); });
     const pie = page.locator('.kura-hud-bottom');

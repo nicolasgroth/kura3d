@@ -22,7 +22,6 @@ test('corte por plano en X: mitades con su eje en el árbol y en el aviso', asyn
   expect(nombres.some((n) => /mitad A \(X−\)/.test(n))).toBe(true);
   expect(nombres.some((n) => /mitad B \(X\+\)/.test(n))).toBe(true);
   await expect(page.getByText(/Corte por plano completado: mitad A \(X−\) y mitad B \(X\+\)/)).toBeVisible();
-  await page.getByRole('tab', { name: /Escena/ }).first().click();
   await expect(page.locator('.kura-scene-tree').getByText(/mitad A \(X−\)/)).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/6-mitades.png` });
   expect(errs).toEqual([]);

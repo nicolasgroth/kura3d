@@ -45,7 +45,6 @@ test('rótulos de pieza en el plan y en el resultado, con los códigos del árbo
   const vistos = await rotulosVisibles(page);
   for (const c of vistos) expect(codigos).toContain(c);
   // Mismo texto que el árbol de Escena (nombres de pieza con su código).
-  await page.getByRole('tab', { name: /Escena/ }).first().click();
   const arbol = await page.locator('.kura-sidebar-left').first().innerText();
   for (const c of vistos) expect(arbol).toContain(c);
   await page.screenshot({ path: `${SHOTS}/1-resultado-claro.png` });

@@ -1,6 +1,6 @@
 /**
  * @file src/styles/studio-panels.css
- * @description Paneles laterales: primitivas, escena, rail compacto y bordes colapsables. Parte de studio.css (se importa en orden desde allí).
+ * @description Paneles laterales: primitivas, escena y bordes colapsables. Parte de studio.css (se importa en orden desde allí).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -88,27 +88,6 @@
   left: -18px;
   border-right: none;
   border-radius: 7px 0 0 7px;
-}
-
-/* Rail vertical compacto (56px) para LeftSidebar en modo Compacto */
-.kura-compact-rail {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 4px;
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-  scrollbar-width: none;
-}
-
-.kura-compact-rail-sep {
-  width: 28px;
-  height: 1px;
-  background: var(--border-subtle);
-  margin: 2px 0;
-  flex-shrink: 0;
 }
 
 /* Píldora para salir de Modo Zen en la primera fila del HUD */

@@ -1,0 +1,66 @@
+/**
+ * @file src/styles/sceneTreeSwatch.css
+ * @description Muestra de color en las filas del árbol de la escena (cuadradito, partido o puntitos con «+N»,
+ * con borde para que el blanco y el negro se vean en ambos temas) y guías de jerarquía más claras: línea
+ * vertical por nivel y un trazo horizontal hacia cada fila anidada, como un árbol de carpetas.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-tree-swatch-wrap {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.kura-tree-swatch {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+
+.kura-tree-swatch-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.kura-tree-swatch-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+
+.kura-tree-swatch-more {
+  font-size: 10px;
+  line-height: 1;
+  color: var(--text-secondary);
+}
+
+/* Guías del árbol: la vertical del nivel, más visible, y un codo horizontal hacia la fila. */
+.kura-scene-tree .kura-tree-row.kura-tree-row[aria-level]:not([aria-level='1'])::before {
+  top: 0;
+  bottom: 0;
+  border-left-color: var(--border-strong);
+}
+
+.kura-scene-tree .kura-tree-row.kura-tree-row[aria-level]:not([aria-level='1'])::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(var(--tree-level, 0) * 16px - 6px);
+  width: 8px;
+  border-top: 1px solid var(--border-strong);
+  pointer-events: none;
+}
+
+@media (forced-colors: active) {
+  .kura-tree-swatch,
+  .kura-tree-swatch-dot {
+    forced-color-adjust: none;
+  }
+}

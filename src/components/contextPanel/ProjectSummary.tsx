@@ -1,7 +1,8 @@
 /**
  * @file src/components/contextPanel/ProjectSummary.tsx
- * @description Contexto «Proyecto» del panel derecho (sin selección): nombre, archivo, estado de guardado,
- * cantidad de objetos, cama activa y unidades, con acceso a cambiar unidades o cama; debajo, la leyenda de
+ * @description Contexto «Proyecto» del panel derecho (sin selección o desde el botón «Proyecto»): nombre editable
+ * en línea, archivo, estado de guardado, cantidad de objetos, y cama activa y unidades editables ahí mismo con
+ * su lápiz; debajo, las acciones de archivo (Nuevo, Abrir, Guardar, Guardar como, recientes), la leyenda de
  * filamentos y las operaciones de escena (acomodar en cuadrícula, aplicar restas). Solo muestra datos que el
  * proyecto ya tiene: no hay descripción ni fechas en el modelo de datos.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -9,18 +10,23 @@
  * @license MIT
  */
 
-import React from 'react';
-import { Combine, Grid, Ruler } from 'lucide-react';
+import React, { useId } from 'react';
+import { Combine, Grid } from 'lucide-react';
 import { isNegative, isSolid } from '../../core/scene/objectRole';
 import { getLocalizedPrinterName, t } from '../../i18n';
 import { isProjectDirty, useKuraStore } from '../../store/useKuraStore';
 import { formatDimension } from '../../utils/units';
 import { toUserSize } from '../../core/scene/displayAxes';
 import { FilamentLegendCard } from '../inspector/FilamentLegendCard';
+import { BedProfileSelect } from '../fitToBed/BedProfileSelect';
+import { UNIT_OPTIONS } from '../settings/MeasuresFields';
+import type { UnitSystem } from '../../types/kura';
+import { InlineFactEditor } from './InlineFactEditor';
+import { ProjectFileActions } from './ProjectFileActions';
+import { ProjectNameField } from './ProjectNameField';
 
 export const ProjectSummary: React.FC = () => {
   const language = useKuraStore((s) => s.language);
-  const projectName = useKuraStore((s) => s.projectName);
   const projectLocation = useKuraStore((s) => s.projectLocation);
   const objects = useKuraStore((s) => s.objects);
   const unitSystem = useKuraStore((s) => s.unitSystem);
@@ -28,7 +34,8 @@ export const ProjectSummary: React.FC = () => {
   const custom = useKuraStore((s) => s.customBedDimensions);
   const dirty = useKuraStore(isProjectDirty);
   const busyOperation = useKuraStore((s) => s.busyOperation);
-  const requestMeasuresPopover = useKuraStore((s) => s.requestMeasuresPopover);
+  const setUnitSystem = useKuraStore((s) => s.setUnitSystem);
+  const unitSelectId = useId();
   const alignSelectedObjects = useKuraStore((s) => s.alignSelectedObjects);
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
 
@@ -37,7 +44,7 @@ export const ProjectSummary: React.FC = () => {
   // Tamaño interno [x, y(alto), z]; toUserSize lo entrega como ancho × fondo × alto del usuario.
   const bed = toUserSize(custom ? [custom.width, custom.height, custom.depth] : [printerProfile.bedWidthMm, printerProfile.maxHeightMm, printerProfile.bedDepthMm]);
   const bedSize = bed.map((mm) => formatDimension(mm, unitSystem, 0, language)).join(' × ');
-  const name = projectName ?? t(language, 'app.untitled');
+  const printerName = getLocalizedPrinterName(language, printerProfile);
 
   return (
     <>
@@ -45,7 +52,7 @@ export const ProjectSummary: React.FC = () => {
         <p className="kura-ctx-hint">{t(language, 'inspector.emptyTitle')}</p>
         <dl className="kura-ctx-facts">
           <dt>{t(language, 'panel.project.name')}</dt>
-          <dd title={name}>{name}</dd>
+          <dd className="kura-fact-dd" data-testid="panel-project-name"><ProjectNameField /></dd>
           {projectLocation && (
             <>
               <dt>{t(language, 'panel.project.location')}</dt>
@@ -57,19 +64,32 @@ export const ProjectSummary: React.FC = () => {
           <dt>{t(language, 'panel.project.objects')}</dt>
           <dd data-testid="panel-project-count">{objects.length}</dd>
           <dt>{t(language, 'panel.project.bed')}</dt>
-          <dd title={`${getLocalizedPrinterName(language, printerProfile)} · ${bedSize}`}>
-            {getLocalizedPrinterName(language, printerProfile)}
-            <span className="kura-ctx-sub">{bedSize}</span>
+          <dd className="kura-fact-dd">
+            <InlineFactEditor
+              help="project.bed"
+              testId="panel-project-bed-edit"
+              title={`${printerName} · ${bedSize}`}
+              value={<>{printerName}<span className="kura-ctx-sub">{bedSize}</span></>}
+            >
+              <BedProfileSelect />
+            </InlineFactEditor>
           </dd>
           <dt>{t(language, 'panel.project.units')}</dt>
-          <dd>{unitSystem}</dd>
+          <dd className="kura-fact-dd">
+            <InlineFactEditor help="project.units" testId="panel-project-units-edit" value={unitSystem}>
+              <label className="kura-field-label" htmlFor={unitSelectId}>{t(language, 'dialog.settings.unitLabel')}</label>
+              <select id={unitSelectId} className="kura-select" value={unitSystem} onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}>
+                {UNIT_OPTIONS.map((unit) => (
+                  <option key={unit} value={unit}>{unit}</option>
+                ))}
+              </select>
+            </InlineFactEditor>
+          </dd>
         </dl>
-        <button type="button" className="kura-btn kura-btn-sm" title={t(language, 'panel.project.change')} onClick={() => requestMeasuresPopover('printer')}>
-          <Ruler size={13} aria-hidden="true" />
-          <span>{t(language, 'panel.project.change')}</span>
-        </button>
         <p className="kura-ctx-hint">{t(language, 'panel.project.hint')}</p>
       </section>
+
+      <ProjectFileActions />
 
       <FilamentLegendCard />
 

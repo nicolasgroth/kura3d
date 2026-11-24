@@ -45,6 +45,7 @@ import { UX7_HI } from './ux7';
 import { REDISENO_HI } from './rediseno';
 import { PANEL_HI } from './panel';
 import { ENCAJE_UI_HI } from './encajeUi';
+import { REDISENO3A_HI } from './rediseno3a';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -87,6 +88,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...REDISENO_HI,
   ...PANEL_HI,
   ...ENCAJE_UI_HI,
+  ...REDISENO3A_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',
@@ -209,11 +211,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'topbar.moreTip': 'ऊपरी बार के और नियंत्रण',
 
   // Barra lateral izquierda (LeftSidebar)
-  'sidebar.tab.shapes': 'आकृतियाँ',
   'sidebar.tab.scene': 'दृश्य',
-  'sidebar.shapes.primitivesTitle': 'पैरामेट्रिक मूल आकृतियाँ',
-  'sidebar.shapes.generatorsTitle': '2D → 3D जनरेटर',
-  'sidebar.shapes.quickActionsTitle': 'त्वरित दृश्य',
   'sidebar.shapes.createStarter': '30 mm कैलिब्रेशन घन',
   'sidebar.shapes.clearScene': 'बेड साफ़ करें',
   'sidebar.generators.thread': 'ISO थ्रेड (M3–M64)',
@@ -910,7 +908,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'toast.less': 'कम दिखाएँ',
   'toast.lessTip': 'पिछली सूचनाएँ समेटें',
   'narrow.bar.label': 'पैनल',
-  'narrow.bar.shapesTip': 'आकृतियाँ शीट खोलें या बंद करें (Escape बंद करता है)',
   'narrow.bar.inspectorTip': 'इंस्पेक्टर शीट खोलें या बंद करें (Escape बंद करता है)',
   'toast.refineDone': 'मेश परिष्कृत किया गया ({tris} त्रिभुज)',
   'toast.hullDone': 'उत्तल आवरण (Hull) बनाया गया',

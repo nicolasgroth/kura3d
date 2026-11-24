@@ -37,40 +37,7 @@ const UX6 = {
   'ux6.bed.shortcut': { es: 'Mostrar u ocultar la cama', en: 'Show or hide the bed', de: 'Druckbett ein- oder ausblenden', fr: 'Afficher ou masquer le plateau', hi: 'बेड दिखाएँ या छिपाएँ', zh: '显示或隐藏打印床' },
 
   // Barra lateral izquierda de tres estados
-  'ux6.sidebar.mode.full': { es: 'completa', en: 'full', de: 'vollständig', fr: 'complète', hi: 'पूरी', zh: '完整' },
-  'ux6.sidebar.mode.compact': { es: 'compacta', en: 'compact', de: 'kompakt', fr: 'compacte', hi: 'संक्षिप्त', zh: '紧凑' },
-  'ux6.sidebar.mode.hidden': { es: 'oculta', en: 'hidden', de: 'ausgeblendet', fr: 'masquée', hi: 'छिपी', zh: '隐藏' },
-  'ux6.sidebar.handle': {
-    es: 'Barra lateral {mode}: pasar a {next}',
-    en: 'Sidebar {mode}: switch to {next}',
-    de: 'Seitenleiste {mode}: zu {next} wechseln',
-    fr: 'Barre latérale {mode} : passer en {next}',
-    hi: 'साइडबार {mode}: {next} पर जाएँ',
-    zh: '侧边栏{mode}:切换为{next}',
-  },
-  'ux6.sidebar.handleTip': {
-    es: 'Barra lateral {mode}. Clic: pasar a {next}. Clic derecho o Mayús+F10: elegir el estado.',
-    en: 'Sidebar {mode}. Click: switch to {next}. Right-click or Shift+F10: choose the state.',
-    de: 'Seitenleiste {mode}. Klick: zu {next} wechseln. Rechtsklick oder Umschalt+F10: Zustand wählen.',
-    fr: 'Barre latérale {mode}. Clic : passer en {next}. Clic droit ou Maj+F10 : choisir l’état.',
-    hi: 'साइडबार {mode}। क्लिक: {next} पर जाएँ। राइट-क्लिक या Shift+F10: स्थिति चुनें।',
-    zh: '侧边栏{mode}。单击:切换为{next}。右键或 Shift+F10:选择状态。',
-  },
-  'ux6.sidebar.menu': { es: 'Estado de la barra lateral', en: 'Sidebar state', de: 'Zustand der Seitenleiste', fr: 'État de la barre latérale', hi: 'साइडबार की स्थिति', zh: '侧边栏状态' },
-  'ux6.sidebar.opt.full': { es: 'Completa (iconos y texto)', en: 'Full (icons and text)', de: 'Vollständig (Symbole und Text)', fr: 'Complète (icônes et texte)', hi: 'पूरी (आइकन और पाठ)', zh: '完整(图标和文字)' },
-  'ux6.sidebar.opt.compact': { es: 'Compacta (solo iconos)', en: 'Compact (icons only)', de: 'Kompakt (nur Symbole)', fr: 'Compacte (icônes seules)', hi: 'संक्षिप्त (केवल आइकन)', zh: '紧凑(仅图标)' },
-  'ux6.sidebar.opt.hidden': { es: 'Oculta', en: 'Hidden', de: 'Ausgeblendet', fr: 'Masquée', hi: 'छिपी', zh: '隐藏' },
-  'ux6.sidebar.cmdFull': { es: 'Barra lateral completa', en: 'Full sidebar', de: 'Vollständige Seitenleiste', fr: 'Barre latérale complète', hi: 'पूरी साइडबार', zh: '完整侧边栏' },
-  'ux6.sidebar.cmdCompact': { es: 'Barra lateral compacta (solo iconos)', en: 'Compact sidebar (icons only)', de: 'Kompakte Seitenleiste (nur Symbole)', fr: 'Barre latérale compacte (icônes seules)', hi: 'संक्षिप्त साइडबार (केवल आइकन)', zh: '紧凑侧边栏(仅图标)' },
   'ux6.sidebar.cmdHidden': { es: 'Ocultar la barra lateral', en: 'Hide the sidebar', de: 'Seitenleiste ausblenden', fr: 'Masquer la barre latérale', hi: 'साइडबार छिपाएँ', zh: '隐藏侧边栏' },
-  'ux6.sidebar.expandScene': {
-    es: 'Expandir la barra para ver la escena ({count} objetos)',
-    en: 'Expand the sidebar to see the scene ({count} objects)',
-    de: 'Seitenleiste erweitern, um die Szene zu sehen ({count} Objekte)',
-    fr: 'Déplier la barre pour voir la scène ({count} objets)',
-    hi: 'दृश्य देखने के लिए साइडबार फैलाएँ ({count} वस्तुएँ)',
-    zh: '展开侧边栏查看场景({count} 个对象)',
-  },
 
   // Medir
   'ux6.measure.missClick': { es: 'Haz clic en un punto de la pieza', en: 'Click a point on the part', de: 'Klicke auf einen Punkt des Teils', fr: 'Cliquez sur un point de la pièce', hi: 'भाग के किसी बिंदु पर क्लिक करें', zh: '点击零件上的一个点' },

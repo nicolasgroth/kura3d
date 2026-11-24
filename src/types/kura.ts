@@ -26,8 +26,8 @@ export const SUPPORTED_LANGUAGES: LanguageSpec[] = [
   { code: 'en', shortLabel: 'EN', nativeName: 'English' },
   { code: 'de', shortLabel: 'DE', nativeName: 'Deutsch' },
   { code: 'fr', shortLabel: 'FR', nativeName: 'Français' },
-  { code: 'hi', shortLabel: 'HI', nativeName: 'हिन्दी (Hindi)' },
-  { code: 'zh', shortLabel: 'ZH', nativeName: '中文 (简体)' },
+  { code: 'hi', shortLabel: 'HI', nativeName: 'हिन्दी' },
+  { code: 'zh', shortLabel: 'ZH', nativeName: '中文' },
 ];
 
 /** Unidades de medida soportadas. Internamente Kura3D siempre almacena geometría en milímetros (mm). */

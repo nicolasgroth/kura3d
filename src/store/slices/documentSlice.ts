@@ -9,7 +9,7 @@
 
 import * as engine from '../../engine';
 import { decodeProjectAsync, encodeProjectAsync } from '../../project/projectCodecClient';
-import { openProjectFile, saveProjectFile, SaveNotConfirmedError } from '../../project/projectFiles';
+import { normalizeFileName, openProjectFile, saveProjectFile, SaveNotConfirmedError } from '../../project/projectFiles';
 import { moveRecoveryDraft } from '../../project/projectRecoveryStorage';
 import { loadRecoveryDocument } from '../../project/recoveryDraftStore';
 import type { ProjectDocument } from '../../project/projectSchema';
@@ -47,6 +47,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
       projectLocation: location,
       projectDraftId: recoveredDraftId ?? makeProjectDraftId(),
       projectRecovered: Boolean(recoveredDraftId),
+      projectRenamed: false,
       savedProject: document,
       pendingDownloadSave: null,
       activeTool: 'select',
@@ -79,9 +80,19 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     projectName: null,
     projectDraftId: makeProjectDraftId(),
     projectRecovered: false,
+    projectRenamed: false,
     savedProject: null,
     pendingDownloadSave: null,
     projectBusy: false,
+
+    renameProject: (input) => {
+      if (get().projectBusy || !input.trim()) return false;
+      const name = normalizeFileName(input);
+      if (name === get().projectName) return true;
+      // Otro nombre es otro archivo: el próximo guardado pregunta dónde (no sobrescribe el anterior).
+      set({ projectName: name, projectLocation: undefined, projectRenamed: true });
+      return true;
+    },
 
     newProject: () => {
       if (get().projectBusy || !canChangeDocument()) return false;
@@ -155,7 +166,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     acknowledgeDownloadSave: () => {
       const pending = get().pendingDownloadSave;
       if (!pending) return;
-      set({ projectName: pending.name, savedProject: pending.document, projectRecovered: false, pendingDownloadSave: null });
+      set({ projectName: pending.name, savedProject: pending.document, projectRecovered: false, projectRenamed: false, pendingDownloadSave: null });
     },
 
     saveProject: async (saveAs = false) => {
@@ -184,7 +195,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
           get().addToast(tr('uxEscena.savedDownload', { name: saved.name }), 'info');
           return true;
         }
-        set({ projectName: saved.name, projectLocation: saved.location, savedProject: document, projectRecovered: false, pendingDownloadSave: null });
+        set({ projectName: saved.name, projectLocation: saved.location, savedProject: document, projectRecovered: false, projectRenamed: false, pendingDownloadSave: null });
         get().addToast(tr('fileProject.saved', { name: saved.name }), 'success');
         return true;
       } catch (error) {

@@ -10,6 +10,7 @@
  * @license MIT
  */
 import { test, expect, type Page } from '@playwright/test';
+import { itemAccion } from './acciones-helpers';
 import { abrir } from './ux-escena-helpers';
 
 /** Lee una propiedad del store. */
@@ -27,20 +28,33 @@ test.beforeEach(async ({ page }) => {
   await abrir(page);
 });
 
-test('sin selección: ítems deshabilitados con el motivo; teclado y Esc', async ({ page }) => {
+test('sin selección: un submenú por grupo con icono; ítems deshabilitados con el motivo; teclado y Esc', async ({ page }) => {
   const trigger = page.getByRole('button', { name: 'Acciones', exact: true });
   const menu = await abrirMenu(page);
+  // El menú principal es corto: solo los grupos, cada uno abre su submenú y lleva icono.
+  const grupos = menu.locator(':scope > .kura-context-subwrap > [aria-haspopup="menu"]');
+  await expect(grupos).toHaveCount(5);
   for (const group of ['Preparar para imprimir', 'Malla', 'Separar y combinar', 'Posición y tipo', 'Analizar']) {
-    await expect(menu.getByRole('group', { name: group })).toBeVisible();
+    const g = grupos.filter({ hasText: group });
+    await expect(g).toBeVisible();
+    await expect(g.locator('svg').first()).toBeVisible();
   }
-  const reparar = menu.getByRole('menuitem', { name: 'Reparar malla' });
-  await expect(reparar).toBeDisabled();
-  await expect(reparar).toContainText('Selecciona un objeto primero');
-  await expect(menu.getByRole('menuitem', { name: 'Generar molde…' })).toContainText('La escena está vacía');
+  // Teclado: el primer grupo tiene el foco; → abre su submenú y ← vuelve.
+  await expect(grupos.first()).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('menu', { name: 'Preparar para imprimir' })).toBeVisible();
+  await page.keyboard.press('ArrowLeft');
+  await expect(grupos.first()).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(menu).toBeHidden();
   await expect(trigger).toBeFocused();
+
+  const reparar = await itemAccion(page, 'Reparar malla');
+  await expect(reparar).toBeDisabled();
+  await expect(reparar).toContainText('Selecciona un objeto primero');
+  await expect(await itemAccion(page, 'Generar molde…')).toContainText('La escena está vacía');
   await page.screenshot({ path: 'G:/proyectos/kura3d/.eval-tmp/rediseno/acciones-vacio.png' });
+  await page.keyboard.press('Escape');
 });
 
 test('cada acción hace lo mismo que su entrada anterior y registra la acción activa', async ({ page }) => {
@@ -48,33 +62,29 @@ test('cada acción hace lo mismo que su entrada anterior y registra la acción a
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().selectedIds.length)).toBe(1);
 
   // Dividir para imprimir: el mismo diálogo que Shift+C.
-  let menu = await abrirMenu(page);
-  await expect(menu.getByRole('menuitem', { name: 'Dividir para imprimir…' })).toContainText('Shift+C');
-  await menu.getByRole('menuitem', { name: 'Dividir para imprimir…' }).click();
+  const dividir = await itemAccion(page, 'Dividir para imprimir…');
+  await expect(dividir).toContainText('Shift+C');
+  await dividir.click();
   expect(await st(page, 'activeDialog')).toBe('splitForBed');
   expect(await st(page, 'activeAction')).toBe('splitForBed');
   await page.evaluate(() => (window as any).__s.getState().setActiveDialog(null));
 
   // Generar molde: el mismo diálogo que Shift+M.
-  menu = await abrirMenu(page);
-  await menu.getByRole('menuitem', { name: 'Generar molde…' }).click();
+  await (await itemAccion(page, 'Generar molde…')).click();
   expect(await st(page, 'activeDialog')).toBe('mold');
   await page.evaluate(() => (window as any).__s.getState().setActiveDialog(null));
 
   // Ahuecar: lleva el inspector a su panel (como el menú contextual).
-  menu = await abrirMenu(page);
-  await menu.getByRole('menuitem', { name: 'Ahuecar…' }).click();
+  await (await itemAccion(page, 'Ahuecar…')).click();
   await expect(page.getByText(/Ahuecar/).first()).toBeVisible();
   expect(await st(page, 'activeAction')).toBe('hollow');
 
   // Simplificar: misma petición que el aviso de malla pesada.
-  menu = await abrirMenu(page);
-  await menu.getByRole('menuitem', { name: 'Simplificar…' }).click();
+  await (await itemAccion(page, 'Simplificar…')).click();
   expect(await page.evaluate(() => { const s = (window as any).__s.getState(); return s.simplifyRequest?.id === s.selectedIds[0]; })).toBe(true);
 
   // Convertir en ▸ Negativo: igual que el menú contextual.
-  menu = await abrirMenu(page);
-  await menu.getByRole('menuitem', { name: 'Convertir en' }).click();
+  await (await itemAccion(page, 'Convertir en')).click();
   await page.getByRole('menuitem', { name: 'Negativo' }).click();
   expect(await page.evaluate(() => (window as any).__s.getState().objects[0].role)).toBe('negative');
   expect(await st(page, 'activeAction')).toBe('convert');
@@ -84,8 +94,7 @@ test('cada acción hace lo mismo que su entrada anterior y registra la acción a
   expect(await st(page, 'activeAction')).toBe(null);
 
   // Agrupar pide dos objetos: deshabilitado con motivo.
-  menu = await abrirMenu(page);
-  await expect(menu.getByRole('menuitem', { name: 'Agrupar', exact: true })).toContainText('Selecciona dos o más objetos');
+  await expect(await itemAccion(page, 'Agrupar', true)).toContainText('Selecciona dos o más objetos');
   await page.screenshot({ path: 'G:/proyectos/kura3d/.eval-tmp/rediseno/acciones-menu.png' });
   await page.keyboard.press('Escape');
 });

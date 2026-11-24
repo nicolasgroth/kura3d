@@ -46,7 +46,6 @@ test('agrupar, anidar y deshacer: un paso por acción; Ctrl+G no actúa dentro d
   await page.keyboard.press('Control+z');
   expect((await estado()).grupos).toBe(0);
   // Ctrl+G dentro del buscador del árbol no agrupa.
-  await page.getByRole('tab', { name: /Escena/ }).click();
   await page.evaluate(() => { const s = (window as any).__s.getState(); s.selectObject(s.objects[0].id); s.selectObject(s.objects[1].id, true); });
   await page.getByRole('textbox', { name: 'Buscar en la escena' }).click();
   const antes = await estado();

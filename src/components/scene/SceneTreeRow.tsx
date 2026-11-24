@@ -2,7 +2,7 @@
  * @file src/components/scene/SceneTreeRow.tsx
  * @description Una fila del árbol de la escena (`treeitem`): sangría por nivel, flecha para plegar,
  * icono por tipo (grupo, sólido, negativo, texto, pieza de división, combinado), nombre o campo de
- * renombrar, contador de miembros y botones de ojo y candado (en un grupo aplican a todo). Los estados
+ * renombrar, muestra de color del objeto (`SceneColorSwatch`), contador de miembros y botones de ojo y candado (en un grupo aplican a todo). Los estados
  * se anuncian en texto, no solo con icono o color.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -22,6 +22,7 @@ import { tCount } from '../../utils/plural';
 import type { TreeRow } from './sceneTreeRows';
 import '../../styles/ux3Edicion.css';
 import { splitPieceDisplayName } from '../../core/scene/splitPieceName';
+import { SceneColorSwatch } from './SceneColorSwatch';
 
 export type DropPlace = 'before' | 'after' | 'inside';
 
@@ -132,6 +133,7 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
         <span className="kura-tree-icon" aria-hidden="true" style={obj && isSolid(obj) ? { color: obj.color } : undefined}>
           {type.icon}
         </span>
+        {obj && <SceneColorSwatch obj={obj} language={language} />}
         {renaming ? (
           <input
             className="kura-input kura-scene-rename"

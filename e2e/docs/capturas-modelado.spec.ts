@@ -111,7 +111,6 @@ test('grupos-y-escena', async ({ page }) => {
   await seleccionar(page, [a.id, b.id, c.id]);
   await page.keyboard.press('Control+g');
   await page.waitForTimeout(800);
-  await page.getByRole('tab', { name: /Escena/ }).click();
   await page.waitForTimeout(600);
   await captura(page, 'grupos-y-escena-01-arbol');
 });
@@ -151,6 +150,5 @@ test('colores-y-pintura', async ({ page }) => {
   await page.waitForFunction(() => (window as any).__s.getState().objects.length === 2, null, { timeout: 30_000 });
   await page.waitForTimeout(1000);
   await encuadrar(page, 'scene');
-  await page.getByRole('tab', { name: /Escena/ }).click();
   await captura(page, 'colores-y-pintura-03-resultado');
 });

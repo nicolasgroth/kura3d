@@ -9,6 +9,7 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 import { existsSync } from 'node:fs';
+import { agregarForma } from './agregar-helpers';
 
 // Los fixtures viven en .eval-tmp (fuera del repo); sin ellos el spec se salta con motivo en vez de fallar.
 const FIXTURES = '.eval-tmp/qa-interfaz/fx';
@@ -44,7 +45,7 @@ test('tallar un cubo rotado y escalado no duplica la transformación', async ({ 
 
 test('conector demasiado grande y gráfico fuera de la cara dan error claro', async ({ page }) => {
   await page.goto(process.env.KURA_URL ?? 'http://127.0.0.1:5189/');
-  await page.getByRole('button', { name: 'Cubo', exact: true }).first().click();
+  await agregarForma(page, 'Cubo');
   await page.getByRole('button', { name: 'Corte por plano + uniones' }).click();
   await fijar(page, 'Tamaño del conector (mm)', '50');
   await page.getByRole('button', { name: 'Ejecutar Corte' }).click();
@@ -58,7 +59,6 @@ test('conector demasiado grande y gráfico fuera de la cara dan error claro', as
 test('lista de escena: flechas, Shift+flechas, F2 y Supr con teclado', async ({ page }) => {
   await page.goto(process.env.KURA_URL ?? 'http://127.0.0.1:5189/');
   for (const n of ['Cubo', 'Cilindro', 'Esfera']) await page.getByRole('button', { name: n, exact: true }).first().click();
-  await page.getByRole('tab', { name: /Escena/ }).click();
   const lista = page.locator('.kura-scene-list');
   await lista.focus();
   await page.keyboard.press('Home');
@@ -76,8 +76,11 @@ test('lista de escena: flechas, Shift+flechas, F2 y Supr con teclado', async ({ 
 for (const [lang, texto] of [['en', /leaves no cavity/], ['de', /lässt keinen Hohlraum/]] as const) {
   test(`pared imposible al ahuecar sale traducida (${lang})`, async ({ page }) => {
     await page.goto(process.env.KURA_URL ?? 'http://127.0.0.1:5189/');
-    await page.getByLabel(/Interface language|Idioma|Sprache/).selectOption(lang);
-    await page.locator('aside button').filter({ hasText: /^(Box|Quader)/ }).first().click();
+    // Idioma desde el selector con bandera; la forma desde «Agregar» de la barra vertical.
+    await page.locator('.kura-topbar .kura-lang-trigger').click();
+    await page.getByRole('menuitemradio', { name: lang === 'en' ? 'English' : 'Deutsch' }).click();
+    await page.locator('#kura-tool-rail .kura-tool-rail-add').click();
+    await page.getByRole('menuitem', { name: /^(Box|Quader)/ }).click();
     const aplicar = page.getByRole('button', { name: /Apply hollowing|Aushöhlung anwenden/ });
     await aplicar.click(); // ahueca (pared 12 mm en cubo de 30)
     await aplicar.click(); // segunda vez: ya no cabe cavidad

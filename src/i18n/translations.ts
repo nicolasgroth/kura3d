@@ -50,6 +50,7 @@ import { UX7_EN, UX7_ES } from './locales/ux7';
 import { REDISENO_EN, REDISENO_ES } from './locales/rediseno';
 import { PANEL_EN, PANEL_ES } from './locales/panel';
 import { ENCAJE_UI_EN, ENCAJE_UI_ES } from './locales/encajeUi';
+import { REDISENO3A_EN, REDISENO3A_ES } from './locales/rediseno3a';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -94,6 +95,7 @@ export const TRANSLATIONS_ES = {
   ...REDISENO_ES,
   ...PANEL_ES,
   ...ENCAJE_UI_ES,
+  ...REDISENO3A_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -216,11 +218,7 @@ export const TRANSLATIONS_ES = {
   'topbar.moreTip': 'Más controles de la barra superior',
 
   // Barra lateral izquierda (LeftSidebar)
-  'sidebar.tab.shapes': 'Formas',
   'sidebar.tab.scene': 'Escena',
-  'sidebar.shapes.primitivesTitle': 'Primitivas Paramétricas',
-  'sidebar.shapes.generatorsTitle': 'Generadores 2D → 3D',
-  'sidebar.shapes.quickActionsTitle': 'Escena Rápida',
   'sidebar.shapes.createStarter': 'Cubo de calibración 30 mm',
   'sidebar.shapes.clearScene': 'Vaciar cama',
   'sidebar.generators.thread': 'Rosca ISO (M3–M64)',
@@ -917,7 +915,6 @@ export const TRANSLATIONS_ES = {
   'toast.less': 'Ver menos',
   'toast.lessTip': 'Plegar los avisos anteriores',
   'narrow.bar.label': 'Paneles',
-  'narrow.bar.shapesTip': 'Abrir o cerrar la hoja de Formas (Escape cierra)',
   'narrow.bar.inspectorTip': 'Abrir o cerrar la hoja del Inspector (Escape cierra)',
   'toast.refineDone': 'Malla refinada ({tris} triángulos)',
   'toast.hullDone': 'Envolvente convexa generada',
@@ -1438,6 +1435,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...REDISENO_EN,
   ...PANEL_EN,
   ...ENCAJE_UI_EN,
+  ...REDISENO3A_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
@@ -1553,11 +1551,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'topbar.more': 'More',
   'topbar.moreTip': 'More top bar controls',
 
-  'sidebar.tab.shapes': 'Shapes',
   'sidebar.tab.scene': 'Scene',
-  'sidebar.shapes.primitivesTitle': 'Parametric Primitives',
-  'sidebar.shapes.generatorsTitle': '2D → 3D Generators',
-  'sidebar.shapes.quickActionsTitle': 'Quick Scene',
   'sidebar.shapes.createStarter': '30 mm Calibration Cube',
   'sidebar.shapes.clearScene': 'Clear bed',
   'sidebar.generators.thread': 'ISO Thread (M3–M64)',
@@ -2233,7 +2227,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'toast.less': 'Show less',
   'toast.lessTip': 'Collapse earlier notices',
   'narrow.bar.label': 'Panels',
-  'narrow.bar.shapesTip': 'Open or close the Shapes sheet (Escape closes)',
   'narrow.bar.inspectorTip': 'Open or close the Inspector sheet (Escape closes)',
   'toast.refineDone': 'Mesh refined ({tris} triangles)',
   'toast.hullDone': 'Convex hull generated',

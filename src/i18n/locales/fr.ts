@@ -45,6 +45,7 @@ import { UX7_FR } from './ux7';
 import { REDISENO_FR } from './rediseno';
 import { PANEL_FR } from './panel';
 import { ENCAJE_UI_FR } from './encajeUi';
+import { REDISENO3A_FR } from './rediseno3a';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -87,6 +88,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...REDISENO_FR,
   ...PANEL_FR,
   ...ENCAJE_UI_FR,
+  ...REDISENO3A_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',
@@ -209,11 +211,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'topbar.moreTip': 'Plus de commandes de la barre supérieure',
 
   // Barra lateral izquierda (LeftSidebar)
-  'sidebar.tab.shapes': 'Formes',
   'sidebar.tab.scene': 'Scène',
-  'sidebar.shapes.primitivesTitle': 'Primitives Paramétriques',
-  'sidebar.shapes.generatorsTitle': 'Générateurs 2D → 3D',
-  'sidebar.shapes.quickActionsTitle': 'Scène Rapide',
   'sidebar.shapes.createStarter': 'Cube de calibration 30 mm',
   'sidebar.shapes.clearScene': 'Vider le plateau',
   'sidebar.generators.thread': 'Filetage ISO (M3–M64)',
@@ -910,7 +908,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'toast.less': 'Voir moins',
   'toast.lessTip': 'Replier les avis précédents',
   'narrow.bar.label': 'Panneaux',
-  'narrow.bar.shapesTip': 'Ouvrir ou fermer la feuille Formes (Échap ferme)',
   'narrow.bar.inspectorTip': 'Ouvrir ou fermer la feuille Inspecteur (Échap ferme)',
   'toast.refineDone': 'Maillage affiné ({tris} triangles)',
   'toast.hullDone': 'Enveloppe convexe générée',

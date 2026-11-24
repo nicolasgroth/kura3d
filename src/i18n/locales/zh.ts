@@ -45,6 +45,7 @@ import { UX7_ZH } from './ux7';
 import { REDISENO_ZH } from './rediseno';
 import { PANEL_ZH } from './panel';
 import { ENCAJE_UI_ZH } from './encajeUi';
+import { REDISENO3A_ZH } from './rediseno3a';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -87,6 +88,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...REDISENO_ZH,
   ...PANEL_ZH,
   ...ENCAJE_UI_ZH,
+  ...REDISENO3A_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
   'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',
@@ -209,11 +211,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'topbar.moreTip': '顶部栏的更多控件',
 
   // Barra lateral izquierda (LeftSidebar)
-  'sidebar.tab.shapes': '形状',
   'sidebar.tab.scene': '场景',
-  'sidebar.shapes.primitivesTitle': '参数化基本体',
-  'sidebar.shapes.generatorsTitle': '2D → 3D 生成器',
-  'sidebar.shapes.quickActionsTitle': '快速场景',
   'sidebar.shapes.createStarter': '30 mm 校准方块',
   'sidebar.shapes.clearScene': '清空打印床',
   'sidebar.generators.thread': 'ISO 公制螺纹 (M3–M64)',
@@ -910,7 +908,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'toast.less': '收起',
   'toast.lessTip': '收起之前的提示',
   'narrow.bar.label': '面板',
-  'narrow.bar.shapesTip': '打开或关闭“形状”面板（Esc 关闭）',
   'narrow.bar.inspectorTip': '打开或关闭“检查器”面板（Esc 关闭）',
   'toast.refineDone': '网格已细分（{tris} 个三角面）',
   'toast.hullDone': '已生成凸包',

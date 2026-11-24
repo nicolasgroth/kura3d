@@ -8,6 +8,7 @@
  * @license MIT
  */
 import { test, expect } from '@playwright/test';
+import { agregarForma } from './agregar-helpers';
 
 test.use({ locale: 'en-US', viewport: { width: 1440, height: 900 } });
 
@@ -42,7 +43,7 @@ test('rosca ISO: valores fuera de rango deshabilitan Crear con mensaje de rango'
 
 test('hueco de una caja 30 mm: volumen = 30³ − 25,6³ y deshacer lo revierte en un paso', async ({ page }) => {
   await page.goto(URL);
-  await page.locator('button.kura-primitive-card', { hasText: 'Box' }).click();
+  await agregarForma(page, 'Box');
   const ins = page.locator('[aria-label="Inspector"]');
   const vol = async () => ((await ins.innerText()).match(/VOLUME\n([^\n]*)/) ?? [])[1];
   await expect.poll(vol).toBe('27,000 mm³');
@@ -58,7 +59,7 @@ test('hueco de una caja 30 mm: volumen = 30³ − 25,6³ y deshacer lo revierte 
 // intento (paredes coincidentes). El motor reintenta con el gráfico girado una fracción ínfima.
 test('proyectar dos veces el mismo texto en el mismo lugar no debe fallar', async ({ page }) => {
   await page.goto(URL);
-  await page.locator('button.kura-primitive-card', { hasText: 'Box' }).click();
+  await agregarForma(page, 'Box');
   const ins = page.locator('[aria-label="Inspector"]');
   for (let i = 0; i < 2; i++) {
     const open = ins.getByRole('button', { name: /Project Text\/SVG/ });
