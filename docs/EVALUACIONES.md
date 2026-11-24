@@ -587,3 +587,24 @@ Sin bloqueos. Asistentes queda sobre el mínimo en los tres evaluadores. Arrastr
 - **Incidente durante la evaluación de usabilidad:** el orquestador editó `FileField.tsx` con el servidor en uso y por unos segundos la app quedó en blanco (`useState is not defined`) hasta completar la importación. No se repitió tras recargar. Queda como regla: no editar la rama servida mientras un evaluador usa el navegador. El evaluador anotó además que falta una barrera de errores: un fallo en un campo se lleva la app entera.
 
 Consumo (modelo · duración · tokens): recetas ronda 3 (Opus · 18 min · 202 k), interfaz ronda 3 (Sonnet · 9 min · 178 k), usabilidad (Opus · 9 min · 195 k), código (Opus · 5 min · 154 k), funcional (Opus · 7 min · 135 k).
+
+## QA24 · 24 de noviembre de 2026, 16:00 · rama `feat/iman` · aprobada con observaciones
+
+Alojamiento de imán: clic sobre una cara → pieza negativa perpendicular, con preajustes incluidos y propios.
+
+Confirmado en navegador: hueco perpendicular y a ras en caras inclinadas, traseras e inferiores, en piezas giradas y escaladas, en una esfera y en dos modelos reales; volumen removido exacto tras «Aplicar restas» (dos huecos: 93,519 mm³ de 93,519 esperados) y sólido válido; el STL exportado no incluye el negativo; avisos de pared (placa de 3 mm: 0,8 mm; placa de 2 mm: atraviesa); validación de medidas con coma decimal; preajustes propios que sobreviven a recargar, tope de 30 y saneo de datos corruptos; `localStorage` solo con nombres y medidas; `.kura` y borrador conservan los imanes; consola sin errores.
+
+Fallos, corregidos por el orquestador:
+
+1. Con la pieza seleccionada y el panel abierto, el manipulador seguía activo y un arrastre movía la pieza. El manipulador se oculta mientras el panel está abierto.
+2. Con la única pieza bloqueada el panel abría sin dejar colocar ni explicar por qué. Ahora no abre y el aviso lo dice.
+3. Foco inicial en «Cerrar»: ahora en el selector de preajuste.
+4. `e2e/ux8-menu-pintura.spec.ts` fallaba 3 de 8 porque esperaba que un solo Escape cerrara el menú desde un submenú (comportamiento cambiado en la QA22): prueba actualizada.
+
+Tras las correcciones: 2820 pruebas del frontend pasan; 20 de 20 recorridos en navegador (QA24, el del desarrollo y el de menú y pintura).
+
+Observaciones abiertas: duplicar la pieza no duplica sus imanes y borrarla deja el imán huérfano (no definido en el encargo); no hay forma de colocar con teclado; sin probar 3MF, cilindro, clic en arista y lector de pantalla real.
+
+Lección de proceso: tras editar la rama servida, el servidor de desarrollo sirve módulos con marca de recarga y las pruebas que enlazan el store quedan con una copia distinta (8 fallas falsas). Se reinicia el servidor antes de cada corrida de verificación.
+
+Consumo (modelo · duración · tokens): alojamiento de imán (Opus · 32 min · 297 k), QA24 (Sonnet · 49 min · 241 k).

@@ -41,9 +41,9 @@ export const useMagnetPanel = create<MagnetPanelState>(() => ({
 /** Preajustes de imán del usuario (guardados en preferencias locales). */
 export const useMagnetPresets = createUserPresetsStore(MAGNET_PRESET_KIND);
 
-/** Hay al menos una pieza sólida visible donde colocar un alojamiento. */
+/** Hay al menos una pieza sólida visible y sin bloquear donde colocar un alojamiento (las mismas que acepta la capa del visor). */
 export function hasMagnetHost(): boolean {
-  return useKuraStore.getState().objects.some((o) => isSolid(o) && o.visible);
+  return useKuraStore.getState().objects.some((o) => isSolid(o) && o.visible && !o.locked);
 }
 
 /** Abre el panel; sin piezas sólidas no abre y avisa por qué. */

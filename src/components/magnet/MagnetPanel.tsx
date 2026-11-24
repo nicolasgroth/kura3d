@@ -35,6 +35,7 @@ export const MagnetPanel: React.FC = () => {
       onClose={close}
       title={t(language, 'magnet.title')}
       className="kura-magnet-panel"
+      initialFocus='[data-testid="magnet-preset"]'
       footer={(
         <button type="button" className="kura-btn kura-btn-sm kura-btn-primary" data-testid="magnet-done" onClick={close}>
           {t(language, 'magnet.done')}

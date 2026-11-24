@@ -20,12 +20,12 @@ const IMAN_TABLE = {
     '在零件的某个面上为磁铁开槽(作为负形零件添加)。',
   ],
   'magnet.needSolid': [
-    'Para colocar un alojamiento de imán necesitas al menos una pieza sólida visible en la escena.',
-    'To place a magnet pocket you need at least one visible solid part in the scene.',
-    'Für eine Magnetaufnahme brauchst du mindestens ein sichtbares festes Teil in der Szene.',
-    'Pour placer un logement d’aimant, il faut au moins une pièce solide visible dans la scène.',
-    'चुंबक खाँचा रखने के लिए दृश्य में कम से कम एक दिखाई देने वाला ठोस भाग चाहिए।',
-    '要放置磁铁槽,场景中至少需要一个可见的实体零件。',
+    'Para colocar un alojamiento de imán necesitas al menos una pieza sólida visible y sin bloquear en la escena.',
+    'To place a magnet pocket you need at least one visible, unlocked solid part in the scene.',
+    'Für eine Magnetaufnahme brauchst du mindestens ein sichtbares, nicht gesperrtes festes Teil in der Szene.',
+    'Pour placer un logement d’aimant, il faut au moins une pièce solide visible et non verrouillée dans la scène.',
+    'चुंबक खाँचा रखने के लिए दृश्य में कम से कम एक दिखाई देने वाला, बिना लॉक का ठोस भाग चाहिए।',
+    '要放置磁铁槽,场景中至少需要一个可见且未锁定的实体零件。',
   ],
   'magnet.objectName': ['Imán {size}', 'Magnet {size}', 'Magnet {size}', 'Aimant {size}', 'चुंबक {size}', '磁铁 {size}'],
   'magnet.created': [

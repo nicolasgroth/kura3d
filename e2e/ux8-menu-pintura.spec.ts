@@ -68,6 +68,8 @@ test.describe('Menú contextual del objeto', () => {
       await page.locator('.kura-context-menu').first().getByRole('menuitem', { name: 'Preparar para imprimir' }).click();
       await expect(page.getByRole('menuitem', { name: 'Ahuecar…' }).first()).toBeVisible();
       await page.keyboard.press('Escape');
+      // Escape dentro de un submenú cierra solo ese nivel; el segundo cierra el menú.
+      await page.keyboard.press('Escape');
       await expect(page.locator('.kura-context-menu')).toHaveCount(0);
       expect(errs).toEqual([]);
     });
