@@ -103,8 +103,7 @@
 }
 
 .kura-fitcheck-stale,
-.kura-fitcheck-clean,
-.kura-fitcheck-message {
+.kura-fitcheck-clean {
   margin: 0;
   display: flex;
   align-items: flex-start;

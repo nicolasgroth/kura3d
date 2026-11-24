@@ -185,9 +185,7 @@ export const FitCheckPanel: React.FC = () => {
               <CheckCircle2 size={14} aria-hidden="true" />
               <span>{report.summary.possiblePairs > 0 ? t(language, 'fitCheck.ui.allFits') : localizeFitMessage(language, report.summary.message)}</span>
             </p>
-          ) : (
-            <p className="kura-fitcheck-message">{localizeFitMessage(language, report.summary.message)}</p>
-          )}
+          ) : null}
           {report.pairs.length > 0 && (
             <>
               <FitCheckPairList report={report} />
