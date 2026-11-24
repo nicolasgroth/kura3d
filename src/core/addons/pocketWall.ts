@@ -34,6 +34,8 @@ export interface PocketWallReport {
   protrudeMm: number;
   /** Otro hueco pendiente a menos de la pared mínima, o superpuesto (null si no hay). */
   neighbor: PocketNeighbor | null;
+  /** Imán oculto: material real sobre el imán en su borde (≤ 0 si se abre); null o ausente si es abierto. */
+  coverMm?: number | null;
 }
 
 /** Un corte cuya normal forma menos de ~41° con el eje es la misma superficie de la boca, no una pared lateral. */
@@ -51,7 +53,7 @@ export interface PocketWallOptions {
 /** Mide la pared alrededor del hueco con boca en `point` (sobre la cara) y la base `frame`. */
 export function measurePocketWall(
   world: MeshData, point: Vec3, frame: PocketFrame, dims: PocketDims, options: PocketWallOptions = {},
-): Omit<PocketWallReport, 'protrudeMm' | 'neighbor'> {
+): Omit<PocketWallReport, 'protrudeMm' | 'neighbor' | 'coverMm'> {
   const half = dims.widthMm / 2;
   const inward: Vec3 = [-frame.axis[0], -frame.axis[1], -frame.axis[2]];
   const step = MOUTH_DIRECTIONS / 8;

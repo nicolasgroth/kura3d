@@ -132,8 +132,10 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       }),
 
     duplicateObjects: (ids) => {
-      const targetIds = ids && ids.length > 0 ? ids : get().selectedIds;
-      const sourceObjs = get().objects.filter((o) => targetIds.includes(o.id));
+      const targetIds = new Set(ids && ids.length > 0 ? ids : get().selectedIds);
+      // Los imanes de una pieza duplicada se copian con ella (aunque no estén en la selección), una sola vez.
+      for (const id of dependentMagnetIds(get().objects, targetIds, { includeLocked: true })) targetIds.add(id);
+      const sourceObjs = get().objects.filter((o) => targetIds.has(o.id));
       if (sourceObjs.length === 0 || rejectWhileLocked()) return [];
       pushHistory();
       const copySuffix = tr('store.copySuffix');

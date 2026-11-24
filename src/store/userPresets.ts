@@ -3,7 +3,9 @@
  * @description Preajustes del usuario, genéricos por tipo (imanes hoy; insertos después): una lista con nombre y
  * valores guardada en preferencias locales (`localStorage`, sin secretos ni datos personales) con saneo al leer
  * (descarta lo corrupto sin romper), tope de cantidad y largo de nombre. Cada tipo aporta su clave de
- * almacenamiento y su función de saneo de valores; `createUserPresetsStore` da un store Zustand reactivo.
+ * almacenamiento y su función de saneo de valores; `createUserPresetsStore` da un store Zustand reactivo. Los
+ * nombres son únicos sin distinguir mayúsculas; si el almacenamiento falla, la lista en memoria no cambia y la
+ * operación devuelve el fallo para que la interfaz lo diga.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -39,6 +41,18 @@ export const validPresetName = (name: string) => {
   return n.length > 0 && n.length <= USER_PRESET_NAME_MAX;
 };
 
+const nameKey = (name: string) => cleanPresetName(name).toLocaleLowerCase();
+
+/** Un preajuste válido (id propio, nombre limpio, valores saneados) a partir de datos no confiables; null si no sirve. */
+export function sanitizeUserPreset<T>(kind: UserPresetKind<T>, raw: unknown): UserPreset<T> | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const p = raw as Record<string, unknown>;
+  if (typeof p.id !== 'string' || !ID_RE.test(p.id)) return null;
+  if (typeof p.name !== 'string' || !validPresetName(p.name)) return null;
+  const values = kind.sanitize(p.values);
+  return values ? { id: p.id, name: cleanPresetName(p.name), values } : null;
+}
+
 /** Lee y sanea los preajustes guardados de un tipo. */
 export function loadUserPresets<T>(kind: UserPresetKind<T>): UserPreset<T>[] {
   const raw = readStorage(kind.storageKey);
@@ -48,16 +62,15 @@ export function loadUserPresets<T>(kind: UserPresetKind<T>): UserPreset<T>[] {
     if (!Array.isArray(list)) return [];
     const out: UserPreset<T>[] = [];
     const seen = new Set<string>();
+    const names = new Set<string>();
     for (const item of list) {
       if (out.length >= (kind.max ?? MAX_USER_PRESETS)) break;
-      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
-      const p = item as Record<string, unknown>;
-      if (typeof p.id !== 'string' || !ID_RE.test(p.id) || seen.has(p.id)) continue;
-      if (typeof p.name !== 'string' || !validPresetName(p.name)) continue;
-      const values = kind.sanitize(p.values);
-      if (!values) continue;
-      seen.add(p.id);
-      out.push({ id: p.id, name: cleanPresetName(p.name), values });
+      const preset = sanitizeUserPreset(kind, item);
+      // Ids y nombres repetidos (sin distinguir mayúsculas): queda el primero.
+      if (!preset || seen.has(preset.id) || names.has(nameKey(preset.name))) continue;
+      seen.add(preset.id);
+      names.add(nameKey(preset.name));
+      out.push(preset);
     }
     return out;
   } catch {
@@ -65,8 +78,9 @@ export function loadUserPresets<T>(kind: UserPresetKind<T>): UserPreset<T>[] {
   }
 }
 
-export function saveUserPresets<T>(kind: UserPresetKind<T>, list: readonly UserPreset<T>[]): void {
-  writeStorage(kind.storageKey, list.length ? JSON.stringify(list.slice(0, kind.max ?? MAX_USER_PRESETS)) : null);
+/** Guarda la lista; false si el almacenamiento falló (lleno o bloqueado). */
+export function saveUserPresets<T>(kind: UserPresetKind<T>, list: readonly UserPreset<T>[]): boolean {
+  return writeStorage(kind.storageKey, list.length ? JSON.stringify(list.slice(0, kind.max ?? MAX_USER_PRESETS)) : null);
 }
 
 export function newUserPresetId(): string {
@@ -76,14 +90,21 @@ export function newUserPresetId(): string {
 
 export type SavePresetResult<T> =
   | { ok: true; preset: UserPreset<T> }
-  | { ok: false; reason: 'name' | 'values' | 'full' };
+  | { ok: false; reason: 'name' | 'values' | 'full' | 'storage' };
 
 export interface UserPresetsState<T> {
   presets: UserPreset<T>[];
-  /** Guarda uno nuevo; con el mismo nombre (sin distinguir mayúsculas) reemplaza sus valores. */
+  /**
+   * Guarda uno nuevo; con el mismo nombre (sin distinguir mayúsculas) actualiza ese. `storage`: no se pudo guardar
+   * y la lista en memoria no cambió.
+   */
   save: (name: string, values: T) => SavePresetResult<T>;
+  /** Elimina uno; null si no existe o el almacenamiento falló (la lista no cambia). */
   remove: (id: string) => UserPreset<T> | null;
-  /** Devuelve uno eliminado (Deshacer) en su posición; false si ya existe, no cabe o es inválido. */
+  /**
+   * Devuelve uno eliminado (Deshacer) en su posición; false si ya existe (id o nombre), no cabe, es inválido o el
+   * almacenamiento falló.
+   */
   restore: (preset: UserPreset<T>, index?: number) => boolean;
   /** Vuelve a leer del almacenamiento (otra pestaña, pruebas). */
   reload: () => void;
@@ -93,9 +114,11 @@ export interface UserPresetsState<T> {
 
 export function createUserPresetsStore<T>(kind: UserPresetKind<T>): UseBoundStore<StoreApi<UserPresetsState<T>>> {
   return create<UserPresetsState<T>>((set, get) => {
-    const persist = (presets: UserPreset<T>[]) => {
-      saveUserPresets(kind, presets);
+    // Memoria y almacenamiento quedan iguales: si guardar falla, la lista no cambia.
+    const persist = (presets: UserPreset<T>[]): boolean => {
+      if (!saveUserPresets(kind, presets)) return false;
       set({ presets });
+      return true;
     };
     return {
       presets: loadUserPresets(kind),
@@ -105,30 +128,30 @@ export function createUserPresetsStore<T>(kind: UserPresetKind<T>): UseBoundStor
         if (!clean) return { ok: false, reason: 'values' };
         const label = cleanPresetName(name);
         const list = get().presets;
-        const same = list.find((p) => p.name.toLocaleLowerCase() === label.toLocaleLowerCase());
+        const same = list.find((p) => nameKey(p.name) === nameKey(label));
         if (same) {
           const preset = { ...same, name: label, values: clean };
-          persist(list.map((p) => (p.id === same.id ? preset : p)));
+          if (!persist(list.map((p) => (p.id === same.id ? preset : p)))) return { ok: false, reason: 'storage' };
           return { ok: true, preset };
         }
         if (list.length >= (kind.max ?? MAX_USER_PRESETS)) return { ok: false, reason: 'full' };
         const preset = { id: newUserPresetId(), name: label, values: clean };
-        persist([...list, preset]);
+        if (!persist([...list, preset])) return { ok: false, reason: 'storage' };
         return { ok: true, preset };
       },
       remove: (id) => {
         const list = get().presets;
         const target = list.find((p) => p.id === id) ?? null;
-        if (target) persist(list.filter((p) => p.id !== id));
+        if (!target || !persist(list.filter((p) => p.id !== id))) return null;
         return target;
       },
       restore: (preset, index) => {
         const list = get().presets;
-        const values = kind.sanitize(preset.values);
-        if (!values || list.some((p) => p.id === preset.id) || list.length >= (kind.max ?? MAX_USER_PRESETS)) return false;
-        const at = index === undefined ? list.length : Math.max(0, Math.min(index, list.length));
-        persist([...list.slice(0, at), { ...preset, values }, ...list.slice(at)]);
-        return true;
+        const clean = sanitizeUserPreset(kind, preset);
+        if (!clean || list.length >= (kind.max ?? MAX_USER_PRESETS)) return false;
+        if (list.some((p) => p.id === clean.id || nameKey(p.name) === nameKey(clean.name))) return false;
+        const at = index === undefined || !Number.isInteger(index) ? list.length : Math.max(0, Math.min(index, list.length));
+        return persist([...list.slice(0, at), clean, ...list.slice(at)]);
       },
       reload: () => set({ presets: loadUserPresets(kind) }),
       watch: () => {

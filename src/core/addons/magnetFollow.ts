@@ -55,23 +55,61 @@ export function followHostPose(magnet: SceneObject, host0: Placed, host1: Placed
   return [...out.position, ...out.rotation].every(Number.isFinite) ? out : null;
 }
 
+const samePose = (a: Placed, b: Placed) => sameVec(a.position, b.position) && sameVec(a.rotation, b.rotation) && sameVec(a.scale, b.scale);
+
+/** El objeto con `id` en `list`, probando primero el mismo índice (el orden de la escena casi nunca cambia). */
+function findById(list: readonly SceneObject[], id: string, hint: number, cache: { map: Map<string, SceneObject> | null }) {
+  const at = list[hint];
+  if (at && at.id === id) return at;
+  cache.map ??= new Map(list.map((o) => [o.id, o]));
+  return cache.map.get(id);
+}
+
 /**
- * Tras un cambio de escena `prev` → `next`: cada imán cuya pieza cambió de escala se lleva a su cara con su medida
- * anterior. Solo si el imán no cambió (se escaló la pieza sola) o cambió con la misma proporción que su pieza (se
- * escaló el grupo); otro cambio del imán (deshacer, edición propia) se respeta. Devuelve `next` si no hay nada que mover.
+ * Tras un cambio de escena `prev` → `next`: cada imán cuya pieza cambió de pose (posición, rotación o escala, con la
+ * misma malla) se lleva a su cara con su medida anterior. Solo si el imán no cambió (se transformó la pieza sola) o,
+ * al escalar, cambió con la misma proporción que su pieza (se escaló el grupo). Si el imán cambió de otra forma, ya
+ * lo movió alguien (el grupo, deshacer o rehacer, una edición propia) y se respeta. Una pieza con malla nueva (una
+ * resta, aplicar la escala) no es un movimiento rígido: no se sigue. Devuelve `next` si no hay nada que mover.
  */
 export function followMagnetHosts(prev: readonly SceneObject[], next: SceneObject[]): SceneObject[] {
-  if (prev === next || !next.some((o) => magnetHostId(o) !== undefined)) return next;
-  const before = new Map(prev.map((o) => [o.id, o]));
-  const now = new Map(next.map((o) => [o.id, o]));
+  if (prev === next) return next;
+  // Salida barata: sin imanes no hay nada que seguir (solo se leen los metadatos).
+  let magnetAt: number[] | null = null;
+  let hostIds: Set<string> | null = null;
+  for (let i = 0; i < next.length; i++) {
+    const hostId = magnetHostId(next[i]);
+    if (hostId === undefined) continue;
+    (magnetAt ??= []).push(i);
+    (hostIds ??= new Set()).add(hostId);
+  }
+  if (!magnetAt || !hostIds) return next;
+  // Piezas anfitrionas que cambiaron de referencia. Con el mismo largo basta comparar referencias por índice: los
+  // objetos que no cambiaron ni se leen.
+  const prevCache = { map: null as Map<string, SceneObject> | null };
+  const moved = new Map<string, [SceneObject, SceneObject]>();
+  const consider = (h1: SceneObject, index: number) => {
+    if (!hostIds!.has(h1.id)) return;
+    const h0 = findById(prev, h1.id, index, prevCache);
+    if (h0 && h0 !== h1 && h0.mesh === h1.mesh && !samePose(h0, h1)) moved.set(h1.id, [h0, h1]);
+  };
+  if (prev.length === next.length) {
+    for (let i = 0; i < next.length; i++) if (prev[i] !== next[i]) consider(next[i], i);
+  } else {
+    for (let i = 0; i < next.length; i++) consider(next[i], i);
+  }
+  if (moved.size === 0) return next;
   let changed: Map<string, Placed> | null = null;
-  for (const m1 of next) {
-    const hostId = magnetHostId(m1);
-    if (!hostId || m1.locked) continue;
-    const h0 = before.get(hostId), h1 = now.get(hostId), m0 = before.get(m1.id);
-    if (!h0 || !h1 || !m0 || h0 === h1 || sameVec(h0.scale, h1.scale)) continue;
-    const untouched = m0 === m1 || (sameVec(m0.position, m1.position) && sameVec(m0.rotation, m1.rotation) && sameVec(m0.scale, m1.scale));
-    if (!untouched && !ratiosMatch(m0.scale, m1.scale, h0.scale, h1.scale)) continue;
+  for (const i of magnetAt) {
+    const m1 = next[i];
+    const pair = moved.get(magnetHostId(m1)!);
+    if (!pair || m1.locked) continue;
+    const [h0, h1] = pair;
+    const m0 = findById(prev, m1.id, i, prevCache);
+    if (!m0) continue;
+    const untouched = m0 === m1 || samePose(m0, m1);
+    const groupScaled = !sameVec(h0.scale, h1.scale) && ratiosMatch(m0.scale, m1.scale, h0.scale, h1.scale);
+    if (!untouched && !groupScaled) continue;
     const pose = followHostPose(m0, h0, h1);
     if (pose) (changed ??= new Map()).set(m1.id, pose);
   }
@@ -90,10 +128,15 @@ export function remapMagnetHosts(copies: SceneObject[], copyIdBySource: Readonly
   });
 }
 
-/** Imanes (sin bloquear) de las piezas `hostIds` que no están ya en la lista: se borran con su pieza. */
-export function dependentMagnetIds(objects: readonly SceneObject[], hostIds: ReadonlySet<string>): string[] {
+/**
+ * Imanes de las piezas `hostIds` que no están ya en la lista: se borran (sin los bloqueados) o se duplican (todos)
+ * con su pieza.
+ */
+export function dependentMagnetIds(
+  objects: readonly SceneObject[], hostIds: ReadonlySet<string>, options: { includeLocked?: boolean } = {},
+): string[] {
   return objects.filter((o) => {
     const hostId = magnetHostId(o);
-    return hostId !== undefined && hostIds.has(hostId) && !hostIds.has(o.id) && !o.locked;
+    return hostId !== undefined && hostIds.has(hostId) && !hostIds.has(o.id) && (options.includeLocked || !o.locked);
   }).map((o) => o.id);
 }
