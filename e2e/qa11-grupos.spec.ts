@@ -9,6 +9,7 @@
  * @license MIT
  */
 import { test, expect, type Page } from '@playwright/test';
+import { agregarForma } from './agregar-helpers';
 
 const URL = process.env.KURA_URL ?? 'http://127.0.0.1:5210/';
 
@@ -20,7 +21,7 @@ async function abrir(page: Page) {
 
 async function agregar(page: Page, nombres: string[]) {
   for (const n of nombres) {
-    await page.getByRole('button', { name: n, exact: true }).first().click();
+    await agregarForma(page, n);
     await page.waitForTimeout(300);
   }
 }

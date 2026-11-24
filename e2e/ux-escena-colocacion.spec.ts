@@ -8,11 +8,12 @@
  * @license MIT
  */
 import { test, expect, type Page } from '@playwright/test';
+import { agregarForma } from './agregar-helpers';
 import { abrir, cajas, importarStl, solapes, stlCubes } from './ux-escena-helpers';
 
 const cuenta = (page: Page) => page.evaluate(() => (window as any).__s.getState().objects.length);
 const forma = async (page: Page, name: string, total: number) => {
-  await page.getByRole('button', { name, exact: true }).first().click();
+  await agregarForma(page, name);
   await expect.poll(() => cuenta(page)).toBe(total);
 };
 
