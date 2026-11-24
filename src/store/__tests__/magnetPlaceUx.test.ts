@@ -57,6 +57,15 @@ describe('colocar un imán: selección y avisos', () => {
     expect(store().toasts[0].text).toContain('Imán 5 × 2 (2)');
   });
 
+  it('tres colocaciones seguidas en lugares distintos dejan un solo aviso a la vista (no se apilan sobre el visor)', async () => {
+    const host = store().objects[0];
+    for (const x of [-6, 0, 6]) {
+      expect(await placeMagnetAt(host.id, [x, 30, 0], [0, 1, 0])).toBe(true);
+      expect(store().toasts).toHaveLength(1);
+    }
+    expect(store().toasts[0].text).toContain('(3)');
+  });
+
   it('con un campo inválido no coloca ni cambia la selección', async () => {
     useMagnetPanel.setState({ blocked: true });
     const before = [...store().selectedIds];

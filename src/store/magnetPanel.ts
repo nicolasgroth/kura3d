@@ -139,6 +139,9 @@ export function mostSevereMagnetWarning(warnings: readonly MagnetWarning[]): Mag
  * Coloca un alojamiento con el imán vigente sobre la cara indicada. No altera la selección que había y deja un solo
  * aviso por colocación: «agregado» más la advertencia más grave (el detalle completo queda en el panel).
  */
+/** Aviso de la última colocación que sigue a la vista (para reemplazarlo en la siguiente). */
+let lastPlacementToastId: string | null = null;
+
 export async function placeMagnetAt(hostId: string, point: Vec3, normal: Vec3): Promise<boolean> {
   const { params, blocked } = useMagnetPanel.getState();
   if (blocked) return false;
@@ -157,7 +160,13 @@ export async function placeMagnetAt(hostId: string, point: Vec3, normal: Vec3): 
   useKuraStore.setState((s) => ({ toasts: s.toasts.filter((x) => !mine(x)), toastHistory: s.toastHistory.filter((x) => !mine(x)) }));
   const warning = mostSevereMagnetWarning(magnetWarnings(result.wall, after.language));
   const created = t(after.language, 'magnet.created', { name: result.obj.name });
+  // Al colocar varios seguidos, el aviso nuevo reemplaza al de la colocación anterior: apilados sobre el visor
+  // tapaban la pieza y el siguiente clic caía en un aviso.
+  const previous = lastPlacementToastId;
+  if (previous) useKuraStore.setState((s) => ({ toasts: s.toasts.filter((x) => x.id !== previous) }));
+  const before = new Set(useKuraStore.getState().toasts.map((x) => x.id));
   after.addToast(warning ? `${created} ${magnetWarningText(warning, after.language)}` : created, warning ? 'info' : 'success');
+  lastPlacementToastId = useKuraStore.getState().toasts.find((x) => !before.has(x.id))?.id ?? null;
   useMagnetPanel.setState({ lastWall: result.wall });
   return true;
 }
