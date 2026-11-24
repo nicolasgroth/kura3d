@@ -64,7 +64,11 @@ export function createMagnetSlice(ctx: StoreContext): Partial<KuraStoreState> {
       }
       const result = await runExclusive('magnet_pocket', null, async () => {
         await get().initEngine();
-        const name = tr('magnet.objectName', { size: magnetSizeLabel(request.params, get().language) });
+        // Los repetidos se numeran («Imán 5 × 2», «Imán 5 × 2 (2)»…) con el menor número libre, para distinguirlos en el árbol.
+        const baseName = tr('magnet.objectName', { size: magnetSizeLabel(request.params, get().language) });
+        const taken = new Set(get().objects.map((o) => o.name));
+        let name = baseName;
+        for (let n = 2; taken.has(name); n += 1) name = `${baseName} (${n})`;
         const pendingNegatives = nearbyNegatives(get().objects, host).map(placed);
         const made = await ctx.runEngine('magnetPocket', {
           host: { id: host.id, ...placed(host) }, params: request.params, point: request.point, normal: request.normal, name, pendingNegatives,
