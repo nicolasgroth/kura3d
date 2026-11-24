@@ -26,3 +26,5 @@ Pediste varios ajustes y en algunos dejaste dos caminos. Elegí uno en cada caso
 - **Paneles flotantes:** descartados por ti el 23-nov; queda el panel que abre y cierra.
 - **Paleta de pintura, «colores del proyecto» (24-nov):** el botón reemplazaba tu paleta por los colores del proyecto y perdías los tuyos. Lo cambié a **sumar** los que falten, sin duplicar. Si prefieres que reemplace (o tener las dos opciones), dime.
 
+### 4. Arrastrar el cuerpo del objeto en modo Mover (24-nov)
+Hoy, con la herramienta Mover activa, arrastrar el cuerpo del objeto orbita la cámara; solo las flechas del manipulador lo mueven. El evaluador esperaba que arrastrar el cuerpo moviera el objeto sobre la cama. ¿Lo cambiamos? Opciones: **A** arrastrar el cuerpo mueve el objeto sobre el plano de la cama (como en los laminadores; orbitar queda para el fondo y el botón derecho); **B** dejarlo como está y agregar un consejo en pantalla. No entra en el lote en curso.
