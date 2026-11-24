@@ -50,6 +50,7 @@ import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
 import { UX8_EN, UX8_ES } from './locales/ux8';
 import { UX10_EN, UX10_ES } from './locales/ux10';
+import { UX9_EN, UX9_ES } from './locales/ux9';
 import { REDISENO_EN, REDISENO_ES } from './locales/rediseno';
 import { PANEL_EN, PANEL_ES } from './locales/panel';
 import { ENCAJE_UI_EN, ENCAJE_UI_ES } from './locales/encajeUi';
@@ -100,6 +101,7 @@ export const TRANSLATIONS_ES = {
   ...UX7_ES,
   ...UX8_ES,
   ...UX10_ES,
+  ...UX9_ES,
   ...REDISENO_ES,
   ...PANEL_ES,
   ...ENCAJE_UI_ES,
@@ -1431,6 +1433,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UX7_EN,
   ...UX8_EN,
   ...UX10_EN,
+  ...UX9_EN,
   ...REDISENO_EN,
   ...PANEL_EN,
   ...ENCAJE_UI_EN,

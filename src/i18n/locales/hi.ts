@@ -45,6 +45,7 @@ import { BORDES_HI } from './bordesPrimitivas';
 import { UX7_HI } from './ux7';
 import { UX8_HI } from './ux8';
 import { UX10_HI } from './ux10';
+import { UX9_HI } from './ux9';
 import { REDISENO_HI } from './rediseno';
 import { PANEL_HI } from './panel';
 import { ENCAJE_UI_HI } from './encajeUi';
@@ -93,6 +94,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...UX7_HI,
   ...UX8_HI,
   ...UX10_HI,
+  ...UX9_HI,
   ...REDISENO_HI,
   ...PANEL_HI,
   ...ENCAJE_UI_HI,
