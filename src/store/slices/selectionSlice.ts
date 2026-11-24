@@ -10,6 +10,7 @@
 
 import * as ops from '../../core/operations';
 import { computeBedPositionY, copySceneObject, makeId } from '../../core/scene/sceneObjects';
+import { dependentMagnetIds, remapMagnetHosts } from '../../core/addons/magnetFollow';
 import { resolveAlignTargets } from '../../core/scene/sceneRules';
 import { keepClearOfOthers } from '../../core/scene/freeSpot';
 import { activeBedSize } from '../bedSize';
@@ -152,7 +153,11 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       pairs.forEach((p, i) => {
         p.copy.position = spot.parts[i].position;
       });
-      const created = pairs.map((p) => p.copy);
+      // Un imán copiado junto con su pieza queda en la copia de la pieza.
+      const created = remapMagnetHosts(pairs.map((p) => p.copy), new Map(pairs.map((p) => [p.sourceId, p.copy.id])));
+      pairs.forEach((p, i) => {
+        p.copy = created[i];
+      });
       // Duplicar un grupo duplica su estructura (las copias cuelgan de un grupo gemelo).
       const next = duplicateGroupStructure(
         { objects: [...get().objects, ...created], groups: get().groups },
@@ -172,6 +177,8 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       if (targetIds.length === 0 || rejectWhileLocked()) return;
       const removableIds = new Set(get().objects.filter((o) => targetIds.includes(o.id) && !o.locked).map((o) => o.id));
       if (removableIds.size === 0) return;
+      // Los imanes de una pieza borrada se van con ella (mismo paso de deshacer): no quedan negativos huérfanos.
+      for (const id of dependentMagnetIds(get().objects, removableIds)) removableIds.add(id);
       pushHistory();
       set((state) => ({
         objects: state.objects.filter((o) => !removableIds.has(o.id)),
@@ -215,9 +222,11 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       const stationaryOriginal = copySceneObject(src, { id: makeId('mesh') });
       const cloneLabel = tr('store.copySuffix');
       const now = Date.now();
+      // Los imanes de la pieza quedan donde estaban: pasan a la copia estacionaria.
+      const keptHost = new Map([[id, stationaryOriginal.id]]);
       set((state) => ({
         objects: [
-          ...state.objects.map((o) => (o.id === id ? { ...o, name: `${src.name} ${cloneLabel}` } : o)),
+          ...remapMagnetHosts(state.objects.map((o) => (o.id === id ? { ...o, name: `${src.name} ${cloneLabel}` } : o)), keptHost),
           stationaryOriginal,
         ],
         spawnedAtById: { ...state.spawnedAtById, [stationaryOriginal.id]: now },

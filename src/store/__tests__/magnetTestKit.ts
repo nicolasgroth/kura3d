@@ -37,11 +37,11 @@ export function worldCenter(o: SceneObject): Vec3 {
 }
 
 /** Primer triángulo que corta el rayo: punto de corte y normal del triángulo (hacia afuera del sólido). */
-export function pickFace(mesh: MeshData, origin: Vec3, dir: Vec3): { point: Vec3; normal: Vec3 } {
+export function pickFace(mesh: MeshData, origin: Vec3, dir: Vec3): { point: Vec3; normal: Vec3; face: number } {
   const p = mesh.positions, idx = mesh.indices;
   const o = new THREE.Vector3(...origin), d = new THREE.Vector3(...dir).normalize();
   const ray = new THREE.Ray(o, d);
-  let best: { t: number; point: Vec3; normal: Vec3 } | null = null;
+  let best: { t: number; point: Vec3; normal: Vec3; face: number } | null = null;
   const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), hit = new THREE.Vector3();
   for (let t = 0; t < idx.length; t += 3) {
     a.fromArray(p, idx[t] * 3); b.fromArray(p, idx[t + 1] * 3); c.fromArray(p, idx[t + 2] * 3);
@@ -49,10 +49,10 @@ export function pickFace(mesh: MeshData, origin: Vec3, dir: Vec3): { point: Vec3
     const dist = hit.distanceTo(o);
     if (best && dist >= best.t) continue;
     const n = new THREE.Vector3().crossVectors(b.clone().sub(a), c.clone().sub(a)).normalize();
-    best = { t: dist, point: [hit.x, hit.y, hit.z], normal: [n.x, n.y, n.z] };
+    best = { t: dist, point: [hit.x, hit.y, hit.z], normal: [n.x, n.y, n.z], face: t / 3 };
   }
   if (!best) throw new Error('el rayo no corta la malla');
-  return { point: best.point, normal: best.normal };
+  return { point: best.point, normal: best.normal, face: best.face };
 }
 
 /** Cuerpos conexos (por vértices compartidos tras soldar posiciones). */
