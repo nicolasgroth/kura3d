@@ -533,3 +533,20 @@ Tras las correcciones: 2638 pruebas del frontend pasan; el recorrido de doble cr
 No probado: tema oscuro real, táctil y lápiz, 1280×720, contenido de los archivos exportados, «Comprobar encaje» de la caja con la tapa montada, idiomas de, fr, hi y zh.
 
 Consumo (modelo · duración · tokens): arrastrar para mover (Sonnet · 24 min · 190 k), Asistentes (Sonnet · 22 min · 283 k), QA23 (Sonnet · 39 min · 176 k).
+
+## Evaluación a ciegas de arrastrar para mover y Asistentes · 24 de noviembre de 2026, 12:45 · rama `feat/asistentes-y-arrastrar` (`f31e584`) · primera ronda
+
+| Funcionalidad | Usabilidad | Código | Funcional |
+|---|---|---|---|
+| Arrastrar para mover | 83 | 80 | 86 |
+| Asistentes | 81 | 83 | 70 |
+
+Sin bloqueos duros en ninguna. Bajo el mínimo (85) en cinco de las seis notas: se corrige y se reevalúa con evaluadores nuevos.
+
+**Arrastrar para mover.** Usabilidad: arrastrar sobre un objeto no seleccionado gira la vista pero al soltar lo deja seleccionado; el cursor no cambia al pasar sobre lo arrastrable; la cámara encuadra muy pegada; sin marca del plano en objetos elevados. Código: el gesto no tiene pruebas unitarias; la prueba del alcance máximo no ejercita el recorte; si el objeto se desmonta a mitad del gesto la cámara queda apagada; cada movimiento escribe en el estado sin agrupar por cuadro. Funcional: cumple lo prometido; falta avisar al soltar fuera de la cama.
+
+**Asistentes.** Funcional (70): la caja con tapa sale bien (tapa a presión con 0,2 mm de holgura por lado; pilotos de 2,52 mm para M3; sólidos cerrados), pero con valores válidos hay piezas inútiles sin aviso: placa con tornillos arriba y abajo que pierde los agujeros; llavero con logo y texto superpuestos y en dos piezas; argolla grande con letra chica que parte el llavero; llavero de 569 mm sin chequeo de cama; texto en blanco que da un error del motor; el juego caja + tapa no cabe como bloque desde 120 mm. Usabilidad: «Volver a la lista» pierde el foco; dos controles «Texto» en el llavero; la variante Chile no cambia nada; sin vista previa ni edición posterior; a 390 px el pie tapa campos. Código: aviso de fallo duplicado; aviso de cama ante cualquier chequeo; formulario que se redibuja con cada cambio de escena; archivo sin tope de lectura.
+
+Fuera de esta ronda (quedan como mejoras): vista previa antes de crear, reabrir un asistente con los parámetros de lo creado, labio de la tapa en reborde, avellanado de tornillos, medidas reales por país de la placa, marca del plano de arrastre.
+
+Consumo (modelo · duración · tokens): usabilidad (Opus · 6 min · 161 k), código (Opus · 5 min · 140 k), funcional (Opus · 6 min · 129 k).
