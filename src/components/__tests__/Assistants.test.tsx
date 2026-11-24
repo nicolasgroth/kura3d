@@ -248,6 +248,24 @@ describe('Asistentes: crear', () => {
     expect(useAssistantsPanel.getState().open).toBe(true);
   });
 
+  it('un error de ejecución que señala un campo se muestra junto a ese campo, no en la lista de problemas', async () => {
+    const user = userEvent.setup();
+    const detail = 'Este texto tiene caracteres que la fuente no incluye: 😀';
+    const run = vi.fn().mockResolvedValue({
+      ok: false,
+      errors: [issue('run.input', 'params[0]', { detail, focus: 'text', step: 'txt', engine: 'x' })],
+      messages: [],
+      params: [],
+    });
+    useKuraStore.setState({ runRecipe: run } as never);
+    openForm('kura.llavero');
+    await user.click(createButton());
+    const field = await screen.findByLabelText('Texto');
+    const described = (field.getAttribute('aria-describedby') ?? '').split(' ').map((id) => document.getElementById(id)?.textContent ?? '').join(' ');
+    expect(described).toContain(detail);
+    expect(screen.queryByText(t('es', 'asis.problems'))).toBeNull();
+  });
+
   it('si el motor no responde (null) no cambia la escena y no agrega un segundo aviso', async () => {
     const user = userEvent.setup();
     useKuraStore.setState({ runRecipe: vi.fn().mockResolvedValue(null) } as never);

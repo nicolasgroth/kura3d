@@ -22,7 +22,7 @@ import { recipeBed } from '../../store/slices/recipesSlice';
 import { useKuraStore } from '../../store/useKuraStore';
 import { useInvalidFields } from '../useInvalidFields';
 import { FieldNotes, RecipeFieldControl, type FieldChange } from './RecipeFieldControl';
-import { buildFormModel, type AssistantRecipe } from './recipeFormModel';
+import { buildFormModel, type AssistantRecipe, type FieldNote } from './recipeFormModel';
 import '../../styles/assistants.css';
 
 const FIELD_CONTROLS = '.kura-asis-fields :is(input, select, textarea, button):not([disabled]):not([type="file"])';
@@ -50,6 +50,18 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
   const recipe = entry.validated.recipe;
   const title = resolveText(recipe, recipe.title, languageOf(language));
   const description = recipe.description ? resolveText(recipe, recipe.description, languageOf(language)) : undefined;
+  // Un error de ejecución que señala un campo (`focus`, p. ej. un carácter que la fuente no tiene) va junto a ese
+  // campo; el resto, en la lista de problemas sobre el botón.
+  const fieldIds = new Set(model.groups.flatMap((g) => g.fields.map((f) => f.id)));
+  const focusOf = (e: RecipeIssue) => (typeof e.params?.focus === 'string' && fieldIds.has(e.params.focus) ? e.params.focus : null);
+  const fieldRunErrors = new Map<string, FieldNote[]>();
+  for (const e of runErrors) {
+    const id = focusOf(e);
+    if (!id) continue;
+    const text = typeof e.params?.detail === 'string' && e.params.detail ? e.params.detail : t(language, e.key, e.params);
+    fieldRunErrors.set(id, [...(fieldRunErrors.get(id) ?? []), { level: 'error', text }]);
+  }
+  const otherRunErrors = runErrors.filter((e) => !focusOf(e));
   const blocked = !model.canCreate || invalid.blocked || fileErrors.size > 0;
 
   // Foco inicial en el primer campo (tras el foco que el panel pone al abrir).
@@ -213,7 +225,7 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
                 {group.fields.map((field) => (
                   <RecipeFieldControl
                     key={field.id}
-                    field={field}
+                    field={fieldRunErrors.has(field.id) ? { ...field, notes: [...field.notes, ...fieldRunErrors.get(field.id)!] } : field}
                     busy={busy}
                     onChange={(c) => change(field.id, c)}
                     onInvalid={invalid.track(field.id)}
@@ -229,11 +241,11 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; onBack: () => void; 
             {t(language, 'asis.file.readError')}
           </p>
         )}
-        {runErrors.length > 0 && (
+        {otherRunErrors.length > 0 && (
           <div className="kura-asis-problems" role="alert">
             <strong>{t(language, 'asis.problems')}</strong>
             <ul>
-              {runErrors.map((e, k) => (
+              {otherRunErrors.map((e, k) => (
                 <li key={k}>{t(language, e.key, e.params)}</li>
               ))}
             </ul>
