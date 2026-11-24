@@ -10,22 +10,11 @@
  */
 
 import * as THREE from 'three';
-import type { MeshData, PrimitiveParams, Vec3 } from '../../types/kura';
+import type { MagnetPocketParams, MeshData, PrimitiveParams, Vec3 } from '../../types/kura';
 
-export type MagnetShape = 'round' | 'square';
-
-/** Imán pedido: `sizeMm` es el diámetro (redondo) o el lado (cuadrado); `heightMm` su alto. */
-export interface MagnetParams {
-  shape: MagnetShape;
-  sizeMm: number;
-  heightMm: number;
-  /** Holgura sumada al diámetro o lado. */
-  clearanceMm: number;
-  /** Holgura sumada a la profundidad. */
-  depthClearanceMm: number;
-  /** Oculto bajo la cara (queda `HIDDEN_COVER_MM` de material encima; requiere pausar la impresión). */
-  hidden: boolean;
-}
+/** Imán pedido: el mismo tipo que guardan los metadatos `addon` (una sola definición, en `types/kura`). */
+export type MagnetParams = MagnetPocketParams;
+export type MagnetShape = MagnetParams['shape'];
 
 export const MAGNET_DEFAULTS: Readonly<MagnetParams> = {
   shape: 'round', sizeMm: 5, heightMm: 2, clearanceMm: 0.2, depthClearanceMm: 0.2, hidden: false,
@@ -91,13 +80,18 @@ export interface PocketDims {
   topMm: number;
 }
 
-export function pocketDims(p: MagnetParams): PocketDims {
+/**
+ * Medidas del hueco. `overshootMm` es cuánto sobresale el negativo abierto sobre el plano de la cara: en caras
+ * planas basta `MOUTH_OVERSHOOT_MM`; en caras cóncavas el motor lo calcula midiendo la superficie (`pocketSurface`).
+ */
+export function pocketDims(p: MagnetParams, overshootMm: number = MOUTH_OVERSHOOT_MM): PocketDims {
   const widthMm = p.sizeMm + p.clearanceMm;
   const depthMm = p.heightMm + p.depthClearanceMm;
   if (p.hidden) {
     return { shape: p.shape, widthMm, depthMm, lengthMm: depthMm, bottomMm: HIDDEN_COVER_MM + depthMm, topMm: HIDDEN_COVER_MM };
   }
-  return { shape: p.shape, widthMm, depthMm, lengthMm: depthMm + MOUTH_OVERSHOOT_MM, bottomMm: depthMm, topMm: 0 };
+  const over = Number.isFinite(overshootMm) && overshootMm > MOUTH_OVERSHOOT_MM ? overshootMm : MOUTH_OVERSHOOT_MM;
+  return { shape: p.shape, widthMm, depthMm, lengthMm: depthMm + over, bottomMm: depthMm, topMm: 0 };
 }
 
 /**
@@ -149,10 +143,10 @@ export interface PocketPlacement {
   primitive: { type: 'cylinder' | 'box'; params: PrimitiveParams };
 }
 
-export function placePocket(p: MagnetParams, point: Vec3, normal: Vec3): PocketPlacement | null {
+export function placePocket(p: MagnetParams, point: Vec3, normal: Vec3, overshootMm?: number): PocketPlacement | null {
   const frame = pocketFrame(normal);
   if (!frame || !point.every(Number.isFinite)) return null;
-  const dims = pocketDims(p);
+  const dims = pocketDims(p, overshootMm);
   // Local X → u, local Y → normal (afuera), local Z → w; la base local (y = 0) va al fondo del hueco.
   const basis = new THREE.Matrix4().makeBasis(vec(frame.u), vec(frame.axis), vec(frame.w));
   const euler = new THREE.Euler().setFromRotationMatrix(basis, 'XYZ');

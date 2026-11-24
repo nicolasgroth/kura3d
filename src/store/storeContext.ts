@@ -1,7 +1,7 @@
 /**
  * @file src/store/storeContext.ts
  * @description Contexto compartido por los slices del store: `set` que descarta segmentaciones
- * obsoletas, traducción, historial, bloqueo durante operaciones o arrastres, puerta exclusiva de
+ * obsoletas (y que mantiene cada imán en su cara a escala propia cuando su pieza se escala), traducción, historial, bloqueo durante operaciones o arrastres, puerta exclusiva de
  * operaciones asíncronas, avisos y errores, y el puente hacia `src/core/operations` (construcción
  * de objetos, nombres y aplicación de un `SceneChange`).
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -16,6 +16,7 @@ import { segmentationMatchesMesh } from '../engine/segmentationGuards';
 import { t, type TranslationKey } from '../i18n';
 import { limitsToBytes, trimHistory } from '../project/historyBudget';
 import { ProjectCodecError } from '../project/projectSchema';
+import { followMagnetHosts } from '../core/addons/magnetFollow';
 import { applySceneChange, type OperationContext, type SceneChange } from '../core/operations';
 import { getEngineClient, isEngineCancelled, type EngineClient, type EngineJob } from '../core/operations/engineClient';
 import type { EngineTaskArgs, EngineTaskName, EngineTaskResult } from '../core/operations/engineTasks';
@@ -139,9 +140,17 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     const clean = reconcileGroups({ objects: state.objects, groups: state.groups ?? [] });
     if (clean.objects !== state.objects || clean.groups !== state.groups) rawSet({ objects: clean.objects, groups: clean.groups });
   };
+  // Un imán conserva su medida: si su pieza cambia de escala (por cualquier camino), vuelve a su cara a escala propia.
+  const keepMagnetsOnHosts = (before: SceneObject[] | undefined) => {
+    const objects = get().objects;
+    if (!before || objects === before) return;
+    const next = followMagnetHosts(before, objects);
+    if (next !== objects) rawSet({ objects: next });
+  };
   const set: SetState = ((...args: Parameters<SetState>) => {
     const prev = get();
     rawSet(...args);
+    if (prev) keepMagnetsOnHosts(prev.objects);
     if (prev) keepGroupsCoherent(prev.objects, prev.groups);
     dropStaleSegmentation();
   }) as SetState;

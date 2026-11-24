@@ -13,7 +13,7 @@ import React, { useCallback } from 'react';
 import { MIN_WALL_MM } from '../../core/addons/magnetPocket';
 import { t } from '../../i18n';
 import { closeMagnetPanel, useMagnetPanel } from '../../store/magnetPanel';
-import { wallWarningKey } from '../../store/slices/magnetSlice';
+import { magnetWarnings, magnetWarningText, wallWarningKey } from '../../store/magnetWarnings';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationPanel } from '../OperationPanel';
 import { MagnetFoldStrip } from './MagnetFoldStrip';
@@ -28,6 +28,8 @@ export const MagnetPanel: React.FC = () => {
   const blocked = useMagnetPanel((s) => s.blocked);
   const close = useCallback(() => closeMagnetPanel(), []);
   const warn = lastWall ? wallWarningKey(lastWall) : null;
+  // Avisos además del de pared (imán que sobresale en una curva, hueco pegado a otro): una línea cada uno.
+  const extra = lastWall ? magnetWarnings(lastWall, language).filter((w) => w.kind !== 'wall') : [];
   const fmt = (n: number) => n.toLocaleString(language, { maximumFractionDigits: 1 });
 
   return (
@@ -57,6 +59,11 @@ export const MagnetPanel: React.FC = () => {
             : t(language, 'magnet.lastWall', { wall: fmt(lastWall.minWallMm) })}
         </p>
       )}
+      {extra.map((w) => (
+        <p key={w.kind} className="kura-magnet-wall is-warning" role="status" data-testid={`magnet-warn-${w.kind}`}>
+          {magnetWarningText(w, language)}
+        </p>
+      ))}
     </OperationPanel>
     </>
   );
