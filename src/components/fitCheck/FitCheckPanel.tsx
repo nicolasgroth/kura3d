@@ -64,7 +64,8 @@ export const FitCheckPanel: React.FC = () => {
     void checkFit({ ids: targets.ids, options: { clearanceTargetMm: clearance, applyPendingSubtractions: applyNegatives } });
   };
 
-  const phase = running ? phaseView(language, running.phase) : null;
+  const runLabel = t(language, report || stale ? 'fitCheck.ui.rerun' : 'fitCheck.ui.run');
+  const phase = running ?phaseView(language, running.phase) : null;
   const issues = report ? report.summary.interferes + report.summary.tight : 0;
   const worst = report ? worstPairNames(language, report) : null;
 
@@ -122,9 +123,10 @@ export const FitCheckPanel: React.FC = () => {
           onClick={run}
           data-testid="fit-check-run"
           {...helpAttrs('fitCheck.run', language)}
+          title={runLabel}
         >
           <Ruler size={13} aria-hidden="true" />
-          <span>{t(language, report || stale ? 'fitCheck.ui.rerun' : 'fitCheck.ui.run')}</span>
+          <span>{runLabel}</span>
         </button>
         {running && (
           <button type="button" className="kura-btn kura-btn-sm" onClick={cancelFitCheck} data-testid="fit-check-cancel" {...helpAttrs('fitCheck.cancel', language)}>
