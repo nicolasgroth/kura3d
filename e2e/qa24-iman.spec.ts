@@ -27,6 +27,11 @@ const getState = (page: Page) => page.evaluate(() => {
   };
 });
 
+/** Espera a que el visor dibuje `n` cuadros: el ratón y la cámara se asientan sin un tiempo fijo. */
+const cuadros = (page: Page, n = 2) => page.evaluate(async (k) => {
+  for (let i = 0; i < k; i += 1) await new Promise<void>((r) => requestAnimationFrame(() => r()));
+}, n);
+
 const libre = (page: Page) => expect.poll(async () => (await getState(page)).busy, { timeout: 20_000 }).toBeNull();
 
 const crear = (page: Page, type: string, params: any, opts: any = {}) => page.evaluate(async ({ type, params, opts }) => {
@@ -68,7 +73,7 @@ async function camara(page: Page, target: P3, dir: P3, dist = 220) {
     r.controls?.target?.set?.(target[0], target[1], target[2]);
     r.controls?.update?.();
   }, { target, dir, dist });
-  await page.waitForTimeout(250);
+  await cuadros(page, 3);
 }
 
 async function abrirPanel(page: Page) {
@@ -87,7 +92,7 @@ async function apuntar(page: Page, target: P3, offset: [number, number] = [0, 0]
   const a = await aPixel(page, target);
   await page.mouse.move(a.x + offset[0] - 5, a.y + offset[1] - 5);
   await page.mouse.move(a.x + offset[0], a.y + offset[1], { steps: 4 });
-  await page.waitForTimeout(150);
+  await cuadros(page, 3);
   return { x: a.x + offset[0], y: a.y + offset[1] };
 }
 
@@ -134,7 +139,6 @@ async function colocarYVerificar(page: Page, host: string, target: P3, profundid
   // A ras: base + eje * profundidad(2.2) = punto bajo el cursor.
   const tip = last.position.map((v: number, i: number) => v + axis[i] * profundidad);
   const err = Math.hypot(tip[0] - h!.point[0], tip[1] - h!.point[1], tip[2] - h!.point[2]);
-  if (err >= 0.15) console.log(`NOTA desvio ${err.toFixed(4)} hover=${JSON.stringify(h!.point)} tip=${JSON.stringify(tip)} normal=${JSON.stringify(h!.normal)} neg=${JSON.stringify(last.position)}`);
   expect(err, 'boca del hueco sobre el punto de la vista previa').toBeLessThan(0.15);
   return { h: h!, neg: last };
 }
@@ -162,21 +166,13 @@ test('01 entradas sin pieza sólida: escena vacía, solo negativos, ocultas y bl
   await expect(page.getByText(/necesitas al menos una pieza sólida/).first()).toBeVisible();
   await expect(page.locator('.kura-magnet-panel')).toHaveCount(0);
 
-  // Pieza bloqueada: ¿explica por qué no se puede colocar?
+  // Pieza bloqueada: no abre el panel y avisa por qué (no hay dónde colocar).
   await page.evaluate((id) => (window as any).__s.getState().updateObjectMeta(id, { visible: true, locked: true }), solid);
   await page.evaluate(() => (window as any).__s.getState().dismissAllToasts?.());
   await abre();
-  await page.waitForTimeout(400);
-  const panel = await page.locator('.kura-magnet-panel').count();
-  const aviso = await page.getByText(/necesitas al menos una pieza sólida|bloquead/i).count();
-  console.log(`NOTA bloqueada: panel abierto=${panel}, aviso=${aviso}`);
+  await expect(page.getByText(/necesitas al menos una pieza sólida/).first()).toBeVisible();
+  await expect(page.locator('.kura-magnet-panel')).toHaveCount(0);
   await page.screenshot({ path: `${SHOTS}/01-bloqueada.png` });
-  expect.soft(panel === 0 ? aviso : 1, 'solo pieza bloqueada: o no abre con aviso, o el panel explica que no hay dónde colocar').toBeGreaterThan(0);
-  // Si abre, el panel debe decir por qué no coloca.
-  if (panel > 0) {
-    const texto = await page.locator('.kura-magnet-panel').innerText();
-    expect.soft(/bloquead/i.test(texto), 'el panel menciona que la pieza está bloqueada').toBe(true);
-  }
 });
 
 test('02 colocación: pieza rotada y escalada no uniforme, cara inferior, esfera', async ({ page }) => {
@@ -200,7 +196,6 @@ test('02 colocación: pieza rotada y escalada no uniforme, cara inferior, esfera
   await camara(page, bb.center as P3, [0.7, 0.5, 0.8]);
   const r1 = await colocarYVerificar(page, esf, bb.center as P3);
   const dist = Math.hypot(r1.h.point[0] - bb.center[0], r1.h.point[1] - bb.center[1], r1.h.point[2] - bb.center[2]);
-  console.log(`NOTA esfera: radio al punto ${dist.toFixed(3)} (nominal 20)`);
   expect(Math.abs(dist - 20)).toBeLessThan(0.3);
   await page.keyboard.press('Escape');
 });
@@ -256,7 +251,6 @@ test('03 restas: volumen exacto, sólido válido, STL sin el negativo y reimport
   const stlAntes = join(dir, 'antes.stl');
   await exportarStl(page, stlAntes);
   const a = leerStl(readFileSync(stlAntes));
-  console.log(`NOTA STL con negativos: ${a.tris} tri, vol ${a.volume.toFixed(2)}, tam ${a.size.map((v) => v.toFixed(2)).join('x')}`);
   expect(Math.abs(a.volume - 27000)).toBeLessThan(1);
 
   const vol0 = (await getState(page)).objects.find((o: any) => o.id === host).volume;
@@ -269,7 +263,6 @@ test('03 restas: volumen exacto, sólido válido, STL sin el negativo y reimport
   expect(solido.manifold).toBe(true);
   const esperado = 2 * HOLE_ROUND(5.2, 2.2);
   const removido = vol0 - solido.volume;
-  console.log(`NOTA removido ${removido.toFixed(3)} esperado ${esperado.toFixed(3)}`);
   expect(Math.abs(removido - esperado) / esperado).toBeLessThan(0.01);
 
   const stl = join(dir, 'despues.stl');
@@ -286,7 +279,8 @@ test('03 restas: volumen exacto, sólido válido, STL sin el negativo y reimport
   await page.getByRole('button', { name: 'Importar 3D', exact: true }).first().click();
   (await ch).setFiles(stl);
   await expect.poll(async () => (await getState(page)).objects.length, { timeout: 30000 }).toBe(1);
-  await page.waitForTimeout(1500);
+  await cuadros(page);
+  await libre(page);
   const r = (await getState(page)).objects[0];
   expect(Math.abs(r.volume - solido.volume) / solido.volume).toBeLessThan(0.002);
   expect(r.manifold).toBe(true);
@@ -306,7 +300,6 @@ test('04 pared mínima: placa de 3 mm avisa, placa de 2 mm atraviesa, hueco pega
   await camara(page, p.bb.center as P3, [0.05, 1, 0.05]);
   await colocarYVerificar(page, p.id, p.bb.center as P3);
   let wall = await page.getByTestId('magnet-wall').innerText();
-  console.log(`NOTA placa 3mm: ${wall}`);
   expect(wall).toMatch(/0,8/);
   expect(wall).toMatch(/1,2/);
   await page.screenshot({ path: `${SHOTS}/04-placa3.png` });
@@ -318,7 +311,6 @@ test('04 pared mínima: placa de 3 mm avisa, placa de 2 mm atraviesa, hueco pega
   await camara(page, p.bb.center as P3, [0.05, 1, 0.05]);
   await colocarYVerificar(page, p.id, p.bb.center as P3);
   wall = await page.getByTestId('magnet-wall').innerText();
-  console.log(`NOTA placa 2mm: ${wall}`);
   expect(wall.toLowerCase()).toMatch(/atraviesa|asoma/);
   await page.keyboard.press('Escape');
 
@@ -329,9 +321,8 @@ test('04 pared mínima: placa de 3 mm avisa, placa de 2 mm atraviesa, hueco pega
   const borde: P3 = [p.bb.max[0] - 3.6, p.bb.max[1], p.bb.center[2]];
   await colocarYVerificar(page, p.id, borde);
   wall = await page.getByTestId('magnet-wall').innerText();
-  console.log(`NOTA borde: ${wall}`);
   expect(wall).toMatch(/pared/i);
-  expect.soft(wall, 'hueco a ~1 mm del borde debe avisar pared fina').toMatch(/menos|poca|fina|mínim/i);
+  expect(wall, 'hueco a ~1 mm del borde debe avisar pared fina').toMatch(/menos|poca|fina|mínim/i);
   void toasts;
 });
 
@@ -355,7 +346,6 @@ async function colocarYVerificarOculto(page: Page, host: string) {
   const axis = ejeDe(neg.rotation);
   const tip = neg.position.map((v: number, i: number) => v + axis[i] * 2.2);
   const prof = (h!.point[0] - tip[0]) * axis[0] + (h!.point[1] - tip[1]) * axis[1] + (h!.point[2] - tip[2]) * axis[2];
-  console.log(`NOTA oculto: techo del hueco a ${prof.toFixed(3)} mm bajo la cara (esperado 0,6)`);
   expect(Math.abs(prof - 0.6)).toBeLessThan(0.15);
   expect(neg.addon.hostId).toBe(host);
   return neg.addon;
@@ -374,15 +364,13 @@ test('05 medidas: rangos, coma decimal, inválidos bloquean, holguras, cuadrado 
 
   for (const malo of ['0', '-3', 'abc', '61', '0,4']) {
     await escribir(page, /^Diámetro/, malo);
-    const hint = await page.getByTestId('magnet-hint').innerText();
     const invalido = await campo(page, /^Diámetro/).getAttribute('aria-invalid');
-    const err = await page.locator('.kura-magnet-panel [role="alert"], .kura-magnet-panel .kura-unit-error').allInnerTexts();
-    console.log(`NOTA diametro="${malo}" aria-invalid=${invalido} hint="${hint.slice(0, 50)}" err=${JSON.stringify(err)} resumen="${await resumen.innerText()}"`);
-    expect.soft(invalido, `"${malo}" debe marcarse inválido`).toBe('true');
+    expect(invalido, `"${malo}" debe marcarse inválido`).toBe('true');
     await apuntar(page, bb.center as P3);
     await page.mouse.down();
     await page.mouse.up();
-    await page.waitForTimeout(300);
+    await cuadros(page);
+    await libre(page);
     expect(await nObj(), `con "${malo}" no se coloca`).toBe(base);
   }
   await escribir(page, /^Diámetro/, '1');
@@ -399,7 +387,7 @@ test('05 medidas: rangos, coma decimal, inválidos bloquean, holguras, cuadrado 
   await escribir(page, /^Holgura de profundidad/, '0,6');
   await expect(resumen).toHaveText('Hueco: Ø 7,1 × 2,6 mm');
   await escribir(page, /^Holgura de ancho/, '0,61');
-  expect.soft(await campo(page, /^Holgura de ancho/).getAttribute('aria-invalid'), '0,61 inválido').toBe('true');
+  expect(await campo(page, /^Holgura de ancho/).getAttribute('aria-invalid'), '0,61 inválido').toBe('true');
   await escribir(page, /^Holgura de ancho/, '0,6');
 
   await page.getByTestId('magnet-shape-square').click();
@@ -426,7 +414,6 @@ test('05 medidas: rangos, coma decimal, inválidos bloquean, holguras, cuadrado 
   expect(s.objects).toHaveLength(1);
   const esperado = 7.1 * 7.1 * 2.6 + HOLE_ROUND(5.2, 2.2);
   const quitado = vol0 - s.objects[0].volume;
-  console.log(`NOTA restas cuadrado+oculto: quitado ${quitado.toFixed(3)} esperado ${esperado.toFixed(3)} manifold=${s.objects[0].manifold}`);
   expect(Math.abs(quitado - esperado) / esperado).toBeLessThan(0.01);
   expect(s.objects[0].manifold).toBe(true);
 });
@@ -439,7 +426,6 @@ test('06 preajustes: incluidos, guardar propio, nombres raros, eliminar, recarga
   await abrirPanel(page);
   const sel = page.getByTestId('magnet-preset');
   const resumen = page.getByTestId('magnet-summary');
-  console.log(`NOTA incluidos: ${JSON.stringify(await sel.locator('option').allInnerTexts())}`);
   await sel.selectOption({ label: 'Redondo 10 × 3' });
   await expect(resumen).toHaveText('Hueco: Ø 10,2 × 3,2 mm');
   await expect(page.getByTestId('magnet-preset-delete')).toBeDisabled();
@@ -453,7 +439,6 @@ test('06 preajustes: incluidos, guardar propio, nombres raros, eliminar, recarga
   await guardar.click();
   await expect(alerta).toBeVisible();
   await nombre.fill('X'.repeat(300));
-  console.log(`NOTA largo escrito: ${(await nombre.inputValue()).length}`);
   await guardar.click();
   await expect(alerta).toBeVisible();
   await nombre.fill('N'.repeat(40));
@@ -468,7 +453,6 @@ test('06 preajustes: incluidos, guardar propio, nombres raros, eliminar, recarga
   await nombre.fill('n'.repeat(40));
   await guardar.click();
   const guardado = await page.evaluate(() => localStorage.getItem('kura3d-presets-magnet'));
-  console.log(`NOTA localStorage presets: ${guardado!.slice(0, 500)}`);
   const lista = JSON.parse(guardado!);
   expect(lista).toHaveLength(2);
   for (const p of lista) expect(Object.keys(p).sort()).toEqual(['id', 'name', 'values']);
@@ -516,8 +500,6 @@ test('07 interacción: orbitar y arrastrar no actúan, Escape y Listo cierran, d
   await camara(page, bb.center as P3, [0.6, 0.9, 1.1]);
   // Sin selección previa: el arrastre sobre la pieza no la mueve (el panel intercepta el gesto).
   await abrirPanel(page);
-  const selAbierto = await sel(page);
-  console.log(`NOTA selección con panel abierto: ${JSON.stringify(selAbierto)}`);
   const pos0 = (await getState(page)).objects[0].position;
   const past0 = (await getState(page)).past;
   // Arrastre sobre la pieza con el panel abierto: no mueve ni coloca ni selecciona.
@@ -525,7 +507,8 @@ test('07 interacción: orbitar y arrastrar no actúan, Escape y Listo cierran, d
   await page.mouse.down();
   await page.mouse.move(a.x + 80, a.y + 30, { steps: 10 });
   await page.mouse.up();
-  await page.waitForTimeout(400);
+  await cuadros(page);
+  await libre(page);
   let s = await getState(page);
   expect(s.objects).toHaveLength(1);
   expect(s.objects[0].position).toEqual(pos0);
@@ -535,7 +518,8 @@ test('07 interacción: orbitar y arrastrar no actúan, Escape y Listo cierran, d
   await camara(page, bb.center as P3, [0.6, 0.9, 1.1]);
   await apuntar(page, bb.center as P3);
   await page.mouse.click((await aPixel(page, bb.center as P3)).x, (await aPixel(page, bb.center as P3)).y, { button: 'right' });
-  await page.waitForTimeout(300);
+  await cuadros(page);
+  await libre(page);
   expect((await getState(page)).objects).toHaveLength(1);
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
@@ -549,7 +533,8 @@ test('07 interacción: orbitar y arrastrar no actúan, Escape y Listo cierran, d
     const p = await aPixel(page, bb.center as P3);
     await page.mouse.move(p.x + off[0] * 3 - 4, p.y - 4);
     await page.mouse.move(p.x + off[0] * 3, p.y, { steps: 3 });
-    await page.waitForTimeout(120);
+    await cuadros(page);
+    await libre(page);
     await page.mouse.down();
     await page.mouse.up();
     await expect.poll(async () => (await getState(page)).past).toBe(base + 1);
@@ -560,14 +545,13 @@ test('07 interacción: orbitar y arrastrar no actúan, Escape y Listo cierran, d
   await page.getByTestId('magnet-done').click();
   await expect(page.locator('.kura-magnet-panel')).toHaveCount(0);
   const cursor = await page.locator('canvas').first().evaluate((c) => getComputedStyle(c).cursor);
-  console.log(`NOTA cursor tras Listo: ${cursor}`);
   expect(cursor).not.toBe('crosshair');
   // Clic sobre la pieza ahora selecciona (herramientas normales).
   await camara(page, bb.center as P3, [0.6, 0.9, 1.1]);
   const c = await aPixel(page, [bb.center[0], bb.center[1], bb.center[2]]);
   await page.mouse.click(c.x, c.y);
-  await page.waitForTimeout(300);
-  console.log(`NOTA selección tras clic normal: ${JSON.stringify(await sel(page))}`);
+  await cuadros(page);
+  await libre(page);
   expect((await sel(page)).length).toBeGreaterThan(0);
   // Arrastrar para mover vuelve a funcionar.
   const p0 = (await getState(page)).objects.find((o: any) => o.id === host).position;
@@ -575,21 +559,20 @@ test('07 interacción: orbitar y arrastrar no actúan, Escape y Listo cierran, d
   await page.mouse.down();
   await page.mouse.move(c.x + 70, c.y + 10, { steps: 10 });
   await page.mouse.up();
-  await page.waitForTimeout(400);
+  await cuadros(page);
+  await libre(page);
   s = await getState(page);
   const p1 = s.objects.find((o: any) => o.id === host).position;
-  console.log(`NOTA arrastre tras cerrar: ${JSON.stringify(p0)} -> ${JSON.stringify(p1)}`);
   // Los imanes agrupados se mueven con la anfitriona.
   const negs = s.objects.filter((o: any) => o.role === 'negative');
   expect(negs).toHaveLength(3);
   const dx = p1[0] - p0[0], dz = p1[2] - p0[2];
   expect(Math.hypot(dx, dz), 'la pieza se mueve al arrastrar').toBeGreaterThan(5);
-  const g = await page.evaluate(() => (window as any).__s.getState().groups.length);
-  console.log(`NOTA grupos: ${g}`);
   // Deshacer x4 (mover + 3 huecos) y rehacer.
   const kinds = async () => (await getState(page)).objects.filter((o: any) => o.role === 'negative').length;
   await page.keyboard.press('Control+z');
-  await page.waitForTimeout(200);
+  await cuadros(page);
+  await libre(page);
   expect(await kinds()).toBe(3);
   await page.keyboard.press('Control+z');
   await expect.poll(kinds).toBe(2);
@@ -629,9 +612,7 @@ test('08 convivencia: paneles excluyentes, grupo, duplicar, borrar, guardar y re
   let s = await getState(page);
   const neg = s.objects.find((o: any) => o.role === 'negative');
   expect(neg.name).toBe('Imán 5 × 2');
-  const grupos = await page.evaluate(() => (window as any).__s.getState().groups.map((g: any) => ({ id: g.id, name: g.name })));
   const refs = await page.evaluate(() => (window as any).__s.getState().objects.map((o: any) => ({ id: o.id, g: o.groupRef ?? null })));
-  console.log(`NOTA grupos=${JSON.stringify(grupos)} refs=${JSON.stringify(refs)}`);
   expect(refs.find((r: any) => r.id === neg.id).g).toBe(refs.find((r: any) => r.id === host).g);
   expect(refs.find((r: any) => r.id === host).g).not.toBeNull();
 
@@ -640,17 +621,14 @@ test('08 convivencia: paneles excluyentes, grupo, duplicar, borrar, guardar y re
   await page.evaluate(() => (window as any).__s.getState().nudgeSelectedObjects([10, 0, 0]));
   s = await getState(page);
   const neg2 = s.objects.find((o: any) => o.id === neg.id);
-  const hostN = s.objects.find((o: any) => o.id === host);
-  console.log(`NOTA nudge: host ${JSON.stringify(hostN.position)} neg ${JSON.stringify(neg2.position)} (antes ${JSON.stringify(neg.position)})`);
   expect(neg2.position[0] - neg.position[0]).toBeCloseTo(10, 3);
 
   // Duplicar la pieza: el duplicado trae su imán?
-  const antes = (await getState(page)).objects.length;
   await page.evaluate((id) => (window as any).__s.getState().duplicateObjects([id]), host);
   s = await getState(page);
-  console.log(`NOTA duplicar anfitriona: ${antes} -> ${s.objects.length} objetos, negativos ${s.objects.filter((o: any) => o.role === 'negative').length}`);
   await page.keyboard.press('Control+z');
-  await page.waitForTimeout(300);
+  await cuadros(page);
+  await libre(page);
 
   // Guardar .kura (descarga) y reabrir.
   const dir = (await import('node:fs')).mkdtempSync((await import('node:path')).join((await import('node:os')).tmpdir(), 'qa24k-'));
@@ -665,7 +643,8 @@ test('08 convivencia: paneles excluyentes, grupo, duplicar, borrar, guardar y re
   await page.evaluate(() => void (window as any).__s.getState().openProject());
   (await ch).setFiles(archivo);
   await expect.poll(async () => (await getState(page)).objects.length, { timeout: 30000 }).toBe(antesN.length);
-  await page.waitForTimeout(800);
+  await cuadros(page);
+  await libre(page);
   s = await getState(page);
   const despuesN = s.objects.map((o: any) => `${o.name}|${o.role}|${JSON.stringify(o.addon)}`).sort();
   expect(despuesN).toEqual(antesN);
@@ -679,13 +658,14 @@ test('08 convivencia: paneles excluyentes, grupo, duplicar, borrar, guardar y re
   expect(s.objects).toHaveLength(1);
   expect(s.objects[0].manifold).toBe(true);
   await page.evaluate(() => (window as any).__s.getState().undo());
-  await page.waitForTimeout(500);
+  await cuadros(page);
+  await libre(page);
 
   // Borrar la anfitriona: ¿qué pasa con el imán?
   await page.evaluate((id) => { const x = (window as any).__s.getState(); x.setSelection([id]); x.deleteSelected?.(); }, host);
-  await page.waitForTimeout(500);
+  await cuadros(page);
+  await libre(page);
   s = await getState(page);
-  console.log(`NOTA tras borrar anfitriona: ${s.objects.length} objetos (${s.objects.map((o: any) => o.name + ':' + o.role).join(', ')})`);
 
   // Borrador tras recargar con un imán colocado.
   await page.evaluate(() => (window as any).__s.getState().clearScene());
@@ -715,28 +695,26 @@ test('09 gizmo con panel abierto: la pieza seleccionada no debe moverse ni bloqu
   await page.evaluate((id) => (window as any).__s.getState().selectObject(id), host);
   await abrirPanel(page);
   const pos0 = (await getState(page)).objects[0].position;
-  const past0 = (await getState(page)).past;
   const a = await apuntar(page, bb.center as P3);
   await page.mouse.down();
   await page.mouse.move(a.x + 80, a.y + 30, { steps: 10 });
   await page.mouse.up();
-  await page.waitForTimeout(500);
+  await cuadros(page);
+  await libre(page);
   const s1 = await getState(page);
-  console.log(`NOTA gizmo con panel abierto: ${JSON.stringify(pos0)} -> ${JSON.stringify(s1.objects[0].position)} past ${past0} -> ${s1.past}`);
-  expect.soft(s1.objects[0].position, 'arrastrar con el panel abierto no mueve la pieza').toEqual(pos0);
+  expect(s1.objects[0].position, 'arrastrar con el panel abierto no mueve la pieza').toEqual(pos0);
   // Tras ese gesto, colocar un hueco debe seguir funcionando (lejos del gizmo).
   await camara(page, bb.center as P3, [0.05, 1, 0.05]);
   const top = await aPixel(page, [bb.center[0] + 8, bb.max[1], bb.center[2] + 8]);
   await page.mouse.move(top.x - 4, top.y - 4);
   await page.mouse.move(top.x, top.y, { steps: 3 });
-  await page.waitForTimeout(150);
+  await cuadros(page);
+  await libre(page);
   await page.mouse.down();
   await page.mouse.up();
   await expect.poll(async () => (await getState(page)).objects.filter((o: any) => o.role === 'negative').length, { timeout: 15000 }).toBe(1);
   const negs = (await getState(page)).objects.filter((o: any) => o.role === 'negative').length;
-  const toasts = await page.evaluate(() => (window as any).__s.getState().toasts?.map((t: any) => t.message ?? t.text));
-  console.log(`NOTA colocar tras gizmo: negativos=${negs} toasts=${JSON.stringify(toasts)}`);
-  expect.soft(negs, 'colocar un hueco tras arrastrar el gizmo con el panel abierto').toBe(1);
+  expect(negs, 'colocar un hueco tras arrastrar el gizmo con el panel abierto').toBe(1);
   await page.screenshot({ path: `${SHOTS}/09-gizmo-panel.png` });
 });
 
@@ -746,27 +724,27 @@ test('10 modelos reales importados: vista previa = creado, restas válidas', asy
   const dir = process.env.QA20_MODELOS ?? 'G:/proyectos/kura3d/.eval-tmp/modelos';
   for (const nombre of ['ocarina.3mf', 'obj_1_tinker.obj.stl']) {
     const ruta = `${dir}/${nombre}`;
-    if (!existsSync(ruta)) { console.log(`NOTA falta ${ruta}`); continue; }
+    if (!existsSync(ruta)) { continue; }
     await abrir(page);
     await page.evaluate(() => (window as any).__s.getState().clearScene());
     const ch = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: 'Importar 3D', exact: true }).first().click();
     (await ch).setFiles(ruta);
     await expect.poll(async () => (await getState(page)).objects.filter((o: any) => o.role !== 'negative').length, { timeout: 120000 }).toBeGreaterThan(0);
-    await page.waitForTimeout(1500);
+    await cuadros(page);
+    await libre(page);
     await page.evaluate(() => (window as any).__s.getState().setSelection([]));
     const solidos = (await getState(page)).objects.filter((o: any) => o.role !== 'negative');
     // Busca una pieza y apunta a su centro desde arriba y desde un costado.
     const objetivo = solidos[0];
     const bb = await bbox(page, objetivo.id);
-    console.log(`NOTA ${nombre}: ${solidos.length} piezas, tamaño ${bb.size.map((v) => v.toFixed(1)).join('x')}`);
     await abrirPanel(page);
     const antes = (await getState(page)).objects.filter((o: any) => o.role === 'negative').length;
     for (const dir3 of [[0.05, 1, 0.05], [1, 0.3, 0.2]] as P3[]) {
       await camara(page, bb.center as P3, dir3, Math.max(...bb.size) * 3);
       await apuntar(page, bb.center as P3);
       const h = await hoverState(page);
-      if (!h) { console.log(`NOTA ${nombre}: sin cara bajo el centro desde ${dir3}`); continue; }
+      if (!h) { continue; }
       const n0 = (await getState(page)).objects.length;
       await page.mouse.down();
       await page.mouse.up();
@@ -776,7 +754,6 @@ test('10 modelos reales importados: vista previa = creado, restas válidas', asy
       const axis = ejeDe(last.rotation);
       const tip = last.position.map((v: number, i: number) => v + axis[i] * 2.2);
       const err = Math.hypot(tip[0] - h.point[0], tip[1] - h.point[1], tip[2] - h.point[2]);
-      console.log(`NOTA ${nombre}: eje.normal=${dot(axis, h.normal).toFixed(5)} desvío boca=${err.toFixed(3)} pared="${await page.getByTestId('magnet-wall').innerText()}"`);
       expect(dot(axis, h.normal)).toBeGreaterThan(0.999);
       expect(err).toBeLessThan(0.3);
     }
@@ -788,7 +765,6 @@ test('10 modelos reales importados: vista previa = creado, restas válidas', asy
     await expect.poll(async () => (await getState(page)).busy, { timeout: 120000 }).toBeNull();
     const fin = await getState(page);
     const sol = fin.objects.find((o: any) => o.id === objetivo.id) ?? fin.objects.filter((o: any) => o.role !== 'negative')[0];
-    console.log(`NOTA ${nombre}: volumen ${volAntes.toFixed(1)} -> ${sol.volume.toFixed(1)}, manifold=${sol.manifold}, negativos restantes=${fin.objects.filter((o: any) => o.role === 'negative').length}`);
     expect(fin.objects.filter((o: any) => o.role === 'negative')).toHaveLength(0);
     expect(sol.volume).toBeLessThan(volAntes);
   }

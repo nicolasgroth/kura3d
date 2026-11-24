@@ -31,6 +31,11 @@ async function cubo(page: Page): Promise<string> {
   });
 }
 
+/** Espera a que el visor dibuje `n` cuadros (el ratón y la cámara se asientan sin un tiempo fijo). */
+const cuadros = (page: Page, n = 2) => page.evaluate(async (k) => {
+  for (let i = 0; i < k; i += 1) await new Promise<void>((r) => requestAnimationFrame(() => r()));
+}, n);
+
 async function vista(page: Page, cam: P3) {
   await page.evaluate((c) => {
     const r = (window as any).__r3f.getState();
@@ -40,7 +45,7 @@ async function vista(page: Page, cam: P3) {
     r.controls?.target?.set?.(0, 15, 0);
     r.controls?.update?.();
   }, cam);
-  await page.waitForTimeout(250);
+  await cuadros(page);
 }
 
 async function abrirPanel(page: Page) {
@@ -53,7 +58,7 @@ async function clic(page: Page, p: P3) {
   const a = await aPixel(page, p);
   await page.mouse.move(a.x - 4, a.y - 4);
   await page.mouse.move(a.x, a.y, { steps: 3 });
-  await page.waitForTimeout(100);
+  await cuadros(page);
   await page.mouse.down();
   await page.mouse.up();
 }
@@ -91,7 +96,8 @@ test('colocar en cara superior y lateral, orbitar no coloca, deshacer y aplicar 
   await page.mouse.down();
   await page.mouse.move(top.x + 60, top.y + 20, { steps: 8 });
   await page.mouse.up();
-  await page.waitForTimeout(300);
+  await cuadros(page);
+  await esperarLibre(page);
   expect((await st(page)).objects).toHaveLength(1);
   await vista(page, [70, 80, 90]);
 
@@ -137,7 +143,6 @@ test('colocar en cara superior y lateral, orbitar no coloca, deshacer y aplicar 
   expect(after.manifold).toBe(true);
   const hole = 64 * 2.6 * 2.6 * Math.tan(Math.PI / 64) * 2.2;
   const removed = vol0 - after.volume;
-  console.log(`NOTA volumen removido ${removed.toFixed(3)} mm³ (esperado ${(2 * hole).toFixed(3)})`);
   expect(Math.abs(removed - 2 * hole) / (2 * hole)).toBeLessThan(0.01);
 });
 

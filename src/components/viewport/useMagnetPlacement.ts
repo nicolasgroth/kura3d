@@ -20,7 +20,7 @@ import type { SceneObject, Vec3 } from '../../types/kura';
 export const MAGNET_CLICK_SLOP_PX = 5;
 
 /** Cara bajo el cursor: punto sobre la pieza real y normal de mundo hacia la cámara. */
-export function magnetHitFromEvent(obj: SceneObject, e: Pick<ThreeEvent<PointerEvent>, 'faceIndex' | 'ray' | 'point'>): MagnetHover | null {
+export function magnetHitFromEvent(obj: SceneObject, e: Pick<ThreeEvent<MouseEvent>, 'faceIndex' | 'ray' | 'point'>): MagnetHover | null {
   const face = e.faceIndex;
   if (face == null) return null;
   const normal = worldFaceNormal(obj.mesh, face, obj.rotation, obj.scale);
@@ -58,7 +58,7 @@ export function useMagnetPlacement(obj: SceneObject): MagnetPlacementHandlers {
       e.stopPropagation();
       if (e.button !== 0 || e.delta > MAGNET_CLICK_SLOP_PX) return;
       if (useKuraStore.getState().busyOperation) return;
-      const hit = magnetHitFromEvent(obj, e as unknown as ThreeEvent<PointerEvent>);
+      const hit = magnetHitFromEvent(obj, e);
       if (hit) void placeMagnetAt(hit.hostId, hit.point, hit.normal);
     },
   }), [obj]);

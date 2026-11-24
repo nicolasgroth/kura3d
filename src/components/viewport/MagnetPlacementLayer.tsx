@@ -16,12 +16,15 @@ import { isSolid } from '../../core/scene/objectRole';
 import { useMagnetPanel } from '../../store/magnetPanel';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
+import { useMagnetCursor } from './magnetCursor';
+import { pocketGhostGeometry } from './pocketGhostGeometry';
 import { useMagnetPlacement } from './useMagnetPlacement';
 
 const NO_RAYCAST = () => null;
 
 const Catcher: React.FC<{ obj: SceneObject }> = ({ obj }) => {
   const handlers = useMagnetPlacement(obj);
+  const cursor = useMagnetCursor();
   const geometry = useMemo(() => {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(obj.mesh.positions, 3));
@@ -41,8 +44,8 @@ const Catcher: React.FC<{ obj: SceneObject }> = ({ obj }) => {
       onPointerMove={handlers.onPointerMove}
       onPointerOut={handlers.onPointerOut}
       onClick={handlers.onClick}
-      onPointerOver={(e) => ((e.nativeEvent.target as HTMLElement).style.cursor = 'crosshair')}
-      onPointerLeave={(e) => ((e.nativeEvent.target as HTMLElement).style.cursor = '')}
+      onPointerOver={cursor.onPointerOver}
+      onPointerLeave={cursor.onPointerLeave}
       userData={{ magnetCatcher: obj.id }}
     >
       <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
@@ -55,16 +58,10 @@ const PocketGhost: React.FC = () => {
   const params = useMagnetPanel((s) => s.params);
   const blocked = useMagnetPanel((s) => s.blocked);
   const plan = hover && !blocked ? placePocket(params, hover.point, hover.normal) : null;
-  const shape = plan?.primitive.type;
-  const radius = plan?.primitive.params.radius as number | undefined;
-  const width = plan?.dims.widthMm ?? 0;
-  const length = plan?.dims.lengthMm ?? 0;
-  const geometry = useMemo(() => {
-    if (!shape) return null;
-    const g = shape === 'cylinder' ? new THREE.CylinderGeometry(radius, radius, length, 64) : new THREE.BoxGeometry(width, length, width);
-    g.translate(0, length / 2, 0);
-    return g;
-  }, [shape, radius, width, length]);
+  // Misma primitiva que crea el negativo: la vista previa no puede divergir del resultado.
+  const primitive = plan?.primitive;
+  const key = primitive ? `${primitive.type}:${JSON.stringify(primitive.params)}` : null;
+  const geometry = useMemo(() => (primitive ? pocketGhostGeometry(primitive) : null), [key]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => geometry?.dispose(), [geometry]);
   if (!plan || !geometry) return null;
   return (

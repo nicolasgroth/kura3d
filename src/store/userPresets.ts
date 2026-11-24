@@ -83,8 +83,12 @@ export interface UserPresetsState<T> {
   /** Guarda uno nuevo; con el mismo nombre (sin distinguir mayúsculas) reemplaza sus valores. */
   save: (name: string, values: T) => SavePresetResult<T>;
   remove: (id: string) => UserPreset<T> | null;
+  /** Devuelve uno eliminado (Deshacer) en su posición; false si ya existe, no cabe o es inválido. */
+  restore: (preset: UserPreset<T>, index?: number) => boolean;
   /** Vuelve a leer del almacenamiento (otra pestaña, pruebas). */
   reload: () => void;
+  /** Se mantiene al día con los cambios de otras pestañas (evento `storage`); devuelve la limpieza. */
+  watch: () => () => void;
 }
 
 export function createUserPresetsStore<T>(kind: UserPresetKind<T>): UseBoundStore<StoreApi<UserPresetsState<T>>> {
@@ -118,7 +122,23 @@ export function createUserPresetsStore<T>(kind: UserPresetKind<T>): UseBoundStor
         if (target) persist(list.filter((p) => p.id !== id));
         return target;
       },
+      restore: (preset, index) => {
+        const list = get().presets;
+        const values = kind.sanitize(preset.values);
+        if (!values || list.some((p) => p.id === preset.id) || list.length >= (kind.max ?? MAX_USER_PRESETS)) return false;
+        const at = index === undefined ? list.length : Math.max(0, Math.min(index, list.length));
+        persist([...list.slice(0, at), { ...preset, values }, ...list.slice(at)]);
+        return true;
+      },
       reload: () => set({ presets: loadUserPresets(kind) }),
+      watch: () => {
+        if (typeof window === 'undefined') return () => undefined;
+        const onStorage = (e: StorageEvent) => {
+          if (e.key === null || e.key === kind.storageKey) set({ presets: loadUserPresets(kind) });
+        };
+        window.addEventListener('storage', onStorage);
+        return () => window.removeEventListener('storage', onStorage);
+      },
     };
   });
 }
