@@ -26,11 +26,13 @@ import { recommendedConnectorRadius, reinforcementCap } from './assemblyConnecto
 import { classifyContactIslands } from './splitJointIslands';
 import { buildJointLabel, orientedToWorld } from './splitLabels';
 import { buildOutsideDots, buildOutsideLabel } from './splitOutsideLabel';
-import { ASSEMBLY_LIMITS, OPERATION_DEFAULTS } from '../operationLimits';
+import { depthByRays, eligibleIslands, jointStrength, SPLIT_JOINT_WALL_MM } from './splitJointStrength';
+import { ASSEMBLY_LIMITS, OPERATION_DEFAULTS, OPERATION_RANGES } from '../operationLimits';
 import { AXIS_INDEX, islandWidth, orientForAxis } from './splitSections';
-import type { SplitAxis, SplitConnectorOptions, SplitJointIsland, SplitJointKind, SplitLabelPlacement, SplitLapInfo } from './splitTypes';
+import type { SplitAxis, SplitConnectorOptions, SplitJointIsland, SplitJointKind, SplitJointStrength, SplitLabelPlacement, SplitLapInfo } from './splitTypes';
 
 const MIN_WALL_DEFAULT = OPERATION_DEFAULTS.split.minWallForConnectorMm;
+const ASSEMBLY_MAX_COUNT = OPERATION_RANGES.cut.connectorCount.max;
 
 const NORMALS: Record<SplitAxis, Vec3> = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] };
 const BIG = 1e5;
@@ -135,7 +137,7 @@ function placeRung(
   const a = AXIS_INDEX[j.axis];
   const from = j.coord - (c.type === 'loose-dowel' ? looseDowelHoleDepth(c) : 0.5);
   const to = j.coord + holeDepth(c);
-  for (const wall of [CONNECTOR_MIN_WALL_MM, CONNECTOR_MIN_WALL_MM + RETRY_EXTRA_WALL_MM]) {
+  for (const wall of [SPLIT_JOINT_WALL_MM, SPLIT_JOINT_WALL_MM + RETRY_EXTRA_WALL_MM]) {
     let target = face;
     if (j.room) {
       const margin = connectorFootprintRadius(lt, c.size, c.tolerance + wall) + 0.02;
@@ -180,6 +182,7 @@ export interface JointOutcome {
   engraved: number;
   labelPlacement: SplitLabelPlacement | null;
   labelHeightMm: number;
+  strength: SplitJointStrength;
 }
 
 /** Arma una unión: agrega a `low.adds`/`high.subs`/`low.subs` los sólidos y devuelve lo aplicado. */
@@ -201,6 +204,8 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     let used: SplitConnectorOptions | null = null;
     let centers: Vec3[] = [];
     let clearance = 0;
+    let requestedAt: SplitConnectorOptions | null = null;
+    let depthFrom: number | null = null;
     const { oriented, owned } = orientForAxis(face, axis);
     const faceSection = own(oriented.slice(coord + 0.01));
     if (owned) oriented.delete();
@@ -222,6 +227,11 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
       const cap = reinforcementCap(requested.size, width, requested.depth);
       const autoSingle = connector.sizeAuto ? autoRequest({ ...connector, count: 1 }, area, dim, width).size : undefined;
       const ladder = connectorLadder(requested, j.reinforce ? (n) => Math.min(cap, recommendedConnectorRadius(area, n, dim)) : undefined, autoSingle);
+      // Uniones firmes: con tamaño automático o firmeza activa, cada isla que admite conector recibe al
+      // menos uno (se prueba primero). Un tamaño y cantidad elegidos a mano se respetan.
+      const perIsland = connector.sizeAuto || j.reinforce ? Math.min(ASSEMBLY_MAX_COUNT, eligibleIslands(islands, requested)) : 0;
+      if (perIsland > requested.count) ladder.unshift({ ...requested, count: perIsland });
+      requestedAt = requested;
       const lt = layoutType(connector.type);
       for (const c of ladder) {
         const found = placeRung(wasm, j, face, c, lt, handles);
@@ -232,7 +242,20 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
           break;
         }
       }
-      const reduced = used && used !== requested && (used.size < requested.size || used.count < requested.count);
+      // Profundidad medida con rayos en ambas piezas: no atraviesa ni deja menos de la pared mínima
+      if (used) {
+        const rays = depthByRays(low.m, high.m, axis, centers, used);
+        if (rays.depth === null) {
+          j.room?.remove(j.label);
+          used = null;
+          centers = [];
+        } else if (rays.depth < used.depth - 1e-9) {
+          depthFrom = used.depth;
+          used = { ...used, depth: rays.depth };
+          warnings.push(engineWarning('SPLIT_CONNECTOR_DEPTH_REDUCED', { ...pair, depth: rays.depth, requested: depthFrom }));
+        }
+      }
+      const reduced = used && used !== requested && (used.size < requested.size || used.count < Math.min(requested.count, connector.count));
       if (used && reduced) warnings.push(engineWarning('SPLIT_CONNECTOR_REDUCED', { ...pair, count: used.count, size: used.size }));
       // Menos conectores aunque más grandes es una reducción (ya avisada), no un refuerzo.
       const reinforced = used && used.count >= requested.count && (used.size > requested.size + 1e-6 || used.count > requested.count);
@@ -356,7 +379,11 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
         warnings.push(engineWarning('SPLIT_LABEL_SKIPPED', { ...pair, min: j.labelMinHeightMm }));
       }
     }
-    return { kind, used, centers, lap, islands: islandInfo, clearance, engraved, labelPlacement, labelHeightMm };
+    const strength = jointStrength(used, requestedAt, centers, j.contact.area(), islandInfo, depthFrom);
+    if (strength.level === 'weak') {
+      warnings.push(engineWarning('SPLIT_JOINT_WEAK', { ...pair, count: strength.count, area: Math.round(1000 * strength.areaRatio) / 10, reason: strength.reasons[0] }));
+    }
+    return { kind, used, centers, lap, islands: islandInfo, clearance, engraved, labelPlacement, labelHeightMm, strength };
   } finally {
     for (const h of handles) h.delete();
   }
