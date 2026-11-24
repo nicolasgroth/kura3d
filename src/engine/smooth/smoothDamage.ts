@@ -51,6 +51,27 @@ export function countInvertedTriangles(before: Float32Array, after: Float32Array
   return count;
 }
 
+/** Triángulos por hoja de la BVH: hojas chicas recortan los pares candidatos del recorrido propio. */
+const BVH_LEAF_SIZE = 5;
+
+/** Caja [minx, miny, minz, maxx, maxy, maxz] de cada triángulo de `idx`. */
+function triangleBoxes(P: Float32Array, idx: Uint32Array): Float32Array {
+  const out = new Float32Array((idx.length / 3) * 6);
+  for (let t = 0; t < idx.length / 3; t++) {
+    for (let k = 0; k < 3; k++) {
+      let lo = Infinity, hi = -Infinity;
+      for (let j = 0; j < 3; j++) {
+        const c = P[idx[t * 3 + j] * 3 + k];
+        if (c < lo) lo = c;
+        if (c > hi) hi = c;
+      }
+      out[t * 6 + k] = lo;
+      out[t * 6 + 3 + k] = hi;
+    }
+  }
+  return out;
+}
+
 function setTriangle(tri: THREE.Triangle, P: Float32Array, a: number, b: number, c: number): void {
   tri.a.set(P[a * 3], P[a * 3 + 1], P[a * 3 + 2]);
   tri.b.set(P[b * 3], P[b * 3 + 1], P[b * 3 + 2]);
@@ -71,13 +92,17 @@ export function countNewSelfIntersections(
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(after, 3));
   geometry.setIndex(new THREE.BufferAttribute(indices.slice(), 1));
-  const bvh = new MeshBVH(geometry);
+  const bvh = new MeshBVH(geometry, { targetLeafSize: BVH_LEAF_SIZE });
   const idx = geometry.index!.array as Uint32Array; // reordenado por la BVH
+  const boxes = triangleBoxes(after, idx);
   const old1 = new ExtendedTriangle(), old2 = new ExtendedTriangle();
   let count = 0;
   bvh.bvhcast(bvh, new THREE.Matrix4(), {
     intersectsTriangles: (t1, t2, i1, i2) => {
       if (i1 >= i2) return false; // cada par una vez (y no consigo mismo)
+      const o1 = i1 * 6, o2 = i2 * 6;
+      if (boxes[o1] > boxes[o2 + 3] || boxes[o2] > boxes[o1 + 3] || boxes[o1 + 1] > boxes[o2 + 4] ||
+          boxes[o2 + 1] > boxes[o1 + 4] || boxes[o1 + 2] > boxes[o2 + 5] || boxes[o2 + 2] > boxes[o1 + 5]) return false;
       const a1 = idx[i1 * 3], b1 = idx[i1 * 3 + 1], c1 = idx[i1 * 3 + 2];
       const a2 = idx[i2 * 3], b2 = idx[i2 * 3 + 1], c2 = idx[i2 * 3 + 2];
       if (!moved[a1] && !moved[b1] && !moved[c1] && !moved[a2] && !moved[b2] && !moved[c2]) return false;
