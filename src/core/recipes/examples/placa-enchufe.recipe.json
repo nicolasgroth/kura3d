@@ -59,7 +59,7 @@
       "modules": "Módulos", "mw": "Ancho de módulo", "winw": "Ancho de ventana", "winh": "Alto de ventana", "ph": "Alto de placa",
       "margin": "Margen lateral", "t": "Grosor", "screwAxis": "Tornillos", "sides": "A los lados", "topBottom": "Arriba y abajo",
       "spacing": "Distancia entre tornillos", "screw": "Diámetro de tornillo",
-      "cl": "Chile (por verificar)", "it": "Italia (por verificar)", "es": "España (por verificar)", "us": "EE. UU. (por verificar)",
+      "cl": "Chile", "it": "Italia", "es": "España", "us": "EE. UU.",
       "winTooTall": "La ventana es casi tan alta como la placa.", "screwOut": "Los tornillos quedan fuera de la placa.",
       "screwInWindow": "Los tornillos caen dentro de la ventana.",
       "unverified": "Medidas de ejemplo: mide tu caja antes de imprimir.", "outPlate": "Placa"
@@ -70,7 +70,7 @@
       "modules": "Modules", "mw": "Module width", "winw": "Window width", "winh": "Window height", "ph": "Plate height",
       "margin": "Side margin", "t": "Thickness", "screwAxis": "Screws", "sides": "On the sides", "topBottom": "Top and bottom",
       "spacing": "Screw spacing", "screw": "Screw diameter",
-      "cl": "Chile (to verify)", "it": "Italy (to verify)", "es": "Spain (to verify)", "us": "USA (to verify)",
+      "cl": "Chile", "it": "Italy", "es": "Spain", "us": "USA",
       "winTooTall": "The window is almost as tall as the plate.", "screwOut": "The screws fall outside the plate.",
       "screwInWindow": "The screws fall inside the window.",
       "unverified": "Example sizes: measure your box before printing.", "outPlate": "Plate"

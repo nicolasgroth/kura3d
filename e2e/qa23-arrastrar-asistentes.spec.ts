@@ -306,9 +306,8 @@ test.describe('B. asistentes', () => {
     expect(errs.filter((e) => !/favicon/.test(e))).toEqual([]);
   });
 
-  // FALLO CONOCIDO QA23 (mayor): la segunda creación cae exactamente sobre la primera. Al corregirse, quitar test.fail.
+  // QA23: la segunda creación caía exactamente sobre la primera (corregido: las salidas van a un hueco libre).
   test('crear dos veces seguidas sin deshacer: la segunda no se solapa con la primera', async ({ page }) => {
-    test.fail();
     await abrir(page);
     for (let k = 1; k <= 2; k++) {
       await abrirAsistentes(page);
@@ -321,7 +320,7 @@ test.describe('B. asistentes', () => {
     const cajas = o.filter((x: any) => x.name === 'Caja');
     expect(cajas).toHaveLength(2);
     const [a, b] = cajas;
-    const solapa = Math.abs(a.pos[0] - b.pos[0]) < (a.dims[0] + b.dims[0]) / 2 - 0.01 && Math.abs(a.pos[1] - b.pos[1]) < (a.dims[1] + b.dims[1]) / 2 - 0.01;
+    const solapa = Math.abs(a.pos[0] - b.pos[0]) < (a.dims[0] + b.dims[0]) / 2 - 0.01 && Math.abs(a.pos[2] - b.pos[2]) < (a.dims[2] + b.dims[2]) / 2 - 0.01; // planta: X y Z (Y es la altura)
     expect(solapa, 'la segunda caja cae sobre la primera').toBe(false);
   });
 

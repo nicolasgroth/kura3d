@@ -36,6 +36,38 @@ describe('runAssistant (motor real)', () => {
     expect(store().objects.map((o) => o.id)).toEqual([cube.id]);
   });
 
+  it('crear dos veces no apila: el segundo juego cae en otro hueco, cada tapa conserva la distancia a su caja y todo queda en la cama', async () => {
+    const footprint = (o: { mesh: { positions: ArrayLike<number> }; position: readonly number[] }) => {
+      let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+      for (let i = 0; i < o.mesh.positions.length; i += 3) {
+        minX = Math.min(minX, o.mesh.positions[i] + o.position[0]); maxX = Math.max(maxX, o.mesh.positions[i] + o.position[0]);
+        minZ = Math.min(minZ, o.mesh.positions[i + 2] + o.position[2]); maxZ = Math.max(maxZ, o.mesh.positions[i + 2] + o.position[2]);
+      }
+      return { minX, maxX, minZ, maxZ };
+    };
+    await runAssistant({ recipe: builtinRecipe('kura.caja-tapa'), answers: {} });
+    await runAssistant({ recipe: builtinRecipe('kura.caja-tapa'), answers: {} });
+    const objs = store().objects;
+    expect(objs.map((o) => o.name)).toEqual(['Caja', 'Tapa', 'Caja', 'Tapa']);
+    const fps = objs.map(footprint);
+    for (let a = 0; a < fps.length; a++) {
+      for (let b = a + 1; b < fps.length; b++) {
+        const overlap = fps[a].minX < fps[b].maxX - 1e-6 && fps[a].maxX > fps[b].minX + 1e-6 && fps[a].minZ < fps[b].maxZ - 1e-6 && fps[a].maxZ > fps[b].minZ + 1e-6;
+        expect(overlap, `${a} y ${b} se solapan`).toBe(false);
+      }
+    }
+    // El bloque se mueve entero: la tapa queda a la misma distancia de su caja en los dos juegos.
+    const gap = (i: number) => [objs[i + 1].position[0] - objs[i].position[0], objs[i + 1].position[2] - objs[i].position[2]];
+    expect(gap(2)[0]).toBeCloseTo(gap(0)[0], 6);
+    expect(gap(2)[1]).toBeCloseTo(gap(0)[1], 6);
+    // El primer juego, con la cama por defecto, queda dentro de la cama y sin el aviso de «fuera de la cama».
+    const bed = store().printerProfile;
+    for (const f of fps.slice(0, 2)) {
+      expect(f.minX).toBeGreaterThanOrEqual(-bed.bedWidthMm / 2 - 1e-6);
+      expect(f.maxX).toBeLessThanOrEqual(bed.bedWidthMm / 2 + 1e-6);
+    }
+  });
+
   it('con una variante crea la pieza y la deja marcada con su procedencia', async () => {
     const outcome = await runAssistant({ recipe: builtinRecipe('kura.placa-enchufe'), answers: {}, variant: 'us' });
     expect(outcome.status).toBe('created');

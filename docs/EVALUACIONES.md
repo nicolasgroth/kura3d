@@ -512,3 +512,24 @@ No evaluado: guardar y abrir `.kura`, arrastrar el manipulador, ángulo/área/ca
 Serie de usabilidad: 76 → 75 → 79 → 78 → 80 → 81. Sexta ronda bajo el mínimo: se consulta de nuevo al autor.
 
 Consumo: evaluador (Opus · 17 min).
+
+## QA23 · 24 de noviembre de 2026, 12:15 · rama `feat/asistentes-y-arrastrar` · rechazada, corregida
+
+Dos funcionalidades nuevas: arrastrar el objeto seleccionado para moverlo sobre su plano horizontal, y la sección Asistentes (caja con tapa, llavero, placa de enchufe).
+
+**Arrastrar para mover:** sin fallos. Objeto apoyado y elevado, varias vistas incluida la rasante, varios seleccionados, bloqueados, Escape, un solo paso de deshacer, rejilla, grupos; no actúa con Pintar, Cortar, Borrar ni Medir. Con Rotar o Escalar activos el cuerpo no mueve el objeto (decisión del desarrollo). Con un STL de 253 mil triángulos no congela, pero va a unas 4 imágenes por segundo, un 50 % más lento que orbitar. Sin probar: táctil y lápiz.
+
+**Asistentes:** rechazada por dos fallos mayores, corregidos por el orquestador:
+
+1. Crear dos veces el mismo asistente apilaba el segundo juego sobre el primero. Ahora las salidas de una receta se llevan como bloque al primer hueco libre de la cama.
+2. Con la cama por defecto la tapa quedaba 8 mm fuera de la cama y el aviso no lo decía. Con la colocación en bloque el juego queda centrado dentro de la cama, y si no cabe sale el aviso habitual.
+
+Menores corregidos: el llavero no tenía descripción; las variantes de la placa decían «(por verificar) (sin verificar)». Menor pendiente: a 390 px la hoja de Asistentes abre muy baja (se ve un solo campo). Antes de la QA se corrigieron dos variantes de la placa (Italia y España) que no respetaban su propio rango.
+
+Lo demás pasó: lista, foco, teclado, paleta, rangos con mensaje junto al campo, coma decimal, las 4 variantes de la placa, medidas de la caja (84 × 64 × 42 exterior para 80 × 60 × 40 interior con pared 2), un solo deshacer, inglés, 390/1024/1440 px sin scroll horizontal. Recorridos vecinos: 19 de 19.
+
+Tras las correcciones: 2638 pruebas del frontend pasan; el recorrido de doble creación pasa en navegador (su medición comparaba la altura en vez del fondo y se corrigió).
+
+No probado: tema oscuro real, táctil y lápiz, 1280×720, contenido de los archivos exportados, «Comprobar encaje» de la caja con la tapa montada, idiomas de, fr, hi y zh.
+
+Consumo (modelo · duración · tokens): arrastrar para mover (Sonnet · 24 min · 190 k), Asistentes (Sonnet · 22 min · 283 k), QA23 (Sonnet · 39 min · 176 k).

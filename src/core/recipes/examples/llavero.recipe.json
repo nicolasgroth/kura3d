@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "kura": ">=0.8.0",
   "title": "$t:title",
+  "description": "$t:description",
   "author": "Kura3D",
   "license": "MIT",
   "category": "regalos",
@@ -40,12 +41,12 @@
   "outputs": [{ "ref": "@out", "name": "=p.text" }],
   "strings": {
     "es": {
-      "title": "Llavero con texto", "text": "Texto", "size": "Tamaño de letra", "mode": "Texto", "relief": "En relieve",
+      "title": "Llavero con texto", "description": "Placa con tu texto en relieve o grabado y agujero para la argolla.", "text": "Texto", "size": "Tamaño de letra", "mode": "Texto", "relief": "En relieve",
       "engrave": "Grabado", "base": "Grosor de la base", "depth": "Profundidad del texto", "ring": "Diámetro de la argolla",
       "logo": "Logo (SVG)", "empty": "Escribe un texto o elige un logo.", "tooDeep": "El grabado atraviesa casi toda la base."
     },
     "en": {
-      "title": "Text keychain", "text": "Text", "size": "Letter size", "mode": "Text", "relief": "Raised",
+      "title": "Text keychain", "description": "Tag with your text raised or engraved and a ring hole.", "text": "Text", "size": "Letter size", "mode": "Text", "relief": "Raised",
       "engrave": "Engraved", "base": "Base thickness", "depth": "Text depth", "ring": "Ring diameter",
       "logo": "Logo (SVG)", "empty": "Type a text or choose a logo.", "tooDeep": "The engraving goes through almost all the base."
     }
