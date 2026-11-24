@@ -454,3 +454,5 @@ No alcanzó: insertar SVG e imagen a 3D, aviso de unidades, guardar `.kura` en d
 Serie de usabilidad: 76 → 75 → 79 → 78 → 80. Quinta ronda bajo el mínimo: corresponde consultar al autor (regla 6).
 
 Consumo: evaluador (Opus · ~22 min).
+
+Suite completa de navegador sobre `e60ef2a` (24-nov, 05:35 · 1,3 h): 353 recorridos pasan, 12 omitidos, 1 falla (`ux-texto-menu`, menú de clic derecho sobre el fondo). Aislado pasa 3 de 3; la prueba medía el lienzo antes de que tomara su tamaño y ahora espera a que ocupe el visor (causa probable, no confirmada con la traza). Capturas de las guías regeneradas (17 de 17) y enlaces sin roturas.

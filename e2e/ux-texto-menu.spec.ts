@@ -21,6 +21,9 @@ test('menú del fondo, menú del objeto y error de SVG dentro del diálogo', asy
 
   // Clic derecho real en el fondo vacío.
   const canvas = page.locator('canvas').first();
+  // El lienzo nace de 300×150 y r3f lo agranda al medir el visor: con la máquina cargada, medirlo antes deja el
+  // clic sobre la barra de vista y el menú no abre. Se espera a que ocupe el visor.
+  await expect.poll(async () => (await canvas.boundingBox())?.width ?? 0).toBeGreaterThan(500);
   const box = (await canvas.boundingBox())!;
   await page.mouse.click(box.x + box.width * 0.6, box.y + box.height * 0.3, { button: 'right' });
   const bgMenu = page.getByRole('menu').first();
