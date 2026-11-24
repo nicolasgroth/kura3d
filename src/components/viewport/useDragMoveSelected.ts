@@ -15,7 +15,8 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useThree, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { DRAG_MOVE_THRESHOLD_PX, dragMoveDelta, dragSnapMm } from '../../core/scene/dragMovePlane';
+import { DRAG_MOVE_THRESHOLD_PX, dragBoundsForBed, dragMoveDelta, dragSnapMm } from '../../core/scene/dragMovePlane';
+import { activeBedSize } from '../../store/bedSize';
 import { t } from '../../i18n';
 import { useGizmoDragStore } from '../../store/gizmoDragStore';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -27,6 +28,8 @@ interface Session {
   pointerId: number;
   startX: number;
   startY: number;
+  lastX: number;
+  lastY: number;
   grab: Vec3;
   baseline: Baseline;
   reference: Vec3;
@@ -78,10 +81,13 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       session.current = null;
       const store = useKuraStore.getState();
       if (s.active) {
-        if (mode === 'commit') store.commitTransformSnapshot();
+        // Soltar sin desplazamiento neto (vista rasante, o en el punto de partida) no deja un paso de deshacer.
+        const moved = s.lastDelta[0] !== 0 || s.lastDelta[2] !== 0;
+        if (mode === 'commit' && moved) store.commitTransformSnapshot();
         else store.cancelTransformSnapshot();
         useGizmoDragStore.getState().end();
-        canvas.style.cursor = s.previousCursor;
+        // El cursor de «agarrar» pertenece al objeto: si el puntero ya salió, no debe quedar pegado.
+        canvas.style.cursor = s.previousCursor === 'grab' || s.previousCursor === 'not-allowed' ? '' : s.previousCursor;
       } else if (mode === 'commit') {
         s.onClick();
       }
@@ -125,6 +131,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       grab: s.grab,
       reference: s.reference,
       snapMm: dragSnapMm(store.snapGridMm, p.ctrl),
+      bounds: dragBoundsForBed(activeBedSize(store)),
     });
     // Vista rasante o rayo que no alcanza el plano: se conserva la última posición válida.
     if (delta) s.lastDelta = delta;
@@ -135,8 +142,9 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
 
   const startDragMove = useCallback(
     (e: ThreeEvent<PointerEvent>, onClick: () => void, options?: DragMoveOptions) => {
-      const moveEnabled = options?.moveEnabled ?? true;
       const state = useKuraStore.getState();
+      // Motor ocupado: `transformSelectionRigid` no movería nada; el gesto queda como clic y la cámara orbita.
+      const moveEnabled = (options?.moveEnabled ?? true) && !state.busyOperation;
       const baseline: Baseline = moveEnabled
         ? state.objects
             .filter((o) => state.selectedIds.includes(o.id))
@@ -147,6 +155,8 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
         pointerId: e.pointerId,
         startX: e.nativeEvent.clientX,
         startY: e.nativeEvent.clientY,
+        lastX: e.nativeEvent.clientX,
+        lastY: e.nativeEvent.clientY,
         grab: [e.point.x, e.point.y, e.point.z],
         baseline,
         reference: firstMovable ? ([...firstMovable.position] as Vec3) : ZERO,
@@ -193,6 +203,8 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
         useGizmoDragStore.getState().begin();
         canvas.style.cursor = 'grabbing';
       }
+      s.lastX = ev.clientX;
+      s.lastY = ev.clientY;
       pending.current = { x: ev.clientX, y: ev.clientY, ctrl: ev.ctrlKey || ev.metaKey };
       if (!frame.current) frame.current = requestAnimationFrame(() => applyRef.current());
     };
@@ -219,7 +231,14 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       if (s && ev.pointerId !== s.pointerId) finish('cancel', false);
     };
     const onKey = (ev: KeyboardEvent) => {
-      if (ev.key !== 'Escape' || !session.current) return;
+      const s = session.current;
+      // Ctrl/Cmd cambia el ajuste a 1 mm: se recalcula en el acto, sin esperar a que el ratón se mueva.
+      if ((ev.key === 'Control' || ev.key === 'Meta') && s?.active && ev.type !== 'keypress') {
+        pending.current = { x: s.lastX, y: s.lastY, ctrl: ev.type === 'keydown' };
+        if (!frame.current) frame.current = requestAnimationFrame(() => applyRef.current());
+        return;
+      }
+      if (ev.key !== 'Escape' || ev.type !== 'keydown' || !session.current) return;
       ev.preventDefault();
       ev.stopPropagation();
       finish('cancel', false);
@@ -233,6 +252,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
     window.addEventListener('pointercancel', onUp);
     window.addEventListener('pointerdown', onOtherDown, true);
     window.addEventListener('keydown', onKey, true);
+    window.addEventListener('keyup', onKey, true);
     window.addEventListener('blur', onBlur);
     canvas.addEventListener('lostpointercapture', onLostCapture);
     return () => {
@@ -241,6 +261,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       window.removeEventListener('pointercancel', onUp);
       window.removeEventListener('pointerdown', onOtherDown, true);
       window.removeEventListener('keydown', onKey, true);
+    window.removeEventListener('keyup', onKey, true);
       window.removeEventListener('blur', onBlur);
       canvas.removeEventListener('lostpointercapture', onLostCapture);
     };

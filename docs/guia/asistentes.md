@@ -1,6 +1,6 @@
 # Asistentes
 
-Un asistente crea una pieza completa a partir de unas pocas preguntas: eliges las medidas, y Kura3D arma la pieza (o varias, como una caja y su tapa) lista para revisar, dividir o exportar. Hoy vienen tres: **Caja con tapa**, **Llavero** y **Placa de enchufe**. Cada uno está hecho con una *receta*, un archivo de datos (sin código) que describe sus preguntas, sus reglas y los pasos para construir la pieza.
+Un asistente crea una pieza completa a partir de unas pocas preguntas: eliges las medidas, y Kura3D arma la pieza (o varias, como una caja y su tapa) lista para revisar, dividir o exportar. Hoy vienen tres: **Caja con tapa**, **Llavero con texto** y **Placa de enchufe**. Cada uno está hecho con una *receta*, un archivo de datos (sin código) que describe sus preguntas, sus reglas y los pasos para construir la pieza.
 
 Los asistentes solo preparan la geometría. No laminan ni generan G-code.
 
@@ -9,7 +9,7 @@ Los asistentes solo preparan la geometría. No laminan ni generan G-code.
 1. Elige **Insertar › Asistentes** en la barra superior (en el teléfono, en la hoja **Agregar**). También sirve `Ctrl+K` y escribir *Asistentes* o el nombre del asistente, por ejemplo *Asistente: Caja con tapa*, que abre su formulario directo.
 2. Se abre el panel **Asistentes** a la derecha, con la lista. Cada tarjeta trae el nombre, una descripción corta y, si el asistente ofrece variantes, cuántas.
 
-![Lista de asistentes: Caja con tapa, Llavero y Placa de enchufe](img/asistentes-01-lista.png)
+![Lista de asistentes: Caja con tapa, Llavero con texto y Placa de enchufe](img/asistentes-01-lista.png)
 
 ## Crear una caja con tapa
 

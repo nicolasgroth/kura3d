@@ -13,7 +13,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { t } from '../../i18n';
 import { closeAssistants, openAssistants, useAssistantsPanel } from '../../store/assistantsPanel';
-import { setText3DPanelOpen, useText3DPanel } from '../../store/insertCatalog';
+import { setText3DPanelOpen, startPanelExclusion, useText3DPanel } from '../../store/insertCatalog';
 import { useKuraStore } from '../../store/useKuraStore';
 import { fakeBox } from '../../test/fakeObjects';
 import { AssistantsPanel } from '../assistants/AssistantsPanel';
@@ -191,7 +191,26 @@ describe('Asistentes: foco y paneles', () => {
     await waitFor(() => expect((document.activeElement as HTMLElement | null)?.getAttribute('data-recipe')).toBe(CAJA));
   });
 
+  it('sin arrancar la exclusión, importar el módulo no enlaza los paneles; al arrancarla (una vez) sí, y se puede quitar', () => {
+    act(() => openAssistants());
+    act(() => setText3DPanelOpen(true));
+    expect(useAssistantsPanel.getState().open).toBe(true);
+    act(() => setText3DPanelOpen(false));
+    closeAssistants();
+    const stop = startPanelExclusion();
+    expect(startPanelExclusion()).toBe(stop);
+    act(() => openAssistants());
+    act(() => setText3DPanelOpen(true));
+    expect(useAssistantsPanel.getState().open).toBe(false);
+    stop();
+    setText3DPanelOpen(false);
+    act(() => openAssistants());
+    act(() => setText3DPanelOpen(true));
+    expect(useAssistantsPanel.getState().open).toBe(true);
+  });
+
   it('abrir Texto 3D cierra Asistentes y al revés', () => {
+    const stop = startPanelExclusion();
     act(() => openAssistants());
     expect(useAssistantsPanel.getState().open).toBe(true);
     act(() => setText3DPanelOpen(true));
@@ -200,6 +219,7 @@ describe('Asistentes: foco y paneles', () => {
     act(() => openAssistants());
     expect(useText3DPanel.getState().open).toBe(false);
     expect(useAssistantsPanel.getState().open).toBe(true);
+    stop();
   });
 
   it('mientras crea, el indicador visible muestra «Creando…» junto al botón', async () => {

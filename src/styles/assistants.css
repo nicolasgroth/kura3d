@@ -218,15 +218,33 @@
 }
 
 .kura-asis-actions {
+  /* Barra fija al pie de la hoja: el formulario termina encima de ella y nada queda tapado. */
   position: sticky;
   bottom: 0;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  padding: 8px 0 2px;
+  margin: auto -14px 0;
+  padding: 8px 14px calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border-subtle);
   background: var(--bg-panel);
+  box-shadow: 0 -6px 10px -8px rgba(0, 0, 0, 0.35);
+}
+
+.kura-asis-panel .kura-op-panel-body {
+  padding-bottom: 0;
+}
+
+.kura-asis-panel .kura-asis-form-wrap,
+.kura-asis-form {
+  flex: 1 1 auto;
+}
+
+.kura-asis-counter.is-limit {
+  font-weight: 700;
 }
 
 .kura-asis-status {
@@ -268,7 +286,7 @@
 }
 
 .kura-asis-panel .kura-op-panel-body {
-  scroll-padding-bottom: 96px;
+  scroll-padding-bottom: 120px;
 }
 
 /* Hoja estrecha: el asistente necesita más alto que la hoja media por defecto para ver más de un campo. */

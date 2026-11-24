@@ -118,7 +118,8 @@ describe('useDragMoveSelected', () => {
     expect(onClick).not.toHaveBeenCalled();
     expect(useGizmoDragStore.getState().start).toBeNull();
     expect(orbit.current.enabled).toBe(true);
-    expect(canvas.style.cursor).toBe('grab');
+    // El cursor de «agarrar» es del objeto: al soltar no queda pegado (el objeto lo repone si el puntero sigue encima).
+    expect(canvas.style.cursor).toBe('');
   });
 
   it('al soltar aplica la última posición aunque el cuadro no haya corrido', () => {
@@ -181,7 +182,7 @@ describe('useDragMoveSelected', () => {
     window.dispatchEvent(new Event('blur'));
     expect(spies.cancel).toHaveBeenCalledTimes(1);
     expect(useGizmoDragStore.getState().start).toBeNull();
-    expect(canvas.style.cursor).toBe('grab');
+    expect(canvas.style.cursor).toBe('');
   });
 
   it('perder la captura del puntero cancela el gesto', () => {
@@ -257,5 +258,113 @@ describe('useDragMoveSelected', () => {
     pointer('pointermove', { x: 101, y: 100 });
     pointer('pointerup', { x: 101, y: 100 });
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  describe('sentido y magnitud (cámara conocida: en (0,500,500) mirando al origen, fov 50, lienzo 200x200)', () => {
+    const lastTranslate = () => {
+      const calls = spies.rigid.mock.calls;
+      return (calls[calls.length - 1][0] as { translate: number[] }).translate;
+    };
+    const tanHalf = Math.tan((25 * Math.PI) / 180);
+    const f = Math.SQRT1_2;
+
+    it('50 px a la derecha mueven +X exactamente lo que predice la geometría y nada en Z', () => {
+      const { start } = setup();
+      start();
+      pointer('pointermove', { x: 150, y: 100 });
+      flushFrames();
+      // rayo = adelante + 0,5·tan(25°)·derecha, desde y=500: corta y=0 en t = 500/f.
+      const expectedX = 0.5 * tanHalf * (500 / f);
+      const [dx, dy, dz] = lastTranslate();
+      expect(dx).toBeCloseTo(expectedX, 4);
+      expect(dx).toBeGreaterThan(0);
+      expect(dy).toBe(0);
+      expect(Math.abs(dz)).toBeLessThan(1e-6);
+    });
+
+    it('50 px hacia abajo (hacia la cámara) mueven +Z; hacia arriba, -Z', () => {
+      const { start } = setup();
+      start();
+      pointer('pointermove', { x: 100, y: 150 });
+      flushFrames();
+      // ndcY = -0,5; arriba de cámara = (0, f, -f): dir = adelante - 0,5·tan·arriba.
+      const dirY = -f - 0.5 * tanHalf * f;
+      const dirZ = -f + 0.5 * tanHalf * f;
+      const t = 500 / -dirY;
+      const expectedZ = 500 + dirZ * t;
+      const down = lastTranslate();
+      expect(down[2]).toBeCloseTo(expectedZ, 4);
+      expect(down[2]).toBeGreaterThan(0);
+      expect(Math.abs(down[0])).toBeLessThan(1e-6);
+      pointer('pointermove', { x: 100, y: 50 });
+      flushFrames();
+      expect(lastTranslate()[2]).toBeLessThan(0);
+    });
+  });
+
+  it('soltar sin desplazamiento neto (vuelta al punto de partida) cancela el paso de deshacer', () => {
+    const { start } = setup();
+    start();
+    pointer('pointermove', { x: 150, y: 100 });
+    flushFrames();
+    pointer('pointermove', { x: 100, y: 100 });
+    pointer('pointerup', { x: 100, y: 100 });
+    expect(spies.commit).not.toHaveBeenCalled();
+    expect(spies.cancel).toHaveBeenCalledTimes(1);
+    expect(useGizmoDragStore.getState().start).toBeNull();
+  });
+
+  it('con vista rasante desde el inicio nada se mueve y no queda paso de deshacer', () => {
+    camera.position.set(0, 5, 1000);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld(true);
+    const { start } = setup();
+    start();
+    pointer('pointermove', { x: 150, y: 100 });
+    pointer('pointerup', { x: 150, y: 100 });
+    expect(spies.commit).not.toHaveBeenCalled();
+    expect(spies.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('con el motor ocupado no inicia el arrastre: la cámara sigue libre y el cursor no cambia', () => {
+    useKuraStore.setState({ busyOperation: 'dividir' } as never);
+    const { start, onClick } = setup();
+    start();
+    expect(orbit.current.enabled).toBe(true);
+    pointer('pointermove', { x: 150, y: 100 });
+    flushFrames();
+    expect(canvas.style.cursor).toBe('grab');
+    expect(spies.rigid).not.toHaveBeenCalled();
+    pointer('pointerup', { x: 150, y: 100 });
+    expect(onClick).not.toHaveBeenCalled();
+    useKuraStore.setState({ busyOperation: null } as never);
+  });
+
+  it('la posición final queda dentro de la cama más un margen igual a su lado mayor', () => {
+    useKuraStore.setState({ customBedDimensions: { width: 100, depth: 100, height: 100 } } as never);
+    const { start } = setup();
+    start();
+    pointer('pointermove', { x: 200, y: 100 });
+    flushFrames();
+    const [dx] = (spies.rigid.mock.calls[0][0] as { translate: number[] }).translate;
+    expect(dx).toBeCloseTo(50 + 100, 6);
+    useKuraStore.setState({ customBedDimensions: null } as never);
+  });
+
+  it('pulsar o soltar Ctrl recalcula el ajuste a 1 mm sin mover el ratón', () => {
+    const { start } = setup();
+    start();
+    pointer('pointermove', { x: 123, y: 100 });
+    flushFrames();
+    const free = (spies.rigid.mock.calls[0][0] as { translate: number[] }).translate[0];
+    expect(Number.isInteger(free)).toBe(false);
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', bubbles: true }));
+    flushFrames();
+    const snapped = (spies.rigid.mock.calls[1][0] as { translate: number[] }).translate[0];
+    expect(Number.isInteger(snapped)).toBe(true);
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Control', bubbles: true }));
+    flushFrames();
+    expect((spies.rigid.mock.calls[2][0] as { translate: number[] }).translate[0]).toBeCloseTo(free, 9);
+    pointer('pointerup');
   });
 });
