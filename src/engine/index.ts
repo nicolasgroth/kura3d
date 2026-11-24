@@ -192,3 +192,14 @@ export {
   type OperationRange,
 } from './operationLimits';
 export * from './split';
+
+export {
+  smoothMesh,
+  trianglesWithColor,
+  SMOOTH_DEFAULTS,
+  SMOOTH_RANGES,
+  type SmoothOptions,
+  type SmoothReport,
+  type SmoothResult,
+  type SmoothZone,
+} from './smooth';

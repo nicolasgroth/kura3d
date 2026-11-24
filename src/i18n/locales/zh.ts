@@ -19,6 +19,7 @@ import { PREVIEW_ZH } from './preview';
 import { SPLITJOINTS_ZH } from './splitJoints';
 import { SPLITPREFS_ZH } from './splitPrefs';
 import { AJUSTAR_ZH } from './ajustarImpresora';
+import { SUAVIZAR_ZH } from './suavizarMotor';
 import { SPLITCOUPLING_ZH } from './splitCoupling';
 import { A11YUX_ZH } from './a11yUx';
 import { UXMOVIL_ZH } from './uxMovil';
@@ -67,6 +68,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...SPLITJOINTS_ZH,
   ...SPLITPREFS_ZH,
   ...AJUSTAR_ZH,
+  ...SUAVIZAR_ZH,
   ...SPLITCOUPLING_ZH,
   ...A11YUX_ZH,
   ...UXMOVIL_ZH,

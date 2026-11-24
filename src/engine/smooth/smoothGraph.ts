@@ -1,0 +1,149 @@
+/**
+ * @file src/engine/smooth/smoothGraph.ts
+ * @description Grafo de vértices soldados para «Suavizar malla», armado una sola vez por llamada:
+ * reutiliza la adyacencia por arista de la pintura (`getFaceAdjacency`: soldadura de costuras,
+ * aristas y normales por cara), arma la lista de vecinos en CSR, bloquea los vértices de aristas
+ * vivas (diedro sobre el umbral), de bordes abiertos y de aristas no manifold, y asigna a cada
+ * vértice un peso 0–1 según la zona y su anillo de atenuación.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import type { MeshData } from '../../types/kura';
+import { getFaceAdjacency } from '../paint/faceAdjacency';
+import type { ResolvedSmoothOptions } from './smoothOptions';
+
+export interface SmoothGraph {
+  /** Vértice soldado de cada vértice original. */
+  weld: Uint32Array;
+  /** Cantidad de vértices soldados. */
+  weldedCount: number;
+  /** Vecinos del soldado `v`: `nbr[nbrStart[v] .. nbrStart[v+1])`. */
+  nbrStart: Uint32Array;
+  nbr: Uint32Array;
+  /** Peso de movimiento por soldado (0 = fijo, 1 = suavizado pleno). */
+  weight: Float32Array;
+  /** Soldados con peso > 0. */
+  active: Uint32Array;
+  /** Soldados fijados por arista viva, borde abierto o arista no manifold. */
+  lockedCount: number;
+}
+
+/** Arma el grafo y los pesos de suavizado. */
+export function buildSmoothGraph(mesh: MeshData, opts: ResolvedSmoothOptions): SmoothGraph {
+  const I = mesh.indices;
+  const adj = getFaceAdjacency(mesh);
+  const { weld, sideEdge, edgeStart, edgeTris, normals } = adj;
+  let weldedCount = 0;
+  for (let v = 0; v < weld.length; v++) if (weld[v] + 1 > weldedCount) weldedCount = weld[v] + 1;
+  const edgeCount = edgeStart.length - 1;
+
+  // Extremos (soldados) de cada arista.
+  const edgeA = new Int32Array(edgeCount).fill(-1);
+  const edgeB = new Int32Array(edgeCount);
+  for (let s = 0; s < sideEdge.length; s++) {
+    const e = sideEdge[s];
+    if (edgeA[e] !== -1) continue;
+    const t = Math.floor(s / 3), k = s % 3;
+    edgeA[e] = weld[I[t * 3 + k]];
+    edgeB[e] = weld[I[t * 3 + ((k + 1) % 3)]];
+  }
+
+  // Bloqueos y vecindad.
+  const locked = new Uint8Array(weldedCount);
+  const degree = new Uint32Array(weldedCount + 1);
+  const sharpCos = Math.cos((opts.sharpAngleDeg * Math.PI) / 180);
+  for (let e = 0; e < edgeCount; e++) {
+    const a = edgeA[e], b = edgeB[e];
+    if (a < 0 || a === b) continue;
+    degree[a + 1]++;
+    degree[b + 1]++;
+    const n = edgeStart[e + 1] - edgeStart[e];
+    let lock = false;
+    if (n === 1) lock = opts.preserveBoundary;
+    else if (n > 2) lock = true;
+    else if (opts.preserveSharpEdges) {
+      const t0 = edgeTris[edgeStart[e]] * 3, t1 = edgeTris[edgeStart[e] + 1] * 3;
+      const dot = normals[t0] * normals[t1] + normals[t0 + 1] * normals[t1 + 1] + normals[t0 + 2] * normals[t1 + 2];
+      lock = dot < sharpCos;
+    }
+    if (lock) locked[a] = locked[b] = 1;
+  }
+  for (let v = 0; v < weldedCount; v++) degree[v + 1] += degree[v];
+  const nbrStart = degree;
+  const fill = nbrStart.slice(0, weldedCount);
+  const nbr = new Uint32Array(nbrStart[weldedCount]);
+  for (let e = 0; e < edgeCount; e++) {
+    const a = edgeA[e], b = edgeB[e];
+    if (a < 0 || a === b) continue;
+    nbr[fill[a]++] = b;
+    nbr[fill[b]++] = a;
+  }
+
+  const weight = zoneWeights(mesh, weld, weldedCount, nbrStart, nbr, opts);
+  let lockedCount = 0;
+  for (let v = 0; v < weldedCount; v++) {
+    if (locked[v]) {
+      lockedCount++;
+      weight[v] = 0;
+    } else if (nbrStart[v + 1] === nbrStart[v]) weight[v] = 0; // vértice suelto
+  }
+  let activeCount = 0;
+  for (let v = 0; v < weldedCount; v++) if (weight[v] > 0) activeCount++;
+  const active = new Uint32Array(activeCount);
+  for (let v = 0, i = 0; v < weldedCount; v++) if (weight[v] > 0) active[i++] = v;
+  return { weld, weldedCount, nbrStart, nbr, weight, active, lockedCount };
+}
+
+/**
+ * Pesos por zona: 1 dentro, `1 − r/(R+1)` en el anillo r (1..R) por fuera, 0 más allá.
+ * Sin zona, todo pesa 1.
+ */
+function zoneWeights(
+  mesh: MeshData,
+  weld: Uint32Array,
+  weldedCount: number,
+  nbrStart: Uint32Array,
+  nbr: Uint32Array,
+  opts: ResolvedSmoothOptions,
+): Float32Array {
+  const weight = new Float32Array(weldedCount);
+  const zone = opts.zone;
+  if (!zone) return weight.fill(1);
+  const vertCount = weld.length;
+  const triCount = mesh.indices.length / 3;
+  let frontier: number[] = [];
+  const seed = (orig: number) => {
+    if (!Number.isInteger(orig) || orig < 0 || orig >= vertCount) return;
+    const w = weld[orig];
+    if (weight[w] === 0) {
+      weight[w] = 1;
+      frontier.push(w);
+    }
+  };
+  if (zone.vertices) for (let i = 0; i < zone.vertices.length; i++) seed(zone.vertices[i]);
+  if (zone.triangles) {
+    for (let i = 0; i < zone.triangles.length; i++) {
+      const t = zone.triangles[i];
+      if (!Number.isInteger(t) || t < 0 || t >= triCount) continue;
+      for (let k = 0; k < 3; k++) seed(mesh.indices[t * 3 + k]);
+    }
+  }
+  const R = zone.falloffRings;
+  for (let r = 1; r <= R && frontier.length; r++) {
+    const w = 1 - r / (R + 1);
+    const next: number[] = [];
+    for (const v of frontier) {
+      for (let j = nbrStart[v]; j < nbrStart[v + 1]; j++) {
+        const u = nbr[j];
+        if (weight[u] === 0) {
+          weight[u] = w;
+          next.push(u);
+        }
+      }
+    }
+    frontier = next;
+  }
+  return weight;
+}
