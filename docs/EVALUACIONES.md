@@ -550,3 +550,21 @@ Sin bloqueos duros en ninguna. Bajo el mínimo (85) en cinco de las seis notas: 
 Fuera de esta ronda (quedan como mejoras): vista previa antes de crear, reabrir un asistente con los parámetros de lo creado, labio de la tapa en reborde, avellanado de tornillos, medidas reales por país de la placa, marca del plano de arrastre.
 
 Consumo (modelo · duración · tokens): usabilidad (Opus · 6 min · 161 k), código (Opus · 5 min · 140 k), funcional (Opus · 6 min · 129 k).
+
+## Arrastrar para mover y Asistentes · segunda ronda a ciegas · 24 de noviembre de 2026, 13:20 · rama `feat/asistentes-y-arrastrar` (`a1a5d1d`)
+
+Evaluadores nuevos tras dos lotes de corrección (recetas con casos reales; código y usabilidad). 2688 pruebas del frontend y 34 recorridos en navegador pasan.
+
+| Funcionalidad | Usabilidad | Código | Funcional | Primera ronda |
+|---|---|---|---|---|
+| Arrastrar para mover | 86 | 86 | 84 | 83 / 80 / 86 |
+| Asistentes | 84 | 83 | 82 | 81 / 83 / 70 |
+
+Sin bloqueos. Cuatro de seis notas siguen bajo 85, por hallazgos distintos de los ya corregidos:
+
+- **Arrastrar.** Funcional: alcance de 2000 mm fijo en vista casi rasante; sin selección, presionar una pieza la selecciona aunque luego se gire la vista. Código: las pruebas del gesto no verifican sentido ni magnitud; paso de deshacer vacío con desplazamiento cero; sin aviso con el motor ocupado. Usabilidad: en vista Frente la pieza no sigue al cursor (el plano sigue siendo horizontal); cursor «grab» sobre piezas bloqueadas; sin guía visual del plano.
+- **Asistentes.** Código: las recetas traen textos solo en español e inglés y la prueba de paridad no lo detecta; carrera al cargar archivos; `submit` sin `try/finally`. Funcional: emoji o SVG de solo trazo terminan en un error técnico del motor; caja chica con postes que tapan el interior; pestaña de la tapa a presión que resta altura sin decirlo; logo alto que deja un llavero de 290 mm; avellanado que atraviesa placas delgadas. Usabilidad: mensajes viejos junto a un valor inválido; texto cortado en silencio a 20 caracteres; cambiar de variante borra lo ingresado; «Crear» tapa un campo a 390 px; sin vista previa ni reedición.
+
+Tercera ronda de corrección en curso (dos lotes). Quedan fuera, como mejoras posteriores: vista previa en vivo, reabrir un asistente con los parámetros de lo creado, plano vertical al arrastrar en vista frontal y guía visual del plano.
+
+Consumo (modelo · duración · tokens): correcciones de código (Sonnet · 11 min · 174 k), recetas con casos reales (Opus · 13 min · 169 k), usabilidad (Opus · 8 min · 180 k), código (Opus · 5 min · 154 k), funcional (Opus · 8 min · 147 k).
