@@ -26,4 +26,13 @@ describe('MiddleEllipsisName', () => {
     const { container } = render(<MiddleEllipsisName name="Cubo 1" />);
     expect(container.querySelector('.kura-mid-tail')).toBeNull();
   });
+
+  it('un imán numerado conserva el contador al final aunque el nombre sea corto', () => {
+    const { container } = render(<MiddleEllipsisName name="Imán 5 × 2 (3)" />);
+    const root = container.querySelector('.kura-scene-name') as HTMLElement;
+    expect(root.textContent).toBe('Imán 5 × 2 (3)');
+    const tail = container.querySelector('.kura-mid-tail')?.textContent ?? '';
+    expect(tail.endsWith('(3)')).toBe(true);
+    expect(container.querySelector('.kura-mid-head')?.textContent).not.toMatch(/\(3\)/);
+  });
 });

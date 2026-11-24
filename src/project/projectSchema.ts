@@ -162,7 +162,7 @@ const recipeMetadata = shape({
 const addonMetadata = shape({
   kind: oneOf('magnet_pocket'),
   params: (v) => sanitizeMagnetParams(v) !== null && shape({
-    shape: str, sizeMm: finite, heightMm: finite, clearanceMm: finite, depthClearanceMm: finite, hidden: bool,
+    shape: str, sizeMm: finite, heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
   })(v),
   hostId: optional(id),
 });

@@ -229,11 +229,11 @@ const IMAN_TABLE = {
   'magnet.done': ['Listo', 'Done', 'Fertig', 'Terminé', 'हो गया', '完成'],
   'magnet.cmd.keywords': [
     'imán iman alojamiento hueco neodimio agregado',
-    'magnet pocket hole neodymium addon',
-    'magnet aufnahme aussparung neodym',
-    'aimant logement creux néodyme',
-    'चुंबक खाँचा छेद नियोडिमियम magnet',
-    '磁铁 槽 孔 钕磁铁 magnet',
+    'magnet pocket hole neodymium addon iman imán alojamiento',
+    'magnet aufnahme aussparung neodym iman imán alojamiento',
+    'aimant logement creux néodyme iman imán alojamiento',
+    'चुंबक खाँचा छेद नियोडिमियम magnet iman imán alojamiento',
+    '磁铁 槽 孔 钕磁铁 magnet iman imán alojamiento',
   ],
 } satisfies Record<string, Row>;
 

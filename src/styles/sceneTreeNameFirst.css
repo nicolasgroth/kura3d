@@ -22,3 +22,27 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Fila estrecha: la insignia de texto cede su ancho al nombre y queda como icono (con título y el estado va en el texto oculto). */
+.kura-tree-row {
+  container-type: inline-size;
+}
+
+.kura-tree-row .kura-hole-tag-icon {
+  display: none;
+}
+
+@container (max-width: 260px) {
+  .kura-tree-row .kura-hole-tag-text {
+    display: none;
+  }
+
+  .kura-tree-row .kura-hole-tag-icon {
+    display: block;
+  }
+
+  .kura-tree-row .kura-hole-tag {
+    flex: 0 0 auto;
+    padding: 2px;
+  }
+}
