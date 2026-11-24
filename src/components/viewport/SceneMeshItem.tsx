@@ -21,6 +21,7 @@ import { regionIdForFace } from '../../utils/segmentHighlight';
 import { onMeasureContextMenu, onMeasurePointerDown, onMeasurePointerMove, onMeasurePointerOut } from '../measure/measurePointer';
 import { buildViewportGeometry } from './creasedGeometry';
 import { hidePaintCursor, updatePaintCursor } from './PaintBrushCursor';
+import { ensureVisiblePaintColor } from '../paint/paintEraser';
 import { hasLiveStroke, queueLiveSample, startLiveStroke } from './livePaintStroke';
 import { brushQueryFromEvent, strokeNeedsEdgeRefine, strokeSampleFromEvent, usePaintRaycastAcceleration } from './paintPointer';
 import { continueStorePaintStroke, startStorePaintStroke } from './paintStrokeController';
@@ -209,7 +210,11 @@ export const SceneMeshItem: React.FC<{
           selectObject(obj.id, false);
           return;
         }
-        if (!isPrimarySelected) selectObject(obj.id, false);
+        if (!isPrimarySelected) {
+          selectObject(obj.id, false);
+          // Pintura directa: el primer trazo ya debe verse sobre el color del objeto.
+          ensureVisiblePaintColor(obj.color);
+        }
         onStartPaintDrag();
         const state = useKuraStore.getState();
         // Pincel sin subdivisión: trazo en vivo (pinta por frame y sube a la GPU solo lo cambiado).

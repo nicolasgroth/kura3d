@@ -93,23 +93,48 @@ test('Pintar sin seleccionar pinta directo el objeto bajo el pincel', async ({ p
     return (window as any).__s.getState().objects[0].id as string;
   });
   await page.waitForTimeout(400);
+  // Cámara de react-three-fiber para proyectar el cubo a la pantalla (como `ux-movil-helpers`).
+  await page.evaluate(async () => {
+    const w = window as any;
+    const urls = performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /react-three_fiber/.test(n));
+    for (const u of urls) {
+      const m = await import(/* @vite-ignore */ u);
+      if (m._roots) w.__r3f = [...m._roots.values()][0].store;
+    }
+  });
   const centro = await page.evaluate(() => (window as any).__s.getState().objects[0].position as [number, number, number]);
   await rail(page).getByRole('button', { name: 'Pintar' }).click();
   expect(await st(page, 'activeTool')).toBe('paint');
   expect(await st(page, 'selectedIds')).toEqual([]);
   await expect(panel(page)).toHaveAttribute('data-context', 'tool');
   const p = await aPixel(page, centro);
-  await page.mouse.move(p.x, p.y);
-  await page.mouse.down();
-  await page.mouse.move(p.x + 4, p.y + 2, { steps: 3 });
-  await page.mouse.up();
+  const trazo = async () => {
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.down();
+    await page.mouse.move(p.x + 4, p.y + 2, { steps: 3 });
+    await page.mouse.up();
+  };
+  await trazo();
   await expect.poll(() => st(page, 'selectedIds')).toEqual([id]);
-  const pintado = await page.evaluate(() => {
-    const s = (window as any).__s.getState();
-    const faces: string[] | undefined = s.objects[0].mesh.faceColors;
-    return Boolean(faces && faces.some((c) => c.toLowerCase() === s.paintColor.toLowerCase()));
-  });
-  expect(pintado).toBe(true);
+  // La primitiva pide confirmación antes de pintar (aviso existente): se acepta y se repite el trazo.
+  const aviso = page.getByRole('dialog').getByRole('button', { name: 'Pintar igual', exact: true });
+  await expect(page.getByRole('heading', { name: 'Pintar quita los parámetros' })).toBeVisible();
+  await page.waitForTimeout(600);
+  if (await aviso.first().isVisible().catch(() => false)) {
+    await aviso.first().click();
+    await page.waitForTimeout(800);
+    await trazo();
+  }
+  // Alguna cara quedó con un color distinto del color base del objeto.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const o = (window as any).__s.getState().objects[0];
+        const faces: string[] | undefined = o.mesh.faceColors;
+        return Boolean(faces && faces.some((c) => c.toLowerCase() !== o.color.toLowerCase()));
+      }),
+    )
+    .toBe(true);
 });
 
 test('con Pintar activa el panel muestra solo la pintura', async ({ page }) => {

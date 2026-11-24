@@ -9,7 +9,9 @@
  */
 
 import { create } from 'zustand';
+import { usePaintPalette } from '../../store/paintPalette';
 import { useKuraStore } from '../../store/useKuraStore';
+import { contrastingPaintColor } from '../../utils/paintContrast';
 
 interface EraserState {
   eraser: boolean;
@@ -33,6 +35,17 @@ export function toggleEraser(): void {
 export function choosePaintColor(hex: string): void {
   usePaintEraser.setState({ eraser: false, colorBefore: null });
   useKuraStore.getState().setPaintSettings({ paintColor: hex });
+}
+
+/**
+ * Si el pincel es igual o casi igual al color del objeto, el trazo no se vería: pasa al siguiente color de la
+ * paleta que contraste (salvo con la goma, que pinta a propósito con el color base).
+ */
+export function ensureVisiblePaintColor(baseColor: string): void {
+  if (usePaintEraser.getState().eraser) return;
+  const current = useKuraStore.getState().paintColor;
+  const next = contrastingPaintColor(current, baseColor, usePaintPalette.getState().colors);
+  if (next !== current) useKuraStore.getState().setPaintSettings({ paintColor: next });
 }
 
 /** Al salir de Pintar con la goma activa se recupera el color de pincel anterior. */

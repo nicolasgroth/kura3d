@@ -12,11 +12,9 @@
 import React, { useEffect } from 'react';
 import { Eraser } from 'lucide-react';
 import { t } from '../../i18n';
-import { usePaintPalette } from '../../store/paintPalette';
 import { type PaintBrushMode, useKuraStore } from '../../store/useKuraStore';
-import { contrastingPaintColor } from '../../utils/paintContrast';
 import { PAINT_RADIUS_MAX_MM, PAINT_RADIUS_MIN_MM, usePaintRadiusKeys } from '../viewport/usePaintRadiusKeys';
-import { choosePaintColor, resetEraserOnExit, toggleEraser, usePaintEraser } from './paintEraser';
+import { choosePaintColor, ensureVisiblePaintColor, resetEraserOnExit, toggleEraser, usePaintEraser } from './paintEraser';
 import { PaintPalette } from './PaintPalette';
 import '../../styles/paintTools.css';
 
@@ -39,12 +37,8 @@ export function usePaintToolEffects(): void {
   // Al entrar a Pintar (o cambiar de objeto): si el pincel es igual o casi igual al objeto, el primer trazo no se
   // vería; se pasa al siguiente color de la paleta que contraste.
   useEffect(() => {
-    if (usePaintEraser.getState().eraser || !baseColor) return;
-    const current = useKuraStore.getState().paintColor;
-    const next = contrastingPaintColor(current, baseColor, usePaintPalette.getState().colors);
-    if (next !== current) setPaintSettings({ paintColor: next });
+    if (baseColor) ensureVisiblePaintColor(baseColor);
     // Solo al entrar o al cambiar el objeto, no al elegir un color a mano.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseColor]);
 
   // Al salir de la herramienta con la goma activa se recupera el color de pincel anterior.
