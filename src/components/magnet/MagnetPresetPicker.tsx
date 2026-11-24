@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { Save, Trash2 } from 'lucide-react';
 import { BUILTIN_MAGNET_PRESETS, magnetSizeLabel, sameMagnet } from '../../core/addons/magnetPresets';
 import type { MagnetParams } from '../../core/addons/magnetPocket';
@@ -32,6 +32,13 @@ export const MagnetPresetPicker: React.FC = () => {
   const uid = useId();
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
+  const selectRef = useRef<HTMLSelectElement | null>(null);
+
+  // Al día con los cambios de otra pestaña mientras el panel está abierto.
+  useEffect(() => {
+    useMagnetPresets.getState().reload();
+    return useMagnetPresets.getState().watch();
+  }, []);
 
   // El elegido es el primero (propios primero) cuyas medidas calzan con las actuales.
   const mine = presets.find((p) => sameMagnet(p.values, params));
@@ -56,7 +63,7 @@ export const MagnetPresetPicker: React.FC = () => {
     }
     const result = useMagnetPresets.getState().save(name, params);
     if (!result.ok) {
-      setNameError(t(language, result.reason === 'full' ? 'magnet.preset.full' : 'magnet.invalid', { max: MAX_USER_PRESETS }));
+      setNameError(t(language, result.reason === 'full' ? 'magnet.preset.full' : 'magnet.preset.valuesInvalid', { max: MAX_USER_PRESETS }));
       return;
     }
     setNameError(null);
@@ -66,15 +73,25 @@ export const MagnetPresetPicker: React.FC = () => {
 
   const remove = () => {
     if (!mine) return;
+    const index = presets.findIndex((p) => p.id === mine.id);
     const gone = useMagnetPresets.getState().remove(mine.id);
-    if (gone) useKuraStore.getState().addToast(t(language, 'magnet.preset.deleted', { name: gone.name }), 'info');
+    // El botón queda deshabilitado al eliminar: el foco vuelve al selector de preajuste, no al body.
+    selectRef.current?.focus();
+    if (!gone) return;
+    useKuraStore.getState().addToast(t(language, 'magnet.preset.deleted', { name: gone.name }), 'info', {
+      label: t(language, 'topbar.undo'),
+      transient: true,
+      run: () => {
+        if (useMagnetPresets.getState().restore(gone, index)) selectRef.current?.focus();
+      },
+    });
   };
 
   return (
     <div className="kura-magnet-presets">
       <label className="kura-field-label" htmlFor={`${uid}-preset`}>{t(language, 'magnet.preset')}</label>
       <div className="kura-magnet-row">
-        <select id={`${uid}-preset`} className="kura-select" data-testid="magnet-preset" value={selected} onChange={(e) => pick(e.target.value)}>
+        <select ref={selectRef} id={`${uid}-preset`} className="kura-select" data-testid="magnet-preset" value={selected} onChange={(e) => pick(e.target.value)}>
           <option value={CUSTOM} disabled>{t(language, 'magnet.preset.custom')}</option>
           <optgroup label={t(language, 'magnet.preset.builtin')}>
             {BUILTIN_MAGNET_PRESETS.map((p) => (

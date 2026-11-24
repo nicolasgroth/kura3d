@@ -92,6 +92,51 @@
   content: '⚠ ';
 }
 
+/* Franja de la hoja plegada: solo existe con la hoja plegada en pantallas angostas. */
+.kura-magnet-fold {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .kura-workspace[data-sheet="folded"] .kura-magnet-fold {
+    order: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .kura-magnet-fold-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kura-magnet-fold .kura-btn {
+    flex: 0 0 auto;
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Con la hoja completa las flechas de los campos no se recortan: campo y flechas más grandes con puntero grueso. */
+@media (pointer: coarse), (max-width: 767px) {
+  .kura-magnet-panel .kura-precision-input {
+    height: 44px;
+  }
+
+  .kura-magnet-panel .kura-precision-steppers {
+    width: 28px;
+  }
+}
+
 @media (pointer: coarse), (max-width: 767px) {
   .kura-magnet-panel .kura-btn,
   .kura-magnet-panel .kura-select,

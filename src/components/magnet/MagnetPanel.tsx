@@ -16,6 +16,7 @@ import { closeMagnetPanel, useMagnetPanel } from '../../store/magnetPanel';
 import { wallWarningKey } from '../../store/slices/magnetSlice';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationPanel } from '../OperationPanel';
+import { MagnetFoldStrip } from './MagnetFoldStrip';
 import { MagnetForm } from './MagnetForm';
 import { MagnetPresetPicker } from './MagnetPresetPicker';
 import '../../styles/magnetPanel.css';
@@ -30,6 +31,8 @@ export const MagnetPanel: React.FC = () => {
   const fmt = (n: number) => n.toLocaleString(language, { maximumFractionDigits: 1 });
 
   return (
+    <>
+    {open && <MagnetFoldStrip />}
     <OperationPanel
       open={open}
       onClose={close}
@@ -55,5 +58,6 @@ export const MagnetPanel: React.FC = () => {
         </p>
       )}
     </OperationPanel>
+    </>
   );
 };

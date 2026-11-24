@@ -43,6 +43,7 @@ export const MagnetForm: React.FC = () => {
         value={params[key]}
         onChange={(v) => setMagnetParams({ [key]: v })}
         describedBy={help}
+        ariaLabel={t(language, label)}
       />
     </div>
   );
@@ -83,7 +84,9 @@ export const MagnetForm: React.FC = () => {
       </label>
       <p id={`${uid}-hidden-help`} className="kura-fit-note">{t(language, 'magnet.hiddenHelp')}</p>
       <p className="kura-magnet-summary" data-testid="magnet-summary">
-        {t(language, params.shape === 'round' ? 'magnet.summaryRound' : 'magnet.summarySquare', { w: fmt(dims.widthMm), d: fmt(dims.depthMm) })}
+        {invalid.blocked
+          ? t(language, 'magnet.summaryInvalid')
+          : t(language, params.shape === 'round' ? 'magnet.summaryRound' : 'magnet.summarySquare', { w: fmt(dims.widthMm), d: fmt(dims.depthMm) })}
       </p>
     </div>
   );
