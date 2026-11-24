@@ -2,13 +2,14 @@
 /**
  * @file src/store/__tests__/userPresets.test.ts
  * @description Preajustes del usuario (genéricos, probados con imanes): guardar, reemplazar por nombre, eliminar,
- * persistir, saneo de datos corruptos al leer y tope de cantidad. También los preajustes incluidos de imán.
+ * persistir, saneo de datos corruptos al leer (también nombres repetidos), tope de cantidad, restaurar solo lo válido y
+ * fallo del almacenamiento (la lista no cambia y se informa). También los preajustes incluidos de imán.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAGNET_DEFAULTS } from '../../core/addons/magnetPocket';
 import { BUILTIN_MAGNET_PRESETS, MAGNET_PRESET_KIND, MAGNET_PRESET_STORAGE_KEY, magnetSizeLabel } from '../../core/addons/magnetPresets';
 import { createUserPresetsStore, loadUserPresets, MAX_USER_PRESETS } from '../userPresets';
@@ -73,6 +74,60 @@ describe('preajustes de usuario', () => {
     expect(loadUserPresets(MAGNET_PRESET_KIND)).toEqual([]);
     localStorage.setItem(MAGNET_PRESET_STORAGE_KEY, '{"a":1}');
     expect(loadUserPresets(MAGNET_PRESET_KIND)).toEqual([]);
+  });
+});
+
+describe('preajustes de usuario: entradas no confiables y fallos del almacenamiento', () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => vi.restoreAllMocks());
+
+  it('al leer descarta nombres repetidos sin distinguir mayúsculas (queda el primero)', () => {
+    const list = [
+      { id: 'user-a', name: 'Tapa', values: big },
+      { id: 'user-b', name: 'TAPA', values: big },
+      { id: 'user-c', name: '  tapa ', values: big },
+      { id: 'user-d', name: 'Base', values: big },
+    ];
+    localStorage.setItem(MAGNET_PRESET_STORAGE_KEY, JSON.stringify(list));
+    expect(loadUserPresets(MAGNET_PRESET_KIND).map((p) => p.id)).toEqual(['user-a', 'user-d']);
+  });
+
+  it('guardar con un nombre existente actualiza ese (mismo id), sin crear otro', () => {
+    const store = createUserPresetsStore(MAGNET_PRESET_KIND);
+    const first = store.getState().save('Tapa', big);
+    const again = store.getState().save('TAPA', { ...big, sizeMm: 8 });
+    expect(first.ok && again.ok && again.preset.id === first.preset.id).toBe(true);
+    expect(loadUserPresets(MAGNET_PRESET_KIND)).toHaveLength(1);
+    expect(loadUserPresets(MAGNET_PRESET_KIND)[0].values.sizeMm).toBe(8);
+  });
+
+  it('restaurar valida id, nombre y valores, y no repite un nombre', () => {
+    const store = createUserPresetsStore(MAGNET_PRESET_KIND);
+    const saved = store.getState().save('Tapa', big);
+    if (!saved.ok) throw new Error('no se guardó');
+    expect(store.getState().restore({ id: 'malo', name: 'x', values: big })).toBe(false);
+    expect(store.getState().restore({ id: 'user-zz', name: '   ', values: big })).toBe(false);
+    expect(store.getState().restore({ id: 'user-zz', name: 'x'.repeat(41), values: big })).toBe(false);
+    expect(store.getState().restore({ id: 'user-zz', name: 'tapa', values: big })).toBe(false);
+    expect(store.getState().restore({ id: 'user-zz', name: 'Otro', values: { ...big, sizeMm: -1 } })).toBe(false);
+    expect(store.getState().presets).toHaveLength(1);
+    expect(store.getState().restore({ id: 'user-zz', name: '  Otro   nombre ', values: big }, 0)).toBe(true);
+    expect(store.getState().presets.map((p) => p.name)).toEqual(['Otro nombre', 'Tapa']);
+  });
+
+  it('si el almacenamiento falla, la lista en memoria no cambia y se informa', () => {
+    const store = createUserPresetsStore(MAGNET_PRESET_KIND);
+    const saved = store.getState().save('Tapa', big);
+    if (!saved.ok) throw new Error('no se guardó');
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('lleno', 'QuotaExceededError'); });
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => { throw new DOMException('bloqueado', 'SecurityError'); });
+    expect(store.getState().save('Nuevo', big)).toEqual({ ok: false, reason: 'storage' });
+    expect(store.getState().save('tapa', { ...big, sizeMm: 8 })).toEqual({ ok: false, reason: 'storage' });
+    expect(store.getState().remove(saved.preset.id)).toBeNull();
+    expect(store.getState().restore({ id: 'user-zz', name: 'Otro', values: big })).toBe(false);
+    expect(store.getState().presets).toEqual([saved.preset]);
+    vi.restoreAllMocks();
+    expect(loadUserPresets(MAGNET_PRESET_KIND)).toEqual([saved.preset]);
   });
 });
 
