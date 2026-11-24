@@ -63,6 +63,7 @@ import {
 } from 'lucide-react';
 import { viewPrefsPaletteItems } from './viewPrefsPaletteItems';
 import { toolPaletteItems } from './toolPaletteItems';
+import { actionPaletteItems } from './actionPaletteItems';
 import { Boxes as BoxesIcon, Group as GroupIcon, Ungroup as UngroupIcon } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
@@ -923,7 +924,14 @@ export const CommandPalette: React.FC = () => {
     mirrorObject,
   ]);
 
-  const filtered = useMemo(() => rankPaletteItems(actions, query), [actions, query]);
+  // Toda acción del catálogo se encuentra en la paleta con su nombre canónico (el de los menús).
+  const groups = useKuraStore((s) => s.groups);
+  const busyOperation = useKuraStore((s) => s.busyOperation);
+  const allActions = useMemo<PaletteActionItem[]>(
+    () => [...actions, ...actionPaletteItems(language, { objects, selectedIds, groups, busyOperation }, actions.map((a) => a.label))],
+    [actions, language, objects, selectedIds, groups, busyOperation],
+  );
+  const filtered = useMemo(() => rankPaletteItems(allActions, query), [allActions, query]);
 
   useEffect(() => {
     setActiveIndex(0);

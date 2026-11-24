@@ -46,17 +46,26 @@ export const MenuSurface: React.FC<{
   const narrow = typeof window !== 'undefined' && window.matchMedia?.(NARROW_QUERY).matches === true;
 
   // Ajusta al área del visor: sube el menú si se sale por abajo; si no cabe entero, scroll con submenús en línea.
+  // Se vuelve a ajustar cuando el menú crece (un submenú en línea que se despliega en pantalla estrecha): sin eso,
+  // un menú corto que cabía al abrir se saldría de la ventana sin scroll.
   useLayoutEffect(() => {
     const el = rootRef.current;
     const parent = el?.offsetParent as HTMLElement | null;
     if (!el || !parent) return;
-    const avail = parent.clientHeight - 16;
-    if (el.scrollHeight > avail) {
-      setScroll(true);
-      setTop(8);
-    } else {
-      setTop(Math.max(8, Math.min(y, parent.clientHeight - el.offsetHeight - 8)));
-    }
+    const fit = () => {
+      const avail = parent.clientHeight - 16;
+      if (el.scrollHeight > avail) {
+        setScroll(true);
+        setTop(8);
+      } else {
+        setTop(Math.max(8, Math.min(y, parent.clientHeight - el.offsetHeight - 8)));
+      }
+    };
+    fit();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(fit);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [y]);
 
   /** Indica con sombras si hay contenido por encima o por debajo (solo con scroll interno). */
@@ -291,7 +300,9 @@ export const SubMenu: React.FC<{
           className={`kura-context-sub${inline ? ' is-inline' : ''}${placement.flip ? ' is-flip' : ''}`}
           style={placement.shift ? { top: SUB_TOP + placement.shift } : undefined}
           onKeyDown={(e) => {
-            if (e.key === 'ArrowLeft') {
+            // Escape dentro del submenú cierra solo el submenú (el foco vuelve a su entrada); un segundo Escape
+            // cierra el menú. Se corta la propagación para que no llegue al cierre global del menú.
+            if (e.key === 'ArrowLeft' || e.key === 'Escape') {
               e.preventDefault();
               e.stopPropagation();
               close();

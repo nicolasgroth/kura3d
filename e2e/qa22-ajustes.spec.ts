@@ -708,7 +708,14 @@ test.describe('10b. Menú contextual: teclado y bordes de ventana', () => {
         await page.keyboard.press('ArrowRight');
         const sub = page.getByRole('menu', { name: nombre, exact: true });
         await expect(sub, `submenú ${nombre} abre con flecha derecha`).toBeVisible();
-        await dentro(`[role=menu][aria-label="${nombre}"]`, `submenú ${nombre}`);
+        // En pantalla estrecha el submenú se despliega en línea dentro del menú, que pasa a tener scroll interno:
+        // lo que debe quedar dentro de la ventana es el menú, y el ítem con foco debe verse.
+        if (await sub.evaluate((el) => el.classList.contains('is-inline'))) {
+          await dentro('.kura-context-menu', `menú con ${nombre} desplegado`);
+          await expect(page.locator(':focus')).toBeInViewport();
+        } else {
+          await dentro(`[role=menu][aria-label="${nombre}"]`, `submenú ${nombre}`);
+        }
         expect(await page.evaluate(() => document.activeElement?.closest('[role=menu]')?.getAttribute('aria-label')), `foco dentro de ${nombre}`).toBe(nombre);
         await page.keyboard.press('Tab');
         expect(await page.evaluate(() => document.activeElement?.closest('.kura-context-menu, [role=menu]') !== null), `Tab no saca el foco de ${nombre}`).toBe(true);
@@ -718,11 +725,11 @@ test.describe('10b. Menú contextual: teclado y bordes de ventana', () => {
       }
       await page.screenshot({ path: `${SHOTS}/p10-teclado-${w}.png` });
       // Una acción por submenú, solo con teclado/ratón: Posición y tipo > Centrar en la cama mueve el objeto.
-      await page.evaluate((i) => (window as any).__s.getState().setObjectTransform(i, { position: [50, 20, 30] }, true), id);
+      await page.evaluate((i) => (window as any).__s.getState().setObjectTransform(i, { position: [20, 20, 10] }, true), id);
       const pos0 = await page.evaluate((i) => (window as any).__s.getState().objects.find((o: any) => o.id === i).position, id);
       await page.keyboard.press('Escape');
       await page.evaluate((i) => (window as any).__s.getState().setSelection([i]), id);
-      const q = await aPixel(page, [50, 20, 30]);
+      const q = await aPixel(page, [20, 20, 10]);
       await page.mouse.click(q.x, q.y, { button: 'right' });
       await page.locator('.kura-context-menu').first().getByRole('menuitem', { name: 'Posición y tipo', exact: true }).click();
       await page.getByRole('menuitem', { name: 'Centrar en la cama', exact: true }).click();

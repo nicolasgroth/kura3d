@@ -31,6 +31,8 @@ export function usePortalMenu(placement: MenuPlacement = 'below') {
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
+      // Escape dentro de un submenú abierto lo atiende el propio submenú (cierra solo ese nivel).
+      if (e.key === 'Escape' && (e.target as HTMLElement | null)?.closest?.('.kura-context-sub')) return;
       if (e.key === 'Escape') {
         // En captura: Esc cierra el menú antes de que los atajos globales lo usen (salir de un grupo…).
         e.preventDefault();
