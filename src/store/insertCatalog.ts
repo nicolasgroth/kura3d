@@ -1,7 +1,8 @@
 /**
  * @file src/store/insertCatalog.ts
  * @description Catálogo de lo que se puede agregar a la escena: las primitivas paramétricas (con sus valores por
- * defecto) y los generadores (Texto 3D, Importar SVG, Imagen → 3D, Rosca ISO, Cubo de calibración). Es la única
+ * defecto) y los generadores (Texto 3D, Importar SVG, Imagen → 3D, Rosca ISO, Cubo de calibración, Asistentes,
+ * Alojamiento de imán). Es la única
  * fuente del botón «Agregar» de la barra vertical, del menú «Insertar» de la barra superior y de la hoja
  * «Agregar» en móvil; `runInsert` hace lo mismo desde cualquiera de ellos. El Texto 3D abre su panel de
  * creación (`useText3DPanel`) para validar el texto y el tamaño antes de crearlo.
@@ -15,10 +16,11 @@ import { discParams } from '../core/scene/pieceSizing';
 import { t, type TranslationKey } from '../i18n';
 import type { PrimitiveType } from '../types/kura';
 import { closeAssistants, openAssistants, useAssistantsPanel } from './assistantsPanel';
+import { closeMagnetPanel, openMagnetPanel, useMagnetPanel } from './magnetPanel';
 import { useKuraStore } from './useKuraStore';
 
 export type ShapeId = 'box' | 'cylinder' | 'disc' | 'tube' | 'sphere' | 'cone' | 'torus' | 'prism' | 'text';
-export type GeneratorId = 'svg' | 'image' | 'thread' | 'calibration' | 'assistants';
+export type GeneratorId = 'svg' | 'image' | 'thread' | 'calibration' | 'assistants' | 'magnet';
 export type InsertId = ShapeId | GeneratorId;
 
 interface ShapeDef {
@@ -41,7 +43,7 @@ export const SHAPES: readonly ShapeDef[] = [
 ];
 
 /** Generadores del menú Insertar (y de la hoja Agregar en móvil). */
-export const GENERATORS: readonly GeneratorId[] = ['svg', 'image', 'thread', 'calibration', 'assistants'];
+export const GENERATORS: readonly GeneratorId[] = ['svg', 'image', 'thread', 'calibration', 'assistants', 'magnet'];
 
 /** Nombre visible de cada entrada. */
 export function insertLabelKey(id: InsertId): TranslationKey {
@@ -56,6 +58,8 @@ export function insertLabelKey(id: InsertId): TranslationKey {
       return 'sidebar.shapes.createStarter';
     case 'assistants':
       return 'asis.title';
+    case 'magnet':
+      return 'magnet.title';
     default:
       return `sidebar.primitive.${id}` as TranslationKey;
   }
@@ -74,6 +78,8 @@ export function insertTipKey(id: InsertId): TranslationKey | null {
       return 'r3a.insert.textTip';
     case 'assistants':
       return 'asis.menuTip';
+    case 'magnet':
+      return 'magnet.menuTip';
     default:
       return null;
   }
@@ -89,20 +95,25 @@ export function setText3DPanelOpen(open: boolean): void {
 let panelExclusionOff: (() => void) | null = null;
 
 /**
- * Texto 3D y Asistentes comparten el mismo hueco de panel: abrir uno cierra el otro. Se arranca una sola vez desde
+ * Texto 3D, Asistentes y Alojamiento de imán comparten el mismo hueco de panel: abrir uno cierra los otros. Se arranca una sola vez desde
  * `App.tsx` (no al importar el módulo); llamarla de nuevo no duplica las suscripciones. Devuelve la función que las quita.
  */
 export function startPanelExclusion(): () => void {
   if (!panelExclusionOff) {
-    const offText = useText3DPanel.subscribe((s, prev) => {
-      if (s.open && !prev.open && useAssistantsPanel.getState().open) closeAssistants();
-    });
-    const offAssistants = useAssistantsPanel.subscribe((s, prev) => {
-      if (s.open && !prev.open && useText3DPanel.getState().open) setText3DPanelOpen(false);
-    });
+    // Texto 3D, Asistentes y Alojamiento de imán: al abrir uno se cierran los otros.
+    const panels = [
+      { store: useText3DPanel, close: () => setText3DPanelOpen(false) },
+      { store: useAssistantsPanel, close: closeAssistants },
+      { store: useMagnetPanel, close: closeMagnetPanel },
+    ];
+    const offs = panels.map((panel) =>
+      panel.store.subscribe((s: { open: boolean }, prev: { open: boolean }) => {
+        if (!s.open || prev.open) return;
+        for (const other of panels) if (other !== panel && other.store.getState().open) other.close();
+      }),
+    );
     panelExclusionOff = () => {
-      offText();
-      offAssistants();
+      offs.forEach((off) => off());
       panelExclusionOff = null;
     };
   }
@@ -118,6 +129,10 @@ export async function runInsert(id: InsertId): Promise<void> {
   }
   if (id === 'assistants') {
     openAssistants();
+    return;
+  }
+  if (id === 'magnet') {
+    openMagnetPanel();
     return;
   }
   if (id === 'svg' || id === 'image' || id === 'thread') {

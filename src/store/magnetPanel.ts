@@ -30,9 +30,13 @@ export interface MagnetPanelState {
   params: MagnetParams;
   hover: MagnetHover | null;
   lastWall: PocketWallReport | null;
+  /** Hay campos con medidas fuera de rango: no se coloca. */
+  blocked: boolean;
 }
 
-export const useMagnetPanel = create<MagnetPanelState>(() => ({ open: false, params: { ...MAGNET_DEFAULTS }, hover: null, lastWall: null }));
+export const useMagnetPanel = create<MagnetPanelState>(() => ({
+  open: false, params: { ...MAGNET_DEFAULTS }, hover: null, lastWall: null, blocked: false,
+}));
 
 /** Preajustes de imán del usuario (guardados en preferencias locales). */
 export const useMagnetPresets = createUserPresetsStore(MAGNET_PRESET_KIND);
@@ -61,6 +65,10 @@ export function setMagnetParams(patch: Partial<MagnetParams>): void {
   useMagnetPanel.setState((s) => ({ params: { ...s.params, ...patch } }));
 }
 
+export function setMagnetBlocked(blocked: boolean): void {
+  if (useMagnetPanel.getState().blocked !== blocked) useMagnetPanel.setState({ blocked });
+}
+
 export function setMagnetHover(hover: MagnetHover | null): void {
   const prev = useMagnetPanel.getState().hover;
   if (prev === hover) return;
@@ -69,7 +77,8 @@ export function setMagnetHover(hover: MagnetHover | null): void {
 
 /** Coloca un alojamiento con el imán vigente sobre la cara indicada. */
 export async function placeMagnetAt(hostId: string, point: Vec3, normal: Vec3): Promise<boolean> {
-  const { params } = useMagnetPanel.getState();
+  const { params, blocked } = useMagnetPanel.getState();
+  if (blocked) return false;
   const result = await useKuraStore.getState().addMagnetPocket({ hostId, params, point, normal });
   if (!result) return false;
   useMagnetPanel.setState({ lastWall: result.wall });

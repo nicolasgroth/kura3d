@@ -1,20 +1,22 @@
 /**
  * @file src/components/viewport/contextMenu/ObjectMenuMore.tsx
  * @description Submenú «Más» del menú contextual del objeto: lo que no tiene sitio en el primer nivel ni en los
- * grupos del catálogo de acciones. Agregar pieza y pieza negativa (con sus formas), Reemplazar por archivo…,
+ * grupos del catálogo de acciones. Agregar pieza y pieza negativa (con sus formas), Alojamiento de imán, Reemplazar
+ * por archivo…,
  * Exportar selección como un STL…, Repetir la última acción, Recalcular (solo objetos paramétricos) y Atajos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import { isPrintable } from '../../../core/scene/objectRole';
+import { isPrintable, isSolid } from '../../../core/scene/objectRole';
 import { parametricStateOf } from '../../../core/scene/parametric';
 import React from 'react';
-import { Download, FileInput, HelpCircle, MinusCircle, MoreHorizontal, PlusCircle, RefreshCw, Repeat2 } from 'lucide-react';
+import { Download, FileInput, HelpCircle, Magnet, MinusCircle, MoreHorizontal, PlusCircle, RefreshCw, Repeat2 } from 'lucide-react';
 import { t } from '../../../i18n';
 import { useKuraStore } from '../../../store/useKuraStore';
 import { repeatLabel } from '../../../store/repeatLabel';
+import { openMagnetPanel } from '../../../store/magnetPanel';
 import { isTauriRuntime } from '../../../utils/platformBridge';
 import type { SceneObject } from '../../../types/kura';
 import { openExportDialog } from '../../ExportDialog';
@@ -51,6 +53,13 @@ export const ObjectMenuMore: React.FC<{
       <SubMenu icon={<MinusCircle size={14} aria-hidden="true" style={{ color: 'var(--accent-amber)' }} />} label={t(language, 'menu.addNegative')} tip={t(language, 'menu.addNegative.tip')}>
         <PieceShapeItems language={language} onPick={(shape) => run(() => void addPieceToObject(shape, 'negative', target.id))()} />
       </SubMenu>
+      <MenuItem
+        icon={<Magnet size={14} aria-hidden="true" style={{ color: 'var(--accent-amber)' }} />}
+        label={t(language, 'magnet.title')}
+        tip={isSolid(target) ? t(language, 'magnet.menuTip') : t(language, 'magnet.needSolid')}
+        disabled={!isSolid(target) || target.locked || busy}
+        onSelect={run(() => void openMagnetPanel())}
+      />
       <MenuItem
         icon={<FileInput size={14} aria-hidden="true" />}
         label={t(language, 'menu.more.replace')}
