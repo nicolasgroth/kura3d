@@ -9,6 +9,7 @@
  * @license MIT
  */
 import { test, expect } from '@playwright/test';
+import { itemAccion } from '../acciones-helpers';
 import { abrir, captura, cmd, encuadrar, importarArchivo, seleccionar, sinAvisos, stlCubos } from './helpers';
 
 const IZQ = { x: 0, y: 52, width: 268, height: 650 };
@@ -42,7 +43,8 @@ test('dividir-para-imprimir', async ({ page }) => {
   const grande = await cmd(page, 'create_primitive', { type: 'box', width: 400, height: 200, depth: 180, name: 'Pieza grande', position: [0, 0, 0] });
   await encuadrar(page, 'scene');
   await seleccionar(page, [grande.id]);
-  await page.keyboard.press('Shift+C');
+  // Se abre desde Acciones: con el atajo Mayús+C la «C» caía en el primer campo del panel.
+  await (await itemAccion(page, 'Dividir para imprimir…')).click();
   const dividir = page.getByRole('button', { name: 'Dividir', exact: true });
   await expect(dividir).toBeEnabled({ timeout: 60_000 });
   await page.waitForTimeout(1200);
