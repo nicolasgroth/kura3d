@@ -22,7 +22,7 @@ import { dispatchWithFallback, type KuraToolContext } from './tools.js';
 const coord = rangeSchema(TRANSFORM_RANGES.position);
 
 /** Lugar del agregado: punto + normal o cara + desplazamiento (mismos nombres en el bus). */
-const placementInputs = {
+export const placementInputs = {
   point: positionSchema.optional().describe('World point on the part surface [X, Y, Z] in mm (user axes: Z up). Give it with normal, or use face.'),
   normal: z.tuple([coord, coord, coord]).optional().describe('Outward surface normal at point [X, Y, Z] (normalized).'),
   face: z.enum(ADDON_FACES).optional()

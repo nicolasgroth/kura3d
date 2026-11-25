@@ -62,10 +62,12 @@ Ejemplos de configuración para Claude Desktop, Codex CLI y Antigravity están e
 La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre coincide con lo que recibe el agente. Las descripciones están en inglés porque son las que el cliente MCP entrega al modelo. Los parámetros marcados con `*` son obligatorios; el esquema completo de cada herramienta lo entrega el servidor al cliente.
 
 <!-- TABLA-HERRAMIENTAS:INICIO -->
-<!-- Generada por `npm run docs:mcp` desde el servidor real (54 herramientas). No la edites a mano. -->
+<!-- Generada por `npm run docs:mcp` desde el servidor real (56 herramientas). No la edites a mano. -->
 
 | Herramienta | Acceso | Qué hace | Parámetros principales (`*` = obligatorio) |
 | :--- | :--- | :--- | :--- |
+| `kura_add_cable_pass` | escritura | Adds a cable pass on a face of a solid part: a pending negative hole, round (widthMm = diameter) or slot (lengthMm × widthMm), with an optional entry chamfer, along the face normal. autoDepth (default true) measures the wall and goes through it (up to 40 mm); otherwise depthMm is used. One undo step; in the app it is grouped with its part and follows it. Defaults: round Ø 5 mm, chamfer 0.5 mm. Returns the negative, the report (measured thickness, bore length, through, noExit, nearEdge, nearAddon) and warnings. Fails with addon-blocked (reason spansFace) when it is wider than the face. | `hostId`* (string), `point` (lista), `normal` (lista), `face` (`top` · `bottom` · `front` · `back` · `left` · `right`), `faceOffsetMm` (lista), `shape` (`round` · `slot`), … (+6) |
+| `kura_add_keyhole` | escritura | Adds a keyhole for hanging the part from a wall screw on a face of a solid part (normally the face against the wall): a pending negative made of the round entry for the screw head, the neck slot in the lip and the chamber behind it; the slot runs towards the part's "up" (angleDeg turns it). screwMm picks the built-in size (3, 3.5, 4, 5 mm; default 4 mm: head 8.5, neck 4.5, slot 10, chamber 3, lip 1.5); explicit sizes win. One undo step; in the app it is grouped with its part and follows it. Returns the negative, the report (wall behind the chamber, through, edge, vertical face, level offset vs other keyholes on the face, lip retention mm³ vs an infinite wall) and warnings (KEYHOLE_THROUGH, KEYHOLE_WALL, KEYHOLE_EDGE, KEYHOLE_LEVEL, KEYHOLE_FACE). Fails with addon-blocked: reason spansFace when it is wider than the face, notRetained when the lip left by the real part holds less than 60 % of the head (face too small: the head would slip out). | `hostId`* (string), `point` (lista), `normal` (lista), `face` (`top` · `bottom` · `front` · `back` · `left` · `right`), `faceOffsetMm` (lista), `screwMm` (number), … (+6) |
 | `kura_add_magnet_pocket` | escritura | Adds a magnet pocket on a face of a solid part: a pending negative (cylinder or box) sized magnet + clearance, axis along the face normal, open and flush with the face or hidden under 0.6 mm of material (pause the print to insert it). One undo step; in the app it is grouped with its part. It keeps its real size and follows the part when the part is moved, turned or scaled. Returns the negative, pocket size, the measured wall (minimum wall, through, protrusion on curved faces, cover of a hidden magnet, nearby pockets) and warnings (MAGNET_WALL, MAGNET_THROUGH, MAGNET_PROTRUDE, MAGNET_NEAR…). Fails with addon-blocked (reason tooBig or spansFace) when the pocket would take most of the part or is wider than the part there. | `hostId`* (string), `point` (lista), `normal` (lista), `face` (`top` · `bottom` · `front` · `back` · `left` · `right`), `faceOffsetMm` (lista), `shape` (`round` · `square`), … (+5) |
 | `kura_add_screw_boss` | escritura | Adds a screw boss on a face of a solid part: a solid post (merged with the part when subtractions are applied) and a coaxial blind hole negative with a 0.5 mm entry chamfer. type "screw" = self-tapping pilot hole, "insert" = heat-set threaded insert. With type and nominalMm (M2–M5) the built-in table gives the hole; explicit sizes win. Default height = hole depth + 2 mm, default outer diameter = 2.5 × nominal (at least hole + 2 minimum walls). One undo step; it keeps its size and follows the part. Returns both objects, the report (post wall, hole depth into the part, exits the other side, collides with another addon) and warnings. Fails with addon-blocked (reason tooWide) when the post foot is wider than the face. | `hostId`* (string), `point` (lista), `normal` (lista), `face` (`top` · `bottom` · `front` · `back` · `left` · `right`), `faceOffsetMm` (lista), `type` (`screw` · `insert`), … (+5) |
 | `kura_align_objects` | escritura | Aligns multiple objects by edges or centers (min/center/max on X/Y/Z; minZ = bottom, maxZ = top, minY = front) or automatically distributes them in a grid on the bed. | `objectIds`* (lista de string), `mode`* (`minX` · `centerX` · `maxX` · `minY` · `centerY` · `maxY` · `minZ` · `centerZ` · `maxZ` · `arrange_grid`), `spacingMm` (number) |
@@ -276,6 +278,22 @@ kura_add_screw_boss { "hostId": "<caja>", "face": "top", "faceOffsetMm": [10, 0]
 
 kura_add_magnet_pocket { "hostId": "<caja 8 mm>", "face": "top", "sizeMm": 20 }
 // → error [addon-blocked] … { "code": "addon-blocked", "params": { "reason": "tooBig" } }
+```
+
+### 9. Ojo de cerradura y paso de cable
+
+`kura_add_keyhole` agrega un ojo para colgar la pieza de un tornillo en el muro (entrada para la cabeza, ranura del cuello y cámara), normalmente en la cara que mira al muro; la ranura sube hacia el «arriba» de la pieza. `screwMm` (3, 3,5, 4 o 5) elige las medidas incluidas; las explícitas mandan. El informe trae la pared detrás de la cámara, si se asoma por un borde, la diferencia de altura con otros ojos de la cara y la retención del labio (mm³ de material sobre la cabeza en el extremo de la ranura frente a una pared infinita). Si la cara es tan chica que el labio no sujeta la cabeza, falla con `addon-blocked` y motivo `notRetained`. `kura_add_cable_pass` agrega un agujero redondo o en ranura que atraviesa la pared (con `autoDepth` la mide) con chaflán de entrada. Ambos usan el mismo lugar que el imán (`point` + `normal` o `face` + `faceOffsetMm`) y siguen a la pieza.
+
+```jsonc
+kura_add_keyhole { "hostId": "<placa 60 × 60 × 10>", "face": "back", "screwMm": 4 }
+// → negativo «Keyhole 4 mm», params { headDiameterMm 8.5, neckWidthMm 4.5, slotLengthMm 10, … },
+//   report { wallBehindMm 5.5, through false, edge false, vertical true, retentionMm3 ≈ retentionIdealMm3 }
+
+kura_add_keyhole { "hostId": "<cubo 10 mm>", "face": "back" }
+// → error [addon-blocked] … { "code": "addon-blocked", "params": { "reason": "notRetained" } }
+
+kura_add_cable_pass { "hostId": "<tapa 6 mm>", "face": "top", "shape": "slot", "widthMm": 4, "lengthMm": 10 }
+// → report { thicknessMm 6, boreMm 6, through true, nearEdge false, nearAddon false }, warnings []
 ```
 
 ## Límites conocidos

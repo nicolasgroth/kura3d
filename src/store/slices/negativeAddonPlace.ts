@@ -29,17 +29,8 @@ export const placedMeshOf = (o: SceneObject): PlacedMesh => ({
   mesh: { positions: o.mesh.positions, indices: o.mesh.indices }, position: o.position, rotation: o.rotation, scale: o.scale,
 });
 
-const reachOf = (o: SceneObject) => Math.hypot(...o.stats.dimensionsMm) * Math.max(...o.scale.map(Math.abs));
-
-/** Agregados pendientes (de cualquier tipo) cerca de la pieza: con ellos se mide la distancia mínima. */
-export function nearbyAddonObjects(objects: readonly SceneObject[], host: SceneObject, marginMm: number): SceneObject[] {
-  const hr = reachOf(host);
-  return objects.filter((o) => {
-    if (o.id === host.id || !o.metadata?.addon) return false;
-    const d = Math.hypot(o.position[0] - host.position[0], o.position[1] - host.position[1], o.position[2] - host.position[2]);
-    return d <= hr + reachOf(o) + marginMm;
-  });
-}
+/** Agregados pendientes cerca de la pieza (misma regla en el MCP sin interfaz: vive en `core/addons`). */
+export { nearbyAddonObjects } from '../../core/addons/addonNeighbors';
 
 export interface NegativeAddonMade<R> {
   object: SceneObject;
