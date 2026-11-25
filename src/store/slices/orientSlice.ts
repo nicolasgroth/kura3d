@@ -137,13 +137,15 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const { orient } = state;
       const candidate = candidateId && orient ? orient.analysis.candidates.find((c) => c.id === candidateId) : undefined;
       const obj = orient ? state.objects.find((o) => o.id === orient.objectId) : undefined;
-      // La actual no se gira: no hay fantasma que mostrar.
-      if (!orient || !candidate || !obj || candidate.source === 'current' || !orientSourceIsCurrent(orient.source, obj)) {
+      if (!orient || !candidate || !obj || !orientSourceIsCurrent(orient.source, obj)) {
         dropPreview();
         return;
       }
       const generation = ++previewGeneration;
-      const plan = planOrientTransform(obj, candidate.quaternion, { keepXY: state.orientKeepXY });
+      // La actual no se gira: su fantasma queda sobre la pieza y sirve para ver qué zonas necesitan soporte hoy.
+      const plan = candidate.source === 'current'
+        ? { position: obj.position, rotation: obj.rotation, scale: obj.scale }
+        : planOrientTransform(obj, candidate.quaternion, { keepXY: state.orientKeepXY });
       set({
         orientPreviewId: candidate.id,
         orientOverhang: state.orientOverhang?.candidateId === candidate.id ? state.orientOverhang : null,

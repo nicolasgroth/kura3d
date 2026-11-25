@@ -82,6 +82,7 @@ Las capturas de abajo y las de las [guías](docs/guia/README.md) se generan desd
 - Pintura 3D por caras para impresión multicolor, con separación por color.
 - Detección de estructuras para separar un modelo en partes.
 - Análisis de imprimibilidad: malla cerrada, voladizos, tamaño de cama y peso aproximado.
+- **Orientar para imprimir:** compara cómo apoyar la pieza en la cama (soporte aproximado, voladizo, base, altura y si cabe), con motivos claros, vista previa en el visor con las zonas en voladizo resaltadas y un paso para aplicar; no genera soportes.
 - **Comprobar encaje:** choques (en mm³) y holguras entre piezas y referencias, con las restas pendientes aplicadas en copia, una recomendación por par y la zona o la cota resaltada en el visor; no cambia la escena.
 - Siluetas de cama de 12 impresoras (Elegoo, Bambu Lab, Snapmaker, FlashForge y genéricas).
 
@@ -99,7 +100,7 @@ Las capturas de abajo y las de las [guías](docs/guia/README.md) se generan desd
 
 Paso a paso con capturas, para quien imprime y no programa: [**índice de guías**](docs/guia/README.md).
 
-[Primeros pasos](docs/guia/primeros-pasos.md) · [Importar y reparar](docs/guia/importar-y-reparar.md) · [Dividir para imprimir](docs/guia/dividir-para-imprimir.md) · [Cortar y ahuecar](docs/guia/cortar-y-ahuecar.md) · [Sólidos negativos y restas](docs/guia/solidos-negativos-y-restas.md) · [Objetos de referencia](docs/guia/objetos-de-referencia.md) · [Comprobar encaje](docs/guia/comprobar-encaje.md) · [Grupos y escena](docs/guia/grupos-y-escena.md) · [Medir](docs/guia/medir.md) · [Colores y pintura](docs/guia/colores-y-pintura.md) · [Generadores](docs/guia/generadores.md) · [Asistentes](docs/guia/asistentes.md) · [Alojamiento de imán](docs/guia/alojamiento-de-iman.md) · [Exportar](docs/guia/exportar.md) · [Guardar y recuperar](docs/guia/guardar-y-recuperar.md) · [Servidor MCP](docs/MCP.md) · [Ajustar a la impresora](docs/guia/ajustar-a-la-impresora.md)
+[Primeros pasos](docs/guia/primeros-pasos.md) · [Importar y reparar](docs/guia/importar-y-reparar.md) · [Dividir para imprimir](docs/guia/dividir-para-imprimir.md) · [Cortar y ahuecar](docs/guia/cortar-y-ahuecar.md) · [Sólidos negativos y restas](docs/guia/solidos-negativos-y-restas.md) · [Objetos de referencia](docs/guia/objetos-de-referencia.md) · [Comprobar encaje](docs/guia/comprobar-encaje.md) · [Orientar para imprimir](docs/guia/orientar-para-imprimir.md) · [Grupos y escena](docs/guia/grupos-y-escena.md) · [Medir](docs/guia/medir.md) · [Colores y pintura](docs/guia/colores-y-pintura.md) · [Generadores](docs/guia/generadores.md) · [Asistentes](docs/guia/asistentes.md) · [Alojamiento de imán](docs/guia/alojamiento-de-iman.md) · [Exportar](docs/guia/exportar.md) · [Guardar y recuperar](docs/guia/guardar-y-recuperar.md) · [Servidor MCP](docs/MCP.md) · [Ajustar a la impresora](docs/guia/ajustar-a-la-impresora.md)
 
 ## Hacia dónde va
 
