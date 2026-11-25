@@ -374,8 +374,33 @@ test.describe('qa25c placas: hallazgos de QA (cosas que el desarrollo prometió 
       await page.waitForTimeout(600);
     };
     const pasos0 = await st(page, (s) => s.past.length);
-    await page.mouse.click(490, 450);
-    await mv(490, 450, 930, 330);
+    // QA25-E: coordenadas calculadas proyectando la escena (la cámara encuadra distinto según el momento), no fijas.
+    await page.evaluate(async () => {
+      const urls = performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /react-three_fiber/.test(n));
+      for (const u of urls) {
+        const m = await import(/* @vite-ignore */ u);
+        if (m._roots) (window as any).__r3f = [...m._roots.values()][0].store;
+      }
+    });
+    let prevCam = '';
+    for (let i = 0; i < 40; i += 1) {
+      const cur = await page.evaluate(() => (window as any).__r3f.getState().camera.matrixWorld.elements.map((n: number) => n.toFixed(3)).join());
+      if (cur === prevCam) break;
+      prevCam = cur;
+      await page.waitForTimeout(250);
+    }
+    const px = (p: number[]) => page.evaluate((q) => {
+      const r3f = (window as any).__r3f.getState();
+      r3f.camera.updateMatrixWorld();
+      const v = new r3f.camera.position.constructor(q[0], q[1], q[2]).project(r3f.camera);
+      const r = r3f.gl.domElement.getBoundingClientRect();
+      return [r.left + ((v.x + 1) / 2) * r.width, r.top + ((1 - v.y) / 2) * r.height];
+    }, p);
+    const cubo = await st(page, (s) => ({ a: s.objects.find((o: any) => o.name === 'Cubo 1').position, o2: s.plates[1].origin }));
+    const [x0, y0] = await px(cubo.a);
+    const [x1, y1] = await px([cubo.o2[0] - 30, cubo.a[1], cubo.a[2]]);
+    await page.mouse.click(x0, y0);
+    await mv(x0, y0, x1, y1);
     const d = await pos(page);
     expect(d.find((o: any) => o.n === 'Cubo 1')!.p2).toBe(true);
     expect(await st(page, (s) => s.past.length)).toBe(pasos0 + 1);
