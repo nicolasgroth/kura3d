@@ -13,6 +13,8 @@ import React from 'react';
 import { t, type TranslationKey } from '../../i18n';
 import type { AddonWarning } from '../../store/addonWarning';
 import { useKuraStore } from '../../store/useKuraStore';
+import type { Vec3 } from '../../types/kura';
+import { AddonFacePlacer } from './AddonFacePlacer';
 import { MagnetFoldStrip } from '../magnet/MagnetFoldStrip';
 import { OperationPanel } from '../OperationPanel';
 import '../../styles/magnetPanel.css';
@@ -26,10 +28,12 @@ export interface AddonPanelShellProps {
   warnings: readonly AddonWarning[];
   /** Línea «última sin avisos», o null si todavía no se colocó ninguna. */
   lastOk: string | null;
+  /** Misma ruta que el clic en el visor: con ella el panel ofrece «Colocar en el centro de la cara» (sin ratón). */
+  placeAt?: (hostId: string, point: Vec3, normal: Vec3) => Promise<boolean>;
   children: React.ReactNode;
 }
 
-export const AddonPanelShell: React.FC<AddonPanelShellProps> = ({ prefix, open, onClose, blocked, warnings, lastOk, children }) => {
+export const AddonPanelShell: React.FC<AddonPanelShellProps> = ({ prefix, open, onClose, blocked, warnings, lastOk, placeAt, children }) => {
   const language = useKuraStore((s) => s.language);
   const k = (s: string) => `${prefix}.${s}` as TranslationKey;
   return (
@@ -51,6 +55,7 @@ export const AddonPanelShell: React.FC<AddonPanelShellProps> = ({ prefix, open, 
           {t(language, k(blocked ? 'invalid' : 'hint'))}
         </p>
         {children}
+        {placeAt && <AddonFacePlacer testId={prefix} place={placeAt} blocked={blocked} />}
         {lastOk && warnings.length === 0 && (
           <p className="kura-magnet-wall" role="status" data-testid={`${prefix}-last`}>{lastOk}</p>
         )}
