@@ -28,6 +28,12 @@ Cada imán deja 1,2 mm de pared alrededor y hacia el exterior. Donde no cabe, no
 
 ![Panel Dividir para imprimir con «Imanes (desmontable)» elegido y el preajuste de imán](img/dividir-para-imprimir-03-imanes.png)
 
+Con imanes, el resumen del resultado habla en términos de imanes: «N uniones: hasta M con imán, según el espacio de cada unión; el resto se pega», y sugiere «elige un imán más chico» para tener imanes en más uniones. Las piezas se rotulan con su letra y número (por ejemplo A1·2), y los avisos ya no tapan la tarjeta de armado.
+
+## Fragmentos diminutos
+
+Un corte a veces deja esquirlas que no se pueden imprimir ni pegar. Kurra Studio las **descarta** (las que miden menos de 1 mm³ o de 10 partes por millón del volumen, y no se pueden fusionar con otra pieza) y lo avisa: «Se descartaron N fragmentos diminutos del corte (V mm³ en total): no se pueden imprimir ni pegar y no se entregan como pieza.» Si ese aviso te sorprende, mueve el corte unas décimas de milímetro.
+
 ## Armar y preparar para imprimir
 
 Tras dividir, el control **Armado** del visor deja ver cómo encajan:

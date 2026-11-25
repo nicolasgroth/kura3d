@@ -15,6 +15,26 @@ Cómo sacar tu modelo de Kurra Studio para abrirlo en tu laminador (OrcaSlicer, 
 
 ![Diálogo Exportar modelo con los cinco formatos](img/exportar-01-dialogo.png)
 
+## Exportar con varias placas
+
+Si tu escena tiene **dos o más [placas](placas.md)** con piezas, el diálogo muestra un grupo **Piezas en 2 placas** (el número cambia según tus placas) con las salidas disponibles:
+
+- **Un 3MF con todas las placas** (formato 3MF): un solo archivo donde cada placa conserva sus piezas. Bambu Studio y OrcaSlicer abren cada placa por separado; PrusaSlicer y Cura ven todas las piezas juntas en una sola cama.
+- **Un archivo por placa (ZIP):** un 3MF por placa dentro de un ZIP; cada archivo trae las piezas de una placa, sobre su cama. Sirve en cualquier laminador.
+- **STL:** como el STL no guarda placas, siempre sale **un STL por placa en un ZIP**. El botón de exportar cambia a `.zip` y una nota lo explica. Para tener todas las placas en un solo archivo, elige 3MF.
+
+![Exportar con dos placas en 3MF: un 3MF con todas las placas o un archivo por placa](img/exportar-02-placas-3mf.png)
+
+![Exportar con dos placas en STL: un archivo por placa dentro de un ZIP](img/exportar-03-placas-stl.png)
+
+Detalles que conviene saber:
+
+- **Piezas sin placa quedan fuera.** Si alguna pieza no está en ninguna placa, no se exporta y un aviso te lo dice; asígnala a una placa con **Mover a placa** y vuelve a exportar.
+- **Mismas coordenadas en cada placa:** una pieza que está al centro de la placa 2 sale al centro de su cama en el archivo, igual que si estuviera en la placa 1.
+- **Nombres de archivo:** el nombre de cada placa se sanea (se quitan caracteres como `/` o `:`) para que el sistema lo acepte.
+- **Sin placas, nada cambia:** con una sola cama el diálogo es el de siempre.
+- **Estado:** el 3MF con todas las placas lo entienden Bambu Studio y OrcaSlicer, pero **todavía no está verificado en un laminador real**. Si importa que salga bien a la primera, usa **Un archivo por placa (ZIP)**, que funciona en cualquier laminador.
+
 ## Detalles que conviene saber
 
 - **Los negativos y los objetos ocultos no se exportan** (el diálogo lo recuerda). Aplica las restas antes.

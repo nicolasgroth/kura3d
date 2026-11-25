@@ -17,6 +17,10 @@ Kurra Studio **no genera soportes ni lamina**: solo orienta y mide. Mirar las op
    - sus **motivos** en lenguaje claro: «Sin voladizos: no necesita soporte», «82 % menos soporte que ahora», «Base 3 veces mayor que ahora», «No cabe en la cama», «Inestable: puede volcarse».
 5. Si la orientación actual ya es la mejor, arriba dice **«La orientación actual ya es la mejor»** y no se propone ninguna. Si todas son equivalentes (una esfera), dice que **no hay una recomendada**. Si ninguna se sostiene sola (la pieza no tiene una cara plana que apoye en la cama), un aviso lo dice: «La pieza no se sostiene sola en ninguna de estas orientaciones… Necesitará soporte, balsa o un corte plano».
 
+### Las que no se sostienen solas
+
+Las orientaciones sin **base de apoyo** (la pieza no queda apoyada sobre una cara plana) no se mezclan con las demás: van en un grupo aparte, **No recomendadas: sin base de apoyo (N)**, y nunca se proponen como recomendada. Si de todos modos eliges una, el panel pide confirmar: «Esta orientación no tiene base de apoyo. Pulsa **Aplicar de todos modos** para confirmarla.»
+
 ## Ver cada opción en el visor
 
 - Pasa el cursor por una opción, enfócala con el teclado o elígela: el visor muestra la pieza **en esa orientación**, translúcida y apoyada en la cama, sin tocar la pieza real.
@@ -26,7 +30,7 @@ Kurra Studio **no genera soportes ni lamina**: solo orienta y mide. Mirar las op
 
 1. Elige una opción distinta de la actual (la recomendada ya viene elegida).
 2. Decide si quieres **Conservar posición en la cama** (viene marcada: la pieza gira sobre su sitio) o centrarla en la cama (desmarcada).
-3. Pulsa **Aplicar orientación**, o **Enter** sobre la opción. La pieza gira, queda apoyada en la cama y es **un solo paso de deshacer** (**Ctrl+Z**).
+3. Pulsa **Aplicar orientación**, o **Enter** sobre la opción. La pieza gira, queda apoyada en la cama y es **un solo paso de deshacer** (**Ctrl+Z**). Después de apoyarla, Kurra Studio la gira además sobre la vertical para dejarla **alineada con la cama**, con la huella de menor caja (un cubo que estaba girado queda con sus lados paralelos a los bordes de la cama).
 4. La lista se calcula de nuevo, la orientación aplicada pasa a ser la **Actual** y el foco queda sobre ella, así que puedes seguir con el teclado o pasar a otra pieza.
 
 Los alojamientos de imán de la pieza la siguen al girar.

@@ -45,6 +45,7 @@ Avisos que puedes ver:
 ## Problemas frecuentes
 
 - **«La protección de aristas está frenando el suavizado»**: en un escaneo con mucho ruido, muchas aristas parecen vivas y quedan fijas (más de un 30 % de los vértices), así que el ruido casi no baja. El panel te lo dice y ofrece un botón que sube el ángulo a 70°; si ya estaba alto, el botón desactiva la protección.
+- **«Suavizar no se aplicó: el volumen cambiaría…»**: Suavizar no aplica en silencio un cambio de volumen de más de 5 %. Pasa con mallas muy gruesas (una esfera de 32 triángulos con intensidad alta se encoge un 61 %), donde alisar encoge la pieza. El panel sugiere refinar la malla antes (**Acciones › Malla › Refinar malla**) y ofrece **Aplicar de todos modos** si de verdad quieres ese resultado; es un solo paso de deshacer.
 - **No pasó nada visible**: «con estos valores no se mueve ningún vértice». Baja la protección de aristas o amplía la zona.
 - **La pieza se ve igual de facetada**: una malla muy gruesa no tiene vértices suficientes para alisarse; refínala antes con **Acciones › Malla › Refinar malla**.
 - **Esquinas redondeadas**: sube la intensidad solo si lo necesitas; con **Conservar aristas vivas** activada y un ángulo bajo se mantienen. Suavizar no sirve para redondear aristas a propósito.
