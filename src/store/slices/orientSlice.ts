@@ -12,7 +12,7 @@
 
 import { isEngineCancelled, type EngineJob } from '../../core/operations/engineClient';
 import type { EngineTaskResult } from '../../core/operations/engineTasks';
-import { isSolid } from '../../core/scene/objectRole';
+import { orientableObject } from '../../core/operations/orientOperations';
 import { orientFollowPatches } from '../../core/scene/rigidFollow';
 import { ORIENT_RANGES, planOrientTransform, type OrientAnalysis, type OrientOptions } from '../../engine/orient';
 import type { SceneObject, Vec3 } from '../../types/kura';
@@ -76,9 +76,7 @@ const sameVec = (a: Vec3, b: Vec3) => a[0] === b[0] && a[1] === b[1] && a[2] ===
 export const orientSourceIsCurrent = (source: Pose, o: SceneObject | undefined): boolean =>
   Boolean(o) && o!.mesh === source.mesh && sameVec(o!.position, source.position) && sameVec(o!.rotation, source.rotation) && sameVec(o!.scale, source.scale);
 
-/** Pieza que «Orientar» puede tratar: un sólido desbloqueado con geometría. */
-export const orientableObject = (o: SceneObject | undefined): o is SceneObject =>
-  Boolean(o) && isSolid(o!) && !o!.locked && o!.mesh.indices.length >= 3;
+export { orientableObject } from '../../core/operations/orientOperations';
 
 export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, runExclusive, runEngineDetached, startEngineJob, commitChange, assertCurrent, reportOperationError, tr } = ctx;

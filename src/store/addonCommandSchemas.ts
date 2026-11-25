@@ -27,6 +27,9 @@ const invalid = (param: string, expected: string) => new CommandError('invalid-p
 const round2 = (n: number) => Math.round(n * 100) / 100;
 const r = (n: number, digits = 3) => Math.round(n * 10 ** digits) / 10 ** digits + 0;
 
+/** Alias del parámetro de la pieza anfitriona. */
+export const ADDON_HOST_KEYS = ['hostId', 'objectId', 'id'];
+
 /** Error tipado de un agregado que no se coloca (`addon-blocked`, con el motivo y el mismo texto que la app). */
 export const addonBlockedError = (reason: AddonBlockReason) => new CommandError('addon-blocked', ADDON_BLOCK_KEY[reason] as TranslationKey, { reason });
 

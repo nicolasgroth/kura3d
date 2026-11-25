@@ -13,6 +13,7 @@ import type { AddonBlockReason } from '../core/addons/addonBlock';
 import { resolveAddonPlacement } from '../core/addons/addonPlacement';
 import { isSolid } from '../core/scene/objectRole';
 import {
+  ADDON_HOST_KEYS,
   addonBlockedError,
   magnetResultToUser,
   parseMagnetPocketCommand,
@@ -26,11 +27,9 @@ import type { KuraStoreState } from './useKuraStore';
 
 type Deps = { get: () => KuraStoreState };
 
-const HOST_KEYS = ['hostId', 'objectId', 'id'];
-
 export const ADDON_HANDLERS = {
   add_magnet_pocket: async (p: RawParams, { get }: Deps) => {
-    const host = resolveTarget(get(), p, { unlocked: true, keys: HOST_KEYS });
+    const host = resolveTarget(get(), p, { unlocked: true, keys: ADDON_HOST_KEYS });
     if (!isSolid(host)) throw new CommandError('precondition', 'magnet.needSolid');
     const { params, placement } = parseMagnetPocketCommand(p);
     const at = resolveAddonPlacement(host, placement);
@@ -42,7 +41,7 @@ export const ADDON_HANDLERS = {
   },
 
   add_screw_boss: async (p: RawParams, { get }: Deps) => {
-    const host = resolveTarget(get(), p, { unlocked: true, keys: HOST_KEYS });
+    const host = resolveTarget(get(), p, { unlocked: true, keys: ADDON_HOST_KEYS });
     if (!isSolid(host)) throw new CommandError('precondition', 'turret.needSolid');
     const { params, placement } = parseScrewBossCommand(p);
     const at = resolveAddonPlacement(host, placement);

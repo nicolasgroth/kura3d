@@ -11,13 +11,13 @@
 
 import type { EngineWarning } from '../engine/engineErrors';
 import type { SmoothReport } from '../engine/smooth';
-import type { SceneObject } from '../types/kura';
 import { transformToUser } from './commandAxes';
 import { CommandError } from './commandErrors';
 import { resolveTarget } from './commandTargets';
 import type { RawParams } from './commandValidation';
 import {
   findOrientCandidate,
+  movedObjectIds,
   orientAnalysisToUser,
   parseApplyOrientation,
   parseOrientLanguage,
@@ -31,18 +31,6 @@ import type { KuraStoreState } from './useKuraStore';
 type Deps = { get: () => KuraStoreState };
 
 const failed = (command: string) => new CommandError('failed', 'bus.error.failed', { command });
-
-/** Ids de los objetos (además de `exceptId`) cuya pose cambió entre dos escenas. */
-export function movedObjectIds(before: readonly SceneObject[], after: readonly SceneObject[], exceptId: string): string[] {
-  const prev = new Map(before.map((o) => [o.id, o]));
-  const same = (a: number[], b: number[]) => a.every((v, i) => v === b[i]);
-  return after
-    .filter((o) => {
-      const was = prev.get(o.id);
-      return o.id !== exceptId && was && (!same(was.position, o.position) || !same(was.rotation, o.rotation) || !same(was.scale, o.scale));
-    })
-    .map((o) => o.id);
-}
 
 async function analyze(p: RawParams, get: Deps['get'], command: string) {
   const target = resolveTarget(get(), p);

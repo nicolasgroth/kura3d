@@ -16,7 +16,7 @@ import { fromUserVector, toUserVector } from '../core/scene/displayAxes';
 import { ORIENT_RANGES, type OrientAnalysis, type OrientBed, type OrientCandidate } from '../engine/orient';
 import { OPERATION_RANGES as OR } from '../engine/operationLimits';
 import type { FitBed } from '../engine/fitToBed';
-import type { LanguageCode, Vec3 } from '../types/kura';
+import type { LanguageCode, SceneObject, Vec3 } from '../types/kura';
 
 export const ORIENT_LANGUAGES: readonly LanguageCode[] = ['es', 'en', 'de', 'fr', 'hi', 'zh'];
 
@@ -69,7 +69,7 @@ export interface ApplyOrientationRequest {
 }
 
 export function parseApplyOrientation(p: RawParams): ApplyOrientationRequest {
-  const candidateId = readString(p, 64, 'candidateId') ?? null;
+  const candidateId = readString(p, 128, 'candidateId') ?? null;
   const rawQ = pick(p, 'quaternion')?.[1];
   if (candidateId && rawQ !== undefined) throw invalid('candidateId', 'either candidateId or quaternion, not both');
   let quaternion: Quaternion | null = null;
@@ -132,4 +132,16 @@ export function orientAnalysisToUser(a: OrientAnalysis, language: LanguageCode) 
     partVolumeMm3: r(a.partVolumeMm3, 1),
     language,
   };
+}
+
+/** Ids de los objetos (además de `exceptId`) cuya pose cambió entre dos escenas. */
+export function movedObjectIds(before: readonly SceneObject[], after: readonly SceneObject[], exceptId: string): string[] {
+  const prev = new Map(before.map((o) => [o.id, o]));
+  const same = (a: number[], b: number[]) => a.every((v, i) => v === b[i]);
+  return after
+    .filter((o) => {
+      const was = prev.get(o.id);
+      return o.id !== exceptId && was && (!same(was.position, o.position) || !same(was.rotation, o.rotation) || !same(was.scale, o.scale));
+    })
+    .map((o) => o.id);
 }
