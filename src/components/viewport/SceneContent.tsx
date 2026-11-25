@@ -35,6 +35,7 @@ import { overhangFacesFor } from '../../store/printReportSelectors';
 import { PlateBeds } from './PlateBeds';
 import { resolveActivePlate } from '../../core/scene/plates';
 import { PreviewLayers } from './PreviewLayers';
+import { SectionPlaneIndicator } from './SectionPlaneIndicator';
 import { MagnetPlacementLayer } from './MagnetPlacementLayer';
 import { ScrewBossPlacementLayer } from './ScrewBossPlacementLayer';
 import { KeyholePlacementLayer } from './KeyholePlacementLayer';
@@ -218,22 +219,7 @@ export const SceneContent: React.FC<{
       ))}
 
       {/* Indicador visual translúcido del plano de sección Rayos X */}
-      {sectionPlane.enabled && (
-        <mesh
-          position={[0, sectionPlane.heightMm, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          renderOrder={15}
-        >
-          <planeGeometry args={[printerProfile.bedWidthMm, printerProfile.bedDepthMm]} />
-          <meshBasicMaterial
-            color="#38bdf8"
-            transparent
-            opacity={0.12}
-            side={THREE.DoubleSide}
-            depthWrite={false}
-          />
-        </mesh>
-      )}
+      {sectionPlane.enabled && <SectionPlaneIndicator heightMm={sectionPlane.heightMm} />}
 
       <PreviewLayers />
       <MagnetPlacementLayer />

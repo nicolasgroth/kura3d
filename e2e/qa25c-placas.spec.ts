@@ -396,6 +396,10 @@ test.describe('qa25c placas: hallazgos de QA (cosas que el desarrollo prometió 
     const o = await pos(page);
     expect(o.length).toBe(2);
     expect(o.every((x: any) => x.p2 && x.x > x.ox - 200 && x.x < x.ox + 200)).toBe(true);
+    // «Preparar para imprimir»: las partes se disponen desde la placa 2 (nunca sobre la placa 1) y siguen en la placa 2.
+    await st(page, (s) => s.arrangeSplitGroup(s.objects.find((x: any) => x.metadata?.split)!.id, 'print'));
+    const printed = await pos(page);
+    expect(printed.every((x: any) => x.p2 && x.x > x.ox - 128)).toBe(true);
     expect(errs).toEqual([]);
   });
 

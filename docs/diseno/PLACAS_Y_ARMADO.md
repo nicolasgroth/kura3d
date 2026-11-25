@@ -12,6 +12,13 @@ Pedido del autor: tener las piezas de una figura repartidas en varias placas par
 - **El 3MF toma los grupos raíz como placas** al exportar (`scenePlates()` en `src/engine/io/threeMfExport.ts`); al importar, las placas de Bambu/Orca se vuelven grupos.
 - **El `.kura`** va en versión 3 con validación estricta: una versión anterior de la app no abre un archivo con campos nuevos.
 
+### Dividir con placas reales (implementado)
+
+- La placa virtual 0 de una pieza dividida es su placa real (`plateRef`): su origen y su cama. Sin placa o sin placas, el origen del mundo y la cama del proyecto, igual que antes.
+- Las placas virtuales 1, 2, … siguen la cuadrícula de `plateOffset()` anclada al origen de esa placa y se saltan las celdas a menos de 40 mm de otra placa real (`src/core/scene/splitFrame.ts`). Sin otras placas el resultado es idéntico al de antes. Las partes conservan el `plateRef` de su placa; convertir placas virtuales en reales queda para P7.
+- Fuera de volumen por placa, «Preparar para imprimir», las guías, los rótulos y la derivación de poses usan ese mismo marco. Exportar por pieza no depende de la placa: cada archivo sale centrado en su cama.
+- El índice de placa virtual del `.kura` se acota a `MAX_SPLIT_PLATES` (1024); el cálculo de celdas tiene un tope fijo.
+
 ## 1. Modelo de datos propuesto
 
 ### Placa como entidad
