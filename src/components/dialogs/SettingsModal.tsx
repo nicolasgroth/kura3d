@@ -221,6 +221,14 @@ export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = (
             <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
               {t(language, 'dialog.settings.aboutStack')}
             </p>
+            <button
+              type="button"
+              className="kura-btn kura-btn-sm"
+              onClick={() => useKuraStore.getState().setActiveDialog('about')}
+              title={t(language, 'about.menuTip', { name: BRAND.name })}
+            >
+              {t(language, 'about.title', { name: BRAND.name })}
+            </button>
           </div>
 
           <div className="kura-card">

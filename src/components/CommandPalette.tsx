@@ -37,6 +37,7 @@ import {
   Grid,
   Grid3x3,
   HelpCircle,
+  Info,
   Hexagon,
   Image as ImageIcon,
   Languages,
@@ -61,6 +62,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { BRAND } from '../brand';
 import { viewPrefsPaletteItems } from './viewPrefsPaletteItems';
 import { toolPaletteItems } from './toolPaletteItems';
 import { actionPaletteItems } from './actionPaletteItems';
@@ -857,6 +859,15 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <HelpCircle size={15} />,
         run: () => setActiveDialog('shortcuts'),
+      },
+      {
+        id: 'view-about',
+        label: t(language, 'about.title', { name: BRAND.name }),
+        category: catView,
+        keywords: 'acerca de about info versión version licencia license autor author créditos credits',
+        kind: 'local',
+        icon: <Info size={15} />,
+        run: () => setActiveDialog('about'),
       },
       {
         id: 'set-ai-drawer',

@@ -44,6 +44,7 @@ import { REALESUI_HI } from './realesUi';
 import { UX6_HI } from './ux6';
 import { RECETAS_HI } from './recetas';
 import { ASISTENTES_HI } from './asistentes';
+import { ACERCA_HI } from './acercaDe';
 import { IMAN_HI } from './iman';
 import { IMAN_UI3_HI } from './imanUi3';
 import { TORRETA_HI } from './torreta';
@@ -1396,4 +1397,5 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.thread.invalidFields': 'थ्रेड बनाने से पहले चिह्नित फ़ील्ड सुधारें: गैर-संख्यात्मक या सीमा से बाहर का मान लागू नहीं होता।',
   ...ORIENT_UI_HI,
   ...IMANES_UNION_HI,
+  ...ACERCA_HI,
 };

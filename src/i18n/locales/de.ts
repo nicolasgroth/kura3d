@@ -44,6 +44,7 @@ import { REALESUI_DE } from './realesUi';
 import { UX6_DE } from './ux6';
 import { RECETAS_DE } from './recetas';
 import { ASISTENTES_DE } from './asistentes';
+import { ACERCA_DE } from './acercaDe';
 import { IMAN_DE } from './iman';
 import { IMAN_UI3_DE } from './imanUi3';
 import { TORRETA_DE } from './torreta';
@@ -1396,4 +1397,5 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.thread.invalidFields': 'Korrigiere die markierten Felder, bevor du das Gewinde erstellst: Ein nicht numerischer oder außerhalb des Bereichs liegender Wert wird nicht übernommen.',
   ...ORIENT_UI_DE,
   ...IMANES_UNION_DE,
+  ...ACERCA_DE,
 };

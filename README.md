@@ -56,6 +56,7 @@ Las capturas de abajo y las de las [guías](docs/guia/README.md) se generan desd
 ## Qué puedes hacer hoy
 
 **Proyecto**
+- **Acerca de**: qué es el programa, cómo se construyó, su licencia y las bibliotecas abiertas que usa (desde Ajustes, la paleta de comandos o la insignia de versión junto al logo).
 - Proyectos `.kura` con escena, materiales, pintura e historial de deshacer. Autoguardado y recuperación de borradores. En escritorio, la lista de recientes recuerda las rutas y reabre con un clic (se puede desactivar en Ajustes).
 - Importar **STL, 3MF, OBJ y PLY**, varios archivos a la vez, por diálogo o arrastrando. Lee los 3MF de slicers (componentes, instancias, colores de filamento) conservando las posiciones.
 - **Ida y vuelta por 3MF exacta:** piezas, grupos, colores y posiciones se conservan al exportar y volver a abrir.

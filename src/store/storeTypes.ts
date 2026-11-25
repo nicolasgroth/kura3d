@@ -87,6 +87,7 @@ export type ActiveDialogType =
   | 'export'
   | 'settings'
   | 'shortcuts'
+  | 'about'
   | null;
 export type SettingsTabType = 'appearance' | 'project' | 'ai' | 'mcp' | 'about';
 export type MeasuresFocus = 'unit' | 'printer';

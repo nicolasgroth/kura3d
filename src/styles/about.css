@@ -1,0 +1,205 @@
+/**
+ * @file src/styles/about.css
+ * @description Estilos del diálogo «Acerca de» y del huevo de pascua del logo. La animación solo corre
+ * sin `prefers-reduced-motion` (además la hoja de accesibilidad anula todas las animaciones con esa
+ * preferencia). Ningún cambio de color supera 1 ciclo por 3 s: nada parpadea.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+/* Diálogo */
+dialog.kura-dialog.kura-dialog-about {
+  width: min(640px, calc(100vw - 24px));
+}
+
+.kura-about {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
+.kura-about h3 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.kura-about p {
+  margin: 0;
+}
+
+.kura-about-quote {
+  margin: 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent-cyan);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--accent-cyan) 9%, transparent);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.kura-about-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  color: var(--text-secondary);
+}
+
+.kura-about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kura-about a {
+  color: var(--accent-cyan);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.kura-about a:focus-visible,
+.kura-about-egg-btn:focus-visible,
+button.kura-about-version-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-about-libs {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.kura-about-libs caption {
+  text-align: left;
+  color: var(--text-secondary);
+  padding-bottom: 4px;
+}
+
+.kura-about-libs th,
+.kura-about-libs td {
+  padding: 4px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.kura-about-libs th {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.kura-about-egg-btn {
+  align-self: flex-start;
+  background: transparent;
+  border: 0;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.kura-about-egg-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Insignia de versión convertida en botón: conserva el aspecto de la insignia */
+button.kura-brand-badge.kura-about-version-btn {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button.kura-brand-badge.kura-about-version-btn:hover {
+  background: color-mix(in srgb, var(--accent-cyan) 26%, transparent);
+}
+
+/* Huevo de pascua */
+.kura-egg-message {
+  position: fixed;
+  left: 50%;
+  bottom: 48px;
+  z-index: 1000;
+  transform: translateX(-50%);
+  max-width: min(480px, calc(100vw - 32px));
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-cyan);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  pointer-events: none;
+}
+
+.kura-egg-message:not(.is-visible) {
+  display: none;
+}
+
+@property --kura-egg-h {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 190;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kura-egg-message.is-visible {
+    animation: kura-egg-msg 3s ease-in-out both;
+  }
+
+  :root[data-kura-egg][data-kura-egg] {
+    --accent-cyan: light-dark(hsl(var(--kura-egg-h) 75% 28%), hsl(var(--kura-egg-h) 85% 62%));
+    animation: kura-egg-hue 3s ease-in-out both;
+  }
+
+  :root[data-kura-egg] .kura-brand-icon-img {
+    animation: kura-egg-spin 1.5s ease-in-out 2 both;
+  }
+}
+
+@keyframes kura-egg-hue {
+  from {
+    --kura-egg-h: 190;
+  }
+  to {
+    --kura-egg-h: 550;
+  }
+}
+
+@keyframes kura-egg-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes kura-egg-msg {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  15%,
+  85% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+}
