@@ -399,9 +399,8 @@ test.describe('qa25c placas: hallazgos de QA (cosas que el desarrollo prometió 
     expect(errs).toEqual([]);
   });
 
-  // BUG (mayor): `create_primitive` por el bus/MCP sin `position` deja la pieza en el origen del mundo (placa 1) con
-  // `plateRef` = placa activa (2): la ficha dice «Fuera de volumen» para un cubo de 30 mm. La UI sí la pone sobre la placa.
-  test.fail('create_primitive por comando sin posición, con la placa 2 activa, cae sobre la placa 2', async ({ page }) => {
+  // Corregido (QA25-C fallo 1): `create_primitive` por el bus/MCP sin `position` cae sobre el origen de la placa activa.
+  test('create_primitive por comando sin posición, con la placa 2 activa, cae sobre la placa 2', async ({ page }) => {
     await abrir(page);
     await st(page, (s) => s.createPlate());
     await cmd(page, 'create_primitive', { type: 'box', width: 30, depth: 30, height: 30, name: 'ViaCmd' });

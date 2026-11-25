@@ -10,6 +10,7 @@
 import { createModulePrimitive, createPrimitive } from '../../core/operations';
 import { announceFreePlacement, createFreePlacer, type FreePlacer } from '../freePlacement';
 import { placementBedSize } from '../bedSize';
+import { activePlateBed } from '../../core/scene/activePlateBed';
 import { overlapsOthers, placeInFreeSpot } from '../../core/scene/freeSpot';
 import { parametricStateOf } from '../../core/scene/parametric';
 import { resolveModuleTarget } from '../../core/scene/sceneRules';
@@ -40,6 +41,13 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
     if (targetId) return ok(objects.find((o) => o.id === targetId));
     const selected = selectedIds.length === 1 ? ok(objects.find((o) => o.id === selectedIds[0])) : null;
     return selected && selected.parametric?.kind !== 'thread' ? selected : null;
+  };
+
+  /** Traslada al origen de la placa activa lo creado en el origen del mundo (sin placas, no cambia nada). */
+  const onActivePlate = (obj: SceneObject): SceneObject => {
+    const [ox, oz] = activePlateBed(get()).origin;
+    if (ox === 0 && oz === 0) return obj;
+    return { ...obj, position: [obj.position[0] + ox, obj.position[1], obj.position[2] + oz] };
   };
 
   /** Agrega un objeto recién creado con animación de aparición. */
@@ -80,7 +88,8 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
         });
         if (solid) rememberSpawnTarget(obj, solid.id);
         const over = solid && isNegative(obj) ? negativeSpotFor(obj, get().objects) : null;
-        const placed = over ? { ...obj, position: over } : obj;
+        // Sin posición ni colocador (comandos, MCP): el «origen» es el de la placa activa, no el del mundo.
+        const placed = over ? { ...obj, position: over } : options?.position || free ? obj : onActivePlate(obj);
         addSpawned(placed, [placed.id]);
         get().addToast(tr('toast.created', { name: placed.name }), 'success');
         if (over) get().requestCameraPreset('ensure', [placed.id]);
