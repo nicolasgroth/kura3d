@@ -731,3 +731,30 @@ Observaciones menores, pendientes: (1) con «Por cantidad» el aviso flotante si
 
 No cubierto: aviso de agujero cerrado en Simplificar, cantidad manual de imanes y vista de armado, caras inclinadas en agregados, textos en francés, hindi y chino.
 
+## 25-nov-2026 · Evaluación a ciegas del lote del 25-nov (ronda 1)
+
+Sobre `main` 60d89e3. Tres evaluadores Opus independientes, sin ver notas previas, QA ni autoría. Sin bloqueos duros en ninguno. **Usabilidad y funcional quedan bajo el mínimo de 85: se corrige y se reevalúa.**
+
+| Funcionalidad | Usabilidad | Código | Funcional |
+|---|---|---|---|
+| Suavizar malla | 74 | (89 en la evaluación anterior) | 72 |
+| Orientar para imprimir | 80 | 89 (regla de base real) | 78 |
+| Simplificar por modos | 72 | 88 | 82 |
+| Imanes como unión del corte | 76 | (87) | 85 |
+| Torreta para tornillo | 82 | (85) | 84 |
+| Colgar en el muro y paso de cable | 80 | 84 | 88 |
+| Barra flotante | 80 | 86 (antes 83) | — |
+| «Acerca de» | 86 | 90 | — |
+| Herramientas MCP | — | (85) | 84 |
+| Cancelación suave del motor | — | 85 | — |
+| Placas: modelo y dos poses | — | 87 | — |
+| **Global** | **78** | **87** | **82** |
+
+**Funcional (82), medido con el motor real y cuatro modelos reales.** Lo que cumple: alojamientos de imán Ø 5,206 × 2,2 mm coaxiales entre piezas; en el ojo de cerradura la cabeza entra y queda retenida; torreta en un cuerpo cerrado con volumen exacto; todo lo generado queda como malla cerrada. Lo que resta: Suavizar se rechaza entero en la ocarina por 2 triángulos invertidos y en otros modelos baja la intensidad de 0,5 a 0,06; Orientar dice «ya es la mejor» en una figura orgánica sin base de apoyo; Simplificar no lleva el aviso de agujeros perdidos al canal visible y da un género erróneo (−1); la torreta sale inclinada 8° en caras curvas y falta M5 directo; en un corte oblicuo se pone un solo imán; volúmenes del informe en coordenadas locales con piezas escaladas.
+
+**Usabilidad (78), en navegador a 1440 y 1024 px con dos modelos reales (uno de 2,37 millones de triángulos).** Lo que resta: Suavizar falla con sus valores por defecto en un modelo real y sus botones quedan bajo el pliegue; Simplificar no está en el inspector (solo en Acciones › Malla), el aviso de modelo pesado abre en «Sin pérdida» en vez de un objetivo útil y no hay vista previa; en Orientar un tooltip tapa el estado, el foco se pierde tras aplicar y un segundo Enter revierte; en Dividir con imanes un texto dice «menos que el mínimo de 0 mm» y los nombres de pieza se truncan por el inicio; la barra flotante tapa la parte alta de la pieza y no devuelve el foco al cerrar «Más»; «Acerca de» reabre desplazado; ningún agregado se puede colocar con teclado; paneles con dos patrones distintos (Volver frente a ×/Cancelar).
+
+**Código (87).** Prioridades: escalamiento de la cancelación suave con cola, guardas en `updateObjectsMeta`, restauración segura de la selección al colocar agregados, un solo saneo para proyecto y borrador, rangos de tolerancia alineados.
+
+Consumo (modelo · duración · tokens): usabilidad (Opus · ~30 min), funcional (Opus · 10 min · 186 k), código (Opus · 5 min · 191 k), cuelgue de Orientar (Sonnet · 27 min · 114 k), observaciones menores (Sonnet · 22 min · 215 k), placas P1 (Opus · 23 min · 223 k), placas P3 (Opus · 24 min · 228 k), cancelación suave (Opus · 13 min · 132 k).
+
