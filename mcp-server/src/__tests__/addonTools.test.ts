@@ -111,6 +111,13 @@ describe('MCP: alojamiento de imán sin interfaz', () => {
 });
 
 describe('MCP: torreta para tornillo sin interfaz', () => {
+  it('tornillo directo M5 desde la tabla (antes invalid-params)', async () => {
+    const { call } = await connect();
+    const box = await call('kura_create_primitive', { primitiveType: 'box', params: { width: 40, depth: 40, height: 30 }, placement: 'origin' });
+    const res = await call('kura_add_screw_boss', { hostId: box.id, face: 'top', type: 'screw', nominalMm: 5 });
+    expect(res.params).toMatchObject({ type: 'screw', nominalMm: 5, holeDiameterMm: 4.2, holeDepthMm: 12, heightMm: 14, outerDiameterMm: 12.5 });
+  });
+
   it('crea poste y agujero desde la tabla; unir y restar deja un solo cuerpo cerrado', async () => {
     const { call, headless } = await connect();
     const box = await call('kura_create_primitive', { primitiveType: 'box', params: { width: 40, depth: 40, height: 20 }, placement: 'origin' });
