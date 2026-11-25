@@ -4,7 +4,7 @@
  * normal de mundo en ejes del usuario (Z arriba), o una cara por nombre (`top`, `bottom`, `front`, `back`, `left`,
  * `right`) con un desplazamiento en el plano de esa cara. La cara se resuelve con un rayo desde fuera de la caja de la
  * pieza hacia adentro (primer corte con la malla de mundo, la misma de `meshRays` que mide la pared); su normal es la
- * del triángulo cortado. Devuelve punto y normal en ejes internos (Y arriba), como los da el visor al store.
+ * de la superficie promediada en el radio del agregado (`surfaceNormal`; en caras planas, la del triángulo cortado). Devuelve punto y normal en ejes internos (Y arriba), como los da el visor al store.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -16,6 +16,7 @@ import { CommandError } from '../bus/commandErrors';
 import { pick, readEnum, readVec3, type RawParams } from '../bus/commandValidation';
 import { fromUserVector, toUserVector } from '../scene/displayAxes';
 import { rayHitsDetailed } from './meshRays';
+import { averagedSurfaceNormal, SURFACE_NORMAL_DEFAULT_RADIUS_MM } from './surfaceNormal';
 
 export const ADDON_FACES = ['top', 'bottom', 'front', 'back', 'left', 'right'] as const;
 export type AddonFace = (typeof ADDON_FACES)[number];
@@ -85,10 +86,12 @@ function userBox(world: MeshData): { min: Vec3; max: Vec3 } {
 }
 
 /**
- * Punto y normal internos para el lugar pedido. Con una cara, el rayo parte del centro de la cara de la caja (más el
+ * Punto y normal internos para el lugar pedido (`radiusMm`: radio del agregado para la normal). Con una cara, el rayo parte del centro de la cara de la caja (más el
  * desplazamiento) y entra perpendicular: si no toca la pieza, `invalid-params` en `faceOffsetMm`.
  */
-export function resolveAddonPlacement(host: Pick<SceneObject, 'mesh' | 'position' | 'rotation' | 'scale'>, input: AddonPlacementInput): ResolvedPlacement {
+export function resolveAddonPlacement(
+  host: Pick<SceneObject, 'mesh' | 'position' | 'rotation' | 'scale'>, input: AddonPlacementInput, radiusMm = SURFACE_NORMAL_DEFAULT_RADIUS_MM,
+): ResolvedPlacement {
   if (input.kind === 'point') return { point: fromUserVector(input.point), normal: unit(fromUserVector(input.normal)) };
   const world = worldMeshOf(host);
   const box = userBox(world);
@@ -106,7 +109,8 @@ export function resolveAddonPlacement(host: Pick<SceneObject, 'mesh' | 'position
   // Normal hacia afuera: contra el rayo que entra (una malla con caras invertidas no la da vuelta).
   const facing = hit.normal[0] * dir[0] + hit.normal[1] * dir[1] + hit.normal[2] * dir[2];
   const normal = facing > 0 ? (hit.normal.map((n) => -n) as Vec3) : hit.normal;
-  return { point, normal: unit(normal) };
+  const face = unit(normal);
+  return { point, normal: averagedSurfaceNormal(world, point, face, radiusMm) ?? face };
 }
 
 /** Punto y normal internos de vuelta en ejes del usuario (para la respuesta). */

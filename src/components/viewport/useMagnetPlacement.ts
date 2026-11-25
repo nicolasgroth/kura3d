@@ -26,6 +26,7 @@ const MAGNET_TARGET: AddonPlacementTarget = {
   setHover: (hover) => setMagnetHover(hover),
   hoverHostId: () => useMagnetPanel.getState().hover?.hostId,
   place: (hostId, point, normal) => placeMagnetAt(hostId, point, normal),
+  radiusMm: () => useMagnetPanel.getState().params.sizeMm / 2,
 };
 
 export function useMagnetPlacement(obj: SceneObject): MagnetPlacementHandlers {
