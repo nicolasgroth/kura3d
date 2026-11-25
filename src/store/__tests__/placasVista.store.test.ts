@@ -184,8 +184,11 @@ describe('placas a la vista: store', () => {
       store().moveToPlate(p2.id, [b.id]);
       const status = () => platesBedStatus(store().objects, store().printerProfile, store().plates);
       expect(status().map((e) => e.status)).toEqual(['ok', 'ok']);
-      // «b» está en la placa 2: en el origen del mundo estaría dentro de la placa 1, pero lejos de la 2.
-      store().setObjectTransform(b.id, { position: [0, 0, 0] }, true);
+      // «b» sale de la cama de la placa 2 sin caer en otra: conserva la placa 2 y queda fuera de volumen. (Llevarla
+      // sobre la placa 1 la reasignaría: la placa sigue a la posición, lote P6.)
+      const p2Now = store().plates.find((p) => p.id === p2.id)!;
+      store().setObjectTransform(b.id, { position: [p2Now.origin[0] + store().printerProfile.bedWidthMm / 2 + 15, 0, 0] }, true);
+      expect(byId(b.id)!.plateRef).toBe(p2.id);
       expect(status().map((e) => e.status)).toEqual(['ok', 'outOfBounds']);
       expect(sceneBedStatus(store().objects, store().printerProfile, store().plates)).toBe('outOfBounds');
       // Sin placa, ya no cuenta.

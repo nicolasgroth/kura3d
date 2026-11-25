@@ -28,6 +28,34 @@ export interface ThreeMfSceneOptions {
   groups: readonly SceneGroup[];
 }
 
+/** Placas reales de la escena (lote P6): mandan sobre los grupos raíz como placas del laminador. */
+export interface ThreeMfPlateLayout {
+  /** Nombre de cada placa y los ids de sus objetos, ya colocados respecto de su cama. */
+  plates: ReadonlyArray<{ name: string; objectIds: readonly string[] }>;
+  /** Desplazamiento [X, Z] restado a cada objeto (por id); viaja en los metadatos de escena para restaurarla. */
+  offsets?: Readonly<Record<string, readonly [number, number]>>;
+}
+
+/** Placas del laminador desde las placas reales: una por placa con objetos impresos (null si quedan menos de dos). */
+function realPlates(printed: readonly SceneObject[], layout: ThreeMfPlateLayout): Array<{ name: string; members: Set<number> }> | null {
+  const index = new Map(printed.map((o, i) => [o.id, i]));
+  const owned = new Set<number>();
+  const plates: Array<{ name: string; members: Set<number> }> = [];
+  for (const plate of layout.plates) {
+    const members = new Set<number>();
+    for (const id of plate.objectIds) {
+      const i = index.get(id);
+      if (i === undefined || owned.has(i)) continue;
+      members.add(i);
+      owned.add(i);
+    }
+    if (members.size > 0) plates.push({ name: plate.name, members });
+  }
+  // Lo impreso que no nombra ninguna placa (no debería pasar) va con la primera: nunca queda fuera del archivo.
+  if (plates.length > 0) for (let i = 0; i < printed.length; i++) if (!owned.has(i)) plates[0].members.add(i);
+  return plates.length >= 2 ? plates : null;
+}
+
 /** Placas del laminador: una por grupo raíz si hay dos o más y cada objeto impreso cae en alguno. */
 function scenePlates(printed: readonly SceneObject[], groups: readonly SceneGroup[]): Array<{ name: string; members: Set<number> }> | null {
   const byId = new Map(groups.map((g) => [g.id, g]));
@@ -114,7 +142,8 @@ export const num = (n: number) => {
  * `Metadata/model_settings.config`) con `<basematerials>` y colores por triángulo. Es un único 3MF estándar:
  * `_deprecatedSlicerTarget` se acepta e ignora para no romper a quienes aún lo pasan (p. ej. el servidor MCP).
  * `brand` (la marca de la app, desde quien llama) firma los metadatos `Application`/`Organization`
- * y el nombre de la placa; sin ella se omiten.
+ * y el nombre de la placa; sin ella se omiten. `plateLayout` (placas reales) reparte lo impreso en las placas del
+ * laminador (Bambu Studio / OrcaSlicer) y manda sobre los grupos.
  */
 export function exportSceneTo3MF(
   objects: SceneObject[],
@@ -122,6 +151,7 @@ export function exportSceneTo3MF(
   _deprecatedSlicerTarget?: SlicerTarget,
   brand?: ExportBrand,
   sceneOptions?: ThreeMfSceneOptions,
+  plateLayout?: ThreeMfPlateLayout,
 ): Uint8Array {
   const solidObjects = exportableObjects(objects);
   // Escena completa: lo no impreso (oculto, negativos) se escribe después, sin ítem de build. Las
@@ -171,7 +201,8 @@ export function exportSceneTo3MF(
   const buildItems: string[] = [];
   const configObjects: string[] = [];
   const configInstances: string[] = [];
-  const plates = sceneOptions ? scenePlates(solidObjects, sceneOptions.groups) : null;
+  // Con placas reales, ellas definen las placas del laminador; sin ellas, los grupos raíz de la escena completa.
+  const plates = plateLayout ? realPlates(solidObjects, plateLayout) : sceneOptions ? scenePlates(solidObjects, sceneOptions.groups) : null;
 
   written.forEach((obj, objIdx) => {
     const objId = objIdx + 2;
@@ -232,7 +263,7 @@ export function exportSceneTo3MF(
     `  <metadata key="filament_count" value="${filamentCount}"/>\n` +
     `${configObjects.join('\n')}\n${platesXml}\n</config>\n`;
   const sceneMeta: Record<string, Uint8Array> = sceneOptions
-    ? { [KURA_SCENE_PATH]: strToU8(JSON.stringify(buildKuraSceneMeta(written, written.map((_, i) => String(i + 2)), sceneOptions.groups))) }
+    ? { [KURA_SCENE_PATH]: strToU8(JSON.stringify(buildKuraSceneMeta(written, written.map((_, i) => String(i + 2)), sceneOptions.groups, plateLayout?.offsets))) }
     : {};
 
   const contentTypes =

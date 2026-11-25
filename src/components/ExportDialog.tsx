@@ -3,7 +3,8 @@
  * @description Diálogo único de exportación: formato (STL, 3MF, OBJ+MTL, GLB, PLY), alcance
  * (selección o escena), nombre de archivo basado en el proyecto y laminador destino para 3MF,
  * con avisos de lo que cada formato conserva. Con piezas de una división ofrece un archivo por pieza
- * (ZIP) o un 3MF en disposición de impresión (`split/SplitExportOptions`).
+ * (ZIP) o un 3MF en disposición de impresión (`split/SplitExportOptions`). Con piezas en dos o más placas, un
+ * 3MF con todas las placas o un archivo por placa en ZIP (`dialogs/PlateExportOptions`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -20,6 +21,9 @@ import { defaultExportBase, sanitizeFileBase } from '../utils/exportNaming';
 import { NativeModal } from './NativeModal';
 import { SplitExportOptions } from './split/SplitExportOptions';
 import { GroupExportOptions } from './dialogs/GroupExportOptions';
+import { PlateExportOptions } from './dialogs/PlateExportOptions';
+import { planPlateExport } from '../core/scene/plateExport';
+import type { PlateExportMode } from '../store/plateExportFlow';
 import { selectedGroup } from '../core/scene/groups';
 import { hasSplitParts, type SplitExportMode } from '../store/splitExport';
 import '../styles/modelIo.css';
@@ -58,6 +62,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const projectName = useKuraStore((s) => s.projectName);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const exportModel = useKuraStore((s) => s.exportModel);
+  const plates = useKuraStore((s) => s.plates);
   const formId = useId();
   const nameId = useId();
 
@@ -73,6 +78,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const [busy, setBusy] = useState(false);
   const [splitMode, setSplitMode] = useState<SplitExportMode | null>(null);
   const [perObject, setPerObject] = useState(false);
+  const [plateMode, setPlateMode] = useState<PlateExportMode>('combined');
   const groupSel = useKuraStore((s) => selectedGroup(s.objects, s.groups, s.selectedIds));
   // Si el usuario no ha editado el nombre, seguir el alcance elegido.
   const nameEditedRef = useRef(false);
@@ -102,6 +108,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     setScope(nextScope);
     nameEditedRef.current = false;
     formatPickedRef.current = false;
+    setPlateMode('combined');
     setFileName(defaultExportBase(nextScope, projectName, selected, exportable, t(language, 'app.untitled'), t(language, 'export.selectionSuffix'), t(language, 'export.piecesSuffix'), selectedGroupName()));
     // Solo al abrir: los cambios de selección posteriores no pisan lo que escribió el usuario.
   }, [open]);
@@ -111,6 +118,11 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
   const splitTargets = hasSplitParts(targets);
   const effectiveSplit = splitTargets && (splitMode === 'perPiece' || (splitMode === 'printLayout' && format === '3mf')) ? splitMode : null;
   const groupPerObject = Boolean(groupSel) && scope === 'selection' && !splitTargets && perObject;
+  // Piezas de dos o más placas: la elección aparece; con una sola placa, el diálogo de siempre.
+  const platePlan = useMemo(() => (plates.length >= 2 ? planPlateExport(targets, plates) : null), [targets, plates]);
+  const showPlates = (platePlan?.buckets.length ?? 0) >= 2 && !effectiveSplit && !groupPerObject;
+  const perPlateZip = showPlates && (format !== '3mf' || plateMode === 'perPlate');
+  const extension = effectiveSplit === 'perPiece' || groupPerObject || perPlateZip ? 'zip' : format;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -118,7 +130,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
     setBusy(true);
     try {
       if (formatPickedRef.current) storeFormat(format);
-      const ok = await exportModel({ format, scope, fileName: base, splitMode: effectiveSplit ?? undefined, perObject: groupPerObject });
+      const ok = await exportModel({ format, scope, fileName: base, splitMode: effectiveSplit ?? undefined, perObject: groupPerObject, ...(showPlates ? { plateMode } : {}) });
       if (ok) onClose();
     } finally {
       setBusy(false);
@@ -137,7 +149,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
           </button>
           <button type="submit" form={formId} className="kura-btn kura-btn-primary" disabled={busy || targets.length === 0}>
             <Download size={14} aria-hidden="true" />
-            <span>{t(language, 'dialog.export.execute')} {base}.{effectiveSplit === 'perPiece' || groupPerObject ? 'zip' : format}</span>
+            <span>{t(language, 'dialog.export.execute')} {base}.{extension}</span>
           </button>
         </>
       }
@@ -192,7 +204,7 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
                 setFileName(e.target.value);
               }}
             />
-            <span aria-hidden="true">.{format}</span>
+            <span aria-hidden="true">.{perPlateZip ? 'zip' : format}</span>
           </div>
         </div>
 
@@ -200,6 +212,17 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
 
         {groupSel && scope === 'selection' && !splitTargets && (
           <GroupExportOptions language={language} groupName={groupSel.name} perObject={perObject} onChange={setPerObject} />
+        )}
+
+        {showPlates && platePlan && (
+          <PlateExportOptions
+            language={language}
+            format={format}
+            plateCount={platePlan.buckets.length}
+            excluded={platePlan.excluded}
+            mode={plateMode}
+            onChange={setPlateMode}
+          />
         )}
 
         {splitTargets && (

@@ -727,11 +727,15 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     {
       title: 'Export scene to STL file',
       description:
-        'Exports the indicated objects (or the whole visible scene) as binary or ASCII STL directly to disk.',
+        'Exports the indicated objects (or the whole visible scene) as binary or ASCII STL directly to disk. With print ' +
+        'plates, each part is written relative to the bed of its own plate; parts without a plate are skipped ' +
+        '(`skippedUnplaced`). An STL has no plates: when the parts are on two or more plates, pass `plateId` to export ' +
+        'one plate (call once per plate), or use kura_export_3mf for one file with all plates.',
       inputSchema: {
         outputPath: outputPathSchema.describe('Destination path of the .stl file on disk.'),
         objectIds: z.array(idSchema).max(256).optional().describe('Specific IDs to export (optional).'),
         binary: z.boolean().default(true).describe('true for binary STL (recommended), false for ASCII.'),
+        plateId: idSchema.optional().describe('Only the parts of this print plate, relative to its bed (with the UI connected).'),
       },
     },
     async (args) => {
@@ -741,7 +745,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           extension: '.stl',
           label: 'STL',
           outputPath: args.outputPath,
-          liveParams: { objectIds: args.objectIds, binary: args.binary },
+          liveParams: { objectIds: args.objectIds, binary: args.binary, plateId: args.plateId },
           headless: (targetPath) =>
             ctx.headless.exportStl({ outputPath: targetPath, objectIds: args.objectIds, binary: args.binary }),
         });
@@ -758,10 +762,14 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       title: 'Export scene to 3MF file',
       description:
         'Exports the indicated objects (or the whole visible scene) as one standard 3MF with per-triangle colors, readable by ' +
-        'OrcaSlicer, Bambu Studio, PrusaSlicer and Cura. The former `slicerTarget` argument is obsolete and ignored.',
+        'OrcaSlicer, Bambu Studio, PrusaSlicer and Cura. The former `slicerTarget` argument is obsolete and ignored. With ' +
+        'parts on two or more print plates, the file carries every plate (Bambu Studio and OrcaSlicer show each one; ' +
+        'PrusaSlicer and Cura see all parts on one bed), each part relative to the bed of its plate; parts without a ' +
+        'plate are skipped (`skippedUnplaced`). `plateId` exports a single plate.',
       inputSchema: {
         outputPath: outputPathSchema.describe('Destination path of the .3mf file on disk.'),
         objectIds: z.array(idSchema).max(256).optional().describe('Specific IDs to export (optional).'),
+        plateId: idSchema.optional().describe('Only the parts of this print plate, relative to its bed (with the UI connected).'),
       },
     },
     async (args) => {
@@ -771,7 +779,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           extension: '.3mf',
           label: '3MF',
           outputPath: args.outputPath,
-          liveParams: { objectIds: args.objectIds },
+          liveParams: { objectIds: args.objectIds, plateId: args.plateId },
           headless: (targetPath) => ctx.headless.export3mf({ outputPath: targetPath, objectIds: args.objectIds }),
         });
       } catch (err) {

@@ -37,16 +37,26 @@ export function isKuraScene(model: engine.ImportedModel): boolean {
   return model.kuraScene !== undefined && model.parts.every((p) => p.kura !== undefined);
 }
 
+/**
+ * Posición de mundo de un objeto guardado: la escrita más el origen de placa que se le restó al exportar por placa
+ * (las placas no se restauran como placas: cada pieza vuelve a su lugar de mundo; convertirlas es el lote P7).
+ */
+export function kuraWorldPosition(k: { position: Vec3; plateOffset?: [number, number] }): Vec3 {
+  const off = k.plateOffset;
+  return off ? [k.position[0] + off[0], k.position[1], k.position[2] + off[1]] : [k.position[0], k.position[1], k.position[2]];
+}
+
 /** Objetos y grupos de la escena guardada, con ids nuevos y el desplazamiento `offset` aplicado. */
 export function restoreKuraScene(model: engine.ImportedModel, build: RestoreBuild, offset: Vec3 = [0, 0, 0], asReference = false): RestoredScene {
   const metaGroups = model.kuraScene?.groups ?? [];
   const groupIds = metaGroups.map(() => makeId('grp'));
   const objects = model.parts.map((part) => {
     const k = part.kura!;
+    const world = kuraWorldPosition(k);
     const built = build({
       name: k.name || part.name,
       mesh: part.mesh,
-      position: [k.position[0] + offset[0], k.position[1] + offset[1], k.position[2] + offset[2]],
+      position: [world[0] + offset[0], world[1] + offset[1], world[2] + offset[2]],
       rotation: [...k.rotation],
       scale: [...k.scale],
       color: k.color || part.color || '',

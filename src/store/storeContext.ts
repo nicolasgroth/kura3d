@@ -26,6 +26,7 @@ import { inputsAreCurrent } from '../core/scene/sceneRules';
 import { reconcileGroups } from '../core/scene/groups';
 import { projectBed } from '../core/scene/activePlateBed';
 import { adoptNewPieces } from '../core/scene/plateAdopt';
+import { reassignMovedPieces } from '../core/scene/plateFollow';
 import { reconcilePlates } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
 import { colorName } from '../utils/colorNames';
@@ -157,12 +158,20 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   const keepActivePlateInSync = (prev: KuraStoreState) => {
     const state = get();
     if (!state.plates?.length || state.plates !== prev.plates) return;
+    let reassigned = false;
     if (state.objects !== prev.objects && state.layout !== 'assembly') {
       const bed = state.printerProfile ? projectBed(state) : null;
       const next = adoptNewPieces(prev.objects, state.objects, state.plates, state.activePlateId, bed);
       if (next) rawSet({ objects: next });
+      // La placa sigue a la posición por cualquier camino (panel, bus, alinear…), no solo al arrastrar. Cambiar
+      // de modo intercambia poses: no es mover.
+      const moved = bed && state.layout === prev.layout ? reassignMovedPieces(prev.objects, get().objects, state.plates, bed) : null;
+      if (moved) rawSet({ objects: moved });
+      // Durante un arrastre la placa activa no salta (Esc lo deshace todo); al soltar, el arrastre la ajusta.
+      reassigned = moved !== null && runtime.transformSnapshotBeforeDrag === null;
     }
-    if (state.selectedIds !== prev.selectedIds && state.plates.length > 1 && state.selectedIds.length > 0) {
+    // Elegir piezas (o que las elegidas cambien de placa) activa su placa.
+    if ((state.selectedIds !== prev.selectedIds || reassigned) && state.plates.length > 1 && state.selectedIds.length > 0) {
       const refs = new Set(get().objects.filter((o) => state.selectedIds.includes(o.id)).map((o) => o.plateRef));
       const [only] = refs;
       if (refs.size === 1 && only !== undefined && only !== state.activePlateId && state.plates.some((p) => p.id === only)) rawSet({ activePlateId: only });

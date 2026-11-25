@@ -132,7 +132,10 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
     reassignPlatesByPosition: (ids) => {
       const next = reassignByPosition(scene(), ids, projectBed(get()));
-      if (next) set({ objects: next.objects, ...followSelection(next.objects) });
+      // Aunque la placa ya se haya reasignado durante el arrastre, al soltar la activa sigue a la selección.
+      const objects = next?.objects ?? get().objects;
+      const follow = followSelection(objects);
+      if (next || follow.activePlateId) set({ ...(next ? { objects } : {}), ...follow });
     },
 
     setActivePlate: (plateId) => {

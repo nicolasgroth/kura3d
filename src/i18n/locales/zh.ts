@@ -14,6 +14,7 @@ import { FIT_CHECK_ZH } from './encaje';
 import { MENU_IDEAS_ZH } from './menuIdeas';
 import { GROUPS_ZH } from './groups';
 import { PLATES_VIEW_ZH } from './placasVista';
+import { PLATES_EXPORT_ZH } from './placasExportar';
 import { MEASURE_ZH } from './measure';
 import { FLOWUX_ZH } from './flowUx';
 import { PREVIEW_ZH } from './preview';
@@ -77,6 +78,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...MENU_IDEAS_ZH,
   ...GROUPS_ZH,
   ...PLATES_VIEW_ZH,
+  ...PLATES_EXPORT_ZH,
   ...MEASURE_ZH,
   ...FLOWUX_ZH,
   ...PREVIEW_ZH,

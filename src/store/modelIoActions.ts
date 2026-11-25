@@ -25,8 +25,10 @@ import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } 
 import { MAX_GROUP_NAME, objectAncestors, reconcileGroups } from '../core/scene/groups';
 import { groupImported } from './importGrouping';
 import { exportNotices, importErrorMessage } from './modelImportNotices';
+import { onlyPlate, singleFilePlan, zipPerPlate, type PlateExportMode } from './plateExportFlow';
+import { planPlateExport } from '../core/scene/plateExport';
 import { readModelBatch } from './modelImportBatch';
-import { isKuraScene, restoreKuraScene } from './kuraSceneRestore';
+import { isKuraScene, kuraWorldPosition, restoreKuraScene } from './kuraSceneRestore';
 import { reportImportNotices, type ImportedEntry } from './importResultNotices';
 import { maxDimension, rescaleAsBlock } from './unitRescale';
 import { IMPORT_BATCH_TRIANGLES, insertImportedObjects, yieldToMain } from './importInsertion';
@@ -54,6 +56,10 @@ export interface ExportRequest {
   splitMode?: SplitExportMode;
   /** Grupo: un archivo por objeto en un ZIP, con el nombre del árbol (`Grupo - Objeto`). */
   perObject?: boolean;
+  /** Piezas de varias placas en 3MF: un archivo con todas las placas (por defecto) o un 3MF por placa (ZIP). */
+  plateMode?: PlateExportMode;
+  /** Solo las piezas de esta placa, respecto de su cama (Command Bus). */
+  plateId?: string;
 }
 
 /**
@@ -88,6 +94,8 @@ interface IoState {
   printerProfile: { bedWidthMm?: number };
   customBedDimensions?: { width: number } | null;
   projectName: string | null;
+  /** Placas de impresión (cada pieza se exporta respecto de la cama de la suya). */
+  plates?: import('../types/plates').ScenePlate[];
   /** Modo de vista (ausente = imprimir): se exporta siempre desde las poses de impresión. */
   layout?: import('../types/plates').SceneLayout;
   importPlacementMode: engine.ImportPlacementMode;
@@ -231,7 +239,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
       // Con la escena ya ocupada (y colocación en cama), el bloque entero va a un hueco libre.
       let offset: Vec3 = [0, 0, 0];
       if (placement === 'bed' && others.length > 0) {
-        const items = model.parts.map((p) => ({ mesh: p.mesh, position: p.kura!.position, rotation: p.kura!.rotation, scale: p.kura!.scale }));
+        const items = model.parts.map((p) => ({ mesh: p.mesh, position: kuraWorldPosition(p.kura!), rotation: p.kura!.rotation, scale: p.kura!.scale }));
         const spot = placeGroupInFreeSpot(others, items, bed);
         offset = [spot.offset[0], 0, spot.offset[2]];
         if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
@@ -328,7 +336,9 @@ export function createModelIoActions(deps: ModelIoDeps) {
 
   /** Exporta selección o escena en el formato pedido; false si no hay nada, se cancela o falla. */
   async function exportModel(request: ExportRequest): Promise<boolean> {
-    const targets = exportTargets(request.scope);
+    const plates = get().plates ?? [];
+    const scoped = exportTargets(request.scope);
+    const targets = request.plateId ? onlyPlate(scoped, plates, request.plateId) : scoped;
     if (targets.length === 0) {
       get().addToast(tr('toast.nothingToExport'), 'error');
       return false;
@@ -360,18 +370,34 @@ export function createModelIoActions(deps: ModelIoDeps) {
         if (saved) get().addToast(tr('export.split.zipDone', { count, name: zipName }), 'success');
         return saved;
       }
+      // Con placas: cada pieza respecto de la cama de su placa; varias placas en STL/OBJ/PLY/GLB (o 3MF por placa) = ZIP.
+      const byPlate = splitMode === 'printLayout' ? null : planPlateExport(targets, plates);
+      if (byPlate && byPlate.excluded > 0) get().addToast(tr('export.plates.excluded', { count: byPlate.excluded }), 'info');
+      if (byPlate && byPlate.buckets.length === 0) {
+        get().addToast(tr('toast.nothingToExport'), 'error');
+        return false;
+      }
+      if (byPlate && byPlate.buckets.length >= 2 && (request.format !== '3mf' || request.plateMode === 'perPlate')) {
+        const zipName = `${base}.zip`;
+        const { data, names } = await zipPerPlate(byPlate.buckets, { format: request.format, unitSystem: state.unitSystem }, exportFiles);
+        const saved = await saveFileSet([{ name: zipName, data, filters: [{ name: 'ZIP', extensions: ['zip'] }] }]);
+        if (saved) get().addToast(tr('export.plates.zipDone', { count: names.length, name: zipName }), 'success');
+        return saved;
+      }
       const bedWidth = state.customBedDimensions?.width ?? state.printerProfile.bedWidthMm ?? 256;
       const layoutTargets = splitMode === 'printLayout' && request.format === '3mf' ? printLayoutTargets(targets, bedWidth) : targets;
       const filters = [EXPORT_FILTERS[request.format]];
       // 3MF de la escena completa: viajan los objetos (ocultos y negativos sin ítem de build) y los grupos,
       // para que Kurra Studio la restaure tal cual al volver a abrirla. Las referencias nunca: solo en el `.kura`.
-      const fullScene = request.format === '3mf' && request.scope === 'scene' && !splitMode;
+      const fullScene = request.format === '3mf' && request.scope === 'scene' && !splitMode && !request.plateId;
+      const single = byPlate ? singleFilePlan(targets, plates, fullScene ? printPosedObjects(state).filter((o) => !isReference(o)) : undefined) : null;
       const { files } = await exportFiles({
         format: request.format,
-        targets: fullScene ? printPosedObjects(state).filter((o) => !isReference(o)) : layoutTargets,
+        targets: single ? single.targets : layoutTargets,
         baseName: base,
         unitSystem: state.unitSystem,
         ...(fullScene ? { sceneGroups: state.groups ?? [] } : {}),
+        ...(single?.plateLayout && request.format === '3mf' ? { plateLayout: single.plateLayout } : {}),
       });
       const entries: SaveSetEntry[] = files.map((f) => ({
         name: `${base}${f.suffix}`,
