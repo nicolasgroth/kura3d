@@ -26,7 +26,7 @@ import { sanitizeFileBase } from '../utils/exportNaming';
 export type PlateExportMode = 'combined' | 'perPlate';
 
 /** Nombres que Windows reserva (con o sin extensión): dentro del ZIP se les antepone «_». */
-const RESERVED = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
+const RESERVED = /^(con|prn|aux|nul|com[0-9¹²³]|lpt[0-9¹²³])$/i;
 
 /** Nombre base seguro de la entrada del ZIP de una placa: sin rutas ni caracteres reservados. */
 export function plateEntryBase(name: string, index: number): string {
