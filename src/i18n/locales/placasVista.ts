@@ -2,7 +2,7 @@
  * @file src/i18n/locales/placasVista.ts
  * @description Textos de la interfaz de placas (lote P2 «Placas a la vista») en los 6 idiomas: tira de placas
  * sobre la barra de estado, crear/borrar/renombrar, «Solo esta», «Mover a placa», aviso de fuera de volumen por
- * placa y pasos de placas en el historial. Cada clave lleva [es, en, de, fr, hi, zh].
+ * placa, aviso de placas solapadas al abrir y pasos de placas en el historial. Cada clave lleva [es, en, de, fr, hi, zh].
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -118,6 +118,14 @@ const PLATES_VIEW_TABLE = {
     'Rien n’a été réparti : les pièces ne sont sur aucun plateau. Déplacez-les d’abord vers un plateau.',
     'कुछ वितरित नहीं हुआ: हिस्से किसी प्लेट पर नहीं हैं। पहले उन्हें किसी प्लेट पर ले जाएँ।',
     '未做任何分布：这些零件不在任何打印板上。请先将它们移到某块板上。',
+  ],
+  'plates.overlap.opened': [
+    'Hay placas que se pisan: {names}. No se movieron; sepáralas o ajusta su cama antes de imprimir.',
+    'Some plates overlap: {names}. They were not moved; separate them or adjust their bed before printing.',
+    'Einige Platten überlappen sich: {names}. Sie wurden nicht verschoben; trenne sie oder passe ihr Druckbett vor dem Drucken an.',
+    'Certains plateaux se chevauchent : {names}. Ils n’ont pas été déplacés ; séparez-les ou ajustez leur plateau avant d’imprimer.',
+    'कुछ प्लेटें एक-दूसरे पर चढ़ी हैं: {names}। उन्हें हिलाया नहीं गया; प्रिंट से पहले उन्हें अलग करें या उनका बेड बदलें।',
+    '有打印板相互重叠：{names}。未移动它们；打印前请将其分开或调整其打印平台。',
   ],
 } as const satisfies Record<string, Row>;
 

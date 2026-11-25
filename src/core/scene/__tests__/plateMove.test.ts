@@ -99,6 +99,16 @@ describe('mover a placa', () => {
     expect(objects.find((o) => o.id === 'm')!.plateRef).toBeUndefined();
   });
 
+  it('un acompañante con placa queda asignado a la placa destino (no físicamente en una y asignado a otra)', () => {
+    const magnet = box('m', [32, 5, 0], 'p1', { role: 'negative', metadata: { addon: { kind: 'magnet', hostId: 'a' } } } as unknown as Partial<SceneObject>);
+    const hole = box('h', [0, 5, 0], 'p1', { role: 'negative', groupRef: 'g' } as Partial<SceneObject>);
+    const scene = { objects: [box('a', [30, 0, 0], 'p1', { groupRef: 'g' }), magnet, hole], plates: PLATES };
+    const res = movePiecesToPlate(scene, ['a'], 'p2', 'print', CTX, BED)!;
+    expect(res.scene.objects.find((o) => o.id === 'm')).toMatchObject({ plateRef: 'p2', position: [282, 5, 0] });
+    expect(res.scene.objects.find((o) => o.id === 'h')).toMatchObject({ plateRef: 'p2', position: [250, 5, 0] });
+    expect(res.moved).toEqual(['a']);
+  });
+
   it('un negativo de grupo no acompaña si solo se mueve una de las piezas del grupo', () => {
     const hole = box('h', [0, 5, 0], undefined, { role: 'negative', groupRef: 'g' } as Partial<SceneObject>);
     const scene = { objects: [box('a', [0, 0, 0], 'p1', { groupRef: 'g' }), box('b', [40, 0, 0], 'p1', { groupRef: 'g' }), hole], plates: PLATES };

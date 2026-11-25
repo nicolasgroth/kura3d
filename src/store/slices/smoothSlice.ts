@@ -136,6 +136,8 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
       });
       try {
         await get().initEngine();
+        // Limpiada o reemplazada mientras se esperaba al motor: no se arranca un cálculo que nadie espera.
+        if (gen !== generation) return false;
         const job = startEngineJob('smooth', { obj, options: smoothTaskOptions(params, obj.mesh) }, (phase) => {
           if (gen === generation) patchSession({ phase });
         });
@@ -195,6 +197,12 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
       const signature = smoothSignature(params);
       return runExclusive('smooth', false, async () => {
         const hit = cacheFor(id, signature);
+        // La vista previa que se estuviera calculando ya no sirve: se descarta en suave (no quedan dos cálculos).
+        if (activeJob) {
+          generation++;
+          activeJob.cancel('soft');
+          activeJob = null;
+        }
         let result: { report: SmoothReport; change: SceneChange };
         try {
           if (hit) {

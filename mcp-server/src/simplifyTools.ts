@@ -31,15 +31,17 @@ export function registerSimplifyTools(server: Pick<McpServer, 'registerTool'>, c
         Math.round(SWL.genusSlackRel * 100) + ' % above the target (target.genusPreserved). Genus is summed per body. If ' +
         'the applied result changes the genus, warnings carries SIMPLIFY_GENUS_CHANGED (same channel as SIMPLIFY_VOLUME_CHANGED). Returns the report: applied, triangles before/after, volume change %, genus before/after, maxDeviationMm ' +
         '(sampled, a lower bound), checks (genus_changed, volume_changed > ' + SWL.volumePct + ' %, deviation_high > ' +
-        SWL.deviationMm + ' mm, target_not_reached, no_reduction) and rejectedBy (lossless). applied=false leaves the object untouched.',
+        SWL.deviationMm + ' mm, target_not_reached, no_reduction) and rejectedBy (lossless). applied=false leaves the object untouched. ' +
+        'Parameters that do not belong to the mode are rejected with invalid-params (toleranceMm only in tolerance; ' +
+        'targetTriangles/targetPercent only in target).',
       inputSchema: {
         objectId: idSchema.describe('ID of the object to simplify.'),
         mode: z.enum(SIMPLIFY_MODES as [string, ...string[]]).optional()
           .describe('lossless | tolerance | target. Default: target if targetTriangles/targetPercent is given, else tolerance.'),
         toleranceMm: rangeSchema(OR.simplify.toleranceMm).optional()
-          .describe(`Mode tolerance: Manifold simplify tolerance in mm (default ${OD.simplify.toleranceMm}).`),
-        targetTriangles: rangeSchema(OR.simplify.targetTriangles).optional().describe('Mode target: triangles to leave.'),
-        targetPercent: rangeSchema(OR.simplify.targetPercent).optional().describe('Mode target: % of the current triangles to keep.'),
+          .describe(`Mode tolerance only: Manifold simplify tolerance in mm (default ${OD.simplify.toleranceMm}).`),
+        targetTriangles: rangeSchema(OR.simplify.targetTriangles).optional().describe('Mode target only: triangles to leave.'),
+        targetPercent: rangeSchema(OR.simplify.targetPercent).optional().describe('Mode target only: % of the current triangles to keep.'),
       },
     },
     async (args) =>

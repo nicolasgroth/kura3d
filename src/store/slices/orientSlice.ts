@@ -83,8 +83,15 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
   let job: EngineJob<EngineTaskResult<'orientForPrint'>> | null = null;
   let previewGeneration = 0;
 
+  /** Resaltado de voladizos de la vista previa en curso: uno a la vez (el anterior se descarta en suave). */
+  let overhangJob: { cancel: (mode?: 'soft' | 'hard') => void } | null = null;
+  const cancelOverhang = () => {
+    overhangJob?.cancel('soft');
+    overhangJob = null;
+  };
   const dropPreview = () => {
     previewGeneration++;
+    cancelOverhang();
     if (get().orientPreviewId !== null || get().orientOverhang !== null) set({ orientPreviewId: null, orientOverhang: null });
     get().clearOperationPreview(ORIENT_PREVIEW_KEY);
   };
@@ -149,6 +156,7 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
         return;
       }
       const generation = ++previewGeneration;
+      cancelOverhang();
       // La actual no se gira: su fantasma queda sobre la pieza y sirve para ver qué zonas necesitan soporte hoy.
       const plan = candidate.source === 'current'
         ? { position: obj.position, rotation: obj.rotation, scale: obj.scale }
@@ -164,13 +172,17 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
         },
       });
       if (state.orientOverhang?.candidateId === candidate.id) return;
-      runEngineDetached('orientOverhangFaces', { obj, quaternion: candidate.quaternion, overhangAngleDeg: orient.analysis.overhangAngleDeg }).then(
+      const overhang = startEngineJob('orientOverhangFaces', { obj, quaternion: candidate.quaternion, overhangAngleDeg: orient.analysis.overhangAngleDeg });
+      overhangJob = overhang;
+      overhang.promise.then(
         (res) => {
+          if (overhangJob === overhang) overhangJob = null;
           if (generation !== previewGeneration) return;
           set({ orientOverhang: { candidateId: candidate.id, triangles: res.triangles, truncated: res.truncated } });
         },
         () => {
-          // El resaltado es un extra: si falla, el fantasma sigue sin él.
+          // El resaltado es un extra: si falla (o se descartó por otra vista previa), el fantasma sigue sin él.
+          if (overhangJob === overhang) overhangJob = null;
         },
       );
     },
