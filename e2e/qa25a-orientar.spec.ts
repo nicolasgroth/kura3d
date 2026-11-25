@@ -67,7 +67,7 @@ for (const vp of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }]) {
       await libre(page);
       await expect.poll(() => pasos(page)).toBe(p0 + 1);
       const b = await caja(page, id);
-      test.info().annotations.push({ type: 'cajas', description: JSON.stringify({ antes, despues: b, elegida: await page.locator('[data-testid="orient-option"][aria-selected="true"]').first().getAttribute('aria-label').catch(() => null) }) });
+      test.info().annotations.push({ type: 'cajas', description: JSON.stringify({ antes, despues: b, elegida: await page.locator('[data-testid="orient-option"][aria-selected="true"]').count() }) });
       console.log('CAJAS', JSON.stringify({ antes, despues: b }));
       expect(Math.abs(b.min[1]), 'pieza apoyada en la cama (min Y = 0)').toBeLessThan(0.05);
       await page.screenshot({ path: `${EVID}/orientar-${vp.width}-aplicada.png` });
