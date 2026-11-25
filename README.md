@@ -76,6 +76,7 @@ Las capturas de abajo y las de las [guías](docs/guia/README.md) se generan desd
 - Texto y SVG en relieve, grabado o incrustado sobre cualquier superficie.
 - Litofanías planas y cilíndricas, y cortadores desde una imagen.
 - Simplificar y refinar mallas, alinear y distribuir en la cama.
+- **Suavizar malla**: quita facetado y ruido de escaneos sin cambiar los triángulos, con aristas protegidas, zona pintada y vista previa antes de aplicar (**Acciones › Malla › Suavizar…**).
 
 **Preparación para imprimir**
 - **Dividir para imprimir:** parte un modelo más grande que tu cama en piezas con código (A1, B1…), uniones, marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza.
