@@ -33,6 +33,7 @@ export const SimplifyReportView: React.FC<{ report: SimplifyReport; language: La
           </>
         )}
       </ul>
+      {report.applied && <p className="kura-cut-hint">{t(language, 'simplify.report.toleranceHelp')}</p>}
       {warnings.length > 0 && (
         <ul className="kura-simplify-report-warnings" data-testid="simplify-report-warnings">
           {warnings.map((code) => (

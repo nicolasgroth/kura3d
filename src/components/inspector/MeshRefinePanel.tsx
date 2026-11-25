@@ -6,7 +6,7 @@
  * @license MIT
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { Box, Wand2 } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -27,6 +27,7 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
   const runConvexHull = useKuraStore((s) => s.runConvexHull);
   const isBusy = Boolean(busyOperation);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const uid = useId();
   const request = useKuraStore((s) => s.simplifyRequest);
 
   // Abierto desde el aviso de malla pesada: el panel entra a la vista y la tolerancia queda enfocada.
@@ -34,17 +35,21 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
     if (!request || request.id !== primary.id || Date.now() - request.at > SIMPLIFY_REQUEST_FRESH_MS) return;
     const root = rootRef.current;
     if (!root) return;
+    // El foco al primer campo del modo lo da `SimplifySection` (conoce el modo pedido).
     root.scrollIntoView({ block: 'nearest' });
-    // Primer control de Simplificar: el selector de modo.
-    root.querySelector<HTMLElement>('select, input')?.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request?.n]);
 
   return (
     <div className="kura-form-field" ref={rootRef}>
       <label>{t(language, 'inspector.pro.meshTitle')}</label>
-      <SimplifySection primary={primary} toleranceMm={simplifyTolMm} setToleranceMm={setSimplifyTolMm} invalid={invalid} />
+      <div role="group" aria-labelledby={`${uid}-simplify`} className="kura-mesh-group">
+        <h4 id={`${uid}-simplify`} className="kura-mesh-group-title">{t(language, 'simplify.section.simplify')}</h4>
+        <SimplifySection primary={primary} toleranceMm={simplifyTolMm} setToleranceMm={setSimplifyTolMm} invalid={invalid} />
+      </div>
 
+      <div role="group" aria-labelledby={`${uid}-refine`} className="kura-mesh-group">
+        <h4 id={`${uid}-refine`} className="kura-mesh-group-title">{t(language, 'simplify.section.refine')}</h4>
       <div className="kura-field-row">
         <span className="kura-field-label">{t(language, 'inspector.pro.refineEdge')}</span>
         <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
@@ -81,7 +86,10 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
         />
         <span>{t(language, 'inspector.pro.refineSmooth')}</span>
       </label>
+      </div>
 
+      <div role="group" aria-labelledby={`${uid}-hull`} className="kura-mesh-group">
+        <h4 id={`${uid}-hull`} className="kura-mesh-group-title">{t(language, 'simplify.section.hull')}</h4>
       <button
         type="button"
         className="kura-btn kura-btn-sm"
@@ -91,6 +99,7 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
         <Box size={13} />
         <span>{t(language, 'inspector.pro.hull')}</span>
       </button>
+      </div>
     </div>
   );
 };

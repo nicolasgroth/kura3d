@@ -17,6 +17,7 @@ import { type InspectorSectionProps } from './inspectorTypes';
 import { toUserSize } from '../../core/scene/displayAxes';
 import { GEOMETRY_STATS_ID } from '../../store/slices/repairSlice';
 import { MeshStatusStat } from './MeshStatusStat';
+import { SimplifyEntryButton } from './SimplifyEntryButton';
 
 /** Sección 3: geometría y métricas. */
 export const GeometrySection: React.FC<Pick<InspectorSectionProps, 'primary'>> = ({ primary }) => {
@@ -54,6 +55,7 @@ export const GeometrySection: React.FC<Pick<InspectorSectionProps, 'primary'>> =
         <div className="kura-stat-box">
           <div className="kura-stat-title">{t(language, 'inspector.stats.triangles')}</div>
           <div className="kura-stat-val">{formatNumber(language, primary.stats.triangles)}</div>
+          <SimplifyEntryButton id={primary.id} />
         </div>
         <div className="kura-stat-box">
           <div className="kura-stat-title">{t(language, 'inspector.stats.vertices')}</div>

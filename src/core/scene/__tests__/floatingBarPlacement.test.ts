@@ -39,6 +39,17 @@ describe('placeFloatingBar', () => {
     expect(placeFloatingBar({ extent: { left: 960, right: 1100, top: 300, bottom: 400 }, bar, viewport }).x).toBe(1000 - 8 - 200);
   });
 
+  it('un objeto alto que no deja hueco arriba ni abajo recibe la barra a un lado, fuera de su caja', () => {
+    const right = placeFloatingBar({ extent: { left: 100, right: 500, top: 20, bottom: 700 }, bar, viewport });
+    expect(right.side).toBe('right');
+    expect(right.x).toBe(510);
+    expect(inside(right)).toBe(true);
+    const left = placeFloatingBar({ extent: { left: 500, right: 950, top: 20, bottom: 700 }, bar, viewport });
+    expect(left.side).toBe('left');
+    expect(left.x + bar.width).toBeLessThanOrEqual(500 - 10);
+    expect(inside(left)).toBe(true);
+  });
+
   it('un objeto que llena el visor deja la barra pegada al borde, dentro', () => {
     const p = placeFloatingBar({ extent: { left: -100, right: 1100, top: -100, bottom: 700 }, bar, viewport });
     expect(p.side).toBe('pinned');
