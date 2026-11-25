@@ -5,9 +5,9 @@
  * `activeBedSize()` (colocar piezas) derivan de aquí. Sin placas, o con placas que usan la cama del proyecto, las
  * medidas son idénticas a las de antes y el origen es [0, 0] para la placa implícita.
  *
- * Para P2: quien coloque, valide o dibuje respecto de la cama debe pedir `activePlateBed(state)` y sumar
- * `origin` (centro de la placa en X/Z de mundo); hoy los ~45 lectores usan solo las medidas, que equivale a
- * trabajar sobre la placa del origen.
+ * Lectores con origen (P2): `placementBedSize` (colocar lo nuevo), `plateFrameFor` (centrar, acomodar, ajustar a la
+ * impresora, orientar) y el estado de volumen por placa (`components/viewport/plateBedStatus.ts`). El resto de los
+ * lectores de la cama usa solo las medidas, que equivale a trabajar sobre la placa del origen.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
