@@ -7,7 +7,14 @@
  * @license MIT
  */
 
-import { LOSSLESS_LIMITS, SIMPLIFY_WARN_LIMITS, type SimplifyReport, type SimplifyWarningCode } from '../engine/simplify';
+import {
+  LOSSLESS_LIMITS,
+  SIMPLIFY_DESTRUCTIVE_LIMITS,
+  SIMPLIFY_WARN_LIMITS,
+  type SimplifyDestructiveReason,
+  type SimplifyReport,
+  type SimplifyWarningCode,
+} from '../engine/simplify';
 import type { LanguageCode } from '../types/kura';
 import { t } from './index';
 import { formatLocaleNumber } from './numberLocale';
@@ -31,6 +38,28 @@ export function simplifyWarningSentence(lang: LanguageCode, report: SimplifyRepo
     case 'no_reduction':
       return t(lang, 'simplify.warn.no_reduction');
   }
+}
+
+/** Frase de un motivo de resultado destructivo, con sus números y el tope. */
+export function simplifyDestructiveSentence(lang: LanguageCode, report: SimplifyReport, reason: SimplifyDestructiveReason): string {
+  const n = (v: number, digits: number) => formatLocaleNumber(lang, v, { maxFrac: digits, grouping: digits === 0 });
+  switch (reason) {
+    case 'holes_lost':
+      return t(lang, 'simplify.blocked.holes_lost', { before: report.genusBefore, after: report.genusAfter });
+    case 'volume_changed':
+      return t(lang, 'simplify.blocked.volume_changed', { pct: n(report.volumeChangePct, 2), limit: n(SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct, 2) });
+    case 'deviation_high':
+      return t(lang, 'simplify.blocked.deviation_high', {
+        mm: n(report.maxDeviationMm, 3),
+        limit: n(report.destructiveLimitMm ?? SIMPLIFY_DESTRUCTIVE_LIMITS.deviationMinMm, 3),
+      });
+  }
+}
+
+/** Aviso de Simplificar bloqueado por resultado destructivo (los motivos unidos). */
+export function simplifyBlockedToast(lang: LanguageCode, report: SimplifyReport): string {
+  const reasons = (report.destructive ?? []).map((r) => simplifyDestructiveSentence(lang, report, r)).join(' ');
+  return t(lang, 'simplify.toast.blocked', { reasons });
 }
 
 /** Varias frases unidas por espacio (cada una termina en punto). */
