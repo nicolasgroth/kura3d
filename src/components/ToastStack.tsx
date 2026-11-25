@@ -20,6 +20,7 @@ import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { useTopModal } from './useTopModal';
 import { ToastItem } from './ToastItem';
+import { useToastClearance } from './useToastClearance';
 
 const MAX_VISIBLE = 2;
 /** Holgura entre la pila y el diálogo o el borde de la ventana (px). */
@@ -48,6 +49,8 @@ export const ToastStack: React.FC = () => {
   // Con un modal abierto la pila nunca se dibuja sobre él: va en la franja libre o, si no cabe, queda detrás.
   const [slot, setSlot] = useState<ModalSlot>('behind');
   const inModal = modal !== null && slot !== 'behind';
+
+  useToastClearance(stackRef, toastCount > 0 && !inModal);
 
   useLayoutEffect(() => {
     if (!modal) return undefined;

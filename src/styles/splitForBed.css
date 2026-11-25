@@ -299,7 +299,8 @@
 }
 
 .kura-split-assembly {
-  bottom: 124px;
+  /* Sube lo que ocupe la pila de avisos (`--kura-toast-clear`, publicada por ToastStack): no la tapan. */
+  bottom: calc(124px + var(--kura-toast-clear, 0px));
   flex-direction: column;
   align-items: stretch;
   gap: 6px;

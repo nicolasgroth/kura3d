@@ -27,6 +27,22 @@ const UX7 = {
     hi: '{count} {count?जोड़|जोड़}: अधिकतम {with} कनेक्टर के साथ; बाकी चिपकाए जाते हैं (जोड़ते समय कुछ और चिपकाने पड़ सकते हैं)',
     zh: '{count} 处连接:最多 {with} 处带连接件;其余需粘合(装配时可能还有几处需要粘合)',
   },
+  'split.sum.jointsUpToMagnet': {
+    es: '{count} {count?unión|uniones}: hasta {with} con imán, según el espacio de cada unión; el resto se pega',
+    en: '{count} {count?joint|joints}: up to {with} with a magnet, depending on the room at each joint; the rest are glued',
+    de: '{count} {count?Verbindung|Verbindungen}: bis zu {with} mit Magnet, je nach Platz an jeder Fuge; der Rest wird geklebt',
+    fr: '{count} {count?jonction|jonctions} : jusqu’à {with} avec aimant, selon la place de chaque jonction ; le reste se colle',
+    hi: '{count} जोड़: हर जोड़ की जगह के अनुसार अधिकतम {with} में चुंबक; बाकी चिपकाए जाते हैं',
+    zh: '{count} 处连接:视每处空间,最多 {with} 处装磁铁;其余需粘合',
+  },
+  'split.glueSmallerMagnet': {
+    es: 'Para tener imanes en más uniones: elige un imán más chico.',
+    en: 'To get magnets in more joints: choose a smaller magnet.',
+    de: 'Für Magnete in mehr Fugen: wähle einen kleineren Magneten.',
+    fr: 'Pour avoir des aimants dans plus de jonctions : choisis un aimant plus petit.',
+    hi: 'अधिक जोड़ों में चुंबक के लिए: छोटा चुंबक चुनें।',
+    zh: '想让更多连接处装上磁铁：请选更小的磁铁。',
+  },
   'ux7.split.jointsNoRoom': {
     es: '{count} {count?unión|uniones}, todas para pegar: ningún corte deja espacio para un conector',
     en: '{count} {count?joint|joints}, all glued: no cut leaves room for a connector',

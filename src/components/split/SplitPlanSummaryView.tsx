@@ -99,7 +99,7 @@ export const SplitPlanSummaryView: React.FC<{
             <dd>
               {plan.connector && !summary.assemblyMeasured
                 ? summary.jointCount - summary.jointsWithoutConnector > 0
-                  ? t(language, 'ux7.split.jointsUpTo', {
+                  ? t(language, plan.connector.type === 'magnet' ? 'split.sum.jointsUpToMagnet' : 'ux7.split.jointsUpTo', {
                       count: summary.jointCount,
                       with: summary.jointCount - summary.jointsWithoutConnector,
                     })
@@ -155,10 +155,16 @@ export const SplitPlanSummaryView: React.FC<{
               )}
             </p>
           )}
-          {glueOnly.length > 0 && (onLowerMinWall || onUseLap) && (
+          {glueOnly.length > 0 && plan.connector?.type === 'magnet' && (
+            // Con imanes la salida no es el solape de borde: lo que limita es el tamaño del imán frente al espacio de la unión.
+            <p className="kura-split-glue-options" data-testid="split-magnet-suggestion">
+              <span>{t(language, 'split.glueSmallerMagnet')}</span>
+            </p>
+          )}
+          {glueOnly.length > 0 && plan.connector?.type !== 'magnet' && (onLowerMinWall || onUseLap) && (
             <p className="kura-split-glue-options">
               <span>{t(language, 'split.glueOptions')}</span>
-              {onLowerMinWall && plan?.connector?.type !== 'magnet' && (
+              {onLowerMinWall && (
                 <button type="button" className="kura-btn kura-btn-sm" title={t(language, 'split.glueLowerMinTip')} onClick={onLowerMinWall}>
                   {t(language, 'split.glueLowerMin')}
                 </button>
