@@ -1,6 +1,6 @@
 /**
  * @file src/core/recipes/builtin/index.ts
- * @description Recetas incorporadas de Kura3D, cargadas como datos (los mismos `*.recipe.json` de
+ * @description Recetas incorporadas de Kurra3D Studio, cargadas como datos (los mismos `*.recipe.json` de
  * `src/core/recipes/examples/`, en el formato público `kura.recipe/1`). Se buscan por `id`; nunca por ruta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH

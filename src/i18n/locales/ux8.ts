@@ -53,12 +53,12 @@ const UX8 = {
     zh: '© 2026 ISGROTH',
   },
   'ux8.minWidth.notice': {
-    es: 'Kura3D está pensado para pantallas de al menos 1024 px de ancho. En una más angosta puedes seguir, pero algunas partes pueden verse apretadas.',
-    en: 'Kura3D is designed for screens at least 1024 px wide. You can keep going on a narrower one, but some parts may look cramped.',
-    de: 'Kura3D ist für Bildschirme ab 1024 px Breite gedacht. Auf einem schmaleren kannst du weitermachen, aber manches kann gedrängt wirken.',
-    fr: 'Kura3D est pensé pour des écrans d’au moins 1024 px de large. Tu peux continuer sur un écran plus étroit, mais certaines parties peuvent sembler serrées.',
-    hi: 'Kura3D कम से कम 1024 px चौड़ी स्क्रीन के लिए बना है। छोटी स्क्रीन पर भी काम कर सकते हैं, पर कुछ हिस्से तंग दिख सकते हैं।',
-    zh: 'Kura3D 适用于宽度至少 1024 px 的屏幕。在更窄的屏幕上仍可使用,但部分界面可能显得拥挤。',
+    es: 'Kurra3D Studio está pensado para pantallas de al menos 1024 px de ancho. En una más angosta puedes seguir, pero algunas partes pueden verse apretadas.',
+    en: 'Kurra3D Studio is designed for screens at least 1024 px wide. You can keep going on a narrower one, but some parts may look cramped.',
+    de: 'Kurra3D Studio ist für Bildschirme ab 1024 px Breite gedacht. Auf einem schmaleren kannst du weitermachen, aber manches kann gedrängt wirken.',
+    fr: 'Kurra3D Studio est pensé pour des écrans d’au moins 1024 px de large. Tu peux continuer sur un écran plus étroit, mais certaines parties peuvent sembler serrées.',
+    hi: 'Kurra3D Studio कम से कम 1024 px चौड़ी स्क्रीन के लिए बना है। छोटी स्क्रीन पर भी काम कर सकते हैं, पर कुछ हिस्से तंग दिख सकते हैं।',
+    zh: 'Kurra3D Studio 适用于宽度至少 1024 px 的屏幕。在更窄的屏幕上仍可使用,但部分界面可能显得拥挤。',
   },
 } satisfies Record<string, Row>;
 

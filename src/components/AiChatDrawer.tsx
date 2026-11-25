@@ -1,6 +1,6 @@
 /**
  * @file src/components/AiChatDrawer.tsx
- * @description Panel lateral desplegable de Chat IA nativo de Kura3D conectado al Command Bus
+ * @description Panel lateral desplegable de Chat IA nativo de Kurra3D Studio conectado al Command Bus
  * (Gemini, OpenAI, Anthropic, Ollama, proveedores compatibles con OpenAI o Asistente Local Determinista
  * sin clave). El historial es un `role="log"` con `aria-live`, y cada solicitud se puede detener.
  * @author Nicolás Groth <ngroth@gmail.com>

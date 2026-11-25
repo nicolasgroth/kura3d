@@ -93,7 +93,7 @@ export const profileIdSchema = z.string().regex(/^[a-z0-9-]{1,64}$/);
 /** Ruta de exportación solicitada (se confina luego con `resolveExportPath`). */
 export const outputPathSchema = z.string().min(1).max(1024);
 
-/** Respuesta de la UI de Kura3D a un comando del Command Bus. */
+/** Respuesta de la UI de Kurra3D Studio a un comando del Command Bus. */
 export const uiCommandResponseSchema = z.object({
   id: z.string().min(1).max(128),
   ok: z.boolean(),

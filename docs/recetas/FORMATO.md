@@ -1,10 +1,10 @@
 # Formato de recetas `kura.recipe/1`
 
-Una receta es un archivo JSON (`*.recipe.json`, UTF-8) que describe un asistente: qué le pregunta al usuario, qué reglas comprueba y qué pasos ejecuta sobre las operaciones de Kura3D. Son **datos, no código**: no hay JavaScript, bucles ni acceso a archivos o red.
+Una receta es un archivo JSON (`*.recipe.json`, UTF-8) que describe un asistente: qué le pregunta al usuario, qué reglas comprueba y qué pasos ejecuta sobre las operaciones de Kurra3D Studio. Son **datos, no código**: no hay JavaScript, bucles ni acceso a archivos o red.
 
 - Esquema para editores e IA: [`kura.recipe-1.schema.json`](kura.recipe-1.schema.json) (JSON Schema 2020-12; se regenera con `npm run recetas:schema`).
 - Diseño y razones: [`docs/diseno/ASISTENTES.md`](../diseno/ASISTENTES.md). Ejemplos completos: `src/core/recipes/examples/`.
-- El JSON Schema solo revisa la forma. Referencias, alcance de expresiones, ciclos y presupuestos los revisa el validador de Kura3D (`src/core/recipes/`).
+- El JSON Schema solo revisa la forma. Referencias, alcance de expresiones, ciclos y presupuestos los revisa el validador de Kurra3D Studio (`src/core/recipes/`).
 
 ## Campos
 
@@ -15,7 +15,7 @@ Todo objeto es estricto: un campo desconocido es un error.
 | `format` | sí | `"kura.recipe/1"` |
 | `id` | sí | `autor.nombre` (`[a-z0-9-]`, con punto, ≤ 64) |
 | `version` | sí | semver (`1.0.0`) |
-| `kura` | no | rango de versiones de Kura3D (`">=0.8.0"`) |
+| `kura` | no | rango de versiones de Kurra3D Studio (`">=0.8.0"`) |
 | `title`, `author` | sí | texto (≤ 200) o `"$t:clave"` |
 | `description` | no | texto |
 | `license` | sí | `MIT`, `Apache-2.0`, `BSD-2-Clause`, `BSD-3-Clause`, `ISC` o `MPL-2.0` |
@@ -96,7 +96,7 @@ Todo exceso es un error con código, ruta del campo y mensaje traducido (por eje
 
 ## Ejecución
 
-Kura3D ejecuta la receta sobre una **escena de trabajo aislada**: nada entra a tu escena hasta que todos los pasos terminan bien, y entonces entran solo las salidas (`outputs`), juntas, como un único paso de deshacer. Si algo falla o se pasa un tope, no entra nada y el error trae código y ruta (`run.triangles @ steps[4].args`).
+Kurra3D Studio ejecuta la receta sobre una **escena de trabajo aislada**: nada entra a tu escena hasta que todos los pasos terminan bien, y entonces entran solo las salidas (`outputs`), juntas, como un único paso de deshacer. Si algo falla o se pasa un tope, no entra nada y el error trae código y ruta (`run.triangles @ steps[4].args`).
 
 **Coordenadas.** Ejes del usuario (Z arriba), en mm, con el origen en el centro de la cama. `position` es el centro de la base del objeto creado; `rotation` va en **grados** (Euler XYZ, igual que `sin`/`cos`); `scale` es un factor por eje. `s.<paso>` es la caja envolvente del resultado del paso en esos mismos ejes.
 
@@ -123,7 +123,7 @@ Un argumento que la tabla no nombra es error (`run.badArgs`). Las listas de refe
 
 | Tope | Valor |
 |---|---|
-| Triángulos sumados en la escena de trabajo | 5 368 707 (los mismos que un STL que Kura3D puede reabrir) |
+| Triángulos sumados en la escena de trabajo | 5 368 707 (los mismos que un STL que Kurra3D Studio puede reabrir) |
 | Objetos de trabajo (instancias, intermedios y salidas) | 512 |
 | Memoria de mallas | 512 MiB |
 | Tiempo de pared | 30 s (se revisa antes y después de cada operación) |

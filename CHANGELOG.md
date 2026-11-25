@@ -1,4 +1,4 @@
-# Historial de Versiones (Changelog) — Kura3D
+# Historial de Versiones (Changelog) — Kurra3D Studio
 
 **Autor:** Nicolás Groth (`ngroth@gmail.com`)  
 **Organización:** **ISGROTH** — *Innovación y Soluciones GROTH*  

@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/__tests__/mcp.test.ts
- * @description Pruebas unitarias y de integración MCP para Kura3D con Vitest.
+ * @description Pruebas unitarias y de integración MCP para Kurra3D Studio con Vitest.
  * Verifica el registro completo de herramientas, la generación headless de primitivas
  * con exportación STL binaria/3MF válida y el intercambio bidireccional vía WebSocket Live Bridge.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -102,7 +102,7 @@ async function setupInMemoryPair(
   return { server, bridge, headless, client };
 }
 
-describe('Kura3D MCP Server', () => {
+describe('Kurra3D Studio MCP Server', () => {
   const cleanupTasks: Array<() => Promise<void>> = [];
 
   afterEach(async () => {
@@ -112,7 +112,7 @@ describe('Kura3D MCP Server', () => {
     }
   });
 
-  it('registra todas las herramientas y recursos MCP de Kura3D', async () => {
+  it('registra todas las herramientas y recursos MCP de Kurra3D Studio', async () => {
     const { client, server, bridge } = await setupInMemoryPair();
     cleanupTasks.push(async () => {
       await client.close();
@@ -290,7 +290,7 @@ describe('Kura3D MCP Server', () => {
     expect(rejected).toBe(true);
   });
 
-  it('reenvía comandos, alias de parámetros y captura PNG en vivo cuando la UI de Kura3D está conectada vía WebSocket', async () => {
+  it('reenvía comandos, alias de parámetros y captura PNG en vivo cuando la UI de Kurra3D Studio está conectada vía WebSocket', async () => {
     const { client, server, bridge } = await setupInMemoryPair(0);
     const started = await bridge.start();
     expect(started).toBe(true);
@@ -310,7 +310,7 @@ describe('Kura3D MCP Server', () => {
       ws.once('error', reject);
     });
 
-    // Mock de la interfaz viva de Kura3D respondiendo al Command Bus
+    // Mock de la interfaz viva de Kurra3D Studio respondiendo al Command Bus
     const receivedRequests: KuraCommandRequest[] = [];
     ws.on('message', (raw) => {
       const req = JSON.parse(raw.toString('utf8')) as KuraCommandRequest;

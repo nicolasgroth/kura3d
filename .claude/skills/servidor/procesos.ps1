@@ -1,5 +1,5 @@
 # @file .claude/skills/servidor/procesos.ps1
-# @description Lista (y con -Cerrar, termina) los procesos de desarrollo de Kura3D que quedan vivos: servidores
+# @description Lista (y con -Cerrar, termina) los procesos de desarrollo de Kurra3D Studio que quedan vivos: servidores
 #   Vite, corridas de Playwright, navegadores de prueba y vitest. No toca los conectores MCP de la app de Claude.
 # @author Nicolás Groth <ngroth@gmail.com>
 # @organization ISGROTH — Innovación y Soluciones GROTH
@@ -32,7 +32,7 @@ $procesos = Get-CimInstance Win32_Process |
   Where-Object { ($_.CommandLine -match $propios -or $escuchas.ContainsKey([int]$_.ProcessId)) -and $_.CommandLine -notmatch $ajenos }
 
 if (-not $procesos) {
-  Write-Output 'Limpio: no hay servidores ni corridas de prueba de Kura3D vivos.'
+  Write-Output 'Limpio: no hay servidores ni corridas de prueba de Kurra3D Studio vivos.'
   exit 0
 }
 

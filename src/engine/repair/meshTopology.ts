@@ -1,7 +1,7 @@
 /**
  * @file src/engine/repair/meshTopology.ts
  * @description Topología de malla en arreglos tipados (sin claves string): soldadura por cuadrícula,
- * tabla de aristas con sus semi-aristas y la definición única de "malla cerrada" de Kura3D. Una malla
+ * tabla de aristas con sus semi-aristas y la definición única de "malla cerrada" de Kurra3D Studio. Una malla
  * es cerrada si, uniendo los vértices con la misma posición (`CLOSURE_WELD_MM` = 1 nm, por debajo de la
  * resolución float32 del archivo: lo que ve un laminador), no tiene triángulos colapsados y cada arista
  * tiene exactamente dos semi-aristas opuestas. Lineal en memoria y tiempo.

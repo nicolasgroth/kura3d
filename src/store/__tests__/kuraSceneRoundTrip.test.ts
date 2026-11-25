@@ -1,6 +1,6 @@
 /**
  * @file src/store/__tests__/kuraSceneRoundTrip.test.ts
- * @description Ida y vuelta exacta de una escena por 3MF de Kura3D: grupos anidados, colores por cara,
+ * @description Ida y vuelta exacta de una escena por 3MF de Kurra3D Studio: grupos anidados, colores por cara,
  * un hueco, objetos ocultos y bloqueados, rotaciones y escalas. Exportar -> leer -> restaurar ->
  * comparación profunda. Además: la estructura estándar sigue intacta (build solo con lo impreso, placas
  * por grupo raíz) y un archivo editado por otro programa (conteos distintos) cae al lector normal.
@@ -53,7 +53,7 @@ function roundTrip(objects: SceneObject[], sceneGroups: SceneGroup[]) {
   return { bytes, model };
 }
 
-describe('3MF de Kura3D: ida y vuelta exacta de la escena', () => {
+describe('3MF de Kurra3D Studio: ida y vuelta exacta de la escena', () => {
   it('restaura piezas, nombres, colores, grupos y transformaciones', () => {
     const { model } = roundTrip(scene, groups);
     expect(isKuraScene(model)).toBe(true);

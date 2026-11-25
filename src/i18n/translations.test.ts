@@ -1,7 +1,7 @@
 /**
  * @file src/i18n/translations.test.ts
  * @description Verifica la paridad estricta 1:1 de claves, ausencia de cadenas vacías,
- * paridad exacta de placeholders `{variable}` e interpolación en los 6 idiomas de Kura3D v0.5.0
+ * paridad exacta de placeholders `{variable}` e interpolación en los 6 idiomas de Kurra3D Studio v0.5.0
  * (`es`, `en`, `de`, `fr`, `hi`, `zh`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -33,7 +33,7 @@ function extractPlaceholders(text: string): string[] {
   return matches ? [...matches].sort() : [];
 }
 
-describe('Sistema i18n multilingüe de Kura3D v0.5.0 (6 idiomas)', () => {
+describe('Sistema i18n multilingüe de Kurra3D Studio v0.5.0 (6 idiomas)', () => {
   const localeEntries: Array<[LanguageCode, Record<TranslationKey, string>]> = [
     ['es', TRANSLATIONS_ES],
     ['en', TRANSLATIONS_EN],

@@ -1,7 +1,7 @@
 /**
  * @file src/engine/__tests__/engine.test.ts
  * @description Suite integral de pruebas unitarias Vitest para el núcleo geométrico
- * de Kura3D (Manifold WASM, primitivas, CSG, ahuecado, cortes con conectores,
+ * de Kurra3D Studio (Manifold WASM, primitivas, CSG, ahuecado, cortes con conectores,
  * SVG, relieve desde imagen, texturas procedurales, pintado y E/S STL/OBJ/3MF).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -85,7 +85,7 @@ function getMeshBounds(mesh: MeshData) {
   return { minX, minY, minZ, maxX, maxY, maxZ };
 }
 
-describe('Núcleo Geométrico Kura3D (Manifold-3D + E/S)', () => {
+describe('Núcleo Geométrico Kurra3D Studio (Manifold-3D + E/S)', () => {
   it('inicializa el módulo WASM de Manifold-3D en Node.js de forma determinista', async () => {
     const wasm = await initManifoldEngine();
     expect(wasm).toBeDefined();

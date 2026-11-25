@@ -1,6 +1,6 @@
 ﻿/**
  * @file mcp-server/src/__tests__/bridgeReplace.test.ts
- * @description Puente MCP: cuando otra instancia de Kura3D reemplaza al cliente activo, las
+ * @description Puente MCP: cuando otra instancia de Kurra3D Studio reemplaza al cliente activo, las
  * solicitudes en vuelo del cliente anterior se rechazan de inmediato en vez de esperar el timeout.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH

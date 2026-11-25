@@ -1,6 +1,6 @@
 /**
  * @file src/main.tsx
- * @description Punto de entrada React 19 de Kura3D y carga de estilos de estudio CAD.
+ * @description Punto de entrada React 19 de Kurra3D Studio y carga de estilos de estudio CAD.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
