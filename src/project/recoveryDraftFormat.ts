@@ -11,11 +11,10 @@
  */
 
 import { computeMeshStats } from '../engine/primitives';
-import { reconcileGroups } from '../core/scene/groups';
-import { reconcilePlates } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
 import type { SceneLayout, ScenePlate } from '../types/plates';
 import { withBoundedParams } from './primitiveParamsBounds';
+import { reconcileSceneStructure } from './sceneStructure';
 import {
   check, color, id, nat, record, validSettings, validStoredGroups, validStoredLayout, validStoredObject, validStoredPlates,
   type ObjectMetadata, type ProjectDocument, type ProjectSceneSnapshot,
@@ -222,19 +221,12 @@ export function assembleDocument(manifest: unknown, blocks: Map<string, Words>):
     check(validStoredGroups(s.groups), 'draft-groups');
     check(validStoredPlates(s.plates), 'draft-plates');
     check(validStoredLayout(s.layout), 'draft-layout');
-    const groups = (s.groups as SceneGroup[] | undefined) ?? [];
-    const rawPlates = (s.plates as ScenePlate[] | undefined) ?? [];
-    let scene = { objects, groups: [] as SceneGroup[], plates: [] as ScenePlate[] };
-    if (groups.length || objects.some((o) => o.groupRef !== undefined)) scene = { ...scene, ...reconcileGroups({ objects, groups }) };
-    if (rawPlates.length || scene.objects.some((o) => o.plateRef !== undefined)) {
-      scene = { ...scene, ...reconcilePlates({ objects: scene.objects, plates: rawPlates }) };
-    }
-    return {
-      objects: scene.objects, selectedIds,
-      ...(scene.groups.length ? { groups: scene.groups } : {}),
-      ...(scene.plates.length ? { plates: scene.plates } : {}),
+    return reconcileSceneStructure({
+      objects, selectedIds,
+      ...(s.groups !== undefined ? { groups: s.groups as SceneGroup[] } : {}),
+      ...(s.plates !== undefined ? { plates: s.plates as ScenePlate[] } : {}),
       ...(s.layout === 'assembly' ? { layout: 'assembly' as const } : {}),
-    };
+    });
   }
   return {
     ...manifest.settings,
