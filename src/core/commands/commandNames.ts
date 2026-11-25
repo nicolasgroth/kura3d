@@ -58,4 +58,9 @@ export type KuraCommandName =
   | 'list_recipes'
   | 'describe_recipe'
   | 'validate_recipe'
-  | 'run_recipe';
+  | 'run_recipe'
+  | 'smooth_mesh'
+  | 'orient_for_print'
+  | 'apply_orientation'
+  | 'add_magnet_pocket'
+  | 'add_screw_boss';

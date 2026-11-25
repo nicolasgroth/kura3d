@@ -76,6 +76,12 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   describe_recipe: 'read',
   validate_recipe: 'read',
   run_recipe: 'write',
+  smooth_mesh: 'write',
+  // Orientar para imprimir: solo mide y ordena orientaciones; aplicar una es `apply_orientation`.
+  orient_for_print: 'read',
+  apply_orientation: 'write',
+  add_magnet_pocket: 'write',
+  add_screw_boss: 'write',
 });
 
 /** Indica si el nombre corresponde a un comando conocido del Command Bus. */
@@ -147,6 +153,11 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_describe_recipe: 'describe_recipe',
   kura_validate_recipe: 'validate_recipe',
   kura_run_recipe: 'run_recipe',
+  kura_smooth_mesh: 'smooth_mesh',
+  kura_orient_for_print: 'orient_for_print',
+  kura_apply_orientation: 'apply_orientation',
+  kura_add_magnet_pocket: 'add_magnet_pocket',
+  kura_add_screw_boss: 'add_screw_boss',
 });
 
 /** Acceso de una herramienta MCP; herramientas no declaradas se tratan como escritura. */

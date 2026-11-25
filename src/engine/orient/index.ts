@@ -8,6 +8,6 @@
  */
 
 export * from './orientTypes';
-export { analyzeOrientations, planOrientTransform, ORIENT_DEFAULTS } from './orientForPrint';
+export { analyzeOrientations, planOrientTransform, ORIENT_DEFAULTS, ORIENT_RANGES } from './orientForPrint';
 export { orientOverhangFaces, OVERHANG_FACES_MAX, type OrientOverhangFaces, type OrientOverhangFacesArgs } from './orientOverhangFaces';
 export { ORIENT_WEIGHTS, ORIENT_EQUIVALENCE } from './orientScore';

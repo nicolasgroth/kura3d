@@ -11,10 +11,11 @@
  * @license MIT
  */
 
-import { BOSS_MIN_WALL_MM, type ScrewBossParams } from '../../core/addons/screwBoss';
+import type { AddonBlockReason } from '../../core/addons/addonBlock';
+import { screwBossNames } from '../../core/addons/addonNames';
+import { nearbyAddons, placedMeshOf as placed } from '../../core/addons/addonNeighbors';
+import type { ScrewBossParams } from '../../core/addons/screwBoss';
 import type { ScrewBossReport } from '../../core/addons/screwBossAnalysis';
-import { formatMm, metricLabel } from '../../core/addons/screwBossPresets';
-import type { PlacedMesh } from '../../core/operations/magnetOperations';
 import { attachToTarget } from '../../core/scene/attachPiece';
 import { isSolid } from '../../core/scene/objectRole';
 import type { SceneObject, Vec3 } from '../../types/kura';
@@ -30,6 +31,8 @@ export interface ScrewBossRequest {
   normal: Vec3;
   /** No emite avisos de «agregada» ni de advertencias: quien llama publica el suyo (los errores sí se avisan). */
   silent?: boolean;
+  /** Si la torreta no se puede colocar (más ancha que la zona), se llama en vez de mostrar el error (Command Bus). */
+  onBlocked?: (reason: AddonBlockReason) => void;
 }
 
 export interface ScrewBossPlaced {
@@ -43,30 +46,7 @@ export interface ScrewBossSliceState {
   addScrewBoss: (request: ScrewBossRequest) => Promise<ScrewBossPlaced | null>;
 }
 
-const placed = (o: SceneObject): PlacedMesh => ({
-  mesh: { positions: o.mesh.positions, indices: o.mesh.indices }, position: o.position, rotation: o.rotation, scale: o.scale,
-});
-
-const reachOf = (o: SceneObject) => Math.hypot(...o.stats.dimensionsMm) * Math.max(...o.scale.map(Math.abs));
-
-/** Torretas (postes) e imanes pendientes cerca de la pieza: con ellos se mide el choque. */
-export function nearbyAddons(objects: readonly SceneObject[], host: SceneObject): SceneObject[] {
-  const hr = reachOf(host);
-  return objects.filter((o) => {
-    const addon = o.metadata?.addon;
-    if (o.id === host.id || !addon) return false;
-    if (addon.kind === 'screw_boss' && addon.part !== 'post') return false;
-    const d = Math.hypot(o.position[0] - host.position[0], o.position[1] - host.position[1], o.position[2] - host.position[2]);
-    return d <= hr + reachOf(o) + BOSS_MIN_WALL_MM;
-  });
-}
-
-/** El menor nombre libre: «base», «base (2)», «base (3)»… */
-function freeName(taken: ReadonlySet<string>, base: string): string {
-  let name = base;
-  for (let n = 2; taken.has(name); n += 1) name = `${base} (${n})`;
-  return name;
-}
+export { nearbyAddons } from '../../core/addons/addonNeighbors';
 
 export function createScrewBossSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, pushHistory, runExclusive } = ctx;
@@ -79,13 +59,7 @@ export function createScrewBossSlice(ctx: StoreContext): Partial<KuraStoreState>
       }
       const result = await runExclusive('screw_boss', null, async () => {
         await get().initEngine();
-        const lang = get().language;
-        const size = metricLabel(request.params.nominalMm, lang);
-        const taken = new Set(get().objects.map((o) => o.name));
-        const names = {
-          post: freeName(taken, tr(request.params.type === 'insert' ? 'turret.objectName.insert' : 'turret.objectName.screw', { size })),
-          hole: freeName(taken, tr('turret.objectName.hole', { size, d: formatMm(request.params.holeDiameterMm, lang) })),
-        };
+        const names = screwBossNames(request.params, get().language, new Set(get().objects.map((o) => o.name)));
         const made = await ctx.runEngine('screwBoss', {
           host: { id: host.id, color: host.color, ...placed(host) },
           params: request.params, point: request.point, normal: request.normal, names,
@@ -93,7 +67,8 @@ export function createScrewBossSlice(ctx: StoreContext): Partial<KuraStoreState>
         });
         ctx.assertCurrent([host]);
         if (made.spansFace) {
-          get().addToast(tr('turret.error.tooWide'), 'error');
+          if (request.onBlocked) request.onBlocked('tooWide');
+          else get().addToast(tr('turret.error.tooWide'), 'error');
           return null;
         }
         const { post, hole } = made;

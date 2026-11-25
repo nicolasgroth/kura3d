@@ -28,6 +28,11 @@ export const ORIENT_DEFAULTS = Object.freeze({
   minSupportAreaFraction: 0.001,
 });
 
+/** Rango del umbral de voladizo que ofrecen la interfaz y los comandos (grados; el motor acepta 1–89). */
+export const ORIENT_RANGES = Object.freeze({
+  overhangAngleDeg: Object.freeze({ min: 30, max: 70, default: ORIENT_DEFAULTS.overhangAngleDeg }),
+});
+
 function settingsOf(o: OrientOptions, totalArea: number): MeasureSettings {
   const angle = o.overhangAngleDeg ?? ORIENT_DEFAULTS.overhangAngleDeg;
   if (!(Number.isFinite(angle) && angle > 0 && angle < 90)) {

@@ -10,19 +10,20 @@
  * @license MIT
  */
 
-import { MIN_WALL_MM, type MagnetParams } from '../../core/addons/magnetPocket';
-import { magnetSizeLabel } from '../../core/addons/magnetPresets';
-import { MAX_POCKET_FILL } from '../../core/addons/pocketAnalysis';
+import { magnetPocketName } from '../../core/addons/addonNames';
+import { nearbyNegatives, placedMeshOf as placed } from '../../core/addons/addonNeighbors';
+import type { MagnetParams } from '../../core/addons/magnetPocket';
+import { magnetBlockReason, type AddonBlockReason } from '../../core/addons/addonBlock';
 import type { PocketWallReport } from '../../core/addons/pocketWall';
-import type { PlacedMesh } from '../../core/operations/magnetOperations';
 import { attachToTarget } from '../../core/scene/attachPiece';
-import { isNegative, isSolid } from '../../core/scene/objectRole';
+import { isSolid } from '../../core/scene/objectRole';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { magnetWarnings, magnetWarningText } from '../magnetWarnings';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
 export { wallWarningKey } from '../magnetWarnings';
+export { nearbyNegatives } from '../../core/addons/addonNeighbors';
 
 export interface MagnetPocketRequest {
   hostId: string;
@@ -32,28 +33,13 @@ export interface MagnetPocketRequest {
   normal: Vec3;
   /** No emite avisos de «agregado» ni de advertencias: quien llama publica el suyo (los errores sí se avisan). */
   silent?: boolean;
+  /** Si el hueco no se puede colocar (ocuparía casi toda la pieza), se llama en vez de mostrar el error (Command Bus). */
+  onBlocked?: (reason: AddonBlockReason) => void;
 }
 
 export interface MagnetSliceState {
   /** Agrega el negativo del alojamiento; null si la pieza no sirve, el motor estaba ocupado o falló (ya se avisó). */
   addMagnetPocket: (request: MagnetPocketRequest) => Promise<{ obj: SceneObject; wall: PocketWallReport; fill: number; spansFace: boolean } | null>;
-}
-
-const placed = (o: SceneObject): PlacedMesh => ({
-  mesh: { positions: o.mesh.positions, indices: o.mesh.indices }, position: o.position, rotation: o.rotation, scale: o.scale,
-});
-
-/** Radio generoso de la pieza alrededor de su origen (mm), con su escala. */
-const reachOf = (o: SceneObject) => Math.hypot(...o.stats.dimensionsMm) * Math.max(...o.scale.map(Math.abs));
-
-/** Negativos pendientes que pueden tocar a la pieza (descarte grueso por distancia; el Worker mide el resto). */
-export function nearbyNegatives(objects: readonly SceneObject[], host: SceneObject): SceneObject[] {
-  const hr = reachOf(host);
-  return objects.filter((o) => {
-    if (o.id === host.id || !isNegative(o)) return false;
-    const d = Math.hypot(o.position[0] - host.position[0], o.position[1] - host.position[1], o.position[2] - host.position[2]);
-    return d <= hr + reachOf(o) + MIN_WALL_MM;
-  });
 }
 
 export function createMagnetSlice(ctx: StoreContext): Partial<KuraStoreState> {
@@ -68,18 +54,17 @@ export function createMagnetSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const result = await runExclusive('magnet_pocket', null, async () => {
         await get().initEngine();
         // Los repetidos se numeran («Imán 5 × 2», «Imán 5 × 2 (2)»…) con el menor número libre, para distinguirlos en el árbol.
-        const baseName = tr('magnet.objectName', { size: magnetSizeLabel(request.params, get().language) });
-        const taken = new Set(get().objects.map((o) => o.name));
-        let name = baseName;
-        for (let n = 2; taken.has(name); n += 1) name = `${baseName} (${n})`;
+        const name = magnetPocketName(request.params, get().language, new Set(get().objects.map((o) => o.name)));
         const pendingNegatives = nearbyNegatives(get().objects, host).map(placed);
         const made = await ctx.runEngine('magnetPocket', {
           host: { id: host.id, ...placed(host) }, params: request.params, point: request.point, normal: request.normal, name, pendingNegatives,
         });
         ctx.assertCurrent([host]);
         // Un hueco que ocupa casi toda la pieza la haría desaparecer al restar: no se coloca.
-        if (made.fill > MAX_POCKET_FILL || made.spansFace) {
-          get().addToast(tr('magnet.error.tooBig'), 'error');
+        const blocked = magnetBlockReason(made);
+        if (blocked) {
+          if (request.onBlocked) request.onBlocked(blocked);
+          else get().addToast(tr('magnet.error.tooBig'), 'error');
           return null;
         }
         const obj = made.obj;
