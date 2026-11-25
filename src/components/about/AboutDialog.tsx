@@ -8,19 +8,29 @@
  * @license MIT
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { BRAND } from '../../brand';
 import { t } from '../../i18n';
+import type { TranslationKey } from '../../i18n/translations';
 import { useKuraStore } from '../../store/useKuraStore';
+import { pickPurposeKey } from '../../utils/aboutPurpose';
 import { ABOUT_LIBS, GUIDES_URL, REPO_URL } from '../../utils/aboutInfo';
 import { triggerEgg } from '../../utils/logoEasterEgg';
 import { NativeModal } from '../NativeModal';
 import { EasterEggHost } from './EasterEggHost';
 import '../../styles/about.css';
 
-export const AboutDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+/** `random` se inyecta para probar la frase al azar; por defecto `Math.random`. */
+export const AboutDialog: React.FC<{ open: boolean; onClose: () => void; random?: () => number }> = ({
+  open,
+  onClose,
+  random,
+}) => {
   const language = useKuraStore((s) => s.language);
   const name = BRAND.name;
+  // Una frase por apertura: se sortea cuando el diálogo se abre y queda fija mientras siga abierto.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const purposeKey = useMemo(() => pickPurposeKey(random) as TranslationKey, [open]);
   const newTab = t(language, 'about.linkNote');
 
   return (
@@ -43,7 +53,7 @@ export const AboutDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ 
 
         <section aria-labelledby="about-purpose">
           <h3 id="about-purpose">{t(language, 'about.purposeTitle')}</h3>
-          <p className="kura-about-quote">{t(language, 'about.purpose', { name })}</p>
+          <p className="kura-about-quote">{t(language, purposeKey, { name })}</p>
         </section>
 
         <section aria-labelledby="about-how">
