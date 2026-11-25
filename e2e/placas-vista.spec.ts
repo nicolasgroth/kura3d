@@ -1,6 +1,6 @@
 /**
  * @file e2e/placas-vista.spec.ts
- * @description Recorridos de la interfaz de placas (lote P2 «Placas a la vista»), escritos para QA y SIN ejecutar
+ * @description Recorridos de la interfaz de placas (lote P2 «Placas a la vista»), ejecutados por QA (25-nov)
  * todavía: una sola placa = la interfaz de siempre, crear la segunda placa (tira, fichas, activa), renombrar con F2,
  * «Mover a placa» desde la paleta y el menú de la fila, fuera de volumen por placa, borrar una placa con piezas
  * (confirmación que dice a cuál pasan) y deshacer cada paso. Se comprueba a 1024 px y a 1280 px.
@@ -98,9 +98,9 @@ for (const width of [1024, 1280]) {
       await abrir(page);
       await agregarForma(page, 'Cubo');
       await store(page, (s) => s.createPlate());
-      const fila = page.locator('.kura-scene-row, [data-testid^="scene-row"]').first();
+      const fila = page.getByRole('treeitem').first();
       await fila.click();
-      await page.keyboard.press('Shift+F10');
+      await fila.press('Shift+F10');
       const menu = page.getByRole('menu').first();
       await menu.getByRole('menuitem', { name: 'Posición y tipo' }).click();
       await page.getByRole('menuitem', { name: 'Mover a placa' }).click();
@@ -144,16 +144,17 @@ for (const width of [1024, 1280]) {
       await expect(ficha(page, 'Placa 2')).toContainText('1 pieza');
     });
 
-    test('«Solo esta» deja una sola cama en el visor y «Sin cama» (B) las oculta todas', async ({ page }) => {
+    test('«Solo esta» y «Sin cama» (B): el estado queda en la tira y en el store (la escena de Three no se expone a las pruebas)', async ({ page }) => {
       await abrir(page);
       await store(page, (s) => s.createPlate());
-      const camas = () => page.evaluate(() => (window as any).__r3f?.getState().scene.children.filter((c: any) => String(c.name).startsWith('plate-bed:')).length);
-      expect(await camas()).toBe(2);
-      await tira(page).getByRole('button', { name: /Solo esta/ }).click();
-      await expect(tira(page).getByRole('button', { name: /Solo esta/ })).toHaveAttribute('aria-pressed', 'true');
-      expect(await camas()).toBe(1);
+      const solo = tira(page).getByRole('button', { name: /Solo esta/ });
+      await expect(solo).toHaveAttribute('aria-pressed', 'false');
+      await solo.click();
+      await expect(solo).toHaveAttribute('aria-pressed', 'true');
+      expect(await store(page, (s) => s.plateSolo)).toBe(true);
       await page.getByTestId('bed-toggle').click();
-      expect(await camas()).toBe(0);
+      expect(await store(page, (s) => s.showBed)).toBe(false);
+      await expect(page.getByTestId('plate-add-first')).toHaveCount(0);
     });
 
     test('deshacer cada paso de placas, uno a uno, con su nombre en el historial', async ({ page }) => {
@@ -167,7 +168,7 @@ for (const width of [1024, 1280]) {
         const s = (window as any).__s.getState();
         return historyTimeline(s.language, s, 50).entries.map((e: any) => e.label);
       });
-      expect(etiquetas.slice(-3)).toEqual(['Crear placa «Placa 2»', 'Renombrar placa «Cabeza»', 'Mover «Cubo» a «Cabeza»']);
+      expect(etiquetas.slice(-3)).toEqual(['Crear placa «Placa 2»', 'Renombrar placa «Cabeza»', 'Mover «Cubo 1» a «Cabeza»']);
       await undo(page);
       await expect(ficha(page, 'Cabeza')).toContainText('Vacía');
       await undo(page);
