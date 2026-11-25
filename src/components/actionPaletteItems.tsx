@@ -12,12 +12,13 @@ import React from 'react';
 import { Zap } from 'lucide-react';
 import { t, type TranslationKey } from '../i18n';
 import { OBJECT_ROLES } from '../core/scene/objectRole';
-import { actionName } from '../store/actionLabels';
+import { actionName, moveToPlateName } from '../store/actionLabels';
+import { assignable } from '../core/scene/plates';
 import { ACTION_GROUPS, ACTION_SHORTCUTS, actionAvailability, type ActionId } from '../store/actionsCatalog';
 import { ROLE_LABEL_KEY } from '../store/roleLabels';
 import type { KuraStoreState } from '../store/storeTypes';
 import type { LanguageCode } from '../types/kura';
-import { runAction, runAlign, runConvert } from './shell/actionRunners';
+import { runAction, runAlign, runConvert, runMoveToPlate } from './shell/actionRunners';
 import { ALIGN_MODES } from './viewport/contextMenu/ObjectMenuPosition';
 
 export interface ActionPaletteItem {
@@ -33,7 +34,7 @@ export interface ActionPaletteItem {
   unavailable?: string;
 }
 
-type StateSlice = Pick<KuraStoreState, 'objects' | 'selectedIds' | 'groups' | 'busyOperation'>;
+type StateSlice = Pick<KuraStoreState, 'objects' | 'selectedIds' | 'groups' | 'busyOperation'> & Partial<Pick<KuraStoreState, 'plates'>>;
 
 /** Palabras extra con las que se busca una acción (además de su nombre): sinónimos de uso, no del rótulo. */
 const EXTRA_KEYWORDS: Partial<Record<ActionId, string>> = {
@@ -75,6 +76,17 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
       const shortcut = ACTION_SHORTCUTS[id]?.label;
       out.push({ ...base, id: `action-${id}`, label: name, ...(shortcut ? { shortcut } : {}), run: () => runAction(id) });
     }
+  }
+  // «Mover a placa: <placa>» solo desde la segunda placa; mismo nombre que el menú contextual.
+  const plates = state.plates ?? [];
+  if (plates.length >= 2) {
+    const name = moveToPlateName(language);
+    const movable = state.objects.filter((o) => state.selectedIds.includes(o.id) && assignable(o));
+    const unavailable = movable.length === 0 ? { unavailable: t(language, 'plates.move.reason') } : {};
+    const category = t(language, 'rediseno.actions.group.position');
+    const base = { category, keywords: 'moveToPlate placa plate mover move', kind: 'local' as const, icon, ...unavailable };
+    for (const p of plates) out.push({ ...base, id: `action-moveToPlate-${p.id}`, label: `${name}: ${p.name}`, run: () => runMoveToPlate(p.id) });
+    out.push({ ...base, id: 'action-moveToPlate-new', label: `${name}: ${t(language, 'plates.move.new')}`, run: () => runMoveToPlate(null) });
   }
   return out;
 }

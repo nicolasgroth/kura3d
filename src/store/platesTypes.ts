@@ -31,6 +31,21 @@ export interface PlatesSliceState {
   /** Fija la placa activa (sin paso de deshacer). false si la placa no existe. */
   setActivePlate: (plateId: string) => boolean;
   /**
+   * Borra una placa llevando sus piezas, trasladadas a su hueco equivalente, a la primera placa que queda (la
+   * que la interfaz anuncia). Un solo paso de deshacer. Devuelve el id de esa placa, o null si no se pudo borrar.
+   */
+  removePlate: (plateId: string) => string | null;
+  /** Vista «Solo esta»: el visor dibuja solo la cama de la placa activa. Preferencia de sesión, sin deshacer. */
+  plateSolo: boolean;
+  setPlateSolo: (solo: boolean) => void;
+  /**
+   * Mueve `ids` (o la selección) a una placa y las traslada al hueco equivalente de ella; `null` crea una placa
+   * nueva para recibirlas. Un solo paso de deshacer. Devuelve cuántas piezas cambiaron de placa.
+   */
+  moveToPlate: (plateId: string | null, ids?: string[]) => number;
+  /** Tras un arrastre: cada pieza pasa a la placa sobre la que quedó (sin paso propio: va en el del arrastre). */
+  reassignPlatesByPosition: (ids: string[]) => void;
+  /**
    * Modo de vista de la escena: poses de impresión o de armado (`core/scene/layoutPoses.ts`). Entra en la
    * instantánea del historial (cada paso recuerda su modo) y en el `.kura` v4; 'print' = el de siempre.
    */

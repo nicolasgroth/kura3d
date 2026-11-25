@@ -24,7 +24,7 @@ import { attachNotesToParts, buildGroupNotes } from '../../core/scene/splitGroup
 import { segmentationMatchesMesh } from '../../engine/segmentationGuards';
 import { tCount } from '../../utils/plural';
 import type { Vec3 } from '../../types/kura';
-import { activeBedSize } from '../bedSize';
+import { placementBedSize } from '../bedSize';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 import { colorName } from '../../utils/colorNames';
@@ -43,7 +43,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
     // La pieza de origen (quitada, o recortada a su remanente) no cuenta: las piezas salen de ella.
     const source = new Set([...(change.removedIds ?? []), ...(change.patches ?? []).map((p) => p.id)]);
     const others = get().objects.filter((o) => !source.has(o.id));
-    const result = keepClearOfOthers(others, added, activeBedSize(get()));
+    const result = keepClearOfOthers(others, added, placementBedSize(get()));
     if (!result.moved) return change;
     if (!result.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
     get().requestCameraPreset('ensure', result.parts.map((p) => p.id));
@@ -77,9 +77,9 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         if (parts.length === 0) return [];
         // Las mitades no quedan encimadas: se separan unos milímetros o la superior va a la cama.
         const others = get().objects.filter((o) => o.id !== obj.id);
-        const separated = separateCutHalves(others, parts, options.axis, activeBedSize(get()));
+        const separated = separateCutHalves(others, parts, options.axis, placementBedSize(get()));
         // Con una sola mitad conservada que no queda en la cama, se aplica lo que eligió el usuario.
-        const kept = resolveKeptHalf(others, separated.parts, options, activeBedSize(get()));
+        const kept = resolveKeptHalf(others, separated.parts, options, placementBedSize(get()));
         // Si no, y aun así una mitad pisa a otro objeto, el par se mueve junto a un hueco libre.
         // Con `dropToBed` se respeta la elección (aunque se superponga: se avisa).
         const cleared = kept
@@ -218,7 +218,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         assertCurrent([obj]);
         // Las mitades se mueven juntas, como un bloque, a un hueco libre junto a la pieza original.
         // Si una pieza del molde queda sobre otra (p. ej. el positivo dentro de la caja), va sola a otro hueco.
-        const spot = placePartsInFreeSpot(get().objects, parts, activeBedSize(get()));
+        const spot = placePartsInFreeSpot(get().objects, parts, placementBedSize(get()));
         const placed = spot.parts;
         commitChange({ ...change, added: placed }, { select: placed.map((c) => c.id), spawned: placed });
         const names = placed.map((c) => c.name).join(', ');

@@ -13,15 +13,25 @@ import { getLocalizedPrinterName } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { BRAND_ACCENTS } from './viewportHelpers';
 
-export const PrinterBedOverlay: React.FC<{ isOutOfBounds: boolean }> = ({ isOutOfBounds }) => {
+export interface PrinterBedOverlayProps {
+  isOutOfBounds: boolean;
+  /** Cama de una placa (varias placas); ausente = la del perfil de impresora, como siempre. */
+  bed?: { widthMm: number; depthMm: number; heightMm: number };
+  /** Rótulo de la placa frontal en lugar del nombre de la impresora (nombre de la placa). */
+  title?: string;
+  /** Placa activa entre varias: marco más marcado. */
+  active?: boolean;
+}
+
+export const PrinterBedOverlay: React.FC<PrinterBedOverlayProps> = ({ isOutOfBounds, bed, title, active = false }) => {
   const language = useKuraStore((s) => s.language);
   const printerProfile = useKuraStore((s) => s.printerProfile);
-  const width = printerProfile.bedWidthMm;
-  const depth = printerProfile.bedDepthMm;
-  const height = printerProfile.maxHeightMm;
+  const width = bed?.widthMm ?? printerProfile.bedWidthMm;
+  const depth = bed?.depthMm ?? printerProfile.bedDepthMm;
+  const height = bed?.heightMm ?? printerProfile.maxHeightMm;
   const showVolume = printerProfile.showPrintVolume;
   const purgeZoneMm = printerProfile.purgeZoneMm ?? 0;
-  const displayName = getLocalizedPrinterName(language, printerProfile);
+  const displayName = title ?? getLocalizedPrinterName(language, printerProfile);
   const brandColor = BRAND_ACCENTS[printerProfile.brand] ?? '#38bdf8';
   const cageColor = isOutOfBounds ? '#ef4444' : brandColor;
 
@@ -114,7 +124,7 @@ export const PrinterBedOverlay: React.FC<{ isOutOfBounds: boolean }> = ({ isOutO
 
       {/* Marco exterior de alerta o marca */}
       <lineSegments geometry={bedBorderGeo} position={[0, -1.4, 0]}>
-        <lineBasicMaterial color={cageColor} transparent opacity={isOutOfBounds ? 0.85 : 0.45} />
+        <lineBasicMaterial color={cageColor} transparent opacity={isOutOfBounds ? 0.85 : active ? 0.95 : 0.45} />
       </lineSegments>
 
       {/* Escuadras L luminosas en las 4 esquinas */}

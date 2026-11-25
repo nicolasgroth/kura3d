@@ -1,0 +1,117 @@
+/**
+ * @file src/i18n/locales/placasVista.ts
+ * @description Textos de la interfaz de placas (lote P2 «Placas a la vista») en los 6 idiomas: tira de placas
+ * sobre la barra de estado, crear/borrar/renombrar, «Solo esta», «Mover a placa», aviso de fuera de volumen por
+ * placa y pasos de placas en el historial. Cada clave lleva [es, en, de, fr, hi, zh].
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+type Row = readonly [es: string, en: string, de: string, fr: string, hi: string, zh: string];
+
+const PLATES_VIEW_TABLE = {
+  // Tira de placas.
+  'plates.strip.label': ['Placas de impresión', 'Print plates', 'Druckplatten', 'Plateaux d’impression', 'प्रिंट प्लेटें', '打印板'],
+  'plates.chip.pieces': ['{count} {count?pieza|piezas}', '{count} {count?part|parts}', '{count} {count?Teil|Teile}', '{count} {count?pièce|pièces}', '{count} {count?हिस्सा|हिस्से}', '{count} 个零件'],
+  'plates.chip.label': ['{name}: {pieces}, {status}', '{name}: {pieces}, {status}', '{name}: {pieces}, {status}', '{name} : {pieces}, {status}', '{name}: {pieces}, {status}', '{name}:{pieces},{status}'],
+  'plates.chip.tip': [
+    'Hacer activa «{name}». Doble clic o F2 para renombrarla',
+    'Make “{name}” the active plate. Double-click or F2 to rename it',
+    '„{name}“ zur aktiven Platte machen. Doppelklick oder F2 zum Umbenennen',
+    'Activer « {name} ». Double-clic ou F2 pour la renommer',
+    '“{name}” को सक्रिय प्लेट बनाएँ। नाम बदलने के लिए डबल-क्लिक या F2',
+    '将“{name}”设为当前板。双击或按 F2 重命名',
+  ],
+  'plates.status.ok': ['Bien', 'OK', 'In Ordnung', 'Correct', 'ठीक', '正常'],
+  'plates.status.out': ['Fuera de volumen', 'Out of volume', 'Außerhalb des Volumens', 'Hors volume', 'वॉल्यूम से बाहर', '超出体积'],
+  'plates.status.empty': ['Vacía', 'Empty', 'Leer', 'Vide', 'खाली', '空'],
+  'plates.rename.label': ['Nombre de la placa', 'Plate name', 'Name der Platte', 'Nom du plateau', 'प्लेट का नाम', '板名称'],
+  'plates.add': ['Agregar placa', 'Add plate', 'Platte hinzufügen', 'Ajouter un plateau', 'प्लेट जोड़ें', '添加打印板'],
+  'plates.add.tip': ['Crea una placa nueva y la deja activa', 'Creates a new plate and makes it active', 'Erstellt eine neue Platte und aktiviert sie', 'Crée un nouveau plateau et l’active', 'नई प्लेट बनाकर उसे सक्रिय करती है', '新建一块打印板并设为当前板'],
+  'plates.addFirst': ['+ Placa', '+ Plate', '+ Platte', '+ Plateau', '+ प्लेट', '+ 打印板'],
+  'plates.addFirst.tip': [
+    'Crea una segunda placa para repartir las piezas',
+    'Creates a second plate to spread the parts over',
+    'Erstellt eine zweite Platte, um die Teile zu verteilen',
+    'Crée un second plateau pour répartir les pièces',
+    'हिस्सों को बाँटने के लिए दूसरी प्लेट बनाती है',
+    '新建第二块打印板,用于分配零件',
+  ],
+  'plates.solo': ['Solo esta', 'Only this', 'Nur diese', 'Seulement celui-ci', 'सिर्फ़ यह', '仅此板'],
+  'plates.solo.tip': [
+    'Muestra solo la cama de la placa activa',
+    'Shows only the bed of the active plate',
+    'Zeigt nur das Bett der aktiven Platte',
+    'Affiche seulement le plateau actif',
+    'सिर्फ़ सक्रिय प्लेट का बेड दिखाती है',
+    '只显示当前板的热床',
+  ],
+  'plates.delete': ['Borrar placa «{name}»', 'Delete plate “{name}”', 'Platte „{name}“ löschen', 'Supprimer le plateau « {name} »', '“{name}” प्लेट हटाएँ', '删除打印板“{name}”'],
+  'plates.delete.title': ['Borrar la placa', 'Delete the plate', 'Platte löschen', 'Supprimer le plateau', 'प्लेट हटाएँ', '删除打印板'],
+  'plates.delete.message': [
+    'La placa «{name}» tiene {count} {count?pieza|piezas}: pasan a «{target}», en el mismo lugar relativo.',
+    'Plate “{name}” has {count} {count?part|parts}: they move to “{target}”, in the same relative spot.',
+    'Die Platte „{name}“ enthält {count} {count?Teil|Teile}: Sie wechseln an derselben relativen Stelle zu „{target}“.',
+    'Le plateau « {name} » contient {count} {count?pièce|pièces} : elles passent à « {target} », au même endroit relatif.',
+    '“{name}” प्लेट में {count} {count?हिस्सा|हिस्से} हैं: वे उसी सापेक्ष जगह पर “{target}” में चले जाते हैं।',
+    '打印板“{name}”有 {count} 个零件:它们会移到“{target}”的相同相对位置。',
+  ],
+  'plates.delete.confirm': ['Borrar placa', 'Delete plate', 'Platte löschen', 'Supprimer le plateau', 'प्लेट हटाएँ', '删除打印板'],
+  'plates.toast.removed': [
+    'Placa «{name}» borrada; sus piezas pasan a «{target}».',
+    'Plate “{name}” deleted; its parts moved to “{target}”.',
+    'Platte „{name}“ gelöscht; ihre Teile wechseln zu „{target}“.',
+    'Plateau « {name} » supprimé ; ses pièces passent à « {target} ».',
+    '“{name}” प्लेट हटाई गई; उसके हिस्से “{target}” में चले गए।',
+    '已删除打印板“{name}”;其零件已移到“{target}”。',
+  ],
+  'plates.toast.moved': [
+    '{count} {count?pieza movida|piezas movidas} a «{name}».',
+    '{count} {count?part|parts} moved to “{name}”.',
+    '{count} {count?Teil|Teile} nach „{name}“ verschoben.',
+    '{count} {count?pièce déplacée|pièces déplacées} vers « {name} ».',
+    '{count} {count?हिस्सा|हिस्से} “{name}” में ले जाए गए।',
+    '已将 {count} 个零件移到“{name}”。',
+  ],
+  // Mover a placa (menú contextual y paleta de comandos).
+  'plates.action.moveToPlate': ['Mover a placa', 'Move to plate', 'Auf Platte verschieben', 'Déplacer vers un plateau', 'प्लेट पर ले जाएँ', '移到打印板'],
+  'plates.action.moveToPlate.tip': [
+    'Lleva la selección a otra placa, en el mismo lugar relativo',
+    'Moves the selection to another plate, in the same relative spot',
+    'Verschiebt die Auswahl auf eine andere Platte, an dieselbe relative Stelle',
+    'Déplace la sélection vers un autre plateau, au même endroit relatif',
+    'चयन को दूसरी प्लेट पर उसी सापेक्ष जगह ले जाता है',
+    '把所选零件移到另一块打印板的相同相对位置',
+  ],
+  'plates.move.new': ['Placa nueva', 'New plate', 'Neue Platte', 'Nouveau plateau', 'नई प्लेट', '新打印板'],
+  'plates.move.current': ['{name} (actual)', '{name} (current)', '{name} (aktuell)', '{name} (actuel)', '{name} (वर्तमान)', '{name}(当前)'],
+  'plates.move.reason': [
+    'Elige al menos una pieza sólida sin bloquear',
+    'Pick at least one solid, unlocked part',
+    'Wähle mindestens ein festes, nicht gesperrtes Teil',
+    'Choisissez au moins une pièce solide non verrouillée',
+    'कम से कम एक ठोस, अनलॉक हिस्सा चुनें',
+    '请至少选择一个未锁定的实体零件',
+  ],
+  // Aviso de fuera de volumen por placa.
+  'plates.oob.where': ['en {names}', 'on {names}', 'auf {names}', 'sur {names}', '{names} पर', '位于 {names}'],
+  // Pasos de placas en el historial de deshacer.
+  'plates.history.create': ['Crear placa «{name}»', 'Create plate “{name}”', 'Platte „{name}“ erstellen', 'Créer le plateau « {name} »', '“{name}” प्लेट बनाएँ', '创建打印板“{name}”'],
+  'plates.history.delete': ['Borrar placa «{name}»', 'Delete plate “{name}”', 'Platte „{name}“ löschen', 'Supprimer le plateau « {name} »', '“{name}” प्लेट हटाएँ', '删除打印板“{name}”'],
+  'plates.history.rename': ['Renombrar placa «{name}»', 'Rename plate “{name}”', 'Platte „{name}“ umbenennen', 'Renommer le plateau « {name} »', '“{name}” प्लेट का नाम बदलें', '重命名打印板“{name}”'],
+  'plates.history.move.one': ['Mover «{piece}» a «{name}»', 'Move “{piece}” to “{name}”', '„{piece}“ nach „{name}“ verschieben', 'Déplacer « {piece} » vers « {name} »', '“{piece}” को “{name}” में ले जाएँ', '将“{piece}”移到“{name}”'],
+  'plates.history.move.many': ['Mover {count} piezas a «{name}»', 'Move {count} parts to “{name}”', '{count} Teile nach „{name}“ verschieben', 'Déplacer {count} pièces vers « {name} »', '{count} हिस्से “{name}” में ले जाएँ', '将 {count} 个零件移到“{name}”'],
+} as const satisfies Record<string, Row>;
+
+type PlatesViewKey = keyof typeof PLATES_VIEW_TABLE;
+
+const pick = (index: number): Record<PlatesViewKey, string> =>
+  Object.fromEntries(Object.entries(PLATES_VIEW_TABLE).map(([key, row]) => [key, row[index]])) as Record<PlatesViewKey, string>;
+
+export const PLATES_VIEW_ES = pick(0);
+export const PLATES_VIEW_EN = pick(1);
+export const PLATES_VIEW_DE = pick(2);
+export const PLATES_VIEW_FR = pick(3);
+export const PLATES_VIEW_HI = pick(4);
+export const PLATES_VIEW_ZH = pick(5);

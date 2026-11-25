@@ -31,11 +31,14 @@ export function worldFootprintCenter(objects: readonly SceneObject[]): [number, 
   return any ? [(box.min.x + box.max.x) / 2, (box.min.z + box.max.z) / 2] : null;
 }
 
-/** Posiciones nuevas (id → posición) que centran el conjunto en la cama sin tocar la altura. */
-export function centerOnBedPositions(targets: readonly SceneObject[]): Record<string, Vec3> {
+/**
+ * Posiciones nuevas (id → posición) que centran el conjunto en la cama sin tocar la altura. `origin` es el centro
+ * [X, Z] de la cama de la placa (sin placas, el origen).
+ */
+export function centerOnBedPositions(targets: readonly SceneObject[], origin: readonly [number, number] = [0, 0]): Record<string, Vec3> {
   const center = worldFootprintCenter(targets);
   if (!center) return {};
   const out: Record<string, Vec3> = {};
-  for (const o of targets) out[o.id] = [o.position[0] - center[0], o.position[1], o.position[2] - center[1]];
+  for (const o of targets) out[o.id] = [o.position[0] - center[0] + origin[0], o.position[1], o.position[2] - center[1] + origin[1]];
   return out;
 }

@@ -13,7 +13,8 @@ import { computeBedPositionY, copySceneObject, makeId } from '../../core/scene/s
 import { dependentAddonIds, remapAddonHosts } from '../../core/addons/addonFollow';
 import { resolveAlignTargets } from '../../core/scene/sceneRules';
 import { keepClearOfOthers } from '../../core/scene/freeSpot';
-import { activeBedSize } from '../bedSize';
+import { placementBedSize } from '../bedSize';
+import { plateFrameFor, shiftChangeXZ } from '../../core/scene/plateFrame';
 import { duplicateGroupStructure, pickSelection } from '../../core/scene/groups';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { tCount } from '../../utils/plural';
@@ -129,7 +130,11 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       placeObject(id, (o) => ({ position: [o.position[0], computeBedPositionY(o.mesh, o.rotation, o.scale), o.position[2]] })),
 
     centerObjectOnBed: (id) =>
-      placeObject(id, (o) => ({ position: [0, computeBedPositionY(o.mesh, o.rotation, o.scale), 0] })),
+      placeObject(id, (o) => {
+        // Con placas, el centro es el de la placa de la pieza (sin placas: el origen, como siempre).
+        const [ox, oz] = plateFrameFor(get(), [o]).origin;
+        return { position: [ox, computeBedPositionY(o.mesh, o.rotation, o.scale), oz] };
+      }),
 
     resetObjectOrientation: (id) =>
       placeObject(id, (o) => {
@@ -158,7 +163,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
         },
       }));
       // Las copias quedan corridas 15 mm; si así pisan al original o a otro objeto, van juntas al primer hueco libre.
-      const spot = keepClearOfOthers(get().objects, pairs.map((p) => p.copy), activeBedSize(get()));
+      const spot = keepClearOfOthers(get().objects, pairs.map((p) => p.copy), placementBedSize(get(), sourceObjs[0]?.plateRef));
       pairs.forEach((p, i) => {
         p.copy.position = spot.parts[i].position;
       });
@@ -250,7 +255,12 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       if (targetObjs.length === 0) return null;
 
       // Operación pura compartida con el MCP headless: parches de posición.
-      const { change, moved, fitsBed } = ops.alignObjects(objects, targetObjs, mode, printerProfile);
+      // Con placas, «Acomodar» trabaja sobre la placa de las piezas: su cama y su origen.
+      const frame = get().plates.length > 0 ? plateFrameFor(get(), targetObjs) : null;
+      const profile = frame ? { ...printerProfile, bedWidthMm: frame.bed.widthMm, bedDepthMm: frame.bed.depthMm, maxHeightMm: frame.bed.heightMm } : printerProfile;
+      const aligned = ops.alignObjects(objects, targetObjs, mode, profile);
+      const { moved, fitsBed } = aligned;
+      const change = frame && mode === 'arrange_grid' ? shiftChangeXZ(aligned.change, frame.origin) : aligned.change;
       pushHistory();
       set((state) => ({ objects: ops.applySceneChange(state.objects, change) }));
       // Un solo aviso coherente: si la distribución no cabe, no se anuncia como lograda.
@@ -258,7 +268,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
         get().addToast(tr(`toast.alignedDone.${mode}`), 'success');
       } else {
         get().addToast(
-          tr('store.align.overflow', { width: printerProfile.bedWidthMm, depth: printerProfile.bedDepthMm }),
+          tr('store.align.overflow', { width: profile.bedWidthMm, depth: profile.bedDepthMm }),
           'error',
         );
       }

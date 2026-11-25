@@ -16,7 +16,7 @@ import type { RecipeRunResult, RecipeRunSuccess } from '../../core/recipes/run/t
 import { placeGroupInFreeSpot, placeInFreeSpot, type BedSize } from '../../core/scene/freeSpot';
 import type { LanguageCode, SceneObject } from '../../types/kura';
 import { t } from '../../i18n';
-import { activeBedSize } from '../bedSize';
+import { placementBedSize } from '../bedSize';
 import { planReplacement, stampRecipeRun } from '../recipeRuns';
 import { makeId } from '../../core/scene/sceneObjects';
 import type { StoreContext } from '../storeContext';
@@ -127,7 +127,7 @@ export function createRecipesSlice(ctx: StoreContext): Partial<KuraStoreState> {
     // Las piezas salen de la receta alrededor del origen. Si la receta trabaja sobre un objeto de la escena,
     // sus salidas ya están ubicadas respecto de él y no se mueven.
     if (chosenObjectIds(request.answers).size === 0) {
-      const placed = placeRecipeOutputs(now.objects, change.added, activeBedSize(now));
+      const placed = placeRecipeOutputs(now.objects, change.added, placementBedSize(now));
       fits = placed.fits;
       if (placed.parts !== change.added) change = { ...change, added: [...placed.parts] };
     }

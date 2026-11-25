@@ -948,9 +948,10 @@ export const CommandPalette: React.FC = () => {
   // Toda acción del catálogo se encuentra en la paleta con su nombre canónico (el de los menús).
   const groups = useKuraStore((s) => s.groups);
   const busyOperation = useKuraStore((s) => s.busyOperation);
+  const plates = useKuraStore((s) => s.plates);
   const allActions = useMemo<PaletteActionItem[]>(
-    () => [...actions, ...actionPaletteItems(language, { objects, selectedIds, groups, busyOperation }, actions.map((a) => a.label))],
-    [actions, language, objects, selectedIds, groups, busyOperation],
+    () => [...actions, ...actionPaletteItems(language, { objects, selectedIds, groups, busyOperation, plates }, actions.map((a) => a.label))],
+    [actions, language, objects, selectedIds, groups, busyOperation, plates],
   );
   const filtered = useMemo(() => rankPaletteItems(allActions, query), [allActions, query]);
 

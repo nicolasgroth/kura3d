@@ -18,6 +18,7 @@ import { REFERENCE_EN, REFERENCE_ES } from './locales/referencia';
 import { FIT_CHECK_EN, FIT_CHECK_ES } from './locales/encaje';
 import { MENU_IDEAS_EN, MENU_IDEAS_ES } from './locales/menuIdeas';
 import { GROUPS_EN, GROUPS_ES } from './locales/groups';
+import { PLATES_VIEW_EN, PLATES_VIEW_ES } from './locales/placasVista';
 import { MEASURE_EN, MEASURE_ES } from './locales/measure';
 import { FLOWUX_EN, FLOWUX_ES } from './locales/flowUx';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
@@ -82,6 +83,7 @@ export const TRANSLATIONS_ES = {
   ...FIT_CHECK_ES,
   ...MENU_IDEAS_ES,
   ...GROUPS_ES,
+  ...PLATES_VIEW_ES,
   ...MEASURE_ES,
   ...FLOWUX_ES,
   ...PREVIEW_ES,
@@ -1426,6 +1428,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...FIT_CHECK_EN,
   ...MENU_IDEAS_EN,
   ...GROUPS_EN,
+  ...PLATES_VIEW_EN,
   ...MEASURE_EN,
   ...FLOWUX_EN,
   ...PREVIEW_EN,

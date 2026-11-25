@@ -12,8 +12,10 @@
 
 import { t, type TranslationKey } from '../i18n';
 import type { LanguageCode, SceneObject } from '../types/kura';
+import type { ScenePlate } from '../types/plates';
 import type { ProjectSceneSnapshot } from '../project/projectSchema';
 import { isPaintDeltaStep, type HistoryStep } from './historySteps';
+import { describePlateChange } from './plateHistoryLabels';
 import { repeatLabel } from './repeatLabel';
 import type { RepeatRecord } from './quickActionsTypes';
 
@@ -47,6 +49,10 @@ const objectsOf = (step: HistoryStep | undefined, current: readonly SceneObject[
 /** Grupos de un paso como texto comparable (las instantáneas copian los grupos: no sirve comparar referencias). */
 const groupsOf = (step: HistoryStep | undefined, current: unknown): string =>
   JSON.stringify(step === undefined ? current ?? [] : isPaintDeltaStep(step) ? null : (step as ProjectSceneSnapshot).groups ?? []);
+
+/** Placas de un paso (o las vigentes si no hay paso). */
+const platesOf = (step: HistoryStep | undefined, current: readonly ScenePlate[] | undefined): readonly ScenePlate[] =>
+  step === undefined ? current ?? [] : isPaintDeltaStep(step) ? [] : (step as ProjectSceneSnapshot).plates ?? [];
 
 const differs = (a: readonly number[], b: readonly number[]) => a.some((v, i) => Math.abs(v - b[i]) > 1e-9);
 
@@ -198,7 +204,7 @@ export interface HistoryTimelineEntry {
  */
 export function historyTimeline(
   language: LanguageCode,
-  state: { past: readonly HistoryStep[]; future: readonly HistoryStep[]; objects: readonly SceneObject[]; groups: unknown },
+  state: { past: readonly HistoryStep[]; future: readonly HistoryStep[]; objects: readonly SceneObject[]; groups: unknown; plates?: readonly ScenePlate[] },
   max = 50,
 ): { entries: HistoryTimelineEntry[]; hidden: number } {
   const { past, future, objects } = state;
@@ -219,6 +225,13 @@ export function historyTimeline(
     const before = objectsOf(beforeStep, objects);
     const after = objectsOf(afterStep, objects);
     if (!before || !after) return t(language, 'rediseno.history.step.other');
+    const beforePlates = platesOf(beforeStep, state.plates);
+    const afterPlates = platesOf(afterStep, state.plates);
+    // Crear, borrar o renombrar placas y mover piezas entre placas tienen nombre propio (sin placas, nunca entra).
+    if (beforePlates.length > 0 || afterPlates.length > 0) {
+      const plateLabel = describePlateChange(language, { plates: beforePlates, objects: before }, { plates: afterPlates, objects: after });
+      if (plateLabel) return plateLabel;
+    }
     const groupsChanged = groupsOf(beforeStep, state.groups) !== groupsOf(afterStep, state.groups);
     return describeChange(language, before, after, groupsChanged);
   };

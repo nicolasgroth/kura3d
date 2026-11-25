@@ -21,6 +21,8 @@ export type { FootprintXZ };
 export interface BedSize {
   width: number;
   depth: number;
+  /** Centro [X, Z] de la cama en el mundo (placas); ausente = el origen. */
+  origin?: [number, number];
 }
 
 export interface FreeSpot {
@@ -80,6 +82,13 @@ export function findFreeSpot(
   bed: BedSize | null = null,
   gap = PLACEMENT_GAP_MM,
 ): FreeSpot {
+  const origin = bed?.origin;
+  if (bed && origin && (origin[0] !== 0 || origin[1] !== 0)) {
+    // Cama de otra placa: se busca en su marco local (centrada en el origen) y el resultado vuelve al mundo.
+    const local = occupied.map((r) => ({ minX: r.minX - origin[0], maxX: r.maxX - origin[0], minZ: r.minZ - origin[1], maxZ: r.maxZ - origin[1] }));
+    const spot = findFreeSpot(local, size, { width: bed.width, depth: bed.depth }, gap);
+    return { x: spot.x + origin[0], z: spot.z + origin[1], fits: spot.fits };
+  }
   const hw = Math.max(0, size[0]) / 2;
   const hd = Math.max(0, size[1]) / 2;
   const xs = new Set<number>([0]);

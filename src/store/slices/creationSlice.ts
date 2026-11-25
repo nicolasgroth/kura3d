@@ -9,7 +9,7 @@
 
 import { createModulePrimitive, createPrimitive } from '../../core/operations';
 import { announceFreePlacement, createFreePlacer, type FreePlacer } from '../freePlacement';
-import { activeBedSize } from '../bedSize';
+import { placementBedSize } from '../bedSize';
 import { overlapsOthers, placeInFreeSpot } from '../../core/scene/freeSpot';
 import { parametricStateOf } from '../../core/scene/parametric';
 import { resolveModuleTarget } from '../../core/scene/sceneRules';
@@ -25,7 +25,7 @@ import { negativeSpotFor, rememberSpawnTarget } from '../negativeSpawn';
 export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, pushHistory, runExclusive, opCtx, assertCurrent, commitChange, rejectWhileLocked } = ctx;
 
-  const activeBed = () => activeBedSize(get());
+  const activeBed = () => placementBedSize(get());
 
   const freePlacer = (rotation?: Vec3, scale?: Vec3) => createFreePlacer(get, rotation, scale);
   const afterFreePlacement = (free: FreePlacer, newId: string) => announceFreePlacement(get(), tr, free.result, newId);

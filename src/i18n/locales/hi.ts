@@ -13,6 +13,7 @@ import { REFERENCE_HI } from './referencia';
 import { FIT_CHECK_HI } from './encaje';
 import { MENU_IDEAS_HI } from './menuIdeas';
 import { GROUPS_HI } from './groups';
+import { PLATES_VIEW_HI } from './placasVista';
 import { MEASURE_HI } from './measure';
 import { FLOWUX_HI } from './flowUx';
 import { PREVIEW_HI } from './preview';
@@ -75,6 +76,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...FIT_CHECK_HI,
   ...MENU_IDEAS_HI,
   ...GROUPS_HI,
+  ...PLATES_VIEW_HI,
   ...MEASURE_HI,
   ...FLOWUX_HI,
   ...PREVIEW_HI,

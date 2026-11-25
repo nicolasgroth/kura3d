@@ -32,7 +32,8 @@ import { ViewportCaptureRegistrar } from './ViewportCaptureRegistrar';
 import { ViewportCanvasA11y } from './ViewportCanvasA11y';
 import { CameraController } from './CameraController';
 import { overhangFacesFor } from '../../store/printReportSelectors';
-import { PrinterBedOverlay } from './PrinterBedOverlay';
+import { PlateBeds } from './PlateBeds';
+import { resolveActivePlate } from '../../core/scene/plates';
 import { PreviewLayers } from './PreviewLayers';
 import { MagnetPlacementLayer } from './MagnetPlacementLayer';
 import { ScrewBossPlacementLayer } from './ScrewBossPlacementLayer';
@@ -85,6 +86,9 @@ export const SceneContent: React.FC<{
   const colorScheme = useKuraStore((s) => s.colorScheme);
   // Vista sin cama: sin placa, rejilla, rótulo, volumen ni sombras de contacto; la órbita pasa bajo Z=0.
   const showBed = useKuraStore((s) => s.showBed);
+  // Con placas, la sombra de contacto sigue a la placa activa (sin placas, el origen de siempre).
+  const shadowX = useKuraStore((s) => resolveActivePlate(s.plates, s.activePlateId)?.origin[0] ?? 0);
+  const shadowZ = useKuraStore((s) => resolveActivePlate(s.plates, s.activePlateId)?.origin[1] ?? 0);
   const setObjectTransform = useKuraStore((s) => s.setObjectTransform);
   const commitTransformSnapshot = useKuraStore((s) => s.commitTransformSnapshot);
   const altCloneForDrag = useKuraStore((s) => s.altCloneForDrag);
@@ -160,7 +164,7 @@ export const SceneContent: React.FC<{
     selectedIds.length >= 2 &&
     objects.some((o) => selectedIds.includes(o.id) && o.visible && !o.locked);
 
-  const shadowsKey = `${objects.length}:${pastCount}:${printerProfile.id}`;
+  const shadowsKey = `${objects.length}:${pastCount}:${printerProfile.id}${shadowX || shadowZ ? `:${shadowX},${shadowZ}` : ''}`;
 
   return (
     <>
@@ -181,13 +185,13 @@ export const SceneContent: React.FC<{
       <directionalLight position={[-120, 80, -100]} intensity={0.52} color="#bae6fd" />
       <directionalLight position={[0, -80, 90]} intensity={0.25} color="#fed7aa" />
 
-      {showBed && <PrinterBedOverlay isOutOfBounds={isOutOfBounds} />}
+      {showBed && <PlateBeds isOutOfBounds={isOutOfBounds} />}
 
       {showBed && (
         <ContactShadows
           key={shadowsKey}
           frames={1}
-          position={[0, 0.01, 0]}
+          position={[shadowX, 0.01, shadowZ]}
           opacity={0.35}
           scale={280}
           blur={1.8}

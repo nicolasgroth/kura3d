@@ -24,6 +24,7 @@ import { createKeyedNaming, localeShortMm } from '../core/scene/resultNames';
 import { APP_BUILD_POLICY, makeId } from '../core/scene/sceneObjects';
 import { inputsAreCurrent } from '../core/scene/sceneRules';
 import { reconcileGroups } from '../core/scene/groups';
+import { adoptNewPieces } from '../core/scene/plateAdopt';
 import { reconcilePlates } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
 import { colorName } from '../utils/colorNames';
@@ -149,6 +150,22 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     const clean = reconcilePlates({ objects: state.objects, plates: state.plates ?? [] });
     if (clean.objects !== state.objects || clean.plates !== state.plates) rawSet({ objects: clean.objects, plates: clean.plates });
   };
+  // Con placas, lo nuevo cae en la placa activa (o en la de lo que reemplaza) y elegir una pieza activa su placa.
+  // Solo cuando las placas no cambiaron en el mismo paso: deshacer, rehacer y abrir un archivo las reemplazan, y
+  // sus piezas ya traen la placa que les toca (una pieza sin placa sigue sin ella).
+  const keepActivePlateInSync = (prev: KuraStoreState) => {
+    const state = get();
+    if (!state.plates?.length || state.plates !== prev.plates) return;
+    if (state.objects !== prev.objects && state.layout !== 'assembly') {
+      const next = adoptNewPieces(prev.objects, state.objects, state.plates, state.activePlateId);
+      if (next) rawSet({ objects: next });
+    }
+    if (state.selectedIds !== prev.selectedIds && state.plates.length > 1 && state.selectedIds.length > 0) {
+      const refs = new Set(get().objects.filter((o) => state.selectedIds.includes(o.id)).map((o) => o.plateRef));
+      const [only] = refs;
+      if (refs.size === 1 && only !== undefined && only !== state.activePlateId && state.plates.some((p) => p.id === only)) rawSet({ activePlateId: only });
+    }
+  };
   // Un imán conserva su medida: si su pieza cambia de escala (por cualquier camino), vuelve a su cara a escala propia.
   const keepMagnetsOnHosts = (before: SceneObject[] | undefined) => {
     const objects = get().objects;
@@ -162,6 +179,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     if (prev) keepMagnetsOnHosts(prev.objects);
     if (prev) keepGroupsCoherent(prev.objects, prev.groups);
     if (prev) keepPlatesCoherent(prev.objects, prev.plates);
+    if (prev) keepActivePlateInSync(prev);
     dropStaleSegmentation();
   }) as SetState;
 

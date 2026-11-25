@@ -104,7 +104,7 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
       if (!orientableObject(obj)) return null;
       dropPreview();
       const source: Pose = { mesh: obj.mesh, position: obj.position, rotation: obj.rotation, scale: obj.scale };
-      const bed = activeFitBed(get());
+      const bed = activeFitBed(get(), [obj]);
       set({ orientRunning: true });
       const current = startEngineJob('orientForPrint', { obj, options: { overhangAngleDeg: angleDeg, bed } });
       job = current;
