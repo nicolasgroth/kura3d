@@ -29,6 +29,7 @@ import { registerFitCheckTools } from './fitCheckTools.js';
 import { registerRoleTools, roleSchema } from './roleTools.js';
 import { registerRecipeTools } from './recipeTools.js';
 import { registerSmoothOrientTools } from './smoothOrientTools.js';
+import { registerSimplifyTools } from './simplifyTools.js';
 import { registerAddonTools } from './addonTools.js';
 import type { ObjectRole } from '../../src/types/kura';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
@@ -345,6 +346,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerRoleTools(server, ctx);
   registerRecipeTools(server, ctx);
   registerSmoothOrientTools(server, ctx);
+  registerSimplifyTools(server, ctx);
   registerAddonTools(server, ctx);
 
   // 3. Transformación de objetos
@@ -994,27 +996,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       )
   );
 
-  // 21. Simplificación adaptativa de malla
-  server.registerTool(
-    'kura_simplify_mesh',
-    {
-      title: 'Simplify 3D mesh',
-      description: 'Reduces triangle density while respecting the geometric tolerance in mm.',
-      inputSchema: {
-        objectId: idSchema.describe('ID of the object to simplify.'),
-        toleranceMm: rangeSchema(OR.simplify.toleranceMm)
-          .default(0.1)
-          .describe('Maximum geometric deviation tolerance in mm.'),
-      },
-    },
-    async (args) =>
-      dispatchWithFallback(
-        ctx,
-        'simplify_mesh',
-        { ...args, id: args.objectId },
-        () => ctx.headless.simplifyMesh(args.objectId, args.toleranceMm)
-      )
-  );
+  // 21. Simplificar con verificación: en `simplifyTools.ts`.
 
   // 22. Refinamiento / subdivisión de malla
   server.registerTool(

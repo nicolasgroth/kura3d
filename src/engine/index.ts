@@ -115,6 +115,18 @@ export {
   simplifyMesh,
 } from './analysis';
 
+export {
+  LOSSLESS_LIMITS,
+  SIMPLIFY_MODES,
+  SIMPLIFY_WARN_LIMITS,
+  SIMPLIFY_WARNING_CODES,
+  simplifyMeshDetailed,
+  type SimplifyMode,
+  type SimplifyReport,
+  type SimplifyRequest,
+  type SimplifyWarningCode,
+} from './simplify';
+
 export { localizePrintWarning, PRINT_FILAMENT_DIAMETER_MM, PRINT_SHELL_FRACTION } from './printability';
 
 export { flipTriangleWinding, orientationState, signedVolumeMm3, type OrientationState } from './meshOrientation';

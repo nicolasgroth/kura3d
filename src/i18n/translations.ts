@@ -26,6 +26,7 @@ import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
 import { UNIONES_FIRMES_EN, UNIONES_FIRMES_ES } from './locales/unionesFirmes';
 import { AJUSTAR_EN, AJUSTAR_ES } from './locales/ajustarImpresora';
 import { SUAVIZAR_EN, SUAVIZAR_ES } from './locales/suavizarMotor';
+import { SIMPLIFICAR_ES, SIMPLIFICAR_EN } from './locales/simplificar';
 import { SUAVIZAR_UI_EN, SUAVIZAR_UI_ES } from './locales/suavizarUi';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
 import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
@@ -90,6 +91,7 @@ export const TRANSLATIONS_ES = {
   ...AJUSTAR_ES,
   ...SUAVIZAR_ES,
   ...SUAVIZAR_UI_ES,
+  ...SIMPLIFICAR_ES,
   ...SPLITCOUPLING_ES,
   ...A11YUX_ES,
   ...UXMOVIL_ES,
@@ -1434,6 +1436,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...AJUSTAR_EN,
   ...SUAVIZAR_EN,
   ...SUAVIZAR_UI_EN,
+  ...SIMPLIFICAR_EN,
   ...SPLITCOUPLING_EN,
   ...A11YUX_EN,
   ...UXMOVIL_EN,

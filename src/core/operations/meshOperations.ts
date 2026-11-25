@@ -19,6 +19,7 @@ import type {
 } from '../../types/kura';
 import { engineWarning } from '../../engine/engineErrors';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
+import { simplifyMeshDetailed, type SimplifyRequest } from '../../engine/simplify';
 import { worldBaked } from '../scene/sceneObjects';
 import { change, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
 
@@ -47,28 +48,31 @@ export async function repairObject(
   return { report: res.report, change: patchOf(obj, meshPatch(ctx, obj, res.mesh), res.warnings) };
 }
 
-/** Decima la malla (Manifold `simplify`). */
-export async function simplifyObject(ctx: OperationContext, obj: SceneObject, toleranceMm: number): Promise<SceneChange> {
-  const simplified = await engine.simplifyMesh(obj, toleranceMm);
-  // Volumen en coordenadas locales: la escala del objeto no cambia el porcentaje.
-  const statsBefore = engine.computeMeshStats(obj.mesh);
-  const statsAfter = engine.computeMeshStats(simplified);
-  const before = statsBefore.volumeMm3;
-  const after = statsAfter.volumeMm3;
-  const pct = before > 0 ? (100 * (after - before)) / before : 0;
-  const warnings = Math.abs(pct) > OPERATION_DEFAULTS.simplify.volumeWarnPct
+/**
+ * Simplifica con verificación (`simplifyMeshDetailed`): un número es el modo «Por tolerancia» (compatibilidad).
+ * Si no se aplica (sin reducción o «Sin pérdida» rechazado) el cambio no trae parches, solo el informe.
+ */
+export async function simplifyObject(
+  ctx: OperationContext,
+  obj: SceneObject,
+  request: number | SimplifyRequest,
+): Promise<SceneChange> {
+  const req: SimplifyRequest = typeof request === 'number' ? { mode: 'tolerance', toleranceMm: request } : request;
+  const { mesh, report } = await simplifyMeshDetailed(obj, req, { onProgress: ctx.onProgress });
+  const pct = report.volumeChangePct;
+  const warnings = mesh && Math.abs(pct) > OPERATION_DEFAULTS.simplify.volumeWarnPct
     ? [engineWarning('SIMPLIFY_VOLUME_CHANGED', { pct: Math.round(pct * 10) / 10 })]
     : [];
-  return {
-    ...patchOf(obj, meshPatch(ctx, obj, simplified), warnings),
-    simplify: {
-      trianglesBefore: statsBefore.triangles,
-      trianglesAfter: statsAfter.triangles,
-      volumeBeforeMm3: before,
-      volumeAfterMm3: after,
-      volumeChangePct: pct,
-    },
+  const simplify = {
+    trianglesBefore: report.trianglesBefore,
+    trianglesAfter: report.trianglesAfter,
+    volumeBeforeMm3: report.volumeBeforeMm3,
+    volumeAfterMm3: report.volumeAfterMm3,
+    volumeChangePct: pct,
+    report,
   };
+  if (!mesh) return change({ simplify });
+  return { ...patchOf(obj, meshPatch(ctx, obj, mesh), warnings), simplify };
 }
 
 /** Refina (y suaviza opcionalmente) la malla. */

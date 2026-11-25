@@ -10,6 +10,7 @@
  * @license MIT
  */
 
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { tagLastPushedStep } from '../historyLabels';
 import { attachToTarget } from '../../core/scene/attachPiece';
 import { withoutModulePrefix } from '../../core/scene/resultNames';
@@ -154,7 +155,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         return 'done';
       case 'simplify': {
         if (!first) return 'notApplicable';
-        for (const o of targets) await s.simplifySelectedMesh(o.id, rec.toleranceMm);
+        for (const o of targets) await s.simplifySelectedMesh(o.id, rec.request ?? rec.toleranceMm);
         return 'done';
       }
       case 'color': {
@@ -261,9 +262,13 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       if (applicable) record({ kind: 'applyHoles' });
     },
 
-    simplifySelectedMesh: async (id, toleranceMm) => {
-      const ok = await base.simplifySelectedMesh!(id, toleranceMm);
-      if (ok) record({ kind: 'simplify', toleranceMm });
+    simplifySelectedMesh: async (id, request, options) => {
+      const ok = await base.simplifySelectedMesh!(id, request, options);
+      // Repetir usa el mismo modo; `toleranceMm` queda por compatibilidad con lo ya registrado.
+      if (ok && typeof request === 'number') record({ kind: 'simplify', toleranceMm: request });
+      else if (ok && typeof request !== 'number') {
+        record({ kind: 'simplify', toleranceMm: request.mode === 'tolerance' ? request.toleranceMm : OPERATION_DEFAULTS.simplify.toleranceMm, request });
+      }
       return ok;
     },
 

@@ -29,6 +29,8 @@ import type {
   Vec3,
 } from '../../types/kura';
 import { measureObjectCapacity, type CapacityOptions } from '../../engine/measure';
+import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
+import type { SimplifyRequest } from '../../engine/simplify';
 import { booleanOperation, convexHull } from './csgOperations';
 import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
 import { eraseSphere, hollowObject, projectOnSurface, refineObject, repairObject, simplifyObject } from './meshOperations';
@@ -108,7 +110,9 @@ export const ENGINE_TASKS = {
   applyHoles: (ctx: OperationContext, a: { solids: SceneObject[]; holes: SceneObject[] }) => applyHolesWithPosts(ctx, a.solids, a.holes),
   convexHull: (ctx: OperationContext, a: { targets: SceneObject[]; name?: string }) => convexHull(ctx, a.targets, a.name),
   hollow: (ctx: OperationContext, a: { obj: SceneObject; options: HollowOptions }) => hollowObject(ctx, a.obj, a.options),
-  simplify: (ctx: OperationContext, a: { obj: SceneObject; toleranceMm: number }) => simplifyObject(ctx, a.obj, a.toleranceMm),
+  // Número = «Por tolerancia» (compatibilidad); si no, la petición con su modo. Cancelar termina el Worker.
+  simplify: (ctx: OperationContext, a: { obj: SceneObject; toleranceMm?: number; request?: SimplifyRequest }) =>
+    simplifyObject(ctx, a.obj, a.request ?? a.toleranceMm ?? OPERATION_DEFAULTS.simplify.toleranceMm),
   repair: (ctx: OperationContext, a: { obj: SceneObject; options?: Omit<engine.MeshRepairOptions, 'onProgress'> }) =>
     repairObject(ctx, a.obj, a.options),
   diagnoseMesh: (_ctx: OperationContext, a: { mesh: Pick<SceneObject['mesh'], 'positions' | 'indices'> }) => engine.diagnoseMesh(a.mesh),
