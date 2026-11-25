@@ -8,6 +8,7 @@
  * @license MIT
  */
 import { test, expect, type Page } from '@playwright/test';
+import { itemAccion } from '../acciones-helpers';
 import { abrir, captura, cmd, encuadrar, seleccionar, sinAvisos } from './helpers';
 
 const libre = (page: Page) => expect.poll(() => page.evaluate(() => (window as any).__s.getState().busyOperation), { timeout: 30_000 }).toBeNull();
@@ -36,18 +37,19 @@ test('suavizar', async ({ page }) => {
   await seleccionar(page, [esfera.id]);
 
   // 1) Panel desde Acciones › Malla, con la vista previa calculada.
-  await page.getByRole('button', { name: 'Acciones', exact: true }).first().click();
-  await page.getByRole('menuitem', { name: /^Suavizar/ }).click();
+  await (await itemAccion(page, 'Suavizar…')).click();
   await expect(page.getByRole('heading', { name: 'Suavizar malla' })).toBeVisible();
   await page.getByRole('button', { name: /^Vista previa/ }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Vista previa lista' })).toBeVisible({ timeout: 60_000 });
+  await expect(page.locator('#kura-inspector-panel').getByRole('status').filter({ hasText: 'Vista previa lista' })).toBeVisible({ timeout: 60_000 });
   await sinAvisos(page);
   await captura(page, 'suavizar-01-panel');
 
   // 2) Resultado aplicado.
   await page.getByRole('button', { name: 'Aplicar', exact: true }).click();
   await libre(page);
-  await expect(page.getByRole('status').filter({ hasText: 'Suavizado aplicado' })).toBeVisible();
+  await expect(page.locator('#kura-inspector-panel').getByRole('status').filter({ hasText: 'Suavizado aplicado' })).toBeVisible();
+  await sinAvisos(page);
   await encuadrar(page, 'scene');
+  await expect(page.locator('footer')).toContainText('Borrador local guardado', { timeout: 40_000 });
   await captura(page, 'suavizar-02-resultado');
 });

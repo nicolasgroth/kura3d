@@ -40,6 +40,7 @@ test('asistentes', async ({ page }) => {
   const editar = page.getByRole('button', { name: 'Editar con el asistente' });
   await expect(editar).toBeVisible();
   await page.mouse.move(700, 880);
+  await expect(page.locator('footer')).toContainText('Borrador local guardado', { timeout: 40_000 });
   await captura(page, 'asistentes-03-editar');
   // 4) El formulario vuelve con las respuestas guardadas y «Actualizar».
   await editar.click();

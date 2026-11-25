@@ -26,7 +26,7 @@ Con el tipo **Imanes (desmontable)** cada cara del corte recibe alojamientos de 
 
 Cada imán deja 1,2 mm de pared alrededor y hacia el exterior. Donde no cabe, no se pone y la unión lo avisa (queda para pegar): elige un imán más chico o mueve el corte a una zona más ancha. Por ahora solo se admiten imanes **redondos**; con un preajuste cuadrado el panel lo advierte y la unión queda para pegar.
 
-<!-- captura: dividir-para-imprimir-03-imanes.png (panel con «Imanes (desmontable)» elegido). Paso preparado en e2e/docs/capturas-dividir-imanes.spec.ts; pendiente de ejecutar. -->
+![Panel Dividir para imprimir con «Imanes (desmontable)» elegido y el preajuste de imán](img/dividir-para-imprimir-03-imanes.png)
 
 ## Armar y preparar para imprimir
 

@@ -67,5 +67,7 @@ test('torreta para tornillo', async ({ page }) => {
   });
   await libre(page);
   await camara(page, [55, 60, 45]);
+  await sinAvisos(page);
+  await expect(page.locator('footer')).toContainText('Borrador local guardado', { timeout: 40_000 });
   await captura(page, 'torreta-02-resultado');
 });
