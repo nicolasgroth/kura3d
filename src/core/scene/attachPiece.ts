@@ -36,8 +36,13 @@ export function negativeOnTopFace(target: SceneObject, mesh: MeshData, protrudeM
   return [center[0] - local[0], Math.max(0, top + protrudeMm - height) - minY, center[2] - local[2]];
 }
 
-/** Agrega `piece` a la escena agrupada con `targetId`; `grouped` dice si quedó en un grupo. */
-export function attachToTarget(scene: GroupScene, piece: SceneObject, targetId: string): { objects: SceneObject[]; groups: SceneGroup[]; grouped: boolean } {
+/**
+ * Agrega `piece` a la escena agrupada con `targetId`; `grouped` dice si quedó en un grupo y `createdGroupId` si esta
+ * llamada creó el grupo (el objeto no tenía uno): quien lo necesite puede disolverlo si después queda con un miembro.
+ */
+export function attachToTarget(
+  scene: GroupScene, piece: SceneObject, targetId: string,
+): { objects: SceneObject[]; groups: SceneGroup[]; grouped: boolean; createdGroupId?: string } {
   const target = scene.objects.find((o) => o.id === targetId);
   let objects = [...scene.objects, piece];
   if (target?.groupRef) {
@@ -45,8 +50,9 @@ export function attachToTarget(scene: GroupScene, piece: SceneObject, targetId: 
     return { objects, groups: scene.groups, grouped: true };
   }
   if (target) {
-    const next = groupSelection({ objects, groups: scene.groups }, [target.id, piece.id], { id: makeId('grp'), name: target.name });
-    if (next) return { objects: next.objects, groups: next.groups, grouped: true };
+    const createdGroupId = makeId('grp');
+    const next = groupSelection({ objects, groups: scene.groups }, [target.id, piece.id], { id: createdGroupId, name: target.name });
+    if (next) return { objects: next.objects, groups: next.groups, grouped: true, createdGroupId };
   }
   return { objects, groups: scene.groups, grouped: false };
 }
