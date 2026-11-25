@@ -27,7 +27,7 @@ test('aparece al seleccionar, dentro del visor, con seis botones nombrados', asy
   await conCaja(page);
   await expect(barra(page)).toBeVisible();
   const nombres = await barra(page).getByRole('button').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')));
-  expect(nombres).toEqual(['Color base', 'Duplicar', 'Ocultar', 'Bloquear', 'Eliminar', 'Más']);
+  expect(nombres).toEqual(['Color base', 'Duplicar', 'Ocultar (no se exporta)', 'Bloquear', 'Eliminar', 'Más']);
   const visor = (await page.locator('.kura-viewport-wrap').boundingBox())!;
   const b = await caja(page);
   expect(b.x).toBeGreaterThanOrEqual(visor.x);
