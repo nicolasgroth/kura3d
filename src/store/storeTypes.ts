@@ -527,8 +527,10 @@ export interface KuraStoreState {
   rescaleObjects: (ids: readonly string[], factor: number) => boolean;
   /** Exportación única (STL, 3MF, OBJ+MTL, GLB, PLY) de la selección o la escena. */
   exportModel: (request: ExportRequest) => Promise<boolean>;
-  exportSceneStl: (onlySelected?: boolean) => Promise<boolean>;
-  exportScene3mf: (onlySelected?: boolean) => Promise<boolean>;
+  /** Con piezas de varias placas, un ZIP con un archivo por placa; `plateId` = solo esa placa (lote P6). */
+  exportSceneStl: (onlySelected?: boolean, plateId?: string) => Promise<boolean>;
+  /** Con piezas de varias placas, un 3MF con todas las placas; `plateId` = solo esa placa (lote P6). */
+  exportScene3mf: (onlySelected?: boolean, plateId?: string) => Promise<boolean>;
   exportSelectedObj: () => Promise<boolean>;
 
   // Command Bus Unificado (UI, MCP y Chat IA)

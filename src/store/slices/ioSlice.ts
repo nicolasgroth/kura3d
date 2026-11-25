@@ -222,10 +222,10 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     exportModel: (request) => modelIo.exportModel(request),
-    exportSceneStl: async (onlySelected = false) =>
-      modelIo.exportModel({ format: 'stl', scope: onlySelected ? 'selection' : 'scene' }),
-    exportScene3mf: async (onlySelected = false) =>
-      modelIo.exportModel({ format: '3mf', scope: onlySelected ? 'selection' : 'scene' }),
+    exportSceneStl: async (onlySelected = false, plateId) =>
+      modelIo.exportModel({ format: 'stl', scope: onlySelected ? 'selection' : 'scene', ...(plateId ? { plateId } : {}) }),
+    exportScene3mf: async (onlySelected = false, plateId) =>
+      modelIo.exportModel({ format: '3mf', scope: onlySelected ? 'selection' : 'scene', ...(plateId ? { plateId } : {}) }),
     exportSelectedObj: async () =>
       modelIo.exportModel({ format: 'obj', scope: get().selectedIds.length > 0 ? 'selection' : 'scene' }),
   };

@@ -10,7 +10,6 @@
  */
 
 import { isReadCommand } from '../core/commands/commandPolicy';
-import { BRAND } from '../brand';
 import * as engine from '../engine';
 import { isEngineError, type EngineErrorCode } from '../engine/engineErrors';
 import { edgeReport } from '../engine/primitiveEdges';
@@ -19,8 +18,6 @@ import type { TranslationKey } from '../i18n';
 import type { KuraCommandRequest, KuraCommandResponse, SceneObject } from '../types/kura';
 import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { CommandError, type CommandErrorCode } from './commandErrors';
-import { selectExportTargets } from './exportTargets';
-import { printPosedObjects } from './sceneLayout';
 import { simplifyReportToUser } from '../core/bus/simplifySchema';
 import type { SimplifyReport } from '../engine/simplify';
 import * as schema from './commandSchemas';
@@ -29,6 +26,7 @@ import { parseUpdatePrimitiveParams } from './parametricCommandSchemas';
 import { parseSplitForBed, parseValidateAssembly } from './splitCommandSchemas';
 import { fitAnalysisToUser, parseFitToBed } from './fitCommandSchemas';
 import { MEASURE_HANDLERS } from './measureCommands';
+import { EXPORT_HANDLERS } from './exportCommands';
 import { REPAIR_HANDLERS } from './repairCommands';
 import { ROLE_HANDLERS } from './roleCommands';
 import { FIT_CHECK_HANDLERS } from './fitCheckCommands';
@@ -100,19 +98,9 @@ function required<T>(value: T, command: string): NonNullable<T> {
   return value as NonNullable<T>;
 }
 
-function exportTargets(deps: CommandBusDeps, onlySelected: boolean): { targets: SceneObject[]; skippedHoles: number; skippedReferences: number } {
-  // Se exporta siempre desde las poses de impresión, sea cual sea el modo de vista.
-  const state = deps.get();
-  const selection = selectExportTargets(printPosedObjects(state), state.selectedIds, onlySelected);
-  if (selection.targets.length === 0) throw new CommandError('precondition', 'toast.nothingToExport');
-  return selection;
-}
-
-const triangles = (objs: SceneObject[]) => objs.reduce((acc, o) => acc + o.stats.triangles, 0);
-const headless = () => typeof document === 'undefined';
-
 const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...MEASURE_HANDLERS,
+  ...EXPORT_HANDLERS,
   ...REPAIR_HANDLERS,
   ...ROLE_HANDLERS,
   ...FIT_CHECK_HANDLERS,
@@ -390,29 +378,6 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       ?? (input.regionIndex !== undefined ? seg.regions[input.regionIndex] : undefined);
     if (!region) throw new CommandError('not-found', 'bus.error.regionNotFound');
     return withStats(required(await get().extractDetectedStructure(region.id, input.removeFromSource), command));
-  },
-
-  export_stl: async (p, deps, command) => {
-    const { onlySelected, wantsBytes } = schema.parseExport(p);
-    if (wantsBytes || headless()) {
-      const { targets, skippedHoles, skippedReferences } = exportTargets(deps, onlySelected);
-      const bytes = engine.exportSceneToBinarySTL(targets, engine.stlBrandHeader(BRAND));
-      return { format: 'stl', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles, skippedReferences };
-    }
-    required(await deps.get().exportSceneStl(onlySelected), command);
-    return { format: 'stl' };
-  },
-
-  // `slicerTarget` está obsoleto: se acepta e ignora (un único 3MF estándar, compatible con OrcaSlicer, Bambu Studio, PrusaSlicer y Cura).
-  export_3mf: async (p, deps, command) => {
-    const input = schema.parseExport(p);
-    if (input.wantsBytes || headless()) {
-      const { targets, skippedHoles, skippedReferences } = exportTargets(deps, input.onlySelected);
-      const bytes = engine.exportSceneTo3MF(targets, deps.get().unitSystem, undefined, BRAND);
-      return { format: '3mf', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(targets), skippedHoles, skippedReferences };
-    }
-    required(await deps.get().exportScene3mf(input.onlySelected), command);
-    return { format: '3mf' };
   },
 
   capture_viewport: () => {

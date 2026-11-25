@@ -271,6 +271,8 @@ export function parseAlign(scene: SceneView, p: RawParams): { mode: AlignMode; o
 export interface ExportInput {
   onlySelected: boolean;
   wantsBytes: boolean;
+  /** Solo las piezas de esta placa, respecto de su cama (lote P6). */
+  plateId?: string;
 }
 
 /** `slicerTarget` (obsoleto) se acepta en `p` pero se ignora: hay un único 3MF estándar. */
@@ -278,6 +280,7 @@ export function parseExport(p: RawParams): ExportInput {
   return {
     onlySelected: readBoolean(p, 'onlySelected') ?? false,
     wantsBytes: Boolean(readBoolean(p, 'returnBytes')) || Boolean(readString(p, 4096, 'outputPath')),
+    plateId: readId(p, 'plateId'),
   };
 }
 

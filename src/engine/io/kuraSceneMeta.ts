@@ -4,7 +4,7 @@
  * nombres `KURA_SCENE_NAMESPACE`): por cada objeto del modelo, su transformación exacta (posición,
  * rotación, escala), nombre, color, visibilidad, bloqueo, hueco y grupo; y el árbol de grupos (anidados,
  * plegado, visible, bloqueado). Con ellos, la ida y vuelta por 3MF de Kurra Studio restaura la escena tal cual,
- * sin reacomodo ni detección de conjuntos. Los laminadores ignoran el archivo. La lectura es defensiva:
+ * sin reacomodo ni detección de conjuntos. Con placas, cada objeto guarda el origen de placa restado (`plateOffset`). Los laminadores ignoran el archivo. La lectura es defensiva:
  * tope de bytes, de entradas y de longitud de textos; cualquier incoherencia descarta los metadatos y el
  * archivo se lee como un 3MF cualquiera.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -15,6 +15,7 @@
 import type { SceneGroup, SceneObject, Vec3 } from '../../types/kura';
 import { MAX_PART_NAME } from './importErrors';
 import { isNegative } from '../../core/scene/objectRole';
+import { TRANSFORM_LIMITS } from '../operationLimits';
 
 /** Ruta del archivo dentro del paquete. */
 export const KURA_SCENE_PATH = 'Metadata/kura_scene.json';
@@ -40,6 +41,11 @@ export interface KuraSceneObjectMeta {
   materialPreset?: string;
   /** Índice en `groups` del grupo que lo contiene. */
   group?: number;
+  /**
+   * Origen [X, Z] de la placa que se restó al escribirlo (exportar por placa, lote P6): la posición guardada es
+   * respecto de esa cama y al restaurar se le vuelve a sumar. Ausente = posición de mundo.
+   */
+  plateOffset?: [number, number];
   /** Huella de la malla escrita: si no calza al leer, el archivo fue editado por otro programa. */
   vertices: number;
   triangles: number;
@@ -71,6 +77,7 @@ export function buildKuraSceneMeta(
   objects: readonly SceneObject[],
   objectIds: readonly string[],
   groups: readonly SceneGroup[],
+  plateOffsets?: Readonly<Record<string, readonly [number, number]>>,
 ): KuraSceneMeta {
   const groupIndex = new Map(groups.map((g, i) => [g.id, i]));
   const objectIndex = new Map(objects.map((o, i) => [o.id, i]));
@@ -92,6 +99,7 @@ export function buildKuraSceneMeta(
       isHole: isNegative(o),
       ...(o.materialPreset ? { materialPreset: o.materialPreset } : {}),
       ...(o.groupRef !== undefined && groupIndex.has(o.groupRef) ? { group: groupIndex.get(o.groupRef) } : {}),
+      ...(plateOffsets?.[o.id] ? { plateOffset: [plateOffsets[o.id][0], plateOffsets[o.id][1]] as [number, number] } : {}),
       vertices: Math.floor(o.mesh.positions.length / 3),
       triangles: Math.floor(o.mesh.indices.length / 3),
     })),
@@ -111,6 +119,13 @@ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'obj
 const text = (v: unknown): string | null => (typeof v === 'string' ? v.slice(0, MAX_TEXT) : null);
 const finiteVec3 = (v: unknown): Vec3 | null =>
   Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n)) ? [v[0], v[1], v[2]] : null;
+/** Desplazamiento de placa: dos números finitos dentro del límite de coordenadas; cualquier otra cosa invalida. */
+const plateOffsetOf = (v: unknown): [number, number] | null | undefined => {
+  if (v === undefined) return undefined;
+  if (!Array.isArray(v) || v.length !== 2) return null;
+  const ok = v.every((n) => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= TRANSFORM_LIMITS.maxAbsCoordinate);
+  return ok ? [v[0], v[1]] : null;
+};
 const count = (v: unknown): number | null => (Number.isInteger(v) && (v as number) >= 0 ? (v as number) : null);
 const indexIn = (v: unknown, size: number): number | undefined =>
   Number.isInteger(v) && (v as number) >= 0 && (v as number) < size ? (v as number) : undefined;
@@ -147,7 +162,9 @@ export function parseKuraSceneMeta(raw: string, maxObjects: number): KuraSceneMe
     const scale = finiteVec3(entry.scale);
     const vertices = count(entry.vertices);
     const triangles = count(entry.triangles);
+    const plateOffset = plateOffsetOf(entry.plateOffset);
     if (!objectId || seenIds.has(objectId) || !position || !rotation || !scale || vertices === null || triangles === null) return null;
+    if (plateOffset === null) return null;
     if (scale.some((s) => s === 0)) return null;
     seenIds.add(objectId);
     const group = indexIn(entry.group, groupCount);
@@ -164,6 +181,7 @@ export function parseKuraSceneMeta(raw: string, maxObjects: number): KuraSceneMe
       isHole: entry.isHole === true,
       ...(materialPreset ? { materialPreset } : {}),
       ...(group !== undefined ? { group } : {}),
+      ...(plateOffset ? { plateOffset } : {}),
       vertices,
       triangles,
     });
