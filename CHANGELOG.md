@@ -10,6 +10,11 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Logo e ícono nuevos.** La K de piedra con geometría púrpura y turquesa en la cabecera, la pantalla de carga, «Acerca de», la pestaña del navegador y la app de escritorio.
+- **Acerca de.** La frase del sentido del proyecto cambia al azar entre tres cada vez que se abre.
+- **Modelos muy pesados.** Al importar un modelo de más de 1 millón de triángulos, el aviso ofrece simplificarlo y apunta a la pieza más pesada.
+- **Orientar para imprimir, corregido.** Una pieza de varios cuerpos ya no recibe como recomendada una pose en que solo toca la cama con aristas; esas opciones aparecen marcadas «Sin base» y al final.
+- **Foco al abrir una acción.** En los paneles de acción el foco cae en el primer campo, no en «Volver».
 - **Nombre nuevo: Kurra Studio.** Cambia el nombre visible; los proyectos `.kura`, las herramientas `kura_*` y lo guardado en el navegador siguen igual.
 - **Simplificar para equipos con poca memoria.** Tres modos: «sin pérdida» (se aplica solo si la forma no cambia), por tolerancia y por cantidad de triángulos. Muestra un informe de antes y después con avisos si se cerró un agujero, cambió el volumen o la forma se desvió. El valor por defecto baja de 0,15 a 0,01 mm, porque el anterior deformaba.
 - **Barra flotante.** Al seleccionar un objeto aparece junto a él una barra con color, duplicar, ocultar, bloquear, eliminar y «Más»; sigue al objeto, se oculta al arrastrar y se puede apagar en Ajustes. Cambiar el color o bloquear varios objetos deja un solo paso de deshacer.
