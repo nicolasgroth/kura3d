@@ -25,6 +25,7 @@ import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 import { userAxisLabel } from '../../core/scene/displayAxes';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
+import { undoToastAction } from '../toastActionState';
 
 export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, pushHistory, runExclusive, rejectWhileLocked, opCtx, assertCurrent, commitChange, runtime, runEngine } = ctx;
@@ -131,10 +132,14 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         await get().initEngine();
         const change = await runEngine('simplify', { obj, request: req });
         assertCurrent([obj]);
-        const report = change.simplify!.report;
-        options.onReport?.(report);
         const lang = get().language;
         const before = obj.stats.triangles;
+        // El motor cuenta los triángulos de la malla ya soldada (sin degenerados): puede diferir en unos pocos de lo
+        // que el usuario ve en el inspector. Informe y avisos usan la misma fuente: la malla real de la escena.
+        const engineReport = change.simplify!.report;
+        const afterReal = engineReport.applied ? (change.patches[0].patch.stats?.triangles ?? engineReport.trianglesAfter) : before;
+        const report = { ...engineReport, trianglesBefore: before, trianglesAfter: afterReal };
+        options.onReport?.(report);
         // Sin reducción o «Sin pérdida» rechazado: no hay paso de historial y el aviso dice por qué.
         if (!report.applied) {
           if (report.warnings.includes('no_reduction')) {
@@ -159,7 +164,11 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         const checks = report.warnings.filter((w) => w !== 'no_reduction');
         const result = tr('realesMotor.simplifyResult', { before: counts.before, after: counts.tris, delta });
         const text = checks.length > 0 ? `${result} ${tr('simplify.toast.check', { reasons: simplifyWarningText(lang, report, checks) })}` : result;
-        get().addToast(text, outcome === 'marginal' || checks.length > 0 ? 'info' : 'success');
+        get().addToast(
+          text,
+          outcome === 'marginal' || checks.length > 0 ? 'info' : 'success',
+          undoToastAction(tr('toast.undo'), () => get().past, () => get().undo()),
+        );
         return true;
       });
     },

@@ -26,6 +26,7 @@ La torreta son dos piezas: el **poste**, un sólido que se une a tu pieza, y el 
 | Tornillo directo | M2,5 | Ø 2,1 | 7 | Ø 6,25 × 9 |
 | Tornillo directo | **M3** (por defecto) | Ø 2,5 | 8 | Ø 7,5 × 10 |
 | Tornillo directo | M4 | Ø 3,4 | 10 | Ø 10 × 12 |
+| Tornillo directo | M5 | Ø 4,2 | 12 | Ø 12,5 × 14 |
 | Inserto (largo 3) | M2 | Ø 3,2 | 4 | Ø 5,6 × 6 |
 | Inserto (largo 4) | M2,5 | Ø 3,6 | 5 | Ø 6,25 × 7 |
 | Inserto (largo 5,7) | M3 | Ø 4,0 | 6,7 | Ø 7,5 × 8,7 |

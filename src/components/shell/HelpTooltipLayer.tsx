@@ -26,6 +26,9 @@ const CONTROL = 'button, select, a[href], input, [role="tab"], [role="menuitem"]
 const SHOW_DELAY_HOVER_MS = 350;
 const SHOW_DELAY_FOCUS_MS = 200;
 const HIDE_DELAY_MS = 120;
+/** Teclas con las que una persona mueve el foco (el foco puesto por código no cuenta). */
+const NAV_KEYS = new Set(['Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End']);
+const NAV_KEY_WINDOW_MS = 400;
 const TOOLTIP_ID = 'kura-help-tooltip';
 
 interface Shown {
@@ -57,6 +60,7 @@ export const HelpTooltipLayer: React.FC = () => {
   const showTimer = useRef<number | null>(null);
   const hideTimer = useRef<number | null>(null);
   const shownRef = useRef<Shown | null>(null);
+  const lastNavKeyAt = useRef(-Infinity);
   shownRef.current = shown;
 
   useEffect(() => {
@@ -107,8 +111,12 @@ export const HelpTooltipLayer: React.FC = () => {
     };
     const onFocusIn = (e: FocusEvent) => {
       const el = controlFrom(e.target);
-      // Solo el foco de teclado muestra el tooltip (un clic con el ratón ya pasó por el cursor).
-      if (el && el.matches(':focus-visible')) enter(el, SHOW_DELAY_FOCUS_MS);
+      // Solo el foco de teclado muestra el tooltip (un clic con el ratón ya pasó por el cursor) y solo si la persona
+      // lo movió con una tecla de navegación: el foco puesto por la app al abrir un panel o tras aplicar no lo abre.
+      if (el && el.matches(':focus-visible') && performance.now() - lastNavKeyAt.current < NAV_KEY_WINDOW_MS) enter(el, SHOW_DELAY_FOCUS_MS);
+    };
+    const onNavKey = (e: KeyboardEvent) => {
+      if (NAV_KEYS.has(e.key)) lastNavKeyAt.current = performance.now();
     };
     const onFocusOut = (e: FocusEvent) => {
       const el = controlFrom(e.target);
@@ -125,6 +133,7 @@ export const HelpTooltipLayer: React.FC = () => {
 
     document.addEventListener('pointerover', onOver);
     document.addEventListener('pointerout', onOut);
+    document.addEventListener('keydown', onNavKey, true);
     document.addEventListener('focusin', onFocusIn);
     document.addEventListener('focusout', onFocusOut);
     document.addEventListener('pointerdown', onDown, true);
@@ -133,6 +142,7 @@ export const HelpTooltipLayer: React.FC = () => {
       clearTimers();
       document.removeEventListener('pointerover', onOver);
       document.removeEventListener('pointerout', onOut);
+      document.removeEventListener('keydown', onNavKey, true);
       document.removeEventListener('focusin', onFocusIn);
       document.removeEventListener('focusout', onFocusOut);
       document.removeEventListener('pointerdown', onDown, true);

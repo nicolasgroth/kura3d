@@ -20,6 +20,15 @@ dialog.kura-dialog.kura-dialog-about {
   font-size: 13px;
   line-height: 1.55;
   color: var(--text-primary);
+  /* Zona desplazable propia (enfocable con teclado); el cuerpo del diálogo no se desplaza. */
+  max-height: calc(100dvh - 190px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.kura-about:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
 }
 
 .kura-about h3 {

@@ -32,6 +32,8 @@ export interface OrientOptions {
   bed?: OrientBed | null;
   /** Máximo de candidatos del casco convexo que se puntúan (además de la actual y las 6 de ejes). */
   maxHullCandidates?: number;
+  /** Máximo de parches casi coplanares de la malla (piezas orgánicas) que se puntúan. Por defecto 6. */
+  maxPatchCandidates?: number;
   /** Ángulo mínimo de vuelco (grados) para considerar estable un apoyo. Por defecto 10. */
   minTipAngleDeg?: number;
   /** Celdas por lado de la grilla de proyección que aproxima el volumen de soporte. Por defecto 160. */
@@ -54,7 +56,14 @@ export interface OrientWeights {
   noFit: number;
 }
 
-export type OrientSource = 'current' | 'axis' | 'hull';
+/** `patch`: parche de caras casi coplanares de la malla con contacto real (piezas orgánicas). */
+export type OrientSource = 'current' | 'axis' | 'hull' | 'patch';
+
+/**
+ * `ok`: al menos una orientación apoya estable. `noStableBase`: ninguna se sostiene sola (sin caras planas
+ * suficientes en la cama o vuelca): la pieza necesitará soporte, balsa o un corte plano.
+ */
+export type OrientBaseStatus = 'ok' | 'noStableBase';
 
 /** Motivo legible como dato: la interfaz lo traduce con i18n. */
 export type OrientReason =
@@ -117,8 +126,9 @@ export interface OrientAnalysis {
   /** Ordenada de mejor a peor. */
   candidates: OrientCandidate[];
   currentId: string;
-  /** La actual ya está entre las mejores (equivalente a la primera). */
+  /** La actual ya está entre las mejores (equivalente a la primera) y tiene base real; sin base nunca es «la mejor». */
   currentIsBest: boolean;
+  baseStatus: OrientBaseStatus;
   /** Todas las orientaciones son equivalentes (p. ej. una esfera): no hay ganadora. */
   allEquivalent: boolean;
   overhangAngleDeg: number;

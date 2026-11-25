@@ -13,7 +13,7 @@
 import React, { useCallback, useEffect, useId, useMemo } from 'react';
 import { invalidKeyholeFields, KEYHOLE_RANGES, keyholeDepthMm, sameKeyhole, type KeyholeNumericField } from '../../core/addons/keyhole';
 import { BUILTIN_KEYHOLE_PRESETS, KEYHOLE_DEFAULTS } from '../../core/addons/keyholePresets';
-import { formatMm } from '../../core/addons/screwBossPresets';
+import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { t, type TranslationKey } from '../../i18n';
 import { keyholePanel, useKeyholePanel, useKeyholePresets } from '../../store/keyholePanel';
 import { keyholeWarnings } from '../../store/keyholeWarnings';
@@ -42,7 +42,7 @@ const KeyholeForm: React.FC = () => {
   const blocked = invalid.blocked || cross.length > 0;
   useEffect(() => keyholePanel.setBlocked(blocked), [blocked]);
   useEffect(() => () => keyholePanel.setBlocked(false), []);
-  const fmt = (n: number) => formatMm(n, language);
+  const fmt = (n: number) => formatLocaleNumber(language, n);
   return (
     <div className="kura-magnet-form">
       <div className="kura-magnet-grid">
@@ -86,14 +86,16 @@ export const KeyholePanel: React.FC = () => {
   const builtins = useMemo(() => BUILTIN_KEYHOLE_PRESETS.map((p) => ({
     id: p.id,
     values: p.values,
-    label: t(language, 'keyhole.preset.screw', { size: formatMm(p.values.screwMm, language), head: formatMm(p.values.headDiameterMm, language) }),
+    label: t(language, 'keyhole.preset.screw', { size: formatLocaleNumber(language, p.values.screwMm), head: formatLocaleNumber(language, p.values.headDiameterMm) }),
   })), [language]);
-  const fmt = (n: number) => n.toLocaleString(language, { maximumFractionDigits: 1 });
+  // El formateador común de la app (mismos decimales y sin separador de miles que el resto de las medidas).
+  const fmt = (n: number) => formatLocaleNumber(language, n, { maxFrac: 1 });
   return (
     <AddonPanelShell
       prefix="keyhole"
       open={open}
       onClose={close}
+      placeAt={keyholePanel.placeAt}
       blocked={blocked}
       warnings={report ? keyholeWarnings(report, language) : []}
       lastOk={report && Number.isFinite(report.wallBehindMm) ? t(language, 'keyhole.lastOk', { wall: fmt(report.wallBehindMm) }) : null}

@@ -123,14 +123,6 @@ const MENU_IDEAS_TABLE = {
     '导入内容合计 {tris} 个三角形,超过一百万:可能运行缓慢。可以简化最重的那个零件。',
   ],
   'import.heavy.action': ['Simplificar…', 'Simplify…', 'Vereinfachen…', 'Simplifier…', 'सरल करें…', '简化…'],
-  'toast.simplifyPanelOpened': [
-    'Elige el modo y pulsa Simplificar',
-    'Choose the mode and press Simplify',
-    'Wähle den Modus und drücke Vereinfachen',
-    'Choisis le mode et appuie sur Simplifier',
-    'मोड चुनें और सरल करें दबाएँ',
-    '选择模式并点击简化',
-  ],
 } as const satisfies Record<string, Row>;
 
 type MenuIdeasKey = keyof typeof MENU_IDEAS_TABLE;

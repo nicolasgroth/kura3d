@@ -1,7 +1,7 @@
 /**
  * @file src/core/addons/screwBossPresets.ts
  * @description Tabla de medidas incluida de la torreta para tornillo (valores típicos, POR VERIFICAR con una
- * impresión de prueba): tornillo directo al plástico M2, M2,5, M3 (por defecto) y M4 con agujero piloto ≈ 0,85 ×
+ * impresión de prueba): tornillo directo al plástico M2, M2,5, M3 (por defecto), M4 y M5 con agujero piloto ≈ 0,85 ×
  * nominal, e insertos roscados M2 a M5 con el diámetro y el largo típicos del inserto (profundidad = largo + 1 mm).
  * Alto del poste por defecto = profundidad + 2 mm; diámetro exterior = 2,5 × nominal (mínimo agujero + 2 × 1,2 mm).
  * También el tipo de preajuste de usuario y el texto del resumen.
@@ -52,6 +52,7 @@ export const BUILTIN_SCREW_BOSS_PRESETS: readonly BuiltinScrewBossPreset[] = [
   screw(2.5, 2.1, 7),
   screw(3, 2.5, 8),
   screw(4, 3.4, 10),
+  screw(5, 4.2, 12),
   insert(2, 3.2, 3),
   insert(2.5, 3.6, 4),
   insert(3, 4.0, 5.7),

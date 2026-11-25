@@ -24,6 +24,7 @@ export interface MenuIdeasSliceState {
   /** Pide el archivo (STL/3MF/OBJ/PLY) con el selector del sistema y reemplaza la malla de `id`. */
   replaceObjectMeshFromDialog: (id: string) => Promise<boolean>;
   /** Petición de abrir el panel Simplificar para un objeto (la atiende `useSimplifyRequestRelay`). */
-  simplifyRequest: { id: string; n: number; at: number } | null;
-  requestSimplifyPanel: (id: string) => void;
+  simplifyRequest: { id: string; n: number; at: number; mode?: 'target' } | null;
+  /** `mode: 'target'` abre el panel ya en «Por cantidad» con un objetivo sugerido (aviso de malla pesada). */
+  requestSimplifyPanel: (id: string, options?: { mode?: 'target' }) => void;
 }

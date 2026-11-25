@@ -35,4 +35,11 @@ describe('MiddleEllipsisName', () => {
     expect(tail.endsWith('(3)')).toBe(true);
     expect(container.querySelector('.kura-mid-head')?.textContent).not.toMatch(/\(3\)/);
   });
+
+  it('el código de pieza de una división (A1, B2…) queda siempre al final y completo', () => {
+    expect(splitNameTail('Linterna Delux Carcasa Exterior · A1')).toEqual(['Linterna Delux Carcasa Exterior', ' · A1']);
+    expect(splitNameTail('Caja · B12')).toEqual(['Caja', ' · B12']);
+    const { container } = render(<MiddleEllipsisName name="Linterna Delux Carcasa Exterior · A1" />);
+    expect(container.querySelector('.kura-mid-tail')?.textContent).toBe(' · A1');
+  });
 });

@@ -34,6 +34,11 @@ describe('Suavizar: error de daño', () => {
     useKuraStore.setState({ objects: [obj], selectedIds: [obj.id] });
   });
 
+  it('el mensaje de daño solo sugiere proteger las aristas si no lo están', async () => {
+    expect(await store().applySmooth('sph', { ...SMOOTH_UI_DEFAULTS, keepSharpEdges: false })).toBe(false);
+    expect(store().smoothSession!.error).toBe('No se pudo suavizar sin dañar la malla: baja la intensidad o protege las aristas.');
+  });
+
   it('al aplicar: error junto a los controles, sin toast de error y sin tocar la escena', async () => {
     const before = byId('sph')!;
     const past = store().past.length;
@@ -41,7 +46,7 @@ describe('Suavizar: error de daño', () => {
     const session = store().smoothSession!;
     expect(session.status).toBe('error');
     expect(session.errorCode).toBe('SMOOTH_DAMAGE');
-    expect(session.error).toBe('No se pudo suavizar sin dañar la malla: baja la intensidad o protege las aristas.');
+    expect(session.error).toBe('No se pudo suavizar sin dañar la malla: baja la intensidad o las pasadas, o limita la zona.');
     expect(byId('sph')).toBe(before);
     expect(store().past.length).toBe(past);
     expect(store().toasts.filter((x) => x.kind === 'error')).toHaveLength(0);

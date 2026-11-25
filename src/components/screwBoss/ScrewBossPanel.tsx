@@ -14,10 +14,11 @@ import { sameScrewBoss } from '../../core/addons/screwBoss';
 import { builtinScrewBossPresetsOf, formatMm, metricLabel } from '../../core/addons/screwBossPresets';
 import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
-import { closeScrewBossPanel, setScrewBossParams, useScrewBossPanel, useScrewBossPresets } from '../../store/screwBossPanel';
+import { closeScrewBossPanel, placeScrewBossAt, setScrewBossParams, useScrewBossPanel, useScrewBossPresets } from '../../store/screwBossPanel';
 import { screwBossWarnings, screwBossWarningText } from '../../store/screwBossWarnings';
 import { useKuraStore } from '../../store/useKuraStore';
 import { AddonPresetPicker } from '../addons/AddonPresetPicker';
+import { AddonFacePlacer } from '../addons/AddonFacePlacer';
 import { MagnetFoldStrip } from '../magnet/MagnetFoldStrip';
 import { OperationPanel } from '../OperationPanel';
 import { ScrewBossForm } from './ScrewBossForm';
@@ -77,6 +78,7 @@ export const ScrewBossPanel: React.FC = () => {
         </p>
         <ScrewBossPresetPicker />
         <ScrewBossForm />
+        <AddonFacePlacer testId="turret" place={placeScrewBossAt} blocked={blocked} />
         {report && warnings.length === 0 && (
           <p className="kura-magnet-wall" role="status" data-testid="turret-last">
             {t(language, 'turret.lastOk', { wall: fmt(report.wallMm) })}

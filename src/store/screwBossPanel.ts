@@ -20,6 +20,7 @@ import { createHoverChannel, type AddonHover } from './addonHover';
 import { hasMagnetHost } from './magnetPanel';
 import { screwBossWarnings, screwBossWarningShortText } from './screwBossWarnings';
 import { createUserPresetsStore } from './userPresets';
+import { createPlacementToast, placeKeepingSelection } from './addonPlacement';
 import { useKuraStore } from './useKuraStore';
 
 export interface ScrewBossPanelState {
@@ -74,33 +75,27 @@ export function isScrewBossPlacementActive(): boolean {
   return useScrewBossPanel.getState().open;
 }
 
-/** Aviso de la última colocación que sigue a la vista (para reemplazarlo en la siguiente). */
-let lastPlacementToastId: string | null = null;
+/** Aviso de la colocación: el nuevo reemplaza al de la anterior. */
+const showPlacementToast = createPlacementToast();
 
 /** Coloca una torreta con las medidas vigentes sobre la cara indicada, sin cambiar la selección. */
 export async function placeScrewBossAt(hostId: string, point: Vec3, normal: Vec3): Promise<boolean> {
   const { params, blocked } = useScrewBossPanel.getState();
   if (blocked) return false;
   const store = useKuraStore.getState();
-  const selection = store.selectedIds;
-  const result = await store.addScrewBoss({ hostId, params, point, normal, silent: true });
+  // Colocar no cambia lo que estaba seleccionado (salvo que el usuario lo cambie mientras corre el Worker).
+  const result = await placeKeepingSelection(() => store.addScrewBoss({ hostId, params, point, normal, silent: true }), (r) => r.post.id);
   const after = useKuraStore.getState();
-  if (after.selectedIds !== selection && (after.selectedIds.length !== selection.length || after.selectedIds.some((id, i) => id !== selection[i]))) {
-    useKuraStore.setState({ selectedIds: selection });
-  }
   if (!result) return false;
   const [warning] = screwBossWarnings(result.report, after.language);
   const placed = t(after.language, 'turret.placed', { name: result.post.name });
-  const previous = lastPlacementToastId;
-  if (previous) useKuraStore.setState((s) => ({ toasts: s.toasts.filter((x) => x.id !== previous) }));
-  const before = new Set(useKuraStore.getState().toasts.map((x) => x.id));
-  after.addToast(warning ? `${placed} ${screwBossWarningShortText(warning, after.language)}` : placed, warning ? 'info' : 'success');
-  lastPlacementToastId = useKuraStore.getState().toasts.find((x) => !before.has(x.id))?.id ?? null;
+  showPlacementToast(warning ? `${placed} ${screwBossWarningShortText(warning, after.language)}` : placed, warning ? 'info' : 'success');
   useScrewBossPanel.setState({ lastReport: result.report, lastObjectId: result.post.id });
   return true;
 }
 
-// El informe de la última colocación solo vale mientras esa torreta exista (deshacer o borrar lo descarta).
+// El informe de la última colocación solo vale mientras esa torreta exista (deshacer o borrar lo descarta). El panel
+// es un único módulo de vida de la app: la suscripción no se cancela a propósito.
 useKuraStore.subscribe((state) => {
   const { lastObjectId } = useScrewBossPanel.getState();
   if (lastObjectId && !state.objects.some((o) => o.id === lastObjectId)) useScrewBossPanel.setState({ lastReport: null, lastObjectId: null });

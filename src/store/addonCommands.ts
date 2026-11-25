@@ -32,7 +32,7 @@ export const ADDON_HANDLERS = {
     const host = resolveTarget(get(), p, { unlocked: true, keys: ADDON_HOST_KEYS });
     if (!isSolid(host)) throw new CommandError('precondition', 'magnet.needSolid');
     const { params, placement } = parseMagnetPocketCommand(p);
-    const at = resolveAddonPlacement(host, placement);
+    const at = resolveAddonPlacement(host, placement, params.sizeMm / 2);
     let blocked: AddonBlockReason | null = null;
     const made = await get().addMagnetPocket({ hostId: host.id, params, ...at, onBlocked: (reason) => { blocked = reason; } });
     if (blocked) throw addonBlockedError(blocked);
@@ -44,7 +44,7 @@ export const ADDON_HANDLERS = {
     const host = resolveTarget(get(), p, { unlocked: true, keys: ADDON_HOST_KEYS });
     if (!isSolid(host)) throw new CommandError('precondition', 'turret.needSolid');
     const { params, placement } = parseScrewBossCommand(p);
-    const at = resolveAddonPlacement(host, placement);
+    const at = resolveAddonPlacement(host, placement, params.outerDiameterMm / 2);
     let blocked: AddonBlockReason | null = null;
     const made = await get().addScrewBoss({ hostId: host.id, params, ...at, onBlocked: (reason) => { blocked = reason; } });
     if (blocked) throw addonBlockedError(blocked);

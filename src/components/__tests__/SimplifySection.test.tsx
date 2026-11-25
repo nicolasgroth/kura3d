@@ -12,11 +12,15 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { uvSphere } from '../../engine/__tests__/smoothFixtures';
+import { OPERATION_RANGES } from '../../engine/operationLimits';
 import type { SimplifyReport, SimplifyRequest } from '../../engine/simplify';
 import { buildSceneObject } from '../../core/scene/sceneObjects';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { SimplifySection } from '../inspector/SimplifySection';
+import { SIMPLIFY_HEAVY_TARGET_TRIANGLES, suggestHeavyTarget } from '../inspector/simplifyPanelRequest';
+import { SimplifyEntryButton } from '../inspector/SimplifyEntryButton';
+import { SimplifyReportView } from '../inspector/SimplifyReportView';
 import { useInvalidFields } from '../useInvalidFields';
 import type { SceneObject } from '../../types/kura';
 
@@ -80,5 +84,54 @@ describe('Simplificar con modos (panel)', () => {
     expect(codes).toEqual(['genus_changed', 'volume_changed', 'deviation_high']);
     expect(report.textContent).toContain(t('es', 'simplify.warn.genus_changed', { before: 1, after: 0 }));
     expect(report.getAttribute('role')).toBe('status');
+  });
+
+  it('la tolerancia acepta en la interfaz el mismo rango que el motor y MCP (una sola fuente)', async () => {
+    await mount();
+    fireEvent.change(screen.getByLabelText(t('es', 'simplify.mode')), { target: { value: 'tolerance' } });
+    const field = screen.getByLabelText(t('es', 'inspector.pro.simplifyTol')) as HTMLInputElement;
+    const typeAndBlur = (text: string) => {
+      fireEvent.focus(field);
+      fireEvent.change(field, { target: { value: text } });
+      fireEvent.blur(field);
+    };
+    typeAndBlur('20');
+    expect(field.getAttribute('aria-invalid')).not.toBe('true');
+    typeAndBlur(String(OPERATION_RANGES.simplify.toleranceMm.max + 1));
+    expect(field.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('abierto desde el aviso de malla pesada: «Por cantidad» con objetivo sugerido y el foco en el campo', async () => {
+    const mesh = uvSphere(10, 32, 16);
+    const obj = buildSceneObject({ id: 'sph', name: 'Esfera', source: 'imported', mesh });
+    useKuraStore.setState({ objects: [obj], selectedIds: [obj.id], language: 'es', busyOperation: null, toasts: [], past: [], future: [] });
+    store().requestSimplifyPanel(obj.id, { mode: 'target' });
+    render(<Harness id={obj.id} />);
+    const select = screen.getByLabelText(t('es', 'simplify.mode')) as HTMLSelectElement;
+    expect(select.value).toBe('target');
+    const field = (await screen.findByLabelText(t('es', 'simplify.target.count'))) as HTMLInputElement;
+    await waitFor(() => expect(document.activeElement).toBe(field));
+    expect(field.value.replace(/\D/g, '')).toBe(String(suggestHeavyTarget(obj.stats.triangles, OPERATION_RANGES.simplify.targetTriangles.min)));
+    useKuraStore.setState({ simplifyRequest: null });
+  });
+
+  it('el objetivo sugerido queda bajo el millón y nunca sube la malla', () => {
+    expect(SIMPLIFY_HEAVY_TARGET_TRIANGLES).toBeLessThan(1_000_000);
+    expect(suggestHeavyTarget(2_375_160, 100)).toBe(SIMPLIFY_HEAVY_TARGET_TRIANGLES);
+    expect(suggestHeavyTarget(600_000, 100)).toBe(300_000);
+    expect(suggestHeavyTarget(50, 100)).toBe(100);
+  });
+
+  it('«Simplificar…» del inspector pide el mismo panel; el botón principal y la ayuda de tolerancia se ven', async () => {
+    const obj = await mount();
+    useKuraStore.setState({ simplifyRequest: null });
+    const { unmount } = render(<SimplifyEntryButton id={obj.id} />);
+    fireEvent.click(screen.getByTestId('simplify-entry'));
+    expect(store().simplifyRequest?.id).toBe(obj.id);
+    expect(store().simplifyRequest?.mode).toBeUndefined();
+    unmount();
+    expect(screen.getByRole('button', { name: t('es', 'inspector.pro.simplifyBtn') }).className).toContain('kura-btn-primary');
+    render(<SimplifyReportView report={REPORT} language="es" />);
+    expect(screen.getByText(t('es', 'simplify.report.toleranceHelp'))).toBeTruthy();
   });
 });

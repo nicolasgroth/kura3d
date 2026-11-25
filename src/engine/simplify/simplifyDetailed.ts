@@ -17,6 +17,7 @@ import { EngineError, requireOperationRange } from '../engineErrors';
 import { OPERATION_RANGES } from '../operationLimits';
 import { normalizeMeshToBed } from '../primitives';
 import { manifoldMesh, sampledDeviation } from './simplifyDeviation';
+import { bodyGenus } from './simplifyGenus';
 import { searchTargetTolerance, throwIfAborted } from './simplifyTarget';
 import {
   LOSSLESS_LIMITS,
@@ -80,13 +81,15 @@ export async function simplifyMeshDetailed(
   try {
     original = meshDataToManifold(wasm, obj.mesh, registry?.colorToId, obj.color);
     const trianglesBefore = original.numTri();
+    // Género por cuerpo: `Manifold.genus()` da 1 − n + Σ gᵢ con n cuerpos (dos esferas: −1).
+    const genusBefore = bodyGenus(original);
     let toleranceMm: number;
     let target: SimplifyTargetInfo | undefined;
     if (request.mode === 'target') {
       const wanted = resolveTargetTriangles(request, trianglesBefore);
       const minTol = LOSSLESS_LIMITS.toleranceMm / maxScale;
       const maxTol = R.toleranceMm.max / maxScale;
-      const found = searchTargetTolerance(original, wanted, minTol, maxTol, opts);
+      const found = searchTargetTolerance(original, wanted, minTol, maxTol, opts, { genus: genusBefore, of: bodyGenus });
       simplified = found.best;
       toleranceMm = found.toleranceLocal * maxScale;
       target = found.info;
@@ -109,8 +112,8 @@ export async function simplifyMeshDetailed(
       ? { maxMm: 0, samples: 0 }
       : sampledDeviation(manifoldMesh(original), manifoldMesh(simplified), SIMPLIFY_WARN_LIMITS.maxDeviationSamples);
     const measured = {
-      genusBefore: original.genus(),
-      genusAfter: simplified.genus(),
+      genusBefore,
+      genusAfter: bodyGenus(simplified),
       volumeChangePct: volumeBeforeMm3 > 0 ? (100 * (volumeAfterMm3 - volumeBeforeMm3)) / volumeBeforeMm3 : 0,
       maxDeviationMm: deviation.maxMm * maxScale,
     };

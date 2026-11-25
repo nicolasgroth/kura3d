@@ -129,9 +129,9 @@ export function createMenuIdeasSlice(ctx: StoreContext): Partial<KuraStoreState>
       return get().replaceObjectMesh(id, picked);
     },
 
-    requestSimplifyPanel: (id) => {
+    requestSimplifyPanel: (id, options) => {
       requestCounter += 1;
-      set({ simplifyRequest: { id, n: requestCounter, at: Date.now() } });
+      set({ simplifyRequest: { id, n: requestCounter, at: Date.now(), ...(options?.mode ? { mode: options.mode } : {}) } });
     },
   };
 }

@@ -28,11 +28,19 @@ export const heightText = (language: LanguageCode, mm: number): string => format
 /** Motivos que se muestran: «Es como está ahora» ya lo dice la insignia «Actual». */
 export const visibleReasons = (c: OrientCandidate): OrientReason[] => c.reasons.filter((r) => r.key !== 'current');
 
-/** Id de la orientación recomendada, o `null` si no hay (la actual ya es la mejor o todas son equivalentes). */
-export function recommendedId(a: OrientAnalysis): string | null {
+/**
+ * Id de la orientación recomendada, o `null` si no hay: la actual ya es la mejor, todas son equivalentes o
+ * la primera es la actual (sin base, no se la llama «la mejor» pero tampoco hay otra que ganarle).
+ */
+export function recommendedId(a: Pick<OrientAnalysis, 'allEquivalent' | 'currentIsBest' | 'candidates' | 'currentId'>): string | null {
   if (a.allEquivalent || a.currentIsBest) return null;
-  return a.candidates[0]?.id ?? null;
+  const first = a.candidates[0]?.id ?? null;
+  return first === a.currentId ? null : first;
 }
+
+/** Aviso «sin base estable» aparte del resumen (cuando el resumen ya lo dice, no se repite). */
+export const showBaseWarning = (a: OrientAnalysis): boolean =>
+  a.baseStatus === 'noStableBase' && (a.allEquivalent || a.currentIsBest || recommendedId(a) !== null);
 
 export type OrientBadge = 'current' | 'recommended';
 
@@ -73,5 +81,6 @@ export function optionLabel(language: LanguageCode, a: OrientAnalysis, c: Orient
 export function summaryText(language: LanguageCode, a: OrientAnalysis): string {
   if (a.allEquivalent) return t(language, 'orient.ui.summary.equivalent');
   if (a.currentIsBest) return t(language, 'orient.ui.summary.best');
+  if (recommendedId(a) === null) return t(language, 'orient.ui.noStableBase');
   return t(language, 'orient.ui.summary.better', { count: a.candidates.length });
 }

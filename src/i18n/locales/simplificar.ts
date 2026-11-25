@@ -60,6 +60,19 @@ const SIMPLIFICAR = {
   'simplify.toast.noChange': { es: 'No se pudo reducir: la malla sigue con {tris} triángulos.', en: 'Could not reduce: the mesh still has {tris} triangles.', de: 'Keine Reduktion möglich: Das Netz hat weiter {tris} Dreiecke.', fr: 'Réduction impossible : le maillage garde {tris} triangles.', hi: 'घटाया नहीं जा सका: मेश में अब भी {tris} त्रिकोण हैं।', zh: '无法减少：网格仍有 {tris} 个三角形。' },
   'simplify.toast.losslessRejected': { es: 'Sin pérdida no se aplicó: {reasons}', en: 'Lossless was not applied: {reasons}', de: 'Verlustfrei wurde nicht angewendet: {reasons}', fr: 'Sans perte n’a pas été appliqué : {reasons}', hi: 'बिना नुकसान लागू नहीं हुआ: {reasons}', zh: '无损未应用：{reasons}' },
   'simplify.toast.check': { es: 'Revisa el resultado: {reasons}', en: 'Check the result: {reasons}', de: 'Prüfe das Ergebnis: {reasons}', fr: 'Vérifiez le résultat : {reasons}', hi: 'परिणाम जाँचें: {reasons}', zh: '请检查结果：{reasons}' },
+  'simplify.entry': { es: 'Simplificar…', en: 'Simplify…', de: 'Vereinfachen…', fr: 'Simplifier…', hi: 'सरल करें…', zh: '简化…' },
+  'simplify.entry.tip': { es: 'Abre el panel para reducir los triángulos de esta pieza', en: 'Opens the panel to reduce this part’s triangles', de: 'Öffnet das Panel, um die Dreiecke dieses Teils zu reduzieren', fr: 'Ouvre le panneau pour réduire les triangles de cette pièce', hi: 'इस भाग के त्रिकोण घटाने के लिए पैनल खोलता है', zh: '打开面板以减少此零件的三角形' },
+  'simplify.section.simplify': { es: 'Simplificar', en: 'Simplify', de: 'Vereinfachen', fr: 'Simplifier', hi: 'सरल करें', zh: '简化' },
+  'simplify.section.refine': { es: 'Refinar malla', en: 'Refine mesh', de: 'Netz verfeinern', fr: 'Affiner le maillage', hi: 'मेश परिष्कृत करें', zh: '细化网格' },
+  'simplify.section.hull': { es: 'Envolvente convexa', en: 'Convex hull', de: 'Konvexe Hülle', fr: 'Enveloppe convexe', hi: 'उत्तल आवरण', zh: '凸包' },
+  'simplify.report.toleranceHelp': {
+    es: 'La tolerancia es el límite que se le pide al algoritmo; la desviación es lo que realmente se midió.',
+    en: 'The tolerance is the limit given to the algorithm; the deviation is what was actually measured.',
+    de: 'Die Toleranz ist die dem Algorithmus vorgegebene Grenze; die Abweichung ist der tatsächlich gemessene Wert.',
+    fr: 'La tolérance est la limite demandée à l’algorithme ; l’écart est ce qui a réellement été mesuré.',
+    hi: 'सहनशीलता एल्गोरिद्म को दी गई सीमा है; विचलन वह है जो वास्तव में मापा गया।',
+    zh: '公差是给算法设定的上限；偏差是实际测得的值。',
+  },
 } as const satisfies Record<string, Row>;
 
 type Lang = keyof Row;

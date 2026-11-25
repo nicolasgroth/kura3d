@@ -197,9 +197,10 @@ export function assignToPlate(scene: PlateScene, ids: readonly string[], plateId
  * Escena con placas coherentes (al abrir un archivo, tras deshacer o tras cualquier cambio): sin ids repetidos,
  * nombres recortados, a lo sumo `MAX_PLATES`, y cada `plateRef` apunta a una placa existente. Una referencia
  * rota pasa a la placa por defecto (la pieza nunca se pierde); sin placas, se quita. Devuelve la misma escena
- * (mismas referencias) si no había nada que corregir.
+ * (mismas referencias) si no había nada que corregir. `nameFor(n)` da el nombre de una placa sin nombre (por
+ * defecto, neutro e independiente del idioma: el códec no lo conoce).
  */
-export function reconcilePlates(scene: PlateScene): PlateScene {
+export function reconcilePlates(scene: PlateScene, nameFor: (n: number) => string = (n) => `#${n}`): PlateScene {
   const seen = new Set<string>();
   let platesChanged = scene.plates.length > MAX_PLATES;
   const plates: ScenePlate[] = [];
@@ -209,7 +210,8 @@ export function reconcilePlates(scene: PlateScene): PlateScene {
       continue;
     }
     seen.add(p.id);
-    const name = p.name.slice(0, MAX_PLATE_NAME);
+    // Un nombre vacío (que `createPlate` rechazaría) se repara con uno por defecto: la placa no se pierde.
+    const name = p.name.trim() ? p.name.slice(0, MAX_PLATE_NAME) : nameFor(plates.length + 1);
     if (name !== p.name) platesChanged = true;
     plates.push(name === p.name ? p : { ...p, name });
   }

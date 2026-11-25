@@ -59,6 +59,28 @@ afterEach(() => {
   document.documentElement.removeAttribute('data-kura-egg');
 });
 
+describe('Acerca de: desplazamiento y frase', () => {
+  it('la zona desplazable es enfocable con nombre, y cada apertura empieza arriba con una frase nueva', () => {
+    const picks = [0, 0.99];
+    let n = 0;
+    const random = () => picks[Math.min(n++, picks.length - 1)];
+    const { rerender } = render(<AboutDialog open={false} onClose={() => undefined} random={random} />);
+    const region = document.querySelector('.kura-about') as HTMLElement;
+    expect(region.tabIndex).toBe(0);
+    expect(region.getAttribute('role')).toBe('region');
+    expect(region.getAttribute('aria-label')).toBe(t('es', 'about.scrollRegion', { name: NAME }));
+    region.scrollTop = 120;
+    const quote = () => region.querySelector('.kura-about-quote')!.textContent;
+    const first = quote();
+    rerender(<AboutDialog open onClose={() => undefined} random={random} />);
+    expect(region.scrollTop).toBe(0);
+    const second = quote();
+    rerender(<AboutDialog open onClose={() => undefined} random={random} />);
+    expect(quote()).toBe(second);
+    expect(second).not.toBe(first);
+  });
+});
+
 describe('Acerca de: entradas', () => {
   it('se abre desde la pestaña Acerca de de Ajustes', async () => {
     const user = userEvent.setup();

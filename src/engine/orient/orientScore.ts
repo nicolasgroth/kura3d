@@ -12,6 +12,7 @@
  * @license MIT
  */
 
+import { hasRealBase } from './orientMeasure';
 import type { OrientMeasures, OrientReason, OrientWeights } from './orientTypes';
 
 export const ORIENT_WEIGHTS: Readonly<OrientWeights> = Object.freeze({
@@ -27,8 +28,8 @@ export interface ScoreContext {
   maxDimensionMm: number;
   /** Mayor contacto entre candidatos; si es despreciable, el término de base no cuenta. */
   maxContactMm2: number;
-  /** Contacto mínimo (mm²) para que haya base real; bajo eso solo tocan aristas o vértices. */
-  minBaseMm2: number;
+  /** Contacto mínimo (mm²) para que haya base real (`hasRealBase`); bajo eso solo tocan aristas o vértices. */
+  minSupportAreaMm2: number;
 }
 
 /** Despreciable: soporte o voladizo por debajo de 0,1 % de la pieza. */
@@ -91,7 +92,7 @@ export function reasonsFor(
   }
   if (flags.equivalentToBest) out.push({ key: 'equivalentToBest' });
   // Sin base real el ángulo de vuelco no dice nada útil: el motivo es que no hay caras apoyadas.
-  if (m.contactAreaMm2 < ctx.minBaseMm2) out.push({ key: 'noBase' });
+  if (!hasRealBase(m.contactAreaMm2, ctx.minSupportAreaMm2)) out.push({ key: 'noBase' });
   else if (!m.stable) out.push({ key: 'unstable', params: { tipAngleDeg: Math.round(m.tipAngleDeg * 10) / 10 } });
   if (m.fitsBed === false) out.push({ key: 'doesNotFit' });
   return out;

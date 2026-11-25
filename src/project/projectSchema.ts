@@ -6,6 +6,7 @@
  * @license MIT
  */
 
+import { BRAND } from '../brand';
 import { TRANSFORM_LIMITS } from '../engine/operationLimits';
 import { EDGE_SCOPES, EDGE_STYLES, TEXT_ALIGN_OPTIONS } from '../engine/primitiveLimits';
 import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
@@ -46,9 +47,9 @@ export class ProjectCodecError extends Error {
   /** Causa técnica opcional (campo u objeto que no pasó la validación). */
   constructor(public readonly code: 'invalid' | 'unsupported' | 'too-large', public readonly detail?: string) {
     super({
-      invalid: 'Invalid or damaged Kurra Studio project.',
-      unsupported: 'Unsupported Kurra Studio project version.',
-      'too-large': 'Kurra Studio project exceeds the supported size.',
+      invalid: `Invalid or damaged ${BRAND.name} project.`,
+      unsupported: `Unsupported ${BRAND.name} project version.`,
+      'too-large': `${BRAND.name} project exceeds the supported size.`,
     }[code]);
     this.name = 'ProjectCodecError';
   }
