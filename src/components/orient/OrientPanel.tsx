@@ -54,6 +54,9 @@ export const OrientPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => 
   const keepHintId = useId();
   const angle = parseOrientAngle(angleText);
   const lastAngle = useRef<number>(ORIENT_ANGLE_RANGE.default);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  // Se aplicó una orientación y falta el análisis nuevo: la lista recalculada parte en «Actual», no en una sugerencia.
+  const justApplied = useRef(false);
 
   // Al abrir (y al cambiar de pieza) calcula; al salir cierra el análisis y la vista previa.
   useEffect(() => {
@@ -65,9 +68,19 @@ export const OrientPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => 
 
   // Un análisis nuevo parte con la recomendada elegida (si la hay) y su vista previa.
   useEffect(() => {
-    const next = analysis ? recommendedId(analysis) : null;
+    const wasApplied = justApplied.current && analysis !== null;
+    if (wasApplied) justApplied.current = false;
+    // Tras aplicar nada distinto de la actual queda elegido: un segundo Enter no puede revertir.
+    const next = !analysis ? null : wasApplied ? analysis.currentId : recommendedId(analysis);
     setChosenId(next);
-    setPreview(next);
+    setPreview(wasApplied ? null : next);
+    if (wasApplied && next) {
+      // El foco sigue en la opción aplicada (ahora «Actual»), no cae al documento.
+      const active = document.activeElement;
+      if (!active || active === document.body || rootRef.current?.contains(active)) {
+        rootRef.current?.querySelector<HTMLElement>(`[data-candidate="${CSS.escape(next)}"]`)?.focus();
+      }
+    }
   }, [analysis, setPreview]);
 
   const recalc = (value: number) => {
@@ -88,7 +101,10 @@ export const OrientPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => 
   };
   const apply = (id: string) => {
     if (!analysis || id === analysis.currentId || running || busy) return;
-    void applyOrient(id);
+    justApplied.current = true;
+    void applyOrient(id).then((ok) => {
+      if (!ok) justApplied.current = false;
+    });
   };
   // Al salir de la lista (cursor o foco) vuelve la vista previa de la opción elegida.
   const previewFromList = (id: string | null) => setPreview(id ?? chosenId);
@@ -97,7 +113,7 @@ export const OrientPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => 
   const currentPreview = Boolean(overhang && overhang.triangles.length > 0);
 
   return (
-    <div className="kura-orient" data-testid="orient-panel">
+    <div className="kura-orient" data-testid="orient-panel" ref={rootRef}>
       <div className="kura-orient-field">
         <label className="kura-field-label" htmlFor={angleId}>{t(language, 'orient.ui.angle')}</label>
         <input
