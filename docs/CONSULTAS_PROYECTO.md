@@ -11,8 +11,11 @@ Ninguna detiene el trabajo.
 ### 1. Prueba de los 3MF en OrcaSlicer
 Postergada por decisión tuya; sigue autorizada. Se hace contigo presente cuando me avises.
 
-### 2. Nombre nuevo: ¿cómo se escribe exactamente? (24-nov, noche)
-Dijiste por voz «Curra con 2R, 3D», por la palabra mapuche para piedra. El dictado ya había escrito «Cura 3D» por Kura3D, así que no sé si la primera letra es K o C. Opciones: **Kurra3D** (conserva la K del nombre actual; es la que asumo), **Curra3D**, o con espacio («Kurra 3D»). El cambio de lo visible es mecánico y lo hago apenas confirmes; no lo hice de noche para no renombrar con una grafía equivocada. Antes de fijarlo conviene buscar si el nombre ya existe en otro producto de impresión 3D (lo reviso y te cuento).
+### 2. Cambio de nombre a Kurra3D: lo que te toca a ti
+El nombre nuevo es **Kurra3D** (confirmado el 24-nov). Esta noche cambio lo visible: marca, títulos, logo si lleva texto, documentación y README. Dos cosas quedan para ti o para que me las pidas expresamente, porque son ajustes de tu cuenta o rompen compatibilidad:
+- **Renombrar el repositorio en GitHub** (hoy `nicolasgroth/kura3d`). Es un ajuste de tu cuenta: lo haces tú en Settings → General → Repository name, o me dices «renómbralo» y lo hago con `gh repo rename`. GitHub redirige la dirección vieja, y después actualizo el remoto local.
+- **Lo interno** se queda como está por ahora: extensión `.kura` de los proyectos, herramientas `kura_*` del servidor MCP, formato `kura.recipe/1`, claves guardadas en el navegador (`kura3d-*`), clases CSS y el identificador de la app de escritorio. Cambiarlos rompe proyectos guardados y configuraciones de quien ya use el MCP. ¿Los dejamos así (recomendado, «kura» sigue siendo la raíz de la palabra) o planificamos una migración?
+- Busqué «Kurra3D» y «Kurra 3D» en la web y no apareció ningún producto con ese nombre (búsqueda rápida, no es una revisión de marcas registradas). Lo más cercano por sonido son Cura, el laminador de UltiMaker, y Kirra, una app de minería.
 
 ### 3. Placas y vista armada: tres decisiones (diseño en `docs/diseno/PLACAS_Y_ARMADO.md`)
 1. ¿La vista armada permite mover y girar piezas, o es solo para mirar? Recomendación: que permita editar.
