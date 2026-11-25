@@ -35,10 +35,16 @@ const sub = (p: ArrayLike<number>, i: number, q: Vec3): Vec3 => [p[i] - q[0], p[
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
-/** Triángulo que contiene el punto (el más cercano a su plano entre los que lo contienen); −1 si ninguno. */
-function containingTriangle(p: ArrayLike<number>, idx: ArrayLike<number>, point: Vec3): number {
+/**
+ * Triángulo que contiene el punto (el más cercano a su plano entre los candidatos que lo contienen); −1 si ninguno.
+ * `candidates` limita la búsqueda a esos triángulos (índice de triángulo); sin él recorre la malla completa.
+ */
+function containingTriangle(p: ArrayLike<number>, idx: ArrayLike<number>, point: Vec3, candidates?: ArrayLike<number>): number {
   let best = -1, bestDist = Infinity;
-  for (let t = 0; t + 2 < idx.length; t += 3) {
+  const count = candidates ? candidates.length : Math.floor(idx.length / 3);
+  for (let j = 0; j < count; j++) {
+    const tri = candidates ? candidates[j] : j;
+    const t = tri * 3;
     const a: Vec3 = [p[idx[t] * 3], p[idx[t] * 3 + 1], p[idx[t] * 3 + 2]];
     const e1 = sub(p, idx[t + 1] * 3, a), e2 = sub(p, idx[t + 2] * 3, a);
     const n = cross(e1, e2);
@@ -48,9 +54,26 @@ function containingTriangle(p: ArrayLike<number>, idx: ArrayLike<number>, point:
     const dist = Math.abs(dot(w, n)) / Math.sqrt(n2);
     if (dist >= bestDist) continue;
     const u = dot(cross(w, e2), n) / n2, v = dot(cross(e1, w), n) / n2;
-    if (u >= -1e-6 && v >= -1e-6 && u + v <= 1 + 1e-6) { best = t / 3; bestDist = dist; }
+    if (u >= -1e-6 && v >= -1e-6 && u + v <= 1 + 1e-6) { best = tri; bestDist = dist; }
   }
   return best;
+}
+
+/**
+ * Respaldo sin `hitFace`: busca el triángulo que contiene el punto con la grilla de baricentros, en cajas cada vez
+ * mayores alrededor del punto (un triángulo que lo contiene tiene su baricentro a lo sumo a una arista de él). Para
+ * en la primera caja que lo encuentra; si ninguna lo encuentra, la última cubre toda la grilla, igual que recorrer
+ * la malla. Con capas superpuestas a distancias parecidas gana la más cercana de entre las vecinas de la caja.
+ */
+function containingTriangleIndexed(mesh: Mesh, point: Vec3): number {
+  const grid = centroidGridOf(mesh);
+  const span = Math.max(grid.dims[0], grid.dims[1], grid.dims[2]) * grid.cell;
+  for (let reach = grid.cell * 2; ; reach *= 4) {
+    const covers = reach >= span * 2;
+    const box = (sign: number) => [0, 1, 2].map((k) => point[k] + sign * (covers ? span * 2 + Math.abs(point[k] - grid.origin[k]) : reach));
+    const found = containingTriangle(mesh.positions, mesh.indices, point, trianglesNearBox(grid, box(-1), box(1)));
+    if (found >= 0 || covers) return found;
+  }
 }
 
 /** El triángulo del raycast, si es válido (existe y no es degenerado); si no, −1. */
@@ -77,7 +100,7 @@ export function averagedSurfaceNormal(
   if (!(fl > 0) || !(radius > 0)) return null;
   const f: Vec3 = [faceNormal[0] / fl, faceNormal[1] / fl, faceNormal[2] / fl];
   let hit = validHit(p, idx, hitFace);
-  if (hit < 0) hit = containingTriangle(p, idx, point);
+  if (hit < 0) hit = containingTriangleIndexed(mesh, point);
   if (hit < 0) return null;
   const corners = [0, 1, 2].map((k) => idx[hit * 3 + k] * 3);
   const verts = corners.map((i) => [p[i], p[i + 1], p[i + 2]] as Vec3);
