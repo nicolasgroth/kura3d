@@ -16,6 +16,7 @@ export const OPNOTES_ES = {
   'progress.op.split_colors': 'Separar por colores',
   'engineWarning.SPLIT_COLOR_ABSORBED': 'Colores sin volumen propio ({count}): {colors}. Otro color ocupó su capa; prueba con menos profundidad.',
   'engineWarning.SIMPLIFY_VOLUME_CHANGED': 'Simplificar cambió el volumen un {pct} %. Revisa la forma o usa una tolerancia menor.',
+  'engineWarning.SIMPLIFY_GENUS_CHANGED': 'Simplificar cambió los agujeros pasantes: antes {before}, ahora {after}. Un agujero se cerró o se abrió; revisa la pieza o usa una tolerancia menor.',
 };
 
 export const OPNOTES_EN = {
@@ -26,6 +27,7 @@ export const OPNOTES_EN = {
   'progress.op.split_colors': 'Split by colors',
   'engineWarning.SPLIT_COLOR_ABSORBED': 'Colors left without volume ({count}): {colors}. Another color took their layer; try a smaller depth.',
   'engineWarning.SIMPLIFY_VOLUME_CHANGED': 'Simplify changed the volume by {pct}%. Check the shape or use a smaller tolerance.',
+  'engineWarning.SIMPLIFY_GENUS_CHANGED': 'Simplify changed the through holes: {before} before, {after} now. A hole closed or opened; check the part or use a smaller tolerance.',
 };
 
 export const OPNOTES_DE = {
@@ -36,6 +38,7 @@ export const OPNOTES_DE = {
   'progress.op.split_colors': 'Nach Farben trennen',
   'engineWarning.SPLIT_COLOR_ABSORBED': 'Farben ohne eigenes Volumen ({count}): {colors}. Eine andere Farbe hat ihre Schicht belegt; versuche eine geringere Tiefe.',
   'engineWarning.SIMPLIFY_VOLUME_CHANGED': 'Vereinfachen hat das Volumen um {pct} % verändert. Prüfe die Form oder nutze eine kleinere Toleranz.',
+  'engineWarning.SIMPLIFY_GENUS_CHANGED': 'Vereinfachen hat die Durchgangslöcher verändert: vorher {before}, jetzt {after}. Ein Loch hat sich geschlossen oder geöffnet; prüfe das Teil oder nutze eine kleinere Toleranz.',
 };
 
 export const OPNOTES_FR = {
@@ -46,6 +49,7 @@ export const OPNOTES_FR = {
   'progress.op.split_colors': 'Séparer par couleurs',
   'engineWarning.SPLIT_COLOR_ABSORBED': 'Couleurs sans volume propre ({count}) : {colors}. Une autre couleur a pris leur couche ; essaie une profondeur plus faible.',
   'engineWarning.SIMPLIFY_VOLUME_CHANGED': 'La simplification a changé le volume de {pct} %. Vérifie la forme ou utilise une tolérance plus faible.',
+  'engineWarning.SIMPLIFY_GENUS_CHANGED': 'La simplification a changé les trous traversants : {before} avant, {after} maintenant. Un trou s’est fermé ou ouvert ; vérifie la pièce ou utilise une tolérance plus faible.',
 };
 
 export const OPNOTES_HI = {
@@ -56,6 +60,7 @@ export const OPNOTES_HI = {
   'progress.op.split_colors': 'रंगों से अलग करें',
   'engineWarning.SPLIT_COLOR_ABSORBED': 'बिना अपने आयतन वाले रंग ({count}): {colors}। किसी दूसरे रंग ने उनकी परत ले ली; कम गहराई आज़माएँ।',
   'engineWarning.SIMPLIFY_VOLUME_CHANGED': 'सरल करने से आयतन {pct}% बदल गया। आकार जाँचें या कम सहनशीलता इस्तेमाल करें।',
+  'engineWarning.SIMPLIFY_GENUS_CHANGED': 'सरल करने से आर-पार छेद बदल गए: पहले {before}, अब {after}। कोई छेद बंद हुआ या खुला; भाग जाँचें या कम सहनशीलता इस्तेमाल करें।',
 };
 
 export const OPNOTES_ZH = {
@@ -66,4 +71,5 @@ export const OPNOTES_ZH = {
   'progress.op.split_colors': '按颜色拆分',
   'engineWarning.SPLIT_COLOR_ABSORBED': '没有自身体积的颜色（{count}）：{colors}。其他颜色占用了它们的层；请尝试更小的深度。',
   'engineWarning.SIMPLIFY_VOLUME_CHANGED': '简化使体积变化了 {pct}%。请检查形状或使用更小的公差。',
+  'engineWarning.SIMPLIFY_GENUS_CHANGED': '简化改变了通孔数量:之前 {before},现在 {after}。有孔被封闭或打开;请检查零件或使用更小的公差。',
 };

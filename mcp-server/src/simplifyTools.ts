@@ -27,7 +27,9 @@ export function registerSimplifyTools(server: Pick<McpServer, 'registerTool'>, c
         LOSSLESS_LIMITS.maxDeviationMm + ' mm; "tolerance" (default) uses toleranceMm (default ' + OD.simplify.toleranceMm +
         ' mm; the tolerance does NOT bound the real deviation); "target" searches the tolerance (bisection, capped iterations ' +
         'and time) that leaves targetTriangles or targetPercent of the current triangles, and returns what it reached if it ' +
-        'cannot. Returns the report: applied, triangles before/after, volume change %, genus before/after, maxDeviationMm ' +
+        'cannot; if the closest result loses through holes, it prefers the best one that keeps them within ' +
+        Math.round(SWL.genusSlackRel * 100) + ' % above the target (target.genusPreserved). Genus is summed per body. If ' +
+        'the applied result changes the genus, warnings carries SIMPLIFY_GENUS_CHANGED (same channel as SIMPLIFY_VOLUME_CHANGED). Returns the report: applied, triangles before/after, volume change %, genus before/after, maxDeviationMm ' +
         '(sampled, a lower bound), checks (genus_changed, volume_changed > ' + SWL.volumePct + ' %, deviation_high > ' +
         SWL.deviationMm + ' mm, target_not_reached, no_reduction) and rejectedBy (lossless). applied=false leaves the object untouched.',
       inputSchema: {

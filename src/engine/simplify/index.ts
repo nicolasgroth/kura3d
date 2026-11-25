@@ -7,5 +7,6 @@
  */
 
 export * from './simplifyTypes';
+export { bodyGenus } from './simplifyGenus';
 export { simplifyMeshDetailed, resolveTargetTriangles, type SimplifyDetailedResult } from './simplifyDetailed';
 export { sampledDeviation, manifoldMesh, bvhOf, maxDistanceTo, type SampledDeviation } from './simplifyDeviation';
