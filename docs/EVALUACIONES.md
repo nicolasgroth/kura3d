@@ -758,3 +758,30 @@ Sobre `main` 60d89e3. Tres evaluadores Opus independientes, sin ver notas previa
 
 Consumo (modelo · duración · tokens): usabilidad (Opus · ~30 min), funcional (Opus · 10 min · 186 k), código (Opus · 5 min · 191 k), cuelgue de Orientar (Sonnet · 27 min · 114 k), observaciones menores (Sonnet · 22 min · 215 k), placas P1 (Opus · 23 min · 223 k), placas P3 (Opus · 24 min · 228 k), cancelación suave (Opus · 13 min · 132 k).
 
+## 25-nov-2026 · Evaluación a ciegas del lote del 25-nov (ronda 2)
+
+Sobre `main` ab1a21c / 2ae7d14, tras las correcciones de la ronda 1. Tres evaluadores Opus nuevos, sin ver notas previas. Sin bloqueos duros declarados, pero funcional marcó como «bloqueo a decidir» la exportación desde la placa 2. **Usabilidad y código alcanzan el mínimo global; funcional no (81).**
+
+| Funcionalidad | Usabilidad R1 → R2 | Código R1 → R2 | Funcional R1 → R2 |
+|---|---|---|---|
+| Suavizar malla | 74 → 88 | 89 → 86 | 72 → 86 |
+| Orientar para imprimir | 80 → 84 | 89 → 86 | 78 → 87 |
+| Simplificar por modos | 72 → 85 | 88 → 88 | 82 → 68 |
+| Imanes como unión del corte | 76 → 80 | 87 → 86 | 85 → 91 |
+| Torreta para tornillo | 82 → 87 | 85 → (agregados 80) | 84 → 90 |
+| Colgar en el muro y paso de cable | 80 → 86 | 84 → (agregados 80) | 88 → 87 |
+| Barra flotante | 80 → 88 | 86 → 87 | — |
+| Placas | — → 86 | 87 → 88 | — → 60 |
+| «Acerca de» | 86 → 92 | 90 → — | — |
+| Herramientas MCP | — | — | 84 → 84 |
+| Motor de cálculo compartido | — | 85 → 84 | — |
+| **Global** | **78 → 85** | **87 → 86** | **82 → 81** |
+
+**Funcional (81).** Subió todo lo corregido; lo que baja la nota es nuevo: (1) exportar desde la placa 2 sale desplazado (vértices en x≈298 con cama de 256 mm), y una pieza movida sin arrastrar no cambia de placa; (2) «Simplificar por cantidad» deja aplicado un resultado destructivo con solo un aviso (placa de 3 mm que queda de 1 mm; toro que pierde el agujero y el 99 % del volumen). Menores: fragmentos de menos de 1 mm³ al dividir, ojo de cerradura que se coloca aunque la cabeza no quede retenida, huella en diagonal tras orientar un cubo girado, faltan herramientas MCP de ojo, cable y placas.
+
+**Usabilidad (85).** Con dos modelos reales (477 mil y 1,2 millones de triángulos). Bajo 85: Orientar (84: el panel dice «ya es la mejor» mientras la región de estado anuncia que la recomendada necesita menos soporte; ofrece cinco alternativas «Sin base» y Enter aplica una sin confirmar) e imanes del corte (80: el atajo Mayús+C escribe una «C» en el primer campo de Dividir; el resumen promete 8 uniones con conector y salen 4; dos piezas sin código). Transversales: dos estilos de panel, «Mover a placa» a tres niveles, Simplificar sin progreso real, uso apretado a 1024 px.
+
+**Código (86).** Bajo 85: agregados (80: la normal de superficie recorre la malla completa tres veces en cada movimiento del cursor) y motor compartido (84: la cancelación suave puede reiniciar un cálculo legítimo). Además: el `plateRef` de los acompañantes al mover entre placas, carreras en Suavizar, una malla sin liberar en Simplificar, borrador de recuperación sin los topes del códec.
+
+Consumo (modelo · duración · tokens): usabilidad (Opus · 13 min), funcional (Opus · 16 min · 227 k), código (Opus · 7 min · 187 k), QA25-C placas (Sonnet · 50 min · 201 k), QA25-D (Sonnet · 75 min · 246 k), correcciones de código R1 (Opus · 27 min · 223 k), Suavizar en modelos reales (Opus · 33 min · 238 k), funcionales (Opus · 51 min · 319 k), usabilidad A (Sonnet · 20 min · 212 k), usabilidad B (Sonnet · 19 min · 192 k), placas P2 (Sonnet · 21 min · 346 k), correcciones de placas (Opus · 27 min · 244 k), Dividir con placas (Opus · 24 min · 232 k), menores (Sonnet · 25 min · 218 k), guías y capturas (Sonnet · 23 min · 221 k).
+
