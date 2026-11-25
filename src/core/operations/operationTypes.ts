@@ -9,6 +9,7 @@
  */
 
 import { computeMeshStats, computeWorldStats, EngineError, type EngineWarning } from '../../engine';
+import type { SimplifyReport } from '../../engine/simplify';
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
 import type { ResultNaming } from '../scene/resultNames';
 import { buildSceneObject, type BuildObjectParams, type ObjectBuildPolicy } from '../scene/sceneObjects';
@@ -34,6 +35,8 @@ export interface SimplifyOutcome {
   volumeAfterMm3: number;
   /** Cambio de volumen en % (positivo = creció). */
   volumeChangePct: number;
+  /** Informe completo (modo, género, desviación muestreada, avisos tipados). */
+  report: SimplifyReport;
 }
 
 /** Dependencias de una operación: política de construcción, IDs y nombres. */

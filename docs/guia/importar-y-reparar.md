@@ -38,7 +38,15 @@ En el resumen del objeto (panel derecho), la sección *Geometría y métricas* m
 
 ## Simplificar
 
-Un modelo con millones de triángulos pesa y tarda. Selecciónalo y elige **Acciones › Simplificar…** (o **Simplificar…** en el resumen del objeto): el panel derecho muestra solo *Optimizar / Remallar*. Elige la **Tolerancia** (en mm) y pulsa **Simplificar**. A mayor tolerancia, menos triángulos y menos detalle. Con más de 300 mil triángulos Kurra3D Studio te lo sugiere en un aviso.
+Un modelo con millones de triángulos pesa y tarda, sobre todo en un computador con poca memoria. Selecciónalo y elige **Acciones › Simplificar…** (o **Simplificar…** en el resumen del objeto): el panel derecho muestra solo *Optimizar / Remallar*. Con más de 300 mil triángulos Kurra3D Studio te lo sugiere en un aviso.
+
+Elige el **Modo de simplificar** y pulsa **Simplificar**:
+
+- **Sin pérdida** (el que viene marcado): quita solo los triángulos que sobran, como los de las caras planas. Se aplica únicamente si la pieza conserva sus agujeros pasantes, el volumen cambia menos de 0,01 % y la superficie no se mueve más de 0,01 mm. Si no pasa, el objeto queda intacto y el aviso dice por qué. En piezas orgánicas (figuras, escaneos) casi no hay nada que quitar sin perder forma.
+- **Por tolerancia**: cuánto puede moverse la superficie, en mm (por defecto 0,01 mm). A mayor tolerancia, menos triángulos y más pérdida de forma: cilindros con menos lados, letras y redondeos achatados.
+- **Por cantidad**: deja la pieza en un **porcentaje** de sus triángulos o en una cantidad de **triángulos** finales. Kurra3D Studio busca la tolerancia que llega a ese número; si no puede (por ejemplo, un cubo no baja de 12), entrega lo que logró y lo avisa.
+
+Debajo aparece el **Último resultado**: triángulos antes → después, cambio de volumen, agujeros pasantes antes → después, la desviación medida y la tolerancia usada. Si la pieza cambió la cantidad de agujeros, el volumen cambió más de 0,5 % o la superficie se movió más de 0,1 mm, el resultado lo marca: revísalo antes de imprimir. **Deshacer** (Ctrl+Z) vuelve a la malla anterior en un solo paso. La desviación se mide por muestreo: es una cota inferior, no el máximo exacto.
 
 ## Problemas frecuentes
 

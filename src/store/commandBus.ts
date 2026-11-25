@@ -20,6 +20,8 @@ import type { KuraCommandRequest, KuraCommandResponse, SceneObject } from '../ty
 import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { CommandError, type CommandErrorCode } from './commandErrors';
 import { selectExportTargets } from './exportTargets';
+import { simplifyReportToUser } from '../core/bus/simplifySchema';
+import type { SimplifyReport } from '../engine/simplify';
 import * as schema from './commandSchemas';
 import * as groupSchema from './groupCommandSchemas';
 import { parseUpdatePrimitiveParams } from './parametricCommandSchemas';
@@ -322,11 +324,13 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     return { ...report, approximate: true };
   },
 
+  // Devuelve el informe aunque no se aplique (sin reducción o «Sin pérdida» rechazado: `applied: false`).
   simplify_mesh: async (p, { get }, command) => {
-    const { target, toleranceMm } = schema.parseSimplify(get(), p);
-    required(await get().simplifySelectedMesh(target.id, toleranceMm), command);
-    const updated = get().objects.find((o) => o.id === target.id);
-    return updated ? worldStats(updated) : null;
+    const { target, request } = schema.parseSimplify(get(), p);
+    let report: SimplifyReport | null = null;
+    await get().simplifySelectedMesh(target.id, request, { onReport: (r) => { report = r; } });
+    const done = required(report as SimplifyReport | null, command);
+    return { id: target.id, ...simplifyReportToUser(done) };
   },
 
   refine_mesh: async (p, { get }, command) => {

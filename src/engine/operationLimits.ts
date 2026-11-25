@@ -91,6 +91,10 @@ export const OPERATION_RANGES = {
   },
   simplify: {
     toleranceMm: closed(0.01, 100),
+    /** Objetivo por cantidad: triángulos finales (un tetraedro tiene 4). */
+    targetTriangles: int(4, 50_000_000),
+    /** Objetivo por cantidad: % de los triángulos actuales que se conservan. */
+    targetPercent: closed(1, 99),
   },
   /** Separar por colores: capa que toma cada color hacia el interior (`colorSplitSolid.ts`). */
   colorSplit: {
@@ -174,8 +178,14 @@ export const OPERATION_DEFAULTS = {
   printability: { infillPercent: 20, overhangAngleDeg: 45, minWallMm: 0.8 },
   /** Profundidad del color por defecto: unas 2–3 capas de pared, suficiente para que el color se vea. */
   colorSplit: { depthMm: 1 },
-  /** Simplificar avisa (`SIMPLIFY_VOLUME_CHANGED`) cuando el volumen cambia más que este porcentaje. */
-  simplify: { volumeWarnPct: 2 },
+  /**
+   * Simplificar avisa (`SIMPLIFY_VOLUME_CHANGED`) cuando el volumen cambia más que `volumeWarnPct`. Tolerancia por
+   * defecto del modo «Por tolerancia» (interfaz, bus y MCP): 0,01 mm. Medición del 25-nov-2026
+   * (`docs/diseno/FORMAS_SIMPLES.md`): a 0,01 mm, 10 modelos reales quedaron con |ΔV| ≤ 0,23 % y desviación
+   * de 0,007–0,157 mm; a 0,1 mm (cerca del antiguo 0,15) la desviación llegó a 1,48 mm, el volumen a −2,8 % y el
+   * género cambió en 6 de 10. 0,01 es el único valor medido dentro de 0,01–0,02 mm y el mínimo del rango.
+   */
+  simplify: { volumeWarnPct: 2, toleranceMm: 0.01 },
   /** Aviso no bloqueante al importar un modelo con más triángulos que esto (desde ~300 000 la vista y las operaciones ya se sienten lentas; se ofrece Simplificar). */
   heavyMesh: { warnTriangles: 300_000 },
   /**

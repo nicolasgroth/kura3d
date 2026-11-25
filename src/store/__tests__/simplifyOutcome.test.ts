@@ -22,8 +22,12 @@ function clientWithTriangles(tris: (before: number) => number): EngineClient {
     run(ctx, name, args) {
       const promise = runEngineTaskInProcess(ctx, name, args).then((result) => {
         if (name === 'simplify') {
-          const patch = (result as { patches: Array<{ patch: { stats: { triangles: number } } }> }).patches[0].patch;
-          patch.stats = { ...patch.stats, triangles: tris((args as { obj: { stats: { triangles: number } } }).obj.stats.triangles) };
+          // El store lee el recuento del informe; el parche (si hay) se iguala para que la escena calce.
+          const r = result as { patches: Array<{ patch: { stats: { triangles: number } } }>; simplify: { report: { trianglesAfter: number } } };
+          const after = tris((args as { obj: { stats: { triangles: number } } }).obj.stats.triangles);
+          r.simplify.report.trianglesAfter = after;
+          const patch = r.patches[0]?.patch;
+          if (patch) patch.stats = { ...patch.stats, triangles: after };
         }
         return result;
       });
@@ -51,7 +55,8 @@ describe('simplificar: aviso veraz', () => {
     const before = sphere!.stats.triangles;
     setStoreEngineClient(clientWithTriangles((b) => b - 2));
     const count = store().toasts.length;
-    expect(await store().simplifySelectedMesh(sphere!.id, 0.01)).toBe(true);
+    // 0,3 mm sí reduce la esfera (hay parche); el cliente fija el recuento a «casi igual».
+    expect(await store().simplifySelectedMesh(sphere!.id, 0.3)).toBe(true);
     const added = store().toasts.slice(count);
     expect(added.some((x) => x.kind === 'success')).toBe(false);
     const lang = store().language;

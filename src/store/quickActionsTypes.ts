@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import type { SimplifyRequest } from '../engine/simplify';
 import type { PieceShape } from '../core/scene/pieceSizing';
 import type { AlignMode, MaterialPresetId, ObjectRole, PlaneCutOptions, SceneObject, Vec3 } from '../types/kura';
 
@@ -23,7 +24,7 @@ export type RepeatRecord =
   | { kind: 'applyHoles' }
   | { kind: 'planeCut'; options: PlaneCutOptions }
   | { kind: 'addPiece'; shape: PieceShape; mode: PieceMode }
-  | { kind: 'simplify'; toleranceMm: number }
+  | { kind: 'simplify'; toleranceMm: number; request?: SimplifyRequest }
   | { kind: 'color'; color: string }
   | { kind: 'setType'; role: ObjectRole }
   | { kind: 'centerOnBed' }

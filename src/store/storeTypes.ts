@@ -475,7 +475,16 @@ export interface KuraStoreState {
     overhangAngleDeg?: number,
     minWallMm?: number,
   ) => Promise<PrintabilityReport | null>;
-  simplifySelectedMesh: (id: string, toleranceMm: number) => Promise<boolean>;
+  /**
+   * Simplifica con verificación: un número es «Por tolerancia» (mm); si no, la petición con su modo. `true` si se
+   * aplicó (un paso de deshacer). `onReport` recibe el informe aunque no se aplique (sin reducción o «Sin pérdida»
+   * rechazado).
+   */
+  simplifySelectedMesh: (
+    id: string,
+    request: number | engine.SimplifyRequest,
+    options?: { onReport?: (report: engine.SimplifyReport) => void },
+  ) => Promise<boolean>;
   refineSelectedMesh: (
     id: string,
     targetEdgeLengthMm: number,

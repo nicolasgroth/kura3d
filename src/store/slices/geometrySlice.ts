@@ -17,6 +17,8 @@ import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets, touchingHol
 import { withAddonPosts } from '../../core/operations/addonPostMerge';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { classifySimplifyResult } from '../../core/operations/simplifyOutcome';
+import type { SimplifyRequest } from '../../engine/simplify';
+import { simplifyWarningText } from '../../i18n/simplifyWarnings';
 import { formatNumber } from '../../utils/plural';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
@@ -116,31 +118,43 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       });
     },
 
-    simplifySelectedMesh: async (id, toleranceMm) => {
+    simplifySelectedMesh: async (id, request, options = {}) => {
       const obj = editable(id);
       if (!obj) return false;
+      const req: SimplifyRequest = typeof request === 'number' ? { mode: 'tolerance', toleranceMm: request } : request;
       return runExclusive('simplify', false, async () => {
         await get().initEngine();
-        const change = await runEngine('simplify', { obj, toleranceMm });
+        const change = await runEngine('simplify', { obj, request: req });
         assertCurrent([obj]);
+        const report = change.simplify!.report;
+        options.onReport?.(report);
+        const lang = get().language;
         const before = obj.stats.triangles;
-        const tris = change.patches[0].patch.stats!.triangles;
-        const outcome = classifySimplifyResult(before, tris);
-        // Sin reducción no hay paso de historial: el aviso lo dice tal cual.
-        if (outcome === 'none') {
-          get().addToast(tr('toast.simplifyNoChange', { tris: formatNumber(get().language, before) }), 'info');
+        // Sin reducción o «Sin pérdida» rechazado: no hay paso de historial y el aviso dice por qué.
+        if (!report.applied) {
+          if (report.warnings.includes('no_reduction')) {
+            const key = req.mode === 'tolerance' ? 'toast.simplifyNoChange' : 'simplify.toast.noChange';
+            get().addToast(tr(key, { tris: formatNumber(lang, before) }), 'info');
+          } else {
+            get().addToast(tr('simplify.toast.losslessRejected', { reasons: simplifyWarningText(lang, report, report.rejectedBy) }), 'info');
+          }
           return false;
         }
         commitChange(change);
         reportEngineWarnings(change.warnings);
-        const lang = get().language;
+        const tris = change.patches[0].patch.stats?.triangles ?? report.trianglesAfter;
+        const outcome = classifySimplifyResult(before, tris);
         const counts = { before: formatNumber(lang, before), tris: formatNumber(lang, tris) };
         // Menos de 1 % de reducción no se anuncia como éxito.
         if (outcome === 'marginal') get().addToast(tr('toast.simplifyMarginal', counts), 'info');
         // Siempre: triángulos antes -> después y cambio de volumen en % (el aviso de > 2 % sigue aparte).
-        const pct = change.simplify?.volumeChangePct ?? 0;
+        const pct = report.volumeChangePct;
         const delta = new Intl.NumberFormat(lang, { maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(Math.round(pct * 100) / 100);
-        get().addToast(tr('realesMotor.simplifyResult', { before: counts.before, after: counts.tris, delta }), outcome === 'marginal' ? 'info' : 'success');
+        // Avisos de la verificación (género, volumen, desviación, objetivo) en el mismo aviso: deja de ser «éxito».
+        const checks = report.warnings.filter((w) => w !== 'no_reduction');
+        const result = tr('realesMotor.simplifyResult', { before: counts.before, after: counts.tris, delta });
+        const text = checks.length > 0 ? `${result} ${tr('simplify.toast.check', { reasons: simplifyWarningText(lang, report, checks) })}` : result;
+        get().addToast(text, outcome === 'marginal' || checks.length > 0 ? 'info' : 'success');
         return true;
       });
     },

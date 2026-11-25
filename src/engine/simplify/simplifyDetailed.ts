@@ -1,0 +1,148 @@
+/**
+ * @file src/engine/simplify/simplifyDetailed.ts
+ * @description Simplificar con verificación (función pura, corre en el Worker): ejecuta el modo pedido sobre
+ * `Manifold.simplify` («Sin pérdida» a 0,001 mm, «Por tolerancia», «Por cantidad» con bisección) y mide el
+ * resultado contra el original: triángulos, volumen, género y desviación muestreada. Como la tolerancia de Manifold
+ * no acota la desviación real, el informe trae avisos tipados y «Sin pérdida» solo entrega la malla si pasa la
+ * verificación. La tolerancia es en mm de mundo (dividida por la mayor escala en la malla local).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+import type { Manifold } from 'manifold-3d';
+import type { MeshData, SceneObject } from '../../types/kura';
+import { createColorRegistry, initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../manifoldKernel';
+import { EngineError, requireOperationRange } from '../engineErrors';
+import { OPERATION_RANGES } from '../operationLimits';
+import { normalizeMeshToBed } from '../primitives';
+import { manifoldMesh, sampledDeviation } from './simplifyDeviation';
+import { searchTargetTolerance, throwIfAborted } from './simplifyTarget';
+import {
+  LOSSLESS_LIMITS,
+  SIMPLIFY_WARN_LIMITS,
+  type SimplifyReport,
+  type SimplifyRequest,
+  type SimplifyRunOptions,
+  type SimplifyTargetInfo,
+  type SimplifyWarningCode,
+} from './simplifyTypes';
+
+export interface SimplifyDetailedResult {
+  /** Malla simplificada normalizada a cama, o null si no se aplica. */
+  mesh: MeshData | null;
+  report: SimplifyReport;
+}
+
+const R = OPERATION_RANGES.simplify;
+
+/** Triángulos pedidos por «Por cantidad» (`targetTriangles` manda sobre `targetPercent`). */
+export function resolveTargetTriangles(request: Extract<SimplifyRequest, { mode: 'target' }>, before: number): number {
+  if (request.targetTriangles !== undefined) return requireOperationRange('targetTriangles', request.targetTriangles, R.targetTriangles);
+  if (request.targetPercent !== undefined) {
+    const pct = requireOperationRange('targetPercent', request.targetPercent, R.targetPercent);
+    return Math.max(R.targetTriangles.min, Math.round((before * pct) / 100));
+  }
+  throw new EngineError('INVALID_PARAMETER', { name: 'targetTriangles', value: 'undefined', min: R.targetTriangles.min, max: R.targetTriangles.max });
+}
+
+/** Avisos por umbral, comunes a los tres modos. */
+function thresholdWarnings(r: Pick<SimplifyReport, 'genusBefore' | 'genusAfter' | 'volumeChangePct' | 'maxDeviationMm'>,
+  limits: { maxVolumePct: number; maxDeviationMm: number }): SimplifyWarningCode[] {
+  const out: SimplifyWarningCode[] = [];
+  if (r.genusAfter !== r.genusBefore) out.push('genus_changed');
+  if (Math.abs(r.volumeChangePct) > limits.maxVolumePct) out.push('volume_changed');
+  if (r.maxDeviationMm > limits.maxDeviationMm) out.push('deviation_high');
+  return out;
+}
+
+/**
+ * Simplifica `obj` según `request` y verifica el resultado. Lanza `MESH_EMPTY` si la tolerancia vacía la pieza,
+ * `INVALID_PARAMETER`/`OUT_OF_RANGE` con parámetros fuera de rango y `AbortError` si se cancela.
+ */
+export async function simplifyMeshDetailed(
+  obj: SceneObject,
+  request: SimplifyRequest,
+  opts: SimplifyRunOptions = {},
+): Promise<SimplifyDetailedResult> {
+  const now = opts.now ?? (() => performance.now());
+  const t0 = now();
+  const userTol = request.mode === 'tolerance' ? requireOperationRange('toleranceMm', request.toleranceMm, R.toleranceMm) : null;
+  const wasm = await initManifoldEngine();
+  throwIfAborted(opts.signal);
+  const registry = obj.mesh.faceColors?.length
+    ? createColorRegistry(wasm, [{ color: obj.color, faceColors: obj.mesh.faceColors }])
+    : null;
+  // Tolerancia y desviación en mm de mundo: en la malla local se divide / multiplica por la mayor escala.
+  const maxScale = Math.max(...obj.scale.map((s) => Math.abs(s))) || 1;
+  let original: Manifold | null = null;
+  let simplified: Manifold | null = null;
+  try {
+    original = meshDataToManifold(wasm, obj.mesh, registry?.colorToId, obj.color);
+    const trianglesBefore = original.numTri();
+    let toleranceMm: number;
+    let target: SimplifyTargetInfo | undefined;
+    if (request.mode === 'target') {
+      const wanted = resolveTargetTriangles(request, trianglesBefore);
+      const minTol = LOSSLESS_LIMITS.toleranceMm / maxScale;
+      const maxTol = R.toleranceMm.max / maxScale;
+      const found = searchTargetTolerance(original, wanted, minTol, maxTol, opts);
+      simplified = found.best;
+      toleranceMm = found.toleranceLocal * maxScale;
+      target = found.info;
+    } else {
+      toleranceMm = request.mode === 'lossless' ? LOSSLESS_LIMITS.toleranceMm : userTol!;
+      opts.onProgress?.('simplify:1/1');
+      simplified = original.simplify(toleranceMm / maxScale);
+    }
+    // Una tolerancia mayor que la pieza la colapsa: error tipado, el objeto queda intacto.
+    if (simplified.isEmpty() || simplified.numTri() === 0 || simplified.volume() <= 0) {
+      throw new EngineError('MESH_EMPTY', { operation: 'simplify_mesh' });
+    }
+    throwIfAborted(opts.signal);
+    opts.onProgress?.('simplify:verify');
+    const volumeBeforeMm3 = original.volume();
+    const volumeAfterMm3 = simplified.volume();
+    const trianglesAfter = simplified.numTri();
+    const noReduction = !(trianglesAfter < trianglesBefore);
+    const deviation = noReduction
+      ? { maxMm: 0, samples: 0 }
+      : sampledDeviation(manifoldMesh(original), manifoldMesh(simplified), SIMPLIFY_WARN_LIMITS.maxDeviationSamples);
+    const measured = {
+      genusBefore: original.genus(),
+      genusAfter: simplified.genus(),
+      volumeChangePct: volumeBeforeMm3 > 0 ? (100 * (volumeAfterMm3 - volumeBeforeMm3)) / volumeBeforeMm3 : 0,
+      maxDeviationMm: deviation.maxMm * maxScale,
+    };
+    const warnings = noReduction ? [] : thresholdWarnings(measured, { maxVolumePct: SIMPLIFY_WARN_LIMITS.volumePct, maxDeviationMm: SIMPLIFY_WARN_LIMITS.deviationMm });
+    if (noReduction) warnings.push('no_reduction');
+    if (target && !target.reached) warnings.push('target_not_reached');
+    const rejectedBy = request.mode === 'lossless' && !noReduction
+      ? thresholdWarnings(measured, opts.losslessLimits ?? LOSSLESS_LIMITS)
+      : [];
+    // «Sin pérdida» rechazado también se marca en los avisos (con los umbrales de aviso puede no figurar).
+    for (const code of rejectedBy) if (!warnings.includes(code)) warnings.push(code);
+    const applied = !noReduction && rejectedBy.length === 0;
+    const report: SimplifyReport = {
+      mode: request.mode,
+      applied,
+      toleranceMm,
+      trianglesBefore,
+      trianglesAfter,
+      volumeBeforeMm3,
+      volumeAfterMm3,
+      ...measured,
+      deviationSamples: deviation.samples,
+      warnings,
+      rejectedBy,
+      ...(target ? { target } : {}),
+      ms: 0,
+    };
+    const mesh = applied ? normalizeMeshToBed(manifoldToMeshData(simplified, registry?.idToColor)) : null;
+    report.ms = Math.round(now() - t0);
+    return { mesh, report };
+  } finally {
+    original?.delete();
+    simplified?.delete();
+  }
+}

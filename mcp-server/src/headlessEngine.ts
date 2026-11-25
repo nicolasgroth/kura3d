@@ -12,6 +12,8 @@
  * @license MIT
  */
 
+import { parseSimplifyRequest, simplifyReportToUser } from '../../src/core/bus/simplifySchema';
+import type { SimplifyRequest } from '../../src/engine/simplify';
 import * as ops from '../../src/core/operations/index';
 import type { OperationContext, SceneChange } from '../../src/core/operations/index';
 import { parametricStateOf } from '../../src/core/scene/parametric';
@@ -529,18 +531,24 @@ export class KuraHeadlessEngine {
     return { dryRun: false, object: userSummary(obj), ...ops.repairReportToUser(report), note: ENGINE_NOTE };
   }
 
-  /** Decima la malla con `simplifyMesh` del motor (Manifold `simplify`). */
-  async simplifyMesh(
-    objectId: string,
-    toleranceMm: number
-  ): Promise<{ object: SceneObjectSummary; toleranceMm: number; trianglesBefore: number; warnings?: ua.UserWarning[] }> {
+  /**
+   * Simplifica con verificación (`simplify_mesh`): un número es «Por tolerancia»; si no, la petición con su modo.
+   * Misma operación y mismo informe que el bus; si no se aplica (`applied: false`) la escena no cambia.
+   */
+  async simplifyMesh(objectId: string, request: number | SimplifyRequest) {
     const obj = this.requireEditable(objectId);
     const trianglesBefore = obj.stats.triangles;
-    const change = await ops.simplifyObject(this.ctx, obj, toleranceMm);
+    const change = await ops.simplifyObject(this.ctx, obj, request);
     this.apply(change);
-    // Aviso tipado si el volumen cambió más que el umbral (`SIMPLIFY_VOLUME_CHANGED`).
+    // Avisos generales del motor (`SIMPLIFY_VOLUME_CHANGED`, soldadura implícita); los de la verificación van en `checks`.
     const warnings = change.warnings.length > 0 ? { warnings: ua.userWarnings(change.warnings) } : {};
-    return { object: userSummary(obj), toleranceMm, trianglesBefore, ...warnings };
+    return { id: obj.id, ...simplifyReportToUser(change.simplify!.report), object: userSummary(obj), trianglesBefore, ...warnings };
+  }
+
+  /** `simplify_mesh` con los parámetros crudos del comando (mismo esquema que el bus). */
+  simplifyMeshParams(params: Record<string, unknown>) {
+    const objectId = typeof params.objectId === 'string' ? params.objectId : String(params.id ?? '');
+    return this.simplifyMesh(objectId, parseSimplifyRequest(params));
   }
 
   /** Refina (y suaviza opcionalmente) con `refineMesh` del motor. */
