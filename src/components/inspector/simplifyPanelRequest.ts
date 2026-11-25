@@ -1,7 +1,7 @@
 /**
  * @file src/components/inspector/simplifyPanelRequest.ts
  * @description Petición de abrir el panel Simplificar del inspector (desde el aviso de malla pesada): selecciona el
- * objeto, despliega el inspector (o la hoja en pantallas estrechas) y pide enfocar la tolerancia. El store guarda la
+ * objeto, despliega el inspector (o la hoja en pantallas estrechas) y pide enfocar el primer campo del modo. Sin aviso propio: el panel ya se abrió por una acción del usuario. El store guarda la
  * petición (`simplifyRequest`); `useSimplifyRequestRelay` (montado una vez en App) la convierte en esa apertura y el
  * panel la atiende mientras es reciente.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -10,12 +10,19 @@
  */
 
 import { useEffect } from 'react';
-import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OPEN_INSPECTOR_EVENT } from './hollowPanelRequest';
 
 /** Una petición se atiende si es reciente (el panel puede montarse justo después de pedirla). */
 export const SIMPLIFY_REQUEST_FRESH_MS = 1500;
+
+/** Objetivo sugerido de triángulos cuando el aviso de malla pesada abre «Por cantidad» (bajo el millón del aviso). */
+export const SIMPLIFY_HEAVY_TARGET_TRIANGLES = 500_000;
+
+/** Objetivo sugerido para una pieza de `current` triángulos: el de siempre, o la mitad si ya es menor. */
+export function suggestHeavyTarget(current: number, minTriangles: number): number {
+  return Math.max(minTriangles, Math.min(SIMPLIFY_HEAVY_TARGET_TRIANGLES, Math.round(current / 2)));
+}
 
 /** Selecciona `id`, abre el inspector y avisa de qué hacer en el panel Simplificar. */
 export function openSimplifyPanel(id: string): void {
@@ -30,7 +37,6 @@ export function openSimplifyPanel(id: string): void {
   } else if (useKuraStore.getState().rightCollapsed) {
     state.toggleRightInspector();
   }
-  state.addToast(t(state.language, 'toast.simplifyPanelOpened'), 'info');
 }
 
 /** Atiende `simplifyRequest` del store: abre el panel para el objeto pedido. */

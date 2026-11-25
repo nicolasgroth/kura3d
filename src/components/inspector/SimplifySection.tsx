@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { OPERATION_RANGES } from '../../engine/operationLimits';
 import { SIMPLIFY_MODES, type SimplifyMode, type SimplifyReport, type SimplifyRequest } from '../../engine/simplify';
 import { t } from '../../i18n';
@@ -17,6 +17,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import type { useInvalidFields } from '../useInvalidFields';
+import { SIMPLIFY_REQUEST_FRESH_MS, suggestHeavyTarget } from './simplifyPanelRequest';
 import { SimplifyReportView } from './SimplifyReportView';
 import '../../styles/simplifyPanel.css';
 
@@ -40,8 +41,29 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   const [targetCount, setTargetCount] = useState<number | null>(null);
   const [last, setLast] = useState<{ id: string; report: SimplifyReport } | null>(null);
   const uid = useId();
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const openRequest = useKuraStore((s) => s.simplifyRequest);
+  const [focusTick, setFocusTick] = useState(0);
   const current = primary.stats.triangles;
   const count = targetCount ?? Math.max(R.targetTriangles.min, Math.round(current / 2));
+
+  // Abierto desde el aviso de malla pesada: «Por cantidad» con un objetivo sugerido bajo el millón.
+  useEffect(() => {
+    if (!openRequest || openRequest.id !== primary.id || Date.now() - openRequest.at > SIMPLIFY_REQUEST_FRESH_MS) return;
+    if (openRequest.mode === 'target') {
+      setMode('target');
+      setTargetKind('count');
+      setTargetCount(suggestHeavyTarget(primary.stats.triangles, R.targetTriangles.min));
+    }
+    setFocusTick(openRequest.n);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openRequest?.n]);
+
+  // Tras pintar el modo pedido, el foco va al primer campo de ese modo.
+  useEffect(() => {
+    if (focusTick === 0) return;
+    rootRef.current?.querySelector<HTMLElement>('.kura-simplify-focus select, .kura-simplify-focus input')?.focus();
+  }, [focusTick]);
 
   const request = (): SimplifyRequest => {
     if (mode === 'lossless') return { mode };
@@ -54,8 +76,8 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   };
 
   return (
-    <div className="kura-simplify-section">
-      <div className="kura-field-row">
+    <div className="kura-simplify-section" ref={rootRef}>
+      <div className={`kura-field-row${mode === 'lossless' ? ' kura-simplify-focus' : ''}`}>
         <label className="kura-field-label" htmlFor={`${uid}-mode`}>{t(language, 'simplify.mode')}</label>
         <select
           id={`${uid}-mode`}
@@ -70,7 +92,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
       <p id={`${uid}-help`} className="kura-cut-hint">{t(language, `simplify.mode.${mode}.help`)}</p>
 
       {mode === 'tolerance' && (
-        <div className="kura-field-row">
+        <div className="kura-field-row kura-simplify-focus">
           <span className="kura-field-label">{t(language, 'inspector.pro.simplifyTol')}</span>
           <PrecisionNumberInput
             strictRange
@@ -96,7 +118,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
               <option value="count">{t(language, 'simplify.target.kind.count')}</option>
             </select>
           </div>
-          <div className="kura-field-row">
+          <div className="kura-field-row kura-simplify-focus">
             <span className="kura-field-label">
               {t(language, targetKind === 'percent' ? 'simplify.target.percent' : 'simplify.target.count')}
             </span>
@@ -137,7 +159,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
 
       <button
         type="button"
-        className="kura-btn kura-btn-sm"
+        className="kura-btn kura-btn-sm kura-btn-primary kura-simplify-run"
         disabled={busy || primary.locked || invalid.blocked}
         onClick={run}
       >

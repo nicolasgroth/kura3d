@@ -76,7 +76,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
     exportFiles: (args) => ctx.runEngineDetached('export', args),
     reportWarnings: (warnings) => reportEngineWarnings(warnings),
-    openSimplify: (id) => get().requestSimplifyPanel(id),
+    openSimplify: (id) => get().requestSimplifyPanel(id, { mode: 'target' }),
     repairMesh: (id) => get().repairObjectMesh(id),
     repairMeshes: (groups) => get().repairObjectMeshes(groups),
     separateBodies: (id) => void get().splitDisconnectedObject(id),

@@ -423,7 +423,7 @@ export const TRANSLATIONS_ES = {
   'inspector.pro.meshTitle': 'Optimizar / Remallar (Simplificar y Refinar)',
   'inspector.pro.simplifyTol': 'Tolerancia (mm)',
   'inspector.pro.simplifyBtn': 'Simplificar',
-  'inspector.pro.refineEdge': 'Arista obj. (mm)',
+  'inspector.pro.refineEdge': 'Arista objetivo (mm)',
   'inspector.pro.refineSmooth': 'Suavizado orgánico',
   'inspector.pro.refineBtn': 'Refinar',
   'inspector.pro.hull': 'Envolvente convexa',
