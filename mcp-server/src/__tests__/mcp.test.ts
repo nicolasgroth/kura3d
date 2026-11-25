@@ -70,6 +70,11 @@ const EXPECTED_TOOLS = [
   'kura_measure_object',
   'kura_measure_capacity',
   'kura_check_fit',
+  'kura_smooth_mesh',
+  'kura_orient_for_print',
+  'kura_apply_orientation',
+  'kura_add_magnet_pocket',
+  'kura_add_screw_boss',
 ];
 
 /** Token de prueba con longitud suficiente para habilitar el puente (mínimo 16). */
@@ -118,8 +123,8 @@ describe('Kura3D MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(49);
-    expect(toolNames).toHaveLength(49);
+    expect(EXPECTED_TOOLS).toHaveLength(54);
+    expect(toolNames).toHaveLength(54);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }

@@ -16,10 +16,12 @@ import type { InspectorSectionProps } from '../inspector/inspectorTypes';
 import { FitCheckPanel } from '../fitCheck/FitCheckPanel';
 import { HollowPanel } from '../inspector/HollowPanel';
 import { MeshRefinePanel } from '../inspector/MeshRefinePanel';
+import { SmoothPanel } from '../inspector/SmoothPanel';
 import { ModulesPanel } from '../inspector/ModulesPanel';
 import { PrintCheckPanel } from '../inspector/PrintCheckPanel';
 import { StructureDetectionPanel } from '../inspector/StructureDetectionPanel';
 import { TexturePanel } from '../inspector/TexturePanel';
+import { OrientPanel } from '../orient/OrientPanel';
 
 export interface PanelContentEntry {
   /** Título del panel (y del anuncio). */
@@ -34,11 +36,13 @@ const PANEL_CONTENT = new Map<ActionId, PanelContentEntry>([
   ['hollow', { title: 'panel.title.hollow', render: (p) => <HollowPanel {...p} /> }],
   ['simplify', { title: 'panel.title.simplify', render: (p) => <MeshRefinePanel {...p} /> }],
   ['refine', { title: 'panel.title.refine', render: (p) => <MeshRefinePanel {...p} /> }],
+  ['smooth', { title: 'panel.title.smooth', render: (p) => <SmoothPanel {...p} /> }],
   ['texture', { title: 'panel.title.texture', render: (p) => <TexturePanel {...p} /> }],
   ['modules', { title: 'panel.title.modules', render: (p) => <ModulesPanel {...p} /> }],
   ['validate', { title: 'panel.title.validate', render: (p) => <PrintCheckPanel primary={p.primary} /> }],
   ['detect', { title: 'panel.title.detect', render: (p) => <StructureDetectionPanel {...p} /> }],
   ['fitCheck', { title: 'fitCheck.ui.title', renderScene: () => <FitCheckPanel /> }],
+  ['orient', { title: 'orient.ui.title', render: (p) => <OrientPanel primary={p.primary} /> }],
 ]);
 
 /** Registra (o reemplaza) el contenido de una acción del panel. */

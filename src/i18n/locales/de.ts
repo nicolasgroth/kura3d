@@ -18,7 +18,10 @@ import { FLOWUX_DE } from './flowUx';
 import { PREVIEW_DE } from './preview';
 import { SPLITJOINTS_DE } from './splitJoints';
 import { SPLITPREFS_DE } from './splitPrefs';
+import { UNIONES_FIRMES_DE } from './unionesFirmes';
 import { AJUSTAR_DE } from './ajustarImpresora';
+import { SUAVIZAR_DE } from './suavizarMotor';
+import { SUAVIZAR_UI_DE } from './suavizarUi';
 import { SPLITCOUPLING_DE } from './splitCoupling';
 import { A11YUX_DE } from './a11yUx';
 import { UXMOVIL_DE } from './uxMovil';
@@ -41,16 +44,26 @@ import { REALESUI_DE } from './realesUi';
 import { UX6_DE } from './ux6';
 import { RECETAS_DE } from './recetas';
 import { ASISTENTES_DE } from './asistentes';
+import { ACERCA_DE } from './acercaDe';
+import { IMAN_DE } from './iman';
+import { IMAN_UI3_DE } from './imanUi3';
+import { TORRETA_DE } from './torreta';
 import { BORDES_DE } from './bordesPrimitivas';
 import { UX7_DE } from './ux7';
 import { UX8_DE } from './ux8';
 import { UX10_DE } from './ux10';
+import { UX9_DE } from './ux9';
 import { REDISENO_DE } from './rediseno';
 import { PANEL_DE } from './panel';
 import { ENCAJE_UI_DE } from './encajeUi';
+import { ORIENT_UI_DE } from './orientar';
 import { REDISENO3A_DE } from './rediseno3a';
 import { REDISENO3B_DE } from './rediseno3b';
 import { UX8_MENU_DE } from './ux8Menu';
+import { IMANES_UNION_DE } from './imanesUnion';
+import { BARRA_FLOTANTE_DE } from './barraFlotante';
+import { COLGAR_MURO_DE } from './colgarMuro';
+import { PASO_CABLE_DE } from './pasoCable';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -66,7 +79,10 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...PREVIEW_DE,
   ...SPLITJOINTS_DE,
   ...SPLITPREFS_DE,
+  ...UNIONES_FIRMES_DE,
   ...AJUSTAR_DE,
+  ...SUAVIZAR_DE,
+  ...SUAVIZAR_UI_DE,
   ...SPLITCOUPLING_DE,
   ...A11YUX_DE,
   ...UXMOVIL_DE,
@@ -89,16 +105,20 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...UX6_DE,
   ...RECETAS_DE,
   ...ASISTENTES_DE,
+  ...IMAN_DE,
+  ...IMAN_UI3_DE,
   ...BORDES_DE,
   ...UX7_DE,
   ...UX8_DE,
   ...UX10_DE,
+  ...UX9_DE,
   ...REDISENO_DE,
   ...PANEL_DE,
   ...ENCAJE_UI_DE,
   ...REDISENO3A_DE,
   ...REDISENO3B_DE,
   ...UX8_MENU_DE,
+  ...TORRETA_DE,
   // Marca y shell principal
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
   'app.docTitle': 'Kura3D v0.5.0 — Natives 3D-Modellierungsstudio',
@@ -1274,7 +1294,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'Jedes Teil liegt auf seiner Platte (nebeneinander), ohne die Szene zu ändern',
   'export.split.zipDone': '{count} Teile nach {name} exportiert',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'Teil {code} enthält ein loses Fragment von {volume} mm³, das mit keinem Nachbarn verschmolzen werden konnte: es bleibt ein eigenes Teil.',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': 'Teil {code} hat ein loses Fragment von {volume} mm³ aus der Nachbarzelle aufgenommen und ragt {protrusion} mm über die Schnittebene hinaus (beabsichtigt; mit Fragment-Schwelle 0 bleibt es ein eigenes Teil).',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'Teil {code} enthält ein kleines loses Stück von {volume} mm³ vom benachbarten Schnitt und ragt deshalb {protrusion} mm über die Schnittebene hinaus. Das ist Absicht: So entsteht kein winziges Einzelteil.',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': 'Ebenen ({planes}) ohne Schnitt, der Wände nicht der Länge nach teilt; insgesamt: {count}. Die gleichmäßige Position wurde beibehalten.',
   'split.joint.auto': 'Verbinder, wo sie passen; sonst glatter Schnitt zum Kleben',
   'split.joint.lap': 'Randüberlappung (ändert die Form)',
@@ -1378,4 +1398,10 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'bus.error.assemblyNoTarget': 'Gib groupId oder die ids der geteilten Teile an.',
   'bus.error.assemblyNotSplit': 'Diese Teile können nicht neu geprüft werden ({reason}): Sie müssen zu einer geteilten Gruppe mit gespeicherten Verbindungen gehören.',
   'dialog.thread.invalidFields': 'Korrigiere die markierten Felder, bevor du das Gewinde erstellst: Ein nicht numerischer oder außerhalb des Bereichs liegender Wert wird nicht übernommen.',
+  ...ORIENT_UI_DE,
+  ...IMANES_UNION_DE,
+  ...ACERCA_DE,
+  ...BARRA_FLOTANTE_DE,
+  ...COLGAR_MURO_DE,
+  ...PASO_CABLE_DE,
 };

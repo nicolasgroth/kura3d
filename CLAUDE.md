@@ -10,6 +10,7 @@ Estudio de modelado 3D para impresión (web + escritorio). Autor: Nicolás Groth
 - Dependencias: solo código abierto con licencia permisiva (MIT, Apache-2.0, BSD, ISC, MPL-2.0). GPL/AGPL prohibidas; LGPL solo con aprobación explícita del usuario. Antes de escribir algo complejo, busca una librería abierta que lo resuelva.
 - Todo archivo de código lleva cabecera `@file / @description / @author Nicolás Groth <ngroth@gmail.com> / @organization ISGROTH — Innovación y Soluciones GROTH / @license MIT` (en Rust, el estilo `// Autor:` de `src-tauri/src/lib.rs`).
 - Textos de interfaz: siempre por i18n, con paridad en los 6 idiomas (`src/i18n/`).
+- Pantalla mínima soportada: **1024 px** de ancho. El teléfono (390 px) no es requisito: lo que existe para pantallas angostas se conserva, pero no se corrige, no se prueba en QA ni se evalúa.
 - Seguridad primero: nada de secretos en archivos de proyecto, `localStorage` ni logs; el puente MCP solo en loopback con token.
 
 ## Stack y comandos
@@ -62,7 +63,7 @@ Reglas:
 6. El orquestador (no el evaluador) aplica el umbral: mínimo 85 en cada evaluador, meta 90. Bajo el mínimo, se corrige y se reevalúa con un evaluador nuevo. Tras 3 rondas bajo el mínimo, se consulta al usuario.
 7. Al cerrar una versión: evaluación global de todas las funcionalidades activas y, opcionalmente, **evaluador externo** con Codex CLI (`codex exec`, solo lectura) como tercera opinión de otro proveedor.
 8. Cada cierre actualiza `docs/FUNCIONALIDADES.md`, `docs/EVALUACIONES.md` y `CHANGELOG.md`.
-9. **Documentación pública al día.** Es un flujo propio, no un extra: toda funcionalidad que llega a `main` y cambia lo que ve o hace el usuario actualiza en el mismo lote su guía en `docs/guia/` (paso a paso con capturas o animación generadas desde la app web, nunca armadas a mano), el `README.md` si cambia la lista de funciones, y `docs/MCP.md` si cambia una herramienta `kura_*` o las reglas de uso del servidor MCP. Una captura que ya no coincide con la interfaz es un fallo de QA.
+9. **Documentación pública al día.** Es un flujo propio, no un extra: toda funcionalidad que llega a `main` y cambia lo que ve o hace el usuario actualiza en el mismo lote su guía en `docs/guia/` (paso a paso con capturas o animación generadas desde la app web, nunca armadas a mano), el `README.md` (su sección «Qué funciona hoy» lista lo ya implementado y habilitado, y «En camino» lo que falta: se actualiza en cada cierre, nunca se deja para después), y `docs/MCP.md` si cambia una herramienta `kura_*` o las reglas de uso del servidor MCP. Una captura que ya no coincide con la interfaz es un fallo de QA.
 
 Uso de tokens: da a cada agente solo las rutas y el criterio de su lote; pídele informes breves; no lances evaluadores para cambios mecánicos.
 

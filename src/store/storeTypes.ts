@@ -63,13 +63,19 @@ import type {
 import type { ObjectRole } from '../types/kura';
 import type { ExportRequest, ModelImportOptions, ModelImportSource } from './modelIoActions';
 import type { PreviewSliceState } from './slices/previewSlice';
+import type { SmoothSliceState } from './slices/smoothSlice';
 import type { SplitSliceState } from './slices/splitSlice';
 import type { SplitJointsSliceState } from './slices/splitJointsSlice';
 import type { SplitPrefsSliceState } from './slices/splitPrefsSlice';
 import type { FitToBedSliceState } from './slices/fitToBedSlice';
 import type { FitCheckSliceState } from './slices/fitCheckSlice';
+import type { OrientSliceState } from './slices/orientSlice';
 import type { RecipesSliceState } from './slices/recipesSlice';
 import type { BedProfilesSliceState } from './slices/bedProfilesSlice';
+import type { MagnetSliceState } from './slices/magnetSlice';
+import type { ScrewBossSliceState } from './slices/screwBossSlice';
+import type { KeyholeSliceState } from './slices/keyholeSlice';
+import type { CablePassSliceState } from './slices/cablePassSlice';
 
 export type ActiveDialogType =
   | 'svg'
@@ -83,6 +89,7 @@ export type ActiveDialogType =
   | 'export'
   | 'settings'
   | 'shortcuts'
+  | 'about'
   | null;
 export type SettingsTabType = 'appearance' | 'project' | 'ai' | 'mcp' | 'about';
 export type MeasuresFocus = 'unit' | 'printer';
@@ -118,6 +125,8 @@ export interface ToastHistoryEntry {
 
 export interface ToastAction {
   label: string;
+  /** Nombre accesible propio cuando el texto visible es corto y se repetiría en otro control (p. ej. «Deshacer»). */
+  ariaLabel?: string;
   run: () => void;
   /** Objetos sobre los que actúa: si ya no existe ninguno, la acción deja de ser aplicable. */
   targetIds?: readonly string[];
@@ -153,7 +162,7 @@ export interface BusyProgress {
 
 /** Vista previa de operaciones (declarada en `slices/previewSlice.ts`), fusionada al estado. */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface KuraStoreState extends PreviewSliceState, SplitSliceState, SplitJointsSliceState, SplitPrefsSliceState, FitToBedSliceState, FitCheckSliceState, RecipesSliceState, BedProfilesSliceState, QuickActionsSliceState, MenuIdeasSliceState, GroupsSliceState, RepairSliceState, ViewPrefsSliceState {}
+export interface KuraStoreState extends PreviewSliceState, SplitSliceState, SplitJointsSliceState, SplitPrefsSliceState, FitToBedSliceState, FitCheckSliceState, OrientSliceState, RecipesSliceState, BedProfilesSliceState, MagnetSliceState, QuickActionsSliceState, MenuIdeasSliceState, GroupsSliceState, RepairSliceState, ViewPrefsSliceState, SmoothSliceState, ScrewBossSliceState, KeyholeSliceState, CablePassSliceState {}
 
 export interface KuraStoreState {
   // Estado del motor geométrico
@@ -257,6 +266,8 @@ export interface KuraStoreState {
   toasts: ToastMessage[];
   /** Últimos avisos y errores (aunque ya se hayan cerrado o se hayan mostrado dentro de un diálogo). */
   toastHistory: ToastHistoryEntry[];
+  /** Panel «Proyecto» fijado desde la barra superior sin tocar la selección; vale mientras no cambie el contexto. */
+  projectPanelPin: import('./panelContext').ProjectPanelPin | null;
 
   // Acciones de inicialización, densidad y preferencias
   initEngine: () => Promise<void>;
@@ -265,7 +276,7 @@ export interface KuraStoreState {
   toggleZenMode: () => void;
   toggleLeftSidebar: () => void;
   toggleRightInspector: () => void;
-  /** Muestra el contexto «Proyecto» del panel derecho: quita la selección y la acción activa y abre el panel. */
+  /** Muestra el contexto «Proyecto» del panel derecho: lo fija sin quitar la selección ni la herramienta y abre el panel. */
   showProjectPanel: () => void;
   setSectionPlane: (patch: Partial<{ enabled: boolean; heightMm: number }>) => void;
   setShowOverhangs: (show: boolean) => void;
@@ -377,6 +388,15 @@ export interface KuraStoreState {
     patch: Partial<
       Pick<SceneObject, 'name' | 'color' | 'role' | 'referenceOpacity' | 'visible' | 'locked' | 'materialPreset'>
     >,
+  ) => void;
+  /**
+   * Cambia metadatos de varios objetos en UN solo paso de deshacer. `recordHistory: false` aplica sin guardar paso
+   * (vista en vivo mientras se arrastra un selector; el primer cambio del gesto sí lo guarda).
+   */
+  updateObjectsMeta: (
+    ids: readonly string[],
+    patch: Partial<Pick<SceneObject, 'color' | 'visible' | 'locked'>>,
+    recordHistory?: boolean,
   ) => void;
   /**
    * Mayús+H en el visor: oculta la selección (o la muestra si ya estaba toda oculta); sin selección,

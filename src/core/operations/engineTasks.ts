@@ -29,15 +29,22 @@ import type {
   Vec3,
 } from '../../types/kura';
 import { measureObjectCapacity, type CapacityOptions } from '../../engine/measure';
-import { applyHoles, booleanOperation, convexHull } from './csgOperations';
+import { booleanOperation, convexHull } from './csgOperations';
 import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
 import { eraseSphere, hollowObject, projectOnSurface, refineObject, repairObject, simplifyObject } from './meshOperations';
 import type { OperationContext } from './operationTypes';
+import { smoothObject, type SmoothTaskOptions } from './smoothOperations';
 import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnected, splitStructures } from './partOperations';
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
 import { runFitToBed, type FitToBedTaskArgs } from './fitOperations';
+import { orientApplyChange, orientForPrint, orientOverhangFaces, type OrientApplyTaskArgs, type OrientForPrintTaskArgs, type OrientOverhangFacesArgs } from './orientOperations';
 import { runFitCheck, type FitCheckInput } from '../../engine/fitCheck';
 import { runRecipe } from '../recipes/run/executeRecipe';
+import { createMagnetPocket, type MagnetPocketInput } from './magnetOperations';
+import { createScrewBoss, type ScrewBossInput } from './screwBossOperations';
+import { createKeyhole, type KeyholeInput } from './keyholeOperations';
+import { createCablePass, type CablePassInput } from './cablePassOperations';
+import { applyHolesWithPosts } from './addonPostMerge';
 import type { RunInput } from '../recipes/run/types';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
@@ -97,7 +104,8 @@ export async function exportSceneFiles(a: ExportTaskArgs): Promise<ExportTaskRes
 /** Tareas del motor. Los argumentos y resultados deben ser clonables (sin funciones). */
 export const ENGINE_TASKS = {
   boolean: (ctx: OperationContext, a: Parameters<typeof booleanOperation>[1]) => booleanOperation(ctx, a),
-  applyHoles: (ctx: OperationContext, a: { solids: SceneObject[]; holes: SceneObject[] }) => applyHoles(ctx, a.solids, a.holes),
+  // Une antes los postes de torreta a su pieza (sin postes es `applyHoles` tal cual).
+  applyHoles: (ctx: OperationContext, a: { solids: SceneObject[]; holes: SceneObject[] }) => applyHolesWithPosts(ctx, a.solids, a.holes),
   convexHull: (ctx: OperationContext, a: { targets: SceneObject[]; name?: string }) => convexHull(ctx, a.targets, a.name),
   hollow: (ctx: OperationContext, a: { obj: SceneObject; options: HollowOptions }) => hollowObject(ctx, a.obj, a.options),
   simplify: (ctx: OperationContext, a: { obj: SceneObject; toleranceMm: number }) => simplifyObject(ctx, a.obj, a.toleranceMm),
@@ -106,6 +114,7 @@ export const ENGINE_TASKS = {
   diagnoseMesh: (_ctx: OperationContext, a: { mesh: Pick<SceneObject['mesh'], 'positions' | 'indices'> }) => engine.diagnoseMesh(a.mesh),
   refine: (ctx: OperationContext, a: { obj: SceneObject; edgeMm: number; smooth: boolean }) =>
     refineObject(ctx, a.obj, a.edgeMm, a.smooth),
+  smooth: (ctx: OperationContext, a: { obj: SceneObject; options?: SmoothTaskOptions }) => smoothObject(ctx, a.obj, a.options),
   erase: (ctx: OperationContext, a: { obj: SceneObject; center: Vec3; radiusMm: number }) =>
     eraseSphere(ctx, a.obj, a.center, a.radiusMm),
   projectSurface: (ctx: OperationContext, a: { obj: SceneObject; options: SurfaceProjectionOptions }) =>
@@ -128,6 +137,14 @@ export const ENGINE_TASKS = {
   // Creación: el Worker genera la malla; el hilo principal la ubica en la escena y crea el objeto.
   primitiveMesh: (_ctx: OperationContext, a: { type: PrimitiveType; params?: PrimitiveParams }) => primitiveMesh(a.type, a.params),
   regenerateParametric: (ctx: OperationContext, a: { obj: SceneObject; edit: ParametricEdit }) => regenerateParametric(ctx, a.obj, a.edit),
+  // Alojamiento de imán: negativo orientado por la cara y pared medida con rayos sobre la anfitriona.
+  magnetPocket: (ctx: OperationContext, a: MagnetPocketInput) => createMagnetPocket(ctx, a),
+  // Torreta para tornillo: poste (sólido) y agujero (negativo) orientados por la cara, con su análisis.
+  screwBoss: (ctx: OperationContext, a: ScrewBossInput) => createScrewBoss(ctx, a),
+  // Ojo de cerradura para colgar en el muro: negativo de tres partes unidas, ranura hacia «arriba».
+  keyhole: (ctx: OperationContext, a: KeyholeInput) => createKeyhole(ctx, a),
+  // Paso de cable: negativo pasante con el largo medido con rayos.
+  cablePass: (ctx: OperationContext, a: CablePassInput) => createCablePass(ctx, a),
   imageReliefMesh: (_ctx: OperationContext, a: { options: ImageTo3DOptions }) => imageReliefMesh(a.options),
   svgMesh: (_ctx: OperationContext, a: { options: SvgImportOptions; contours: engine.PackedSvgContours }) => svgMesh(a.options, a.contours),
   splitPlan: (
@@ -137,6 +154,10 @@ export const ENGINE_TASKS = {
   splitForBed: (ctx: OperationContext, a: { obj: SceneObject; plan: engine.BedSplitPlan; options: ExecuteBedSplitOptions }) =>
     executeBedSplit(ctx, a.obj, a.plan, a.options),
   fitToBed: (_ctx: OperationContext, a: FitToBedTaskArgs) => runFitToBed(a),
+  // Orientar para imprimir: analizar es solo lectura; aplicar devuelve un parche de transformación.
+  orientForPrint: (_ctx: OperationContext, a: OrientForPrintTaskArgs) => orientForPrint(a),
+  orientApply: (_ctx: OperationContext, a: OrientApplyTaskArgs) => orientApplyChange(a),
+  orientOverhangFaces: (_ctx: OperationContext, a: OrientOverhangFacesArgs) => orientOverhangFaces(a),
   // Receta completa (validar → resolver → escena de trabajo → salidas): el resultado es un SceneChange de solo objetos nuevos.
   runRecipe: (ctx: OperationContext, a: Omit<RunInput, 'signal' | 'now'>) => runRecipe(ctx, a),
   validateAssembly: (_ctx: OperationContext, a: { objects: SceneObject[] }) => engine.storedAssemblyResponse(a.objects),

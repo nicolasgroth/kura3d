@@ -31,7 +31,7 @@ Lista PID, puerto, hora de inicio y memoria de servidores Vite, corridas de Play
    Agrega `--force` solo si cambió `package-lock.json` o la app carga módulos viejos.
 3. Confirma que responde 200 antes de encargar nada.
 
-Un servidor que lleva horas o que sirvió varias ramas se reinicia antes de una QA o una evaluación: se degrada y da fallos falsos.
+Un servidor que lleva horas o que sirvió varias ramas se reinicia antes de una QA o una evaluación: se degrada y da fallos falsos. Lo mismo después de editar archivos de la rama servida: el servidor entrega esos módulos con marca de recarga en caliente y las pruebas que enlazan el store (`e2e/store-link.ts`) pueden quedar con una copia distinta del estado.
 
 ## Detener
 

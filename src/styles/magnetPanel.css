@@ -1,0 +1,153 @@
+/**
+ * @file src/styles/magnetPanel.css
+ * @description Estilos del panel «Alojamiento de imán»: indicación de cómo colocar, fila de preajustes, grilla de
+ * medidas, casilla de «oculto» y el estado de pared del último colocado (con texto, no solo color). Objetivos
+ * táctiles de 44 px con puntero grueso.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-magnet-panel .kura-op-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kura-magnet-hint {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.kura-magnet-presets,
+.kura-magnet-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.kura-magnet-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+
+.kura-magnet-row .kura-select,
+.kura-magnet-row .kura-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.kura-magnet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+}
+
+.kura-magnet-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  /* Etiquetas de una o dos líneas: los campos quedan alineados por su base. */
+  justify-content: flex-end;
+}
+
+.kura-magnet-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.kura-magnet-summary {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.kura-magnet-wall {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.kura-magnet-wall.is-warning {
+  color: var(--text-primary);
+  padding: 6px 8px;
+  border-left: 3px solid var(--accent-amber);
+  background: color-mix(in srgb, var(--accent-amber) 12%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.kura-magnet-wall.is-warning::before {
+  content: '⚠ ';
+}
+
+/* Franja de la hoja plegada: solo existe con la hoja plegada en pantallas angostas. */
+.kura-magnet-fold {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .kura-workspace[data-sheet="folded"] .kura-magnet-fold {
+    order: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .kura-magnet-fold-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kura-magnet-fold .kura-btn {
+    flex: 0 0 auto;
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Con la hoja completa las flechas de los campos no se recortan: campo y flechas más grandes con puntero grueso. */
+@media (pointer: coarse), (max-width: 767px) {
+  .kura-magnet-panel .kura-precision-input {
+    height: 44px;
+  }
+
+  .kura-magnet-panel .kura-precision-steppers {
+    width: 28px;
+  }
+}
+
+@media (pointer: coarse), (max-width: 767px) {
+  .kura-magnet-panel .kura-btn,
+  .kura-magnet-panel .kura-select,
+  .kura-magnet-panel .kura-input {
+    min-height: 44px;
+  }
+
+  .kura-magnet-check input {
+    width: 22px;
+    height: 22px;
+  }
+}

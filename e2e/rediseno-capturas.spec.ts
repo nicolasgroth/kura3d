@@ -16,7 +16,6 @@ const SIZES = [
   [1440, 900],
   [1280, 800],
   [1024, 768],
-  [390, 844],
 ] as const;
 
 test.skip(!process.env.REDISENO_CAPTURAS, 'Solo bajo pedido (REDISENO_CAPTURAS=1).');

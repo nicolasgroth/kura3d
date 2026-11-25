@@ -38,6 +38,7 @@ export const ACTION_TIP_KEY: Partial<Record<ActionId, TranslationKey>> = {
   splitParts: 'groups.action.separate.tip',
   centerOnBed: 'ctx.centerOnBed.tip',
   fitCheck: 'fitCheck.ui.openTip',
+  orient: 'orient.ui.openTip',
 };
 
 /**

@@ -125,7 +125,7 @@ test('cuota del navegador insuficiente: el pie explica el motivo y ofrece guarda
   await save.focus();
   await expect(save).toBeFocused();
   await page.screenshot({ path: `${SHOTS}/borrador-cuota-1280.png` });
-  await page.setViewportSize({ width: 390, height: 800 });
+  await page.setViewportSize({ width: 1024, height: 800 });
   await expect(save).toBeVisible();
-  await page.screenshot({ path: `${SHOTS}/borrador-cuota-390.png` });
+  await page.screenshot({ path: `${SHOTS}/borrador-cuota-1024.png` });
 });

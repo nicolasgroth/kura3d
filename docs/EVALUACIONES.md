@@ -587,3 +587,117 @@ Sin bloqueos. Asistentes queda sobre el mínimo en los tres evaluadores. Arrastr
 - **Incidente durante la evaluación de usabilidad:** el orquestador editó `FileField.tsx` con el servidor en uso y por unos segundos la app quedó en blanco (`useState is not defined`) hasta completar la importación. No se repitió tras recargar. Queda como regla: no editar la rama servida mientras un evaluador usa el navegador. El evaluador anotó además que falta una barrera de errores: un fallo en un campo se lleva la app entera.
 
 Consumo (modelo · duración · tokens): recetas ronda 3 (Opus · 18 min · 202 k), interfaz ronda 3 (Sonnet · 9 min · 178 k), usabilidad (Opus · 9 min · 195 k), código (Opus · 5 min · 154 k), funcional (Opus · 7 min · 135 k).
+
+## QA24 · 24 de noviembre de 2026, 16:00 · rama `feat/iman` · aprobada con observaciones
+
+Alojamiento de imán: clic sobre una cara → pieza negativa perpendicular, con preajustes incluidos y propios.
+
+Confirmado en navegador: hueco perpendicular y a ras en caras inclinadas, traseras e inferiores, en piezas giradas y escaladas, en una esfera y en dos modelos reales; volumen removido exacto tras «Aplicar restas» (dos huecos: 93,519 mm³ de 93,519 esperados) y sólido válido; el STL exportado no incluye el negativo; avisos de pared (placa de 3 mm: 0,8 mm; placa de 2 mm: atraviesa); validación de medidas con coma decimal; preajustes propios que sobreviven a recargar, tope de 30 y saneo de datos corruptos; `localStorage` solo con nombres y medidas; `.kura` y borrador conservan los imanes; consola sin errores.
+
+Fallos, corregidos por el orquestador:
+
+1. Con la pieza seleccionada y el panel abierto, el manipulador seguía activo y un arrastre movía la pieza. El manipulador se oculta mientras el panel está abierto.
+2. Con la única pieza bloqueada el panel abría sin dejar colocar ni explicar por qué. Ahora no abre y el aviso lo dice.
+3. Foco inicial en «Cerrar»: ahora en el selector de preajuste.
+4. `e2e/ux8-menu-pintura.spec.ts` fallaba 3 de 8 porque esperaba que un solo Escape cerrara el menú desde un submenú (comportamiento cambiado en la QA22): prueba actualizada.
+
+Tras las correcciones: 2820 pruebas del frontend pasan; 20 de 20 recorridos en navegador (QA24, el del desarrollo y el de menú y pintura).
+
+Observaciones abiertas: duplicar la pieza no duplica sus imanes y borrarla deja el imán huérfano (no definido en el encargo); no hay forma de colocar con teclado; sin probar 3MF, cilindro, clic en arista y lector de pantalla real.
+
+Lección de proceso: tras editar la rama servida, el servidor de desarrollo sirve módulos con marca de recarga y las pruebas que enlazan el store quedan con una copia distinta (8 fallas falsas). Se reinicia el servidor antes de cada corrida de verificación.
+
+Consumo (modelo · duración · tokens): alojamiento de imán (Opus · 32 min · 297 k), QA24 (Sonnet · 49 min · 241 k).
+
+## Alojamiento de imán · primera ronda a ciegas · 24 de noviembre de 2026, 16:45 · rama `feat/iman` (`323b765`)
+
+| Usabilidad | Código | Funcional |
+|---|---|---|
+| 82 | 84 | 77 |
+
+Sin bloqueos duros. Las tres bajo el mínimo (85): se corrige y se reevalúa.
+
+- **Funcional (77).** El hueco mide exacto en todas las orientaciones (46,759 mm³ removidos; 5,2 mm entre caras planas) y los avisos de pared y de hueco pasante funcionan en piezas planas. Fallas: al escalar la pieza después de colocar, el hueco se escala con ella (10,4 × 4,4 para un imán de 5 × 2) sin aviso; dos huecos pegados o superpuestos no avisan; en cara cóncava quedan láminas de hasta 0,29 mm sobre la boca; en cara convexa el imán no asienta completo y el aviso no lo explica; la guía del modo oculto no dice a qué altura pausar.
+- **Código (84).** Núcleo puro y correcto, preajustes de verdad genéricos, saneo en `localStorage` y `.kura`. Restan: caras curvas sin cubrir ni probar; tipos de parámetros duplicados; la vista previa reconstruye su geometría; cursor pegado al cerrar; escritura al store en cada movimiento; e2e con esperas fijas y aserciones blandas.
+- **Usabilidad (82).** Fácil de encontrar y de usar en cubo, cilindro y esfera; formulario sólido. Restan: avisos falsos de «atraviesa» y «poca pared» en superficies curvas; móvil apenas usable (la barra Unir/Restar tapa el visor, hoja plegada sin avisos ni «Listo»); contraste del error en tema oscuro (~2,5:1); el resumen muestra el último valor válido con un campo en error; eliminar un preajuste sin deshacer y con foco perdido; flechas de los campos sin nombre propio.
+
+Decisión del orquestador (estaba como pregunta abierta en el diseño): un imán conserva su medida real al escalar la pieza y solo se mueve para seguir a su cara. Informada al autor.
+
+Segunda ronda de corrección en curso (dos lotes: geometría y ciclo de vida; panel, accesibilidad y pruebas).
+
+Consumo (modelo · duración · tokens): usabilidad (Opus · 6 min · 146 k), código (Opus · 3 min · 120 k), funcional (Opus · 5 min · 133 k).
+
+## Alojamiento de imán · segunda ronda a ciegas · 24 de noviembre de 2026, 17:45 · rama `feat/iman`
+
+Evaluadores nuevos tras dos lotes de corrección (geometría y ciclo de vida; panel, móvil y pruebas). 2849 pruebas del frontend y 12 recorridos en navegador pasan.
+
+| Usabilidad | Código | Funcional | Primera ronda |
+|---|---|---|---|
+| 80 | 86 | 84 | 82 / 84 / 77 |
+
+Sin bloqueos duros. Hallazgos nuevos:
+
+- **Funcional (84).** Planas exactas en toda orientación; cóncavas abren limpio; escalar, deshacer, rehacer y `.kura` conservan el imán. Fallas: imán oculto en cara convexa con tapa de 0,16 mm o abierta, sin aviso propio; hueco que se sale por el borde avisa «curva» en una cara plana; duplicar solo la pieza no copia sus imanes; un imán más grande que la pieza la elimina al restar.
+- **Código (86).** Sobre el mínimo. Restan: vista previa más corta que el hueco real en cóncavas; el seguimiento no cubre rotar o mover la pieza sola; rayos sin BVH; `userPresets.restore` sin validar.
+- **Usabilidad (80).** Validación y preajustes a buen nivel; contraste del error corregido (6,4:1). Restan: aviso de «curva» en un cubo; la fila de un negativo seleccionado pierde su nombre en el árbol; «Aplicar 4 restas» aplicó 3; colocar cambia la selección; dos botones «Deshacer» con el mismo nombre accesible; el botón de la hoja móvil con rótulo de escritorio.
+
+Tercera ronda de corrección en curso (dos lotes). Es la tercera del lote: si alguna nota sigue bajo 85, se consulta al autor.
+
+Consumo (modelo · duración · tokens): geometría ronda 2 (Opus · 23 min · 226 k), panel ronda 2 (Sonnet · 9 min · 183 k), usabilidad (Opus · 6 min · 147 k), código (Opus · 3 min · 134 k), funcional (Opus · 4 min · 127 k).
+
+## Alojamiento de imán · tercera ronda a ciegas · 24 de noviembre de 2026, 18:40 · rama `feat/iman`
+
+Evaluadores nuevos tras la tercera ronda de corrección. 2892 pruebas del frontend y 12 recorridos en navegador pasan.
+
+| Usabilidad | Código | Funcional | Segunda ronda | Primera ronda |
+|---|---|---|---|---|
+| 84 | 86 | 88 | 80 / 86 / 84 | 82 / 84 / 77 |
+
+Sin bloqueos. Código y funcional sobre el mínimo; usabilidad a un punto, tras tres rondas: se consulta al autor (consulta 2).
+
+- **Funcional (88).** Unos 90 casos con motor y store reales: medidas exactas en toda orientación (46,759 mm³), convexas y cóncavas abren limpio, avisos correctos de pared, borde, vecinos, tapa del oculto e imán demasiado grande; el imán sigue a la pieza al moverla, girarla o escalarla; duplicar, borrar, deshacer, rehacer y `.kura` correctos. Restan: oculto en esfera de R ≤ 5 deja una lámina suelta dentro del hueco y el aviso solo dice «a la vista»; un imán más ancho que la cara (60 × 0,5 en cubo de 8) solo da el aviso genérico; «sobresale por la curva» aún aparece en una cara plana cuando la boca cae justo en la arista; el mensaje de parámetro inválido sale con `{value}`, `{min}` y `{max}` sin rellenar; una malla abierta avisa «atraviesa» en vez de «malla defectuosa».
+- **Código (86).** Restan: avisos de colocación manejados en dos capas; el rayo de la vista previa sin BVH; el esquema `.kura` exige holguras que el saneo acepta ausentes; sin aviso si falla el almacenamiento al borrar un preajuste.
+- **Usabilidad (84).** Avisos creíbles, preajustes con Deshacer, escalar/duplicar/borrar correctos. Restan: a 390 px los botones ▼ de los campos quedan bajo la etiqueta siguiente y no se pueden pulsar; en el árbol los nombres de los imanes se cortan y no se distinguen; tras deshacer queda el aviso de «se superpone» de un imán que ya no existe; avisos de colocación largos; grupo de un solo hijo tras aplicar restas.
+
+Incidente previo a esta ronda, corregido: los avisos de «imán agregado» se apilaban sobre el visor y el tercer clic seguido caía sobre un aviso (lo detectó un recorrido de la QA). Cada colocación reemplaza ahora el aviso anterior.
+
+Consumo (modelo · duración · tokens): geometría ronda 3 (Opus · 18 min · 211 k), interfaz ronda 3 (Sonnet · 14 min · 231 k), usabilidad (Opus · 7 min · 153 k), código (Opus · 3 min · 137 k), funcional (Opus · 6 min · ~130 k).
+
+## Integración del 24 de noviembre de 2026, 21:00 · rama `integracion/24-nov`
+
+Reúne el alojamiento de imán (usabilidad 84 aceptada de forma temporal por el autor, sin cuarta evaluación), tres motores sin interfaz (uniones firmes, orientar para imprimir, suavizar), los pendientes de usabilidad de la sexta evaluación y la vista previa con reedición de Asistentes. 3033 pruebas del frontend y 151 del servidor MCP pasan. Suite completa de navegador en curso al escribir esto. Ninguno de los lotes nuevos tiene todavía QA en navegador ni evaluación a ciegas.
+
+- **Imán, últimas correcciones:** nombre visible en el árbol con su número, aviso que se limpia al deshacer, aviso de lámina suelta en el modo oculto, imán más ancho que la zona se impide, un solo aviso corto por colocación. Un recorrido de la QA falló por un rechazo correcto (clic sobre un saliente de 5 mm con un hueco de 5,4 mm en un modelo real); se ajustó la prueba y se reescribió el mensaje.
+- **Uniones firmes (motor):** mide la sección del corte, dimensiona conectores con pared mínima de 1,2 mm y clasifica cada unión (firme, justa, débil, pegada). Pared, mínimo útil y encastre son criterio propio «por verificar».
+- **Orientar para imprimir (motor):** hasta 16 orientaciones estables con voladizo, volumen aproximado de soporte, base y altura; acierta a ±1 % en figuras de resultado conocido; 4,3 s en 250 mil triángulos.
+- **Suavizar (motor):** Taubin sin encogimiento (+0,63 % en esfera facetada), aristas vivas sobre 40° protegidas, zona con atenuación, detección de triángulos invertidos y autointersecciones con reducción de fuerza.
+- **Usabilidad, pendientes:** aviso descartado que no vuelve a emerger, botón Proyecto que no pierde la selección, «unión del corte» en Comprobar encaje, historial con la acción real, conversión de unidades bajo 5 mm, Agregar e Insertar con el mismo catálogo, filamentos con nombre distinto, textos claros. El re-emisor del aviso no se reprodujo leyendo el código: la corrección es general y falta confirmarla en navegador con el 3MF de 95 piezas.
+- **Asistentes:** vista previa en el visor con espera y cancelación, «Editar con el asistente» que reemplaza el juego en un paso. La procedencia en el `.kura` gana campos opcionales (`run`, `name`, `meshFingerprint`).
+
+Consumo (modelo · duración · tokens): imán defectos finales (Sonnet · 12 min · 171 k), imán modelos reales (Opus · 23 min · 170 k), uniones firmes (Opus · 25 min · 220 k), orientar (Opus · 26 min · 231 k), suavizar (Opus · 33 min · 215 k), usabilidad pendientes (Sonnet · ~45 min con un corte por límite de uso · 257 k), vista previa de Asistentes (Sonnet · ~45 min con un corte · 277 k), diseño de placas (Opus · 4 min · 133 k), investigación de formas simples (Opus · 6 min · 136 k), tres evaluadores de la tercera ronda del imán (Opus · ~16 min · ~440 k).
+
+## 25-nov-2026 · Integración de la noche (`integracion/25-nov`)
+
+La sesión se cortó a las 00:25 y se retomó a las 06:15: las revisiones programadas no la reanudaron. Lo integrado: barra flotante, «Acerca de», herramientas MCP nuevas, medición de Simplificar, ojo de cerradura y paso de cable.
+
+**Evaluación de código a ciegas** (Opus, solo lectura, 207 pruebas puntuales corridas, sin bloqueos duros):
+
+| Funcionalidad | Nota | Lo que más resta |
+|---|---|---|
+| «Acerca de» | 92 | Texto repetido en el botón; contador de clics en variables de módulo |
+| Suavizar malla | 89 | Zona por color sin color suaviza todo sin avisar; ángulo de arista con escala no uniforme |
+| Imanes como unión del corte | 87 | Reglas «por verificar»; la rama de imanes salta dos comprobaciones de `splitJoints` |
+| Orientar para imprimir | 86 | Capas invertidas (corregido después); seguimiento rígido no comprueba la escala |
+| Torreta para tornillo | 85 | Al unir el poste se pierden atributos de la pieza; choque a fuerza bruta |
+| Herramientas MCP nuevas | 85 | Orquestación duplicada entre el modo sin interfaz y la app |
+| Barra flotante | 83 (bajo el mínimo) | Un paso de deshacer por cada evento del selector de color |
+
+Corregido tras la evaluación, sin reevaluar todavía: historial de la barra flotante (un paso por cambio), lectura del DOM por cuadro, ícono por campo propio, `reasonText` movido a `src/core/orient/` y el porcentaje con signo doble de Orientar.
+
+**Pendiente:** QA en navegador y evaluaciones de usabilidad y funcional de todo lo de esta integración; reevaluación de código de la barra flotante; evaluación de código de los dos agregados nuevos.
+
+**Pruebas:** ver el cierre del lote en el tablero. La suite completa de navegador se corrió sobre `integracion/24-nov-b` (402 de 404; la que falló era una prueba inestable de la paleta, corregida); sobre la integración final solo se repitieron los recorridos tocados.
+
+**Aprendizaje de proceso:** no se puede servir la app desde un worktree cuyo `node_modules` es un enlace: Vite responde 403 al motor WASM y la app no carga. Para pruebas de navegador se sirve desde el directorio principal.
+
+Consumo (modelo · duración · tokens): medición de Simplificar (Opus · 25 min · 186 k), herramientas MCP (Opus · 33 min · 356 k), agregados (Opus · ~45 min con un corte · 356 k), evaluación de código (Opus · 12 min · 209 k), correcciones de la barra flotante (Sonnet · 26 min · 113 k). «Acerca de» y barra flotante se entregaron antes del corte; su consumo no quedó registrado.

@@ -57,16 +57,17 @@ test('Medir: panel angosto y acoplable que no tapa el modelo', async ({ page }) 
     await s.createPrimitive('box', { width: 120, height: 60, depth: 120 }, { placement: 'free' });
   });
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length)).toBe(1);
-  await page.evaluate(() => (window as any).__s.getState().requestCameraPreset('top'));
-  await page.waitForTimeout(600);
+  // Medir se abre antes de encuadrar: el panel es un oclusor del visor y el encuadre deja la pieza fuera de su huella.
   await page.keyboard.press('d');
   const panel = page.getByTestId('measure-panel');
   await expect(panel).toBeVisible();
+  await page.evaluate(() => (window as any).__s.getState().requestCameraPreset('top'));
+  await page.waitForTimeout(600);
   const box = (await panel.boundingBox())!;
   expect(box.width).toBeLessThanOrEqual(233);
   await page.waitForTimeout(800);
-  expect(solapa(await rectObjeto(page), (await panel.boundingBox())!)).toBe(false);
   await page.screenshot({ path: `${SHOTS}/medir-izquierda-1440.png` });
+  expect(solapa(await rectObjeto(page), (await panel.boundingBox())!)).toBe(false);
 
   const dock = page.getByTestId('measure-dock');
   await expect(dock).toHaveAccessibleName('Mover el panel al borde derecho');
@@ -75,6 +76,8 @@ test('Medir: panel angosto y acoplable que no tapa el modelo', async ({ page }) 
   await expect(panel).toHaveClass(/is-right/);
   const right = (await panel.boundingBox())!;
   expect(right.x).toBeGreaterThan(1440 / 2);
+  // Cambiar de borde no mueve la cámara: Encuadrar vuelve a dejar la pieza fuera de la huella del panel.
+  await page.evaluate(() => (window as any).__s.getState().requestCameraPreset('top'));
   await page.waitForTimeout(800);
   expect(solapa(await rectObjeto(page), (await panel.boundingBox())!)).toBe(false);
   await expect(dock).toHaveAccessibleName('Mover el panel al borde izquierdo');

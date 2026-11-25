@@ -23,6 +23,7 @@ import { InspectorEdgeToggle } from '../inspector/InspectorEdgeToggle';
 import { InspectorMulti } from '../inspector/InspectorMulti';
 import type { InspectorLocalState } from '../inspector/inspectorTypes';
 import { ParametersSection } from '../inspector/ParametersSection';
+import { AssistantOriginSection } from '../assistants/AssistantOriginSection';
 import { TransformSection } from '../inspector/TransformSection';
 import { useScrollTopOnSelection } from '../inspector/useScrollTopOnSelection';
 import { SplitJointsSection } from '../split/SplitJointsSection';
@@ -96,6 +97,9 @@ const ObjectSummary: React.FC<{ primary: SceneObject; ui: InspectorLocalState }>
         {hasParams && (
           <PanelFold id="parameters" title="rediseno3b.fold.parameters"><ParametersSection primary={primary} /></PanelFold>
         )}
+        {primary.metadata?.recipe && (
+          <PanelFold id="assistant" title="asis.edit.section"><AssistantOriginSection primary={primary} /></PanelFold>
+        )}
         <PanelFold id="transform" title="rediseno3b.fold.transform"><TransformSection primary={primary} ui={ui} /></PanelFold>
         <PanelFold id="geometry" title="inspector.section.stats"><GeometrySection primary={primary} /></PanelFold>
         <ObjectOperations primary={primary} />
@@ -114,9 +118,10 @@ export const ContextPanel: React.FC<{ ui: InspectorLocalState }> = ({ ui }) => {
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const objects = useKuraStore((s) => s.objects);
   const transformFocus = useKuraStore((s) => s.transformFocus);
+  const projectPanelPin = useKuraStore((s) => s.projectPanelPin);
   const ctx = useMemo(
-    () => panelContextOf({ activeAction, activeTool, selectedIds, objects, transformFocus }),
-    [activeAction, activeTool, selectedIds, objects, transformFocus],
+    () => panelContextOf({ activeAction, activeTool, selectedIds, objects, transformFocus, projectPanelPin }),
+    [activeAction, activeTool, selectedIds, objects, transformFocus, projectPanelPin],
   );
   const live = useContextAnnouncement(language, ctx, objects);
 

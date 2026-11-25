@@ -10,6 +10,10 @@ import { TRANSFORM_LIMITS } from '../engine/operationLimits';
 import { EDGE_SCOPES, EDGE_STYLES, TEXT_ALIGN_OPTIONS } from '../engine/primitiveLimits';
 import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
 import { REFERENCE_OPACITY } from '../core/scene/objectRole';
+import { sanitizeMagnetParams } from '../core/addons/magnetPocket';
+import { sanitizeScrewBossParams } from '../core/addons/screwBoss';
+import { sanitizeKeyholeParams } from '../core/addons/keyhole';
+import { sanitizeCablePassParams } from '../core/addons/cablePass';
 import { RECIPE_PROVENANCE_LIMITS } from '../types/recipeProvenance';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
 
@@ -105,15 +109,24 @@ const splitTransform = shape({ position: vec3, rotation: vec3 });
 const face = oneOf('+x', '-x', '+y', '-y', '+z', '-z');
 const label16 = (v: unknown) => str(v) && v.length <= 16;
 // Unión guardada para revalidar el armado (`SplitJointRecord`).
+// Imán de una unión del corte (`MagnetPocketParams`): mismos rangos que el alojamiento de imán.
+const splitMagnet = (v: unknown) => sanitizeMagnetParams(v) !== null && shape({
+  shape: str, sizeMm: finite, heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
+})(v);
 const splitConnector = shape({
-  type: oneOf('dowel', 'peg', 'dovetail', 'lap', 'loose-dowel'), size: positive, depth: positive, tolerance: nonnegative,
+  type: oneOf('dowel', 'peg', 'dovetail', 'lap', 'loose-dowel', 'magnet'), size: positive, depth: positive, tolerance: nonnegative,
   count: (v) => nat(v) && v > 0, minWallForConnectorMm: optional(nonnegative), lapHeightMm: optional(positive),
+  magnet: optional(splitMagnet),
+});
+const splitJointMagnets = shape({
+  magnet: splitMagnet, count: (v) => nat(v) && v > 0 && v <= 64, pocketDiameterMm: positive, pocketDepthMm: positive, polarity: oneOf('opposite'),
 });
 const splitJointRecord = shape({
   label: label16, axis: oneOf('x', 'y', 'z'), position: finite, a: label16, b: label16,
   kind: oneOf('connector', 'glue', 'lap', 'socket'), connector: (v) => v === null || splitConnector(v),
   connectorCenters: (v) => Array.isArray(v) && v.length <= 4096 && v.every(vec3), contactAreaMm2: nonnegative,
   labelPlacement: optional((v) => v === null || oneOf('joint', 'outside', 'dots')(v)),
+  magnets: optional(splitJointMagnets),
 });
 // Avisos de la división guardados con el grupo (`SplitStoredNotes`): todo acotado en cantidad y largo.
 const short = (n: number) => (v: unknown) => typeof v === 'string' && v.length <= n;
@@ -156,8 +169,51 @@ const recipeMetadata = shape({
   variant: optional(short(RP.maxIdLength)),
   output: (v) => short(RP.maxIdLength)(v) && (v as string).length > 0,
   omitted: optional(shortList(RP.maxAnswers, RP.maxIdLength)),
+  run: optional(short(RP.maxIdLength)),
+  name: optional(short(RP.maxTextAnswer)),
+  meshFingerprint: optional(short(RP.maxIdLength)),
 });
-const objectExtra = shape({ split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata), recipe: optional(recipeMetadata) });
+// Agregado (`metadata.addon`): alojamiento de imán con sus medidas; los rangos los valida `sanitizeMagnetParams`.
+const magnetAddonMetadata = shape({
+  kind: oneOf('magnet_pocket'),
+  params: (v) => sanitizeMagnetParams(v) !== null && shape({
+    shape: str, sizeMm: finite, heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
+  })(v),
+  hostId: optional(id),
+});
+// Torreta para tornillo (poste o agujero); los rangos los valida `sanitizeScrewBossParams`, el ancla es acotada.
+const screwBossAddonMetadata = shape({
+  kind: oneOf('screw_boss'),
+  part: oneOf('post', 'hole'),
+  params: (v) => sanitizeScrewBossParams(v) !== null && shape({
+    type: str, nominalMm: finite, holeDiameterMm: finite, holeDepthMm: finite, heightMm: finite, outerDiameterMm: finite,
+  })(v),
+  anchorMm: (v) => finite(v) && Math.abs(v) <= 1000,
+  hostId: optional(id),
+});
+// Ojo de cerradura (negativo); los rangos los valida `sanitizeKeyholeParams`, el ancla es acotada.
+const keyholeAddonMetadata = shape({
+  kind: oneOf('keyhole'),
+  params: (v) => sanitizeKeyholeParams(v) !== null && shape({
+    screwMm: finite, headDiameterMm: finite, neckWidthMm: finite, slotLengthMm: finite, chamberDepthMm: finite, lipMm: finite, angleDeg: finite,
+  })(v),
+  anchorMm: (v) => finite(v) && Math.abs(v) <= 1000,
+  hostId: optional(id),
+});
+// Paso de cable (negativo); los rangos los valida `sanitizeCablePassParams`, el largo medido es acotado.
+const cablePassAddonMetadata = shape({
+  kind: oneOf('cable_pass'),
+  params: (v) => sanitizeCablePassParams(v) !== null && shape({
+    shape: str, widthMm: finite, lengthMm: finite, chamferMm: finite, angleDeg: finite, autoDepth: bool, depthMm: finite,
+  })(v),
+  anchorMm: (v) => finite(v) && Math.abs(v) <= 1000,
+  boreMm: (v) => finite(v) && v > 0 && v <= 1000,
+  hostId: optional(id),
+});
+const addonMetadata: Rule = (v) => magnetAddonMetadata(v) || screwBossAddonMetadata(v) || keyholeAddonMetadata(v) || cablePassAddonMetadata(v);
+const objectExtra = shape({
+  split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata), recipe: optional(recipeMetadata), addon: optional(addonMetadata),
+});
 
 export type ObjectMetadata = Omit<SceneObject, 'mesh' | 'stats'>;
 const metadataFields = {

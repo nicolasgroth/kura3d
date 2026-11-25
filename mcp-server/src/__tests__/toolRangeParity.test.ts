@@ -17,6 +17,10 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, describe, expect, it } from 'vitest';
 import { OPERATION_RANGES, TRANSFORM_RANGES } from '../../../src/engine/operationLimits';
 import { MIN_SEGMENTS_BY_TYPE, PRIMITIVE_PARAM_RANGES, TEXT_DEPTH_RANGE } from '../../../src/engine/primitiveLimits';
+import { MAGNET_RANGES } from '../../../src/core/addons/magnetPocket';
+import { SCREW_BOSS_RANGES } from '../../../src/core/addons/screwBoss';
+import { ORIENT_RANGES } from '../../../src/engine/orient';
+import { SMOOTH_RANGES } from '../../../src/engine/smooth';
 import { createKuraMcpServer } from '../index.js';
 
 const open: Array<() => Promise<void>> = [];
@@ -41,6 +45,10 @@ for (const group of Object.values(OPERATION_RANGES)) for (const r of Object.valu
 for (const r of Object.values(TRANSFORM_RANGES)) addRange(r);
 for (const r of Object.values(PRIMITIVE_PARAM_RANGES)) addRange(r);
 addRange(TEXT_DEPTH_RANGE);
+// Medidas del imán (unión con imanes de kura_split_for_bed): fuente única del alojamiento de imán
+for (const r of Object.values(MAGNET_RANGES)) addRange(r);
+// Suavizar, Orientar y Torreta: fuentes únicas del motor y de los agregados (las mismas que la interfaz)
+for (const r of [...Object.values(SMOOTH_RANGES), ...Object.values(ORIENT_RANGES), ...Object.values(SCREW_BOSS_RANGES)]) addRange(r);
 for (const min of Object.values(MIN_SEGMENTS_BY_TYPE)) addRange({ min, max: PRIMITIVE_PARAM_RANGES.segments.max });
 
 interface JsonSchema {
@@ -98,7 +106,7 @@ describe('MCP: rangos de las herramientas desde la fuente única del motor', () 
 
   it('las fuentes del servidor no acotan z.number() con literales', () => {
     const offenders: string[] = [];
-    for (const file of ['tools.ts', 'schemas.ts', 'splitTools.ts', 'parametricTools.ts']) {
+    for (const file of ['tools.ts', 'schemas.ts', 'splitTools.ts', 'parametricTools.ts', 'smoothOrientTools.ts', 'addonTools.ts']) {
       const src = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
       // Inicios de cadena zod (`z.number(`, `z.array(`…) para saber a qué cadena pertenece cada cota.
       const starts = [...src.matchAll(/\bz\s*\.\s*(\w+)\s*\(/g)].map((m) => ({ at: m.index!, kind: m[1] }));

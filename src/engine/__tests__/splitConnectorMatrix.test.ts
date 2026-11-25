@@ -183,9 +183,10 @@ export async function runCase(model: string, conn: SplitConnectorOptions | null,
     const dowels = res.looseDowels.reduce((s, d) => s + d.count, 0);
     if (dowels !== holes) v.push(`tarugos sueltos ${dowels} vs agujeros-par ${holes}`);
     for (const d of res.looseDowels) {
-      const j = res.joints.find((q) => q.connector && Math.abs(2 * q.connector.size - d.diameterMm) < 1e-6);
-      if (!j) v.push(`tarugo Ø${d.diameterMm}: sin unión de ese diámetro`);
-      else if (Math.abs(d.lengthMm - Math.max(1, 2 * j.connector!.depth - 2 * j.connector!.tolerance)) > 1e-6) v.push(`tarugo largo ${d.lengthMm} incoherente`);
+      // Uniones firmes: la profundidad puede acortarse por unión (rayos), así que hay un lote por diámetro y largo
+      const same = res.joints.filter((q) => q.connector && Math.abs(2 * q.connector.size - d.diameterMm) < 1e-6);
+      if (same.length === 0) v.push(`tarugo Ø${d.diameterMm}: sin unión de ese diámetro`);
+      else if (!same.some((j) => Math.abs(d.lengthMm - Math.max(1, 2 * j.connector!.depth - 2 * j.connector!.tolerance)) < 1e-6)) v.push(`tarugo largo ${d.lengthMm} incoherente`);
     }
   }
   if (THIN.has(model) && conn && conn.type !== 'lap') {

@@ -1,7 +1,7 @@
 /**
  * @file src/engine/io/unitHint.ts
  * @description Diagnóstico de unidades dudosas al importar formatos sin unidad (STL, OBJ, PLY): si la
- * mayor dimensión del modelo es diminuta (< 2 mm) o enorme (> 5 m), propone escalas probables
+ * mayor dimensión del modelo es diminuta (< 5 mm) o enorme (> 5 m), propone escalas probables
  * (metros ×1000, pulgadas ×25,4, centímetros ×10, ×100, o «ajustar a 100 mm») ordenadas por lo
  * razonable del tamaño resultante. Nunca escala por sí solo: la interfaz ofrece la elección.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -13,7 +13,7 @@ import type { ImportedModel } from './importTypes';
 import { partBounds } from './partGeometry';
 
 /** Bajo este tamaño (mm, mayor dimensión) el modelo probablemente viene en otra unidad. */
-export const UNIT_HINT_MIN_MM = 2;
+export const UNIT_HINT_MIN_MM = 5;
 /** Sobre este tamaño (mm, mayor dimensión) el modelo probablemente viene en otra unidad. */
 export const UNIT_HINT_MAX_MM = 5_000;
 /** Tamaño objetivo de «ajustar a N mm». */

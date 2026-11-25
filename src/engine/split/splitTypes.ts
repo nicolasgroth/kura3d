@@ -12,7 +12,7 @@
  * @license MIT
  */
 
-import type { CutConnectorType, MeshData, Vec3 } from '../../types/kura';
+import type { CutConnectorType, MagnetPocketParams, MeshData, Vec3 } from '../../types/kura';
 import type { EngineWarning } from '../engineErrors';
 import type { AssemblyReport } from './assemblyTypes';
 
@@ -63,10 +63,17 @@ export interface SplitConnectorOptions {
   minWallForConnectorMm?: number;
   /** Alto del solape (mm, por defecto 6), solo con `type: 'lap'`. */
   lapHeightMm?: number;
+  /**
+   * Imán de la unión (`type: 'magnet'`, ver `splitMagnet.ts`): con él, `size` = radio del imán, `tolerance` = holgura
+   * radial y `depth` = profundidad de cada alojamiento (alto + holgura de profundidad). Solo redondo.
+   */
+  magnet?: MagnetPocketParams;
+  /** Cantidad automática (solo imanes): uno por isla como mínimo y dos por unión si caben; `count` queda de referencia. */
+  countAuto?: boolean;
 }
 
 /** Tipos de conector de las uniones de "dividir para imprimir". */
-export type SplitConnectorType = Exclude<CutConnectorType, 'none'> | 'lap' | 'loose-dowel';
+export type SplitConnectorType = Exclude<CutConnectorType, 'none'> | 'lap' | 'loose-dowel' | 'magnet';
 
 /**
  * Tipo de unión resultante: conectores, corte liso para pegar (pared delgada o sin espacio), solape
@@ -91,6 +98,27 @@ export interface SplitJointIsland {
   areaMm2: number;
   /** Ancho típico de la isla (2·área/perímetro, mm): el espesor de pared en anillos y tiras. */
   minWidthMm: number;
+}
+
+/**
+ * Firmeza de una unión (`splitJointStrength.ts`, reglas en `jointRules.ts`): nivel con sus motivos,
+ * conectores finales, qué se achicó (tamaño, cantidad, profundidad) y qué islas quedaron solo para pegar.
+ * `areaRatio` = área de los machos / área de contacto.
+ */
+export interface SplitJointStrength {
+  level: 'firm' | 'fair' | 'weak' | 'glue';
+  reasons: Array<'no-connector' | 'single-connector' | 'low-area' | 'shallow' | 'islands-uncovered' | 'below-useful' | 'single-magnet'>;
+  /** Regla aplicada: conectores (por defecto) o imanes (`MAGNET_RULES`, por verificar: depende del imán real). */
+  basis?: 'connector' | 'magnet';
+  count: number;
+  /** Radio del conector (mm), como `SplitConnectorOptions.size`. */
+  sizeMm: number;
+  depthMm: number;
+  areaRatio: number;
+  islands: number;
+  islandsCovered: number;
+  shrunk: Array<{ reason: 'section-width' | 'count' | 'depth'; fromMm: number; toMm: number }>;
+  discarded: Array<{ island: number; reason: 'section-narrow'; measuredMm: number }>;
 }
 
 /**
@@ -311,6 +339,24 @@ export interface SplitJoint {
   labelPlacement: SplitLabelPlacement | null;
   /** Altura de letra usada (mm), 0 si no se grabó. */
   labelHeightMm: number;
+  /** Firmeza de la unión (uniones firmes); ausente en registros guardados antes de existir. */
+  strength?: SplitJointStrength;
+  /** Imanes de la unión (`type: 'magnet'`); las posiciones son `connectorCenters`. */
+  magnets?: SplitJointMagnets;
+}
+
+/**
+ * Imanes de una unión: cada centro lleva dos alojamientos enfrentados (uno por pieza), coaxiales con la normal del
+ * plano y con la boca en la cara del corte. `polarity: 'opposite'` = pegar cada par con polos opuestos (la app no
+ * puede fijar la polaridad física; ver `MAGNET_POLARITY_NOTE`).
+ */
+export interface SplitJointMagnets {
+  magnet: MagnetPocketParams;
+  count: number;
+  /** Diámetro y profundidad de cada alojamiento (mm). */
+  pocketDiameterMm: number;
+  pocketDepthMm: number;
+  polarity: 'opposite';
 }
 
 /**

@@ -20,6 +20,7 @@ import { resolveAssemblyTargets, ValidateAssemblyTargetError } from '../core/com
 import { CommandError } from './commandErrors';
 import { pick, readBoolean, readEnum, readId, readIds, readRange, type RawParams } from './commandValidation';
 import { internalAxisOfUser } from '../core/scene/displayAxes';
+import { readMagnetConnector } from './splitMagnetParams';
 
 const AXES = ['x', 'y', 'z'] as const;
 
@@ -95,11 +96,13 @@ function readConnectorSizeAuto(p: RawParams): boolean {
 export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): SplitForBedRequest {
   const target = resolveTarget(scene, p, { unlocked: true });
   const bed = activeBed(scene);
-  const type = readEnum(p, ['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel'] as const, 'connectorType') ?? 'dowel';
+  const type = readEnum(p, ['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel', 'magnet'] as const, 'connectorType') ?? 'dowel';
   const sizeAuto = readConnectorSizeAuto(p);
   const connector: SplitConnectorOptions | null =
     type === 'none'
       ? null
+      : type === 'magnet'
+      ? readMagnetConnector(p)
       : {
           type,
           size: sizeAuto ? FALLBACK_CONNECTOR_SIZE_MM : (readRange(p, OR.cut.connectorSize, 'connectorSize') ?? FALLBACK_CONNECTOR_SIZE_MM),

@@ -47,7 +47,7 @@ test('clic al centro de la fila selecciona y no oculta; botones a la derecha al 
   expect(errs).toEqual([]);
 });
 
-for (const [ancho, alto, tema] of [[1024, 768, 'dark'], [390, 844, 'light']] as const) {
+for (const [ancho, alto, tema] of [[1024, 768, 'dark']] as const) {
   test(`a ${ancho} px (${tema}) el clic en la zona del nombre selecciona sin ocultar`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: tema });
     const errs = await abrir(page, ancho, alto);

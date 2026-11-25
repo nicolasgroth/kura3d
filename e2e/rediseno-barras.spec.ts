@@ -85,7 +85,11 @@ test('barra de herramientas: patrón toolbar con una parada de tabulación, flec
   // Los atajos de siempre siguen: V vuelve a Seleccionar y S elige Escalar.
   await page.locator('.kura-viewport-wrap canvas').focus();
   await page.keyboard.press('v');
-  await expect(rail.getByRole('button', { name: 'Seleccionar' })).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => page.evaluate(() => (window as any).__s.getState().activeTool)).toBe('select');
+  // Con un objeto elegido la herramienta Seleccionar deja marcado el modo del manipulador que había (Rotar): una sola pulsada.
+  await expect(rail.getByRole('button', { name: 'Pintar' })).toHaveAttribute('aria-pressed', 'false');
+  await expect(rail.getByRole('button', { name: 'Rotar' })).toHaveAttribute('aria-pressed', 'true');
+  expect(await rail.locator('button[aria-pressed="true"]').count()).toBe(1);
   await page.keyboard.press('s');
   await expect(rail.getByRole('button', { name: 'Escalar' })).toHaveAttribute('aria-pressed', 'true');
 });

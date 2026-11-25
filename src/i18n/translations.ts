@@ -23,7 +23,10 @@ import { FLOWUX_EN, FLOWUX_ES } from './locales/flowUx';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
 import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
 import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
+import { UNIONES_FIRMES_EN, UNIONES_FIRMES_ES } from './locales/unionesFirmes';
 import { AJUSTAR_EN, AJUSTAR_ES } from './locales/ajustarImpresora';
+import { SUAVIZAR_EN, SUAVIZAR_ES } from './locales/suavizarMotor';
+import { SUAVIZAR_UI_EN, SUAVIZAR_UI_ES } from './locales/suavizarUi';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
 import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
 import { UXMOVIL_EN, UXMOVIL_ES } from './locales/uxMovil';
@@ -46,16 +49,26 @@ import { REALESUI_EN, REALESUI_ES } from './locales/realesUi';
 import { UX6_EN, UX6_ES } from './locales/ux6';
 import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
 import { ASISTENTES_EN, ASISTENTES_ES } from './locales/asistentes';
+import { ACERCA_EN, ACERCA_ES } from './locales/acercaDe';
+import { IMAN_EN, IMAN_ES } from './locales/iman';
+import { IMAN_UI3_EN, IMAN_UI3_ES } from './locales/imanUi3';
+import { TORRETA_EN, TORRETA_ES } from './locales/torreta';
 import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
 import { UX8_EN, UX8_ES } from './locales/ux8';
 import { UX10_EN, UX10_ES } from './locales/ux10';
+import { UX9_EN, UX9_ES } from './locales/ux9';
 import { REDISENO_EN, REDISENO_ES } from './locales/rediseno';
 import { PANEL_EN, PANEL_ES } from './locales/panel';
 import { ENCAJE_UI_EN, ENCAJE_UI_ES } from './locales/encajeUi';
+import { ORIENT_UI_EN, ORIENT_UI_ES } from './locales/orientar';
 import { REDISENO3A_EN, REDISENO3A_ES } from './locales/rediseno3a';
 import { REDISENO3B_EN, REDISENO3B_ES } from './locales/rediseno3b';
 import { UX8_MENU_EN, UX8_MENU_ES } from './locales/ux8Menu';
+import { IMANES_UNION_EN, IMANES_UNION_ES } from './locales/imanesUnion';
+import { BARRA_FLOTANTE_EN, BARRA_FLOTANTE_ES } from './locales/barraFlotante';
+import { COLGAR_MURO_EN, COLGAR_MURO_ES } from './locales/colgarMuro';
+import { PASO_CABLE_EN, PASO_CABLE_ES } from './locales/pasoCable';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -73,7 +86,10 @@ export const TRANSLATIONS_ES = {
   ...PREVIEW_ES,
   ...SPLITJOINTS_ES,
   ...SPLITPREFS_ES,
+  ...UNIONES_FIRMES_ES,
   ...AJUSTAR_ES,
+  ...SUAVIZAR_ES,
+  ...SUAVIZAR_UI_ES,
   ...SPLITCOUPLING_ES,
   ...A11YUX_ES,
   ...UXMOVIL_ES,
@@ -96,16 +112,20 @@ export const TRANSLATIONS_ES = {
   ...UX6_ES,
   ...RECETAS_ES,
   ...ASISTENTES_ES,
+  ...IMAN_ES,
+  ...IMAN_UI3_ES,
   ...BORDES_ES,
   ...UX7_ES,
   ...UX8_ES,
   ...UX10_ES,
+  ...UX9_ES,
   ...REDISENO_ES,
   ...PANEL_ES,
   ...ENCAJE_UI_ES,
   ...REDISENO3A_ES,
   ...REDISENO3B_ES,
   ...UX8_MENU_ES,
+  ...TORRETA_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -1281,7 +1301,7 @@ export const TRANSLATIONS_ES = {
   'export.split.printLayoutTip': 'Cada pieza apoyada en su placa (placas una al lado de otra), sin mover la escena',
   'export.split.zipDone': '{count} piezas exportadas en {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'La pieza {code} trae un fragmento suelto de {volume} mm³ que no se pudo fusionar con una vecina: queda como pieza propia.',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': 'La pieza {code} absorbió un fragmento suelto de {volume} mm³ de la celda vecina y sobresale {protrusion} mm del plano de corte (es intencional; con umbral de fragmento 0 queda como pieza propia).',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'La pieza {code} incluye un trocito suelto de {volume} mm³ que quedó del corte vecino, por eso sobresale {protrusion} mm del plano de corte. Es a propósito: así no queda una pieza minúscula aparte.',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': 'Planos ({planes}) sin una sección que evite cortar paredes a lo largo; en total: {count}. Se dejó la posición uniforme.',
   'split.joint.auto': 'Conectores donde quepan; corte liso para pegar donde no',
   'split.joint.lap': 'Solape de borde (modifica la forma)',
@@ -1385,6 +1405,12 @@ export const TRANSLATIONS_ES = {
   'bus.error.assemblyNoTarget': 'Indica groupId o ids de las piezas divididas.',
   'bus.error.assemblyNotSplit': 'Esas piezas no se pueden revalidar ({reason}): deben ser piezas de un mismo grupo dividido con sus uniones guardadas.',
   'dialog.thread.invalidFields': 'Corrige los campos marcados antes de crear la rosca: un valor no numérico o fuera de rango no se aplica.',
+  ...ORIENT_UI_ES,
+  ...IMANES_UNION_ES,
+  ...ACERCA_ES,
+  ...BARRA_FLOTANTE_ES,
+  ...COLGAR_MURO_ES,
+  ...PASO_CABLE_ES,
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -1404,7 +1430,10 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PREVIEW_EN,
   ...SPLITJOINTS_EN,
   ...SPLITPREFS_EN,
+  ...UNIONES_FIRMES_EN,
   ...AJUSTAR_EN,
+  ...SUAVIZAR_EN,
+  ...SUAVIZAR_UI_EN,
   ...SPLITCOUPLING_EN,
   ...A11YUX_EN,
   ...UXMOVIL_EN,
@@ -1427,16 +1456,20 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UX6_EN,
   ...RECETAS_EN,
   ...ASISTENTES_EN,
+  ...IMAN_EN,
+  ...IMAN_UI3_EN,
   ...BORDES_EN,
   ...UX7_EN,
   ...UX8_EN,
   ...UX10_EN,
+  ...UX9_EN,
   ...REDISENO_EN,
   ...PANEL_EN,
   ...ENCAJE_UI_EN,
   ...REDISENO3A_EN,
   ...REDISENO3B_EN,
   ...UX8_MENU_EN,
+  ...TORRETA_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
@@ -2584,7 +2617,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'Each piece laid on its plate (plates side by side), without moving the scene',
   'export.split.zipDone': '{count} pieces exported to {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'Piece {code} has a loose {volume} mm³ fragment that could not be merged with a neighbour: it stays as its own piece.',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': 'Piece {code} absorbed a loose {volume} mm³ fragment from the neighbouring cell and extends {protrusion} mm past the cut plane (intended; with a fragment threshold of 0 it stays as its own piece).',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'Piece {code} includes a small loose chunk of {volume} mm³ left over from the neighbouring cut, so it sticks out {protrusion} mm past the cut plane. This is intended: it avoids a tiny separate piece.',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': 'Planes ({planes}) with no section that avoids cutting walls lengthwise; total: {count}. The uniform position was kept.',
   'split.joint.auto': 'Connectors where they fit; plain cut for gluing elsewhere',
   'split.joint.lap': 'Edge lap (changes the shape)',
@@ -2688,6 +2721,12 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'bus.error.assemblyNoTarget': 'Give groupId or the ids of the split parts.',
   'bus.error.assemblyNotSplit': 'These parts cannot be revalidated ({reason}): they must be parts of one split group with their joints saved.',
   'dialog.thread.invalidFields': 'Fix the marked fields before creating the thread: a non-numeric or out-of-range value is not applied.',
+  ...ORIENT_UI_EN,
+  ...IMANES_UNION_EN,
+  ...ACERCA_EN,
+  ...BARRA_FLOTANTE_EN,
+  ...COLGAR_MURO_EN,
+  ...PASO_CABLE_EN,
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

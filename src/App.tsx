@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { AiChatDrawer } from './components/AiChatDrawer';
 import { CommandPalette } from './components/CommandPalette';
 import { Dialogs } from './components/Dialogs';
+import { AboutLayer } from './components/about/AboutDialog';
 import { LeftSidebar } from './components/LeftSidebar';
 import { ProjectDropTarget } from './components/ProjectDropTarget';
 import { ProjectRecoveryBanner } from './components/ProjectRecoveryBanner';
@@ -46,7 +47,12 @@ import { OPEN_INSPECTOR_EVENT } from './components/inspector/hollowPanelRequest'
 import { ToolRail } from './components/shell/ToolRail';
 import { Text3DPanel } from './components/text3d/Text3DPanel';
 import { AssistantsPanel } from './components/assistants/AssistantsPanel';
+import { MagnetPanel } from './components/magnet/MagnetPanel';
+import { ScrewBossPanel } from './components/screwBoss/ScrewBossPanel';
+import { KeyholePanel } from './components/keyhole/KeyholePanel';
+import { CablePassPanel } from './components/cablePass/CablePassPanel';
 import { startPanelExclusion } from './store/insertCatalog';
+import { startMinWidthNotice } from './store/minWidthNotice';
 import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
 import { activateRailTool, toggleRailTool } from './store/toolActivation';
 import { useSimplifyRequestRelay } from './components/inspector/simplifyPanelRequest';
@@ -78,6 +84,8 @@ export const App: React.FC = () => {
   const recovery = useProjectRecovery();
   // Texto 3D y Asistentes comparten hueco: el arranque explícito de su exclusión mutua (una sola vez).
   useEffect(() => startPanelExclusion(), []);
+  // La app está pensada para 1024 px o más: bajo ese ancho se avisa una vez, sin bloquear.
+  useEffect(() => startMinWidthNotice(), []);
   const discardRecoveryOnClose = recovery.discardOnClose;
 
   // F2/F3 necesitan la lista de escena: en pantallas estrechas el panel izquierdo es un cajón, y se pide la
@@ -478,12 +486,17 @@ export const App: React.FC = () => {
         <div id="kura-op-slot" className="kura-op-slot" />
         <Text3DPanel />
         <AssistantsPanel />
+        <MagnetPanel />
+        <ScrewBossPanel />
+        <KeyholePanel />
+        <CablePassPanel />
         <AiChatDrawer />
         <ProjectDropTarget />
       </div>
 
       <StatusBar recoveryStatus={recovery.status} recoveryFailure={recovery.failure} />
       <Dialogs />
+      <AboutLayer />
       <ConfirmDialogHost />
       <UnitChoiceDialog />
       <FitToBedDialog />

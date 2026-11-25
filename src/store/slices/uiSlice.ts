@@ -34,6 +34,7 @@ import { takeSecondaryAction } from '../toastEnhancers';
 import { findBedProfile, loadUserBedProfiles } from '../bedProfiles';
 import type { KuraStoreState, ToastAction, ToastMessage } from '../storeTypes';
 import { indexObjects, snapshotWatch, toastIsSticky } from '../toastActionState';
+import { projectPanelPinOf } from '../panelContext';
 import { actionHasPanel } from '../actionsCatalog';
 import { loadRightPanelCollapsed, saveRightPanelCollapsed } from '../rightPanelPrefs';
 
@@ -44,6 +45,17 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const initialDensity = loadInitialUiDensity();
   applyMetaColorScheme(initialScheme);
   applyThemePresetToDom(initialThemePreset);
+  // Avisos con acción sobre objetos concretos que el usuario ya descartó: no vuelven a emerger por la misma causa
+  // (quedan en el historial de «Avisos»). La clave incluye los objetos, así que un archivo nuevo sí avisa.
+  const dismissedNoticeKeys = new Set<string>();
+  const noticeKey = (x: Pick<ToastMessage, 'text' | 'kind' | 'action'>) =>
+    x.kind !== 'error' && x.action?.targetIds?.length ? `${x.kind}|${x.text}|${[...x.action.targetIds].sort().join(',')}` : null;
+  const rememberDismissed = (list: readonly ToastMessage[]) => {
+    for (const x of list) {
+      const key = noticeKey(x);
+      if (key) dismissedNoticeKeys.add(key);
+    }
+  };
 
   return {
     uiDensity: initialDensity,
@@ -98,6 +110,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     spawnedAtById: {},
     toasts: [],
     toastHistory: [],
+    projectPanelPin: null,
 
     setUiDensity: (mode) => {
       if (mode !== 'zen') writeStorage(STORAGE_UI_DENSITY_KEY, mode);
@@ -119,7 +132,8 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
     showProjectPanel: () => {
       if (get().rightCollapsed) saveRightPanelCollapsed(false);
-      set({ selectedIds: [], activeAction: null, rightCollapsed: false });
+      // La selección y la herramienta se conservan: el panel Proyecto queda fijado hasta que cambien.
+      set({ projectPanelPin: projectPanelPinOf(get()), rightCollapsed: false });
     },
     setSectionPlane: (patch) => set((state) => ({ sectionPlane: { ...state.sectionPlane, ...patch } })),
     setShowOverhangs: (showOverhangs) => set({ showOverhangs }),
@@ -210,6 +224,8 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       // Historial corto (8): también lo que se mostró solo dentro de un diálogo, con sus acciones operables.
       set((state) => ({ toastHistory: [...state.toastHistory.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, at: Date.now(), ...(actions.length > 0 ? { actions } : {}) }].slice(-8) }));
       if (options?.historyOnly) return;
+      const key = noticeKey({ text, kind, action });
+      if (key && dismissedNoticeKeys.has(key)) return;
       // Un aviso por acción: uno idéntico (mismo texto y tipo) se reemplaza en vez de apilarse.
       set((state) => {
         const next = [...state.toasts.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, ...(action ? { action } : {}), ...(secondaryAction ? { secondaryAction } : {}) }];
@@ -235,9 +251,15 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       }));
       action.run();
     },
-    dismissAllToasts: () => set({ toasts: [] }),
+    dismissAllToasts: () => {
+      rememberDismissed(get().toasts);
+      set({ toasts: [] });
+    },
     clearToastHistory: () => set({ toastHistory: [] }),
     dismissErrorToasts: () => set((state) => (state.toasts.some((x) => x.kind === 'error') ? { toasts: state.toasts.filter((x) => x.kind !== 'error') } : state)),
-    dismissToast: (id) => set((state) => ({ toasts: state.toasts.filter((toast) => toast.id !== id) })),
+    dismissToast: (id) => {
+      rememberDismissed(get().toasts.filter((toast) => toast.id === id));
+      set((state) => ({ toasts: state.toasts.filter((toast) => toast.id !== id) }));
+    },
   };
 }

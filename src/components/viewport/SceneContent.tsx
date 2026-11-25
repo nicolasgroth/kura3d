@@ -21,6 +21,10 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { X } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import { useMagnetPanel } from '../../store/magnetPanel';
+import { useScrewBossPanel } from '../../store/screwBossPanel';
+import { useKeyholePanel } from '../../store/keyholePanel';
+import { useCablePassPanel } from '../../store/cablePassPanel';
 import { useUserAxisGizmoColors } from './gizmoAxisColors';
 import { type Vec3 } from '../../types/kura';
 import { PaintBrushCursor } from './PaintBrushCursor';
@@ -30,16 +34,22 @@ import { CameraController } from './CameraController';
 import { overhangFacesFor } from '../../store/printReportSelectors';
 import { PrinterBedOverlay } from './PrinterBedOverlay';
 import { PreviewLayers } from './PreviewLayers';
+import { MagnetPlacementLayer } from './MagnetPlacementLayer';
+import { ScrewBossPlacementLayer } from './ScrewBossPlacementLayer';
+import { KeyholePlacementLayer } from './KeyholePlacementLayer';
+import { CablePassPlacementLayer } from './CablePassPlacementLayer';
 import { FitPreviewGhost } from '../fitToBed/FitPreviewGhost';
 import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
 import { OpenEdgesOverlay } from './OpenEdgesOverlay';
 import { FitCheckHighlight } from '../fitCheck/FitCheckHighlight';
+import { OrientOverhangLayer } from '../orient/OrientOverhangLayer';
 import { GroupTransformGizmo } from './GroupTransformGizmo';
 import { GroupEnterOnDoubleClick } from './GroupEnterOnDoubleClick';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
 import { usePaintStroke } from './usePaintStroke';
 import { useDragMoveSelected } from './useDragMoveSelected';
+import { FloatingBarTracker } from './FloatingBarTracker';
 
 /** Caras del cubo de vistas en el orden de drei (+X, −X, +Y, −Y, +Z, −Z internos = der, izq, sup, inf, frente, fondo). */
 const VIEWCUBE_FACES = ['right', 'left', 'top', 'bottom', 'front', 'back'] as const;
@@ -121,10 +131,20 @@ export const SceneContent: React.FC<{
   const pickingSurface = useKuraStore((s) => s.surfacePick !== null);
   // Con un panel de operación abierto (corte, molde, proyección…) el gizmo de mover se oculta.
   const operationOpen = useKuraStore((s) => s.activeDialog !== null);
+  // Con el panel de imán abierto el clic coloca huecos: el gizmo no debe mover la pieza ni tapar la cara.
+  const magnetOpen = useMagnetPanel((s) => s.open);
+  // Igual con la torreta: el clic coloca, el gizmo se oculta.
+  const screwBossOpen = useScrewBossPanel((s) => s.open);
+  const keyholeOpen = useKeyholePanel((s) => s.open);
+  const cablePassOpen = useCablePassPanel((s) => s.open);
   const showGizmo =
     activeTool === 'select' &&
     !pickingSurface &&
     !operationOpen &&
+    !magnetOpen &&
+    !screwBossOpen &&
+    !keyholeOpen &&
+    !cablePassOpen &&
     Boolean(primaryObj) &&
     Boolean(activeTargetGroup) &&
     !primaryObj?.locked &&
@@ -212,10 +232,15 @@ export const SceneContent: React.FC<{
       )}
 
       <PreviewLayers />
+      <MagnetPlacementLayer />
+      <ScrewBossPlacementLayer />
+      <KeyholePlacementLayer />
+      <CablePassPlacementLayer />
       <FitPreviewGhost />
       <SegmentHighlight />
       <OpenEdgesOverlay />
       <FitCheckHighlight />
+      <OrientOverhangLayer />
 
       {activeTool === 'paint' && <PaintBrushCursor />}
       {activeTool === 'measure' && <MeasureOverlay />}
@@ -333,6 +358,7 @@ export const SceneContent: React.FC<{
       <GroupEnterOnDoubleClick />
       <ViewportCaptureRegistrar />
       <ViewportCanvasA11y />
+      <FloatingBarTracker />
     </>
   );
 };

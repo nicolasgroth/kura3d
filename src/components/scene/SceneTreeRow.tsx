@@ -21,6 +21,7 @@ import type { LanguageCode, SceneObject } from '../../types/kura';
 import { tCount } from '../../utils/plural';
 import type { TreeRow } from './sceneTreeRows';
 import '../../styles/ux3Edicion.css';
+import '../../styles/sceneTreeNameFirst.css';
 import { splitPieceDisplayName } from '../../core/scene/splitPieceName';
 import { SceneColorSwatch } from './SceneColorSwatch';
 import { MiddleEllipsisName } from './MiddleEllipsisName';
@@ -161,7 +162,7 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
             <span aria-hidden="true">{obj.metadata.split.assemblyStep}</span>
           </span>
         )}
-        {obj && isNegative(obj) && <span className="kura-hole-tag" aria-hidden="true">{t(language, 'sidebar.scene.holeBadge')}</span>}
+        {obj && isNegative(obj) && <span className="kura-hole-tag" aria-hidden="true" title={t(language, 'sidebar.scene.holeBadge')}><span className="kura-hole-tag-text">{t(language, 'sidebar.scene.holeBadge')}</span><MinusSquare className="kura-hole-tag-icon" size={12} /></span>}
         {obj && isReference(obj) && <span className="kura-hole-tag kura-reference-tag" aria-hidden="true">{t(language, 'sidebar.scene.referenceBadge')}</span>}
         {obj && <SceneColorSwatch obj={obj} language={language} part="spoken" />}
         <span className="sr-only">, {states.join(', ')}</span>

@@ -35,6 +35,12 @@ export interface ActionPaletteItem {
 
 type StateSlice = Pick<KuraStoreState, 'objects' | 'selectedIds' | 'groups' | 'busyOperation'>;
 
+/** Palabras extra con las que se busca una acción (además de su nombre): sinónimos de uso, no del rótulo. */
+const EXTRA_KEYWORDS: Partial<Record<ActionId, string>> = {
+  orient: 'orientar orientación soporte voladizo apoyar girar acostar orient orientation support overhang rotate lay flat',
+  fitCheck: 'encaje holgura tolerancia ajuste choque interferencia justo fit clearance tolerance interference tight',
+};
+
 /** Nombre comparable: sin mayúsculas, espacios sobrantes ni la elipsis que marca un diálogo. */
 const plain = (label: string) => label.replace(/(…|\.\.\.)\s*$/, '').trim().toLowerCase();
 
@@ -52,7 +58,7 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
       const name = actionName(language, id);
       const availability = actionAvailability(state, id);
       const unavailable = availability.reason ? { unavailable: t(language, availability.reason) } : {};
-      const base = { category, keywords: id, kind: 'local' as const, icon, ...unavailable };
+      const base = { category, keywords: `${id} ${EXTRA_KEYWORDS[id] ?? ''}`.trim(), kind: 'local' as const, icon, ...unavailable };
       if (id === 'convert') {
         for (const role of OBJECT_ROLES) {
           out.push({ ...base, id: `action-convert-${role}`, label: `${name}: ${t(language, ROLE_LABEL_KEY[role])}`, run: () => runConvert(role) });

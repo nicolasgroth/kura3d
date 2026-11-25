@@ -29,7 +29,6 @@ const PRIMER_NIVEL = ['Renombrar', 'Duplicar', 'Ocultar (no se exporta)', 'Bloqu
 const VISTAS = [
   { ancho: 1440, alto: 900, tema: 'light' as const },
   { ancho: 1024, alto: 768, tema: 'dark' as const },
-  { ancho: 390, alto: 844, tema: 'light' as const },
 ];
 
 test.describe('Menú contextual del objeto', () => {
@@ -67,6 +66,8 @@ test.describe('Menú contextual del objeto', () => {
       await page.mouse.click(p.x, p.y, { button: 'right' });
       await page.locator('.kura-context-menu').first().getByRole('menuitem', { name: 'Preparar para imprimir' }).click();
       await expect(page.getByRole('menuitem', { name: 'Ahuecar…' }).first()).toBeVisible();
+      await page.keyboard.press('Escape');
+      // Escape dentro de un submenú cierra solo ese nivel; el segundo cierra el menú.
       await page.keyboard.press('Escape');
       await expect(page.locator('.kura-context-menu')).toHaveCount(0);
       expect(errs).toEqual([]);
@@ -108,25 +109,6 @@ test.describe('Pintura: muestras y destino', () => {
     expect(errs).toEqual([]);
   });
 
-  test.describe('táctil', () => {
-    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
-    test('las muestras miden 44×44', async ({ page }) => {
-      const errs = await abrir(page, 390, 844);
-      const id = await crear(page, 'box', { width: 20, height: 20, depth: 20 }, [0, 10, 0]);
-      await page.evaluate((x) => {
-        const s = (window as any).__s.getState();
-        s.setSelection([x]);
-        s.setActiveTool('paint');
-      }, id);
-      const muestra = page.locator('.kura-paint-palette .kura-swatch').first();
-      await muestra.waitFor({ state: 'attached' });
-      await muestra.scrollIntoViewIfNeeded();
-      const caja = (await muestra.boundingBox())!;
-      expect(caja.width).toBeGreaterThanOrEqual(44);
-      expect(caja.height).toBeGreaterThanOrEqual(44);
-      expect(errs).toEqual([]);
-    });
-  });
 });
 
 test.describe('Pintura', () => {

@@ -15,7 +15,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Layers, Trash2 } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
-import { colorName, colorNameWithHex } from '../utils/colorNames';
+import { colorNameWithHex, distinctColorNames } from '../utils/colorNames';
 import { tCount } from '../utils/plural';
 import { AddSheet } from './AddSheet';
 import { SceneObjectList } from './scene/SceneObjectList';
@@ -61,6 +61,7 @@ export const LeftSidebar: React.FC = () => {
     }
     return Array.from(counts.entries());
   }, [objects]);
+  const legendNames = useMemo(() => distinctColorNames(language, filamentColors.map(([hex]) => hex)), [language, filamentColors]);
 
   const showAdd = narrow && narrowTab === 'shapes';
   const sceneTitle = t(language, 'r3a.sidebar.label');
@@ -100,7 +101,7 @@ export const LeftSidebar: React.FC = () => {
                 {filamentColors.map(([hex, count]) => (
                   <span key={hex} className="kura-filament-chip" title={`${colorNameWithHex(language, hex)} (${count})`}>
                     <span className="kura-color-dot" style={{ backgroundColor: hex }} aria-hidden="true" />
-                    <span>{colorName(language, hex)}</span>
+                    <span>{legendNames.get(hex.toLowerCase())}</span>
                     <span style={{ color: 'var(--text-muted)' }}>{t(language, 'ux7.filament.pieces', { count })}</span>
                   </span>
                 ))}

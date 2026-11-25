@@ -13,7 +13,7 @@ import { formatLocaleNumber } from '../../i18n/numberLocale';
 import type { FitCheckReport, FitPairResult, FitPairStatus } from '../../engine/fitCheck';
 import type { LanguageCode } from '../../types/kura';
 
-const RANK: Record<FitPairStatus, number> = { interferes: 0, tight: 1, ok: 2, far: 3 };
+const RANK: Record<FitPairStatus, number> = { interferes: 0, tight: 1, cutJoint: 2, ok: 3, far: 4 };
 
 /** Pares del más grave al menos: choques por volumen, justos por holgura y luego el resto (orden estable). */
 export function pairsBySeverity(pairs: readonly FitPairResult[]): FitPairResult[] {

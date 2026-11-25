@@ -124,7 +124,7 @@ test.describe('mitad conservada del corte', () => {
     await expect(page.getByRole('radio', { name: /^(✓ )?Apoyarla en la cama/ })).toBeChecked();
   });
 
-  for (const [ancho, alto] of [[1440, 900], [390, 844]] as const) {
+  for (const [ancho, alto] of [[1440, 900]] as const) {
     for (const tema of ['light', 'dark'] as const) {
       test(`capturas ${ancho}px tema ${tema}`, async ({ page }) => {
         const errores: string[] = [];

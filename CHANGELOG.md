@@ -10,6 +10,17 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Barra flotante.** Al seleccionar un objeto aparece junto a él una barra con color, duplicar, ocultar, bloquear, eliminar y «Más»; sigue al objeto, se oculta al arrastrar y se puede apagar en Ajustes. Cambiar el color o bloquear varios objetos deja un solo paso de deshacer.
+- **Colgar en el muro y paso de cable.** Dos agregados nuevos en Insertar: un ojo de cerradura para colgar la pieza de un tornillo y un agujero pasante para cables (redondo u ovalado), con preajustes y avisos. Medidas típicas por verificar.
+- **Acerca de.** Qué es el programa, cómo se construyó, licencia y bibliotecas; con una sorpresa al hacer 10 clics en el logo.
+- **Suavizar, Orientar, imanes como unión del corte y torreta para tornillo** ya tienen interfaz (antes solo motor).
+- **Servidor MCP.** Cinco herramientas nuevas (suavizar, analizar y aplicar orientación, alojamiento de imán, torreta): 54 en total.
+- **Orientar.** El motivo «más baja» ya no muestra un porcentaje con signo negativo.
+- **Alojamiento de imán.** Clic sobre una cara y queda el hueco como pieza negativa, perpendicular a la cara, también en superficies curvas. Redondo de 5 × 2 mm por defecto o cuadrado, holgura ajustable, preajustes propios, modo oculto, y avisos de pared, borde, huecos vecinos y curva. El imán conserva su medida y sigue a la pieza al moverla, girarla o escalarla.
+- **Asistentes: vista previa y edición.** Mientras llenas el formulario se ve en el visor lo que se va a crear, y «Editar con el asistente» reabre una pieza creada con sus parámetros.
+- **Pantalla mínima de 1024 px.** El teléfono deja de ser un tamaño soportado.
+- **Usabilidad.** Un aviso que cerraste no vuelve a aparecer por la misma causa; el botón Proyecto ya no borra la selección; Comprobar encaje reconoce las uniones de un corte; el historial dice la acción real; importar algo de menos de 5 mm ofrece convertir unidades; «Agregar» e «Insertar» ofrecen lo mismo.
+- **Motor (sin interfaz todavía).** Suavizar malla sin encogerla, orientar la pieza para reducir soportes, y uniones dimensionadas según la sección del corte al dividir.
 - **Asistentes.** Nueva sección (Insertar → Asistentes, o la paleta) para crear piezas paso a paso: caja con tapa, llavero con texto y placa de enchufe, con un formulario que sale de cada receta y valida mientras escribes.
 - **Arrastrar para mover.** Con un objeto seleccionado, arrastrarlo lo mueve sobre el plano horizontal en que está; arrastrar el fondo sigue girando la vista.
 - **Usabilidad, lote tras la quinta evaluación.** Menú de clic derecho corto (12 entradas y submenús iguales a los de «Acciones»), un solo nombre por comando en menús y paleta, y todas las acciones disponibles en la paleta. Lo nuevo y lo importado cae al costado, no detrás. Los avisos ya no tapan paneles (máximo 2 visibles). Nombres largos distinguibles en el árbol. Una sola herramienta marcada en la barra. Dividir avisa mientras recalcula. Medir no mueve la cámara. Mayús+H oculta y vuelve a mostrar. Una escena vacía no deja borrador. Los objetos nuevos usan el menor número libre.

@@ -27,6 +27,7 @@ import {
   Ruler,
   Scissors,
   Search,
+  Info,
   Settings,
   Sun,
   Undo2,
@@ -38,6 +39,7 @@ import { useKuraStore } from '../store/useKuraStore';
 import type { ActiveTool } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
 import { useMcpBridgeStatus } from '../utils/mcpBridgeClient';
+import { handleLogoClick } from '../utils/logoEasterEgg';
 import { describeMcpBridge } from '../utils/mcpBridgeHealth';
 import { openExportDialog } from './ExportDialog';
 import { ImportMenuButton } from './ImportMenuButton';
@@ -140,6 +142,7 @@ export const TopBar: React.FC = () => {
   const undo = useKuraStore((s) => s.undo);
   const redo = useKuraStore((s) => s.redo);
   const openSettings = useKuraStore((s) => s.openSettings);
+  const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const setCommandPaletteOpen = useKuraStore((s) => s.setCommandPaletteOpen);
   const bridgeStatus = useMcpBridgeStatus();
   const mcpConfig = useKuraStore((s) => s.mcpConfig);
@@ -252,11 +255,20 @@ export const TopBar: React.FC = () => {
         className="kura-brand-icon-img"
         width={26}
         height={26}
+        onClick={handleLogoClick}
       />
       {!isHidden('brand') && (
         <>
           <span className="kura-brand-title">{BRAND.name}</span>
-          <span className="kura-brand-badge">{BRAND.version.split('.').slice(0, 2).join('.')}</span>
+          <button
+            type="button"
+            className="kura-brand-badge kura-about-version-btn"
+            onClick={() => setActiveDialog('about')}
+            aria-label={t(language, 'about.badgeLabel', { version: BRAND.version, name: BRAND.name })}
+            title={t(language, 'about.menuTip', { name: BRAND.name })}
+          >
+            {BRAND.version.split('.').slice(0, 2).join('.')}
+          </button>
         </>
       )}
     </div>
@@ -451,6 +463,18 @@ export const TopBar: React.FC = () => {
               >
                 <Settings size={13} aria-hidden="true" />
                 <span>{t(language, 'topbar.settings')}</span>
+              </button>
+            )}
+            {narrowScreen && (
+              <button
+                type="button"
+                role="menuitem"
+                className="kura-btn kura-btn-sm"
+                onClick={() => setActiveDialog('about')}
+                title={t(language, 'about.menuTip', { name: BRAND.name })}
+              >
+                <Info size={13} aria-hidden="true" />
+                <span>{t(language, 'about.title', { name: BRAND.name })}</span>
               </button>
             )}
             {isHidden('lang') && <LanguageRadioItems language={language} onPick={setLanguage} />}

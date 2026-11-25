@@ -788,6 +788,118 @@ export interface SceneObjectMetadata {
   splitDowel?: SplitDowelMetadata;
   /** Receta que generó el objeto (`src/types/recipeProvenance.ts`). */
   recipe?: RecipeProvenance;
+  /** Agregado paramétrico (alojamiento de imán): tipo, parámetros y pieza anfitriona. */
+  addon?: AddonMetadata;
+}
+
+/**
+ * Imán pedido para un alojamiento: `sizeMm` es el diámetro (redondo) o el lado (cuadrado); `heightMm` su alto.
+ * Única definición: `MagnetParams` de `core/addons/magnetPocket` es este mismo tipo.
+ */
+export interface MagnetPocketParams {
+  shape: 'round' | 'square';
+  sizeMm: number;
+  heightMm: number;
+  /** Holgura sumada al diámetro o lado. */
+  clearanceMm: number;
+  /** Holgura sumada a la profundidad. */
+  depthClearanceMm: number;
+  /** Oculto bajo la cara (queda material encima; requiere pausar la impresión). */
+  hidden: boolean;
+}
+
+/** Agregado colocado sobre una cara: alojamiento de imán (negativo) o una de las dos piezas de una torreta. */
+export type AddonMetadata = MagnetAddonMetadata | ScrewBossAddonMetadata | KeyholeAddonMetadata | CablePassAddonMetadata;
+
+/**
+ * Ojo de cerradura para colgar en el muro: entrada para la cabeza del tornillo, ranura del cuello hacia «arriba» y
+ * cámara detrás donde queda la cabeza. Única definición: `KeyholeParams` de `core/addons/keyhole`.
+ */
+export interface KeyholeParams {
+  /** Tornillo nominal (rótulo y nombre). */
+  screwMm: number;
+  /** Diámetro de la entrada y ancho de la cámara (cabeza + holgura). */
+  headDiameterMm: number;
+  /** Ancho de la ranura del cuello. */
+  neckWidthMm: number;
+  /** Recorrido de la ranura: del centro de la entrada al centro del extremo donde descansa el tornillo. */
+  slotLengthMm: number;
+  /** Fondo de la cámara donde queda la cabeza. */
+  chamberDepthMm: number;
+  /** Material entre la cámara y la cara (labio que sujeta la cabeza). */
+  lipMm: number;
+  /** Giro de la ranura respecto del «arriba» de la pieza (grados). */
+  angleDeg: number;
+}
+
+/** Ojo de cerradura como pieza negativa; `anchorMm` = 0 (el origen está en el punto de la cara). */
+export interface KeyholeAddonMetadata {
+  kind: 'keyhole';
+  params: KeyholeParams;
+  anchorMm: number;
+  hostId?: string;
+}
+
+/** Paso de cable: agujero pasante redondo u ovalado con chaflán en las bocas. Única definición en `core/addons/cablePass`. */
+export interface CablePassParams {
+  shape: 'round' | 'slot';
+  /** Diámetro (redondo) o lado corto (ranura). */
+  widthMm: number;
+  /** Lado largo de la ranura (en el redondo se ignora). */
+  lengthMm: number;
+  chamferMm: number;
+  /** Giro del lado largo respecto de la horizontal de la cara (grados). */
+  angleDeg: number;
+  /** true: el largo se mide con rayos para atravesar la pared; false: `depthMm`. */
+  autoDepth: boolean;
+  /** Profundidad a mano (cuando `autoDepth` es false o la pared es demasiado gruesa para medir). */
+  depthMm: number;
+}
+
+/** Paso de cable como pieza negativa; `boreMm` = largo del agujero entre bocas, medido al colocar. */
+export interface CablePassAddonMetadata {
+  kind: 'cable_pass';
+  params: CablePassParams;
+  anchorMm: number;
+  boreMm: number;
+  hostId?: string;
+}
+
+/** Alojamiento de imán como pieza negativa. */
+export interface MagnetAddonMetadata {
+  kind: 'magnet_pocket';
+  params: MagnetPocketParams;
+  /** Pieza sobre la que se colocó (puede ya no existir). */
+  hostId?: string;
+}
+
+/**
+ * Torreta para tornillo: tipo de sujeción, medida nominal, agujero y poste. `holeDiameterMm` y `holeDepthMm` salen
+ * de la tabla de medidas (o del preajuste del usuario). Única definición: `ScrewBossParams` de `core/addons/screwBoss`.
+ */
+export interface ScrewBossParams {
+  /** `screw`: tornillo directo al plástico (agujero piloto); `insert`: inserto roscado de latón puesto con calor. */
+  type: 'screw' | 'insert';
+  /** Medida métrica nominal (2, 2,5, 3, 4, 5). */
+  nominalMm: number;
+  holeDiameterMm: number;
+  holeDepthMm: number;
+  /** Alto del poste sobre la cara. */
+  heightMm: number;
+  outerDiameterMm: number;
+}
+
+/**
+ * Una pieza de la torreta: el poste (sólido que se une a la pieza al aplicar las restas) o el agujero (negativo).
+ * `anchorMm`: distancia sobre el eje +Y local desde la base del objeto hasta el punto de la cara clicada (lo usa
+ * el seguimiento de la pieza).
+ */
+export interface ScrewBossAddonMetadata {
+  kind: 'screw_boss';
+  part: 'post' | 'hole';
+  params: ScrewBossParams;
+  anchorMm: number;
+  hostId?: string;
 }
 
 /** Lote de tarugos sueltos de "dividir para imprimir": medida y cantidad. */
@@ -863,16 +975,23 @@ export interface SplitJointRecord {
   b: string;
   kind: 'connector' | 'glue' | 'lap' | 'socket';
   connector: {
-    type: 'dowel' | 'peg' | 'dovetail' | 'lap' | 'loose-dowel';
+    type: 'dowel' | 'peg' | 'dovetail' | 'lap' | 'loose-dowel' | 'magnet';
     size: number;
     depth: number;
     tolerance: number;
     count: number;
     minWallForConnectorMm?: number;
     lapHeightMm?: number;
+    /** Imán de la unión (`type: 'magnet'`). */
+    magnet?: MagnetPocketParams;
   } | null;
   connectorCenters: Vec3[];
   contactAreaMm2: number;
+  /**
+   * Imanes de la unión: medida, cantidad, alojamiento y polaridad (pegar cada par con polos opuestos); las posiciones
+   * son `connectorCenters`. Ausente sin imanes y en proyectos anteriores.
+   */
+  magnets?: { magnet: MagnetPocketParams; count: number; pocketDiameterMm: number; pocketDepthMm: number; polarity: 'opposite' };
   /** Dónde quedó la marca de pareja (`dots` = puntos por fuera); `null` sin marca. Ausente en proyectos anteriores. */
   labelPlacement?: 'joint' | 'outside' | 'dots' | null;
 }
@@ -1008,7 +1127,12 @@ export interface KuraCommandRequest {
     | 'list_recipes'
     | 'describe_recipe'
     | 'validate_recipe'
-    | 'run_recipe';
+    | 'run_recipe'
+    | 'smooth_mesh'
+    | 'orient_for_print'
+    | 'apply_orientation'
+    | 'add_magnet_pocket'
+    | 'add_screw_boss';
   params: Record<string, unknown>;
 }
 

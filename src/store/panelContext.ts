@@ -30,9 +30,29 @@ export type PanelContext =
   /** Opciones de la herramienta activa; `objectId` es el objeto único seleccionado (o `null`). */
   | { kind: 'tool'; tool: PanelToolId; objectId: string | null };
 
-type PanelState = Pick<KuraStoreState, 'activeAction' | 'activeTool' | 'selectedIds' | 'objects'> & Partial<Pick<KuraStoreState, 'transformFocus'>>;
+type PanelState = Pick<KuraStoreState, 'activeAction' | 'activeTool' | 'selectedIds' | 'objects'> & Partial<Pick<KuraStoreState, 'transformFocus' | 'projectPanelPin'>>;
+
+/** Contexto en el que se fijó el panel «Proyecto» (botón de la barra superior). */
+export interface ProjectPanelPin {
+  selection: string;
+  tool: string;
+  action: string | null;
+}
+
+export function projectPanelPinOf(state: Pick<KuraStoreState, 'activeAction' | 'activeTool' | 'selectedIds'>): ProjectPanelPin {
+  return { selection: [...state.selectedIds].sort().join('|'), tool: state.activeTool, action: state.activeAction };
+}
+
+/** El panel «Proyecto» fijado sigue vigente solo mientras no cambie la selección, la herramienta ni la acción. */
+function projectPinned(state: PanelState): boolean {
+  const pin = state.projectPanelPin;
+  if (!pin) return false;
+  const now = projectPanelPinOf(state);
+  return pin.selection === now.selection && pin.tool === now.tool && pin.action === now.action;
+}
 
 export function panelContextOf(state: PanelState): PanelContext {
+  if (projectPinned(state)) return { kind: 'project' };
   const ids = state.selectedIds.filter((id) => state.objects.some((o) => o.id === id));
   const active = activeContextOf(state);
   if (active.kind === 'action' && SCENE_PANEL_ACTIONS.has(active.id)) {

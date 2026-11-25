@@ -18,7 +18,10 @@ import { FLOWUX_HI } from './flowUx';
 import { PREVIEW_HI } from './preview';
 import { SPLITJOINTS_HI } from './splitJoints';
 import { SPLITPREFS_HI } from './splitPrefs';
+import { UNIONES_FIRMES_HI } from './unionesFirmes';
 import { AJUSTAR_HI } from './ajustarImpresora';
+import { SUAVIZAR_HI } from './suavizarMotor';
+import { SUAVIZAR_UI_HI } from './suavizarUi';
 import { SPLITCOUPLING_HI } from './splitCoupling';
 import { A11YUX_HI } from './a11yUx';
 import { UXMOVIL_HI } from './uxMovil';
@@ -41,16 +44,26 @@ import { REALESUI_HI } from './realesUi';
 import { UX6_HI } from './ux6';
 import { RECETAS_HI } from './recetas';
 import { ASISTENTES_HI } from './asistentes';
+import { ACERCA_HI } from './acercaDe';
+import { IMAN_HI } from './iman';
+import { IMAN_UI3_HI } from './imanUi3';
+import { TORRETA_HI } from './torreta';
 import { BORDES_HI } from './bordesPrimitivas';
 import { UX7_HI } from './ux7';
 import { UX8_HI } from './ux8';
 import { UX10_HI } from './ux10';
+import { UX9_HI } from './ux9';
 import { REDISENO_HI } from './rediseno';
 import { PANEL_HI } from './panel';
 import { ENCAJE_UI_HI } from './encajeUi';
+import { ORIENT_UI_HI } from './orientar';
 import { REDISENO3A_HI } from './rediseno3a';
 import { REDISENO3B_HI } from './rediseno3b';
 import { UX8_MENU_HI } from './ux8Menu';
+import { IMANES_UNION_HI } from './imanesUnion';
+import { BARRA_FLOTANTE_HI } from './barraFlotante';
+import { COLGAR_MURO_HI } from './colgarMuro';
+import { PASO_CABLE_HI } from './pasoCable';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -66,7 +79,10 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...PREVIEW_HI,
   ...SPLITJOINTS_HI,
   ...SPLITPREFS_HI,
+  ...UNIONES_FIRMES_HI,
   ...AJUSTAR_HI,
+  ...SUAVIZAR_HI,
+  ...SUAVIZAR_UI_HI,
   ...SPLITCOUPLING_HI,
   ...A11YUX_HI,
   ...UXMOVIL_HI,
@@ -89,16 +105,20 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...UX6_HI,
   ...RECETAS_HI,
   ...ASISTENTES_HI,
+  ...IMAN_HI,
+  ...IMAN_UI3_HI,
   ...BORDES_HI,
   ...UX7_HI,
   ...UX8_HI,
   ...UX10_HI,
+  ...UX9_HI,
   ...REDISENO_HI,
   ...PANEL_HI,
   ...ENCAJE_UI_HI,
   ...REDISENO3A_HI,
   ...REDISENO3B_HI,
   ...UX8_MENU_HI,
+  ...TORRETA_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',
@@ -1274,7 +1294,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'हर टुकड़ा अपनी प्लेट पर (अगल-बगल), दृश्य हिलाए बिना',
   'export.split.zipDone': '{count} टुकड़े {name} में निर्यात',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'भाग {code} में {volume} mm³ का एक अलग टुकड़ा है जिसे किसी पड़ोसी से नहीं जोड़ा जा सका: यह अलग भाग रहेगा।',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': 'भाग {code} ने पड़ोसी सेल का {volume} mm³ का एक अलग टुकड़ा जोड़ लिया है और कट प्लेन से {protrusion} mm बाहर निकलता है (जानबूझकर; टुकड़ा सीमा 0 होने पर यह अलग भाग रहता है)।',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'भाग {code} में पड़ोसी कट से बचा {volume} mm³ का एक छोटा अलग टुकड़ा शामिल है, इसलिए यह कट प्लेन से {protrusion} mm बाहर निकलता है। यह जानबूझकर है: इससे एक नन्हा अलग भाग नहीं बनता।',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} तल ({planes}) को ऐसा खंड नहीं मिला जो दीवारों को लंबाई में न काटे: समान स्थिति रखी गई।',
   'split.joint.auto': 'जहाँ फिट हों वहाँ कनेक्टर; बाकी जगह चिपकाने के लिए सपाट कट',
   'split.joint.lap': 'किनारा ओवरलैप (आकार बदलता है)',
@@ -1378,4 +1398,10 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'bus.error.assemblyNoTarget': 'groupId या विभाजित हिस्सों के ids दें।',
   'bus.error.assemblyNotSplit': 'इन हिस्सों की फिर से जाँच नहीं हो सकती ({reason}): वे एक ही विभाजित समूह के हों और उनके जोड़ सहेजे हों।',
   'dialog.thread.invalidFields': 'थ्रेड बनाने से पहले चिह्नित फ़ील्ड सुधारें: गैर-संख्यात्मक या सीमा से बाहर का मान लागू नहीं होता।',
+  ...ORIENT_UI_HI,
+  ...IMANES_UNION_HI,
+  ...ACERCA_HI,
+  ...BARRA_FLOTANTE_HI,
+  ...COLGAR_MURO_HI,
+  ...PASO_CABLE_HI,
 };

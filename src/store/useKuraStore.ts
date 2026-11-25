@@ -23,15 +23,21 @@ import { createPaintSlice } from './slices/paintSlice';
 import { createPartsSlice } from './slices/partsSlice';
 import { clearPreviewOnSelectionChange, createPreviewSlice } from './slices/previewSlice';
 import { createSelectionSlice } from './slices/selectionSlice';
+import { clearSmoothOnSelectionChange, createSmoothSlice } from './slices/smoothSlice';
 import { createSplitSlice } from './slices/splitSlice';
 import { createSplitJointsSlice } from './slices/splitJointsSlice';
 import { createSplitPrefsSlice } from './slices/splitPrefsSlice';
 import { createFitToBedSlice } from './slices/fitToBedSlice';
 import { createFitCheckSlice, invalidateFitCheckOnSceneChange } from './slices/fitCheckSlice';
+import { createOrientSlice, invalidateOrientOnSceneChange } from './slices/orientSlice';
 import { closeActionOnTargetLoss } from './actionTargetGuard';
 import { resetToolWhenUnavailable } from './toolAvailabilityGuard';
 import { createRecipesSlice } from './slices/recipesSlice';
 import { createBedProfilesSlice } from './slices/bedProfilesSlice';
+import { createMagnetSlice } from './slices/magnetSlice';
+import { createScrewBossSlice } from './slices/screwBossSlice';
+import { createKeyholeSlice } from './slices/keyholeSlice';
+import { createCablePassSlice } from './slices/cablePassSlice';
 import { createUiSlice } from './slices/uiSlice';
 import { createQuickActionsSlice } from './slices/quickActionsSlice';
 import { createMenuIdeasSlice } from './slices/menuIdeasSlice';
@@ -85,12 +91,18 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createSplitPrefsSlice(ctx),
     ...createFitToBedSlice(ctx),
     ...createFitCheckSlice(ctx),
+    ...createOrientSlice(ctx),
     ...createRecipesSlice(ctx),
     ...createBedProfilesSlice(ctx),
+    ...createMagnetSlice(ctx),
+    ...createScrewBossSlice(ctx),
+    ...createKeyholeSlice(ctx),
+    ...createCablePassSlice(ctx),
     ...createMenuIdeasSlice(ctx),
     ...createGroupsSlice(ctx),
     ...createRepairSlice(ctx),
     ...createViewPrefsSlice(ctx),
+    ...createSmoothSlice(ctx),
   } as Partial<KuraStoreState>;
   return {
     ...base,
@@ -109,6 +121,8 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
 
 hydrateSecrets(useKuraStore);
 clearPreviewOnSelectionChange(useKuraStore);
+clearSmoothOnSelectionChange(useKuraStore);
 invalidateFitCheckOnSceneChange(useKuraStore);
+invalidateOrientOnSceneChange(useKuraStore);
 closeActionOnTargetLoss(useKuraStore);
 resetToolWhenUnavailable(useKuraStore);

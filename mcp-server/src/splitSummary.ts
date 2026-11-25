@@ -14,7 +14,12 @@ interface JointLike {
   connector?: unknown;
   connectors?: number;
   connectorCenters?: unknown[];
+  /** Imanes de la unión (`connectorType: 'magnet'`). */
+  magnets?: { count?: number; magnet?: { sizeMm?: number; heightMm?: number } };
 }
+
+/** Texto de polaridad para quien arma (la app no fija la polaridad física de los imanes). */
+export const MAGNET_POLARITY_TEXT = 'Glue each pair with opposite poles facing; test the pair before gluing.';
 
 interface PartLike {
   id?: string;
@@ -44,6 +49,19 @@ function connectorCount(j: JointLike): number {
   return j.connector ? 1 : 0;
 }
 
+/** Pares de imanes de las uniones con imanes: total, medidas por unión y el texto de polaridad. */
+function magnetSummary(joints: JointLike[]): Record<string, unknown> {
+  const withMagnets = joints.filter((j) => j.magnets && connectorCount(j) > 0);
+  if (withMagnets.length === 0) return {};
+  return {
+    magnets: {
+      pairs: withMagnets.reduce((s, j) => s + connectorCount(j), 0),
+      perJoint: withMagnets.map((j) => ({ label: j.label, pairs: connectorCount(j), diameterMm: j.magnets?.magnet?.sizeMm, heightMm: j.magnets?.magnet?.heightMm })),
+      polarity: MAGNET_POLARITY_TEXT,
+    },
+  };
+}
+
 /** Resumen corto del resultado de dividir para imprimir. */
 export function summarizeSplitResult(raw: unknown): Record<string, unknown> {
   const r = (raw ?? {}) as SplitResultLike;
@@ -69,6 +87,7 @@ export function summarizeSplitResult(raw: unknown): Record<string, unknown> {
     },
     parts: parts.map((p) => ({ id: p.id, code: p.code, plate: p.plate })),
     ...(Array.isArray(r.looseDowels) && r.looseDowels.length > 0 ? { looseDowels: r.looseDowels } : {}),
+    ...magnetSummary(joints),
     ...(r.assembly ? { assembly: r.assembly } : {}),
     warnings: Array.isArray(r.warnings) ? r.warnings : [],
     ...(r.note ? { note: r.note } : {}),

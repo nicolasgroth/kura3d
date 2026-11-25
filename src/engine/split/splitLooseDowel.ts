@@ -19,9 +19,9 @@ const SEGMENTS = 24;
 /** Separación entre tarugos en la placa del lote (mm). */
 const BATCH_GAP_MM = 3;
 
-/** Tipo para la disposición y la huella: el tarugo suelto ocupa como una espiga cilíndrica. */
+/** Tipo para la disposición y la huella: el tarugo suelto y el imán ocupan como una espiga cilíndrica. */
 export const layoutType = (t: SplitConnectorOptions['type']) =>
-  (t === 'loose-dowel' ? 'dowel' : t) as Exclude<SplitConnectorOptions['type'], 'lap' | 'loose-dowel'>;
+  (t === 'loose-dowel' || t === 'magnet' ? 'dowel' : t) as Exclude<SplitConnectorOptions['type'], 'lap' | 'loose-dowel' | 'magnet'>;
 
 /** Largo del tarugo impreso (mm). */
 export const looseDowelLength = (c: Pick<SplitConnectorOptions, 'depth' | 'tolerance'>) => Math.max(1, 2 * c.depth - 2 * c.tolerance);

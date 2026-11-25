@@ -14,6 +14,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionName } from '../../store/actionLabels';
 import { ACTION_GROUPS } from '../../store/actionsCatalog';
 import { useKuraStore } from '../../store/useKuraStore';
+import { closeMagnetPanel, useMagnetPanel } from '../../store/magnetPanel';
+import { closeScrewBossPanel, useScrewBossPanel } from '../../store/screwBossPanel';
 import { fakeBox } from '../../test/fakeObjects';
 import { ObjectContextMenu } from '../viewport/ObjectContextMenu';
 import { SceneObjectList } from '../scene/SceneObjectList';
@@ -84,12 +86,12 @@ describe('ObjectContextMenu', () => {
     }
   });
 
-  it('«Más» reúne Agregar pieza, Reemplazar, Exportar y Atajos; → abre las 11 formas y ← cierra', async () => {
+  it('«Más» reúne Agregar pieza, Alojamiento de imán, Reemplazar, Exportar y Atajos; → abre las 11 formas y ← cierra', async () => {
     const user = userEvent.setup();
     setup();
     const more = await openPath(user, 'Más');
     const labels = within(more).getAllByRole('menuitem').map((i) => i.querySelector('.kura-context-label')?.textContent);
-    expect(labels).toEqual(['Agregar pieza', 'Agregar pieza negativa', 'Reemplazar por archivo…', 'Exportar selección como un STL…', 'Atajos de teclado']);
+    expect(labels).toEqual(['Agregar pieza', 'Agregar pieza negativa', 'Alojamiento de imán', 'Torreta para tornillo', 'Colgar en el muro', 'Paso de cable', 'Reemplazar por archivo…', 'Exportar selección como un STL…', 'Atajos de teclado']);
     const trigger = within(more).getByRole('menuitem', { name: /Agregar pieza$/ });
     expect(document.activeElement).toBe(within(more).getAllByRole('menuitem')[0]);
     await openSub(user);
@@ -102,6 +104,26 @@ describe('ObjectContextMenu', () => {
     expect(screen.queryByRole('menu', { name: /Agregar pieza$/ })).toBeNull();
     expect(document.activeElement).toBe(trigger);
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('«Más › Alojamiento de imán» abre su panel', async () => {
+    const user = userEvent.setup();
+    closeMagnetPanel();
+    setup();
+    const more = await openPath(user, 'Más');
+    await user.click(within(more).getByRole('menuitem', { name: /Alojamiento de imán/ }));
+    expect(useMagnetPanel.getState().open).toBe(true);
+    closeMagnetPanel();
+  });
+
+  it('«Más › Torreta para tornillo» abre su panel', async () => {
+    const user = userEvent.setup();
+    closeScrewBossPanel();
+    setup();
+    const more = await openPath(user, 'Más');
+    await user.click(within(more).getByRole('menuitem', { name: /Torreta para tornillo/ }));
+    expect(useScrewBossPanel.getState().open).toBe(true);
+    closeScrewBossPanel();
   });
 
   it('agregar pieza negativa → Esfera llama al store con el objeto del menú y cierra el menú', async () => {

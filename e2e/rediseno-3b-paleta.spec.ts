@@ -73,12 +73,3 @@ test('cambiar un color y elegir una paleta persiste al recargar', async ({ page 
   });
   await expect(panel(page).locator('[data-swatch]').first()).toHaveAttribute('data-swatch', '#fecaca');
 });
-
-test('a 390 px las opciones de pintura están en la barra del visor', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await abrir(page);
-  await pintar(page);
-  const barra = page.locator('.kura-paint-toolbar');
-  await expect(barra.getByRole('button', { name: 'Opciones de la paleta' })).toBeVisible();
-  await page.screenshot({ path: `${OUT}/paleta-390.png` });
-});

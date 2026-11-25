@@ -46,16 +46,19 @@ export function readStorage(key: string): string | null {
   }
 }
 
-export function writeStorage(key: string, value: string | null): void {
+/** Escribe (o borra con `null`) una preferencia; false si el almacenamiento está lleno, bloqueado o no existe. */
+export function writeStorage(key: string, value: string | null): boolean {
   try {
-    if (typeof localStorage === 'undefined') return;
+    if (typeof localStorage === 'undefined') return false;
     if (value === null) {
       localStorage.removeItem(key);
     } else {
       localStorage.setItem(key, value);
     }
+    return true;
   } catch {
-    // Silenciar si el almacenamiento está bloqueado.
+    // Almacenamiento bloqueado o lleno: quien necesite saberlo mira el resultado.
+    return false;
   }
 }
 

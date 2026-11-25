@@ -18,6 +18,7 @@ import { faceOfUserDirection, type AxisDirection } from './displayAxes';
 export const FIT_STATUS_KEYS: Record<FitPairStatus, TranslationKey> = {
   interferes: 'fitCheck.status.interferes',
   tight: 'fitCheck.status.tight',
+  cutJoint: 'fitCheck.status.cutJoint',
   ok: 'fitCheck.status.ok',
   far: 'fitCheck.status.far',
 };

@@ -40,6 +40,7 @@ const ENCAJE_UI = {
   // Resumen
   'fitCheck.ui.summary.pairs': { es: 'Pares revisados', en: 'Pairs checked', de: 'Geprüfte Paare', fr: 'Paires vérifiées', hi: 'जाँचे गए जोड़े', zh: '已检查组合' },
   'fitCheck.ui.summary.clashes': { es: 'Con choque', en: 'Overlapping', de: 'Mit Überschneidung', fr: 'En chevauchement', hi: 'आपस में घुसते', zh: '重叠' },
+  'fitCheck.ui.summary.cutJoints': { es: 'Uniones del corte (se tocan a propósito)', en: 'Cut joints (meant to touch)', de: 'Schnittverbindungen (berühren sich gewollt)', fr: 'Jonctions de coupe (contact voulu)', hi: 'कट जोड़ (जानबूझकर स्पर्श)', zh: '切口接合（有意接触）' },
   'fitCheck.ui.summary.tight': { es: 'Justos', en: 'Too tight', de: 'Zu eng', fr: 'Trop justes', hi: 'बहुत तंग', zh: '过紧' },
   'fitCheck.ui.summary.worst': { es: 'Peor caso', en: 'Worst case', de: 'Schlimmster Fall', fr: 'Pire cas', hi: 'सबसे बुरा', zh: '最严重' },
   'fitCheck.ui.allFits': { es: 'Todo calza: ningún par choca ni queda justo.', en: 'Everything fits: no pair overlaps or is too tight.', de: 'Alles passt: kein Paar überschneidet sich oder sitzt zu eng.', fr: 'Tout s’ajuste : aucune paire ne chevauche ni n’est trop juste.', hi: 'सब फ़िट है: कोई जोड़ा न घुसता है, न बहुत तंग है।', zh: '全部合适:没有组合重叠或过紧。' },

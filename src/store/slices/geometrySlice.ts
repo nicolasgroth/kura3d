@@ -14,6 +14,7 @@ import { boxesOverlap } from '../../core/scene/overlap';
 import { isReference } from '../../core/scene/objectRole';
 import * as ops from '../../core/operations';
 import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets, touchingHoleScope } from '../../core/scene/sceneRules';
+import { withAddonPosts } from '../../core/operations/addonPostMerge';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { classifySimplifyResult } from '../../core/operations/simplifyOutcome';
 import { formatNumber } from '../../utils/plural';
@@ -83,7 +84,10 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       if (scope.solids.length === 0 || scope.holes.length === 0 || rejectWhileLocked()) return;
       // Solo se recortan los sólidos que algún negativo toca, y solo se consumen esos negativos: los
       // objetos ajenos no se reconstruyen ni quedan seleccionados (evita una segunda resta por error).
-      const { solids, holes } = touchingHoleScope(scope.solids, scope.holes);
+      const touching = touchingHoleScope(scope.solids, scope.holes);
+      // Los postes de torreta se unen a su pieza al restar: entran juntos al alcance.
+      const solids = withAddonPosts(scope.solids, touching.solids);
+      const { holes } = touching;
       if (solids.length === 0) {
         get().addToast(tr('toast.booleanNoContact'), 'info');
         return;

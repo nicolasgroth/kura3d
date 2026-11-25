@@ -29,6 +29,7 @@ import { onSplitPlaneMove, planeKey } from './splitPlaneDrag';
 import { SplitPlanSummaryView } from './SplitPlanSummaryView';
 import { SplitSection } from './SplitSection';
 import { SplitLabelsToggle } from './SplitLabelsToggle';
+import { SplitMagnetOptions, splitMagnetConnector, useSplitMagnetChoice } from './SplitMagnetOptions';
 import '../../styles/splitForBed.css';
 import { userAxisLabel } from '../../core/scene/displayAxes';
 
@@ -83,6 +84,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const [labelPlacement, setLabelPlacement] = useState<LabelPlacement>('auto');
   const [maxPieces, setMaxPieces] = useState<'auto' | undefined>(undefined);
   const [overrides, setOverrides] = useState<Overrides>({});
+  const [magnetChoice, setMagnetChoice] = useSplitMagnetChoice();
 
   // Ligado al objeto con el que se abrió: clics en el visor no cambian el objetivo ni borran el plan.
   const { target, targetId, markConsumed } = useBoundOperationTarget(open, onClose);
@@ -111,6 +113,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
     () =>
       kind === 'none'
         ? null
+        : kind === 'magnet'
+        ? splitMagnetConnector(magnetChoice)
         : {
             type: kind === 'auto' ? 'dowel' : kind,
             size, depth, tolerance, count,
@@ -118,8 +122,10 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
             minWallForConnectorMm: minWall,
             lapHeightMm: lapHeight,
           },
-    [kind, size, sizeAuto, depth, tolerance, count, lapHeight, minWall],
+    [kind, size, sizeAuto, depth, tolerance, count, lapHeight, minWall, magnetChoice],
   );
+  /** Conector macho/hembra o tarugo (los imanes y el solape tienen sus propias opciones). */
+  const isConnector = kind !== 'none' && kind !== 'lap' && kind !== 'magnet';
   const allowedAxes = useMemo(() => AXES.filter((a) => axes[a]), [axes]);
   const planOptions = useMemo<BedSplitPlanOptions>(
     () => ({ marginMm: margin, axes: allowedAxes, allowRotation, allowDiagonal, connector, planePositions: overrides, maxPieces }),
@@ -349,12 +355,13 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
             <option value="peg">{t(language, 'dialog.cut.connector.peg')}</option>
             <option value="dovetail">{t(language, 'dialog.cut.connector.dovetail')}</option>
             <option value="loose-dowel">{t(language, 'split.joint.looseDowel')}</option>
+            <option value="magnet">{t(language, 'split.joint.magnet')}</option>
           </select>
         </div>
         {kind === 'loose-dowel' && <p className="kura-split-target" id={`${uid}-dowel-help`}>{t(language, 'split.looseDowelHelp')}</p>}
-        {kind !== 'none' && kind !== 'lap' &&
+        {isConnector &&
           num('minwall', `${t(language, 'split.minWall')} (mm)`, minWall, setMinWall, OR.split.minWallForConnectorMm, { step: 0.5, def: D.minWallForConnectorMm, hint: t(language, 'split.minWallTip') })}
-        {kind !== 'none' && kind !== 'lap' && (
+        {isConnector && (
           <label className="kura-split-check" title={t(language, 'split.allowSurfaceChangeTip')}>
             <input type="checkbox" checked={allowSurface} onChange={(e) => setAllowSurface(e.target.checked)} />
             <span>{t(language, 'split.allowSurfaceChange')}</span>
@@ -363,8 +370,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         {kind === 'lap' && <p className="kura-split-target">{t(language, 'split.lapShapeNote')}</p>}
         {kind === 'lap' &&
           num('laph', `${t(language, 'split.lapHeight')} (mm)`, lapHeight, setLapHeight, OR.split.lapHeightMm, { step: 0.5, def: D.lapHeightMm })}
-        <div className="kura-split-row2">
-          {kind !== 'none' && kind !== 'lap' && (
+        {kind === 'magnet' && <SplitMagnetOptions language={language} uid={uid} choice={magnetChoice} onChange={setMagnetChoice} num={num} />}
+        {kind !== 'magnet' && <div className="kura-split-row2">
+          {isConnector && (
             <label className="kura-split-check kura-split-size-auto" title={t(language, 'split.size.autoTip')}>
               <input
                 type="checkbox"
@@ -379,11 +387,11 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
           {num('depth', `${t(language, 'dialog.cut.connectorDepth')} (mm)`, depth, setDepth, { min: OR.cut.connectorDepth.min, max: 50 }, { step: 0.5, disabled: !connector || kind === 'lap', def: 6 })}
           {num('tol', `${t(language, 'dialog.cut.tolerance')} (mm)`, tolerance, setTolerance, OR.cut.tolerance, { step: 0.05, precision: 2, disabled: !connector, def: 0.25 })}
           {num('count', t(language, 'dialog.cut.connectorCount'), count, (v) => setCount(Math.round(v)), { min: 1, max: OR.cut.connectorCount.max }, { precision: 0, disabled: !connector || kind === 'lap', def: 2 })}
-        </div>
-        {kind !== 'none' && kind !== 'lap' && (
+        </div>}
+        {isConnector && (
           <p className="kura-split-target" id={`${uid}-size-help`}>{sizeAuto ? t(language, 'split.size.autoHelp') : t(language, 'split.size.help')}</p>
         )}
-        {kind !== 'none' && kind !== 'lap' && (
+        {isConnector && (
           <>
             <label className="kura-split-check" title={t(language, 'split.reinforceTip')}>
               <input
@@ -495,7 +503,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         plan={plan}
         pending={pending}
         checking={checking}
-        onLowerMinWall={kind !== 'lap' && kind !== 'none' ? () => document.getElementById(`${uid}-minwall`)?.focus() : undefined}
+        onLowerMinWall={isConnector ? () => document.getElementById(`${uid}-minwall`)?.focus() : undefined}
         onUseLap={kind !== 'lap' ? () => setKind('lap') : undefined}
       />
     </OperationPanel>

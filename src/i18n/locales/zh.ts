@@ -18,7 +18,10 @@ import { FLOWUX_ZH } from './flowUx';
 import { PREVIEW_ZH } from './preview';
 import { SPLITJOINTS_ZH } from './splitJoints';
 import { SPLITPREFS_ZH } from './splitPrefs';
+import { UNIONES_FIRMES_ZH } from './unionesFirmes';
 import { AJUSTAR_ZH } from './ajustarImpresora';
+import { SUAVIZAR_ZH } from './suavizarMotor';
+import { SUAVIZAR_UI_ZH } from './suavizarUi';
 import { SPLITCOUPLING_ZH } from './splitCoupling';
 import { A11YUX_ZH } from './a11yUx';
 import { UXMOVIL_ZH } from './uxMovil';
@@ -41,16 +44,26 @@ import { REALESUI_ZH } from './realesUi';
 import { UX6_ZH } from './ux6';
 import { RECETAS_ZH } from './recetas';
 import { ASISTENTES_ZH } from './asistentes';
+import { ACERCA_ZH } from './acercaDe';
+import { IMAN_ZH } from './iman';
+import { IMAN_UI3_ZH } from './imanUi3';
+import { TORRETA_ZH } from './torreta';
 import { BORDES_ZH } from './bordesPrimitivas';
 import { UX7_ZH } from './ux7';
 import { UX8_ZH } from './ux8';
 import { UX10_ZH } from './ux10';
+import { UX9_ZH } from './ux9';
 import { REDISENO_ZH } from './rediseno';
 import { PANEL_ZH } from './panel';
 import { ENCAJE_UI_ZH } from './encajeUi';
+import { ORIENT_UI_ZH } from './orientar';
 import { REDISENO3A_ZH } from './rediseno3a';
 import { REDISENO3B_ZH } from './rediseno3b';
 import { UX8_MENU_ZH } from './ux8Menu';
+import { IMANES_UNION_ZH } from './imanesUnion';
+import { BARRA_FLOTANTE_ZH } from './barraFlotante';
+import { COLGAR_MURO_ZH } from './colgarMuro';
+import { PASO_CABLE_ZH } from './pasoCable';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -66,7 +79,10 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PREVIEW_ZH,
   ...SPLITJOINTS_ZH,
   ...SPLITPREFS_ZH,
+  ...UNIONES_FIRMES_ZH,
   ...AJUSTAR_ZH,
+  ...SUAVIZAR_ZH,
+  ...SUAVIZAR_UI_ZH,
   ...SPLITCOUPLING_ZH,
   ...A11YUX_ZH,
   ...UXMOVIL_ZH,
@@ -89,16 +105,20 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...UX6_ZH,
   ...RECETAS_ZH,
   ...ASISTENTES_ZH,
+  ...IMAN_ZH,
+  ...IMAN_UI3_ZH,
   ...BORDES_ZH,
   ...UX7_ZH,
   ...UX8_ZH,
   ...UX10_ZH,
+  ...UX9_ZH,
   ...REDISENO_ZH,
   ...PANEL_ZH,
   ...ENCAJE_UI_ZH,
   ...REDISENO3A_ZH,
   ...REDISENO3B_ZH,
   ...UX8_MENU_ZH,
+  ...TORRETA_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
   'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',
@@ -1274,7 +1294,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': '每个零件放在其批次平台上（并排），不改动场景',
   'export.split.zipDone': '已将 {count} 个零件导出到 {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': '零件 {code} 带有一个 {volume} mm³ 的游离碎块，无法与相邻零件合并：保留为单独零件。',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': '零件 {code} 合并了相邻单元中 {volume} mm³ 的游离碎块，超出切割平面 {protrusion} mm（有意为之；碎块阈值为 0 时保留为单独零件）。',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': '零件 {code} 包含相邻切割遗留的 {volume} mm³ 小碎块，因此超出切割平面 {protrusion} mm。这是有意为之：避免产生一个很小的单独零件。',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': '{count} 个平面（{planes}）找不到不沿长度方向切开壁的截面：保留均匀位置。',
   'split.joint.auto': '能放下处用连接件；其余为平切面，用于粘合',
   'split.joint.lap': '边缘搭接（会改变形状）',
@@ -1378,4 +1398,10 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'bus.error.assemblyNoTarget': '请提供 groupId 或分割零件的 ids。',
   'bus.error.assemblyNotSplit': '无法重新验证这些零件（{reason}）：它们必须属于同一分割组并保存了接合信息。',
   'dialog.thread.invalidFields': '创建螺纹前请先修正标记的字段：非数字或超出范围的值不会被应用。',
+  ...ORIENT_UI_ZH,
+  ...IMANES_UNION_ZH,
+  ...ACERCA_ZH,
+  ...BARRA_FLOTANTE_ZH,
+  ...COLGAR_MURO_ZH,
+  ...PASO_CABLE_ZH,
 };

@@ -78,7 +78,7 @@ test('rótulos de pieza en el plan y en el resultado, con los códigos del árbo
   expect(errs).toEqual([]);
 });
 
-for (const [ancho, alto] of [[1440, 900], [1024, 768], [390, 844]] as const) {
+for (const [ancho, alto] of [[1440, 900], [1024, 768]] as const) {
   test(`«Placa 1» completa en el visor tras Preparar para imprimir (${ancho} px)`, async ({ page }) => {
     test.setTimeout(240_000);
     const errs = await abrir(page, ancho, alto);

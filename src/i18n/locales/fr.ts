@@ -18,7 +18,10 @@ import { FLOWUX_FR } from './flowUx';
 import { PREVIEW_FR } from './preview';
 import { SPLITJOINTS_FR } from './splitJoints';
 import { SPLITPREFS_FR } from './splitPrefs';
+import { UNIONES_FIRMES_FR } from './unionesFirmes';
 import { AJUSTAR_FR } from './ajustarImpresora';
+import { SUAVIZAR_FR } from './suavizarMotor';
+import { SUAVIZAR_UI_FR } from './suavizarUi';
 import { SPLITCOUPLING_FR } from './splitCoupling';
 import { A11YUX_FR } from './a11yUx';
 import { UXMOVIL_FR } from './uxMovil';
@@ -41,16 +44,26 @@ import { REALESUI_FR } from './realesUi';
 import { UX6_FR } from './ux6';
 import { RECETAS_FR } from './recetas';
 import { ASISTENTES_FR } from './asistentes';
+import { ACERCA_FR } from './acercaDe';
+import { IMAN_FR } from './iman';
+import { IMAN_UI3_FR } from './imanUi3';
+import { TORRETA_FR } from './torreta';
 import { BORDES_FR } from './bordesPrimitivas';
 import { UX7_FR } from './ux7';
 import { UX8_FR } from './ux8';
 import { UX10_FR } from './ux10';
+import { UX9_FR } from './ux9';
 import { REDISENO_FR } from './rediseno';
 import { PANEL_FR } from './panel';
 import { ENCAJE_UI_FR } from './encajeUi';
+import { ORIENT_UI_FR } from './orientar';
 import { REDISENO3A_FR } from './rediseno3a';
 import { REDISENO3B_FR } from './rediseno3b';
 import { UX8_MENU_FR } from './ux8Menu';
+import { IMANES_UNION_FR } from './imanesUnion';
+import { BARRA_FLOTANTE_FR } from './barraFlotante';
+import { COLGAR_MURO_FR } from './colgarMuro';
+import { PASO_CABLE_FR } from './pasoCable';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -66,7 +79,10 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...PREVIEW_FR,
   ...SPLITJOINTS_FR,
   ...SPLITPREFS_FR,
+  ...UNIONES_FIRMES_FR,
   ...AJUSTAR_FR,
+  ...SUAVIZAR_FR,
+  ...SUAVIZAR_UI_FR,
   ...SPLITCOUPLING_FR,
   ...A11YUX_FR,
   ...UXMOVIL_FR,
@@ -89,16 +105,20 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...UX6_FR,
   ...RECETAS_FR,
   ...ASISTENTES_FR,
+  ...IMAN_FR,
+  ...IMAN_UI3_FR,
   ...BORDES_FR,
   ...UX7_FR,
   ...UX8_FR,
   ...UX10_FR,
+  ...UX9_FR,
   ...REDISENO_FR,
   ...PANEL_FR,
   ...ENCAJE_UI_FR,
   ...REDISENO3A_FR,
   ...REDISENO3B_FR,
   ...UX8_MENU_FR,
+  ...TORRETA_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',
@@ -1274,7 +1294,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'export.split.printLayoutTip': 'Chaque pièce posée sur son plateau (côte à côte), sans déplacer la scène',
   'export.split.zipDone': '{count} pièces exportées dans {name}',
   'engineWarning.SPLIT_FRAGMENT_KEPT': 'La pièce {code} contient un fragment détaché de {volume} mm³ qui n\'a pas pu être fusionné avec une voisine : il reste une pièce à part.',
-  'engineWarning.SPLIT_FRAGMENT_MERGED': 'La pièce {code} a absorbé un fragment détaché de {volume} mm³ de la cellule voisine et dépasse de {protrusion} mm le plan de coupe (voulu ; avec un seuil de fragment de 0, il reste une pièce à part).',
+  'engineWarning.SPLIT_FRAGMENT_MERGED': 'La pièce {code} inclut un petit morceau détaché de {volume} mm³ resté du découpage voisin, elle dépasse donc de {protrusion} mm le plan de coupe. C’est voulu : cela évite une minuscule pièce à part.',
   'engineWarning.SPLIT_PLANE_THIN_SECTION': 'Plans ({planes}) sans section évitant de couper des parois dans la longueur ; au total : {count}. La position uniforme a été conservée.',
   'split.joint.auto': 'Connecteurs là où ils tiennent ; sinon coupe lisse à coller',
   'split.joint.lap': 'Recouvrement de bord (modifie la forme)',
@@ -1378,4 +1398,10 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'bus.error.assemblyNoTarget': 'Indique groupId ou les ids des pièces divisées.',
   'bus.error.assemblyNotSplit': 'Ces pièces ne peuvent pas être revalidées ({reason}) : elles doivent appartenir à un même groupe divisé avec ses jonctions enregistrées.',
   'dialog.thread.invalidFields': 'Corrigez les champs marqués avant de créer le filetage : une valeur non numérique ou hors plage n’est pas appliquée.',
+  ...ORIENT_UI_FR,
+  ...IMANES_UNION_FR,
+  ...ACERCA_FR,
+  ...BARRA_FLOTANTE_FR,
+  ...COLGAR_MURO_FR,
+  ...PASO_CABLE_FR,
 };

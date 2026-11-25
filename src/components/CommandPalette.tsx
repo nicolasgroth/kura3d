@@ -37,6 +37,7 @@ import {
   Grid,
   Grid3x3,
   HelpCircle,
+  Info,
   Hexagon,
   Image as ImageIcon,
   Languages,
@@ -61,10 +62,15 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { BRAND } from '../brand';
 import { viewPrefsPaletteItems } from './viewPrefsPaletteItems';
 import { toolPaletteItems } from './toolPaletteItems';
 import { actionPaletteItems } from './actionPaletteItems';
 import { assistantPaletteItems } from './assistants/assistantPaletteItems';
+import { magnetPaletteItems } from './magnet/magnetPaletteItems';
+import { screwBossPaletteItems } from './screwBoss/screwBossPaletteItems';
+import { keyholePaletteItems } from './keyhole/keyholePaletteItems';
+import { cablePassPaletteItems } from './cablePass/cablePassPaletteItems';
 import { Boxes as BoxesIcon, Group as GroupIcon, Ungroup as UngroupIcon } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
@@ -334,6 +340,10 @@ export const CommandPalette: React.FC = () => {
         run: () => setActiveDialog('thread'),
       },
       ...assistantPaletteItems(language, catPrim),
+      ...magnetPaletteItems(language, catPrim),
+      ...screwBossPaletteItems(language, catPrim),
+      ...keyholePaletteItems(language, catPrim),
+      ...cablePassPaletteItems(language, catPrim),
       {
         id: 'gen-svg',
         label: t(language, 'topbar.importSvg'),
@@ -853,6 +863,15 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <HelpCircle size={15} />,
         run: () => setActiveDialog('shortcuts'),
+      },
+      {
+        id: 'view-about',
+        label: t(language, 'about.title', { name: BRAND.name }),
+        category: catView,
+        keywords: 'acerca de about info versión version licencia license autor author créditos credits',
+        kind: 'local',
+        icon: <Info size={15} />,
+        run: () => setActiveDialog('about'),
       },
       {
         id: 'set-ai-drawer',

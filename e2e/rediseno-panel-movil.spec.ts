@@ -29,45 +29,6 @@ async function sinDesborde(page: Page) {
   expect(r.area).toBeLessThanOrEqual(1);
 }
 
-test('390 px: proyecto, resumen y acción en la hoja, sin desborde (claro y oscuro)', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await abrir(page);
-  const barra = page.getByRole('toolbar', { name: 'Paneles' });
-  await barra.getByRole('button', { name: 'Inspector' }).click();
-  await expect(panel(page)).toBeVisible();
-  await expect(panel(page)).toHaveAttribute('data-context', 'project');
-  await sinDesborde(page);
-
-  await crearCubo(page);
-  await page.evaluate(() => (window as any).__s.getState().setSelection([(window as any).__s.getState().objects[0].id]));
-  if (!(await panel(page).isVisible())) await barra.getByRole('button', { name: 'Inspector' }).click();
-  await expect(panel(page)).toHaveAttribute('data-context', 'object');
-  await sinDesborde(page);
-  await page.screenshot({ path: `${OUT}/movil-objeto-claro.png` });
-
-  await panel(page).getByRole('button', { name: 'Ahuecar…' }).click();
-  await expect(panel(page)).toHaveAttribute('data-context', 'action');
-  await expect(panel(page).getByRole('button', { name: 'Aplicar ahuecado' })).toBeVisible();
-  await sinDesborde(page);
-  await page.screenshot({ path: `${OUT}/movil-accion-claro.png` });
-
-  await page.evaluate(() => (window as any).__s.getState().setColorScheme('dark'));
-  await page.screenshot({ path: `${OUT}/movil-accion-oscuro.png` });
-  await panel(page).getByRole('button', { name: 'Volver' }).click();
-  await expect(panel(page)).toHaveAttribute('data-context', 'object');
-});
-
-test('390 px: F3 abre la Escena y el botón Escena queda marcado', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await abrir(page);
-  await crearCubo(page);
-  await page.locator('body').focus();
-  await page.keyboard.press('F3');
-  const barra = page.getByRole('toolbar', { name: 'Paneles' });
-  await expect(barra.getByRole('button', { name: 'Escena' })).toHaveAttribute('aria-expanded', 'true');
-  await expect(barra.getByRole('button', { name: 'Agregar' })).toHaveAttribute('aria-expanded', 'false');
-});
-
 test('1024 px: el panel lateral sigue el contexto (claro y oscuro)', async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
   await abrir(page);

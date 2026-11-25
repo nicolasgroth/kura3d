@@ -1,0 +1,250 @@
+/**
+ * @file src/i18n/locales/iman.ts
+ * @description Textos del alojamiento de imán (panel, preajustes, avisos de pared y nombre del negativo) en los 6
+ * idiomas. Cada clave lleva [es, en, de, fr, hi, zh]; `IMAN_<IDIOMA>` se mezcla en cada diccionario.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+type Row = readonly [es: string, en: string, de: string, fr: string, hi: string, zh: string];
+
+const IMAN_TABLE = {
+  'magnet.title': ['Alojamiento de imán', 'Magnet pocket', 'Magnetaufnahme', 'Logement d’aimant', 'चुंबक खाँचा', '磁铁槽'],
+  'magnet.menuTip': [
+    'Hueco para un imán sobre una cara de una pieza (queda como pieza negativa).',
+    'Pocket for a magnet on a face of a part (added as a negative part).',
+    'Aussparung für einen Magneten auf einer Fläche eines Teils (als Negativteil).',
+    'Creux pour un aimant sur une face d’une pièce (ajouté comme pièce négative).',
+    'किसी भाग की सतह पर चुंबक के लिए खाँचा (नेगेटिव भाग के रूप में)।',
+    '在零件的某个面上为磁铁开槽(作为负形零件添加)。',
+  ],
+  'magnet.needSolid': [
+    'Para colocar un alojamiento de imán necesitas al menos una pieza sólida visible y sin bloquear en la escena.',
+    'To place a magnet pocket you need at least one visible, unlocked solid part in the scene.',
+    'Für eine Magnetaufnahme brauchst du mindestens ein sichtbares, nicht gesperrtes festes Teil in der Szene.',
+    'Pour placer un logement d’aimant, il faut au moins une pièce solide visible et non verrouillée dans la scène.',
+    'चुंबक खाँचा रखने के लिए दृश्य में कम से कम एक दिखाई देने वाला, बिना लॉक का ठोस भाग चाहिए।',
+    '要放置磁铁槽,场景中至少需要一个可见且未锁定的实体零件。',
+  ],
+  'magnet.objectName': ['Imán {size}', 'Magnet {size}', 'Magnet {size}', 'Aimant {size}', 'चुंबक {size}', '磁铁 {size}'],
+  'magnet.created': [
+    '«{name}» agregado como pieza negativa. Usa «Aplicar restas» para abrir el hueco.',
+    '“{name}” added as a negative part. Use “Apply subtractions” to open the pocket.',
+    '„{name}“ als Negativteil hinzugefügt. Mit „Abzüge anwenden“ entsteht die Aussparung.',
+    '« {name} » ajouté comme pièce négative. Utilise « Appliquer les soustractions » pour creuser.',
+    '“{name}” नेगेटिव भाग के रूप में जोड़ा गया। खाँचा बनाने के लिए “घटाव लागू करें” चुनें।',
+    '已将“{name}”添加为负形零件。使用“应用减法”开出凹槽。',
+  ],
+  'magnet.warn.wall': [
+    'Queda poca pared alrededor del imán: {wall} mm (se recomienda al menos {min} mm).',
+    'Little wall left around the magnet: {wall} mm (at least {min} mm is recommended).',
+    'Wenig Wand um den Magneten: {wall} mm (empfohlen sind mindestens {min} mm).',
+    'Peu de paroi autour de l’aimant : {wall} mm (au moins {min} mm recommandé).',
+    'चुंबक के चारों ओर दीवार कम है: {wall} mm (कम से कम {min} mm की सलाह है)।',
+    '磁铁周围的壁太薄:{wall} mm(建议至少 {min} mm)。',
+  ],
+  'magnet.warn.through': [
+    'El hueco atraviesa la pieza o se asoma por otra cara: muévelo o usa un imán más bajo.',
+    'The pocket goes through the part or breaks out of another face: move it or use a shorter magnet.',
+    'Die Aussparung geht durch das Teil oder tritt an einer anderen Fläche aus: verschiebe sie oder nimm einen flacheren Magneten.',
+    'Le creux traverse la pièce ou débouche sur une autre face : déplace-le ou prends un aimant moins haut.',
+    'खाँचा भाग के आर-पार जाता है या दूसरी सतह से निकलता है: इसे हटाएँ या छोटा चुंबक लें।',
+    '凹槽穿透了零件或从另一面露出:请移动它或使用更薄的磁铁。',
+  ],
+  'magnet.warn.protrude': [
+    'En esta curva el imán sobresale {mm} mm: la superficie baja hacia el borde del hueco. Usa un imán más bajo o una zona más plana.',
+    'On this curve the magnet sticks out {mm} mm: the surface drops toward the edge of the pocket. Use a shorter magnet or a flatter spot.',
+    'An dieser Rundung steht der Magnet {mm} mm über: die Fläche fällt zum Rand der Aussparung ab. Nimm einen flacheren Magneten oder eine ebenere Stelle.',
+    'Sur cette courbe, l’aimant dépasse de {mm} mm : la surface descend vers le bord du creux. Prends un aimant moins haut ou une zone plus plate.',
+    'इस वक्र पर चुंबक {mm} mm बाहर निकलता है: सतह खाँचे के किनारे की ओर नीचे जाती है। छोटा चुंबक या अधिक समतल जगह चुनें।',
+    '在此曲面上磁铁会凸出 {mm} mm:表面向凹槽边缘下降。请使用更薄的磁铁或更平坦的位置。',
+  ],
+  'magnet.warn.near': [
+    'Este hueco queda a {gap} mm de otro hueco pendiente (se recomienda al menos {min} mm).',
+    'This pocket is {gap} mm from another pending pocket (at least {min} mm is recommended).',
+    'Diese Aussparung ist {gap} mm von einer anderen ausstehenden Aussparung entfernt (empfohlen sind mindestens {min} mm).',
+    'Ce creux est à {gap} mm d’un autre creux en attente (au moins {min} mm recommandé).',
+    'यह खाँचा दूसरे लंबित खाँचे से {gap} mm दूर है (कम से कम {min} mm की सलाह है)।',
+    '此凹槽距离另一个待处理的凹槽 {gap} mm(建议至少 {min} mm)。',
+  ],
+  'magnet.warn.thinCover': [
+    'En esta curva la tapa sobre el imán queda de {mm} mm (mínimo {min} mm): se romperá. Usa un imán más bajo, una zona más plana o el hueco abierto.',
+    'On this curve the cover over the magnet is only {mm} mm (minimum {min} mm): it will break. Use a shorter magnet, a flatter spot or an open pocket.',
+    'An dieser Rundung ist die Abdeckung über dem Magneten nur {mm} mm dick (mindestens {min} mm): sie wird brechen. Nimm einen flacheren Magneten, eine ebenere Stelle oder eine offene Aussparung.',
+    'Sur cette courbe, le couvercle au-dessus de l’aimant ne fait que {mm} mm (minimum {min} mm) : il cassera. Prends un aimant moins haut, une zone plus plate ou un creux ouvert.',
+    'इस वक्र पर चुंबक के ऊपर का ढक्कन केवल {mm} mm है (न्यूनतम {min} mm): यह टूट जाएगा। छोटा चुंबक, अधिक समतल जगह या खुला खाँचा चुनें।',
+    '在此曲面上磁铁上方的覆盖层只有 {mm} mm(最少 {min} mm):会破裂。请使用更薄的磁铁、更平坦的位置或开口凹槽。',
+  ],
+  'magnet.warn.exposed': [
+    'En esta curva la tapa no alcanza a cubrir el imán: el imán quedará a la vista y la tapa quedará como un trozo suelto dentro del hueco. Usa el modo abierto, un imán más bajo o una zona más plana.',
+    'On this curve the cover does not reach over the magnet: the magnet will be visible and the cover will be left as a loose piece inside the pocket. Use the open mode, a shorter magnet or a flatter spot.',
+    'An dieser Rundung reicht die Abdeckung nicht über den Magneten: der Magnet bleibt sichtbar und die Abdeckung bleibt als loses Stück in der Aussparung. Nimm den offenen Modus, einen flacheren Magneten oder eine ebenere Stelle.',
+    'Sur cette courbe, le couvercle ne recouvre pas l’aimant : l’aimant restera visible et le couvercle restera comme un morceau libre dans le creux. Utilise le mode ouvert, un aimant moins haut ou une zone plus plate.',
+    'इस वक्र पर ढक्कन चुंबक को नहीं ढकता: चुंबक दिखाई देगा और ढक्कन खाँचे के अंदर एक ढीले टुकड़े के रूप में रह जाएगा। खुला मोड, छोटा चुंबक या अधिक समतल जगह चुनें।',
+    '在此曲面上覆盖层盖不住磁铁:磁铁会露出来,覆盖层会作为松散的小片留在凹槽内。请使用开口模式、更薄的磁铁或更平坦的位置。',
+  ],
+  'magnet.placed': ['{name} agregado.', '{name} added.', '{name} hinzugefügt.', '{name} ajouté.', '{name} जोड़ा गया।', '已添加{name}。'],
+  'magnet.short.through': ['Atraviesa la pieza.', 'Goes through the part.', 'Geht durch das Teil.', 'Traverse la pièce.', 'भाग के आर-पार जाता है।', '穿透了零件。'],
+  'magnet.short.wall': ['Pared delgada.', 'Thin wall.', 'Dünne Wand.', 'Paroi fine.', 'पतली दीवार।', '壁太薄。'],
+  'magnet.short.overlap': ['Se superpone con otro hueco.', 'Overlaps another pocket.', 'Überschneidet eine andere Aussparung.', 'Chevauche un autre creux.', 'दूसरे खाँचे पर चढ़ता है।', '与另一凹槽重叠。'],
+  'magnet.short.near': ['Muy cerca de otro hueco.', 'Very close to another pocket.', 'Sehr nah an einer anderen Aussparung.', 'Très près d’un autre creux.', 'दूसरे खाँचे के बहुत पास।', '离另一凹槽太近。'],
+  'magnet.short.protrude': ['Sobresale por la curva.', 'Sticks out on the curve.', 'Steht an der Rundung über.', 'Dépasse sur la courbe.', 'वक्र पर बाहर निकलता है।', '在曲面上凸出。'],
+  'magnet.short.exposed': ['Tapa abierta: queda a la vista.', 'Cover opens: magnet visible.', 'Abdeckung offen: Magnet sichtbar.', 'Couvercle ouvert : aimant visible.', 'ढक्कन खुला: चुंबक दिखेगा।', '覆盖层打开:磁铁外露。'],
+  'magnet.short.thinCover': ['Tapa muy delgada.', 'Very thin cover.', 'Sehr dünne Abdeckung.', 'Couvercle très fin.', 'बहुत पतला ढक्कन।', '覆盖层太薄。'],
+  'magnet.error.tooBig': [
+    'El imán no cabe aquí: es más ancho que el material de la pieza en este punto, y el hueco la cortaría de lado a lado. Usa un imán más chico o elige una zona más ancha.',
+    'The magnet does not fit here: it is wider than the material at this spot, and the pocket would cut the part through. Use a smaller magnet or pick a wider area.',
+    'Der Magnet passt hier nicht: Er ist breiter als das Material an dieser Stelle, und die Aussparung würde das Teil durchtrennen. Nimm einen kleineren Magneten oder eine breitere Stelle.',
+    'L’aimant ne rentre pas ici : il est plus large que la matière à cet endroit, et le creux couperait la pièce de part en part. Prends un aimant plus petit ou choisis une zone plus large.',
+    'चुंबक यहाँ नहीं समाता: यह इस जगह की सामग्री से चौड़ा है और खाँचा भाग को आर-पार काट देगा। छोटा चुंबक लें या चौड़ी जगह चुनें।',
+    '磁铁放不下:它比此处的材料还宽,凹槽会把零件切穿。请使用更小的磁铁或选择更宽的位置。',
+  ],
+  'magnet.preset.storageFailed': [
+    'No se pudo guardar en este navegador (almacenamiento lleno o bloqueado): el preajuste no cambió.',
+    'Could not save in this browser (storage full or blocked): the preset did not change.',
+    'Speichern in diesem Browser nicht möglich (Speicher voll oder gesperrt): die Vorlage wurde nicht geändert.',
+    'Impossible d’enregistrer dans ce navigateur (stockage plein ou bloqué) : le préréglage n’a pas changé.',
+    'इस ब्राउज़र में सहेजा नहीं जा सका (स्टोरेज भरा या अवरुद्ध): प्रीसेट नहीं बदला।',
+    '无法在此浏览器中保存(存储已满或被阻止):预设未更改。',
+  ],
+  'magnet.warn.overlap': [
+    'Este hueco se superpone con otro hueco pendiente: muévelo o borra uno de los dos.',
+    'This pocket overlaps another pending pocket: move it or delete one of them.',
+    'Diese Aussparung überschneidet sich mit einer anderen ausstehenden Aussparung: verschiebe sie oder lösche eine davon.',
+    'Ce creux chevauche un autre creux en attente : déplace-le ou supprime l’un des deux.',
+    'यह खाँचा दूसरे लंबित खाँचे पर चढ़ता है: इसे हटाएँ या दोनों में से एक मिटाएँ।',
+    '此凹槽与另一个待处理的凹槽重叠:请移动它或删除其中一个。',
+  ],
+  'magnet.hint': [
+    'Haz clic sobre una cara de una pieza para colocar el hueco. Cada clic agrega otro; Esc o «Listo» termina.',
+    'Click a face of a part to place the pocket. Each click adds another; Esc or “Done” finishes.',
+    'Klicke auf eine Fläche eines Teils, um die Aussparung zu setzen. Jeder Klick fügt eine weitere hinzu; Esc oder „Fertig“ beendet.',
+    'Clique sur une face d’une pièce pour placer le creux. Chaque clic en ajoute un ; Échap ou « Terminé » arrête.',
+    'खाँचा रखने के लिए किसी भाग की सतह पर क्लिक करें। हर क्लिक एक और जोड़ता है; Esc या “हो गया” से समाप्त करें।',
+    '点击零件的某个面放置凹槽。每次点击再加一个;按 Esc 或“完成”结束。',
+  ],
+  'magnet.invalid': [
+    'Corrige los campos marcados para poder colocar.',
+    'Fix the marked fields to place pockets.',
+    'Korrigiere die markierten Felder, um zu platzieren.',
+    'Corrige les champs signalés pour pouvoir placer.',
+    'रखने के लिए चिह्नित फ़ील्ड ठीक करें।',
+    '请先修正标记的字段再放置。',
+  ],
+  'magnet.preset': ['Preajuste', 'Preset', 'Voreinstellung', 'Préréglage', 'प्रीसेट', '预设'],
+  'magnet.preset.builtin': ['Incluidos', 'Built-in', 'Mitgeliefert', 'Inclus', 'शामिल', '内置'],
+  'magnet.preset.mine': ['Mis preajustes', 'My presets', 'Meine Voreinstellungen', 'Mes préréglages', 'मेरे प्रीसेट', '我的预设'],
+  'magnet.preset.custom': ['Personalizado', 'Custom', 'Eigene Werte', 'Personnalisé', 'कस्टम', '自定义'],
+  'magnet.preset.round': ['Redondo {size}', 'Round {size}', 'Rund {size}', 'Rond {size}', 'गोल {size}', '圆形 {size}'],
+  'magnet.preset.square': ['Cuadrado {size}', 'Square {size}', 'Quadratisch {size}', 'Carré {size}', 'चौकोर {size}', '方形 {size}'],
+  'magnet.preset.name': ['Nombre del preajuste', 'Preset name', 'Name der Voreinstellung', 'Nom du préréglage', 'प्रीसेट का नाम', '预设名称'],
+  'magnet.preset.save': ['Guardar preajuste', 'Save preset', 'Voreinstellung speichern', 'Enregistrer le préréglage', 'प्रीसेट सहेजें', '保存预设'],
+  'magnet.preset.saved': ['Preajuste «{name}» guardado.', 'Preset “{name}” saved.', 'Voreinstellung „{name}“ gespeichert.', 'Préréglage « {name} » enregistré.', 'प्रीसेट “{name}” सहेजा गया।', '已保存预设“{name}”。'],
+  'magnet.preset.delete': ['Eliminar preajuste', 'Delete preset', 'Voreinstellung löschen', 'Supprimer le préréglage', 'प्रीसेट हटाएँ', '删除预设'],
+  'magnet.preset.deleted': ['Preajuste «{name}» eliminado.', 'Preset “{name}” deleted.', 'Voreinstellung „{name}“ gelöscht.', 'Préréglage « {name} » supprimé.', 'प्रीसेट “{name}” हटाया गया।', '已删除预设“{name}”。'],
+  'magnet.preset.nameInvalid': [
+    'Escribe un nombre de 1 a 40 caracteres.',
+    'Enter a name of 1 to 40 characters.',
+    'Gib einen Namen mit 1 bis 40 Zeichen ein.',
+    'Saisis un nom de 1 à 40 caractères.',
+    '1 से 40 अक्षरों का नाम लिखें।',
+    '请输入 1 到 40 个字符的名称。',
+  ],
+  'magnet.preset.full': [
+    'Llegaste al máximo de {max} preajustes: elimina uno para guardar otro.',
+    'You reached the maximum of {max} presets: delete one to save another.',
+    'Maximal {max} Voreinstellungen erreicht: lösche eine, um eine neue zu speichern.',
+    'Maximum de {max} préréglages atteint : supprimes-en un pour en enregistrer un autre.',
+    'अधिकतम {max} प्रीसेट हो गए: नया सहेजने के लिए एक हटाएँ।',
+    '已达到 {max} 个预设的上限:请删除一个再保存。',
+  ],
+  'magnet.shape': ['Forma', 'Shape', 'Form', 'Forme', 'आकार', '形状'],
+  'magnet.shape.round': ['Redondo', 'Round', 'Rund', 'Rond', 'गोल', '圆形'],
+  'magnet.shape.square': ['Cuadrado', 'Square', 'Quadratisch', 'Carré', 'चौकोर', '方形'],
+  'magnet.diameter': ['Diámetro del imán (mm)', 'Magnet diameter (mm)', 'Magnetdurchmesser (mm)', 'Diamètre de l’aimant (mm)', 'चुंबक का व्यास (mm)', '磁铁直径 (mm)'],
+  'magnet.side': ['Lado del imán (mm)', 'Magnet side (mm)', 'Magnetseite (mm)', 'Côté de l’aimant (mm)', 'चुंबक की भुजा (mm)', '磁铁边长 (mm)'],
+  'magnet.height': ['Alto del imán (mm)', 'Magnet height (mm)', 'Magnethöhe (mm)', 'Hauteur de l’aimant (mm)', 'चुंबक की ऊँचाई (mm)', '磁铁高度 (mm)'],
+  'magnet.clearance': ['Holgura de ancho (mm)', 'Width clearance (mm)', 'Spiel in der Breite (mm)', 'Jeu en largeur (mm)', 'चौड़ाई में ढील (mm)', '宽度间隙 (mm)'],
+  'magnet.depthClearance': ['Holgura de profundidad (mm)', 'Depth clearance (mm)', 'Spiel in der Tiefe (mm)', 'Jeu en profondeur (mm)', 'गहराई में ढील (mm)', '深度间隙 (mm)'],
+  'magnet.clearanceHelp': [
+    'Se suma al diámetro o lado y a la profundidad. 0,2 mm suele entrar a presión; más si lo vas a pegar.',
+    'Added to the diameter or side and to the depth. 0.2 mm is usually a press fit; more if you will glue it.',
+    'Wird zu Durchmesser bzw. Seite und zur Tiefe addiert. 0,2 mm passt meist mit Presssitz; mehr zum Kleben.',
+    'S’ajoute au diamètre ou au côté et à la profondeur. 0,2 mm entre souvent en force ; plus si tu le colles.',
+    'व्यास या भुजा और गहराई में जुड़ता है। 0.2 mm आम तौर पर दबाकर फिट होता है; चिपकाना हो तो ज़्यादा रखें।',
+    '加到直径或边长以及深度上。0.2 mm 通常可压入;若要粘接可加大。',
+  ],
+  'magnet.hidden': ['Oculto bajo la cara', 'Hidden under the face', 'Verdeckt unter der Fläche', 'Caché sous la face', 'सतह के नीचे छिपा', '隐藏在表面下'],
+  'magnet.hiddenHelp': [
+    'Deja 0,6 mm de material sobre el imán. Tendrás que pausar la impresión a esa altura para insertarlo.',
+    'Leaves 0.6 mm of material over the magnet. You must pause the print at that height to insert it.',
+    'Lässt 0,6 mm Material über dem Magneten. Du musst den Druck auf dieser Höhe pausieren, um ihn einzulegen.',
+    'Laisse 0,6 mm de matière au-dessus de l’aimant. Il faudra mettre l’impression en pause à cette hauteur pour l’insérer.',
+    'चुंबक के ऊपर 0.6 mm सामग्री छोड़ता है। उसे डालने के लिए उस ऊँचाई पर प्रिंट रोकना होगा।',
+    '在磁铁上方保留 0.6 mm 材料。需要在该高度暂停打印以放入磁铁。',
+  ],
+  'magnet.summaryRound': ['Hueco: Ø {w} × {d} mm', 'Pocket: Ø {w} × {d} mm', 'Aussparung: Ø {w} × {d} mm', 'Creux : Ø {w} × {d} mm', 'खाँचा: Ø {w} × {d} mm', '凹槽:Ø {w} × {d} mm'],
+  'magnet.summarySquare': ['Hueco: {w} × {w} × {d} mm', 'Pocket: {w} × {w} × {d} mm', 'Aussparung: {w} × {w} × {d} mm', 'Creux : {w} × {w} × {d} mm', 'खाँचा: {w} × {w} × {d} mm', '凹槽:{w} × {w} × {d} mm'],
+  'magnet.lastWall': [
+    'Último colocado: pared mínima {wall} mm.',
+    'Last placed: minimum wall {wall} mm.',
+    'Zuletzt gesetzt: minimale Wand {wall} mm.',
+    'Dernier placé : paroi minimale {wall} mm.',
+    'पिछला रखा गया: न्यूनतम दीवार {wall} mm।',
+    '上一个:最薄壁 {wall} mm。',
+  ],
+  'magnet.summaryInvalid': [
+    'Hueco: — (hay campos inválidos)',
+    'Pocket: — (some fields are invalid)',
+    'Aussparung: — (ungültige Felder)',
+    'Creux : — (champs invalides)',
+    'खाँचा: — (कुछ फ़ील्ड अमान्य हैं)',
+    '凹槽:—(有无效字段)',
+  ],
+  'magnet.preset.valuesInvalid': [
+    'No se pudo guardar: las medidas actuales no son válidas para un preajuste.',
+    'Could not save: the current measures are not valid for a preset.',
+    'Speichern nicht möglich: Die aktuellen Maße sind für eine Voreinstellung ungültig.',
+    'Enregistrement impossible : les mesures actuelles ne sont pas valides pour un préréglage.',
+    'सहेजा नहीं जा सका: मौजूदा माप प्रीसेट के लिए मान्य नहीं हैं।',
+    '无法保存:当前尺寸不适用于预设。',
+  ],
+  'magnet.fold.label': [
+    'Alojamiento de imán: último aviso y Listo',
+    'Magnet pocket: last notice and Done',
+    'Magnetaufnahme: letzte Meldung und Fertig',
+    'Logement d’aimant : dernier avis et Terminé',
+    'चुंबक खाँचा: अंतिम सूचना और हो गया',
+    '磁铁槽:最新提示与完成',
+  ],
+  'magnet.fold.empty': [
+    'Toca la pieza para colocar',
+    'Tap the part to place',
+    'Tippe auf das Teil zum Platzieren',
+    'Touche la pièce pour placer',
+    'रखने के लिए भाग को छुएँ',
+    '点按零件以放置',
+  ],
+  'magnet.done': ['Listo', 'Done', 'Fertig', 'Terminé', 'हो गया', '完成'],
+  'magnet.cmd.keywords': [
+    'imán iman alojamiento hueco neodimio agregado',
+    'magnet pocket hole neodymium addon iman imán alojamiento',
+    'magnet aufnahme aussparung neodym iman imán alojamiento',
+    'aimant logement creux néodyme iman imán alojamiento',
+    'चुंबक खाँचा छेद नियोडिमियम magnet iman imán alojamiento',
+    '磁铁 槽 孔 钕磁铁 magnet iman imán alojamiento',
+  ],
+} satisfies Record<string, Row>;
+
+type ImanKey = keyof typeof IMAN_TABLE;
+
+const pick = (index: number) =>
+  Object.fromEntries(Object.entries(IMAN_TABLE).map(([key, row]) => [key, row[index]])) as Record<ImanKey, string>;
+
+export const IMAN_ES = pick(0);
+export const IMAN_EN = pick(1);
+export const IMAN_DE = pick(2);
+export const IMAN_FR = pick(3);
+export const IMAN_HI = pick(4);
+export const IMAN_ZH = pick(5);
