@@ -35,6 +35,8 @@ export function reasonText(language: LanguageCode, reason: OrientReason): string
       return t(language, 'orient.reason.lowerVsCurrent', { percent: Math.round(Math.abs(reason.params.percent)) });
     case 'unstable':
       return t(language, 'orient.reason.unstable', { angle: formatLocaleNumber(language, reason.params.tipAngleDeg, { maxFrac: 1 }) });
+    case 'noBase':
+      return t(language, 'orient.reason.noBase');
     case 'current':
       return t(language, 'orient.reason.current');
     case 'noOverhangs':

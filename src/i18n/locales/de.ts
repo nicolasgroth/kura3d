@@ -794,7 +794,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': '{name}-Emblem',
   'app.lockupAlt': 'Offizielles {name}-Logo',
-  'app.monoAlt': 'Einfarbiges {name}-Emblem',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'Profi-Tastenkürzel & CAD-Tipps',

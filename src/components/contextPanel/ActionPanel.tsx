@@ -48,7 +48,9 @@ export const ActionPanel: React.FC<{ id: ActionId; primary: SceneObject | null; 
     if (!root) return;
     const active = document.activeElement;
     if (active && root.contains(active)) return;
-    const first = root.querySelector<HTMLElement>(`.kura-ctx-body ${FOCUSABLE}`) ?? root.querySelector<HTMLElement>('.kura-ctx-heading');
+    // Se busca dentro del cuerpo: con `.kura-ctx-body ${FOCUSABLE}` el prefijo solo afectaba a la primera
+    // alternativa de la lista y `button` encontraba antes «Volver» (va primero en el DOM).
+    const first = root.querySelector('.kura-ctx-body')?.querySelector<HTMLElement>(FOCUSABLE) ?? root.querySelector<HTMLElement>('.kura-ctx-heading');
     first?.focus({ preventScroll: true });
   }, [id]);
 

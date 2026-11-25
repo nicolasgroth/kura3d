@@ -801,7 +801,6 @@ export const TRANSLATIONS_ES = {
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': 'Emblema de {name}',
   'app.lockupAlt': 'Logotipo oficial de {name}',
-  'app.monoAlt': 'Emblema monocromo de {name}',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'Atajos de teclado y consejos',
@@ -2121,7 +2120,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': '{name} emblem',
   'app.lockupAlt': '{name} official lockup',
-  'app.monoAlt': '{name} monochrome emblem',
 
   'dialog.shortcuts.title': 'Keyboard Shortcuts & Tips',
   'dialog.shortcuts.subtitle': 'Keys to work faster: move, rotate, change view and more.',

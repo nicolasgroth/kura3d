@@ -63,5 +63,31 @@ export const cubeWithHole = () => extrude(rect(-15, 0, 15, 30), [rect(-5, 10, 5,
 /** Caja cerrada de tamaño interno (x, y altura, z) apoyada en y = 0. */
 export const box = (x: number, y: number, z: number) => extrude(rect(-x / 2, 0, x / 2, y), [], z);
 
-export const input = (mesh: MeshData, position: Vec3 = [0, 0, 0], rotation: Vec3 = [0, 0, 0], scale: Vec3 = [1, 1, 1]): OrientInput =>
+/** Junta mallas cerradas desplazadas en una sola (varios cuerpos, sin unirlos). */
+export function bodies(parts: Array<{ mesh: MeshData; offset: Vec3 }>): MeshData {
+  const pos: number[] = [];
+  const idx: number[] = [];
+  for (const { mesh, offset } of parts) {
+    const base = pos.length / 3;
+    for (let i = 0; i < mesh.positions.length; i += 3) pos.push(mesh.positions[i] + offset[0], mesh.positions[i + 1] + offset[1], mesh.positions[i + 2] + offset[2]);
+    for (const k of mesh.indices) idx.push(base + k);
+  }
+  return { positions: new Float32Array(pos), indices: new Uint32Array(idx), normals: new Float32Array(pos.length) } as MeshData;
+}
+
+/** Caso de QA (25-nov): cajas 10×10×40 (centro usuario [0,0,20]) y 40×10×10 (centro [0,0,45]) que no se tocan. */
+export const qaCross = () => bodies([
+  // A: x ∈ [−5, 5], y ∈ [15, 25], z ∈ [−20, 20]
+  { mesh: box(10, 10, 40), offset: [0, 15, -20] },
+  // B: x ∈ [−20, 20], y ∈ [40, 50], z ∈ [−5, 5]
+  { mesh: box(40, 10, 10), offset: [0, 40, -5] },
+]);
+
+/** Dos cubos de 10 separados en diagonal y a distinta altura. */
+export const stepCubes = () => bodies([
+  { mesh: box(10, 10, 10), offset: [0, 0, 0] },
+  { mesh: box(10, 10, 10), offset: [25, 12, 0] },
+]);
+
+export const input =(mesh: MeshData, position: Vec3 = [0, 0, 0], rotation: Vec3 = [0, 0, 0], scale: Vec3 = [1, 1, 1]): OrientInput =>
   ({ mesh, position, rotation, scale });

@@ -237,17 +237,14 @@ export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = (
             </span>
             <div className="kura-brand-showcase">
               <div className="kura-brand-variant-card">
+                <img src="/branding/kurra-studio-icono.svg" alt="" className="kura-brand-icon-variant" width={44} height={44} />
+                <span className="kura-brand-variant-name">{BRAND.name}</span>
+              </div>
+              <div className="kura-brand-variant-card is-light">
                 <img
-                  src="/branding/kura3d-lockup.png"
+                  src="/branding/kurra-studio-logo.svg"
                   alt={t(language, 'app.lockupAlt', { name: BRAND.name })}
                   className="kura-brand-lockup-img"
-                />
-              </div>
-              <div className="kura-brand-variant-card is-mono">
-                <img
-                  src="/branding/kura3d-mono.png"
-                  alt={t(language, 'app.monoAlt', { name: BRAND.name })}
-                  className="kura-brand-mono-img"
                 />
               </div>
             </div>

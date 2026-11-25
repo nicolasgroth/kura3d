@@ -794,7 +794,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': '{name} प्रतीक',
   'app.lockupAlt': '{name} आधिकारिक लोगो',
-  'app.monoAlt': '{name} एकवर्णी प्रतीक',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': 'कीबोर्ड शॉर्टकट और सुझाव',

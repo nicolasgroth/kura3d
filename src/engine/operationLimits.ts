@@ -187,7 +187,11 @@ export const OPERATION_DEFAULTS = {
    */
   simplify: { volumeWarnPct: 2, toleranceMm: 0.01 },
   /** Aviso no bloqueante al importar un modelo con más triángulos que esto (desde ~300 000 la vista y las operaciones ya se sienten lentas; se ofrece Simplificar). */
-  heavyMesh: { warnTriangles: 300_000 },
+  heavyMesh: {
+    warnTriangles: 300_000,
+    /** Umbral «muy pesado»: 1 millón de triángulos (los laminadores avisan desde ahí); el aviso insiste en Simplificar. */
+    hugeTriangles: 1_000_000,
+  },
   /**
    * Corte por plano (`plane_cut`) cuando el llamador omite el conector: igual en el bus y en el MCP (con y sin
    * interfaz). Sin conector por defecto: un corte de una pieza chica no falla por un conector que no pidió.

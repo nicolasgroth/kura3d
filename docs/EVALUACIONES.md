@@ -701,3 +701,17 @@ Corregido tras la evaluación, sin reevaluar todavía: historial de la barra flo
 **Aprendizaje de proceso:** no se puede servir la app desde un worktree cuyo `node_modules` es un enlace: Vite responde 403 al motor WASM y la app no carga. Para pruebas de navegador se sirve desde el directorio principal.
 
 Consumo (modelo · duración · tokens): medición de Simplificar (Opus · 25 min · 186 k), herramientas MCP (Opus · 33 min · 356 k), agregados (Opus · ~45 min con un corte · 356 k), evaluación de código (Opus · 12 min · 209 k), correcciones de la barra flotante (Sonnet · 26 min · 113 k). «Acerca de» y barra flotante se entregaron antes del corte; su consumo no quedó registrado.
+
+## 25-nov-2026 · QA25-A en navegador (Suavizar, Orientar, barra flotante)
+
+Sonnet · 55 min · 223 k. Sobre `main` a69f6f3, a 1440 y 1024 px. Dejó 27 recorridos en `e2e/qa25a-*.spec.ts`.
+
+| Funcionalidad | Veredicto | Hallazgos |
+|---|---|---|
+| Suavizar malla | Aprobada con observaciones | El foco inicial caía en «Volver» (corregido: el defecto era de todos los paneles de acción) |
+| Barra flotante | Aprobada con observaciones | Con el panel de corte abierto la barra no reaparece al volver a Seleccionar (coherente con la regla, se deja) |
+| Orientar para imprimir | Rechazada | Pieza de dos cuerpos con una pose recomendada sin base real; página sin responder tras aplicar (no reproducido) |
+
+Corrección de Orientar (Opus · 27 min · 251 k): la medida «hundida 10,6 mm» venía del ayudante de la prueba (caja envolvente girada); la malla real quedaba en Y = 0. El defecto real era recomendar una pose apoyada solo en aristas: ahora «estable» exige base real y las opciones sin base van al final con su aviso. El bloqueo de más de 100 s no se reprodujo: analizar y aplicar una malla de 299 mil triángulos tarda 1,9 s con 45 ms en el hilo principal. Queda una mejora pendiente: cancelar un análisis termina el Worker compartido y lo recrea, lo que en desarrollo ocurre cada vez que se abre el panel.
+
+Otros consumos: cambio de nombre (Haiku · 14 min · 164 k), Simplificar por modos (Opus · 36 min · 277 k), frases, logo y aviso al importar (Sonnet · 12 min · 141 k).

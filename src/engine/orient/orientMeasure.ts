@@ -2,7 +2,8 @@
  * @file src/engine/orient/orientMeasure.ts
  * @description Medidas de una orientación con la pieza ya apoyada en la cama: área en voladizo,
  * volumen aproximado de soporte, contacto con la cama, polígono de apoyo y ángulo de vuelco,
- * altura, huella y si cabe en la cama (con el giro sobre la vertical que la hace caber).
+ * altura, huella y si cabe en la cama (con el giro sobre la vertical que la hace caber). Estable exige
+ * base real (caras planas en la cama), polígono de apoyo suficiente y ángulo de vuelco mínimo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -34,6 +35,9 @@ export interface MeasuredOrientation {
   quaternion: THREE.Quaternion;
   supportCellMm: number;
 }
+
+/** Hay base real: caras planas en la cama con al menos el área mínima de apoyo. */
+export const hasRealBase = (contactAreaMm2: number, minSupportAreaMm2: number): boolean => contactAreaMm2 >= minSupportAreaMm2;
 
 /** Giro que lleva `down` a −Y (mundo). */
 export function baseQuaternion(down: Vec3): THREE.Quaternion {
@@ -125,7 +129,9 @@ export function measureOrientation(world: OrientWorld, base: THREE.Quaternion, s
   const margin = insideMargin(poly, com.x, com.z);
   const comHeight = Math.max(com.y - minH, 1e-9);
   const tipAngleDeg = (Math.atan2(margin, comHeight) * 180) / Math.PI;
-  const stable = supportPolygonMm2 >= s.minSupportAreaMm2 && tipAngleDeg >= s.minTipAngleDeg;
+  // Sin caras planas en la cama (solo aristas o vértices tocan, p. ej. dos cuerpos apoyados en sus cantos) el
+  // polígono de apoyo puede tener área, pero la pieza no se adhiere ni se sostiene: no es un apoyo estable.
+  const stable = hasRealBase(contactAreaMm2, s.minSupportAreaMm2) && supportPolygonMm2 >= s.minSupportAreaMm2 && tipAngleDeg >= s.minTipAngleDeg;
 
   return {
     quaternion,

@@ -101,10 +101,8 @@
 .kura-brand-icon-img {
   width: 26px;
   height: 26px;
-  border-radius: 7px;
-  object-fit: cover;
+  object-fit: contain;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
 }
 
 .kura-brand-title {
