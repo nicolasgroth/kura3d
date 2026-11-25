@@ -15,8 +15,8 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useThree, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { DRAG_MOVE_THRESHOLD_PX, dragBoundsForBed, dragMoveDelta, dragSnapMm } from '../../core/scene/dragMovePlane';
-import { activeBedSize } from '../../store/bedSize';
+import { DRAG_MOVE_THRESHOLD_PX, dragBoundsForBed, dragBoundsForBeds, dragMoveDelta, dragSnapMm } from '../../core/scene/dragMovePlane';
+import { activeBedSize, allBedSizes } from '../../store/bedSize';
 import { t } from '../../i18n';
 import { useGizmoDragStore } from '../../store/gizmoDragStore';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -83,6 +83,8 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       if (s.active) {
         // Soltar sin desplazamiento neto (vista rasante, o en el punto de partida) no deja un paso de deshacer.
         const moved = s.lastDelta[0] !== 0 || s.lastDelta[2] !== 0;
+        // Con varias placas, soltar sobre otra reasigna la pieza (mismo paso de deshacer que el arrastre).
+        if (mode === 'commit' && moved && store.plates.length >= 2) store.reassignPlatesByPosition(s.baseline.map((b) => b.id));
         if (mode === 'commit' && moved) store.commitTransformSnapshot();
         else store.cancelTransformSnapshot();
         useGizmoDragStore.getState().end();
@@ -131,7 +133,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       grab: s.grab,
       reference: s.reference,
       snapMm: dragSnapMm(store.snapGridMm, p.ctrl),
-      bounds: dragBoundsForBed(activeBedSize(store)),
+      bounds: store.plates.length >= 2 ? dragBoundsForBeds(allBedSizes(store)) : dragBoundsForBed(activeBedSize(store)),
     });
     // Vista rasante o rayo que no alcanza el plano: se conserva la última posición válida.
     if (delta) s.lastDelta = delta;

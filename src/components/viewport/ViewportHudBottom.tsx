@@ -14,8 +14,9 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { computeSelectionBounds } from '../../utils/selectionBounds';
 import { formatDimension } from '../../utils/units';
 import { toUserSize } from '../../core/scene/displayAxes';
-import { bedStatusOf } from '../split/splitAssembledStatus';
+import { platesBedStatus, sceneBedStatus } from './plateBedStatus';
 import { BedHiddenChip } from './BedHiddenChip';
+import { AddFirstPlateButton } from '../plates/AddFirstPlateButton';
 import { FitOutOfBoundsButton } from '../fitToBed/FitOutOfBoundsButton';
 
 /** HUD inferior en una sola línea. */
@@ -28,7 +29,13 @@ export const ViewportHudBottom: React.FC = () => {
   const showBed = useKuraStore((s) => s.showBed);
   const selectedObj = objects.find((o) => o.id === selectedIds[0]) ?? null;
   const localizedPrinterName = getLocalizedPrinterName(language, printerProfile);
-  const bedStatus = useMemo(() => bedStatusOf(objects, printerProfile), [objects, printerProfile]);
+  const plates = useKuraStore((s) => s.plates);
+  const bedStatus = useMemo(() => sceneBedStatus(objects, printerProfile, plates), [objects, printerProfile, plates]);
+  // Con varias placas, el aviso dice cuáles están fuera de volumen.
+  const outPlateNames = useMemo(
+    () => (plates.length < 2 ? [] : platesBedStatus(objects, printerProfile, plates).filter((e) => e.status === 'outOfBounds').map((e) => plates.find((p) => p.id === e.plateId)?.name ?? '')),
+    [objects, printerProfile, plates],
+  );
   const activeDimensionsText = useMemo(() => {
     if (!selectedObj) {
       return t(language, 'viewport.noSelection');
@@ -79,9 +86,11 @@ export const ViewportHudBottom: React.FC = () => {
             <span className="kura-oob-badge">
               <AlertTriangle size={11} />
               <span>{t(language, 'viewport.bed.outOfBounds')}</span>
+              {outPlateNames.length > 0 && <span data-testid="oob-plates">{t(language, 'plates.oob.where', { names: outPlateNames.join(', ') })}</span>}
             </span>
           )}
           {bedStatus === 'outOfBounds' && <FitOutOfBoundsButton />}
+          <AddFirstPlateButton />
           {bedStatus === 'assembled' && (
             <span className="kura-assembled-badge" role="status" title={t(language, 'splitUx.assembled.status')}>
               <Boxes size={11} aria-hidden="true" />

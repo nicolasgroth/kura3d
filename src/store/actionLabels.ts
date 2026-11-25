@@ -19,6 +19,13 @@ export const actionLabelKey = (id: ActionId): TranslationKey => `rediseno.action
 /** Nombre de la acción en el idioma dado: el mismo en menús, paleta y tooltips. */
 export const actionName = (language: LanguageCode, id: ActionId): string => t(language, actionLabelKey(id));
 
+/**
+ * «Mover a placa»: acción propia de las placas, fuera de `ACTION_GROUPS` porque solo existe desde la segunda placa
+ * (con una o ninguna, los menús son los de siempre). Menú contextual y paleta usan este mismo nombre.
+ */
+export const MOVE_TO_PLATE_KEY: TranslationKey = 'plates.action.moveToPlate';
+export const moveToPlateName = (language: LanguageCode): string => t(language, MOVE_TO_PLATE_KEY);
+
 /** Descripción breve bajo la etiqueta (distingue Agrupar, Combinar y Unir), solo en las acciones que la tienen. */
 export const ACTION_DESCRIPTION_KEY: Partial<Record<ActionId, TranslationKey>> = {
   group: 'ux3.organize.groupDesc',

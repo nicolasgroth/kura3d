@@ -21,6 +21,7 @@ import { type SceneObject } from '../../types/kura';
 import { MenuItem, MenuSurface } from './contextMenu/MenuKit';
 import { ObjectMenuMore } from './contextMenu/ObjectMenuMore';
 import { TransformSubMenu } from './contextMenu/ObjectMenuPosition';
+import { MoveToPlateMenu } from './contextMenu/MoveToPlateMenu';
 import { confirmDeleteSelection } from '../scene/confirmDeleteSelection';
 import { ActionGroupMenus } from '../shell/ActionGroupMenus';
 import { runAction } from '../shell/actionRunners';
@@ -92,7 +93,12 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
           prepare: (
             <MenuItem icon={<Scissors size={14} aria-hidden="true" />} label={t(language, 'ctx.planeCut')} disabled={target.locked} keys="C" onSelect={run(() => setActiveDialog('cut'))} />
           ),
-          position: <TransformSubMenu target={target} run={run} />,
+          position: (
+            <>
+              <TransformSubMenu target={target} run={run} />
+              <MoveToPlateMenu target={target} run={run} />
+            </>
+          ),
         }}
       />
       <ObjectMenuMore target={target} run={run} />

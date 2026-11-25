@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import { t } from '../../i18n';
 import type { AlignMode, ObjectRole } from '../../types/kura';
 import { actionHasPanel, type ActionId } from '../../store/actionsCatalog';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -128,4 +129,14 @@ export function runAlign(mode: AlignMode): void {
   const state = useKuraStore.getState();
   state.setActiveAction('align');
   state.alignSelectedObjects(mode);
+}
+
+/** «Mover a placa»: lleva la selección a la placa `plateId` (`null` = placa nueva) y avisa cuántas piezas pasaron. */
+export function runMoveToPlate(plateId: string | null): void {
+  const state = useKuraStore.getState();
+  const count = state.moveToPlate(plateId);
+  if (count === 0) return;
+  const after = useKuraStore.getState();
+  const name = after.plates.find((p) => p.id === (plateId ?? after.activePlateId))?.name ?? '';
+  after.addToast(t(after.language, 'plates.toast.moved', { count, name }), 'info');
 }

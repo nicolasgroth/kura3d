@@ -13,6 +13,7 @@ import { REFERENCE_FR } from './referencia';
 import { FIT_CHECK_FR } from './encaje';
 import { MENU_IDEAS_FR } from './menuIdeas';
 import { GROUPS_FR } from './groups';
+import { PLATES_VIEW_FR } from './placasVista';
 import { MEASURE_FR } from './measure';
 import { FLOWUX_FR } from './flowUx';
 import { PREVIEW_FR } from './preview';
@@ -75,6 +76,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...FIT_CHECK_FR,
   ...MENU_IDEAS_FR,
   ...GROUPS_FR,
+  ...PLATES_VIEW_FR,
   ...MEASURE_FR,
   ...FLOWUX_FR,
   ...PREVIEW_FR,

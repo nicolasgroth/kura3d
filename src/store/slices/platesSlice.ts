@@ -9,10 +9,12 @@
  */
 
 import { projectBed } from '../../core/scene/activePlateBed';
+import { movePiecesToPlate, reassignByPosition } from '../../core/scene/plateMove';
 import {
-  assignToPlate, createPlate, deletePlate, findPlate, nextPlateName, renamePlate, type PlateScene,
+  assignToPlate, createPlate, deletePlate, findPlate, nextPlateName, renamePlate, resolveActivePlate, type PlateScene,
 } from '../../core/scene/plates';
 import { makeId } from '../../core/scene/sceneObjects';
+import { layoutContextOf } from '../sceneLayout';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -33,6 +35,7 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
   return {
     plates: [],
     activePlateId: null,
+    plateSolo: false,
 
     createPlate: (options = {}) => {
       if (rejectWhileLocked()) return null;
@@ -58,6 +61,21 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       return commit(next, active === plateId ? { activePlateId: next.plates[0]?.id ?? null } : {});
     },
 
+    removePlate: (plateId) => {
+      if (rejectWhileLocked()) return null;
+      const state = get();
+      const before = scene();
+      const target = before.plates.find((p) => p.id !== plateId);
+      if (!target || before.plates.length < 2 || !before.plates.some((p) => p.id === plateId)) return null;
+      const ids = before.objects.filter((o) => o.plateRef === plateId).map((o) => o.id);
+      const moved = ids.length ? movePiecesToPlate(before, ids, target.id, state.layout, layoutContextOf(state), projectBed(state)) : null;
+      // Las piezas bloqueadas no se asignan: quedan donde están y pasan a la placa que queda al borrar.
+      const next = deletePlate(moved?.scene ?? before, plateId, target.id);
+      if (!next) return null;
+      commit(next, resolveActivePlate(before.plates, state.activePlateId)?.id === plateId ? { activePlateId: target.id } : {});
+      return target.id;
+    },
+
     renamePlate: (plateId, name) => !rejectWhileLocked() && commit(renamePlate(scene(), plateId, name)),
 
     assignToPlate: (plateId, ids) => {
@@ -69,6 +87,37 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const count = next.objects.reduce((n, o, i) => n + (o !== before.objects[i] ? 1 : 0), 0);
       commit(next);
       return count;
+    },
+
+    setPlateSolo: (solo) => {
+      if (get().plateSolo !== solo) set({ plateSolo: solo });
+    },
+
+    moveToPlate: (plateId, ids) => {
+      if (rejectWhileLocked()) return 0;
+      const state = get();
+      const chosen = ids && ids.length ? ids : state.selectedIds;
+      let base = scene();
+      let created: string | null = null;
+      if (plateId === null) {
+        const made = createPlate(base, {
+          id: makeId('plate'), name: nextPlateName(base.plates, plateName), projectBed: projectBed(state), implicit: { id: makeId('plate'), name: plateName(1) },
+        });
+        if (!made) return 0;
+        base = made.scene;
+        created = made.plate.id;
+      }
+      const dest = created ?? plateId!;
+      const result = movePiecesToPlate(base, chosen, dest, state.layout, layoutContextOf(state), projectBed(state));
+      // Sin piezas que mover no se crea la placa vacía: «Placa nueva» solo existe para recibir piezas.
+      if (!result) return 0;
+      commit(result.scene, created ? { activePlateId: created } : {});
+      return result.moved.length;
+    },
+
+    reassignPlatesByPosition: (ids) => {
+      const next = reassignByPosition(scene(), ids, projectBed(get()));
+      if (next) set({ objects: next.objects });
     },
 
     setActivePlate: (plateId) => {

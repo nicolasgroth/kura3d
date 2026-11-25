@@ -23,6 +23,8 @@ export const DRAG_FULL_RAY_SLOPE = 0.2;
 export interface DragBounds {
   halfX: number;
   halfZ: number;
+  /** Rectángulo explícito (varias placas lejos del origen); si está, manda sobre `halfX`/`halfZ`. */
+  rect?: { minX: number; maxX: number; minZ: number; maxZ: number };
 }
 
 /** Cama + un margen igual a su lado mayor por cada lado; null si no hay cama. */
@@ -30,6 +32,20 @@ export function dragBoundsForBed(bed: { width: number; depth: number } | null): 
   if (!bed || !(bed.width > 0) || !(bed.depth > 0)) return null;
   const margin = Math.max(bed.width, bed.depth);
   return { halfX: bed.width / 2 + margin, halfZ: bed.depth / 2 + margin };
+}
+
+/** Camas (con su centro) + un margen igual al lado mayor por cada lado: todas las placas caben en el rectángulo. */
+export function dragBoundsForBeds(beds: ReadonlyArray<{ width: number; depth: number; origin?: [number, number] }>): DragBounds | null {
+  const valid = beds.filter((b) => b.width > 0 && b.depth > 0);
+  if (valid.length === 0) return null;
+  const margin = Math.max(...valid.map((b) => Math.max(b.width, b.depth)));
+  const rect = {
+    minX: Math.min(...valid.map((b) => (b.origin?.[0] ?? 0) - b.width / 2)) - margin,
+    maxX: Math.max(...valid.map((b) => (b.origin?.[0] ?? 0) + b.width / 2)) + margin,
+    minZ: Math.min(...valid.map((b) => (b.origin?.[1] ?? 0) - b.depth / 2)) - margin,
+    maxZ: Math.max(...valid.map((b) => (b.origin?.[1] ?? 0) + b.depth / 2)) + margin,
+  };
+  return { halfX: Math.max(Math.abs(rect.minX), Math.abs(rect.maxX)), halfZ: Math.max(Math.abs(rect.minZ), Math.abs(rect.maxZ)), rect };
 }
 
 /** Factor 0..1 (suavizado) que reduce el desplazamiento cuando el rayo se acerca al plano. */
@@ -88,10 +104,11 @@ export function dragMoveDelta(input: DragMoveInput): Vec3 | null {
   }
   if (input.bounds) {
     const { halfX, halfZ } = input.bounds;
+    const r = input.bounds.rect ?? { minX: -halfX, maxX: halfX, minZ: -halfZ, maxZ: halfZ };
     const fx = input.reference[0] + dx;
     const fz = input.reference[2] + dz;
-    dx = Math.min(Math.max(fx, Math.min(-halfX, input.reference[0])), Math.max(halfX, input.reference[0])) - input.reference[0];
-    dz = Math.min(Math.max(fz, Math.min(-halfZ, input.reference[2])), Math.max(halfZ, input.reference[2])) - input.reference[2];
+    dx = Math.min(Math.max(fx, Math.min(r.minX, input.reference[0])), Math.max(r.maxX, input.reference[0])) - input.reference[0];
+    dz = Math.min(Math.max(fz, Math.min(r.minZ, input.reference[2])), Math.max(r.maxZ, input.reference[2])) - input.reference[2];
   }
   if (input.snapMm > 0) {
     const s = input.snapMm;

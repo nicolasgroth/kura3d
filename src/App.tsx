@@ -23,6 +23,7 @@ import { RightInspector } from './components/RightInspector';
 import { requestLeftPanelTab } from './components/leftPanelTabRequest';
 import { SplashScreen } from './components/SplashScreen';
 import { StatusBar } from './components/StatusBar';
+import { PlateStrip } from './components/plates/PlateStrip';
 import { SkipLinks } from './components/SkipLinks';
 import { TopBar } from './components/TopBar';
 import { Viewport3D } from './components/Viewport3D';
@@ -494,6 +495,7 @@ export const App: React.FC = () => {
         <ProjectDropTarget />
       </div>
 
+      <PlateStrip />
       <StatusBar recoveryStatus={recovery.status} recoveryFailure={recovery.failure} />
       <Dialogs />
       <AboutLayer />
