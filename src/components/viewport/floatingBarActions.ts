@@ -40,7 +40,8 @@ export interface FloatingBarSelection {
 
 /** Resumen de la selección para la barra (valores planos: comparable con `useShallow`). */
 export function floatingBarSelection(objects: readonly SceneObject[], selectedIds: readonly string[]): FloatingBarSelection {
-  const picked = objects.filter((o) => selectedIds.includes(o.id));
+  const wanted = new Set(selectedIds);
+  const picked = objects.filter((o) => wanted.has(o.id));
   const primary = objects.find((o) => o.id === selectedIds[0]);
   return {
     allLocked: picked.length > 0 && picked.every((o) => o.locked),

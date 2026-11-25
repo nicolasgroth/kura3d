@@ -7,7 +7,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { createTopInsetCache } from '../FloatingBarTracker';
+import { createTopInsetCache } from '../topInsetCache';
 
 describe('createTopInsetCache', () => {
   it('no vuelve a medir ni a buscar el HUD en cada cuadro', () => {

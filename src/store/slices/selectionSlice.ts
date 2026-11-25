@@ -83,15 +83,16 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       // Como `setObjectTransform`: durante una operación del motor no se edita (su resultado se validará contra la
       // escena de partida). Una pieza bloqueada solo acepta lo que la saca o la deja ver de ese estado: bloquear o
       // desbloquear y mostrar u ocultar (como el menú); el color no se le cambia.
-      if (ids.length === 0 || get().busyOperation) return;
+      if (ids.length === 0 || get().busyOperation) return false;
       const lockSafe = { ...patch };
       delete lockSafe.color;
       const wanted = new Set(ids);
       const patchFor = (obj: SceneObject) => (obj.locked ? lockSafe : patch);
       const changes = (obj: SceneObject) => Object.entries(patchFor(obj)).some(([k, v]) => obj[k as keyof SceneObject] !== v);
-      if (!get().objects.some((obj) => wanted.has(obj.id) && changes(obj))) return;
+      if (!get().objects.some((obj) => wanted.has(obj.id) && changes(obj))) return false;
       if (recordHistory) pushHistory();
       set((state) => ({ objects: state.objects.map((obj) => (wanted.has(obj.id) && changes(obj) ? { ...obj, ...patchFor(obj) } : obj)) }));
+      return true;
     },
 
     toggleSelectionVisibility: () => {

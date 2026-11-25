@@ -317,8 +317,10 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
     },
 
     updateObjectsMeta: (ids, patch, recordHistory = true) => {
-      base.updateObjectsMeta!(ids, patch, recordHistory);
-      if (recordHistory && ids.length > 0 && patch.color && Object.keys(patch).length === 1) record({ kind: 'color', color: patch.color });
+      const applied = base.updateObjectsMeta!(ids, patch, recordHistory);
+      // Solo si hubo cambio: rechazado (bloqueadas, mismo color, operación en curso) no es repetible ni renombra el paso anterior.
+      if (applied && recordHistory && patch.color && Object.keys(patch).length === 1) record({ kind: 'color', color: patch.color });
+      return applied;
     },
 
     updateObjectMeta: (id, patch) => {

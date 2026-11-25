@@ -18,6 +18,7 @@ import { useGizmoDragStore } from '../../store/gizmoDragStore';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { floatingBarBridge } from './floatingBarBridge';
+import { useTopInsetCache } from './topInsetCache';
 
 const localBoxes = new WeakMap<object, THREE.Box3 | null>();
 
@@ -53,51 +54,6 @@ export function selectionWorldBox(objects: readonly SceneObject[], selectedIds: 
     }
   }
   return out.isEmpty() ? null : out;
-}
-
-/** Distancia entre el borde superior del visor y la base de la franja fija de la interfaz (barra de vista). */
-export function createTopInsetCache(
-  query: (selector: string) => Element | null = (sel) => document.querySelector(sel),
-  makeObserver: (cb: () => void) => { observe: (el: Element) => void; disconnect: () => void } | null = (cb) =>
-    typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(cb),
-) {
-  let dirty = true;
-  let value = 0;
-  let hud: Element | null = null;
-  let wrap: Element | null = null;
-  const observer = makeObserver(() => {
-    dirty = true;
-  });
-  const onWindowResize = () => {
-    dirty = true;
-  };
-  if (typeof window !== 'undefined') window.addEventListener('resize', onWindowResize);
-  return {
-    get(parent: Element | null): number {
-      if (parent !== wrap || (hud && !hud.isConnected)) {
-        observer?.disconnect();
-        wrap = parent;
-        hud = null;
-        dirty = true;
-      }
-      if (!hud) {
-        hud = query('.kura-hud-top-bar');
-        if (hud) observer?.observe(hud);
-        if (wrap) observer?.observe(wrap);
-        dirty = true;
-      }
-      if (dirty) {
-        value = hud && wrap ? Math.max(0, hud.getBoundingClientRect().bottom - wrap.getBoundingClientRect().top) : 0;
-        // Sin franja aún en el DOM se vuelve a buscar en el siguiente cuadro; con ella se cachea.
-        dirty = !hud;
-      }
-      return value;
-    },
-    dispose() {
-      observer?.disconnect();
-      if (typeof window !== 'undefined') window.removeEventListener('resize', onWindowResize);
-    },
-  };
 }
 
 export const FloatingBarTracker = () => {
@@ -155,11 +111,7 @@ export const FloatingBarTracker = () => {
   }, [gl]);
 
   // Inset superior cacheado: se mide solo cuando cambia el tamaño del HUD o del visor, no en cada cuadro.
-  const insetCache = useRef(createTopInsetCache());
-  useEffect(() => {
-    const cache = insetCache.current;
-    return () => cache.dispose();
-  }, []);
+  const insetCache = useTopInsetCache();
 
   useFrame(({ camera, size }) => {
     const el = floatingBarBridge.el;
@@ -217,7 +169,7 @@ export const FloatingBarTracker = () => {
       return;
     }
     // Franja fija de la interfaz en el borde superior del visor (barra de vista): la barra no se coloca debajo de ella.
-    const topInset = insetCache.current.get(el.parentElement);
+    const topInset = insetCache.current?.get(el.parentElement) ?? 0;
     const placed = placeFloatingBar({ extent, bar: { width: floatingBarBridge.width, height: floatingBarBridge.height }, viewport, topInset });
     el.style.transform = `translate3d(${Math.round(placed.x)}px, ${Math.round(placed.y)}px, 0)`;
     el.dataset.side = placed.side;
