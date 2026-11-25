@@ -91,7 +91,10 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
       description:
         'Turns a part to an orientation returned by kura_orient_for_print, given by candidateId (re-analyzed with the same angle ' +
         'and bed) or by its quaternion [x, y, z, w] (user axes, relative to the current pose). The part rests on the bed (Z = 0) ' +
-        'and keeps its X/Y place (keepXY, default true) or is centered. One undo step. Pending negatives of its group turn with ' +
+        'and keeps its X/Y place (keepXY, default true) or is centered. With alignFootprint (default true for candidateId, false ' +
+        'for an explicit quaternion) it is then turned around the vertical so the bounding box of its footprint on the bed is the ' +
+        'smallest (minimum-area rectangle over the convex hull: a cube set on a hull face lies square, not diagonal); a part ' +
+        'already aligned is not turned. One undo step. Pending negatives of its group turn with ' +
         'it, and magnet pockets and screw bosses follow their part keeping their size; followers lists the IDs that moved.',
       inputSchema: {
         objectId: idSchema.describe('ID of the part to turn.'),
@@ -99,6 +102,8 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
         quaternion: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional()
           .describe('Rotation [x, y, z, w] of a candidate (user axes, relative to the current pose); normalized.'),
         keepXY: z.boolean().optional().describe('Keep the center on the bed in X/Y (default true); false = center on the origin.'),
+        alignFootprint: z.boolean().optional()
+          .describe('Turn around the vertical for the smallest footprint box (default true with candidateId, false with quaternion).'),
         ...orientInputs,
       },
     },

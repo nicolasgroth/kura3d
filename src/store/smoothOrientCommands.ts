@@ -65,7 +65,7 @@ export const SMOOTH_ORIENT_HANDLERS = {
     const target = resolveTarget(get(), p, { unlocked: true });
     const quaternion = request.quaternion ?? findOrientCandidate((await analyze(p, get, 'apply_orientation')).analysis, request.candidateId!).quaternion;
     const before = get().objects;
-    if (!(await get().applyOrientQuaternion(target.id, quaternion, request.keepXY))) throw failed('apply_orientation');
+    if (!(await get().applyOrientQuaternion(target.id, quaternion, request.keepXY, request.alignFootprint))) throw failed('apply_orientation');
     const updated = get().objects.find((o) => o.id === target.id);
     if (!updated) throw failed('apply_orientation');
     return {
@@ -73,6 +73,7 @@ export const SMOOTH_ORIENT_HANDLERS = {
       applied: request.candidateId ?? 'quaternion',
       quaternion: quaternionToUser(quaternion),
       keepXY: request.keepXY,
+      alignFootprint: request.alignFootprint,
       ...transformToUser(updated),
       followers: movedObjectIds(before, get().objects, target.id),
     };

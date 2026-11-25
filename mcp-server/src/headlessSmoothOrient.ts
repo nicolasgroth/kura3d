@@ -61,7 +61,7 @@ export function headlessApplyOrientation(scene: HeadlessScene, p: RawParams) {
   const { target, analysis } = analyze(scene, p, true);
   const quaternion = request.quaternion ?? findOrientCandidate(analysis(), request.candidateId!).quaternion;
   const before = scene.objects().map((o) => ({ ...o }));
-  const change = orientApplyChange({ obj: target, quaternion, keepXY: request.keepXY });
+  const change = orientApplyChange({ obj: target, quaternion, keepXY: request.keepXY, alignFootprint: request.alignFootprint });
   change.patches.push(...orientFollowPatches(scene.objects(), target, change));
   scene.apply(change);
   for (const { id } of change.patches) {
@@ -73,6 +73,7 @@ export function headlessApplyOrientation(scene: HeadlessScene, p: RawParams) {
     applied: request.candidateId ?? 'quaternion',
     quaternion: quaternionToUser(quaternion),
     keepXY: request.keepXY,
+    alignFootprint: request.alignFootprint,
     ...transformToUser(target),
     followers: movedObjectIds(before, scene.objects(), target.id),
   };

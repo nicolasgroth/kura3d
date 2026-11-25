@@ -14,6 +14,7 @@
 import * as THREE from 'three';
 import type { Vec3 } from '../../types/kura';
 import { EngineError } from '../engineErrors';
+import { footprintYaw } from './orientFootprint';
 import { directionCandidates, groupHullFaces, type DirectionCandidate } from './orientCandidates';
 import { baseQuaternion, hasRealBase, measureOrientation, type MeasureSettings, type MeasuredOrientation } from './orientMeasure';
 import { ORIENT_EQUIVALENCE, ORIENT_WEIGHTS, orientCost, orientOrder, reasonsFor, vsCurrentOf, type ScoreContext } from './orientScore';
@@ -127,12 +128,13 @@ const snap = (v: number) => {
 
 /**
  * Transformación que aplica el giro `quaternion` (mundo, sobre la pieza tal como está): rota, apoya
- * en la cama (mínimo Y = 0) y centra en X/Z = 0, o conserva el centro X/Z actual con `keepXY`.
+ * en la cama (mínimo Y = 0) y centra en X/Z = 0, o conserva el centro X/Z actual con `keepXY`. Con `alignFootprint`
+ * además gira alrededor de la vertical para que la caja de la huella sea la de menor área (`orientFootprint`).
  */
 export function planOrientTransform(
   input: OrientInput,
   quaternion: readonly [number, number, number, number],
-  opts: { keepXY?: boolean } = {},
+  opts: { keepXY?: boolean; alignFootprint?: boolean } = {},
 ): { position: Vec3; rotation: Vec3; scale: Vec3 } {
   if (!quaternion.every(Number.isFinite)) throw new EngineError('INVALID_PARAMETER', { name: 'quaternion', value: quaternion.join(','), min: -1, max: 1 });
   const r = new THREE.Quaternion(...quaternion).normalize();
@@ -140,12 +142,23 @@ export function planOrientTransform(
   const m = new THREE.Matrix4().compose(new THREE.Vector3(...input.position), obj, new THREE.Vector3(...input.scale));
   const p = input.mesh.positions;
   const before = new THREE.Box3(), after = new THREE.Box3(), v = new THREE.Vector3();
+  const xz: Array<[number, number]> = [];
   for (let i = 0; i + 2 < p.length; i += 3) {
     v.set(p[i], p[i + 1], p[i + 2]).applyMatrix4(m);
     before.expandByPoint(v);
-    after.expandByPoint(v.applyQuaternion(r));
+    v.applyQuaternion(r);
+    after.expandByPoint(v);
+    if (opts.alignFootprint) xz.push([v.x, v.z]);
   }
   if (before.isEmpty()) throw new EngineError('MESH_EMPTY');
+  // Ya apoyada: girar alrededor de la vertical para que la caja de la huella sea la menor (no queda en diagonal).
+  const yaw = opts.alignFootprint ? footprintYaw(xz) : 0;
+  if (yaw !== 0) {
+    const qy = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+    r.premultiply(qy);
+    after.makeEmpty();
+    for (let i = 0; i + 2 < p.length; i += 3) after.expandByPoint(v.set(p[i], p[i + 1], p[i + 2]).applyMatrix4(m).applyQuaternion(r));
+  }
   const target = opts.keepXY ? before.getCenter(new THREE.Vector3()) : new THREE.Vector3();
   const center = after.getCenter(new THREE.Vector3());
   const pos = new THREE.Vector3(...input.position).applyQuaternion(r);

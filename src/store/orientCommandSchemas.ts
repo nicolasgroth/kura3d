@@ -67,6 +67,8 @@ export interface ApplyOrientationRequest {
   /** Cuaternión interno (ya convertido desde los ejes del usuario). */
   quaternion: Quaternion | null;
   keepXY: boolean;
+  /** Gira alrededor de la vertical para la huella de menor caja (por defecto sí con candidato, no con cuaternión). */
+  alignFootprint: boolean;
 }
 
 export function parseApplyOrientation(p: RawParams): ApplyOrientationRequest {
@@ -79,7 +81,7 @@ export function parseApplyOrientation(p: RawParams): ApplyOrientationRequest {
     if (!quaternion) throw invalid('quaternion', '[x, y, z, w] finite and non-zero');
   }
   if (!candidateId && !quaternion) throw invalid('candidateId', 'candidateId (from orient_for_print) or quaternion');
-  return { candidateId, quaternion, keepXY: readBoolean(p, 'keepXY') ?? true };
+  return { candidateId, quaternion, keepXY: readBoolean(p, 'keepXY') ?? true, alignFootprint: readBoolean(p, 'alignFootprint') ?? candidateId !== null };
 }
 
 /** Candidato del análisis por id, o `not-found` con los ids disponibles. */

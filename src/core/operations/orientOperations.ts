@@ -27,6 +27,8 @@ export interface OrientApplyTaskArgs {
   quaternion: [number, number, number, number];
   /** Conserva el centro en la cama (X/Y del usuario); si no, centra en el origen. */
   keepXY?: boolean;
+  /** Gira alrededor de la vertical para la huella de menor caja (por defecto sí; false conserva el giro). */
+  alignFootprint?: boolean;
 }
 
 export type { OrientOverhangFacesArgs } from '../../engine/orient';
@@ -43,6 +45,6 @@ export function orientForPrint(a: OrientForPrintTaskArgs): OrientAnalysis {
 
 /** Cambio que aplica la orientación elegida (un parche de posición y rotación). */
 export function orientApplyChange(a: OrientApplyTaskArgs): SceneChange {
-  const t = planOrientTransform(a.obj, a.quaternion, { keepXY: a.keepXY });
+  const t = planOrientTransform(a.obj, a.quaternion, { keepXY: a.keepXY, alignFootprint: a.alignFootprint ?? true });
   return change({ patches: [{ id: a.obj.id, patch: { position: t.position, rotation: t.rotation } }] });
 }

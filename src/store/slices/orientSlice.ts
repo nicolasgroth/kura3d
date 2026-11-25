@@ -67,7 +67,8 @@ export interface OrientSliceState {
    * Aplica un giro (cuaternión de un candidato) en un paso de deshacer, con los negativos del grupo; los imanes y
    * torretas siguen solos. false si la pieza no se puede orientar o el motor está ocupado.
    */
-  applyOrientQuaternion: (objectId: string, quaternion: [number, number, number, number], keepXY: boolean) => Promise<boolean>;
+  /** `alignFootprint` (por defecto true): tras apoyar, gira alrededor de la vertical para la huella de menor caja. */
+  applyOrientQuaternion: (objectId: string, quaternion: [number, number, number, number], keepXY: boolean, alignFootprint?: boolean) => Promise<boolean>;
 }
 
 const sameVec = (a: Vec3, b: Vec3) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
@@ -160,7 +161,7 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
       // La actual no se gira: su fantasma queda sobre la pieza y sirve para ver qué zonas necesitan soporte hoy.
       const plan = candidate.source === 'current'
         ? { position: obj.position, rotation: obj.rotation, scale: obj.scale }
-        : planOrientTransform(obj, candidate.quaternion, { keepXY: state.orientKeepXY });
+        : planOrientTransform(obj, candidate.quaternion, { keepXY: state.orientKeepXY, alignFootprint: true });
       set({
         orientPreviewId: candidate.id,
         orientOverhang: state.orientOverhang?.candidateId === candidate.id ? state.orientOverhang : null,
@@ -209,11 +210,11 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
       return runEngineDetached('orientForPrint', { obj, options });
     },
 
-    applyOrientQuaternion: async (objectId, quaternion, keepXY) => {
+    applyOrientQuaternion: async (objectId, quaternion, keepXY, alignFootprint = true) => {
       const obj = get().objects.find((o) => o.id === objectId);
       if (!orientableObject(obj)) return false;
       return runExclusive('orient', false, async () => {
-        const change = await runEngineDetached('orientApply', { obj, quaternion, keepXY });
+        const change = await runEngineDetached('orientApply', { obj, quaternion, keepXY, alignFootprint });
         assertCurrent([obj]);
         // Los negativos pendientes del mismo grupo acompañan a la pieza (los imanes y torretas ya la siguen solos):
         // si quedaran donde estaban, la resta cortaría otra zona sin aviso.
