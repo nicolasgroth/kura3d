@@ -20,7 +20,7 @@ describe('placas solapadas', () => {
       { id: 'a', name: 'A', origin: [0, 0] },
       { id: 'b', name: 'B', origin: [150, 0] },
       { id: 'c', name: 'C', origin: [600, 0] },
-      { id: 'd', name: 'D', origin: [600, 260], bed: { widthMm: 100, depthMm: 400, heightMm: 100 } },
+      { id: 'd', name: 'D', origin: [600, 260], bed: { name: 'Alta', widthMm: 100, depthMm: 400, heightMm: 100 } },
     ];
     expect(overlappingPlates(plates, BED)).toEqual([['a', 'b'], ['c', 'd']]);
   });
