@@ -530,7 +530,7 @@ async function menuContextual(page: Page, id: string) {
 test.describe('10. Menú contextual: submenús, nombres y teclado', () => {
   for (const idioma of ['es', 'en'] as const) {
     test(`nombres de comandos iguales en menú contextual, Acciones y paleta (${idioma})`, async ({ page }) => {
-      test.setTimeout(240000);
+      test.setTimeout(480000); // el catálogo creció: son más de 40 búsquedas en la paleta
       const errs = await abrir(page, 1440, 900);
       await page.evaluate((l) => (window as any).__s.getState().setLanguage(l), idioma);
       const id = await crear(page, 'box', { width: 40, height: 40, depth: 40 }, [0, 20, 0]);
@@ -564,19 +564,25 @@ test.describe('10. Menú contextual: submenús, nombres y teclado', () => {
       // Paleta: cada comando del catálogo se encuentra por su nombre exacto.
       const faltanEnPaleta: string[] = [];
       for (const n of nombres) {
-        await page.keyboard.press('Control+k');
-        const campo = page.locator('input[role=combobox]').first();
-        await campo.fill(n.nombre.replace('…', '').trim());
-        // La lista se filtra con un pequeño retraso: se espera a que aparezca el nombre en vez de un tiempo fijo.
         const buscado = n.nombre.replace('…', '').trim();
         const hay = (ops: string[]) => ops.some((o) => o.replace(/\s+/g, ' ').includes(buscado));
-        let ops = await page.getByRole('option').allTextContents();
-        for (let k = 0; k < 20 && !hay(ops); k++) {
-          await page.waitForTimeout(150);
-          ops = await page.getByRole('option').allTextContents();
+        let ops: string[] = [];
+        // Dos intentos: si la paleta no alcanzó a cerrarse en la vuelta anterior, Ctrl+K la cierra en vez de abrirla
+        // y el texto cae en otro campo. El segundo intento parte con la paleta cerrada de verdad.
+        for (let intento = 0; intento < 2 && !hay(ops); intento++) {
+          const dialogo = page.locator('.kura-palette-input');
+          if (!(await dialogo.isVisible().catch(() => false))) await page.keyboard.press('Control+k');
+          await dialogo.fill(buscado);
+          // La lista se filtra con un pequeño retraso: se espera a que aparezca el nombre en vez de un tiempo fijo.
+          ops = await page.locator('.kura-palette-list [role=option]').allTextContents();
+          for (let k = 0; k < 20 && !hay(ops); k++) {
+            await page.waitForTimeout(150);
+            ops = await page.locator('.kura-palette-list [role=option]').allTextContents();
+          }
+          await page.keyboard.press('Escape');
+          await expect(dialogo).toBeHidden();
         }
         if (!hay(ops)) faltanEnPaleta.push(`${n.id}="${n.nombre}" (opciones: ${ops.slice(0, 3).join(' / ')})`);
-        await page.keyboard.press('Escape');
       }
       console.log(idioma, 'comandos del catálogo que NO aparecen con ese nombre en la paleta:', faltanEnPaleta);
       expect.soft(faltanEnCtx, 'menú contextual').toEqual([]);
