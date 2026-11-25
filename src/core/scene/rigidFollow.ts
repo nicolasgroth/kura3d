@@ -2,13 +2,15 @@
  * @file src/core/scene/rigidFollow.ts
  * @description Lleva a los objetos que dependen de una pieza (negativos pendientes de su mismo grupo) con la misma
  * transformación rígida que recibió la pieza: si la pieza pasó de una pose a otra sin cambiar de escala, cada
- * acompañante conserva su posición y giro relativos a ella. Función pura; el store la usa al aplicar una orientación.
+ * acompañante conserva su posición y giro relativos a ella. Si la escala cambió, no arrastra en silencio: lanza
+ * `INVALID_PARAMETER` y la operación no se aplica. Función pura; el store la usa al aplicar una orientación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 import * as THREE from 'three';
+import { EngineError } from '../../engine/engineErrors';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { isNegative } from './objectRole';
 
@@ -43,12 +45,28 @@ export function orientFollowPatches(
   return rigidFollowPatches(plainGroupNegatives(objects, host), host, to);
 }
 
-/** Parches de posición y giro para que `followers` acompañen a la pieza de `from` a `to` (misma escala en ambas). */
+/** Tolerancia relativa para dar dos escalas por iguales. */
+const SCALE_TOL = 1e-9;
+const sameScale = (a: Vec3, b: Vec3) => a.every((v, i) => Math.abs(v - b[i]) <= SCALE_TOL * Math.max(1, Math.abs(v), Math.abs(b[i])));
+
+/**
+ * Parches de posición y giro para que `followers` acompañen a la pieza de `from` a `to`. Con la misma escala en
+ * ambas poses (uniforme o no) el delta `M(to)·M(from)⁻¹ = T·R·R⁻¹·T⁻¹` es rígido: la escala se cancela. Si la
+ * escala cambió, el delta trae escala o cizalla que un parche de posición y giro no puede expresar; en vez de
+ * arrastrar a los acompañantes a una pose aproximada (la resta cortaría otra zona sin aviso) se lanza
+ * `INVALID_PARAMETER` (`scale`) y la operación no se aplica. Sin acompañantes no hay nada que comprobar.
+ */
 export function rigidFollowPatches(
   followers: readonly SceneObject[],
   from: Pose,
   to: Pose,
 ): Array<{ id: string; patch: { position: Vec3; rotation: Vec3 } }> {
+  if (followers.length === 0) return [];
+  if (!sameScale(from.scale, to.scale)) {
+    // La única escala válida es la de partida: min = max = la escala actual de la pieza.
+    const kept = from.scale.join(', ');
+    throw new EngineError('INVALID_PARAMETER', { name: 'scale', value: to.scale.join(', '), min: kept, max: kept });
+  }
   const delta = matrixOf(to).multiply(matrixOf(from).invert());
   const position = new THREE.Vector3();
   const quaternion = new THREE.Quaternion();
