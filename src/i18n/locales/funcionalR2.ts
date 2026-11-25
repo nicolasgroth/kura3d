@@ -99,6 +99,14 @@ const FUNCIONAL_R2 = {
     hi: 'कीहोल नहीं लगाया गया: उस फलक पर स्क्रू के सिर को थामने वाला किनारा नहीं बचता (सिर निकल जाएगा)। बड़ा फलक या छोटा स्क्रू चुनें।',
     zh: '未放置钥匙孔：该面没有留下能卡住螺丝头的唇边（螺丝头会滑出）。请使用更大的面或更小的螺丝。',
   },
+  'engineWarning.SPLIT_FRAGMENTS_DISCARDED': {
+    es: 'Se descartaron {count} fragmentos diminutos del corte ({volume} mm³ en total): no se pueden imprimir ni pegar y no se entregan como pieza.',
+    en: '{count} tiny cut fragments were discarded ({volume} mm³ in total): they cannot be printed or glued and are not delivered as pieces.',
+    de: '{count} winzige Schnittfragmente wurden verworfen (insgesamt {volume} mm³): Sie lassen sich weder drucken noch kleben und werden nicht als Teile geliefert.',
+    fr: '{count} fragments minuscules de la découpe ont été écartés ({volume} mm³ au total) : impossibles à imprimer ou à coller, ils ne sont pas livrés comme pièces.',
+    hi: 'कट के {count} बहुत छोटे टुकड़े हटा दिए गए (कुल {volume} mm³): इन्हें न छापा जा सकता है न चिपकाया, इसलिए ये भाग के रूप में नहीं दिए जाते।',
+    zh: '已丢弃 {count} 个切割产生的微小碎块（共 {volume} mm³）：无法打印或粘接，不作为零件交付。',
+  },
 } as const satisfies Record<string, Row>;
 
 type Lang = keyof Row;

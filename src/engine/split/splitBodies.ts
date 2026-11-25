@@ -23,6 +23,14 @@ export const cellKey = (c: Cell) => c.join(',');
 
 /** Área mínima de contacto para que haya unión (mm²). */
 export const MIN_CONTACT_MM2 = 1;
+/**
+ * Fragmento que no se entrega como pieza (se descarta con `SPLIT_FRAGMENTS_DISCARDED`) si, tras intentar fusionarlo,
+ * queda bajo el mayor de `SPLIT_DISCARD_FRAGMENT_MM3` (1 mm³: un cubo de 1 mm, menos que una gota de material y nada
+ * que se pueda imprimir y pegar) y `SPLIT_DISCARD_FRAGMENT_REL` del volumen de la pieza (10 ppm: en una figura de
+ * 1 L son 10 mm³). Medido: una figura real escalada y girada dejó una pieza de 0,1 mm³.
+ */
+export const SPLIT_DISCARD_FRAGMENT_MM3 = 1;
+export const SPLIT_DISCARD_FRAGMENT_REL = 1e-5;
 /** Distancia a la que se secciona cada pieza a un lado del plano (mm). */
 const SIDE_EPS = 0.01;
 const AXES: SplitAxis[] = ['x', 'y', 'z'];
@@ -149,6 +157,9 @@ export function buildBodies(
   }
   if (empty > 0) warnings.push(engineWarning('SPLIT_EMPTY_CELLS', { count: empty }));
   const cache = new SectionCache(bodies);
+  let total = 0;
+  for (const b of bodies.values()) total += b.m.volume();
+  const discardBelow = Math.max(SPLIT_DISCARD_FRAGMENT_MM3, SPLIT_DISCARD_FRAGMENT_REL * total);
   if (opts.minFragmentMm3 > 0) {
     const fragments = [...bodies.values()].filter((b) => b.m.volume() < opts.minFragmentMm3).sort((p, q) => p.m.volume() - q.m.volume());
     for (const frag of fragments) {
@@ -185,11 +196,12 @@ export function buildBodies(
         merged = true;
         break;
       }
-      if (!merged) {
+      if (!merged && frag.m.volume() >= discardBelow) {
         warnings.push(engineWarning('SPLIT_FRAGMENT_KEPT', { code: opts.codeOf(frag.cell), volume: Math.round(frag.m.volume()) }));
       }
     }
   }
+  discardTinyFragments(bodies, byCell, cache, discardBelow, warnings);
   for (const [k, ids] of byCell) {
     const cell = bodies.get(ids[0])!.cell;
     const base = opts.codeOf(cell);
@@ -199,4 +211,30 @@ export function buildBodies(
     void k;
   }
   return { bodies, byCell, cache };
+}
+
+/**
+ * Quita los cuerpos bajo `below` mm³ (los que no se pudieron fusionar): no se entregan como pieza y un aviso dice
+ * cuántos y su volumen total. Nunca deja la división sin piezas. Los códigos se asignan después, sin huecos.
+ */
+function discardTinyFragments(
+  bodies: Map<number, SplitBody>,
+  byCell: Map<string, number[]>,
+  cache: SectionCache,
+  below: number,
+  warnings: EngineWarning[],
+): void {
+  const tiny = [...bodies.values()].filter((b) => b.m.volume() < below);
+  if (tiny.length === 0 || tiny.length >= bodies.size) return;
+  let volume = 0;
+  for (const b of tiny) {
+    volume += b.m.volume();
+    cache.invalidate(b.id);
+    b.m.delete();
+    bodies.delete(b.id);
+    const list = byCell.get(cellKey(b.cell))!;
+    list.splice(list.indexOf(b.id), 1);
+    if (list.length === 0) byCell.delete(cellKey(b.cell));
+  }
+  warnings.push(engineWarning('SPLIT_FRAGMENTS_DISCARDED', { count: tiny.length, volume: Math.round(volume * 100) / 100 }));
 }
