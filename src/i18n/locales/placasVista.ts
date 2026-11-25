@@ -66,6 +66,18 @@ const PLATES_VIEW_TABLE = {
     '“{name}” प्लेट हटाई गई; उसके हिस्से “{target}” में चले गए।',
     '已删除打印板“{name}”;其零件已移到“{target}”。',
   ],
+  'plates.toast.created': ['{name} creada', '{name} created', '{name} erstellt', '{name} créé', '{name} बनाई गई', '已创建{name}'],
+  'plates.badge.label': ['Placa: {name}', 'Plate: {name}', 'Platte: {name}', 'Plateau : {name}', 'प्लेट: {name}', '打印板:{name}'],
+  'plates.badge.tip': ['Esta pieza está en «{name}»', 'This part is on “{name}”', 'Dieses Teil liegt auf „{name}“', 'Cette pièce est sur « {name} »', 'यह हिस्सा “{name}” पर है', '此零件位于“{name}”'],
+  'plates.inspector.relative': ['Posición respecto de {name}', 'Position relative to {name}', 'Position relativ zu {name}', 'Position par rapport à {name}', '{name} के सापेक्ष स्थिति', '相对于{name}的位置'],
+  'plates.inspector.relativeTip': [
+    'Con varias placas, X y Z se miden desde el centro de la placa de la pieza; la posición global es la de la escena completa.',
+    'With several plates, X and Z are measured from the center of the part’s plate; the global position is the one in the whole scene.',
+    'Bei mehreren Platten werden X und Z vom Mittelpunkt der Platte des Teils gemessen; die globale Position gilt für die ganze Szene.',
+    'Avec plusieurs plateaux, X et Z se mesurent depuis le centre du plateau de la pièce ; la position globale est celle de toute la scène.',
+    'कई प्लेटों के साथ X और Z हिस्से की प्लेट के केंद्र से मापे जाते हैं; वैश्विक स्थिति पूरे दृश्य की होती है।',
+    '有多块打印板时，X 和 Z 以零件所在打印板的中心为原点；全局位置指整个场景中的位置。',
+  ],
   'plates.toast.moved': [
     '{count} {count?pieza movida|piezas movidas} a «{name}».',
     '{count} {count?part|parts} moved to “{name}”.',
