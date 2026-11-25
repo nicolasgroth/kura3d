@@ -21,6 +21,7 @@ import { SPLITPREFS_HI } from './splitPrefs';
 import { UNIONES_FIRMES_HI } from './unionesFirmes';
 import { AJUSTAR_HI } from './ajustarImpresora';
 import { SUAVIZAR_HI } from './suavizarMotor';
+import { SUAVIZAR_UI_HI } from './suavizarUi';
 import { SPLITCOUPLING_HI } from './splitCoupling';
 import { A11YUX_HI } from './a11yUx';
 import { UXMOVIL_HI } from './uxMovil';
@@ -74,6 +75,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...UNIONES_FIRMES_HI,
   ...AJUSTAR_HI,
   ...SUAVIZAR_HI,
+  ...SUAVIZAR_UI_HI,
   ...SPLITCOUPLING_HI,
   ...A11YUX_HI,
   ...UXMOVIL_HI,

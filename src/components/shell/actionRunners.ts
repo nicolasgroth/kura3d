@@ -64,6 +64,7 @@ export function runAction(id: ActionId): void {
     case 'refine':
       if (primary) void state.refineSelectedMesh(primary, REFINE_UI_DEFAULTS.edgeMm, REFINE_UI_DEFAULTS.smooth);
       return;
+    case 'smooth':
     case 'texture':
     case 'modules':
       // Solo opciones: el panel contextual muestra su sección y el usuario aplica desde allí.

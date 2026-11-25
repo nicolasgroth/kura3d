@@ -1,0 +1,103 @@
+/**
+ * @file src/styles/smoothPanel.css
+ * @description Estilos del panel «Suavizar malla»: campos con su ayuda, zona, botones, estado, aviso de
+ * resultado, error de daño y sugerencia de aristas. Colores solo con variables del tema (claro y oscuro);
+ * los estados se distinguen por texto y borde, no solo por color.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-smooth-panel {
+  gap: 10px;
+}
+
+.kura-smooth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-smooth-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.kura-smooth-where {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  min-width: 0;
+}
+
+.kura-smooth-where legend {
+  padding: 0 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.kura-smooth-where select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.kura-smooth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.kura-smooth-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-smooth-line {
+  min-height: 1.2em;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.kura-smooth-line[data-state='computing']::before {
+  content: '…';
+  margin-right: 4px;
+}
+
+.kura-smooth-note,
+.kura-smooth-suggest,
+.kura-smooth-error {
+  margin: 0;
+  padding: 6px 8px;
+  font-size: 12px;
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid #d97706;
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.kura-smooth-error {
+  border-left-color: #dc2626;
+  font-weight: 600;
+}
+
+.kura-smooth-suggest {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.kura-smooth-suggest p {
+  margin: 0;
+}
