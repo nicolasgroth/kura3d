@@ -50,6 +50,16 @@ Cada alojamiento es un paso de deshacer: `Ctrl+Z` quita solo el último.
 
 Al colocar, Kurra Studio mide con rayos cuánto material queda entre el hueco y las otras caras de la pieza (al fondo y a los costados). Si queda menos de **1,2 mm** (unos tres perímetros de 0,4 mm), te avisa con la medida. Si el hueco atraviesa la pieza o se asoma por otra cara, también te lo dice. El aviso no impide colocarlo: decides tú si lo mueves o usas un imán más bajo. El panel muestra la pared mínima del último que colocaste.
 
+### Colocar sin ratón
+
+Si no puedes apuntar con el cursor (usas el teclado, o la cara es difícil de alcanzar), el panel trae el bloque **Colocar sin ratón**:
+
+1. Selecciona la pieza donde irá el hueco.
+2. En **Cara** elige **Arriba**, **Abajo**, **Frente**, **Atrás**, **Izquierda** o **Derecha**.
+3. Pulsa **Colocar en el centro de la cara**. Se coloca con las medidas que ves en el panel y es un paso de deshacer. Si no hay una pieza seleccionada, el panel dice «Selecciona primero la pieza donde colocarlo»; si esa cara no existe en la pieza, dice «No se encontró esa cara en la pieza: prueba con otra».
+
+En una cara curva sigue valiendo lo que se explica más abajo: el hueco se orienta según la superficie y puede sobresalir.
+
 ### Caras curvas y piezas escaladas
 
 - **En una cara curva** (un cilindro, una esfera) el imán puede **sobresalir** de la superficie, y con *Oculto bajo la cara* la tapa de 0,6 mm no queda pareja. Kurra Studio lo avisa al colocar. La vista previa naranja muestra la forma, las medidas y el eje del hueco, pero no cuánto sobresale: en una cara cóncava el hueco real sobresale más de lo que dibuja la vista previa.

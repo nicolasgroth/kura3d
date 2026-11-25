@@ -46,6 +46,16 @@ Si un campo está fuera de rango o las medidas no calzan entre sí, el campo que
 
 Para que la pieza cuelgue derecha usa **dos ojos a la misma altura**. Kurra Studio compara el punto donde descansa cada tornillo.
 
+### Colocar sin ratón
+
+Si no puedes apuntar con el cursor (usas el teclado, o la cara es difícil de alcanzar), el panel trae el bloque **Colocar sin ratón**:
+
+1. Selecciona la pieza donde irá el ojo de cerradura.
+2. En **Cara** elige **Arriba**, **Abajo**, **Frente**, **Atrás**, **Izquierda** o **Derecha**.
+3. Pulsa **Colocar en el centro de la cara**. Se coloca con las medidas que ves en el panel y es un paso de deshacer. Si no hay una pieza seleccionada, el panel dice «Selecciona primero la pieza donde colocarlo»; si esa cara no existe en la pieza, dice «No se encontró esa cara en la pieza: prueba con otra».
+
+En una cara curva el ojo sigue la superficie, no una faceta de la malla: queda perpendicular a la cara en ese punto.
+
 ### Avisos
 
 Kurra Studio revisa cada ojo al colocarlo y te avisa sin impedirlo:

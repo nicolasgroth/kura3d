@@ -5,7 +5,7 @@ Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una ti
 | Guía | Para qué |
 |---|---|
 | [Primeros pasos](primeros-pasos.md) | La pantalla, los ejes, crear piezas, moverlas, girarlas, escalarlas y deshacer |
-| [Importar y reparar](importar-y-reparar.md) | Abrir STL, 3MF, OBJ o PLY; avisos de unidades; estado de la malla; reparar y simplificar |
+| [Importar y reparar](importar-y-reparar.md) | Abrir STL, 3MF, OBJ o PLY; avisos de unidades; estado de la malla; reparar y simplificar con informe y Deshacer |
 | [Suavizar malla](suavizar.md) | Quitar facetado y ruido de un escaneo conservando las aristas, con vista previa y zona pintada |
 | [Dividir para imprimir](dividir-para-imprimir.md) | Partir una pieza más grande que tu cama, con uniones, códigos de pieza y armado |
 | [Ajustar a la impresora](ajustar-a-la-impresora.md) | Escalar, girar o dividir para que la pieza quepa en tu cama; tus propias camas |
@@ -23,6 +23,7 @@ Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una ti
 | [Torreta para tornillo](torreta-para-tornillo.md) | Poste con agujero para tornillo directo o inserto roscado, con un clic sobre una cara |
 | [Colgar en el muro](colgar-en-el-muro.md) | Ojo de cerradura para colgar la pieza de un tornillo en la pared, con la ranura hacia arriba |
 | [Paso de cable](paso-de-cable.md) | Agujero pasante redondo u ovalado con chaflán; el largo se mide solo para atravesar la pared |
+| [Placas](placas.md) | Repartir piezas en varias camas: crear placas, renombrarlas, mover piezas entre ellas y ver cuál se pasa de su cama |
 | [Exportar](exportar.md) | STL, 3MF con grupos y colores, selección o escena |
 | [Guardar y recuperar](guardar-y-recuperar.md) | Proyecto `.kura` y borrador de recuperación |
 

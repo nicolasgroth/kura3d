@@ -15,7 +15,7 @@ Kurra Studio **no genera soportes ni lamina**: solo orienta y mide. Mirar las op
    - las insignias **Actual** (cómo está la pieza hoy) y **Recomendada**;
    - **Soporte aprox.** (en mm³ o cm³ según el tamaño), **Área en voladizo**, **Base de apoyo** y **Altura**;
    - sus **motivos** en lenguaje claro: «Sin voladizos: no necesita soporte», «82 % menos soporte que ahora», «Base 3 veces mayor que ahora», «No cabe en la cama», «Inestable: puede volcarse».
-5. Si la orientación actual ya es la mejor, arriba dice **«La orientación actual ya es la mejor»** y no se propone ninguna. Si todas son equivalentes (una esfera), dice que **no hay una recomendada**.
+5. Si la orientación actual ya es la mejor, arriba dice **«La orientación actual ya es la mejor»** y no se propone ninguna. Si todas son equivalentes (una esfera), dice que **no hay una recomendada**. Si ninguna se sostiene sola (la pieza no tiene una cara plana que apoye en la cama), un aviso lo dice: «La pieza no se sostiene sola en ninguna de estas orientaciones… Necesitará soporte, balsa o un corte plano».
 
 ## Ver cada opción en el visor
 
@@ -27,7 +27,7 @@ Kurra Studio **no genera soportes ni lamina**: solo orienta y mide. Mirar las op
 1. Elige una opción distinta de la actual (la recomendada ya viene elegida).
 2. Decide si quieres **Conservar posición en la cama** (viene marcada: la pieza gira sobre su sitio) o centrarla en la cama (desmarcada).
 3. Pulsa **Aplicar orientación**, o **Enter** sobre la opción. La pieza gira, queda apoyada en la cama y es **un solo paso de deshacer** (**Ctrl+Z**).
-4. La lista se calcula de nuevo y la orientación aplicada pasa a ser la **Actual**.
+4. La lista se calcula de nuevo, la orientación aplicada pasa a ser la **Actual** y el foco queda sobre ella, así que puedes seguir con el teclado o pasar a otra pieza.
 
 Los alojamientos de imán de la pieza la siguen al girar.
 
@@ -55,5 +55,5 @@ Un voladizo es una pared inclinada hacia abajo. Por defecto cuenta como voladizo
 - **La opción está deshabilitada.** Selecciona una sola pieza sólida y desbloqueada.
 - **«No cabe en la cama».** Esa orientación es más grande que tu cama con su margen. Usa [Ajustar a la impresora](ajustar-a-la-impresora.md) para escalarla o dividirla.
 - **Una opción dice «Inestable».** Se apoya en una base chica y puede volcarse; con borde (*brim*) o soportes a veces se imprime igual.
-- **Una opción dice «Sin base».** Solo toca la cama con aristas o puntos (pasa con piezas de varios cuerpos separados). Nunca sale recomendada; si la aplicas igual, el aviso lo recuerda.
+- **Una opción dice «Sin base».** Solo toca la cama con aristas o puntos y no se sostiene sola (pasa con piezas de varios cuerpos separados o con formas redondeadas). Nunca sale recomendada; si la aplicas igual, el aviso dice «orientada, pero sin base».
 - **Cambié la pieza y la lista desapareció.** Es lo esperado: pulsa **Calcular de nuevo**.

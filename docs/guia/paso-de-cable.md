@@ -40,6 +40,16 @@ Si un campo está fuera de rango, queda marcado y el panel no coloca nada hasta 
 2. Haz **clic** donde lo quieras. Se agrega el paso agrupado con la pieza. Lo que tenías seleccionado no cambia; cada clic agrega otro y `Ctrl+Z` quita solo el último.
 3. Termina con **Listo**, con la X del panel o con `Esc`.
 
+### Colocar sin ratón
+
+Si no puedes apuntar con el cursor (usas el teclado, o la cara es difícil de alcanzar), el panel trae el bloque **Colocar sin ratón**:
+
+1. Selecciona la pieza donde irá el agujero.
+2. En **Cara** elige **Arriba**, **Abajo**, **Frente**, **Atrás**, **Izquierda** o **Derecha**.
+3. Pulsa **Colocar en el centro de la cara**. Se coloca con las medidas que ves en el panel y es un paso de deshacer. Si no hay una pieza seleccionada, el panel dice «Selecciona primero la pieza donde colocarlo»; si esa cara no existe en la pieza, dice «No se encontró esa cara en la pieza: prueba con otra».
+
+En una cara curva el agujero sigue la superficie, no una faceta de la malla: queda perpendicular a la cara en ese punto.
+
 ### Avisos
 
 - **Pared muy gruesa**: el rayo no salió dentro de 40 mm. Se usó la profundidad a mano; súbela si quieres que atraviese.

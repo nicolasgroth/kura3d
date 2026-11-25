@@ -9,6 +9,7 @@
  * @license MIT
  */
 import { test, expect } from '@playwright/test';
+import { itemAccion } from '../acciones-helpers';
 import { abrir, captura, cmd, encuadrar, importarArchivo, seleccionar, sinAvisos, stlCubos } from './helpers';
 
 const IZQ = { x: 0, y: 52, width: 268, height: 650 };
@@ -26,6 +27,15 @@ test('primeros-pasos', async ({ page }) => {
   await captura(page, 'primeros-pasos-02-interfaz');
   await captura(page, 'primeros-pasos-03-formas', IZQ);
   await captura(page, 'primeros-pasos-04-inspector', DER);
+  // Barra flotante con la paleta de colores abierta (recorte alrededor de la barra, que se ubica fuera de la pieza).
+  const barra = page.getByRole('toolbar', { name: 'Acciones del objeto' });
+  await barra.getByRole('button', { name: /Color base/ }).click();
+  await page.waitForTimeout(400);
+  const cajaBarra = await barra.boundingBox();
+  if (!cajaBarra) throw new Error('sin barra flotante');
+  await captura(page, 'primeros-pasos-08-barra-flotante', { x: Math.max(0, cajaBarra.x - 160), y: Math.max(0, cajaBarra.y - 120), width: cajaBarra.width + 320, height: 520 });
+  await page.keyboard.press('Escape');
+  await page.mouse.move(700, 880);
   // Barra lateral compacta (con el tirador) y vista sin cama; al final se dejan como estaban.
   await page.getByTestId('left-sidebar-handle').click();
   await page.waitForTimeout(300);
@@ -42,7 +52,8 @@ test('dividir-para-imprimir', async ({ page }) => {
   const grande = await cmd(page, 'create_primitive', { type: 'box', width: 400, height: 200, depth: 180, name: 'Pieza grande', position: [0, 0, 0] });
   await encuadrar(page, 'scene');
   await seleccionar(page, [grande.id]);
-  await page.keyboard.press('Shift+C');
+  // Se abre desde Acciones: con el atajo Mayús+C la «C» caía en el primer campo del panel.
+  await (await itemAccion(page, 'Dividir para imprimir…')).click();
   const dividir = page.getByRole('button', { name: 'Dividir', exact: true });
   await expect(dividir).toBeEnabled({ timeout: 60_000 });
   await page.waitForTimeout(1200);
