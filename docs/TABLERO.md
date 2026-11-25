@@ -27,8 +27,8 @@ Estado de `main`: 2526 pruebas del frontend, 151 del servidor MCP y 37 de Rust e
 | «Acerca de» y huevo de pascua | Integrado, código 92. Falta QA y usabilidad; el autor debe elegir la frase (consulta 5) |
 | Agregados: colgar en el muro (ojo de cerradura) y paso de cable | Integrado con motor, interfaz, guía y recorridos de navegador en verde. Faltan capturas de las guías, QA y las tres evaluaciones |
 | Servidor MCP: 5 herramientas nuevas (54 en total) con paridad sin la app abierta | Integrado, código 85. Falta evaluación funcional |
-| Cambio de nombre visible a **Kurra3D Studio** (decisión del 25-nov) | Pendiente: cambio mecánico y regenerar todas las capturas |
-| Simplificar para equipos con poca memoria: modo sin pérdida verificado, valor por defecto más fino y objetivo por cantidad de triángulos | Planificado tras la medición del 25-nov (reemplaza a «figuras simples») |
+| Cambio de nombre visible a **Kurra3D Studio** (decisión del 25-nov) | Hecho en el código y la documentación; falta regenerar las capturas y las imágenes de marca |
+| Simplificar para equipos con poca memoria: modo sin pérdida verificado, valor por defecto más fino y objetivo por cantidad de triángulos | Desarrollado el 25-nov (motor, interfaz, bus y MCP con pruebas). Falta QA en navegador y evaluación |
 | Placas y vista armada | Diseño hecho y decisiones del autor tomadas el 25-nov; listo para partir por el lote P1 |
 | Asistentes: vista previa en el visor mientras se llena el formulario, y «Editar con el asistente» para reabrir una pieza creada con sus parámetros | Integrado en `integracion/24-nov` el 24-nov (21:00), con pruebas; suite de navegador en curso. Falta QA en navegador y evaluación |
 | Usabilidad, pendientes serios de la sexta evaluación: aviso que no se puede cerrar, botón Proyecto que borra la selección, falso «Justo» tras Dividir, historial descriptivo, unidades al importar algo diminuto, Agregar e Insertar con el mismo catálogo, filamentos con nombre repetido, avisos con jerga | Integrado en `integracion/24-nov` el 24-nov (21:00), con pruebas; suite de navegador en curso. Falta QA en navegador |

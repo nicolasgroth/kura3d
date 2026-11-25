@@ -10,6 +10,8 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Nombre nuevo: Kurra3D Studio.** Cambia el nombre visible; los proyectos `.kura`, las herramientas `kura_*` y lo guardado en el navegador siguen igual.
+- **Simplificar para equipos con poca memoria.** Tres modos: «sin pérdida» (se aplica solo si la forma no cambia), por tolerancia y por cantidad de triángulos. Muestra un informe de antes y después con avisos si se cerró un agujero, cambió el volumen o la forma se desvió. El valor por defecto baja de 0,15 a 0,01 mm, porque el anterior deformaba.
 - **Barra flotante.** Al seleccionar un objeto aparece junto a él una barra con color, duplicar, ocultar, bloquear, eliminar y «Más»; sigue al objeto, se oculta al arrastrar y se puede apagar en Ajustes. Cambiar el color o bloquear varios objetos deja un solo paso de deshacer.
 - **Colgar en el muro y paso de cable.** Dos agregados nuevos en Insertar: un ojo de cerradura para colgar la pieza de un tornillo y un agujero pasante para cables (redondo u ovalado), con preajustes y avisos. Medidas típicas por verificar.
 - **Acerca de.** Qué es el programa, cómo se construyó, licencia y bibliotecas; con una sorpresa al hacer 10 clics en el logo.

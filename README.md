@@ -80,6 +80,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - Texto y SVG en relieve, grabado o incrustado sobre cualquier superficie.
 - Litofanías planas y cilíndricas, y cortadores desde una imagen.
 - Simplificar y refinar mallas, alinear y distribuir en la cama.
+- **Simplificar** (en revisión) para equipos con poca memoria: «sin pérdida» (solo se aplica si no cambia la forma), por tolerancia o por cantidad de triángulos, con un informe de antes y después que avisa si se cerró un agujero o cambió el volumen.
 - **Suavizar malla** (en revisión): quita facetado y ruido de escaneos sin cambiar los triángulos, con aristas protegidas, zona pintada y vista previa antes de aplicar (**Acciones › Malla › Suavizar…**).
 
 **Preparación para imprimir**
@@ -116,9 +117,8 @@ Lo que falta, en el orden del [roadmap](docs/ROADMAP.md). El detalle está en el
 **Lo siguiente**
 1. Cerrar la revisión de lo marcado «(en revisión)» arriba.
 2. **Placas y vista armada:** las piezas de una figura repartidas en varias placas, una vista que las muestra juntas y exportación por placa ([diseño](docs/diseno/PLACAS_Y_ARMADO.md), espera decisiones del autor).
-3. **Simplificar sin pérdida**, con verificación del resultado ([medición con modelos reales](docs/diseno/FORMAS_SIMPLES.md)).
-4. **Uniones firmes** en Dividir: tamaño mínimo de conector y de pared según la sección. El cálculo ya existe; falta mostrarlo en la interfaz.
-5. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
+3. **Uniones firmes** en Dividir: tamaño mínimo de conector y de pared según la sección. El cálculo ya existe; falta mostrarlo en la interfaz.
+4. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
 
 **Más adelante**
 - Dividir: cortes por las partes naturales de la figura, cortes inclinados, uniones vinculadas.
