@@ -98,7 +98,8 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
     orientKeepXY: true,
 
     analyzeOrient: async (objectId, angleDeg = ORIENT_ANGLE_RANGE.default) => {
-      job?.cancel();
+      // Reemplazo: suave, para no recargar el Worker (el cliente escala a dura si bloquea al nuevo).
+      job?.cancel('soft');
       const obj = get().objects.find((o) => o.id === objectId);
       if (!orientableObject(obj)) return null;
       dropPreview();
@@ -126,7 +127,7 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
     cancelOrient: () => {
       if (!job) return;
-      job.cancel();
+      job.cancel('hard');
       job = null;
       set({ orientRunning: false });
     },
@@ -211,7 +212,8 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     clearOrient: (reason) => {
-      job?.cancel();
+      // Desmontaje del panel (StrictMode lo hace en cada apertura en desarrollo): suave.
+      job?.cancel('soft');
       job = null;
       dropPreview();
       set({ orient: null, orientRunning: false, orientStale: reason === 'stale' });

@@ -2,9 +2,12 @@
  * @file src/core/operations/engineClient.ts
  * @description Cliente del Worker del motor: un único Worker reutilizable (Manifold se inicializa
  * una vez), entradas copiadas y transferidas, resultados transferidos de vuelta, nombres
- * resueltos con el `ResultNaming` real, progreso por fase y cancelación (descarta el resultado y,
- * como Manifold no se puede interrumpir, termina el Worker y reencola las demás tareas pendientes
- * en uno nuevo). Sin `Worker` (Node, Vitest, MCP headless) ejecuta la misma tarea en proceso.
+ * resueltos con el `ResultNaming` real, progreso por fase y cancelación en dos modos: «suave»
+ * (descarta el resultado cuando llegue; el Worker sigue vivo y no se recarga Manifold) y «dura»
+ * (como Manifold no se puede interrumpir, termina el Worker y reencola las demás tareas pendientes
+ * en uno nuevo). Si un trabajo descartado deja ocupado al Worker más de `softCancelGraceMs`
+ * mientras otro pedido espera, se escala a dura. Sin `Worker` (Node, Vitest, MCP headless) ejecuta
+ * la misma tarea en proceso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -43,13 +46,32 @@ export function isEngineCancelled(err: unknown): err is EngineCancelledError {
   return err instanceof EngineCancelledError;
 }
 
+/**
+ * `soft`: rechaza ya y descarta el resultado cuando llegue, sin tocar el Worker (desmontajes y
+ * reemplazos de vistas previas o análisis). `hard`: además termina el Worker para liberarlo ya
+ * (botón Cancelar del usuario o tope de tiempo).
+ */
+export type EngineCancelMode = 'soft' | 'hard';
+
 export interface EngineJob<R> {
   id: number;
-  /** true si corre en el Worker (cancelar libera de inmediato y recrea el Worker). */
+  /** true si corre en el Worker (una cancelación dura lo termina y lo recrea). */
   inWorker: boolean;
   promise: Promise<R>;
-  cancel(): void;
+  /** Cancela la tarea; sin modo es `hard`. */
+  cancel(mode?: EngineCancelMode): void;
 }
+
+export interface EngineClientOptions {
+  /**
+   * Cuánto puede esperar un pedido detrás de trabajos cancelados en suave antes de escalar a dura
+   * (terminar el Worker y reencolar lo pendiente).
+   */
+  softCancelGraceMs?: number;
+}
+
+/** Espera por defecto antes de escalar una cancelación suave que bloquea al siguiente pedido. */
+export const SOFT_CANCEL_GRACE_MS = 1500;
 
 interface Pending {
   resolve: (value: unknown) => void;
@@ -95,11 +117,23 @@ export interface EngineClient {
   dispose(): void;
 }
 
-export function createEngineClient(factory: () => WorkerLike | null = defaultWorkerFactory): EngineClient {
+export function createEngineClient(
+  factory: () => WorkerLike | null = defaultWorkerFactory,
+  options: EngineClientOptions = {},
+): EngineClient {
+  const graceMs = options.softCancelGraceMs ?? SOFT_CANCEL_GRACE_MS;
   let worker: WorkerLike | null = null;
   let workerUnavailable = false;
   let nextId = 1;
   const pending = new Map<number, Pending>();
+  /** Tareas canceladas en suave que el Worker todavía está calculando (su respuesta se descarta). */
+  const orphans = new Set<number>();
+  let escalation: ReturnType<typeof setTimeout> | null = null;
+
+  const disarmEscalation = () => {
+    if (escalation !== null) clearTimeout(escalation);
+    escalation = null;
+  };
 
   const failAll = (err: unknown) => {
     for (const p of pending.values()) p.reject(err);
@@ -109,6 +143,22 @@ export function createEngineClient(factory: () => WorkerLike | null = defaultWor
   const resetWorker = () => {
     worker?.terminate();
     worker = null;
+    orphans.clear();
+    disarmEscalation();
+  };
+
+  /**
+   * Un pedido nuevo quedó en cola detrás de trabajos descartados: si siguen ahí pasado el umbral,
+   * el Worker se termina y lo pendiente se reencola en uno nuevo (nadie puede cancelar un huérfano).
+   */
+  const armEscalation = () => {
+    if (escalation !== null || orphans.size === 0) return;
+    escalation = setTimeout(() => {
+      escalation = null;
+      if (orphans.size === 0 || pending.size === 0) return;
+      resetWorker();
+      requeuePending();
+    }, graceMs);
   };
 
   /** Envía la tarea al Worker; si `postMessage` lanza (p. ej. DataCloneError) la rechaza y la limpia. */
@@ -143,7 +193,11 @@ export function createEngineClient(factory: () => WorkerLike | null = defaultWor
     }
     worker.onmessage = ({ data }: MessageEvent<EngineTaskResponse>) => {
       const p = pending.get(data.id);
-      if (!p) return; // cancelada: el resultado se descarta
+      if (!p) {
+        // Cancelada: el resultado se descarta; si era un huérfano, el Worker ya quedó libre de él.
+        if (data.type !== 'progress' && orphans.delete(data.id) && orphans.size === 0) disarmEscalation();
+        return;
+      }
       if (data.type === 'progress') {
         p.onProgress?.(data.phase);
         return;
@@ -191,14 +245,21 @@ export function createEngineClient(factory: () => WorkerLike | null = defaultWor
         pending.set(id, entry);
         post(w, id, entry);
       });
+      armEscalation();
       return {
         id,
         inWorker: true,
         promise,
-        cancel: () => {
+        cancel: (mode = 'hard') => {
           const p = pending.get(id);
           if (!p) return;
           pending.delete(id);
+          if (mode === 'soft' && worker) {
+            // El Worker sigue con el cálculo; su respuesta se descarta al llegar.
+            orphans.add(id);
+            p.reject(new EngineCancelledError());
+            return;
+          }
           // Manifold no se interrumpe: se termina el Worker; solo se rechaza esta tarea y las demás
           // pendientes se reencolan en un Worker nuevo.
           resetWorker();

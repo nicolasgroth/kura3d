@@ -51,7 +51,8 @@ export function createFitCheckSlice(ctx: StoreContext): Partial<KuraStoreState> 
     fitCheckStale: false,
 
     checkFit: async (request = {}) => {
-      job?.cancel();
+      // Reemplazo por un análisis nuevo: suave.
+      job?.cancel('soft');
       const { objects, selectedIds } = get();
       const scope = fitCheckScope(objects, selectedIds, request.ids);
       const inputs = fitCheckInputRefs(scope, objects);
@@ -85,7 +86,7 @@ export function createFitCheckSlice(ctx: StoreContext): Partial<KuraStoreState> 
 
     cancelFitCheck: () => {
       if (!job) return;
-      job.cancel();
+      job.cancel('hard');
       job = null;
       set({ fitCheckRunning: null });
     },

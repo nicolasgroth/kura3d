@@ -231,18 +231,18 @@ export const useMeasureStore = create<MeasureState>((set, get) => ({
   },
   cancelCapacity: () => {
     if (!capacityJob) return;
-    capacityJob.cancel();
+    capacityJob.cancel('hard');
     capacityJob = null;
     const cur = get().capacity;
     set({ capacity: cur?.result ? { ...cur, status: 'done' } : null });
   },
   clearCapacity: () => {
-    capacityJob?.cancel();
+    capacityJob?.cancel('soft');
     capacityJob = null;
     set({ capacity: null });
   },
   reset: () => {
-    capacityJob?.cancel();
+    capacityJob?.cancel('soft');
     capacityJob = null;
     set({ ...INITIAL });
   },

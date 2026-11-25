@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { isEngineCancelled } from '../../core/operations/engineClient';
+import { isEngineCancelled, type EngineCancelMode } from '../../core/operations/engineClient';
 import type { SceneChange } from '../../core/operations';
 import { isEngineError, type EngineWarning } from '../../engine/engineErrors';
 import type { SmoothReport } from '../../engine/smooth';
@@ -76,7 +76,7 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
   const { set, get, tr, runExclusive, runEngine, startEngineJob, assertCurrent, commitChange, reportEngineWarnings } = ctx;
   let generation = 0;
   let cached: Cached | null = null;
-  let activeJob: { cancel: () => void } | null = null;
+  let activeJob: { cancel: (mode?: EngineCancelMode) => void } | null = null;
 
   const editable = (id: string) => {
     const obj = get().objects.find((o) => o.id === id);
@@ -121,7 +121,8 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
         showGhost(hit.change, false);
         return true;
       }
-      activeJob?.cancel();
+      // Reemplazo por parámetros nuevos: suave (el Worker sigue vivo).
+      activeJob?.cancel('soft');
       const gen = ++generation;
       cached = null;
       set({
@@ -159,7 +160,7 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
       const session = get().smoothSession;
       if (!session || session.status !== 'computing') return;
       generation++;
-      activeJob?.cancel();
+      activeJob?.cancel('hard');
       activeJob = null;
       dropPreview();
       set({ smoothSession: null });
@@ -167,7 +168,8 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
 
     clearSmoothPreview: () => {
       generation++;
-      activeJob?.cancel();
+      // Desmontaje o cambio de parámetros/malla: suave.
+      activeJob?.cancel('soft');
       activeJob = null;
       cached = null;
       dropPreview();

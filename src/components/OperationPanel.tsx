@@ -57,8 +57,11 @@ export const OperationPanel: React.FC<{
     if (!open) return;
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const panel = panelRef.current;
-    const wanted = initialFocus ? panel?.querySelector<HTMLElement>(`.kura-op-panel-body ${initialFocus}`) : null;
-    const first = wanted ?? panel?.querySelector<HTMLElement>(`.kura-op-panel-body ${FOCUSABLE}`) ?? panel;
+    // Se busca dentro del cuerpo: con `.kura-op-panel-body ${FOCUSABLE}` el prefijo solo afectaba a la
+    // primera alternativa de la lista y `button` encontraba antes la X de cerrar del encabezado.
+    const body = panel?.querySelector<HTMLElement>('.kura-op-panel-body');
+    const wanted = initialFocus ? body?.querySelector<HTMLElement>(initialFocus) : null;
+    const first = wanted ?? body?.querySelector<HTMLElement>(FOCUSABLE) ?? panel;
     first?.focus({ preventScroll: true });
     return () => {
       const back = returnFocusRef.current;
