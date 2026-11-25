@@ -91,9 +91,9 @@ Un parámetro oculto toma su `default` y no se valida.
 
 **Variantes**: `presets: [{ id, label, values, verified }]` rellenan respuestas y el usuario puede ajustarlas. `verified: false` se ve como "medidas por verificar". `extends: "kura.placa-enchufe@^1"` crea una receta derivada que solo puede cambiar `default/min/max` (campo `overrides: { <param>: {…} }`), agregar presets, reglas y textos. Cambiar pasos es hacer una copia (fork) con otro `id`.
 
-**Textos**: `"$t:clave"` se busca en `strings.<idioma>`. Mínimo `es` y `en`; las propias de Kura3D, los 6 idiomas (prueba de paridad como `translations.test.ts`). Se muestran como texto plano (sin HTML ni enlaces), ≤ 200 caracteres.
+**Textos**: `"$t:clave"` se busca en `strings.<idioma>`. Mínimo `es` y `en`; las propias de Kurra Studio, los 6 idiomas (prueba de paridad como `translations.test.ts`). Se muestran como texto plano (sin HTML ni enlaces), ≤ 200 caracteres.
 
-**Versión**: `format` sube de mayor solo con cambios incompatibles, y el cargador sigue leyendo `/1`. Los campos nuevos de `/1.x` son opcionales. Si una receta pide un `op` o un argumento que esta versión de Kura3D no conoce, se rechaza con "requiere Kura3D ≥ x" (de `kura`). Los nombres y argumentos del bus son el contrato (API-01): renombrarlos exige alias.
+**Versión**: `format` sube de mayor solo con cambios incompatibles, y el cargador sigue leyendo `/1`. Los campos nuevos de `/1.x` son opcionales. Si una receta pide un `op` o un argumento que esta versión de Kurra Studio no conoce, se rechaza con "requiere Kurra Studio ≥ x" (de `kura`). Los nombres y argumentos del bus son el contrato (API-01): renombrarlos exige alias.
 
 **Ejecución**: un único ejecutor en `src/core/recipes/` (validar → evaluar → correr pasos en el Worker → `SceneChange`) lo usan la interfaz (un paso de deshacer), F4, el MCP con puente y el MCP sin interfaz.
 
@@ -126,7 +126,7 @@ Coordenadas en ejes del usuario. Por ahora `position` sigue la convención del b
 ```json
 {
   "format": "kura.recipe/1", "id": "kura.caja-tapa", "version": "1.0.0", "kura": ">=0.8.0",
-  "title": "$t:title", "author": "Kura3D", "license": "MIT", "category": "cajas",
+  "title": "$t:title", "author": "Kurra Studio", "license": "MIT", "category": "cajas",
   "params": [
     { "id": "w", "type": "number", "unit": "mm", "min": 10, "max": 400, "default": 80, "label": "$t:w", "page": "medidas" },
     { "id": "dp", "type": "number", "unit": "mm", "min": 10, "max": 400, "default": 60, "label": "$t:dp", "page": "medidas" },
@@ -198,7 +198,7 @@ Coordenadas en ejes del usuario. Por ahora `position` sigue la convención del b
 ```json
 {
   "format": "kura.recipe/1", "id": "kura.placa-enchufe", "version": "0.1.0", "kura": ">=0.8.0",
-  "title": "$t:title", "author": "Kura3D", "license": "MIT", "category": "hogar",
+  "title": "$t:title", "author": "Kurra Studio", "license": "MIT", "category": "hogar",
   "params": [
     { "id": "modules", "type": "integer", "unit": "count", "min": 1, "max": 3, "default": 1, "label": "$t:modules" },
     { "id": "mw", "type": "number", "unit": "mm", "min": 10, "max": 80, "default": 45, "label": "$t:mw" },
@@ -269,7 +269,7 @@ Variante de un tercero (solo datos):
 ```json
 {
   "format": "kura.recipe/1", "id": "kura.llavero", "version": "1.0.0", "kura": ">=0.8.0",
-  "title": "$t:title", "author": "Kura3D", "license": "MIT", "category": "regalos",
+  "title": "$t:title", "author": "Kurra Studio", "license": "MIT", "category": "regalos",
   "params": [
     { "id": "text", "type": "text", "maxLength": 20, "default": "Kura", "label": "$t:text" },
     { "id": "size", "type": "number", "unit": "mm", "min": 4, "max": 30, "default": 10, "label": "$t:size" },
@@ -348,7 +348,7 @@ Variante de un tercero (solo datos):
 
 | Librería | Licencia (npm) | Veredicto |
 |---|---|---|
-| `jsep` 1.6 | MIT | **Sí**: solo produce el AST; Kura3D lo interpreta con lista blanca y contador. |
+| `jsep` 1.6 | MIT | **Sí**: solo produce el AST; Kurra Studio lo interpreta con lista blanca y contador. |
 | `zod` 4.6 | MIT | **Sí**: ya está en `mcp-server`; `z.toJSONSchema` da el esquema que lee la IA. |
 | `@marcbachmann/cel-js` 8.0 | MIT | Alternativa seria (CEL no es Turing-completo). No revisé su mantenimiento ni si usa generación de código. |
 | `subscript` 10.8 | ISC | Parser pequeño; mismo papel que `jsep`, menos conocido. |

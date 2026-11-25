@@ -1,6 +1,6 @@
 /**
  * @file src/store/storeTypes.ts
- * @description Tipos públicos del store de Kura3D: estado completo (`KuraStoreState`), diálogos,
+ * @description Tipos públicos del store de Kurra Studio: estado completo (`KuraStoreState`), diálogos,
  * pestañas, origen de comandos, modo de pincel, presets de cámara y toasts. `useKuraStore.ts` los
  * reexporta para que los componentes no cambien sus imports.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -475,7 +475,16 @@ export interface KuraStoreState {
     overhangAngleDeg?: number,
     minWallMm?: number,
   ) => Promise<PrintabilityReport | null>;
-  simplifySelectedMesh: (id: string, toleranceMm: number) => Promise<boolean>;
+  /**
+   * Simplifica con verificación: un número es «Por tolerancia» (mm); si no, la petición con su modo. `true` si se
+   * aplicó (un paso de deshacer). `onReport` recibe el informe aunque no se aplique (sin reducción o «Sin pérdida»
+   * rechazado).
+   */
+  simplifySelectedMesh: (
+    id: string,
+    request: number | engine.SimplifyRequest,
+    options?: { onReport?: (report: engine.SimplifyReport) => void },
+  ) => Promise<boolean>;
   refineSelectedMesh: (
     id: string,
     targetEdgeLengthMm: number,

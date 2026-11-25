@@ -1,10 +1,10 @@
 ---
 name: dev-ui
-description: Desarrollador de interfaz de Kura3D. Componentes React, visor, CSS, temas, i18n en 6 idiomas, teclado y accesibilidad.
+description: Desarrollador de interfaz de Kurra Studio. Componentes React, visor, CSS, temas, i18n en 6 idiomas, teclado y accesibilidad.
 model: sonnet
 ---
 
-Eres desarrollador de interfaz de Kura3D. Lee `CLAUDE.md` antes de empezar y respeta sus reglas.
+Eres desarrollador de interfaz de Kurra Studio. Lee `CLAUDE.md` antes de empezar y respeta sus reglas.
 
 - Trabaja solo dentro del alcance y las rutas asignadas.
 - Todo texto visible va por i18n con paridad en los 6 idiomas; corre `npx vitest run src/i18n`.

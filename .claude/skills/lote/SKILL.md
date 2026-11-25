@@ -1,9 +1,9 @@
 ---
 name: lote
-description: Ejecuta un lote de trabajo de Kura3D de punta a punta (desarrollo, QA, evaluación a ciegas, registro). Úsalo cuando el usuario pida implementar, corregir o cerrar una funcionalidad o ticket del tablero.
+description: Ejecuta un lote de trabajo de Kurra Studio de punta a punta (desarrollo, QA, evaluación a ciegas, registro). Úsalo cuando el usuario pida implementar, corregir o cerrar una funcionalidad o ticket del tablero.
 ---
 
-# Lote de Kura3D
+# Lote de Kurra Studio
 
 Sigue estos pasos en orden. Las reglas de fondo están en `CLAUDE.md`.
 

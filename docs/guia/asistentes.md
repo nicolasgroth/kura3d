@@ -1,6 +1,6 @@
 # Asistentes
 
-Un asistente crea una pieza completa a partir de unas pocas preguntas: eliges las medidas, y Kura3D arma la pieza (o varias, como una caja y su tapa) lista para revisar, dividir o exportar. Hoy vienen tres: **Caja con tapa**, **Llavero con texto** y **Placa de enchufe**. Cada uno está hecho con una *receta*, un archivo de datos (sin código) que describe sus preguntas, sus reglas y los pasos para construir la pieza.
+Un asistente crea una pieza completa a partir de unas pocas preguntas: eliges las medidas, y Kurra Studio arma la pieza (o varias, como una caja y su tapa) lista para revisar, dividir o exportar. Hoy vienen tres: **Caja con tapa**, **Llavero con texto** y **Placa de enchufe**. Cada uno está hecho con una *receta*, un archivo de datos (sin código) que describe sus preguntas, sus reglas y los pasos para construir la pieza.
 
 Los asistentes solo preparan la geometría. No laminan ni generan G-code.
 
@@ -36,7 +36,7 @@ Sobre el botón **Crear** está el interruptor **Vista previa**, activado por de
 - A su derecha, un texto discreto dice el estado (*Calculando vista previa…*, *Vista previa actualizada*). Se anuncia sin interrumpir a los lectores de pantalla.
 - Si el formulario tiene un error, o la receta no puede construir la pieza con esas medidas, el fantasma desaparece y la vista previa dice *Sin vista previa: revisa los campos*; el motivo ya está junto al campo y no salen avisos emergentes.
 - Si calcular tarda más de unos 1,5 s, la vista previa se **pausa** (*Vista previa pausada: demasiado pesada*) y deja de calcular sola. El botón **Actualizar** la calcula a mano, sin tope de tiempo. Mientras tanto puedes pulsar **Crear** con normalidad.
-- Si Kura3D está ocupado con otra operación, la vista previa espera su turno: nunca la retrasa.
+- Si Kurra Studio está ocupado con otra operación, la vista previa espera su turno: nunca la retrasa.
 
 Apaga el interruptor si prefieres no ver el fantasma. La vista previa no toca la escena ni el historial de deshacer.
 
@@ -55,7 +55,7 @@ Las piezas nuevas conservan la **posición** donde estaba el juego, el **nombre*
 
 Lo que conviene saber:
 
-- **Si modificaste la pieza después** (la cortaste, le aplicaste restas, la pintaste), Kura3D avisa antes: *se regenerará desde la receta y se perderán esos cambios*, con **Cancelar** para no tocar nada. En piezas creadas antes de esta función no se puede saber si hubo cambios, así que el aviso aparece siempre.
+- **Si modificaste la pieza después** (la cortaste, le aplicaste restas, la pintaste), Kurra Studio avisa antes: *se regenerará desde la receta y se perderán esos cambios*, con **Cancelar** para no tocar nada. En piezas creadas antes de esta función no se puede saber si hubo cambios, así que el aviso aparece siempre.
 - **Archivos y objetos elegidos** (el logo del llavero, por ejemplo) no se guardan en la pieza: el formulario te dice qué volver a elegir.
 - **Respuestas guardadas que ya no sirven** (porque la receta cambió) se descartan, se usa el valor por defecto y el formulario lo indica.
 - **Si la receta ya no existe** o cambió a una versión mayor incompatible, el panel lo explica y ofrece **Crear una nueva**, en lugar de abrir un formulario con datos que no corresponden.

@@ -1,6 +1,6 @@
 /**
  * @file src/components/StatusBar.tsx
- * @description Barra de estado inferior de Kura3D con estado de runtime (Tauri/Web),
+ * @description Barra de estado inferior de Kurra Studio con estado de runtime (Tauri/Web),
  * motor Manifold WASM, indicador de unidad e impresora (popover), conteo de triángulos, línea de ayuda del
  * control bajo el cursor o el foco (zona propia en el centro) y atajos rápidos.
  * @author Nicolás Groth <ngroth@gmail.com>

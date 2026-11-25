@@ -1,6 +1,6 @@
 /**
  * @file src/__tests__/storeEngineFlows.e2e.test.ts
- * @description Suite integral de evaluación funcional End-to-End (E2E) para Kura3D.
+ * @description Suite integral de evaluación funcional End-to-End (E2E) para Kurra Studio.
  * Verifica de punta a punta el store central Zustand (`useKuraStore`), el núcleo geométrico
  * Manifold-3D WASM y el Command Bus unificado a través de las 9 áreas funcionales:
  *   1. Módulos dinámicos (+ / −) e importación STL modular + aplicación booleana de huecos.
@@ -108,7 +108,7 @@ async function resetCleanStore() {
   });
 }
 
-describe('Kura3D — Evaluación Funcional End-to-End (Store + Engine + Command Bus)', () => {
+describe('Kurra Studio — Evaluación Funcional End-to-End (Store + Engine + Command Bus)', () => {
   beforeEach(async () => {
     await resetCleanStore();
   });

@@ -1,10 +1,10 @@
-# Extensiones de Kura3D
+# Extensiones de Kurra Studio
 
 **Estado: diseño propuesto.** El sistema de extensiones todavía no está implementado (ticket EXT-01). Este documento fija las reglas para que el núcleo se construya desde ya de forma compatible, y para que quien quiera aportar sepa qué esperar. Puede cambiar hasta la primera versión que lo incluya.
 
 ## Qué es una extensión
 
-Un paquete hecho por un tercero que agrega funciones a Kura3D sin modificar su código. Usa el mismo contrato de operaciones que la interfaz, la línea de comandos, el servidor MCP y la API: una extensión no puede hacer nada que un usuario no pueda hacer, y todo lo que hace queda en el historial y se puede deshacer.
+Un paquete hecho por un tercero que agrega funciones a Kurra Studio sin modificar su código. Usa el mismo contrato de operaciones que la interfaz, la línea de comandos, el servidor MCP y la API: una extensión no puede hacer nada que un usuario no pueda hacer, y todo lo que hace queda en el historial y se puede deshacer.
 
 ## Qué puede agregar
 

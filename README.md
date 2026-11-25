@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="public/branding/kura3d-banner.png" alt="Kura3D — estudio de modelado 3D para impresión" width="680" />
+  <img src="public/branding/kura3d-banner.png" alt="Kurra Studio — estudio de modelado 3D para impresión" width="680" />
 </p>
 
-<h1 align="center">Kura3D</h1>
+<h1 align="center">Kurra Studio</h1>
 
 <p align="center">
   <strong>Estudio abierto de modelado 3D para dejar cualquier pieza lista para imprimir</strong><br/>
@@ -19,9 +19,9 @@
 
 ---
 
-**Kura3D** (*kura* es "piedra" en mapudungun) reúne en una sola herramienta lo que hoy está repartido en varias: importar o crear un modelo, cortarlo, ahuecarlo, unirlo con encajes, pintarlo por colores y exportarlo para tu slicer. Funciona en el navegador y como aplicación de escritorio, **100 % local**: la inteligencia artificial es opcional.
+**Kurra Studio** (*kurra* es "piedra" en mapudungun) reúne en una sola herramienta lo que hoy está repartido en varias: importar o crear un modelo, cortarlo, ahuecarlo, unirlo con encajes, pintarlo por colores y exportarlo para tu slicer. Funciona en el navegador y como aplicación de escritorio, **100 % local**: la inteligencia artificial es opcional.
 
-El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kura3D entrega archivos que los slicers abren sin sorpresas.
+El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kurra Studio entrega archivos que los slicers abren sin sorpresas.
 
 > **Estado: beta en desarrollo activo.** El avance de cada funcionalidad, con sus notas de calidad, está en el [tablero](docs/TABLERO.md). La versión web es la más probada; la aplicación de escritorio todavía tiene verificaciones pendientes.
 
@@ -80,6 +80,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - Texto y SVG en relieve, grabado o incrustado sobre cualquier superficie.
 - Litofanías planas y cilíndricas, y cortadores desde una imagen.
 - Simplificar y refinar mallas, alinear y distribuir en la cama.
+- **Simplificar** (en revisión) para equipos con poca memoria: «sin pérdida» (solo se aplica si no cambia la forma), por tolerancia o por cantidad de triángulos, con un informe de antes y después que avisa si se cerró un agujero o cambió el volumen.
 - **Suavizar malla** (en revisión): quita facetado y ruido de escaneos sin cambiar los triángulos, con aristas protegidas, zona pintada y vista previa antes de aplicar (**Acciones › Malla › Suavizar…**).
 
 **Preparación para imprimir**
@@ -116,9 +117,8 @@ Lo que falta, en el orden del [roadmap](docs/ROADMAP.md). El detalle está en el
 **Lo siguiente**
 1. Cerrar la revisión de lo marcado «(en revisión)» arriba.
 2. **Placas y vista armada:** las piezas de una figura repartidas en varias placas, una vista que las muestra juntas y exportación por placa ([diseño](docs/diseno/PLACAS_Y_ARMADO.md), espera decisiones del autor).
-3. **Simplificar sin pérdida**, con verificación del resultado ([medición con modelos reales](docs/diseno/FORMAS_SIMPLES.md)).
-4. **Uniones firmes** en Dividir: tamaño mínimo de conector y de pared según la sección. El cálculo ya existe; falta mostrarlo en la interfaz.
-5. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
+3. **Uniones firmes** en Dividir: tamaño mínimo de conector y de pared según la sección. El cálculo ya existe; falta mostrarlo en la interfaz.
+4. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
 
 **Más adelante**
 - Dividir: cortes por las partes naturales de la figura, cortes inclinados, uniones vinculadas.
@@ -165,7 +165,7 @@ Todas las dependencias tienen licencia permisiva (MIT, Apache-2.0, BSD, ISC).
 
 ## Cómo se construye
 
-Kura3D se desarrolla con agentes de IA organizados en tres equipos independientes: desarrollo, QA y evaluación. Cada funcionalidad recibe una nota de 1 a 100 en usabilidad, código y funcionalidad, con evidencia, y solo se da por lista con 85 o más en las tres. Las reglas están en [CLAUDE.md](CLAUDE.md) y las notas en [docs/EVALUACIONES.md](docs/EVALUACIONES.md).
+Kurra Studio se desarrolla con agentes de IA organizados en tres equipos independientes: desarrollo, QA y evaluación. Cada funcionalidad recibe una nota de 1 a 100 en usabilidad, código y funcionalidad, con evidencia, y solo se da por lista con 85 o más en las tres. Las reglas están en [CLAUDE.md](CLAUDE.md) y las notas en [docs/EVALUACIONES.md](docs/EVALUACIONES.md).
 
 ## Documentación
 

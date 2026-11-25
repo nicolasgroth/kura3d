@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/types.ts
- * @description Tipos y contratos compartidos para el servidor MCP de Kura3D,
+ * @description Tipos y contratos compartidos para el servidor MCP de Kurra Studio,
  * alineados con el Command Bus del frontend y el modo autónomo headless.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -9,7 +9,7 @@
 
 import type { KuraCommandName } from '../../src/core/commands/commandNames';
 
-/** Unidades de medida soportadas por Kura3D (almacenamiento interno siempre en mm). */
+/** Unidades de medida soportadas por Kurra Studio (almacenamiento interno siempre en mm). */
 export type UnitSystem = 'mm' | 'cm' | 'm' | 'in' | 'ft';
 
 /** Tipos de primitivas paramétricas nativas. */
@@ -34,7 +34,7 @@ export type MaterialPresetId =
   | 'wax_candle'
   | 'metallic';
 
-/** Especificación física de cada material PBR soportado por Kura3D. */
+/** Especificación física de cada material PBR soportado por Kurra Studio. */
 export interface MaterialPresetSpec {
   id: MaterialPresetId;
   labelEs: string;
@@ -43,7 +43,7 @@ export interface MaterialPresetSpec {
   densityGCm3: number;
 }
 
-/** Catálogo oficial de materiales PBR de Kura3D. */
+/** Catálogo oficial de materiales PBR de Kurra Studio. */
 export const MATERIAL_PRESETS: Record<MaterialPresetId, MaterialPresetSpec> = {
   pla_matte: {
     id: 'pla_matte',
@@ -343,7 +343,7 @@ export interface PrinterProfile {
 }
 
 /**
- * Perfiles oficiales de impresoras 3D integrados en Kura3D
+ * Perfiles oficiales de impresoras 3D integrados en Kurra Studio
  * (Elegoo Centauri Carbon 1 & 2, Bambu Lab, Snapmaker, FlashForge, Genéricas y Estudio Libre).
  */
 export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
@@ -481,14 +481,14 @@ export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [
 /** Nombres de comandos del Command Bus (fuente única en `src/core/commands`). */
 export type { KuraCommandName } from '../../src/core/commands/commandNames';
 
-/** Mensaje de petición enviado hacia la UI viva de Kura3D por WebSocket. */
+/** Mensaje de petición enviado hacia la UI viva de Kurra Studio por WebSocket. */
 export interface KuraCommandRequest {
   id: string;
   command: KuraCommandName;
   params: Record<string, unknown>;
 }
 
-/** Mensaje de respuesta recibido desde la UI viva de Kura3D por WebSocket. */
+/** Mensaje de respuesta recibido desde la UI viva de Kurra Studio por WebSocket. */
 export interface KuraCommandResponse {
   id: string;
   ok: boolean;

@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/index.ts
- * @description Punto de entrada del servidor MCP open-source de Kura3D sobre StdioServerTransport.
+ * @description Punto de entrada del servidor MCP open-source de Kurra Studio sobre StdioServerTransport.
  * Inicia el puente WebSocket local (`127.0.0.1:17432`) y el motor autónomo Headless,
  * registrando todos los logs exclusivamente en `stderr` para mantener `stdout` limpio para JSON-RPC.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -14,7 +14,7 @@ import { KuraBridgeServer, type KuraBridgeOptions } from './bridge.js';
 import { KuraHeadlessEngine } from './headlessEngine.js';
 import { registerKuraTools } from './tools.js';
 
-/** Crea e inicializa una instancia configurada del servidor MCP de Kura3D. */
+/** Crea e inicializa una instancia configurada del servidor MCP de Kurra Studio. */
 export function createKuraMcpServer(
   options?: { bridgePort?: number } & Omit<KuraBridgeOptions, 'port'>
 ) {
@@ -49,10 +49,10 @@ async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  console.error('[Kura3D-MCP] Servidor MCP listo en transporte stdio (Nicolás Groth, MIT).');
+  console.error('[Kurra-MCP] Servidor MCP listo en transporte stdio (Nicolás Groth, MIT).');
 
   const shutdown = async () => {
-    console.error('[Kura3D-MCP] Cerrando servidor MCP y puente WebSocket...');
+    console.error('[Kurra-MCP] Cerrando servidor MCP y puente WebSocket...');
     await server.close();
     await bridge.close();
     process.exit(0);
@@ -69,7 +69,7 @@ const isMainEntry =
 
 if (isMainEntry) {
   main().catch((err) => {
-    console.error('[Kura3D-MCP] Error fatal al iniciar:', err);
+    console.error('[Kurra-MCP] Error fatal al iniciar:', err);
     process.exit(1);
   });
 }

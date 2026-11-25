@@ -1,6 +1,6 @@
 /**
  * @file src/i18n/locales/hi.ts
- * @description Diccionario completo en hindi (हिन्दी, escritura devanagari) para Kura3D v0.5.0.
+ * @description Diccionario completo en hindi (हिन्दी, escritura devanagari) para Kurra Studio v0.5.0.
  * Tipado estrictamente con `Record<TranslationKey, string>` para garantizar paridad 1:1 en compilación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -21,6 +21,7 @@ import { SPLITPREFS_HI } from './splitPrefs';
 import { UNIONES_FIRMES_HI } from './unionesFirmes';
 import { AJUSTAR_HI } from './ajustarImpresora';
 import { SUAVIZAR_HI } from './suavizarMotor';
+import { SIMPLIFICAR_HI } from './simplificar';
 import { SUAVIZAR_UI_HI } from './suavizarUi';
 import { SPLITCOUPLING_HI } from './splitCoupling';
 import { A11YUX_HI } from './a11yUx';
@@ -83,6 +84,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...AJUSTAR_HI,
   ...SUAVIZAR_HI,
   ...SUAVIZAR_UI_HI,
+  ...SIMPLIFICAR_HI,
   ...SPLITCOUPLING_HI,
   ...A11YUX_HI,
   ...UXMOVIL_HI,
@@ -121,7 +123,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...TORRETA_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
-  'app.docTitle': 'Kura3D v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',
+  'app.docTitle': 'Kurra Studio v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',
   'app.untitled': 'शीर्षकहीन दृश्य',
   'recovery.status.working': 'ड्राफ़्ट सहेजा जा रहा है…',
   'recovery.status.ready': 'स्थानीय ड्राफ़्ट सहेजा गया',
@@ -151,7 +153,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'fileProject.busy': 'मौजूदा कार्रवाई पूरी होने तक प्रतीक्षा करें।',
   'fileProject.working': 'प्रोजेक्ट खोला या सहेजा जा रहा है…',
   'fileProject.invalid': '.kura फ़ाइल अमान्य या क्षतिग्रस्त है।',
-  'fileProject.unsupported': 'इस .kura फ़ाइल के लिए Kura3D का संगत संस्करण चाहिए।',
+  'fileProject.unsupported': 'इस .kura फ़ाइल के लिए Kurra Studio का संगत संस्करण चाहिए।',
   'fileProject.tooLarge': 'प्रोजेक्ट आकार या ज्यामिति की सीमा से बड़ा है।',
   'common.close': 'बंद करें',
 
@@ -451,7 +453,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'ctx.delete': 'हटाएं',
 
   // Paleta de comandos (Ctrl+K)
-  'cmd.title': 'Kura3D कमांड पैलेट',
+  'cmd.title': 'Kurra Studio कमांड पैलेट',
   'cmd.placeholder': 'कोई कमांड, आकृति, संचालन या सेटिंग टाइप करें...',
   'cmd.empty': 'कोई मेल खाने वाला कमांड नहीं मिला।',
   'cmd.badgeLocal': 'लोकल',
@@ -472,13 +474,13 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'palette.cmd.appearance': 'रंग थीम बदलें (रूप-रंग)',
 
   // Panel de Chat IA (AiChatDrawer)
-  'ai.title': 'Kura3D AI सहायक',
+  'ai.title': 'Kurra Studio AI सहायक',
   'ai.configureKey': 'AI कॉन्फ़िगर करें',
   'ai.placeholder': 'उदा. "40 mm ऊँची बेलन बनाएं और 2 mm मोटाई पर खोखला करें"...',
   'ai.send': 'भेजें',
   'ai.clearChat': 'चैट साफ़ करें',
   'ai.thinking': 'ज्यामिति संसाधित हो रही है...',
-  'ai.welcome': 'नमस्ते, मैं Kura3D सहायक हूँ। ऑफ़लाइन मैं प्रिमिटिव और ISO थ्रेड (बोल्ट, नट या थ्रेडेड छेद: «M6 थ्रेडेड छेद जोड़ो») बना सकता हूँ, उन्हें खिसका, स्केल, खोखला और डॉवेल के साथ काट सकता हूँ, चयन को जोड़ या घटा सकता हूँ, प्रिंट योग्यता जाँच सकता हूँ («यह कितना प्रिंट करने योग्य है?») और STL/3MF निर्यात कर सकता हूँ। खुले अनुरोधों के लिए सेटिंग्स में Gemini, OpenAI, Anthropic या Ollama सेट करें।',
+  'ai.welcome': 'नमस्ते, मैं Kurra Studio सहायक हूँ। ऑफ़लाइन मैं प्रिमिटिव और ISO थ्रेड (बोल्ट, नट या थ्रेडेड छेद: «M6 थ्रेडेड छेद जोड़ो») बना सकता हूँ, उन्हें खिसका, स्केल, खोखला और डॉवेल के साथ काट सकता हूँ, चयन को जोड़ या घटा सकता हूँ, प्रिंट योग्यता जाँच सकता हूँ («यह कितना प्रिंट करने योग्य है?») और STL/3MF निर्यात कर सकता हूँ। खुले अनुरोधों के लिए सेटिंग्स में Gemini, OpenAI, Anthropic या Ollama सेट करें।',
   'ai.chip.box': '40 mm घन',
   'ai.chip.hollow': '2.5 mm खोखला',
   'ai.chip.cylinder': '20×50 mm बेलन',
@@ -713,7 +715,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   // Modal Exportar 3MF Multi-Slicer
 
   // Modal Ajustes & MCP
-  'dialog.settings.title': 'Kura3D सेटिंग्स',
+  'dialog.settings.title': 'Kurra Studio सेटिंग्स',
   'dialog.settings.tab.ai': 'AI प्रदाता',
   'dialog.settings.tab.mcp': 'MCP सर्वर',
   'dialog.settings.tab.appearance': 'रूप और थीम',
@@ -723,7 +725,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.settings.themeDefaultBadge': 'डिफ़ॉल्ट',
   'dialog.settings.themeActiveBadge': 'सक्रिय',
   'dialog.settings.themePreviewBadge': 'लाइव पूर्वावलोकन',
-  'dialog.settings.brandVariants': 'Kura3D दृश्य पहचान',
+  'dialog.settings.brandVariants': 'Kurra Studio दृश्य पहचान',
   'theme.obsidian.name': 'Obsidian Cyan',
   'theme.obsidian.desc': 'तकनीकी सियान के साथ गहरा स्लेट स्टूडियो (डिफ़ॉल्ट थीम)।',
   'theme.kura_prism.name': 'Kura Prism',
@@ -1156,10 +1158,10 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.settings.test.desktopKey': 'डेस्कटॉप पर कुंजी कीचेन से पढ़ी जाती है: जाँच से पहले सेटिंग सहेजें।',
   'dialog.settings.test.url': 'मान्य बेस URL आवश्यक है।',
   'dialog.settings.test.local': 'स्थानीय मोड: जाँचने के लिए कोई बाहरी कनेक्शन नहीं है।',
-  'mcp.setup.pathLabel': 'आपकी Kura3D प्रति का पथ (वैकल्पिक)',
-  'mcp.setup.pathNote': 'ऐप को आपकी Kura3D प्रति की जगह नहीं पता। यहाँ पथ लिखें या <REPO_PATH> हाथ से बदलें।',
+  'mcp.setup.pathLabel': 'आपकी Kurra Studio प्रति का पथ (वैकल्पिक)',
+  'mcp.setup.pathNote': 'ऐप को आपकी Kurra Studio प्रति की जगह नहीं पता। यहाँ पथ लिखें या <REPO_PATH> हाथ से बदलें।',
   'mcp.setup.helpTitle': 'MCP सर्वर अभी उत्तर नहीं दे रहा: चरण',
-  'mcp.setup.step1': '1. Kura3D फ़ोल्डर से सर्वर एक बार बनाएँ:',
+  'mcp.setup.step1': '1. Kurra Studio फ़ोल्डर से सर्वर एक बार बनाएँ:',
   'mcp.setup.step2': '2. इसे अपने MCP क्लाइंट में पंजीकृत करें। Claude Code में (<TOKEN> को ऊपर के टोकन से बदलें):',
   'mcp.setup.step3': '3. MCP क्लाइंट फिर शुरू करें; सर्वर चलते ही स्थिति «जुड़ा» हो जाती है।',
   'mcp.setup.copyCommand': 'कमांड कॉपी करें',

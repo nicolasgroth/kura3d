@@ -1,6 +1,6 @@
 /**
  * @file src/components/RightInspector.tsx
- * @description Inspector derecho de Kura3D: guarda el estado local de las secciones (sobrevive a cambios de
+ * @description Inspector derecho de Kurra Studio: guarda el estado local de las secciones (sobrevive a cambios de
  * selección y de contexto), atiende la petición de foco de precisión y delega en el panel contextual
  * (`./contextPanel/ContextPanel.tsx`), que elige qué mostrar.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import { OPERATION_DEFAULTS } from '../engine/operationLimits';
 import React, { useLayoutEffect, useState } from 'react';
 import { type PrimitiveType, type TexturePatternType, type TransformMode } from '../types/kura';
 import { REFINE_UI_DEFAULTS } from './refineDefaults';
@@ -28,7 +29,7 @@ function useInspectorLocalState(): InspectorLocalState {
   const [rotationRelative, setRotationRelative] = useState(false);
   const [scaleBySize, setScaleBySize] = useState(false);
   const [modularShape, setModularShape] = useState<PrimitiveType>('cylinder');
-  const [simplifyTolMm, setSimplifyTolMm] = useState(0.15);
+  const [simplifyTolMm, setSimplifyTolMm] = useState<number>(OPERATION_DEFAULTS.simplify.toleranceMm);
   const [refineEdgeMm, setRefineEdgeMm] = useState<number>(REFINE_UI_DEFAULTS.edgeMm);
   const [refineSmooth, setRefineSmooth] = useState<boolean>(REFINE_UI_DEFAULTS.smooth);
   return { wallThicknessMm, setWallThicknessMm, drainHole, setDrainHole, drainRadiusMm, setDrainRadiusMm, texturePattern, setTexturePattern, textureDepthMm, setTextureDepthMm, textureScaleMm, setTextureScaleMm, positionRelative, setPositionRelative, rotationRelative, setRotationRelative, scaleBySize, setScaleBySize, modularShape, setModularShape, simplifyTolMm, setSimplifyTolMm, refineEdgeMm, setRefineEdgeMm, refineSmooth, setRefineSmooth };

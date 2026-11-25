@@ -1,4 +1,4 @@
-# Plan de desarrollo de Kura3D
+# Plan de desarrollo de Kurra Studio
 
 Línea base del 21 de noviembre de 2026 · `main` en `9c875ba` · aplicación `0.5.0`.
 
@@ -18,7 +18,7 @@ Este plan cruza `KURA_3D_ESPECIFICACION_MAESTRA.md` (en la carpeta superior), `r
 | Integraciones | Asistente local y proveedores opcionales, servidor MCP, operación headless, puente local y bus en el store | Falta política uniforme para propuesta, previsualización y escritura, aislamiento de credenciales y API versionada. El hecho de tener un puente local no cierra los hallazgos de las revisiones. |
 | Verificación | `npm test` 68/68, `npm run mcp:test` 9/9, tipos MCP y `npm run build` correctos. CI con suites web/MCP y `cargo check` en Windows pasó en `9c875ba` | Suites principalmente Node, con DOM simulado puntual y puente loopback. Vite advierte de la externalización de `node:module` desde Manifold y de dos chunks JS superiores a 500 kB minificados. Faltan métricas de interacción y recorrido de instaladores. |
 
-[Store](../src/store/useKuraStore.ts) · [Formatos](../src/engine/ioFormats.ts) · [Motor](../src/engine/index.ts) · [Shell](../src/App.tsx) · [CI](../.github/workflows/ci.yml) · [Ejecución de CI en GitHub](https://github.com/nicolasgroth/kura3d/actions/runs/44910583803) · [Release](../.github/workflows/release.yml) · [MCP](../mcp-server/README.md)
+[Store](../src/store/useKuraStore.ts) · [Formatos](../src/engine/ioFormats.ts) · [Motor](../src/engine/index.ts) · [Shell](../src/App.tsx) · [CI](../.github/workflows/ci.yml) · [Ejecución de CI en GitHub](https://github.com/nicolasgroth/kurra3d/actions/runs/44910583803) · [Release](../.github/workflows/release.yml) · [MCP](../mcp-server/README.md)
 
 ## Iteraciones y criterio de salida
 

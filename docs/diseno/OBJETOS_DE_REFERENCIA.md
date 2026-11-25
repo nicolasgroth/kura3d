@@ -5,7 +5,7 @@ Estado: propuesta (23-nov-2026). Tercer tipo de objeto: se ve, no se imprime ni 
 ## 1. Qué hay hoy
 
 - **Tipo de objeto:** `SceneObject.isHole: boolean` (`src/types/kura.ts:720`). No hay más tipos. Unas 100 lecturas fuera de pruebas. Casi todas usan `!o.isHole` para decir "se imprime": **si se agrega un tercer tipo como bandera aparte, todas esas lecturas lo tratarían como sólido sin avisar**.
-- **Formato `.kura`:** `src/project/projectSchema.ts` valida con `shape()` **estricto** (rechaza claves desconocidas) y `projectCodec.ts` lee las versiones `{1, 2}`. Un campo nuevo obliga a pasar a la versión 3; una versión anterior de Kura3D rechazará el archivo con "versión no soportada" (no lo lee mal: es el comportamiento que conviene).
+- **Formato `.kura`:** `src/project/projectSchema.ts` valida con `shape()` **estricto** (rechaza claves desconocidas) y `projectCodec.ts` lee las versiones `{1, 2}`. Un campo nuevo obliga a pasar a la versión 3; una versión anterior de Kurra Studio rechazará el archivo con "versión no soportada" (no lo lee mal: es el comportamiento que conviene).
 - **3MF de escena completa:** `threeMfExport.ts` deja lo no impreso (oculto, negativos) como recurso sin ítem de `<build>`, y `kuraSceneMeta.ts` / `threeMfKuraScene.ts` guardan `isHole`. **Una versión antigua leería una referencia como sólido.**
 - **Detección de solapes:**
   - `src/core/scene/overlap.ts`: solo cajas envolventes (rápido, impreciso).

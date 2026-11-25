@@ -1,6 +1,6 @@
 /**
  * @file src/engine/generators.ts
- * @description Generadores paramétricos especializados de Kura3D:
+ * @description Generadores paramétricos especializados de Kurra Studio:
  * 1) Roscas métricas ISO (reexportadas desde `threads.ts`).
  * 2) Litofanías cilíndricas curvas completamente cerradas (watertight, 90°..360°).
  * 3) Siluetas y cortadores de galletas/sellos (`silhouette` / `cutter`) extraídos de

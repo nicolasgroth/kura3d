@@ -31,9 +31,9 @@ Tienes tres caminos:
 - **Paredes y detalles se reducen**: al escalar, una pared de 1,2 mm queda más delgada. Revisa que tu pieza la aguante.
 - **Queda bajo el 50 % del tamaño**: conviene dividir en vez de achicar tanto.
 - **Cambia la cara apoyada**: revisa que la pieza quede estable y que no aparezcan voladizos nuevos.
-- **Medidas que dejan de ser estándar**: si el bloque tiene una **rosca ISO** generada en Kura3D (por ejemplo M8) o piezas de Dividir con **conectores** o **tarugos**, al escalar dejan de tener su medida. Si la rosca es un objeto aparte dentro de un bloque de varios, **Mantener aparte** la deja fuera del ajuste con su tamaño. Los conectores de Dividir están fundidos en la pieza: no se pueden dejar aparte.
+- **Medidas que dejan de ser estándar**: si el bloque tiene una **rosca ISO** generada en Kurra Studio (por ejemplo M8) o piezas de Dividir con **conectores** o **tarugos**, al escalar dejan de tener su medida. Si la rosca es un objeto aparte dentro de un bloque de varios, **Mantener aparte** la deja fuera del ajuste con su tamaño. Los conectores de Dividir están fundidos en la pieza: no se pueden dejar aparte.
 
-Kura3D solo reconoce las medidas que creó él mismo (roscas, conectores, tarugos y piezas con parámetros). En una malla importada no puede saber si un agujero es para un tornillo.
+Kurra Studio solo reconoce las medidas que creó él mismo (roscas, conectores, tarugos y piezas con parámetros). En una malla importada no puede saber si un agujero es para un tornillo.
 
 ## Mis camas
 
@@ -45,7 +45,7 @@ Si tu impresora no está en la lista, crea tu propia cama:
 
 ![Editor de Mis camas](img/ajustar-a-la-impresora-03-mis-camas.png)
 
-Tus camas se guardan en este equipo. El proyecto `.kura` guarda la cama activa: al abrir un proyecto hecho con otra cama, Kura3D te avisa y puedes elegir **Usar mi cama** o **Mantener la del proyecto**.
+Tus camas se guardan en este equipo. El proyecto `.kura` guarda la cama activa: al abrir un proyecto hecho con otra cama, Kurra Studio te avisa y puedes elegir **Usar mi cama** o **Mantener la del proyecto**.
 
 ## Problemas frecuentes
 

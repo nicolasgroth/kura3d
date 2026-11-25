@@ -1,6 +1,6 @@
 /**
  * @file src/engine/index.ts
- * @description Punto de entrada único (barrel export) del núcleo geométrico de Kura3D.
+ * @description Punto de entrada único (barrel export) del núcleo geométrico de Kurra Studio.
  * Expone inicialización de Manifold-3D, primitivas paramétricas, operaciones CSG y
  * reparación/corte, geometría avanzada (SVG, relieve, texturas, pintado) y E/S STL/3MF/OBJ.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -114,6 +114,18 @@ export {
   refineMesh,
   simplifyMesh,
 } from './analysis';
+
+export {
+  LOSSLESS_LIMITS,
+  SIMPLIFY_MODES,
+  SIMPLIFY_WARN_LIMITS,
+  SIMPLIFY_WARNING_CODES,
+  simplifyMeshDetailed,
+  type SimplifyMode,
+  type SimplifyReport,
+  type SimplifyRequest,
+  type SimplifyWarningCode,
+} from './simplify';
 
 export { localizePrintWarning, PRINT_FILAMENT_DIAMETER_MM, PRINT_SHELL_FRACTION } from './printability';
 

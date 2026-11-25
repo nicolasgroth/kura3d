@@ -1,6 +1,6 @@
 /**
  * @file src/components/CommandPalette.tsx
- * @description Paleta rápida de comandos (Ctrl+K) de Kura3D v0.5.0 sobre <dialog> nativo
+ * @description Paleta rápida de comandos (Ctrl+K) de Kurra Studio v0.5.0 sobre <dialog> nativo
  * con filtrado en vivo, navegación por teclado (↑/↓/Enter), comandos Maker Pro, selector de
  * apariencia y temas WCAG AA/AAA, ciclo de 6 idiomas, modos de densidad (Compacto/Zen),
  * plano de sección Rayos X y badges explícitos Local vs IA.

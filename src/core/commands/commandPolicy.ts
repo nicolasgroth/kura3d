@@ -1,7 +1,7 @@
 /**
  * @file src/core/commands/commandPolicy.ts
  * @description Fuente única de verdad del acceso (lectura o escritura) de cada comando del
- * Command Bus de Kura3D. La consumen el servidor MCP (rechazo en servidor), el puente WebSocket
+ * Command Bus de Kurra Studio. La consumen el servidor MCP (rechazo en servidor), el puente WebSocket
  * y el cliente del puente en la UI (`src/utils/mcpBridgeClient.ts`). Módulo puro, sin dependencias
  * de Node, para poder importarse también desde el frontend.
  * @author Nicolás Groth <ngroth@gmail.com>

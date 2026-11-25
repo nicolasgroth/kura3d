@@ -1,19 +1,19 @@
-# Kura3D MCP Server (Open Source)
+# Kurra Studio MCP Server (Open Source)
 
 **Autor:** Nicolás Groth — **ISGROTH (Innovación y Soluciones GROTH)** (<ngroth@gmail.com>)  
 **Licencia:** MIT  
 
-Servidor oficial **Model Context Protocol (MCP)** para **Kura3D**. Permite que agentes de IA (como **Antigravity**, **Claude Desktop** o **Codex**) creen, inspeccionen, modifiquen y exporten modelos 3D listos para impresión 3D.
+Servidor oficial **Model Context Protocol (MCP)** para **Kurra Studio**. Permite que agentes de IA (como **Antigravity**, **Claude Desktop** o **Codex**) creen, inspeccionen, modifiquen y exporten modelos 3D listos para impresión 3D.
 
 ---
 
 ## Arquitectura Dual: Live Bridge + Headless Standalone
 
 1. **Modo Live Bridge (Tiempo Real):**  
-   Al iniciarse, el servidor abre un puente WebSocket local seguro en `ws://127.0.0.1:17432` (configurable con `KURA_BRIDGE_PORT`). Cuando la app de escritorio/web **Kura3D** está abierta, cada herramienta ejecutada por la IA actualiza el viewport 3D en vivo e incluso permite capturar vistas PNG (`kura_capture_viewport`).
+   Al iniciarse, el servidor abre un puente WebSocket local seguro en `ws://127.0.0.1:17432` (configurable con `KURA_BRIDGE_PORT`). Cuando la app de escritorio/web **Kurra Studio** está abierta, cada herramienta ejecutada por la IA actualiza el viewport 3D en vivo e incluso permite capturar vistas PNG (`kura_capture_viewport`).
 
 2. **Modo Headless Standalone (Sin UI abierta):**  
-   Si la interfaz gráfica de Kura3D no está abierta, el servidor MCP mantiene la escena en memoria (`KuraHeadlessEngine`) y ejecuta **toda la geometría con el mismo motor de la app** (`src/engine`, Manifold WASM): CSG exacto, corte con conectores, ahuecado, moldes, roscas, proyección, simplificación, segmentación y exportación **STL binario/ASCII** y **3MF con materiales y colores**. Lo que necesita el navegador (captura del viewport con WebGL) responde con un error explícito "no soportada en headless"; nunca se devuelve geometría aproximada.
+   Si la interfaz gráfica de Kurra Studio no está abierta, el servidor MCP mantiene la escena en memoria (`KuraHeadlessEngine`) y ejecuta **toda la geometría con el mismo motor de la app** (`src/engine`, Manifold WASM): CSG exacto, corte con conectores, ahuecado, moldes, roscas, proyección, simplificación, segmentación y exportación **STL binario/ASCII** y **3MF con materiales y colores**. Lo que necesita el navegador (captura del viewport con WebGL) responde con un error explícito "no soportada en headless"; nunca se devuelve geometría aproximada.
 
    `npm run build` comprueba tipos con `tsc` y empaqueta servidor + motor en `dist/index.js` con esbuild; `manifold-3d`, `three` y `fflate` se resuelven desde `mcp-server/node_modules`.
 
@@ -52,7 +52,7 @@ El puente WebSocket escucha solo en `127.0.0.1` y aplica, en este orden, a cada 
 | `KURA_BRIDGE_TOKEN` | — | *(vacío → puente deshabilitado)* | Token compartido con la UI (Ajustes → MCP lo genera y lo incluye en el JSON copiable). |
 | `KURA_BRIDGE_TOKEN_FILE` | `--token-file` | *(ninguno)* | Archivo con el token. Tiene prioridad sobre `KURA_BRIDGE_TOKEN` y es donde se **persisten las rotaciones** (escritura atómica, permisos `0600`). |
 | `KURA_BRIDGE_READ_ONLY` | `--read-only` | `false` | Acepta `true/1/yes/on`. Impone **Solo Lectura** en el servidor; la UI no puede desactivarlo. |
-| `KURA_EXPORT_DIR` | `--export-dir` | `~/Kura3D/exports` | Único directorio donde `kura_export_stl` / `kura_export_3mf` pueden escribir. |
+| `KURA_EXPORT_DIR` | `--export-dir` | `~/Kurra Studio/exports` | Único directorio donde `kura_export_stl` / `kura_export_3mf` pueden escribir. |
 | `KURA_BRIDGE_RATE_LIMIT` | `--rate-limit` | `120` | Máximo de comandos por minuto (ventana deslizante de 60 s). |
 | `KURA_BRIDGE_MAX_MESSAGE_BYTES` | `--max-message-bytes` | `67108864` (64 MiB) | Tamaño máximo por mensaje WebSocket entrante (cubre STL grandes en base64). |
 

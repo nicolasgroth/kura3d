@@ -135,7 +135,7 @@ export function useProjectRecovery() {
       await controllerRef.current?.discardOnClose();
     } catch (error) {
       // A storage failure must not leave a user trapped in the window.
-      console.warn('[Kura3D] Recovery cleanup:', error);
+      console.warn('[Kurra Studio] Recovery cleanup:', error);
     }
   }, []);
 

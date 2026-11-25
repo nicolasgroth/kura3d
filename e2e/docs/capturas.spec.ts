@@ -1,6 +1,6 @@
 /**
  * @file e2e/docs/capturas.spec.ts
- * @description Generador de las capturas de `docs/guia/img/` (guías de uso de Kura3D). Cada prueba arma una
+ * @description Generador de las capturas de `docs/guia/img/` (guías de uso de Kurra Studio). Cada prueba arma una
  * escena con primitivas de la app y guarda PNG de 1440×900 en tema claro y español. No afirma comportamiento:
  * si la interfaz cambia, se vuelve a correr (`npm run docs:capturas`) y las imágenes se regeneran.
  * Filtra una guía con `npm run docs:capturas -- -g dividir`.

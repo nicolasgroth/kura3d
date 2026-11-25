@@ -14,7 +14,7 @@ import { STRUCTURAL_COLOR_PALETTE } from './constants';
  * Pinta cada triángulo de `mesh.faceColors` con el color hexadecimal de la región estructural
  * detectada a la que pertenece, dejando la malla lista para inspección visual y exportación 3MF multicolor.
  *
- * @param mesh Malla origen en formato Kura3D.
+ * @param mesh Malla origen en formato Kurra Studio.
  * @param segmentation Resultado devuelto por `detectStructuralRegions`.
  * @returns Nueva instancia `MeshData` con `faceColors` poblado para todos sus triángulos.
  */

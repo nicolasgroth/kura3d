@@ -1,6 +1,6 @@
 ---
 name: eval-codigo
-description: Evaluador a ciegas de calidad de código de Kura3D. Puntúa de 1 a 100 la implementación de cada funcionalidad o módulo indicado. Solo lectura.
+description: Evaluador a ciegas de calidad de código de Kurra Studio. Puntúa de 1 a 100 la implementación de cada funcionalidad o módulo indicado. Solo lectura.
 model: opus
 disallowedTools: Edit, Write, NotebookEdit
 ---

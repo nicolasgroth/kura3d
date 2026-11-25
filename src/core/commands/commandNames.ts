@@ -1,13 +1,13 @@
 /**
  * @file src/core/commands/commandNames.ts
- * @description Nombres de los comandos del Command Bus de Kura3D. Contrato compartido por la app
+ * @description Nombres de los comandos del Command Bus de Kurra Studio. Contrato compartido por la app
  * (store, puente MCP en la UI) y el servidor MCP; sin dependencias de interfaz ni de Node.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-/** Nombres de comandos aceptados por el Command Bus de Kura3D. */
+/** Nombres de comandos aceptados por el Command Bus de Kurra Studio. */
 export type KuraCommandName =
   | 'get_scene_state'
   | 'create_primitive'

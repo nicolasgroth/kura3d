@@ -72,7 +72,7 @@ describe('Project file IO', () => {
     const bytes = new Uint8Array([1, 2, 3]);
 
     await expect(saveProjectFile('modelo', bytes)).resolves.toEqual({ name: 'modelo.kura', viaDownload: true });
-    expect(saveBinaryFile).toHaveBeenCalledWith('modelo.kura', bytes, [{ name: 'Kura3D', extensions: ['kura'] }]);
+    expect(saveBinaryFile).toHaveBeenCalledWith('modelo.kura', bytes, [{ name: 'Kurra Studio', extensions: ['kura'] }]);
     await expect(saveProjectFile('modelo.kura', bytes)).rejects.toThrow('No se pudo iniciar la descarga');
   });
 

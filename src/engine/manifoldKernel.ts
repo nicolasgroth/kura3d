@@ -1,7 +1,7 @@
 /**
  * @file src/engine/manifoldKernel.ts
  * @description Inicialización perezosa del núcleo WASM Manifold-3D (compatible con Vite/navegador y Node/Vitest)
- * y utilidades de conversión bidireccional entre MeshData de Kura3D (Y-up en mm) y Manifold.
+ * y utilidades de conversión bidireccional entre MeshData de Kurra Studio (Y-up en mm) y Manifold.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -260,12 +260,12 @@ function constructManifold(wasm: ManifoldToplevel, mesh: ManifoldMesh): Manifold
 }
 
 /**
- * Convierte una malla `MeshData` de Kura3D (sistema Y-up en mm) a un sólido `Manifold`.
+ * Convierte una malla `MeshData` de Kurra Studio (sistema Y-up en mm) a un sólido `Manifold`.
  * Opcionalmente asocia IDs originales (`originalID`) agrupando triángulos por color para
  * preservar regiones multicolor tras operaciones booleanas o cortes.
  *
  * @param wasm Módulo Manifold inicializado.
- * @param mesh Malla de entrada en formato Kura3D.
+ * @param mesh Malla de entrada en formato Kurra Studio.
  * @param colorIdMap Mapa opcional de color hex ('#rrggbb') -> `originalID` reservado vía `Manifold.reserveIDs`.
  * @param fallbackColor Color por defecto si `mesh.faceColors` no está definido.
  * @returns Instancia válida de `Manifold`.
@@ -396,7 +396,7 @@ export function takeImplicitWeldWarning(): EngineWarning | null {
 }
 
 /**
- * Convierte un sólido `Manifold` de vuelta a `MeshData` de Kura3D (Y-up en mm),
+ * Convierte un sólido `Manifold` de vuelta a `MeshData` de Kurra Studio (Y-up en mm),
  * reconstruyendo opcionalmente `faceColors` a partir de los `runOriginalID` rastreados.
  *
  * @param manifold Sólido `Manifold` origen.

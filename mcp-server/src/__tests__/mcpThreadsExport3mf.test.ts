@@ -80,7 +80,7 @@ describe('rosca M3 / M64 válidas, M2 / M65 con error tipado en inglés', () => 
     const r = await raw('kura_create_thread', { kind: 'bolt', diameterMm: 2, pitchMm: 0.5, lengthMm: 10 });
     expect(r.isError).toBe(true);
     // Los errores del motor llegan como "[CODE] mensaje" más un bloque JSON { code, params }; los de validación del SDK
-    // llegan como error JSON-RPC -32602 (código de protocolo, en inglés) sin código de Kura3D.
+    // llegan como error JSON-RPC -32602 (código de protocolo, en inglés) sin código de Kurra Studio.
     expect(text(r)).toMatch(/\[[A-Z_]+\]|"code"|-32602/);
   });
 

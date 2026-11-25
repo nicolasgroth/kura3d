@@ -4,7 +4,7 @@ Estado: motor listo y probado, todavía sin interfaz (rama `feat/orientar-motor`
 
 ## Qué hace
 
-Recibe una pieza y propone las orientaciones sobre la cama que **reducen o eliminan los soportes** en FDM. Explica cada propuesta para que la persona elija. Kura3D no genera soportes ni lamina: solo orienta y mide. Todo se resuelve con geometría y reglas, sin IA.
+Recibe una pieza y propone las orientaciones sobre la cama que **reducen o eliminan los soportes** en FDM. Explica cada propuesta para que la persona elija. Kurra Studio no genera soportes ni lamina: solo orienta y mide. Todo se resuelve con geometría y reglas, sin IA.
 
 Código:
 

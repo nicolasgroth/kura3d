@@ -1,8 +1,8 @@
-# Compilación Multiplataforma de Instaladores (Windows, Linux, macOS) — Kura3D
+# Compilación Multiplataforma de Instaladores (Windows, Linux, macOS) — Kurra Studio
 # Organización: ISGROTH — Innovación y Soluciones GROTH
 # Autor: Nicolás Groth <ngroth@gmail.com>
 
-name: Kura3D Multi-Platform Release
+name: Kurra Studio Multi-Platform Release
 
 on:
   push:
@@ -59,8 +59,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__
-          releaseName: 'Kura3D v__VERSION__'
-          releaseBody: 'Instaladores nativos de **Kura3D** (Windows `.msi`/`.exe`, Linux `.AppImage`/`.deb`, macOS `.dmg`) — ISGROTH (Innovación y Soluciones GROTH).'
+          releaseName: 'Kurra Studio v__VERSION__'
+          releaseBody: 'Instaladores nativos de **Kurra Studio** (Windows `.msi`/`.exe`, Linux `.AppImage`/`.deb`, macOS `.dmg`) — ISGROTH (Innovación y Soluciones GROTH).'
           releaseDraft: true
           prerelease: true
           args: ${{ matrix.args }}

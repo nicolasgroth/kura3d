@@ -40,9 +40,9 @@ export class ProjectCodecError extends Error {
   /** Causa técnica opcional (campo u objeto que no pasó la validación). */
   constructor(public readonly code: 'invalid' | 'unsupported' | 'too-large', public readonly detail?: string) {
     super({
-      invalid: 'Invalid or damaged Kura3D project.',
-      unsupported: 'Unsupported Kura3D project version.',
-      'too-large': 'Kura3D project exceeds the supported size.',
+      invalid: 'Invalid or damaged Kurra Studio project.',
+      unsupported: 'Unsupported Kurra Studio project version.',
+      'too-large': 'Kurra Studio project exceeds the supported size.',
     }[code]);
     this.name = 'ProjectCodecError';
   }

@@ -1,6 +1,6 @@
 /**
  * @file src/store/kuraSceneRestore.ts
- * @description Restauración de una escena exportada por Kura3D a 3MF (`ImportedModel.kuraScene`):
+ * @description Restauración de una escena exportada por Kurra Studio a 3MF (`ImportedModel.kuraScene`):
  * objetos con su transformación, nombre, color, visibilidad, bloqueo y hueco exactos, y el árbol de
  * grupos (anidados, plegado, visible, bloqueado) con ids nuevos. Sin reacomodo ni conjuntos; si la
  * escena actual ya tiene objetos, el bloque entero se desplaza a un hueco libre (opcional).
@@ -32,7 +32,7 @@ export interface RestoredScene {
   groups: SceneGroup[];
 }
 
-/** true si el modelo es una escena de Kura3D que se restaura tal cual. */
+/** true si el modelo es una escena de Kurra Studio que se restaura tal cual. */
 export function isKuraScene(model: engine.ImportedModel): boolean {
   return model.kuraScene !== undefined && model.parts.every((p) => p.kura !== undefined);
 }

@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/tools.ts
- * @description Registro de todas las herramientas y recursos MCP de Kura3D.
+ * @description Registro de todas las herramientas y recursos MCP de Kurra Studio.
  * Soporta ejecución dual transparente: Live Bridge WebSocket (UI viva en tiempo real)
  * y Headless Standalone (motor en memoria con exportación STL/3MF directa a disco).
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -29,6 +29,7 @@ import { registerFitCheckTools } from './fitCheckTools.js';
 import { registerRoleTools, roleSchema } from './roleTools.js';
 import { registerRecipeTools } from './recipeTools.js';
 import { registerSmoothOrientTools } from './smoothOrientTools.js';
+import { registerSimplifyTools } from './simplifyTools.js';
 import { registerAddonTools } from './addonTools.js';
 import type { ObjectRole } from '../../src/types/kura';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
@@ -87,7 +88,7 @@ function failText(message: string): CallToolResult {
 function enforceSecurityPolicy(ctx: KuraToolContext, command: KuraCommandName): void {
   if (ctx.bridge.isReadOnly() && !isReadCommand(command)) {
     throw new Error(
-      `Operation denied: Kura3D MCP is in Read-only mode. Only inspection commands are allowed (${READ_COMMANDS.join(', ')}).`
+      `Operation denied: Kurra Studio MCP is in Read-only mode. Only inspection commands are allowed (${READ_COMMANDS.join(', ')}).`
     );
   }
   ctx.bridge.consumeRateLimit();
@@ -103,7 +104,7 @@ async function writeLiveExport(
 ): Promise<{ path: string; bytesWritten: number } | null> {
   const payload = exportPayloadSchema.safeParse(result ?? {});
   if (!payload.success) {
-    throw new Error('The Kura3D UI returned an export payload with an invalid format.');
+    throw new Error('The Kurra Studio UI returned an export payload with an invalid format.');
   }
   const { bytesBase64, text } = payload.data;
   if (!bytesBase64 && !text) {
@@ -140,7 +141,7 @@ async function exportToFile(
       { skipRateLimit: true }
     );
     if (!response.ok) {
-      return failText(response.error ?? `Error exporting ${opts.label} from the Kura3D UI.`);
+      return failText(response.error ?? `Error exporting ${opts.label} from the Kurra Studio UI.`);
     }
     const written = await writeLiveExport(targetPath, response.result);
     if (written) {
@@ -174,7 +175,7 @@ function createAccessAwareRegistrar(server: McpServer): McpServer['registerTool'
 }
 
 /**
- * Ejecuta un comando priorizando el puente WebSocket vivo de Kura3D y cayendo
+ * Ejecuta un comando priorizando el puente WebSocket vivo de Kurra Studio y cayendo
  * automáticamente al motor Headless cuando la interfaz gráfica no está conectada.
  */
 export async function dispatchWithFallback(
@@ -193,7 +194,7 @@ export async function dispatchWithFallback(
         skipRateLimit: true,
       });
       if (!response.ok) {
-        const message = response.error ?? `The command '${command}' failed in the Kura3D UI.`;
+        const message = response.error ?? `The command '${command}' failed in the Kurra Studio UI.`;
         const code = (response as { errorCode?: string }).errorCode;
         return code ? failCoded(code, message, {}) : failText(message);
       }
@@ -345,6 +346,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerRoleTools(server, ctx);
   registerRecipeTools(server, ctx);
   registerSmoothOrientTools(server, ctx);
+  registerSimplifyTools(server, ctx);
   registerAddonTools(server, ctx);
 
   // 3. Transformación de objetos
@@ -527,7 +529,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
 
   // 8b. Organizar: grupos y combinar (requieren la app abierta; el modo sin interfaz no guarda grupos)
   const needsApp = (what: string) => () => {
-    throw new Error(`${what} needs the Kura3D app connected through the local bridge (headless mode has no groups).`);
+    throw new Error(`${what} needs the Kurra Studio app connected through the local bridge (headless mode has no groups).`);
   };
   server.registerTool(
     'kura_group_objects',
@@ -688,7 +690,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     'kura_set_units',
     {
       title: 'Set unit system',
-      description: 'Changes the Kura3D display unit (mm, cm, m, in, ft).',
+      description: 'Changes the Kurra Studio display unit (mm, cm, m, in, ft).',
       inputSchema: {
         units: z.enum(['mm', 'cm', 'm', 'in', 'ft']).describe('Desired unit of measure.'),
       },
@@ -784,7 +786,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     {
       title: 'Capture 3D viewport view',
       description:
-        'Captures a PNG image of the 3D viewport when the Kura3D graphical app is connected via Live Bridge.',
+        'Captures a PNG image of the 3D viewport when the Kurra Studio graphical app is connected via Live Bridge.',
       inputSchema: {
         width: rangeSchema(OR.capture.sizePx).optional(),
         height: rangeSchema(OR.capture.sizePx).optional(),
@@ -805,7 +807,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           skipRateLimit: true,
         });
         if (!response.ok) {
-          return failText(response.error ?? 'Could not capture the Kura3D viewport.');
+          return failText(response.error ?? 'Could not capture the Kurra Studio viewport.');
         }
 
         const payload = (response.result ?? {}) as {
@@ -817,7 +819,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         const cleanBase64 = raw.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '');
 
         if (!cleanBase64) {
-          return failText('The Kura3D UI did not return valid PNG data for the capture.');
+          return failText('The Kurra Studio UI did not return valid PNG data for the capture.');
         }
 
         return {
@@ -829,7 +831,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
             },
             {
               type: 'text',
-              text: '3D viewport capture obtained successfully from Kura3D Live Bridge.',
+              text: '3D viewport capture obtained successfully from Kurra Studio Live Bridge.',
             },
           ],
         };
@@ -994,27 +996,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       )
   );
 
-  // 21. Simplificación adaptativa de malla
-  server.registerTool(
-    'kura_simplify_mesh',
-    {
-      title: 'Simplify 3D mesh',
-      description: 'Reduces triangle density while respecting the geometric tolerance in mm.',
-      inputSchema: {
-        objectId: idSchema.describe('ID of the object to simplify.'),
-        toleranceMm: rangeSchema(OR.simplify.toleranceMm)
-          .default(0.1)
-          .describe('Maximum geometric deviation tolerance in mm.'),
-      },
-    },
-    async (args) =>
-      dispatchWithFallback(
-        ctx,
-        'simplify_mesh',
-        { ...args, id: args.objectId },
-        () => ctx.headless.simplifyMesh(args.objectId, args.toleranceMm)
-      )
-  );
+  // 21. Simplificar con verificación: en `simplifyTools.ts`.
 
   // 22. Refinamiento / subdivisión de malla
   server.registerTool(
@@ -1277,7 +1259,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     'scene-state',
     'kura://scene/state',
     {
-      title: 'Current Kura3D scene state',
+      title: 'Current Kurra Studio scene state',
       description: 'JSON snapshot of the objects, units and active printer profile.',
       mimeType: 'application/json',
     },
@@ -1310,7 +1292,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     'about-kura3d',
     'kura://info/about',
     {
-      title: 'Kura3D MCP information',
+      title: 'Kurra Studio MCP information',
       description: 'Authorship metadata, MIT license and WebSocket bridge connection status.',
       mimeType: 'application/json',
     },
@@ -1321,7 +1303,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           mimeType: 'application/json',
           text: JSON.stringify(
             {
-              name: 'Kura3D MCP Server',
+              name: 'Kurra Studio MCP Server',
               version: '0.5.0',
               author: 'Nicolás Groth <ngroth@gmail.com>',
               organization: 'ISGROTH — Innovación y Soluciones GROTH',

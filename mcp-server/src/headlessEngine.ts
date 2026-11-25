@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/headlessEngine.ts
- * @description Capa delgada de estado de escena para el modo Headless del servidor MCP de Kura3D.
+ * @description Capa delgada de estado de escena para el modo Headless del servidor MCP de Kurra Studio.
  * Mantiene objetos, unidades y perfil de impresora en memoria. Las operaciones de escena son las
  * mismas funciones puras que usa la app (`src/core/operations`, sobre el motor Manifold de
  * `src/engine`), con la política de construcción y los nombres del headless. Este archivo solo
@@ -12,6 +12,8 @@
  * @license MIT
  */
 
+import { parseSimplifyRequest, simplifyReportToUser } from '../../src/core/bus/simplifySchema';
+import type { SimplifyRequest } from '../../src/engine/simplify';
 import * as ops from '../../src/core/operations/index';
 import type { OperationContext, SceneChange } from '../../src/core/operations/index';
 import { parametricStateOf } from '../../src/core/scene/parametric';
@@ -75,7 +77,7 @@ export { HeadlessUnsupportedError, type SceneObjectSummary } from './headlessSup
 export const ENGINE_GRID_SPACING_MM = ops.ARRANGE_GRID_SPACING_MM;
 
 /** Nota común que identifica el origen real de la geometría en las respuestas. */
-const ENGINE_NOTE = 'Computed with the shared Kura3D Manifold engine (src/engine).';
+const ENGINE_NOTE = 'Computed with the shared Kurra Studio Manifold engine (src/engine).';
 
 /** Instantánea completa del estado de la escena en modo Headless. */
 export interface HeadlessSceneState {
@@ -86,7 +88,7 @@ export interface HeadlessSceneState {
   objects: SceneObjectSummary[];
 }
 
-/** Motor de escena en memoria usado cuando la UI de Kura3D no está conectada al puente. */
+/** Motor de escena en memoria usado cuando la UI de Kurra Studio no está conectada al puente. */
 export class KuraHeadlessEngine {
   private readonly objects = new Map<string, HeadlessSceneObject>();
   private units: UnitSystem = 'mm';
@@ -463,7 +465,7 @@ export class KuraHeadlessEngine {
     // `spacingMm` solo aplica a la grilla (misma regla que el bus): en los demás modos se ignora con nota.
     if (mode === 'arrange_grid' && spacingMm !== undefined && spacingMm !== ENGINE_GRID_SPACING_MM) {
       throw new Error(
-        `spacingMm=${spacingMm} not supported: the Kura3D engine distributes with a fixed spacing of ${ENGINE_GRID_SPACING_MM} mm. Omit the parameter.`
+        `spacingMm=${spacingMm} not supported: the Kurra Studio engine distributes with a fixed spacing of ${ENGINE_GRID_SPACING_MM} mm. Omit the parameter.`
       );
     }
     // Operación pura compartida con el store; los bloqueados no se mueven.
@@ -529,18 +531,24 @@ export class KuraHeadlessEngine {
     return { dryRun: false, object: userSummary(obj), ...ops.repairReportToUser(report), note: ENGINE_NOTE };
   }
 
-  /** Decima la malla con `simplifyMesh` del motor (Manifold `simplify`). */
-  async simplifyMesh(
-    objectId: string,
-    toleranceMm: number
-  ): Promise<{ object: SceneObjectSummary; toleranceMm: number; trianglesBefore: number; warnings?: ua.UserWarning[] }> {
+  /**
+   * Simplifica con verificación (`simplify_mesh`): un número es «Por tolerancia»; si no, la petición con su modo.
+   * Misma operación y mismo informe que el bus; si no se aplica (`applied: false`) la escena no cambia.
+   */
+  async simplifyMesh(objectId: string, request: number | SimplifyRequest) {
     const obj = this.requireEditable(objectId);
     const trianglesBefore = obj.stats.triangles;
-    const change = await ops.simplifyObject(this.ctx, obj, toleranceMm);
+    const change = await ops.simplifyObject(this.ctx, obj, request);
     this.apply(change);
-    // Aviso tipado si el volumen cambió más que el umbral (`SIMPLIFY_VOLUME_CHANGED`).
+    // Avisos generales del motor (`SIMPLIFY_VOLUME_CHANGED`, soldadura implícita); los de la verificación van en `checks`.
     const warnings = change.warnings.length > 0 ? { warnings: ua.userWarnings(change.warnings) } : {};
-    return { object: userSummary(obj), toleranceMm, trianglesBefore, ...warnings };
+    return { id: obj.id, ...simplifyReportToUser(change.simplify!.report), object: userSummary(obj), trianglesBefore, ...warnings };
+  }
+
+  /** `simplify_mesh` con los parámetros crudos del comando (mismo esquema que el bus). */
+  simplifyMeshParams(params: Record<string, unknown>) {
+    const objectId = typeof params.objectId === 'string' ? params.objectId : String(params.id ?? '');
+    return this.simplifyMesh(objectId, parseSimplifyRequest(params));
   }
 
   /** Refina (y suaviza opcionalmente) con `refineMesh` del motor. */

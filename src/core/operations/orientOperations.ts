@@ -3,7 +3,7 @@
  * @description «Orientar para imprimir» como operación pura (app, Worker y headless): analizar es de
  * solo lectura y devuelve las orientaciones ordenadas; aplicar una elegida devuelve un `SceneChange`
  * con un parche de transformación (girar, apoyar en la cama y centrar o conservar X/Y: un paso de
- * deshacer). Kura3D no genera soportes: solo orienta y mide.
+ * deshacer). Kurra Studio no genera soportes: solo orienta y mide.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

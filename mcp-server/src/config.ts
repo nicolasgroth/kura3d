@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/config.ts
- * @description Resolución única de la configuración de seguridad del servidor MCP de Kura3D
+ * @description Resolución única de la configuración de seguridad del servidor MCP de Kurra Studio
  * a partir de opciones programáticas, argumentos CLI y variables de entorno (en ese orden de
  * prioridad). Incluye la lectura del token desde archivo y su persistencia atómica al rotarlo.
  * @author Nicolás Groth <ngroth@gmail.com>

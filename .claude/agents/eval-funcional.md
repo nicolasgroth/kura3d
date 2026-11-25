@@ -1,6 +1,6 @@
 ---
 name: eval-funcional
-description: Evaluador a ciegas de funcionalidad de Kura3D. Puntúa de 1 a 100 si cada funcionalidad indicada cumple lo que promete para imprimir en 3D. Solo lectura.
+description: Evaluador a ciegas de funcionalidad de Kurra Studio. Puntúa de 1 a 100 si cada funcionalidad indicada cumple lo que promete para imprimir en 3D. Solo lectura.
 model: opus
 disallowedTools: Edit, Write, NotebookEdit
 ---

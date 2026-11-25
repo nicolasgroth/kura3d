@@ -1,7 +1,7 @@
 /**
  * @file src/engine/analysis.ts
  * @description Simplificación topológica, refinamiento/suavizado adaptativo y envolvente convexa (Convex Hull)
- * sobre el núcleo Manifold-3D en Kura3D.
+ * sobre el núcleo Manifold-3D en Kurra Studio.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -65,7 +65,8 @@ export { analyzePrintability } from './printability';
  * preservando `faceColors` cuando existen.
  *
  * @param obj Objeto de escena a simplificar (opera sobre su malla local).
- * @param toleranceMm Tolerancia máxima de desviación en mm de mundo (se aplica dividida por la escala).
+ * @param toleranceMm Tolerancia de `simplify` en mm de mundo (se aplica dividida por la escala). No acota la
+ *   desviación real (medición del 25-nov-2026); la versión con verificación es `simplifyMeshDetailed`.
  * @returns Malla simplificada watertight normalizada a cama.
  */
 export async function simplifyMesh(

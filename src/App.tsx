@@ -1,6 +1,6 @@
 /**
  * @file src/App.tsx
- * @description Shell principal de la aplicación Kura3D v0.5.0: inicialización del motor Manifold,
+ * @description Shell principal de la aplicación Kurra Studio v0.5.0: inicialización del motor Manifold,
  * pantalla de bienvenida animada (SplashScreen), densidad adaptativa (Expandido / Compacto / Zen
  * con Ctrl/⌘+Shift+Enter), atajos de teclado CAD globales, puente MCP WebSocket, sincronización de tema y
  * esquema de color, y stack de notificaciones toast.

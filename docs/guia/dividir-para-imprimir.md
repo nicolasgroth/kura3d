@@ -7,7 +7,7 @@ Cuando una pieza es más grande que la cama de tu impresora, **Dividir para impr
 1. Selecciona la pieza grande y pulsa **Mayús+C** (o `Ctrl+K` y escribe *Dividir para imprimir*). Se abre el panel *Dividir para imprimir*.
 2. En **Cama y cortes** la cama viene de tu impresora activa; puedes cambiarla y fijar un margen por lado. Marca los ejes en los que se puede cortar (X, Y, Z) y si se permite acostar piezas.
 3. El plan se calcula solo y se dibuja en el visor: los **planos** de corte (naranja, con su nombre, por ejemplo *Plano X1*) y los códigos de cada pieza. Puedes arrastrar un plano o ajustarlo con su campo.
-4. En **Uniones** elige el **tipo de conector**: tarugo cilíndrico, clavija cuadrada, cola de milano, tarugo suelto (se imprime aparte), **imanes** (la figura queda desmontable, ver abajo), solape de borde o sin conectores. Con **Tamaño automático (recomendado)** Kura3D calcula el diámetro según la superficie de cada unión.
+4. En **Uniones** elige el **tipo de conector**: tarugo cilíndrico, clavija cuadrada, cola de milano, tarugo suelto (se imprime aparte), **imanes** (la figura queda desmontable, ver abajo), solape de borde o sin conectores. Con **Tamaño automático (recomendado)** Kurra Studio calcula el diámetro según la superficie de cada unión.
 5. Revisa el **Resumen**: piezas, placas estimadas, pieza más grande, uniones con conector y espacio libre contra la cama.
 6. Pulsa **Dividir**. Las piezas quedan armadas en su lugar, agrupadas, con el código en cada una.
 
@@ -22,7 +22,7 @@ Con el tipo **Imanes (desmontable)** cada cara del corte recibe alojamientos de 
 3. Ajusta las **holguras** (diámetro y profundidad, +0,2 mm por defecto). La ayuda muestra la medida de cada alojamiento: diámetro del imán + holgura y profundidad = alto + holgura, en cada pieza.
 4. Deja **Cantidad automática** (al menos un imán por isla de la sección y dos por unión cuando caben, para que no gire) o desmárcala y fija cuántos imanes lleva cada unión.
 5. Pulsa **Dividir**. Las piezas salen con los alojamientos ya abiertos, listas para imprimir.
-6. Al armar: **pega los imanes de cada par con polos opuestos; prueba el par antes de pegar.** Kura3D no puede saber la polaridad de tus imanes; la sección **Uniones** del inspector te lo recuerda.
+6. Al armar: **pega los imanes de cada par con polos opuestos; prueba el par antes de pegar.** Kurra Studio no puede saber la polaridad de tus imanes; la sección **Uniones** del inspector te lo recuerda.
 
 Cada imán deja 1,2 mm de pared alrededor y hacia el exterior. Donde no cabe, no se pone y la unión lo avisa (queda para pegar): elige un imán más chico o mueve el corte a una zona más ancha. Por ahora solo se admiten imanes **redondos**; con un preajuste cuadrado el panel lo advierte y la unión queda para pegar.
 

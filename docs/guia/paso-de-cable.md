@@ -1,12 +1,12 @@
 # Paso de cable
 
-Un **paso de cable** es un agujero que atraviesa una pared para sacar un cable o un conector (USB, alimentación, un cable plano). En Kura3D lo colocas con un clic sobre la pared y **el largo se mide solo**: Kura3D lanza un rayo desde el punto tocado y lo alarga hasta salir por el otro lado.
+Un **paso de cable** es un agujero que atraviesa una pared para sacar un cable o un conector (USB, alimentación, un cable plano). En Kurra Studio lo colocas con un clic sobre la pared y **el largo se mide solo**: Kurra Studio lanza un rayo desde el punto tocado y lo alarga hasta salir por el otro lado.
 
 El paso es una **pieza negativa**: se resta de tu pieza cuando usas **Aplicar restas** (ver [Sólidos negativos y restas](solidos-negativos-y-restas.md)). Puede ser **redondo** u **ovalado** (ranura) y lleva un **chaflán de 0,5 mm** en las dos bocas para que el cable no se corte con el canto.
 
 ## Abrir el panel
 
-1. Ten al menos una pieza sólida visible en la escena. Si no hay ninguna, Kura3D te avisa y el panel no se abre.
+1. Ten al menos una pieza sólida visible en la escena. Si no hay ninguna, Kurra Studio te avisa y el panel no se abre.
 2. Elige **Insertar › Paso de cable** en la barra superior. También puedes hacer clic derecho sobre la pieza y elegir **Más › Paso de cable**, o abrir la paleta con `Ctrl+K` y escribir *cable* o *usb*.
 3. El panel **Paso de cable** se abre a la derecha, con un **redondo de Ø 5 mm** que atraviesa la pared.
 
@@ -47,7 +47,7 @@ Si un campo está fuera de rango, queda marcado y el panel no coloca nada hasta 
 - **Cerca del borde**: queda a menos de 1,2 mm del borde de la cara; el borde puede romperse.
 - **Cerca de otro agregado**: queda a menos de 1,2 mm de otro agregado que aún no restaste.
 
-Si la boca es más ancha que la cara en esa zona (sale de la pieza por lados opuestos), el paso **no se coloca** y Kura3D te lo dice.
+Si la boca es más ancha que la cara en esa zona (sale de la pieza por lados opuestos), el paso **no se coloca** y Kurra Studio te lo dice.
 
 El paso **sigue a su pieza** al moverla, girarla o escalarla, y conserva sus medidas. Al duplicar la pieza se copia; al borrarla se borra. Se guarda en el proyecto `.kura`.
 

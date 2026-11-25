@@ -382,12 +382,8 @@ export function parsePrintability(scene: SceneView, p: RawParams) {
   };
 }
 
-export function parseSimplify(scene: SceneView, p: RawParams) {
-  return {
-    target: resolveTarget(scene, p, { unlocked: true }),
-    toleranceMm: readRange(p, OR.simplify.toleranceMm, 'toleranceMm') ?? 0.15,
-  };
-}
+/** `simplify_mesh`: modos y objetivo en su propio esquema (lo comparte el MCP sin interfaz). */
+export { parseSimplify } from './simplifySchema';
 
 /** `split_by_color`: objeto editable y profundidad opcional del color (mm). */
 export function parseSplitByColor(scene: SceneView, p: RawParams) {

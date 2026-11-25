@@ -23,7 +23,7 @@ export interface OpenedProjectFile extends SavedProjectFile {
 }
 
 const EXTENSION = '.kura';
-const FILTERS = [{ name: 'Kura3D', extensions: ['kura'] }];
+const FILTERS = [{ name: 'Kurra Studio', extensions: ['kura'] }];
 const NATIVE_TOO_LARGE = 'kura-project-too-large';
 const webLocations = new Map<string, FileSystemFileHandle>();
 
@@ -157,7 +157,7 @@ export async function saveProjectFile(
       // The picker needs the original click/key gesture, before encoding the project.
       handle = await picker.call(window, {
         suggestedName: name,
-        types: [{ description: 'Kura3D', accept: { 'application/octet-stream': [EXTENSION] } }],
+        types: [{ description: 'Kurra Studio', accept: { 'application/octet-stream': [EXTENSION] } }],
         excludeAcceptAllOption: true,
       });
     } catch (error) {

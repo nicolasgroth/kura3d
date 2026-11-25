@@ -1,6 +1,6 @@
-# Guía de Contribución — Kura3D
+# Guía de Contribución — Kurra Studio
 
-¡Gracias por tu interés en contribuir a **Kura3D**, un proyecto open-source creado por **Nicolás Groth (`ngroth@gmail.com`)** para **ISGROTH (Innovación y Soluciones GROTH)** bajo licencia **MIT**!
+¡Gracias por tu interés en contribuir a **Kurra Studio**, un proyecto open-source creado por **Nicolás Groth (`ngroth@gmail.com`)** para **ISGROTH (Innovación y Soluciones GROTH)** bajo licencia **MIT**!
 
 ---
 

@@ -45,22 +45,22 @@ describe('SplitAssemblyStatus', () => {
       />,
     );
     expect(screen.getByTestId('split-assembly-status').textContent).toContain(
-      'Para que se pueda montar, Kura3D dejó 1 unión para pegar y cambió el tipo de conector en 2 uniones.',
+      'Para que se pueda montar, Kurra Studio dejó 1 unión para pegar y cambió el tipo de conector en 2 uniones.',
     );
   });
 
   it('plurales correctos y sin frases con cero', () => {
-    expect(fixedSummary('es', 0, 1)).toBe('Para que se pueda montar, Kura3D cambió el tipo de conector en 1 unión.');
-    expect(fixedSummary('es', 3, 0)).toBe('Para que se pueda montar, Kura3D dejó 3 uniones para pegar.');
-    expect(fixedSummary('en', 1, 1)).toBe('So it can be assembled, Kura3D left 1 joint for gluing and changed the connector type on 1 joint.');
+    expect(fixedSummary('es', 0, 1)).toBe('Para que se pueda montar, Kurra Studio cambió el tipo de conector en 1 unión.');
+    expect(fixedSummary('es', 3, 0)).toBe('Para que se pueda montar, Kurra Studio dejó 3 uniones para pegar.');
+    expect(fixedSummary('en', 1, 1)).toBe('So it can be assembled, Kurra Studio left 1 joint for gluing and changed the connector type on 1 joint.');
     expect(fixedSummary('es', 0, 2)).not.toContain('0');
   });
 
   it('con el total de uniones para pegar, la cabecera usa la misma cifra que el aviso y la lista', () => {
     expect(fixedSummary('es', 2, 0, { count: 19, total: 26 })).toBe(
-      'Para que se pueda montar, Kura3D dejó 19 de 26 uniones para pegar (2 por impedir el montaje).',
+      'Para que se pueda montar, Kurra Studio dejó 19 de 26 uniones para pegar (2 por impedir el montaje).',
     );
     // Si todas las uniones para pegar son las del motor, no hay segunda cifra
-    expect(fixedSummary('es', 3, 0, { count: 3, total: 9 })).toBe('Para que se pueda montar, Kura3D dejó 3 uniones para pegar.');
+    expect(fixedSummary('es', 3, 0, { count: 3, total: 9 })).toBe('Para que se pueda montar, Kurra Studio dejó 3 uniones para pegar.');
   });
 });

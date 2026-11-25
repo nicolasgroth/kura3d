@@ -3,7 +3,7 @@
  * @description JSON Schema (draft 2020-12) de `kura.recipe/1` generado desde el esquema zod con `z.toJSONSchema`,
  * para que editores e IA validen recetas. Lo escribe `npm run recetas:schema` en `docs/recetas/kura.recipe-1.schema.json`.
  * Las reglas semánticas (referencias, alcance de expresiones, ciclos, topes de trabajo) no caben en un JSON Schema:
- * las aplica solo el validador de Kura3D.
+ * las aplica solo el validador de Kurra Studio.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

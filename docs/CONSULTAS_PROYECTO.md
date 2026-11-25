@@ -11,8 +11,8 @@ Ninguna detiene el trabajo.
 ### 1. Prueba de los 3MF en OrcaSlicer
 Postergada por decisión tuya; sigue autorizada. Se hace contigo presente cuando me avises.
 
-### 2. Kurra3D Studio: tareas que solo puedes hacer tú
-Resuelto el 25-nov: hacia afuera el producto es **Kurra3D Studio** y lo interno se queda como está. Te quedan a ti, sin apuro:
+### 2. Kurra Studio: tareas que solo puedes hacer tú
+Resuelto el 25-nov: hacia afuera el producto es **Kurra Studio** y lo interno se queda como está. Te quedan a ti, sin apuro:
 - Revisar si el nombre está libre como marca registrada y como dominio (yo solo hice una búsqueda rápida en la web).
 - Decidir si se borran en GitHub las ramas de trabajo ya integradas (`feat/iman`, `integracion/24-nov`); no las borro sin que lo pidas.
 - Si quieres logo o banner nuevo con el nombre completo: el banner actual es una imagen con el nombre antiguo y no lo puedo regenerar sin que me digas cómo lo quieres.
@@ -25,9 +25,9 @@ Resuelto el 25-nov: primero menos triángulos; reconocer formas exactas queda pa
 
 ### 5. Frase de «Acerca de»
 Quedó puesta la primera; elige la que prefieras o dicta la tuya.
-1. «Modelar es imaginar juntos: Kurra3D Studio existe para que cualquiera pueda dar forma a una idea y compartirla, porque el mundo se construye mejor entre todos.»
-2. «Cada pieza empieza como una idea; Kurra3D Studio existe para que darle forma y compartirla esté al alcance de todos, porque un mundo mejor se modela entre muchas manos.»
-3. «Un mundo donde todos podemos trabajar juntos también se modela: Kurra3D Studio es un lugar para imaginar, crear y compartir, pieza a pieza.»
+1. «Modelar es imaginar juntos: Kurra Studio existe para que cualquiera pueda dar forma a una idea y compartirla, porque el mundo se construye mejor entre todos.»
+2. «Cada pieza empieza como una idea; Kurra Studio existe para que darle forma y compartirla esté al alcance de todos, porque un mundo mejor se modela entre muchas manos.»
+3. «Un mundo donde todos podemos trabajar juntos también se modela: Kurra Studio es un lugar para imaginar, crear y compartir, pieza a pieza.»
 
 El mensaje del huevo de pascua (10 clics en el logo) es «Piedra a piedra se levanta un mundo.»
 

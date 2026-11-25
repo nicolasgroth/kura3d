@@ -1,6 +1,6 @@
 /**
  * @file src/ai/aiClient.ts
- * @description Punto de entrada del chat IA de Kura3D. Elige el proveedor configurado (Gemini, OpenAI,
+ * @description Punto de entrada del chat IA de Kurra Studio. Elige el proveedor configurado (Gemini, OpenAI,
  * Anthropic, Ollama o un proveedor compatible con OpenAI) y lo ejecuta con el bucle común de herramientas
  * (`providerLoop.ts`) sobre el transporte único (`aiTransport.ts`: proxy nativo en escritorio, `fetch` en
  * web). Sin credenciales usa el Asistente Local Determinista (`local/localAssistant.ts`).
