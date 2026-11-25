@@ -120,11 +120,16 @@ type Posed = Pick<SceneObject, 'position' | 'rotation' | 'scale' | 'metadata'>;
 
 const quat = (o: Posed) => new THREE.Quaternion().setFromEuler(new THREE.Euler(...o.rotation, 'XYZ'));
 
-/** Punto de cuelgue (mundo) de un ojo ya colocado, según su pose actual; null si no es un ojo. */
+/**
+ * Punto de cuelgue (mundo) de un ojo ya colocado, según su pose actual; null si no es un ojo. El extremo local de la
+ * ranura pasa por la transformación completa del objeto (posición · rotación · escala, la misma del visor), así una
+ * escala no uniforme o un espejo nunca dependen de un solo eje.
+ */
 export function keyholeHangPoint(o: Posed): Vec3 | null {
   const addon = o.metadata?.addon;
   if (addon?.kind !== 'keyhole') return null;
-  const v = new THREE.Vector3(addon.params.slotLengthMm * o.scale[0], 0, 0).applyQuaternion(quat(o)).add(new THREE.Vector3(...o.position));
+  const world = new THREE.Matrix4().compose(new THREE.Vector3(...o.position), quat(o), new THREE.Vector3(...o.scale));
+  const v = new THREE.Vector3(addon.params.slotLengthMm, 0, 0).applyMatrix4(world);
   return [v.x, v.y, v.z];
 }
 

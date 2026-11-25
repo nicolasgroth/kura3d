@@ -16,6 +16,7 @@ import {
 } from '../../core/addons/cablePass';
 import { BUILTIN_CABLE_PASS_PRESETS, CABLE_PASS_DEFAULTS, CABLE_SLOT_DEFAULTS } from '../../core/addons/cablePassPresets';
 import { formatMm } from '../../core/addons/screwBossPresets';
+import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { t, type TranslationKey } from '../../i18n';
 import { cablePassPanel, useCablePassPanel, useCablePassPresets } from '../../store/cablePassPanel';
 import { cablePassWarnings } from '../../store/cablePassWarnings';
@@ -118,7 +119,8 @@ export const CablePassPanel: React.FC = () => {
       ? t(language, `cable.preset.${p.labelKey}` as TranslationKey, { l: formatMm(p.values.lengthMm, language), w: formatMm(p.values.widthMm, language) })
       : t(language, 'cable.preset.round', { d: formatMm(p.values.widthMm, language) }),
   })), [language]);
-  const fmt = (n: number) => n.toLocaleString(language, { maximumFractionDigits: 1 });
+  // El formateador común de la app (mismos decimales y sin separador de miles que el resto de las medidas).
+  const fmt = (n: number) => formatLocaleNumber(language, n, { maxFrac: 1 });
   return (
     <AddonPanelShell
       prefix="cable"

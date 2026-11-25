@@ -14,6 +14,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { KEYHOLE_DEFAULTS } from '../../core/addons/keyholePresets';
 import { t } from '../../i18n';
+import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { TRANSLATIONS } from '../../i18n/translations';
 import { GENERATORS, insertLabelKey, runInsert, startPanelExclusion } from '../../store/insertCatalog';
 import { keyholePanel, useKeyholePanel, useKeyholePresets } from '../../store/keyholePanel';
@@ -126,5 +127,14 @@ describe('panel del ojo de cerradura', () => {
     for (const lang of Object.keys(TRANSLATIONS) as (keyof typeof TRANSLATIONS)[]) {
       for (const k of keys) expect((TRANSLATIONS[lang] as Record<string, string>)[k], `${lang} ${k}`).toBeTruthy();
     }
+  });
+
+  it('la pared del último ojo usa el formateador común (sin separador de miles, como el resto)', () => {
+    render(<KeyholePanel />);
+    act(() => {
+      keyholePanel.open();
+      useKeyholePanel.setState({ lastReport: { ...okReport, wallBehindMm: 12345.64 }, lastObjectId: 'b1' });
+    });
+    expect(screen.getByTestId('keyhole-last').textContent).toBe(t('es', 'keyhole.lastOk', { wall: formatLocaleNumber('es', 12345.64, { maxFrac: 1 }) }));
   });
 });
