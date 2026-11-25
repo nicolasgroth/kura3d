@@ -24,10 +24,14 @@ export const SimplifyReportView: React.FC<{ report: SimplifyReport; language: La
       {!report.applied && <p className="kura-cut-hint">{t(language, 'simplify.report.notApplied')}</p>}
       <ul className="kura-simplify-report-list">
         <li>{t(language, 'simplify.report.triangles', { before: n(report.trianglesBefore, 0), after: n(report.trianglesAfter, 0) })}</li>
-        <li>{t(language, 'simplify.report.volume', { pct })}</li>
-        <li>{t(language, 'simplify.report.genus', { before: report.genusBefore, after: report.genusAfter })}</li>
-        <li>{t(language, 'simplify.report.deviation', { mm: n(report.maxDeviationMm, 3) })}</li>
-        <li>{t(language, 'simplify.report.tolerance', { mm: n(report.toleranceMm, 4) })}</li>
+        {report.applied && (
+          <>
+            <li>{t(language, 'simplify.report.volume', { pct })}</li>
+            <li>{t(language, 'simplify.report.genus', { before: report.genusBefore, after: report.genusAfter })}</li>
+            <li>{t(language, 'simplify.report.deviation', { mm: n(report.maxDeviationMm, 3) })}</li>
+            <li>{t(language, 'simplify.report.tolerance', { mm: n(report.toleranceMm, 4) })}</li>
+          </>
+        )}
       </ul>
       {warnings.length > 0 && (
         <ul className="kura-simplify-report-warnings" data-testid="simplify-report-warnings">

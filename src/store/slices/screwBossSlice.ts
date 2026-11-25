@@ -16,6 +16,7 @@ import { screwBossNames } from '../../core/addons/addonNames';
 import { nearbyAddons, placedMeshOf as placed } from '../../core/addons/addonNeighbors';
 import type { ScrewBossParams } from '../../core/addons/screwBoss';
 import type { ScrewBossReport } from '../../core/addons/screwBossAnalysis';
+import { markAddonGroup } from '../../core/scene/addonGroups';
 import { attachToTarget } from '../../core/scene/attachPiece';
 import { isSolid } from '../../core/scene/objectRole';
 import type { SceneObject, Vec3 } from '../../types/kura';
@@ -76,6 +77,7 @@ export function createScrewBossSlice(ctx: StoreContext): Partial<KuraStoreState>
         set((s) => {
           const withPost = attachToTarget(s, post, host.id);
           const next = attachToTarget({ objects: withPost.objects, groups: withPost.groups }, hole, host.id);
+          markAddonGroup(withPost.createdGroupId);
           const now = Date.now();
           return { objects: next.objects, groups: next.groups, spawnedAtById: { ...s.spawnedAtById, [post.id]: now, [hole.id]: now } };
         });

@@ -14,6 +14,7 @@ import { boxesOverlap } from '../../core/scene/overlap';
 import { isReference } from '../../core/scene/objectRole';
 import * as ops from '../../core/operations';
 import { resolveBooleanInputs, resolveHoleScope, resolveHullTargets, touchingHoleScope } from '../../core/scene/sceneRules';
+import { dissolveLoneAddonGroups } from '../../core/scene/addonGroups';
 import { withAddonPosts } from '../../core/operations/addonPostMerge';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { classifySimplifyResult } from '../../core/operations/simplifyOutcome';
@@ -98,6 +99,10 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         const { updated, change } = await runEngine('applyHoles', { solids, holes });
         assertCurrent([...solids, ...holes]);
         commitChange(change, { select: updated.map((s) => s.id) });
+        // El grupo que creó una torreta para sus piezas deja de tener sentido si solo queda la pieza.
+        const scene = { objects: get().objects, groups: get().groups };
+        const tidy = dissolveLoneAddonGroups(scene);
+        if (tidy !== scene) set({ objects: tidy.objects, groups: tidy.groups });
         get().addToast(tr('toast.booleanDone.subtract'), 'success');
       });
     },
