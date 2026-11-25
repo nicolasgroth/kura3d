@@ -6,7 +6,9 @@
  * (descarta el resultado cuando llegue; el Worker sigue vivo y no se recarga Manifold) y «dura»
  * (como Manifold no se puede interrumpir, termina el Worker y reencola las demás tareas pendientes
  * en uno nuevo). Si un trabajo descartado deja ocupado al Worker más de `softCancelGraceMs`
- * mientras otro pedido espera, se escala a dura. Sin `Worker` (Node, Vitest, MCP headless) ejecuta
+ * mientras otro pedido espera, se escala a dura. Solo cuenta el descartado que se está ejecutando
+ * (enviado antes que el pendiente más antiguo; el Worker atiende en orden de envío): uno que quedó
+ * en cola detrás de un trabajo legítimo no bloquea a nadie y no provoca reiniciar el Worker. Sin `Worker` (Node, Vitest, MCP headless) ejecuta
  * la misma tarea en proceso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -128,6 +130,9 @@ export function createEngineClient(
   const pending = new Map<number, Pending>();
   /** Tareas canceladas en suave que el Worker todavía está calculando (su respuesta se descarta). */
   const orphans = new Set<number>();
+  /** Orden de envío al Worker actual (el Worker atiende en ese orden). */
+  const sentSeq = new Map<number, number>();
+  let nextSeq = 0;
   let escalation: ReturnType<typeof setTimeout> | null = null;
 
   const disarmEscalation = () => {
@@ -144,18 +149,32 @@ export function createEngineClient(
     worker?.terminate();
     worker = null;
     orphans.clear();
+    sentSeq.clear();
     disarmEscalation();
   };
 
   /**
-   * Un pedido nuevo quedó en cola detrás de trabajos descartados: si siguen ahí pasado el umbral,
-   * el Worker se termina y lo pendiente se reencola en uno nuevo (nadie puede cancelar un huérfano).
+   * Hay un huérfano que retiene al Worker: fue enviado antes que el pendiente más antiguo (así que
+   * está en ejecución o delante en la cola) y alguien espera detrás. Un huérfano enviado después del
+   * pendiente más antiguo todavía no empezó: no bloquea y no justifica reiniciar el Worker.
+   */
+  const orphanBlocking = (): boolean => {
+    if (orphans.size === 0 || pending.size === 0) return false;
+    let oldestPending = Infinity;
+    for (const id of pending.keys()) oldestPending = Math.min(oldestPending, sentSeq.get(id) ?? Infinity);
+    for (const id of orphans) if ((sentSeq.get(id) ?? Infinity) < oldestPending) return true;
+    return false;
+  };
+
+  /**
+   * Un pedido quedó en cola detrás de un trabajo descartado: si sigue ahí pasado el umbral, el
+   * Worker se termina y lo pendiente se reencola en uno nuevo (nadie puede cancelar un huérfano).
    */
   const armEscalation = () => {
-    if (escalation !== null || orphans.size === 0) return;
+    if (escalation !== null || !orphanBlocking()) return;
     escalation = setTimeout(() => {
       escalation = null;
-      if (orphans.size === 0 || pending.size === 0) return;
+      if (!orphanBlocking()) return;
       resetWorker();
       requeuePending();
     }, graceMs);
@@ -167,6 +186,7 @@ export function createEngineClient(
       const payload = copyForTransfer(p.args);
       const request: EngineTaskRequest = { type: 'run', id, task: p.task, args: payload, policy: { ...p.ctx.policy } };
       w.postMessage(request, collectTransferables(payload));
+      sentSeq.set(id, nextSeq++);
     } catch (err) {
       pending.delete(id);
       p.reject(err);
@@ -195,7 +215,10 @@ export function createEngineClient(
       const p = pending.get(data.id);
       if (!p) {
         // Cancelada: el resultado se descarta; si era un huérfano, el Worker ya quedó libre de él.
-        if (data.type !== 'progress' && orphans.delete(data.id) && orphans.size === 0) disarmEscalation();
+        if (data.type !== 'progress' && orphans.delete(data.id)) {
+          sentSeq.delete(data.id);
+          if (!orphanBlocking()) disarmEscalation();
+        }
         return;
       }
       if (data.type === 'progress') {
@@ -203,6 +226,9 @@ export function createEngineClient(
         return;
       }
       pending.delete(data.id);
+      sentSeq.delete(data.id);
+      // Terminó un trabajo legítimo: si el siguiente en el Worker es un huérfano, ahora bloquea.
+      armEscalation();
       if (data.type === 'error') {
         p.reject(deserializeError(data.error));
         return;
@@ -259,7 +285,7 @@ export function createEngineClient(
             orphans.add(id);
             p.reject(new EngineCancelledError());
             // Si ya había pedidos en cola detrás (llegaron cuando aún no había huérfanos), el tope corre desde ahora.
-            if (pending.size > 0) armEscalation();
+            armEscalation();
             return;
           }
           // Manifold no se interrumpe: se termina el Worker; solo se rechaza esta tarea y las demás

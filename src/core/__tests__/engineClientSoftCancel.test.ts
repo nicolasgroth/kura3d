@@ -50,6 +50,11 @@ class FakeWorker implements WorkerLike {
     for (const run of this.held.splice(0)) run();
   }
 
+  /** Procesa solo el primero retenido (el Worker termina el trabajo en curso y sigue con la cola). */
+  releaseOne(): void {
+    this.held.shift()?.();
+  }
+
   terminate(): void {
     this.terminated = true;
   }
@@ -185,6 +190,59 @@ describe('cancelación suave y dura del cliente del Worker', () => {
     await sleep(250);
     expect(workers).toHaveLength(1);
     expect(workers[0].terminated).toBe(false);
+    client.dispose();
+  });
+
+  it('no escala por un huérfano que quedó en cola detrás de un trabajo legítimo que corre', async () => {
+    const workers: FakeWorker[] = [];
+    const client = createEngineClient(
+      () => {
+        const w = new FakeWorker(true);
+        workers.push(w);
+        return w;
+      },
+      { softCancelGraceMs: 30 },
+    );
+    // B (legítima y larga) corre; A entra detrás y se descarta: A no bloquea a nadie.
+    const running = client.run(ctx(), 'boolean', { target: a, tools: [b], op: 'subtract' });
+    const queued = client.run(ctx(), 'boolean', { target: a, tools: [b], op: 'union' });
+    queued.cancel('soft');
+    await expect(queued.promise).rejects.toSatisfy(isEngineCancelled);
+    await sleep(90);
+    expect(workers[0].terminated).toBe(false);
+    workers[0].release();
+    const res = await running.promise;
+    expect(res.result?.stats.isManifold).toBe(true);
+    expect(workers).toHaveLength(1);
+    client.dispose();
+  });
+
+  it('escala cuando el huérfano en cola pasa a ejecutarse y bloquea al siguiente', async () => {
+    const workers: FakeWorker[] = [];
+    const client = createEngineClient(
+      () => {
+        const w = new FakeWorker(true);
+        workers.push(w);
+        return w;
+      },
+      { softCancelGraceMs: 30 },
+    );
+    const running = client.run(ctx(), 'boolean', { target: a, tools: [b], op: 'subtract' });
+    const orphan = client.run(ctx(), 'boolean', { target: a, tools: [b], op: 'union' });
+    const waiting = client.run(ctx(), 'boolean', { target: a, tools: [b], op: 'intersect' });
+    orphan.cancel('soft');
+    await expect(orphan.promise).rejects.toSatisfy(isEngineCancelled);
+    await sleep(60);
+    expect(workers[0].terminated).toBe(false);
+    // Termina B: ahora el Worker calcula el huérfano y C espera detrás de él.
+    workers[0].releaseOne();
+    expect((await running.promise).result?.stats.isManifold).toBe(true);
+    await sleep(90);
+    expect(workers[0].terminated).toBe(true);
+    expect(workers).toHaveLength(2);
+    expect(workers[1].received).toBe(1);
+    workers[1].release();
+    expect((await waiting.promise).result?.stats.isManifold).toBe(true);
     client.dispose();
   });
 
