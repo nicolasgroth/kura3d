@@ -63,6 +63,10 @@ export async function simplifyObject(
   const warnings = mesh && Math.abs(pct) > OPERATION_DEFAULTS.simplify.volumeWarnPct
     ? [engineWarning('SIMPLIFY_VOLUME_CHANGED', { pct: Math.round(pct * 10) / 10 })]
     : [];
+  // Perder (o abrir) un agujero pasante cambia la pieza: se avisa por el mismo canal visible que el volumen.
+  if (mesh && report.genusAfter !== report.genusBefore) {
+    warnings.push(engineWarning('SIMPLIFY_GENUS_CHANGED', { before: report.genusBefore, after: report.genusAfter }));
+  }
   const simplify = {
     trianglesBefore: report.trianglesBefore,
     trianglesAfter: report.trianglesAfter,

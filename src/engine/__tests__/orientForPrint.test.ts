@@ -101,11 +101,13 @@ describe('analyzeOrientations: cubo con agujero pasante horizontal', () => {
 });
 
 describe('analyzeOrientations: esfera', () => {
-  it('todas equivalentes: no inventa una ganadora y la actual ya sirve', async () => {
+  it('todas equivalentes: no inventa una ganadora, pero sin base la actual no es «la mejor»', async () => {
     const mesh = await createPrimitiveMesh('sphere', { radius: 20, segments: 48 });
     const a = analyzeOrientations(input(mesh));
     expect(a.allEquivalent).toBe(true);
-    expect(a.currentIsBest).toBe(true);
+    // Ninguna apoya caras en la cama: el análisis lo avisa en vez de decir que la actual ya sirve.
+    expect(a.currentIsBest).toBe(false);
+    expect(a.baseStatus).toBe('noStableBase');
     expect(a.candidates.every((c) => c.equivalentToBest)).toBe(true);
     // Ningún apoyo del casco es estable (facetas diminutas): solo la actual y los ejes.
     expect(a.candidates.every((c) => c.source !== 'hull')).toBe(true);

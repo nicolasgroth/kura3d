@@ -53,7 +53,7 @@ const takenNames = (scene: HeadlessScene) => new Set(scene.objects().map((o) => 
 export async function headlessAddMagnetPocket(scene: HeadlessScene, p: RawParams) {
   const host = hostOf(scene, p, 'magnet.needSolid');
   const { params, placement } = parseMagnetPocketCommand(p);
-  const at = resolveAddonPlacement(host, placement);
+  const at = resolveAddonPlacement(host, placement, params.sizeMm / 2);
   const made = await createMagnetPocket(scene.ctx, {
     host: { id: host.id, ...placedMeshOf(host) },
     params,
@@ -70,7 +70,7 @@ export async function headlessAddMagnetPocket(scene: HeadlessScene, p: RawParams
 export async function headlessAddScrewBoss(scene: HeadlessScene, p: RawParams) {
   const host = hostOf(scene, p, 'turret.needSolid');
   const { params, placement } = parseScrewBossCommand(p);
-  const at = resolveAddonPlacement(host, placement);
+  const at = resolveAddonPlacement(host, placement, params.outerDiameterMm / 2);
   const made = await createScrewBoss(scene.ctx, {
     host: { id: host.id, color: host.color, ...placedMeshOf(host) },
     params,

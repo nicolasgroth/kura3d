@@ -61,9 +61,15 @@ export function twoSidedHoleDepth(c: Pick<SplitConnectorOptions, 'type' | 'depth
   return c.type === 'magnet' ? c.depth : c.depth + c.tolerance;
 }
 
-/** Cantidades a probar, de mayor a menor. Automática: max(2, islas aptas) y luego menos; fija: la pedida y menos. */
-export function magnetLadder(c: SplitConnectorOptions, eligibleIslands: number): SplitConnectorOptions[] {
-  const top = c.countAuto ? Math.min(JOINT_RULES.maxCount, Math.max(2, eligibleIslands)) : c.count;
+/**
+ * Cantidades a probar, de mayor a menor. Automática: max(2, islas aptas, los que dan una unión firme en el área de la
+ * sección: `firmAreaRatio` × área / área de un imán), hasta `JOINT_RULES.maxCount`, y luego menos (se queda con la
+ * mayor que cabe con sus márgenes); fija: la pedida y menos.
+ */
+export function magnetLadder(c: SplitConnectorOptions, eligibleIslands: number, sectionAreaMm2 = 0): SplitConnectorOptions[] {
+  const magnetArea = Math.PI * c.size * c.size;
+  const firm = magnetArea > 0 ? Math.ceil((MAGNET_RULES.firmAreaRatio * sectionAreaMm2) / magnetArea) : 0;
+  const top = c.countAuto ? Math.min(JOINT_RULES.maxCount, Math.max(2, eligibleIslands, firm)) : c.count;
   const out: SplitConnectorOptions[] = [];
   for (let n = top; n >= 1; n--) out.push({ ...c, count: n });
   return out;
@@ -161,8 +167,10 @@ export function placeMagnets<C>(
     return { used: null, centers: [], requested: c };
   }
   const eligible = magnetEligibleIslands(islands, c);
-  const ladder = magnetLadder(c, eligible);
-  const requested = ladder[0];
+  const ladder = magnetLadder(c, eligible, islands.reduce((s, isl) => s + Math.abs(isl.area()), 0));
+  // Automática: el aviso de «menos de los pedidos» compara con la base de siempre (2 o uno por isla), no con los
+  // extra que se intentan para una unión firme en secciones grandes.
+  const requested = c.countAuto ? { ...c, count: Math.min(ladder[0].count, Math.max(2, eligible)) } : ladder[0];
   for (const rung of eligible > 0 ? ladder : []) {
     const found = place(rung);
     if (!found || !magnetDepthFits(j.low.m, j.high.m, j.axis, found.centers, rung)) continue;

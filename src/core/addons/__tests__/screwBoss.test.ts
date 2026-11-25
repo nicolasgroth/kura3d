@@ -67,8 +67,13 @@ describe('medidas y tabla', () => {
 
   it('tornillo directo: piloto ≈ 0,85 × nominal (± 0,1 mm)', () => {
     const screws = builtinScrewBossPresetsOf('screw');
-    expect(screws.map((p) => p.values.nominalMm)).toEqual([2, 2.5, 3, 4]);
+    expect(screws.map((p) => p.values.nominalMm)).toEqual([2, 2.5, 3, 4, 5]);
     for (const p of screws) expect(Math.abs(p.values.holeDiameterMm - 0.85 * p.values.nominalMm)).toBeLessThanOrEqual(0.1);
+  });
+
+  it('tornillo directo M5: piloto Ø 4,2 × 12, poste Ø 12,5 × 14 (por verificar como el resto)', () => {
+    expect(builtinScrewBossPresetsOf('screw').find((p) => p.values.nominalMm === 5)!.values)
+      .toEqual({ type: 'screw', nominalMm: 5, holeDiameterMm: 4.2, holeDepthMm: 12, heightMm: 14, outerDiameterMm: 12.5 });
   });
 
   it('insertos M2–M5 con su diámetro y profundidad = largo + 1 mm', () => {

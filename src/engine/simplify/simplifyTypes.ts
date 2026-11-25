@@ -34,7 +34,8 @@ export const SIMPLIFY_WARNING_CODES: readonly SimplifyWarningCode[] = [
 ];
 
 /** Por qué terminó la búsqueda de «Por cantidad». */
-export type SimplifyTargetStop = 'reached' | 'iterations' | 'time' | 'range';
+/** `genus`: se quedó sobre el objetivo para no perder agujeros pasantes. */
+export type SimplifyTargetStop = 'reached' | 'iterations' | 'time' | 'range' | 'genus';
 
 export interface SimplifyTargetInfo {
   /** Triángulos pedidos (si llegó un %, ya convertido). */
@@ -44,6 +45,11 @@ export interface SimplifyTargetInfo {
   /** Llamadas a `simplify` hechas en la búsqueda. */
   iterations: number;
   stoppedBy: SimplifyTargetStop;
+  /**
+   * true si se eligió un candidato que conserva los agujeros pasantes en vez del más cercano al objetivo (que
+   * los perdía); queda dentro de `genusSlackRel` sobre el objetivo.
+   */
+  genusPreserved?: boolean;
 }
 
 /** Informe antes → después. Volúmenes en mm³ locales (la escala no cambia el %); desviación en mm de mundo. */
@@ -103,6 +109,9 @@ export type LosslessLimits = { maxVolumePct: number; maxDeviationMm: number };
  * - `maxDeviationSamples`: vértices y centroides por sentido (el total es hasta 4×); la medición usó 150 000 y
  *   aquí se baja para que medir no cueste más que simplificar en mallas de millones.
  * - Búsqueda por cantidad: hasta 16 llamadas a `simplify` o 30 s; se acepta quedar hasta 2 % bajo el objetivo.
+ * - `genusSlackRel` 25 %: en «Por cantidad», si el resultado más cercano pierde agujeros pasantes, se prefiere el
+ *   mejor que los conserva con hasta 25 % más triángulos que el objetivo (la forma manda sobre el número); se
+ *   buscan hasta `genusExtraIterations` tolerancias más en el borde donde cambia el género.
  */
 export const SIMPLIFY_WARN_LIMITS = {
   volumePct: 0.5,
@@ -111,6 +120,8 @@ export const SIMPLIFY_WARN_LIMITS = {
   targetMaxIterations: 16,
   targetMaxMs: 30_000,
   targetSlackRel: 0.02,
+  genusSlackRel: 0.25,
+  genusExtraIterations: 6,
 } as const;
 
 /** Opciones de ejecución (no cruzan al Worker: allí cancelar termina el Worker). */

@@ -24,6 +24,7 @@ const TARGET: AddonPlacementTarget = {
   setHover: (hover) => setScrewBossHover(hover),
   hoverHostId: () => useScrewBossPanel.getState().hover?.hostId,
   place: (hostId, point, normal) => placeScrewBossAt(hostId, point, normal),
+  radiusMm: () => useScrewBossPanel.getState().params.outerDiameterMm / 2,
 };
 
 const Catcher: React.FC<{ obj: SceneObject }> = ({ obj }) => {
