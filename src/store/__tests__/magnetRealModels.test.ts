@@ -28,7 +28,7 @@ const { existsSync, readFileSync } = (globalThis as unknown as { process: { getB
 const DIR = 'G:/proyectos/kura3d/.eval-tmp/modelos';
 const HOLE_MM = MAGNET_DEFAULTS.sizeMm + MAGNET_DEFAULTS.clearanceMm;
 const DEPTH_MM = MAGNET_DEFAULTS.heightMm + MAGNET_DEFAULTS.depthClearanceMm;
-const TOO_BIG = /más grande que la pieza/;
+const TOO_BIG = /El imán no cabe aquí/;
 
 async function importReal(name: string) {
   const buf = readFileSync(`${DIR}/${name}`);

@@ -93,12 +93,12 @@ const IMAN_TABLE = {
   'magnet.short.exposed': ['Tapa abierta: queda a la vista.', 'Cover opens: magnet visible.', 'Abdeckung offen: Magnet sichtbar.', 'Couvercle ouvert : aimant visible.', 'ढक्कन खुला: चुंबक दिखेगा।', '覆盖层打开:磁铁外露。'],
   'magnet.short.thinCover': ['Tapa muy delgada.', 'Very thin cover.', 'Sehr dünne Abdeckung.', 'Couvercle très fin.', 'बहुत पतला ढक्कन।', '覆盖层太薄。'],
   'magnet.error.tooBig': [
-    'El imán es más grande que la pieza: al restar el hueco la pieza desaparecería. Usa un imán más chico o una pieza más grande.',
-    'The magnet is larger than the part: subtracting the pocket would remove the part. Use a smaller magnet or a larger part.',
-    'Der Magnet ist größer als das Teil: beim Abziehen der Aussparung würde das Teil verschwinden. Nimm einen kleineren Magneten oder ein größeres Teil.',
-    'L’aimant est plus grand que la pièce : en soustrayant le creux, la pièce disparaîtrait. Prends un aimant plus petit ou une pièce plus grande.',
-    'चुंबक भाग से बड़ा है: खाँचा घटाने पर भाग गायब हो जाएगा। छोटा चुंबक या बड़ा भाग चुनें।',
-    '磁铁比零件还大:减去凹槽后零件会消失。请使用更小的磁铁或更大的零件。',
+    'El imán no cabe aquí: es más ancho que el material de la pieza en este punto, y el hueco la cortaría de lado a lado. Usa un imán más chico o elige una zona más ancha.',
+    'The magnet does not fit here: it is wider than the material at this spot, and the pocket would cut the part through. Use a smaller magnet or pick a wider area.',
+    'Der Magnet passt hier nicht: Er ist breiter als das Material an dieser Stelle, und die Aussparung würde das Teil durchtrennen. Nimm einen kleineren Magneten oder eine breitere Stelle.',
+    'L’aimant ne rentre pas ici : il est plus large que la matière à cet endroit, et le creux couperait la pièce de part en part. Prends un aimant plus petit ou choisis une zone plus large.',
+    'चुंबक यहाँ नहीं समाता: यह इस जगह की सामग्री से चौड़ा है और खाँचा भाग को आर-पार काट देगा। छोटा चुंबक लें या चौड़ी जगह चुनें।',
+    '磁铁放不下:它比此处的材料还宽,凹槽会把零件切穿。请使用更小的磁铁或选择更宽的位置。',
   ],
   'magnet.preset.storageFailed': [
     'No se pudo guardar en este navegador (almacenamiento lleno o bloqueado): el preajuste no cambió.',

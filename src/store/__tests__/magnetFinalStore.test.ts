@@ -70,7 +70,7 @@ describe('imán: defectos finales', () => {
     });
     expect(r).toBeNull();
     expect(store().objects).toHaveLength(count);
-    expect(store().toasts.some((x) => /más grande que la pieza/.test(x.text))).toBe(true);
+    expect(store().toasts.some((x) => /El imán no cabe aquí/.test(x.text))).toBe(true);
   });
 
   it('7: si el hueco se asoma por el borde de un cubo no se avisa de curva', async () => {

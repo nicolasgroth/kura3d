@@ -107,7 +107,7 @@ describe('imán más grande que la pieza', () => {
     expect(placed).toBeNull();
     expect(store().objects.map((o) => o.id)).toEqual([box.id]);
     expect(store().past.length).toBe(steps);
-    expect(store().toasts.some((t) => t.kind === 'error' && /más grande que la pieza/.test(t.text))).toBe(true);
+    expect(store().toasts.some((t) => t.kind === 'error' && /El imán no cabe aquí/.test(t.text))).toBe(true);
     expect(worldVolume(byId(box.id))).toBeCloseTo(volume, 3);
   });
 
@@ -125,6 +125,6 @@ describe('imán más grande que la pieza', () => {
     const params = { ...MAGNET_DEFAULTS, sizeMm: 40, heightMm: 10 };
     const placed = await store().addMagnetPocket({ hostId: box.id, params, point: [0, 30, 0], normal: [0, 1, 0] });
     expect(placed).toBeNull();
-    expect(store().toasts.some((t) => t.kind === 'error' && /más grande que la pieza/.test(t.text))).toBe(true);
+    expect(store().toasts.some((t) => t.kind === 'error' && /El imán no cabe aquí/.test(t.text))).toBe(true);
   });
 });

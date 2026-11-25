@@ -757,7 +757,7 @@ test('10 modelos reales importados: vista previa = creado, restas válidas', asy
           const s = (await getState(page));
           if (s.objects.length === n0 + 1) return 'creado';
           const rechazo = await page.evaluate(() => (window as any).__s.getState().toasts
-            .some((t: any) => t.kind === 'error' && /más grande que la pieza/.test(t.text)));
+            .some((t: any) => t.kind === 'error' && /El imán no cabe aquí/.test(t.text)));
           return rechazo ? 'rechazado' : null;
         };
         await expect.poll(outcome, { timeout: 60000 }).not.toBeNull();
