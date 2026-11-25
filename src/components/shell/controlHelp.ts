@@ -78,6 +78,11 @@ export const CONTROL_HELP = {
   'fitCheck.run': { name: 'fitCheck.ui.run', desc: 'fitCheck.help.run' },
   'fitCheck.cancel': { name: 'fitCheck.ui.cancel', desc: 'fitCheck.help.cancel' },
   'fitCheck.pair': { name: 'fitCheck.ui.list', desc: 'fitCheck.help.pair', shortcut: 'Enter', keys: 'Enter' },
+  'orient.option': { name: 'orient.ui.list', desc: 'orient.help.option', shortcut: 'Enter', keys: 'Enter' },
+  'orient.angle': { name: 'orient.ui.angle', desc: 'orient.help.angle' },
+  'orient.keepXY': { name: 'orient.ui.keepPosition', desc: 'orient.help.keepPosition' },
+  'orient.apply': { name: 'orient.ui.apply', desc: 'orient.help.apply', shortcut: 'Enter', keys: 'Enter' },
+  'orient.cancel': { name: 'orient.ui.cancel', desc: 'orient.help.cancel' },
 } as const satisfies Record<string, ControlHelpDef>;
 
 export type HelpId = keyof typeof CONTROL_HELP;

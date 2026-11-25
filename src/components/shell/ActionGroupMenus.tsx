@@ -26,6 +26,7 @@ import {
   PaintBucket,
   Printer,
   Puzzle,
+  Rotate3d,
   Ruler,
   ScanSearch,
   ShieldCheck,
@@ -77,6 +78,7 @@ const ICONS: Record<ActionId, React.ReactNode> = {
   validate: <ShieldCheck size={14} aria-hidden="true" />,
   detect: <ScanSearch size={14} aria-hidden="true" />,
   fitCheck: <Ruler size={14} aria-hidden="true" />,
+  orient: <Rotate3d size={14} aria-hidden="true" />,
 };
 
 const GROUP_ICONS: Record<ActionGroupId, React.ReactNode> = {

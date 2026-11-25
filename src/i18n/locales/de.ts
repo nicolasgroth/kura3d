@@ -53,6 +53,7 @@ import { UX9_DE } from './ux9';
 import { REDISENO_DE } from './rediseno';
 import { PANEL_DE } from './panel';
 import { ENCAJE_UI_DE } from './encajeUi';
+import { ORIENT_UI_DE } from './orientar';
 import { REDISENO3A_DE } from './rediseno3a';
 import { REDISENO3B_DE } from './rediseno3b';
 import { UX8_MENU_DE } from './ux8Menu';
@@ -1388,4 +1389,5 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'bus.error.assemblyNoTarget': 'Gib groupId oder die ids der geteilten Teile an.',
   'bus.error.assemblyNotSplit': 'Diese Teile können nicht neu geprüft werden ({reason}): Sie müssen zu einer geteilten Gruppe mit gespeicherten Verbindungen gehören.',
   'dialog.thread.invalidFields': 'Korrigiere die markierten Felder, bevor du das Gewinde erstellst: Ein nicht numerischer oder außerhalb des Bereichs liegender Wert wird nicht übernommen.',
+  ...ORIENT_UI_DE,
 };

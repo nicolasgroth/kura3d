@@ -53,6 +53,7 @@ import { UX9_FR } from './ux9';
 import { REDISENO_FR } from './rediseno';
 import { PANEL_FR } from './panel';
 import { ENCAJE_UI_FR } from './encajeUi';
+import { ORIENT_UI_FR } from './orientar';
 import { REDISENO3A_FR } from './rediseno3a';
 import { REDISENO3B_FR } from './rediseno3b';
 import { UX8_MENU_FR } from './ux8Menu';
@@ -1388,4 +1389,5 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'bus.error.assemblyNoTarget': 'Indique groupId ou les ids des pièces divisées.',
   'bus.error.assemblyNotSplit': 'Ces pièces ne peuvent pas être revalidées ({reason}) : elles doivent appartenir à un même groupe divisé avec ses jonctions enregistrées.',
   'dialog.thread.invalidFields': 'Corrigez les champs marqués avant de créer le filetage : une valeur non numérique ou hors plage n’est pas appliquée.',
+  ...ORIENT_UI_FR,
 };

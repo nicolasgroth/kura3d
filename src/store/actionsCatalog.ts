@@ -19,7 +19,7 @@ import type { TranslationKey } from '../i18n';
 import type { KuraStoreState } from './storeTypes';
 
 export const ACTION_GROUPS = [
-  { id: 'prepare', items: ['hollow', 'splitForBed', 'fitToBed', 'mold', 'project', 'modules'] },
+  { id: 'prepare', items: ['hollow', 'splitForBed', 'fitToBed', 'orient', 'mold', 'project', 'modules'] },
   { id: 'mesh', items: ['repair', 'simplify', 'refine', 'texture', 'hull'] },
   { id: 'organize', items: ['splitColors', 'splitParts', 'group', 'ungroup', 'combine', 'union', 'applyHoles'] },
   { id: 'position', items: ['convert', 'dropToBed', 'centerOnBed', 'align'] },
@@ -83,6 +83,10 @@ export function actionAvailability(state: StateSlice, id: ActionId): ActionAvail
     case 'splitParts':
       if (primary.locked) return no('rediseno.reason.locked');
       return cachedMeshBodies(primary.mesh) === 1 ? no('rediseno.reason.singleBody') : ok;
+    case 'orient':
+      if (picked.length > 1) return no('orient.ui.reason.needOne');
+      if (!isSolid(primary)) return no('orient.ui.reason.notSolid');
+      return primary.locked ? no('rediseno.reason.locked') : ok;
     case 'validate':
     case 'detect':
     case 'splitForBed':
@@ -99,7 +103,7 @@ export function actionAvailability(state: StateSlice, id: ActionId): ActionAvail
  * contenido en `components/contextPanel/panelRegistry.tsx`. Operan sobre un objeto seleccionado, salvo las de
  * `SCENE_PANEL_ACTIONS`.
  */
-export const PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['hollow', 'simplify', 'refine', 'texture', 'modules', 'validate', 'detect', 'fitCheck']);
+export const PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['hollow', 'simplify', 'refine', 'texture', 'modules', 'validate', 'detect', 'fitCheck', 'orient']);
 
 /** Acciones del panel que trabajan sobre la escena (varios objetos o todo lo visible), no sobre uno solo. */
 export const SCENE_PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['fitCheck']);

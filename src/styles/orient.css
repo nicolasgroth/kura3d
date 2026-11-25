@@ -1,0 +1,281 @@
+/**
+ * @file src/styles/orient.css
+ * @description Estilos del panel «Orientar para imprimir»: campo del ángulo, avance, resumen, lista de opciones
+ * (insignias con icono y texto, borde distinto para la actual y la recomendada: nunca solo color), leyenda de
+ * zonas en voladizo y nota. Usa los tokens del tema (claro y oscuro).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-orient {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kura-orient-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.kura-orient-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kura-orient-number {
+  width: 72px;
+  flex: none;
+  text-align: right;
+}
+
+.kura-orient-number[aria-invalid='true'] {
+  border-color: var(--accent-red);
+}
+
+.kura-orient-live:empty {
+  display: none;
+}
+
+.kura-orient-running {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.kura-orient-phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kura-orient-spin {
+  animation: kura-orient-spin 1s linear infinite;
+}
+
+@keyframes kura-orient-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-orient-spin {
+    animation: none;
+  }
+}
+
+.kura-orient-progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--accent-cyan);
+}
+
+.kura-orient-summary,
+.kura-orient-stale {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.kura-orient-summary svg {
+  color: var(--accent-green);
+  flex: none;
+  margin-top: 1px;
+}
+
+.kura-orient-stale {
+  padding: 6px 8px;
+  border: 1px dashed var(--accent-amber);
+  border-radius: var(--radius-sm);
+}
+
+.kura-orient-stale svg {
+  color: var(--accent-amber);
+  flex: none;
+  margin-top: 1px;
+}
+
+.kura-orient-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kura-orient-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-orient-option {
+  border: 1px solid var(--border-subtle);
+  border-left-width: 4px;
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  background: var(--bg-elevated);
+  min-width: 0;
+}
+
+.kura-orient-option:hover {
+  border-color: var(--accent-cyan);
+}
+
+.kura-orient-option:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-orient-option.is-selected {
+  box-shadow: inset 0 0 0 1px var(--accent-cyan);
+  background: color-mix(in srgb, var(--accent-cyan) 10%, var(--bg-elevated));
+}
+
+.kura-orient-option.is-recommended {
+  border-left-color: var(--accent-green);
+}
+
+.kura-orient-option.is-current {
+  border-left-style: dashed;
+  border-left-color: var(--text-muted);
+}
+
+.kura-orient-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kura-orient-name {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.kura-orient-badges {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.kura-orient-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  color: var(--text-primary);
+}
+
+.kura-orient-badge.is-recommended {
+  border-color: var(--accent-green);
+}
+
+.kura-orient-badge.is-current {
+  border-style: dashed;
+}
+
+.kura-orient-badge.is-chosen {
+  border-color: var(--accent-cyan);
+}
+
+.kura-orient-stats {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 8px;
+}
+
+.kura-orient-stats > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+  min-width: 0;
+}
+
+.kura-orient-stats dt {
+  color: var(--text-secondary);
+}
+
+.kura-orient-stats dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.kura-orient-reasons {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.kura-orient-reasons .is-warning {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.kura-orient-legend {
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 12px;
+}
+
+.kura-orient-swatch {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 3px;
+  border: 1px solid var(--text-primary);
+  background: repeating-linear-gradient(45deg, #f97316 0 4px, #fdba74 4px 8px);
+}
+
+.kura-orient-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  min-height: 28px;
+}
+
+.kura-orient-note {
+  margin: 0;
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+}
+
+.kura-orient-note svg {
+  flex: none;
+  margin-top: 1px;
+}

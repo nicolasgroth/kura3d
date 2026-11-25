@@ -28,6 +28,7 @@ import { createSplitJointsSlice } from './slices/splitJointsSlice';
 import { createSplitPrefsSlice } from './slices/splitPrefsSlice';
 import { createFitToBedSlice } from './slices/fitToBedSlice';
 import { createFitCheckSlice, invalidateFitCheckOnSceneChange } from './slices/fitCheckSlice';
+import { createOrientSlice, invalidateOrientOnSceneChange } from './slices/orientSlice';
 import { closeActionOnTargetLoss } from './actionTargetGuard';
 import { resetToolWhenUnavailable } from './toolAvailabilityGuard';
 import { createRecipesSlice } from './slices/recipesSlice';
@@ -86,6 +87,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createSplitPrefsSlice(ctx),
     ...createFitToBedSlice(ctx),
     ...createFitCheckSlice(ctx),
+    ...createOrientSlice(ctx),
     ...createRecipesSlice(ctx),
     ...createBedProfilesSlice(ctx),
     ...createMagnetSlice(ctx),
@@ -112,5 +114,6 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
 hydrateSecrets(useKuraStore);
 clearPreviewOnSelectionChange(useKuraStore);
 invalidateFitCheckOnSceneChange(useKuraStore);
+invalidateOrientOnSceneChange(useKuraStore);
 closeActionOnTargetLoss(useKuraStore);
 resetToolWhenUnavailable(useKuraStore);

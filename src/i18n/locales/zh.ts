@@ -53,6 +53,7 @@ import { UX9_ZH } from './ux9';
 import { REDISENO_ZH } from './rediseno';
 import { PANEL_ZH } from './panel';
 import { ENCAJE_UI_ZH } from './encajeUi';
+import { ORIENT_UI_ZH } from './orientar';
 import { REDISENO3A_ZH } from './rediseno3a';
 import { REDISENO3B_ZH } from './rediseno3b';
 import { UX8_MENU_ZH } from './ux8Menu';
@@ -1388,4 +1389,5 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'bus.error.assemblyNoTarget': '请提供 groupId 或分割零件的 ids。',
   'bus.error.assemblyNotSplit': '无法重新验证这些零件（{reason}）：它们必须属于同一分割组并保存了接合信息。',
   'dialog.thread.invalidFields': '创建螺纹前请先修正标记的字段：非数字或超出范围的值不会被应用。',
+  ...ORIENT_UI_ZH,
 };
