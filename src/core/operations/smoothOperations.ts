@@ -13,6 +13,18 @@ import { smoothMesh, type SmoothOptions, type SmoothReport } from '../../engine/
 import type { SceneObject } from '../../types/kura';
 import { change, meshPatch, type OperationContext, type SceneChange } from './operationTypes';
 
+/**
+ * Cambio de volumen (%) sobre el cual Suavizar no se aplica en silencio (hay que pedirlo con `allowVolumeChange`):
+ * 5 %, el mismo tope de «destructivo» de Simplificar. Medido: una esfera de 72 triángulos escalada ×2 perdía −16,2 %;
+ * con una malla fina el suavizado normal queda bajo 1–2 %. La salida es refinar la malla antes.
+ */
+export const SMOOTH_BLOCK_VOLUME_PCT = 5;
+
+/** true si el resultado cambia el volumen más que el tope y no se pidió aplicarlo igual. */
+export function smoothVolumeBlocked(report: Pick<SmoothReport, 'movedVertices' | 'volumeChangePct'>, allowVolumeChange = false): boolean {
+  return !allowVolumeChange && report.movedVertices > 0 && Math.abs(report.volumeChangePct) > SMOOTH_BLOCK_VOLUME_PCT;
+}
+
 /** Opciones serializables de la tarea (sin `onProgress`: lo pone el contexto). */
 export type SmoothTaskOptions = Omit<SmoothOptions, 'onProgress'>;
 

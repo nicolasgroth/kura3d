@@ -14,7 +14,7 @@ import type { SmoothReport } from '../engine/smooth';
 import { transformToUser } from './commandAxes';
 import { CommandError } from './commandErrors';
 import { resolveTarget } from './commandTargets';
-import type { RawParams } from './commandValidation';
+import { readBoolean, type RawParams } from './commandValidation';
 import {
   findOrientCandidate,
   movedObjectIds,
@@ -44,14 +44,16 @@ export const SMOOTH_ORIENT_HANDLERS = {
   smooth_mesh: async (p: RawParams, { get }: Deps) => {
     const target = resolveTarget(get(), p, { unlocked: true });
     const params = parseSmoothMesh(p, target.mesh);
-    let result: { report: SmoothReport; warnings: readonly EngineWarning[]; applied: boolean } | null = null;
+    const allowVolumeChange = readBoolean(p, 'allowVolumeChange') ?? false;
+    let result: { report: SmoothReport; warnings: readonly EngineWarning[]; applied: boolean; blocked: boolean } | null = null;
     await get().applySmooth(target.id, params, {
       rethrowEngineErrors: true,
-      onResult: (report, warnings, applied) => { result = { report, warnings, applied }; },
+      allowVolumeChange,
+      onResult: (report, warnings, applied, blocked) => { result = { report, warnings, applied, blocked: blocked === true }; },
     });
-    const done = result as { report: SmoothReport; applied: boolean } | null;
+    const done = result as { report: SmoothReport; applied: boolean; blocked: boolean } | null;
     if (!done) throw failed('smooth_mesh');
-    return { id: target.id, ...smoothReportToUser(done.report, done.applied) };
+    return { id: target.id, ...smoothReportToUser(done.report, done.applied, done.blocked, allowVolumeChange) };
   },
 
   orient_for_print: async (p: RawParams, { get }: Deps) => {

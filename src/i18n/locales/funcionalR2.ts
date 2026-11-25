@@ -107,6 +107,22 @@ const FUNCIONAL_R2 = {
     hi: 'कट के {count} बहुत छोटे टुकड़े हटा दिए गए (कुल {volume} mm³): इन्हें न छापा जा सकता है न चिपकाया, इसलिए ये भाग के रूप में नहीं दिए जाते।',
     zh: '已丢弃 {count} 个切割产生的微小碎块（共 {volume} mm³）：无法打印或粘接，不作为零件交付。',
   },
+  'smooth.blocked.toast': {
+    es: 'Suavizar no se aplicó: el volumen cambiaría {pct} % (tope {limit} %). La malla es muy gruesa: refínala antes, o usa «Aplicar de todos modos».',
+    en: 'Smooth was not applied: the volume would change {pct} % (limit {limit} %). The mesh is very coarse: refine it first, or use “Apply anyway”.',
+    de: 'Glätten wurde nicht angewendet: Das Volumen würde sich um {pct} % ändern (Grenze {limit} %). Das Netz ist sehr grob: Verfeinere es zuerst oder nutze „Trotzdem anwenden“.',
+    fr: 'Lisser n’a pas été appliqué : le volume changerait de {pct} % (limite {limit} %). Le maillage est très grossier : affine-le d’abord, ou utilise « Appliquer quand même ».',
+    hi: 'स्मूद लागू नहीं हुआ: आयतन {pct} % बदल जाता (सीमा {limit} %)। मेश बहुत मोटा है: पहले इसे परिष्कृत करें, या «फिर भी लागू करें» चुनें।',
+    zh: '平滑未应用：体积会变化 {pct} %（上限 {limit} %）。网格太粗：请先细化，或使用“仍然应用”。',
+  },
+  'smooth.blocked.status': {
+    es: 'No se aplicó: el volumen cambiaría {pct} % (tope {limit} %). Con tan pocos triángulos el suavizado encoge la pieza; refina la malla antes para conservar la forma.',
+    en: 'Not applied: the volume would change {pct} % (limit {limit} %). With so few triangles smoothing shrinks the part; refine the mesh first to keep the shape.',
+    de: 'Nicht angewendet: Das Volumen würde sich um {pct} % ändern (Grenze {limit} %). Mit so wenigen Dreiecken schrumpft das Glätten das Teil; verfeinere das Netz zuerst, um die Form zu erhalten.',
+    fr: 'Non appliqué : le volume changerait de {pct} % (limite {limit} %). Avec si peu de triangles, le lissage rétrécit la pièce ; affine d’abord le maillage pour garder la forme.',
+    hi: 'लागू नहीं हुआ: आयतन {pct} % बदल जाता (सीमा {limit} %)। इतने कम त्रिकोणों में स्मूद करने से पुर्ज़ा सिकुड़ता है; आकार बचाने के लिए पहले मेश परिष्कृत करें।',
+    zh: '未应用：体积会变化 {pct} %（上限 {limit} %）。三角形这么少时平滑会使零件缩小；请先细化网格以保持形状。',
+  },
   'orient.error.candidateNotFound': {
     es: 'No hay una orientación con id "{id}". Disponibles: {available}.',
     en: 'No orientation candidate with id "{id}". Available: {available}.',

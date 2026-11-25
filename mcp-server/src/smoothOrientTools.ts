@@ -11,6 +11,7 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { SMOOTH_BLOCK_VOLUME_PCT } from '../../src/core/operations/smoothOperations';
 import { OPERATION_RANGES as OR } from '../../src/engine/operationLimits';
 import { ORIENT_RANGES } from '../../src/engine/orient';
 import { SMOOTH_DEFAULTS as SD, SMOOTH_RANGES as SR } from '../../src/engine/smooth';
@@ -45,7 +46,9 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
         'widespread is the strength halved as a last resort (appliedStrength; strengthCoveragePct = % of movable vertices ' +
         'smoothed with at least 80 % of the requested strength). Returns the report in world units (object scale applied): ' +
         `volume before/after and change in % (warning SMOOTH_VOLUME_CHANGED above ${SD.volumeWarnPct} %), moved and protected ` +
-        'vertices, largest displacement. The transform does not change.',
+        'vertices, largest displacement. The transform does not change. If |volume change| > ' + SMOOTH_BLOCK_VOLUME_PCT + ' % ' +
+        '(typical of very coarse meshes: refine the mesh first with kura_refine_mesh) the result is NOT applied: applied=false, ' +
+        'blockedBy "volume_changed", volumeLimitPct; pass allowVolumeChange=true to apply it anyway (forced=true).',
       inputSchema: {
         objectId: idSchema.describe('ID of the object to smooth.'),
         strength: rangeSchema(SR.strength).optional().describe(`Intensity 0.1–1 (default ${SD.strength}; λ = 0.5 · strength).`),
@@ -56,6 +59,8 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
         zoneColor: hexColorSchema.optional().describe('Only smooth the triangles painted with this color (#rrggbb, must be on the object).'),
         falloffRings: rangeSchema(SR.falloffRings).optional()
           .describe(`Only with zoneColor (error without it): rings of neighbors with decreasing weight around the zone (default ${SD.falloffRings}; 0 = hard border).`),
+        allowVolumeChange: z.boolean().optional()
+          .describe(`Apply even if the volume changes more than ${SMOOTH_BLOCK_VOLUME_PCT} % (default false: not applied).`),
       },
     },
     async (args) => dispatchWithFallback(ctx, 'smooth_mesh', { ...args }, () => ctx.headless.smoothMesh({ ...args })),

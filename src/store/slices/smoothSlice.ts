@@ -12,6 +12,7 @@
 
 import { CommandError } from '../../core/bus/commandErrors';
 import { isEngineCancelled, type EngineCancelMode } from '../../core/operations/engineClient';
+import { SMOOTH_BLOCK_VOLUME_PCT, smoothVolumeBlocked } from '../../core/operations/smoothOperations';
 import type { SceneChange } from '../../core/operations';
 import { isEngineError, type EngineWarning } from '../../engine/engineErrors';
 import type { SmoothReport } from '../../engine/smooth';
@@ -43,6 +44,8 @@ export interface SmoothSession {
   errorCode: string | null;
   /** «Comparar con el original»: oculta el fantasma para ver solo la pieza. */
   comparing: boolean;
+  /** No se aplicó porque el volumen cambiaba más que `SMOOTH_BLOCK_VOLUME_PCT` (se puede aplicar de todos modos). */
+  volumeBlocked?: boolean;
 }
 
 export interface SmoothSliceState {
@@ -60,7 +63,9 @@ export interface SmoothSliceState {
 
 /** Para el Command Bus: recibe el informe (también sin cambios) y deja subir los errores del motor tipados. */
 export interface SmoothApplyHooks {
-  onResult?: (report: SmoothReport, warnings: readonly EngineWarning[], applied: boolean) => void;
+  onResult?: (report: SmoothReport, warnings: readonly EngineWarning[], applied: boolean, volumeBlocked?: boolean) => void;
+  /** Aplica aunque el volumen cambie más que `SMOOTH_BLOCK_VOLUME_PCT` («Aplicar de todos modos»). */
+  allowVolumeChange?: boolean;
   /** true: un error del motor se relanza (lo registra el ejecutor) en vez de quedar junto a los controles. */
   rethrowEngineErrors?: boolean;
 }
@@ -224,6 +229,16 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
         }
         assertCurrent([obj]);
         const { report, change } = result;
+        // Cambio de volumen sobre el tope: no se aplica en silencio. La vista previa queda (y en caché, para «Aplicar
+        // de todos modos» sin recalcular) y el panel dice por qué y sugiere refinar la malla.
+        if (change.patches.length > 0 && smoothVolumeBlocked(report, hooks?.allowVolumeChange)) {
+          hooks?.onResult?.(report, change.warnings, false, true);
+          set({
+            smoothSession: { objectId: id, status: 'ready', phase: null, signature, params, report, warnings: change.warnings, error: null, errorCode: null, comparing: false, volumeBlocked: true },
+          });
+          get().addToast(tr('smooth.blocked.toast', { pct: formatLocaleNumber(get().language, Math.abs(report.volumeChangePct), { maxFrac: 1 }), limit: SMOOTH_BLOCK_VOLUME_PCT }), 'info');
+          return false;
+        }
         generation++;
         cached = null;
         dropPreview();
