@@ -9,7 +9,6 @@
  * @license MIT
  */
 
-import { isNegative, isReference, isSolid } from './core/scene/objectRole';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AiChatDrawer } from './components/AiChatDrawer';
 import { CommandPalette } from './components/CommandPalette';
@@ -34,13 +33,11 @@ import type { TransformMode } from './types/kura';
 import { useMcpBridgeClient } from './utils/mcpBridgeClient';
 import { isTauriRuntime } from './utils/platformBridge';
 import { useFunctionKeys } from './components/useFunctionKeys';
-import { guardUnsavedChanges } from './utils/unsavedGuard';
 import { LOG_TAG } from './brand';
 import { ConfirmDialogHost } from './components/ConfirmDialogHost';
 import { UnitChoiceDialog } from './components/dialogs/UnitChoiceDialog';
 import { FitToBedDialog } from './components/fitToBed/FitToBedDialog';
 import { RowContextMenuHost } from './components/scene/RowContextMenuHost';
-import { confirmDeleteSelection } from './components/scene/confirmDeleteSelection';
 import { NarrowPanelBar } from './components/NarrowPanelBar';
 import { useNarrowSheets } from './components/narrow/useNarrowSheets';
 import { MobileTransformBar } from './components/narrow/MobileTransformBar';
@@ -52,20 +49,12 @@ import { MagnetPanel } from './components/magnet/MagnetPanel';
 import { ScrewBossPanel } from './components/screwBoss/ScrewBossPanel';
 import { KeyholePanel } from './components/keyhole/KeyholePanel';
 import { CablePassPanel } from './components/cablePass/CablePassPanel';
-import { SINGLE_KEY_SHORTCUTS } from './store/singleKeyShortcuts';
+import { resolveShortcut } from './store/keyboardShortcuts';
+import { dispatchShortcut, readShortcutContext } from './components/shell/dispatchShortcut';
 import { startPanelExclusion } from './store/insertCatalog';
 import { startMinWidthNotice } from './store/minWidthNotice';
 import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
-import { activateRailTool, toggleRailTool } from './store/toolActivation';
 import { useSimplifyRequestRelay } from './components/inspector/simplifyPanelRequest';
-
-const TRANSFORM_SHORTCUTS = new Map<string, TransformMode>([
-  ['m', 'translate'],
-  ['g', 'translate'],
-  ['w', 'translate'],
-  ['r', 'rotate'],
-  ['s', 'scale'],
-]);
 
 export const App: React.FC = () => {
   useSimplifyRequestRelay();
@@ -195,260 +184,17 @@ export const App: React.FC = () => {
 
   // Atajos de teclado globales del estudio CAD
   useEffect(() => {
+    // Las reglas viven en `store/keyboardShortcuts` (tabla probada); aquí solo se resuelve y se despacha.
+    const ui = {
+      revealRightSheet: () => sheets.reveal('right'),
+      requestPrecision: (mode: TransformMode) => setPrecisionRequest({ mode }),
+    };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.isComposing) return;
-      const state = useKuraStore.getState();
-      const mod = e.ctrlKey || e.metaKey;
-      const key = e.key.toLowerCase();
-      if (mod && !e.altKey && (key === 's' || (!e.shiftKey && (key === 'n' || key === 'o')))) {
-        if (state.activeDialog !== null || state.commandPaletteOpen) return;
-        e.preventDefault();
-        if (e.repeat) return;
-        if (key === 's') {
-          const field = e.target;
-          if (field instanceof HTMLInputElement && field.hasAttribute('data-commit-on-blur')) {
-            field.blur();
-          }
-          void state.saveProject(e.shiftKey);
-        }
-        else if (key === 'o') void guardUnsavedChanges(() => state.openProject());
-        else void guardUnsavedChanges(() => state.newProject());
-        return;
-      }
-      const target = e.target as HTMLElement | null;
-      const tag = target?.tagName;
-      if (
-        tag === 'INPUT' ||
-        tag === 'TEXTAREA' ||
-        tag === 'SELECT' ||
-        target?.isContentEditable
-      ) {
-        return;
-      }
-
-      // Con un diálogo modal abierto los atajos globales (Ctrl+Z, flechas, borrar…) no tocan la escena: dentro de
-      // un campo de texto ya se retiraron arriba y ahí Ctrl+Z deshace la edición del propio campo.
-      if (document.querySelector('dialog[open]:modal')) return;
-
-      if (mod && key === 'k') {
-        e.preventDefault();
-        if (state.activeDialog === null) {
-          state.setCommandPaletteOpen(!state.commandPaletteOpen);
-        }
-        return;
-      }
-
-      if (mod && e.key === ',') {
-        e.preventDefault();
-        state.openSettings('appearance');
-        return;
-      }
-
-      if (state.activeDialog !== null || state.commandPaletteOpen) {
-        return;
-      }
-
-      if (mod && e.shiftKey && !e.altKey && key === 'enter') {
-        e.preventDefault();
-        if (!e.repeat) state.toggleZenMode();
-        return;
-      }
-
-      // Escape también sale del modo Zen (sin diálogos abiertos: esos ya consumen Escape).
-      // Escape sale un nivel del grupo en el que se entró; Enter entra al grupo del objeto elegido.
-      if (e.key === 'Escape' && !mod && !e.shiftKey && state.groupContextId) {
-        e.preventDefault();
-        state.exitGroup();
-        return;
-      }
-      if (e.key === 'Enter' && !mod && !e.shiftKey && !e.altKey && state.groups.length > 0 && state.selectedIds.length > 1) {
-        if (state.enterGroup()) {
-          e.preventDefault();
-          return;
-        }
-      }
-
-      if (e.key === 'Escape' && !mod && state.uiDensity === 'zen') {
-        e.preventDefault();
-        state.toggleZenMode();
-        return;
-      }
-
-      if (mod && key === 'z') {
-        e.preventDefault();
-        if (e.shiftKey) {
-          state.redo();
-        } else {
-          state.undo();
-        }
-        return;
-      }
-
-      if (mod && key === 'y') {
-        e.preventDefault();
-        state.redo();
-        return;
-      }
-
-      if (mod && key === 'd') {
-        e.preventDefault();
-        state.duplicateObjects();
-        return;
-      }
-
-      // Ctrl/⌘+G agrupa y Ctrl/⌘+Mayús+G desagrupa (convención general).
-      if (mod && !e.altKey && key === 'g') {
-        e.preventDefault();
-        if (e.repeat) return;
-        if (e.shiftKey) state.ungroupObjects();
-        else state.groupObjects();
-        return;
-      }
-
-      // Ctrl/⌘+Mayús+U: aplicar restas o unir sólidos (antes Ctrl+G).
-      if (mod && e.shiftKey && !e.altKey && key === 'u') {
-        e.preventDefault();
-        if (e.repeat) return;
-        {
-          const selectedObjs = state.objects.filter((o) => state.selectedIds.includes(o.id));
-          const selHasHole = selectedObjs.some((o) => isNegative(o) && o.visible);
-          const selHasSolid = selectedObjs.some((o) => isSolid(o) && o.visible);
-          const sceneHasHole = state.objects.some((o) => isNegative(o) && o.visible);
-          const sceneHasSolid = state.objects.some((o) => isSolid(o) && o.visible);
-          if ((selHasHole && selHasSolid) || (state.selectedIds.length < 2 && sceneHasHole && sceneHasSolid)) {
-            void state.applyHolesOnSolids();
-          } else if (state.selectedIds.length >= 2) {
-            void state.runBooleanOnSelection('union');
-          } else if (sceneHasHole && sceneHasSolid) {
-            void state.applyHolesOnSolids();
-          }
-        }
-        return;
-      }
-
-      if (mod && key === 'a') {
-        e.preventDefault();
-        state.selectAll();
-        return;
-      }
-
-      // Empuje numérico de precisión (Arrow Keys / PageUp / PageDown) sobre selección
-      if (
-        e.key === 'ArrowLeft' ||
-        e.key === 'ArrowRight' ||
-        e.key === 'ArrowUp' ||
-        e.key === 'ArrowDown' ||
-        e.key === 'PageUp' ||
-        e.key === 'PageDown'
-      ) {
-        const targetIds =
-          state.selectedIds.length > 0
-            ? state.selectedIds
-            : state.objects.length === 1
-              ? [state.objects[0].id]
-              : [];
-        if (targetIds.length > 0) {
-          if (state.selectedIds.length === 0) {
-            state.selectObject(targetIds[0], false);
-          }
-          e.preventDefault();
-          const base = state.snapGridMm > 0 ? state.snapGridMm : 1;
-          const step = e.shiftKey ? base * 10 : mod || e.altKey ? base * 0.2 : base;
-          if (e.key === 'ArrowLeft') state.nudgeSelectedObjects([-step, 0, 0]);
-          else if (e.key === 'ArrowRight') state.nudgeSelectedObjects([step, 0, 0]);
-          else if (e.key === 'ArrowUp') state.nudgeSelectedObjects([0, 0, -step]);
-          else if (e.key === 'ArrowDown') state.nudgeSelectedObjects([0, 0, step]);
-          else if (e.key === 'PageUp') state.nudgeSelectedObjects([0, step, 0]);
-          else if (e.key === 'PageDown') state.nudgeSelectedObjects([0, -step, 0]);
-        }
-        return;
-      }
-
-      if (mod || e.altKey) return;
-
-      if (e.key === '?' || e.key === 'F1') {
-        e.preventDefault();
-        state.setActiveDialog('shortcuts');
-        return;
-      }
-
-      if (e.shiftKey && key === 'd') {
-        e.preventDefault();
-        state.duplicateObjects();
-        return;
-      }
-
-      const transformMode = TRANSFORM_SHORTCUTS.get(key);
-      if (transformMode && !(key === 'm' && e.shiftKey)) {
-        e.preventDefault();
-        // Misma regla que la barra: sin selección toma los objetos visibles sin candado; escena vacía: avisa.
-        const applied = activateRailTool(transformMode === 'translate' ? 'move' : transformMode);
-        if (!applied.enabled) return;
-        const opensInspector = key === 'm' || key === 'r' || key === 's';
-        if (opensInspector && !e.shiftKey && !e.repeat && useKuraStore.getState().selectedIds.length === 1) {
-          const narrow = window.matchMedia('(max-width: 900px)').matches;
-          if (state.uiDensity === 'zen') state.toggleZenMode();
-          if (state.aiDrawerOpen && window.matchMedia('(max-width: 1240px)').matches) {
-            state.setAiDrawerOpen(false);
-          }
-          if (narrow) sheets.reveal('right');
-          else if (state.rightCollapsed) state.toggleRightInspector();
-          setPrecisionRequest({ mode: transformMode });
-        }
-        return;
-      }
-
-      // Atajos de una letra que abren paneles o dialogos con un campo enfocado: sin esto el
-      // caracter de la tecla llega (keypress/input) al campo recien enfocado y lo ensucia.
-      if (SINGLE_KEY_SHORTCUTS.has(key)) e.preventDefault();
-
-      if (key === '1') {
-        state.requestCameraPreset('front');
-      } else if (key === '2') {
-        state.requestCameraPreset('right');
-      } else if (key === '3') {
-        state.requestCameraPreset('iso');
-      } else if (key === '7') {
-        state.requestCameraPreset('top');
-      } else if (key === 'v') {
-        activateRailTool('select');
-      } else if (key === 'f') {
-        state.requestCameraPreset('fit');
-      } else if (key === 'h' && e.shiftKey) {
-        // Mayús+H: oculta la selección o la vuelve a mostrar; sin selección, muestra todo lo oculto.
-        state.toggleSelectionVisibility();
-      } else if (key === 'h') {
-        for (const id of state.selectedIds) {
-          const obj = state.objects.find((o) => o.id === id);
-          // H alterna Sólido / Negativo; una referencia no cambia con H (se convierte desde el menú).
-          if (obj && !isReference(obj)) {
-            state.updateObjectMeta(id, { role: isNegative(obj) ? 'solid' : 'negative' });
-          }
-        }
-      } else if (key === 'm' && e.shiftKey) {
-        if (state.objects.length > 0) state.setActiveDialog('mold');
-      } else if (key === 'b' && !e.shiftKey) {
-        state.toggleShowBed();
-      } else if (key === 'x') {
-        state.setSectionPlane({ enabled: !state.sectionPlane.enabled });
-      } else if (key === 'p') {
-        toggleRailTool('paint');
-      } else if (key === 'd' && !e.shiftKey) {
-        toggleRailTool('measure');
-      } else if (key === 'c' && e.shiftKey) {
-        if (state.selectedIds.length > 0) state.setActiveDialog('splitForBed');
-      } else if (key === 'c') {
-        if (state.objects.length > 0) state.setActiveDialog('cut');
-      } else if (key === 'l') {
-        for (const id of state.selectedIds) {
-          state.dropObjectToBed(id);
-        }
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (state.selectedIds.length > 0) {
-          e.preventDefault();
-          void confirmDeleteSelection();
-        }
-      }
+      const { action, preventDefault } = resolveShortcut(e, readShortcutContext(e.target));
+      if (preventDefault) e.preventDefault();
+      if (!action) return;
+      if (dispatchShortcut(action, e, ui)) e.preventDefault();
     };
 
     window.addEventListener('keydown', onKeyDown);

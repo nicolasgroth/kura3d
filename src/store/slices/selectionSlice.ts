@@ -38,6 +38,17 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
     set((state) => ({ objects: state.objects.map((item) => (item.id === id ? { ...item, ...patch } : item)) }));
   };
 
+  /** Como `placeObject` para varios objetos: un solo paso de historial para todo el lote. Devuelve los ids movidos. */
+  const placeObjects = (ids: string[], place: (obj: SceneObject) => Partial<SceneObject>): string[] => {
+    const wanted = new Set(ids);
+    const targets = get().objects.filter((o) => wanted.has(o.id) && !o.locked);
+    if (targets.length === 0) return [];
+    pushHistory();
+    const patches = new Map(targets.map((o) => [o.id, place(o)]));
+    set((state) => ({ objects: state.objects.map((item) => (patches.has(item.id) ? { ...item, ...patches.get(item.id) } : item)) }));
+    return targets.map((o) => o.id);
+  };
+
   return {
     setSelection: (ids) =>
       set((state) => {
@@ -138,6 +149,9 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
 
     dropObjectToBed: (id) =>
       placeObject(id, (o) => ({ position: [o.position[0], computeBedPositionY(o.mesh, o.rotation, o.scale), o.position[2]] })),
+
+    dropObjectsToBed: (ids) =>
+      placeObjects(ids, (o) => ({ position: [o.position[0], computeBedPositionY(o.mesh, o.rotation, o.scale), o.position[2]] })),
 
     centerObjectOnBed: (id) =>
       placeObject(id, (o) => {
