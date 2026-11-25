@@ -91,6 +91,14 @@ const FUNCIONAL_R2 = {
     hi: 'सरल करना लागू नहीं हुआ क्योंकि यह पुर्ज़े को बिगाड़ता है: {reasons} रिपोर्ट सुरक्षित संस्करण देती है।',
     zh: '简化未应用，因为它会破坏零件：{reasons} 报告中提供了安全版本。',
   },
+  'keyhole.error.notRetained': {
+    es: 'El ojo no se colocó: en esa cara no queda labio que sujete la cabeza del tornillo (se saldría). Usa una cara más grande o un tornillo menor.',
+    en: 'The keyhole was not placed: that face leaves no lip to hold the screw head (it would slip out). Use a larger face or a smaller screw.',
+    de: 'Das Schlüsselloch wurde nicht gesetzt: Auf dieser Fläche bleibt keine Lippe, die den Schraubenkopf hält (er würde herausrutschen). Nutze eine größere Fläche oder eine kleinere Schraube.',
+    fr: 'Le trou n’a pas été placé : cette face ne laisse aucune lèvre pour retenir la tête de vis (elle sortirait). Utilise une face plus grande ou une vis plus petite.',
+    hi: 'कीहोल नहीं लगाया गया: उस फलक पर स्क्रू के सिर को थामने वाला किनारा नहीं बचता (सिर निकल जाएगा)। बड़ा फलक या छोटा स्क्रू चुनें।',
+    zh: '未放置钥匙孔：该面没有留下能卡住螺丝头的唇边（螺丝头会滑出）。请使用更大的面或更小的螺丝。',
+  },
 } as const satisfies Record<string, Row>;
 
 type Lang = keyof Row;

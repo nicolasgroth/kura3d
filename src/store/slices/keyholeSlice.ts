@@ -2,7 +2,7 @@
  * @file src/store/slices/keyholeSlice.ts
  * @description Ojo de cerradura en el store: pide al Worker el negativo orientado por la cara (ranura hacia el
  * «arriba» de la pieza) y su informe, y lo agrega como UN paso de deshacer agrupado con su pieza
- * (`placeNegativeAddon`). Si la figura es más ancha que la cara no se coloca; la pared detrás de la cámara, el borde,
+ * (`placeNegativeAddon`). Si la figura es más ancha que la cara, o el labio que queda no retiene la cabeza, no se coloca; la pared detrás de la cámara, el borde,
  * la cara no vertical y la diferencia de altura con otros ojos de la misma cara se avisan sin bloquear.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -16,7 +16,7 @@ import type { SceneObject, Vec3 } from '../../types/kura';
 import { keyholeWarnings, keyholeWarningText } from '../keyholeWarnings';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
-import { freeName, placedMeshOf, placeNegativeAddon } from './negativeAddonPlace';
+import { freeName, placedMeshOf, placeNegativeAddon, type NegativeAddonBlock } from './negativeAddonPlace';
 
 export interface KeyholeRequest {
   hostId: string;
@@ -26,6 +26,8 @@ export interface KeyholeRequest {
   normal: Vec3;
   /** No emite avisos de «agregado» ni de advertencias: quien llama publica el suyo (los errores sí se avisan). */
   silent?: boolean;
+  /** Si viene, recibe el bloqueo (`spansFace`, `notRetained`) en vez del aviso de error. */
+  onBlocked?: (reason: NegativeAddonBlock) => void;
 }
 
 export interface KeyholePlaced {
@@ -47,6 +49,8 @@ export function createKeyholeSlice(ctx: StoreContext): Partial<KuraStoreState> {
         busyName: 'keyhole',
         needSolidKey: 'keyhole.needSolid',
         tooWideKey: 'keyhole.error.tooWide',
+        notRetainedKey: 'keyhole.error.notRetained',
+        onBlocked: request.onBlocked,
         build: (host, taken) => ctx.runEngine('keyhole', {
           host: { id: host.id, ...placedMeshOf(host) },
           params: request.params, point: request.point, normal: request.normal,

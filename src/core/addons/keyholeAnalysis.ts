@@ -27,6 +27,10 @@ export interface KeyholeReport {
   vertical: boolean;
   /** Mayor diferencia de altura con otros ojos de la misma cara (mm); null si es el único. Lo completa el store. */
   levelOffsetMm: number | null;
+  /** Material del labio que sujeta la cabeza en el extremo de la ranura (mm³); lo mide la operación con Manifold. */
+  retentionMm3?: number;
+  /** El mismo volumen en una pared infinita (mm³). */
+  retentionIdealMm3?: number;
 }
 
 export interface KeyholeAnalysis {

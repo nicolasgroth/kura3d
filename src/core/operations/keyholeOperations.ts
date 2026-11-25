@@ -3,7 +3,7 @@
  * @description Operación «ojo de cerradura para colgar en el muro»: une con Manifold las tres partes del negativo
  * (entrada, ranura del cuello y cámara) en una sola malla cerrada, la orienta según la cara tocada (ranura hacia el
  * «arriba» de la pieza) y la devuelve como pieza negativa con metadatos `addon` (`keyhole`, medidas, ancla 0 y
- * anfitrión), junto a su análisis (`keyholeAnalysis`). No toca la escena: el store la agrega en un paso de deshacer.
+ * anfitrión), junto a su análisis (`keyholeAnalysis`) y si el labio retiene la cabeza (`keyholeRetention`). No toca la escena: el store la agrega en un paso de deshacer.
  * Corre en el Worker del motor (tarea `keyhole`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -15,6 +15,7 @@ import type { MeshData, SceneObject, Vec3 } from '../../types/kura';
 import { invalidKeyholeFields, KEYHOLE_RANGES, keyholePartMeshes, type KeyholeParams } from '../addons/keyhole';
 import { analyzeKeyhole, type KeyholeReport } from '../addons/keyholeAnalysis';
 import { HOLE_HELPER_COLOR } from './creationOperations';
+import { keyholeRetention } from './keyholeRetention';
 import type { PlacedMesh } from './magnetOperations';
 import { buildWith, type OperationContext } from './operationTypes';
 
@@ -32,6 +33,8 @@ export interface KeyholeResult {
   report: KeyholeReport;
   /** La figura es más ancha que la cara: no se coloca. */
   spansFace: boolean;
+  /** El labio que queda no retiene la cabeza (cara demasiado chica): no se coloca. */
+  notRetained: boolean;
 }
 
 /** Une mallas convexas cerradas en una sola con Manifold. */
@@ -59,6 +62,9 @@ export async function createKeyhole(ctx: OperationContext, input: KeyholeInput):
   if (!analysis) throw new engine.EngineError('INVALID_PARAMETER', { name: 'normal' });
   const { entry, neck, chamber } = keyholePartMeshes(params);
   const mesh = await unionMeshes([entry, neck, chamber]);
+  // ¿Retiene? Con el material real: si no queda labio sobre la cabeza en el extremo de la ranura, la cabeza sale.
+  const retention = await keyholeRetention(world, mesh, params, analysis.plan);
+  const report: KeyholeReport = { ...analysis.report, retentionMm3: retention.retentionMm3, retentionIdealMm3: retention.idealMm3 };
   const object: SceneObject = {
     ...buildWith(ctx, {
       name: input.name,
@@ -71,5 +77,5 @@ export async function createKeyhole(ctx: OperationContext, input: KeyholeInput):
     }),
     metadata: { addon: { kind: 'keyhole', params: { ...params }, anchorMm: 0, hostId: host.id } },
   };
-  return { object, report: analysis.report, spansFace: analysis.spansFace };
+  return { object, report, spansFace: analysis.spansFace, notRetained: !retention.retained };
 }
