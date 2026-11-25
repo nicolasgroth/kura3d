@@ -101,7 +101,8 @@ export function findSafeAlternative(input: SafeSearchInput, opts: SimplifyRunOpt
   };
   let lo = input.minTolMm;
   let hi = input.destructiveTolMm;
-  if (!(hi > lo) || !evaluate(lo)) return best;
+  // `lo` > 0 también protege la media geométrica (sqrt(lo·hi)): con 0 o negativo no habría búsqueda posible.
+  if (!(lo > 0) || !(hi > lo) || !evaluate(lo)) return best;
   for (let i = 0; i < D.safeSearchIterations && hi / lo > 1.01; i++) {
     opts.onProgress?.(`simplify:safe:${i + 1}/${D.safeSearchIterations}`);
     const mid = Math.sqrt(lo * hi);
