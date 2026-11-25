@@ -22,6 +22,10 @@ Estado de `main`: 2526 pruebas del frontend, 151 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
+| Orientar para imprimir, interfaz: lista de orientaciones con medidas y motivos, vista previa con las zonas en voladizo, aplicar | En desarrollo desde el 24-nov (21:45), en paralelo |
+| Suavizar malla, interfaz: intensidad, pasadas, conservar aristas, zona pintada, vista previa y aplicar | En desarrollo desde el 24-nov (21:45), en paralelo |
+| Imanes como unión del corte: tipo de unión nuevo en Dividir, con pares de alojamientos enfrentados y coaxiales (pedido del autor) | En desarrollo desde el 24-nov (21:45), en paralelo |
+| Torreta para tornillo: poste con agujero para tornillo directo o inserto roscado, con preajustes y avisos, sobre el patrón del imán | En desarrollo desde el 24-nov (21:45), en paralelo |
 | Asistentes: vista previa en el visor mientras se llena el formulario, y «Editar con el asistente» para reabrir una pieza creada con sus parámetros | Integrado en `integracion/24-nov` el 24-nov (21:00), con pruebas; suite de navegador en curso. Falta QA en navegador y evaluación |
 | Usabilidad, pendientes serios de la sexta evaluación: aviso que no se puede cerrar, botón Proyecto que borra la selección, falso «Justo» tras Dividir, historial descriptivo, unidades al importar algo diminuto, Agregar e Insertar con el mismo catálogo, filamentos con nombre repetido, avisos con jerga | Integrado en `integracion/24-nov` el 24-nov (21:00), con pruebas; suite de navegador en curso. Falta QA en navegador |
 | Diseño de placas, modo libre y vista armada (pedido del autor): modelo de datos, modos de vista y plan por lotes | Propuesta lista en `docs/diseno/PLACAS_Y_ARMADO.md`; espera las respuestas del autor |
