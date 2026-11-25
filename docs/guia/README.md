@@ -1,4 +1,4 @@
-# Guías de uso de Kura3D
+# Guías de uso de Kurra3D Studio
 
 Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una tiene pasos numerados, capturas hechas desde la propia app y un apartado de problemas frecuentes. Solo describen lo que funciona hoy; lo que viene está en el [roadmap](../ROADMAP.md).
 
@@ -26,7 +26,7 @@ Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una ti
 | [Exportar](exportar.md) | STL, 3MF con grupos y colores, selección o escena |
 | [Guardar y recuperar](guardar-y-recuperar.md) | Proyecto `.kura` y borrador de recuperación |
 
-Para conectar un asistente de IA a Kura3D, mira el [servidor MCP](../MCP.md).
+Para conectar un asistente de IA a Kurra3D Studio, mira el [servidor MCP](../MCP.md).
 
 ## Convenciones de estas guías
 
@@ -39,7 +39,7 @@ Para conectar un asistente de IA a Kura3D, mira el [servidor MCP](../MCP.md).
 Cuando cambie la interfaz, las imágenes de `img/` se vuelven a generar sin tocarlas a mano:
 
 ```bash
-npx vite --host 127.0.0.1 --port 5239 --strictPort &      # la web de Kura3D
+npx vite --host 127.0.0.1 --port 5239 --strictPort &      # la web de Kurra3D Studio
 KURA_URL=http://127.0.0.1:5239/ npm run docs:capturas       # genera docs/guia/img/*.png
 npm run docs:capturas -- -g medir                           # solo una guía
 npm run docs:enlaces                                        # revisa enlaces e imágenes

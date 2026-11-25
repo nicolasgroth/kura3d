@@ -1,4 +1,4 @@
-# Tablero de Kura3D
+# Tablero de Kurra3D Studio
 
 Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 25 de noviembre de 2026 a las 07:10: integración de la noche (barra flotante, «Acerca de», colgar en el muro, paso de cable, herramientas MCP) con evaluación de código hecha; falta QA en navegador y evaluación de usabilidad y funcional.
 
@@ -148,7 +148,7 @@ Trabajo terminado y verificado con pruebas automáticas; lo marcado con ✔ adem
 |---|---|
 | Arrastrar el objeto seleccionado para moverlo sobre su plano horizontal (decisión del autor del 24-nov); orbitar queda para el fondo | ✔ En `main` desde el 24-nov. Tres rondas a ciegas (usabilidad/código/funcional): arrastrar 84/88/85; en usabilidad queda un punto bajo el mínimo, consultado al autor |
 | Asistentes: sección para crear piezas paso a paso desde las recetas incorporadas (caja con tapa, llavero, placa de enchufe), con formulario generado desde la receta | ✔ En `main` desde el 24-nov. Tres rondas a ciegas (usabilidad/código/funcional): Asistentes 86/85/86 |
-| Nombre único Kura3D, marca centralizada y autoría en todo el código | Pruebas |
+| Nombre único Kurra3D Studio, marca centralizada y autoría en todo el código | Pruebas |
 | Agentes de desarrollo, QA y evaluación a ciegas; control de agentes con latido | En uso |
 | Seguridad: CSP en escritorio, sin comandos de disco arbitrario, claves de IA fuera del navegador | ✔ web |
 | Puente MCP: token obligatorio, solo lectura en el servidor, rotación, carpeta de exportación acotada | ✔ ataques reales |
@@ -188,7 +188,7 @@ Ordenadas por prioridad dentro de cada grupo.
 | Interfaz | Barra flotante junto al objeto seleccionado (idea tomada el 24-nov de la app Forge de kura3d.com): color, duplicar, girar, cortar y eliminar a un clic, sin ir al panel ni al menú de clic derecho |
 | Interfaz | Tiradores en las caras para estirar una pieza paramétrica (idea de Forge): arrastrar una cara cambia esa medida; ya estaba como «redimensionar arrastrando caras» |
 | Interfaz | Deslizador junto a cada campo numérico de medidas en formas y asistentes (idea de Forge), y galería de diseños listos con miniatura por categoría como entrada a los Asistentes |
-| Interfaz | Aviso bajo 1024 px de ancho: «Kura3D está pensado para pantallas de al menos 1024 px», descartable, sin bloquear el uso (decisión del 24-nov). Se hace al fusionar el imán |
+| Interfaz | Aviso bajo 1024 px de ancho: «Kurra3D Studio está pensado para pantallas de al menos 1024 px», descartable, sin bloquear el uso (decisión del 24-nov). Se hace al fusionar el imán |
 | Dividir para imprimir | Imanes como unión del corte (pedido el 24-nov): al dividir, elegir imanes en vez de conectores macho/hembra, con el par de huecos enfrentados en las dos caras del corte, para una figura desmontable. Reúne el «par de imanes enfrentados» y las uniones firmes |
 | Placas y escena | Modo libre y vista armada (pedido el 24-nov): trabajar sin la cama a la vista, tener las piezas de una figura repartidas en distintas camas y poder verlas todas conectadas como quedará la figura terminada. Se apoya en lo que ya existe (botón «Sin cama», vista armada de Dividir) y en «placas como entidad del proyecto» |
 | Preajustes | Listas de preajustes que el usuario agrega y elimina (pedido el 24-nov). Las camas ya lo tienen («Mis camas», en Ajustar a la impresora y donde se elige la cama). Falta lo mismo para imanes (por defecto redondo de 5 mm de diámetro × 2 mm; también cuadrados) e insertos, y la holgura de encajes a presión (hoy fija en 0,2 mm) |

@@ -1,10 +1,10 @@
-# Roadmap de Kura3D
+# Roadmap de Kurra3D Studio
 
 Actualizado el 21 de noviembre de 2026. Este documento fija las prioridades; el detalle por ticket sigue en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md) y el flujo de agentes en [CLAUDE.md](../CLAUDE.md).
 
-## Para qué existe Kura3D
+## Para qué existe Kurra3D Studio
 
-Reunir en una sola herramienta abierta lo que hoy está repartido en varias: tomar o crear un modelo 3D y dejarlo **listo para imprimir**, sea una pieza chica con encajes precisos o una figura de un metro que hay que dividir, etiquetar y armar. El trabajo del slicer (boquillas, extrusión, G-code) queda fuera; Kura3D entrega archivos que los slicers abren sin sorpresas.
+Reunir en una sola herramienta abierta lo que hoy está repartido en varias: tomar o crear un modelo 3D y dejarlo **listo para imprimir**, sea una pieza chica con encajes precisos o una figura de un metro que hay que dividir, etiquetar y armar. El trabajo del slicer (boquillas, extrusión, G-code) queda fuera; Kurra3D Studio entrega archivos que los slicers abren sin sorpresas.
 
 ## Casos que deben funcionar de punta a punta
 

@@ -1,6 +1,6 @@
 # Avisos de terceros
 
-Kura3D se distribuye con licencia MIT. Incluye o empaqueta los siguientes componentes de terceros,
+Kurra3D Studio se distribuye con licencia MIT. Incluye o empaqueta los siguientes componentes de terceros,
 cada uno bajo su propia licencia. Las dependencias de npm instaladas como paquetes conservan su
 archivo de licencia en `node_modules/<paquete>/`; aquí se listan las que se copian dentro del
 repositorio o que tienen avisos que deben acompañar la distribución.
@@ -39,7 +39,7 @@ repositorio o que tienen avisos que deben acompañar la distribución.
 ### sharp y libvips
 
 - Uso: ninguno directo. Llega de forma indirecta por `manifold-3d` → `@gltf-transform/functions` →
-  `ndarray-pixels` → `sharp`. Kura3D no lo importa ni lo ejecuta.
+  `ndarray-pixels` → `sharp`. Kurra3D Studio no lo importa ni lo ejecuta.
 - Alcance: solo queda en `node_modules` al desarrollar. No entra en el paquete web, en el servidor
   MCP publicado ni en el instalador de escritorio.
 - Licencias: `sharp` es Apache-2.0. Sus binarios precompilados (`@img/sharp-win32-x64`,

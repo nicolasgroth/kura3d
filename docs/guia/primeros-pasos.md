@@ -4,7 +4,7 @@ Esta guía te lleva de la pantalla vacía a una escena con tres piezas que puede
 
 ## La pantalla
 
-![Kura3D recién abierto, con la escena vacía](img/primeros-pasos-01-vacio.png)
+![Kurra3D Studio recién abierto, con la escena vacía](img/primeros-pasos-01-vacio.png)
 
 - **Barra superior:** a la izquierda el grupo *Archivo* (**Importar**, **Proyecto** —muestra el panel del proyecto a la derecha— y **Exportar**), *Deshacer*, *Rehacer* y el **historial** (el reloj: lista lo que hiciste y te deja volver a cualquier punto), y los menús **Insertar** (formas, Texto 3D, SVG, imagen, rosca y cubo de calibración) y **Acciones**. A la derecha: búsqueda de comandos, idioma (con su bandera), temas, tema claro u oscuro, **Rótulos**, el estado del puente MCP, el asistente *IA* y *Ajustes*. La insignia de versión junto al logo (o *Acerca de* en la paleta de comandos y en Ajustes) abre **Acerca de**: qué es el programa, cómo se construyó, su licencia y las bibliotecas abiertas que usa.
 - **Barra de herramientas (vertical, junto al visor):** arriba **Agregar** (abre a su lado las formas básicas: Cubo, Cilindro, Disco, Tubo hueco, Esfera, Cono, Toroide, Prisma y Texto 3D), luego *Seleccionar*, *Mover*, *Rotar* y *Escalar* (el modo del manipulador), y después *Pintar*, *Cortar*, *Esculpir* (esculpir o borrar volumen; el nombre completo sale en la ayuda) y *Medir*. La herramienta activa queda marcada con fondo y una raya al costado. Con el teclado es una sola parada de **Tab**; las flechas recorren los botones. Sin nada seleccionado, *Mover*, *Rotar* y *Escalar* toman solas el objeto (o todos los visibles sin candado) y *Pintar* pinta directo lo que tocas; *Cortar*, *Esculpir* y *Medir* toman el objeto si hay uno solo. Con la escena vacía quedan apagadas (atenuadas y tachadas) y el tooltip y la barra de estado dicen por qué.
@@ -30,7 +30,7 @@ El botón **Rótulos** (*Aa*) alterna todas las barras a la vez entre iconos con
 
 ## Los ejes
 
-Kura3D usa los mismos ejes que los laminadores: **X hacia la derecha, Y hacia el fondo, Z hacia arriba** (la altura). Las flechas del manipulador son roja (X), verde (Y) y azul (Z).
+Kurra3D Studio usa los mismos ejes que los laminadores: **X hacia la derecha, Y hacia el fondo, Z hacia arriba** (la altura). Las flechas del manipulador son roja (X), verde (Y) y azul (Z).
 
 ## Crear, mover, girar y escalar
 
@@ -67,7 +67,7 @@ Arrastra para orbitar y usa la rueda para acercar. Las teclas **1** (frente), **
 
 ## Barra lateral: mostrar u ocultar la Escena
 
-El tirador del borde del panel izquierdo (la pestaña con la flecha) muestra u oculta la *Escena* con un clic (o **Enter** con el foco en él); oculta, el visor gana ese ancho. También está en la paleta de comandos (**Ctrl+K**, «Barra lateral»). Kura3D recuerda tu elección, y el modo sin distracciones (**Ctrl+Mayús+Enter**) no la cambia.
+El tirador del borde del panel izquierdo (la pestaña con la flecha) muestra u oculta la *Escena* con un clic (o **Enter** con el foco en él); oculta, el visor gana ese ancho. También está en la paleta de comandos (**Ctrl+K**, «Barra lateral»). Kurra3D Studio recuerda tu elección, y el modo sin distracciones (**Ctrl+Mayús+Enter**) no la cambia.
 
 ![Barra lateral oculta: el visor ocupa el ancho](img/primeros-pasos-05-barra-compacta.png)
 

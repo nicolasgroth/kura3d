@@ -2,7 +2,7 @@
 
 Una **referencia** es un objeto que se ve y se mide, pero **nunca se imprime ni se exporta**. Sirve para diseñar alrededor de algo real: la placa de un circuito, un tornillo, un imán o un enchufe. Importas su modelo, lo ubicas en la escena y construyes la caja, el soporte o la tapa a su medida.
 
-Kura3D tiene tres tipos de objeto:
+Kurra3D Studio tiene tres tipos de objeto:
 
 | Tipo | Qué hace |
 |---|---|
@@ -36,7 +36,7 @@ En el panel *Escena*, una referencia lleva un icono de recuadro discontinuo y la
 - Cada referencia tiene su **Opacidad** en el inspector (de 15 % a 100 %). El cambio queda en un paso de deshacer al soltar el deslizador; **Usar la de Ajustes** vuelve al valor general.
 - El valor general está en **Ajustes ▸ Apariencia y Temas ▸ Opacidad de las referencias** (35 % al empezar). Se aplica a cada referencia que no tiene una opacidad propia.
 
-## Qué hace Kura3D con una referencia
+## Qué hace Kurra3D Studio con una referencia
 
 | Acción | Con una referencia |
 |---|---|
@@ -53,4 +53,4 @@ En el panel *Escena*, una referencia lleva un icono de recuadro discontinuo y la
 - **No aparece en el archivo exportado.** Es lo esperado: las referencias solo viven en el proyecto. Si quieres imprimirla, conviértela en **Sólido**.
 - **No la veo bien.** Sube su opacidad en el inspector o el valor general en *Ajustes*.
 - **La moví sin querer.** Deshaz con `Ctrl+Z` y bloquéala con el candado.
-- **Un archivo `.kura` nuevo no abre en una versión antigua de Kura3D.** Desde que existen las referencias, el proyecto se guarda en la versión 3 del formato; una versión anterior dice «versión no soportada» en vez de leer la referencia como sólido. Actualiza Kura3D.
+- **Un archivo `.kura` nuevo no abre en una versión antigua de Kurra3D Studio.** Desde que existen las referencias, el proyecto se guarda en la versión 3 del formato; una versión anterior dice «versión no soportada» en vez de leer la referencia como sólido. Actualiza Kurra3D Studio.

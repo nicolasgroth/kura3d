@@ -1,12 +1,12 @@
 # Alojamiento de imán
 
-Un alojamiento de imán es el hueco donde va un imán de neodimio: para cerrar una tapa, pegar una pieza a una superficie metálica o alinear dos mitades. En Kura3D lo colocas con un clic sobre una cara de una pieza. El hueco queda como **pieza negativa**, orientado según esa cara, y se abre en la pieza cuando aplicas las restas, como cualquier negativo (ver [Sólidos negativos y restas](solidos-negativos-y-restas.md)).
+Un alojamiento de imán es el hueco donde va un imán de neodimio: para cerrar una tapa, pegar una pieza a una superficie metálica o alinear dos mitades. En Kurra3D Studio lo colocas con un clic sobre una cara de una pieza. El hueco queda como **pieza negativa**, orientado según esa cara, y se abre en la pieza cuando aplicas las restas, como cualquier negativo (ver [Sólidos negativos y restas](solidos-negativos-y-restas.md)).
 
-Kura3D solo prepara la geometría. No lamina, así que tampoco inserta la pausa de impresión por ti.
+Kurra3D Studio solo prepara la geometría. No lamina, así que tampoco inserta la pausa de impresión por ti.
 
 ## Abrir el panel
 
-1. Ten al menos una pieza sólida visible en la escena. Si no hay ninguna, Kura3D te avisa y el panel no se abre.
+1. Ten al menos una pieza sólida visible en la escena. Si no hay ninguna, Kurra3D Studio te avisa y el panel no se abre.
 2. Elige **Insertar › Alojamiento de imán** en la barra superior. También puedes hacer clic derecho sobre la pieza y elegir **Más › Alojamiento de imán**, o abrir la paleta con `Ctrl+K` y escribir *imán*.
 3. El panel **Alojamiento de imán** se abre a la derecha. Viene con un imán **redondo de 5 × 2 mm** (diámetro × alto).
 
@@ -34,7 +34,7 @@ Por defecto el hueco es **abierto**: su boca queda a ras de la cara y el imán s
 
 1. Ajusta las medidas a tu imán.
 2. Escribe un nombre en *Nombre del preajuste* (hasta 40 caracteres) y pulsa **Guardar preajuste**. Si ya tienes uno con ese nombre, se actualizan sus medidas.
-3. Aparece en la lista bajo *Mis preajustes* y sigue ahí cuando vuelves a abrir Kura3D (se guarda en este navegador, no en el proyecto).
+3. Aparece en la lista bajo *Mis preajustes* y sigue ahí cuando vuelves a abrir Kurra3D Studio (se guarda en este navegador, no en el proyecto).
 4. Para borrarlo, elígelo en la lista y pulsa el botón de la papelera. El aviso ofrece **Deshacer** para recuperarlo y el foco vuelve a la lista de preajustes.
 
 ## Colocar el hueco
@@ -48,11 +48,11 @@ Cada alojamiento es un paso de deshacer: `Ctrl+Z` quita solo el último.
 
 ### Pared mínima
 
-Al colocar, Kura3D mide con rayos cuánto material queda entre el hueco y las otras caras de la pieza (al fondo y a los costados). Si queda menos de **1,2 mm** (unos tres perímetros de 0,4 mm), te avisa con la medida. Si el hueco atraviesa la pieza o se asoma por otra cara, también te lo dice. El aviso no impide colocarlo: decides tú si lo mueves o usas un imán más bajo. El panel muestra la pared mínima del último que colocaste.
+Al colocar, Kurra3D Studio mide con rayos cuánto material queda entre el hueco y las otras caras de la pieza (al fondo y a los costados). Si queda menos de **1,2 mm** (unos tres perímetros de 0,4 mm), te avisa con la medida. Si el hueco atraviesa la pieza o se asoma por otra cara, también te lo dice. El aviso no impide colocarlo: decides tú si lo mueves o usas un imán más bajo. El panel muestra la pared mínima del último que colocaste.
 
 ### Caras curvas y piezas escaladas
 
-- **En una cara curva** (un cilindro, una esfera) el imán puede **sobresalir** de la superficie, y con *Oculto bajo la cara* la tapa de 0,6 mm no queda pareja. Kura3D lo avisa al colocar. La vista previa naranja muestra la forma, las medidas y el eje del hueco, pero no cuánto sobresale: en una cara cóncava el hueco real sobresale más de lo que dibuja la vista previa.
+- **En una cara curva** (un cilindro, una esfera) el imán puede **sobresalir** de la superficie, y con *Oculto bajo la cara* la tapa de 0,6 mm no queda pareja. Kurra3D Studio lo avisa al colocar. La vista previa naranja muestra la forma, las medidas y el eje del hueco, pero no cuánto sobresale: en una cara cóncava el hueco real sobresale más de lo que dibuja la vista previa.
 - **Escalar la pieza no cambia el tamaño del imán.** El hueco se crea con las medidas reales del imán que elegiste, aunque la pieza esté escalada. Pero si después escalas el grupo o el negativo, el hueco se escala con ellos y deja de coincidir con tu imán: en ese caso borra el alojamiento y vuelve a colocarlo con la pieza ya escalada.
 
 ## Abrir los huecos
