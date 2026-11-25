@@ -3,7 +3,7 @@
  * @description Grafo de vértices soldados para «Suavizar malla», armado una sola vez por llamada:
  * reutiliza la adyacencia por arista de la pintura (`getFaceAdjacency`: soldadura de costuras,
  * aristas y normales por cara), arma la lista de vecinos en CSR, bloquea los vértices de aristas
- * vivas (diedro sobre el umbral), de bordes abiertos y de aristas no manifold, y asigna a cada
+ * vivas (diedro sobre el umbral, medido en mundo con la escala del objeto), de bordes abiertos y de aristas no manifold, y asigna a cada
  * vértice un peso 0–1 según la zona y su anillo de atenuación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
