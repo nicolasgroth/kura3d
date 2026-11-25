@@ -39,13 +39,29 @@ const ACERCA_TABLE = {
     '{name} 是一个开放的工作室,用于建模并准备 3D 打印零件,可在网页和桌面端使用。',
   ],
   'about.purposeTitle': ['El sentido', 'The idea behind it', 'Der Sinn', 'Le sens', 'इसका अर्थ', '初衷'],
-  'about.purpose': [
+  'about.purpose.1': [
     'Modelar es imaginar juntos: {name} existe para que cualquiera pueda dar forma a una idea y compartirla, porque el mundo se construye mejor entre todos.',
     'Modelling is imagining together: {name} exists so that anyone can give shape to an idea and share it, because the world is built better by all of us.',
     'Modellieren heißt gemeinsam sich etwas vorstellen: {name} gibt jedem die Möglichkeit, einer Idee Form zu geben und sie zu teilen, denn die Welt entsteht besser gemeinsam.',
     'Modéliser, c’est imaginer ensemble : {name} existe pour que chacun puisse donner forme à une idée et la partager, car le monde se construit mieux à plusieurs.',
     'मॉडलिंग का मतलब है साथ मिलकर कल्पना करना: {name} इसलिए है कि कोई भी किसी विचार को आकार दे सके और साझा कर सके, क्योंकि दुनिया सबके साथ मिलकर बेहतर बनती है।',
     '建模就是一起想象:{name} 的存在,是为了让任何人都能把想法变成形状并与他人分享,因为世界由大家一起建造会更好。',
+  ],
+  'about.purpose.2': [
+    'Cada pieza empieza como una idea; {name} existe para que darle forma y compartirla esté al alcance de todos, porque un mundo mejor se modela entre muchas manos.',
+    'Every part starts as an idea; {name} exists so that shaping it and sharing it is within everyone’s reach, because a better world is modelled by many hands.',
+    'Jedes Teil beginnt als Idee; {name} gibt es, damit es für alle erreichbar ist, ihr Form zu geben und sie zu teilen, denn eine bessere Welt wird von vielen Händen modelliert.',
+    'Chaque pièce naît d’une idée ; {name} existe pour que lui donner forme et la partager soit à la portée de tous, car un monde meilleur se modèle à plusieurs mains.',
+    'हर पुर्ज़ा एक विचार से शुरू होता है; {name} इसलिए है कि उसे आकार देना और साझा करना सबकी पहुँच में हो, क्योंकि एक बेहतर दुनिया कई हाथों से गढ़ी जाती है।',
+    '每个零件都始于一个想法;{name} 的存在,是为了让每个人都能轻松地为想法赋形并与他人分享,因为更美好的世界要靠许多双手共同塑造。',
+  ],
+  'about.purpose.3': [
+    'Un mundo donde todos podemos trabajar juntos también se modela: {name} es un lugar para imaginar, crear y compartir, pieza a pieza.',
+    'A world where we can all work together can also be modelled: {name} is a place to imagine, create and share, part by part.',
+    'Auch eine Welt, in der wir alle zusammenarbeiten können, lässt sich modellieren: {name} ist ein Ort zum Vorstellen, Erschaffen und Teilen, Teil für Teil.',
+    'Un monde où nous pouvons tous travailler ensemble se modèle aussi : {name} est un lieu pour imaginer, créer et partager, pièce après pièce.',
+    'जिस दुनिया में हम सब साथ काम कर सकें, उसे भी गढ़ा जा सकता है: {name} कल्पना करने, बनाने और साझा करने की एक जगह है, एक-एक पुर्ज़े के साथ।',
+    '一个人人都能携手合作的世界,同样可以被建模:{name} 是一个用来想象、创造和分享的地方,一件一件地来。',
   ],
   'about.howTitle': ['Cómo se construyó', 'How it was built', 'Wie es entstanden ist', 'Comment il a été construit', 'यह कैसे बना', '如何构建'],
   'about.how': [

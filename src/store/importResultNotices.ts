@@ -12,7 +12,7 @@
 
 import { isReference } from '../core/scene/objectRole';
 import type * as engine from '../engine';
-import { OPERATION_DEFAULTS } from '../engine/operationLimits';
+import { heavyImportNotice } from './importHeavyNotice';
 import { countMeshBodies } from '../engine/io/meshBodies';
 import type { LanguageCode, MeshData, SceneObject } from '../types/kura';
 import type { Translate } from './modelImportNotices';
@@ -95,11 +95,11 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
   registerUnitChoice(entries, deps);
 
   const unique = uniqueMeshes(entries);
-  const heavy = unique.find((u) => u.mesh.indices.length / 3 >= OPERATION_DEFAULTS.heavyMesh.warnTriangles);
+  const heavy = heavyImportNotice(unique);
   if (heavy) {
-    const id = heavy.entries[0].object.id;
+    const id = heavy.id;
     addToast(
-      tr('import.heavy', { tris: fmt(Math.floor(heavy.mesh.indices.length / 3)) }),
+      tr(heavy.key, { tris: fmt(heavy.tris) }),
       'info',
       deps.openSimplify ? { label: tr('import.heavy.action'), run: () => deps.openSimplify?.(id), targetIds: [id], watch: 'mesh' } : undefined,
     );

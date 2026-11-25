@@ -28,7 +28,7 @@ import {
   resetLogoClicks,
   useEggStore,
 } from '../../utils/logoEasterEgg';
-import { AboutLayer } from '../about/AboutDialog';
+import { AboutDialog, AboutLayer } from '../about/AboutDialog';
 import { CommandPalette } from '../CommandPalette';
 import { SettingsModal } from '../dialogs/SettingsModal';
 import { TopBar } from '../TopBar';
@@ -87,6 +87,22 @@ describe('Acerca de: entradas', () => {
     });
     await user.click(badge);
     expect(useKuraStore.getState().activeDialog).toBe('about');
+  });
+});
+
+describe('Acerca de: frase al azar', () => {
+  it('muestra la frase que elige el generador y la mantiene mientras está abierto', () => {
+    useKuraStore.setState({ language: 'es' } as never);
+    let value = 0.99;
+    const { rerender } = render(<AboutDialog open onClose={() => undefined} random={() => value} />);
+    const third = t('es', 'about.purpose.3', { name: NAME });
+    expect(screen.getByText(third)).toBeTruthy();
+    value = 0;
+    rerender(<AboutDialog open onClose={() => undefined} random={() => value} />);
+    expect(screen.getByText(third)).toBeTruthy();
+    rerender(<AboutDialog open={false} onClose={() => undefined} random={() => value} />);
+    rerender(<AboutDialog open onClose={() => undefined} random={() => value} />);
+    expect(screen.getByText(t('es', 'about.purpose.1', { name: NAME }))).toBeTruthy();
   });
 });
 

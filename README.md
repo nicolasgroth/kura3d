@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/branding/kura3d-banner.png" alt="Kurra Studio — estudio de modelado 3D para impresión" width="680" />
+  <img src="public/branding/kurra-studio-logo.svg" alt="Kurra Studio — logotipo: una K de piedra y geometría 3D" width="520" />
 </p>
 
 <h1 align="center">Kurra Studio</h1>
