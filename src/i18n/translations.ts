@@ -1,7 +1,7 @@
 /**
  * @file src/i18n/translations.ts
  * @description Diccionario multilingüe completo (6 idiomas internacionales: ES por defecto, EN, DE, FR, HI, ZH)
- * para toda la interfaz de Kurra3D Studio v0.5.0. Mantiene paridad estricta 1:1 de claves entre los 6 idiomas
+ * para toda la interfaz de Kurra Studio v0.5.0. Mantiene paridad estricta 1:1 de claves entre los 6 idiomas
  * verificada en tiempo de compilación TypeScript y tests automatizados.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -130,7 +130,7 @@ export const TRANSLATIONS_ES = {
   ...TORRETA_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
-  'app.docTitle': 'Kurra3D Studio v0.5.0 — Estudio de Modelado 3D Nativo',
+  'app.docTitle': 'Kurra Studio v0.5.0 — Estudio de Modelado 3D Nativo',
   'app.untitled': 'Escena sin título',
   'recovery.status.working': 'Guardando borrador…',
   'recovery.status.ready': 'Borrador local guardado',
@@ -160,7 +160,7 @@ export const TRANSLATIONS_ES = {
   'fileProject.busy': 'Espera a que termine la operación actual.',
   'fileProject.working': 'Guardando o abriendo proyecto…',
   'fileProject.invalid': 'El archivo .kura no es válido o está dañado.',
-  'fileProject.unsupported': 'Esta versión del archivo .kura requiere una versión compatible de Kurra3D Studio.',
+  'fileProject.unsupported': 'Esta versión del archivo .kura requiere una versión compatible de Kurra Studio.',
   'fileProject.tooLarge': 'El proyecto supera los límites de tamaño o geometría.',
   'common.close': 'Cerrar',
 
@@ -460,7 +460,7 @@ export const TRANSLATIONS_ES = {
   'ctx.delete': 'Eliminar',
 
   // Paleta de comandos (Ctrl+K)
-  'cmd.title': 'Paleta de Comandos Kurra3D Studio',
+  'cmd.title': 'Paleta de Comandos Kurra Studio',
   'cmd.placeholder': 'Escribe un comando, primitiva, operación o ajuste...',
   'cmd.empty': 'No se encontraron comandos coincidentes.',
   'cmd.badgeLocal': 'Local',
@@ -481,13 +481,13 @@ export const TRANSLATIONS_ES = {
   'palette.cmd.appearance': 'Cambiar tema de color (Apariencia)',
 
   // Panel de Chat IA (AiChatDrawer)
-  'ai.title': 'Asistente IA Kurra3D Studio',
+  'ai.title': 'Asistente IA Kurra Studio',
   'ai.configureKey': 'Configurar IA',
   'ai.placeholder': 'Ej: "Crea un cilindro de 40mm de alto y ahueca a 2mm"...',
   'ai.send': 'Enviar',
   'ai.clearChat': 'Limpiar chat',
   'ai.thinking': 'Procesando geometría...',
-  'ai.welcome': 'Hola, soy el asistente de Kurra3D Studio. Sin conexión puedo crear primitivas y roscas ISO (tornillo, tuerca o agujero roscado: «agrégale un agujero roscado M6»), moverlas, escalarlas, ahuecarlas, cortarlas con pasadores, unir o restar la selección, validar imprimibilidad («¿qué tan imprimible es?») y exportar STL/3MF. Configura Gemini, OpenAI, Anthropic u Ollama en Ajustes para pedidos más libres.',
+  'ai.welcome': 'Hola, soy el asistente de Kurra Studio. Sin conexión puedo crear primitivas y roscas ISO (tornillo, tuerca o agujero roscado: «agrégale un agujero roscado M6»), moverlas, escalarlas, ahuecarlas, cortarlas con pasadores, unir o restar la selección, validar imprimibilidad («¿qué tan imprimible es?») y exportar STL/3MF. Configura Gemini, OpenAI, Anthropic u Ollama en Ajustes para pedidos más libres.',
   'ai.chip.box': 'Cubo 40 mm',
   'ai.chip.hollow': 'Ahuecar 2.5 mm',
   'ai.chip.cylinder': 'Cilindro 20×50 mm',
@@ -722,7 +722,7 @@ export const TRANSLATIONS_ES = {
   // Modal Exportar 3MF Multi-Slicer
 
   // Modal Ajustes & MCP
-  'dialog.settings.title': 'Ajustes de Kurra3D Studio',
+  'dialog.settings.title': 'Ajustes de Kurra Studio',
   'dialog.settings.tab.ai': 'Proveedor IA',
   'dialog.settings.tab.mcp': 'Servidor MCP',
   'dialog.settings.tab.appearance': 'Apariencia y Temas',
@@ -732,7 +732,7 @@ export const TRANSLATIONS_ES = {
   'dialog.settings.themeDefaultBadge': 'Por defecto',
   'dialog.settings.themeActiveBadge': 'Activo',
   'dialog.settings.themePreviewBadge': 'Vista previa en vivo',
-  'dialog.settings.brandVariants': 'Identidad visual Kurra3D Studio',
+  'dialog.settings.brandVariants': 'Identidad visual Kurra Studio',
   'theme.obsidian.name': 'Obsidian Cyan',
   'theme.obsidian.desc': 'Estudio pizarra profundo con cian técnico (tema por defecto).',
   'theme.kura_prism.name': 'Kura Prism',
@@ -1165,10 +1165,10 @@ export const TRANSLATIONS_ES = {
   'dialog.settings.test.desktopKey': 'En escritorio la clave se lee del llavero: guarda los ajustes antes de probar.',
   'dialog.settings.test.url': 'Falta una URL base válida.',
   'dialog.settings.test.local': 'Modo local: no hay conexión externa que probar.',
-  'mcp.setup.pathLabel': 'Ruta a tu copia de Kurra3D Studio (opcional)',
-  'mcp.setup.pathNote': 'La aplicación no sabe dónde está tu copia de Kurra3D Studio. Escribe la ruta aquí o reemplaza <REPO_PATH> a mano.',
+  'mcp.setup.pathLabel': 'Ruta a tu copia de Kurra Studio (opcional)',
+  'mcp.setup.pathNote': 'La aplicación no sabe dónde está tu copia de Kurra Studio. Escribe la ruta aquí o reemplaza <REPO_PATH> a mano.',
   'mcp.setup.helpTitle': 'El servidor MCP aún no responde: pasos',
-  'mcp.setup.step1': '1. Compila el servidor una vez, desde la carpeta de Kurra3D Studio:',
+  'mcp.setup.step1': '1. Compila el servidor una vez, desde la carpeta de Kurra Studio:',
   'mcp.setup.step2': '2. Regístralo en tu cliente MCP. Con Claude Code (cambia <TOKEN> por el token de arriba):',
   'mcp.setup.step3': '3. Reinicia el cliente MCP; el estado cambia a Conectado cuando el servidor arranca.',
   'mcp.setup.copyCommand': 'Copiar comando',
@@ -1474,7 +1474,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UX8_MENU_EN,
   ...TORRETA_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
-  'app.docTitle': 'Kurra3D Studio v0.5.0 — Native 3D Modeling Studio',
+  'app.docTitle': 'Kurra Studio v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
   'recovery.status.working': 'Saving draft…',
   'recovery.status.ready': 'Local draft saved',
@@ -1504,7 +1504,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'fileProject.busy': 'Wait for the current operation to finish.',
   'fileProject.working': 'Opening or saving project…',
   'fileProject.invalid': 'The .kura file is invalid or damaged.',
-  'fileProject.unsupported': 'This .kura file requires a compatible version of Kurra3D Studio.',
+  'fileProject.unsupported': 'This .kura file requires a compatible version of Kurra Studio.',
   'fileProject.tooLarge': 'The project exceeds the supported file size or geometry limits.',
   'common.close': 'Close',
 
@@ -1790,7 +1790,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'ctx.duplicate': 'Duplicate',
   'ctx.delete': 'Delete',
 
-  'cmd.title': 'Kurra3D Studio Command Palette',
+  'cmd.title': 'Kurra Studio Command Palette',
   'cmd.placeholder': 'Type a command, primitive, operation or setting...',
   'cmd.empty': 'No matching commands found.',
   'cmd.badgeLocal': 'Local',
@@ -1810,13 +1810,13 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'cmd.view.shortcuts': 'View Keyboard Shortcuts & Tips',
   'palette.cmd.appearance': 'Change color theme (Appearance)',
 
-  'ai.title': 'Kurra3D Studio AI Assistant',
+  'ai.title': 'Kurra Studio AI Assistant',
   'ai.configureKey': 'Configure AI',
   'ai.placeholder': 'E.g. "Create a 40mm tall cylinder and hollow to 2mm"...',
   'ai.send': 'Send',
   'ai.clearChat': 'Clear chat',
   'ai.thinking': 'Processing geometry...',
-  'ai.welcome': 'Hello, I am the Kurra3D Studio assistant. Offline I can create primitives and ISO threads (bolt, nut or threaded hole: “add an M6 threaded hole”), move, scale, hollow and cut them with dowels, union or subtract the selection, check printability (“how printable is it?”) and export STL/3MF. Configure Gemini, OpenAI, Anthropic or Ollama in Settings for free-form requests.',
+  'ai.welcome': 'Hello, I am the Kurra Studio assistant. Offline I can create primitives and ISO threads (bolt, nut or threaded hole: “add an M6 threaded hole”), move, scale, hollow and cut them with dowels, union or subtract the selection, check printability (“how printable is it?”) and export STL/3MF. Configure Gemini, OpenAI, Anthropic or Ollama in Settings for free-form requests.',
   'ai.chip.box': '40 mm Box',
   'ai.chip.hollow': 'Hollow 2.5 mm',
   'ai.chip.cylinder': '20×50 mm Cylinder',
@@ -2042,7 +2042,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.thread.execute': 'Create ISO Thread',
 
 
-  'dialog.settings.title': 'Kurra3D Studio Settings',
+  'dialog.settings.title': 'Kurra Studio Settings',
   'dialog.settings.tab.ai': 'AI Provider',
   'dialog.settings.tab.mcp': 'MCP Server',
   'dialog.settings.tab.appearance': 'Appearance & Themes',
@@ -2052,7 +2052,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.settings.themeDefaultBadge': 'Default',
   'dialog.settings.themeActiveBadge': 'Active',
   'dialog.settings.themePreviewBadge': 'Live preview',
-  'dialog.settings.brandVariants': 'Kurra3D Studio Visual Identity',
+  'dialog.settings.brandVariants': 'Kurra Studio Visual Identity',
   'theme.obsidian.name': 'Obsidian Cyan',
   'theme.obsidian.desc': 'Deep slate studio with technical cyan (default theme).',
   'theme.kura_prism.name': 'Kura Prism',
@@ -2482,10 +2482,10 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.settings.test.desktopKey': 'On desktop the key is read from the keychain: save the settings before testing.',
   'dialog.settings.test.url': 'A valid base URL is required.',
   'dialog.settings.test.local': 'Local mode: there is no external connection to test.',
-  'mcp.setup.pathLabel': 'Path to your Kurra3D Studio copy (optional)',
-  'mcp.setup.pathNote': 'The app cannot know where your Kurra3D Studio copy is. Type the path here or replace <REPO_PATH> by hand.',
+  'mcp.setup.pathLabel': 'Path to your Kurra Studio copy (optional)',
+  'mcp.setup.pathNote': 'The app cannot know where your Kurra Studio copy is. Type the path here or replace <REPO_PATH> by hand.',
   'mcp.setup.helpTitle': 'The MCP server is not responding yet: steps',
-  'mcp.setup.step1': '1. Build the server once, from the Kurra3D Studio folder:',
+  'mcp.setup.step1': '1. Build the server once, from the Kurra Studio folder:',
   'mcp.setup.step2': '2. Register it in your MCP client. With Claude Code (replace <TOKEN> with the token above):',
   'mcp.setup.step3': '3. Restart the MCP client; the status turns to Connected once the server starts.',
   'mcp.setup.copyCommand': 'Copy command',

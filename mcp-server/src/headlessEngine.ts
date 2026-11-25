@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/headlessEngine.ts
- * @description Capa delgada de estado de escena para el modo Headless del servidor MCP de Kurra3D Studio.
+ * @description Capa delgada de estado de escena para el modo Headless del servidor MCP de Kurra Studio.
  * Mantiene objetos, unidades y perfil de impresora en memoria. Las operaciones de escena son las
  * mismas funciones puras que usa la app (`src/core/operations`, sobre el motor Manifold de
  * `src/engine`), con la política de construcción y los nombres del headless. Este archivo solo
@@ -77,7 +77,7 @@ export { HeadlessUnsupportedError, type SceneObjectSummary } from './headlessSup
 export const ENGINE_GRID_SPACING_MM = ops.ARRANGE_GRID_SPACING_MM;
 
 /** Nota común que identifica el origen real de la geometría en las respuestas. */
-const ENGINE_NOTE = 'Computed with the shared Kurra3D Studio Manifold engine (src/engine).';
+const ENGINE_NOTE = 'Computed with the shared Kurra Studio Manifold engine (src/engine).';
 
 /** Instantánea completa del estado de la escena en modo Headless. */
 export interface HeadlessSceneState {
@@ -88,7 +88,7 @@ export interface HeadlessSceneState {
   objects: SceneObjectSummary[];
 }
 
-/** Motor de escena en memoria usado cuando la UI de Kurra3D Studio no está conectada al puente. */
+/** Motor de escena en memoria usado cuando la UI de Kurra Studio no está conectada al puente. */
 export class KuraHeadlessEngine {
   private readonly objects = new Map<string, HeadlessSceneObject>();
   private units: UnitSystem = 'mm';
@@ -465,7 +465,7 @@ export class KuraHeadlessEngine {
     // `spacingMm` solo aplica a la grilla (misma regla que el bus): en los demás modos se ignora con nota.
     if (mode === 'arrange_grid' && spacingMm !== undefined && spacingMm !== ENGINE_GRID_SPACING_MM) {
       throw new Error(
-        `spacingMm=${spacingMm} not supported: the Kurra3D Studio engine distributes with a fixed spacing of ${ENGINE_GRID_SPACING_MM} mm. Omit the parameter.`
+        `spacingMm=${spacingMm} not supported: the Kurra Studio engine distributes with a fixed spacing of ${ENGINE_GRID_SPACING_MM} mm. Omit the parameter.`
       );
     }
     // Operación pura compartida con el store; los bloqueados no se mueven.

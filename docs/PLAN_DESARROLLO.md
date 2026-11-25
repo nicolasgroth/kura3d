@@ -1,4 +1,4 @@
-# Plan de desarrollo de Kurra3D Studio
+# Plan de desarrollo de Kurra Studio
 
 Línea base del 21 de noviembre de 2026 · `main` en `9c875ba` · aplicación `0.5.0`.
 

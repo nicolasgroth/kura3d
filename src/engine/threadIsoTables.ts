@@ -1,6 +1,6 @@
 /**
  * @file src/engine/threadIsoTables.ts
- * @description Tablas ISO de roscas métricas M3–M64 (rango único de Kurra3D Studio, igual en interfaz,
+ * @description Tablas ISO de roscas métricas M3–M64 (rango único de Kurra Studio, igual en interfaz,
  * límites y motor): paso grueso ISO 261, entrecaras s y altura de cabeza k de ISO 4017 / ISO 4032,
  * tolerancia TD1 grado 6 del diámetro menor interior (ISO 965-1, posición H ⇒ D1 máx = D1 + TD1)
  * y la holgura radial por defecto para impresión FDM, escalada con el paso.

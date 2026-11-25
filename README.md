@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="public/branding/kura3d-banner.png" alt="Kurra3D Studio — estudio de modelado 3D para impresión" width="680" />
+  <img src="public/branding/kura3d-banner.png" alt="Kurra Studio — estudio de modelado 3D para impresión" width="680" />
 </p>
 
-<h1 align="center">Kurra3D Studio</h1>
+<h1 align="center">Kurra Studio</h1>
 
 <p align="center">
   <strong>Estudio abierto de modelado 3D para dejar cualquier pieza lista para imprimir</strong><br/>
@@ -19,9 +19,9 @@
 
 ---
 
-**Kurra3D Studio** (*kurra* es "piedra" en mapudungun) reúne en una sola herramienta lo que hoy está repartido en varias: importar o crear un modelo, cortarlo, ahuecarlo, unirlo con encajes, pintarlo por colores y exportarlo para tu slicer. Funciona en el navegador y como aplicación de escritorio, **100 % local**: la inteligencia artificial es opcional.
+**Kurra Studio** (*kurra* es "piedra" en mapudungun) reúne en una sola herramienta lo que hoy está repartido en varias: importar o crear un modelo, cortarlo, ahuecarlo, unirlo con encajes, pintarlo por colores y exportarlo para tu slicer. Funciona en el navegador y como aplicación de escritorio, **100 % local**: la inteligencia artificial es opcional.
 
-El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kurra3D Studio entrega archivos que los slicers abren sin sorpresas.
+El trabajo del slicer (laminado, G-code, boquillas, soportes) queda fuera. Kurra Studio entrega archivos que los slicers abren sin sorpresas.
 
 > **Estado: beta en desarrollo activo.** El avance de cada funcionalidad, con sus notas de calidad, está en el [tablero](docs/TABLERO.md). La versión web es la más probada; la aplicación de escritorio todavía tiene verificaciones pendientes.
 
@@ -165,7 +165,7 @@ Todas las dependencias tienen licencia permisiva (MIT, Apache-2.0, BSD, ISC).
 
 ## Cómo se construye
 
-Kurra3D Studio se desarrolla con agentes de IA organizados en tres equipos independientes: desarrollo, QA y evaluación. Cada funcionalidad recibe una nota de 1 a 100 en usabilidad, código y funcionalidad, con evidencia, y solo se da por lista con 85 o más en las tres. Las reglas están en [CLAUDE.md](CLAUDE.md) y las notas en [docs/EVALUACIONES.md](docs/EVALUACIONES.md).
+Kurra Studio se desarrolla con agentes de IA organizados en tres equipos independientes: desarrollo, QA y evaluación. Cada funcionalidad recibe una nota de 1 a 100 en usabilidad, código y funcionalidad, con evidencia, y solo se da por lista con 85 o más en las tres. Las reglas están en [CLAUDE.md](CLAUDE.md) y las notas en [docs/EVALUACIONES.md](docs/EVALUACIONES.md).
 
 ## Documentación
 

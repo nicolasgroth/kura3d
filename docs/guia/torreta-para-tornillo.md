@@ -1,6 +1,6 @@
 # Torreta para tornillo
 
-Una torreta es un poste con un agujero donde atornillas una tapa o una placa. En Kurra3D Studio la colocas con un clic sobre una cara de una pieza y queda perpendicular a ella. Sirve para dos casos:
+Una torreta es un poste con un agujero donde atornillas una tapa o una placa. En Kurra Studio la colocas con un clic sobre una cara de una pieza y queda perpendicular a ella. Sirve para dos casos:
 
 - **Tornillo directo**: el tornillo abre su rosca en el plástico. El agujero es un piloto, más chico que el tornillo.
 - **Inserto roscado**: un inserto de latón que metes con el cautín. El agujero tiene el diámetro del inserto y 1 mm más de profundidad que su largo, para el plástico que el inserto empuja al entrar.
@@ -9,7 +9,7 @@ La torreta son dos piezas: el **poste**, un sólido que se une a tu pieza, y el 
 
 ## Abrir el panel
 
-1. Ten al menos una pieza sólida visible en la escena. Si no hay ninguna, Kurra3D Studio te avisa y el panel no se abre.
+1. Ten al menos una pieza sólida visible en la escena. Si no hay ninguna, Kurra Studio te avisa y el panel no se abre.
 2. Elige **Insertar › Torreta para tornillo** en la barra superior. También puedes hacer clic derecho sobre la pieza y elegir **Más › Torreta para tornillo**, o abrir la paleta con `Ctrl+K` y escribir *torreta* o *inserto*.
 3. El panel **Torreta para tornillo** se abre a la derecha, con un **tornillo directo M3**: poste Ø 7,5 × 10 mm y agujero Ø 2,5 × 8 mm.
 
@@ -42,7 +42,7 @@ Son valores de partida. Los agujeros impresos en FDM suelen salir más chicos qu
 
 1. Ajusta las medidas a tu tornillo o inserto.
 2. Escribe un nombre en *Nombre del preajuste* (hasta 40 caracteres) y pulsa **Guardar**. Si ya tienes uno con ese nombre, se actualizan sus medidas.
-3. Aparece en la lista bajo *Mis medidas* y sigue ahí cuando vuelves a abrir Kurra3D Studio (se guarda en este navegador, no en el proyecto).
+3. Aparece en la lista bajo *Mis medidas* y sigue ahí cuando vuelves a abrir Kurra Studio (se guarda en este navegador, no en el proyecto).
 4. Para borrarlo, elígelo y pulsa la papelera. El aviso ofrece **Deshacer**.
 
 ## Colocar la torreta
@@ -56,18 +56,18 @@ Cada torreta es un paso de deshacer: `Ctrl+Z` quita solo la última, con su post
 
 ### Avisos
 
-Al colocar, Kurra3D Studio revisa la torreta y te avisa sin impedir que la coloques:
+Al colocar, Kurra Studio revisa la torreta y te avisa sin impedir que la coloques:
 
 - **Pared delgada**: queda menos de 1,2 mm de plástico alrededor del agujero. Aumenta el diámetro exterior.
 - **El agujero entra en la pieza**: es más hondo que el poste y sigue dentro de tu pieza. Revisa que ahí haya material de sobra.
 - **El agujero sale por el otro lado**: atraviesa la pieza. Sube el poste o acorta el agujero.
 - **Choca con otra**: el poste toca otra torreta o un imán que aún no restaste.
 
-Si el poste es más ancho que la cara en esa zona (sale de la pieza por lados opuestos), la torreta **no se coloca** y Kurra3D Studio te lo dice.
+Si el poste es más ancho que la cara en esa zona (sale de la pieza por lados opuestos), la torreta **no se coloca** y Kurra Studio te lo dice.
 
 ### Caras curvas y piezas escaladas
 
-- **En una cara curva** (el costado de un cilindro), Kurra3D Studio mide la superficie bajo el pie del poste y lo hunde lo necesario para que se una sin rendijas. La vista previa usa el hundimiento mínimo; el poste real puede quedar un poco más hundido.
+- **En una cara curva** (el costado de un cilindro), Kurra Studio mide la superficie bajo el pie del poste y lo hunde lo necesario para que se una sin rendijas. La vista previa usa el hundimiento mínimo; el poste real puede quedar un poco más hundido.
 - **La torreta sigue a su pieza.** Si mueves, giras o escalas la pieza, el poste y el agujero se mueven con ella y **conservan sus medidas**. Al duplicar la pieza se copian con ella, y al borrarla se borran.
 
 ## Aplicar las restas

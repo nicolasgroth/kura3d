@@ -7,15 +7,15 @@ Dos operaciones para preparar una pieza: partirla con un plano (con o sin conect
 1. Selecciona la pieza y pulsa **C** (o el botón **Cortar** de la barra superior, o *Corte por plano + uniones* en el resumen del objeto, panel derecho). Se abre el panel *Corte por plano + uniones* y aparece el **plano naranja** en el visor.
 2. Elige el **Eje del plano de corte**: *Z (horizontal)* corta en altura; X e Y cortan en vertical.
 3. Mueve el plano: arrástralo en el visor, usa el deslizador o escribe el **Desplazamiento desde el centro (mm)**. Con el foco en el visor, las flechas ↑/↓ también lo mueven. Los puntos azules marcan dónde irán los conectores.
-4. Elige el **Tipo de conector** (por ejemplo *Tarugo cilíndrico*) o *Sin conectores (corte limpio)*. Kurra3D Studio recomienda un diámetro según la sección; puedes editarlo, junto con la profundidad de encastre, la tolerancia de impresión y la cantidad.
+4. Elige el **Tipo de conector** (por ejemplo *Tarugo cilíndrico*) o *Sin conectores (corte limpio)*. Kurra Studio recomienda un diámetro según la sección; puedes editarlo, junto con la profundidad de encastre, la tolerancia de impresión y la cantidad.
 5. En **Mitades a conservar** elige *Ambas mitades*, *Solo mitad positiva (+)* o *Solo mitad negativa (-)*.
 6. Pulsa **Ejecutar Corte**. Las mitades se nombran con su eje: *mitad A (Z−)* y *mitad B (Z+)*.
 
 ![Panel de corte: plano naranja, conectores y mitades a conservar](img/cortar-y-ahuecar-01-corte.png)
 
-### Dónde deja Kurra3D Studio la mitad que conservas
+### Dónde deja Kurra Studio la mitad que conservas
 
-Si conservas una sola mitad y quedaría flotando sobre la cama, el diálogo pregunta **¿Dónde dejar la mitad que conservas?**: *Dejarla donde está* (útil para unirla luego con otra pieza), *Apoyarla en la cama* (baja en Z sin cambiar X ni Y) o *Apoyarla en un lugar libre* (busca un hueco sin tocar otros objetos). Kurra3D Studio recuerda tu elección y avisa si la mitad se superpondría con otro objeto.
+Si conservas una sola mitad y quedaría flotando sobre la cama, el diálogo pregunta **¿Dónde dejar la mitad que conservas?**: *Dejarla donde está* (útil para unirla luego con otra pieza), *Apoyarla en la cama* (baja en Z sin cambiar X ni Y) o *Apoyarla en un lugar libre* (busca un hueco sin tocar otros objetos). Kurra Studio recuerda tu elección y avisa si la mitad se superpondría con otro objeto.
 
 ![Las dos mitades resultantes, con la selección de ambas](img/cortar-y-ahuecar-02-mitades.png)
 

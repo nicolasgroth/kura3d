@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/scripts/build.mjs
- * @description Empaqueta el servidor MCP de Kurra3D Studio junto con el motor geométrico compartido
+ * @description Empaqueta el servidor MCP de Kurra Studio junto con el motor geométrico compartido
  * (`src/engine/**` de la app) en `dist/index.js` mediante esbuild. Las dependencias npm
  * (manifold-3d con su WASM, three, fflate, SDK MCP, ws, zod) quedan externas y se resuelven
  * en tiempo de ejecución desde `mcp-server/node_modules`.
@@ -31,4 +31,4 @@ await build({
   logLevel: 'warning',
 });
 
-console.error('[Kurra3D-MCP] dist/index.js generado con el motor compartido de src/engine.');
+console.error('[Kurra-MCP] dist/index.js generado con el motor compartido de src/engine.');

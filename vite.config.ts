@@ -1,6 +1,6 @@
 /**
  * @file vite.config.ts
- * @description Configuración de Vite para Kurra3D Studio (compatible con despliegue Web y Tauri v2).
+ * @description Configuración de Vite para Kurra Studio (compatible con despliegue Web y Tauri v2).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

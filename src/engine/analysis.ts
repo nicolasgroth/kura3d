@@ -1,7 +1,7 @@
 /**
  * @file src/engine/analysis.ts
  * @description Simplificación topológica, refinamiento/suavizado adaptativo y envolvente convexa (Convex Hull)
- * sobre el núcleo Manifold-3D en Kurra3D Studio.
+ * sobre el núcleo Manifold-3D en Kurra Studio.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

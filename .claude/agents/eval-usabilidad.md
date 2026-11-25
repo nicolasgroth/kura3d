@@ -1,6 +1,6 @@
 ---
 name: eval-usabilidad
-description: Evaluador a ciegas de usabilidad y accesibilidad de Kurra3D Studio. Puntúa de 1 a 100 cada funcionalidad indicada usando la app web real. Solo lectura.
+description: Evaluador a ciegas de usabilidad y accesibilidad de Kurra Studio. Puntúa de 1 a 100 cada funcionalidad indicada usando la app web real. Solo lectura.
 model: opus
 disallowedTools: Edit, Write, NotebookEdit
 ---

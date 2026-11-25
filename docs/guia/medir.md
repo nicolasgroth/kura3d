@@ -4,7 +4,7 @@ La herramienta **Medir** responde preguntas sin tocar tu modelo: cuánto mide al
 
 ## Activarla
 
-Pulsa **Medir** en la barra superior o la tecla **D**. Para volver a la selección, **D** o **V** otra vez. El panel *Medir* aparece acoplado al borde izquierdo del visor, bajo la barra de vistas, con cuatro modos: **Distancia**, **Ángulo**, **Área** y **Capacidad**, y un resumen de la pieza (superficie y volumen). Es angosto y, si tu modelo queda detrás, la cámara lo corre al área libre. En su título tienes dos botones: **mover el panel al otro borde** (izquierdo o derecho; Kurra3D Studio recuerda tu elección mientras la app está abierta) y **plegar** (deja solo el título).
+Pulsa **Medir** en la barra superior o la tecla **D**. Para volver a la selección, **D** o **V** otra vez. El panel *Medir* aparece acoplado al borde izquierdo del visor, bajo la barra de vistas, con cuatro modos: **Distancia**, **Ángulo**, **Área** y **Capacidad**, y un resumen de la pieza (superficie y volumen). Es angosto y, si tu modelo queda detrás, la cámara lo corre al área libre. En su título tienes dos botones: **mover el panel al otro borde** (izquierdo o derecho; Kurra Studio recuerda tu elección mientras la app está abierta) y **plegar** (deja solo el título).
 
 ![Herramienta Medir con la primera esquina marcada](img/medir-01-herramienta.png)
 
@@ -19,14 +19,14 @@ Pulsa **Medir** en la barra superior o la tecla **D**. Para volver a la selecci�
 ## Ángulo, área y volumen
 
 - **Ángulo:** elige *3 puntos* (el segundo es el vértice) o *2 caras* (ángulo entre ellas).
-- **Área:** haz clic en una cara y Kurra3D Studio mide la zona plana conectada.
+- **Área:** haz clic en una cara y Kurra Studio mide la zona plana conectada.
 - **Volumen:** aparece en el resumen de la pieza, en mm³ y en mL (1 cm³ = 1 mL).
 - Las unidades siguen las que elegiste en *Ajustes* (mm, cm, pulgadas); la capacidad sale en mL o litros.
 
 ## Capacidad de un recipiente
 
 1. Selecciona el vaso, jarro o caja ahuecada y elige **Capacidad**. El panel dice qué objeto mide (*Objeto medido: …*).
-2. Pulsa **Calcular capacidad**. Kurra3D Studio calcula cuánto cabe en la orientación **actual** de la pieza, hasta el nivel de **rebalse**.
+2. Pulsa **Calcular capacidad**. Kurra Studio calcula cuánto cabe en la orientación **actual** de la pieza, hasta el nivel de **rebalse**.
 3. Lee la **capacidad máxima** (por ejemplo «48,8 mL») y la altura de rebalse. Con el deslizador *Nivel* o el campo *Altura del líquido* ves cuánto cabe hasta cierto nivel.
 4. Para medir inclinado, gira la pieza y vuelve a calcular. Si hay varias cavidades puedes elegir cuál.
 

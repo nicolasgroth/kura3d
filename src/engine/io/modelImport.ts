@@ -36,7 +36,7 @@ export function detectModelFormat(fileName: string): ModelImportFormat | null {
  */
 export function parseModelFile(fileName: string, buffer: ArrayBuffer, options: ModelParseOptions = {}): ImportedModel {
   const read = readModelFile(fileName, buffer, options);
-  // Una escena de Kurra3D Studio vuelve exacta: sin reorientar normales ni buscar conjuntos.
+  // Una escena de Kurra Studio vuelve exacta: sin reorientar normales ni buscar conjuntos.
   if (read.kuraScene) return analyzeImportedModel({ ...read, clusters: [] });
   const model = fixImportedOrientation(read);
   // Conjuntos y diagnóstico de unidades calculados una vez, aquí (en el Worker).

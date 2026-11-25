@@ -1,6 +1,6 @@
 /**
  * @file src/store/commandBus.ts
- * @description Command Bus unificado de Kurra3D Studio (UI, Servidor MCP y Chat IA). Aplica la política
+ * @description Command Bus unificado de Kurra Studio (UI, Servidor MCP y Chat IA). Aplica la política
  * lectura/escritura compartida, bloquea comandos que mutan la escena durante una operación o un
  * arrastre, valida cada comando con `commandSchemas` y traduce los errores tipados al idioma activo.
  * Se instancia desde el store con sus dependencias, sin cambiar `executeCommand`.

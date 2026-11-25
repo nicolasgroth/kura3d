@@ -1,6 +1,6 @@
 # Suavizar malla
 
-Suavizar quita el facetado y el ruido de una pieza importada o esculpida (por ejemplo un escaneo) moviendo sus vértices. **No cambia la cantidad de triángulos**, no abre la malla y no agranda la caja de la pieza. Las aristas marcadas (esquinas y chaflanes) se pueden proteger para que no se redondeen. Kurra3D Studio solo prepara la geometría; no lamina.
+Suavizar quita el facetado y el ruido de una pieza importada o esculpida (por ejemplo un escaneo) moviendo sus vértices. **No cambia la cantidad de triángulos**, no abre la malla y no agranda la caja de la pieza. Las aristas marcadas (esquinas y chaflanes) se pueden proteger para que no se redondeen. Kurra Studio solo prepara la geometría; no lamina.
 
 ## Abrir el panel
 
@@ -36,7 +36,7 @@ Un valor fuera de rango queda marcado junto a su campo y, mientras no lo corrija
 
 Avisos que puedes ver:
 
-- **Se redujo la intensidad** de 100 % a 25 %: con la intensidad pedida, la malla se dañaba (triángulos invertidos o paredes finas que se cruzan), así que Kurra3D Studio bajó la intensidad hasta que no hubiera daño. Si necesitas más alisado, protege las aristas o limita la zona.
+- **Se redujo la intensidad** de 100 % a 25 %: con la intensidad pedida, la malla se dañaba (triángulos invertidos o paredes finas que se cruzan), así que Kurra Studio bajó la intensidad hasta que no hubiera daño. Si necesitas más alisado, protege las aristas o limita la zona.
 - **El volumen cambió más de 2 %**: revisa que la pieza conserve sus medidas.
 - **No se pudo suavizar sin dañar la malla**: sale como error junto a los controles y no cambia nada. Baja la intensidad o protege las aristas.
 

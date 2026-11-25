@@ -6,7 +6,7 @@ Estado: investigación (24-nov-2026) y medición (25-nov-2026, sección 4); nada
 
 ## 1. Qué hay hoy en el repo
 
-Corrección al encargo: **Kurra3D Studio no usa meshoptimizer**. Figura como candidata en `docs/ROADMAP.md:57`, pero no está en `package.json`. La simplificación actual es de Manifold.
+Corrección al encargo: **Kurra Studio no usa meshoptimizer**. Figura como candidata en `docs/ROADMAP.md:57`, pero no está en `package.json`. La simplificación actual es de Manifold.
 
 | Pieza | Ruta | Qué hace y para qué sirve aquí |
 |---|---|---|
@@ -37,7 +37,7 @@ Corrección al encargo: **Kurra3D Studio no usa meshoptimizer**. Figura como can
 | **RANSAC de primitivas** (Schnabel, Wahl y Klein, 2007) | Prueba muchas primitivas a partir de pocos puntos al azar y se queda con las que más puntos explican. No necesita segmentar antes; pensado para nubes de puntos. | Alta, pero es más de lo necesario: en CAD el crecimiento de regiones da lo mismo de forma determinista. | La mejor de las clásicas ante ruido y datos incompletos. | Alta: muchos parámetros (ε, ángulo, tamaño mínimo), **resultado no determinista** (mala base para pruebas y para "mismo archivo, mismo resultado") y trabaja sobre puntos, no garantiza una malla cerrada. |
 | **Variational Shape Approximation** (Cohen-Steiner, Alliez y Desbrun, 2004) | Reparte la malla en k parches planos (proxies) que minimizan el error y la reconstruye como poliedro de pocas caras. Da un "low-poly" de forma controlada. | Buena, pero en CAD la fusión coplanar es exacta y más simple. | Buena para un facetado estilizado; pierde detalle por diseño. | Alta: el particionado es abordable, la **extracción de la malla cerrada** entre parches es la parte frágil. Solo planos (hay extensiones a cuádricas, más difíciles). |
 | **Descomposición convexa aproximada** (V-HACD, CoACD) | Parte un sólido en varios cuerpos casi convexos. | Funciona. | Funciona. | No se implementa, se usa una librería. **No reduce bien triángulos para imprimir**: es para colisiones físicas; cambia la forma (rellena concavidades) y deja juntas. |
-| **Conversión a CSG / B-rep** (ingeniería inversa) | Reconstruir el modelo como operaciones entre primitivas (caja menos cilindro…), editable. | Posible en piezas prismáticas simples; se rompe con redondeos, superficies libres y roscas. | No aplica. | Muy alta; es tema de investigación vigente y de productos comerciales. Fuera de escala para Kurra3D Studio. |
+| **Conversión a CSG / B-rep** (ingeniería inversa) | Reconstruir el modelo como operaciones entre primitivas (caja menos cilindro…), editable. | Posible en piezas prismáticas simples; se rompe con redondeos, superficies libres y roscas. | No aplica. | Muy alta; es tema de investigación vigente y de productos comerciales. Fuera de escala para Kurra Studio. |
 
 Tres hechos que conviene tener claros antes de decidir:
 
@@ -112,7 +112,7 @@ A tolerancias mayores (mismo orden de filas): a 0,05 mm quedan 18,1 · 15,2 · 5
 | Cilindro 64 lados | 252 | 252 | 252 | 108 (vol. −1,0 %, desv. 0,096) | 252 | 51 % (la pared) |
 | Esfera | 512 | 512 | 512 | 512 | — | 100 % |
 | Caja con tapa (Asistentes) | 1 076 | 1 076 | 788 (desv. 0,048) | 760 (desv. 0,78) | 1 068 | 46 % (8 cilindros) |
-| Texto 3D «Kurra3D Studio» | 900 | 900 | 852 (desv. 0,040) | 756 (desv. 0,080) | 900 | 2 % |
+| Texto 3D «Kurra Studio» | 900 | 900 | 852 (desv. 0,040) | 756 (desv. 0,080) | 900 | 2 % |
 | Rosca M8 × 16 | 5 330 | 5 322 → 5 296 (desv. 0,004) | 5 224 (desv. 0,061) | 3 118 (vol. −0,36 %) | 2 834 de 2 836 | 49 % |
 
 Lo que crea la app **ya está en su mínimo**: Simplificar a ≤ 0,01 mm no le quita nada (la rosca, 34 triángulos) y la cota plana coincide con lo que hay (la caja, 8 triángulos de 1 076). Lo que baja a 0,05–0,1 mm es pérdida de forma: menos lados en el cilindro, letras y redondeos achatados.

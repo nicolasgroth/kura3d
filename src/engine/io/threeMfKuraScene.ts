@@ -1,6 +1,6 @@
 /**
  * @file src/engine/io/threeMfKuraScene.ts
- * @description Lectura de un 3MF exportado por Kurra3D Studio con sus metadatos de escena: cada `<object>` que
+ * @description Lectura de un 3MF exportado por Kurra Studio con sus metadatos de escena: cada `<object>` que
  * nombran los metadatos (impreso, oculto o hueco) vuelve con su malla LOCAL (se deshace la
  * transformación mundial con la que se escribió), su transformación exacta y su estado; el árbol de
  * grupos viaja en `ImportedModel.kuraScene`. Si algo no calza (objeto ausente, conteos distintos porque
@@ -24,7 +24,7 @@ export interface KuraObjectGeometry {
   baseColor?: string;
 }
 
-/** Matriz inversa (columna mayor, three) de la transformación mundial de Kurra3D Studio. */
+/** Matriz inversa (columna mayor, three) de la transformación mundial de Kurra Studio. */
 function inverseWorld(position: readonly number[], rotation: readonly number[], scale: readonly number[]): number[] | null {
   const m = new THREE.Matrix4().compose(
     new THREE.Vector3(position[0], position[1], position[2]),
@@ -36,7 +36,7 @@ function inverseWorld(position: readonly number[], rotation: readonly number[], 
 }
 
 /**
- * Piezas de la escena Kurra3D Studio, en el orden de los metadatos. `geometryOf(id)` devuelve la geometría del
+ * Piezas de la escena Kurra Studio, en el orden de los metadatos. `geometryOf(id)` devuelve la geometría del
  * objeto o null si no existe o no tiene malla.
  */
 export function readKuraScene(
@@ -70,7 +70,7 @@ export function readKuraScene(
     const src = geometry.positions;
     const positions = new Float32Array(src.length);
     for (let i = 0; i < src.length; i += 3) {
-      // Archivo (Z arriba, unidad del 3MF) -> mundo Kurra3D Studio (Y arriba, mm) -> local del objeto.
+      // Archivo (Z arriba, unidad del 3MF) -> mundo Kurra Studio (Y arriba, mm) -> local del objeto.
       const x = src[i] * unitScale, y = src[i + 2] * unitScale, z = -src[i + 1] * unitScale;
       positions[i] = inv[0] * x + inv[4] * y + inv[8] * z + inv[12];
       positions[i + 1] = inv[1] * x + inv[5] * y + inv[9] * z + inv[13];

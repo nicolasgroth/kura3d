@@ -19,12 +19,12 @@ Para imprimir en varios colores (o con varios filamentos) puedes **pintar caras*
 - **Opciones de la paleta (…):** elige una paleta predefinida (*Original*, *Vivos*, *Sobrios*, *Pastel*, *Escala de grises*), **Agregar los colores del proyecto** (suma los que ya tienen tus objetos y le faltan a la paleta, de más a menos usado, sin quitar los tuyos) o **Volver a la paleta original**.
 - La paleta se recuerda en este navegador; no se guarda en el proyecto. Con muchas muestras se ven las primeras 24 y el resto con **N más**.
 
-Si el modelo tiene pocos triángulos (un cubo, por ejemplo), el pincel pinta caras enteras y Kurra3D Studio lo avisa con la opción **Refinar malla para pintar con detalle**. Las primitivas paramétricas piden confirmación antes de pintar, porque pintar las convierte en una malla fija.
+Si el modelo tiene pocos triángulos (un cubo, por ejemplo), el pincel pinta caras enteras y Kurra Studio lo avisa con la opción **Refinar malla para pintar con detalle**. Las primitivas paramétricas piden confirmación antes de pintar, porque pintar las convierte en una malla fija.
 
 ## Separar por colores
 
 1. Con el objeto pintado seleccionado, pulsa **Separar por colores** en el resumen del objeto (panel derecho, grupo *Corte y Separación*) o elige **Acciones › Separar por colores**.
-2. Kurra3D Studio entrega **un sólido cerrado por color**: el color base conserva el resto y cada color adicional toma una capa hacia adentro desde la superficie pintada (la profundidad es configurable). Los volúmenes suman el del original.
+2. Kurra Studio entrega **un sólido cerrado por color**: el color base conserva el resto y cada color adicional toma una capa hacia adentro desde la superficie pintada (la profundidad es configurable). Los volúmenes suman el del original.
 3. Cada pieza aparece en la pestaña **Escena** con su color («Bola — Verde», «Bola — Naranja») y el resumen *Filamentos en escena* cuenta cuántos hay.
 4. Si no te convence, **Ctrl+Z** lo deshace en un paso.
 
@@ -38,7 +38,7 @@ Para exportar con los colores, ver [Exportar](exportar.md): el 3MF conserva el c
 
 - **El pincel pinta cuadrados enteros:** la malla es muy gruesa; usa *Refinar malla para pintar con detalle*.
 - **Pinté la cara equivocada:** **Ctrl+Z** por trazo, o la **Goma**.
-- **Sobre texto 3D pintado, alguna pieza puede salir abierta:** Kurra3D Studio avisa cuáles y ofrece repararlas (*Reparar malla*).
+- **Sobre texto 3D pintado, alguna pieza puede salir abierta:** Kurra Studio avisa cuáles y ofrece repararlas (*Reparar malla*).
 - **Pintar está apagado:** la escena está vacía o todos los objetos están ocultos, con candado o son referencias; el tooltip y la barra de estado dicen el motivo.
 
 Anterior: [Medir](medir.md) · Siguiente: [Generadores](generadores.md) · [Índice](README.md)

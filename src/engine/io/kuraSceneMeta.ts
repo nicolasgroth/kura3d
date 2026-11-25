@@ -1,9 +1,9 @@
 /**
  * @file src/engine/io/kuraSceneMeta.ts
- * @description Metadatos propios de Kurra3D Studio dentro de un 3MF (`Metadata/kura_scene.json`, espacio de
+ * @description Metadatos propios de Kurra Studio dentro de un 3MF (`Metadata/kura_scene.json`, espacio de
  * nombres `KURA_SCENE_NAMESPACE`): por cada objeto del modelo, su transformación exacta (posición,
  * rotación, escala), nombre, color, visibilidad, bloqueo, hueco y grupo; y el árbol de grupos (anidados,
- * plegado, visible, bloqueado). Con ellos, la ida y vuelta por 3MF de Kurra3D Studio restaura la escena tal cual,
+ * plegado, visible, bloqueado). Con ellos, la ida y vuelta por 3MF de Kurra Studio restaura la escena tal cual,
  * sin reacomodo ni detección de conjuntos. Los laminadores ignoran el archivo. La lectura es defensiva:
  * tope de bytes, de entradas y de longitud de textos; cualquier incoherencia descarta los metadatos y el
  * archivo se lee como un 3MF cualquiera.
@@ -26,7 +26,7 @@ export const KURA_SCENE_MAX_BYTES = 4 * 1024 * 1024;
 const MAX_META_GROUPS = 4_000;
 const MAX_TEXT = 200;
 
-/** Objeto de la escena tal como lo guarda Kurra3D Studio (`objectId` es el id del `<object>` del 3MF). */
+/** Objeto de la escena tal como lo guarda Kurra Studio (`objectId` es el id del `<object>` del 3MF). */
 export interface KuraSceneObjectMeta {
   objectId: string;
   name: string;
@@ -122,7 +122,7 @@ const indexList = (v: unknown, size: number): number[] | undefined => {
 
 /**
  * Lee y valida los metadatos. Devuelve null si el texto excede el tope, no es del espacio de nombres
- * de Kurra3D Studio o trae datos inválidos (el archivo se importa entonces como 3MF normal).
+ * de Kurra Studio o trae datos inválidos (el archivo se importa entonces como 3MF normal).
  */
 export function parseKuraSceneMeta(raw: string, maxObjects: number): KuraSceneMeta | null {
   if (raw.length > KURA_SCENE_MAX_BYTES) return null;

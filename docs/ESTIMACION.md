@@ -38,7 +38,7 @@ Tiene código y pruebas unitarias; le falta QA en navegador, evaluación a ciega
 | Suavizar, Orientar, imanes como unión del corte, torreta, vista previa de Asistentes | Integrado, sin QA formal ni evaluación | QA + evaluación + correcciones | 5–8 h (dos encargos de QA; más de 8 objetivos no caben en uno) |
 | Barra flotante, «Acerca de», ojo de cerradura, paso de cable | Entregado, recorridos de navegador sin ejecutar | Ejecutar recorridos, QA, evaluación, guías | 4–6 h |
 | Herramientas MCP de lo nuevo | En entrega | Revisión de código y funcional (no usa navegador) | 1–2 h |
-| Cambio de nombre visible a Kurra3D | Decidido | Cambio mecánico, regenerar todas las capturas, revisar | 2–3 h |
+| Cambio de nombre visible a Kurra | Decidido | Cambio mecánico, regenerar todas las capturas, revisar | 2–3 h |
 | Usabilidad general (81) y del imán (84) hasta 85 | Aceptadas temporalmente | Una o dos rondas más cada una | 3–6 h |
 
 **Subtotal: 15–25 h.**

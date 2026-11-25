@@ -1,6 +1,6 @@
 # Exportar
 
-Cómo sacar tu modelo de Kurra3D Studio para abrirlo en tu laminador (OrcaSlicer, Bambu Studio, PrusaSlicer, Cura) o en otro programa. Kurra3D Studio no lamina ni genera G-code: entrega archivos que el laminador abre sin sorpresas.
+Cómo sacar tu modelo de Kurra Studio para abrirlo en tu laminador (OrcaSlicer, Bambu Studio, PrusaSlicer, Cura) o en otro programa. Kurra Studio no lamina ni genera G-code: entrega archivos que el laminador abre sin sorpresas.
 
 ## Paso a paso
 
@@ -26,7 +26,7 @@ Cómo sacar tu modelo de Kurra3D Studio para abrirlo en tu laminador (OrcaSlicer
 
 ## Problemas frecuentes
 
-- **El laminador muestra la pieza gigante o diminuta:** revisa la unidad del laminador; Kurra3D Studio exporta en mm.
+- **El laminador muestra la pieza gigante o diminuta:** revisa la unidad del laminador; Kurra Studio exporta en mm.
 - **Me faltan piezas en el archivo:** estaban ocultas, eran negativos o no estaban seleccionadas con *Selección* marcada.
 - **Los colores no aparecen en un STL:** el STL no guarda color; usa 3MF.
 - **En el navegador el archivo se descarga:** en la versión web el archivo va a tu carpeta de descargas, y un aviso lo confirma; en escritorio eliges la carpeta.

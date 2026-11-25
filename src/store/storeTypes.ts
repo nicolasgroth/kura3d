@@ -1,6 +1,6 @@
 /**
  * @file src/store/storeTypes.ts
- * @description Tipos públicos del store de Kurra3D Studio: estado completo (`KuraStoreState`), diálogos,
+ * @description Tipos públicos del store de Kurra Studio: estado completo (`KuraStoreState`), diálogos,
  * pestañas, origen de comandos, modo de pincel, presets de cámara y toasts. `useKuraStore.ts` los
  * reexporta para que los componentes no cambien sus imports.
  * @author Nicolás Groth <ngroth@gmail.com>

@@ -1,6 +1,6 @@
 /**
  * @file src/types/kura.ts
- * @description Contratos y tipos compartidos para Kurra3D Studio (Escena, Geometría, Moldes,
+ * @description Contratos y tipos compartidos para Kurra Studio (Escena, Geometría, Moldes,
  * Proyección en Superficies, Validador Estructural, Materiales PBR, Impresoras Multi-Marca,
  * Unidades, i18n, MCP y Chat IA).
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -10,7 +10,7 @@
 
 import type { RecipeProvenance } from './recipeProvenance';
 
-/** Idiomas soportados nativamente en Kurra3D Studio (6 idiomas internacionales). */
+/** Idiomas soportados nativamente en Kurra Studio (6 idiomas internacionales). */
 export type LanguageCode = 'es' | 'en' | 'de' | 'fr' | 'hi' | 'zh';
 
 /** Metadatos de idioma para selector compacto con nombre nativo. */
@@ -20,7 +20,7 @@ export interface LanguageSpec {
   nativeName: string;
 }
 
-/** Catálogo oficial de los 6 idiomas de Kurra3D Studio v0.5.0. */
+/** Catálogo oficial de los 6 idiomas de Kurra Studio v0.5.0. */
 export const SUPPORTED_LANGUAGES: LanguageSpec[] = [
   { code: 'es', shortLabel: 'ES', nativeName: 'Español' },
   { code: 'en', shortLabel: 'EN', nativeName: 'English' },
@@ -30,7 +30,7 @@ export const SUPPORTED_LANGUAGES: LanguageSpec[] = [
   { code: 'zh', shortLabel: 'ZH', nativeName: '中文' },
 ];
 
-/** Unidades de medida soportadas. Internamente Kurra3D Studio siempre almacena geometría en milímetros (mm). */
+/** Unidades de medida soportadas. Internamente Kurra Studio siempre almacena geometría en milímetros (mm). */
 export type UnitSystem = 'mm' | 'cm' | 'm' | 'in' | 'ft';
 
 /** Esquema de color visual de la interfaz. */
@@ -45,7 +45,7 @@ export type ThemePresetId =
   | 'solar_amber'
   | 'high_contrast';
 
-/** Definición visual y de accesibilidad de un tema de color de Kurra3D Studio. */
+/** Definición visual y de accesibilidad de un tema de color de Kurra Studio. */
 export interface ThemePresetSpec {
   id: ThemePresetId;
   wcagLevel: 'AA' | 'AAA';
@@ -236,7 +236,7 @@ export interface MaterialPresetSpec {
   densityGCm3: number;
 }
 
-/** Catálogo oficial de materiales PBR de Kurra3D Studio. */
+/** Catálogo oficial de materiales PBR de Kurra Studio. */
 export const MATERIAL_PRESETS: Record<MaterialPresetId, MaterialPresetSpec> = {
   pla_matte: {
     id: 'pla_matte',
@@ -705,7 +705,7 @@ export type ObjectSourceType =
 /** Rol de un objeto: se imprime, se resta o solo sirve de referencia visual. Ver `core/scene/objectRole.ts`. */
 export type ObjectRole = 'solid' | 'negative' | 'reference';
 
-/** Nodo de objeto 3D en la escena de Kurra3D Studio. */
+/** Nodo de objeto 3D en la escena de Kurra Studio. */
 export interface SceneObject {
   id: string;
   name: string;
@@ -1147,7 +1147,7 @@ export interface KuraCommandResponse {
 }
 
 /**
- * Presets oficiales de impresoras 3D integrados en Kurra3D Studio:
+ * Presets oficiales de impresoras 3D integrados en Kurra Studio:
  * Elegoo Centauri Carbon 1 & 2, Bambu Lab, Snapmaker, FlashForge y modos genéricos.
  */
 export const DEFAULT_PRINTER_PROFILES: PrinterProfile[] = [

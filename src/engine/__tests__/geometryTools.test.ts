@@ -1,7 +1,7 @@
 /**
  * @file src/engine/__tests__/geometryTools.test.ts
  * @description Suite integral de pruebas unitarias Vitest para las extensiones
- * Kurra3D Studio del núcleo geométrico:
+ * Kurra Studio del núcleo geométrico:
  * - Generador automático de moldes (4 modos)
  * - Proyección conformal de texto/SVG sobre superficies planas y cilíndricas
  * - Validador de imprimibilidad, simplificación, refinamiento/suavizado y Convex Hull

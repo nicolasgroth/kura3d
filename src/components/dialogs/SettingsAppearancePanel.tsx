@@ -97,7 +97,7 @@ export const SettingsAppearancePanel: React.FC = () => {
               onBlur={() => setPreviewThemePreset(null)}
               onClick={() => setThemePreset(preset.id)}
             >
-              {/* Maqueta en miniatura del estudio Kurra3D Studio pintada con la paleta exacta del tema */}
+              {/* Maqueta en miniatura del estudio Kurra Studio pintada con la paleta exacta del tema */}
               <div
                 className="kura-theme-mockup"
                 aria-hidden="true"

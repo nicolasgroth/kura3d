@@ -1,6 +1,6 @@
 /**
  * @file src/utils/units.ts
- * @description Conversión y formateo de unidades métricas e imperiales para Kurra3D Studio.
+ * @description Conversión y formateo de unidades métricas e imperiales para Kurra Studio.
  * Internamente la geometría y la física siempre trabajan en milímetros (mm).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH

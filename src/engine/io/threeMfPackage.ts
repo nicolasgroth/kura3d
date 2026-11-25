@@ -52,7 +52,7 @@ export interface ThreeMfPackage {
     /** XML de `Metadata/model_settings.config` (placas, ver `threeMfPlates.ts`), o null si falta. */
     settingsXml: string | null;
   };
-  /** Texto de `Metadata/kura_scene.json` (escena exportada por Kurra3D Studio), o null si falta o excede su tope. */
+  /** Texto de `Metadata/kura_scene.json` (escena exportada por Kurra Studio), o null si falta o excede su tope. */
   kuraSceneText: string | null;
 }
 

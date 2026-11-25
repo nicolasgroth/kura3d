@@ -1,6 +1,6 @@
 /**
  * @file src/utils/numericExpression.ts
- * @description Evaluador puro y seguro de expresiones numéricas para los campos de Kurra3D Studio:
+ * @description Evaluador puro y seguro de expresiones numéricas para los campos de Kurra Studio:
  * suma, resta, multiplicación, división, paréntesis, coma o punto decimal y unidades
  * (`2cm`, `1in`) convertidas a la unidad activa. Descenso recursivo propio: no usa `eval` ni `Function`.
  * @author Nicolás Groth <ngroth@gmail.com>

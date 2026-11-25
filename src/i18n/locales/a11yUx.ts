@@ -24,7 +24,7 @@ export const A11YUX_ES = {
   'dialog.shortcuts.camRight': 'Vista derecha',
   'dialog.shortcuts.camIso': 'Vista isométrica (en perspectiva, como a vuelo de pájaro)',
   'dialog.shortcuts.camTop': 'Vista superior (desde arriba)',
-  'settings.mcp.intro': 'Permite que un asistente de IA en tu computador controle Kurra3D Studio. Es opcional.',
+  'settings.mcp.intro': 'Permite que un asistente de IA en tu computador controle Kurra Studio. Es opcional.',
 } as const;
 
 export const A11YUX_EN = {
@@ -43,7 +43,7 @@ export const A11YUX_EN = {
   'dialog.shortcuts.camRight': 'Right view',
   'dialog.shortcuts.camIso': 'Isometric view (3D from a corner)',
   'dialog.shortcuts.camTop': 'Top view (from above)',
-  'settings.mcp.intro': 'Lets an AI assistant on your computer control Kurra3D Studio. It is optional.',
+  'settings.mcp.intro': 'Lets an AI assistant on your computer control Kurra Studio. It is optional.',
 };
 
 export const A11YUX_DE = {
@@ -62,7 +62,7 @@ export const A11YUX_DE = {
   'dialog.shortcuts.camRight': 'Ansicht von rechts',
   'dialog.shortcuts.camIso': 'Isometrische Ansicht (3D von einer Ecke)',
   'dialog.shortcuts.camTop': 'Ansicht von oben',
-  'settings.mcp.intro': 'Lässt einen KI-Assistenten auf deinem Computer Kurra3D Studio steuern. Das ist optional.',
+  'settings.mcp.intro': 'Lässt einen KI-Assistenten auf deinem Computer Kurra Studio steuern. Das ist optional.',
 };
 
 export const A11YUX_FR = {
@@ -81,7 +81,7 @@ export const A11YUX_FR = {
   'dialog.shortcuts.camRight': 'Vue de droite',
   'dialog.shortcuts.camIso': 'Vue isométrique (3D depuis un coin)',
   'dialog.shortcuts.camTop': 'Vue de dessus',
-  'settings.mcp.intro': 'Permet à un assistant IA sur ton ordinateur de piloter Kurra3D Studio. C’est facultatif.',
+  'settings.mcp.intro': 'Permet à un assistant IA sur ton ordinateur de piloter Kurra Studio. C’est facultatif.',
 };
 
 export const A11YUX_HI = {
@@ -100,7 +100,7 @@ export const A11YUX_HI = {
   'dialog.shortcuts.camRight': 'दाएँ से व्यू',
   'dialog.shortcuts.camIso': 'आइसोमेट्रिक व्यू (कोने से 3D)',
   'dialog.shortcuts.camTop': 'ऊपर से व्यू',
-  'settings.mcp.intro': 'आपके कंप्यूटर पर एक AI सहायक को Kurra3D Studio चलाने देता है। यह वैकल्पिक है।',
+  'settings.mcp.intro': 'आपके कंप्यूटर पर एक AI सहायक को Kurra Studio चलाने देता है। यह वैकल्पिक है।',
 };
 
 export const A11YUX_ZH = {
@@ -119,5 +119,5 @@ export const A11YUX_ZH = {
   'dialog.shortcuts.camRight': '右视图',
   'dialog.shortcuts.camIso': '等轴测视图（从角上看的立体视图）',
   'dialog.shortcuts.camTop': '顶视图（从上往下）',
-  'settings.mcp.intro': '让你电脑上的 AI 助手控制 Kurra3D Studio。此功能为可选。',
+  'settings.mcp.intro': '让你电脑上的 AI 助手控制 Kurra Studio。此功能为可选。',
 };

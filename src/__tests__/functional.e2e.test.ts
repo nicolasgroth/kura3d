@@ -1,6 +1,6 @@
 /**
  * @file src/__tests__/functional.e2e.test.ts
- * @description Suite integral de evaluación funcional End-to-End (E2E) para Kurra3D Studio.
+ * @description Suite integral de evaluación funcional End-to-End (E2E) para Kurra Studio.
  * Verifica las 13 áreas funcionales principales contra el motor real Manifold-3D WASM,
  * el store central Zustand (`useKuraStore`), el Command Bus unificado, conversión de
  * unidades, diccionario i18n bilingüe (ES/EN), formatos STL/OBJ/3MF y el asistente IA local.
@@ -108,7 +108,7 @@ async function resetCleanStore() {
   });
 }
 
-describe('Evaluación Funcional E2E de Kurra3D Studio (13 áreas funcionales)', () => {
+describe('Evaluación Funcional E2E de Kurra Studio (13 áreas funcionales)', () => {
   beforeEach(async () => {
     await resetCleanStore();
   });

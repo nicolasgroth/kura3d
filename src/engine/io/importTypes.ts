@@ -1,7 +1,7 @@
 /**
  * @file src/engine/io/importTypes.ts
  * @description Tipos comunes del resultado de importación de modelos: piezas en coordenadas de
- * archivo (mm, Y-up de Kurra3D Studio), procedencia de la posición y diagnóstico de cierre.
+ * archivo (mm, Y-up de Kurra Studio), procedencia de la posición y diagnóstico de cierre.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -15,7 +15,7 @@ import type { KuraSceneGroupMeta, KuraSceneObjectMeta } from './kuraSceneMeta';
 import type { UnitHint } from './unitHint';
 import type { ImportedMeshAnalysis } from './importAnalysis';
 
-/** Formatos de modelo que Kurra3D Studio sabe leer. */
+/** Formatos de modelo que Kurra Studio sabe leer. */
 export type ModelImportFormat = 'stl' | 'obj' | '3mf' | 'ply';
 
 /** Pieza importada en coordenadas de escena del archivo (mm, Y-up), sin recentrar. */
@@ -33,7 +33,7 @@ export interface ImportedPart {
   group: number;
   /** Aristas no compartidas por exactamente dos triángulos (0 = cerrada, -1 = sin analizar). */
   openEdges: number;
-  /** Estado exacto del objeto si el 3MF lo exportó Kurra3D Studio (`mesh` es entonces la malla LOCAL). */
+  /** Estado exacto del objeto si el 3MF lo exportó Kurra Studio (`mesh` es entonces la malla LOCAL). */
   kura?: KuraSceneObjectMeta;
   /**
    * Traslación (mm, Y-up) de esta pieza respecto de `mesh`, si la malla se comparte con otras piezas
@@ -67,7 +67,7 @@ export interface ImportedModel {
   /** Ajustes hechos al leer (p. ej. normales invertidas reorientadas), con el nombre del archivo. */
   warnings?: EngineWarning[];
   /**
-   * Escena exportada por Kurra3D Studio (metadatos `Metadata/kura_scene.json`): se restaura tal cual, sin
+   * Escena exportada por Kurra Studio (metadatos `Metadata/kura_scene.json`): se restaura tal cual, sin
    * reacomodo ni conjuntos. Cada pieza trae su estado en `part.kura`.
    */
   kuraScene?: { groups: KuraSceneGroupMeta[] };

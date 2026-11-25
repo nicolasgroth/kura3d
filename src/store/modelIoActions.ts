@@ -188,7 +188,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
     const state = get();
     const wasEmpty = state.objects.length === 0;
     const bed = deps.bedSize?.() ?? null;
-    // Escenas exportadas por Kurra3D Studio: se restauran tal cual (sin reacomodo ni conjuntos).
+    // Escenas exportadas por Kurra Studio: se restauran tal cual (sin reacomodo ni conjuntos).
     const sceneModels = models.filter(isKuraScene);
     const plainModels = models.filter((m) => !isKuraScene(m));
     // El conjunto se arma centrado y luego se mueve como bloque al primer hueco libre de la cama.
@@ -360,7 +360,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
       const layoutTargets = splitMode === 'printLayout' && request.format === '3mf' ? printLayoutTargets(targets, bedWidth) : targets;
       const filters = [EXPORT_FILTERS[request.format]];
       // 3MF de la escena completa: viajan los objetos (ocultos y negativos sin ítem de build) y los grupos,
-      // para que Kurra3D Studio la restaure tal cual al volver a abrirla. Las referencias nunca: solo en el `.kura`.
+      // para que Kurra Studio la restaure tal cual al volver a abrirla. Las referencias nunca: solo en el `.kura`.
       const fullScene = request.format === '3mf' && request.scope === 'scene' && !splitMode;
       const { files } = await exportFiles({
         format: request.format,

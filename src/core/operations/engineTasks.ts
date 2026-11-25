@@ -58,7 +58,7 @@ export interface ExportTaskArgs {
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
   /**
    * 3MF de escena completa: grupos de la escena. `targets` trae entonces TODOS los objetos (también
-   * ocultos y huecos) y el archivo lleva los metadatos de Kurra3D Studio para restaurarla tal cual.
+   * ocultos y huecos) y el archivo lleva los metadatos de Kurra Studio para restaurarla tal cual.
    */
   sceneGroups?: SceneGroup[];
 }

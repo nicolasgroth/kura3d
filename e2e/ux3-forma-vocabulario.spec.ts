@@ -43,7 +43,7 @@ for (const esquema of ['light', 'dark'] as const) {
       await page.waitForTimeout(400);
       fallos.push(...(await pequenos(page)).map((f) => `${d}: ${f}`));
       if (d === 'settings') {
-        await expect(page.getByRole('dialog').getByRole('heading', { name: 'Ajustes de Kurra3D Studio', exact: true })).toBeVisible();
+        await expect(page.getByRole('dialog').getByRole('heading', { name: 'Ajustes de Kurra Studio', exact: true })).toBeVisible();
         await page.screenshot({ path: `${SHOTS}/vocab-ajustes-${esquema}.png` });
       }
       await page.evaluate(() => (window as any).__s.getState().setActiveDialog(null));
@@ -59,5 +59,5 @@ test('en inglés se usa «bed» y el título de Ajustes es «Settings»', async 
   const texto = await page.evaluate(() => document.body.innerText);
   expect(texto).not.toMatch(/build plate/i);
   await page.evaluate(() => (window as any).__s.getState().setActiveDialog('settings'));
-  await expect(page.getByRole('dialog').getByRole('heading', { name: 'Kurra3D Studio Settings', exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog').getByRole('heading', { name: 'Kurra Studio Settings', exact: true })).toBeVisible();
 });

@@ -1,6 +1,6 @@
 /**
  * @file src/components/PrecisionNumberInput.tsx
- * @description Control numérico de precisión CAD estilo Blender/Rhino para Kurra3D Studio:
+ * @description Control numérico de precisión CAD estilo Blender/Rhino para Kurra Studio:
  * - Arrastre horizontal (Drag-Scrub a 60fps) sobre la etiqueta/prefijo con modificadores en vivo.
  * - Teclado: ↑/↓ paso normal, Shift+↑/↓ salto grueso ×10, Alt/Ctrl+↑/↓ micro-precisión ×0.1.
  * - Enter confirma y Escape revierte al valor previo al foco.

@@ -1,13 +1,13 @@
 /**
  * @file src/styles/studio-components.css
- * @description Componentes Kurra3D Studio: leyenda de filamentos, validador, módulos, entrada de precisión y bloqueo. Parte de studio.css (se importa en orden desde allí).
+ * @description Componentes Kurra Studio: leyenda de filamentos, validador, módulos, entrada de precisión y bloqueo. Parte de studio.css (se importa en orden desde allí).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
 /* ============================================================================
- * 10. Componentes Kurra3D Studio (Leyenda de Filamentos, Validador, Módulos)
+ * 10. Componentes Kurra Studio (Leyenda de Filamentos, Validador, Módulos)
  * ============================================================================ */
 .kura-filament-legend {
   display: flex;
@@ -101,7 +101,7 @@
 }
 
 /* ============================================================================
- * 11. Componentes Kurra3D Studio (Precision Input, Lock, Estructuras, Pro Tips, Atajos)
+ * 11. Componentes Kurra Studio (Precision Input, Lock, Estructuras, Pro Tips, Atajos)
  * ============================================================================ */
 .kura-precision-input {
   display: flex;

@@ -162,7 +162,7 @@ export { computeMeshStats } from './meshStats';
  * Cuando `mesh.faceColors` está presente, convierte la geometría a formato no-indexado
  * con atributo `color` por vértice para mostrar el pintado por triángulo con bordes nítidos.
  *
- * @param mesh Malla origen en formato Kurra3D Studio.
+ * @param mesh Malla origen en formato Kurra Studio.
  * @param baseColorHex Color base opcional en hex si no se usa `faceColors`.
  * @returns Geometría Three.js lista para GPU.
  */

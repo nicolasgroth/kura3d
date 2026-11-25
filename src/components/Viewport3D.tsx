@@ -1,6 +1,6 @@
 /**
  * @file src/components/Viewport3D.tsx
- * @description Visor 3D de Kurra3D Studio (React Three Fiber): monta el Canvas con la escena y compone el HUD (vistas, rejilla, modos, menú contextual, consejos y dimensiones) desde `./viewport/`.
+ * @description Visor 3D de Kurra Studio (React Three Fiber): monta el Canvas con la escena y compone el HUD (vistas, rejilla, modos, menú contextual, consejos y dimensiones) desde `./viewport/`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

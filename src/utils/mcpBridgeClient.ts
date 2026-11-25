@@ -1,6 +1,6 @@
 /**
  * @file src/utils/mcpBridgeClient.ts
- * @description Cliente WebSocket controlado por el usuario para conectar Kurra3D Studio con el servidor MCP local.
+ * @description Cliente WebSocket controlado por el usuario para conectar Kurra Studio con el servidor MCP local.
  * Cuando `mcpConfig.enabled` es false, no realiza ningún intento de conexión ni reconexión.
  * Cuando está activo, usa `ws://127.0.0.1:${port}` con token obligatorio y declara su preferencia de
  * solo lectura en el handshake. La política lectura/escritura se importa de `src/core/commands/commandPolicy.ts`

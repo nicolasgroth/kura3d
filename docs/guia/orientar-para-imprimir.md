@@ -2,7 +2,7 @@
 
 **Orientar para imprimir** te dice cómo apoyar una pieza en la cama para que necesite **menos soporte**. Compara la orientación actual con las que se pueden obtener apoyando la pieza sobre cada una de sus caras planas, las ordena y te explica cada una en palabras. Tú eliges.
 
-Kurra3D Studio **no genera soportes ni lamina**: solo orienta y mide. Mirar las opciones no cambia la escena; la pieza solo se mueve cuando pulsas **Aplicar orientación**.
+Kurra Studio **no genera soportes ni lamina**: solo orienta y mide. Mirar las opciones no cambia la escena; la pieza solo se mueve cuando pulsas **Aplicar orientación**.
 
 ![Una «T» de pie: la lista de orientaciones a la derecha y, en el visor, en naranja, las zonas que hoy necesitarían soporte](img/orientar-01-lista.png)
 

@@ -1,6 +1,6 @@
 # Colgar en el muro
 
-Un **ojo de cerradura** (*keyhole*) es la ranura que tienen los cuadros, los routers o los organizadores para colgarlos de un tornillo en la pared: metes la cabeza del tornillo por el agujero grande, bajas la pieza y la cabeza queda atrapada detrás de la ranura. En Kurra3D Studio lo colocas con un clic sobre una cara.
+Un **ojo de cerradura** (*keyhole*) es la ranura que tienen los cuadros, los routers o los organizadores para colgarlos de un tornillo en la pared: metes la cabeza del tornillo por el agujero grande, bajas la pieza y la cabeza queda atrapada detrás de la ranura. En Kurra Studio lo colocas con un clic sobre una cara.
 
 El ojo es una **pieza negativa**: se resta de tu pieza cuando usas **Aplicar restas** (ver [Sólidos negativos y restas](solidos-negativos-y-restas.md)). Tiene tres partes:
 
@@ -10,7 +10,7 @@ El ojo es una **pieza negativa**: se resta de tu pieza cuando usas **Aplicar res
 
 ## Abrir el panel
 
-1. Ten al menos una pieza sólida visible en la escena. Si no hay ninguna, Kurra3D Studio te avisa y el panel no se abre.
+1. Ten al menos una pieza sólida visible en la escena. Si no hay ninguna, Kurra Studio te avisa y el panel no se abre.
 2. Elige **Insertar › Colgar en el muro** en la barra superior. También puedes hacer clic derecho sobre la pieza y elegir **Más › Colgar en el muro**, o abrir la paleta con `Ctrl+K` y escribir *colgar* o *keyhole*.
 3. El panel **Colgar en el muro** se abre a la derecha, con el tornillo de **4 mm**: entrada Ø 8,5 mm, cuello de 4,5 mm, ranura de 10 mm y cámara de 3 mm bajo un labio de 1,5 mm.
 
@@ -44,11 +44,11 @@ Si un campo está fuera de rango o las medidas no calzan entre sí, el campo que
 3. Haz **clic** donde lo quieras. Se agrega el ojo agrupado con la pieza. Lo que tenías seleccionado no cambia; cada clic agrega otro y `Ctrl+Z` quita solo el último.
 4. Termina con **Listo**, con la X del panel o con `Esc`.
 
-Para que la pieza cuelgue derecha usa **dos ojos a la misma altura**. Kurra3D Studio compara el punto donde descansa cada tornillo.
+Para que la pieza cuelgue derecha usa **dos ojos a la misma altura**. Kurra Studio compara el punto donde descansa cada tornillo.
 
 ### Avisos
 
-Kurra3D Studio revisa cada ojo al colocarlo y te avisa sin impedirlo:
+Kurra Studio revisa cada ojo al colocarlo y te avisa sin impedirlo:
 
 - **La cámara atraviesa la pieza**: la pared es más delgada que labio + cámara. Usa una cara más gruesa o baja el fondo de la cámara.
 - **Pared delgada detrás**: quedan menos de 1,2 mm de material detrás de la cámara; puede romperse al colgar.
@@ -56,7 +56,7 @@ Kurra3D Studio revisa cada ojo al colocarlo y te avisa sin impedirlo:
 - **No está a la misma altura**: hay otro ojo en la misma cara y sus puntos de cuelgue difieren más de 0,2 mm. La pieza colgaría torcida.
 - **Cara no vertical**: aviso suave; normalmente el ojo va en la cara que mira al muro.
 
-Si la figura es más ancha que la cara en esa zona (sale de la pieza por lados opuestos), el ojo **no se coloca** y Kurra3D Studio te lo dice.
+Si la figura es más ancha que la cara en esa zona (sale de la pieza por lados opuestos), el ojo **no se coloca** y Kurra Studio te lo dice.
 
 El ojo **sigue a su pieza**: si la mueves, la giras o la escalas, el ojo va con ella y conserva sus medidas. Al duplicar la pieza se copia; al borrarla se borra. Se guarda en el proyecto `.kura`.
 

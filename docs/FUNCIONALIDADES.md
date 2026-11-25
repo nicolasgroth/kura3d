@@ -1,4 +1,4 @@
-# Registro de funcionalidades de Kurra3D Studio
+# Registro de funcionalidades de Kurra Studio
 
 Lista de lo que la app ofrece hoy. Es el alcance que reciben los evaluadores: cada funcionalidad **activa** se puntúa por separado (usabilidad, código, funcionalidad) y luego se da una nota global. Las notas se registran en [EVALUACIONES.md](EVALUACIONES.md).
 

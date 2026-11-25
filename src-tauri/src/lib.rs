@@ -1,7 +1,7 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
 // Organización: ISGROTH — Innovación y Soluciones GROTH
 // Licencia: MIT
-// Descripción: Módulo principal del backend nativo de Kurra3D Studio sobre Tauri v2.
+// Descripción: Módulo principal del backend nativo de Kurra Studio sobre Tauri v2.
 // Expone los comandos de proyectos .kura (y su registro de recientes), el almacén de claves IA del sistema operativo y el
 // proxy HTTP nativo hacia proveedores IA (la CSP del webview no abre hosts remotos).
 
@@ -50,6 +50,6 @@ pub fn run() {
             ai_proxy::ai_allowed_hosts_set,
         ])
         .run(tauri::generate_context!())
-        .expect("Error crítico al iniciar el runtime nativo de Kurra3D Studio");
+        .expect("Error crítico al iniciar el runtime nativo de Kurra Studio");
 }
 

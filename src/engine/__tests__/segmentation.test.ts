@@ -1,6 +1,6 @@
 /**
  * @file src/engine/__tests__/segmentation.test.ts
- * @description Suite de pruebas unitarias Vitest para Kurra3D Studio: Detección y Segmentación
+ * @description Suite de pruebas unitarias Vitest para Kurra Studio: Detección y Segmentación
  * Estructural Determinística 3D, coloreado automático por regiones, extracción sólida
  * con cierre de fronteras abiertas, división completa y simetría especular (mirror).
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -100,7 +100,7 @@ async function buildDiverCompositeMesh(): Promise<MeshData> {
   }
 }
 
-describe('Kurra3D Studio — Detección y Segmentación Estructural Determinística', () => {
+describe('Kurra Studio — Detección y Segmentación Estructural Determinística', () => {
   it('detecta y clasifica limpiamente >= 4 sub-estructuras en la figura compuesta Buzo/Diver', async () => {
     const diverMesh = await buildDiverCompositeMesh();
     const diverObj = makeSceneObject('diver_1', diverMesh);

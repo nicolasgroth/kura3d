@@ -2,7 +2,7 @@
  * @file src/components/split/SplitAssemblyStatus.tsx
  * @description Estado del armado de un grupo dividido, arriba de la sección "Uniones": si el resultado no
  * cierra (piezas que no entran, choques entre conectores, interferencias o huecos), un aviso visible con lo
- * que hay que hacer; y, si Kurra3D Studio pegó uniones o cambió tipos de conector para poder montarlo, cuántas.
+ * que hay que hacer; y, si Kurra Studio pegó uniones o cambió tipos de conector para poder montarlo, cuántas.
  * También lista las uniones débiles. Toma el último "Validar armado" si existe y, si no, el informe completo
  * que devolvió la división (se guarda en el proyecto, así que se ve igual al reabrir).
  * @author Nicolás Groth <ngroth@gmail.com>

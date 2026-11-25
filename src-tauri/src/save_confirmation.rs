@@ -29,7 +29,7 @@ impl SaveConfirmer for NativeConfirmer<'_> {
                 "¿Guardar los cambios en {name}? Se abrió desde Recientes.\n\
                  Save changes to {name}? It was opened from Recent.\n\n{folder}"
             ))
-            .title("Kurra3D Studio")
+            .title("Kurra Studio")
             .kind(MessageDialogKind::Warning)
             .buttons(MessageDialogButtons::OkCancel)
             .blocking_show()

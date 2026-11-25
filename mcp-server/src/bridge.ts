@@ -1,7 +1,7 @@
 /**
  * @file mcp-server/src/bridge.ts
  * @description Servidor WebSocket local (`127.0.0.1`) que actúa como puente en tiempo real
- * entre el servidor MCP de Kurra3D Studio y la interfaz gráfica (escritorio Tauri o navegador web).
+ * entre el servidor MCP de Kurra Studio y la interfaz gráfica (escritorio Tauri o navegador web).
  * Seguridad: token obligatorio (sin token el puente no se habilita), validación de Host y Origin
  * contra DNS rebinding, límite de tamaño de mensaje, rate-limit de comandos y de autenticaciones
  * fallidas, rotación de token con revocación inmediata y modo Solo Lectura aplicado en servidor.
@@ -34,7 +34,7 @@ export const BRIDGE_PROTOCOL_VERSION = 1;
 /** Código de cierre WebSocket enviado a las sesiones cuyo token fue revocado por rotación. */
 export const CLOSE_TOKEN_ROTATED = 4001;
 
-/** Entrada de petición pendiente de respuesta desde el cliente Kurra3D Studio conectado. */
+/** Entrada de petición pendiente de respuesta desde el cliente Kurra Studio conectado. */
 interface PendingRequest {
   resolve: (value: KuraCommandResponse) => void;
   reject: (reason: Error) => void;
@@ -91,7 +91,7 @@ export function constantTimeEquals(expected: string, received: string): boolean 
 
 /**
  * Puente WebSocket seguro (ligado exclusivamente a `127.0.0.1`) que permite
- * ejecutar herramientas MCP directamente sobre la escena activa en Kurra3D Studio.
+ * ejecutar herramientas MCP directamente sobre la escena activa en Kurra Studio.
  */
 export class KuraBridgeServer {
   private readonly host = '127.0.0.1';
@@ -129,7 +129,7 @@ export class KuraBridgeServer {
         this.authToken.length === 0
           ? 'Puente WebSocket deshabilitado: falta KURA_BRIDGE_TOKEN (o --token-file). Modo Headless disponible.'
           : `WebSocket bridge disabled: the token must have at least ${MIN_TOKEN_LENGTH} characters.`;
-      console.error(`[Kurra3D-MCP] ${this.startupError}`);
+      console.error(`[Kurra-MCP] ${this.startupError}`);
       this.listening = false;
       return false;
     }
@@ -153,7 +153,7 @@ export class KuraBridgeServer {
           this.port = address.port;
         }
         this.listening = true;
-        console.error(`[Kurra3D-MCP] Puente WebSocket escuchando en ws://${this.host}:${this.port}`);
+        console.error(`[Kurra-MCP] Puente WebSocket escuchando en ws://${this.host}:${this.port}`);
         if (!settled) {
           settled = true;
           resolve(true);
@@ -165,10 +165,10 @@ export class KuraBridgeServer {
       wss.on('error', (err: NodeJS.ErrnoException) => {
         if (err.code === 'EADDRINUSE') {
           console.error(
-            `[Kurra3D-MCP] Puerto ${this.port} ocupado por otra instancia; continuando en modo Headless.`
+            `[Kurra-MCP] Puerto ${this.port} ocupado por otra instancia; continuando en modo Headless.`
           );
         } else {
-          console.error(`[Kurra3D-MCP] Error en puente WebSocket: ${err.message}`);
+          console.error(`[Kurra-MCP] Error en puente WebSocket: ${err.message}`);
         }
         this.listening = false;
         if (!settled) {
@@ -185,7 +185,7 @@ export class KuraBridgeServer {
     });
   }
 
-  /** Indica si hay una instancia viva de la UI de Kurra3D Studio conectada al puente. */
+  /** Indica si hay una instancia viva de la UI de Kurra Studio conectada al puente. */
   isConnected(): boolean {
     return this.activeClient !== null && this.activeClient.readyState === WebSocket.OPEN;
   }
@@ -278,17 +278,17 @@ export class KuraBridgeServer {
         persistent = true;
       } catch (err) {
         console.error(
-          `[Kurra3D-MCP] No se pudo persistir el token rotado: ${err instanceof Error ? err.message : String(err)}`
+          `[Kurra-MCP] No se pudo persistir el token rotado: ${err instanceof Error ? err.message : String(err)}`
         );
       }
     }
     console.error(
-      `[Kurra3D-MCP] Token del puente rotado (${persistent ? 'persistente' : 'solo en memoria hasta reiniciar'}).`
+      `[Kurra-MCP] Token del puente rotado (${persistent ? 'persistente' : 'solo en memoria hasta reiniciar'}).`
     );
     return { ok: true, persistent };
   }
 
-  /** Envía un comando al frontend de Kurra3D Studio y espera su respuesta JSON correlacionada por `id`. */
+  /** Envía un comando al frontend de Kurra Studio y espera su respuesta JSON correlacionada por `id`. */
   async sendCommand(
     command: KuraCommandName,
     params: Record<string, unknown> = {},
@@ -296,7 +296,7 @@ export class KuraBridgeServer {
     options?: { skipRateLimit?: boolean }
   ): Promise<KuraCommandResponse> {
     if (this.isReadOnly() && !isReadCommand(command)) {
-      throw new Error('Operation blocked: Kurra3D Studio MCP is in Read-only mode.');
+      throw new Error('Operation blocked: Kurra Studio MCP is in Read-only mode.');
     }
 
     if (!options?.skipRateLimit) {
@@ -305,7 +305,7 @@ export class KuraBridgeServer {
 
     const client = this.activeClient;
     if (!client || client.readyState !== WebSocket.OPEN) {
-      throw new Error('No Kurra3D Studio instance is connected to the WebSocket bridge.');
+      throw new Error('No Kurra Studio instance is connected to the WebSocket bridge.');
     }
 
     const id = randomUUID();
@@ -315,7 +315,7 @@ export class KuraBridgeServer {
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(
-          new Error(`Timed out (${timeoutMs} ms) running command '${command}' in Kurra3D Studio.`)
+          new Error(`Timed out (${timeoutMs} ms) running command '${command}' in Kurra Studio.`)
         );
       }, timeoutMs);
 
@@ -333,7 +333,7 @@ export class KuraBridgeServer {
 
   /** Cierra ordenadamente las conexiones activas y libera el puerto TCP local. */
   async close(): Promise<void> {
-    this.rejectAllPending(new Error('The Kurra3D Studio bridge server was stopped.'));
+    this.rejectAllPending(new Error('The Kurra Studio bridge server was stopped.'));
 
     if (this.activeClient) {
       try {
@@ -367,7 +367,7 @@ export class KuraBridgeServer {
     done: (result: boolean, code?: number, message?: string) => void
   ): void {
     const reject = (code: number, message: string) => {
-      console.error(`[Kurra3D-MCP] Conexión WebSocket rechazada (${code}): ${message}`);
+      console.error(`[Kurra-MCP] Conexión WebSocket rechazada (${code}): ${message}`);
       done(false, code, message);
     };
 
@@ -378,7 +378,7 @@ export class KuraBridgeServer {
       return;
     }
     if (!isAllowedLocalOrigin(origin ?? req.headers.origin)) {
-      reject(403, 'Origin not allowed on the local Kurra3D Studio bridge.');
+      reject(403, 'Origin not allowed on the local Kurra Studio bridge.');
       return;
     }
     // El throttle se aplica antes de mirar el token (también al correcto) para que
@@ -402,9 +402,9 @@ export class KuraBridgeServer {
   private handleConnection(socket: WebSocket, req: IncomingMessage): void {
     if (this.activeClient && this.activeClient !== socket) {
       // Las solicitudes en vuelo eran del cliente anterior: se rechazan ya, sin esperar el timeout.
-      this.rejectAllPending(new Error('The Kurra3D Studio instance was replaced by another before responding.'));
+      this.rejectAllPending(new Error('The Kurra Studio instance was replaced by another before responding.'));
       try {
-        this.activeClient.close(1000, 'Replaced by a new Kurra3D Studio instance');
+        this.activeClient.close(1000, 'Replaced by a new Kurra Studio instance');
       } catch {
         // Ignora errores al cerrar conexiones previas obsoletas
       }
@@ -412,7 +412,7 @@ export class KuraBridgeServer {
 
     this.activeClient = socket;
     this.uiReadOnly = this.parseUiReadOnly(req);
-    console.error('[Kurra3D-MCP] UI de Kurra3D Studio conectada en modo Live Bridge.');
+    console.error('[Kurra-MCP] UI de Kurra Studio conectada en modo Live Bridge.');
 
     this.sendControl(socket, {
       type: 'hello',
@@ -433,14 +433,14 @@ export class KuraBridgeServer {
       if (this.activeClient === socket) {
         this.activeClient = null;
         this.rejectAllPending(
-          new Error('The connection to the Kurra3D Studio UI closed before the command completed.')
+          new Error('The connection to the Kurra Studio UI closed before the command completed.')
         );
-        console.error('[Kurra3D-MCP] UI de Kurra3D Studio desconectada. Modo Headless disponible.');
+        console.error('[Kurra-MCP] UI de Kurra Studio desconectada. Modo Headless disponible.');
       }
     });
 
     socket.on('error', (err) => {
-      console.error(`[Kurra3D-MCP] Error en socket cliente: ${err.message}`);
+      console.error(`[Kurra-MCP] Error en socket cliente: ${err.message}`);
     });
   }
 
@@ -450,7 +450,7 @@ export class KuraBridgeServer {
     try {
       parsed = JSON.parse(rawText);
     } catch {
-      console.error('[Kurra3D-MCP] Mensaje WebSocket inválido (JSON malformado).');
+      console.error('[Kurra-MCP] Mensaje WebSocket inválido (JSON malformado).');
       return;
     }
 

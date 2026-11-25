@@ -1,6 +1,6 @@
 /**
  * @file src/components/RightInspector.tsx
- * @description Inspector derecho de Kurra3D Studio: guarda el estado local de las secciones (sobrevive a cambios de
+ * @description Inspector derecho de Kurra Studio: guarda el estado local de las secciones (sobrevive a cambios de
  * selección y de contexto), atiende la petición de foco de precisión y delega en el panel contextual
  * (`./contextPanel/ContextPanel.tsx`), que elige qué mostrar.
  * @author Nicolás Groth <ngroth@gmail.com>

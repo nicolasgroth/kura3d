@@ -52,7 +52,7 @@ export interface CompiledExpr {
 
 let configured = false;
 
-/** Reduce la tabla global de `jsep` a la lista blanca. Kurra3D Studio no usa `jsep` en otro lugar. */
+/** Reduce la tabla global de `jsep` a la lista blanca. Kurra Studio no usa `jsep` en otro lugar. */
 function configureJsep(): void {
   if (configured) return;
   jsep.removeAllBinaryOps();

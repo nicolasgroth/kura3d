@@ -1,6 +1,6 @@
 /**
  * @file src/engine/engineErrors.ts
- * @description Errores y avisos tipados del motor geométrico de Kurra3D Studio. Cada error lleva un
+ * @description Errores y avisos tipados del motor geométrico de Kurra Studio. Cada error lleva un
  * código estable (`EngineErrorCode`) y parámetros numéricos; el mensaje se resuelve por i18n
  * (`engineError.<código>` / `engineWarning.<código>`) en los 6 idiomas. `message` queda en
  * español para compatibilidad con los consumidores que solo muestran `err.message`.

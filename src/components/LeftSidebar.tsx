@@ -1,6 +1,6 @@
 /**
  * @file src/components/LeftSidebar.tsx
- * @description Barra lateral izquierda de Kurra3D Studio: solo la Escena (resumen de filamentos, búsqueda y árbol de
+ * @description Barra lateral izquierda de Kurra Studio: solo la Escena (resumen de filamentos, búsqueda y árbol de
  * objetos operable con teclado, `scene/SceneObjectList.tsx`, y «Vaciar cama» con su confirmación). Se muestra u
  * oculta con el tirador `LeftSidebarHandle`; oculta, el visor gana ese ancho. Las formas y generadores viven en
  * «Agregar» (barra vertical) e «Insertar» (barra superior). En pantallas estrechas es la hoja inferior: con la

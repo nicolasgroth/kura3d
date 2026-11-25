@@ -1,6 +1,6 @@
 /**
  * @file src/store/useKuraStore.ts
- * @description Store central Zustand de Kurra3D Studio: compone los slices por responsabilidad
+ * @description Store central Zustand de Kurra Studio: compone los slices por responsabilidad
  * (documento, historial, selección y transformación, interfaz y preferencias, IA y MCP,
  * importación/exportación y operaciones geométricas) y el Command Bus unificado para UI, servidor
  * MCP y chat IA. La lógica de escena vive en `src/core`; aquí solo se ensambla.

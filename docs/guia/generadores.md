@@ -1,6 +1,6 @@
 # Generadores
 
-Kurra3D Studio crea formas a partir de un texto, un dibujo vectorial, una imagen o una norma de roscas, y moldes a partir de tu pieza. Todos están en el menú **Insertar** de la barra superior (en el teléfono, en la hoja **Agregar**) o en la paleta `Ctrl+K`.
+Kurra Studio crea formas a partir de un texto, un dibujo vectorial, una imagen o una norma de roscas, y moldes a partir de tu pieza. Todos están en el menú **Insertar** de la barra superior (en el teléfono, en la hoja **Agregar**) o en la paleta `Ctrl+K`.
 
 ## Texto 3D
 

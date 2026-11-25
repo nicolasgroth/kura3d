@@ -54,7 +54,7 @@ export function hasAllowedExtension(path: string, extensions: string[]): boolean
 }
 
 /**
- * Detecta en tiempo de ejecución si Kurra3D Studio está corriendo dentro del contenedor nativo Tauri v2.
+ * Detecta en tiempo de ejecución si Kurra Studio está corriendo dentro del contenedor nativo Tauri v2.
  */
 export function isTauriRuntime(): boolean {
   if (typeof window === 'undefined') {

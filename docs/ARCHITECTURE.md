@@ -1,4 +1,4 @@
-# Arquitectura de Kurra3D Studio
+# Arquitectura de Kurra Studio
 
 Guía breve de capas y dependencias. La prueba `src/__tests__/dependencyRules.test.ts` hace cumplir la regla de dependencias.
 

@@ -1,6 +1,6 @@
 ---
 name: capturas
-description: Regenera las capturas y animaciones de las guías públicas de Kurra3D Studio desde la app web y comprueba los enlaces. Úsalo cuando un lote cambia algo que el usuario ve (interfaz, textos, menús) y antes de fusionar ese lote a main.
+description: Regenera las capturas y animaciones de las guías públicas de Kurra Studio desde la app web y comprueba los enlaces. Úsalo cuando un lote cambia algo que el usuario ve (interfaz, textos, menús) y antes de fusionar ese lote a main.
 ---
 
 # Capturas de las guías

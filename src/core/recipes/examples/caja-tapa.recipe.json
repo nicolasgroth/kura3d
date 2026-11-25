@@ -5,7 +5,7 @@
   "kura": ">=0.8.0",
   "title": "$t:title",
   "description": "$t:description",
-  "author": "Kurra3D Studio",
+  "author": "Kurra Studio",
   "license": "MIT",
   "category": "cajas",
   "params": [

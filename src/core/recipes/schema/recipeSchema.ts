@@ -28,7 +28,7 @@ export const RecipeSchema = z
       .max(40)
       .regex(/^(>=|>|<=|<|=|\^|~)?\d{1,4}\.\d{1,4}\.\d{1,6}( (>=|>|<=|<|=|\^|~)?\d{1,4}\.\d{1,4}\.\d{1,6})?$/)
       .optional()
-      .describe('Versiones de Kurra3D Studio compatibles (rango semver simple).'),
+      .describe('Versiones de Kurra Studio compatibles (rango semver simple).'),
     title: Text,
     description: Text.optional(),
     author: Text,
@@ -53,7 +53,7 @@ export const RecipeSchema = z
     assets: z.array(Asset).max(L.maxAssets).optional(),
     strings: Strings.optional(),
   })
-  .describe('Receta de Kurra3D Studio (kura.recipe/1): parámetros, reglas y pasos sobre comandos del programa. Datos, no código.');
+  .describe('Receta de Kurra Studio (kura.recipe/1): parámetros, reglas y pasos sobre comandos del programa. Datos, no código.');
 
 export type Recipe = z.infer<typeof RecipeSchema>;
 export type RecipeParam = z.infer<typeof Param>;

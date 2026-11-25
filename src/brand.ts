@@ -1,6 +1,6 @@
 /**
  * @file src/brand.ts
- * @description Fuente única de verdad de la marca, autoría y licencia de Kurra3D Studio,
+ * @description Fuente única de verdad de la marca, autoría y licencia de Kurra Studio,
  * usada por la interfaz y los exportadores de archivos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -8,9 +8,9 @@
  */
 
 export const BRAND = {
-  name: 'Kurra3D Studio',
+  name: 'Kurra Studio',
   /** Forma corta para lugares angostos (insignias, prefijos de consola). */
-  shortName: 'Kurra3D',
+  shortName: 'Kurra',
   author: 'Nicolás Groth',
   organization: 'ISGROTH — Innovación y Soluciones GROTH',
   license: 'MIT',

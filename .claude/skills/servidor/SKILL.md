@@ -1,9 +1,9 @@
 ---
 name: servidor
-description: Levanta, detiene y verifica el servidor web de Kurra3D Studio y las corridas de Playwright sin dejar procesos colgados. Úsalo antes de abrir la app en el navegador, antes de lanzar QA o evaluación, al cerrar un lote y antes de cada mensaje de cierre al usuario.
+description: Levanta, detiene y verifica el servidor web de Kurra Studio y las corridas de Playwright sin dejar procesos colgados. Úsalo antes de abrir la app en el navegador, antes de lanzar QA o evaluación, al cerrar un lote y antes de cada mensaje de cierre al usuario.
 ---
 
-# Servidor y procesos de Kurra3D Studio
+# Servidor y procesos de Kurra Studio
 
 El autor trabaja en otras cosas en la misma máquina. Un proceso de desarrollo que queda vivo le quita memoria y CPU a todo lo demás. En Windows, detener una tarea en segundo plano (`TaskStop`) cierra el `npx` que la lanzó, pero **deja vivo el `node` hijo**: Vite sigue escuchando y Playwright deja sus navegadores. Por eso todo cierre se hace por PID y se verifica.
 

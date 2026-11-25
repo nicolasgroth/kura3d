@@ -18,7 +18,7 @@ import { buildKuraSceneMeta, KURA_SCENE_PATH } from './kuraSceneMeta';
 import { exportableObjects } from './stl';
 import { isReference } from '../../core/scene/objectRole';
 
-/** Opciones de la exportación de escena completa (ida y vuelta exacta con Kurra3D Studio). */
+/** Opciones de la exportación de escena completa (ida y vuelta exacta con Kurra Studio). */
 export interface ThreeMfSceneOptions {
   /**
    * Árbol de grupos de la escena. Si se pasa, `objects` es la escena entera: lo visible y sólido va al
@@ -199,7 +199,7 @@ export function exportSceneTo3MF(
       model.write(`          <triangle v1="${idx[t * 3]}" v2="${idx[t * 3 + 1]}" v3="${idx[t * 3 + 2]}"${props} />\n`);
     }
     model.write(`        </triangles>\n      </mesh>\n    </object>\n`);
-    if (!printed) return; // oculto o hueco: solo Kurra3D Studio lo restaura (los laminadores no lo ven)
+    if (!printed) return; // oculto o hueco: solo Kurra Studio lo restaura (los laminadores no lo ven)
     buildItems.push(`    <item objectid="${objId}" />`);
 
     // Mapeo de extrusores (base 1..N) para Bambu/Orca/Elegoo/FlashForge/Snapmaker.
