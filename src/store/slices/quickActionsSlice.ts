@@ -311,6 +311,11 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       if (target) record({ kind: 'material', materialPreset });
     },
 
+    updateObjectsMeta: (ids, patch, recordHistory = true) => {
+      base.updateObjectsMeta!(ids, patch, recordHistory);
+      if (recordHistory && ids.length > 0 && patch.color && Object.keys(patch).length === 1) record({ kind: 'color', color: patch.color });
+    },
+
     updateObjectMeta: (id, patch) => {
       // Pasar a Negativo una pieza recién creada junto al sólido que estaba seleccionado la lleva sobre él.
       const obj = patch.role === 'negative' ? get().objects.find((o) => o.id === id && !isNegative(o)) : undefined;
