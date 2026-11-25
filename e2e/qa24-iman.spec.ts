@@ -742,20 +742,48 @@ test('10 modelos reales importados: vista previa = creado, restas válidas', asy
     const antes = (await getState(page)).objects.filter((o: any) => o.role === 'negative').length;
     for (const dir3 of [[0.05, 1, 0.05], [1, 0.3, 0.2]] as P3[]) {
       await camara(page, bb.center as P3, dir3, Math.max(...bb.size) * 3);
-      await apuntar(page, bb.center as P3);
-      const h = await hoverState(page);
-      if (!h) { continue; }
-      const n0 = (await getState(page)).objects.length;
-      await page.mouse.down();
-      await page.mouse.up();
-      await expect.poll(async () => (await getState(page)).objects.length, { timeout: 60000 }).toBe(n0 + 1);
-      await libre(page);
-      const last = (await getState(page)).objects.filter((o: any) => o.role === 'negative').slice(-1)[0];
-      const axis = ejeDe(last.rotation);
-      const tip = last.position.map((v: number, i: number) => v + axis[i] * 2.2);
-      const err = Math.hypot(tip[0] - h.point[0], tip[1] - h.point[1], tip[2] - h.point[2]);
-      expect(dot(axis, h.normal)).toBeGreaterThan(0.999);
-      expect(err).toBeLessThan(0.3);
+      // El centro puede caer en un saliente más angosto que el hueco (en tinker, desde arriba, un saliente de ~5 mm
+      // con el hueco de 5,4 mm): ahí el imán se rechaza con aviso, y eso es correcto. Se comprueba que el rechazo
+      // sea por eso y se prueba un punto vecino.
+      for (const off of [[0, 0], [14, 0], [-14, 0], [0, 14], [0, -14], [28, 28], [-28, -28]] as [number, number][]) {
+        await apuntar(page, bb.center as P3, off);
+        const h = await hoverState(page);
+        if (!h) { continue; }
+        const n0 = (await getState(page)).objects.length;
+        await page.evaluate(() => (window as any).__s.getState().dismissAllToasts?.());
+        await page.mouse.down();
+        await page.mouse.up();
+        const outcome = async () => {
+          const s = (await getState(page));
+          if (s.objects.length === n0 + 1) return 'creado';
+          const rechazo = await page.evaluate(() => (window as any).__s.getState().toasts
+            .some((t: any) => t.kind === 'error' && /más grande que la pieza/.test(t.text)));
+          return rechazo ? 'rechazado' : null;
+        };
+        await expect.poll(outcome, { timeout: 60000 }).not.toBeNull();
+        await libre(page);
+        if ((await outcome()) === 'rechazado') {
+          // El rechazo tiene que estar justificado por la geometría: el hueco es más ancho que la pieza ahí.
+          const motivo = await page.evaluate(async ({ id, h }) => {
+            const { analyzePocket, MAX_POCKET_FILL } = await import('/src/core/addons/pocketAnalysis.ts');
+            const { applyTransformToMesh } = await import('/src/engine/index.ts');
+            const { useMagnetPanel } = await import('/src/store/magnetPanel.ts');
+            const o = (window as any).__s.getState().objects.find((x: any) => x.id === id);
+            const a = analyzePocket(applyTransformToMesh(o.mesh, o.position, o.rotation, o.scale), useMagnetPanel.getState().params, h.point, h.normal, []);
+            return a ? { spansFace: a.spansFace, tooFull: a.fill > MAX_POCKET_FILL } : null;
+          }, { id: objetivo.id, h });
+          expect(motivo && (motivo.spansFace || motivo.tooFull), `rechazo sin motivo geométrico en ${JSON.stringify(h)}`).toBe(true);
+          await page.evaluate(() => (window as any).__s.getState().dismissAllToasts?.());
+          continue;
+        }
+        const last = (await getState(page)).objects.filter((o: any) => o.role === 'negative').slice(-1)[0];
+        const axis = ejeDe(last.rotation);
+        const tip = last.position.map((v: number, i: number) => v + axis[i] * 2.2);
+        const err = Math.hypot(tip[0] - h.point[0], tip[1] - h.point[1], tip[2] - h.point[2]);
+        expect(dot(axis, h.normal)).toBeGreaterThan(0.999);
+        expect(err).toBeLessThan(0.3);
+        break;
+      }
     }
     await page.keyboard.press('Escape');
     const nNeg = (await getState(page)).objects.filter((o: any) => o.role === 'negative').length;
