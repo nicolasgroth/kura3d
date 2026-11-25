@@ -10,6 +10,7 @@
  * @license MIT
  */
 
+import { plateFrameFor } from '../../core/scene/plateFrame';
 import React, { useEffect, useId, useMemo, useState } from 'react';
 import { Minimize2 } from 'lucide-react';
 import { t, type TranslationKey } from '../../i18n';
@@ -73,7 +74,10 @@ export const FitToBedDialog: React.FC = () => {
       return;
     }
     const targets = fitTargets(scene, activeIds);
-    setFitPreview(planFitTransforms(targets, { orientationIndex: selected.orientation.index, factor: selected.factor }));
+    const preview = planFitTransforms(targets, { orientationIndex: selected.orientation.index, factor: selected.factor });
+    // Con placas, la vista previa cae en la placa de las piezas (sin placas: el origen, como siempre).
+    const [ox, oz] = plateFrameFor(useKuraStore.getState(), targets).origin;
+    setFitPreview(ox === 0 && oz === 0 ? preview : Object.fromEntries(Object.entries(preview).map(([id, tf]) => [id, { ...tf, position: [tf.position[0] + ox, tf.position[1], tf.position[2] + oz] as typeof tf.position }])));
   }, [open, selected, activeIds]);
 
   const apply = async () => {

@@ -19,12 +19,19 @@ type BedState = Pick<KuraStoreState, 'customBedDimensions' | 'printerProfile'> &
   activePlateId?: string | null;
 };
 
+/** Medidas de la cama activa (centrada en el origen de su placa), o null si no hay medidas. */
+export function activeBedSize(state: BedState): BedSize | null {
+  if (!state.customBedDimensions && !state.printerProfile) return null;
+  const { bed } = activePlateBed(state);
+  return { width: bed.widthMm, depth: bed.depthMm };
+}
+
 /**
- * Medidas de la cama activa, o null si no hay medidas. `origin` solo aparece si la placa no está en el origen
- * (sin placas, o con la primera, el resultado es el de siempre). `plateId` pide la cama de otra placa
- * (p. ej. la de la pieza que se duplica) en vez de la activa.
+ * Cama para COLOCAR piezas: las medidas de `activeBedSize` más el centro de la placa (`origin`), para que lo nuevo
+ * caiga sobre su placa. `origin` solo aparece si la placa no está en el origen (sin placas, o con la primera, el
+ * resultado es el de siempre). `plateId` pide la cama de otra placa (p. ej. la de la pieza que se duplica).
  */
-export function activeBedSize(state: BedState, plateId?: string | null): BedSize | null {
+export function placementBedSize(state: BedState, plateId?: string | null): BedSize | null {
   if (!state.customBedDimensions && !state.printerProfile) return null;
   const { bed, origin } = activePlateBed(plateId ? { ...state, activePlateId: plateId } : state);
   return { width: bed.widthMm, depth: bed.depthMm, ...(origin[0] !== 0 || origin[1] !== 0 ? { origin } : {}) };
@@ -34,7 +41,7 @@ export function activeBedSize(state: BedState, plateId?: string | null): BedSize
 export function allBedSizes(state: BedState): BedSize[] {
   const plates = state.plates ?? [];
   if (plates.length < 2) {
-    const one = activeBedSize(state);
+    const one = placementBedSize(state);
     return one ? [one] : [];
   }
   const base = projectBed(state);

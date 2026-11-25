@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { plateFrameFor } from '../../core/scene/plateFrame';
 import * as engine from '../../engine';
 import { centerOnBedPositions } from '../../core/scene/centerOnBed';
 import { replacedGeometryPatch } from '../../core/scene/replaceGeometry';
@@ -41,7 +42,9 @@ export function createMenuIdeasSlice(ctx: StoreContext): Partial<KuraStoreState>
     centerSelectionOnBed: (ids) => {
       const targets = editable(ids);
       if (targets.length === 0 || rejectWhileLocked()) return false;
-      const positions = centerOnBedPositions(targets);
+      // Con placas, se centra en la placa de las piezas (sin placas: el origen, como siempre).
+      const [ox, oz] = plateFrameFor(get(), targets).origin;
+      const positions = centerOnBedPositions(targets, [ox, oz]);
       const moved = targets.filter((o) => {
         const p = positions[o.id];
         return p && (Math.abs(p[0] - o.position[0]) > 1e-9 || Math.abs(p[2] - o.position[2]) > 1e-9);

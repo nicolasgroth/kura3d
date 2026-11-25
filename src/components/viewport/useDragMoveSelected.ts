@@ -16,7 +16,7 @@ import { useThree, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { DRAG_MOVE_THRESHOLD_PX, dragBoundsForBed, dragBoundsForBeds, dragMoveDelta, dragSnapMm } from '../../core/scene/dragMovePlane';
-import { activeBedSize, allBedSizes } from '../../store/bedSize';
+import { allBedSizes, placementBedSize } from '../../store/bedSize';
 import { t } from '../../i18n';
 import { useGizmoDragStore } from '../../store/gizmoDragStore';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -133,7 +133,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       grab: s.grab,
       reference: s.reference,
       snapMm: dragSnapMm(store.snapGridMm, p.ctrl),
-      bounds: store.plates.length >= 2 ? dragBoundsForBeds(allBedSizes(store)) : dragBoundsForBed(activeBedSize(store)),
+      bounds: store.plates.length >= 2 ? dragBoundsForBeds(allBedSizes(store)) : dragBoundsForBed(placementBedSize(store)),
     });
     // Vista rasante o rayo que no alcanza el plano: se conserva la última posición válida.
     if (delta) s.lastDelta = delta;

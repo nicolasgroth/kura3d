@@ -19,7 +19,7 @@ import { PRINT_COLOR_PALETTE, type ImageTo3DOptions, type SceneObject, type Vec3
 type ImageShapeMode = NonNullable<ImageTo3DOptions['shapeMode']>;
 import { MAX_MODEL_FILE_BYTES, openLocalFile, openLocalFiles } from '../../utils/platformBridge';
 import { flushRecoveryDraft } from '../../project/recoveryFlush';
-import { activeBedSize } from '../bedSize';
+import { placementBedSize } from '../bedSize';
 import { cloneSnapshot, isProjectDirty } from '../projectDocument';
 import { createModelIoActions, type ModelImportSource } from '../modelIoActions';
 import { loadInitialImportPlacement, STORAGE_IMPORT_PLACEMENT_KEY, writeStorage } from '../preferencesStorage';
@@ -82,7 +82,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     separateBodies: (id) => void get().splitDisconnectedObject(id),
     bedSize: () => {
       setImportStage('place');
-      return activeBedSize(get());
+      return placementBedSize(get());
     },
     // Antes de un modelo grande: si hay cambios sin guardar, el borrador de recuperación queda escrito.
     ensureRecoveryDraft: async () => {

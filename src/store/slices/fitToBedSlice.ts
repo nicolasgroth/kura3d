@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import { plateFrameFor, shiftChangeXZ } from '../../core/scene/plateFrame';
 import type { FitAlternative, FitAlternativeKind, FitBed, FitTransform } from '../../engine/fitToBed';
 import { fitBedOf, type FitAnalysisResult } from '../../core/operations/fitOperations';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
@@ -30,8 +31,14 @@ export interface FitToBedSliceState {
 }
 
 /** Cama activa (perfil o medidas propias) con su margen. */
-export function activeFitBed(s: Pick<KuraStoreState, 'printerProfile' | 'customBedDimensions'>): FitBed {
-  return fitBedOf(s.printerProfile, s.customBedDimensions);
+export function activeFitBed(
+  s: Pick<KuraStoreState, 'printerProfile' | 'customBedDimensions'> & Partial<Pick<KuraStoreState, 'plates' | 'activePlateId'>>,
+  targets?: ReadonlyArray<Pick<SceneObject, 'plateRef'>>,
+): FitBed {
+  if (!s.plates?.length) return fitBedOf(s.printerProfile, s.customBedDimensions);
+  // Con placas, la cama es la de la placa de las piezas (o la activa).
+  const { bed } = plateFrameFor(s, targets);
+  return fitBedOf(s.printerProfile, { width: bed.widthMm, depth: bed.depthMm, height: bed.heightMm });
 }
 
 /** Objetos ajustables: existentes, desbloqueados y con malla (los negativos viajan con el bloque). */
@@ -61,7 +68,7 @@ export function createFitToBedSlice(ctx: StoreContext): Partial<KuraStoreState> 
       if (targets.length === 0) return null;
       try {
         await get().initEngine();
-        const { analysis } = await runEngineDetached('fitToBed', { objects: targets, bed: bed ?? activeFitBed(get()) });
+        const { analysis } = await runEngineDetached('fitToBed', { objects: targets, bed: bed ?? activeFitBed(get(), targets) });
         return analysis;
       } catch (err) {
         reportOperationError(err);
@@ -76,10 +83,12 @@ export function createFitToBedSlice(ctx: StoreContext): Partial<KuraStoreState> 
       }
       return runExclusive('fit_to_bed', null, async () => {
         await get().initEngine();
-        const { analysis, change, applied } = await runEngine('fitToBed', { objects: targets, bed: bed ?? activeFitBed(get()), apply: kind });
+        const { analysis, change, applied } = await runEngine('fitToBed', { objects: targets, bed: bed ?? activeFitBed(get(), targets), apply: kind });
         assertCurrent(targets);
         if (!change || !applied) return null;
-        commitChange(change, { select: targets.map((o) => o.id), extra: { fitPreview: null } });
+        // Con placas, el bloque queda centrado en la placa de las piezas (sin placas: el origen, como siempre).
+        const placed = shiftChangeXZ(change, plateFrameFor(get(), targets).origin);
+        commitChange(placed, { select: targets.map((o) => o.id), extra: { fitPreview: null } });
         const pct = formatLocaleNumber(get().language, applied.factor * 100, { maxFrac: 1 });
         const summary = kind === 'rotate' ? tr('fit.alt.rotate') : tr(kind === 'scale' ? 'fit.alt.scale' : 'fit.alt.rotateScale', { pct });
         get().addToast(tr('fit.applied', { summary }), 'success');

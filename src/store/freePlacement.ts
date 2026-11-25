@@ -12,7 +12,7 @@
 import type { PlaceMesh } from '../core/operations';
 import { placeInFreeSpot } from '../core/scene/freeSpot';
 import type { Vec3 } from '../types/kura';
-import { activeBedSize } from './bedSize';
+import { placementBedSize } from './bedSize';
 import type { KuraStoreState } from './storeTypes';
 
 type PlacementState = Pick<KuraStoreState, 'objects' | 'customBedDimensions' | 'printerProfile'>;
@@ -28,7 +28,7 @@ export function createFreePlacer(get: () => PlacementState, rotation: Vec3 = [0,
   const result = { fits: true, wasEmpty: get().objects.length === 0 };
   const place: PlaceMesh = (mesh) => {
     const state = get();
-    const spot = placeInFreeSpot(state.objects, mesh, rotation, scale, activeBedSize(state));
+    const spot = placeInFreeSpot(state.objects, mesh, rotation, scale, placementBedSize(state));
     result.fits = spot.fits;
     return spot.position;
   };
