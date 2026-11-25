@@ -36,7 +36,7 @@ export function addonHitFromEvent(
   const point = rayHitOnFace(obj.mesh, face, obj, origin, dir) ?? ([e.point.x, e.point.y, e.point.z] as Vec3);
   // Una malla con caras invertidas daría la normal hacia adentro: se toma la que mira a la cámara.
   const facing = normal[0] * dir[0] + normal[1] * dir[1] + normal[2] * dir[2] > 0 ? (normal.map((v) => -v) as Vec3) : normal;
-  return { hostId: obj.id, point, normal: worldSurfaceNormal(obj, point, facing, radiusMm) ?? facing };
+  return { hostId: obj.id, point, normal: worldSurfaceNormal(obj, point, facing, radiusMm, face) ?? facing };
 }
 
 export interface AddonPlacementHandlers {
