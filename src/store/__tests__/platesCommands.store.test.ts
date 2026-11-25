@@ -104,4 +104,58 @@ describe('placas y comandos del bus', () => {
       expect(Math.abs(copy.position[0])).toBeLessThan(p2.origin[0] / 2);
     });
   });
+
+  describe('align_objects con placas', () => {
+    /** Dos piezas en la placa 1 y dos en la 2, con la placa 2 activa. */
+    const twoPlates = async () => {
+      const a = await created({ position: [10, 0, 0], name: 'P1a' });
+      const b = await created({ position: [-60, 0, 0], name: 'P1b' });
+      const p2 = store().createPlate()!;
+      const c = await created({ position: [p2.origin[0] + 20, 0, 0], name: 'P2a' });
+      const d = await created({ position: [p2.origin[0] - 20, 40, 0], name: 'P2b' });
+      return { a, b, c, d, p1: store().plates[0], p2 };
+    };
+
+    it('«Distribuir en cama» sin selección acomoda cada pieza en la cama de su placa, en un paso de deshacer', async () => {
+      const { a, b, c, d, p1, p2 } = await twoPlates();
+      store().setSelection([]);
+      const steps = store().past.length;
+      const res = await run('align_objects', { mode: 'arrange_grid' });
+      expect(res.ok, JSON.stringify(res)).toBe(true);
+      expect((res as { result: { moved: number; fitsBed: boolean } }).result).toMatchObject({ moved: 4, fitsBed: true });
+      expect(store().past.length).toBe(steps + 1);
+      expect([a, b].map((o) => byId(o.id)!.plateRef)).toEqual([p1.id, p1.id]);
+      expect([c, d].map((o) => byId(o.id)!.plateRef)).toEqual([p2.id, p2.id]);
+      for (const o of [a, b, c, d]) expect(insideOwnPlate(o.id), byId(o.id)!.name).toBe(true);
+      expect(status()).toEqual(['ok', 'ok']);
+      store().undo();
+      expect(byId(c.id)!.position[0]).toBeCloseTo(p2.origin[0] + 20, 5);
+    });
+
+    it('con selección de varias placas, tampoco junta piezas de placas distintas', async () => {
+      const { a, c } = await twoPlates();
+      const res = await run('align_objects', { mode: 'arrange_grid', objectIds: [a.id, c.id] });
+      expect(res.ok, JSON.stringify(res)).toBe(true);
+      expect(insideOwnPlate(a.id)).toBe(true);
+      expect(insideOwnPlate(c.id)).toBe(true);
+      expect(status()).toEqual(['ok', 'ok']);
+    });
+
+    it('alinear por eje con selección mixta alinea dentro de cada placa (no saca piezas de su cama)', async () => {
+      const { a, b, c, d } = await twoPlates();
+      store().setSelection([a.id, b.id, c.id, d.id]);
+      store().alignSelectedObjects('minX');
+      expect(byId(a.id)!.position[0]).toBeCloseTo(byId(b.id)!.position[0], 5);
+      expect(byId(c.id)!.position[0]).toBeCloseTo(byId(d.id)!.position[0], 5);
+      for (const o of [a, b, c, d]) expect(insideOwnPlate(o.id)).toBe(true);
+    });
+
+    it('un sólido sin placa se deja donde está', async () => {
+      const { a } = await twoPlates();
+      useKuraStore.setState({ objects: store().objects.map((o) => (o.id === a.id ? { ...o, plateRef: undefined, position: [5000, 0, 0] } : o)) });
+      store().setSelection([]);
+      store().alignSelectedObjects('arrange_grid');
+      expect(byId(a.id)!.position[0]).toBe(5000);
+    });
+  });
 });

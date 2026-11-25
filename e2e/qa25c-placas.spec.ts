@@ -409,9 +409,8 @@ test.describe('qa25c placas: hallazgos de QA (cosas que el desarrollo prometió 
     expect(Math.abs(o.x - o.ox)).toBeLessThan(128);
   });
 
-  // BUG (mayor): «Distribuir en cama (Auto)» sin selección (o con piezas de varias placas) junta todas las piezas
-  // en la cama de la placa 1 y deja su `plateRef`: las piezas de la placa 2 quedan en otra cama distinta de la suya.
-  test.fail('Distribuir en cama (Auto) sin selección no saca las piezas de su placa', async ({ page }) => {
+  // Corregido (QA25-C fallo 2): «Distribuir en cama (Auto)» acomoda cada pieza en la cama de SU placa.
+  test('Distribuir en cama (Auto) sin selección no saca las piezas de su placa', async ({ page }) => {
     await abrir(page);
     await cmd(page, 'create_primitive', { type: 'box', width: 30, depth: 30, height: 30, name: 'P1a', position: [10, 0, 0] });
     await st(page, (s) => s.createPlate());

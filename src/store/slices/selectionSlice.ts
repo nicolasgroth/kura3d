@@ -14,7 +14,8 @@ import { dependentAddonIds, remapAddonHosts } from '../../core/addons/addonFollo
 import { resolveAlignTargets } from '../../core/scene/sceneRules';
 import { keepClearOfOthers } from '../../core/scene/freeSpot';
 import { placementBedSize } from '../bedSize';
-import { plateFrameFor, shiftChangeXZ } from '../../core/scene/plateFrame';
+import { plateFrameFor } from '../../core/scene/plateFrame';
+import { alignPerPlate } from '../../core/scene/plateAlign';
 import { duplicateGroupStructure, pickSelection } from '../../core/scene/groups';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { tCount } from '../../utils/plural';
@@ -262,13 +263,9 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       const targetObjs = resolveAlignTargets(objects, selectedIds, mode);
       if (targetObjs.length === 0) return null;
 
-      // Operación pura compartida con el MCP headless: parches de posición.
-      // Con placas, «Acomodar» trabaja sobre la placa de las piezas: su cama y su origen.
-      const frame = get().plates.length > 0 ? plateFrameFor(get(), targetObjs) : null;
-      const profile = frame ? { ...printerProfile, bedWidthMm: frame.bed.widthMm, bedDepthMm: frame.bed.depthMm, maxHeightMm: frame.bed.heightMm } : printerProfile;
-      const aligned = ops.alignObjects(objects, targetObjs, mode, profile);
-      const { moved, fitsBed } = aligned;
-      const change = frame && mode === 'arrange_grid' ? shiftChangeXZ(aligned.change, frame.origin) : aligned.change;
+      // Con placas, cada pieza se alinea o acomoda en la cama de SU placa (agrupadas por placa, un solo paso).
+      const { change, moved, fitsBed, overflow } = alignPerPlate(objects, targetObjs, mode, printerProfile, get());
+      if (moved === 0) return { moved, fitsBed };
       pushHistory();
       set((state) => ({ objects: ops.applySceneChange(state.objects, change) }));
       // Un solo aviso coherente: si la distribución no cabe, no se anuncia como lograda.
@@ -276,7 +273,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
         get().addToast(tr(`toast.alignedDone.${mode}`), 'success');
       } else {
         get().addToast(
-          tr('store.align.overflow', { width: profile.bedWidthMm, depth: profile.bedDepthMm }),
+          tr('store.align.overflow', { width: overflow?.bed.widthMm ?? printerProfile.bedWidthMm, depth: overflow?.bed.depthMm ?? printerProfile.bedDepthMm }),
           'error',
         );
       }
