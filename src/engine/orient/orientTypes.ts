@@ -66,6 +66,8 @@ export type OrientReason =
   | { key: 'lowerVsCurrent'; params: { percent: number } }
   | { key: 'equivalentToBest' }
   | { key: 'unstable'; params: { tipAngleDeg: number } }
+  /** Solo aristas o vértices tocan la cama (contacto ≈ 0): sin base real, no se recomienda. */
+  | { key: 'noBase' }
   | { key: 'doesNotFit' };
 
 export interface OrientMeasures {

@@ -182,7 +182,9 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const applied = await get().applyOrientQuaternion(obj.id, candidate.quaternion, orientKeepXY);
       if (!applied) return false;
       dropPreview();
-      get().addToast(tr('orient.ui.applied', { name: obj.name }), 'success');
+      // «Apoyada» solo si hay base real: con solo aristas en la cama se avisa en vez de felicitar.
+      const noBase = candidate.reasons.some((r) => r.key === 'noBase');
+      get().addToast(tr(noBase ? 'orient.ui.appliedNoBase' : 'orient.ui.applied', { name: obj.name }), noBase ? 'info' : 'success');
       // La pieza ya está en la orientación elegida: la lista se recalcula y la aplicada pasa a ser «Actual».
       await get().analyzeOrient(obj.id, orient.analysis.overhangAngleDeg);
       return true;

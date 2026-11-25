@@ -62,6 +62,7 @@ Por qué estos pesos:
 - **La base y la altura pesan 0,1 cada una.** Solo desempatan: a igualdad de soporte, gana la que tiene más base (adherencia) y menos altura (tiempo de impresión, que crece con el número de capas). Un cambio de 10 % en el soporte pesa más que pasar de la peor a la mejor base.
 - **Inestable: +0,5.** Una pieza que vuelca arruina la impresión, pero con borde (brim) o soportes a veces se puede. Por eso se desaconseja sin descartarla.
 - **No cabe: +1.** Equivale a un soporte del tamaño de la pieza entera. Prácticamente la descarta, pero sigue visible.
+- **Sin base real no hay recomendación.** Si las caras planas apoyadas en la cama suman menos que el área mínima de apoyo (0,1 % del área total y al menos 1 mm²), solo tocan aristas o vértices: pasa en piezas de varios cuerpos, donde una cara del casco convexo cruza de un cuerpo a otro y no coincide con ninguna cara de la malla. Esa orientación no es estable, del casco ni se propone, y en la lista va siempre después de cualquiera con base, sea cual sea su costo; solo equivale a otras sin base (esfera).
 - **El término de base no cuenta** si el mayor contacto es menor que el 0,1 % del área total, como en una esfera. Así no se inventa una diferencia.
 
 **Equivalencia.** Si el costo está a menos de 0,02 (`ORIENT_EQUIVALENCE`) del mejor, la orientación se considera igual para imprimir. Si la actual es equivalente, va primera y `currentIsBest = true`: no se propone mover la pieza sin ganancia. Si todas son equivalentes (esfera), `allEquivalent = true` y no hay ganadora.
@@ -82,6 +83,7 @@ Cada candidato trae `reasons` como `{ key, params }`:
 | `lowerVsCurrent` | `percent` | Al menos un 10 % más baja |
 | `equivalentToBest` | — | Empata con la mejor |
 | `unstable` | `tipAngleDeg` | Se vuelca con poca inclinación |
+| `noBase` | — | Solo aristas o vértices tocan la cama (sin base real); reemplaza a `unstable` |
 | `doesNotFit` | — | No cabe en la cama indicada |
 
 Además, `vsCurrent` trae los porcentajes de soporte, voladizo y altura y el factor de contacto. Es `null` cuando la actual vale 0.

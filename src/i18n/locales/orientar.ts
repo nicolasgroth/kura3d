@@ -58,6 +58,7 @@ const ORIENT_UI = {
   'orient.reason.lowerVsCurrent': { es: '{percent} % más baja que ahora.', en: '{percent}% lower than now.', de: '{percent} % niedriger als jetzt.', fr: '{percent} % plus basse qu’actuellement.', hi: 'अभी से {percent}% नीची।', zh: '比现在矮 {percent}%。' },
   'orient.reason.equivalentToBest': { es: 'Tan buena para imprimir como la mejor.', en: 'As good for printing as the best one.', de: 'Fürs Drucken so gut wie die beste.', fr: 'Aussi bonne pour imprimer que la meilleure.', hi: 'प्रिंट के लिए सबसे अच्छी जितनी ही अच्छी।', zh: '打印效果与最佳项相当。' },
   'orient.reason.unstable': { es: 'Inestable: puede volcarse (se inclina {angle}° antes de caer).', en: 'Unstable: it can tip over (it tilts {angle}° before falling).', de: 'Instabil: kann umkippen (kippt nach {angle}°).', fr: 'Instable : peut basculer (bascule après {angle}° d’inclinaison).', hi: 'अस्थिर: पलट सकता है ({angle}° झुकने पर गिरता है)।', zh: '不稳定:可能倾倒(倾斜 {angle}° 就会倒)。' },
+  'orient.reason.noBase': { es: 'Sin base: solo toca la cama con aristas o puntos y no se sostiene sola.', en: 'No base: only edges or points touch the bed and it cannot stand on its own.', de: 'Keine Auflagefläche: nur Kanten oder Punkte berühren das Bett, es hält nicht von selbst.', fr: 'Sans base : seules des arêtes ou des pointes touchent le plateau, elle ne tient pas seule.', hi: 'आधार नहीं: बेड को केवल किनारे या बिंदु छूते हैं, यह अपने आप नहीं टिकता।', zh: '没有底面:只有棱边或顶点接触打印床,无法自行立稳。' },
   'orient.reason.doesNotFit': { es: 'No cabe en la cama.', en: 'Does not fit on the bed.', de: 'Passt nicht auf das Druckbett.', fr: 'Ne tient pas sur le plateau.', hi: 'बेड पर नहीं समाता।', zh: '放不进打印床。' },
 
   // Aplicar
@@ -66,6 +67,8 @@ const ORIENT_UI = {
   'orient.ui.apply': { es: 'Aplicar orientación', en: 'Apply orientation', de: 'Ausrichtung anwenden', fr: 'Appliquer l’orientation', hi: 'दिशा लागू करें', zh: '应用朝向' },
   'orient.ui.applyNeed': { es: 'Elige una orientación distinta de la actual para aplicarla.', en: 'Choose an orientation other than the current one to apply it.', de: 'Wähle eine andere Ausrichtung als die aktuelle, um sie anzuwenden.', fr: 'Choisis une orientation différente de l’actuelle pour l’appliquer.', hi: 'लागू करने के लिए मौजूदा से अलग दिशा चुनें।', zh: '请选择与当前不同的朝向再应用。' },
   'orient.ui.applied': { es: '«{name}» orientada y apoyada en la cama.', en: '“{name}” oriented and resting on the bed.', de: '„{name}“ ausgerichtet und auf das Bett gelegt.', fr: '« {name} » orientée et posée sur le plateau.', hi: '“{name}” की दिशा तय हुई और वह बेड पर टिकी है।', zh: '“{name}”已调整朝向并落在打印床上。' },
+
+  'orient.ui.appliedNoBase': { es: '«{name}» orientada, pero sin base: solo toca la cama con aristas o puntos.', en: '“{name}” oriented, but with no base: only edges or points touch the bed.', de: '„{name}“ ausgerichtet, aber ohne Auflagefläche: nur Kanten oder Punkte berühren das Bett.', fr: '« {name} » orientée, mais sans base : seules des arêtes ou des pointes touchent le plateau.', hi: '“{name}” की दिशा तय हुई, पर आधार नहीं: बेड को केवल किनारे या बिंदु छूते हैं।', zh: '“{name}”已调整朝向,但没有底面:只有棱边或顶点接触打印床。' },
 
   // Leyenda y nota
   'orient.ui.legend': { es: 'Zonas que necesitarían soporte', en: 'Areas that would need support', de: 'Bereiche, die Stützen bräuchten', fr: 'Zones qui demanderaient des supports', hi: 'वे हिस्से जिन्हें सपोर्ट चाहिए', zh: '需要支撑的区域' },

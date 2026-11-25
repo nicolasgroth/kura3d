@@ -11,7 +11,8 @@ import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { fakeBox } from '../../../test/fakeObjects';
 import type { SceneObject, Vec3 } from '../../../types/kura';
-import { plainGroupNegatives, rigidFollowPatches } from '../rigidFollow';
+import { EngineError } from '../../../engine/engineErrors';
+import { orientFollowPatches, plainGroupNegatives, rigidFollowPatches } from '../rigidFollow';
 
 const obj = (id: string, extra: Partial<SceneObject>): SceneObject => ({ ...fakeBox(id, id), ...extra }) as SceneObject;
 const m = (p: { position: Vec3; rotation: Vec3; scale: Vec3 }) =>
@@ -42,6 +43,29 @@ describe('rigidFollow', () => {
     relBefore.elements.forEach((v, i) => expect(relAfter.elements[i]).toBeCloseTo(v, 6));
     // De verdad se movió: no es el mismo lugar de antes.
     expect(Math.hypot(patch.position[0] - 14, patch.position[1] - 9, patch.position[2] + 3)).toBeGreaterThan(10);
+  });
+
+  it('con la misma escala no uniforme en ambas poses el delta es rígido: la pose relativa se conserva', () => {
+    const from = { position: [10, 5, -3] as Vec3, rotation: [0.2, 0, 0.1] as Vec3, scale: [2, 0.5, 3] as Vec3 };
+    const to = { position: [-4, 20, 9] as Vec3, rotation: [Math.PI / 2, 0.3, -0.7] as Vec3, scale: [2, 0.5, 3] as Vec3 };
+    const hueco = obj('hueco', { position: [14, 9, -3], rotation: [0, 0.5, 0], scale: [1.5, 1, 0.5] });
+    const relBefore = m(from).invert().multiply(m(hueco));
+    const [{ patch }] = rigidFollowPatches([hueco], from, to);
+    const relAfter = m(to).invert().multiply(m({ ...hueco, ...patch }));
+    relBefore.elements.forEach((v, i) => expect(relAfter.elements[i]).toBeCloseTo(v, 6));
+  });
+
+  it('si la escala de la pieza cambia, no arrastra a los negativos en silencio: falla con un error del motor', () => {
+    const from = { position: [0, 0, 0] as Vec3, rotation: [0, 0, 0] as Vec3, scale: [1, 1, 1] as Vec3 };
+    const to = { position: [0, 0, 0] as Vec3, rotation: [0, 0.4, 0] as Vec3, scale: [2, 1, 1] as Vec3 };
+    const hueco = obj('hueco', { position: [5, 0, 0] });
+    expect(() => rigidFollowPatches([hueco], from, to)).toThrow(EngineError);
+    // Sin acompañantes no hay nada que arrastrar: no falla.
+    expect(rigidFollowPatches([], from, to)).toEqual([]);
+    // Por la vía de «Orientar»: un parche que trae escala distinta tampoco pasa.
+    const host = obj('pieza', { groupRef: 'g1' });
+    const scene = [host, obj('hueco', { groupRef: 'g1', role: 'negative' })];
+    expect(() => orientFollowPatches(scene, host, { patches: [{ id: 'pieza', patch: { scale: [1, 3, 1] } }] })).toThrow(EngineError);
   });
 
   it('si la pieza no cambió, el negativo tampoco', () => {

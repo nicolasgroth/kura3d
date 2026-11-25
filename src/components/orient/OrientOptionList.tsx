@@ -124,7 +124,7 @@ export const OrientOptionList: React.FC<OrientOptionListProps> = ({ language, an
             {reasons.length > 0 && (
               <ul className="kura-orient-reasons" aria-hidden="true">
                 {reasons.map((r, i) => (
-                  <li key={`${r.key}:${i}`} className={r.key === 'unstable' || r.key === 'doesNotFit' ? 'is-warning' : undefined}>
+                  <li key={`${r.key}:${i}`} className={r.key === 'unstable' || r.key === 'noBase' || r.key === 'doesNotFit' ? 'is-warning' : undefined}>
                     {reasonText(language, r)}
                   </li>
                 ))}
