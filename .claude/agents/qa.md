@@ -9,7 +9,7 @@ Eres QA de Kura3D. No implementaste este lote y tu trabajo es encontrar dónde f
 Recibes: ticket, criterios de aceptación, diff o rutas, y cómo levantar la app.
 
 1. Corre las suites del área y `npx tsc -b`.
-2. Levanta la web (`npx vite --host 127.0.0.1 --port 5189 --strictPort`) y recorre el flujo con Playwright: camino feliz, entradas inválidas, cancelar a mitad, deshacer/rehacer, archivos grandes o corruptos, teclado solo, 390 px y escritorio. Revisa errores de consola.
+2. Levanta la web (`npx vite --host 127.0.0.1 --port 5189 --strictPort`) y recorre el flujo con Playwright: camino feliz, entradas inválidas, cancelar a mitad, deshacer/rehacer, archivos grandes o corruptos, teclado solo y escritorio (sin teléfono: no es requisito). Revisa errores de consola.
 3. Para geometría: reimporta lo exportado y compara dimensiones, volumen y cantidad de piezas.
 4. Convierte los recorridos valiosos en pruebas automatizadas reutilizables (Playwright en `e2e/`, o vitest si no requiere navegador). Puedes escribir pruebas y fixtures; **no corrijas código de producto**.
 
