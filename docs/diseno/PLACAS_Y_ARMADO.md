@@ -9,7 +9,7 @@ Pedido del autor: tener las piezas de una figura repartidas en varias placas par
 - **Una sola cama, centrada en el origen.** La definen `printerProfile` y `customBedDimensions`; la leen `activeBed()` (`src/store/splitCommandSchemas.ts`) y `activeBedSize()` (`src/store/bedSize.ts`). Unos 45 archivos dependen de esas dos funciones.
 - **«Sin cama»** (`showBed`, atajo B) solo oculta la cama. Es preferencia de sesión: no se guarda en el `.kura` ni cambia el comportamiento de las herramientas.
 - **Dividir ya tiene dos poses, solo para sus piezas:** `metadata.split.assembly` y `metadata.split.print` (con índice de placa). Sus placas son virtuales: una cuadrícula calculada por `plateOffset()` (`src/core/scene/splitGroups.ts`) y dibujada por `SplitPlateGuides.tsx`.
-- **El 3MF toma los grupos raíz como placas** al exportar (`scenePlates()` en `src/engine/io/threeMfExport.ts`); al importar, las placas de Bambu/Orca se vuelven grupos.
+- **El 3MF toma los grupos raíz como placas** al exportar (`scenePlates()` en `src/engine/io/threeMfExport.ts`) cuando no hay dos o más placas reales (si las hay, mandan ellas: ver más abajo); al importar, las placas de Bambu/Orca se vuelven grupos.
 - **El `.kura`** va en versión 3 con validación estricta: una versión anterior de la app no abre un archivo con campos nuevos.
 
 ### Dividir con placas reales (implementado)
@@ -18,6 +18,17 @@ Pedido del autor: tener las piezas de una figura repartidas en varias placas par
 - Las placas virtuales 1, 2, … siguen la cuadrícula de `plateOffset()` anclada al origen de esa placa y se saltan las celdas a menos de 40 mm de otra placa real (`src/core/scene/splitFrame.ts`). Sin otras placas el resultado es idéntico al de antes. Las partes conservan el `plateRef` de su placa; convertir placas virtuales en reales queda para P7.
 - Fuera de volumen por placa, «Preparar para imprimir», las guías, los rótulos y la derivación de poses usan ese mismo marco. Exportar por pieza no depende de la placa: cada archivo sale centrado en su cama.
 - El índice de placa virtual del `.kura` se acota a `MAX_SPLIT_PLATES` (1024); el cálculo de celdas tiene un tope fijo.
+
+### Exportar por placa y la placa sigue a la posición (implementado, lote P6 adelantado)
+
+- Toda exportación coloca cada pieza respecto de la cama de SU placa (se resta su origen; siempre en pose de impresión). Sin placas, o con una sola en el origen, los archivos son idénticos a los de antes (`src/core/scene/plateExport.ts`).
+- Piezas de dos o más placas: STL, OBJ, PLY y GLB salen en un ZIP con un archivo por placa (nombre de la placa saneado, sin rutas ni nombres reservados de Windows). En 3MF, por defecto un archivo con todas las placas (formato `<plate>` de `model_settings.config` de Bambu Studio / OrcaSlicer) o «un 3MF por placa (ZIP)» (`src/store/plateExportFlow.ts`).
+- **Placas reales frente a grupos en el 3MF:** con dos o más placas reales, ellas definen las placas del laminador y los grupos raíz ya no (siguen viajando en `kura_scene.json`). Con una placa o ninguna, los grupos raíz siguen siendo placas del laminador como antes.
+- Lo que no tiene placa (habiendo dos o más) se excluye con un aviso que dice cuántas piezas quedaron fuera. Un agregado sin placa propia va con la placa de su pieza.
+- Dividir no cambia: «un archivo por pieza» centra cada pieza en su cama y «3MF en disposición de impresión» usa la cuadrícula de siempre. Un grupo exportado «un archivo por objeto» tampoco.
+- Bus y MCP: `export_3mf` con bytes lleva todas las placas en un archivo; `export_stl` con bytes y piezas en varias placas pide `plateId` (el MCP escribe un único `.stl`); `plateId` exporta una sola placa. Las respuestas traen `skippedUnplaced` y `plateCount`.
+- Ida y vuelta: el 3MF de escena guarda por objeto el origen de placa restado (`plateOffset`, validado: dos números finitos dentro del límite de coordenadas, o se descartan los metadatos) y al abrirlo cada pieza vuelve a su lugar de mundo. Las placas no se restauran como placas, y un 3MF con placas de un laminador se sigue importando como grupos: convertirlos en placas reales es P7.
+- **La placa sigue a la posición** (`src/core/scene/plateFollow.ts`, enganchado en `storeContext`): cualquier cambio de pose de una pieza existente (panel, `transform_object`, alinear, centrar, apoyar, flechas, arrastre) la asigna a la placa que contiene el centro de su huella; si no cae en ninguna conserva la suya y queda fuera de volumen. No actúa en armado, al cambiar de modo, al deshacer o abrir (cambian las placas o el `plateRef` en el mismo paso), ni cuando el mismo paso cambió el `plateRef` (Mover a placa). Los agregados y los negativos con placa de un grupo que se muda entero acompañan a su pieza. No existe «pegar» (no hay portapapeles de objetos); duplicar coloca la copia en la cama de su placa.
 
 ## 1. Modelo de datos propuesto
 
