@@ -2,7 +2,7 @@
  * @file src/i18n/locales/groups.ts
  * @description Textos de grupos y organización de la escena en los 6 idiomas: Agrupar, Desagrupar,
  * Combinar en un objeto, Separar cuerpos, árbol de la escena (capas), confirmación al eliminar un
- * grupo, tarjeta del conjunto en el inspector y atajos. Cada clave lleva [es, en, de, fr, hi, zh].
+ * grupo, tarjeta del conjunto en el inspector, atajos y el nombre por defecto de las placas. Cada clave lleva [es, en, de, fr, hi, zh].
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,6 +12,8 @@ type Row = readonly [es: string, en: string, de: string, fr: string, hi: string,
 
 const GROUPS_TABLE = {
   'groups.defaultName': ['Grupo {n}', 'Group {n}', 'Gruppe {n}', 'Groupe {n}', 'समूह {n}', '组 {n}'],
+  // Nombre por defecto de una placa de impresión (`core/scene/plates.ts`).
+  'plates.defaultName': ['Placa {n}', 'Plate {n}', 'Druckplatte {n}', 'Plateau {n}', 'प्लेट {n}', '打印板 {n}'],
   'groups.combinedName': ['{name} combinado', '{name} combined', '{name} kombiniert', '{name} combiné', '{name} संयुक्त', '{name} 合并'],
   'inspector.source.combined': ['Objeto combinado', 'Combined object', 'Kombiniertes Objekt', 'Objet combiné', 'संयुक्त ऑब्जेक्ट', '合并对象'],
 

@@ -21,6 +21,7 @@ import { CommandError } from './commandErrors';
 import { pick, readBoolean, readEnum, readId, readIds, readRange, type RawParams } from './commandValidation';
 import { internalAxisOfUser } from '../core/scene/displayAxes';
 import { readMagnetConnector } from './splitMagnetParams';
+import { activePlateBed, type PlateBedSource } from '../core/scene/activePlateBed';
 
 const AXES = ['x', 'y', 'z'] as const;
 
@@ -45,17 +46,16 @@ export interface SplitForBedOutcome {
   assembly?: AssemblySummary;
 }
 
-/** Cama activa (perfil de impresora o medidas personalizadas) como volumen de impresión. */
-export interface BedSource {
-  printerProfile: { bedWidthMm: number; bedDepthMm: number; maxHeightMm: number };
-  customBedDimensions: { width: number; depth: number; height: number } | null;
-}
+/** Cama activa (perfil de impresora o medidas personalizadas, y placa activa si hay placas). */
+export type BedSource = PlateBedSource;
 
+/**
+ * Volumen de impresión de la placa activa (sin placas: la cama del proyecto, como siempre). Solo medidas: el
+ * origen de la placa lo da `activePlateBed` (`core/scene/activePlateBed.ts`), el punto único de la cama.
+ */
 export function activeBed(scene: BedSource): SplitBed {
-  const c = scene.customBedDimensions;
-  if (c) return { widthMm: c.width, depthMm: c.depth, heightMm: c.height };
-  const p = scene.printerProfile;
-  return { widthMm: p.bedWidthMm, depthMm: p.bedDepthMm, heightMm: p.maxHeightMm };
+  const { widthMm, depthMm, heightMm } = activePlateBed(scene).bed;
+  return { widthMm, depthMm, heightMm };
 }
 
 function readAxes(p: RawParams): SplitAxis[] | undefined {

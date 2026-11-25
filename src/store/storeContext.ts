@@ -24,6 +24,7 @@ import { createKeyedNaming, localeShortMm } from '../core/scene/resultNames';
 import { APP_BUILD_POLICY, makeId } from '../core/scene/sceneObjects';
 import { inputsAreCurrent } from '../core/scene/sceneRules';
 import { reconcileGroups } from '../core/scene/groups';
+import { reconcilePlates } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
 import { colorName } from '../utils/colorNames';
 import { structureLabel } from '../utils/structureLabels';
@@ -140,6 +141,14 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     const clean = reconcileGroups({ objects: state.objects, groups: state.groups ?? [] });
     if (clean.objects !== state.objects || clean.groups !== state.groups) rawSet({ objects: clean.objects, groups: clean.groups });
   };
+  // Igual con las placas: ninguna pieza apunta a una placa que no existe (deshacer, borrar, abrir).
+  const keepPlatesCoherent = (before: SceneObject[] | undefined, beforePlates: KuraStoreState['plates'] | undefined) => {
+    const state = get();
+    if (state.objects === before && state.plates === beforePlates) return;
+    if (!state.plates?.length && !state.objects.some((o) => o.plateRef !== undefined)) return;
+    const clean = reconcilePlates({ objects: state.objects, plates: state.plates ?? [] });
+    if (clean.objects !== state.objects || clean.plates !== state.plates) rawSet({ objects: clean.objects, plates: clean.plates });
+  };
   // Un imán conserva su medida: si su pieza cambia de escala (por cualquier camino), vuelve a su cara a escala propia.
   const keepMagnetsOnHosts = (before: SceneObject[] | undefined) => {
     const objects = get().objects;
@@ -152,6 +161,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     rawSet(...args);
     if (prev) keepMagnetsOnHosts(prev.objects);
     if (prev) keepGroupsCoherent(prev.objects, prev.groups);
+    if (prev) keepPlatesCoherent(prev.objects, prev.plates);
     dropStaleSegmentation();
   }) as SetState;
 
@@ -179,7 +189,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   };
   const pushHistory = () => {
     const state = get();
-    pushHistoryStep(cloneSnapshot(state.objects, state.selectedIds, state.groups));
+    pushHistoryStep(cloneSnapshot(state.objects, state.selectedIds, state.groups, state.plates));
   };
 
   const operationErrors = createOperationErrorTracker();

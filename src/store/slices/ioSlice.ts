@@ -67,7 +67,7 @@ export function createIoSlice(ctx: StoreContext): Partial<KuraStoreState> {
     set: (updater) => set((state) => updater(state) as Partial<KuraStoreState>),
     tr,
     // La importación entra por tandas: su paso de deshacer guarda la escena de antes de empezar.
-    pushHistory: (before) => (before ? ctx.pushHistoryStep(cloneSnapshot(before.objects, before.selectedIds, before.groups)) : pushHistory()),
+    pushHistory: (before) => (before ? ctx.pushHistoryStep(cloneSnapshot(before.objects, before.selectedIds, before.groups, get().plates)) : pushHistory()),
     buildObject: ({ name, mesh, position, color, role, rotation, scale, stats }) =>
       (setImportStage('place'), buildSceneObject({ name, source: 'imported', mesh, position, rotation, scale, stats, color: color || PRINT_COLOR_PALETTE[get().objects.length % PRINT_COLOR_PALETTE.length], role })),
     onBuildProgress: (done, total) => {

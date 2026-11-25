@@ -1,7 +1,7 @@
 /**
  * @file src/project/projectCodec.ts
- * @description Códec binario del formato de proyecto .kura (v2, lee v1): serializa y valida escena, historial
- * y mallas con CRC-32 y límites de tamaño.
+ * @description Códec binario del formato de proyecto .kura (escribe v3, o v4 si el proyecto usa placas; lee v1 a v4):
+ * serializa y valida escena, historial y mallas con CRC-32 y límites de tamaño.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -9,10 +9,12 @@
 
 import { computeMeshStats } from '../engine/primitives';
 import { MAX_GROUPS, reconcileGroups } from '../core/scene/groups';
+import { MAX_PLATES, reconcilePlates } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
+import type { ScenePlate } from '../types/plates';
 import { FILE_HISTORY_MAX_STEPS } from './historyBudget';
 import {
-  check, color, id, limit, MAX_PROJECT_BYTES, nat, ProjectCodecError, record, shape, validSettings, validStoredGroups, validStoredObject,
+  check, color, id, limit, MAX_PROJECT_BYTES, nat, ProjectCodecError, record, shape, validSettings, validStoredGroups, validStoredObject, validStoredPlates,
   type ObjectMetadata, type ProjectDocument, type ProjectSceneSnapshot,
 } from './projectSchema';
 import { migrateStoredRole, ROLE_FORMAT_VERSION } from './projectRoleMigration';
@@ -41,8 +43,12 @@ const HEADER_SIZE = 16;
 // Versiones: 1 = formato inicial; 2 = agrega el campo opcional `parametric` a cada objeto.
 // Se escribe siempre la última; se leen todas las listadas. Un archivo v1 no puede traer campos de v2.
 // v3: `role` reemplaza a `isHole` (objetos de referencia); ver `projectRoleMigration.ts`.
+// v4: placas de impresión (`plates` en cada instantánea y `plateRef` en cada objeto). Se escribe SOLO si el
+// proyecto usa placas (en la escena o en su historial); si no, se sigue escribiendo la 3 para que una
+// versión anterior de la app lo abra. Un archivo anterior a v4 no puede traer campos de placas.
 const VERSION = ROLE_FORMAT_VERSION;
-const READABLE_VERSIONS = new Set([1, 2, ROLE_FORMAT_VERSION]);
+export const PLATES_FORMAT_VERSION = 4;
+const READABLE_VERSIONS = new Set([1, 2, ROLE_FORMAT_VERSION, PLATES_FORMAT_VERSION]);
 const LITTLE_ENDIAN = new Uint8Array(new Uint32Array([1]).buffer)[0] === 1;
 const crcTable = Uint32Array.from({ length: 256 }, (_, i) => {
   for (let bit = 0; bit < 8; bit++) i = (i >>> 1) ^ ((i & 1) ? 0xedb88320 : 0);
@@ -63,7 +69,7 @@ type StoredMesh = {
   faceColors?: { palette: string[]; indices: number };
 };
 type StoredObject = ObjectMetadata & { mesh: number };
-type Snapshot<T> = { objects: T[]; selectedIds: string[]; groups?: SceneGroup[] };
+type Snapshot<T> = { objects: T[]; selectedIds: string[]; groups?: SceneGroup[]; plates?: ScenePlate[] };
 const maybeIndex = (v: unknown) => v === undefined || nat(v);
 const colorTable = shape({ palette: Array.isArray, indices: nat });
 const validMesh = shape({
@@ -72,7 +78,8 @@ const validMesh = shape({
 const validBlock = shape({
   kind: (v) => v === 'f32' || v === 'u32', length: nat,
 }) as (v: unknown) => v is Block;
-const validSnapshot = shape({ objects: Array.isArray, selectedIds: Array.isArray, groups: (v) => v === undefined || Array.isArray(v) }) as
+const optionalList = (v: unknown) => v === undefined || Array.isArray(v);
+const validSnapshot = shape({ objects: Array.isArray, selectedIds: Array.isArray, groups: optionalList, plates: optionalList }) as
   (v: unknown) => v is Snapshot<unknown>;
 
 function copyWords(src: Uint8Array, dest: Uint8Array) {
@@ -120,20 +127,45 @@ function mapSnapshot<I, O extends { id: string }>(snapshot: Snapshot<I>, mapObje
     check(id(selected) && ids.delete(selected), `selection:${String(selected)}`);
     return selected;
   });
-  if (snapshot.groups === undefined || snapshot.groups.length === 0) return { objects, selectedIds };
-  // Grupos: forma estricta y cantidad acotada; ciclos, huérfanos y vacíos se sanean, no rechazan el archivo.
-  limit(snapshot.groups.length <= MAX_GROUPS);
-  check(validStoredGroups(snapshot.groups), 'groups');
-  const groups = snapshot.groups.map((g) => ({ ...g }));
-  return { objects, selectedIds, groups };
+  const out: Snapshot<O> = { objects, selectedIds };
+  if (snapshot.groups !== undefined && snapshot.groups.length > 0) {
+    // Grupos: forma estricta y cantidad acotada; ciclos, huérfanos y vacíos se sanean, no rechazan el archivo.
+    limit(snapshot.groups.length <= MAX_GROUPS);
+    check(validStoredGroups(snapshot.groups), 'groups');
+    out.groups = snapshot.groups.map((g) => ({ ...g }));
+  }
+  if (snapshot.plates !== undefined && snapshot.plates.length > 0) {
+    // Placas: igual que los grupos; ids repetidos y referencias rotas se sanean (la pieza no se pierde).
+    limit(snapshot.plates.length <= MAX_PLATES);
+    check(validStoredPlates(snapshot.plates), 'plates');
+    out.plates = snapshot.plates.map((p) => ({ ...p, origin: [p.origin[0], p.origin[1]], ...(p.bed ? { bed: { ...p.bed } } : {}) }));
+  }
+  return out;
+}
+
+/** true si la instantánea usa placas (lista o alguna referencia): obliga a escribir la versión 4. */
+function usesPlates(s: ProjectSceneSnapshot): boolean {
+  return (s.plates?.length ?? 0) > 0 || s.objects.some((o) => o.plateRef !== undefined);
 }
 
 /** Escena con grupos saneados (al abrir): huérfanos, ciclos, profundidad y orden contiguo. */
-function reconcileSnapshot<T extends { objects: SceneObject[]; selectedIds: string[]; groups?: SceneGroup[] }>(s: T): T {
+function reconcileSnapshot<T extends { objects: SceneObject[]; selectedIds: string[]; groups?: SceneGroup[]; plates?: ScenePlate[] }>(s: T): T {
+  return reconcileSnapshotPlates(reconcileSnapshotGroups(s));
+}
+
+function reconcileSnapshotGroups<T extends { objects: SceneObject[]; groups?: SceneGroup[] }>(s: T): T {
   if (!s.groups && !s.objects.some((o) => o.groupRef !== undefined)) return s;
   const clean = reconcileGroups({ objects: s.objects, groups: s.groups ?? [] });
   const { groups: _drop, ...rest } = s;
   return (clean.groups.length ? { ...rest, objects: clean.objects, groups: clean.groups } : { ...rest, objects: clean.objects }) as T;
+}
+
+/** Placas saneadas al abrir: sin ids repetidos y cada `plateRef` apunta a una placa (o se quita sin placas). */
+function reconcileSnapshotPlates<T extends { objects: SceneObject[]; plates?: ScenePlate[] }>(s: T): T {
+  if (!s.plates && !s.objects.some((o) => o.plateRef !== undefined)) return s;
+  const clean = reconcilePlates({ objects: s.objects, plates: s.plates ?? [] });
+  const { plates: _drop, ...rest } = s;
+  return (clean.plates.length ? { ...rest, objects: clean.objects, plates: clean.plates } : { ...rest, objects: clean.objects }) as T;
 }
 
 export function encodeProject(doc: ProjectDocument): Uint8Array {
@@ -219,7 +251,11 @@ export function encodeProject(doc: ProjectDocument): Uint8Array {
   }
 
   const snapshot = (s: ProjectSceneSnapshot) => mapSnapshot(s, storeObject);
-  const current = snapshot({ objects: doc.objects, selectedIds: doc.selectedIds, ...(doc.groups?.length ? { groups: doc.groups } : {}) });
+  const current = snapshot({
+    objects: doc.objects, selectedIds: doc.selectedIds,
+    ...(doc.groups?.length ? { groups: doc.groups } : {}),
+    ...(doc.plates?.length ? { plates: doc.plates } : {}),
+  });
   const past = Array.from(doc.past, snapshot);
   const future = Array.from(doc.future, snapshot);
   const manifest = {
@@ -234,7 +270,8 @@ export function encodeProject(doc: ProjectDocument): Uint8Array {
   const bytes = new Uint8Array(size);
   const header = new DataView(bytes.buffer);
   bytes.set(MAGIC);
-  header.setUint32(4, VERSION, true);
+  const withPlates = usesPlates(doc) || doc.past.some(usesPlates) || doc.future.some(usesPlates);
+  header.setUint32(4, withPlates ? PLATES_FORMAT_VERSION : VERSION, true);
   header.setUint32(8, metadataBytes.length, true);
   bytes.set(metadataBytes, HEADER_SIZE);
   let offset = HEADER_SIZE + metadataBytes.length;
@@ -320,6 +357,7 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
     const stored = migrateStoredRole(raw, version);
     check(validStoredObject(stored) && stored.mesh < assets.length, `object:${String((stored as { name?: unknown }).name)}`);
     check(version >= 2 || stored.parametric === undefined, `object:${String(stored.name)}`);
+    check(version >= PLATES_FORMAT_VERSION || stored.plateRef === undefined, `object:${String(stored.name)}`);
     const { mesh, geometryKey } = assets[stored.mesh];
     usedMeshes.add(stored.mesh);
     let cache = stats.get(geometryKey);
@@ -331,6 +369,7 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
   }
   function snapshot(s: unknown) {
     check(validSnapshot(s));
+    check(version >= PLATES_FORMAT_VERSION || s.plates === undefined, 'plates');
     return reconcileSnapshot(mapSnapshot(s, restoreObject));
   }
   const document = { ...settings, ...snapshot(current), past: past.map(snapshot), future: future.map(snapshot) };

@@ -42,6 +42,7 @@ import { createUiSlice } from './slices/uiSlice';
 import { createQuickActionsSlice } from './slices/quickActionsSlice';
 import { createMenuIdeasSlice } from './slices/menuIdeasSlice';
 import { createGroupsSlice } from './slices/groupsSlice';
+import { createPlatesSlice } from './slices/platesSlice';
 import { createRepairSlice } from './slices/repairSlice';
 import { createViewPrefsSlice } from './slices/viewPrefsSlice';
 
@@ -100,6 +101,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createCablePassSlice(ctx),
     ...createMenuIdeasSlice(ctx),
     ...createGroupsSlice(ctx),
+    ...createPlatesSlice(ctx),
     ...createRepairSlice(ctx),
     ...createViewPrefsSlice(ctx),
     ...createSmoothSlice(ctx),

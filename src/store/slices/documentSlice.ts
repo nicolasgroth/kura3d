@@ -41,6 +41,8 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     set((state) => ({
       ...document,
       groups: document.groups ?? [],
+      plates: document.plates ?? [],
+      activePlateId: null,
       groupContextId: null,
       temporarySectionView: null,
       projectName: name,
@@ -101,6 +103,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         objects: [],
         selectedIds: [],
         groups: [],
+        plates: [],
         past: [],
         future: [],
         sectionPlane: { enabled: false, heightMm: 25 },

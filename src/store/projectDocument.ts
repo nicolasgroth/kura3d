@@ -12,6 +12,7 @@ import { trimHistoryForFile } from '../project/historyBudget';
 import type { ProjectDocument } from '../project/projectSchema';
 import { makeId } from '../core/scene/sceneObjects';
 import type { SceneGroup, SceneObject, Vec3 } from '../types/kura';
+import type { ScenePlate } from '../types/plates';
 import { deltaSourceOf, isPaintDeltaStep, keepDeltaSource, materializeHistory, type HistoryStep } from './historySteps';
 import type { KuraStoreState, SceneSnapshot } from './storeTypes';
 
@@ -60,11 +61,12 @@ function fileHistory(past: HistoryStep[], future: HistoryStep[]) {
 export function captureProject(state: KuraStoreState): ProjectDocument {
   const trimmed = fileHistory(state.past, state.future);
   // Los deltas de pintura viajan al archivo como instantáneas completas.
-  const history = materializeHistory(state.objects, state.selectedIds, trimmed.past, trimmed.future, state.groups);
+  const history = materializeHistory(state.objects, state.selectedIds, trimmed.past, trimmed.future, state.groups, state.plates);
   return {
     objects: state.objects,
     selectedIds: liveSelection(state.objects, state.selectedIds),
     ...(state.groups.length ? { groups: state.groups } : {}),
+    ...(state.plates.length ? { plates: state.plates } : {}),
     past: history.past.map(cleanSnapshotSelection),
     future: history.future.map(cleanSnapshotSelection),
     unitSystem: state.unitSystem,
@@ -82,13 +84,15 @@ export function hasProjectChanged(saved: ProjectDocument, state: KuraStoreState)
     !sameHistory(saved.past, history.past) || !sameHistory(saved.future, history.future) ||
     saved.unitSystem !== state.unitSystem || saved.printerProfile !== state.printerProfile ||
     saved.customBedDimensions !== state.customBedDimensions || saved.sectionPlane !== state.sectionPlane ||
-    saved.snapGridMm !== state.snapGridMm || !sameGroups(saved.groups, state.groups);
+    saved.snapGridMm !== state.snapGridMm || !sameGroups(saved.groups, state.groups) ||
+    !sameList(saved.plates, state.plates);
 }
 
-/** Sin grupos en ambos lados cuenta como igual (un proyecto sin grupos no los guarda). */
-function sameGroups(a: SceneGroup[] | undefined, b: SceneGroup[] | undefined): boolean {
+/** Sin grupos (o placas) en ambos lados cuenta como igual (un proyecto sin ellos no los guarda). */
+function sameList<T>(a: readonly T[] | undefined, b: readonly T[] | undefined): boolean {
   return a === b || ((a?.length ?? 0) === 0 && (b?.length ?? 0) === 0);
 }
+const sameGroups = (a: SceneGroup[] | undefined, b: SceneGroup[] | undefined) => sameList(a, b);
 
 export function isProjectDirty(state: KuraStoreState): boolean {
   if (state.projectRecovered || state.projectRenamed) return true;
@@ -100,7 +104,7 @@ export function makeProjectDraftId(): string {
 }
 
 /** Clona un arreglo de objetos para instantáneas Undo/Redo compartiendo referencias inmutables de MeshData. */
-export function cloneSnapshot(objects: SceneObject[], selectedIds: string[], groups: SceneGroup[] = []): SceneSnapshot {
+export function cloneSnapshot(objects: SceneObject[], selectedIds: string[], groups: SceneGroup[] = [], plates: ScenePlate[] = []): SceneSnapshot {
   const copies = objects.map((obj) => ({
     ...obj,
     position: [...obj.position] as Vec3,
@@ -115,6 +119,10 @@ export function cloneSnapshot(objects: SceneObject[], selectedIds: string[], gro
   }));
   // Undo and redo copy the immutable scene layout without creating a new revision.
   sceneRevisions.set(copies, sceneRevision(objects));
-  // Los grupos son inmutables (cada cambio crea objetos nuevos): basta con la referencia.
-  return groups.length ? { objects: copies, selectedIds: [...selectedIds], groups } : { objects: copies, selectedIds: [...selectedIds] };
+  // Grupos y placas son inmutables (cada cambio crea objetos nuevos): basta con la referencia.
+  return {
+    objects: copies, selectedIds: [...selectedIds],
+    ...(groups.length ? { groups } : {}),
+    ...(plates.length ? { plates } : {}),
+  };
 }

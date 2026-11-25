@@ -9,12 +9,14 @@
 import { TRANSFORM_LIMITS } from '../engine/operationLimits';
 import { EDGE_SCOPES, EDGE_STYLES, TEXT_ALIGN_OPTIONS } from '../engine/primitiveLimits';
 import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
+import { MAX_PLATE_NAME, MAX_PLATES, validPlateBed } from '../core/scene/plates';
 import { REFERENCE_OPACITY } from '../core/scene/objectRole';
 import { sanitizeMagnetParams } from '../core/addons/magnetPocket';
 import { sanitizeScrewBossParams } from '../core/addons/screwBoss';
 import { sanitizeKeyholeParams } from '../core/addons/keyhole';
 import { sanitizeCablePassParams } from '../core/addons/cablePass';
 import { RECIPE_PROVENANCE_LIMITS } from '../types/recipeProvenance';
+import type { PlateBed, ScenePlate } from '../types/plates';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
 
 export const MAX_PROJECT_BYTES = 128 * 1024 * 1024;
@@ -24,6 +26,8 @@ export interface ProjectSceneSnapshot {
   selectedIds: string[];
   /** Grupos de organización (opcional: proyectos sin grupos lo omiten). */
   groups?: SceneGroup[];
+  /** Placas de impresión (opcional: sin placas hay una implícita en el origen; desde la versión 4). */
+  plates?: ScenePlate[];
 }
 
 export interface ProjectDocument extends ProjectSceneSnapshot {
@@ -233,6 +237,8 @@ const metadataFields = {
   texture: optional(shape({ pattern: oneOf('none', 'fuzzy', 'knurling', 'waves', 'honeycomb', 'grid'), depth: finite, scale: finite })),
   metadata: optional(objectExtra),
   groupRef: optional(id),
+  // Desde la versión 4: placa de impresión de la pieza (una referencia rota se sanea al abrir).
+  plateRef: optional(id),
 } satisfies Record<keyof ObjectMetadata, Rule>;
 
 const idList = (v: unknown) => Array.isArray(v) && v.length <= 1_000_000 && v.every(id);
@@ -246,6 +252,21 @@ export const validStoredGroup = shape({
 
 export const validStoredGroups = (v: unknown): v is SceneGroup[] =>
   v === undefined || (Array.isArray(v) && v.length <= MAX_GROUPS && v.every(validStoredGroup));
+
+/** Placa de impresión guardada (`ScenePlate`, versión 4); ids repetidos y referencias rotas se sanean aparte. */
+const plateBedShape = shape({
+  profileId: optional(id), name: (v) => typeof v === 'string' && v.length <= MAX_PLATE_NAME,
+  widthMm: finite, depthMm: finite, heightMm: finite, marginMm: numberOption,
+} satisfies Record<keyof PlateBed, Rule>);
+const plateOrigin = (v: unknown) => Array.isArray(v) && v.length === 2
+  && v.every((n) => finite(n) && Math.abs(n) <= TRANSFORM_LIMITS.maxAbsCoordinate);
+export const validStoredPlate = shape({
+  id, name: (v) => typeof v === 'string' && v.length <= MAX_PLATE_NAME, origin: plateOrigin,
+  bed: optional((v) => plateBedShape(v) && validPlateBed(v as PlateBed)), locked: optional(bool),
+} satisfies Record<keyof ScenePlate, Rule>) as (v: unknown) => v is ScenePlate;
+
+export const validStoredPlates = (v: unknown): v is ScenePlate[] =>
+  v === undefined || (Array.isArray(v) && v.length <= MAX_PLATES && v.every(validStoredPlate));
 
 export const validStoredObject = shape({ ...metadataFields, mesh: nat }) as
   (v: unknown) => v is ObjectMetadata & { mesh: number };
