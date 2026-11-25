@@ -19,7 +19,7 @@ import { buildConnectorSolid } from '../cutConnectorSolid';
 import { engineWarning, type EngineWarning } from '../engineErrors';
 import type { SplitBody } from './splitBodies';
 import { buildLapSolids, type LapRejection } from './splitLap';
-import { buildLooseDowelHoles, layoutType, looseDowelHoleDepth } from './splitLooseDowel';
+import { buildLooseDowelHoles, layoutType } from './splitLooseDowel';
 import type { Capsule } from './assemblyConnectors';
 import type { ConnectorRoom } from './splitConnectorRoom';
 import { recommendedConnectorRadius, reinforcementCap } from './assemblyConnectors';
@@ -27,9 +27,10 @@ import { classifyContactIslands } from './splitJointIslands';
 import { buildJointLabel, orientedToWorld } from './splitLabels';
 import { buildOutsideDots, buildOutsideLabel } from './splitOutsideLabel';
 import { depthByRays, eligibleIslands, jointStrength, SPLIT_JOINT_WALL_MM } from './splitJointStrength';
+import { buildMagnetPockets, magnetJointInfo, magnetStrength, placeMagnets, twoSidedHoleDepth } from './splitMagnet';
 import { ASSEMBLY_LIMITS, OPERATION_DEFAULTS, OPERATION_RANGES } from '../operationLimits';
 import { AXIS_INDEX, islandWidth, orientForAxis } from './splitSections';
-import type { SplitAxis, SplitConnectorOptions, SplitJointIsland, SplitJointKind, SplitJointStrength, SplitLabelPlacement, SplitLapInfo } from './splitTypes';
+import type { SplitAxis, SplitConnectorOptions, SplitJointIsland, SplitJointKind, SplitJointMagnets, SplitJointStrength, SplitLabelPlacement, SplitLapInfo } from './splitTypes';
 
 const MIN_WALL_DEFAULT = OPERATION_DEFAULTS.split.minWallForConnectorMm;
 const ASSEMBLY_MAX_COUNT = OPERATION_RANGES.cut.connectorCount.max;
@@ -135,7 +136,7 @@ function placeRung(
   lt: ReturnType<typeof layoutType>, handles: Array<{ delete: () => void }>,
 ): { centers: Vec3[]; caps: Capsule[] } | null {
   const a = AXIS_INDEX[j.axis];
-  const from = j.coord - (c.type === 'loose-dowel' ? looseDowelHoleDepth(c) : 0.5);
+  const from = j.coord - (c.type === 'loose-dowel' || c.type === 'magnet' ? twoSidedHoleDepth(c) : 0.5);
   const to = j.coord + holeDepth(c);
   for (const wall of [SPLIT_JOINT_WALL_MM, SPLIT_JOINT_WALL_MM + RETRY_EXTRA_WALL_MM]) {
     let target = face;
@@ -183,6 +184,7 @@ export interface JointOutcome {
   labelPlacement: SplitLabelPlacement | null;
   labelHeightMm: number;
   strength: SplitJointStrength;
+  magnets?: SplitJointMagnets;
 }
 
 /** Arma una unión: agrega a `low.adds`/`high.subs`/`low.subs` los sólidos y devuelve lo aplicado. */
@@ -217,7 +219,14 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     // El tarugo suelto también agujerea la pieza baja: necesita fondo a ambos lados del plano
     const lowSpan = coord - j.bounds[a][low.cell[a]];
     const roomBelow = connector?.type !== 'loose-dowel' || holeDepth(connector) < lowSpan;
-    if (connector && connector.type !== 'lap' && !thinOnly && roomBelow && holeDepth(connector) < j.span && !face.isEmpty()) {
+    if (connector?.type === 'magnet') {
+      // Imanes: misma ubicación que los conectores; cantidad automática o fija, sin achicar (el imán es fijo)
+      const lt = layoutType(connector.type);
+      const m = face.isEmpty() ? null : placeMagnets(j, islands, connector, (c) => placeRung(wasm, j, face, c, lt, handles), (caps) => j.room?.add(caps), warnings, pair);
+      used = m?.used ?? null;
+      centers = m?.centers ?? [];
+      requestedAt = m?.requested ?? connector;
+    } else if (connector && connector.type !== 'lap' && !thinOnly && roomBelow && holeDepth(connector) < j.span && !face.isEmpty()) {
       const area = j.contact.area();
       const dim = j.reinforce || connector.sizeAuto ? smallerPieceDim(low, high) : 0;
       // Tope relativo a la sección: la isla más ancha que admite conector
@@ -265,9 +274,9 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
         }));
       }
     }
-    if (used && used.type === 'loose-dowel') {
+    if (used && (used.type === 'loose-dowel' || used.type === 'magnet')) {
       for (const center of centers) {
-        const holes = buildLooseDowelHoles(wasm, axis, center, used);
+        const holes = used.type === 'magnet' ? buildMagnetPockets(wasm, axis, center, used) : buildLooseDowelHoles(wasm, axis, center, used);
         const inLow = own(low.m.intersect(holes.low));
         const inHigh = own(high.m.intersect(holes.high));
         clearance += inLow.volume() + inHigh.volume();
@@ -379,11 +388,15 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
         warnings.push(engineWarning('SPLIT_LABEL_SKIPPED', { ...pair, min: j.labelMinHeightMm }));
       }
     }
-    const strength = jointStrength(used, requestedAt, centers, j.contact.area(), islandInfo, depthFrom);
+    const magnet = connector?.type === 'magnet';
+    const strength = magnet
+      ? magnetStrength(used, requestedAt, centers, j.contact.area(), islandInfo)
+      : jointStrength(used, requestedAt, centers, j.contact.area(), islandInfo, depthFrom);
     if (strength.level === 'weak') {
       warnings.push(engineWarning('SPLIT_JOINT_WEAK', { ...pair, count: strength.count, area: Math.round(1000 * strength.areaRatio) / 10, reason: strength.reasons[0] }));
     }
-    return { kind, used, centers, lap, islands: islandInfo, clearance, engraved, labelPlacement, labelHeightMm, strength };
+    const magnets = used && magnet ? magnetJointInfo(used, centers.length) : undefined;
+    return { kind, used, centers, lap, islands: islandInfo, clearance, engraved, labelPlacement, labelHeightMm, strength, ...(magnets ? { magnets } : {}) };
   } finally {
     for (const h of handles) h.delete();
   }

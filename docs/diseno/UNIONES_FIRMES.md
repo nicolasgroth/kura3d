@@ -74,3 +74,56 @@ Rayos paralelos al eje desde el centro y desde cuatro puntos del anillo *huella 
 - La pared del anillo se comprueba con 4 rayos, no con un barrido continuo; la pared lateral la garantiza la ubicación (secciones a lo largo de la profundidad), los rayos cubren el fondo y las caras inclinadas.
 - `holeDepth` (alcance hacia la celda vecina y cápsulas de la validación) sigue con 0,8 mm de fondo: es conservador hacia afuera, el fondo real de 1,2 lo exigen los rayos.
 - Los números marcados «por verificar» son criterio de diseño, no ensayos de resistencia.
+
+## Imanes como unión del corte
+
+Tipo de unión `magnet` de Dividir para imprimir (`src/engine/split/splitMagnet.ts`): en vez de macho y hembra, cada imán abre **dos alojamientos enfrentados**, uno en cada pieza, para que la figura quede desmontable. Reutiliza el alojamiento de imán (`core/addons/magnetPocket.ts`: medidas con holgura, negativo circunscrito de 64 lados) y la ubicación de las uniones firmes.
+
+### Conector
+
+`magnetConnector(imán, cantidad)` arma un `SplitConnectorOptions` con `type: 'magnet'`, `size` = radio del imán, `tolerance` = holgura radial (la mitad de la del diámetro), `depth` = profundidad de cada alojamiento (alto + holgura de profundidad), `magnet` = el imán (siempre abierto) y `countAuto` si la cantidad es automática. `minWallForConnectorMm` va en 0: no se exige el espesor mínimo de los conectores (8 mm), manda la pared alrededor de cada imán. Por defecto Ø5 × 2 con holgura +0,2 / +0,2 (alojamiento Ø5,2 × 2,2 mm). Se agregó el preajuste incluido **3 × 1** (al final de la lista).
+
+### Ubicación
+
+- La misma `placeRung` de los conectores (`layoutForCut` con pared **1,2 mm** alrededor y hacia el exterior, secciones a lo largo de la profundidad, zona prohibida por los conectores de otras uniones con `ConnectorRoom`), con la huella del tarugo cilíndrico (`layoutType('magnet') = 'dowel'`).
+- **Cantidad automática**: se prueba `max(2, islas que admiten un imán)` (tope 8) y se baja de a uno. Con dos islas, uno por isla; con una sola isla, dos (no gira); en secciones angostas el muestreo del punto más lejano los deja en línea.
+- **Cantidad fija**: se prueba la pedida y se baja de a uno si no caben (`SPLIT_MAGNET_REDUCED` con lo pedido y lo puesto).
+- El imán tiene alto fijo: la profundidad **no se acorta**. Rayos paralelos al eje (centro y anillo hueco + pared) exigen alojamiento + 1,2 mm de material en **las dos** piezas; si no, se prueba con menos imanes y, si no cabe ninguno, la unión queda para pegar con `SPLIT_MAGNET_NO_ROOM` (diámetro, alto y pared).
+- Imán cuadrado: aún no se admite en uniones (`SPLIT_MAGNET_SQUARE`, la unión queda para pegar; el panel lo advierte al elegirlo).
+
+### Geometría
+
+`buildMagnetPockets`: dos cilindros coaxiales con la normal del plano en cada centro. El de la pieza baja va de plano − profundidad a plano + 0,5; el de la alta, de plano − 0,5 a plano + profundidad. El medio milímetro que cruza el plano cae en la otra pieza, que no lo recibe: las bocas quedan exactamente en la cara del corte y se tocan al armar. Se **restan directamente** al generar las piezas, como los alojamientos hembra y el tarugo suelto: las piezas salen listas para imprimir (no se dejan negativos editables con `metadata.addon`). El volumen quitado se suma a `clearanceVolumeMm3`.
+
+### Registro y polaridad
+
+- `SplitJoint.magnets` y `SplitJointRecord.magnets` (guardado en `.kura`, validado por `projectSchema.ts`): imán, cantidad, diámetro y profundidad del alojamiento y `polarity: 'opposite'`. Las posiciones son `connectorCenters`; el conector guardado lleva `magnet`.
+- La app no puede fijar la polaridad física. El panel y la sección Uniones muestran «pega los imanes de cada par con polos opuestos; prueba el par antes de pegar» (`splitMagnet.polarity`); el resumen del MCP trae el mismo texto. Las marcas de pareja grabadas no cambian (los imanes las evitan como a cualquier conector).
+
+### Armado y Comprobar encaje
+
+- Un imán va a ras dentro de su alojamiento: la unión **no restringe la dirección de entrada** (`restricts` falso) ni se ofrece cambiarla de tipo; sus cápsulas sí cuentan para los choques entre conectores.
+- Comprobar encaje: las piezas en posición de armado son «unión del corte» (`fitCheck/cutJoint.ts` no depende del tipo de conector). Los imanes de Dividir no son objetos aparte, así que el seguimiento de imanes (`magnetFollow.ts`) no interviene y no cambió.
+
+### Fuerza (`MAGNET_RULES`, por verificar)
+
+`areaRatio` = área de los imanes (π·r² por imán) / área de la sección. `SplitJointStrength.basis = 'magnet'`.
+
+| Nivel | Regla |
+|---|---|
+| `glue` | Ningún imán. |
+| `weak` | Área < 1 % de la sección, o un solo imán con área < 5 % (motivo `single-magnet`: en una sección grande gira y se suelta). |
+| `firm` | ≥ 2 imanes, área ≥ 2 % y todas las islas con imán. |
+| `fair` (justa) | El resto: un imán en sección chica, área de 1 a 2 % o islas sin imán. |
+
+Criterio de diseño propio, **por verificar**: la fuerza real depende del grado (N35, N52…) y del tamaño del imán, no solo del área. Ejemplos de las pruebas: bloque 40 × 30 con dos Ø5 → 3,3 % → firme; cubo 60 × 60 con un Ø5 → 0,5 % → débil (`low-area`, `single-magnet`); barra 6 × 6 con un Ø3 → 19,6 % → justa (`single-connector`).
+
+### Pruebas
+
+`src/engine/__tests__/splitMagnetJoint.test.ts` (motor real): bloque en dos (2 pares, coaxiales ±0,01 mm, bocas en el plano, profundidad 2,2, piezas cerradas, volumen quitado = 4 huecos ±1 %), barra 6 × 6 (5 × 2 no cabe, con aviso; 3 × 1 sí, un par), H con dos islas (un par por isla), pieza girada 25°/20° (cada hueco mide Ø5,2 de lado y 2,2 a lo largo de la normal del plano), torre en ≥ 3 piezas (cada unión con sus 2 pares) y cantidad fija (4 imanes; uno solo en sección grande es débil). `splitMagnetFit.test.ts`: Comprobar encaje («unión del corte»), registro y `.kura` de ida y vuelta, revalidación sin trabas. Los huecos se miden en el armado como (sólido original ∩ lado de la pieza) − pieza, recortado alrededor de cada centro.
+
+### Límites
+
+- Solo imanes redondos; sin ubicación manual de cada imán; no hay par de imanes entre piezas que no vienen de un corte (caja y tapa).
+- Dividir corta por planos de los ejes: el «corte inclinado» se prueba con una pieza girada (caras inclinadas que cruzan el plano), no con un plano oblicuo.
+- En el panel la medida se elige por preajuste (incluidos o propios); para una medida nueva se guarda primero como preajuste en *Alojamiento de imán*. Por comando o MCP se pasan `magnetDiameterMm`, `magnetHeightMm`, holguras y `magnetCount`.

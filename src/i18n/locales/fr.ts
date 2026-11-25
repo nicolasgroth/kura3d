@@ -58,6 +58,7 @@ import { ORIENT_UI_FR } from './orientar';
 import { REDISENO3A_FR } from './rediseno3a';
 import { REDISENO3B_FR } from './rediseno3b';
 import { UX8_MENU_FR } from './ux8Menu';
+import { IMANES_UNION_FR } from './imanesUnion';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -1392,4 +1393,5 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'bus.error.assemblyNotSplit': 'Ces pièces ne peuvent pas être revalidées ({reason}) : elles doivent appartenir à un même groupe divisé avec ses jonctions enregistrées.',
   'dialog.thread.invalidFields': 'Corrigez les champs marqués avant de créer le filetage : une valeur non numérique ou hors plage n’est pas appliquée.',
   ...ORIENT_UI_FR,
+  ...IMANES_UNION_FR,
 };

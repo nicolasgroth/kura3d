@@ -11,6 +11,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../../src/engine/operationLimits';
+import { MAGNET_DEFAULTS as MD, MAGNET_RANGES as MR } from '../../src/core/addons/magnetPocket';
+import { magnetConnector } from '../../src/engine/split/splitMagnet';
 import { idSchema, rangeSchema } from './schemas.js';
 import { summarizeSplitResult } from './splitSummary.js';
 import { dispatchWithFallback, type KuraToolContext } from './tools.js';
@@ -41,8 +43,15 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         maxPieces: z.union([rangeSchema(OR.split.maxPieces), z.literal('auto')]).default(d.maxPieces),
         allowRotation: z.boolean().default(true).describe('Allows rotating a part 90° so it fits.'),
         allowDiagonal: z.boolean().default(false).describe('Allows resting the part diagonally on the bed if it fits that way without cutting.'),
-        connectorType: z.enum(['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel']).default('dowel')
-          .describe('dowel = fixed peg on one part; loose-dowel = blind holes in both parts plus separate printed dowels (no protrusions).'),
+        connectorType: z.enum(['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel', 'magnet']).default('dowel')
+          .describe('dowel = fixed peg on one part; loose-dowel = blind holes in both parts plus separate printed dowels (no protrusions); ' +
+            'magnet = facing round magnet pockets on both faces of each cut so the model comes apart (glue each pair with opposite poles).'),
+        magnetDiameterMm: rangeSchema(MR.sizeMm).default(MD.sizeMm).describe('connectorType="magnet": round magnet diameter in mm (default 5).'),
+        magnetHeightMm: rangeSchema(MR.heightMm).default(MD.heightMm).describe('connectorType="magnet": magnet height in mm (default 2); each pocket is height + depth clearance deep.'),
+        magnetClearanceMm: rangeSchema(MR.clearanceMm).default(MD.clearanceMm).describe('connectorType="magnet": clearance added to the diameter.'),
+        magnetDepthClearanceMm: rangeSchema(MR.depthClearanceMm).default(MD.depthClearanceMm).describe('connectorType="magnet": clearance added to the depth.'),
+        magnetCount: z.union([rangeSchema(OR.cut.connectorCount), z.literal('auto')]).default('auto')
+          .describe("connectorType=\"magnet\": magnets per joint, or 'auto' (at least one per island and two per joint when they fit)."),
         minWallForConnectorMm: rangeSchema(OR.split.minWallForConnectorMm).default(d.minWallForConnectorMm).describe('Minimum section thickness to place a connector; thinner sections are left for gluing.'),
         lapHeightMm: rangeSchema(OR.split.lapHeightMm).default(d.lapHeightMm).describe('Edge overlap height in mm.'),
         connectorSize: z.union([rangeSchema(OR.cut.connectorSize), z.literal('auto')]).default(d.connectorSize)
@@ -62,6 +71,11 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
       const connector =
         args.connectorType === 'none'
           ? null
+          : args.connectorType === 'magnet'
+          ? magnetConnector({
+              shape: 'round', sizeMm: args.magnetDiameterMm, heightMm: args.magnetHeightMm, clearanceMm: args.magnetClearanceMm,
+              depthClearanceMm: args.magnetDepthClearanceMm, hidden: false,
+            }, args.magnetCount)
           : {
               type: args.connectorType, size: args.connectorSize === 'auto' ? 4 : args.connectorSize, ...(args.connectorSize === 'auto' ? { sizeAuto: true } : {}), depth: args.connectorDepth, tolerance: args.tolerance,
               count: Math.max(1, args.connectorCount), minWallForConnectorMm: args.minWallForConnectorMm, lapHeightMm: args.lapHeightMm,

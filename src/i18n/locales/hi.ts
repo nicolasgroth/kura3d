@@ -58,6 +58,7 @@ import { ORIENT_UI_HI } from './orientar';
 import { REDISENO3A_HI } from './rediseno3a';
 import { REDISENO3B_HI } from './rediseno3b';
 import { UX8_MENU_HI } from './ux8Menu';
+import { IMANES_UNION_HI } from './imanesUnion';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -1392,4 +1393,5 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'bus.error.assemblyNotSplit': 'इन हिस्सों की फिर से जाँच नहीं हो सकती ({reason}): वे एक ही विभाजित समूह के हों और उनके जोड़ सहेजे हों।',
   'dialog.thread.invalidFields': 'थ्रेड बनाने से पहले चिह्नित फ़ील्ड सुधारें: गैर-संख्यात्मक या सीमा से बाहर का मान लागू नहीं होता।',
   ...ORIENT_UI_HI,
+  ...IMANES_UNION_HI,
 };

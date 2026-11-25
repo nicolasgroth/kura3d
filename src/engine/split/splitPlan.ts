@@ -68,7 +68,8 @@ export function splitPartCode(cell: [number, number, number], zCount: number): s
 export function connectorProtrusion(c: SplitConnectorOptions | null): number {
   if (!c) return 0;
   const lap = c.type === 'lap' ? (c.lapHeightMm ?? SPLIT_DEFAULTS.lapHeightMm) : 0;
-  return Math.max(0.8, c.type === 'lap' ? 0 : c.depth, lap);
+  // Los imanes no sobresalen: cada alojamiento queda dentro de su pieza
+  return Math.max(0.8, c.type === 'lap' || c.type === 'magnet' ? 0 : c.depth, lap);
 }
 
 /** Tramo mínimo: el alojamiento con su pared debe caber en la pieza que lo recibe. */

@@ -58,6 +58,7 @@ import { ORIENT_UI_ZH } from './orientar';
 import { REDISENO3A_ZH } from './rediseno3a';
 import { REDISENO3B_ZH } from './rediseno3b';
 import { UX8_MENU_ZH } from './ux8Menu';
+import { IMANES_UNION_ZH } from './imanesUnion';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -1392,4 +1393,5 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'bus.error.assemblyNotSplit': '无法重新验证这些零件（{reason}）：它们必须属于同一分割组并保存了接合信息。',
   'dialog.thread.invalidFields': '创建螺纹前请先修正标记的字段：非数字或超出范围的值不会被应用。',
   ...ORIENT_UI_ZH,
+  ...IMANES_UNION_ZH,
 };

@@ -158,6 +158,8 @@ interface JointLike {
   b: JointSide;
   connectorCenters: unknown[];
   labelEngraved?: boolean;
+  /** Imanes de la unión (medida, cantidad, polaridad), si los lleva. */
+  magnets?: unknown;
 }
 
 const sideToUser = <S extends JointSide>(s: S): S => (s.face ? { ...s, face: userDirectionOfInternal(s.face) } : s);
@@ -167,6 +169,7 @@ export function splitJointToUser(j: JointLike) {
   return {
     label: j.label, axis: axisToUser(j.axis), a: sideToUser(j.a), b: sideToUser(j.b),
     connectors: j.connectorCenters.length, labelEngraved: j.labelEngraved,
+    ...(j.magnets ? { magnets: j.magnets } : {}),
   };
 }
 

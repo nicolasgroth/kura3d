@@ -106,15 +106,24 @@ const splitTransform = shape({ position: vec3, rotation: vec3 });
 const face = oneOf('+x', '-x', '+y', '-y', '+z', '-z');
 const label16 = (v: unknown) => str(v) && v.length <= 16;
 // Unión guardada para revalidar el armado (`SplitJointRecord`).
+// Imán de una unión del corte (`MagnetPocketParams`): mismos rangos que el alojamiento de imán.
+const splitMagnet = (v: unknown) => sanitizeMagnetParams(v) !== null && shape({
+  shape: str, sizeMm: finite, heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
+})(v);
 const splitConnector = shape({
-  type: oneOf('dowel', 'peg', 'dovetail', 'lap', 'loose-dowel'), size: positive, depth: positive, tolerance: nonnegative,
+  type: oneOf('dowel', 'peg', 'dovetail', 'lap', 'loose-dowel', 'magnet'), size: positive, depth: positive, tolerance: nonnegative,
   count: (v) => nat(v) && v > 0, minWallForConnectorMm: optional(nonnegative), lapHeightMm: optional(positive),
+  magnet: optional(splitMagnet),
+});
+const splitJointMagnets = shape({
+  magnet: splitMagnet, count: (v) => nat(v) && v > 0 && v <= 64, pocketDiameterMm: positive, pocketDepthMm: positive, polarity: oneOf('opposite'),
 });
 const splitJointRecord = shape({
   label: label16, axis: oneOf('x', 'y', 'z'), position: finite, a: label16, b: label16,
   kind: oneOf('connector', 'glue', 'lap', 'socket'), connector: (v) => v === null || splitConnector(v),
   connectorCenters: (v) => Array.isArray(v) && v.length <= 4096 && v.every(vec3), contactAreaMm2: nonnegative,
   labelPlacement: optional((v) => v === null || oneOf('joint', 'outside', 'dots')(v)),
+  magnets: optional(splitJointMagnets),
 });
 // Avisos de la división guardados con el grupo (`SplitStoredNotes`): todo acotado en cantidad y largo.
 const short = (n: number) => (v: unknown) => typeof v === 'string' && v.length <= n;
