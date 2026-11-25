@@ -77,6 +77,7 @@ export const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = 
         { keys: ['L'], label: t(language, 'dialog.shortcuts.dropBed') },
         { keys: ['H'], label: t(language, 'dialog.shortcuts.toggleHole') },
         { keys: ['Shift+H'], label: t(language, 'ux8.shortcuts.toggleVisible') },
+        { keys: ['Alt+.'], label: t(language, 'floatingBar.shortcut') },
         { keys: ['↔'], label: t(language, 'ux10.shortcuts.dragMove') },
       ],
     },

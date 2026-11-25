@@ -17,6 +17,7 @@ import { ViewportHudTop } from './viewport/ViewportHudTop';
 import { ObjectContextMenu } from './viewport/ObjectContextMenu';
 import { BackgroundContextMenu } from './viewport/BackgroundContextMenu';
 import { ViewportOverlays } from './viewport/ViewportOverlays';
+import { FloatingActionBar } from './viewport/FloatingActionBar';
 
 export const Viewport3D: React.FC = () => {
   const viewportRef = useRef<HTMLElement | null>(null);
@@ -64,6 +65,7 @@ export const Viewport3D: React.FC = () => {
       )}
 
       <ViewportOverlays />
+      <FloatingActionBar contextMenuOpen={contextMenu !== null} onMore={handleObjectContextMenu} />
     </main>
   );
 };

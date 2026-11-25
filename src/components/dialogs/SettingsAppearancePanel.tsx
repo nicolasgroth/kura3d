@@ -11,6 +11,7 @@ import { Check, Monitor, Moon, Sun } from 'lucide-react';
 import { t, type TranslationKey } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { ReferenceOpacitySetting } from '../settings/ReferenceOpacitySetting';
+import { FloatingBarSetting } from '../settings/FloatingBarSetting';
 import { THEME_PRESETS, type ColorSchemePreference } from '../../types/kura';
 import { useResolvedDarkScheme } from './useResolvedDarkScheme';
 
@@ -60,6 +61,7 @@ export const SettingsAppearancePanel: React.FC = () => {
         </div>
       </div>
       <ReferenceOpacitySetting />
+      <FloatingBarSetting />
 
       <div className="kura-themes-header">
         <div>

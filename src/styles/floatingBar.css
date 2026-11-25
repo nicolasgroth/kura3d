@@ -1,0 +1,107 @@
+/**
+ * @file src/styles/floatingBar.css
+ * @description Barra flotante de acciones junto al objeto seleccionado (claro y oscuro por tokens). La posición
+ * llega por `transform` desde el bucle del visor; `data-busy` la oculta mientras se arrastra y `data-offscreen`
+ * cuando el objeto queda fuera de vista. Objetivos de puntero de 32 px.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-floating-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  color: var(--text-primary);
+  will-change: transform;
+  transition: opacity 0.12s ease;
+}
+
+/* Sin colocar aún, arrastrando o con el objeto fuera de vista: invisible y sin recibir clics (ni foco). */
+.kura-floating-bar:not([data-placed='true']),
+.kura-floating-bar[data-busy='true'],
+.kura-floating-bar[data-offscreen='true'] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.kura-floating-bar-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.kura-floating-bar-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.kura-floating-bar-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+/* Bloqueado: fondo y borde, no solo el icono (el estado no depende del color). */
+.kura-floating-bar-btn.is-pressed {
+  background: color-mix(in srgb, var(--accent-cyan) 18%, var(--bg-elevated));
+  border-color: var(--accent-cyan);
+}
+
+.kura-floating-bar-btn.is-danger:hover {
+  color: var(--danger, #ef4444);
+}
+
+.kura-floating-bar-btn[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.kura-floating-bar-dot {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  pointer-events: none;
+}
+
+/* El selector nativo vive aquí, invisible, para que se abra junto al botón Color. */
+.kura-floating-bar-color {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 32px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kura-floating-bar {
+    transition: none;
+  }
+}
