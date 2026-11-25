@@ -59,6 +59,34 @@ describe('la placa sigue a la posición', () => {
     expect(store().activePlateId).toBe(p2);
   });
 
+  it('invariante de historial: dentro de un arrastre la reasignación viaja en el paso del arrastre', async () => {
+    const { a, p2, x2 } = await twoPlates();
+    store().selectObject(a);
+    const steps = store().past.length;
+    store().setObjectTransform(a, { position: [x2, 0, 0] }, false);
+    store().reassignPlatesByPosition([a]);
+    expect(store().past.length).toBe(steps);
+    store().commitTransformSnapshot();
+    expect(store().past.length).toBe(steps + 1);
+    expect(byId(a)!.plateRef).toBe(p2);
+  });
+
+  it('invariante de historial: fuera de un arrastre abre su paso y un deshacer la revierte', async () => {
+    const { a, p1, p2, x2 } = await twoPlates();
+    // Posición cambiada sin pasar por las acciones del store: la placa quedó desfasada.
+    useKuraStore.setState((s) => ({ objects: s.objects.map((o) => (o.id === a ? { ...o, position: [x2, 0, 0] } : o)) }));
+    expect(byId(a)!.plateRef).toBe(p1);
+    const steps = store().past.length;
+    store().reassignPlatesByPosition([a]);
+    expect(byId(a)!.plateRef).toBe(p2);
+    expect(store().past.length).toBe(steps + 1);
+    // Sin nada más que reasignar no deja otro paso.
+    store().reassignPlatesByPosition([a]);
+    expect(store().past.length).toBe(steps + 1);
+    store().undo();
+    expect(byId(a)!.plateRef).toBe(p1);
+  });
+
   it('transform_object del bus', async () => {
     const { a, p2, x2 } = await twoPlates();
     const res = await run('transform_object', { id: a, position: [x2, 0, 0] });

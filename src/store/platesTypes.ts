@@ -43,7 +43,10 @@ export interface PlatesSliceState {
    * nueva para recibirlas. Un solo paso de deshacer. Devuelve cuántas piezas cambiaron de placa.
    */
   moveToPlate: (plateId: string | null, ids?: string[]) => number;
-  /** Tras un arrastre: cada pieza pasa a la placa sobre la que quedó (sin paso propio: va en el del arrastre). */
+  /**
+   * Tras un arrastre: cada pieza pasa a la placa sobre la que quedó. Dentro de un arrastre va en el paso de deshacer
+   * del propio arrastre; fuera de uno, abre su paso (nunca cambia la escena sin poder deshacerse).
+   */
   reassignPlatesByPosition: (ids: string[]) => void;
   /**
    * Modo de vista de la escena: poses de impresión o de armado (`core/scene/layoutPoses.ts`). Entra en la
