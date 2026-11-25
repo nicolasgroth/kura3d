@@ -33,3 +33,15 @@ El mensaje del huevo de pascua (10 clics en el logo) es «Piedra a piedra se lev
 
 ### 6. Tiempos de lo pendiente
 Estimación por tarea en `docs/ESTIMACION.md`, para revisarla juntos.
+
+### 7. Un solo patrón para los paneles
+Hoy conviven dos: unos 13 paneles usan × con «Cancelar / Aplicar» (Dividir, Corte, Molde, Rosca, Texto 3D, Medir, Asistentes, imán, torreta, colgar en el muro, paso de cable…) y unos 10 usan «Volver» (Ahuecar, Simplificar, Suavizar, Orientar, Comprobar encaje…). El evaluador de usabilidad lo marcó como inconsistencia. ¿Unificamos en «Volver» (misma tecla Esc) conservando el botón de acción de cada panel? Recomendación: sí; es un cambio en un archivo común más las pruebas de esos 13 paneles, unas 2–3 h.
+
+### 8. Vista previa en Simplificar
+El evaluador la echa de menos. No se puede reutilizar la de Suavizar con poco código y hay que decidir cómo mostrar un fantasma de millones de triángulos sin congelar el visor. Propuesta: primero una vista previa que muestra solo el informe (cuántos triángulos, desviación, agujeros) sin tocar la pieza, y el fantasma después. ¿Te sirve así?
+
+### 9. Imanes cuadrados como unión del corte
+Hoy solo los redondos sirven de unión al dividir; con un imán cuadrado la app avisa y deja la unión para pegar. ¿Lo sumo? Requiere alojamientos cuadrados y otra regla de pared; talla S–M (3–5 h).
+
+### 10. Logo para fondo oscuro e imágenes de marca antiguas
+El logo completo tiene «Studio» en un morado casi negro y no se lee sobre fondo oscuro (por eso la app usa el ícono junto al nombre escrito). ¿Entregas una variante clara o la derivo de tu SVG cambiando solo el color del texto? Y los seis PNG antiguos de `public/branding/` ya no se usan: ¿los borro?

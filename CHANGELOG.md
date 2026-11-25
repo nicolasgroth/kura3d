@@ -10,6 +10,14 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Placas (primera versión).** Botón «+ Placa» junto al rótulo de la cama; con dos o más aparece la tira de placas (renombrar, «Solo esta», borrar), una cama por placa en el visor, «Mover a placa» en el menú y arrastrando, y «Fuera de volumen» por placa. Con una sola placa todo sigue igual. Los proyectos sin placas se guardan como antes.
+- **Suavizar funciona en modelos reales.** Unos pocos triángulos problemáticos ya no impiden suavizar el resto: se protegen solo esos puntos. Valores iniciales más suaves (30 % y 3 pasadas) y botones siempre a la vista.
+- **Orientar avisa cuando la pieza no se sostiene sola** y busca apoyos planos en la malla misma. Tras aplicar, un segundo Enter ya no revierte.
+- **Simplificar más a mano.** Botón en el inspector; desde el aviso de modelo pesado abre directo en «Por cantidad» con una meta sugerida; el resultado trae «Deshacer» y avisa si se cerró un agujero.
+- **Barra flotante.** Se ubica fuera de la pieza, usa la paleta de colores del inspector y no cambia el color de piezas bloqueadas.
+- **Agregados sin ratón.** Imán, torreta, colgar en el muro y paso de cable se pueden colocar en el centro de una cara eligiéndola de una lista. En caras curvas siguen la superficie. Nuevo M5 para tornillo directo.
+- **Imanes del corte.** En cortes oblicuos se colocan los que caben; el código de pieza (A1, B1…) se ve siempre en la lista.
+- **Tooltips.** Los que aparecen al enfocar un control solo salen si llegaste con el teclado.
 - **Logo e ícono nuevos.** La K de piedra con geometría púrpura y turquesa en la cabecera, la pantalla de carga, «Acerca de», la pestaña del navegador y la app de escritorio.
 - **Acerca de.** La frase del sentido del proyecto cambia al azar entre tres cada vez que se abre.
 - **Modelos muy pesados.** Al importar un modelo de más de 1 millón de triángulos, el aviso ofrece simplificarlo y apunta a la pieza más pesada.
