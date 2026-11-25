@@ -3,6 +3,8 @@
  * @description Reglas de escena de los grupos de "dividir para imprimir": piezas de un grupo,
  * disposición actual (armado o impresión), cambio que mueve el grupo a su armado o a sus placas de
  * impresión (una al lado de otra en X), si una medida excede la cama, y nombre de archivo por pieza.
+ * Las placas virtuales se ubican con un `SplitFrame` por pieza, anclado a su placa real (`splitFrame.ts`); con un
+ * ancho de cama, el marco de siempre desde el origen del mundo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -50,38 +52,76 @@ export function plateOffsetX(plate: number, bedWidthMm: number): number {
   return plateOffset(plate, bedWidthMm)[0];
 }
 
-/** Transformación de mundo de una pieza en la disposición pedida. */
-export function splitTransformFor(meta: SplitPartMetadata, mode: SplitArrangement, bedWidthMm: number, bedDepthMm = bedWidthMm): { position: Vec3; rotation: Vec3 } {
+/**
+ * Marco de impresión de una pieza dividida: medidas de la cama de su placa real y centro de mundo [X, Z] de cada
+ * placa virtual (la 0 es la placa real de la pieza). Lo arma `splitFrame.ts` a partir de las placas de la escena.
+ */
+export interface SplitFrame {
+  widthMm: number;
+  depthMm: number;
+  center: (plate: number) => [number, number];
+}
+
+/** Marco de cada pieza (según su placa). */
+export type SplitFrames = (part: SceneObject) => SplitFrame;
+
+/** Ancho de cama (marco de siempre: cuadrícula desde el origen del mundo) o marco por pieza. */
+export type SplitBedArg = number | SplitFrames;
+
+/** Marco de siempre: la placa 0 en el origen del mundo y la cuadrícula de `plateOffset`. */
+export function originSplitFrame(bedWidthMm: number, bedDepthMm = bedWidthMm): SplitFrame {
+  return { widthMm: bedWidthMm, depthMm: bedDepthMm, center: (plate) => plateOffset(plate, bedWidthMm, bedDepthMm) };
+}
+
+const framesOf = (bed: SplitBedArg, bedDepthMm?: number): SplitFrames => {
+  if (typeof bed === 'function') return bed;
+  const frame = originSplitFrame(bed, bedDepthMm ?? bed);
+  return () => frame;
+};
+
+/** Transformación de mundo de una pieza en la disposición pedida (con un ancho: respecto del origen del mundo). */
+export function splitTransformFor(
+  meta: SplitPartMetadata,
+  mode: SplitArrangement,
+  bed: number | SplitFrame,
+  bedDepthMm?: number,
+): { position: Vec3; rotation: Vec3 } {
   if (mode === 'assembly') return { position: [...meta.assembly.position] as Vec3, rotation: [...meta.assembly.rotation] as Vec3 };
   const p = meta.print.position;
-  const [ox, oz] = plateOffset(meta.print.plate, bedWidthMm, bedDepthMm);
+  const frame = typeof bed === 'number' ? originSplitFrame(bed, bedDepthMm ?? bed) : bed;
+  const [ox, oz] = frame.center(meta.print.plate);
   return { position: [p[0] + ox, p[1], p[2] + oz], rotation: [...meta.print.rotation] as Vec3 };
 }
 
 const near = (a: readonly number[], b: readonly number[]) => a.every((v, i) => Math.abs(v - b[i]) < 1e-3);
 
+/** true si todas las piezas del grupo están en su pose de armado (no depende de la cama ni de las placas). */
+export function splitIsAssembled(group: SplitGroup): boolean {
+  return group.parts.every((o) => near(o.position, o.metadata.split.assembly.position) && near(o.rotation, o.metadata.split.assembly.rotation));
+}
+
 /** Disposición actual del grupo: armado, impresión o `null` si las piezas se movieron a mano. */
-export function splitArrangementOf(group: SplitGroup, bedWidthMm: number, bedDepthMm = bedWidthMm): SplitArrangement | null {
-  for (const mode of ['assembly', 'print'] as const) {
-    const all = group.parts.every((o) => {
-      const t = splitTransformFor(o.metadata.split, mode, bedWidthMm, bedDepthMm);
-      return near(o.position, t.position) && near(o.rotation, t.rotation);
-    });
-    if (all) return mode;
-  }
-  return null;
+export function splitArrangementOf(group: SplitGroup, bed: SplitBedArg, bedDepthMm?: number): SplitArrangement | null {
+  if (splitIsAssembled(group)) return 'assembly';
+  const frames = framesOf(bed, bedDepthMm);
+  const print = group.parts.every((o) => {
+    const t = splitTransformFor(o.metadata.split, 'print', frames(o));
+    return near(o.position, t.position) && near(o.rotation, t.rotation);
+  });
+  return print ? 'print' : null;
 }
 
 /** Parches que llevan las piezas del grupo a la disposición pedida (vacío si ya están ahí). */
 export function arrangeSplitGroupPatches(
   group: SplitGroup,
   mode: SplitArrangement,
-  bedWidthMm: number,
-  bedDepthMm = bedWidthMm,
+  bed: SplitBedArg,
+  bedDepthMm?: number,
 ): Array<{ id: string; patch: { position: Vec3; rotation: Vec3 } }> {
+  const frames = framesOf(bed, bedDepthMm);
   return group.parts
     .filter((o) => !o.locked)
-    .map((o) => ({ id: o.id, patch: splitTransformFor(o.metadata.split, mode, bedWidthMm, bedDepthMm) }))
+    .map((o) => ({ id: o.id, patch: splitTransformFor(o.metadata.split, mode, frames(o)) }))
     .filter(({ id, patch }) => {
       const o = group.parts.find((p) => p.id === id)!;
       return !(near(o.position, patch.position) && near(o.rotation, patch.rotation));

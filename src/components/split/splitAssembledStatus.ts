@@ -9,7 +9,7 @@
  */
 
 import type { PrinterProfile, SceneObject } from '../../types/kura';
-import { splitArrangementOf, splitGroupOf } from '../../core/scene/splitGroups';
+import { splitGroupOf, splitIsAssembled, type SplitFrames } from '../../core/scene/splitGroups';
 import { checkObjectsOutOfBounds } from '../viewport/viewportHelpers';
 
 export type BedStatus = 'ok' | 'outOfBounds' | 'assembled';
@@ -17,16 +17,17 @@ export type BedStatus = 'ok' | 'outOfBounds' | 'assembled';
 /**
  * `outOfBounds` si algo fuera de una división armada excede la cama; `assembled` si solo lo hacen las
  * piezas de un grupo dividido que está armado (las placas se ven con «Preparar para imprimir»); `ok` si nada.
+ * `frames` ubica las placas virtuales de Dividir (por defecto, la cuadrícula desde el origen).
  */
-export function bedStatusOf(objects: SceneObject[], profile: PrinterProfile): BedStatus {
-  if (!checkObjectsOutOfBounds(objects, profile)) return 'ok';
+export function bedStatusOf(objects: SceneObject[], profile: PrinterProfile, frames?: SplitFrames): BedStatus {
+  if (!checkObjectsOutOfBounds(objects, profile, frames)) return 'ok';
   const assembled = new Set<string>();
   for (const o of objects) {
     const grp = o.metadata?.split ? splitGroupOf(objects, o.id) : null;
-    if (grp && !assembled.has(o.id) && splitArrangementOf(grp, profile.bedWidthMm) === 'assembly') {
+    if (grp && !assembled.has(o.id) && splitIsAssembled(grp)) {
       for (const part of grp.parts) assembled.add(part.id);
     }
   }
   if (assembled.size === 0) return 'outOfBounds';
-  return checkObjectsOutOfBounds(objects.filter((o) => !assembled.has(o.id)), profile) ? 'outOfBounds' : 'assembled';
+  return checkObjectsOutOfBounds(objects.filter((o) => !assembled.has(o.id)), profile, frames) ? 'outOfBounds' : 'assembled';
 }

@@ -1,7 +1,7 @@
 /**
  * @file src/store/sceneLayout.ts
- * @description Lectores del store para las dos poses: contexto de derivación (cama de las placas virtuales de
- * Dividir, la misma que usa «Disponer grupo») y la escena en pose de impresión (exportar) o de armado (comprobar
+ * @description Lectores del store para las dos poses: contexto de derivación (cama y marco por placa de las placas
+ * virtuales de Dividir, el mismo que usa «Disponer grupo») y la escena en pose de impresión (exportar) o de armado (comprobar
  * encaje), sea cual sea el modo activo. Lógica en `core/scene/layoutPoses.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -10,6 +10,7 @@
 
 import { activePlateBed, type PlateBedSource } from '../core/scene/activePlateBed';
 import { DEFAULT_LAYOUT, posedObjects, type LayoutContext } from '../core/scene/layoutPoses';
+import { splitFramesOf, splitPlateSourceOf } from '../core/scene/splitFrame';
 import type { SceneObject } from '../types/kura';
 import type { SceneLayout } from '../types/plates';
 
@@ -28,7 +29,9 @@ function posed(state: LayoutState, wanted: SceneLayout): SceneObject[] {
 
 export function layoutContextOf(state: PlateBedSource): LayoutContext {
   const { widthMm, depthMm } = activePlateBed(state).bed;
-  return { bed: { widthMm, depthMm } };
+  // Con placas, cada pieza dividida se deriva respecto de su placa real (sin placas, la cuadrícula de siempre).
+  if (!state.plates?.length) return { bed: { widthMm, depthMm } };
+  return { bed: { widthMm, depthMm }, frames: splitFramesOf(splitPlateSourceOf(state)) };
 }
 
 /** Escena en pose de impresión (la misma lista si ya está en imprimir): lo que se exporta. */

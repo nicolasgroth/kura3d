@@ -8,7 +8,7 @@
 
 import * as THREE from 'three';
 import { X } from 'lucide-react';
-import { plateOffset } from '../../core/scene/splitGroups';
+import { originSplitFrame, type SplitFrame, type SplitFrames } from '../../core/scene/splitGroups';
 import { isPrintable } from '../../core/scene/objectRole';
 import { type PrinterProfile, type SceneObject, type SlicerTarget } from '../../types/kura';
 
@@ -77,23 +77,29 @@ export function computeWorldBounds(obj: SceneObject): {
  * Desplazamiento [X, Z] de una pieza de una división acomodada para imprimir en su placa (las placas van
  * en cuadrícula junto a la cama: cada pieza se mide dentro de la suya, no contra la cama real).
  * `[0, 0]` si no es una pieza dividida o si no está en su lugar de impresión (movida a mano, armada).
+ * `frame` da el centro de cada placa virtual en las coordenadas de la medición (por defecto, la cuadrícula desde
+ * el origen; con placas reales, la de su placa vista desde el origen de esa placa).
  */
-export function printPlateShift(obj: SceneObject, bedWidthMm: number, bedDepthMm = bedWidthMm): [number, number] {
+export function printPlateShift(obj: SceneObject, bedWidthMm: number, bedDepthMm = bedWidthMm, frame?: SplitFrame): [number, number] {
   const meta = obj.metadata?.split;
   if (!meta) return [0, 0];
   const [px, py, pz] = meta.print.position;
   const near = (a: number, b: number) => Math.abs(a - b) < 1e-3;
   const sameRotation = meta.print.rotation.every((r, i) => near(r, obj.rotation[i]));
   if (!sameRotation || !near(obj.position[1], py)) return [0, 0];
-  const [ox, oz] = plateOffset(meta.print.plate, bedWidthMm, bedDepthMm);
+  const [ox, oz] = (frame ?? originSplitFrame(bedWidthMm, bedDepthMm)).center(meta.print.plate);
   // Solo el desplazamiento exacto de su placa; cualquier otro (movida a mano) se mide contra la cama.
   return near(obj.position[0] - px, ox) && near(obj.position[2] - pz, oz) ? [ox, oz] : [0, 0];
 }
 
-/** Verifica si algún sólido visible excede los límites X, Z o altura máxima Y de la impresora activa. */
+/**
+ * Verifica si algún sólido visible excede los límites X, Z o altura máxima Y de la impresora activa. `frames` ubica
+ * las placas virtuales de Dividir de cada pieza (por defecto, la cuadrícula desde el origen).
+ */
 export function checkObjectsOutOfBounds(
   objects: SceneObject[],
   profile: PrinterProfile,
+  frames?: SplitFrames,
 ): boolean {
   if (!profile.showPrintVolume) return false;
   const halfW = profile.bedWidthMm * 0.5 + 0.05;
@@ -103,7 +109,7 @@ export function checkObjectsOutOfBounds(
   for (const obj of objects) {
     if (!isPrintable(obj)) continue;
     const b = computeWorldBounds(obj);
-    const [sx, sz] = printPlateShift(obj, profile.bedWidthMm, profile.bedDepthMm);
+    const [sx, sz] = printPlateShift(obj, profile.bedWidthMm, profile.bedDepthMm, frames?.(obj));
     b.minX -= sx;
     b.maxX -= sx;
     b.minZ -= sz;
