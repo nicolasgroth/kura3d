@@ -38,7 +38,7 @@ describe('Suavizar en el store', () => {
     const before = byId('sph')!;
     const sdBefore = radialStdDev(before.mesh);
     const pastBefore = store().past.length;
-    expect(await store().applySmooth('sph', params())).toBe(true);
+    expect(await store().applySmooth('sph', params({ intensityPct: 100, iterations: 10 }))).toBe(true);
     const after = byId('sph')!;
     expect(radialStdDev(after.mesh)).toBeLessThan(sdBefore * 0.6);
     const report = store().smoothSession!.report!;

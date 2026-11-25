@@ -14,8 +14,8 @@ Suavizar quita el facetado y el ruido de una pieza importada o esculpida (por ej
 
 Cada control trae una línea de ayuda debajo. Los valores por defecto sirven para casi todo.
 
-- **Intensidad** (10 a 100 %, por defecto 100): cuánto alisa cada pasada. Hay un deslizador y una casilla; un doble clic en el deslizador vuelve al valor por defecto.
-- **Pasadas** (1 a 100, por defecto 10): cuántas veces se repite. Más pasadas quitan más facetas; con muchas, la pieza puede inflarse apenas, por eso el aviso de volumen (abajo).
+- **Intensidad** (10 a 100 %, por defecto 30): cuánto alisa cada pasada. Hay un deslizador y una casilla; un doble clic en el deslizador vuelve al valor por defecto.
+- **Pasadas** (1 a 100, por defecto 3): cuántas veces se repite. Más pasadas quitan más facetas; con muchas, la pieza puede inflarse apenas, por eso el aviso de volumen (abajo).
 - **Conservar aristas vivas** (activada): las esquinas y chaflanes no se mueven. Al activarla aparece **Ángulo de arista viva** (por defecto 40°): una arista que dobla más que ese ángulo cuenta como viva. Súbelo para proteger menos; con 40° se protegen chaflanes de 45° y aristas de 90°. Los bordes abiertos de una malla no cerrada también quedan fijos.
 - **Dónde**: *Toda la pieza* o *Solo la zona pintada de un color*. La segunda necesita que la pieza tenga pintura (ver [Colores y pintura](colores-y-pintura.md)); si no la tiene, la opción está apagada y el panel lo explica. Con ella eliges el color (la lista muestra cuántos triángulos tiene cada uno) y la **Transición**: de 0 a 10 anillos de triángulos donde el efecto se atenúa hasta cero para que no quede un escalón en el borde de la zona.
 
