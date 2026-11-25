@@ -19,7 +19,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { helpAttrs } from '../shell/controlHelp';
 import { OrientOptionList } from './OrientOptionList';
-import { recommendedId, summaryText } from './orientView';
+import { recommendedId, showBaseWarning, summaryText } from './orientView';
 import '../../styles/orient.css';
 
 const { min: ANGLE_MIN, max: ANGLE_MAX } = ORIENT_ANGLE_RANGE;
@@ -137,9 +137,17 @@ export const OrientPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => 
           </div>
         )}
         {!running && analysis && (
-          <p className="kura-orient-summary" data-testid="orient-summary" data-kind={analysis.allEquivalent ? 'equivalent' : analysis.currentIsBest ? 'best' : 'better'}>
-            <CheckCircle2 size={14} aria-hidden="true" />
+          <p className="kura-orient-summary" data-testid="orient-summary" data-kind={analysis.allEquivalent ? 'equivalent' : analysis.currentIsBest ? 'best' : recommendedId(analysis) === null ? 'noBase' : 'better'}>
+            {!analysis.allEquivalent && !analysis.currentIsBest && recommendedId(analysis) === null
+              ? <AlertTriangle size={14} aria-hidden="true" />
+              : <CheckCircle2 size={14} aria-hidden="true" />}
             <span>{summaryText(language, analysis)}</span>
+          </p>
+        )}
+        {!running && analysis && showBaseWarning(analysis) && (
+          <p className="kura-orient-stale" data-testid="orient-no-base">
+            <AlertTriangle size={14} aria-hidden="true" />
+            <span>{t(language, 'orient.ui.noStableBase')}</span>
           </p>
         )}
         {!running && !analysis && stale && (

@@ -66,8 +66,11 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
         'convex-hull faces), measures each one resting on the bed and returns them sorted best first: support volume (mm³, grid ' +
         'approximation), overhang area, contact area, height, footprint [X, Y], tip angle and stability, bed fit, cost, and the ' +
         'differences against the current pose. Each reason has a key with params and a sentence in the requested language. ' +
-        'currentIsBest = the current pose is already among the best; allEquivalent = no winner (e.g. a sphere); recommendedId is ' +
-        'null in both cases. Apply one with kura_apply_orientation (same angle and bed). Kurra Studio does not generate supports.',
+        'currentIsBest = the current pose is already among the best and has a real base; allEquivalent = no winner (e.g. a sphere); ' +
+        'recommendedId is null in both cases and when the first one is the current pose. Besides axis rests and hull faces, ' +
+        'near-coplanar patches of the mesh with real contact are tried (organic parts). baseStatus = noStableBase (with a ' +
+        'warning in warnings) when no orientation stands on its own: it will need supports, a raft or a flat cut. ' +
+        'Apply one with kura_apply_orientation (same angle and bed). Kurra Studio does not generate supports.',
       inputSchema: {
         objectId: idSchema.describe('ID of the part to analyze.'),
         ...orientInputs,

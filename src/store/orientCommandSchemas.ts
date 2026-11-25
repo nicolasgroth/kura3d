@@ -10,6 +10,7 @@
  */
 
 import { reasonText } from '../core/orient/orientReasonText';
+import { t } from '../i18n';
 import { CommandError } from '../core/bus/commandErrors';
 import { pick, readBoolean, readEnum, readRange, readString, type RawParams } from '../core/bus/commandValidation';
 import { fromUserVector, toUserVector } from '../core/scene/displayAxes';
@@ -124,9 +125,13 @@ export function orientAnalysisToUser(a: OrientAnalysis, language: LanguageCode) 
   return {
     candidates: a.candidates.map((c) => candidateToUser(c, language)),
     currentId: a.currentId,
-    recommendedId: a.allEquivalent || a.currentIsBest ? null : (a.candidates[0]?.id ?? null),
+    // Sin recomendada si la actual ya es la mejor, si son equivalentes o si la primera es la actual (sin base).
+    recommendedId: a.allEquivalent || a.currentIsBest || a.candidates[0]?.id === a.currentId ? null : (a.candidates[0]?.id ?? null),
     currentIsBest: a.currentIsBest,
     allEquivalent: a.allEquivalent,
+    /** `noStableBase`: ninguna orientación se sostiene sola; `warnings` trae el aviso en el idioma pedido. */
+    baseStatus: a.baseStatus,
+    warnings: a.baseStatus === 'noStableBase' ? [{ key: 'noStableBase', text: t(language, 'orient.ui.noStableBase') }] : [],
     overhangAngleDeg: a.overhangAngleDeg,
     supportCellMm: r(a.supportCellMm),
     partVolumeMm3: r(a.partVolumeMm3, 1),

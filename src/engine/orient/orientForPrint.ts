@@ -1,9 +1,10 @@
 /**
  * @file src/engine/orient/orientForPrint.ts
  * @description «Orientar para imprimir», función pura: propone orientaciones estables que reducen
- * o eliminan los soportes (candidatos = actual, 6 de ejes y caras del casco convexo agrupadas por
- * normal), mide cada una apoyada en la cama, las ordena por costo ponderado y las compara con la
- * actual. `planOrientTransform` calcula la transformación que aplica una orientación elegida
+ * o eliminan los soportes (candidatos = actual, 6 de ejes, caras del casco convexo agrupadas por
+ * normal y parches casi coplanares de la malla con contacto real), mide cada una apoyada en la cama,
+ * las ordena por costo ponderado y las compara con la actual. Si ninguna apoya estable, el análisis
+ * lo dice (`baseStatus: 'noStableBase'`) y la actual sin base nunca es «la mejor». `planOrientTransform` calcula la transformación que aplica una orientación elegida
  * (gira, apoya en Y = 0 y centra o conserva X/Z). Sin IA: geometría y reglas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -13,15 +14,17 @@
 import * as THREE from 'three';
 import type { Vec3 } from '../../types/kura';
 import { EngineError } from '../engineErrors';
-import { directionCandidates, groupHullFaces } from './orientCandidates';
+import { directionCandidates, groupHullFaces, type DirectionCandidate } from './orientCandidates';
 import { baseQuaternion, hasRealBase, measureOrientation, type MeasureSettings, type MeasuredOrientation } from './orientMeasure';
 import { ORIENT_EQUIVALENCE, ORIENT_WEIGHTS, orientCost, orientOrder, reasonsFor, vsCurrentOf, type ScoreContext } from './orientScore';
 import type { OrientAnalysis, OrientCandidate, OrientInput, OrientOptions } from './orientTypes';
+import { planarPatchDirections } from './orientPatches';
 import { prepareOrientWorld } from './orientWorld';
 
 export const ORIENT_DEFAULTS = Object.freeze({
   overhangAngleDeg: 45,
   maxHullCandidates: 16,
+  maxPatchCandidates: 6,
   minTipAngleDeg: 10,
   gridCells: 160,
   /** Área mínima del polígono de apoyo: fracción del área total de la pieza (y al menos 1 mm²). */
@@ -53,6 +56,8 @@ function settingsOf(o: OrientOptions, totalArea: number): MeasureSettings {
   };
 }
 
+const SAME_DIRECTION_COS = Math.cos((0.1 * Math.PI) / 180);
+
 const r4 = (v: number) => Math.round(v * 1e4) / 1e4 + 0;
 
 /** Analiza las orientaciones de la pieza y las devuelve ordenadas (la primera es la recomendada). */
@@ -60,15 +65,24 @@ export function analyzeOrientations(input: OrientInput, options: OrientOptions =
   const world = prepareOrientWorld(input);
   const s = settingsOf(options, world.totalArea);
   const maxHull = Math.max(0, Math.round(options.maxHullCandidates ?? ORIENT_DEFAULTS.maxHullCandidates));
-  const dirs = directionCandidates(groupHullFaces(world.hullFaces, world.com), maxHull, s.minSupportAreaMm2, s.minTipAngleDeg);
+  const maxPatch = Math.max(0, Math.round(options.maxPatchCandidates ?? ORIENT_DEFAULTS.maxPatchCandidates));
+  const dirs: DirectionCandidate[] = directionCandidates(groupHullFaces(world.hullFaces, world.com), maxHull, s.minSupportAreaMm2, s.minTipAngleDeg);
+  // Parches de la malla: solo si no repiten casi exacta (0,1°) una dirección ya puesta. Una de ejes a 1–2° de un
+  // parche no lo reemplaza: apoyada así solo toca con aristas. La medición confirma el contacto.
+  const patches = planarPatchDirections(world, s.minSupportAreaMm2, maxPatch);
+  patches.forEach((p, i) => {
+    if (!dirs.some((d) => d.down[0] * p.down[0] + d.down[1] * p.down[1] + d.down[2] * p.down[2] > SAME_DIRECTION_COS)) {
+      dirs.push({ id: `patch${i}`, source: 'patch', down: p.down });
+    }
+  });
   const scratch = new Float64Array(world.positions.length);
   const measured: Array<{ dir: (typeof dirs)[number]; m: MeasuredOrientation }> = [];
   let cellMm = 0;
   for (const dir of dirs) {
     const q = dir.source === 'current' ? new THREE.Quaternion() : baseQuaternion(dir.down);
     const m = measureOrientation(world, q, s, scratch);
-    // Del casco solo quedan los apoyos estables; la actual y los ejes se muestran siempre (marcados).
-    if (dir.source === 'hull' && !m.measures.stable) continue;
+    // Del casco y de los parches solo quedan los apoyos estables; la actual y los ejes se muestran siempre (marcados).
+    if ((dir.source === 'hull' || dir.source === 'patch') && !m.measures.stable) continue;
     if (dir.source === 'current') cellMm = m.supportCellMm;
     measured.push({ dir, m });
   }
@@ -95,8 +109,10 @@ export function analyzeOrientations(input: OrientInput, options: OrientOptions =
       reasons: reasonsFor(m.measures, cur, ctx, { isCurrent: i === 0, equivalentToBest: eq && order.length > 1 }),
     };
   });
+  const currentHasBase = hasRealBase(cur.contactAreaMm2, s.minSupportAreaMm2);
   return {
-    candidates, currentId: 'current', currentIsBest: equivalent(0),
+    candidates, currentId: 'current', currentIsBest: equivalent(0) && currentHasBase,
+    baseStatus: candidates.some((c) => c.measures.stable) ? 'ok' : 'noStableBase',
     allEquivalent: candidates.length > 1 && candidates.every((c) => c.equivalentToBest),
     overhangAngleDeg: s.overhangAngleDeg, weights: { ...ORIENT_WEIGHTS }, equivalenceTolerance: ORIENT_EQUIVALENCE,
     supportCellMm: cellMm, partVolumeMm3: world.volume, triangleCount: world.areas.length,
