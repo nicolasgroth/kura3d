@@ -158,4 +158,37 @@ describe('placas y comandos del bus', () => {
       expect(byId(a.id)!.position[0]).toBe(5000);
     });
   });
+
+  describe('la placa activa sigue a la pieza reasignada', () => {
+    it('«Mover a placa» con la pieza seleccionada activa su nueva placa, sin paso extra', async () => {
+      const a = await created({ name: 'A' });
+      const p2 = store().createPlate()!;
+      store().setActivePlate(store().plates[0].id);
+      store().setSelection([a.id]);
+      const steps = store().past.length;
+      store().moveToPlate(p2.id);
+      expect(store().activePlateId).toBe(p2.id);
+      expect(store().past.length).toBe(steps + 1);
+    });
+
+    it('soltar sobre otra placa (arrastre) activa esa placa', async () => {
+      const a = await created({ name: 'A' });
+      const p2 = store().createPlate()!;
+      store().setSelection([a.id]);
+      expect(store().activePlateId).toBe(store().plates[0].id);
+      store().setObjectTransform(a.id, { position: [p2.origin[0] + 5, 0, 0] }, true);
+      store().reassignPlatesByPosition([a.id]);
+      expect(byId(a.id)!.plateRef).toBe(p2.id);
+      expect(store().activePlateId).toBe(p2.id);
+    });
+
+    it('mover una pieza no seleccionada no cambia la activa', async () => {
+      const a = await created({ name: 'A' });
+      const p2 = store().createPlate()!;
+      store().setActivePlate(store().plates[0].id);
+      store().setSelection([]);
+      store().moveToPlate(p2.id, [a.id]);
+      expect(store().activePlateId).toBe(store().plates[0].id);
+    });
+  });
 });

@@ -24,6 +24,18 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const scene = (): PlateScene => ({ objects: get().objects, plates: get().plates });
   const plateName = (n: number) => tr('plates.defaultName', { n });
 
+  /**
+   * Placa activa que sigue a la selección tras reasignar piezas: si todo lo seleccionado quedó en una misma placa
+   * distinta de la activa, esa pasa a ser la activa (estado de vista: sin paso de deshacer).
+   */
+  const followSelection = (objects: PlateScene['objects']): Partial<KuraStoreState> => {
+    const { selectedIds, activePlateId, plates } = get();
+    if (selectedIds.length === 0) return {};
+    const refs = new Set(objects.filter((o) => selectedIds.includes(o.id)).map((o) => o.plateRef));
+    const [only] = refs;
+    return refs.size === 1 && only !== undefined && only !== activePlateId && findPlate(plates, only) ? { activePlateId: only } : {};
+  };
+
   /** Aplica una escena de placas nueva con un paso de deshacer. */
   const commit = (next: PlateScene | null, extra: Partial<KuraStoreState> = {}) => {
     if (!next) return false;
@@ -85,7 +97,7 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const next = assignToPlate(before, chosen, plateId);
       if (!next) return 0;
       const count = next.objects.reduce((n, o, i) => n + (o !== before.objects[i] ? 1 : 0), 0);
-      commit(next);
+      commit(next, followSelection(next.objects));
       return count;
     },
 
@@ -111,13 +123,13 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const result = movePiecesToPlate(base, chosen, dest, state.layout, layoutContextOf(state), projectBed(state));
       // Sin piezas que mover no se crea la placa vacía: «Placa nueva» solo existe para recibir piezas.
       if (!result) return 0;
-      commit(result.scene, created ? { activePlateId: created } : {});
+      commit(result.scene, created ? { activePlateId: created } : followSelection(result.scene.objects));
       return result.moved.length;
     },
 
     reassignPlatesByPosition: (ids) => {
       const next = reassignByPosition(scene(), ids, projectBed(get()));
-      if (next) set({ objects: next.objects });
+      if (next) set({ objects: next.objects, ...followSelection(next.objects) });
     },
 
     setActivePlate: (plateId) => {
