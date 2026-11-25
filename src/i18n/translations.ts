@@ -49,6 +49,7 @@ import { REALESUI_EN, REALESUI_ES } from './locales/realesUi';
 import { UX6_EN, UX6_ES } from './locales/ux6';
 import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
 import { ASISTENTES_EN, ASISTENTES_ES } from './locales/asistentes';
+import { ACERCA_EN, ACERCA_ES } from './locales/acercaDe';
 import { IMAN_EN, IMAN_ES } from './locales/iman';
 import { IMAN_UI3_EN, IMAN_UI3_ES } from './locales/imanUi3';
 import { TORRETA_EN, TORRETA_ES } from './locales/torreta';
@@ -1403,6 +1404,7 @@ export const TRANSLATIONS_ES = {
   'dialog.thread.invalidFields': 'Corrige los campos marcados antes de crear la rosca: un valor no numérico o fuera de rango no se aplica.',
   ...ORIENT_UI_ES,
   ...IMANES_UNION_ES,
+  ...ACERCA_ES,
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2715,6 +2717,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.thread.invalidFields': 'Fix the marked fields before creating the thread: a non-numeric or out-of-range value is not applied.',
   ...ORIENT_UI_EN,
   ...IMANES_UNION_EN,
+  ...ACERCA_EN,
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

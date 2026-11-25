@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { AiChatDrawer } from './components/AiChatDrawer';
 import { CommandPalette } from './components/CommandPalette';
 import { Dialogs } from './components/Dialogs';
+import { AboutLayer } from './components/about/AboutDialog';
 import { LeftSidebar } from './components/LeftSidebar';
 import { ProjectDropTarget } from './components/ProjectDropTarget';
 import { ProjectRecoveryBanner } from './components/ProjectRecoveryBanner';
@@ -491,6 +492,7 @@ export const App: React.FC = () => {
 
       <StatusBar recoveryStatus={recovery.status} recoveryFailure={recovery.failure} />
       <Dialogs />
+      <AboutLayer />
       <ConfirmDialogHost />
       <UnitChoiceDialog />
       <FitToBedDialog />

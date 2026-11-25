@@ -44,6 +44,7 @@ import { REALESUI_ZH } from './realesUi';
 import { UX6_ZH } from './ux6';
 import { RECETAS_ZH } from './recetas';
 import { ASISTENTES_ZH } from './asistentes';
+import { ACERCA_ZH } from './acercaDe';
 import { IMAN_ZH } from './iman';
 import { IMAN_UI3_ZH } from './imanUi3';
 import { TORRETA_ZH } from './torreta';
@@ -1396,4 +1397,5 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.thread.invalidFields': '创建螺纹前请先修正标记的字段：非数字或超出范围的值不会被应用。',
   ...ORIENT_UI_ZH,
   ...IMANES_UNION_ZH,
+  ...ACERCA_ZH,
 };

@@ -44,6 +44,7 @@ import { REALESUI_FR } from './realesUi';
 import { UX6_FR } from './ux6';
 import { RECETAS_FR } from './recetas';
 import { ASISTENTES_FR } from './asistentes';
+import { ACERCA_FR } from './acercaDe';
 import { IMAN_FR } from './iman';
 import { IMAN_UI3_FR } from './imanUi3';
 import { TORRETA_FR } from './torreta';
@@ -1396,4 +1397,5 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.thread.invalidFields': 'Corrigez les champs marqués avant de créer le filetage : une valeur non numérique ou hors plage n’est pas appliquée.',
   ...ORIENT_UI_FR,
   ...IMANES_UNION_FR,
+  ...ACERCA_FR,
 };
