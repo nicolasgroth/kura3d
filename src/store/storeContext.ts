@@ -167,7 +167,8 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
       // de modo intercambia poses: no es mover.
       const moved = bed && state.layout === prev.layout ? reassignMovedPieces(prev.objects, get().objects, state.plates, bed) : null;
       if (moved) rawSet({ objects: moved });
-      reassigned = moved !== null;
+      // Durante un arrastre la placa activa no salta (Esc lo deshace todo); al soltar, el arrastre la ajusta.
+      reassigned = moved !== null && runtime.transformSnapshotBeforeDrag === null;
     }
     // Elegir piezas (o que las elegidas cambien de placa) activa su placa.
     if ((state.selectedIds !== prev.selectedIds || reassigned) && state.plates.length > 1 && state.selectedIds.length > 0) {

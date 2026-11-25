@@ -44,6 +44,21 @@ describe('la placa sigue a la posición', () => {
     expect(store().activePlateId).toBe(p2);
   });
 
+  it('arrastre: la placa cambia en vivo, la activa solo al soltar y Esc lo deshace', async () => {
+    const { a, p1, p2, x2 } = await twoPlates();
+    store().selectObject(a);
+    store().setObjectTransform(a, { position: [x2, 0, 0] }, false);
+    expect(byId(a)!.plateRef).toBe(p2);
+    expect(store().activePlateId).toBe(p1);
+    store().cancelTransformSnapshot();
+    expect(byId(a)!.plateRef).toBe(p1);
+    store().setObjectTransform(a, { position: [x2, 0, 0] }, false);
+    store().commitTransformSnapshot();
+    store().reassignPlatesByPosition([a]);
+    expect(byId(a)!.plateRef).toBe(p2);
+    expect(store().activePlateId).toBe(p2);
+  });
+
   it('transform_object del bus', async () => {
     const { a, p2, x2 } = await twoPlates();
     const res = await run('transform_object', { id: a, position: [x2, 0, 0] });
