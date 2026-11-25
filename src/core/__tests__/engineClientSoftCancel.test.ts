@@ -143,6 +143,28 @@ describe('cancelación suave y dura del cliente del Worker', () => {
     client.dispose();
   });
 
+  it('escala también si el pedido ya estaba en cola cuando se canceló en suave el que corría', async () => {
+    const workers: FakeWorker[] = [];
+    const client = createEngineClient(
+      () => {
+        const w = new FakeWorker(workers.length === 0);
+        workers.push(w);
+        return w;
+      },
+      { softCancelGraceMs: 30 },
+    );
+    const first = client.run(ctx(), 'boolean', { target: a, tools: [b], op: 'subtract' });
+    // El segundo entra a la cola ANTES de que se descarte el primero: al pedirlo aún no había huérfanos.
+    const second = client.run(ctx(), 'boolean', { target: a, tools: [b], op: 'union' });
+    first.cancel('soft');
+    await expect(first.promise).rejects.toSatisfy(isEngineCancelled);
+    const res = await Promise.race([second.promise, sleep(400).then(() => null)]);
+    expect(res?.result?.stats.isManifold).toBe(true);
+    expect(workers[0].terminated).toBe(true);
+    expect(workers).toHaveLength(2);
+    client.dispose();
+  });
+
   it('no escala si el trabajo descartado termina antes del umbral', async () => {
     const workers: FakeWorker[] = [];
     const client = createEngineClient(
