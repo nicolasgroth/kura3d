@@ -101,6 +101,15 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-25 | Frase de «Acerca de» | Al autor le gustaron las tres: se muestran al azar, una cada vez que se abre, y se pueden ir sumando frases. |
 | 2026-11-25 | Logo e ícono nuevos | El autor entregó `Kurra_Studio_Logo.svg` y `Kurra_Studio_Icono.svg` (K de piedra con brazos púrpura y turquesa). Prioridad baja. El logo dice «Kurra Studio», sin «3D»: falta confirmar el nombre exacto antes de aplicarlo. |
 | 2026-11-25 | Nombre definitivo | **Kurra Studio** (confirmado por el autor el 25-nov, coincide con el logo que entregó; «más universal»). Reemplaza a «Kurra3D Studio». Forma corta: Kurra. El repositorio sigue siendo `kurra3d` y lo interno no cambia. |
+| 2026-11-25 | Paneles | Un solo patrón: «Volver» (misma tecla Esc) en todos, conservando el botón de acción de cada panel. |
+| 2026-11-25 | Vista previa de Simplificar | Aprobada en dos pasos: primero una vista previa que muestra solo el informe; el fantasma en el visor después. |
+| 2026-11-25 | Imanes como unión del corte | Sumar los cuadrados. El autor recuerda que también hay rectangulares (tres medidas: largo, ancho y alto); se incluyen. |
+| 2026-11-25 | Logo y marca | El orquestador deriva del SVG del autor la variante para fondo oscuro y construye un banner con el nombre completo, con una parte de piedra y otra estilizada, como el logo. Las imágenes de marca antiguas se borran. La revisión de marca registrada la lleva el autor por otro lado. |
+| 2026-11-25 | Ramas | Se borran las ramas de trabajo ya integradas, locales y en GitHub. |
+| 2026-11-25 | Simplificar al importar | Confirmado: con más de 1 millón de triángulos se ofrece simplificar. Hecho. |
+| 2026-11-25 | Placas: formas de repartir | Se suma solo «una placa por objeto» (la 7); el resto queda para más adelante. |
+| 2026-11-25 | README | Se actualiza una vez al día, al final; con capturas si se puede. |
+| 2026-11-25 | Frases de «Acerca de» | Las tres rotan al azar. Hecho. |
 | 2026-11-24 | Sección «Acerca de» | La app lleva una sección «Acerca de» que cuenta cómo se construyó y para qué, con una frase sobre modelar un mundo donde todos podamos trabajar juntos, y un huevo de pascua al hacer clic unas 10 veces en el logo. |
 | 2026-11-24 | Trabajo nocturno | El autor autoriza trabajar de noche con procesos en paralelo. Las dudas se dejan en `docs/CONSULTAS_PROYECTO.md`. |
 | 2026-11-24 | README como registro vivo | El README lista lo que ya funciona y está habilitado, separado de lo que falta y de las ideas, y se actualiza como parte del cierre de cada lote, a medida que las funcionalidades se van cerrando. |

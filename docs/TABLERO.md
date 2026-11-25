@@ -1,6 +1,46 @@
 # Tablero de Kurra Studio
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 25 de noviembre de 2026 a las 07:10: integración de la noche (barra flotante, «Acerca de», colgar en el muro, paso de cable, herramientas MCP) con evaluación de código hecha; falta QA en navegador y evaluación de usabilidad y funcional.
+**Actualizado el 25 de noviembre de 2026, 15:00.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
+
+## En corto: último día (24 y 25 de noviembre)
+
+**Notas de la última evaluación a ciegas** (mínimo 85): usabilidad **85** · código **87** · funcional **87**. Sin bloqueos.
+
+**Pruebas:** 3708 del programa y 172 del servidor MCP, todas en verde, más los recorridos de navegador de cada lote.
+
+Lo que quedó hecho y está en `main`:
+
+- **Nombre y logo nuevos:** Kurra Studio, con el ícono de la K de piedra.
+- **Placas:** varias camas en un proyecto, mover piezas entre ellas, «fuera de volumen» por placa y exportar un archivo por placa.
+- **Suavizar** una malla, ahora útil también en modelos reales.
+- **Orientar para imprimir:** propone cómo apoyar la pieza y avisa si no se sostiene sola.
+- **Simplificar** por modos, con protección: no aplica un resultado que destruye la pieza.
+- **Dividir con imanes** como unión desmontable.
+- **Agregados:** torreta para tornillo, colgar en el muro, paso de cable e imán; también sin ratón.
+- **Barra flotante** junto a la pieza seleccionada.
+- **Acerca de**, con frases que cambian.
+- **Servidor MCP:** 56 herramientas.
+- **Guías** con capturas al día, incluida la de placas.
+
+## En corto: lo que viene
+
+Ahora (ya decidido por el autor):
+
+1. Paneles con un solo patrón: «Volver» en todos.
+2. Vista previa en Simplificar (primero el informe, después el fantasma).
+3. Imanes cuadrados y rectangulares como unión del corte.
+4. «Una placa por objeto» al repartir.
+5. Logo para fondo oscuro y banner nuevo con el nombre completo.
+6. Simplificar sin bloquear de más en figuras con túneles finos.
+
+Después:
+
+7. Placas: vista de armado en pantalla, repartir automático y cama distinta por placa.
+8. Uniones firmes visibles en Dividir.
+9. Abrir en un laminador real el 3MF con varias placas (necesita al autor, 5 minutos).
+10. Cerrar lo que quedó bajo 85 por funcionalidad: Simplificar, imanes del corte y atajos.
+
+Más adelante: todo lo de «Planificada» e «Idea», más abajo. Tiempos estimados en [ESTIMACION.md](ESTIMACION.md).
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 

@@ -785,3 +785,27 @@ Sobre `main` ab1a21c / 2ae7d14, tras las correcciones de la ronda 1. Tres evalua
 
 Consumo (modelo · duración · tokens): usabilidad (Opus · 13 min), funcional (Opus · 16 min · 227 k), código (Opus · 7 min · 187 k), QA25-C placas (Sonnet · 50 min · 201 k), QA25-D (Sonnet · 75 min · 246 k), correcciones de código R1 (Opus · 27 min · 223 k), Suavizar en modelos reales (Opus · 33 min · 238 k), funcionales (Opus · 51 min · 319 k), usabilidad A (Sonnet · 20 min · 212 k), usabilidad B (Sonnet · 19 min · 192 k), placas P2 (Sonnet · 21 min · 346 k), correcciones de placas (Opus · 27 min · 244 k), Dividir con placas (Opus · 24 min · 232 k), menores (Sonnet · 25 min · 218 k), guías y capturas (Sonnet · 23 min · 221 k).
 
+## 25-nov-2026 · Evaluación a ciegas del lote del 25-nov (ronda 3: código y funcional)
+
+Sobre `main` 32bd3ed. Evaluadores Opus nuevos. Sin bloqueos duros. **Los tres evaluadores quedan en el mínimo o sobre él** (usabilidad 85 es de la ronda 2; su tercera ronda no se hizo).
+
+| Funcionalidad | Código R2 → R3 | Funcional R2 → R3 |
+|---|---|---|
+| Suavizar malla | 86 → 87 | 86 → 92 |
+| Orientar para imprimir | 86 → 88 | 87 → 90 |
+| Simplificar por modos | 88 → 87 | 68 → 76 |
+| Imanes como unión del corte | 86 → 85 | 91 → 87 |
+| Torreta para tornillo | (agregados 80 → 88) | 90 → 92 |
+| Colgar en el muro y paso de cable | (agregados 80 → 88) | 87 → 86 |
+| Placas | 88 → 90 | 60 → 88 |
+| Herramientas MCP | — | 84 → 92 |
+| Motor de cálculo compartido | 84 → 91 | — |
+| Barra flotante y atajos | 87 → 80 | — |
+| **Global** | **86 → 87** | **81 → 87** |
+
+**Funcional (87).** Exportar desde la placa 2 ya da el mismo archivo byte a byte que desde la 1; paridad exacta entre la app y el MCP. Bajo 85: Simplificar (76): la protección contra resultados destructivos bloquea una reducción normal al 50 % en una figura real por 2 túneles de 58 cerrados con 0,1 mm de desviación, y sin versión segura que ofrecer; riesgo latente de que una malla no centrada salte al simplificar. Menor: el ojo de cerradura se coloca en una placa de 3 mm aunque su propio aviso dice que la cabeza no quedaría retenida.
+
+**Código (87).** Formato y exportación robustos ante archivos hostiles, sin hallazgos de seguridad. Bajo 85: barra flotante y atajos (80): el manejador de atajos es una función de unas 255 líneas probada por regex, y H o L con varias piezas crean un paso de deshacer por pieza. En corrección.
+
+Consumo (modelo · duración · tokens): funcional (Opus · 15 min · 202 k), código (Opus · 6 min · 165 k), QA25-E (Sonnet · 54 min · 213 k), exportar por placa (Opus · 29 min · 283 k), correcciones de código R2 (Opus · 34 min · 288 k), usabilidad C (Sonnet · 30 min · 314 k), Simplificar seguro (Opus · 52 min · 363 k).
+
