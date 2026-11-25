@@ -13,6 +13,7 @@
 import { isEngineCancelled, type EngineJob } from '../../core/operations/engineClient';
 import type { EngineTaskResult } from '../../core/operations/engineTasks';
 import { isSolid } from '../../core/scene/objectRole';
+import { plainGroupNegatives, rigidFollowPatches } from '../../core/scene/rigidFollow';
 import { ORIENT_DEFAULTS, planOrientTransform, type OrientAnalysis } from '../../engine/orient';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import type { StoreContext } from '../storeContext';
@@ -176,6 +177,13 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const applied = await runExclusive('orient', false, async () => {
         const change = await runEngineDetached('orientApply', { obj, quaternion: candidate.quaternion, keepXY: orientKeepXY });
         assertCurrent([obj]);
+        // Los negativos pendientes del mismo grupo acompañan a la pieza (los imanes y torretas ya la siguen solos):
+        // si quedaran donde estaban, la resta cortaría otra zona sin aviso.
+        const own = change.patches.find((p) => p.id === obj.id)?.patch;
+        if (own) {
+          const to = { position: own.position ?? obj.position, rotation: own.rotation ?? obj.rotation, scale: own.scale ?? obj.scale };
+          change.patches.push(...rigidFollowPatches(plainGroupNegatives(get().objects, obj), obj, to));
+        }
         commitChange(change);
         return true;
       });

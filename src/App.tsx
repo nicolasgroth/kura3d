@@ -49,6 +49,7 @@ import { AssistantsPanel } from './components/assistants/AssistantsPanel';
 import { MagnetPanel } from './components/magnet/MagnetPanel';
 import { ScrewBossPanel } from './components/screwBoss/ScrewBossPanel';
 import { startPanelExclusion } from './store/insertCatalog';
+import { startMinWidthNotice } from './store/minWidthNotice';
 import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
 import { activateRailTool, toggleRailTool } from './store/toolActivation';
 import { useSimplifyRequestRelay } from './components/inspector/simplifyPanelRequest';
@@ -80,6 +81,8 @@ export const App: React.FC = () => {
   const recovery = useProjectRecovery();
   // Texto 3D y Asistentes comparten hueco: el arranque explícito de su exclusión mutua (una sola vez).
   useEffect(() => startPanelExclusion(), []);
+  // La app está pensada para 1024 px o más: bajo ese ancho se avisa una vez, sin bloquear.
+  useEffect(() => startMinWidthNotice(), []);
   const discardRecoveryOnClose = recovery.discardOnClose;
 
   // F2/F3 necesitan la lista de escena: en pantallas estrechas el panel izquierdo es un cajón, y se pide la
