@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BRAND } from '../../brand';
 import { t } from '../../i18n';
 import type { TranslationKey } from '../../i18n/translations';
@@ -28,9 +28,18 @@ export const AboutDialog: React.FC<{ open: boolean; onClose: () => void; random?
 }) => {
   const language = useKuraStore((s) => s.language);
   const name = BRAND.name;
-  // Una frase por apertura: se sortea cuando el diálogo se abre y queda fija mientras siga abierto.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const purposeKey = useMemo(() => pickPurposeKey(random) as TranslationKey, [open]);
+  // Una frase por apertura: se sortea al pasar de cerrado a abierto y queda fija mientras siga abierto.
+  const [wasOpen, setWasOpen] = useState(open);
+  const [purposeKey, setPurposeKey] = useState(() => pickPurposeKey(random) as TranslationKey);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setPurposeKey(pickPurposeKey(random) as TranslationKey);
+  }
+  // El diálogo sigue montado al cerrarse: cada apertura empieza arriba, con el logo a la vista.
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (open && scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [open]);
   const newTab = t(language, 'about.linkNote');
 
   return (
@@ -45,7 +54,8 @@ export const AboutDialog: React.FC<{ open: boolean; onClose: () => void; random?
         </button>
       }
     >
-      <div className="kura-about">
+      {/* La zona que se desplaza es enfocable y con nombre: con teclado se recorre con flechas, AvPág y Espacio. */}
+      <div className="kura-about" ref={scrollRef} role="region" tabIndex={0} aria-label={t(language, 'about.scrollRegion', { name })}>
         <img src="/branding/kurra-studio-icono.svg" alt="" className="kura-about-logo" width={64} height={64} />
         <section aria-labelledby="about-what">
           <h3 id="about-what">{t(language, 'about.whatTitle')}</h3>
