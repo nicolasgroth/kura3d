@@ -56,6 +56,7 @@ import { ENCAJE_UI_DE } from './encajeUi';
 import { REDISENO3A_DE } from './rediseno3a';
 import { REDISENO3B_DE } from './rediseno3b';
 import { UX8_MENU_DE } from './ux8Menu';
+import { IMANES_UNION_DE } from './imanesUnion';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -1388,4 +1389,5 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'bus.error.assemblyNoTarget': 'Gib groupId oder die ids der geteilten Teile an.',
   'bus.error.assemblyNotSplit': 'Diese Teile können nicht neu geprüft werden ({reason}): Sie müssen zu einer geteilten Gruppe mit gespeicherten Verbindungen gehören.',
   'dialog.thread.invalidFields': 'Korrigiere die markierten Felder, bevor du das Gewinde erstellst: Ein nicht numerischer oder außerhalb des Bereichs liegender Wert wird nicht übernommen.',
+  ...IMANES_UNION_DE,
 };

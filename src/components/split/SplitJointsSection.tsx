@@ -42,6 +42,7 @@ export function jointTypeName(language: LanguageCode, row: Pick<SplitJointRow, '
   const type = 'type' in row ? row.type : row.kind === 'connector' ? row.connector?.type ?? 'none' : row.kind;
   if (type === 'dowel' || type === 'peg' || type === 'dovetail') return t(language, `dialog.cut.connector.${type}`);
   if (type === 'glue' || type === 'lap' || type === 'loose-dowel' || type === 'socket' || type === 'none') return t(language, `splitJoints.type.${type}`);
+  if (type === 'magnet') return t(language, 'splitJoints.type.magnet');
   return type;
 }
 
@@ -153,6 +154,8 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
   for (const row of rows) {
     const texts = warnText(row).filter(Boolean);
     if (row.status === 'glue') texts.push(t(language, 'splitJoints.note.glue'));
+    // Imanes: la app no fija la polaridad física; se recuerda al armar (una sola vez si hay varias uniones)
+    if (row.kind === 'connector' && row.connector?.type === 'magnet' && row.centers.length > 0) texts.push(t(language, 'splitMagnet.polarity'));
     rowTexts.set(row.label, texts);
   }
   const textCount = new Map<string, number>();
