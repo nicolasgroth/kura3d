@@ -1,6 +1,6 @@
 # Formas simples: reducir triángulos reconociendo primitivas — diseño
 
-Estado: investigación (24-nov-2026), solo lectura; nada implementado ni decidido. Responde a la pregunta del autor: ¿se puede bajar el número de triángulos de un modelo reemplazando zonas por figuras más simples (planos, cilindros, esferas, conos, cajas), y con qué?
+Estado: investigación (24-nov-2026) y medición (25-nov-2026, sección 4); nada implementado ni decidido. Responde a la pregunta del autor: ¿se puede bajar el número de triángulos de un modelo reemplazando zonas por figuras más simples (planos, cilindros, esferas, conos, cajas), y con qué?
 
 **Respuesta corta.** Sí, y en tres escalones muy distintos de costo. Lo plano es barato, exacto y casi todo existe ya en el repo. Los cilindros, esferas y conos se pueden reconocer con geometría clásica (sin IA y sin dependencia nueva), pero en mallas CAD **no bajan triángulos gratis**: una pared de cilindro con N segmentos ya usa el mínimo (2N); bajar N es perder precisión, igual que decimar. Lo que sí da reconocerlos es regenerarlos con los segmentos que uno elija, radios exactos, medir diámetros y limpiar escaneos. La conversión general de malla a CSG es investigación abierta y no se recomienda.
 
@@ -41,7 +41,7 @@ Corrección al encargo: **Kura3D no usa meshoptimizer**. Figura como candidata e
 
 Tres hechos que conviene tener claros antes de decidir:
 
-1. **Decimar con tolerancia chica ya hace casi todo el trabajo plano.** `Manifold.simplify` colapsa aristas mientras la superficie no se mueva más que la tolerancia: en una zona plana eso es "gratis". No verifiqué con mediciones cuán cerca del mínimo queda; es lo primero que hay que medir (ver etapa 0).
+1. **Decimar con tolerancia chica ya hace casi todo el trabajo plano.** `Manifold.simplify` colapsa aristas mientras la superficie no se mueva más que la tolerancia: en una zona plana eso es "gratis". Medido: a 0,001 mm queda a menos del 0,13 % del mínimo plano (ver «Medición (25-nov-2026)»).
 2. **Un cilindro CAD ya está en su mínimo.** Una pared con N segmentos usa 2N triángulos. Solo sobra algo si trae anillos intermedios o tapas mal trianguladas. Bajar N es aceptar error de cuerda `r·(1 − cos(π/N))`: con r = 10 mm, 32 segmentos son 0,048 mm; 16 son 0,19 mm.
 3. **Cambiar los segmentos de un cilindro obliga a rehacer a sus vecinos.** El borde del cilindro es también el borde de la tapa o de la cara donde está el agujero. Si se cambia de 64 a 24 lados, la cara vecina hay que re-triangularla con el contorno nuevo, o la malla queda abierta.
 
@@ -73,9 +73,64 @@ No pude verificar: la licencia del código original de Schnabel (Efficient RANSA
 
 ## 4. Recomendación por etapas
 
-### Etapa 0 — Medir antes de escribir (medio día, sin código de producto)
+### Medición (25-nov-2026)
 
-Tomar 5–6 modelos reales (STL CAD sobre-teselado, texto extruido, pieza con muchos agujeros, un escaneo) y anotar: triángulos originales, triángulos tras `simplify` a 0,001 / 0,01 mm, y el mínimo teórico de las zonas planas. Si Manifold ya queda a menos de ~10 % del mínimo, la etapa 1 se reduce a un botón y una explicación. **Esto no lo medí; es la mayor incertidumbre del documento.**
+Hecha con el motor real desde `src/engine/__tests__/simplifyMeasure.perf.test.ts` (`npm run test:perf`; apoyo en `simplifyMeasureSupport.ts`, `simplifyMeasurePlanar.ts` y `simplifyMeasurePrimitives.ts`). Lee los modelos de la carpeta local `.eval-tmp/modelos/` (de terceros, no se versionan; sin ella la prueba se salta) y escribe los números crudos en `.eval-tmp/medicion-simplificar/`. Nada de la app cambió.
+
+**Método.**
+- *Simplificar:* `Manifold.simplify(tol)` directo sobre cada cuerpo cerrado (lo mismo que hace `simplifyMesh` en `analysis.ts`, sin la escala del objeto). 0,001 y 0,005 mm están **bajo el mínimo que hoy acepta la app** (0,01 mm, `operationLimits.ts`); la interfaz propone 0,15 mm por defecto (`RightInspector.tsx`), que no medí exacto (está entre 0,1 y la siguiente).
+- *Desviación:* Hausdorff aproximado en ambos sentidos con `three-mesh-bvh`: vértices del original contra la superficie simplificada, y centroides de los triángulos simplificados contra el original; hasta 150 000 muestras por sentido (cota inferior del máximo real).
+- *Cerrada:* `isMeshClosed` sobre el resultado (salió cerrada en el 100 % de los casos). *Género:* el de Manifold antes y después; si cambia, se abrió o se cerró un agujero, es decir, cambió la forma.
+- *Cota de lo plano:* regiones crecidas desde una semilla sobre `getFaceAdjacency` (normal a menos de 0,1° de la semilla y los tres vértices a menos de 0,001 mm de su plano); mínimo por región = aristas del contorno − 2 + 2 × agujeros (se conservan todos los vértices del contorno, así no se toca a las vecinas). Se calcula sobre el original y sobre el resultado de 0,001 mm: **la diferencia en este último es lo que ganaría un lote de «limpiar caras planas»**.
+- *Indicio de primitivas:* regiones suaves (diedro < 20° entre vecinos, sin las caras planas de 3+ triángulos), 12+ triángulos; si las normales caben en un plano se ajusta un cilindro (eje = autovector menor de Σ n nᵀ, círculo de Kåsa), si no una esfera (Kåsa 3D); se acepta con desviación máxima de los vértices < 0,02 mm. Validado con las primitivas de la app (cilindro, esfera y los 8 cilindros de la caja salen reconocidos; el cubo y el texto no). Es una **cota inferior**: una región que mezcla un plano tangente y un redondeo se descarta entera, y los conos y toros no se buscan.
+
+**Modelos reales** (11 de los 23 archivos de la carpeta; tipo a ojo por los números: CAD = mucha superficie plana o cilíndrica).
+
+| Archivo | Tipo | Triángulos | A 0,001 mm | A 0,01 mm | Desv. a 0,01 | Vol. a 0,01 | Género igual a 0,01 | Plano del original (mínimo) | Ganancia plana sobre 0,001 | Cil. + esf. |
+|---|---|---:|---:|---:|---:|---:|---|---|---:|---:|
+| Starwars_AT-AT.3mf | CAD | 1 280 182 ¹ | 59,3 % | 38,3 % | 0,025 mm | −0,005 % | sí | 79,1 % (57,2 %) | 980 (0,13 %) | 8,5 % |
+| pack_fidget_NG.3mf | CAD | 3 110 214 | 79,0 % | 46,0 % | 0,036 mm | −0,089 % | **no** (ya a 0,001) | 32,1 % (30,9 %) | 18 (0,00 %) | 4,7 % |
+| llaveros.3mf | CAD | 2 916 ² | 100 % | 68,2 % | 0,007 mm | −0,23 % | sí | 100 % (100 %) | 0 | 0 % |
+| ocarina.3mf | mixto | 38 144 | 98,5 % | 87,5 % | 0,011 mm | +0,000 % | sí | 27,3 % (27,3 %) | 0 | 2,9 % |
+| NeroBlackClover_SeparatePlate.3mf | orgánico, base plana | 271 584 | 93,0 % | 65,2 % | 0,130 mm | +0,000 % | **no** (ya a 0,001) | 19,4 % (15,4 %) | 49 (0,02 %) | 0,1 % |
+| obj_1_tinker.obj.stl | orgánico | 183 128 | 99,9 % | 99,7 % | 0,157 mm | −0,000 % | sí (no a 0,05) | 2,0 % (2,0 %) | 0 | 0 % |
+| Sagradocorazon.3mf | orgánico | 499 836 | 100 % | 98,8 % | 0,020 mm | −0,002 % | sí (no a 0,05) | 2,6 % (2,6 %) | 0 | 0 % |
+| Spiral+Phoenix+12cm+STL.stl | orgánico | 253 248 | 100 % | 96,4 % | 0,017 mm | −0,003 % | sí | 3,4 % (3,4 %) | 0 | 0 % |
+| obj_1_obj_1_300mm helmet.stl | orgánico | 386 962 | 100 % | 100 % | 0,036 mm | −0,000 % | sí | 0,9 % (0,9 %) | 0 | 0 % |
+| frierenmw.stl | orgánico | 477 684 | 99,8 % | 83,7 % | 0,019 mm | −0,014 % | **no** (desde 0,005) | 5,7 % (5,7 %) | 0 | 0,0 % |
+| busto_anubis_gotico.stl | orgánico | 325 650 | — | — | — | — | — | — | — | — |
+
+¹ 10 de 11 cuerpos (uno no es cerrado). ² Solo 3 de los 7 cuerpos distintos son cerrados (los otros 4, con 24–30 aristas abiertas, suman 136 340 triángulos y Manifold los rechaza, como Simplificar en la app). El busto quedó fuera por lo mismo (8 aristas abiertas). Porcentajes de triángulos respecto del original; «plano del original» = triángulos en regiones coplanares de 2+ triángulos y, entre paréntesis, su mínimo teórico, ambos sobre el total.
+
+A tolerancias mayores (mismo orden de filas): a 0,05 mm quedan 18,1 · 15,2 · 51,2 · 59,9 · 36,3 · 96,3 · 67,8 · 37,1 · 99,3 · 22,7 %, con desviaciones de 0,04 a 0,67 mm; a 0,1 mm, 11,1 · 11,5 · 41,8 · 38,7 · 23,9 · 84,3 · 38,7 · 16,3 · 93,0 · 12,8 %, con desviaciones de 0,09 a 1,48 mm, cambios de volumen de hasta −2,8 % (llaveros) y género cambiado en 6 de 10. Tiempos: menos de 7 s por tolerancia en el más grande (3,1 M de triángulos); ninguno se acercó al corte de 2 min.
+
+**Piezas generadas por la app.**
+
+| Pieza | Triángulos | 0,001 → 0,01 mm | 0,05 mm | 0,1 mm | Mínimo plano | Cil. + esf. |
+|---|---:|---|---|---|---:|---:|
+| Cubo | 12 | 12 | 12 | 12 | 12 | 0 % |
+| Cilindro 64 lados | 252 | 252 | 252 | 108 (vol. −1,0 %, desv. 0,096) | 252 | 51 % (la pared) |
+| Esfera | 512 | 512 | 512 | 512 | — | 100 % |
+| Caja con tapa (Asistentes) | 1 076 | 1 076 | 788 (desv. 0,048) | 760 (desv. 0,78) | 1 068 | 46 % (8 cilindros) |
+| Texto 3D «Kura3D» | 900 | 900 | 852 (desv. 0,040) | 756 (desv. 0,080) | 900 | 2 % |
+| Rosca M8 × 16 | 5 330 | 5 322 → 5 296 (desv. 0,004) | 5 224 (desv. 0,061) | 3 118 (vol. −0,36 %) | 2 834 de 2 836 | 49 % |
+
+Lo que crea la app **ya está en su mínimo**: Simplificar a ≤ 0,01 mm no le quita nada (la rosca, 34 triángulos) y la cota plana coincide con lo que hay (la caja, 8 triángulos de 1 076). Lo que baja a 0,05–0,1 mm es pérdida de forma: menos lados en el cilindro, letras y redondeos achatados.
+
+**Conclusiones.**
+1. **Las caras planas ya las limpia `simplify`.** Tras 0,001 mm, lo que quedaría por re-triangular en regiones planas es como mucho el 0,13 % (AT-AT, 980 de 759 538); en los otros, 0–49 triángulos. Antes de simplificar, la cota plana sí es grande en CAD (AT-AT: 79 % de los triángulos en regiones planas, mínimo 57 %), y `simplify` a 0,001 mm llega prácticamente a ese mínimo (59 %). Un algoritmo propio de caras planas **no ganaría nada medible** en mallas cerradas.
+2. **La ganancia grande está en CAD sobre-teselado y a tolerancia mínima**: AT-AT baja al 59 % a 0,001 mm y al 38 % a 0,01 mm; el pack, al 79 % y al 46 %. En lo orgánico, 0,001–0,01 mm deja entre 84 y 100 %: ahí casi no hay nada que quitar sin perder forma, y hay que decirlo en la interfaz.
+3. **La tolerancia de Manifold no es una cota de desviación.** A 0,01 mm, 9 de 10 modelos se desvían más de 0,01 mm (hasta 0,157 mm), y el casco se desvía 0,036 mm sin perder un solo triángulo. En una sonda aparte sobre el casco a 0,001 mm, con todos los vértices y centroides: ningún vértice nuevo ni movido, pero 14 centroides a más de 0,001 mm (máx. 0,009 mm); el desvío viene de cambiar diagonales, que Manifold hace aunque no colapse nada (inferido de esos números; no lo verifiqué en el código de Manifold). Además, el género cambia en 3 modelos ya a 0,001–0,005 mm (Manifold cierra agujeritos o rendijas de ese orden). Esto vale también para el valor por defecto actual (0,15 mm): a 0,1 mm ya hay desviaciones de 0,2–1,5 mm y cambios de género.
+4. **Primitivas: poco y sin ahorro.** Cilindros y esferas reconocibles (< 0,02 mm) son el 8,5 % de los triángulos en el modelo más CAD, 4,7 % en el pack, 2,9 % en la ocarina y ~0 % en lo orgánico; y esos cilindros ya usan 2N triángulos, así que regenerarlos no baja nada sin aceptar menos lados. Su valor sigue siendo el de la etapa 2a (medir diámetros, informar), no el peso.
+
+**Recomendación: (a)**. No hace falta un lote de «figuras simples» para bajar triángulos. Basta un lote chico sobre Simplificar:
+- agregar un modo **«sin pérdida»** = `simplify(0,001)` (hoy el rango empieza en 0,01 mm; habría que bajarlo a 0,001 para ese modo), que en los dos CAD grandes da 21–41 % menos triángulos y en lo orgánico casi nada;
+- como la tolerancia no garantiza la desviación, **verificar después**: mismo género, cambio de volumen < 0,01 % y desviación muestreada (`three-mesh-bvh`, como esta medición) bajo un límite; si falla, devolver el objeto intacto con aviso, o probar sin el cuerpo que cambió;
+- **bajar el valor por defecto** de 0,15 mm a 0,01–0,02 mm y mostrar la desviación medida en el resultado, porque 0,15 mm ya achata cilindros y texto.
+
+Las etapas 1 y 2b no se justifican por triángulos con estos datos; la 2a (detectar e informar cilindros) sigue en pie solo si se quiere para Medir.
+
+**Lo que no se midió.** Los 7 archivos de más de ~1,2 M de triángulos o duplicados en otro formato (`busto_pablo_victor.stl`, `busto_personal_fernando.*`, `fernando_ito_josefa_2.stl`, `obj_1_Saitama_75mm_base.stl` y `Saitama_75mm_base.3mf`, `pedido_felipe_regalo_papa_2026-11-05.*`, `DAFFY.3mf`, `frierenmw.3mf`, `Spiral+Phoenix+12cm+STL.3mf`, `obj_1_OcarinaDeluxe.stl`), por tiempo; son orgánicos a ojo y no cambiarían la conclusión plana. Los cuerpos abiertos (4 de 7 en llaveros, el busto anubis) tampoco: Manifold no los acepta, y ahí un algoritmo propio sí podría servir (ver decisión 4). La tolerancia exacta de 0,15 mm. Conos, toros y redondeos mezclados con planos (el indicio de primitivas es cota inferior). Si los cambios de género a 0,001 mm se ven al imprimir (son detalles del orden de la tolerancia). La desviación es muestreada (hasta 150 000 puntos por sentido), no exacta.
 
 ### Etapa 1 — "Limpiar caras planas" (sin pérdida)
 
@@ -105,8 +160,8 @@ Tomar 5–6 modelos reales (STL CAD sobre-teselado, texto extruido, pieza con mu
 
 ## 5. Decisiones para el autor
 
-1. **¿Cuál es el objetivo real: menos triángulos, o formas exactas y editables?** Cambia la prioridad. *Recomendación:* si es peso y velocidad, basta etapa 0 + 1. Si es "que los agujeros queden redondos y saber su diámetro", el valor está en la etapa 2a.
-2. **¿Se aprueba la etapa 0 (medición) antes de comprometer un lote de motor?** *Recomendación:* sí; puede mostrar que `simplify` ya resuelve la etapa 1 y ahorrar el lote.
+1. **¿Cuál es el objetivo real: menos triángulos, o formas exactas y editables?** Cambia la prioridad. *Recomendación (ajustada por la medición):* si es peso y velocidad, basta el modo «sin pérdida» de Simplificar con verificación; la etapa 1 no gana nada medible. Si es "que los agujeros queden redondos y saber su diámetro", el valor está en la etapa 2a.
+2. **Medición previa:** hecha (25-nov-2026); mostró que `simplify` ya resuelve la etapa 1. ¿Se aprueba el lote chico de la recomendación (a)?
 3. **Etapa 1: ¿acción separada "Limpiar caras planas (sin pérdida)" o un modo dentro de Simplificar?** *Recomendación:* un modo dentro de Simplificar, primero en la lista, sin deslizador y con el resultado esperado ("no cambia la forma").
 4. **¿Debe funcionar en mallas abiertas o sin reparar?** Solo eso justifica el algoritmo propio (opción B). *Recomendación:* no al principio; pedir reparar antes, como hace hoy Simplificar.
 5. **Etapa 2: ¿solo informar (2a) o también sustituir (2b)?** *Recomendación:* 2a primero, integrada a Medir; 2b solo para cilindros entre caras planas (agujeros pasantes y ejes), que es el caso común y el único con costura simple.
