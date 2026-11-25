@@ -35,7 +35,7 @@ import { OPERATION_DEFAULTS } from '../operationLimits';
 const AXES = SPLIT_AXES;
 
 /** Avisos que solo valen si la unión terminó con conector. */
-const CONNECTOR_ONLY_WARNINGS = new Set<string>(['SPLIT_CONNECTOR_REINFORCED', 'SPLIT_CONNECTOR_REDUCED', 'SPLIT_CONNECTOR_DEPTH_REDUCED', 'SPLIT_JOINT_WEAK']);
+const CONNECTOR_ONLY_WARNINGS = new Set<string>(['SPLIT_CONNECTOR_REINFORCED', 'SPLIT_CONNECTOR_REDUCED', 'SPLIT_CONNECTOR_DEPTH_REDUCED', 'SPLIT_JOINT_WEAK', 'SPLIT_MAGNET_REDUCED']);
 
 /** Tarugos sueltos de las uniones que los conservan, en un lote por medida. */
 function buildLooseDowels(wasm: Awaited<ReturnType<typeof initManifoldEngine>>, joints: SplitJoint[]): SplitLooseDowel[] {
@@ -148,6 +148,7 @@ export async function executeBedSplitGeometry(
               label, axis, position: coord, low: low.id, high: hid, connector: out.used, connectorCenters: out.centers,
               kind: out.kind, lap: out.lap, islands: out.islands, contactAreaMm2: area, labelEngraved: out.labelPlacement !== null,
               labelPlacement: out.labelPlacement, labelHeightMm: out.labelHeightMm, strength: out.strength, clearance: out.clearance, solids,
+              ...(out.magnets ? { magnets: out.magnets } : {}),
             });
           } finally {
             contact.delete();

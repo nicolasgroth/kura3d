@@ -25,6 +25,7 @@ export const BUILTIN_MAGNET_PRESETS: readonly BuiltinMagnetPreset[] = [
   preset('round-8x3', 'round', 8, 3),
   preset('round-10x3', 'round', 10, 3),
   preset('square-5x5x2', 'square', 5, 2),
+  preset('round-3x1', 'round', 3, 1),
 ];
 
 export const MAGNET_PRESET_STORAGE_KEY = 'kura3d-presets-magnet';

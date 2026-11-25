@@ -134,7 +134,7 @@ describe('preajustes de usuario: entradas no confiables y fallos del almacenamie
 describe('preajustes incluidos de imán', () => {
   it('trae 5 × 2 (por defecto), 6 × 3, 8 × 3, 10 × 3 y cuadrado 5 × 5 × 2', () => {
     expect(BUILTIN_MAGNET_PRESETS[0].values).toEqual(MAGNET_DEFAULTS);
-    expect(BUILTIN_MAGNET_PRESETS.map((p) => magnetSizeLabel(p.values))).toEqual(['5 × 2', '6 × 3', '8 × 3', '10 × 3', '5 × 5 × 2']);
+    expect(BUILTIN_MAGNET_PRESETS.map((p) => magnetSizeLabel(p.values))).toEqual(['5 × 2', '6 × 3', '8 × 3', '10 × 3', '5 × 5 × 2', '3 × 1']);
     expect(magnetSizeLabel({ shape: 'round', sizeMm: 6.5, heightMm: 2 }, 'es')).toBe('6,5 × 2');
     expect(magnetSizeLabel({ shape: 'round', sizeMm: 6.5, heightMm: 2 }, 'en')).toBe('6.5 × 2');
   });

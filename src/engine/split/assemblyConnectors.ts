@@ -21,14 +21,16 @@ import { connectorFootprintRadius } from '../cutConnectorLayout';
 import { ASSEMBLY_LIMITS } from '../operationLimits';
 import type { AssemblyDirection, AssemblyJointInput, ConnectorClash } from './assemblyTypes';
 import { holeDepth } from './splitJoints';
-import { layoutType, looseDowelHoleDepth } from './splitLooseDowel';
+import { layoutType } from './splitLooseDowel';
+import { twoSidedHoleDepth } from './splitMagnet';
 import type { SplitAxis, SplitConnectorOptions, SplitConnectorType } from './splitTypes';
 
 const AXIS_INDEX: Record<SplitAxis, number> = { x: 0, y: 1, z: 2 };
 const DOVETAIL_SLIDE: Record<SplitAxis, SplitAxis> = { x: 'y', y: 'z', z: 'y' };
 
 /** Si la unión restringe la dirección de entrada (tiene conector o solape). */
-export const restricts = (j: AssemblyJointInput) => (j.kind === 'connector' || j.kind === 'lap') && j.connector !== null;
+// Los imanes van a ras dentro de su alojamiento: no traban ninguna dirección (la pieza se apoya como en un corte liso)
+export const restricts = (j: AssemblyJointInput) => (j.kind === 'connector' || j.kind === 'lap') && j.connector !== null && j.connector.type !== 'magnet';
 
 /** Direcciones con que `part` puede entrar hacia su vecina de la unión `j` (ya puesta). */
 export function jointDirections(j: AssemblyJointInput, part: number): AssemblyDirection[] {
@@ -47,7 +49,7 @@ export function jointDirections(j: AssemblyJointInput, part: number): AssemblyDi
  * `allowSurface` (decisión del usuario). Pasar de cola de milano a espiga no la altera.
  */
 export function alternativeType(j: AssemblyJointInput, part: number, d: AssemblyDirection, allowSurface = true): SplitConnectorType | null {
-  if (j.kind !== 'connector' || !j.connector || j.connector.type === 'lap') return null;
+  if (j.kind !== 'connector' || !j.connector || j.connector.type === 'lap' || j.connector.type === 'magnet') return null;
   if (j.connector.type === 'dovetail') {
     const normal = `${part === j.a.part ? '+' : '-'}${j.axis}`;
     return d === normal ? 'dowel' : null;
@@ -90,7 +92,7 @@ export function capsules(joints: AssemblyJointInput[]): Capsule[] {
       const p = [...c] as Vec3;
       const q = [...c] as Vec3;
       // Tarugo suelto: agujero a ambos lados del plano
-      p[a] -= j.connector!.type === 'loose-dowel' ? looseDowelHoleDepth(j.connector!) : 0.5;
+      p[a] -= j.connector!.type === 'loose-dowel' || j.connector!.type === 'magnet' ? twoSidedHoleDepth(j.connector!) : 0.5;
       q[a] += reach;
       const slide = j.connector!.type === 'dovetail' ? AXIS_INDEX[DOVETAIL_SLIDE[j.axis]] : undefined;
       out.push({ joint: j.label, index, p, q, r, axis: j.axis, plane: j.position, parts: [j.a.part, j.b.part], slide });

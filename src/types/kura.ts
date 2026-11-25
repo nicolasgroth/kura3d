@@ -889,16 +889,23 @@ export interface SplitJointRecord {
   b: string;
   kind: 'connector' | 'glue' | 'lap' | 'socket';
   connector: {
-    type: 'dowel' | 'peg' | 'dovetail' | 'lap' | 'loose-dowel';
+    type: 'dowel' | 'peg' | 'dovetail' | 'lap' | 'loose-dowel' | 'magnet';
     size: number;
     depth: number;
     tolerance: number;
     count: number;
     minWallForConnectorMm?: number;
     lapHeightMm?: number;
+    /** Imán de la unión (`type: 'magnet'`). */
+    magnet?: MagnetPocketParams;
   } | null;
   connectorCenters: Vec3[];
   contactAreaMm2: number;
+  /**
+   * Imanes de la unión: medida, cantidad, alojamiento y polaridad (pegar cada par con polos opuestos); las posiciones
+   * son `connectorCenters`. Ausente sin imanes y en proyectos anteriores.
+   */
+  magnets?: { magnet: MagnetPocketParams; count: number; pocketDiameterMm: number; pocketDepthMm: number; polarity: 'opposite' };
   /** Dónde quedó la marca de pareja (`dots` = puntos por fuera); `null` sin marca. Ausente en proyectos anteriores. */
   labelPlacement?: 'joint' | 'outside' | 'dots' | null;
 }

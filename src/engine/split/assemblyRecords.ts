@@ -16,11 +16,14 @@ import { summarizeAssembly, validateAssembly } from './validateAssembly';
 
 /** Unión del motor → registro guardable en el proyecto (piezas por código). */
 export function jointRecord(j: SplitJoint): SplitJointRecord {
+  // Las marcas de pedido (`sizeAuto`, `countAuto`) no se guardan: el conector aplicado lleva lo real
+  const { sizeAuto: _s, countAuto: _c, magnet, ...connector } = j.connector ?? ({} as NonNullable<SplitJoint['connector']>);
   return {
     label: j.label, axis: j.axis, position: j.position, a: j.a.code, b: j.b.code, kind: j.kind,
-    connector: j.connector ? { ...j.connector } : null,
+    connector: j.connector ? { ...connector, ...(magnet ? { magnet: { ...magnet } } : {}) } : null,
     connectorCenters: j.connectorCenters.map((c) => [c[0], c[1], c[2]]), contactAreaMm2: j.contactAreaMm2,
     labelPlacement: j.labelPlacement,
+    ...(j.magnets ? { magnets: { ...j.magnets, magnet: { ...j.magnets.magnet } } } : {}),
   };
 }
 
