@@ -33,6 +33,7 @@ import { resetToolWhenUnavailable } from './toolAvailabilityGuard';
 import { createRecipesSlice } from './slices/recipesSlice';
 import { createBedProfilesSlice } from './slices/bedProfilesSlice';
 import { createMagnetSlice } from './slices/magnetSlice';
+import { createScrewBossSlice } from './slices/screwBossSlice';
 import { createUiSlice } from './slices/uiSlice';
 import { createQuickActionsSlice } from './slices/quickActionsSlice';
 import { createMenuIdeasSlice } from './slices/menuIdeasSlice';
@@ -89,6 +90,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createRecipesSlice(ctx),
     ...createBedProfilesSlice(ctx),
     ...createMagnetSlice(ctx),
+    ...createScrewBossSlice(ctx),
     ...createMenuIdeasSlice(ctx),
     ...createGroupsSlice(ctx),
     ...createRepairSlice(ctx),
