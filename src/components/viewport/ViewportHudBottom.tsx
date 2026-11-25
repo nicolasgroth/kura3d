@@ -15,6 +15,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { computeSelectionBounds } from '../../utils/selectionBounds';
 import { formatDimension } from '../../utils/units';
 import { toUserSize } from '../../core/scene/displayAxes';
+import { isLegacyPlateSetup } from '../../core/scene/plates';
 import { platesBedStatus, sceneBedStatus } from './plateBedStatus';
 import { BedHiddenChip } from './BedHiddenChip';
 import { AddFirstPlateButton } from '../plates/AddFirstPlateButton';
@@ -34,7 +35,7 @@ export const ViewportHudBottom: React.FC = () => {
   const bedStatus = useMemo(() => sceneBedStatus(objects, printerProfile, plates), [objects, printerProfile, plates]);
   // Con varias placas, el aviso dice cuáles están fuera de volumen.
   const outPlateNames = useMemo(
-    () => (plates.length < 2 ? [] : platesBedStatus(objects, printerProfile, plates).filter((e) => e.status === 'outOfBounds').map((e) => plates.find((p) => p.id === e.plateId)?.name ?? '')),
+    () => (isLegacyPlateSetup(plates, { widthMm: printerProfile.bedWidthMm, depthMm: printerProfile.bedDepthMm, heightMm: printerProfile.maxHeightMm }) ? [] : platesBedStatus(objects, printerProfile, plates).filter((e) => e.status === 'outOfBounds').map((e) => plates.find((p) => p.id === e.plateId)?.name ?? '')),
     [objects, printerProfile, plates],
   );
   const bedDims = printerProfile.showPrintVolume

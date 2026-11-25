@@ -1,7 +1,7 @@
 /**
  * @file src/components/viewport/PlateBeds.tsx
- * @description Camas del visor. Con una placa o ninguna dibuja la cama de siempre (`PrinterBedOverlay`); desde la
- * segunda placa dibuja una cama por placa, cada una en su origen y con su nombre, la activa resaltada y cada una
+ * @description Camas del visor. Sin placas, o con una sola en el origen y la cama del proyecto, dibuja la cama de siempre (`PrinterBedOverlay`); si
+ * no (varias, o una fuera del origen) dibuja una cama por placa, cada una en su origen y con su nombre, la activa resaltada y cada una
  * en rojo si sus piezas exceden SU volumen. «Solo esta» (`plateSolo`) deja solo la cama de la placa activa. El
  * botón «Sin cama» oculta todas (lo decide quien monta este componente).
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -10,7 +10,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { plateBed, resolveActivePlate } from '../../core/scene/plates';
+import { isLegacyPlateSetup, plateBed, resolveActivePlate } from '../../core/scene/plates';
 import { useKuraStore } from '../../store/useKuraStore';
 import { platesBedStatus } from './plateBedStatus';
 import { PrinterBedOverlay } from './PrinterBedOverlay';
@@ -22,7 +22,8 @@ export const PlateBeds: React.FC<{ isOutOfBounds: boolean }> = ({ isOutOfBounds 
   const objects = useKuraStore((s) => s.objects);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const customBed = useKuraStore((s) => s.customBedDimensions);
-  const multi = plates.length >= 2;
+  // Una sola placa fuera del origen (o con cama propia) también se dibuja por placa: la cama de siempre estaría mal puesta.
+  const multi = !isLegacyPlateSetup(plates, customBed ? { widthMm: customBed.width, depthMm: customBed.depth, heightMm: customBed.height } : { widthMm: printerProfile.bedWidthMm, depthMm: printerProfile.bedDepthMm, heightMm: printerProfile.maxHeightMm });
   const statuses = useMemo(
     () => (multi ? new Map(platesBedStatus(objects, printerProfile, plates).map((e) => [e.plateId, e.status])) : null),
     [multi, objects, printerProfile, plates],

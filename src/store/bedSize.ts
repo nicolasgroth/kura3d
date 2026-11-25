@@ -10,7 +10,7 @@
 
 import type { BedSize } from '../core/scene/freeSpot';
 import { activePlateBed, projectBed } from '../core/scene/activePlateBed';
-import { plateBed } from '../core/scene/plates';
+import { isLegacyPlateSetup, plateBed } from '../core/scene/plates';
 import type { ScenePlate } from '../types/plates';
 import type { KuraStoreState } from './storeTypes';
 
@@ -37,10 +37,10 @@ export function placementBedSize(state: BedState, plateId?: string | null): BedS
   return { width: bed.widthMm, depth: bed.depthMm, ...(origin[0] !== 0 || origin[1] !== 0 ? { origin } : {}) };
 }
 
-/** Cama de cada placa con su centro (con menos de dos placas, solo la activa: como siempre). */
+/** Cama de cada placa con su centro (sin placas o con una sola en el origen y la cama del proyecto, solo la activa: como siempre). */
 export function allBedSizes(state: BedState): BedSize[] {
   const plates = state.plates ?? [];
-  if (plates.length < 2) {
+  if (isLegacyPlateSetup(plates, projectBed(state))) {
     const one = placementBedSize(state);
     return one ? [one] : [];
   }

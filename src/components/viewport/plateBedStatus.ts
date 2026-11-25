@@ -2,14 +2,14 @@
  * @file src/components/viewport/plateBedStatus.ts
  * @description Estado de la cama por placa (sin React): cada pieza se evalúa contra la cama de SU placa, sumando el
  * origen de esa placa. Las piezas sin placa no cuentan. `sceneBedStatus` es el estado único del pie del visor y de
- * las camas: con menos de dos placas es exactamente `bedStatusOf` (la interfaz de siempre); con varias, el peor de
- * todas las placas.
+ * las camas: sin placas, o con una sola en el origen y la cama del proyecto, es exactamente `bedStatusOf` (la interfaz de siempre);
+ * con una placa fuera del origen o con varias, el peor de todas las placas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import { plateBed } from '../../core/scene/plates';
+import { isLegacyPlateSetup, plateBed } from '../../core/scene/plates';
 import { splitFrameFor } from '../../core/scene/splitFrame';
 import type { SplitFrame, SplitFrames } from '../../core/scene/splitGroups';
 import type { PrinterProfile, SceneObject } from '../../types/kura';
@@ -72,9 +72,9 @@ export function outOfBoundsIds(objects: readonly SceneObject[], profile: Printer
   return out;
 }
 
-/** Estado único de la escena: como siempre con 0 o 1 placas; con varias, el peor de las placas (las sin placa no cuentan). */
+/** Estado único de la escena: como siempre sin placas o con una sola en el origen y la cama del proyecto; si no, el peor de las placas (las sin placa no cuentan). */
 export function sceneBedStatus(objects: SceneObject[], profile: PrinterProfile, plates: readonly ScenePlate[] = []): BedStatus {
-  if (plates.length < 2) return bedStatusOf(objects, profile);
+  if (isLegacyPlateSetup(plates, { widthMm: profile.bedWidthMm, depthMm: profile.bedDepthMm, heightMm: profile.maxHeightMm })) return bedStatusOf(objects, profile);
   const all = platesBedStatus(objects, profile, plates).map((e) => e.status);
   if (all.includes('outOfBounds')) return 'outOfBounds';
   return all.includes('assembled') ? 'assembled' : 'ok';
