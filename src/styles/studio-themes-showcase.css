@@ -93,7 +93,7 @@ dialog.kura-dialog-settings {
   background: color-mix(in srgb, var(--accent-cyan) 8%, var(--bg-elevated));
 }
 
-/* Maqueta miniatura del estudio Kura3D dentro de cada tarjeta de tema */
+/* Maqueta miniatura del estudio Kurra3D Studio dentro de cada tarjeta de tema */
 .kura-theme-mockup {
   width: 100%;
   height: 76px;

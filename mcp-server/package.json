@@ -1,12 +1,12 @@
 {
   "name": "kura3d-mcp-server",
   "version": "0.5.0",
-  "description": "Servidor MCP open-source nativo para Kura3D (stdio + WebSocket bridge). Desarrollado para ISGROTH (InnovaciÃ³n y Soluciones GROTH).",
+  "description": "Servidor MCP open-source nativo para Kurra3D Studio (stdio + WebSocket bridge). Desarrollado para ISGROTH (InnovaciÃ³n y Soluciones GROTH).",
   "author": "NicolÃ¡s Groth <ngroth@gmail.com> (ISGROTH â€” InnovaciÃ³n y Soluciones GROTH)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nicolasgroth/kura3d.git"
+    "url": "https://github.com/nicolasgroth/kurra3d.git"
   },
   "type": "module",
   "bin": {

@@ -67,7 +67,7 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
         'approximation), overhang area, contact area, height, footprint [X, Y], tip angle and stability, bed fit, cost, and the ' +
         'differences against the current pose. Each reason has a key with params and a sentence in the requested language. ' +
         'currentIsBest = the current pose is already among the best; allEquivalent = no winner (e.g. a sphere); recommendedId is ' +
-        'null in both cases. Apply one with kura_apply_orientation (same angle and bed). Kura3D does not generate supports.',
+        'null in both cases. Apply one with kura_apply_orientation (same angle and bed). Kurra3D Studio does not generate supports.',
       inputSchema: {
         objectId: idSchema.describe('ID of the part to analyze.'),
         ...orientInputs,

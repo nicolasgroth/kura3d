@@ -18,9 +18,9 @@
       <stop offset="100%" stop-color="#075985"/>
     </linearGradient>
   </defs>
-  <!-- Fondo redondeado Kura3D -->
+  <!-- Fondo redondeado Kurra3D Studio -->
   <rect x="12" y="12" width="232" height="232" rx="48" fill="url(#bg)" stroke="#38bdf8" stroke-opacity="0.35" stroke-width="4"/>
-  <!-- Cubo/roca facetada isométrica Kura3D -->
+  <!-- Cubo/roca facetada isométrica Kurra3D Studio -->
   <!-- Cara superior biselada -->
   <polygon points="128,46 196,84 128,122 60,84" fill="url(#topFace)"/>
   <!-- Faceta izquierda -->

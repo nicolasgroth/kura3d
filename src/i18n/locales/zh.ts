@@ -1,6 +1,6 @@
 /**
  * @file src/i18n/locales/zh.ts
- * @description Diccionario completo en chino simplificado (中文 简体) para Kura3D v0.5.0.
+ * @description Diccionario completo en chino simplificado (中文 简体) para Kurra3D Studio v0.5.0.
  * Tipado estrictamente con `Record<TranslationKey, string>` para garantizar paridad 1:1 en compilación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -121,7 +121,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...TORRETA_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
-  'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',
+  'app.docTitle': 'Kurra3D Studio v0.5.0 — 原生 3D 建模工作室',
   'app.untitled': '未命名场景',
   'recovery.status.working': '正在保存草稿…',
   'recovery.status.ready': '本地草稿已保存',
@@ -151,7 +151,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'fileProject.busy': '请等待当前操作完成。',
   'fileProject.working': '正在打开或保存项目…',
   'fileProject.invalid': '.kura 文件无效或已损坏。',
-  'fileProject.unsupported': '此 .kura 文件需要兼容版本的 Kura3D。',
+  'fileProject.unsupported': '此 .kura 文件需要兼容版本的 Kurra3D Studio。',
   'fileProject.tooLarge': '项目超过支持的文件大小或几何限制。',
   'common.close': '关闭',
 
@@ -451,7 +451,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'ctx.delete': '删除',
 
   // Paleta de comandos (Ctrl+K)
-  'cmd.title': 'Kura3D 命令面板',
+  'cmd.title': 'Kurra3D Studio 命令面板',
   'cmd.placeholder': '输入命令、基本体、操作或设置...',
   'cmd.empty': '未找到匹配的命令。',
   'cmd.badgeLocal': '本地',
@@ -472,13 +472,13 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'palette.cmd.appearance': '更改颜色主题（外观）',
 
   // Panel de Chat IA (AiChatDrawer)
-  'ai.title': 'Kura3D AI 助手',
+  'ai.title': 'Kurra3D Studio AI 助手',
   'ai.configureKey': '配置 AI',
   'ai.placeholder': '例如：“创建一个 40 mm 高的圆柱并抽壳 2 mm”...',
   'ai.send': '发送',
   'ai.clearChat': '清空对话',
   'ai.thinking': '正在处理几何体...',
-  'ai.welcome': '你好，我是 Kura3D 助手。离线时我可以创建基本体和 ISO 螺纹（螺栓、螺母或螺纹孔：“加一个 M6 螺纹孔”），移动、缩放、抽壳并用定位销切开，合并或相减所选对象，检查可打印性（“它的可打印性如何？”），以及导出 STL/3MF。若需更自由的请求，请在设置中配置 Gemini、OpenAI、Anthropic 或 Ollama。',
+  'ai.welcome': '你好，我是 Kurra3D Studio 助手。离线时我可以创建基本体和 ISO 螺纹（螺栓、螺母或螺纹孔：“加一个 M6 螺纹孔”），移动、缩放、抽壳并用定位销切开，合并或相减所选对象，检查可打印性（“它的可打印性如何？”），以及导出 STL/3MF。若需更自由的请求，请在设置中配置 Gemini、OpenAI、Anthropic 或 Ollama。',
   'ai.chip.box': '40 mm 立方体',
   'ai.chip.hollow': '抽壳 2.5 mm',
   'ai.chip.cylinder': '20×50 mm 圆柱',
@@ -713,7 +713,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   // Modal Exportar 3MF Multi-Slicer
 
   // Modal Ajustes & MCP
-  'dialog.settings.title': 'Kura3D 设置',
+  'dialog.settings.title': 'Kurra3D Studio 设置',
   'dialog.settings.tab.ai': 'AI 提供商',
   'dialog.settings.tab.mcp': 'MCP 服务器',
   'dialog.settings.tab.appearance': '外观与主题',
@@ -723,7 +723,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.settings.themeDefaultBadge': '默认',
   'dialog.settings.themeActiveBadge': '当前启用',
   'dialog.settings.themePreviewBadge': '实时预览',
-  'dialog.settings.brandVariants': 'Kura3D 视觉标识',
+  'dialog.settings.brandVariants': 'Kurra3D Studio 视觉标识',
   'theme.obsidian.name': 'Obsidian Cyan',
   'theme.obsidian.desc': '深石板工作室配技术青色（默认主题）。',
   'theme.kura_prism.name': 'Kura Prism',
@@ -1156,10 +1156,10 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.settings.test.desktopKey': '桌面版从钥匙串读取密钥：请先保存设置再测试。',
   'dialog.settings.test.url': '需要有效的基础 URL。',
   'dialog.settings.test.local': '本地模式：没有需要测试的外部连接。',
-  'mcp.setup.pathLabel': 'Kura3D 副本路径（可选）',
-  'mcp.setup.pathNote': '应用无法得知 Kura3D 副本的位置。请在此输入路径，或手动替换 <REPO_PATH>。',
+  'mcp.setup.pathLabel': 'Kurra3D Studio 副本路径（可选）',
+  'mcp.setup.pathNote': '应用无法得知 Kurra3D Studio 副本的位置。请在此输入路径，或手动替换 <REPO_PATH>。',
   'mcp.setup.helpTitle': 'MCP 服务器尚未响应：步骤',
-  'mcp.setup.step1': '1. 在 Kura3D 文件夹中构建一次服务器：',
+  'mcp.setup.step1': '1. 在 Kurra3D Studio 文件夹中构建一次服务器：',
   'mcp.setup.step2': '2. 在 MCP 客户端中注册。使用 Claude Code（将 <TOKEN> 替换为上方令牌）：',
   'mcp.setup.step3': '3. 重启 MCP 客户端；服务器启动后状态会变为已连接。',
   'mcp.setup.copyCommand': '复制命令',

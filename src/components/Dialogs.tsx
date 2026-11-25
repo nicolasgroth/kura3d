@@ -1,6 +1,6 @@
 /**
  * @file src/components/Dialogs.tsx
- * @description Índice de los modales nativos <dialog> de Kura3D. Cada diálogo vive en su propio
+ * @description Índice de los modales nativos <dialog> de Kurra3D Studio. Cada diálogo vive en su propio
  * archivo de `./dialogs/`; aquí solo se montan según `activeDialog` del store y se re-exportan
  * para no romper imports existentes.
  * @author Nicolás Groth <ngroth@gmail.com>

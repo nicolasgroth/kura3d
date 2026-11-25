@@ -146,7 +146,7 @@ test('guardar y reabrir .kura conserva los avisos de las uniones', async ({ page
   await page.getByLabel('Tipo de conector').selectOption({ label: 'Tarugo suelto (se imprime aparte)' });
   await page.getByRole('button', { name: 'Dividir', exact: true }).click();
   await expect(page.getByText(/Uniones \(12\)/i)).toBeVisible({ timeout: 30000 });
-  const antes = await page.getByText('Kura3D dejó esta unión para pegar').count();
+  const antes = await page.getByText('Kurra3D Studio dejó esta unión para pegar').count();
   expect(antes).toBeGreaterThan(0);
   await page.keyboard.press('Control+s');
   await expect.poll(() => page.evaluate(() => (window as unknown as { __saved: Blob | null }).__saved?.size ?? 0)).toBeGreaterThan(0);
@@ -166,5 +166,5 @@ test('guardar y reabrir .kura conserva los avisos de las uniones', async ({ page
   }, b64);
   await page.keyboard.press('Control+a');
   await expect(page.getByText(/Uniones \(12\)/i)).toBeVisible({ timeout: 30000 });
-  expect(await page.getByText('Kura3D dejó esta unión para pegar').count()).toBe(antes);
+  expect(await page.getByText('Kurra3D Studio dejó esta unión para pegar').count()).toBe(antes);
 });

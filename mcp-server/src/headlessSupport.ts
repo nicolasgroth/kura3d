@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/headlessSupport.ts
- * @description Utilidades de la capa de escena headless del servidor MCP de Kura3D: alias de
+ * @description Utilidades de la capa de escena headless del servidor MCP de Kurra3D Studio: alias de
  * tipos, construcción de objetos con la política headless de `src/core/scene`, resúmenes
  * serializables y el error explícito "no soportado en headless".
  * No contiene geometría propia: toda malla proviene de `src/engine` (Manifold WASM).
@@ -47,7 +47,7 @@ export { summarizeObject, type SceneObjectSummary } from '../../src/core/scene/s
 export class HeadlessUnsupportedError extends Error {
   constructor(operation: string, reason: string) {
     super(
-      `Operation '${operation}' not supported in headless: ${reason} Open the Kura3D UI and connect it to the MCP bridge.`
+      `Operation '${operation}' not supported in headless: ${reason} Open the Kurra3D Studio UI and connect it to the MCP bridge.`
     );
     this.name = 'HeadlessUnsupportedError';
   }

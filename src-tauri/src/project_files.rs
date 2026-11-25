@@ -101,7 +101,7 @@ fn project_dialog(
     if window.label() != "main" {
         return Err("El diálogo de proyectos requiere la ventana principal.".into());
     }
-    let dialog = window.dialog().file().add_filter("Kura3D", &["kura"]);
+    let dialog = window.dialog().file().add_filter("Kurra3D Studio", &["kura"]);
     #[cfg(desktop)]
     let dialog = dialog.set_parent(window);
     Ok(dialog)

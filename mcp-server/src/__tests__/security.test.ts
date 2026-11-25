@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/__tests__/security.test.ts
- * @description Pruebas de seguridad TRUST-02 del puente MCP de Kura3D: autenticación obligatoria,
+ * @description Pruebas de seguridad TRUST-02 del puente MCP de Kurra3D Studio: autenticación obligatoria,
  * validación de Host/Origin, rotación de token con revocación, solo lectura aplicado en servidor,
  * confinamiento de exportaciones, límite de tamaño de mensaje y validación de datos con esquema.
  * @author Nicolás Groth <ngroth@gmail.com>

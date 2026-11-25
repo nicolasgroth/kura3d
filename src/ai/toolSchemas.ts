@@ -1,6 +1,6 @@
 /**
  * @file src/ai/toolSchemas.ts
- * @description Catálogo de herramientas de escena que Kura3D expone a los proveedores IA. Es también la
+ * @description Catálogo de herramientas de escena que Kurra3D Studio expone a los proveedores IA. Es también la
  * lista permitida: un comando que no figure aquí nunca se ejecuta desde una respuesta de proveedor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH

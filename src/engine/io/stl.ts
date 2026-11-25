@@ -2,7 +2,7 @@
  * @file src/engine/io/stl.ts
  * @description Lectura y escritura STL. Lector binario/ASCII con detección robusta (bytes extra al
  * final, cabeceras binarias que empiezan con "solid"), validación de NaN y truncado, y soldado de
- * vértices. Escritor binario IEEE-754 con conversión Y-up (Kura3D) a Z-up (laminadores).
+ * vértices. Escritor binario IEEE-754 con conversión Y-up (Kurra3D Studio) a Z-up (laminadores).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

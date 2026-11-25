@@ -291,10 +291,10 @@ pub async fn ai_allowed_hosts_set(
         let confirmed = app
             .dialog()
             .message(format!(
-                "¿Permitir que Kura3D envíe solicitudes de IA a estos servidores?\n\
-                 Allow Kura3D to send AI requests to these servers?\n\n{list}"
+                "¿Permitir que Kurra3D Studio envíe solicitudes de IA a estos servidores?\n\
+                 Allow Kurra3D Studio to send AI requests to these servers?\n\n{list}"
             ))
-            .title("Kura3D")
+            .title("Kurra3D Studio")
             .kind(MessageDialogKind::Warning)
             .buttons(MessageDialogButtons::OkCancel)
             .blocking_show();

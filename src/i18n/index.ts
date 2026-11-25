@@ -1,6 +1,6 @@
 /**
  * @file src/i18n/index.ts
- * @description Helper tipado de internacionalización (i18n) para los 6 idiomas de Kura3D v0.5.0
+ * @description Helper tipado de internacionalización (i18n) para los 6 idiomas de Kurra3D Studio v0.5.0
  * (`es`, `en`, `de`, `fr`, `hi`, `zh`), con interpolación de parámetros y localización de
  * perfiles de impresora y materiales PBR.
  * @author Nicolás Groth <ngroth@gmail.com>

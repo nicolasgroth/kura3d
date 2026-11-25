@@ -42,7 +42,7 @@ test('SVG: válido crea sólido; roto, vacío y texto plano dan error y no crean
   await expect.poll(() => objs(page)).toBe('0');
 });
 
-test('Texto 3D: emoji y chino dan error claro; Kura3D se crea y deshacer lo revierte', async ({ page }) => {
+test('Texto 3D: emoji y chino dan error claro; Kurra3D Studio se crea y deshacer lo revierte', async ({ page }) => {
   await fresh(page);
   await agregarForma(page, 'Texto 3D');
   const inp = page.locator('#kura-text3d-input');

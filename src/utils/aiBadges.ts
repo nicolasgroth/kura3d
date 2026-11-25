@@ -1,7 +1,7 @@
 /**
  * @file src/utils/aiBadges.ts
  * @description Helper centralizado para distinguir explícitamente entre modo 100% Local,
- * IA Local (Ollama) e IA Externa (Gemini / OpenAI / Anthropic) en toda la interfaz de Kura3D.
+ * IA Local (Ollama) e IA Externa (Gemini / OpenAI / Anthropic) en toda la interfaz de Kurra3D Studio.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

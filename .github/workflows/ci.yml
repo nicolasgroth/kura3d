@@ -1,8 +1,8 @@
-# Integración Continua (CI) — Kura3D
+# Integración Continua (CI) — Kurra3D Studio
 # Organización: ISGROTH — Innovación y Soluciones GROTH
 # Autor: Nicolás Groth <ngroth@gmail.com>
 
-name: Kura3D CI
+name: Kurra3D Studio CI
 
 on:
   push:

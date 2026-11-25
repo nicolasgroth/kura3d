@@ -1,6 +1,6 @@
 /**
  * @file src/components/SplashScreen.tsx
- * @description Pantalla de bienvenida animada (Splash Screen) de Kura3D v0.5.0 para entornos
+ * @description Pantalla de bienvenida animada (Splash Screen) de Kurra3D Studio v0.5.0 para entornos
  * nativos (Tauri v2) y Web Studio. Muestra el emblema oficial 3D, marca ISGROTH y progreso real
  * de inicialización del motor geométrico Manifold WASM con cierre automático suave (~900 ms tras
  * quedar listo) y descarte instantáneo mediante clic o tecla Escape.

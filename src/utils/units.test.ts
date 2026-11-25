@@ -1,6 +1,6 @@
 /**
  * @file src/utils/units.test.ts
- * @description Pruebas unitarias de conversión exacta y formateo de unidades de Kura3D.
+ * @description Pruebas unitarias de conversión exacta y formateo de unidades de Kurra3D Studio.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -16,7 +16,7 @@ import {
   toMm,
 } from './units';
 
-describe('Conversión de unidades CAD en Kura3D', () => {
+describe('Conversión de unidades CAD en Kurra3D Studio', () => {
   it('convierte milímetros a todas las unidades soportadas y viceversa con exactitud', () => {
     expect(fromMm(25.4, 'in')).toBeCloseTo(1, 6);
     expect(toMm(1, 'in')).toBeCloseTo(25.4, 6);

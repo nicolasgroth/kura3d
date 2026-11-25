@@ -18,12 +18,12 @@ const UX = {
     fr: 'Taille automatique (recommandée)', hi: 'स्वचालित आकार (अनुशंसित)', zh: '自动尺寸（推荐）',
   },
   'split.size.autoHelp': {
-    es: 'Cada unión usa el diámetro que recomienda Kura3D según su superficie de contacto y la pieza que sostiene, respetando la pared mínima.',
-    en: 'Each joint uses the diameter Kura3D recommends for its contact area and the part it holds, keeping the minimum wall.',
-    de: 'Jede Verbindung nutzt den von Kura3D empfohlenen Durchmesser für ihre Kontaktfläche und das gehaltene Teil und wahrt die Mindestwand.',
-    fr: 'Chaque jonction utilise le diamètre recommandé par Kura3D selon sa surface de contact et la pièce qu\'elle tient, en respectant la paroi minimale.',
-    hi: 'हर जोड़ अपने संपर्क क्षेत्र और थामे जाने वाले भाग के लिए Kura3D का अनुशंसित व्यास इस्तेमाल करता है, न्यूनतम दीवार का ध्यान रखते हुए।',
-    zh: '每个接合根据其接触面积和所承载的部件使用 Kura3D 推荐的直径，并保证最小壁厚。',
+    es: 'Cada unión usa el diámetro que recomienda Kurra3D Studio según su superficie de contacto y la pieza que sostiene, respetando la pared mínima.',
+    en: 'Each joint uses the diameter Kurra3D Studio recommends for its contact area and the part it holds, keeping the minimum wall.',
+    de: 'Jede Verbindung nutzt den von Kurra3D Studio empfohlenen Durchmesser für ihre Kontaktfläche und das gehaltene Teil und wahrt die Mindestwand.',
+    fr: 'Chaque jonction utilise le diamètre recommandé par Kurra3D Studio selon sa surface de contact et la pièce qu\'elle tient, en respectant la paroi minimale.',
+    hi: 'हर जोड़ अपने संपर्क क्षेत्र और थामे जाने वाले भाग के लिए Kurra3D Studio का अनुशंसित व्यास इस्तेमाल करता है, न्यूनतम दीवार का ध्यान रखते हुए।',
+    zh: '每个接合根据其接触面积和所承载的部件使用 Kurra3D Studio 推荐的直径，并保证最小壁厚。',
   },
   'split.size.label': {
     es: 'Diámetro del conector Ø', en: 'Connector diameter Ø', de: 'Verbinderdurchmesser Ø',
@@ -161,8 +161,8 @@ const UX = {
     fr: 'a changé le type de connecteur sur {count} jonctions', hi: '{count} जोड़ों पर कनेक्टर प्रकार बदला', zh: '更换了 {count} 个接合的连接件类型',
   },
   'splitUx.fixed.intro': {
-    es: 'Para que se pueda montar, Kura3D {actions}.', en: 'So it can be assembled, Kura3D {actions}.', de: 'Damit sich alles montieren lässt, {actions}.',
-    fr: 'Pour que le montage soit possible, Kura3D {actions}.', hi: 'असेंबली संभव करने के लिए Kura3D ने {actions}।', zh: '为了能够装配，Kura3D {actions}。',
+    es: 'Para que se pueda montar, Kurra3D Studio {actions}.', en: 'So it can be assembled, Kurra3D Studio {actions}.', de: 'Damit sich alles montieren lässt, {actions}.',
+    fr: 'Pour que le montage soit possible, Kurra3D Studio {actions}.', hi: 'असेंबली संभव करने के लिए Kurra3D Studio ने {actions}।', zh: '为了能够装配，Kurra3D Studio {actions}。',
   },
   'splitUx.fixed.and': { es: ' y ', en: ' and ', de: ' und ', fr: ' et ', hi: ' और ', zh: '，并' },
   'splitUx.warn.rotated.one': {

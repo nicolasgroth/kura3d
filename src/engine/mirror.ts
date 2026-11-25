@@ -15,7 +15,7 @@ import { normalizeMeshToBed } from './primitives';
  * invierte el orden de devanado `(i0, i2, i1)` de cada triángulo para preservar normales
  * salientes y condición 2-manifold watertight, conserva `faceColors` y re-normaliza a cama (Y >= 0).
  *
- * @param mesh Malla de entrada en formato Kura3D.
+ * @param mesh Malla de entrada en formato Kurra3D Studio.
  * @param axis Eje de simetría especular ('x', 'y' o 'z').
  * @returns Nueva malla reflejada, cerrada y apoyada sobre la cama.
  */

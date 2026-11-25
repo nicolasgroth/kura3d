@@ -1,16 +1,16 @@
 {
   "name": "kura3d",
   "version": "0.5.0",
-  "description": "Kura3D — Modelador 3D nativo y web de alto rendimiento para creación e impresión 3D, con motor Manifold CSG, servidor MCP nativo y chat IA multi-proveedor. Desarrollado para ISGROTH (Innovación y Soluciones GROTH).",
+  "description": "Kurra3D Studio — Modelador 3D nativo y web de alto rendimiento para creación e impresión 3D, con motor Manifold CSG, servidor MCP nativo y chat IA multi-proveedor. Desarrollado para ISGROTH (Innovación y Soluciones GROTH).",
   "author": "Nicolás Groth <ngroth@gmail.com> (ISGROTH — Innovación y Soluciones GROTH)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nicolasgroth/kura3d.git"
+    "url": "https://github.com/nicolasgroth/kurra3d.git"
   },
-  "homepage": "https://github.com/nicolasgroth/kura3d#readme",
+  "homepage": "https://github.com/nicolasgroth/kurra3d#readme",
   "bugs": {
-    "url": "https://github.com/nicolasgroth/kura3d/issues"
+    "url": "https://github.com/nicolasgroth/kurra3d/issues"
   },
   "private": true,
   "type": "module",

@@ -1,6 +1,6 @@
 /**
  * @file mcp-server/src/headlessExport.ts
- * @description Exportación a disco del modo headless de Kura3D usando los codificadores del
+ * @description Exportación a disco del modo headless de Kurra3D Studio usando los codificadores del
  * motor compartido (`exportSceneToBinarySTL` y `exportSceneTo3MF` de `src/engine`). El 3MF lleva
  * la paleta `<basematerials>` y el color por triángulo igual que la app. El STL ASCII se obtiene
  * transcribiendo el STL binario del motor, por lo que la geometría es idéntica en ambos formatos.
@@ -45,7 +45,7 @@ function exportableObjects(targets: HeadlessSceneObject[]): HeadlessSceneObject[
 }
 
 /** Transcribe un STL binario (80 B cabecera + 50 B por triángulo) a STL ASCII equivalente. */
-export function binaryStlToAscii(bytes: Uint8Array, solidName = 'Kura3D'): string {
+export function binaryStlToAscii(bytes: Uint8Array, solidName = 'Kurra3D Studio'): string {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const triCount = view.getUint32(80, true);
   const f = (offset: number) => view.getFloat32(offset, true).toExponential(6);

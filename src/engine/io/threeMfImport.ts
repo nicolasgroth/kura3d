@@ -267,7 +267,7 @@ export function read3MF(
     return geometry;
   };
 
-  // Escena exportada por Kura3D: se restaura tal cual (sin build, placas ni conjuntos).
+  // Escena exportada por Kurra3D Studio: se restaura tal cual (sin build, placas ni conjuntos).
   const kuraMeta = pkg.kuraSceneText ? parseKuraSceneMeta(pkg.kuraSceneText, limits.maxParts) : null;
   if (kuraMeta) {
     const restored = readKuraScene(kuraMeta, (id) => {
@@ -371,7 +371,7 @@ export function read3MF(
       const tx = (x * t[0] + y * t[3] + z * t[6] + t[9]) * scale;
       const ty = (x * t[1] + y * t[4] + z * t[7] + t[10]) * scale;
       const tz = (x * t[2] + y * t[5] + z * t[8] + t[11]) * scale;
-      // 3MF Z-up -> Kura3D Y-up: (x, y, z) -> (x, z, -y)
+      // 3MF Z-up -> Kurra3D Studio Y-up: (x, y, z) -> (x, z, -y)
       positions[i] = tx;
       positions[i + 1] = tz;
       positions[i + 2] = -ty;
