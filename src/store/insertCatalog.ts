@@ -17,10 +17,11 @@ import { t, type TranslationKey } from '../i18n';
 import type { PrimitiveType } from '../types/kura';
 import { closeAssistants, openAssistants, useAssistantsPanel } from './assistantsPanel';
 import { closeMagnetPanel, openMagnetPanel, useMagnetPanel } from './magnetPanel';
+import { closeScrewBossPanel, openScrewBossPanel, useScrewBossPanel } from './screwBossPanel';
 import { useKuraStore } from './useKuraStore';
 
 export type ShapeId = 'box' | 'cylinder' | 'disc' | 'tube' | 'sphere' | 'cone' | 'torus' | 'prism' | 'text';
-export type GeneratorId = 'svg' | 'image' | 'thread' | 'calibration' | 'assistants' | 'magnet';
+export type GeneratorId = 'svg' | 'image' | 'thread' | 'calibration' | 'assistants' | 'magnet' | 'screwBoss';
 export type InsertId = ShapeId | GeneratorId;
 
 interface ShapeDef {
@@ -43,7 +44,7 @@ export const SHAPES: readonly ShapeDef[] = [
 ];
 
 /** Generadores del menú Insertar (y de la hoja Agregar en móvil). */
-export const GENERATORS: readonly GeneratorId[] = ['svg', 'image', 'thread', 'calibration', 'assistants', 'magnet'];
+export const GENERATORS: readonly GeneratorId[] = ['svg', 'image', 'thread', 'calibration', 'assistants', 'magnet', 'screwBoss'];
 
 /** Nombre visible de cada entrada. */
 export function insertLabelKey(id: InsertId): TranslationKey {
@@ -60,6 +61,8 @@ export function insertLabelKey(id: InsertId): TranslationKey {
       return 'asis.title';
     case 'magnet':
       return 'magnet.title';
+    case 'screwBoss':
+      return 'turret.title';
     default:
       return `sidebar.primitive.${id}` as TranslationKey;
   }
@@ -80,6 +83,8 @@ export function insertTipKey(id: InsertId): TranslationKey | null {
       return 'asis.menuTip';
     case 'magnet':
       return 'magnet.menuTip';
+    case 'screwBoss':
+      return 'turret.menuTip';
     default:
       return null;
   }
@@ -105,6 +110,7 @@ export function startPanelExclusion(): () => void {
       { store: useText3DPanel, close: () => setText3DPanelOpen(false) },
       { store: useAssistantsPanel, close: closeAssistants },
       { store: useMagnetPanel, close: closeMagnetPanel },
+      { store: useScrewBossPanel, close: closeScrewBossPanel },
     ];
     const offs = panels.map((panel) =>
       panel.store.subscribe((s: { open: boolean }, prev: { open: boolean }) => {
@@ -133,6 +139,10 @@ export async function runInsert(id: InsertId): Promise<void> {
   }
   if (id === 'magnet') {
     openMagnetPanel();
+    return;
+  }
+  if (id === 'screwBoss') {
+    openScrewBossPanel();
     return;
   }
   if (id === 'svg' || id === 'image' || id === 'thread') {

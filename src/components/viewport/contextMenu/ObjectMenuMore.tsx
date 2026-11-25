@@ -12,11 +12,12 @@
 import { isPrintable, isSolid } from '../../../core/scene/objectRole';
 import { parametricStateOf } from '../../../core/scene/parametric';
 import React from 'react';
-import { Download, FileInput, HelpCircle, Magnet, MinusCircle, MoreHorizontal, PlusCircle, RefreshCw, Repeat2, WandSparkles } from 'lucide-react';
+import { CircleDot, Download, FileInput, HelpCircle, Magnet, MinusCircle, MoreHorizontal, PlusCircle, RefreshCw, Repeat2, WandSparkles } from 'lucide-react';
 import { t } from '../../../i18n';
 import { useKuraStore } from '../../../store/useKuraStore';
 import { repeatLabel } from '../../../store/repeatLabel';
 import { openMagnetPanel } from '../../../store/magnetPanel';
+import { openScrewBossPanel } from '../../../store/screwBossPanel';
 import { isTauriRuntime } from '../../../utils/platformBridge';
 import type { SceneObject } from '../../../types/kura';
 import { openAssistantEdit, isAssistantPiece } from '../../assistants/editActions';
@@ -69,6 +70,13 @@ export const ObjectMenuMore: React.FC<{
         tip={isSolid(target) ? t(language, 'magnet.menuTip') : t(language, 'magnet.needSolid')}
         disabled={!isSolid(target) || target.locked || busy}
         onSelect={run(() => void openMagnetPanel())}
+      />
+      <MenuItem
+        icon={<CircleDot size={14} aria-hidden="true" style={{ color: 'var(--accent-amber)' }} />}
+        label={t(language, 'turret.title')}
+        tip={isSolid(target) ? t(language, 'turret.menuTip') : t(language, 'turret.needSolid')}
+        disabled={!isSolid(target) || target.locked || busy}
+        onSelect={run(() => void openScrewBossPanel())}
       />
       <MenuItem
         icon={<FileInput size={14} aria-hidden="true" />}

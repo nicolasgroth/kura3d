@@ -22,6 +22,7 @@ import { X } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { useMagnetPanel } from '../../store/magnetPanel';
+import { useScrewBossPanel } from '../../store/screwBossPanel';
 import { useUserAxisGizmoColors } from './gizmoAxisColors';
 import { type Vec3 } from '../../types/kura';
 import { PaintBrushCursor } from './PaintBrushCursor';
@@ -32,6 +33,7 @@ import { overhangFacesFor } from '../../store/printReportSelectors';
 import { PrinterBedOverlay } from './PrinterBedOverlay';
 import { PreviewLayers } from './PreviewLayers';
 import { MagnetPlacementLayer } from './MagnetPlacementLayer';
+import { ScrewBossPlacementLayer } from './ScrewBossPlacementLayer';
 import { FitPreviewGhost } from '../fitToBed/FitPreviewGhost';
 import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
@@ -125,11 +127,14 @@ export const SceneContent: React.FC<{
   const operationOpen = useKuraStore((s) => s.activeDialog !== null);
   // Con el panel de imán abierto el clic coloca huecos: el gizmo no debe mover la pieza ni tapar la cara.
   const magnetOpen = useMagnetPanel((s) => s.open);
+  // Igual con la torreta: el clic coloca, el gizmo se oculta.
+  const screwBossOpen = useScrewBossPanel((s) => s.open);
   const showGizmo =
     activeTool === 'select' &&
     !pickingSurface &&
     !operationOpen &&
     !magnetOpen &&
+    !screwBossOpen &&
     Boolean(primaryObj) &&
     Boolean(activeTargetGroup) &&
     !primaryObj?.locked &&
@@ -218,6 +223,7 @@ export const SceneContent: React.FC<{
 
       <PreviewLayers />
       <MagnetPlacementLayer />
+      <ScrewBossPlacementLayer />
       <FitPreviewGhost />
       <SegmentHighlight />
       <OpenEdgesOverlay />
