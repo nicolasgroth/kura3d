@@ -46,6 +46,7 @@ import { RECETAS_ZH } from './recetas';
 import { ASISTENTES_ZH } from './asistentes';
 import { IMAN_ZH } from './iman';
 import { IMAN_UI3_ZH } from './imanUi3';
+import { TORRETA_ZH } from './torreta';
 import { BORDES_ZH } from './bordesPrimitivas';
 import { UX7_ZH } from './ux7';
 import { UX8_ZH } from './ux8';
@@ -113,6 +114,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...REDISENO3A_ZH,
   ...REDISENO3B_ZH,
   ...UX8_MENU_ZH,
+  ...TORRETA_ZH,
   // Marca y shell principal
   'app.tagline': '原生与网页端 3D 建模及 3D 打印工作室',
   'app.docTitle': 'Kura3D v0.5.0 — 原生 3D 建模工作室',

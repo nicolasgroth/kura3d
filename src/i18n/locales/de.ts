@@ -46,6 +46,7 @@ import { RECETAS_DE } from './recetas';
 import { ASISTENTES_DE } from './asistentes';
 import { IMAN_DE } from './iman';
 import { IMAN_UI3_DE } from './imanUi3';
+import { TORRETA_DE } from './torreta';
 import { BORDES_DE } from './bordesPrimitivas';
 import { UX7_DE } from './ux7';
 import { UX8_DE } from './ux8';
@@ -113,6 +114,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...REDISENO3A_DE,
   ...REDISENO3B_DE,
   ...UX8_MENU_DE,
+  ...TORRETA_DE,
   // Marca y shell principal
   'app.tagline': 'Natives & Web-3D-Modellierungsstudio für 3D-Druck',
   'app.docTitle': 'Kura3D v0.5.0 — Natives 3D-Modellierungsstudio',

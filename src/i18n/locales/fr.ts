@@ -46,6 +46,7 @@ import { RECETAS_FR } from './recetas';
 import { ASISTENTES_FR } from './asistentes';
 import { IMAN_FR } from './iman';
 import { IMAN_UI3_FR } from './imanUi3';
+import { TORRETA_FR } from './torreta';
 import { BORDES_FR } from './bordesPrimitivas';
 import { UX7_FR } from './ux7';
 import { UX8_FR } from './ux8';
@@ -113,6 +114,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...REDISENO3A_FR,
   ...REDISENO3B_FR,
   ...UX8_MENU_FR,
+  ...TORRETA_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kura3D v0.5.0 — Studio de Modélisation 3D Natif',

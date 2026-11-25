@@ -73,6 +73,7 @@ import type { OrientSliceState } from './slices/orientSlice';
 import type { RecipesSliceState } from './slices/recipesSlice';
 import type { BedProfilesSliceState } from './slices/bedProfilesSlice';
 import type { MagnetSliceState } from './slices/magnetSlice';
+import type { ScrewBossSliceState } from './slices/screwBossSlice';
 
 export type ActiveDialogType =
   | 'svg'
@@ -158,7 +159,7 @@ export interface BusyProgress {
 
 /** Vista previa de operaciones (declarada en `slices/previewSlice.ts`), fusionada al estado. */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface KuraStoreState extends PreviewSliceState, SplitSliceState, SplitJointsSliceState, SplitPrefsSliceState, FitToBedSliceState, FitCheckSliceState, OrientSliceState, RecipesSliceState, BedProfilesSliceState, MagnetSliceState, QuickActionsSliceState, MenuIdeasSliceState, GroupsSliceState, RepairSliceState, ViewPrefsSliceState, SmoothSliceState {}
+export interface KuraStoreState extends PreviewSliceState, SplitSliceState, SplitJointsSliceState, SplitPrefsSliceState, FitToBedSliceState, FitCheckSliceState, OrientSliceState, RecipesSliceState, BedProfilesSliceState, MagnetSliceState, QuickActionsSliceState, MenuIdeasSliceState, GroupsSliceState, RepairSliceState, ViewPrefsSliceState, SmoothSliceState, ScrewBossSliceState {}
 
 export interface KuraStoreState {
   // Estado del motor geométrico

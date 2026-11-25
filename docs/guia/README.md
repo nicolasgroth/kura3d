@@ -20,6 +20,7 @@ Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una ti
 | [Generadores](generadores.md) | Texto 3D, SVG, imagen a 3D, roscas ISO y moldes |
 | [Asistentes](asistentes.md) | Crear una caja con tapa, un llavero o una placa de enchufe respondiendo unas preguntas |
 | [Alojamiento de imán](alojamiento-de-iman.md) | Hueco para un imán con un clic sobre una cara: medidas, holgura, oculto y tus preajustes |
+| [Torreta para tornillo](torreta-para-tornillo.md) | Poste con agujero para tornillo directo o inserto roscado, con un clic sobre una cara |
 | [Exportar](exportar.md) | STL, 3MF con grupos y colores, selección o escena |
 | [Guardar y recuperar](guardar-y-recuperar.md) | Proyecto `.kura` y borrador de recuperación |
 

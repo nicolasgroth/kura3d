@@ -808,11 +808,43 @@ export interface MagnetPocketParams {
   hidden: boolean;
 }
 
-/** Agregado colocado sobre una cara (hoy, alojamiento de imán como pieza negativa). */
-export interface AddonMetadata {
+/** Agregado colocado sobre una cara: alojamiento de imán (negativo) o una de las dos piezas de una torreta. */
+export type AddonMetadata = MagnetAddonMetadata | ScrewBossAddonMetadata;
+
+/** Alojamiento de imán como pieza negativa. */
+export interface MagnetAddonMetadata {
   kind: 'magnet_pocket';
   params: MagnetPocketParams;
   /** Pieza sobre la que se colocó (puede ya no existir). */
+  hostId?: string;
+}
+
+/**
+ * Torreta para tornillo: tipo de sujeción, medida nominal, agujero y poste. `holeDiameterMm` y `holeDepthMm` salen
+ * de la tabla de medidas (o del preajuste del usuario). Única definición: `ScrewBossParams` de `core/addons/screwBoss`.
+ */
+export interface ScrewBossParams {
+  /** `screw`: tornillo directo al plástico (agujero piloto); `insert`: inserto roscado de latón puesto con calor. */
+  type: 'screw' | 'insert';
+  /** Medida métrica nominal (2, 2,5, 3, 4, 5). */
+  nominalMm: number;
+  holeDiameterMm: number;
+  holeDepthMm: number;
+  /** Alto del poste sobre la cara. */
+  heightMm: number;
+  outerDiameterMm: number;
+}
+
+/**
+ * Una pieza de la torreta: el poste (sólido que se une a la pieza al aplicar las restas) o el agujero (negativo).
+ * `anchorMm`: distancia sobre el eje +Y local desde la base del objeto hasta el punto de la cara clicada (lo usa
+ * el seguimiento de la pieza).
+ */
+export interface ScrewBossAddonMetadata {
+  kind: 'screw_boss';
+  part: 'post' | 'hole';
+  params: ScrewBossParams;
+  anchorMm: number;
   hostId?: string;
 }
 

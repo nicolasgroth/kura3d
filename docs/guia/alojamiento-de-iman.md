@@ -71,4 +71,4 @@ El hueco redondo es un polígono de 64 lados que *rodea* el círculo pedido: su 
 - **El hueco quedó en una cara que no querías:** `Ctrl+Z` y vuelve a hacer clic. También puedes mover el negativo como cualquier pieza antes de aplicar las restas.
 - **El imán no entra o queda suelto:** cambia la holgura. Las medidas de los imanes varían entre marcas; mide el tuyo con un pie de metro antes de imprimir.
 
-Anterior: [Asistentes](asistentes.md) · Siguiente: [Exportar](exportar.md) · [Índice](README.md)
+Anterior: [Asistentes](asistentes.md) · Siguiente: [Torreta para tornillo](torreta-para-tornillo.md) · [Índice](README.md)

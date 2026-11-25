@@ -11,6 +11,7 @@ import { EDGE_SCOPES, EDGE_STYLES, TEXT_ALIGN_OPTIONS } from '../engine/primitiv
 import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
 import { REFERENCE_OPACITY } from '../core/scene/objectRole';
 import { sanitizeMagnetParams } from '../core/addons/magnetPocket';
+import { sanitizeScrewBossParams } from '../core/addons/screwBoss';
 import { RECIPE_PROVENANCE_LIMITS } from '../types/recipeProvenance';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
 
@@ -171,13 +172,24 @@ const recipeMetadata = shape({
   meshFingerprint: optional(short(RP.maxIdLength)),
 });
 // Agregado (`metadata.addon`): alojamiento de imán con sus medidas; los rangos los valida `sanitizeMagnetParams`.
-const addonMetadata = shape({
+const magnetAddonMetadata = shape({
   kind: oneOf('magnet_pocket'),
   params: (v) => sanitizeMagnetParams(v) !== null && shape({
     shape: str, sizeMm: finite, heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
   })(v),
   hostId: optional(id),
 });
+// Torreta para tornillo (poste o agujero); los rangos los valida `sanitizeScrewBossParams`, el ancla es acotada.
+const screwBossAddonMetadata = shape({
+  kind: oneOf('screw_boss'),
+  part: oneOf('post', 'hole'),
+  params: (v) => sanitizeScrewBossParams(v) !== null && shape({
+    type: str, nominalMm: finite, holeDiameterMm: finite, holeDepthMm: finite, heightMm: finite, outerDiameterMm: finite,
+  })(v),
+  anchorMm: (v) => finite(v) && Math.abs(v) <= 1000,
+  hostId: optional(id),
+});
+const addonMetadata: Rule = (v) => magnetAddonMetadata(v) || screwBossAddonMetadata(v);
 const objectExtra = shape({
   split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata), recipe: optional(recipeMetadata), addon: optional(addonMetadata),
 });

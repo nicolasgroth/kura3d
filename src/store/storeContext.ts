@@ -16,7 +16,7 @@ import { segmentationMatchesMesh } from '../engine/segmentationGuards';
 import { t, type TranslationKey } from '../i18n';
 import { limitsToBytes, trimHistory } from '../project/historyBudget';
 import { ProjectCodecError } from '../project/projectSchema';
-import { followMagnetHosts } from '../core/addons/magnetFollow';
+import { followAddonHosts } from '../core/addons/addonFollow';
 import { applySceneChange, type OperationContext, type SceneChange } from '../core/operations';
 import { getEngineClient, isEngineCancelled, type EngineClient, type EngineJob } from '../core/operations/engineClient';
 import type { EngineTaskArgs, EngineTaskName, EngineTaskResult } from '../core/operations/engineTasks';
@@ -144,7 +144,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   const keepMagnetsOnHosts = (before: SceneObject[] | undefined) => {
     const objects = get().objects;
     if (!before || objects === before) return;
-    const next = followMagnetHosts(before, objects);
+    const next = followAddonHosts(before, objects);
     if (next !== objects) rawSet({ objects: next });
   };
   const set: SetState = ((...args: Parameters<SetState>) => {

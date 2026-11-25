@@ -51,6 +51,7 @@ import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
 import { ASISTENTES_EN, ASISTENTES_ES } from './locales/asistentes';
 import { IMAN_EN, IMAN_ES } from './locales/iman';
 import { IMAN_UI3_EN, IMAN_UI3_ES } from './locales/imanUi3';
+import { TORRETA_EN, TORRETA_ES } from './locales/torreta';
 import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
 import { UX8_EN, UX8_ES } from './locales/ux8';
@@ -120,6 +121,7 @@ export const TRANSLATIONS_ES = {
   ...REDISENO3A_ES,
   ...REDISENO3B_ES,
   ...UX8_MENU_ES,
+  ...TORRETA_ES,
   // Marca y shell principal
   'app.tagline': 'Estudio de Modelado 3D Nativo e Impresión',
   'app.docTitle': 'Kura3D v0.5.0 — Estudio de Modelado 3D Nativo',
@@ -1459,6 +1461,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...REDISENO3A_EN,
   ...REDISENO3B_EN,
   ...UX8_MENU_EN,
+  ...TORRETA_EN,
   'app.tagline': 'Native & Web 3D Modeling Studio for 3D Printing',
   'app.docTitle': 'Kura3D v0.5.0 — Native 3D Modeling Studio',
   'app.untitled': 'Untitled Scene',
