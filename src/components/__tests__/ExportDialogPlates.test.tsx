@@ -23,7 +23,7 @@ const PLATES: ScenePlate[] = [
 
 function openWith(refs: Array<string | undefined>, format: 'stl' | '3mf', plates = PLATES) {
   const objects = refs.map((ref, i) => ({ ...fakeBox(`o${i}`, `Pieza ${i}`), ...(ref ? { plateRef: ref } : {}) }));
-  const exportModel = vi.fn(async () => true);
+  const exportModel = vi.fn(async (_request: unknown) => true);
   useKuraStore.setState({ objects, selectedIds: [], plates, language: 'es', exportModel } as never);
   openExportDialog(format, 'scene');
   render(<ExportDialog open onClose={() => undefined} />);
