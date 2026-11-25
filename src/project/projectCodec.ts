@@ -11,10 +11,10 @@ import { computeMeshStats } from '../engine/primitives';
 import { MAX_GROUPS, reconcileGroups } from '../core/scene/groups';
 import { MAX_PLATES, reconcilePlates } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
-import type { ScenePlate } from '../types/plates';
+import type { SceneLayout, ScenePlate } from '../types/plates';
 import { FILE_HISTORY_MAX_STEPS } from './historyBudget';
 import {
-  check, color, id, limit, MAX_PROJECT_BYTES, nat, ProjectCodecError, record, shape, validSettings, validStoredGroups, validStoredObject, validStoredPlates,
+  check, color, id, limit, MAX_PROJECT_BYTES, nat, ProjectCodecError, record, shape, validSettings, validStoredGroups, validStoredLayout, validStoredObject, validStoredPlates,
   type ObjectMetadata, type ProjectDocument, type ProjectSceneSnapshot,
 } from './projectSchema';
 import { migrateStoredRole, ROLE_FORMAT_VERSION } from './projectRoleMigration';
@@ -46,6 +46,7 @@ const HEADER_SIZE = 16;
 // v4: placas de impresión (`plates` en cada instantánea y `plateRef` en cada objeto). Se escribe SOLO si el
 // proyecto usa placas (en la escena o en su historial); si no, se sigue escribiendo la 3 para que una
 // versión anterior de la app lo abra. Un archivo anterior a v4 no puede traer campos de placas.
+// También v4: las dos poses (`restPose` en cada objeto y `layout` = 'assembly' en la instantánea).
 const VERSION = ROLE_FORMAT_VERSION;
 export const PLATES_FORMAT_VERSION = 4;
 const READABLE_VERSIONS = new Set([1, 2, ROLE_FORMAT_VERSION, PLATES_FORMAT_VERSION]);
@@ -69,7 +70,7 @@ type StoredMesh = {
   faceColors?: { palette: string[]; indices: number };
 };
 type StoredObject = ObjectMetadata & { mesh: number };
-type Snapshot<T> = { objects: T[]; selectedIds: string[]; groups?: SceneGroup[]; plates?: ScenePlate[] };
+type Snapshot<T> = { objects: T[]; selectedIds: string[]; groups?: SceneGroup[]; plates?: ScenePlate[]; layout?: SceneLayout };
 const maybeIndex = (v: unknown) => v === undefined || nat(v);
 const colorTable = shape({ palette: Array.isArray, indices: nat });
 const validMesh = shape({
@@ -79,7 +80,7 @@ const validBlock = shape({
   kind: (v) => v === 'f32' || v === 'u32', length: nat,
 }) as (v: unknown) => v is Block;
 const optionalList = (v: unknown) => v === undefined || Array.isArray(v);
-const validSnapshot = shape({ objects: Array.isArray, selectedIds: Array.isArray, groups: optionalList, plates: optionalList }) as
+const validSnapshot = shape({ objects: Array.isArray, selectedIds: Array.isArray, groups: optionalList, plates: optionalList, layout: validStoredLayout }) as
   (v: unknown) => v is Snapshot<unknown>;
 
 function copyWords(src: Uint8Array, dest: Uint8Array) {
@@ -140,12 +141,15 @@ function mapSnapshot<I, O extends { id: string }>(snapshot: Snapshot<I>, mapObje
     check(validStoredPlates(snapshot.plates), 'plates');
     out.plates = snapshot.plates.map((p) => ({ ...p, origin: [p.origin[0], p.origin[1]], ...(p.bed ? { bed: { ...p.bed } } : {}) }));
   }
+  // Modo de vista: solo se escribe 'assembly' ('print' es el de siempre y equivale a no tenerlo).
+  if (snapshot.layout === 'assembly') out.layout = 'assembly';
   return out;
 }
 
-/** true si la instantánea usa placas (lista o alguna referencia): obliga a escribir la versión 4. */
+/** true si la instantánea usa placas o dos poses (lista, referencia, `restPose` o modo armado): obliga a la versión 4. */
 function usesPlates(s: ProjectSceneSnapshot): boolean {
-  return (s.plates?.length ?? 0) > 0 || s.objects.some((o) => o.plateRef !== undefined);
+  return (s.plates?.length ?? 0) > 0 || s.layout === 'assembly'
+    || s.objects.some((o) => o.plateRef !== undefined || o.restPose !== undefined);
 }
 
 /** Escena con grupos saneados (al abrir): huérfanos, ciclos, profundidad y orden contiguo. */
@@ -255,6 +259,7 @@ export function encodeProject(doc: ProjectDocument): Uint8Array {
     objects: doc.objects, selectedIds: doc.selectedIds,
     ...(doc.groups?.length ? { groups: doc.groups } : {}),
     ...(doc.plates?.length ? { plates: doc.plates } : {}),
+    ...(doc.layout === 'assembly' ? { layout: doc.layout } : {}),
   });
   const past = Array.from(doc.past, snapshot);
   const future = Array.from(doc.future, snapshot);
@@ -357,7 +362,7 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
     const stored = migrateStoredRole(raw, version);
     check(validStoredObject(stored) && stored.mesh < assets.length, `object:${String((stored as { name?: unknown }).name)}`);
     check(version >= 2 || stored.parametric === undefined, `object:${String(stored.name)}`);
-    check(version >= PLATES_FORMAT_VERSION || stored.plateRef === undefined, `object:${String(stored.name)}`);
+    check(version >= PLATES_FORMAT_VERSION || (stored.plateRef === undefined && stored.restPose === undefined), `object:${String(stored.name)}`);
     const { mesh, geometryKey } = assets[stored.mesh];
     usedMeshes.add(stored.mesh);
     let cache = stats.get(geometryKey);
@@ -370,6 +375,7 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
   function snapshot(s: unknown) {
     check(validSnapshot(s));
     check(version >= PLATES_FORMAT_VERSION || s.plates === undefined, 'plates');
+    check(version >= PLATES_FORMAT_VERSION || s.layout === undefined, 'layout');
     return reconcileSnapshot(mapSnapshot(s, restoreObject));
   }
   const document = { ...settings, ...snapshot(current), past: past.map(snapshot), future: future.map(snapshot) };

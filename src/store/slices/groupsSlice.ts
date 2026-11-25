@@ -234,7 +234,7 @@ export function createGroupsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         clean.set(p.id, patch);
       }
       if (options.recordHistory) pushHistory();
-      else if (!runtime.transformSnapshotBeforeDrag) runtime.transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds, s.groups, s.plates);
+      else if (!runtime.transformSnapshotBeforeDrag) runtime.transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds, s.groups, s.plates, s.layout);
       set((st) => ({ objects: st.objects.map((o) => (clean.has(o.id) ? { ...o, ...clean.get(o.id) } : o)) }));
       return true;
     },

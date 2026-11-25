@@ -20,6 +20,7 @@ import type { KuraCommandRequest, KuraCommandResponse, SceneObject } from '../ty
 import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { CommandError, type CommandErrorCode } from './commandErrors';
 import { selectExportTargets } from './exportTargets';
+import { printPosedObjects } from './sceneLayout';
 import { simplifyReportToUser } from '../core/bus/simplifySchema';
 import type { SimplifyReport } from '../engine/simplify';
 import * as schema from './commandSchemas';
@@ -100,8 +101,9 @@ function required<T>(value: T, command: string): NonNullable<T> {
 }
 
 function exportTargets(deps: CommandBusDeps, onlySelected: boolean): { targets: SceneObject[]; skippedHoles: number; skippedReferences: number } {
-  const { objects, selectedIds } = deps.get();
-  const selection = selectExportTargets(objects, selectedIds, onlySelected);
+  // Se exporta siempre desde las poses de impresión, sea cual sea el modo de vista.
+  const state = deps.get();
+  const selection = selectExportTargets(printPosedObjects(state), state.selectedIds, onlySelected);
   if (selection.targets.length === 0) throw new CommandError('precondition', 'toast.nothingToExport');
   return selection;
 }

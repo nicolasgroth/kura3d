@@ -8,6 +8,7 @@
  * @license MIT
  */
 
+import { DEFAULT_LAYOUT } from '../../core/scene/layoutPoses';
 import { applyPaintDeltaStep, isPaintDeltaStep } from '../historySteps';
 import { cloneSnapshot } from '../projectDocument';
 import { carryStepLabel } from '../historyLabels';
@@ -38,11 +39,11 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
       const { past, future } = limitHistory(state.past.slice(0, -1), objects ? [step, ...state.future] : state.future);
       return { objects: objects ?? state.objects, activeSegmentation: null, past, future };
     }
-    const current = cloneSnapshot(state.objects, state.selectedIds, state.groups, state.plates);
+    const current = cloneSnapshot(state.objects, state.selectedIds, state.groups, state.plates, state.layout);
     // La acción deshecha conserva su nombre en el futuro (desplegable del historial).
     carryStepLabel(step, current);
     const { past, future } = limitHistory(state.past.slice(0, -1), [current, ...state.future]);
-    return { objects: step.objects, selectedIds: step.selectedIds, groups: step.groups ?? [], plates: step.plates ?? [], activeSegmentation: null, past, future };
+    return { objects: step.objects, selectedIds: step.selectedIds, groups: step.groups ?? [], plates: step.plates ?? [], layout: step.layout ?? DEFAULT_LAYOUT, activeSegmentation: null, past, future };
   };
 
   /** Un paso hacia adelante: el estado resultante (o `null` si no hay futuro). */
@@ -54,10 +55,10 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
       const { past, future } = limitHistory(objects ? [...state.past, step] : state.past, state.future.slice(1));
       return { objects: objects ?? state.objects, activeSegmentation: null, past, future };
     }
-    const current = cloneSnapshot(state.objects, state.selectedIds, state.groups, state.plates);
+    const current = cloneSnapshot(state.objects, state.selectedIds, state.groups, state.plates, state.layout);
     carryStepLabel(step, current);
     const { past, future } = limitHistory([...state.past, current], state.future.slice(1));
-    return { objects: step.objects, selectedIds: step.selectedIds, groups: step.groups ?? [], plates: step.plates ?? [], activeSegmentation: null, past, future };
+    return { objects: step.objects, selectedIds: step.selectedIds, groups: step.groups ?? [], plates: step.plates ?? [], layout: step.layout ?? DEFAULT_LAYOUT, activeSegmentation: null, past, future };
   };
   return {
     historyLimits: loadInitialHistoryLimits(),
@@ -104,8 +105,8 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
           steps += steps < 0 ? 1 : -1;
         }
         if (current === state) return state;
-        const { objects, selectedIds, groups, plates, activeSegmentation, past, future } = current;
-        return { objects, selectedIds, groups, plates, activeSegmentation, past, future };
+        const { objects, selectedIds, groups, plates, layout, activeSegmentation, past, future } = current;
+        return { objects, selectedIds, groups, plates, layout, activeSegmentation, past, future };
       });
       ensureRestoredInView(before);
     },
@@ -121,7 +122,7 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
       const snap = runtime.transformSnapshotBeforeDrag;
       if (!snap) return;
       runtime.transformSnapshotBeforeDrag = null;
-      set({ objects: snap.objects, selectedIds: snap.selectedIds, groups: snap.groups ?? [], plates: snap.plates ?? [] });
+      set({ objects: snap.objects, selectedIds: snap.selectedIds, groups: snap.groups ?? [], plates: snap.plates ?? [], layout: snap.layout ?? DEFAULT_LAYOUT });
     },
   };
 }

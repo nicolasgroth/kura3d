@@ -189,7 +189,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   };
   const pushHistory = () => {
     const state = get();
-    pushHistoryStep(cloneSnapshot(state.objects, state.selectedIds, state.groups, state.plates));
+    pushHistoryStep(cloneSnapshot(state.objects, state.selectedIds, state.groups, state.plates, state.layout));
   };
 
   const operationErrors = createOperationErrorTracker();
