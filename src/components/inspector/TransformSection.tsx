@@ -38,6 +38,8 @@ import {
 import { RelativeTransformFields } from './RelativeTransformFields';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { UnitDoubtLink } from './UnitDoubtLink';
+import { displayPlate, fromPlateRelative, plateOffset, toPlateRelative } from './plateRelativePosition';
+import '../../styles/plateBadge.css';
 
 /** Giro máximo aceptado por campo (grados): 100 vueltas. */
 const ROTATION_LIMIT_DEG = 36000;
@@ -56,6 +58,8 @@ export const TransformSection: React.FC<InspectorSectionProps & { focus?: Transf
   const proportionalScale = useKuraStore((s) => s.proportionalScale);
   const toggleProportionalScale = useKuraStore((s) => s.toggleProportionalScale);
   const mirrorObject = useKuraStore((s) => s.mirrorObject);
+  const plates = useKuraStore((s) => s.plates);
+  const layout = useKuraStore((s) => s.layout);
   const isBusy = Boolean(busyOperation);
   const stepUnit = getUnitStep(unitSystem);
   const unitLabel = getUnitLabel(unitSystem);
@@ -67,7 +71,10 @@ export const TransformSection: React.FC<InspectorSectionProps & { focus?: Transf
     : t(language, 'inspector.field.scale');
   const transformDisabled = primary.locked || isBusy;
   // Valores en ejes del usuario (X derecha, Y fondo, Z arriba); el objeto guarda los internos.
-  const userPosition = toUserPosition(primary.position);
+  // Con 2 o más placas la posición se muestra (y se edita) respecto del centro de la placa de la pieza.
+  const shownPlate = displayPlate(plates, primary.plateRef, layout);
+  const offset = plateOffset(shownPlate);
+  const userPosition = toUserPosition(toPlateRelative(primary.position, offset));
   const userRotation = toUserRotation(primary.rotation);
   const userScale = toUserScale(primary.scale);
   const userDimensions = toUserSize(primary.stats.dimensionsMm);
@@ -76,7 +83,7 @@ export const TransformSection: React.FC<InspectorSectionProps & { focus?: Transf
     if (!Number.isFinite(millimeters) || millimeters === userPosition[axisIdx]) return;
     const nextUser: Vec3 = [...userPosition];
     nextUser[axisIdx] = millimeters;
-    setObjectTransform(primary.id, { position: fromUserPosition(nextUser) }, !modifiers?.isScrubbing);
+    setObjectTransform(primary.id, { position: fromPlateRelative(fromUserPosition(nextUser), offset) }, !modifiers?.isScrubbing);
   };
   const handleRotChange = (axisIdx: 0 | 1 | 2, deg: number, modifiers?: PrecisionModifierState) => {
     const radians = THREE.MathUtils.degToRad(deg);
@@ -153,7 +160,7 @@ export const TransformSection: React.FC<InspectorSectionProps & { focus?: Transf
                 (value, index) => value + toMm(delta[index], unitSystem),
               ) as Vec3;
               if (position.every(Number.isFinite)) {
-                setObjectTransform(primary.id, { position: fromUserPosition(position) }, true);
+                setObjectTransform(primary.id, { position: fromPlateRelative(fromUserPosition(position), offset) }, true);
               }
             }}
           />
@@ -161,7 +168,7 @@ export const TransformSection: React.FC<InspectorSectionProps & { focus?: Transf
           <div className="kura-vec3-grid">
             {AXES.map((axis, idx) => (
               <PrecisionNumberInput
-                key={`${primary.id}:${unitSystem}:${axis}`}
+                key={`${primary.id}:${unitSystem}:${axis}:${shownPlate?.id ?? ''}`}
                 prefix={axis.toUpperCase()}
                 axisTone={axis}
                 step={stepUnit}
@@ -180,6 +187,11 @@ export const TransformSection: React.FC<InspectorSectionProps & { focus?: Transf
               />
             ))}
           </div>
+        )}
+        {shownPlate && (
+          <small className="kura-plate-relative-note" data-testid="plate-relative-note" title={t(language, 'plates.inspector.relativeTip')}>
+            {t(language, 'plates.inspector.relative', { name: shownPlate.name })}
+          </small>
         )}
       </div>
 
