@@ -715,3 +715,19 @@ Sonnet · 55 min · 223 k. Sobre `main` a69f6f3, a 1440 y 1024 px. Dejó 27 reco
 Corrección de Orientar (Opus · 27 min · 251 k): la medida «hundida 10,6 mm» venía del ayudante de la prueba (caja envolvente girada); la malla real quedaba en Y = 0. El defecto real era recomendar una pose apoyada solo en aristas: ahora «estable» exige base real y las opciones sin base van al final con su aviso. El bloqueo de más de 100 s no se reprodujo: analizar y aplicar una malla de 299 mil triángulos tarda 1,9 s con 45 ms en el hilo principal. Queda una mejora pendiente: cancelar un análisis termina el Worker compartido y lo recrea, lo que en desarrollo ocurre cada vez que se abre el panel.
 
 Otros consumos: cambio de nombre (Haiku · 14 min · 164 k), Simplificar por modos (Opus · 36 min · 277 k), frases, logo y aviso al importar (Sonnet · 12 min · 141 k).
+
+## 25-nov-2026 · QA25-B en navegador (Simplificar, imanes del corte, agregados, torreta)
+
+Sonnet · 28 min · 203 k. Sobre `main` a555a27. **Aprobada**, sin bloqueos duros ni fallos mayores. Dejó 14 recorridos en `e2e/qa25b-*.spec.ts`, todos en verde.
+
+| Funcionalidad | Veredicto | Evidencia principal |
+|---|---|---|
+| Simplificar por modos | Aprobada con observaciones | Ocarina real 38 144 → 18 938 triángulos al 50 %, un paso de deshacer; cancelar a mitad en 477 mil triángulos no deja restos |
+| Imanes como unión del corte | Aprobada | Alojamientos Ø 5,2 × 2,2 mm enfrentados y coaxiales en las dos piezas, ambas cerradas; si no cabe, lo avisa y deja la unión para pegar |
+| Colgar en el muro y paso de cable | Aprobada con observación | Avisos correctos, preajustes propios, el agregado sigue a la pieza al moverla y girarla |
+| Torreta para tornillo | Aprobada | Al aplicar restas queda una sola pieza con nombre, color, material y grupo intactos (la sospecha de la revisión de código no se reproduce) |
+
+Observaciones menores, pendientes: (1) con «Por cantidad» el aviso flotante sigue hablando de tolerancia; (2) el informe de «sin pérdida» no aplicado muestra tolerancia y volumen 0 %, datos que no aportan; (3) queda una cara grabada de 0,4 mm en el plano del corte con imanes (probable etiqueta de la unión), sin confirmar si puede cruzar un alojamiento; (4) el paso de cable en una cara curva avisa «cerca del borde» sin estarlo; (5) torreta sin grupo previo deja un grupo de un solo miembro.
+
+No cubierto: aviso de agujero cerrado en Simplificar, cantidad manual de imanes y vista de armado, caras inclinadas en agregados, textos en francés, hindi y chino.
+
