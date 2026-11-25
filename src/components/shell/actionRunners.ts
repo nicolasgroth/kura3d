@@ -105,6 +105,9 @@ export function runAction(id: ActionId): void {
     case 'detect':
       if (primary) void state.detectObjectStructures(primary);
       return;
+    case 'orient':
+      // Solo opciones: el panel calcula al abrirse y el usuario aplica desde allí.
+      return;
     case 'fitCheck':
       // Bajo pedido: el panel muestra las opciones y el usuario comprueba desde allí.
       return;

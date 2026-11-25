@@ -28,6 +28,9 @@ export interface OrientApplyTaskArgs {
   keepXY?: boolean;
 }
 
+export type { OrientOverhangFacesArgs } from '../../engine/orient';
+export { orientOverhangFaces } from '../../engine/orient';
+
 /** Orientaciones ordenadas de la pieza (solo lectura). */
 export function orientForPrint(a: OrientForPrintTaskArgs): OrientAnalysis {
   return analyzeOrientations(a.obj, a.options);

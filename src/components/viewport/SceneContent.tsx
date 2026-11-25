@@ -37,6 +37,7 @@ import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
 import { OpenEdgesOverlay } from './OpenEdgesOverlay';
 import { FitCheckHighlight } from '../fitCheck/FitCheckHighlight';
+import { OrientOverhangLayer } from '../orient/OrientOverhangLayer';
 import { GroupTransformGizmo } from './GroupTransformGizmo';
 import { GroupEnterOnDoubleClick } from './GroupEnterOnDoubleClick';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
@@ -222,6 +223,7 @@ export const SceneContent: React.FC<{
       <SegmentHighlight />
       <OpenEdgesOverlay />
       <FitCheckHighlight />
+      <OrientOverhangLayer />
 
       {activeTool === 'paint' && <PaintBrushCursor />}
       {activeTool === 'measure' && <MeasureOverlay />}

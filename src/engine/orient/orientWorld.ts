@@ -32,7 +32,7 @@ export interface OrientWorld {
   hullFaces: HullFace[];
 }
 
-function worldPositions(input: OrientInput): Float64Array {
+export function worldPositions(input: OrientInput): Float64Array {
   const m = new THREE.Matrix4().compose(
     new THREE.Vector3(...input.position),
     new THREE.Quaternion().setFromEuler(new THREE.Euler(input.rotation[0], input.rotation[1], input.rotation[2], 'XYZ')),
@@ -49,7 +49,7 @@ function worldPositions(input: OrientInput): Float64Array {
   return out;
 }
 
-function massProperties(p: Float64Array, idx: ArrayLike<number>): { volume: number; com: Vec3 } {
+export function massProperties(p: Float64Array, idx: ArrayLike<number>): { volume: number; com: Vec3 } {
   let v6 = 0, cx = 0, cy = 0, cz = 0;
   for (let t = 0; t + 2 < idx.length; t += 3) {
     const a = idx[t] * 3, b = idx[t + 1] * 3, c = idx[t + 2] * 3;

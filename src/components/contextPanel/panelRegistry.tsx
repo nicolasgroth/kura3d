@@ -21,6 +21,7 @@ import { ModulesPanel } from '../inspector/ModulesPanel';
 import { PrintCheckPanel } from '../inspector/PrintCheckPanel';
 import { StructureDetectionPanel } from '../inspector/StructureDetectionPanel';
 import { TexturePanel } from '../inspector/TexturePanel';
+import { OrientPanel } from '../orient/OrientPanel';
 
 export interface PanelContentEntry {
   /** Título del panel (y del anuncio). */
@@ -41,6 +42,7 @@ const PANEL_CONTENT = new Map<ActionId, PanelContentEntry>([
   ['validate', { title: 'panel.title.validate', render: (p) => <PrintCheckPanel primary={p.primary} /> }],
   ['detect', { title: 'panel.title.detect', render: (p) => <StructureDetectionPanel {...p} /> }],
   ['fitCheck', { title: 'fitCheck.ui.title', renderScene: () => <FitCheckPanel /> }],
+  ['orient', { title: 'orient.ui.title', render: (p) => <OrientPanel primary={p.primary} /> }],
 ]);
 
 /** Registra (o reemplaza) el contenido de una acción del panel. */

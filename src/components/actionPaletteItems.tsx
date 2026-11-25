@@ -37,6 +37,7 @@ type StateSlice = Pick<KuraStoreState, 'objects' | 'selectedIds' | 'groups' | 'b
 
 /** Palabras extra con las que se busca una acción (además de su nombre): sinónimos de uso, no del rótulo. */
 const EXTRA_KEYWORDS: Partial<Record<ActionId, string>> = {
+  orient: 'orientar orientación soporte voladizo apoyar girar acostar orient orientation support overhang rotate lay flat',
   fitCheck: 'encaje holgura tolerancia ajuste choque interferencia justo fit clearance tolerance interference tight',
 };
 

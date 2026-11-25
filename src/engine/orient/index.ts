@@ -9,4 +9,5 @@
 
 export * from './orientTypes';
 export { analyzeOrientations, planOrientTransform, ORIENT_DEFAULTS } from './orientForPrint';
+export { orientOverhangFaces, OVERHANG_FACES_MAX, type OrientOverhangFaces, type OrientOverhangFacesArgs } from './orientOverhangFaces';
 export { ORIENT_WEIGHTS, ORIENT_EQUIVALENCE } from './orientScore';

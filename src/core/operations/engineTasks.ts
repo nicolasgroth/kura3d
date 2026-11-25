@@ -37,7 +37,7 @@ import { smoothObject, type SmoothTaskOptions } from './smoothOperations';
 import { extractStructure, generateMold, planeCut, splitByColor, splitDisconnected, splitStructures } from './partOperations';
 import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from './splitOperations';
 import { runFitToBed, type FitToBedTaskArgs } from './fitOperations';
-import { orientApplyChange, orientForPrint, type OrientApplyTaskArgs, type OrientForPrintTaskArgs } from './orientOperations';
+import { orientApplyChange, orientForPrint, orientOverhangFaces, type OrientApplyTaskArgs, type OrientForPrintTaskArgs, type OrientOverhangFacesArgs } from './orientOperations';
 import { runFitCheck, type FitCheckInput } from '../../engine/fitCheck';
 import { runRecipe } from '../recipes/run/executeRecipe';
 import { createMagnetPocket, type MagnetPocketInput } from './magnetOperations';
@@ -146,6 +146,7 @@ export const ENGINE_TASKS = {
   // Orientar para imprimir: analizar es solo lectura; aplicar devuelve un parche de transformación.
   orientForPrint: (_ctx: OperationContext, a: OrientForPrintTaskArgs) => orientForPrint(a),
   orientApply: (_ctx: OperationContext, a: OrientApplyTaskArgs) => orientApplyChange(a),
+  orientOverhangFaces: (_ctx: OperationContext, a: OrientOverhangFacesArgs) => orientOverhangFaces(a),
   // Receta completa (validar → resolver → escena de trabajo → salidas): el resultado es un SceneChange de solo objetos nuevos.
   runRecipe: (ctx: OperationContext, a: Omit<RunInput, 'signal' | 'now'>) => runRecipe(ctx, a),
   validateAssembly: (_ctx: OperationContext, a: { objects: SceneObject[] }) => engine.storedAssemblyResponse(a.objects),
