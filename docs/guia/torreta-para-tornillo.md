@@ -55,6 +55,16 @@ Son valores de partida. Los agujeros impresos en FDM suelen salir más chicos qu
 
 Cada torreta es un paso de deshacer: `Ctrl+Z` quita solo la última, con su poste y su agujero.
 
+### Colocar sin ratón
+
+Si no puedes apuntar con el cursor (usas el teclado, o la cara es difícil de alcanzar), el panel trae el bloque **Colocar sin ratón**:
+
+1. Selecciona la pieza donde irá la torreta.
+2. En **Cara** elige **Arriba**, **Abajo**, **Frente**, **Atrás**, **Izquierda** o **Derecha**.
+3. Pulsa **Colocar en el centro de la cara**. Se coloca con las medidas que ves en el panel y es un paso de deshacer. Si no hay una pieza seleccionada, el panel dice «Selecciona primero la pieza donde colocarlo»; si esa cara no existe en la pieza, dice «No se encontró esa cara en la pieza: prueba con otra».
+
+En una cara curva la torreta sigue la superficie, no una faceta de la malla: queda perpendicular a la cara en ese punto.
+
 ### Avisos
 
 Al colocar, Kurra Studio revisa la torreta y te avisa sin impedir que la coloques:

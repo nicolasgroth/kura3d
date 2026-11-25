@@ -75,12 +75,13 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - **Asistentes**: crea una caja con tapa, un llavero o una placa de enchufe respondiendo unas preguntas, con reglas en vivo y un solo paso de deshacer (**Insertar › Asistentes**).
 - **Alojamiento de imán**: un clic sobre una cara deja el hueco para un imán redondo o cuadrado, con holgura, opción oculta y aviso de pared mínima; tus medidas se guardan como preajustes (**Insertar › Alojamiento de imán**).
 - **Torreta para tornillo** (en revisión): un clic sobre una cara deja un poste con agujero para tornillo directo o inserto roscado (tabla de medidas M2 a M5 por verificar), con avisos de pared, agujero que atraviesa y choques; al aplicar las restas queda una sola pieza (**Insertar › Torreta para tornillo**).
+- **Colocar agregados sin ratón** (en revisión): imán, torreta, colgar en el muro y paso de cable traen un bloque con selector de cara y un botón que los deja en el centro de esa cara; en caras curvas siguen la superficie. La torreta suma tornillo directo M5 (por verificar).
 - **Colgar en el muro** (en revisión): un clic sobre la cara que va contra la pared deja un ojo de cerradura (entrada para la cabeza, ranura del cuello hacia arriba y cámara detrás) para tornillos de 3 a 5 mm, con avisos de pared detrás, borde, cara no vertical y ojos a distinta altura (**Insertar › Colgar en el muro**).
 - **Paso de cable** (en revisión): un clic sobre una pared deja un agujero pasante redondo u ovalado (Ø 5, 8, 12; USB-C, micro-USB, cable plano, por verificar) con chaflán en las bocas; el largo se mide solo con rayos, con avisos de borde, de otro agregado cercano y de pared demasiado gruesa (**Insertar › Paso de cable**).
 - Texto y SVG en relieve, grabado o incrustado sobre cualquier superficie.
 - Litofanías planas y cilíndricas, y cortadores desde una imagen.
 - Simplificar y refinar mallas, alinear y distribuir en la cama.
-- **Simplificar** (en revisión) para equipos con poca memoria: «sin pérdida» (solo se aplica si no cambia la forma), por tolerancia o por cantidad de triángulos, con un informe de antes y después que avisa si se cerró un agujero o cambió el volumen.
+- **Simplificar** (en revisión) para equipos con poca memoria: «sin pérdida» (solo se aplica si no cambia la forma), por tolerancia o por cantidad de triángulos, con un informe de antes y después que avisa si se cerró un agujero o cambió el volumen, y un botón **Deshacer** en el aviso y en el informe. Se abre desde **Simplificar…** en el inspector, o desde el aviso de modelo pesado ya en «Por cantidad».
 - **Suavizar malla** (en revisión): quita facetado y ruido de escaneos sin cambiar los triángulos, con aristas protegidas, zona pintada y vista previa antes de aplicar (**Acciones › Malla › Suavizar…**).
 
 **Preparación para imprimir**
@@ -93,7 +94,8 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - Siluetas de cama de 12 impresoras (Elegoo, Bambu Lab, Snapmaker, FlashForge y genéricas).
 
 **Estudio**
-- **Barra flotante** (en revisión) junto al objeto seleccionado, con las acciones más usadas a un clic.
+- **Placas** (en revisión): crea una segunda cama con **+ Placa**, renombra, activa y borra placas en una tira sobre la barra de estado, mueve piezas entre ellas (paleta, clic derecho o arrastrando) y mira cuál se pasa del volumen de su cama. Lo nuevo cae en la placa activa y Dividir respeta la placa de la pieza ([guía](docs/guia/placas.md)).
+- **Barra flotante** (en revisión) junto al objeto seleccionado, fuera de la pieza, con las acciones más usadas a un clic, una paleta de colores y **Alt+.** para llegar a ella con el teclado; se oculta mientras hay un panel de operación abierto.
 - **Arrastrar para mover**: el objeto seleccionado se arrastra sobre su plano horizontal.
 - 6 idiomas, 6 temas en claro y oscuro con contraste verificado, y modo compacto.
 - Uso por teclado: atajos, paleta de comandos (`Ctrl/⌘+K`), lista de escena y menús navegables.
@@ -108,7 +110,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 
 Paso a paso con capturas, para quien imprime y no programa: [**índice de guías**](docs/guia/README.md).
 
-[Primeros pasos](docs/guia/primeros-pasos.md) · [Importar y reparar](docs/guia/importar-y-reparar.md) · [Dividir para imprimir](docs/guia/dividir-para-imprimir.md) · [Cortar y ahuecar](docs/guia/cortar-y-ahuecar.md) · [Sólidos negativos y restas](docs/guia/solidos-negativos-y-restas.md) · [Objetos de referencia](docs/guia/objetos-de-referencia.md) · [Comprobar encaje](docs/guia/comprobar-encaje.md) · [Orientar para imprimir](docs/guia/orientar-para-imprimir.md) · [Grupos y escena](docs/guia/grupos-y-escena.md) · [Medir](docs/guia/medir.md) · [Colores y pintura](docs/guia/colores-y-pintura.md) · [Generadores](docs/guia/generadores.md) · [Asistentes](docs/guia/asistentes.md) · [Alojamiento de imán](docs/guia/alojamiento-de-iman.md) · [Exportar](docs/guia/exportar.md) · [Guardar y recuperar](docs/guia/guardar-y-recuperar.md) · [Servidor MCP](docs/MCP.md) · [Ajustar a la impresora](docs/guia/ajustar-a-la-impresora.md) · [Torreta para tornillo](docs/guia/torreta-para-tornillo.md) · [Colgar en el muro](docs/guia/colgar-en-el-muro.md) · [Paso de cable](docs/guia/paso-de-cable.md)
+[Primeros pasos](docs/guia/primeros-pasos.md) · [Importar y reparar](docs/guia/importar-y-reparar.md) · [Dividir para imprimir](docs/guia/dividir-para-imprimir.md) · [Cortar y ahuecar](docs/guia/cortar-y-ahuecar.md) · [Sólidos negativos y restas](docs/guia/solidos-negativos-y-restas.md) · [Objetos de referencia](docs/guia/objetos-de-referencia.md) · [Comprobar encaje](docs/guia/comprobar-encaje.md) · [Orientar para imprimir](docs/guia/orientar-para-imprimir.md) · [Grupos y escena](docs/guia/grupos-y-escena.md) · [Medir](docs/guia/medir.md) · [Colores y pintura](docs/guia/colores-y-pintura.md) · [Generadores](docs/guia/generadores.md) · [Asistentes](docs/guia/asistentes.md) · [Alojamiento de imán](docs/guia/alojamiento-de-iman.md) · [Exportar](docs/guia/exportar.md) · [Guardar y recuperar](docs/guia/guardar-y-recuperar.md) · [Servidor MCP](docs/MCP.md) · [Ajustar a la impresora](docs/guia/ajustar-a-la-impresora.md) · [Torreta para tornillo](docs/guia/torreta-para-tornillo.md) · [Colgar en el muro](docs/guia/colgar-en-el-muro.md) · [Paso de cable](docs/guia/paso-de-cable.md) · [Placas](docs/guia/placas.md)
 
 ## En camino
 
@@ -116,7 +118,7 @@ Lo que falta, en el orden del [roadmap](docs/ROADMAP.md). El detalle está en el
 
 **Lo siguiente**
 1. Cerrar la revisión de lo marcado «(en revisión)» arriba.
-2. **Placas y vista armada:** las piezas de una figura repartidas en varias placas, una vista que las muestra juntas y exportación por placa ([diseño](docs/diseno/PLACAS_Y_ARMADO.md), espera decisiones del autor).
+2. **Placas, lo que falta:** la vista de armado que muestra juntas las piezas de todas las placas, el reparto automático de piezas entre placas, la exportación por placa y una cama distinta para cada placa ([diseño](docs/diseno/PLACAS_Y_ARMADO.md), espera decisiones del autor).
 3. **Uniones firmes** en Dividir: tamaño mínimo de conector y de pared según la sección. El cálculo ya existe; falta mostrarlo en la interfaz.
 4. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
 

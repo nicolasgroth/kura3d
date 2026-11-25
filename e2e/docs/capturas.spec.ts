@@ -27,6 +27,15 @@ test('primeros-pasos', async ({ page }) => {
   await captura(page, 'primeros-pasos-02-interfaz');
   await captura(page, 'primeros-pasos-03-formas', IZQ);
   await captura(page, 'primeros-pasos-04-inspector', DER);
+  // Barra flotante con la paleta de colores abierta (recorte alrededor de la barra, que se ubica fuera de la pieza).
+  const barra = page.getByRole('toolbar', { name: 'Acciones del objeto' });
+  await barra.getByRole('button', { name: /Color base/ }).click();
+  await page.waitForTimeout(400);
+  const cajaBarra = await barra.boundingBox();
+  if (!cajaBarra) throw new Error('sin barra flotante');
+  await captura(page, 'primeros-pasos-08-barra-flotante', { x: Math.max(0, cajaBarra.x - 160), y: Math.max(0, cajaBarra.y - 120), width: cajaBarra.width + 320, height: 520 });
+  await page.keyboard.press('Escape');
+  await page.mouse.move(700, 880);
   // Barra lateral compacta (con el tirador) y vista sin cama; al final se dejan como estaban.
   await page.getByTestId('left-sidebar-handle').click();
   await page.waitForTimeout(300);
