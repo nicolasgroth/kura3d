@@ -27,6 +27,8 @@ export interface SmoothReport {
   movedVertices: number;
   /** Vértices soldados fijados por arista viva, borde abierto o arista no manifold. */
   lockedVertices: number;
+  /** Vértices soldados del grafo (base del porcentaje de `lockedVertices`). */
+  weldedVertices: number;
   volumeBeforeMm3: number;
   volumeAfterMm3: number;
   /** Cambio de volumen en % (positivo = creció). */
@@ -78,6 +80,7 @@ export function smoothMesh(mesh: MeshData, options: SmoothOptions = {}): SmoothR
     appliedStrength: 0,
     movedVertices: 0,
     lockedVertices: graph.lockedCount,
+    weldedVertices: graph.weldedCount,
     volumeBeforeMm3: volumeBefore,
     volumeAfterMm3: volumeBefore,
     volumeChangePct: 0,

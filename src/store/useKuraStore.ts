@@ -23,6 +23,7 @@ import { createPaintSlice } from './slices/paintSlice';
 import { createPartsSlice } from './slices/partsSlice';
 import { clearPreviewOnSelectionChange, createPreviewSlice } from './slices/previewSlice';
 import { createSelectionSlice } from './slices/selectionSlice';
+import { clearSmoothOnSelectionChange, createSmoothSlice } from './slices/smoothSlice';
 import { createSplitSlice } from './slices/splitSlice';
 import { createSplitJointsSlice } from './slices/splitJointsSlice';
 import { createSplitPrefsSlice } from './slices/splitPrefsSlice';
@@ -93,6 +94,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createGroupsSlice(ctx),
     ...createRepairSlice(ctx),
     ...createViewPrefsSlice(ctx),
+    ...createSmoothSlice(ctx),
   } as Partial<KuraStoreState>;
   return {
     ...base,
@@ -111,6 +113,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
 
 hydrateSecrets(useKuraStore);
 clearPreviewOnSelectionChange(useKuraStore);
+clearSmoothOnSelectionChange(useKuraStore);
 invalidateFitCheckOnSceneChange(useKuraStore);
 closeActionOnTargetLoss(useKuraStore);
 resetToolWhenUnavailable(useKuraStore);

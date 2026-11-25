@@ -36,6 +36,7 @@ import {
   Type,
   Ungroup,
   Wand2,
+  Feather,
   Waves,
   Wrench,
 } from 'lucide-react';
@@ -62,6 +63,7 @@ const ICONS: Record<ActionId, React.ReactNode> = {
   repair: <Wrench size={14} aria-hidden="true" />,
   simplify: <Sparkles size={14} aria-hidden="true" />,
   refine: <Wand2 size={14} aria-hidden="true" />,
+  smooth: <Feather size={14} aria-hidden="true" />,
   hull: <Box size={14} aria-hidden="true" />,
   splitColors: <Sparkles size={14} aria-hidden="true" />,
   splitParts: <Split size={14} aria-hidden="true" />,
