@@ -194,6 +194,36 @@ const UX = {
     es: 'Separación de las piezas (explosión)', en: 'Piece separation (explode)', de: 'Teileabstand (Explosion)',
     fr: 'Écartement des pièces (éclaté)', hi: 'भागों का अलगाव (एक्सप्लोड)', zh: '部件分离（爆炸视图）',
   },
+  // --- Con imanes manda el alojamiento del imán, no el mínimo de pared de los conectores ---
+  'split.warn.planeGlueOnlyMagnet': {
+    es: '{plane}: pared de ≈ {wall} mm, insuficiente para alojar el imán: queda un corte liso para pegar.',
+    en: '{plane}: wall ≈ {wall} mm, too thin to hold the magnet: stays a smooth cut to glue.',
+    de: '{plane}: Wand ≈ {wall} mm, zu dünn für die Magnetaufnahme: bleibt ein glatter Schnitt zum Kleben.',
+    fr: '{plane} : paroi ≈ {wall} mm, trop fine pour loger l’aimant : reste une coupe lisse à coller.',
+    hi: '{plane}: दीवार ≈ {wall} mm, चुंबक के लिए बहुत पतली: चिपकाने के लिए सपाट कट रहेगा।',
+    zh: '{plane}：壁厚约 {wall} mm，太薄放不下磁铁：保留平整切面用于粘合。',
+  },
+  'split.warn.planeGlueOnlyMagnetNoWall': {
+    es: '{plane}: la sección es demasiado delgada para alojar el imán: queda un corte liso para pegar.',
+    en: '{plane}: the section is too thin to hold the magnet: stays a smooth cut to glue.',
+    de: '{plane}: Der Querschnitt ist zu dünn für die Magnetaufnahme: bleibt ein glatter Schnitt zum Kleben.',
+    fr: '{plane} : la section est trop fine pour loger l’aimant : reste une coupe lisse à coller.',
+    hi: '{plane}: खंड चुंबक के लिए बहुत पतला है: चिपकाने के लिए सपाट कट रहेगा।',
+    zh: '{plane}：截面太薄放不下磁铁：保留平整切面用于粘合。',
+  },
+  // --- Colocar un agregado sin ratón: cara por nombre ---
+  'addon.face.group': { es: 'Colocar sin ratón', en: 'Place without a mouse', de: 'Ohne Maus platzieren', fr: 'Placer sans souris', hi: 'माउस के बिना रखें', zh: '不用鼠标放置' },
+  'addon.face.label': { es: 'Cara', en: 'Face', de: 'Seite', fr: 'Face', hi: 'सतह', zh: '面' },
+  'addon.face.top': { es: 'Arriba', en: 'Top', de: 'Oben', fr: 'Dessus', hi: 'ऊपर', zh: '顶部' },
+  'addon.face.bottom': { es: 'Abajo', en: 'Bottom', de: 'Unten', fr: 'Dessous', hi: 'नीचे', zh: '底部' },
+  'addon.face.front': { es: 'Frente', en: 'Front', de: 'Vorne', fr: 'Avant', hi: 'सामने', zh: '正面' },
+  'addon.face.back': { es: 'Atrás', en: 'Back', de: 'Hinten', fr: 'Arrière', hi: 'पीछे', zh: '背面' },
+  'addon.face.left': { es: 'Izquierda', en: 'Left', de: 'Links', fr: 'Gauche', hi: 'बाएँ', zh: '左侧' },
+  'addon.face.right': { es: 'Derecha', en: 'Right', de: 'Rechts', fr: 'Droite', hi: 'दाएँ', zh: '右侧' },
+  'addon.face.place': { es: 'Colocar en el centro de la cara', en: 'Place at the center of the face', de: 'In der Mitte der Seite platzieren', fr: 'Placer au centre de la face', hi: 'सतह के केंद्र में रखें', zh: '放在该面中心' },
+  'addon.face.tip': { es: 'Coloca el agregado en el centro de la cara elegida de la pieza seleccionada, con las medidas de arriba.', en: 'Places the add-on at the center of the chosen face of the selected part, with the sizes above.', de: 'Setzt das Zubehör in die Mitte der gewählten Seite des gewählten Teils, mit den obigen Maßen.', fr: 'Place l’ajout au centre de la face choisie de la pièce sélectionnée, avec les dimensions ci-dessus.', hi: 'ऊपर की माप के साथ चुने हुए भाग की चुनी सतह के केंद्र में जोड़ रखता है।', zh: '按上面的尺寸，把附件放在所选零件所选面的中心。' },
+  'addon.face.needHost': { es: 'Selecciona primero la pieza donde colocarlo.', en: 'Select the part to place it on first.', de: 'Wähle zuerst das Teil aus, auf dem es platziert werden soll.', fr: 'Sélectionnez d’abord la pièce où le placer.', hi: 'पहले वह भाग चुनें जिस पर इसे रखना है।', zh: '请先选择要放置的零件。' },
+  'addon.face.miss': { es: 'No se encontró esa cara en la pieza: prueba con otra.', en: 'That face was not found on the part: try another.', de: 'Diese Seite wurde am Teil nicht gefunden: Versuche eine andere.', fr: 'Cette face est introuvable sur la pièce : essayez-en une autre.', hi: 'इस भाग पर वह सतह नहीं मिली: दूसरी आज़माएँ।', zh: '在零件上找不到该面：请换一个。' },
 } as const satisfies Record<string, Row>;
 
 type Lang = keyof Row;

@@ -51,12 +51,10 @@ export const ViewportHudBottom: React.FC = () => {
         });
       }
     }
-    // Ejes del usuario: X × Y × Z con Z = altura.
-    const [dx, dy, dz] = toUserSize(selectedObj.stats.dimensionsMm);
-    const [sx, sy, sz] = toUserSize(selectedObj.scale);
-    return `${formatDimension(dx * sx, unitSystem, undefined, language)} × ${formatDimension(
-      dy * sy,
-      unitSystem, undefined, language)} × ${formatDimension(dz * sz, unitSystem, undefined, language)}`;
+    // Ejes del usuario: X × Y × Z con Z = altura. Es la caja en el mundo: acostar la pieza cambia el alto.
+    const bounds = computeSelectionBounds([selectedObj]);
+    const [dx, dy, dz] = toUserSize(bounds ? bounds.size : selectedObj.stats.dimensionsMm);
+    return [dx, dy, dz].map((v) => formatDimension(v, unitSystem, undefined, language)).join(' × ');
   }, [selectedObj, selectedIds, objects, unitSystem, language]);
 
   return (

@@ -101,7 +101,7 @@ describe('panel Suavizar', () => {
     await user.click(passes);
     await user.keyboard('{Enter}');
     await waitFor(() => expect(store().smoothSession?.status).toBe('ready'));
-    expect(store().smoothSession!.params.iterations).toBe(10);
+    expect(store().smoothSession!.params.iterations).toBe(3);
   });
 
   it('cambiar un valor descarta la vista previa obsoleta', async () => {

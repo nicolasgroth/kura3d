@@ -27,9 +27,12 @@ export interface SmoothParams {
   falloffRings: number;
 }
 
+/** Valores iniciales del panel: conservadores, para que un modelo real no termine en error al primer intento. */
+export const SMOOTH_PANEL_START = { intensityPct: 30, iterations: 3 } as const;
+
 export const SMOOTH_UI_DEFAULTS: SmoothParams = {
-  intensityPct: SMOOTH_DEFAULTS.strength * 100,
-  iterations: SMOOTH_DEFAULTS.iterations,
+  intensityPct: SMOOTH_PANEL_START.intensityPct,
+  iterations: SMOOTH_PANEL_START.iterations,
   keepSharpEdges: SMOOTH_DEFAULTS.preserveSharpEdges,
   sharpAngleDeg: SMOOTH_DEFAULTS.sharpAngleDeg,
   zoneMode: 'all',

@@ -127,6 +127,7 @@ export const CablePassPanel: React.FC = () => {
       open={open}
       onClose={close}
       blocked={blocked}
+      placeAt={cablePassPanel.placeAt}
       warnings={report ? cablePassWarnings(report, language) : []}
       lastOk={report ? t(language, 'cable.lastOk', { wall: fmt(report.boreMm) }) : null}
     >

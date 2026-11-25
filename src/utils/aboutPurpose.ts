@@ -20,6 +20,8 @@ export function purposeKeys(): string[] {
 /** Elige una clave de frase con `random()` (por defecto `Math.random`; devuelve [0, 1)). */
 export function pickPurposeKey(random: () => number = Math.random): string {
   const keys = purposeKeys();
+  // Sin frases cargadas (no debería pasar) cae en la primera: nunca devuelve `undefined`.
+  if (keys.length === 0) return 'about.purpose.1';
   const i = Math.min(keys.length - 1, Math.max(0, Math.floor(random() * keys.length)));
   return keys[i];
 }

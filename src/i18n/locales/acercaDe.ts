@@ -13,6 +13,7 @@ type Row = readonly [es: string, en: string, de: string, fr: string, hi: string,
 
 const ACERCA_TABLE = {
   'about.title': ['Acerca de {name}', 'About {name}', 'Über {name}', 'À propos de {name}', '{name} के बारे में', '关于 {name}'],
+  'about.scrollRegion': ['Contenido de Acerca de {name}', 'About {name} content', 'Inhalt von Über {name}', 'Contenu de À propos de {name}', '{name} के बारे में की सामग्री', '关于 {name} 的内容'],
   'about.menuTip': [
     'Qué es {name}, cómo se construyó y con qué está hecho',
     'What {name} is, how it was built and what it is made with',

@@ -12,10 +12,11 @@
 import React, { useCallback } from 'react';
 import { MIN_WALL_MM } from '../../core/addons/magnetPocket';
 import { t } from '../../i18n';
-import { closeMagnetPanel, useMagnetPanel } from '../../store/magnetPanel';
+import { closeMagnetPanel, placeMagnetAt, useMagnetPanel } from '../../store/magnetPanel';
 import { magnetWarnings, magnetWarningText, wallWarningKey } from '../../store/magnetWarnings';
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationPanel } from '../OperationPanel';
+import { AddonFacePlacer } from '../addons/AddonFacePlacer';
 import { MagnetFoldStrip } from './MagnetFoldStrip';
 import { MagnetForm } from './MagnetForm';
 import { MagnetPresetPicker } from './MagnetPresetPicker';
@@ -52,6 +53,7 @@ export const MagnetPanel: React.FC = () => {
       </p>
       <MagnetPresetPicker />
       <MagnetForm />
+      <AddonFacePlacer testId="magnet" place={placeMagnetAt} blocked={blocked} />
       {lastWall && (
         <p className={`kura-magnet-wall${warn ? ' is-warning' : ''}`} role="status" data-testid="magnet-wall">
           {warn

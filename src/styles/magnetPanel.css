@@ -151,3 +151,25 @@
     height: 22px;
   }
 }
+
+/* Colocar sin ratón: selector de cara y botón (AddonFacePlacer). */
+.kura-addon-face {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle, var(--border-color, rgba(128, 128, 128, 0.3)));
+  border-radius: 8px;
+}
+
+.kura-addon-face legend {
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.kura-addon-face .kura-btn {
+  align-self: flex-start;
+}

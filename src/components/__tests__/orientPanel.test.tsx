@@ -116,7 +116,16 @@ describe('Orientar para imprimir: panel', () => {
     expect(screen.getByTestId('orient-summary').textContent).toContain('ya es la mejor');
     const now = options().find((o) => within(o).queryByTestId('orient-badge-current'))!;
     expect(now.textContent).toContain('Sin voladizos');
-    expect(useKuraStore.getState().operationPreview.key).toBeNull();
+    // El foco queda en la opción aplicada (ahora «Actual») y es la única elegida: un segundo Enter no revierte.
+    expect(document.activeElement).toBe(now);
+    expect(useKuraStore.getState().orientPreviewId).toBe(now.dataset.candidate);
+    expect(options().filter((o) => o.getAttribute('aria-selected') === 'true')).toEqual([now]);
+    const pastAfter = useKuraStore.getState().past.length;
+    fireEvent.keyDown(now, { key: 'Enter' });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(useKuraStore.getState().past.length).toBe(pastAfter);
   });
 
   it('el botón Aplicar está deshabilitado con la actual y aplica la elegida', async () => {

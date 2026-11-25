@@ -49,6 +49,13 @@
 }
 
 .kura-smooth-actions {
+  /* Pie fijo: Vista previa y Aplicar siempre a la vista, aunque el panel sea más alto que la ventana. */
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding: 8px 0;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-subtle, var(--border-color, rgba(128, 128, 128, 0.3)));
   display: flex;
   flex-wrap: wrap;
   gap: 6px;

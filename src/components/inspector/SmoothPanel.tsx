@@ -198,6 +198,23 @@ export const SmoothPanel: React.FC<InspectorSectionProps> = ({ primary }) => {
         )}
       </fieldset>
 
+      {session?.status === 'ready' && (
+        <div className="kura-smooth-field">
+          <label className="kura-smooth-check">
+            <input
+              type="checkbox"
+              checked={session.comparing}
+              aria-describedby={id('compare-help')}
+              onChange={(e) => setComparing(e.target.checked)}
+            />
+            <span>{t(language, 'smooth.compare')}</span>
+          </label>
+          <p id={id('compare-help')} className="kura-cut-hint">{t(language, 'smooth.compare.help')}</p>
+        </div>
+      )}
+
+      <SmoothStatus language={language} session={session} params={effective} onFix={fixEdges} />
+
       <div className="kura-smooth-actions">
         <button
           type="button"
@@ -224,23 +241,6 @@ export const SmoothPanel: React.FC<InspectorSectionProps> = ({ primary }) => {
           {t(language, 'smooth.apply')}
         </button>
       </div>
-
-      {session?.status === 'ready' && (
-        <div className="kura-smooth-field">
-          <label className="kura-smooth-check">
-            <input
-              type="checkbox"
-              checked={session.comparing}
-              aria-describedby={id('compare-help')}
-              onChange={(e) => setComparing(e.target.checked)}
-            />
-            <span>{t(language, 'smooth.compare')}</span>
-          </label>
-          <p id={id('compare-help')} className="kura-cut-hint">{t(language, 'smooth.compare.help')}</p>
-        </div>
-      )}
-
-      <SmoothStatus language={language} session={session} params={effective} onFix={fixEdges} />
     </div>
   );
 };

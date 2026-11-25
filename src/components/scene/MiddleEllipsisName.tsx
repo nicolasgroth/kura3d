@@ -19,9 +19,14 @@ const COUNTER_SUFFIX = /\(\d+\)$/;
 /** Caracteres del final que se conservan en un nombre con contador. */
 const COUNTER_TAIL_CHARS = 8;
 
+/** Código de pieza de una división al final del nombre («Tapa · A1»): se ve siempre completo. */
+const PIECE_CODE_SUFFIX = /\s·\s[A-Za-z]{1,3}\d{1,3}$/;
+
 /** Parte el nombre en tramo recortable y final fijo; los nombres cortos no se parten. */
 export function splitNameTail(name: string, tail = NAME_TAIL_CHARS): [string, string] {
   const chars = Array.from(name);
+  const piece = PIECE_CODE_SUFFIX.exec(name);
+  if (piece && piece.index > 0) return [name.slice(0, piece.index), piece[0]];
   // Los repetidos se numeran «Nombre (3)»: el número entre paréntesis y la medida que lo precede siempre se ven.
   if (COUNTER_SUFFIX.test(name) && chars.length > COUNTER_TAIL_CHARS) {
     return [chars.slice(0, chars.length - COUNTER_TAIL_CHARS).join(''), chars.slice(chars.length - COUNTER_TAIL_CHARS).join('')];

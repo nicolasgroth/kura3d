@@ -93,10 +93,10 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
   const dropPreview = () => {
     if (get().operationPreview.key === SMOOTH_PREVIEW_KEY) set({ operationPreview: EMPTY_PREVIEW });
   };
-  const messageOf = (err: unknown): { text: string; code: string | null } => {
+  const messageOf = (err: unknown, params: SmoothParams): { text: string; code: string | null } => {
     if (isEngineError(err)) {
       const code = err.code;
-      return { text: code === 'SMOOTH_DAMAGE' ? tr('smooth.error.damage') : localizeEngineErrorForUser(get().language, err), code };
+      return { text: code === 'SMOOTH_DAMAGE' ? tr(params.keepSharpEdges ? 'smooth.error.damageEdgesOn' : 'smooth.error.damage') : localizeEngineErrorForUser(get().language, err), code };
     }
     return { text: err instanceof Error ? err.message : String(err), code: null };
   };
@@ -150,7 +150,7 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
           set({ smoothSession: null });
           return false;
         }
-        const { text, code } = messageOf(err);
+        const { text, code } = messageOf(err, params);
         patchSession({ status: 'error', phase: null, error: text, errorCode: code });
         return false;
       }
@@ -201,7 +201,7 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
         } catch (err) {
           // Cancelado: lo informa el ejecutor. Un error del motor se muestra junto a los controles, sin tocar la escena.
           if (!isEngineError(err) || hooks?.rethrowEngineErrors) throw err;
-          const { text, code } = messageOf(err);
+          const { text, code } = messageOf(err, params);
           dropPreview();
           set({
             smoothSession: { objectId: id, status: 'error', phase: null, signature, params, report: null, warnings: [], error: text, errorCode: code, comparing: false },
