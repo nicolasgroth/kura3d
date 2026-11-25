@@ -9,6 +9,7 @@
  */
 
 import type { RecipeProvenance } from './recipeProvenance';
+import type { RestPose } from './plates';
 
 /** Idiomas soportados nativamente en Kurra Studio (6 idiomas internacionales). */
 export type LanguageCode = 'es' | 'en' | 'de' | 'fr' | 'hi' | 'zh';
@@ -759,6 +760,12 @@ export interface SceneObject {
   groupRef?: string;
   /** Placa de impresión (`ScenePlate.id`, `types/plates.ts`); ausente = sin placa o placa implícita. */
   plateRef?: string;
+  /**
+   * Pose del otro modo de vista (`docs/diseno/PLACAS_Y_ARMADO.md`, alternativa D): `position/rotation` es la del modo
+   * activo de la escena (`layout`) y esta la del otro. Ausente = misma pose en ambos modos (o derivada de
+   * `metadata.split`). Solo la escribe `core/scene/layoutPoses.ts`.
+   */
+  restPose?: RestPose;
 }
 
 /**

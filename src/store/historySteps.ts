@@ -12,7 +12,7 @@
 
 import { applyFaceColorDelta, type DeltaDirection, type FaceColorDelta } from '../engine/paint/colorDelta';
 import type { SceneGroup, SceneObject } from '../types/kura';
-import type { ScenePlate } from '../types/plates';
+import type { SceneLayout, ScenePlate } from '../types/plates';
 import type { ProjectSceneSnapshot } from '../project/projectSchema';
 
 export interface PaintDeltaStep {
@@ -68,6 +68,7 @@ export function materializeHistory(
   future: readonly HistoryStep[],
   groups: SceneGroup[] = [],
   plates: ScenePlate[] = [],
+  layout: SceneLayout = 'print',
 ): { past: ProjectSceneSnapshot[]; future: ProjectSceneSnapshot[] } {
   const walk = (steps: readonly HistoryStep[], direction: DeltaDirection) => {
     const out: ProjectSceneSnapshot[] = [];
@@ -75,6 +76,7 @@ export function materializeHistory(
     let selection = selectedIds;
     let groupState = groups;
     let plateState = plates;
+    let layoutState = layout;
     for (const step of steps) {
       if (!isPaintDeltaStep(step)) {
         out.push(step);
@@ -82,15 +84,17 @@ export function materializeHistory(
         selection = step.selectedIds;
         groupState = step.groups ?? [];
         plateState = step.plates ?? [];
+        layoutState = step.layout ?? 'print';
         continue;
       }
       const next = applyPaintDeltaStep(state, step, direction);
       if (!next) break;
-      // Un trazo no cambia grupos ni placas: la instantánea lleva los del estado vecino.
+      // Un trazo no cambia grupos, placas ni modo: la instantánea lleva los del estado vecino.
       const snapshot: ProjectSceneSnapshot = {
         objects: next, selectedIds: selection,
         ...(groupState.length ? { groups: groupState } : {}),
         ...(plateState.length ? { plates: plateState } : {}),
+        ...(layoutState === 'assembly' ? { layout: layoutState } : {}),
       };
       materializedFrom.set(snapshot, step);
       out.push(snapshot);

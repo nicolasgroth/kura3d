@@ -110,7 +110,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
         pushHistory();
       } else if (!runtime.transformSnapshotBeforeDrag) {
         const s = get();
-        runtime.transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds, s.groups, s.plates);
+        runtime.transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds, s.groups, s.plates, s.layout);
       }
       set((state) => ({
         objects: state.objects.map((obj) => {
@@ -224,7 +224,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       if (!src || src.locked) return null;
       // Estado previo al Alt-arrastre: Ctrl+Z deshace clonación y movimiento en un paso.
       if (!runtime.transformSnapshotBeforeDrag) {
-        runtime.transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds, s.groups, s.plates);
+        runtime.transformSnapshotBeforeDrag = cloneSnapshot(s.objects, s.selectedIds, s.groups, s.plates, s.layout);
       }
       // Copia estacionaria en la posición original; la malla arrastrada pasa a ser la copia, así
       // TransformControls mantiene el puntero enganchado.

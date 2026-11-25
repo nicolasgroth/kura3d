@@ -14,10 +14,10 @@ import { computeMeshStats } from '../engine/primitives';
 import { reconcileGroups } from '../core/scene/groups';
 import { reconcilePlates } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
-import type { ScenePlate } from '../types/plates';
+import type { SceneLayout, ScenePlate } from '../types/plates';
 import { withBoundedParams } from './primitiveParamsBounds';
 import {
-  check, color, id, nat, record, validSettings, validStoredGroups, validStoredObject, validStoredPlates,
+  check, color, id, nat, record, validSettings, validStoredGroups, validStoredLayout, validStoredObject, validStoredPlates,
   type ObjectMetadata, type ProjectDocument, type ProjectSceneSnapshot,
 } from './projectSchema';
 
@@ -33,7 +33,7 @@ export interface DraftMeshRef {
   faceColors?: { palette: string[]; indices: string };
 }
 type DraftObject = ObjectMetadata & { mesh: number };
-interface DraftSnapshot { objects: DraftObject[]; selectedIds: string[]; groups?: SceneGroup[]; plates?: ScenePlate[] }
+interface DraftSnapshot { objects: DraftObject[]; selectedIds: string[]; groups?: SceneGroup[]; plates?: ScenePlate[]; layout?: SceneLayout }
 export interface DraftManifest {
   format: typeof DRAFT_FORMAT;
   settings: Pick<ProjectDocument, 'unitSystem' | 'printerProfile' | 'customBedDimensions' | 'sectionPlane' | 'snapGridMm'>;
@@ -136,6 +136,7 @@ export async function splitDocument(doc: ProjectDocument, withHistory = true) {
       objects, selectedIds: [...s.selectedIds],
       ...(s.groups?.length ? { groups: s.groups } : {}),
       ...(s.plates?.length ? { plates: s.plates } : {}),
+      ...(s.layout === 'assembly' ? { layout: s.layout } : {}),
     };
   }
   const { unitSystem, printerProfile, customBedDimensions, sectionPlane, snapGridMm } = doc;
@@ -220,6 +221,7 @@ export function assembleDocument(manifest: unknown, blocks: Map<string, Words>):
     const selectedIds = (s.selectedIds as unknown[]).filter((v): v is string => id(v) && ids.has(v));
     check(validStoredGroups(s.groups), 'draft-groups');
     check(validStoredPlates(s.plates), 'draft-plates');
+    check(validStoredLayout(s.layout), 'draft-layout');
     const groups = (s.groups as SceneGroup[] | undefined) ?? [];
     const rawPlates = (s.plates as ScenePlate[] | undefined) ?? [];
     let scene = { objects, groups: [] as SceneGroup[], plates: [] as ScenePlate[] };
@@ -231,6 +233,7 @@ export function assembleDocument(manifest: unknown, blocks: Map<string, Words>):
       objects: scene.objects, selectedIds,
       ...(scene.groups.length ? { groups: scene.groups } : {}),
       ...(scene.plates.length ? { plates: scene.plates } : {}),
+      ...(s.layout === 'assembly' ? { layout: 'assembly' as const } : {}),
     };
   }
   return {

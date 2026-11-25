@@ -16,7 +16,7 @@ import { sanitizeScrewBossParams } from '../core/addons/screwBoss';
 import { sanitizeKeyholeParams } from '../core/addons/keyhole';
 import { sanitizeCablePassParams } from '../core/addons/cablePass';
 import { RECIPE_PROVENANCE_LIMITS } from '../types/recipeProvenance';
-import type { PlateBed, ScenePlate } from '../types/plates';
+import type { PlateBed, RestPose, SceneLayout, ScenePlate } from '../types/plates';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
 
 export const MAX_PROJECT_BYTES = 128 * 1024 * 1024;
@@ -28,6 +28,8 @@ export interface ProjectSceneSnapshot {
   groups?: SceneGroup[];
   /** Placas de impresión (opcional: sin placas hay una implícita en el origen; desde la versión 4). */
   plates?: ScenePlate[];
+  /** Modo de vista en que se tomó (opcional: ausente = 'print'; desde la versión 4). */
+  layout?: SceneLayout;
 }
 
 export interface ProjectDocument extends ProjectSceneSnapshot {
@@ -239,6 +241,10 @@ const metadataFields = {
   groupRef: optional(id),
   // Desde la versión 4: placa de impresión de la pieza (una referencia rota se sanea al abrir).
   plateRef: optional(id),
+  // Desde la versión 4: pose del modo de vista que no está activo (`core/scene/layoutPoses.ts`).
+  restPose: optional(shape({
+    position: withinAbs(TRANSFORM_LIMITS.maxAbsCoordinate), rotation: withinAbs(TRANSFORM_LIMITS.maxAbsRotation),
+  } satisfies Record<keyof RestPose, Rule>)),
 } satisfies Record<keyof ObjectMetadata, Rule>;
 
 const idList = (v: unknown) => Array.isArray(v) && v.length <= 1_000_000 && v.every(id);
@@ -264,6 +270,9 @@ export const validStoredPlate = shape({
   id, name: (v) => typeof v === 'string' && v.length <= MAX_PLATE_NAME, origin: plateOrigin,
   bed: optional((v) => plateBedShape(v) && validPlateBed(v as PlateBed)), locked: optional(bool),
 } satisfies Record<keyof ScenePlate, Rule>) as (v: unknown) => v is ScenePlate;
+
+/** Modo de vista guardado (versión 4). */
+export const validStoredLayout = (v: unknown): v is SceneLayout | undefined => v === undefined || v === 'print' || v === 'assembly';
 
 export const validStoredPlates = (v: unknown): v is ScenePlate[] =>
   v === undefined || (Array.isArray(v) && v.length <= MAX_PLATES && v.every(validStoredPlate));
