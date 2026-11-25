@@ -12,10 +12,12 @@
 
 import { computeMeshStats } from '../engine/primitives';
 import { reconcileGroups } from '../core/scene/groups';
+import { reconcilePlates } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
+import type { ScenePlate } from '../types/plates';
 import { withBoundedParams } from './primitiveParamsBounds';
 import {
-  check, color, id, nat, record, validSettings, validStoredGroups, validStoredObject,
+  check, color, id, nat, record, validSettings, validStoredGroups, validStoredObject, validStoredPlates,
   type ObjectMetadata, type ProjectDocument, type ProjectSceneSnapshot,
 } from './projectSchema';
 
@@ -31,7 +33,7 @@ export interface DraftMeshRef {
   faceColors?: { palette: string[]; indices: string };
 }
 type DraftObject = ObjectMetadata & { mesh: number };
-interface DraftSnapshot { objects: DraftObject[]; selectedIds: string[]; groups?: SceneGroup[] }
+interface DraftSnapshot { objects: DraftObject[]; selectedIds: string[]; groups?: SceneGroup[]; plates?: ScenePlate[] }
 export interface DraftManifest {
   format: typeof DRAFT_FORMAT;
   settings: Pick<ProjectDocument, 'unitSystem' | 'printerProfile' | 'customBedDimensions' | 'sectionPlane' | 'snapGridMm'>;
@@ -130,7 +132,11 @@ export async function splitDocument(doc: ProjectDocument, withHistory = true) {
       const { mesh, stats: _stats, ...metadata } = obj;
       objects.push({ ...metadata, mesh: await storeMesh(mesh) });
     }
-    return { objects, selectedIds: [...s.selectedIds], ...(s.groups?.length ? { groups: s.groups } : {}) };
+    return {
+      objects, selectedIds: [...s.selectedIds],
+      ...(s.groups?.length ? { groups: s.groups } : {}),
+      ...(s.plates?.length ? { plates: s.plates } : {}),
+    };
   }
   const { unitSystem, printerProfile, customBedDimensions, sectionPlane, snapGridMm } = doc;
   const current = await snapshot(doc);
@@ -213,12 +219,19 @@ export function assembleDocument(manifest: unknown, blocks: Map<string, Words>):
     });
     const selectedIds = (s.selectedIds as unknown[]).filter((v): v is string => id(v) && ids.has(v));
     check(validStoredGroups(s.groups), 'draft-groups');
+    check(validStoredPlates(s.plates), 'draft-plates');
     const groups = (s.groups as SceneGroup[] | undefined) ?? [];
-    if (!groups.length && !objects.some((o) => o.groupRef !== undefined)) return { objects, selectedIds };
-    const clean = reconcileGroups({ objects, groups });
-    return clean.groups.length
-      ? { objects: clean.objects, selectedIds, groups: clean.groups }
-      : { objects: clean.objects, selectedIds };
+    const rawPlates = (s.plates as ScenePlate[] | undefined) ?? [];
+    let scene = { objects, groups: [] as SceneGroup[], plates: [] as ScenePlate[] };
+    if (groups.length || objects.some((o) => o.groupRef !== undefined)) scene = { ...scene, ...reconcileGroups({ objects, groups }) };
+    if (rawPlates.length || scene.objects.some((o) => o.plateRef !== undefined)) {
+      scene = { ...scene, ...reconcilePlates({ objects: scene.objects, plates: rawPlates }) };
+    }
+    return {
+      objects: scene.objects, selectedIds,
+      ...(scene.groups.length ? { groups: scene.groups } : {}),
+      ...(scene.plates.length ? { plates: scene.plates } : {}),
+    };
   }
   return {
     ...manifest.settings,

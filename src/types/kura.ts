@@ -757,6 +757,8 @@ export interface SceneObject {
   metadata?: SceneObjectMetadata;
   /** Grupo de organización al que pertenece (`SceneGroup.id`). No confundir con `metadata.split.groupId`. */
   groupRef?: string;
+  /** Placa de impresión (`ScenePlate.id`, `types/plates.ts`); ausente = sin placa o placa implícita. */
+  plateRef?: string;
 }
 
 /**
