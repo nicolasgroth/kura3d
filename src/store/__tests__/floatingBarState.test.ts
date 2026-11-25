@@ -19,6 +19,7 @@ const base: FloatingBarContext = {
   pickingSurface: false,
   operationOpen: false,
   placementPanelOpen: false,
+  actionPanelOpen: false,
   contextMenuOpen: false,
 };
 
@@ -37,7 +38,7 @@ describe('floatingBarVisible', () => {
     expect(floatingBarVisible({ ...base, activeTool })).toBe(false);
   });
 
-  it.each(['pickingSurface', 'operationOpen', 'placementPanelOpen', 'contextMenuOpen'] as const)('no aparece con %s', (key) => {
+  it.each(['pickingSurface', 'operationOpen', 'placementPanelOpen', 'actionPanelOpen', 'contextMenuOpen'] as const)('no aparece con %s', (key) => {
     expect(floatingBarVisible({ ...base, [key]: true })).toBe(false);
   });
 

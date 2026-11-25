@@ -238,12 +238,13 @@ test('barra: Más + Escape devuelve el foco a Más; Alt+. enfoca; se oculta con 
     await page.waitForTimeout(400);
     await seleccionar(page, [id]);
   }
-  // Paneles del inspector (Suavizar, Orientar): observación; la regla vigente solo cubre `activeDialog` y colocación.
+  // Paneles contextuales del inspector (Suavizar, Orientar): misma regla, la barra se oculta.
   for (const accion of ['Suavizar…', 'Orientar para imprimir…']) {
     await (await itemAccion(page, accion)).click();
     await page.waitForTimeout(600);
-    console.log('QA25D OBS barra con panel del inspector', accion, 'visible=', await barra(page).count());
+    expect(await barra(page).count(), `la barra sigue con ${accion}`).toBe(0);
     await page.keyboard.press('Escape');
+    await seleccionar(page, [id]);
   }
   expect(errs, errs.join('\n')).toEqual([]);
 });

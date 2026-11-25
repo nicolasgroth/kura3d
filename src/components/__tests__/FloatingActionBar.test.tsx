@@ -48,6 +48,14 @@ beforeEach(() => {
 });
 
 describe('FloatingActionBar', () => {
+  it('se oculta con un panel contextual de acción del inspector (Suavizar) y vuelve al cerrarlo', () => {
+    useKuraStore.setState({ activeAction: 'smooth' } as never);
+    const { container } = render(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
+    expect(container.querySelector('[data-testid="floating-action-bar"]')).toBeNull();
+    act(() => useKuraStore.setState({ activeAction: null } as never));
+    expect(container.querySelector('[data-testid="floating-action-bar"]')).not.toBeNull();
+  });
+
   it('es una barra de herramientas con seis botones con los nombres del menú contextual', () => {
     render(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
     expect(buttons().map((b) => b.getAttribute('aria-label'))).toEqual([
