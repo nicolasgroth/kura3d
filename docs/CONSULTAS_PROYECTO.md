@@ -22,5 +22,15 @@ El nombre nuevo es **Kurra3D** (confirmado el 24-nov). Esta noche cambio lo visi
 2. Al exportar: ¿un archivo por placa en un ZIP (recomendado, lo entiende cualquier laminador) o un solo 3MF con todas las placas (solo Bambu Studio y OrcaSlicer)? Se pueden ofrecer ambos, con el ZIP por defecto.
 3. La hoja de ruta pedía 11 formas de repartir piezas; el diseño propone 3 (compacto, por color, por grupo). ¿Alcanza para empezar?
 
-### 4. Bajar triángulos con figuras simples (investigación en `docs/diseno/FORMAS_SIMPLES.md`)
-¿El objetivo es que el modelo tenga menos triángulos, o reconocer formas exactas (cilindros, planos, esferas) para medirlas y regenerarlas? Recomendación: partir midiendo cuánto baja el simplificador actual en modelos reales (se está midiendo esta noche) antes de comprometer un lote.
+### 4. Bajar triángulos con figuras simples: la medición dice que no hace falta (`docs/diseno/FORMAS_SIMPLES.md`)
+Medido el 25-nov con 10 modelos reales. Reconocer caras planas, cilindros y esferas casi no ahorra: tras simplificar a 0,001 mm, lo que quedaría por ganar en caras planas es menos del 0,13 % de los triángulos, y cilindros y esferas son como mucho el 8,5 % del modelo y ya están en su mínimo.
+
+Lo que sí apareció: el Simplificar actual, con su valor por defecto de 0,15 mm, cambia la forma más de lo que promete (a 0,1 mm se desvía entre 0,09 y 1,5 mm, cambia el volumen hasta −2,8 % y cierra o abre agujeros en 6 de 10 modelos).
+
+¿Cambiamos el lote de «figuras simples» por uno chico sobre Simplificar: un modo «sin pérdida» a 0,001 mm que verifica el resultado (agujeros, volumen y desviación) y un valor por defecto de 0,01–0,02 mm? Recomendación: sí; son 3–5 h. Si lo que buscas es reconocer formas exactas para medirlas o regenerarlas, es otro tema y sigue abierto.
+
+### 5. Frase de «Acerca de»
+Quedó puesta una de tres; las otras dos están en `.eval-tmp/RETOMAR.md`. Elige la que prefieras o dicta la tuya.
+
+### 6. Tiempos de lo pendiente
+Estimación por tarea en `docs/ESTIMACION.md`, para revisarla juntos.
