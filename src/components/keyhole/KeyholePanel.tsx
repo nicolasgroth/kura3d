@@ -98,6 +98,7 @@ export const KeyholePanel: React.FC = () => {
       warnings={report ? keyholeWarnings(report, language) : []}
       lastOk={report && Number.isFinite(report.wallBehindMm) ? t(language, 'keyhole.lastOk', { wall: fmt(report.wallBehindMm) }) : null}
     >
+      {/* Textos del selector, armados por AddonPresetPicker: 'keyhole.preset' y `keyhole.preset.${…}`. */}
       <AddonPresetPicker
         textPrefix="keyhole"
         testId="keyhole"

@@ -128,6 +128,7 @@ export const CablePassPanel: React.FC = () => {
       warnings={report ? cablePassWarnings(report, language) : []}
       lastOk={report ? t(language, 'cable.lastOk', { wall: fmt(report.boreMm) }) : null}
     >
+      {/* Textos del selector, armados por AddonPresetPicker: 'cable.preset' y `cable.preset.${…}`. */}
       <AddonPresetPicker
         textPrefix="cable"
         testId="cable"
