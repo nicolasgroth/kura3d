@@ -203,13 +203,14 @@ describe('mover a placa', () => {
     open([PLATES[0]]);
     const sub = await openPosition(userEvent.setup());
     expect(within(sub).queryByRole('menuitem', { name: moveToPlateName('es') })).toBeNull();
+    expect(within(screen.getAllByRole('menu')[0]).queryByRole('menuitem', { name: moveToPlateName('es') })).toBeNull();
   });
 
   it('desde la segunda placa lista las placas (la actual apagada) y «Placa nueva»; mover es un paso', async () => {
     const user = userEvent.setup();
     open(PLATES);
-    const sub = await openPosition(user);
-    const trigger = within(sub).getByRole('menuitem', { name: 'Mover a placa' });
+    // Va en el primer nivel del menú, no dentro de «Posición y tipo».
+    const trigger = within(screen.getAllByRole('menu')[0]).getByRole('menuitem', { name: 'Mover a placa' });
     trigger.focus();
     await user.keyboard('{ArrowRight}');
     await waitFor(() => expect(document.activeElement).not.toBe(trigger));
