@@ -12,6 +12,7 @@ import { MAX_GROUPS } from '../core/scene/groups';
 import { MAX_PLATES } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
 import type { SceneLayout, ScenePlate } from '../types/plates';
+import { geometryBudget, MAX_HISTORY, MAX_MESHES, MAX_OBJECTS } from './codecLimits';
 import { FILE_HISTORY_MAX_STEPS } from './historyBudget';
 import {
   check, color, id, limit, MAX_PROJECT_BYTES, nat, ProjectCodecError, record, shape, validSettings, validStoredGroups, validStoredLayout, validStoredObject, validStoredPlates,
@@ -30,11 +31,6 @@ const MAX_MANIFEST_BYTES = 16 * 1024 * 1024;
  * (máximo 40 pasos) siguen leyéndose igual.
  */
 export const MAX_UNDO_HISTORY = FILE_HISTORY_MAX_STEPS;
-const MAX_HISTORY = MAX_UNDO_HISTORY;
-const MAX_OBJECTS = 10000;
-const MAX_MESHES = 20000;
-const MAX_TRIANGLES_PER_MESH = 1_000_000;
-const MAX_VERTICES_PER_MESH = 3_000_000;
 
 // V1: "KURA", uint32 version, uint32 UTF-8 manifest length, uint32 CRC-32 of all
 // remaining bytes, JSON manifest, tightly packed 32-bit blocks. All words are little-endian.
@@ -97,21 +93,6 @@ function copyWords(src: Uint8Array, dest: Uint8Array) {
 
 function asBytes(words: Words) {
   return new Uint8Array(words.buffer, words.byteOffset, words.byteLength);
-}
-
-// Bound work even when a small manifest references the same large block many times.
-function geometryBudget() {
-  let vertices = 0;
-  let triangles = 0;
-  return (positions: Float32Array, indices: Uint32Array) => {
-    const n = positions.length / 3, t = indices.length / 3;
-    check(Number.isInteger(n) && Number.isInteger(t));
-    limit(n <= MAX_VERTICES_PER_MESH && t <= MAX_TRIANGLES_PER_MESH);
-    vertices += n;
-    triangles += t;
-    limit(vertices <= 16_000_000 && triangles <= 8_000_000);
-    for (const vertex of indices) check(vertex < n);
-  };
 }
 
 function mapSnapshot<I, O extends { id: string }>(snapshot: Snapshot<I>, mapObject: (obj: I) => O): Snapshot<O> {

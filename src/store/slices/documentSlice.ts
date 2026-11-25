@@ -1,12 +1,15 @@
 /**
  * @file src/store/slices/documentSlice.ts
  * @description Slice de documento: estado del motor, escena, historial y proyecto `.kura`
- * (nuevo, abrir, recuperar borrador, guardar, confirmar descarga) e inicialización del motor.
+ * (nuevo, abrir, recuperar borrador, guardar, confirmar descarga) e inicialización del motor. Al abrir o
+ * recuperar avisa si hay placas que se pisan (no las mueve).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
+import { projectBed } from '../../core/scene/activePlateBed';
+import { overlappingPlates } from '../../core/scene/plateOverlap';
 import * as engine from '../../engine';
 import { decodeProjectAsync, encodeProjectAsync } from '../../project/projectCodecClient';
 import { normalizeFileName, openProjectFile, PROJECT_NAME_MAX, saveProjectFile, SaveNotConfirmedError } from '../../project/projectFiles';
@@ -66,6 +69,16 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     }));
   };
 
+  /** Placas del archivo que se pisan: no se recolocan (ver `plateOverlap.ts`), se avisa con sus nombres. */
+  const warnOverlappingPlates = () => {
+    const state = get();
+    const pairs = overlappingPlates(state.plates, projectBed(state));
+    if (pairs.length === 0) return;
+    const name = (id: string) => state.plates.find((p) => p.id === id)?.name ?? id;
+    const names = pairs.map(([a, b]) => `${name(a)} / ${name(b)}`).join(', ');
+    get().addToast(tr('plates.overlap.opened', { names }), 'info');
+  };
+
   return {
     engineReady: false,
     engineError: null,
@@ -123,6 +136,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         if (!canChangeDocument()) throw new Error(tr('fileProject.busy'));
         replaceProject(document, file.name, { location: file.location });
         get().addToast(tr('fileProject.opened', { name: file.name }), 'success');
+        warnOverlappingPlates();
         get().offerPreferredBed();
         return true;
       } catch (error) {
@@ -159,6 +173,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         }
         replaceProject(document, stored.name, { recoveredDraftId });
         get().addToast(tr('recovery.status.restored'), 'success');
+        warnOverlappingPlates();
         return true;
       } catch (error) {
         get().addToast(tr('recovery.status.restoreFailed', { message: projectErrorMessage(error) }), 'error');

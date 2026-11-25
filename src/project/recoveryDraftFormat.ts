@@ -10,13 +10,17 @@
  * @license MIT
  */
 
+import { MAX_GROUPS } from '../core/scene/groups';
+import { MAX_PLATES } from '../core/scene/plates';
+import { MODEL_IO_LIMITS } from '../engine/operationLimits';
 import { computeMeshStats } from '../engine/primitives';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
 import type { SceneLayout, ScenePlate } from '../types/plates';
+import { geometryBudget, MAX_HISTORY, MAX_MESHES, MAX_OBJECTS } from './codecLimits';
 import { withBoundedParams } from './primitiveParamsBounds';
 import { reconcileSceneStructure } from './sceneStructure';
 import {
-  check, color, id, nat, record, validSettings, validStoredGroups, validStoredLayout, validStoredObject, validStoredPlates,
+  check, color, id, limit, nat, ProjectCodecError, record, validSettings, validStoredGroups, validStoredLayout, validStoredObject, validStoredPlates,
   type ObjectMetadata, type ProjectDocument, type ProjectSceneSnapshot,
 } from './projectSchema';
 
@@ -171,25 +175,70 @@ export function isDraftManifest(value: unknown): value is DraftManifest {
   return record(value) && value.format === DRAFT_FORMAT;
 }
 
-/** Rearma y valida el documento a partir del manifiesto y sus bloques ya leídos. */
+/** Tope por malla del borrador: lo que la app puede importar (el `.kura` admite menos y no se pudo guardar así). */
+const DRAFT_PER_MESH = { triangles: MODEL_IO_LIMITS.maxTriangles, vertices: 3 * MODEL_IO_LIMITS.maxTriangles };
+
+/** Índices de malla que referencian los objetos de unas instantáneas (forma mínima; el resto se valida después). */
+function meshRefsOf(snapshots: unknown[], meshCount: number): Set<number> {
+  const out = new Set<number>();
+  for (const s of snapshots) {
+    check(record(s) && Array.isArray(s.objects), 'draft-scene');
+    limit(s.objects.length <= MAX_OBJECTS);
+    for (const o of s.objects as unknown[]) {
+      check(record(o) && nat(o.mesh) && o.mesh < meshCount, 'draft-object');
+      out.add(o.mesh);
+    }
+  }
+  return out;
+}
+
+/**
+ * Rearma y valida el documento a partir del manifiesto y sus bloques ya leídos, con los topes del códec `.kura`
+ * (objetos por escena, mallas, geometría total; `codecLimits.ts`). La escena actual manda: si excede, el
+ * borrador se rechaza (`too-large`). Si lo que excede es solo el historial (más pasos que el tope, o geometría
+ * que usan solo sus instantáneas), se descarta el historial y la escena actual se recupera igual, como hace el
+ * escritor cuando el historial no cabe en la cuota.
+ */
 export function assembleDocument(manifest: unknown, blocks: Map<string, Words>): ProjectDocument {
   check(isDraftManifest(manifest) && validSettings(manifest.settings), 'draft');
   check(Array.isArray(manifest.meshes) && Array.isArray(manifest.past) && Array.isArray(manifest.future), 'draft');
+  limit(manifest.meshes.length <= MAX_MESHES);
   const block = (key: unknown) => {
     check(typeof key === 'string' && blocks.has(key), 'draft-block');
     return blocks.get(key as string)!;
   };
-  const meshes = manifest.meshes.map((ref: unknown) => {
+  const refs = manifest.meshes as unknown[];
+  const budget = geometryBudget(DRAFT_PER_MESH);
+  /** Valida forma y presupuesto de una malla (barato: sin estadísticas). */
+  const validateMesh = (i: number): MeshData => {
+    const ref = refs[i];
     check(record(ref), 'draft-mesh');
     const positions = block(ref.positions), indices = block(ref.indices);
     check(positions instanceof Float32Array && indices instanceof Uint32Array && positions.length % 3 === 0 && indices.length % 3 === 0);
-    const vertices = positions.length / 3;
+    budget(positions, indices);
     for (const value of positions) check(Number.isFinite(value));
-    for (const vertex of indices) check(vertex < vertices);
-    const mesh: MeshData = { positions, indices };
+    return { positions, indices };
+  };
+  const meshes = new Map<number, { mesh: MeshData; stats: SceneObject['stats'] }>();
+  const validated = new Map<number, MeshData>();
+  const currentRefs = meshRefsOf([manifest.current], refs.length);
+  for (const i of currentRefs) validated.set(i, validateMesh(i));
+  let history: unknown[] = [...manifest.past, ...manifest.future];
+  try {
+    limit(history.length <= MAX_HISTORY);
+    for (const i of meshRefsOf(history, refs.length)) if (!validated.has(i)) validated.set(i, validateMesh(i));
+  } catch (err) {
+    if (!(err instanceof ProjectCodecError && err.code === 'too-large')) throw err;
+    history = [];
+  }
+  const meshAt = (i: number) => {
+    const known = meshes.get(i);
+    if (known) return known;
+    const ref = refs[i] as Record<string, unknown>;
+    const mesh = validated.get(i)!;
     if (ref.normals !== undefined) {
       const normals = block(ref.normals);
-      check(normals instanceof Float32Array && normals.length === positions.length);
+      check(normals instanceof Float32Array && normals.length === mesh.positions.length);
       mesh.normals = normals;
     }
     if (ref.faceColors !== undefined) {
@@ -197,23 +246,25 @@ export function assembleDocument(manifest: unknown, blocks: Map<string, Words>):
       const palette = ref.faceColors.palette as unknown[];
       check(palette.every(color));
       const byFace = block(ref.faceColors.indices);
-      check(byFace instanceof Uint32Array && byFace.length <= indices.length / 3);
+      check(byFace instanceof Uint32Array && byFace.length <= mesh.indices.length / 3);
       const colors = new Array<string>(byFace.length);
-      for (let i = 0; i < byFace.length; i++) {
-        check(byFace[i] <= palette.length);
-        if (byFace[i] > 0) colors[i] = palette[byFace[i] - 1] as string;
+      for (let k = 0; k < byFace.length; k++) {
+        check(byFace[k] <= palette.length);
+        if (byFace[k] > 0) colors[k] = palette[byFace[k] - 1] as string;
       }
       mesh.faceColors = colors;
     }
-    return { mesh, stats: computeMeshStats(mesh) };
-  });
+    const entry = { mesh, stats: computeMeshStats(mesh) };
+    meshes.set(i, entry);
+    return entry;
+  };
   function snapshot(s: unknown): ProjectSceneSnapshot {
     check(record(s) && Array.isArray(s.objects) && Array.isArray(s.selectedIds), 'draft-scene');
     const ids = new Set<string>();
     const objects: SceneObject[] = (s.objects as unknown[]).map((stored) => {
-      check(validStoredObject(stored) && nat(stored.mesh) && stored.mesh < meshes.length && !ids.has(stored.id), 'draft-object');
+      check(validStoredObject(stored) && nat(stored.mesh) && validated.has(stored.mesh) && !ids.has(stored.id), 'draft-object');
       ids.add(stored.id);
-      const { mesh, stats } = meshes[stored.mesh];
+      const { mesh, stats } = meshAt(stored.mesh);
       const { mesh: _ref, ...metadata } = withBoundedParams(stored);
       return { ...metadata, mesh, stats: { ...stats, dimensionsMm: [...stats.dimensionsMm] } } as SceneObject;
     });
@@ -221,6 +272,8 @@ export function assembleDocument(manifest: unknown, blocks: Map<string, Words>):
     check(validStoredGroups(s.groups), 'draft-groups');
     check(validStoredPlates(s.plates), 'draft-plates');
     check(validStoredLayout(s.layout), 'draft-layout');
+    if (Array.isArray(s.groups)) limit(s.groups.length <= MAX_GROUPS);
+    if (Array.isArray(s.plates)) limit(s.plates.length <= MAX_PLATES);
     return reconcileSceneStructure({
       objects, selectedIds,
       ...(s.groups !== undefined ? { groups: s.groups as SceneGroup[] } : {}),
@@ -228,10 +281,12 @@ export function assembleDocument(manifest: unknown, blocks: Map<string, Words>):
       ...(s.layout === 'assembly' ? { layout: 'assembly' as const } : {}),
     });
   }
+  const current = snapshot(manifest.current);
+  const keep = history.length > 0;
   return {
     ...manifest.settings,
-    ...snapshot(manifest.current),
-    past: manifest.past.map(snapshot),
-    future: manifest.future.map(snapshot),
+    ...current,
+    past: keep ? manifest.past.map(snapshot) : [],
+    future: keep ? manifest.future.map(snapshot) : [],
   };
 }

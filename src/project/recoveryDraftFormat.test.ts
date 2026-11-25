@@ -1,7 +1,8 @@
 /**
  * @file src/project/recoveryDraftFormat.test.ts
  * @description Pruebas del formato del borrador v2: ida y vuelta, claves estables por contenido
- * (mover o recolorear no crea bloques nuevos) y rechazo de bloques ausentes.
+ * (mover o recolorear no crea bloques nuevos), rechazo de bloques ausentes y topes del códec (objetos,
+ * historial, triángulos totales).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -11,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { captureProject, useKuraStore } from '../store/useKuraStore';
 import { computeMeshStats } from '../engine/primitives';
 import type { MeshData, SceneObject } from '../types/kura';
+import { MAX_HISTORY, MAX_OBJECTS, MAX_TOTAL_TRIANGLES } from './codecLimits';
 import { assembleDocument, blockKey, splitDocument } from './recoveryDraftFormat';
 
 function mesh(size = 1): MeshData {
@@ -81,5 +83,49 @@ describe('borrador de recuperación v2', () => {
     expect(full.manifest.past).toHaveLength(1);
     expect(light.manifest.past).toHaveLength(0);
     expect(light.blocks.size).toBeLessThan(full.blocks.size);
+  });
+
+  it('rechaza un borrador con más objetos que el tope del códec', async () => {
+    const { manifest, blocks } = await splitDocument(documentWith([object('a', mesh())]));
+    const one = manifest.current.objects[0];
+    manifest.current.objects = Array.from({ length: MAX_OBJECTS + 1 }, (_, i) => ({ ...one, id: `o${i}` }));
+    expect(() => assembleDocument(manifest, asWords(blocks))).toThrow(expect.objectContaining({ code: 'too-large' }));
+  });
+
+  it('un historial más largo que el tope se descarta y la escena actual se recupera', async () => {
+    const doc = documentWith([object('a', mesh())]);
+    const { manifest, blocks } = await splitDocument({ ...doc, past: [{ objects: [object('z', mesh(9))], selectedIds: [] }] });
+    manifest.past = Array.from({ length: MAX_HISTORY + 1 }, () => manifest.past[0]);
+    const back = assembleDocument(manifest, asWords(blocks));
+    expect(back.objects.map((o) => o.id)).toEqual(['a']);
+    expect(back.past).toEqual([]);
+    expect(back.future).toEqual([]);
+  });
+
+  it('rechaza un borrador cuya geometría total supera el tope, aunque repita el mismo bloque', async () => {
+    const { manifest, blocks } = await splitDocument(documentWith([object('a', mesh())]));
+    const words = asWords(blocks);
+    // Un bloque de índices de un millón de triángulos (todos al vértice 0) referenciado por muchas mallas.
+    words.set('big', new Uint32Array(3_000_000));
+    const copies = Math.floor(MAX_TOTAL_TRIANGLES / 1_000_000) + 1;
+    manifest.meshes = Array.from({ length: copies }, () => ({ ...manifest.meshes[0], indices: 'big' }));
+    const one = manifest.current.objects[0];
+    manifest.current.objects = manifest.meshes.map((_, i) => ({ ...one, id: `o${i}`, mesh: i }));
+    expect(() => assembleDocument(manifest, words)).toThrow(expect.objectContaining({ code: 'too-large' }));
+  });
+
+  it('si la geometría que solo usa el historial supera el tope, se descarta el historial', async () => {
+    const doc = documentWith([object('a', mesh())]);
+    const { manifest, blocks } = await splitDocument({ ...doc, past: [{ objects: [object('z', mesh(9))], selectedIds: [] }] });
+    const words = asWords(blocks);
+    words.set('big', new Uint32Array(3_000_000));
+    const copies = Math.floor(MAX_TOTAL_TRIANGLES / 1_000_000) + 1;
+    const first = manifest.meshes.length;
+    for (let i = 0; i < copies; i++) manifest.meshes.push({ ...manifest.meshes[0], indices: 'big' });
+    const z = manifest.past[0].objects[0];
+    manifest.past[0].objects = Array.from({ length: copies }, (_, i) => ({ ...z, id: `z${i}`, mesh: first + i }));
+    const back = assembleDocument(manifest, words);
+    expect(back.objects.map((o) => o.id)).toEqual(['a']);
+    expect(back.past).toEqual([]);
   });
 });
