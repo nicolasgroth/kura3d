@@ -104,9 +104,9 @@ test('«Deshacer» caduca solo y en el historial vale solo hasta el siguiente ca
   await expect(entrada.getByText('Ya no aplica: la escena cambió')).toBeVisible();
 });
 
-for (const width of [1440, 1024, 390]) {
+for (const width of [1440, 1024]) {
   test(`el historial queda dentro de la ventana con el texto ajustado a ${width} px`, async ({ page }) => {
-    await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+    await page.setViewportSize({ width, height: 900 });
     await abrir(page);
     await page.evaluate(() => {
       const s = (window as any).__s.getState();

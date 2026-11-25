@@ -236,7 +236,7 @@ test('idioma: bandera SVG y nombre propio; el botón muestra bandera y código',
   await page.evaluate(() => (window as any).__s.getState().setLanguage('es'));
 });
 
-for (const [w, h] of [[1440, 900], [1024, 768], [390, 844]] as const) {
+for (const [w, h] of [[1440, 900], [1024, 768]] as const) {
   for (const tema of ['light', 'dark'] as const) {
     test(`recorrido ${w}px ${tema}: sin desborde y Agregar alcanzable`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: h });

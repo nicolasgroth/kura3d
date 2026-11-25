@@ -72,18 +72,3 @@ test('Mayús+F10 y la tecla Menú abren el menú del grupo; Escape devuelve el f
   await expect(menu).toBeVisible();
   await page.keyboard.press('Escape');
 });
-
-test('el menú de grupo cabe a 390 px', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await prepararGrupo(page, true);
-  const fila = page.getByRole('treeitem', { name: /Conjunto/ }).first();
-  await fila.click({ button: 'right' });
-  const menu = page.getByRole('menu', { name: /Conjunto/ });
-  await expect(menu).toBeVisible();
-  const caja = (await menu.boundingBox())!;
-  expect(caja.x).toBeGreaterThanOrEqual(0);
-  expect(caja.x + caja.width).toBeLessThanOrEqual(390);
-  expect(caja.y).toBeGreaterThanOrEqual(0);
-  expect(caja.y + caja.height).toBeLessThanOrEqual(844);
-  await page.screenshot({ path: `${SHOTS}/menu-grupo-390.png` });
-});

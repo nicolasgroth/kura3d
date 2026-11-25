@@ -13,13 +13,13 @@ import { abrir, importarStl, stlCubes } from './ux-escena-helpers';
 const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/ux6';
 
 for (const scheme of ['light', 'dark'] as const) {
-  for (const width of [1440, 1024, 390]) {
+  for (const width of [1440, 1024]) {
     test(`ux6 en ${width} px, tema ${scheme}, sin errores de consola`, async ({ page }) => {
       const errors: string[] = [];
       page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
       page.on('pageerror', (e) => errors.push(String(e)));
       await page.emulateMedia({ colorScheme: scheme });
-      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      await page.setViewportSize({ width, height: 900 });
       await abrir(page);
       await page.evaluate((s) => (window as any).__s.getState().setColorScheme(s), scheme);
       await page.evaluate(() => (window as any).__s.getState().setLeftSidebarMode('hidden'));

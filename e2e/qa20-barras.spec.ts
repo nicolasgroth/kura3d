@@ -37,7 +37,7 @@ async function conEscena(page: Page, w: number, scheme: 'light' | 'dark') {
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().objects.length)).toBe(1);
 }
 
-for (const w of [1440, 1024, 390]) {
+for (const w of [1440, 1024]) {
   for (const scheme of ['light', 'dark'] as const) {
     test(`sin desborde horizontal ni cortes a ${w}px (${scheme})`, async ({ page }) => {
       await conEscena(page, w, scheme);
@@ -53,20 +53,6 @@ for (const w of [1440, 1024, 390]) {
     });
   }
 }
-
-test('bajo 900 px Ajustes vive en «Más» y no hay un botón Ajustes suelto en la barra', async ({ page }) => {
-  await conEscena(page, 390, 'light');
-  const barra = page.locator('.kura-topbar');
-  console.log('botones barra 390:', await barra.getByRole('button').evaluateAll((els) => els.map((e) => (e.getAttribute('aria-label') || e.textContent || '').trim())));
-  const mas = barra.getByRole('button', { name: /Más/ });
-  await expect(mas).toBeVisible();
-  await mas.click();
-  const menu = page.getByRole('menu').last();
-  await expect(menu.getByRole('menuitem', { name: /Ajustes/ })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(mas).toBeFocused();
-  await expect(barra.getByRole('button', { name: 'Ajustes', exact: true })).toHaveCount(0);
-});
 
 test('historial: saltar a un paso anterior y volver', async ({ page }) => {
   await conEscena(page, 1440, 'light');

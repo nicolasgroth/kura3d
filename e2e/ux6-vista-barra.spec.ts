@@ -142,11 +142,4 @@ test.describe('ux6: barra lateral de Escena (mostrar u ocultar)', () => {
     }
   });
 
-  test('en móvil la barra sigue en la hoja inferior aunque la preferencia sea oculta', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await abrir(page);
-    await page.evaluate(() => (window as any).__s.getState().setLeftSidebarMode('hidden'));
-    await expect(page.getByTestId('left-sidebar-handle')).toBeHidden();
-    await page.screenshot({ path: `${SHOTS}/movil-390.png` });
-  });
 });

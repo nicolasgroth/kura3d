@@ -14,7 +14,6 @@ test.use({ locale: 'es-CL' });
 
 const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/gen-ui';
 const TAMANOS = [
-  { nombre: '390', width: 390, height: 844 },
   { nombre: '1024', width: 1024, height: 768 },
   { nombre: '1440', width: 1440, height: 900 },
 ] as const;

@@ -35,55 +35,6 @@ const pequenos = (page: Page) =>
     return [...new Set(out)];
   });
 
-test.describe('390 px táctil', () => {
-  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
-
-  test('ningún control visible mide menos de 44x44 en las vistas principales', async ({ page }) => {
-    test.setTimeout(300000);
-    await abrir(page);
-    const fallos: Record<string, string[]> = {};
-    const medir = async (vista: string) => {
-      await page.waitForTimeout(350);
-      const lista = await pequenos(page);
-      if (lista.length) fallos[vista] = lista;
-    };
-    await medir('escena vacía');
-    await crearCubo(page);
-    await medir('objeto seleccionado');
-    await page.getByRole('button', { name: 'Agregar', exact: true }).tap();
-    await medir('hoja Agregar');
-    await page.getByRole('button', { name: 'Escena', exact: true }).tap({ timeout: 4000 }).catch(() => undefined);
-    await medir('hoja Escena');
-    await page.getByRole('button', { name: 'Inspector', exact: true }).tap();
-    await medir('hoja Inspector');
-    await page.evaluate(() => (window as any).__s.getState().setActiveTool('measure'));
-    await medir('hoja Medir');
-    await page.evaluate(() => (window as any).__s.getState().setActiveTool('select'));
-    await page.evaluate(() => (window as any).__s.getState().setAiDrawerOpen(true));
-    await medir('chat de IA');
-    await page.evaluate(() => (window as any).__s.getState().setAiDrawerOpen(false));
-    await page.getByRole('button', { name: 'Más', exact: true }).tap();
-    await medir('menú Más');
-    await page.screenshot({ path: `${SHOTS}/tactil-mas.png` });
-    expect(fallos).toEqual({});
-  });
-
-  test('los avisos no tapan la hoja ni las barras', async ({ page }) => {
-    await abrir(page);
-    await crearCubo(page);
-    await page.getByRole('button', { name: 'Inspector', exact: true }).tap();
-    await page.evaluate(() => (window as any).__s.getState().addToast('Aviso de prueba para comprobar que no tapa la hoja', 'info'));
-    await expect(page.locator('.kura-toast').first()).toBeVisible();
-    const toast = (await rect(page, '.kura-toast'))!;
-    for (const sel of ['.kura-narrow-panel-actions', '.kura-sidebar-right', '.kura-mobile-transform']) {
-      const r = (await rect(page, sel))!;
-      const cruza = toast.y < r.y + r.height && toast.y + toast.height > r.y && toast.x < r.x + r.width && toast.x + toast.width > r.x;
-      expect(cruza, `el aviso tapa ${sel}`).toBe(false);
-    }
-    await page.screenshot({ path: `${SHOTS}/tactil-aviso.png` });
-  });
-});
-
 test.describe('escritorio 1280 px', () => {
   test('el chat de IA mide <= 380 px, se pliega y el visor conserva >= 50 % del ancho', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });

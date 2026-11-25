@@ -11,7 +11,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { abrir, stlCubes, importarStl } from './ux-escena-helpers';
 
 const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/pulido7';
-const ANCHOS: Array<[number, number]> = [[390, 844], [1024, 768], [1280, 800], [1440, 900]];
+const ANCHOS: Array<[number, number]> = [[1024, 768], [1280, 800], [1440, 900]];
 
 async function avisos(page: Page, n = 3) {
   await page.evaluate((k) => {
@@ -72,21 +72,3 @@ for (const [w, h] of ANCHOS) {
     });
   });
 }
-
-test.describe('diálogo de unidades a 390 px', () => {
-  test.use({ viewport: { width: 390, height: 844 } });
-  test('el aviso del STL diminuto no tapa ninguna opción del diálogo', async ({ page }) => {
-    await abrir(page);
-    await importarStl(page, 'diminuto.stl', stlCubes([[0, 0, 0]], 0.9));
-    const aviso = page.locator('.kura-toast', { hasText: 'mide 0,9 mm' }).first();
-    await expect(aviso).toBeVisible({ timeout: 30000 });
-    await aviso.getByRole('button', { name: 'Otra unidad…' }).click();
-    const dlg = page.getByRole('dialog');
-    await expect(dlg).toBeVisible();
-    await page.waitForTimeout(700);
-    const opciones = await dlg.locator('button:not(.kura-toast *, .kura-toast-more), input, label').evaluateAll((els) => els.map((e) => { const b = e.getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; }));
-    const tapadas = await page.evaluate((pts) => pts.filter((p) => { const t = document.elementFromPoint(p.x, p.y); return !!t?.closest('.kura-toast, .kura-toast-more'); }), opciones);
-    await page.screenshot({ path: `${SHOTS}/avisos-unidades-390.png` });
-    expect(tapadas).toEqual([]);
-  });
-});

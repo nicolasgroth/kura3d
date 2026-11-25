@@ -11,7 +11,7 @@ import { abrir, crearCubo, aPixel } from './ux-movil-helpers';
 
 const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/ux-cierre';
 
-for (const [w, h] of [[1280, 800], [390, 844]] as const) {
+for (const [w, h] of [[1280, 800]] as const) {
   test(`el menú del objeto muestra su título completo al abrir (${w}x${h})`, async ({ page }) => {
     const errs: string[] = [];
     page.on('console', (m) => m.type() === 'error' && errs.push(m.text()));

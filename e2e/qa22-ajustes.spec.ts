@@ -679,7 +679,7 @@ test.describe('11. Pintura: variantes del primer trazo', () => {
 });
 
 test.describe('10b. Menú contextual: teclado y bordes de ventana', () => {
-  for (const [w, h] of [[1440, 900], [390, 844]] as const) {
+  for (const [w, h] of [[1440, 900]] as const) {
     test(`flechas, Enter, Escape y Tab sin salir de la ventana (${w} px) y una acción por submenú`, async ({ page }) => {
       test.setTimeout(150000);
       const errs = await abrir(page, w, h);

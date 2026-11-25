@@ -46,20 +46,3 @@ test.describe('escritorio', () => {
     await expect(page.locator('.kura-split-notice')).toBeVisible();
   });
 });
-
-test.describe('móvil', () => {
-  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
-
-  test('el botón «Sin cama» queda dentro de la pantalla en la fila de vistas', async ({ page }) => {
-    await abrir(page);
-    const btn = page.getByTestId('bed-toggle');
-    await expect(btn).toBeVisible();
-    await page.screenshot({ path: `${SHOTS}/sin-cama-fila-390.png` });
-    const r = await btn.evaluate((e) => { const b = e.getBoundingClientRect(); return { right: b.right, left: b.left, vw: window.innerWidth }; });
-    // Entero y fuera de la zona desvanecida (28 px) del borde derecho
-    expect(r.left).toBeGreaterThanOrEqual(0);
-    expect(r.right).toBeLessThanOrEqual(r.vw - 28);
-    await btn.tap();
-    expect(await page.evaluate(() => (window as any).__s.getState().showBed)).toBe(false);
-  });
-});

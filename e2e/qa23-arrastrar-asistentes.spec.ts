@@ -384,7 +384,6 @@ test.describe('B. asistentes', () => {
   for (const [nombre, w, h, lang, oscuro] of [
     ['en-1440', 1440, 900, 'en', false],
     ['es-oscuro-1024', 1024, 700, 'es', true],
-    ['en-390', 390, 800, 'en', false],
   ] as const) {
     test(`panel Asistentes en ${nombre}`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: h });

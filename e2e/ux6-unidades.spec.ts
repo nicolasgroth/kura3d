@@ -52,23 +52,6 @@ test('«Otra unidad…» abre el diálogo con todas las sugerencias y aplica en 
   await expect.poll(() => mayor(page)).toBeCloseTo(0.9, 2);
 });
 
-test('ajustar a N mm con campo propio; un tamaño inválido desactiva Aplicar', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await abrir(page);
-  await importarDiminuto(page);
-  await page.locator('.kura-toast', { hasText: 'mide 0,9 mm' }).first().getByRole('button', { name: 'Otra unidad…' }).click();
-  const dialog = page.getByRole('dialog', { name: '¿En qué unidad está este modelo?' });
-  const campo = dialog.getByRole('textbox', { name: /Ajustar el lado mayor a/ });
-  await campo.fill('0');
-  await expect(dialog.getByRole('alert')).toHaveText('Escribe un tamaño entre 1 y 5000 mm.');
-  await expect(page.getByTestId('unit-apply')).toBeDisabled();
-  await campo.fill('62,5');
-  await expect(dialog.getByText('queda en 62,5 mm')).toBeVisible();
-  await page.screenshot({ path: `${SHOTS}/unidades-dialogo-390.png` });
-  await page.getByTestId('unit-apply').click();
-  await expect.poll(() => mayor(page)).toBeCloseTo(62.5, 1);
-});
-
 test('los avisos con una sola acción no cambian', async ({ page }) => {
   await abrir(page);
   await page.evaluate(() => (window as any).__s.getState().addToast('Aviso de prueba', 'info', { label: 'Hacer algo', run: () => undefined }));

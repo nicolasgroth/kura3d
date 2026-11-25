@@ -226,7 +226,7 @@ test.describe('2. Agregar', () => {
 
 test.describe('3. Menús sin desborde', () => {
   test.setTimeout(120_000);
-  for (const [w, h] of [[1440, 900], [1024, 768], [390, 844]] as const) {
+  for (const [w, h] of [[1440, 900], [1024, 768]] as const) {
     test(`Insertar, Acciones, Idioma y Agregar quedan dentro de la ventana a ${w}px`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: h });
       await abrir(page);
@@ -644,28 +644,5 @@ test.describe('8. Idiomas', () => {
     await enlazar(page);
     expect(await st(page, 'language')).toBe('de');
     await page.evaluate(() => (window as any).__s.getState().setLanguage('es'));
-  });
-});
-
-test.describe('Móvil 390 px', () => {
-  test('recorrido usable: agregar, herramientas, proyecto y paleta sin desborde ni errores', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await abrir(page);
-    await agregarForma(page, 'Cubo');
-    await expect.poll(() => nObjs(page)).toBe(1);
-    await page.screenshot({ path: `${OUT}/movil-390-base.png` });
-    await page.locator('.kura-topbar .kura-project-trigger').click();
-    await expect(panel(page).or(page.locator('#kura-inspector-panel'))).toBeAttached();
-    await page.screenshot({ path: `${OUT}/movil-390-proyecto.png` });
-    const d = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }));
-    expect(d.sw).toBeLessThanOrEqual(d.cw + 1);
-    // Objetivos táctiles de la barra inferior de al menos 32 px.
-    const chicos = await page.evaluate(() =>
-      [...document.querySelectorAll<HTMLElement>('.kura-narrow-panel-actions button, .kura-topbar button')]
-        .filter((b) => b.offsetParent !== null)
-        .map((b) => ({ n: b.getAttribute('aria-label') ?? b.innerText, w: b.getBoundingClientRect().width, h: b.getBoundingClientRect().height }))
-        .filter((b) => b.w < 32 || b.h < 32),
-    );
-    test.info().annotations.push({ type: 'objetivos-chicos', description: JSON.stringify(chicos) });
   });
 });

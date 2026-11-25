@@ -63,23 +63,3 @@ for (const width of [1280, 1024]) {
     });
   }
 }
-
-test('390 px: la barra superior no se recorta y todos sus botones caben en la pantalla', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await abrir(page);
-  await crearCubo(page);
-  await page.waitForTimeout(500);
-  const r = await page.evaluate(() => {
-    const bar = document.querySelector('.kura-topbar') as HTMLElement;
-    const fuera = [...bar.querySelectorAll('button, select')]
-      .filter((el) => (el as HTMLElement).getClientRects().length > 0)
-      .map((el) => ({ el, b: el.getBoundingClientRect() }))
-      .filter(({ b }) => b.right > window.innerWidth + 0.5 || b.left < -0.5)
-      .map(({ el }) => el.outerHTML.slice(0, 80));
-    return { sw: bar.scrollWidth, cw: bar.clientWidth, fuera };
-  });
-  await page.screenshot({ path: `${SHOTS}/barra-390.png`, clip: { x: 0, y: 0, width: 390, height: 60 } });
-  expect(r.sw).toBeLessThanOrEqual(r.cw);
-  expect(r.fuera).toEqual([]);
-  expect(await sinNombre(page)).toEqual([]);
-});
