@@ -43,7 +43,8 @@ test('Proyecto: sin menú, muestra el panel con acciones de archivo; nombre, cam
   await expect(boton).not.toHaveAttribute('aria-haspopup', /.+/);
   await boton.click();
   await expect.poll(() => st(page, 'rightCollapsed')).toBe(false);
-  await expect.poll(() => st(page, 'selectedIds').then((ids: string[]) => ids.length)).toBe(0);
+  // «Proyecto» fija el panel Proyecto sin borrar la selección.
+  await expect.poll(() => st(page, 'selectedIds').then((ids: string[]) => ids.length)).toBe(1);
   const panel = page.locator('#kura-inspector-panel');
   await expect(panel).toHaveAttribute('data-context', 'project');
   for (const nombre of ['Nuevo proyecto', 'Abrir proyecto…', 'Guardar proyecto', 'Guardar proyecto como…']) {
@@ -109,7 +110,10 @@ test('Agregar: menú lateral con primitivas, teclado completo y Esc devuelve el 
   const menu = page.getByRole('menu', { name: 'Agregar forma' });
   await expect(menu).toBeVisible();
   const items = menu.getByRole('menuitem');
-  await expect(items).toHaveCount(9);
+  // «Agregar» e «Insertar» comparten catálogo: las 9 primitivas y luego generadores, asistentes e inserciones.
+  const catalogo = ['Cubo', 'Cilindro', 'Disco', 'Tubo hueco', 'Esfera', 'Cono', 'Toroide', 'Prisma', 'Texto 3D', 'Importar SVG', 'Imagen → 3D', 'Rosca ISO (M3–M64)', 'Cubo de calibración 30 mm', 'Asistentes', 'Alojamiento de imán', 'Torreta para tornillo'];
+  await expect(items).toHaveCount(catalogo.length);
+  expect(await items.evaluateAll((els) => els.map((e) => (e.textContent || '').trim()))).toEqual(catalogo);
   for (const n of ['Cubo', 'Cilindro', 'Disco', 'Tubo hueco', 'Esfera', 'Cono', 'Toroide', 'Prisma', 'Texto 3D']) {
     await expect(menu.getByRole('menuitem', { name: n, exact: true }).locator('svg')).toHaveCount(1);
   }

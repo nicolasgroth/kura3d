@@ -110,6 +110,9 @@ test('menú contextual: Ahuecar abre el panel con solo sus opciones', async ({ p
   if (!box) throw new Error('sin visor');
   // El cubo inicial queda al centro del visor.
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: 'right' });
+  // El primer nivel del menú es corto: Ahuecar vive un submenú más adentro, en «Preparar para imprimir».
+  await expect(page.getByRole('menuitem', { name: /Ahuecar/ })).toHaveCount(0);
+  await page.getByRole('menuitem', { name: 'Preparar para imprimir' }).click();
   const item = page.getByRole('menuitem', { name: /Ahuecar/ }).first();
   await expect(item).toBeVisible();
   await item.click();

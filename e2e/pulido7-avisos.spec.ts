@@ -35,6 +35,7 @@ for (const [w, h] of ANCHOS) {
         const items = [...document.querySelectorAll('.kura-toast, .kura-toast-more')].map((e) => ({ name: e.className, ...rect(e) }));
         return { tip, items };
       });
+      await page.screenshot({ path: `${SHOTS}/avisos-consejo-${w}.png` });
       expect(r.items.some((i) => i.name.includes('kura-toast-close-all'))).toBe(true);
       for (const t of r.tip) {
         for (const i of r.items) {
@@ -42,7 +43,6 @@ for (const [w, h] of ANCHOS) {
           expect(cruza, `${i.name} cruza la barra de Consejo`).toBe(false);
         }
       }
-      await page.screenshot({ path: `${SHOTS}/avisos-consejo-${w}.png` });
     });
 
     test('con un diálogo modal abierto, ningún aviso se dibuja encima de él', async ({ page }) => {

@@ -212,14 +212,16 @@ test.describe('4. Mayús+H', () => {
     await abrir(page, 1440, 900);
     const a = await crear(page, 'box', { width: 20, height: 20, depth: 20 });
     await page.evaluate((i) => (window as any).__s.getState().setSelection([i]), a);
-    await page.getByRole('button', { name: /Renombrar/ }).first().click().catch(() => undefined);
+    // F2 abre el campo de renombrar (no hay botón «Renombrar» con ese nombre): el foco queda en un campo de texto.
     await page.keyboard.press('F2');
-    const inp = page.locator('input[type=text]:focus').first();
-    if (await inp.count()) {
-      await page.keyboard.type('HOLA');
-      const v = await page.evaluate((i) => (window as any).__s.getState().objects.find((o: any) => o.id === i).visible, a);
-      expect(v).toBe(true);
-    }
+    const inp = page.locator('input:focus').first();
+    await expect(inp).toBeVisible();
+    await page.keyboard.type('hola');
+    await page.keyboard.press('Shift+H');
+    // La H con Mayús se escribe en el campo y no oculta la selección ni agrega pasos de historial.
+    await expect(inp).toHaveValue(/holaH$/);
+    const v = await page.evaluate((i) => (window as any).__s.getState().objects.find((o: any) => o.id === i).visible, a);
+    expect(v).toBe(true);
   });
 });
 
@@ -565,9 +567,15 @@ test.describe('10. Menú contextual: submenús, nombres y teclado', () => {
         await page.keyboard.press('Control+k');
         const campo = page.locator('input[role=combobox]').first();
         await campo.fill(n.nombre.replace('…', '').trim());
-        await page.waitForTimeout(120);
-        const ops = await page.getByRole('option').allTextContents();
-        if (!ops.some((o) => o.replace(/\s+/g, ' ').includes(n.nombre.replace('…', '').trim()))) faltanEnPaleta.push(`${n.id}="${n.nombre}" (opciones: ${ops.slice(0, 3).join(' / ')})`);
+        // La lista se filtra con un pequeño retraso: se espera a que aparezca el nombre en vez de un tiempo fijo.
+        const buscado = n.nombre.replace('…', '').trim();
+        const hay = (ops: string[]) => ops.some((o) => o.replace(/\s+/g, ' ').includes(buscado));
+        let ops = await page.getByRole('option').allTextContents();
+        for (let k = 0; k < 20 && !hay(ops); k++) {
+          await page.waitForTimeout(150);
+          ops = await page.getByRole('option').allTextContents();
+        }
+        if (!hay(ops)) faltanEnPaleta.push(`${n.id}="${n.nombre}" (opciones: ${ops.slice(0, 3).join(' / ')})`);
         await page.keyboard.press('Escape');
       }
       console.log(idioma, 'comandos del catálogo que NO aparecen con ese nombre en la paleta:', faltanEnPaleta);
