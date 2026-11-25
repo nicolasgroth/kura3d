@@ -21,6 +21,8 @@ export interface FloatingBarItem {
   labelKey: TranslationKey;
   /** Tooltip propio cuando difiere del nombre. */
   tipKey?: TranslationKey;
+  /** Ícono del botón; distinto del id cuando el estado cambia el dibujo (Mostrar/Ocultar). */
+  icon: 'palette' | 'copy' | 'eye' | 'eye-off' | 'lock' | 'unlock' | 'trash' | 'more';
   /** Estado de un botón de dos estados (Bloquear). */
   pressed?: boolean;
   /** Sin efecto sobre la selección actual (conserva foco y tooltip). */
@@ -33,19 +35,20 @@ export function floatingBarItems(objects: readonly SceneObject[], selectedIds: r
   const allLocked = picked.length > 0 && picked.every((o) => o.locked);
   const allHidden = picked.length > 0 && picked.every((o) => !o.visible);
   return [
-    { id: 'color', labelKey: 'inspector.field.color' },
-    { id: 'duplicate', labelKey: 'ctx.duplicate' },
+    { id: 'color', labelKey: 'inspector.field.color', icon: 'palette' },
+    { id: 'duplicate', labelKey: 'ctx.duplicate', icon: 'copy' },
     allHidden
-      ? { id: 'hide', labelKey: 'ux8.menu.show', tipKey: 'ux8.menu.show.tip' }
-      : { id: 'hide', labelKey: 'menu.more.hide', tipKey: 'menu.more.hide.tip' },
+      ? { id: 'hide', labelKey: 'ux8.menu.show', tipKey: 'ux8.menu.show.tip', icon: 'eye' }
+      : { id: 'hide', labelKey: 'menu.more.hide', tipKey: 'menu.more.hide.tip', icon: 'eye-off' },
     {
       id: 'lock',
       labelKey: allLocked ? 'ux8.menu.unlock' : 'ux8.menu.lock',
       tipKey: allLocked ? 'ux8.menu.unlock.tip' : 'ux8.menu.lock.tip',
       pressed: allLocked,
+      icon: allLocked ? 'lock' : 'unlock',
     },
-    { id: 'delete', labelKey: 'ctx.delete', disabled: picked.some((o) => o.locked) },
-    { id: 'more', labelKey: 'menu.more', tipKey: 'floatingBar.more.tip' },
+    { id: 'delete', labelKey: 'ctx.delete', disabled: picked.some((o) => o.locked), icon: 'trash' },
+    { id: 'more', labelKey: 'menu.more', tipKey: 'floatingBar.more.tip', icon: 'more' },
   ];
 }
 
@@ -64,7 +67,7 @@ export function runFloatingBarAction(id: Exclude<FloatingBarActionId, 'color' | 
     case 'lock': {
       const picked = s.objects.filter((o) => ids.includes(o.id));
       const allLocked = picked.every((o) => o.locked);
-      picked.forEach((o) => s.updateObjectMeta(o.id, { locked: !allLocked }));
+      s.updateObjectsMeta(picked.map((o) => o.id), { locked: !allLocked });
       return;
     }
     case 'delete':
@@ -74,7 +77,7 @@ export function runFloatingBarAction(id: Exclude<FloatingBarActionId, 'color' | 
 }
 
 /** Color base de toda la selección (lo mismo que el campo «Color base» del inspector, objeto por objeto). */
-export function applyFloatingBarColor(hex: string): void {
+export function applyFloatingBarColor(hex: string, recordHistory = true): void {
   const s = useKuraStore.getState();
-  s.selectedIds.forEach((id) => s.updateObjectMeta(id, { color: hex }));
+  s.updateObjectsMeta(s.selectedIds, { color: hex }, recordHistory);
 }

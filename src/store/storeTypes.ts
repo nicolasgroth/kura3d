@@ -390,6 +390,15 @@ export interface KuraStoreState {
     >,
   ) => void;
   /**
+   * Cambia metadatos de varios objetos en UN solo paso de deshacer. `recordHistory: false` aplica sin guardar paso
+   * (vista en vivo mientras se arrastra un selector; el primer cambio del gesto sí lo guarda).
+   */
+  updateObjectsMeta: (
+    ids: readonly string[],
+    patch: Partial<Pick<SceneObject, 'color' | 'visible' | 'locked'>>,
+    recordHistory?: boolean,
+  ) => void;
+  /**
    * Mayús+H en el visor: oculta la selección (o la muestra si ya estaba toda oculta); sin selección,
    * muestra todo lo oculto. Un solo paso de deshacer; devuelve los ids cambiados.
    */

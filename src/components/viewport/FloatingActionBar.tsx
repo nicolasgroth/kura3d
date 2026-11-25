@@ -16,7 +16,7 @@ import { floatingBarVisible, useFloatingBarPrefs } from '../../store/floatingBar
 import { useMagnetPanel } from '../../store/magnetPanel';
 import { useScrewBossPanel } from '../../store/screwBossPanel';
 import { useKuraStore } from '../../store/useKuraStore';
-import { applyFloatingBarColor, floatingBarItems, runFloatingBarAction, type FloatingBarActionId } from './floatingBarActions';
+import { applyFloatingBarColor, floatingBarItems, runFloatingBarAction, type FloatingBarActionId, type FloatingBarItem } from './floatingBarActions';
 import { measureFloatingBar, registerFloatingBar } from './floatingBarBridge';
 import '../../styles/floatingBar.css';
 
@@ -55,6 +55,21 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
   const barRef = useRef<HTMLDivElement | null>(null);
   const buttons = useRef<Array<HTMLButtonElement | null>>([]);
   const colorInput = useRef<HTMLInputElement | null>(null);
+  const colorGesture = useRef(false);
+  // El evento nativo `change` (soltar el selector) cierra el gesto: el siguiente cambio vuelve a guardar un paso.
+  useEffect(() => {
+    const input = colorInput.current;
+    if (!input) return;
+    const end = () => {
+      colorGesture.current = false;
+    };
+    input.addEventListener('change', end);
+    input.addEventListener('blur', end);
+    return () => {
+      input.removeEventListener('change', end);
+      input.removeEventListener('blur', end);
+    };
+  }, [visible]);
   const [focusIndex, setFocusIndex] = useState(0);
 
   const setBar = useCallback((el: HTMLDivElement | null) => {
@@ -142,17 +157,21 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
     runFloatingBarAction(id);
   };
 
-  const iconOf = (id: FloatingBarActionId, pressed: boolean | undefined, labelKey: string) => {
-    switch (id) {
-      case 'color':
+  const iconOf = (icon: FloatingBarItem['icon']) => {
+    switch (icon) {
+      case 'palette':
         return <Palette size={ICON} aria-hidden="true" />;
-      case 'duplicate':
+      case 'copy':
         return <Copy size={ICON} aria-hidden="true" />;
-      case 'hide':
-        return labelKey === 'ux8.menu.show' ? <Eye size={ICON} aria-hidden="true" /> : <EyeOff size={ICON} aria-hidden="true" />;
+      case 'eye':
+        return <Eye size={ICON} aria-hidden="true" />;
+      case 'eye-off':
+        return <EyeOff size={ICON} aria-hidden="true" />;
       case 'lock':
-        return pressed ? <Lock size={ICON} aria-hidden="true" /> : <Unlock size={ICON} aria-hidden="true" />;
-      case 'delete':
+        return <Lock size={ICON} aria-hidden="true" />;
+      case 'unlock':
+        return <Unlock size={ICON} aria-hidden="true" />;
+      case 'trash':
         return <Trash2 size={ICON} aria-hidden="true" />;
       default:
         return <MoreHorizontal size={ICON} aria-hidden="true" />;
@@ -193,7 +212,7 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
             onFocus={() => setFocusIndex(i)}
             onClick={(e) => run(item.id, item.disabled, e.currentTarget)}
           >
-            {iconOf(item.id, item.pressed, item.labelKey)}
+            {iconOf(item.icon)}
             {item.id === 'color' && primary && <span className="kura-floating-bar-dot" style={{ background: primary.color }} aria-hidden="true" />}
           </button>
         );
@@ -206,7 +225,11 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
         tabIndex={-1}
         aria-hidden="true"
         value={primary?.color ?? '#808080'}
-        onChange={(e) => applyFloatingBarColor(e.target.value)}
+        onChange={(e) => {
+          // Un gesto de arrastre = un paso de deshacer: el primer cambio lo guarda, el resto es vista en vivo.
+          applyFloatingBarColor(e.target.value, !colorGesture.current);
+          colorGesture.current = true;
+        }}
       />
     </div>
   );

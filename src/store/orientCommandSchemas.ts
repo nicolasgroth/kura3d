@@ -9,16 +9,16 @@
  * @license MIT
  */
 
-import { reasonText } from '../components/orient/orientView';
+import { reasonText } from '../core/orient/orientReasonText';
 import { CommandError } from '../core/bus/commandErrors';
 import { pick, readBoolean, readEnum, readRange, readString, type RawParams } from '../core/bus/commandValidation';
 import { fromUserVector, toUserVector } from '../core/scene/displayAxes';
 import { ORIENT_RANGES, type OrientAnalysis, type OrientBed, type OrientCandidate } from '../engine/orient';
 import { OPERATION_RANGES as OR } from '../engine/operationLimits';
 import type { FitBed } from '../engine/fitToBed';
-import type { LanguageCode, SceneObject, Vec3 } from '../types/kura';
+import { SUPPORTED_LANGUAGES, type LanguageCode, type SceneObject, type Vec3 } from '../types/kura';
 
-export const ORIENT_LANGUAGES: readonly LanguageCode[] = ['es', 'en', 'de', 'fr', 'hi', 'zh'];
+export const ORIENT_LANGUAGES: readonly LanguageCode[] = SUPPORTED_LANGUAGES.map((l) => l.code);
 
 export type Quaternion = [number, number, number, number];
 

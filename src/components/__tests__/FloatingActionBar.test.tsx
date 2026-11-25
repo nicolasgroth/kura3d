@@ -20,7 +20,7 @@ vi.mock('../scene/confirmDeleteSelection', () => ({ confirmDeleteSelection: (ids
 
 const duplicateObjects = vi.fn();
 const toggleSelectionVisibility = vi.fn(() => ['a']);
-const updateObjectMeta = vi.fn();
+const updateObjectsMeta = vi.fn();
 
 const toolbar = () => screen.getByRole('toolbar', { name: t('es', 'floatingBar.label') });
 const buttons = () => Array.from(toolbar().querySelectorAll<HTMLButtonElement>('button'));
@@ -39,7 +39,7 @@ beforeEach(() => {
     surfacePick: null,
     duplicateObjects,
     toggleSelectionVisibility,
-    updateObjectMeta,
+    updateObjectsMeta,
   } as never);
 });
 
@@ -64,7 +64,7 @@ describe('FloatingActionBar', () => {
     fireEvent.click(btn('hide'));
     expect(toggleSelectionVisibility).toHaveBeenCalledTimes(1);
     fireEvent.click(btn('lock'));
-    expect(updateObjectMeta).toHaveBeenCalledWith('a', { locked: true });
+    expect(updateObjectsMeta).toHaveBeenCalledWith(['a'], { locked: true });
     fireEvent.click(btn('delete'));
     expect(deleteSelection).toHaveBeenCalledWith(['a']);
   });
@@ -73,8 +73,7 @@ describe('FloatingActionBar', () => {
     useKuraStore.setState({ selectedIds: ['a', 'b'] } as never);
     const { container } = render(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
     fireEvent.change(container.querySelector('input[type="color"]')!, { target: { value: '#123456' } });
-    expect(updateObjectMeta).toHaveBeenCalledWith('a', { color: '#123456' });
-    expect(updateObjectMeta).toHaveBeenCalledWith('b', { color: '#123456' });
+    expect(updateObjectsMeta).toHaveBeenCalledWith(['a', 'b'], { color: '#123456' }, true);
   });
 
   it('Bloquear lleva aria-pressed y pasa a Desbloquear; Ocultar pasa a Mostrar', () => {
@@ -84,7 +83,7 @@ describe('FloatingActionBar', () => {
     expect(btn('lock').getAttribute('aria-label')).toBe(t('es', 'ux8.menu.unlock'));
     expect(btn('hide').getAttribute('aria-label')).toBe(t('es', 'ux8.menu.show'));
     fireEvent.click(btn('lock'));
-    expect(updateObjectMeta).toHaveBeenCalledWith('a', { locked: false });
+    expect(updateObjectsMeta).toHaveBeenCalledWith(['a'], { locked: false });
     // Eliminar no actúa sobre un objeto bloqueado.
     expect(btn('delete').getAttribute('aria-disabled')).toBe('true');
     fireEvent.click(btn('delete'));
