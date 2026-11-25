@@ -23,6 +23,8 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { useMagnetPanel } from '../../store/magnetPanel';
 import { useScrewBossPanel } from '../../store/screwBossPanel';
+import { useKeyholePanel } from '../../store/keyholePanel';
+import { useCablePassPanel } from '../../store/cablePassPanel';
 import { useUserAxisGizmoColors } from './gizmoAxisColors';
 import { type Vec3 } from '../../types/kura';
 import { PaintBrushCursor } from './PaintBrushCursor';
@@ -34,6 +36,8 @@ import { PrinterBedOverlay } from './PrinterBedOverlay';
 import { PreviewLayers } from './PreviewLayers';
 import { MagnetPlacementLayer } from './MagnetPlacementLayer';
 import { ScrewBossPlacementLayer } from './ScrewBossPlacementLayer';
+import { KeyholePlacementLayer } from './KeyholePlacementLayer';
+import { CablePassPlacementLayer } from './CablePassPlacementLayer';
 import { FitPreviewGhost } from '../fitToBed/FitPreviewGhost';
 import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
@@ -131,12 +135,16 @@ export const SceneContent: React.FC<{
   const magnetOpen = useMagnetPanel((s) => s.open);
   // Igual con la torreta: el clic coloca, el gizmo se oculta.
   const screwBossOpen = useScrewBossPanel((s) => s.open);
+  const keyholeOpen = useKeyholePanel((s) => s.open);
+  const cablePassOpen = useCablePassPanel((s) => s.open);
   const showGizmo =
     activeTool === 'select' &&
     !pickingSurface &&
     !operationOpen &&
     !magnetOpen &&
     !screwBossOpen &&
+    !keyholeOpen &&
+    !cablePassOpen &&
     Boolean(primaryObj) &&
     Boolean(activeTargetGroup) &&
     !primaryObj?.locked &&
@@ -226,6 +234,8 @@ export const SceneContent: React.FC<{
       <PreviewLayers />
       <MagnetPlacementLayer />
       <ScrewBossPlacementLayer />
+      <KeyholePlacementLayer />
+      <CablePassPlacementLayer />
       <FitPreviewGhost />
       <SegmentHighlight />
       <OpenEdgesOverlay />

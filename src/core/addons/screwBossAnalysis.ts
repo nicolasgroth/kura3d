@@ -12,9 +12,10 @@
 
 import type { MeshData, Vec3 } from '../../types/kura';
 import type { PocketDims } from './magnetPocket';
-import { addScaled, insideMesh, rayHits } from './meshRays';
+import { addScaled, insideMesh } from './meshRays';
 import { pocketSignedDistance } from './pocketNeighbors';
 import { measureMouthSurface } from './pocketSurface';
+import { thicknessBelow } from './wallThickness';
 import { BOSS_SEAT_OVERLAP_MM, bossWallMm, placeScrewBoss, type ScrewBossParams, type ScrewBossPlan } from './screwBoss';
 
 /** Tope del hundimiento del poste (mm): una bajada mayor no es curvatura sino otra cara. */
@@ -40,15 +41,6 @@ export interface ScrewBossAnalysis {
   report: ScrewBossReport;
   /** El pie del poste sale de la pieza por lados opuestos: más ancho que la zona de apoyo (no se coloca). */
   spansFace: boolean;
-}
-
-/** Espesor de la pieza bajo `point` a lo largo de −`axis` (mm); Infinity si el rayo no la cruza. */
-function thicknessBelow(world: MeshData, point: Vec3, axis: Vec3): number {
-  const lift = 0.5;
-  const hits = rayHits(world, addScaled(point, axis, lift), [-axis[0], -axis[1], -axis[2]]);
-  const entry = hits.findIndex((d) => d >= lift - 0.05);
-  if (entry < 0 || entry + 1 >= hits.length) return Infinity;
-  return hits[entry + 1] - lift;
 }
 
 /** Medidas del poste como «hueco» analítico para la distancia con signo (de −`seat` a +`heightMm` sobre la cara). */

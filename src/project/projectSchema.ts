@@ -12,6 +12,8 @@ import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
 import { REFERENCE_OPACITY } from '../core/scene/objectRole';
 import { sanitizeMagnetParams } from '../core/addons/magnetPocket';
 import { sanitizeScrewBossParams } from '../core/addons/screwBoss';
+import { sanitizeKeyholeParams } from '../core/addons/keyhole';
+import { sanitizeCablePassParams } from '../core/addons/cablePass';
 import { RECIPE_PROVENANCE_LIMITS } from '../types/recipeProvenance';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
 
@@ -189,7 +191,26 @@ const screwBossAddonMetadata = shape({
   anchorMm: (v) => finite(v) && Math.abs(v) <= 1000,
   hostId: optional(id),
 });
-const addonMetadata: Rule = (v) => magnetAddonMetadata(v) || screwBossAddonMetadata(v);
+// Ojo de cerradura (negativo); los rangos los valida `sanitizeKeyholeParams`, el ancla es acotada.
+const keyholeAddonMetadata = shape({
+  kind: oneOf('keyhole'),
+  params: (v) => sanitizeKeyholeParams(v) !== null && shape({
+    screwMm: finite, headDiameterMm: finite, neckWidthMm: finite, slotLengthMm: finite, chamberDepthMm: finite, lipMm: finite, angleDeg: finite,
+  })(v),
+  anchorMm: (v) => finite(v) && Math.abs(v) <= 1000,
+  hostId: optional(id),
+});
+// Paso de cable (negativo); los rangos los valida `sanitizeCablePassParams`, el largo medido es acotado.
+const cablePassAddonMetadata = shape({
+  kind: oneOf('cable_pass'),
+  params: (v) => sanitizeCablePassParams(v) !== null && shape({
+    shape: str, widthMm: finite, lengthMm: finite, chamferMm: finite, angleDeg: finite, autoDepth: bool, depthMm: finite,
+  })(v),
+  anchorMm: (v) => finite(v) && Math.abs(v) <= 1000,
+  boreMm: (v) => finite(v) && v > 0 && v <= 1000,
+  hostId: optional(id),
+});
+const addonMetadata: Rule = (v) => magnetAddonMetadata(v) || screwBossAddonMetadata(v) || keyholeAddonMetadata(v) || cablePassAddonMetadata(v);
 const objectExtra = shape({
   split: optional(splitMetadata), splitDowel: optional(splitDowelMetadata), recipe: optional(recipeMetadata), addon: optional(addonMetadata),
 });

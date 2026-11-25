@@ -62,6 +62,8 @@ import { REDISENO3B_ZH } from './rediseno3b';
 import { UX8_MENU_ZH } from './ux8Menu';
 import { IMANES_UNION_ZH } from './imanesUnion';
 import { BARRA_FLOTANTE_ZH } from './barraFlotante';
+import { COLGAR_MURO_ZH } from './colgarMuro';
+import { PASO_CABLE_ZH } from './pasoCable';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -1400,4 +1402,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...IMANES_UNION_ZH,
   ...ACERCA_ZH,
   ...BARRA_FLOTANTE_ZH,
+  ...COLGAR_MURO_ZH,
+  ...PASO_CABLE_ZH,
 };

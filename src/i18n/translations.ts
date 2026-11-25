@@ -67,6 +67,8 @@ import { REDISENO3B_EN, REDISENO3B_ES } from './locales/rediseno3b';
 import { UX8_MENU_EN, UX8_MENU_ES } from './locales/ux8Menu';
 import { IMANES_UNION_EN, IMANES_UNION_ES } from './locales/imanesUnion';
 import { BARRA_FLOTANTE_EN, BARRA_FLOTANTE_ES } from './locales/barraFlotante';
+import { COLGAR_MURO_EN, COLGAR_MURO_ES } from './locales/colgarMuro';
+import { PASO_CABLE_EN, PASO_CABLE_ES } from './locales/pasoCable';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -1407,6 +1409,8 @@ export const TRANSLATIONS_ES = {
   ...IMANES_UNION_ES,
   ...ACERCA_ES,
   ...BARRA_FLOTANTE_ES,
+  ...COLGAR_MURO_ES,
+  ...PASO_CABLE_ES,
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2721,6 +2725,8 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...IMANES_UNION_EN,
   ...ACERCA_EN,
   ...BARRA_FLOTANTE_EN,
+  ...COLGAR_MURO_EN,
+  ...PASO_CABLE_EN,
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

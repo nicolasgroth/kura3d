@@ -62,6 +62,8 @@ import { REDISENO3B_HI } from './rediseno3b';
 import { UX8_MENU_HI } from './ux8Menu';
 import { IMANES_UNION_HI } from './imanesUnion';
 import { BARRA_FLOTANTE_HI } from './barraFlotante';
+import { COLGAR_MURO_HI } from './colgarMuro';
+import { PASO_CABLE_HI } from './pasoCable';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -1400,4 +1402,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...IMANES_UNION_HI,
   ...ACERCA_HI,
   ...BARRA_FLOTANTE_HI,
+  ...COLGAR_MURO_HI,
+  ...PASO_CABLE_HI,
 };

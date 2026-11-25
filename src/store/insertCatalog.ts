@@ -18,10 +18,12 @@ import type { PrimitiveType } from '../types/kura';
 import { closeAssistants, openAssistants, useAssistantsPanel } from './assistantsPanel';
 import { closeMagnetPanel, openMagnetPanel, useMagnetPanel } from './magnetPanel';
 import { closeScrewBossPanel, openScrewBossPanel, useScrewBossPanel } from './screwBossPanel';
+import { closeKeyholePanel, openKeyholePanel, useKeyholePanel } from './keyholePanel';
+import { closeCablePassPanel, openCablePassPanel, useCablePassPanel } from './cablePassPanel';
 import { useKuraStore } from './useKuraStore';
 
 export type ShapeId = 'box' | 'cylinder' | 'disc' | 'tube' | 'sphere' | 'cone' | 'torus' | 'prism' | 'text';
-export type GeneratorId = 'svg' | 'image' | 'thread' | 'calibration' | 'assistants' | 'magnet' | 'screwBoss';
+export type GeneratorId = 'svg' | 'image' | 'thread' | 'calibration' | 'assistants' | 'magnet' | 'screwBoss' | 'keyhole' | 'cablePass';
 export type InsertId = ShapeId | GeneratorId;
 
 interface ShapeDef {
@@ -44,7 +46,7 @@ export const SHAPES: readonly ShapeDef[] = [
 ];
 
 /** Generadores del menú Insertar (y de la hoja Agregar en móvil). */
-export const GENERATORS: readonly GeneratorId[] = ['svg', 'image', 'thread', 'calibration', 'assistants', 'magnet', 'screwBoss'];
+export const GENERATORS: readonly GeneratorId[] = ['svg', 'image', 'thread', 'calibration', 'assistants', 'magnet', 'screwBoss', 'keyhole', 'cablePass'];
 
 /** Nombre visible de cada entrada. */
 export function insertLabelKey(id: InsertId): TranslationKey {
@@ -63,6 +65,10 @@ export function insertLabelKey(id: InsertId): TranslationKey {
       return 'magnet.title';
     case 'screwBoss':
       return 'turret.title';
+    case 'keyhole':
+      return 'keyhole.title';
+    case 'cablePass':
+      return 'cable.title';
     default:
       return `sidebar.primitive.${id}` as TranslationKey;
   }
@@ -85,6 +91,10 @@ export function insertTipKey(id: InsertId): TranslationKey | null {
       return 'magnet.menuTip';
     case 'screwBoss':
       return 'turret.menuTip';
+    case 'keyhole':
+      return 'keyhole.menuTip';
+    case 'cablePass':
+      return 'cable.menuTip';
     default:
       return null;
   }
@@ -111,6 +121,8 @@ export function startPanelExclusion(): () => void {
       { store: useAssistantsPanel, close: closeAssistants },
       { store: useMagnetPanel, close: closeMagnetPanel },
       { store: useScrewBossPanel, close: closeScrewBossPanel },
+      { store: useKeyholePanel, close: closeKeyholePanel },
+      { store: useCablePassPanel, close: closeCablePassPanel },
     ];
     const offs = panels.map((panel) =>
       panel.store.subscribe((s: { open: boolean }, prev: { open: boolean }) => {
@@ -143,6 +155,14 @@ export async function runInsert(id: InsertId): Promise<void> {
   }
   if (id === 'screwBoss') {
     openScrewBossPanel();
+    return;
+  }
+  if (id === 'keyhole') {
+    openKeyholePanel();
+    return;
+  }
+  if (id === 'cablePass') {
+    openCablePassPanel();
     return;
   }
   if (id === 'svg' || id === 'image' || id === 'thread') {

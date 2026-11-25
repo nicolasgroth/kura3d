@@ -809,7 +809,61 @@ export interface MagnetPocketParams {
 }
 
 /** Agregado colocado sobre una cara: alojamiento de imán (negativo) o una de las dos piezas de una torreta. */
-export type AddonMetadata = MagnetAddonMetadata | ScrewBossAddonMetadata;
+export type AddonMetadata = MagnetAddonMetadata | ScrewBossAddonMetadata | KeyholeAddonMetadata | CablePassAddonMetadata;
+
+/**
+ * Ojo de cerradura para colgar en el muro: entrada para la cabeza del tornillo, ranura del cuello hacia «arriba» y
+ * cámara detrás donde queda la cabeza. Única definición: `KeyholeParams` de `core/addons/keyhole`.
+ */
+export interface KeyholeParams {
+  /** Tornillo nominal (rótulo y nombre). */
+  screwMm: number;
+  /** Diámetro de la entrada y ancho de la cámara (cabeza + holgura). */
+  headDiameterMm: number;
+  /** Ancho de la ranura del cuello. */
+  neckWidthMm: number;
+  /** Recorrido de la ranura: del centro de la entrada al centro del extremo donde descansa el tornillo. */
+  slotLengthMm: number;
+  /** Fondo de la cámara donde queda la cabeza. */
+  chamberDepthMm: number;
+  /** Material entre la cámara y la cara (labio que sujeta la cabeza). */
+  lipMm: number;
+  /** Giro de la ranura respecto del «arriba» de la pieza (grados). */
+  angleDeg: number;
+}
+
+/** Ojo de cerradura como pieza negativa; `anchorMm` = 0 (el origen está en el punto de la cara). */
+export interface KeyholeAddonMetadata {
+  kind: 'keyhole';
+  params: KeyholeParams;
+  anchorMm: number;
+  hostId?: string;
+}
+
+/** Paso de cable: agujero pasante redondo u ovalado con chaflán en las bocas. Única definición en `core/addons/cablePass`. */
+export interface CablePassParams {
+  shape: 'round' | 'slot';
+  /** Diámetro (redondo) o lado corto (ranura). */
+  widthMm: number;
+  /** Lado largo de la ranura (en el redondo se ignora). */
+  lengthMm: number;
+  chamferMm: number;
+  /** Giro del lado largo respecto de la horizontal de la cara (grados). */
+  angleDeg: number;
+  /** true: el largo se mide con rayos para atravesar la pared; false: `depthMm`. */
+  autoDepth: boolean;
+  /** Profundidad a mano (cuando `autoDepth` es false o la pared es demasiado gruesa para medir). */
+  depthMm: number;
+}
+
+/** Paso de cable como pieza negativa; `boreMm` = largo del agujero entre bocas, medido al colocar. */
+export interface CablePassAddonMetadata {
+  kind: 'cable_pass';
+  params: CablePassParams;
+  anchorMm: number;
+  boreMm: number;
+  hostId?: string;
+}
 
 /** Alojamiento de imán como pieza negativa. */
 export interface MagnetAddonMetadata {

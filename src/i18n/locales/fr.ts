@@ -62,6 +62,8 @@ import { REDISENO3B_FR } from './rediseno3b';
 import { UX8_MENU_FR } from './ux8Menu';
 import { IMANES_UNION_FR } from './imanesUnion';
 import { BARRA_FLOTANTE_FR } from './barraFlotante';
+import { COLGAR_MURO_FR } from './colgarMuro';
+import { PASO_CABLE_FR } from './pasoCable';
 
 /**
  * Diccionario en francés con terminología técnica de CAO e impresión 3D.
@@ -1400,4 +1402,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...IMANES_UNION_FR,
   ...ACERCA_FR,
   ...BARRA_FLOTANTE_FR,
+  ...COLGAR_MURO_FR,
+  ...PASO_CABLE_FR,
 };
