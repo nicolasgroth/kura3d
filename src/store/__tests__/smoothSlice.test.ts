@@ -109,12 +109,13 @@ describe('Suavizar en el store', () => {
     expect(moved.size).toBeLessThan(positions.length / 3 / 2);
   });
 
-  it('si el motor reduce la intensidad para no dañar la malla, queda en el informe y en un aviso', async () => {
+  it('si unos triángulos se dañarían, el motor protege solo esos vértices: intensidad pedida y protegidos en el informe', async () => {
     await load(buildSceneObject({ id: 'sph', name: 'Pliegue', source: 'imported', mesh: await thinFold() }));
     expect(await store().applySmooth('sph', params({ keepSharpEdges: false, iterations: 60, intensityPct: 100 }))).toBe(true);
     const report = store().smoothSession!.report!;
-    expect(report.appliedStrength).toBeLessThan(report.requestedStrength);
-    expect(store().toasts.some((x) => x.text.includes('fuerza'))).toBe(true);
+    expect(report.appliedStrength).toBe(report.requestedStrength);
+    expect(report.damageProtectedVertices).toBeGreaterThan(0);
+    expect(store().toasts.some((x) => x.text.includes('fuerza'))).toBe(false);
   });
 
   it('con ruido fuerte y aristas protegidas, el informe pide la sugerencia', async () => {

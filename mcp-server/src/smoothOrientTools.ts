@@ -39,9 +39,13 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
       description:
         'Smooths an object mesh with Taubin λ/μ filtering (does not shrink the part like plain Laplacian smoothing): one undo step. ' +
         'Sharp edges above sharpAngleDeg and open borders stay fixed; zoneColor limits it to the triangles painted with that color ' +
-        '(with falloffRings of soft transition). If the result would fold triangles or self-intersect, the strength is halved ' +
-        '(appliedStrength shows what was used). Returns the report: volume before/after and change in % (warning ' +
-        `SMOOTH_VOLUME_CHANGED above ${SD.volumeWarnPct} %), moved and protected vertices, largest displacement. The transform does not change.`,
+        '(with falloffRings of soft transition: up to that many edge rings outside the painted triangles also move, with ' +
+        'decreasing weight). If a few triangles would fold or self-intersect, only those vertices and two rings around them ' +
+        'are pinned or damped (damageProtectedVertices) and the rest gets the requested strength; only when the damage is ' +
+        'widespread is the strength halved as a last resort (appliedStrength; strengthCoveragePct = % of movable vertices ' +
+        'smoothed with at least 80 % of the requested strength). Returns the report in world units (object scale applied): ' +
+        `volume before/after and change in % (warning SMOOTH_VOLUME_CHANGED above ${SD.volumeWarnPct} %), moved and protected ` +
+        'vertices, largest displacement. The transform does not change.',
       inputSchema: {
         objectId: idSchema.describe('ID of the object to smooth.'),
         strength: rangeSchema(SR.strength).optional().describe(`Intensity 0.1–1 (default ${SD.strength}; λ = 0.5 · strength).`),
@@ -51,7 +55,7 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
           .describe(`Dihedral angle in degrees from which an edge counts as sharp (default ${SD.sharpAngleDeg}).`),
         zoneColor: hexColorSchema.optional().describe('Only smooth the triangles painted with this color (#rrggbb, must be on the object).'),
         falloffRings: rangeSchema(SR.falloffRings).optional()
-          .describe(`With zoneColor: rings of neighbors with decreasing weight around the zone (default ${SD.falloffRings}; 0 = hard border).`),
+          .describe(`Only with zoneColor (error without it): rings of neighbors with decreasing weight around the zone (default ${SD.falloffRings}; 0 = hard border).`),
       },
     },
     async (args) => dispatchWithFallback(ctx, 'smooth_mesh', { ...args }, () => ctx.headless.smoothMesh({ ...args })),

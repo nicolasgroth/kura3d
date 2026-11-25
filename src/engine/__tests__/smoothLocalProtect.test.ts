@@ -105,6 +105,17 @@ describe('protección local ante daño', () => {
     expect(res.report.movedVertices).toBeGreaterThan(res.report.damageProtectedVertices);
   });
 
+  it('si el daño no es local (ruido fuerte en toda la pieza), recurre a bajar la intensidad global y avisa', () => {
+    // Medido: 389 invertidos; tras proteger 1303 vértices (> 20 % de los movibles) quedan 134 → fuerza 0,5 → 0,25.
+    const noisy = withRadialNoise(uvSphere(20, 96, 48), 1.5);
+    const res = smoothMesh(noisy, RAW_FOLD);
+    expect(res.report.appliedStrength).toBeLessThan(1);
+    expect(res.warnings).toContainEqual({ code: 'SMOOTH_STRENGTH_REDUCED', params: { requested: 1, applied: res.report.appliedStrength } });
+    const graph = buildSmoothGraph(noisy, resolveSmoothOptions(RAW_FOLD));
+    const all = new Uint8Array(noisy.positions.length / 3).fill(1);
+    expect(detectSmoothDamage(noisy.positions, res.mesh.positions, noisy.indices, graph.weld, all)).toEqual({ invertedTriangles: 0, newIntersections: 0 });
+  });
+
   it('sin daño, nada queda protegido y la cobertura es total', () => {
     const res = smoothMesh(withRadialNoise(uvSphere(20, 48, 24), 0.1));
     expect(res.report.damageProtectedVertices).toBe(0);
