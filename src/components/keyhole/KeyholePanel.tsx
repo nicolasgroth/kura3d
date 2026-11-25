@@ -95,6 +95,7 @@ export const KeyholePanel: React.FC = () => {
       prefix="keyhole"
       open={open}
       onClose={close}
+      placeAt={keyholePanel.placeAt}
       blocked={blocked}
       warnings={report ? keyholeWarnings(report, language) : []}
       lastOk={report && Number.isFinite(report.wallBehindMm) ? t(language, 'keyhole.lastOk', { wall: fmt(report.wallBehindMm) }) : null}
