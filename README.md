@@ -49,14 +49,14 @@ Las capturas de abajo y las de las [guías](docs/guia/README.md) se generan desd
 
 *Seis idiomas y temas accesibles, claro y oscuro, desde Ajustes.*
 
-<img src="docs/screenshots/05-movil.png" alt="Kura3D en pantalla de 390 píxeles" width="260">
+## Qué funciona hoy
 
-*En el móvil: la barra se recoge en menús y la barra de estado conserva unidad e impresora.*
+Todo lo de esta lista está implementado y habilitado en la app. Se actualiza cada vez que se cierra un tema. Lo marcado con «(en revisión)» ya se puede usar, pero todavía no pasa la QA en navegador y la evaluación independiente que exige el proyecto.
 
-## Qué puedes hacer hoy
+Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionando.
 
 **Proyecto**
-- **Acerca de**: qué es el programa, cómo se construyó, su licencia y las bibliotecas abiertas que usa (desde Ajustes, la paleta de comandos o la insignia de versión junto al logo).
+- **Acerca de** (en revisión): qué es el programa, cómo se construyó, su licencia y las bibliotecas abiertas que usa (desde Ajustes, la paleta de comandos o la insignia de versión junto al logo).
 - Proyectos `.kura` con escena, materiales, pintura e historial de deshacer. Autoguardado y recuperación de borradores. En escritorio, la lista de recientes recuerda las rutas y reabre con un clic (se puede desactivar en Ajustes).
 - Importar **STL, 3MF, OBJ y PLY**, varios archivos a la vez, por diálogo o arrastrando. Lee los 3MF de slicers (componentes, instancias, colores de filamento) conservando las posiciones.
 - **Ida y vuelta por 3MF exacta:** piezas, grupos, colores y posiciones se conservan al exportar y volver a abrir.
@@ -74,22 +74,24 @@ Las capturas de abajo y las de las [guías](docs/guia/README.md) se generan desd
 - **Roscas ISO M3–M64** con paso y holgura automáticos según la norma.
 - **Asistentes**: crea una caja con tapa, un llavero o una placa de enchufe respondiendo unas preguntas, con reglas en vivo y un solo paso de deshacer (**Insertar › Asistentes**).
 - **Alojamiento de imán**: un clic sobre una cara deja el hueco para un imán redondo o cuadrado, con holgura, opción oculta y aviso de pared mínima; tus medidas se guardan como preajustes (**Insertar › Alojamiento de imán**).
-- **Torreta para tornillo**: un clic sobre una cara deja un poste con agujero para tornillo directo o inserto roscado (tabla de medidas M2 a M5 por verificar), con avisos de pared, agujero que atraviesa y choques; al aplicar las restas queda una sola pieza (**Insertar › Torreta para tornillo**).
+- **Torreta para tornillo** (en revisión): un clic sobre una cara deja un poste con agujero para tornillo directo o inserto roscado (tabla de medidas M2 a M5 por verificar), con avisos de pared, agujero que atraviesa y choques; al aplicar las restas queda una sola pieza (**Insertar › Torreta para tornillo**).
 - Texto y SVG en relieve, grabado o incrustado sobre cualquier superficie.
 - Litofanías planas y cilíndricas, y cortadores desde una imagen.
 - Simplificar y refinar mallas, alinear y distribuir en la cama.
-- **Suavizar malla**: quita facetado y ruido de escaneos sin cambiar los triángulos, con aristas protegidas, zona pintada y vista previa antes de aplicar (**Acciones › Malla › Suavizar…**).
+- **Suavizar malla** (en revisión): quita facetado y ruido de escaneos sin cambiar los triángulos, con aristas protegidas, zona pintada y vista previa antes de aplicar (**Acciones › Malla › Suavizar…**).
 
 **Preparación para imprimir**
-- **Dividir para imprimir:** parte un modelo más grande que tu cama en piezas con código (A1, B1…), uniones (conectores o imanes enfrentados para que quede desmontable), marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza.
+- **Dividir para imprimir:** parte un modelo más grande que tu cama en piezas con código (A1, B1…), uniones (conectores o, en revisión, imanes enfrentados para que quede desmontable), marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza.
 - Pintura 3D por caras para impresión multicolor, con separación por color.
 - Detección de estructuras para separar un modelo en partes.
 - Análisis de imprimibilidad: malla cerrada, voladizos, tamaño de cama y peso aproximado.
-- **Orientar para imprimir:** compara cómo apoyar la pieza en la cama (soporte aproximado, voladizo, base, altura y si cabe), con motivos claros, vista previa en el visor con las zonas en voladizo resaltadas y un paso para aplicar; no genera soportes.
+- **Orientar para imprimir** (en revisión): compara cómo apoyar la pieza en la cama (soporte aproximado, voladizo, base, altura y si cabe), con motivos claros, vista previa en el visor con las zonas en voladizo resaltadas y un paso para aplicar; no genera soportes.
 - **Comprobar encaje:** choques (en mm³) y holguras entre piezas y referencias, con las restas pendientes aplicadas en copia, una recomendación por par y la zona o la cota resaltada en el visor; no cambia la escena.
 - Siluetas de cama de 12 impresoras (Elegoo, Bambu Lab, Snapmaker, FlashForge y genéricas).
 
 **Estudio**
+- **Barra flotante** (en revisión) junto al objeto seleccionado, con las acciones más usadas a un clic.
+- **Arrastrar para mover**: el objeto seleccionado se arrastra sobre su plano horizontal.
 - 6 idiomas, 6 temas en claro y oscuro con contraste verificado, y modo compacto.
 - Uso por teclado: atajos, paleta de comandos (`Ctrl/⌘+K`), lista de escena y menús navegables.
 - Campos numéricos que aceptan expresiones y unidades (`10+5`, `2cm`).
@@ -97,7 +99,7 @@ Las capturas de abajo y las de las [guías](docs/guia/README.md) se generan desd
 **Inteligencia artificial (opcional)**
 - Asistente local sin conexión que entiende órdenes simples en español e inglés.
 - Proveedores externos: Anthropic, OpenAI, Gemini, Ollama y **cualquier API compatible con OpenAI** (DeepSeek, Qwen, OpenRouter, LM Studio). En escritorio las claves se guardan en el llavero del sistema.
-- **Servidor MCP** con 49 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
+- **Servidor MCP** con 54 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
 
 ## Guías
 
@@ -105,14 +107,27 @@ Paso a paso con capturas, para quien imprime y no programa: [**índice de guías
 
 [Primeros pasos](docs/guia/primeros-pasos.md) · [Importar y reparar](docs/guia/importar-y-reparar.md) · [Dividir para imprimir](docs/guia/dividir-para-imprimir.md) · [Cortar y ahuecar](docs/guia/cortar-y-ahuecar.md) · [Sólidos negativos y restas](docs/guia/solidos-negativos-y-restas.md) · [Objetos de referencia](docs/guia/objetos-de-referencia.md) · [Comprobar encaje](docs/guia/comprobar-encaje.md) · [Orientar para imprimir](docs/guia/orientar-para-imprimir.md) · [Grupos y escena](docs/guia/grupos-y-escena.md) · [Medir](docs/guia/medir.md) · [Colores y pintura](docs/guia/colores-y-pintura.md) · [Generadores](docs/guia/generadores.md) · [Asistentes](docs/guia/asistentes.md) · [Alojamiento de imán](docs/guia/alojamiento-de-iman.md) · [Exportar](docs/guia/exportar.md) · [Guardar y recuperar](docs/guia/guardar-y-recuperar.md) · [Servidor MCP](docs/MCP.md) · [Ajustar a la impresora](docs/guia/ajustar-a-la-impresora.md) · [Torreta para tornillo](docs/guia/torreta-para-tornillo.md)
 
-## Hacia dónde va
+## En camino
 
-El orden de trabajo está en el [roadmap](docs/ROADMAP.md). Lo siguiente:
+Lo que falta, en el orden del [roadmap](docs/ROADMAP.md). El detalle está en el [tablero](docs/TABLERO.md) y los tiempos estimados en [docs/ESTIMACION.md](docs/ESTIMACION.md).
 
-1. **Placas** como parte del proyecto y exportación por placa.
-2. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
-3. **Estudio configurable:** paneles móviles, pestañas de proyecto, clic derecho y línea de comandos.
-4. **Extensiones de terceros**, con las reglas ya escritas en [docs/EXTENSIONES.md](docs/EXTENSIONES.md).
+**Lo siguiente**
+1. Cerrar la revisión de lo marcado «(en revisión)» arriba.
+2. **Placas y vista armada:** las piezas de una figura repartidas en varias placas, una vista que las muestra juntas y exportación por placa ([diseño](docs/diseno/PLACAS_Y_ARMADO.md), espera decisiones del autor).
+3. **Simplificar sin pérdida**, con verificación del resultado ([medición con modelos reales](docs/diseno/FORMAS_SIMPLES.md)).
+4. **Uniones firmes** en Dividir: tamaño mínimo de conector y de pared según la sección. El cálculo ya existe; falta mostrarlo en la interfaz.
+5. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
+
+**Más adelante**
+- Dividir: cortes por las partes naturales de la figura, cortes inclinados, uniones vinculadas.
+- Encajes: tapa roscada, acoples de tubería, clips y biblioteca de conectores.
+- Edición: instancias, patrones y espejo, tiradores en las caras, modificadores no destructivos.
+- **Estudio configurable:** paneles móviles, pestañas de proyecto, atajos editables y línea de comandos.
+- Tutorial interactivo e instrucciones de armado.
+- **Extensiones de terceros**, con las reglas ya escritas en [docs/EXTENSIONES.md](docs/EXTENSIONES.md).
+- Instaladores firmados para Windows, Linux y macOS.
+
+**Fuera de alcance:** laminado, G-code, soportes y control de impresoras.
 
 ## Instalación y desarrollo
 
@@ -153,7 +168,7 @@ Kura3D se desarrolla con agentes de IA organizados en tres equipos independiente
 ## Documentación
 
 - [Guías de uso](docs/guia/README.md) · [Servidor MCP: guía](docs/MCP.md)
-- [Tablero de funcionalidades](docs/TABLERO.md)
+- [Tablero de funcionalidades](docs/TABLERO.md) · [Estimación de lo pendiente](docs/ESTIMACION.md)
 - [Roadmap y prioridades](docs/ROADMAP.md)
 - [Registro de funcionalidades](docs/FUNCIONALIDADES.md)
 - [Evaluaciones de calidad](docs/EVALUACIONES.md)
