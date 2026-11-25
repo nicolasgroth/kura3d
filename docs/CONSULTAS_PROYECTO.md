@@ -8,8 +8,8 @@ Actualizado el 23 de noviembre de 2026 a las 22:15.
 
 Ninguna detiene el trabajo.
 
-### 1. Prueba de los 3MF en OrcaSlicer
-Postergada por decisión tuya; sigue autorizada. Se hace contigo presente cuando me avises.
+### 1. Prueba de los 3MF en un laminador (ahora importa más)
+Sigue postergada por decisión tuya y autorizada. Desde el 25-nov hay una razón concreta para hacerla: la exportación con varias placas escribe un 3MF con cada pieza en las coordenadas de su propia cama y las placas declaradas para Bambu Studio y OrcaSlicer. Está probado con el motor (mismas coordenadas en la placa 1 y en la 2, dos placas en el archivo), pero **nadie lo ha abierto en un laminador real**: si Bambu u Orca esperan las piezas separadas en coordenadas globales, las placas se verían una encima de otra. Es una prueba de cinco minutos contigo presente: crear dos placas con una pieza cada una, exportar «un 3MF con todas las placas» y abrirlo. Mientras no se haga, la opción segura es «un archivo por placa (ZIP)».
 
 ### 2. Kurra Studio: tareas que solo puedes hacer tú
 Resuelto el 25-nov: hacia afuera el producto es **Kurra Studio** y lo interno se queda como está. Te quedan a ti, sin apuro:
