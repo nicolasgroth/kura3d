@@ -16,6 +16,9 @@ import type { OrientWorld } from './orientWorld';
 
 /** Celda de cuantización de normales (por componente), como el agrupamiento del casco. */
 const NORMAL_QUANTUM = 0.02;
+/** Desplazamiento y paso de la clave numérica de una celda de normal. */
+const KEY_HALF = 512;
+const KEY_SPAN = 2 * KEY_HALF + 1;
 /** Igual que el contacto medido: normal a menos de 1° de la vertical hacia abajo. */
 const CONTACT_COS = Math.cos((1 * Math.PI) / 180);
 /** Dos parches a menos de 2° se consideran la misma dirección. */
@@ -56,13 +59,16 @@ function contactAlong(world: OrientWorld, n: Vec3, tol: number): number {
  */
 export function planarPatchDirections(world: OrientWorld, minAreaMm2: number, maxCount: number): PatchDirection[] {
   if (maxCount <= 0) return [];
-  const bins = new Map<string, { sx: number; sy: number; sz: number; area: number }>();
+  // Clave numérica por celda de normal (sin armar un texto por triángulo). Con normales unitarias cada índice queda
+  // en ±1/NORMAL_QUANTUM (±50), muy dentro de ±KEY_HALF.
+  const bins = new Map<number, { sx: number; sy: number; sz: number; area: number }>();
   const nr = world.normals, ar = world.areas;
   for (let t = 0; t < ar.length; t++) {
     const a = ar[t];
     if (!(a > 1e-12)) continue;
     const x = nr[t * 3], y = nr[t * 3 + 1], z = nr[t * 3 + 2];
-    const key = `${Math.round(x / NORMAL_QUANTUM)},${Math.round(y / NORMAL_QUANTUM)},${Math.round(z / NORMAL_QUANTUM)}`;
+    const key = ((Math.round(x / NORMAL_QUANTUM) + KEY_HALF) * KEY_SPAN + Math.round(y / NORMAL_QUANTUM) + KEY_HALF) * KEY_SPAN
+      + Math.round(z / NORMAL_QUANTUM) + KEY_HALF;
     let b = bins.get(key);
     if (!b) bins.set(key, (b = { sx: 0, sy: 0, sz: 0, area: 0 }));
     b.sx += x * a; b.sy += y * a; b.sz += z * a; b.area += a;

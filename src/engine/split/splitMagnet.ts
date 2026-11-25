@@ -123,12 +123,15 @@ export function magnetPocketVolume(c: SplitConnectorOptions): number {
  * centro y desde el anillo hueco + pared). El alto del imán es fijo: si no cabe, no se acorta, se descarta.
  */
 export function magnetDepthFits(low: Manifold, high: Manifold, axis: SplitAxis, centers: Vec3[], c: SplitConnectorOptions, wall = JOINT_RULES.minWallMm): boolean {
+  return depthFitsWith({ lo: new AxisRayMesh(low), hi: new AxisRayMesh(high) }, axis, centers, c, wall);
+}
+
+/** Lo mismo con las mallas de rayos ya armadas (una vez por unión, no por peldaño de la escalera). */
+function depthFitsWith(rays: { lo: AxisRayMesh; hi: AxisRayMesh }, axis: SplitAxis, centers: Vec3[], c: SplitConnectorOptions, wall = JOINT_RULES.minWallMm): boolean {
   const a = AXIS_INDEX[axis];
   const ring = c.size + c.tolerance + wall;
   const need = c.depth + wall;
-  const hi = new AxisRayMesh(high);
-  const lo = new AxisRayMesh(low);
-  return centers.every((p) => materialAlongAxis(hi, p, a, 1, ring) >= need && materialAlongAxis(lo, p, a, -1, ring) >= need);
+  return centers.every((p) => materialAlongAxis(rays.hi, p, a, 1, ring) >= need && materialAlongAxis(rays.lo, p, a, -1, ring) >= need);
 }
 
 /** Islas que admiten un imán con su pared: la zona segura (isla encogida por hueco + pared) no queda vacía. */
@@ -171,9 +174,13 @@ export function placeMagnets<C>(
   // Automática: el aviso de «menos de los pedidos» compara con la base de siempre (2 o uno por isla), no con los
   // extra que se intentan para una unión firme en secciones grandes.
   const requested = c.countAuto ? { ...c, count: Math.min(ladder[0].count, Math.max(2, eligible)) } : ladder[0];
+  // Las mallas de rayos (copia de la malla de cada pieza) se arman una vez, al primer peldaño que ubica imanes.
+  let rays: { lo: AxisRayMesh; hi: AxisRayMesh } | null = null;
   for (const rung of eligible > 0 ? ladder : []) {
     const found = place(rung);
-    if (!found || !magnetDepthFits(j.low.m, j.high.m, j.axis, found.centers, rung)) continue;
+    if (!found) continue;
+    rays ??= { lo: new AxisRayMesh(j.low.m), hi: new AxisRayMesh(j.high.m) };
+    if (!depthFitsWith(rays, j.axis, found.centers, rung)) continue;
     addCaps(found.caps);
     if (rung.count < requested.count) warnings.push(engineWarning('SPLIT_MAGNET_REDUCED', { ...pair, count: rung.count, requested: requested.count }));
     return { used: rung, centers: found.centers, requested };
