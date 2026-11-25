@@ -78,7 +78,7 @@ Las capturas de abajo y las de las [guías](docs/guia/README.md) se generan desd
 - Simplificar y refinar mallas, alinear y distribuir en la cama.
 
 **Preparación para imprimir**
-- **Dividir para imprimir:** parte un modelo más grande que tu cama en piezas con código (A1, B1…), uniones, marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza.
+- **Dividir para imprimir:** parte un modelo más grande que tu cama en piezas con código (A1, B1…), uniones (conectores o imanes enfrentados para que quede desmontable), marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza.
 - Pintura 3D por caras para impresión multicolor, con separación por color.
 - Detección de estructuras para separar un modelo en partes.
 - Análisis de imprimibilidad: malla cerrada, voladizos, tamaño de cama y peso aproximado.
