@@ -289,8 +289,25 @@ dialog.kura-dialog-settings {
   background: #0d0919;
 }
 
-.kura-brand-variant-card.is-mono {
-  background: #141923;
+.kura-brand-variant-card {
+  gap: 10px;
+}
+
+/* El logo completo tiene el texto oscuro: va sobre fondo claro en cualquier tema. */
+.kura-brand-variant-card.is-light {
+  background: #f6f3fb;
+}
+
+.kura-brand-icon-variant {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.kura-brand-variant-name {
+  color: #f3eefc;
+  font-weight: 800;
+  font-size: 17px;
 }
 
 .kura-brand-lockup-img {
@@ -299,8 +316,3 @@ dialog.kura-dialog-settings {
   object-fit: contain;
 }
 
-.kura-brand-mono-img {
-  max-width: 100%;
-  max-height: 54px;
-  object-fit: contain;
-}

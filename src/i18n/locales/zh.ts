@@ -794,7 +794,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': '{name} 徽标',
   'app.lockupAlt': '{name} 官方标志',
-  'app.monoAlt': '{name} 单色徽标',
 
   // Modal Atajos de Teclado y Pro Tips
   'dialog.shortcuts.title': '专业键盘快捷键与 CAD 技巧',

@@ -46,6 +46,7 @@ export const AboutDialog: React.FC<{ open: boolean; onClose: () => void; random?
       }
     >
       <div className="kura-about">
+        <img src="/branding/kurra-studio-icono.svg" alt="" className="kura-about-logo" width={64} height={64} />
         <section aria-labelledby="about-what">
           <h3 id="about-what">{t(language, 'about.whatTitle')}</h3>
           <p>{t(language, 'about.what', { name })}</p>

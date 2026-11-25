@@ -85,7 +85,7 @@ export const SplashScreen: React.FC = () => {
       <div className="kura-splash-card">
         <div className="kura-splash-emblem-wrap">
           <img
-            src="/branding/kura3d-emblem.png"
+            src="/branding/kurra-studio-icono.svg"
             alt={t(language, 'app.emblemAlt', { name: BRAND.name })}
             className="kura-splash-emblem"
             width={112}

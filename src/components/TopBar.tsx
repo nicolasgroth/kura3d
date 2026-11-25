@@ -250,7 +250,7 @@ export const TopBar: React.FC = () => {
   const brandEl = (
     <div className="kura-brand" title={t(language, 'app.tagline')}>
       <img
-        src="/branding/kura3d-icon.png"
+        src="/branding/kurra-studio-icono.svg"
         alt={BRAND.name}
         className="kura-brand-icon-img"
         width={26}
