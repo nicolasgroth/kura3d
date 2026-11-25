@@ -1141,7 +1141,9 @@ export interface KuraCommandRequest {
     | 'orient_for_print'
     | 'apply_orientation'
     | 'add_magnet_pocket'
-    | 'add_screw_boss';
+    | 'add_screw_boss'
+    | 'add_keyhole'
+    | 'add_cable_pass';
   params: Record<string, unknown>;
 }
 

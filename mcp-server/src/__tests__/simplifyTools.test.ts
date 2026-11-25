@@ -78,6 +78,23 @@ describe('MCP: kura_simplify_mesh con modos', () => {
     expect(res.trianglesAfter).toBeGreaterThan(res.target.triangles * 0.8);
   });
 
+  it('destructivo: no aplica, trae safe y allowDestructive lo fuerza', async () => {
+    const { call, headless } = await connect();
+    const torus = await call('kura_create_primitive', { primitiveType: 'torus', params: { outerRadius: 14, tubeRadius: 4, segments: 48 }, placement: 'origin' });
+    const positions = Array.from(headless.getObject(torus.id).mesh.positions);
+    const res = await call('kura_simplify_mesh', { objectId: torus.id, targetPercent: 2 });
+    expect(res.applied).toBe(false);
+    expect(res.destructive.length).toBeGreaterThan(0);
+    expect(res.safe).toMatchObject({ triangles: expect.any(Number), toleranceMm: expect.any(Number), maxDeviationMm: expect.any(Number) });
+    expect(Array.from(headless.getObject(torus.id).mesh.positions)).toEqual(positions);
+    // La alternativa segura se aplica con «tolerance» y su tolerancia.
+    const safe = await call('kura_simplify_mesh', { objectId: torus.id, mode: 'tolerance', toleranceMm: res.safe.toleranceMm });
+    expect(safe).toMatchObject({ applied: true, destructive: [], trianglesAfter: res.safe.triangles });
+    const again = await call('kura_create_primitive', { primitiveType: 'torus', params: { outerRadius: 14, tubeRadius: 4, segments: 48 }, placement: 'origin' });
+    const forced = await call('kura_simplify_mesh', { objectId: again.id, targetPercent: 2, allowDestructive: true });
+    expect(forced).toMatchObject({ applied: true, forced: true });
+  });
+
   it('sin reducción: applied false y la malla no cambia', async () => {
     const { call, headless } = await connect();
     const box = await call('kura_create_primitive', { primitiveType: 'box', placement: 'origin' });

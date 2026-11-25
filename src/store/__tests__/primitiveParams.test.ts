@@ -55,7 +55,8 @@ describe('updatePrimitiveParams', () => {
 
   it('deja de ser paramétrico tras una operación que cambia la malla y rechaza editar', async () => {
     const obj = await cylinder();
-    expect(await store().simplifySelectedMesh(obj.id, 0.5)).toBe(true);
+    // A 0,5 mm el cilindro chico cambia más que el tope de destructivo: se fuerza (lo que importa es que la malla cambie).
+    expect(await store().simplifySelectedMesh(obj.id, { mode: 'tolerance', toleranceMm: 0.5, allowDestructive: true })).toBe(true);
     expect(parametricStateOf(byId(obj.id)!).status).toBe('modified');
     expect(await store().updatePrimitiveParams(obj.id, { kind: 'primitive', params: { radius: 3 } })).toBeNull();
   });

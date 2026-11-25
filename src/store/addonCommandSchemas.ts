@@ -31,7 +31,8 @@ const r = (n: number, digits = 3) => Math.round(n * 10 ** digits) / 10 ** digits
 export const ADDON_HOST_KEYS = ['hostId', 'objectId', 'id'];
 
 /** Error tipado de un agregado que no se coloca (`addon-blocked`, con el motivo y el mismo texto que la app). */
-export const addonBlockedError = (reason: AddonBlockReason) => new CommandError('addon-blocked', ADDON_BLOCK_KEY[reason] as TranslationKey, { reason });
+export const addonBlockedError = (reason: AddonBlockReason, key: TranslationKey = ADDON_BLOCK_KEY[reason] as TranslationKey) =>
+  new CommandError('addon-blocked', key, { reason });
 
 export function parseMagnetPocketCommand(p: RawParams): { params: MagnetParams; placement: AddonPlacementInput } {
   const D = MAGNET_DEFAULTS;
@@ -82,7 +83,7 @@ export function parseScrewBossCommand(p: RawParams): { params: ScrewBossParams; 
 const warningCode = (prefix: string, key: string) => `${prefix}_${key.slice(key.lastIndexOf('.') + 1).replace(/[A-Z]/g, (c) => `_${c}`).toUpperCase()}`;
 
 /** Avisos con código, parámetros y mensaje en inglés (misma forma que los avisos del motor). */
-function warningsOf(list: ReadonlyArray<{ key: TranslationKey; params: Record<string, string> }>, prefix: string) {
+export function warningsOf(list: ReadonlyArray<{ key: TranslationKey; params: Record<string, string> }>, prefix: string) {
   return list.map((w) => ({ code: warningCode(prefix, w.key), params: w.params, message: t('en', w.key, w.params) }));
 }
 

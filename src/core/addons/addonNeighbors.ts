@@ -43,6 +43,12 @@ export function nearbyAddons(objects: readonly SceneObject[], host: SceneObject)
   });
 }
 
+/** Agregados pendientes (de cualquier tipo) cerca de la pieza: con ellos se mide la distancia mínima (paso de cable). */
+export function nearbyAddonObjects(objects: readonly SceneObject[], host: SceneObject, marginMm: number): SceneObject[] {
+  const hr = reachOf(host);
+  return objects.filter((o) => o.id !== host.id && Boolean(o.metadata?.addon) && distance(o, host) <= hr + reachOf(o) + marginMm);
+}
+
 /** El menor nombre libre: «base», «base (2)», «base (3)»… */
 export function freeName(taken: ReadonlySet<string>, base: string): string {
   let name = base;

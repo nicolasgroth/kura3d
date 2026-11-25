@@ -32,7 +32,7 @@ import { freePlacer, spreadPartsInFreeSpace, type HeadlessPlacement } from './he
 import { headlessPrintabilityReport, type PrintabilityInput } from './headlessPrintability.js';
 import { SerialQueue } from './headlessQueue.js';
 import { headlessFitToBed, type HeadlessFitInput } from './headlessFit.js';
-import { headlessAddMagnetPocket, headlessAddScrewBoss, type HeadlessScene } from './headlessAddons.js';
+import { headlessAddCablePass, headlessAddKeyhole, headlessAddMagnetPocket, headlessAddScrewBoss, type HeadlessScene } from './headlessAddons.js';
 import { followAddonsAfter, snapshotForFollow } from './headlessFollow.js';
 import { headlessApplyOrientation, headlessOrientForPrint, headlessSmoothMesh } from './headlessSmoothOrient.js';
 import {
@@ -743,6 +743,16 @@ export class KuraHeadlessEngine {
   /** Agrega una torreta para tornillo sobre una cara (`add_screw_boss`). */
   addScrewBoss(params: Record<string, unknown>) {
     return headlessAddScrewBoss(this.scene(), params);
+  }
+
+  /** Agrega un ojo de cerradura para colgar en el muro (`add_keyhole`). */
+  addKeyhole(params: Record<string, unknown>) {
+    return headlessAddKeyhole(this.scene(), params);
+  }
+
+  /** Agrega un paso de cable (`add_cable_pass`). */
+  addCablePass(params: Record<string, unknown>) {
+    return headlessAddCablePass(this.scene(), params);
   }
 
   private scene(): HeadlessScene {

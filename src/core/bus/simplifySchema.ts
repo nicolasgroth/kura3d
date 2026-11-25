@@ -9,10 +9,10 @@
  */
 
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../../engine/operationLimits';
-import { SIMPLIFY_MODES, type SimplifyReport, type SimplifyRequest } from '../../engine/simplify';
+import { SIMPLIFY_MODES, type SimplifyReport, type SimplifyRequest, type SimplifySafeAlternative } from '../../engine/simplify';
 import { CommandError } from './commandErrors';
 import { resolveTarget, type SceneView } from './commandTargets';
-import { readEnum, readRange, type RawParams } from './commandValidation';
+import { readBoolean, readEnum, readRange, type RawParams } from './commandValidation';
 
 const invalid = (param: string, expected: string) =>
   new CommandError('invalid-params', 'bus.error.invalidParam', { param, expected });
@@ -32,13 +32,17 @@ export function parseSimplifyRequest(p: RawParams): SimplifyRequest {
   if (mode !== 'target' && targetTriangles !== undefined) throw notFor('targetTriangles');
   if (mode !== 'target' && targetPercent !== undefined) throw notFor('targetPercent');
   if (mode !== 'tolerance' && toleranceMm !== undefined) throw notFor('toleranceMm');
+  const allowDestructive = readBoolean(p, 'allowDestructive');
+  // «Sin pérdida» nunca entrega un resultado destructivo (sus límites son más estrictos): forzarlo no tiene sentido.
+  if (mode === 'lossless' && allowDestructive) throw notFor('allowDestructive');
+  const force = allowDestructive ? { allowDestructive: true } : {};
   if (mode === 'lossless') return { mode };
-  if (mode === 'tolerance') return { mode, toleranceMm: toleranceMm ?? OPERATION_DEFAULTS.simplify.toleranceMm };
+  if (mode === 'tolerance') return { mode, toleranceMm: toleranceMm ?? OPERATION_DEFAULTS.simplify.toleranceMm, ...force };
   if (targetTriangles !== undefined && targetPercent !== undefined) {
     throw invalid('targetPercent', 'only one of targetTriangles | targetPercent');
   }
   if (!hasTarget) throw invalid('targetTriangles', 'targetTriangles or targetPercent for mode "target"');
-  return targetTriangles !== undefined ? { mode, targetTriangles } : { mode, targetPercent };
+  return targetTriangles !== undefined ? { mode, targetTriangles, ...force } : { mode, targetPercent, ...force };
 }
 
 export function parseSimplify(scene: SceneView, p: RawParams) {
@@ -66,5 +70,21 @@ export function simplifyReportToUser(report: SimplifyReport) {
     checks: [...report.warnings],
     rejectedBy: [...report.rejectedBy],
     ...(report.target ? { target: { ...report.target } } : {}),
+    /** Motivos de resultado destructivo (`holes_lost`, `volume_changed`, `deviation_high`); vacío si no lo es. */
+    destructive: [...(report.destructive ?? [])],
+    /** Solo si fue destructivo y no se aplicó: la alternativa segura (aplicable con mode "tolerance"), o null. */
+    ...(report.safe !== undefined ? { safe: report.safe && safeToUser(report.safe) } : {}),
+    ...(report.forced ? { forced: true } : {}),
+  };
+}
+
+function safeToUser(s: SimplifySafeAlternative) {
+  return {
+    toleranceMm: r(s.toleranceMm, 6),
+    triangles: s.triangles,
+    volumeAfterMm3: r(s.volumeAfterMm3, 3),
+    volumeChangePct: r(s.volumeChangePct),
+    genusAfter: s.genusAfter,
+    maxDeviationMm: r(s.maxDeviationMm),
   };
 }

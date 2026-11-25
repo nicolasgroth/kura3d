@@ -16,8 +16,47 @@ export const SIMPLIFY_MODES: readonly SimplifyMode[] = ['lossless', 'tolerance',
 /** Petición serializable (cruza al Worker). En «Por cantidad» va `targetTriangles` o `targetPercent`. */
 export type SimplifyRequest =
   | { mode: 'lossless' }
-  | { mode: 'tolerance'; toleranceMm: number }
-  | { mode: 'target'; targetTriangles?: number; targetPercent?: number };
+  | { mode: 'tolerance'; toleranceMm: number; allowDestructive?: boolean }
+  | { mode: 'target'; targetTriangles?: number; targetPercent?: number; allowDestructive?: boolean };
+
+/**
+ * Por qué un resultado es destructivo (no se aplica sin `allowDestructive`):
+ * - `holes_lost`: se cerró algún agujero pasante (el género bajó);
+ * - `volume_changed`: |ΔV| supera `SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct`;
+ * - `deviation_high`: la desviación supera el tope relativo al tamaño de la pieza.
+ */
+export type SimplifyDestructiveReason = 'holes_lost' | 'volume_changed' | 'deviation_high';
+
+export const SIMPLIFY_DESTRUCTIVE_REASONS: readonly SimplifyDestructiveReason[] = ['holes_lost', 'volume_changed', 'deviation_high'];
+
+/** Alternativa segura: el candidato con menos triángulos que no es destructivo (se aplica con «Por tolerancia»). */
+export interface SimplifySafeAlternative {
+  /** Tolerancia en mm de mundo que la reproduce (≥ el mínimo de «Por tolerancia»). */
+  toleranceMm: number;
+  triangles: number;
+  volumeAfterMm3: number;
+  volumeChangePct: number;
+  genusAfter: number;
+  maxDeviationMm: number;
+}
+
+/**
+ * Tope de lo «destructivo» (criterio delegado por el autor, 25-nov-2026). Sobre esto el resultado no se aplica en
+ * silencio: se ofrece la alternativa segura y, aparte, aplicarlo igual.
+ * - `volumePct` 5 %: diez veces el umbral de aviso (0,5 %); los casos medidos que destruyen la pieza (placa de 3 mm
+ *   que queda de 1 mm, −66,6 %; toro al 2 %, −99,4 %) están muy por encima, y una esfera de 64 lados a 2 mm de
+ *   tolerancia (deformación visible pero reconocible) queda en el orden de 1–3 %.
+ * - Desviación: el mayor de `deviationMinMm` (1 mm, unas 5 capas de 0,2 mm: deja de ser la misma pieza al
+ *   ensamblar) y `deviationRelDiag` (1 % de la diagonal de la caja: en una pieza de 300 mm, 1 mm es ruido).
+ * - `safeSearchIterations`: llamadas a `simplify` de la bisección que busca la alternativa segura (la razón entre
+ *   la tolerancia mínima y la destructiva suele ser ≤ 10⁴: 8 pasos la acotan a ~±8 %).
+ */
+export const SIMPLIFY_DESTRUCTIVE_LIMITS = {
+  volumePct: 5,
+  deviationMinMm: 1,
+  deviationRelDiag: 0.01,
+  safeSearchIterations: 8,
+} as const;
 
 /**
  * Avisos del informe (la interfaz los traduce con `simplify.warn.<código>`):
@@ -55,7 +94,9 @@ export interface SimplifyTargetInfo {
 /** Informe antes → después. Volúmenes en mm³ locales (la escala no cambia el %); desviación en mm de mundo. */
 export interface SimplifyReport {
   mode: SimplifyMode;
-  /** false si no se aplicó (sin reducción o «Sin pérdida» rechazado): el objeto queda intacto. */
+  /** Objeto al que corresponde (lo agrega la app; el motor no lo conoce). */
+  objectId?: string;
+  /** false si no se aplicó (sin reducción, «Sin pérdida» rechazado o resultado destructivo): el objeto queda intacto. */
   applied: boolean;
   /** Tolerancia usada en mm de mundo (en «Por cantidad», la hallada por la búsqueda). */
   toleranceMm: number;
@@ -77,6 +118,17 @@ export interface SimplifyReport {
   rejectedBy: SimplifyWarningCode[];
   /** Solo «Por cantidad». */
   target?: SimplifyTargetInfo;
+  /**
+   * Motivos por los que el resultado calculado es destructivo (vacío si no lo es). Si no viene `allowDestructive`,
+   * un resultado destructivo no se aplica (`applied: false`).
+   */
+  destructive?: SimplifyDestructiveReason[];
+  /** Tope de desviación destructiva para esta pieza (mm de mundo); viene junto con `destructive` no vacío. */
+  destructiveLimitMm?: number;
+  /** Solo si `destructive` no está vacío: la mejor alternativa segura hallada, o null si no hay ninguna. */
+  safe?: SimplifySafeAlternative | null;
+  /** true si se aplicó un resultado destructivo porque se pidió `allowDestructive`. */
+  forced?: boolean;
   /** Duración total en ms (simplificar + verificar). */
   ms: number;
 }

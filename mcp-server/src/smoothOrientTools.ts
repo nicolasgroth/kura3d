@@ -11,6 +11,7 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { SMOOTH_BLOCK_VOLUME_PCT } from '../../src/core/operations/smoothOperations';
 import { OPERATION_RANGES as OR } from '../../src/engine/operationLimits';
 import { ORIENT_RANGES } from '../../src/engine/orient';
 import { SMOOTH_DEFAULTS as SD, SMOOTH_RANGES as SR } from '../../src/engine/smooth';
@@ -45,7 +46,9 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
         'widespread is the strength halved as a last resort (appliedStrength; strengthCoveragePct = % of movable vertices ' +
         'smoothed with at least 80 % of the requested strength). Returns the report in world units (object scale applied): ' +
         `volume before/after and change in % (warning SMOOTH_VOLUME_CHANGED above ${SD.volumeWarnPct} %), moved and protected ` +
-        'vertices, largest displacement. The transform does not change.',
+        'vertices, largest displacement. The transform does not change. If |volume change| > ' + SMOOTH_BLOCK_VOLUME_PCT + ' % ' +
+        '(typical of very coarse meshes: refine the mesh first with kura_refine_mesh) the result is NOT applied: applied=false, ' +
+        'blockedBy "volume_changed", volumeLimitPct; pass allowVolumeChange=true to apply it anyway (forced=true).',
       inputSchema: {
         objectId: idSchema.describe('ID of the object to smooth.'),
         strength: rangeSchema(SR.strength).optional().describe(`Intensity 0.1–1 (default ${SD.strength}; λ = 0.5 · strength).`),
@@ -56,6 +59,8 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
         zoneColor: hexColorSchema.optional().describe('Only smooth the triangles painted with this color (#rrggbb, must be on the object).'),
         falloffRings: rangeSchema(SR.falloffRings).optional()
           .describe(`Only with zoneColor (error without it): rings of neighbors with decreasing weight around the zone (default ${SD.falloffRings}; 0 = hard border).`),
+        allowVolumeChange: z.boolean().optional()
+          .describe(`Apply even if the volume changes more than ${SMOOTH_BLOCK_VOLUME_PCT} % (default false: not applied).`),
       },
     },
     async (args) => dispatchWithFallback(ctx, 'smooth_mesh', { ...args }, () => ctx.headless.smoothMesh({ ...args })),
@@ -91,7 +96,10 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
       description:
         'Turns a part to an orientation returned by kura_orient_for_print, given by candidateId (re-analyzed with the same angle ' +
         'and bed) or by its quaternion [x, y, z, w] (user axes, relative to the current pose). The part rests on the bed (Z = 0) ' +
-        'and keeps its X/Y place (keepXY, default true) or is centered. One undo step. Pending negatives of its group turn with ' +
+        'and keeps its X/Y place (keepXY, default true) or is centered. With alignFootprint (default true for candidateId, false ' +
+        'for an explicit quaternion) it is then turned around the vertical so the bounding box of its footprint on the bed is the ' +
+        'smallest (minimum-area rectangle over the convex hull: a cube set on a hull face lies square, not diagonal); a part ' +
+        'already aligned is not turned. One undo step. Pending negatives of its group turn with ' +
         'it, and magnet pockets and screw bosses follow their part keeping their size; followers lists the IDs that moved.',
       inputSchema: {
         objectId: idSchema.describe('ID of the part to turn.'),
@@ -99,6 +107,8 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
         quaternion: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional()
           .describe('Rotation [x, y, z, w] of a candidate (user axes, relative to the current pose); normalized.'),
         keepXY: z.boolean().optional().describe('Keep the center on the bed in X/Y (default true); false = center on the origin.'),
+        alignFootprint: z.boolean().optional()
+          .describe('Turn around the vertical for the smallest footprint box (default true with candidateId, false with quaternion).'),
         ...orientInputs,
       },
     },

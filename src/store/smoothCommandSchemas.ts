@@ -12,6 +12,7 @@
 
 import { CommandError } from '../core/bus/commandErrors';
 import { readBoolean, readColor, readRange, type RawParams } from '../core/bus/commandValidation';
+import { SMOOTH_BLOCK_VOLUME_PCT } from '../core/operations/smoothOperations';
 import { SMOOTH_DEFAULTS, SMOOTH_RANGES, type SmoothReport } from '../engine/smooth';
 import type { MeshData } from '../types/kura';
 import { paintedColors, SMOOTH_UI_DEFAULTS, unpaintedZoneError, type SmoothParams } from './smoothParams';
@@ -40,9 +41,12 @@ export function parseSmoothMesh(p: RawParams, mesh: MeshData): SmoothParams {
 const r = (v: number, digits = 4) => Math.round(v * 10 ** digits) / 10 ** digits + 0;
 
 /** Informe del suavizado para el comando (sin malla). `applied` es false si no había vértices que mover. */
-export function smoothReportToUser(report: SmoothReport, applied: boolean) {
+export function smoothReportToUser(report: SmoothReport, applied: boolean, volumeBlocked = false, allowVolumeChange = false) {
   return {
     applied,
+    /** No se aplicó: el volumen cambiaba más que `volumeLimitPct` (refina la malla, o pide `allowVolumeChange`). */
+    ...(volumeBlocked ? { blockedBy: 'volume_changed' as const, volumeLimitPct: SMOOTH_BLOCK_VOLUME_PCT } : {}),
+    ...(applied && allowVolumeChange && Math.abs(report.volumeChangePct) > SMOOTH_BLOCK_VOLUME_PCT ? { forced: true } : {}),
     iterations: report.iterations,
     requestedStrength: r(report.requestedStrength),
     appliedStrength: r(report.appliedStrength),

@@ -16,7 +16,7 @@ import type { SceneObject, Vec3 } from '../../types/kura';
 import { cablePassWarnings, cablePassWarningText } from '../cablePassWarnings';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
-import { freeName, nearbyAddonObjects, placedMeshOf, placeNegativeAddon } from './negativeAddonPlace';
+import { freeName, nearbyAddonObjects, placedMeshOf, placeNegativeAddon, type NegativeAddonBlock } from './negativeAddonPlace';
 
 export interface CablePassRequest {
   hostId: string;
@@ -24,6 +24,8 @@ export interface CablePassRequest {
   point: Vec3;
   normal: Vec3;
   silent?: boolean;
+  /** Si viene, recibe el bloqueo (`spansFace`) en vez del aviso de error. */
+  onBlocked?: (reason: NegativeAddonBlock) => void;
 }
 
 export interface CablePassPlaced {
@@ -48,6 +50,7 @@ export function createCablePassSlice(ctx: StoreContext): Partial<KuraStoreState>
         busyName: 'cable_pass',
         needSolidKey: 'cable.needSolid',
         tooWideKey: 'cable.error.tooWide',
+        onBlocked: request.onBlocked,
         build: (host, taken) => ctx.runEngine('cablePass', {
           host: { id: host.id, ...placedMeshOf(host) },
           params: p, point: request.point, normal: request.normal,

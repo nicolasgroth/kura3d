@@ -11,10 +11,10 @@
 
 import { CommandError } from '../../src/core/bus/commandErrors';
 import { resolveTarget } from '../../src/core/bus/commandTargets';
-import type { RawParams } from '../../src/core/bus/commandValidation';
+import { readBoolean, type RawParams } from '../../src/core/bus/commandValidation';
 import { fitBedOf } from '../../src/core/operations/fitOperations';
 import { orientableObject, orientApplyChange, orientForPrint } from '../../src/core/operations/orientOperations';
-import { smoothObject } from '../../src/core/operations/smoothOperations';
+import { smoothObject, smoothVolumeBlocked } from '../../src/core/operations/smoothOperations';
 import { orientFollowPatches } from '../../src/core/scene/rigidFollow';
 import { transformToUser } from '../../src/core/scene/userAxesContract';
 import {
@@ -36,11 +36,15 @@ const view = (scene: HeadlessScene) => ({ objects: scene.objects(), selectedIds:
 export function headlessSmoothMesh(scene: HeadlessScene, p: RawParams) {
   const target = resolveTarget(view(scene), p, { unlocked: true });
   const params = parseSmoothMesh(p, target.mesh);
+  const allowVolumeChange = readBoolean(p, 'allowVolumeChange') ?? false;
   const { report, change } = smoothObject(scene.ctx, target, smoothTaskOptions(params, target.mesh));
+  // Volumen sobre el tope: no se aplica salvo `allowVolumeChange` (misma regla que la app).
+  const blocked = change.patches.length > 0 && smoothVolumeBlocked(report, allowVolumeChange);
+  if (blocked) return { id: target.id, ...smoothReportToUser(report, false, true) };
   // Sin vértices que mover el cambio no trae parches, pero sí el aviso.
   scene.apply(change);
   if (change.patches.length > 0) target.stats = worldStatsOf(target);
-  return { id: target.id, ...smoothReportToUser(report, change.patches.length > 0) };
+  return { id: target.id, ...smoothReportToUser(report, change.patches.length > 0, false, allowVolumeChange) };
 }
 
 function analyze(scene: HeadlessScene, p: RawParams, unlocked: boolean) {
@@ -61,7 +65,7 @@ export function headlessApplyOrientation(scene: HeadlessScene, p: RawParams) {
   const { target, analysis } = analyze(scene, p, true);
   const quaternion = request.quaternion ?? findOrientCandidate(analysis(), request.candidateId!).quaternion;
   const before = scene.objects().map((o) => ({ ...o }));
-  const change = orientApplyChange({ obj: target, quaternion, keepXY: request.keepXY });
+  const change = orientApplyChange({ obj: target, quaternion, keepXY: request.keepXY, alignFootprint: request.alignFootprint });
   change.patches.push(...orientFollowPatches(scene.objects(), target, change));
   scene.apply(change);
   for (const { id } of change.patches) {
@@ -73,6 +77,7 @@ export function headlessApplyOrientation(scene: HeadlessScene, p: RawParams) {
     applied: request.candidateId ?? 'quaternion',
     quaternion: quaternionToUser(quaternion),
     keepXY: request.keepXY,
+    alignFootprint: request.alignFootprint,
     ...transformToUser(target),
     followers: movedObjectIds(before, scene.objects(), target.id),
   };

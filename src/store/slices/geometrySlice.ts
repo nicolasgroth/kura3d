@@ -19,7 +19,7 @@ import { withAddonPosts } from '../../core/operations/addonPostMerge';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { classifySimplifyResult } from '../../core/operations/simplifyOutcome';
 import type { SimplifyRequest } from '../../engine/simplify';
-import { simplifyWarningText } from '../../i18n/simplifyWarnings';
+import { simplifyBlockedToast, simplifyWarningText } from '../../i18n/simplifyWarnings';
 import { formatNumber } from '../../utils/plural';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
@@ -137,12 +137,18 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         // El motor cuenta los triángulos de la malla ya soldada (sin degenerados): puede diferir en unos pocos de lo
         // que el usuario ve en el inspector. Informe y avisos usan la misma fuente: la malla real de la escena.
         const engineReport = change.simplify!.report;
-        const afterReal = engineReport.applied ? (change.patches[0].patch.stats?.triangles ?? engineReport.trianglesAfter) : before;
-        const report = { ...engineReport, trianglesBefore: before, trianglesAfter: afterReal };
+        // Destructivo sin aplicar: se conserva el número calculado (el informe compara las dos alternativas).
+        const blocked = !engineReport.applied && (engineReport.destructive?.length ?? 0) > 0;
+        const afterReal = engineReport.applied
+          ? (change.patches[0].patch.stats?.triangles ?? engineReport.trianglesAfter)
+          : blocked ? engineReport.trianglesAfter : before;
+        const report = { ...engineReport, objectId: id, trianglesBefore: before, trianglesAfter: afterReal };
         options.onReport?.(report);
-        // Sin reducción o «Sin pérdida» rechazado: no hay paso de historial y el aviso dice por qué.
+        // Sin reducción, «Sin pérdida» rechazado o destructivo: no hay paso de historial y el aviso dice por qué.
         if (!report.applied) {
-          if (report.warnings.includes('no_reduction')) {
+          if (blocked) {
+            get().addToast(simplifyBlockedToast(lang, report), 'info');
+          } else if (report.warnings.includes('no_reduction')) {
             const key = req.mode === 'tolerance' ? 'toast.simplifyNoChange' : 'simplify.toast.noChange';
             get().addToast(tr(key, { tris: formatNumber(lang, before) }), 'info');
           } else {

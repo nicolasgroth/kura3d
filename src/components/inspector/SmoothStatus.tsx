@@ -3,7 +3,8 @@
  * @description Estado de «Suavizar» bajo los controles: progreso por pasada (`role="status"`), resultado de
  * la vista previa o de la aplicación en lenguaje claro (cambio de volumen, intensidad reducida, volumen sobre
  * el umbral), error de daño junto a los controles (`role="alert"`) y la sugerencia cuando la protección de
- * aristas fija demasiados vértices.
+ * aristas fija demasiados vértices. Si el cambio de volumen supera el tope no se aplicó: lo dice, sugiere refinar la
+ * malla y ofrece «Aplicar de todos modos».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -13,6 +14,7 @@ import React, { useEffect, useRef } from 'react';
 import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { SMOOTH_DEFAULTS } from '../../engine/smooth';
+import { SMOOTH_BLOCK_VOLUME_PCT } from '../../core/operations/smoothOperations';
 import { edgeProtectionBlocks, SMOOTH_SUGGESTED_ANGLE_DEG, type SmoothParams } from '../../store/smoothParams';
 import type { SmoothSession } from '../../store/slices/smoothSlice';
 import type { LanguageCode } from '../../types/kura';
@@ -32,9 +34,11 @@ export interface SmoothStatusProps {
   params: SmoothParams;
   /** Aplica la sugerencia: sube el ángulo o, si ya es alto, desactiva la protección. */
   onFix: () => void;
+  /** Con el resultado bloqueado por volumen: lo aplica igual (un paso de deshacer). Sin él, el botón no aparece. */
+  onApplyAnyway?: () => void;
 }
 
-export const SmoothStatus: React.FC<SmoothStatusProps> = ({ language, session, params, onFix }) => {
+export const SmoothStatus: React.FC<SmoothStatusProps> = ({ language, session, params, onFix, onApplyAnyway }) => {
   const pct = (n: number) => formatLocaleNumber(language, Math.abs(n), { maxFrac: 1 });
   const report = session?.report ?? null;
   const done = session?.status === 'ready' || session?.status === 'applied';
@@ -84,6 +88,16 @@ export const SmoothStatus: React.FC<SmoothStatusProps> = ({ language, session, p
         <p className="kura-smooth-note" data-testid="smooth-volume">
           {t(language, 'smooth.result.volume', { limit: SMOOTH_DEFAULTS.volumeWarnPct })}
         </p>
+      )}
+      {session?.volumeBlocked && report && (
+        <div role="alert" className="kura-smooth-error" data-testid="smooth-volume-blocked">
+          <p>{t(language, 'smooth.blocked.status', { pct: pct(report.volumeChangePct), limit: SMOOTH_BLOCK_VOLUME_PCT })}</p>
+          {onApplyAnyway && (
+            <button type="button" className="kura-btn kura-btn-sm" data-testid="smooth-apply-anyway" onClick={onApplyAnyway}>
+              {t(language, 'simplify.blocked.applyAnyway')}
+            </button>
+          )}
+        </div>
       )}
       {session?.status === 'error' && session.error && (
         <p role="alert" className="kura-smooth-error" data-testid="smooth-error">

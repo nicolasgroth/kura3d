@@ -24,6 +24,7 @@ import { UNIONES_FIRMES_DE } from './unionesFirmes';
 import { AJUSTAR_DE } from './ajustarImpresora';
 import { SUAVIZAR_DE } from './suavizarMotor';
 import { SIMPLIFICAR_DE } from './simplificar';
+import { FUNCIONAL_R2_DE } from './funcionalR2';
 import { SUAVIZAR_UI_DE } from './suavizarUi';
 import { SPLITCOUPLING_DE } from './splitCoupling';
 import { A11YUX_DE } from './a11yUx';
@@ -89,6 +90,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...SUAVIZAR_DE,
   ...SUAVIZAR_UI_DE,
   ...SIMPLIFICAR_DE,
+  ...FUNCIONAL_R2_DE,
   ...SPLITCOUPLING_DE,
   ...A11YUX_DE,
   ...UXMOVIL_DE,

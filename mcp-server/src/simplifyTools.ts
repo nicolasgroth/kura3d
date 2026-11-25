@@ -11,7 +11,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { OPERATION_DEFAULTS as OD, OPERATION_RANGES as OR } from '../../src/engine/operationLimits';
-import { LOSSLESS_LIMITS, SIMPLIFY_MODES, SIMPLIFY_WARN_LIMITS as SWL } from '../../src/engine/simplify';
+import { LOSSLESS_LIMITS, SIMPLIFY_DESTRUCTIVE_LIMITS as SDL, SIMPLIFY_MODES, SIMPLIFY_WARN_LIMITS as SWL } from '../../src/engine/simplify';
 import { idSchema, rangeSchema } from './schemas.js';
 import { dispatchWithFallback, type KuraToolContext } from './tools.js';
 
@@ -32,8 +32,15 @@ export function registerSimplifyTools(server: Pick<McpServer, 'registerTool'>, c
         'the applied result changes the genus, warnings carries SIMPLIFY_GENUS_CHANGED (same channel as SIMPLIFY_VOLUME_CHANGED). Returns the report: applied, triangles before/after, volume change %, genus before/after, maxDeviationMm ' +
         '(sampled, a lower bound), checks (genus_changed, volume_changed > ' + SWL.volumePct + ' %, deviation_high > ' +
         SWL.deviationMm + ' mm, target_not_reached, no_reduction) and rejectedBy (lossless). applied=false leaves the object untouched. ' +
+        'DESTRUCTIVE results are NOT applied by default (tolerance and target): a result is destructive if it closes a ' +
+        'through hole (holes_lost), |volume change| > ' + SDL.volumePct + ' % (volume_changed) or the deviation exceeds the ' +
+        'larger of ' + SDL.deviationMinMm + ' mm and ' + SDL.deviationRelDiag * 100 + ' % of the bounding-box diagonal ' +
+        '(deviation_high). Then applied=false, destructive lists the reasons and safe carries the best safe alternative ' +
+        'found (fewest triangles that is not destructive: toleranceMm, triangles, volumeAfterMm3, volumeChangePct, ' +
+        'genusAfter, maxDeviationMm; null if none) - apply it with mode "tolerance" and that toleranceMm. Pass ' +
+        'allowDestructive=true to apply the destructive result anyway (forced=true in the report). ' +
         'Parameters that do not belong to the mode are rejected with invalid-params (toleranceMm only in tolerance; ' +
-        'targetTriangles/targetPercent only in target).',
+        'targetTriangles/targetPercent only in target; allowDestructive=true not in lossless).',
       inputSchema: {
         objectId: idSchema.describe('ID of the object to simplify.'),
         mode: z.enum(SIMPLIFY_MODES as [string, ...string[]]).optional()
@@ -42,6 +49,8 @@ export function registerSimplifyTools(server: Pick<McpServer, 'registerTool'>, c
           .describe(`Mode tolerance only: Manifold simplify tolerance in mm (default ${OD.simplify.toleranceMm}).`),
         targetTriangles: rangeSchema(OR.simplify.targetTriangles).optional().describe('Mode target only: triangles to leave.'),
         targetPercent: rangeSchema(OR.simplify.targetPercent).optional().describe('Mode target only: % of the current triangles to keep.'),
+        allowDestructive: z.boolean().optional()
+          .describe('Modes tolerance/target: apply even if the result is destructive (default false: not applied, the report offers safe).'),
       },
     },
     async (args) =>

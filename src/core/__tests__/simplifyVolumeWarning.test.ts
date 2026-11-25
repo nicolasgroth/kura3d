@@ -24,7 +24,8 @@ describe('simplificar con pérdida de volumen', () => {
   it('avisa con el porcentaje cuando la esfera pierde más del umbral', async () => {
     const mesh = await createPrimitiveMesh('sphere', { radius: 20, segments: 64 });
     const obj = buildSceneObject({ id: 's', name: 'Esfera', source: 'primitive', mesh });
-    const change = await ops.simplifyObject(ctx, obj, 5);
+    // A 5 mm el resultado es destructivo (no se aplicaría): se fuerza para medir el aviso del resultado aplicado.
+    const change = await ops.simplifyObject(ctx, obj, { mode: 'tolerance', toleranceMm: 5, allowDestructive: true });
     const after = change.patches[0].patch.mesh!;
     const pct = (100 * (computeMeshStats(after).volumeMm3 - computeMeshStats(mesh).volumeMm3)) / computeMeshStats(mesh).volumeMm3;
     expect(Math.abs(pct)).toBeGreaterThan(OPERATION_DEFAULTS.simplify.volumeWarnPct);

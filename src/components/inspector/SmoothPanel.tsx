@@ -213,7 +213,10 @@ export const SmoothPanel: React.FC<InspectorSectionProps> = ({ primary }) => {
         </div>
       )}
 
-      <SmoothStatus language={language} session={session} params={effective} onFix={fixEdges} />
+      <SmoothStatus
+        language={language} session={session} params={effective} onFix={fixEdges}
+        onApplyAnyway={blocked ? undefined : () => void applySmooth(primary.id, effective, { allowVolumeChange: true })}
+      />
 
       <div className="kura-smooth-actions">
         <button

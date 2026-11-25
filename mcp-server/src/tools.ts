@@ -31,6 +31,7 @@ import { registerRecipeTools } from './recipeTools.js';
 import { registerSmoothOrientTools } from './smoothOrientTools.js';
 import { registerSimplifyTools } from './simplifyTools.js';
 import { registerAddonTools } from './addonTools.js';
+import { registerFaceNegativeTools } from './faceNegativeTools.js';
 import type { ObjectRole } from '../../src/types/kura';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
 import { HeadlessCommandError } from './headlessSupport.js';
@@ -348,6 +349,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerSmoothOrientTools(server, ctx);
   registerSimplifyTools(server, ctx);
   registerAddonTools(server, ctx);
+  registerFaceNegativeTools(server, ctx);
 
   // 3. Transformación de objetos
   server.registerTool(

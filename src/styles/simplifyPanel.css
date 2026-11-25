@@ -72,3 +72,10 @@
 .kura-simplify-entry {
   margin-top: 4px;
 }
+
+.kura-simplify-blocked-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0;
+}

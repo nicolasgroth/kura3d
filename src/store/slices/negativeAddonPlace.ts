@@ -3,7 +3,7 @@
  * @description Colocación común de un agregado de una sola pieza negativa (ojo de cerradura, paso de cable): exige
  * una pieza sólida visible y sin bloquear, corre la tarea del Worker en exclusiva (solo viaja la malla y la
  * transformación de la pieza y, si hace falta, de los agregados cercanos), descarta el resultado si la escena cambió,
- * no coloca si la figura es más ancha que la cara y agrega el negativo agrupado con su pieza en UN paso de deshacer.
+ * no coloca si la figura es más ancha que la cara (o, en el ojo, si el labio no retiene la cabeza) y agrega el negativo agrupado con su pieza en UN paso de deshacer.
  * También el nombre libre y la forma mínima de una pieza para el Worker.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -29,23 +29,19 @@ export const placedMeshOf = (o: SceneObject): PlacedMesh => ({
   mesh: { positions: o.mesh.positions, indices: o.mesh.indices }, position: o.position, rotation: o.rotation, scale: o.scale,
 });
 
-const reachOf = (o: SceneObject) => Math.hypot(...o.stats.dimensionsMm) * Math.max(...o.scale.map(Math.abs));
-
-/** Agregados pendientes (de cualquier tipo) cerca de la pieza: con ellos se mide la distancia mínima. */
-export function nearbyAddonObjects(objects: readonly SceneObject[], host: SceneObject, marginMm: number): SceneObject[] {
-  const hr = reachOf(host);
-  return objects.filter((o) => {
-    if (o.id === host.id || !o.metadata?.addon) return false;
-    const d = Math.hypot(o.position[0] - host.position[0], o.position[1] - host.position[1], o.position[2] - host.position[2]);
-    return d <= hr + reachOf(o) + marginMm;
-  });
-}
+/** Agregados pendientes cerca de la pieza (misma regla en el MCP sin interfaz: vive en `core/addons`). */
+export { nearbyAddonObjects } from '../../core/addons/addonNeighbors';
 
 export interface NegativeAddonMade<R> {
   object: SceneObject;
   report: R;
   spansFace: boolean;
+  /** Ojo de cerradura: el labio no retiene la cabeza (no se coloca). */
+  notRetained?: boolean;
 }
+
+/** Bloqueos de un negativo de una pieza: más ancho que la cara, o (ojo) sin labio que retenga. */
+export type NegativeAddonBlock = 'spansFace' | 'notRetained';
 
 export interface NegativeAddonPlaceOptions<R> {
   hostId: string;
@@ -53,6 +49,10 @@ export interface NegativeAddonPlaceOptions<R> {
   busyName: string;
   needSolidKey: TranslationKey;
   tooWideKey: TranslationKey;
+  /** Texto del bloqueo `notRetained` (solo el ojo de cerradura lo produce). */
+  notRetainedKey?: TranslationKey;
+  /** Si viene, recibe el bloqueo en vez del aviso (el Command Bus lo devuelve como error tipado). */
+  onBlocked?: (reason: NegativeAddonBlock) => void;
   /** Construye el negativo en el Worker; recibe la pieza y los nombres ya usados. */
   build: (host: SceneObject, taken: ReadonlySet<string>) => Promise<NegativeAddonMade<R>>;
 }
@@ -69,8 +69,10 @@ export async function placeNegativeAddon<R>(ctx: StoreContext, options: Negative
     await get().initEngine();
     const made = await options.build(host, new Set(get().objects.map((o) => o.name)));
     ctx.assertCurrent([host]);
-    if (made.spansFace) {
-      get().addToast(tr(options.tooWideKey), 'error');
+    const blocked: NegativeAddonBlock | null = made.spansFace ? 'spansFace' : made.notRetained ? 'notRetained' : null;
+    if (blocked) {
+      if (options.onBlocked) options.onBlocked(blocked);
+      else get().addToast(tr(blocked === 'spansFace' ? options.tooWideKey : (options.notRetainedKey ?? options.tooWideKey)), 'error');
       return null;
     }
     pushHistory();

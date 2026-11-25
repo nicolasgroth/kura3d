@@ -16,13 +16,15 @@ import { createColorRegistry, initManifoldEngine, manifoldToMeshData, meshDataTo
 import { EngineError, requireOperationRange } from '../engineErrors';
 import { OPERATION_RANGES } from '../operationLimits';
 import { normalizeMeshToBed } from '../primitives';
-import { manifoldMesh, sampledDeviation } from './simplifyDeviation';
+import { bvhOf, manifoldMesh, sampledDeviation } from './simplifyDeviation';
 import { bodyGenus } from './simplifyGenus';
+import { destructiveDeviationMm, destructiveReasons, findSafeAlternative, worldDiagonalMm } from './simplifySafety';
 import { searchTargetTolerance, throwIfAborted } from './simplifyTarget';
 import {
   LOSSLESS_LIMITS,
   SIMPLIFY_WARN_LIMITS,
   type SimplifyReport,
+  type SimplifySafeAlternative,
   type SimplifyRequest,
   type SimplifyRunOptions,
   type SimplifyTargetInfo,
@@ -125,7 +127,20 @@ export async function simplifyMeshDetailed(
       : [];
     // «Sin pérdida» rechazado también se marca en los avisos (con los umbrales de aviso puede no figurar).
     for (const code of rejectedBy) if (!warnings.includes(code)) warnings.push(code);
-    const applied = !noReduction && rejectedBy.length === 0;
+    // Resultado destructivo (agujeros perdidos, volumen o desviación sobre el tope): no se aplica salvo que se pida.
+    const diagMm = worldDiagonalMm(original, obj.scale);
+    const destructive = noReduction || request.mode === 'lossless' ? [] : destructiveReasons(measured, diagMm);
+    const allowDestructive = request.mode !== 'lossless' && request.allowDestructive === true;
+    let safe: SimplifySafeAlternative | null | undefined;
+    if (destructive.length > 0 && !allowDestructive) {
+      const originalMesh = manifoldMesh(original);
+      safe = findSafeAlternative({
+        original, originalMesh, originalBvh: bvhOf(originalMesh), trianglesBefore, genusBefore,
+        volumeBefore: volumeBeforeMm3, maxScale, diagMm, minTolMm: R.toleranceMm.min, destructiveTolMm: toleranceMm,
+      }, opts);
+    }
+    const blocked = destructive.length > 0 && !allowDestructive;
+    const applied = !noReduction && rejectedBy.length === 0 && !blocked;
     const report: SimplifyReport = {
       mode: request.mode,
       applied,
@@ -139,6 +154,10 @@ export async function simplifyMeshDetailed(
       warnings,
       rejectedBy,
       ...(target ? { target } : {}),
+      destructive,
+      ...(destructive.length > 0 ? { destructiveLimitMm: destructiveDeviationMm(diagMm) } : {}),
+      ...(safe !== undefined ? { safe } : {}),
+      ...(destructive.length > 0 && allowDestructive ? { forced: true } : {}),
       ms: 0,
     };
     const mesh = applied ? normalizeMeshToBed(manifoldToMeshData(simplified, registry?.idToColor)) : null;

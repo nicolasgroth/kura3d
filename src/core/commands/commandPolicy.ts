@@ -82,6 +82,8 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   apply_orientation: 'write',
   add_magnet_pocket: 'write',
   add_screw_boss: 'write',
+  add_keyhole: 'write',
+  add_cable_pass: 'write',
 });
 
 /** Indica si el nombre corresponde a un comando conocido del Command Bus. */
@@ -158,6 +160,8 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_apply_orientation: 'apply_orientation',
   kura_add_magnet_pocket: 'add_magnet_pocket',
   kura_add_screw_boss: 'add_screw_boss',
+  kura_add_keyhole: 'add_keyhole',
+  kura_add_cable_pass: 'add_cable_pass',
 });
 
 /** Acceso de una herramienta MCP; herramientas no declaradas se tratan como escritura. */

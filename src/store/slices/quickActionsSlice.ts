@@ -267,7 +267,10 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       // Repetir usa el mismo modo; `toleranceMm` queda por compatibilidad con lo ya registrado.
       if (ok && typeof request === 'number') record({ kind: 'simplify', toleranceMm: request });
       else if (ok && typeof request !== 'number') {
-        record({ kind: 'simplify', toleranceMm: request.mode === 'tolerance' ? request.toleranceMm : OPERATION_DEFAULTS.simplify.toleranceMm, request });
+        // «Aplicar de todos modos» no se repite en otra pieza: repetir vuelve a pasar por la regla de destructivo.
+        const safeRequest = { ...request };
+        if ('allowDestructive' in safeRequest) delete safeRequest.allowDestructive;
+        record({ kind: 'simplify', toleranceMm: request.mode === 'tolerance' ? request.toleranceMm : OPERATION_DEFAULTS.simplify.toleranceMm, request: safeRequest });
       }
       return ok;
     },
