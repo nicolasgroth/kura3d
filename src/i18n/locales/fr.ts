@@ -415,7 +415,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'inspector.pro.howCalculated': 'Comment est-ce calculé ?',
   'inspector.pro.assumptions': 'Poids estimé avec {material} ({density} g/cm³), remplissage {infill} % et {shell} % de périmètres et couches pleines ; filament de {filament} mm.',
   'inspector.pro.actionDropToBed': 'Poser sur le plateau',
-  'inspector.pro.meshTitle': 'Optimiser / Remailler (Simplifier & Affiner)',
+  'inspector.pro.meshTitle': 'Maillage : simplifier, affiner et enveloppe',
   'inspector.pro.simplifyTol': 'Tolérance (mm)',
   'inspector.pro.simplifyBtn': 'Simplifier',
   'inspector.pro.refineEdge': 'Arête cible (mm)',

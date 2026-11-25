@@ -76,6 +76,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
     return targetKind === 'percent' ? { mode, targetPercent } : { mode, targetTriangles: count };
   };
   const run = () => {
+    if (busy || primary.locked || invalid.blocked) return;
     const id = primary.id;
     setUndoStep(null);
     void simplifySelectedMesh(id, request(), { onReport: (report) => setLast({ id, report }) }).then((ok) => {
@@ -85,8 +86,17 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
     });
   };
 
+  // Enter en cualquier campo del modo ejecuta, como el botón. El campo confirma su valor primero (en el mismo evento);
+  // se espera un turno para ejecutar con el valor ya aplicado.
+  const runRef = useRef(run);
+  runRef.current = run;
+  const onEnter = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter' || e.defaultPrevented === false || !(e.target instanceof HTMLInputElement)) return;
+    window.setTimeout(() => runRef.current(), 0);
+  };
+
   return (
-    <div className="kura-simplify-section" ref={rootRef}>
+    <div className="kura-simplify-section" ref={rootRef} onKeyDown={onEnter}>
       <div className={`kura-field-row${mode === 'lossless' ? ' kura-simplify-focus' : ''}`}>
         <label className="kura-field-label" htmlFor={`${uid}-mode`}>{t(language, 'simplify.mode')}</label>
         <select
@@ -157,6 +167,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
                 max={R.targetTriangles.max}
                 step={1000}
                 precision={0}
+                grouping
                 value={count}
                 onChange={(v) => setTargetCount(Math.round(v))}
                 ariaLabel={t(language, 'simplify.target.count')}

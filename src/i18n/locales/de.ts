@@ -415,7 +415,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'inspector.pro.howCalculated': 'Wie wird das berechnet?',
   'inspector.pro.assumptions': 'Gewicht geschätzt mit {material} ({density} g/cm³), {infill} % Füllung und {shell} % massive Wände und Deckschichten; Filament {filament} mm.',
   'inspector.pro.actionDropToBed': 'Auf das Druckbett setzen',
-  'inspector.pro.meshTitle': 'Optimieren / Neuvernetzen (Vereinfachen & Verfeinern)',
+  'inspector.pro.meshTitle': 'Netz: vereinfachen, verfeinern und Hülle',
   'inspector.pro.simplifyTol': 'Toleranz (mm)',
   'inspector.pro.simplifyBtn': 'Vereinfachen',
   'inspector.pro.refineEdge': 'Zielkante (mm)',

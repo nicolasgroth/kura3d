@@ -415,7 +415,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'inspector.pro.howCalculated': 'यह कैसे गणना होती है?',
   'inspector.pro.assumptions': 'वज़न का अनुमान {material} ({density} g/cm³), {infill} % इन्फ़िल और {shell} % ठोस परिधि व कैप के साथ; फ़िलामेंट {filament} mm।',
   'inspector.pro.actionDropToBed': 'बेड पर रखें',
-  'inspector.pro.meshTitle': 'अनुकूलित / रीमेश करें (सरल व परिष्कृत)',
+  'inspector.pro.meshTitle': 'मेश: सरल करना, परिष्कृत करना और बाहरी आवरण',
   'inspector.pro.simplifyTol': 'सहिष्णुता (mm)',
   'inspector.pro.simplifyBtn': 'सरल करें',
   'inspector.pro.refineEdge': 'लक्ष्य किनारा (mm)',
