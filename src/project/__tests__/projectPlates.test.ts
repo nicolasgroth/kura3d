@@ -2,8 +2,8 @@
  * @file src/project/__tests__/projectPlates.test.ts
  * @description Placas en el `.kura`: sin placas se sigue escribiendo la versión 3 (la abre una versión anterior),
  * con placas (en la escena o en el historial) la 4; ida y vuelta de v3 y v4, saneo de referencias rotas sin
- * perder la pieza, rechazo de campos de placas en archivos anteriores a v4 y de placas malformadas, y el
- * borrador de recuperación con placas.
+ * perder la pieza, rechazo de campos de placas en archivos anteriores a v4 y de placas malformadas, índice de
+ * placa virtual de Dividir acotado (archivo malicioso) y el borrador de recuperación con placas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeMeshStats } from '../../engine/primitives';
 import { MAX_PLATES } from '../../core/scene/plates';
+import { MAX_SPLIT_PLATES } from '../../core/scene/splitGroups';
 import { DEFAULT_PRINTER_PROFILES, type MeshData, type SceneObject } from '../../types/kura';
 import type { ScenePlate } from '../../types/plates';
 import { decodeProject, encodeProject, PLATES_FORMAT_VERSION, type ProjectDocument } from '../projectCodec';
@@ -122,6 +123,31 @@ describe('saneo de placas al abrir', () => {
   it.each(malformed)('rechaza una placa malformada: %s', (_label, edit, code) => {
     const bytes = repackKura(encodeProject(withPlates()), 4, (m) => edit(m.current as unknown as Plates));
     expect(() => decodeProject(bytes)).toThrowError(expect.objectContaining({ code }));
+  });
+});
+
+describe('índice de placa virtual de Dividir', () => {
+  const splitPart = (plate: number) => obj('s', {
+    metadata: {
+      split: {
+        groupId: 'g', code: 'A1', cell: [0, 0, 0], assembly: { position: [0, 0, 0], rotation: [0, 0, 0] },
+        print: { position: [0, 0, 0], rotation: [0, 0, 0], plate, downFace: '-y' }, jointLabels: [],
+      },
+    },
+  } as Partial<SceneObject>);
+
+  it('un índice dentro del tope abre bien', () => {
+    expect(decodeProject(encodeProject(doc([splitPart(MAX_SPLIT_PLATES - 1)]))).objects[0].metadata?.split?.print.plate).toBe(MAX_SPLIT_PLATES - 1);
+  });
+
+  it('un archivo malicioso con un índice de placa enorme se rechaza', () => {
+    for (const plate of [MAX_SPLIT_PLATES, 2 ** 31, Number.MAX_SAFE_INTEGER]) {
+      const bytes = repackKura(encodeProject(doc([splitPart(0)])), ROLE_FORMAT_VERSION, (m) => {
+        const objects = (m.current as unknown as { objects: Array<{ metadata: { split: { print: { plate: number } } } }> }).objects;
+        objects[0].metadata.split.print.plate = plate;
+      });
+      expect(() => decodeProject(bytes)).toThrowError(expect.objectContaining({ code: 'invalid' }));
+    }
   });
 });
 

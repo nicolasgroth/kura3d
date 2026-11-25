@@ -34,6 +34,12 @@ export function splitGroupOf(objects: SceneObject[], id: string | null | undefin
   return { groupId: meta.groupId, parts };
 }
 
+/**
+ * Tope del índice de placa virtual de una pieza (`metadata.split.print.plate`): Dividir hace a lo sumo
+ * `OPERATION_RANGES.split.maxPieces` (512) piezas, una placa como mucho por pieza. El `.kura` rechaza índices mayores.
+ */
+export const MAX_SPLIT_PLATES = 1024;
+
 /** Placas por fila: con muchas placas se forma una cuadrícula compacta en vez de una fila ilegible. */
 export const SPLIT_PLATE_COLUMNS = 4;
 

@@ -18,7 +18,7 @@ import type { SceneObject } from '../../types/kura';
 import type { ScenePlate } from '../../types/plates';
 import { projectBed as projectBedOf, type PlateBedSource } from './activePlateBed';
 import { bedsSeparated, findPlate, plateBed, PLATE_GAP_MM, type ProjectBed } from './plates';
-import { plateOffset, type SplitFrame, type SplitFrames, type SplitGroup } from './splitGroups';
+import { MAX_SPLIT_PLATES, plateOffset, type SplitFrame, type SplitFrames, type SplitGroup } from './splitGroups';
 
 /** Lo que define los marcos: placas de la escena y cama del proyecto (la de las placas sin cama propia). */
 export interface SplitPlateSource {
@@ -26,8 +26,11 @@ export interface SplitPlateSource {
   projectBed: ProjectBed;
 }
 
-/** Tope de celdas a recorrer por placa virtual (cada placa real bloquea pocas; es solo un seguro). */
-const MAX_SCAN = 4096;
+/**
+ * Tope fijo de celdas recorridas por marco, independiente de la entrada (cada placa real bloquea pocas celdas; es un
+ * seguro ante datos externos). Si no alcanza, o el índice pasa de `MAX_SPLIT_PLATES`, se usa la celda sin saltos.
+ */
+export const MAX_SPLIT_FRAME_SCAN = 4096;
 
 /** Marco de las piezas de la placa `plate` (null = sin placa: origen del mundo y cama del proyecto). */
 export function splitFrameFor(plate: ScenePlate | null, source: SplitPlateSource): SplitFrame {
@@ -43,7 +46,8 @@ export function splitFrameFor(plate: ScenePlate | null, source: SplitPlateSource
   let k = 0;
   const free = ([x, z]: [number, number]) => others.every((o) => bedsSeparated(x, z, bed, o.x, o.z, o.bed, PLATE_GAP_MM));
   const center = (plate: number): [number, number] => {
-    while (centers.length <= plate && k < plate + MAX_SCAN) {
+    if (!Number.isInteger(plate) || plate < 0 || plate >= MAX_SPLIT_PLATES) return cell(plate);
+    while (centers.length <= plate && k < MAX_SPLIT_FRAME_SCAN) {
       const c = cell(++k);
       if (free(c)) centers.push(c);
     }

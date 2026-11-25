@@ -14,17 +14,18 @@ import React, { useMemo } from 'react';
 import { t } from '../../i18n';
 import {
   explodedSplitPositions,
-  plateOffset,
   splitArrangementOf,
   splitGroupOf,
+  splitIsAssembled,
   splitPlateCount,
 } from '../../core/scene/splitGroups';
-import { activeBed } from '../../store/splitCommandSchemas';
+import { splitGroupFrame } from '../../core/scene/splitFrame';
 import { userAxisLabel } from '../../core/scene/displayAxes';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { computeWorldBounds } from '../viewport/viewportHelpers';
 import { SplitLabelLayer, type SplitLabelItem } from './SplitLabelLayer';
+import { useSplitFrames, useSplitPlateSource } from './useSplitFrames';
 
 type Bounds = ReturnType<typeof computeWorldBounds>;
 const boundsCache = new WeakMap<SceneObject, Bounds>();
@@ -44,9 +45,8 @@ export const SplitLabels: React.FC = () => {
   const explode = useKuraStore((s) => s.splitExplode);
   const preview = useKuraStore((s) => s.splitPlanPreview);
   const selectedId = useKuraStore((s) => s.selectedIds[0] ?? null);
-  const printerProfile = useKuraStore((s) => s.printerProfile);
-  const customBed = useKuraStore((s) => s.customBedDimensions);
-  const bed = activeBed({ printerProfile, customBedDimensions: customBed });
+  const plateSource = useSplitPlateSource();
+  const frames = useSplitFrames();
 
   const items = useMemo<SplitLabelItem[]>(() => {
     const out: SplitLabelItem[] = [];
@@ -101,7 +101,7 @@ export const SplitLabels: React.FC = () => {
       for (const [groupId, parts] of groups) {
         const group = splitGroupOf(objects, parts[0].id);
         const moved =
-          explode && explode.groupId === groupId && explode.factor > 0 && group && splitArrangementOf(group, bed.widthMm) === 'assembly'
+          explode && explode.groupId === groupId && explode.factor > 0 && group && splitIsAssembled(group)
             ? explodedSplitPositions(group, explode.factor)
             : null;
         for (const o of parts) {
@@ -121,22 +121,24 @@ export const SplitLabels: React.FC = () => {
       }
     }
 
-    // Placas de impresión del grupo seleccionado (la 1 es la cama real).
+    // Placas de impresión del grupo seleccionado (la 1 es la placa real del grupo), bajo el borde de cada una.
     const group = splitGroupOf(objects, selectedId);
-    if (group && splitArrangementOf(group, bed.widthMm, bed.depthMm) === 'print') {
+    if (group && splitArrangementOf(group, frames) === 'print') {
       const plates = splitPlateCount(group);
+      const frame = splitGroupFrame(group, plateSource);
       for (let plate = 0; plate < plates; plate++) {
+        const [x, z] = frame.center(plate);
         out.push({
           id: `plate:${plate}`,
           text: t(language, 'split.plate', { n: plate + 1 }),
-          anchor: [plateOffset(plate, bed.widthMm, bed.depthMm)[0], 0.1, plateOffset(plate, bed.widthMm, bed.depthMm)[1] + bed.depthMm / 2 + 12],
+          anchor: [x, 0.1, z + frame.depthMm / 2 + 12],
           radiusMm: 0,
           kind: 'plate',
         });
       }
     }
     return out;
-  }, [show, language, objects, explode, preview, selectedId, bed.widthMm, bed.depthMm]);
+  }, [show, language, objects, explode, preview, selectedId, frames, plateSource]);
 
   return <SplitLabelLayer items={items} />;
 };

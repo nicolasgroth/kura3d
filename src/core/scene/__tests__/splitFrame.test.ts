@@ -12,9 +12,9 @@ import { describe, expect, it } from 'vitest';
 import type { SceneObject, SplitPartMetadata, Vec3 } from '../../../types/kura';
 import type { ScenePlate } from '../../../types/plates';
 import { bedsSeparated, PLATE_GAP_MM } from '../plates';
-import { splitFrameFor, splitFramesOf, splitGroupFrame } from '../splitFrame';
+import { MAX_SPLIT_FRAME_SCAN, splitFrameFor, splitFramesOf, splitGroupFrame } from '../splitFrame';
 import {
-  arrangeSplitGroupPatches, plateOffset, splitArrangementOf, splitGroupOf, splitTransformFor, type SplitGroup,
+  arrangeSplitGroupPatches, MAX_SPLIT_PLATES, plateOffset, splitArrangementOf, splitGroupOf, splitTransformFor, type SplitGroup,
 } from '../splitGroups';
 
 const BED = { widthMm: 220, depthMm: 200, heightMm: 250 };
@@ -96,6 +96,19 @@ describe('splitFrame', () => {
     expect(frame.widthMm).toBe(150);
     expect(frame.center(1)).toEqual([260 + 150 + PLATE_GAP_MM, 0]);
     expect(splitTransformFor(part('a', 1).metadata!.split!, 'print', frame).position).toEqual([10 + 260 + 190, 0, -20]);
+  });
+
+  it('un índice de placa gigante (dato externo) termina al instante y sin llenar la lista', () => {
+    const frame = splitFrameFor(P2, { plates: [P1, P2, P3], projectBed: BED });
+    const t0 = performance.now();
+    for (const plate of [MAX_SPLIT_PLATES, 1e9, Number.MAX_SAFE_INTEGER, -1, 2.5]) {
+      const c = frame.center(plate);
+      expect(c).toHaveLength(2);
+    }
+    // Un índice válido alto sigue saltando placas reales y el trabajo queda bajo el tope fijo.
+    expect(frame.center(MAX_SPLIT_PLATES - 1)).toHaveLength(2);
+    expect(performance.now() - t0).toBeLessThan(200);
+    expect(MAX_SPLIT_FRAME_SCAN).toBeGreaterThanOrEqual(MAX_SPLIT_PLATES);
   });
 
   it('el marco del grupo es el de la placa de la mayoría de sus piezas', () => {

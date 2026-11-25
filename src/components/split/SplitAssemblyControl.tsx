@@ -13,9 +13,9 @@ import { Boxes, Pause, Play, Printer } from 'lucide-react';
 import { t } from '../../i18n';
 import { tCount } from '../../utils/plural';
 import { splitArrangementOf, splitGroupOf, splitPlateCount } from '../../core/scene/splitGroups';
-import { activeBed } from '../../store/splitCommandSchemas';
 import { useKuraStore } from '../../store/useKuraStore';
 import { SplitLabelsToggle } from './SplitLabelsToggle';
+import { useSplitFrames } from './useSplitFrames';
 
 /** Duración de una ida (armado → explosionado) en ms. */
 const HALF_CYCLE_MS = 1600;
@@ -35,15 +35,15 @@ export const SplitAssemblyControl: React.FC = () => {
   const setExplode = useKuraStore((s) => s.setSplitExplode);
   const arrange = useKuraStore((s) => s.arrangeSplitGroup);
   const busy = useKuraStore((s) => Boolean(s.busyOperation));
-  const bedWidth = useKuraStore((s) => activeBed(s).widthMm);
-  const bedDepth = useKuraStore((s) => activeBed(s).depthMm);
+  // Cada pieza se mide en su placa real (sin placas: la cuadrícula desde el origen).
+  const frames = useSplitFrames();
   const [playing, setPlaying] = useState(false);
   const raf = useRef<number | null>(null);
   const uid = useId();
 
   const group = splitGroupOf(objects, selectedId);
   const groupId = group?.groupId ?? null;
-  const arrangement = group ? splitArrangementOf(group, bedWidth, bedDepth) : null;
+  const arrangement = group ? splitArrangementOf(group, frames) : null;
   const factor = explode && explode.groupId === groupId ? explode.factor : 0;
 
   // Al salir del grupo, la vista vuelve a armado y la animación se detiene.
