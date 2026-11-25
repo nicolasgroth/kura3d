@@ -22,6 +22,12 @@ Estado de `main`: 2526 pruebas del frontend, 151 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
+| «Acerca de»: cómo se construyó y para qué, autor, licencia y bibliotecas; huevo de pascua con 10 clics en el logo (pedido del autor) | En desarrollo desde el 24-nov (23:50), en paralelo |
+| Barra flotante de acciones junto al objeto seleccionado: color, duplicar, ocultar, bloquear, eliminar y más | En desarrollo desde el 24-nov (23:50), en paralelo |
+| Agregados: ojo de cerradura para colgar en el muro y paso de cable, sobre el patrón del imán y la torreta | En desarrollo desde el 24-nov (23:50), en paralelo |
+| Servidor MCP: herramientas para suavizar, orientar, alojamiento de imán y torreta, con paridad sin la app abierta | En desarrollo desde el 24-nov (23:50), en paralelo |
+| Medición con modelos reales: cuánto baja Simplificar y cuánto ganaría reconocer caras planas y figuras simples | En desarrollo desde el 24-nov (23:50), en paralelo |
+| README con todo lo que ya funciona y lo que falta; documento de estimación de tiempos de lo pendiente (pedidos del autor) | En desarrollo desde el 24-nov (23:50), en paralelo |
 | Orientar para imprimir, interfaz: lista de orientaciones con medidas y motivos, vista previa con las zonas en voladizo, aplicar | En desarrollo desde el 24-nov (21:45), en paralelo |
 | Suavizar malla, interfaz: intensidad, pasadas, conservar aristas, zona pintada, vista previa y aplicar | En desarrollo desde el 24-nov (21:45), en paralelo |
 | Imanes como unión del corte: tipo de unión nuevo en Dividir, con pares de alojamientos enfrentados y coaxiales (pedido del autor) | En desarrollo desde el 24-nov (21:45), en paralelo |
