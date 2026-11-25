@@ -194,6 +194,23 @@ const UX = {
     es: 'Separación de las piezas (explosión)', en: 'Piece separation (explode)', de: 'Teileabstand (Explosion)',
     fr: 'Écartement des pièces (éclaté)', hi: 'भागों का अलगाव (एक्सप्लोड)', zh: '部件分离（爆炸视图）',
   },
+  // --- Con imanes manda el alojamiento del imán, no el mínimo de pared de los conectores ---
+  'split.warn.planeGlueOnlyMagnet': {
+    es: '{plane}: pared de ≈ {wall} mm, insuficiente para alojar el imán: queda un corte liso para pegar.',
+    en: '{plane}: wall ≈ {wall} mm, too thin to hold the magnet: stays a smooth cut to glue.',
+    de: '{plane}: Wand ≈ {wall} mm, zu dünn für die Magnetaufnahme: bleibt ein glatter Schnitt zum Kleben.',
+    fr: '{plane} : paroi ≈ {wall} mm, trop fine pour loger l’aimant : reste une coupe lisse à coller.',
+    hi: '{plane}: दीवार ≈ {wall} mm, चुंबक के लिए बहुत पतली: चिपकाने के लिए सपाट कट रहेगा।',
+    zh: '{plane}：壁厚约 {wall} mm，太薄放不下磁铁：保留平整切面用于粘合。',
+  },
+  'split.warn.planeGlueOnlyMagnetNoWall': {
+    es: '{plane}: la sección es demasiado delgada para alojar el imán: queda un corte liso para pegar.',
+    en: '{plane}: the section is too thin to hold the magnet: stays a smooth cut to glue.',
+    de: '{plane}: Der Querschnitt ist zu dünn für die Magnetaufnahme: bleibt ein glatter Schnitt zum Kleben.',
+    fr: '{plane} : la section est trop fine pour loger l’aimant : reste une coupe lisse à coller.',
+    hi: '{plane}: खंड चुंबक के लिए बहुत पतला है: चिपकाने के लिए सपाट कट रहेगा।',
+    zh: '{plane}：截面太薄放不下磁铁：保留平整切面用于粘合。',
+  },
 } as const satisfies Record<string, Row>;
 
 type Lang = keyof Row;

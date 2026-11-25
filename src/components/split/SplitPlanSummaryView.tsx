@@ -44,11 +44,13 @@ export const SplitPlanSummaryView: React.FC<{
     const min = fmt1(summary.minWallForConnectorMm ?? 0);
     for (const p of glueOnly) {
       const plane = t(language, 'split.planeName', { axis: userAxisLabel(p.axis), n: p.number });
-      warnings.push(
+      // Con imanes el límite es el alojamiento del imán (el mínimo de pared de conectores vale 0 y no aplica).
+      const magnet = plan.connector?.type === 'magnet';
+      const key =
         p.wallMm !== null
-          ? t(language, 'split.warn.planeGlueOnly', { plane, wall: fmt1(p.wallMm), min })
-          : t(language, 'split.warn.planeGlueOnlyNoWall', { plane, min }),
-      );
+          ? magnet ? 'split.warn.planeGlueOnlyMagnet' : 'split.warn.planeGlueOnly'
+          : magnet ? 'split.warn.planeGlueOnlyMagnetNoWall' : 'split.warn.planeGlueOnlyNoWall';
+      warnings.push(t(language, key, { plane, wall: p.wallMm !== null ? fmt1(p.wallMm) : '', min }));
     }
     if (!plan.connector && summary.jointCount > 0) warnings.push(t(language, 'split.warn.noConnectors'));
     if (summary.rotatedCount > 0) warnings.push(tCount(language, { one: 'splitUx.warn.rotated.one', other: 'splitUx.warn.rotated.other' }, summary.rotatedCount));
@@ -156,7 +158,7 @@ export const SplitPlanSummaryView: React.FC<{
           {glueOnly.length > 0 && (onLowerMinWall || onUseLap) && (
             <p className="kura-split-glue-options">
               <span>{t(language, 'split.glueOptions')}</span>
-              {onLowerMinWall && (
+              {onLowerMinWall && plan?.connector?.type !== 'magnet' && (
                 <button type="button" className="kura-btn kura-btn-sm" title={t(language, 'split.glueLowerMinTip')} onClick={onLowerMinWall}>
                   {t(language, 'split.glueLowerMin')}
                 </button>
