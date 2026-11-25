@@ -59,7 +59,7 @@ export const AddonFacePlacer: React.FC<AddonFacePlacerProps> = ({ testId, place,
       <legend>{t(language, 'addon.face.group')}</legend>
       <div className="kura-field-row">
         <label htmlFor={`${uid}-face`}>{t(language, 'addon.face.label')}</label>
-        <select id={`${uid}-face`} value={face} onChange={(e) => setFace(e.target.value as AddonFace)} data-testid={`${testId}-face-select`}>
+        <select id={`${uid}-face`} className="kura-select" value={face} onChange={(e) => setFace(e.target.value as AddonFace)} data-testid={`${testId}-face-select`}>
           {ADDON_FACES.map((f) => (
             <option key={f} value={f}>{t(language, `addon.face.${f}` as TranslationKey)}</option>
           ))}
