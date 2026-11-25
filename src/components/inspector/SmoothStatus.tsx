@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { SMOOTH_DEFAULTS } from '../../engine/smooth';
@@ -50,9 +50,16 @@ export const SmoothStatus: React.FC<SmoothStatusProps> = ({ language, session, p
   const protectedCount = done && report ? report.damageProtectedVertices : 0;
   const bigVolume = done && report && Math.abs(report.volumeChangePct) > SMOOTH_DEFAULTS.volumeWarnPct;
   const suggest = done && session !== null && edgeProtectionBlocks(session.params, report);
+  // El pie fijo (Vista previa / Aplicar) no debe tapar el resultado: al llegar uno nuevo o un error, se trae a la vista
+  // por encima del pie (`scroll-margin-bottom` en smoothPanel.css).
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const settled = session?.status === 'ready' || session?.status === 'applied' || session?.status === 'error';
+  useEffect(() => {
+    if (settled) rootRef.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [settled, session?.status]);
 
   return (
-    <div className="kura-smooth-status">
+    <div className="kura-smooth-status" ref={rootRef}>
       <p role="status" className="kura-smooth-line" data-state={session?.status ?? 'idle'}>
         {message}
       </p>

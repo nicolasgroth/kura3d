@@ -84,6 +84,8 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
         disabled={!groupAvailability.enabled}
         onSelect={pick(() => runAction('group'))}
       />
+      {/* Primer nivel (solo desde la segunda placa): «Mover a placa» no se esconde tres niveles adentro. */}
+      <MoveToPlateMenu target={target} run={run} />
 
       <div className="kura-context-sep" role="separator" />
       <ActionGroupMenus
@@ -93,12 +95,7 @@ export const ObjectContextMenu: React.FC<{ menu: ContextMenuState; target: Scene
           prepare: (
             <MenuItem icon={<Scissors size={14} aria-hidden="true" />} label={t(language, 'ctx.planeCut')} disabled={target.locked} keys="C" onSelect={run(() => setActiveDialog('cut'))} />
           ),
-          position: (
-            <>
-              <TransformSubMenu target={target} run={run} />
-              <MoveToPlateMenu target={target} run={run} />
-            </>
-          ),
+          position: <TransformSubMenu target={target} run={run} />,
         }}
       />
       <ObjectMenuMore target={target} run={run} />

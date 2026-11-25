@@ -105,6 +105,15 @@ describe('SplitForBedPanel', () => {
     expect((splitButton() as HTMLButtonElement).disabled).toBe(false);
   });
 
+  it('con imanes el resumen dice «según el espacio de cada unión» y sugiere un imán más chico, no el solape', () => {
+    render(<SplitForBedPanel open onClose={() => undefined} />);
+    ready({ ...PLAN, connector: { type: 'magnet', size: 4, depth: 3, tolerance: 0.25, count: 1 } } as BedSplitPlan);
+    const text = document.body.textContent ?? '';
+    expect(text).toContain(t('es', 'split.sum.jointsUpToMagnet', { count: 4, with: 3 }));
+    expect(screen.getByTestId('split-magnet-suggestion').textContent).toContain('imán más chico');
+    expect(screen.queryByRole('button', { name: t('es', 'split.glueUseLap'), hidden: true })).toBeNull();
+  });
+
   it('ofrece Tarugo suelto con su ayuda y cuenta los tarugos del plan en el resumen', () => {
     render(<SplitForBedPanel open onClose={() => undefined} />);
     const select = screen.getByLabelText(t('es', 'dialog.cut.connectorType'), { selector: 'select' }) as HTMLSelectElement;

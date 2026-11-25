@@ -8,16 +8,21 @@
  * @license MIT
  */
 
-/** Rótulo de pieza válido: letras mayúsculas, dígitos y letras minúsculas opcionales (A1, B2b, AA12c). */
-const PIECE_CODE = /^[A-Z]{1,3}\d{1,4}[a-z]{0,3}$/;
+/**
+ * Rótulo de pieza válido: letras mayúsculas, dígitos y letras minúsculas opcionales (A1, B2b, AA12c), más el
+ * sufijo «·n» de las celdas que quedan en varios cuerpos (A1·2): sin él esas piezas se veían sin rótulo.
+ */
+const PIECE_CODE = /^[A-Z]{1,3}\d{1,4}[a-z]{0,3}(?:·\d{1,3})?$/;
 
 export function isPieceCode(code: unknown): code is string {
-  return typeof code === 'string' && code.length <= 10 && PIECE_CODE.test(code);
+  return typeof code === 'string' && code.length <= 14 && PIECE_CODE.test(code);
 }
 
 /** «código · nombre sin el código final»; si el código no es válido, el nombre tal cual. */
 export function splitPieceDisplayName(name: string, code: unknown): string {
   if (!isPieceCode(code)) return name;
-  const base = name.endsWith(code) ? name.slice(0, -code.length).trimEnd() : name;
+  let base = name.endsWith(code) ? name.slice(0, -code.length).trimEnd() : name;
+  // Las piezas se nombran «Nombre · A1»: el separador que queda al quitar el código tampoco se muestra.
+  if (base.length > 1 && base.endsWith('·')) base = base.slice(0, -1).trimEnd();
   return `${code} · ${base || name}`;
 }

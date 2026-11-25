@@ -1,0 +1,31 @@
+/**
+ * @file src/styles/plateBadge.css
+ * @description Insignia de la placa de una pieza en la lista de escena y nota de posición relativa del inspector.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-plate-badge {
+  flex: 0 3 auto;
+  min-width: 0;
+  max-width: 9ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 6px;
+  border: 1px solid var(--border-strong, var(--border-subtle));
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+}
+
+.kura-plate-relative-note {
+  display: block;
+  margin: 2px 0 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}

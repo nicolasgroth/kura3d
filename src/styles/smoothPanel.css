@@ -62,6 +62,15 @@
   align-items: center;
 }
 
+/* El pie fijo mide ~48 px: lo que se trae a la vista (resultado, foco de un campo) queda por encima de el, no debajo. */
+.kura-smooth-panel {
+  --kura-smooth-actions-h: 56px;
+}
+
+.kura-smooth-panel :is(.kura-smooth-status, .kura-smooth-where, .kura-smooth-field, input, select) {
+  scroll-margin-bottom: var(--kura-smooth-actions-h);
+}
+
 .kura-smooth-status {
   display: flex;
   flex-direction: column;

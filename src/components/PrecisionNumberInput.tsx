@@ -45,6 +45,8 @@ export interface PrecisionNumberInputProps {
   axisTone?: 'x' | 'y' | 'z';
   /** Sufijo compacto opcional dentro de la caja (ej. 'mm', '°', '×'). */
   suffix?: string;
+  /** Muestra el valor con separador de miles (500.000) mientras no se edita; al enfocar vuelve el texto plano. */
+  grouping?: boolean;
   /**
    * Unidad de longitud activa del campo: habilita escribir `2cm` o `1in` y los convierte a ella.
    * Sin ella se deduce del sufijo (`mm`, `in`…); con `null` el campo no admite unidades.
@@ -126,6 +128,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
   prefix,
   axisTone,
   suffix,
+  grouping = false,
   unit,
   defaultValue,
   scrubPixelsPerStep = 4,
@@ -470,7 +473,7 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
         className="kura-precision-field"
         disabled={disabled}
         data-commit-on-blur={commitOnBlur || undefined}
-        value={isFocused || invalid ? draft : formatDisplayValue(value, precision, language)}
+        value={isFocused || invalid ? draft : grouping && Number.isFinite(value) ? formatLocaleNumber(language, Number(value.toFixed(precision)), { maxFrac: Math.max(precision, 0), grouping: true }) : formatDisplayValue(value, precision, language)}
         aria-label={ariaLabel ?? prefix}
         aria-invalid={invalid || externalInvalid ? true : undefined}
         aria-describedby={invalid ? (describedBy ? `${errorId} ${describedBy}` : errorId) : describedBy}

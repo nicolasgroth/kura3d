@@ -19,7 +19,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { helpAttrs } from '../shell/controlHelp';
 import { OrientOptionList } from './OrientOptionList';
-import { recommendedId, showBaseWarning, summaryText } from './orientView';
+import { hasNoBase, recommendedId, showBaseWarning, summaryOf } from './orientView';
 import '../../styles/orient.css';
 
 const { min: ANGLE_MIN, max: ANGLE_MAX } = ORIENT_ANGLE_RANGE;
@@ -55,6 +55,7 @@ export const OrientPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => 
   const angle = parseOrientAngle(angleText);
   const lastAngle = useRef<number>(ORIENT_ANGLE_RANGE.default);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const applyRef = useRef<HTMLButtonElement | null>(null);
   // Se aplicó una orientación y falta el análisis nuevo: la lista recalculada parte en «Actual», no en una sugerencia.
   const justApplied = useRef(false);
 
@@ -94,6 +95,9 @@ export const OrientPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => 
 
   const chosen = analysis?.candidates.find((c) => c.id === chosenId) ?? null;
   const canApply = Boolean(analysis && chosen && chosen.id !== analysis.currentId && !running && !busy);
+  // Una opcion sin base de apoyo exige una accion explicita: su boton dice «Aplicar de todos modos».
+  const chosenNoBase = Boolean(chosen && hasNoBase(chosen));
+  const summary = analysis && !running ? summaryOf(language, analysis) : null;
 
   const choose = (id: string) => {
     setChosenId(id);
@@ -152,12 +156,10 @@ export const OrientPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => 
             <progress className="kura-orient-progress" aria-label={t(language, 'orient.ui.progress')} />
           </div>
         )}
-        {!running && analysis && (
-          <p className="kura-orient-summary" data-testid="orient-summary" data-kind={analysis.allEquivalent ? 'equivalent' : analysis.currentIsBest ? 'best' : recommendedId(analysis) === null ? 'noBase' : 'better'}>
-            {!analysis.allEquivalent && !analysis.currentIsBest && recommendedId(analysis) === null
-              ? <AlertTriangle size={14} aria-hidden="true" />
-              : <CheckCircle2 size={14} aria-hidden="true" />}
-            <span>{summaryText(language, analysis)}</span>
+        {summary && (
+          <p className="kura-orient-summary" data-testid="orient-summary" data-kind={summary.kind}>
+            {summary.kind === 'noBase' ? <AlertTriangle size={14} aria-hidden="true" /> : <CheckCircle2 size={14} aria-hidden="true" />}
+            <span>{summary.text}</span>
           </p>
         )}
         {!running && analysis && showBaseWarning(analysis) && (
@@ -206,6 +208,11 @@ export const OrientPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => 
             onChoose={choose}
             onApply={(id) => {
               choose(id);
+              // Sin base: Enter solo la elige y lleva el foco al boton «Aplicar de todos modos».
+              if (analysis.candidates.find((c) => c.id === id && hasNoBase(c) && c.id !== analysis.currentId)) {
+                setTimeout(() => applyRef.current?.focus(), 0);
+                return;
+              }
               apply(id);
             }}
             onPreview={previewFromList}
@@ -238,18 +245,22 @@ export const OrientPanel: React.FC<{ primary: SceneObject }> = ({ primary }) => 
 
           <div className="kura-orient-actions">
             <button
+              ref={applyRef}
               type="button"
               className="kura-btn kura-btn-sm kura-btn-primary"
               disabled={!canApply}
               onClick={() => chosenId && apply(chosenId)}
               data-testid="orient-apply"
               {...helpAttrs('orient.apply', language)}
-              title={canApply ? t(language, 'orient.ui.apply') : t(language, 'orient.ui.applyNeed')}
+              title={canApply ? t(language, chosenNoBase ? 'orient.ui.applyAnyway' : 'orient.ui.apply') : t(language, 'orient.ui.applyNeed')}
             >
               <RotateCw size={13} aria-hidden="true" />
-              <span>{t(language, 'orient.ui.apply')}</span>
+              <span>{t(language, chosenNoBase ? 'orient.ui.applyAnyway' : 'orient.ui.apply')}</span>
             </button>
           </div>
+          {canApply && chosenNoBase && (
+            <small className="kura-orient-hint" data-testid="orient-confirm-nobase">{t(language, 'orient.ui.confirmNoBase')}</small>
+          )}
           {!canApply && !running && <small className="kura-orient-hint">{t(language, 'orient.ui.applyNeed')}</small>}
         </>
       )}

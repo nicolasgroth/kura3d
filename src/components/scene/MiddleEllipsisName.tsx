@@ -20,7 +20,7 @@ const COUNTER_SUFFIX = /\(\d+\)$/;
 const COUNTER_TAIL_CHARS = 8;
 
 /** Código de pieza de una división al final del nombre («Tapa · A1»): se ve siempre completo. */
-const PIECE_CODE_SUFFIX = /\s·\s[A-Za-z]{1,3}\d{1,3}$/;
+const PIECE_CODE_SUFFIX = /\s·\s[A-Za-z]{1,3}\d{1,3}[a-z]{0,3}(?:·\d{1,3})?$/;
 
 /** Parte el nombre en tramo recortable y final fijo; los nombres cortos no se parten. */
 export function splitNameTail(name: string, tail = NAME_TAIL_CHARS): [string, string] {

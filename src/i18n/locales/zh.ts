@@ -417,7 +417,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'inspector.pro.howCalculated': '如何计算？',
   'inspector.pro.assumptions': '重量按 {material}（{density} g/cm³）、{infill}% 填充和 {shell}% 实心外壁与顶底层估算；耗材直径 {filament} mm。',
   'inspector.pro.actionDropToBed': '放到打印床上',
-  'inspector.pro.meshTitle': '网格优化 / 重拓扑（简化与细分）',
+  'inspector.pro.meshTitle': '网格：简化、细分与外壳',
   'inspector.pro.simplifyTol': '容差 (mm)',
   'inspector.pro.simplifyBtn': '简化网格',
   'inspector.pro.refineEdge': '目标边长 (mm)',

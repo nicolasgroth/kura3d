@@ -64,6 +64,8 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       commit(result.scene, { activePlateId: result.plate.id });
       // La placa nueva queda lejos del encuadre: la cámara deja a la vista todas las camas.
       get().requestCameraPreset('plates');
+      // Confirmacion visible: la placa nueva queda fuera del encuadre actual y, sin aviso, parece que no pasó nada.
+      get().addToast(tr('plates.toast.created', { name: result.plate.name }), 'success');
       return result.plate;
     },
 

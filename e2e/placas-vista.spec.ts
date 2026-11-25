@@ -102,8 +102,7 @@ for (const width of [1024, 1280]) {
       await fila.click();
       await fila.press('Shift+F10');
       const menu = page.getByRole('menu').first();
-      await menu.getByRole('menuitem', { name: 'Posición y tipo' }).click();
-      await page.getByRole('menuitem', { name: 'Mover a placa' }).click();
+      await menu.getByRole('menuitem', { name: 'Mover a placa' }).click();
       const lista = page.getByRole('menu', { name: /Mover a placa/ });
       await expect(lista.getByRole('menuitem')).toHaveText([/Placa 1 \(actual\)/, /Placa 2/, /Placa nueva/]);
       await lista.getByRole('menuitem', { name: 'Placa nueva' }).click();

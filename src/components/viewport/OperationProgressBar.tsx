@@ -17,6 +17,7 @@ import type { LanguageCode } from '../../types/kura';
 import { formatNumber } from '../../utils/plural';
 import { parseCutPhase, progressPhaseLabel } from '../split/splitProgress';
 import { importPhaseLabel, parseImportParts } from './importProgress';
+import { simplifyPhaseLabel, simplifySlowNote } from './simplifyProgress';
 import '../../styles/operationPreview.css';
 import '../../styles/splitForBed.css';
 
@@ -42,6 +43,8 @@ export const OperationProgressBar: React.FC = () => {
   const progress = useKuraStore((s) => s.busyProgress);
   const cancel = useKuraStore((s) => s.cancelBusyOperation);
   const [now, setNow] = useState(() => Date.now());
+  // Triangulos del objeto en curso (la seleccion): para avisar de la espera larga al simplificar modelos pesados.
+  const triangles = useKuraStore((s) => (s.selectedIds.length > 0 ? s.objects.find((o) => o.id === s.selectedIds[0])?.stats.triangles ?? null : null));
 
   useEffect(() => {
     if (!progress) return;
@@ -65,7 +68,8 @@ export const OperationProgressBar: React.FC = () => {
   if (!view || view.elapsedMs < PROGRESS_SHOW_DELAY_MS) return null;
 
   const label = operationLabel(language, view.name);
-  const phaseText = progressPhaseLabel(language, view.phase) ?? importPhaseLabel(language, view.phase);
+  const phaseText = progressPhaseLabel(language, view.phase) ?? importPhaseLabel(language, view.phase) ?? simplifyPhaseLabel(language, view.phase);
+  const slowNote = simplifySlowNote(language, view.name, triangles);
   // Barra determinada si la fase trae avance (cortes de Dividir o piezas importadas); si no, indeterminada.
   const cut = parseCutPhase(view.phase) ?? parseImportParts(view.phase);
   const seconds = formatNumber(language, view.elapsedMs / 1000, { maximumFractionDigits: 1, minimumFractionDigits: 1 });
@@ -75,6 +79,7 @@ export const OperationProgressBar: React.FC = () => {
       <Loader2 size={14} className="kura-op-progress-spin" aria-hidden="true" />
       <span className="kura-op-progress-name">{t(language, 'progress.running', { op: label })}</span>
       {phaseText && <span className="kura-op-progress-phase">{phaseText}</span>}
+      {slowNote && <span className="kura-op-progress-phase" data-testid="op-progress-slow">{slowNote}</span>}
       <span className="kura-op-progress-time" aria-hidden="true">
         {t(language, 'progress.elapsed', { seconds })}
       </span>

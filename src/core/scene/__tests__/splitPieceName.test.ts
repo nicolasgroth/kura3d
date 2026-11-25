@@ -16,6 +16,12 @@ describe('splitPieceDisplayName', () => {
     expect(splitPieceDisplayName('A1a', 'A1a')).toBe('A1a · A1a');
   });
 
+  it('las piezas de una celda en varios cuerpos (A1·2) también llevan su rótulo y sin separador sobrante', () => {
+    expect(isPieceCode('A1·2')).toBe(true);
+    expect(splitPieceDisplayName('frieren · A1·2', 'A1·2')).toBe('A1·2 · frieren');
+    expect(splitPieceDisplayName('frieren · A1', 'A1')).toBe('A1 · frieren');
+  });
+
   it('ignora códigos hostiles o con formato inesperado', () => {
     const huge = 'a'.repeat(10_000);
     for (const code of ['(a+)+$', '.*', huge, '', 'a1', null, 42, 'A1a; DROP']) {

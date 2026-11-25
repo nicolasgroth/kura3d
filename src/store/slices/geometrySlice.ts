@@ -156,7 +156,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         const outcome = classifySimplifyResult(before, tris);
         const counts = { before: formatNumber(lang, before), tris: formatNumber(lang, tris) };
         // Menos de 1 % de reducción no se anuncia como éxito.
-        if (outcome === 'marginal') get().addToast(tr('toast.simplifyMarginal', counts), 'info');
+        if (outcome === 'marginal') get().addToast(tr(req.mode === 'tolerance' ? 'toast.simplifyMarginal' : 'simplify.toast.marginal', counts), 'info');
         // Siempre: triángulos antes -> después y cambio de volumen en % (el aviso de > 2 % sigue aparte).
         const pct = report.volumeChangePct;
         const delta = new Intl.NumberFormat(lang, { maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(Math.round(pct * 100) / 100);

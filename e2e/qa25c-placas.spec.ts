@@ -134,7 +134,6 @@ for (const size of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }])
       const fila = page.getByRole('treeitem').first();
       await fila.click();
       await fila.press('Shift+F10');
-      await page.getByRole('menuitem', { name: 'Posición y tipo' }).click();
       await page.getByRole('menuitem', { name: 'Mover a placa' }).click();
       const lista = page.getByRole('menu', { name: /Mover a placa/ });
       await expect(lista.getByRole('menuitem', { name: /Placa 1/ })).toBeDisabled();

@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { PlateBadge } from '../plates/PlateBadge';
 import React from 'react';
 import {
   ArrowDownToLine, Box, Boxes, ChevronDown, ChevronRight, Copy, Eye, EyeOff, Folder, FolderOpen, Lock, MinusSquare,
@@ -156,6 +157,7 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
           <MiddleEllipsisName name={name} />
         )}
         {count > 0 && <span className="kura-tree-count" aria-hidden="true">{count}</span>}
+        {obj && !obj.metadata?.splitDowel && <PlateBadge obj={obj} />}
         {obj?.metadata?.split?.assemblyStep != null && (
           <span className="kura-step-tag" title={t(language, 'splitJoints.order.title')}>
             <span className="sr-only">{t(language, 'splitJoints.order.badge', { n: obj.metadata.split.assemblyStep })}</span>

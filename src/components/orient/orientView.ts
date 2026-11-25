@@ -77,10 +77,34 @@ export function optionLabel(language: LanguageCode, a: OrientAnalysis, c: Orient
   return parts.join('. ').replace(/\.\./g, '.');
 }
 
-/** Texto del resumen de arriba, o `null` si solo hay lista. */
-export function summaryText(language: LanguageCode, a: OrientAnalysis): string {
-  if (a.allEquivalent) return t(language, 'orient.ui.summary.equivalent');
-  if (a.currentIsBest) return t(language, 'orient.ui.summary.best');
-  if (recommendedId(a) === null) return t(language, 'orient.ui.noStableBase');
-  return t(language, 'orient.ui.summary.better', { count: a.candidates.length });
+export type OrientSummaryKind = 'equivalent' | 'best' | 'noBase' | 'better';
+
+/** Una sola fuente del resumen: el texto visible y el de la region `role="status"` salen de aqui. */
+export function summaryOf(language: LanguageCode, a: OrientAnalysis): { kind: OrientSummaryKind; text: string } {
+  if (a.allEquivalent) return { kind: 'equivalent', text: t(language, 'orient.ui.summary.equivalent') };
+  if (a.currentIsBest) return { kind: 'best', text: t(language, 'orient.ui.summary.best') };
+  if (recommendedId(a) === null) return { kind: 'noBase', text: t(language, 'orient.ui.noStableBase') };
+  return { kind: 'better', text: t(language, 'orient.ui.summary.better', { count: a.candidates.length }) };
+}
+
+/** Texto del resumen de arriba. */
+export const summaryText = (language: LanguageCode, a: OrientAnalysis): string => summaryOf(language, a).text;
+
+/** La opcion solo toca la cama con una arista o un punto (sin base de apoyo). */
+export const hasNoBase = (c: OrientCandidate): boolean => c.reasons.some((r) => r.key === 'noBase');
+
+export interface IndexedCandidate {
+  c: OrientCandidate;
+  index: number;
+}
+
+/**
+ * Reparte las opciones: las validas arriba y, aparte, las «sin base» (salvo la actual, que siempre va con las
+ * validas porque es donde esta la pieza). Conserva el numero de opcion (`index`) de la lista completa.
+ */
+export function splitCandidates(a: OrientAnalysis): { valid: IndexedCandidate[]; noBase: IndexedCandidate[] } {
+  const valid: IndexedCandidate[] = [];
+  const noBase: IndexedCandidate[] = [];
+  a.candidates.forEach((c, index) => (hasNoBase(c) && c.id !== a.currentId ? noBase : valid).push({ c, index }));
+  return { valid, noBase };
 }
