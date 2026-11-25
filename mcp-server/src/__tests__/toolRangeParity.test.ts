@@ -17,6 +17,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, describe, expect, it } from 'vitest';
 import { OPERATION_RANGES, TRANSFORM_RANGES } from '../../../src/engine/operationLimits';
 import { MIN_SEGMENTS_BY_TYPE, PRIMITIVE_PARAM_RANGES, TEXT_DEPTH_RANGE } from '../../../src/engine/primitiveLimits';
+import { MAGNET_RANGES } from '../../../src/core/addons/magnetPocket';
 import { createKuraMcpServer } from '../index.js';
 
 const open: Array<() => Promise<void>> = [];
@@ -41,6 +42,8 @@ for (const group of Object.values(OPERATION_RANGES)) for (const r of Object.valu
 for (const r of Object.values(TRANSFORM_RANGES)) addRange(r);
 for (const r of Object.values(PRIMITIVE_PARAM_RANGES)) addRange(r);
 addRange(TEXT_DEPTH_RANGE);
+// Medidas del imán (unión con imanes de kura_split_for_bed): fuente única del alojamiento de imán
+for (const r of Object.values(MAGNET_RANGES)) addRange(r);
 for (const min of Object.values(MIN_SEGMENTS_BY_TYPE)) addRange({ min, max: PRIMITIVE_PARAM_RANGES.segments.max });
 
 interface JsonSchema {

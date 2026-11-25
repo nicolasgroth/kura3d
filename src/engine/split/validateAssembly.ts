@@ -199,7 +199,8 @@ export function validateAssembly(
   const glued = new Set(fix.applied ? fix.glueJoints : []);
   const weak: WeakJoint[] = [];
   for (const j of joints) {
-    if (j.kind !== 'connector' || !j.connector || j.connector.type === 'lap' || glued.has(j.label)) continue;
+    // Los imanes tienen su propia regla de fuerza (`MAGNET_RULES` en `splitMagnet.ts`), no la del radio del conector
+    if (j.kind !== 'connector' || !j.connector || j.connector.type === 'lap' || j.connector.type === 'magnet' || glued.has(j.label)) continue;
     const small = volumes[j.a.part] <= volumes[j.b.part] ? j.a.part : j.b.part;
     const dim = Math.max(...ext[small].map(([lo, hi]) => hi - lo));
     const n = Math.max(1, j.connectorCenters.length);
