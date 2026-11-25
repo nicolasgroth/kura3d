@@ -45,6 +45,7 @@ import { GroupEnterOnDoubleClick } from './GroupEnterOnDoubleClick';
 import { useGizmoDrag, useGizmoModifiers } from './useGizmoDrag';
 import { usePaintStroke } from './usePaintStroke';
 import { useDragMoveSelected } from './useDragMoveSelected';
+import { FloatingBarTracker } from './FloatingBarTracker';
 
 /** Caras del cubo de vistas en el orden de drei (+X, −X, +Y, −Y, +Z, −Z internos = der, izq, sup, inf, frente, fondo). */
 const VIEWCUBE_FACES = ['right', 'left', 'top', 'bottom', 'front', 'back'] as const;
@@ -347,6 +348,7 @@ export const SceneContent: React.FC<{
       <GroupEnterOnDoubleClick />
       <ViewportCaptureRegistrar />
       <ViewportCanvasA11y />
+      <FloatingBarTracker />
     </>
   );
 };

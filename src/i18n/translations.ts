@@ -65,6 +65,7 @@ import { REDISENO3A_EN, REDISENO3A_ES } from './locales/rediseno3a';
 import { REDISENO3B_EN, REDISENO3B_ES } from './locales/rediseno3b';
 import { UX8_MENU_EN, UX8_MENU_ES } from './locales/ux8Menu';
 import { IMANES_UNION_EN, IMANES_UNION_ES } from './locales/imanesUnion';
+import { BARRA_FLOTANTE_EN, BARRA_FLOTANTE_ES } from './locales/barraFlotante';
 
 /**
  * Diccionario maestro de cadenas traducibles.
@@ -1403,6 +1404,7 @@ export const TRANSLATIONS_ES = {
   'dialog.thread.invalidFields': 'Corrige los campos marcados antes de crear la rosca: un valor no numérico o fuera de rango no se aplica.',
   ...ORIENT_UI_ES,
   ...IMANES_UNION_ES,
+  ...BARRA_FLOTANTE_ES,
 } as const;
 
 /** Tipo estricto de todas las claves de traducción disponibles. */
@@ -2715,6 +2717,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.thread.invalidFields': 'Fix the marked fields before creating the thread: a non-numeric or out-of-range value is not applied.',
   ...ORIENT_UI_EN,
   ...IMANES_UNION_EN,
+  ...BARRA_FLOTANTE_EN,
 };
 
 export { TRANSLATIONS_DE, TRANSLATIONS_FR, TRANSLATIONS_HI, TRANSLATIONS_ZH };

@@ -60,6 +60,7 @@ import { REDISENO3A_ZH } from './rediseno3a';
 import { REDISENO3B_ZH } from './rediseno3b';
 import { UX8_MENU_ZH } from './ux8Menu';
 import { IMANES_UNION_ZH } from './imanesUnion';
+import { BARRA_FLOTANTE_ZH } from './barraFlotante';
 
 /**
  * Diccionario en chino simplificado (简体中文) con terminología profesional de CAD e impresión 3D.
@@ -1396,4 +1397,5 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.thread.invalidFields': '创建螺纹前请先修正标记的字段：非数字或超出范围的值不会被应用。',
   ...ORIENT_UI_ZH,
   ...IMANES_UNION_ZH,
+  ...BARRA_FLOTANTE_ZH,
 };

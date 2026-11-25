@@ -60,6 +60,7 @@ import { REDISENO3A_DE } from './rediseno3a';
 import { REDISENO3B_DE } from './rediseno3b';
 import { UX8_MENU_DE } from './ux8Menu';
 import { IMANES_UNION_DE } from './imanesUnion';
+import { BARRA_FLOTANTE_DE } from './barraFlotante';
 
 /**
  * Diccionario en alemán con terminología técnica de CAD e impresión 3D.
@@ -1396,4 +1397,5 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.thread.invalidFields': 'Korrigiere die markierten Felder, bevor du das Gewinde erstellst: Ein nicht numerischer oder außerhalb des Bereichs liegender Wert wird nicht übernommen.',
   ...ORIENT_UI_DE,
   ...IMANES_UNION_DE,
+  ...BARRA_FLOTANTE_DE,
 };
