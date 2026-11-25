@@ -45,6 +45,7 @@ export const CONTROL_HELP = {
   'view.bed': { name: 'ux6.bed.toggle', desc: 'rediseno.help.bed', shortcut: 'B', keys: 'B' },
   'view.xray': { name: 'viewport.section.toggle', desc: 'rediseno.help.xray', shortcut: 'X', keys: 'X' },
   'view.snap': { name: 'rediseno.view.snap', desc: 'rediseno.help.snap' },
+  'top.importOptions': { name: 'import.menu', desc: 'rediseno.help.importOptions' },
   'top.import': { name: 'topbar.importModel', desc: 'rediseno.help.import' },
   'top.project': { name: 'fileProject.menu', desc: 'r3a.help.project' },
   'top.insert': { name: 'r3a.insert.menu', desc: 'r3a.insert.help' },

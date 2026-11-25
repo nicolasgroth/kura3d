@@ -18,6 +18,7 @@ import { useCablePassPanel } from '../../store/cablePassPanel';
 import { useKeyholePanel } from '../../store/keyholePanel';
 import { useMagnetPanel } from '../../store/magnetPanel';
 import { useScrewBossPanel } from '../../store/screwBossPanel';
+import { panelContextOf } from '../../store/panelContext';
 import { useKuraStore } from '../../store/useKuraStore';
 import { applyFloatingBarColor, floatingBarItemsFor, floatingBarSelection, runFloatingBarAction, type FloatingBarActionId, type FloatingBarItem } from './floatingBarActions';
 import { measureFloatingBar, registerFloatingBar } from './floatingBarBridge';
@@ -49,6 +50,8 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
   const keyholeOpen = useKeyholePanel((s) => s.open);
   const cablePassOpen = useCablePassPanel((s) => s.open);
   const placementPanelOpen = magnetOpen || screwBossOpen || keyholeOpen || cablePassOpen;
+  // Panel contextual de una acción del inspector (Suavizar, Orientar, Simplificar…): misma regla que un diálogo.
+  const actionPanelOpen = useKuraStore((s) => panelContextOf(s).kind === 'action');
   const enabled = useFloatingBarPrefs((s) => s.enabled);
   const visible = floatingBarVisible({
     enabled,
@@ -58,6 +61,7 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
     pickingSurface,
     operationOpen,
     placementPanelOpen,
+    actionPanelOpen,
     contextMenuOpen,
   });
 

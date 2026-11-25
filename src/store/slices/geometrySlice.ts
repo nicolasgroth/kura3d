@@ -167,7 +167,8 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         get().addToast(
           text,
           outcome === 'marginal' || checks.length > 0 ? 'info' : 'success',
-          undoToastAction(tr('toast.undo'), () => get().past, () => get().undo()),
+          // Persistente: Simplificar tarda (minutos en mallas de millones) y el aviso no debe caducar antes de que se vea.
+          undoToastAction(tr('toast.undo'), () => get().past, () => get().undo(), true),
         );
         return true;
       });

@@ -12,6 +12,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { platesBedStatus } from '../../components/viewport/plateBedStatus';
 import { footprintOf } from '../../core/scene/freeSpot';
+import { t } from '../../i18n';
 import type { KuraCommandRequest } from '../../types/kura';
 import type { CommandBusResponse } from '../commandBus';
 import { useKuraStore } from '../useKuraStore';
@@ -152,10 +153,15 @@ describe('placas y comandos del bus', () => {
 
     it('un sólido sin placa se deja donde está', async () => {
       const { a } = await twoPlates();
-      useKuraStore.setState({ objects: store().objects.map((o) => (o.id === a.id ? { ...o, plateRef: undefined, position: [5000, 0, 0] } : o)) });
+      useKuraStore.setState({ objects: store().objects.map((o) => ({ ...o, plateRef: undefined, ...(o.id === a.id ? { position: [5000, 0, 0] as [number, number, number] } : {}) })) });
       store().setSelection([]);
+      const steps = store().past.length;
+      useKuraStore.setState({ toasts: [] });
       store().alignSelectedObjects('arrange_grid');
       expect(byId(a.id)!.position[0]).toBe(5000);
+      expect(store().past.length).toBe(steps);
+      // Sin movimiento no hay silencio: el aviso dice que las piezas no están en ninguna placa.
+      expect(store().toasts.map((x) => x.text)).toContain(t(store().language, 'plates.align.noPlate'));
     });
   });
 

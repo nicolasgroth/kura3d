@@ -61,6 +61,23 @@ export function plateBed(plate: ScenePlate | null | undefined, projectBed: Proje
   return { widthMm: own.widthMm, depthMm: own.depthMm, heightMm: own.heightMm, ...(own.marginMm !== undefined ? { marginMm: own.marginMm } : {}) };
 }
 
+/**
+ * true si las placas no cambian dónde está la cama ni cuál es: ninguna, o una sola en el origen con la cama del
+ * proyecto. Solo entonces vale el camino de siempre (todo se mide contra la cama del proyecto centrada en el origen).
+ * Una única placa fuera del origen o con cama propia (p. ej. tras borrar la placa 1) NO es legado: hay que restar su
+ * origen y usar su cama. Atajo único: no uses `plates.length < 2` para decidir algo que dependa de posiciones.
+ */
+export function isLegacyPlateSetup(plates: readonly ScenePlate[], projectBed?: ProjectBed): boolean {
+  if (plates.length === 0) return true;
+  if (plates.length > 1) return false;
+  const only = plates[0];
+  if (only.origin[0] !== 0 || only.origin[1] !== 0) return false;
+  if (!only.bed) return true;
+  return projectBed !== undefined
+    && only.bed.widthMm === projectBed.widthMm && only.bed.depthMm === projectBed.depthMm && only.bed.heightMm === projectBed.heightMm
+    && (only.bed.marginMm ?? 0) === (projectBed.marginMm ?? 0);
+}
+
 export function findPlate(plates: readonly ScenePlate[], plateId: string | null | undefined): ScenePlate | null {
   return plateId ? plates.find((p) => p.id === plateId) ?? null : null;
 }

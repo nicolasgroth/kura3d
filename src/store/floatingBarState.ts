@@ -46,10 +46,12 @@ export interface FloatingBarContext {
   operationOpen: boolean;
   /** Algún panel de colocación de agregado abierto (imán, tornillo, colgar en el muro, paso de cable). */
   placementPanelOpen: boolean;
+  /** Panel contextual de una acción del inspector abierto (Suavizar, Orientar, Simplificar, Ahuecar, Comprobar encaje…). */
+  actionPanelOpen: boolean;
   contextMenuOpen: boolean;
 }
 
-/** Regla única: la barra solo aparece con selección, herramienta Seleccionar (y sus modos) y sin ningún panel de operación (`activeDialog`) o de colocación abierto ni menú contextual. */
+/** Regla única: la barra solo aparece con selección, herramienta Seleccionar (y sus modos) y sin ningún panel de operación (`activeDialog`), contextual de acción del inspector o de colocación abierto ni menú contextual. */
 export function floatingBarVisible(ctx: FloatingBarContext): boolean {
   return (
     ctx.enabled &&
@@ -59,6 +61,7 @@ export function floatingBarVisible(ctx: FloatingBarContext): boolean {
     !ctx.pickingSurface &&
     !ctx.operationOpen &&
     !ctx.placementPanelOpen &&
+    !ctx.actionPanelOpen &&
     !ctx.contextMenuOpen
   );
 }

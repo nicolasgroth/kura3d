@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { uvSphere } from '../../engine/__tests__/smoothFixtures';
@@ -84,6 +84,24 @@ describe('Simplificar con modos (panel)', () => {
     expect(codes).toEqual(['genus_changed', 'volume_changed', 'deviation_high']);
     expect(report.textContent).toContain(t('es', 'simplify.warn.genus_changed', { before: 1, after: 0 }));
     expect(report.getAttribute('role')).toBe('status');
+  });
+
+  it('el informe trae «Deshacer» mientras el paso siga siendo el último del historial', async () => {
+    await mount();
+    act(() => useKuraStore.setState({
+      simplifySelectedMesh: async (_id, _request, options) => {
+        useKuraStore.setState({ past: [{ label: 'simplify' } as never] });
+        options?.onReport?.(REPORT);
+        return true;
+      },
+    }));
+    fireEvent.click(screen.getByRole('button', { name: t('es', 'inspector.pro.simplifyBtn') }));
+    const undo = await screen.findByTestId('simplify-report-undo');
+    expect(undo.textContent).toBe(t('es', 'toast.undo'));
+    // Otro paso después: el «Deshacer» del informe ya no vale.
+    act(() => useKuraStore.setState({ past: [{ label: 'simplify' } as never, { label: 'otro' } as never] }));
+    await waitFor(() => expect(screen.queryByTestId('simplify-report-undo')).toBeNull());
+    expect(screen.getByTestId('simplify-report')).toBeTruthy();
   });
 
   it('la tolerancia acepta en la interfaz el mismo rango que el motor y MCP (una sola fuente)', async () => {

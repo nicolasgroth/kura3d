@@ -11,6 +11,7 @@ import { useId, useRef } from 'react';
 import { ChevronDown, FileUp, SquareDashed } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import { helpAttrs } from './shell/controlHelp';
 import '../styles/modelIo.css';
 
 export function ImportMenuButton() {
@@ -28,6 +29,7 @@ export function ImportMenuButton() {
         type="button"
         className="kura-btn kura-btn-sm"
         onClick={() => void importMeshFromDialog()}
+        {...helpAttrs('top.import', language)}
         title={`${t(language, 'topbar.importModelTip')} · ${placementLabel}`}
         aria-label={t(language, 'topbar.importModel')}
       >
@@ -38,6 +40,7 @@ export function ImportMenuButton() {
         type="button"
         className="kura-btn kura-btn-sm"
         popoverTarget={menuId}
+        {...helpAttrs('top.importOptions', language)}
         title={t(language, 'import.menu')}
         aria-label={t(language, 'import.menu')}
       >
