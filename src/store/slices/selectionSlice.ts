@@ -15,7 +15,7 @@ import { resolveAlignTargets } from '../../core/scene/sceneRules';
 import { keepClearOfOthers } from '../../core/scene/freeSpot';
 import { placementBedSize } from '../bedSize';
 import { plateFrameFor } from '../../core/scene/plateFrame';
-import { alignPerPlate } from '../../core/scene/plateAlign';
+import { alignPerPlate, groupTargetsByPlate } from '../../core/scene/plateAlign';
 import { duplicateGroupStructure, pickSelection } from '../../core/scene/groups';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import { tCount } from '../../utils/plural';
@@ -265,7 +265,11 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
 
       // Con placas, cada pieza se alinea o acomoda en la cama de SU placa (agrupadas por placa, un solo paso).
       const { change, moved, fitsBed, overflow } = alignPerPlate(objects, targetObjs, mode, printerProfile, get());
-      if (moved === 0) return { moved, fitsBed };
+      if (moved === 0) {
+        // Sin movimiento no hay paso de historial, pero tampoco silencio: con placas, los sólidos sin placa no se acomodan.
+        if ((get().plates?.length ?? 0) > 0 && groupTargetsByPlate(get(), targetObjs).length === 0) get().addToast(tr('plates.align.noPlate'), 'info');
+        return { moved, fitsBed };
+      }
       pushHistory();
       set((state) => ({ objects: ops.applySceneChange(state.objects, change) }));
       // Un solo aviso coherente: si la distribución no cabe, no se anuncia como lograda.

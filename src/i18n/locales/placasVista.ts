@@ -111,6 +111,14 @@ const PLATES_VIEW_TABLE = {
   'plates.history.rename': ['Renombrar placa «{name}»', 'Rename plate “{name}”', 'Platte „{name}“ umbenennen', 'Renommer le plateau « {name} »', '“{name}” प्लेट का नाम बदलें', '重命名打印板“{name}”'],
   'plates.history.move.one': ['Mover «{piece}» a «{name}»', 'Move “{piece}” to “{name}”', '„{piece}“ nach „{name}“ verschieben', 'Déplacer « {piece} » vers « {name} »', '“{piece}” को “{name}” में ले जाएँ', '将“{piece}”移到“{name}”'],
   'plates.history.move.many': ['Mover {count} piezas a «{name}»', 'Move {count} parts to “{name}”', '{count} Teile nach „{name}“ verschieben', 'Déplacer {count} pièces vers « {name} »', '{count} हिस्से “{name}” में ले जाएँ', '将 {count} 个零件移到“{name}”'],
+  'plates.align.noPlate': [
+    'No se distribuyó nada: las piezas no están en ninguna placa. Muévelas a una placa primero.',
+    'Nothing was arranged: the parts are not on any plate. Move them to a plate first.',
+    'Nichts wurde verteilt: Die Teile liegen auf keiner Platte. Verschiebe sie zuerst auf eine Platte.',
+    'Rien n’a été réparti : les pièces ne sont sur aucun plateau. Déplacez-les d’abord vers un plateau.',
+    'कुछ वितरित नहीं हुआ: हिस्से किसी प्लेट पर नहीं हैं। पहले उन्हें किसी प्लेट पर ले जाएँ।',
+    '未做任何分布：这些零件不在任何打印板上。请先将它们移到某块板上。',
+  ],
 } as const satisfies Record<string, Row>;
 
 type PlatesViewKey = keyof typeof PLATES_VIEW_TABLE;
