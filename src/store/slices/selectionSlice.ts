@@ -10,7 +10,7 @@
 
 import * as ops from '../../core/operations';
 import { computeBedPositionY, copySceneObject, makeId } from '../../core/scene/sceneObjects';
-import { dependentMagnetIds, remapMagnetHosts } from '../../core/addons/magnetFollow';
+import { dependentAddonIds, remapAddonHosts } from '../../core/addons/addonFollow';
 import { resolveAlignTargets } from '../../core/scene/sceneRules';
 import { keepClearOfOthers } from '../../core/scene/freeSpot';
 import { activeBedSize } from '../bedSize';
@@ -134,7 +134,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
     duplicateObjects: (ids) => {
       const targetIds = new Set(ids && ids.length > 0 ? ids : get().selectedIds);
       // Los imanes de una pieza duplicada se copian con ella (aunque no estén en la selección), una sola vez.
-      for (const id of dependentMagnetIds(get().objects, targetIds, { includeLocked: true })) targetIds.add(id);
+      for (const id of dependentAddonIds(get().objects, targetIds, { includeLocked: true })) targetIds.add(id);
       const sourceObjs = get().objects.filter((o) => targetIds.has(o.id));
       if (sourceObjs.length === 0 || rejectWhileLocked()) return [];
       pushHistory();
@@ -156,7 +156,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
         p.copy.position = spot.parts[i].position;
       });
       // Un imán copiado junto con su pieza queda en la copia de la pieza.
-      const created = remapMagnetHosts(pairs.map((p) => p.copy), new Map(pairs.map((p) => [p.sourceId, p.copy.id])));
+      const created = remapAddonHosts(pairs.map((p) => p.copy), new Map(pairs.map((p) => [p.sourceId, p.copy.id])));
       pairs.forEach((p, i) => {
         p.copy = created[i];
       });
@@ -180,7 +180,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       const removableIds = new Set(get().objects.filter((o) => targetIds.includes(o.id) && !o.locked).map((o) => o.id));
       if (removableIds.size === 0) return;
       // Los imanes de una pieza borrada se van con ella (mismo paso de deshacer): no quedan negativos huérfanos.
-      for (const id of dependentMagnetIds(get().objects, removableIds)) removableIds.add(id);
+      for (const id of dependentAddonIds(get().objects, removableIds)) removableIds.add(id);
       pushHistory();
       set((state) => ({
         objects: state.objects.filter((o) => !removableIds.has(o.id)),
@@ -228,7 +228,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       const keptHost = new Map([[id, stationaryOriginal.id]]);
       set((state) => ({
         objects: [
-          ...remapMagnetHosts(state.objects.map((o) => (o.id === id ? { ...o, name: `${src.name} ${cloneLabel}` } : o)), keptHost),
+          ...remapAddonHosts(state.objects.map((o) => (o.id === id ? { ...o, name: `${src.name} ${cloneLabel}` } : o)), keptHost),
           stationaryOriginal,
         ],
         spawnedAtById: { ...state.spawnedAtById, [stationaryOriginal.id]: now },

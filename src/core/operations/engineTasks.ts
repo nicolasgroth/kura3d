@@ -29,7 +29,7 @@ import type {
   Vec3,
 } from '../../types/kura';
 import { measureObjectCapacity, type CapacityOptions } from '../../engine/measure';
-import { applyHoles, booleanOperation, convexHull } from './csgOperations';
+import { booleanOperation, convexHull } from './csgOperations';
 import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
 import { eraseSphere, hollowObject, projectOnSurface, refineObject, repairObject, simplifyObject } from './meshOperations';
 import type { OperationContext } from './operationTypes';
@@ -41,6 +41,8 @@ import { orientApplyChange, orientForPrint, type OrientApplyTaskArgs, type Orien
 import { runFitCheck, type FitCheckInput } from '../../engine/fitCheck';
 import { runRecipe } from '../recipes/run/executeRecipe';
 import { createMagnetPocket, type MagnetPocketInput } from './magnetOperations';
+import { createScrewBoss, type ScrewBossInput } from './screwBossOperations';
+import { applyHolesWithPosts } from './addonPostMerge';
 import type { RunInput } from '../recipes/run/types';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
@@ -100,7 +102,8 @@ export async function exportSceneFiles(a: ExportTaskArgs): Promise<ExportTaskRes
 /** Tareas del motor. Los argumentos y resultados deben ser clonables (sin funciones). */
 export const ENGINE_TASKS = {
   boolean: (ctx: OperationContext, a: Parameters<typeof booleanOperation>[1]) => booleanOperation(ctx, a),
-  applyHoles: (ctx: OperationContext, a: { solids: SceneObject[]; holes: SceneObject[] }) => applyHoles(ctx, a.solids, a.holes),
+  // Une antes los postes de torreta a su pieza (sin postes es `applyHoles` tal cual).
+  applyHoles: (ctx: OperationContext, a: { solids: SceneObject[]; holes: SceneObject[] }) => applyHolesWithPosts(ctx, a.solids, a.holes),
   convexHull: (ctx: OperationContext, a: { targets: SceneObject[]; name?: string }) => convexHull(ctx, a.targets, a.name),
   hollow: (ctx: OperationContext, a: { obj: SceneObject; options: HollowOptions }) => hollowObject(ctx, a.obj, a.options),
   simplify: (ctx: OperationContext, a: { obj: SceneObject; toleranceMm: number }) => simplifyObject(ctx, a.obj, a.toleranceMm),
@@ -134,6 +137,8 @@ export const ENGINE_TASKS = {
   regenerateParametric: (ctx: OperationContext, a: { obj: SceneObject; edit: ParametricEdit }) => regenerateParametric(ctx, a.obj, a.edit),
   // Alojamiento de imán: negativo orientado por la cara y pared medida con rayos sobre la anfitriona.
   magnetPocket: (ctx: OperationContext, a: MagnetPocketInput) => createMagnetPocket(ctx, a),
+  // Torreta para tornillo: poste (sólido) y agujero (negativo) orientados por la cara, con su análisis.
+  screwBoss: (ctx: OperationContext, a: ScrewBossInput) => createScrewBoss(ctx, a),
   imageReliefMesh: (_ctx: OperationContext, a: { options: ImageTo3DOptions }) => imageReliefMesh(a.options),
   svgMesh: (_ctx: OperationContext, a: { options: SvgImportOptions; contours: engine.PackedSvgContours }) => svgMesh(a.options, a.contours),
   splitPlan: (
