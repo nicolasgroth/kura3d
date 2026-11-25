@@ -30,6 +30,8 @@ import { REPAIR_HANDLERS } from './repairCommands';
 import { ROLE_HANDLERS } from './roleCommands';
 import { FIT_CHECK_HANDLERS } from './fitCheckCommands';
 import { RECIPE_HANDLERS } from './recipeCommands';
+import { ADDON_HANDLERS } from './addonCommands';
+import { SMOOTH_ORIENT_HANDLERS } from './smoothOrientCommands';
 import { userWarning } from '../core/scene/userEngineMessages';
 import { localizeEngineWarning, type EngineWarning } from '../engine/engineErrors';
 import type { OperationErrorTracker } from './operationErrors';
@@ -111,6 +113,8 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...ROLE_HANDLERS,
   ...FIT_CHECK_HANDLERS,
   ...RECIPE_HANDLERS,
+  ...ADDON_HANDLERS,
+  ...SMOOTH_ORIENT_HANDLERS,
   get_scene_state: (_p, { get }) => {
     const s = get();
     return {

@@ -11,6 +11,7 @@
 
 import { analyzeOrientations, planOrientTransform, type OrientAnalysis, type OrientOptions } from '../../engine/orient';
 import type { SceneObject } from '../../types/kura';
+import { isSolid } from '../scene/objectRole';
 import { change, type SceneChange } from './operationTypes';
 
 type Orientable = Pick<SceneObject, 'mesh' | 'position' | 'rotation' | 'scale'>;
@@ -30,6 +31,10 @@ export interface OrientApplyTaskArgs {
 
 export type { OrientOverhangFacesArgs } from '../../engine/orient';
 export { orientOverhangFaces } from '../../engine/orient';
+
+/** Pieza que «Orientar» puede tratar: un sólido desbloqueado con geometría. */
+export const orientableObject = (o: SceneObject | undefined): o is SceneObject =>
+  Boolean(o) && isSolid(o!) && !o!.locked && o!.mesh.indices.length >= 3;
 
 /** Orientaciones ordenadas de la pieza (solo lectura). */
 export function orientForPrint(a: OrientForPrintTaskArgs): OrientAnalysis {

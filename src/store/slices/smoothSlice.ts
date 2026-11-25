@@ -54,7 +54,14 @@ export interface SmoothSliceState {
   clearSmoothPreview: () => void;
   setSmoothComparing: (comparing: boolean) => void;
   /** Aplica con un paso de deshacer (usa la vista previa si coincide). */
-  applySmooth: (id: string, params: SmoothParams) => Promise<boolean>;
+  applySmooth: (id: string, params: SmoothParams, hooks?: SmoothApplyHooks) => Promise<boolean>;
+}
+
+/** Para el Command Bus: recibe el informe (también sin cambios) y deja subir los errores del motor tipados. */
+export interface SmoothApplyHooks {
+  onResult?: (report: SmoothReport, warnings: readonly EngineWarning[], applied: boolean) => void;
+  /** true: un error del motor se relanza (lo registra el ejecutor) en vez de quedar junto a los controles. */
+  rethrowEngineErrors?: boolean;
 }
 
 interface Cached {
@@ -175,7 +182,7 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
       if (hit) showGhost(hit.change, comparing);
     },
 
-    applySmooth: async (id, params) => {
+    applySmooth: async (id, params, hooks) => {
       const obj = editable(id);
       if (!obj) return false;
       const signature = smoothSignature(params);
@@ -191,7 +198,7 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
           }
         } catch (err) {
           // Cancelado: lo informa el ejecutor. Un error del motor se muestra junto a los controles, sin tocar la escena.
-          if (!isEngineError(err)) throw err;
+          if (!isEngineError(err) || hooks?.rethrowEngineErrors) throw err;
           const { text, code } = messageOf(err);
           dropPreview();
           set({
@@ -204,6 +211,7 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
         generation++;
         cached = null;
         dropPreview();
+        hooks?.onResult?.(report, change.warnings, change.patches.length > 0);
         if (change.patches.length === 0) {
           set({ smoothSession: null });
           reportEngineWarnings(change.warnings);

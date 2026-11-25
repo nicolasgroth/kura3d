@@ -28,9 +28,13 @@ import { registerRepairTools } from './repairTools.js';
 import { registerFitCheckTools } from './fitCheckTools.js';
 import { registerRoleTools, roleSchema } from './roleTools.js';
 import { registerRecipeTools } from './recipeTools.js';
+import { registerSmoothOrientTools } from './smoothOrientTools.js';
+import { registerAddonTools } from './addonTools.js';
 import type { ObjectRole } from '../../src/types/kura';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
 import { HeadlessCommandError } from './headlessSupport.js';
+import { CommandError } from '../../src/core/bus/commandErrors';
+import { t } from '../../src/i18n/index';
 import {
   exportPayloadSchema,
   hexColorSchema,
@@ -258,6 +262,10 @@ function failError(err: unknown): CallToolResult {
   if (err instanceof HeadlessCommandError) {
     return failCoded(err.code, err.message, err.params);
   }
+  // Esquemas compartidos con el bus (p. ej. `addon-blocked`): mismo código, mensaje en inglés.
+  if (err instanceof CommandError) {
+    return failCoded(err.code, t('en', err.key, err.params), err.params);
+  }
   return failText(err instanceof Error ? err.message : String(err));
 }
 
@@ -336,6 +344,8 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerFitCheckTools(server, ctx);
   registerRoleTools(server, ctx);
   registerRecipeTools(server, ctx);
+  registerSmoothOrientTools(server, ctx);
+  registerAddonTools(server, ctx);
 
   // 3. Transformación de objetos
   server.registerTool(

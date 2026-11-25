@@ -30,6 +30,9 @@ import { freePlacer, spreadPartsInFreeSpace, type HeadlessPlacement } from './he
 import { headlessPrintabilityReport, type PrintabilityInput } from './headlessPrintability.js';
 import { SerialQueue } from './headlessQueue.js';
 import { headlessFitToBed, type HeadlessFitInput } from './headlessFit.js';
+import { headlessAddMagnetPocket, headlessAddScrewBoss, type HeadlessScene } from './headlessAddons.js';
+import { followAddonsAfter, snapshotForFollow } from './headlessFollow.js';
+import { headlessApplyOrientation, headlessOrientForPrint, headlessSmoothMesh } from './headlessSmoothOrient.js';
 import {
   assertUnlocked,
   HeadlessCommandError,
@@ -181,6 +184,7 @@ export class KuraHeadlessEngine {
     // Bloqueado: solo se acepta cambiar el propio `locked` (para desbloquear).
     const otherKeys = Object.entries(patch).some(([k, v]) => k !== 'locked' && v !== undefined);
     if (otherKeys && !(patch.locked === false)) assertUnlocked(obj);
+    const before = snapshotForFollow(this.objects.values());
     if (patch.position) obj.position = ua.vecFromUser(patch.position)!;
     if (patch.rotation) obj.rotation = ua.rotationFromUser(patch.rotation)!;
     if (patch.scale) obj.scale = ua.scaleFromUser(patch.scale)!;
@@ -191,6 +195,8 @@ export class KuraHeadlessEngine {
     if (patch.visible !== undefined) obj.visible = patch.visible;
     if (patch.locked !== undefined) obj.locked = patch.locked;
     obj.stats = worldStatsOf(obj);
+    // Un imán o una torreta conserva su medida y sigue a su pieza (misma regla que el store de la app).
+    followAddonsAfter(before, [...this.objects.values()]);
     return userSummary(obj);
   }
 
@@ -706,8 +712,41 @@ export class KuraHeadlessEngine {
     return result;
   }
 
-  /** Aplica un `SceneChange` en el mapa: parches in situ, bajas y altas al final (orden de inserción). */
+  /** Suaviza la malla (`smooth_mesh`, mismo esquema y operación que la app). */
+  smoothMesh(params: Record<string, unknown>) {
+    return headlessSmoothMesh(this.scene(), params);
+  }
+
+  /** Orientaciones ordenadas de una pieza (`orient_for_print`, solo lectura). */
+  orientForPrint(params: Record<string, unknown>) {
+    return headlessOrientForPrint(this.scene(), params);
+  }
+
+  /** Aplica una orientación (`apply_orientation`): un candidato por id o un cuaternión. */
+  applyOrientation(params: Record<string, unknown>) {
+    return headlessApplyOrientation(this.scene(), params);
+  }
+
+  /** Agrega un alojamiento de imán sobre una cara (`add_magnet_pocket`). */
+  addMagnetPocket(params: Record<string, unknown>) {
+    return headlessAddMagnetPocket(this.scene(), params);
+  }
+
+  /** Agrega una torreta para tornillo sobre una cara (`add_screw_boss`). */
+  addScrewBoss(params: Record<string, unknown>) {
+    return headlessAddScrewBoss(this.scene(), params);
+  }
+
+  private scene(): HeadlessScene {
+    return { objects: () => Array.from(this.objects.values()), ctx: this.ctx, profile: this.printerProfile, apply: (c) => this.apply(c) };
+  }
+
+  /**
+   * Aplica un `SceneChange` en el mapa: parches in situ, bajas y altas al final (orden de inserción). Después, los
+   * agregados cuya pieza cambió de pose la siguen con su medida (`followAddonHosts`, como el store de la app).
+   */
   private apply(change: SceneChange): void {
+    const before = snapshotForFollow(this.objects.values());
     this.pendingWarnings.push(...change.warnings);
     for (const { id, patch } of change.patches) {
       const obj = this.objects.get(id);
@@ -715,6 +754,7 @@ export class KuraHeadlessEngine {
     }
     for (const id of change.removedIds) this.objects.delete(id);
     for (const obj of change.added) this.objects.set(obj.id, obj);
+    followAddonsAfter(before, Array.from(this.objects.values()));
   }
 
   /** Una referencia no entra en booleanas, divisiones, ahuecado, pintura ni análisis de impresión. */

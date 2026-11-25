@@ -12,9 +12,9 @@
 
 import { isEngineCancelled, type EngineJob } from '../../core/operations/engineClient';
 import type { EngineTaskResult } from '../../core/operations/engineTasks';
-import { isSolid } from '../../core/scene/objectRole';
-import { plainGroupNegatives, rigidFollowPatches } from '../../core/scene/rigidFollow';
-import { ORIENT_DEFAULTS, planOrientTransform, type OrientAnalysis } from '../../engine/orient';
+import { orientableObject } from '../../core/operations/orientOperations';
+import { orientFollowPatches } from '../../core/scene/rigidFollow';
+import { ORIENT_RANGES, planOrientTransform, type OrientAnalysis, type OrientOptions } from '../../engine/orient';
 import type { SceneObject, Vec3 } from '../../types/kura';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
@@ -24,7 +24,7 @@ import { activeFitBed } from './fitToBedSlice';
 export const ORIENT_PREVIEW_KEY = 'orient';
 
 /** Rango del umbral de voladizo que ofrece la interfaz (grados). */
-export const ORIENT_ANGLE_RANGE = Object.freeze({ min: 30, max: 70, default: ORIENT_DEFAULTS.overhangAngleDeg });
+export const ORIENT_ANGLE_RANGE = ORIENT_RANGES.overhangAngleDeg;
 
 type Pose = Pick<SceneObject, 'mesh' | 'position' | 'rotation' | 'scale'>;
 
@@ -61,6 +61,13 @@ export interface OrientSliceState {
   applyOrient: (candidateId: string) => Promise<boolean>;
   /** Cierra todo: análisis, cálculo en curso y vista previa. */
   clearOrient: (reason?: 'stale') => void;
+  /** Análisis en el Worker sin tocar el panel (Command Bus); `null` si la pieza no se puede orientar. */
+  computeOrientAnalysis: (objectId: string, options: OrientOptions) => Promise<OrientAnalysis | null>;
+  /**
+   * Aplica un giro (cuaternión de un candidato) en un paso de deshacer, con los negativos del grupo; los imanes y
+   * torretas siguen solos. false si la pieza no se puede orientar o el motor está ocupado.
+   */
+  applyOrientQuaternion: (objectId: string, quaternion: [number, number, number, number], keepXY: boolean) => Promise<boolean>;
 }
 
 const sameVec = (a: Vec3, b: Vec3) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
@@ -69,9 +76,7 @@ const sameVec = (a: Vec3, b: Vec3) => a[0] === b[0] && a[1] === b[1] && a[2] ===
 export const orientSourceIsCurrent = (source: Pose, o: SceneObject | undefined): boolean =>
   Boolean(o) && o!.mesh === source.mesh && sameVec(o!.position, source.position) && sameVec(o!.rotation, source.rotation) && sameVec(o!.scale, source.scale);
 
-/** Pieza que «Orientar» puede tratar: un sólido desbloqueado con geometría. */
-export const orientableObject = (o: SceneObject | undefined): o is SceneObject =>
-  Boolean(o) && isSolid(o!) && !o!.locked && o!.mesh.indices.length >= 3;
+export { orientableObject } from '../../core/operations/orientOperations';
 
 export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, runExclusive, runEngineDetached, startEngineJob, commitChange, assertCurrent, reportOperationError, tr } = ctx;
@@ -174,25 +179,33 @@ export function createOrientSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const candidate = orient?.analysis.candidates.find((c) => c.id === candidateId);
       const obj = orient ? get().objects.find((o) => o.id === orient.objectId) : undefined;
       if (!orient || !candidate || !obj || !orientSourceIsCurrent(orient.source, obj)) return false;
-      const applied = await runExclusive('orient', false, async () => {
-        const change = await runEngineDetached('orientApply', { obj, quaternion: candidate.quaternion, keepXY: orientKeepXY });
-        assertCurrent([obj]);
-        // Los negativos pendientes del mismo grupo acompañan a la pieza (los imanes y torretas ya la siguen solos):
-        // si quedaran donde estaban, la resta cortaría otra zona sin aviso.
-        const own = change.patches.find((p) => p.id === obj.id)?.patch;
-        if (own) {
-          const to = { position: own.position ?? obj.position, rotation: own.rotation ?? obj.rotation, scale: own.scale ?? obj.scale };
-          change.patches.push(...rigidFollowPatches(plainGroupNegatives(get().objects, obj), obj, to));
-        }
-        commitChange(change);
-        return true;
-      });
+      const applied = await get().applyOrientQuaternion(obj.id, candidate.quaternion, orientKeepXY);
       if (!applied) return false;
       dropPreview();
       get().addToast(tr('orient.ui.applied', { name: obj.name }), 'success');
       // La pieza ya está en la orientación elegida: la lista se recalcula y la aplicada pasa a ser «Actual».
       await get().analyzeOrient(obj.id, orient.analysis.overhangAngleDeg);
       return true;
+    },
+
+    computeOrientAnalysis: async (objectId, options) => {
+      const obj = get().objects.find((o) => o.id === objectId);
+      if (!orientableObject(obj)) return null;
+      return runEngineDetached('orientForPrint', { obj, options });
+    },
+
+    applyOrientQuaternion: async (objectId, quaternion, keepXY) => {
+      const obj = get().objects.find((o) => o.id === objectId);
+      if (!orientableObject(obj)) return false;
+      return runExclusive('orient', false, async () => {
+        const change = await runEngineDetached('orientApply', { obj, quaternion, keepXY });
+        assertCurrent([obj]);
+        // Los negativos pendientes del mismo grupo acompañan a la pieza (los imanes y torretas ya la siguen solos):
+        // si quedaran donde estaban, la resta cortaría otra zona sin aviso.
+        change.patches.push(...orientFollowPatches(get().objects, obj, change));
+        commitChange(change);
+        return true;
+      });
     },
 
     clearOrient: (reason) => {

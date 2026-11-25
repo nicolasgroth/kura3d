@@ -22,7 +22,9 @@ export type CommandErrorCode =
   | 'busy'
   | 'stale-input'
   | 'precondition'
-  | 'failed';
+  | 'failed'
+  /** Un agregado (imán, torreta) no se coloca: ocuparía casi toda la pieza o es más ancho que la zona. */
+  | 'addon-blocked';
 
 type Params = Record<string, string | number>;
 

@@ -28,6 +28,21 @@ export function plainGroupNegatives(objects: readonly SceneObject[], host: Scene
   return objects.filter((o) => o.id !== host.id && o.groupRef === host.groupRef && isNegative(o) && !o.metadata?.addon && !o.locked);
 }
 
+/**
+ * Parches para que los negativos del grupo de `host` acompañen el giro que trae `change` (el de «Orientar para
+ * imprimir»). Vacío si el cambio no mueve a la pieza. Mismo resultado en la app y en el MCP sin interfaz.
+ */
+export function orientFollowPatches(
+  objects: readonly SceneObject[],
+  host: SceneObject,
+  change: { patches: ReadonlyArray<{ id: string; patch: Partial<Pose> }> },
+): Array<{ id: string; patch: { position: Vec3; rotation: Vec3 } }> {
+  const own = change.patches.find((p) => p.id === host.id)?.patch;
+  if (!own) return [];
+  const to = { position: own.position ?? host.position, rotation: own.rotation ?? host.rotation, scale: own.scale ?? host.scale };
+  return rigidFollowPatches(plainGroupNegatives(objects, host), host, to);
+}
+
 /** Parches de posición y giro para que `followers` acompañen a la pieza de `from` a `to` (misma escala en ambas). */
 export function rigidFollowPatches(
   followers: readonly SceneObject[],
