@@ -159,6 +159,28 @@ describe('placas y comandos del bus', () => {
     });
   });
 
+  describe('encuadre de placas', () => {
+    it('crear una placa pide encuadrar las camas; activar otra pide dejarla a la vista', async () => {
+      await created({ name: 'A' });
+      store().createPlate();
+      expect(store().cameraRequest?.preset).toBe('plates');
+      const nonce = store().cameraRequest!.nonce;
+      store().setActivePlate(store().plates[0].id);
+      expect(store().cameraRequest).toMatchObject({ preset: 'activePlate', nonce: nonce + 1 });
+      // Activar la que ya está activa no mueve la cámara.
+      store().setActivePlate(store().plates[0].id);
+      expect(store().cameraRequest!.nonce).toBe(nonce + 1);
+    });
+
+    it('«Placa nueva» al mover también encuadra las camas', async () => {
+      const a = await created({ name: 'A' });
+      store().createPlate();
+      store().setActivePlate(store().plates[0].id);
+      store().moveToPlate(null, [a.id]);
+      expect(store().cameraRequest?.preset).toBe('plates');
+    });
+  });
+
   describe('la placa activa sigue a la pieza reasignada', () => {
     it('«Mover a placa» con la pieza seleccionada activa su nueva placa, sin paso extra', async () => {
       const a = await created({ name: 'A' });

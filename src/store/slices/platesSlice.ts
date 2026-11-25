@@ -62,6 +62,8 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       });
       if (!result) return null;
       commit(result.scene, { activePlateId: result.plate.id });
+      // La placa nueva queda lejos del encuadre: la cámara deja a la vista todas las camas.
+      get().requestCameraPreset('plates');
       return result.plate;
     },
 
@@ -124,6 +126,7 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       // Sin piezas que mover no se crea la placa vacía: «Placa nueva» solo existe para recibir piezas.
       if (!result) return 0;
       commit(result.scene, created ? { activePlateId: created } : followSelection(result.scene.objects));
+      if (created) get().requestCameraPreset('plates');
       return result.moved.length;
     },
 
@@ -134,7 +137,11 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
     setActivePlate: (plateId) => {
       if (!findPlate(get().plates, plateId)) return false;
-      if (get().activePlateId !== plateId) set({ activePlateId: plateId });
+      if (get().activePlateId !== plateId) {
+        set({ activePlateId: plateId });
+        // Si la cama activa quedó fuera del encuadre, la cámara la trae (si ya se ve, no se mueve).
+        get().requestCameraPreset('activePlate');
+      }
       return true;
     },
   };
