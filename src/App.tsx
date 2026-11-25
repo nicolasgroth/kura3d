@@ -52,6 +52,7 @@ import { MagnetPanel } from './components/magnet/MagnetPanel';
 import { ScrewBossPanel } from './components/screwBoss/ScrewBossPanel';
 import { KeyholePanel } from './components/keyhole/KeyholePanel';
 import { CablePassPanel } from './components/cablePass/CablePassPanel';
+import { SINGLE_KEY_SHORTCUTS } from './store/singleKeyShortcuts';
 import { startPanelExclusion } from './store/insertCatalog';
 import { startMinWidthNotice } from './store/minWidthNotice';
 import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
@@ -396,6 +397,10 @@ export const App: React.FC = () => {
         }
         return;
       }
+
+      // Atajos de una letra que abren paneles o dialogos con un campo enfocado: sin esto el
+      // caracter de la tecla llega (keypress/input) al campo recien enfocado y lo ensucia.
+      if (SINGLE_KEY_SHORTCUTS.has(key)) e.preventDefault();
 
       if (key === '1') {
         state.requestCameraPreset('front');

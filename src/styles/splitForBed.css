@@ -380,3 +380,9 @@
     transition: none;
   }
 }
+
+/* El aviso de un campo invalido reserva alto suficiente (hasta tres lineas en columnas estrechas) para no tapar
+   lo que sigue, como el boton «Usar la cama activa». */
+.kura-split-panel .kura-precision-input.is-invalid {
+  margin-bottom: 58px;
+}
