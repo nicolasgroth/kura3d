@@ -48,6 +48,7 @@ import { Text3DPanel } from './components/text3d/Text3DPanel';
 import { AssistantsPanel } from './components/assistants/AssistantsPanel';
 import { MagnetPanel } from './components/magnet/MagnetPanel';
 import { ScrewBossPanel } from './components/screwBoss/ScrewBossPanel';
+import { KeyholePanel } from './components/keyhole/KeyholePanel';
 import { startPanelExclusion } from './store/insertCatalog';
 import { startMinWidthNotice } from './store/minWidthNotice';
 import { HelpTooltipLayer } from './components/shell/HelpTooltipLayer';
@@ -485,6 +486,7 @@ export const App: React.FC = () => {
         <AssistantsPanel />
         <MagnetPanel />
         <ScrewBossPanel />
+        <KeyholePanel />
         <AiChatDrawer />
         <ProjectDropTarget />
       </div>

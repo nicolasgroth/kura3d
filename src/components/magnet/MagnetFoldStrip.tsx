@@ -18,7 +18,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 export interface FoldStripProps {
   onDone?: () => void;
   /** Prefijo de textos (`magnet.fold.label`, `magnet.fold.empty`, `magnet.done`) y de `data-testid`. */
-  prefix?: 'magnet' | 'turret';
+  prefix?: 'magnet' | 'turret' | 'keyhole' | 'cable';
 }
 
 export const MagnetFoldStrip: React.FC<FoldStripProps> = ({ onDone = closeMagnetPanel, prefix = 'magnet' }) => {

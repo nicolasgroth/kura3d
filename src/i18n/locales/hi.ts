@@ -60,6 +60,8 @@ import { REDISENO3A_HI } from './rediseno3a';
 import { REDISENO3B_HI } from './rediseno3b';
 import { UX8_MENU_HI } from './ux8Menu';
 import { IMANES_UNION_HI } from './imanesUnion';
+import { COLGAR_MURO_HI } from './colgarMuro';
+import { PASO_CABLE_HI } from './pasoCable';
 
 /**
  * Diccionario en hindi (देवनागरी) con terminología técnica natural de CAD e impresión 3D.
@@ -1396,4 +1398,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.thread.invalidFields': 'थ्रेड बनाने से पहले चिह्नित फ़ील्ड सुधारें: गैर-संख्यात्मक या सीमा से बाहर का मान लागू नहीं होता।',
   ...ORIENT_UI_HI,
   ...IMANES_UNION_HI,
+  ...COLGAR_MURO_HI,
+  ...PASO_CABLE_HI,
 };

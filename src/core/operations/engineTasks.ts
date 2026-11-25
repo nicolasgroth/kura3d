@@ -42,6 +42,8 @@ import { runFitCheck, type FitCheckInput } from '../../engine/fitCheck';
 import { runRecipe } from '../recipes/run/executeRecipe';
 import { createMagnetPocket, type MagnetPocketInput } from './magnetOperations';
 import { createScrewBoss, type ScrewBossInput } from './screwBossOperations';
+import { createKeyhole, type KeyholeInput } from './keyholeOperations';
+import { createCablePass, type CablePassInput } from './cablePassOperations';
 import { applyHolesWithPosts } from './addonPostMerge';
 import type { RunInput } from '../recipes/run/types';
 
@@ -139,6 +141,10 @@ export const ENGINE_TASKS = {
   magnetPocket: (ctx: OperationContext, a: MagnetPocketInput) => createMagnetPocket(ctx, a),
   // Torreta para tornillo: poste (sólido) y agujero (negativo) orientados por la cara, con su análisis.
   screwBoss: (ctx: OperationContext, a: ScrewBossInput) => createScrewBoss(ctx, a),
+  // Ojo de cerradura para colgar en el muro: negativo de tres partes unidas, ranura hacia «arriba».
+  keyhole: (ctx: OperationContext, a: KeyholeInput) => createKeyhole(ctx, a),
+  // Paso de cable: negativo pasante con el largo medido con rayos.
+  cablePass: (ctx: OperationContext, a: CablePassInput) => createCablePass(ctx, a),
   imageReliefMesh: (_ctx: OperationContext, a: { options: ImageTo3DOptions }) => imageReliefMesh(a.options),
   svgMesh: (_ctx: OperationContext, a: { options: SvgImportOptions; contours: engine.PackedSvgContours }) => svgMesh(a.options, a.contours),
   splitPlan: (

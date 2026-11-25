@@ -86,4 +86,4 @@ El agujero es un polígono de 64 lados que *rodea* el círculo pedido: su ancho 
 - **El tornillo queda suelto o no entra:** ajusta el diámetro del agujero de a 0,1 mm y guarda la medida que te funcione como preajuste.
 - **El inserto queda torcido:** el poste es angosto o bajo. Súbelo o ensánchalo, y calienta el inserto sin empujar de más.
 
-Anterior: [Alojamiento de imán](alojamiento-de-iman.md) · Siguiente: [Exportar](exportar.md) · [Índice](README.md)
+Anterior: [Alojamiento de imán](alojamiento-de-iman.md) · Siguiente: [Colgar en el muro](colgar-en-el-muro.md) · [Índice](README.md)

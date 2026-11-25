@@ -36,6 +36,8 @@ import { createRecipesSlice } from './slices/recipesSlice';
 import { createBedProfilesSlice } from './slices/bedProfilesSlice';
 import { createMagnetSlice } from './slices/magnetSlice';
 import { createScrewBossSlice } from './slices/screwBossSlice';
+import { createKeyholeSlice } from './slices/keyholeSlice';
+import { createCablePassSlice } from './slices/cablePassSlice';
 import { createUiSlice } from './slices/uiSlice';
 import { createQuickActionsSlice } from './slices/quickActionsSlice';
 import { createMenuIdeasSlice } from './slices/menuIdeasSlice';
@@ -94,6 +96,8 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createBedProfilesSlice(ctx),
     ...createMagnetSlice(ctx),
     ...createScrewBossSlice(ctx),
+    ...createKeyholeSlice(ctx),
+    ...createCablePassSlice(ctx),
     ...createMenuIdeasSlice(ctx),
     ...createGroupsSlice(ctx),
     ...createRepairSlice(ctx),

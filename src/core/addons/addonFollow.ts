@@ -31,6 +31,7 @@ export function addonAnchorMm(o: WithMeta): number | null {
   if (!addon) return null;
   if (addon.kind === 'magnet_pocket') return addon.params ? pocketDims(addon.params).bottomMm : null;
   if (addon.kind === 'screw_boss') return Number.isFinite(addon.anchorMm) ? addon.anchorMm : null;
+  if (addon.kind === 'keyhole' || addon.kind === 'cable_pass') return Number.isFinite(addon.anchorMm) ? addon.anchorMm : null;
   return null;
 }
 

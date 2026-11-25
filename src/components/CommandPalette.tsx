@@ -67,6 +67,7 @@ import { actionPaletteItems } from './actionPaletteItems';
 import { assistantPaletteItems } from './assistants/assistantPaletteItems';
 import { magnetPaletteItems } from './magnet/magnetPaletteItems';
 import { screwBossPaletteItems } from './screwBoss/screwBossPaletteItems';
+import { keyholePaletteItems } from './keyhole/keyholePaletteItems';
 import { Boxes as BoxesIcon, Group as GroupIcon, Ungroup as UngroupIcon } from 'lucide-react';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
@@ -338,6 +339,7 @@ export const CommandPalette: React.FC = () => {
       ...assistantPaletteItems(language, catPrim),
       ...magnetPaletteItems(language, catPrim),
       ...screwBossPaletteItems(language, catPrim),
+      ...keyholePaletteItems(language, catPrim),
       {
         id: 'gen-svg',
         label: t(language, 'topbar.importSvg'),

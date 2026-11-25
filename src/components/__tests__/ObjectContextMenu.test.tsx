@@ -91,7 +91,7 @@ describe('ObjectContextMenu', () => {
     setup();
     const more = await openPath(user, 'Más');
     const labels = within(more).getAllByRole('menuitem').map((i) => i.querySelector('.kura-context-label')?.textContent);
-    expect(labels).toEqual(['Agregar pieza', 'Agregar pieza negativa', 'Alojamiento de imán', 'Torreta para tornillo', 'Reemplazar por archivo…', 'Exportar selección como un STL…', 'Atajos de teclado']);
+    expect(labels).toEqual(['Agregar pieza', 'Agregar pieza negativa', 'Alojamiento de imán', 'Torreta para tornillo', 'Colgar en el muro', 'Reemplazar por archivo…', 'Exportar selección como un STL…', 'Atajos de teclado']);
     const trigger = within(more).getByRole('menuitem', { name: /Agregar pieza$/ });
     expect(document.activeElement).toBe(within(more).getAllByRole('menuitem')[0]);
     await openSub(user);

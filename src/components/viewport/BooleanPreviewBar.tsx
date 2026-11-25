@@ -17,6 +17,7 @@ import { BooleanRoles } from '../booleanPreview/BooleanRoles';
 import { useBooleanPreview } from '../booleanPreview/useBooleanPreview';
 import { useMagnetPanel } from '../../store/magnetPanel';
 import { useScrewBossPanel } from '../../store/screwBossPanel';
+import { useKeyholePanel } from '../../store/keyholePanel';
 import { useInspectorVisible } from './useInspectorVisible';
 import '../../styles/operationPreview.css';
 import '../../styles/booleanBar.css';
@@ -37,7 +38,8 @@ export const BooleanPreviewBar: React.FC = () => {
   // Con el panel de imán abierto la barra flotante taparía el visor donde se coloca: se oculta.
   const magnetOpen = useMagnetPanel((s) => s.open);
   const screwBossOpen = useScrewBossPanel((s) => s.open);
-  const visible = !(magnetOpen || screwBossOpen || selectedCount < 2 || activeDialog !== null || inspectorVisible || !api.base || !api.tool);
+  const keyholeOpen = useKeyholePanel((s) => s.open);
+  const visible = !(magnetOpen || screwBossOpen || keyholeOpen || selectedCount < 2 || activeDialog !== null || inspectorVisible || !api.base || !api.tool);
   const barRef = useRef<HTMLDivElement | null>(null);
 
   // Publica su alto real (`--kura-bool-bar-h`) para que otros paneles flotantes del visor (p. ej. "Armado" en

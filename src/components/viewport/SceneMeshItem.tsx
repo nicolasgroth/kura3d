@@ -29,6 +29,7 @@ import { continueStorePaintStroke, startStorePaintStroke } from './paintStrokeCo
 import { ReferenceMeshMaterial, ReferenceOutline } from './ReferenceMaterial';
 import { isMagnetPlacementActive } from '../../store/magnetPanel';
 import { isScrewBossPlacementActive } from '../../store/screwBossPanel';
+import { keyholePanel } from '../../store/keyholePanel';
 import { effectiveReferenceOpacity, useReferenceOpacityStore } from '../../store/referenceOpacityStore';
 
 /** Margen total del contorno de selección sobre la pieza y tamaño mínimo, en mm de mundo (no de espacio local). */
@@ -211,6 +212,7 @@ export const SceneMeshItem: React.FC<{
       // Colocando imanes el clic es de la capa de colocación: la pieza no se selecciona ni se mueve.
       if (isMagnetPlacementActive()) return;
       if (isScrewBossPlacementActive()) return;
+      if (keyholePanel.isActive()) return;
 
       if (activeTool === 'paint') {
         if (obj.locked) return;
