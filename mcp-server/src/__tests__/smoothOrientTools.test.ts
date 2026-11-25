@@ -80,6 +80,18 @@ describe('MCP: suavizar y orientar sin interfaz', () => {
     expect(stats.volumeMm3).toBeCloseTo(res.volumeAfterMm3, 0);
   }, 60_000);
 
+  it('con la pieza escalada, el volumen del informe es el de mundo (cilindro ×2 en altura → doble)', async () => {
+    const { call, headless } = await connect();
+    const cyl = await call('kura_create_primitive', { primitiveType: 'cylinder', placement: 'origin' });
+    const local = engine.computeMeshStats(headless.getObject(cyl.id).mesh).volumeMm3;
+    await call('kura_transform_object', { objectId: cyl.id, scale: [1, 1, 2] });
+    const res = await call('kura_smooth_mesh', { objectId: cyl.id, strength: 0.5, iterations: 3, preserveSharpEdges: false });
+    expect(res.volumeBeforeMm3).toBeCloseTo(2 * local, 1);
+    expect(res.volumeAfterMm3 / res.volumeBeforeMm3).toBeCloseTo(1 + res.volumeChangePct / 100, 6);
+    expect(res).toHaveProperty('damageProtectedVertices');
+    expect(res.strengthCoveragePct).toBeGreaterThan(0);
+  }, 60_000);
+
   it('una zona por un color que la pieza no tiene es un error tipado', async () => {
     const { raw, call } = await connect();
     const box = await call('kura_create_primitive', { primitiveType: 'box', placement: 'origin' });

@@ -17,7 +17,7 @@ Cada control trae una línea de ayuda debajo. Los valores por defecto sirven par
 - **Intensidad** (10 a 100 %, por defecto 30): cuánto alisa cada pasada. Hay un deslizador y una casilla; un doble clic en el deslizador vuelve al valor por defecto.
 - **Pasadas** (1 a 100, por defecto 3): cuántas veces se repite. Más pasadas quitan más facetas; con muchas, la pieza puede inflarse apenas, por eso el aviso de volumen (abajo).
 - **Conservar aristas vivas** (activada): las esquinas y chaflanes no se mueven. Al activarla aparece **Ángulo de arista viva** (por defecto 40°): una arista que dobla más que ese ángulo cuenta como viva. Súbelo para proteger menos; con 40° se protegen chaflanes de 45° y aristas de 90°. Los bordes abiertos de una malla no cerrada también quedan fijos.
-- **Dónde**: *Toda la pieza* o *Solo la zona pintada de un color*. La segunda necesita que la pieza tenga pintura (ver [Colores y pintura](colores-y-pintura.md)); si no la tiene, la opción está apagada y el panel lo explica. Con ella eliges el color (la lista muestra cuántos triángulos tiene cada uno) y la **Transición**: de 0 a 10 anillos de triángulos donde el efecto se atenúa hasta cero para que no quede un escalón en el borde de la zona.
+- **Dónde**: *Toda la pieza* o *Solo la zona pintada de un color*. La segunda necesita que la pieza tenga pintura (ver [Colores y pintura](colores-y-pintura.md)); si no la tiene, la opción está apagada y el panel lo explica. Con ella eliges el color (la lista muestra cuántos triángulos tiene cada uno) y la **Transición**: de 0 a 10 anillos de triángulos donde el efecto se atenúa hasta cero para que no quede un escalón en el borde de la zona. La transición queda **fuera** de lo pintado: con 2 anillos se mueven también, y menos, los vértices a una o dos aristas del borde de la zona (unas dos veces el largo de arista de la malla); más allá no se mueve nada. Con 0 no se mueve nada fuera de lo pintado, pero puede quedar un escalón en el borde.
 
 Un valor fuera de rango queda marcado junto a su campo y, mientras no lo corrijas, los botones esperan. La coma decimal funciona como en el resto de la app.
 
@@ -34,9 +34,11 @@ Un valor fuera de rango queda marcado junto a su campo y, mientras no lo corrija
 
 ![La esfera después de suavizar: la superficie sin ruido](img/suavizar-02-resultado.png)
 
+Si al suavizar unos pocos triángulos se invertirían o se cruzarían con otros (pasa en modelos reales con triángulos muy alargados o paredes finas), Kurra Studio deja quietos solo esos vértices y una franja de dos anillos a su alrededor, y suaviza el resto de la pieza con la intensidad que pediste. No tienes que hacer nada: el resultado nunca trae triángulos dañados nuevos. Los volúmenes del informe se miden con la escala de la pieza (lo que se imprime).
+
 Avisos que puedes ver:
 
-- **Se redujo la intensidad** de 100 % a 25 %: con la intensidad pedida, la malla se dañaba (triángulos invertidos o paredes finas que se cruzan), así que Kurra Studio bajó la intensidad hasta que no hubiera daño. Si necesitas más alisado, protege las aristas o limita la zona.
+- **Se redujo la intensidad** de 100 % a 25 %: el daño no estaba en unos pocos puntos sino repartido por la pieza (por ejemplo, ruido muy fuerte), así que como último recurso Kurra Studio bajó la intensidad de toda la pieza hasta que no hubiera daño. Si necesitas más alisado, protege las aristas o limita la zona.
 - **El volumen cambió más de 2 %**: revisa que la pieza conserve sus medidas.
 - **No se pudo suavizar sin dañar la malla**: sale como error junto a los controles y no cambia nada. Baja la intensidad o protege las aristas.
 

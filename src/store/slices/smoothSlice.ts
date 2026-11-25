@@ -10,6 +10,7 @@
  * @license MIT
  */
 
+import { CommandError } from '../../core/bus/commandErrors';
 import { isEngineCancelled, type EngineCancelMode } from '../../core/operations/engineClient';
 import type { SceneChange } from '../../core/operations';
 import { isEngineError, type EngineWarning } from '../../engine/engineErrors';
@@ -68,6 +69,7 @@ interface Cached {
   objectId: string;
   signature: string;
   mesh: MeshData;
+  scale: number[];
   change: SceneChange;
   report: SmoothReport;
 }
@@ -98,11 +100,14 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
       const code = err.code;
       return { text: code === 'SMOOTH_DAMAGE' ? tr(params.keepSharpEdges ? 'smooth.error.damageEdgesOn' : 'smooth.error.damage') : localizeEngineErrorForUser(get().language, err), code };
     }
+    if (err instanceof CommandError) return { text: tr(err.key, err.params), code: err.code };
     return { text: err instanceof Error ? err.message : String(err), code: null };
   };
   const cacheFor = (id: string, signature: string): Cached | null => {
     const obj = get().objects.find((o) => o.id === id);
-    return cached && obj && cached.objectId === id && cached.signature === signature && cached.mesh === obj.mesh ? cached : null;
+    // La escala cuenta: el informe (volumen) y el ángulo de arista viva se miden en mundo.
+    const sameScale = cached && obj && cached.scale.every((s, k) => s === obj.scale[k]);
+    return cached && obj && sameScale && cached.objectId === id && cached.signature === signature && cached.mesh === obj.mesh ? cached : null;
   };
 
   return {
@@ -138,7 +143,7 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
         const { report, change } = await job.promise;
         if (gen !== generation) return false;
         activeJob = null;
-        cached = { objectId: id, signature, mesh: obj.mesh, change, report };
+        cached = { objectId: id, signature, mesh: obj.mesh, scale: [...obj.scale], change, report };
         patchSession({ status: 'ready', phase: null, report, warnings: change.warnings });
         showGhost(change, false);
         return true;
@@ -200,7 +205,8 @@ export function createSmoothSlice(ctx: StoreContext): SmoothSliceState {
           }
         } catch (err) {
           // Cancelado: lo informa el ejecutor. Un error del motor se muestra junto a los controles, sin tocar la escena.
-          if (!isEngineError(err) || hooks?.rethrowEngineErrors) throw err;
+          // Una zona por color sin color pintado (`invalid-params`) se trata igual.
+          if (!(isEngineError(err) || err instanceof CommandError) || hooks?.rethrowEngineErrors) throw err;
           const { text, code } = messageOf(err, params);
           dropPreview();
           set({

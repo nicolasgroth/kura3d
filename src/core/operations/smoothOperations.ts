@@ -16,13 +16,14 @@ import { change, meshPatch, type OperationContext, type SceneChange } from './op
 /** Opciones serializables de la tarea (sin `onProgress`: lo pone el contexto). */
 export type SmoothTaskOptions = Omit<SmoothOptions, 'onProgress'>;
 
-/** Suaviza la malla del objeto (coordenadas locales; la transformación no cambia). */
+/** Suaviza la malla del objeto (en local; la transformación no cambia). El informe va en coordenadas de mundo. */
 export function smoothObject(
   ctx: OperationContext,
   obj: SceneObject,
   options: SmoothTaskOptions = {},
 ): { report: SmoothReport; change: SceneChange } {
-  const res = smoothMesh(obj.mesh, { ...options, onProgress: ctx.onProgress });
+  // La escala del objeto: el informe (volumen, desplazamiento) y el ángulo de arista viva se miden en mundo.
+  const res = smoothMesh(obj.mesh, { ...options, scale: obj.scale, onProgress: ctx.onProgress });
   if (res.report.movedVertices === 0) return { report: res.report, change: change({ warnings: res.warnings }) };
   return {
     report: res.report,

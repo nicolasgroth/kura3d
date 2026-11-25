@@ -105,17 +105,15 @@ describe('smoothMesh en pared fina', () => {
     expect(localizeEngineError('en', err)).toMatch(/not applied/);
   });
 
-  it('por defecto baja la fuerza a la mitad hasta quedar sano y avisa; no entrega daño nuevo', async () => {
+  it('por defecto protege solo los vértices dañados, mantiene la fuerza pedida y no entrega daño nuevo', async () => {
     const fold = await thinFold();
     const res = smoothMesh(fold, { preserveSharpEdges: false, iterations: 60 });
-    // Medido: fuerza 1 → 7 invertidos, 0,5 → 3, 0,25 → 0.
+    // Medido antes de la protección local: fuerza 1 → 7 invertidos, 0,5 → 3, 0,25 → 0 (se entregaba 0,25).
     expect(res.report.attempts.length).toBeGreaterThan(1);
     expect(res.report.attempts[0].invertedTriangles).toBeGreaterThan(0);
-    expect(res.warnings).toContainEqual({
-      code: 'SMOOTH_STRENGTH_REDUCED',
-      params: { requested: 1, applied: res.report.appliedStrength },
-    });
-    expect(res.report.appliedStrength).toBeLessThan(1);
+    expect(res.report.appliedStrength).toBe(1);
+    expect(res.report.damageProtectedVertices).toBeGreaterThan(0);
+    expect(res.warnings.map((w) => w.code)).not.toContain('SMOOTH_STRENGTH_REDUCED');
     const graph = buildSmoothGraph(fold, resolveSmoothOptions({ preserveSharpEdges: false }));
     const d = detectSmoothDamage(fold.positions, res.mesh.positions, fold.indices, graph.weld, allMoved(fold));
     expect(d).toEqual({ invertedTriangles: 0, newIntersections: 0 });

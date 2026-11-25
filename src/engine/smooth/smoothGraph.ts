@@ -3,7 +3,7 @@
  * @description Grafo de vértices soldados para «Suavizar malla», armado una sola vez por llamada:
  * reutiliza la adyacencia por arista de la pintura (`getFaceAdjacency`: soldadura de costuras,
  * aristas y normales por cara), arma la lista de vecinos en CSR, bloquea los vértices de aristas
- * vivas (diedro sobre el umbral), de bordes abiertos y de aristas no manifold, y asigna a cada
+ * vivas (diedro sobre el umbral, medido en mundo con la escala del objeto), de bordes abiertos y de aristas no manifold, y asigna a cada
  * vértice un peso 0–1 según la zona y su anillo de atenuación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -54,6 +54,7 @@ export function buildSmoothGraph(mesh: MeshData, opts: ResolvedSmoothOptions): S
   const locked = new Uint8Array(weldedCount);
   const degree = new Uint32Array(weldedCount + 1);
   const sharpCos = Math.cos((opts.sharpAngleDeg * Math.PI) / 180);
+  const dihedralCos = worldDihedralCos(normals, opts.scale);
   for (let e = 0; e < edgeCount; e++) {
     const a = edgeA[e], b = edgeB[e];
     if (a < 0 || a === b) continue;
@@ -64,9 +65,7 @@ export function buildSmoothGraph(mesh: MeshData, opts: ResolvedSmoothOptions): S
     if (n === 1) lock = opts.preserveBoundary;
     else if (n > 2) lock = true;
     else if (opts.preserveSharpEdges) {
-      const t0 = edgeTris[edgeStart[e]] * 3, t1 = edgeTris[edgeStart[e] + 1] * 3;
-      const dot = normals[t0] * normals[t1] + normals[t0 + 1] * normals[t1 + 1] + normals[t0 + 2] * normals[t1 + 2];
-      lock = dot < sharpCos;
+      lock = dihedralCos(edgeTris[edgeStart[e]], edgeTris[edgeStart[e] + 1]) < sharpCos;
     }
     if (lock) locked[a] = locked[b] = 1;
   }
@@ -94,6 +93,25 @@ export function buildSmoothGraph(mesh: MeshData, opts: ResolvedSmoothOptions): S
   const active = new Uint32Array(activeCount);
   for (let v = 0, i = 0; v < weldedCount; v++) if (weight[v] > 0) active[i++] = v;
   return { weld, weldedCount, nbrStart, nbr, weight, active, lockedCount };
+}
+
+/**
+ * Coseno del ángulo entre las normales de dos triángulos medido en mundo. Con escala `S` (diagonal) la normal de
+ * mundo es `S⁻¹·n` normalizada (inversa transpuesta); la rotación no cambia el ángulo. Con escala uniforme es la
+ * normal local tal cual.
+ */
+function worldDihedralCos(normals: Float32Array, scale: readonly [number, number, number]): (t0: number, t1: number) => number {
+  const ax = Math.abs(scale[0]), ay = Math.abs(scale[1]), az = Math.abs(scale[2]);
+  if (ax === ay && ay === az) {
+    return (t0, t1) => normals[t0 * 3] * normals[t1 * 3] + normals[t0 * 3 + 1] * normals[t1 * 3 + 1] + normals[t0 * 3 + 2] * normals[t1 * 3 + 2];
+  }
+  const ix = 1 / ax, iy = 1 / ay, iz = 1 / az;
+  return (t0, t1) => {
+    const x0 = normals[t0 * 3] * ix, y0 = normals[t0 * 3 + 1] * iy, z0 = normals[t0 * 3 + 2] * iz;
+    const x1 = normals[t1 * 3] * ix, y1 = normals[t1 * 3 + 1] * iy, z1 = normals[t1 * 3 + 2] * iz;
+    const l = Math.hypot(x0, y0, z0) * Math.hypot(x1, y1, z1);
+    return l > 0 ? (x0 * x1 + y0 * y1 + z0 * z1) / l : 1;
+  };
 }
 
 /**

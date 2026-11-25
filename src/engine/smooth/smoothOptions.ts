@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import { requireOperationRange } from '../engineErrors';
+import { EngineError, requireOperationRange } from '../engineErrors';
 import type { OperationRange } from '../operationLimits';
 
 /** Rangos de Suavizar (fuente única del motor; el MCP y la interfaz los tomarán de aquí). */
@@ -37,7 +37,7 @@ export const SMOOTH_DEFAULTS = {
 export const TAUBIN_PASS_BAND = 0.1;
 /** λ con fuerza 1 (Taubin 1995). */
 export const TAUBIN_MAX_LAMBDA = 0.5;
-/** Reintentos con la fuerza a la mitad cuando el resultado trae daño. */
+/** Último recurso (tras la protección local): reintentos con la fuerza a la mitad cuando el resultado trae daño. */
 export const SMOOTH_DAMAGE_RETRIES = 3;
 
 /** Zona a suavizar: vértices o triángulos de la malla original (índices). */
@@ -59,8 +59,17 @@ export interface SmoothOptions {
   /** No mover los vértices de bordes abiertos (mallas no cerradas). */
   preserveBoundary?: boolean;
   zone?: SmoothZone;
-  /** Ante triángulos invertidos o autointersecciones nuevas: bajar la fuerza (por defecto) o fallar. */
+  /**
+   * Ante triángulos invertidos o autointersecciones nuevas: proteger localmente los vértices dañados y, como
+   * último recurso, bajar la fuerza (por defecto), o fallar.
+   */
   onDamage?: 'reduce' | 'error';
+  /**
+   * Escala del objeto [sx, sy, sz] (por defecto 1, 1, 1). La malla se suaviza en coordenadas locales (el laplaciano
+   * uniforme es afín: da lo mismo), pero el ángulo de arista viva, el volumen y el desplazamiento del informe se
+   * miden en mundo. La rotación no cambia ángulos, volúmenes ni distancias.
+   */
+  scale?: readonly [number, number, number];
   /** Avance legible por máquina (`smooth:iter/total`, `smooth:check`). */
   onProgress?: (phase: string) => void;
 }
@@ -74,6 +83,22 @@ export interface ResolvedSmoothOptions {
   preserveBoundary: boolean;
   zone: { vertices?: ArrayLike<number>; triangles?: ArrayLike<number>; falloffRings: number } | null;
   onDamage: 'reduce' | 'error';
+  scale: [number, number, number];
+}
+
+/** Escala de objeto admitida por eje (en valor absoluto). */
+const SCALE_LIMITS = { min: 1e-6, max: 1e6 };
+
+function resolveScale(s: SmoothOptions['scale']): [number, number, number] {
+  if (!s) return [1, 1, 1];
+  return [0, 1, 2].map((k) => {
+    const v = s[k];
+    const abs = typeof v === 'number' ? Math.abs(v) : NaN;
+    if (!Number.isFinite(abs) || abs < SCALE_LIMITS.min || abs > SCALE_LIMITS.max) {
+      throw new EngineError('INVALID_PARAMETER', { name: 'scale', value: String(s), min: SCALE_LIMITS.min, max: SCALE_LIMITS.max });
+    }
+    return v;
+  }) as [number, number, number];
 }
 
 /** Valida y completa las opciones; lanza `INVALID_PARAMETER` si algo está fuera de rango. */
@@ -93,6 +118,7 @@ export function resolveSmoothOptions(o: SmoothOptions = {}): ResolvedSmoothOptio
         }
       : null,
     onDamage: o.onDamage ?? D.onDamage,
+    scale: resolveScale(o.scale),
   };
 }
 

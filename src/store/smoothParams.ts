@@ -9,6 +9,7 @@
  * @license MIT
  */
 
+import { CommandError } from '../core/bus/commandErrors';
 import type { SmoothTaskOptions } from '../core/operations/smoothOperations';
 import { SMOOTH_DEFAULTS, SMOOTH_RANGES, trianglesWithColor, type SmoothReport } from '../engine/smooth';
 import type { MeshData } from '../types/kura';
@@ -60,7 +61,15 @@ export function paintedColors(mesh: MeshData): string[] {
   return [...seen];
 }
 
-/** Opciones de la tarea del motor para estos parámetros sobre esta malla. */
+/** Error tipado de una zona por color que no corresponde a ningún color pintado en la pieza. */
+export function unpaintedZoneError(): CommandError {
+  return new CommandError('invalid-params', 'bus.error.invalidParam', { param: 'zoneColor', expected: 'a color painted on the object' });
+}
+
+/**
+ * Opciones de la tarea del motor para estos parámetros sobre esta malla. Con zona «color» exige un color pintado en
+ * la pieza: si no lo hay lanza `invalid-params` (antes suavizaba la pieza entera sin avisar).
+ */
 export function smoothTaskOptions(params: SmoothParams, mesh: MeshData): SmoothTaskOptions {
   const opts: SmoothTaskOptions = {
     iterations: params.iterations,
@@ -68,8 +77,10 @@ export function smoothTaskOptions(params: SmoothParams, mesh: MeshData): SmoothT
     preserveSharpEdges: params.keepSharpEdges,
     sharpAngleDeg: params.sharpAngleDeg,
   };
-  if (params.zoneMode === 'color' && params.zoneColor) {
-    opts.zone = { triangles: trianglesWithColor(mesh, params.zoneColor), falloffRings: params.falloffRings };
+  if (params.zoneMode === 'color') {
+    const triangles = params.zoneColor ? trianglesWithColor(mesh, params.zoneColor) : new Uint32Array(0);
+    if (triangles.length === 0) throw unpaintedZoneError();
+    opts.zone = { triangles, falloffRings: params.falloffRings };
   }
   return opts;
 }
