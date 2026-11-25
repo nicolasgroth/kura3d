@@ -85,7 +85,10 @@ export function parseApplyOrientation(p: RawParams): ApplyOrientationRequest {
 /** Candidato del análisis por id, o `not-found` con los ids disponibles. */
 export function findOrientCandidate(analysis: OrientAnalysis, id: string): OrientCandidate {
   const found = analysis.candidates.find((c) => c.id === id);
-  if (!found) throw new CommandError('not-found', 'bus.error.notFound', { id: `${id} (available: ${analysis.candidates.map((c) => c.id).join(', ')})` });
+  if (!found) {
+    // `available` va como parámetro propio (no mezclado en `id`): quien llama puede leerlo y reintentar.
+    throw new CommandError('not-found', 'orient.error.candidateNotFound', { id, available: analysis.candidates.map((c) => c.id).join(', ') });
+  }
   return found;
 }
 

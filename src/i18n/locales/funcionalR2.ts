@@ -107,6 +107,14 @@ const FUNCIONAL_R2 = {
     hi: 'कट के {count} बहुत छोटे टुकड़े हटा दिए गए (कुल {volume} mm³): इन्हें न छापा जा सकता है न चिपकाया, इसलिए ये भाग के रूप में नहीं दिए जाते।',
     zh: '已丢弃 {count} 个切割产生的微小碎块（共 {volume} mm³）：无法打印或粘接，不作为零件交付。',
   },
+  'orient.error.candidateNotFound': {
+    es: 'No hay una orientación con id "{id}". Disponibles: {available}.',
+    en: 'No orientation candidate with id "{id}". Available: {available}.',
+    de: 'Keine Ausrichtung mit der ID "{id}". Verfügbar: {available}.',
+    fr: 'Aucune orientation avec l’id "{id}". Disponibles : {available}.',
+    hi: '"{id}" id वाला कोई अभिविन्यास नहीं है। उपलब्ध: {available}।',
+    zh: '没有 id 为 "{id}" 的朝向。可用：{available}。',
+  },
 } as const satisfies Record<string, Row>;
 
 type Lang = keyof Row;
