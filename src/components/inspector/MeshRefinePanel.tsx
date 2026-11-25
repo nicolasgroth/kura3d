@@ -1,6 +1,6 @@
 /**
  * @file src/components/inspector/MeshRefinePanel.tsx
- * @description Panel Simplificar / Refinar malla del inspector.
+ * @description Panel Simplificar / Refinar malla del inspector (Simplificar con modos e informe en `SimplifySection`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,6 +14,7 @@ import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { useInvalidFields } from '../useInvalidFields';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { SIMPLIFY_REQUEST_FRESH_MS } from './simplifyPanelRequest';
+import { SimplifySection } from './SimplifySection';
 
 /** Simplificar / refinar malla dentro de Herramientas Maker. */
 export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }) => {
@@ -22,7 +23,6 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
   // Campos fuera de rango o no numéricos: se marcan y la operación no se aplica (nada se acota en silencio).
   const invalid = useInvalidFields();
   const busyOperation = useKuraStore((s) => s.busyOperation);
-  const simplifySelectedMesh = useKuraStore((s) => s.simplifySelectedMesh);
   const refineSelectedMesh = useKuraStore((s) => s.refineSelectedMesh);
   const runConvexHull = useKuraStore((s) => s.runConvexHull);
   const isBusy = Boolean(busyOperation);
@@ -35,39 +35,15 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
     const root = rootRef.current;
     if (!root) return;
     root.scrollIntoView({ block: 'nearest' });
-    root.querySelector<HTMLInputElement>('input')?.focus();
+    // Primer control de Simplificar: el selector de modo.
+    root.querySelector<HTMLElement>('select, input')?.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request?.n]);
 
   return (
     <div className="kura-form-field" ref={rootRef}>
       <label>{t(language, 'inspector.pro.meshTitle')}</label>
-      <div className="kura-field-row">
-        <span className="kura-field-label">{t(language, 'inspector.pro.simplifyTol')}</span>
-        <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-          <PrecisionNumberInput
-            strictRange
-            onInvalidChange={invalid.track('f1')}
-            style={{ width: 92 }}
-            min={0.01}
-            max={5}
-            step={0.05}
-            precision={2}
-            defaultValue={0.15}
-            value={simplifyTolMm}
-            onChange={setSimplifyTolMm}
-            ariaLabel={t(language, 'inspector.pro.simplifyTol')}
-          />
-          <button
-            type="button"
-            className="kura-btn kura-btn-sm"
-            disabled={isBusy || primary.locked || invalid.blocked}
-            onClick={() => void simplifySelectedMesh(primary.id, simplifyTolMm)}
-          >
-            {t(language, 'inspector.pro.simplifyBtn')}
-          </button>
-        </div>
-      </div>
+      <SimplifySection primary={primary} toleranceMm={simplifyTolMm} setToleranceMm={setSimplifyTolMm} invalid={invalid} />
 
       <div className="kura-field-row">
         <span className="kura-field-label">{t(language, 'inspector.pro.refineEdge')}</span>

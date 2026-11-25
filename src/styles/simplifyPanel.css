@@ -1,0 +1,41 @@
+/**
+ * @file src/styles/simplifyPanel.css
+ * @description Estilos de Simplificar con modos: bloque del modo y su ayuda, e informe antes → después con sus
+ * avisos. Colores solo con variables del tema; los avisos se distinguen por texto y borde, no solo por color.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-simplify-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-simplify-section select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.kura-simplify-report {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  font-size: 11.5px;
+}
+
+.kura-simplify-report-list,
+.kura-simplify-report-warnings {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.kura-simplify-report-warnings {
+  border-left: 2px solid var(--text-secondary);
+  padding-left: 12px;
+  list-style: none;
+}
