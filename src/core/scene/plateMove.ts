@@ -3,7 +3,8 @@
  * @description Mover piezas entre placas (funciones puras): reasigna `plateRef` y traslada la pieza al hueco
  * equivalente de la placa destino (misma posición relativa al origen de su placa). Con la escena en imprimir se
  * mueve la pose viva; en armado la figura no se toca y se traslada la pose de impresión (`restPose`). Los
- * agregados ligados (imanes, torretas) y los negativos de un grupo que se mueve entero acompañan a su pieza.
+ * agregados ligados (imanes, torretas) y los negativos de un grupo que se mueve entero acompañan a su pieza (y si
+ * tenían placa, pasan a la destino).
  * También decide a qué placa pertenece una pieza según dónde se soltó (arrastre).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -92,7 +93,8 @@ export function movePiecesToPlate(
   const objects = scene.objects.map((o) => {
     const d = delta.get(o.id);
     if (!d) return o;
-    const next: SceneObject = moverSet.has(o.id) ? { ...o, plateRef: destId } : { ...o };
+    // Un acompañante con placa propia también pasa a la destino: queda físicamente ahí. Sin placa, sigue sin ella.
+    const next: SceneObject = moverSet.has(o.id) || o.plateRef !== undefined ? { ...o, plateRef: destId } : { ...o };
     if (layout === 'print') {
       next.position = [clean(o.position[0] + d[0]), o.position[1], clean(o.position[2] + d[1])];
       return next;
