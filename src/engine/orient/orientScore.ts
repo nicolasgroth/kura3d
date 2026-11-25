@@ -5,7 +5,8 @@
  *   + base·(1 − contacto / mayor contacto) + unstable·[inestable] + noFit·[no cabe].
  * Pesos en `ORIENT_WEIGHTS` (justificación en docs/diseno/ORIENTAR.md): el soporte manda; base y
  * altura solo desempatan. Dentro de `ORIENT_EQUIVALENCE` del mejor costo, las orientaciones son
- * equivalentes (no se inventa una ganadora). Motivos como datos (clave + parámetros).
+ * equivalentes (no se inventa una ganadora). Una orientación sin base real (solo aristas o vértices en
+ * la cama) nunca va antes que una con base, sea cual sea su costo (`orientOrder`). Motivos como datos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -26,6 +27,8 @@ export interface ScoreContext {
   maxDimensionMm: number;
   /** Mayor contacto entre candidatos; si es despreciable, el término de base no cuenta. */
   maxContactMm2: number;
+  /** Contacto mínimo (mm²) para que haya base real; bajo eso solo tocan aristas o vértices. */
+  minBaseMm2: number;
 }
 
 /** Despreciable: soporte o voladizo por debajo de 0,1 % de la pieza. */
@@ -40,6 +43,23 @@ export function orientCost(m: OrientMeasures, ctx: ScoreContext, w: OrientWeight
     + w.base * baseTerm
     + (m.stable ? 0 : w.unstable)
     + (m.fitsBed === false ? w.noFit : 0);
+}
+
+/**
+ * Orden de los candidatos (índices) y cuáles equivalen al primero. Primero los que tienen base real, luego
+ * por costo; la actual (índice 0) va primera si equivale a la mejor. Solo equivalen los del mismo grupo de base.
+ */
+export function orientOrder(costs: readonly number[], hasBase: readonly boolean[]): { order: number[]; equivalent: (i: number) => boolean } {
+  const group = (i: number) => (hasBase[i] ? 0 : 1);
+  const order = costs.map((_, i) => i).sort((a, b) => group(a) - group(b) || costs[a] - costs[b] || a - b);
+  const first = order[0];
+  const equivalent = (i: number) => group(i) === group(first) && costs[i] - costs[first] <= ORIENT_EQUIVALENCE;
+  // Si la actual empata con la mejor, va primera: no se propone mover la pieza sin ganancia.
+  if (equivalent(0) && first !== 0) {
+    order.splice(order.indexOf(0), 1);
+    order.unshift(0);
+  }
+  return { order, equivalent };
 }
 
 const pct = (value: number, ref: number): number | null => (ref > 0 ? Math.round(((value - ref) / ref) * 100) : null);
@@ -70,7 +90,9 @@ export function reasonsFor(
     if (v.heightPct <= -10) out.push({ key: 'lowerVsCurrent', params: { percent: v.heightPct } });
   }
   if (flags.equivalentToBest) out.push({ key: 'equivalentToBest' });
-  if (!m.stable) out.push({ key: 'unstable', params: { tipAngleDeg: Math.round(m.tipAngleDeg * 10) / 10 } });
+  // Sin base real el ángulo de vuelco no dice nada útil: el motivo es que no hay caras apoyadas.
+  if (m.contactAreaMm2 < ctx.minBaseMm2) out.push({ key: 'noBase' });
+  else if (!m.stable) out.push({ key: 'unstable', params: { tipAngleDeg: Math.round(m.tipAngleDeg * 10) / 10 } });
   if (m.fitsBed === false) out.push({ key: 'doesNotFit' });
   return out;
 }

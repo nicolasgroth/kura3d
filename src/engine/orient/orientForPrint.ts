@@ -14,8 +14,8 @@ import * as THREE from 'three';
 import type { Vec3 } from '../../types/kura';
 import { EngineError } from '../engineErrors';
 import { directionCandidates, groupHullFaces } from './orientCandidates';
-import { baseQuaternion, measureOrientation, type MeasureSettings, type MeasuredOrientation } from './orientMeasure';
-import { ORIENT_EQUIVALENCE, ORIENT_WEIGHTS, orientCost, reasonsFor, vsCurrentOf, type ScoreContext } from './orientScore';
+import { baseQuaternion, hasRealBase, measureOrientation, type MeasureSettings, type MeasuredOrientation } from './orientMeasure';
+import { ORIENT_EQUIVALENCE, ORIENT_WEIGHTS, orientCost, orientOrder, reasonsFor, vsCurrentOf, type ScoreContext } from './orientScore';
 import type { OrientAnalysis, OrientCandidate, OrientInput, OrientOptions } from './orientTypes';
 import { prepareOrientWorld } from './orientWorld';
 
@@ -78,17 +78,11 @@ export function analyzeOrientations(input: OrientInput, options: OrientOptions =
     totalAreaMm2: world.totalArea,
     maxDimensionMm: world.diag,
     maxContactMm2: Math.max(...measured.map((x) => x.m.measures.contactAreaMm2)),
+    minBaseMm2: s.minSupportAreaMm2,
   };
   const cur = measured[0].m.measures;
   const costs = measured.map((x) => orientCost(x.m.measures, ctx));
-  const order = measured.map((_, i) => i).sort((a, b) => costs[a] - costs[b] || a - b);
-  const bestCost = costs[order[0]];
-  const equivalent = (i: number) => costs[i] - bestCost <= ORIENT_EQUIVALENCE;
-  // Si la actual empata con la mejor, va primera: no se propone mover la pieza sin ganancia.
-  if (equivalent(0)) {
-    order.splice(order.indexOf(0), 1);
-    order.unshift(0);
-  }
+  const { order, equivalent } = orientOrder(costs, measured.map((x) => hasRealBase(x.m.measures.contactAreaMm2, s.minSupportAreaMm2)));
 
   const candidates: OrientCandidate[] = order.map((i, rank) => {
     const { dir, m } = measured[i];

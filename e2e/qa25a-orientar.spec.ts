@@ -26,12 +26,14 @@ async function abrirOrientar(page: Page) {
   await expect(page.getByTestId('orient-panel')).toBeVisible();
 }
 
+// Caja exacta (vértice por vértice). `worldBox` gira la caja local y, con la pieza inclinada, la agranda: con la
+// cruz de dos cuerpos a 45° daba min Y = −10,6 aunque la malla real estaba en Y = 0.
 const caja = (page: Page, id: string) =>
   page.evaluate(async (oid) => {
-    const { worldBox } = await import('/src/core/scene/overlap.ts');
+    const { computeWorldBounds } = await import('/src/components/viewport/viewportHelpers.ts');
     const o = (window as any).__s.getState().objects.find((x: any) => x.id === oid);
-    const b = worldBox(o)!;
-    return { min: b.min.toArray() as number[], max: b.max.toArray() as number[] };
+    const b = computeWorldBounds(o);
+    return { min: [b.minX, b.minY, b.minZ], max: [b.maxX, b.maxY, b.maxZ] };
   }, id);
 
 for (const vp of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }]) {

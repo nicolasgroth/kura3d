@@ -55,4 +55,5 @@ Un voladizo es una pared inclinada hacia abajo. Por defecto cuenta como voladizo
 - **La opción está deshabilitada.** Selecciona una sola pieza sólida y desbloqueada.
 - **«No cabe en la cama».** Esa orientación es más grande que tu cama con su margen. Usa [Ajustar a la impresora](ajustar-a-la-impresora.md) para escalarla o dividirla.
 - **Una opción dice «Inestable».** Se apoya en una base chica y puede volcarse; con borde (*brim*) o soportes a veces se imprime igual.
+- **Una opción dice «Sin base».** Solo toca la cama con aristas o puntos (pasa con piezas de varios cuerpos separados). Nunca sale recomendada; si la aplicas igual, el aviso lo recuerda.
 - **Cambié la pieza y la lista desapareció.** Es lo esperado: pulsa **Calcular de nuevo**.
