@@ -88,7 +88,7 @@ export function registerSmoothOrientTools(server: Pick<McpServer, 'registerTool'
         'it, and magnet pockets and screw bosses follow their part keeping their size; followers lists the IDs that moved.',
       inputSchema: {
         objectId: idSchema.describe('ID of the part to turn.'),
-        candidateId: idSchema.optional().describe('Candidate id from kura_orient_for_print (e.g. "hull0"). Give this or quaternion.'),
+        candidateId: idSchema.optional().describe('Candidate id from kura_orient_for_print (e.g. "axis-z" or "hull0"). Give this or quaternion.'),
         quaternion: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional()
           .describe('Rotation [x, y, z, w] of a candidate (user axes, relative to the current pose); normalized.'),
         keepXY: z.boolean().optional().describe('Keep the center on the bed in X/Y (default true); false = center on the origin.'),

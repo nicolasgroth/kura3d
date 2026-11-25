@@ -153,7 +153,7 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 
 ## Catálogo de Herramientas MCP (`kura_*`)
 
-La tabla completa y al día (49 herramientas, generada desde el servidor con `npm run docs:mcp`) está en [docs/MCP.md](../docs/MCP.md). Lo que sigue es un resumen que puede no incluir las más nuevas (medir, reparar, grupos).
+La tabla completa y al día (54 herramientas, generada desde el servidor con `npm run docs:mcp`) está en [docs/MCP.md](../docs/MCP.md). Lo que sigue es un resumen que puede no incluir las más nuevas (medir, reparar, grupos).
 
 | Herramienta | Descripción |
 | :--- | :--- |
@@ -190,6 +190,18 @@ La tabla completa y al día (49 herramientas, generada desde el servidor con `np
 | `kura_update_primitive_params` | Regenera una primitiva o rosca paramétrica con parámetros nuevos, conservando id y posición. |
 | `kura_mirror_object` | Refleja especularmente un objeto sobre el eje `x`, `y` o `z`, invirtiendo vértices y winding de triángulos para mantener normales válidas. |
 | `kura_validate_assembly` | *(Solo Lectura)* Revalida el armado de un grupo dividido (`groupId`) o de una selección de sus piezas (`ids`) con las uniones guardadas en `metadata.split.joints`: cierre, choques de conectores, orden de montaje con direcciones, piezas trabadas con sus opciones por unión (`glue` o `change-type:<tipo>`) y uniones débiles. |
+
+### Suavizar, orientar, imán y torreta
+
+Cinco herramientas con el mismo motor en la app y sin interfaz (detalle y ejemplos en [docs/MCP.md](../docs/MCP.md#7-suavizar-y-orientar-para-imprimir)):
+
+| Herramienta | Acceso | Qué hace | Ejemplo |
+| :--- | :--- | :--- | :--- |
+| `kura_smooth_mesh` | escritura | Suaviza (Taubin) con intensidad, pasadas, aristas vivas y zona por color; devuelve el cambio de volumen y la intensidad usada. | `{ "objectId": "<id>", "strength": 0.8 }` |
+| `kura_orient_for_print` | lectura | Orientaciones ordenadas con medidas y motivos (clave + frase en `language`), `currentIsBest`, `allEquivalent`. | `{ "objectId": "<id>", "language": "es" }` |
+| `kura_apply_orientation` | escritura | Aplica un candidato (`candidateId` o `quaternion`), `keepXY`; los negativos del grupo y los agregados acompañan. | `{ "objectId": "<id>", "candidateId": "axis-z" }` |
+| `kura_add_magnet_pocket` | escritura | Negativo del imán en `face` o `point` + `normal`, con pared medida y avisos; `addon-blocked` si no cabe. | `{ "hostId": "<id>", "face": "top", "sizeMm": 6 }` |
+| `kura_add_screw_boss` | escritura | Poste + agujero de tornillo o inserto (tabla M2–M5 o medidas explícitas). | `{ "hostId": "<id>", "face": "top", "type": "insert", "nominalMm": 3 }` |
 
 ### Ejes
 
