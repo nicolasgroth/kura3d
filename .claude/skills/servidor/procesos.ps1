@@ -1,6 +1,7 @@
 # @file .claude/skills/servidor/procesos.ps1
 # @description Lista (y con -Cerrar, termina) los procesos de desarrollo de Kurra Studio que quedan vivos: servidores
-#   Vite, corridas de Playwright, navegadores de prueba y vitest. No toca los conectores MCP de la app de Claude.
+#   Vite, corridas de Playwright, navegadores de prueba, vitest y bucles de espera de shell que llevan más de 20 minutos
+#   (un `until ...; do sleep; done` que quedó esperando un archivo que nunca llegó). No toca los conectores MCP de la app de Claude.
 # @author Nicolás Groth <ngroth@gmail.com>
 # @organization ISGROTH — Innovación y Soluciones GROTH
 # @license MIT
@@ -12,6 +13,7 @@
 #   powershell -NoProfile -File .claude/skills/servidor/procesos.ps1 -Cerrar -Solo 5291        # cierra solo ese servidor
 #
 # -Cerrar nunca termina corridas de vitest (pueden ser de otro agente): se listan y se cierran a mano por PID.
+# -Cerrar (sin -Solo) sí termina los bucles de espera de más de 20 minutos: ninguna espera legítima dura tanto.
 
 param(
   [switch]$Cerrar,
@@ -31,6 +33,12 @@ $procesos = Get-CimInstance Win32_Process |
   Where-Object { $_.Name -match '^(node|chrome|chrome-headless-shell|esbuild)\.exe$' } |
   Where-Object { ($_.CommandLine -match $propios -or $escuchas.ContainsKey([int]$_.ProcessId)) -and $_.CommandLine -notmatch $ajenos }
 
+# Bucles de espera de shell: un `until`/`while` con `sleep` que lleva más de 20 minutos vivo es casi seguro un huérfano.
+$limiteEspera = (Get-Date).AddMinutes(-20)
+$esperas = Get-CimInstance Win32_Process |
+  Where-Object { $_.Name -eq 'bash.exe' -and $_.CommandLine -match '(until|while) .*sleep \d' -and $_.CreationDate -lt $limiteEspera }
+$procesos = @($procesos) + @($esperas) | Where-Object { $_ }
+
 if (-not $procesos) {
   Write-Output 'Limpio: no hay servidores ni corridas de prueba de Kurra Studio vivos.'
   exit 0
@@ -39,7 +47,7 @@ if (-not $procesos) {
 $filas = foreach ($p in $procesos) {
   $puerto = $escuchas[[int]$p.ProcessId]
   if (-not $puerto -and $p.CommandLine -match '--port[ =](\d+)') { $puerto = [int]$Matches[1] }
-  $tipo = if ($p.CommandLine -match 'vitest') { 'vitest' } elseif ($puerto) { 'servidor' } else { 'playwright' }
+  $tipo = if ($p.Name -eq 'bash.exe') { 'espera' } elseif ($p.CommandLine -match 'vitest') { 'vitest' } elseif ($puerto) { 'servidor' } else { 'playwright' }
   $cmd = ($p.CommandLine -replace '"', '')
   if ($cmd.Length -gt 90) { $cmd = '...' + $cmd.Substring($cmd.Length - 90) }
   [pscustomobject]@{
@@ -56,7 +64,8 @@ $filas | Sort-Object Inicio | Format-Table -AutoSize | Out-String -Width 200 | W
 if ($Cerrar) {
   foreach ($f in $filas) {
     if ($f.Tipo -eq 'vitest') { continue }
-    if ($Solo.Count -gt 0 -and $Solo -notcontains $f.Puerto) { continue }
+    if ($f.Tipo -eq 'espera' -and $Solo.Count -gt 0) { continue }
+    if ($f.Tipo -ne 'espera' -and $Solo.Count -gt 0 -and $Solo -notcontains $f.Puerto) { continue }
     if ($f.Puerto -and $Conservar -contains $f.Puerto) { continue }
     & taskkill /PID $f.PID /F /T 2>$null | Out-Null
   }

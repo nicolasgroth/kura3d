@@ -15,13 +15,15 @@ El autor trabaja en otras cosas en la misma máquina. Un proceso de desarrollo q
 5. **No se edita la rama servida mientras un agente usa el navegador.** Vite recarga en caliente cada archivo guardado: un cambio a medias deja la app en blanco frente al evaluador o a la QA. Las correcciones esperan a que entregue, o se hacen en un worktree.
 4. **Nadie mata lo que no lanzó**, salvo el orquestador al cerrar un lote. Los conectores `@playwright/mcp` y `server-pdf` son de la app de Claude: no se tocan.
 
+6. **Ninguna espera sin tope.** Para esperar una corrida se usa la notificación de la tarea en segundo plano, no un bucle `until grep …; do sleep; done`: si el texto esperado nunca aparece, el bucle queda vivo para siempre y la tarea figura como en curso durante horas. Si un bucle es inevitable, lleva un tope (`for i in $(seq 1 60)`).
+
 ## Ver qué hay vivo
 
 ```
 powershell -NoProfile -File .claude/skills/servidor/procesos.ps1
 ```
 
-Lista PID, puerto, hora de inicio y memoria de servidores Vite, corridas de Playwright, navegadores de prueba y vitest.
+Lista PID, puerto, hora de inicio y memoria de servidores Vite, corridas de Playwright, navegadores de prueba, vitest y bucles de espera de shell con más de 20 minutos (tipo «espera»; `-Cerrar` los termina).
 
 ## Levantar
 
@@ -53,4 +55,4 @@ La primera forma cierra todo; la segunda deja el servidor de QA; la tercera cier
 
 Copia estas líneas en todo encargo que use navegador o Playwright:
 
-> Un solo proceso pesado a la vez. Playwright siempre con `KURA_URL=http://127.0.0.1:<puerto>/` y `--workers=1`, nunca dos corridas a la vez. No levantes otro servidor. Al terminar, cierra el navegador y corre `powershell -NoProfile -File G:/proyectos/kura3d/.claude/skills/servidor/procesos.ps1`; si queda algo que tú lanzaste, ciérralo por PID (tu servidor: `procesos.ps1 -Cerrar -Solo <tu puerto>`; nunca `-Cerrar` a secas) y dilo en el informe.
+> Un solo proceso pesado a la vez. Playwright siempre con `KURA_URL=http://127.0.0.1:<puerto>/` y `--workers=1`, nunca dos corridas a la vez. No levantes otro servidor. Al terminar, cierra el navegador y corre `powershell -NoProfile -File G:/proyectos/kura3d/.claude/skills/servidor/procesos.ps1`; si queda algo que tú lanzaste, ciérralo por PID (tu servidor: `procesos.ps1 -Cerrar -Solo <tu puerto>`; nunca `-Cerrar` a secas) y dilo en el informe. No esperes corridas con bucles `until … sleep` sin tope: usa la notificación de la tarea o un `for` con un máximo de vueltas.
