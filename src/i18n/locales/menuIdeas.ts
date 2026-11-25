@@ -106,6 +106,22 @@ const MENU_IDEAS_TABLE = {
     'इस मॉडल में {tris} त्रिभुज हैं और यह धीमा चल सकता है।',
     '此模型有 {tris} 个三角形,可能运行缓慢。',
   ],
+  'import.heavy.huge': [
+    'Este modelo tiene {tris} triángulos, más de un millón: se verá lento y los laminadores también lo advierten. Simplificarlo suele bastar para imprimir.',
+    'This model has {tris} triangles, over a million: it will feel slow and slicers warn about this too. Simplifying it is usually enough for printing.',
+    'Dieses Modell hat {tris} Dreiecke, mehr als eine Million: Es wird langsam laufen, und auch Slicer warnen davor. Vereinfachen reicht zum Drucken meist aus.',
+    'Ce modèle a {tris} triangles, plus d’un million : il sera lent et les logiciels de découpe le signalent aussi. Le simplifier suffit souvent pour imprimer.',
+    'इस मॉडल में {tris} त्रिभुज हैं, दस लाख से अधिक: यह धीमा चलेगा और स्लाइसर भी इसकी चेतावनी देते हैं। प्रिंट के लिए अक्सर इसे सरल करना काफ़ी होता है।',
+    '此模型有 {tris} 个三角形,超过一百万:运行会很慢,切片软件也会对此提示。打印前通常简化一下就够了。',
+  ],
+  'import.heavy.total': [
+    'Lo importado suma {tris} triángulos, más de un millón: puede ir lento. Puedes simplificar la pieza más pesada.',
+    'The imported files add up to {tris} triangles, over a million: it may run slowly. You can simplify the heaviest part.',
+    'Das Importierte ergibt zusammen {tris} Dreiecke, mehr als eine Million: Es kann langsam laufen. Du kannst das schwerste Teil vereinfachen.',
+    'Les éléments importés totalisent {tris} triangles, plus d’un million : cela peut être lent. Tu peux simplifier la pièce la plus lourde.',
+    'आयात किए गए मॉडल मिलाकर {tris} त्रिभुज हैं, दस लाख से अधिक: यह धीमा चल सकता है। आप सबसे भारी भाग को सरल कर सकते हैं।',
+    '导入内容合计 {tris} 个三角形,超过一百万:可能运行缓慢。可以简化最重的那个零件。',
+  ],
   'import.heavy.action': ['Simplificar…', 'Simplify…', 'Vereinfachen…', 'Simplifier…', 'सरल करें…', '简化…'],
   'toast.simplifyPanelOpened': [
     'Elige la tolerancia y pulsa Simplificar',
