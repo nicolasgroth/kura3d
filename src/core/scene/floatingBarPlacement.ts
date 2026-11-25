@@ -26,8 +26,11 @@ export interface ScreenExtent {
 export interface BarPlacement {
   x: number;
   y: number;
-  /** «above»: sobre el objeto; «below»: debajo (arriba no cabía); «pinned»: ni arriba ni abajo caben, pegada al borde. */
-  side: 'above' | 'below' | 'pinned';
+  /**
+   * «above»: sobre el objeto; «below»: debajo (arriba no cabía); «right» / «left»: a un lado (ni arriba ni abajo cabían);
+   * «pinned»: el objeto llena el visor y no hay hueco fuera de él, pegada al borde.
+   */
+  side: 'above' | 'below' | 'right' | 'left' | 'pinned';
 }
 
 export const BAR_MARGIN_PX = 8;
@@ -60,7 +63,8 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
 /**
  * Esquina superior izquierda de la barra (px, relativa al visor). Centrada en la caja y encima con `gap`; si arriba
  * no cabe (por el margen o por `topInset`, la franja de la interfaz fija del borde superior) va debajo; si tampoco
- * cabe abajo, queda pegada al borde con más espacio. Siempre dentro del visor mientras el visor sea mayor que la barra.
+ * cabe abajo, va a la derecha o a la izquierda de la caja (siempre fuera de ella, centrada en vertical); solo si
+ * el objeto llena el visor queda pegada al borde superior libre. Siempre dentro del visor mientras el visor sea mayor que la barra.
  */
 export function placeFloatingBar(input: {
   extent: ScreenExtent;
@@ -82,6 +86,12 @@ export function placeFloatingBar(input: {
   if (above >= minY) return { x, y: Math.min(above, maxY), side: 'above' };
   const below = extent.bottom + gap;
   if (below <= maxY) return { x, y: Math.max(below, minY), side: 'below' };
+  // Ni arriba ni abajo: al costado, fuera de la caja del objeto.
+  const midY = clamp((extent.top + extent.bottom) / 2 - bar.height / 2, minY, maxY);
+  const right = extent.right + gap;
+  if (right <= maxX) return { x: right, y: midY, side: 'right' };
+  const left = extent.left - gap - bar.width;
+  if (left >= margin) return { x: left, y: midY, side: 'left' };
   // Objeto que ocupa casi todo el visor: pegada al borde superior libre.
   return { x, y: clamp(above, minY, maxY), side: 'pinned' };
 }

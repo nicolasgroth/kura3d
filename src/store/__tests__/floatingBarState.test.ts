@@ -18,8 +18,7 @@ const base: FloatingBarContext = {
   uiDensity: 'full',
   pickingSurface: false,
   operationOpen: false,
-  magnetOpen: false,
-  screwBossOpen: false,
+  placementPanelOpen: false,
   contextMenuOpen: false,
 };
 
@@ -38,7 +37,7 @@ describe('floatingBarVisible', () => {
     expect(floatingBarVisible({ ...base, activeTool })).toBe(false);
   });
 
-  it.each(['pickingSurface', 'operationOpen', 'magnetOpen', 'screwBossOpen', 'contextMenuOpen'] as const)('no aparece con %s', (key) => {
+  it.each(['pickingSurface', 'operationOpen', 'placementPanelOpen', 'contextMenuOpen'] as const)('no aparece con %s', (key) => {
     expect(floatingBarVisible({ ...base, [key]: true })).toBe(false);
   });
 

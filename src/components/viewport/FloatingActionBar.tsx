@@ -14,11 +14,15 @@ import { useShallow } from 'zustand/react/shallow';
 import { Copy, Eye, EyeOff, Lock, MoreHorizontal, Palette, Trash2, Unlock } from 'lucide-react';
 import { t } from '../../i18n';
 import { floatingBarVisible, useFloatingBarPrefs } from '../../store/floatingBarState';
+import { useCablePassPanel } from '../../store/cablePassPanel';
+import { useKeyholePanel } from '../../store/keyholePanel';
 import { useMagnetPanel } from '../../store/magnetPanel';
 import { useScrewBossPanel } from '../../store/screwBossPanel';
 import { useKuraStore } from '../../store/useKuraStore';
 import { applyFloatingBarColor, floatingBarItemsFor, floatingBarSelection, runFloatingBarAction, type FloatingBarActionId, type FloatingBarItem } from './floatingBarActions';
 import { measureFloatingBar, registerFloatingBar } from './floatingBarBridge';
+import { FloatingBarColorPalette } from './FloatingBarColorPalette';
+import { focusWhenShown } from './floatingBarFocus';
 import '../../styles/floatingBar.css';
 
 const ICON = 16;
@@ -39,8 +43,12 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
   const uiDensity = useKuraStore((s) => s.uiDensity);
   const pickingSurface = useKuraStore((s) => s.surfacePick !== null);
   const operationOpen = useKuraStore((s) => s.activeDialog !== null);
+  // Regla única: ningún panel de operación (`activeDialog`) ni de colocación (imán, tornillo, colgar en el muro, paso de cable).
   const magnetOpen = useMagnetPanel((s) => s.open);
   const screwBossOpen = useScrewBossPanel((s) => s.open);
+  const keyholeOpen = useKeyholePanel((s) => s.open);
+  const cablePassOpen = useCablePassPanel((s) => s.open);
+  const placementPanelOpen = magnetOpen || screwBossOpen || keyholeOpen || cablePassOpen;
   const enabled = useFloatingBarPrefs((s) => s.enabled);
   const visible = floatingBarVisible({
     enabled,
@@ -49,8 +57,7 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
     uiDensity,
     pickingSurface,
     operationOpen,
-    magnetOpen,
-    screwBossOpen,
+    placementPanelOpen,
     contextMenuOpen,
   });
 
@@ -58,6 +65,10 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
   const buttons = useRef<Array<HTMLButtonElement | null>>([]);
   const colorInput = useRef<HTMLInputElement | null>(null);
   const colorGesture = useRef(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  // «Más» abre un menú que oculta la barra: al cerrarlo con Escape el foco vuelve al botón «Más».
+  const openedFromMore = useRef(false);
+  const escapedMenu = useRef(false);
   // El evento nativo `change` (soltar el selector) cierra el gesto: el siguiente cambio vuelve a guardar un paso.
   useEffect(() => {
     const input = colorInput.current;
@@ -72,6 +83,36 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
       input.removeEventListener('blur', end);
     };
   }, [visible]);
+  useEffect(() => {
+    if (!contextMenuOpen) return;
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && openedFromMore.current) escapedMenu.current = true;
+    };
+    window.addEventListener('keydown', onEscape, true);
+    return () => window.removeEventListener('keydown', onEscape, true);
+  }, [contextMenuOpen]);
+  useEffect(() => {
+    if (contextMenuOpen || !visible) return;
+    const restore = escapedMenu.current;
+    openedFromMore.current = false;
+    escapedMenu.current = false;
+    if (!restore) return;
+    // La barra reaparece sin colocar: el foco espera a que el visor la muestre.
+    return focusWhenShown(() => barRef.current, () => buttons.current[buttons.current.length - 1]);
+  }, [contextMenuOpen, visible]);
+  // La paleta se cierra al ocultarse la barra o al pulsar fuera de ella.
+  useEffect(() => {
+    if (!paletteOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!barRef.current?.contains(e.target as Node)) setPaletteOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown, true);
+    return () => document.removeEventListener('pointerdown', onDown, true);
+  }, [paletteOpen]);
+  useEffect(() => {
+    if (!visible) setPaletteOpen(false);
+  }, [visible]);
+
   const items = floatingBarItemsFor(selection);
   const [rawFocusIndex, setFocusIndex] = useState(0);
   // Si cambia la cantidad de botones, la parada de tabulación nunca queda fuera de la barra.
@@ -111,8 +152,40 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
   if (!visible) return null;
 
 
+  const closePalette = (focusColor: boolean) => {
+    setPaletteOpen(false);
+    if (focusColor) buttons.current[items.findIndex((it) => it.id === 'color')]?.focus();
+  };
+  const openNativePicker = () => {
+    const input = colorInput.current;
+    if (!input) return;
+    if (typeof input.showPicker === 'function') {
+      try {
+        input.showPicker();
+        return;
+      } catch {
+        /* sin selector nativo: se cae al clic */
+      }
+    }
+    input.click();
+  };
+
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Dentro de la paleta de color solo Escape lo gestiona la barra (cierra y devuelve el foco al botón Color).
+    if ((e.target as HTMLElement).closest?.('.kura-floating-bar-palette')) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        closePalette(true);
+      }
+      return;
+    }
     if (e.key === 'Escape') {
+      if (paletteOpen) {
+        e.preventDefault();
+        closePalette(true);
+        return;
+      }
       // Devuelve el foco al lienzo del visor (sin deseleccionar).
       e.preventDefault();
       barRef.current?.parentElement?.querySelector<HTMLElement>('canvas')?.focus({ preventScroll: true });
@@ -138,26 +211,19 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
 
   const run = (id: FloatingBarActionId, disabled: boolean | undefined, button: HTMLButtonElement) => {
     if (id === 'color') {
-      const input = colorInput.current;
       if (disabled) return;
-      if (!input) return;
-      if (typeof input.showPicker === 'function') {
-        try {
-          input.showPicker();
-          return;
-        } catch {
-          /* sin selector nativo: se cae al clic */
-        }
-      }
-      input.click();
+      setPaletteOpen((open) => !open);
       return;
     }
     if (id === 'more') {
+      setPaletteOpen(false);
+      openedFromMore.current = true;
       const r = button.getBoundingClientRect();
       if (selection.primaryId) onMore(selection.primaryId, r.left, r.bottom + 4);
       return;
     }
     if (disabled) return;
+    setPaletteOpen(false);
     runFloatingBarAction(id);
   };
 
@@ -189,6 +255,8 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
       role="toolbar"
       aria-orientation="horizontal"
       aria-label={t(language, 'floatingBar.label')}
+      aria-keyshortcuts="Alt+Period"
+      title={`${t(language, 'floatingBar.label')} (Alt+.)`}
       data-testid="floating-action-bar"
       data-busy="true"
       onKeyDown={onKeyDown}
@@ -210,7 +278,8 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
             title={tip}
             data-action={item.id}
             aria-pressed={item.id === 'lock' ? Boolean(item.pressed) : undefined}
-            aria-haspopup={item.id === 'more' ? 'menu' : undefined}
+            aria-haspopup={item.id === 'more' ? 'menu' : item.id === 'color' ? 'true' : undefined}
+            aria-expanded={item.id === 'color' ? paletteOpen : undefined}
             aria-disabled={item.disabled ? true : undefined}
             tabIndex={i === focusIndex ? 0 : -1}
             onFocus={() => setFocusIndex(i)}
@@ -221,7 +290,21 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
           </button>
         );
       })}
-      {/* Selector de color base del navegador (el mismo campo del inspector); lo abre el botón Color. */}
+      {paletteOpen && (
+        <FloatingBarColorPalette
+          current={selection.primaryColor}
+          onPick={(hex) => {
+            // Una muestra = un paso de deshacer.
+            applyFloatingBarColor(hex, true);
+            closePalette(true);
+          }}
+          onCustom={() => {
+            closePalette(false);
+            openNativePicker();
+          }}
+        />
+      )}
+      {/* Selector libre del navegador: la última opción de la paleta lo abre (queda oculto junto a la barra). */}
       <input
         ref={colorInput}
         type="color"

@@ -11,6 +11,9 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { t } from '../../i18n';
+import { useKeyholePanel } from '../../store/keyholePanel';
+import { PRINT_COLOR_PALETTE } from '../../types/kura';
+import { colorName } from '../../utils/colorNames';
 import { useFloatingBarPrefs } from '../../store/floatingBarState';
 import { useKuraStore } from '../../store/useKuraStore';
 import { fakeBox } from '../../test/fakeObjects';
@@ -162,5 +165,74 @@ describe('FloatingActionBar', () => {
     useFloatingBarPrefs.setState({ enabled: false });
     rerender(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
     expect(screen.queryByRole('toolbar')).toBeNull();
+  });
+
+  it('Color abre la paleta del inspector; una muestra cambia el color con un solo paso de deshacer', () => {
+    render(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
+    expect(screen.queryByTestId('floating-bar-palette')).toBeNull();
+    fireEvent.click(btn('color'));
+    const palette = screen.getByTestId('floating-bar-palette');
+    expect(btn('color').getAttribute('aria-expanded')).toBe('true');
+    const swatches = Array.from(palette.querySelectorAll<HTMLButtonElement>('.kura-floating-bar-swatch'));
+    expect(swatches.map((b) => b.getAttribute('aria-label'))).toEqual(PRINT_COLOR_PALETTE.map((hex) => colorName('es', hex)));
+    fireEvent.click(swatches[1]);
+    expect(updateObjectsMeta).toHaveBeenCalledTimes(1);
+    expect(updateObjectsMeta).toHaveBeenCalledWith(['a'], { color: PRINT_COLOR_PALETTE[1] }, true);
+    expect(screen.queryByTestId('floating-bar-palette')).toBeNull();
+    expect(document.activeElement).toBe(btn('color'));
+  });
+
+  it('la paleta deja «Otro color…» como última opción y Escape la cierra devolviendo el foco a Color', () => {
+    render(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
+    fireEvent.click(btn('color'));
+    const options = Array.from(screen.getByTestId('floating-bar-palette').querySelectorAll('button'));
+    expect(options[options.length - 1].getAttribute('aria-label')).toBe(t('es', 'floatingBar.color.custom'));
+    fireEvent.keyDown(options[0], { key: 'Escape' });
+    expect(screen.queryByTestId('floating-bar-palette')).toBeNull();
+    expect(document.activeElement).toBe(btn('color'));
+  });
+
+  it('el atajo Alt+. queda anunciado en la barra', () => {
+    render(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
+    expect(toolbar().getAttribute('aria-keyshortcuts')).toBe('Alt+Period');
+    expect(toolbar().title).toContain('Alt+.');
+  });
+
+  it('con Colgar en el muro abierto la barra se oculta, igual que con Torreta o Dividir', () => {
+    useKeyholePanel.setState({ open: true });
+    render(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
+    expect(screen.queryByRole('toolbar')).toBeNull();
+    act(() => useKeyholePanel.setState({ open: false }));
+    expect(screen.queryByRole('toolbar')).not.toBeNull();
+  });
+
+  it('cerrar con Escape el menú abierto desde «Más» devuelve el foco al botón «Más»', async () => {
+    const rafs: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => rafs.push(cb));
+    vi.stubGlobal('cancelAnimationFrame', () => undefined);
+    const { rerender } = render(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
+    fireEvent.click(btn('more'));
+    rerender(<FloatingActionBar contextMenuOpen onMore={() => undefined} />);
+    expect(screen.queryByRole('toolbar')).toBeNull();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    rerender(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
+    // El visor coloca la barra en el siguiente cuadro; recién entonces recibe el foco.
+    toolbar().dataset.placed = 'true';
+    toolbar().dataset.busy = 'false';
+    act(() => rafs.shift()?.(0));
+    expect(document.activeElement).toBe(btn('more'));
+    vi.unstubAllGlobals();
+  });
+
+  it('cerrar el menú de «Más» sin Escape (clic fuera) no roba el foco', () => {
+    const rafs: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => rafs.push(cb));
+    vi.stubGlobal('cancelAnimationFrame', () => undefined);
+    const { rerender } = render(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
+    fireEvent.click(btn('more'));
+    rerender(<FloatingActionBar contextMenuOpen onMore={() => undefined} />);
+    rerender(<FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />);
+    expect(rafs).toHaveLength(0);
+    vi.unstubAllGlobals();
   });
 });

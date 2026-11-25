@@ -44,12 +44,12 @@ export interface FloatingBarContext {
   pickingSurface: boolean;
   /** Panel de operación abierto (`activeDialog`: corte, molde, proyección…). */
   operationOpen: boolean;
-  magnetOpen: boolean;
-  screwBossOpen: boolean;
+  /** Algún panel de colocación de agregado abierto (imán, tornillo, colgar en el muro, paso de cable). */
+  placementPanelOpen: boolean;
   contextMenuOpen: boolean;
 }
 
-/** La barra solo aparece con selección, herramienta Seleccionar (y sus modos) y sin paneles de colocación ni menú abierto. */
+/** Regla única: la barra solo aparece con selección, herramienta Seleccionar (y sus modos) y sin ningún panel de operación (`activeDialog`) o de colocación abierto ni menú contextual. */
 export function floatingBarVisible(ctx: FloatingBarContext): boolean {
   return (
     ctx.enabled &&
@@ -58,8 +58,7 @@ export function floatingBarVisible(ctx: FloatingBarContext): boolean {
     ctx.uiDensity !== 'zen' &&
     !ctx.pickingSurface &&
     !ctx.operationOpen &&
-    !ctx.magnetOpen &&
-    !ctx.screwBossOpen &&
+    !ctx.placementPanelOpen &&
     !ctx.contextMenuOpen
   );
 }
