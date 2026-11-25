@@ -223,9 +223,9 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const actions = [action, secondaryAction].filter((a): a is ToastAction => Boolean(a));
       // Historial corto (8): también lo que se mostró solo dentro de un diálogo, con sus acciones operables.
       set((state) => ({ toastHistory: [...state.toastHistory.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, at: Date.now(), ...(actions.length > 0 ? { actions } : {}) }].slice(-8) }));
-      if (options?.historyOnly) return;
+      if (options?.historyOnly) return null;
       const key = noticeKey({ text, kind, action });
-      if (key && dismissedNoticeKeys.has(key)) return;
+      if (key && dismissedNoticeKeys.has(key)) return null;
       // Un aviso por acción: uno idéntico (mismo texto y tipo) se reemplaza en vez de apilarse.
       set((state) => {
         const next = [...state.toasts.filter((x) => !(x.text === text && x.kind === kind)), { id, text, kind, ...(action ? { action } : {}), ...(secondaryAction ? { secondaryAction } : {}) }];
@@ -243,6 +243,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       });
       // El cierre automático lo temporiza `ToastItem` (con pausa al pasar el cursor o el foco); un aviso con
       // una acción aún aplicable no caduca solo.
+      return id;
     },
     runToastAction: (id, action) => {
       set((state) => ({

@@ -88,7 +88,8 @@ describe('panel del ojo de cerradura', () => {
     useKuraStore.setState({ selectedIds: ['b1'] });
     const object = { ...fakeBox('k1', 'Ojo de cerradura 4 mm', 5) } as SceneObject;
     const add = vi.spyOn(store(), 'addKeyhole').mockImplementation(async () => {
-      useKuraStore.setState({ selectedIds: [] });
+      // La colocación selecciona la pieza nueva: placeAt vuelve a la selección previa.
+      useKuraStore.setState({ selectedIds: [object.id] });
       return { object, report: { ...okReport, vertical: false } };
     });
     act(() => void keyholePanel.open());

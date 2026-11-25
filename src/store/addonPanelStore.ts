@@ -3,8 +3,8 @@
  * @description Estado común del panel de un agregado que se coloca con clic sobre una cara (ojo de cerradura, paso
  * de cable): abierto o no, las medidas elegidas, la cara bajo el cursor (vista previa, por el canal agrupado de
  * `addonHover`), el informe de la última colocada y si hay campos inválidos. Abrir exige al menos una pieza sólida
- * (si no, avisa por qué). `placeAt` coloca con las medidas vigentes sin cambiar la selección y deja un solo aviso
- * corto que reemplaza al de la colocación anterior. El informe se descarta si su pieza deja de existir.
+ * (si no, avisa por qué). `placeAt` coloca con las medidas vigentes sin cambiar la selección (`addonPlacement.ts`) y deja
+ * un solo aviso corto que reemplaza al de la colocación anterior. El informe se descarta si su pieza deja de existir.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,6 +14,7 @@ import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import { t, type TranslationKey } from '../i18n';
 import type { LanguageCode, SceneObject, Vec3 } from '../types/kura';
 import { createHoverChannel, type AddonHover } from './addonHover';
+import { createPlacementToast, placeKeepingSelection } from './addonPlacement';
 import { hasMagnetHost } from './magnetPanel';
 import { useKuraStore } from './useKuraStore';
 
@@ -57,7 +58,22 @@ export function createAddonPanel<P extends object, R>(config: AddonPanelConfig<P
     open: false, params: { ...config.defaults }, hover: null, lastReport: null, lastObjectId: null, blocked: false,
   }));
   const hoverChannel = createHoverChannel(() => usePanel.getState().hover, (hover) => usePanel.setState({ hover }));
-  let lastPlacementToastId: string | null = null;
+  const showPlacementToast = createPlacementToast();
+  // El informe de la última colocación solo vale mientras esa pieza exista (deshacer o borrar lo descarta). La
+  // suscripción al store vive solo mientras hay un informe que vigilar: se cancela al descartarlo.
+  let unwatch: (() => void) | null = null;
+  const forgetLast = () => {
+    unwatch?.();
+    unwatch = null;
+  };
+  const watchLastObject = (id: string) => {
+    forgetLast();
+    unwatch = useKuraStore.subscribe((state) => {
+      if (state.objects.some((o) => o.id === id)) return;
+      forgetLast();
+      if (usePanel.getState().lastObjectId === id) usePanel.setState({ lastReport: null, lastObjectId: null });
+    });
+  };
 
   const panel: AddonPanel<P, R> = {
     usePanel,
@@ -67,11 +83,13 @@ export function createAddonPanel<P extends object, R>(config: AddonPanelConfig<P
         store.addToast(t(store.language, config.needSolidKey), 'info');
         return false;
       }
+      forgetLast();
       usePanel.setState({ open: true, hover: null, lastReport: null, lastObjectId: null });
       return true;
     },
     close: () => {
       hoverChannel.set(null);
+      forgetLast();
       usePanel.setState({ open: false, hover: null, lastReport: null, lastObjectId: null });
     },
     setParams: (patch) => usePanel.setState((s) => ({ params: { ...s.params, ...patch } })),
@@ -84,30 +102,17 @@ export function createAddonPanel<P extends object, R>(config: AddonPanelConfig<P
     placeAt: async (hostId, point, normal) => {
       const { params, blocked } = usePanel.getState();
       if (blocked) return false;
-      const store = useKuraStore.getState();
-      const selection = store.selectedIds;
-      const result = await config.add({ hostId, params, point, normal, silent: true });
-      const after = useKuraStore.getState();
-      if (after.selectedIds !== selection && (after.selectedIds.length !== selection.length || after.selectedIds.some((id, i) => id !== selection[i]))) {
-        useKuraStore.setState({ selectedIds: selection });
-      }
+      const result = await placeKeepingSelection(() => config.add({ hostId, params, point, normal, silent: true }), (r) => r.object.id);
       if (!result) return false;
-      const short = config.shortWarning(result.report, after.language);
-      const placed = t(after.language, config.placedKey, { name: result.object.name });
-      const previous = lastPlacementToastId;
-      if (previous) useKuraStore.setState((s) => ({ toasts: s.toasts.filter((x) => x.id !== previous) }));
-      const before = new Set(useKuraStore.getState().toasts.map((x) => x.id));
-      after.addToast(short ? `${placed} ${short}` : placed, short ? 'info' : 'success');
-      lastPlacementToastId = useKuraStore.getState().toasts.find((x) => !before.has(x.id))?.id ?? null;
+      const { language } = useKuraStore.getState();
+      const short = config.shortWarning(result.report, language);
+      const placed = t(language, config.placedKey, { name: result.object.name });
+      showPlacementToast(short ? `${placed} ${short}` : placed, short ? 'info' : 'success');
       usePanel.setState({ lastReport: result.report, lastObjectId: result.object.id });
+      watchLastObject(result.object.id);
       return true;
     },
   };
 
-  // El informe de la última colocación solo vale mientras esa pieza exista (deshacer o borrar lo descarta).
-  useKuraStore.subscribe((state) => {
-    const { lastObjectId } = usePanel.getState();
-    if (lastObjectId && !state.objects.some((o) => o.id === lastObjectId)) usePanel.setState({ lastReport: null, lastObjectId: null });
-  });
   return panel;
 }
