@@ -8,8 +8,8 @@
  */
 
 import { computeMeshStats } from '../engine/primitives';
-import { MAX_GROUPS, reconcileGroups } from '../core/scene/groups';
-import { MAX_PLATES, reconcilePlates } from '../core/scene/plates';
+import { MAX_GROUPS } from '../core/scene/groups';
+import { MAX_PLATES } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
 import type { SceneLayout, ScenePlate } from '../types/plates';
 import { FILE_HISTORY_MAX_STEPS } from './historyBudget';
@@ -19,6 +19,7 @@ import {
 } from './projectSchema';
 import { migrateStoredRole, ROLE_FORMAT_VERSION } from './projectRoleMigration';
 import { withBoundedParams } from './primitiveParamsBounds';
+import { reconcileSceneStructure } from './sceneStructure';
 
 export { MAX_PROJECT_BYTES, ProjectCodecError, type ProjectDocument, type ProjectSceneSnapshot } from './projectSchema';
 const MAX_MANIFEST_BYTES = 16 * 1024 * 1024;
@@ -150,26 +151,6 @@ function mapSnapshot<I, O extends { id: string }>(snapshot: Snapshot<I>, mapObje
 function usesPlates(s: ProjectSceneSnapshot): boolean {
   return (s.plates?.length ?? 0) > 0 || s.layout === 'assembly'
     || s.objects.some((o) => o.plateRef !== undefined || o.restPose !== undefined);
-}
-
-/** Escena con grupos saneados (al abrir): huérfanos, ciclos, profundidad y orden contiguo. */
-function reconcileSnapshot<T extends { objects: SceneObject[]; selectedIds: string[]; groups?: SceneGroup[]; plates?: ScenePlate[] }>(s: T): T {
-  return reconcileSnapshotPlates(reconcileSnapshotGroups(s));
-}
-
-function reconcileSnapshotGroups<T extends { objects: SceneObject[]; groups?: SceneGroup[] }>(s: T): T {
-  if (!s.groups && !s.objects.some((o) => o.groupRef !== undefined)) return s;
-  const clean = reconcileGroups({ objects: s.objects, groups: s.groups ?? [] });
-  const { groups: _drop, ...rest } = s;
-  return (clean.groups.length ? { ...rest, objects: clean.objects, groups: clean.groups } : { ...rest, objects: clean.objects }) as T;
-}
-
-/** Placas saneadas al abrir: sin ids repetidos y cada `plateRef` apunta a una placa (o se quita sin placas). */
-function reconcileSnapshotPlates<T extends { objects: SceneObject[]; plates?: ScenePlate[] }>(s: T): T {
-  if (!s.plates && !s.objects.some((o) => o.plateRef !== undefined)) return s;
-  const clean = reconcilePlates({ objects: s.objects, plates: s.plates ?? [] });
-  const { plates: _drop, ...rest } = s;
-  return (clean.plates.length ? { ...rest, objects: clean.objects, plates: clean.plates } : { ...rest, objects: clean.objects }) as T;
 }
 
 export function encodeProject(doc: ProjectDocument): Uint8Array {
@@ -376,7 +357,7 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
     check(validSnapshot(s));
     check(version >= PLATES_FORMAT_VERSION || s.plates === undefined, 'plates');
     check(version >= PLATES_FORMAT_VERSION || s.layout === undefined, 'layout');
-    return reconcileSnapshot(mapSnapshot(s, restoreObject));
+    return reconcileSceneStructure(mapSnapshot(s, restoreObject));
   }
   const document = { ...settings, ...snapshot(current), past: past.map(snapshot), future: future.map(snapshot) };
   check(usedMeshes.size === assets.length);

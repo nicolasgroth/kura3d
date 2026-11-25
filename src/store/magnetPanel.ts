@@ -19,6 +19,7 @@ import { magnetWarnings, magnetWarningShortText, type MagnetWarning } from './ma
 import type { Vec3 } from '../types/kura';
 import { createUserPresetsStore } from './userPresets';
 import { ADDON_HOVER_EPS, createHoverChannel, sameAddonHover, type AddonHover } from './addonHover';
+import { createPlacementToast, placeKeepingSelection } from './addonPlacement';
 import { useKuraStore } from './useKuraStore';
 
 export type MagnetHover = AddonHover;
@@ -101,40 +102,31 @@ export function mostSevereMagnetWarning(warnings: readonly MagnetWarning[]): Mag
   return [...warnings].sort((a, b) => rank(a) - rank(b))[0] ?? null;
 }
 
+/** Aviso de la colocación: el nuevo reemplaza al de la anterior. */
+const showPlacementToast = createPlacementToast();
+
 /**
  * Coloca un alojamiento con el imán vigente sobre la cara indicada. No altera la selección que había y deja un solo
  * aviso por colocación: «agregado» más la advertencia más grave (el detalle completo queda en el panel).
  */
-/** Aviso de la última colocación que sigue a la vista (para reemplazarlo en la siguiente). */
-let lastPlacementToastId: string | null = null;
-
 export async function placeMagnetAt(hostId: string, point: Vec3, normal: Vec3): Promise<boolean> {
   const { params, blocked } = useMagnetPanel.getState();
   if (blocked) return false;
   const store = useKuraStore.getState();
-  const selection = store.selectedIds;
-  const result = await store.addMagnetPocket({ hostId, params, point, normal, silent: true });
+  // Colocar no cambia lo que estaba seleccionado (salvo que el usuario lo cambie mientras corre el Worker).
+  const result = await placeKeepingSelection(() => store.addMagnetPocket({ hostId, params, point, normal, silent: true }), (r) => r.obj.id);
   const after = useKuraStore.getState();
-  // Colocar no cambia lo que estaba seleccionado.
-  if (after.selectedIds !== selection && (after.selectedIds.length !== selection.length || after.selectedIds.some((id, i) => id !== selection[i]))) {
-    useKuraStore.setState({ selectedIds: selection });
-  }
   if (!result) return false;
   // Un solo aviso, corto: «agregado» más la advertencia más grave resumida (el detalle queda en el panel).
   const warning = mostSevereMagnetWarning(magnetWarnings(result.wall, after.language));
   const placed = t(after.language, 'magnet.placed', { name: result.obj.name });
-  // Al colocar varios seguidos, el aviso nuevo reemplaza al de la colocación anterior: apilados sobre el visor
-  // tapaban la pieza y el siguiente clic caía en un aviso.
-  const previous = lastPlacementToastId;
-  if (previous) useKuraStore.setState((s) => ({ toasts: s.toasts.filter((x) => x.id !== previous) }));
-  const before = new Set(useKuraStore.getState().toasts.map((x) => x.id));
-  after.addToast(warning ? `${placed} ${magnetWarningShortText(warning, after.language)}` : placed, warning ? 'info' : 'success');
-  lastPlacementToastId = useKuraStore.getState().toasts.find((x) => !before.has(x.id))?.id ?? null;
+  showPlacementToast(warning ? `${placed} ${magnetWarningShortText(warning, after.language)}` : placed, warning ? 'info' : 'success');
   useMagnetPanel.setState({ lastWall: result.wall, lastObjectId: result.obj.id });
   return true;
 }
 
-// El resultado de la última colocación solo vale mientras ese imán exista (deshacer o borrar lo descarta).
+// El resultado de la última colocación solo vale mientras ese imán exista (deshacer o borrar lo descarta). El panel
+// es un único módulo de vida de la app: la suscripción no se cancela a propósito.
 useKuraStore.subscribe((state) => {
   const { lastObjectId } = useMagnetPanel.getState();
   if (lastObjectId && !state.objects.some((o) => o.id === lastObjectId)) useMagnetPanel.setState({ lastWall: null, lastObjectId: null });

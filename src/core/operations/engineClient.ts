@@ -258,6 +258,8 @@ export function createEngineClient(
             // El Worker sigue con el cálculo; su respuesta se descarta al llegar.
             orphans.add(id);
             p.reject(new EngineCancelledError());
+            // Si ya había pedidos en cola detrás (llegaron cuando aún no había huérfanos), el tope corre desde ahora.
+            if (pending.size > 0) armEscalation();
             return;
           }
           // Manifold no se interrumpe: se termina el Worker; solo se rechaza esta tarea y las demás

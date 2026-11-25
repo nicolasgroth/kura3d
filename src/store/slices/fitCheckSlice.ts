@@ -33,7 +33,8 @@ export interface FitCheckSliceState {
   fitCheckHighlight: FitCheckPairRef | null;
   /** El último informe se descartó porque la escena cambió (el panel ofrece volver a comprobar). */
   fitCheckStale: boolean;
-  /** Comprueba `ids` (o la selección, o todo lo visible). `null` si se canceló o falló (el error ya se avisó). */
+  /** Comprueba `ids` (o la selección, o todo lo visible). `null` si se canceló, falló (el error ya se avisó) o la
+   * escena cambió mientras calculaba (queda `fitCheckStale`). */
   checkFit: (request?: { ids?: string[]; options?: FitCheckOptions }) => Promise<FitCheckReport | null>;
   cancelFitCheck: () => void;
   setFitCheckHighlight: (pair: FitCheckPairRef | null) => void;
@@ -70,13 +71,14 @@ export function createFitCheckSlice(ctx: StoreContext): Partial<KuraStoreState> 
         const report = await current.promise;
         if (job !== current) return null;
         job = null;
-        // Si la escena cambió mientras se calculaba, el informe ya no corresponde: no se guarda.
+        // Si la escena cambió mientras se calculaba, el informe ya no corresponde: no se guarda ni se devuelve (quien
+        // llama, p. ej. `check_fit` por MCP, respondería con medidas de una escena que ya no existe).
         const valid = fitCheckIsCurrent(inputs, assemblyPosedObjects(get()));
         set({
           fitCheckRunning: null,
           ...(valid ? { fitCheck: { report, inputs }, fitCheckHighlight: null, fitCheckStale: false } : { fitCheckStale: true }),
         });
-        return report;
+        return valid ? report : null;
       } catch (err) {
         if (job === current) {
           job = null;

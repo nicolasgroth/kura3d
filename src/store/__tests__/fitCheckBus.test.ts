@@ -68,4 +68,14 @@ describe('Command Bus: check_fit', () => {
     expect(store().fitCheck).toBeNull();
     expect(store().fitCheckHighlight).toBeNull();
   });
+
+  it('si la escena cambió mientras calculaba, devuelve null (el informe ya no corresponde) y queda obsoleto', async () => {
+    const objs = [await cube('A', 0), await cube('B', 8)];
+    useKuraStore.setState({ objects: objs, selectedIds: [] } as never);
+    const pending = store().checkFit({ ids: ['A', 'B'] });
+    useKuraStore.setState({ objects: store().objects.map((o) => (o.id === 'B' ? { ...o, position: [30, 0, 0] } : o)) } as never);
+    expect(await pending).toBeNull();
+    expect(store().fitCheckStale).toBe(true);
+    expect(store().fitCheck).toBeNull();
+  });
 });

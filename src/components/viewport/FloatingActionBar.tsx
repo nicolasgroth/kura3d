@@ -10,13 +10,14 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Copy, Eye, EyeOff, Lock, MoreHorizontal, Palette, Trash2, Unlock } from 'lucide-react';
 import { t } from '../../i18n';
 import { floatingBarVisible, useFloatingBarPrefs } from '../../store/floatingBarState';
 import { useMagnetPanel } from '../../store/magnetPanel';
 import { useScrewBossPanel } from '../../store/screwBossPanel';
 import { useKuraStore } from '../../store/useKuraStore';
-import { applyFloatingBarColor, floatingBarItems, runFloatingBarAction, type FloatingBarActionId, type FloatingBarItem } from './floatingBarActions';
+import { applyFloatingBarColor, floatingBarItemsFor, floatingBarSelection, runFloatingBarAction, type FloatingBarActionId, type FloatingBarItem } from './floatingBarActions';
 import { measureFloatingBar, registerFloatingBar } from './floatingBarBridge';
 import '../../styles/floatingBar.css';
 
@@ -31,8 +32,9 @@ interface Props {
 
 export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) => {
   const language = useKuraStore((s) => s.language);
-  const objects = useKuraStore((s) => s.objects);
-  const selectedIds = useKuraStore((s) => s.selectedIds);
+  // Selector estrecho: la barra se vuelve a pintar solo si cambia lo que muestra, no con cada edición de la escena.
+  const selection = useKuraStore(useShallow((s) => floatingBarSelection(s.objects, s.selectedIds)));
+  const selectedCount = useKuraStore((s) => s.selectedIds.length);
   const activeTool = useKuraStore((s) => s.activeTool);
   const uiDensity = useKuraStore((s) => s.uiDensity);
   const pickingSurface = useKuraStore((s) => s.surfacePick !== null);
@@ -42,7 +44,7 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
   const enabled = useFloatingBarPrefs((s) => s.enabled);
   const visible = floatingBarVisible({
     enabled,
-    selectedCount: selectedIds.length,
+    selectedCount,
     activeTool,
     uiDensity,
     pickingSurface,
@@ -70,7 +72,10 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
       input.removeEventListener('blur', end);
     };
   }, [visible]);
-  const [focusIndex, setFocusIndex] = useState(0);
+  const items = floatingBarItemsFor(selection);
+  const [rawFocusIndex, setFocusIndex] = useState(0);
+  // Si cambia la cantidad de botones, la parada de tabulación nunca queda fuera de la barra.
+  const focusIndex = Math.min(rawFocusIndex, items.length - 1);
 
   const setBar = useCallback((el: HTMLDivElement | null) => {
     barRef.current = el;
@@ -105,8 +110,6 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
 
   if (!visible) return null;
 
-  const items = floatingBarItems(objects, selectedIds);
-  const primary = objects.find((o) => o.id === selectedIds[0]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Escape') {
@@ -136,6 +139,7 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
   const run = (id: FloatingBarActionId, disabled: boolean | undefined, button: HTMLButtonElement) => {
     if (id === 'color') {
       const input = colorInput.current;
+      if (disabled) return;
       if (!input) return;
       if (typeof input.showPicker === 'function') {
         try {
@@ -150,7 +154,7 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
     }
     if (id === 'more') {
       const r = button.getBoundingClientRect();
-      if (primary) onMore(primary.id, r.left, r.bottom + 4);
+      if (selection.primaryId) onMore(selection.primaryId, r.left, r.bottom + 4);
       return;
     }
     if (disabled) return;
@@ -213,7 +217,7 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
             onClick={(e) => run(item.id, item.disabled, e.currentTarget)}
           >
             {iconOf(item.icon)}
-            {item.id === 'color' && primary && <span className="kura-floating-bar-dot" style={{ background: primary.color }} aria-hidden="true" />}
+            {item.id === 'color' && selection.primaryColor && <span className="kura-floating-bar-dot" style={{ background: selection.primaryColor }} aria-hidden="true" />}
           </button>
         );
       })}
@@ -224,7 +228,7 @@ export const FloatingActionBar: React.FC<Props> = ({ contextMenuOpen, onMore }) 
         className="kura-floating-bar-color"
         tabIndex={-1}
         aria-hidden="true"
-        value={primary?.color ?? '#808080'}
+        value={selection.primaryColor ?? '#808080'}
         onChange={(e) => {
           // Un gesto de arrastre = un paso de deshacer: el primer cambio lo guarda, el resto es vista en vivo.
           applyFloatingBarColor(e.target.value, !colorGesture.current);

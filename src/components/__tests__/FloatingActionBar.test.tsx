@@ -7,7 +7,8 @@
  * @license MIT
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { t } from '../../i18n';
 import { useFloatingBarPrefs } from '../../store/floatingBarState';
@@ -88,6 +89,23 @@ describe('FloatingActionBar', () => {
     expect(btn('delete').getAttribute('aria-disabled')).toBe('true');
     fireEvent.click(btn('delete'));
     expect(deleteSelection).not.toHaveBeenCalled();
+    // Con todo bloqueado el color no tendría efecto: el botón lo dice.
+    expect(btn('color').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('no se vuelve a pintar por cambios de la escena que no muestra (selector estrecho)', () => {
+    // El Profiler avisa cada vez que la barra (su único hijo) se vuelve a pintar.
+    let renders = 0;
+    render(
+      <React.Profiler id="bar" onRender={() => { renders += 1; }}>
+        <FloatingActionBar contextMenuOpen={false} onMore={() => undefined} />
+      </React.Profiler>,
+    );
+    const before = toolbar().innerHTML;
+    // Mover la pieza no seleccionada crea una lista `objects` nueva: la barra no cambia.
+    act(() => useKuraStore.setState((s) => ({ objects: s.objects.map((o) => (o.id === 'b' ? { ...o, position: [9, 0, 0] } : o)) }) as never));
+    expect(toolbar().innerHTML).toBe(before);
+    expect(renders).toBe(1);
   });
 
   it('«Más» abre el menú del objeto con su id y las coordenadas del botón', () => {

@@ -77,7 +77,8 @@ describe('panel del paso de cable', () => {
     const object = { ...fakeBox('c1', 'Paso de cable Ø 5', 5) } as SceneObject;
     const report = { thicknessMm: 3, boreMm: 3, through: true, noExit: false, nearEdge: true, nearAddon: false };
     const add = vi.spyOn(store(), 'addCablePass').mockImplementation(async () => {
-      useKuraStore.setState({ selectedIds: [] });
+      // La colocación selecciona la pieza nueva: placeAt vuelve a la selección previa.
+      useKuraStore.setState({ selectedIds: [object.id] });
       return { object, report };
     });
     act(() => void cablePassPanel.open());

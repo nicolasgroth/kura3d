@@ -78,7 +78,7 @@ export function analyzeOrientations(input: OrientInput, options: OrientOptions =
     totalAreaMm2: world.totalArea,
     maxDimensionMm: world.diag,
     maxContactMm2: Math.max(...measured.map((x) => x.m.measures.contactAreaMm2)),
-    minBaseMm2: s.minSupportAreaMm2,
+    minSupportAreaMm2: s.minSupportAreaMm2,
   };
   const cur = measured[0].m.measures;
   const costs = measured.map((x) => orientCost(x.m.measures, ctx));

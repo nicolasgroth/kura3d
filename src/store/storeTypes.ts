@@ -319,7 +319,8 @@ export interface KuraStoreState {
   clearAiMessages: () => void;
   setAiBusy: (busy: boolean) => void;
   setMcpConnected: (connected: boolean) => void;
-  addToast: (text: string, kind?: ToastMessage['kind'], action?: ToastAction, options?: { historyOnly?: boolean; secondaryAction?: ToastAction }) => void;
+  /** Muestra un aviso y devuelve su id; null si no quedó a la vista (solo historial o descartado para siempre). */
+  addToast: (text: string, kind?: ToastMessage['kind'], action?: ToastAction, options?: { historyOnly?: boolean; secondaryAction?: ToastAction }) => string | null;
   clearToastHistory: () => void;
   dismissErrorToasts: () => void;
   dismissToast: (id: string) => void;
