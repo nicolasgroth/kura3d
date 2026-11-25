@@ -13,7 +13,7 @@ Postergada por decisión tuya; sigue autorizada. Se hace contigo presente cuando
 
 ### 2. Cambio de nombre a Kurra3D: lo que te toca a ti
 El nombre nuevo es **Kurra3D** (confirmado el 24-nov). Esta noche cambio lo visible: marca, títulos, logo si lleva texto, documentación y README. Dos cosas quedan para ti o para que me las pidas expresamente, porque son ajustes de tu cuenta o rompen compatibilidad:
-- **Renombrar el repositorio en GitHub** (hoy `nicolasgroth/kura3d`). Es un ajuste de tu cuenta: lo haces tú en Settings → General → Repository name, o me dices «renómbralo» y lo hago con `gh repo rename`. GitHub redirige la dirección vieja, y después actualizo el remoto local.
+- **Repositorio de GitHub:** renombrado a `nicolasgroth/kurra3d` el 25-nov a pedido tuyo; el remoto local ya apunta ahí y GitHub redirige la dirección antigua. En GitHub quedan ramas de trabajo ya integradas (`feat/iman`, `integracion/24-nov`); no las borro sin que lo pidas.
 - **Lo interno** se queda como está por ahora: extensión `.kura` de los proyectos, herramientas `kura_*` del servidor MCP, formato `kura.recipe/1`, claves guardadas en el navegador (`kura3d-*`), clases CSS y el identificador de la app de escritorio. Cambiarlos rompe proyectos guardados y configuraciones de quien ya use el MCP. ¿Los dejamos así (recomendado, «kura» sigue siendo la raíz de la palabra) o planificamos una migración?
 - Busqué «Kurra3D» y «Kurra 3D» en la web y no apareció ningún producto con ese nombre (búsqueda rápida, no es una revisión de marcas registradas). Lo más cercano por sonido son Cura, el laminador de UltiMaker, y Kirra, una app de minería.
 

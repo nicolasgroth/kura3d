@@ -94,3 +94,4 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-24 | Sección «Acerca de» | La app lleva una sección «Acerca de» que cuenta cómo se construyó y para qué, con una frase sobre modelar un mundo donde todos podamos trabajar juntos, y un huevo de pascua al hacer clic unas 10 veces en el logo. |
 | 2026-11-24 | Trabajo nocturno | El autor autoriza trabajar de noche con procesos en paralelo. Las dudas se dejan en `docs/CONSULTAS_PROYECTO.md`. |
 | 2026-11-24 | README como registro vivo | El README lista lo que ya funciona y está habilitado, separado de lo que falta y de las ideas, y se actualiza como parte del cierre de cada lote, a medida que las funcionalidades se van cerrando. |
+| 2026-11-25 | Repositorio de GitHub | Renombrado de `nicolasgroth/kura3d` a `nicolasgroth/kurra3d` por pedido expreso del autor. |
