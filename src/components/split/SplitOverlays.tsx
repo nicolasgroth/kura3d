@@ -14,6 +14,7 @@ import { AlertTriangle, Grid3x3 } from 'lucide-react';
 import { t } from '../../i18n';
 import { toUserSize } from '../../core/scene/displayAxes';
 import { exceedsBed } from '../../core/scene/splitGroups';
+import { findPlate } from '../../core/scene/plates';
 import { activeBed } from '../../store/splitCommandSchemas';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { Vec3 } from '../../types/kura';
@@ -35,6 +36,7 @@ export const SplitFitNotice: React.FC = () => {
   const showBed = useKuraStore((s) => s.showBed);
   const busy = useKuraStore((s) => Boolean(s.busyOperation));
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
+  const plates = useKuraStore((s) => s.plates);
 
   const [collapsed, setCollapsed] = useState(false);
   const obj = selectedIds.length === 1 ? objects.find((o) => o.id === selectedIds[0]) ?? null : null;
@@ -47,6 +49,9 @@ export const SplitFitNotice: React.FC = () => {
   if (!obj || !size || activeDialog === 'splitForBed' || !showBed || !exceedsBed(size, bed)) return null;
   // `size` está en ejes del motor (Y arriba): se muestra en los del usuario (X × Y × Z, Z = altura)
   const dims = toUserSize(size).map((v) => formatNumber(language, v, { maximumFractionDigits: 0 })).join(' × ');
+  // Con varias placas, el aviso dice de qué placa es la cama que no alcanza.
+  const plate = plates.length > 1 ? findPlate(plates, obj.plateRef) : null;
+  const notice = plate ? t(language, 'plates.split.notice', { plate: plate.name, size: dims }) : t(language, 'split.notice', { size: dims });
 
   return (
     <div className="kura-split-notice" role="status" data-collapsed={collapsed || undefined}>
@@ -60,7 +65,7 @@ export const SplitFitNotice: React.FC = () => {
       >
         <AlertTriangle size={13} aria-hidden="true" />
       </button>
-      {!collapsed && <span>{t(language, 'split.notice', { size: dims })}</span>}
+      {!collapsed && <span>{notice}</span>}
       <button
         type="button"
         className="kura-btn kura-btn-sm kura-btn-primary"

@@ -50,12 +50,12 @@ const PLATES_VIEW_TABLE = {
   'plates.delete': ['Borrar placa «{name}»', 'Delete plate “{name}”', 'Platte „{name}“ löschen', 'Supprimer le plateau « {name} »', '“{name}” प्लेट हटाएँ', '删除打印板“{name}”'],
   'plates.delete.title': ['Borrar la placa', 'Delete the plate', 'Platte löschen', 'Supprimer le plateau', 'प्लेट हटाएँ', '删除打印板'],
   'plates.delete.message': [
-    'La placa «{name}» tiene {count} {count?pieza|piezas}: pasan a «{target}», en el mismo lugar relativo.',
-    'Plate “{name}” has {count} {count?part|parts}: they move to “{target}”, in the same relative spot.',
-    'Die Platte „{name}“ enthält {count} {count?Teil|Teile}: Sie wechseln an derselben relativen Stelle zu „{target}“.',
-    'Le plateau « {name} » contient {count} {count?pièce|pièces} : elles passent à « {target} », au même endroit relatif.',
-    '“{name}” प्लेट में {count} {count?हिस्सा|हिस्से} हैं: वे उसी सापेक्ष जगह पर “{target}” में चले जाते हैं।',
-    '打印板“{name}”有 {count} 个零件:它们会移到“{target}”的相同相对位置。',
+    'La placa «{name}» tiene {count} {count?pieza: pasa|piezas: pasan} a «{target}», en el mismo lugar relativo.',
+    'Plate “{name}” has {count} {count?part: it moves|parts: they move} to “{target}”, in the same relative spot.',
+    'Die Platte „{name}“ enthält {count} {count?Teil: es wechselt|Teile: sie wechseln} an derselben relativen Stelle zu „{target}“.',
+    'Le plateau « {name} » contient {count} {count?pièce : elle passe|pièces : elles passent} à « {target} », au même endroit relatif.',
+    '“{name}” प्लेट में {count} {count?हिस्सा है: वह|हिस्से हैं: वे} उसी सापेक्ष जगह पर “{target}” में {count?चला जाता है|चले जाते हैं}।',
+    '打印板“{name}”有 {count} 个零件:{count?它|它们}会移到“{target}”的相同相对位置。',
   ],
   'plates.delete.confirm': ['Borrar placa', 'Delete plate', 'Platte löschen', 'Supprimer le plateau', 'प्लेट हटाएँ', '删除打印板'],
   'plates.toast.removed': [
@@ -96,6 +96,15 @@ const PLATES_VIEW_TABLE = {
   ],
   // Aviso de fuera de volumen por placa.
   'plates.oob.where': ['en {names}', 'on {names}', 'auf {names}', 'sur {names}', '{names} पर', '位于 {names}'],
+  // Aviso «no cabe» de Dividir con varias placas: nombra la placa de la pieza.
+  'plates.split.notice': [
+    'No cabe en la cama de «{plate}» ({size} mm).',
+    'Does not fit the bed of “{plate}” ({size} mm).',
+    'Passt nicht aufs Druckbett von „{plate}“ ({size} mm).',
+    'Ne tient pas sur le plateau « {plate} » ({size} mm).',
+    '“{plate}” के बेड में नहीं समाता ({size} mm)।',
+    '放不进“{plate}”的打印平台（{size} mm）。',
+  ],
   // Pasos de placas en el historial de deshacer.
   'plates.history.create': ['Crear placa «{name}»', 'Create plate “{name}”', 'Platte „{name}“ erstellen', 'Créer le plateau « {name} »', '“{name}” प्लेट बनाएँ', '创建打印板“{name}”'],
   'plates.history.delete': ['Borrar placa «{name}»', 'Delete plate “{name}”', 'Platte „{name}“ löschen', 'Supprimer le plateau « {name} »', '“{name}” प्लेट हटाएँ', '删除打印板“{name}”'],

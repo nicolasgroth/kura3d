@@ -29,6 +29,7 @@ beforeEach(() => {
     printerProfile: { ...DEFAULT_PRINTER_PROFILES[0], bedWidthMm: 200, bedDepthMm: 200, maxHeightMm: 200 },
     activeDialog: null,
     busyOperation: null,
+    plates: [],
   } as never);
 });
 
@@ -40,5 +41,17 @@ describe('SplitFitNotice', () => {
     const text = screen.getByRole('status').textContent ?? '';
     expect(text).toContain('28 × 30 × 600');
     expect(text).not.toContain('28 × 600 × 30');
+  });
+
+  it('con varias placas nombra la placa de la pieza; con una sola, el texto de siempre', () => {
+    const plates = [{ id: 'p1', name: 'Placa 1', origin: [0, 0] }, { id: 'p2', name: 'Cabeza', origin: [520, 0] }];
+    // Interno: X=500, Y(altura)=30, Z(fondo)=40 → usuario 500 × 40 × 30.
+    useKuraStore.setState({ objects: [{ ...box(500, 30, 40), plateRef: 'p2' }], selectedIds: ['t'], plates } as never);
+    const { unmount } = render(<SplitFitNotice />);
+    expect(screen.getByRole('status').textContent).toContain('No cabe en la cama de «Cabeza» (500 × 40 × 30 mm).');
+    unmount();
+    useKuraStore.setState({ plates: [plates[0]] } as never);
+    render(<SplitFitNotice />);
+    expect(screen.getByRole('status').textContent).toContain('No cabe en la cama (500 × 40 × 30 mm).');
   });
 });

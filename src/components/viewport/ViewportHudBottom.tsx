@@ -9,6 +9,7 @@
 import React, { useMemo } from 'react';
 import { AlertTriangle, Boxes } from 'lucide-react';
 import '../../styles/splitUx.css';
+import '../../styles/plateHud.css';
 import { getLocalizedPrinterName, t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { computeSelectionBounds } from '../../utils/selectionBounds';
@@ -36,6 +37,10 @@ export const ViewportHudBottom: React.FC = () => {
     () => (plates.length < 2 ? [] : platesBedStatus(objects, printerProfile, plates).filter((e) => e.status === 'outOfBounds').map((e) => plates.find((p) => p.id === e.plateId)?.name ?? '')),
     [objects, printerProfile, plates],
   );
+  const bedDims = printerProfile.showPrintVolume
+    ? [printerProfile.bedWidthMm, printerProfile.bedDepthMm, printerProfile.maxHeightMm].map((v) => formatDimension(v, unitSystem, 1, language)).join(' × ')
+    : '';
+  const bedText = bedDims ? `${localizedPrinterName} (${bedDims})` : localizedPrinterName;
   const activeDimensionsText = useMemo(() => {
     if (!selectedObj) {
       return t(language, 'viewport.noSelection');
@@ -67,18 +72,12 @@ export const ViewportHudBottom: React.FC = () => {
       </div>
 
       {!showBed ? <BedHiddenChip /> : (
-        <div className="kura-hud-card kura-hud-pill-nowrap">
+        <div className="kura-hud-card kura-hud-pill-nowrap kura-bed-card" data-oob={bedStatus === 'outOfBounds' || undefined}>
           <span className="kura-field-label">{t(language, 'viewport.bedLabel')}:</span>
-          <span className="kura-dims-badge">
-            {printerProfile.showPrintVolume
-              ? `${localizedPrinterName} (${formatDimension(
-                  printerProfile.bedWidthMm,
-                  unitSystem,
-                  1, language)} × ${formatDimension(printerProfile.bedDepthMm, unitSystem, 1, language)} × ${formatDimension(
-                  printerProfile.maxHeightMm,
-                  unitSystem,
-                  1, language)})`
-              : localizedPrinterName}
+          {/* El nombre se abrevia con elipsis (nunca a una letra) y, sin espacio, se oculta antes que las medidas. */}
+          <span className="kura-dims-badge kura-bed-badge" title={bedText}>
+            <span className="kura-bed-name">{localizedPrinterName}</span>
+            {bedDims && <span className="kura-bed-dims">{` (${bedDims})`}</span>}
           </span>
           {bedStatus === 'outOfBounds' && (
             <span className="kura-oob-badge">
