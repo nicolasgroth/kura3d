@@ -13,6 +13,7 @@ import { OPERATION_RANGES } from '../../engine/operationLimits';
 import { SIMPLIFY_MODES, type SimplifyMode, type SimplifyReport, type SimplifyRequest } from '../../engine/simplify';
 import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
+import { undoToastAction } from '../../store/toastActionState';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
@@ -40,6 +41,10 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   const [targetPercent, setTargetPercent] = useState(50);
   const [targetCount, setTargetCount] = useState<number | null>(null);
   const [last, setLast] = useState<{ id: string; report: SimplifyReport } | null>(null);
+  // «Deshacer» del informe: vale mientras el paso que creó este resultado siga siendo el último del historial.
+  const [undoStep, setUndoStep] = useState<ReturnType<typeof undoToastAction> | null>(null);
+  const past = useKuraStore((s) => s.past);
+  void past; // recalcula `applicable` cuando cambia el historial
   const uid = useId();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const openRequest = useKuraStore((s) => s.simplifyRequest);
@@ -72,7 +77,12 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   };
   const run = () => {
     const id = primary.id;
-    void simplifySelectedMesh(id, request(), { onReport: (report) => setLast({ id, report }) });
+    setUndoStep(null);
+    void simplifySelectedMesh(id, request(), { onReport: (report) => setLast({ id, report }) }).then((ok) => {
+      if (!ok) return;
+      const st = useKuraStore.getState();
+      setUndoStep(undoToastAction(t(st.language, 'toast.undo'), () => useKuraStore.getState().past, () => useKuraStore.getState().undo()));
+    });
   };
 
   return (
@@ -166,7 +176,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
         {t(language, 'inspector.pro.simplifyBtn')}
       </button>
 
-      {last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} />}
+      {last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} onUndo={undoStep?.applicable?.() ? undoStep.run : undefined} />}
     </div>
   );
 };

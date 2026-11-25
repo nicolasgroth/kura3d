@@ -1,7 +1,7 @@
 /**
  * @file src/components/inspector/SimplifyReportView.tsx
  * @description Informe antes → después del último Simplificar de la pieza: triángulos, volumen, agujeros pasantes
- * (género), desviación medida, tolerancia usada y los avisos tipados traducidos. Si no se aplicó, lo dice.
+ * (género), desviación medida, tolerancia usada y los avisos tipados traducidos. Si no se aplicó, lo dice. Con `onUndo` trae «Deshacer» (mientras ese paso siga siendo el último del historial).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,7 +14,7 @@ import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { simplifyWarningSentence } from '../../i18n/simplifyWarnings';
 import type { LanguageCode } from '../../types/kura';
 
-export const SimplifyReportView: React.FC<{ report: SimplifyReport; language: LanguageCode }> = ({ report, language }) => {
+export const SimplifyReportView: React.FC<{ report: SimplifyReport; language: LanguageCode; onUndo?: () => void }> = ({ report, language, onUndo }) => {
   const n = (v: number, maxFrac: number) => formatLocaleNumber(language, v, { maxFrac, grouping: maxFrac === 0 });
   const pct = new Intl.NumberFormat(language, { maximumFractionDigits: 3, signDisplay: 'exceptZero' }).format(report.volumeChangePct);
   const warnings = report.warnings;
@@ -40,6 +40,11 @@ export const SimplifyReportView: React.FC<{ report: SimplifyReport; language: La
             <li key={code} data-code={code}>{simplifyWarningSentence(language, report, code)}</li>
           ))}
         </ul>
+      )}
+      {onUndo && (
+        <button type="button" className="kura-btn kura-btn-sm" data-testid="simplify-report-undo" title={t(language, 'toast.undo')} onClick={onUndo}>
+          {t(language, 'toast.undo')}
+        </button>
       )}
     </div>
   );

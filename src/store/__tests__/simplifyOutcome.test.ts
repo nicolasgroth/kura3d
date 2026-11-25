@@ -65,6 +65,17 @@ describe('simplificar: aviso veraz', () => {
     );
   });
 
+  it('el aviso de resultado trae «Deshacer» persistente (no caduca solo) y lo deshace', async () => {
+    const sphere = await store().createPrimitive('sphere', { radius: 10, segments: 48 });
+    setStoreEngineClient(clientWithTriangles((b) => b - 2));
+    const count = store().toasts.length;
+    expect(await store().simplifySelectedMesh(sphere!.id, 0.3)).toBe(true);
+    const withUndo = store().toasts.slice(count).filter((x) => x.action?.label === t(store().language, 'toast.undo'));
+    expect(withUndo).toHaveLength(1);
+    expect(withUndo[0].action!.transient).toBe(false);
+    expect(withUndo[0].action!.applicable?.()).toBe(true);
+  });
+
   it('sin reducción: no cambia la malla ni avisa éxito', async () => {
     const sphere = await store().createPrimitive('sphere', { radius: 10, segments: 48 });
     setStoreEngineClient(clientWithTriangles((b) => b));
