@@ -188,6 +188,11 @@ export const HelpTooltipLayer: React.FC = () => {
     if (shown.el.closest('.kura-tool-rail')) {
       left = r.right + 8;
       top = r.top + r.height / 2 - h / 2;
+    } else if (shown.el.closest('.kura-orient-lists')) {
+      // Lista de orientaciones: el tooltip va fuera de la lista (al costado con mas espacio), nunca sobre las tarjetas.
+      const lr = (shown.el.closest('.kura-orient-lists') as HTMLElement).getBoundingClientRect();
+      left = lr.left - w - 8 >= 4 ? lr.left - w - 8 : lr.right + 8;
+      top = r.top;
     } else if (shown.el.closest('.kura-statusbar')) {
       left = r.left;
       top = r.top - h - 8;

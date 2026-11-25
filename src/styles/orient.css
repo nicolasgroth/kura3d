@@ -137,14 +137,49 @@
   border-color: var(--accent-cyan);
 }
 
+/* Un solo resaltado fuerte (la opcion elegida: relleno y borde de 2 px); el foco del teclado es sutil: contorno fino. */
 .kura-orient-option:focus-visible {
+  outline: 1px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+.kura-orient-option.is-selected {
+  box-shadow: inset 0 0 0 2px var(--accent-cyan);
+  background: color-mix(in srgb, var(--accent-cyan) 14%, var(--bg-elevated));
+}
+
+.kura-orient-option.is-selected:focus-visible {
+  outline-width: 2px;
+}
+
+.kura-orient-lists {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Grupo plegado de las orientaciones sin base de apoyo: aparte de las validas y al final. */
+.kura-orient-nobase {
+  border: 1px dashed var(--accent-amber);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px 8px;
+}
+
+.kura-orient-nobase > summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 0;
+}
+
+.kura-orient-nobase > summary:focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
 
-.kura-orient-option.is-selected {
-  box-shadow: inset 0 0 0 1px var(--accent-cyan);
-  background: color-mix(in srgb, var(--accent-cyan) 10%, var(--bg-elevated));
+.kura-orient-nobase > .kura-orient-hint {
+  display: block;
+  margin: 0 0 6px;
 }
 
 .kura-orient-option.is-recommended {
