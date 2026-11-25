@@ -19,7 +19,8 @@ const invalid = (param: string, expected: string) =>
 
 /**
  * Sin `mode`: «target» si llega `targetTriangles` o `targetPercent`, si no «tolerance» (compatibilidad). En
- * «target» va exactamente uno de los dos objetivos.
+ * «target» va exactamente uno de los dos objetivos. Un parámetro que no corresponde al modo (`toleranceMm` en
+ * «lossless» o «target»; un objetivo en «lossless» o «tolerance») es `invalid-params`: no se ignora en silencio.
  */
 export function parseSimplifyRequest(p: RawParams): SimplifyRequest {
   const targetTriangles = readRange(p, OR.simplify.targetTriangles, 'targetTriangles');
@@ -27,6 +28,10 @@ export function parseSimplifyRequest(p: RawParams): SimplifyRequest {
   const toleranceMm = readRange(p, OR.simplify.toleranceMm, 'toleranceMm');
   const hasTarget = targetTriangles !== undefined || targetPercent !== undefined;
   const mode = readEnum(p, SIMPLIFY_MODES, 'mode') ?? (hasTarget ? 'target' : 'tolerance');
+  const notFor = (param: string) => invalid(param, `not used by mode "${mode}"`);
+  if (mode !== 'target' && targetTriangles !== undefined) throw notFor('targetTriangles');
+  if (mode !== 'target' && targetPercent !== undefined) throw notFor('targetPercent');
+  if (mode !== 'tolerance' && toleranceMm !== undefined) throw notFor('toleranceMm');
   if (mode === 'lossless') return { mode };
   if (mode === 'tolerance') return { mode, toleranceMm: toleranceMm ?? OPERATION_DEFAULTS.simplify.toleranceMm };
   if (targetTriangles !== undefined && targetPercent !== undefined) {

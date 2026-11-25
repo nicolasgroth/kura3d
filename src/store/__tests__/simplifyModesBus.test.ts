@@ -42,6 +42,20 @@ describe('simplify_mesh con modos', () => {
     }
   });
 
+  it('parámetros que no corresponden al modo: invalid-params (no se ignoran en silencio)', () => {
+    for (const params of [
+      { mode: 'lossless', toleranceMm: 0.5 },
+      { mode: 'lossless', targetPercent: 30 },
+      { mode: 'tolerance', targetTriangles: 100 },
+      { mode: 'tolerance', targetPercent: 30 },
+      { mode: 'target', targetPercent: 30, toleranceMm: 0.5 },
+      { targetTriangles: 100, toleranceMm: 0.5 },
+    ]) {
+      expect(() => parseSimplifyRequest(params), JSON.stringify(params)).toThrow(expect.objectContaining({ code: 'invalid-params' }));
+    }
+    expect(parseSimplifyRequest({ mode: 'tolerance', toleranceMm: 0.5 })).toEqual({ mode: 'tolerance', toleranceMm: 0.5 });
+  });
+
   it('«Sin pérdida» sobre un cubo sobre-teselado: un paso de deshacer e informe', async () => {
     const box = await store().createPrimitive('box', { width: 20, height: 20, depth: 20 });
     expect(await store().refineSelectedMesh(box!.id, 2)).toBe(true);

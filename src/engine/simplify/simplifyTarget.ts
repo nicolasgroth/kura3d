@@ -75,8 +75,15 @@ export function searchTargetTolerance(
     opts.onProgress?.(`simplify:${iterations + 1}/${L.targetMaxIterations}`);
     const m = original.simplify(tol);
     iterations++;
-    const ok = valid(m);
-    const c: Candidate = { m, tol, tris: ok ? m.numTri() : 0, genus: ok && guard ? guard.of(m) : NaN };
+    let ok: boolean, c: Candidate;
+    try {
+      ok = valid(m);
+      c = { m, tol, tris: ok ? m.numTri() : 0, genus: ok && guard ? guard.of(m) : NaN };
+    } catch (e) {
+      // Aún no es candidato (ni mejor ni conservado): nadie más lo libera.
+      m.delete();
+      throw e;
+    }
     if (ok && guard) {
       if (c.genus === guard.genus) keptTol = Math.max(keptTol, tol);
       else lostTol = Math.min(lostTol, tol);
