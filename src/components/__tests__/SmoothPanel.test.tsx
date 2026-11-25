@@ -19,7 +19,8 @@ import { ACTION_GROUPS, actionAvailability, actionHasPanel } from '../../store/a
 import { actionName } from '../../store/actionLabels';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { InspectorLocalState } from '../inspector/inspectorTypes';
-import { smoothProgressText } from '../inspector/SmoothStatus';
+import { SMOOTH_UI_DEFAULTS } from '../../store/smoothParams';
+import { smoothProgressText, SmoothStatus } from '../inspector/SmoothStatus';
 import { SmoothPanel } from '../inspector/SmoothPanel';
 import { panelContentOf } from '../contextPanel/panelRegistry';
 
@@ -156,6 +157,29 @@ describe('Suavizar en el menú de acciones', () => {
     expect(actionAvailability(slice([obj], []), 'smooth')).toEqual({ enabled: false, reason: 'rediseno.reason.noSelection' });
     expect(actionAvailability(slice([{ ...obj, locked: true }], ['sph']), 'smooth')).toEqual({ enabled: false, reason: 'rediseno.reason.locked' });
     expect(actionAvailability(slice([obj], ['sph']), 'smooth').enabled).toBe(true);
+  });
+});
+
+describe('SmoothStatus: puntos protegidos por daño', () => {
+  const baseReport = {
+    iterations: 4, requestedStrength: 0.5, appliedStrength: 0.5, movedVertices: 900, lockedVertices: 10, weldedVertices: 1200,
+    movableVertices: 1000, damageProtectedVertices: 0, strengthCoverage: 1, volumeBeforeMm3: 100, volumeAfterMm3: 99,
+    volumeChangePct: -1, maxDisplacementMm: 0.2, attempts: [],
+  };
+  const session = (report: typeof baseReport) => ({
+    objectId: 'sph', status: 'ready', phase: null, signature: 's', params: SMOOTH_UI_DEFAULTS, report, warnings: [], error: null, errorCode: null, comparing: false,
+  }) as never;
+
+  it('con vértices protegidos dice cuántos quedaron sin suavizar y el porcentaje suavizado', () => {
+    render(<SmoothStatus language="es" session={session({ ...baseReport, damageProtectedVertices: 120, strengthCoverage: 0.88 })} params={SMOOTH_UI_DEFAULTS} onFix={() => {}} />);
+    const line = screen.getByTestId('smooth-protected');
+    expect(line.textContent).toContain('120');
+    expect(line.textContent).toContain('88');
+  });
+
+  it('sin vértices protegidos no muestra la línea', () => {
+    render(<SmoothStatus language="es" session={session(baseReport)} params={SMOOTH_UI_DEFAULTS} onFix={() => {}} />);
+    expect(screen.queryByTestId('smooth-protected')).toBeNull();
   });
 });
 

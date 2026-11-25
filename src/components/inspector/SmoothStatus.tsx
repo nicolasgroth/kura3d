@@ -47,6 +47,7 @@ export const SmoothStatus: React.FC<SmoothStatusProps> = ({ language, session, p
         : t(language, session!.status === 'applied' ? 'smooth.status.applied' : 'smooth.status.ready', { pct: pct(report.volumeChangePct) });
   }
   const reduced = done && report && report.movedVertices > 0 && report.appliedStrength < report.requestedStrength;
+  const protectedCount = done && report ? report.damageProtectedVertices : 0;
   const bigVolume = done && report && Math.abs(report.volumeChangePct) > SMOOTH_DEFAULTS.volumeWarnPct;
   const suggest = done && session !== null && edgeProtectionBlocks(session.params, report);
 
@@ -60,6 +61,15 @@ export const SmoothStatus: React.FC<SmoothStatusProps> = ({ language, session, p
           {t(language, 'smooth.result.reduced', {
             requested: Math.round(report.requestedStrength * 100),
             applied: Math.round(report.appliedStrength * 100),
+          })}
+        </p>
+      )}
+      {protectedCount > 0 && report && (
+        <p className="kura-smooth-note" data-testid="smooth-protected">
+          {t(language, 'smooth.result.protectedVertices', {
+            count: formatLocaleNumber(language, protectedCount, { maxFrac: 0, grouping: true }),
+            total: formatLocaleNumber(language, report.movableVertices, { maxFrac: 0, grouping: true }),
+            pct: pct(report.strengthCoverage * 100),
           })}
         </p>
       )}
