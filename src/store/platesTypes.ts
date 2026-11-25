@@ -7,7 +7,7 @@
  * @license MIT
  */
 
-import type { PlateBed, ScenePlate } from '../types/plates';
+import type { PlateBed, SceneLayout, ScenePlate } from '../types/plates';
 
 export interface PlatesSliceState {
   /** Placas de la escena; vacío = una placa implícita en el origen (como siempre). Entra en el historial. */
@@ -30,4 +30,14 @@ export interface PlatesSliceState {
   assignToPlate: (plateId: string, ids?: string[]) => number;
   /** Fija la placa activa (sin paso de deshacer). false si la placa no existe. */
   setActivePlate: (plateId: string) => boolean;
+  /**
+   * Modo de vista de la escena: poses de impresión o de armado (`core/scene/layoutPoses.ts`). Entra en la
+   * instantánea del historial (cada paso recuerda su modo) y en el `.kura` v4; 'print' = el de siempre.
+   */
+  layout: SceneLayout;
+  /**
+   * Cambia de modo intercambiando pose viva y `restPose` de cada pieza. NO es un paso de deshacer. false si ya
+   * estaba en ese modo o la escena está ocupada (operación en curso o arrastre sin soltar).
+   */
+  setLayout: (to: SceneLayout) => boolean;
 }

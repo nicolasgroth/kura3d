@@ -18,6 +18,7 @@ import { FileSaveError, saveFileSet, type SaveSetEntry } from '../utils/platform
 import { tCount } from '../utils/plural';
 import { exportFileBase, sanitizeFileBase } from '../utils/exportNaming';
 import { selectExportTargets } from './exportTargets';
+import { printPosedObjects } from './sceneLayout';
 import { placeGroupInFreeSpot, type BedSize } from '../core/scene/freeSpot';
 import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
 import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } from './splitExport';
@@ -87,6 +88,8 @@ interface IoState {
   printerProfile: { bedWidthMm?: number };
   customBedDimensions?: { width: number } | null;
   projectName: string | null;
+  /** Modo de vista (ausente = imprimir): se exporta siempre desde las poses de impresión. */
+  layout?: import('../types/plates').SceneLayout;
   importPlacementMode: engine.ImportPlacementMode;
   addToast: (text: string, kind?: 'info' | 'success' | 'error', action?: import('./storeTypes').ToastAction) => void;
   requestCameraPreset: (preset: 'fit' | 'ensure', ids?: string[]) => void;
@@ -313,9 +316,10 @@ export function createModelIoActions(deps: ModelIoDeps) {
     );
   }
 
-  /** Objetos a exportar según el alcance (selector compartido con el Command Bus). */
+  /** Objetos a exportar según el alcance (selector compartido con el Command Bus), siempre en pose de impresión. */
   function exportTargets(scope: ExportScope): SceneObject[] {
-    const { objects, selectedIds } = get();
+    const { selectedIds } = get();
+    const objects = printPosedObjects(get());
     const { targets, skippedHoles, skippedReferences } = selectExportTargets(objects, selectedIds, scope === 'selection');
     if (targets.length > 0 && skippedHoles > 0) get().addToast(tCount(get().language, { one: 'export.holesSkipped.one', other: 'export.holesSkipped.other' }, skippedHoles), 'info');
     if (skippedReferences > 0) get().addToast(tCount(get().language, { one: 'reference.export.skipped.one', other: 'reference.export.skipped.other' }, skippedReferences), 'info');
@@ -364,7 +368,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
       const fullScene = request.format === '3mf' && request.scope === 'scene' && !splitMode;
       const { files } = await exportFiles({
         format: request.format,
-        targets: fullScene ? state.objects.filter((o) => !isReference(o)) : layoutTargets,
+        targets: fullScene ? printPosedObjects(state).filter((o) => !isReference(o)) : layoutTargets,
         baseName: base,
         unitSystem: state.unitSystem,
         ...(fullScene ? { sceneGroups: state.groups ?? [] } : {}),

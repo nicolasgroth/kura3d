@@ -31,3 +31,12 @@ export interface ScenePlate {
   /** «Repartir» no la toca (P5). */
   locked?: boolean;
 }
+
+/** Disposición de la escena: poses de impresión (sobre las placas) o de armado (la figura compuesta). */
+export type SceneLayout = 'print' | 'assembly';
+
+/** Pose guardada del modo que no está activo (ver `SceneObject.restPose`). */
+export interface RestPose {
+  position: [number, number, number];
+  rotation: [number, number, number];
+}

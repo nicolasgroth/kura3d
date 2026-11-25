@@ -4,7 +4,8 @@
  * Worker, cancelable y con progreso, sin tomar el bloqueo de escena (es de solo lectura); guarda el último
  * informe con las referencias de lo comprobado y el par resaltado. El informe se invalida solo cuando
  * cambia la malla, la transformación, el rol o la visibilidad de un objeto involucrado (o un negativo
- * visible aparece o se va): ver `invalidateFitCheckOnSceneChange`.
+ * visible aparece o se va): ver `invalidateFitCheckOnSceneChange`. Se comprueba siempre en pose de armado
+ * (`assemblyPosedObjects`), sea cual sea el modo de vista: cambiar de modo no invalida el informe.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -14,6 +15,7 @@ import { isEngineCancelled, type EngineJob } from '../../core/operations/engineC
 import { fitCheckInputRefs, fitCheckIsCurrent, fitCheckScope, type FitCheckInputRef } from '../../core/operations/fitCheckOperations';
 import type { EngineTaskResult } from '../../core/operations/engineTasks';
 import type { FitCheckOptions, FitCheckReport } from '../../engine/fitCheck';
+import { assemblyPosedObjects } from '../sceneLayout';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -53,7 +55,8 @@ export function createFitCheckSlice(ctx: StoreContext): Partial<KuraStoreState> 
     checkFit: async (request = {}) => {
       // Reemplazo por un análisis nuevo: suave.
       job?.cancel('soft');
-      const { objects, selectedIds } = get();
+      const { selectedIds } = get();
+      const objects = assemblyPosedObjects(get());
       const scope = fitCheckScope(objects, selectedIds, request.ids);
       const inputs = fitCheckInputRefs(scope, objects);
       set({ fitCheckRunning: { phase: null } });
@@ -68,7 +71,7 @@ export function createFitCheckSlice(ctx: StoreContext): Partial<KuraStoreState> 
         if (job !== current) return null;
         job = null;
         // Si la escena cambió mientras se calculaba, el informe ya no corresponde: no se guarda.
-        const valid = fitCheckIsCurrent(inputs, get().objects);
+        const valid = fitCheckIsCurrent(inputs, assemblyPosedObjects(get()));
         set({
           fitCheckRunning: null,
           ...(valid ? { fitCheck: { report, inputs }, fitCheckHighlight: null, fitCheckStale: false } : { fitCheckStale: true }),
@@ -107,6 +110,6 @@ export function invalidateFitCheckOnSceneChange(store: {
 }): () => void {
   return store.subscribe((state, prev) => {
     if (state.objects === prev.objects || !state.fitCheck) return;
-    if (!fitCheckIsCurrent(state.fitCheck.inputs, state.objects)) state.clearFitCheck('stale');
+    if (!fitCheckIsCurrent(state.fitCheck.inputs, assemblyPosedObjects(state))) state.clearFitCheck('stale');
   });
 }

@@ -13,6 +13,7 @@ import React, { useCallback, useMemo } from 'react';
 import { sameScrewBoss } from '../../core/addons/screwBoss';
 import { builtinScrewBossPresetsOf, formatMm, metricLabel } from '../../core/addons/screwBossPresets';
 import { t } from '../../i18n';
+import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { closeScrewBossPanel, setScrewBossParams, useScrewBossPanel, useScrewBossPresets } from '../../store/screwBossPanel';
 import { screwBossWarnings, screwBossWarningText } from '../../store/screwBossWarnings';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -54,7 +55,7 @@ export const ScrewBossPanel: React.FC = () => {
   const blocked = useScrewBossPanel((s) => s.blocked);
   const close = useCallback(() => closeScrewBossPanel(), []);
   const warnings = report ? screwBossWarnings(report, language) : [];
-  const fmt = (n: number) => n.toLocaleString(language, { maximumFractionDigits: 1 });
+  const fmt = (n: number) => formatLocaleNumber(language, n, { maxFrac: 1 });
 
   return (
     <>

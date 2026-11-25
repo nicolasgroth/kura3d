@@ -124,12 +124,12 @@ const MENU_IDEAS_TABLE = {
   ],
   'import.heavy.action': ['Simplificar…', 'Simplify…', 'Vereinfachen…', 'Simplifier…', 'सरल करें…', '简化…'],
   'toast.simplifyPanelOpened': [
-    'Elige la tolerancia y pulsa Simplificar',
-    'Choose the tolerance and press Simplify',
-    'Wähle die Toleranz und drücke Vereinfachen',
-    'Choisis la tolérance et appuie sur Simplifier',
-    'सहनशीलता चुनें और सरल करें दबाएँ',
-    '选择容差并点击简化',
+    'Elige el modo y pulsa Simplificar',
+    'Choose the mode and press Simplify',
+    'Wähle den Modus und drücke Vereinfachen',
+    'Choisis le mode et appuie sur Simplifier',
+    'मोड चुनें और सरल करें दबाएँ',
+    '选择模式并点击简化',
   ],
 } as const satisfies Record<string, Row>;
 

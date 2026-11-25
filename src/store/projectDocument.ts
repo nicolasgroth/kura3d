@@ -12,7 +12,8 @@ import { trimHistoryForFile } from '../project/historyBudget';
 import type { ProjectDocument } from '../project/projectSchema';
 import { makeId } from '../core/scene/sceneObjects';
 import type { SceneGroup, SceneObject, Vec3 } from '../types/kura';
-import type { ScenePlate } from '../types/plates';
+import type { SceneLayout, ScenePlate } from '../types/plates';
+import { DEFAULT_LAYOUT } from '../core/scene/layoutPoses';
 import { deltaSourceOf, isPaintDeltaStep, keepDeltaSource, materializeHistory, type HistoryStep } from './historySteps';
 import type { KuraStoreState, SceneSnapshot } from './storeTypes';
 
@@ -61,12 +62,13 @@ function fileHistory(past: HistoryStep[], future: HistoryStep[]) {
 export function captureProject(state: KuraStoreState): ProjectDocument {
   const trimmed = fileHistory(state.past, state.future);
   // Los deltas de pintura viajan al archivo como instantáneas completas.
-  const history = materializeHistory(state.objects, state.selectedIds, trimmed.past, trimmed.future, state.groups, state.plates);
+  const history = materializeHistory(state.objects, state.selectedIds, trimmed.past, trimmed.future, state.groups, state.plates, state.layout);
   return {
     objects: state.objects,
     selectedIds: liveSelection(state.objects, state.selectedIds),
     ...(state.groups.length ? { groups: state.groups } : {}),
     ...(state.plates.length ? { plates: state.plates } : {}),
+    ...(state.layout === 'assembly' ? { layout: state.layout } : {}),
     past: history.past.map(cleanSnapshotSelection),
     future: history.future.map(cleanSnapshotSelection),
     unitSystem: state.unitSystem,
@@ -85,7 +87,7 @@ export function hasProjectChanged(saved: ProjectDocument, state: KuraStoreState)
     saved.unitSystem !== state.unitSystem || saved.printerProfile !== state.printerProfile ||
     saved.customBedDimensions !== state.customBedDimensions || saved.sectionPlane !== state.sectionPlane ||
     saved.snapGridMm !== state.snapGridMm || !sameGroups(saved.groups, state.groups) ||
-    !sameList(saved.plates, state.plates);
+    !sameList(saved.plates, state.plates) || (saved.layout ?? DEFAULT_LAYOUT) !== state.layout;
 }
 
 /** Sin grupos (o placas) en ambos lados cuenta como igual (un proyecto sin ellos no los guarda). */
@@ -104,12 +106,15 @@ export function makeProjectDraftId(): string {
 }
 
 /** Clona un arreglo de objetos para instantáneas Undo/Redo compartiendo referencias inmutables de MeshData. */
-export function cloneSnapshot(objects: SceneObject[], selectedIds: string[], groups: SceneGroup[] = [], plates: ScenePlate[] = []): SceneSnapshot {
+export function cloneSnapshot(
+  objects: SceneObject[], selectedIds: string[], groups: SceneGroup[] = [], plates: ScenePlate[] = [], layout: SceneLayout = DEFAULT_LAYOUT,
+): SceneSnapshot {
   const copies = objects.map((obj) => ({
     ...obj,
     position: [...obj.position] as Vec3,
     rotation: [...obj.rotation] as Vec3,
     scale: [...obj.scale] as Vec3,
+    ...(obj.restPose ? { restPose: { position: [...obj.restPose.position] as Vec3, rotation: [...obj.restPose.rotation] as Vec3 } } : {}),
     hollow: obj.hollow ? { ...obj.hollow } : undefined,
     texture: obj.texture ? { ...obj.texture } : undefined,
     stats: {
@@ -124,5 +129,7 @@ export function cloneSnapshot(objects: SceneObject[], selectedIds: string[], gro
     objects: copies, selectedIds: [...selectedIds],
     ...(groups.length ? { groups } : {}),
     ...(plates.length ? { plates } : {}),
+    // Cada paso recuerda su modo de vista: deshacer vuelve a la escena en el modo en que se hizo.
+    ...(layout === 'assembly' ? { layout } : {}),
   };
 }
