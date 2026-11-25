@@ -12,6 +12,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { uvSphere } from '../../engine/__tests__/smoothFixtures';
+import { OPERATION_RANGES } from '../../engine/operationLimits';
 import type { SimplifyReport, SimplifyRequest } from '../../engine/simplify';
 import { buildSceneObject } from '../../core/scene/sceneObjects';
 import { t } from '../../i18n';
@@ -80,5 +81,20 @@ describe('Simplificar con modos (panel)', () => {
     expect(codes).toEqual(['genus_changed', 'volume_changed', 'deviation_high']);
     expect(report.textContent).toContain(t('es', 'simplify.warn.genus_changed', { before: 1, after: 0 }));
     expect(report.getAttribute('role')).toBe('status');
+  });
+
+  it('la tolerancia acepta en la interfaz el mismo rango que el motor y MCP (una sola fuente)', async () => {
+    await mount();
+    fireEvent.change(screen.getByLabelText(t('es', 'simplify.mode')), { target: { value: 'tolerance' } });
+    const field = screen.getByLabelText(t('es', 'inspector.pro.simplifyTol')) as HTMLInputElement;
+    const typeAndBlur = (text: string) => {
+      fireEvent.focus(field);
+      fireEvent.change(field, { target: { value: text } });
+      fireEvent.blur(field);
+    };
+    typeAndBlur('20');
+    expect(field.getAttribute('aria-invalid')).not.toBe('true');
+    typeAndBlur(String(OPERATION_RANGES.simplify.toleranceMm.max + 1));
+    expect(field.getAttribute('aria-invalid')).toBe('true');
   });
 });
