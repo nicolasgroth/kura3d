@@ -100,7 +100,8 @@ export type PaintBrushMode = 'brush' | 'smart_fill' | 'whole';
  * 'fit': selección o escena; 'scene': toda la escena (abrir/recuperar); 'ensure': mostrar `ids` solo
  * si no están a la vista; 'focus': encuadrar siempre `ids` desde una vista que otros objetos no tapen.
  */
-export type CameraPresetType = 'iso' | 'top' | 'bottom' | 'front' | 'back' | 'left' | 'right' | 'fit' | 'scene' | 'ensure' | 'focus';
+/** `plates`: encuadra las camas de placa visibles y sus piezas; `activePlate`: deja a la vista la cama activa si no lo está. */
+export type CameraPresetType = 'iso' | 'top' | 'bottom' | 'front' | 'back' | 'left' | 'right' | 'fit' | 'scene' | 'ensure' | 'focus' | 'plates' | 'activePlate';
 
 export interface ToastMessage {
   id: string;

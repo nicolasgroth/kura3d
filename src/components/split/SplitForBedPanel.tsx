@@ -15,6 +15,7 @@ import { AlertTriangle, Grid3x3, RotateCcw } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { activeBed, FALLBACK_CONNECTOR_SIZE_MM } from '../../store/splitCommandSchemas';
+import { findPlate, plateBed } from '../../core/scene/plates';
 import type { BedSplitPlanOptions, SplitAxis, SplitBed, SplitConnectorOptions } from '../../engine';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR, SPLIT_HARD_MAX_PIECES } from '../../engine/operationLimits';
 import { summarizeSplitPlan } from '../../core/scene/splitPlanSummary';
@@ -59,11 +60,12 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const failure = useOperationFailure(open);
   const uid = useId();
 
-  const defaultBed = useMemo<SplitBed>(
+  const plates = useKuraStore((s) => s.plates);
+  const projectDefaultBed = useMemo<SplitBed>(
     () => activeBed({ printerProfile, customBedDimensions: customBed }),
     [printerProfile, customBed],
   );
-  const [bed, setBed] = useState<SplitBed>(defaultBed);
+  const [bed, setBed] = useState<SplitBed>(projectDefaultBed);
   const [margin, setMargin] = useState<number>(D.marginMm);
   const [axes, setAxes] = useState<Record<SplitAxis, boolean>>({ x: true, y: true, z: true });
   const [allowRotation, setAllowRotation] = useState(true);
@@ -88,9 +90,15 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
 
   // Ligado al objeto con el que se abrió: clics en el visor no cambian el objetivo ni borran el plan.
   const { target, targetId, markConsumed } = useBoundOperationTarget(open, onClose);
+  // Cama por defecto: la de la placa de la pieza (la propia si la tiene); sin placa, la del proyecto.
+  const targetPlateRef = target?.plateRef;
+  const defaultBed = useMemo<SplitBed>(() => {
+    const b = plateBed(findPlate(plates, targetPlateRef), projectDefaultBed);
+    return { widthMm: b.widthMm, depthMm: b.depthMm, heightMm: b.heightMm };
+  }, [plates, targetPlateRef, projectDefaultBed]);
   const fmt = (n: number, digits = 1) => formatNumber(language, n, { maximumFractionDigits: digits });
 
-  // Al abrir, la cama activa; al cambiar de pieza, sin planos a mano.
+  // Al abrir, la cama de la placa de la pieza; al cambiar de pieza, sin planos a mano.
   useEffect(() => {
     if (open) setBed(defaultBed);
   }, [open, defaultBed]);

@@ -27,14 +27,19 @@ import type { SceneObject, Vec3 } from '../../types/kura';
 import type { RestPose, SceneLayout } from '../../types/plates';
 import { isNegative } from './objectRole';
 import { rigidFollowPatches } from './rigidFollow';
-import { splitTransformFor } from './splitGroups';
+import { originSplitFrame, splitTransformFor, type SplitFrames } from './splitGroups';
 
 /** Modo de una escena sin `layout` (todo proyecto anterior). */
 export const DEFAULT_LAYOUT: SceneLayout = 'print';
 
-/** Lo que la derivación necesita fuera de los objetos: la cama de las placas virtuales de Dividir. */
+/**
+ * Lo que la derivación necesita fuera de los objetos: la cama de las placas virtuales de Dividir y, si la escena tiene
+ * placas, el marco de cada pieza (placas virtuales ancladas a su placa real, `splitFrame.ts`). Sin `frames`, la
+ * cuadrícula de siempre desde el origen del mundo.
+ */
 export interface LayoutContext {
   bed: { widthMm: number; depthMm: number };
+  frames?: SplitFrames;
 }
 
 /** Parche de un cambio de modo: pose viva nueva y `restPose` nueva (`null` = se quita). */
@@ -65,7 +70,7 @@ const plainNegative = (o: SceneObject) => isNegative(o) && !!o.groupRef && !o.me
 function ownTarget(o: SceneObject, to: SceneLayout, ctx: LayoutContext): Pose {
   if (o.restPose) return copy(o.restPose);
   const split = o.metadata?.split;
-  if (split) return copy(splitTransformFor(split, to, ctx.bed.widthMm, ctx.bed.depthMm));
+  if (split) return copy(splitTransformFor(split, to, ctx.frames ? ctx.frames(o) : originSplitFrame(ctx.bed.widthMm, ctx.bed.depthMm)));
   return live(o);
 }
 

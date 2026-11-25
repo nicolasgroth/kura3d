@@ -9,12 +9,12 @@
  * @license MIT
  */
 
+import { splitFramesOf, splitPlateSourceOf } from '../../core/scene/splitFrame';
 import { arrangeSplitGroupPatches, splitGroupOf, type SplitArrangement } from '../../core/scene/splitGroups';
 import { change } from '../../core/operations/operationTypes';
 import type { BedSplitExecuteOptions, BedSplitPlan, BedSplitPlanOptions, SplitBed } from '../../engine';
 import { isEngineError } from '../../engine/engineErrors';
 import { localizeEngineErrorForUser } from '../userEngineMessages';
-import { activeBed } from '../splitCommandSchemas';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -128,8 +128,8 @@ export function createSplitSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const state = get();
       const group = splitGroupOf(state.objects, id);
       if (!group) return false;
-      const bed = activeBed(state);
-      const patches = arrangeSplitGroupPatches(group, mode, bed.widthMm, bed.depthMm);
+      // Cada pieza se dispone respecto de su placa real (sin placas: desde el origen, como siempre).
+      const patches = arrangeSplitGroupPatches(group, mode, splitFramesOf(splitPlateSourceOf(state)));
       // La vista explosionada se apaga: las piezas quedan donde dice la disposición.
       set({ splitExplode: null });
       if (patches.length === 0) return true;

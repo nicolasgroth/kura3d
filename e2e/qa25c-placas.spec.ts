@@ -396,12 +396,15 @@ test.describe('qa25c placas: hallazgos de QA (cosas que el desarrollo prometió 
     const o = await pos(page);
     expect(o.length).toBe(2);
     expect(o.every((x: any) => x.p2 && x.x > x.ox - 200 && x.x < x.ox + 200)).toBe(true);
+    // «Preparar para imprimir»: las partes se disponen desde la placa 2 (nunca sobre la placa 1) y siguen en la placa 2.
+    await st(page, (s) => s.arrangeSplitGroup(s.objects.find((x: any) => x.metadata?.split)!.id, 'print'));
+    const printed = await pos(page);
+    expect(printed.every((x: any) => x.p2 && x.x > x.ox - 128)).toBe(true);
     expect(errs).toEqual([]);
   });
 
-  // BUG (mayor): `create_primitive` por el bus/MCP sin `position` deja la pieza en el origen del mundo (placa 1) con
-  // `plateRef` = placa activa (2): la ficha dice «Fuera de volumen» para un cubo de 30 mm. La UI sí la pone sobre la placa.
-  test.fail('create_primitive por comando sin posición, con la placa 2 activa, cae sobre la placa 2', async ({ page }) => {
+  // Corregido (QA25-C fallo 1): `create_primitive` por el bus/MCP sin `position` cae sobre el origen de la placa activa.
+  test('create_primitive por comando sin posición, con la placa 2 activa, cae sobre la placa 2', async ({ page }) => {
     await abrir(page);
     await st(page, (s) => s.createPlate());
     await cmd(page, 'create_primitive', { type: 'box', width: 30, depth: 30, height: 30, name: 'ViaCmd' });
@@ -410,9 +413,8 @@ test.describe('qa25c placas: hallazgos de QA (cosas que el desarrollo prometió 
     expect(Math.abs(o.x - o.ox)).toBeLessThan(128);
   });
 
-  // BUG (mayor): «Distribuir en cama (Auto)» sin selección (o con piezas de varias placas) junta todas las piezas
-  // en la cama de la placa 1 y deja su `plateRef`: las piezas de la placa 2 quedan en otra cama distinta de la suya.
-  test.fail('Distribuir en cama (Auto) sin selección no saca las piezas de su placa', async ({ page }) => {
+  // Corregido (QA25-C fallo 2): «Distribuir en cama (Auto)» acomoda cada pieza en la cama de SU placa.
+  test('Distribuir en cama (Auto) sin selección no saca las piezas de su placa', async ({ page }) => {
     await abrir(page);
     await cmd(page, 'create_primitive', { type: 'box', width: 30, depth: 30, height: 30, name: 'P1a', position: [10, 0, 0] });
     await st(page, (s) => s.createPlate());

@@ -11,6 +11,7 @@ import { TRANSFORM_LIMITS } from '../engine/operationLimits';
 import { EDGE_SCOPES, EDGE_STYLES, TEXT_ALIGN_OPTIONS } from '../engine/primitiveLimits';
 import { MAX_GROUP_NAME, MAX_GROUPS } from '../core/scene/groups';
 import { MAX_PLATE_NAME, MAX_PLATES, validPlateBed } from '../core/scene/plates';
+import { MAX_SPLIT_PLATES } from '../core/scene/splitGroups';
 import { REFERENCE_OPACITY } from '../core/scene/objectRole';
 import { sanitizeMagnetParams } from '../core/addons/magnetPocket';
 import { sanitizeScrewBossParams } from '../core/addons/screwBoss';
@@ -154,7 +155,8 @@ const splitNotes = shape({
 });
 const splitMetadata = shape({
   groupId: id, code: (v) => str(v) && v.length <= 16, cell: nat3, assembly: splitTransform,
-  print: shape({ position: vec3, rotation: vec3, plate: (v) => Number.isInteger(v) && (v as number) >= 0, downFace: face }),
+  // Índice de placa virtual acotado: un archivo no puede pedir recorrer millones de placas.
+  print: shape({ position: vec3, rotation: vec3, plate: (v) => Number.isInteger(v) && (v as number) >= 0 && (v as number) < MAX_SPLIT_PLATES, downFace: face }),
   jointLabels: (v) => Array.isArray(v) && v.length <= 4096 && v.every((l) => str(l) && l.length <= 16),
   jointPartners: optional((v) => Array.isArray(v) && v.length <= 4096
     && v.every(shape({ label: (l) => str(l) && l.length <= 16, code: (c) => str(c) && c.length <= 16 }))),

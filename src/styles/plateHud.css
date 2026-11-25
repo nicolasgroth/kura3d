@@ -1,0 +1,38 @@
+/**
+ * @file src/styles/plateHud.css
+ * @description Tarjeta «Cama» del HUD inferior con placas: el nombre de la impresora se abrevia con elipsis legible
+ * (nunca a una sola letra) y, en pantallas angostas con el aviso de fuera de volumen, se oculta antes que las
+ * medidas. El texto completo queda en el `title` de la insignia.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-bed-card .kura-bed-badge {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.kura-bed-card .kura-bed-name {
+  /* Al menos unas letras legibles antes de la elipsis; nunca «E.». */
+  min-width: 7ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-bed-card .kura-bed-dims {
+  flex-shrink: 0;
+  white-space: pre;
+}
+
+/* Con el aviso de fuera de volumen no hay sitio para el nombre a 1024–1279 px: quedan las medidas. */
+@media (max-width: 1279px) {
+  .kura-bed-card[data-oob] .kura-bed-name {
+    display: none;
+  }
+
+  .kura-bed-card[data-oob] .kura-bed-dims {
+    white-space: nowrap;
+  }
+}

@@ -12,8 +12,7 @@
 import React, { useMemo } from 'react';
 import { Line } from '@react-three/drei';
 import { groupJointRecords } from '../../core/scene/splitJointStatus';
-import { explodedSplitPositions, splitArrangementOf, splitGroupOf } from '../../core/scene/splitGroups';
-import { activeBed } from '../../store/splitCommandSchemas';
+import { explodedSplitPositions, splitGroupOf, splitIsAssembled } from '../../core/scene/splitGroups';
 import { useKuraStore } from '../../store/useKuraStore';
 import { computeWorldBounds } from '../viewport/viewportHelpers';
 import { useResolvedDarkScheme } from '../dialogs/useResolvedDarkScheme';
@@ -46,8 +45,6 @@ export const SplitJointHighlight: React.FC = () => {
   const focus = useKuraStore((s) => s.splitJointFocus);
   const objects = useKuraStore((s) => s.objects);
   const explode = useKuraStore((s) => s.splitExplode);
-  const printerProfile = useKuraStore((s) => s.printerProfile);
-  const customBed = useKuraStore((s) => s.customBedDimensions);
   const colorScheme = useKuraStore((s) => s.colorScheme);
   const dark = useResolvedDarkScheme(colorScheme);
   const tint = dark ? TINT_DARK : TINT_LIGHT;
@@ -72,10 +69,10 @@ export const SplitJointHighlight: React.FC = () => {
           center: [(b.minX + b.maxX) / 2 + dx, (b.minY + b.maxY) / 2 + dy, (b.minZ + b.maxZ) / 2 + dz] as [number, number, number],
         };
       });
-    const bed = activeBed({ printerProfile, customBedDimensions: customBed });
-    const showCenters = factor === 0 && splitArrangementOf(group, bed.widthMm) === 'assembly';
+    // Armado no depende de la cama ni de la placa: es la pose de `metadata.split.assembly`.
+    const showCenters = factor === 0 && splitIsAssembled(group);
     return { boxes, centers: showCenters ? record.connectorCenters : [], radius: Math.max(1, record.connector?.size ?? 2) };
-  }, [focus, objects, explode, printerProfile, customBed]);
+  }, [focus, objects, explode]);
 
   const edges = useMemo(() => (data ? data.boxes.map((b) => ({ ...b, points: boxEdgePoints(b.size) })) : []), [data]);
 

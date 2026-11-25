@@ -10,6 +10,8 @@
  */
 
 import { plateBed } from '../../core/scene/plates';
+import { splitFrameFor } from '../../core/scene/splitFrame';
+import type { SplitFrame, SplitFrames } from '../../core/scene/splitGroups';
 import type { PrinterProfile, SceneObject } from '../../types/kura';
 import type { ScenePlate } from '../../types/plates';
 import { bedStatusOf, type BedStatus } from '../split/splitAssembledStatus';
@@ -37,13 +39,25 @@ function localTo(plate: ScenePlate, objects: readonly SceneObject[]): SceneObjec
   return objects.filter((o) => o.plateRef === plate.id).map((o) => (ox === 0 && oz === 0 ? o : { ...o, position: [o.position[0] - ox, o.position[1], o.position[2] - oz] as SceneObject['position'] }));
 }
 
+/**
+ * Placas virtuales de Dividir de las piezas de `plate`, vistas desde su origen (como `localTo`): ancladas a esa placa y
+ * sin pisar las demás (`splitFrame.ts`).
+ */
+function localFrames(plate: ScenePlate, profile: PrinterProfile, plates: readonly ScenePlate[]): SplitFrames {
+  const projectBed = { widthMm: profile.bedWidthMm, depthMm: profile.bedDepthMm, heightMm: profile.maxHeightMm };
+  const world = splitFrameFor(plate, { plates, projectBed });
+  const [ox, oz] = plate.origin;
+  const local: SplitFrame = { ...world, center: (k) => { const [x, z] = world.center(k); return [x - ox, z - oz]; } };
+  return () => local;
+}
+
 /** Estado de cada placa, en el orden de `plates`. */
 export function platesBedStatus(objects: readonly SceneObject[], profile: PrinterProfile, plates: readonly ScenePlate[]): PlateStatusEntry[] {
   return plates.map((plate) => {
     const own = localTo(plate, objects);
     const count = own.length;
     if (count === 0) return { plateId: plate.id, status: 'empty', count };
-    return { plateId: plate.id, status: bedStatusOf(own, plateProfile(profile, plate)), count };
+    return { plateId: plate.id, status: bedStatusOf(own, plateProfile(profile, plate), localFrames(plate, profile, plates)), count };
   });
 }
 
@@ -52,7 +66,8 @@ export function outOfBoundsIds(objects: readonly SceneObject[], profile: Printer
   const out: string[] = [];
   for (const plate of plates) {
     const local = plateProfile(profile, plate);
-    for (const o of localTo(plate, objects)) if (isPrintable(o) && o.visible && checkObjectsOutOfBounds([o], local)) out.push(o.id);
+    const frames = localFrames(plate, profile, plates);
+    for (const o of localTo(plate, objects)) if (isPrintable(o) && o.visible && checkObjectsOutOfBounds([o], local, frames)) out.push(o.id);
   }
   return out;
 }

@@ -1,7 +1,8 @@
 /**
  * @file src/components/__tests__/SplitFitNotice.test.tsx
  * @description El aviso «No cabe en la cama» muestra el tamaño en los ejes del usuario
- * (X × Y × Z, con Z = altura), no en los ejes internos del motor (Y arriba).
+ * (X × Y × Z, con Z = altura), no en los ejes internos del motor (Y arriba), y mide contra la cama de la placa
+ * de la pieza.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -29,6 +30,7 @@ beforeEach(() => {
     printerProfile: { ...DEFAULT_PRINTER_PROFILES[0], bedWidthMm: 200, bedDepthMm: 200, maxHeightMm: 200 },
     activeDialog: null,
     busyOperation: null,
+    plates: [],
   } as never);
 });
 
@@ -40,5 +42,31 @@ describe('SplitFitNotice', () => {
     const text = screen.getByRole('status').textContent ?? '';
     expect(text).toContain('28 × 30 × 600');
     expect(text).not.toContain('28 × 600 × 30');
+  });
+
+  it('con varias placas nombra la placa de la pieza; con una sola, el texto de siempre', () => {
+    const plates = [{ id: 'p1', name: 'Placa 1', origin: [0, 0] }, { id: 'p2', name: 'Cabeza', origin: [520, 0] }];
+    // Interno: X=500, Y(altura)=30, Z(fondo)=40 → usuario 500 × 40 × 30.
+    useKuraStore.setState({ objects: [{ ...box(500, 30, 40), plateRef: 'p2' }], selectedIds: ['t'], plates } as never);
+    const { unmount } = render(<SplitFitNotice />);
+    expect(screen.getByRole('status').textContent).toContain('No cabe en la cama de «Cabeza» (500 × 40 × 30 mm).');
+    unmount();
+    useKuraStore.setState({ plates: [plates[0]] } as never);
+    render(<SplitFitNotice />);
+    expect(screen.getByRole('status').textContent).toContain('No cabe en la cama (500 × 40 × 30 mm).');
+  });
+
+  it('mide contra la cama de la placa de la pieza, no contra la del proyecto', () => {
+    const small = { name: 'Chica', widthMm: 100, depthMm: 100, heightMm: 100 };
+    const plates = [{ id: 'p1', name: 'Placa 1', origin: [0, 0] }, { id: 'p2', name: 'Chica', origin: [260, 0], bed: small }];
+    // 150 mm de ancho: cabe en la cama del proyecto (200) pero no en la de su placa (100).
+    useKuraStore.setState({ objects: [{ ...box(150, 30, 40), plateRef: 'p2' }], selectedIds: ['t'], plates } as never);
+    const { unmount } = render(<SplitFitNotice />);
+    expect(screen.getByRole('status').textContent).toContain('«Chica»');
+    unmount();
+    // En la placa 1 (cama del proyecto) cabe: sin aviso.
+    useKuraStore.setState({ objects: [{ ...box(150, 30, 40), plateRef: 'p1' }] } as never);
+    render(<SplitFitNotice />);
+    expect(screen.queryByRole('status')).toBeNull();
   });
 });

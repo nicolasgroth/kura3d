@@ -93,7 +93,7 @@ export function nextPlateName(plates: readonly ScenePlate[], nameFor: (n: number
 }
 
 /** true si las camas de dos placas quedan separadas por al menos `gap` en algún eje. */
-function separated(ax: number, az: number, a: ProjectBed, bx: number, bz: number, b: ProjectBed, gap: number): boolean {
+export function bedsSeparated(ax: number, az: number, a: ProjectBed, bx: number, bz: number, b: ProjectBed, gap: number): boolean {
   const eps = 1e-6;
   return Math.abs(ax - bx) - (a.widthMm + b.widthMm) / 2 >= gap - eps || Math.abs(az - bz) - (a.depthMm + b.depthMm) / 2 >= gap - eps;
 }
@@ -113,7 +113,7 @@ export function nextPlateOrigin(plates: readonly ScenePlate[], projectBed: Proje
     const x = (k % PLATE_COLUMNS) * pitchX;
     const row = Math.floor(k / PLATE_COLUMNS);
     const z = row === 0 ? 0 : -row * pitchZ; // sin −0 (se guarda y compara)
-    if (plates.every((p, i) => separated(x, z, fresh, p.origin[0], p.origin[1], beds[i], gap))) {
+    if (plates.every((p, i) => bedsSeparated(x, z, fresh, p.origin[0], p.origin[1], beds[i], gap))) {
       const reach = Math.max(Math.abs(x) + fresh.widthMm / 2, Math.abs(z) + fresh.depthMm / 2);
       return reach <= TRANSFORM_LIMITS.maxAbsCoordinate ? [x, z] : null;
     }

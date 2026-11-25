@@ -29,6 +29,7 @@ import {
 import { measureViewportInsets } from './viewportInsets';
 import { clipPlanesFor, isViewPreset, minFrameDistance, VIEW_PRESET_DIRS } from '../../core/scene/viewPresets';
 import { explodedSplitPositions, splitGroupOf } from '../../core/scene/splitGroups';
+import { plateBedsBox, unionBox } from '../../core/scene/plateView';
 import type { SceneObject } from '../../types/kura';
 
 const ISO_DIR: Vec3 = VIEW_PRESET_DIRS.iso;
@@ -191,6 +192,15 @@ export const CameraController: React.FC<{
         .map((o) => boxForObjects([o]))
         .filter((b): b is FrameBox => b !== null);
       frameBox(box, 'focus', blockers);
+      return;
+    }
+
+    // Placas: crear una deja a la vista todas las camas (con sus piezas); activar una fuera del encuadre la trae.
+    if (preset === 'plates' || preset === 'activePlate') {
+      const state = useKuraStore.getState();
+      const beds = plateBedsBox(state, preset === 'plates' ? 'visible' : 'active');
+      const box = preset === 'plates' ? unionBox(beds, boxForObjects(cur.filter((o) => o.visible !== false))) : beds;
+      if (box) frameBox(box, preset === 'plates' ? 'fit' : 'ensure');
       return;
     }
 
