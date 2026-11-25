@@ -24,7 +24,12 @@ Resuelto lo principal el 25-nov (la vista armada edita; 3MF con todas las placas
 Resuelto el 25-nov: primero menos triángulos; reconocer formas exactas queda para después. Con la medición, el lote propuesto es: modo «sin pérdida» verificado, valor por defecto más fino y un objetivo por cantidad («dejar en N triángulos» o «a la mitad») con aviso de cuánto se desvía la forma. Una duda: ¿quieres además que la app **ofrezca simplificar al importar** un modelo muy pesado (por ejemplo sobre 1 millón de triángulos)? Recomendación: sí, como sugerencia que se puede ignorar.
 
 ### 5. Frase de «Acerca de»
-Quedó puesta una de tres; las otras dos están en `.eval-tmp/RETOMAR.md`. Elige la que prefieras o dicta la tuya.
+Quedó puesta la primera; elige la que prefieras o dicta la tuya.
+1. «Modelar es imaginar juntos: Kurra3D Studio existe para que cualquiera pueda dar forma a una idea y compartirla, porque el mundo se construye mejor entre todos.»
+2. «Cada pieza empieza como una idea; Kurra3D Studio existe para que darle forma y compartirla esté al alcance de todos, porque un mundo mejor se modela entre muchas manos.»
+3. «Un mundo donde todos podemos trabajar juntos también se modela: Kurra3D Studio es un lugar para imaginar, crear y compartir, pieza a pieza.»
+
+El mensaje del huevo de pascua (10 clics en el logo) es «Piedra a piedra se levanta un mundo.»
 
 ### 6. Tiempos de lo pendiente
 Estimación por tarea en `docs/ESTIMACION.md`, para revisarla juntos.
