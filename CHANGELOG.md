@@ -10,6 +10,12 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Barra flotante.** Al seleccionar un objeto aparece junto a él una barra con color, duplicar, ocultar, bloquear, eliminar y «Más»; sigue al objeto, se oculta al arrastrar y se puede apagar en Ajustes. Cambiar el color o bloquear varios objetos deja un solo paso de deshacer.
+- **Colgar en el muro y paso de cable.** Dos agregados nuevos en Insertar: un ojo de cerradura para colgar la pieza de un tornillo y un agujero pasante para cables (redondo u ovalado), con preajustes y avisos. Medidas típicas por verificar.
+- **Acerca de.** Qué es el programa, cómo se construyó, licencia y bibliotecas; con una sorpresa al hacer 10 clics en el logo.
+- **Suavizar, Orientar, imanes como unión del corte y torreta para tornillo** ya tienen interfaz (antes solo motor).
+- **Servidor MCP.** Cinco herramientas nuevas (suavizar, analizar y aplicar orientación, alojamiento de imán, torreta): 54 en total.
+- **Orientar.** El motivo «más baja» ya no muestra un porcentaje con signo negativo.
 - **Alojamiento de imán.** Clic sobre una cara y queda el hueco como pieza negativa, perpendicular a la cara, también en superficies curvas. Redondo de 5 × 2 mm por defecto o cuadrado, holgura ajustable, preajustes propios, modo oculto, y avisos de pared, borde, huecos vecinos y curva. El imán conserva su medida y sigue a la pieza al moverla, girarla o escalarla.
 - **Asistentes: vista previa y edición.** Mientras llenas el formulario se ve en el visor lo que se va a crear, y «Editar con el asistente» reabre una pieza creada con sus parámetros.
 - **Pantalla mínima de 1024 px.** El teléfono deja de ser un tamaño soportado.

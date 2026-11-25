@@ -675,3 +675,29 @@ Reúne el alojamiento de imán (usabilidad 84 aceptada de forma temporal por el 
 - **Asistentes:** vista previa en el visor con espera y cancelación, «Editar con el asistente» que reemplaza el juego en un paso. La procedencia en el `.kura` gana campos opcionales (`run`, `name`, `meshFingerprint`).
 
 Consumo (modelo · duración · tokens): imán defectos finales (Sonnet · 12 min · 171 k), imán modelos reales (Opus · 23 min · 170 k), uniones firmes (Opus · 25 min · 220 k), orientar (Opus · 26 min · 231 k), suavizar (Opus · 33 min · 215 k), usabilidad pendientes (Sonnet · ~45 min con un corte por límite de uso · 257 k), vista previa de Asistentes (Sonnet · ~45 min con un corte · 277 k), diseño de placas (Opus · 4 min · 133 k), investigación de formas simples (Opus · 6 min · 136 k), tres evaluadores de la tercera ronda del imán (Opus · ~16 min · ~440 k).
+
+## 25-nov-2026 · Integración de la noche (`integracion/25-nov`)
+
+La sesión se cortó a las 00:25 y se retomó a las 06:15: las revisiones programadas no la reanudaron. Lo integrado: barra flotante, «Acerca de», herramientas MCP nuevas, medición de Simplificar, ojo de cerradura y paso de cable.
+
+**Evaluación de código a ciegas** (Opus, solo lectura, 207 pruebas puntuales corridas, sin bloqueos duros):
+
+| Funcionalidad | Nota | Lo que más resta |
+|---|---|---|
+| «Acerca de» | 92 | Texto repetido en el botón; contador de clics en variables de módulo |
+| Suavizar malla | 89 | Zona por color sin color suaviza todo sin avisar; ángulo de arista con escala no uniforme |
+| Imanes como unión del corte | 87 | Reglas «por verificar»; la rama de imanes salta dos comprobaciones de `splitJoints` |
+| Orientar para imprimir | 86 | Capas invertidas (corregido después); seguimiento rígido no comprueba la escala |
+| Torreta para tornillo | 85 | Al unir el poste se pierden atributos de la pieza; choque a fuerza bruta |
+| Herramientas MCP nuevas | 85 | Orquestación duplicada entre el modo sin interfaz y la app |
+| Barra flotante | 83 (bajo el mínimo) | Un paso de deshacer por cada evento del selector de color |
+
+Corregido tras la evaluación, sin reevaluar todavía: historial de la barra flotante (un paso por cambio), lectura del DOM por cuadro, ícono por campo propio, `reasonText` movido a `src/core/orient/` y el porcentaje con signo doble de Orientar.
+
+**Pendiente:** QA en navegador y evaluaciones de usabilidad y funcional de todo lo de esta integración; reevaluación de código de la barra flotante; evaluación de código de los dos agregados nuevos.
+
+**Pruebas:** ver el cierre del lote en el tablero. La suite completa de navegador se corrió sobre `integracion/24-nov-b` (402 de 404; la que falló era una prueba inestable de la paleta, corregida); sobre la integración final solo se repitieron los recorridos tocados.
+
+**Aprendizaje de proceso:** no se puede servir la app desde un worktree cuyo `node_modules` es un enlace: Vite responde 403 al motor WASM y la app no carga. Para pruebas de navegador se sirve desde el directorio principal.
+
+Consumo (modelo · duración · tokens): medición de Simplificar (Opus · 25 min · 186 k), herramientas MCP (Opus · 33 min · 356 k), agregados (Opus · ~45 min con un corte · 356 k), evaluación de código (Opus · 12 min · 209 k), correcciones de la barra flotante (Sonnet · 26 min · 113 k). «Acerca de» y barra flotante se entregaron antes del corte; su consumo no quedó registrado.

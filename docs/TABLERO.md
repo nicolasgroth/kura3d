@@ -1,6 +1,6 @@
 # Tablero de Kura3D
 
-Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 24 de noviembre de 2026 a las 04:40: quinta evaluación de usabilidad, 80 (mínimo 85), sin bloqueos; el rediseño subió importar, cortar y dividir, y lo que más resta es un «Todo encaja» engañoso en Comprobar encaje.
+Vista rápida de todas las funcionalidades y en qué etapa está cada una. Actualizado el 25 de noviembre de 2026 a las 07:10: integración de la noche (barra flotante, «Acerca de», colgar en el muro, paso de cable, herramientas MCP) con evaluación de código hecha; falta QA en navegador y evaluación de usabilidad y funcional.
 
 Etapas, en orden: **Idea** → **Planificada** → **En desarrollo** → **En QA** → **En evaluación** → **Lista**. Una funcionalidad queda **Lista** solo con QA aprobado y nota mínima de 85 en los tres evaluadores. El detalle de cada ticket está en [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md), las prioridades en [ROADMAP.md](ROADMAP.md), las notas en [EVALUACIONES.md](EVALUACIONES.md), las decisiones que esperan al autor en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md) y las ya tomadas en [DECISIONES.md](DECISIONES.md).
 
@@ -22,16 +22,14 @@ Estado de `main`: 2526 pruebas del frontend, 151 del servidor MCP y 37 de Rust e
 
 | Funcionalidad | Estado |
 |---|---|
-| «Acerca de»: cómo se construyó y para qué, autor, licencia y bibliotecas; huevo de pascua con 10 clics en el logo (pedido del autor) | En desarrollo desde el 24-nov (23:50), en paralelo |
-| Barra flotante de acciones junto al objeto seleccionado: color, duplicar, ocultar, bloquear, eliminar y más | En desarrollo desde el 24-nov (23:50), en paralelo |
-| Agregados: ojo de cerradura para colgar en el muro y paso de cable, sobre el patrón del imán y la torreta | En desarrollo desde el 24-nov (23:50), en paralelo |
-| Servidor MCP: herramientas para suavizar, orientar, alojamiento de imán y torreta, con paridad sin la app abierta | En desarrollo desde el 24-nov (23:50), en paralelo |
-| Medición con modelos reales: cuánto baja Simplificar y cuánto ganaría reconocer caras planas y figuras simples | En desarrollo desde el 24-nov (23:50), en paralelo |
-| README con todo lo que ya funciona y lo que falta; documento de estimación de tiempos de lo pendiente (pedidos del autor) | En desarrollo desde el 24-nov (23:50), en paralelo |
-| Orientar para imprimir, interfaz: lista de orientaciones con medidas y motivos, vista previa con las zonas en voladizo, aplicar | En desarrollo desde el 24-nov (21:45), en paralelo |
-| Suavizar malla, interfaz: intensidad, pasadas, conservar aristas, zona pintada, vista previa y aplicar | En desarrollo desde el 24-nov (21:45), en paralelo |
-| Imanes como unión del corte: tipo de unión nuevo en Dividir, con pares de alojamientos enfrentados y coaxiales (pedido del autor) | En desarrollo desde el 24-nov (21:45), en paralelo |
-| Torreta para tornillo: poste con agujero para tornillo directo o inserto roscado, con preajustes y avisos, sobre el patrón del imán | En desarrollo desde el 24-nov (21:45), en paralelo |
+| Suavizar malla, Orientar para imprimir, imanes como unión del corte, torreta para tornillo, vista previa de Asistentes | Integrado, código evaluado (85–89). Falta QA en navegador y evaluación de usabilidad y funcional |
+| Barra flotante junto al objeto seleccionado | Integrada; código 83 en la evaluación, corregido el historial de deshacer, falta reevaluar. Recorridos de navegador escritos y corridos |
+| «Acerca de» y huevo de pascua | Integrado, código 92. Falta QA y usabilidad; el autor debe elegir la frase (consulta 5) |
+| Agregados: colgar en el muro (ojo de cerradura) y paso de cable | Integrado con motor, interfaz, guía y recorridos de navegador en verde. Faltan capturas de las guías, QA y las tres evaluaciones |
+| Servidor MCP: 5 herramientas nuevas (54 en total) con paridad sin la app abierta | Integrado, código 85. Falta evaluación funcional |
+| Cambio de nombre visible a **Kurra3D Studio** (decisión del 25-nov) | Pendiente: cambio mecánico y regenerar todas las capturas |
+| Simplificar para equipos con poca memoria: modo sin pérdida verificado, valor por defecto más fino y objetivo por cantidad de triángulos | Planificado tras la medición del 25-nov (reemplaza a «figuras simples») |
+| Placas y vista armada | Diseño hecho y decisiones del autor tomadas el 25-nov; listo para partir por el lote P1 |
 | Asistentes: vista previa en el visor mientras se llena el formulario, y «Editar con el asistente» para reabrir una pieza creada con sus parámetros | Integrado en `integracion/24-nov` el 24-nov (21:00), con pruebas; suite de navegador en curso. Falta QA en navegador y evaluación |
 | Usabilidad, pendientes serios de la sexta evaluación: aviso que no se puede cerrar, botón Proyecto que borra la selección, falso «Justo» tras Dividir, historial descriptivo, unidades al importar algo diminuto, Agregar e Insertar con el mismo catálogo, filamentos con nombre repetido, avisos con jerga | Integrado en `integracion/24-nov` el 24-nov (21:00), con pruebas; suite de navegador en curso. Falta QA en navegador |
 | Diseño de placas, modo libre y vista armada (pedido del autor): modelo de datos, modos de vista y plan por lotes | Propuesta lista en `docs/diseno/PLACAS_Y_ARMADO.md`; espera las respuestas del autor |
