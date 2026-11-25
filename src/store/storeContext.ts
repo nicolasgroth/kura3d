@@ -333,7 +333,7 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
     const job = runtime.activeJob;
     if (!job) return false;
     runtime.activeJob = null;
-    job.cancel();
+    job.cancel('hard');
     return true;
   };
 
