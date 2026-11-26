@@ -62,7 +62,7 @@ export function firmnessFacts(input: FirmnessInput): FirmnessFact[] {
       case 'low-area': facts.push({ key: 'lowArea', params: { area: Math.round(s.areaRatio * 1000) / 10 } }); break;
       case 'shallow': facts.push({ key: 'shallow', params: { depth: Math.round(s.depthMm * 10) / 10 } }); break;
       case 'islands-uncovered':
-        facts.push({ key: 'islandsUncovered', params: { glued: s.islands - s.islandsCovered, total: s.islands } });
+        facts.push({ key: 'islandsUncovered', params: { glued: Math.max(0, s.islands - s.islandsCovered), total: s.islands } });
         break;
       case 'below-useful': facts.push({ key: 'belowUseful', params: { d: Math.round(2 * s.sizeMm * 10) / 10, min: MIN_USEFUL_DIAMETER_MM } }); break;
     }
@@ -76,6 +76,7 @@ export function firmnessFacts(input: FirmnessInput): FirmnessFact[] {
   for (const k of s.shrunk) {
     const r = (n: number) => Math.round(n * 10) / 10;
     if (k.reason === 'section-width') facts.push({ key: 'shrunkSize', params: { from: r(2 * k.fromMm), to: r(2 * k.toMm) } });
+    // Con `reason: 'count'`, `fromMm`/`toMm` son cantidades de conectores: el nombre viene del formato guardado.
     else if (k.reason === 'count') facts.push({ key: 'shrunkCount', params: { from: k.fromMm, to: k.toMm } });
     else facts.push({ key: 'shrunkDepth', params: { from: r(k.fromMm), to: r(k.toMm) } });
   }

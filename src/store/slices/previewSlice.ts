@@ -29,6 +29,12 @@ export interface PreviewGhost {
   rotation: Vec3;
   scale: Vec3;
   role: PreviewRole;
+  /**
+   * Cómo se dibuja. Sin valor: sólido con aristas vivas (EdgesGeometry, para mallas chicas). `solid`: solo sólido;
+   * `solidWire`: sólido y malla de triángulos (alambre). Ambos evitan el costoso cálculo de aristas vivas, pensados
+   * para mallas densas.
+   */
+  display?: 'solid' | 'solidWire';
 }
 
 /** Marcador o rótulo en el visor (posición de mundo). `labelKey` es una clave i18n. */

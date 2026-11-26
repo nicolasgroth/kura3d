@@ -16,6 +16,7 @@ import type { openProjectFile } from '../project/projectFiles';
 import type { RecoveryDraftInfo } from '../project/projectRecoveryStorage';
 import type { HistoryLimits } from '../project/historyBudget';
 import type { ProjectDocument, ProjectSceneSnapshot } from '../project/projectSchema';
+import type { ProjectInfo } from '../project/projectInfo';
 import type { HistoryStep } from './historySteps';
 import type { BrushView } from '../engine/paint/brushSelect';
 import type { QuickActionsSliceState } from './quickActionsTypes';
@@ -194,6 +195,16 @@ export interface KuraStoreState {
   projectRenamed: boolean;
   /** Cambia el nombre del proyecto (se usa al guardar); vacío no se acepta. Marca cambios sin guardar. */
   renameProject: (name: string) => boolean;
+  /**
+   * Datos del proyecto (descripción, notas, autor, fechas); `workSeconds` va aparte en `projectWorkSeconds` para que
+   * el reloj de trabajo no marque cambios. No entran al historial de deshacer (igual que el nombre del proyecto).
+   */
+  projectInfo: Omit<ProjectInfo, 'workSeconds'>;
+  projectWorkSeconds: number;
+  /** Edita descripción, notas o autor (texto plano, con sus topes); `true` si algo cambió. Marca cambios sin guardar. */
+  setProjectInfo: (patch: Partial<Pick<ProjectInfo, 'description' | 'notes' | 'author'>>) => boolean;
+  /** Suma segundos de trabajo (lo llama el reloj de `useWorkTimer`); no marca cambios sin guardar. */
+  addProjectWorkSeconds: (seconds: number) => void;
   savedProject: ProjectDocument | null;
   projectBusy: boolean;
   newProject: () => boolean;
@@ -209,6 +220,8 @@ export interface KuraStoreState {
   uiDensity: UiDensityMode;
   lastNonZenDensity: 'full' | 'compact';
   leftCollapsed: boolean;
+  /** La lista de escena se plegó sola porque un panel de operación necesita el ancho (no es una preferencia: no se guarda). */
+  leftAutoFolded: boolean;
   rightCollapsed: boolean;
 
   // Herramientas y viewport
@@ -436,7 +449,8 @@ export interface KuraStoreState {
     targetId?: string,
     toolId?: string | string[],
   ) => Promise<SceneObject | null>;
-  applyHolesOnSolids: () => Promise<void>;
+  /** true si las restas se aplicaron; false si no había alcance, contacto o el motor estaba ocupado. */
+  applyHolesOnSolids: () => Promise<boolean>;
   hollowObject: (id: string, options: HollowOptions) => Promise<boolean>;
   planeCutObject: (id: string, options: PlaneCutOptions) => Promise<SceneObject[]>;
   /**

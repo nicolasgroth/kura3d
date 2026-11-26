@@ -16,6 +16,7 @@ import { GROUPS_ZH } from './groups';
 import { PLATES_VIEW_ZH } from './placasVista';
 import { VIEW_MODE_ZH } from './vistaModos';
 import { PLATES_EXPORT_ZH } from './placasExportar';
+import { PLATES_BED_ZH } from './placasCama';
 import { PLATES_ARRANGE_ZH } from './placasRepartir';
 import { PLATES_ARRANGE_UI_ZH } from './placasRepartirUi';
 import { MEASURE_ZH } from './measure';
@@ -67,6 +68,7 @@ import { PANEL_ZH } from './panel';
 import { ENCAJE_UI_ZH } from './encajeUi';
 import { ORIENT_UI_ZH } from './orientar';
 import { REDISENO3A_ZH } from './rediseno3a';
+import { DATOS_PROYECTO_ZH } from './datosProyecto';
 import { REDISENO3B_ZH } from './rediseno3b';
 import { UX8_MENU_ZH } from './ux8Menu';
 import { IMANES_UNION_ZH } from './imanesUnion';
@@ -86,6 +88,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PLATES_VIEW_ZH,
   ...VIEW_MODE_ZH,
   ...PLATES_EXPORT_ZH,
+  ...PLATES_BED_ZH,
   ...PLATES_ARRANGE_ZH,
   ...PLATES_ARRANGE_UI_ZH,
   ...MEASURE_ZH,
@@ -134,6 +137,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PANEL_ZH,
   ...ENCAJE_UI_ZH,
   ...REDISENO3A_ZH,
+  ...DATOS_PROYECTO_ZH,
   ...REDISENO3B_ZH,
   ...UX8_MENU_ZH,
   ...TORRETA_ZH,
@@ -639,7 +643,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.svg.generate': '拉伸 SVG 为 3D',
 
   // Modal Imagen a 3D
-  'dialog.img.title': '图像 → 3D（浮雕、透光画、剪影与切模）',
+  'dialog.img.title': '图像转 3D',
   'dialog.img.upload': '选择图像 (PNG / JPG / WebP)',
   'dialog.img.useSample': '使用测试图案',
   'dialog.img.shapeMode': '3D 生成模式',
@@ -679,7 +683,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.cut.execute': '执行切割',
 
   // Modal Generador de Moldes y Contra-Moldes
-  'dialog.mold.title': '模具 / 硅胶 / 蜡烛生成器',
+  'dialog.mold.title': '模具 / 硅胶 / 蜡烛',
   'dialog.mold.mode': '模具架构',
   'dialog.mold.modeDirect1': '单件模具（直接型腔）',
   'dialog.mold.modeDirect2': '两半对开模 + 定位键',
@@ -695,7 +699,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.mold.execute': '生成 3D 模具',
 
   // Modal Proyección Conformal en Superficies
-  'dialog.project.title': '将文字或 SVG 投影到 3D 表面',
+  'dialog.project.title': '投影到 3D 表面',
   'dialog.project.kind': '图形来源',
   'dialog.project.kindText': '参数化文字',
   'dialog.project.kindSvg': '矢量 SVG 代码',
@@ -715,7 +719,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.project.execute': '投影到模型',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'ISO 公制螺纹生成器 (M3–M64)',
+  'dialog.thread.title': 'ISO 公制螺纹',
   'dialog.thread.preset': 'ISO 公制预设',
   'dialog.thread.kind': '螺纹零件类型',
   'dialog.thread.kindBolt': '螺栓（外螺纹）',

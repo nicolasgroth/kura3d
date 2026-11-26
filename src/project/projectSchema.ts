@@ -17,6 +17,7 @@ import { sanitizeMagnetParams } from '../core/addons/magnetPocket';
 import { sanitizeScrewBossParams } from '../core/addons/screwBoss';
 import { sanitizeKeyholeParams } from '../core/addons/keyhole';
 import { sanitizeCablePassParams } from '../core/addons/cablePass';
+import type { ProjectInfo } from './projectInfo';
 import { RECIPE_PROVENANCE_LIMITS } from '../types/recipeProvenance';
 import type { PlateBed, RestPose, SceneLayout, ScenePlate } from '../types/plates';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
@@ -42,6 +43,8 @@ export interface ProjectDocument extends ProjectSceneSnapshot {
   customBedDimensions: { width: number; depth: number; height: number } | null;
   sectionPlane: { enabled: boolean; heightMm: number };
   snapGridMm: number;
+  /** Datos del proyecto (descripción, notas, autor, fechas, tiempo de trabajo; versión 5). Ausente = sin datos. */
+  info?: ProjectInfo;
 }
 
 export class ProjectCodecError extends Error {
@@ -129,14 +132,27 @@ const splitConnector = shape({
 const splitJointMagnets = shape({
   magnet: splitMagnet, count: (v) => nat(v) && v > 0 && v <= 64, pocketDiameterMm: positive, pocketDepthMm: positive, polarity: oneOf('opposite'),
 });
-const splitJointStrength = shape({
+// Cantidades (conectores, islas) enteras y acotadas como `connectorCenters`; las cubiertas no superan las islas.
+const MAX_JOINT_COUNT = 4096;
+const jointCount = (v: unknown): v is number => nat(v) && v <= MAX_JOINT_COUNT;
+const shrunkEntry = shape({ reason: oneOf('section-width', 'count', 'depth'), fromMm: finite, toMm: finite });
+// Con `reason: 'count'` los campos `fromMm`/`toMm` guardan cantidades (nombre heredado del formato guardado): enteras.
+const shrunkRecord = (v: unknown) => {
+  if (!shrunkEntry(v)) return false;
+  const k = v as { reason: string; fromMm: number; toMm: number };
+  return k.reason !== 'count' || (jointCount(k.fromMm) && jointCount(k.toMm));
+};
+const splitJointStrengthShape = shape({
   level: oneOf('firm', 'fair', 'weak', 'glue'),
   reasons: (v) => Array.isArray(v) && v.length <= 8 && v.every((r) => oneOf('no-connector', 'single-connector', 'low-area', 'shallow', 'islands-uncovered', 'below-useful', 'single-magnet')(r)),
   basis: optional(oneOf('connector', 'magnet')),
-  count: nonnegative, sizeMm: nonnegative, depthMm: nonnegative, areaRatio: nonnegative, islands: nonnegative, islandsCovered: nonnegative,
-  shrunk: (v) => Array.isArray(v) && v.length <= 8 && v.every(shape({ reason: oneOf('section-width', 'count', 'depth'), fromMm: finite, toMm: finite })),
-  discarded: (v) => Array.isArray(v) && v.length <= 256 && v.every(shape({ island: nonnegative, reason: oneOf('section-narrow'), measuredMm: finite })),
+  count: jointCount, sizeMm: nonnegative, depthMm: nonnegative, areaRatio: nonnegative, islands: jointCount, islandsCovered: jointCount,
+  shrunk: (v) => Array.isArray(v) && v.length <= 8 && v.every(shrunkRecord),
+  discarded: (v) => Array.isArray(v) && v.length <= 256 && v.every(shape({ island: jointCount, reason: oneOf('section-narrow'), measuredMm: finite })),
 });
+export const validSplitJointStrength = (v: unknown): boolean =>
+  splitJointStrengthShape(v) && (v as { islandsCovered: number }).islandsCovered <= (v as { islands: number }).islands;
+const splitJointStrength = validSplitJointStrength;
 const splitJointRecord = shape({
   label: label16, axis: oneOf('x', 'y', 'z'), position: finite, a: label16, b: label16,
   kind: oneOf('connector', 'glue', 'lap', 'socket'), connector: (v) => v === null || splitConnector(v),
@@ -272,8 +288,11 @@ export const validStoredGroups = (v: unknown): v is SceneGroup[] =>
   v === undefined || (Array.isArray(v) && v.length <= MAX_GROUPS && v.every(validStoredGroup));
 
 /** Placa de impresión guardada (`ScenePlate`, versión 4); ids repetidos y referencias rotas se sanean aparte. */
+// Cama propia (P7): nombre visible no vacío (es lo que dice la ficha) e id de perfil corto; el perfil puede no existir
+// en este equipo y la cama se conserva con sus medidas.
 const plateBedShape = shape({
-  profileId: optional(id), name: (v) => typeof v === 'string' && v.length <= MAX_PLATE_NAME,
+  profileId: optional((v) => id(v) && v.length <= 64),
+  name: (v) => typeof v === 'string' && v.length <= MAX_PLATE_NAME && v.trim().length > 0,
   widthMm: finite, depthMm: finite, heightMm: finite, marginMm: numberOption,
 } satisfies Record<keyof PlateBed, Rule>);
 const plateOrigin = (v: unknown) => Array.isArray(v) && v.length === 2
@@ -292,7 +311,7 @@ export const validStoredPlates = (v: unknown): v is ScenePlate[] =>
 export const validStoredObject = shape({ ...metadataFields, mesh: nat }) as
   (v: unknown) => v is ObjectMetadata & { mesh: number };
 
-export type ProjectSettings = Omit<ProjectDocument, keyof ProjectSceneSnapshot | 'past' | 'future'>;
+export type ProjectSettings = Omit<ProjectDocument, keyof ProjectSceneSnapshot | 'past' | 'future' | 'info'>;
 const settingsFields = {
   unitSystem: oneOf('mm', 'cm', 'm', 'in', 'ft'),
   printerProfile: shape({

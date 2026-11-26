@@ -3,8 +3,8 @@
  * @description Contexto «Proyecto» del panel derecho (sin selección o desde el botón «Proyecto»): nombre editable
  * en línea, archivo, estado de guardado, cantidad de objetos, y cama activa y unidades editables ahí mismo con
  * su lápiz; debajo, las acciones de archivo (Nuevo, Abrir, Guardar, Guardar como, recientes), la leyenda de
- * filamentos y las operaciones de escena (acomodar en cuadrícula, aplicar restas). Solo muestra datos que el
- * proyecto ya tiene: no hay descripción ni fechas en el modelo de datos.
+ * filamentos y las operaciones de escena (acomodar en cuadrícula, aplicar restas). Tras las acciones de archivo va la sección
+ * «Datos del proyecto» (`ProjectInfoSection`: descripción, notas, autor y fechas).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -24,6 +24,7 @@ import { UNIT_OPTIONS } from '../settings/MeasuresFields';
 import type { UnitSystem } from '../../types/kura';
 import { InlineFactEditor } from './InlineFactEditor';
 import { ProjectFileActions } from './ProjectFileActions';
+import { ProjectInfoSection } from './ProjectInfoSection';
 import { ProjectNameField } from './ProjectNameField';
 
 export const ProjectSummary: React.FC = () => {
@@ -92,6 +93,8 @@ export const ProjectSummary: React.FC = () => {
       </section>
 
       <ProjectFileActions />
+
+      <ProjectInfoSection />
 
       <FilamentLegendCard />
 

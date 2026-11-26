@@ -97,6 +97,6 @@ export function readKuraScene(
     format: '3mf',
     parts,
     hasPlacement: true,
-    kuraScene: { groups: meta.groups },
+    kuraScene: { groups: meta.groups, ...(meta.plates?.length ? { plates: meta.plates } : {}) },
   };
 }

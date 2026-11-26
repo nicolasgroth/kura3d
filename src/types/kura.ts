@@ -1028,6 +1028,10 @@ export interface SplitJointRecordStrength {
   areaRatio: number;
   islands: number;
   islandsCovered: number;
+  /**
+   * Lo que el motor achicó. Con `reason: 'count'`, `fromMm`/`toMm` guardan CANTIDADES de conectores, no mm: el nombre
+   * se conserva porque es el del formato `.kura` guardado (renombrarlo rompería los archivos existentes).
+   */
   shrunk: Array<{ reason: 'section-width' | 'count' | 'depth'; fromMm: number; toMm: number }>;
   discarded: Array<{ island: number; reason: 'section-narrow'; measuredMm: number }>;
 }
@@ -1179,7 +1183,10 @@ export interface KuraCommandRequest {
     | 'set_active_plate'
     | 'move_to_plate'
     | 'spread_one_plate_per_object'
-    | 'set_layout';
+    | 'set_plate_bed'
+    | 'set_layout'
+    | 'get_project_info'
+    | 'set_project_info';
   params: Record<string, unknown>;
 }
 

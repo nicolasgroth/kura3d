@@ -16,12 +16,20 @@ import { normalizeFileName, openProjectFile, PROJECT_NAME_MAX, saveProjectFile, 
 import { moveRecoveryDraft } from '../../project/projectRecoveryStorage';
 import { loadRecoveryDocument } from '../../project/recoveryDraftStore';
 import type { ProjectDocument } from '../../project/projectSchema';
+import { cleanInfoText, compactInfo, infoNow, type ProjectInfo } from '../../project/projectInfo';
+import { revealProjectNotes } from '../../utils/projectNotesFocus';
 import { captureProject, hasProjectChanged, makeProjectDraftId } from '../projectDocument';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
 /** Evita doble inicialización concurrente del módulo WASM en React StrictMode. */
 let engineInitPromise: Promise<void> | null = null;
+
+/** Datos del proyecto que viven en el store (el tiempo de trabajo va aparte para no marcar cambios). */
+const storedInfo = (info: ProjectInfo | undefined): Omit<ProjectInfo, 'workSeconds'> => {
+  const { workSeconds: _work, ...rest } = info ?? {};
+  return rest;
+};
 
 export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, projectErrorMessage } = ctx;
@@ -50,6 +58,9 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
       groupContextId: null,
       temporarySectionView: null,
       projectName: name,
+      // Abrir no cambia fechas: un archivo sin fecha queda sin ella (no se inventa).
+      projectInfo: storedInfo(document.info),
+      projectWorkSeconds: document.info?.workSeconds ?? 0,
       projectLocation: location,
       projectDraftId: recoveredDraftId ?? makeProjectDraftId(),
       projectRecovered: Boolean(recoveredDraftId),
@@ -67,6 +78,17 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
       spawnedAtById: {},
       cameraRequest: { preset: 'scene', nonce: (state.cameraRequest?.nonce ?? 0) + 1 },
     }));
+  };
+
+  /** Aviso discreto (no un modal) al abrir o recuperar un proyecto con notas, con «Ver notas». */
+  const noticeNotes = () => {
+    if (!get().projectInfo.notes?.trim()) return;
+    get().addToast(tr('projectInfo.notesNotice'), 'info', {
+      label: tr('projectInfo.notesView'),
+      ariaLabel: tr('projectInfo.notesViewAria'),
+      run: () => revealProjectNotes(get().showProjectPanel),
+      transient: true,
+    });
   };
 
   /** Placas del archivo que se pisan: no se recolocan (ver `plateOverlap.ts`), se avisa con sus nombres. */
@@ -97,9 +119,33 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     projectDraftId: makeProjectDraftId(),
     projectRecovered: false,
     projectRenamed: false,
+    // Un proyecto nuevo (también el vacío del arranque) nace con su fecha de creación.
+    projectInfo: { createdAt: infoNow() },
+    projectWorkSeconds: 0,
     savedProject: null,
     pendingDownloadSave: null,
     projectBusy: false,
+
+    setProjectInfo: (patch) => {
+      if (get().projectBusy) return false;
+      const current = get().projectInfo;
+      const next: Omit<ProjectInfo, 'workSeconds'> = { ...current };
+      for (const field of ['description', 'notes', 'author'] as const) {
+        const value = patch[field];
+        if (typeof value !== 'string') continue;
+        const clean = cleanInfoText(value, field);
+        if (clean) next[field] = clean;
+        else delete next[field];
+      }
+      const changed = (['description', 'notes', 'author'] as const).some((f) => (next[f] ?? '') !== (current[f] ?? ''));
+      if (changed) set({ projectInfo: next });
+      return changed;
+    },
+
+    addProjectWorkSeconds: (seconds) => {
+      if (!Number.isFinite(seconds) || seconds <= 0) return;
+      set((state) => ({ projectWorkSeconds: Math.floor(state.projectWorkSeconds + seconds) }));
+    },
 
     renameProject: (input) => {
       if (get().projectBusy || !input.trim()) return false;
@@ -122,6 +168,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         past: [],
         future: [],
         sectionPlane: { enabled: false, heightMm: 25 },
+        info: { createdAt: infoNow() },
       }, null);
       return true;
     },
@@ -136,6 +183,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         if (!canChangeDocument()) throw new Error(tr('fileProject.busy'));
         replaceProject(document, file.name, { location: file.location });
         get().addToast(tr('fileProject.opened', { name: file.name }), 'success');
+        noticeNotes();
         warnOverlappingPlates();
         get().offerPreferredBed();
         return true;
@@ -173,6 +221,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         }
         replaceProject(document, stored.name, { recoveredDraftId });
         get().addToast(tr('recovery.status.restored'), 'success');
+        noticeNotes();
         warnOverlappingPlates();
         return true;
       } catch (error) {
@@ -186,7 +235,11 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     acknowledgeDownloadSave: () => {
       const pending = get().pendingDownloadSave;
       if (!pending) return;
-      set({ projectName: pending.name, savedProject: pending.document, projectRecovered: false, projectRenamed: false, pendingDownloadSave: null });
+      set((state) => ({
+        projectName: pending.name, savedProject: pending.document, projectRecovered: false, projectRenamed: false, pendingDownloadSave: null,
+        // La descarga quedó confirmada: esa es la fecha de guardado; lo escrito después se conserva.
+        projectInfo: { ...state.projectInfo, ...(pending.document.info?.modifiedAt ? { modifiedAt: pending.document.info.modifiedAt } : {}) },
+      }));
     },
 
     saveProject: async (saveAs = false) => {
@@ -199,7 +252,9 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
       set({ projectBusy: true });
       try {
         const state = get();
-        const document = captureProject(state);
+        // La fecha de modificación se fija al guardar (no al abrir ni al editar).
+        const withDate = compactInfo({ ...state.projectInfo, workSeconds: state.projectWorkSeconds, modifiedAt: infoNow() });
+        const document = { ...captureProject(state), ...(withDate ? { info: withDate } : {}) };
         const name = state.projectName ?? `${tr('app.untitled')}.kura`;
         const saved = await saveProjectFile(
           name,
@@ -215,7 +270,10 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
           get().addToast(tr('uxEscena.savedDownload', { name: saved.name }), 'info');
           return true;
         }
-        set({ projectName: saved.name, projectLocation: saved.location, savedProject: document, projectRecovered: false, projectRenamed: false, pendingDownloadSave: null });
+        set((current) => ({
+          projectName: saved.name, projectLocation: saved.location, savedProject: document, projectRecovered: false, projectRenamed: false, pendingDownloadSave: null,
+          projectInfo: { ...current.projectInfo, ...(document.info?.modifiedAt ? { modifiedAt: document.info.modifiedAt } : {}) },
+        }));
         get().addToast(tr('fileProject.saved', { name: saved.name }), 'success');
         return true;
       } catch (error) {

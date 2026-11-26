@@ -146,8 +146,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       case 'applyHoles': {
         const scope = resolveHoleScope(s.objects, s.selectedIds);
         if (scope.solids.length === 0 || scope.holes.length === 0) return 'notApplicable';
-        await s.applyHolesOnSolids();
-        return 'done';
+        return (await s.applyHolesOnSolids()) ? 'done' : 'notApplicable';
       }
       case 'addPiece':
         if (!first) return 'notApplicable';
@@ -199,6 +198,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         return 'done';
       }
       case 'arrangePlates':
+      case 'convertGroupsToPlates':
         return 'notApplicable';
     }
   };
@@ -261,10 +261,10 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
     },
 
     applyHolesOnSolids: async () => {
-      const scope = resolveHoleScope(get().objects, get().selectedIds);
-      const applicable = scope.solids.length > 0 && scope.holes.length > 0;
-      await base.applyHolesOnSolids!();
-      if (applicable) record({ kind: 'applyHoles' });
+      const applied = await base.applyHolesOnSolids!();
+      // Solo se registra para F4 si las restas ocurrieron (sin contacto, bloqueadas u ocupado no es repetible).
+      if (applied) record({ kind: 'applyHoles' });
+      return applied;
     },
 
     simplifySelectedMesh: async (id, request, options) => {
@@ -365,7 +365,8 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
     // Tecla H: cada pieza seleccionada alterna Sólido / Negativo (una referencia no cambia) en UN paso de deshacer.
     toggleSelectionRole: () => {
       const wanted = new Set(get().selectedIds);
-      const targets = get().objects.filter((o) => wanted.has(o.id) && !isReference(o));
+      // Igual que setObjectsRole y L: las piezas bloqueadas no cambian.
+      const targets = get().objects.filter((o) => wanted.has(o.id) && !o.locked && !isReference(o));
       if (targets.length === 0) return false;
       pushHistory();
       const next = new Map(targets.map((o) => [o.id, isNegative(o) ? 'solid' : 'negative'] as const));
@@ -378,26 +379,19 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
     },
 
     // Ctrl+Mayús+U: con huecos y sólidos en la selección (o, con menos de 2 piezas elegidas, en la escena) aplica las
-    // restas; con 2 o más piezas sin esa mezcla, une. Devuelve la acción elegida o null si no aplica nada.
-    applyHolesOrUnion: () => {
+    // restas; con 2 o más piezas sin esa mezcla, une. Devuelve la acción que realmente ocurrió, o null si no se aplicó
+    // nada (sin contacto, bloqueadas, motor ocupado), para no anunciar ni registrar algo que no pasó.
+    applyHolesOrUnion: async () => {
       const { objects, selectedIds } = get();
       const selected = objects.filter((o) => selectedIds.includes(o.id));
       const selHasHole = selected.some((o) => isNegative(o) && o.visible);
       const selHasSolid = selected.some((o) => isSolid(o) && o.visible);
       const sceneHasHole = objects.some((o) => isNegative(o) && o.visible);
       const sceneHasSolid = objects.some((o) => isSolid(o) && o.visible);
-      if ((selHasHole && selHasSolid) || (selectedIds.length < 2 && sceneHasHole && sceneHasSolid)) {
-        void get().applyHolesOnSolids();
-        return 'applyHoles';
-      }
-      if (selectedIds.length >= 2) {
-        void get().runBooleanOnSelection('union');
-        return 'union';
-      }
-      if (sceneHasHole && sceneHasSolid) {
-        void get().applyHolesOnSolids();
-        return 'applyHoles';
-      }
+      const holes = async () => ((await get().applyHolesOnSolids()) ? 'applyHoles' as const : null);
+      if ((selHasHole && selHasSolid) || (selectedIds.length < 2 && sceneHasHole && sceneHasSolid)) return holes();
+      if (selectedIds.length >= 2) return (await get().runBooleanOnSelection('union')) ? 'union' : null;
+      if (sceneHasHole && sceneHasSolid) return holes();
       return null;
     },
 

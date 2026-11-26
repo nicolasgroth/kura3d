@@ -15,6 +15,9 @@ import { computeSelectionBounds } from './selectionBounds';
  * Posiciones de la separación visual (0 = armado exacto, 1 = separadas): cada pieza se aleja del centro del conjunto
  * en la dirección de su propio centro, en proporción a `factor`. Solo dibujo: no toca poses ni historial. Con menos
  * de dos piezas no hay nada que separar.
+ * Invariante: todas las piezas se desplazan la MISMA distancia (`factor × alcance`, alcance = mayor lado del conjunto
+ * × `spread`), sin importar cuán lejos estén del centro; así las piezas chicas del medio se despegan tanto como las de
+ * afuera. `docs/diseno/PLACAS_Y_ARMADO.md` no pide una separación proporcional a la distancia.
  */
 export function explodedFigurePositions(objects: readonly SceneObject[], ids: ReadonlySet<string>, factor: number, spread = 0.8): Map<string, Vec3> {
   const out = new Map<string, Vec3>();

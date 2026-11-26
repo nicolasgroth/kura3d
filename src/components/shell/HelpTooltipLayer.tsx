@@ -52,6 +52,14 @@ function fallbackLine(el: HTMLElement): string | null {
   return line.length > 0 ? line : null;
 }
 
+/** Paneles de herramienta cuyo Esc debe llegar aunque haya un tooltip abierto. */
+const PANEL_SELECTOR = '.kura-ctx-tool, .kura-ctx-action, .kura-op-panel';
+
+/** ¿El foco está dentro de un panel de herramienta (Esc = «Volver» de ese panel)? */
+export function escapeFallsThroughToPanel(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(PANEL_SELECTOR) !== null;
+}
+
 export const HelpTooltipLayer: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const [shown, setShown] = useState<Shown | null>(null);
@@ -124,10 +132,13 @@ export const HelpTooltipLayer: React.FC = () => {
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || !shownRef.current) return;
-      // Esc cierra el tooltip sin hacer nada más (no sale de un grupo ni del modo sin distracciones).
+      // Esc cierra el tooltip sin hacer nada más (no sale de un grupo ni del modo sin distracciones)...
+      hide();
+      // ...salvo con el foco dentro de un panel de herramienta: ahí el mismo Esc sigue y ejecuta el «Volver» del panel
+      // (si hay un cálculo que cancelar, es el panel quien decide qué hace primero).
+      if (escapeFallsThroughToPanel(e.target)) return;
       e.stopPropagation();
       e.preventDefault();
-      hide();
     };
     const onDown = () => hide();
 

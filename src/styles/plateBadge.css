@@ -7,11 +7,8 @@
  */
 
 .kura-plate-badge {
-  flex: 0 3 auto;
-  min-width: 0;
-  max-width: 9ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Rótulo corto («P2»): no se encoge ni se corta, aunque la fila compita con sus botones. */
+  flex: 0 0 auto;
   white-space: nowrap;
   padding: 0 6px;
   border: 1px solid var(--border-strong, var(--border-subtle));

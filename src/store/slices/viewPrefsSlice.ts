@@ -59,10 +59,11 @@ export function createViewPrefsSlice(ctx: StoreContext): Partial<KuraStoreState>
 
     leftSidebarMode: initialLeft,
     leftCollapsed: initialLeft === 'hidden',
+    leftAutoFolded: false,
     setLeftSidebarMode: (mode) => {
       if (!LEFT_SIDEBAR_MODES.includes(mode)) return;
       writeStorage(STORAGE_LEFT_SIDEBAR_KEY, mode === 'full' ? null : mode);
-      set({ leftSidebarMode: mode, leftCollapsed: mode === 'hidden' });
+      set({ leftSidebarMode: mode, leftCollapsed: mode === 'hidden', leftAutoFolded: false });
     },
     cycleLeftSidebar: () => get().setLeftSidebarMode(nextLeftSidebarMode(get().leftSidebarMode)),
     rightPanelWidth: loadRightPanelWidth(),

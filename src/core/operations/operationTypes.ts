@@ -37,6 +37,11 @@ export interface SimplifyOutcome {
   volumeChangePct: number;
   /** Informe completo (modo, género, desviación muestreada, avisos tipados). */
   report: SimplifyReport;
+  /**
+   * Malla de lo pedido cuando se aplicaría la versión segura en su lugar (para verla en la vista previa sin
+   * recalcular). Opcional: el motor aún no la guarda y entonces la interfaz no ofrece el conmutador.
+   */
+  requestedMesh?: MeshData;
 }
 
 /** Dependencias de una operación: política de construcción, IDs y nombres. */

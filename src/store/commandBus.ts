@@ -19,6 +19,7 @@ import type { KuraCommandRequest, KuraCommandResponse, SceneObject } from '../ty
 import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { CommandError, type CommandErrorCode } from './commandErrors';
 import { simplifyReportToUser } from '../core/bus/simplifySchema';
+import { assertPrintLayout } from '../core/bus/plateCommandSchemas';
 import type { SimplifyReport } from '../engine/simplify';
 import * as schema from './commandSchemas';
 import * as groupSchema from './groupCommandSchemas';
@@ -35,6 +36,7 @@ import { ADDON_HANDLERS } from './addonCommands';
 import { SMOOTH_ORIENT_HANDLERS } from './smoothOrientCommands';
 import { PLATE_ARRANGE_HANDLERS } from './plateArrangeCommands';
 import { PLATE_HANDLERS } from './plateCommands';
+import { PROJECT_INFO_HANDLERS } from './projectInfoCommands';
 import { userWarning } from '../core/scene/userEngineMessages';
 import { localizeEngineWarning, type EngineWarning } from '../engine/engineErrors';
 import type { OperationErrorTracker } from './operationErrors';
@@ -84,7 +86,7 @@ function responseWarnings(warnings: readonly EngineWarning[]): KuraCommandRespon
 type Handler = (p: RawParams, deps: CommandBusDeps, command: string) => Promise<unknown> | unknown;
 
 /** Comandos de escritura que no modifican la escena (ajustes y exportaciones): no se bloquean. */
-const NON_SCENE_WRITES = new Set(['set_printer_profile', 'set_unit_system', 'export_stl', 'export_3mf']);
+const NON_SCENE_WRITES = new Set(['set_printer_profile', 'set_unit_system', 'export_stl', 'export_3mf', 'set_project_info']);
 
 const brief = (o: SceneObject) => ({ id: o.id, name: o.name });
 /**
@@ -112,6 +114,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...SMOOTH_ORIENT_HANDLERS,
   ...PLATE_ARRANGE_HANDLERS,
   ...PLATE_HANDLERS,
+  ...PROJECT_INFO_HANDLERS,
   get_scene_state: (_p, { get }) => {
     const s = get();
     return {
@@ -167,6 +170,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   transform_object: (p, { get }, command) => {
     const input = schema.parseTransform(get(), p);
     const id = input.target.id;
+    if (input.dropToBed || input.centerOnBed) assertPrintLayout(get().layout);
     if (input.dropToBed) get().dropObjectToBed(id);
     else if (input.centerOnBed) get().centerObjectOnBed(id);
     else {
@@ -349,6 +353,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
 
   align_objects: (p, deps) => {
     const { mode, objects, spacingIgnored } = schema.parseAlign(deps.get(), p);
+    if (mode === 'arrange_grid') assertPrintLayout(deps.get().layout);
     if (objects) deps.setSelectedIds(objects.map((o) => o.id));
     const result = deps.get().alignSelectedObjects(alignModeFromUser(mode));
     return { mode, moved: result?.moved ?? 0, fitsBed: result?.fitsBed ?? true, ...(spacingIgnored ? { ignoredParams: ['spacingMm'] } : {}) };

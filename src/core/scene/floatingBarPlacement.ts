@@ -33,6 +33,9 @@ export interface BarPlacement {
   side: 'above' | 'below' | 'right' | 'left' | 'pinned';
 }
 
+/** Zona de la interfaz fija sobre el visor (rótulo de la vista, etc.), en coordenadas del visor: la barra no la tapa. */
+export type Obstacle = ScreenExtent;
+
 export const BAR_MARGIN_PX = 8;
 export const BAR_GAP_PX = 10;
 
@@ -73,6 +76,8 @@ export function placeFloatingBar(input: {
   margin?: number;
   gap?: number;
   topInset?: number;
+  /** Zonas fijas que la barra evita (se prueba otro lado del objeto antes de taparlas). */
+  obstacles?: readonly Obstacle[];
 }): BarPlacement {
   const { extent, bar, viewport } = input;
   const margin = input.margin ?? BAR_MARGIN_PX;
@@ -81,17 +86,26 @@ export function placeFloatingBar(input: {
   const maxY = Math.max(minY, viewport.height - margin - bar.height);
   const maxX = Math.max(margin, viewport.width - margin - bar.width);
   const x = clamp((extent.left + extent.right) / 2 - bar.width / 2, margin, maxX);
-
-  const above = extent.top - gap - bar.height;
-  if (above >= minY) return { x, y: Math.min(above, maxY), side: 'above' };
-  const below = extent.bottom + gap;
-  if (below <= maxY) return { x, y: Math.max(below, minY), side: 'below' };
-  // Ni arriba ni abajo: al costado, fuera de la caja del objeto.
+  const obstacles = input.obstacles ?? [];
+  const hits = (px: number, py: number) => obstacles.some((o) => px < o.right && px + bar.width > o.left && py < o.bottom && py + bar.height > o.top);
   const midY = clamp((extent.top + extent.bottom) / 2 - bar.height / 2, minY, maxY);
+
+  // Candidatos en orden de preferencia; el primero que cabe y no tapa una zona fija gana.
+  const above = extent.top - gap - bar.height;
+  const below = extent.bottom + gap;
   const right = extent.right + gap;
-  if (right <= maxX) return { x: right, y: midY, side: 'right' };
   const left = extent.left - gap - bar.width;
-  if (left >= margin) return { x: left, y: midY, side: 'left' };
+  const candidates: Array<BarPlacement & { fits: boolean }> = [
+    { x, y: Math.min(above, maxY), side: 'above', fits: above >= minY },
+    { x, y: Math.max(below, minY), side: 'below', fits: below <= maxY },
+    { x: right, y: midY, side: 'right', fits: right <= maxX },
+    { x: left, y: midY, side: 'left', fits: left >= margin },
+  ];
+  const free = candidates.find((c) => c.fits && !hits(c.x, c.y));
+  if (free) return { x: free.x, y: free.y, side: free.side };
+  // Todo tapa algo: se conserva la preferencia sin zonas fijas.
+  const first = candidates.find((c) => c.fits);
+  if (first) return { x: first.x, y: first.y, side: first.side };
   // Objeto que ocupa casi todo el visor: pegada al borde superior libre.
   return { x, y: clamp(above, minY, maxY), side: 'pinned' };
 }

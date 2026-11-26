@@ -156,6 +156,8 @@ describe('placas en el store', () => {
 
   it('guardar: sin placas v3, con placas v4, y vuelve igual', async () => {
     const a = await addBox(10);
+    // Sin datos del proyecto (un proyecto con fechas se escribe como v5): aquí se prueba solo la versión por placas.
+    useKuraStore.setState({ projectInfo: {} } as never);
     expect(versionOf(encodeProject(captureProject(store())))).toBe(ROLE_FORMAT_VERSION);
     const p2 = store().createPlate()!;
     store().assignToPlate(p2.id, [a.id]);

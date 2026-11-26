@@ -22,6 +22,7 @@ import { pick, readBoolean, readEnum, readId, readIds, readRange, type RawParams
 import { internalAxisOfUser } from '../core/scene/displayAxes';
 import { readMagnetConnector } from './splitMagnetParams';
 import { activePlateBed, type PlateBedSource } from '../core/scene/activePlateBed';
+import { plateFrameFor } from '../core/scene/plateFrame';
 
 const AXES = ['x', 'y', 'z'] as const;
 
@@ -95,7 +96,8 @@ function readConnectorSizeAuto(p: RawParams): boolean {
 
 export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): SplitForBedRequest {
   const target = resolveTarget(scene, p, { unlocked: true });
-  const bed = activeBed(scene);
+  // Cama propuesta: la de la placa de la pieza (P7: cada placa puede ser otra impresora), no la de la placa activa.
+  const bed = plateFrameFor(scene, [target]).bed;
   const type = readEnum(p, ['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel', 'magnet'] as const, 'connectorType') ?? 'dowel';
   const sizeAuto = readConnectorSizeAuto(p);
   const connector: SplitConnectorOptions | null =

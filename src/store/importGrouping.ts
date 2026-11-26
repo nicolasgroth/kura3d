@@ -21,6 +21,11 @@ export interface ImportGrouping {
   objects: SceneObject[];
   groups: SceneGroup[];
   notices: string[];
+  /**
+   * Archivos con placas de un laminador (P7): sus grupos «Placa N», para ofrecer «Convertir en placas» en el aviso.
+   * `notice` es el índice en `notices` del aviso de ese archivo.
+   */
+  plateOffers: Array<{ fileName: string; count: number; groupIds: string[]; notice: number }>;
 }
 
 /** Ancho y fondo (mm) de la huella XZ de unas piezas colocadas. */
@@ -55,6 +60,7 @@ export function groupImported(
   const objects = [...created];
   const groups: SceneGroup[] = [];
   const notices: string[] = [];
+  const plateOffers: ImportGrouping['plateOffers'] = [];
   const indexOf = new Map<engine.ImportedPart, number>();
   placed.forEach((p, i) => indexOf.set(p.part, i));
   const grouped = new Set<number>();
@@ -63,6 +69,7 @@ export function groupImported(
     const clusters = engine.clustersOf(model);
     const base = model.fileName.replace(/\.[^.]+$/, '');
     let assemblies = 0;
+    const plateGroups: string[] = [];
     for (const cluster of clusters) {
       const members = cluster.parts
         .map((i) => indexOf.get(model.parts[i]))
@@ -76,6 +83,7 @@ export function groupImported(
       groups.push(group);
       for (const i of members) objects[i] = { ...objects[i], groupRef: group.id };
       if (cluster.kind === 'assembly') assemblies++;
+      else plateGroups.push(group.id);
     }
 
     const plateCount = clusters.filter((c) => c.kind === 'plate').length;
@@ -85,9 +93,10 @@ export function groupImported(
       notices.push(bed && (w > bed.width || d > bed.depth)
         ? tr('importReal.platesExceedBed', { name: model.fileName, count: plateCount, w: Math.round(w), d: Math.round(d), bw: Math.round(bed.width), bd: Math.round(bed.depth) })
         : tr('importReal.plates', { name: model.fileName, count: plateCount }));
+      if (plateGroups.length >= 2) plateOffers.push({ fileName: model.fileName, count: plateGroups.length, groupIds: plateGroups, notice: notices.length - 1 });
     } else if (assemblies > 0) {
       notices.push(tr('importReal.assembled', { name: model.fileName }));
     }
   }
-  return { objects, groups, notices };
+  return { objects, groups, notices, plateOffers };
 }

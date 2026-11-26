@@ -123,6 +123,22 @@ const PLATES_EXPORT_TABLE = {
     'हिलाने को कुछ नहीं: हिस्से पहले से उसी प्लेट पर हैं या ठोस हिस्से नहीं हैं (संदर्भ और नेगेटिव प्लेट पर नहीं जाते)।',
     '没有可移动的内容：零件已在该打印板上，或不是实体零件（参考体和负形不放在打印板上）。',
   ],
+  'bus.error.arrangeByGroupHeadless': [
+    'Repartir por grupo necesita la app abierta: sin interfaz la escena no tiene grupos. Usa criterion: compact o byColor.',
+    'Arrange by group needs the app open: without the UI the scene has no groups. Use criterion: compact or byColor.',
+    'Nach Gruppe verteilen braucht die geöffnete App: ohne Oberfläche hat die Szene keine Gruppen. Nutze criterion: compact oder byColor.',
+    'Répartir par groupe nécessite l’app ouverte : sans interface la scène n’a pas de groupes. Utilise criterion: compact ou byColor.',
+    'समूह के अनुसार बाँटने के लिए ऐप खुला होना चाहिए: इंटरफ़ेस के बिना दृश्य में समूह नहीं होते। criterion: compact या byColor इस्तेमाल करें।',
+    '按组分配需要打开应用：无界面时场景中没有分组。请使用 criterion: compact 或 byColor。',
+  ],
+  'bus.error.printLayoutOnly': [
+    'Disponible en la vista Imprimir: en Armado las piezas están en su pose de montaje. Cambia de vista con set_layout (layout: print).',
+    'Available in the Print view: in Assembly the parts are in their assembled pose. Switch views with set_layout (layout: print).',
+    'In der Ansicht „Drucken“ verfügbar: In „Montage“ stehen die Teile in ihrer Montagepose. Wechsle die Ansicht mit set_layout (layout: print).',
+    'Disponible dans la vue Impression : en Assemblage les pièces sont dans leur pose montée. Change de vue avec set_layout (layout: print).',
+    'प्रिंट दृश्य में उपलब्ध: असेंबली में हिस्से अपनी जोड़ी गई मुद्रा में होते हैं। set_layout (layout: print) से दृश्य बदलें।',
+    '仅在“打印”视图中可用：在“装配”视图中零件处于装配姿态。请用 set_layout (layout: print) 切换视图。',
+  ],
   'bus.error.plateSpreadNeedsTwo': [
     'Una placa por objeto necesita al menos dos piezas sólidas sin bloquear.',
     'One plate per object needs at least two unlocked solid parts.',

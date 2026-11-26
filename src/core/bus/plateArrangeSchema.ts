@@ -26,7 +26,7 @@ export function parseArrangeOnPlates(state: { objects: SceneObject[]; selectedId
   for (const id of ids ?? []) findObject(state, id);
   const plateIds = readIds(p, 'plateIds');
   for (const id of plateIds ?? []) {
-    if (!state.plates.some((pl) => pl.id === id)) throw new CommandError('not-found', 'bus.error.plateNotFound', { id });
+    if (!state.plates.some((pl) => pl.id === id)) throw new CommandError('not-found', 'bus.error.plateNotFound', { id: id.slice(0, 64) });
   }
   return {
     dryRun: readBoolean(p, 'dryRun') ?? false,

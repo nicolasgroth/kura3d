@@ -134,12 +134,12 @@ const VIEW_MODE_TABLE = {
     '无论处于哪个视图,都使用装配后的零件进行检查。',
   ],
   'viewMode.newPiece': [
-    'Pieza nueva junto a la figura, sin placa. Asígnala a una placa desde la vista Imprimir.',
-    'New part placed next to the figure, on no plate. Assign it to a plate from the Print view.',
-    'Neues Teil neben der Figur, auf keiner Platte. Weise es in der Ansicht „Drucken“ einer Platte zu.',
-    'Nouvelle pièce placée près de la figure, sur aucun plateau. Affectez-la à un plateau depuis la vue Impression.',
-    'नया हिस्सा आकृति के पास रखा गया, किसी प्लेट पर नहीं। इसे प्रिंट दृश्य से किसी प्लेट को सौंपें।',
-    '新零件已放在造型旁边,不属于任何打印板。请在“打印”视图中把它分配到某块打印板。',
+    'La pieza quedó sin placa. Vuelve a Imprimir y usa «Mover a placa» para ubicarla.',
+    'The part has no plate. Go back to Print and use “Move to plate” to place it.',
+    'Das Teil ist keiner Platte zugeordnet. Wechsle zurück zu „Drucken“ und nutze „Auf Platte verschieben“.',
+    'La pièce n’a pas de plateau. Revenez à Impression et utilisez « Déplacer vers un plateau ».',
+    'हिस्से के लिए कोई प्लेट नहीं है। प्रिंट पर लौटें और “प्लेट पर ले जाएँ” से उसे रखें।',
+    '该零件没有打印板。请返回“打印”视图,用“移到打印板”来安排它。',
   ],
   'viewMode.split.note': [
     'En la vista armada, «Disponer grupo» es lo mismo que cambiar de vista: usa el selector Imprimir / Armado.',

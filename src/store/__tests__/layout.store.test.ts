@@ -134,9 +134,11 @@ describe('setLayout', () => {
 
   it('.kura: poses y modo fuerzan v4 y vuelven iguales; sin ellas sigue en v3', async () => {
     const { a } = await twoParts();
-    useKuraStore.setState({ objects: [a] } as never);
+    // Sin datos del proyecto (un proyecto con fechas se escribe como v5): aquí se prueba solo la versión por poses.
+    useKuraStore.setState({ objects: [a], projectInfo: {} } as never);
     expect(versionOf(encodeProject(captureProject(store())))).toBe(ROLE_FORMAT_VERSION);
     await twoParts();
+    useKuraStore.setState({ projectInfo: {} } as never);
     store().setObjectTransform('A', { position: [1, 0, 0] }, true);
     store().setLayout('assembly');
     const bytes = encodeProject(captureProject(store()));

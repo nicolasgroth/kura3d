@@ -39,6 +39,8 @@ export interface HistoryBase {
   objects: SceneObject[];
   selectedIds: string[];
   groups: import('../types/kura').SceneGroup[];
+  /** Placas antes de importar (P7: abrir un 3MF de la app puede restaurarlas). */
+  plates?: import('../types/plates').ScenePlate[];
 }
 
 export { importErrorMessage };
@@ -90,6 +92,8 @@ interface IoState {
   selectedIds: string[];
   /** Grupos de la escena (nombres del árbol al exportar un archivo por objeto). */
   groups?: import('../types/kura').SceneGroup[];
+  /** Placas de un laminador → placas reales (P7); ausente en pruebas que no lo usan. */
+  convertGroupsToPlates?: (groupIds?: string[]) => unknown;
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
   printerProfile: { bedWidthMm?: number };
   customBedDimensions?: { width: number } | null;
@@ -234,6 +238,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
     const entries: ImportedEntry[] = placed.map((p, i) => ({ object: grouping.objects[i], part: p.part, fileName: p.fileName }));
     const newGroups = [...grouping.groups];
     const notices = [...grouping.notices];
+    const restoredPlates: import('../types/plates').ScenePlate[] = [];
     for (const model of sceneModels) {
       const others = [...state.objects, ...entries.map((e) => e.object)];
       // Con la escena ya ocupada (y colocación en cama), el bloque entero va a un hueco libre.
@@ -245,7 +250,10 @@ export function createModelIoActions(deps: ModelIoDeps) {
         if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
       }
       for (const part of model.parts) primeImportedShading(part.mesh, part);
-      const restored = restoreKuraScene(model, buildObject, offset, options.asReference);
+      // P7: abierto en una escena vacía y sin placas, sus placas reales vuelven como placas (con su cama).
+      const withPlates = others.length === 0 && !(state.plates?.length) && !restoredPlates.length;
+      const restored = restoreKuraScene(model, buildObject, offset, options.asReference, withPlates);
+      restoredPlates.push(...restored.plates);
       restored.objects.forEach((object, i) => entries.push({ object, part: model.parts[i], fileName: model.fileName }));
       newGroups.push(...restored.groups);
       notices.push(tr('realesMotor.sceneRestored', { name: model.fileName, count: restored.objects.length, groups: restored.groups.length }));
@@ -253,10 +261,11 @@ export function createModelIoActions(deps: ModelIoDeps) {
     const createdObjects = entries.map((e) => e.object);
     const createdIds = createdObjects.map((o) => o.id);
     // Entran a la escena por tandas, pintando entre una y otra; un solo paso deshacible al final.
-    const before = { objects: state.objects, selectedIds: state.selectedIds, groups: state.groups ?? [] };
+    const before = { objects: state.objects, selectedIds: state.selectedIds, groups: state.groups ?? [], plates: state.plates ?? [] };
     const inserted = await insertImportedObjects(createdObjects, (prev) => ({
       ...reconcileGroups({ objects: [...prev.objects, ...createdObjects], groups: [...(prev.groups ?? []), ...newGroups] }),
       selectedIds: createdIds,
+      ...(restoredPlates.length ? { plates: restoredPlates, activePlateId: restoredPlates[0].id } : {}),
     }), {
       get: () => get(),
       set: (patch) => set((prev) => patch(prev)),
@@ -275,7 +284,12 @@ export function createModelIoActions(deps: ModelIoDeps) {
 
     const noticeDeps = { tr, language: get().language, addToast: get().addToast, openSimplify: deps.openSimplify, repairMesh: deps.repairMesh, repairMeshes: deps.repairMeshes, separateBodies: deps.separateBodies };
     reportImportNotices(entries, models.length, models[0].fileName, noticeDeps);
-    for (const notice of notices) get().addToast(notice, 'info');
+    // Placas de un laminador (P7): el aviso ofrece volverlas placas reales (otro paso de deshacer, aparte del de importar).
+    const offers = new Map(grouping.plateOffers.map((o) => [o.notice, o]));
+    notices.forEach((notice, i) => {
+      const o = offers.get(i);
+      get().addToast(notice, 'info', o ? { label: tr('plates.convert.offer'), ariaLabel: tr('plates.convert.importOffer', { name: o.fileName, count: o.count }), run: () => void get().convertGroupsToPlates?.(o.groupIds) } : undefined);
+    });
     reportUnitHint(plainModels, entries);
     deps.reportWarnings?.(models.flatMap((m) => m.warnings ?? []));
     if (failures.length > 0) {

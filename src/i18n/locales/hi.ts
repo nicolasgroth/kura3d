@@ -16,6 +16,7 @@ import { GROUPS_HI } from './groups';
 import { PLATES_VIEW_HI } from './placasVista';
 import { VIEW_MODE_HI } from './vistaModos';
 import { PLATES_EXPORT_HI } from './placasExportar';
+import { PLATES_BED_HI } from './placasCama';
 import { PLATES_ARRANGE_HI } from './placasRepartir';
 import { PLATES_ARRANGE_UI_HI } from './placasRepartirUi';
 import { MEASURE_HI } from './measure';
@@ -67,6 +68,7 @@ import { PANEL_HI } from './panel';
 import { ENCAJE_UI_HI } from './encajeUi';
 import { ORIENT_UI_HI } from './orientar';
 import { REDISENO3A_HI } from './rediseno3a';
+import { DATOS_PROYECTO_HI } from './datosProyecto';
 import { REDISENO3B_HI } from './rediseno3b';
 import { UX8_MENU_HI } from './ux8Menu';
 import { IMANES_UNION_HI } from './imanesUnion';
@@ -86,6 +88,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...PLATES_VIEW_HI,
   ...VIEW_MODE_HI,
   ...PLATES_EXPORT_HI,
+  ...PLATES_BED_HI,
   ...PLATES_ARRANGE_HI,
   ...PLATES_ARRANGE_UI_HI,
   ...MEASURE_HI,
@@ -134,6 +137,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...PANEL_HI,
   ...ENCAJE_UI_HI,
   ...REDISENO3A_HI,
+  ...DATOS_PROYECTO_HI,
   ...REDISENO3B_HI,
   ...UX8_MENU_HI,
   ...TORRETA_HI,
@@ -639,7 +643,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.svg.generate': 'SVG को 3D में एक्सट्रूड करें',
 
   // Modal Imagen a 3D
-  'dialog.img.title': 'छवि → 3D (उभार, लिथोफ़ेन, सिल्हूट और कटर)',
+  'dialog.img.title': 'छवि से 3D',
   'dialog.img.upload': 'छवि चुनें (PNG / JPG / WebP)',
   'dialog.img.useSample': 'परीक्षण पैटर्न उपयोग करें',
   'dialog.img.shapeMode': '3D निर्माण मोड',
@@ -679,7 +683,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.cut.execute': 'कट निष्पादित करें',
 
   // Modal Generador de Moldes y Contra-Moldes
-  'dialog.mold.title': 'मोल्ड / सिलिकॉन / मोमबत्ती जनरेटर',
+  'dialog.mold.title': 'मोल्ड / सिलिकॉन / मोमबत्ती',
   'dialog.mold.mode': 'मोल्ड संरचना',
   'dialog.mold.modeDirect1': '1-भाग मोल्ड (प्रत्यक्ष गुहा)',
   'dialog.mold.modeDirect2': '2-भाग मोल्ड + पंजीकरण कुंजियाँ',
@@ -695,7 +699,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.mold.execute': '3D मोल्ड बनाएं',
 
   // Modal Proyección Conformal en Superficies
-  'dialog.project.title': '3D सतह पर पाठ या SVG प्रोजेक्ट करें',
+  'dialog.project.title': '3D सतह पर प्रोजेक्ट',
   'dialog.project.kind': 'ग्राफ़िक स्रोत',
   'dialog.project.kindText': 'पैरामेट्रिक पाठ',
   'dialog.project.kindSvg': 'वेक्टर SVG कोड',
@@ -715,7 +719,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.project.execute': 'मॉडल पर प्रोजेक्ट करें',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'मीट्रिक ISO थ्रेड जनरेटर (M3–M64)',
+  'dialog.thread.title': 'मीट्रिक ISO थ्रेड',
   'dialog.thread.preset': 'ISO मीट्रिक प्रीसेट',
   'dialog.thread.kind': 'थ्रेडेड भाग प्रकार',
   'dialog.thread.kindBolt': 'बोल्ट (बाहरी थ्रेड)',

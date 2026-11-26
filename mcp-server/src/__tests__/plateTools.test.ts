@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, describe, expect, it } from 'vitest';
+import { parseArrangeOnPlates } from '../../../src/core/bus/plateArrangeSchema';
 import { MAX_PLATES } from '../../../src/core/scene/plates';
 import { createKuraMcpServer } from '../index.js';
 
@@ -126,6 +127,24 @@ describe('MCP sin interfaz: herramientas de placas', () => {
     expect(await failCode('kura_arrange_on_plates', { plateIds: ['nope'] })).toBe('not-found');
   });
 
+  it('repartir por grupo sin interfaz: error precondition claro, no aparenta agrupar', async () => {
+    const { headless, call, failCode } = await setup();
+    await boxes(headless, 3);
+    for (const dryRun of [true, false]) {
+      expect(await failCode('kura_arrange_on_plates', { criterion: 'byGroup', dryRun })).toBe('precondition');
+    }
+    const res = await call('kura_arrange_on_plates', { criterion: 'byGroup' });
+    expect((res.content as Array<{ text: string }>)[0].text).toMatch(/groups/i);
+    expect(headless.plates.plates).toEqual([]);
+  });
+
+  it('placa inexistente en repartir: el id del error se recorta a 64 caracteres (esquema compartido)', () => {
+    let err: any = null;
+    try { parseArrangeOnPlates({ objects: [], selectedIds: [], plates: [] }, { plateIds: ['z'.repeat(128)] }); } catch (e) { err = e; }
+    expect(err?.code).toBe('not-found');
+    expect(err?.params.id).toBe('z'.repeat(64));
+  });
+
   it('exportar por placa: STL de una placa respecto de su cama; STL con varias placas pide plateId', async () => {
     const { headless, ok, failCode, exportDir } = await setup();
     const ids = await boxes(headless, 2);
@@ -197,6 +216,30 @@ describe('MCP sin interfaz: seguridad de las herramientas de placas', () => {
     expect(created).toBeGreaterThan(10);
     expect(lastError).toBe('precondition');
     expect(await failCode('kura_create_plate', {})).toBe('precondition');
+  });
+
+  it('kura_set_plate_bed (P7): perfil, medidas y vuelta a la del proyecto; la vecina se corre; entrada hostil', async () => {
+    const { headless, ok, failCode } = await setup();
+    await boxes(headless, 1);
+    const { plate: p2 } = await ok('kura_create_plate', {});
+    const p1 = (await ok('kura_list_plates')).plates[0];
+    const mini = await ok('kura_set_plate_bed', { plateId: p2.id, profileId: 'bambu-a1-mini' });
+    expect(mini.changed).toBe(true);
+    expect(mini.plate.bed).toMatchObject({ widthMm: 180, own: true, profileId: 'bambu-a1-mini' });
+    const big = await ok('kura_set_plate_bed', { plateId: p1.id, widthMm: 600, depthMm: 600, heightMm: 400, name: 'Grande' });
+    expect(big.relocated).toEqual([p2.id]);
+    const list = await ok('kura_list_plates');
+    expect(list.plates[0].bed).toMatchObject({ widthMm: 600, name: 'Grande', own: true });
+    expect(list.plates[1].origin[0]).toBeGreaterThanOrEqual(300 + 90 + 40 - 1e-6);
+    expect((await ok('kura_set_plate_bed', { plateId: p1.id, widthMm: 600, depthMm: 600, heightMm: 400, name: 'Grande' })).changed).toBe(false);
+    expect((await ok('kura_set_plate_bed', { plateId: p1.id, project: true })).plate.bed.own).toBe(false);
+    expect(await failCode('kura_set_plate_bed', { plateId: 'nope', project: true })).toBe('not-found');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id, profileId: 'no-existe' })).toBe('not-found');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id })).toBe('invalid-params');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id, project: true, profileId: 'bambu-a1-mini' })).toBe('invalid-params');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id, widthMm: 10 })).toBe('invalid-params');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id, widthMm: 20_000, depthMm: 10, heightMm: 10 })).not.toBe('');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id, widthMm: -1, depthMm: 10, heightMm: 10 })).not.toBe('');
   });
 
   it('la exportación por placa sigue confinada a la carpeta permitida', async () => {

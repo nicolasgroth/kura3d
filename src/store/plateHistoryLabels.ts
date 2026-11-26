@@ -11,6 +11,7 @@
 import { t } from '../i18n';
 import type { LanguageCode, SceneObject } from '../types/kura';
 import type { ScenePlate } from '../types/plates';
+import { samePlateBed } from '../core/scene/plateBedChange';
 
 /**
  * Etiqueta del paso si cambió la lista de placas o la placa de alguna pieza: crear, borrar, renombrar o mover.
@@ -30,6 +31,13 @@ export function describePlateChange(
   if (removed.length > 0 && created.length === 0) return t(language, 'plates.history.delete', { name: removed[0].name });
   const renamed = after.plates.find((p) => beforeById.has(p.id) && beforeById.get(p.id)!.name !== p.name);
   if (renamed) return t(language, 'plates.history.rename', { name: renamed.name });
+  // Cama de una placa (P7): el paso puede además recolocar placas vecinas, pero lo que pidió el usuario es la cama.
+  const rebedded = after.plates.find((p) => beforeById.has(p.id) && !samePlateBed(beforeById.get(p.id)!.bed, p.bed));
+  if (rebedded) {
+    return rebedded.bed
+      ? t(language, 'plates.history.bed', { name: rebedded.name, bed: rebedded.bed.name })
+      : t(language, 'plates.history.bedProject', { name: rebedded.name });
+  }
   const beforeRefs = new Map(before.objects.map((o) => [o.id, o.plateRef]));
   const moved = after.objects.filter((o) => beforeRefs.has(o.id) && beforeRefs.get(o.id) !== o.plateRef && o.plateRef !== undefined);
   if (moved.length === 0) return null;

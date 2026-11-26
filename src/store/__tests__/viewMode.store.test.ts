@@ -85,6 +85,21 @@ describe('selector de modos de vista', () => {
     expect(requestViewMode('free')).toBe('changed');
   });
 
+  it('rechazado con un trazo de pintura abierto: no cambia de pose y dice por qué', async () => {
+    await twoParts();
+    const past = store().past.length;
+    store().beginPaintStroke();
+    expect(store().setViewMode('assembly')).toBe('stroke');
+    expect(store().layout).toBe('print');
+    expect(byId('B')!.position).toEqual([100, 0, 0]);
+    expect(requestViewMode('free')).toBe('stroke');
+    expect(store().freeView).toBe(false);
+    expect(toastTexts()).toContain(t('es', 'viewMode.blocked.stroke'));
+    expect(store().past.length).toBe(past);
+    store().endPaintStroke();
+    expect(store().setViewMode('assembly')).toBe('changed');
+  });
+
   it('el atajo cicla Imprimir, Armado, Libre; sin nada que alternar no hace nada', async () => {
     await twoParts();
     expect(cycleViewMode()).toBe('changed');

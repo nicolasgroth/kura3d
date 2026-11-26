@@ -12,6 +12,7 @@
 import React, { useMemo } from 'react';
 import { isLegacyPlateSetup, plateBed, resolveActivePlate } from '../../core/scene/plates';
 import { useKuraStore } from '../../store/useKuraStore';
+import { findBedProfile } from '../../store/bedProfiles';
 import { platesBedStatus } from './plateBedStatus';
 import { PrinterBedOverlay } from './PrinterBedOverlay';
 
@@ -22,6 +23,7 @@ export const PlateBeds: React.FC<{ isOutOfBounds: boolean }> = ({ isOutOfBounds 
   const objects = useKuraStore((s) => s.objects);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const customBed = useKuraStore((s) => s.customBedDimensions);
+  const userBeds = useKuraStore((s) => s.userBedProfiles);
   // Una sola placa fuera del origen (o con cama propia) también se dibuja por placa: la cama de siempre estaría mal puesta.
   const multi = !isLegacyPlateSetup(plates, customBed ? { widthMm: customBed.width, depthMm: customBed.depth, heightMm: customBed.height } : { widthMm: printerProfile.bedWidthMm, depthMm: printerProfile.bedDepthMm, heightMm: printerProfile.maxHeightMm });
   const statuses = useMemo(
@@ -41,7 +43,8 @@ export const PlateBeds: React.FC<{ isOutOfBounds: boolean }> = ({ isOutOfBounds 
           <PrinterBedOverlay
             isOutOfBounds={statuses?.get(p.id) === 'outOfBounds'}
             bed={plateBed(p, base)}
-            title={p.name}
+            title={p.bed ? `${p.name} · ${p.bed.name}` : p.name}
+            silhouette={p.bed ? findBedProfile(p.bed.profileId ?? null, userBeds ?? []) : undefined}
             active={p.id === active?.id}
           />
         </group>

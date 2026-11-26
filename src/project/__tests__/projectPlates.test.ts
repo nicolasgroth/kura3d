@@ -15,7 +15,7 @@ import { MAX_PLATES } from '../../core/scene/plates';
 import { MAX_SPLIT_PLATES } from '../../core/scene/splitGroups';
 import { DEFAULT_PRINTER_PROFILES, type MeshData, type SceneObject } from '../../types/kura';
 import type { ScenePlate } from '../../types/plates';
-import { decodeProject, encodeProject, PLATES_FORMAT_VERSION, type ProjectDocument } from '../projectCodec';
+import { decodeProject, encodeProject, INFO_FORMAT_VERSION, PLATES_FORMAT_VERSION, type ProjectDocument } from '../projectCodec';
 import { ROLE_FORMAT_VERSION } from '../projectRoleMigration';
 import { assembleDocument, splitDocument } from '../recoveryDraftFormat';
 import { repackKura } from './legacyKura';
@@ -74,8 +74,8 @@ describe('versión del .kura según las placas', () => {
     expect(() => decodeProject(onlyRef)).toThrowError(expect.objectContaining({ code: 'invalid' }));
   });
 
-  it('una versión más nueva que la 4 dice "no soportada"', () => {
-    const future = repackKura(encodeProject(withPlates()), PLATES_FORMAT_VERSION + 1);
+  it('una versión más nueva que la 5 dice "no soportada"', () => {
+    const future = repackKura(encodeProject(withPlates()), INFO_FORMAT_VERSION + 1);
     expect(() => decodeProject(future)).toThrowError(expect.objectContaining({ code: 'unsupported' }));
   });
 });
@@ -96,6 +96,16 @@ describe('saneo de placas al abrir', () => {
     expect(back.plates).toBeUndefined();
   });
 
+  it('una cama cuyo perfil no existe en este equipo se conserva con sus medidas (P7)', () => {
+    const bytes = repackKura(encodeProject(withPlates()), 4, (m) => {
+      const bed = (m.current as unknown as { plates: ScenePlate[] }).plates[1].bed!;
+      bed.profileId = 'user-de-otro-equipo';
+      bed.widthMm = 9_999;
+    });
+    const bed = decodeProject(bytes).plates![1].bed!;
+    expect(bed).toEqual({ profileId: 'user-de-otro-equipo', name: 'Mini', widthMm: 9_999, depthMm: 180, heightMm: 180, marginMm: 3 });
+  });
+
   it('placas con id repetido se reducen a la primera', () => {
     const bytes = repackKura(encodeProject(withPlates()), 4, (m) => {
       const current = m.current as unknown as { plates: ScenePlate[] };
@@ -114,6 +124,17 @@ describe('saneo de placas al abrir', () => {
     ['cama negativa', (c) => { (c.plates[1].bed as Record<string, unknown>).widthMm = -5; }, 'invalid'],
     ['cama gigante', (c) => { (c.plates[1].bed as Record<string, unknown>).depthMm = 1e7; }, 'invalid'],
     ['campo extra en la cama', (c) => { (c.plates[1].bed as Record<string, unknown>).nozzle = 0.4; }, 'invalid'],
+    // P7: topes de la cama propia (medidas en (0, 10 m], margen 0–50, nombre acotado y no vacío, perfil corto).
+    ['cama de alto cero', (c) => { (c.plates[1].bed as Record<string, unknown>).heightMm = 0; }, 'invalid'],
+    ['cama de 10 m y un poco', (c) => { (c.plates[1].bed as Record<string, unknown>).widthMm = 10_000.5; }, 'invalid'],
+    ['cama con medida de texto', (c) => { (c.plates[1].bed as Record<string, unknown>).widthMm = '180'; }, 'invalid'],
+    ['cama sin alto', (c) => { delete (c.plates[1].bed as Record<string, unknown>).heightMm; }, 'invalid'],
+    ['margen de cama excesivo', (c) => { (c.plates[1].bed as Record<string, unknown>).marginMm = 51; }, 'invalid'],
+    ['nombre de cama larguísimo', (c) => { (c.plates[1].bed as Record<string, unknown>).name = 'x'.repeat(81); }, 'invalid'],
+    ['nombre de cama vacío', (c) => { (c.plates[1].bed as Record<string, unknown>).name = '   '; }, 'invalid'],
+    ['id de perfil larguísimo', (c) => { (c.plates[1].bed as Record<string, unknown>).profileId = 'p'.repeat(65); }, 'invalid'],
+    ['cama que no es objeto', (c) => { c.plates[1].bed = [180, 180, 180]; }, 'invalid'],
+    ['prototipo en la cama', (c) => { c.plates[1].bed = JSON.parse('{"__proto__":{"x":1},"name":"a","widthMm":1,"depthMm":1,"heightMm":1}'); }, 'invalid'],
     ['nombre larguísimo', (c) => { c.plates[0].name = 'x'.repeat(500); }, 'invalid'],
     ['id vacío', (c) => { c.plates[0].id = ''; }, 'invalid'],
     ['locked no booleano', (c) => { c.plates[0].locked = 'sí'; }, 'invalid'],

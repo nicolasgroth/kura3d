@@ -26,6 +26,18 @@ export interface PlatesSliceState {
   deletePlate: (plateId: string, reassignTo?: string | null) => boolean;
   /** Renombra una placa. Un paso de deshacer. */
   renamePlate: (plateId: string, name: string) => boolean;
+  /**
+   * Cama de una placa (P7): una propia (`PlateBed`) o `null` = la del proyecto. Si la cama nueva pisaría a otra placa,
+   * las que chocan se recolocan con sus piezas (`core/scene/plateBedChange.ts`). Un paso de deshacer. Devuelve las
+   * placas recolocadas, o null si no se pudo (placa inexistente, cama inválida, sin cambios o sin espacio).
+   */
+  setPlateBed: (plateId: string, bed: PlateBed | null) => { relocated: string[]; keptLocked: string[] } | null;
+  /**
+   * «Convertir grupos en placas» (P7): una placa real por grupo raíz (`groupIds`; sin ellos, los de la selección o los
+   * que se llaman como placas), con sus piezas centradas en su cama (`core/scene/plateConvert.ts`). Solo en Imprimir.
+   * Un paso de deshacer. null (con aviso) si no se convirtió ninguno.
+   */
+  convertGroupsToPlates: (groupIds?: string[]) => { created: string[]; skipped: string[] } | null;
   /** Asigna `ids` (o la selección) a la placa; solo sólidos no bloqueados. Devuelve cuántas piezas cambiaron. */
   assignToPlate: (plateId: string, ids?: string[]) => number;
   /** Fija la placa activa (sin paso de deshacer). false si la placa no existe. */

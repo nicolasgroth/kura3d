@@ -38,7 +38,9 @@ export type RepeatRecord =
   | { kind: 'group' }
   | { kind: 'combine' }
   /** Solo nombra el paso del historial («Repartir en placas»); no se repite con F4. */
-  | { kind: 'arrangePlates' };
+  | { kind: 'arrangePlates' }
+  /** Solo nombra el paso del historial («Convertir N grupos en placas»); no se repite con F4. */
+  | { kind: 'convertGroupsToPlates'; count: number };
 
 export type RepeatOutcome = 'done' | 'none' | 'notApplicable';
 
@@ -55,7 +57,7 @@ export interface QuickActionsSliceState {
   /** Tecla H: alterna Sólido / Negativo en cada pieza seleccionada (no toca referencias) en un solo paso de deshacer. */
   toggleSelectionRole: () => boolean;
   /** Ctrl+Mayús+U: aplica las restas o une los sólidos según la selección; devuelve qué hizo (null: nada). */
-  applyHolesOrUnion: () => 'applyHoles' | 'union' | null;
+  applyHolesOrUnion: () => Promise<'applyHoles' | 'union' | null>;
   /** Regenera los paramétricos seleccionados (F5). Devuelve cuántos se recalcularon. */
   recomputeSelected: () => Promise<number>;
   /** Búsqueda en la escena (F3). */

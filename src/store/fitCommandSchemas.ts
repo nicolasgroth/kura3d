@@ -10,7 +10,7 @@
 
 import type { FitAlternativeKind, FitBed } from '../engine/fitToBed';
 import type { FitAnalysisResult } from '../core/operations/fitOperations';
-import { fitBedOf } from '../core/operations/fitOperations';
+import { activeFitBed } from '../core/scene/plateFitBed';
 import { OPERATION_RANGES as OR } from '../engine/operationLimits';
 import type { SceneObject } from '../types/kura';
 import { CommandError } from './commandErrors';
@@ -29,7 +29,8 @@ export interface FitToBedRequest {
 
 export function parseFitToBed(scene: SceneView & BedSource & { printerProfile: { marginMm?: number } }, p: RawParams): FitToBedRequest {
   const targets = resolveIdsOrSelection(scene, p, { unlocked: true });
-  const base = fitBedOf(scene.printerProfile, scene.customBedDimensions);
+  // Con placas, la cama de la placa de las piezas (P7: puede ser otra impresora); sin placas, la del proyecto.
+  const base = activeFitBed(scene, targets);
   const bed: FitBed = {
     widthMm: readRange(p, OR.split.bedMm, 'bedWidthMm') ?? base.widthMm,
     depthMm: readRange(p, OR.split.bedMm, 'bedDepthMm') ?? base.depthMm,

@@ -9,6 +9,7 @@
 
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
+import { plateShortLabel } from '../../core/scene/plateShortLabel';
 import { PlateBadge } from '../plates/PlateBadge';
 import { useKuraStore } from '../../store/useKuraStore';
 
@@ -18,6 +19,15 @@ const PLATES = [
 ];
 
 afterEach(cleanup);
+
+describe('insignia de placa: rótulo corto', () => {
+  it('«P» + número del nombre, o la posición si el nombre no lleva número; nunca una sola letra', () => {
+    expect(plateShortLabel('Placa 2', 5)).toBe('P2');
+    expect(plateShortLabel('Plate 12', 0)).toBe('P12');
+    expect(plateShortLabel('Bandeja azul', 2)).toBe('P3');
+    expect(plateShortLabel('Bandeja azul', 2).length).toBeGreaterThan(1);
+  });
+});
 
 describe('insignia de placa', () => {
   it('con una sola placa no pinta nada', () => {
@@ -30,7 +40,7 @@ describe('insignia de placa', () => {
     useKuraStore.setState({ language: 'es', plates: PLATES } as never);
     render(<PlateBadge obj={{ plateRef: 'p2' }} />);
     const badge = screen.getByTestId('plate-badge');
-    expect(badge.textContent).toBe('Placa 2');
+    expect(badge.textContent).toBe('P2');
     expect(badge.getAttribute('aria-label')).toBe('Placa: Placa 2');
     expect(badge.getAttribute('title')).toContain('Placa 2');
   });

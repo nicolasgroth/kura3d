@@ -16,6 +16,7 @@ import { GROUPS_DE } from './groups';
 import { PLATES_VIEW_DE } from './placasVista';
 import { VIEW_MODE_DE } from './vistaModos';
 import { PLATES_EXPORT_DE } from './placasExportar';
+import { PLATES_BED_DE } from './placasCama';
 import { PLATES_ARRANGE_DE } from './placasRepartir';
 import { PLATES_ARRANGE_UI_DE } from './placasRepartirUi';
 import { MEASURE_DE } from './measure';
@@ -67,6 +68,7 @@ import { PANEL_DE } from './panel';
 import { ENCAJE_UI_DE } from './encajeUi';
 import { ORIENT_UI_DE } from './orientar';
 import { REDISENO3A_DE } from './rediseno3a';
+import { DATOS_PROYECTO_DE } from './datosProyecto';
 import { REDISENO3B_DE } from './rediseno3b';
 import { UX8_MENU_DE } from './ux8Menu';
 import { IMANES_UNION_DE } from './imanesUnion';
@@ -86,6 +88,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...PLATES_VIEW_DE,
   ...VIEW_MODE_DE,
   ...PLATES_EXPORT_DE,
+  ...PLATES_BED_DE,
   ...PLATES_ARRANGE_DE,
   ...PLATES_ARRANGE_UI_DE,
   ...MEASURE_DE,
@@ -134,6 +137,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...PANEL_DE,
   ...ENCAJE_UI_DE,
   ...REDISENO3A_DE,
+  ...DATOS_PROYECTO_DE,
   ...REDISENO3B_DE,
   ...UX8_MENU_DE,
   ...TORRETA_DE,
@@ -639,7 +643,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.svg.generate': 'SVG in 3D extrudieren',
 
   // Modal Imagen a 3D
-  'dialog.img.title': 'Bild → 3D (Relief, Lithophanie, Silhouette & Ausstecher)',
+  'dialog.img.title': 'Bild zu 3D',
   'dialog.img.upload': 'Bild wählen (PNG / JPG / WebP)',
   'dialog.img.useSample': 'Testmuster verwenden',
   'dialog.img.shapeMode': '3D-Generierungsmodus',
@@ -679,7 +683,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.cut.execute': 'Schnitt ausführen',
 
   // Modal Generador de Moldes y Contra-Moldes
-  'dialog.mold.title': 'Gießform- / Silikon- / Kerzengenerator',
+  'dialog.mold.title': 'Gießform / Silikon / Kerze',
   'dialog.mold.mode': 'Formarchitektur',
   'dialog.mold.modeDirect1': '1-teilige Form (Direkte Kavität)',
   'dialog.mold.modeDirect2': '2-teilige Form + Passstifte',
@@ -695,7 +699,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.mold.execute': '3D-Gießform erzeugen',
 
   // Modal Proyección Conformal en Superficies
-  'dialog.project.title': 'Text oder SVG auf 3D-Oberfläche projizieren',
+  'dialog.project.title': 'Auf 3D-Fläche projizieren',
   'dialog.project.kind': 'Grafikquelle',
   'dialog.project.kindText': 'Parametrischer Text',
   'dialog.project.kindSvg': 'SVG-Vektormarkup',
@@ -715,7 +719,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.project.execute': 'Auf Modell projizieren',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'Metrischer ISO-Gewindegenerator (M3–M64)',
+  'dialog.thread.title': 'ISO-Metrikgewinde',
   'dialog.thread.preset': 'Metrisches ISO-Preset',
   'dialog.thread.kind': 'Gewindeteiltyp',
   'dialog.thread.kindBolt': 'Schraube (Außengewinde)',

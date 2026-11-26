@@ -24,8 +24,13 @@
   font-weight: inherit;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* Hasta dos líneas (el título completo va también en `title`); nunca una elipsis a media palabra en una sola línea. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
 }
 
 .kura-panel-head .kura-panel-title:focus-visible {

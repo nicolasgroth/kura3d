@@ -21,6 +21,7 @@ import { GROUPS_EN, GROUPS_ES } from './locales/groups';
 import { PLATES_VIEW_EN, PLATES_VIEW_ES } from './locales/placasVista';
 import { VIEW_MODE_EN, VIEW_MODE_ES } from './locales/vistaModos';
 import { PLATES_EXPORT_EN, PLATES_EXPORT_ES } from './locales/placasExportar';
+import { PLATES_BED_EN, PLATES_BED_ES } from './locales/placasCama';
 import { PLATES_ARRANGE_EN, PLATES_ARRANGE_ES } from './locales/placasRepartir';
 import { PLATES_ARRANGE_UI_EN, PLATES_ARRANGE_UI_ES } from './locales/placasRepartirUi';
 import { MEASURE_EN, MEASURE_ES } from './locales/measure';
@@ -72,6 +73,7 @@ import { PANEL_EN, PANEL_ES } from './locales/panel';
 import { ENCAJE_UI_EN, ENCAJE_UI_ES } from './locales/encajeUi';
 import { ORIENT_UI_EN, ORIENT_UI_ES } from './locales/orientar';
 import { REDISENO3A_EN, REDISENO3A_ES } from './locales/rediseno3a';
+import { DATOS_PROYECTO_EN, DATOS_PROYECTO_ES } from './locales/datosProyecto';
 import { REDISENO3B_EN, REDISENO3B_ES } from './locales/rediseno3b';
 import { UX8_MENU_EN, UX8_MENU_ES } from './locales/ux8Menu';
 import { IMANES_UNION_EN, IMANES_UNION_ES } from './locales/imanesUnion';
@@ -93,6 +95,7 @@ export const TRANSLATIONS_ES = {
   ...PLATES_VIEW_ES,
   ...VIEW_MODE_ES,
   ...PLATES_EXPORT_ES,
+  ...PLATES_BED_ES,
   ...PLATES_ARRANGE_ES,
   ...PLATES_ARRANGE_UI_ES,
   ...MEASURE_ES,
@@ -141,6 +144,7 @@ export const TRANSLATIONS_ES = {
   ...PANEL_ES,
   ...ENCAJE_UI_ES,
   ...REDISENO3A_ES,
+  ...DATOS_PROYECTO_ES,
   ...REDISENO3B_ES,
   ...UX8_MENU_ES,
   ...TORRETA_ES,
@@ -646,7 +650,7 @@ export const TRANSLATIONS_ES = {
   'dialog.svg.generate': 'Extruir SVG en 3D',
 
   // Modal Imagen a 3D
-  'dialog.img.title': 'Imagen → 3D (Relieve, Litofanía, Silueta y Cortador)',
+  'dialog.img.title': 'Imagen a 3D',
   'dialog.img.upload': 'Elegir imagen (PNG / JPG / WebP)',
   'dialog.img.useSample': 'Usar patrón de prueba',
   'dialog.img.shapeMode': 'Modo de generación 3D',
@@ -686,7 +690,7 @@ export const TRANSLATIONS_ES = {
   'dialog.cut.execute': 'Ejecutar Corte',
 
   // Modal Generador de Moldes y Contra-Moldes
-  'dialog.mold.title': 'Generador de Moldes / Silicona / Velas',
+  'dialog.mold.title': 'Molde, silicona y velas',
   'dialog.mold.mode': 'Arquitectura del molde',
   'dialog.mold.modeDirect1': 'Molde 1 pieza (Cavidad directa)',
   'dialog.mold.modeDirect2': 'Molde 2 mitades + llaves de registro',
@@ -702,7 +706,7 @@ export const TRANSLATIONS_ES = {
   'dialog.mold.execute': 'Generar Molde 3D',
 
   // Modal Proyección Conformal en Superficies
-  'dialog.project.title': 'Proyectar Texto o SVG en Superficie 3D',
+  'dialog.project.title': 'Proyectar en superficie 3D',
   'dialog.project.kind': 'Gráfico a proyectar',
   'dialog.project.kindText': 'Texto paramétrico',
   'dialog.project.kindSvg': 'Código SVG vectorial',
@@ -722,7 +726,7 @@ export const TRANSLATIONS_ES = {
   'dialog.project.execute': 'Proyectar sobre Modelo',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'Generador de Roscas Métricas ISO (M3–M64)',
+  'dialog.thread.title': 'Rosca métrica ISO',
   'dialog.thread.preset': 'Preset Métrico ISO',
   'dialog.thread.kind': 'Tipo de pieza roscada',
   'dialog.thread.kindBolt': 'Perno (Rosca exterior)',
@@ -1445,6 +1449,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PLATES_VIEW_EN,
   ...VIEW_MODE_EN,
   ...PLATES_EXPORT_EN,
+  ...PLATES_BED_EN,
   ...PLATES_ARRANGE_EN,
   ...PLATES_ARRANGE_UI_EN,
   ...MEASURE_EN,
@@ -1493,6 +1498,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PANEL_EN,
   ...ENCAJE_UI_EN,
   ...REDISENO3A_EN,
+  ...DATOS_PROYECTO_EN,
   ...REDISENO3B_EN,
   ...UX8_MENU_EN,
   ...TORRETA_EN,
@@ -1979,7 +1985,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.svg.code': 'SVG markup',
   'dialog.svg.generate': 'Extrude SVG to 3D',
 
-  'dialog.img.title': 'Image → 3D (Relief, Lithophane, Silhouette & Cutter)',
+  'dialog.img.title': 'Image to 3D',
   'dialog.img.upload': 'Choose image (PNG / JPG / WebP)',
   'dialog.img.useSample': 'Use test pattern',
   'dialog.img.shapeMode': '3D generation mode',
@@ -2017,7 +2023,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.cut.keepNegative': 'Negative half (-) only',
   'dialog.cut.execute': 'Run Plane Cut',
 
-  'dialog.mold.title': 'Mold / Silicone / Candle Generator',
+  'dialog.mold.title': 'Mold / silicone / candle',
   'dialog.mold.mode': 'Mold architecture',
   'dialog.mold.modeDirect1': '1-Part Mold (Direct cavity)',
   'dialog.mold.modeDirect2': '2-Part Split Mold + registration keys',
@@ -2032,7 +2038,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.mold.pourSpoutRadius': 'Spout radius (mm)',
   'dialog.mold.execute': 'Generate 3D Mold',
 
-  'dialog.project.title': 'Project Text or SVG onto 3D Surface',
+  'dialog.project.title': 'Project onto 3D surface',
   'dialog.project.kind': 'Graphic source',
   'dialog.project.kindText': 'Parametric text',
   'dialog.project.kindSvg': 'Vector SVG markup',
@@ -2051,7 +2057,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.project.offsetV': 'V Offset (mm)',
   'dialog.project.execute': 'Project onto Model',
 
-  'dialog.thread.title': 'Metric ISO Thread Generator (M3–M64)',
+  'dialog.thread.title': 'Metric ISO thread',
   'dialog.thread.preset': 'ISO Metric Preset',
   'dialog.thread.kind': 'Threaded part type',
   'dialog.thread.kindBolt': 'Bolt (External thread)',

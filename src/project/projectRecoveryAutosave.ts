@@ -47,6 +47,7 @@ export function classifyRecoveryFailure(error: unknown, stage: RecoveryFailureSt
 
 function recoveryChanged(state: KuraStoreState, previous: KuraStoreState) {
   return state.projectDraftId !== previous.projectDraftId || state.projectName !== previous.projectName ||
+    state.projectInfo !== previous.projectInfo ||
     state.objects !== previous.objects || state.past !== previous.past || state.future !== previous.future ||
     state.unitSystem !== previous.unitSystem || state.printerProfile !== previous.printerProfile ||
     state.customBedDimensions !== previous.customBedDimensions || state.sectionPlane !== previous.sectionPlane ||

@@ -34,6 +34,7 @@ export function blockHalves(m: MagnetParams): { halfL: number; halfW: number } {
 /**
  * Ángulo (radianes, en el plano u, v) del eje principal de mayor extensión de los contornos `polys` (con agujeros en
  * sentido contrario, como los da `toPolygons`). 0 si la sección no tiene dirección dominante (cuadrada, circular).
+ * Vale igual con los contornos en sentido horario: los momentos se normalizan por el signo del área total.
  */
 export function principalAngle(polys: ReadonlyArray<ReadonlyArray<Readonly<Vec2>>>): number {
   let a = 0, cx = 0, cy = 0, sxx = 0, syy = 0, sxy = 0;
@@ -53,8 +54,10 @@ export function principalAngle(polys: ReadonlyArray<ReadonlyArray<Readonly<Vec2>
   if (!(Math.abs(a) > 1e-9)) return 0;
   cx /= a;
   cy /= a;
-  // Momentos centrales (∫x², ∫y², ∫xy respecto del centroide).
-  const mxx = sxx - a * cx * cx, myy = syy - a * cy * cy, mxy = sxy - a * cx * cy;
+  // Momentos centrales (∫x², ∫y², ∫xy respecto del centroide), con el signo del área: un contorno horario da área y
+  // momentos negativos, y sin normalizar el ángulo saldría girado 90° (el eje menor).
+  const sign = Math.sign(a);
+  const mxx = sign * (sxx - a * cx * cx), myy = sign * (syy - a * cy * cy), mxy = sign * (sxy - a * cx * cy);
   const spread = Math.abs(mxx) + Math.abs(myy);
   if (!(spread > 0) || Math.hypot(mxx - myy, 2 * mxy) < 1e-6 * spread) return 0;
   return 0.5 * Math.atan2(2 * mxy, mxx - myy);
