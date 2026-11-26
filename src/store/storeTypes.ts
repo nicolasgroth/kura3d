@@ -436,7 +436,8 @@ export interface KuraStoreState {
     targetId?: string,
     toolId?: string | string[],
   ) => Promise<SceneObject | null>;
-  applyHolesOnSolids: () => Promise<void>;
+  /** true si las restas se aplicaron; false si no había alcance, contacto o el motor estaba ocupado. */
+  applyHolesOnSolids: () => Promise<boolean>;
   hollowObject: (id: string, options: HollowOptions) => Promise<boolean>;
   planeCutObject: (id: string, options: PlaneCutOptions) => Promise<SceneObject[]>;
   /**
