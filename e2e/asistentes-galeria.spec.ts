@@ -27,9 +27,9 @@ for (const ancho of [1440, 1024]) {
       page.on('console', (m) => m.type() === 'error' && errores.push(m.text()));
       await abrirGaleria(page);
       const tarjetas = page.locator('.kura-asis-card');
-      await expect(tarjetas).toHaveCount(3);
+      await expect(tarjetas).toHaveCount(4);
       // Las miniaturas se generan: al terminar cada tarjeta trae un SVG (o su icono de respaldo).
-      await expect(page.locator('.kura-asis-card svg.kura-asis-thumb')).toHaveCount(3, { timeout: 60000 });
+      await expect(page.locator('.kura-asis-card svg.kura-asis-thumb')).toHaveCount(4, { timeout: 60000 });
       // Sin desbordar horizontalmente.
       const panel = page.locator('.kura-asis-panel');
       expect(await panel.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);

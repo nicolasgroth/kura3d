@@ -31,7 +31,7 @@ export interface ScrewFitOptions {
   readonly leadMm: number;
   /** Vueltas que se desenrosca la hembra para medir (las posiciones van de 0 a este valor, sin incluirlo). */
   readonly turns: number;
-  /** Posiciones medidas (incluida la final). Por defecto 6. */
+  /** Posiciones donde se mide la interferencia (incluida la final). Por defecto 6. */
   readonly samples?: number;
   /** +1 si la hembra sale hacia +Z (tapa arriba), −1 si sale hacia −Z. */
   readonly direction?: 1 | -1;
@@ -45,7 +45,12 @@ export interface ScrewFitPosition {
   /** Vueltas desenroscadas desde la posición final. */
   readonly turns: number;
   readonly interferenceMm3: number;
-  readonly clearanceMm: number;
+  /**
+   * Holgura mínima en esta posición, o null si no se midió: se mide en la posición final y a media carrera (la malla es
+   * invariante ante el movimiento de tornillo, así que la holgura casi no cambia por la hélice; la interferencia sí se
+   * mide en todas, porque es la que delata un perfil que no calza).
+   */
+  readonly clearanceMm: number | null;
 }
 
 export interface ScrewFitReport {
@@ -86,13 +91,15 @@ export function checkScrewFitSolids(wasm: ManifoldToplevel, male: Manifold, fema
     const femaleClipped = keepAbove ? scope.track(female.intersect(keepAbove)) : female;
     const positions: ScrewFitPosition[] = [];
     const screwed = (m: Manifold, t: number) => scope.track(scope.track(m.rotate([0, 0, dir * 360 * t])).translate([0, 0, dir * lead * t]));
+    const half = Math.floor(samples / 2);
     for (let k = 0; k < samples; k++) {
       const t = (turns * k) / samples;
       const vol = Math.max(0, scope.track(male.intersect(screwed(female, t))).volume());
-      const gap = vol > SCREW_FIT_INTERFERENCE_TOL_MM3 ? 0 : maleClipped.minGap(screwed(femaleClipped, t), SCREW_FIT_SEARCH_MM);
-      positions.push({ turns: round(t, 4), interferenceMm3: round(vol, 4), clearanceMm: round(Math.min(gap, SCREW_FIT_SEARCH_MM), 3) });
+      const measure = k === 0 || k === half || vol > SCREW_FIT_INTERFERENCE_TOL_MM3;
+      const gap = vol > SCREW_FIT_INTERFERENCE_TOL_MM3 ? 0 : measure ? maleClipped.minGap(screwed(femaleClipped, t), SCREW_FIT_SEARCH_MM) : null;
+      positions.push({ turns: round(t, 4), interferenceMm3: round(vol, 4), clearanceMm: gap === null ? null : round(Math.min(gap, SCREW_FIT_SEARCH_MM), 3) });
     }
-    const minClearanceMm = Math.min(...positions.map((p) => p.clearanceMm));
+    const minClearanceMm = Math.min(...positions.flatMap((p) => (p.clearanceMm === null ? [] : [p.clearanceMm])));
     const maxInterferenceMm3 = Math.max(...positions.map((p) => p.interferenceMm3));
     const status = screwFitStatus(minClearanceMm, maxInterferenceMm3);
     return { status, fits: status === 'ok', minClearanceMm, maxInterferenceMm3, positions };

@@ -48,7 +48,8 @@ export async function screwFitCheck(scene: WorkScene, refs: readonly string[], k
   if (JSON.stringify(info[0].spec) !== JSON.stringify(info[1].spec)) {
     throw new RecipeError('run.badArgs', at, { detail: 'screw_fit: body and lid must share the same measurements' });
   }
-  const report = await guarded({ at, lang }, () => screwContainerFit(info[0].spec));
+  // Cuatro posiciones: la vista previa del asistente se pausa sobre 1,5 s.
+  const report = await guarded({ at, lang }, () => screwContainerFit(info[0].spec, { samples: 4 }));
   return {
     kind: 'screw_fit',
     ref: refs[1],

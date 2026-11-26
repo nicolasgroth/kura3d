@@ -142,6 +142,29 @@ function roundedSquare(wasm: ManifoldToplevel, scope: WasmScope, half: number, h
   return scope.track(wasm.Manifold.hull(posts));
 }
 
+/**
+ * Contorno exterior de la tapa entre `z0` y `z1`: cilindro liso, estriado (moleteado: estrías verticales de perfil
+ * senoidal, sin voladizos) o hexágono de caras planas, siempre dentro de `radius` y con `GRIP_DEPTH_MM` de agarre.
+ * El estriado es UNA extrusión de un polígono (no la resta de decenas de cilindros).
+ */
+function lidShell(wasm: ManifoldToplevel, scope: WasmScope, grip: ScrewContainerGrip, radius: number, z0: number, z1: number, n: number): Manifold {
+  if (grip === 'flats') {
+    const circum = radius / Math.cos(Math.PI / 6);
+    const hex = frustum(wasm, scope, z0, z1, circum, circum, 6);
+    return scope.track(hex.intersect(frustum(wasm, scope, z0 - 1, z1 + 1, radius, radius, n)));
+  }
+  if (grip === 'none') return frustum(wasm, scope, z0, z1, radius, radius, n);
+  const flutes = Math.min(120, Math.max(12, Math.round((2 * Math.PI * radius) / 3)));
+  const perFlute = 8;
+  const outline: [number, number][] = [];
+  for (let i = 0; i < flutes * perFlute; i++) {
+    const a = (2 * Math.PI * i) / (flutes * perFlute);
+    const r = radius - GRIP_DEPTH_MM * 0.5 * (1 - Math.cos(flutes * a));
+    outline.push([r * Math.cos(a), r * Math.sin(a)]);
+  }
+  return scope.track(scope.track(wasm.Manifold.extrude([outline], z1 - z0)).translate([0, 0, z0]));
+}
+
 /** Cuerpo y tapa en posición de armado (tapa a tope en el asiento), eje Z. Quien llama libera los dos. */
 export function buildScrewContainerSolids(wasm: ManifoldToplevel, spec: ScrewContainerOptions): { body: Manifold; lid: Manifold; layout: ScrewContainerLayout } {
   const L = layoutScrewContainer(spec);
@@ -165,28 +188,14 @@ export function buildScrewContainerSolids(wasm: ManifoldToplevel, spec: ScrewCon
     const cavity = frustum(wasm, scope, spec.bottomMm, L.topZ + 1, L.innerRadius, L.innerRadius, N);
     const body = scope.track(scope.track(base.add(neck)).subtract(cavity));
 
-    // Tapa (armada): cilindro − rosca hembra − bisel de la boca − agarre.
+    // Tapa (armada): contorno (liso, estriado o con caras planas) − rosca hembra − bisel de la boca.
     const lidTop = L.seatZ + L.lidHeight;
-    const shell = frustum(wasm, scope, L.seatZ, lidTop, L.lidRadius, L.lidRadius, N);
+    const shell = lidShell(wasm, scope, spec.grip, L.lidRadius, L.seatZ, lidTop, N);
     const c = L.effRadialClearanceMm;
     const female = thread(L.rootRadius + c, L.majorRadius + c, L.seatZ - 1, L.topZ + LID_TOP_GAP_MM, tap.tapBreaks);
     const mouthR = L.majorRadius + c - 0.1 * profile.depthMm;
     const mouth = frustum(wasm, scope, L.seatZ - 1, L.seatZ + (mouthR - L.rootRadius - c), mouthR + 1, L.rootRadius + c, N);
-    let lid = scope.track(scope.track(shell.subtract(female)).subtract(mouth));
-    if (spec.grip === 'knurl') {
-      const count = Math.min(120, Math.max(12, Math.round((2 * Math.PI * L.lidRadius) / 3)));
-      const grooves = Array.from({ length: count }, (_, i) => {
-        const a = (2 * Math.PI * i) / count;
-        return frustum(wasm, scope, L.seatZ - 1, lidTop + 1, GRIP_DEPTH_MM, GRIP_DEPTH_MM, 8)
-          .translate([L.lidRadius * Math.cos(a), L.lidRadius * Math.sin(a), 0]);
-      });
-      grooves.forEach((g) => scope.track(g));
-      lid = scope.track(lid.subtract(scope.track(wasm.Manifold.union(grooves))));
-    } else if (spec.grip === 'flats') {
-      const apothem = L.lidRadius - GRIP_DEPTH_MM;
-      const hex = frustum(wasm, scope, L.seatZ - 1, lidTop + 1, apothem / Math.cos(Math.PI / 6), apothem / Math.cos(Math.PI / 6), 6);
-      lid = scope.track(lid.intersect(hex));
-    }
+    const lid = scope.track(scope.track(shell.subtract(female)).subtract(mouth));
     return { body: scope.keep(body), lid: scope.keep(lid), layout: L };
   });
 }

@@ -157,23 +157,25 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
       <ThreadPairOption value={pair} onChange={setPair} />
 
       <div className="kura-form-grid">
-        <div className="kura-form-field" hidden={pair !== null}>
-          <label htmlFor="thread-kind">{t(language, 'dialog.thread.kind')}</label>
-          <select
-            id="thread-kind"
-            className="kura-select"
-            value={kind}
-            onChange={(e) => {
-              const next = e.target.value as ThreadOptions['kind'];
-              setKind(next);
-              syncLength(diameterMm, next);
-            }}
-          >
-            <option value="bolt">{t(language, 'dialog.thread.kindBolt')}</option>
-            <option value="nut">{t(language, 'dialog.thread.kindNut')}</option>
-            <option value="hole">{t(language, 'dialog.thread.kindHole')}</option>
-          </select>
-        </div>
+        {pair === null && (
+          <div className="kura-form-field">
+            <label htmlFor="thread-kind">{t(language, 'dialog.thread.kind')}</label>
+            <select
+              id="thread-kind"
+              className="kura-select"
+              value={kind}
+              onChange={(e) => {
+                const next = e.target.value as ThreadOptions['kind'];
+                setKind(next);
+                syncLength(diameterMm, next);
+              }}
+            >
+              <option value="bolt">{t(language, 'dialog.thread.kindBolt')}</option>
+              <option value="nut">{t(language, 'dialog.thread.kindNut')}</option>
+              <option value="hole">{t(language, 'dialog.thread.kindHole')}</option>
+            </select>
+          </div>
+        )}
 
         <div className="kura-form-field">
           <label htmlFor="thread-diam">{t(language, 'dialog.thread.diameter')}</label>
