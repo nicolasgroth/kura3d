@@ -18,13 +18,15 @@ import '../../styles/viewportFocus.css';
 export function ViewportCanvasA11y(): null {
   const gl = useThree((s) => s.gl);
   const language = useKuraStore((s) => s.language);
+  // Las flechas mueven un plano solo con Cortar o Dividir a la vista; en otro caso el nombre no habla de planos.
+  const planes = useKuraStore((s) => s.activeTool === 'cut' || s.activeDialog === 'cut' || s.activeDialog === 'splitForBed');
   useEffect(() => {
     const el = gl.domElement;
     el.tabIndex = 0;
     el.setAttribute('role', 'application');
-    el.setAttribute('aria-label', t(language, 'viewport.canvasLabel'));
+    el.setAttribute('aria-label', t(language, planes ? 'viewport.canvasLabel' : 'viewport.canvasLabelBase'));
     el.setAttribute('aria-roledescription', t(language, 'viewport.canvasRole'));
     el.classList.add('kura-viewport-canvas');
-  }, [gl, language]);
+  }, [gl, language, planes]);
   return null;
 }

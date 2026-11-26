@@ -15,6 +15,7 @@ import { MENU_IDEAS_FR } from './menuIdeas';
 import { GROUPS_FR } from './groups';
 import { PLATES_VIEW_FR } from './placasVista';
 import { VIEW_MODE_FR } from './vistaModos';
+import { USAB_N26B_FR } from './usabN26b';
 import { PLATES_EXPORT_FR } from './placasExportar';
 import { PLATES_BED_FR } from './placasCama';
 import { PLATES_ARRANGE_FR } from './placasRepartir';
@@ -87,6 +88,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...GROUPS_FR,
   ...PLATES_VIEW_FR,
   ...VIEW_MODE_FR,
+  ...USAB_N26B_FR,
   ...PLATES_EXPORT_FR,
   ...PLATES_BED_FR,
   ...PLATES_ARRANGE_FR,
