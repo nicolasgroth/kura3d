@@ -23,8 +23,8 @@ const FALLBACK_LEVEL = 1;
 /** Deflate no pasa de ~1032:1; un archivo que declara más miente y se rechaza antes de reservar memoria. */
 const MAX_DEFLATE_RATIO = 1100;
 /** Bytes comprimidos por `push` (máximo y mínimo): acotan la salida temporal de cada paso del inflado. */
-const CHUNK_MAX = 64 * 1024;
-const CHUNK_MIN = 4096;
+const CHUNK_MAX = 1024 * 1024;
+const CHUNK_MIN = 64 * 1024; // Partes más chicas hacen lento el inflado por flujo (8 KB: 3 veces más lento con mallas).
 
 const u32 = (bytes: Uint8Array, at: number) => new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(at, true);
 
@@ -101,7 +101,7 @@ function inflateBounded(data: Uint8Array, expected: number): Uint8Array {
     let at = 0;
     while (at < data.length && !ended) {
       // Cada parte se acota a lo que falta por salir dividido por la razón máxima: un `push` no puede
-      // producir (salvo ~4 MB por la parte mínima) mucho más de lo declarado antes de que el callback corte.
+      // producir (salvo ~66 MB por la parte mínima, 64 KB × 1032) mucho más de lo declarado antes de que el callback corte.
       const step = Math.max(CHUNK_MIN, Math.min(CHUNK_MAX, Math.floor((expected - size) / MAX_DEFLATE_RATIO)));
       const end = Math.min(data.length, at + step);
       inflater.push(data.subarray(at, end), end >= data.length);
