@@ -42,6 +42,7 @@ import { executeBedSplit, planSplitForBed, type ExecuteBedSplitOptions } from '.
 import { runFitToBed, type FitToBedTaskArgs } from './fitOperations';
 import { orientApplyChange, orientForPrint, orientOverhangFaces, type OrientApplyTaskArgs, type OrientForPrintTaskArgs, type OrientOverhangFacesArgs } from './orientOperations';
 import { runFitCheck, type FitCheckInput } from '../../engine/fitCheck';
+import { arrangeOnPlatesTask, type ArrangeTaskArgs } from './plateArrangeOperations';
 import { runRecipe } from '../recipes/run/executeRecipe';
 import { createMagnetPocket, type MagnetPocketInput } from './magnetOperations';
 import { createScrewBoss, type ScrewBossInput } from './screwBossOperations';
@@ -165,6 +166,8 @@ export const ENGINE_TASKS = {
   orientForPrint: (_ctx: OperationContext, a: OrientForPrintTaskArgs) => orientForPrint(a),
   orientApply: (_ctx: OperationContext, a: OrientApplyTaskArgs) => orientApplyChange(a),
   orientOverhangFaces: (_ctx: OperationContext, a: OrientOverhangFacesArgs) => orientOverhangFaces(a),
+  // Repartir en placas: solo lectura (orienta si se pide y empaqueta); el store aplica el plan en un paso.
+  arrangeOnPlates: (_ctx: OperationContext, a: ArrangeTaskArgs) => arrangeOnPlatesTask(a),
   // Receta completa (validar → resolver → escena de trabajo → salidas): el resultado es un SceneChange de solo objetos nuevos.
   runRecipe: (ctx: OperationContext, a: Omit<RunInput, 'signal' | 'now'>) => runRecipe(ctx, a),
   validateAssembly: (_ctx: OperationContext, a: { objects: SceneObject[] }) => engine.storedAssemblyResponse(a.objects),

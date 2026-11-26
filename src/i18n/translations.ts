@@ -21,6 +21,7 @@ import { GROUPS_EN, GROUPS_ES } from './locales/groups';
 import { PLATES_VIEW_EN, PLATES_VIEW_ES } from './locales/placasVista';
 import { VIEW_MODE_EN, VIEW_MODE_ES } from './locales/vistaModos';
 import { PLATES_EXPORT_EN, PLATES_EXPORT_ES } from './locales/placasExportar';
+import { PLATES_ARRANGE_EN, PLATES_ARRANGE_ES } from './locales/placasRepartir';
 import { MEASURE_EN, MEASURE_ES } from './locales/measure';
 import { FLOWUX_EN, FLOWUX_ES } from './locales/flowUx';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
@@ -89,6 +90,7 @@ export const TRANSLATIONS_ES = {
   ...PLATES_VIEW_ES,
   ...VIEW_MODE_ES,
   ...PLATES_EXPORT_ES,
+  ...PLATES_ARRANGE_ES,
   ...MEASURE_ES,
   ...FLOWUX_ES,
   ...PREVIEW_ES,
@@ -1437,6 +1439,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PLATES_VIEW_EN,
   ...VIEW_MODE_EN,
   ...PLATES_EXPORT_EN,
+  ...PLATES_ARRANGE_EN,
   ...MEASURE_EN,
   ...FLOWUX_EN,
   ...PREVIEW_EN,

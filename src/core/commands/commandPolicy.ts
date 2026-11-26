@@ -84,6 +84,8 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   add_screw_boss: 'write',
   add_keyhole: 'write',
   add_cable_pass: 'write',
+  // Repartir en placas: con dryRun solo planifica; aplicar crea placas y mueve piezas (un paso de deshacer).
+  arrange_on_plates: 'write',
 });
 
 /** Indica si el nombre corresponde a un comando conocido del Command Bus. */

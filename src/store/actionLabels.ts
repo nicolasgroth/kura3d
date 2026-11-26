@@ -29,6 +29,12 @@ export const moveToPlateName = (language: LanguageCode): string => t(language, M
 /** «Una placa por objeto»: tira de placas y paleta usan este mismo nombre. */
 export const SPREAD_PLATES_KEY: TranslationKey = 'plates.action.onePerObject';
 export const spreadPlatesName = (language: LanguageCode): string => t(language, SPREAD_PLATES_KEY);
+/**
+ * «Repartir en placas» (lote P5): acción de escena, fuera de `ACTION_GROUPS`. Mientras no exista su diálogo, la paleta
+ * la ejecuta con las opciones por defecto (compacto, mantener orientación, separación y margen de 5 mm).
+ */
+export const ARRANGE_PLATES_KEY: TranslationKey = 'plates.action.arrange';
+export const arrangePlatesName = (language: LanguageCode): string => t(language, ARRANGE_PLATES_KEY);
 
 /** Descripción breve bajo la etiqueta (distingue Agrupar, Combinar y Unir), solo en las acciones que la tienen. */
 export const ACTION_DESCRIPTION_KEY: Partial<Record<ActionId, TranslationKey>> = {

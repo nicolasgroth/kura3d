@@ -45,6 +45,7 @@ import { createQuickActionsSlice } from './slices/quickActionsSlice';
 import { createMenuIdeasSlice } from './slices/menuIdeasSlice';
 import { createGroupsSlice } from './slices/groupsSlice';
 import { createPlatesSlice } from './slices/platesSlice';
+import { createPlateArrangeSlice } from './slices/plateArrangeSlice';
 import { createLayoutSlice } from './slices/layoutSlice';
 import { createRepairSlice } from './slices/repairSlice';
 import { createViewPrefsSlice } from './slices/viewPrefsSlice';
@@ -105,6 +106,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createMenuIdeasSlice(ctx),
     ...createGroupsSlice(ctx),
     ...createPlatesSlice(ctx),
+    ...createPlateArrangeSlice(ctx),
     ...createLayoutSlice(ctx),
     ...createRepairSlice(ctx),
     ...createViewPrefsSlice(ctx),

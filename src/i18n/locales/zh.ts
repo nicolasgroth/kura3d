@@ -16,6 +16,7 @@ import { GROUPS_ZH } from './groups';
 import { PLATES_VIEW_ZH } from './placasVista';
 import { VIEW_MODE_ZH } from './vistaModos';
 import { PLATES_EXPORT_ZH } from './placasExportar';
+import { PLATES_ARRANGE_ZH } from './placasRepartir';
 import { MEASURE_ZH } from './measure';
 import { FLOWUX_ZH } from './flowUx';
 import { PREVIEW_ZH } from './preview';
@@ -82,6 +83,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PLATES_VIEW_ZH,
   ...VIEW_MODE_ZH,
   ...PLATES_EXPORT_ZH,
+  ...PLATES_ARRANGE_ZH,
   ...MEASURE_ZH,
   ...FLOWUX_ZH,
   ...PREVIEW_ZH,
