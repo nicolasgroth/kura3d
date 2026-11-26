@@ -43,7 +43,7 @@ function box(id: string, position: Vec3, plateRef?: string, extra: Partial<Scene
 describe('mover a placa: queda dentro de la cama destino', () => {
   const SMALL: ScenePlate[] = [
     { id: 'p1', name: 'Placa 1', origin: [0, 0] },
-    { id: 'p2', name: 'Placa 2', origin: [250, 0], bed: { widthMm: 100, depthMm: 100, heightMm: 100 } },
+    { id: 'p2', name: 'Placa 2', origin: [250, 0], bed: { name: 'Chica', widthMm: 100, depthMm: 100, heightMm: 100 } },
   ];
   const fp = (o: SceneObject) => ({ minX: o.position[0] - 10, maxX: o.position[0] + 10, minZ: o.position[2] - 10, maxZ: o.position[2] + 10 });
 
