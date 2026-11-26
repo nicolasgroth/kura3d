@@ -11,6 +11,7 @@
  */
 
 import {
+  assertPrintLayout,
   assignmentsOf,
   nothingToMove,
   parseCreatePlate,
@@ -81,6 +82,7 @@ export const PLATE_HANDLERS = {
 
   move_to_plate: (p: RawParams, { get }: Deps) => {
     const { ids, plateId } = parseMoveToPlate(get(), p);
+    assertPrintLayout(get().layout);
     const moved = get().moveToPlate(plateId, ids);
     if (moved === 0) throw nothingToMove();
     const s = get();

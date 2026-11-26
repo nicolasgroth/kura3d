@@ -13,6 +13,7 @@
  */
 
 import { parseSimplifyRequest, simplifyReportToUser } from '../../src/core/bus/simplifySchema';
+import { assertPrintLayout } from '../../src/core/bus/plateCommandSchemas';
 import type { SimplifyRequest } from '../../src/engine/simplify';
 import * as ops from '../../src/core/operations/index';
 import type { OperationContext, SceneChange } from '../../src/core/operations/index';
@@ -483,6 +484,8 @@ export class KuraHeadlessEngine {
         `spacingMm=${spacingMm} not supported: the Kurra Studio engine distributes with a fixed spacing of ${ENGINE_GRID_SPACING_MM} mm. Omit the parameter.`
       );
     }
+    // Distribuir en la cama solo en la vista Imprimir (misma regla y error que el bus de la app).
+    if (mode === 'arrange_grid') assertPrintLayout(this.plates.layout);
     // Operación pura compartida con el store; los bloqueados no se mueven.
     const targets = objectIds.map((id) => this.requireObject(id));
     this.apply(ops.alignObjects([...this.objects.values()], targets, ua.alignModeFromUser(mode), this.printerProfile).change);

@@ -12,7 +12,7 @@
  */
 
 import {
-  assignmentsOf, nothingToMove, parseCreatePlate, parseDeletePlate, parseMoveToPlate, parseRenamePlate, parseSetActivePlate,
+  assertPrintLayout, assignmentsOf, nothingToMove, parseCreatePlate, parseDeletePlate, parseMoveToPlate, parseRenamePlate, parseSetActivePlate,
   parseSetLayout, parseSpreadOnePlatePerObject, plateListToUser, plateNotCreated, plateToUser, type PlateListState,
 } from '../../src/core/bus/plateCommandSchemas';
 import { CommandError } from '../../src/core/bus/commandErrors';
@@ -163,6 +163,7 @@ export class HeadlessPlates {
 
   moveTo(p: RawParams) {
     const { ids, plateId } = parseMoveToPlate(this.scene(), p);
+    assertPrintLayout(this.layout);
     const result = moveToPlateOrNew(this.scene(), ids, plateId, { ...this.actionContext(), makeId: this.makeId, nameFor });
     if (!result) throw nothingToMove();
     this.commit(result.scene, result.created ?? undefined);

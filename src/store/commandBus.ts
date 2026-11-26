@@ -19,6 +19,7 @@ import type { KuraCommandRequest, KuraCommandResponse, SceneObject } from '../ty
 import { captureViewportPng, isMcpCommandAllowed } from '../utils/mcpBridgeClient';
 import { CommandError, type CommandErrorCode } from './commandErrors';
 import { simplifyReportToUser } from '../core/bus/simplifySchema';
+import { assertPrintLayout } from '../core/bus/plateCommandSchemas';
 import type { SimplifyReport } from '../engine/simplify';
 import * as schema from './commandSchemas';
 import * as groupSchema from './groupCommandSchemas';
@@ -167,6 +168,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   transform_object: (p, { get }, command) => {
     const input = schema.parseTransform(get(), p);
     const id = input.target.id;
+    if (input.dropToBed || input.centerOnBed) assertPrintLayout(get().layout);
     if (input.dropToBed) get().dropObjectToBed(id);
     else if (input.centerOnBed) get().centerObjectOnBed(id);
     else {
@@ -349,6 +351,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
 
   align_objects: (p, deps) => {
     const { mode, objects, spacingIgnored } = schema.parseAlign(deps.get(), p);
+    if (mode === 'arrange_grid') assertPrintLayout(deps.get().layout);
     if (objects) deps.setSelectedIds(objects.map((o) => o.id));
     const result = deps.get().alignSelectedObjects(alignModeFromUser(mode));
     return { mode, moved: result?.moved ?? 0, fitsBed: result?.fitsBed ?? true, ...(spacingIgnored ? { ignoredParams: ['spacingMm'] } : {}) };

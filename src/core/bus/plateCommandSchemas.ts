@@ -15,6 +15,7 @@ import type { SceneLayout, ScenePlate } from '../../types/plates';
 import { isPrintable } from '../scene/objectRole';
 import { poseBounds } from '../scene/plateArrange';
 import { spreadCandidates } from '../scene/plateSpread';
+import { plateToolBlockReason } from '../scene/viewMode';
 import { findPlate, MAX_PLATE_NAME, MAX_PLATES, plateBed, resolveActivePlate, type ProjectBed } from '../scene/plates';
 import { CommandError } from './commandErrors';
 import { findObject } from './commandTargets';
@@ -127,6 +128,14 @@ export function parseSetLayout(p: RawParams): SceneLayout {
 
 /** Nada que mover (todas ya estaban en la placa destino o no son piezas sólidas): error tipado, la escena no cambia. */
 export const nothingToMove = () => new CommandError('precondition', 'bus.error.plateNothingToMove');
+
+/**
+ * Acciones de cama (mover a placa, apoyar, centrar, distribuir en grilla) fuera de la vista Imprimir: misma regla que
+ * `layoutGuardSlice` en la app (`plateToolBlockReason`), con error tipado en el bus y en el modo sin interfaz.
+ */
+export function assertPrintLayout(layout: SceneLayout | undefined): void {
+  if (plateToolBlockReason(layout)) throw new CommandError('precondition', 'bus.error.printLayoutOnly');
+}
 
 // ---------------------------------------------------------------------------------------------------------------
 // Respuesta
