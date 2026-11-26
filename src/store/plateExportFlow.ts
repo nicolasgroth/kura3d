@@ -98,9 +98,17 @@ export function singleFilePlan(
   // Escena completa: lo imprimible sin placa (con varias placas) queda fuera, como en el alcance.
   const kept = plates.length >= 2 ? fullScene.filter((o) => !isPrintable(o) || exportPlateOf(fullScene, plates, o)) : [...fullScene];
   const shifted = shiftForExport(kept, plates);
+  // P7: las placas reales viajan en los metadatos de escena para volver como placas al abrir el 3MF.
+  const layout = layoutOf(plan.buckets, shifted.offsets, plates) ?? (plates.length ? { plates: [] } : undefined);
+  if (layout && plates.length) {
+    const index = new Map(plates.map((p, i) => [p.id, i]));
+    const plateOf: Record<string, number> = {};
+    for (const o of kept) if (o.plateRef !== undefined && index.has(o.plateRef)) plateOf[o.id] = index.get(o.plateRef)!;
+    layout.scenePlates = { plates: plates.map((p) => ({ name: p.name, origin: [p.origin[0], p.origin[1]], ...(p.bed ? { bed: p.bed } : {}) })), plateOf };
+  }
   return {
     targets: shifted.objects,
-    plateLayout: layoutOf(plan.buckets, shifted.offsets, plates),
+    plateLayout: layout,
     plateCount: plan.buckets.length,
     excluded: plan.excluded,
   };

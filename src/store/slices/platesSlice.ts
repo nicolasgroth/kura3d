@@ -11,6 +11,9 @@
 import { projectBed } from '../../core/scene/activePlateBed';
 import { moveToPlateOrNew, removePlateMoving } from '../../core/scene/plateActions';
 import { setPlateBed } from '../../core/scene/plateBedChange';
+import { convertGroupsToPlates } from '../../core/scene/plateConvert';
+import { tagLastPushedStep } from '../historyLabels';
+import { groupsToConvert } from '../plateGroupNames';
 import { reassignByPosition } from '../../core/scene/plateMove';
 import { spreadOnePlatePerObject } from '../../core/scene/plateSpread';
 import {
@@ -91,6 +94,34 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     renamePlate: (plateId, name) => !rejectWhileLocked() && commit(renamePlate(scene(), plateId, name)),
+
+    convertGroupsToPlates: (groupIds) => {
+      if (rejectWhileLocked()) return null;
+      const state = get();
+      if (state.layout !== 'print') {
+        get().addToast(tr('plates.convert.assembly'), 'info');
+        return null;
+      }
+      const wanted = groupIds?.length ? groupIds : groupsToConvert(state.objects, state.groups, state.selectedIds);
+      const result = wanted.length
+        ? convertGroupsToPlates({ objects: state.objects, plates: state.plates, groups: state.groups }, wanted, {
+          projectBed: projectBed(state), makeId: () => makeId('plate'), nameFor: plateName,
+        })
+        : null;
+      if (!result) {
+        get().addToast(tr('plates.convert.none'), 'info');
+        return null;
+      }
+      commit(result.scene, { activePlateId: result.created[0] });
+      tagLastPushedStep({ kind: 'convertGroupsToPlates', count: result.created.length }, get().past);
+      get().requestCameraPreset('plates');
+      get().addToast(tr('plates.convert.done', { count: result.created.length }), 'success');
+      if (result.skipped.length) {
+        const names = result.skipped.map((id) => state.groups.find((g) => g.id === id)?.name ?? id).join(', ');
+        get().addToast(tr('plates.convert.skipped', { names }), 'info');
+      }
+      return { created: result.created, skipped: result.skipped };
+    },
 
     setPlateBed: (plateId, bed) => {
       if (rejectWhileLocked()) return null;

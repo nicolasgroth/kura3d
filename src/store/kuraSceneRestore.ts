@@ -14,6 +14,7 @@ import { MAX_GROUP_NAME } from '../core/scene/groups';
 import { makeId } from '../core/scene/sceneObjects';
 import type { MaterialPresetId, MeshData, ObjectRole, SceneGroup, SceneObject, Vec3 } from '../types/kura';
 import { roleFromLegacy } from '../core/scene/objectRole';
+import type { ScenePlate } from '../types/plates';
 
 /** Constructor de objetos del store (calcula estadísticas). */
 export type RestoreBuild = (params: {
@@ -30,6 +31,8 @@ export type RestoreBuild = (params: {
 export interface RestoredScene {
   objects: SceneObject[];
   groups: SceneGroup[];
+  /** Placas reales (P7), solo si se pidieron (`withPlates`) y el archivo las trae; ids nuevos. */
+  plates: ScenePlate[];
 }
 
 /** true si el modelo es una escena de Kurra Studio que se restaura tal cual. */
@@ -39,17 +42,24 @@ export function isKuraScene(model: engine.ImportedModel): boolean {
 
 /**
  * Posición de mundo de un objeto guardado: la escrita más el origen de placa que se le restó al exportar por placa
- * (las placas no se restauran como placas: cada pieza vuelve a su lugar de mundo; convertirlas es el lote P7).
+ * (cada pieza vuelve a su lugar de mundo; las placas reales se restauran aparte, ver `restoreKuraScene`).
  */
 export function kuraWorldPosition(k: { position: Vec3; plateOffset?: [number, number] }): Vec3 {
   const off = k.plateOffset;
   return off ? [k.position[0] + off[0], k.position[1], k.position[2] + off[1]] : [k.position[0], k.position[1], k.position[2]];
 }
 
-/** Objetos y grupos de la escena guardada, con ids nuevos y el desplazamiento `offset` aplicado. */
-export function restoreKuraScene(model: engine.ImportedModel, build: RestoreBuild, offset: Vec3 = [0, 0, 0], asReference = false): RestoredScene {
+/**
+ * Objetos y grupos de la escena guardada, con ids nuevos y el desplazamiento `offset` aplicado. Con `withPlates` (abrir
+ * en una escena vacía, sin desplazamiento) también sus placas reales con su cama, y cada sólido en la suya (P7).
+ */
+export function restoreKuraScene(
+  model: engine.ImportedModel, build: RestoreBuild, offset: Vec3 = [0, 0, 0], asReference = false, withPlates = false,
+): RestoredScene {
   const metaGroups = model.kuraScene?.groups ?? [];
   const groupIds = metaGroups.map(() => makeId('grp'));
+  const metaPlates = withPlates && !asReference ? model.kuraScene?.plates ?? [] : [];
+  const plates: ScenePlate[] = metaPlates.map((p) => ({ id: makeId('plate'), name: p.name, origin: [p.origin[0], p.origin[1]], ...(p.bed ? { bed: { ...p.bed } } : {}) }));
   const objects = model.parts.map((part) => {
     const k = part.kura!;
     const world = kuraWorldPosition(k);
@@ -69,6 +79,7 @@ export function restoreKuraScene(model: engine.ImportedModel, build: RestoreBuil
       locked: k.locked,
       ...(k.materialPreset ? { materialPreset: k.materialPreset as MaterialPresetId } : {}),
       ...(k.group !== undefined ? { groupRef: groupIds[k.group] } : {}),
+      ...(k.plate !== undefined && plates[k.plate] ? { plateRef: plates[k.plate].id } : {}),
     };
   });
   const idsOf = (indices?: number[]) => {
@@ -89,5 +100,5 @@ export function restoreKuraScene(model: engine.ImportedModel, build: RestoreBuil
       ...(lockedByGroup ? { lockedByGroup } : {}),
     };
   });
-  return { objects, groups };
+  return { objects, groups, plates };
 }

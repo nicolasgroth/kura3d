@@ -272,8 +272,11 @@ export const validStoredGroups = (v: unknown): v is SceneGroup[] =>
   v === undefined || (Array.isArray(v) && v.length <= MAX_GROUPS && v.every(validStoredGroup));
 
 /** Placa de impresión guardada (`ScenePlate`, versión 4); ids repetidos y referencias rotas se sanean aparte. */
+// Cama propia (P7): nombre visible no vacío (es lo que dice la ficha) e id de perfil corto; el perfil puede no existir
+// en este equipo y la cama se conserva con sus medidas.
 const plateBedShape = shape({
-  profileId: optional(id), name: (v) => typeof v === 'string' && v.length <= MAX_PLATE_NAME,
+  profileId: optional((v) => id(v) && v.length <= 64),
+  name: (v) => typeof v === 'string' && v.length <= MAX_PLATE_NAME && v.trim().length > 0,
   widthMm: finite, depthMm: finite, heightMm: finite, marginMm: numberOption,
 } satisfies Record<keyof PlateBed, Rule>);
 const plateOrigin = (v: unknown) => Array.isArray(v) && v.length === 2
