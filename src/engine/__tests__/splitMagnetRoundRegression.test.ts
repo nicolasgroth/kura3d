@@ -2,7 +2,8 @@
  * @file src/engine/__tests__/splitMagnetRoundRegression.test.ts
  * @description Regresión exacta de los imanes redondos en la unión del corte tras sumar cuadrados y rectangulares:
  * mismas posiciones (±0,001 mm), cantidades y fuerza que antes del cambio, en un bloque, una sección grande con
- * imán de 8 × 3, una caja girada 30° (sección oblicua) y una cantidad fija de 3. Valores medidos con el motor previo.
+ * imán de 8 × 3, una caja girada 30° (sección oblicua) y una cantidad fija de 3. Valores medidos con el motor previo
+ * (la caja girada ahora se corta en dos tramos y no en tres: los imanes no suman saliente; su sección no cambia).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -44,7 +45,8 @@ const CASES: Array<{ name: string; make: () => Manifold; bed: SplitBed; connecto
       return out;
     },
     connector: () => magnetConnector(MAGNET_DEFAULTS, 'auto'),
-    joints: [GIRADA.map(([x, , z]) => [x, -16.6667, z] as Vec3), GIRADA.map(([x, , z]) => [x, 16.6667, z] as Vec3)], area: 0.024543692324484244,
+    // Antes en tres tramos (el plan sumaba 0,8 mm de saliente a los imanes); ahora en dos: la sección (y los imanes) es la misma.
+    joints: [GIRADA], area: 0.024543692324484244,
   },
   {
     name: 'bloque 60 × 60 × 30, cantidad fija 3', make: () => w.Manifold.cube([60, 60, 30], true), bed: BED50,
