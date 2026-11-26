@@ -17,6 +17,12 @@ import { idSchema, rangeSchema } from './schemas.js';
 import { summarizeSplitResult } from './splitSummary.js';
 import { dispatchWithFallback, type KuraToolContext } from './tools.js';
 
+/** Ancho del imán rectangular de la unión: obligatorio con `magnetShape: 'rect'`. */
+function requiredRectWidth(widthMm: number | undefined): number {
+  if (widthMm === undefined) throw new Error('magnetWidthMm is required when magnetShape="rect".');
+  return widthMm;
+}
+
 export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx: KuraToolContext): void {
   const d = OPERATION_DEFAULTS.split;
   server.registerTool(
@@ -45,8 +51,11 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         allowDiagonal: z.boolean().default(false).describe('Allows resting the part diagonally on the bed if it fits that way without cutting.'),
         connectorType: z.enum(['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel', 'magnet']).default('dowel')
           .describe('dowel = fixed peg on one part; loose-dowel = blind holes in both parts plus separate printed dowels (no protrusions); ' +
-            'magnet = facing round magnet pockets on both faces of each cut so the model comes apart (glue each pair with opposite poles).'),
-        magnetDiameterMm: rangeSchema(MR.sizeMm).default(MD.sizeMm).describe('connectorType="magnet": round magnet diameter in mm (default 5).'),
+            'magnet = facing magnet pockets (round, square or rectangular) on both faces of each cut so the model comes apart (glue each pair with opposite poles).'),
+        magnetShape: z.enum(['round', 'square', 'rect']).default('round')
+          .describe('connectorType="magnet": magnet shape. square/rect pockets have the same orientation in both parts, with the length along the longest direction of the section.'),
+        magnetDiameterMm: rangeSchema(MR.sizeMm).default(MD.sizeMm).describe('connectorType="magnet": diameter (round), side (square) or length (rect) of the magnet in mm (default 5).'),
+        magnetWidthMm: rangeSchema(MR.widthMm).optional().describe('connectorType="magnet" with magnetShape="rect" (required there): magnet width in mm.'),
         magnetHeightMm: rangeSchema(MR.heightMm).default(MD.heightMm).describe('connectorType="magnet": magnet height in mm (default 2); each pocket is height + depth clearance deep.'),
         magnetClearanceMm: rangeSchema(MR.clearanceMm).default(MD.clearanceMm).describe('connectorType="magnet": clearance added to the diameter.'),
         magnetDepthClearanceMm: rangeSchema(MR.depthClearanceMm).default(MD.depthClearanceMm).describe('connectorType="magnet": clearance added to the depth.'),
@@ -73,8 +82,9 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
           ? null
           : args.connectorType === 'magnet'
           ? magnetConnector({
-              shape: 'round', sizeMm: args.magnetDiameterMm, heightMm: args.magnetHeightMm, clearanceMm: args.magnetClearanceMm,
+              shape: args.magnetShape, sizeMm: args.magnetDiameterMm, heightMm: args.magnetHeightMm, clearanceMm: args.magnetClearanceMm,
               depthClearanceMm: args.magnetDepthClearanceMm, hidden: false,
+              ...(args.magnetShape === 'rect' ? { widthMm: requiredRectWidth(args.magnetWidthMm) } : {}),
             }, args.magnetCount)
           : {
               type: args.connectorType, size: args.connectorSize === 'auto' ? 4 : args.connectorSize, ...(args.connectorSize === 'auto' ? { sizeAuto: true } : {}), depth: args.connectorDepth, tolerance: args.tolerance,

@@ -19,7 +19,8 @@ import { AddonPresetPicker } from '../addons/AddonPresetPicker';
 
 export function builtinPresetLabel(values: MagnetParams, language: LanguageCode): string {
   const size = magnetSizeLabel(values, language);
-  return t(language, values.shape === 'square' ? 'magnet.preset.square' : 'magnet.preset.round', { size });
+  const key = values.shape === 'square' ? 'magnet.preset.square' : values.shape === 'rect' ? 'magnet.preset.rect' : 'magnet.preset.round';
+  return t(language, key, { size });
 }
 
 export const MagnetPresetPicker: React.FC = () => {
@@ -37,7 +38,8 @@ export const MagnetPresetPicker: React.FC = () => {
       builtins={builtins}
       presets={useMagnetPresets}
       same={sameMagnet}
-      onPick={setMagnetParams}
+      // Un preajuste trae todo el imán: sin ancho ni giro propios no hereda los del rectangular anterior.
+      onPick={(v) => setMagnetParams({ widthMm: undefined, turn90: undefined, ...v })}
     />
   );
 };

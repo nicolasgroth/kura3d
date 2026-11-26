@@ -13,7 +13,7 @@
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';
-import { HIDDEN_COVER_MM, MOUTH_OVERSHOOT_MM, POCKET_SEGMENTS, type MagnetParams, type MagnetShape, type PocketFrame } from './magnetPocket';
+import { footprintReach, HIDDEN_COVER_MM, magnetFootprint, MOUTH_OVERSHOOT_MM, POCKET_SEGMENTS, type MagnetParams, type MagnetShape, type PocketFrame } from './magnetPocket';
 import { addScaled, dot3, rayHits, rayHitsDetailed } from './meshRays';
 
 /** Direcciones de muestreo alrededor del eje (las pares coinciden con las 8 de la medición de pared). */
@@ -29,13 +29,15 @@ export const OPEN_COVER_MM = 0.05;
 /** Un corte cuya normal forma más de ~41° con el eje es una cara de costado (borde de la pieza), no la boca curva. */
 const SIDE_FACE_COS = 0.75;
 
-/** Dirección tangente `k` de `MOUTH_DIRECTIONS` y el alcance del borde en ella (el cuadrado llega más lejos en las diagonales). */
-export function rimDirection(frame: PocketFrame, k: number, shape: MagnetShape, half: number): { dir: Vec3; reach: number } {
+/**
+ * Dirección tangente `k` de `MOUTH_DIRECTIONS` y el alcance del borde en ella, con semilados `half` (a lo largo de u)
+ * y `halfW` (de w; por defecto igual): cuadrado y rectángulo llegan más lejos hacia sus esquinas.
+ */
+export function rimDirection(frame: PocketFrame, k: number, shape: MagnetShape, half: number, halfW = half): { dir: Vec3; reach: number } {
   const ang = (k * 2 * Math.PI) / MOUTH_DIRECTIONS;
   const cu = Math.cos(ang), cw = Math.sin(ang);
   const dir: Vec3 = [frame.u[0] * cu + frame.w[0] * cw, frame.u[1] * cu + frame.w[1] * cw, frame.u[2] * cu + frame.w[2] * cw];
-  const reach = shape === 'square' ? half / Math.max(Math.abs(cu), Math.abs(cw)) : half;
-  return { dir, reach };
+  return { dir, reach: footprintReach(shape, half, halfW, cu, cw) };
 }
 
 /**
@@ -100,12 +102,19 @@ export function measureMouthSurface(world: MeshData, point: Vec3, frame: PocketF
   const depth = p.heightMm + p.depthClearanceMm;
   // Oculto: el hueco llega hasta la tapa más su profundidad; hasta ahí se busca la superficie.
   const searchDepth = p.hidden ? HIDDEN_COVER_MM + depth : depth;
-  const holeHalf = (p.sizeMm + p.clearanceMm) / 2;
+  const foot = magnetFootprint(p);
+  // Proporción ancho / largo: los semilados de w salen de los de u (1 en redondo y cuadrado).
+  const ratioW = foot.widthMm / foot.lengthMm;
+  const holeHalf = (foot.lengthMm + p.clearanceMm) / 2;
+  const holeHalfW = (foot.widthMm + p.clearanceMm) / 2;
   // El negativo redondo es un polígono circunscrito: su borde llega un poco más lejos que el radio del hueco.
   const outerHalf = (p.shape === 'round' ? holeHalf / Math.cos(Math.PI / POCKET_SEGMENTS) : holeHalf) * 1.04 + 0.05;
   const cap = Math.min(MAX_MOUTH_OVERSHOOT_MM, outerHalf * 1.5);
+  const outerHalfW = holeHalfW + (outerHalf - holeHalf);
   const sampleAt = (k: number, half: number, lateral: boolean) => {
-    const { dir, reach } = rimDirection(frame, k, p.shape, half);
+    // Semilado de w correspondiente: en el borde del hueco y fuera de él suma la misma holgura que el largo.
+    const halfW = half === holeHalf ? holeHalfW : half === outerHalf ? outerHalfW : half * ratioW;
+    const { dir, reach } = rimDirection(frame, k, p.shape, half, halfW);
     return surfaceSample(world, addScaled(point, dir, reach), frame.axis, searchDepth, cap, lateral ? { point, dir, reach } : null);
   };
   let rise = 0;

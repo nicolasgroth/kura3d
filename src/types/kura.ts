@@ -806,8 +806,14 @@ export interface SceneObjectMetadata {
  * Única definición: `MagnetParams` de `core/addons/magnetPocket` es este mismo tipo.
  */
 export interface MagnetPocketParams {
-  shape: 'round' | 'square';
+  /** Redondo (diámetro × alto), cuadrado (lado × alto) o rectangular (largo × ancho × alto). */
+  shape: 'round' | 'square' | 'rect';
+  /** Diámetro (redondo), lado (cuadrado) o largo (rectangular). */
   sizeMm: number;
+  /** Ancho del rectangular; ausente en redondo y cuadrado (el cuadrado es el caso largo = ancho). */
+  widthMm?: number;
+  /** Rectangular suelto: el largo va al «arriba» de la cara; con `true`, girado 90°. Ausente = sin giro. */
+  turn90?: boolean;
   heightMm: number;
   /** Holgura sumada al diámetro o lado. */
   clearanceMm: number;

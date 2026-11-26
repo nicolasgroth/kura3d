@@ -131,10 +131,27 @@ describe('preajustes de usuario: entradas no confiables y fallos del almacenamie
   });
 });
 
+describe('preajustes propios de imán rectangular', () => {
+  beforeEach(() => localStorage.clear());
+  it('guarda y lee un rectangular; un cuadrado guardado antes sigue igual; un rectangular sin ancho se descarta', () => {
+    const rect = { ...MAGNET_DEFAULTS, shape: 'rect' as const, sizeMm: 10, widthMm: 5, heightMm: 2, turn90: true };
+    const square = { shape: 'square', sizeMm: 5, heightMm: 2, clearanceMm: 0.2, depthClearanceMm: 0.2, hidden: false };
+    localStorage.setItem(MAGNET_PRESET_STORAGE_KEY, JSON.stringify([
+      { id: 'user-r', name: 'bloque', values: rect },
+      { id: 'user-s', name: 'cuadrado viejo', values: square },
+      { id: 'user-bad', name: 'sin ancho', values: { ...rect, widthMm: undefined } },
+    ]));
+    const loaded = loadUserPresets(MAGNET_PRESET_KIND);
+    expect(loaded.map((p) => p.id)).toEqual(['user-r', 'user-s']);
+    expect(loaded[0].values).toEqual(rect);
+    expect(loaded[1].values).toEqual({ ...MAGNET_DEFAULTS, shape: 'square' });
+  });
+});
+
 describe('preajustes incluidos de imán', () => {
-  it('trae 5 × 2 (por defecto), 6 × 3, 8 × 3, 10 × 3 y cuadrado 5 × 5 × 2', () => {
+  it('trae 5 × 2 (por defecto), 6 × 3, 8 × 3, 10 × 3, cuadrado 5 × 5 × 2 y rectangular 10 × 5 × 2', () => {
     expect(BUILTIN_MAGNET_PRESETS[0].values).toEqual(MAGNET_DEFAULTS);
-    expect(BUILTIN_MAGNET_PRESETS.map((p) => magnetSizeLabel(p.values))).toEqual(['5 × 2', '6 × 3', '8 × 3', '10 × 3', '5 × 5 × 2', '3 × 1']);
+    expect(BUILTIN_MAGNET_PRESETS.map((p) => magnetSizeLabel(p.values))).toEqual(['5 × 2', '6 × 3', '8 × 3', '10 × 3', '5 × 5 × 2', '10 × 5 × 2', '3 × 1']);
     expect(magnetSizeLabel({ shape: 'round', sizeMm: 6.5, heightMm: 2 }, 'es')).toBe('6,5 × 2');
     expect(magnetSizeLabel({ shape: 'round', sizeMm: 6.5, heightMm: 2 }, 'en')).toBe('6.5 × 2');
   });

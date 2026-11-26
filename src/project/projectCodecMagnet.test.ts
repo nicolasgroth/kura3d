@@ -1,7 +1,7 @@
 /**
  * @file src/project/projectCodecMagnet.test.ts
  * @description Un .kura con un agregado de imán sin holguras (como lo sanea `sanitizeMagnetParams`) se carga; uno con
- * medidas fuera de rango se rechaza. También: la paleta encuentra el alojamiento por «imán» o «iman» en inglés.
+ * medidas fuera de rango se rechaza; el rectangular (con ancho y giro) se carga y sin ancho válido se rechaza. También: la paleta encuentra el alojamiento por «imán» o «iman» en inglés.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -41,6 +41,16 @@ describe('.kura: agregado de imán', () => {
   it('un imán sin holguras (se usan las de fábrica) se carga', () => {
     const back = decodeProject(encodeProject(doc([withAddon({ shape: 'round', sizeMm: 5, heightMm: 2, hidden: false })])));
     expect(back.objects[0].metadata?.addon?.kind).toBe('magnet_pocket');
+  });
+
+  it('rectangular (largo × ancho × alto, con giro) se carga; un cuadrado anterior sin ancho también; sin ancho o con ancho malo, no', () => {
+    const rect = { shape: 'rect', sizeMm: 10, widthMm: 5, heightMm: 2, turn90: true, hidden: false };
+    const back = decodeProject(encodeProject(doc([withAddon(rect)])));
+    expect(back.objects[0].metadata?.addon?.params).toMatchObject({ shape: 'rect', sizeMm: 10, widthMm: 5, turn90: true });
+    expect(decodeProject(encodeProject(doc([withAddon({ shape: 'square', sizeMm: 5, heightMm: 2, hidden: false })]))).objects).toHaveLength(1);
+    expect(() => decodeProject(encodeProject(doc([withAddon({ ...rect, widthMm: undefined })])))).toThrow();
+    expect(() => decodeProject(encodeProject(doc([withAddon({ ...rect, widthMm: 0 })])))).toThrow();
+    expect(() => decodeProject(encodeProject(doc([withAddon({ ...rect, turn90: 'sí' })])))).toThrow();
   });
 
   it('medidas fuera de rango se rechazan', () => {

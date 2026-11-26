@@ -13,7 +13,7 @@ import type { ScrewBossReport } from '../core/addons/screwBossAnalysis';
 import { t, type TranslationKey } from '../i18n';
 import type { LanguageCode } from '../types/kura';
 
-export type ScrewBossWarningKind = 'through' | 'wall' | 'collide';
+export type ScrewBossWarningKind = 'through' | 'wall' | 'collide' | 'base';
 
 export interface ScrewBossWarning {
   kind: ScrewBossWarningKind;
@@ -35,6 +35,10 @@ export function screwBossWarnings(report: ScrewBossReport, language: LanguageCod
     out.push({ kind: 'wall', key: 'turret.warn.wall', short: 'turret.short.wall', params: { wall: fmt(report.wallMm), min: fmt(BOSS_MIN_WALL_MM) } });
   }
   if (report.collides) out.push({ kind: 'collide', key: 'turret.warn.collide', short: 'turret.short.collide', params: {} });
+  // Cara de apoyo: el poste sobresale bajo la base. Avisa, no bloquea (puede ser a propósito si se imprime de otro lado).
+  if ((report.belowBaseMm ?? 0) > 0) {
+    out.push({ kind: 'base', key: 'turret.warn.belowBase', short: 'turret.short.belowBase', params: { mm: fmt(report.belowBaseMm) } });
+  }
   return out;
 }
 

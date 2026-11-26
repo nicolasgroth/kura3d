@@ -78,6 +78,22 @@ describe('MCP: alojamiento de imán sin interfaz', () => {
     expect(engine.computeMeshStats(after.mesh).isManifold).toBe(true);
   }, 60_000);
 
+  it('imán rectangular: largo × ancho × alto, quita el volumen del hueco y sin ancho es un error tipado', async () => {
+    const { call, raw, headless } = await connect();
+    const box = await call('kura_create_primitive', { primitiveType: 'box', params: { width: 30, depth: 30, height: 30 }, placement: 'origin' });
+    const res = await call('kura_add_magnet_pocket', { hostId: box.id, face: 'top', shape: 'rect', sizeMm: 10, widthMm: 5, heightMm: 2, turn90: true });
+    expect(res).toMatchObject({ pocket: { shape: 'rect', widthMm: 10.2, crossMm: 5.2, depthMm: 2.2 } });
+    expect(res.params).toMatchObject({ shape: 'rect', sizeMm: 10, widthMm: 5, turn90: true });
+    const before = worldVolume(headless.getObject(box.id));
+    const cut = await call('kura_boolean_operation', { targetId: box.id, toolIds: [res.id], operation: 'subtract' });
+    const removed = before - worldVolume(headless.getObject(cut.resultId));
+    const expected = 10.2 * 5.2 * 2.2;
+    expect(Math.abs(removed - expected) / expected).toBeLessThan(0.01);
+    const missing = await raw('kura_add_magnet_pocket', { hostId: cut.resultId, face: 'top', shape: 'rect', sizeMm: 10 });
+    expect(missing.error).toBe(true);
+    expect(missing.text).toContain('widthMm');
+  }, 60_000);
+
   it('por punto y normal da lo mismo que por cara, y el desplazamiento mueve la boca', async () => {
     const { call } = await connect();
     const box = await call('kura_create_primitive', { primitiveType: 'box', params: { width: 40, depth: 20, height: 20 }, placement: 'origin' });

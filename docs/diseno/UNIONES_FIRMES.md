@@ -89,7 +89,7 @@ Tipo de unión `magnet` de Dividir para imprimir (`src/engine/split/splitMagnet.
 - **Cantidad automática**: se prueba `max(2, islas que admiten un imán)` (tope 8) y se baja de a uno. Con dos islas, uno por isla; con una sola isla, dos (no gira); en secciones angostas el muestreo del punto más lejano los deja en línea.
 - **Cantidad fija**: se prueba la pedida y se baja de a uno si no caben (`SPLIT_MAGNET_REDUCED` con lo pedido y lo puesto).
 - El imán tiene alto fijo: la profundidad **no se acorta**. Rayos paralelos al eje (centro y anillo hueco + pared) exigen alojamiento + 1,2 mm de material en **las dos** piezas; si no, se prueba con menos imanes y, si no cabe ninguno, la unión queda para pegar con `SPLIT_MAGNET_NO_ROOM` (diámetro, alto y pared).
-- Imán cuadrado: aún no se admite en uniones (`SPLIT_MAGNET_SQUARE`, la unión queda para pegar; el panel lo advierte al elegirlo).
+- Imanes cuadrados y rectangulares (`splitMagnetBlock.ts`): alojamientos enfrentados con la misma orientación en las dos piezas; el largo va por el eje principal de inercia de la isla; la huella (rectángulo + 1,2 mm de pared) se comprueba exacta con polígonos y el material bajo el fondo con rayos en centro, esquinas y lados; la fuerza usa el área real. Si no caben: `SPLIT_MAGNET_NO_ROOM_BLOCK` y la unión queda para pegar.
 
 ### Geometría
 
