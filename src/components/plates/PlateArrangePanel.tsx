@@ -30,6 +30,12 @@ import '../../styles/plateArrangePanel.css';
 export const ARRANGE_PREVIEW_DELAY_MS = 250;
 
 const CHOICES: readonly ArrangeChoice[] = ['compact', 'byColor', 'byGroup', 'onePerObject'];
+const CHOICE_LABEL: Record<ArrangeChoice, TranslationKey> = {
+  compact: 'plates.arrangeDlg.crit.compact', byColor: 'plates.arrangeDlg.crit.byColor', byGroup: 'plates.arrangeDlg.crit.byGroup', onePerObject: 'plates.action.onePerObject',
+};
+const CHOICE_HELP: Record<ArrangeChoice, TranslationKey> = {
+  compact: 'plates.arrangeDlg.crit.compact.help', byColor: 'plates.arrangeDlg.crit.byColor.help', byGroup: 'plates.arrangeDlg.crit.byGroup.help', onePerObject: 'plates.action.onePerObject.tip',
+};
 const ORIENTS: readonly ArrangeOrient[] = ['keep', 'flatDown'];
 
 /** Una opción de grupo de radios con su línea de ayuda enlazada por `aria-describedby`. */
@@ -145,7 +151,7 @@ export const PlateArrangePanel: React.FC = () => {
         {CHOICES.map((c) => (
           <RadioOption
             key={c} name={`${uid}-criterion`} value={c} testId={`arrange-criterion-${c}`} checked={panel.criterion === c}
-            label={t(language, `plates.arrangeDlg.crit.${c}` as TranslationKey)} help={t(language, `plates.arrangeDlg.crit.${c}.help` as TranslationKey)}
+            label={t(language, CHOICE_LABEL[c])} help={t(language, CHOICE_HELP[c])}
             onSelect={() => setPlateArrangeOptions({ criterion: c })}
           />
         ))}

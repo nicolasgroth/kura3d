@@ -31,14 +31,6 @@ const PLATES_ARRANGE_UI_TABLE = {
     '按这些选项分配零件，作为可撤销的单一步骤。',
   ],
   'plates.arrangeDlg.applyBusy': ['Repartiendo…', 'Arranging…', 'Wird verteilt…', 'Répartition…', 'बाँटा जा रहा है…', '正在分配…'],
-  'plates.arrangeDlg.applyNothing': [
-    'No hay nada que repartir con estas opciones.',
-    'There is nothing to arrange with these options.',
-    'Mit diesen Optionen gibt es nichts zu verteilen.',
-    'Rien à répartir avec ces options.',
-    'इन विकल्पों से बाँटने के लिए कुछ नहीं है।',
-    '按这些选项没有可分配的内容。',
-  ],
 
   // Qué repartir
   'plates.arrangeDlg.scope': ['Qué repartir', 'What to arrange', 'Was verteilen', 'Que répartir', 'क्या बाँटना है', '分配范围'],
@@ -95,15 +87,6 @@ const PLATES_ARRANGE_UI_TABLE = {
     'Garde chaque groupe ensemble. Les pièces sans groupe vont à part.',
     'हर समूह को साथ रखता है। बिना समूह वाले हिस्से अलग रखे जाते हैं।',
     '让每个分组保持在一起，没有分组的零件单独放置。',
-  ],
-  'plates.arrangeDlg.crit.onePerObject': ['Una placa por objeto', 'One plate per object', 'Eine Platte pro Objekt', 'Un plateau par objet', 'हर वस्तु के लिए एक प्लेट', '每个对象一块板'],
-  'plates.arrangeDlg.crit.onePerObject.help': [
-    'Cada pieza va a su propia placa, sin buscar el mejor acomodo.',
-    'Each part goes to its own plate, without looking for the best fit.',
-    'Jedes Teil kommt auf eine eigene Platte, ohne beste Anordnung zu suchen.',
-    'Chaque pièce va sur son propre plateau, sans chercher le meilleur agencement.',
-    'हर हिस्सा अपनी प्लेट पर जाता है, सबसे अच्छा क्रम खोजे बिना।',
-    '每个零件放到各自的板上，不做最优排布。',
   ],
 
   // Orientación
