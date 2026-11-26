@@ -234,8 +234,9 @@ export interface SplitPlane {
   tiltDeg?: [number, number];
   normal?: Vec3;
   offset?: number;
-  /** Solo planos a mano: `SplitManualCut.id` del que sale. */
+  /** Solo planos a mano: `SplitManualCut.id` del que sale y su posición en la lista pedida (0 = el primero). */
   cutId?: string;
+  cutIndex?: number;
 }
 
 /** Pieza estimada del plan (caja de la celda recortada a la caja del modelo). */

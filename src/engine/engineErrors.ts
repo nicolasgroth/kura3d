@@ -126,6 +126,7 @@ export const ENGINE_WARNING_CODES = [
   'SPLIT_MANUAL_PIECE_TOO_BIG',
   'SPLIT_MANUAL_PIECE_THIN',
   'SPLIT_MANUAL_TILT_GLUE',
+  'SPLIT_MANUAL_TILT_GLUED',
 ] as const;
 
 export type EngineWarningCode = (typeof ENGINE_WARNING_CODES)[number];

@@ -52,6 +52,7 @@ import { FIX10_EN, FIX10_ES } from './locales/fix10';
 import { OPNOTES_EN, OPNOTES_ES } from './locales/operationNotes';
 import { IMPORTREAL_EN, IMPORTREAL_ES } from './locales/importReal';
 import { REPAIR_EN, REPAIR_ES } from './locales/repair';
+import { SPLIT_MANUAL_EN, SPLIT_MANUAL_ES } from './locales/splitManual';
 import { GEN_MOTOR_EN, GEN_MOTOR_ES } from './locales/genMotor';
 import { UXESCENA_EN, UXESCENA_ES } from './locales/uxEscena';
 import { UXCIERRE_EN, UXCIERRE_ES } from './locales/uxCierre';
@@ -130,6 +131,7 @@ export const TRANSLATIONS_ES = {
   ...OPNOTES_ES,
   ...IMPORTREAL_ES,
   ...REPAIR_ES,
+  ...SPLIT_MANUAL_ES,
   ...GEN_MOTOR_ES,
   ...UXESCENA_ES,
   ...UXCIERRE_ES,
@@ -1488,6 +1490,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...OPNOTES_EN,
   ...IMPORTREAL_EN,
   ...REPAIR_EN,
+  ...SPLIT_MANUAL_EN,
   ...GEN_MOTOR_EN,
   ...UXESCENA_EN,
   ...UXCIERRE_EN,

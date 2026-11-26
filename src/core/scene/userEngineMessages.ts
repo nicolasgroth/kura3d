@@ -24,7 +24,7 @@ import type { LanguageCode } from '../../types/kura';
  * Códigos cuyo texto nombra un eje ({axis}, {plane} o {planes}) y que se convierten a ejes del usuario aquí.
  * Una prueba exige que todo código del motor con esos parámetros esté en estas listas.
  */
-export const AXIS_ERROR_CODES: readonly string[] = ['CUT_PLANE_OUTSIDE', 'SPLIT_AXIS_BLOCKED'];
+export const AXIS_ERROR_CODES: readonly string[] = ['CUT_PLANE_OUTSIDE', 'SPLIT_AXIS_BLOCKED', 'SPLIT_MANUAL_CUTS_CROSS'];
 export const AXIS_WARNING_CODES: readonly string[] = ['SPLIT_PLANE_THIN_SECTION'];
 
 /** Eje interno (cualquier caja) → rótulo de eje de usuario en mayúscula (como en el resto de la interfaz). */
@@ -47,6 +47,12 @@ export function userErrorParams(code: string, params: EngineMessageParams): Engi
     return out;
   }
   if (code === 'SPLIT_AXIS_BLOCKED') return { ...params, axis: userAxisText(params.axis).text as string };
+  if (code === 'SPLIT_MANUAL_CUTS_CROSS') {
+    // Posiciones de los dos planos en el eje del usuario (Y del usuario = −Z interno)
+    const { text, sign } = userAxisText(params.axis);
+    const flip = (v: unknown) => (typeof v === 'number' ? v * sign + 0 : v) as number;
+    return { ...params, axis: text as string, a: flip(params.a), b: flip(params.b) };
+  }
   return params;
 }
 

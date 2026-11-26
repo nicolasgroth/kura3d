@@ -122,7 +122,8 @@ describe('cortes a mano inclinados', () => {
     expect((plan.warnings ?? []).map((w) => w.code)).toContain('SPLIT_MANUAL_TILT_GLUE');
     const res = await executeBedSplitGeometry(obj, plan, { connector: DOWEL });
     expect(res.parts).toHaveLength(4);
-    expect(res.warnings.map((w) => w.code)).toContain('SPLIT_MANUAL_TILT_GLUE');
+    expect(plan.warnings!.find((w) => w.code === 'SPLIT_MANUAL_TILT_GLUE')!.params.cuts).toBe('1');
+    expect(res.warnings.map((w) => w.code)).toContain('SPLIT_MANUAL_TILT_GLUED');
     for (const j of res.joints) if (j.normal) expect(j.kind).toBe('glue');
     expect(res.joints.some((j) => !j.normal && j.kind === 'connector')).toBe(true);
     expect(res.assembly?.ok).toBe(true);

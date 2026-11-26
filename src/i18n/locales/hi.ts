@@ -47,6 +47,7 @@ import { FIX10_HI } from './fix10';
 import { OPNOTES_HI } from './operationNotes';
 import { IMPORTREAL_HI } from './importReal';
 import { REPAIR_HI } from './repair';
+import { SPLIT_MANUAL_HI } from './splitManual';
 import { GEN_MOTOR_HI } from './genMotor';
 import { UXESCENA_HI } from './uxEscena';
 import { UXCIERRE_HI } from './uxCierre';
@@ -123,6 +124,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...OPNOTES_HI,
   ...IMPORTREAL_HI,
   ...REPAIR_HI,
+  ...SPLIT_MANUAL_HI,
   ...GEN_MOTOR_HI,
   ...UXESCENA_HI,
   ...UXCIERRE_HI,

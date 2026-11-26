@@ -10,7 +10,7 @@
  * en una cara inclinada solo entra moviendo la pieza a lo largo de la normal de ESA cara. Si una pieza tiene
  * además uniones con conector en caras de otra dirección (otro plano inclinado o recto que se cruza), no hay
  * una dirección de entrada que sirva para todas: esas uniones inclinadas pasan a "para pegar" con el aviso
- * `SPLIT_MANUAL_TILT_GLUE`, en vez de dejar piezas que no arman. Los imanes no restringen la dirección (quedan al ras).
+ * `SPLIT_MANUAL_TILT_GLUED` (en el plan, antes: `SPLIT_MANUAL_TILT_GLUE`), en vez de dejar piezas que no arman. Los imanes no restringen la dirección (quedan al ras).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later
@@ -139,8 +139,8 @@ export function demoteCrossedTilts(
   let removed = 0;
   for (const j of demote) removed += demoteToGlue(j, bodies.get(j.low)!, bodies.get(j.high)!);
   if (demote.size > 0) {
-    const where = [...demote].map((j) => `${bodies.get(j.low)!.code}–${bodies.get(j.high)!.code}`).join(', ');
-    warnings.push(engineWarning('SPLIT_MANUAL_TILT_GLUE', { count: demote.size, where }));
+    const pairs = [...demote].map((j) => `${bodies.get(j.low)!.code}–${bodies.get(j.high)!.code}`).join(', ');
+    warnings.push(engineWarning('SPLIT_MANUAL_TILT_GLUED', { count: demote.size, pairs }));
   }
   return removed;
 }

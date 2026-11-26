@@ -29,6 +29,8 @@ export const TILT_AXES: Record<SplitAxis, [SplitAxis, SplitAxis]> = { x: ['y', '
 /** Corte a mano ya validado, con su plano en mundo (`normal · x = offset`). */
 export interface ResolvedCut {
   id?: string;
+  /** Posición en la lista pedida (0 = el primero). */
+  inputIndex: number;
   axis: SplitAxis;
   positionMm: number;
   tiltDeg: [number, number];
@@ -124,7 +126,7 @@ export function resolveManualCuts(cuts: readonly SplitManualCut[], b: SplitBound
     p[a] = pos;
     return {
       ...(cut.id !== undefined ? { id: String(cut.id) } : {}),
-      axis: cut.axis, positionMm: pos, tiltDeg: tilted ? [tilt[0], tilt[1]] : [0, 0], tilted, normal,
+      inputIndex: i, axis: cut.axis, positionMm: pos, tiltDeg: tilted ? [tilt[0], tilt[1]] : [0, 0], tilted, normal,
       offset: normal[0] * p[0] + normal[1] * p[1] + normal[2] * p[2],
     };
   });

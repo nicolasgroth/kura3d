@@ -102,6 +102,7 @@ export function manualPlanFromManifold(
         sectionAreaMm2: s.areaMm2, islands: s.islands, strips: s.strips, smallestIslandMm2: s.smallestIslandMm2, admitsConnectors: s.admitsConnectors,
         ...(c.tilted ? { tiltDeg: c.tiltDeg, normal: c.normal, offset: c.offset } : {}),
         ...(c.id !== undefined ? { cutId: c.id } : {}),
+        cutIndex: c.inputIndex,
       });
     });
   }
@@ -183,7 +184,8 @@ function pieceWarnings(plan: BedSplitPlan, usable: Vec3, allowRotation: boolean,
   }
   const glue = plan.planes.filter((p) => p.normal && tiltNeedsGlue(p, plan.planes, plan.connector));
   if (glue.length > 0) {
-    out.push(engineWarning('SPLIT_MANUAL_TILT_GLUE', { count: glue.length, where: glue.map((p) => `${p.axis.toUpperCase()}${p.index + 1}`).join(', ') }));
+    // Número de cada plano en la lista pedida (1 = el primero), como lo muestra el panel
+    out.push(engineWarning('SPLIT_MANUAL_TILT_GLUE', { count: glue.length, cuts: glue.map((p) => (p.cutIndex ?? 0) + 1).join(', ') }));
   }
   return out;
 }
