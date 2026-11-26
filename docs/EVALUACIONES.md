@@ -992,3 +992,5 @@ Lectura del orquestador: la pasada de diseño resolvió lo estructural de placas
 
 **Cambio de licencia a AGPL-3.0-or-later** (`chore/licencia-agpl`, Haiku · 11 min · 148 k, completado por el orquestador). 2103 cabeceras, metadatos de paquetes, textos de la app en 6 idiomas, README, guía de contribución, reglas del proyecto y revisión de dependencias (todas las directas de npm son MIT, Apache-2.0 o ISC; las de Rust no se verificaron con metadatos). El agente no pudo descargar los textos legales; el orquestador obtuvo el texto de AGPL-3.0 de la API de licencias de GitHub (662 líneas, comprobado su encabezado, la sección 13 y el apéndice) y el acuerdo individual de Apache v2.2 del repositorio oficial de su sitio. Suites sobre `main`: 4451 pruebas del programa y 190 del servidor MCP en verde.
 
+Dependencias de Rust para Windows (298 paquetes, leídas con `cargo metadata`): todas con licencia permisiva (MIT, Apache-2.0, BSD, ISC, Zlib, MPL-2.0, Unicode). Las exclusivas de Linux y macOS no se pudieron leer sin conexión.
+

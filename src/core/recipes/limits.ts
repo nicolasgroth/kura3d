@@ -16,7 +16,7 @@ export const RECIPE_LANGUAGES = ['es', 'en', 'de', 'fr', 'hi', 'zh'] as const;
 export type RecipeLanguage = (typeof RECIPE_LANGUAGES)[number];
 
 /** Licencias que acepta una receta (misma política de dependencias del proyecto: solo permisivas). */
-export const RECIPE_LICENSES = ['MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'ISC', 'MPL-2.0'] as const;
+export const RECIPE_LICENSES = ['AGPL-3.0-or-later', 'GPL-3.0-or-later', 'MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'ISC', 'MPL-2.0'] as const;
 
 export const RECIPE_LIMITS = {
   /** Texto JSON de la receta sin contar los datos de los recursos embebidos. */

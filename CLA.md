@@ -1,6 +1,6 @@
 # Acuerdo de contribuyentes de Kurra Studio (CLA)
 
-> **Estado: pendiente de revisión legal.** Hasta que un abogado lo revise, los aportes de terceros no se incorporan al proyecto.
+> **Estado: vigente.** Validado legalmente por el titular del proyecto el 26 de noviembre de 2026.
 
 Este acuerdo es una **adaptación del Individual Contributor License Agreement v2.2 de The Apache Software Foundation**. No es un texto original ni está avalado por esa fundación.
 

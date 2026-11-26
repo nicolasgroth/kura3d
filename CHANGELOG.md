@@ -10,6 +10,8 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Recetas:** las que trae la app pasan a AGPL-3.0-or-later; las de terceros pueden declarar además AGPL-3.0-or-later o GPL-3.0-or-later.
+- **Acuerdo de contribuyentes vigente** (`CLA.md`).
 - **Licencia: el proyecto pasa de MIT a AGPL-3.0-or-later.** Quien distribuya una versión modificada, o la ofrezca como servicio por la red, debe publicar su código bajo la misma licencia. Lo publicado hasta el commit 5bc2699 se distribuyó como MIT. «Acerca de» enlaza al código fuente. Los aportes de terceros requieren aceptar el acuerdo de contribuyentes (`CLA.md`, pendiente de revisión legal).
 - **Guardar proyectos grandes es más rápido** (de unos 4 s a unos 2 s con un modelo de 478 mil triángulos) y muestra su avance en la barra del visor desde el inicio.
 - **Tira de placas rediseñada.** El selector Imprimir / Armado / Libre pasa al inicio de la tira; en Armado la tira trae la separación, el alcance y «Juntar piezas», y desaparece el panel sobre el visor. Con una sola placa queda una tira corta con el selector. La insignia de placa (P1, P2…) se ve siempre. La barra del visor muestra textos o iconos según el ancho.

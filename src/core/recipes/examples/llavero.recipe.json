@@ -6,7 +6,7 @@
   "title": "$t:title",
   "description": "$t:description",
   "author": "Kurra Studio",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "category": "regalos",
   "params": [
     { "id": "text", "type": "text", "maxLength": 20, "default": "Kura", "label": "$t:text" },

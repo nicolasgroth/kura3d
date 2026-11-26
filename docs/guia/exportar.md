@@ -39,7 +39,7 @@ De tu proyecto de ejemplo Kurra Studio toma únicamente la versión del laminado
 
 ![La sección Laminador con un proyecto de ejemplo cargado](img/exportar-04-laminador.png)
 
-**Estado:** el autor lo probó en Elegoo Slicer (derivado de OrcaSlicer) con 1, 3 y 5 placas, incluida una placa vacía y una con una cama distinta. **Todavía no se ha probado en Bambu Studio ni en OrcaSlicer**, aunque deberían comportarse igual; si te falla, cuéntalo. PrusaSlicer y Cura no usan este mecanismo.
+**Estado:** el autor lo probó en Elegoo Slicer (derivado de OrcaSlicer) con 1, 3 y 5 placas, incluida una placa vacía y una con una cama distinta. También abre bien en OrcaSlicer. **No se ha probado en Bambu Studio**, aunque usa el mismo formato y debería comportarse igual; si te falla, cuéntalo. PrusaSlicer y Cura no usan este mecanismo.
 
 ## Detalles de las placas
 
@@ -47,7 +47,7 @@ De tu proyecto de ejemplo Kurra Studio toma únicamente la versión del laminado
 - **Mismas coordenadas en cada placa:** una pieza que está al centro de la placa 2 sale al centro de su cama en el archivo, igual que si estuviera en la placa 1.
 - **Nombres de archivo:** el nombre de cada placa se sanea (se quitan caracteres como `/` o `:`) para que el sistema lo acepte.
 - **Sin placas, nada cambia:** con una sola cama el diálogo es el de siempre.
-- **Estado:** con proyecto de ejemplo, el 3MF con todas las placas está probado en Elegoo Slicer, no aún en Bambu Studio ni OrcaSlicer. Si importa que salga bien a la primera en otro laminador, usa **Un archivo por placa (ZIP)**, que funciona en cualquiera.
+- **Estado:** con proyecto de ejemplo, el 3MF con todas las placas está probado en Elegoo Slicer y en OrcaSlicer, no aún en Bambu Studio. Si importa que salga bien a la primera en otro laminador, usa **Un archivo por placa (ZIP)**, que funciona en cualquiera.
 
 ## Detalles que conviene saber
 
@@ -64,7 +64,7 @@ De tu proyecto de ejemplo Kurra Studio toma únicamente la versión del laminado
 - **Me faltan piezas en el archivo:** estaban ocultas, eran negativos o no estaban seleccionadas con *Selección* marcada.
 - **Los colores no aparecen en un STL:** el STL no guarda color; usa 3MF.
 - **En el navegador el archivo se descarga:** en la versión web el archivo va a tu carpeta de descargas, y un aviso lo confirma; en escritorio eliges la carpeta.
-- **No está verificado en todos los laminadores:** el 3MF con bandejas se probó en Elegoo Slicer; el multicolor se comprobará en OrcaSlicer, Bambu Studio, PrusaSlicer y Cura según el [roadmap](../ROADMAP.md).
+- **No está verificado en todos los laminadores:** el 3MF con bandejas se probó en Elegoo Slicer y en OrcaSlicer; el multicolor se comprobará en OrcaSlicer, Bambu Studio, PrusaSlicer y Cura según el [roadmap](../ROADMAP.md).
 - **El laminador abre todo en una sola bandeja:** carga un proyecto de ejemplo en la sección **Laminador** y elige *Load Whole File* al abrir.
 
 Anterior: [Torreta para tornillo](torreta-para-tornillo.md) · Siguiente: [Guardar y recuperar](guardar-y-recuperar.md) · [Índice](README.md)

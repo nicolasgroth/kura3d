@@ -18,7 +18,7 @@ Todo objeto es estricto: un campo desconocido es un error.
 | `kura` | no | rango de versiones de Kurra Studio (`">=0.8.0"`) |
 | `title`, `author` | sí | texto (≤ 200) o `"$t:clave"` |
 | `description` | no | texto |
-| `license` | sí | `MIT`, `Apache-2.0`, `BSD-2-Clause`, `BSD-3-Clause`, `ISC` o `MPL-2.0` |
+| `license` | sí | `AGPL-3.0-or-later` (la del programa y la de las recetas que trae), `GPL-3.0-or-later`, `MIT`, `Apache-2.0`, `BSD-2-Clause`, `BSD-3-Clause`, `ISC` o `MPL-2.0` |
 | `category`, `tags` | no | `[a-z0-9-]`, ≤ 32 (tags ≤ 16) |
 | `params` | no | parámetros que se le piden al usuario (≤ 64) |
 | `derive` | no | valores calculados `{ id: expresión }` (≤ 64) |
@@ -141,7 +141,7 @@ Un argumento que la tabla no nombra es error (`run.badArgs`). Las listas de refe
   "version": "1.0.0",
   "title": "$t:title",                       // texto traducible
   "author": "Ana",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "params": [
     { "id": "w", "type": "number", "unit": "mm", "min": 5, "max": 100, "default": 20, "label": "$t:w" },
     { "id": "hole", "type": "boolean", "default": true, "label": "$t:hole" }

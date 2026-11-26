@@ -37,4 +37,4 @@ cargo check --manifest-path src-tauri/Cargo.toml
 
 ## Licencia de los aportes
 
-Los aportes se aceptan bajo **AGPL-3.0-or-later**. Antes de que tu primer aporte se incorpore, debes aceptar el acuerdo de contribuyentes de [CLA.md](CLA.md), que explica cómo hacerlo. El acuerdo está pendiente de revisión legal: hasta entonces no se incorporan aportes de terceros.
+Los aportes se aceptan bajo **AGPL-3.0-or-later**. Antes de que tu primer aporte se incorpore, debes aceptar el acuerdo de contribuyentes de [CLA.md](CLA.md), que explica cómo hacerlo.

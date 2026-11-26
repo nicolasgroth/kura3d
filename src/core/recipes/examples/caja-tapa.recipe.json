@@ -6,7 +6,7 @@
   "title": "$t:title",
   "description": "$t:description",
   "author": "Kurra Studio",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "category": "cajas",
   "params": [
     { "id": "w", "type": "number", "unit": "mm", "min": 10, "max": 400, "default": 80, "label": "$t:w", "page": "medidas" },
