@@ -57,7 +57,7 @@ export function selectionWorldBox(objects: readonly SceneObject[], selectedIds: 
 }
 
 /** Selectores de la interfaz fija sobre el visor que la barra flotante no debe tapar. */
-const OBSTACLE_SELECTORS = ['.kura-viewmode-hud'];
+const OBSTACLE_SELECTORS: string[] = [];
 
 /** Rectángulos (relativos al visor) de las zonas fijas visibles. */
 function fixedObstacles(wrap: HTMLElement | null): Obstacle[] {

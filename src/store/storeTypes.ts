@@ -148,6 +148,8 @@ export interface ToastAction {
   applicable?: () => boolean;
   /** Acción de conveniencia (Deshacer): el aviso caduca solo como uno informativo. */
   transient?: boolean;
+  /** Deshacer: si se deshace por otra vía (Ctrl+Z, informe) y la acción deja de aplicar, el aviso se cierra. */
+  closeOnUndo?: boolean;
 }
 
 export type SceneSnapshot = ProjectSceneSnapshot;

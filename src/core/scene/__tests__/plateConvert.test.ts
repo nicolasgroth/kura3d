@@ -34,6 +34,22 @@ let n = 0;
 const opts = { projectBed: BED, makeId: () => `plate_${++n}`, nameFor: (k: number) => `Placa ${k}` };
 
 describe('convertir grupos en placas', () => {
+  it('disuelve solo los grupos que `dissolve` marca; sus subgrupos suben a la raíz', () => {
+    n = 0;
+    const scene = {
+      objects: [box('a', [0, 0, 0], 'g1'), box('b', [300, 0, 0], 'g2'), box('c', [310, 0, 0], 'g3')],
+      plates: [], groups: [group('g1', 'Placa 1'), group('g2', 'Mío'), group('g3', 'Sub', 'g2')],
+    };
+    const res = convertGroupsToPlates(scene, ['g1', 'g2'], { ...opts, dissolve: (g) => g.name === 'Placa 1' })!;
+    expect(res.dissolved).toEqual(['g1']);
+    expect(res.groups.map((g) => g.id)).toEqual(['g2', 'g3']);
+    expect(res.scene.objects[0].groupRef).toBeUndefined();
+    expect(res.scene.objects[1].groupRef).toBe('g2');
+    const dis = convertGroupsToPlates(scene, ['g2'], { ...opts, dissolve: () => true })!;
+    expect(dis.groups.map((g) => [g.id, g.parentId])).toEqual([['g1', undefined], ['g3', undefined]]);
+    expect(dis.scene.objects[2].groupRef).toBe('g3');
+  });
+
   it('una placa por grupo, con su nombre, piezas centradas en su cama y posiciones relativas intactas', () => {
     n = 0;
     // Así llega un 3MF de Bambu con dos placas: dos grupos lado a lado.

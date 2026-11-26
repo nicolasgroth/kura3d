@@ -174,7 +174,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
           text,
           outcome === 'marginal' || checks.length > 0 || report.appliedVariant === 'safe' ? 'info' : 'success',
           // Persistente: Simplificar tarda (minutos en mallas de millones) y el aviso no debe caducar antes de que se vea.
-          undoToastAction(tr('toast.undo'), () => get().past, () => get().undo(), true),
+          undoToastAction(tr('toast.undo'), () => get().past, () => get().undo(), true, true),
         );
         return true;
       });

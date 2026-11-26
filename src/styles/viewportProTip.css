@@ -1,0 +1,28 @@
+/**
+ * @file src/styles/viewportProTip.css
+ * @description Consejo del visor: una sola línea truncada con «…»; desplegado (botón con `aria-expanded`) vuelve a
+ * mostrarse completo, en varias líneas.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-protip-pill .kura-protip-text.is-clamped {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kura-protip-pill .kura-protip-text.is-expanded {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+  overflow: visible;
+}
+
+.kura-protip-pill .kura-mini-icon-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}

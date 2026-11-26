@@ -41,7 +41,7 @@ En el resumen del objeto (panel derecho), la sección *Geometría y métricas* m
 Un modelo con muchos triángulos pesa y tarda, sobre todo en un computador con poca memoria. Tienes tres formas de abrir el panel:
 
 - Selecciona la pieza y pulsa **Simplificar…** en su resumen del inspector, junto al número de triángulos.
-- Elige **Acciones › Simplificar…**.
+- Elige **Acciones › Malla › Simplificar…**.
 - Si importas un modelo pesado, el aviso trae el botón **Simplificar…**. Desde ahí el panel se abre ya en **Por cantidad**, con una meta sugerida (por ejemplo 500 000 triángulos) y el cursor en ese campo: revisa el número y pulsa **Simplificar**.
 
 El panel se titula **Simplificar o refinar** (para salir, **Volver** arriba a la izquierda o `Esc`) y tiene tres grupos: **Simplificar**, **Refinar malla** y **Envolvente convexa**. Esta guía es del primero. En **Por cantidad**, **Enter** en el campo ejecuta, igual que el botón **Simplificar**; los números grandes se muestran con separador de miles (500.000).
@@ -60,7 +60,7 @@ Mientras trabaja puedes cancelar el cálculo con su botón. Al terminar aparece 
 
 ### Vista previa: mira antes de aplicar
 
-Pulsa **Vista previa** (junto a **Simplificar**) y la pieza no se toca: en el visor aparece un **fantasma celeste** con la malla que quedaría, y en el panel un resumen de lo que pasaría («Vista previa (aún no se aplicó)»). Con **Comparar con el original** ocultas el fantasma para ver solo la pieza, y con **Mostrar las aristas de la simplificada** ves la red de triángulos. Si te gusta, pulsa **Simplificar**; si no, cambia el modo o la cantidad y vuelve a mirar.
+Pulsa **Vista previa** (junto a **Simplificar**) y la pieza no se toca: en el visor aparece un **fantasma celeste** con la malla que quedaría, y en el panel un resumen de lo que pasaría («Vista previa (aún no se aplicó)»). Con **Ocultar la vista previa** ocultas el fantasma para ver solo la pieza, y con **Mostrar las aristas de la simplificada** ves la red de triángulos. Si te gusta, pulsa **Simplificar**; si no, cambia el modo o la cantidad y vuelve a mirar.
 
 ![Vista previa de Simplificar: el fantasma celeste sobre la esfera y el resumen en el panel](img/importar-y-reparar-09-simplificar-vista-previa.png)
 

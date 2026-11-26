@@ -34,15 +34,19 @@ for (const width of [1024, 1440]) {
     test.describe(`modos de vista, ${width} px, tema ${tema}`, () => {
       test.use({ viewport: { width, height: 760 }, colorScheme: tema });
 
-      test('proyecto simple: el selector no ensucia la barra; con dos placas aparece', async ({ page }) => {
+      test('el selector vive al inicio de la tira (con una o varias placas), con texto, y no en la barra del visor', async ({ page }) => {
         await abrir(page);
         await agregarForma(page, 'Cubo');
-        await expect(selector(page)).toHaveCount(0);
+        // Una sola placa: tira corta con el selector y «+ Placa».
+        await expect(selector(page)).toBeVisible();
+        await expect(tira(page).getByTestId('plate-add-first')).toBeVisible();
         await page.getByTestId('plate-add-first').click();
         await expect(selector(page)).toBeVisible();
         await expect(modo(page, 'Imprimir')).toHaveAttribute('aria-checked', 'true');
-        // El selector cabe en la barra a una sola fila (sin desbordar el visor).
-        const caja = await page.getByRole('toolbar').first().boundingBox();
+        await expect(modo(page, 'Armado')).toContainText('Armado');
+        await expect(page.getByRole('toolbar').first().getByRole('radiogroup')).toHaveCount(0);
+        // El selector es lo primero de la tira y cabe sin desbordar el ancho.
+        const caja = await selector(page).boundingBox();
         expect(caja!.x + caja!.width).toBeLessThanOrEqual(width);
       });
 
@@ -61,22 +65,24 @@ for (const width of [1024, 1440]) {
         expect(await store(page, (s) => s.objects.map((o: any) => [...o.position]))).toEqual(posiciones);
       });
 
-      test('Armado oculta camas y atenúa la tira con su nota; el pie dice «Sin cama en esta vista»; Libre también', async ({ page }) => {
+      test('Armado cambia las fichas por la separación y una nota; el pie dice «Sin cama en esta vista»; Libre tiene su línea', async ({ page }) => {
         await dosPlacas(page);
-        await expect(page.getByTestId('viewmode-hud')).toHaveCount(0);
+        await expect(page.getByTestId('viewmode-explode-bar')).toHaveCount(0);
         await modo(page, 'Armado').click();
-        await expect(page.getByTestId('viewmode-badge')).toContainText('Vista armada');
-        await expect(page.getByTestId('viewmode-badge')).toContainText('no cambia su lugar en la placa');
+        await expect(tira(page).getByTestId('viewmode-explode-bar')).toBeVisible();
+        await expect(page.getByTestId('viewmode-hud')).toHaveCount(0);
+        await expect(tira(page).getByRole('combobox', { name: 'Qué separar' })).toBeVisible();
         await expect(tira(page)).toBeVisible();
-        await expect(page.getByTestId('plate-strip-note')).toContainText('figura armada');
+        await expect(page.getByTestId('plate-strip-note')).toHaveText('2 placas · se editan en Imprimir');
         await expect(page.getByTestId('viewmode-bed-chip')).toHaveText('Sin cama en esta vista');
         await expect(page.getByText('Fuera de volumen')).toHaveCount(0);
         await modo(page, 'Libre').click();
-        await expect(page.getByTestId('viewmode-badge')).toContainText('Vista libre');
+        await expect(page.getByTestId('plate-strip-note')).toHaveText('Vista libre: sin camas');
+        await expect(page.getByTestId('viewmode-explode-bar')).toHaveCount(0);
         await expect(page.getByTestId('viewmode-bed-chip')).toBeVisible();
-        await page.getByTestId('viewmode-back').click();
+        await modo(page, 'Imprimir').click();
         await expect(modo(page, 'Imprimir')).toHaveAttribute('aria-checked', 'true');
-        await expect(page.getByTestId('viewmode-hud')).toHaveCount(0);
+        await expect(page.getByTestId('viewmode-explode-bar')).toHaveCount(0);
       });
 
       test('las acciones de cama salen deshabilitadas en Armado con el motivo «Disponible en la vista Imprimir»', async ({ page }) => {

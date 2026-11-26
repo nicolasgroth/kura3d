@@ -1,19 +1,23 @@
 /**
  * @file src/components/viewport/ViewportProTip.tsx
- * @description Píldora de consejos del visor con acceso directo a la guía de atajos.
+ * @description Píldora de consejos del visor con acceso directo a la guía de atajos. El consejo es una sola línea
+ * truncada; un botón con `aria-expanded` lo despliega completo (accesible por teclado).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import React, { useState } from 'react';
-import { HelpCircle, Lightbulb, X } from 'lucide-react';
+import React, { useId, useState } from 'react';
+import { ChevronDown, ChevronUp, HelpCircle, Lightbulb, X } from 'lucide-react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import '../../styles/viewportProTip.css';
 
 /** Píldora contextual de consejos y acceso a Atajos (?). */
 export const ViewportProTip: React.FC = () => {
   const [tipDismissed, setTipDismissed] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const textId = useId();
   const language = useKuraStore((s) => s.language);
   const activeTool = useKuraStore((s) => s.activeTool);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
@@ -34,9 +38,21 @@ export const ViewportProTip: React.FC = () => {
       ) : (
         <div className="kura-hud-card kura-protip-pill">
           <Lightbulb size={13} style={{ color: 'var(--accent-amber)', flexShrink: 0 }} />
-          <span className="kura-protip-text" title={t(language, `viewport.protip.${activeTool}`)}>
+          <span id={textId} className={`kura-protip-text${expanded ? ' is-expanded' : ' is-clamped'}`} title={t(language, `viewport.protip.${activeTool}`)}>
             {t(language, `viewport.protip.${activeTool}`)}
           </span>
+          <button
+            type="button"
+            className="kura-mini-icon-btn"
+            aria-expanded={expanded}
+            aria-controls={textId}
+            data-testid="protip-expand"
+            onClick={() => setExpanded((v) => !v)}
+            title={t(language, 'viewport.protip.expand')}
+            aria-label={t(language, 'viewport.protip.expand')}
+          >
+            {expanded ? <ChevronUp size={12} aria-hidden="true" /> : <ChevronDown size={12} aria-hidden="true" />}
+          </button>
           <button
             type="button"
             className="kura-btn kura-btn-sm kura-protip-help-btn"

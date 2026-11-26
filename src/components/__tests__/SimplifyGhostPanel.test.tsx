@@ -1,6 +1,6 @@
 /**
  * @file src/components/__tests__/SimplifyGhostPanel.test.tsx
- * @description Controles del fantasma de Simplificar en el panel: «Comparar con el original», aristas (se bloquean en
+ * @description Controles del fantasma de Simplificar en el panel: «Ocultar la vista previa», aristas (se bloquean en
  * el modo liviano), conmutador «Ver lo pedido» / «Ver la versión segura» (solo si la malla pedida se guardó), aviso de
  * resultado demasiado grande o sin malla, y la barra por pasos («intento i de n», «paso i de n» de la segura) mientras
  * se calcula.
@@ -48,7 +48,7 @@ function mount(session: Partial<SimplifyPreviewSession>) {
 afterEach(() => useKuraStore.setState({ simplifyPreview: null }));
 
 describe('Simplificar: controles del fantasma', () => {
-  it('«Comparar con el original» y las aristas actualizan la sesión, con nombre accesible', () => {
+  it('«Ocultar la vista previa» y las aristas actualizan la sesión, con nombre accesible', () => {
     mount({});
     const compare = screen.getByLabelText(t('es', 'simplify.ghost.compare')) as HTMLInputElement;
     expect(compare.checked).toBe(false);
@@ -127,5 +127,20 @@ describe('Simplificar: progreso por pasos de la vista previa', () => {
     expect(screen.queryByTestId('simplify-preview-steps')).toBeNull();
     expect(screen.queryByTestId('simplify-preview-phase')).toBeNull();
     expect(screen.getByTestId('simplify-preview-cancel')).toBeTruthy();
+  });
+});
+
+describe('Simplificar: foco al terminar la vista previa', () => {
+  it('el foco va al informe (con nombre accesible), no al botón que modifica la pieza', async () => {
+    mount({ status: 'computing', report: null, phase: null, ghost: 'none', ghostTriangles: 0 });
+    const cancel = screen.getByTestId('simplify-preview-cancel');
+    cancel.focus();
+    expect(document.activeElement).toBe(cancel);
+    act(() => useKuraStore.setState({ simplifyPreview: { ...useKuraStore.getState().simplifyPreview!, status: 'ready', report: REPORT, ghost: 'shown', ghostTriangles: 300 } }));
+    const report = screen.getByTestId('simplify-report');
+    expect(document.activeElement).toBe(report);
+    expect(report.getAttribute('tabindex')).toBe('-1');
+    expect(document.getElementById(report.getAttribute('aria-labelledby')!)?.textContent).toBe(t('es', 'simplify.preview.title'));
+    expect(document.activeElement?.classList.contains('kura-simplify-run')).toBe(false);
   });
 });

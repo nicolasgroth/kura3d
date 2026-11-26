@@ -92,7 +92,8 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
     const unavailable = printOnly ? { unavailable: t(language, printOnly) } : movable.length === 0 ? { unavailable: t(language, 'plates.move.reason') } : {};
     const category = t(language, 'rediseno.actions.group.position');
     const base = { category, keywords: 'moveToPlate placa plate mover move', kind: 'local' as const, icon, ...unavailable };
-    for (const p of plates) out.push({ ...base, id: `action-moveToPlate-${p.id}`, label: `${name}: ${p.name}`, run: () => runMoveToPlate(p.id) });
+    // No se ofrece la placa donde ya está toda la selección (mover no haría nada).
+    for (const p of plates.filter((pl) => movable.length === 0 || !movable.every((o) => o.plateRef === pl.id))) out.push({ ...base, id: `action-moveToPlate-${p.id}`, label: `${name}: ${p.name}`, run: () => runMoveToPlate(p.id) });
     out.push({ ...base, id: 'action-moveToPlate-new', label: `${name}: ${t(language, 'plates.move.new')}`, run: () => runMoveToPlate(null) });
   }
   // «Una placa por objeto»: con 2+ piezas sólidas sin bloquear entre las elegidas (o entre todas si no hay selección).

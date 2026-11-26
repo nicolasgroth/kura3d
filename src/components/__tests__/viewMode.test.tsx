@@ -18,7 +18,7 @@ import { fakeBox } from '../../test/fakeObjects';
 import type { SceneObject } from '../../types/kura';
 import type { ScenePlate } from '../../types/plates';
 import { PlateStrip } from '../plates/PlateStrip';
-import { ViewModeHud } from '../viewmode/ViewModeHud';
+import { ViewModeExplode } from '../viewmode/ViewModeExplode';
 import { ViewModeSelector } from '../viewmode/ViewModeSelector';
 import { ViewportHudBottom } from '../viewport/ViewportHudBottom';
 
@@ -107,31 +107,19 @@ describe('selector Imprimir / Armado / Libre', () => {
   });
 });
 
-describe('rótulo y separación visual', () => {
-  it('en Imprimir no dibuja nada', () => {
-    const { container } = render(<ViewModeHud />);
+describe('separación visual (controles de Armado en la tira)', () => {
+  it('en Imprimir y en Libre no dibuja nada', () => {
+    const { container, rerender } = render(<ViewModeExplode />);
     expect(container.firstChild).toBeNull();
-  });
-
-  it('en Armado dice la vista, que mover aquí no mueve la pieza de su placa y permite volver', () => {
-    seed({ layout: 'assembly' });
-    render(<ViewModeHud />);
-    expect(screen.getByTestId('viewmode-badge').textContent).toContain('Vista armada');
-    expect(screen.getByTestId('viewmode-badge').textContent).toContain('no cambia su lugar en la placa');
-    fireEvent.click(screen.getByTestId('viewmode-back'));
-    expect(store().layout).toBe('print');
-  });
-
-  it('en Libre el rótulo dice «Vista libre»', () => {
-    seed({ layout: 'assembly', freeView: true });
-    render(<ViewModeHud />);
-    expect(screen.getByTestId('viewmode-badge').textContent).toContain('Vista libre');
+    act(() => seed({ layout: 'assembly', freeView: true }));
+    rerender(<ViewModeExplode />);
+    expect(container.firstChild).toBeNull();
   });
 
   it('el deslizador separa solo en el dibujo: no toca objetos ni historial', () => {
     seed({ layout: 'assembly' });
     const objects = store().objects;
-    render(<ViewModeHud />);
+    render(<ViewModeExplode />);
     const slider = screen.getByTestId('viewmode-explode') as HTMLInputElement;
     fireEvent.change(slider, { target: { value: '40' } });
     expect(store().figureExplode).toMatchObject({ scope: 'all', factor: 0.4 });
@@ -142,13 +130,29 @@ describe('rótulo y separación visual', () => {
     expect(store().figureExplode).toBeNull();
   });
 
+  it('RePág y AvPág mueven 10 %; el alcance tiene nombre accesible', () => {
+    seed({ layout: 'assembly' });
+    render(<ViewModeExplode />);
+    const slider = screen.getByTestId('viewmode-explode');
+    fireEvent.keyDown(slider, { key: 'PageUp' });
+    expect(store().figureExplode?.factor).toBeCloseTo(0.1);
+    fireEvent.keyDown(slider, { key: 'PageUp' });
+    expect(store().figureExplode?.factor).toBeCloseTo(0.2);
+    fireEvent.keyDown(slider, { key: 'PageDown' });
+    expect(store().figureExplode?.factor).toBeCloseTo(0.1);
+    fireEvent.keyDown(slider, { key: 'PageDown' });
+    fireEvent.keyDown(slider, { key: 'PageDown' });
+    expect(store().figureExplode).toBeNull();
+    expect(screen.getByRole('combobox', { name: 'Qué separar' })).toBeTruthy();
+  });
+
   it('con un grupo seleccionado se puede separar solo ese grupo; sin grupo, solo toda la figura', () => {
     const group = { id: 'g1', name: 'Grupo' };
     seed(
       { layout: 'assembly', groups: [group], selectedIds: ['a'] },
       [piece('a', [0, 0, 0], { groupRef: 'g1' }), piece('b', [50, 0, 0], { groupRef: 'g1' }), piece('c', [100, 0, 0])],
     );
-    render(<ViewModeHud />);
+    render(<ViewModeExplode />);
     const scope = screen.getByTestId('viewmode-scope') as HTMLSelectElement;
     fireEvent.change(scope, { target: { value: 'group' } });
     fireEvent.change(screen.getByTestId('viewmode-explode'), { target: { value: '50' } });
@@ -159,7 +163,58 @@ describe('rótulo y separación visual', () => {
   });
 });
 
-describe('pie del visor y tira de placas según el modo', () => {
+describe('tira de vistas y placas', () => {
+  const two = () => seed({ plates: PLATES, activePlateId: 'p1' }, [piece('a', [0, 0, 0], { plateRef: 'p1' }), piece('b', [300, 0, 0], { plateRef: 'p2' })]);
+
+  it('el selector de vista va al inicio de la tira, siempre con texto', () => {
+    two();
+    render(<PlateStrip />);
+    const strip = screen.getByTestId('plate-strip');
+    const group = screen.getByRole('radiogroup', { name: 'Modo de vista' });
+    expect(strip.firstElementChild).toBe(group);
+    expect(group.textContent).toContain('Imprimir');
+    expect(group.textContent).toContain('Armado');
+    expect(group.textContent).toContain('Libre');
+  });
+
+  it('con una sola placa la tira es corta: selector y «+ Placa»; con escena vacía no se dibuja', () => {
+    seed();
+    const { rerender } = render(<PlateStrip />);
+    expect(screen.getByTestId('plate-strip').getAttribute('data-short')).toBe('true');
+    expect(screen.getByTestId('viewmode-selector')).toBeTruthy();
+    expect(screen.getByTestId('plate-add-first')).toBeTruthy();
+    expect(screen.queryByTestId('plate-add')).toBeNull();
+    act(() => seed({}, []));
+    rerender(<PlateStrip />);
+    expect(screen.queryByTestId('plate-strip')).toBeNull();
+  });
+
+  it('Armado: los controles de separación ocupan el lugar de las fichas y la nota cuenta las placas', () => {
+    two();
+    const { rerender } = render(<PlateStrip />);
+    expect(screen.queryByTestId('viewmode-explode')).toBeNull();
+    expect(screen.getByTestId('plate-add')).toBeTruthy();
+    act(() => seed({ plates: PLATES, activePlateId: 'p1', layout: 'assembly' }, [piece('a', [0, 0, 0], { plateRef: 'p1' }), piece('b', [10, 0, 0], { plateRef: 'p2' })]));
+    rerender(<PlateStrip />);
+    expect(screen.getByTestId('plate-strip').getAttribute('data-view-mode')).toBe('armed');
+    expect(screen.getByTestId('viewmode-explode')).toBeTruthy();
+    expect(screen.queryByTestId('plate-add')).toBeNull();
+    expect(screen.queryByTestId('viewmode-back')).toBeNull();
+    expect(screen.queryByTestId('viewmode-hud')).toBeNull();
+    expect(screen.getByTestId('plate-strip-note').textContent).toBe('2 placas · se editan en Imprimir');
+  });
+
+  it('Libre: el selector y su propia línea, no el texto de Armado', () => {
+    seed({ plates: PLATES, activePlateId: 'p1', layout: 'assembly', freeView: true });
+    render(<PlateStrip />);
+    expect(screen.getByTestId('plate-strip').getAttribute('data-view-mode')).toBe('free');
+    expect(screen.getByTestId('plate-strip-note').textContent).toBe('Vista libre: sin camas');
+    expect(screen.queryByTestId('viewmode-explode')).toBeNull();
+    expect(screen.getByTestId('viewmode-free').getAttribute('aria-checked')).toBe('true');
+  });
+});
+
+describe('pie del visor según el modo', () => {
   it('Imprimir muestra la cama; Armado y Libre dicen que aquí no hay cama ni fuera de volumen', () => {
     const { rerender } = render(<ViewportHudBottom />);
     expect(screen.queryByTestId('viewmode-bed-chip')).toBeNull();
@@ -171,19 +226,6 @@ describe('pie del visor y tira de placas según el modo', () => {
     act(() => seed({ layout: 'assembly', freeView: true }));
     rerender(<ViewportHudBottom />);
     expect(screen.getByTestId('viewmode-bed-chip')).toBeTruthy();
-  });
-
-  it('la tira queda visible pero atenuada, con su nota, y no deja crear ni borrar placas', () => {
-    seed({ plates: PLATES, activePlateId: 'p1' }, [piece('a', [0, 0, 0], { plateRef: 'p1' }), piece('b', [300, 0, 0], { plateRef: 'p2' })]);
-    const { rerender } = render(<PlateStrip />);
-    expect(screen.queryByTestId('plate-strip-note')).toBeNull();
-    expect((screen.getByTestId('plate-add') as HTMLButtonElement).disabled).toBe(false);
-    act(() => seed({ plates: PLATES, activePlateId: 'p1', layout: 'assembly' }, [piece('a', [0, 0, 0], { plateRef: 'p1' }), piece('b', [10, 0, 0], { plateRef: 'p2' })]));
-    rerender(<PlateStrip />);
-    expect(screen.getByTestId('plate-strip').getAttribute('data-view-mode')).toBe('armed');
-    expect(screen.getByTestId('plate-strip-note').textContent).toContain('figura armada');
-    expect((screen.getByTestId('plate-add') as HTMLButtonElement).disabled).toBe(true);
-    expect((screen.getByTestId('plate-delete') as HTMLButtonElement).disabled).toBe(true);
   });
 });
 

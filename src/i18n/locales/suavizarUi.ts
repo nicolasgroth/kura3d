@@ -109,7 +109,7 @@ const SUAVIZAR_UI = {
     hi: 'पुर्ज़े को एक ही अनडू चरण में स्मूद करता है; कुछ न बदला हो तो पूर्वावलोकन का उपयोग करता है।',
     zh: '用一步撤销完成平滑；若未改动参数则直接使用预览结果。',
   },
-  'smooth.compare': { es: 'Comparar con el original', en: 'Compare with the original', de: 'Mit dem Original vergleichen', fr: 'Comparer avec l’original', hi: 'मूल से तुलना करें', zh: '与原件对比' },
+  'smooth.compare': { es: 'Ocultar la vista previa', en: 'Hide the preview', de: 'Vorschau ausblenden', fr: 'Masquer l’aperçu', hi: 'पूर्वावलोकन छिपाएँ', zh: '隐藏预览' },
   'smooth.compare.help': {
     es: 'Activado, oculta el resultado para ver solo la pieza original.',
     en: 'When on, hides the result so you see only the original part.',

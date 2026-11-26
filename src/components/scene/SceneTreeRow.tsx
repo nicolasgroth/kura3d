@@ -24,6 +24,7 @@ import { tCount } from '../../utils/plural';
 import type { TreeRow } from './sceneTreeRows';
 import '../../styles/ux3Edicion.css';
 import '../../styles/sceneTreeNameFirst.css';
+import '../../styles/sceneTreeBadge.css';
 import { splitPieceDisplayName } from '../../core/scene/splitPieceName';
 import { SceneColorSwatch } from './SceneColorSwatch';
 import { MiddleEllipsisName } from './MiddleEllipsisName';

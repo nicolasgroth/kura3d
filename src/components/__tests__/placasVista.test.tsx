@@ -49,12 +49,14 @@ beforeEach(() => seed([], []));
 afterEach(() => cleanup());
 
 describe('tira de placas', () => {
-  it('no existe con una placa o ninguna', () => {
+  it('con una placa o ninguna es corta (selector y «+ Placa», sin fichas); con la escena vacía no existe', () => {
     const { container, rerender } = render(<PlateStrip />);
     expect(container.firstChild).toBeNull();
     act(() => seed([PLATES[0]], [solid('a', 'A', [0, 0, 0], 'p1')]));
     rerender(<PlateStrip />);
-    expect(screen.queryByTestId('plate-strip')).toBeNull();
+    expect(screen.getByTestId('plate-strip').getAttribute('data-short')).toBe('true');
+    expect(screen.queryByTestId('plate-solo')).toBeNull();
+    expect(screen.getByTestId('plate-add-first')).toBeTruthy();
   });
 
   it('una ficha por placa con nombre, piezas y estado con texto; la activa va con aria-pressed', () => {
@@ -229,7 +231,9 @@ describe('mover a placa', () => {
     const state = { objects: [target], selectedIds: ['a'], groups: [], busyOperation: null };
     expect(actionPaletteItems('es', { ...state, plates: [PLATES[0]] }, []).some((i) => i.id.startsWith('action-moveToPlate'))).toBe(false);
     const items = actionPaletteItems('es', { ...state, plates: PLATES }, []).filter((i) => i.id.startsWith('action-moveToPlate'));
-    expect(items.map((i) => i.label)).toEqual(['Mover a placa: Placa 1', 'Mover a placa: Placa 2', 'Mover a placa: Placa 3', 'Mover a placa: Placa nueva']);
+    expect(items.map((i) => i.label)).toEqual(['Mover a placa: Placa 2', 'Mover a placa: Placa 3', 'Mover a placa: Placa nueva']);
+    // La placa donde ya está toda la selección no se ofrece.
+    expect(items.some((i) => i.id === 'action-moveToPlate-p1')).toBe(false);
     expect(items.every((i) => i.label.startsWith(moveToPlateName('es')))).toBe(true);
     expect(actionPaletteItems('es', { ...state, selectedIds: [], plates: PLATES }, []).find((i) => i.id === 'action-moveToPlate-p2')!.unavailable).toBeTruthy();
   });

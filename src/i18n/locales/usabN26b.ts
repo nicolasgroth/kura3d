@@ -27,6 +27,14 @@ const USAB_N26B_TABLE = {
     'एक और प्लेट का नाम पहले से «{name}» है। कोई दूसरा नाम लिखें।',
     '已有另一块打印板名为“{name}”。请输入不同的名称。',
   ],
+  'plates.toast.movedCrowded': [
+    '{count} {count?pieza movida|piezas movidas} a «{name}», pero la placa está llena: queda dentro de la cama, encima de otras piezas. Muévela a un hueco o usa «Repartir en placas».',
+    '{count} {count?part|parts} moved to “{name}”, but the plate is full: it sits inside the bed, on top of other parts. Move it to a free spot or use “Arrange on plates”.',
+    '{count} {count?Teil|Teile} nach „{name}“ verschoben, aber die Platte ist voll: Es liegt im Druckbett über anderen Teilen. Verschiebe es an eine freie Stelle oder nutze „Auf Platten verteilen“.',
+    '{count} {count?pièce déplacée|pièces déplacées} vers « {name} », mais le plateau est plein : elle reste dans le plateau, sur d’autres pièces. Déplace-la vers un espace libre ou utilise « Répartir sur les plateaux ».',
+    '{count} {count?हिस्सा|हिस्से} “{name}” में ले जाए गए, पर प्लेट भरी है: वह बेड के भीतर दूसरे हिस्सों के ऊपर है। उसे खाली जगह पर ले जाएँ या «प्लेटों पर बाँटें» का उपयोग करें।',
+    '已将 {count} 个零件移到“{name}”，但该板已满：它位于打印床内，压在其他零件上。请移到空位，或使用“分配到打印板”。',
+  ],
   'plates.toast.movedNoFit': [
     '{count} {count?pieza movida|piezas movidas} a «{name}», pero no cabe en su cama: sobresale. Reduce su tamaño o cambia la cama de la placa.',
     '{count} {count?part|parts} moved to “{name}”, but it does not fit its bed and overhangs. Scale it down or change the plate’s bed.',

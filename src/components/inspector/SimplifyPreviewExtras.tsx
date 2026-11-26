@@ -2,7 +2,7 @@
  * @file src/components/inspector/SimplifyPreviewExtras.tsx
  * @description Piezas de la vista previa de Simplificar que acompañan al fantasma del visor: `SimplifyPreviewProgress`
  * (barra por pasos «intento i de n» / «paso i de n» de la versión segura mientras calcula, con el texto de la fase) y
- * `SimplifyGhostControls` («Comparar con el original», «Mostrar las aristas», conmutador «Ver lo pedido» / «Ver la
+ * `SimplifyGhostControls` («Ocultar la vista previa», «Mostrar las aristas», conmutador «Ver lo pedido» / «Ver la
  * versión segura» solo si la malla pedida se guardó, y el aviso cuando el resultado es demasiado grande para dibujarse).
  * Todo el estado vive en `simplifyPreviewSlice`.
  * @author Nicolás Groth <ngroth@gmail.com>
