@@ -66,6 +66,7 @@ import { ACERCA_FR } from './acercaDe';
 import { IMAN_FR } from './iman';
 import { IMAN_UI3_FR } from './imanUi3';
 import { TORRETA_FR } from './torreta';
+import { INSTRUCCIONES_ARMADO_FR } from './instruccionesArmado';
 import { BORDES_FR } from './bordesPrimitivas';
 import { UX7_FR } from './ux7';
 import { UX8_FR } from './ux8';
@@ -157,6 +158,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...REDISENO3B_FR,
   ...UX8_MENU_FR,
   ...TORRETA_FR,
+  ...INSTRUCCIONES_ARMADO_FR,
   // Marca y shell principal
   'app.tagline': 'Studio de Modélisation 3D Natif et Impression 3D',
   'app.docTitle': 'Kurra Studio v0.5.0 — Studio de Modélisation 3D Natif',
