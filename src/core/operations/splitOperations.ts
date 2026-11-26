@@ -55,7 +55,7 @@ export async function planSplitForBed(
   // Previa fiel: corre la división completa (sin tocar la escena) para contar las uniones que el
   // cierre de armado deja para pegar por orden de montaje o choque de conectores.
   const res = await engine.executeBedSplitGeometry(obj, plan, assemblyPreview);
-  return { ...plan, assemblyPreview: { joints: res.joints.length, glueJoints: res.glueJoints } };
+  return { ...plan, assemblyPreview: { joints: res.joints.length, glueJoints: res.glueJoints }, jointPreview: engine.previewJoints(res) };
 }
 
 /** Celdas y triángulos hasta los que la previa ejecuta el plan (en estos casos corre en < 2 s). */

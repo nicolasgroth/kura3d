@@ -22,6 +22,10 @@ import {
 import { splitGroupOf } from '../../core/scene/splitGroups';
 import { groupNotesOf } from '../../core/scene/splitGroupNotes';
 import { SplitAssemblyStatus } from './SplitAssemblyStatus';
+import { SplitJointStrengthNotes, strengthNotes } from './SplitJointStrengthNotes';
+import { FIRMNESS_ICON, firmnessSentence } from './jointFirmnessUi';
+import { countFirmness } from '../../core/scene/jointFirmness';
+import '../../styles/splitFirmness.css';
 import { localizeWarnings } from '../../store/operationErrors';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { LanguageCode, SceneObject } from '../../types/kura';
@@ -163,6 +167,8 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
   const common = [...textCount].filter(([, n]) => n > 1);
   const commonSet = new Set(common.map(([text]) => text));
   const weakRows = rows.filter((r) => r.weak !== null);
+  // Conteo por firmeza: solo uniones con firmeza guardada que siguen como se dividieron (no cambiadas ni trabadas)
+  const firmnessCounts = countFirmness(rows.flatMap((r) => (r.firmness ? [r.firmness] : [])));
   const limited = reinforced || autoSized || weakRows.some((r) => r.reinforced);
 
   const focusRow = (label: string) => {
@@ -187,6 +193,9 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
     <section className="kura-split-joints-section" id={SPLIT_JOINTS_ID} tabIndex={-1} aria-labelledby={`${uid}-title`}>
       <SplitAssemblyStatus language={language} notes={notes} validation={report} glue={glueCountOf(rows)} />
       <h3 id={`${uid}-title`} className="kura-section-label">{t(language, 'splitJoints.title')} ({rows.length})</h3>
+      {firmnessCounts.total > 0 && (
+        <p className="kura-firmness-line" data-testid="split-joints-firmness">{firmnessSentence(language, firmnessCounts)}</p>
+      )}
       {weakRows.length > 0 && (
         <div className="kura-split-weak-summary" role="note" data-testid="split-weak-summary">
           <p className="kura-split-weak-title">
@@ -235,7 +244,9 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
         <ul className="kura-split-joint-list" ref={listRef} aria-label={t(language, 'splitUx.list.label')} onKeyDown={onListKey}>
           {rows.map((row) => {
             const axis = userAxisOfInternal(row.axis);
-            const statusText = t(language, `splitJoints.status.${row.status}`);
+            const shown: SplitJointStatus | 'fair' = row.status === 'ok' && (row.firmness === 'fair' || row.firmness === 'weak') ? row.firmness : row.status;
+            const statusText = shown === 'fair' ? t(language, 'jointFirmness.level.fair') : t(language, `splitJoints.status.${shown}`);
+            const notes = strengthNotes(language, row);
             const typeName = jointTypeName(language, row);
             const count = row.centers.length;
             const own = (rowTexts.get(row.label) ?? []).filter((text) => !commonSet.has(text));
@@ -244,9 +255,9 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
               ? t(language, reinforced || autoSized || row.reinforced ? 'splitUx.weak.shortLimit' : 'splitUx.weak.short', { measured: fmt(2 * row.weak.measuredMm), recommended: fmt(2 * row.weak.recommendedMm) })
               : null;
             const noteId = `${uid}-n-${row.label}`;
-            const hasDetail = own.length > 0 || Boolean(mark) || row.status === 'blocked';
+            const hasDetail = own.length > 0 || Boolean(mark) || row.status === 'blocked' || Boolean(notes.measures) || notes.facts.length > 0;
             return (
-              <li key={row.label} className="kura-split-joint" data-status={row.status} data-testid={`split-joint-${row.label}`}>
+              <li key={row.label} className="kura-split-joint" data-status={shown} data-testid={`split-joint-${row.label}`}>
                 <button
                   type="button"
                   className="kura-split-joint-btn"
@@ -266,8 +277,8 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
                   }}
                 >
                   <span className="kura-split-joint-label">{t(language, 'splitJoints.item', { label: row.label, a: row.a, b: row.b })}</span>
-                  <span className="kura-split-joint-status" data-status={row.status}>
-                    {STATUS_ICON[row.status]} {statusText}
+                  <span className="kura-split-joint-status" data-status={shown}>
+                    {shown === 'fair' ? FIRMNESS_ICON.fair : STATUS_ICON[shown]} {statusText}
                   </span>
                   {row.labelDots && (
                     <span className="kura-split-joint-status" data-status="dots" title={t(language, 'splitJoints.note.dotsShort')}>
@@ -293,6 +304,7 @@ export const SplitJointsSection: React.FC<{ primary: SceneObject }> = ({ primary
                       {t(language, 'splitUx.detail')}
                     </summary>
                     <div className="kura-split-joint-notes">
+                      <SplitJointStrengthNotes language={language} row={row} testId={`split-joint-strength-${row.label}`} />
                       {mark && (
                         <p className="kura-split-joint-note" data-kind="info" data-testid={`split-joint-mark-${row.label}`}>
                           <CircleDot size={12} aria-hidden="true" />

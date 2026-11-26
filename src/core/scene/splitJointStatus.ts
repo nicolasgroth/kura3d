@@ -13,6 +13,7 @@
 import type { EngineWarning, EngineWarningCode } from '../../engine/engineErrors';
 import type { AssemblyFixOption, AssemblySuggestion, WeakJoint } from '../../engine/split/assemblyTypes';
 import type { SceneObject, SplitJointRecord, SplitStoredReport, Vec3 } from '../../types/kura';
+import { effectiveFirmness, type JointFirmness } from './jointFirmness';
 import type { SplitGroup } from './splitGroups';
 
 export type SplitJointStatus = 'ok' | 'weak' | 'glue' | 'changed' | 'blocked';
@@ -79,6 +80,13 @@ export interface SplitJointRow {
   status: SplitJointStatus;
   /** Medida y recomendación del conector si la unión es débil. */
   weak: { measuredMm: number; recommendedMm: number } | null;
+  /** Firmeza guardada al dividir (`null` en proyectos anteriores). */
+  strength: SplitJointRecord['strength'] | null;
+  /**
+   * Nivel de firmeza que se muestra (firme, regular, débil, para pegar); `null` si no hay firmeza guardada o si la
+   * unión ya cambió de tipo o traba el montaje (esos estados mandan).
+   */
+  firmness: JointFirmness | null;
   /** Avisos del motor propios de esta unión (solape no imprimible, marca limitada, pegada, cambiada…). */
   warnings: EngineWarning[];
   /** `true` si la marca de pareja de esta unión va como puntos por fuera (`labelPlacement: 'dots'`). */
@@ -167,6 +175,10 @@ export function buildJointRows(
       centers: r.connectorCenters, status, labelDots, mark,
       reinforced: own.some((w) => w.code === 'SPLIT_CONNECTOR_REINFORCED'),
       weak: weak ? { measuredMm: weak.measuredMm, recommendedMm: weak.recommendedMm } : null,
+      strength: r.strength ?? null,
+      firmness: r.strength && (status === 'ok' || status === 'weak' || status === 'glue')
+        ? status === 'glue' ? 'glue' : effectiveFirmness(r.strength, weak ? { measuredMm: weak.measuredMm, recommendedMm: weak.recommendedMm } : null)
+        : null,
       warnings: own, blocks, options: pending?.options ?? [],
     };
   });

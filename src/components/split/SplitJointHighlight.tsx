@@ -12,6 +12,7 @@
 import React, { useMemo } from 'react';
 import { Line } from '@react-three/drei';
 import { groupJointRecords } from '../../core/scene/splitJointStatus';
+import { effectiveFirmness, type JointFirmness } from '../../core/scene/jointFirmness';
 import { explodedSplitPositions, splitGroupOf, splitIsAssembled } from '../../core/scene/splitGroups';
 import { useKuraStore } from '../../store/useKuraStore';
 import { computeWorldBounds } from '../viewport/viewportHelpers';
@@ -22,6 +23,14 @@ const TINT_DARK = '#fbbf24';
 const TINT_LIGHT = '#c2410c';
 /** Grosor del contorno en píxeles. */
 const OUTLINE_PX = 4;
+
+/** Color y patrón del contorno según la firmeza de la unión (el patrón distingue el nivel sin depender del color). */
+const FIRMNESS_TINT: Record<JointFirmness, { dark: string; light: string; dash: { dashSize: number; gapSize: number } | null }> = {
+  firm: { dark: '#4ade80', light: '#15803d', dash: null },
+  fair: { dark: '#facc15', light: '#a16207', dash: { dashSize: 4, gapSize: 2 } },
+  weak: { dark: '#fb923c', light: '#c2410c', dash: { dashSize: 1.5, gapSize: 1.5 } },
+  glue: { dark: '#22d3ee', light: '#0e7490', dash: { dashSize: 0.6, gapSize: 2 } },
+};
 
 /** Las 12 aristas de una caja centrada en el origen, como pares de puntos. */
 export function boxEdgePoints(size: [number, number, number]): Array<[number, number, number]> {
@@ -71,27 +80,32 @@ export const SplitJointHighlight: React.FC = () => {
       });
     // Armado no depende de la cama ni de la placa: es la pose de `metadata.split.assembly`.
     const showCenters = factor === 0 && splitIsAssembled(group);
-    return { boxes, centers: showCenters ? record.connectorCenters : [], radius: Math.max(1, record.connector?.size ?? 2) };
+    const firmness = record.strength ? effectiveFirmness(record.strength) : null;
+    return { boxes, centers: showCenters ? record.connectorCenters : [], radius: Math.max(1, record.connector?.size ?? 2), firmness };
   }, [focus, objects, explode]);
 
   const edges = useMemo(() => (data ? data.boxes.map((b) => ({ ...b, points: boxEdgePoints(b.size) })) : []), [data]);
 
   if (!data) return null;
+  // Con firmeza guardada el contorno toma el color y el patrón de su nivel; sin ella, el acento de siempre.
+  const level = data.firmness ? FIRMNESS_TINT[data.firmness] : null;
+  const color = level ? (dark ? level.dark : level.light) : tint;
+  const dash = level?.dash ?? null;
   return (
     <group raycast={() => null}>
       {edges.map((e) => (
         <group key={e.key} position={e.center}>
           <mesh renderOrder={20} raycast={() => null}>
             <boxGeometry args={e.size} />
-            <meshBasicMaterial color={tint} transparent opacity={0.2} depthWrite={false} />
+            <meshBasicMaterial color={color} transparent opacity={0.2} depthWrite={false} />
           </mesh>
-          <Line points={e.points} segments lineWidth={OUTLINE_PX} color={tint} depthTest={false} transparent renderOrder={21} raycast={() => null} />
+          <Line points={e.points} segments lineWidth={OUTLINE_PX} color={color} {...(dash ? { dashed: true, ...dash } : {})} depthTest={false} transparent renderOrder={21} raycast={() => null} />
         </group>
       ))}
       {data.centers.map((c, i) => (
         <mesh key={i} position={c} renderOrder={22} raycast={() => null}>
           <sphereGeometry args={[data.radius, 16, 12]} />
-          <meshBasicMaterial color={tint} transparent opacity={0.9} depthTest={false} />
+          <meshBasicMaterial color={color} transparent opacity={0.9} depthTest={false} />
         </mesh>
       ))}
     </group>

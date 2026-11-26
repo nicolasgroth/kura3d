@@ -510,6 +510,13 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         checking={checking}
         onLowerMinWall={isConnector ? () => document.getElementById(`${uid}-minwall`)?.focus() : undefined}
         onUseLap={kind !== 'lap' ? () => setKind('lap') : undefined}
+        firmness={{
+          sizeAuto,
+          reinforce,
+          manualDiameterMm: 2 * size,
+          onEnableSizeAuto: () => setSizeAuto(true),
+          onEnableReinforce: () => setReinforce(true),
+        }}
       />
     </OperationPanel>
   );
