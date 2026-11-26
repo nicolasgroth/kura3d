@@ -10,6 +10,7 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Guardar proyectos grandes es más rápido** (de unos 4 s a unos 2 s con un modelo de 478 mil triángulos) y muestra su avance en la barra del visor desde el inicio.
 - **Tira de placas rediseñada.** El selector Imprimir / Armado / Libre pasa al inicio de la tira; en Armado la tira trae la separación, el alcance y «Juntar piezas», y desaparece el panel sobre el visor. Con una sola placa queda una tira corta con el selector. La insignia de placa (P1, P2…) se ve siempre. La barra del visor muestra textos o iconos según el ancho.
 - **3MF que el laminador abre con sus bandejas.** Cada pieza va en la celda de su bandeja y el archivo lleva un perfil mínimo tomado de un «proyecto de ejemplo» guardado desde el laminador (Exportar → 3MF → Laminador). Llegan bandejas, nombres, filamento por pieza y colores. Probado en Elegoo Slicer con 1, 3 y 5 placas.
 - **Corregido: los 3MF exportados perdían nombres y filamentos en laminadores de la familia Orca** por una línea de más en la configuración de piezas. Afectaba a todas las exportaciones 3MF.

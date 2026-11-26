@@ -979,3 +979,5 @@ Guías y capturas (Sonnet · 22 min · 156 k): placas, exportar, importar y repa
 
 Reevaluación a ciegas de placas y Simplificar tras la pasada de diseño: en curso.
 
+**Guardado de proyectos grandes** (`perf/guardar-proyecto`, Opus · 25 min · 276 k; en `main` como 4c575b6). Un solo Worker del códec, arrancado de antemano y reutilizado; el avance empieza al iniciar el guardado. Medido por el orquestador en la app (Chromium sin interfaz, modelo de 478 mil triángulos): el guardado completo bajó de 3,9–5,0 s a 2,1 s; el códec empieza a los 0,9 s en vez de a los 2,7 s. La barra de avance alcanzó a pintarse en un solo cuadro. Límite de la medición: ese navegador dibuja la escena por software, así que cada cuadro con 478 mil triángulos tarda varios cientos de milisegundos; cuántos cuadros se pintan en un equipo con tarjeta gráfica queda por comprobar a ojo. El perfil del hilo principal muestra el tiempo en código nativo del navegador (copia de datos, dibujo), no en JavaScript de la app. Suite completa: 4451 pruebas en verde.
+
