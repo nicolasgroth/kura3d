@@ -977,7 +977,16 @@ Consumo: ronda acotada (Sonnet · 20 min · 208 k), tercera evaluación de usabi
 
 Guías y capturas (Sonnet · 22 min · 156 k): placas, exportar, importar y reparar, guardar y recuperar, primeros pasos, cortar; README y FUNCIONALIDADES.
 
-Reevaluación a ciegas de placas y Simplificar tras la pasada de diseño: en curso.
+Reevaluación a ciegas de placas y Simplificar tras la pasada de diseño: abajo.
 
 **Guardado de proyectos grandes** (`perf/guardar-proyecto`, Opus · 25 min · 276 k; en `main` como 4c575b6). Un solo Worker del códec, arrancado de antemano y reutilizado; el avance empieza al iniciar el guardado. Medido por el orquestador en la app (Chromium sin interfaz, modelo de 478 mil triángulos): el guardado completo bajó de 3,9–5,0 s a 2,1 s; el códec empieza a los 0,9 s en vez de a los 2,7 s. La barra de avance alcanzó a pintarse en un solo cuadro. Límite de la medición: ese navegador dibuja la escena por software, así que cada cuadro con 478 mil triángulos tarda varios cientos de milisegundos; cuántos cuadros se pintan en un equipo con tarjeta gráfica queda por comprobar a ojo. El perfil del hilo principal muestra el tiempo en código nativo del navegador (copia de datos, dibujo), no en JavaScript de la app. Suite completa: 4451 pruebas en verde.
+
+**Reevaluación tras la pasada de diseño (quinta ronda): placas 84, Simplificar 80** (Opus · unos 15 min; sobre 5bc2699). Sin bloqueos. Placas queda a un punto del mínimo; Simplificar sigue bajo él.
+
+| Funcionalidad | R3 | R4 | R5 | Confirmado en esta ronda | Lo que más resta |
+|---|---|---|---|---|---|
+| Vistas y tira de placas | 76 | 80 | 84 | Recorrido completo con mouse y teclado; nombre repetido rechazado en línea; selector como grupo de radios; Armado y Libre con su texto; contraste 7:1 o más; sin desborde a 1024 px | Fichas y texto chicos (24–26 px, 11 px); mover una pieza entre placas no deja aviso; a 1024 px los nombres de la lista se cortan sin sentido; los avisos de importación tapan el visor |
+| Simplificar | 72 | 78 | 80 | Abre desde menú, paleta e inspector; foco al modo y de vuelta; el foco llega al informe; deshacer exacto | Al aplicar aparecen dos avisos y el panel con el mismo texto, y dos de ellos se contradicen sobre el agujero cerrado; el foco cae al documento durante el cálculo (45 s en un busto de 325 mil triángulos); el bloqueo por malla abierta dice «Not manifold» y no trae botón de reparar; a 1024 px el informe queda bajo el pliegue |
+
+Lectura del orquestador: la pasada de diseño resolvió lo estructural de placas (el visor queda libre y ya nadie reporta paneles que lo tapen). Lo que queda en placas son ajustes de tamaño y un aviso. Simplificar necesita su propia pasada, pero de mensajes y no de distribución: un solo mensaje por resultado, foco estable durante el cálculo y una salida directa a «Reparar malla».
 

@@ -4,7 +4,7 @@
 
 ## En corto: último día (noche del 25 al 26 de noviembre)
 
-**Notas de la evaluación a ciegas de lo de esta noche** (mínimo 85): usabilidad **81 en la última evaluación completa; placas 80 y Simplificar 78 antes de la pasada de diseño de la tira: reevaluación en curso** · código **85** · funcional **86**. Sin bloqueos.
+**Notas de la evaluación a ciegas de lo de esta noche** (mínimo 85): usabilidad **81 en la última evaluación completa; tras la pasada de diseño, placas 84 y Simplificar 80 (mínimo 85)** · código **85** · funcional **86**. Sin bloqueos.
 
 **Pruebas en `main`:** 4447 del programa, 190 del servidor MCP y 54 de rendimiento, todas en verde. Capturas de las guías: 35 recorridos en verde.
 
@@ -43,7 +43,7 @@ Hoy en la tarde entró además: tira de placas rediseñada, 3MF que el laminador
 
 Ahora:
 
-1. Reevaluación a ciegas de placas y Simplificar tras la pasada de diseño.
+1. Placas (84): fichas más grandes, aviso al mover una pieza, nombres legibles a 1024 px. Simplificar (80): un solo mensaje por resultado, foco estable durante el cálculo, botón «Reparar malla» en el bloqueo.
 2. Guardado de proyectos grandes: bajar los casi 3 segundos previos a codificar y que el avance se vea.
 3. Cambio de licencia a AGPL-3.0 con acuerdo de contribuyentes (decidido; se aplica como último lote).
 4. Probar el 3MF con bandejas en OrcaSlicer y Bambu Studio.
