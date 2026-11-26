@@ -40,7 +40,7 @@ async function runWorker<T>(request: ProjectCodecRequest, transfer: Transferable
 }
 
 export async function encodeProjectAsync(document: ProjectDocument): Promise<Uint8Array> {
-  if (typeof Worker === 'undefined') return (await import('./projectCodec')).encodeProject(document);
+  if (typeof Worker === 'undefined') return (await import('./projectCodec')).encodeProjectCompressed(document);
   // Structured clone snapshots the scene and history. Their geometry remains owned by the editor.
   return runWorker<Uint8Array>({ operation: 'encode', document });
 }

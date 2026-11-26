@@ -12,7 +12,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildSceneObject, APP_BUILD_POLICY } from '../../core/scene/sceneObjects';
 import { createPrimitiveMesh } from '../../engine/primitives';
-import { decodeProject, encodeProject, PLATES_FORMAT_VERSION } from '../../project/projectCodec';
+import { decodeProject, encodeProjectImage, PLATES_FORMAT_VERSION } from '../../project/projectCodec';
 import { ROLE_FORMAT_VERSION } from '../../project/projectRoleMigration';
 import { assembleDocument, splitDocument } from '../../project/recoveryDraftFormat';
 import type { SceneObject, Vec3 } from '../../types/kura';
@@ -136,12 +136,12 @@ describe('setLayout', () => {
     const { a } = await twoParts();
     // Sin datos del proyecto (un proyecto con fechas se escribe como v5): aquí se prueba solo la versión por poses.
     useKuraStore.setState({ objects: [a], projectInfo: {} } as never);
-    expect(versionOf(encodeProject(captureProject(store())))).toBe(ROLE_FORMAT_VERSION);
+    expect(versionOf(encodeProjectImage(captureProject(store())))).toBe(ROLE_FORMAT_VERSION);
     await twoParts();
     useKuraStore.setState({ projectInfo: {} } as never);
     store().setObjectTransform('A', { position: [1, 0, 0] }, true);
     store().setLayout('assembly');
-    const bytes = encodeProject(captureProject(store()));
+    const bytes = encodeProjectImage(captureProject(store()));
     expect(versionOf(bytes)).toBe(PLATES_FORMAT_VERSION);
     const doc = decodeProject(bytes);
     expect(doc.layout).toBe('assembly');

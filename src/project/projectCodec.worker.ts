@@ -1,13 +1,13 @@
 /**
  * @file src/project/projectCodec.worker.ts
- * @description Web Worker que codifica y decodifica proyectos .kura fuera del hilo principal,
+ * @description Web Worker que codifica (v6, con el deflate nativo si existe) y decodifica proyectos .kura fuera del hilo principal,
  * transfiriendo los buffers de geometría.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
-import { decodeProject, encodeProject } from './projectCodec';
+import { decodeProject, encodeProjectCompressed } from './projectCodec';
 import type { ProjectCodecRequest, ProjectCodecResponse } from './projectCodecClient';
 import { ProjectCodecError, type ProjectDocument } from './projectSchema';
 import type { MeshData } from '../types/kura';
@@ -32,10 +32,10 @@ function reply(response: ProjectCodecResponse, transfer: Transferable[] = []) {
 }
 
 self.onmessageerror = () => reply({ ok: false, message: 'Unable to read the project worker request.' });
-self.onmessage = ({ data }: MessageEvent<ProjectCodecRequest>) => {
+self.onmessage = async ({ data }: MessageEvent<ProjectCodecRequest>) => {
   try {
     if (data.operation === 'encode') {
-      const value = encodeProject(data.document);
+      const value = await encodeProjectCompressed(data.document);
       reply({ ok: true, value }, [value.buffer as ArrayBuffer]);
     } else {
       const value = decodeProject(data.bytes);

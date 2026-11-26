@@ -1,6 +1,6 @@
 /**
  * @file src/project/projectCodec.test.ts
- * @description Pruebas del códec binario de proyectos .kura v1 (ida y vuelta, CRC y límites).
+ * @description Pruebas del códec binario de proyectos .kura (imagen sin comprimir v1 a v5 y ida y vuelta v6; CRC y límites).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeMeshStats } from '../engine/primitives';
 import { DEFAULT_PRINTER_PROFILES, type MeshData, type SceneObject } from '../types/kura';
-import { decodeProject, encodeProject, type ProjectDocument } from './projectCodec';
+import { decodeProject, encodeProject, encodeProjectImage, type ProjectDocument } from './projectCodec';
 
 function fixture(): ProjectDocument {
   const faceColors = new Array<string>(4);
@@ -101,7 +101,7 @@ describe('Kura project v1', () => {
     const doc = fixture();
     doc.objects[0].stats.volumeMm3 = 987654;
     const session = { ...doc, aiConfig: { apiKey: 'secret-test-value' }, mcpConfig: { authToken: 'secret-test-value' } };
-    const bytes = encodeProject(session);
+    const bytes = encodeProjectImage(session);
     const text = new TextDecoder().decode(bytes);
     expect(text).not.toMatch(/secret-test-value|aiConfig|mcpConfig|volumeMm3|stats/);
     expect(decodeProject(bytes).objects[0].stats.volumeMm3).toBe(4);
@@ -110,13 +110,13 @@ describe('Kura project v1', () => {
   });
 
   it('rejects damaged bytes, unknown versions and oversized metadata with distinct errors', () => {
-    const bytes = encodeProject(fixture());
+    const bytes = encodeProjectImage(fixture());
     expect(() => decodeProject(bytes.subarray(0, -1))).toThrowError(expect.objectContaining({ code: 'invalid' }));
     const broken = bytes.slice();
     broken[broken.length - 1] ^= 1;
     expect(() => decodeProject(broken)).toThrowError(expect.objectContaining({ code: 'invalid' }));
-    // La 4 (placas) y la 5 (datos del proyecto) ya existen: la primera versión desconocida es la 6.
-    broken[4] = 6;
+    // La 4 (placas), la 5 (datos del proyecto) y la 6 (comprimido) ya existen: la primera versión desconocida es la 7.
+    broken[4] = 7;
     expect(() => decodeProject(broken)).toThrowError(expect.objectContaining({ code: 'unsupported' }));
     broken[4] = 3;
     new DataView(broken.buffer).setUint32(8, 16 * 1024 * 1024 + 1, true);
@@ -142,7 +142,7 @@ describe('Kura project v1', () => {
     ['unclaimed binary bytes', m => { m.blocks.at(-1).length--; }],
   ];
   it.each(malformed)('rejects %s even with a matching checksum', (_, edit) => {
-    const bytes = repack(encodeProject(fixture()), edit);
+    const bytes = repack(encodeProjectImage(fixture()), edit);
     expect(() => decodeProject(bytes)).toThrowError(expect.objectContaining({ code: 'invalid' }));
   });
 

@@ -15,7 +15,7 @@ import { MAX_PLATES } from '../../core/scene/plates';
 import { DEFAULT_PRINTER_PROFILES, type MeshData, type SceneObject } from '../../types/kura';
 import type { ScenePlate } from '../../types/plates';
 import { BRAND } from '../../brand';
-import { decodeProject, encodeProject, type ProjectDocument } from '../projectCodec';
+import { decodeProject, encodeProjectImage, type ProjectDocument } from '../projectCodec';
 import { ProjectCodecError } from '../projectSchema';
 import { assembleDocument, splitDocument } from '../recoveryDraftFormat';
 import { repackKura } from './legacyKura';
@@ -105,7 +105,7 @@ describe('nombre de placa vacío al abrir', () => {
   });
 
   it('el .kura lo repara igual', () => {
-    const bytes = repackKura(encodeProject(doc()), 4, (m) => { (m.current as unknown as Scene).plates[0].name = ''; });
+    const bytes = repackKura(encodeProjectImage(doc()), 4, (m) => { (m.current as unknown as Scene).plates[0].name = ''; });
     const back = decodeProject(bytes);
     expect(back.plates!.map((p) => p.id)).toEqual(['p1', 'p2']);
     expect(back.plates![0].name).not.toBe('');

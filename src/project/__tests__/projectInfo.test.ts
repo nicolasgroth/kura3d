@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_PRINTER_PROFILES } from '../../types/kura';
-import { decodeProject, encodeProject, INFO_FORMAT_VERSION, PLATES_FORMAT_VERSION, ProjectCodecError, type ProjectDocument } from '../projectCodec';
+import { decodeProject, encodeProjectImage, INFO_FORMAT_VERSION, PLATES_FORMAT_VERSION, ProjectCodecError, type ProjectDocument } from '../projectCodec';
 import { PROJECT_INFO_LIMITS, cleanInfoText, compactInfo, isValidInfoDate, sameInfoContent, validStoredInfo } from '../projectInfo';
 import { assembleDocument, splitDocument } from '../recoveryDraftFormat';
 import { repackKura } from './legacyKura';
@@ -31,31 +31,31 @@ const FULL = {
 
 /** Reescribe `info` en el manifiesto de un archivo ya guardado (con CRC recalculado). */
 const withInfo = (info: unknown, version = INFO_FORMAT_VERSION) =>
-  repackKura(encodeProject(doc(FULL)), version, (m) => { (m as unknown as { info: unknown }).info = info; });
+  repackKura(encodeProjectImage(doc(FULL)), version, (m) => { (m as unknown as { info: unknown }).info = info; });
 
 describe('datos del proyecto en el .kura', () => {
   it('ida y vuelta con todos los datos', () => {
-    const bytes = encodeProject(doc(FULL));
+    const bytes = encodeProjectImage(doc(FULL));
     expect(versionOf(bytes)).toBe(INFO_FORMAT_VERSION);
     expect(decodeProject(bytes).info).toEqual(FULL);
   });
 
   it('sin datos: versión 3, sin `info`, y abre igual', () => {
-    const bytes = encodeProject(doc());
+    const bytes = encodeProjectImage(doc());
     expect(versionOf(bytes)).toBe(3);
     expect(decodeProject(bytes).info).toBeUndefined();
     // Campos vacíos o solo espacios no se guardan.
-    const empty = encodeProject(doc({ description: '   ', notes: '\n\n', author: '', workSeconds: 0 }));
+    const empty = encodeProjectImage(doc({ description: '   ', notes: '\n\n', author: '', workSeconds: 0 }));
     expect(versionOf(empty)).toBe(3);
     expect(decodeProject(empty).info).toBeUndefined();
   });
 
   it('un proyecto antiguo (v3 y v4) sin datos abre y se guarda sin campos vacíos', () => {
     for (const version of [3, PLATES_FORMAT_VERSION]) {
-      const old = repackKura(encodeProject(doc()), version);
+      const old = repackKura(encodeProjectImage(doc()), version);
       const opened = decodeProject(old);
       expect(opened.info).toBeUndefined();
-      const resaved = encodeProject(opened);
+      const resaved = encodeProjectImage(opened);
       const manifest = JSON.parse(new TextDecoder().decode(resaved.subarray(16, 16 + new DataView(resaved.buffer).getUint32(8, true))));
       expect(Object.keys(manifest)).not.toContain('info');
       expect(versionOf(resaved)).toBe(3);
@@ -63,13 +63,13 @@ describe('datos del proyecto en el .kura', () => {
   });
 
   it('guarda solo los campos presentes (una fecha sola basta y no inventa el resto)', () => {
-    const back = decodeProject(encodeProject(doc({ modifiedAt: '2026-01-02T03:04:05Z' })));
+    const back = decodeProject(encodeProjectImage(doc({ modifiedAt: '2026-01-02T03:04:05Z' })));
     expect(back.info).toEqual({ modifiedAt: '2026-01-02T03:04:05Z' });
   });
 
   it('el HTML y los scripts viajan como texto, sin tocarse', () => {
     const html = '<script>alert(1)</script><img src=x onerror=alert(2)> &amp; "q"';
-    expect(decodeProject(encodeProject(doc({ description: html, notes: html }))).info).toEqual({ description: html, notes: html });
+    expect(decodeProject(encodeProjectImage(doc({ description: html, notes: html }))).info).toEqual({ description: html, notes: html });
   });
 
   it('un archivo anterior a v5 no puede traer `info`', () => {
@@ -114,12 +114,12 @@ describe('datos del proyecto en el .kura', () => {
 
   it('el límite exacto se acepta', () => {
     const edge = { description: 'd'.repeat(500), notes: 'n'.repeat(20_000), author: 'a'.repeat(120), workSeconds: PROJECT_INFO_LIMITS.maxWorkSeconds };
-    expect(decodeProject(encodeProject(doc(edge))).info).toEqual(edge);
+    expect(decodeProject(encodeProjectImage(doc(edge))).info).toEqual(edge);
   });
 
   it('escribir información inválida falla antes de producir un archivo', () => {
-    expect(() => encodeProject(doc({ createdAt: 'mañana' }))).toThrow(ProjectCodecError);
-    expect(() => encodeProject(doc({ description: 'a'.repeat(501) }))).toThrow(ProjectCodecError);
+    expect(() => encodeProjectImage(doc({ createdAt: 'mañana' }))).toThrow(ProjectCodecError);
+    expect(() => encodeProjectImage(doc({ description: 'a'.repeat(501) }))).toThrow(ProjectCodecError);
   });
 });
 

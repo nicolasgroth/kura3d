@@ -13,7 +13,7 @@ import { createPrimitiveMesh, computeMeshStats } from '../engine/primitives';
 import { PRIMITIVE_LIMITS, TEXT_DEPTH_RANGE } from '../engine/primitiveLimits';
 import { DEFAULT_PRINTER_PROFILES, type SceneObject } from '../types/kura';
 import { boundPrimitiveParams } from './primitiveParamsBounds';
-import { decodeProject, encodeProject, type ProjectDocument } from './projectCodec';
+import { decodeProject, encodeProjectImage, type ProjectDocument } from './projectCodec';
 
 async function documentWith(params: SceneObject['primitiveParams'], primitiveType: SceneObject['primitiveType'] = 'cylinder'): Promise<ProjectDocument> {
   const mesh = await createPrimitiveMesh('cylinder', { radius: 5, height: 10, segments: 24 });
@@ -68,7 +68,7 @@ describe('parámetros de primitiva del .kura dentro de rango', () => {
 
   it('un proyecto con segments: 1e9 se abre con los parámetros acotados y la malla intacta', async () => {
     const doc = await documentWith({ radius: 5, height: 10, segments: 24 });
-    const bytes = withRawParams(encodeProject(doc), { radius: 5, height: 10, segments: 1e9, width: 1e12 });
+    const bytes = withRawParams(encodeProjectImage(doc), { radius: 5, height: 10, segments: 1e9, width: 1e12 });
     const back = decodeProject(bytes);
     expect(back.objects[0].primitiveParams).toEqual({ radius: 5, height: 10, segments: 256, width: 2000 });
     expect(back.objects[0].stats.volumeMm3).toBeCloseTo(doc.objects[0].stats.volumeMm3, 6);
@@ -76,13 +76,13 @@ describe('parámetros de primitiva del .kura dentro de rango', () => {
 
   it('valores no finitos siguen rechazándose con error tipado', async () => {
     const doc = await documentWith({ radius: 5 });
-    const bytes = withRawParams(encodeProject(doc), { radius: 'x' });
+    const bytes = withRawParams(encodeProjectImage(doc), { radius: 'x' });
     expect(() => decodeProject(bytes)).toThrow(expect.objectContaining({ name: 'ProjectCodecError', code: 'invalid' }));
   });
 
   it('al guardar también se acota (un .kura nuevo nunca trae valores fuera de rango)', async () => {
     const doc = await documentWith({ radius: 5, segments: 4096 });
-    const back = decodeProject(encodeProject(doc));
+    const back = decodeProject(encodeProjectImage(doc));
     expect(back.objects[0].primitiveParams).toEqual({ radius: 5, segments: 256 });
     expect(doc.objects[0].primitiveParams).toEqual({ radius: 5, segments: 4096 });
   });

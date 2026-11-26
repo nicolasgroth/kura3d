@@ -15,7 +15,7 @@ import { buildSceneObject } from '../core/scene/sceneObjects';
 import { computeMeshFingerprint } from '../engine/meshFingerprint';
 import { DEFAULT_PRINTER_PROFILES, type PrimitiveParams, type PrimitiveType, type SceneObject } from '../types/kura';
 import { boundPrimitiveParams } from './primitiveParamsBounds';
-import { decodeProject, encodeProject, type ProjectDocument } from './projectCodec';
+import { decodeProject, encodeProjectImage, type ProjectDocument } from './projectCodec';
 import { toLegacyKura } from './__tests__/legacyKura';
 
 beforeAll(async () => {
@@ -40,7 +40,7 @@ describe('.kura: bordes de primitivas', () => {
   it('guarda y recupera estilo, tamaño y alcance; el objeto sigue paramétrico', async () => {
     const params: PrimitiveParams = { width: 40, depth: 30, height: 20, edgeStyle: 'round', edgeSize: 5, edgeScope: 'vertical' };
     const box = await primitive('b1', 'box', params);
-    const back = decodeProject(encodeProject(doc([box])));
+    const back = decodeProject(encodeProjectImage(doc([box])));
     expect(back.objects[0].primitiveParams).toEqual(params);
     const state = parametricStateOf(back.objects[0]);
     expect(state.status).toBe('primitive');
@@ -53,7 +53,7 @@ describe('.kura: bordes de primitivas', () => {
     const legacyParams = { width: 20, depth: 20, height: 10 };
     const old = await primitive('old', 'box', legacyParams);
     // v2 sin campos nuevos: sigue paramétrico y la regeneración coincide con la malla guardada.
-    const v2 = decodeProject(toLegacyKura(encodeProject(doc([old])), 2));
+    const v2 = decodeProject(toLegacyKura(encodeProjectImage(doc([old])), 2));
     expect(v2.objects[0].primitiveParams).toEqual(legacyParams);
     expect(parametricStateOf(v2.objects[0]).status).toBe('primitive');
     const regenerated = engine.normalizeMeshToBed(await engine.createPrimitiveMesh('box', v2.objects[0].primitiveParams));
@@ -61,7 +61,7 @@ describe('.kura: bordes de primitivas', () => {
     // v1 (sin `parametric`): abre igual, con los mismos parámetros y sin campos de borde.
     const { parametric: _omit, ...legacy } = old;
     // Desde la versión 3 el tipo de objeto va en `role`: el archivo antiguo se arma con el ayudante de formato previo.
-    const v1 = decodeProject(toLegacyKura(encodeProject(doc([legacy as SceneObject])), 1));
+    const v1 = decodeProject(toLegacyKura(encodeProjectImage(doc([legacy as SceneObject])), 1));
     expect(v1.objects[0].primitiveParams).toEqual(legacyParams);
     expect(v1.objects[0].primitiveParams?.edgeStyle).toBeUndefined();
   });
@@ -69,9 +69,9 @@ describe('.kura: bordes de primitivas', () => {
   it('rechaza un estilo o alcance desconocido y acota el tamaño al rango global', async () => {
     const box = await primitive('b2', 'box', { width: 10, depth: 10, height: 10 });
     const bad = { ...box, primitiveParams: { width: 10, edgeStyle: 'wavy' } } as unknown as SceneObject;
-    expect(() => encodeProject(doc([bad]))).toThrowError(expect.objectContaining({ code: 'invalid' }));
+    expect(() => encodeProjectImage(doc([bad]))).toThrowError(expect.objectContaining({ code: 'invalid' }));
     const badScope = { ...box, primitiveParams: { width: 10, edgeScope: 'sideways' } } as unknown as SceneObject;
-    expect(() => encodeProject(doc([badScope]))).toThrowError(expect.objectContaining({ code: 'invalid' }));
+    expect(() => encodeProjectImage(doc([badScope]))).toThrowError(expect.objectContaining({ code: 'invalid' }));
     expect(boundPrimitiveParams('box', { edgeSize: 1e6 })).toEqual({ edgeSize: 1000 });
     expect(boundPrimitiveParams('box', { edgeSize: -2 })).toEqual({ edgeSize: 0 });
   });
@@ -84,7 +84,7 @@ describe('.kura: bordes de primitivas', () => {
 
   it('el texto 3D con espaciado y alineación también se guarda', async () => {
     const text = await primitive('t1', 'text', { text: 'AB', fontSize: 10, height: 2, letterSpacing: 1, textAlign: 'center' });
-    const back = decodeProject(encodeProject(doc([text])));
+    const back = decodeProject(encodeProjectImage(doc([text])));
     expect(back.objects[0].primitiveParams).toMatchObject({ letterSpacing: 1, textAlign: 'center' });
   });
 });

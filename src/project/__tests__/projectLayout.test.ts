@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { computeMeshStats } from '../../engine/primitives';
 import { TRANSFORM_LIMITS } from '../../engine/operationLimits';
 import { DEFAULT_PRINTER_PROFILES, type MeshData, type SceneObject } from '../../types/kura';
-import { decodeProject, encodeProject, PLATES_FORMAT_VERSION, type ProjectDocument } from '../projectCodec';
+import { decodeProject, encodeProjectImage, PLATES_FORMAT_VERSION, type ProjectDocument } from '../projectCodec';
 import { ROLE_FORMAT_VERSION } from '../projectRoleMigration';
 import { repackKura } from './legacyKura';
 
@@ -35,14 +35,14 @@ type Manifest = { current: { objects: Array<Record<string, unknown>>; layout?: u
 
 describe('.kura con dos poses', () => {
   it('sin restPose ni modo armado sigue en v3 (layout "print" no cuenta)', () => {
-    const bytes = encodeProject(doc([obj('a')], { layout: 'print' }));
+    const bytes = encodeProjectImage(doc([obj('a')], { layout: 'print' }));
     expect(versionOf(bytes)).toBe(ROLE_FORMAT_VERSION);
     expect(new TextDecoder().decode(bytes)).not.toMatch(/layout|restPose/);
   });
 
   it('restPose y modo armado se escriben en v4 y vuelven iguales', () => {
     const original = doc([obj('a', { restPose: rest }), obj('b')], { layout: 'assembly' });
-    const bytes = encodeProject(original);
+    const bytes = encodeProjectImage(original);
     expect(versionOf(bytes)).toBe(PLATES_FORMAT_VERSION);
     const back = decodeProject(bytes);
     expect(back.layout).toBe('assembly');
@@ -52,7 +52,7 @@ describe('.kura con dos poses', () => {
 
   it('poses solo en el historial también obligan a v4', () => {
     const past = { objects: [obj('a', { restPose: rest })], selectedIds: [], layout: 'assembly' as const };
-    const bytes = encodeProject(doc([obj('a')], { past: [past] }));
+    const bytes = encodeProjectImage(doc([obj('a')], { past: [past] }));
     expect(versionOf(bytes)).toBe(PLATES_FORMAT_VERSION);
     const back = decodeProject(bytes);
     expect(back.layout).toBeUndefined();
@@ -61,14 +61,14 @@ describe('.kura con dos poses', () => {
   });
 
   it('un v3 que trae restPose o layout se rechaza', () => {
-    const v4 = encodeProject(doc([obj('a', { restPose: rest })], { layout: 'assembly' }));
+    const v4 = encodeProjectImage(doc([obj('a', { restPose: rest })], { layout: 'assembly' }));
     expect(() => decodeProject(repackKura(v4, 3))).toThrowError(expect.objectContaining({ code: 'invalid' }));
     const onlyLayout = repackKura(v4, 3, (m) => { delete (m as unknown as Manifest).current.objects[0].restPose; });
     expect(() => decodeProject(onlyLayout)).toThrowError(expect.objectContaining({ code: 'invalid' }));
   });
 
   it('valores fuera de forma o de límites se rechazan', () => {
-    const v4 = encodeProject(doc([obj('a', { restPose: rest })], { layout: 'assembly' }));
+    const v4 = encodeProjectImage(doc([obj('a', { restPose: rest })], { layout: 'assembly' }));
     const bad = (edit: (m: Manifest) => void) => () => decodeProject(repackKura(v4, PLATES_FORMAT_VERSION, (m) => edit(m as unknown as Manifest)));
     expect(bad((m) => { m.current.layout = 'free'; })).toThrowError(expect.objectContaining({ code: 'invalid' }));
     expect(bad((m) => { m.current.objects[0].restPose = { position: [1, 2] , rotation: [0, 0, 0] }; })).toThrowError(expect.objectContaining({ code: 'invalid' }));

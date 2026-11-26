@@ -1,7 +1,8 @@
 /**
  * @file src/project/projectCodec.ts
- * @description Códec binario del formato de proyecto .kura (escribe v3, v4 si el proyecto usa placas o v5 si lleva datos del proyecto; lee v1 a v5):
- * serializa y valida escena, historial y mallas con CRC-32 y límites de tamaño.
+ * @description Códec binario del formato de proyecto .kura: escribe v6 (sobre comprimido, ver `kuraEnvelope.ts`) con una
+ * imagen interior v3, v4 si el proyecto usa placas o v5 si lleva datos del proyecto; lee v1 a v6. Serializa y valida
+ * escena, historial y mallas con CRC-32 y límites de tamaño.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -22,8 +23,11 @@ import { compactInfo, validStoredInfo, type ProjectInfo } from './projectInfo';
 import { migrateStoredRole, ROLE_FORMAT_VERSION } from './projectRoleMigration';
 import { withBoundedParams } from './primitiveParamsBounds';
 import { reconcileSceneStructure } from './sceneStructure';
+import { crc32 as checksum } from './crc32';
+import { compressImage, compressImageSync, COMPRESSED_FORMAT_VERSION, hasKuraMagic, inflateImage, KURA_HEADER_SIZE, KURA_MAGIC } from './kuraEnvelope';
 
 export { MAX_PROJECT_BYTES, ProjectCodecError, type ProjectDocument, type ProjectSceneSnapshot } from './projectSchema';
+export { COMPRESSED_FORMAT_VERSION } from './kuraEnvelope';
 const MAX_MANIFEST_BYTES = 16 * 1024 * 1024;
 /**
  * Pasos de historial (pasado + futuro) que admite el formato .kura. El store conserva más (por
@@ -36,8 +40,8 @@ export const MAX_UNDO_HISTORY = FILE_HISTORY_MAX_STEPS;
 // V1: "KURA", uint32 version, uint32 UTF-8 manifest length, uint32 CRC-32 of all
 // remaining bytes, JSON manifest, tightly packed 32-bit blocks. All words are little-endian.
 // Object coordinates remain local millimetres, Y-up, independent of the chosen display unit.
-const MAGIC = [0x4b, 0x55, 0x52, 0x41];
-const HEADER_SIZE = 16;
+const MAGIC = KURA_MAGIC;
+const HEADER_SIZE = KURA_HEADER_SIZE;
 // Versiones: 1 = formato inicial; 2 = agrega el campo opcional `parametric` a cada objeto.
 // Se escribe siempre la última; se leen todas las listadas. Un archivo v1 no puede traer campos de v2.
 // v3: `role` reemplaza a `isHole` (objetos de referencia); ver `projectRoleMigration.ts`.
@@ -50,20 +54,13 @@ const HEADER_SIZE = 16;
 // estricto (seis claves exactas), así que una app anterior no puede ignorar el campo nuevo: lo rechaza como versión
 // no admitida en vez de abrirlo perdiendo datos. Esta versión sí lee v1 a v5; un archivo anterior a v5 no puede
 // traer `info`.
+// v6: sobre comprimido (`kuraEnvelope.ts`). Todo guardado sale v6; dentro va la imagen v3/v4/v5 de siempre, que sigue
+// marcando qué campos admite. Una app anterior lo rechaza como versión no admitida. La imagen interior no puede ser v6.
 const VERSION = ROLE_FORMAT_VERSION;
 export const PLATES_FORMAT_VERSION = 4;
 export const INFO_FORMAT_VERSION = 5;
 const READABLE_VERSIONS = new Set([1, 2, ROLE_FORMAT_VERSION, PLATES_FORMAT_VERSION, INFO_FORMAT_VERSION]);
 const LITTLE_ENDIAN = new Uint8Array(new Uint32Array([1]).buffer)[0] === 1;
-const crcTable = Uint32Array.from({ length: 256 }, (_, i) => {
-  for (let bit = 0; bit < 8; bit++) i = (i >>> 1) ^ ((i & 1) ? 0xedb88320 : 0);
-  return i >>> 0;
-});
-function checksum(bytes: Uint8Array, start = 0) {
-  let value = 0xffffffff;
-  for (let i = start; i < bytes.length; i++) value = (value >>> 8) ^ crcTable[(value ^ bytes[i]) & 255];
-  return (value ^ 0xffffffff) >>> 0;
-}
 
 type Words = Float32Array | Uint32Array;
 type Block = { kind: 'f32' | 'u32'; length: number };
@@ -141,7 +138,18 @@ function usesPlates(s: ProjectSceneSnapshot): boolean {
     || s.objects.some((o) => o.plateRef !== undefined || o.restPose !== undefined);
 }
 
+/** Guarda un proyecto como .kura v6 comprimido con fflate (síncrono; el Worker usa `encodeProjectCompressed`). */
 export function encodeProject(doc: ProjectDocument): Uint8Array {
+  return compressImageSync(encodeProjectImage(doc));
+}
+
+/** Guarda un proyecto como .kura v6 con el deflate nativo de la plataforma, o fflate si no lo hay. */
+export async function encodeProjectCompressed(doc: ProjectDocument): Promise<Uint8Array> {
+  return compressImage(encodeProjectImage(doc));
+}
+
+/** Imagen .kura sin comprimir (v3, v4 o v5): el contenido del sobre v6 y el formato que escribían versiones anteriores. */
+export function encodeProjectImage(doc: ProjectDocument): Uint8Array {
   const { unitSystem, printerProfile, customBedDimensions, sectionPlane, snapGridMm } = doc;
   const settings = { unitSystem, printerProfile, customBedDimensions, sectionPlane, snapGridMm };
   check(validSettings(settings) && Array.isArray(doc.past) && Array.isArray(doc.future));
@@ -260,9 +268,20 @@ export function encodeProject(doc: ProjectDocument): Uint8Array {
   return bytes;
 }
 
+/** Abre un .kura v1 a v6. Lanza siempre `ProjectCodecError` ante datos dañados, truncados o fuera de límites. */
 export function decodeProject(bytes: Uint8Array): ProjectDocument {
   limit(bytes.byteLength <= MAX_PROJECT_BYTES);
-  check(bytes.length >= HEADER_SIZE && MAGIC.every((b, i) => bytes[i] === b));
+  check(hasKuraMagic(bytes));
+  const version = new DataView(bytes.buffer, bytes.byteOffset, HEADER_SIZE).getUint32(4, true);
+  if (version !== COMPRESSED_FORMAT_VERSION) return decodeImage(bytes);
+  const image = inflateImage(bytes);
+  // Sin anidar: dentro de un v6 solo va una imagen v1 a v5.
+  check(hasKuraMagic(image) && READABLE_VERSIONS.has(new DataView(image.buffer).getUint32(4, true)), 'inner-version');
+  return decodeImage(image);
+}
+
+function decodeImage(bytes: Uint8Array): ProjectDocument {
+  check(hasKuraMagic(bytes));
   const header = new DataView(bytes.buffer, bytes.byteOffset, HEADER_SIZE);
   const version = header.getUint32(4, true);
   if (!READABLE_VERSIONS.has(version)) throw new ProjectCodecError('unsupported');
