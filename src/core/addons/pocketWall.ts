@@ -30,6 +30,11 @@ export interface PocketWallReport {
   side: 'bottom' | 'side';
   /** El hueco sale de la pieza por otra cara. */
   through: boolean;
+  /**
+   * false si ningún rayo lateral dio una medida (todas las alturas sobre la superficie local o solo el labio de la
+   * boca): la pared lateral queda sin medir y `minWallMm` es solo la del fondo. Ausente en informes anteriores = true.
+   */
+  sideMeasured?: boolean;
   /** En una cara convexa, cuánto sobresale el imán sobre la superficie (0 si asienta completo). */
   protrudeMm: number;
   /** Otro hueco pendiente a menos de la pared mínima, o superpuesto (null si no hay). */
@@ -102,6 +107,10 @@ export function measurePocketWall(
     bottom = Math.min(bottom, wall);
     options.onRay?.(origin, inward, wall);
   }
-  const minWallMm = Math.min(side, bottom);
-  return { minWallMm, side: bottom <= side ? 'bottom' : 'side', through: minWallMm <= 0 };
+  // Sin ningún rayo lateral válido (cara convexa: todas las alturas sobre la superficie local) la pared lateral es
+  // «sin medida», no infinita: `minWallMm` es lo medido (el fondo, siempre finito), así el aviso de pared sigue
+  // saltando si el fondo es delgado, y `sideMeasured: false` lo deja explícito en el informe.
+  const sideMeasured = Number.isFinite(side);
+  const minWallMm = sideMeasured ? Math.min(side, bottom) : bottom;
+  return { minWallMm, side: !sideMeasured || bottom <= side ? 'bottom' : 'side', through: minWallMm <= 0, sideMeasured };
 }
