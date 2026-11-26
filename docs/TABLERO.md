@@ -1,61 +1,48 @@
 # Tablero de Kurra Studio
 
-**Actualizado el 26 de noviembre de 2026, 14:50.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
+**Actualizado el 26 de noviembre de 2026, 15:50.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
 
-## En corto: último día (noche del 25 al 26 de noviembre)
+## En corto: hoy, 26 de noviembre
 
-**Notas de la evaluación a ciegas de lo de esta noche** (mínimo 85): usabilidad **81 en la última evaluación completa; tras la pasada de diseño, placas 84 y Simplificar 80 (mínimo 85)** · código **85** · funcional **86**. Sin bloqueos.
+**Notas a ciegas vigentes** (mínimo 85): funcional **86** · código **85** · usabilidad **81** en la última evaluación completa. En las dos funcionalidades más bajas, tras la pasada de diseño: placas **84** y Simplificar **80**.
 
-**Pruebas en `main`:** 4447 del programa, 190 del servidor MCP y 54 de rendimiento, todas en verde. Capturas de las guías: 35 recorridos en verde.
+**Pruebas en `main`:** 4465 del programa, 190 del servidor MCP y 54 de rendimiento, en verde. Capturas de las guías: 35 recorridos en verde.
 
-Lo que entró esta noche y está en `main`:
+En desarrollo ahora mismo: nada nuevo. Lo único en curso es la verificación en navegador de la ronda corta de placas y Simplificar.
 
-- **Paneles con un solo patrón:** «Volver» en todos, también en las herramientas (Medir, Pintar, Cortar, Mover…). Un solo Esc cierra.
-- **Placas, vistas:** selector Imprimir / Armado / Libre. En Armado se ve la figura junta y moverla no cambia su lugar en la placa.
-- **Placas, repartir:** panel «Repartir en placas…» con vista previa (compacto, por color, por grupo, una placa por objeto).
-- **Placas, camas:** cada placa puede tener su propia cama (dos impresoras en un proyecto). Las placas de un laminador se convierten en placas reales.
-- **Simplificar:** vista previa con informe y fantasma en el visor; ya no bloquea de más en figuras con túneles finos.
-- **Imanes cuadrados y rectangulares** como unión del corte.
-- **Firmeza de las uniones** visible al dividir: firme, regular, débil o para pegar, con el motivo.
-- **Datos del proyecto:** descripción, notas, autor, fechas y tiempo de trabajo.
-- **Marca:** logo para fondo oscuro y banner con el nombre completo.
-- **Atajos:** H y L con varias piezas dejan un solo paso de deshacer.
-- **Asistentes:** galería con miniaturas, deslizadores junto a las medidas y holgura ajustable en la caja con tapa.
-- **Arrastrar eligiendo el plano:** en vista de frente la pieza se mueve en vertical; Alt y Mayús cambian el plano o lo restringen a un eje.
-- **Servidor MCP:** 68 herramientas, incluidas las de placas, que funcionan también sin la app abierta.
+Lo que entró hoy y está en `main`:
 
-Verificado en navegador esta madrugada: Simplificar con la regla nueva y su fantasma, «Volver» y Esc en todas las herramientas, arrastre por plano, galería de Asistentes, camas por placa, 3MF real de laminador con 95 piezas, datos del proyecto. Las guías y sus capturas ya muestran todo esto.
+- **Tira de placas rediseñada:** el selector Imprimir / Armado / Libre y los controles de Armado viven en la tira; el visor queda libre a 1024 px.
+- **3MF que el laminador abre con sus bandejas:** con un «proyecto de ejemplo» de tu laminador (Exportar › 3MF › Laminador) llegan bandejas, nombres, filamento por pieza y colores. Probado por el autor en Elegoo Slicer y OrcaSlicer.
+- **Corregido:** los 3MF exportados perdían nombres y filamentos en laminadores de la familia Orca.
+- **Proyecto `.kura` comprimido** (formato 6) y guardado más rápido: de unos 4 s a unos 2 s en un modelo de 478 mil triángulos.
+- **Licencia AGPL-3.0-or-later** en todo el proyecto, recetas incluidas, con acuerdo de contribuyentes vigente y enlace al código fuente en «Acerca de».
+- **De la noche anterior:** paneles con un solo «Volver», vistas de placas, repartir, cama por placa, Simplificar con vista previa, imanes rectangulares, firmeza de uniones, datos del proyecto, galería de Asistentes, arrastre por plano.
 
-Qué no está verificado todavía:
+Qué falta verificar:
 
-- El 3MF con varias placas abierto en un laminador real (consulta 1).
-- En navegador: dividir con imanes cuadrados o rectangulares, exportar por placa a ZIP con camas distintas, y Esc con un grupo abierto o un cálculo en curso (tienen pruebas de motor, no recorrido).
-
-Menores anotados, sin corregir:
-
-- «Ajustar a la impresora» y «Cama de Placa N» siguen como diálogos con × y Cancelar, no con «Volver».
-- En Armado, sin figura dividida, la pieza de la placa 2 queda lejos y Encuadrar no la incluye.
-- En la guía de armado, los alojamientos rectangulares se dibujan como círculos.
+- La ronda corta de placas y Simplificar está fusionada en local, con la suite en verde; faltan sus recorridos de navegador, capturas y la reevaluación a ciegas.
+- Si la barra de avance del guardado se ve en un equipo con tarjeta gráfica (consulta abierta).
+- El 3MF con bandejas en Bambu Studio (el autor no lo tiene).
+- En navegador: dividir con imanes cuadrados o rectangulares y exportar por placa a ZIP con camas distintas.
 
 ## En corto: lo que viene
 
-Hoy en la tarde entró además: tira de placas rediseñada, 3MF que el laminador abre con sus bandejas (probado en Elegoo Slicer), proyecto `.kura` comprimido.
+Para cerrar el día:
 
-Ahora:
+1. Terminar la ronda corta de placas y Simplificar, y reevaluarlas a ciegas.
+2. Actualizar Playwright (pedido de Dependabot).
 
-1. Placas (84): fichas más grandes, aviso al mover una pieza, nombres legibles a 1024 px. Simplificar (80): un solo mensaje por resultado, foco estable durante el cálculo, botón «Reparar malla» en el bloqueo.
-2. Guardado de proyectos grandes: bajar los casi 3 segundos previos a codificar y que el avance se vea.
-3. Licencia: AGPL-3.0-or-later en todo el proyecto, recetas incluidas; acuerdo de contribuyentes vigente.
-4. 3MF con bandejas: abre bien en Elegoo Slicer y en OrcaSlicer.
-5. Actualizar Playwright (pedido de Dependabot).
+Siguientes funcionalidades, en este orden:
 
-Después:
+3. Dividir: cortes por las partes naturales de la figura y cortes inclinados.
+4. Encajes: tapa roscada, clips y biblioteca de conectores.
+5. Tiradores en las caras para estirar una pieza.
+6. Mejoras de pintura (cursor de área, borde duro o suave, relleno con tolerancia).
 
-6. Abrir en un laminador real el 3MF con varias placas (necesita al autor, 5 minutos).
-7. Dividir: cortes por las partes naturales de la figura y cortes inclinados.
-8. Encajes: tapa roscada, clips y biblioteca de conectores.
-9. Tiradores en las caras para estirar una pieza.
-10. Mejoras de pintura (cursor de área, borde duro o suave, relleno con tolerancia).
+Pendientes chicos anotados: deslizadores en las formas básicas del inspector, conmutador «Ver lo pedido» en Simplificar, alojamientos rectangulares dibujados como círculos en la guía de armado, «Ajustar a la impresora» y «Cama de Placa N» todavía como diálogos.
+
+Sin fecha: instalador con actualización desde la app y firma de instaladores; revisar qué código de OrcaSlicer conviene aprovechar ahora que la licencia lo permite.
 
 Más adelante: todo lo de «Planificada» e «Idea», más abajo. Tiempos estimados en [ESTIMACION.md](ESTIMACION.md).
 
@@ -76,6 +63,8 @@ Estado de `main`: 2526 pruebas del frontend, 151 del servidor MCP y 37 de Rust e
 | Decidido el 23-nov | Actualizar todas las dependencias; preguntar qué hacer con la mitad conservada de un corte; token MCP como está; seguir iterando usabilidad. Sin consultas abiertas: la licencia LGPL indirecta quedó aceptada para desarrollo, Node local se actualiza y OrcaSlicer se posterga |
 
 ## En desarrollo
+
+**Al 26-nov, 15:50:** nada nuevo en desarrollo. Lo de más abajo en esta sección es el detalle anterior al 24-nov y se conserva como historial.
 
 | Funcionalidad | Estado |
 |---|---|
@@ -105,6 +94,8 @@ Estado de `main`: 2526 pruebas del frontend, 151 del servidor MCP y 37 de Rust e
 | Armado por subconjuntos (filas, luego capas, luego apilar) para conservar todos los conectores en rejillas; hoy el orden pieza a pieza ya es el óptimo demostrado | Pendiente; cambia el modelo de pasos de armado |
 
 ## En QA
+
+**Al 26-nov, 15:50:** en verificación en navegador la ronda corta de placas y Simplificar (fichas más cómodas, aviso al mover piezas, nombres legibles, un solo mensaje por resultado, foco durante el cálculo, reparar desde el bloqueo). Lo de más abajo es anterior al 24-nov.
 
 Prueba con modelos reales del autor (9 archivos: bustos en STL de hasta 2,4 millones de triángulos y 3MF de slicer): **rechazada** por un bloqueo de importación y cinco fallos mayores, hoy en desarrollo. Lo que funcionó: importar y medir los STL, ida y vuelta por 3MF sin pérdida de piezas, colores ni volumen, simplificar 2,4 M de triángulos en 38 s, dividir un modelo real a 600 mm en 23 piezas cerradas dentro de la cama, análisis con avisos razonables, y rechazo tipado de archivos corruptos sin cuelgues.
 
@@ -161,6 +152,8 @@ QA en navegador sobre las correcciones de la ronda 5: **rechazado** por la pintu
 | Proyectos recientes y seguridad en escritorio (CSP, llavero, permisos, proxy de IA, confirmación al sobrescribir) | Probado en web y con pruebas; falta verificar en la app instalada |
 
 ## En evaluación
+
+**Al 26-nov, 15:50:** notas vigentes: funcional **86** · código **85** · usabilidad **81** (evaluación completa del 26-nov; serie del día 80, 80, 81). Rondas acotadas a las dos más bajas: placas 76 → 80 → 84, Simplificar 72 → 78 → 80. Pendiente la reevaluación tras la ronda corta. Lo de más abajo es anterior al 24-nov.
 
 Nada en este momento. Notas vigentes: **usabilidad 79** (tercera evaluación, 23-nov 02:45; antes 76 y 75) · **código 85** · **funcional 86**. El mínimo es 85 en los tres. Usabilidad lleva tres evaluaciones bajo el mínimo: por la regla del proyecto no se lanza una cuarta sin consultar al autor (consulta 6 en [CONSULTAS_PROYECTO.md](CONSULTAS_PROYECTO.md)). Detalle en [EVALUACIONES.md](EVALUACIONES.md).
 
