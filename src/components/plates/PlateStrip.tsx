@@ -11,9 +11,11 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, CheckCircle2, CircleDashed, Eye, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, CircleDashed, Eye, LayoutGrid, Plus, Trash2 } from 'lucide-react';
 import { t } from '../../i18n';
+import { spreadPlatesName } from '../../store/actionLabels';
 import { useKuraStore } from '../../store/useKuraStore';
+import { runSpreadOnePlatePerObject } from '../shell/actionRunners';
 import { askDecision } from '../../utils/confirmDialog';
 import '../../styles/plateStrip.css';
 import { MIN_PLATES_FOR_STRIP, plateChips, type ChipStatus, type PlateChip } from './plateStripModel';
@@ -173,6 +175,17 @@ export const PlateStrip: React.FC = () => {
           data-testid="plate-add"
         >
           <Plus size={13} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="kura-plate-btn"
+          onClick={runSpreadOnePlatePerObject}
+          disabled={busy}
+          aria-label={spreadPlatesName(language)}
+          title={`${spreadPlatesName(language)}. ${t(language, 'plates.action.onePerObject.tip')}`}
+          data-testid="plate-spread"
+        >
+          <LayoutGrid size={13} aria-hidden="true" />
         </button>
         <button
           type="button"

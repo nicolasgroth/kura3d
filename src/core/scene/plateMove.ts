@@ -33,7 +33,7 @@ function originOf(plates: readonly ScenePlate[], obj: Pick<SceneObject, 'plateRe
 }
 
 /** Acompañantes de las piezas movidas: id → id de la pieza cuyo desplazamiento heredan. */
-function followersOf(objects: readonly SceneObject[], movers: readonly SceneObject[]): Map<string, string> {
+export function followersOf(objects: readonly SceneObject[], movers: readonly SceneObject[]): Map<string, string> {
   const out = new Map<string, string>();
   const moverIds = new Set(movers.map((o) => o.id));
   for (const id of dependentAddonIds(objects, moverIds, { includeLocked: true })) {

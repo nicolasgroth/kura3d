@@ -44,6 +44,12 @@ export interface PlatesSliceState {
    */
   moveToPlate: (plateId: string | null, ids?: string[]) => number;
   /**
+   * «Una placa por objeto»: deja cada pieza sólida (las de `ids`, o la selección, o todas si no hay) en su propia placa,
+   * centrada sobre su cama; crea las placas que falten y reutiliza las vacías. Un solo paso de deshacer. null si hay
+   * menos de dos piezas participantes (bloqueadas, referencias y negativos no cuentan ni se mueven).
+   */
+  spreadOnePlatePerObject: (ids?: string[]) => { pieces: number; created: number } | null;
+  /**
    * Tras un arrastre: cada pieza pasa a la placa sobre la que quedó. Dentro de un arrastre va en el paso de deshacer
    * del propio arrastre; fuera de uno, abre su paso (nunca cambia la escena sin poder deshacerse).
    */

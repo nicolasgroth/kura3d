@@ -26,6 +26,10 @@ export const actionName = (language: LanguageCode, id: ActionId): string => t(la
 export const MOVE_TO_PLATE_KEY: TranslationKey = 'plates.action.moveToPlate';
 export const moveToPlateName = (language: LanguageCode): string => t(language, MOVE_TO_PLATE_KEY);
 
+/** «Una placa por objeto»: tira de placas y paleta usan este mismo nombre. */
+export const SPREAD_PLATES_KEY: TranslationKey = 'plates.action.onePerObject';
+export const spreadPlatesName = (language: LanguageCode): string => t(language, SPREAD_PLATES_KEY);
+
 /** Descripción breve bajo la etiqueta (distingue Agrupar, Combinar y Unir), solo en las acciones que la tienen. */
 export const ACTION_DESCRIPTION_KEY: Partial<Record<ActionId, TranslationKey>> = {
   group: 'ux3.organize.groupDesc',

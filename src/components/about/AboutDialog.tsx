@@ -19,6 +19,7 @@ import { triggerEgg } from '../../utils/logoEasterEgg';
 import { NativeModal } from '../NativeModal';
 import { EasterEggHost } from './EasterEggHost';
 import '../../styles/about.css';
+import { BrandLogo } from '../BrandLogo';
 
 /** `random` se inyecta para probar la frase al azar; por defecto `Math.random`. */
 export const AboutDialog: React.FC<{ open: boolean; onClose: () => void; random?: () => number }> = ({
@@ -56,7 +57,7 @@ export const AboutDialog: React.FC<{ open: boolean; onClose: () => void; random?
     >
       {/* La zona que se desplaza es enfocable y con nombre: con teclado se recorre con flechas, AvPág y Espacio. */}
       <div className="kura-about" ref={scrollRef} role="region" tabIndex={0} aria-label={t(language, 'about.scrollRegion', { name })}>
-        <img src="/branding/kurra-studio-icono.svg" alt="" className="kura-about-logo" width={64} height={64} />
+        <BrandLogo width={220} />
         <section aria-labelledby="about-what">
           <h3 id="about-what">{t(language, 'about.whatTitle')}</h3>
           <p>{t(language, 'about.what', { name })}</p>
