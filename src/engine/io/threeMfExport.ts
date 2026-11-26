@@ -17,6 +17,7 @@ import { normalizeHexColor } from './meshBuffers';
 import { buildKuraSceneMeta, KURA_SCENE_PATH, type KuraScenePlates } from './kuraSceneMeta';
 import { exportableObjects } from './stl';
 import { isReference } from '../../core/scene/objectRole';
+import { slicerPlateShift, validSlicerBed, type SlicerBed } from './slicerPlateGrid';
 
 /** Opciones de la exportación de escena completa (ida y vuelta exacta con Kurra Studio). */
 export interface ThreeMfSceneOptions {
@@ -171,6 +172,11 @@ export const num = (n: number) => {
  * y el nombre de la placa; sin ella se omiten. `plateLayout` (placas reales) reparte lo impreso en las placas del
  * laminador (Bambu Studio / OrcaSlicer) y manda sobre los grupos. `projectMeta` (nombre, descripción y autor del
  * proyecto) va como metadatos estándar `Title` / `Description` / `Designer`; los vacíos se omiten.
+ *
+ * `slicerBed` (la cama del proyecto) coloca el archivo para Bambu Studio / OrcaSlicer y derivados: cada `<item>` lleva
+ * un `transform` que traslada la pieza, medida desde el centro de su cama, a la celda de su placa en la rejilla del
+ * laminador (`slicerPlateGrid.ts`; los vértices no cambian), y el modelo declara `BambuStudio:3mfVersion`. Sin ella el
+ * archivo queda como antes, sin transformaciones.
  */
 export function exportSceneTo3MF(
   objects: SceneObject[],
@@ -180,6 +186,7 @@ export function exportSceneTo3MF(
   sceneOptions?: ThreeMfSceneOptions,
   plateLayout?: ThreeMfPlateLayout,
   projectMeta?: ThreeMfProjectMeta,
+  slicerBed?: SlicerBed,
 ): Uint8Array {
   const solidObjects = exportableObjects(objects);
   // Escena completa: lo no impreso (oculto, negativos) se escribe después, sin ítem de build. Las
@@ -213,11 +220,15 @@ export function exportSceneTo3MF(
   extraObjects.forEach(registerObject);
 
   const signature = brandSignature(brand);
+  const bed = validSlicerBed(slicerBed) ? slicerBed : undefined;
   const model = new ByteChunks();
   model.write(
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
-    `<model unit="${unitSpec.xmlName}" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n` +
+    `<model unit="${unitSpec.xmlName}" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"` +
+    (bed ? ` xmlns:BambuStudio="${BAMBU_NS}"` : '') + `>\n` +
     (signature ? `  <metadata name="Application">${escapeXml(signature)}</metadata>\n` : '') +
+    // Versión del formato de proyecto del laminador (la declaran los 3MF de proyecto de Bambu Studio / OrcaSlicer).
+    (bed ? `  <metadata name="BambuStudio:3mfVersion">1</metadata>\n` : '') +
     (brand?.organization ? `  <metadata name="Organization">${escapeXml(brand.organization)}</metadata>\n` : '') +
     projectMetadataXml(projectMeta) +
     `  <resources>\n    <basematerials id="1">\n`,
@@ -234,6 +245,10 @@ export function exportSceneTo3MF(
   // Un `plateLayout` que solo trae `scenePlates` (una placa en el origen) no cambia las placas del laminador.
   const realLayout = plateLayout && (plateLayout.plates.length > 0 || plateLayout.offsets) ? plateLayout : undefined;
   const plates = realLayout ? realPlates(solidObjects, realLayout) : sceneOptions ? scenePlates(solidObjects, sceneOptions.groups) : null;
+  // Placa (desde 0) de cada objeto impreso, para su celda en la rejilla del laminador.
+  const plateIndex = new Array<number>(solidObjects.length).fill(0);
+  plates?.forEach((p, i) => p.members.forEach((m) => { plateIndex[m] = i; }));
+  const plateCount = plates?.length ?? 1;
 
   written.forEach((obj, objIdx) => {
     const objId = objIdx + 2;
@@ -262,7 +277,10 @@ export function exportSceneTo3MF(
     }
     model.write(`        </triangles>\n      </mesh>\n    </object>\n`);
     if (!printed) return; // oculto o hueco: solo Kurra Studio lo restaura (los laminadores no lo ven)
-    buildItems.push(`    <item objectid="${objId}" />`);
+    if (bed) {
+      const [tx, ty] = slicerPlateShift(plateIndex[objIdx], plateCount, bed);
+      buildItems.push(`    <item objectid="${objId}" transform="1 0 0 0 1 0 0 0 1 ${num(tx * s)} ${num(ty * s)} 0" />`);
+    } else buildItems.push(`    <item objectid="${objId}" />`);
 
     // Mapeo de extrusores (base 1..N) para Bambu/Orca/Elegoo/FlashForge/Snapmaker.
     const extruder = baseIdx + 1;
@@ -279,12 +297,12 @@ export function exportSceneTo3MF(
     );
     configInstances[objIdx] =
       `    <model_instance>\n      <metadata key="object_id" value="${objId}"/>\n` +
-      `      <metadata key="instance_id" value="0"/>\n    </model_instance>`;
+      `      <metadata key="instance_id" value="0"/>\n      <metadata key="identify_id" value="${objId}"/>\n    </model_instance>`;
   });
   model.write(`  </resources>\n  <build>\n${buildItems.join('\n')}\n  </build>\n</model>\n`);
 
   const plateXml = (id: number, name: string, members: number[]) =>
-    `  <plate>\n    <metadata key="plater_id" value="${id}"/>\n    <metadata key="plater_name" value="${escapeXml(name)}"/>\n` +
+    `  <plate>\n    <metadata key="plater_id" value="${id}"/>\n    <metadata key="plater_name" value="${escapeXml(name)}"/>\n    <metadata key="locked" value="false"/>\n` +
     `${members.map((i) => configInstances[i]).join('\n')}\n  </plate>`;
   const platesXml = plates
     ? plates.map((p, i) => plateXml(i + 1, p.name, [...p.members])).join('\n')
@@ -329,6 +347,9 @@ export function exportSceneTo3MF(
  * nivel 1 tarda 5,9 s y da 57,5 MB (+9 %). El 3MF sigue siendo ZIP/deflate estándar para los laminadores.
  */
 const ZIP_LEVEL = 1;
+
+/** Espacio de nombres de los metadatos de proyecto de Bambu Studio (lo usan también OrcaSlicer y derivados). */
+const BAMBU_NS = 'http://schemas.bambulab.com/package/2021';
 
 /** Fecha de las entradas del ZIP (la mínima del formato DOS): salida determinista. */
 const ZIP_FIXED_MTIME = new Date(1980, 0, 1, 0, 0, 0);

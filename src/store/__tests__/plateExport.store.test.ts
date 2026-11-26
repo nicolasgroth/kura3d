@@ -30,6 +30,7 @@ vi.mock('../../utils/platformBridge', async (importOriginal) => ({
 const lastSaved = () => vi.mocked(saveFileSet).mock.calls.at(-1)![0];
 const savedBytes = () => lastSaved()[0].data;
 const half = () => store().printerProfile.bedWidthMm / 2;
+const t2 = (key: Parameters<typeof t>[1], params: Record<string, string | number>) => t('es', key, params);
 
 /** Triángulos de un STL binario (sin la cabecera). */
 const stlTriangles = (bytes: Uint8Array) => Array.from(bytes.subarray(84));
@@ -142,7 +143,31 @@ describe('exportar con placas', () => {
     expect(savedBytes()).toEqual(exportSceneToBinarySTL(printable(), stlBrandHeader(BRAND)));
     expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
     const full = store().objects.filter((o) => !isReference(o));
-    expect(savedBytes()).toEqual(exportSceneTo3MF(full, 'mm', undefined, BRAND, { groups: [] }));
+    const bed = { widthMm: store().printerProfile.bedWidthMm, depthMm: store().printerProfile.bedDepthMm };
+    expect(savedBytes()).toEqual(exportSceneTo3MF(full, 'mm', undefined, BRAND, { groups: [] }, undefined, undefined, bed));
+  });
+
+  it('3MF con todas las placas: cada ítem en la celda de su placa del laminador y aviso por la cama propia', async () => {
+    await addBox(20, [10, 0, 0], { name: 'A' });
+    const p2 = store().createPlate({ name: 'Mini' })!;
+    await addBox(20, [p2.origin[0] - 20, 0, 30], { name: 'B' });
+    store().setPlateBed(p2.id, { profileId: 'bambu-a1-mini', name: 'A1 mini', widthMm: 180, depthMm: 180, heightMm: 180 });
+    const b = store().objects.find((o) => o.name === 'B')!;
+    const relB = [b.position[0] - store().plates[1].origin[0], b.position[2] - store().plates[1].origin[1]];
+    expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
+    const model = strFromU8(unzipSync(savedBytes())['3D/3dmodel.model']);
+    const t = [...model.matchAll(/<item objectid="\d+" transform="([^"]+)"/g)].map((m) => m[1].split(' ').map(Number));
+    const { bedWidthMm: w, bedDepthMm: d } = store().printerProfile;
+    expect(t).toHaveLength(2);
+    expect([t[0][9], t[0][10], t[0][11]]).toEqual([w / 2, d / 2, 0]);
+    expect(t[1][9]).toBeCloseTo(1.2 * w + w / 2, 4);
+    expect(t[1][10]).toBeCloseTo(d / 2, 4);
+    // La pieza de la placa con cama propia queda en la misma posición respecto del centro de su celda.
+    const objB = [...model.matchAll(/<object id="\d+"[\s\S]*?<\/object>/g)][1][0];
+    const vB = [...objB.matchAll(/<vertex x="([^"]+)"/g)].map((m) => [Number(m[1])]);
+    const cx = (Math.min(...vB.map((v) => v[0])) + Math.max(...vB.map((v) => v[0]))) / 2;
+    expect(cx).toBeCloseTo(relB[0], 4);
+    expect(store().toasts.some((x) => x.text === t2('export.plates.otherBed', { names: '«Mini»', count: 1, w: Math.round(w), d: Math.round(d) }))).toBe(true);
   });
 
   it('una sola placa en el origen tampoco cambia nada', async () => {

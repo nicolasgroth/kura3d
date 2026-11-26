@@ -68,6 +68,17 @@ export function shiftForExport(
   return { objects: out, offsets };
 }
 
+/**
+ * Placas del archivo con cama propia de otro ancho o fondo que la del proyecto (en el orden de `plateIds`). El 3MF
+ * de los laminadores supone una sola cama: esas placas van centradas en una celda del tamaño de la del proyecto.
+ */
+export function platesWithOtherBed(
+  plates: readonly ScenePlate[], plateIds: ReadonlyArray<string | null>, bed: { widthMm: number; depthMm: number },
+): ScenePlate[] {
+  const differs = (p: ScenePlate) => !!p.bed && (Math.abs(p.bed.widthMm - bed.widthMm) > 1e-6 || Math.abs(p.bed.depthMm - bed.depthMm) > 1e-6);
+  return plateIds.map((id) => findPlate(plates, id)).filter((p): p is ScenePlate => !!p && differs(p));
+}
+
 /** Reparte `targets` (en pose de impresión) en un cubo por placa, cada pieza respecto de su cama. */
 export function planPlateExport(targets: readonly SceneObject[], plates: readonly ScenePlate[]): PlateExportPlan {
   if (plates.length < 2) {

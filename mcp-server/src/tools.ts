@@ -774,7 +774,10 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         'OrcaSlicer, Bambu Studio, PrusaSlicer and Cura. The former `slicerTarget` argument is obsolete and ignored. With ' +
         'parts on two or more print plates, the file carries every plate (Bambu Studio and OrcaSlicer show each one; ' +
         'PrusaSlicer and Cura see all parts on one bed), each part relative to the bed of its plate; parts without a ' +
-        'plate are skipped (`skippedUnplaced`). `plateId` exports a single plate.',
+        'plate are skipped (`skippedUnplaced`). Each part is placed where Bambu Studio / OrcaSlicer expect its plate (bed ' +
+        'corner as origin, plates in a grid sized by the project bed); those slicers assume one bed for every plate, so a ' +
+        'plate with its own bed of another size goes centered in a project-bed cell and is listed in `otherBedPlates`. ' +
+        '`plateId` exports a single plate.',
       inputSchema: {
         outputPath: outputPathSchema.describe('Destination path of the .3mf file on disk.'),
         objectIds: z.array(idSchema).max(256).optional().describe('Specific IDs to export (optional).'),

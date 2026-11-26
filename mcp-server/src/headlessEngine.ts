@@ -681,8 +681,10 @@ export class KuraHeadlessEngine {
   async export3mf(input: { outputPath: string; objectIds?: string[]; plateId?: string }): Promise<ExportFileResult> {
     const targets = this.resolveExportTargets(input.objectIds);
     const plan = this.plates.exportPlan(targets, '3mf', input.plateId);
-    const written = await write3mfFile(input.outputPath, plan?.targets ?? targets, this.units, plan?.plateLayout, projectMetaOf(this.projectInfo.snapshot()));
-    return plan ? { ...written, plateCount: plan.plateCount, skippedUnplaced: plan.excluded } : written;
+    const written = await write3mfFile(input.outputPath, plan?.targets ?? targets, this.units, plan?.plateLayout, projectMetaOf(this.projectInfo.snapshot()), this.plates.projectBed());
+    if (!plan) return written;
+    const otherBed = this.plates.otherBedPlates(plan);
+    return { ...written, plateCount: plan.plateCount, skippedUnplaced: plan.excluded, ...(otherBed.length ? { otherBedPlates: otherBed } : {}) };
   }
 
   private resolveExportTargets(objectIds?: string[]): HeadlessSceneObject[] {

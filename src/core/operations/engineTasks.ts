@@ -32,6 +32,7 @@ import { measureObjectCapacity, type CapacityOptions } from '../../engine/measur
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import type { SimplifyRequest } from '../../engine/simplify';
 import type { ThreeMfPlateLayout, ThreeMfProjectMeta } from '../../engine/io/threeMfExport';
+import type { SlicerBed } from '../../engine/io/slicerPlateGrid';
 import { booleanOperation, convexHull } from './csgOperations';
 import { createThread, imageReliefMesh, primitiveMesh, regenerateParametric, svgMesh, type ParametricEdit } from './creationOperations';
 import { eraseSphere, hollowObject, projectOnSurface, refineObject, repairObject, simplifyObject } from './meshOperations';
@@ -67,6 +68,8 @@ export interface ExportTaskArgs {
   plateLayout?: ThreeMfPlateLayout;
   /** 3MF: nombre, descripción y autor del proyecto (metadatos `Title` / `Description` / `Designer`). */
   projectMeta?: ThreeMfProjectMeta;
+  /** 3MF: cama del proyecto, para colocar cada placa donde la espera el laminador (Bambu Studio / OrcaSlicer). */
+  slicerBed?: SlicerBed;
 }
 
 /** Argumentos del informe de imprimibilidad (solo lectura; no modifica la escena). */
@@ -96,7 +99,7 @@ export async function exportSceneFiles(a: ExportTaskArgs): Promise<ExportTaskRes
     case 'stl':
       return { files: [{ suffix: '.stl', data: engine.exportSceneToBinarySTL(a.targets, engine.stlBrandHeader(BRAND)) }] };
     case '3mf':
-      return { files: [{ suffix: '.3mf', data: engine.exportSceneTo3MF(a.targets, a.unitSystem, undefined, BRAND, a.sceneGroups ? { groups: a.sceneGroups } : undefined, a.plateLayout, a.projectMeta) }] };
+      return { files: [{ suffix: '.3mf', data: engine.exportSceneTo3MF(a.targets, a.unitSystem, undefined, BRAND, a.sceneGroups ? { groups: a.sceneGroups } : undefined, a.plateLayout, a.projectMeta, a.slicerBed) }] };
     case 'obj': {
       const { obj, mtl } = engine.exportSceneToOBJ(a.targets, a.baseName, BRAND);
       const enc = new TextEncoder();

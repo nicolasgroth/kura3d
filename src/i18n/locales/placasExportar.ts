@@ -75,6 +75,14 @@ const PLATES_EXPORT_TABLE = {
     'बिना प्लेट के {count} {count?हिस्सा|हिस्से} निर्यात से बाहर रहे। शामिल करने के लिए उन्हें किसी प्लेट पर ले जाएँ।',
     '{count} 个没有打印板的零件未被导出。将它们移到某块打印板上即可包含。',
   ],
+  'export.plates.otherBed': [
+    'El laminador usa una sola cama para todas las placas: {names} {count?tiene|tienen} cama propia y {count?quedó centrada|quedaron centradas} en una placa de {w} × {d} mm (la del proyecto). Revisa que sus piezas quepan.',
+    'The slicer uses a single bed for all plates: {names} {count?has its|have their} own bed and {count?was|were} centered on a {w} × {d} mm plate (the project bed). Check that its parts fit.',
+    'Der Slicer nutzt ein einziges Druckbett für alle Platten: {names} {count?hat|haben} ein eigenes Druckbett und {count?wurde|wurden} auf einer Platte von {w} × {d} mm (der des Projekts) zentriert. Prüfe, ob die Teile passen.',
+    'Le trancheur utilise un seul plateau pour tous : {names} {count?a son|ont leur} propre plateau et {count?a été centré|ont été centrés} sur un plateau de {w} × {d} mm (celui du projet). Vérifiez que les pièces tiennent.',
+    'स्लाइसर सभी प्लेटों के लिए एक ही बेड इस्तेमाल करता है: {names} का अपना बेड है और {count?उसे|उन्हें} {w} × {d} mm (प्रोजेक्ट के बेड) की प्लेट के बीच में रखा गया। जाँचें कि हिस्से समा जाएँ।',
+    '切片软件对所有打印板只使用一种热床：{names} 有自己的热床，已居中放在 {w} × {d} mm（项目热床）的打印板上。请检查零件是否放得下。',
+  ],
   'export.plates.zipDone': [
     'Exportadas {count} placas en {name}',
     'Exported {count} plates to {name}',

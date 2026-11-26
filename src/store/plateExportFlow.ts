@@ -16,7 +16,8 @@
 import { zipSync } from 'fflate';
 import type { ExportTaskArgs, ExportTaskResult } from '../core/operations/engineTasks';
 import { isPrintable } from '../core/scene/objectRole';
-import { exportPlateOf, planPlateExport, shiftForExport, type PlateExportBucket } from '../core/scene/plateExport';
+import { exportPlateOf, planPlateExport, platesWithOtherBed, shiftForExport, type PlateExportBucket } from '../core/scene/plateExport';
+import type { Translate } from './modelImportNotices';
 import type { ThreeMfPlateLayout } from '../engine/io/threeMfExport';
 import type { SceneObject } from '../types/kura';
 import type { ScenePlate } from '../types/plates';
@@ -66,6 +67,8 @@ export interface SingleFilePlan {
   plateLayout?: ThreeMfPlateLayout;
   /** Placas con piezas en el archivo. */
   plateCount: number;
+  /** Ids de esas placas, en el orden del archivo (null = escena sin placas). */
+  plateIds: Array<string | null>;
   /** Piezas imprimibles excluidas por no tener placa. */
   excluded: number;
 }
@@ -92,6 +95,7 @@ export function singleFilePlan(
       targets: plan.buckets.flatMap((b) => b.objects),
       plateLayout: layoutOf(plan.buckets, {}, plates),
       plateCount: plan.buckets.length,
+      plateIds: plan.buckets.map((b) => b.plateId),
       excluded: plan.excluded,
     };
   }
@@ -110,6 +114,30 @@ export function singleFilePlan(
     targets: shifted.objects,
     plateLayout: layout,
     plateCount: plan.buckets.length,
+    plateIds: plan.buckets.map((b) => b.plateId),
     excluded: plan.excluded,
   };
+}
+
+/**
+ * Aviso del 3MF con placas: el laminador supone una sola cama (la del proyecto) para todas, así que las placas con
+ * cama propia de otro tamaño van centradas en una celda de la cama del proyecto. null si no hay ninguna.
+ */
+export function otherBedNotice(
+  plan: Pick<SingleFilePlan, 'plateIds'> | null, plates: readonly ScenePlate[], bed: { widthMm: number; depthMm: number }, tr: Translate,
+): string | null {
+  const other = plan ? platesWithOtherBed(plates, plan.plateIds, bed) : [];
+  if (other.length === 0) return null;
+  const names = other.map((p) => `«${p.name}»`).join(', ');
+  return tr('export.plates.otherBed', { names, count: other.length, w: Math.round(bed.widthMm), d: Math.round(bed.depthMm) });
+}
+
+/** Cama del proyecto para la rejilla de placas del 3MF (la medida propia manda sobre la del perfil; 256 si falta). */
+export function slicerBedOf(source: {
+  printerProfile: { bedWidthMm?: number; bedDepthMm?: number };
+  customBedDimensions?: { width: number; depth?: number } | null;
+}): { widthMm: number; depthMm: number } {
+  const c = source.customBedDimensions;
+  const widthMm = c?.width ?? source.printerProfile.bedWidthMm ?? 256;
+  return { widthMm, depthMm: (c ? c.depth : source.printerProfile.bedDepthMm) ?? widthMm };
 }
