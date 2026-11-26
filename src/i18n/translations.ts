@@ -646,7 +646,7 @@ export const TRANSLATIONS_ES = {
   'dialog.svg.generate': 'Extruir SVG en 3D',
 
   // Modal Imagen a 3D
-  'dialog.img.title': 'Imagen → 3D (Relieve, Litofanía, Silueta y Cortador)',
+  'dialog.img.title': 'Imagen a 3D',
   'dialog.img.upload': 'Elegir imagen (PNG / JPG / WebP)',
   'dialog.img.useSample': 'Usar patrón de prueba',
   'dialog.img.shapeMode': 'Modo de generación 3D',
@@ -686,7 +686,7 @@ export const TRANSLATIONS_ES = {
   'dialog.cut.execute': 'Ejecutar Corte',
 
   // Modal Generador de Moldes y Contra-Moldes
-  'dialog.mold.title': 'Generador de Moldes / Silicona / Velas',
+  'dialog.mold.title': 'Molde, silicona y velas',
   'dialog.mold.mode': 'Arquitectura del molde',
   'dialog.mold.modeDirect1': 'Molde 1 pieza (Cavidad directa)',
   'dialog.mold.modeDirect2': 'Molde 2 mitades + llaves de registro',
@@ -702,7 +702,7 @@ export const TRANSLATIONS_ES = {
   'dialog.mold.execute': 'Generar Molde 3D',
 
   // Modal Proyección Conformal en Superficies
-  'dialog.project.title': 'Proyectar Texto o SVG en Superficie 3D',
+  'dialog.project.title': 'Proyectar en superficie 3D',
   'dialog.project.kind': 'Gráfico a proyectar',
   'dialog.project.kindText': 'Texto paramétrico',
   'dialog.project.kindSvg': 'Código SVG vectorial',
@@ -722,7 +722,7 @@ export const TRANSLATIONS_ES = {
   'dialog.project.execute': 'Proyectar sobre Modelo',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'Generador de Roscas Métricas ISO (M3–M64)',
+  'dialog.thread.title': 'Rosca métrica ISO',
   'dialog.thread.preset': 'Preset Métrico ISO',
   'dialog.thread.kind': 'Tipo de pieza roscada',
   'dialog.thread.kindBolt': 'Perno (Rosca exterior)',
@@ -1979,7 +1979,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.svg.code': 'SVG markup',
   'dialog.svg.generate': 'Extrude SVG to 3D',
 
-  'dialog.img.title': 'Image → 3D (Relief, Lithophane, Silhouette & Cutter)',
+  'dialog.img.title': 'Image to 3D',
   'dialog.img.upload': 'Choose image (PNG / JPG / WebP)',
   'dialog.img.useSample': 'Use test pattern',
   'dialog.img.shapeMode': '3D generation mode',
@@ -2017,7 +2017,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.cut.keepNegative': 'Negative half (-) only',
   'dialog.cut.execute': 'Run Plane Cut',
 
-  'dialog.mold.title': 'Mold / Silicone / Candle Generator',
+  'dialog.mold.title': 'Mold / silicone / candle',
   'dialog.mold.mode': 'Mold architecture',
   'dialog.mold.modeDirect1': '1-Part Mold (Direct cavity)',
   'dialog.mold.modeDirect2': '2-Part Split Mold + registration keys',
@@ -2032,7 +2032,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.mold.pourSpoutRadius': 'Spout radius (mm)',
   'dialog.mold.execute': 'Generate 3D Mold',
 
-  'dialog.project.title': 'Project Text or SVG onto 3D Surface',
+  'dialog.project.title': 'Project onto 3D surface',
   'dialog.project.kind': 'Graphic source',
   'dialog.project.kindText': 'Parametric text',
   'dialog.project.kindSvg': 'Vector SVG markup',
@@ -2051,7 +2051,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.project.offsetV': 'V Offset (mm)',
   'dialog.project.execute': 'Project onto Model',
 
-  'dialog.thread.title': 'Metric ISO Thread Generator (M3–M64)',
+  'dialog.thread.title': 'Metric ISO thread',
   'dialog.thread.preset': 'ISO Metric Preset',
   'dialog.thread.kind': 'Threaded part type',
   'dialog.thread.kindBolt': 'Bolt (External thread)',

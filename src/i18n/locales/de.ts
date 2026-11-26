@@ -639,7 +639,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.svg.generate': 'SVG in 3D extrudieren',
 
   // Modal Imagen a 3D
-  'dialog.img.title': 'Bild → 3D (Relief, Lithophanie, Silhouette & Ausstecher)',
+  'dialog.img.title': 'Bild zu 3D',
   'dialog.img.upload': 'Bild wählen (PNG / JPG / WebP)',
   'dialog.img.useSample': 'Testmuster verwenden',
   'dialog.img.shapeMode': '3D-Generierungsmodus',
@@ -679,7 +679,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.cut.execute': 'Schnitt ausführen',
 
   // Modal Generador de Moldes y Contra-Moldes
-  'dialog.mold.title': 'Gießform- / Silikon- / Kerzengenerator',
+  'dialog.mold.title': 'Gießform / Silikon / Kerze',
   'dialog.mold.mode': 'Formarchitektur',
   'dialog.mold.modeDirect1': '1-teilige Form (Direkte Kavität)',
   'dialog.mold.modeDirect2': '2-teilige Form + Passstifte',
@@ -695,7 +695,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.mold.execute': '3D-Gießform erzeugen',
 
   // Modal Proyección Conformal en Superficies
-  'dialog.project.title': 'Text oder SVG auf 3D-Oberfläche projizieren',
+  'dialog.project.title': 'Auf 3D-Fläche projizieren',
   'dialog.project.kind': 'Grafikquelle',
   'dialog.project.kindText': 'Parametrischer Text',
   'dialog.project.kindSvg': 'SVG-Vektormarkup',
@@ -715,7 +715,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.project.execute': 'Auf Modell projizieren',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'Metrischer ISO-Gewindegenerator (M3–M64)',
+  'dialog.thread.title': 'ISO-Metrikgewinde',
   'dialog.thread.preset': 'Metrisches ISO-Preset',
   'dialog.thread.kind': 'Gewindeteiltyp',
   'dialog.thread.kindBolt': 'Schraube (Außengewinde)',

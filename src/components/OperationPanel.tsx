@@ -11,6 +11,7 @@
 
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { panelClosed, panelOpened } from '../store/leftSidebarAutoFold';
 import { useKuraStore } from '../store/useKuraStore';
 import { PanelHeader } from './shell/PanelHeader';
 import { keyboardFocusInViewport } from './viewport/cutPlaneDrag';
@@ -66,6 +67,13 @@ export const OperationPanel: React.FC<{
       if (back && back.isConnected) back.focus({ preventScroll: true });
     };
   }, [open, initialFocus]);
+
+  // Con la ventana angosta, la lista de escena se pliega mientras el panel está abierto y se restaura al cerrarlo.
+  useEffect(() => {
+    if (!open) return;
+    panelOpened();
+    return panelClosed;
+  }, [open]);
 
   // Escape con el foco en el visor también cierra el panel (salvo que haya algo que cancelar).
   useEffect(() => {

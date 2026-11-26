@@ -40,13 +40,17 @@ export function createFreePlacer(get: () => PlacementState, rotation: Vec3 = [0,
  * cama: encuadre de la pieza; si ya había objetos, se asegura que la pieza nueva quede a la vista.
  */
 export function announceFreePlacement(
-  state: Pick<KuraStoreState, 'addToast' | 'requestCameraPreset'> & Partial<Pick<KuraStoreState, 'layout'>>,
-  tr: (key: 'toast.placedOutsideBed' | 'viewMode.newPiece') => string,
+  state: Pick<KuraStoreState, 'addToast' | 'requestCameraPreset'> & Partial<Pick<KuraStoreState, 'layout' | 'setViewMode'>>,
+  tr: (key: 'toast.placedOutsideBed' | 'viewMode.newPiece' | 'viewMode.badge.back') => string,
   result: FreePlacer['result'],
   newId: string,
 ): void {
   // Armado y Libre: lo nuevo queda junto a la figura y sin placa; la cama no se evalúa en esta vista.
-  if (state.layout === 'assembly') state.addToast(tr('viewMode.newPiece'), 'info');
+  // El aviso lleva el botón «Volver a Imprimir» (donde se usa «Mover a placa»).
+  if (state.layout === 'assembly') {
+    const back = state.setViewMode;
+    state.addToast(tr('viewMode.newPiece'), 'info', back ? { label: tr('viewMode.badge.back'), run: () => void back('print') } : undefined);
+  }
   else if (!result.fits) state.addToast(tr('toast.placedOutsideBed'), 'info');
   if (!result.fits || result.wasEmpty) state.requestCameraPreset('fit', [newId]);
   else state.requestCameraPreset('ensure', [newId]);

@@ -639,7 +639,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.svg.generate': 'Extruder le SVG en 3D',
 
   // Modal Imagen a 3D
-  'dialog.img.title': 'Image → 3D (Relief, Lithophanie, Silhouette & Emporte-pièce)',
+  'dialog.img.title': 'Image vers 3D',
   'dialog.img.upload': 'Choisir une image (PNG / JPG / WebP)',
   'dialog.img.useSample': 'Utiliser un motif test',
   'dialog.img.shapeMode': 'Mode de génération 3D',
@@ -679,7 +679,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.cut.execute': 'Exécuter la Coupe',
 
   // Modal Generador de Moldes y Contra-Moldes
-  'dialog.mold.title': 'Générateur de Moules / Silicone / Bougies',
+  'dialog.mold.title': 'Moule / silicone / bougie',
   'dialog.mold.mode': 'Architecture du moule',
   'dialog.mold.modeDirect1': 'Moule 1 pièce (Cavité directe)',
   'dialog.mold.modeDirect2': 'Moule 2 moitiés + clés de repérage',
@@ -695,7 +695,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.mold.execute': 'Générer le Moule 3D',
 
   // Modal Proyección Conformal en Superficies
-  'dialog.project.title': 'Projeter Texte ou SVG sur Surface 3D',
+  'dialog.project.title': 'Projeter sur surface 3D',
   'dialog.project.kind': 'Source graphique',
   'dialog.project.kindText': 'Texte paramétrique',
   'dialog.project.kindSvg': 'Code SVG vectoriel',
@@ -715,7 +715,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.project.execute': 'Projeter sur le Modèle',
 
   // Modal Generador de Roscas ISO
-  'dialog.thread.title': 'Générateur de Filetages Métriques ISO (M3–M64)',
+  'dialog.thread.title': 'Filetage métrique ISO',
   'dialog.thread.preset': 'Préréglage Métrique ISO',
   'dialog.thread.kind': 'Type de pièce filetée',
   'dialog.thread.kindBolt': 'Vis (Filetage extérieur)',

@@ -40,7 +40,7 @@ export const PanelHeader: React.FC<{
         <ArrowLeft size={14} aria-hidden="true" />
         <span>{label}</span>
       </button>
-      <h2 id={titleId} className={titleClassName ? `kura-panel-title ${titleClassName}` : 'kura-panel-title'} tabIndex={focusableTitle ? -1 : undefined}>
+      <h2 id={titleId} title={title} className={titleClassName ? `kura-panel-title ${titleClassName}` : 'kura-panel-title'} tabIndex={focusableTitle ? -1 : undefined}>
         {title}
       </h2>
     </div>
