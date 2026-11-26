@@ -109,6 +109,23 @@ export function nextPlateName(plates: readonly ScenePlate[], nameFor: (n: number
   return nameFor(plates.length + 1);
 }
 
+/**
+ * Nombre que no repite el de otra placa (sin distinguir mayúsculas): el propio si está libre; si no, su número final
+ * sube hasta el primer libre («Placa 1» → «Placa 2») o, sin número, se le añade « 2», « 3»… Respeta MAX_PLATE_NAME.
+ */
+export function uniquePlateName(plates: readonly ScenePlate[], name: string): string {
+  const taken = new Set(plates.map((p) => p.name.trim().toLowerCase()));
+  const base = name.trim();
+  if (!taken.has(base.toLowerCase())) return base;
+  const m = /^(.*?)(\d+)\s*$/.exec(base);
+  const stem = m ? m[1] : `${base} `;
+  for (let n = m ? Number(m[2]) + 1 : 2; n < 1000; n++) {
+    const cand = `${stem.slice(0, MAX_PLATE_NAME - String(n).length)}${n}`;
+    if (!taken.has(cand.toLowerCase())) return cand;
+  }
+  return base;
+}
+
 /** true si las camas de dos placas quedan separadas por al menos `gap` en algún eje. */
 export function bedsSeparated(ax: number, az: number, a: ProjectBed, bx: number, bz: number, b: ProjectBed, gap: number): boolean {
   const eps = 1e-6;

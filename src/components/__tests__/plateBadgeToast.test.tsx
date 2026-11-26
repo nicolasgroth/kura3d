@@ -21,11 +21,10 @@ const PLATES = [
 afterEach(cleanup);
 
 describe('insignia de placa: rótulo corto', () => {
-  it('«P» + número del nombre, o la posición si el nombre no lleva número; nunca una sola letra', () => {
-    expect(plateShortLabel('Placa 2', 5)).toBe('P2');
-    expect(plateShortLabel('Plate 12', 0)).toBe('P12');
-    expect(plateShortLabel('Bandeja azul', 2)).toBe('P3');
-    expect(plateShortLabel('Bandeja azul', 2).length).toBeGreaterThan(1);
+  it('«P» + la posición de la placa en la tira, sin importar el número del nombre; nunca una sola letra', () => {
+    expect(plateShortLabel(0)).toBe('P1');
+    expect(plateShortLabel(2)).toBe('P3');
+    expect(plateShortLabel(2).length).toBeGreaterThan(1);
   });
 });
 
@@ -43,6 +42,21 @@ describe('insignia de placa', () => {
     expect(badge.textContent).toBe('P2');
     expect(badge.getAttribute('aria-label')).toBe('Placa: Placa 2');
     expect(badge.getAttribute('title')).toContain('Placa 2');
+  });
+});
+
+describe('insignia de placa: posición vs nombre', () => {
+  it('muestra la posición en la tira y el nombre completo en title y nombre accesible', () => {
+    const plates = [
+      { id: 'p1', name: 'Placa 1', origin: [0, 0] as [number, number] },
+      { id: 'p3', name: 'Placa 3', origin: [300, 0] as [number, number] },
+    ];
+    useKuraStore.setState({ language: 'es', plates } as never);
+    render(<PlateBadge obj={{ plateRef: 'p3' }} />);
+    const badge = screen.getByTestId('plate-badge');
+    expect(badge.textContent).toBe('P2');
+    expect(badge.getAttribute('aria-label')).toContain('Placa 3');
+    expect(badge.getAttribute('title')).toContain('Placa 3');
   });
 });
 

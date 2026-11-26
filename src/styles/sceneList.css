@@ -52,6 +52,8 @@
 .kura-scene-item .kura-scene-item-main {
   flex: 1 1 96px;
   min-width: 0;
+  /* En filas anidadas y con selección múltiple el contenido (insignia de placa, contador) no se monta sobre el ojo. */
+  overflow: hidden;
   align-self: stretch;
 }
 

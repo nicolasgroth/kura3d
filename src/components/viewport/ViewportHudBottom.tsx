@@ -16,6 +16,7 @@ import { computeSelectionBounds } from '../../utils/selectionBounds';
 import { formatDimension } from '../../utils/units';
 import { toUserSize } from '../../core/scene/displayAxes';
 import { isLegacyPlateSetup } from '../../core/scene/plates';
+import { hudBed } from '../../core/scene/bedLabel';
 import { platesBedStatus, sceneBedStatus } from './plateBedStatus';
 import { BedHiddenChip } from './BedHiddenChip';
 import { ViewModeBedChip } from '../viewmode/ViewModeBedChip';
@@ -32,16 +33,20 @@ export const ViewportHudBottom: React.FC = () => {
   const showBed = useKuraStore((s) => s.showBed);
   const layout = useKuraStore((s) => s.layout);
   const selectedObj = objects.find((o) => o.id === selectedIds[0]) ?? null;
-  const localizedPrinterName = getLocalizedPrinterName(language, printerProfile);
   const plates = useKuraStore((s) => s.plates);
+  const activePlateId = useKuraStore((s) => s.activePlateId);
+  const customBedDimensions = useKuraStore((s) => s.customBedDimensions);
   const bedStatus = useMemo(() => sceneBedStatus(objects, printerProfile, plates), [objects, printerProfile, plates]);
   // Con varias placas, el aviso dice cuáles están fuera de volumen.
   const outPlateNames = useMemo(
     () => (isLegacyPlateSetup(plates, { widthMm: printerProfile.bedWidthMm, depthMm: printerProfile.bedDepthMm, heightMm: printerProfile.maxHeightMm }) ? [] : platesBedStatus(objects, printerProfile, plates).filter((e) => e.status === 'outOfBounds').map((e) => plates.find((p) => p.id === e.plateId)?.name ?? '')),
     [objects, printerProfile, plates],
   );
-  const bedDims = printerProfile.showPrintVolume
-    ? [printerProfile.bedWidthMm, printerProfile.bedDepthMm, printerProfile.maxHeightMm].map((v) => formatDimension(v, unitSystem, 1, language)).join(' × ')
+  // La placa activa con cama propia manda sobre la del proyecto (nombre y medidas).
+  const shownBed = hudBed({ printerProfile, customBedDimensions, plates, activePlateId });
+  const localizedPrinterName = shownBed.ownName ?? getLocalizedPrinterName(language, printerProfile);
+  const bedDims = printerProfile.showPrintVolume || shownBed.ownName
+    ? [shownBed.widthMm, shownBed.depthMm, shownBed.heightMm].map((v) => formatDimension(v, unitSystem, 1, language)).join(' × ')
     : '';
   const bedText = bedDims ? `${localizedPrinterName} (${bedDims})` : localizedPrinterName;
   const activeDimensionsText = useMemo(() => {

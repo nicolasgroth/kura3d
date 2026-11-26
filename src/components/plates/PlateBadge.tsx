@@ -30,7 +30,7 @@ export const PlateBadge: React.FC<{ obj: Pick<SceneObject, 'plateRef'> }> = ({ o
       aria-label={t(language, 'plates.badge.label', { name: plate.name })}
       title={t(language, 'plates.badge.tip', { name: plate.name })}
     >
-      {plateShortLabel(plate.name, plates.indexOf(plate))}
+      {plateShortLabel(plates.indexOf(plate))}
     </span>
   );
 };
