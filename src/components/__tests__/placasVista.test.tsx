@@ -49,12 +49,14 @@ beforeEach(() => seed([], []));
 afterEach(() => cleanup());
 
 describe('tira de placas', () => {
-  it('no existe con una placa o ninguna', () => {
+  it('con una placa o ninguna es corta (selector y «+ Placa», sin fichas); con la escena vacía no existe', () => {
     const { container, rerender } = render(<PlateStrip />);
     expect(container.firstChild).toBeNull();
     act(() => seed([PLATES[0]], [solid('a', 'A', [0, 0, 0], 'p1')]));
     rerender(<PlateStrip />);
-    expect(screen.queryByTestId('plate-strip')).toBeNull();
+    expect(screen.getByTestId('plate-strip').getAttribute('data-short')).toBe('true');
+    expect(screen.queryByTestId('plate-solo')).toBeNull();
+    expect(screen.getByTestId('plate-add-first')).toBeTruthy();
   });
 
   it('una ficha por placa con nombre, piezas y estado con texto; la activa va con aria-pressed', () => {

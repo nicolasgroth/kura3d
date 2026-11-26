@@ -89,7 +89,7 @@ test('placas: vistas, repartir y cama por placa', async ({ page }) => {
   await page.waitForTimeout(400);
   await encuadrar(page, 'scene');
 
-  // 1) Selector Imprimir / Armado / Libre (recorte de la barra de vista).
+  // 1) Selector Imprimir / Armado / Libre (recorte de la tira de placas).
   const selector = page.getByTestId('viewmode-selector');
   await expect(selector).toBeVisible();
   const caja = (await selector.boundingBox())!;
@@ -128,7 +128,7 @@ test('placas: vista armada de una figura dividida', async ({ page }) => {
   await seleccionar(page, []);
   await encuadrar(page, 'scene');
   await page.getByTestId('viewmode-assembly').click();
-  await expect(page.getByTestId('viewmode-hud')).toBeVisible();
+  await expect(page.getByTestId('viewmode-explode-bar')).toBeVisible();
   await page.getByTestId('viewmode-explode').fill('25');
   await page.waitForTimeout(900);
   await encuadrar(page, 'fit');

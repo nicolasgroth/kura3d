@@ -46,14 +46,14 @@ for (const size of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }])
     test('0 o 1 placa: interfaz de siempre; «+ Placa» solo con cama visible; sin «Mover a placa»; sin «Kura3D»', async ({ page }) => {
       const errs = await abrir(page);
       await agregarForma(page, 'Cubo');
-      await expect(page.getByTestId('plate-strip')).toHaveCount(0);
+      await expect(page.getByTestId('plate-strip')).toHaveAttribute('data-short', 'true');
       const add = page.getByTestId('plate-add-first');
       await expect(add).toBeVisible();
       await page.screenshot({ path: `${EVID}/una-placa-${size.width}.png` });
-      // «Sin cama» (B): el botón desaparece; B otra vez lo devuelve.
+      // «Sin cama» (B): «+ Placa» vive en la tira y sigue ahí (ya no depende del pie del visor).
       await page.locator('body').click({ position: { x: 5, y: 5 } }).catch(() => undefined);
       await page.keyboard.press('b');
-      await expect(add).toHaveCount(0);
+      await expect(add).toBeVisible();
       await page.keyboard.press('b');
       await expect(add).toBeVisible();
       // Menú de la fila: sin «Mover a placa».

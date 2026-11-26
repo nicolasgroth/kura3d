@@ -36,16 +36,21 @@ afterEach(() => {
 });
 
 describe('tira de placas: botón «Repartir…»', () => {
-  for (const layout of ['print', 'assembly'] as const) {
-    it(`está con dos placas en la vista ${layout} y se encuentra por su texto visible`, () => {
-      seed(layout);
-      render(<PlateStrip />);
-      const byId = screen.getByTestId('plate-arrange');
-      expect(screen.getByRole('button', { name: 'Repartir…' })).toBe(byId);
-      expect(byId.textContent).toContain('Repartir…');
-      expect((byId as HTMLButtonElement).disabled).toBe(false);
-    });
-  }
+  it('está con dos placas en Imprimir y se encuentra por su texto visible', () => {
+    seed('print');
+    render(<PlateStrip />);
+    const byId = screen.getByTestId('plate-arrange');
+    expect(screen.getByRole('button', { name: 'Repartir…' })).toBe(byId);
+    expect(byId.textContent).toContain('Repartir…');
+    expect((byId as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('en Armado las placas no se editan: el botón deja su lugar a los controles de separación', () => {
+    seed('assembly');
+    render(<PlateStrip />);
+    expect(screen.queryByTestId('plate-arrange')).toBeNull();
+    expect(screen.getByTestId('viewmode-explode')).toBeTruthy();
+  });
 
   it('sigue tras «una placa por objeto» y abre el panel de reparto', () => {
     seed('print', [{ ...fakeBox('a', 'A'), plateRef: 'p1' } as SceneObject, { ...fakeBox('b', 'B'), plateRef: 'p2' } as SceneObject]);

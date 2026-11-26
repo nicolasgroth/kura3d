@@ -88,7 +88,7 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
             <li>{t(language, 'simplify.report.volume', { pct })}</li>
             <li>{t(language, 'simplify.report.genus', { before: report.genusBefore, after: report.genusAfter })}</li>
             <li>{t(language, 'simplify.report.deviation', { mm: n(report.maxDeviationMm, 3) })}</li>
-            <li>{t(language, 'simplify.report.tolerance', { mm: n(report.toleranceMm, 4) })}</li>
+            <li>{t(language, report.mode === 'tolerance' ? 'simplify.report.toleranceAsked' : 'simplify.report.tolerance', { mm: n(report.toleranceMm, 4) })}</li>
           </>
         )}
       </ul>
