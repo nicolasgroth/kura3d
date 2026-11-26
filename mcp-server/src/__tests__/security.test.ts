@@ -241,6 +241,15 @@ describe('TRUST-02 · solo lectura como fuente única', () => {
     expect(hello.serverReadOnly).toBe(true);
     const res = await client.callTool({ name: 'kura_delete_object', arguments: { objectId: 'x' } });
     expect(res.isError).toBe(true);
+    // dryRun no cambia la clasificación: las herramientas con vista previa son de escritura y se bloquean igual.
+    for (const [name, args] of [
+      ['kura_arrange_on_plates', { dryRun: true }], ['kura_fit_to_bed', { objectIds: ['x'], dryRun: true }],
+      ['kura_split_for_bed', { objectId: 'x', dryRun: true }], ['kura_simplify_mesh', { objectId: 'x', dryRun: true }],
+    ] as const) {
+      const blocked = await client.callTool({ name, arguments: args });
+      expect(blocked.isError, name).toBe(true);
+      expect(textOf(blocked), name).toContain('Read-only mode');
+    }
   });
 });
 

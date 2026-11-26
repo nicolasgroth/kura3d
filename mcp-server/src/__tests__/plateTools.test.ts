@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, describe, expect, it } from 'vitest';
+import { parseArrangeOnPlates } from '../../../src/core/bus/plateArrangeSchema';
 import { MAX_PLATES } from '../../../src/core/scene/plates';
 import { createKuraMcpServer } from '../index.js';
 
@@ -124,6 +125,24 @@ describe('MCP sin interfaz: herramientas de placas', () => {
     expect(new Set(spread.assignments.map((a: { plateId: string }) => a.plateId)).size).toBe(3);
     expect(await failCode('kura_arrange_on_plates', { spacingMm: 1e9 })).toMatch(/spacingMm|invalid/i);
     expect(await failCode('kura_arrange_on_plates', { plateIds: ['nope'] })).toBe('not-found');
+  });
+
+  it('repartir por grupo sin interfaz: error precondition claro, no aparenta agrupar', async () => {
+    const { headless, call, failCode } = await setup();
+    await boxes(headless, 3);
+    for (const dryRun of [true, false]) {
+      expect(await failCode('kura_arrange_on_plates', { criterion: 'byGroup', dryRun })).toBe('precondition');
+    }
+    const res = await call('kura_arrange_on_plates', { criterion: 'byGroup' });
+    expect((res.content as Array<{ text: string }>)[0].text).toMatch(/groups/i);
+    expect(headless.plates.plates).toEqual([]);
+  });
+
+  it('placa inexistente en repartir: el id del error se recorta a 64 caracteres (esquema compartido)', () => {
+    let err: any = null;
+    try { parseArrangeOnPlates({ objects: [], selectedIds: [], plates: [] }, { plateIds: ['z'.repeat(128)] }); } catch (e) { err = e; }
+    expect(err?.code).toBe('not-found');
+    expect(err?.params.id).toBe('z'.repeat(64));
   });
 
   it('exportar por placa: STL de una placa respecto de su cama; STL con varias placas pide plateId', async () => {

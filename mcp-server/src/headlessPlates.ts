@@ -188,6 +188,8 @@ export class HeadlessPlates {
 
   arrange(p: RawParams) {
     const request = parseArrangeOnPlates({ objects: this.host.objects(), selectedIds: [], plates: this.plates }, p);
+    // Sin interfaz no hay grupos de organización: «por grupo» no podría agrupar nada (ni en dryRun), así que se dice.
+    if (request.options.criterion === 'byGroup') throw new CommandError('precondition', 'bus.error.arrangeByGroupHeadless');
     const plan = arrangeOnPlatesTask({
       objects: this.printObjects(), plates: this.plates, groups: [], projectBed: projectBed(this.source()), options: request.options,
     });
