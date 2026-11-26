@@ -16,6 +16,7 @@ import { GROUPS_ZH } from './groups';
 import { PLATES_VIEW_ZH } from './placasVista';
 import { VIEW_MODE_ZH } from './vistaModos';
 import { PLATES_EXPORT_ZH } from './placasExportar';
+import { PLATES_BED_ZH } from './placasCama';
 import { PLATES_ARRANGE_ZH } from './placasRepartir';
 import { PLATES_ARRANGE_UI_ZH } from './placasRepartirUi';
 import { MEASURE_ZH } from './measure';
@@ -86,6 +87,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PLATES_VIEW_ZH,
   ...VIEW_MODE_ZH,
   ...PLATES_EXPORT_ZH,
+  ...PLATES_BED_ZH,
   ...PLATES_ARRANGE_ZH,
   ...PLATES_ARRANGE_UI_ZH,
   ...MEASURE_ZH,

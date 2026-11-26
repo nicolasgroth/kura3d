@@ -1179,6 +1179,7 @@ export interface KuraCommandRequest {
     | 'set_active_plate'
     | 'move_to_plate'
     | 'spread_one_plate_per_object'
+    | 'set_plate_bed'
     | 'set_layout';
   params: Record<string, unknown>;
 }

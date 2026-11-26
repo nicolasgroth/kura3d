@@ -34,7 +34,7 @@ const failed = (command: string) => new CommandError('failed', 'bus.error.failed
 
 async function analyze(p: RawParams, get: Deps['get'], command: string) {
   const target = resolveTarget(get(), p);
-  const options = parseOrientOptions(p, activeFitBed(get()));
+  const options = parseOrientOptions(p, activeFitBed(get(), [target]));
   const analysis = await get().computeOrientAnalysis(target.id, options);
   if (!analysis) throw new CommandError('precondition', 'bus.error.failed', { command });
   return { target, analysis };

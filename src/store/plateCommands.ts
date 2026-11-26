@@ -19,7 +19,9 @@ import {
   parseRenamePlate,
   parseSetActivePlate,
   parseSetLayout,
+  parseSetPlateBed,
   parseSpreadOnePlatePerObject,
+  plateBedNoRoom,
   plateListToUser,
   plateNotCreated,
   plateToUser,
@@ -27,6 +29,8 @@ import {
 } from '../core/bus/plateCommandSchemas';
 import { projectBed } from '../core/scene/activePlateBed';
 import { resolveActivePlate } from '../core/scene/plates';
+import { samePlateBed } from '../core/scene/plateBedChange';
+import { findBedProfile } from './bedProfiles';
 import { CommandError } from './commandErrors';
 import type { RawParams } from './commandValidation';
 import { printPosedObjects } from './sceneLayout';
@@ -97,6 +101,15 @@ export const PLATE_HANDLERS = {
     if (!result) throw new CommandError('precondition', 'bus.error.plateSpreadNeedsTwo');
     const s = get();
     return { pieces: result.pieces, created: result.created, assignments: assignmentsOf(s.objects, ids), activePlateId: activeId(s), plateCount: s.plates.length };
+  },
+
+  set_plate_bed: (p: RawParams, { get }: Deps) => {
+    const { plate, bed } = parseSetPlateBed(get(), p, (id) => findBedProfile(id, get().userBedProfiles ?? []));
+    if (samePlateBed(plate.bed, bed ?? undefined)) return { plate: plateOut(get(), plate.id), changed: false, relocated: [] };
+    const done = get().setPlateBed(plate.id, bed);
+    if (!done) throw plateBedNoRoom();
+    const s = get();
+    return { plate: plateOut(s, plate.id), changed: true, relocated: done.relocated, keptLocked: done.keptLocked };
   },
 
   set_layout: (p: RawParams, { get }: Deps) => {

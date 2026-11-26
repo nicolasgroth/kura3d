@@ -220,3 +220,40 @@ describe('arrangeOnPlates: orientación', () => {
     expect(plan.placements[0].rotation).toEqual([0, 0, 0]);
   });
 });
+
+describe('arrangeOnPlates: cada placa con su cama (P7, dos impresoras)', () => {
+  // Proyecto de 200; la placa 1 es una impresora de 256 y la 2 una de 120.
+  const PLATES: ScenePlate[] = [
+    { id: 'p1', name: 'Grande', origin: [0, 0], bed: { name: 'X1', widthMm: 256, depthMm: 256, heightMm: 256 } },
+    { id: 'p2', name: 'Chica', origin: [400, 0], bed: { name: 'Mini', widthMm: 120, depthMm: 120, heightMm: 120 } },
+  ];
+
+  it('dos piezas que solo caben en la cama grande van juntas a ella (no salen como «más grande que la cama»)', () => {
+    const objects = [box('a', [230, 20, 110]), box('b', [230, 20, 110])];
+    const plan = arrangeOnPlates(input(objects, PLATES, { spacingMm: 4, marginMm: 5 }));
+    expect(plan.report.unplaced).toEqual([]);
+    expect(plan.placements.map((p) => p.plate)).toEqual(['p1', 'p1']);
+    for (const f of finalBounds(objects, plan)) {
+      expect(f.b.minX).toBeGreaterThanOrEqual(-128 + 5 - 1e-6);
+      expect(f.b.maxX).toBeLessThanOrEqual(128 - 5 + 1e-6);
+    }
+  });
+
+  it('una pieza que no cabe en la chica sí cabe en la grande; la que no cabe en ninguna sale como tooLarge', () => {
+    const objects = [box('big', [240, 10, 240]), box('small', [50, 10, 50]), box('huge', [300, 10, 300])];
+    const plan = arrangeOnPlates(input(objects, PLATES, { spacingMm: 2, marginMm: 2 }));
+    expect(plan.placements.find((p) => p.id === 'big')!.plate).toBe('p1');
+    expect(plan.report.unplaced).toEqual([{ id: 'huge', reason: 'tooLarge' }]);
+    // La pequeña va a la chica: la grande quedó llena.
+    expect(plan.placements.find((p) => p.id === 'small')!.plate).toBe('p2');
+    const small = finalBounds(objects, plan).find((f) => f.id === 'small')!.b;
+    expect(small.minX).toBeGreaterThanOrEqual(400 - 60 + 2 - 1e-6);
+    expect(small.maxX).toBeLessThanOrEqual(400 + 60 - 2 + 1e-6);
+  });
+
+  it('la altura se mide contra la cama de cada placa', () => {
+    const objects = [box('tall', [50, 200, 50])];
+    const plan = arrangeOnPlates(input(objects, [PLATES[1], { ...PLATES[0], origin: [0, -400] }]));
+    expect(plan.placements[0].plate).toBe('p1');
+  });
+});

@@ -16,6 +16,7 @@ import { GROUPS_HI } from './groups';
 import { PLATES_VIEW_HI } from './placasVista';
 import { VIEW_MODE_HI } from './vistaModos';
 import { PLATES_EXPORT_HI } from './placasExportar';
+import { PLATES_BED_HI } from './placasCama';
 import { PLATES_ARRANGE_HI } from './placasRepartir';
 import { PLATES_ARRANGE_UI_HI } from './placasRepartirUi';
 import { MEASURE_HI } from './measure';
@@ -86,6 +87,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...PLATES_VIEW_HI,
   ...VIEW_MODE_HI,
   ...PLATES_EXPORT_HI,
+  ...PLATES_BED_HI,
   ...PLATES_ARRANGE_HI,
   ...PLATES_ARRANGE_UI_HI,
   ...MEASURE_HI,

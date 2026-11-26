@@ -9,6 +9,7 @@
  */
 
 import { plateFrameFor, shiftChangeXZ } from '../../core/scene/plateFrame';
+import type { PlateBedSource } from '../../core/scene/activePlateBed';
 import type { FitAlternative, FitAlternativeKind, FitBed, FitTransform } from '../../engine/fitToBed';
 import { fitBedOf, type FitAnalysisResult } from '../../core/operations/fitOperations';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
@@ -32,13 +33,14 @@ export interface FitToBedSliceState {
 
 /** Cama activa (perfil o medidas propias) con su margen. */
 export function activeFitBed(
-  s: Pick<KuraStoreState, 'printerProfile' | 'customBedDimensions'> & Partial<Pick<KuraStoreState, 'plates' | 'activePlateId'>>,
+  s: PlateBedSource,
   targets?: ReadonlyArray<Pick<SceneObject, 'plateRef'>>,
 ): FitBed {
   if (!s.plates?.length) return fitBedOf(s.printerProfile, s.customBedDimensions);
   // Con placas, la cama es la de la placa de las piezas (o la activa).
   const { bed } = plateFrameFor(s, targets);
-  return fitBedOf(s.printerProfile, { width: bed.widthMm, depth: bed.depthMm, height: bed.heightMm });
+  // El margen de una cama propia (otra impresora) manda sobre el del perfil del proyecto.
+  return fitBedOf(s.printerProfile, { width: bed.widthMm, depth: bed.depthMm, height: bed.heightMm }, bed.marginMm);
 }
 
 /** Objetos ajustables: existentes, desbloqueados y con malla (los negativos viajan con el bloque). */

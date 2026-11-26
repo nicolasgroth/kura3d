@@ -68,9 +68,12 @@ export const CameraController: React.FC<{
 
   /** Radio de la escena visible (con la cama) para ajustar los planos de recorte. */
   const sceneRadius = (): number => {
-    const { objects: cur, printerProfile } = useKuraStore.getState();
-    const box = boxForObjects(cur);
-    const bed = Math.hypot(printerProfile.bedWidthMm, printerProfile.bedDepthMm) / 2;
+    const state = useKuraStore.getState();
+    const { objects: cur, printerProfile } = state;
+    // Con placas, todas las camas (cada una con su tamaño, P7); sin placas, la del perfil como siempre.
+    const beds = plateBedsBox(state, 'visible');
+    const box = unionBox(boxForObjects(cur), beds);
+    const bed = beds ? 0 : Math.hypot(printerProfile.bedWidthMm, printerProfile.bedDepthMm) / 2;
     if (!box) return bed;
     return Math.max(bed, ...box.min.map(Math.abs), ...box.max.map(Math.abs));
   };
@@ -228,8 +231,8 @@ export const CameraController: React.FC<{
     const content = boxForObjects(selected.length > 0 ? selected : cur.filter((o) => o.visible !== false));
     const halfW = printerProfile.bedWidthMm / 2;
     const halfD = printerProfile.bedDepthMm / 2;
-    // Sin objetos: la cama entera.
-    const box: FrameBox = content ?? { min: [-halfW, 0, -halfD], max: [halfW, 30, halfD] };
+    // Sin objetos: la cama entera (con placas, la de la placa activa con su tamaño y su lugar).
+    const box: FrameBox = content ?? plateBedsBox(useKuraStore.getState(), 'active') ?? { min: [-halfW, 0, -halfD], max: [halfW, 30, halfD] };
     const persp = camera as THREE.PerspectiveCamera;
     const aspect = sizeRef.current.height > 0 ? sizeRef.current.width / sizeRef.current.height : persp.aspect;
     const pose = framePose({

@@ -95,6 +95,7 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   set_active_plate: 'write',
   move_to_plate: 'write',
   spread_one_plate_per_object: 'write',
+  set_plate_bed: 'write',
   set_layout: 'write',
 });
 
@@ -182,6 +183,7 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_move_to_plate: 'move_to_plate',
   kura_spread_one_plate_per_object: 'spread_one_plate_per_object',
   kura_arrange_on_plates: 'arrange_on_plates',
+  kura_set_plate_bed: 'set_plate_bed',
   kura_set_layout: 'set_layout',
 });
 

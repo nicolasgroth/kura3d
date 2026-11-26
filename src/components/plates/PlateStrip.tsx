@@ -11,13 +11,15 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, CheckCircle2, CircleDashed, Eye, LayoutGrid, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, CircleDashed, Eye, LayoutGrid, Plus, Printer, Trash2 } from 'lucide-react';
+import { PlateBedPicker } from './PlateBedPicker';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { openPlateArrangePanel } from '../../store/plateArrangePanel';
 import { askDecision } from '../../utils/confirmDialog';
 import '../../styles/plateStrip.css';
 import '../../styles/viewMode.css';
+import '../../styles/plateBed.css';
 import { printPosedObjects } from '../../store/sceneLayout';
 import { MIN_PLATES_FOR_STRIP, plateChips, type ChipStatus, type PlateChip } from './plateStripModel';
 
@@ -71,6 +73,7 @@ export const PlateStrip: React.FC = () => {
   const layout = useKuraStore((s) => s.layout);
   const armed = layout === 'assembly';
   const [renaming, setRenaming] = useState<string | null>(null);
+  const [bedFor, setBedFor] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   const chips = useMemo(
@@ -145,7 +148,9 @@ export const PlateStrip: React.FC = () => {
                   type="button"
                   className="kura-plate-chip-main"
                   aria-pressed={chip.active}
-                  aria-label={t(language, 'plates.chip.label', { name: chip.name, pieces, status })}
+                  aria-label={chip.bedName
+                    ? t(language, 'plates.bed.chipLabel', { name: chip.name, pieces, status, bed: chip.bedName })
+                    : t(language, 'plates.chip.label', { name: chip.name, pieces, status })}
                   aria-keyshortcuts="F2"
                   title={t(language, 'plates.chip.tip', { name: chip.name })}
                   onClick={() => store().setActivePlate(chip.id)}
@@ -165,8 +170,21 @@ export const PlateStrip: React.FC = () => {
                     {STATUS_ICON[chip.status]}
                     <span>{status}</span>
                   </span>
+                  {chip.bedName && <span className="kura-plate-chip-bed" data-testid="plate-chip-bed">{t(language, 'plates.bed.chip', { bed: chip.bedName })}</span>}
                 </button>
               )}
+              <button
+                type="button"
+                className="kura-plate-chip-bed-btn"
+                onClick={() => setBedFor(chip.id)}
+                disabled={busy}
+                aria-label={t(language, 'plates.bed.action', { name: chip.name })}
+                title={t(language, 'plates.bed.actionTip')}
+                aria-haspopup="dialog"
+                data-testid="plate-bed-open"
+              >
+                <Printer size={12} aria-hidden="true" />
+              </button>
             </div>
           );
         })}
@@ -220,6 +238,17 @@ export const PlateStrip: React.FC = () => {
           <Trash2 size={13} aria-hidden="true" />
         </button>
       </div>
+      {bedFor && (
+        <PlateBedPicker
+          plateId={bedFor}
+          onClose={() => {
+            const id = bedFor;
+            setBedFor(null);
+            // El foco vuelve al botón que abrió el selector.
+            requestAnimationFrame(() => listRef.current?.querySelector<HTMLButtonElement>(`[data-plate-id="${CSS.escape(id)}"] .kura-plate-chip-bed-btn`)?.focus());
+          }}
+        />
+      )}
     </section>
   );
 };

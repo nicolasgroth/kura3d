@@ -16,6 +16,7 @@ import { GROUPS_DE } from './groups';
 import { PLATES_VIEW_DE } from './placasVista';
 import { VIEW_MODE_DE } from './vistaModos';
 import { PLATES_EXPORT_DE } from './placasExportar';
+import { PLATES_BED_DE } from './placasCama';
 import { PLATES_ARRANGE_DE } from './placasRepartir';
 import { PLATES_ARRANGE_UI_DE } from './placasRepartirUi';
 import { MEASURE_DE } from './measure';
@@ -86,6 +87,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...PLATES_VIEW_DE,
   ...VIEW_MODE_DE,
   ...PLATES_EXPORT_DE,
+  ...PLATES_BED_DE,
   ...PLATES_ARRANGE_DE,
   ...PLATES_ARRANGE_UI_DE,
   ...MEASURE_DE,

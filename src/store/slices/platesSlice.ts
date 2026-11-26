@@ -10,6 +10,7 @@
 
 import { projectBed } from '../../core/scene/activePlateBed';
 import { moveToPlateOrNew, removePlateMoving } from '../../core/scene/plateActions';
+import { setPlateBed } from '../../core/scene/plateBedChange';
 import { reassignByPosition } from '../../core/scene/plateMove';
 import { spreadOnePlatePerObject } from '../../core/scene/plateSpread';
 import {
@@ -90,6 +91,21 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     renamePlate: (plateId, name) => !rejectWhileLocked() && commit(renamePlate(scene(), plateId, name)),
+
+    setPlateBed: (plateId, bed) => {
+      if (rejectWhileLocked()) return null;
+      const state = get();
+      const result = setPlateBed(scene(), plateId, bed, { projectBed: projectBed(state), layout: state.layout, ctx: layoutContextOf(state) });
+      if (!result) return null;
+      commit(result.scene);
+      const names = (ids: readonly string[], list: ReadonlyArray<{ id: string; name: string }>) => ids.map((id) => list.find((x) => x.id === id)?.name ?? id).join(', ');
+      if (result.relocated.length) {
+        get().addToast(tr('plates.bed.toast.relocated', { names: names(result.relocated, result.scene.plates) }), 'info');
+        get().requestCameraPreset('plates');
+      }
+      if (result.keptLocked.length) get().addToast(tr('plates.bed.toast.keptLocked', { names: names(result.keptLocked, result.scene.objects) }), 'info');
+      return { relocated: result.relocated, keptLocked: result.keptLocked };
+    },
 
     assignToPlate: (plateId, ids) => {
       if (rejectWhileLocked()) return 0;
