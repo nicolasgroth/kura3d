@@ -91,3 +91,27 @@ describe('screenExtent / extentIntersectsViewport', () => {
     expect(extentIntersectsViewport({ left: 900, right: 1300, top: 10, bottom: 50 }, viewport)).toBe(true);
   });
 });
+
+describe('placeFloatingBar con zonas fijas (rótulo de la vista)', () => {
+  const rotulo = { left: 8, right: 520, top: 50, bottom: 130 };
+  const overlaps = (p: { x: number; y: number }, o = rotulo) => p.x < o.right && p.x + bar.width > o.left && p.y < o.bottom && p.y + bar.height > o.top;
+
+  it('no tapa el rótulo: si arriba lo cubre, prueba debajo del objeto', () => {
+    const extent = { left: 300, right: 500, top: 160, bottom: 400 };
+    expect(overlaps(placeFloatingBar({ extent, bar, viewport }))).toBe(true);
+    const p = placeFloatingBar({ extent, bar, viewport, obstacles: [rotulo] });
+    expect(p.side).toBe('below');
+    expect(overlaps(p)).toBe(false);
+  });
+
+  it('sin tapar nada conserva la colocación de siempre', () => {
+    const extent = { left: 400, right: 600, top: 300, bottom: 450 };
+    expect(placeFloatingBar({ extent, bar, viewport, obstacles: [rotulo] })).toEqual(placeFloatingBar({ extent, bar, viewport }));
+  });
+
+  it('si ningún lado queda libre, no se queda sin barra (conserva la preferencia)', () => {
+    const todo = { left: 0, right: 1000, top: 0, bottom: 600 };
+    const p = placeFloatingBar({ extent: { left: 400, right: 600, top: 300, bottom: 450 }, bar, viewport, obstacles: [todo] });
+    expect(p.side).toBe('above');
+  });
+});

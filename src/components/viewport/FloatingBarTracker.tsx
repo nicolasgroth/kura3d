@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { extentIntersectsViewport, placeFloatingBar, screenExtent, type ScreenPoint } from '../../core/scene/floatingBarPlacement';
+import { extentIntersectsViewport, placeFloatingBar, screenExtent, type Obstacle, type ScreenPoint } from '../../core/scene/floatingBarPlacement';
 import { FLOATING_BAR_REVEAL_DELAY_MS } from '../../store/floatingBarState';
 import { useGizmoDragStore } from '../../store/gizmoDragStore';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -56,13 +56,31 @@ export function selectionWorldBox(objects: readonly SceneObject[], selectedIds: 
   return out.isEmpty() ? null : out;
 }
 
+/** Selectores de la interfaz fija sobre el visor que la barra flotante no debe tapar. */
+const OBSTACLE_SELECTORS = ['.kura-viewmode-hud'];
+
+/** Rectángulos (relativos al visor) de las zonas fijas visibles. */
+function fixedObstacles(wrap: HTMLElement | null): Obstacle[] {
+  if (!wrap) return [];
+  const origin = wrap.getBoundingClientRect();
+  const out: Obstacle[] = [];
+  for (const sel of OBSTACLE_SELECTORS) {
+    const node = document.querySelector(sel);
+    if (!node) continue;
+    const r = node.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) continue;
+    out.push({ left: r.left - origin.left, right: r.right - origin.left, top: r.top - origin.top, bottom: r.bottom - origin.top });
+  }
+  return out;
+}
+
 export const FloatingBarTracker = () => {
   const gl = useThree((s) => s.gl);
   const scratch = useMemo(
     () => ({ box: new THREE.Box3(), v: new THREE.Vector3(), view: new THREE.Vector3(), points: Array.from({ length: 8 }, (): ScreenPoint => ({ x: 0, y: 0, inFront: true })) }),
     [],
   );
-  const last = useRef({ objects: null as unknown, selected: null as unknown, w: 0, h: 0, version: -1, matrix: new Float32Array(16), proj: new Float32Array(16), busy: null as boolean | null, el: null as HTMLElement | null });
+  const last = useRef({ objects: null as unknown, selected: null as unknown, w: 0, h: 0, version: -1, matrix: new Float32Array(16), proj: new Float32Array(16), obstacle: '', busy: null as boolean | null, el: null as HTMLElement | null });
   const busy = useRef({ pointer: false, drag: false, hidden: false, timer: 0 as unknown as ReturnType<typeof setTimeout> });
 
   // Ocultar mientras se arrastra (puntero sobre el lienzo o arrastre del manipulador / del objeto); reaparece con retardo.
@@ -135,9 +153,13 @@ export const FloatingBarTracker = () => {
     camera.updateMatrixWorld();
     const mw = camera.matrixWorld.elements;
     const pm = camera.projectionMatrix.elements;
-    let same = l.objects === objects && l.selected === selectedIds && l.w === size.width && l.h === size.height && l.version === floatingBarBridge.version;
+    // Zonas fijas que la barra evita: el rótulo de la vista (Armado / Libre) con su deslizador «Separación».
+    const obstacles = fixedObstacles(el.parentElement);
+    const obstacleKey = obstacles.map((o) => `${Math.round(o.left)},${Math.round(o.top)},${Math.round(o.right)},${Math.round(o.bottom)}`).join('|');
+    let same = l.obstacle === obstacleKey && l.objects === objects && l.selected === selectedIds && l.w === size.width && l.h === size.height && l.version === floatingBarBridge.version;
     for (let i = 0; same && i < 16; i += 1) if (l.matrix[i] !== mw[i] || l.proj[i] !== pm[i]) same = false;
     if (same && el.dataset.placed === 'true') return;
+    l.obstacle = obstacleKey;
     l.objects = objects;
     l.selected = selectedIds;
     l.w = size.width;
@@ -170,7 +192,7 @@ export const FloatingBarTracker = () => {
     }
     // Franja fija de la interfaz en el borde superior del visor (barra de vista): la barra no se coloca debajo de ella.
     const topInset = insetCache.current?.get(el.parentElement) ?? 0;
-    const placed = placeFloatingBar({ extent, bar: { width: floatingBarBridge.width, height: floatingBarBridge.height }, viewport, topInset });
+    const placed = placeFloatingBar({ extent, bar: { width: floatingBarBridge.width, height: floatingBarBridge.height }, viewport, topInset, obstacles });
     el.style.transform = `translate3d(${Math.round(placed.x)}px, ${Math.round(placed.y)}px, 0)`;
     el.dataset.side = placed.side;
     el.dataset.offscreen = 'false';
