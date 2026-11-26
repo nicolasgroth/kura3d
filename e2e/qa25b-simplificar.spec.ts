@@ -40,7 +40,7 @@ test('sin pérdida en un cubo: no cambia nada, no hay paso de historial, avisa',
   expect(errs, errs.join('\n')).toEqual([]);
 });
 
-test('por cantidad 50 % en esfera: informe, un paso, deshacer; valores inválidos', async ({ page }) => {
+test('por cantidad 50 % en esfera: versión segura en un paso con aviso, deshacer; valores inválidos', async ({ page }) => {
   const errs = await abrir(page);
   const s = await cmd(page, 'create_primitive', { type: 'sphere', radius: 25, name: 'Esfera' });
   await seleccionar(page, [s.id]);
@@ -66,7 +66,17 @@ test('por cantidad 50 % en esfera: informe, un paso, deshacer; valores inválido
   const t1 = await tris(page, s.id);
   console.log('QA25B tris', `${t0} -> ${t1}`);
   expect(t1).toBeLessThan(t0);
-  expect(Math.abs(t1 / t0 - 0.5)).toBeLessThan(0.15);
+  // Malla gruesa: el 50 % pedido es destructivo (volumen > 5 %) y se aplica la versión segura en su lugar (regla del
+  // 25-nov: onDestructive «safe»), con el aviso y «Aplicar de todos modos» a la vista. Si no, queda cerca del 50 %.
+  const segura = (await page.getByTestId('simplify-safe-applied').count()) > 0;
+  console.log('QA25B segura aplicada', segura);
+  if (segura) {
+    expect(t1).toBeLessThanOrEqual(Math.floor(t0 * 0.9));
+    await expect(page.getByTestId('simplify-safe-applied-text')).toContainText('Se aplicó la versión segura');
+    await expect(page.getByTestId('simplify-apply-anyway')).toBeInViewport();
+  } else {
+    expect(Math.abs(t1 / t0 - 0.5)).toBeLessThan(0.15);
+  }
   expect(await pasos(page)).toBe(p0 + 1);
   const v1 = await volumen(page, s.id);
   expect(Math.abs(v1 - v0) / v0).toBeLessThan(0.1);
