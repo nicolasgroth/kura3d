@@ -33,7 +33,7 @@ const Harness: React.FC<{ id: string }> = ({ id }) => {
 };
 
 const REPORT: SimplifyReport = {
-  mode: 'target', applied: true, toleranceMm: 0.25, trianglesBefore: 1000, trianglesAfter: 495, volumeBeforeMm3: 4000,
+  mode: 'target', applied: true, appliedVariant: 'requested', toleranceMm: 0.25, trianglesBefore: 1000, trianglesAfter: 495, volumeBeforeMm3: 4000,
   volumeAfterMm3: 3960, volumeChangePct: -1, genusBefore: 1, genusAfter: 0, maxDeviationMm: 0.3, deviationSamples: 2000,
   warnings: ['genus_changed', 'volume_changed', 'deviation_high'], rejectedBy: [],
   target: { triangles: 500, reached: true, iterations: 6, stoppedBy: 'reached' }, ms: 10,

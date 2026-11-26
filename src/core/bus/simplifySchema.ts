@@ -9,7 +9,14 @@
  */
 
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../../engine/operationLimits';
-import { SIMPLIFY_MODES, type SimplifyReport, type SimplifyRequest, type SimplifySafeAlternative } from '../../engine/simplify';
+import {
+  SIMPLIFY_MODES,
+  SIMPLIFY_ON_DESTRUCTIVE,
+  type SimplifyReport,
+  type SimplifyRequest,
+  type SimplifyRequestedResult,
+  type SimplifySafeAlternative,
+} from '../../engine/simplify';
 import { CommandError } from './commandErrors';
 import { resolveTarget, type SceneView } from './commandTargets';
 import { readBoolean, readEnum, readRange, type RawParams } from './commandValidation';
@@ -33,9 +40,15 @@ export function parseSimplifyRequest(p: RawParams): SimplifyRequest {
   if (mode !== 'target' && targetPercent !== undefined) throw notFor('targetPercent');
   if (mode !== 'tolerance' && toleranceMm !== undefined) throw notFor('toleranceMm');
   const allowDestructive = readBoolean(p, 'allowDestructive');
+  const onDestructive = readEnum(p, SIMPLIFY_ON_DESTRUCTIVE, 'onDestructive');
   // «Sin pérdida» nunca entrega un resultado destructivo (sus límites son más estrictos): forzarlo no tiene sentido.
   if (mode === 'lossless' && allowDestructive) throw notFor('allowDestructive');
-  const force = allowDestructive ? { allowDestructive: true } : {};
+  if (mode === 'lossless' && onDestructive !== undefined) throw notFor('onDestructive');
+  // `allowDestructive: true` es el alias de `onDestructive: "force"`: contradecirlo no se resuelve en silencio.
+  if (allowDestructive && onDestructive !== undefined && onDestructive !== 'force') {
+    throw invalid('onDestructive', '"force" (or omit it) when allowDestructive is true');
+  }
+  const force = allowDestructive ? { allowDestructive: true } : onDestructive !== undefined ? { onDestructive } : {};
   if (mode === 'lossless') return { mode };
   if (mode === 'tolerance') return { mode, toleranceMm: toleranceMm ?? OPERATION_DEFAULTS.simplify.toleranceMm, ...force };
   if (targetTriangles !== undefined && targetPercent !== undefined) {
@@ -45,8 +58,13 @@ export function parseSimplifyRequest(p: RawParams): SimplifyRequest {
   return targetTriangles !== undefined ? { mode, targetTriangles, ...force } : { mode, targetPercent, ...force };
 }
 
+/** `dryRun: true` calcula el mismo informe sin tocar la escena ni el historial (vista previa). */
 export function parseSimplify(scene: SceneView, p: RawParams) {
-  return { target: resolveTarget(scene, p, { unlocked: true }), request: parseSimplifyRequest(p) };
+  return {
+    target: resolveTarget(scene, p, { unlocked: true }),
+    request: parseSimplifyRequest(p),
+    dryRun: readBoolean(p, 'dryRun') === true,
+  };
 }
 
 const r = (v: number, digits = 4) => Math.round(v * 10 ** digits) / 10 ** digits + 0;
@@ -56,6 +74,8 @@ export function simplifyReportToUser(report: SimplifyReport) {
   return {
     mode: report.mode,
     applied: report.applied,
+    /** `requested` (lo pedido), `safe` (la versión segura en su lugar: ver `requested`) o `none`. */
+    appliedVariant: report.appliedVariant,
     toleranceMm: r(report.toleranceMm, 6),
     trianglesBefore: report.trianglesBefore,
     trianglesAfter: report.trianglesAfter,
@@ -72,9 +92,22 @@ export function simplifyReportToUser(report: SimplifyReport) {
     ...(report.target ? { target: { ...report.target } } : {}),
     /** Motivos de resultado destructivo (`holes_lost`, `volume_changed`, `deviation_high`); vacío si no lo es. */
     destructive: [...(report.destructive ?? [])],
-    /** Solo si fue destructivo y no se aplicó: la alternativa segura (aplicable con mode "tolerance"), o null. */
+    /** Solo si fue destructivo: la alternativa segura (aplicable con mode "tolerance"), o null. */
     ...(report.safe !== undefined ? { safe: report.safe && safeToUser(report.safe) } : {}),
+    /** Solo si se aplicó la segura en lugar de lo pedido: las medidas de lo pedido. */
+    ...(report.requested ? { requested: requestedToUser(report.requested) } : {}),
     ...(report.forced ? { forced: true } : {}),
+  };
+}
+
+function requestedToUser(q: SimplifyRequestedResult) {
+  return {
+    toleranceMm: r(q.toleranceMm, 6),
+    triangles: q.triangles,
+    volumeAfterMm3: r(q.volumeAfterMm3, 3),
+    volumeChangePct: r(q.volumeChangePct),
+    genusAfter: q.genusAfter,
+    maxDeviationMm: r(q.maxDeviationMm),
   };
 }
 

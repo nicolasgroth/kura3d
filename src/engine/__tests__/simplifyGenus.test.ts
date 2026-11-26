@@ -106,7 +106,7 @@ describe('Simplificar: género por cuerpo', () => {
 
   it('por cantidad sin candidato que conserve los agujeros en la holgura: aplica con el aviso explícito', async () => {
     const mesh = await tori(3, 32);
-    const r = (await simplifyMeshDetailed(makeObject('t', mesh), { mode: 'target', targetTriangles: 40 })).report;
+    const r = (await simplifyMeshDetailed(makeObject('t', mesh), { mode: 'target', targetTriangles: 40, onDestructive: 'block' })).report;
     expect(r.genusAfter).not.toBe(3);
     expect(r.target?.genusPreserved).toBeUndefined();
     expect(r.warnings).toContain('genus_changed');

@@ -69,7 +69,7 @@ describe('Simplificar: túneles finos', () => {
 
   it('un agujero de 1 mm en una lámina de 2 mm que se cierra (desviación ~0,7 mm) sigue bloqueado', async () => {
     const mesh = await sheetWithHole(2, 0.5, 8);
-    const res = await simplifyMeshDetailed(makeObject('c', mesh), { mode: 'tolerance', toleranceMm: 1 });
+    const res = await simplifyMeshDetailed(makeObject('c', mesh), { mode: 'tolerance', toleranceMm: 1, onDestructive: 'block' });
     const r = res.report;
     expect(r.genusAfter).toBe(0);
     expect(r.maxDeviationMm).toBeGreaterThan(SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM);

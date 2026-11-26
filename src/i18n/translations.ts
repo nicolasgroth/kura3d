@@ -30,6 +30,7 @@ import { AJUSTAR_EN, AJUSTAR_ES } from './locales/ajustarImpresora';
 import { SUAVIZAR_EN, SUAVIZAR_ES } from './locales/suavizarMotor';
 import { SIMPLIFICAR_ES, SIMPLIFICAR_EN } from './locales/simplificar';
 import { FUNCIONAL_R2_ES, FUNCIONAL_R2_EN } from './locales/funcionalR2';
+import { SIMPLIFICAR_VP_ES, SIMPLIFICAR_VP_EN } from './locales/simplificarVistaPrevia';
 import { SUAVIZAR_UI_EN, SUAVIZAR_UI_ES } from './locales/suavizarUi';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
 import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
@@ -98,6 +99,7 @@ export const TRANSLATIONS_ES = {
   ...SUAVIZAR_UI_ES,
   ...SIMPLIFICAR_ES,
   ...FUNCIONAL_R2_ES,
+  ...SIMPLIFICAR_VP_ES,
   ...SPLITCOUPLING_ES,
   ...A11YUX_ES,
   ...UXMOVIL_ES,
@@ -1445,6 +1447,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...SUAVIZAR_UI_EN,
   ...SIMPLIFICAR_EN,
   ...FUNCIONAL_R2_EN,
+  ...SIMPLIFICAR_VP_EN,
   ...SPLITCOUPLING_EN,
   ...A11YUX_EN,
   ...UXMOVIL_EN,

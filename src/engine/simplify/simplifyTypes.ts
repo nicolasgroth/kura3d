@@ -13,11 +13,51 @@ export type SimplifyMode = 'lossless' | 'tolerance' | 'target';
 
 export const SIMPLIFY_MODES: readonly SimplifyMode[] = ['lossless', 'tolerance', 'target'];
 
+/**
+ * Qué hacer si lo pedido es destructivo (no aplica a «Sin pérdida»):
+ * - `safe` (por defecto, `SIMPLIFY_DEFAULT_ON_DESTRUCTIVE`): aplicar la versión segura útil si existe; si no, no aplicar;
+ * - `block`: no aplicar nada (solo el informe con la segura y lo pedido);
+ * - `force`: aplicar lo pedido igual (`allowDestructive: true` es su alias).
+ */
+export type SimplifyOnDestructive = 'safe' | 'block' | 'force';
+
+export const SIMPLIFY_ON_DESTRUCTIVE: readonly SimplifyOnDestructive[] = ['safe', 'block', 'force'];
+
+/** Decisión del orquestador (25-nov-2026): pedir «50 %» a una primitiva gruesa aplica la versión segura, sin bloqueo. */
+export const SIMPLIFY_DEFAULT_ON_DESTRUCTIVE: SimplifyOnDestructive = 'safe';
+
+interface DestructiveChoice {
+  onDestructive?: SimplifyOnDestructive;
+  /** Alias de `onDestructive: 'force'` (compatibilidad). */
+  allowDestructive?: boolean;
+}
+
 /** Petición serializable (cruza al Worker). En «Por cantidad» va `targetTriangles` o `targetPercent`. */
 export type SimplifyRequest =
   | { mode: 'lossless' }
-  | { mode: 'tolerance'; toleranceMm: number; allowDestructive?: boolean }
-  | { mode: 'target'; targetTriangles?: number; targetPercent?: number; allowDestructive?: boolean };
+  | ({ mode: 'tolerance'; toleranceMm: number } & DestructiveChoice)
+  | ({ mode: 'target'; targetTriangles?: number; targetPercent?: number } & DestructiveChoice);
+
+/** Qué se aplicó: lo pedido, la versión segura en su lugar, o nada. */
+export type SimplifyAppliedVariant = 'requested' | 'safe' | 'none';
+
+/** Política efectiva de una petición (`allowDestructive` manda como `force`). */
+export function onDestructiveOf(request: SimplifyRequest): SimplifyOnDestructive {
+  if (request.mode === 'lossless') return 'block';
+  if (request.allowDestructive === true) return 'force';
+  return request.onDestructive ?? SIMPLIFY_DEFAULT_ON_DESTRUCTIVE;
+}
+
+/** Medidas del resultado pedido cuando era destructivo y se aplicó la segura (o nada) en su lugar. */
+export interface SimplifyRequestedResult {
+  /** Tolerancia en mm de mundo que lo reproduce. */
+  toleranceMm: number;
+  triangles: number;
+  volumeAfterMm3: number;
+  volumeChangePct: number;
+  genusAfter: number;
+  maxDeviationMm: number;
+}
 
 /**
  * Por qué un resultado es destructivo (no se aplica sin `allowDestructive`):
@@ -116,6 +156,13 @@ export interface SimplifyReport {
   objectId?: string;
   /** false si no se aplicó (sin reducción, «Sin pérdida» rechazado o resultado destructivo): el objeto queda intacto. */
   applied: boolean;
+  /**
+   * Qué se aplicó. Con `safe`, las medidas de arriba (tolerancia, triángulos, volumen, género, desviación) son las de
+   * la versión segura aplicada y `requested` trae las de lo pedido.
+   */
+  appliedVariant: SimplifyAppliedVariant;
+  /** Solo si lo pedido era destructivo y se aplicó la segura: las medidas de lo pedido. */
+  requested?: SimplifyRequestedResult;
   /** Tolerancia usada en mm de mundo (en «Por cantidad», la hallada por la búsqueda). */
   toleranceMm: number;
   trianglesBefore: number;

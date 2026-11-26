@@ -25,6 +25,7 @@ import { AJUSTAR_ZH } from './ajustarImpresora';
 import { SUAVIZAR_ZH } from './suavizarMotor';
 import { SIMPLIFICAR_ZH } from './simplificar';
 import { FUNCIONAL_R2_ZH } from './funcionalR2';
+import { SIMPLIFICAR_VP_ZH } from './simplificarVistaPrevia';
 import { SUAVIZAR_UI_ZH } from './suavizarUi';
 import { SPLITCOUPLING_ZH } from './splitCoupling';
 import { A11YUX_ZH } from './a11yUx';
@@ -91,6 +92,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...SUAVIZAR_UI_ZH,
   ...SIMPLIFICAR_ZH,
   ...FUNCIONAL_R2_ZH,
+  ...SIMPLIFICAR_VP_ZH,
   ...SPLITCOUPLING_ZH,
   ...A11YUX_ZH,
   ...UXMOVIL_ZH,

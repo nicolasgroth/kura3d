@@ -46,7 +46,7 @@ describe('Simplificar: regla de resultado destructivo', () => {
   it('placa de 3 agujeros por cantidad muy agresiva: no aplica y ofrece la alternativa segura', async () => {
     const plate = await plateThreeHoles();
     const obj = makeObject('p', plate);
-    const res = await simplifyMeshDetailed(obj, { mode: 'target', targetTriangles: 20 });
+    const res = await simplifyMeshDetailed(obj, { mode: 'target', targetTriangles: 20, onDestructive: 'block' });
     const r = res.report;
     expect(r.applied).toBe(false);
     expect(res.mesh).toBeNull();
@@ -80,7 +80,7 @@ describe('Simplificar: regla de resultado destructivo', () => {
 
   it('toro al 2 %: el resultado colapsa el tubo, no se aplica y ofrece uno que conserva el agujero', async () => {
     const torus = await createPrimitiveMesh('torus', { outerRadius: 14, tubeRadius: 4, segments: 48 });
-    const res = await simplifyMeshDetailed(makeObject('t', torus), { mode: 'target', targetPercent: 2 });
+    const res = await simplifyMeshDetailed(makeObject('t', torus), { mode: 'target', targetPercent: 2, onDestructive: 'block' });
     const r = res.report;
     expect(r.applied).toBe(false);
     expect(r.destructive?.length).toBeGreaterThan(0);
@@ -99,11 +99,48 @@ describe('Simplificar: regla de resultado destructivo', () => {
     const o = p.subtract(h);
     const mesh = manifoldToMeshData(o);
     for (const m of [p, h, o]) m.delete();
-    const res = await simplifyMeshDetailed(makeObject('p', mesh), { mode: 'tolerance', toleranceMm: 1 });
+    const res = await simplifyMeshDetailed(makeObject('p', mesh), { mode: 'tolerance', toleranceMm: 1, onDestructive: 'block' });
     expect(res.report.applied).toBe(false);
     expect(res.report.destructive).toContain('holes_lost');
     const forced = await simplifyMeshDetailed(makeObject('p', mesh), { mode: 'tolerance', toleranceMm: 1, allowDestructive: true });
     expect(forced.report.applied).toBe(true);
+  });
+
+  it('por defecto (onDestructive safe) aplica la versión segura en lugar de lo pedido y guarda lo pedido', async () => {
+    const plate = await plateThreeHoles();
+    const obj = makeObject('p', plate);
+    const res = await simplifyMeshDetailed(obj, { mode: 'target', targetTriangles: 20 });
+    const r = res.report;
+    expect(r.applied).toBe(true);
+    expect(r.appliedVariant).toBe('safe');
+    expect(r.destructive?.length).toBeGreaterThan(0);
+    expect(r.safe).toBeTruthy();
+    expect(r.trianglesAfter).toBe(r.safe!.triangles);
+    expect(r.toleranceMm).toBe(r.safe!.toleranceMm);
+    expect(r.genusAfter).toBe(3);
+    expect(r.requested!.triangles).toBeLessThan(r.trianglesAfter);
+    expect(r.warnings).not.toContain('target_not_reached');
+    const m = res.mesh!;
+    expect(m.indices.length / 3).toBe(r.safe!.triangles);
+    expect(isMeshClosed(m.positions, m.indices)).toBe(true);
+    const dims = computeMeshStats(m).dimensionsMm;
+    expect(dims[0]).toBeCloseTo(60, 0);
+    expect(Math.min(...dims)).toBeGreaterThan(2.9);
+    expect(Math.abs(r.volumeChangePct)).toBeLessThanOrEqual(SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct);
+    // `force` es lo mismo que allowDestructive: aplica lo pedido.
+    const forced = await simplifyMeshDetailed(obj, { mode: 'target', targetTriangles: 20, onDestructive: 'force' });
+    expect(forced.report.appliedVariant).toBe('requested');
+    expect(forced.report.trianglesAfter).toBe(r.requested!.triangles);
+  });
+
+  it('sin versión segura útil, el valor por defecto no aplica nada', async () => {
+    const sphere = await createPrimitiveMesh('sphere', { radius: 10, segments: 8 });
+    const res = await simplifyMeshDetailed(makeObject('s', sphere), { mode: 'target', targetPercent: 30 });
+    expect(res.report.destructive?.length).toBeGreaterThan(0);
+    expect(res.report.safe).toBeNull();
+    expect(res.report.applied).toBe(false);
+    expect(res.report.appliedVariant).toBe('none');
+    expect(res.mesh).toBeNull();
   });
 
   it('un resultado no destructivo se aplica como antes (sin safe ni forced)', async () => {

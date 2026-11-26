@@ -25,6 +25,7 @@ import { AJUSTAR_FR } from './ajustarImpresora';
 import { SUAVIZAR_FR } from './suavizarMotor';
 import { SIMPLIFICAR_FR } from './simplificar';
 import { FUNCIONAL_R2_FR } from './funcionalR2';
+import { SIMPLIFICAR_VP_FR } from './simplificarVistaPrevia';
 import { SUAVIZAR_UI_FR } from './suavizarUi';
 import { SPLITCOUPLING_FR } from './splitCoupling';
 import { A11YUX_FR } from './a11yUx';
@@ -91,6 +92,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...SUAVIZAR_UI_FR,
   ...SIMPLIFICAR_FR,
   ...FUNCIONAL_R2_FR,
+  ...SIMPLIFICAR_VP_FR,
   ...SPLITCOUPLING_FR,
   ...A11YUX_FR,
   ...UXMOVIL_FR,

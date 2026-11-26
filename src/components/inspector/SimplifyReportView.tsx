@@ -3,7 +3,10 @@
  * @description Informe antes → después del último Simplificar de la pieza: triángulos, volumen, agujeros pasantes
  * (género), desviación medida, tolerancia usada y los avisos tipados traducidos. Si no se aplicó, lo dice; si fue
  * porque el resultado era destructivo, ofrece la versión segura o aplicarlo igual (`SimplifyBlockedChoice`) y muestra
- * el informe de lo que se aplicó después. Con `onUndo` trae «Deshacer» (mientras ese paso siga siendo el último).
+ * el informe de lo que se aplicó después. Si se aplicó la versión segura en lugar de lo pedido, lo dice y ofrece
+ * «Aplicar de todos modos» (deshace la segura y aplica lo pedido: queda un solo paso). Con `onUndo` trae «Deshacer»
+ * (mientras ese paso siga siendo el último). Con `preview` es el informe de la vista previa: mismo contenido, sin
+ * botones que apliquen ni «Deshacer».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -21,7 +24,15 @@ import { SimplifyBlockedChoice } from './SimplifyBlockedChoice';
 
 type UndoStep = ReturnType<typeof undoToastAction>;
 
-export const SimplifyReportView: React.FC<{ report: SimplifyReport; language: LanguageCode; onUndo?: () => void }> = ({ report: given, language, onUndo }) => {
+interface Props {
+  report: SimplifyReport;
+  language: LanguageCode;
+  onUndo?: () => void;
+  /** Informe de la vista previa (nada aplicado todavía). */
+  preview?: boolean;
+}
+
+export const SimplifyReportView: React.FC<Props> = ({ report: given, language, onUndo, preview = false }) => {
   const busy = Boolean(useKuraStore((s) => s.busyOperation));
   useKuraStore((s) => s.past); // re-render: «Deshacer» del paso aplicado desde aquí se oculta al dejar de ser el último
   // Lo aplicado desde la elección (versión segura o de todos modos) reemplaza al informe recibido mientras éste no cambie.
@@ -32,6 +43,11 @@ export const SimplifyReportView: React.FC<{ report: SimplifyReport; language: La
   const apply = (request: SimplifyRequest) => {
     const id = given.objectId;
     if (!id) return;
+    // Se aplicó la segura: «Aplicar de todos modos» la reemplaza (se deshace y se aplica lo pedido sobre la original).
+    if (report.appliedVariant === 'safe') {
+      if (!undo) return;
+      undo();
+    }
     let next: SimplifyReport | null = null;
     void useKuraStore.getState().simplifySelectedMesh(id, request, { onReport: (r) => { next = r; } }).then((ok) => {
       if (!next) return;
@@ -44,11 +60,17 @@ export const SimplifyReportView: React.FC<{ report: SimplifyReport; language: La
   const pct = new Intl.NumberFormat(language, { maximumFractionDigits: 3, signDisplay: 'exceptZero' }).format(report.volumeChangePct);
   const warnings = report.warnings;
   const blocked = !report.applied && (report.destructive?.length ?? 0) > 0;
+  const safeApplied = report.applied && report.appliedVariant === 'safe';
+  // Reemplazar la segura exige poder deshacerla (si no, se forzaría sobre la malla ya simplificada).
+  const onApply = preview || (safeApplied && !undo) ? undefined : apply;
   return (
     <div className="kura-simplify-report" role="status" aria-live="polite" data-testid="simplify-report">
-      <strong className="kura-field-label">{t(language, 'simplify.report.title')}</strong>
+      <strong className="kura-field-label">{t(language, preview ? 'simplify.preview.title' : 'simplify.report.title')}</strong>
       {!report.applied && !blocked && <p className="kura-cut-hint">{t(language, 'simplify.report.notApplied')}</p>}
-      {blocked && <SimplifyBlockedChoice report={report} language={language} busy={busy || !report.objectId} onApply={apply} />}
+      {preview && report.applied && !safeApplied && <p className="kura-cut-hint">{t(language, 'simplify.preview.wouldApply')}</p>}
+      {(blocked || safeApplied) && (
+        <SimplifyBlockedChoice report={report} language={language} busy={busy || !report.objectId} onApply={onApply} preview={preview} />
+      )}
       <ul className="kura-simplify-report-list">
         <li>{t(language, 'simplify.report.triangles', { before: n(report.trianglesBefore, 0), after: n(report.trianglesAfter, 0) })}</li>
         {report.applied && (
@@ -68,7 +90,7 @@ export const SimplifyReportView: React.FC<{ report: SimplifyReport; language: La
           ))}
         </ul>
       )}
-      {undo && (
+      {undo && !preview && (
         <button type="button" className="kura-btn kura-btn-sm" data-testid="simplify-report-undo" title={t(language, 'toast.undo')} onClick={undo}>
           {t(language, 'toast.undo')}
         </button>
