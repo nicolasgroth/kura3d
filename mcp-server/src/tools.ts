@@ -35,7 +35,7 @@ import { registerFaceNegativeTools } from './faceNegativeTools.js';
 import { registerPlateTools } from './plateTools.js';
 import { registerPatternTools } from './patternTools.js';
 import { isMirrorPlaneRequest, MIRROR_PLANES } from '../../src/core/bus/patternSchema';
-import { MIRROR_BASES } from '../../src/core/scene/patterns';
+import { MIRROR_BASES, PATTERN_RANGES } from '../../src/core/scene/patterns';
 import { registerProjectInfoTools } from './projectInfoTools.js';
 import type { ObjectRole } from '../../src/types/kura';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
@@ -1271,7 +1271,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         axis: z.enum(['x', 'y', 'z']).optional().describe('Mirror symmetry axis (x, y or z); with plane it must agree.'),
         plane: z.enum(MIRROR_PLANES as unknown as [string, ...string[]]).optional().describe('Mirror plane: yz (mirrors along X), xz (along Y) or xy (along Z).'),
         at: z.enum(MIRROR_BASES as unknown as [string, ...string[]]).optional().describe('The plane goes through the part center (object, default) or the bed center (bed).'),
-        offsetMm: z.number().finite().min(-10000).max(10000).optional().describe('Shift of the plane along its axis in mm (default 0).'),
+        offsetMm: rangeSchema(PATTERN_RANGES.offsetMm).optional().describe('Shift of the plane along its axis in mm (default 0).'),
         keepOriginal: z.boolean().optional().describe('Keep the original and add the reflection (default true in plane mode).'),
         union: z.boolean().optional().describe('Merge part and reflection into one piece.'),
         dryRun: z.boolean().optional().describe('true = only the plane, nothing changes.'),
