@@ -115,8 +115,8 @@ describe('Kura project v1', () => {
     const broken = bytes.slice();
     broken[broken.length - 1] ^= 1;
     expect(() => decodeProject(broken)).toThrowError(expect.objectContaining({ code: 'invalid' }));
-    // La 4 ya existe (placas): la primera versión desconocida es la 5.
-    broken[4] = 5;
+    // La 4 (placas) y la 5 (datos del proyecto) ya existen: la primera versión desconocida es la 6.
+    broken[4] = 6;
     expect(() => decodeProject(broken)).toThrowError(expect.objectContaining({ code: 'unsupported' }));
     broken[4] = 3;
     new DataView(broken.buffer).setUint32(8, 16 * 1024 * 1024 + 1, true);
