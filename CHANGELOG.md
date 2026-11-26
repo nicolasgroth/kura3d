@@ -10,6 +10,12 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Mover a placa:** si la placa destino está llena, la pieza queda dentro de la cama (encima de otras) y el aviso lo dice; antes quedaba al lado de la cama. La paleta ya no ofrece mover a la placa donde la pieza está.
+- **Convertir en placas:** los grupos que representaban las placas del laminador se disuelven, en el mismo paso de deshacer.
+- **Simplificar desde la paleta** abre el panel con su vista previa en vez de aplicar de inmediato. Tras la vista previa el foco queda en el informe.
+- **«Ocultar la vista previa»** reemplaza a «Comparar con el original» en Simplificar y Suavizar.
+- **Avisos con «Deshacer»:** el botón desaparece cuando ese paso ya se deshizo por otra vía.
+- **Rejilla del visor:** la opción «Libre» pasa a «Sin ajuste».
 - **El foco ya no se pierde** al cerrar Dividir, al volver de Armado a Imprimir, tras «Convertir en placas» ni al terminar la vista previa de Simplificar.
 - **Medir:** sin puntos marcados, un solo Esc sale de la herramienta.
 - **Placas:** renombrar con un nombre ya usado se rechaza con aviso; «Mover a placa» deja la pieza dentro de la cama destino; el aviso de repartir dice cuántas placas son nuevas.

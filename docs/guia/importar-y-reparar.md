@@ -60,7 +60,7 @@ Mientras trabaja puedes cancelar el cálculo con su botón. Al terminar aparece 
 
 ### Vista previa: mira antes de aplicar
 
-Pulsa **Vista previa** (junto a **Simplificar**) y la pieza no se toca: en el visor aparece un **fantasma celeste** con la malla que quedaría, y en el panel un resumen de lo que pasaría («Vista previa (aún no se aplicó)»). Con **Comparar con el original** ocultas el fantasma para ver solo la pieza, y con **Mostrar las aristas de la simplificada** ves la red de triángulos. Si te gusta, pulsa **Simplificar**; si no, cambia el modo o la cantidad y vuelve a mirar.
+Pulsa **Vista previa** (junto a **Simplificar**) y la pieza no se toca: en el visor aparece un **fantasma celeste** con la malla que quedaría, y en el panel un resumen de lo que pasaría («Vista previa (aún no se aplicó)»). Con **Ocultar la vista previa** ocultas el fantasma para ver solo la pieza, y con **Mostrar las aristas de la simplificada** ves la red de triángulos. Si te gusta, pulsa **Simplificar**; si no, cambia el modo o la cantidad y vuelve a mirar.
 
 ![Vista previa de Simplificar: el fantasma celeste sobre la esfera y el resumen en el panel](img/importar-y-reparar-09-simplificar-vista-previa.png)
 
