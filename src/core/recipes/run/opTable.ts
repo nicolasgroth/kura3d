@@ -16,6 +16,8 @@ import { booleanOp, combineOp, convexHullOp } from './ops/csgOps';
 import { alignOp, hollowOp, mirrorOp, planeCutOp, transformOp } from './ops/modifyOps';
 import type { OpRunner } from './ops/opSupport';
 import { placeOp } from './ops/placeOp';
+import { screwContainerOp } from './ops/screwContainerOp';
+import { SCREW_CONTAINER_NUMBER_KEYS } from '../../bus/screwContainerSchema';
 
 export type RecipeOp = (typeof RECIPE_OPS)[number];
 
@@ -44,6 +46,12 @@ export const RECIPE_OP_TABLE: Readonly<Record<RecipeOp, RecipeOpSpec>> = Object.
     command: 'create_thread',
     args: ['kind', 'diameterMm', 'pitchMm', 'lengthMm', 'clearanceMm', 'includeHead', 'position'],
     run: createThreadOp,
+  },
+  create_screw_container: {
+    // El paso crea UNA pieza (`part`); el comando del bus crea el par con esta misma receta.
+    command: 'create_screw_container',
+    args: ['part', ...SCREW_CONTAINER_NUMBER_KEYS, 'grip', 'base', 'position'],
+    run: screwContainerOp,
   },
   import_svg: { command: 'import_svg', args: ['svgContent', 'depth', 'targetWidth', 'curveSegments', 'position'], run: importSvgOp },
   plane_cut: {

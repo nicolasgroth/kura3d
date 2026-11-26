@@ -8,6 +8,7 @@
  * @license AGPL-3.0-or-later
  */
 
+import { screwFitText } from '../core/scene/screwFitText';
 import { create } from 'zustand';
 import type { RecipeIssue } from '../core/recipes/errors';
 import type { AssistantEditPlan } from '../components/assistants/editPlan';
@@ -91,7 +92,9 @@ export async function runAssistant(request: AssistantRunRequest): Promise<Assist
   if (!updated) store.requestCameraPreset('fit', ids);
   store.addToast(t(language, updated ? 'asis.updated' : 'asis.created', { names: names.join(', ') }), 'success');
   // Cada tipo de chequeo con su mensaje; un mismo mensaje no se repite.
-  const messages = new Set(result.checks.map((c) => (c.kind === 'fits_bed' ? 'asis.fitsBed' : 'asis.checkOther')));
+  const messages = new Set(result.checks.filter((c) => c.kind !== 'screw_fit').map((c) => (c.kind === 'fits_bed' ? 'asis.fitsBed' : 'asis.checkOther')));
   for (const key of messages) store.addToast(t(language, key), 'info');
+  // El enroscado se informa siempre (también cuando está bien): es la verificación que el asistente promete.
+  for (const c of result.checks) if (c.kind === 'screw_fit') store.addToast(screwFitText(c, language), c.fits ? 'success' : 'error');
   return { status: 'created', names, ...(updated ? { updated: true as const } : {}) };
 }

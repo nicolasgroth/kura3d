@@ -22,6 +22,7 @@ export const RECIPE_OPS = [
   'mirror_object',
   'hollow_object',
   'create_thread',
+  'create_screw_container',
   'import_svg',
   'plane_cut',
   'combine_objects',
@@ -144,11 +145,22 @@ export const Output = z.strictObject({
   role: z.enum(OBJECT_ROLES as unknown as [ObjectRole, ...ObjectRole[]]).optional(),
 });
 
-export const Check = z.strictObject({
-  kind: z.literal('fits_bed'),
-  refs: z.array(StepRef).min(1).max(RECIPE_LIMITS.maxOutputs),
-  onFail: z.enum(['offer_split', 'warn']),
-});
+export const Check = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('fits_bed'),
+    refs: z.array(StepRef).min(1).max(RECIPE_LIMITS.maxOutputs),
+    onFail: z.enum(['offer_split', 'warn']),
+  }),
+  /**
+   * Enroscado de un recipiente con tapa roscada: `refs` = [paso del cuerpo, paso de la tapa], los dos
+   * `create_screw_container` con las mismas medidas. Solo avisa (`warn`): nunca cambia lo que se crea.
+   */
+  z.strictObject({
+    kind: z.literal('screw_fit'),
+    refs: z.array(StepRef).length(2),
+    onFail: z.literal('warn'),
+  }),
+]);
 
 export const Tables = z.record(SafeName, z.record(z.string().min(1).max(64), Literal));
 

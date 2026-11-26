@@ -63,6 +63,7 @@ import { REALESUI_EN, REALESUI_ES } from './locales/realesUi';
 import { UX6_EN, UX6_ES } from './locales/ux6';
 import { RECETAS_EN, RECETAS_ES } from './locales/recetas';
 import { ASISTENTES_EN, ASISTENTES_ES } from './locales/asistentes';
+import { ROSCA_ENROSCA_EN, ROSCA_ENROSCA_ES } from './locales/roscaEnrosca';
 import { ACERCA_EN, ACERCA_ES } from './locales/acercaDe';
 import { IMAN_EN, IMAN_ES } from './locales/iman';
 import { IMAN_UI3_EN, IMAN_UI3_ES } from './locales/imanUi3';
@@ -141,6 +142,7 @@ export const TRANSLATIONS_ES = {
   ...UX6_ES,
   ...RECETAS_ES,
   ...ASISTENTES_ES,
+  ...ROSCA_ENROSCA_ES,
   ...IMAN_ES,
   ...IMAN_UI3_ES,
   ...BORDES_ES,
@@ -1499,6 +1501,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...UX6_EN,
   ...RECETAS_EN,
   ...ASISTENTES_EN,
+  ...ROSCA_ENROSCA_EN,
   ...IMAN_EN,
   ...IMAN_UI3_EN,
   ...BORDES_EN,

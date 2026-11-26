@@ -31,6 +31,7 @@ import { EXPORT_HANDLERS } from './exportCommands';
 import { REPAIR_HANDLERS } from './repairCommands';
 import { ROLE_HANDLERS } from './roleCommands';
 import { FIT_CHECK_HANDLERS } from './fitCheckCommands';
+import { SCREW_FIT_HANDLERS } from './screwFitCommands';
 import { RECIPE_HANDLERS } from './recipeCommands';
 import { ADDON_HANDLERS } from './addonCommands';
 import { SMOOTH_ORIENT_HANDLERS } from './smoothOrientCommands';
@@ -109,6 +110,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...REPAIR_HANDLERS,
   ...ROLE_HANDLERS,
   ...FIT_CHECK_HANDLERS,
+  ...SCREW_FIT_HANDLERS,
   ...RECIPE_HANDLERS,
   ...ADDON_HANDLERS,
   ...SMOOTH_ORIENT_HANDLERS,

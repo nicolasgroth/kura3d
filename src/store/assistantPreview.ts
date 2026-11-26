@@ -12,7 +12,7 @@
 
 import { create } from 'zustand';
 import type { EngineJob } from '../core/operations/engineClient';
-import type { RecipeRunResult, RecipeRunSuccess } from '../core/recipes/run/types';
+import type { RecipeRunResult, RecipeRunSuccess, RecipeScrewFitCheck } from '../core/recipes/run/types';
 import { recipeBed, type RecipeRunRequest } from './slices/recipesSlice';
 import type { PreviewGhost } from './slices/previewSlice';
 import { useKuraStore } from './useKuraStore';
@@ -30,9 +30,11 @@ export type AssistantPreviewStatus = 'off' | 'idle' | 'computing' | 'ready' | 'i
 interface PreviewState {
   enabled: boolean;
   status: AssistantPreviewStatus;
+  /** Comprobación de enroscado del último cálculo (recetas con chequeo `screw_fit`), o null. */
+  screwFit: RecipeScrewFitCheck | null;
 }
 
-export const useAssistantPreview = create<PreviewState>(() => ({ enabled: true, status: 'idle' }));
+export const useAssistantPreview = create<PreviewState>(() => ({ enabled: true, status: 'idle', screwFit: null }));
 
 export interface AssistantPreviewInput {
   readonly recipeId: string;
@@ -94,6 +96,8 @@ function dim(): void {
 
 /** Dibuja el resultado donde caería hoy (misma colocación que crear). */
 function show(result: RecipeRunSuccess, input: AssistantPreviewInput): void {
+  const screwFit = result.checks.find((c): c is RecipeScrewFitCheck => c.kind === 'screw_fit') ?? null;
+  if (useAssistantPreview.getState().screwFit !== screwFit) useAssistantPreview.setState({ screwFit });
   const { change } = useKuraStore.getState().placeRecipeResult(result, input.request, input.targetIds);
   paint(
     change.added.map((o) => ({ id: o.id, mesh: o.mesh, position: o.position, rotation: o.rotation, scale: o.scale, role: o.role === 'negative' ? 'tool' : 'result' })),

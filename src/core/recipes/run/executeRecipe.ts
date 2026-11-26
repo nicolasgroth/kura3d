@@ -25,6 +25,7 @@ import { assetSvgText, fileSvgText } from './resources';
 import { stepInputFailure } from './stepFailure';
 import type { RecipeCheckWarning, RecipeRunResult, RunInput } from './types';
 import { WorkScene } from './workScene';
+import { screwFitCheck } from './ops/screwContainerOp';
 
 const defaultNow = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
@@ -144,11 +145,17 @@ async function finish(
   const checks: RecipeCheckWarning[] = [];
   const bed: [number, number, number] = [profile.bedWidthMm, profile.bedDepthMm, profile.maxHeightMm];
   // Sin cama en las opciones no hay contra qué medir: el chequeo se omite (la interfaz y el MCP siempre la pasan).
-  for (const check of input.options?.bed ? result.checks : []) {
+  for (const [k, check] of result.checks.entries()) {
+    // El enroscado se mide siempre; la cama solo si la resolución la trae.
+    if (check.kind === 'screw_fit') {
+      checks.push(await screwFitCheck(scene, check.refs, k, input.options?.language ?? 'es'));
+      continue;
+    }
+    if (!input.options?.bed) continue;
     for (const ref of check.refs) {
       const box = scene.box(ref, 'checks');
       const size: [number, number, number] = [0, 1, 2].map((k) => box.max[k] - box.min[k]) as [number, number, number];
-      if (size.some((v, k) => v > bed[k] + 1e-6)) checks.push({ kind: 'fits_bed', ref, onFail: check.onFail, size, bed });
+      if (size.some((v, i) => v > bed[i] + 1e-6)) checks.push({ kind: 'fits_bed', ref, onFail: check.onFail, size, bed });
     }
   }
   return {

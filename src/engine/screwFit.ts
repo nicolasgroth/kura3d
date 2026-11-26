@@ -80,17 +80,16 @@ export function checkScrewFitSolids(wasm: ManifoldToplevel, male: Manifold, fema
   return withWasmScope((scope) => {
     const big = 1e5;
     const clip = options.clipBelowZ;
-    const keepAbove = clip === undefined ? null : scope.track(wasm.Manifold.cube([big, big, big], false).translate([-big / 2, -big / 2, clip]));
+    const keepAbove = clip === undefined ? null : scope.track(scope.track(wasm.Manifold.cube([big, big, big], false)).translate([-big / 2, -big / 2, clip]));
+    // El asiento se recorta una sola vez, en la posición final: la tapa recortada se mueve con su hélice.
     const maleClipped = keepAbove ? scope.track(male.intersect(keepAbove)) : male;
+    const femaleClipped = keepAbove ? scope.track(female.intersect(keepAbove)) : female;
     const positions: ScrewFitPosition[] = [];
+    const screwed = (m: Manifold, t: number) => scope.track(scope.track(m.rotate([0, 0, dir * 360 * t])).translate([0, 0, dir * lead * t]));
     for (let k = 0; k < samples; k++) {
-      // Fracción irregular para no caer siempre sobre columnas del mallado
       const t = (turns * k) / samples;
-      const moved = scope.track(female.rotate([0, 0, dir * 360 * t]).translate([0, 0, dir * lead * t]));
-      const inter = scope.track(male.intersect(moved));
-      const vol = Math.max(0, inter.volume());
-      const femaleClipped = keepAbove ? scope.track(moved.intersect(keepAbove)) : moved;
-      const gap = vol > SCREW_FIT_INTERFERENCE_TOL_MM3 ? 0 : maleClipped.minGap(femaleClipped, SCREW_FIT_SEARCH_MM);
+      const vol = Math.max(0, scope.track(male.intersect(screwed(female, t))).volume());
+      const gap = vol > SCREW_FIT_INTERFERENCE_TOL_MM3 ? 0 : maleClipped.minGap(screwed(femaleClipped, t), SCREW_FIT_SEARCH_MM);
       positions.push({ turns: round(t, 4), interferenceMm3: round(vol, 4), clearanceMm: round(Math.min(gap, SCREW_FIT_SEARCH_MM), 3) });
     }
     const minClearanceMm = Math.min(...positions.map((p) => p.clearanceMm));

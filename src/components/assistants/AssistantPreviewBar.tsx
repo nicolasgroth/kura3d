@@ -13,6 +13,7 @@ import { CircleAlert, Eye, LoaderCircle, RefreshCw } from 'lucide-react';
 import { t, type TranslationKey } from '../../i18n';
 import { refreshAssistantPreview, setAssistantPreviewEnabled, useAssistantPreview, type AssistantPreviewStatus } from '../../store/assistantPreview';
 import { useKuraStore } from '../../store/useKuraStore';
+import { AssistantScrewFitNotice } from './AssistantScrewFitNotice';
 import '../../styles/assistantsPreview.css';
 
 const STATUS_TEXT: Partial<Record<AssistantPreviewStatus, TranslationKey>> = {
@@ -52,6 +53,7 @@ export const AssistantPreviewBar: React.FC = () => {
           </>
         )}
       </div>
+      {enabled && status === 'ready' && <AssistantScrewFitNotice />}
       {enabled && status === 'heavy' && (
         <button
           type="button"

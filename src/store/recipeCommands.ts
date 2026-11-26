@@ -57,7 +57,7 @@ export function parseRunOptions(p: RawParams, fallbackLang: LanguageCode) {
 }
 
 /** Primer problema como error del bus (los demás van en `validate_recipe` / `dryRun`). */
-function issueError(issues: readonly RecipeIssue[]): CommandError {
+export function issueError(issues: readonly RecipeIssue[]): CommandError {
   const first = issues[0];
   const code = issueBusCode(first);
   return first ? new CommandError(code, first.key as TranslationKey, first.params) : new CommandError('failed', 'bus.error.failed', { command: 'run_recipe' });

@@ -1,0 +1,544 @@
+{
+  "format": "kura.recipe/1",
+  "id": "kura.tapa-roscada",
+  "version": "1.0.0",
+  "kura": ">=0.5.0",
+  "title": "$t:title",
+  "description": "$t:description",
+  "author": "Kurra Studio",
+  "license": "AGPL-3.0-or-later",
+  "category": "cajas",
+  "params": [
+    {
+      "id": "innerDiameterMm",
+      "type": "number",
+      "unit": "mm",
+      "min": 15,
+      "max": 150,
+      "step": 1,
+      "default": 50,
+      "label": "$t:d",
+      "help": "$t:dHelp",
+      "page": "medidas"
+    },
+    {
+      "id": "innerHeightMm",
+      "type": "number",
+      "unit": "mm",
+      "min": 10,
+      "max": 200,
+      "step": 1,
+      "default": 40,
+      "label": "$t:h",
+      "page": "medidas"
+    },
+    {
+      "id": "wallMm",
+      "type": "number",
+      "unit": "mm",
+      "min": 1.2,
+      "max": 5,
+      "step": 0.1,
+      "default": 2,
+      "label": "$t:wall",
+      "page": "medidas"
+    },
+    {
+      "id": "bottomMm",
+      "type": "number",
+      "unit": "mm",
+      "min": 0.8,
+      "max": 5,
+      "step": 0.1,
+      "default": 2,
+      "label": "$t:bottom",
+      "help": "$t:bottomHelp",
+      "page": "medidas"
+    },
+    {
+      "id": "base",
+      "type": "choice",
+      "default": "round",
+      "label": "$t:base",
+      "page": "forma",
+      "options": [
+        {
+          "value": "round",
+          "label": "$t:round"
+        },
+        {
+          "value": "square",
+          "label": "$t:square"
+        }
+      ]
+    },
+    {
+      "id": "grip",
+      "type": "choice",
+      "default": "knurl",
+      "label": "$t:grip",
+      "page": "forma",
+      "options": [
+        {
+          "value": "knurl",
+          "label": "$t:knurl"
+        },
+        {
+          "value": "flats",
+          "label": "$t:flats"
+        },
+        {
+          "value": "none",
+          "label": "$t:none"
+        }
+      ]
+    },
+    {
+      "id": "pitchMm",
+      "type": "number",
+      "unit": "mm",
+      "min": 2,
+      "max": 8,
+      "step": 0.5,
+      "default": 4,
+      "label": "$t:pitch",
+      "help": "$t:pitchHelp",
+      "page": "rosca"
+    },
+    {
+      "id": "turns",
+      "type": "number",
+      "unit": "count",
+      "min": 1,
+      "max": 4,
+      "step": 0.25,
+      "default": 2,
+      "label": "$t:turns",
+      "page": "rosca"
+    },
+    {
+      "id": "starts",
+      "type": "integer",
+      "unit": "count",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 1,
+      "label": "$t:starts",
+      "help": "$t:startsHelp",
+      "page": "rosca"
+    },
+    {
+      "id": "radialClearanceMm",
+      "type": "number",
+      "unit": "mm",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.3,
+      "label": "$t:fit",
+      "help": "$t:fitHelp",
+      "page": "rosca"
+    },
+    {
+      "id": "axialClearanceMm",
+      "type": "number",
+      "unit": "mm",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.45,
+      "label": "$t:axial",
+      "help": "$t:axialHelp",
+      "page": "rosca"
+    }
+  ],
+  "derive": {
+    "lead": "=p.pitchMm * p.starts",
+    "len": "=p.turns * d.lead",
+    "minH": "=ceil(d.len + 2)",
+    "od": "=p.innerDiameterMm + 4*p.wallMm + 0.6*p.pitchMm + 2*p.radialClearanceMm + (p.grip == 'none' ? 0 : 1.6)",
+    "extra": "=max(0, p.axialClearanceMm - p.radialClearanceMm)",
+    "maxAxial": "=floor((0.15*p.pitchMm + p.radialClearanceMm)*100)/100"
+  },
+  "rules": [
+    {
+      "level": "error",
+      "when": "=p.innerHeightMm < d.minH",
+      "message": "$t:tooShort",
+      "params": {
+        "len": "=round(d.len*10)/10",
+        "min": "=d.minH"
+      },
+      "focus": "innerHeightMm"
+    },
+    {
+      "level": "error",
+      "when": "=d.extra > 0.15*p.pitchMm + 0.000001",
+      "message": "$t:axialTooBig",
+      "params": {
+        "max": "=d.maxAxial"
+      },
+      "focus": "axialClearanceMm"
+    },
+    {
+      "level": "warning",
+      "when": "=p.wallMm < 1.6",
+      "message": "$t:thin",
+      "focus": "wallMm"
+    },
+    {
+      "level": "warning",
+      "when": "=p.radialClearanceMm < 0.15",
+      "message": "$t:tight",
+      "focus": "radialClearanceMm"
+    },
+    {
+      "level": "warning",
+      "when": "=p.radialClearanceMm > 0.6",
+      "message": "$t:loose",
+      "focus": "radialClearanceMm"
+    },
+    {
+      "level": "warning",
+      "when": "=p.turns < 1.5",
+      "message": "$t:fewTurns",
+      "focus": "turns"
+    },
+    {
+      "level": "warning",
+      "when": "=p.turns > 3",
+      "message": "$t:manyTurns",
+      "focus": "turns"
+    },
+    {
+      "level": "warning",
+      "when": "=p.pitchMm < 3",
+      "message": "$t:finePitch",
+      "focus": "pitchMm"
+    },
+    {
+      "level": "info",
+      "when": "=true",
+      "message": "$t:threadInfo",
+      "params": {
+        "len": "=round(d.len*10)/10",
+        "lead": "=d.lead"
+      },
+      "focus": "turns"
+    }
+  ],
+  "steps": [
+    {
+      "id": "body",
+      "op": "create_screw_container",
+      "args": {
+        "part": "body",
+        "innerDiameterMm": "=p.innerDiameterMm",
+        "innerHeightMm": "=p.innerHeightMm",
+        "wallMm": "=p.wallMm",
+        "bottomMm": "=p.bottomMm",
+        "pitchMm": "=p.pitchMm",
+        "starts": "=p.starts",
+        "turns": "=p.turns",
+        "radialClearanceMm": "=p.radialClearanceMm",
+        "axialClearanceMm": "=p.axialClearanceMm",
+        "grip": "=p.grip",
+        "base": "=p.base"
+      }
+    },
+    {
+      "id": "lid",
+      "op": "create_screw_container",
+      "args": {
+        "part": "lid",
+        "innerDiameterMm": "=p.innerDiameterMm",
+        "innerHeightMm": "=p.innerHeightMm",
+        "wallMm": "=p.wallMm",
+        "bottomMm": "=p.bottomMm",
+        "pitchMm": "=p.pitchMm",
+        "starts": "=p.starts",
+        "turns": "=p.turns",
+        "radialClearanceMm": "=p.radialClearanceMm",
+        "axialClearanceMm": "=p.axialClearanceMm",
+        "grip": "=p.grip",
+        "base": "=p.base",
+        "position": [
+          "=d.od + 10",
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "ref": "@body",
+      "name": "$t:outBody"
+    },
+    {
+      "ref": "@lid",
+      "name": "$t:outLid"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "fits_bed",
+      "refs": [
+        "@body",
+        "@lid"
+      ],
+      "onFail": "offer_split"
+    },
+    {
+      "kind": "screw_fit",
+      "refs": [
+        "@body",
+        "@lid"
+      ],
+      "onFail": "warn"
+    }
+  ],
+  "strings": {
+    "es": {
+      "title": "Recipiente con tapa roscada",
+      "description": "Frasco de medidas interiores con tapa que enrosca: rosca de paso grueso imprimible sin soportes y holgura ajustable.",
+      "page.medidas": "Medidas",
+      "page.forma": "Forma",
+      "page.rosca": "Rosca",
+      "d": "Diámetro interior",
+      "dHelp": "Diámetro libre de la boca y del interior: lo que tiene que entrar.",
+      "h": "Alto interior",
+      "wall": "Pared",
+      "bottom": "Fondo y techo de la tapa",
+      "bottomHelp": "Grosor del fondo del recipiente y del techo de la tapa.",
+      "base": "Base",
+      "round": "Redonda",
+      "square": "Cuadrada (boca redonda)",
+      "grip": "Agarre de la tapa",
+      "knurl": "Moleteado",
+      "flats": "Caras planas",
+      "none": "Liso",
+      "pitch": "Paso",
+      "pitchHelp": "Distancia entre filetes. Grueso (3–6 mm) enrosca rápido y tolera mejor la impresión.",
+      "turns": "Vueltas",
+      "starts": "Entradas",
+      "startsHelp": "Con 2 o más entradas la tapa avanza más por vuelta (cierre rápido).",
+      "fit": "Holgura radial",
+      "fitHelp": "Juego entre la rosca del recipiente y la de la tapa: 0,2 mm ajustado · 0,3 mm normal · 0,4–0,5 mm suelto (valores típicos; mídelo con una prueba en tu impresora).",
+      "axial": "Juego axial",
+      "axialHelp": "Juego a lo largo del eje en cada flanco. Con flancos a 45° la holgura radial ya da el mismo juego; súbelo si la tapa se traba.",
+      "tooShort": "El alto interior no alcanza para {len} mm de rosca: súbelo a {min} mm o baja las vueltas o el paso.",
+      "axialTooBig": "Ese juego axial no cabe en el paso: con estas medidas el máximo es {max} mm.",
+      "thin": "Pared bajo 1,6 mm: la rosca puede quedar frágil.",
+      "tight": "Holgura bajo 0,15 mm: la tapa puede quedar pegada al imprimir.",
+      "loose": "Holgura sobre 0,6 mm: la tapa puede quedar floja o saltarse un filete.",
+      "fewTurns": "Menos de 1,5 vueltas: la tapa puede soltarse con poco giro.",
+      "manyTurns": "Más de 3 vueltas: cerrar toma tiempo; considera dos entradas.",
+      "finePitch": "Paso bajo 3 mm: la rosca es más sensible a la precisión de la impresora.",
+      "threadInfo": "Rosca de {len} mm; la tapa avanza {lead} mm por vuelta y llega a tope en el hombro del recipiente.",
+      "outBody": "Recipiente",
+      "outLid": "Tapa roscada"
+    },
+    "en": {
+      "title": "Container with screw lid",
+      "description": "Jar sized by its inside with a lid that screws on: coarse thread printable without supports and adjustable clearance.",
+      "page.medidas": "Dimensions",
+      "page.forma": "Shape",
+      "page.rosca": "Thread",
+      "d": "Inner diameter",
+      "dHelp": "Free diameter of the mouth and the inside: what has to fit.",
+      "h": "Inner height",
+      "wall": "Wall",
+      "bottom": "Bottom and lid top",
+      "bottomHelp": "Thickness of the container bottom and of the lid top.",
+      "base": "Base",
+      "round": "Round",
+      "square": "Square (round mouth)",
+      "grip": "Lid grip",
+      "knurl": "Knurled",
+      "flats": "Flats",
+      "none": "Smooth",
+      "pitch": "Pitch",
+      "pitchHelp": "Distance between thread crests. Coarse (3–6 mm) screws on quickly and tolerates printing better.",
+      "turns": "Turns",
+      "starts": "Starts",
+      "startsHelp": "With 2 or more starts the lid advances more per turn (quick closing).",
+      "fit": "Radial clearance",
+      "fitHelp": "Play between the container thread and the lid thread: 0.2 mm tight · 0.3 mm normal · 0.4–0.5 mm loose (typical values; measure with a test print on your printer).",
+      "axial": "Axial play",
+      "axialHelp": "Play along the axis at each flank. With 45° flanks the radial clearance already gives the same play; raise it if the lid binds.",
+      "tooShort": "The inner height is not enough for {len} mm of thread: raise it to {min} mm or lower the turns or the pitch.",
+      "axialTooBig": "That axial play does not fit in the pitch: with these dimensions the maximum is {max} mm.",
+      "thin": "Wall under 1.6 mm: the thread may be fragile.",
+      "tight": "Clearance under 0.15 mm: the lid may fuse to the thread when printed.",
+      "loose": "Clearance over 0.6 mm: the lid may be loose or skip a thread.",
+      "fewTurns": "Fewer than 1.5 turns: the lid may come off with little rotation.",
+      "manyTurns": "More than 3 turns: closing takes time; consider two starts.",
+      "finePitch": "Pitch under 3 mm: the thread is more sensitive to printer accuracy.",
+      "threadInfo": "{len} mm of thread; the lid advances {lead} mm per turn and stops on the container shoulder.",
+      "outBody": "Container",
+      "outLid": "Screw lid"
+    },
+    "de": {
+      "title": "Behälter mit Schraubdeckel",
+      "description": "Dose nach Innenmaßen mit aufschraubbarem Deckel: grobes Gewinde, ohne Stützen druckbar, mit einstellbarem Spiel.",
+      "page.medidas": "Maße",
+      "page.forma": "Form",
+      "page.rosca": "Gewinde",
+      "d": "Innendurchmesser",
+      "dHelp": "Freier Durchmesser von Öffnung und Innenraum: was hineinpassen muss.",
+      "h": "Innenhöhe",
+      "wall": "Wand",
+      "bottom": "Boden und Deckeloberseite",
+      "bottomHelp": "Dicke des Behälterbodens und der Deckeloberseite.",
+      "base": "Grundform",
+      "round": "Rund",
+      "square": "Quadratisch (runde Öffnung)",
+      "grip": "Deckelgriff",
+      "knurl": "Rändel",
+      "flats": "Flächen",
+      "none": "Glatt",
+      "pitch": "Steigung",
+      "pitchHelp": "Abstand zwischen den Gewindegängen. Grob (3–6 mm) schraubt schnell und verzeiht Druckungenauigkeiten besser.",
+      "turns": "Umdrehungen",
+      "starts": "Gänge",
+      "startsHelp": "Mit 2 oder mehr Gängen kommt der Deckel pro Umdrehung weiter (schnelles Schließen).",
+      "fit": "Radiales Spiel",
+      "fitHelp": "Spiel zwischen Behälter- und Deckelgewinde: 0,2 mm stramm · 0,3 mm normal · 0,4–0,5 mm locker (typische Werte; mit einem Probedruck am eigenen Drucker messen).",
+      "axial": "Axiales Spiel",
+      "axialHelp": "Spiel entlang der Achse an jeder Flanke. Bei 45°-Flanken ergibt das radiale Spiel schon dasselbe; erhöhe es, wenn der Deckel klemmt.",
+      "tooShort": "Die Innenhöhe reicht nicht für {len} mm Gewinde: Erhöhe sie auf {min} mm oder verringere Umdrehungen oder Steigung.",
+      "axialTooBig": "Dieses axiale Spiel passt nicht in die Steigung: Bei diesen Maßen sind höchstens {max} mm möglich.",
+      "thin": "Wand unter 1,6 mm: Das Gewinde kann zerbrechlich sein.",
+      "tight": "Spiel unter 0,15 mm: Der Deckel kann beim Drucken festkleben.",
+      "loose": "Spiel über 0,6 mm: Der Deckel kann locker sitzen oder einen Gang überspringen.",
+      "fewTurns": "Weniger als 1,5 Umdrehungen: Der Deckel kann sich mit wenig Drehung lösen.",
+      "manyTurns": "Mehr als 3 Umdrehungen: Das Schließen dauert; erwäge zwei Gänge.",
+      "finePitch": "Steigung unter 3 mm: Das Gewinde reagiert empfindlicher auf die Druckgenauigkeit.",
+      "threadInfo": "{len} mm Gewinde; der Deckel kommt {lead} mm pro Umdrehung voran und liegt an der Schulter des Behälters an.",
+      "outBody": "Behälter",
+      "outLid": "Schraubdeckel"
+    },
+    "fr": {
+      "title": "Pot avec couvercle vissé",
+      "description": "Pot défini par ses mesures intérieures avec un couvercle qui se visse : filetage à gros pas imprimable sans supports et jeu réglable.",
+      "page.medidas": "Dimensions",
+      "page.forma": "Forme",
+      "page.rosca": "Filetage",
+      "d": "Diamètre intérieur",
+      "dHelp": "Diamètre libre de l’ouverture et de l’intérieur : ce qui doit y entrer.",
+      "h": "Hauteur intérieure",
+      "wall": "Paroi",
+      "bottom": "Fond et dessus du couvercle",
+      "bottomHelp": "Épaisseur du fond du pot et du dessus du couvercle.",
+      "base": "Socle",
+      "round": "Rond",
+      "square": "Carré (ouverture ronde)",
+      "grip": "Prise du couvercle",
+      "knurl": "Moleté",
+      "flats": "Méplats",
+      "none": "Lisse",
+      "pitch": "Pas",
+      "pitchHelp": "Distance entre les filets. Un gros pas (3–6 mm) se visse vite et tolère mieux l’impression.",
+      "turns": "Tours",
+      "starts": "Entrées",
+      "startsHelp": "Avec 2 entrées ou plus, le couvercle avance davantage par tour (fermeture rapide).",
+      "fit": "Jeu radial",
+      "fitHelp": "Jeu entre le filetage du pot et celui du couvercle : 0,2 mm serré · 0,3 mm normal · 0,4–0,5 mm lâche (valeurs typiques ; mesure-le avec une impression d’essai sur ton imprimante).",
+      "axial": "Jeu axial",
+      "axialHelp": "Jeu le long de l’axe sur chaque flanc. Avec des flancs à 45°, le jeu radial donne déjà le même jeu ; augmente-le si le couvercle force.",
+      "tooShort": "La hauteur intérieure ne suffit pas pour {len} mm de filetage : monte-la à {min} mm ou baisse les tours ou le pas.",
+      "axialTooBig": "Ce jeu axial ne tient pas dans le pas : avec ces mesures, le maximum est {max} mm.",
+      "thin": "Paroi sous 1,6 mm : le filetage peut être fragile.",
+      "tight": "Jeu sous 0,15 mm : le couvercle peut se souder au pot à l’impression.",
+      "loose": "Jeu au-dessus de 0,6 mm : le couvercle peut être lâche ou sauter un filet.",
+      "fewTurns": "Moins de 1,5 tour : le couvercle peut se défaire en tournant peu.",
+      "manyTurns": "Plus de 3 tours : la fermeture prend du temps ; pense à deux entrées.",
+      "finePitch": "Pas sous 3 mm : le filetage est plus sensible à la précision de l’imprimante.",
+      "threadInfo": "Filetage de {len} mm ; le couvercle avance de {lead} mm par tour et vient en butée sur l’épaulement du pot.",
+      "outBody": "Pot",
+      "outLid": "Couvercle vissé"
+    },
+    "hi": {
+      "title": "पेंचदार ढक्कन वाला डिब्बा",
+      "description": "अंदरूनी माप से बना डिब्बा, घुमाकर बंद होने वाले ढक्कन के साथ: मोटी चूड़ी, बिना सपोर्ट के छपने लायक, ढील बदली जा सकती है।",
+      "page.medidas": "माप",
+      "page.forma": "आकार",
+      "page.rosca": "चूड़ी",
+      "d": "अंदरूनी व्यास",
+      "dHelp": "मुँह और अंदर का खुला व्यास: जो चीज़ अंदर जानी है।",
+      "h": "अंदरूनी ऊँचाई",
+      "wall": "दीवार",
+      "bottom": "तला और ढक्कन की छत",
+      "bottomHelp": "डिब्बे के तले और ढक्कन की छत की मोटाई।",
+      "base": "आधार",
+      "round": "गोल",
+      "square": "चौकोर (गोल मुँह)",
+      "grip": "ढक्कन की पकड़",
+      "knurl": "खुरदरी धारियाँ",
+      "flats": "सपाट सतहें",
+      "none": "चिकना",
+      "pitch": "पिच",
+      "pitchHelp": "चूड़ियों के बीच की दूरी। मोटी (3–6 mm) जल्दी कसती है और छपाई की कमियाँ बेहतर सहती है।",
+      "turns": "चक्कर",
+      "starts": "शुरुआतें",
+      "startsHelp": "2 या ज़्यादा शुरुआतों से ढक्कन हर चक्कर में ज़्यादा आगे बढ़ता है (जल्दी बंद)।",
+      "fit": "त्रिज्य ढील",
+      "fitHelp": "डिब्बे और ढक्कन की चूड़ी के बीच की ढील: 0.2 mm कसा · 0.3 mm सामान्य · 0.4–0.5 mm ढीला (सामान्य मान; अपने प्रिंटर पर एक परीक्षण छपाई से नापें)।",
+      "axial": "अक्षीय ढील",
+      "axialHelp": "हर ढलान पर अक्ष के साथ ढील। 45° ढलान पर त्रिज्य ढील से ही उतनी ढील मिल जाती है; ढक्कन अटके तो बढ़ाएँ।",
+      "tooShort": "{len} mm चूड़ी के लिए अंदरूनी ऊँचाई काफ़ी नहीं: इसे {min} mm करें या चक्कर या पिच घटाएँ।",
+      "axialTooBig": "यह अक्षीय ढील पिच में नहीं समाती: इन मापों में अधिकतम {max} mm है।",
+      "thin": "दीवार 1.6 mm से कम: चूड़ी कमज़ोर रह सकती है।",
+      "tight": "ढील 0.15 mm से कम: छपाई में ढक्कन चिपक सकता है।",
+      "loose": "ढील 0.6 mm से ज़्यादा: ढक्कन ढीला रह सकता है या चूड़ी छोड़ सकता है।",
+      "fewTurns": "1.5 से कम चक्कर: थोड़ा घुमाने पर ढक्कन निकल सकता है।",
+      "manyTurns": "3 से ज़्यादा चक्कर: बंद करने में समय लगेगा; दो शुरुआतें आज़माएँ।",
+      "finePitch": "पिच 3 mm से कम: चूड़ी प्रिंटर की सटीकता के प्रति ज़्यादा संवेदनशील है।",
+      "threadInfo": "{len} mm चूड़ी; ढक्कन हर चक्कर में {lead} mm आगे बढ़ता है और डिब्बे के कंधे पर रुकता है।",
+      "outBody": "डिब्बा",
+      "outLid": "पेंचदार ढक्कन"
+    },
+    "zh": {
+      "title": "螺旋盖容器",
+      "description": "按内部尺寸设计的罐子，配可拧紧的盖子：粗牙螺纹，无需支撑即可打印，间隙可调。",
+      "page.medidas": "尺寸",
+      "page.forma": "形状",
+      "page.rosca": "螺纹",
+      "d": "内径",
+      "dHelp": "瓶口和内部的净直径：要放进去的东西的尺寸。",
+      "h": "内部高度",
+      "wall": "壁厚",
+      "bottom": "底部与盖顶",
+      "bottomHelp": "容器底部和盖顶的厚度。",
+      "base": "底座",
+      "round": "圆形",
+      "square": "方形（圆口）",
+      "grip": "盖子握持",
+      "knurl": "滚花",
+      "flats": "平面",
+      "none": "光滑",
+      "pitch": "螺距",
+      "pitchHelp": "螺纹牙之间的距离。粗螺距（3–6 mm）拧得快，对打印误差更宽容。",
+      "turns": "圈数",
+      "starts": "头数",
+      "startsHelp": "2 头或以上时，盖子每圈前进更多（快速关闭）。",
+      "fit": "径向间隙",
+      "fitHelp": "容器螺纹与盖子螺纹之间的间隙：0.2 mm 紧 · 0.3 mm 正常 · 0.4–0.5 mm 松（典型值；请在你的打印机上用试打件测量）。",
+      "axial": "轴向间隙",
+      "axialHelp": "每个牙侧沿轴向的间隙。45° 牙侧时径向间隙已提供相同的间隙；盖子卡住时再调大。",
+      "tooShort": "内部高度不足以容纳 {len} mm 的螺纹：请提高到 {min} mm，或减少圈数或螺距。",
+      "axialTooBig": "该轴向间隙超出螺距允许范围：在这些尺寸下最大为 {max} mm。",
+      "thin": "壁厚低于 1.6 mm：螺纹可能较脆弱。",
+      "tight": "间隙低于 0.15 mm：打印时盖子可能与螺纹粘在一起。",
+      "loose": "间隙超过 0.6 mm：盖子可能松动或跳牙。",
+      "fewTurns": "少于 1.5 圈：稍微转动盖子就可能脱开。",
+      "manyTurns": "超过 3 圈：关闭较费时；可考虑双头螺纹。",
+      "finePitch": "螺距低于 3 mm：螺纹对打印机精度更敏感。",
+      "threadInfo": "螺纹长 {len} mm；盖子每圈前进 {lead} mm，并在容器肩部到位。",
+      "outBody": "容器",
+      "outLid": "螺旋盖"
+    }
+  }
+}

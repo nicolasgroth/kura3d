@@ -103,7 +103,7 @@ export interface ResolveResult {
   readonly derived: Readonly<Record<string, ExprValue>>;
   readonly steps: readonly ResolvedStep[];
   readonly outputs: readonly ResolvedOutput[];
-  readonly checks: readonly { readonly kind: 'fits_bed'; readonly refs: readonly string[]; readonly onFail: 'offer_split' | 'warn' }[];
+  readonly checks: readonly { readonly kind: 'fits_bed' | 'screw_fit'; readonly refs: readonly string[]; readonly onFail: 'offer_split' | 'warn' }[];
   /** Trabajo hecho (nodos barridos + nodos compilados + evaluados): crece linealmente con la receta. */
   readonly work: number;
 }
