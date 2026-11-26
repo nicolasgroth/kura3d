@@ -14,7 +14,7 @@
  */
 
 import { AlertTriangle } from 'lucide-react';
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import type { SimplifyReport, SimplifyRequest } from '../../engine/simplify';
 import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
@@ -32,10 +32,22 @@ interface Props {
   onUndo?: () => void;
   /** Informe de la vista previa (nada aplicado todavía). */
   preview?: boolean;
+  /** Vista previa: qué muestra el fantasma del visor (null: no se dibuja). */
+  ghost?: 'requested' | 'safe' | null;
 }
 
-export const SimplifyReportView: React.FC<Props> = ({ report: given, language, onUndo, preview = false }) => {
+/** Clave del resumen de una o dos líneas que abre el informe. */
+const summaryKey = (preview: boolean, safe: boolean) =>
+  preview ? (safe ? 'simplify.preview.summarySafe' : 'simplify.preview.summary') : (safe ? 'simplify.report.summarySafe' : 'simplify.report.summary');
+
+export const SimplifyReportView: React.FC<Props> = ({ report: given, language, onUndo, preview = false, ghost = null }) => {
   const titleId = useId();
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  // Un informe nuevo se desplaza hasta quedar a la vista dentro del panel (sin animar con «reducir movimiento»).
+  useEffect(() => {
+    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    rootRef.current?.scrollIntoView?.({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }, [given]);
   const busy = Boolean(useKuraStore((s) => s.busyOperation));
   useKuraStore((s) => s.past); // re-render: «Deshacer» del paso aplicado desde aquí se oculta al dejar de ser el último
   // Lo aplicado desde la elección (versión segura o de todos modos) reemplaza al informe recibido mientras éste no cambie.
@@ -52,7 +64,7 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
       undo();
     }
     let next: SimplifyReport | null = null;
-    void useKuraStore.getState().simplifySelectedMesh(id, request, { onReport: (r) => { next = r; } }).then((ok) => {
+    void useKuraStore.getState().simplifySelectedMesh(id, request, { onReport: (r) => { next = r; }, inPanel: true }).then((ok) => {
       if (!next) return;
       const st = useKuraStore.getState();
       const step = ok ? undoToastAction(t(st.language, 'toast.undo'), () => useKuraStore.getState().past, () => useKuraStore.getState().undo()) : null;
@@ -68,8 +80,16 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
   const onApply = preview || (safeApplied && !undo) ? undefined : apply;
   return (
     // `tabIndex={-1}`: al terminar la vista previa el foco llega aquí (se lee el resultado antes de decidir aplicar).
-    <div className="kura-simplify-report" role="status" aria-live="polite" aria-labelledby={titleId} tabIndex={-1} data-testid="simplify-report">
+    <div className="kura-simplify-report" ref={rootRef} role="status" aria-live="polite" aria-labelledby={titleId} tabIndex={-1} data-testid="simplify-report">
       <strong id={titleId} className="kura-field-label">{t(language, preview ? 'simplify.preview.title' : 'simplify.report.title')}</strong>
+      {report.applied && (
+        <p className="kura-simplify-summary" data-testid="simplify-report-summary">
+          <strong>
+            {t(language, summaryKey(preview, safeApplied), { before: n(report.trianglesBefore, 0), after: n(report.trianglesAfter, 0) })}
+          </strong>
+          {preview && ghost && <> {t(language, ghost === 'safe' ? 'simplify.preview.ghostSafe' : 'simplify.preview.ghostRequested')}</>}
+        </p>
+      )}
       {!report.applied && !blocked && <p className="kura-cut-hint">{t(language, 'simplify.report.notApplied')}</p>}
       {preview && report.applied && !safeApplied && !simplifyHasShapeNotice(report) && <p className="kura-cut-hint">{t(language, 'simplify.preview.wouldApply')}</p>}
       {simplifyHasShapeNotice(report) && (

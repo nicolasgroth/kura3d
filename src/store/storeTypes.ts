@@ -505,12 +505,14 @@ export interface KuraStoreState {
   /**
    * Simplifica con verificación: un número es «Por tolerancia» (mm); si no, la petición con su modo. `true` si se
    * aplicó (un paso de deshacer). `onReport` recibe el informe aunque no se aplique (sin reducción o «Sin pérdida»
-   * rechazado).
+   * rechazado). Con `inPanel` (el panel de Simplificar está abierto) el resultado se informa en el panel y el
+   * aviso es uno solo y corto; sin él (MCP, paleta sin panel) va el aviso completo. `onFailure` recibe un fallo del
+   * motor antes que el aviso de error: devolver true lo da por atendido (el panel lo muestra en su sitio).
    */
   simplifySelectedMesh: (
     id: string,
     request: number | engine.SimplifyRequest,
-    options?: { onReport?: (report: engine.SimplifyReport) => void },
+    options?: { onReport?: (report: engine.SimplifyReport) => void; inPanel?: boolean; onFailure?: (err: unknown) => boolean },
   ) => Promise<boolean>;
   refineSelectedMesh: (
     id: string,

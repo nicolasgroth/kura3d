@@ -150,5 +150,5 @@ export function runMoveToPlate(plateId: string | null): void {
   if (count === 0) return;
   const after = useKuraStore.getState();
   // Mismo aviso que el arrastre (`plateMoveNotice`). Si el bloque es más grande que la cama destino, se movió igual y el aviso lo dice.
-  announcePiecesMoved(count, plateId ?? after.activePlateId, { noFit: !after.lastMoveToPlateFits, crowded: after.lastMoveToPlateCrowded });
+  announcePiecesMoved(count, plateId ?? after.activePlateId ?? '', { noFit: !after.lastMoveToPlateFits, crowded: after.lastMoveToPlateCrowded });
 }

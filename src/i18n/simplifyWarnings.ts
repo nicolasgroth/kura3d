@@ -40,6 +40,24 @@ export function simplifyHasShapeNotice(report: SimplifyReport): boolean {
     && report.warnings.some((c) => c === 'volume_changed' || c === 'deviation_high');
 }
 
+/** true si los agujeros que se cerraron movieron la superficie menos que el umbral de impresión (se avisa con calma). */
+export function isFineHolesClosure(report: SimplifyReport): boolean {
+  return report.genusAfter < report.genusBefore && report.maxDeviationMm <= SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM;
+}
+
+/**
+ * Texto de los avisos de un resultado aplicado, sin contradicciones: el cierre de agujeros finos (bajo el umbral) va
+ * como frase tranquilizadora sola; lo demás, y el cambio de agujeros sobre el umbral, va bajo «Revisa el resultado».
+ */
+export function simplifyChecksText(lang: LanguageCode, report: SimplifyReport, codes: readonly SimplifyWarningCode[]): { calm: string; check: string } {
+  const calmCodes = codes.filter((c) => c === 'genus_changed' && isFineHolesClosure(report));
+  const checkCodes = codes.filter((c) => !calmCodes.includes(c));
+  return {
+    calm: calmCodes.map((c) => simplifyWarningSentence(lang, report, c)).join(' '),
+    check: checkCodes.length > 0 ? t(lang, 'simplify.toast.check', { reasons: checkCodes.map((c) => simplifyWarningSentence(lang, report, c)).join(' ') }) : '',
+  };
+}
+
 /** Frase de un aviso. En «Sin pérdida» los límites son los de esa verificación. */
 export function simplifyWarningSentence(lang: LanguageCode, report: SimplifyReport, code: SimplifyWarningCode): string {
   const limits = noticeLimits(report);
@@ -47,7 +65,7 @@ export function simplifyWarningSentence(lang: LanguageCode, report: SimplifyRepo
   switch (code) {
     case 'genus_changed':
       // Agujeros cerrados con una desviación que no se imprime (no fue destructivo): se dice que eran muy finos.
-      if (report.genusAfter < report.genusBefore && report.maxDeviationMm <= SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM) {
+      if (isFineHolesClosure(report)) {
         return t(lang, 'simplify.warn.fine_holes_closed', {
           count: report.genusBefore - report.genusAfter, before: report.genusBefore, after: report.genusAfter, mm: n(report.maxDeviationMm, 3),
         });

@@ -19,7 +19,8 @@ import { withAddonPosts } from '../../core/operations/addonPostMerge';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { classifySimplifyResult } from '../../core/operations/simplifyOutcome';
 import type { SimplifyRequest } from '../../engine/simplify';
-import { simplifyBlockedToast, simplifySafeAppliedSentence, simplifyWarningText } from '../../i18n/simplifyWarnings';
+import { simplifyBlockedToast, simplifyChecksText, simplifySafeAppliedSentence, simplifyWarningText } from '../../i18n/simplifyWarnings';
+import { isEngineCancelled } from '../../core/operations/engineClient';
 import { sceneSimplifyReport } from './simplifyPreviewSlice';
 import { formatNumber } from '../../utils/plural';
 import type { StoreContext } from '../storeContext';
@@ -130,6 +131,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       const obj = editable(id);
       if (!obj) return false;
       const req: SimplifyRequest = typeof request === 'number' ? { mode: 'tolerance', toleranceMm: request } : request;
+      const { inPanel = false, onFailure } = options;
       return runExclusive('simplify', false, async () => {
         // La vista previa con la misma malla y parámetros ya lo calculó: se reutiliza en vez de recalcular.
         const previewed = get().consumeSimplifyPreview(obj, req);
@@ -144,6 +146,8 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         options.onReport?.(report);
         // Sin reducción, «Sin pérdida» rechazado o destructivo: no hay paso de historial y el aviso dice por qué.
         if (!report.applied) {
+          // Con el panel abierto el informe ya dice por qué no se aplicó: sin aviso repetido.
+          if (inPanel) return false;
           if (blocked) {
             get().addToast(simplifyBlockedToast(lang, report), 'info');
           } else if (report.warnings.includes('no_reduction')) {
@@ -155,28 +159,45 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
           return false;
         }
         commitChange(change);
-        reportEngineWarnings(change.warnings);
+        // Los avisos de volumen y agujeros del motor repiten (y a veces contradicen) lo que dice el informe: se dicen una vez, abajo.
+        reportEngineWarnings(change.warnings.filter((w) => w.code !== 'SIMPLIFY_VOLUME_CHANGED' && w.code !== 'SIMPLIFY_GENUS_CHANGED'));
         const tris = change.patches[0].patch.stats?.triangles ?? report.trianglesAfter;
         const outcome = classifySimplifyResult(before, tris);
         const counts = { before: formatNumber(lang, before), tris: formatNumber(lang, tris) };
-        // Menos de 1 % de reducción no se anuncia como éxito.
-        if (outcome === 'marginal') get().addToast(tr(req.mode === 'tolerance' ? 'toast.simplifyMarginal' : 'simplify.toast.marginal', counts), 'info');
+        const undo = undoToastAction(tr('toast.undo'), () => get().past, () => get().undo(), true, true);
+        // Con el panel abierto: un solo aviso corto con «Deshacer»; el detalle está en el informe del panel.
+        if (inPanel) {
+          get().addToast(tr('simplify.toast.short', { before: counts.before, after: counts.tris }), 'success', undo);
+          return true;
+        }
+        // Menos de 1 % de reducción no se anuncia como éxito: ese aviso reemplaza al de resultado (uno solo, con «Deshacer»).
+        if (outcome === 'marginal') {
+          get().addToast(tr(req.mode === 'tolerance' ? 'toast.simplifyMarginal' : 'simplify.toast.marginal', counts), 'info', undo);
+          return true;
+        }
         // Siempre: triángulos antes -> después y cambio de volumen en % (el aviso de > 2 % sigue aparte).
         const pct = report.volumeChangePct;
         const delta = new Intl.NumberFormat(lang, { maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(Math.round(pct * 100) / 100);
         // Avisos de la verificación (género, volumen, desviación, objetivo) en el mismo aviso: deja de ser «éxito».
         const checks = report.warnings.filter((w) => w !== 'no_reduction');
+        const { calm, check } = simplifyChecksText(lang, report, checks);
         const plain = tr('realesMotor.simplifyResult', { before: counts.before, after: counts.tris, delta });
         // Se aplicó la versión segura en lugar de lo pedido: el aviso lo dice primero.
         const result = report.appliedVariant === 'safe' ? `${simplifySafeAppliedSentence(lang, report)} ${plain}` : plain;
-        const text = checks.length > 0 ? `${result} ${tr('simplify.toast.check', { reasons: simplifyWarningText(lang, report, checks) })}` : result;
+        // Bajo el umbral de 0,2 mm solo la frase tranquilizadora; sobre él, «Revisa el resultado» (nunca las dos).
+        const text = [result, calm, check].filter(Boolean).join(' ');
         get().addToast(
           text,
-          outcome === 'marginal' || checks.length > 0 || report.appliedVariant === 'safe' ? 'info' : 'success',
+          check !== '' || report.appliedVariant === 'safe' ? 'info' : 'success',
           // Persistente: Simplificar tarda (minutos en mallas de millones) y el aviso no debe caducar antes de que se vea.
-          undoToastAction(tr('toast.undo'), () => get().past, () => get().undo(), true, true),
+          undo,
         );
         return true;
+      }, {
+        onError: (err) => {
+          if (isEngineCancelled(err)) get().addToast(tr('store.operationCancelled'), 'info');
+          else if (!onFailure?.(err)) reportOperationError(err);
+        },
       });
     },
 
