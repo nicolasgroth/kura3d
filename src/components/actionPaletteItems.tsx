@@ -11,6 +11,7 @@
 import React from 'react';
 import { Zap } from 'lucide-react';
 import { t, type TranslationKey } from '../i18n';
+import { plateToolBlockReason } from '../core/scene/viewMode';
 import { OBJECT_ROLES } from '../core/scene/objectRole';
 import { actionName, moveToPlateName } from '../store/actionLabels';
 import { assignable } from '../core/scene/plates';
@@ -34,7 +35,7 @@ export interface ActionPaletteItem {
   unavailable?: string;
 }
 
-type StateSlice = Pick<KuraStoreState, 'objects' | 'selectedIds' | 'groups' | 'busyOperation'> & Partial<Pick<KuraStoreState, 'plates'>>;
+type StateSlice = Pick<KuraStoreState, 'objects' | 'selectedIds' | 'groups' | 'busyOperation'> & Partial<Pick<KuraStoreState, 'plates' | 'layout'>>;
 
 /** Palabras extra con las que se busca una acción (además de su nombre): sinónimos de uso, no del rótulo. */
 const EXTRA_KEYWORDS: Partial<Record<ActionId, string>> = {
@@ -82,7 +83,8 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
   if (plates.length >= 2) {
     const name = moveToPlateName(language);
     const movable = state.objects.filter((o) => state.selectedIds.includes(o.id) && assignable(o));
-    const unavailable = movable.length === 0 ? { unavailable: t(language, 'plates.move.reason') } : {};
+    const printOnly = plateToolBlockReason(state.layout);
+    const unavailable = printOnly ? { unavailable: t(language, printOnly) } : movable.length === 0 ? { unavailable: t(language, 'plates.move.reason') } : {};
     const category = t(language, 'rediseno.actions.group.position');
     const base = { category, keywords: 'moveToPlate placa plate mover move', kind: 'local' as const, icon, ...unavailable };
     for (const p of plates) out.push({ ...base, id: `action-moveToPlate-${p.id}`, label: `${name}: ${p.name}`, run: () => runMoveToPlate(p.id) });

@@ -133,6 +133,14 @@ const VIEW_MODE_TABLE = {
     'जाँच जुड़े हुए हिस्सों से होती है, चाहे आप किसी भी दृश्य में हों।',
     '无论处于哪个视图,都使用装配后的零件进行检查。',
   ],
+  'viewMode.newPiece': [
+    'Pieza nueva junto a la figura, sin placa. Asígnala a una placa desde la vista Imprimir.',
+    'New part placed next to the figure, on no plate. Assign it to a plate from the Print view.',
+    'Neues Teil neben der Figur, auf keiner Platte. Weise es in der Ansicht „Drucken“ einer Platte zu.',
+    'Nouvelle pièce placée près de la figure, sur aucun plateau. Affectez-la à un plateau depuis la vue Impression.',
+    'नया हिस्सा आकृति के पास रखा गया, किसी प्लेट पर नहीं। इसे प्रिंट दृश्य से किसी प्लेट को सौंपें।',
+    '新零件已放在造型旁边,不属于任何打印板。请在“打印”视图中把它分配到某块打印板。',
+  ],
   'viewMode.split.note': [
     'En la vista armada, «Disponer grupo» es lo mismo que cambiar de vista: usa el selector Imprimir / Armado.',
     'In the assembled view, “Arrange group” is the same as switching view: use the Print / Assembled selector.',

@@ -16,6 +16,8 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { askDecision } from '../../utils/confirmDialog';
 import '../../styles/plateStrip.css';
+import '../../styles/viewMode.css';
+import { printPosedObjects } from '../../store/sceneLayout';
 import { MIN_PLATES_FOR_STRIP, plateChips, type ChipStatus, type PlateChip } from './plateStripModel';
 
 const STATUS_ICON: Record<ChipStatus, React.ReactNode> = {
@@ -65,10 +67,16 @@ export const PlateStrip: React.FC = () => {
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const plateSolo = useKuraStore((s) => s.plateSolo);
   const busy = useKuraStore((s) => s.busyOperation !== null);
+  const layout = useKuraStore((s) => s.layout);
+  const armed = layout === 'assembly';
   const [renaming, setRenaming] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  const chips = useMemo(() => plateChips(objects, printerProfile, plates, activePlateId), [objects, printerProfile, plates, activePlateId]);
+  const chips = useMemo(
+    () => plateChips(armed ? printPosedObjects(useKuraStore.getState()) : objects, printerProfile, plates, activePlateId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [objects, printerProfile, plates, activePlateId, armed],
+  );
   const active = chips.find((c) => c.active) ?? chips[0];
 
   // La ficha activa siempre queda a la vista (con muchas placas la lista se desplaza).
@@ -122,7 +130,7 @@ export const PlateStrip: React.FC = () => {
   };
 
   return (
-    <section className="kura-plate-strip" aria-label={t(language, 'plates.strip.label')} data-testid="plate-strip">
+    <section className="kura-plate-strip" aria-label={t(language, 'plates.strip.label')} data-testid="plate-strip" data-view-mode={armed ? 'armed' : 'print'}>
       <div className="kura-plate-list" ref={listRef} onKeyDown={moveFocus}>
         {chips.map((chip) => {
           const pieces = t(language, 'plates.chip.pieces', { count: chip.count });
@@ -162,12 +170,13 @@ export const PlateStrip: React.FC = () => {
           );
         })}
       </div>
+      {armed && <span className="kura-plate-strip-note" data-testid="plate-strip-note">{t(language, 'viewMode.strip.note')}</span>}
       <div className="kura-plate-actions">
         <button
           type="button"
           className="kura-plate-btn"
           onClick={() => store().createPlate()}
-          disabled={busy}
+          disabled={busy || armed}
           aria-label={t(language, 'plates.add')}
           title={t(language, 'plates.add.tip')}
           data-testid="plate-add"
@@ -189,7 +198,7 @@ export const PlateStrip: React.FC = () => {
           type="button"
           className="kura-plate-btn"
           onClick={() => void removeActive()}
-          disabled={busy}
+          disabled={busy || armed}
           aria-label={t(language, 'plates.delete', { name: active.name })}
           title={t(language, 'plates.delete', { name: active.name })}
           data-testid="plate-delete"

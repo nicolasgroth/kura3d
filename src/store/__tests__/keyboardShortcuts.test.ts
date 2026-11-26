@@ -35,6 +35,7 @@ describe('atajos documentados', () => {
     ['7', ev('7'), { type: 'cameraPreset', preset: 'top' }],
     ['F', ev('f'), { type: 'cameraPreset', preset: 'fit' }],
     ['B', ev('b'), { type: 'toggleBed' }],
+    ['A', ev('a'), { type: 'cycleViewMode' }],
     ['Ctrl+Shift+Enter', ctrl('Enter', { shiftKey: true }), { type: 'toggleZen' }],
     ['Ctrl+G', ctrl('g'), { type: 'group' }],
     ['Ctrl+Shift+G', ctrl('G', { shiftKey: true }), { type: 'ungroup' }],

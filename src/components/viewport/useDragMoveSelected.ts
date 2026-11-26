@@ -17,6 +17,7 @@ import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { DRAG_MOVE_THRESHOLD_PX, dragBoundsForBed, dragBoundsForBeds, dragMoveDelta, dragSnapMm } from '../../core/scene/dragMovePlane';
 import { allBedSizes, placementBedSize } from '../../store/bedSize';
+import { viewModeOf, viewModeTraits } from '../../core/scene/viewMode';
 import { t } from '../../i18n';
 import { useGizmoDragStore } from '../../store/gizmoDragStore';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -133,7 +134,8 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       grab: s.grab,
       reference: s.reference,
       snapMm: dragSnapMm(store.snapGridMm, p.ctrl),
-      bounds: store.plates.length >= 2 ? dragBoundsForBeds(allBedSizes(store)) : dragBoundsForBed(placementBedSize(store)),
+      // Armado y Libre: sin camas a la vista, mover no se limita a su rectángulo.
+      bounds: viewModeTraits(viewModeOf(store.layout, store.freeView)).freeDrag ? null : store.plates.length >= 2 ? dragBoundsForBeds(allBedSizes(store)) : dragBoundsForBed(placementBedSize(store)),
     });
     // Vista rasante o rayo que no alcanza el plano: se conserva la última posición válida.
     if (delta) s.lastDelta = delta;

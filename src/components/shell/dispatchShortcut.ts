@@ -11,6 +11,7 @@ import type { TransformMode } from '../../types/kura';
 import type { ShortcutAction, ShortcutContext } from '../../store/keyboardShortcuts';
 import { activateRailTool, toggleRailTool } from '../../store/toolActivation';
 import { useKuraStore } from '../../store/useKuraStore';
+import { cycleViewMode } from '../../store/viewModeRequest';
 import { guardUnsavedChanges } from '../../utils/unsavedGuard';
 import { confirmDeleteSelection } from '../scene/confirmDeleteSelection';
 
@@ -148,6 +149,9 @@ export function dispatchShortcut(action: ShortcutAction, e: KeyboardEvent, ui: S
       return false;
     case 'toggleBed':
       state.toggleShowBed();
+      return false;
+    case 'cycleViewMode':
+      cycleViewMode();
       return false;
     case 'toggleSection':
       state.setSectionPlane({ enabled: !state.sectionPlane.enabled });

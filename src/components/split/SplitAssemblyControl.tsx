@@ -35,6 +35,8 @@ export const SplitAssemblyControl: React.FC = () => {
   const setExplode = useKuraStore((s) => s.setSplitExplode);
   const arrange = useKuraStore((s) => s.arrangeSplitGroup);
   const busy = useKuraStore((s) => Boolean(s.busyOperation));
+  // Fuera de Imprimir las poses las gobierna el selector de vista: estos dos botones se deshabilitan.
+  const inPrintView = useKuraStore((s) => s.layout !== 'assembly');
   // Cada pieza se mide en su placa real (sin placas: la cuadrícula desde el origen).
   const frames = useSplitFrames();
   const [playing, setPlaying] = useState(false);
@@ -118,9 +120,9 @@ export const SplitAssemblyControl: React.FC = () => {
         <button
           type="button"
           className="kura-btn kura-btn-sm"
-          disabled={busy || arrangement === 'print'}
+          disabled={busy || !inPrintView || arrangement === 'print'}
           aria-pressed={arrangement === 'print'}
-          title={t(language, 'split.assembly.printTip')}
+          title={inPrintView ? t(language, 'split.assembly.printTip') : t(language, 'viewMode.split.note')}
           onClick={() => {
             setPlaying(false);
             arrange(selectedId, 'print');
@@ -132,9 +134,9 @@ export const SplitAssemblyControl: React.FC = () => {
         <button
           type="button"
           className="kura-btn kura-btn-sm"
-          disabled={busy || arrangement === 'assembly'}
+          disabled={busy || !inPrintView || arrangement === 'assembly'}
           aria-pressed={arrangement === 'assembly'}
-          title={t(language, 'split.assembly.assembleTip')}
+          title={inPrintView ? t(language, 'split.assembly.assembleTip') : t(language, 'viewMode.split.note')}
           onClick={() => {
             setPlaying(false);
             arrange(selectedId, 'assembly');
@@ -144,6 +146,7 @@ export const SplitAssemblyControl: React.FC = () => {
           <span>{t(language, 'split.assembly.assemble')}</span>
         </button>
       </div>
+      {!inPrintView && <p className="kura-cut-hint" data-testid="split-arrange-note">{t(language, 'viewMode.split.note')}</p>}
       <SplitLabelsToggle />
     </section>
   );

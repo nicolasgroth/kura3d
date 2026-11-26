@@ -36,5 +36,7 @@ export function createLayoutGuardSlice(ctx: StoreContext, inner: Partial<KuraSto
     openFitToBed: (ids) => (blocked() ? false : inner.openFitToBed!(ids)),
     alignSelectedObjects: (mode) => (mode === 'arrange_grid' && blocked() ? null : inner.alignSelectedObjects!(mode)),
     moveToPlate: (plateId, ids) => (blocked() ? 0 : inner.moveToPlate!(plateId, ids)),
+    // «Disponer grupo» escribe la pose viva: fuera de Imprimir se cambia de vista con el selector, no con este control.
+    arrangeSplitGroup: (id, mode) => (blocked() ? false : inner.arrangeSplitGroup!(id, mode)),
   };
 }

@@ -14,6 +14,7 @@ import React, { useId } from 'react';
 import { Combine, Grid } from 'lucide-react';
 import { isNegative, isSolid } from '../../core/scene/objectRole';
 import { getLocalizedPrinterName, t } from '../../i18n';
+import { usePlateToolReason } from '../viewmode/usePlateToolReason';
 import { isProjectDirty, useKuraStore } from '../../store/useKuraStore';
 import { formatDimension } from '../../utils/units';
 import { toUserSize } from '../../core/scene/displayAxes';
@@ -37,6 +38,7 @@ export const ProjectSummary: React.FC = () => {
   const setUnitSystem = useKuraStore((s) => s.setUnitSystem);
   const unitSelectId = useId();
   const alignSelectedObjects = useKuraStore((s) => s.alignSelectedObjects);
+  const plateReason = usePlateToolReason();
   const applyHolesOnSolids = useKuraStore((s) => s.applyHolesOnSolids);
 
   const visible = objects.filter((o) => o.visible);
@@ -96,7 +98,7 @@ export const ProjectSummary: React.FC = () => {
       {objects.length > 0 && (
         <section className="kura-card">
           <h3 className="kura-section-label">{t(language, 'inspector.pro.alignTitle')}</h3>
-          <button type="button" className="kura-btn kura-btn-sm" title={t(language, 'inspector.pro.arrangeGrid')} onClick={() => alignSelectedObjects('arrange_grid')}>
+          <button type="button" className="kura-btn kura-btn-sm" disabled={Boolean(plateReason)} title={plateReason ?? t(language, 'inspector.pro.arrangeGrid')} onClick={() => alignSelectedObjects('arrange_grid')}>
             <Grid size={13} aria-hidden="true" />
             <span>{t(language, 'inspector.pro.arrangeGrid')}</span>
           </button>

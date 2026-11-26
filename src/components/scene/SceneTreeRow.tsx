@@ -18,6 +18,7 @@ import {
 import { isNegative, isReference, isSolid } from '../../core/scene/objectRole';
 import '../../styles/reference.css';
 import { t } from '../../i18n';
+import { usePlateToolReason } from '../viewmode/usePlateToolReason';
 import type { LanguageCode, SceneObject } from '../../types/kura';
 import { tCount } from '../../utils/plural';
 import type { TreeRow } from './sceneTreeRows';
@@ -74,6 +75,7 @@ function typeOf(row: TreeRow): { icon: React.ReactNode; label: string } {
 
 export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
   const { row, id, language, selected, active, renaming, draft, dropPlace, splitName } = props;
+  const plateReason = usePlateToolReason();
   const node = row.node;
   const obj = node.kind === 'object' ? node.object : null;
   const group = node.kind === 'group' ? node.group : null;
@@ -200,7 +202,7 @@ export const SceneTreeRow: React.FC<SceneTreeRowProps> = (props) => {
           )}
           {obj && (
             <>
-              <button type="button" tabIndex={-1} className="kura-mini-icon-btn kura-row-extra" aria-label={t(language, 'groups.row.drop', { name })} aria-keyshortcuts="L" title={t(language, 'sidebar.scene.dropToBed')} onClick={(e) => { e.stopPropagation(); props.onDropToBed(obj); }}>
+              <button type="button" tabIndex={-1} className="kura-mini-icon-btn kura-row-extra" aria-label={t(language, 'groups.row.drop', { name })} aria-keyshortcuts="L" disabled={Boolean(plateReason)} title={plateReason ?? t(language, 'sidebar.scene.dropToBed')} onClick={(e) => { e.stopPropagation(); props.onDropToBed(obj); }}>
                 <ArrowDownToLine size={13} aria-hidden="true" />
               </button>
               <button type="button" tabIndex={-1} className="kura-mini-icon-btn kura-row-extra" aria-label={t(language, 'groups.row.duplicate', { name })} aria-keyshortcuts="Control+D" title={t(language, 'sidebar.scene.duplicate')} onClick={(e) => { e.stopPropagation(); props.onDuplicate(obj); }}>

@@ -69,6 +69,7 @@ export type ShortcutAction =
   | { type: 'toggleRole' }
   | { type: 'openDialog'; dialog: 'mold' | 'splitForBed' | 'cut' }
   | { type: 'toggleBed' }
+  | { type: 'cycleViewMode' }
   | { type: 'toggleSection' }
   | { type: 'togglePaint' }
   | { type: 'toggleMeasure' }
@@ -174,6 +175,7 @@ export function resolveShortcut(e: ShortcutEvent, ctx: ShortcutContext): Shortcu
   if (key === 'h') return single({ type: e.shiftKey ? 'toggleSelectionVisibility' : 'toggleRole' });
   if (key === 'm' && e.shiftKey) return single(ctx.objectCount > 0 ? { type: 'openDialog', dialog: 'mold' } : null);
   if (key === 'b' && !e.shiftKey) return single({ type: 'toggleBed' });
+  if (key === 'a' && !e.shiftKey) return single({ type: 'cycleViewMode' });
   if (key === 'x') return single({ type: 'toggleSection' });
   if (key === 'p') return single({ type: 'togglePaint' });
   if (key === 'd' && !e.shiftKey) return single({ type: 'toggleMeasure' });

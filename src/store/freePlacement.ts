@@ -2,7 +2,7 @@
  * @file src/store/freePlacement.ts
  * @description Único colocador del store para lo nuevo (primitivas, texto 3D, roscas, SVG, imagen a
  * 3D): la pieza cae en el primer hueco libre de la cama activa (`placeInFreeSpot`) y, tras crearla,
- * se avisa si quedó fuera de la cama y se encuadra. Importaciones y moldes usan la misma búsqueda
+ * se avisa si quedó fuera de la cama (en Armado y Libre, que queda sin placa) y se encuadra. Importaciones y moldes usan la misma búsqueda
  * (`findFreeSpot`) a través de `placeGroupInFreeSpot` / `placePartsInFreeSpot`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -40,12 +40,14 @@ export function createFreePlacer(get: () => PlacementState, rotation: Vec3 = [0,
  * cama: encuadre de la pieza; si ya había objetos, se asegura que la pieza nueva quede a la vista.
  */
 export function announceFreePlacement(
-  state: Pick<KuraStoreState, 'addToast' | 'requestCameraPreset'>,
-  tr: (key: 'toast.placedOutsideBed') => string,
+  state: Pick<KuraStoreState, 'addToast' | 'requestCameraPreset'> & Partial<Pick<KuraStoreState, 'layout'>>,
+  tr: (key: 'toast.placedOutsideBed' | 'viewMode.newPiece') => string,
   result: FreePlacer['result'],
   newId: string,
 ): void {
-  if (!result.fits) state.addToast(tr('toast.placedOutsideBed'), 'info');
+  // Armado y Libre: lo nuevo queda junto a la figura y sin placa; la cama no se evalúa en esta vista.
+  if (state.layout === 'assembly') state.addToast(tr('viewMode.newPiece'), 'info');
+  else if (!result.fits) state.addToast(tr('toast.placedOutsideBed'), 'info');
   if (!result.fits || result.wasEmpty) state.requestCameraPreset('fit', [newId]);
   else state.requestCameraPreset('ensure', [newId]);
 }

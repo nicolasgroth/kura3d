@@ -19,6 +19,7 @@ import {
   Unlink2,
 } from 'lucide-react';
 import { t } from '../../i18n';
+import { usePlateToolReason } from '../viewmode/usePlateToolReason';
 import { useKuraStore } from '../../store/useKuraStore';
 import { PrecisionNumberInput, type PrecisionModifierState } from '../PrecisionNumberInput';
 import { type TransformMode, type Vec3 } from '../../types/kura';
@@ -54,6 +55,7 @@ export const TransformSection: React.FC<InspectorSectionProps & { focus?: Transf
   const commitTransformSnapshot = useKuraStore((s) => s.commitTransformSnapshot);
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
   const centerObjectOnBed = useKuraStore((s) => s.centerObjectOnBed);
+  const plateReason = usePlateToolReason();
   const resetObjectOrientation = useKuraStore((s) => s.resetObjectOrientation);
   const proportionalScale = useKuraStore((s) => s.proportionalScale);
   const toggleProportionalScale = useKuraStore((s) => s.toggleProportionalScale);
@@ -332,7 +334,8 @@ export const TransformSection: React.FC<InspectorSectionProps & { focus?: Transf
         <button
           type="button"
           className="kura-btn kura-btn-sm"
-          disabled={primary.locked}
+          disabled={primary.locked || Boolean(plateReason)}
+          title={plateReason}
           onClick={() => dropObjectToBed(primary.id)}
         >
           <ArrowDownToLine size={13} />
@@ -341,7 +344,8 @@ export const TransformSection: React.FC<InspectorSectionProps & { focus?: Transf
         <button
           type="button"
           className="kura-btn kura-btn-sm"
-          disabled={primary.locked}
+          disabled={primary.locked || Boolean(plateReason)}
+          title={plateReason}
           onClick={() => centerObjectOnBed(primary.id)}
         >
           <Crosshair size={13} />

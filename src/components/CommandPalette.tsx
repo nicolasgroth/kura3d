@@ -73,6 +73,7 @@ import { keyholePaletteItems } from './keyhole/keyholePaletteItems';
 import { cablePassPaletteItems } from './cablePass/cablePassPaletteItems';
 import { Boxes as BoxesIcon, Group as GroupIcon, Ungroup as UngroupIcon } from 'lucide-react';
 import { t } from '../i18n';
+import { usePlateToolReason } from './viewmode/usePlateToolReason';
 import { useKuraStore } from '../store/useKuraStore';
 import { SUPPORTED_LANGUAGES } from '../types/kura';
 import { getAiBadgeDescriptor } from '../utils/aiBadges';
@@ -115,6 +116,7 @@ export const CommandPalette: React.FC = () => {
   const open = useKuraStore((s) => s.commandPaletteOpen);
   const setCommandPaletteOpen = useKuraStore((s) => s.setCommandPaletteOpen);
   const language = useKuraStore((s) => s.language);
+  const plateReason = usePlateToolReason();
   const lastRepeatable = useKuraStore((s) => s.lastRepeatable);
   const sceneBusy = useKuraStore((s) => Boolean(s.busyOperation) || s.projectBusy);
   const setLanguage = useKuraStore((s) => s.setLanguage);
@@ -479,7 +481,8 @@ export const CommandPalette: React.FC = () => {
         keywords: 'distribuir cama alinear rejilla arrange grid bed',
         kind: 'local',
         icon: <Grid size={15} />,
-        run: () => alignSelectedObjects('arrange_grid'),
+        ...(plateReason ? { unavailable: plateReason } : {}),
+        run: () => void alignSelectedObjects('arrange_grid'),
       },
       ...(lastRepeatable
         ? [{
@@ -609,6 +612,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'ajustar impresora cama escalar girar caber fit printer bed scale rotate',
         kind: 'local',
         icon: <Minimize2 size={15} />,
+        ...(plateReason ? { unavailable: plateReason } : {}),
         run: () => void useKuraStore.getState().openFitToBed(),
       },
       {
@@ -641,6 +645,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'apoyar cama suelo drop bed y=0',
         kind: 'local',
         icon: <ArrowDownToLine size={15} />,
+        ...(plateReason ? { unavailable: plateReason } : {}),
         run: () => {
           if (primaryId) dropObjectToBed(primaryId);
         },
@@ -652,6 +657,7 @@ export const CommandPalette: React.FC = () => {
         keywords: 'centrar cama centro center bed xy',
         kind: 'local',
         icon: <Crosshair size={15} />,
+        ...(plateReason ? { unavailable: plateReason } : {}),
         run: () => void useKuraStore.getState().centerSelectionOnBed(),
       },
       {
@@ -949,9 +955,10 @@ export const CommandPalette: React.FC = () => {
   const groups = useKuraStore((s) => s.groups);
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const plates = useKuraStore((s) => s.plates);
+  const layout = useKuraStore((s) => s.layout);
   const allActions = useMemo<PaletteActionItem[]>(
-    () => [...actions, ...actionPaletteItems(language, { objects, selectedIds, groups, busyOperation, plates }, actions.map((a) => a.label))],
-    [actions, language, objects, selectedIds, groups, busyOperation, plates],
+    () => [...actions, ...actionPaletteItems(language, { objects, selectedIds, groups, busyOperation, plates, layout }, actions.map((a) => a.label))],
+    [actions, language, objects, selectedIds, groups, busyOperation, plates, layout],
   );
   const filtered = useMemo(() => rankPaletteItems(allActions, query), [allActions, query]);
 
