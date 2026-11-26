@@ -150,7 +150,7 @@ export const ToolPanel: React.FC<{ tool: PanelToolId; objectId: string | null; u
   };
 
   // Esc: un solo dueño (cadena de prioridad en `store/escapeChain`). Medir cancela antes su punto en curso (captura).
-  usePanelEscape(rootRef, goBack, { level: 'tool', outside: 'body' });
+  usePanelEscape(rootRef, goBack, { level: 'tool', outside: 'tool' });
 
   return (
     <div ref={rootRef} className="kura-ctx-tool" data-tool-panel={tool} data-testid="panel-tool">

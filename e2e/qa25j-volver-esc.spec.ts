@@ -2,7 +2,7 @@
  * @file e2e/qa25j-volver-esc.spec.ts
  * @description QA 26-nov (J): «Volver» y Esc de las herramientas. Pasan: un solo «Volver» en Mover, Rotar, Escalar, Pintar,
  * Borrar y Medir; Esc con el foco en un campo o en «Volver» (Tab) cierra y devuelve el foco al botón de la herramienta.
- * Documentados con test.fail (defectos abiertos): Esc con el foco en el visor no cierra el panel, y Cortar muestra dos «Volver».
+ * Corregidos tras la QA: Esc con el foco en el visor o en el botón del riel cierra el panel, y Cortar muestra un solo «Volver».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -34,7 +34,7 @@ for (const boton of ['Mover', 'Rotar', 'Escalar', 'Pintar', 'Esculpir / Borrar',
 }
 
 for (const boton of ['Mover', 'Pintar']) {
-  test.fail(`${boton}: Esc con el foco en el visor cierra el panel`, async ({ page }) => {
+  test(`${boton}: Esc con el foco en el visor cierra el panel`, async ({ page }) => {
     await abrirHerramienta(page, boton);
     await page.evaluate(() => (document.querySelector('.kura-viewport-wrap canvas') as HTMLElement).focus());
     await page.keyboard.press('Escape');
@@ -42,7 +42,7 @@ for (const boton of ['Mover', 'Pintar']) {
   });
 }
 
-test.fail('Cortar: un solo Volver', async ({ page }) => {
+test('Cortar: un solo Volver', async ({ page }) => {
   await abrirHerramienta(page, 'Cortar');
   await expect(volver(page)).toHaveCount(1);
 });

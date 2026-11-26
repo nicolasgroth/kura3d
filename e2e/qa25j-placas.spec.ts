@@ -116,9 +116,8 @@ test('exportar el 3MF de escena con 2 placas y reabrirlo en escena vacía devuel
   expect(errs.filter((e) => !/favicon|WebGL|GPU/i.test(e)), errs.join('\n')).toEqual([]);
 });
 
-// DEFECTO (QA 26-nov J): el botón «Convertir en placas» del aviso de importación se ve con ese texto pero no se encuentra por
-// rol y nombre accesible (getByRole('button', { name: /Convertir en placas/ }) da 0). test.fail hasta que se corrija.
-test.fail('el botón «Convertir en placas» tiene nombre accesible', async ({ page }) => {
+// QA 26-nov (J): el botón «Convertir en placas» se encuentra por rol y nombre accesible (empieza por el texto visible).
+test('el botón «Convertir en placas» tiene nombre accesible', async ({ page }) => {
   test.setTimeout(150_000);
   await abrir(page);
   const ruta = 'G:/proyectos/kura3d/.eval-tmp/modelos/llaveros.3mf';
