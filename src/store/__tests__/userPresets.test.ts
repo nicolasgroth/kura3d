@@ -11,7 +11,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAGNET_DEFAULTS } from '../../core/addons/magnetPocket';
-import { BUILTIN_MAGNET_PRESETS, MAGNET_PRESET_KIND, MAGNET_PRESET_STORAGE_KEY, magnetSizeLabel } from '../../core/addons/magnetPresets';
+import { BUILTIN_MAGNET_PRESETS, MAGNET_PRESET_KIND, MAGNET_PRESET_STORAGE_KEY, magnetSizeLabel, sameMagnet } from '../../core/addons/magnetPresets';
 import { createUserPresetsStore, loadUserPresets, MAX_USER_PRESETS } from '../userPresets';
 
 const big = { ...MAGNET_DEFAULTS, sizeMm: 12, heightMm: 4 };
@@ -145,6 +145,24 @@ describe('preajustes propios de imán rectangular', () => {
     expect(loaded.map((p) => p.id)).toEqual(['user-r', 'user-s']);
     expect(loaded[0].values).toEqual(rect);
     expect(loaded[1].values).toEqual({ ...MAGNET_DEFAULTS, shape: 'square' });
+  });
+
+  it('ida y vuelta por localStorage: un rectangular girado guardado desde el panel sobrevive a recargar', () => {
+    const rect = { ...MAGNET_DEFAULTS, shape: 'rect' as const, sizeMm: 12, widthMm: 4.5, heightMm: 3, clearanceMm: 0.3, turn90: true };
+    const saved = createUserPresetsStore(MAGNET_PRESET_KIND).getState().save('Bloque girado', rect);
+    expect(saved.ok).toBe(true);
+    // Recargar = otra instancia del store que lee con el saneo.
+    const reloaded = createUserPresetsStore(MAGNET_PRESET_KIND).getState().presets;
+    expect(reloaded).toHaveLength(1);
+    expect(reloaded[0].name).toBe('Bloque girado');
+    expect(reloaded[0].values).toEqual(rect);
+    expect(sameMagnet(reloaded[0].values, rect)).toBe(true);
+    // Sin giro también vuelve igual (sin `turn90`).
+    const flat = createUserPresetsStore(MAGNET_PRESET_KIND).getState().save('Bloque', { ...rect, turn90: undefined });
+    expect(flat.ok).toBe(true);
+    const again = loadUserPresets(MAGNET_PRESET_KIND).find((p) => p.name === 'Bloque')!;
+    expect(again.values.turn90).toBeUndefined();
+    expect(again.values.widthMm).toBe(4.5);
   });
 });
 

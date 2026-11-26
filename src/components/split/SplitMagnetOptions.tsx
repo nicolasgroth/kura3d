@@ -1,9 +1,10 @@
 /**
  * @file src/components/split/SplitMagnetOptions.tsx
  * @description Opciones de la unión «Imanes» de Dividir para imprimir: imán (preajustes incluidos y los del usuario
- * del alojamiento de imán; por defecto 5 × 2), holguras de diámetro y profundidad, cantidad automática o fija, la
- * medida del alojamiento resultante, el recordatorio de polaridad y el aviso si el imán elegido es cuadrado (las
- * uniones con imanes son solo para redondos por ahora). El estado vive en `useSplitMagnetChoice`.
+ * del alojamiento de imán; por defecto 5 × 2), redondos, cuadrados y rectangulares, holguras de diámetro y
+ * profundidad, cantidad automática o fija, la medida del alojamiento resultante (diámetro × profundidad en el redondo;
+ * largo × ancho × profundidad en los de bloque) y el recordatorio de polaridad. El estado vive en
+ * `useSplitMagnetChoice`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
