@@ -35,6 +35,8 @@ import { RECIPE_HANDLERS } from './recipeCommands';
 import { ADDON_HANDLERS } from './addonCommands';
 import { SMOOTH_ORIENT_HANDLERS } from './smoothOrientCommands';
 import { PLATE_ARRANGE_HANDLERS } from './plateArrangeCommands';
+import { mirrorWithPlane, PATTERN_HANDLERS } from './patternCommands';
+import { isMirrorPlaneRequest } from '../core/bus/patternSchema';
 import { PLATE_HANDLERS } from './plateCommands';
 import { PROJECT_INFO_HANDLERS } from './projectInfoCommands';
 import { userWarning } from '../core/scene/userEngineMessages';
@@ -113,6 +115,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...ADDON_HANDLERS,
   ...SMOOTH_ORIENT_HANDLERS,
   ...PLATE_ARRANGE_HANDLERS,
+  ...PATTERN_HANDLERS,
   ...PLATE_HANDLERS,
   ...PROJECT_INFO_HANDLERS,
   get_scene_state: (_p, { get }) => {
@@ -359,7 +362,10 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
     return { mode, moved: result?.moved ?? 0, fitsBed: result?.fitsBed ?? true, ...(spacingIgnored ? { ignoredParams: ['spacingMm'] } : {}) };
   },
 
-  mirror_object: (p, { get }, command) => {
+  mirror_object: (p, deps, command) => {
+    // Con plano, base, desplazamiento o «conservar el original» es el espejo con copia (mismo plan que el panel «Patrón»).
+    if (isMirrorPlaneRequest(p)) return mirrorWithPlane(p, deps);
+    const { get } = deps;
     const { target, axis } = schema.parseMirror(get(), p);
     required(get().mirrorObject(target.id, axisFromUser(axis)), command);
     return { id: target.id, axis };

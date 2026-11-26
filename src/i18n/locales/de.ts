@@ -23,6 +23,7 @@ import { PLATES_EXPORT_DE } from './placasExportar';
 import { PLATES_BED_DE } from './placasCama';
 import { PLATES_ARRANGE_DE } from './placasRepartir';
 import { PLATES_ARRANGE_UI_DE } from './placasRepartirUi';
+import { PATTERN_DE } from './patrones';
 import { MEASURE_DE } from './measure';
 import { FLOWUX_DE } from './flowUx';
 import { PREVIEW_DE } from './preview';
@@ -99,6 +100,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...PLATES_BED_DE,
   ...PLATES_ARRANGE_DE,
   ...PLATES_ARRANGE_UI_DE,
+  ...PATTERN_DE,
   ...MEASURE_DE,
   ...FLOWUX_DE,
   ...PREVIEW_DE,

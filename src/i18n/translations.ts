@@ -28,6 +28,7 @@ import { PLATES_EXPORT_EN, PLATES_EXPORT_ES } from './locales/placasExportar';
 import { PLATES_BED_EN, PLATES_BED_ES } from './locales/placasCama';
 import { PLATES_ARRANGE_EN, PLATES_ARRANGE_ES } from './locales/placasRepartir';
 import { PLATES_ARRANGE_UI_EN, PLATES_ARRANGE_UI_ES } from './locales/placasRepartirUi';
+import { PATTERN_EN, PATTERN_ES } from './locales/patrones';
 import { MEASURE_EN, MEASURE_ES } from './locales/measure';
 import { FLOWUX_EN, FLOWUX_ES } from './locales/flowUx';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
@@ -106,6 +107,7 @@ export const TRANSLATIONS_ES = {
   ...PLATES_BED_ES,
   ...PLATES_ARRANGE_ES,
   ...PLATES_ARRANGE_UI_ES,
+  ...PATTERN_ES,
   ...MEASURE_ES,
   ...FLOWUX_ES,
   ...PREVIEW_ES,
@@ -1464,6 +1466,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PLATES_BED_EN,
   ...PLATES_ARRANGE_EN,
   ...PLATES_ARRANGE_UI_EN,
+  ...PATTERN_EN,
   ...MEASURE_EN,
   ...FLOWUX_EN,
   ...PREVIEW_EN,
