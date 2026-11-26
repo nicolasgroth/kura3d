@@ -12,6 +12,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';
 import { agregarForma } from './agregar-helpers';
+import { itemAccion } from './acciones-helpers';
 
 const store = <T,>(page: Page, fn: (s: any) => T): Promise<T> => page.evaluate((src) => (0, eval)(`(${src})`)((window as any).__s.getState()), fn.toString());
 
@@ -144,8 +145,8 @@ for (const width of [1024, 1440]) {
       test('«Comprobar encaje» dice que se comprueba con las piezas armadas', async ({ page }) => {
         await dosPlacas(page);
         await page.evaluate(() => (window as any).__s.getState().setSelection((window as any).__s.getState().objects.map((o: any) => o.id)));
-        await page.getByRole('button', { name: /Acciones/ }).click();
-        await page.getByRole('menuitem', { name: /Comprobar encaje/ }).click();
+        // «Comprobar encaje…» vive en el submenú «Analizar» del menú Acciones.
+        await (await itemAccion(page, 'Comprobar encaje…')).click();
         await expect(page.getByTestId('fit-check-assembled-note')).toContainText('piezas armadas');
       });
     });
