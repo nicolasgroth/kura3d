@@ -86,6 +86,16 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   add_cable_pass: 'write',
   // Repartir en placas: con dryRun solo planifica; aplicar crea placas y mueve piezas (un paso de deshacer).
   arrange_on_plates: 'write',
+  // Placas (lote P8): listar no cambia nada; el resto cambia la escena (un paso de deshacer) o el estado de vista
+  // (placa activa, modo imprimir/armado), que también es escritura.
+  list_plates: 'read',
+  create_plate: 'write',
+  rename_plate: 'write',
+  delete_plate: 'write',
+  set_active_plate: 'write',
+  move_to_plate: 'write',
+  spread_one_plate_per_object: 'write',
+  set_layout: 'write',
 });
 
 /** Indica si el nombre corresponde a un comando conocido del Command Bus. */
@@ -164,6 +174,15 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_add_screw_boss: 'add_screw_boss',
   kura_add_keyhole: 'add_keyhole',
   kura_add_cable_pass: 'add_cable_pass',
+  kura_list_plates: 'list_plates',
+  kura_create_plate: 'create_plate',
+  kura_rename_plate: 'rename_plate',
+  kura_delete_plate: 'delete_plate',
+  kura_set_active_plate: 'set_active_plate',
+  kura_move_to_plate: 'move_to_plate',
+  kura_spread_one_plate_per_object: 'spread_one_plate_per_object',
+  kura_arrange_on_plates: 'arrange_on_plates',
+  kura_set_layout: 'set_layout',
 });
 
 /** Acceso de una herramienta MCP; herramientas no declaradas se tratan como escritura. */

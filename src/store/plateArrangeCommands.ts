@@ -3,7 +3,7 @@
  * @description Comando `arrange_on_plates` del Command Bus («Repartir en placas», lote P5): esquema de parámetros
  * (`ids`, `criterion`, `spacingMm`, `marginMm`, `orient`, `plateIds`, `dryRun`) y manejador. Con `dryRun` devuelve el
  * plan y el informe sin tocar escena ni historial; sin él lo aplica en un paso de deshacer. Usa las mismas acciones
- * del store que el diálogo. El MCP sin interfaz no tiene placas: no lo expone.
+ * del store que el diálogo. El MCP sin interfaz usa el mismo esquema (`mcp-server/src/headlessPlates.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

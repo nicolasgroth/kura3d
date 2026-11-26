@@ -34,6 +34,7 @@ import { RECIPE_HANDLERS } from './recipeCommands';
 import { ADDON_HANDLERS } from './addonCommands';
 import { SMOOTH_ORIENT_HANDLERS } from './smoothOrientCommands';
 import { PLATE_ARRANGE_HANDLERS } from './plateArrangeCommands';
+import { PLATE_HANDLERS } from './plateCommands';
 import { userWarning } from '../core/scene/userEngineMessages';
 import { localizeEngineWarning, type EngineWarning } from '../engine/engineErrors';
 import type { OperationErrorTracker } from './operationErrors';
@@ -109,6 +110,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...ADDON_HANDLERS,
   ...SMOOTH_ORIENT_HANDLERS,
   ...PLATE_ARRANGE_HANDLERS,
+  ...PLATE_HANDLERS,
   get_scene_state: (_p, { get }) => {
     const s = get();
     return {
@@ -122,9 +124,13 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
         id: o.id, name: o.name, source: o.source, primitiveType: o.primitiveType,
         ...transformToUser(o), color: o.color,
         materialPreset: o.materialPreset ?? 'pla_matte', role: o.role, isHole: o.role === 'negative', visible: o.visible,
-        locked: o.locked, stats: worldStats(o), groupId: o.groupRef ?? null,
+        locked: o.locked, stats: worldStats(o), groupId: o.groupRef ?? null, plateId: o.plateRef ?? null,
       })),
       groups: groupSchema.groupHierarchy(s),
+      // Placas (detalle en `list_plates`) y modo de vista: imprimir o armado.
+      layout: s.layout,
+      plateCount: s.plates.length,
+      activePlateId: s.plates.length ? s.activePlateId ?? s.plates[0].id : null,
     };
   },
 
