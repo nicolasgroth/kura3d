@@ -52,7 +52,7 @@ Pedido del autor: tener las piezas de una figura repartidas en varias placas par
 - **Placas:** las indicadas (`plateIds`, lo que ya tienen queda como obstáculo) o las no bloqueadas que quedan vacías; las que falten se crean con `nextPlateOrigin`. Sin placas, la implícita va primero y solo se vuelve explícita si hacen falta otras. Una pieza más grande que toda cama queda fuera (`tooLarge` / `tooTall`; `noRoom` si se acaban las placas).
 - **Cara plana abajo** (`orient: 'flatDown'`): en el Worker, el motor de Orientar mide candidatos y se toma el estable con base real de mayor contacto; sin base real se conserva la orientación (`keptOrientation`).
 - **Store** (`src/store/slices/plateArrangeSlice.ts`): `planArrangeOnPlates(opciones)` (vista previa en el Worker, sin escena ni historial; un pedido nuevo cancela en suave) y `arrangeOnPlatesApply(opciones)` (un paso de deshacer; reutiliza la vista previa si nada cambió). En armado traslada la `restPose`, no la figura; no cambia de modo.
-- **Bus:** `arrange_on_plates` (escritura; `dryRun` devuelve plan e informe sin tocar nada). Sin herramienta MCP: el modo sin interfaz no tiene placas (queda para P8). 
+- **Bus:** `arrange_on_plates` (escritura; `dryRun` devuelve plan e informe sin tocar nada). Herramienta MCP `kura_arrange_on_plates` desde P8, también sin interfaz. En la paleta, «Repartir en placas» corre con las opciones por defecto.
 
 **Panel «Repartir en placas…»** (`PlateArrangePanel`, estado y lógica en `src/store/plateArrangePanel.ts`):
 
@@ -63,6 +63,12 @@ Pedido del autor: tener las piezas de una figura repartidas en varias placas par
 - **Aplicar** (`applyPlateArrange`): `arrangeOnPlatesApply` con las mismas opciones y `quiet` (el panel da su propio aviso), un paso de deshacer nombrado «Repartir en placas» en el historial, cierra el panel; si la vista era Armado o Libre pasa a Imprimir (`setViewMode('print')`, sin paso de deshacer; el aviso lo dice). Aviso persistente con «Deshacer» (mismo patrón que Simplificar, `undoToastAction` persistente) y un segundo aviso con los nombres y motivos de lo que no cupo (hasta 5, luego «y N más»). Deshacer vuelve también a la vista de Armado, porque el paso guarda la vista.
 - **Entradas:** tira de placas, botón de texto «Repartir…» (reemplaza al botón de ícono de «Una placa por objeto»: queda como opción del panel, así no hay dos botones parecidos); menú Acciones (grupo Posición) y paleta, «Repartir en placas…» (mismo nombre, `arrangePlatesName`, ya no ejecuta directo); aviso «Fuera de volumen», junto a «Ajustar a la impresora…». «Una placa por objeto» sigue disponible por la paleta como comando directo.
 - **Límites conocidos:** con «Una placa por objeto» no hay vista previa de reparto (solo la frase de lo que hará); el panel no ofrece elegir las placas de destino (`plateIds` queda para el bus); los contornos no distinguen piezas con acompañantes.
+
+### Placas en el servidor MCP (P8, implementado)
+
+- **Comandos del bus** (`src/store/plateCommands.ts`, esquema compartido en `src/core/bus/plateCommandSchemas.ts`): `list_plates` (lectura), `create_plate`, `rename_plate`, `delete_plate` (con `targetPlateId`), `set_active_plate`, `move_to_plate` (`plateId: "new"` crea una), `spread_one_plate_per_object` (sin `ids`, todas las piezas; no la selección) y `set_layout`. Cada escritura de escena es un paso de deshacer; placa activa y modo no. `get_scene_state` trae `plateId` por objeto, `layout`, `plateCount` y `activePlateId`.
+- **Lógica compartida:** borrar moviendo piezas y mover a una placa nueva viven en `core/scene/plateActions.ts`; aplicar un plan de reparto, en `core/scene/arrangeApply.ts`; el esquema de `arrange_on_plates`, en `core/bus/plateArrangeSchema.ts`. El store y el MCP sin interfaz llaman a las mismas funciones.
+- **Sin interfaz** (`mcp-server/src/headlessPlates.ts`): placas, placa activa y modo en memoria; tras cada herramienta, lo nuevo y lo movido siguen a su placa (`plateAdopt`, `plateFollow`), y lo nuevo se coloca en la cama de la placa activa. Exportar con `plateId` y 3MF multiplaca como la app. Paridad probada en `src/store/__tests__/mcpPlatesParity.test.ts`: mismas posiciones, asignaciones y STL byte a byte. Sin grupos, selección, deshacer ni `.kura`.
 
 ## 1. Modelo de datos propuesto
 

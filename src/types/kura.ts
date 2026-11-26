@@ -1171,7 +1171,15 @@ export interface KuraCommandRequest {
     | 'add_screw_boss'
     | 'add_keyhole'
     | 'add_cable_pass'
-    | 'arrange_on_plates';
+    | 'arrange_on_plates'
+    | 'list_plates'
+    | 'create_plate'
+    | 'rename_plate'
+    | 'delete_plate'
+    | 'set_active_plate'
+    | 'move_to_plate'
+    | 'spread_one_plate_per_object'
+    | 'set_layout';
   params: Record<string, unknown>;
 }
 

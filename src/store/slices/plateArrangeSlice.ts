@@ -4,7 +4,7 @@
  * Worker sin tocar escena ni historial (vista previa del diálogo; un pedido nuevo descarta el anterior con
  * cancelación suave) y `arrangeOnPlatesApply` lo calcula (o reutiliza la vista previa si la escena no cambió) y lo
  * aplica en UN paso de deshacer: crea placas, asigna `plateRef` y mueve. En armado traslada la pose de impresión
- * (`restPose`), no la figura. Lógica pura en `core/scene/plateArrange.ts`.
+ * (`restPose`), no la figura. Lógica pura en `core/scene/plateArrange.ts` (plan) y `core/scene/arrangeApply.ts` (aplicar).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -13,11 +13,9 @@
 import { isEngineCancelled, type EngineJob } from '../../core/operations/engineClient';
 import type { ArrangeTaskArgs } from '../../core/operations/plateArrangeOperations';
 import { projectBed } from '../../core/scene/activePlateBed';
-import { ARRANGE_RANGES, IMPLICIT_PLATE_KEY, type ArrangeOptions, type ArrangePlan, type ArrangeReport } from '../../core/scene/plateArrangeTypes';
-import { nextPlateName, reconcilePlates } from '../../core/scene/plates';
+import { applyArrangePlan, firstUsedPlate, reportWithPlateIds } from '../../core/scene/arrangeApply';
+import { ARRANGE_RANGES, type ArrangeOptions, type ArrangePlan, type ArrangeReport } from '../../core/scene/plateArrangeTypes';
 import { makeId } from '../../core/scene/sceneObjects';
-import type { SceneObject } from '../../types/kura';
-import type { ScenePlate } from '../../types/plates';
 import { StoreOperationError } from '../commandErrors';
 import { tagLastPushedStep } from '../historyLabels';
 import { printPosedObjects } from '../sceneLayout';
@@ -85,34 +83,7 @@ export function createPlateArrangeSlice(ctx: StoreContext): Partial<KuraStoreSta
   const plateName = (n: number) => tr('plates.defaultName', { n });
 
   /** Escena con el plan aplicado (pura salvo los ids nuevos) y el mapa clave → id de placa. */
-  const applyPlan = (scene: Snapshot, plan: ArrangePlan) => {
-    const keyToId = new Map<string, string | null>(scene.plates.map((p) => [p.id, p.id]));
-    let plates: ScenePlate[] = scene.plates;
-    let objects: SceneObject[] = scene.objects;
-    keyToId.set(IMPLICIT_PLATE_KEY, null);
-    for (const c of plan.createdPlates) {
-      const id = makeId('plate');
-      const name = c.key === IMPLICIT_PLATE_KEY ? plateName(1) : nextPlateName(plates, plateName);
-      plates = [...plates, { id, name, origin: [c.origin[0], c.origin[1]] }];
-      keyToId.set(c.key, id);
-      // La implícita se vuelve explícita y recibe los sólidos sin placa (como al crear la segunda placa a mano).
-      if (c.key === IMPLICIT_PLATE_KEY) objects = objects.map((o) => (o.role === 'solid' && o.plateRef === undefined ? { ...o, plateRef: id } : o));
-    }
-    const byId = new Map(plan.placements.map((p) => [p.id, p]));
-    objects = objects.map((o) => {
-      const p = byId.get(o.id);
-      if (!p) return o;
-      const plateId = keyToId.get(p.plate) ?? null;
-      const next: SceneObject = { ...o, ...(p.assignPlate && plateId ? { plateRef: plateId } : {}) };
-      if (scene.layout === 'assembly') next.restPose = { position: [...p.position], rotation: [...p.rotation] };
-      else {
-        next.position = [...p.position];
-        next.rotation = [...p.rotation];
-      }
-      return next;
-    });
-    return { scene: reconcilePlates({ objects, plates }, plateName), keyToId };
-  };
+  const applyPlan = (scene: Snapshot, plan: ArrangePlan) => applyArrangePlan(scene, plan, { makeId: () => makeId('plate'), nameFor: plateName });
 
   return {
     plateArrangeRunning: false,
@@ -164,15 +135,10 @@ export function createPlateArrangeSlice(ctx: StoreContext): Partial<KuraStoreSta
         const { scene: next, keyToId } = applyPlan(scene, plan);
         pushHistory();
         tagLastPushedStep({ kind: 'arrangePlates' }, get().past);
-        const firstUsed = plan.report.platesUsed.map((k) => keyToId.get(k)).find((id): id is string => typeof id === 'string');
+        const firstUsed = firstUsedPlate(plan.report, keyToId);
         set({ objects: next.objects, plates: next.plates, ...(firstUsed ? { activePlateId: firstUsed } : {}) });
         if (plan.createdPlates.length) get().requestCameraPreset('plates');
-        const mapKey = (k: string) => keyToId.get(k) ?? k;
-        const report: ArrangeReport = {
-          ...plan.report,
-          platesUsed: plan.report.platesUsed.map(mapKey),
-          splitGroups: plan.report.splitGroups.map((g) => ({ ...g, plates: g.plates.map(mapKey) })),
-        };
+        const report = reportWithPlateIds(plan.report, keyToId);
         if (!flags?.quiet) {
           get().addToast(tr('plates.arrange.toast.done', { count: report.placed.length, plates: report.platesUsed.length }), 'success');
           if (report.unplaced.length) get().addToast(tr('plates.arrange.toast.unplaced', { count: report.unplaced.length }), 'info');

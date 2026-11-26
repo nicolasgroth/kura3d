@@ -32,6 +32,7 @@ import { registerSmoothOrientTools } from './smoothOrientTools.js';
 import { registerSimplifyTools } from './simplifyTools.js';
 import { registerAddonTools } from './addonTools.js';
 import { registerFaceNegativeTools } from './faceNegativeTools.js';
+import { registerPlateTools } from './plateTools.js';
 import type { ObjectRole } from '../../src/types/kura';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
 import { HeadlessCommandError } from './headlessSupport.js';
@@ -210,7 +211,10 @@ export async function dispatchWithFallback(
     const result = await ctx.headless.queue.run(async () => {
       ctx.headless.takeWarnings();
       takeImplicitWeldWarning();
+      // Con placas, lo nuevo y lo movido siguen a su placa como en la app (`headlessPlates.sync`).
+      const plates = ctx.headless.plates.snapshot();
       const value = await headlessHandler();
+      ctx.headless.plates.sync(plates);
       const weld = takeImplicitWeldWarning();
       return withEngineWarnings(value, [...ctx.headless.takeWarnings(), ...(weld ? [weld] : [])]);
     });
@@ -350,6 +354,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerSimplifyTools(server, ctx);
   registerAddonTools(server, ctx);
   registerFaceNegativeTools(server, ctx);
+  registerPlateTools(server, ctx);
 
   // 3. Transformación de objetos
   server.registerTool(
@@ -737,7 +742,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
         outputPath: outputPathSchema.describe('Destination path of the .stl file on disk.'),
         objectIds: z.array(idSchema).max(256).optional().describe('Specific IDs to export (optional).'),
         binary: z.boolean().default(true).describe('true for binary STL (recommended), false for ASCII.'),
-        plateId: idSchema.optional().describe('Only the parts of this print plate, relative to its bed (with the UI connected).'),
+        plateId: idSchema.optional().describe('Only the parts of this print plate, relative to its bed (from kura_list_plates).'),
       },
     },
     async (args) => {
@@ -749,7 +754,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           outputPath: args.outputPath,
           liveParams: { objectIds: args.objectIds, binary: args.binary, plateId: args.plateId },
           headless: (targetPath) =>
-            ctx.headless.exportStl({ outputPath: targetPath, objectIds: args.objectIds, binary: args.binary }),
+            ctx.headless.exportStl({ outputPath: targetPath, objectIds: args.objectIds, binary: args.binary, plateId: args.plateId }),
         });
       } catch (err) {
         return failError(err);
@@ -771,7 +776,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
       inputSchema: {
         outputPath: outputPathSchema.describe('Destination path of the .3mf file on disk.'),
         objectIds: z.array(idSchema).max(256).optional().describe('Specific IDs to export (optional).'),
-        plateId: idSchema.optional().describe('Only the parts of this print plate, relative to its bed (with the UI connected).'),
+        plateId: idSchema.optional().describe('Only the parts of this print plate, relative to its bed (from kura_list_plates).'),
       },
     },
     async (args) => {
@@ -782,7 +787,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
           label: '3MF',
           outputPath: args.outputPath,
           liveParams: { objectIds: args.objectIds, plateId: args.plateId },
-          headless: (targetPath) => ctx.headless.export3mf({ outputPath: targetPath, objectIds: args.objectIds }),
+          headless: (targetPath) => ctx.headless.export3mf({ outputPath: targetPath, objectIds: args.objectIds, plateId: args.plateId }),
         });
       } catch (err) {
         return failError(err);
