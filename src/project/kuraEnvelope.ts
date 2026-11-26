@@ -11,7 +11,7 @@
  * @license MIT
  */
 
-import { deflateSync, Inflate } from 'fflate';
+import { Deflate, Inflate } from 'fflate';
 import { crc32 } from './crc32';
 import { check, limit, MAX_PROJECT_BYTES, ProjectCodecError } from './projectSchema';
 
@@ -50,17 +50,49 @@ function wrap(image: Uint8Array, compressed: Uint8Array): Uint8Array {
   return out;
 }
 
-/** Comprime una imagen .kura (v1 a v5) con fflate: síncrono y determinista. */
-export function compressImageSync(image: Uint8Array): Uint8Array {
-  return wrap(image, deflateSync(image, { level: FALLBACK_LEVEL }));
+/** Avance de la compresión: bytes de la imagen ya entregados al compresor y total. */
+export type CompressProgress = (fed: number, total: number) => void;
+/** Parte que se entrega al compresor por paso: da el avance sin cambiar el resultado (9 MB → 9 avisos). */
+const FEED_CHUNK = 1024 * 1024;
+
+function concat(chunks: Uint8Array[], size: number): Uint8Array {
+  limit(size <= MAX_PROJECT_BYTES);
+  const out = new Uint8Array(size);
+  let at = 0;
+  for (const chunk of chunks) { out.set(chunk, at); at += chunk.length; }
+  return out;
 }
 
-async function deflateNative(image: Uint8Array): Promise<Uint8Array | null> {
+/** Comprime una imagen .kura (v1 a v5) con fflate por partes: síncrono y determinista. */
+export function compressImageSync(image: Uint8Array, onProgress?: CompressProgress): Uint8Array {
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  const deflater = new Deflate({ level: FALLBACK_LEVEL }, (chunk) => { chunks.push(chunk); size += chunk.length; });
+  for (let at = 0; at < image.length;) {
+    const end = Math.min(image.length, at + FEED_CHUNK);
+    deflater.push(image.subarray(at, end), end >= image.length);
+    at = end;
+    onProgress?.(at, image.length);
+  }
+  return wrap(image, concat(chunks, size));
+}
+
+async function deflateNative(image: Uint8Array, onProgress?: CompressProgress): Promise<Uint8Array | null> {
   if (typeof CompressionStream !== 'function') return null;
   try {
     const stream = new CompressionStream('deflate-raw');
     const writer = stream.writable.getWriter();
-    void writer.write(image as Uint8Array<ArrayBuffer>).then(() => writer.close()).catch(() => {});
+    // Cada `write` se resuelve cuando el compresor tomó la parte: eso es el avance.
+    const feeding = (async () => {
+      for (let at = 0; at < image.length;) {
+        const end = Math.min(image.length, at + FEED_CHUNK);
+        await writer.write(image.subarray(at, end) as Uint8Array<ArrayBuffer>);
+        at = end;
+        onProgress?.(at, image.length);
+      }
+      await writer.close();
+    })();
+    feeding.catch(() => {}); // El error llega también por la lectura; se evita el rechazo sin atender.
     const reader = stream.readable.getReader();
     const chunks: Uint8Array[] = [];
     let size = 0;
@@ -71,10 +103,8 @@ async function deflateNative(image: Uint8Array): Promise<Uint8Array | null> {
       size += value.length;
       limit(size <= MAX_PROJECT_BYTES);
     }
-    const out = new Uint8Array(size);
-    let at = 0;
-    for (const chunk of chunks) { out.set(chunk, at); at += chunk.length; }
-    return out;
+    await feeding;
+    return concat(chunks, size);
   } catch (error) {
     if (error instanceof ProjectCodecError) throw error;
     return null; // Sin 'deflate-raw' (WebView antiguo) o falla del flujo: se usa el respaldo.
@@ -82,9 +112,9 @@ async function deflateNative(image: Uint8Array): Promise<Uint8Array | null> {
 }
 
 /** Comprime con el deflate nativo si la plataforma lo tiene; si no, o si falla, con fflate. */
-export async function compressImage(image: Uint8Array): Promise<Uint8Array> {
-  const native = await deflateNative(image);
-  return native ? wrap(image, native) : compressImageSync(image);
+export async function compressImage(image: Uint8Array, onProgress?: CompressProgress): Promise<Uint8Array> {
+  const native = await deflateNative(image, onProgress);
+  return native ? wrap(image, native) : compressImageSync(image, onProgress);
 }
 
 function inflateBounded(data: Uint8Array, expected: number): Uint8Array {

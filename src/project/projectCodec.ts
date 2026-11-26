@@ -143,9 +143,25 @@ export function encodeProject(doc: ProjectDocument): Uint8Array {
   return compressImageSync(encodeProjectImage(doc));
 }
 
-/** Guarda un proyecto como .kura v6 con el deflate nativo de la plataforma, o fflate si no lo hay. */
-export async function encodeProjectCompressed(doc: ProjectDocument): Promise<Uint8Array> {
-  return compressImage(encodeProjectImage(doc));
+/** Fase del guardado y porcentaje total (0 a 100, creciente). */
+export type EncodeProgress = (percent: number, phase: 'encode' | 'compress') => void;
+/** Parte del avance que corresponde a preparar la imagen (medido: ~110 ms de ~430 ms con 500 mil triángulos). */
+const ENCODE_SHARE = 25;
+
+/**
+ * Guarda un proyecto como .kura v6 con el deflate nativo de la plataforma, o fflate si no lo hay. `onProgress`
+ * recibe 0 al empezar a preparar, 25 al tener la imagen y luego los bytes entregados al compresor hasta 100.
+ */
+export async function encodeProjectCompressed(doc: ProjectDocument, onProgress?: EncodeProgress): Promise<Uint8Array> {
+  onProgress?.(0, 'encode');
+  const image = encodeProjectImage(doc);
+  let last = ENCODE_SHARE;
+  onProgress?.(last, 'compress');
+  return compressImage(image, onProgress && ((fed, total) => {
+    // Creciente aunque el camino nativo falle a medias y el respaldo empiece de nuevo.
+    last = Math.max(last, ENCODE_SHARE + Math.floor(((100 - ENCODE_SHARE) * fed) / total));
+    onProgress(last, 'compress');
+  }));
 }
 
 /** Imagen .kura sin comprimir (v3, v4 o v5): el contenido del sobre v6 y el formato que escribían versiones anteriores. */
