@@ -302,7 +302,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'viewport.gizmo.rotate': '旋转 (R)',
   'viewport.gizmo.scale': '缩放 (S)',
   'viewport.snapLabel': '网格',
-  'viewport.snapOff': '自由',
+  'viewport.snapOff': '无吸附',
   'viewport.dimensionsPrefix': '尺寸',
   'viewport.noSelection': '未选择对象',
   'viewport.dimensionsMulti': '{size}（{count} 个对象）',
