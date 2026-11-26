@@ -57,7 +57,7 @@ describe('guardar: tramo previo al códec', () => {
     structuredClone(doc);
     const cloneMs = performance.now() - t0;
 
-    let firstProgressMs = NaN;
+    let firstProgressMs = NaN, imageMs = NaN, compressedMs = NaN;
     let start = 0;
     vi.mocked(saveProjectFile).mockImplementation(async (name, data) => {
       if (typeof data === 'function') await data();
@@ -65,13 +65,16 @@ describe('guardar: tramo previo al códec', () => {
     });
     const unsubscribe = useKuraStore.subscribe((s) => {
       if (Number.isNaN(firstProgressMs) && s.busyProgress?.name === 'project_save') firstProgressMs = performance.now() - start;
+      if (s.busyProgress?.phase === 'save:compress:25' && Number.isNaN(imageMs)) imageMs = performance.now() - start;
+      if (s.busyProgress?.phase === 'save:write' && Number.isNaN(compressedMs)) compressedMs = performance.now() - start;
     });
     start = performance.now();
     expect(await store().saveProject()).toBe(true);
     const totalMs = performance.now() - start;
     unsubscribe();
     console.log(`[guardar] captura ${Math.round(captureMs)} ms; copia estructurada ${Math.round(cloneMs)} ms; `
-      + `primer avance ${Math.round(firstProgressMs)} ms; total ${Math.round(totalMs)} ms`);
+      + `primer avance ${Math.round(firstProgressMs)} ms; imagen lista ${Math.round(imageMs)} ms; comprimido ${Math.round(compressedMs)} ms; `
+      + `total ${Math.round(totalMs)} ms`);
     expect(firstProgressMs).toBeLessThan(300);
     expect(totalMs).toBeLessThan(10_000);
   }, 180_000);
