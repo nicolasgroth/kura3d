@@ -33,7 +33,7 @@ async function abrirDesdePaleta(page: Page) {
 }
 
 async function numero(page: Page, nombre: string, valor: string) {
-  const campo = page.getByRole('spinbutton', { name: nombre });
+  const campo = page.getByRole('spinbutton', { name: nombre, exact: true });
   await campo.fill(valor);
   await campo.press('Enter');
 }
