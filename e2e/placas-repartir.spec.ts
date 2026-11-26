@@ -22,12 +22,14 @@ const resumen = (page: Page) => page.getByTestId('arrange-summary');
 async function tresCubos(page: Page) {
   await abrir(page);
   for (let i = 0; i < 3; i++) await agregarForma(page, 'Cubo');
+  // Agregar deja la última pieza seleccionada y entonces el alcance por defecto es «La selección»: se limpia.
+  await page.evaluate(() => (window as any).__s.getState().setSelection([]));
 }
 
 /** Abre el panel desde la paleta de comandos. */
 async function abrirDesdePaleta(page: Page) {
   await page.keyboard.press('Control+K');
-  await page.getByRole('combobox').fill('Repartir en placas');
+  await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('Repartir en placas');
   await page.getByRole('option', { name: /Repartir en placas…/ }).first().click();
   await expect(panel(page)).toBeVisible();
 }
@@ -41,7 +43,8 @@ for (const width of [1024, 1440]) {
         await tresCubos(page);
         await abrirDesdePaleta(page);
         await expect(page.getByTestId('arrange-scope-all')).toBeChecked();
-        await expect(page.getByTestId('arrange-criterion-compact')).toBeFocused();
+        // Foco inicial: el primer radio marcado del panel (el alcance), no el criterio.
+        await expect(page.getByTestId('arrange-scope-all')).toBeFocused();
         await expect(resumen(page)).toContainText(/placa/, { timeout: 10_000 });
         await expect(resumen(page)).toContainText('3 piezas colocadas');
         // El panel no desborda el ancho de la ventana.
@@ -57,7 +60,7 @@ for (const width of [1024, 1440]) {
         await expect(resumen(page)).toContainText('3 piezas colocadas', { timeout: 10_000 });
         await page.getByTestId('arrange-criterion-byColor').check();
         await expect(page.getByTestId('arrange-preview')).toHaveAttribute('data-status', 'ready', { timeout: 10_000 });
-        const separacion = page.getByRole('textbox', { name: 'Separación entre piezas' });
+        const separacion = page.getByLabel('Separación entre piezas', { exact: true });
         await separacion.fill('200');
         await separacion.press('Enter');
         await page.getByTestId('arrange-criterion-onePerObject').check();
@@ -82,13 +85,11 @@ for (const width of [1024, 1440]) {
         expect(await store(page, (s) => s.plates.length)).toBe(0);
       });
 
-      test('desde la tira de placas, desde Armado: pasa a Imprimir y lo avisa', async ({ page }) => {
+      test('desde Armado (la tira de placas solo existe en Imprimir): pasa a Imprimir y lo avisa', async ({ page }) => {
         await tresCubos(page);
         await page.evaluate(() => (window as any).__s.setState({ customBedDimensions: { width: 60, depth: 60, height: 100 } }));
-        await page.evaluate(() => (window as any).__s.getState().spreadOnePlatePerObject());
         await page.evaluate(() => (window as any).__s.getState().setViewMode('assembly'));
-        await page.getByTestId('plate-arrange').click();
-        await expect(panel(page)).toBeVisible();
+        await abrirDesdePaleta(page);
         await expect(page.getByTestId('arrange-preview')).toHaveAttribute('data-status', 'ready', { timeout: 10_000 });
         await page.getByTestId('arrange-apply').click();
         await expect(panel(page)).toHaveCount(0);
@@ -116,7 +117,8 @@ for (const width of [1024, 1440]) {
 
       test('desde el aviso «Fuera de volumen» se ofrece «Repartir en placas…»', async ({ page }) => {
         await tresCubos(page);
-        await page.evaluate(() => (window as any).__s.setState({ customBedDimensions: { width: 15, depth: 15, height: 100 } }));
+        // El aviso mide contra el perfil de la impresora, no contra las medidas propias: se saca un cubo de la cama.
+        await page.evaluate(() => { const s = (window as any).__s.getState(); s.setObjectTransform(s.objects[0].id, { position: [1000, 0, 0] }, true); });
         await page.getByTestId('oob-arrange').click();
         await expect(panel(page)).toBeVisible();
       });

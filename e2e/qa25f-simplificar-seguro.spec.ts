@@ -33,7 +33,7 @@ async function abrirPanel(page: Page) {
   await expect(page.locator('.kura-simplify-section')).toBeVisible();
 }
 
-test('placa con 3 agujeros por cantidad muy baja: bloquea, motivos, versión segura y «de todos modos»', async ({ page }) => {
+test('placa con 3 agujeros por cantidad muy baja: aplica la versión segura con aviso y «de todos modos» la reemplaza', async ({ page }) => {
   test.setTimeout(180_000);
   const errs = await abrir(page);
   const id = await placaConAgujeros(page);
@@ -51,26 +51,26 @@ test('placa con 3 agujeros por cantidad muy baja: bloquea, motivos, versión seg
   const p0 = await pasos(page);
   await page.keyboard.press('Enter');
   await libre(page);
+  // Regla del 26-nov: con una versión segura útil se APLICA esa en lugar de lo pedido (un paso, con aviso y
+  // «Aplicar de todos modos»); solo si no hay segura queda el bloqueo («No se aplicó…») sin tocar la pieza.
+  const aplicada = page.getByTestId('simplify-safe-applied');
   const bloque = page.getByTestId('simplify-blocked');
-  await expect(bloque).toBeVisible({ timeout: 60_000 });
-  expect(await pasos(page)).toBe(p0);
-  expect(await tris(page, id)).toBe(t0);
-  console.log('QA25F bloqueo:', (await bloque.innerText()).replace(/\s+/g, ' '));
+  await expect(aplicada.or(bloque)).toBeVisible({ timeout: 60_000 });
+  const segura = (await aplicada.count()) > 0;
+  console.log('QA25F resultado:', segura ? 'segura aplicada' : 'bloqueo', (await page.getByTestId('simplify-report').innerText()).replace(/\s+/g, ' ').slice(0, 400));
   await page.screenshot({ path: `${EV}/placa-bloqueada.png` });
-  const seguro = page.getByTestId('simplify-apply-safe');
   await expect(page.getByTestId('simplify-apply-anyway')).toBeVisible();
-  if (await seguro.count()) {
-    await seguro.click();
-    await libre(page);
+  if (segura) {
     const t1 = await tris(page, id);
     console.log('QA25F segura', t0, '->', t1);
-    expect(t1).toBeLessThanOrEqual(t0);
+    expect(t1).toBeLessThan(t0);
     expect(await pasos(page)).toBe(p0 + 1);
     await page.keyboard.press('Control+z');
     expect(await tris(page, id)).toBe(t0);
     expect(await pasos(page)).toBe(p0);
   } else {
-    console.log('QA25F sin versión segura (placa ya mínima)');
+    expect(await pasos(page)).toBe(p0);
+    expect(await tris(page, id)).toBe(t0);
   }
   // Volver a pedirlo y forzar.
   await campo.click();
