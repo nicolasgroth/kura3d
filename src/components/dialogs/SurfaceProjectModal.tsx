@@ -170,9 +170,6 @@ export const SurfaceProjectModal: React.FC<{ open: boolean; onClose: () => void 
       title={t(language, 'dialog.project.title')}
       footer={
         <>
-          <button type="button" className="kura-btn" onClick={onClose}>
-            {t(language, 'dialog.cancel')}
-          </button>
           <button
             type="button"
             className="kura-btn kura-btn-primary"

@@ -17,7 +17,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 
 export interface FoldStripProps {
   onDone?: () => void;
-  /** Prefijo de textos (`magnet.fold.label`, `magnet.fold.empty`, `magnet.done`) y de `data-testid`. */
+  /** Prefijo de textos (`magnet.fold.label`, `magnet.fold.empty`) y de `data-testid`. */
   prefix?: 'magnet' | 'turret' | 'keyhole' | 'cable';
 }
 
@@ -32,7 +32,7 @@ export const MagnetFoldStrip: React.FC<FoldStripProps> = ({ onDone = closeMagnet
         {last ? last.text : t(language, k('fold.empty'))}
       </p>
       <button type="button" className="kura-btn kura-btn-sm kura-btn-primary" data-testid={`${prefix}-fold-done`} onClick={onDone}>
-        {t(language, k('done'))}
+        {t(language, 'panel.action.back')}
       </button>
     </div>,
     document.getElementById('kura-op-slot') ?? document.body,

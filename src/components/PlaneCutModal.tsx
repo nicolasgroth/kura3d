@@ -258,9 +258,6 @@ export const PlaneCutModal: React.FC<{ open: boolean; onClose: () => void }> = (
      
       footer={
         <>
-          <button type="button" className="kura-btn" onClick={onClose}>
-            {t(language, 'dialog.cancel')}
-          </button>
           <button
             type="button"
             className="kura-btn kura-btn-primary"

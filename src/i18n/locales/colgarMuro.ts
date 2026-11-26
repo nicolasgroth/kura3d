@@ -52,7 +52,6 @@ const TABLE = {
     'रखने के लिए चिह्नित माप ठीक करें।',
     '请修正标记的尺寸后再放置。',
   ],
-  'keyhole.done': ['Listo', 'Done', 'Fertig', 'Terminé', 'हो गया', '完成'],
   'keyhole.fold.label': ['Colgar en el muro', 'Wall-hanging keyhole', 'Schlüsselloch zum Aufhängen', 'Trou de serrure mural', 'दीवार पर टाँगने का कीहोल', '挂墙钥匙孔'],
   'keyhole.fold.empty': ['Haz clic sobre una cara para colocar.', 'Click a face to place.', 'Klicke auf eine Fläche zum Setzen.', 'Clique sur une face pour placer.', 'रखने के लिए फलक पर क्लिक करें।', '点击一个面来放置。'],
   ...presetRows('keyhole'),

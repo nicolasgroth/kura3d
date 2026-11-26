@@ -68,7 +68,7 @@ for (const caso of [{ nombre: 'simple', rot: false, grupo: false }, { nombre: 'e
     await cuadros(page);
     await page.mouse.down(); await page.mouse.up();
     await libre(page);
-    await page.getByTestId('turret-done').click();
+    await page.getByTestId('panel-back').click();
     const nObjs = await page.evaluate(() => (window as any).__s.getState().objects.length);
     await page.evaluate(async () => { const x = (window as any).__s.getState(); x.setSelection([]); await x.applyHolesOnSolids(); });
     await libre(page);

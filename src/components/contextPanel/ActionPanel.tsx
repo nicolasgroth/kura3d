@@ -10,13 +10,12 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { t } from '../../i18n';
 import type { ActionId } from '../../store/actionsCatalog';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import type { InspectorLocalState } from '../inspector/inspectorTypes';
-import { helpAttrs } from '../shell/controlHelp';
+import { PanelHeader } from '../shell/PanelHeader';
 import { panelContentOf } from './panelRegistry';
 
 const FOCUSABLE = 'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])';
@@ -99,13 +98,7 @@ export const ActionPanel: React.FC<{ id: ActionId; primary: SceneObject | null; 
 
   return (
     <div ref={rootRef} className="kura-ctx-action" data-action={id} onKeyDown={onKeyDown}>
-      <div className="kura-panel-header kura-ctx-header">
-        <button type="button" className="kura-btn kura-btn-sm kura-ctx-back" aria-label={t(language, 'panel.action.back')} onClick={close} {...helpAttrs('panel.back', language)}>
-          <ArrowLeft size={14} aria-hidden="true" />
-          <span>{t(language, 'panel.action.back')}</span>
-        </button>
-        <h2 className="kura-ctx-heading" tabIndex={-1}>{title}</h2>
-      </div>
+      <PanelHeader onBack={close} title={title} className="kura-ctx-header" titleClassName="kura-ctx-heading" focusableTitle />
       {!entry.renderScene && primary && (
         <p className="kura-ctx-target" title={primary.name}>{t(language, 'panel.action.target', { name: primary.name })}</p>
       )}

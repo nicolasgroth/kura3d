@@ -226,7 +226,6 @@ const IMAN_TABLE = {
     'रखने के लिए भाग को छुएँ',
     '点按零件以放置',
   ],
-  'magnet.done': ['Listo', 'Done', 'Fertig', 'Terminé', 'हो गया', '完成'],
   'magnet.cmd.keywords': [
     'imán iman alojamiento hueco neodimio agregado',
     'magnet pocket hole neodymium addon iman imán alojamiento',

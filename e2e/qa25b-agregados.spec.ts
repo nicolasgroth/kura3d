@@ -77,7 +77,7 @@ test('ojo de cerradura: aviso de pared delgada y de borde, y sigue a la pieza al
   const avisos2 = await page.locator('[data-testid^="keyhole-warn-"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-testid')));
   console.log('QA25B keyhole avisos borde', JSON.stringify(avisos2));
   expect(avisos2.join()).toMatch(/edge/);
-  await page.getByTestId('keyhole-done').click();
+  await page.getByTestId('panel-back').click();
   const antes = await addons(page, 'keyhole');
   expect(antes.length).toBe(2);
   await page.evaluate((id) => (window as any).__s.getState().setObjectTransform(id, { position: [50, 0, 20], rotation: [0, Math.PI / 2, 0] }, true), host);

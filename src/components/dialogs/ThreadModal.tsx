@@ -82,9 +82,6 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
       title={t(language, 'dialog.thread.title')}
       footer={
         <>
-          <button type="button" className="kura-btn" onClick={onClose}>
-            {t(language, 'dialog.cancel')}
-          </button>
           <button
             type="button"
             className="kura-btn kura-btn-primary"

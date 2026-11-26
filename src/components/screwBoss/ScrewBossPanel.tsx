@@ -3,7 +3,7 @@
  * @description Panel de operación «Torreta para tornillo» (no modal, en el lugar del inspector, como el imán).
  * Mientras está abierto, un clic sobre una cara coloca la torreta perpendicular a ella (ver
  * `ScrewBossPlacementLayer`); muestra cómo colocar, la medida (preajustes incluidos y propios), los campos, el
- * resumen y los avisos de la última colocada. Se cierra con «Listo», su X o Escape.
+ * resumen y los avisos de la última colocada. Se cierra con «Volver» o Escape.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -67,11 +67,6 @@ export const ScrewBossPanel: React.FC = () => {
         title={t(language, 'turret.title')}
         className="kura-magnet-panel kura-turret-panel"
         initialFocus='[data-testid="turret-preset"]'
-        footer={(
-          <button type="button" className="kura-btn kura-btn-sm kura-btn-primary" data-testid="turret-done" onClick={close}>
-            {t(language, 'turret.done')}
-          </button>
-        )}
       >
         <p className="kura-magnet-hint" role="status" data-testid="turret-hint">
           {t(language, blocked ? 'turret.invalid' : 'turret.hint')}
