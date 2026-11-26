@@ -51,6 +51,17 @@ describe('modelo de la lista de cortes a mano', () => {
     expect(cuts.map((c) => c.positionMm)).toEqual([180]);
   });
 
+  it('agregar no cae sobre un plano que ya existe en ese eje: va al centro del tramo libre más largo', () => {
+    // Rejilla automática con un corte al centro (Z = 150): el nuevo no debe quedar encima (se cruzarían al inclinar).
+    let cuts = addCut([], BOX);
+    cuts = addCut(cuts, BOX);
+    expect(cuts.map((c) => c.positionMm)).toEqual([150, 75]);
+    cuts = addCut(cuts, BOX);
+    expect(cuts.map((c) => c.positionMm)).toEqual([150, 75, 225]);
+    // Otro eje no cuenta: en X vacío vuelve al centro.
+    expect(addCut(cuts, BOX, 'x').at(-1)).toMatchObject({ axis: 'x', positionMm: 0 });
+  });
+
   it('acota posición al modelo y ángulos a ±45°; al cambiar de eje vuelve al centro', () => {
     const [c] = addCut([], BOX, 'x');
     expect(updateCut([c], c.id, { positionMm: 999 }, BOX)[0].positionMm).toBe(positionRange(BOX, 'x').max);

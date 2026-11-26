@@ -39,7 +39,7 @@ test('dividir con cortes a mano: editar desde el automático, inclinar, ver solo
   // Agregar un plano y luego inclinar el primero 20° hacia Z
   await page.getByRole('button', { name: 'Agregar plano' }).click();
   await expect(filas).toHaveCount(antes + 1);
-  const inclinacion = page.getByLabel('Inclinación del plano 1 hacia Z (grados)');
+  const inclinacion = page.getByRole('spinbutton', { name: 'Inclinación del plano 1 hacia Z (grados)', exact: true });
   await inclinacion.fill('20');
   await inclinacion.press('Enter');
   await expect(panel.locator('.kura-split-cuts > li').first()).toContainText('inclinado');

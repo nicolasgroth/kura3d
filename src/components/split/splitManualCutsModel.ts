@@ -1,7 +1,7 @@
 /**
  * @file src/components/split/splitManualCutsModel.ts
  * @description Modelo de la lista de cortes a mano del panel "Dividir para imprimir" (funciones puras, en ejes del
- * usuario): agregar (en el centro del modelo, en el eje más largo), quitar, duplicar (desplazado un 10 % del tramo),
+ * usuario): agregar (en el eje más largo, en el centro del tramo libre más largo), quitar, duplicar (desplazado un 10 % del tramo),
  * cambiar eje, posición o ángulos (acotados al modelo y a ±`SPLIT_MANUAL_MAX_TILT_DEG`), partir desde los planos de
  * la rejilla automática y pasar la lista a los cortes del motor (`BedSplitPlanOptions.manualCuts`).
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -42,13 +42,26 @@ export function positionRange(box: UserBox, axis: AxisName): { min: number; max:
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const center = (box: UserBox, axis: AxisName) => Math.round(((box.min[INDEX[axis]] + box.max[INDEX[axis]]) / 2) * 10) / 10;
 
-/** Agrega un plano recto en el centro, en el eje más largo del modelo (o en `axis`). */
+/**
+ * Posición libre para un plano nuevo en `axis`: el centro del tramo más largo entre los bordes del modelo y los planos
+ * que ya hay en ese eje (el primero si empatan). Sin planos en el eje es el centro del modelo. Así el nuevo nunca cae
+ * encima de otro (dos planos coincidentes se cruzan en cuanto uno se inclina).
+ */
+function freePosition(cuts: ManualCut[], box: UserBox, axis: AxisName): number {
+  const a = INDEX[axis];
+  const stops = [box.min[a], ...cuts.filter((c) => c.axis === axis).map((c) => c.positionMm), box.max[a]].sort((p, q) => p - q);
+  let best = 0;
+  for (let i = 1; i < stops.length - 1; i++) if (stops[i + 1] - stops[i] > stops[best + 1] - stops[best]) best = i;
+  return Math.round(((stops[best] + stops[best + 1]) / 2) * 10) / 10;
+}
+
+/** Agrega un plano recto en el eje más largo del modelo (o en `axis`), en el centro del tramo libre más largo. */
 export function addCut(cuts: ManualCut[], box: UserBox, axis?: AxisName): ManualCut[] {
   if (cuts.length >= SPLIT_MANUAL_MAX_CUTS) return cuts;
   const size = [0, 1, 2].map((i) => box.max[i] - box.min[i]);
   const longest = (['x', 'y', 'z'] as AxisName[])[size.indexOf(Math.max(...size))];
   const a = axis ?? longest;
-  return [...cuts, { id: newCutId(), axis: a, positionMm: center(box, a), tiltDeg: [0, 0] }];
+  return [...cuts, { id: newCutId(), axis: a, positionMm: freePosition(cuts, box, a), tiltDeg: [0, 0] }];
 }
 
 export const removeCut = (cuts: ManualCut[], id: string): ManualCut[] => cuts.filter((c) => c.id !== id);
