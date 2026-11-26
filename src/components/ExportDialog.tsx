@@ -22,6 +22,7 @@ import { NativeModal } from './NativeModal';
 import { SplitExportOptions } from './split/SplitExportOptions';
 import { GroupExportOptions } from './dialogs/GroupExportOptions';
 import { PlateExportOptions } from './dialogs/PlateExportOptions';
+import { SlicerProjectSection } from './dialogs/SlicerProjectSection';
 import { planPlateExport } from '../core/scene/plateExport';
 import type { PlateExportMode } from '../store/plateExportFlow';
 import { selectedGroup } from '../core/scene/groups';
@@ -224,6 +225,8 @@ export const ExportDialog: React.FC<{ open: boolean; onClose: () => void; initia
             onChange={setPlateMode}
           />
         )}
+
+        {format === '3mf' && !(showPlates && plateMode === 'perPlate') && <SlicerProjectSection language={language} />}
 
         {splitTargets && (
           <SplitExportOptions

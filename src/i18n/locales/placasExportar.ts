@@ -2,7 +2,7 @@
  * @file src/i18n/locales/placasExportar.ts
  * @description Textos de exportar con placas (lote P6) en los 6 idiomas: elección del diálogo de exportación con
  * varias placas (un 3MF con todas o un archivo por placa en ZIP) y qué laminadores entienden cada una, piezas sin
- * placa excluidas, ZIP hecho y errores del bus (exportar y comandos de placas del lote P8). Cada clave lleva [es, en, de, fr, hi, zh].
+ * placa excluidas, sección «Laminador» (proyecto de ejemplo), ZIP hecho y errores del bus (exportar y comandos de placas del lote P8). Cada clave lleva [es, en, de, fr, hi, zh].
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -82,6 +82,86 @@ const PLATES_EXPORT_TABLE = {
     'Le trancheur utilise un seul plateau pour tous : {names} {count?a son|ont leur} propre plateau et {count?a été centré|ont été centrés} sur un plateau de {w} × {d} mm (celui du projet). Vérifiez que les pièces tiennent.',
     'स्लाइसर सभी प्लेटों के लिए एक ही बेड इस्तेमाल करता है: {names} का अपना बेड है और {count?उसे|उन्हें} {w} × {d} mm (प्रोजेक्ट के बेड) की प्लेट के बीच में रखा गया। जाँचें कि हिस्से समा जाएँ।',
     '切片软件对所有打印板只使用一种热床：{names} 有自己的热床，已居中放在 {w} × {d} mm（项目热床）的打印板上。请检查零件是否放得下。',
+  ],
+  'dialog.export.slicer.legend': [
+    'Laminador',
+    'Slicer',
+    'Slicer',
+    'Trancheur',
+    'स्लाइसर',
+    '切片软件',
+  ],
+  'dialog.export.slicer.hint': [
+    'Para que Bambu Studio, OrcaSlicer o Elegoo Slicer abran el 3MF con sus placas, nombres y colores, carga una vez un proyecto .3mf guardado desde tu laminador. Solo se toman los nombres de impresora, proceso y filamentos. Sin él, el laminador abre todas las piezas en una sola bandeja.',
+    'For Bambu Studio, OrcaSlicer or Elegoo Slicer to open the 3MF with its plates, names and colors, load once a .3mf project saved from your slicer. Only the printer, process and filament names are taken. Without it, the slicer opens all parts on a single plate.',
+    'Damit Bambu Studio, OrcaSlicer oder Elegoo Slicer das 3MF mit Platten, Namen und Farben öffnen, lade einmal ein aus deinem Slicer gespeichertes .3mf-Projekt. Übernommen werden nur die Namen von Drucker, Prozess und Filamenten. Ohne es öffnet der Slicer alle Teile auf einer einzigen Platte.',
+    'Pour que Bambu Studio, OrcaSlicer ou Elegoo Slicer ouvrent le 3MF avec ses plateaux, noms et couleurs, chargez une fois un projet .3mf enregistré depuis votre trancheur. Seuls les noms d’imprimante, de processus et de filaments sont repris. Sans lui, le trancheur ouvre toutes les pièces sur un seul plateau.',
+    'Bambu Studio, OrcaSlicer या Elegoo Slicer में 3MF को उसकी प्लेटों, नामों और रंगों के साथ खोलने के लिए, अपने स्लाइसर से सहेजा गया एक .3mf प्रोजेक्ट एक बार लोड करें। सिर्फ़ प्रिंटर, प्रोसेस और फ़िलामेंट के नाम लिए जाते हैं। इसके बिना स्लाइसर सभी हिस्से एक ही प्लेट पर खोलता है।',
+    '要让 Bambu Studio、OrcaSlicer 或 Elegoo Slicer 打开 3MF 时保留打印板、名称和颜色，请载入一次从你的切片软件保存的 .3mf 项目。只读取打印机、工艺和耗材的名称。没有它，切片软件会把所有零件放在一块打印板上。',
+  ],
+  'dialog.export.slicer.loaded': [
+    'Proyecto de ejemplo: {printer} · {count} {count?filamento|filamentos}: {filaments}',
+    'Sample project: {printer} · {count} {count?filament|filaments}: {filaments}',
+    'Beispielprojekt: {printer} · {count} {count?Filament|Filamente}: {filaments}',
+    'Projet d’exemple : {printer} · {count} {count?filament|filaments} : {filaments}',
+    'नमूना प्रोजेक्ट: {printer} · {count} फ़िलामेंट: {filaments}',
+    '示例项目：{printer} · {count} 种耗材：{filaments}',
+  ],
+  'dialog.export.slicer.none': [
+    'No hay proyecto de ejemplo cargado.',
+    'No sample project loaded.',
+    'Kein Beispielprojekt geladen.',
+    'Aucun projet d’exemple chargé.',
+    'कोई नमूना प्रोजेक्ट लोड नहीं है।',
+    '尚未载入示例项目。',
+  ],
+  'dialog.export.slicer.load': [
+    'Cargar proyecto del laminador…',
+    'Load slicer project…',
+    'Slicer-Projekt laden…',
+    'Charger un projet du trancheur…',
+    'स्लाइसर प्रोजेक्ट लोड करें…',
+    '载入切片项目…',
+  ],
+  'dialog.export.slicer.remove': [
+    'Quitar proyecto de ejemplo',
+    'Remove sample project',
+    'Beispielprojekt entfernen',
+    'Retirer le projet d’exemple',
+    'नमूना प्रोजेक्ट हटाएँ',
+    '移除示例项目',
+  ],
+  'dialog.export.slicer.error.not-3mf': [
+    '«{name}» no es un archivo 3MF.',
+    '"{name}" is not a 3MF file.',
+    '„{name}“ ist keine 3MF-Datei.',
+    '« {name} » n’est pas un fichier 3MF.',
+    '"{name}" 3MF फ़ाइल नहीं है।',
+    '“{name}”不是 3MF 文件。',
+  ],
+  'dialog.export.slicer.error.no-profile': [
+    '«{name}» no trae perfil del laminador. Guárdalo como proyecto desde Bambu Studio, OrcaSlicer o Elegoo Slicer (Archivo > Guardar proyecto) y cárgalo de nuevo.',
+    '"{name}" has no slicer profile. Save it as a project from Bambu Studio, OrcaSlicer or Elegoo Slicer (File > Save project) and load it again.',
+    '„{name}“ enthält kein Slicer-Profil. Speichere es in Bambu Studio, OrcaSlicer oder Elegoo Slicer als Projekt (Datei > Projekt speichern) und lade es erneut.',
+    '« {name} » ne contient pas de profil de trancheur. Enregistrez-le comme projet depuis Bambu Studio, OrcaSlicer ou Elegoo Slicer (Fichier > Enregistrer le projet) puis rechargez-le.',
+    '"{name}" में स्लाइसर प्रोफ़ाइल नहीं है। इसे Bambu Studio, OrcaSlicer या Elegoo Slicer से प्रोजेक्ट के रूप में सहेजें (File > Save project) और फिर से लोड करें।',
+    '“{name}”不含切片配置。请在 Bambu Studio、OrcaSlicer 或 Elegoo Slicer 中另存为项目（文件 > 保存项目）后重新载入。',
+  ],
+  'dialog.export.slicer.error.unreadable': [
+    'No se pudo leer el perfil del laminador de «{name}»: el archivo está dañado o es demasiado grande.',
+    'Could not read the slicer profile in "{name}": the file is damaged or too large.',
+    'Das Slicer-Profil in „{name}“ konnte nicht gelesen werden: Die Datei ist beschädigt oder zu groß.',
+    'Impossible de lire le profil du trancheur de « {name} » : le fichier est endommagé ou trop volumineux.',
+    '"{name}" की स्लाइसर प्रोफ़ाइल पढ़ी नहीं जा सकी: फ़ाइल खराब है या बहुत बड़ी है।',
+    '无法读取“{name}”中的切片配置：文件已损坏或过大。',
+  ],
+  'dialog.export.slicer.error.save': [
+    'No se pudo guardar el proyecto de ejemplo en este navegador.',
+    'Could not save the sample project in this browser.',
+    'Das Beispielprojekt konnte in diesem Browser nicht gespeichert werden.',
+    'Impossible d’enregistrer le projet d’exemple dans ce navigateur.',
+    'इस ब्राउज़र में नमूना प्रोजेक्ट सहेजा नहीं जा सका।',
+    '无法在此浏览器中保存示例项目。',
   ],
   'export.plates.zipDone': [
     'Exportadas {count} placas en {name}',
