@@ -15,6 +15,7 @@ import { MENU_IDEAS_HI } from './menuIdeas';
 import { GROUPS_HI } from './groups';
 import { PLATES_VIEW_HI } from './placasVista';
 import { PLATES_EXPORT_HI } from './placasExportar';
+import { PLATES_ARRANGE_HI } from './placasRepartir';
 import { MEASURE_HI } from './measure';
 import { FLOWUX_HI } from './flowUx';
 import { PREVIEW_HI } from './preview';
@@ -80,6 +81,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...GROUPS_HI,
   ...PLATES_VIEW_HI,
   ...PLATES_EXPORT_HI,
+  ...PLATES_ARRANGE_HI,
   ...MEASURE_HI,
   ...FLOWUX_HI,
   ...PREVIEW_HI,

@@ -179,7 +179,7 @@ describe('arrangeOnPlates: criterios', () => {
 describe('arrangeOnPlates: acompañantes', () => {
   it('un agregado y un negativo del grupo viajan con su pieza; un negativo suelto no se mueve', () => {
     const host = box('host', [30, 10, 30], [100, 0, 100], { groupRef: 'g' });
-    const addon = box('mag', [6, 3, 6], [100, 7, 100], { role: 'negative', metadata: { addon: { kind: 'magnet', hostId: 'host' } } as SceneObject['metadata'] });
+    const addon = box('mag', [6, 3, 6], [100, 7, 100], { role: 'negative', metadata: { addon: { kind: 'magnet_pocket', hostId: 'host' } } as unknown as SceneObject['metadata'] });
     const hole = box('hole', [5, 20, 5], [105, 0, 105], { role: 'negative', groupRef: 'g' });
     const loose = box('loose', [5, 20, 5], [-50, 0, -50], { role: 'negative' });
     const objects = [host, addon, hole, loose];
@@ -196,7 +196,7 @@ describe('arrangeOnPlates: acompañantes', () => {
 
   it('la huella del bloque incluye al acompañante que sobresale', () => {
     const host = box('host', [20, 10, 20], [0, 0, 0]);
-    const post = box('post', [10, 10, 10], [15, 0, 0], { metadata: { addon: { kind: 'screwBoss', hostId: 'host' } } as SceneObject['metadata'] });
+    const post = box('post', [10, 10, 10], [15, 0, 0], { metadata: { addon: { kind: 'screw_boss', hostId: 'host' } } as unknown as SceneObject['metadata'] });
     const plan = arrangeOnPlates(input([host, post], [], { marginMm: 0, spacingMm: 0 }));
     const hostPos = plan.placements.find((p) => p.id === 'host')!.position;
     // Bloque de X ∈ [−10, 20] en la esquina mínima de la cama (−100): la pieza queda en −90.
