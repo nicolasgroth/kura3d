@@ -102,7 +102,16 @@ export const PlateBedPicker: React.FC<{ plateId: string | null; onClose: () => v
               <legend>{t(language, GROUP_KEY[group])}</legend>
               {items.map((o) => (
                 <label key={o.key} className="kura-plate-bed-option" data-selected={o.key === choice}>
-                  <input type="radio" name={`${uid}-bed`} value={o.key} checked={o.key === choice} onChange={() => setChoice(o.key)} data-testid={`plate-bed-option-${o.key}`} />
+                  <input
+                    type="radio"
+                    name={`${uid}-bed`}
+                    value={o.key}
+                    checked={o.key === choice}
+                    onChange={() => setChoice(o.key)}
+                    data-testid={`plate-bed-option-${o.key}`}
+                    // La cama del proyecto suele ser la misma impresora que una de la lista: su nombre accesible lo distingue.
+                    aria-label={o.group === 'project' ? t(language, 'plates.bed.projectOptionName', { bed: `${o.name} ${dims(o)}` }) : undefined}
+                  />
                   <span className="kura-plate-bed-name">{o.name}</span>
                   <span className="kura-plate-bed-dims">{dims(o)}</span>
                 </label>

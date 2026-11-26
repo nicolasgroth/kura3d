@@ -35,6 +35,14 @@ const USAB_N26B_TABLE = {
     '{count} {count?हिस्सा|हिस्से} “{name}” में ले जाए गए, पर वह उसके बेड पर नहीं समाता और बाहर निकलता है। उसे छोटा करें या प्लेट का बेड बदलें।',
     '已将 {count} 个零件移到“{name}”，但它放不进该板的打印床，会超出边缘。请缩小它，或更改该板的打印床。',
   ],
+  'plates.bed.projectOptionName': [
+    'Cama del proyecto: {bed}',
+    'Project bed: {bed}',
+    'Bett des Projekts: {bed}',
+    'Plateau du projet : {bed}',
+    'प्रोजेक्ट का बेड: {bed}',
+    '项目打印床：{bed}',
+  ],
 } as const satisfies Record<string, Row>;
 
 type UsabKey = keyof typeof USAB_N26B_TABLE;
