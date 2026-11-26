@@ -90,7 +90,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - **Suavizar malla** (en revisión): quita facetado y ruido de escaneos sin cambiar los triángulos, con aristas protegidas, zona pintada y vista previa antes de aplicar (**Acciones › Malla › Suavizar…**).
 
 **Preparación para imprimir**
-- **Dividir para imprimir:** parte un modelo más grande que tu cama en piezas con código (A1, B1…), uniones (conectores o, en revisión, imanes enfrentados para que quede desmontable), marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza.
+- **Dividir para imprimir:** parte un modelo más grande que tu cama en piezas con código (A1, B1…), uniones (conectores o, en revisión, imanes enfrentados para que quede desmontable), marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza. Los cortes pueden ir en rejilla, **por las partes de la figura** (en los estrechamientos) o **a mano**, con planos inclinados (los dos últimos, en revisión).
 - **Firmeza de las uniones** (en revisión): antes de dividir, el resumen dice cuántas uniones quedan firmes, regulares, débiles o para pegar, con el motivo y cómo corregirlas.
 - Pintura 3D por caras para impresión multicolor, con separación por color.
 - Detección de estructuras para separar un modelo en partes.
@@ -133,12 +133,12 @@ Lo que falta, en el orden del [roadmap](docs/ROADMAP.md). El detalle está en el
 1. Cerrar la revisión de lo marcado «(en revisión)» arriba.
 2. Deslizadores también en las formas básicas del inspector.
 3. **3MF con bandejas** verificado en Bambu Studio, y **multimaterial** en los cinco laminadores.
-4. Dividir: cortes por las partes naturales de la figura y cortes inclinados.
+4. Encajes: acoples de tubería, clips y biblioteca de conectores.
 
 **Más adelante**
-- Dividir: cortes por las partes naturales de la figura, cortes inclinados, uniones vinculadas.
-- Encajes: tapa roscada, acoples de tubería, clips y biblioteca de conectores.
-- Edición: instancias, patrones y espejo, tiradores en las caras, modificadores no destructivos.
+- Dividir: uniones vinculadas, cortes que sigan una curva.
+- Encajes: acoples de tubería, clips y biblioteca de conectores.
+- Edición: instancias, tiradores en las caras, modificadores no destructivos.
 - **Estudio configurable:** paneles móviles, pestañas de proyecto, atajos editables y línea de comandos.
 - Tutorial interactivo e instrucciones de armado.
 - **Extensiones de terceros**, con las reglas ya escritas en [docs/EXTENSIONES.md](docs/EXTENSIONES.md).

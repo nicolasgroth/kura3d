@@ -20,7 +20,7 @@ test('dividir-para-imprimir: cortes a mano', async ({ page }) => {
   const dividir = page.getByRole('button', { name: 'Dividir', exact: true });
   await expect(dividir).toBeEnabled({ timeout: 60_000 });
   await page.getByRole('button', { name: 'Editar estos cortes a mano' }).click();
-  const inclinacion = page.getByLabel('Inclinación del plano 1 hacia Z (grados)');
+  const inclinacion = page.getByRole('spinbutton', { name: 'Inclinación del plano 1 hacia Z (grados)', exact: true });
   await inclinacion.fill('20');
   await inclinacion.press('Enter');
   await expect(dividir).toBeEnabled({ timeout: 60_000 });

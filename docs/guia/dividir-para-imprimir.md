@@ -29,9 +29,7 @@ Lo que hace y lo que no:
 - Busca estrechamientos en la forma, no reconoce partes del cuerpo: una pieza sin estrechamientos (una caja, una ocarina) queda igual que con la rejilla.
 - La malla debe ser un sólido cerrado, igual que para la rejilla; si no, primero *Reparar malla*.
 
-<!-- Capturas pendientes (generar desde la app web con el skill «capturas», nunca a mano):
-     img/dividir-para-imprimir-05-partes.png: panel con «Cómo cortar: Por las partes de la figura» elegido, su explicación y el resumen de cortes, sobre una figura con estrechamiento (la pesa de e2e/dividir-partes.spec.ts o una figura real) y el plano en el cuello en el visor.
-     img/dividir-para-imprimir-06-partes-rejilla.png (opcional): la misma pieza con «Rejilla pareja», para comparar dónde cae el corte. -->
+![Panel con «Cómo cortar: Por las partes de la figura» y el plano en el cuello de la figura](img/dividir-para-imprimir-07-partes.png)
 
 ## Qué tan firmes quedan las uniones
 

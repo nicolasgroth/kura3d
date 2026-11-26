@@ -1007,3 +1007,27 @@ Lectura del orquestador: son seis rondas sobre estas dos funcionalidades sin pas
 
 **Corrección de los cuatro defectos** (`fix/defectos-n26`, Sonnet con navegador · 68 min · 224 k; en `main` como bfa4350). Cada defecto se reprodujo en el navegador antes de corregirlo y quedó con un recorrido que fallaba y ahora pasa (`e2e/defectos-n26.spec.ts`, 5 casos, uno con el 3MF real de llaveros). Causa del arrastre: la placa se reasigna en vivo por un camino común a todos los gestos y el aviso solo estaba conectado al arrastre del cuerpo; ahora se asienta y avisa al cerrar el paso. Verificación del orquestador sobre `main`: 163 recorridos de arrastre, placas y Simplificar; 4 en rojo. Tres son de `ux10-arrastrar` (altura que cambia 0,4 a 0,6 mm al arrastrar y varios seleccionados que no se mueven) y fallan igual en el commit anterior al lote: no los causó esta corrección, pero son del arrastre básico y quedan por investigar. El cuarto, escalar un grupo con los agarres del manipulador, no se comparó todavía. Menores no hechos: foco tras «Reparar malla» y encuadre del fantasma.
 
+## 26-nov-2026 · Noche: cuatro bloques de funcionalidad (sin evaluar todavía)
+
+Cuatro lotes en paralelo, cada uno en su worktree y **sin navegador**; después, integración en `main` con recorridos de navegador ejecutados por el orquestador y un lote de corrección con navegador. La evaluación a ciegas queda para la mañana del 27.
+
+| Lote | Agente | Duración | Tokens | Resultado |
+|---|---|---|---|---|
+| `feat/patrones` (lineal, rejilla, circular, espejo) | dev-ui (Sonnet) | unos 35 min | sin dato | 20 recorridos en verde tras hacer exacto un selector de la prueba |
+| `feat/dividir-cortes-manuales` (a mano e inclinados) | dev-motor (Opus) | 60 min | 389 k | Recorrido rojo en navegador: un plano agregado caía encima del existente y bloqueaba «Dividir» |
+| `feat/dividir-partes-naturales` (estrechamientos) | dev-motor (Opus) | 72 min | 293 k | La app funcionaba; el recorrido armaba mal la figura de prueba |
+| `feat/tapa-roscada` (recipiente y pareja de roscas) | dev-motor (Opus) | 77 min | 431 k | Recorrido rojo en navegador: la vista previa quedaba «pausada» y el aviso de enroscado no aparecía |
+| `fix/e2e-noche` (correcciones con navegador) | dev-motor (Opus) | 27 min | 196 k | Los tres recorridos en verde; dos defectos de la app corregidos con prueba |
+
+Defectos reales que solo aparecieron en el navegador:
+
+- **Cortes a mano:** «Agregar plano» lo ponía siempre en el centro, sobre el corte de la rejilla; al inclinar uno se cruzaban y «Dividir» quedaba bloqueado. Ahora va al centro del tramo libre más largo.
+- **Vista previa de asistentes:** cada cambio del formulario terminaba el proceso de cálculo y el siguiente pagaba un arranque en frío de unos 3,8 s contra un tope de 1,5 s; quedaba «pausada». Ahora se cancela sin terminar el proceso y el tope corre desde que empieza el cálculo.
+- **Arrastre** (anterior a la noche, encontrado al comparar recorridos): con la cámara inicial se elegía el plano vertical. Corregido por elevación de la cámara, con histéresis.
+
+Sin resolver: el punto de agarre Y de la escala de grupo no responde al puntero en `e2e/pulido-grupo-gizmo.spec.ts:59`; falla igual antes de los cambios de esta noche.
+
+Lectura del orquestador: es la tercera vez que un lote sin navegador entrega algo que no funciona en la app real. Tres de cuatro lo necesitaron. Los próximos lotes con interfaz llevan una pasada con navegador antes de darse por entregados.
+
+Pruebas tras la integración: 4655 del programa y 208 del servidor MCP.
+

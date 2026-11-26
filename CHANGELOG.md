@@ -2,7 +2,7 @@
 
 **Autor:** Nicolás Groth (`ngroth@gmail.com`)  
 **Organización:** **ISGROTH** — *Innovación y Soluciones GROTH*  
-**Licencia:** MIT
+**Licencia:** AGPL-3.0-or-later
 
 El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta el lanzamiento estable `1.0.0`.
 
@@ -10,6 +10,13 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Dividir con cortes a mano.** En *Dividir para imprimir*, «A mano» deja poner los planos donde quieras: agregar, quitar, duplicar, mover con deslizador o número e **inclinar** hasta 45°. «Editar estos cortes a mano» parte de la rejilla automática, y «Solo las piezas» oculta los planos en el visor. Las uniones de un plano inclinado quedan perpendiculares a su cara.
+- **Dividir por las partes de la figura.** «Cómo cortar › Por las partes de la figura» pone los cortes en los estrechamientos (cuello, cintura, tobillos) en vez de la rejilla pareja, y dice cuántos cayeron ahí y cuántos quedaron rectos.
+- **Recipiente con tapa roscada** (Insertar › Asistentes): frasco y tapa que enroscan, con rosca gruesa imprimible sin soportes, holgura ajustable y un aviso que dice si enrosca y con cuánta holgura. En el diálogo de roscas, «Crear la pareja que enrosca» hace perno y tuerca (o agujero y perno) de una vez.
+- **Patrón** (Acciones › Posición › Patrón…): repite una pieza en fila, en rejilla o alrededor de un eje, o la refleja, con vista previa en el visor.
+- **Corregido:** con la vista inicial, arrastrar una pieza la movía en vertical en vez de deslizarla sobre la cama.
+- **Corregido:** la vista previa de los asistentes quedaba «pausada» tras cambiar un valor, porque cada cambio reiniciaba el cálculo desde cero.
+- **Servidor MCP:** 73 herramientas. Nuevas: `kura_pattern_*` (patrón y espejo), `kura_create_screw_container`, `kura_create_thread_pair`, `kura_check_screw_fit`; `kura_split_for_bed` acepta `cuts` (cortes a mano) y `strategy`.
 - **Corregido:** al arrastrar una pieza a otra placa (con el cuerpo o con el manipulador) ahora queda dentro de la cama de destino y sale el aviso con «Deshacer».
 - **Corregido en Simplificar:** tras «Aplicar de todos modos» el panel muestra lo que quedó aplicado y conserva «Deshacer»; «Tolerancia pedida» es la que escribiste; Enter en un campo hace la vista previa en vez de aplicar.
 - **Placas:** fichas de la tira más altas y con letra más grande; aviso con «Deshacer» al mover piezas entre placas (paleta, menú o arrastre); nombres largos de pieza cortados por el medio para que se distingan; una placa nueva ya no repite un número visible en la tira.

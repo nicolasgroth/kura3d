@@ -1,17 +1,22 @@
 # Tablero de Kurra Studio
 
-**Actualizado el 26 de noviembre de 2026, 18:17.** Muestra qué funciona hoy, qué le falta a cada función y qué viene. El historial de lotes, pruebas y evaluaciones está en otros archivos (ver el final).
+**Actualizado el 26 de noviembre de 2026, 21:30.** Muestra qué funciona hoy, qué le falta a cada función y qué viene. El historial de lotes, pruebas y evaluaciones está en otros archivos (ver el final).
 
 ## En corto: hoy, 26 de noviembre
 
 **Notas a ciegas vigentes** (mínimo 85): funcional **86** · código **85** · usabilidad **81** en la última evaluación completa. En las dos funcionalidades más bajas, última ronda: placas **84** y Simplificar **72**; los cuatro defectos que encontró ya están corregidos, sin reevaluar todavía.
 
-**Pruebas en `main`:** 4465 del programa, 190 del servidor MCP y 54 de rendimiento, en verde. Capturas de las guías: 35 recorridos en verde.
+**Pruebas en `main`:** 4655 del programa y 208 del servidor MCP, en verde. Recorridos de navegador de lo nuevo: patrones 20, Dividir a mano 2, partes de la figura 1, tapa roscada 3, arrastre 15, todos en verde.
 
-En desarrollo ahora mismo (noche del 26 al 27): cortes a mano e inclinados en Dividir, cortes por las partes de la figura, recipiente con tapa roscada, y patrones con espejo.
+En desarrollo ahora mismo: nada. Los cuatro bloques de la noche están en `main`, **sin evaluar todavía** (la evaluación a ciegas queda para la mañana).
 
 Lo que entró hoy y está en `main`:
 
+- **Dividir con cortes a mano e inclinados**, y conmutador para ver solo las piezas. Sin evaluar.
+- **Dividir por las partes de la figura** (cortes en los estrechamientos). Sin evaluar.
+- **Recipiente con tapa roscada** y **pareja de roscas que enrosca**, con comprobación de holgura. Sin evaluar.
+- **Patrón** lineal, en rejilla, circular y espejo. Sin evaluar.
+- **Corregido:** con la vista inicial, arrastrar una pieza la movía en vertical en vez de sobre la cama.
 - **Tira de placas rediseñada:** el selector Imprimir / Armado / Libre y los controles de Armado viven en la tira; el visor queda libre a 1024 px.
 - **3MF que el laminador abre con sus bandejas:** con un «proyecto de ejemplo» de tu laminador (Exportar › 3MF › Laminador) llegan bandejas, nombres, filamento por pieza y colores. Probado por el autor en Elegoo Slicer y OrcaSlicer.
 - **Corregido:** los 3MF exportados perdían nombres y filamentos en laminadores de la familia Orca.
@@ -21,6 +26,9 @@ Lo que entró hoy y está en `main`:
 
 Qué falta verificar:
 
+- Evaluación a ciegas de los cuatro bloques de la noche, y reevaluación de placas y Simplificar.
+- «Por las partes de la figura» con figuras reales: en las pruebas con modelos de terceros solo una de cinco tuvo un estrechamiento útil; en figuras con pelo o capa vuelve a los cortes rectos y lo dice.
+- El punto de agarre Y de la escala de un grupo no responde al puntero en su recorrido de navegador (fallo anterior a esta noche, sin diagnosticar).
 - Los cuatro defectos de la última evaluación están corregidos y con recorrido de navegador (aviso y ajuste a la cama al arrastrar entre placas; informe de Simplificar tras «Aplicar de todos modos»; tolerancia pedida; Enter hace vista previa). Falta reevaluar.
 - Si la barra de avance del guardado se ve en un equipo con tarjeta gráfica (consulta abierta).
 - El 3MF con bandejas en Bambu Studio (el autor no lo tiene).
@@ -35,12 +43,12 @@ Para cerrar el día:
 
 Siguientes funcionalidades, en este orden:
 
-3. Dividir: cortes por las partes naturales de la figura y cortes inclinados.
-4. Encajes: tapa roscada, clips y biblioteca de conectores.
+3. Encajes: acoples de tubería, clips y biblioteca de conectores.
+4. Instrucciones de armado y preajustes de conectores.
 5. Tiradores en las caras para estirar una pieza.
 6. Mejoras de pintura (cursor de área, borde duro o suave, relleno con tolerancia).
 
-Pendientes chicos anotados: deslizadores en las formas básicas del inspector, conmutador «Ver lo pedido» en Simplificar, alojamientos rectangulares dibujados como círculos en la guía de armado, «Ajustar a la impresora» y «Cama de Placa N» todavía como diálogos.
+Pendientes chicos anotados: encuadrar la cámara para que entren las copias de la vista previa del patrón, el aviso «Escena vacía» tapa la vista previa de un asistente, deslizadores en las formas básicas del inspector, conmutador «Ver lo pedido» en Simplificar, alojamientos rectangulares dibujados como círculos en la guía de armado, «Ajustar a la impresora» y «Cama de Placa N» todavía como diálogos.
 
 Sin fecha: instalador con actualización desde la app y firma de instaladores; revisar qué código de OrcaSlicer conviene aprovechar ahora que la licencia lo permite.
 
@@ -67,6 +75,8 @@ Lo que ya puede usar cualquiera. Las guías con capturas están en `guia/`.
 - **Litofanías** planas y cilíndricas, y **cortadores** desde una imagen. [Generadores](guia/generadores.md)
 - **Moldes** de una pieza, de dos mitades, caja madre y núcleo con cavidad. [Generadores](guia/generadores.md)
 - **Roscas ISO M3 a M64** con paso y holgura según la norma: perno, tuerca y agujero roscado. [Generadores](guia/generadores.md)
+- **Pareja de roscas que enrosca:** en el diálogo de roscas, perno y tuerca (o agujero y perno) de una vez, con la holgura comprobada. *Sin evaluar.*
+- **Recipiente con tapa roscada** (Insertar › Asistentes): frasco y tapa con rosca gruesa imprimible sin soportes, holgura ajustable y aviso de si enrosca. *Sin evaluar.* [Recipiente con tapa roscada](guia/tapa-roscada.md)
 - **Asistentes** (Insertar › Asistentes): caja con tapa, llavero y placa de enchufe, con formulario, vista previa en el visor y «Editar con el asistente» para reabrir una pieza. [Asistentes](guia/asistentes.md)
 - **Alojamiento de imán** (Insertar): un clic sobre una cara deja el hueco para un imán redondo, cuadrado o rectangular, con holgura y preajustes propios. [Alojamiento de imán](guia/alojamiento-de-iman.md)
 - **Torreta para tornillo** (Insertar): un poste con agujero para tornillo directo o inserto roscado. [Torreta para tornillo](guia/torreta-para-tornillo.md)
@@ -81,11 +91,14 @@ Lo que ya puede usar cualquiera. Las guías con capturas están en `guia/`.
 - **Simplificar:** reduce triángulos sin pérdida, por tolerancia o por cantidad, con vista previa, informe y deshacer. Si el resultado estropearía la pieza, no lo aplica sin tu confirmación.
 - **Reparar malla:** el inspector dice si la malla está cerrada, muestra los bordes abiertos y un botón la repara. [Importar y reparar](guia/importar-y-reparar.md)
 - **Alinear y distribuir** objetos en la cama.
+- **Patrón** (Acciones › Posición › Patrón…): repite una pieza en fila, rejilla o alrededor de un eje, o la refleja, con vista previa. *Sin evaluar.* [Patrón](guia/patrones.md)
 - **Segmentación estructural:** detecta, colorea y extrae partes de un modelo.
 
 ### Dividir para imprimir y uniones
 
 - **Dividir para imprimir:** parte un modelo más grande que la cama en piezas con nombre (A1, B1…), uniones, marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza. [Dividir para imprimir](guia/dividir-para-imprimir.md)
+- **Cortes a mano e inclinados:** pones los planos donde quieras, los inclinas hasta 45° y puedes ver solo las piezas. *Sin evaluar.* [Dividir para imprimir](guia/dividir-para-imprimir.md)
+- **Cortes por las partes de la figura:** los planos van a los estrechamientos (cuello, cintura) en vez de la rejilla pareja. *Sin evaluar.* [Dividir para imprimir](guia/dividir-para-imprimir.md)
 - **Corte por plano con conectores** (espiga, pasador, cola de milano), con holgura configurable. Al conservar una sola mitad, eliges dónde dejarla. [Cortar y ahuecar](guia/cortar-y-ahuecar.md)
 - **Uniones con imanes enfrentados** para una figura desmontable.
 - **Tamaño de conector automático** según la sección del corte, y un resumen que dice cuántas uniones quedan firmes, regulares, débiles o para pegar.
@@ -149,6 +162,10 @@ Funciones que ya se usan y lo que les falta, en una línea cada una.
 
 | Funcionalidad | Qué le falta |
 |---|---|
+| Dividir: cortes a mano | Arrastrar un plano inclinado en el visor; firmeza en vivo con planos inclinados; una pieza con uniones en dos direcciones y un plano inclinado queda para pegar |
+| Dividir: por las partes de la figura | Solo planos rectos que atraviesan todo el modelo; no reconoce partes del cuerpo, solo estrechamientos; sin avance propio durante el análisis |
+| Recipiente con tapa roscada | Solo rosca derecha; el ángulo de flanco no está en el formulario; un recipiente grande puede pausar la vista previa |
+| Patrón | La cámara no se aleja sola para mostrar todas las copias de la vista previa |
 | Proyectos `.kura` | Encuadrar la vista al abrir; confirmar en un equipo real que la barra de avance al guardar aparece y avanza |
 | Recuperación local | Vista previa del borrador |
 | Importar | Importar GLB |
@@ -184,8 +201,6 @@ Lo que todavía no existe. Ordenado por prioridad dentro de cada grupo.
 | Interfaz | Deslizadores en las formas básicas del inspector (ya están en Asistentes) |
 | Interfaz | Estudio configurable: guardar y restablecer la disposición del escritorio, pestañas de proyecto, atajos editables, línea de comandos, barra de herramientas configurable con perfiles básico y pro, y entrada numérica flotante al pulsar M, R o S |
 | Idiomas | Escritura de derecha a izquierda (agregar un idioma ya no requiere código) |
-| Dividir para imprimir | Cortes por las partes naturales de la figura (estrechamientos), además de la rejilla |
-| Dividir para imprimir | Cortes inclinados y más de un plano por eje, ajustados a mano; mostrar u ocultar los cortes |
 | Dividir para imprimir | Uniones vinculadas entre mitades (mover una mueve su pareja) |
 | Dividir para imprimir | Unión de enchufe para tubos: una boca se ensancha y la otra se alarga para conservar el largo total (opción del usuario) |
 | Dividir para imprimir | Colocar piezas en diagonal sobre la cama para ganar largo sin cortar |
@@ -193,7 +208,6 @@ Lo que todavía no existe. Ordenado por prioridad dentro de cada grupo.
 | Dividir para imprimir | Guía de uniones: previsualizar, editar y confirmar (hoy hay vista previa, no edición) |
 | Dividir para imprimir | Uniones firmes: tamaño mínimo de pared según la sección (el tamaño del conector ya es automático) |
 | Dividir para imprimir | Vista sin camas, con las piezas flotando entre armado y desarmado (la vista Libre de Placas es el punto de partida) |
-| Encajes | Tapa roscada y roscas emparejadas |
 | Encajes | Acoples de tubería macho y hembra |
 | Encajes | Clips, tornillos, insertos y biblioteca de conectores |
 | Encajes | Preajustes para insertos, y holgura de encajes a presión (hoy fija en 0,2 mm). Los imanes ya tienen preajustes |
@@ -207,7 +221,7 @@ Lo que todavía no existe. Ordenado por prioridad dentro de cada grupo.
 | Edición | Recargar un objeto desde su archivo de origen cuando cambia en disco |
 | Edición | Modificadores no destructivos e historial editable |
 | Edición | Vista previa en vivo en molde, ahuecado y litofanía |
-| Edición | Patrones lineales y circulares, espejo, tubos y refuerzos |
+| Edición | Tubos y refuerzos (patrones y espejo ya existen) |
 | Edición | Patrones de perforación sobre una superficie (por ejemplo, una esfera hueca calada) |
 | Edición | Reparación de malla con mapa de defectos (hoy hay diagnóstico y bordes abiertos resaltados) |
 | Edición | Medición con tolerancias (hoy Medir ya usa el imán) |
