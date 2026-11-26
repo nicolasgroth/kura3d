@@ -1,0 +1,46 @@
+/**
+ * @file src/styles/projectInfo.css
+ * @description Sección «Datos del proyecto» del panel «Proyecto»: campos apilados con su etiqueta, notas con altura
+ * acotada y contador, y datos de solo lectura que parten línea sin desbordar a 1024 px.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-project-info .kura-info-field {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 8px;
+  min-width: 0;
+}
+
+.kura-project-info .kura-info-field .kura-input,
+.kura-project-info .kura-info-notes {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.kura-project-info .kura-info-notes {
+  min-height: 84px;
+  max-height: 240px;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.kura-project-info .kura-input:focus-visible,
+.kura-project-info .kura-info-notes:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+.kura-project-info .kura-info-count {
+  justify-self: end;
+}
+
+/* Fechas largas («hace 3 días · 23 nov 2026, 14:05») parten línea en vez de recortarse. */
+.kura-ctx-panel .kura-project-info .kura-info-facts dd {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

@@ -67,6 +67,7 @@ import { PANEL_ZH } from './panel';
 import { ENCAJE_UI_ZH } from './encajeUi';
 import { ORIENT_UI_ZH } from './orientar';
 import { REDISENO3A_ZH } from './rediseno3a';
+import { DATOS_PROYECTO_ZH } from './datosProyecto';
 import { REDISENO3B_ZH } from './rediseno3b';
 import { UX8_MENU_ZH } from './ux8Menu';
 import { IMANES_UNION_ZH } from './imanesUnion';
@@ -134,6 +135,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PANEL_ZH,
   ...ENCAJE_UI_ZH,
   ...REDISENO3A_ZH,
+  ...DATOS_PROYECTO_ZH,
   ...REDISENO3B_ZH,
   ...UX8_MENU_ZH,
   ...TORRETA_ZH,

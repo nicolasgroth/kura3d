@@ -28,6 +28,7 @@ import { TopBar } from './components/TopBar';
 import { Viewport3D } from './components/Viewport3D';
 import { t } from './i18n';
 import { useProjectRecovery } from './project/useProjectRecovery';
+import { useWorkTimer } from './utils/workTimer';
 import { isProjectDirty, useKuraStore } from './store/useKuraStore';
 import type { TransformMode } from './types/kura';
 import { useMcpBridgeClient } from './utils/mcpBridgeClient';
@@ -74,6 +75,8 @@ export const App: React.FC = () => {
   const sheets = useNarrowSheets();
   const visibleNarrowPanel = sheets.visible;
   const recovery = useProjectRecovery();
+  // Tiempo de trabajo del proyecto (solo local, se guarda en el .kura): ver `utils/workTimer.ts`.
+  useWorkTimer();
   // Texto 3D y Asistentes comparten hueco: el arranque explícito de su exclusión mutua (una sola vez).
   useEffect(() => startPanelExclusion(), []);
   // La app está pensada para 1024 px o más: bajo ese ancho se avisa una vez, sin bloquear.

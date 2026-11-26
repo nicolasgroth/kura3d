@@ -2,7 +2,8 @@
  * @file src/components/RecentProjectsGroup.tsx
  * @description Grupo «Proyectos recientes» del panel Proyecto (botones, no un menú). En escritorio cada fila muestra nombre,
  * carpeta abreviada y fecha, abre con un clic, marca los archivos que ya no existen y permite quitarlos;
- * en web sigue como antes (nombre y fecha; abrir lleva al selector de archivos).
+ * en web sigue como antes (nombre y fecha; abrir lleva al selector de archivos). Si el proyecto tiene descripción o
+ * fecha de modificación guardadas (solo eso, nunca sus notas), van en una línea bajo el nombre.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,6 +13,7 @@ import { History, Trash2, X } from 'lucide-react';
 import { t } from '../i18n';
 import { abbreviateFolder } from '../project/nativeRecents';
 import type { LanguageCode } from '../types/kura';
+import { formatInfoDate } from '../utils/projectInfoFormat';
 import type { RecentEntry, RecentProjectsView } from '../utils/useRecentProjects';
 
 interface RecentProjectsGroupProps {
@@ -53,6 +55,12 @@ export function RecentProjectsGroup({ language, view, blocked, formatDate, onOpe
             <span className="kura-menu-item-label">
               {item.name}
               {desktop && item.folder && <small className="kura-recent-folder">{abbreviateFolder(item.folder)}</small>}
+              {item.description && <small className="kura-recent-folder" data-testid="recent-description">{item.description}</small>}
+              {item.modifiedAt && (
+                <small className="kura-recent-folder" data-testid="recent-modified">
+                  {t(language, 'projectInfo.recent.modified', { date: formatInfoDate(item.modifiedAt, language) })}
+                </small>
+              )}
             </span>
             {item.exists
               ? <span className="kura-menu-kbd">{formatDate(item.openedAt)}</span>

@@ -17,6 +17,7 @@ import { sanitizeMagnetParams } from '../core/addons/magnetPocket';
 import { sanitizeScrewBossParams } from '../core/addons/screwBoss';
 import { sanitizeKeyholeParams } from '../core/addons/keyhole';
 import { sanitizeCablePassParams } from '../core/addons/cablePass';
+import type { ProjectInfo } from './projectInfo';
 import { RECIPE_PROVENANCE_LIMITS } from '../types/recipeProvenance';
 import type { PlateBed, RestPose, SceneLayout, ScenePlate } from '../types/plates';
 import { MATERIAL_PRESETS, type PrinterProfile, type SceneGroup, type SceneObject, type UnitSystem } from '../types/kura';
@@ -42,6 +43,8 @@ export interface ProjectDocument extends ProjectSceneSnapshot {
   customBedDimensions: { width: number; depth: number; height: number } | null;
   sectionPlane: { enabled: boolean; heightMm: number };
   snapGridMm: number;
+  /** Datos del proyecto (descripción, notas, autor, fechas, tiempo de trabajo; versión 5). Ausente = sin datos. */
+  info?: ProjectInfo;
 }
 
 export class ProjectCodecError extends Error {
@@ -292,7 +295,7 @@ export const validStoredPlates = (v: unknown): v is ScenePlate[] =>
 export const validStoredObject = shape({ ...metadataFields, mesh: nat }) as
   (v: unknown) => v is ObjectMetadata & { mesh: number };
 
-export type ProjectSettings = Omit<ProjectDocument, keyof ProjectSceneSnapshot | 'past' | 'future'>;
+export type ProjectSettings = Omit<ProjectDocument, keyof ProjectSceneSnapshot | 'past' | 'future' | 'info'>;
 const settingsFields = {
   unitSystem: oneOf('mm', 'cm', 'm', 'in', 'ft'),
   printerProfile: shape({
