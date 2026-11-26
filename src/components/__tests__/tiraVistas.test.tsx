@@ -10,8 +10,6 @@
  */
 
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { buildSceneObject } from '../../core/scene/sceneObjects';
@@ -25,8 +23,12 @@ import { ViewBar } from '../shell/ViewBar';
 import { ViewportProTip } from '../viewport/ViewportProTip';
 import { useInvalidFields } from '../useInvalidFields';
 
-const ROOT = resolve(__dirname, '../../..');
-const read = (rel: string) => readFileSync(resolve(ROOT, rel), 'utf-8');
+// jsdom no procesa CSS importado con `?raw`: se lee del disco (mismo patrón que `sceneTreeRowNegative.test`).
+const proc = (globalThis as unknown as { process: { cwd: () => string; getBuiltinModule: (id: string) => { readFileSync: (path: string, encoding: 'utf8') => string } } }).process;
+const readCss = (name: string) => proc.getBuiltinModule('node:fs').readFileSync(`${proc.cwd()}/src/styles/${name}`, 'utf8');
+const tokensCss = readCss('studio-tokens.css');
+const viewModeCss = readCss('viewMode.css');
+const plateStripCss = readCss('plateStrip.css');
 
 afterEach(() => cleanup());
 
@@ -50,8 +52,12 @@ describe('selector de vista fuera de la barra del visor', () => {
 });
 
 describe('contraste de la tira de placas', () => {
-  const tokens = read('src/styles/studio-tokens.css');
-  const token = (name: string) => tokens.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`))![1];
+  const tokens = tokensCss;
+  const token = (name: string) => {
+    const found = tokens.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`));
+    if (!found) throw new Error(`token ${name} no encontrado (${tokens.length} caracteres)`);
+    return found[1];
+  };
   const TEXT = ['text-primary', 'text-secondary', 'text-muted', 'accent-green', 'accent-red'];
 
   it('todo color de texto de la tira pasa 4,5:1 sobre el panel, en claro y en oscuro', () => {
@@ -62,7 +68,8 @@ describe('contraste de la tira de placas', () => {
   });
 
   it('la tira no se atenúa con opacidad en Armado ni en Libre', () => {
-    const css = `${read('src/styles/viewMode.css')}\n${read('src/styles/plateStrip.css')}`;
+    const css = `${viewModeCss}
+${plateStripCss}`;
     const rules = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter((m) => /plate-strip|viewmode/.test(m[1]) && !/:disabled|bedchip/.test(m[1]));
     for (const [, selector, body] of rules) expect(body, selector).not.toMatch(/opacity\s*:/);
   });
