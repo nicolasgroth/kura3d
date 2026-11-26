@@ -31,10 +31,11 @@ export interface PlatesSliceState {
   /** Fija la placa activa (sin paso de deshacer). false si la placa no existe. */
   setActivePlate: (plateId: string) => boolean;
   /**
-   * Borra una placa llevando sus piezas, trasladadas a su hueco equivalente, a la primera placa que queda (la
-   * que la interfaz anuncia). Un solo paso de deshacer. Devuelve el id de esa placa, o null si no se pudo borrar.
+   * Borra una placa llevando sus piezas, trasladadas a su hueco equivalente, a `targetId` o, sin él, a la primera
+   * placa que queda (la que la interfaz anuncia). Un solo paso de deshacer. Devuelve el id de la placa destino, o null
+   * si no se pudo borrar.
    */
-  removePlate: (plateId: string) => string | null;
+  removePlate: (plateId: string, targetId?: string) => string | null;
   /** Vista «Solo esta»: el visor dibuja solo la cama de la placa activa. Preferencia de sesión, sin deshacer. */
   plateSolo: boolean;
   setPlateSolo: (solo: boolean) => void;
