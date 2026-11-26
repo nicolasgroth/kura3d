@@ -99,9 +99,9 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
         const reassign = mode === 'commit' && moved && store.plates.length >= 2;
         if (reassign) store.reassignPlatesByPosition(s.baseline.map((b) => b.id));
         if (mode === 'commit' && moved) store.commitTransformSnapshot();
+        else store.cancelTransformSnapshot();
         // El aviso va después de cerrar el paso: su «Deshacer» deshace el arrastre junto con el cambio de placa.
         if (reassign) announceReassignments(platesReached(s.startPlates, useKuraStore.getState().objects));
-        else store.cancelTransformSnapshot();
         useGizmoDragStore.getState().end();
         // El cursor de «agarrar» pertenece al objeto: si el puntero ya salió, no debe quedar pegado.
         canvas.style.cursor = s.previousCursor === 'grab' || s.previousCursor === 'not-allowed' ? '' : s.previousCursor;

@@ -31,7 +31,7 @@ import { undoToastAction } from '../toastActionState';
 
 export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> {
   const { set, get, tr, pushHistory, runExclusive, rejectWhileLocked, opCtx, assertCurrent, commitChange, runtime, runEngine } = ctx;
-  const { reportOperationError, reportEngineWarnings } = ctx;
+  const { reportOperationError, reportEngineWarnings, recordEngineWarnings } = ctx;
 
   const editable = (id: string) => {
     const obj = get().objects.find((o) => o.id === id);
@@ -160,7 +160,10 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         }
         commitChange(change);
         // Los avisos de volumen y agujeros del motor repiten (y a veces contradicen) lo que dice el informe: se dicen una vez, abajo.
-        reportEngineWarnings(change.warnings.filter((w) => w.code !== 'SIMPLIFY_VOLUME_CHANGED' && w.code !== 'SIMPLIFY_GENUS_CHANGED'));
+        // Siguen en la respuesta del bus (MCP): solo se omite su aviso en pantalla.
+        const repeated = (w: { code: string }) => w.code === 'SIMPLIFY_VOLUME_CHANGED' || w.code === 'SIMPLIFY_GENUS_CHANGED';
+        reportEngineWarnings(change.warnings.filter((w) => !repeated(w)));
+        recordEngineWarnings(change.warnings.filter(repeated));
         const tris = change.patches[0].patch.stats?.triangles ?? report.trianglesAfter;
         const outcome = classifySimplifyResult(before, tris);
         const counts = { before: formatNumber(lang, before), tris: formatNumber(lang, tris) };
