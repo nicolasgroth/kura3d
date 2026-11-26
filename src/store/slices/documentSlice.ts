@@ -11,7 +11,7 @@
 import { projectBed } from '../../core/scene/activePlateBed';
 import { overlappingPlates } from '../../core/scene/plateOverlap';
 import * as engine from '../../engine';
-import { decodeProjectAsync, encodeProjectAsync } from '../../project/projectCodecClient';
+import { decodeProjectAsync, encodeProjectAsync, prewarmProjectCodec } from '../../project/projectCodecClient';
 import { normalizeFileName, openProjectFile, PROJECT_NAME_MAX, saveProjectFile, SaveNotConfirmedError } from '../../project/projectFiles';
 import { moveRecoveryDraft } from '../../project/projectRecoveryStorage';
 import { loadRecoveryDocument } from '../../project/recoveryDraftStore';
@@ -20,7 +20,8 @@ import { compactInfo, infoNow, type ProjectInfo } from '../../project/projectInf
 import { applyProjectInfoPatch } from '../../project/projectInfoPatch';
 import { revealProjectNotes } from '../../utils/projectNotesFocus';
 import { captureProject, hasProjectChanged, makeProjectDraftId } from '../projectDocument';
-import { trackSaveProgress } from '../saveProgress';
+import { nextFrame, trackSaveProgress } from '../saveProgress';
+import { isTauriRuntime } from '../../utils/platformBridge';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -254,8 +255,14 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         const saved = await saveProjectFile(
           name,
           async () => {
+            // Se llama ya elegido el archivo (en la web, después del selector): el avance arranca aquí, antes del
+            // Worker, y se cede un cuadro para que la interfaz pinte antes de copiar el proyecto al Worker.
+            progress.update(0, 'encode');
+            await nextFrame();
             const bytes = await encodeProjectAsync(document, progress.update);
-            progress.writing();
+            // En escritorio, sin ubicación conocida, el diálogo nativo se abre DESPUÉS de codificar: ahí no hay avance.
+            if (isTauriRuntime() && (saveAs || !state.projectLocation)) progress.end();
+            else progress.writing();
             return bytes;
           },
           saveAs ? undefined : state.projectLocation,
@@ -297,6 +304,8 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         try {
           await engine.initManifoldEngine();
           set({ engineReady: true, engineError: null, savedProject: captureProject(get()) });
+          // El Worker del códec arranca ahora (en segundo plano): el primer guardado no paga su carga.
+          prewarmProjectCodec();
           // Sin toast: el estado del motor ya se ve en la barra de estado (avisarlo en cada carga era ruido).
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);

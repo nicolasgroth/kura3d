@@ -45,6 +45,14 @@ export function trackSaveProgress(get: Get, set: Set, now: () => number = Date.n
   };
 }
 
+/** Cede el hilo hasta el próximo cuadro (y una tarea después), para que la interfaz pinte entre pasos. */
+export function nextFrame(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => setTimeout(resolve, 0));
+    else setTimeout(resolve, 0);
+  });
+}
+
 /** Fase de guardado (`save:compress:64` → compress, 64), o null si la fase no es de guardado. */
 export function parseSavePhase(phase: string | null | undefined): { step: 'encode' | 'compress' | 'write'; percent: number } | null {
   if (phase === 'save:write') return { step: 'write', percent: 100 };
