@@ -58,6 +58,8 @@ export interface PlatesSliceState {
   moveToPlate: (plateId: string | null, ids?: string[]) => number;
   /** El último `moveToPlate` dejó las piezas dentro de la cama destino (false: el bloque es más grande que ella). Solo sesión. */
   lastMoveToPlateFits: boolean;
+  /** El último `moveToPlate` no halló hueco libre en la placa destino: la pieza quedó dentro de su cama, encima de otras. Solo sesión. */
+  lastMoveToPlateCrowded: boolean;
   /**
    * «Una placa por objeto»: deja cada pieza sólida (las de `ids`, o la selección, o todas si no hay) en su propia placa,
    * centrada sobre su cama; crea las placas que falten y reutiliza las vacías. Un solo paso de deshacer. null si hay
