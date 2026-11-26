@@ -70,3 +70,21 @@ test('alojamiento de imán', async ({ page }) => {
   await camara(page, [55, 60, 45]);
   await captura(page, 'alojamiento-de-iman-02-resultado');
 });
+
+test('alojamiento de imán: forma rectangular', async ({ page }) => {
+  await abrir(page);
+  await cmd(page, 'create_primitive', { type: 'box', width: 30, depth: 30, height: 30, name: 'Tapa', position: [0, 0, 0], color: '#38bdf8' });
+  await page.evaluate(() => (window as any).__s.getState().setSelection([]));
+  await camara(page, [60, 70, 80]);
+  await page.getByRole('button', { name: 'Insertar', exact: true }).first().click();
+  await page.getByRole('menuitem', { name: /^Alojamiento de imán/ }).click();
+  await expect(page.locator('.kura-magnet-panel')).toBeVisible();
+  await page.getByTestId('magnet-shape-rect').click();
+  await expect(page.getByTestId('magnet-turn90')).toBeVisible();
+  await sinAvisos(page);
+  const top = await aPixel(page, [0, 30, 0]);
+  await page.mouse.move(top.x - 8, top.y - 8);
+  await page.mouse.move(top.x, top.y, { steps: 4 });
+  await page.waitForTimeout(400);
+  await captura(page, 'alojamiento-de-iman-03-rectangular');
+});

@@ -7,19 +7,29 @@ Cuando una pieza es más grande que la cama de tu impresora, **Dividir para impr
 1. Selecciona la pieza grande y pulsa **Mayús+C** (o `Ctrl+K` y escribe *Dividir para imprimir*). Se abre el panel *Dividir para imprimir*.
 2. En **Cama y cortes** la cama viene de tu impresora activa; puedes cambiarla y fijar un margen por lado. Marca los ejes en los que se puede cortar (X, Y, Z) y si se permite acostar piezas.
 3. El plan se calcula solo y se dibuja en el visor: los **planos** de corte (naranja, con su nombre, por ejemplo *Plano X1*) y los códigos de cada pieza. Puedes arrastrar un plano o ajustarlo con su campo.
-4. En **Uniones** elige el **tipo de conector**: tarugo cilíndrico, clavija cuadrada, cola de milano, tarugo suelto (se imprime aparte), **imanes** (la figura queda desmontable, ver abajo), solape de borde o sin conectores. Con **Tamaño automático (recomendado)** Kurra Studio calcula el diámetro según la superficie de cada unión.
+4. En **Uniones** elige el **tipo de conector**: tarugo cilíndrico, clavija cuadrada, cola de milano, tarugo suelto (se imprime aparte), **imanes** (la figura queda desmontable, ver abajo), solape de borde o sin conectores. Con **Dimensionar los conectores según cada unión (recomendado)** Kurra Studio calcula el tamaño según la superficie de cada una.
 5. Revisa el **Resumen**: piezas, placas estimadas, pieza más grande, uniones con conector y espacio libre contra la cama.
 6. Pulsa **Dividir**. Las piezas quedan armadas en su lugar, agrupadas, con el código en cada una. En el panel *Escena* el código (A1, B1…) va **siempre al comienzo** del nombre de cada pieza, así que se ve completo aunque el nombre largo quede cortado.
 
 ![Panel Dividir para imprimir con el plan sobre una pieza de 400 mm](img/dividir-para-imprimir-01-plan.png)
+
+## Qué tan firmes quedan las uniones
+
+Antes de pulsar **Dividir**, en el **Resumen** aparece **Firmeza de las uniones**, por ejemplo «3 uniones: 2 firmes, 1 débil». Cada unión se califica como **Firme**, **Regular**, **Débil** o **Para pegar**, siempre con texto e icono (no solo color).
+
+- Abre **Detalle por unión** para ver cada una: cuántos conectores lleva, su tamaño, cuánto entra y la pared mínima, y el motivo si no es firme («Un solo conector: resiste poco el giro», «El conector se achicó para caber en la sección»).
+- Bajo el detalle, **Qué puedes hacer** ofrece botones: **Dimensionar según cada unión** (cada unión usa el conector que cabe en su sección), **Reforzar las uniones débiles** (agranda el conector o suma uno donde cabe) y **Usar solape de borde** (cambia todas las uniones a solape, que sirve en paredes delgadas).
+- En un modelo muy grande el detalle no se calcula en vivo: el panel lo dice y la firmeza se mide al dividir.
+
+![El resumen de firmeza de las uniones con el detalle abierto](img/dividir-para-imprimir-04-firmeza.png)
 
 ## Unión con imanes (figura desmontable)
 
 Con el tipo **Imanes (desmontable)** cada cara del corte recibe alojamientos de imán enfrentados con los de la otra cara, en vez de macho y hembra: al armar, los imanes quedan cara a cara y la figura se puede separar y volver a juntar.
 
 1. En **Uniones** elige **Imanes (desmontable)**.
-2. En **Imán** elige la medida: los preajustes incluidos (redondos de 5 × 2, 6 × 3, 8 × 3, 10 × 3 y 3 × 1 mm) o los tuyos, guardados en el panel *Alojamiento de imán*. Por defecto, 5 × 2 mm. Como unión **solo sirven imanes redondos**: con uno cuadrado el panel lo advierte y la unión queda para pegar.
-3. Ajusta las **holguras** (diámetro y profundidad, +0,2 mm por defecto). La ayuda muestra la medida de cada alojamiento: diámetro del imán + holgura y profundidad = alto + holgura, en cada pieza.
+2. En **Imán** elige la medida: los preajustes incluidos (redondos de 5 × 2, 6 × 3, 8 × 3, 10 × 3 y 3 × 1 mm) o los tuyos, guardados en el panel *Alojamiento de imán*. Por defecto, 5 × 2 mm. Como unión sirven imanes **redondos, cuadrados y rectangulares**; el alojamiento de cada uno se dibuja con su forma. Si un imán no cabe en la sección, el panel lo advierte y esa unión queda para pegar.
+3. Ajusta las **holguras** (diámetro y profundidad, +0,2 mm por defecto). La ayuda muestra la medida de cada alojamiento: medida del imán + holgura y profundidad = alto + holgura, en cada pieza.
 4. Deja **Cantidad automática** o desmárcala y fija cuántos imanes lleva cada unión. En automático Kurra Studio reparte **varios imanes según el área de la sección**: al menos uno por isla y dos por unión cuando caben, para que no gire, y más en una sección grande. Eso vale también cuando la sección del corte es **oblicua** (inclinada respecto de la pieza): se mide su área real, no la de un corte recto.
 5. Pulsa **Dividir**. Las piezas salen con los alojamientos ya abiertos, listas para imprimir.
 6. Al armar: **pega los imanes de cada par con polos opuestos; prueba el par antes de pegar.** Kurra Studio no puede saber la polaridad de tus imanes; la sección **Uniones** del inspector te lo recuerda.

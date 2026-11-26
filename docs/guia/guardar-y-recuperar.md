@@ -12,6 +12,19 @@ En la versión web, guardar descarga el archivo `.kura` a tu carpeta de descarga
 
 ![Panel Proyecto con nuevo, abrir, guardar y guardar como](img/guardar-y-recuperar-01-menu.png)
 
+## Datos del proyecto
+
+Más abajo en el mismo panel **Proyecto** (sin ningún objeto seleccionado) está la sección **Datos del proyecto**, para que tú o quien reciba el archivo sepa de qué se trata:
+
+- **Descripción:** una línea; se muestra en la lista de proyectos recientes.
+- **Notas:** texto libre (medidas, materiales, pendientes), hasta 20.000 caracteres.
+- **Autor:** opcional. Lo escribes tú; Kurra Studio nunca lo rellena sola.
+- **Creado**, **Modificado** y **Tiempo de trabajo:** los pone la app. El tiempo cuenta solo mientras trabajas con la ventana en primer plano y hay actividad reciente.
+
+Todo se guarda dentro del archivo `.kura`. Editarlo marca el proyecto como modificado, pero no entra en el historial de **Deshacer** (igual que el nombre). Si un proyecto tiene notas, al abrirlo te lo avisa.
+
+![La sección Datos del proyecto con descripción, notas y autor](img/guardar-y-recuperar-01-datos-del-proyecto.png)
+
 ## El borrador de recuperación
 
 Mientras trabajas, la barra de estado muestra «Guardando borrador…» y luego «Borrador local guardado». Es una copia de seguridad automática en tu navegador o equipo, no un reemplazo de guardar el proyecto.

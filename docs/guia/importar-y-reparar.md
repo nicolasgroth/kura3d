@@ -44,7 +44,7 @@ Un modelo con muchos triángulos pesa y tarda, sobre todo en un computador con p
 - Elige **Acciones › Simplificar…**.
 - Si importas un modelo pesado, el aviso trae el botón **Simplificar…**. Desde ahí el panel se abre ya en **Por cantidad**, con una meta sugerida (por ejemplo 500 000 triángulos) y el cursor en ese campo: revisa el número y pulsa **Simplificar**.
 
-El panel se titula **Simplificar o refinar malla** y tiene tres grupos: **Simplificar**, **Refinar malla** y **Envolvente convexa**. Esta guía es del primero. En **Por cantidad**, **Enter** en el campo ejecuta, igual que el botón **Simplificar**; los números grandes se muestran con separador de miles (500.000).
+El panel se titula **Simplificar o refinar** (para salir, **Volver** arriba a la izquierda o `Esc`) y tiene tres grupos: **Simplificar**, **Refinar malla** y **Envolvente convexa**. Esta guía es del primero. En **Por cantidad**, **Enter** en el campo ejecuta, igual que el botón **Simplificar**; los números grandes se muestran con separador de miles (500.000).
 
 ![Panel Simplificar en el modo Por cantidad, al 50 % de los triángulos](img/importar-y-reparar-06-simplificar-panel.png)
 
@@ -54,23 +54,27 @@ Elige el **Modo de simplificar** y pulsa **Simplificar**:
 - **Por tolerancia**: cuánto puede moverse la superficie, en mm (por defecto 0,01 mm). A mayor tolerancia, menos triángulos y más pérdida de forma: cilindros con menos lados, letras y redondeos achatados.
 - **Por cantidad**: deja la pieza en un **porcentaje** de sus triángulos o en una cantidad de **triángulos** finales (debajo ves «Ahora: N triángulos»). Kurra Studio busca la tolerancia que llega a ese número y prefiere conservar los agujeros; si no puede llegar (por ejemplo, un cubo no baja de 12), entrega lo que logró y lo avisa.
 
-Mientras trabaja puedes **Cancelar**. Al terminar aparece el **Último resultado**: triángulos antes → después, cambio de volumen, agujeros pasantes antes → después, la desviación medida y la tolerancia usada.
+Mientras trabaja puedes cancelar el cálculo con su botón. Al terminar aparece el **Último resultado**: triángulos antes → después, cambio de volumen, agujeros pasantes antes → después, la desviación medida y la tolerancia usada.
 
 ![Informe del resultado: 2.048 a 1.008 triángulos, con el aviso de revisión y el botón Deshacer](img/importar-y-reparar-07-simplificar-informe.png)
 
-Si algo se movió más de lo prudente, el informe lo dice con palabras: «El volumen cambió…», «La superficie se movió hasta…» o «Cambió la cantidad de agujeros pasantes (2 → 1)», que es lo que ocurre cuando un agujero chico se cierra. Revísalo antes de imprimir. El mismo aviso sale en una notificación que **no se cierra sola** y, igual que el informe, trae el botón **Deshacer**: vuelve a la malla anterior en un solo paso (también con **Ctrl+Z**). La desviación se mide por muestreo: es una cota inferior, no el máximo exacto.
+### Vista previa: mira antes de aplicar
 
-### Cuando el resultado estropearía la pieza
+Pulsa **Vista previa** (junto a **Simplificar**) y la pieza no se toca: en el visor aparece un **fantasma celeste** con la malla que quedaría, y en el panel un resumen de lo que pasaría («Vista previa (aún no se aplicó)»). Con **Comparar con el original** ocultas el fantasma para ver solo la pieza, y con **Mostrar las aristas de la simplificada** ves la red de triángulos. Si te gusta, pulsa **Simplificar**; si no, cambia el modo o la cantidad y vuelve a mirar.
 
-Kurra Studio **no aplica** un resultado «destructivo». Lo es si pierde un agujero pasante, si el volumen cambia más de 5 %, o si la superficie se aleja más de 1 mm o del 1 % de la diagonal de la pieza (el mayor de los dos). En ese caso la pieza queda intacta y el informe muestra:
+![Vista previa de Simplificar: el fantasma celeste sobre la esfera y el resumen en el panel](img/importar-y-reparar-09-simplificar-vista-previa.png)
 
-- **No se aplicó porque el resultado estropea la pieza**, con cada motivo en palabras («la superficie se mueve 2,257 mm (tope 1 mm para esta pieza)»);
-- los números del **resultado pedido** y de la **versión segura** (la que más triángulos quita sin pasar la regla);
-- dos botones: **Aplicar la versión segura (N triángulos)** y **Aplicar de todos modos**. Cada uno es un solo paso de deshacer (**Ctrl+Z**).
+### Qué pasa si el cambio es grande
 
-![Informe de un resultado bloqueado en una placa con tres agujeros: motivos, versión segura y «Aplicar de todos modos»](img/importar-y-reparar-08-simplificar-bloqueo.png)
+Kurra Studio mide cuánto cambia la pieza y decide en tres casos, en palabras simples:
 
-Por eso una malla gruesa bloquea pedidos que en una malla densa pasan: una esfera de solo 512 triángulos al 50 % cambia su volumen 5,4 % y se bloquea (ofrece una versión segura de 476 triángulos), mientras que una de 2.048 triángulos baja a la mitad sin problema. Si lo que quieres es justamente ese resultado agresivo, **Aplicar de todos modos** lo hace; el informe lo marca como forzado.
+1. **Cambio chico:** se aplica y listo.
+2. **Cambio moderado:** se aplica **con aviso**. El informe dice qué se movió («El volumen cambió…», «La superficie se movió hasta…») y trae **Deshacer**; el mismo aviso sale en una notificación que no se cierra sola. Revísalo antes de imprimir. La desviación se mide por muestreo: es una cota inferior, no el máximo exacto.
+3. **Cambio que estropearía la pieza** (pierde un agujero pasante, el volumen cambia más de 5 %, o la superficie se aleja más de 1 mm o del 1 % de la diagonal): lo pedido **no se aplica tal cual**. Kurra Studio aplica la **versión segura**, la que más triángulos quita sin pasar la regla, y el informe dice «Se aplicó la versión segura: N triángulos en vez de M, porque…». Si prefieres lo pedido, pulsa **Aplicar de todos modos**: reemplaza la versión segura por lo que pediste, en un solo paso de deshacer. Si ni siquiera hay una versión segura, la pieza queda intacta y el informe lo explica.
+
+![Resultado en una placa con tres agujeros: se aplicó la versión segura, con el motivo y el botón «Aplicar de todos modos»](img/importar-y-reparar-08-simplificar-bloqueo.png)
+
+Por eso una malla gruesa se protege más que una densa: una esfera de solo 512 triángulos al 50 % cambia su volumen 5,4 % y recibe la versión segura, mientras que una de 2.048 triángulos baja a la mitad sin problema. Todo se deshace con **Ctrl+Z**.
 
 ## Problemas frecuentes
 

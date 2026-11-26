@@ -14,12 +14,18 @@ Kurra Studio solo prepara la geometría. No lamina, así que tampoco inserta la 
 
 ## Elegir el imán
 
-- **Preajuste**: los incluidos son redondos de 5 × 2, 6 × 3, 8 × 3 y 10 × 3 mm, y uno cuadrado de 5 × 5 × 2 mm. Al elegir uno se cargan sus medidas.
-- **Forma**: *Redondo* (diámetro × alto) o *Cuadrado* (lado × alto).
+- **Preajuste**: los incluidos son redondos de 5 × 2, 6 × 3, 8 × 3 y 10 × 3 mm, uno cuadrado de 5 × 5 × 2 mm y, con la forma Rectangular, las medidas que quieras. Al elegir uno se cargan sus medidas.
+- **Forma**: *Redondo* (diámetro × alto), *Cuadrado* (lado × alto) o *Rectangular* (largo × ancho × alto).
 - **Diámetro** o **Lado**, y **Alto** del imán, en milímetros. Puedes escribir con coma decimal (`6,5`).
 - **Holgura de ancho** y **Holgura de profundidad**: lo que se agrega al diámetro o lado y a la profundidad para que el imán entre. Por defecto son 0,2 mm, así que un imán de 5 × 2 deja un hueco de 5,2 × 2,2 mm. Se ajustan de 0 a 0,6 mm. Los 0,2 mm son un **punto de partida por verificar**, no una garantía: los agujeros impresos en FDM suelen salir más chicos que el modelo, así que si el imán no entra, prueba con 0,3 a 0,4 mm; si lo vas a pegar, también conviene subirlo. Imprime antes una pieza de prueba chica con la misma holgura.
 - Un valor fuera de rango queda marcado junto a su campo y, mientras no lo corrijas, el panel no coloca nada.
 - Debajo de los campos ves el tamaño real del hueco, por ejemplo *Hueco: Ø 5,2 × 2,2 mm*; mientras un campo tenga error dice que es inválido en vez de mostrar el último valor bueno.
+
+### Imán rectangular
+
+Con **Rectangular** aparecen tres medidas: **Largo del imán**, **Ancho del imán** y **Alto del imán**. El hueco muestra sus tres medidas reales (por ejemplo *Hueco: 5,2 × 2,7 × 2,2 mm*). Marca **Girar 90° en la cara** para cambiar la orientación: por defecto el largo va hacia arriba de la cara y, marcado, queda acostado. También puedes usarlo como unión en [Dividir para imprimir](dividir-para-imprimir.md#unión-con-imanes-figura-desmontable).
+
+![Panel con la forma Rectangular: largo, ancho y alto, y la casilla Girar 90°](img/alojamiento-de-iman-03-rectangular.png)
 
 ### Abierto u oculto
 
@@ -42,7 +48,7 @@ Por defecto el hueco es **abierto**: su boca queda a ras de la cara y el imán s
 1. Con el panel abierto, pasa el cursor sobre la pieza: una vista previa naranja translúcida (la ves también a través de la pieza) muestra el hueco sobre la cara que está bajo el cursor, perpendicular a ella.
 2. Haz **clic** donde lo quieras. Se agrega un negativo llamado, por ejemplo, **Imán 5 × 2**, agrupado con la pieza para que se muevan juntos. Funciona en caras de arriba, de los costados e inclinadas, también si la pieza está girada o escalada.
 3. Cada clic agrega otro alojamiento. Arrastrar para orbitar la cámara no coloca nada.
-4. Termina con **Listo**, con la X del panel o con `Esc`.
+4. Termina con **Volver** (arriba a la izquierda del panel) o con `Esc`.
 
 Cada alojamiento es un paso de deshacer: `Ctrl+Z` quita solo el último.
 

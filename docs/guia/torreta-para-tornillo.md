@@ -51,7 +51,7 @@ Son valores de partida. Los agujeros impresos en FDM suelen salir más chicos qu
 1. Con el panel abierto, pasa el cursor sobre la pieza: la vista previa muestra el poste (gris) y el agujero (naranja) sobre la cara bajo el cursor, perpendicular a ella.
 2. Haz **clic** donde la quieras. Se agregan el poste (por ejemplo **Torreta M3**) y su agujero, agrupados con la pieza. Funciona en caras de arriba, de los costados e inclinadas, también si la pieza está girada o escalada. Lo que tenías seleccionado no cambia.
 3. Cada clic agrega otra torreta. Arrastrar para orbitar la cámara no coloca nada.
-4. Termina con **Listo**, con la X del panel o con `Esc`.
+4. Termina con **Volver** (arriba a la izquierda del panel) o con `Esc`.
 
 Cada torreta es un paso de deshacer: `Ctrl+Z` quita solo la última, con su poste y su agujero.
 

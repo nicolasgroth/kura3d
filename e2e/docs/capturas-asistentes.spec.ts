@@ -31,6 +31,18 @@ test('asistentes', async ({ page }) => {
   await page.waitForTimeout(600);
   await page.mouse.move(700, 880);
   await captura(page, 'asistentes-02-caja');
+  // 2b) La holgura de la tapa, más abajo en el mismo formulario.
+  // Solo aparece con el cierre «A presión»; se vuelve a «Tornillos» después para no cambiar el resto del recorrido.
+  const cierre = page.getByLabel('Cierre de la tapa');
+  await cierre.selectOption({ label: 'A presión' });
+  const holgura = page.getByLabel('Holgura de la tapa').first();
+  await expect(holgura).toBeVisible();
+  await holgura.scrollIntoViewIfNeeded();
+  await expect(page.getByText('Vista previa actualizada')).toBeVisible({ timeout: 60_000 });
+  await page.waitForTimeout(600);
+  await captura(page, 'asistentes-05-holgura');
+  await cierre.selectOption({ label: 'Tornillos' });
+  await expect(page.getByText('Vista previa actualizada')).toBeVisible({ timeout: 60_000 });
   // 3) Crear y reabrir la caja con sus parámetros: ficha «Creada con un asistente» del inspector.
   await page.getByRole('button', { name: 'Crear', exact: true }).click();
   await expect(page.getByRole('list', { name: 'Asistentes disponibles' })).toBeHidden();

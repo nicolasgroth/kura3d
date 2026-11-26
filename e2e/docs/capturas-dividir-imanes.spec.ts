@@ -27,3 +27,19 @@ test('dividir-para-imprimir con imanes', async ({ page }) => {
   await page.waitForTimeout(1200);
   await captura(page, 'dividir-para-imprimir-03-imanes');
 });
+
+test('dividir-para-imprimir: firmeza de las uniones', async ({ page }) => {
+  await abrir(page);
+  const pieza = await cmd(page, 'create_primitive', { type: 'box', width: 300, height: 120, depth: 120, name: 'Figura', position: [0, 0, 0] });
+  await encuadrar(page, 'scene');
+  await seleccionar(page, [pieza.id]);
+  await (await itemAccion(page, 'Dividir para imprimir…')).click();
+  const dividir = page.getByRole('button', { name: 'Dividir', exact: true });
+  await expect(dividir).toBeEnabled({ timeout: 60_000 });
+  const firmeza = page.getByTestId('split-firmness');
+  await expect(firmeza).toBeVisible({ timeout: 60_000 });
+  await firmeza.locator('summary').first().click();
+  await firmeza.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(800);
+  await captura(page, 'dividir-para-imprimir-04-firmeza');
+});

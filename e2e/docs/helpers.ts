@@ -129,6 +129,8 @@ export async function captura(page: Page, nombre: string, area?: Clip | Locator)
   const file = path.join(IMG_DIR, `${nombre}.png`);
   await sinAvisos(page);
   await page.mouse.move(720, 890);
+  // Un tooltip de foco o de cursor (p. ej. el de «Volver», que cae justo donde estaba el menú) tarda en irse.
+  await page.waitForTimeout(500);
   if (area && 'screenshot' in area) await area.screenshot({ path: file });
   else await page.screenshot({ path: file, clip: area as Clip | undefined });
   const kb = Math.round(statSync(file).size / 1024);

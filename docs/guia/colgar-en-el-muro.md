@@ -42,7 +42,7 @@ Si un campo está fuera de rango o las medidas no calzan entre sí, el campo que
 1. Gira la vista para ver la **cara que va contra la pared** (normalmente la de atrás).
 2. Pasa el cursor sobre ella: la vista previa naranja muestra la entrada, la ranura y la cámara. **La ranura sube hacia el «arriba» de la pieza tal como está en la cama** (el eje vertical proyectado en la cara).
 3. Haz **clic** donde lo quieras. Se agrega el ojo agrupado con la pieza. Lo que tenías seleccionado no cambia; cada clic agrega otro y `Ctrl+Z` quita solo el último.
-4. Termina con **Listo**, con la X del panel o con `Esc`.
+4. Termina con **Volver** (arriba a la izquierda del panel) o con `Esc`.
 
 Para que la pieza cuelgue derecha usa **dos ojos a la misma altura**. Kurra Studio compara el punto donde descansa cada tornillo.
 
