@@ -10,6 +10,8 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Corregido:** al arrastrar una pieza a otra placa (con el cuerpo o con el manipulador) ahora queda dentro de la cama de destino y sale el aviso con «Deshacer».
+- **Corregido en Simplificar:** tras «Aplicar de todos modos» el panel muestra lo que quedó aplicado y conserva «Deshacer»; «Tolerancia pedida» es la que escribiste; Enter en un campo hace la vista previa en vez de aplicar.
 - **Placas:** fichas de la tira más altas y con letra más grande; aviso con «Deshacer» al mover piezas entre placas (paleta, menú o arrastre); nombres largos de pieza cortados por el medio para que se distingan; una placa nueva ya no repite un número visible en la tira.
 - **Simplificar:** un solo mensaje por resultado; el foco se queda en el panel durante el cálculo; con la malla abierta, el aviso trae «Reparar malla»; el informe queda a la vista y parte con un resumen.
 - **Recetas:** las que trae la app pasan a AGPL-3.0-or-later; las de terceros pueden declarar además AGPL-3.0-or-later o GPL-3.0-or-later.

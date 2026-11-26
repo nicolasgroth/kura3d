@@ -4,11 +4,11 @@
 
 ## En corto: hoy, 26 de noviembre
 
-**Notas a ciegas vigentes** (mínimo 85): funcional **86** · código **85** · usabilidad **81** en la última evaluación completa. En las dos funcionalidades más bajas, última ronda: placas **84** y Simplificar **72**, con cuatro defectos concretos encontrados.
+**Notas a ciegas vigentes** (mínimo 85): funcional **86** · código **85** · usabilidad **81** en la última evaluación completa. En las dos funcionalidades más bajas, última ronda: placas **84** y Simplificar **72**; los cuatro defectos que encontró ya están corregidos, sin reevaluar todavía.
 
 **Pruebas en `main`:** 4465 del programa, 190 del servidor MCP y 54 de rendimiento, en verde. Capturas de las guías: 35 recorridos en verde.
 
-En desarrollo ahora mismo: nada. La ronda corta de placas y Simplificar está en `main`; su reevaluación encontró cuatro defectos por corregir (abajo).
+En desarrollo ahora mismo (noche del 26 al 27): cortes a mano e inclinados en Dividir, cortes por las partes de la figura, recipiente con tapa roscada, y patrones con espejo.
 
 Lo que entró hoy y está en `main`:
 
@@ -21,7 +21,7 @@ Lo que entró hoy y está en `main`:
 
 Qué falta verificar:
 
-- Defectos encontrados por la última evaluación, sin corregir: arrastrar una pieza a otra placa no da aviso y la deja fuera de la cama; tras «Aplicar de todos modos» el informe de Simplificar queda desactualizado y sin «Deshacer»; «Tolerancia pedida» muestra otro valor; Enter en el campo de Simplificar aplica sin vista previa.
+- Los cuatro defectos de la última evaluación están corregidos y con recorrido de navegador (aviso y ajuste a la cama al arrastrar entre placas; informe de Simplificar tras «Aplicar de todos modos»; tolerancia pedida; Enter hace vista previa). Falta reevaluar.
 - Si la barra de avance del guardado se ve en un equipo con tarjeta gráfica (consulta abierta).
 - El 3MF con bandejas en Bambu Studio (el autor no lo tiene).
 - En navegador: dividir con imanes cuadrados o rectangulares y exportar por placa a ZIP con camas distintas.
