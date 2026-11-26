@@ -29,7 +29,7 @@ async function abrirCorte(page: Page, id: string) {
     st.selectObject(i);
     st.setActiveDialog('cut');
   }, id);
-  const dlg = page.getByRole('dialog', { name: 'Corte por plano + uniones' });
+  const dlg = page.getByRole('dialog', { name: 'Cortar' });
   await expect(dlg).toBeVisible();
   // Z del usuario = altura: es el corte horizontal que ya viene por defecto.
   await page.getByLabel('Mitades a conservar').selectOption('positive');
@@ -44,7 +44,7 @@ async function elegir(page: Page, opcion: RegExp) {
 async function cortar(page: Page) {
   await page.getByRole('button', { name: /Ejecutar Corte/ }).click();
   // El diálogo se cierra cuando el corte terminó.
-  await expect(page.getByRole('dialog', { name: 'Corte por plano + uniones' })).toBeHidden();
+  await expect(page.getByRole('dialog', { name: 'Cortar' })).toBeHidden();
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().busyOperation)).toBeNull();
 }
 

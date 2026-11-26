@@ -136,7 +136,7 @@ test.describe('3. Nombres', () => {
       st.selectObject(i);
       st.setActiveDialog('cut');
     }, id);
-    const dlg = page.getByRole('dialog', { name: 'Corte por plano + uniones' });
+    const dlg = page.getByRole('dialog', { name: 'Cortar' });
     await expect(dlg).toBeVisible();
     await page.getByLabel('Tipo de conector').selectOption('none');
     await page.getByRole('button', { name: /Ejecutar Corte/ }).click();

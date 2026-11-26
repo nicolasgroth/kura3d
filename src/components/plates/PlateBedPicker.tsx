@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import React, { useEffect, useId, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Printer } from 'lucide-react';
 import { getLocalizedPrinterName, t, type TranslationKey } from '../../i18n';
 import { formatNumber } from '../../utils/plural';
@@ -40,8 +40,16 @@ export const PlateBedPicker: React.FC<{ plateId: string | null; onClose: () => v
     const base = projectBed({ printerProfile, customBedDimensions: customBed });
     return plateBedOptions(plate, { name: getLocalizedPrinterName(language, printerProfile), ...base }, userBeds ?? [], (p) => getLocalizedPrinterName(language, p));
   }, [plate, printerProfile, customBed, userBeds, language]);
-  const [choice, setChoice] = useState<string | null>(null);
+  const [choice, setChoice] = useState<string | null>(model?.selected ?? null);
+  const listRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => setChoice(model?.selected ?? null), [plateId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Foco inicial en el radio marcado (no en «Cerrar»): el efecto del modal abre el diálogo antes que este.
+  const selectedKey = model?.selected ?? null;
+  useEffect(() => {
+    if (!selectedKey) return;
+    const radio = Array.from(listRef.current?.querySelectorAll<HTMLInputElement>('input[type="radio"]') ?? []).find((r) => r.value === selectedKey);
+    radio?.focus();
+  }, [plateId, selectedKey]);
 
   if (!plate || !model) return null;
   const dims = (o: PlateBedOption) => t(language, 'plates.bed.dims', {
@@ -77,7 +85,7 @@ export const PlateBedPicker: React.FC<{ plateId: string | null; onClose: () => v
       }
     >
       <p className="kura-plate-bed-hint" id={`${uid}-hint`}>{t(language, 'plates.bed.dialogHint')}</p>
-      <div className="kura-plate-bed-list" role="group" aria-label={t(language, 'plates.bed.listLabel')} aria-describedby={`${uid}-hint ${uid}-note`}>
+      <div className="kura-plate-bed-list" ref={listRef} role="group" aria-label={t(language, 'plates.bed.listLabel')} aria-describedby={`${uid}-hint ${uid}-note`}>
         {GROUPS.map((group) => {
           const items = model.options.filter((o) => o.group === group);
           if (group === 'mine' && items.length === 0) {
