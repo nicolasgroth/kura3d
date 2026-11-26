@@ -122,6 +122,20 @@ export const OPERATION_RANGES = {
     axialClearanceMm: closed(0, 1),
     flankAngleDeg: closed(30, 45),
   },
+  /**
+   * Acople de tubería (`pipeCoupling.ts`): macho + hembra roscados (perfil de recipiente) o a presión (espiga cónica
+   * con tope). La pared mínima de 0,8 mm son dos perímetros con boquilla de 0,4 mm; bajo 1,2 mm se avisa.
+   */
+  pipeCoupling: {
+    boreDiameterMm: closed(3, 150),
+    wallMm: closed(0.8, 6),
+    tailLengthMm: closed(3, 150),
+    engageMm: closed(4, 80),
+    clearanceMm: closed(0, 1),
+    pitchMm: closed(2, 8),
+    starts: closed(1, 4),
+    turns: closed(1, 6),
+  },
   /** Comprobación de enroscado (`screwFit.ts`): avance por vuelta, vueltas a desenroscar y posiciones medidas. */
   screwFit: {
     leadMm: closed(0.2, 64),
