@@ -113,12 +113,12 @@ const TABLE = {
     '钥匙孔放不下：比该处的面更宽。请选择更宽的区域或更小的螺丝。',
   ],
   'keyhole.warn.through': [
-    'La cámara atraviesa la pieza: la cabeza no quedaría sujeta. Usa una cara más gruesa o baja el fondo de la cámara.',
-    'The chamber goes through the part: the head would not be held. Use a thicker face or reduce the chamber depth.',
-    'Die Kammer geht durch das Teil: Der Kopf würde nicht gehalten. Nutze eine dickere Fläche oder verringere die Kammertiefe.',
-    'La chambre traverse la pièce : la tête ne serait pas retenue. Utilise une face plus épaisse ou réduis la profondeur.',
-    'कक्ष भाग के आर-पार जाता है: हेड नहीं टिकेगा। मोटा फलक लें या कक्ष की गहराई घटाएँ।',
-    '腔体穿透零件：螺丝头无法卡住。请用更厚的面或减小腔深。',
+    'La cámara atraviesa la pieza: el labio sigue reteniendo la cabeza, pero quedará un agujero a la vista por el otro lado. Si no lo quieres, usa una cara más gruesa o baja el fondo de la cámara.',
+    'The chamber goes through the part: the lip still holds the head, but a hole will show on the other side. If you do not want it, use a thicker face or reduce the chamber depth.',
+    'Die Kammer geht durch das Teil: Die Lippe hält den Kopf weiterhin, aber auf der anderen Seite bleibt ein sichtbares Loch. Wenn du das nicht willst, nutze eine dickere Fläche oder verringere die Kammertiefe.',
+    'La chambre traverse la pièce : la lèvre retient toujours la tête, mais un trou restera visible de l’autre côté. Si tu n’en veux pas, utilise une face plus épaisse ou réduis la profondeur.',
+    'कक्ष भाग के आर-पार जाता है: किनारा हेड को फिर भी थामे रखता है, पर दूसरी ओर छेद दिखेगा। अगर यह नहीं चाहिए, तो मोटा फलक लें या कक्ष की गहराई घटाएँ।',
+    '腔体穿透零件：唇边仍能卡住螺丝头，但另一面会露出孔。若不希望如此，请用更厚的面或减小腔深。',
   ],
   'keyhole.warn.wall': [
     'Detrás de la cámara quedan {wall} mm de material (mínimo recomendado {min} mm): puede romperse al colgar.',

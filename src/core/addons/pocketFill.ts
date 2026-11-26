@@ -40,12 +40,13 @@ export function pocketFillRatio(world: MeshData, plan: PocketPlacement, hostVolu
   const bound = negativeVolume / hostVolumeMm3;
   if (bound < FILL_SAMPLE_FROM) return bound;
   const half = dims.widthMm / 2;
+  const halfW = dims.crossMm / 2;
   let total = 0;
   let inside = 0;
   for (let i = 0; i < SECTION_SAMPLES; i++) {
     const x = ((i + 0.5) / SECTION_SAMPLES * 2 - 1) * half;
     for (let j = 0; j < SECTION_SAMPLES; j++) {
-      const z = ((j + 0.5) / SECTION_SAMPLES * 2 - 1) * half;
+      const z = ((j + 0.5) / SECTION_SAMPLES * 2 - 1) * halfW;
       if (dims.shape === 'round' && Math.hypot(x, z) > half) continue;
       const column = addScaled(addScaled(plan.position, frame.u, x), frame.w, z);
       for (let k = 0; k < AXIS_SAMPLES; k++) {

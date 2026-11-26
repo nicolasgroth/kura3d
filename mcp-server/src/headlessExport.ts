@@ -15,6 +15,7 @@ import { strFromU8, unzipSync } from 'fflate';
 import { exportSceneTo3MF, exportSceneToBinarySTL, stlBrandHeader } from '../../src/engine/index';
 import { BRAND } from '../../src/brand';
 import { isPrintable } from '../../src/core/scene/objectRole';
+import type { ThreeMfPlateLayout } from '../../src/engine/io/threeMfExport';
 import type { HeadlessSceneObject } from './headlessSupport.js';
 import type { UnitSystem } from './types.js';
 
@@ -28,6 +29,9 @@ export interface ExportFileResult {
   /** Colores distintos escritos en `<basematerials>` (solo 3MF). */
   colorCount?: number;
   bytesWritten: number;
+  /** Con placas: placas con piezas en el archivo y piezas imprimibles sin placa excluidas (como la app). */
+  plateCount?: number;
+  skippedUnplaced?: number;
 }
 
 /**
@@ -92,10 +96,12 @@ export async function writeStlFile(
 export async function write3mfFile(
   outputPath: string,
   targets: HeadlessSceneObject[],
-  units: UnitSystem
+  units: UnitSystem,
+  /** Placas del laminador (Bambu Studio / OrcaSlicer) con dos o más placas reales, como la app. */
+  plateLayout?: ThreeMfPlateLayout,
 ): Promise<ExportFileResult> {
   const solids = exportableObjects(targets);
-  const bytes = exportSceneTo3MF(solids, units, undefined, BRAND);
+  const bytes = exportSceneTo3MF(solids, units, undefined, BRAND, undefined, plateLayout);
 
   // Lee de vuelta el modelo escrito por el motor para informar exactamente lo exportado
   const modelXml = strFromU8(unzipSync(bytes, { filter: (f) => f.name === '3D/3dmodel.model' })['3D/3dmodel.model']);

@@ -11,7 +11,7 @@
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';
-import type { PocketDims, PocketFrame } from './magnetPocket';
+import { footprintReach, type PocketDims, type PocketFrame } from './magnetPocket';
 import { addScaled, dot3, rayHitsDetailed } from './meshRays';
 import { MOUTH_DIRECTIONS } from './pocketSurface';
 
@@ -50,27 +50,37 @@ export interface PocketWallOptions {
   onRay?: (origin: Vec3, dir: Vec3, hostWall: number) => void;
 }
 
+/**
+ * Direcciones (radianes en la base u, w) en que se mide la pared lateral: ocho repartidas en el redondo; en cuadrado
+ * y rectángulo, los cuatro lados y las cuatro esquinas (en el cuadrado coinciden con las ocho repartidas).
+ */
+function wallAngles(dims: PocketDims): number[] {
+  if (dims.shape === 'round') return [0, 1, 2, 3, 4, 5, 6, 7].map((k) => (k * Math.PI) / 4);
+  const c = Math.atan2(dims.crossMm, dims.widthMm);
+  return [0, c, Math.PI / 2, Math.PI - c, Math.PI, Math.PI + c, (3 * Math.PI) / 2, 2 * Math.PI - c];
+}
+
 /** Mide la pared alrededor del hueco con boca en `point` (sobre la cara) y la base `frame`. */
 export function measurePocketWall(
   world: MeshData, point: Vec3, frame: PocketFrame, dims: PocketDims, options: PocketWallOptions = {},
 ): Omit<PocketWallReport, 'protrudeMm' | 'neighbor' | 'coverMm'> {
   const half = dims.widthMm / 2;
+  const halfW = dims.crossMm / 2;
   const inward: Vec3 = [-frame.axis[0], -frame.axis[1], -frame.axis[2]];
-  const step = MOUTH_DIRECTIONS / 8;
   let side = Infinity;
   // Tres alturas dentro del hueco, medidas desde la cara hacia adentro (no la boca: ahí no hay pared que medir).
   for (const f of [0.2, 0.5, 0.9]) {
     const level = dims.topMm + dims.depthMm * f;
     const center = addScaled(point, inward, level);
-    for (let k = 0; k < 8; k++) {
+    for (const ang of wallAngles(dims)) {
       // En una cara convexa la superficie baja hacia el borde: sobre ella no hay material que medir.
-      const rimHeight = options.rimHeights?.[k * step] ?? 0;
+      const k = Math.round((ang / (2 * Math.PI)) * MOUTH_DIRECTIONS + MOUTH_DIRECTIONS) % MOUTH_DIRECTIONS;
+      const rimHeight = options.rimHeights?.[k] ?? 0;
       if (level + Math.min(0, rimHeight) < LEVEL_MARGIN_MM) continue;
-      const ang = (k * Math.PI) / 4;
       const cu = Math.cos(ang), cw = Math.sin(ang);
       const dir: Vec3 = [frame.u[0] * cu + frame.w[0] * cw, frame.u[1] * cu + frame.w[1] * cw, frame.u[2] * cu + frame.w[2] * cw];
-      // Distancia del eje al borde en esa dirección (el cuadrado llega más lejos en las diagonales).
-      const reach = dims.shape === 'square' ? half / Math.max(Math.abs(cu), Math.abs(cw)) : half;
+      // Distancia del eje al borde en esa dirección (cuadrado y rectángulo llegan más lejos hacia sus esquinas).
+      const reach = footprintReach(dims.shape, half, halfW, cu, cw);
       const origin = addScaled(center, dir, reach);
       const hits = rayHitsDetailed(world, origin, dir);
       let wall: number;
@@ -86,7 +96,7 @@ export function measurePocketWall(
   const floor = addScaled(point, inward, dims.bottomMm);
   const offsets: Array<[number, number]> = [[0, 0], [0.7, 0], [-0.7, 0], [0, 0.7], [0, -0.7]];
   for (const [a, b] of offsets) {
-    const origin = addScaled(addScaled(floor, frame.u, a * half), frame.w, b * half);
+    const origin = addScaled(addScaled(floor, frame.u, a * half), frame.w, b * halfW);
     const hits = rayHitsDetailed(world, origin, inward);
     const wall = hits.length % 2 === 1 ? hits[0].dist : 0;
     bottom = Math.min(bottom, wall);

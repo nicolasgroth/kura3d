@@ -26,6 +26,7 @@ import { createSelectionSlice } from './slices/selectionSlice';
 import { createViewModeSlice } from './slices/viewModeSlice';
 import { createLayoutGuardSlice } from './slices/layoutGuardSlice';
 import { clearSmoothOnSelectionChange, createSmoothSlice } from './slices/smoothSlice';
+import { clearSimplifyPreviewOnSelectionChange, createSimplifyPreviewSlice } from './slices/simplifyPreviewSlice';
 import { createSplitSlice } from './slices/splitSlice';
 import { createSplitJointsSlice } from './slices/splitJointsSlice';
 import { createSplitPrefsSlice } from './slices/splitPrefsSlice';
@@ -112,6 +113,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createViewPrefsSlice(ctx),
     ...createViewModeSlice(ctx),
     ...createSmoothSlice(ctx),
+    ...createSimplifyPreviewSlice(ctx),
   } as Partial<KuraStoreState>;
   const withQuickActions = { ...base, ...createQuickActionsSlice(ctx, base) } as Partial<KuraStoreState>;
   return {
@@ -133,6 +135,7 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
 hydrateSecrets(useKuraStore);
 clearPreviewOnSelectionChange(useKuraStore);
 clearSmoothOnSelectionChange(useKuraStore);
+clearSimplifyPreviewOnSelectionChange(useKuraStore);
 invalidateFitCheckOnSceneChange(useKuraStore);
 invalidateOrientOnSceneChange(useKuraStore);
 closeActionOnTargetLoss(useKuraStore);

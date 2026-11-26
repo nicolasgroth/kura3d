@@ -17,16 +17,19 @@ import { PLATES_VIEW_HI } from './placasVista';
 import { VIEW_MODE_HI } from './vistaModos';
 import { PLATES_EXPORT_HI } from './placasExportar';
 import { PLATES_ARRANGE_HI } from './placasRepartir';
+import { PLATES_ARRANGE_UI_HI } from './placasRepartirUi';
 import { MEASURE_HI } from './measure';
 import { FLOWUX_HI } from './flowUx';
 import { PREVIEW_HI } from './preview';
 import { SPLITJOINTS_HI } from './splitJoints';
 import { SPLITPREFS_HI } from './splitPrefs';
 import { UNIONES_FIRMES_HI } from './unionesFirmes';
+import { FIRMEZA_UNIONES_HI } from './firmezaUniones';
 import { AJUSTAR_HI } from './ajustarImpresora';
 import { SUAVIZAR_HI } from './suavizarMotor';
 import { SIMPLIFICAR_HI } from './simplificar';
 import { FUNCIONAL_R2_HI } from './funcionalR2';
+import { SIMPLIFICAR_VP_HI } from './simplificarVistaPrevia';
 import { SUAVIZAR_UI_HI } from './suavizarUi';
 import { SPLITCOUPLING_HI } from './splitCoupling';
 import { A11YUX_HI } from './a11yUx';
@@ -84,17 +87,20 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...VIEW_MODE_HI,
   ...PLATES_EXPORT_HI,
   ...PLATES_ARRANGE_HI,
+  ...PLATES_ARRANGE_UI_HI,
   ...MEASURE_HI,
   ...FLOWUX_HI,
   ...PREVIEW_HI,
   ...SPLITJOINTS_HI,
   ...SPLITPREFS_HI,
   ...UNIONES_FIRMES_HI,
+  ...FIRMEZA_UNIONES_HI,
   ...AJUSTAR_HI,
   ...SUAVIZAR_HI,
   ...SUAVIZAR_UI_HI,
   ...SIMPLIFICAR_HI,
   ...FUNCIONAL_R2_HI,
+  ...SIMPLIFICAR_VP_HI,
   ...SPLITCOUPLING_HI,
   ...A11YUX_HI,
   ...UXMOVIL_HI,

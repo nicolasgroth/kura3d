@@ -42,7 +42,7 @@ describe('Dividir: unión con imanes', () => {
     expect(document.body.textContent).toContain(t('es', 'splitMagnet.help', { width: '5,2', depth: '2,2' }));
   });
 
-  it('cambia de imán por preajuste, pasa a cantidad fija y avisa con un imán cuadrado', () => {
+  it('cambia de imán por preajuste, pasa a cantidad fija y admite cuadrados y rectangulares sin aviso', () => {
     render(<SplitForBedPanel open onClose={() => undefined} />);
     fireEvent.change(screen.getByLabelText(t('es', 'dialog.cut.connectorType'), { selector: 'select' }), { target: { value: 'magnet' } });
     const preset = screen.getByTestId('split-magnet-preset') as HTMLSelectElement;
@@ -52,9 +52,13 @@ describe('Dividir: unión con imanes', () => {
     fireEvent.click(screen.getByTestId('split-magnet-count-auto'));
     expect(lastConnector()).toMatchObject({ count: 2 });
     expect(lastConnector().countAuto).toBeUndefined();
-    expect(screen.queryByTestId('split-magnet-square')).toBeNull();
     fireEvent.change(preset, { target: { value: 'builtin:square-5x5x2' } });
-    expect(screen.getByTestId('split-magnet-square').textContent).toContain(t('es', 'splitMagnet.squareNote'));
-    expect(preset.getAttribute('aria-describedby')).toContain('magnet-square');
+    expect(lastConnector()).toMatchObject({ magnet: { shape: 'square', sizeMm: 5 } });
+    expect(screen.queryByTestId('split-magnet-square')).toBeNull();
+    expect(document.body.textContent).toContain(t('es', 'splitMagnet.helpBlock', { size: '5,2 × 5,2 × 2,2' }));
+    fireEvent.change(preset, { target: { value: 'builtin:rect-10x5x2' } });
+    expect(preset.value).toBe('builtin:rect-10x5x2');
+    expect(lastConnector()).toMatchObject({ magnet: { shape: 'rect', sizeMm: 10, widthMm: 5, heightMm: 2 } });
+    expect(document.body.textContent).toContain(t('es', 'splitMagnet.helpBlock', { size: '10,2 × 5,2 × 2,2' }));
   });
 });

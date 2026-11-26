@@ -19,7 +19,8 @@ import { withAddonPosts } from '../../core/operations/addonPostMerge';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { classifySimplifyResult } from '../../core/operations/simplifyOutcome';
 import type { SimplifyRequest } from '../../engine/simplify';
-import { simplifyBlockedToast, simplifyWarningText } from '../../i18n/simplifyWarnings';
+import { simplifyBlockedToast, simplifySafeAppliedSentence, simplifyWarningText } from '../../i18n/simplifyWarnings';
+import { sceneSimplifyReport } from './simplifyPreviewSlice';
 import { formatNumber } from '../../utils/plural';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
@@ -129,20 +130,16 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       if (!obj) return false;
       const req: SimplifyRequest = typeof request === 'number' ? { mode: 'tolerance', toleranceMm: request } : request;
       return runExclusive('simplify', false, async () => {
-        await get().initEngine();
-        const change = await runEngine('simplify', { obj, request: req });
+        // La vista previa con la misma malla y parámetros ya lo calculó: se reutiliza en vez de recalcular.
+        const previewed = get().consumeSimplifyPreview(obj, req);
+        if (!previewed) await get().initEngine();
+        const change = previewed ?? await runEngine('simplify', { obj, request: req });
         assertCurrent([obj]);
         const lang = get().language;
         const before = obj.stats.triangles;
-        // El motor cuenta los triángulos de la malla ya soldada (sin degenerados): puede diferir en unos pocos de lo
-        // que el usuario ve en el inspector. Informe y avisos usan la misma fuente: la malla real de la escena.
-        const engineReport = change.simplify!.report;
-        // Destructivo sin aplicar: se conserva el número calculado (el informe compara las dos alternativas).
-        const blocked = !engineReport.applied && (engineReport.destructive?.length ?? 0) > 0;
-        const afterReal = engineReport.applied
-          ? (change.patches[0].patch.stats?.triangles ?? engineReport.trianglesAfter)
-          : blocked ? engineReport.trianglesAfter : before;
-        const report = { ...engineReport, objectId: id, trianglesBefore: before, trianglesAfter: afterReal };
+        // Informe y avisos usan la malla real de la escena (el motor cuenta la soldada; puede diferir en unos pocos).
+        const report = sceneSimplifyReport(obj, change);
+        const blocked = !report.applied && (report.destructive?.length ?? 0) > 0;
         options.onReport?.(report);
         // Sin reducción, «Sin pérdida» rechazado o destructivo: no hay paso de historial y el aviso dice por qué.
         if (!report.applied) {
@@ -168,11 +165,13 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         const delta = new Intl.NumberFormat(lang, { maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(Math.round(pct * 100) / 100);
         // Avisos de la verificación (género, volumen, desviación, objetivo) en el mismo aviso: deja de ser «éxito».
         const checks = report.warnings.filter((w) => w !== 'no_reduction');
-        const result = tr('realesMotor.simplifyResult', { before: counts.before, after: counts.tris, delta });
+        const plain = tr('realesMotor.simplifyResult', { before: counts.before, after: counts.tris, delta });
+        // Se aplicó la versión segura en lugar de lo pedido: el aviso lo dice primero.
+        const result = report.appliedVariant === 'safe' ? `${simplifySafeAppliedSentence(lang, report)} ${plain}` : plain;
         const text = checks.length > 0 ? `${result} ${tr('simplify.toast.check', { reasons: simplifyWarningText(lang, report, checks) })}` : result;
         get().addToast(
           text,
-          outcome === 'marginal' || checks.length > 0 ? 'info' : 'success',
+          outcome === 'marginal' || checks.length > 0 || report.appliedVariant === 'safe' ? 'info' : 'success',
           // Persistente: Simplificar tarda (minutos en mallas de millones) y el aviso no debe caducar antes de que se vea.
           undoToastAction(tr('toast.undo'), () => get().past, () => get().undo(), true),
         );

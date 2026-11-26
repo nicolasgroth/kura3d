@@ -42,6 +42,7 @@ import { ScrewBossPlacementLayer } from './ScrewBossPlacementLayer';
 import { KeyholePlacementLayer } from './KeyholePlacementLayer';
 import { CablePassPlacementLayer } from './CablePassPlacementLayer';
 import { FitPreviewGhost } from '../fitToBed/FitPreviewGhost';
+import { PlateArrangeGhost } from '../plates/PlateArrangeGhost';
 import { SegmentHighlight } from './SegmentHighlight';
 import { SceneMeshItem } from './SceneMeshItem';
 import { OpenEdgesOverlay } from './OpenEdgesOverlay';
@@ -233,6 +234,7 @@ export const SceneContent: React.FC<{
       <KeyholePlacementLayer />
       <CablePassPlacementLayer />
       <FitPreviewGhost />
+      <PlateArrangeGhost />
       <SegmentHighlight />
       <OpenEdgesOverlay />
       <FitCheckHighlight />

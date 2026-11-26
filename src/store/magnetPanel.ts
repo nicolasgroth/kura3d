@@ -10,7 +10,7 @@
  */
 
 import { create } from 'zustand';
-import { MAGNET_DEFAULTS, type MagnetParams } from '../core/addons/magnetPocket';
+import { MAGNET_DEFAULTS, MAGNET_RANGES, type MagnetParams } from '../core/addons/magnetPocket';
 import { MAGNET_PRESET_KIND } from '../core/addons/magnetPresets';
 import type { PocketWallReport } from '../core/addons/pocketWall';
 import { isSolid } from '../core/scene/objectRole';
@@ -63,8 +63,15 @@ export function closeMagnetPanel(): void {
   useMagnetPanel.setState({ open: false, hover: null, lastWall: null, lastObjectId: null });
 }
 
+/** Ancho con que arranca un rectangular sin ancho (la mitad del largo, al menos el mínimo). */
+export const rectDefaultWidth = (sizeMm: number) => Math.max(MAGNET_RANGES.widthMm.min, Math.round(sizeMm) / 2);
+
 export function setMagnetParams(patch: Partial<MagnetParams>): void {
-  useMagnetPanel.setState((s) => ({ params: { ...s.params, ...patch } }));
+  useMagnetPanel.setState((s) => {
+    const params = { ...s.params, ...patch };
+    if (params.shape === 'rect' && params.widthMm === undefined) params.widthMm = rectDefaultWidth(params.sizeMm);
+    return { params };
+  });
 }
 
 export function setMagnetBlocked(blocked: boolean): void {

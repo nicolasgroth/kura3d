@@ -195,6 +195,15 @@ const TABLE = {
   'turret.short.exits': ['El agujero sale por el otro lado.', 'The hole comes out the other side.', 'Das Loch tritt auf der anderen Seite aus.', 'Le trou ressort de l’autre côté.', 'छेद दूसरी ओर निकलता है।', '孔从另一侧露出。'],
   'turret.short.into': ['El agujero entra en la pieza.', 'The hole goes into the part.', 'Das Loch reicht ins Teil.', 'Le trou entre dans la pièce.', 'छेद भाग में जाता है।', '孔深入零件。'],
   'turret.short.wall': ['Pared delgada.', 'Thin wall.', 'Dünne Wand.', 'Paroi fine.', 'पतली दीवार।', '柱壁过薄。'],
+  'turret.warn.belowBase': [
+    'La torreta está en la cara de apoyo: sobresale {mm} mm bajo la base y la pieza ya no apoyará plana en la cama. Ponla en otra cara o gira la pieza para imprimirla.',
+    'The boss is on the resting face: it sticks out {mm} mm below the base and the part will no longer sit flat on the bed. Put it on another face or turn the part to print it.',
+    'Der Schraubdom sitzt auf der Auflagefläche: Er ragt {mm} mm unter die Basis und das Teil liegt nicht mehr flach auf dem Druckbett. Setze ihn auf eine andere Fläche oder drehe das Teil zum Drucken.',
+    'La tourelle est sur la face d’appui : elle dépasse de {mm} mm sous la base et la pièce ne reposera plus à plat sur le plateau. Place-la sur une autre face ou tourne la pièce pour l’imprimer.',
+    'बॉस टिकने वाले फलक पर है: यह आधार के नीचे {mm} mm बाहर निकलता है और भाग बेड पर सपाट नहीं टिकेगा। इसे दूसरे फलक पर रखें या प्रिंट के लिए भाग घुमाएँ।',
+    '螺柱位于支撑面上：它在底面以下伸出 {mm} mm，零件将无法平放在热床上。请放到其他面，或旋转零件后再打印。',
+  ],
+  'turret.short.belowBase': ['Sobresale bajo la base.', 'Sticks out below the base.', 'Ragt unter die Basis.', 'Dépasse sous la base.', 'आधार के नीचे निकलता है।', '伸出底面。'],
   'turret.short.collide': ['Choca con otra.', 'Overlaps another.', 'Überschneidet sich.', 'Chevauche un autre.', 'दूसरे से टकराता है।', '与其他重叠。'],
   'turret.lastOk': [
     'Última torreta sin avisos: pared de {wall} mm.',

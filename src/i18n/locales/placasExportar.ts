@@ -2,7 +2,7 @@
  * @file src/i18n/locales/placasExportar.ts
  * @description Textos de exportar con placas (lote P6) en los 6 idiomas: elección del diálogo de exportación con
  * varias placas (un 3MF con todas o un archivo por placa en ZIP) y qué laminadores entienden cada una, piezas sin
- * placa excluidas, ZIP hecho y error del bus. Cada clave lleva [es, en, de, fr, hi, zh].
+ * placa excluidas, ZIP hecho y errores del bus (exportar y comandos de placas del lote P8). Cada clave lleva [es, en, de, fr, hi, zh].
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -98,6 +98,38 @@ const PLATES_EXPORT_TABLE = {
     'Le plateau « {id} » n’existe pas.',
     'प्लेट “{id}” मौजूद नहीं है।',
     '打印板“{id}”不存在。',
+  ],
+  'bus.error.plateLimit': [
+    'No se pueden crear más placas (máximo {max}, o no queda espacio libre para otra cama).',
+    'No more plates can be created (maximum {max}, or there is no free space left for another bed).',
+    'Es können keine weiteren Platten erstellt werden (maximal {max}, oder kein freier Platz für ein weiteres Druckbett).',
+    'Impossible de créer d’autres plateaux (maximum {max}, ou plus d’espace libre pour un autre plateau).',
+    'और प्लेटें नहीं बनाई जा सकतीं (अधिकतम {max}, या किसी और बेड के लिए खाली जगह नहीं बची)।',
+    '无法再创建打印板（最多 {max} 块，或已没有可放置新打印床的空间）。',
+  ],
+  'bus.error.plateLast': [
+    'No se puede borrar la única placa: una escena con placas siempre tiene al menos una.',
+    'The only plate cannot be deleted: a scene with plates always keeps at least one.',
+    'Die einzige Platte kann nicht gelöscht werden: Eine Szene mit Platten behält immer mindestens eine.',
+    'Impossible de supprimer le seul plateau : une scène avec plateaux en garde toujours au moins un.',
+    'इकलौती प्लेट हटाई नहीं जा सकती: प्लेटों वाले दृश्य में हमेशा कम से कम एक प्लेट रहती है।',
+    '无法删除唯一的打印板：有打印板的场景始终至少保留一块。',
+  ],
+  'bus.error.plateNothingToMove': [
+    'Nada que mover: las piezas ya están en esa placa o no son piezas sólidas (referencias y negativos no van en placas).',
+    'Nothing to move: the parts are already on that plate or are not solid parts (references and negatives do not go on plates).',
+    'Nichts zu verschieben: Die Teile liegen bereits auf dieser Platte oder sind keine festen Teile (Referenzen und Negative kommen auf keine Platte).',
+    'Rien à déplacer : les pièces sont déjà sur ce plateau ou ne sont pas des pièces solides (références et négatifs ne vont pas sur un plateau).',
+    'हिलाने को कुछ नहीं: हिस्से पहले से उसी प्लेट पर हैं या ठोस हिस्से नहीं हैं (संदर्भ और नेगेटिव प्लेट पर नहीं जाते)।',
+    '没有可移动的内容：零件已在该打印板上，或不是实体零件（参考体和负形不放在打印板上）。',
+  ],
+  'bus.error.plateSpreadNeedsTwo': [
+    'Una placa por objeto necesita al menos dos piezas sólidas sin bloquear.',
+    'One plate per object needs at least two unlocked solid parts.',
+    'Eine Platte pro Objekt braucht mindestens zwei entsperrte feste Teile.',
+    'Un plateau par objet nécessite au moins deux pièces solides non verrouillées.',
+    'हर वस्तु के लिए एक प्लेट को कम से कम दो अनलॉक ठोस हिस्से चाहिए।',
+    '每个对象一块打印板至少需要两个未锁定的实体零件。',
   ],
 } as const satisfies Record<string, Row>;
 

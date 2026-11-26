@@ -46,10 +46,12 @@ export function registerAddonTools(server: Pick<McpServer, 'registerTool'>, ctx:
       inputSchema: {
         hostId: idSchema.describe('ID of the solid part that receives the pocket.'),
         ...placementInputs,
-        shape: z.enum(['round', 'square']).optional().describe(`Magnet shape (default ${MD.shape}).`),
-        sizeMm: rangeSchema(MR.sizeMm).optional().describe(`Diameter (round) or side (square) of the magnet in mm (default ${MD.sizeMm}).`),
+        shape: z.enum(['round', 'square', 'rect']).optional().describe(`Magnet shape (default ${MD.shape}); "rect" = rectangular block (length × width × height).`),
+        sizeMm: rangeSchema(MR.sizeMm).optional().describe(`Diameter (round), side (square) or length (rect) of the magnet in mm (default ${MD.sizeMm}).`),
+        widthMm: rangeSchema(MR.widthMm).optional().describe('shape="rect" only, required there: magnet width in mm.'),
+        turn90: z.boolean().optional().describe('shape="rect" only: the length points up the face by default; true turns it 90° around the face normal.'),
         heightMm: rangeSchema(MR.heightMm).optional().describe(`Magnet height in mm (default ${MD.heightMm}).`),
-        clearanceMm: rangeSchema(MR.clearanceMm).optional().describe(`Clearance added to the diameter or side (default ${MD.clearanceMm}).`),
+        clearanceMm: rangeSchema(MR.clearanceMm).optional().describe(`Clearance added to the diameter, side, or length and width (default ${MD.clearanceMm}).`),
         depthClearanceMm: rangeSchema(MR.depthClearanceMm).optional().describe(`Clearance added to the depth (default ${MD.depthClearanceMm}).`),
         hidden: z.boolean().optional().describe('Hidden under the face (default false = open pocket).'),
       },
@@ -67,7 +69,7 @@ export function registerAddonTools(server: Pick<McpServer, 'registerTool'>, ctx:
         'threaded insert. With type and nominalMm (M2–M5) the built-in table gives the hole; explicit sizes win. Default height = ' +
         'hole depth + 2 mm, default outer diameter = 2.5 × nominal (at least hole + 2 minimum walls). One undo step; it keeps its ' +
         'size and follows the part. Returns both objects, the report (post wall, hole depth into the part, exits the other side, ' +
-        'collides with another addon) and warnings. Fails with addon-blocked (reason tooWide) when the post foot is wider than the face.',
+        'collides with another addon, belowBaseMm when the post sticks out below the base of the part) and warnings (SCREW_BOSS_BELOW_BASE on the resting face, without blocking). Fails with addon-blocked (reason tooWide) when the post foot is wider than the face.',
       inputSchema: {
         hostId: idSchema.describe('ID of the solid part that receives the boss.'),
         ...placementInputs,

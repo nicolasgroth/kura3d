@@ -198,6 +198,8 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         s.setObjectsRole(targets.map((o) => o.id), rec.role);
         return 'done';
       }
+      case 'arrangePlates':
+        return 'notApplicable';
     }
   };
 
@@ -273,6 +275,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         // «Aplicar de todos modos» no se repite en otra pieza: repetir vuelve a pasar por la regla de destructivo.
         const safeRequest = { ...request };
         if ('allowDestructive' in safeRequest) delete safeRequest.allowDestructive;
+        if ('onDestructive' in safeRequest && safeRequest.onDestructive === 'force') delete safeRequest.onDestructive;
         record({ kind: 'simplify', toleranceMm: request.mode === 'tolerance' ? request.toleranceMm : OPERATION_DEFAULTS.simplify.toleranceMm, request: safeRequest });
       }
       return ok;

@@ -66,6 +66,7 @@ import type { ObjectRole } from '../types/kura';
 import type { ExportRequest, ModelImportOptions, ModelImportSource } from './modelIoActions';
 import type { PreviewSliceState } from './slices/previewSlice';
 import type { SmoothSliceState } from './slices/smoothSlice';
+import type { SimplifyPreviewSliceState } from './slices/simplifyPreviewSlice';
 import type { SplitSliceState } from './slices/splitSlice';
 import type { SplitJointsSliceState } from './slices/splitJointsSlice';
 import type { SplitPrefsSliceState } from './slices/splitPrefsSlice';
@@ -166,7 +167,7 @@ export interface BusyProgress {
 
 /** Vista previa de operaciones (declarada en `slices/previewSlice.ts`), fusionada al estado. */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface KuraStoreState extends PreviewSliceState, SplitSliceState, SplitJointsSliceState, SplitPrefsSliceState, FitToBedSliceState, FitCheckSliceState, OrientSliceState, RecipesSliceState, BedProfilesSliceState, MagnetSliceState, QuickActionsSliceState, MenuIdeasSliceState, GroupsSliceState, PlatesSliceState, RepairSliceState, ViewPrefsSliceState, ViewModeSliceState, SmoothSliceState, ScrewBossSliceState, KeyholeSliceState, CablePassSliceState, PlateArrangeSliceState {}
+export interface KuraStoreState extends PreviewSliceState, SplitSliceState, SplitJointsSliceState, SplitPrefsSliceState, FitToBedSliceState, FitCheckSliceState, OrientSliceState, RecipesSliceState, BedProfilesSliceState, MagnetSliceState, QuickActionsSliceState, MenuIdeasSliceState, GroupsSliceState, PlatesSliceState, RepairSliceState, ViewPrefsSliceState, ViewModeSliceState, SmoothSliceState, ScrewBossSliceState, KeyholeSliceState, CablePassSliceState, PlateArrangeSliceState, SimplifyPreviewSliceState {}
 
 export interface KuraStoreState {
   // Estado del motor geométrico

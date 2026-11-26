@@ -89,7 +89,7 @@ Tipo de unión `magnet` de Dividir para imprimir (`src/engine/split/splitMagnet.
 - **Cantidad automática**: se prueba `max(2, islas que admiten un imán)` (tope 8) y se baja de a uno. Con dos islas, uno por isla; con una sola isla, dos (no gira); en secciones angostas el muestreo del punto más lejano los deja en línea.
 - **Cantidad fija**: se prueba la pedida y se baja de a uno si no caben (`SPLIT_MAGNET_REDUCED` con lo pedido y lo puesto).
 - El imán tiene alto fijo: la profundidad **no se acorta**. Rayos paralelos al eje (centro y anillo hueco + pared) exigen alojamiento + 1,2 mm de material en **las dos** piezas; si no, se prueba con menos imanes y, si no cabe ninguno, la unión queda para pegar con `SPLIT_MAGNET_NO_ROOM` (diámetro, alto y pared).
-- Imán cuadrado: aún no se admite en uniones (`SPLIT_MAGNET_SQUARE`, la unión queda para pegar; el panel lo advierte al elegirlo).
+- Imanes cuadrados y rectangulares (`splitMagnetBlock.ts`): alojamientos enfrentados con la misma orientación en las dos piezas; el largo va por el eje principal de inercia de la isla; la huella (rectángulo + 1,2 mm de pared) se comprueba exacta con polígonos y el material bajo el fondo con rayos en centro, esquinas y lados; la fuerza usa el área real. Si no caben: `SPLIT_MAGNET_NO_ROOM_BLOCK` y la unión queda para pegar.
 
 ### Geometría
 
@@ -127,3 +127,46 @@ Criterio de diseño propio, **por verificar**: la fuerza real depende del grado 
 - Solo imanes redondos; sin ubicación manual de cada imán; no hay par de imanes entre piezas que no vienen de un corte (caja y tapa).
 - Dividir corta por planos de los ejes: el «corte inclinado» se prueba con una pieza girada (caras inclinadas que cruzan el plano), no con un plano oblicuo.
 - En el panel la medida se elige por preajuste (incluidos o propios); para una medida nueva se guarda primero como preajuste en *Alojamiento de imán*. Por comando o MCP se pasan `magnetDiameterMm`, `magnetHeightMm`, holguras y `magnetCount`.
+
+## Firmeza en la interfaz de Dividir para imprimir
+
+La interfaz no calcula reglas: muestra lo que el motor ya midió y usa el mismo vocabulario con conectores y con imanes.
+
+### Qué expone el motor
+
+- `BedSplitPlan.jointPreview` (`SplitPreviewJoint[]`, `src/engine/split/splitJointPreview.ts`): una entrada por unión con su `SplitJointStrength` (nivel, motivos, cantidad, radio, profundidad, área, qué se achicó y qué islas quedaron para pegar), el tipo de conector, el ancho típico de la sección y, si el armado la marca débil, el radio medido y el recomendado. Sale de la **misma corrida** que `assemblyPreview` (la previa ejecuta el plan con las opciones del panel, tamaño automático incluido), así que lo que se promete es lo que el corte produce. Solo existe si la previa se midió (≤ 27 celdas y ≤ 50 000 triángulos); si no, el resumen lo dice y se mide al dividir.
+- `SplitJointRecord.strength`: la misma firmeza viaja con cada pieza, se guarda en el `.kura` (validada en `projectSchema.ts`) y la lee el informe del inspector. Ausente en proyectos anteriores: esas uniones se ven como antes.
+- Nada cambió en las reglas ni en los resultados del motor: solo se copian datos que ya existían.
+
+### Vocabulario único (`src/core/scene/jointFirmness.ts`)
+
+| Nivel | Texto | Icono | Patrón en el visor |
+|---|---|---|---|
+| `firm` | Firme | escudo con visto | trazo continuo |
+| `fair` | Regular | escudo a medias | trazo largo discontinuo |
+| `weak` | Débil | triángulo de aviso | trazo corto discontinuo |
+| `glue` | Para pegar | clip | puntos |
+
+El nivel que se muestra es `weak` si el informe de armado marca el conector bajo el recomendado aunque el área alcance (`effectiveFirmness`). Los motivos y medidas (`firmnessFacts`, `firmnessMeasures`) salen como claves de texto con números; la pared mínima que se muestra es la de la regla de ubicación (1,2 mm), no una medición aparte.
+
+### Antes de dividir
+
+- Resumen del plan (`SplitJointFirmnessSummary`): «6 uniones: 4 firmes, 1 regular, 1 para pegar» y, plegable, el detalle por unión (estado con icono y texto, Ø × cantidad, profundidad, pared mínima, motivos). Cada unión es un detalle plegable; las flechas, Inicio y Fin recorren la lista.
+- La casilla «Dimensionar los conectores según cada unión (recomendado)» (por defecto activa, `connectorSize: 'auto'` de las preferencias) es la que ya existía como tamaño automático: con ella cada unión usa el conector que cabe en su sección; apagada, la previa usa el tamaño manual y marca débiles las uniones donde queda corto.
+- Recomendaciones (botones, solo las que el motor sostiene): *Dimensionar según cada unión* (activa la casilla) y *Reforzar las uniones débiles* (activa la firmeza activa) en uniones débiles o para pegar con tamaño manual; *Usar solape de borde* en uniones para pegar. «Mover el corte N mm» no se ofrece: el motor no calcula ese desplazamiento. Si no hay alternativa, solo el motivo.
+
+### Después de dividir
+
+- La sección «Uniones» del inspector muestra el conteo global, el nivel de cada unión (firme, regular, débil, para pegar; «tipo cambiado» y «traba el montaje» siguen mandando sobre la firmeza) y, en el detalle plegable, las medidas reales y los motivos.
+- Al enfocar o pasar por una unión, `SplitJointHighlight` resalta en el visor con el color y el patrón de su nivel (el color solo refuerza al patrón).
+
+### Pruebas
+
+`src/core/__tests__/splitFirmnessPreview.test.ts` (motor y store: la previa coincide con `SplitJoint.strength`, con `jointRecord` y con lo guardado en las piezas tras dividir; tamaño manual → débiles, automático → no), `src/components/__tests__/SplitJointFirmness.test.tsx` (resumen con datos reales del motor guardados en `fixtures/jointPreview.json`, que la prueba anterior comprueba que sigan vigentes: jsdom no carga el WASM) y `SplitJointFirmnessInspector.test.tsx`.
+
+### Límites
+
+- La pared se informa como la mínima garantizada (1,2 mm); no se mide la pared restante unión por unión.
+- La sección se describe con el ancho típico de la isla más ancha (2·área/perímetro), no con sus medidas en X × Y.
+- El resalte del visor usa el nivel guardado al dividir; no incorpora el aviso «débil» de una revalidación posterior.
+- Las guías de `docs/guia/` aún mencionan el nombre anterior de la casilla («Tamaño automático (recomendado)»).

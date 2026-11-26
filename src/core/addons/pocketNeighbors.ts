@@ -27,7 +27,7 @@ export function pocketSignedDistance(q: Vec3, point: Vec3, frame: PocketFrame, d
     const dr = Math.hypot(x, z) - half;
     return Math.min(Math.max(dr, da), 0) + Math.hypot(Math.max(dr, 0), Math.max(da, 0));
   }
-  const dx = Math.abs(x) - half, dz = Math.abs(z) - half;
+  const dx = Math.abs(x) - half, dz = Math.abs(z) - dims.crossMm / 2;
   return Math.min(Math.max(dx, dz, da), 0) + Math.hypot(Math.max(dx, 0), Math.max(dz, 0), Math.max(da, 0));
 }
 

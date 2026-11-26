@@ -36,14 +36,22 @@ export const addonBlockedError = (reason: AddonBlockReason, key: TranslationKey 
 
 export function parseMagnetPocketCommand(p: RawParams): { params: MagnetParams; placement: AddonPlacementInput } {
   const D = MAGNET_DEFAULTS;
+  const shape = readEnum(p, ['round', 'square', 'rect'] as const, 'shape') ?? D.shape;
   const params: MagnetParams = {
-    shape: readEnum(p, ['round', 'square'] as const, 'shape') ?? D.shape,
+    shape,
     sizeMm: readRange(p, MAGNET_RANGES.sizeMm, 'sizeMm') ?? D.sizeMm,
     heightMm: readRange(p, MAGNET_RANGES.heightMm, 'heightMm') ?? D.heightMm,
     clearanceMm: readRange(p, MAGNET_RANGES.clearanceMm, 'clearanceMm') ?? D.clearanceMm,
     depthClearanceMm: readRange(p, MAGNET_RANGES.depthClearanceMm, 'depthClearanceMm') ?? D.depthClearanceMm,
     hidden: readBoolean(p, 'hidden') ?? D.hidden,
   };
+  if (shape === 'rect') {
+    // Rectangular: largo = sizeMm y ancho obligatorio; turn90 gira el largo 90° respecto del «arriba» de la cara.
+    const widthMm = readRange(p, MAGNET_RANGES.widthMm, 'widthMm');
+    if (widthMm === undefined) throw invalid('widthMm', `${MAGNET_RANGES.widthMm.min}–${MAGNET_RANGES.widthMm.max}`);
+    params.widthMm = widthMm;
+    if (readBoolean(p, 'turn90') === true) params.turn90 = true;
+  }
   const [bad] = invalidMagnetFields(params);
   if (bad) throw invalid(bad, `${MAGNET_RANGES[bad].min}–${MAGNET_RANGES[bad].max}`);
   return { params, placement: parseAddonPlacement(p) };
@@ -103,7 +111,7 @@ export function magnetResultToUser(
     role: 'negative' as const,
     hostId,
     params,
-    pocket: { shape: dims.shape, widthMm: r(dims.widthMm), depthMm: r(dims.depthMm) },
+    pocket: { shape: dims.shape, widthMm: r(dims.widthMm), ...(dims.shape === 'rect' ? { crossMm: r(dims.crossMm) } : {}), depthMm: r(dims.depthMm) },
     placement: placementToUser(at),
     wall: {
       minWallMm: r(w.minWallMm),
@@ -133,7 +141,10 @@ export function screwBossResultToUser(
     hostId,
     params,
     placement: placementToUser(at),
-    report: { wallMm: r(rep.wallMm), intoHostMm: r(rep.intoHostMm), exits: rep.exits, collides: rep.collides, seatMm: r(rep.seatMm) },
+    report: {
+      wallMm: r(rep.wallMm), intoHostMm: r(rep.intoHostMm), exits: rep.exits, collides: rep.collides, seatMm: r(rep.seatMm),
+      belowBaseMm: r(rep.belowBaseMm ?? 0),
+    },
     warnings: warningsOf(screwBossWarnings(rep, 'en'), 'SCREW_BOSS'),
     note: 'The post is a solid that merges with the part and the hole a negative: Apply subtractions in the app joins and cuts them.',
   };

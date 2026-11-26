@@ -121,7 +121,7 @@ export const ENGINE_WARNING_CODES = [
   'SMOOTH_NO_EFFECT',
   'SPLIT_MAGNET_NO_ROOM',
   'SPLIT_MAGNET_REDUCED',
-  'SPLIT_MAGNET_SQUARE',
+  'SPLIT_MAGNET_NO_ROOM_BLOCK',
 ] as const;
 
 export type EngineWarningCode = (typeof ENGINE_WARNING_CODES)[number];

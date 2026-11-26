@@ -66,10 +66,11 @@ export function splitPartCode(cell: [number, number, number], zCount: number): s
 
 /** Saliente del macho más allá de la cara de unión (mm). */
 export function connectorProtrusion(c: SplitConnectorOptions | null): number {
-  if (!c) return 0;
+  // Sin conector o con imanes no sobresale nada: cada alojamiento queda dentro de su pieza (con imanes se sumaba el
+  // mínimo de los machos y una figura justa en dos tramos pasaba a tres: más piezas que sin conector).
+  if (!c || c.type === 'magnet') return 0;
   const lap = c.type === 'lap' ? (c.lapHeightMm ?? SPLIT_DEFAULTS.lapHeightMm) : 0;
-  // Los imanes no sobresalen: cada alojamiento queda dentro de su pieza
-  return Math.max(0.8, c.type === 'lap' || c.type === 'magnet' ? 0 : c.depth, lap);
+  return Math.max(0.8, c.type === 'lap' ? 0 : c.depth, lap);
 }
 
 /** Tramo mínimo: el alojamiento con su pared debe caber en la pieza que lo recibe. */

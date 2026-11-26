@@ -34,6 +34,7 @@ import { SerialQueue } from './headlessQueue.js';
 import { headlessFitToBed, type HeadlessFitInput } from './headlessFit.js';
 import { headlessAddCablePass, headlessAddKeyhole, headlessAddMagnetPocket, headlessAddScrewBoss, type HeadlessScene } from './headlessAddons.js';
 import { followAddonsAfter, snapshotForFollow } from './headlessFollow.js';
+import { HeadlessPlates } from './headlessPlates.js';
 import { headlessApplyOrientation, headlessOrientForPrint, headlessSmoothMesh } from './headlessSmoothOrient.js';
 import {
   assertUnlocked,
@@ -85,7 +86,11 @@ export interface HeadlessSceneState {
   units: UnitSystem;
   printerProfile: PrinterProfile;
   objectCount: number;
-  objects: SceneObjectSummary[];
+  objects: Array<SceneObjectSummary & { plateId: string | null }>;
+  /** Modo de vista y placas (detalle con `list_plates`). */
+  layout: 'print' | 'assembly';
+  plateCount: number;
+  activePlateId: string | null;
 }
 
 /** Motor de escena en memoria usado cuando la UI de Kurra Studio no está conectada al puente. */
@@ -97,6 +102,15 @@ export class KuraHeadlessEngine {
   private pendingWarnings: engine.EngineWarning[] = [];
   /** Cola FIFO: las llamadas MCP concurrentes se ejecutan de a una (ver `dispatchWithFallback`). */
   readonly queue = new SerialQueue();
+  /** Placas de impresión, placa activa y modo de vista (mismas reglas que la app). */
+  readonly plates = new HeadlessPlates({
+    objects: () => Array.from(this.objects.values()),
+    replaceObjects: (next) => {
+      this.objects.clear();
+      for (const o of next) this.objects.set(o.id, o);
+    },
+    profile: () => this.printerProfile,
+  });
   /** Contexto de las operaciones compartidas: estadísticas de mundo, IDs `kura_N_*` y nombres fijos. */
   private readonly ctx: OperationContext = {
     policy: HEADLESS_BUILD_POLICY,
@@ -106,13 +120,14 @@ export class KuraHeadlessEngine {
 
   /** Devuelve una instantánea serializable de toda la escena actual. */
   getSceneState(): HeadlessSceneState {
-    const objects = Array.from(this.objects.values()).map(userSummary);
+    const objects = Array.from(this.objects.values()).map((o) => ({ ...userSummary(o), plateId: o.plateRef ?? null }));
     return {
       mode: 'headless',
       units: this.units,
       printerProfile: { ...this.printerProfile },
       objectCount: objects.length,
       objects,
+      ...this.plates.sceneSummary(),
     };
   }
 
@@ -533,12 +548,14 @@ export class KuraHeadlessEngine {
 
   /**
    * Simplifica con verificación (`simplify_mesh`): un número es «Por tolerancia»; si no, la petición con su modo.
-   * Misma operación y mismo informe que el bus; si no se aplica (`applied: false`) la escena no cambia.
+   * Misma operación y mismo informe que el bus; si no se aplica (`applied: false`) o es `dryRun`, la escena no cambia.
    */
-  async simplifyMesh(objectId: string, request: number | SimplifyRequest) {
+  async simplifyMesh(objectId: string, request: number | SimplifyRequest, dryRun = false) {
     const obj = this.requireEditable(objectId);
     const trianglesBefore = obj.stats.triangles;
     const change = await ops.simplifyObject(this.ctx, obj, request);
+    // `dryRun`: el mismo informe sin aplicar (vista previa).
+    if (dryRun) return { id: obj.id, dryRun: true, ...simplifyReportToUser(change.simplify!.report), object: userSummary(obj), trianglesBefore };
     this.apply(change);
     // Avisos generales del motor (`SIMPLIFY_VOLUME_CHANGED`, soldadura implícita); los de la verificación van en `checks`.
     const warnings = change.warnings.length > 0 ? { warnings: ua.userWarnings(change.warnings) } : {};
@@ -548,7 +565,7 @@ export class KuraHeadlessEngine {
   /** `simplify_mesh` con los parámetros crudos del comando (mismo esquema que el bus). */
   simplifyMeshParams(params: Record<string, unknown>) {
     const objectId = typeof params.objectId === 'string' ? params.objectId : String(params.id ?? '');
-    return this.simplifyMesh(objectId, parseSimplifyRequest(params));
+    return this.simplifyMesh(objectId, parseSimplifyRequest(params), params.dryRun === true);
   }
 
   /** Refina (y suaviza opcionalmente) con `refineMesh` del motor. */
@@ -646,13 +663,19 @@ export class KuraHeadlessEngine {
   }
 
   /** Exporta los objetos indicados (o la escena visible) a STL binario o ASCII. */
-  async exportStl(input: { outputPath: string; objectIds?: string[]; binary?: boolean }): Promise<ExportFileResult> {
-    return writeStlFile(input.outputPath, this.resolveExportTargets(input.objectIds), input.binary ?? true);
+  async exportStl(input: { outputPath: string; objectIds?: string[]; binary?: boolean; plateId?: string }): Promise<ExportFileResult> {
+    const targets = this.resolveExportTargets(input.objectIds);
+    const plan = this.plates.exportPlan(targets, 'stl', input.plateId);
+    const written = await writeStlFile(input.outputPath, plan?.targets ?? targets, input.binary ?? true);
+    return plan ? { ...written, plateCount: plan.plateCount, skippedUnplaced: plan.excluded } : written;
   }
 
   /** Exporta un único 3MF estándar con materiales y colores por triángulo (`exportSceneTo3MF`), como la app. */
-  async export3mf(input: { outputPath: string; objectIds?: string[] }): Promise<ExportFileResult> {
-    return write3mfFile(input.outputPath, this.resolveExportTargets(input.objectIds), this.units);
+  async export3mf(input: { outputPath: string; objectIds?: string[]; plateId?: string }): Promise<ExportFileResult> {
+    const targets = this.resolveExportTargets(input.objectIds);
+    const plan = this.plates.exportPlan(targets, '3mf', input.plateId);
+    const written = await write3mfFile(input.outputPath, plan?.targets ?? targets, this.units, plan?.plateLayout);
+    return plan ? { ...written, plateCount: plan.plateCount, skippedUnplaced: plan.excluded } : written;
   }
 
   private resolveExportTargets(objectIds?: string[]): HeadlessSceneObject[] {
@@ -680,8 +703,9 @@ export class KuraHeadlessEngine {
     return { ...userSummary(updated), ...edgeReport(updated.primitiveType, updated.primitiveParams) };
   }
 
+  /** Cama donde cae lo nuevo: la de la placa activa, con su centro (sin placas, la del perfil en el origen). */
   private bed() {
-    return { width: this.printerProfile.bedWidthMm, depth: this.printerProfile.bedDepthMm };
+    return this.plates.placementBed();
   }
 
   /** Colocador de piezas nuevas (hueco libre por defecto) frente a la escena actual. */

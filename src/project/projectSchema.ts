@@ -119,7 +119,7 @@ const label16 = (v: unknown) => str(v) && v.length <= 16;
 // Unión guardada para revalidar el armado (`SplitJointRecord`).
 // Imán de una unión del corte (`MagnetPocketParams`): mismos rangos que el alojamiento de imán.
 const splitMagnet = (v: unknown) => sanitizeMagnetParams(v) !== null && shape({
-  shape: str, sizeMm: finite, heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
+  shape: str, sizeMm: finite, widthMm: numberOption, turn90: optional(bool), heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
 })(v);
 const splitConnector = shape({
   type: oneOf('dowel', 'peg', 'dovetail', 'lap', 'loose-dowel', 'magnet'), size: positive, depth: positive, tolerance: nonnegative,
@@ -129,12 +129,21 @@ const splitConnector = shape({
 const splitJointMagnets = shape({
   magnet: splitMagnet, count: (v) => nat(v) && v > 0 && v <= 64, pocketDiameterMm: positive, pocketDepthMm: positive, polarity: oneOf('opposite'),
 });
+const splitJointStrength = shape({
+  level: oneOf('firm', 'fair', 'weak', 'glue'),
+  reasons: (v) => Array.isArray(v) && v.length <= 8 && v.every((r) => oneOf('no-connector', 'single-connector', 'low-area', 'shallow', 'islands-uncovered', 'below-useful', 'single-magnet')(r)),
+  basis: optional(oneOf('connector', 'magnet')),
+  count: nonnegative, sizeMm: nonnegative, depthMm: nonnegative, areaRatio: nonnegative, islands: nonnegative, islandsCovered: nonnegative,
+  shrunk: (v) => Array.isArray(v) && v.length <= 8 && v.every(shape({ reason: oneOf('section-width', 'count', 'depth'), fromMm: finite, toMm: finite })),
+  discarded: (v) => Array.isArray(v) && v.length <= 256 && v.every(shape({ island: nonnegative, reason: oneOf('section-narrow'), measuredMm: finite })),
+});
 const splitJointRecord = shape({
   label: label16, axis: oneOf('x', 'y', 'z'), position: finite, a: label16, b: label16,
   kind: oneOf('connector', 'glue', 'lap', 'socket'), connector: (v) => v === null || splitConnector(v),
   connectorCenters: (v) => Array.isArray(v) && v.length <= 4096 && v.every(vec3), contactAreaMm2: nonnegative,
   labelPlacement: optional((v) => v === null || oneOf('joint', 'outside', 'dots')(v)),
   magnets: optional(splitJointMagnets),
+  strength: optional(splitJointStrength),
 });
 // Avisos de la división guardados con el grupo (`SplitStoredNotes`): todo acotado en cantidad y largo.
 const short = (n: number) => (v: unknown) => typeof v === 'string' && v.length <= n;
@@ -186,7 +195,7 @@ const recipeMetadata = shape({
 const magnetAddonMetadata = shape({
   kind: oneOf('magnet_pocket'),
   params: (v) => sanitizeMagnetParams(v) !== null && shape({
-    shape: str, sizeMm: finite, heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
+    shape: str, sizeMm: finite, widthMm: numberOption, turn90: optional(bool), heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
   })(v),
   hostId: optional(id),
 });

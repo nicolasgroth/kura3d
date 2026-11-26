@@ -15,13 +15,13 @@ import type { MeshData, SceneObject } from '../../types/kura';
 import { createColorRegistry, initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../manifoldKernel';
 import { EngineError, requireOperationRange } from '../engineErrors';
 import { OPERATION_RANGES } from '../operationLimits';
-import { normalizeMeshToBed } from '../primitives';
 import { bvhOf, manifoldMesh, sampledDeviation } from './simplifyDeviation';
 import { bodyGenus } from './simplifyGenus';
 import { destructiveDeviationMm, destructiveReasons, findSafeAlternative, worldDiagonalMm } from './simplifySafety';
 import { searchTargetTolerance, throwIfAborted } from './simplifyTarget';
 import {
   LOSSLESS_LIMITS,
+  onDestructiveOf,
   SIMPLIFY_WARN_LIMITS,
   type SimplifyReport,
   type SimplifySafeAlternative,
@@ -32,7 +32,7 @@ import {
 } from './simplifyTypes';
 
 export interface SimplifyDetailedResult {
-  /** Malla simplificada normalizada a cama, o null si no se aplica. */
+  /** Malla simplificada en el mismo sistema local que la original, o null si no se aplica. */
   mesh: MeshData | null;
   report: SimplifyReport;
 }
@@ -57,6 +57,33 @@ function thresholdWarnings(r: Pick<SimplifyReport, 'genusBefore' | 'genusAfter' 
   if (Math.abs(r.volumeChangePct) > limits.maxVolumePct) out.push('volume_changed');
   if (r.maxDeviationMm > limits.maxDeviationMm) out.push('deviation_high');
   return out;
+}
+
+/**
+ * Informe de la versión segura aplicada en lugar de lo pedido: las medidas pasan a ser las de la segura y lo pedido
+ * queda en `requested`. Los avisos se recalculan con la segura (sin `target_not_reached`: el informe ya dice que se
+ * aplicó otra cantidad y por qué).
+ */
+function withSafeApplied(r: SimplifyReport, safe: SimplifySafeAlternative): SimplifyReport {
+  const measured = {
+    genusBefore: r.genusBefore,
+    genusAfter: safe.genusAfter,
+    volumeChangePct: safe.volumeChangePct,
+    maxDeviationMm: safe.maxDeviationMm,
+  };
+  return {
+    ...r,
+    appliedVariant: 'safe',
+    requested: {
+      toleranceMm: r.toleranceMm, triangles: r.trianglesAfter, volumeAfterMm3: r.volumeAfterMm3,
+      volumeChangePct: r.volumeChangePct, genusAfter: r.genusAfter, maxDeviationMm: r.maxDeviationMm,
+    },
+    toleranceMm: safe.toleranceMm,
+    trianglesAfter: safe.triangles,
+    volumeAfterMm3: safe.volumeAfterMm3,
+    ...measured,
+    warnings: thresholdWarnings(measured, { maxVolumePct: SIMPLIFY_WARN_LIMITS.volumePct, maxDeviationMm: SIMPLIFY_WARN_LIMITS.deviationMm }),
+  };
 }
 
 /**
@@ -132,22 +159,26 @@ export async function simplifyMeshDetailed(
       : [];
     // «Sin pérdida» rechazado también se marca en los avisos (con los umbrales de aviso puede no figurar).
     for (const code of rejectedBy) if (!warnings.includes(code)) warnings.push(code);
-    // Resultado destructivo (agujeros perdidos, volumen o desviación sobre el tope): no se aplica salvo que se pida.
+    // Resultado destructivo (agujeros perdidos, volumen o desviación sobre el tope): según `onDestructive` se aplica
+    // la versión segura útil en su lugar (por defecto), no se aplica nada o se aplica igual.
     const diagMm = worldDiagonalMm(original, obj.scale);
     const destructive = noReduction || request.mode === 'lossless' ? [] : destructiveReasons(measured, diagMm);
-    const allowDestructive = request.mode !== 'lossless' && request.allowDestructive === true;
+    const policy = onDestructiveOf(request);
+    const force = destructive.length > 0 && policy === 'force';
     let safe: SimplifySafeAlternative | null | undefined;
-    if (destructive.length > 0 && !allowDestructive) {
+    if (destructive.length > 0 && !force) {
       safe = findSafeAlternative({
         original, originalMesh: originalMesh(), originalBvh: originalBvh(), trianglesBefore, genusBefore,
         volumeBefore: volumeBeforeMm3, maxScale, diagMm, minTolMm: R.toleranceMm.min, destructiveTolMm: toleranceMm,
       }, opts);
     }
-    const blocked = destructive.length > 0 && !allowDestructive;
+    const useSafe = destructive.length > 0 && policy === 'safe' && safe != null;
+    const blocked = destructive.length > 0 && !force && !useSafe;
     const applied = !noReduction && rejectedBy.length === 0 && !blocked;
-    const report: SimplifyReport = {
+    let report: SimplifyReport = {
       mode: request.mode,
       applied,
+      appliedVariant: applied ? 'requested' : 'none',
       toleranceMm,
       trianglesBefore,
       trianglesAfter,
@@ -161,10 +192,18 @@ export async function simplifyMeshDetailed(
       destructive,
       ...(destructive.length > 0 ? { destructiveLimitMm: destructiveDeviationMm(diagMm) } : {}),
       ...(safe !== undefined ? { safe } : {}),
-      ...(destructive.length > 0 && allowDestructive ? { forced: true } : {}),
+      ...(force ? { forced: true } : {}),
       ms: 0,
     };
-    const mesh = applied ? normalizeMeshToBed(manifoldToMeshData(simplified, registry?.idToColor)) : null;
+    if (useSafe && safe) {
+      // La segura se rehace con su tolerancia (Manifold es determinista: mismos triángulos que en la búsqueda).
+      simplified.delete();
+      simplified = original.simplify(safe.toleranceMm / maxScale);
+      report = withSafeApplied(report, safe);
+    }
+    // Mismo sistema local que la original (sin recentrar ni apoyar en la cama): la pieza queda donde estaba en el
+    // mundo con la misma posición, giro y escala.
+    const mesh = applied ? manifoldToMeshData(simplified, registry?.idToColor) : null;
     report.ms = Math.round(now() - t0);
     return { mesh, report };
   } finally {

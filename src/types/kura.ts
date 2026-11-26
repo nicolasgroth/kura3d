@@ -806,8 +806,14 @@ export interface SceneObjectMetadata {
  * Única definición: `MagnetParams` de `core/addons/magnetPocket` es este mismo tipo.
  */
 export interface MagnetPocketParams {
-  shape: 'round' | 'square';
+  /** Redondo (diámetro × alto), cuadrado (lado × alto) o rectangular (largo × ancho × alto). */
+  shape: 'round' | 'square' | 'rect';
+  /** Diámetro (redondo), lado (cuadrado) o largo (rectangular). */
   sizeMm: number;
+  /** Ancho del rectangular; ausente en redondo y cuadrado (el cuadrado es el caso largo = ancho). */
+  widthMm?: number;
+  /** Rectangular suelto: el largo va al «arriba» de la cara; con `true`, girado 90°. Ausente = sin giro. */
+  turn90?: boolean;
   heightMm: number;
   /** Holgura sumada al diámetro o lado. */
   clearanceMm: number;
@@ -1003,6 +1009,27 @@ export interface SplitJointRecord {
   magnets?: { magnet: MagnetPocketParams; count: number; pocketDiameterMm: number; pocketDepthMm: number; polarity: 'opposite' };
   /** Dónde quedó la marca de pareja (`dots` = puntos por fuera); `null` sin marca. Ausente en proyectos anteriores. */
   labelPlacement?: 'joint' | 'outside' | 'dots' | null;
+  /**
+   * Firmeza de la unión al dividir (`SplitJointStrength` del motor): nivel, motivos, medidas y qué se achicó.
+   * Ausente en proyectos anteriores.
+   */
+  strength?: SplitJointRecordStrength;
+}
+
+/** Firmeza guardada de una unión del corte (`SplitJointStrength` en `engine/split/splitTypes.ts`). */
+export interface SplitJointRecordStrength {
+  level: 'firm' | 'fair' | 'weak' | 'glue';
+  reasons: Array<'no-connector' | 'single-connector' | 'low-area' | 'shallow' | 'islands-uncovered' | 'below-useful' | 'single-magnet'>;
+  basis?: 'connector' | 'magnet';
+  count: number;
+  /** Radio del conector o del imán (mm). */
+  sizeMm: number;
+  depthMm: number;
+  areaRatio: number;
+  islands: number;
+  islandsCovered: number;
+  shrunk: Array<{ reason: 'section-width' | 'count' | 'depth'; fromMm: number; toMm: number }>;
+  discarded: Array<{ island: number; reason: 'section-narrow'; measuredMm: number }>;
 }
 
 /** Perfil de impresora 3D o espacio de trabajo libre. */
@@ -1144,7 +1171,15 @@ export interface KuraCommandRequest {
     | 'add_screw_boss'
     | 'add_keyhole'
     | 'add_cable_pass'
-    | 'arrange_on_plates';
+    | 'arrange_on_plates'
+    | 'list_plates'
+    | 'create_plate'
+    | 'rename_plate'
+    | 'delete_plate'
+    | 'set_active_plate'
+    | 'move_to_plate'
+    | 'spread_one_plate_per_object'
+    | 'set_layout';
   params: Record<string, unknown>;
 }
 

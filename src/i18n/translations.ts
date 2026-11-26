@@ -22,16 +22,19 @@ import { PLATES_VIEW_EN, PLATES_VIEW_ES } from './locales/placasVista';
 import { VIEW_MODE_EN, VIEW_MODE_ES } from './locales/vistaModos';
 import { PLATES_EXPORT_EN, PLATES_EXPORT_ES } from './locales/placasExportar';
 import { PLATES_ARRANGE_EN, PLATES_ARRANGE_ES } from './locales/placasRepartir';
+import { PLATES_ARRANGE_UI_EN, PLATES_ARRANGE_UI_ES } from './locales/placasRepartirUi';
 import { MEASURE_EN, MEASURE_ES } from './locales/measure';
 import { FLOWUX_EN, FLOWUX_ES } from './locales/flowUx';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
 import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
 import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
 import { UNIONES_FIRMES_EN, UNIONES_FIRMES_ES } from './locales/unionesFirmes';
+import { FIRMEZA_UNIONES_EN, FIRMEZA_UNIONES_ES } from './locales/firmezaUniones';
 import { AJUSTAR_EN, AJUSTAR_ES } from './locales/ajustarImpresora';
 import { SUAVIZAR_EN, SUAVIZAR_ES } from './locales/suavizarMotor';
 import { SIMPLIFICAR_ES, SIMPLIFICAR_EN } from './locales/simplificar';
 import { FUNCIONAL_R2_ES, FUNCIONAL_R2_EN } from './locales/funcionalR2';
+import { SIMPLIFICAR_VP_ES, SIMPLIFICAR_VP_EN } from './locales/simplificarVistaPrevia';
 import { SUAVIZAR_UI_EN, SUAVIZAR_UI_ES } from './locales/suavizarUi';
 import { SPLITCOUPLING_EN, SPLITCOUPLING_ES } from './locales/splitCoupling';
 import { A11YUX_EN, A11YUX_ES } from './locales/a11yUx';
@@ -91,17 +94,20 @@ export const TRANSLATIONS_ES = {
   ...VIEW_MODE_ES,
   ...PLATES_EXPORT_ES,
   ...PLATES_ARRANGE_ES,
+  ...PLATES_ARRANGE_UI_ES,
   ...MEASURE_ES,
   ...FLOWUX_ES,
   ...PREVIEW_ES,
   ...SPLITJOINTS_ES,
   ...SPLITPREFS_ES,
   ...UNIONES_FIRMES_ES,
+  ...FIRMEZA_UNIONES_ES,
   ...AJUSTAR_ES,
   ...SUAVIZAR_ES,
   ...SUAVIZAR_UI_ES,
   ...SIMPLIFICAR_ES,
   ...FUNCIONAL_R2_ES,
+  ...SIMPLIFICAR_VP_ES,
   ...SPLITCOUPLING_ES,
   ...A11YUX_ES,
   ...UXMOVIL_ES,
@@ -1440,17 +1446,20 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...VIEW_MODE_EN,
   ...PLATES_EXPORT_EN,
   ...PLATES_ARRANGE_EN,
+  ...PLATES_ARRANGE_UI_EN,
   ...MEASURE_EN,
   ...FLOWUX_EN,
   ...PREVIEW_EN,
   ...SPLITJOINTS_EN,
   ...SPLITPREFS_EN,
   ...UNIONES_FIRMES_EN,
+  ...FIRMEZA_UNIONES_EN,
   ...AJUSTAR_EN,
   ...SUAVIZAR_EN,
   ...SUAVIZAR_UI_EN,
   ...SIMPLIFICAR_EN,
   ...FUNCIONAL_R2_EN,
+  ...SIMPLIFICAR_VP_EN,
   ...SPLITCOUPLING_EN,
   ...A11YUX_EN,
   ...UXMOVIL_EN,
