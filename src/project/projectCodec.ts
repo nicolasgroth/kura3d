@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-import { computeMeshStats } from '../engine/primitives';
+import { computeMeshStats } from '../engine/meshStats';
 import { MAX_GROUPS } from '../core/scene/groups';
 import { MAX_PLATES } from '../core/scene/plates';
 import type { MeshData, SceneGroup, SceneObject } from '../types/kura';

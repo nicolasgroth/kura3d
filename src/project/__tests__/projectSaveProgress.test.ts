@@ -70,7 +70,8 @@ describe('avance del guardado .kura', () => {
     await import('../projectCodec.worker');
     const worker = (globalThis as unknown as { self: { onmessage: (e: { data: unknown }) => Promise<void> } }).self;
     const doc = bigDocument();
-    await worker.onmessage({ data: { operation: 'encode', document: doc } });
+    await worker.onmessage({ data: { id: 7, operation: 'encode', document: doc } });
+    expect(messages.every((m) => m.id === 7)).toBe(true);
     const final = messages.at(-1)!;
     expect('ok' in final && final.ok).toBe(true);
     const progress = messages.slice(0, -1).map((m) => ('progress' in m ? m.progress.percent : NaN));

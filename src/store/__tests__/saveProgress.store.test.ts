@@ -29,6 +29,7 @@ const FILE = Uint8Array.from([75, 85, 82, 65, 6, 0, 0, 0]);
 let baseline: ReturnType<typeof get>;
 let seen: (BusyProgress | null)[];
 let written: Uint8Array | undefined;
+let atCodecStart: BusyProgress | null = null;
 
 beforeAll(() => { baseline = get(); });
 
@@ -38,6 +39,7 @@ beforeEach(() => {
   seen = [];
   written = undefined;
   vi.mocked(encodeProjectAsync).mockImplementation(async (_doc, onProgress) => {
+    atCodecStart = get().busyProgress;
     for (const [percent, phase] of [[0, 'encode'], [25, 'compress'], [60, 'compress'], [100, 'compress']] as const) {
       onProgress?.(percent, phase);
       seen.push(get().busyProgress);
@@ -60,6 +62,9 @@ describe('avance del guardado en el store', () => {
     saveThen(() => ({ name: 'a.kura', location: 'C:/a.kura' }));
     expect(await get().saveProject()).toBe(true);
     const steps = seen.map((p) => parseSavePhase(p?.phase));
+    // El avance ya existe (fase «Preparando la escena y el historial») antes de llamar al códec.
+    expect(parseSavePhase(atCodecStart?.phase)).toEqual({ step: 'encode', percent: 0 });
+    expect(atCodecStart?.startedAt).toBe(seen[0]?.startedAt);
     expect(steps.map((s) => s?.percent)).toEqual([0, 25, 60, 100, 100]);
     expect(steps.at(-1)?.step).toBe('write');
     expect(seen.every((p) => p?.name === SAVE_OPERATION && !p.cancellable)).toBe(true);
