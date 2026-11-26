@@ -182,3 +182,24 @@
   outline: 2px solid var(--accent-cyan);
   outline-offset: 1px;
 }
+
+/* Nombre repetido al renombrar: el aviso va junto al campo, con icono y texto (no solo color). */
+.kura-plate-rename-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kura-plate-rename[aria-invalid='true'] {
+  border-color: var(--accent-red);
+}
+
+.kura-plate-rename-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 220px;
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--accent-red);
+}

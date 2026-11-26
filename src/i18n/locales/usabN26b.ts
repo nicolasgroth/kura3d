@@ -19,6 +19,14 @@ const USAB_N26B_TABLE = {
     '3D व्यूपोर्ट। F चयन को फ़्रेम करता है।',
     '3D 视图。F 框选所选对象。',
   ],
+  'plates.rename.taken': [
+    'Otra placa ya se llama «{name}». Escribe un nombre distinto.',
+    'Another plate is already named "{name}". Enter a different name.',
+    'Eine andere Platte heißt bereits „{name}“. Gib einen anderen Namen ein.',
+    'Un autre plateau s’appelle déjà « {name} ». Saisis un autre nom.',
+    'एक और प्लेट का नाम पहले से «{name}» है। कोई दूसरा नाम लिखें।',
+    '已有另一块打印板名为“{name}”。请输入不同的名称。',
+  ],
 } as const satisfies Record<string, Row>;
 
 type UsabKey = keyof typeof USAB_N26B_TABLE;
