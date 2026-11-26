@@ -45,7 +45,7 @@ Ahora:
 
 1. Placas (84): fichas más grandes, aviso al mover una pieza, nombres legibles a 1024 px. Simplificar (80): un solo mensaje por resultado, foco estable durante el cálculo, botón «Reparar malla» en el bloqueo.
 2. Guardado de proyectos grandes: bajar los casi 3 segundos previos a codificar y que el avance se vea.
-3. Cambio de licencia a AGPL-3.0 con acuerdo de contribuyentes (decidido; se aplica como último lote).
+3. Licencia: ya es AGPL-3.0-or-later. Falta la revisión legal del acuerdo de contribuyentes.
 4. Probar el 3MF con bandejas en OrcaSlicer y Bambu Studio.
 5. Actualizar Playwright (pedido de Dependabot).
 
