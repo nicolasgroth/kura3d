@@ -94,7 +94,7 @@ interface IoState {
   /** Grupos de la escena (nombres del árbol al exportar un archivo por objeto). */
   groups?: import('../types/kura').SceneGroup[];
   /** Placas de un laminador → placas reales (P7); ausente en pruebas que no lo usan. */
-  convertGroupsToPlates?: (groupIds?: string[]) => unknown;
+  convertGroupsToPlates?: (groupIds?: string[], options?: { dissolve?: boolean }) => unknown;
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
   printerProfile: { bedWidthMm?: number; bedDepthMm?: number };
   customBedDimensions?: { width: number; depth?: number } | null;
@@ -291,7 +291,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
     const offers = new Map(grouping.plateOffers.map((o) => [o.notice, o]));
     notices.forEach((notice, i) => {
       const o = offers.get(i);
-      get().addToast(notice, 'info', o ? { label: tr('plates.convert.offer'), ariaLabel: tr('plates.convert.importOffer', { name: o.fileName, count: o.count }), run: () => void get().convertGroupsToPlates?.(o.groupIds), focusAfter: '[data-testid="plate-strip"] .kura-plate-chip[data-active="true"] button.kura-plate-chip-main' } : undefined);
+      get().addToast(notice, 'info', o ? { label: tr('plates.convert.offer'), ariaLabel: tr('plates.convert.importOffer', { name: o.fileName, count: o.count }), run: () => void get().convertGroupsToPlates?.(o.groupIds, { dissolve: true }), focusAfter: '[data-testid="plate-strip"] .kura-plate-chip[data-active="true"] button.kura-plate-chip-main' } : undefined);
     });
     reportUnitHint(plainModels, entries);
     deps.reportWarnings?.(models.flatMap((m) => m.warnings ?? []));

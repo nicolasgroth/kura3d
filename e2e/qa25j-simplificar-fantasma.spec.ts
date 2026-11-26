@@ -1,7 +1,7 @@
 /**
  * @file e2e/qa25j-simplificar-fantasma.spec.ts
  * @description QA 26-nov (I), bloque 4 (tema claro): fantasma de la vista previa de Simplificar con una esfera de ~5000
- * triángulos al 50 %: aparece, «Comparar con el original» lo oculta y lo devuelve sin recalcular, quitar aristas persiste,
+ * triángulos al 50 %: aparece, «Ocultar la vista previa» lo oculta y lo devuelve sin recalcular, quitar aristas persiste,
  * y cambiar un valor, la selección, cerrar el panel, deshacer y aplicar lo quitan (ninguno queda huérfano). Evidencia en
  * `.eval-tmp/qa25j/`.
  * @author Nicolás Groth <ngroth@gmail.com>

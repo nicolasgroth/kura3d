@@ -25,7 +25,7 @@ Un valor fuera de rango queda marcado junto a su campo y, mientras no lo corrija
 
 1. Pulsa **Vista previa** (o `Enter` dentro de cualquier campo). El cálculo corre aparte, sin congelar la pantalla, y una línea de estado dice en qué pasada va («Suavizando: pasada 3 de 10») y luego «Comprobando que la malla no se dañe…». **Cancelar** lo detiene.
 2. El resultado aparece como una copia translúcida sobre la pieza. No se toca la escena ni el historial.
-3. Activa **Comparar con el original** para ocultar la copia y ver solo la pieza.
+3. Activa **Ocultar la vista previa** para ocultar la copia y ver solo la pieza.
 4. Si cambias cualquier valor, la vista previa se descarta (ya no corresponde). Pedirla de nuevo con los mismos valores no recalcula.
 
 ## Aplicar

@@ -952,3 +952,16 @@ Consumo de las evaluaciones y rondas de esta mañana: funcional (Opus · 14 min 
 
 Lectura del orquestador: cada evaluador nuevo confirma lo corregido y encuentra otra capa, casi siempre en placas y en vocabulario; la nota de Simplificar baja porque cada ronda prueba un camino distinto (esta vez la paleta). Hay que revisar por qué «Mover a placa» sigue dejando la placa fuera de volumen después de la corrección de la ronda 2.
 
+**Ronda acotada a placas y Simplificar** (pedida por el autor; `fix/usab-n26c`, Sonnet · 20 min · 208 k; en `main` como 828cb02). Causa de «Mover a placa» fuera de la cama: la placa destino del 3MF real de llaveros no tiene hueco libre y el programa dejaba la pieza al lado de la cama; ahora queda dentro, solapada, con aviso. Además: paleta sin la placa actual, grupos de placa del laminador disueltos al convertir, Simplificar desde la paleta abre el panel, foco en el informe, «Ocultar la vista previa», avisos con «Deshacer» vencido, «Sin ajuste» en la rejilla. Verificación del orquestador: 4374 pruebas en verde, 152 recorridos de navegador en verde, 35 capturas regeneradas, 0 enlaces rotos. Reevaluación abajo.
+
+**Reevaluación acotada (cuarta ronda): placas 80, Simplificar 78; siguen bajo el mínimo** (Opus · unos 15 min; sobre 0b550f0). Sin bloqueos. Probada con el 3MF real de 95 piezas, a 1440 y 1024 px, tema claro y oscuro.
+
+| Funcionalidad | R3 | R4 | Confirmado como resuelto | Lo que más resta ahora |
+|---|---|---|---|---|
+| Vistas y tira de placas | 76 | 80 | «Mover a placa» avisa de la placa llena; la paleta no ofrece la placa actual; renombrar devuelve el foco; tres Ctrl+Z revierten en orden | Con placas, la barra del visor queda solo con iconos; la insignia de placa se corta en la fila seleccionada y desaparece a 1024 px; en Libre la tira dice «Estás viendo la figura armada»; en Armado a 1024 px los paneles tapan el visor; contraste de la tira atenuada (unos 2,5:1) |
+| Simplificar | 72 | 78 | La paleta abre el panel; vista previa con versión segura y «Aplicar de todos modos» | Tras «Deshacer» el informe y el aviso siguen diciendo «Se aplicó…» y el foco se pierde; «0,996 mm» pedido junto a «0,165 mm» medido sin decir cuál es cuál; la versión segura cambia el volumen 5,78 % cuando la guía habla de 5 %; el fantasma no se ve sin encuadrar |
+
+Lectura del orquestador: cuatro rondas con evaluadores distintos y ninguna sobre 85 en estas dos. Lo que queda en placas es de diseño a 1024 px y con muchas piezas (barra, insignia, paneles), no fallos sueltos. En Simplificar, el informe tras deshacer es un defecto real de estado; lo demás es redacción. Queda en consulta con el autor.
+
+Consumo: ronda acotada (Sonnet · 20 min · 208 k), tercera evaluación de usabilidad (Opus · 14 min · 178 k).
+

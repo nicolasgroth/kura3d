@@ -1,7 +1,7 @@
 /**
  * @file src/styles/viewMode.css
- * @description Modos de vista Imprimir / Armado / Libre: selector segmentado de la barra de vista, tarjeta de rótulo y
- * separación del visor, tira de placas atenuada fuera de Imprimir y chip de cama «no aplica». El estado seleccionado no
+ * @description Modos de vista Imprimir / Armado / Libre: selector segmentado al inicio de la tira de placas, controles de
+ * separación de Armado en esa misma fila, notas de la tira (sin atenuar con opacidad) y chip de cama «no aplica». El estado seleccionado no
  * depende solo del color: lleva subrayado y peso de letra.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -28,47 +28,37 @@
   outline-offset: 1px;
 }
 
-.kura-viewmode-hud {
-  pointer-events: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  max-width: min(560px, 100%);
-  padding: 6px 10px;
-  font-size: 11.5px;
-  color: var(--text-secondary);
+.kura-viewmode-btn {
+  white-space: nowrap;
 }
 
-.kura-viewmode-badge {
+/* Armado: los controles de separación ocupan en la tira el lugar de las fichas de placa (no se editan aquí). */
+.kura-viewmode-explode {
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 1 auto;
   align-items: center;
   gap: 6px 8px;
-}
-
-.kura-viewmode-badge strong {
+  min-width: 0;
   color: var(--text-primary);
 }
 
-.kura-viewmode-note {
-  flex: 1 1 220px;
-  min-width: 0;
-}
-
-.kura-viewmode-explode {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
+.kura-viewmode-explode label {
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .kura-viewmode-explode input[type='range'] {
   width: 120px;
+  min-width: 60px;
 }
 
 .kura-viewmode-explode .kura-select {
-  height: 28px;
+  height: 26px;
+  max-width: 190px;
+}
+
+.kura-viewmode-explode .kura-btn {
+  white-space: nowrap;
 }
 
 .kura-viewmode-pct {
@@ -76,17 +66,22 @@
   min-width: 38px;
 }
 
-/* Tira de placas: visible pero atenuada, con su nota, fuera de la vista Imprimir. */
-.kura-plate-strip[data-view-mode='armed'] .kura-plate-list,
-.kura-plate-strip[data-view-mode='armed'] .kura-plate-actions {
-  opacity: 0.55;
-}
-
+/* Notas de la tira en Armado y Libre: color pleno del tema (nada de opacidad: contraste >= 4,5:1 en claro y oscuro). */
 .kura-plate-strip-note {
+  margin-left: auto;
   font-size: 11.5px;
   color: var(--text-secondary);
-  font-style: italic;
-  padding: 0 8px;
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.kura-plate-strip[data-view-mode='free'] .kura-plate-strip-note {
+  margin-left: 0;
+  color: var(--text-primary);
+}
+
+.kura-plate-strip .kura-viewmode {
+  margin-right: 2px;
 }
 
 /* Chip de cama en Armado y Libre. */

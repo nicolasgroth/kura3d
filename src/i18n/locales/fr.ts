@@ -16,6 +16,7 @@ import { GROUPS_FR } from './groups';
 import { PLATES_VIEW_FR } from './placasVista';
 import { VIEW_MODE_FR } from './vistaModos';
 import { USAB_N26B_FR } from './usabN26b';
+import { TIRA_VISTAS_FR } from './tiraVistas';
 import { PLATES_EXPORT_FR } from './placasExportar';
 import { PLATES_BED_FR } from './placasCama';
 import { PLATES_ARRANGE_FR } from './placasRepartir';
@@ -89,6 +90,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...PLATES_VIEW_FR,
   ...VIEW_MODE_FR,
   ...USAB_N26B_FR,
+  ...TIRA_VISTAS_FR,
   ...PLATES_EXPORT_FR,
   ...PLATES_BED_FR,
   ...PLATES_ARRANGE_FR,
@@ -302,7 +304,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'viewport.gizmo.rotate': 'Pivoter (R)',
   'viewport.gizmo.scale': 'Redimensionner (S)',
   'viewport.snapLabel': 'Grille',
-  'viewport.snapOff': 'Libre',
+  'viewport.snapOff': 'Sans magnétisme',
   'viewport.dimensionsPrefix': 'Taille',
   'viewport.noSelection': 'Aucune sélection',
   'viewport.dimensionsMulti': '{size} ({count} objets)',

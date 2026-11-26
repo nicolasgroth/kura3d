@@ -17,7 +17,7 @@ import { SIMPLIFY_GHOST_DEFAULTS, simplifySignature } from '../../store/slices/s
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationPanel } from '../OperationPanel';
 import { SimplifySection } from '../inspector/SimplifySection';
-import { focusActiveViewMode } from '../viewmode/ViewModeHud';
+import { focusActiveViewMode } from '../viewmode/ViewModeExplode';
 import { focusWhenMounted } from '../ToastActionButton';
 import { useInvalidFields } from '../useInvalidFields';
 
@@ -80,7 +80,7 @@ describe('focos tras desmontarse el control', () => {
 });
 
 describe('Simplificar: foco al terminar la vista previa', () => {
-  it('«Cancelar» desmontado devuelve el foco a «Vista previa»; al estar lista, a «Simplificar»', async () => {
+  it('«Cancelar» desmontado devuelve el foco a «Vista previa»; al estar lista, al informe', async () => {
     const obj = buildSceneObject({ id: 'sph', name: 'Esfera', source: 'imported', mesh: uvSphere(10, 32, 16) });
     useKuraStore.setState({ objects: [obj], selectedIds: [obj.id], language: 'es', busyOperation: null, toasts: [], past: [], future: [], simplifyPreview: null });
     const Harness: React.FC = () => {
@@ -101,6 +101,7 @@ describe('Simplificar: foco al terminar la vista previa', () => {
     (document.activeElement as HTMLElement).blur();
     const report = { mode: 'lossless', objectId: 'sph', applied: true, toleranceMm: 0, trianglesBefore: 512, trianglesAfter: 400, volumeBeforeMm3: 1, volumeAfterMm3: 1, volumeChangePct: 0, genusBefore: 0, genusAfter: 0, maxDeviationMm: 0, deviationSamples: 0, warnings: [], rejectedBy: [], ms: 1 };
     act(() => useKuraStore.setState({ simplifyPreview: { ...session, status: 'ready', report: report as never } }));
-    await waitFor(() => expect(document.activeElement?.className).toContain('kura-simplify-run'));
+    // El foco va al informe (con nombre accesible), no al botón «Simplificar», que modificaría la pieza.
+    await waitFor(() => expect(document.activeElement?.className).toContain('kura-simplify-report'));
   });
 });

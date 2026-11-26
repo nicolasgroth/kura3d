@@ -150,5 +150,6 @@ export function runMoveToPlate(plateId: string | null): void {
   const after = useKuraStore.getState();
   const name = after.plates.find((p) => p.id === (plateId ?? after.activePlateId))?.name ?? '';
   // Si el bloque es más grande que la cama destino, se movió igual y el aviso lo dice.
-  after.addToast(t(after.language, after.lastMoveToPlateFits ? 'plates.toast.moved' : 'plates.toast.movedNoFit', { count, name }), 'info');
+  const key = !after.lastMoveToPlateFits ? 'plates.toast.movedNoFit' : after.lastMoveToPlateCrowded ? 'plates.toast.movedCrowded' : 'plates.toast.moved';
+  after.addToast(t(after.language, key, { count, name }), 'info');
 }

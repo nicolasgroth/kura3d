@@ -82,6 +82,10 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
       const before = get().objects;
       set((state) => undoOnce(state) ?? state);
       ensureRestoredInView(before);
+      // Un aviso cuyo «Deshacer» pidió cerrarse (Simplificar) ya no dice la verdad una vez deshecho su paso.
+      for (const toast of get().toasts) {
+        if ([toast.action, toast.secondaryAction].some((a) => a?.closeOnUndo && a.applicable && !a.applicable())) get().dismissToast(toast.id);
+      }
     },
 
     redo: () => {

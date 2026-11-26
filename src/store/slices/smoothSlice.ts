@@ -42,7 +42,7 @@ export interface SmoothSession {
   /** Mensaje claro (localizado) cuando `status` es `error`. */
   error: string | null;
   errorCode: string | null;
-  /** «Comparar con el original»: oculta el fantasma para ver solo la pieza. */
+  /** «Ocultar la vista previa»: oculta el fantasma para ver solo la pieza. */
   comparing: boolean;
   /** No se aplicó porque el volumen cambiaba más que `SMOOTH_BLOCK_VOLUME_PCT` (se puede aplicar de todos modos). */
   volumeBlocked?: boolean;

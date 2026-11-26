@@ -252,6 +252,8 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
         toasts: state.toasts.filter((toast) => toast.id !== id),
         toastHistory: state.toastHistory.map((x) => (x.id === id ? { ...x, applied: true } : x)),
       }));
+      // Una acción que dejó de ser aplicable (p. ej. «Deshacer» de un paso que ya no es el último) no se ejecuta.
+      if (action.applicable && !action.applicable()) return;
       action.run();
     },
     dismissAllToasts: () => {
