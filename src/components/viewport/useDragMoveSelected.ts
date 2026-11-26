@@ -22,6 +22,7 @@ import { allBedSizes, placementBedSize } from '../../store/bedSize';
 import { viewModeOf, viewModeTraits } from '../../core/scene/viewMode';
 import { t } from '../../i18n';
 import { useGizmoDragStore } from '../../store/gizmoDragStore';
+import { announceReassignments, platesReached } from '../../store/plateMoveNotice';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject, Vec3 } from '../../types/kura';
 
@@ -35,6 +36,8 @@ interface Session {
   lastY: number;
   grab: Vec3;
   baseline: Baseline;
+  /** Placa de cada pieza al empezar: la placa cambia en vivo durante el arrastre, el aviso compara con el inicio. */
+  startPlates: ReadonlyMap<string, string | undefined>;
   reference: Vec3;
   lastDelta: Vec3;
   active: boolean;
@@ -93,8 +96,11 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
         // Soltar sin desplazamiento neto (vista rasante, o en el punto de partida) no deja un paso de deshacer.
         const moved = s.lastDelta[0] !== 0 || s.lastDelta[1] !== 0 || s.lastDelta[2] !== 0;
         // Con varias placas, soltar sobre otra reasigna la pieza (mismo paso de deshacer que el arrastre).
-        if (mode === 'commit' && moved && store.plates.length >= 2) store.reassignPlatesByPosition(s.baseline.map((b) => b.id));
+        const reassign = mode === 'commit' && moved && store.plates.length >= 2;
+        if (reassign) store.reassignPlatesByPosition(s.baseline.map((b) => b.id));
         if (mode === 'commit' && moved) store.commitTransformSnapshot();
+        // El aviso va después de cerrar el paso: su «Deshacer» deshace el arrastre junto con el cambio de placa.
+        if (reassign) announceReassignments(platesReached(s.startPlates, useKuraStore.getState().objects));
         else store.cancelTransformSnapshot();
         useGizmoDragStore.getState().end();
         // El cursor de «agarrar» pertenece al objeto: si el puntero ya salió, no debe quedar pegado.
@@ -183,6 +189,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
         lastY: e.nativeEvent.clientY,
         grab: [e.point.x, e.point.y, e.point.z],
         baseline,
+        startPlates: new Map(state.objects.filter((o) => baseline.some((b) => b.id === o.id)).map((o) => [o.id, o.plateRef])),
         reference: firstMovable ? ([...firstMovable.position] as Vec3) : ZERO,
         lastDelta: ZERO,
         minDeltaY: moveEnabled && !viewModeTraits(viewModeOf(state.layout, state.freeView)).freeDrag ? floorDeltaY(state.objects, baseline) : undefined,

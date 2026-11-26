@@ -11,6 +11,7 @@
 import { t } from '../../i18n';
 import type { AlignMode, ObjectRole } from '../../types/kura';
 import { actionHasPanel, type ActionId } from '../../store/actionsCatalog';
+import { announcePiecesMoved } from '../../store/plateMoveNotice';
 import { useKuraStore } from '../../store/useKuraStore';
 import { openHollowPanel, OPEN_INSPECTOR_EVENT } from '../inspector/hollowPanelRequest';
 import { REFINE_UI_DEFAULTS } from '../refineDefaults';
@@ -148,8 +149,6 @@ export function runMoveToPlate(plateId: string | null): void {
   const count = state.moveToPlate(plateId);
   if (count === 0) return;
   const after = useKuraStore.getState();
-  const name = after.plates.find((p) => p.id === (plateId ?? after.activePlateId))?.name ?? '';
-  // Si el bloque es más grande que la cama destino, se movió igual y el aviso lo dice.
-  const key = !after.lastMoveToPlateFits ? 'plates.toast.movedNoFit' : after.lastMoveToPlateCrowded ? 'plates.toast.movedCrowded' : 'plates.toast.moved';
-  after.addToast(t(after.language, key, { count, name }), 'info');
+  // Mismo aviso que el arrastre (`plateMoveNotice`). Si el bloque es más grande que la cama destino, se movió igual y el aviso lo dice.
+  announcePiecesMoved(count, plateId ?? after.activePlateId, { noFit: !after.lastMoveToPlateFits, crowded: after.lastMoveToPlateCrowded });
 }

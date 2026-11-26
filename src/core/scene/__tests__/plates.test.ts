@@ -64,8 +64,16 @@ describe('crear placas', () => {
     let s = add(empty(), 'p2').scene;
     s = renamePlate(s, 'p2', 'Cabeza')!;
     const r = add(s, 'p3');
-    expect(r.plate.name).toBe('Placa 2');
+    expect(r.plate.name).toBe('Placa 3');
     expect(r.scene.objects).toBe(s.objects);
+  });
+
+  it('con «Bases» y «Placa 2» la nueva es «Placa 3», y salta los números ya usados', () => {
+    const name = (n: number) => `Placa ${n}`;
+    const mk = (names: string[]) => names.map((n, i) => ({ id: `q${i}`, name: n, origin: [0, 0] as [number, number] }));
+    expect(nextPlateName(mk(['Bases', 'Placa 2']), name)).toBe('Placa 3');
+    expect(nextPlateName(mk(['Bases', 'Placa 3']), name)).toBe('Placa 4');
+    expect(nextPlateName([], name)).toBe('Placa 2');
   });
 
   it('los orígenes forman una cuadrícula sin solaparse (4 por fila, luego hacia el fondo)', () => {
