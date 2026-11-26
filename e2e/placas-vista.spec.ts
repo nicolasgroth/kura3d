@@ -25,10 +25,12 @@ for (const width of [1024, 1280]) {
   test.describe(`placas a la vista, ${width} px`, () => {
     test.use({ viewport: { width, height: 720 } });
 
-    test('una sola placa (o ninguna) es la interfaz de siempre: sin tira, con «+ Placa» discreto', async ({ page }) => {
+    test('una sola placa: tira corta (selector de vista y «+ Placa»), sin fichas', async ({ page }) => {
       await abrir(page);
       await agregarForma(page, 'Cubo');
-      await expect(tira(page)).toHaveCount(0);
+      await expect(tira(page)).toHaveAttribute('data-short', 'true');
+      await expect(tira(page).getByTestId('viewmode-selector')).toBeVisible();
+      await expect(tira(page).getByTestId('plate-solo')).toHaveCount(0);
       await expect(page.getByTestId('plate-add-first')).toBeVisible();
       await expect(page.getByTestId('plate-add-first')).toHaveText('+ Placa');
       // El menú de la fila del objeto no ofrece «Mover a placa» hasta la segunda placa.
@@ -52,7 +54,7 @@ for (const width of [1024, 1280]) {
       // La tira cabe en el ancho: sin desplazamiento horizontal de la página.
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       await undo(page);
-      await expect(tira(page)).toHaveCount(0);
+      await expect(tira(page)).toHaveAttribute('data-short', 'true');
       await expect(page.getByTestId('plate-add-first')).toBeVisible();
     });
 
@@ -153,7 +155,6 @@ for (const width of [1024, 1280]) {
       expect(await store(page, (s) => s.plateSolo)).toBe(true);
       await page.getByTestId('bed-toggle').click();
       expect(await store(page, (s) => s.showBed)).toBe(false);
-      await expect(page.getByTestId('plate-add-first')).toHaveCount(0);
     });
 
     test('deshacer cada paso de placas, uno a uno, con su nombre en el historial', async ({ page }) => {
