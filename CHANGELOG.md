@@ -10,6 +10,17 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Paneles con un solo patrón.** «Volver» a la izquierda del título en todos los paneles y herramientas; el pie conserva solo el botón de acción. Un solo Esc cierra, aunque haya un tooltip abierto. Títulos de panel cortos en los 6 idiomas.
+- **Placas: vistas Imprimir, Armado y Libre.** En Armado se ve la figura junta, se puede mover y editar, y eso no cambia el lugar de cada pieza en su placa. Deslizador para separar las piezas y verlas «explotadas».
+- **Placas: repartir.** Panel «Repartir en placas…» con vista previa de dónde quedará cada pieza: compacto, una placa por color, por grupo o por objeto; opción de apoyar cada pieza en su cara plana.
+- **Placas: una cama por placa.** Cada placa puede usar otra impresora o una de «Mis camas». Al importar un 3MF de laminador con placas, se pueden convertir en placas reales.
+- **Simplificar con vista previa.** Muestra el informe y la malla resultante en el visor antes de aplicar. Las figuras con túneles muy finos ya no quedan bloqueadas; la pieza no se mueve de lugar al simplificar.
+- **Imanes cuadrados y rectangulares** en el alojamiento y como unión del corte, con los dos huecos enfrentados y con la misma orientación.
+- **Firmeza de las uniones al dividir.** El resumen dice cuántas uniones quedan firmes, regulares, débiles o para pegar, con el motivo y botones para corregirlas.
+- **Datos del proyecto.** Descripción, notas, autor, fechas de creación y modificación y tiempo de trabajo, guardados en el proyecto. El formato del proyecto pasa a la versión 5.
+- **Marca.** Logo para fondo oscuro y banner con el nombre completo.
+- **Atajos.** H y L sobre varias piezas dejan un solo paso de deshacer; H ya no cambia piezas bloqueadas.
+- **Servidor MCP.** 66 herramientas: placas (listar, crear, mover, repartir, cama, vista), ojo de cerradura y paso de cable, y simulación previa en Simplificar. Las de placas funcionan también sin la app abierta.
 - **Placas (primera versión).** Botón «+ Placa» junto al rótulo de la cama; con dos o más aparece la tira de placas (renombrar, «Solo esta», borrar), una cama por placa en el visor, «Mover a placa» en el menú y arrastrando, y «Fuera de volumen» por placa. Con una sola placa todo sigue igual. Los proyectos sin placas se guardan como antes.
 - **Suavizar funciona en modelos reales.** Unos pocos triángulos problemáticos ya no impiden suavizar el resto: se protegen solo esos puntos. Valores iniciales más suaves (30 % y 3 pasadas) y botones siempre a la vista.
 - **Orientar avisa cuando la pieza no se sostiene sola** y busca apoyos planos en la malla misma. Tras aplicar, un segundo Enter ya no revierte.

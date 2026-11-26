@@ -1,44 +1,50 @@
 # Tablero de Kurra Studio
 
-**Actualizado el 25 de noviembre de 2026, 15:00.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
+**Actualizado el 26 de noviembre de 2026, 03:30.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
 
-## En corto: último día (24 y 25 de noviembre)
+## En corto: último día (noche del 25 al 26 de noviembre)
 
-**Notas de la última evaluación a ciegas** (mínimo 85): usabilidad **85** · código **87** · funcional **87**. Sin bloqueos.
+**Notas de la última evaluación a ciegas** (mínimo 85): usabilidad **85** · código **85** (lo de esta noche; 87 lo anterior) · funcional **87**. Sin bloqueos.
 
-**Pruebas:** 3708 del programa y 172 del servidor MCP, todas en verde, más los recorridos de navegador de cada lote.
+**Pruebas en `main`:** 4234 del programa y 185 del servidor MCP, todas en verde.
 
-Lo que quedó hecho y está en `main`:
+Lo que entró esta noche y está en `main`:
 
-- **Nombre y logo nuevos:** Kurra Studio, con el ícono de la K de piedra.
-- **Placas:** varias camas en un proyecto, mover piezas entre ellas, «fuera de volumen» por placa y exportar un archivo por placa.
-- **Suavizar** una malla, ahora útil también en modelos reales.
-- **Orientar para imprimir:** propone cómo apoyar la pieza y avisa si no se sostiene sola.
-- **Simplificar** por modos, con protección: no aplica un resultado que destruye la pieza.
-- **Dividir con imanes** como unión desmontable.
-- **Agregados:** torreta para tornillo, colgar en el muro, paso de cable e imán; también sin ratón.
-- **Barra flotante** junto a la pieza seleccionada.
-- **Acerca de**, con frases que cambian.
-- **Servidor MCP:** 56 herramientas.
-- **Guías** con capturas al día, incluida la de placas.
+- **Paneles con un solo patrón:** «Volver» en todos, también en las herramientas (Medir, Pintar, Cortar, Mover…). Un solo Esc cierra.
+- **Placas, vistas:** selector Imprimir / Armado / Libre. En Armado se ve la figura junta y moverla no cambia su lugar en la placa.
+- **Placas, repartir:** panel «Repartir en placas…» con vista previa (compacto, por color, por grupo, una placa por objeto).
+- **Placas, camas:** cada placa puede tener su propia cama (dos impresoras en un proyecto). Las placas de un laminador se convierten en placas reales.
+- **Simplificar:** vista previa con informe y fantasma en el visor; ya no bloquea de más en figuras con túneles finos.
+- **Imanes cuadrados y rectangulares** como unión del corte.
+- **Firmeza de las uniones** visible al dividir: firme, regular, débil o para pegar, con el motivo.
+- **Datos del proyecto:** descripción, notas, autor, fechas y tiempo de trabajo.
+- **Marca:** logo para fondo oscuro y banner con el nombre completo.
+- **Atajos:** H y L con varias piezas dejan un solo paso de deshacer.
+- **Servidor MCP:** 66 herramientas, incluidas las de placas, que funcionan también sin la app abierta.
+
+Qué no está verificado todavía:
+
+- La tercera tanda (camas por placa, datos del proyecto, fantasma de Simplificar) no terminó su QA en navegador: se cortó por el límite de uso y se reanudó a las 03:10.
+- Simplificar: la esfera por defecto al 50 % queda bloqueada. Corrección en curso.
+- Las capturas de las guías no reflejan aún los paneles con «Volver» ni lo nuevo de esta noche.
 
 ## En corto: lo que viene
 
-Ahora (ya decidido por el autor):
+Ahora:
 
-1. Paneles con un solo patrón: «Volver» en todos.
-2. Vista previa en Simplificar (primero el informe, después el fantasma).
-3. Imanes cuadrados y rectangulares como unión del corte.
-4. «Una placa por objeto» al repartir.
-5. Logo para fondo oscuro y banner nuevo con el nombre completo.
-6. Simplificar sin bloquear de más en figuras con túneles finos.
+1. Terminar la corrección de Simplificar y la QA en navegador de la tercera tanda.
+2. Galería de Asistentes con miniaturas y deslizadores junto a las medidas (en desarrollo).
+3. Elegir el plano al arrastrar una pieza (en desarrollo).
+4. Regenerar capturas y guías con todo lo de esta noche.
+5. Evaluación a ciegas de usabilidad y funcional de lo nuevo.
 
 Después:
 
-7. Placas: vista de armado en pantalla, repartir automático y cama distinta por placa.
-8. Uniones firmes visibles en Dividir.
-9. Abrir en un laminador real el 3MF con varias placas (necesita al autor, 5 minutos).
-10. Cerrar lo que quedó bajo 85 por funcionalidad: Simplificar, imanes del corte y atajos.
+6. Abrir en un laminador real el 3MF con varias placas (necesita al autor, 5 minutos).
+7. Dividir: cortes por las partes naturales de la figura y cortes inclinados.
+8. Encajes: tapa roscada, clips y biblioteca de conectores.
+9. Tiradores en las caras para estirar una pieza.
+10. Mejoras de pintura (cursor de área, borde duro o suave, relleno con tolerancia).
 
 Más adelante: todo lo de «Planificada» e «Idea», más abajo. Tiempos estimados en [ESTIMACION.md](ESTIMACION.md).
 

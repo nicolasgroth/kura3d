@@ -60,6 +60,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 
 **Proyecto**
 - **Acerca de** (en revisión): qué es el programa, cómo se construyó, su licencia y las bibliotecas abiertas que usa (desde Ajustes, la paleta de comandos o la insignia de versión junto al logo).
+- **Datos del proyecto** (en revisión): descripción, notas, autor, fechas y tiempo de trabajo, guardados en el archivo y visibles en recientes.
 - Proyectos `.kura` con escena, materiales, pintura e historial de deshacer. Autoguardado y recuperación de borradores. En escritorio, la lista de recientes recuerda las rutas y reabre con un clic (se puede desactivar en Ajustes).
 - Importar **STL, 3MF, OBJ y PLY**, varios archivos a la vez, por diálogo o arrastrando. Lee los 3MF de slicers (componentes, instancias, colores de filamento) conservando las posiciones.
 - **Ida y vuelta por 3MF exacta:** piezas, grupos, colores y posiciones se conservan al exportar y volver a abrir.
@@ -76,7 +77,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - **Moldes** de 1 pieza, 2 mitades, caja madre y núcleo/cavidad.
 - **Roscas ISO M3–M64** con paso y holgura automáticos según la norma.
 - **Asistentes**: crea una caja con tapa, un llavero o una placa de enchufe respondiendo unas preguntas, con reglas en vivo y un solo paso de deshacer (**Insertar › Asistentes**).
-- **Alojamiento de imán**: un clic sobre una cara deja el hueco para un imán redondo o cuadrado, con holgura, opción oculta y aviso de pared mínima; tus medidas se guardan como preajustes (**Insertar › Alojamiento de imán**).
+- **Alojamiento de imán**: un clic sobre una cara deja el hueco para un imán redondo, cuadrado o rectangular, con holgura, opción oculta y aviso de pared mínima; tus medidas se guardan como preajustes (**Insertar › Alojamiento de imán**).
 - **Torreta para tornillo** (en revisión): un clic sobre una cara deja un poste con agujero para tornillo directo o inserto roscado (tabla de medidas M2 a M5 por verificar), con avisos de pared, agujero que atraviesa y choques; al aplicar las restas queda una sola pieza (**Insertar › Torreta para tornillo**).
 - **Colocar agregados sin ratón** (en revisión): imán, torreta, colgar en el muro y paso de cable traen un bloque con selector de cara y un botón que los deja en el centro de esa cara; en caras curvas siguen la superficie. La torreta suma tornillo directo M5 (por verificar).
 - **Colgar en el muro** (en revisión): un clic sobre la cara que va contra la pared deja un ojo de cerradura (entrada para la cabeza, ranura del cuello hacia arriba y cámara detrás) para tornillos de 3 a 5 mm, con avisos de pared detrás, borde, cara no vertical y ojos a distinta altura (**Insertar › Colgar en el muro**).
@@ -84,11 +85,12 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - Texto y SVG en relieve, grabado o incrustado sobre cualquier superficie.
 - Litofanías planas y cilíndricas, y cortadores desde una imagen.
 - Simplificar y refinar mallas, alinear y distribuir en la cama.
-- **Simplificar** (en revisión) para equipos con poca memoria: «sin pérdida» (solo se aplica si no cambia la forma), por tolerancia o por cantidad de triángulos, con un informe de antes y después y un botón **Deshacer** en el aviso y en el informe. Si el resultado estropearía la pieza (pierde un agujero pasante, cambia el volumen más de 5 % o mueve la superficie más de 1 mm), no se aplica: el informe da los motivos y ofrece **Aplicar la versión segura** o **Aplicar de todos modos**. Se abre desde **Simplificar…** en el inspector, o desde el aviso de modelo pesado ya en «Por cantidad».
+- **Simplificar** (en revisión) para equipos con poca memoria, con vista previa del resultado en el visor antes de aplicar: «sin pérdida» (solo se aplica si no cambia la forma), por tolerancia o por cantidad de triángulos, con un informe de antes y después y un botón **Deshacer** en el aviso y en el informe. Si el resultado estropearía la pieza (pierde un agujero pasante, cambia el volumen más de 5 % o mueve la superficie más de 1 mm), no se aplica: el informe da los motivos y ofrece **Aplicar la versión segura** o **Aplicar de todos modos**. Se abre desde **Simplificar…** en el inspector, o desde el aviso de modelo pesado ya en «Por cantidad».
 - **Suavizar malla** (en revisión): quita facetado y ruido de escaneos sin cambiar los triángulos, con aristas protegidas, zona pintada y vista previa antes de aplicar (**Acciones › Malla › Suavizar…**).
 
 **Preparación para imprimir**
 - **Dividir para imprimir:** parte un modelo más grande que tu cama en piezas con código (A1, B1…), uniones (conectores o, en revisión, imanes enfrentados para que quede desmontable), marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza.
+- **Firmeza de las uniones** (en revisión): antes de dividir, el resumen dice cuántas uniones quedan firmes, regulares, débiles o para pegar, con el motivo y cómo corregirlas.
 - Pintura 3D por caras para impresión multicolor, con separación por color.
 - Detección de estructuras para separar un modelo en partes.
 - Análisis de imprimibilidad: malla cerrada, voladizos, tamaño de cama y peso aproximado.
@@ -97,10 +99,14 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - Siluetas de cama de 12 impresoras (Elegoo, Bambu Lab, Snapmaker, FlashForge y genéricas).
 
 **Estudio**
-- **Placas** (en revisión): crea una segunda cama con **+ Placa**, renombra, activa y borra placas en una tira sobre la barra de estado, mueve piezas entre ellas (paleta, clic derecho › **Mover a placa**, arrastrando, con el panel o con las flechas), ve en la lista a qué placa pertenece cada pieza y mira cuál se pasa del volumen de su cama. Lo nuevo cae en la placa activa y Dividir respeta la placa de la pieza ([guía](docs/guia/placas.md)).
-- **Exportar por placa** (en revisión): con piezas en varias placas, el diálogo Exportar ofrece un 3MF con todas las placas o un archivo por placa en un ZIP (STL siempre ZIP por placa); las piezas sin placa quedan fuera con aviso. Bambu Studio y OrcaSlicer entienden las placas del 3MF, pero aún no está verificado en un laminador real: la opción segura es el ZIP ([guía](docs/guia/exportar.md#exportar-con-varias-placas)).
+- **Placas** (en revisión): varias camas en un mismo proyecto. Crea placas con **+ Placa**, renómbralas, mueve piezas entre ellas (menú, paleta o arrastrando) y mira «Fuera de volumen» por placa. Cada placa puede tener **su propia cama** (dos impresoras en un proyecto).
+- **Vistas Imprimir / Armado / Libre** (en revisión): en Armado se ve la figura junta y se puede mover y editar sin cambiar el lugar de cada pieza en su placa; un deslizador separa las piezas para verlas «explotadas».
+- **Repartir en placas** (en revisión): reparte las piezas entre placas con vista previa: compacto, una placa por color, por grupo o por objeto.
+- **Exportar por placa** (en revisión): con piezas en varias placas, un 3MF con todas las placas o un archivo por placa en un ZIP (STL siempre en ZIP). El 3MF con varias placas aún no está probado en un laminador real.
+- **Placas de laminador** (en revisión): al importar un 3MF de Bambu Studio u OrcaSlicer con placas, se pueden convertir en placas reales.
 - **Barra flotante** (en revisión) junto al objeto seleccionado, fuera de la pieza, con las acciones más usadas a un clic, una paleta de colores y **Alt+.** para llegar a ella con el teclado; se oculta mientras hay un panel de operación abierto.
 - **Arrastrar para mover**: el objeto seleccionado se arrastra sobre su plano horizontal.
+- **Paneles con un solo patrón** (en revisión): «Volver» en todos los paneles y herramientas, y un solo Esc para cerrar.
 - 6 idiomas, 6 temas en claro y oscuro con contraste verificado, y modo compacto.
 - Uso por teclado: atajos, paleta de comandos (`Ctrl/⌘+K`), lista de escena y menús navegables.
 - Campos numéricos que aceptan expresiones y unidades (`10+5`, `2cm`).
@@ -108,7 +114,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 **Inteligencia artificial (opcional)**
 - Asistente local sin conexión que entiende órdenes simples en español e inglés.
 - Proveedores externos: Anthropic, OpenAI, Gemini, Ollama y **cualquier API compatible con OpenAI** (DeepSeek, Qwen, OpenRouter, LM Studio). En escritorio las claves se guardan en el llavero del sistema.
-- **Servidor MCP** con 56 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
+- **Servidor MCP** con 66 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
 
 ## Guías
 
@@ -122,9 +128,10 @@ Lo que falta, en el orden del [roadmap](docs/ROADMAP.md). El detalle está en el
 
 **Lo siguiente**
 1. Cerrar la revisión de lo marcado «(en revisión)» arriba.
-2. **Placas, lo que falta:** la vista de armado en la interfaz que muestra juntas las piezas de todas las placas, el reparto automático de piezas entre placas y una cama distinta para cada placa ([diseño](docs/diseno/PLACAS_Y_ARMADO.md), espera decisiones del autor).
-3. **Uniones firmes** en Dividir: tamaño mínimo de conector y de pared según la sección. El cálculo ya existe; falta mostrarlo en la interfaz.
-4. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
+2. **Asistentes:** galería con miniaturas y deslizadores junto a las medidas.
+3. **Arrastrar eligiendo el plano:** en vista de frente, mover en vertical.
+4. **3MF con varias placas** verificado en Bambu Studio y OrcaSlicer, y **multimaterial** en los cinco laminadores.
+5. Dividir: cortes por las partes naturales de la figura y cortes inclinados.
 
 **Más adelante**
 - Dividir: cortes por las partes naturales de la figura, cortes inclinados, uniones vinculadas.
