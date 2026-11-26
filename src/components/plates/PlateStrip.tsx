@@ -176,7 +176,7 @@ export const PlateStrip: React.FC = () => {
       {view === 'print' && !multi && <AddFirstPlateButton />}
       {view === 'assembly' && <ViewModeExplode />}
       {view === 'assembly' && (
-        <span className="kura-plate-strip-note" data-testid="plate-strip-note">{t(language, 'viewMode.strip.armed', { count: plates.length })}</span>
+        <span className="kura-plate-strip-note" data-testid="plate-strip-note">{t(language, 'viewMode.strip.armed', { count: Math.max(1, plates.length) })}</span>
       )}
       {view === 'free' && <span className="kura-plate-strip-note" data-testid="plate-strip-note">{t(language, 'viewMode.strip.free')}</span>}
       {view === 'print' && multi && active && (

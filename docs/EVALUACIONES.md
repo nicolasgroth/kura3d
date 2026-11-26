@@ -965,3 +965,17 @@ Lectura del orquestador: cuatro rondas con evaluadores distintos y ninguna sobre
 
 Consumo: ronda acotada (Sonnet · 20 min · 208 k), tercera evaluación de usabilidad (Opus · 14 min · 178 k).
 
+## 26-nov-2026 · Tarde: pasada de diseño de la tira, 3MF para el laminador y `.kura` comprimido
+
+**Pasada de diseño de la tira de placas** (aprobada por el autor; `feat/tira-vistas`, Sonnet · 15 min · 240 k). Selector de vista y controles de Armado en la tira, barra del visor según el ancho, insignia siempre visible, consejo en una línea, informe de Simplificar tras deshacer. Revisado por el orquestador en navegador a 1024 y 1440 px.
+
+**3MF con placas para el laminador** (`fix/3mf-placas-laminador`, Opus · tres tramos, unos 100 min · 348 k). El autor probó 30 variantes en Elegoo Slicer; las causas fueron tres: coordenadas (cada pieza centrada en su cama en vez de en la rejilla de bandejas), una línea `filament_count` que hacía descartar la configuración de piezas, y la falta de un perfil mínimo de 9 claves. Los archivos finales, generados por el código de la app, abren con bandejas, nombres, filamentos y colores con 1, 3 y 5 placas (una vacía y una con cama distinta). No probado en Bambu Studio ni OrcaSlicer.
+
+**Formato `.kura` 6 comprimido** (`feat/kura-comprimido`, Opus · tres tramos · 231 k). Medido en la app con un modelo de 478 mil triángulos: archivo de 11,5 a 7,3 MB. El guardado completo toma de 3,2 a 5 s; de eso, 2,7 a 3,1 s pasan antes de empezar a codificar (hilo principal) y solo 0,3 a 0,9 s en codificar y comprimir. El indicador de avance agregado no llega a verse por esa razón: en corrección (`perf/guardar-proyecto`).
+
+**Verificación del orquestador sobre todo integrado:** 4447 pruebas del programa, 190 del servidor MCP y 54 de rendimiento en verde; 253 recorridos de navegador del rediseño (242 al primer intento; de los 11 restantes, 7 eran expectativas antiguas del recorrido y 4 fallos por carga de la máquina que pasan al repetirlos); 35 capturas regeneradas y 0 enlaces rotos. Defecto real encontrado y corregido: en la web, guardar no agregaba el proyecto a recientes hasta reabrir el panel (marca de «vivo» que no sobrevivía al modo estricto de React).
+
+Guías y capturas (Sonnet · 22 min · 156 k): placas, exportar, importar y reparar, guardar y recuperar, primeros pasos, cortar; README y FUNCIONALIDADES.
+
+Reevaluación a ciegas de placas y Simplificar tras la pasada de diseño: en curso.
+

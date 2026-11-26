@@ -1,12 +1,12 @@
 # Tablero de Kurra Studio
 
-**Actualizado el 26 de noviembre de 2026, 07:01.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
+**Actualizado el 26 de noviembre de 2026, 14:50.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
 
 ## En corto: último día (noche del 25 al 26 de noviembre)
 
-**Notas de la evaluación a ciegas de lo de esta noche** (mínimo 85): usabilidad **81 en la última evaluación completa; en la ronda acotada, placas 80 y Simplificar 78: bajo el mínimo, en consulta con el autor** · código **85** · funcional **86**. Sin bloqueos.
+**Notas de la evaluación a ciegas de lo de esta noche** (mínimo 85): usabilidad **81 en la última evaluación completa; placas 80 y Simplificar 78 antes de la pasada de diseño de la tira: reevaluación en curso** · código **85** · funcional **86**. Sin bloqueos.
 
-**Pruebas en `main`:** 4374 del programa y 188 del servidor MCP, todas en verde. Capturas de las guías: 35 recorridos en verde.
+**Pruebas en `main`:** 4447 del programa, 190 del servidor MCP y 54 de rendimiento, todas en verde. Capturas de las guías: 35 recorridos en verde.
 
 Lo que entró esta noche y está en `main`:
 
@@ -39,13 +39,15 @@ Menores anotados, sin corregir:
 
 ## En corto: lo que viene
 
+Hoy en la tarde entró además: tira de placas rediseñada, 3MF que el laminador abre con sus bandejas (probado en Elegoo Slicer), proyecto `.kura` comprimido.
+
 Ahora:
 
-
-1. Corregir los menores anotados arriba.
-2. Deslizadores también en las formas básicas del inspector.
-3. Placas: herramientas que aún miran solo la cama del proyecto con una sola placa.
-4. Conmutador «Ver lo pedido» en Simplificar.
+1. Reevaluación a ciegas de placas y Simplificar tras la pasada de diseño.
+2. Guardado de proyectos grandes: bajar los casi 3 segundos previos a codificar y que el avance se vea.
+3. Cambio de licencia a AGPL-3.0 con acuerdo de contribuyentes (decidido; se aplica como último lote).
+4. Probar el 3MF con bandejas en OrcaSlicer y Bambu Studio.
+5. Actualizar Playwright (pedido de Dependabot).
 
 Después:
 

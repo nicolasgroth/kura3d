@@ -10,6 +10,13 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Tira de placas rediseñada.** El selector Imprimir / Armado / Libre pasa al inicio de la tira; en Armado la tira trae la separación, el alcance y «Juntar piezas», y desaparece el panel sobre el visor. Con una sola placa queda una tira corta con el selector. La insignia de placa (P1, P2…) se ve siempre. La barra del visor muestra textos o iconos según el ancho.
+- **3MF que el laminador abre con sus bandejas.** Cada pieza va en la celda de su bandeja y el archivo lleva un perfil mínimo tomado de un «proyecto de ejemplo» guardado desde el laminador (Exportar → 3MF → Laminador). Llegan bandejas, nombres, filamento por pieza y colores. Probado en Elegoo Slicer con 1, 3 y 5 placas.
+- **Corregido: los 3MF exportados perdían nombres y filamentos en laminadores de la familia Orca** por una línea de más en la configuración de piezas. Afectaba a todas las exportaciones 3MF.
+- **Proyecto `.kura` comprimido (formato 6).** Archivos entre un 36 % y un 88 % más chicos; se siguen abriendo los formatos 1 a 5. Lectura con tope de memoria.
+- **Simplificar:** tras «Deshacer» el informe dice que se deshizo; el informe separa la tolerancia pedida de la desviación medida.
+- **Corregido:** en la versión web, guardar un proyecto no lo agregaba a «Proyectos recientes» hasta reabrir el panel.
+- **Consejo del visor** en una línea que se puede expandir.
 - **Mover a placa:** si la placa destino está llena, la pieza queda dentro de la cama (encima de otras) y el aviso lo dice; antes quedaba al lado de la cama. La paleta ya no ofrece mover a la placa donde la pieza está.
 - **Convertir en placas:** los grupos que representaban las placas del laminador se disuelven, en el mismo paso de deshacer.
 - **Simplificar desde la paleta** abre el panel con su vista previa en vez de aplicar de inmediato. Tras la vista previa el foco queda en el informe.
