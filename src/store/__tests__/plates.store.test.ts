@@ -10,7 +10,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { activePlateBed } from '../../core/scene/activePlateBed';
-import { decodeProject, encodeProject, PLATES_FORMAT_VERSION } from '../../project/projectCodec';
+import { decodeProject, encodeProjectImage, PLATES_FORMAT_VERSION } from '../../project/projectCodec';
 import { ROLE_FORMAT_VERSION } from '../../project/projectRoleMigration';
 import { DEFAULT_PRINTER_PROFILES } from '../../types/kura';
 import { activeBedSize } from '../bedSize';
@@ -158,10 +158,10 @@ describe('placas en el store', () => {
     const a = await addBox(10);
     // Sin datos del proyecto (un proyecto con fechas se escribe como v5): aquí se prueba solo la versión por placas.
     useKuraStore.setState({ projectInfo: {} } as never);
-    expect(versionOf(encodeProject(captureProject(store())))).toBe(ROLE_FORMAT_VERSION);
+    expect(versionOf(encodeProjectImage(captureProject(store())))).toBe(ROLE_FORMAT_VERSION);
     const p2 = store().createPlate()!;
     store().assignToPlate(p2.id, [a.id]);
-    const bytes = encodeProject(captureProject(store()));
+    const bytes = encodeProjectImage(captureProject(store()));
     expect(versionOf(bytes)).toBe(PLATES_FORMAT_VERSION);
     const back = decodeProject(bytes);
     expect(back.plates).toEqual(store().plates);

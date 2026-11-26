@@ -2,7 +2,9 @@
  * @file src/components/viewport/OperationProgressBar.tsx
  * @description Barra discreta sobre el visor con la operación en curso: nombre traducido, tiempo
  * transcurrido y Cancelar (si el motor lo permite). Aparece tras ~400 ms para no parpadear en
- * operaciones rápidas, se anuncia con `role="status"` y Escape la cancela con el foco en el visor.
+ * operaciones rápidas, se anuncia con `role="status"` y Escape la cancela con el foco en el visor. Con avance
+ * contable (cortes, piezas importadas, porcentaje del guardado) la barra es un `role="progressbar"` con `aria-valuenow`;
+ * el porcentaje visible no va en la región viva para no anunciarse en cada paso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -17,6 +19,7 @@ import type { LanguageCode } from '../../types/kura';
 import { formatNumber } from '../../utils/plural';
 import { parseCutPhase, progressPhaseLabel } from '../split/splitProgress';
 import { importPhaseLabel, parseImportParts } from './importProgress';
+import { parseSavePhase, savePhaseLabel } from './saveProgressLabel';
 import { simplifyPhaseLabel, simplifySlowNote } from './simplifyProgress';
 import '../../styles/operationPreview.css';
 import '../../styles/splitForBed.css';
@@ -68,10 +71,13 @@ export const OperationProgressBar: React.FC = () => {
   if (!view || view.elapsedMs < PROGRESS_SHOW_DELAY_MS) return null;
 
   const label = operationLabel(language, view.name);
-  const phaseText = progressPhaseLabel(language, view.phase) ?? importPhaseLabel(language, view.phase) ?? simplifyPhaseLabel(language, view.phase);
+  const phaseText = progressPhaseLabel(language, view.phase) ?? importPhaseLabel(language, view.phase) ?? simplifyPhaseLabel(language, view.phase)
+    ?? savePhaseLabel(language, view.phase);
   const slowNote = simplifySlowNote(language, view.name, triangles);
-  // Barra determinada si la fase trae avance (cortes de Dividir o piezas importadas); si no, indeterminada.
-  const cut = parseCutPhase(view.phase) ?? parseImportParts(view.phase);
+  // Barra determinada si la fase trae avance (cortes de Dividir, piezas importadas o guardado); si no, indeterminada.
+  const save = parseSavePhase(view.phase);
+  const cut = parseCutPhase(view.phase) ?? parseImportParts(view.phase) ?? (save ? { done: save.percent, total: 100 } : null);
+  const percent = cut ? Math.round((cut.done / cut.total) * 100) : null;
   const seconds = formatNumber(language, view.elapsedMs / 1000, { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 
   return (
@@ -83,10 +89,20 @@ export const OperationProgressBar: React.FC = () => {
       <span className="kura-op-progress-time" aria-hidden="true">
         {t(language, 'progress.elapsed', { seconds })}
       </span>
-      <span className="kura-op-progress-track" aria-hidden="true">
+      {save && (
+        <span className="kura-op-progress-time" aria-hidden="true" data-testid="op-progress-percent">
+          {t(language, 'saveProgress.percent', { percent: formatNumber(language, save.percent) })}
+        </span>
+      )}
+      <span
+        className="kura-op-progress-track"
+        {...(percent === null
+          ? { 'aria-hidden': true }
+          : { role: 'progressbar', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': percent })}
+      >
         <span
           className={cut ? 'kura-op-progress-bar is-determinate' : 'kura-op-progress-bar'}
-          style={cut ? { width: `${Math.round((cut.done / cut.total) * 100)}%` } : undefined}
+          style={percent !== null ? { width: `${percent}%` } : undefined}
         />
       </span>
       {view.cancellable && (

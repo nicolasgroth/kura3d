@@ -15,7 +15,7 @@ import { MAX_PLATES } from '../../core/scene/plates';
 import { MAX_SPLIT_PLATES } from '../../core/scene/splitGroups';
 import { DEFAULT_PRINTER_PROFILES, type MeshData, type SceneObject } from '../../types/kura';
 import type { ScenePlate } from '../../types/plates';
-import { decodeProject, encodeProject, INFO_FORMAT_VERSION, PLATES_FORMAT_VERSION, type ProjectDocument } from '../projectCodec';
+import { COMPRESSED_FORMAT_VERSION, decodeProject, encodeProjectImage, PLATES_FORMAT_VERSION, type ProjectDocument } from '../projectCodec';
 import { ROLE_FORMAT_VERSION } from '../projectRoleMigration';
 import { assembleDocument, splitDocument } from '../recoveryDraftFormat';
 import { repackKura } from './legacyKura';
@@ -43,7 +43,7 @@ const withPlates = () => doc([obj('a', { plateRef: 'p1' }), obj('b', { plateRef:
 describe('versión del .kura según las placas', () => {
   it('un proyecto sin placas se sigue escribiendo en v3 y vuelve igual', () => {
     const plain = doc([obj('a'), obj('b')]);
-    const bytes = encodeProject(plain);
+    const bytes = encodeProjectImage(plain);
     expect(versionOf(bytes)).toBe(ROLE_FORMAT_VERSION);
     expect(new TextDecoder().decode(bytes)).not.toMatch(/plate/);
     expect(decodeProject(bytes)).toEqual(plain);
@@ -51,16 +51,16 @@ describe('versión del .kura según las placas', () => {
 
   it('con placas se escribe v4 y la ida y vuelta conserva placas, camas y plateRef', () => {
     const original = withPlates();
-    const bytes = encodeProject(original);
+    const bytes = encodeProjectImage(original);
     expect(versionOf(bytes)).toBe(PLATES_FORMAT_VERSION);
     const back = decodeProject(bytes);
     expect(back).toEqual(original);
-    expect(encodeProject(back)).toEqual(bytes);
+    expect(encodeProjectImage(back)).toEqual(bytes);
   });
 
   it('placas solo en el historial también obligan a v4 (una versión anterior no las entendería)', () => {
     const past = { objects: [obj('a', { plateRef: 'p1' })], selectedIds: [], plates: [PLATES[0]] };
-    const bytes = encodeProject(doc([obj('a')], { past: [past] }));
+    const bytes = encodeProjectImage(doc([obj('a')], { past: [past] }));
     expect(versionOf(bytes)).toBe(PLATES_FORMAT_VERSION);
     const back = decodeProject(bytes);
     expect(back.plates).toBeUndefined();
@@ -68,27 +68,27 @@ describe('versión del .kura según las placas', () => {
   });
 
   it('un v3 que trae placas o plateRef se rechaza (validación estricta por versión)', () => {
-    const v4 = encodeProject(withPlates());
+    const v4 = encodeProjectImage(withPlates());
     expect(() => decodeProject(repackKura(v4, 3))).toThrowError(expect.objectContaining({ code: 'invalid' }));
     const onlyRef = repackKura(v4, 3, (m) => { delete (m.current as Record<string, unknown>).plates; });
     expect(() => decodeProject(onlyRef)).toThrowError(expect.objectContaining({ code: 'invalid' }));
   });
 
-  it('una versión más nueva que la 5 dice "no soportada"', () => {
-    const future = repackKura(encodeProject(withPlates()), INFO_FORMAT_VERSION + 1);
+  it('una versión más nueva que la 6 dice "no soportada"', () => {
+    const future = repackKura(encodeProjectImage(withPlates()), COMPRESSED_FORMAT_VERSION + 1);
     expect(() => decodeProject(future)).toThrowError(expect.objectContaining({ code: 'unsupported' }));
   });
 });
 
 describe('saneo de placas al abrir', () => {
   it('un plateRef a una placa inexistente pasa a la placa por defecto sin perder la pieza', () => {
-    const bytes = encodeProject(doc([obj('a', { plateRef: 'fantasma' }), obj('b', { plateRef: 'p2' })], { plates: PLATES }));
+    const bytes = encodeProjectImage(doc([obj('a', { plateRef: 'fantasma' }), obj('b', { plateRef: 'p2' })], { plates: PLATES }));
     const back = decodeProject(bytes);
     expect(back.objects.map((o) => [o.id, o.plateRef])).toEqual([['a', 'p1'], ['b', 'p2']]);
   });
 
   it('un plateRef sin ninguna placa se quita y la pieza queda', () => {
-    const bytes = encodeProject(doc([obj('a', { plateRef: 'fantasma' })]));
+    const bytes = encodeProjectImage(doc([obj('a', { plateRef: 'fantasma' })]));
     expect(versionOf(bytes)).toBe(PLATES_FORMAT_VERSION);
     const back = decodeProject(bytes);
     expect(back.objects).toHaveLength(1);
@@ -97,7 +97,7 @@ describe('saneo de placas al abrir', () => {
   });
 
   it('una cama cuyo perfil no existe en este equipo se conserva con sus medidas (P7)', () => {
-    const bytes = repackKura(encodeProject(withPlates()), 4, (m) => {
+    const bytes = repackKura(encodeProjectImage(withPlates()), 4, (m) => {
       const bed = (m.current as unknown as { plates: ScenePlate[] }).plates[1].bed!;
       bed.profileId = 'user-de-otro-equipo';
       bed.widthMm = 9_999;
@@ -107,7 +107,7 @@ describe('saneo de placas al abrir', () => {
   });
 
   it('placas con id repetido se reducen a la primera', () => {
-    const bytes = repackKura(encodeProject(withPlates()), 4, (m) => {
+    const bytes = repackKura(encodeProjectImage(withPlates()), 4, (m) => {
       const current = m.current as unknown as { plates: ScenePlate[] };
       current.plates.push({ ...current.plates[0], name: 'copia' });
     });
@@ -142,7 +142,7 @@ describe('saneo de placas al abrir', () => {
     ['demasiadas placas', (c) => { c.plates = Array.from({ length: MAX_PLATES + 1 }, (_, i) => ({ id: `p${i}`, name: 'p', origin: [i, 0] })); }, 'too-large'],
   ];
   it.each(malformed)('rechaza una placa malformada: %s', (_label, edit, code) => {
-    const bytes = repackKura(encodeProject(withPlates()), 4, (m) => edit(m.current as unknown as Plates));
+    const bytes = repackKura(encodeProjectImage(withPlates()), 4, (m) => edit(m.current as unknown as Plates));
     expect(() => decodeProject(bytes)).toThrowError(expect.objectContaining({ code }));
   });
 });
@@ -158,12 +158,12 @@ describe('índice de placa virtual de Dividir', () => {
   } as Partial<SceneObject>);
 
   it('un índice dentro del tope abre bien', () => {
-    expect(decodeProject(encodeProject(doc([splitPart(MAX_SPLIT_PLATES - 1)]))).objects[0].metadata?.split?.print.plate).toBe(MAX_SPLIT_PLATES - 1);
+    expect(decodeProject(encodeProjectImage(doc([splitPart(MAX_SPLIT_PLATES - 1)]))).objects[0].metadata?.split?.print.plate).toBe(MAX_SPLIT_PLATES - 1);
   });
 
   it('un archivo malicioso con un índice de placa enorme se rechaza', () => {
     for (const plate of [MAX_SPLIT_PLATES, 2 ** 31, Number.MAX_SAFE_INTEGER]) {
-      const bytes = repackKura(encodeProject(doc([splitPart(0)])), ROLE_FORMAT_VERSION, (m) => {
+      const bytes = repackKura(encodeProjectImage(doc([splitPart(0)])), ROLE_FORMAT_VERSION, (m) => {
         const objects = (m.current as unknown as { objects: Array<{ metadata: { split: { print: { plate: number } } } }> }).objects;
         objects[0].metadata.split.print.plate = plate;
       });

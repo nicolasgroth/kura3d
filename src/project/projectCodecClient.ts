@@ -1,11 +1,13 @@
 /**
  * @file src/project/projectCodecClient.ts
- * @description Cliente que delega la codificación y decodificación de proyectos al worker del códec.
+ * @description Cliente que delega la codificación y decodificación de proyectos al worker del códec; al guardar
+ * reenvía el avance que informa el worker (preparar y comprimir, en porcentaje).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
 
+import type { EncodeProgress } from './projectCodec';
 import { MAX_PROJECT_BYTES, ProjectCodecError, type ProjectDocument } from './projectSchema';
 
 export type ProjectCodecRequest =
@@ -14,9 +16,10 @@ export type ProjectCodecRequest =
 
 export type ProjectCodecResponse<T = Uint8Array | ProjectDocument> =
   | { ok: true; value: T }
-  | { ok: false; message: string; code?: ProjectCodecError['code'] };
+  | { ok: false; message: string; code?: ProjectCodecError['code'] }
+  | { progress: { percent: number; phase: Parameters<EncodeProgress>[1] } };
 
-async function runWorker<T>(request: ProjectCodecRequest, transfer: Transferable[] = []): Promise<T> {
+async function runWorker<T>(request: ProjectCodecRequest, transfer: Transferable[] = [], onProgress?: EncodeProgress): Promise<T> {
   const worker = new Worker(new URL('./projectCodec.worker.ts', import.meta.url), {
     type: 'module',
     name: 'kura-project-codec',
@@ -24,7 +27,8 @@ async function runWorker<T>(request: ProjectCodecRequest, transfer: Transferable
   try {
     return await new Promise<T>((resolve, reject) => {
       worker.onmessage = ({ data }: MessageEvent<ProjectCodecResponse<T>>) => {
-        if (data.ok) resolve(data.value);
+        if ('progress' in data) onProgress?.(data.progress.percent, data.progress.phase);
+        else if (data.ok) resolve(data.value);
         else reject(data.code ? new ProjectCodecError(data.code) : new Error(data.message));
       };
       worker.onerror = event => {
@@ -39,10 +43,10 @@ async function runWorker<T>(request: ProjectCodecRequest, transfer: Transferable
   }
 }
 
-export async function encodeProjectAsync(document: ProjectDocument): Promise<Uint8Array> {
-  if (typeof Worker === 'undefined') return (await import('./projectCodec')).encodeProject(document);
+export async function encodeProjectAsync(document: ProjectDocument, onProgress?: EncodeProgress): Promise<Uint8Array> {
+  if (typeof Worker === 'undefined') return (await import('./projectCodec')).encodeProjectCompressed(document, onProgress);
   // Structured clone snapshots the scene and history. Their geometry remains owned by the editor.
-  return runWorker<Uint8Array>({ operation: 'encode', document });
+  return runWorker<Uint8Array>({ operation: 'encode', document }, [], onProgress);
 }
 
 /** Consumes the supplied file buffer, including any sibling views on it. */
