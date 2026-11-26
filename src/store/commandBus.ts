@@ -58,6 +58,7 @@ import {
   vecFromUser,
 } from './commandAxes';
 import { fromUserVector } from '../core/scene/displayAxes';
+import { resolveActivePlate } from '../core/scene/plates';
 
 export interface CommandBusDeps {
   get: () => KuraStoreState;
@@ -130,7 +131,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
       // Placas (detalle en `list_plates`) y modo de vista: imprimir o armado.
       layout: s.layout,
       plateCount: s.plates.length,
-      activePlateId: s.plates.length ? s.activePlateId ?? s.plates[0].id : null,
+      activePlateId: resolveActivePlate(s.plates, s.activePlateId)?.id ?? null,
     };
   },
 
