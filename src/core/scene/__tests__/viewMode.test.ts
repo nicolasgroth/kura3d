@@ -101,4 +101,18 @@ describe('separación visual', () => {
     expect([...some.keys()].sort()).toEqual(['a', 'b']);
     expect(explodedFigurePositions(objects, new Set(['a']), 1).size).toBe(0);
   });
+
+  it('invariante: todas las piezas se alejan la MISMA distancia (factor × alcance), cerca o lejos del centro', () => {
+    // Una cerca del centro y otras lejos: la separación es pareja, así las piezas chicas del medio también se despegan.
+    const mixed = [solid('near', [2, 0, 0]), solid('far', [-60, 0, 0]), solid('top', [0, 0, 90])];
+    const moved = explodedFigurePositions(mixed, new Set(['near', 'far', 'top']), 0.5);
+    const dist = (id: string) => {
+      const o = mixed.find((x) => x.id === id)!;
+      const p = moved.get(id)!;
+      return Math.hypot(p[0] - o.position[0], p[1] - o.position[1], p[2] - o.position[2]);
+    };
+    expect(dist('near')).toBeGreaterThan(0);
+    expect(dist('far')).toBeCloseTo(dist('near'), 6);
+    expect(dist('top')).toBeCloseTo(dist('near'), 6);
+  });
 });

@@ -3,7 +3,7 @@
  * @description Posición con la que se DIBUJA una pieza en la vista armada (solo dibujo: no cambia la escena ni el
  * historial). Si la separación de la figura (`figureExplode`) está activa y la pieza pertenece a su alcance, devuelve
  * la posición separada; si no, la que dan la separación de Dividir o la pose de la pieza. Fuera de Armado y Libre
- * nunca separa. El cálculo se comparte entre todas las piezas con una caché de una entrada.
+ * nunca separa. El cálculo se comparte entre todas las piezas con una caché por escena y por alcance.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -41,13 +41,25 @@ export function explodeIdsOf(objects: readonly SceneObject[], groups: readonly S
   return new Set(objects.filter((o) => o.metadata?.split?.groupId === id).map((o) => o.id));
 }
 
-let cache: { objects: readonly SceneObject[]; groups: readonly SceneGroup[]; fe: FigureExplode; positions: Map<string, Vec3> } | null = null;
+/** Alcances recordados por escena: alternar entre unos pocos (figura, grupos) no recalcula; más que esto, se olvida el más viejo. */
+const MAX_SCOPES_PER_SCENE = 8;
+/** Caché por escena (objetos y grupos, por identidad: una escena nueva se libera sola) y, dentro, por alcance y factor. */
+const cache = new WeakMap<readonly SceneObject[], WeakMap<readonly SceneGroup[], Map<string, Map<string, Vec3>>>>();
 
-/** Posiciones separadas de toda la escena para `fe` (una sola vez por cambio de objetos o de separación). */
+const scopeKey = (fe: FigureExplode) => `${fe.scope}|${fe.groupKey ?? ''}|${fe.factor}`;
+
+/** Posiciones separadas de la escena para `fe`, una sola vez por escena y alcance (toda la figura o un grupo). */
 export function figureExplodePositions(objects: readonly SceneObject[], groups: readonly SceneGroup[], fe: FigureExplode): Map<string, Vec3> {
-  if (cache && cache.objects === objects && cache.groups === groups && cache.fe === fe) return cache.positions;
+  let byGroups = cache.get(objects);
+  if (!byGroups) cache.set(objects, (byGroups = new WeakMap()));
+  let byScope = byGroups.get(groups);
+  if (!byScope) byGroups.set(groups, (byScope = new Map()));
+  const key = scopeKey(fe);
+  const hit = byScope.get(key);
+  if (hit) return hit;
   const positions = explodedFigurePositions(objects, explodeIdsOf(objects, groups, fe), fe.factor);
-  cache = { objects, groups, fe, positions };
+  if (byScope.size >= MAX_SCOPES_PER_SCENE) byScope.delete(byScope.keys().next().value!);
+  byScope.set(key, positions);
   return positions;
 }
 
