@@ -16,6 +16,7 @@ import { historyTimeline } from '../historyLabels';
 import {
   applyPlateArrange, closePlateArrangePanel, openPlateArrangePanel, refreshPlateArrangePreview, setPlateArrangeOptions, usePlateArrangePanel,
 } from '../plateArrangePanel';
+import { newPlatesUsed } from '../../core/scene/plateArrangeTypes';
 import { useKuraStore } from '../useKuraStore';
 import { addBox, resetStore, store } from './storeTestUtils';
 
@@ -107,6 +108,23 @@ describe('panel Repartir en placas: lógica', () => {
     expect(store().toasts.filter((x) => x.text.includes('repartid'))).toHaveLength(1);
     toast!.action!.run();
     expect(store().plates).toHaveLength(0);
+  });
+
+  it('el aviso de Repartir dice las mismas placas y nuevas que la vista previa (no «existentes» si una es nueva)', async () => {
+    await addBox(120, [0, 0, 0]);
+    await addBox(120, [10, 0, 0]);
+    await addBox(120, [20, 0, 0]);
+    store().setSelection([]);
+    store().createPlate();
+    openPlateArrangePanel();
+    await refreshPlateArrangePreview();
+    const preview = panel().preview!.report;
+    const created = newPlatesUsed(preview);
+    expect(created).toBeGreaterThan(0);
+    expect(await applyPlateArrange()).toBe(true);
+    const toast = store().toasts.find((x) => x.text.includes('repartid'))!;
+    expect(toast.text).not.toContain('existente');
+    expect(toast.text).toContain(`en ${preview.platesUsed.length} placas (${created} ${created === 1 ? 'nueva' : 'nuevas'})`);
   });
 
   it('desde Imprimir no cambia de vista y lista lo que no cupo en un aviso aparte', async () => {
