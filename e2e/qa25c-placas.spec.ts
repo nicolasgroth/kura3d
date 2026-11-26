@@ -192,7 +192,7 @@ for (const size of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }])
       const pasos = await st(page, (s) => s.past.length);
       await page.getByTestId('plate-delete').click();
       await page.getByRole('dialog').getByRole('button', { name: 'Borrar placa' }).click();
-      await expect(tira(page)).toHaveCount(0);
+      await expect(tira(page)).toHaveAttribute('data-short', 'true'); // con una sola placa queda la tira corta
       expect(await st(page, (s) => s.past.length)).toBe(pasos + 1);
       await undo(page);
       await expect(ficha(page, 'Placa 2')).toContainText('1 pieza');

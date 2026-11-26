@@ -139,7 +139,7 @@ for (const width of [1024, 1280]) {
       await expect(ficha(page, 'Placa 2')).toBeVisible();
       await page.getByTestId('plate-delete').click();
       await page.getByRole('dialog').getByRole('button', { name: 'Borrar placa' }).click();
-      await expect(tira(page)).toHaveCount(0);
+      await expect(tira(page)).toHaveAttribute('data-short', 'true'); // con una sola placa queda la tira corta (selector de vista)
       expect(await store(page, (s) => s.objects[0].position[0])).toBeCloseTo(0, 3);
       await undo(page);
       await expect(ficha(page, 'Placa 2')).toContainText('1 pieza');
@@ -174,7 +174,7 @@ for (const width of [1024, 1280]) {
       await undo(page);
       await expect(ficha(page, 'Placa 2')).toBeVisible();
       await undo(page);
-      await expect(tira(page)).toHaveCount(0);
+      await expect(tira(page)).toHaveAttribute('data-short', 'true');
     });
   });
 }

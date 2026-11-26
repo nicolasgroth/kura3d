@@ -13,6 +13,10 @@ updates:
     groups:
       web:
         patterns: ["*"]
+    # Los tipos de Node siguen a la versión de Node que usa el proyecto (22): no se sube de versión mayor por separado.
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "npm"
     directory: "/mcp-server"
@@ -22,6 +26,10 @@ updates:
     groups:
       mcp:
         patterns: ["*"]
+    # Los tipos de Node siguen a la versión de Node que usa el proyecto (22): no se sube de versión mayor por separado.
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "cargo"
     directory: "/src-tauri"
