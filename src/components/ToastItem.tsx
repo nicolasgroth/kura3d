@@ -45,6 +45,10 @@ export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
     [toast.action, toast.secondaryAction, objects, past],
   );
 
+  // Una acción que ya no es aplicable (su paso se deshizo por otra vía o el historial avanzó) deja de ofrecerse:
+  // «Deshacer» nunca debe revertir otra cosa. `past` entra en las dependencias del componente, así que se reevalúa.
+  const actionLive = (a: ToastAction) => !a.applicable || a.applicable();
+
   useEffect(() => {
     if (paused || sticky) return undefined;
     const started = Date.now();
@@ -74,10 +78,10 @@ export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
       }}
     >
       <span>{toast.text}</span>
-      {toast.action && (
+      {toast.action && actionLive(toast.action) && (
         <ToastActionButton action={toast.action} className="kura-btn kura-btn-sm kura-toast-action" onRun={() => runToastAction(toast.id, toast.action!)} />
       )}
-      {toast.secondaryAction && (
+      {toast.secondaryAction && actionLive(toast.secondaryAction) && (
         <ToastActionButton
           action={toast.secondaryAction}
           className="kura-btn kura-btn-sm kura-btn-ghost kura-toast-action is-secondary"
