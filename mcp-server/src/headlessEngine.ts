@@ -533,12 +533,14 @@ export class KuraHeadlessEngine {
 
   /**
    * Simplifica con verificación (`simplify_mesh`): un número es «Por tolerancia»; si no, la petición con su modo.
-   * Misma operación y mismo informe que el bus; si no se aplica (`applied: false`) la escena no cambia.
+   * Misma operación y mismo informe que el bus; si no se aplica (`applied: false`) o es `dryRun`, la escena no cambia.
    */
-  async simplifyMesh(objectId: string, request: number | SimplifyRequest) {
+  async simplifyMesh(objectId: string, request: number | SimplifyRequest, dryRun = false) {
     const obj = this.requireEditable(objectId);
     const trianglesBefore = obj.stats.triangles;
     const change = await ops.simplifyObject(this.ctx, obj, request);
+    // `dryRun`: el mismo informe sin aplicar (vista previa).
+    if (dryRun) return { id: obj.id, dryRun: true, ...simplifyReportToUser(change.simplify!.report), object: userSummary(obj), trianglesBefore };
     this.apply(change);
     // Avisos generales del motor (`SIMPLIFY_VOLUME_CHANGED`, soldadura implícita); los de la verificación van en `checks`.
     const warnings = change.warnings.length > 0 ? { warnings: ua.userWarnings(change.warnings) } : {};
@@ -548,7 +550,7 @@ export class KuraHeadlessEngine {
   /** `simplify_mesh` con los parámetros crudos del comando (mismo esquema que el bus). */
   simplifyMeshParams(params: Record<string, unknown>) {
     const objectId = typeof params.objectId === 'string' ? params.objectId : String(params.id ?? '');
-    return this.simplifyMesh(objectId, parseSimplifyRequest(params));
+    return this.simplifyMesh(objectId, parseSimplifyRequest(params), params.dryRun === true);
   }
 
   /** Refina (y suaviza opcionalmente) con `refineMesh` del motor. */

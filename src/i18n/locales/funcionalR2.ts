@@ -60,12 +60,12 @@ const FUNCIONAL_R2 = {
     zh: '安全版本：{tris} 个三角形，体积 {pct} %，偏差 {mm} mm，孔 {genus}。',
   },
   'simplify.blocked.noSafe': {
-    es: 'No se halló una versión más liviana que conserve la pieza.',
-    en: 'No lighter version that keeps the part was found.',
-    de: 'Es wurde keine leichtere Version gefunden, die das Teil erhält.',
-    fr: 'Aucune version plus légère qui conserve la pièce n’a été trouvée.',
-    hi: 'पुर्ज़े को बचाए रखने वाला कोई हल्का संस्करण नहीं मिला।',
-    zh: '未找到能保留零件的更轻版本。',
+    es: 'No hay una reducción segura para esta pieza: ninguna versión que la conserve baja al menos {pct} % los triángulos.',
+    en: 'There is no safe reduction for this part: no version that keeps it removes at least {pct} % of the triangles.',
+    de: 'Für dieses Teil gibt es keine sichere Reduktion: Keine Version, die es erhält, entfernt mindestens {pct} % der Dreiecke.',
+    fr: 'Il n’y a pas de réduction sûre pour cette pièce : aucune version qui la conserve ne retire au moins {pct} % des triangles.',
+    hi: 'इस पुर्ज़े के लिए कोई सुरक्षित कमी नहीं है: इसे बचाए रखने वाला कोई संस्करण कम से कम {pct} % त्रिकोण नहीं घटाता।',
+    zh: '此零件没有安全的简化方式：没有任何能保留零件的版本能减少至少 {pct} % 的三角形。',
   },
   'simplify.blocked.applySafe': {
     es: 'Aplicar la versión segura ({tris} triángulos)',

@@ -14,7 +14,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { SimplifyReportView } from '../inspector/SimplifyReportView';
 
 const BASE: SimplifyReport = {
-  mode: 'lossless', applied: false, toleranceMm: 0.001, trianglesBefore: 12, trianglesAfter: 12, volumeBeforeMm3: 1000,
+  mode: 'lossless', applied: false, appliedVariant: 'none', toleranceMm: 0.001, trianglesBefore: 12, trianglesAfter: 12, volumeBeforeMm3: 1000,
   volumeAfterMm3: 1000, volumeChangePct: 0, genusBefore: 0, genusAfter: 0, maxDeviationMm: 0, deviationSamples: 0,
   warnings: ['no_reduction'], rejectedBy: [], ms: 1,
 };
@@ -55,7 +55,7 @@ describe('SimplifyReportView', () => {
       expect(screen.getByTestId('simplify-blocked-safe').textContent).toContain('300');
       expect(screen.getByTestId('simplify-apply-safe').textContent).toBe('Aplicar la versión segura (300 triángulos)');
       fireEvent.click(screen.getByTestId('simplify-apply-anyway'));
-      expect(calls[0]).toEqual(['t1', { mode: 'target', targetTriangles: 40, allowDestructive: true }]);
+      expect(calls[0]).toEqual(['t1', { mode: 'target', targetTriangles: 40, onDestructive: 'force' }]);
       await act(async () => { await Promise.resolve(); });
       expect(screen.queryByTestId('simplify-blocked')).toBeNull();
     } finally {

@@ -1,8 +1,9 @@
 /**
  * @file src/components/inspector/SimplifySection.tsx
  * @description Simplificar dentro del panel de malla: selector de modo («Sin pérdida», «Por tolerancia», «Por
- * cantidad»), los campos del modo, el botón (un paso de deshacer al aplicar) y el informe antes → después con sus
- * avisos. La tolerancia vive en el estado del inspector para sobrevivir a cambios de selección.
+ * cantidad»), los campos del modo, «Vista previa» (calcula el mismo informe en el Worker sin aplicar; se cancela en
+ * suave al cambiar parámetros, pieza o malla, y «Simplificar» reutiliza el cálculo si nada cambió), el botón (un paso
+ * de deshacer al aplicar) y el informe antes → después con sus avisos. La tolerancia vive en el estado del inspector para sobrevivir a cambios de selección.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -18,6 +19,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import type { useInvalidFields } from '../useInvalidFields';
+import { simplifySignature } from '../../store/slices/simplifyPreviewSlice';
 import { SIMPLIFY_REQUEST_FRESH_MS, suggestHeavyTarget } from './simplifyPanelRequest';
 import { SimplifyReportView } from './SimplifyReportView';
 import '../../styles/simplifyPanel.css';
@@ -36,6 +38,10 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   const language = useKuraStore((s) => s.language);
   const busy = Boolean(useKuraStore((s) => s.busyOperation));
   const simplifySelectedMesh = useKuraStore((s) => s.simplifySelectedMesh);
+  const previewSession = useKuraStore((s) => s.simplifyPreview);
+  const previewSimplify = useKuraStore((s) => s.previewSimplify);
+  const cancelSimplifyPreview = useKuraStore((s) => s.cancelSimplifyPreview);
+  const clearSimplifyPreview = useKuraStore((s) => s.clearSimplifyPreview);
   const [mode, setMode] = useState<SimplifyMode>('lossless');
   const [targetKind, setTargetKind] = useState<TargetKind>('percent');
   const [targetPercent, setTargetPercent] = useState(50);
@@ -75,6 +81,22 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
     if (mode === 'tolerance') return { mode, toleranceMm };
     return targetKind === 'percent' ? { mode, targetPercent } : { mode, targetTriangles: count };
   };
+  // Cambiar parámetros, pieza o malla invalida la vista previa (cancelación suave); también al cerrar el panel.
+  const signature = simplifySignature(request());
+  useEffect(() => {
+    if (useKuraStore.getState().simplifyPreview) clearSimplifyPreview();
+  }, [signature, primary.id, primary.mesh, clearSimplifyPreview]);
+  useEffect(() => () => useKuraStore.getState().clearSimplifyPreview(), []);
+  const previewing = previewSession?.objectId === primary.id && previewSession.status === 'computing';
+  const previewReady = previewSession?.objectId === primary.id && previewSession.status === 'ready' && previewSession.signature === signature
+    ? previewSession.report : null;
+  const previewError = previewSession?.objectId === primary.id && previewSession.status === 'error' ? previewSession.error : null;
+  const runPreview = () => {
+    if (busy || primary.locked || invalid.blocked || previewing) return;
+    setLast(null);
+    void previewSimplify(primary.id, request());
+  };
+
   const run = () => {
     if (busy || primary.locked || invalid.blocked) return;
     const id = primary.id;
@@ -178,16 +200,39 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
         </>
       )}
 
-      <button
-        type="button"
-        className="kura-btn kura-btn-sm kura-btn-primary kura-simplify-run"
-        disabled={busy || primary.locked || invalid.blocked}
-        onClick={run}
-      >
-        {t(language, 'inspector.pro.simplifyBtn')}
-      </button>
+      <div className="kura-simplify-actions">
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm"
+          data-testid="simplify-preview"
+          title={t(language, 'simplify.preview.btnHint')}
+          disabled={busy || primary.locked || invalid.blocked || previewing}
+          onClick={runPreview}
+        >
+          {t(language, 'simplify.preview.btn')}
+        </button>
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm kura-btn-primary kura-simplify-run"
+          disabled={busy || primary.locked || invalid.blocked}
+          onClick={run}
+        >
+          {t(language, 'inspector.pro.simplifyBtn')}
+        </button>
+      </div>
+      {previewing && (
+        <p className="kura-cut-hint" role="status" data-testid="simplify-preview-computing">
+          {t(language, 'simplify.preview.computing')}{' '}
+          <button type="button" className="kura-btn kura-btn-sm" data-testid="simplify-preview-cancel" onClick={cancelSimplifyPreview}>
+            {t(language, 'simplify.preview.cancel')}
+          </button>
+        </p>
+      )}
+      {previewError && <p className="kura-cut-hint" role="alert" data-testid="simplify-preview-error">{previewError}</p>}
 
-      {last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} onUndo={undoStep?.applicable?.() ? undoStep.run : undefined} />}
+      {previewReady
+        ? <SimplifyReportView report={previewReady} language={language} preview />
+        : last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} onUndo={undoStep?.applicable?.() ? undoStep.run : undefined} />}
     </div>
   );
 };

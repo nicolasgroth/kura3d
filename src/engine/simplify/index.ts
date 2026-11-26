@@ -8,6 +8,6 @@
 
 export * from './simplifyTypes';
 export { bodyGenus } from './simplifyGenus';
-export { destructiveReasons, destructiveDeviationMm, findSafeAlternative, worldDiagonalMm } from './simplifySafety';
+export { destructiveReasons, destructiveDeviationMm, findSafeAlternative, isUsefulSafeReduction, worldDiagonalMm } from './simplifySafety';
 export { simplifyMeshDetailed, resolveTargetTriangles, type SimplifyDetailedResult } from './simplifyDetailed';
 export { sampledDeviation, manifoldMesh, bvhOf, maxDistanceTo, type SampledDeviation } from './simplifyDeviation';

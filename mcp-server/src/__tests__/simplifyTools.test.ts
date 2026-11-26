@@ -39,7 +39,7 @@ async function connect() {
 
 /** Campos del informe: los mismos que devuelve `simplify_mesh` en la app. */
 const REPORT_KEYS = [
-  'id', 'mode', 'applied', 'toleranceMm', 'trianglesBefore', 'trianglesAfter', 'volumeBeforeMm3', 'volumeAfterMm3',
+  'id', 'mode', 'applied', 'appliedVariant', 'toleranceMm', 'trianglesBefore', 'trianglesAfter', 'volumeBeforeMm3', 'volumeAfterMm3',
   'volumeChangePct', 'genusBefore', 'genusAfter', 'maxDeviationMm', 'deviationSamples', 'checks', 'rejectedBy',
 ];
 
@@ -78,12 +78,13 @@ describe('MCP: kura_simplify_mesh con modos', () => {
     expect(res.trianglesAfter).toBeGreaterThan(res.target.triangles * 0.8);
   });
 
-  it('destructivo: no aplica, trae safe y allowDestructive lo fuerza', async () => {
+  it('destructivo con onDestructive block: no aplica, trae safe y allowDestructive lo fuerza', async () => {
     const { call, headless } = await connect();
     const torus = await call('kura_create_primitive', { primitiveType: 'torus', params: { outerRadius: 14, tubeRadius: 4, segments: 48 }, placement: 'origin' });
     const positions = Array.from(headless.getObject(torus.id).mesh.positions);
-    const res = await call('kura_simplify_mesh', { objectId: torus.id, targetPercent: 2 });
+    const res = await call('kura_simplify_mesh', { objectId: torus.id, targetPercent: 2, onDestructive: 'block' });
     expect(res.applied).toBe(false);
+    expect(res.appliedVariant).toBe('none');
     expect(res.destructive.length).toBeGreaterThan(0);
     expect(res.safe).toMatchObject({ triangles: expect.any(Number), toleranceMm: expect.any(Number), maxDeviationMm: expect.any(Number) });
     expect(Array.from(headless.getObject(torus.id).mesh.positions)).toEqual(positions);
@@ -93,6 +94,21 @@ describe('MCP: kura_simplify_mesh con modos', () => {
     const again = await call('kura_create_primitive', { primitiveType: 'torus', params: { outerRadius: 14, tubeRadius: 4, segments: 48 }, placement: 'origin' });
     const forced = await call('kura_simplify_mesh', { objectId: again.id, targetPercent: 2, allowDestructive: true });
     expect(forced).toMatchObject({ applied: true, forced: true });
+  });
+
+  it('por defecto aplica la versión segura; dryRun da el mismo informe sin tocar la escena', async () => {
+    const { call, headless } = await connect();
+    const torus = await call('kura_create_primitive', { primitiveType: 'torus', params: { outerRadius: 14, tubeRadius: 4, segments: 48 }, placement: 'origin' });
+    const positions = Array.from(headless.getObject(torus.id).mesh.positions);
+    const dry = await call('kura_simplify_mesh', { objectId: torus.id, targetPercent: 2, dryRun: true });
+    expect(dry).toMatchObject({ dryRun: true, applied: true, appliedVariant: 'safe' });
+    expect(Array.from(headless.getObject(torus.id).mesh.positions)).toEqual(positions);
+    const res = await call('kura_simplify_mesh', { objectId: torus.id, targetPercent: 2 });
+    expect(res).toMatchObject({ applied: true, appliedVariant: 'safe', trianglesAfter: dry.trianglesAfter });
+    expect(res.dryRun).toBeUndefined();
+    expect(res.requested.triangles).toBeLessThan(res.trianglesAfter);
+    expect(res.trianglesAfter).toBe(res.safe.triangles);
+    expect(headless.getObject(torus.id).stats.triangles).toBe(res.trianglesAfter);
   });
 
   it('sin reducción: applied false y la malla no cambia', async () => {

@@ -163,7 +163,7 @@ describe('simplifyMeshDetailed — por cantidad', () => {
 describe('simplifyMeshDetailed — avisos', () => {
   it('cerrar un agujero chico cambia el género: Sin pérdida no aplica y por tolerancia avisa', async () => {
     const plate = await plateWithHole(0.3, 8);
-    const loose = await simplifyMeshDetailed(makeObject('p', plate), { mode: 'tolerance', toleranceMm: 1 });
+    const loose = await simplifyMeshDetailed(makeObject('p', plate), { mode: 'tolerance', toleranceMm: 1, onDestructive: 'block' });
     expect(loose.report.genusAfter).not.toBe(1);
     expect(loose.report.warnings).toContain('genus_changed');
   });

@@ -317,8 +317,13 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   },
 
   // Devuelve el informe aunque no se aplique (sin reducción o «Sin pérdida» rechazado: `applied: false`).
+  // `dryRun`: el mismo informe sin tocar la escena ni el historial (queda guardado: aplicar después no recalcula).
   simplify_mesh: async (p, { get }, command) => {
-    const { target, request } = schema.parseSimplify(get(), p);
+    const { target, request, dryRun } = schema.parseSimplify(get(), p);
+    if (dryRun) {
+      const previewed = required(await get().previewSimplify(target.id, request, { rethrow: true }), command);
+      return { id: target.id, dryRun: true, ...simplifyReportToUser(previewed) };
+    }
     let report: SimplifyReport | null = null;
     await get().simplifySelectedMesh(target.id, request, { onReport: (r) => { report = r; } });
     const done = required(report as SimplifyReport | null, command);

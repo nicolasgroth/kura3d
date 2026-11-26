@@ -63,9 +63,15 @@
   color: var(--text-primary);
 }
 
-/* La acción principal del panel ocupa el ancho y no se confunde con los botones secundarios. */
-.kura-simplify-run {
+/* La acción principal del panel ocupa el resto del ancho y no se confunde con «Vista previa» (secundario). */
+.kura-simplify-actions {
+  display: flex;
+  gap: 6px;
   align-self: stretch;
+}
+
+.kura-simplify-run {
+  flex: 1;
   font-weight: 600;
 }
 
