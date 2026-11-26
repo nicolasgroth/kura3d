@@ -809,3 +809,46 @@ Sobre `main` 32bd3ed. Evaluadores Opus nuevos. Sin bloqueos duros. **Los tres ev
 
 Consumo (modelo · duración · tokens): funcional (Opus · 15 min · 202 k), código (Opus · 6 min · 165 k), QA25-E (Sonnet · 54 min · 213 k), exportar por placa (Opus · 29 min · 283 k), correcciones de código R2 (Opus · 34 min · 288 k), usabilidad C (Sonnet · 30 min · 314 k), Simplificar seguro (Opus · 52 min · 363 k).
 
+## 26-nov-2026 · Noche del 25 al 26: tres tandas, dos QA y evaluación de código
+
+Tres tandas integradas en `main` (c7e5767): 4234 pruebas del frontend y 185 del servidor MCP en verde. Hubo dos cortes por límite de uso: a las 15:10 del 25 (semanal; reanudado a las 22:20) y a la 01:45 del 26 (ventana de 5 horas; reanudado a las 03:10).
+
+**QA25-G en navegador, primera tanda** (Sonnet · 89 min · 251 k; sobre fbcbf61). Sin bloqueos duros.
+
+| Bloque | Veredicto | Hallazgos |
+|---|---|---|
+| Paneles con «Volver» | Con observaciones | Mayor: Medir sin «Volver» (corregido: faltaba en las siete herramientas). Menores: títulos cortados en cuatro paneles, primer Esc consumido por el tooltip, visor de 398 px a 1024 (todos corregidos) |
+| Vistas Imprimir / Armado / Libre | Aprobado | 32 de 36 recorridos al primer intento; los 4 restantes eran suposiciones de la prueba. La barra flotante tapaba el deslizador de separación (corregido) |
+| Repartir y una placa por objeto | Aprobado | 12 piezas en una placa sin solapes; pieza mayor que la cama queda fuera con aviso |
+| Marca | Aprobado | Logo según tema en 6 temas, claro y oscuro; contraste 5,8 a 14,5 |
+| Atajos | Aprobado | 19 atajos; H y L con 3 piezas dejan un paso de deshacer |
+
+**QA25-H en navegador, segunda tanda** (Sonnet · 71 min · 290 k; sobre b9ecf9b). **Rechazada por un fallo mayor**, sin bloqueos duros.
+
+| Bloque | Veredicto | Hallazgos |
+|---|---|---|
+| Simplificar | Rechazado | Mayor: la esfera por defecto (512 triángulos) al 50 % queda bloqueada, porque su versión segura solo baja 7 % y se descarta. En corrección: dos niveles (aviso / destructivo). Menor: dos juegos de límites en el mismo informe. Aprobado el resto: vista previa, figura real de 478 mil triángulos, pieza descentrada |
+| Imanes rectangulares | Aprobado, parcial | Panel y orientación correctos. Sin cubrir: dividir con cuadrados y rectangulares, y el modelo de 5 piezas |
+| Repartir en placas | Aprobado con menores | «Se usarán 1 placa: 2 nuevas» (concordancia y cifras). No encontró el botón «Repartir…» en la tira: en verificación |
+| Firmeza de las uniones | Aprobado, parcial | Firmes, para pegar y débiles con sus botones. «Una parte de la sección mide 2 mm» en una sección de 4 mm es ambiguo. Sin cubrir: trazos del resalte y tema oscuro |
+
+**Evaluación de código a ciegas de lo de la noche** (Opus · 7 min · 185 k; sobre b9ecf9b). Nota global **85**, sin bloqueos ni fallos de seguridad.
+
+| Funcionalidad | Nota | Lo que más resta |
+|---|---|---|
+| Vistas Imprimir / Armado / Libre | 88 | Caché de módulo de una sola entrada |
+| Marca | 88 | El texto del logo depende de las fuentes del equipo |
+| Imanes rectangulares y unión del corte | 87 | El ángulo principal asumía contornos antihorarios (corregido) |
+| Atajos de teclado en tabla | 86 | H cambiaba piezas bloqueadas (corregido); Esc procesado en dos lugares (en corrección) |
+| Simplificar: vista previa y variantes | 85 | Volumen del informe en unidades locales (corregido) |
+| Paneles con un solo patrón | 84 | Foco y Esc duplicados en dos implementaciones (en corrección) |
+| Herramientas MCP de placas | 84 | La app y el modo sin interfaz no coincidían en vista de armado (corregido) |
+| Firmeza de las uniones en Dividir | 84 | Coherencia entre campos del archivo (corregido) |
+| Repartir en placas | 80 | Con cama propia más grande, una pieza salía como «no cabe» (corregido en el lote de cama por placa) |
+
+**Pendiente al cierre de este registro (03:30):** QA en navegador de la tercera tanda (cama por placa, datos del proyecto, fantasma de Simplificar, «Volver» en herramientas), reanudada tras el corte; evaluación funcional y de usabilidad de lo de la noche; capturas y guías.
+
+**Aprendizajes de proceso.** (1) Con seis o siete agentes en paralelo la ventana de 5 horas se agota en unas 3,5: conviene dejar la QA y el cierre de documentación fuera del pico. (2) Las suites completas de varios agentes a la vez dan tiempos de espera falsos en pruebas con motor; cada agente las corre una sola vez al final. (3) Un agente que se corta antes de crear su copia de trabajo no deja nada: al reanudarlo hay que decirle que parta de cero. (4) Los recorridos de detección con umbrales propios de la QA no van a la suite: se guardan aparte.
+
+Consumo (modelo · duración · tokens): atajos (Sonnet · 34 min · 205 k), paneles «Volver» (Sonnet · 8 min · 129 k), marca y una placa por objeto (Sonnet · 13 min · 160 k), vista de armado (Sonnet · 22 min · 284 k), repartir automático (Opus · 24 min · 265 k), Simplificar con vista previa (Opus · 35 min · 275 k), imanes rectangulares (Opus · 50 min · 330 k), panel de repartir (Sonnet · 25 min · 236 k), uniones firmes (Sonnet · 30 min · 274 k), MCP de placas (Opus · 34 min · 301 k), fantasma de Simplificar (Sonnet · 24 min · 206 k), correcciones QA25-G (Sonnet · 22 min · 212 k), datos del proyecto (Sonnet · 30 min · 282 k), correcciones de código (Opus · 42 min · 258 k), cama por placa (Opus · 53 min · 397 k), guías y capturas (Sonnet · 12 min tras reanudar · 208 k).
+
