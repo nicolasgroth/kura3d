@@ -1,6 +1,6 @@
 # Asistentes
 
-Un asistente crea una pieza completa a partir de unas pocas preguntas: eliges las medidas, y Kurra Studio arma la pieza (o varias, como una caja y su tapa) lista para revisar, dividir o exportar. Hoy vienen tres: **Caja con tapa**, **Llavero con texto** y **Placa de enchufe**. Cada uno está hecho con una *receta*, un archivo de datos (sin código) que describe sus preguntas, sus reglas y los pasos para construir la pieza.
+Un asistente crea una pieza completa a partir de unas pocas preguntas: eliges las medidas, y Kurra Studio arma la pieza (o varias, como una caja y su tapa) lista para revisar, dividir o exportar. Hoy vienen cuatro: **Caja con tapa**, **Recipiente con tapa roscada** (ver [su guía](tapa-roscada.md)), **Llavero con texto** y **Placa de enchufe**. Cada uno está hecho con una *receta*, un archivo de datos (sin código) que describe sus preguntas, sus reglas y los pasos para construir la pieza.
 
 Los asistentes solo preparan la geometría. No laminan ni generan G-code.
 
@@ -73,4 +73,4 @@ Algunos asistentes traen **variantes**: conjuntos de medidas ya preparados, como
 - **La vista previa no aparece:** el interruptor **Vista previa** está apagado, o el formulario tiene un error. Si dice *pausada*, pulsa **Actualizar**.
 - **`Esc`:** dentro de un formulario vuelve a la lista; desde la lista cierra el panel. El botón **Volver** del encabezado hace lo mismo con el mouse.
 
-Anterior: [Generadores](generadores.md) · Siguiente: [Alojamiento de imán](alojamiento-de-iman.md) · [Índice](README.md)
+Anterior: [Generadores](generadores.md) · Siguiente: [Recipiente con tapa roscada](tapa-roscada.md) · [Índice](README.md)

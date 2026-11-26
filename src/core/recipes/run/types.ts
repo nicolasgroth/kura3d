@@ -31,8 +31,22 @@ export interface RunInput {
   readonly now?: () => number;
 }
 
-/** Aviso de un chequeo de la receta (`checks`). */
-export interface RecipeCheckWarning {
+/** Resultado del chequeo `screw_fit`: siempre se informa (también cuando enrosca bien). */
+export interface RecipeScrewFitCheck {
+  readonly kind: 'screw_fit';
+  /** Paso de la tapa. */
+  readonly ref: string;
+  readonly onFail: 'warn';
+  readonly status: 'ok' | 'tight' | 'interference';
+  readonly fits: boolean;
+  readonly minClearanceMm: number;
+  readonly maxInterferenceMm3: number;
+}
+
+/** Aviso o resultado de un chequeo de la receta (`checks`). */
+export type RecipeCheckWarning = RecipeBedCheck | RecipeScrewFitCheck;
+
+export interface RecipeBedCheck {
   readonly kind: 'fits_bed';
   readonly ref: string;
   readonly onFail: 'offer_split' | 'warn';

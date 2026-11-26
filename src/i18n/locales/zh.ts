@@ -59,6 +59,7 @@ import { REALESUI_ZH } from './realesUi';
 import { UX6_ZH } from './ux6';
 import { RECETAS_ZH } from './recetas';
 import { ASISTENTES_ZH } from './asistentes';
+import { ROSCA_ENROSCA_ZH } from './roscaEnrosca';
 import { ACERCA_ZH } from './acercaDe';
 import { IMAN_ZH } from './iman';
 import { IMAN_UI3_ZH } from './imanUi3';
@@ -136,6 +137,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...UX6_ZH,
   ...RECETAS_ZH,
   ...ASISTENTES_ZH,
+  ...ROSCA_ENROSCA_ZH,
   ...IMAN_ZH,
   ...IMAN_UI3_ZH,
   ...BORDES_ZH,

@@ -106,6 +106,7 @@ describe('ejecutor: caja con tapa a presión', () => {
       recipe: clone(EXAMPLES.caja), answers: { w: 300 }, options: { bed: { w: 220, d: 220, h: 250 } },
     }));
     expect(result.checks.map((c) => [c.ref, c.onFail])).toEqual([['box', 'offer_split'], ['lidout', 'offer_split']]);
-    expect(result.checks[0].size[0]).toBeCloseTo(304, 4);
+    const first = result.checks[0];
+    expect(first.kind === 'fits_bed' ? first.size[0] : NaN).toBeCloseTo(304, 4);
   });
 });

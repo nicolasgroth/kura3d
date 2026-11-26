@@ -24,6 +24,8 @@ import {
 } from '../../engine/threads';
 import { ISO_THREAD_PRESET_GROUPS } from './dialogPresets';
 import { defaultThreadLength } from './threadLengthDefaults';
+import { ThreadPairOption, useCreateThreadPair } from './ThreadPairOption';
+import type { ThreadPairKind } from '../../core/operations/screwContainerOperations';
 
 /** Modal 6: Generador Paramétrico de Roscas Métricas ISO (M3–M64). */
 export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
@@ -36,6 +38,9 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
   const [lengthMm, setLengthMm] = useState(20);
   const [clearanceMm, setClearanceMm] = useState(() => defaultThreadClearance(1.25));
   const [includeHead, setIncludeHead] = useState(true);
+  // Pareja que enrosca (perno + tuerca o agujero + perno), con la holgura aplicada y verificada.
+  const [pair, setPair] = useState<ThreadPairKind | null>(null);
+  const createPair = useCreateThreadPair();
   // El largo por defecto sigue al diámetro y al tipo (perno ≈ 2,5·d, tuerca ≈ 0,8·d) hasta que el usuario lo edite.
   const lengthEdited = useRef(false);
   const syncLength = (diameter: number, nextKind: ThreadOptions['kind']) => {
@@ -71,7 +76,8 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
 
   const handleExecute = async () => {
     if (blocked) return;
-    const { result: created } = await failure.run(() => createThreadObject(threadOptions));
+    const { result: created } = await failure.run<boolean>(async () =>
+      pair ? createPair({ pair, diameterMm, pitchMm, lengthMm, clearanceMm }) : (await createThreadObject(threadOptions)) !== null);
     if (created) onClose();
   };
 
@@ -87,11 +93,11 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
             className="kura-btn kura-btn-primary"
             disabled={blocked}
             aria-describedby={blocked ? `${uid}-invalid` : undefined}
-            title={blocked ? t(language, 'dialog.thread.invalidFields') : t(language, 'dialog.thread.execute')}
+            title={blocked ? t(language, 'dialog.thread.invalidFields') : t(language, pair ? 'dialog.thread.pairTip' : 'dialog.thread.execute')}
             onClick={() => void handleExecute()}
           >
             <Bolt size={14} />
-            <span>{t(language, 'dialog.thread.execute')}</span>
+            <span>{t(language, pair ? 'dialog.thread.executePair' : 'dialog.thread.execute')}</span>
           </button>
         </>
       }
@@ -148,24 +154,28 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
         ))}
       </div>
 
+      <ThreadPairOption value={pair} onChange={setPair} />
+
       <div className="kura-form-grid">
-        <div className="kura-form-field">
-          <label htmlFor="thread-kind">{t(language, 'dialog.thread.kind')}</label>
-          <select
-            id="thread-kind"
-            className="kura-select"
-            value={kind}
-            onChange={(e) => {
-              const next = e.target.value as ThreadOptions['kind'];
-              setKind(next);
-              syncLength(diameterMm, next);
-            }}
-          >
-            <option value="bolt">{t(language, 'dialog.thread.kindBolt')}</option>
-            <option value="nut">{t(language, 'dialog.thread.kindNut')}</option>
-            <option value="hole">{t(language, 'dialog.thread.kindHole')}</option>
-          </select>
-        </div>
+        {pair === null && (
+          <div className="kura-form-field">
+            <label htmlFor="thread-kind">{t(language, 'dialog.thread.kind')}</label>
+            <select
+              id="thread-kind"
+              className="kura-select"
+              value={kind}
+              onChange={(e) => {
+                const next = e.target.value as ThreadOptions['kind'];
+                setKind(next);
+                syncLength(diameterMm, next);
+              }}
+            >
+              <option value="bolt">{t(language, 'dialog.thread.kindBolt')}</option>
+              <option value="nut">{t(language, 'dialog.thread.kindNut')}</option>
+              <option value="hole">{t(language, 'dialog.thread.kindHole')}</option>
+            </select>
+          </div>
+        )}
 
         <div className="kura-form-field">
           <label htmlFor="thread-diam">{t(language, 'dialog.thread.diameter')}</label>
@@ -239,7 +249,7 @@ export const ThreadModal: React.FC<{ open: boolean; onClose: () => void }> = ({ 
           />
         </div>
 
-        {kind === 'bolt' && (
+        {kind === 'bolt' && pair === null && (
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 18 }}>
             <input
               type="checkbox"

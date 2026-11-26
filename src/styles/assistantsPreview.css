@@ -57,3 +57,27 @@
   gap: 8px;
   margin-top: 8px;
 }
+
+/* Resultado de la comprobación de enroscado (recipiente con tapa roscada) */
+.kura-asis-screwfit {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1 0 100%;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.kura-asis-screwfit svg {
+  flex: none;
+  color: var(--text-secondary);
+}
+
+.kura-asis-screwfit.is-warn {
+  font-weight: 600;
+}
+
+.kura-asis-screwfit.is-warn svg {
+  color: var(--accent-amber);
+}

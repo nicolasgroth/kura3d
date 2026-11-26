@@ -27,7 +27,7 @@ Todo objeto es estricto: un campo desconocido es un error.
 | `presets` | no | variantes `{ id, label, verified, values }` (≤ 64) |
 | `steps` | sí* | pasos `{ id, op, args, when?, pattern?, onError? }` (≤ 128) |
 | `outputs` | sí* | `{ ref: "@paso", name, color?, role? }` (≤ 16); `role` ∈ `solid` (por defecto), `negative`, `reference` |
-| `checks` | no | `{ kind: "fits_bed", refs, onFail: "offer_split" \| "warn" }` |
+| `checks` | no | `{ kind: "fits_bed", refs, onFail: "offer_split" \| "warn" }` o `{ kind: "screw_fit", refs: ["@cuerpo", "@tapa"], onFail: "warn" }` |
 | `assets` | no | recursos embebidos `{ id, kind, data, label? }` (≤ 16) |
 | `strings` | no | `{ es: {clave: texto}, en: {…}, de, fr, hi, zh }` |
 | `extends`, `overrides` | no | receta derivada: `"autor.base@^1"` y `{ param: { default?, min?, max? } }` |
@@ -47,7 +47,7 @@ Todo objeto es estricto: un campo desconocido es un error.
 
 Valor efectivo: **respuesta del usuario > variante elegida > `default`**. Un parámetro oculto (`visibleWhen` falso) o deshabilitado toma su `default` y no se valida.
 
-**Pasos.** `op` es uno de: `create_primitive`, `transform_object`, `boolean_operation`, `convex_hull`, `mirror_object`, `hollow_object`, `create_thread`, `import_svg`, `plane_cut`, `combine_objects`, `align_objects`, `recipe.place`. `args` usa los nombres del Command Bus. En los argumentos, un texto que empieza con:
+**Pasos.** `op` es uno de: `create_primitive`, `transform_object`, `boolean_operation`, `convex_hull`, `mirror_object`, `hollow_object`, `create_thread`, `create_screw_container`, `import_svg`, `plane_cut`, `combine_objects`, `align_objects`, `recipe.place`. `args` usa los nombres del Command Bus. En los argumentos, un texto que empieza con:
 
 - `=` es una expresión;
 - `@` es el resultado de un paso **anterior** (`"@outer"`);
@@ -111,6 +111,7 @@ Kurra Studio ejecuta la receta sobre una **escena de trabajo aislada**: nada ent
 | `mirror_object` | `mirror_object` | `target`, `axis` |
 | `hollow_object` | `hollow_object` | `target`, `wallThickness`, `drainHole`, `drainHoleRadius` |
 | `create_thread` | `create_thread` | `kind`, `diameterMm`, `pitchMm`, `lengthMm`, `clearanceMm`, `includeHead`, `position` |
+| `create_screw_container` | `create_screw_container` (el comando crea el par; el paso, una pieza) | `part` (`body` \| `lid`, obligatorio), `innerDiameterMm` (15–200), `innerHeightMm` (8–250, ≥ largo roscado + 2), `wallMm` (1,2–6), `bottomMm` (0,8–6), `pitchMm` (2–8), `starts` (entero 1–4), `turns` (1–4), `radialClearanceMm` (0–1), `axialClearanceMm` (0–1, cabe en 0,15·paso + holgura radial), `grip` (`knurl` \| `flats` \| `none`), `base` (`round` \| `square`), `position` |
 | `import_svg` | `import_svg` | `svgContent` (`"$asset:id"` o `"=p.archivo"`), `depth`, `targetWidth`, `curveSegments`, `position` |
 | `plane_cut` | `plane_cut` | `target`, `axis`, `offset`, `connectorType`, `connectorSize`, `connectorDepth`, `tolerance`, `connectorCount`, `keepMode` |
 | `combine_objects` | `combine_objects` | `objectIds` (una lista de un elemento pasa igual) |
@@ -129,6 +130,10 @@ Un argumento que la tabla no nombra es error (`run.badArgs`). Las listas de refe
 | Tiempo de pared | 30 s (se revisa antes y después de cada operación) |
 
 **Chequeos.** `fits_bed` compara cada salida con la cama activa y, si no cabe, devuelve un aviso (`offer_split` o `warn`); no divide nada por su cuenta.
+
+`screw_fit` (desde la receta `kura.tapa-roscada`) mide que una tapa enrosque: `refs` son exactamente dos pasos `create_screw_container`, primero el cuerpo (`part: "body"`) y luego la tapa (`part: "lid"`), con las mismas medidas; `onFail` solo admite `warn`. Arma la tapa a tope en el hombro del cuerpo, la desenrosca por la hélice en varias posiciones y en cada una mide con Manifold el volumen de intersección y la holgura mínima (sin contar el asiento). Siempre devuelve un resultado `{ kind: "screw_fit", ref, status: "ok" | "tight" | "interference", fits, minClearanceMm, maxInterferenceMm3 }`, también cuando enrosca bien; nunca cambia lo que se crea. Referencias a otros pasos, al revés o con medidas distintas fallan con `run.badArgs` en `checks[k].refs`.
+
+**Por qué un paso propio y no `create_thread` + booleanas.** La rosca de recipiente no es de tornillería: perfil trapecial a 45°, varias entradas, holgura radial y axial, bisel de entrada y un asiento de tope. Expresarla con primitivas obligaría a abrir el formato a hélices y perfiles arbitrarios; un paso con límites estrictos (los mismos validadores del bus y del MCP) mantiene la receta como datos y deja la verificación de enroscado en el motor.
 
 **Procedencia.** Cada objeto generado guarda `metadata.recipe = { id, version, hash, answers, variant?, output, omitted? }`: `hash` es el SHA-256 del JSON canónico de la receta (claves ordenadas) y `answers`, las respuestas simples que diste. Los archivos y objetos elegidos se nombran en `omitted`. La copia de la receta dentro del proyecto y "Editar asistente" llegan en un lote posterior.
 

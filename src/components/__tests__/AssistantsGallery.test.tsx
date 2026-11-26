@@ -52,7 +52,7 @@ describe('Galería de Asistentes', () => {
     const user = userEvent.setup();
     render(<AssistantsPanel />);
     act(() => openAssistants());
-    expect(cards()).toHaveLength(3);
+    expect(cards()).toHaveLength(4);
     expect(cards()[0]!.textContent).toContain(t('es', 'asis.cat.cajas'));
     await user.click(screen.getByRole('button', { name: t('es', 'asis.cat.hogar') }));
     expect(cards()).toHaveLength(1);
@@ -70,7 +70,7 @@ describe('Galería de Asistentes', () => {
     await user.type(screen.getByRole('searchbox'), 'zzzz');
     expect(screen.getByText(t('es', 'asis.gallery.empty'))).toBeTruthy();
     await user.click(screen.getByRole('button', { name: t('es', 'asis.gallery.clear') }));
-    expect(cards()).toHaveLength(3);
+    expect(cards()).toHaveLength(4);
   });
 
   it('las flechas mueven el foco entre tarjetas y Enter abre el asistente', async () => {
@@ -81,7 +81,7 @@ describe('Galería de Asistentes', () => {
     await user.keyboard('{ArrowRight}');
     expect(document.activeElement).toBe(cards()[1]);
     await user.keyboard('{End}');
-    expect(document.activeElement).toBe(cards()[2]);
+    expect(document.activeElement).toBe(cards()[3]);
     await user.keyboard('{Home}{Enter}');
     expect(document.querySelector('[data-field="w"]')).not.toBeNull();
   });

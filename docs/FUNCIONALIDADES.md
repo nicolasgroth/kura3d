@@ -27,7 +27,7 @@ Estados: **Activa** (disponible al usuario), **Parcial** (existe con límites co
 | F-ALIN | Alineación | Alinear y apoyar objetos | Activa | `src/engine/alignment.ts` |
 | F-UI | Estudio | Temas, densidades, 6 idiomas, paleta de comandos, atajos | Activa | `src/components/`, `src/i18n/` |
 | F-CHAT | Chat IA | Asistente local; Anthropic, OpenAI, Gemini, Ollama y cualquier API compatible con OpenAI | Activa; sin adjuntar imágenes | `src/ai/` |
-| F-MCP | Servidor MCP | 70 herramientas para agentes externos sobre el mismo motor de la app | Activa; token obligatorio | `mcp-server/` |
+| F-MCP | Servidor MCP | 73 herramientas para agentes externos sobre el mismo motor de la app | Activa; token obligatorio | `mcp-server/` |
 | F-DIVIDIR | Dividir para imprimir | Partir un modelo grande en piezas que caben en la cama, con uniones, nombre por pieza, marcas de pareja grabadas y planos ajustables; exportar un archivo por pieza | Activa | `src/engine/split/`, `src/components/split/` |
 | F-ARMADO | Vista explosionada y armado | Animación de armado, "Preparar para imprimir" por placas y "Volver a armar" | Activa | `src/components/split/`, `src/core/scene/splitGroups.ts` |
 | F-ENCAJE | Comprobar encaje | Bajo pedido (menú Acciones y clic derecho), sin cambiar la escena: choques (volumen) y holguras entre piezas y referencias, con las restas pendientes aplicadas en copia, recomendación por par, resaltado de la zona o la cota en el visor y aviso tras Ajustar a la impresora | Activa | `src/engine/fitCheck/`, `src/components/fitCheck/` |

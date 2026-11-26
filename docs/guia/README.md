@@ -19,6 +19,7 @@ Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una ti
 | [Colores y pintura](colores-y-pintura.md) | Pintar caras y separar por colores para multicolor |
 | [Generadores](generadores.md) | Texto 3D, SVG, imagen a 3D, roscas ISO y moldes |
 | [Asistentes](asistentes.md) | Elegir de una galería y crear una caja con tapa, un llavero o una placa de enchufe respondiendo unas preguntas |
+| [Recipiente con tapa roscada](tapa-roscada.md) | Frasco con tapa que enrosca, rosca imprimible sin soportes, holgura ajustable y comprobación de enroscado; roscas ISO en pareja |
 | [Alojamiento de imán](alojamiento-de-iman.md) | Hueco para un imán con un clic sobre una cara: medidas, holgura, oculto y tus preajustes |
 | [Torreta para tornillo](torreta-para-tornillo.md) | Poste con agujero para tornillo directo o inserto roscado, con un clic sobre una cara |
 | [Colgar en el muro](colgar-en-el-muro.md) | Ojo de cerradura para colgar la pieza de un tornillo en la pared, con la ranura hacia arriba |

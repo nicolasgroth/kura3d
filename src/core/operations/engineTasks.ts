@@ -50,6 +50,8 @@ import { createScrewBoss, type ScrewBossInput } from './screwBossOperations';
 import { createKeyhole, type KeyholeInput } from './keyholeOperations';
 import { createCablePass, type CablePassInput } from './cablePassOperations';
 import { applyHolesWithPosts } from './addonPostMerge';
+import { checkScrewFitObjects, createThreadPair, type ThreadPairArgs } from './screwContainerOperations';
+import type { ScrewFitInput } from '../bus/screwContainerSchema';
 import type { RunInput } from '../recipes/run/types';
 
 export type ExportFormat = 'stl' | '3mf' | 'obj' | 'glb' | 'ply';
@@ -159,6 +161,8 @@ export const ENGINE_TASKS = {
   screwBoss: (ctx: OperationContext, a: ScrewBossInput) => createScrewBoss(ctx, a),
   // Ojo de cerradura para colgar en el muro: negativo de tres partes unidas, ranura hacia «arriba».
   keyhole: (ctx: OperationContext, a: KeyholeInput) => createKeyhole(ctx, a),
+  threadPair: (ctx: OperationContext, a: ThreadPairArgs) => createThreadPair(ctx, a),
+  screwFit: (_ctx: OperationContext, a: { male: SceneObject; female: SceneObject; input: ScrewFitInput }) => checkScrewFitObjects(a.male, a.female, a.input),
   // Paso de cable: negativo pasante con el largo medido con rayos.
   cablePass: (ctx: OperationContext, a: CablePassInput) => createCablePass(ctx, a),
   imageReliefMesh: (_ctx: OperationContext, a: { options: ImageTo3DOptions }) => imageReliefMesh(a.options),

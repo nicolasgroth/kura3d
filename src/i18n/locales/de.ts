@@ -59,6 +59,7 @@ import { REALESUI_DE } from './realesUi';
 import { UX6_DE } from './ux6';
 import { RECETAS_DE } from './recetas';
 import { ASISTENTES_DE } from './asistentes';
+import { ROSCA_ENROSCA_DE } from './roscaEnrosca';
 import { ACERCA_DE } from './acercaDe';
 import { IMAN_DE } from './iman';
 import { IMAN_UI3_DE } from './imanUi3';
@@ -136,6 +137,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...UX6_DE,
   ...RECETAS_DE,
   ...ASISTENTES_DE,
+  ...ROSCA_ENROSCA_DE,
   ...IMAN_DE,
   ...IMAN_UI3_DE,
   ...BORDES_DE,

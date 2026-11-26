@@ -916,6 +916,7 @@
               "mirror_object",
               "hollow_object",
               "create_thread",
+              "create_screw_container",
               "import_svg",
               "plane_cut",
               "combine_objects",
@@ -1387,36 +1388,69 @@
       "maxItems": 16,
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "type": "string",
-            "const": "fits_bed"
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "fits_bed"
+              },
+              "refs": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^@[A-Za-z_][A-Za-z0-9_]{0,63}$",
+                  "description": "Resultado de un paso anterior: \"@id\"."
+                }
+              },
+              "onFail": {
+                "type": "string",
+                "enum": [
+                  "offer_split",
+                  "warn"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "onFail"
+            ],
+            "additionalProperties": false
           },
-          "refs": {
-            "minItems": 1,
-            "maxItems": 16,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^@[A-Za-z_][A-Za-z0-9_]{0,63}$",
-              "description": "Resultado de un paso anterior: \"@id\"."
-            }
-          },
-          "onFail": {
-            "type": "string",
-            "enum": [
-              "offer_split",
-              "warn"
-            ]
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "screw_fit"
+              },
+              "refs": {
+                "minItems": 2,
+                "maxItems": 2,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^@[A-Za-z_][A-Za-z0-9_]{0,63}$",
+                  "description": "Resultado de un paso anterior: \"@id\"."
+                }
+              },
+              "onFail": {
+                "type": "string",
+                "const": "warn"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "onFail"
+            ],
+            "additionalProperties": false
           }
-        },
-        "required": [
-          "kind",
-          "refs",
-          "onFail"
-        ],
-        "additionalProperties": false
+        ]
       }
     },
     "assets": {

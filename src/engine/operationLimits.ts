@@ -109,6 +109,25 @@ export const OPERATION_RANGES = {
     lengthMm: closed(1, 300),
     clearanceMm: closed(0, 1.5),
   },
+  /** Recipiente con tapa roscada (`screwContainer.ts`): rosca de recipiente de paso grueso, no de tornillería. */
+  screwContainer: {
+    innerDiameterMm: closed(15, 200),
+    innerHeightMm: closed(8, 250),
+    wallMm: closed(1.2, 6),
+    bottomMm: closed(0.8, 6),
+    pitchMm: closed(2, 8),
+    starts: closed(1, 4),
+    turns: closed(1, 4),
+    radialClearanceMm: closed(0, 1),
+    axialClearanceMm: closed(0, 1),
+    flankAngleDeg: closed(30, 45),
+  },
+  /** Comprobación de enroscado (`screwFit.ts`): avance por vuelta, vueltas a desenroscar y posiciones medidas. */
+  screwFit: {
+    leadMm: closed(0.2, 64),
+    turns: closed(0.05, 10),
+    samples: closed(2, 16),
+  },
   /** Litofanía cilíndrica (`generateCylindricalLithophane`): altura = `depthMm`. */
   lithophane: {
     widthMm: closed(2, 2000),
