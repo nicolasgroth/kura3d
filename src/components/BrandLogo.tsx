@@ -9,14 +9,14 @@
 
 import React from 'react';
 import { BRAND } from '../brand';
+import { BRAND_LOGO_DARK, BRAND_LOGO_LIGHT } from '../brandAssets';
 import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
 import { useResolvedDarkScheme } from './dialogs/useResolvedDarkScheme';
 import '../styles/brandLogo.css';
 
-/** Archivos del logo completo (proporción 1050 x 430). */
-export const BRAND_LOGO_LIGHT = '/branding/kurra-studio-logo.svg';
-export const BRAND_LOGO_DARK = '/branding/kurra-studio-logo-oscuro.svg';
+/** Archivos del logo completo (proporción 1050 x 430), con la base de la app (`brandAssets`). */
+export { BRAND_LOGO_DARK, BRAND_LOGO_LIGHT };
 
 /** Ruta del logo según el esquema resuelto. */
 export function brandLogoSrc(dark: boolean): string {

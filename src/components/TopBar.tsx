@@ -54,6 +54,7 @@ import { helpAttrs } from './shell/controlHelp';
 import '../styles/shellTopbar.css';
 import '../styles/topbarOverflow.css';
 import '../styles/statusFit.css';
+import { BRAND_ICON } from '../brandAssets';
 
 
 /** Detecta si el sistema operativo prefiere modo oscuro en tiempo real. */
@@ -250,7 +251,7 @@ export const TopBar: React.FC = () => {
   const brandEl = (
     <div className="kura-brand" title={t(language, 'app.tagline')}>
       <img
-        src="/branding/kurra-studio-icono.svg"
+        src={BRAND_ICON}
         alt={BRAND.name}
         className="kura-brand-icon-img"
         width={26}
