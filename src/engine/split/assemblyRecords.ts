@@ -23,6 +23,7 @@ export function jointRecord(j: SplitJoint): SplitJointRecord {
     connector: j.connector ? { ...connector, ...(magnet ? { magnet: { ...magnet } } : {}) } : null,
     connectorCenters: j.connectorCenters.map((c) => [c[0], c[1], c[2]]), contactAreaMm2: j.contactAreaMm2,
     labelPlacement: j.labelPlacement,
+    ...(j.strength ? { strength: structuredClone(j.strength) } : {}),
     ...(j.magnets ? { magnets: { ...j.magnets, magnet: { ...j.magnets.magnet } } } : {}),
   };
 }

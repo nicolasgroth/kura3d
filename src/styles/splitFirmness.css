@@ -1,0 +1,123 @@
+/**
+ * @file src/styles/splitFirmness.css
+ * @description Estilos de la firmeza de las uniones (resumen previo y informe del inspector): insignia con icono y
+ * texto por nivel, lista plegable por unión y botones de recomendación. El color solo refuerza el icono y el texto.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-firmness {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.kura-firmness-line {
+  margin: 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.kura-firmness-detail > summary,
+.kura-firmness-row-summary {
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.kura-firmness-detail > summary:focus-visible,
+.kura-firmness-row-summary:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-firmness-list {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.kura-firmness-row {
+  padding: 4px 8px;
+  border: 1px solid var(--border-subtle);
+  border-left-width: 3px;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  min-width: 0;
+}
+
+.kura-firmness-row[data-firmness='firm'] { border-left-color: #22c55e; }
+.kura-firmness-row[data-firmness='fair'] { border-left-color: #ca8a04; }
+.kura-firmness-row[data-firmness='weak'] { border-left-color: #f59e0b; }
+.kura-firmness-row[data-firmness='glue'] { border-left-color: var(--accent-cyan); }
+
+.kura-firmness-row-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+}
+
+.kura-firmness-name {
+  overflow-wrap: anywhere;
+}
+
+.kura-firmness-badge {
+  --status-color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border: 1px solid var(--status-color);
+  border-radius: 999px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.kura-firmness-badge svg { color: var(--status-color); }
+.kura-firmness-badge[data-firmness='firm'] { --status-color: #16a34a; }
+.kura-firmness-badge[data-firmness='fair'] { --status-color: #a16207; border-style: dashed; }
+.kura-firmness-badge[data-firmness='weak'] { --status-color: #d97706; border-style: double; border-width: 3px; padding: 0 5px; }
+.kura-firmness-badge[data-firmness='glue'] { --status-color: var(--accent-cyan); border-style: dotted; }
+
+/* Nivel «regular» en la lista de uniones del inspector (los demás ya los define splitJoints.css) */
+.kura-split-joint[data-status='fair'] { border-left-color: #ca8a04; }
+.kura-split-joint-status[data-status='fair'] { --status-color: #a16207; border-style: dashed; }
+
+.kura-firmness-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0 2px;
+  font-size: 12px;
+}
+
+.kura-firmness-body p,
+.kura-firmness-facts {
+  margin: 0;
+}
+
+.kura-firmness-facts {
+  padding-left: 16px;
+}
+
+.kura-firmness-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+@media (forced-colors: active) {
+  .kura-firmness-badge,
+  .kura-firmness-row {
+    border-color: CanvasText;
+  }
+}

@@ -168,6 +168,24 @@ export interface BedSplitPlanOptions {
   countOccupancy?: boolean;
 }
 
+/** Firmeza prevista de una unión (resumen del plan, antes de dividir): lo que `executeBedSplitGeometry` produce. */
+export interface SplitPreviewJoint {
+  label: string;
+  /** Códigos de las dos piezas que une. */
+  a: string;
+  b: string;
+  axis: SplitAxis;
+  position: number;
+  kind: SplitJointKind;
+  /** Tipo de conector que lleva (o `null` si queda para pegar). */
+  connectorType: SplitConnectorType | null;
+  strength: SplitJointStrength;
+  /** Ancho típico de la isla más ancha de la cara de unión (mm). */
+  widthMm: number;
+  /** Radio medido y radio recomendado del conector si el armado lo marca débil (mm); `null` si no. */
+  weak: { measuredMm: number; recommendedMm: number } | null;
+}
+
 /** Plano de corte propuesto. */
 export interface SplitPlane {
   axis: SplitAxis;
@@ -232,6 +250,11 @@ export interface BedSplitPlan {
    * puede decir "hasta N con conector".
    */
   assemblyPreview?: { joints: number; glueJoints: number };
+  /**
+   * Firmeza de cada unión tal como la dejará la ejecución (mismos datos que `SplitJoint.strength`); se mide junto con
+   * `assemblyPreview`, en la misma corrida. Ausente si no se midió.
+   */
+  jointPreview?: SplitPreviewJoint[];
   elapsedMs: number;
 }
 

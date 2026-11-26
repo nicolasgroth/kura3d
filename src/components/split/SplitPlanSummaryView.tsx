@@ -18,6 +18,7 @@ import type { SplitPlanSummary } from '../../core/scene/splitPlanSummary';
 import { useKuraStore } from '../../store/useKuraStore';
 import { formatNumber, tCount } from '../../utils/plural';
 import { toUserSize, userAxisLabel } from '../../core/scene/displayAxes';
+import { SplitJointFirmnessSummary, type SplitJointFirmnessSummaryProps } from './SplitJointFirmnessSummary';
 
 export const SplitPlanSummaryView: React.FC<{
   summary: SplitPlanSummary | null;
@@ -28,7 +29,9 @@ export const SplitPlanSummaryView: React.FC<{
   onLowerMinWall?: () => void;
   /** Cambia la unión a solape de borde (sirve en pared delgada). */
   onUseLap?: () => void;
-}> = ({ summary, plan, pending, checking, onLowerMinWall, onUseLap }) => {
+  /** Firmeza por unión: estado de las opciones del panel y cambios que ofrecen las recomendaciones. */
+  firmness?: Omit<SplitJointFirmnessSummaryProps, 'joints' | 'hasConnector' | 'onUseLap'>;
+}> = ({ summary, plan, pending, checking, onLowerMinWall, onUseLap, firmness }) => {
   const language = useKuraStore((s) => s.language);
   const fmt = (n: number) => formatNumber(language, n, { maximumFractionDigits: 0 });
   const fmt1 = (n: number) => formatNumber(language, n, { maximumFractionDigits: 1 });
@@ -136,6 +139,16 @@ export const SplitPlanSummaryView: React.FC<{
               </>
             )}
           </dl>
+          {firmness && (
+            <div aria-hidden={pending || undefined} data-stale={pending || undefined}>
+              <SplitJointFirmnessSummary
+                {...firmness}
+                joints={plan.jointPreview}
+                hasConnector={Boolean(plan.connector) && summary.jointCount > 0}
+                onUseLap={plan.connector && plan.connector.type !== 'lap' && plan.connector.type !== 'magnet' ? onUseLap : undefined}
+              />
+            </div>
+          )}
           {/* Con el conteo exacto del plan las cifras ya son las reales: la nota de máximos sobra. */}
           {!summary.exact && <small className="kura-cut-hint" data-testid="split-max-hint">{t(language, 'split.sum.maxHint')}</small>}
           {warnings.length > 0 && (

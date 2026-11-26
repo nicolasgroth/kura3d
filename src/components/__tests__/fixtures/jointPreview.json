@@ -1,0 +1,438 @@
+{
+ "wide": [
+  {
+   "label": "1",
+   "a": "A1",
+   "b": "B1",
+   "axis": "x",
+   "position": -132,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "firm",
+    "reasons": [],
+    "count": 2,
+    "sizeMm": 1.5,
+    "depthMm": 8,
+    "areaRatio": 0.008835729338221293,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 20,
+   "weak": null
+  },
+  {
+   "label": "2",
+   "a": "B1",
+   "b": "C1",
+   "axis": "x",
+   "position": -44,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "firm",
+    "reasons": [],
+    "count": 2,
+    "sizeMm": 1.5,
+    "depthMm": 8,
+    "areaRatio": 0.008835729338221293,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 20,
+   "weak": null
+  },
+  {
+   "label": "3",
+   "a": "C1",
+   "b": "D1",
+   "axis": "x",
+   "position": 44,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "firm",
+    "reasons": [],
+    "count": 2,
+    "sizeMm": 1.5,
+    "depthMm": 8,
+    "areaRatio": 0.008835729338221293,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 20,
+   "weak": null
+  },
+  {
+   "label": "4",
+   "a": "D1",
+   "b": "E1",
+   "axis": "x",
+   "position": 132,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "firm",
+    "reasons": [],
+    "count": 2,
+    "sizeMm": 1.5,
+    "depthMm": 8,
+    "areaRatio": 0.008835729338221293,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 20,
+   "weak": null
+  }
+ ],
+ "thin": [
+  {
+   "label": "1",
+   "a": "A1",
+   "b": "B1",
+   "axis": "x",
+   "position": -132,
+   "kind": "glue",
+   "connectorType": null,
+   "strength": {
+    "level": "glue",
+    "reasons": [
+     "no-connector"
+    ],
+    "count": 0,
+    "sizeMm": 0,
+    "depthMm": 0,
+    "areaRatio": 0,
+    "islands": 1,
+    "islandsCovered": 0,
+    "shrunk": [],
+    "discarded": [
+     {
+      "island": 0,
+      "reason": "section-narrow",
+      "measuredMm": 2
+     }
+    ]
+   },
+   "widthMm": 2,
+   "weak": null
+  },
+  {
+   "label": "2",
+   "a": "B1",
+   "b": "C1",
+   "axis": "x",
+   "position": -44,
+   "kind": "glue",
+   "connectorType": null,
+   "strength": {
+    "level": "glue",
+    "reasons": [
+     "no-connector"
+    ],
+    "count": 0,
+    "sizeMm": 0,
+    "depthMm": 0,
+    "areaRatio": 0,
+    "islands": 1,
+    "islandsCovered": 0,
+    "shrunk": [],
+    "discarded": [
+     {
+      "island": 0,
+      "reason": "section-narrow",
+      "measuredMm": 2
+     }
+    ]
+   },
+   "widthMm": 2,
+   "weak": null
+  },
+  {
+   "label": "3",
+   "a": "C1",
+   "b": "D1",
+   "axis": "x",
+   "position": 44,
+   "kind": "glue",
+   "connectorType": null,
+   "strength": {
+    "level": "glue",
+    "reasons": [
+     "no-connector"
+    ],
+    "count": 0,
+    "sizeMm": 0,
+    "depthMm": 0,
+    "areaRatio": 0,
+    "islands": 1,
+    "islandsCovered": 0,
+    "shrunk": [],
+    "discarded": [
+     {
+      "island": 0,
+      "reason": "section-narrow",
+      "measuredMm": 2
+     }
+    ]
+   },
+   "widthMm": 2,
+   "weak": null
+  },
+  {
+   "label": "4",
+   "a": "D1",
+   "b": "E1",
+   "axis": "x",
+   "position": 132,
+   "kind": "glue",
+   "connectorType": null,
+   "strength": {
+    "level": "glue",
+    "reasons": [
+     "no-connector"
+    ],
+    "count": 0,
+    "sizeMm": 0,
+    "depthMm": 0,
+    "areaRatio": 0,
+    "islands": 1,
+    "islandsCovered": 0,
+    "shrunk": [],
+    "discarded": [
+     {
+      "island": 0,
+      "reason": "section-narrow",
+      "measuredMm": 2
+     }
+    ]
+   },
+   "widthMm": 2,
+   "weak": null
+  }
+ ],
+ "manualWeak": [
+  {
+   "label": "1",
+   "a": "A1",
+   "b": "B1",
+   "axis": "x",
+   "position": -132,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "weak",
+    "reasons": [
+     "low-area"
+    ],
+    "count": 1,
+    "sizeMm": 1.5,
+    "depthMm": 8,
+    "areaRatio": 0.0007068583470577034,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 50,
+   "weak": {
+    "measuredMm": 1.5,
+    "recommendedMm": 3.5682482323055424
+   }
+  },
+  {
+   "label": "2",
+   "a": "B1",
+   "b": "C1",
+   "axis": "x",
+   "position": -44,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "weak",
+    "reasons": [
+     "low-area"
+    ],
+    "count": 1,
+    "sizeMm": 1.5,
+    "depthMm": 8,
+    "areaRatio": 0.0007068583470577034,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 50,
+   "weak": {
+    "measuredMm": 1.5,
+    "recommendedMm": 3.5682482323055424
+   }
+  },
+  {
+   "label": "3",
+   "a": "C1",
+   "b": "D1",
+   "axis": "x",
+   "position": 44,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "weak",
+    "reasons": [
+     "low-area"
+    ],
+    "count": 1,
+    "sizeMm": 1.5,
+    "depthMm": 8,
+    "areaRatio": 0.0007068583470577034,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 50,
+   "weak": {
+    "measuredMm": 1.5,
+    "recommendedMm": 3.5682482323055424
+   }
+  },
+  {
+   "label": "4",
+   "a": "D1",
+   "b": "E1",
+   "axis": "x",
+   "position": 132,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "weak",
+    "reasons": [
+     "low-area"
+    ],
+    "count": 1,
+    "sizeMm": 1.5,
+    "depthMm": 8,
+    "areaRatio": 0.0007068583470577034,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 50,
+   "weak": {
+    "measuredMm": 1.5,
+    "recommendedMm": 3.5682482323055424
+   }
+  }
+ ],
+ "autoSame": [
+  {
+   "label": "1",
+   "a": "A1",
+   "b": "B1",
+   "axis": "x",
+   "position": -132,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "fair",
+    "reasons": [
+     "single-connector"
+    ],
+    "count": 1,
+    "sizeMm": 3.5682482323055424,
+    "depthMm": 8,
+    "areaRatio": 0.004000000000000001,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 50,
+   "weak": null
+  },
+  {
+   "label": "2",
+   "a": "B1",
+   "b": "C1",
+   "axis": "x",
+   "position": -44,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "fair",
+    "reasons": [
+     "single-connector"
+    ],
+    "count": 1,
+    "sizeMm": 3.5682482323055424,
+    "depthMm": 8,
+    "areaRatio": 0.004000000000000001,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 50,
+   "weak": null
+  },
+  {
+   "label": "3",
+   "a": "C1",
+   "b": "D1",
+   "axis": "x",
+   "position": 44,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "fair",
+    "reasons": [
+     "single-connector"
+    ],
+    "count": 1,
+    "sizeMm": 3.5682482323055424,
+    "depthMm": 8,
+    "areaRatio": 0.004000000000000001,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 50,
+   "weak": null
+  },
+  {
+   "label": "4",
+   "a": "D1",
+   "b": "E1",
+   "axis": "x",
+   "position": 132,
+   "kind": "connector",
+   "connectorType": "dowel",
+   "strength": {
+    "level": "fair",
+    "reasons": [
+     "single-connector"
+    ],
+    "count": 1,
+    "sizeMm": 3.5682482323055424,
+    "depthMm": 8,
+    "areaRatio": 0.004000000000000001,
+    "islands": 1,
+    "islandsCovered": 1,
+    "shrunk": [],
+    "discarded": []
+   },
+   "widthMm": 50,
+   "weak": null
+  }
+ ]
+}

@@ -24,6 +24,7 @@ import { PREVIEW_ZH } from './preview';
 import { SPLITJOINTS_ZH } from './splitJoints';
 import { SPLITPREFS_ZH } from './splitPrefs';
 import { UNIONES_FIRMES_ZH } from './unionesFirmes';
+import { FIRMEZA_UNIONES_ZH } from './firmezaUniones';
 import { AJUSTAR_ZH } from './ajustarImpresora';
 import { SUAVIZAR_ZH } from './suavizarMotor';
 import { SIMPLIFICAR_ZH } from './simplificar';
@@ -93,6 +94,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...SPLITJOINTS_ZH,
   ...SPLITPREFS_ZH,
   ...UNIONES_FIRMES_ZH,
+  ...FIRMEZA_UNIONES_ZH,
   ...AJUSTAR_ZH,
   ...SUAVIZAR_ZH,
   ...SUAVIZAR_UI_ZH,

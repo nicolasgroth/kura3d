@@ -24,6 +24,7 @@ import { PREVIEW_DE } from './preview';
 import { SPLITJOINTS_DE } from './splitJoints';
 import { SPLITPREFS_DE } from './splitPrefs';
 import { UNIONES_FIRMES_DE } from './unionesFirmes';
+import { FIRMEZA_UNIONES_DE } from './firmezaUniones';
 import { AJUSTAR_DE } from './ajustarImpresora';
 import { SUAVIZAR_DE } from './suavizarMotor';
 import { SIMPLIFICAR_DE } from './simplificar';
@@ -93,6 +94,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...SPLITJOINTS_DE,
   ...SPLITPREFS_DE,
   ...UNIONES_FIRMES_DE,
+  ...FIRMEZA_UNIONES_DE,
   ...AJUSTAR_DE,
   ...SUAVIZAR_DE,
   ...SUAVIZAR_UI_DE,

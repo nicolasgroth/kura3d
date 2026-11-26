@@ -14,8 +14,9 @@ type Row = { es: string; en: string; de: string; fr: string; hi: string; zh: str
 const UX = {
   // --- Tamaño del conector: automático y diámetro Ø ---
   'split.size.auto': {
-    es: 'Tamaño automático (recomendado)', en: 'Automatic size (recommended)', de: 'Automatische Größe (empfohlen)',
-    fr: 'Taille automatique (recommandée)', hi: 'स्वचालित आकार (अनुशंसित)', zh: '自动尺寸（推荐）',
+    es: 'Dimensionar los conectores según cada unión (recomendado)', en: 'Size connectors to each joint (recommended)',
+    de: 'Verbinder auf jede Verbindung abstimmen (empfohlen)', fr: 'Dimensionner les connecteurs selon chaque jonction (recommandé)',
+    hi: 'हर जोड़ के अनुसार कनेक्टर का आकार तय करें (अनुशंसित)', zh: '按每个接缝确定连接件尺寸（推荐）',
   },
   'split.size.autoHelp': {
     es: 'Cada unión usa el diámetro que recomienda Kurra Studio según su superficie de contacto y la pieza que sostiene, respetando la pared mínima.',
@@ -73,12 +74,12 @@ const UX = {
     fr: '{count} jonctions sont plus fragiles que recommandé', hi: '{count} जोड़ अनुशंसित से कमज़ोर हैं', zh: '{count} 个接合比推荐的更弱',
   },
   'splitUx.weak.advice': {
-    es: 'Un conector delgado puede romperse al encajar o con el uso. «Reforzar y dividir de nuevo» lo agranda hasta el diámetro recomendado (deshace la división y la repite). También puedes dividir de nuevo con «Tamaño automático (recomendado)».',
-    en: 'A thin connector can break when fitted or in use. "Reinforce and split again" enlarges it to the recommended diameter (it undoes the split and repeats it). You can also split again with "Automatic size (recommended)".',
-    de: 'Ein dünner Verbinder kann beim Fügen oder im Gebrauch brechen. „Verstärken und neu teilen“ vergrößert ihn auf den empfohlenen Durchmesser (macht die Teilung rückgängig und wiederholt sie). Du kannst auch mit „Automatische Größe (empfohlen)“ neu teilen.',
-    fr: 'Un connecteur fin peut casser à l\'emboîtement ou à l\'usage. « Renforcer et diviser à nouveau » l\'agrandit au diamètre recommandé (annule la division et la refait). Tu peux aussi diviser à nouveau avec « Taille automatique (recommandée) ».',
-    hi: 'पतला कनेक्टर जोड़ते समय या उपयोग में टूट सकता है। “मज़बूत करें और फिर विभाजित करें” इसे अनुशंसित व्यास तक बड़ा करता है (विभाजन पूर्ववत करके दोहराता है)। आप “स्वचालित आकार (अनुशंसित)” से भी फिर विभाजित कर सकते हैं।',
-    zh: '较细的连接件在装配或使用时可能断裂。“加固并重新分割”会把它放大到推荐直径（撤销分割后重做）。也可以用“自动尺寸（推荐）”重新分割。',
+    es: 'Un conector delgado puede romperse al encajar o con el uso. «Reforzar y dividir de nuevo» lo agranda hasta el diámetro recomendado (deshace la división y la repite). También puedes dividir de nuevo con «Dimensionar los conectores según cada unión».',
+    en: 'A thin connector can break when fitted or in use. "Reinforce and split again" enlarges it to the recommended diameter (it undoes the split and repeats it). You can also split again with "Size connectors to each joint".',
+    de: 'Ein dünner Verbinder kann beim Fügen oder im Gebrauch brechen. „Verstärken und neu teilen“ vergrößert ihn auf den empfohlenen Durchmesser (macht die Teilung rückgängig und wiederholt sie). Du kannst auch mit „Verbinder auf jede Verbindung abstimmen“ neu teilen.',
+    fr: 'Un connecteur fin peut casser à l\'emboîtement ou à l\'usage. « Renforcer et diviser à nouveau » l\'agrandit au diamètre recommandé (annule la division et la refait). Tu peux aussi diviser à nouveau avec « Dimensionner les connecteurs selon chaque jonction ».',
+    hi: 'पतला कनेक्टर जोड़ते समय या उपयोग में टूट सकता है। “मज़बूत करें और फिर विभाजित करें” इसे अनुशंसित व्यास तक बड़ा करता है (विभाजन पूर्ववत करके दोहराता है)। आप “हर जोड़ के अनुसार कनेक्टर का आकार तय करें” से भी फिर विभाजित कर सकते हैं।',
+    zh: '较细的连接件在装配或使用时可能断裂。“加固并重新分割”会把它放大到推荐直径（撤销分割后重做）。也可以用“按每个接缝确定连接件尺寸”重新分割。',
   },
   'splitUx.weak.short': {
     es: 'Débil · Ø{measured}, recomendado Ø{recommended}', en: 'Weak · Ø{measured}, recommended Ø{recommended}', de: 'Schwach · Ø{measured}, empfohlen Ø{recommended}',
