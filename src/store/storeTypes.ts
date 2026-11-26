@@ -209,6 +209,8 @@ export interface KuraStoreState {
   uiDensity: UiDensityMode;
   lastNonZenDensity: 'full' | 'compact';
   leftCollapsed: boolean;
+  /** La lista de escena se plegó sola porque un panel de operación necesita el ancho (no es una preferencia: no se guarda). */
+  leftAutoFolded: boolean;
   rightCollapsed: boolean;
 
   // Herramientas y viewport
