@@ -36,6 +36,7 @@ export function repeatLabel(language: LanguageCode, rec: RepeatRecord): string {
     case 'material': return t(language, 'ux3.repeat.material');
     case 'group': return t(language, 'groups.action.group');
     case 'combine': return t(language, 'groups.action.combine');
+    case 'arrangePlates': return t(language, 'plates.action.arrange');
     case 'simplify': return t(language, 'repeat.name.simplify');
     case 'color': return t(language, 'repeat.name.color');
     case 'setType':

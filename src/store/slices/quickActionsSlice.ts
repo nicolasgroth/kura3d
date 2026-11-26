@@ -198,6 +198,8 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         s.setObjectsRole(targets.map((o) => o.id), rec.role);
         return 'done';
       }
+      case 'arrangePlates':
+        return 'notApplicable';
     }
   };
 
