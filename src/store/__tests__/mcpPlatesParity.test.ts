@@ -9,10 +9,9 @@
  * @license MIT
  */
 
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { BRAND } from '../../brand';
+import { exportSceneToBinarySTL, stlBrandHeader } from '../../engine';
 import { DEFAULT_PRINTER_PROFILES, type KuraCommandRequest, type SceneObject } from '../../types/kura';
 import type { SceneLayout, ScenePlate } from '../../types/plates';
 import type { CommandBusResponse } from '../commandBus';
@@ -23,8 +22,8 @@ type Params = Record<string, unknown>;
 interface HeadlessLike {
   createPrimitive(input: Params): Promise<{ id: string }>;
   readonlyObjects(): readonly SceneObject[];
-  exportStl(input: { outputPath: string; plateId?: string }): Promise<{ objectCount: number; plateCount?: number }>;
   plates: {
+    exportPlan(targets: readonly SceneObject[], format: 'stl' | '3mf', plateId?: string): { targets: SceneObject[]; plateCount: number } | null;
     plates: ScenePlate[];
     activePlateId: string | null;
     layout: SceneLayout;
@@ -77,7 +76,6 @@ function expectSameScene(h: HeadlessLike) {
 let appIds: string[] = [];
 let headIds: string[] = [];
 const SIZES = [30, 40, 50];
-let exportDir = '';
 
 async function seed(h: HeadlessLike) {
   appIds = [];
@@ -104,10 +102,6 @@ describe('paridad app ↔ sin interfaz: placas', () => {
       language: 'en', printerProfile: { ...DEFAULT_PRINTER_PROFILES[0] }, customBedDimensions: null,
       plates: [], activePlateId: null, layout: 'print',
     });
-    exportDir = await mkdtemp(join(tmpdir(), 'kura3d-parity-'));
-  });
-  afterEach(async () => {
-    await rm(exportDir, { recursive: true, force: true });
   });
 
   it('crear, mover a una placa y a una nueva, borrar con destino: misma escena', async () => {
@@ -166,11 +160,12 @@ describe('paridad app ↔ sin interfaz: placas', () => {
 
     for (let i = 0; i < SIZES.length; i++) {
       const app = await bus('export_stl', { returnBytes: true, plateId: appPlateId(i) });
-      const path = join(exportDir, `p${i}.stl`);
-      const head = await h.exportStl({ outputPath: path, plateId: headPlateId(h, i) });
-      expect(head.plateCount).toBe(app.plateCount);
-      const bytes = new Uint8Array(await readFile(path));
-      expect(Buffer.from(bytes).toString('base64')).toBe(app.bytesBase64);
+      // Lo mismo que escribe `exportStl` sin interfaz: el plan por placa y el codificador del motor.
+      const plan = h.plates.exportPlan(h.readonlyObjects(), 'stl', headPlateId(h, i))!;
+      expect(plan.plateCount).toBe(app.plateCount);
+      const head = exportSceneToBinarySTL(plan.targets, stlBrandHeader(BRAND));
+      const appBytes = Uint8Array.from(atob(app.bytesBase64), (c) => c.charCodeAt(0));
+      expect(Array.from(head)).toEqual(Array.from(appBytes));
     }
   }, 120_000);
 });
