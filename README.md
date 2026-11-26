@@ -61,7 +61,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 **Proyecto**
 - **Acerca de** (en revisión): qué es el programa, cómo se construyó, su licencia y las bibliotecas abiertas que usa (desde Ajustes, la paleta de comandos o la insignia de versión junto al logo).
 - **Datos del proyecto** (en revisión): descripción, notas, autor, fechas y tiempo de trabajo, guardados en el archivo y visibles en recientes.
-- Proyectos `.kura` con escena, materiales, pintura e historial de deshacer. Autoguardado y recuperación de borradores. En escritorio, la lista de recientes recuerda las rutas y reabre con un clic (se puede desactivar en Ajustes).
+- Proyectos `.kura` con escena, materiales, pintura e historial de deshacer, guardados **comprimidos** (formato 6; la app sigue abriendo los anteriores) y, en guardados largos, con un avance en la barra del visor. Autoguardado y recuperación de borradores. En escritorio, la lista de recientes recuerda las rutas y reabre con un clic (se puede desactivar en Ajustes).
 - Importar **STL, 3MF, OBJ y PLY**, varios archivos a la vez, por diálogo o arrastrando. Lee los 3MF de slicers (componentes, instancias, colores de filamento) conservando las posiciones.
 - **Ida y vuelta por 3MF exacta:** piezas, grupos, colores y posiciones se conservan al exportar y volver a abrir.
 - **Aviso de unidades dudosas** al importar, con la corrección sugerida (por ejemplo «Escalar ×100») y un solo Deshacer.
@@ -99,10 +99,11 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - Siluetas de cama de 12 impresoras (Elegoo, Bambu Lab, Snapmaker, FlashForge y genéricas).
 
 **Estudio**
-- **Placas** (en revisión): varias camas en un mismo proyecto. Crea placas con **+ Placa**, renómbralas, mueve piezas entre ellas (menú, paleta o arrastrando) y mira «Fuera de volumen» por placa. Cada placa puede tener **su propia cama** (dos impresoras en un proyecto).
-- **Vistas Imprimir / Armado / Libre** (en revisión): en Armado se ve la figura junta y se puede mover y editar sin cambiar el lugar de cada pieza en su placa; un deslizador separa las piezas para verlas «explotadas».
+- **Placas** (en revisión): varias camas en un mismo proyecto, con una **tira de placas** rediseñada abajo en el visor. Crea placas con **+ Placa**, renómbralas, mueve piezas entre ellas (menú, paleta o arrastrando) y mira «Fuera de volumen» por placa. Cada placa puede tener **su propia cama** (dos impresoras en un proyecto).
+- **Vistas Imprimir / Armado / Libre** (en revisión): el selector está al inicio de la tira de placas; en Armado se ve la figura junta y se puede mover y editar sin cambiar el lugar de cada pieza en su placa; un deslizador separa las piezas para verlas «explotadas».
 - **Repartir en placas** (en revisión): reparte las piezas entre placas con vista previa: compacto, una placa por color, por grupo o por objeto.
-- **Exportar por placa** (en revisión): con piezas en varias placas, un 3MF con todas las placas o un archivo por placa en un ZIP (STL siempre en ZIP). El 3MF con varias placas aún no está probado en un laminador real.
+- **Exportar por placa** (en revisión): con piezas en varias placas, un 3MF con todas las placas o un archivo por placa en un ZIP (STL siempre en ZIP).
+- **3MF para el laminador** (en revisión): en **Exportar › 3MF**, la sección **Laminador** carga una vez un proyecto guardado desde tu laminador; con él, el 3MF abre con sus bandejas, nombres, filamento por pieza y colores (hay que elegir cargar el archivo completo). De ese proyecto solo se toman la versión y los nombres de perfil. Probado en Elegoo Slicer con 1, 3 y 5 placas; aún no en Bambu Studio ni OrcaSlicer.
 - **Placas de laminador** (en revisión): al importar un 3MF de Bambu Studio u OrcaSlicer con placas, se pueden convertir en placas reales.
 - **Barra flotante** (en revisión) junto al objeto seleccionado, fuera de la pieza, con las acciones más usadas a un clic, una paleta de colores y **Alt+.** para llegar a ella con el teclado; se oculta mientras hay un panel de operación abierto.
 - **Arrastrar para mover**: el objeto seleccionado se arrastra sobre su plano horizontal; en las vistas de frente y de lado, en vertical (en revisión).
@@ -129,9 +130,8 @@ Lo que falta, en el orden del [roadmap](docs/ROADMAP.md). El detalle está en el
 **Lo siguiente**
 1. Cerrar la revisión de lo marcado «(en revisión)» arriba.
 2. Deslizadores también en las formas básicas del inspector.
-3. Capturas de las guías al día con los paneles nuevos.
-4. **3MF con varias placas** verificado en Bambu Studio y OrcaSlicer, y **multimaterial** en los cinco laminadores.
-5. Dividir: cortes por las partes naturales de la figura y cortes inclinados.
+3. **3MF con bandejas** verificado en Bambu Studio y OrcaSlicer, y **multimaterial** en los cinco laminadores.
+4. Dividir: cortes por las partes naturales de la figura y cortes inclinados.
 
 **Más adelante**
 - Dividir: cortes por las partes naturales de la figura, cortes inclinados, uniones vinculadas.

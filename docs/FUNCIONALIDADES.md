@@ -6,10 +6,10 @@ Estados: **Activa** (disponible al usuario), **Parcial** (existe con límites co
 
 | ID | Funcionalidad | Qué promete | Estado | Código principal |
 |---|---|---|---|---|
-| F-PROY | Proyectos `.kura` | Nuevo, abrir, guardar y guardar como, conservando escena e historial | Activa | `src/project/` |
+| F-PROY | Proyectos `.kura` | Nuevo, abrir, guardar y guardar como, conservando escena e historial; formato 6 comprimido (abre los anteriores) con avance del guardado | Activa | `src/project/` |
 | F-RECUP | Recuperación local | Autoguardado de borradores y recuperación al reabrir | Activa (web) | `src/project/projectRecovery*` |
 | F-IMPORT | Importar STL/3MF/OBJ/PLY | Por diálogo o arrastre, en lote, con un solo deshacer; 3MF con componentes, instancias y posiciones | Activa | `src/engine/io/` |
-| F-EXPORT | Exportar 3MF/STL/OBJ/GLB/PLY | Diálogo único, selección o escena, colores por cara en 3MF; un solo 3MF estándar (sin selector de perfil de slicer) | Parcial: sin verificación en slicers reales | `src/engine/io/` |
+| F-EXPORT | Exportar 3MF/STL/OBJ/GLB/PLY | Diálogo único, selección o escena, colores por cara en 3MF; un solo 3MF estándar; sección «Laminador» con proyecto de ejemplo para abrir con bandejas, nombres y colores | Parcial: probado en Elegoo Slicer; falta Bambu Studio, OrcaSlicer, PrusaSlicer y Cura | `src/engine/io/` |
 | F-TRANSF | Transformar con precisión | Mover, rotar y escalar por gizmo o valores exactos | Activa | `src/components/RightInspector.tsx` |
 | F-PRIM | Primitivas | Sólidos básicos con parámetros editables tras crearlos; piezas nuevas en espacio libre | Activa | `src/engine/primitives.ts`, `src/core/scene/` |
 | F-BOOL | Booleanas | Unión, diferencia e intersección | Activa | `src/engine/operations.ts` |

@@ -6,16 +6,16 @@ Placas está **en revisión**: ya puedes crearlas, nombrarlas, repartir las piez
 
 ## Si no creas ninguna, nada cambia
 
-Un proyecto nuevo trabaja con una sola cama, como siempre. No ves la tira de placas y los proyectos que ya tenías se abren y se guardan igual. Lo único distinto es un botón pequeño, **+ Placa**, junto al rótulo de la cama, abajo en el visor.
+Un proyecto nuevo trabaja con una sola cama, como siempre. No ves la tira de placas y los proyectos que ya tenías se abren y se guardan igual. Lo único distinto es una tira corta abajo, sobre la barra de estado, con el selector de vistas (**Imprimir / Armado / Libre**) y un botón pequeño, **+ Placa**.
 
-![El botón + Placa junto al rótulo de la cama](img/placas-01-agregar.png)
+![La tira corta con una sola placa: el selector de vistas y el botón + Placa](img/placas-01-agregar.png)
 
 ## Crear una segunda placa
 
 1. Pulsa **+ Placa**. Aparece una segunda cama al lado de la primera y el visor se acomoda para mostrar las dos.
 2. Abajo, sobre la barra de estado, aparece la **tira de placas**: una ficha por placa con su nombre, cuántas piezas tiene y su estado (**Bien**, **Vacía** o **Fuera de volumen**). La placa nueva queda **activa**: es la que tiene el borde marcado.
 3. Un aviso breve confirma «Placa 2 creada».
-4. Para más placas usa el botón **+** al final de la tira.
+4. Para más placas usa el botón **+** al final de la tira (solo en la vista Imprimir).
 
 Crear una placa es un paso de deshacer (**Ctrl+Z**): al deshacer la segunda vuelves a una sola cama, sin tira.
 
@@ -26,8 +26,8 @@ Crear una placa es un paso de deshacer (**Ctrl+Z**): al deshacer la segunda vuel
 ## La tira de placas
 
 - **Hacer activa una placa:** pulsa su ficha. Si su cama estaba fuera de vista, el visor la trae.
-- **Renombrar:** doble clic en la ficha, o enfócala con **Tab** y pulsa **F2**. Escribe el nombre y confirma con **Enter**; **Esc** cancela. Es un paso de deshacer.
-- **Solo esta:** muestra únicamente la cama de la placa activa. Vuelve a pulsarlo para ver todas.
+- **Renombrar:** doble clic en la ficha, o enfócala con **Tab** y pulsa **F2**. Escribe el nombre y confirma con **Enter**; **Esc** cancela. Si el nombre ya lo usa otra placa, se rechaza y la placa conserva el suyo. Es un paso de deshacer.
+- **Solo esta** (solo en Imprimir): muestra únicamente la cama de la placa activa. Vuelve a pulsarlo para ver todas.
 - **Borrar:** la papelera borra la placa activa. Si tiene piezas, Kurra Studio te pregunta primero y dice a qué placa pasan (en el mismo lugar relativo). El botón de cancelar del aviso no cambia nada, y **Ctrl+Z** la restaura.
 
 El estado nunca depende solo del color: lleva texto y un icono.
@@ -40,7 +40,7 @@ Todas estas formas dejan la pieza en el mismo lugar **relativo** de la otra cama
 - **Con el clic derecho:** sobre la pieza, **Mover a placa** está en el primer nivel del menú (ya no hay que buscarlo dentro de un submenú); al apuntarlo se despliegan las placas de destino.
 - **Arrastrando, con el panel o con las flechas:** si llevas la pieza a otra cama (arrastrándola y soltándola sobre ella, escribiendo una posición en el inspector o moviéndola con las flechas del teclado), la pieza **cambia de placa**. Esa placa pasa a ser la activa.
 
-Con la paleta o el menú, la placa de destino también pasa a ser la activa. Cada movimiento es un solo paso de deshacer, también con varias piezas seleccionadas. La opción aparece cuando hay al menos dos placas y la selección tiene una pieza sólida sin bloquear.
+Con la paleta o el menú, la placa de destino también pasa a ser la activa. Si la placa de destino está llena, la pieza igualmente queda dentro de su cama y un aviso lo dice; revisa que no se superponga con otras. Cada movimiento es un solo paso de deshacer, también con varias piezas seleccionadas. La opción aparece cuando hay al menos dos placas y la selección tiene una pieza sólida sin bloquear.
 
 ![La paleta de comandos con una opción «Mover a placa» por cada placa](img/placas-03-mover.png)
 
@@ -48,28 +48,30 @@ Con la paleta o el menú, la placa de destino también pasa a ser la activa. Cad
 
 ## Saber en qué placa está cada pieza
 
-- **Insignia en la lista:** cuando hay varias placas, cada pieza de la lista de escena lleva una insignia con el nombre de su placa (con el cursor encima, un tooltip dice «Esta pieza está en…»). En la fila seleccionada la insignia se acorta porque comparte espacio con los botones de la fila.
+- **Insignia en la lista:** cuando hay varias placas, cada pieza de la lista de escena lleva una insignia con el número de su placa (P1, P2…; con el cursor encima, un tooltip dice «Esta pieza está en…»). La insignia se ve siempre, también en la fila seleccionada.
 - **Posición del inspector:** con varias placas, la posición X y Z del inspector se mide **desde el centro de la placa de la pieza** y el rótulo dice «Posición respecto de Placa 2». Una pieza al centro de cualquier placa marca 0, 0. Pasa el cursor por el rótulo y un tooltip lo explica: la posición global es la de la escena completa.
 
 ![Insignia de placa en la lista y posición respecto de la Placa 2 en el inspector](img/placas-06-insignia-inspector.png)
 
 ## Tres vistas: Imprimir, Armado y Libre
 
-Cuando hay más de una placa (o una figura dividida), la barra de vista del visor muestra un selector con tres opciones. También puedes cambiar con la tecla `A`.
+El selector **Imprimir / Armado / Libre** está al inicio de la tira de placas, abajo en el visor (ya no está en la barra de arriba). Aparece siempre que haya piezas; también puedes cambiar con la tecla `A`.
 
 - **Imprimir:** las piezas sobre sus placas, como se van a imprimir. Es la vista donde editas las placas.
-- **Armado:** la figura con las piezas en su lugar final. Aparece un deslizador **Separación** para abrir la figura y ver cómo encaja cada parte, y **Juntar piezas** la cierra. La separación es solo dibujo: no mueve nada de verdad.
-- **Libre:** como Armado, pero sin plano de apoyo ni avisos de cama.
+- **Armado:** la figura con las piezas en su lugar final. La tira muestra el deslizador **Separación** para abrir la figura y ver cómo encaja cada parte, el selector **Toda la figura / Grupo seleccionado** (a qué piezas se aplica la separación) y **Juntar piezas**, que la cierra. Al final, la nota «N placas · se editan en Imprimir» recuerda dónde se editan las placas. La separación es solo dibujo: no mueve nada de verdad.
+- **Libre:** como Armado, pero sin plano de apoyo ni avisos de cama; la tira dice «Vista libre: sin camas».
 
-Lo que muevas en Armado o Libre no cambia el lugar de la pieza en su placa: al **Volver a Imprimir**, todo regresa a su placa.
+Lo que muevas en Armado o Libre no cambia el lugar de la pieza en su placa: al volver a **Imprimir** con el selector, todo regresa a su placa.
 
-![El selector Imprimir / Armado / Libre en la barra de vista](img/placas-08-vistas.png)
+![El selector Imprimir / Armado / Libre al inicio de la tira de placas](img/placas-08-vistas.png)
 
 ![La vista armada con el deslizador de separación al 25 %](img/placas-09-armado.png)
 
+![La tira en la vista Libre: «Vista libre: sin camas»](img/placas-13-libre.png)
+
 ## Repartir en placas
 
-Si no quieres mover las piezas una por una, pulsa **Repartir…** en la tira de placas. Se abre el panel **Repartir en placas** (para volver, **Volver** arriba a la izquierda o `Esc`).
+Si no quieres mover las piezas una por una, pulsa **Repartir…** en la tira de placas (solo en la vista Imprimir). Se abre el panel **Repartir en placas** (para volver, **Volver** arriba a la izquierda o `Esc`).
 
 1. **Qué repartir:** la selección o todas las piezas visibles.
 2. **Cómo repartir:** *Compacto* (la menor cantidad de placas posible), *Una placa por color*, *Una placa por grupo* o *Una placa por objeto*.
@@ -96,7 +98,7 @@ Desde entonces, **Fuera de volumen**, **Repartir**, **Ajustar a la impresora**, 
 
 ## Placas que vienen de un laminador
 
-Al importar un 3MF que trae varias placas, cada una queda en su propio **grupo**. Kurra Studio te ofrece **Convertir en placas** para dejarlas como placas reales, cada grupo centrado en su cama. También lo encuentras en **Acciones › Convertir grupos en placas** (en la vista Imprimir): sirve con los grupos que selecciones o con grupos llamados «Placa 1», «Placa 2»… Los grupos con piezas bloqueadas o sin piezas sólidas no se convierten, y el aviso dice cuáles. Es un solo paso de deshacer.
+Al importar un 3MF que trae varias placas, cada una queda en su propio **grupo**. Kurra Studio te ofrece **Convertir en placas** para dejarlas como placas reales, cada grupo centrado en su cama. También lo encuentras en **Acciones › Convertir grupos en placas** (en la vista Imprimir): sirve con los grupos que selecciones o con grupos llamados «Placa 1», «Placa 2»… Los grupos con piezas bloqueadas o sin piezas sólidas no se convierten, y el aviso dice cuáles. Los grupos de origen se disuelven al convertirlos (las piezas quedan sueltas en su placa). Es un solo paso de deshacer.
 
 ## Lo que cae en cada placa
 
@@ -112,7 +114,7 @@ Cada placa se compara con su propia cama. Si una pieza se sale del volumen de im
 
 ## Exportar por placa
 
-El diálogo **Exportar** sabe de placas: con piezas en dos o más, ofrece un 3MF con todas las placas o un archivo por placa. Está explicado en [Exportar con varias placas](exportar.md#exportar-con-varias-placas). Es nuevo y todavía no se ha comprobado en un laminador real: si necesitas la opción más segura, elige un archivo por placa (ZIP).
+El diálogo **Exportar** sabe de placas: con piezas en dos o más, ofrece un 3MF con todas las placas o un archivo por placa. Está explicado en [Exportar con varias placas](exportar.md#exportar-con-varias-placas). Para que el laminador lo abra con una bandeja por placa, carga antes un proyecto de ejemplo en la sección **Laminador** (explicado en [Exportar](exportar.md#abrir-el-3mf-con-sus-bandejas-en-el-laminador)); está probado en Elegoo Slicer, no aún en Bambu Studio ni OrcaSlicer. Si necesitas la opción más segura, elige un archivo por placa (ZIP).
 
 ## Guardar
 
@@ -121,11 +123,11 @@ Las placas se guardan dentro del proyecto `.kura` y en el borrador de recuperaci
 ## Qué todavía no existe
 
 - **Repartir con reglas propias:** Repartir no sabe de tiempos de impresión ni de colores por capa; solo de tamaño, color y grupo.
-- **Comprobar las placas en un laminador real:** el 3MF con varias placas todavía no se ha verificado fuera de Kurra Studio.
+- **Comprobar las placas en más laminadores:** el 3MF con varias placas se probó en Elegoo Slicer (1, 3 y 5 placas); falta Bambu Studio y OrcaSlicer.
 
 ## Problemas frecuentes
 
-- **No veo la tira de placas:** aparece cuando hay dos o más. Con una sola placa solo ves **+ Placa**.
+- **No veo la tira de placas:** aparece cuando hay dos o más. Con una sola placa ves una tira corta con el selector de vistas y **+ Placa**.
 - **No aparece «Mover a placa»:** necesitas al menos dos placas y una pieza sólida seleccionada y sin bloquear.
 - **Creé una placa y no la veo:** pulsa su ficha; el visor la trae. **Encuadrar** muestra todas.
 

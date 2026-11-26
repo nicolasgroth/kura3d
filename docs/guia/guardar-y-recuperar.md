@@ -8,6 +8,8 @@ Tu trabajo se guarda en un **proyecto `.kura`**, que conserva la escena, los mat
 2. Pulsa **Guardar** (**Ctrl+S**, funciona en cualquier momento). La primera vez te pide un nombre. **Guardar como** (**Ctrl+Mayús+S**) crea una copia con otro nombre.
 3. **Nuevo** (**Ctrl+N**) y **Abrir** (**Ctrl+O**) te preguntan antes si hay cambios sin guardar.
 
+El archivo se guarda **comprimido** (formato 6), así que pesa bastante menos que antes; Kurra Studio sigue abriendo los proyectos guardados con formatos anteriores. En un guardado largo (una escena muy pesada) la barra de operación del visor muestra «Guardando el proyecto» con el porcentaje de avance; en la mayoría de los proyectos el guardado es tan rápido que casi no alcanzas a verlo.
+
 En la versión web, guardar descarga el archivo `.kura` a tu carpeta de descargas y un aviso lo confirma; para abrirlo, usa **Abrir** o arrástralo al visor. Debajo de los botones, el panel lista los **Proyectos recientes** (se puede desactivar en *Ajustes*).
 
 ![Panel Proyecto con nuevo, abrir, guardar y guardar como](img/guardar-y-recuperar-01-menu.png)

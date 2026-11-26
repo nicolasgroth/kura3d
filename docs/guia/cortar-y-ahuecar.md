@@ -4,7 +4,7 @@ Dos operaciones para preparar una pieza: partirla con un plano (con o sin conect
 
 ## Cortar con un plano
 
-1. Selecciona la pieza y pulsa **C** (o el botón **Cortar** de la barra superior, o *Corte por plano + uniones* en el resumen del objeto, panel derecho). Se abre el panel *Cortar* y aparece el **plano naranja** en el visor.
+1. Selecciona la pieza y pulsa **C** (o el botón **Cortar** de la barra superior, o *Corte por plano + uniones* en el resumen del objeto, panel derecho). Se abre el panel *Cortar* y aparece el **plano naranja** en el visor. Para salir, **Volver** arriba a la izquierda del panel (o `Esc`).
 2. Elige el **Eje del plano de corte**: *Z (horizontal)* corta en altura; X e Y cortan en vertical.
 3. Mueve el plano: arrástralo en el visor, usa el deslizador o escribe el **Desplazamiento desde el centro (mm)**. Con el foco en el visor, las flechas ↑/↓ también lo mueven. Los puntos azules marcan dónde irán los conectores.
 4. Elige el **Tipo de conector** (por ejemplo *Tarugo cilíndrico*) o *Sin conectores (corte limpio)*. Kurra Studio recomienda un diámetro según la sección; puedes editarlo, junto con la profundidad de encastre, la tolerancia de impresión y la cantidad.

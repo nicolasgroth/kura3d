@@ -7,6 +7,7 @@
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
  */
+import { existsSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, captura, cmd, encuadrar, seleccionar, sinAvisos } from './helpers';
 
@@ -37,4 +38,17 @@ test('exportar con placas', async ({ page }) => {
   await expect(dlg.getByText(/Se exporta un archivo STL por placa, en un ZIP/)).toBeVisible();
   await page.waitForTimeout(400);
   await captura(page, 'exportar-03-placas-stl', dlg);
+
+  // Sección «Laminador» del 3MF con un proyecto de ejemplo cargado por el selector real de archivos.
+  // El proyecto de ejemplo es un 3MF guardado desde un laminador; solo se lee (KURA_SLICER_SAMPLE lo cambia).
+  const ejemplo = process.env.KURA_SLICER_SAMPLE ?? 'G:/proyectos/kura3d/.eval-tmp/laminador/kurra-3-placas_separado.3mf';
+  test.skip(!existsSync(ejemplo), 'falta el proyecto de ejemplo del laminador');
+  await dlg.getByRole('radio', { name: /^3MF/ }).check();
+  await expect(dlg.getByText('No hay proyecto de ejemplo cargado.')).toBeVisible();
+  const chooser = page.waitForEvent('filechooser');
+  await dlg.getByRole('button', { name: /Cargar proyecto del laminador/ }).click();
+  await (await chooser).setFiles(ejemplo);
+  await expect(dlg.getByText(/Proyecto de ejemplo:/)).toBeVisible({ timeout: 20_000 });
+  await page.waitForTimeout(400);
+  await captura(page, 'exportar-04-laminador', dlg);
 });

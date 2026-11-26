@@ -24,7 +24,11 @@ test('placas', async ({ page }) => {
   const agregar = page.getByTestId('plate-add-first');
   await expect(agregar).toBeVisible();
   await page.mouse.move(700, 300);
-  await captura(page, 'placas-01-agregar', { x: 344, y: 760, width: 800, height: 112 });
+  // Con una sola placa la tira es corta: el selector de vistas y «+ Placa» (recorte de la barra inferior).
+  const tiraCorta = page.getByTestId('plate-strip');
+  await expect(tiraCorta).toHaveAttribute('data-short', 'true');
+  const cajaCorta = (await tiraCorta.boundingBox())!;
+  await captura(page, 'placas-01-agregar', { x: 0, y: Math.max(0, cajaCorta.y - 6), width: 640, height: cajaCorta.height + 12 });
 
   // 2) Segunda placa por el botón real: aparece la tira y la cama nueva, que queda activa.
   await agregar.click();
@@ -133,4 +137,10 @@ test('placas: vista armada de una figura dividida', async ({ page }) => {
   await page.waitForTimeout(900);
   await encuadrar(page, 'fit');
   await captura(page, 'placas-09-armado');
+
+  // Vista Libre: la tira dice «Vista libre: sin camas» (recorte de la tira).
+  await page.getByTestId('viewmode-free').click();
+  await expect(page.getByTestId('plate-strip-note')).toBeVisible();
+  const cajaLibre = (await page.getByTestId('plate-strip').boundingBox())!;
+  await captura(page, 'placas-13-libre', { x: 0, y: Math.max(0, cajaLibre.y - 6), width: 640, height: cajaLibre.height + 12 });
 });
