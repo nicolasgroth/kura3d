@@ -13,9 +13,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2, CircleDashed, Eye, LayoutGrid, Plus, Trash2 } from 'lucide-react';
 import { t } from '../../i18n';
-import { spreadPlatesName } from '../../store/actionLabels';
 import { useKuraStore } from '../../store/useKuraStore';
-import { runSpreadOnePlatePerObject } from '../shell/actionRunners';
+import { openPlateArrangePanel } from '../../store/plateArrangePanel';
 import { askDecision } from '../../utils/confirmDialog';
 import '../../styles/plateStrip.css';
 import '../../styles/viewMode.css';
@@ -185,16 +184,18 @@ export const PlateStrip: React.FC = () => {
         >
           <Plus size={13} aria-hidden="true" />
         </button>
+        {/* «Una placa por objeto» pasó a ser una opción del panel: un solo botón evita dos entradas que confunden. */}
         <button
           type="button"
-          className="kura-plate-btn"
-          onClick={runSpreadOnePlatePerObject}
+          className="kura-plate-btn kura-plate-btn-text"
+          onClick={() => openPlateArrangePanel()}
           disabled={busy}
-          aria-label={spreadPlatesName(language)}
-          title={`${spreadPlatesName(language)}. ${t(language, 'plates.action.onePerObject.tip')}`}
-          data-testid="plate-spread"
+          aria-label={t(language, 'plates.arrangeDlg.entry')}
+          title={t(language, 'plates.arrangeDlg.entryTip')}
+          data-testid="plate-arrange"
         >
           <LayoutGrid size={13} aria-hidden="true" />
+          <span>{t(language, 'plates.arrangeDlg.strip')}</span>
         </button>
         <button
           type="button"

@@ -19,6 +19,7 @@ import { makeId } from '../../core/scene/sceneObjects';
 import type { SceneObject } from '../../types/kura';
 import type { ScenePlate } from '../../types/plates';
 import { StoreOperationError } from '../commandErrors';
+import { tagLastPushedStep } from '../historyLabels';
 import { printPosedObjects } from '../sceneLayout';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
@@ -39,9 +40,10 @@ export interface PlateArrangeSliceState {
   /**
    * Calcula y aplica el reparto en un paso de deshacer (reutiliza la última vista previa si la escena y las opciones
    * no cambiaron). Devuelve el informe con ids reales de placa, o null si no se pudo (ocupado, cancelado, error).
-   * No cambia de modo: en armado mueve las poses de impresión.
+   * No cambia de modo: en armado mueve las poses de impresión. El paso queda nombrado «Repartir en placas» en el
+   * historial. `quiet`: no emite sus avisos (el panel «Repartir en placas…» da el suyo).
    */
-  arrangeOnPlatesApply: (options?: ArrangeOptions) => Promise<ArrangeReport | null>;
+  arrangeOnPlatesApply: (options?: ArrangeOptions, flags?: { quiet?: boolean }) => Promise<ArrangeReport | null>;
   /** Cancela en suave la vista previa en curso. */
   cancelArrangeOnPlates: () => void;
 }
@@ -147,7 +149,7 @@ export function createPlateArrangeSlice(ctx: StoreContext): Partial<KuraStoreSta
       set({ plateArrangeRunning: false });
     },
 
-    arrangeOnPlatesApply: async (options) => {
+    arrangeOnPlatesApply: async (options, flags) => {
       const opts = normalizeArrangeOptions(options);
       const key = JSON.stringify(opts);
       return runExclusive<ArrangeReport | null>('arrangePlates', null, async () => {
@@ -161,6 +163,7 @@ export function createPlateArrangeSlice(ctx: StoreContext): Partial<KuraStoreSta
         }
         const { scene: next, keyToId } = applyPlan(scene, plan);
         pushHistory();
+        tagLastPushedStep({ kind: 'arrangePlates' }, get().past);
         const firstUsed = plan.report.platesUsed.map((k) => keyToId.get(k)).find((id): id is string => typeof id === 'string');
         set({ objects: next.objects, plates: next.plates, ...(firstUsed ? { activePlateId: firstUsed } : {}) });
         if (plan.createdPlates.length) get().requestCameraPreset('plates');
@@ -170,8 +173,10 @@ export function createPlateArrangeSlice(ctx: StoreContext): Partial<KuraStoreSta
           platesUsed: plan.report.platesUsed.map(mapKey),
           splitGroups: plan.report.splitGroups.map((g) => ({ ...g, plates: g.plates.map(mapKey) })),
         };
-        get().addToast(tr('plates.arrange.toast.done', { count: report.placed.length, plates: report.platesUsed.length }), 'success');
-        if (report.unplaced.length) get().addToast(tr('plates.arrange.toast.unplaced', { count: report.unplaced.length }), 'info');
+        if (!flags?.quiet) {
+          get().addToast(tr('plates.arrange.toast.done', { count: report.placed.length, plates: report.platesUsed.length }), 'success');
+          if (report.unplaced.length) get().addToast(tr('plates.arrange.toast.unplaced', { count: report.unplaced.length }), 'info');
+        }
         return report;
       });
     },

@@ -20,6 +20,7 @@ import {
   Grid3x3,
   Group,
   Layers,
+  LayoutGrid,
   Merge,
   Minimize2,
   Move3d,
@@ -45,7 +46,8 @@ import { OBJECT_ROLES } from '../../core/scene/objectRole';
 import { t, type TranslationKey } from '../../i18n';
 import { plateToolBlockReason } from '../../core/scene/viewMode';
 import { ACTION_GROUPS, ACTION_SHORTCUTS, actionAvailability, type ActionGroupId, type ActionId } from '../../store/actionsCatalog';
-import { ACTION_DESCRIPTION_KEY, ACTION_TIP_KEY, actionName } from '../../store/actionLabels';
+import { ACTION_DESCRIPTION_KEY, ACTION_TIP_KEY, actionName, arrangePlatesName } from '../../store/actionLabels';
+import { arrangeScopeIds, openPlateArrangePanel } from '../../store/plateArrangePanel';
 import { ROLE_LABEL_KEY } from '../../store/roleLabels';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { ObjectRole } from '../../types/kura';
@@ -111,6 +113,20 @@ export const ActionGroupMenus: React.FC<ActionGroupMenusProps> = ({ pick, curren
   const printOnlyReason = plateToolBlockReason(layout);
   const state = { objects, selectedIds, groups, busyOperation, layout };
 
+  // «Repartir en placas…» (acción de escena, fuera del catálogo): abre el panel con sus opciones.
+  const arrangeReason = busyOperation ? 'rediseno.reason.busy' : arrangeScopeIds(objects, selectedIds, 'all').length === 0 ? 'plates.arrange.toast.nothing' : null;
+  const arrangeItem = (
+    <MenuItem
+      key="arrangeOnPlates"
+      icon={<LayoutGrid size={14} aria-hidden="true" />}
+      label={arrangePlatesName(language)}
+      tip={arrangeReason ? t(language, 'rediseno.reason.disabled', { reason: t(language, arrangeReason) }) : t(language, 'plates.arrangeDlg.entryTip')}
+      description={arrangeReason ? t(language, arrangeReason) : undefined}
+      disabled={arrangeReason !== null}
+      onSelect={pick(() => openPlateArrangePanel())}
+    />
+  );
+
   const item = (id: ActionId) => {
     const availability = actionAvailability(state, id);
     const shortcut = ACTION_SHORTCUTS[id];
@@ -169,8 +185,9 @@ export const ActionGroupMenus: React.FC<ActionGroupMenusProps> = ({ pick, curren
       {ACTION_GROUPS.map((group) => {
         const name = t(language, `rediseno.actions.group.${group.id}` as TranslationKey);
         return (
-          <SubMenu key={group.id} icon={GROUP_ICONS[group.id]} label={name} tip={t(language, 'r3a.actions.groupTip', { name, count: group.items.length })}>
+          <SubMenu key={group.id} icon={GROUP_ICONS[group.id]} label={name} tip={t(language, 'r3a.actions.groupTip', { name, count: group.items.length + (group.id === 'position' ? 1 : 0) })}>
             {group.items.map((id) => item(id))}
+            {group.id === 'position' && arrangeItem}
             {extras?.[group.id]}
           </SubMenu>
         );

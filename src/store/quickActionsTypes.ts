@@ -36,7 +36,9 @@ export type RepeatRecord =
   | { kind: 'align'; mode: AlignMode }
   | { kind: 'material'; materialPreset: MaterialPresetId }
   | { kind: 'group' }
-  | { kind: 'combine' };
+  | { kind: 'combine' }
+  /** Solo nombra el paso del historial («Repartir en placas»); no se repite con F4. */
+  | { kind: 'arrangePlates' };
 
 export type RepeatOutcome = 'done' | 'none' | 'notApplicable';
 
