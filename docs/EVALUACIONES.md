@@ -916,4 +916,20 @@ Consumo (modelo · duración; los tokens de esta tanda no quedaron anotados): `f
 
 El evaluador vio que, tras deshacer un reparto, las piezas por placa no coincidían (1/70/26 antes, 0/71/26 después). El orquestador lo repitió en navegador con el mismo 3MF real de 95 piezas más un cubo: deshacer restauró placas, asignación y posiciones idénticas (0 diferencias). No se reproduce.
 
-**Ronda de corrección de usabilidad** (`fix/usab-n26`, Sonnet · 15 min · 187 k; en `main` como 320b16a). Ocho objetivos: nombres de placa únicos, insignia según la posición en la tira, cama de la placa activa en el visor, foco y tamaño de texto del diálogo de cama, Cortar en un solo nivel, resumen de Repartir fijo, eje en el rótulo de arrastre y ayuda de atajos, un solo «Volver» en Asistentes. Verificación del orquestador: 4346 pruebas del programa en verde, 62 recorridos de navegador de lo tocado en verde, 35 recorridos de capturas regenerados y 0 enlaces rotos. Queda anotado: el «Volver» de Asistentes no se deshabilita mientras se crea la pieza. Reevaluación de usabilidad con un evaluador nuevo: en curso.
+**Ronda de corrección de usabilidad** (`fix/usab-n26`, Sonnet · 15 min · 187 k; en `main` como 320b16a). Ocho objetivos: nombres de placa únicos, insignia según la posición en la tira, cama de la placa activa en el visor, foco y tamaño de texto del diálogo de cama, Cortar en un solo nivel, resumen de Repartir fijo, eje en el rótulo de arrastre y ayuda de atajos, un solo «Volver» en Asistentes. Verificación del orquestador: 4346 pruebas del programa en verde, 62 recorridos de navegador de lo tocado en verde, 35 recorridos de capturas regenerados y 0 enlaces rotos. Queda anotado: el «Volver» de Asistentes no se deshabilita mientras se crea la pieza. Reevaluación abajo.
+
+**Usabilidad, segunda ronda: 80, sigue bajo el mínimo** (Opus · 20 min; sobre a477ed8). Sin bloqueos. El evaluador nuevo confirmó lo corregido (Cortar con un Esc, resumen de Repartir fijo, «Eje X» con Mayús, cama propia en la ficha) y encontró otra capa de fallos.
+
+| Funcionalidad | Ronda 1 | Ronda 2 | Lo que más resta ahora |
+|---|---|---|---|
+| Asistentes | 87 | 90 | Con un valor fuera de rango la vista previa desaparece sin aviso |
+| Cama por placa | 78 | 86 | La barra de estado inferior sigue mostrando la cama del proyecto; dos radios con el mismo nombre |
+| Repartir en placas | 84 | 84 | El aviso dice «placas existentes» cuando una era nueva; la vista previa no se encuadra |
+| Datos del proyecto | 86 | 82 | Contraste del texto de ejemplo (4,1:1) |
+| Simplificar | 88 | 80 | El foco se pierde al terminar la vista previa; el aviso de forma no destaca |
+| Paneles con «Volver» y Esc | 80 | 78 | Medir necesita dos Esc; al cerrar Dividir el foco se pierde |
+| Vistas y tira de placas | 72 | 76 | Se aceptan nombres de placa repetidos al renombrar; «Mover a placa» puede dejar la pieza fuera de la cama |
+| Arrastre por plano | 78 | 74 | La pista en pantalla y la guía dicen «Alt+arrastrar clona» y no clona; Mayús antes de arrastrar deselecciona |
+
+Patrón transversal: el foco cae al documento tras acciones que tardan o al cerrar paneles (Dividir, «Volver a Imprimir», vista previa de Simplificar, «Convertir en placas»). Segunda ronda de corrección en curso (`fix/usab-n26b`); si la tercera evaluación sigue bajo 85, se consulta al autor.
+

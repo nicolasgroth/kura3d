@@ -4,7 +4,7 @@
 
 ## En corto: último día (noche del 25 al 26 de noviembre)
 
-**Notas de la evaluación a ciegas de lo de esta noche** (mínimo 85): usabilidad **80, bajo el mínimo: corregido y en reevaluación** · código **85** · funcional **86**. Sin bloqueos.
+**Notas de la evaluación a ciegas de lo de esta noche** (mínimo 85): usabilidad **80 en dos rondas, bajo el mínimo: segunda corrección en curso** · código **85** · funcional **86**. Sin bloqueos.
 
 **Pruebas en `main`:** 4346 del programa y 188 del servidor MCP, todas en verde. Capturas de las guías: 35 recorridos en verde.
 
