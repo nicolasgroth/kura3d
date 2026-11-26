@@ -19,6 +19,7 @@ import { applyTransformToMesh } from '../primitives';
 import { gridOf } from './splitCells';
 import { measureOccupancy } from './splitOccupancy';
 import { cutKey, rememberCut } from './splitCutCache';
+import { planNaturalFromManifold } from './naturalPlan';
 import {
   AXIS_INDEX,
   connectorMargin,
@@ -299,6 +300,7 @@ export function planFromManifold(m: Manifold, bed: SplitBed, options: BedSplitPl
   const { counts, rot } = choice;
   const planes: SplitPlane[] = [];
   const bounds: number[][] = [];
+  const roomMm: Partial<Record<SplitAxis, number>> = {};
   for (const axis of AXES) {
     const a = AXIS_INDEX[axis];
     const n = counts[a];
@@ -310,6 +312,7 @@ export function planFromManifold(m: Manifold, bed: SplitBed, options: BedSplitPl
       const rs = rotatedSize(unit, rot);
       const bedAxis = rs.indexOf(Math.max(...rs));
       const allowed = opt.usable[bedAxis] - protrusion;
+      roomMm[axis] = allowed;
       const { oriented, owned } = orientForAxis(m, axis);
       try {
         axisPlanes = placePlanes(oriented, axis, min[a], max[a], n, allowed, opt.window, opt.connector, opt.planePositions[axis]);
@@ -353,6 +356,7 @@ export function planFromManifold(m: Manifold, bed: SplitBed, options: BedSplitPl
     counts: { x: counts[0], y: counts[1], z: counts[2] },
     planes,
     pieces,
+    roomMm,
     fitsWithoutCuts: planes.length === 0,
     connector: opt.connector,
     elapsedMs: performance.now() - t0,
@@ -370,7 +374,8 @@ export async function planBedSplit(obj: SceneObject, bed: SplitBed, options: Bed
   const world = applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale);
   const m = meshDataToManifold(wasm, world, undefined, obj.color);
   try {
-    const plan = planFromManifold(m, bed, options);
+    // «Por las partes de la figura»: planos en los estrechamientos (`naturalPlan.ts`)
+    const plan = options.strategy === 'natural' ? planNaturalFromManifold(m, world, bed, options, planFromManifold) : planFromManifold(m, bed, options);
     const occupancy = plan.fitsWithoutCuts || options.countOccupancy === false
       ? undefined
       : measureOccupancy(

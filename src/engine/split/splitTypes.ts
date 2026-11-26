@@ -171,6 +171,38 @@ export interface BedSplitPlanOptions {
   minFragmentMm3?: number;
   /** Calcula `occupancy` (por defecto `true`). */
   countOccupancy?: boolean;
+  /**
+   * Cómo se ubican los planos: `'grid'` (por defecto) = rejilla pareja desplazada hacia la sección más simple;
+   * `'natural'` = «Por las partes de la figura» (`naturalPlan.ts`): los planos van a los estrechamientos de la
+   * figura (cuello, cintura, tobillos) y se completa con cortes rectos donde no alcanza.
+   */
+  strategy?: SplitStrategy;
+}
+
+/** Estrategia de ubicación de los planos (ver `BedSplitPlanOptions.strategy`). */
+export type SplitStrategy = 'grid' | 'natural';
+
+/** Resumen de «Por las partes de la figura» en el plan. */
+export interface SplitNaturalSummary {
+  /** Planos puestos en estrechamientos y planos rectos que completaron. */
+  naturalCuts: number;
+  straightCuts: number;
+  /** Estrechamientos encontrados en los ejes que había que cortar (todos, se usaran o no). */
+  candidates: Array<{
+    axis: SplitAxis;
+    kind: 'neck' | 'step';
+    position: number;
+    sectionAreaMm2: number;
+    depth: number;
+    /** Islas de la sección real y si admite la unión (conector o solape). */
+    islands: number;
+    admitsJoint: boolean;
+    /** Puntaje como sitio de corte (0 = descartado: tiras o islas diminutas). */
+    weight: number;
+    used: boolean;
+  }>;
+  /** Milisegundos del perfil de secciones y la elección. */
+  analysisMs: number;
 }
 
 /** Firmeza prevista de una unión (resumen del plan, antes de dividir): lo que `executeBedSplitGeometry` produce. */
@@ -212,6 +244,8 @@ export interface SplitPlane {
   smallestIslandMm2: number;
   /** Si la sección admite la unión: cabe el conector o, en pared delgada, el solape de borde (siempre `false` sin conector). */
   admitsConnectors: boolean;
+  /** Con `strategy: 'natural'`: el plano está en un estrechamiento (`natural`) o es un corte recto que completa (`straight`). */
+  origin?: 'natural' | 'straight';
 }
 
 /** Pieza estimada del plan (caja de la celda recortada a la caja del modelo). */
@@ -260,6 +294,11 @@ export interface BedSplitPlan {
    * `assemblyPreview`, en la misma corrida. Ausente si no se midió.
    */
   jointPreview?: SplitPreviewJoint[];
+  /** Largo máximo de un tramo por eje cortado (mm, cama útil menos el saliente del macho). */
+  roomMm?: Partial<Record<SplitAxis, number>>;
+  /** Estrategia usada y, con `'natural'`, su resumen. Ausente = rejilla. */
+  strategy?: SplitStrategy;
+  natural?: SplitNaturalSummary;
   elapsedMs: number;
 }
 
