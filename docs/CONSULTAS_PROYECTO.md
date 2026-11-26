@@ -16,5 +16,8 @@ Archivos en `.eval-tmp/laminador/` (no están en git):
 
 Qué mirar al abrirlo en Bambu Studio u OrcaSlicer: (a) si abre sin error ni aviso de archivo ajeno; (b) cuántas placas aparecen; (c) si cada pieza está en su placa y al centro, o todas encimadas en la primera; (d) si se conservan los tres colores y los nombres.
 
-### 2. Tiempos de lo pendiente
+### 2. Usabilidad de lo de la noche: tres rondas bajo 85 (80, 80, 81)
+Cada evaluador nuevo confirma lo corregido y encuentra otra capa de detalles, sobre todo en placas y Simplificar. Sin bloqueos. Opciones: (a) una ronda más, acotada a placas y Simplificar, y volver a evaluar solo eso; (b) dejar la nota como está, anotar lo pendiente y seguir con funcionalidades nuevas; (c) una pasada de diseño de la tira de placas antes de seguir corrigiendo. Detalle en `docs/EVALUACIONES.md`.
+
+### 3. Tiempos de lo pendiente
 Estimación por tarea en `docs/ESTIMACION.md`, para cuando quieras revisarla.

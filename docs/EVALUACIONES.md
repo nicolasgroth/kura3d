@@ -933,7 +933,22 @@ El evaluador vio que, tras deshacer un reparto, las piezas por placa no coincid�
 
 Patrón transversal: el foco cae al documento tras acciones que tardan o al cerrar paneles (Dividir, «Volver a Imprimir», vista previa de Simplificar, «Convertir en placas»). Segunda ronda de corrección en curso (`fix/usab-n26b`); si la tercera evaluación sigue bajo 85, se consulta al autor.
 
-**Segunda ronda de corrección de usabilidad** (`fix/usab-n26b`, Sonnet · 19 min · 267 k; en `main` como 32a104b). Ocho objetivos: foco al cerrar paneles y tras acciones que tardan, Esc de Medir, nombres de placa repetidos al renombrar, «Mover a placa» dentro de la cama, aviso de repartir, pista de Alt y Mayús al arrastrar, aviso de Simplificar, cama en la barra de estado. Verificación del orquestador: 4366 pruebas del programa y 188 del servidor MCP en verde; 141 recorridos de navegador de lo tocado (139 al primer intento; los 2 restantes eran del recorrido de imanes, que no confirmaba el diálogo «Descartar borrador», y pasan tras ajustarlo); recorrido nuevo `usab-n26b` (un Esc en Medir, también con el tooltip abierto; nombre repetido rechazado); 35 capturas regeneradas y 0 enlaces rotos. Tercera evaluación de usabilidad: en curso.
+**Segunda ronda de corrección de usabilidad** (`fix/usab-n26b`, Sonnet · 19 min · 267 k; en `main` como 32a104b). Ocho objetivos: foco al cerrar paneles y tras acciones que tardan, Esc de Medir, nombres de placa repetidos al renombrar, «Mover a placa» dentro de la cama, aviso de repartir, pista de Alt y Mayús al arrastrar, aviso de Simplificar, cama en la barra de estado. Verificación del orquestador: 4366 pruebas del programa y 188 del servidor MCP en verde; 141 recorridos de navegador de lo tocado (139 al primer intento; los 2 restantes eran del recorrido de imanes, que no confirmaba el diálogo «Descartar borrador», y pasan tras ajustarlo); recorrido nuevo `usab-n26b` (un Esc en Medir, también con el tooltip abierto; nombre repetido rechazado); 35 capturas regeneradas y 0 enlaces rotos. Tercera evaluación abajo.
 
 Consumo de las evaluaciones y rondas de esta mañana: funcional (Opus · 14 min · 189 k), usabilidad 1 (Opus · 14 min · 198 k), corrección 1 (Sonnet · 15 min · 187 k), usabilidad 2 (Opus · 13 min · 200 k), corrección 2 (Sonnet · 19 min · 267 k).
+
+**Usabilidad, tercera ronda: 81, sigue bajo el mínimo** (Opus · unos 15 min; sobre c0a2b16). Sin bloqueos. Con tres rondas bajo 85, corresponde consultar al autor antes de seguir.
+
+| Funcionalidad | R1 | R2 | R3 | Lo que más resta ahora |
+|---|---|---|---|---|
+| Asistentes | 87 | 90 | 90 | Nombre accesible largo de la tarjeta; la vista previa se dibuja sobre otra pieza |
+| Cama por placa | 78 | 86 | 88 | Rótulo de cama truncado en el visor; nombres accesibles con dos patrones |
+| Datos del proyecto | 86 | 82 | 87 | La lista de borradores no muestra la descripción; etiquetas de 11,5 px |
+| Repartir en placas | 84 | 84 | 85 | El aviso con «Deshacer» sigue visible tras deshacer con Ctrl+Z; la vista previa no se encuadra |
+| Paneles con «Volver» y Esc | 80 | 78 | 84 | Foco al abrir distinto según el panel; «Volver» tras abrir desde la paleta deja el foco en otra herramienta |
+| Arrastre por plano | 78 | 74 | 83 | El rótulo se sale del visor y tapa un botón; la pista fija no cambia según la vista |
+| Vistas y tira de placas | 72 | 76 | 76 | «Mover a placa» dejó la placa destino «Fuera de volumen» (pieza al borde); la paleta ofrece mover a la placa actual; un grupo y una placa con el mismo nombre |
+| Simplificar | 88 | 80 | 72 | Desde la paleta (Ctrl+K) «Simplificar…» aplica de inmediato sin vista previa; tras la vista previa el foco queda en el botón de aplicar |
+
+Lectura del orquestador: cada evaluador nuevo confirma lo corregido y encuentra otra capa, casi siempre en placas y en vocabulario; la nota de Simplificar baja porque cada ronda prueba un camino distinto (esta vez la paleta). Hay que revisar por qué «Mover a placa» sigue dejando la placa fuera de volumen después de la corrección de la ronda 2.
 
