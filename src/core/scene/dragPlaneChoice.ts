@@ -20,12 +20,16 @@ export type DragPlane = 'XZ' | 'XY' | 'ZY';
 /** Índice del eje normal de cada plano. */
 export const DRAG_PLANE_NORMAL: Readonly<Record<DragPlane, 0 | 1 | 2>> = { XZ: 1, XY: 2, ZY: 0 };
 
-/** Cuánto debe superar el candidato al plano actual (en componente de la dirección de la cámara) para cambiar. */
+/** Cuánto debe superar un plano vertical al otro (en componente de la dirección de la cámara) para cambiar entre ellos. */
 export const DRAG_PLANE_HYSTERESIS = 1.15;
-/** Ventaja del plano horizontal: en una vista isométrica o inclinada gana al vertical. */
-export const DRAG_HORIZONTAL_BIAS = 1.3;
-
-const PLANE_OF_NORMAL: Record<number, DragPlane> = { 0: 'ZY', 1: 'XZ', 2: 'XY' };
+/**
+ * Elevación de la cámara (seno del ángulo sobre el horizonte) bajo la cual la vista cuenta como «de frente» o «de lado»
+ * y se arrastra en vertical: unos 15°. Sobre eso (isométrica, la vista inicial de la app a unos 29°, superior) se arrastra
+ * sobre el plano horizontal, que es lo que se espera al mover una pieza por la cama.
+ */
+export const DRAG_VERTICAL_MAX_ELEVATION = 0.26;
+/** Banda de histéresis alrededor de ese límite: orbitando cerca del cruce el plano no salta de un arrastre a otro. */
+export const DRAG_ELEVATION_BAND = 0.04;
 
 export interface ChoosePlaneOptions {
   /** Plano que se venía usando (histéresis). */
@@ -40,21 +44,26 @@ function facingVerticalPlane(dir: Vec3): DragPlane {
 }
 
 /**
- * Plano de arrastre para una cámara que mira en `cameraDir` (no hace falta normalizar). El plano elegido es el
- * principal cuya normal está más alineada con la dirección de la cámara, con ventaja para el horizontal.
+ * Plano de arrastre para una cámara que mira en `cameraDir` (no hace falta normalizar). Horizontal salvo que la cámara
+ * mire casi de frente o de lado (elevación bajo `DRAG_VERTICAL_MAX_ELEVATION`), caso en que se usa el plano vertical
+ * que la enfrenta.
  */
 export function chooseDragPlane(cameraDir: Vec3, opts: ChoosePlaneOptions = {}): DragPlane {
   if (opts.alt) return facingVerticalPlane(cameraDir);
-  const w: Record<DragPlane, number> = {
-    XZ: Math.abs(cameraDir[1]) * DRAG_HORIZONTAL_BIAS,
-    XY: Math.abs(cameraDir[2]),
-    ZY: Math.abs(cameraDir[0]),
-  };
-  let best: DragPlane = 'XZ';
-  for (const p of ['XY', 'ZY'] as const) if (w[p] > w[best]) best = p;
-  const prev = opts.previous;
-  if (prev && prev !== best && w[best] < w[prev] * DRAG_PLANE_HYSTERESIS) return prev;
-  return best;
+  const len = Math.hypot(cameraDir[0], cameraDir[1], cameraDir[2]) || 1;
+  const elevation = Math.abs(cameraDir[1]) / len;
+  const prev = opts.previous ?? null;
+  // Viniendo del horizontal hay que bajar un poco más para pasar a vertical, y viceversa.
+  const limit = prev === 'XZ' ? DRAG_VERTICAL_MAX_ELEVATION - DRAG_ELEVATION_BAND
+    : prev ? DRAG_VERTICAL_MAX_ELEVATION + DRAG_ELEVATION_BAND
+      : DRAG_VERTICAL_MAX_ELEVATION;
+  if (elevation >= limit) return 'XZ';
+  const facing = facingVerticalPlane(cameraDir);
+  if (prev && prev !== 'XZ' && prev !== facing) {
+    const w = { XY: Math.abs(cameraDir[2]), ZY: Math.abs(cameraDir[0]) };
+    if (w[facing as 'XY' | 'ZY'] < w[prev as 'XY' | 'ZY'] * DRAG_PLANE_HYSTERESIS) return prev;
+  }
+  return facing;
 }
 
 /** Nombre del plano como lo ve el usuario (X derecha, Y fondo, Z arriba): horizontal = «XY». */

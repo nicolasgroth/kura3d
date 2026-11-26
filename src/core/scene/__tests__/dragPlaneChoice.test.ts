@@ -30,14 +30,20 @@ describe('chooseDragPlane', () => {
     expect(chooseDragPlane([0, -0.2, -0.98])).toBe('XY');
   });
 
+  it('la vista inicial de la app (cámara a unos 29° sobre el horizonte) arrastra sobre el plano horizontal', () => {
+    expect(chooseDragPlane([-0.581, -0.48, -0.657])).toBe('XZ');
+  });
+
   it('histéresis: cerca del cruce se conserva el plano anterior', () => {
-    // Justo del lado donde el candidato supera al actual por menos del margen.
-    const dir: Vec3 = [0, -0.62, -0.78];
-    const fresh = chooseDragPlane(dir);
-    const other = fresh === 'XZ' ? 'XY' : 'XZ';
-    expect(chooseDragPlane(dir, { previous: other })).toBe(other);
+    // Elevación justo en el límite (0,26): manda el plano que se venía usando.
+    const dir: Vec3 = [0, -0.26, -0.9656];
+    expect(chooseDragPlane(dir, { previous: 'XZ' })).toBe('XZ');
+    expect(chooseDragPlane(dir, { previous: 'XY' })).toBe('XY');
     // Lejos del cruce el candidato gana aunque venga de otro plano.
     expect(chooseDragPlane([0, -1, 0], { previous: 'XY' })).toBe('XZ');
+    expect(chooseDragPlane([0, -0.05, -1], { previous: 'XZ' })).toBe('XY');
+    // Entre los dos verticales también: casi a 45° se conserva el que venía.
+    expect(chooseDragPlane([-0.72, 0, -0.69], { previous: 'XY' })).toBe('XY');
   });
 
   it('Alt fuerza el vertical que mira a la cámara', () => {
