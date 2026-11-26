@@ -199,6 +199,30 @@ describe('MCP sin interfaz: seguridad de las herramientas de placas', () => {
     expect(await failCode('kura_create_plate', {})).toBe('precondition');
   });
 
+  it('kura_set_plate_bed (P7): perfil, medidas y vuelta a la del proyecto; la vecina se corre; entrada hostil', async () => {
+    const { headless, ok, failCode } = await setup();
+    await boxes(headless, 1);
+    const { plate: p2 } = await ok('kura_create_plate', {});
+    const p1 = (await ok('kura_list_plates')).plates[0];
+    const mini = await ok('kura_set_plate_bed', { plateId: p2.id, profileId: 'bambu-a1-mini' });
+    expect(mini.changed).toBe(true);
+    expect(mini.plate.bed).toMatchObject({ widthMm: 180, own: true, profileId: 'bambu-a1-mini' });
+    const big = await ok('kura_set_plate_bed', { plateId: p1.id, widthMm: 600, depthMm: 600, heightMm: 400, name: 'Grande' });
+    expect(big.relocated).toEqual([p2.id]);
+    const list = await ok('kura_list_plates');
+    expect(list.plates[0].bed).toMatchObject({ widthMm: 600, name: 'Grande', own: true });
+    expect(list.plates[1].origin[0]).toBeGreaterThanOrEqual(300 + 90 + 40 - 1e-6);
+    expect((await ok('kura_set_plate_bed', { plateId: p1.id, widthMm: 600, depthMm: 600, heightMm: 400, name: 'Grande' })).changed).toBe(false);
+    expect((await ok('kura_set_plate_bed', { plateId: p1.id, project: true })).plate.bed.own).toBe(false);
+    expect(await failCode('kura_set_plate_bed', { plateId: 'nope', project: true })).toBe('not-found');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id, profileId: 'no-existe' })).toBe('not-found');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id })).toBe('invalid-params');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id, project: true, profileId: 'bambu-a1-mini' })).toBe('invalid-params');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id, widthMm: 10 })).toBe('invalid-params');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id, widthMm: 20_000, depthMm: 10, heightMm: 10 })).not.toBe('');
+    expect(await failCode('kura_set_plate_bed', { plateId: p1.id, widthMm: -1, depthMm: 10, heightMm: 10 })).not.toBe('');
+  });
+
   it('la exportación por placa sigue confinada a la carpeta permitida', async () => {
     const { headless, ok, failCode, exportDir } = await setup();
     await boxes(headless, 2);

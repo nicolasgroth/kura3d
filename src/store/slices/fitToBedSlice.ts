@@ -31,17 +31,9 @@ export interface FitToBedSliceState {
   applyFitToBed: (ids: string[], kind: FitAlternativeKind, bed?: FitBed) => Promise<{ analysis: FitAnalysisResult; applied: FitAlternative } | null>;
 }
 
-/** Cama activa (perfil o medidas propias) con su margen. */
-export function activeFitBed(
-  s: PlateBedSource,
-  targets?: ReadonlyArray<Pick<SceneObject, 'plateRef'>>,
-): FitBed {
-  if (!s.plates?.length) return fitBedOf(s.printerProfile, s.customBedDimensions);
-  // Con placas, la cama es la de la placa de las piezas (o la activa).
-  const { bed } = plateFrameFor(s, targets);
-  // El margen de una cama propia (otra impresora) manda sobre el del perfil del proyecto.
-  return fitBedOf(s.printerProfile, { width: bed.widthMm, depth: bed.depthMm, height: bed.heightMm }, bed.marginMm);
-}
+/** Cama activa (perfil o medidas propias) con su margen; vive en `core/scene/plateFitBed.ts` (sin store). */
+import { activeFitBed } from '../../core/scene/plateFitBed';
+export { activeFitBed };
 
 /** Objetos ajustables: existentes, desbloqueados y con malla (los negativos viajan con el bloque). */
 export function fitTargets(objects: readonly SceneObject[], ids: readonly string[]): SceneObject[] {

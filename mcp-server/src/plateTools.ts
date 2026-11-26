@@ -14,7 +14,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { ARRANGE_CRITERIA, ARRANGE_ORIENTS, ARRANGE_RANGES } from '../../src/core/scene/plateArrangeTypes';
-import { MAX_PLATE_NAME, MAX_PLATES } from '../../src/core/scene/plates';
+import { MAX_PLATE_BED_MM, MAX_PLATE_NAME, MAX_PLATES } from '../../src/core/scene/plates';
 import { idSchema, rangeSchema } from './schemas.js';
 import { dispatchWithFallback, type KuraToolContext } from './tools.js';
 
@@ -140,6 +140,32 @@ export function registerPlateTools(server: Pick<McpServer, 'registerTool'>, ctx:
       },
     },
     async (args) => dispatchWithFallback(ctx, 'arrange_on_plates', { ...args }, () => h().arrange({ ...args })),
+  );
+
+  server.registerTool(
+    'kura_set_plate_bed',
+    {
+      title: 'Set the bed of a print plate',
+      description:
+        'Gives a print plate its own bed (another printer) or puts it back on the project bed. Exactly one of: project: true; ' +
+        'profileId (a built-in printer profile, e.g. "bambu-a1-mini"; with the app connected also the user\'s "My beds"); or ' +
+        `widthMm, depthMm and heightMm (each > 0 and ≤ ${MAX_PLATE_BED_MM} mm) with optional marginMm (0–50) and name. ` +
+        'Out of volume, arrange, fit to printer, orient, split and per-plate export then use that bed. If the new bed would ' +
+        'overlap another plate, that plate moves with its parts (relocated lists them; locked parts stay and are listed in ' +
+        'keptLocked). One undo step. Fails with not-found for an unknown plate or profile and precondition when there is no ' +
+        'room left to move the neighbours.',
+      inputSchema: {
+        plateId,
+        project: z.literal(true).optional().describe('true = use the project bed again.'),
+        profileId: idSchema.optional().describe('Printer profile id.'),
+        widthMm: z.number().positive().max(MAX_PLATE_BED_MM).optional().describe('Bed width (X) in mm.'),
+        depthMm: z.number().positive().max(MAX_PLATE_BED_MM).optional().describe('Bed depth (Y) in mm.'),
+        heightMm: z.number().positive().max(MAX_PLATE_BED_MM).optional().describe('Maximum print height (Z) in mm.'),
+        marginMm: z.number().min(0).max(50).optional().describe('Margin per side in mm.'),
+        name: z.string().min(1).max(MAX_PLATE_NAME).optional().describe('Bed name shown on the plate (default: its measures).'),
+      },
+    },
+    async (args) => dispatchWithFallback(ctx, 'set_plate_bed', { ...args }, () => h().setBed({ ...args })),
   );
 
   server.registerTool(

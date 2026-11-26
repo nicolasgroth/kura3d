@@ -10,7 +10,7 @@
 
 import type { FitAlternativeKind, FitBed } from '../engine/fitToBed';
 import type { FitAnalysisResult } from '../core/operations/fitOperations';
-import { activeFitBed } from './slices/fitToBedSlice';
+import { activeFitBed } from '../core/scene/plateFitBed';
 import { OPERATION_RANGES as OR } from '../engine/operationLimits';
 import type { SceneObject } from '../types/kura';
 import { CommandError } from './commandErrors';
