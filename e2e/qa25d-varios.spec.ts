@@ -105,7 +105,7 @@ test('Acerca de: abre arriba tras desplazar, zona desplazable por teclado, frase
     await abrirAcerca();
     const top = await page.locator('.kura-about').evaluate((el) => el.scrollTop);
     expect(top, `reabrir ${i}: no abre arriba`).toBe(0);
-    await expect(page.locator('.kura-about-logo')).toBeInViewport();
+    await expect(page.locator('.kura-about .kura-brand-logo')).toBeInViewport();
     frases.add((await page.locator('.kura-about-quote').innerText()).trim());
     await page.locator('.kura-about').focus();
     await page.keyboard.press('End');

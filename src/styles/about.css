@@ -212,11 +212,3 @@ button.kura-brand-badge.kura-about-version-btn:hover {
     transform: translate(-50%, 0);
   }
 }
-
-.kura-about-logo {
-  display: block;
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 4px;
-  object-fit: contain;
-}

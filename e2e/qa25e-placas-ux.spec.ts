@@ -37,7 +37,9 @@ test('Mover a placa: ausente con una placa, en el primer nivel con dos; insignia
   await expect(page.getByTestId('plate-badge').first()).toBeVisible();
   const lista = await page.getByRole('treeitem').first().innerText();
   console.log('QA25E fila con insignia:', JSON.stringify(lista));
-  expect(lista).toMatch(/Placa 1/);
+  // La insignia muestra un rótulo corto por posición («P1») y lleva el nombre completo en su nombre accesible.
+  expect(lista).toMatch(/P1/);
+  await expect(page.getByTestId('plate-badge').first()).toHaveAttribute('aria-label', /Placa 1/);
 
   await fila.click();
   await fila.press('Shift+F10');

@@ -62,7 +62,11 @@ export function useRecentProjects(): RecentProjectsView {
   const [enabled, setEnabled] = useState(() => (desktop ? true : isRecentRememberEnabled()));
   const [entries, setEntries] = useState<RecentEntry[]>(() => (desktop ? [] : webEntries()));
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  // Se marca vivo al montar (y no solo al crear la referencia): en modo estricto React monta, desmonta y vuelve a montar.
+  useEffect(() => {
+    alive.current = true;
+    return () => { alive.current = false; };
+  }, []);
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
 

@@ -69,7 +69,7 @@ for (const [w, h] of [[1440, 900], [1024, 768]] as const) {
     await page.evaluate(async (data) => { await (window as any).__s.getState().openProject(async () => ({ name: 'Datos.kura', bytes: new Uint8Array(data) })); }, bytes);
     await expect(page.getByText('Este proyecto tiene notas.')).toBeVisible();
     await page.screenshot({ path: `${EV}/datos-aviso-notas-${w}.png` });
-    await page.getByRole('button', { name: 'Ver las notas del proyecto' }).click();
+    await page.getByRole('button', { name: 'Ver notas', exact: true }).click();
     await expect(page.getByLabel('Notas')).toBeFocused();
     await expect(page.getByLabel('Notas')).toHaveValue(/NOTA-SECRETA-123/);
     await expect(page.getByLabel('Descripción')).toHaveValue(/^Desc <img/);

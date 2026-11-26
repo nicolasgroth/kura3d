@@ -77,7 +77,7 @@ for (const tema of ['light', 'dark'] as const) {
     await expect(aviso).toBeVisible();
     await expect(section.getByTestId('project-info-created')).toHaveText(createdAntes ?? '');
     await expect(section.getByTestId('project-info-modified')).toContainText('este minuto');
-    await page.getByRole('button', { name: 'Ver las notas del proyecto' }).click();
+    await page.getByRole('button', { name: 'Ver notas', exact: true }).click();
     await expect(page.getByLabel('Notas')).toBeFocused();
     await expect(page.getByLabel('Notas')).toHaveValue(/Imprimir en PETG/);
 

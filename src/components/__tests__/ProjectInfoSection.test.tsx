@@ -9,7 +9,8 @@
  * @license MIT
  */
 
-import { cleanup, render, screen, within } from '@testing-library/react';
+import React from 'react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { t } from '../../i18n';
@@ -114,5 +115,18 @@ describe('Datos del proyecto (panel)', () => {
     expect(within(group).getByTestId('recent-description').textContent).toBe('Caja con tapa');
     expect(within(group).getByTestId('recent-modified').textContent).toContain('hace 2 horas');
     expect(group.textContent).not.toContain('SECRETO');
+  });
+
+  it('en modo estricto, guardar agrega el proyecto a recientes sin tener que volver a montar el panel', async () => {
+    localStorage.removeItem(RECENT_PROJECTS_KEY);
+    localStorage.removeItem(RECENT_INFO_KEY);
+    render(<React.StrictMode><ProjectFileActions /></React.StrictMode>);
+    const group = screen.getByRole('group', { name: t('es', 'project.recent.title') });
+    expect(within(group).queryByTestId('recent-description')).toBeNull();
+    await act(async () => {
+      useKuraStore.setState({ projectName: 'Soporte.kura', projectInfo: { ...useKuraStore.getState().projectInfo, description: 'Soporte de auriculares' } } as never);
+      useKuraStore.setState({ savedProject: { ...(useKuraStore.getState().savedProject as object) } } as never);
+    });
+    expect(within(screen.getByRole('group', { name: t('es', 'project.recent.title') })).getByTestId('recent-description').textContent).toBe('Soporte de auriculares');
   });
 });
