@@ -34,9 +34,9 @@ for (const ancho of [1440, 1024]) {
       const panel = page.locator('.kura-asis-panel');
       expect(await panel.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
 
-      await page.getByRole('button', { name: 'Hogar y electricidad' }).click();
+      await page.getByRole('button', { name: 'Hogar y electricidad', exact: true }).click();
       await expect(tarjetas).toHaveCount(1);
-      await page.getByRole('button', { name: 'Todos' }).click();
+      await page.getByRole('button', { name: 'Todos', exact: true }).click();
       await page.getByRole('searchbox', { name: 'Buscar asistentes' }).fill('llavero');
       await expect(tarjetas).toHaveCount(1);
       await page.getByRole('searchbox').fill('');
@@ -45,16 +45,16 @@ for (const ancho of [1440, 1024]) {
       await page.keyboard.press('ArrowRight');
       await expect(tarjetas.nth(1)).toBeFocused();
 
-      await page.getByRole('button', { name: 'Cajas y organización' }).click();
+      await page.getByRole('button', { name: 'Cajas y organización', exact: true }).click();
       await page.locator('.kura-asis-card[data-recipe="kura.caja-tapa"]').click();
-      const ancho_ = page.getByRole('spinbutton', { name: 'Ancho interior' });
+      const ancho_ = page.getByLabel('Ancho interior', { exact: true });
       const deslizador = page.getByRole('slider', { name: 'Deslizador de Ancho interior' });
       await expect(deslizador).toBeVisible();
       await deslizador.focus();
       await page.keyboard.press('ArrowRight');
       await expect(ancho_).not.toHaveValue('80');
       await ancho_.fill('10+5*10');
-      await ancho_.press('Enter');
+      await ancho_.press('Tab');
       await expect(ancho_).toHaveValue('60');
       await expect(deslizador).toHaveAttribute('aria-valuetext', /60 mm/);
 
@@ -62,7 +62,7 @@ for (const ancho of [1440, 1024]) {
       await expect(page.getByRole('spinbutton', { name: 'Holgura de la tapa' })).toBeVisible();
 
       await page.keyboard.press('Escape');
-      await expect(page.getByRole('button', { name: 'Cajas y organización' })).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.getByRole('button', { name: 'Cajas y organización', exact: true })).toHaveAttribute('aria-pressed', 'true');
       await expect(page.locator('.kura-asis-card[data-recipe="kura.caja-tapa"]')).toBeFocused();
       expect(errores).toEqual([]);
     });

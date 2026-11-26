@@ -66,8 +66,7 @@ for (const tema of ['light', 'dark'] as const) {
     expect(await clavesCrudas(page, '.kura-simplify-section')).toEqual([]);
     await page.keyboard.press('Control+z');
     expect(await tris(page, s.id)).toBe(t0);
-    expect(errs, errs.join('
-')).toEqual([]);
+    expect(errs, errs.join('\n')).toEqual([]);
   });
 
   test(`placa con 3 agujeros a 12 triángulos: segura aplicada con aviso, botones a la vista a 1280×720, «de todos modos» en un paso (${tema})`, async ({ page }) => {
