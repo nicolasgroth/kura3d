@@ -23,6 +23,7 @@ export const RECIPE_OPS = [
   'hollow_object',
   'create_thread',
   'create_screw_container',
+  'create_pipe_coupling',
   'import_svg',
   'plane_cut',
   'combine_objects',
@@ -153,7 +154,8 @@ export const Check = z.discriminatedUnion('kind', [
   }),
   /**
    * Enroscado de un recipiente con tapa roscada: `refs` = [paso del cuerpo, paso de la tapa], los dos
-   * `create_screw_container` con las mismas medidas. Solo avisa (`warn`): nunca cambia lo que se crea.
+   * `create_screw_container` con las mismas medidas, o un acople de tubería: [macho, hembra] de `create_pipe_coupling`.
+   * Solo avisa (`warn`): nunca cambia lo que se crea.
    */
   z.strictObject({
     kind: z.literal('screw_fit'),

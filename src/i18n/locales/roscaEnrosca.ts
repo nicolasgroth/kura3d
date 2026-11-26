@@ -83,6 +83,31 @@ const TABLE = {
     'जोड़ी बनाएँ',
     '创建配对',
   ],
+  // Acople de tubería a presión: mismo chequeo, sin hélice (la hembra a tope en el hombro).
+  'pressFit.ok': [
+    'Encaja: holgura mínima {mm} mm',
+    'Fits: minimum clearance {mm} mm',
+    'Passt: kleinstes Spiel {mm} mm',
+    'S’emboîte : jeu minimal {mm} mm',
+    'फ़िट होता है: न्यूनतम ढील {mm} mm',
+    '可以插入:最小间隙 {mm} mm',
+  ],
+  'pressFit.tight': [
+    'Sin holgura suficiente: {mm} mm en el punto más justo (menos de 0,1 mm se pega al imprimir). Sube la holgura.',
+    'Not enough clearance: {mm} mm at the tightest spot (under 0.1 mm fuses when printed). Raise the clearance.',
+    'Zu wenig Spiel: {mm} mm an der engsten Stelle (unter 0,1 mm verschmilzt beim Drucken). Erhöhe das Spiel.',
+    'Jeu insuffisant : {mm} mm au point le plus serré (sous 0,1 mm, ça se soude à l’impression). Augmente le jeu.',
+    'ढील कम है: सबसे तंग जगह पर {mm} mm (0.1 mm से कम छपाई में चिपक जाती है)। ढील बढ़ाएँ।',
+    '间隙不足:最紧处 {mm} mm(低于 0.1 mm 打印时会粘连)。请调大间隙。',
+  ],
+  'pressFit.interference': [
+    'Interferencia: la espiga y la boca se cruzan ({mm3} mm³). Sube la holgura.',
+    'Interference: the spigot and the socket overlap ({mm3} mm³). Raise the clearance.',
+    'Überschneidung: Zapfen und Muffe überlappen sich ({mm3} mm³). Erhöhe das Spiel.',
+    'Interférence : l’embout et le manchon se chevauchent ({mm3} mm³). Augmente le jeu.',
+    'टकराव: नली और सॉकेट एक-दूसरे में घुसते हैं ({mm3} mm³)। ढील बढ़ाएँ।',
+    '干涉:插头与承口相互重叠({mm3} mm³)。请调大间隙。',
+  ],
 } satisfies Record<string, Row>;
 
 type Key = keyof typeof TABLE;

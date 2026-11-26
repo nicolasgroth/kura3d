@@ -11,9 +11,10 @@ import caja from '../examples/caja-tapa.recipe.json';
 import llavero from '../examples/llavero.recipe.json';
 import placa from '../examples/placa-enchufe.recipe.json';
 import tapaRoscada from '../examples/tapa-roscada.recipe.json';
+import acopleTuberia from '../examples/acople-tuberia.recipe.json';
 
 /** Recetas incorporadas en el orden en que se listan. */
-export const BUILTIN_RECIPES: readonly unknown[] = Object.freeze([caja, tapaRoscada, llavero, placa]);
+export const BUILTIN_RECIPES: readonly unknown[] = Object.freeze([caja, tapaRoscada, llavero, placa, acopleTuberia]);
 
 /** Copia profunda de la receta incorporada `id` (quien la recibe puede mutarla), o `undefined`. */
 export function builtinRecipe(id: string): unknown | undefined {

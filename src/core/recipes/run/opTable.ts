@@ -18,6 +18,8 @@ import type { OpRunner } from './ops/opSupport';
 import { placeOp } from './ops/placeOp';
 import { screwContainerOp } from './ops/screwContainerOp';
 import { SCREW_CONTAINER_NUMBER_KEYS } from '../../bus/screwContainerSchema';
+import { pipeCouplingOp } from './ops/pipeCouplingOp';
+import { PIPE_COUPLING_NUMBER_KEYS } from '../../bus/pipeCouplingSchema';
 
 export type RecipeOp = (typeof RECIPE_OPS)[number];
 
@@ -52,6 +54,12 @@ export const RECIPE_OP_TABLE: Readonly<Record<RecipeOp, RecipeOpSpec>> = Object.
     command: 'create_screw_container',
     args: ['part', ...SCREW_CONTAINER_NUMBER_KEYS, 'grip', 'base', 'position'],
     run: screwContainerOp,
+  },
+  create_pipe_coupling: {
+    // El paso crea UNA mitad (`part`); el comando del bus crea el par con esta misma receta.
+    command: 'create_pipe_coupling',
+    args: ['part', 'joint', ...PIPE_COUPLING_NUMBER_KEYS, 'position'],
+    run: pipeCouplingOp,
   },
   import_svg: { command: 'import_svg', args: ['svgContent', 'depth', 'targetWidth', 'curveSegments', 'position'], run: importSvgOp },
   plane_cut: {
