@@ -7,7 +7,6 @@
  * @license MIT
  */
 
-import { existsSync, readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { plateBed } from '../../core/scene/plates';
 import { footprintOf } from '../../core/scene/freeSpot';
@@ -15,16 +14,21 @@ import { projectBed } from '../../core/scene/activePlateBed';
 import { useKuraStore } from '../useKuraStore';
 import { resetStore, store } from './storeTestUtils';
 
+interface NodeFs {
+  existsSync(path: string): boolean;
+  readFileSync(path: string): Uint8Array;
+}
+const fs = (globalThis as unknown as { process: { getBuiltinModule: (id: string) => NodeFs } }).process.getBuiltinModule('node:fs');
 const FILE = 'G:/proyectos/kura3d/.eval-tmp/modelos/llaveros.3mf';
 
-describe.skipIf(!existsSync(FILE))('Mover a placa con llaveros.3mf real', () => {
+describe.skipIf(!fs.existsSync(FILE))('Mover a placa con llaveros.3mf real', () => {
   beforeEach(async () => {
     await resetStore();
     useKuraStore.setState({ plates: [], activePlateId: null, groups: [], layout: 'print', plateSolo: false });
   });
 
   it('la pieza movida queda dentro de la cama destino', async () => {
-    const buf = readFileSync(FILE);
+    const buf = fs.readFileSync(FILE);
     const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
     await store().importModelFiles([{ name: 'llaveros.3mf', size: ab.byteLength, read: async () => ab }]);
     const res = store().convertGroupsToPlates();
