@@ -99,41 +99,57 @@ export function checkScrewFitSolids(wasm: ManifoldToplevel, male: Manifold, fema
   });
 }
 
-export interface ScrewFitMeshOptions extends Omit<ScrewFitOptions, 'direction'> {
+export interface ScrewFitMeshOptions extends Omit<ScrewFitOptions, 'direction' | 'clipBelowZ'> {
   /** Eje de la rosca en coordenadas de la malla (0 = X, 1 = Y, 2 = Z). */
   readonly axis: 0 | 1 | 2;
   /** Punto por donde pasa el eje (coordenadas de la malla). */
   readonly center: readonly [number, number, number];
+  /**
+   * Franja (mm) desde la cara de entrada de la hembra que no cuenta para la holgura: el asiento donde la tapa o la
+   * tuerca llega a tope toca a propósito. Por defecto 0,3 mm. La interferencia se mide en toda la pieza.
+   */
+  readonly seatMm?: number;
 }
 
-/** Lleva `axis` a Z y `center` al origen (permutación cíclica: conserva la lateralidad). */
-function toAxisFrame(mesh: MeshData, axis: 0 | 1 | 2, center: readonly [number, number, number]): MeshData {
+/** Lleva `axis` a Z y `center` al origen (permutación cíclica: conserva la lateralidad); `flip` gira 180° en X. */
+function toAxisFrame(mesh: MeshData, axis: 0 | 1 | 2, center: readonly [number, number, number], flip: boolean): MeshData {
   const p = mesh.positions;
   const out = new Float32Array(p.length);
   const a = (axis + 1) % 3;
   const b = (axis + 2) % 3;
+  const s = flip ? -1 : 1;
   for (let i = 0; i < p.length; i += 3) {
     out[i] = p[i + a] - center[a];
-    out[i + 1] = p[i + b] - center[b];
-    out[i + 2] = p[i + axis] - center[axis];
+    out[i + 1] = s * (p[i + b] - center[b]);
+    out[i + 2] = s * (p[i + axis] - center[axis]);
   }
   return { positions: out, indices: mesh.indices };
 }
 
+function axisMid(mesh: MeshData, axis: 0 | 1 | 2): number {
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (let i = axis; i < mesh.positions.length; i += 3) {
+    lo = Math.min(lo, mesh.positions[i]);
+    hi = Math.max(hi, mesh.positions[i]);
+  }
+  return (lo + hi) / 2;
+}
+
 /**
- * Igual que `checkScrewFitSolids` para dos mallas cerradas ya colocadas en su posición enroscada (mismo marco).
- * El sentido de salida se deduce de dónde queda el centro de la hembra respecto del macho a lo largo del eje.
+ * Igual que `checkScrewFitSolids` para dos mallas cerradas ya colocadas en su posición enroscada (mismo marco). Si la
+ * hembra queda «abajo» del macho a lo largo del eje, las dos se giran 180° (giro propio: la hélice conserva su sentido)
+ * para que la hembra salga siempre hacia +Z.
  */
 export async function checkScrewFitMeshes(male: MeshData, female: MeshData, options: ScrewFitMeshOptions): Promise<ScrewFitReport> {
   const wasm = await initManifoldEngine();
-  const m = toAxisFrame(male, options.axis, options.center);
-  const f = toAxisFrame(female, options.axis, options.center);
+  const flip = axisMid(female, options.axis) < axisMid(male, options.axis);
+  const m = toAxisFrame(male, options.axis, options.center, flip);
+  const f = toAxisFrame(female, options.axis, options.center, flip);
+  const seat = requireNumberInRange('seatMm', options.seatMm ?? 0.3, 0, 10);
   return withWasmScope((scope) => {
     const ms = scope.track(meshDataToManifold(wasm, m));
     const fs = scope.track(meshDataToManifold(wasm, f));
-    const mb = ms.boundingBox();
-    const fb = fs.boundingBox();
-    const direction: 1 | -1 = fb.min[2] + fb.max[2] >= mb.min[2] + mb.max[2] ? 1 : -1;
-    return checkScrewFitSolids(wasm, ms, fs, { ...options, direction });
+    return checkScrewFitSolids(wasm, ms, fs, { ...options, direction: 1, clipBelowZ: fs.boundingBox().min[2] + seat });
   });
 }

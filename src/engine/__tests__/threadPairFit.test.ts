@@ -59,7 +59,7 @@ describe('comprobación de enroscado: entradas y mallas', () => {
       };
       const male = toYUp(body);
       const female = toYUp(lid);
-      const ok = await checkScrewFitMeshes(male, female, { axis: 1, center: [0, 0, 0], leadMm: layout.profile.leadMm, turns: 1, samples: 4, clipBelowZ: layout.seatZ + 0.3 });
+      const ok = await checkScrewFitMeshes(male, female, { axis: 1, center: [0, 0, 0], leadMm: layout.profile.leadMm, turns: 1, samples: 4 });
       expect(ok.status).toBe('ok');
       const shifted = { positions: female.positions.map((v, i) => (i % 3 === 0 ? v + 1 : v)), indices: female.indices };
       const bad = await checkScrewFitMeshes(male, shifted, { axis: 1, center: [0, 0, 0], leadMm: layout.profile.leadMm, turns: 1, samples: 3 });
