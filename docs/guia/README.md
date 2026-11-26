@@ -5,7 +5,7 @@ Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una ti
 | Guía | Para qué |
 |---|---|
 | [Primeros pasos](primeros-pasos.md) | La pantalla, los ejes, crear piezas, moverlas, girarlas, escalarlas y deshacer |
-| [Importar y reparar](importar-y-reparar.md) | Abrir STL, 3MF, OBJ o PLY; avisos de unidades; estado de la malla; reparar y simplificar con informe y Deshacer |
+| [Importar y reparar](importar-y-reparar.md) | Abrir STL, 3MF, OBJ o PLY; avisos de unidades; estado de la malla; reparar y simplificar con vista previa, informe y Deshacer |
 | [Suavizar malla](suavizar.md) | Quitar facetado y ruido de un escaneo conservando las aristas, con vista previa y zona pintada |
 | [Dividir para imprimir](dividir-para-imprimir.md) | Partir una pieza más grande que tu cama, con uniones, códigos de pieza y armado |
 | [Ajustar a la impresora](ajustar-a-la-impresora.md) | Escalar, girar o dividir para que la pieza quepa en tu cama; tus propias camas |
@@ -18,14 +18,14 @@ Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una ti
 | [Medir](medir.md) | Distancias, ángulos, áreas, volumen y capacidad de un recipiente |
 | [Colores y pintura](colores-y-pintura.md) | Pintar caras y separar por colores para multicolor |
 | [Generadores](generadores.md) | Texto 3D, SVG, imagen a 3D, roscas ISO y moldes |
-| [Asistentes](asistentes.md) | Crear una caja con tapa, un llavero o una placa de enchufe respondiendo unas preguntas |
+| [Asistentes](asistentes.md) | Elegir de una galería y crear una caja con tapa, un llavero o una placa de enchufe respondiendo unas preguntas |
 | [Alojamiento de imán](alojamiento-de-iman.md) | Hueco para un imán con un clic sobre una cara: medidas, holgura, oculto y tus preajustes |
 | [Torreta para tornillo](torreta-para-tornillo.md) | Poste con agujero para tornillo directo o inserto roscado, con un clic sobre una cara |
 | [Colgar en el muro](colgar-en-el-muro.md) | Ojo de cerradura para colgar la pieza de un tornillo en la pared, con la ranura hacia arriba |
 | [Paso de cable](paso-de-cable.md) | Agujero pasante redondo u ovalado con chaflán; el largo se mide solo para atravesar la pared |
-| [Placas](placas.md) | Repartir piezas en varias camas: crear placas, renombrarlas, mover piezas entre ellas y ver cuál se pasa de su cama |
+| [Placas](placas.md) | Repartir piezas en varias camas: crear placas, repartir solas, vistas Imprimir / Armado / Libre, una cama por placa y ver cuál se pasa |
 | [Exportar](exportar.md) | STL, 3MF con grupos y colores, selección o escena |
-| [Guardar y recuperar](guardar-y-recuperar.md) | Proyecto `.kura` y borrador de recuperación |
+| [Guardar y recuperar](guardar-y-recuperar.md) | Proyecto `.kura`, datos del proyecto (descripción, notas, autor) y borrador de recuperación |
 
 Para conectar un asistente de IA a Kurra Studio, mira el [servidor MCP](../MCP.md).
 

@@ -63,11 +63,33 @@ test('simplificar: resultado destructivo bloqueado', async ({ page }) => {
   await page.keyboard.press('Control+a');
   await page.keyboard.type('12');
   await page.keyboard.press('Enter');
-  await expect(page.getByTestId('simplify-blocked')).toBeVisible({ timeout: 60_000 });
+  // Desde la tanda de la noche del 26-nov se aplica la versión segura sola, con aviso y «Aplicar de todos modos».
+  await expect(page.getByTestId('simplify-safe-applied')).toBeVisible({ timeout: 60_000 });
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().busyOperation), { timeout: 30_000 }).toBeNull();
   await sinAvisos(page);
   await page.getByTestId('simplify-apply-anyway').scrollIntoViewIfNeeded();
   await page.mouse.move(700, 120);
   await page.waitForTimeout(500);
   await captura(page, 'importar-y-reparar-08-simplificar-bloqueo');
+});
+
+test('simplificar: vista previa con fantasma', async ({ page }) => {
+  await abrir(page);
+  const esfera = await cmd(page, 'create_primitive', { type: 'sphere', radius: 25, segments: 64, name: 'Esfera', position: [0, 0, 0], color: '#38bdf8' });
+  await encuadrar(page, 'scene');
+  await seleccionar(page, [esfera.id]);
+  await page.getByTestId('simplify-entry').click();
+  const seccion = page.locator('.kura-simplify-section');
+  await expect(seccion).toBeVisible();
+  await seccion.locator('select').first().selectOption('target');
+  const campo = seccion.getByRole('spinbutton').first();
+  await campo.fill('80');
+  await campo.blur();
+  await page.getByTestId('simplify-preview').click();
+  await expect(page.getByTestId('simplify-ghost-controls')).toBeVisible({ timeout: 60_000 });
+  await expect.poll(() => page.evaluate(() => (window as any).__s.getState().busyOperation), { timeout: 30_000 }).toBeNull();
+  await sinAvisos(page);
+  await page.mouse.move(700, 120);
+  await page.waitForTimeout(700);
+  await captura(page, 'importar-y-reparar-09-simplificar-vista-previa');
 });

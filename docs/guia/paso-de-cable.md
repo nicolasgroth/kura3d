@@ -38,7 +38,7 @@ Si un campo está fuera de rango, queda marcado y el panel no coloca nada hasta 
 
 1. Pasa el cursor sobre la pared: la vista previa naranja muestra la boca y un tramo del agujero. El largo real se mide al hacer clic.
 2. Haz **clic** donde lo quieras. Se agrega el paso agrupado con la pieza. Lo que tenías seleccionado no cambia; cada clic agrega otro y `Ctrl+Z` quita solo el último.
-3. Termina con **Listo**, con la X del panel o con `Esc`.
+3. Termina con **Volver** (arriba a la izquierda del panel) o con `Esc`.
 
 ### Colocar sin ratón
 
