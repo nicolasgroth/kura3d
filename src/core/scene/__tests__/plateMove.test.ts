@@ -15,7 +15,7 @@ import { dragBoundsForBeds, dragMoveDelta } from '../dragMovePlane';
 import { findFreeSpot, placeInFreeSpot } from '../freeSpot';
 import { adoptNewPieces } from '../plateAdopt';
 import { plateFrameFor, shiftChangeXZ } from '../plateFrame';
-import { movePiecesToPlate, plateAtPoint, reassignByPosition } from '../plateMove';
+import { fitReassignedIntoBeds, movePiecesToPlate, plateAtPoint, reassignByPosition } from '../plateMove';
 
 const BED = { widthMm: 200, depthMm: 200, heightMm: 200 };
 const CTX = { bed: { widthMm: 200, depthMm: 200 } };
@@ -247,5 +247,31 @@ describe('marco de placa de las herramientas', () => {
     expect(moved.patches[0].patch.position).toEqual([251, 2, -7]);
     expect(moved.patches[1]).toBe(change.patches[1]);
     expect(shiftChangeXZ(change, [0, 0])).toBe(change);
+  });
+});
+
+describe('soltar piezas en otra placa: acercarlas lo justo para caber en la cama', () => {
+  it('una pieza que sobresale de la cama destino se acerca hasta quedar dentro; sin tocar lo que ya cabe', () => {
+    const before = [box('a', [0, 0, 0], 'p1'), box('b', [0, 0, 60], 'p1')];
+    // `a` se soltó con su centro a 5 mm del borde derecho de la placa 2 (cama de 200: borde en 350); `b` no cambió de placa.
+    const after = [box('a', [345, 0, 0], 'p2'), box('b', [0, 0, 60], 'p1')];
+    const next = fitReassignedIntoBeds(before, after, PLATES, BED)!;
+    expect(next[0].position[0]).toBeCloseTo(340, 6); // 340 + 10 = 350
+    expect(next[0].position[2]).toBe(0);
+    expect(next[1]).toBe(after[1]);
+  });
+
+  it('si ya cabe donde se soltó, no se mueve', () => {
+    const before = [box('a', [0, 0, 0], 'p1')];
+    const after = [box('a', [260, 0, 10], 'p2')];
+    expect(fitReassignedIntoBeds(before, after, PLATES, BED)).toBeNull();
+  });
+
+  it('varias piezas de un mismo reparto se trasladan juntas y conservan su lugar relativo', () => {
+    const before = [box('a', [0, 0, 0], 'p1'), box('b', [30, 0, 0], 'p1')];
+    const after = [box('a', [335, 0, 0], 'p2'), box('b', [365, 0, 0], 'p2')];
+    const next = fitReassignedIntoBeds(before, after, PLATES, BED)!;
+    expect(next[1].position[0] - next[0].position[0]).toBeCloseTo(30, 6);
+    expect(next[1].position[0] + 10).toBeCloseTo(350, 6);
   });
 });

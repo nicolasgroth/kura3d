@@ -8,6 +8,7 @@
  */
 
 import type { PlateBed, SceneLayout, ScenePlate } from '../types/plates';
+import type { SceneObject } from '../types/kura';
 
 export interface PlatesSliceState {
   /** Placas de la escena; vacío = una placa implícita en el origen (como siempre). Entra en el historial. */
@@ -72,6 +73,11 @@ export interface PlatesSliceState {
    * del propio arrastre; fuera de uno, abre su paso (nunca cambia la escena sin poder deshacerse).
    */
   reassignPlatesByPosition: (ids: string[]) => void;
+  /**
+   * Al cerrar un gesto de mover (ya con su paso de deshacer): las piezas que cambiaron de placa respecto de `before` se
+   * acercan para quedar dentro de la cama destino y se avisa una vez «N piezas pasaron a …» con «Deshacer».
+   */
+  settleDraggedPieces: (before: SceneObject[]) => void;
   /**
    * Modo de vista de la escena: poses de impresión o de armado (`core/scene/layoutPoses.ts`). Entra en la
    * instantánea del historial (cada paso recuerda su modo) y en el `.kura` v4; 'print' = el de siempre.

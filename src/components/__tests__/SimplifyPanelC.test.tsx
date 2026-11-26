@@ -28,14 +28,18 @@ const Harness: React.FC<{ id: string }> = ({ id }) => {
 
 afterEach(cleanup);
 
-describe('Simplificar: Enter ejecuta', () => {
-  it('Enter en «Triángulos finales» ejecuta con el valor escrito', async () => {
+describe('Simplificar: Enter lanza la vista previa', () => {
+  it('Enter en «Triángulos finales» lanza la vista previa con el valor escrito y no aplica', async () => {
     const obj = buildSceneObject({ id: 'sph', name: 'Esfera', source: 'imported', mesh: uvSphere(10, 32, 16) });
     const calls: Array<number | SimplifyRequest> = [];
+    const applied: Array<number | SimplifyRequest> = [];
     useKuraStore.setState({
       objects: [obj], selectedIds: [obj.id], language: 'es', busyOperation: null, toasts: [], past: [], future: [],
-      simplifySelectedMesh: async (_id: string, request: number | SimplifyRequest) => {
+      previewSimplify: async (_id: string, request: SimplifyRequest) => {
         calls.push(request);
+      },
+      simplifySelectedMesh: async (_id: string, request: number | SimplifyRequest) => {
+        applied.push(request);
         return true;
       },
     } as never);
@@ -48,6 +52,7 @@ describe('Simplificar: Enter ejecuta', () => {
     fireEvent.keyDown(field, { key: 'Enter' });
     await waitFor(() => expect(calls).toHaveLength(1));
     expect(calls[0]).toEqual({ mode: 'target', targetTriangles: 1500 });
+    expect(applied).toHaveLength(0);
   });
 });
 

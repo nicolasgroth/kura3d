@@ -89,7 +89,8 @@ for (const tema of ['light', 'dark'] as const) {
     await page.keyboard.press('Control+a');
     await page.keyboard.type('12');
     const p0 = await pasos(page);
-    await page.keyboard.press('Enter');
+    // Enter lanza la vista previa; aplicar exige el botón «Simplificar».
+    await page.getByTestId('simplify-run').click();
     await libre(page);
     const t1 = await tris(page, id);
     expect(t1).toBeLessThan(t0);

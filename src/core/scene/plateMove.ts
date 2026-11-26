@@ -127,6 +127,34 @@ export function movePiecesToPlate(
   return { scene: { objects, plates: scene.plates }, moved: movers.map((o) => o.id), fits: inside.fits, crowded };
 }
 
+/**
+ * Tras soltar piezas que cambiaron de placa (`before` → `after`): las que quedaron con la huella fuera de la cama destino
+ * se acercan lo justo para quedar dentro (las de una misma placa se trasladan juntas, conservando su lugar relativo). Si
+ * ya caben donde se soltaron, o el conjunto es más grande que la cama, no se tocan. null si nada cambia.
+ */
+export function fitReassignedIntoBeds(
+  before: readonly SceneObject[], after: readonly SceneObject[], plates: readonly ScenePlate[], projectBed: ProjectBed,
+): SceneObject[] | null {
+  const prev = new Map(before.map((o) => [o.id, o.plateRef]));
+  const byPlate = new Map<string, SceneObject[]>();
+  for (const o of after) {
+    if (!prev.has(o.id) || o.plateRef === undefined || o.plateRef === prev.get(o.id) || o.metadata?.addon || !assignable(o)) continue;
+    byPlate.set(o.plateRef, [...(byPlate.get(o.plateRef) ?? []), o]);
+  }
+  const shift = new Map<string, [number, number]>();
+  for (const [plateId, group] of byPlate) {
+    const plate = findPlate(plates, plateId);
+    if (!plate) continue;
+    const { dx, dz } = fitInsideBox(group.map((o) => footprintOf(o.mesh, o.position, o.rotation, o.scale)), plateBedBox(plate, projectBed));
+    if (dx !== 0 || dz !== 0) for (const o of group) shift.set(o.id, [dx, dz]);
+  }
+  if (shift.size === 0) return null;
+  return after.map((o) => {
+    const d = shift.get(o.id);
+    return d ? { ...o, position: [o.position[0] + d[0], o.position[1], o.position[2] + d[1]] as Vec3 } : o;
+  });
+}
+
 /** Rectángulo de la cama de una placa en mundo. */
 function plateBedBox(plate: ScenePlate, projectBed: ProjectBed): { minX: number; maxX: number; minZ: number; maxZ: number } {
   const b = plateBed(plate, projectBed);
