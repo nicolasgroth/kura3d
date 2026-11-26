@@ -111,6 +111,21 @@
 
 .kura-arrange-headline {
   font-weight: 600;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Pie fijo: el resumen ocupa su propia línea sobre el botón Repartir y nunca se desplaza con el cuerpo. */
+.kura-arrange-panel .kura-op-panel-footer .kura-arrange-headline {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin: 0;
+  max-height: 4.2em;
+  overflow-y: auto;
+}
+
+.kura-arrange-panel .kura-op-panel-footer .kura-arrange-headline:empty {
+  display: none;
 }
 
 .kura-arrange-running {

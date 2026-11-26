@@ -119,17 +119,23 @@ export const PlateArrangePanel: React.FC = () => {
       className="kura-arrange-panel"
       initialFocus='input[type="radio"]:checked'
       footer={
-        <button
-          type="button"
-          className="kura-btn kura-btn-primary"
-          disabled={!canApply}
-          onClick={() => void applyPlateArrange()}
-          title={t(language, 'plates.arrangeDlg.applyTip')}
-          data-testid="arrange-apply"
-        >
-          <LayoutGrid size={14} aria-hidden="true" />
-          <span>{t(language, busy ? 'plates.arrangeDlg.applyBusy' : 'plates.arrangeDlg.apply')}</span>
-        </button>
+        <>
+          {/* Resumen siempre a la vista junto al botón (pie fijo del panel), sin tener que desplazar el cuerpo. */}
+          <p className="kura-arrange-headline" role="status" aria-live="polite" aria-atomic="true" data-testid="arrange-summary">
+            {onePerObject ? t(language, 'plates.arrangeDlg.preview.onePerObject') : report ? arrangeHeadline(language, report) : ''}
+          </p>
+          <button
+            type="button"
+            className="kura-btn kura-btn-primary"
+            disabled={!canApply}
+            onClick={() => void applyPlateArrange()}
+            title={t(language, 'plates.arrangeDlg.applyTip')}
+            data-testid="arrange-apply"
+          >
+            <LayoutGrid size={14} aria-hidden="true" />
+            <span>{t(language, busy ? 'plates.arrangeDlg.applyBusy' : 'plates.arrangeDlg.apply')}</span>
+          </button>
+        </>
       }
     >
       <fieldset className="kura-arrange-group" data-testid="arrange-scope">
@@ -175,9 +181,6 @@ export const PlateArrangePanel: React.FC = () => {
 
       <section className="kura-arrange-preview" aria-labelledby={`${uid}-preview`} data-testid="arrange-preview" data-status={panel.status}>
         <h3 id={`${uid}-preview`} className="kura-section-label">{t(language, 'plates.arrangeDlg.preview')}</h3>
-        <p className="kura-arrange-headline" role="status" aria-live="polite" aria-atomic="true" data-testid="arrange-summary">
-          {onePerObject ? t(language, 'plates.arrangeDlg.preview.onePerObject') : report ? arrangeHeadline(language, report) : ''}
-        </p>
         {panel.status === 'running' && (
           <div className="kura-arrange-running" data-testid="arrange-running">
             <Loader2 size={14} aria-hidden="true" />

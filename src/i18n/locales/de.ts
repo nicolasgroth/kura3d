@@ -665,7 +665,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'dialog.img.generate': '3D-Netz erzeugen',
 
   // Modal Corte por Plano
-  'dialog.cut.title': 'Ebenenschnitt + Verbinder',
+  'dialog.cut.title': 'Schneiden',
   'dialog.cut.axis': 'Achse der Schnittebene',
   'dialog.cut.offset': 'Versatz vom Zentrum',
   'dialog.cut.connectorType': 'Verbindertyp',

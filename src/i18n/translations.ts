@@ -672,7 +672,7 @@ export const TRANSLATIONS_ES = {
   'dialog.img.generate': 'Generar Malla 3D',
 
   // Modal Corte por Plano
-  'dialog.cut.title': 'Corte por plano + uniones',
+  'dialog.cut.title': 'Cortar',
   'dialog.cut.axis': 'Eje del plano de corte',
   'dialog.cut.offset': 'Desplazamiento desde el centro',
   'dialog.cut.connectorType': 'Tipo de conector',
@@ -2006,7 +2006,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'dialog.img.invert': 'Lithophane mode (darker = thicker)',
   'dialog.img.generate': 'Generate 3D Mesh',
 
-  'dialog.cut.title': 'Plane cut + connectors',
+  'dialog.cut.title': 'Cut',
   'dialog.cut.axis': 'Cut plane axis',
   'dialog.cut.offset': 'Offset from center',
   'dialog.cut.connectorType': 'Connector type',

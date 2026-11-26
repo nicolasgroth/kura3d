@@ -20,7 +20,9 @@ interface GizmoDragState {
   start: GizmoDragStart | null;
   /** Plano de un arrastre de pieza (rótulo «Plano XY»); null con el gizmo. */
   plane: string | null;
-  setPlane: (plane: string | null) => void;
+  /** Eje de un arrastre con Mayús (rótulo «Eje X»); null sin Mayús. Con eje, el rótulo nombra el eje y no el plano. */
+  axis: string | null;
+  setPlane: (plane: string | null, axis?: string | null) => void;
   /** Empieza a leer el arrastre del primer objeto seleccionado con el modo activo. */
   begin: () => void;
   end: () => void;
@@ -29,7 +31,8 @@ interface GizmoDragState {
 export const useGizmoDragStore = create<GizmoDragState>((set) => ({
   start: null,
   plane: null,
-  setPlane: (plane) => set({ plane }),
+  axis: null,
+  setPlane: (plane, axis = null) => set({ plane, axis }),
   begin: () => {
     const s = useKuraStore.getState();
     const obj = s.objects.find((o) => o.id === s.selectedIds[0]);
@@ -44,5 +47,5 @@ export const useGizmoDragStore = create<GizmoDragState>((set) => ({
       },
     });
   },
-  end: () => set({ start: null, plane: null }),
+  end: () => set({ start: null, plane: null, axis: null }),
 }));

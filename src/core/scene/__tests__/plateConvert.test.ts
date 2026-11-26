@@ -59,6 +59,13 @@ describe('convertir grupos en placas', () => {
     expect((fc.minZ + fc.maxZ) / 2).toBeCloseTo(res.scene.plates[1].origin[1]);
   });
 
+  it('el nombre del grupo no repite el de una placa existente (siguiente número libre)', () => {
+    n = 0;
+    const scene = { objects: [box('suelta', [0, 0, 0]), box('a', [500, 0, 0], 'g1')], plates: [], groups: [group('g1', 'Placa 1')] };
+    const res = convertGroupsToPlates(scene, ['g1'], opts)!;
+    expect(res.scene.plates.map((p) => p.name)).toEqual(['Placa 1', 'Placa 2']);
+  });
+
   it('lo que queda fuera de los grupos va a la placa implícita del origen', () => {
     n = 0;
     const scene = { objects: [box('suelta', [0, 0, 0]), box('a', [500, 0, 0], 'g1')], plates: [], groups: [group('g1', 'Placa 1')] };

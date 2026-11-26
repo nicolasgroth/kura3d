@@ -665,7 +665,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'dialog.img.generate': 'Générer le Maillage 3D',
 
   // Modal Corte por Plano
-  'dialog.cut.title': 'Coupe par plan + connecteurs',
+  'dialog.cut.title': 'Couper',
   'dialog.cut.axis': 'Axe du plan de coupe',
   'dialog.cut.offset': 'Décalage depuis le centre',
   'dialog.cut.connectorType': 'Type de connecteur',

@@ -665,7 +665,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'dialog.img.generate': '3D मेश बनाएं',
 
   // Modal Corte por Plano
-  'dialog.cut.title': 'समतल कट + कनेक्टर',
+  'dialog.cut.title': 'काटें',
   'dialog.cut.axis': 'कट समतल अक्ष',
   'dialog.cut.offset': 'केंद्र से ऑफ़सेट',
   'dialog.cut.connectorType': 'कनेक्टर प्रकार',

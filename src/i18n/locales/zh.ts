@@ -665,7 +665,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'dialog.img.generate': '生成 3D 网格',
 
   // Modal Corte por Plano
-  'dialog.cut.title': '平面切割 + 连接件',
+  'dialog.cut.title': '切割',
   'dialog.cut.axis': '切割平面法线轴',
   'dialog.cut.offset': '距中心偏移量',
   'dialog.cut.connectorType': '连接件类型',

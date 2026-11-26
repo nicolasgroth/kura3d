@@ -32,7 +32,7 @@ for (const scheme of ['light', 'dark'] as const) {
       st.selectObject(i);
       st.setActiveDialog('cut');
     }, id);
-    const dlg = page.getByRole('dialog', { name: 'Corte por plano + uniones' });
+    const dlg = page.getByRole('dialog', { name: 'Cortar' });
     await expect(dlg).toBeVisible();
     await page.getByLabel('Mitades a conservar').selectOption('positive');
     const note = dlg.getByTestId('kept-overlap-note');

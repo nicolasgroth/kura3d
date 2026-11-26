@@ -24,7 +24,7 @@ import type { ScenePlate } from '../../types/plates';
 import { footprintOf } from './freeSpot';
 import { descendantObjectIds, effectiveLocked, groupMap } from './groups';
 import { isNegative } from './objectRole';
-import { assignable, MAX_PLATE_NAME, MAX_PLATES, nextPlateOrigin, type PlateScene, type ProjectBed } from './plates';
+import { assignable, MAX_PLATE_NAME, MAX_PLATES, nextPlateOrigin, uniquePlateName, type PlateScene, type ProjectBed } from './plates';
 
 export interface ConvertGroupsScene extends PlateScene {
   groups: SceneGroup[];
@@ -94,7 +94,7 @@ export function convertGroupsToPlates(scene: ConvertGroupsScene, groupIds: reado
       skipped.push(...jobs.slice(k).map((j) => j.group.id));
       break;
     }
-    const name = job.group.name.trim().slice(0, MAX_PLATE_NAME) || opts.nameFor(plates.length + 1);
+    const name = uniquePlateName(plates, job.group.name.trim().slice(0, MAX_PLATE_NAME) || opts.nameFor(plates.length + 1));
     const plate: ScenePlate = { id: opts.makeId(), name, origin };
     plates = [...plates, plate];
     created.push(plate.id);

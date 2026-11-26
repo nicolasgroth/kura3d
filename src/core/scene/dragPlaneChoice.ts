@@ -70,6 +70,14 @@ export function constrainToDominantAxis(delta: Vec3): Vec3 {
   return [0, 1, 2].map((i) => (i === dominant ? delta[i] : 0)) as Vec3;
 }
 
+/** Eje del usuario (X, Y o Z) del desplazamiento dominante; null si no hay desplazamiento. */
+export function dominantAxisUserLabel(delta: Vec3): 'X' | 'Y' | 'Z' | null {
+  if (delta.every((v) => Math.abs(v) < 1e-9)) return null;
+  const a = delta.map(Math.abs);
+  const dominant = a[0] >= a[1] && a[0] >= a[2] ? 0 : a[1] >= a[2] ? 1 : 2;
+  return userAxisLabel((['x', 'y', 'z'] as const)[dominant]);
+}
+
 export interface VerticalDragInput {
   rayOrigin: Vec3;
   rayDir: Vec3;

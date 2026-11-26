@@ -324,9 +324,12 @@ describe('Asistentes: teclado', () => {
     const first = screen.getAllByRole('button').find((b) => b.getAttribute('data-recipe') === CAJA) as HTMLElement;
     first.focus();
     await user.keyboard('{Enter}');
-    expect(screen.getByRole('button', { name: t('es', 'asis.back') })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: t('es', 'asis.back') }));
+    // Un solo «Volver» a la vez: en el formulario vuelve a la lista; en la lista cierra el panel.
+    expect(screen.getAllByRole('button', { name: t('es', 'panel.action.back') })).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: /lista/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: t('es', 'panel.action.back') }));
     expect(screen.getByRole('list')).toBeTruthy();
+    expect(useAssistantsPanel.getState().open).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: t('es', 'panel.action.back') }));
     expect(useAssistantsPanel.getState().open).toBe(false);
   });

@@ -12,7 +12,7 @@
  */
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, LoaderCircle, RefreshCw, WandSparkles } from 'lucide-react';
+import { LoaderCircle, RefreshCw, WandSparkles } from 'lucide-react';
 import type { RecipeIssue } from '../../core/recipes/errors';
 import type { AnswerValue } from '../../core/recipes/resolve/types';
 import { resolveText } from '../../core/recipes/validate/strings';
@@ -188,7 +188,7 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; edit?: AssistantEdit
   submitRef.current = submit;
 
   // Escape (en captura, para que el campo numérico no lo absorba al revertir su texto) vuelve a la lista; el panel
-  // se cierra con su botón X o con Escape desde la lista.
+  // se cierra con el «Volver» del panel o con Escape desde la lista.
   const onEscape = (e: React.KeyboardEvent) => {
     if (e.key !== 'Escape' || busy) return;
     e.preventDefault();
@@ -207,17 +207,6 @@ export const RecipeForm: React.FC<{ entry: AssistantRecipe; edit?: AssistantEdit
   return (
     <div ref={rootRef} className="kura-asis-form-wrap" onKeyDownCapture={onEscape} onKeyDown={onKeyDown}>
       <div className="kura-asis-head">
-        <button
-          type="button"
-          className="kura-btn kura-btn-sm kura-asis-back"
-          disabled={busy}
-          title={t(language, 'asis.backTip')}
-          aria-keyshortcuts="Escape"
-          onClick={onBack}
-        >
-          <ArrowLeft size={13} aria-hidden="true" />
-          <span>{t(language, 'asis.back')}</span>
-        </button>
         <h3 className="kura-asis-title">{title}</h3>
         {description && <p className="kura-gen-note">{description}</p>}
         {edit && (

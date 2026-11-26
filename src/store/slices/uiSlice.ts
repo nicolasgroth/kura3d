@@ -205,7 +205,9 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     requestCameraPreset: (preset, ids) =>
       set((state) => ({ cameraRequest: { preset, nonce: (state.cameraRequest?.nonce ?? 0) + 1, ...(ids ? { ids } : {}) } })),
 
-    setActiveDialog: (activeDialog) => set({ activeDialog }),
+    // Cerrar el panel de corte abierto desde la herramienta Cortar cierra también la herramienta: un solo nivel, un solo «Volver».
+    setActiveDialog: (activeDialog) =>
+      set((state) => (activeDialog === null && state.activeDialog === 'cut' && state.activeTool === 'cut' ? { activeDialog, activeTool: 'select' } : { activeDialog })),
     setSettingsTab: (settingsTab) => set({ settingsTab }),
     openSettings: (tab = 'appearance') => set({ settingsTab: tab, activeDialog: 'settings' }),
     requestMeasuresPopover: (focus = 'unit') =>
