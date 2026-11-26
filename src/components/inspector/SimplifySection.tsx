@@ -3,7 +3,8 @@
  * @description Simplificar dentro del panel de malla: selector de modo («Sin pérdida», «Por tolerancia», «Por
  * cantidad»), los campos del modo, «Vista previa» (calcula el mismo informe en el Worker sin aplicar; se cancela en
  * suave al cambiar parámetros, pieza o malla, y «Simplificar» reutiliza el cálculo si nada cambió), el botón (un paso
- * de deshacer al aplicar), el informe antes → después con sus avisos, la barra por pasos mientras calcula y los
+ * de deshacer al aplicar), el informe antes → después con sus avisos (tras deshacer lo reemplaza un «se deshizo»; el foco
+ * pasa a «Vista previa»), la barra por pasos mientras calcula y los
  * controles del fantasma en el visor (`SimplifyPreviewExtras`). La tolerancia vive en el estado del inspector para sobrevivir a cambios de selección.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -51,8 +52,9 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   const [last, setLast] = useState<{ id: string; report: SimplifyReport } | null>(null);
   // «Deshacer» del informe: vale mientras el paso que creó este resultado siga siendo el último del historial.
   const [undoStep, setUndoStep] = useState<ReturnType<typeof undoToastAction> | null>(null);
+  // Largo del historial justo después de aplicar: si baja de ahí, el paso se deshizo (informe, aviso o Ctrl+Z).
+  const [appliedDepth, setAppliedDepth] = useState<number | null>(null);
   const past = useKuraStore((s) => s.past);
-  void past; // recalcula `applicable` cuando cambia el historial
   const uid = useId();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const openRequest = useKuraStore((s) => s.simplifyRequest);
@@ -108,6 +110,20 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
     const sel = previewReady ? '[data-testid="simplify-report"]' : '[data-testid="simplify-preview"]';
     rootRef.current?.querySelector<HTMLElement>(sel)?.focus({ preventScroll: true });
   }, [previewing, previewReady]);
+  const undone = Boolean(last?.report.applied && appliedDepth !== null && past.length < appliedDepth);
+  // Tras deshacer, el botón pulsado (o la tecla) ya no existe: el foco va a «Vista previa», no a `document.body`.
+  const wasUndone = useRef(false);
+  useEffect(() => {
+    if (!undone) {
+      wasUndone.current = false;
+      return;
+    }
+    if (wasUndone.current) return;
+    wasUndone.current = true;
+    const active = document.activeElement;
+    if (active && active !== document.body && active.isConnected && !(active instanceof HTMLButtonElement && active.disabled)) return;
+    rootRef.current?.querySelector<HTMLElement>('[data-testid="simplify-preview"]')?.focus({ preventScroll: true });
+  }, [undone]);
   const runPreview = () => {
     if (busy || primary.locked || invalid.blocked || previewing) return;
     setLast(null);
@@ -118,9 +134,11 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
     if (busy || primary.locked || invalid.blocked) return;
     const id = primary.id;
     setUndoStep(null);
+    setAppliedDepth(null);
     void simplifySelectedMesh(id, request(), { onReport: (report) => setLast({ id, report }) }).then((ok) => {
       if (!ok) return;
       const st = useKuraStore.getState();
+      setAppliedDepth(st.past.length);
       setUndoStep(undoToastAction(t(st.language, 'toast.undo'), () => useKuraStore.getState().past, () => useKuraStore.getState().undo()));
     });
   };
@@ -250,7 +268,9 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
       {previewReady && previewSession && <SimplifyGhostControls session={previewSession} language={language} />}
       {previewReady
         ? <SimplifyReportView report={previewReady} language={language} preview />
-        : last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} onUndo={undoStep?.applicable?.() ? undoStep.run : undefined} />}
+        : last && last.id === primary.id && undone
+          ? <p className="kura-cut-hint" role="status" data-testid="simplify-undone">{t(language, 'simplify.report.undone')}</p>
+          : last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} onUndo={undoStep?.applicable?.() ? undoStep.run : undefined} />}
     </div>
   );
 };

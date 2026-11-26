@@ -60,7 +60,7 @@ export const TOAST_BLOCK_KEY: Record<Exclude<ToastActionBlock, null>, string> = 
  * «Deshacer» de un aviso: vale mientras el último paso del historial siga siendo el de este aviso. Con `persistent`
  * el aviso no caduca solo mientras siga valiendo (operaciones largas: el usuario puede volver minutos después).
  */
-export function undoToastAction(label: string, getPast: () => readonly unknown[], undo: () => void, persistent = false): ToastAction {
+export function undoToastAction(label: string, getPast: () => readonly unknown[], undo: () => void, persistent = false, closeOnUndo = false): ToastAction {
   const past = getPast();
   const step = past[past.length - 1];
   const depth = past.length;
@@ -68,6 +68,7 @@ export function undoToastAction(label: string, getPast: () => readonly unknown[]
     label,
     run: undo,
     transient: !persistent,
+    ...(closeOnUndo ? { closeOnUndo } : {}),
     applicable: () => {
       const now = getPast();
       return now.length === depth && now[now.length - 1] === step;

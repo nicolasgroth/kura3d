@@ -21,7 +21,10 @@ import { askDecision } from '../../utils/confirmDialog';
 import '../../styles/plateStrip.css';
 import '../../styles/viewMode.css';
 import '../../styles/plateBed.css';
-import { printPosedObjects } from '../../store/sceneLayout';
+import { viewModeOf } from '../../core/scene/viewMode';
+import { ViewModeExplode } from '../viewmode/ViewModeExplode';
+import { ViewModeSelector } from '../viewmode/ViewModeSelector';
+import { AddFirstPlateButton } from './AddFirstPlateButton';
 import { MIN_PLATES_FOR_STRIP, plateChips, type ChipStatus, type PlateChip } from './plateStripModel';
 
 const STATUS_ICON: Record<ChipStatus, React.ReactNode> = {
@@ -94,24 +97,28 @@ export const PlateStrip: React.FC = () => {
   const plateSolo = useKuraStore((s) => s.plateSolo);
   const busy = useKuraStore((s) => s.busyOperation !== null);
   const layout = useKuraStore((s) => s.layout);
-  const armed = layout === 'assembly';
+  const freeView = useKuraStore((s) => s.freeView);
+  const view = viewModeOf(layout, freeView);
+  const armed = view === 'assembly';
   const [renaming, setRenaming] = useState<string | null>(null);
   const [bedFor, setBedFor] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   const chips = useMemo(
-    () => plateChips(armed ? printPosedObjects(useKuraStore.getState()) : objects, printerProfile, plates, activePlateId),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [objects, printerProfile, plates, activePlateId, armed],
+    () => plateChips(objects, printerProfile, plates, activePlateId),
+    [objects, printerProfile, plates, activePlateId],
   );
   const active = chips.find((c) => c.active) ?? chips[0];
+  const multi = plates.length >= MIN_PLATES_FOR_STRIP && Boolean(active);
 
   // La ficha activa siempre queda a la vista (con muchas placas la lista se desplaza).
   useEffect(() => {
     listRef.current?.querySelector<HTMLElement>('[data-active="true"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
   }, [active?.id, chips.length]);
 
-  if (plates.length < MIN_PLATES_FOR_STRIP || !active) return null;
+  // Con una sola placa (o ninguna) la tira es corta: el selector de vista y «+ Placa». Con la escena vacía no se
+  // dibuja nada (no hay qué alternar ni qué repartir); en Armado y Libre sí, para poder volver a Imprimir.
+  if (!multi && objects.length === 0 && view === 'print') return null;
 
   const store = () => useKuraStore.getState();
 
@@ -134,6 +141,7 @@ export const PlateStrip: React.FC = () => {
 
   const removeActive = async () => {
     const { plates: now, objects: all } = store();
+    if (!active) return;
     const target = now.find((p) => p.id !== active.id);
     if (!target) return;
     const count = all.filter((o) => o.plateRef === active.id).length;
@@ -157,7 +165,22 @@ export const PlateStrip: React.FC = () => {
   };
 
   return (
-    <section className="kura-plate-strip" aria-label={t(language, 'plates.strip.label')} data-testid="plate-strip" data-view-mode={armed ? 'armed' : 'print'}>
+    <section
+      className="kura-plate-strip"
+      aria-label={t(language, 'plates.strip.label')}
+      data-testid="plate-strip"
+      data-view-mode={view === 'print' ? 'print' : armed ? 'armed' : 'free'}
+      data-short={multi ? undefined : 'true'}
+    >
+      <ViewModeSelector always />
+      {view === 'print' && !multi && <AddFirstPlateButton />}
+      {view === 'assembly' && <ViewModeExplode />}
+      {view === 'assembly' && (
+        <span className="kura-plate-strip-note" data-testid="plate-strip-note">{t(language, 'viewMode.strip.armed', { count: plates.length })}</span>
+      )}
+      {view === 'free' && <span className="kura-plate-strip-note" data-testid="plate-strip-note">{t(language, 'viewMode.strip.free')}</span>}
+      {view === 'print' && multi && active && (
+      <>
       <div className="kura-plate-list" ref={listRef} onKeyDown={moveFocus}>
         {chips.map((chip) => {
           const pieces = t(language, 'plates.chip.pieces', { count: chip.count });
@@ -212,13 +235,12 @@ export const PlateStrip: React.FC = () => {
           );
         })}
       </div>
-      {armed && <span className="kura-plate-strip-note" data-testid="plate-strip-note">{t(language, 'viewMode.strip.note')}</span>}
       <div className="kura-plate-actions">
         <button
           type="button"
           className="kura-plate-btn"
           onClick={() => store().createPlate()}
-          disabled={busy || armed}
+          disabled={busy}
           aria-label={t(language, 'plates.add')}
           title={t(language, 'plates.add.tip')}
           data-testid="plate-add"
@@ -254,7 +276,7 @@ export const PlateStrip: React.FC = () => {
           type="button"
           className="kura-plate-btn"
           onClick={() => void removeActive()}
-          disabled={busy || armed}
+          disabled={busy}
           aria-label={t(language, 'plates.delete', { name: active.name })}
           title={t(language, 'plates.delete', { name: active.name })}
           data-testid="plate-delete"
@@ -262,6 +284,8 @@ export const PlateStrip: React.FC = () => {
           <Trash2 size={13} aria-hidden="true" />
         </button>
       </div>
+      </>
+      )}
       {bedFor && (
         <PlateBedPicker
           plateId={bedFor}

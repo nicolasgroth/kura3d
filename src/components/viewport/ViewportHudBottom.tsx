@@ -20,7 +20,6 @@ import { hudBed } from '../../core/scene/bedLabel';
 import { platesBedStatus, sceneBedStatus } from './plateBedStatus';
 import { BedHiddenChip } from './BedHiddenChip';
 import { ViewModeBedChip } from '../viewmode/ViewModeBedChip';
-import { AddFirstPlateButton } from '../plates/AddFirstPlateButton';
 import { FitOutOfBoundsButton } from '../fitToBed/FitOutOfBoundsButton';
 
 /** HUD inferior en una sola línea. */
@@ -96,7 +95,6 @@ export const ViewportHudBottom: React.FC = () => {
             </span>
           )}
           {bedStatus === 'outOfBounds' && <FitOutOfBoundsButton />}
-          <AddFirstPlateButton />
           {bedStatus === 'assembled' && (
             <span className="kura-assembled-badge" role="status" title={t(language, 'splitUx.assembled.status')}>
               <Boxes size={11} aria-hidden="true" />

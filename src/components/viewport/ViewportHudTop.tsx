@@ -17,7 +17,6 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { PaintToolbar } from './PaintToolbar';
 import { MeasurePanel } from '../measure/MeasurePanel';
 import { ViewBar } from '../shell/ViewBar';
-import { ViewModeHud } from '../viewmode/ViewModeHud';
 import { ToastStack } from '../ToastStack';
 import { SectionViewNotice } from './SectionViewNotice';
 import '../../styles/sectionNotice.css';
@@ -58,9 +57,6 @@ export const ViewportHudTop: React.FC = () => {
       <div className="kura-hud-top-bar">
         <ViewBar />
       </div>
-
-      {/* Armado y Libre: rótulo de la vista y separación visual (en Imprimir no dibuja nada). */}
-      <ViewModeHud />
 
       {/* Píldora booleana inteligente: aparece cuando existen huecos + sólidos */}
       {holeCount > 0 && solidCount > 0 && (

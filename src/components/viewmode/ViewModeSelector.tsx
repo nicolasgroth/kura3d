@@ -1,8 +1,8 @@
 /**
  * @file src/components/viewmode/ViewModeSelector.tsx
- * @description Selector Imprimir / Armado / Libre de la barra de vista del visor: grupo de opciones tipo radio
+ * @description Selector Imprimir / Armado / Libre al inicio de la tira de placas (siempre con texto): grupo de opciones tipo radio
  * (`role="radiogroup"`, flechas mueven y eligen, un solo tabulador), con texto e icono propios (el estado no depende
- * del color), tooltip y atajo A (cicla). Solo se dibuja cuando hay algo que alternar (`shouldOfferViewModes`). Si el
+ * del color), tooltip y atajo A (cicla). La tira lo muestra siempre (`always`); sin ese modo solo si hay algo que alternar (`shouldOfferViewModes`). Si el
  * store rechaza el cambio (operación en curso, trazo abierto) la selección no cambia y un aviso dice por qué.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -29,7 +29,8 @@ const ICON: Record<ViewMode, React.ReactNode> = {
   free: <Move3d size={14} aria-hidden="true" />,
 };
 
-export const ViewModeSelector: React.FC = () => {
+/** `always`: la tira de placas lo muestra siempre (mismo lugar con una placa, varias o ninguna); sin él, solo con algo que alternar. */
+export const ViewModeSelector: React.FC<{ always?: boolean }> = ({ always = false }) => {
   const language = useKuraStore((s) => s.language);
   const layout = useKuraStore((s) => s.layout);
   const freeView = useKuraStore((s) => s.freeView);
@@ -37,7 +38,7 @@ export const ViewModeSelector: React.FC = () => {
   const objects = useKuraStore((s) => s.objects);
   const groupRef = useRef<HTMLDivElement | null>(null);
   const mode = viewModeOf(layout, freeView);
-  if (!shouldOfferViewModes({ layout, plates, objects })) return null;
+  if (!always && !shouldOfferViewModes({ layout, plates, objects })) return null;
 
   const choose = (next: ViewMode, focus = false) => {
     requestViewMode(next);

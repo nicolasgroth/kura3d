@@ -17,7 +17,7 @@ import { SIMPLIFY_GHOST_DEFAULTS, simplifySignature } from '../../store/slices/s
 import { useKuraStore } from '../../store/useKuraStore';
 import { OperationPanel } from '../OperationPanel';
 import { SimplifySection } from '../inspector/SimplifySection';
-import { focusActiveViewMode } from '../viewmode/ViewModeHud';
+import { focusActiveViewMode } from '../viewmode/ViewModeExplode';
 import { focusWhenMounted } from '../ToastActionButton';
 import { useInvalidFields } from '../useInvalidFields';
 

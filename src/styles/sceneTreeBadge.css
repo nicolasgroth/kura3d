@@ -1,0 +1,33 @@
+/**
+ * @file src/styles/sceneTreeBadge.css
+ * @description Fila del árbol de Escena: la insignia de placa («P2») es siempre visible, también en la fila
+ * seleccionada y con el panel estrecho. Va antes del nombre (el nombre es lo único que se recorta con «…») y, si la
+ * fila no tiene espacio para los botones del ojo, el candado y los demás, quedan solo los que marcan un estado y
+ * el menú «…», que reúne el resto de acciones.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-tree-row .kura-scene-item-main > .kura-scene-name {
+  order: 2;
+}
+
+.kura-tree-row .kura-scene-item-main > .kura-plate-badge {
+  order: 1;
+  flex: 0 0 auto;
+}
+
+.kura-tree-row .kura-scene-item-main > .kura-tree-count,
+.kura-tree-row .kura-scene-item-main > .kura-hole-tag,
+.kura-tree-row .kura-scene-item-main > .kura-step-tag {
+  order: 3;
+}
+
+/* Fila estrecha: los botones sueltos se agrupan en «…» (los de estado activo, oculto o bloqueado, se conservan).
+   `!important`: las reglas de aparición al pasar el cursor o seleccionar llevan una especificidad muy alta. */
+@container (max-width: 340px) {
+  .kura-scene-tree .kura-tree-row .kura-scene-actions .kura-mini-icon-btn:not(.kura-row-more):not(.is-state-on) {
+    display: none !important;
+  }
+}
