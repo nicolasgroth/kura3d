@@ -1,7 +1,7 @@
 /**
  * @file src/components/__tests__/MagnetPanel.test.tsx
  * @description Panel «Alojamiento de imán»: no abre sin pieza sólida (y dice por qué), valores por defecto y resumen
- * del hueco, cambiar a cuadrado, preajustes incluidos, guardar y eliminar uno propio, campo fuera de rango que
+ * del hueco, cambiar a cuadrado o rectangular (tres medidas y giro), preajustes incluidos, guardar y eliminar uno propio, campo fuera de rango que
  * bloquea la colocación, exclusión con Texto 3D y el punto/normal calculados desde un evento del visor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -51,6 +51,27 @@ describe('panel del alojamiento de imán', () => {
     expect(screen.getByLabelText(t('es', 'magnet.side'))).toBeTruthy();
     await user.selectOptions(screen.getByTestId('magnet-preset'), 'builtin:round-8x3');
     expect(useMagnetPanel.getState().params).toMatchObject({ shape: 'round', sizeMm: 8, heightMm: 3 });
+  });
+
+  it('rectangular: tres medidas, giro de 90° y preajuste incluido 10 × 5 × 2; al volver a redondo no hereda el ancho', async () => {
+    const user = userEvent.setup();
+    render(<MagnetPanel />);
+    act(() => void openMagnetPanel());
+    expect(screen.queryByTestId('magnet-turn90')).toBeNull();
+    await user.click(screen.getByTestId('magnet-shape-rect'));
+    expect(screen.getByLabelText(t('es', 'magnet.length'))).toBeTruthy();
+    expect(screen.getByLabelText(t('es', 'magnet.width'))).toBeTruthy();
+    expect(screen.getByLabelText(t('es', 'magnet.height'))).toBeTruthy();
+    expect(useMagnetPanel.getState().params).toMatchObject({ shape: 'rect', sizeMm: 5, widthMm: 2.5 });
+    expect(screen.getByTestId('magnet-summary').textContent).toBe('Hueco: 5,2 × 2,7 × 2,2 mm');
+    await user.click(screen.getByTestId('magnet-turn90'));
+    expect(useMagnetPanel.getState().params.turn90).toBe(true);
+    await user.selectOptions(screen.getByTestId('magnet-preset'), 'builtin:rect-10x5x2');
+    expect(useMagnetPanel.getState().params).toMatchObject({ shape: 'rect', sizeMm: 10, widthMm: 5, heightMm: 2 });
+    expect(useMagnetPanel.getState().params.turn90).toBeUndefined();
+    expect(screen.getByTestId('magnet-summary').textContent).toBe('Hueco: 10,2 × 5,2 × 2,2 mm');
+    await user.selectOptions(screen.getByTestId('magnet-preset'), 'builtin:round-5x2');
+    expect(useMagnetPanel.getState().params.widthMm).toBeUndefined();
   });
 
   it('guarda un preajuste propio con nombre y lo elimina', async () => {

@@ -119,7 +119,7 @@ const label16 = (v: unknown) => str(v) && v.length <= 16;
 // Unión guardada para revalidar el armado (`SplitJointRecord`).
 // Imán de una unión del corte (`MagnetPocketParams`): mismos rangos que el alojamiento de imán.
 const splitMagnet = (v: unknown) => sanitizeMagnetParams(v) !== null && shape({
-  shape: str, sizeMm: finite, heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
+  shape: str, sizeMm: finite, widthMm: numberOption, turn90: optional(bool), heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
 })(v);
 const splitConnector = shape({
   type: oneOf('dowel', 'peg', 'dovetail', 'lap', 'loose-dowel', 'magnet'), size: positive, depth: positive, tolerance: nonnegative,
@@ -186,7 +186,7 @@ const recipeMetadata = shape({
 const magnetAddonMetadata = shape({
   kind: oneOf('magnet_pocket'),
   params: (v) => sanitizeMagnetParams(v) !== null && shape({
-    shape: str, sizeMm: finite, heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
+    shape: str, sizeMm: finite, widthMm: numberOption, turn90: optional(bool), heightMm: finite, clearanceMm: numberOption, depthClearanceMm: numberOption, hidden: bool,
   })(v),
   hostId: optional(id),
 });

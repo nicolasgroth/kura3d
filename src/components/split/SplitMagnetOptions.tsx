@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { AlertTriangle, Magnet } from 'lucide-react';
+import { Magnet } from 'lucide-react';
 import { MAGNET_DEFAULTS, MAGNET_RANGES, pocketDims, type MagnetParams } from '../../core/addons/magnetPocket';
 import { BUILTIN_MAGNET_PRESETS, sameMagnet } from '../../core/addons/magnetPresets';
 import type { SplitConnectorOptions } from '../../engine';
@@ -60,7 +60,8 @@ export const SplitMagnetOptions: React.FC<{
   }, []);
   const { magnet } = choice;
   // Las holguras son propias de la unión: el preajuste se reconoce por forma y medidas
-  const sameSize = (p: MagnetParams) => p.shape === magnet.shape && p.sizeMm === magnet.sizeMm && p.heightMm === magnet.heightMm;
+  const sameSize = (p: MagnetParams) => p.shape === magnet.shape && p.sizeMm === magnet.sizeMm && p.heightMm === magnet.heightMm
+    && (p.shape !== 'rect' || p.widthMm === magnet.widthMm);
   const mine = presets.find((p) => sameMagnet(p.values, magnet)) ?? presets.find((p) => sameSize(p.values));
   const builtin = mine ? undefined : BUILTIN_MAGNET_PRESETS.find((p) => sameSize(p.values));
   const selected = mine ? mine.id : builtin ? `builtin:${builtin.id}` : CUSTOM;
@@ -70,11 +71,16 @@ export const SplitMagnetOptions: React.FC<{
     const found = value.startsWith('builtin:')
       ? BUILTIN_MAGNET_PRESETS.find((p) => `builtin:${p.id}` === value)?.values
       : presets.find((p) => p.id === value)?.values;
-    if (found) setMagnet({ shape: found.shape, sizeMm: found.sizeMm, heightMm: found.heightMm, clearanceMm: found.clearanceMm, depthClearanceMm: found.depthClearanceMm });
+    if (found) {
+      setMagnet({
+        shape: found.shape, sizeMm: found.sizeMm, widthMm: found.shape === 'rect' ? found.widthMm : undefined, heightMm: found.heightMm,
+        clearanceMm: found.clearanceMm, depthClearanceMm: found.depthClearanceMm,
+      });
+    }
   };
   const dims = pocketDims({ ...magnet, hidden: false });
   const fmt = (n: number) => formatNumber(language, n, { maximumFractionDigits: 2 });
-  const square = magnet.shape === 'square';
+  const round = magnet.shape === 'round';
 
   return (
     <div className="kura-split-magnet" data-testid="split-magnet-options">
@@ -85,7 +91,7 @@ export const SplitMagnetOptions: React.FC<{
           className="kura-select"
           data-testid="split-magnet-preset"
           value={selected}
-          aria-describedby={square ? `${uid}-magnet-square` : `${uid}-magnet-help`}
+          aria-describedby={`${uid}-magnet-help`}
           onChange={(e) => pick(e.target.value)}
         >
           <option value={CUSTOM} disabled>{t(language, 'magnet.preset.custom')}</option>
@@ -101,11 +107,6 @@ export const SplitMagnetOptions: React.FC<{
           )}
         </select>
       </div>
-      {square && (
-        <p className="kura-split-target" role="note" id={`${uid}-magnet-square`} data-testid="split-magnet-square">
-          <AlertTriangle size={12} aria-hidden="true" /> {t(language, 'splitMagnet.squareNote')}
-        </p>
-      )}
       <div className="kura-split-row2">
         {num('mclr', `${t(language, 'splitMagnet.clearance')} (mm)`, magnet.clearanceMm, (v) => setMagnet({ clearanceMm: v }), MAGNET_RANGES.clearanceMm, { step: 0.05, precision: 2, def: MAGNET_DEFAULTS.clearanceMm })}
         {num('mdclr', `${t(language, 'splitMagnet.depthClearance')} (mm)`, magnet.depthClearanceMm, (v) => setMagnet({ depthClearanceMm: v }), MAGNET_RANGES.depthClearanceMm, { step: 0.05, precision: 2, def: MAGNET_DEFAULTS.depthClearanceMm })}
@@ -116,7 +117,9 @@ export const SplitMagnetOptions: React.FC<{
         {num('mcount', t(language, 'splitMagnet.count'), choice.count, (v) => set({ count: Math.round(v) }), { min: 1, max: OR.cut.connectorCount.max }, { precision: 0, disabled: choice.countAuto, def: 2 })}
       </div>
       <p className="kura-split-target" id={`${uid}-magnet-help`}>
-        {t(language, 'splitMagnet.help', { width: fmt(dims.widthMm), depth: fmt(dims.depthMm) })}
+        {round
+          ? t(language, 'splitMagnet.help', { width: fmt(dims.widthMm), depth: fmt(dims.depthMm) })
+          : t(language, 'splitMagnet.helpBlock', { size: `${fmt(dims.widthMm)} × ${fmt(dims.crossMm)} × ${fmt(dims.depthMm)}` })}
       </p>
       <p className="kura-split-target" role="note" data-testid="split-magnet-polarity">
         <Magnet size={12} aria-hidden="true" /> {t(language, 'splitMagnet.polarity')}

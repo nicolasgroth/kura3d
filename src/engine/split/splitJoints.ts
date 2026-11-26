@@ -133,7 +133,7 @@ const RETRY_EXTRA_WALL_MM = 2;
  */
 function placeRung(
   wasm: ManifoldToplevel, j: JointInput, face: Manifold, c: SplitConnectorOptions,
-  lt: ReturnType<typeof layoutType>, handles: Array<{ delete: () => void }>,
+  lt: ReturnType<typeof layoutType>, handles: Array<{ delete: () => void }>, layoutSize?: number,
 ): { centers: Vec3[]; caps: Capsule[] } | null {
   const a = AXIS_INDEX[j.axis];
   const from = j.coord - (c.type === 'loose-dowel' || c.type === 'magnet' ? twoSidedHoleDepth(c) : 0.5);
@@ -149,7 +149,8 @@ function placeRung(
         handles.push(target);
       }
     }
-    const layout = layoutForCut(target, j.axis, j.coord + 0.01, { ...c, type: lt }, wall);
+    // `layoutSize`: radio de ubicación propio (imanes de caja: su ancho); la zona de otras uniones usa el de `c`.
+    const layout = layoutForCut(target, j.axis, j.coord + 0.01, { ...c, type: lt, ...(layoutSize !== undefined ? { size: layoutSize, tolerance: 0 } : {}) }, wall);
     if (!(layout.centers.length > 0 && layout.enoughRoom && layout.skippedIslands < layout.islands)) {
       if (!j.room) return null;
       continue;
@@ -205,6 +206,7 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     const face = own(own(high.m.intersect(clip)).intersect(prism));
     let used: SplitConnectorOptions | null = null;
     let centers: Vec3[] = [];
+    let angles: number[] = [];
     let clearance = 0;
     let requestedAt: SplitConnectorOptions | null = null;
     let depthFrom: number | null = null;
@@ -222,9 +224,11 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     if (connector?.type === 'magnet') {
       // Imanes: misma ubicación que los conectores; cantidad automática o fija, sin achicar (el imán es fijo)
       const lt = layoutType(connector.type);
-      const m = face.isEmpty() ? null : placeMagnets(j, islands, connector, (c) => placeRung(wasm, j, face, c, lt, handles), (caps) => j.room?.add(caps), warnings, pair);
+      const place = (c: SplitConnectorOptions, size?: number) => placeRung(wasm, j, face, c, lt, handles, size);
+      const m = face.isEmpty() ? null : placeMagnets({ ...j, wasm }, islands, connector, place, (caps) => j.room?.add(caps), warnings, pair);
       used = m?.used ?? null;
       centers = m?.centers ?? [];
+      angles = m?.angles ?? [];
       requestedAt = m?.requested ?? connector;
     } else if (connector && connector.type !== 'lap' && !thinOnly && roomBelow && holeDepth(connector) < j.span && !face.isEmpty()) {
       const area = j.contact.area();
@@ -275,8 +279,8 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
       }
     }
     if (used && (used.type === 'loose-dowel' || used.type === 'magnet')) {
-      for (const center of centers) {
-        const holes = used.type === 'magnet' ? buildMagnetPockets(wasm, axis, center, used) : buildLooseDowelHoles(wasm, axis, center, used);
+      for (const [i, center] of centers.entries()) {
+        const holes = used.type === 'magnet' ? buildMagnetPockets(wasm, axis, center, used, angles[i]) : buildLooseDowelHoles(wasm, axis, center, used);
         const inLow = own(low.m.intersect(holes.low));
         const inHigh = own(high.m.intersect(holes.high));
         clearance += inLow.volume() + inHigh.volume();

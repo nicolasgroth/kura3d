@@ -116,6 +116,22 @@ describe('alojamiento de imán (store + motor real)', () => {
     expect(r.extent.width).toBeGreaterThanOrEqual(8.2 - 1e-3);
   });
 
+  it('rectangular 10 × 5 × 2 en una cara lateral: volumen = hueco ±1 %, largo hacia arriba y, con giro, horizontal', async () => {
+    const rect: MagnetParams = { ...MAGNET_DEFAULTS, shape: 'rect', sizeMm: 10, widthMm: 5, heightMm: 2 };
+    const host = (await store().createPrimitive('box', { width: 30, height: 30, depth: 30 }, { position: [0, 0, 0] }))!;
+    const r = await placeAndApply(host, [15, 15, 0], [1, 0, 0], rect);
+    expect(Math.abs(r.removed - r.expected) / r.expected).toBeLessThan(0.01);
+    expect(r.extent.depth).toBeCloseTo(2.2, 3);
+    // u = horizontal de la cara, w = vertical: el largo (10,2) va hacia arriba.
+    expect(r.extent.width).toBeCloseTo(5.2, 2);
+    expect(r.extent.length).toBeCloseTo(10.2, 2);
+    await reset();
+    const host2 = (await store().createPrimitive('box', { width: 30, height: 30, depth: 30 }, { position: [0, 0, 0] }))!;
+    const t90 = await placeAndApply(host2, [15, 15, 0], [1, 0, 0], { ...rect, turn90: true });
+    expect(t90.extent.width).toBeCloseTo(10.2, 2);
+    expect(t90.extent.length).toBeCloseTo(5.2, 2);
+  });
+
   it('cara inclinada de una pieza rotada y escalada; cuadrado', async () => {
     const host = (await store().createPrimitive('box', { width: 30, height: 30, depth: 30 }, { position: [0, 0, 0], rotation: [0, 0, Math.PI / 6], scale: [1.2, 1, 1] }))!;
     // Triángulo de la cara superior local (todos sus vértices en y = 30).

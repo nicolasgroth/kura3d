@@ -45,7 +45,7 @@ export interface ScrewBossAnalysis {
 
 /** Medidas del poste como «hueco» analítico para la distancia con signo (de −`seat` a +`heightMm` sobre la cara). */
 const postDims = (p: ScrewBossParams, seat: number): PocketDims => ({
-  shape: 'round', widthMm: p.outerDiameterMm, depthMm: seat + p.heightMm, lengthMm: seat + p.heightMm, bottomMm: seat, topMm: -p.heightMm,
+  shape: 'round', widthMm: p.outerDiameterMm, crossMm: p.outerDiameterMm, depthMm: seat + p.heightMm, lengthMm: seat + p.heightMm, bottomMm: seat, topMm: -p.heightMm,
 });
 
 /** El poste (cilindro analítico) toca alguna de las mallas `others`. */
