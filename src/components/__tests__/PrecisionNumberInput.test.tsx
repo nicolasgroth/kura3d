@@ -6,7 +6,7 @@
  * @license MIT
  */
 
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { t } from '../../i18n';
@@ -46,5 +46,32 @@ describe('PrecisionNumberInput', () => {
     expect(input.getAttribute('aria-invalid')).toBeNull();
     expect(input.value).toBe('10');
     expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('PrecisionNumberInput con grouping (campo ya formateado «500.007»)', () => {
+  const mountGrouped = () => {
+    const onChange = vi.fn();
+    render(<PrecisionNumberInput value={500007} onChange={onChange} precision={0} grouping ariaLabel="Triángulos finales" />);
+    return { onChange, input: screen.getByLabelText('Triángulos finales') as HTMLInputElement };
+  };
+
+  it('al enfocar desformatea ANTES de seleccionar: el texto completo queda seleccionado y el valor nuevo lo reemplaza', () => {
+    const { onChange, input } = mountGrouped();
+    expect(input.value).toBe('500.007');
+    fireEvent.focus(input);
+    expect(input.value).toBe('500007');
+    expect(input.selectionStart).toBe(0);
+    expect(input.selectionEnd).toBe(input.value.length);
+    // Lo que hace `fill()`: reemplaza la selección completa con el valor nuevo.
+    fireEvent.change(input, { target: { value: '256000' } });
+    expect(input.value).toBe('256000');
+    expect(onChange).toHaveBeenLastCalledWith(256000);
+  });
+
+  it('un cambio directo sobre el campo formateado y sin foco acepta el valor entrante completo', () => {
+    const { onChange, input } = mountGrouped();
+    fireEvent.change(input, { target: { value: '256000' } });
+    expect(onChange).toHaveBeenLastCalledWith(256000);
   });
 });
