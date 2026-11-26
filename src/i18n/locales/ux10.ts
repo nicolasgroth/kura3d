@@ -19,12 +19,12 @@ const UX10 = {
     zh: '所选对象已锁定:请先解锁再移动。',
   },
   'ux10.shortcuts.dragMove': {
-    es: 'Arrastrar un objeto seleccionado: lo mueve sobre el plano horizontal (Esc cancela; con rejilla libre, Ctrl ajusta a 1 mm)',
-    en: 'Drag a selected object: moves it on the horizontal plane (Esc cancels; with free grid, Ctrl snaps to 1 mm)',
-    de: 'Ausgewähltes Objekt ziehen: verschiebt es auf der horizontalen Ebene (Esc bricht ab; bei freiem Raster rastet Strg auf 1 mm ein)',
-    fr: 'Glisser un objet sélectionné : le déplace sur le plan horizontal (Échap annule ; avec grille libre, Ctrl aimante à 1 mm)',
-    hi: 'चुने ऑब्जेक्ट को ड्रैग करें: क्षैतिज तल पर खिसकता है (Esc रद्द करता है; मुक्त ग्रिड में Ctrl 1 मिमी पर रोकता है)',
-    zh: '拖动已选对象:在水平面上移动(Esc 取消;自由网格时按 Ctrl 以 1 mm 对齐)',
+    es: 'Arrastrar un objeto seleccionado: lo mueve en el plano de la vista (Alt: vertical; Mayús: un solo eje; Esc cancela; con rejilla libre, Ctrl ajusta a 1 mm)',
+    en: 'Drag a selected object: moves it in the plane of the view (Alt: vertical; Shift: single axis; Esc cancels; with free grid, Ctrl snaps to 1 mm)',
+    de: 'Ausgewähltes Objekt ziehen: verschiebt es in der Ebene der Ansicht (Alt: senkrecht; Umschalt: eine Achse; Esc bricht ab; bei freiem Raster rastet Strg auf 1 mm ein)',
+    fr: 'Glisser un objet sélectionné : le déplace dans le plan de la vue (Alt : vertical ; Maj : un seul axe ; Échap annule ; avec grille libre, Ctrl aimante à 1 mm)',
+    hi: 'चुने ऑब्जेक्ट को ड्रैग करें: दृश्य के तल में खिसकता है (Alt: ऊर्ध्वाधर; Shift: एक अक्ष; Esc रद्द करता है; मुक्त ग्रिड में Ctrl 1 मिमी पर रोकता है)',
+    zh: '拖动已选对象:在视图所在平面内移动(Alt:垂直;Shift:单轴;Esc 取消;自由网格时按 Ctrl 以 1 mm 对齐)',
   },
 } satisfies Record<string, Row>;
 

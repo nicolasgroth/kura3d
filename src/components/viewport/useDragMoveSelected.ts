@@ -16,7 +16,7 @@ import { useThree, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { DRAG_MOVE_THRESHOLD_PX, dragBoundsForBed, dragBoundsForBeds, dragMoveDelta, dragSnapMm } from '../../core/scene/dragMovePlane';
-import { chooseDragPlane, constrainToDominantAxis, dragMoveDeltaVertical, dragPlaneUserLabel, type DragPlane } from '../../core/scene/dragPlaneChoice';
+import { chooseDragPlane, constrainToDominantAxis, dominantAxisUserLabel, dragMoveDeltaVertical, dragPlaneUserLabel, type DragPlane } from '../../core/scene/dragPlaneChoice';
 import { floorDeltaY } from '../../core/scene/dragFloor';
 import { allBedSizes, placementBedSize } from '../../store/bedSize';
 import { viewModeOf, viewModeTraits } from '../../core/scene/viewMode';
@@ -146,12 +146,17 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
     const camDir = camera.getWorldDirection(new THREE.Vector3());
     const plane = chooseDragPlane([camDir.x, camDir.y, camDir.z], { previous: lastPlane.current, alt: p.alt });
     lastPlane.current = plane;
-    useGizmoDragStore.getState().setPlane(dragPlaneUserLabel(plane));
     let delta: Vec3 | null =
       plane === 'XZ'
         ? dragMoveDelta({ rayOrigin, rayDir, grab: s.grab, reference: s.reference, snapMm, bounds })
         : dragMoveDeltaVertical({ rayOrigin, rayDir, grab: s.grab, reference: s.reference, plane, snapMm, bounds, minDeltaY: s.minDeltaY });
-    if (delta && p.shift) delta = constrainToDominantAxis(delta);
+    let axisLabel: string | null = null;
+    if (delta && p.shift) {
+      // Mayús: el rótulo nombra el eje dominante («Eje X»), no el plano.
+      axisLabel = dominantAxisUserLabel(delta);
+      delta = constrainToDominantAxis(delta);
+    }
+    useGizmoDragStore.getState().setPlane(dragPlaneUserLabel(plane), axisLabel);
     // Vista rasante o rayo que no alcanza el plano: se conserva la última posición válida.
     if (delta) s.lastDelta = delta;
     store.transformSelectionRigid({ translate: s.lastDelta }, { baseline: s.baseline });

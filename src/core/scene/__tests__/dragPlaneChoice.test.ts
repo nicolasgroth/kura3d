@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { Vec3 } from '../../../types/kura';
-import { chooseDragPlane, constrainToDominantAxis, dragMoveDeltaVertical, dragPlaneUserLabel } from '../dragPlaneChoice';
+import { chooseDragPlane, constrainToDominantAxis, dominantAxisUserLabel, dragMoveDeltaVertical, dragPlaneUserLabel } from '../dragPlaneChoice';
 
 describe('chooseDragPlane', () => {
   it('vistas canónicas', () => {
@@ -94,5 +94,14 @@ describe('dragMoveDeltaVertical', () => {
   it('aplica la rejilla en los ejes del plano', () => {
     const d = dragMoveDeltaVertical({ ...base, rayOrigin: [33, 50, 500], snapMm: 10 });
     expect(d).toEqual([30, 40, 0]);
+  });
+});
+
+describe('dominantAxisUserLabel', () => {
+  it('nombra el eje del usuario del desplazamiento dominante (Mayús)', () => {
+    expect(dominantAxisUserLabel([10, 1, 2])).toBe('X');
+    expect(dominantAxisUserLabel([1, 5, 2])).toBe('Z'); // arriba
+    expect(dominantAxisUserLabel([1, 1, -7])).toBe('Y'); // fondo
+    expect(dominantAxisUserLabel([0, 0, 0])).toBeNull();
   });
 });

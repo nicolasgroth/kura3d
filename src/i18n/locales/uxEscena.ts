@@ -76,6 +76,14 @@ const UXESCENA = {
     hi: 'तल {plane}',
     zh: '平面 {plane}',
   },
+  'uxEscena.drag.axis': {
+    es: 'Eje {axis}',
+    en: 'Axis {axis}',
+    de: 'Achse {axis}',
+    fr: 'Axe {axis}',
+    hi: 'अक्ष {axis}',
+    zh: '轴 {axis}',
+  },
   'uxEscena.drag.planeHelp': {
     es: 'Arrastrar una pieza: se mueve en el plano de la vista (Frente/Atrás: vertical; Superior e isométrica: horizontal) · Alt: plano vertical frente a la cámara · Mayús: un solo eje',
     en: 'Dragging a part moves it in the plane of the view (Front/Back: vertical; Top and isometric: horizontal) · Alt: vertical plane facing the camera · Shift: single axis',
