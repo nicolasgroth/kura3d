@@ -11,11 +11,8 @@
 
 import { CommandError } from '../core/bus/commandErrors';
 import type { RawParams } from '../core/bus/commandValidation';
-import {
-  parseMirrorPlane, parsePatternCircular, parsePatternLinear, planPositionsToUser,
-} from '../core/bus/patternSchema';
-import { internalAxisOfUser } from '../core/scene/displayAxes';
-import { resolvePattern, type PatternRequest } from './patternPlanning';
+import { parseMirrorPlane, parsePatternCircular, parsePatternLinear } from '../core/bus/patternSchema';
+import { patternDryRun, patternSummary, resolvePattern, type PatternRequest } from './patternPlanning';
 import type { KuraStoreState } from './useKuraStore';
 
 type Deps = { get: () => KuraStoreState };
@@ -25,21 +22,10 @@ const failed = (command: string) => new CommandError('failed', 'bus.error.failed
 async function runPattern(request: PatternRequest, dryRun: boolean, { get }: Deps, command: string) {
   const resolved = resolvePattern(get(), request);
   if (resolved.problem) throw resolved.problem;
-  const { plan, sources } = resolved;
-  const common = { cells: request.kind === 'mirror' ? (request.spec.keepOriginal ? 2 : 1) : plan.cells, overlapCells: plan.overlapCells };
-  if (dryRun) {
-    if (request.kind === 'mirror' && resolved.mirror) {
-      const { sign } = internalAxisOfUser(request.spec.axis);
-      return {
-        dryRun: true, ...common, copies: request.spec.keepOriginal ? sources.length : 0,
-        plane: { axis: request.spec.axis, coordinateMm: Math.round(resolved.mirror.coord * sign * 1000) / 1000 + 0 },
-      };
-    }
-    return { dryRun: true, ...common, copies: plan.limit.copies, positions: planPositionsToUser(plan, sources) };
-  }
+  if (dryRun) return patternDryRun(request, resolved);
   const result = await get().applyPattern(request);
   if (!result) throw failed(command);
-  return { dryRun: false, ...common, ...result };
+  return { dryRun: false, ...patternSummary(request, resolved), ...result };
 }
 
 export const PATTERN_HANDLERS = {

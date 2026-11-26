@@ -33,6 +33,9 @@ import { registerSimplifyTools } from './simplifyTools.js';
 import { registerAddonTools } from './addonTools.js';
 import { registerFaceNegativeTools } from './faceNegativeTools.js';
 import { registerPlateTools } from './plateTools.js';
+import { registerPatternTools } from './patternTools.js';
+import { isMirrorPlaneRequest, MIRROR_PLANES } from '../../src/core/bus/patternSchema';
+import { MIRROR_BASES } from '../../src/core/scene/patterns';
 import { registerProjectInfoTools } from './projectInfoTools.js';
 import type { ObjectRole } from '../../src/types/kura';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
@@ -356,6 +359,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerAddonTools(server, ctx);
   registerFaceNegativeTools(server, ctx);
   registerPlateTools(server, ctx);
+  registerPatternTools(server, ctx);
   registerProjectInfoTools(server, ctx);
 
   // 3. Transformación de objetos
@@ -1254,21 +1258,37 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   server.registerTool(
     'kura_mirror_object',
     {
-      title: 'Mirror object on X, Y or Z axis',
+      title: 'Mirror object on X, Y or Z axis, or across a plane with a copy',
       description:
-        'Generates an exact mirror image of the mesh along the X, Y or Z axis (Z = upside down) by inverting coordinates and triangle winding so outward normals stay valid.',
+        'Mirror image of a part (inverted coordinates and triangle winding so outward normals stay valid). With only axis (x, y or z; Z = upside down) it ' +
+        'mirrors the mesh in place. With plane (yz, xz or xy, perpendicular to X, Y or Z), at (object: the part center, or bed: the bed center), ' +
+        'offsetMm (shift of the plane along its axis, user axes) or keepOriginal, it reflects the part across that world plane: keepOriginal true (default) ' +
+        'adds the reflection and keeps the part (in the app both go in a named group, one undo step), false replaces the part (it must be unlocked). ' +
+        'union: true merges part and reflection. dryRun: true returns the plane without changing anything.',
       inputSchema: {
-        objectId: idSchema.describe('ID of the 3D object to mirror.'),
-        axis: z.enum(['x', 'y', 'z']).describe('Mirror symmetry axis (x, y or z).'),
+        objectId: idSchema.optional().describe('ID of the 3D object to mirror (plane mode also accepts ids).'),
+        ids: z.array(idSchema).min(1).max(256).optional().describe('Parts to mirror across the plane.'),
+        axis: z.enum(['x', 'y', 'z']).optional().describe('Mirror symmetry axis (x, y or z); with plane it must agree.'),
+        plane: z.enum(MIRROR_PLANES as unknown as [string, ...string[]]).optional().describe('Mirror plane: yz (mirrors along X), xz (along Y) or xy (along Z).'),
+        at: z.enum(MIRROR_BASES as unknown as [string, ...string[]]).optional().describe('The plane goes through the part center (object, default) or the bed center (bed).'),
+        offsetMm: z.number().finite().min(-10000).max(10000).optional().describe('Shift of the plane along its axis in mm (default 0).'),
+        keepOriginal: z.boolean().optional().describe('Keep the original and add the reflection (default true in plane mode).'),
+        union: z.boolean().optional().describe('Merge part and reflection into one piece.'),
+        dryRun: z.boolean().optional().describe('true = only the plane, nothing changes.'),
       },
     },
-    async (args) =>
-      dispatchWithFallback(
+    async (args) => {
+      const planeMode = isMirrorPlaneRequest(args as Record<string, unknown>);
+      if (!planeMode && !args.axis) return failCoded('invalid-params', 'Give axis (x, y or z) or plane (yz, xz or xy).', {});
+      return dispatchWithFallback(
         ctx,
         'mirror_object',
-        { ...args, id: args.objectId },
-        () => ctx.headless.mirrorObject(args.objectId, args.axis)
-      )
+        { ...args, ...(args.objectId ? { id: args.objectId } : {}) },
+        () => (planeMode
+          ? ctx.headless.pattern('mirror_plane', { ...args })
+          : ctx.headless.mirrorObject(args.objectId ?? '', args.axis as 'x' | 'y' | 'z'))
+      );
+    }
   );
 
   /* ------------------------------------------------------------------------ */

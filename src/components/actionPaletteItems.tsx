@@ -18,6 +18,7 @@ import { actionName, arrangePlatesName, moveToPlateName, spreadPlatesName } from
 import { useKuraStore } from '../store/useKuraStore';
 import { assignable } from '../core/scene/plates';
 import { openPlateArrangePanel } from '../store/plateArrangePanel';
+import { openPatternPanel } from '../store/patternPanel';
 import { groupsToConvert } from '../store/plateGroupNames';
 import { spreadCandidates } from '../core/scene/plateSpread';
 import { ACTION_GROUPS, ACTION_SHORTCUTS, actionAvailability, type ActionId } from '../store/actionsCatalog';
@@ -112,6 +113,14 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
     keywords: 'arrangeOnPlates repartir distribuir placas empaquetar arrange pack plates nest', kind: 'local', icon,
     ...(arrangeUnavailable ? { unavailable: t(language, arrangeUnavailable) } : {}),
     run: () => void openPlateArrangePanel(),
+  });
+  // «Patrón…»: repetir la selección en fila, rejilla o círculo, o espejo con copia, con vista previa.
+  const patternUnavailable = state.busyOperation ? 'rediseno.reason.busy' : state.selectedIds.length === 0 ? 'pattern.noSelection' : null;
+  out.push({
+    id: 'action-pattern', label: t(language, 'pattern.entry'), category: t(language, 'rediseno.actions.group.position'),
+    keywords: 'pattern patron repetir repeat array fila row rejilla grid circular espejo mirror copias copies', kind: 'local', icon,
+    ...(patternUnavailable ? { unavailable: t(language, patternUnavailable) } : {}),
+    run: () => void openPatternPanel(),
   });
   // «Convertir grupos en placas» (P7): grupos raíz de la selección o, sin ella, los que se llaman como placas.
   const convertible = groupsToConvert(state.objects, state.groups ?? [], state.selectedIds).length > 0;

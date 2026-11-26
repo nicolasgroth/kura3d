@@ -73,6 +73,11 @@ export class HeadlessPlates {
     return { printerProfile: p, customBedDimensions: null, plates: this.plates, activePlateId: this.activePlateId };
   }
 
+  /** Cama, placas y modo de vista para calcular un patrón (mismo estado que usa la app). */
+  bedState() {
+    return { ...this.source(), layout: this.layout };
+  }
+
   private scene(): PlateScene {
     return { objects: this.host.objects(), plates: this.plates };
   }

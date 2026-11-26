@@ -54,7 +54,9 @@ export function createPatternSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const place = (added: SceneObject[], sources: readonly SceneObject[], groupName: string | null) => {
     const objects = [...get().objects, ...added];
     const ids = [...sources.map((s) => s.id), ...added.map((o) => o.id)];
-    const grouped = groupName ? groupSelection({ objects, groups: get().groups }, ids, { id: makeId('grp'), name: groupName }) : null;
+    // Un original bloqueado no se reagrupa (como en «Agrupar»): se copia, pero se queda donde está.
+    const groupIds = ids.filter((id) => !sources.some((s) => s.id === id && s.locked));
+    const grouped = groupName && groupIds.length > 1 ? groupSelection({ objects, groups: get().groups }, groupIds, { id: makeId('grp'), name: groupName }) : null;
     const groupId = grouped ? grouped.groups.find((g) => !get().groups.some((old) => old.id === g.id) && g.name === groupName)?.id ?? null : null;
     set({ objects: grouped?.objects ?? objects, groups: grouped?.groups ?? get().groups, selectedIds: ids });
     return groupId;
@@ -77,10 +79,6 @@ export function createPatternSlice(ctx: StoreContext): Partial<KuraStoreState> {
       if (request.kind !== 'mirror' || request.spec.keepOriginal) {
         // Las originales sin copias no cambian: un patrón de una sola celda no hace nada.
         if (plan.cells < 2) return null;
-      }
-      if (!request.union && sources.some((s) => s.locked) && request.kind === 'mirror' && !request.spec.keepOriginal) {
-        get().addToast(tr('store.error.locked'), 'error');
-        return null;
       }
       const cells = plan.cells;
       const groupName = request.kind === 'mirror' && !request.spec.keepOriginal ? null : groupNameOf(sources, request, cells);

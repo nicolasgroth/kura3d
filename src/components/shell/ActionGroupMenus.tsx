@@ -21,6 +21,7 @@ import {
   Group,
   Layers,
   LayoutGrid,
+  Copy,
   Merge,
   Minimize2,
   Move3d,
@@ -48,6 +49,7 @@ import { plateToolBlockReason } from '../../core/scene/viewMode';
 import { ACTION_GROUPS, ACTION_SHORTCUTS, actionAvailability, type ActionGroupId, type ActionId } from '../../store/actionsCatalog';
 import { ACTION_DESCRIPTION_KEY, ACTION_TIP_KEY, actionName, arrangePlatesName } from '../../store/actionLabels';
 import { arrangeScopeIds, openPlateArrangePanel } from '../../store/plateArrangePanel';
+import { openPatternPanel } from '../../store/patternPanel';
 import { ROLE_LABEL_KEY } from '../../store/roleLabels';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { ObjectRole } from '../../types/kura';
@@ -127,6 +129,20 @@ export const ActionGroupMenus: React.FC<ActionGroupMenusProps> = ({ pick, curren
     />
   );
 
+  // «Patrón…» (acción de escena, fuera del catálogo): repetir en fila, rejilla o círculo, o espejo con copia.
+  const patternReason = busyOperation ? 'rediseno.reason.busy' : selectedIds.length === 0 ? 'pattern.noSelection' : null;
+  const patternItem = (
+    <MenuItem
+      key="pattern"
+      icon={<Copy size={14} aria-hidden="true" />}
+      label={t(language, 'pattern.entry')}
+      tip={patternReason ? t(language, 'rediseno.reason.disabled', { reason: t(language, patternReason) }) : t(language, 'pattern.entryTip')}
+      description={patternReason ? t(language, patternReason) : undefined}
+      disabled={patternReason !== null}
+      onSelect={pick(() => openPatternPanel())}
+    />
+  );
+
   const item = (id: ActionId) => {
     const availability = actionAvailability(state, id);
     const shortcut = ACTION_SHORTCUTS[id];
@@ -185,9 +201,10 @@ export const ActionGroupMenus: React.FC<ActionGroupMenusProps> = ({ pick, curren
       {ACTION_GROUPS.map((group) => {
         const name = t(language, `rediseno.actions.group.${group.id}` as TranslationKey);
         return (
-          <SubMenu key={group.id} icon={GROUP_ICONS[group.id]} label={name} tip={t(language, 'r3a.actions.groupTip', { name, count: group.items.length + (group.id === 'position' ? 1 : 0) })}>
+          <SubMenu key={group.id} icon={GROUP_ICONS[group.id]} label={name} tip={t(language, 'r3a.actions.groupTip', { name, count: group.items.length + (group.id === 'position' ? 2 : 0) })}>
             {group.items.map((id) => item(id))}
             {group.id === 'position' && arrangeItem}
+            {group.id === 'position' && patternItem}
             {extras?.[group.id]}
           </SubMenu>
         );

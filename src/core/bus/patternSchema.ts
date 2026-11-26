@@ -17,11 +17,11 @@ import {
 import type { CircularCenter, PatternPlan } from '../scene/patternPlan';
 import { toUserVector, type AxisName } from '../scene/displayAxes';
 import { CommandError } from './commandErrors';
-import { resolveIdsOrSelection, type SceneView } from './commandTargets';
-import { readBoolean, readEnum, readNumber, readRange, readVec3, type RawParams } from './commandValidation';
+import { resolveIdsOrSelection, resolveObjects, type SceneView } from './commandTargets';
+import { readBoolean, readEnum, readId, readNumber, readRange, readVec3, type RawParams } from './commandValidation';
 
 const invalid = (param: string, expected: string) => new CommandError('invalid-params', 'bus.error.invalidParam', { param, expected });
-const ID_KEYS = ['ids', 'objectIds', 'id', 'objectId'];
+const ID_KEYS = ['ids', 'objectIds'];
 
 export interface PatternRequestBase {
   targets: SceneObject[];
@@ -38,6 +38,8 @@ const nonZero = (value: number | undefined, param: string): void => {
 };
 
 function targetsOf(scene: SceneView, p: RawParams, unlocked = false): SceneObject[] {
+  const one = readId(p, 'id', 'objectId');
+  if (one && p.ids === undefined && p.objectIds === undefined) return resolveObjects(scene, [one], unlocked);
   return resolveIdsOrSelection(scene, p, { keys: ID_KEYS, unlocked });
 }
 
@@ -54,9 +56,11 @@ export function parsePatternLinear(scene: SceneView, p: RawParams): LinearPatter
   if (count * rows < 2) throw invalid('count', 'count × rows ≥ 2');
   const axis = readEnum(p, PATTERN_AXES, 'axis') ?? 'x';
   const rowAxis = readEnum(p, PATTERN_AXES, 'rowAxis') ?? (axis === 'y' ? 'x' : 'y');
+  const union = readBoolean(p, 'union') ?? false;
   return {
-    targets: targetsOf(scene, p),
-    union: readBoolean(p, 'union') ?? false,
+    // Unir consume los originales: no se admiten bloqueados (mismo rechazo `locked` que las demás operaciones).
+    targets: targetsOf(scene, p, union),
+    union,
     dryRun: readBoolean(p, 'dryRun') ?? false,
     spec: {
       count, axis, mode: readEnum(p, PATTERN_DISTANCE_MODES, 'mode') ?? 'step', distanceMm: distanceMm ?? 0,
@@ -76,9 +80,10 @@ export function parsePatternCircular(scene: SceneView, p: RawParams): CircularPa
   const point = readVec3(p, 'pointMm');
   if (mode === 'point' && !point) throw invalid('pointMm', '[x, y, z] in mm when center is "point"');
   if (mode !== 'point' && point) throw invalid('pointMm', 'only with center "point"');
+  const union = readBoolean(p, 'union') ?? false;
   return {
-    targets: targetsOf(scene, p),
-    union: readBoolean(p, 'union') ?? false,
+    targets: targetsOf(scene, p, union),
+    union,
     dryRun: readBoolean(p, 'dryRun') ?? false,
     spec: { count, axis: readEnum(p, PATTERN_AXES, 'axis') ?? 'z', totalAngleDeg, rotateCopies: readBoolean(p, 'rotateCopies') ?? true },
     center: { mode, ...(point ? { pointMm: point } : {}) },
@@ -100,9 +105,10 @@ export function parseMirrorPlane(scene: SceneView, p: RawParams): MirrorPlaneReq
   if (plane && axis && PLANE_AXIS[plane] !== axis) throw invalid('plane', `plane "${plane}" is perpendicular to axis "${PLANE_AXIS[plane]}", not "${axis}"`);
   const resolved: AxisName = plane ? PLANE_AXIS[plane] : axis ?? 'x';
   const keepOriginal = readBoolean(p, 'keepOriginal') ?? true;
+  const union = readBoolean(p, 'union') ?? false;
   return {
-    targets: targetsOf(scene, p, !keepOriginal),
-    union: readBoolean(p, 'union') ?? false,
+    targets: targetsOf(scene, p, !keepOriginal || union),
+    union,
     dryRun: readBoolean(p, 'dryRun') ?? false,
     spec: {
       axis: resolved, base: readEnum(p, MIRROR_BASES, 'at') ?? 'object',

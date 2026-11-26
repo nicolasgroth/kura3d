@@ -9,9 +9,11 @@
  */
 
 import { dependentAddonIds } from '../core/addons/addonFollow';
-import { assertPatternPlan } from '../core/bus/patternSchema';
+import { assertPatternPlan, planPositionsToUser } from '../core/bus/patternSchema';
+import { internalAxisOfUser } from '../core/scene/displayAxes';
 import { CommandError } from '../core/bus/commandErrors';
 import { isSolid } from '../core/scene/objectRole';
+import type { PlateBedSource } from '../core/scene/activePlateBed';
 import { plateFrameFor } from '../core/scene/plateFrame';
 import { ghostOfMirror, ghostOfPoses, type PatternGhost } from '../core/scene/patternGhost';
 import { isDegenerateCircular, planCircular, planLinear, type CircularCenter, type PatternPlan } from '../core/scene/patternPlan';
@@ -20,14 +22,17 @@ import {
   type CircularSpec, type LinearSpec, type MirrorSpec,
 } from '../core/scene/patterns';
 import type { SceneObject } from '../types/kura';
-import type { KuraStoreState } from './storeTypes';
 
 export type PatternRequest =
   | { kind: 'linear'; ids: string[]; spec: LinearSpec; union: boolean }
   | { kind: 'circular'; ids: string[]; spec: CircularSpec; center: CircularCenter; union: boolean }
   | { kind: 'mirror'; ids: string[]; spec: MirrorSpec; union: boolean };
 
-export type PatternSceneState = Pick<KuraStoreState, 'objects' | 'selectedIds' | 'plates' | 'activePlateId' | 'printerProfile' | 'customBedDimensions' | 'layout'>;
+/** Lo que el plan necesita de la escena (la app y el modo sin interfaz lo cumplen): objetos, selección y cama/placas. */
+export interface PatternSceneState extends PlateBedSource {
+  objects: SceneObject[];
+  selectedIds: string[];
+}
 
 export interface ResolvedPattern {
   /** Piezas de origen en orden de escena (con los imanes que dependen de ellas, salvo al unir). */
@@ -76,6 +81,10 @@ export function resolvePattern(state: PatternSceneState, req: PatternRequest): R
   try {
     const pieces = plan.cells * sources.length;
     assertPatternPlan(plan, { union: req.union, pieces, degenerate });
+    // Lo que se consume o se transforma (unir, o espejo que reemplaza) no puede estar bloqueado.
+    const consumes = req.union || (req.kind === 'mirror' && !req.spec.keepOriginal);
+    const locked = consumes ? sources.find((s) => s.locked) : undefined;
+    if (locked) throw new CommandError('locked', 'bus.error.locked', { name: locked.name });
     if (req.union) {
       if (!sources.every(isSolid)) throw new CommandError('precondition', 'pattern.err.unionSolid');
       if (req.kind === 'mirror' && !req.spec.keepOriginal) throw new CommandError('precondition', 'pattern.err.unionNeedsCopy');
@@ -89,4 +98,25 @@ export function resolvePattern(state: PatternSceneState, req: PatternRequest): R
     ? (req.spec.keepOriginal && mirror && !problem ? ghostOfMirror(sources, mirror) : null)
     : plan.limit.ok && !degenerate ? ghostOfPoses(sources, plan.poses) : null;
   return { sources, plan, mirror, ghost, problem };
+}
+
+/** Celdas por pieza y celdas con solape: la parte común de la respuesta del bus y del MCP. */
+export function patternSummary(request: PatternRequest, resolved: ResolvedPattern) {
+  return {
+    cells: request.kind === 'mirror' ? (request.spec.keepOriginal ? 2 : 1) : resolved.plan.cells,
+    overlapCells: resolved.plan.overlapCells,
+  };
+}
+
+/** Respuesta de `dryRun`: posiciones (ejes del usuario) o plano del espejo, sin crear nada. */
+export function patternDryRun(request: PatternRequest, resolved: ResolvedPattern) {
+  const common = patternSummary(request, resolved);
+  if (request.kind === 'mirror' && resolved.mirror) {
+    const { sign } = internalAxisOfUser(request.spec.axis);
+    return {
+      dryRun: true, ...common, copies: request.spec.keepOriginal ? resolved.sources.length : 0,
+      plane: { axis: request.spec.axis, coordinateMm: Math.round(resolved.mirror.coord * sign * 1000) / 1000 + 0 },
+    };
+  }
+  return { dryRun: true, ...common, copies: resolved.plan.limit.copies, positions: planPositionsToUser(resolved.plan, resolved.sources) };
 }
