@@ -14,7 +14,7 @@
  */
 
 import { AlertTriangle } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import type { SimplifyReport, SimplifyRequest } from '../../engine/simplify';
 import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
@@ -35,6 +35,7 @@ interface Props {
 }
 
 export const SimplifyReportView: React.FC<Props> = ({ report: given, language, onUndo, preview = false }) => {
+  const titleId = useId();
   const busy = Boolean(useKuraStore((s) => s.busyOperation));
   useKuraStore((s) => s.past); // re-render: «Deshacer» del paso aplicado desde aquí se oculta al dejar de ser el último
   // Lo aplicado desde la elección (versión segura o de todos modos) reemplaza al informe recibido mientras éste no cambie.
@@ -66,8 +67,9 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
   // Reemplazar la segura exige poder deshacerla (si no, se forzaría sobre la malla ya simplificada).
   const onApply = preview || (safeApplied && !undo) ? undefined : apply;
   return (
-    <div className="kura-simplify-report" role="status" aria-live="polite" data-testid="simplify-report">
-      <strong className="kura-field-label">{t(language, preview ? 'simplify.preview.title' : 'simplify.report.title')}</strong>
+    // `tabIndex={-1}`: al terminar la vista previa el foco llega aquí (se lee el resultado antes de decidir aplicar).
+    <div className="kura-simplify-report" role="status" aria-live="polite" aria-labelledby={titleId} tabIndex={-1} data-testid="simplify-report">
+      <strong id={titleId} className="kura-field-label">{t(language, preview ? 'simplify.preview.title' : 'simplify.report.title')}</strong>
       {!report.applied && !blocked && <p className="kura-cut-hint">{t(language, 'simplify.report.notApplied')}</p>}
       {preview && report.applied && !safeApplied && !simplifyHasShapeNotice(report) && <p className="kura-cut-hint">{t(language, 'simplify.preview.wouldApply')}</p>}
       {simplifyHasShapeNotice(report) && (

@@ -156,11 +156,34 @@ describe('convertir grupos en placas en el store (P7)', () => {
     expect(overlappingPlates(store().plates, projectBed(store()))).toEqual([]);
     expect(byId(b.id)!.plateRef).toBe(store().plates[1].id);
     expect(byId(c.id)!.position[0] - byId(b.id)!.position[0]).toBeCloseTo(30);
+    // Los grupos «Placa N» del importador se disuelven: la placa ya lleva ese nombre.
+    expect(store().groups).toEqual([]);
+    expect(store().objects.every((o) => o.groupRef === undefined)).toBe(true);
     const labels = historyTimeline('es', store(), 50).entries.map((e) => e.label);
     expect(labels).toContain(t('es', 'plates.history.convert', { count: 2 }));
     store().undo();
     expect(store().plates).toEqual([]);
     expect(byId(b.id)!.position[0]).toBeCloseTo(300);
+    expect(store().groups.map((g) => g.name)).toEqual([name(1), name(2)]);
+    expect(byId(a.id)!.groupRef).toBe('g1');
+  });
+
+  it('un grupo del usuario no se disuelve al convertirlo; uno de placa sí, y con `dissolve` también el de nombre propio', async () => {
+    const a = await addBox(20, [0, 0, 0], { name: 'A' });
+    const b = await addBox(20, [300, 0, 0], { name: 'B' });
+    const grp = (id: string, name: string) => ({ id, name, visible: true, locked: false, collapsed: false });
+    useKuraStore.setState({
+      groups: [grp('g1', 'Mi cuerpo'), grp('g2', t('es', 'importReal.plateName', { n: 2 }))],
+      objects: store().objects.map((o) => ({ ...o, groupRef: o.id === a.id ? 'g1' : 'g2' })), selectedIds: [],
+    });
+    store().convertGroupsToPlates(['g1', 'g2']);
+    expect(store().groups.map((g) => g.id)).toEqual(['g1']);
+    expect(byId(a.id)!.groupRef).toBe('g1');
+    expect(byId(b.id)!.groupRef).toBeUndefined();
+    store().undo();
+    store().convertGroupsToPlates(['g1'], { dissolve: true });
+    expect(store().groups.map((g) => g.id)).toEqual(['g2']);
+    expect(byId(a.id)!.groupRef).toBeUndefined();
   });
 
   it('en Armado no convierte y lo dice', async () => {

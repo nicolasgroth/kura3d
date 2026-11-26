@@ -302,7 +302,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'viewport.gizmo.rotate': 'घुमाएं (R)',
   'viewport.gizmo.scale': 'स्केल करें (S)',
   'viewport.snapLabel': 'ग्रिड',
-  'viewport.snapOff': 'मुक्त',
+  'viewport.snapOff': 'स्नैप बंद',
   'viewport.dimensionsPrefix': 'आकार',
   'viewport.noSelection': 'कोई चयन नहीं',
   'viewport.dimensionsMulti': '{size} ({count} ऑब्जेक्ट)',

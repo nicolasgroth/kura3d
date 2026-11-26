@@ -26,6 +26,8 @@ export interface MoveToPlateResult {
   moved: string[];
   /** false si la pieza (o el bloque) es más grande que la cama destino: se movió, pero no cabe. */
   fits: boolean;
+  /** true si la placa destino no tenía un hueco libre: la pieza queda dentro de su cama, encima de otras. */
+  crowded: boolean;
 }
 
 const clean = (n: number) => (Math.abs(n) < 1e-9 ? 0 : n);
@@ -87,6 +89,7 @@ export function movePiecesToPlate(
   }), bedBox);
   if (inside.dx !== 0 || inside.dz !== 0) for (const [id, d] of delta) delta.set(id, [d[0] + inside.dx, d[1] + inside.dz]);
 
+  let crowded = false;
   if (layout === 'print') {
     const moverIds = new Set(movers.map((o) => o.id));
     const others = scene.objects.filter((o) => o.plateRef === destId && !moverIds.has(o.id) && !followers.has(o.id));
@@ -94,7 +97,9 @@ export function movePiecesToPlate(
     const bed = plateBed(dest, projectBed);
     const size: BedSize = { width: bed.widthMm, depth: bed.depthMm, origin: [dest.origin[0], dest.origin[1]] };
     const clear = keepClearOfOthers(others, trial, size);
-    if (clear.moved) {
+    // Sin hueco libre, `keepClearOfOthers` deja el bloque junto a la cama (fuera): se prefiere quedar dentro, encima de otras.
+    if (clear.moved && !clear.fits) crowded = inside.fits;
+    else if (clear.moved) {
       const dx = clear.parts[0].position[0] - trial[0].position[0];
       const dz = clear.parts[0].position[2] - trial[0].position[2];
       for (const [id, d] of delta) delta.set(id, [d[0] + dx, d[1] + dz]);
@@ -119,7 +124,7 @@ export function movePiecesToPlate(
     };
     return next;
   });
-  return { scene: { objects, plates: scene.plates }, moved: movers.map((o) => o.id), fits: inside.fits };
+  return { scene: { objects, plates: scene.plates }, moved: movers.map((o) => o.id), fits: inside.fits, crowded };
 }
 
 /** Rectángulo de la cama de una placa en mundo. */

@@ -229,7 +229,9 @@ describe('mover a placa', () => {
     const state = { objects: [target], selectedIds: ['a'], groups: [], busyOperation: null };
     expect(actionPaletteItems('es', { ...state, plates: [PLATES[0]] }, []).some((i) => i.id.startsWith('action-moveToPlate'))).toBe(false);
     const items = actionPaletteItems('es', { ...state, plates: PLATES }, []).filter((i) => i.id.startsWith('action-moveToPlate'));
-    expect(items.map((i) => i.label)).toEqual(['Mover a placa: Placa 1', 'Mover a placa: Placa 2', 'Mover a placa: Placa 3', 'Mover a placa: Placa nueva']);
+    expect(items.map((i) => i.label)).toEqual(['Mover a placa: Placa 2', 'Mover a placa: Placa 3', 'Mover a placa: Placa nueva']);
+    // La placa donde ya está toda la selección no se ofrece.
+    expect(items.some((i) => i.id === 'action-moveToPlate-p1')).toBe(false);
     expect(items.every((i) => i.label.startsWith(moveToPlateName('es')))).toBe(true);
     expect(actionPaletteItems('es', { ...state, selectedIds: [], plates: PLATES }, []).find((i) => i.id === 'action-moveToPlate-p2')!.unavailable).toBeTruthy();
   });

@@ -49,7 +49,7 @@ export interface MoveToNewPlateIds {
  */
 export function moveToPlateOrNew(
   scene: PlateScene, ids: readonly string[], plateId: string | null, opts: PlateActionContext & MoveToNewPlateIds,
-): { scene: PlateScene; moved: string[]; created: string | null; fits: boolean } | null {
+): { scene: PlateScene; moved: string[]; created: string | null; fits: boolean; crowded: boolean } | null {
   let base = scene;
   let created: string | null = null;
   if (plateId === null) {
@@ -62,5 +62,5 @@ export function moveToPlateOrNew(
     created = made.plate.id;
   }
   const result = movePiecesToPlate(base, ids, created ?? plateId!, opts.layout, opts.ctx, opts.projectBed);
-  return result ? { scene: result.scene, moved: result.moved, created, fits: result.fits } : null;
+  return result ? { scene: result.scene, moved: result.moved, created, fits: result.fits, crowded: result.crowded } : null;
 }

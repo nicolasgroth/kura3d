@@ -138,7 +138,7 @@ export const CommandPalette: React.FC = () => {
   const splitObjectByColor = useKuraStore((s) => s.splitObjectByColor);
   const dropObjectToBed = useKuraStore((s) => s.dropObjectToBed);
   const runPrintabilityCheck = useKuraStore((s) => s.runPrintabilityCheck);
-  const simplifySelectedMesh = useKuraStore((s) => s.simplifySelectedMesh);
+  const requestSimplifyPanel = useKuraStore((s) => s.requestSimplifyPanel);
   const repairObjectMesh = useKuraStore((s) => s.repairObjectMesh);
   const refineSelectedMesh = useKuraStore((s) => s.refineSelectedMesh);
   const runConvexHull = useKuraStore((s) => s.runConvexHull);
@@ -440,7 +440,8 @@ export const CommandPalette: React.FC = () => {
         kind: 'local',
         icon: <Sparkles size={15} />,
         run: () => {
-          if (primaryId) void simplifySelectedMesh(primaryId, 0.15);
+          // Abre el panel de Simplificar con su vista previa (el mismo de Acciones › Malla); no toca la pieza.
+          if (primaryId) requestSimplifyPanel(primaryId);
         },
       },
       {
@@ -931,7 +932,7 @@ export const CommandPalette: React.FC = () => {
     splitObjectByColor,
     dropObjectToBed,
     runPrintabilityCheck,
-    simplifySelectedMesh,
+    requestSimplifyPanel,
     repairObjectMesh,
     refineSelectedMesh,
     runConvexHull,

@@ -302,7 +302,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'viewport.gizmo.rotate': 'Pivoter (R)',
   'viewport.gizmo.scale': 'Redimensionner (S)',
   'viewport.snapLabel': 'Grille',
-  'viewport.snapOff': 'Libre',
+  'viewport.snapOff': 'Sans magnétisme',
   'viewport.dimensionsPrefix': 'Taille',
   'viewport.noSelection': 'Aucune sélection',
   'viewport.dimensionsMulti': '{size} ({count} objets)',
