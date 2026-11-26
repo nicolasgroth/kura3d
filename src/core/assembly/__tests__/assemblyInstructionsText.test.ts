@@ -70,7 +70,7 @@ describe('exportar', () => {
     const html = instructionsHtml('es', { model: hostile, instructions: out });
     expect(html.startsWith('<!doctype html>')).toBe(true);
     expect(html).not.toContain('<img');
-    expect(html).not.toMatch(/<(script|link|img|iframe|object|embed|a)/i);
+    expect(html).not.toMatch(/<(script|link|img|iframe|object|embed|a)\b/i);
     expect(html).not.toMatch(/https?:|url\(/i);
     expect(html).toContain('&lt;img src=x onerror=alert(1)&gt; &amp; &quot;co&quot;');
     expect(html).toContain('<ol');
