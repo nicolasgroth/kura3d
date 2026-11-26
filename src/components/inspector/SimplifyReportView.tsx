@@ -10,7 +10,7 @@
  * aviso, sin ser destructivo), lo dice en negrita antes de la lista de avisos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { AlertTriangle } from 'lucide-react';

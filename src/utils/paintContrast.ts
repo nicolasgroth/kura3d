@@ -4,7 +4,7 @@
  * el primer trazo no se vería; se elige el siguiente color de la paleta que contraste.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Distancia RGB por debajo de la cual dos colores se ven iguales sobre la pieza. */

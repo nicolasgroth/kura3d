@@ -4,7 +4,7 @@
  * cubo, esfera y cilindro contra el valor analítico, e imán a vértices, puntos medios y centros.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

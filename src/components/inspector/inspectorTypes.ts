@@ -3,7 +3,7 @@
  * @description Tipos compartidos por las secciones del inspector: estado local del contenedor y props de sección.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type React from 'react';

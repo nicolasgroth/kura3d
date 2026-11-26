@@ -4,7 +4,7 @@
  * transporte de la clave Gemini, comandos fuera de la lista permitida, redacción de errores y URL base.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

@@ -6,7 +6,7 @@
  * siguiente usa un Worker nuevo, así la app sigue usable. Sin Worker (Node/Vitest) se lee en proceso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { ModelImportError } from './importErrors';

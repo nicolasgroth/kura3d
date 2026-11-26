@@ -5,7 +5,7 @@
  * nombre del archivo, montaje conservado), en un solo paso deshacible.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';

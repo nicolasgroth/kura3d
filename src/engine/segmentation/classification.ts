@@ -3,7 +3,7 @@
  * @description Clasificación geométrica de regiones en arquetipos estructurales, tablas de etiquetas bilingües y calificativo posicional.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, StructuralArchetype, Vec3 } from '../../types/kura';

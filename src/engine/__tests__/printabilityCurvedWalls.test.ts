@@ -5,7 +5,7 @@
  * 1 mm, toro, placa de 0,4 mm, cubo de 20 mm y texto 3D.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

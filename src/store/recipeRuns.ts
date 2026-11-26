@@ -6,7 +6,7 @@
  * posición, nombre cambiado por el usuario, color y grupo). Puro: no toca el store.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { hasPaintedFaces } from '../core/scene/parametric';

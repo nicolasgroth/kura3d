@@ -6,7 +6,7 @@
  * del store que el diálogo. El MCP sin interfaz usa el mismo esquema (`mcp-server/src/headlessPlates.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { arrangeReportToUser, parseArrangeOnPlates } from '../core/bus/plateArrangeSchema';

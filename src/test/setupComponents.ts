@@ -7,7 +7,7 @@
  * de autor, y `:modal` responde según `showModal()` (jsdom entiende el selector pero no abre modales).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { cleanup } from '@testing-library/react';

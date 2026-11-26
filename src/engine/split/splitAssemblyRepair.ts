@@ -12,7 +12,7 @@
  * `fix.applied` es `true` solo si el informe final no tiene bloqueos ni choques.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ManifoldToplevel } from 'manifold-3d';

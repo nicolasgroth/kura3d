@@ -3,7 +3,7 @@
  * @description Malla de un objeto de escena: caché de geometría, materiales PBR, sección Rayos X, voladizos y pintura.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isNegative, isReference, isSolid } from '../../core/scene/objectRole';

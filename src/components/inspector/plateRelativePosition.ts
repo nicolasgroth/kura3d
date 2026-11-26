@@ -5,7 +5,7 @@
  * de la placa en ejes internos (X, Z; la altura no cambia) y el paso de posición global a relativa y de vuelta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { findPlate } from '../../core/scene/plates';

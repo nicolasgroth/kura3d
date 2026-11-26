@@ -5,7 +5,7 @@
  * de los controles; la regla vive en `core/scene/viewMode.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { plateToolBlockReason } from '../../core/scene/viewMode';

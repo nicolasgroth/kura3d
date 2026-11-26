@@ -7,7 +7,7 @@
  * se convierten en sólido.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';

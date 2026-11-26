@@ -5,7 +5,7 @@
  * Consejo y, con un modal, se comprueba que ningún punto del aviso dentro del diálogo es el elemento superior.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, stlCubes, importarStl } from './ux-escena-helpers';

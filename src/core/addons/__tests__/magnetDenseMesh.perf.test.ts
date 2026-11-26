@@ -4,7 +4,7 @@
  * esfera densa de ~250 mil triángulos con un negativo vecino de 64 lados: debe quedar bajo 300 ms.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

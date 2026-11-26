@@ -7,7 +7,7 @@
  * pieza (aunque el agujero no llegue a ella) y una pieza tocada arrastra a sus postes.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as engine from '../../engine';

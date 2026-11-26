@@ -3,7 +3,7 @@
  * @description Pruebas del códec binario de proyectos .kura (imagen sin comprimir v1 a v5 y ida y vuelta v6; CRC y límites).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

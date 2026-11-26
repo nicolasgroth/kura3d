@@ -4,7 +4,7 @@
  * alcance «selección» ya elegidos; sin selección exportable cae a la escena.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { render, screen } from '@testing-library/react';

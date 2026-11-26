@@ -4,7 +4,7 @@
  * redondo de 5 mm por defecto, y los preajustes propios del usuario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CablePassParams } from '../core/addons/cablePass';

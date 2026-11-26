@@ -5,7 +5,7 @@
  * crea una sola caché por montaje (perezosa, en el efecto) y la libera al desmontar, con su listener `resize`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect, useRef, type MutableRefObject } from 'react';

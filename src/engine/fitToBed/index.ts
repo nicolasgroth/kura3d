@@ -4,7 +4,7 @@
  * transformaciones y detección de partes con medida funcional.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export * from './fitToBedTypes';

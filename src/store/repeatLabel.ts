@@ -3,7 +3,7 @@
  * @description Nombre legible de la acción repetible (F4) para el menú, la paleta y los avisos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { userAxisLabel } from '../core/scene/displayAxes';

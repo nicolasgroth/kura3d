@@ -5,7 +5,7 @@
  * así que aquí se convierte la mitad al sentido del motor. Función pura para probar la ruta real.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { PlaneCutOptions } from '../types/kura';

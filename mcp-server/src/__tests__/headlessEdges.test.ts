@@ -5,7 +5,7 @@
  * recta, el tamaño que no cabe se acota y la respuesta lo dice, y los valores inválidos se rechazan.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';

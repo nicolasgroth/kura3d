@@ -7,7 +7,7 @@
  * selección, exclusión con el imán y entradas en Insertar y en la paleta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, render, screen, waitFor } from '@testing-library/react';

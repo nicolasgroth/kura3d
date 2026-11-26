@@ -7,7 +7,7 @@
  * autor viajan como metadatos `Description` / `Designer`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { parseSetProjectInfo, projectInfoToUser } from '../../src/core/bus/projectInfoSchemas';

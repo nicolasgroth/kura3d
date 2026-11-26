@@ -4,7 +4,7 @@
  * trazos `fill="none"` y un agujero, y su equivalente aplanado; más medidas de contornos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Cuadrado 40×40 con agujero 20×20 desplazado por `<g transform>`, un `<use>` y trazos sin relleno. */

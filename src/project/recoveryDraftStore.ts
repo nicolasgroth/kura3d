@@ -7,7 +7,7 @@
  * borradores viejos. Lee también los borradores v1 (un .kura entero) para migrarlos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { decodeProjectAsync } from './projectCodecClient';

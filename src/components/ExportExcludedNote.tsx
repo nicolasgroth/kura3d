@@ -4,7 +4,7 @@
  * el del árbol («15 de 16: 1 oculto no se exporta»), contando ocultos y negativos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

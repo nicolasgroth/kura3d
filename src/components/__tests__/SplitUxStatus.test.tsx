@@ -5,7 +5,7 @@
  * recuentos usan singular y plural correctos y el estado de la barra no muestra ids internos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { render, screen } from '@testing-library/react';

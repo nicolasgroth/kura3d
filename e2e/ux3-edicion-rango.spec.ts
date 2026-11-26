@@ -4,7 +4,7 @@
  * muestra el error con el rango y «Aplicar ahuecado» queda deshabilitado; al corregir el valor se puede aplicar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir, crear, SHOTS } from './ux3-edicion-helpers';

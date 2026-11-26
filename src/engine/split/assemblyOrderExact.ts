@@ -9,7 +9,7 @@
  * óptimo es 16; en 2×2×2 ambos pegan 5 de 12 (cota: uniones − piezas + 1).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { jointDirections, restricts } from './assemblyConnectors';

@@ -4,7 +4,7 @@
  * clave lleva [es, en, de, fr, hi, zh]; `PASO_CABLE_<IDIOMA>` se mezcla al final de cada diccionario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { pickColumn, presetRows, type Row } from './addonPresetRows';

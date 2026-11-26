@@ -4,7 +4,7 @@
  * es manifold con volumen > 0, la suma de volúmenes es la del original (±0,1 %) y no se solapan.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';

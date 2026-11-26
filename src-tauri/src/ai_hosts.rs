@@ -1,6 +1,6 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
 // Organización: ISGROTH — Innovación y Soluciones GROTH
-// Licencia: MIT
+// Licencia: AGPL-3.0-or-later
 // Descripción: Política de destinos del proxy IA nativo. Lista de hosts permitidos
 // (por defecto los oficiales; el usuario la edita en Ajustes y la confirma en un
 // diálogo nativo), validación de URL (solo https, o http a loopback), vínculo de

@@ -4,7 +4,7 @@
  * pieza se veía sin parámetros) y ofrece «Editar con el asistente», que reabre el formulario con las respuestas guardadas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

@@ -5,7 +5,7 @@
  * verificada en tiempo de compilación TypeScript y tests automatizados.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { LanguageCode } from '../types/kura';
@@ -822,7 +822,7 @@ export const TRANSLATIONS_ES = {
   'toast.mcpTokenRotateFailed': 'El servidor no confirmó la rotación; se conserva el token vigente.',
   'dialog.settings.aiPrivacyExternal': 'Atención: Con {provider} y API Key configurada, tus mensajes del chat se enviarán al servicio externo de {provider}.',
   'dialog.settings.aiPrivacyLocal': 'Privacidad total: Sin API Key externa (o con Ollama local), todas las operaciones permanecen en tu equipo.',
-  'dialog.settings.aboutAuthor': 'Autor: Nicolás Groth (ngroth@gmail.com) — Desarrollado para ISGROTH (Innovación y Soluciones GROTH). Licencia MIT.',
+  'dialog.settings.aboutAuthor': 'Autor: Nicolás Groth (ngroth@gmail.com) — Desarrollado para ISGROTH (Innovación y Soluciones GROTH). Licencia AGPL-3.0-or-later.',
   'dialog.settings.aboutStack': 'Motor geométrico Manifold WASM de mallas cerradas, React Three Fiber, Three.js, Tauri v2 y puente MCP en tiempo real.',
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': 'Emblema de {name}',
@@ -874,7 +874,7 @@ export const TRANSLATIONS_ES = {
   'status.triangles': '{count} tris',
   'status.shortcuts': 'Ctrl+K · Ctrl/⌘+Shift+Enter Zen · M/R/S · H · F',
   'status.shortcutsBtn': 'Atajos (?)',
-  'status.copyright': '© 2026 Nicolás Groth · ISGROTH · MIT',
+  'status.copyright': '© 2026 Nicolás Groth · ISGROTH · AGPL-3.0',
 
   // Mensajes de notificación / errores
   'toast.created': 'Creado: {name}',
@@ -2154,7 +2154,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'toast.mcpTokenRotateFailed': 'The server did not confirm the rotation; the current token is kept.',
   'dialog.settings.aiPrivacyExternal': 'Notice: With {provider} and an API Key configured, chat messages are sent to {provider} external service.',
   'dialog.settings.aiPrivacyLocal': 'Full privacy: Without an external API Key (or using local Ollama), all operations stay on your machine.',
-  'dialog.settings.aboutAuthor': 'Author: Nicolás Groth (ngroth@gmail.com) — Built for ISGROTH (Innovación y Soluciones GROTH). MIT License.',
+  'dialog.settings.aboutAuthor': 'Author: Nicolás Groth (ngroth@gmail.com) — Built for ISGROTH (Innovación y Soluciones GROTH). AGPL-3.0-or-later License.',
   'dialog.settings.aboutStack': 'Closed-mesh Manifold WASM geometry kernel, React Three Fiber, Three.js, Tauri v2 & real-time MCP bridge.',
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': '{name} emblem',
@@ -2204,7 +2204,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'status.triangles': '{count} tris',
   'status.shortcuts': 'Ctrl+K · Ctrl/⌘+Shift+Enter Zen · M/R/S · H · F',
   'status.shortcutsBtn': 'Shortcuts (?)',
-  'status.copyright': '© 2026 Nicolás Groth · ISGROTH · MIT',
+  'status.copyright': '© 2026 Nicolás Groth · ISGROTH · AGPL-3.0',
 
   'toast.created': 'Created: {name}',
   'toast.placedOutsideBed': 'There was no free space on the bed: the part was placed next to it.',

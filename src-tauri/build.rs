@@ -1,6 +1,6 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
 // Organización: ISGROTH — Innovación y Soluciones GROTH
-// Licencia: MIT
+// Licencia: AGPL-3.0-or-later
 // Descripción: Script de compilación de Tauri v2 encargado de generar metadatos,
 // recursos de Windows (icono y manifiesto) y permisos de capacidades. Declara los
 // comandos propios para que solo los listados en `capabilities/` sean invocables.

@@ -5,7 +5,7 @@
  * texturas procedurales en `./proceduralTexture` y pintado por cara en `./paint/`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export { extractSvgElementGroups, svgCurveSegments } from './svg/svgContours';

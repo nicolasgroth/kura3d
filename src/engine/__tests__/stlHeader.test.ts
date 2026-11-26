@@ -4,7 +4,7 @@
  * marca propia, no deja que la cabecera empiece con "solid" y la recorta a 80 bytes.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strFromU8 } from 'fflate';

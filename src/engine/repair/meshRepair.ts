@@ -7,7 +7,7 @@
  * de lo hecho y de lo que no se pudo. JavaScript puro y síncrono: corre en el Worker del motor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../types/kura';

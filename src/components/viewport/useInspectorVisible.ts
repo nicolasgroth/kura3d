@@ -4,7 +4,7 @@
  * por el chat ni por el ancho). Mide el elemento real porque su visibilidad depende del CSS.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useLayoutEffect, useState } from 'react';

@@ -4,7 +4,7 @@
  * de la ranura (local) por la transformación completa del objeto (posición · rotación · escala), espejo incluido.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

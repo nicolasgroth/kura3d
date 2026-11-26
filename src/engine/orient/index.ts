@@ -4,7 +4,7 @@
  * pesos documentados y la transformación que aplica la elegida.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export * from './orientTypes';

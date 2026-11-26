@@ -5,7 +5,7 @@
  * `core/scene/dragReadout.ts`; aquí solo se sigue el cursor y se formatea.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useState } from 'react';

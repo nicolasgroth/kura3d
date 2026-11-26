@@ -6,7 +6,7 @@
  * razonable del tamaño resultante. Nunca escala por sí solo: la interfaz ofrece la elección.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ImportedModel } from './importTypes';

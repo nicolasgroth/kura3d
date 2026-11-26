@@ -3,7 +3,7 @@
  * @description Visor 3D de Kurra Studio (React Three Fiber): monta el Canvas con la escena y compone el HUD (vistas, rejilla, modos, menú contextual, consejos y dimensiones) desde `./viewport/`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useMemo, useRef } from 'react';

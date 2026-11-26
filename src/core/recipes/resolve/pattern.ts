@@ -4,7 +4,7 @@
  * variables `i`, `n`, `x`, `y`, `z`. La cantidad se evalúa primero y se compara con `max` antes de generar nada.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { RecipeError, joinPath } from '../errors';

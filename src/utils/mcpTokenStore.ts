@@ -8,7 +8,7 @@
  * la validación de longitud mínima (la misma que exige el servidor) y el enmascarado para la UI.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isTauriRuntime } from './platformBridge';

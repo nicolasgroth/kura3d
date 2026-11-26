@@ -5,7 +5,7 @@
  * toca la escena. Los datos los calcula `store/plateArrangeGhost.ts` al terminar la vista previa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useMemo } from 'react';

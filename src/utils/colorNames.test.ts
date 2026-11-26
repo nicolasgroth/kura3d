@@ -3,7 +3,7 @@
  * @description Lote ux9: dos colores distintos de la leyenda de filamentos no comparten nombre.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

@@ -6,7 +6,7 @@
  * de impresión. Los de pieza dependen de la casilla "Mostrar rótulos de pieza"; los de placa no.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { occupiedPieces } from '../../core/scene/splitOccupiedPieces';

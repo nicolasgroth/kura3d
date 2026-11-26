@@ -6,7 +6,7 @@
  * Z altura); el cálculo interno usa los ejes de three.js (Y arriba).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { AxisDirection } from '../../core/scene/displayAxes';

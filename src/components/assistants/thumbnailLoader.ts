@@ -7,7 +7,7 @@
  * la tarjeta muestra un icono de su categoría en lugar de la miniatura.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { buildThumbnail, type ThumbPart, type Thumbnail } from '../../core/recipes/thumbnail';

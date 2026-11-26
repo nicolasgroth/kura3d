@@ -6,7 +6,7 @@
  * `focus`, errores de tipo y rango). No reimplementa ninguna regla: todo sale de `resolveRecipe`. Puro y sin React.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { BUILTIN_RECIPES } from '../../core/recipes/builtin';

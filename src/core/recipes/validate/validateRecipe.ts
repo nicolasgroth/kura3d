@@ -6,7 +6,7 @@
  * los problemas encontrados con código, ruta y clave i18n, y el trabajo hecho (para probar costo lineal).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { RecipeError, issue, joinPath, type RecipeIssue } from '../errors';

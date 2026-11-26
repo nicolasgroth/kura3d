@@ -7,7 +7,7 @@
  * escena; `localAssistant.ts` resuelve los objetivos y ejecuta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { OPERATION_RANGES } from '../../engine/operationLimits';

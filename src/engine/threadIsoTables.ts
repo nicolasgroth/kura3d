@@ -6,7 +6,7 @@
  * y la holgura radial por defecto para impresión FDM, escalada con el paso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Tabla ISO 261 de paso grueso (diámetro nominal → paso en mm), M3–M64: serie preferente + segunda elección habitual. */

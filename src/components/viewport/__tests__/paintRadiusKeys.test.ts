@@ -3,7 +3,7 @@
  * @description Pasos del radio del pincel con `[` y `]`: 0,5 mm bajo 5 mm, 1 mm desde ahí, con topes.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

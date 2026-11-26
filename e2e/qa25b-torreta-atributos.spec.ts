@@ -5,7 +5,7 @@
  * (todo salvo malla, estadísticas y transformaciones derivadas), también con la pieza girada y dentro de un grupo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { abrir as abrirBase, aPixel } from './qa12-helpers';

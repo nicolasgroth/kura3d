@@ -5,7 +5,7 @@
  * cambios hasta que la persona pulse "Ya lo guardé".
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

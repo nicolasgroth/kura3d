@@ -4,7 +4,7 @@
  * apunta a la pieza más pesada, el aviso habitual entre 300 000 y 1 millón, y una malla ya avisada no repite.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

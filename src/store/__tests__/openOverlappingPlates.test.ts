@@ -4,7 +4,7 @@
  * ni se pierde) y se avisa con los nombres de las placas. Sin solapes no hay aviso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

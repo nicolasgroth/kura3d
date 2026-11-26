@@ -5,7 +5,7 @@
  * kerning o un espaciado negativo los solapa). Lo usan la primitiva de texto y la proyección.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CrossSection, ManifoldToplevel } from 'manifold-3d';

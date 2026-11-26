@@ -8,7 +8,7 @@
  * nombre).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Una pieza a dibujar: malla local (mm, Y arriba) y su desplazamiento. */

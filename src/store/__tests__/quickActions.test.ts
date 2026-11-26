@@ -5,7 +5,7 @@
  * aplicable, sin acción), F5 (recalcular; sin interceptar en la web), F3 (búsqueda) y F2 (renombrar).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

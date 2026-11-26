@@ -5,7 +5,7 @@
  * de su vista y la frase inicial del panel MCP, en los 6 idiomas. Se mezclan en cada diccionario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export const A11YUX_ES = {

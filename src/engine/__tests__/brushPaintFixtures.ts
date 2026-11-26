@@ -4,7 +4,7 @@
  * "separar por colores": trazos irregulares sobre cilindro, esfera y texto 3D.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';

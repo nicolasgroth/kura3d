@@ -5,7 +5,7 @@
  * El nombre completo va aparte (nombre accesible y tooltip). Nunca se corta a una letra.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** `P2` para la segunda placa de la tira (índice 1). */

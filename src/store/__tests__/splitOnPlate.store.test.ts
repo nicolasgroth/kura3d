@@ -6,7 +6,7 @@
  * pieza da los mismos archivos que el mismo corte hecho en la placa 1.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { unzipSync } from 'fflate';

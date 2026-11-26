@@ -5,7 +5,7 @@
  * y con Mayús+F10, y al agregar una pieza queda agrupada con su objeto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen } from '@testing-library/react';

@@ -5,7 +5,7 @@
  * que Medir no ensucie el historial. Requiere `@playwright/test` y la web en KURA_URL (por defecto 5213).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, clicMundo, medidas, mover, SHOTS } from './qa12-helpers';

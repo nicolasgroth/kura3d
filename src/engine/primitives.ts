@@ -5,7 +5,7 @@
  * y conversión optimizada a THREE.BufferGeometry con soporte de pintado por cara.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

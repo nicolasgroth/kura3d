@@ -6,7 +6,7 @@
  * Ejecuta con `KURA_URL=… npx playwright test e2e/ux7-encuadre.spec.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, importarStl, stlCubes } from './ux-escena-helpers';

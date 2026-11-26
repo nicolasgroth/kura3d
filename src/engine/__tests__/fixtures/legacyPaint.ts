@@ -3,7 +3,7 @@
  * @description Copia congelada de la pintura por caras anterior a `src/engine/paint/` (recorrido lineal y adyacencia con claves de texto). Solo para pruebas de equivalencia y de tiempos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, SceneObject, Vec3 } from '../../../types/kura';

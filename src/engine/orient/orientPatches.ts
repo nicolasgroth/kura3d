@@ -8,7 +8,7 @@
  * de una figura queda partido en grupos chicos del casco o tapado por caras que puentean huecos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Vec3 } from '../../types/kura';

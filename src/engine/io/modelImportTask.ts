@@ -5,7 +5,7 @@
  * Define también el protocolo de mensajes entre la sesión y el Worker.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { MODEL_IO_LIMITS } from '../operationLimits';

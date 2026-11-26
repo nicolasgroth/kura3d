@@ -8,7 +8,7 @@
  * Mientras el motor no está listo o hay una operación en curso, las entradas quedan deshabilitadas con su motivo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

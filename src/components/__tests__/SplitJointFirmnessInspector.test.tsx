@@ -6,7 +6,7 @@
  * recomendado (aviso del armado) cuenta como débil, y un proyecto sin firmeza guardada se ve como antes.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { fireEvent, render, screen } from '@testing-library/react';

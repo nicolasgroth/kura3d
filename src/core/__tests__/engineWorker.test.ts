@@ -6,7 +6,7 @@
  * tipado a través del límite, cancelación que libera `busyOperation` y resultado obsoleto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';

@@ -5,7 +5,7 @@
  * lanza `MESH_REPAIR_FAILED` con el diagnóstico. Devuelve avisos para lo que no se pudo cerrar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../types/kura';

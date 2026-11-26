@@ -4,7 +4,7 @@
  * el conjunto en la cama manteniendo posiciones relativas y distribuir piezas sueltas sin solaparse.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeAll, describe, expect, it } from 'vitest';

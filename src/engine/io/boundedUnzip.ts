@@ -7,7 +7,7 @@
  * el límite abortan sin reservar la salida completa; una entrada que sale más corta es `corrupt`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { Inflate } from 'fflate';

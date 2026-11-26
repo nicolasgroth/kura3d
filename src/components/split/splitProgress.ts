@@ -4,7 +4,7 @@
  * ("Cortando 3 de 7"; terminado el último corte, "Preparando uniones") y su fracción para la barra determinada. Otras fases no tienen texto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t } from '../../i18n';

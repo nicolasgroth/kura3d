@@ -5,7 +5,7 @@
  * Command Bus pueda devolver su código estable (`errorCode`) y convierte avisos del motor en textos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { localizeEngineErrorForUser, localizeEngineWarningForUser } from './userEngineMessages';

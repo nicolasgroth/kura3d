@@ -6,7 +6,7 @@
  * `aria-keyshortcuts`); su nombre accesible sigue siendo su `aria-label`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t, type TranslationKey } from '../../i18n';

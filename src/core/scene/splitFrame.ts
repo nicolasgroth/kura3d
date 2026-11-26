@@ -11,7 +11,7 @@
  * - Las placas virtuales no se vuelven placas reales (eso es otro lote): las partes conservan el `plateRef` de su placa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject } from '../../types/kura';

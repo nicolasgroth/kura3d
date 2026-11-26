@@ -4,7 +4,7 @@
  * deshizo por otra vía o el historial avanzó, y si aun así se invoca no revierte otra cosa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, cleanup, render, screen } from '@testing-library/react';

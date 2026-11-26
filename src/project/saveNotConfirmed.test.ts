@@ -4,7 +4,7 @@
  * reciente) se tipa como `SaveNotConfirmedError`; guardar avisa sin error grave y el proyecto sigue con cambios.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

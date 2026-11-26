@@ -6,7 +6,7 @@
  * elige y Esc cierra devolviendo el foco. Muestra las últimas 50 acciones con desplazamiento.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';

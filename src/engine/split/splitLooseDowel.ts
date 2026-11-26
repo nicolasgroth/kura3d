@@ -8,7 +8,7 @@
  * radio `size` y largo `2·depth − 2·tolerance` (holgura en cada fondo).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';

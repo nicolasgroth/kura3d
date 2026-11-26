@@ -1,6 +1,6 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
 // Organización: ISGROTH — Innovación y Soluciones GROTH
-// Licencia: MIT
+// Licencia: AGPL-3.0-or-later
 // Descripción: Proxy HTTP nativo para proveedores IA (comando `ai_http_request`).
 // Mantiene cerrada la CSP del webview: las llamadas salen desde Rust con rustls,
 // solo hacia https (o http a loopback) en hosts de la lista que el usuario

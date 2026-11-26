@@ -5,7 +5,7 @@
  * web en KURA_URL (por defecto http://127.0.0.1:5189; `npm run test:e2e` la levanta). Fixtures: generar con .eval-tmp/qa-interfaz/gen.mjs.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { existsSync } from 'node:fs';

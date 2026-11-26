@@ -5,7 +5,7 @@
  * Worker compartido: cada respuesta lleva el `id` de su petición.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { decodeProject, encodeProjectCompressed } from './projectCodec';

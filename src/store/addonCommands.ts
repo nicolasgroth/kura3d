@@ -7,7 +7,7 @@
  * torreta más ancha que la zona) es el error tipado `addon-blocked`. Misma forma que el MCP sin interfaz.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { AddonBlockReason } from '../core/addons/addonBlock';

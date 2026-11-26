@@ -4,7 +4,7 @@
  * botones (Duplicar, Ocultar, Bloquear, Eliminar, Color, Más) reutilizan las claves del menú contextual.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export const BARRA_FLOTANTE_ES = {

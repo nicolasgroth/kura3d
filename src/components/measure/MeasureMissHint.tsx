@@ -6,7 +6,7 @@
  * avisos) y se anuncia por una región `status`. Vive dentro del lienzo 3D y crea su elemento DOM.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect } from 'react';

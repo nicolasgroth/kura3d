@@ -4,7 +4,7 @@
  * piezas; no cuenta en el pie ni en "Fuera de volumen". Cada exclusión con su prueba, sobre el motor real.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strFromU8, unzipSync } from 'fflate';

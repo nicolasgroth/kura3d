@@ -4,7 +4,7 @@
  * roscas ISO. Adaptador delgado sobre `src/core/operations/creationOperations`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { createModulePrimitive, createPrimitive } from '../../core/operations';

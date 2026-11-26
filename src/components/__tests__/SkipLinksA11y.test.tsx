@@ -4,7 +4,7 @@
  * botones nombrados, controles sin nombre en las vistas principales y regla de movimiento reducido.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { render, screen } from '@testing-library/react';

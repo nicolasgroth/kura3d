@@ -7,7 +7,7 @@
  * termina el Worker) y con progreso. Nunca modifica los objetos de entrada.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type * as THREE from 'three';

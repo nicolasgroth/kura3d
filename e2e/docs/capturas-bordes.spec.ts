@@ -5,7 +5,7 @@
  * regenerarla sin tocar las demás capturas de la guía (`npm run docs:capturas -- e2e/docs/capturas-bordes.spec.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test } from '@playwright/test';
 import { abrir, captura, cmd, encuadrar, seleccionar, sinAvisos } from './helpers';

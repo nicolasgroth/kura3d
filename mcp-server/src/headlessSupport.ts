@@ -6,7 +6,7 @@
  * No contiene geometría propia: toda malla proviene de `src/engine` (Manifold WASM).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { randomUUID } from 'node:crypto';

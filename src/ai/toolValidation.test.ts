@@ -3,7 +3,7 @@
  * @description Pruebas de la lista permitida de herramientas IA y de la validación de parámetros.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

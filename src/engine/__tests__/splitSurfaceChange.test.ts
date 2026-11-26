@@ -4,7 +4,7 @@
  * no hay otro tipo al que cambiar, y el motor lo dice (`SPLIT_SURFACE_CHANGE_UNUSED`) en vez de callar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ManifoldToplevel } from 'manifold-3d';

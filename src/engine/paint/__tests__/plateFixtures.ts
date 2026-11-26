@@ -4,7 +4,7 @@
  * caras pintadas de espaldas a la cámara o en la cara inferior, para las pruebas de visibilidad del pincel.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { computeMeshStats } from '../..';

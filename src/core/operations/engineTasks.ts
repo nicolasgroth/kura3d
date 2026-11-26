@@ -5,7 +5,7 @@
  * a una operación pura de `src/core/operations` (o a un exportador del motor).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as engine from '../../engine';

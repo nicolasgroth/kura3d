@@ -4,7 +4,7 @@
  * como parámetro propio (antes iba mezclado dentro de `id`), y el texto lo dice en los 6 idiomas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

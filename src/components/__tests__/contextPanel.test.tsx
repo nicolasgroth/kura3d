@@ -5,7 +5,7 @@
  * redimensionar con teclado por el separador y el registro de contenido de cada acción con opciones.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen } from '@testing-library/react';

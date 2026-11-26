@@ -6,7 +6,7 @@
  * MCP y chat IA. La lógica de escena vive en `src/core`; aquí solo se ensambla.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { create } from 'zustand';

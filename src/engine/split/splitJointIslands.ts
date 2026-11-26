@@ -6,7 +6,7 @@
  * convención que `cutConnectorLayout.ts`): y → (x, −z); x → (−z, y); z → (x, y).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CrossSection } from 'manifold-3d';

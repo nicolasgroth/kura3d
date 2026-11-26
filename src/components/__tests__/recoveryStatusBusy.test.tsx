@@ -4,7 +4,7 @@
  * corriendo: la escena está por cambiar, así que dice que el borrador está pendiente.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { afterEach, describe, expect, it } from 'vitest';

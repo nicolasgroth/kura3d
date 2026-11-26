@@ -5,7 +5,7 @@
  * (varios pasos en un solo cambio) y confirmación o cancelación del paso de un arrastre de transformación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { DEFAULT_LAYOUT } from '../../core/scene/layoutPoses';

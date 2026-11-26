@@ -4,7 +4,7 @@
  * o el del único objeto exportado, saneado para sistemas de archivos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Sanea un nombre de archivo (sin extensión): quita separadores y caracteres reservados. */

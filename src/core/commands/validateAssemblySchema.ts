@@ -6,7 +6,7 @@
  * Los fallos llevan un motivo estable que cada lado traduce a su error.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Forma mínima de un objeto de escena que mira el esquema (sin depender de los tipos de la escena). */

@@ -4,7 +4,7 @@
  * menor del perno d3 = d − 1.22687·P (ISO 724), con la malla cerrada.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

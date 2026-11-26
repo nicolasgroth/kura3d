@@ -5,7 +5,7 @@
  * cama. Con varias piezas manda la más baja. El origen de una pieza no es su centro: puede estar en su base.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject, Vec3 } from '../../types/kura';

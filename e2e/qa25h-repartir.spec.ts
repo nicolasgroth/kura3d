@@ -6,7 +6,7 @@
  * cancelar la vista previa con «Cara plana abajo» sobre una pieza real. A 1024 px no desborda.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { existsSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';

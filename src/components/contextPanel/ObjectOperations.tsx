@@ -7,7 +7,7 @@
  * (profundidad por defecto) se ejecutan directo; el ▾ de separar por colores despliega su profundidad. Donde hay variantes, un pequeño desplegable (▾) las muestra.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useState } from 'react';

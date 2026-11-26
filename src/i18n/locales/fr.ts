@@ -4,7 +4,7 @@
  * Tipado estrictamente con `Record<TranslationKey, string>` para garantizar paridad 1:1 en compilación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { TranslationKey } from '../translations';
@@ -815,7 +815,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'toast.mcpTokenRotateFailed': 'Le serveur n’a pas confirmé la rotation ; le jeton actuel est conservé.',
   'dialog.settings.aiPrivacyExternal': 'Attention : Avec {provider} et une clé API configurée, vos messages sont envoyés au service externe de {provider}.',
   'dialog.settings.aiPrivacyLocal': 'Confidentialité totale : Sans clé API externe (ou avec Ollama local), toutes les opérations restent sur votre appareil.',
-  'dialog.settings.aboutAuthor': 'Auteur : Nicolás Groth (ngroth@gmail.com) — Conçu pour ISGROTH (Innovación y Soluciones GROTH). Licence MIT.',
+  'dialog.settings.aboutAuthor': 'Auteur : Nicolás Groth (ngroth@gmail.com) — Conçu pour ISGROTH (Innovación y Soluciones GROTH). Licence AGPL-3.0-or-later.',
   'dialog.settings.aboutStack': 'Noyau géométrique étanche Manifold WASM, React Three Fiber, Three.js, Tauri v2 et pont MCP temps réel.',
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': 'Emblème de {name}',
@@ -867,7 +867,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'status.triangles': '{count} tris',
   'status.shortcuts': 'Ctrl+K · Ctrl/⌘+Maj+Entrée Zen · M/R/S · H · F',
   'status.shortcutsBtn': 'Raccourcis (?)',
-  'status.copyright': '© 2026 Nicolás Groth · ISGROTH · MIT',
+  'status.copyright': '© 2026 Nicolás Groth · ISGROTH · AGPL-3.0',
 
   // Mensajes de notificación / errores
   'toast.created': 'Créé : {name}',

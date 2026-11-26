@@ -6,7 +6,7 @@
  * avisos con código y mensaje en inglés). Lo comparten el Command Bus de la app y el MCP sin interfaz.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { ADDON_BLOCK_KEY, type AddonBlockReason } from '../core/addons/addonBlock';

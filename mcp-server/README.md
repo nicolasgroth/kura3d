@@ -1,7 +1,7 @@
 # Kurra Studio MCP Server (Open Source)
 
 **Autor:** Nicolás Groth — **ISGROTH (Innovación y Soluciones GROTH)** (<ngroth@gmail.com>)  
-**Licencia:** MIT  
+**Licencia:** AGPL-3.0-or-later  
 
 Servidor oficial **Model Context Protocol (MCP)** para **Kurra Studio**. Permite que agentes de IA (como **Antigravity**, **Claude Desktop** o **Codex**) creen, inspeccionen, modifiquen y exporten modelos 3D listos para impresión 3D.
 
@@ -216,4 +216,4 @@ Las llamadas concurrentes al motor headless se ejecutan en orden de llegada (col
 ### Recursos MCP expuestos
 
 - `kura://scene/state` — Estado JSON en tiempo real de la escena actual.
-- `kura://info/about` — Metadatos de autoría, licencia MIT y estado del puente WebSocket.
+- `kura://info/about` — Metadatos de autoría, licencia AGPL-3.0-or-later y estado del puente WebSocket.

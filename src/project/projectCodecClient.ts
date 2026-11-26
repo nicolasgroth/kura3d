@@ -5,7 +5,7 @@
  * guardar, el avance que informa el Worker (preparar y comprimir, en porcentaje).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { EncodeProgress } from './projectCodec';

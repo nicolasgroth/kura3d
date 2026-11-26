@@ -6,7 +6,7 @@
  * traduce las claves del plan (`implicit`, `new:N`) a ids reales en el informe.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject } from '../../types/kura';

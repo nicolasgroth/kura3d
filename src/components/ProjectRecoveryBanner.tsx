@@ -3,7 +3,7 @@
  * @description Aviso accesible de borradores de recuperación local con acciones de restaurar y descartar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useId, useState } from 'react';

@@ -5,7 +5,7 @@
  * carácter; en un campo de texto no se disparan; con un diálogo abierto se respetan las reglas vigentes.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

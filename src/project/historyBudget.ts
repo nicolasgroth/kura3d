@@ -6,7 +6,7 @@
  * y por paso; un delta de pintura cuenta solo sus arreglos. Funciones puras, sin dependencia del store.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { formatLocaleNumber } from '../i18n/numberLocale';

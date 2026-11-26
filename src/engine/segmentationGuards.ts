@@ -5,7 +5,7 @@
  * (`SEGMENTATION_REGION_INVALID`). Evitan aplicar índices viejos sobre una geometría nueva.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { DetectedStructureRegion, MeshData, StructuralSegmentationResult } from '../types/kura';

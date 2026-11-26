@@ -8,7 +8,7 @@
  * así la región se une con volumen real y el resto ya no se pellizca.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold, ManifoldToplevel, Vec3 as MVec3 } from 'manifold-3d';

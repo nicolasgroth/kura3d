@@ -12,7 +12,7 @@
  * - volumen de la caja de la región ≤ `NEGLIGIBLE_VOLUME_REL` × volumen de la caja del modelo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';

@@ -4,7 +4,7 @@
  * 1 mm desde ahí, entre 1 y 25 mm). No actúa mientras se escribe en un campo de texto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect } from 'react';

@@ -4,7 +4,7 @@
  * del fondo del visor): Importar (primero), Cubo, Cilindro, Disco, Esfera, Cono, Toroide, Prisma, Tubo hueco, Texto 3D y SVG.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

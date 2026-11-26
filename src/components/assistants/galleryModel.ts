@@ -5,7 +5,7 @@
  * cuadrícula con las flechas. Sin React ni estado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Categorías con texto propio en la interfaz; el resto se agrupa en `otros`. */

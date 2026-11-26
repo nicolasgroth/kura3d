@@ -15,7 +15,7 @@
  *   9. Exportación 3MF estándar (único perfil; `slicerTarget` obsoleto se ignora) con `Metadata/model_settings.config`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strFromU8, unzipSync } from 'fflate';

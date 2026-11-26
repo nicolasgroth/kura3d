@@ -3,7 +3,7 @@
  * @description Coloreado de una malla según las regiones estructurales detectadas (faceColors listos para inspección y exportación 3MF multicolor).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, StructuralSegmentationResult } from '../../types/kura';

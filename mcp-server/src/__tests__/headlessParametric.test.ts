@@ -5,7 +5,7 @@
  * medidas nuevas) conservando id y posición, y falla si la malla ya cambió por una operación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';

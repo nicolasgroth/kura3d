@@ -5,7 +5,7 @@
  * sean finitas y coherentes, que la recomendada no empeore el soporte y que aplicarla apoye la pieza.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

@@ -3,7 +3,7 @@
  * @description Presets compartidos por los diálogos: SVG vectoriales de ejemplo y roscas métricas ISO.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { ISO_COARSE_THREADS } from '../../engine/threads';

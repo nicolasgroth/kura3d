@@ -8,7 +8,7 @@
  * el tooltip propio está a la vista, el `title` nativo del control se guarda para no duplicarlo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';

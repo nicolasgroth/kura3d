@@ -5,7 +5,7 @@
  * unión resaltada en el visor (`splitJointFocus`). Nada de esto va al historial ni al archivo `.kura`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SplitGroupNotes, SplitValidationReport } from '../../core/scene/splitJointStatus';

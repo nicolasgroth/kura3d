@@ -6,7 +6,7 @@
  * piezas importadas como bloque en un solo paso de deshacer (`rescaleObjects`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useId, useState } from 'react';

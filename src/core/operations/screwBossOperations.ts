@@ -7,7 +7,7 @@
  * ambas piezas en un paso de deshacer. Corre en el Worker del motor (tarea `screwBoss`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as engine from '../../engine';

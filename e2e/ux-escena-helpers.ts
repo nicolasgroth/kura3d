@@ -4,7 +4,7 @@
  * STL de prueba (cubos sueltos) en memoria para importar sin archivos externos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import type { Page } from '@playwright/test';
 import { enlazarStores } from './store-link';

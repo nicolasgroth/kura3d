@@ -9,7 +9,7 @@
  * También decide a qué placa pertenece una pieza según dónde se soltó (arrastre).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { dependentAddonIds } from '../addons/addonFollow';

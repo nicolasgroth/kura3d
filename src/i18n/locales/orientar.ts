@@ -5,7 +5,7 @@
  * final de cada diccionario. Los motivos (`orient.reason.*`) se arman desde los datos del motor (`key` + `params`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 type Row = { es: string; en: string; de: string; fr: string; hi: string; zh: string };

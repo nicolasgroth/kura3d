@@ -6,7 +6,7 @@
  * del casco; tres punteros que solo avanzan dan los extremos de cada arista, O(h) tras el casco). Sin dependencias.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /**

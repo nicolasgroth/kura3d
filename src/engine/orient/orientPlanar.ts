@@ -5,7 +5,7 @@
  * huella quepa en la cama (calibres rotatorios sobre las aristas del casco).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Puntos 2D intercalados [x0, y0, x1, y1, …]. */

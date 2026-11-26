@@ -5,7 +5,7 @@
  * registrando todos los logs exclusivamente en `stderr` para mantener `stdout` limpio para JSON-RPC.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -49,7 +49,7 @@ async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  console.error('[Kurra-MCP] Servidor MCP listo en transporte stdio (Nicolás Groth, MIT).');
+  console.error('[Kurra-MCP] Servidor MCP listo en transporte stdio (Nicolás Groth, AGPL-3.0-or-later).');
 
   const shutdown = async () => {
     console.error('[Kurra-MCP] Cerrando servidor MCP y puente WebSocket...');

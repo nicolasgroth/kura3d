@@ -7,7 +7,7 @@
  * URL base verificadas en la documentación oficial (noviembre 2026); son editables en Ajustes.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { AiCompatPresetId, AiConfig, AiProviderType } from '../types/kura';

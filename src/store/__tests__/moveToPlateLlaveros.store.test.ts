@@ -4,7 +4,7 @@
  * pieza de la primera placa a la segunda: la caja queda dentro de la cama destino. Se salta si el archivo no existe.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

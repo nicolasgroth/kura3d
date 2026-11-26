@@ -4,7 +4,7 @@
  * escribir Z = 10 sube la pieza 10 mm, girar 90° en Z gira sobre la cama y "Abajo (Z)" iguala las bases.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { fireEvent, render, screen } from '@testing-library/react';

@@ -5,7 +5,7 @@
  * vistas. En móvil va abajo como el resto del HUD superior.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 .kura-hud-top-bar:has(> .kura-viewbar) {

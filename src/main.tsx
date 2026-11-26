@@ -3,7 +3,7 @@
  * @description Punto de entrada React 19 de Kurra Studio y carga de estilos de estudio CAD.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

@@ -7,7 +7,7 @@
  * el motor ya midió (`SplitJointStrength`). Sin React ni i18n.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SplitJointRecordStrength } from '../../types/kura';

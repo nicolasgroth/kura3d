@@ -5,7 +5,7 @@
  * malla cambia entre plan y ejecución, no se reutiliza nada (la huella es de todas las posiciones).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeAll, describe, expect, it } from 'vitest';

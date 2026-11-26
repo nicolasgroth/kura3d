@@ -4,7 +4,7 @@
  * store o a las herramientas de la barra. Aquí no hay reglas de teclado ni lógica de dominio; solo el despacho.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { TransformMode } from '../../types/kura';

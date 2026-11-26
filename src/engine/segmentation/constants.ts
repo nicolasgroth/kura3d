@@ -3,7 +3,7 @@
  * @description Constantes compartidas de la segmentación estructural: paleta de colores, opciones por defecto, tolerancia de soldado y paquete de claves de aristas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SegmentationOptions } from '../../types/kura';

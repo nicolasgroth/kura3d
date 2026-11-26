@@ -6,7 +6,7 @@
  * barra, los atajos de teclado y la paleta de comandos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t, type TranslationKey } from '../i18n';

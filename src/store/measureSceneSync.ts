@@ -5,7 +5,7 @@
  * Borrar un objeto o cambiar su malla NO las descarta: quedan desactualizadas y vuelven si se deshace.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useKuraStore } from './useKuraStore';

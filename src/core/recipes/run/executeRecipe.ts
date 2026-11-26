@@ -7,7 +7,7 @@
  * Corre igual en el Worker del motor (tarea `runRecipe`), en el MCP sin interfaz y en pruebas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { EngineWarning } from '../../../engine/engineErrors';

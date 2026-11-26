@@ -5,7 +5,7 @@
  * lejos del origen trae también el centro de la cama (`origin`) para que lo nuevo caiga sobre su placa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { BedSize } from '../core/scene/freeSpot';

@@ -6,7 +6,7 @@
  * 50 % ya se bloquea: cambia el volumen 5,4 %) y la placa salen de la propia app (nunca modelos de terceros).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir, captura, cmd, encuadrar, seleccionar, sinAvisos } from './helpers';

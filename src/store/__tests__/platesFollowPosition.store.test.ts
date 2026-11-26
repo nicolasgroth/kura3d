@@ -5,7 +5,7 @@
  * suya; «Mover a placa» y deshacer no se pelean con la reasignación; en armado no se reasigna.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

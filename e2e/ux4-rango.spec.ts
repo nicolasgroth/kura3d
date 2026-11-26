@@ -5,7 +5,7 @@
  * queda deshabilitado mientras haya un Δ inválido; el tamaño y la holgura de Ajustes › División también.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir, crear, SHOTS } from './ux4-helpers';

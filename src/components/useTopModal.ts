@@ -4,7 +4,7 @@
  * para quedar por encima del velo del diálogo, que vive en la capa superior del navegador.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect, useState } from 'react';

@@ -6,7 +6,7 @@
  * Cada clave lleva [es, en, de, fr, hi, zh]; `ACERCA_<IDIOMA>` se mezcla en cada diccionario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 type Row = readonly [es: string, en: string, de: string, fr: string, hi: string, zh: string];
@@ -93,7 +93,7 @@ const ACERCA_TABLE = {
   ],
   'about.linksTitle': ['Enlaces', 'Links', 'Links', 'Liens', 'लिंक', '链接'],
   'about.linkGuides': ['Guías de uso', 'User guides', 'Anleitungen', 'Guides d’utilisation', 'उपयोग गाइड', '使用指南'],
-  'about.linkRepo': ['Repositorio del código', 'Source code repository', 'Code-Repository', 'Dépôt du code', 'कोड रिपॉज़िटरी', '代码仓库'],
+  'about.linkRepo': ['Código fuente', 'Source code', 'Quellcode', 'Code source', 'स्रोत कोड', '源代码'],
   'about.linkNote': ['Se abre en una pestaña nueva', 'Opens in a new tab', 'Öffnet in einem neuen Tab', 'S’ouvre dans un nouvel onglet', 'नए टैब में खुलता है', '在新标签页中打开'],
   'about.libsTitle': ['Con qué está hecho', 'What it is made with', 'Woraus es besteht', 'Avec quoi il est fait', 'यह किससे बना है', '使用的组件'],
   'about.libsIntro': [

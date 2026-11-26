@@ -5,7 +5,7 @@
  * Referencia y su opacidad. Piezas generadas en memoria, nunca modelos de terceros.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir, captura, cmd, encuadrar, seleccionar, sinAvisos, stlCubos } from './helpers';

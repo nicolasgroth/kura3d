@@ -7,7 +7,7 @@
  * pausado («demasiado pesada») hasta que el usuario lo actualice a mano. Crear reutiliza lo ya calculado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { create } from 'zustand';

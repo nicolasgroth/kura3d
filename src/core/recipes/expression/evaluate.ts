@@ -5,7 +5,7 @@
  * contador de nodos evaluados compartido por toda la resolución que aborta con error tipado al agotarse.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { RecipeError } from '../errors';

@@ -4,7 +4,7 @@
  * con la selección o, sin selección, con los objetos que se salen de la cama; «Repartir en placas…» abre el panel de reparto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

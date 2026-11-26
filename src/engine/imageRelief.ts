@@ -4,7 +4,7 @@
  * suavizado opcional y malla cerrada con base plana y paredes cosidas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ImageTo3DOptions, MeshData } from '../types/kura';

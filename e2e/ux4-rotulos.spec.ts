@@ -5,7 +5,7 @@
  * "Preparar para imprimir" en 1440, 1024 y 390 px.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, crear, dividirCubo, encuadrar, SHOTS } from './ux4-helpers';

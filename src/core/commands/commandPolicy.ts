@@ -6,7 +6,7 @@
  * de Node, para poder importarse también desde el frontend.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { KuraCommandName } from './commandNames';

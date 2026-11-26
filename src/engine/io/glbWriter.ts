@@ -6,7 +6,7 @@
  * Una malla por objeto con POSITION (metros) y NORMAL compartidos y una primitiva por color.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Malla lista para escribir: posiciones en metros (Y-up) y triángulos agrupados por color. */

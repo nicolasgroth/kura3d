@@ -5,7 +5,7 @@
  * de la barra de progreso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';

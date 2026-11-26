@@ -5,7 +5,7 @@
  * salidas en un paso de deshacer). La receta llega por `recipeId` (incorporada) o en línea (`recipe`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describeRecipe, languageOf, listBuiltinRecipes, recipeFromSource, validateAny, type RecipeSource } from '../core/recipes/catalog';

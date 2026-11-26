@@ -6,7 +6,7 @@
  * borde de un vacío sellado: líquido o polvo atrapado no puede salir. Solo geometría, sin motor WASM.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export interface CavityMesh {

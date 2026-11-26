@@ -5,7 +5,7 @@
  * memoria de descripción y fecha de recientes (acotada, sin notas, sin entradas hostiles).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

@@ -6,7 +6,7 @@
  * Las restricciones cruzadas (radio interior < exterior, etc.) las sigue validando el motor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Límites globales de primitivas (mm y segmentos). */

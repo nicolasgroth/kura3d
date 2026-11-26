@@ -4,7 +4,7 @@
  * .kura v1 anterior (sin el campo) sigue abriendo, y un v1 que trajera el campo se rechaza.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeAll, describe, expect, it } from 'vitest';

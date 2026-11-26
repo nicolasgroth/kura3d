@@ -4,7 +4,7 @@
  * usada y, si el ancho resultante supera la cama, cuánto mide y qué alto de letra sugerir (con botón para usarlo).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

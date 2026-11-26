@@ -4,7 +4,7 @@
  * y sin restos en inglés ni vocabulario viejo de huecos en español (ver `docs/GLOSARIO.md`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

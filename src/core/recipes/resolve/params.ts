@@ -5,7 +5,7 @@
  * oculto o deshabilitado toma su valor por defecto y no se valida. También calcula `derive` y las reglas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { issue, joinPath, type RecipeIssue } from '../errors';

@@ -4,7 +4,7 @@
  * cierra el trazo (en vivo o del store) al soltar el puntero en cualquier parte de la ventana.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect, useState } from 'react';

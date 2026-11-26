@@ -5,7 +5,7 @@
  * volumen removido; sin pieza sólida avisa; un preajuste propio sobrevive a recargar la página y se puede eliminar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, aPixel } from './qa12-helpers';

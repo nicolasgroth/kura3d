@@ -5,7 +5,7 @@
  * objeto. Evita fugas de memoria del heap WASM en los caminos de error.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Cualquier objeto con memoria WASM que se libera con `delete()`. */

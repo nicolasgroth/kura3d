@@ -7,7 +7,7 @@
  * Sin WASM: lo usan el motor, la interfaz y las validaciones.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { PrimitiveParams, PrimitiveType } from '../types/kura';

@@ -5,7 +5,7 @@
  * cabe en esa cara con margen. Funciones puras para que la interfaz las use al abrir el diálogo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject, SurfaceProjectionAxis, Vec3 } from '../types/kura';

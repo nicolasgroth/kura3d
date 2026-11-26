@@ -4,7 +4,7 @@
  * Tipado estrictamente con `Record<TranslationKey, string>` para garantizar paridad 1:1 en compilación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { TranslationKey } from '../translations';
@@ -815,7 +815,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'toast.mcpTokenRotateFailed': '服务器未确认轮换，保留当前令牌。',
   'dialog.settings.aiPrivacyExternal': '注意：使用 {provider} 且配置了 API 密钥时，对话消息将发送至 {provider} 外部服务。',
   'dialog.settings.aiPrivacyLocal': '完全隐私：未配置外部 API 密钥（或使用本地 Ollama）时，所有操作均保留在您的设备上。',
-  'dialog.settings.aboutAuthor': '作者：Nicolás Groth (ngroth@gmail.com) — 为 ISGROTH (Innovación y Soluciones GROTH) 开发。MIT 许可证。',
+  'dialog.settings.aboutAuthor': '作者：Nicolás Groth (ngroth@gmail.com) — 为 ISGROTH (Innovación y Soluciones GROTH) 开发。AGPL-3.0-or-later 许可证。',
   'dialog.settings.aboutStack': '水密 Manifold WASM 几何内核、React Three Fiber、Three.js、Tauri v2 与实时 MCP 桥接。',
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': '{name} 徽标',
@@ -867,7 +867,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'status.triangles': '{count} 面',
   'status.shortcuts': 'Ctrl+K · Ctrl/⌘+Shift+Enter 禅模式 · M/R/S · H · F',
   'status.shortcutsBtn': '快捷键 (?)',
-  'status.copyright': '© 2026 Nicolás Groth · ISGROTH · MIT',
+  'status.copyright': '© 2026 Nicolás Groth · ISGROTH · AGPL-3.0',
 
   // Mensajes de notificación / errores
   'toast.created': '已创建：{name}',

@@ -5,7 +5,7 @@
  * receta en el proyecto y la regeneración son del lote RCP-03.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Respuesta guardada: solo valores simples. Archivos y objetos elegidos se nombran en `omitted`. */

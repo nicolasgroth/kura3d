@@ -3,7 +3,7 @@
  * @description Etapa final de la detección: elige el cuerpo principal, clasifica cada región, la etiqueta (con numeración de duplicados) y le asigna color. Código movido tal cual desde `detectStructuralRegions`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type {

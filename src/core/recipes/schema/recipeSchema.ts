@@ -4,7 +4,7 @@
  * del JSON Schema exportable (`npm run recetas:schema`). Estricto: rechaza campos desconocidos en todo nivel.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { z } from 'zod';

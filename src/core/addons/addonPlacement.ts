@@ -7,7 +7,7 @@
  * de la superficie promediada en el radio del agregado (`surfaceNormal`; en caras planas, la del triángulo cortado). Devuelve punto y normal en ejes internos (Y arriba), como los da el visor al store.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as engine from '../../engine';

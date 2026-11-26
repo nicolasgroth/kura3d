@@ -5,7 +5,7 @@
  * acompañan, ángulo de voladizo (válido, inválido, mientras calcula), pieza que no cabe en la cama, es/en/de.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { itemAccion } from './acciones-helpers';

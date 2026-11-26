@@ -4,7 +4,7 @@
  * edición por el Command Bus (`update_primitive_params`) y, si la malla cambió, solo lo explica.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen } from '@testing-library/react';

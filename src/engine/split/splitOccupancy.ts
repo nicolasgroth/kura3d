@@ -8,7 +8,7 @@
  * celdas (sin fundir fragmentos ni medir contactos) y el resultado se marca `exact: false`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';

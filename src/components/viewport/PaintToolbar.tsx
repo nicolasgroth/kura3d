@@ -5,7 +5,7 @@
  * las trae también (`PaintControls`), como hoja plegable en móvil, y también con el panel plegado. Monta los efectos de la herramienta una vez.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useState } from 'react';

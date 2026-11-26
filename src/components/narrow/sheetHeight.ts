@@ -4,7 +4,7 @@
  * siguiente y altura más cercana a un valor en píxeles. Lógica pura, sin DOM.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export type SheetHeight = 'folded' | 'half' | 'full';

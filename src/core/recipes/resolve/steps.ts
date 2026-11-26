@@ -5,7 +5,7 @@
  * de patrón; `@paso` → `$ref`, `$asset:id` → `$asset`, y `=p.<archivo|objeto>` → `$file` / `$object`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { RecipeError, joinPath } from '../errors';

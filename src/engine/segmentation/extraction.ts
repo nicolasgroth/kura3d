@@ -3,7 +3,7 @@
  * @description Extracción de una sub-estructura detectada como objeto sólido independiente, con cierre de bucles abiertos y remanente opcional.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { DetectedStructureRegion, MeshData, SceneObject, Vec3 } from '../../types/kura';

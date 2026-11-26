@@ -6,7 +6,7 @@
  * el aviso de fuera de volumen por placa y «Mover a placa» en el menú contextual y la paleta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';

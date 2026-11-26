@@ -6,7 +6,7 @@
  * pieza y valida mientras se escribe; "Ejecutar" queda deshabilitado con el motivo visible si no cabe.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useId, useMemo, useState } from 'react';

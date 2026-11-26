@@ -5,7 +5,7 @@
  * secretos. Se valida al leer (un valor dañado o ajeno se ignora) y se puede quitar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { parseSlicerProjectSample, type SlicerProjectSample } from '../engine/io/slicerProjectSample';

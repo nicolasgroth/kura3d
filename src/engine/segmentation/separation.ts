@@ -3,7 +3,7 @@
  * @description División completa: extrae todas las sub-estructuras detectadas como piezas independientes con etiquetas bilingües, color y posición mundial.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, SceneObject, StructuralSegmentationResult, Vec3 } from '../../types/kura';

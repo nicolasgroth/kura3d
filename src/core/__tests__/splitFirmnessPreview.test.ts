@@ -7,7 +7,7 @@
  * usa la prueba de componente (`SplitJointFirmness.test.tsx`, que en jsdom no puede cargar el WASM) sigue vigente.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import saved from '../../components/__tests__/fixtures/jointPreview.json';

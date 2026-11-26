@@ -5,7 +5,7 @@
  * para los specs (que leen esa variable). Ventana 1280×720 (la de los specs, que usan coordenadas de pantalla).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { defineConfig, devices } from '@playwright/test';

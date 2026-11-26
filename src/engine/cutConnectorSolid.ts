@@ -4,7 +4,7 @@
  * corte. Lo comparten el corte por plano (`operations.ts`) y la división para la cama (`split/`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';

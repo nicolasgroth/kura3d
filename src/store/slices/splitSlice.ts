@@ -6,7 +6,7 @@
  * acciones "Preparar para imprimir" / "Volver a armar" (un paso de deshacer cada una).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { splitFramesOf, splitPlateSourceOf } from '../../core/scene/splitFrame';

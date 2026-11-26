@@ -6,7 +6,7 @@
  * muro»). Una sola fuente para el aviso emergente y las líneas del panel.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { KEYHOLE_LEVEL_TOLERANCE_MM, KEYHOLE_MIN_WALL_MM } from '../core/addons/keyhole';

@@ -7,7 +7,7 @@
  * círculo del pincel. Usa el escritor diferido para no copiar colores si nada cambia.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, SceneObject, Vec3 } from '../../types/kura';

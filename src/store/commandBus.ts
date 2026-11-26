@@ -6,7 +6,7 @@
  * Se instancia desde el store con sus dependencias, sin cambiar `executeCommand`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isReadCommand } from '../core/commands/commandPolicy';

@@ -5,7 +5,7 @@
  * Medidas y ejes del resultado en ejes del usuario: X derecha, Y fondo, Z altura.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Vec3 } from '../../types/kura';

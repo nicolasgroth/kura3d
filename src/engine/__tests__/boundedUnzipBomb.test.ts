@@ -5,7 +5,7 @@
  * trozos que excedan lo declarado (se espía el callback del `Inflate` de fflate).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { deflateSync } from 'fflate';

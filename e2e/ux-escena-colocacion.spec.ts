@@ -5,7 +5,7 @@
  * extraídas quedan en un hueco libre sin solapar OTROS objetos. Ejecuta con `npm run test:e2e`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { agregarForma } from './agregar-helpers';

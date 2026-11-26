@@ -4,7 +4,7 @@
  * primitiva o rosca paramétrica (misma operación que el inspector), por el puente vivo o headless.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';

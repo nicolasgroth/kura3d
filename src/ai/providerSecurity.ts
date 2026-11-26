@@ -7,7 +7,7 @@
  * (`secretRedaction.ts`), que borra claves de cualquier texto antes de mostrarlo o registrarlo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Hosts oficiales permitidos por defecto. Mantener igual que `DEFAULT_HOSTS` en `ai_hosts.rs`. */

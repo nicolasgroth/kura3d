@@ -5,7 +5,7 @@
  * barra de la herramienta activa ni con el aviso «No cabe en la cama». Con un modal abierto Ctrl+Z no deshace la escena.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';

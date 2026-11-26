@@ -3,7 +3,7 @@
  * @description Utilidades geométricas de la segmentación: normalización a cama con posición mundial, claves de aristas y ejes principales (PCA por Jacobi).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';

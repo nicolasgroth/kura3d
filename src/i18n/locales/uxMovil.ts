@@ -4,7 +4,7 @@
  * de transformación del visor en móvil y del plegado del panel de IA, en los 6 idiomas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export const UXMOVIL_ES = {

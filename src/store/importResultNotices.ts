@@ -7,7 +7,7 @@
  * le deja registrada la segunda acción «Otra unidad…», que abre el diálogo con todas las sugerencias.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isReference } from '../core/scene/objectRole';

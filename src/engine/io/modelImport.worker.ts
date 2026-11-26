@@ -4,7 +4,7 @@
  * del lote (llegan una vez), lee cada Blob aquí mismo y devuelve las mallas transfiriendo sus buffers.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { attachViewportShading } from './importShading';

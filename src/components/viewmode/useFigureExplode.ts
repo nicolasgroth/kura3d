@@ -6,7 +6,7 @@
  * nunca separa. El cálculo se comparte entre todas las piezas con una caché por escena y por alcance.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useMemo } from 'react';

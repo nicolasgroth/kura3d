@@ -4,7 +4,7 @@
  * nombre canónico (en los 6 idiomas), y Escape dentro de un submenú cierra solo el submenú.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { fireEvent, render, screen } from '@testing-library/react';

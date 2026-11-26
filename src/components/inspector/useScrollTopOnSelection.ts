@@ -4,7 +4,7 @@
  * el nombre y el tipo del objeto nuevo queden a la vista; con la misma selección no toca el desplazamiento.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useLayoutEffect, useRef } from 'react';

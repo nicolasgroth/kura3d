@@ -4,7 +4,7 @@
  * lienzo que ocupan, cámara fuera de su caja, plano cercano por delante) y capturas en `.eval-tmp/ux7`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import type { Page } from '@playwright/test';
 

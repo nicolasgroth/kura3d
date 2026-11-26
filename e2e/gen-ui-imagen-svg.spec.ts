@@ -5,7 +5,7 @@
  * valores fuera de rango se marcan en el campo (no se acotan en silencio) y se avisa si no cabe en la cama.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';

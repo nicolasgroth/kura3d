@@ -5,7 +5,7 @@
  * con un 3MF de millones de triángulos ese cálculo era el bloqueo principal tras leer el archivo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { computeCreasedShading, MAX_CREASED_TRIANGLES } from '../../utils/creasedNormals';

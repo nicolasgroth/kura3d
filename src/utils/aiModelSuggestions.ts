@@ -4,7 +4,7 @@
  * texto libre sigue permitido). Son identificadores públicos de modelos; no afectan a la seguridad.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { AiCompatPresetId, AiConfig } from '../types/kura';

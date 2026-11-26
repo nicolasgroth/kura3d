@@ -4,7 +4,7 @@
  * (su nombre y sus medidas); si no, la del proyecto (impresora y medidas del perfil). Se apoya en `activePlateBed`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { activePlateBed, type PlateBedSource } from './activePlateBed';

@@ -5,7 +5,7 @@
  * mantiene dentro del cuadro los que no deben faltar (rótulos de placa). Función pura, sin DOM.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Rótulo ya proyectado a píxeles del lienzo (origen arriba a la izquierda). */

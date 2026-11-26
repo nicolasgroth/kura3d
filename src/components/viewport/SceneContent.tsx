@@ -3,7 +3,7 @@
  * @description Contenido del Canvas 3D: luces, objetos, plano de sección, vista previa láser, OrbitControls, gizmo y cubo de vista.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { MeasureOverlay } from '../measure/MeasureOverlay';

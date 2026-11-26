@@ -4,7 +4,7 @@
  * abierto; los avisos se pintan dentro del diálogo modal (capa superior), no bajo su velo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';

@@ -4,7 +4,7 @@
  * herramienta Pintar, así dicen lo mismo con cualquier selección (ninguno, uno o varios). Función pura.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t } from '../i18n';

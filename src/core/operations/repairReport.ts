@@ -5,7 +5,7 @@
  * ejes del usuario, coordenadas locales del objeto). Sin segmentos del visor ni datos internos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshDiagnosisSummary, MeshHole, MeshRepairReport } from '../../engine';

@@ -3,7 +3,7 @@
  * @description Lista corta de palabras españolas frecuentes para detectar texto sin traducir en la interfaz inglesa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export const SPANISH_WORDS =

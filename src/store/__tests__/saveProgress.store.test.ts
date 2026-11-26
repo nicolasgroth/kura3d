@@ -5,7 +5,7 @@
  * El archivo que se escribe es exactamente el que entrega el códec.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';

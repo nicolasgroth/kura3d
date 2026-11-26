@@ -4,7 +4,7 @@
  * máximo de pasos con límites, vaciado con confirmación propia y tooltips de Deshacer/Rehacer.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, render, screen, waitFor } from '@testing-library/react';

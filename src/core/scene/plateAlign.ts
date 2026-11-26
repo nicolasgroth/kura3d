@@ -13,7 +13,7 @@
  * - Sin placas, la cama del perfil en el origen (idéntico a antes).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { alignObjects } from '../operations/alignOperations';

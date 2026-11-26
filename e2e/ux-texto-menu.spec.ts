@@ -4,7 +4,7 @@
  * la ventana, el menú del objeto cabe sin recortes y el error del SVG sale dentro del diálogo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { agregarForma } from './agregar-helpers';

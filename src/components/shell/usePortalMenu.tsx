@@ -5,7 +5,7 @@
  * foco al botón; Tab y Mayús+Tab cierran y dejan seguir el foco desde el botón; un clic fuera cierra sin robar el foco. Lo comparten «Acciones», «Insertar» y «Agregar».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';

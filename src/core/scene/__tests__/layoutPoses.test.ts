@@ -5,7 +5,7 @@
  * `metadata.split`, seguidores (agregado con anfitrión y negativo de grupo) y `posedObjects` sin tocar la escena.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

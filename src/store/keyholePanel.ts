@@ -4,7 +4,7 @@
  * (`createAddonPanel`) con las medidas por defecto del tornillo de 4 mm, y los preajustes propios del usuario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { KeyholeParams } from '../core/addons/keyhole';

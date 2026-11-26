@@ -6,7 +6,7 @@
  * (nivel, motivos, qué se achicó y qué islas quedaron solo para pegar) como datos estructurados.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CrossSection, Manifold } from 'manifold-3d';

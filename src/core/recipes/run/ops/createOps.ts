@@ -5,7 +5,7 @@
  * motor. `position` es el centro de la base (ejes del usuario, mm), `rotation` en grados y `scale` por eje.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { createPrimitive, createThread, importSvg, primitiveMesh } from '../../../operations/creationOperations';

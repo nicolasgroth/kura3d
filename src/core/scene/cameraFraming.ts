@@ -7,7 +7,7 @@
  * reencuadre tras editar un tamaño. Funciones puras, sin dependencia del visor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

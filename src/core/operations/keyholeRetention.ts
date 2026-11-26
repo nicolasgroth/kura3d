@@ -6,7 +6,7 @@
  * volumen en una pared infinita. Es la sonda del evaluador hecha regla. Usa Manifold: corre en el Worker.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as engine from '../../engine';

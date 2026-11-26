@@ -6,7 +6,7 @@
  * botón «Sin cama» oculta todas (lo decide quien monta este componente).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useMemo } from 'react';

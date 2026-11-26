@@ -5,7 +5,7 @@
  * traducidos. (El motor no corre en jsdom: la acción del store se sustituye; el motor y el store se prueban aparte.)
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';

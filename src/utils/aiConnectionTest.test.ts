@@ -3,7 +3,7 @@
  * @description Pruebas de "Probar conexión": clasificación de resultados, petición mínima y ausencia de la clave en la salida.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it, vi } from 'vitest';

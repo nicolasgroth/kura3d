@@ -5,7 +5,7 @@
  * exportación única (STL, 3MF, OBJ+MTL, GLB, PLY).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { importPartsPhase, importStagePhase, parseImportParts, type ImportStage } from '../importPhase';

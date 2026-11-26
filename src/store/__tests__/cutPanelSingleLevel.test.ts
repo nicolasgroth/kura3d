@@ -3,7 +3,7 @@
  * @description Cortar es un solo nivel: cerrar el panel de corte abierto desde la herramienta devuelve a Seleccionar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

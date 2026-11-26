@@ -7,7 +7,7 @@
  * busto de 325 k triángulos cada extracción eran ~260 k consultas de 35 µs (9 s).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Distancia con signo acotada: exacta si |d| < cap, si no ±cap. */

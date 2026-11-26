@@ -4,7 +4,7 @@
  * crudas ni «Kura3D» en pantalla (diálogo de exportar con dos placas, menú contextual, inspector, insignia y Orientar).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { abrir, cmd } from './qa25a-helpers';

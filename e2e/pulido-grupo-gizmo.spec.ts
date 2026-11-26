@@ -6,7 +6,7 @@
  * Los agarres se ubican proyectando los selectores internos de TransformControls a píxeles de pantalla.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir } from './qa12-helpers';

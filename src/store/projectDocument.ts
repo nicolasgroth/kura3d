@@ -5,7 +5,7 @@
  * guardar e instantáneas Undo/Redo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { trimHistoryForFile } from '../project/historyBudget';

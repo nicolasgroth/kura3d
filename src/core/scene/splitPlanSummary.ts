@@ -5,7 +5,7 @@
  * a la cama útil, piezas que no caben (planos ajustados a mano), uniones previstas con y sin conector.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { BedSplitPlan, PlannedPiece, SplitAxis, SplitPlane } from '../../engine';

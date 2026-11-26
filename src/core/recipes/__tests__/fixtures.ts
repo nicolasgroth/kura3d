@@ -4,7 +4,7 @@
  * las pruebas hostiles modifican campo por campo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import caja from '../examples/caja-tapa.recipe.json';

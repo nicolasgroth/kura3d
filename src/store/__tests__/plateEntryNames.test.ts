@@ -5,7 +5,7 @@
  * mayúsculas (Windows no las distingue) siempre quedan como entradas distintas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { unzipSync } from 'fflate';

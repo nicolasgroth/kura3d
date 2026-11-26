@@ -6,7 +6,7 @@
  * (como siempre); una pieza sin placa habiendo placas vive en el mundo, también en [0, 0].
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject } from '../../types/kura';

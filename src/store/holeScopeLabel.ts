@@ -5,7 +5,7 @@
  * solo los negativos que tocan algún sólido se consumen. Así el número del botón es lo que de verdad se aplica.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { resolveHoleScope, touchingHoleScope } from '../core/scene/sceneRules';

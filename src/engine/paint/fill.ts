@@ -4,7 +4,7 @@
  * la misma malla si ningún color cambia, así el store no agrega pasos de historial vacíos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../types/kura';

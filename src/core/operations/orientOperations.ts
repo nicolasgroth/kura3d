@@ -6,7 +6,7 @@
  * deshacer). Kurra Studio no genera soportes: solo orienta y mide.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { analyzeOrientations, planOrientTransform, type OrientAnalysis, type OrientOptions } from '../../engine/orient';

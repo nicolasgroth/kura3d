@@ -5,7 +5,7 @@
  * de la cara y a menos de 1,2 mm de otro agregado pendiente. Una sola fuente para el aviso emergente y el panel.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { CABLE_MAX_AUTO_MM, CABLE_MIN_GAP_MM } from '../core/addons/cablePass';

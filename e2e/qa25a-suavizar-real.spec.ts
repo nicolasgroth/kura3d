@@ -5,7 +5,7 @@
  * es un solo paso sin encoger el volumen. Se omite si el modelo no existe.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { existsSync } from 'node:fs';
 import { expect, test } from '@playwright/test';

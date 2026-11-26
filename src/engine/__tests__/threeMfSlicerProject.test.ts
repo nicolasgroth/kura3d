@@ -6,7 +6,7 @@
  * nombres, colores y posiciones; un `project_settings.config` ajeno (con claves de conexión) no rompe la importación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';

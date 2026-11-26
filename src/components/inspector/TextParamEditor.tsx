@@ -5,7 +5,7 @@
  * carácter» en lugar de revertir; contador, fuente y aviso si el ancho resultante supera la cama.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useId, useState } from 'react';

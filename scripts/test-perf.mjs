@@ -5,7 +5,7 @@
  * así `npx vitest run` y `npm test` no las ejecutan) sin depender de la sintaxis del shell.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { spawnSync } from 'node:child_process';

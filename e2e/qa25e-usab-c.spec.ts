@@ -6,7 +6,7 @@
  * tras aplicar); sin claves crudas ni «Kura3D». Evidencia en `.eval-tmp/qa25e/`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { abrir, cmd, esferaRuidosa, libre, pasos, seleccionar } from './qa25a-helpers';

@@ -4,7 +4,7 @@
  * derecha; la isométrica rellena las tres en tonos). Se entiende sin texto y sigue el color del botón.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

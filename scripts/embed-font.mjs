@@ -5,7 +5,7 @@
  * Uso: node scripts/embed-font.mjs <archivo.woff> <ruta-salida.ts> <NOMBRE_CONSTANTE>
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -25,7 +25,7 @@ const source = `/**
  * Fuente con licencia SIL OFL 1.1 (ver src/assets/fonts y THIRD_PARTY_NOTICES.md).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export const ${constName} =

@@ -7,7 +7,7 @@
  * transcribiendo el STL binario del motor, por lo que la geometría es idéntica en ambos formatos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { mkdir, writeFile } from 'node:fs/promises';

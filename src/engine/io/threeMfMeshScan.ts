@@ -6,7 +6,7 @@
  * etiqueta sin `>` o con `<` dentro es archivo dañado, y el coste es O(n) sobre el texto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { ModelImportError } from './importErrors';

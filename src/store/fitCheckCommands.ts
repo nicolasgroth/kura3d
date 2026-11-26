@@ -6,7 +6,7 @@
  * el MCP sin interfaz), y lo deja en el store para el panel de resultados.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { fitReportWithText } from '../core/scene/fitCheckText';

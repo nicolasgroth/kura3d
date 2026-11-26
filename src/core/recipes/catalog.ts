@@ -5,7 +5,7 @@
  * salidas y textos en el idioma pedido) y validarla devolviendo errores con ruta. No ejecutan geometría.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { BUILTIN_RECIPES, builtinRecipe } from './builtin';

@@ -4,7 +4,7 @@
  * con la coma o el punto del idioma, título de cada alternativa, pasos de giro y avisos traducidos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t, type TranslationKey } from '../../i18n';

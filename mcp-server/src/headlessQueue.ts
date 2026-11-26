@@ -5,7 +5,7 @@
  * mitad de camino por otra llamada. Un fallo no detiene la cola.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Serializa tareas síncronas o asíncronas en orden de llegada. */

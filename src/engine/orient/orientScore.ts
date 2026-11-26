@@ -9,7 +9,7 @@
  * la cama) nunca va antes que una con base, sea cual sea su costo (`orientOrder`). Motivos como datos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { hasRealBase } from './orientMeasure';

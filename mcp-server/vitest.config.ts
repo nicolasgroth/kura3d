@@ -6,7 +6,7 @@
  * la suite corra solo con `npm --prefix mcp-server ci`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { fileURLToPath } from 'node:url';

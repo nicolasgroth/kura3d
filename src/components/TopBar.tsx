@@ -8,7 +8,7 @@
  * vertical junto al visor; en pantallas estrechas (sin barra vertical) siguen en el menú «Más».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';

@@ -6,7 +6,7 @@
  * Herramientas MCP: `kura_get_project_info` y `kura_set_project_info` (`mcp-server/src/projectInfoTools.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { parseSetProjectInfo, projectInfoToUser } from '../core/bus/projectInfoSchemas';

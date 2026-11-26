@@ -6,7 +6,7 @@
  * campo debe usar el signo por número de vueltas (`DistanceSignMode = 'winding'`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshDistanceField } from './meshDistance';

@@ -6,7 +6,7 @@
  * - Web: `fetch`, con la clave en memoria adjunta según la ranura (misma tabla que Rust).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isTauriRuntime } from '../utils/platformBridge';

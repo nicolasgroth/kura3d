@@ -4,7 +4,7 @@
  * popover con los dos selectores y cambio mediante las acciones del store.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, render, screen, waitFor } from '@testing-library/react';

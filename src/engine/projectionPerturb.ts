@@ -8,7 +8,7 @@
  * desplazamiento máximo de `PERTURB_MM` en el borde: muy bajo la resolución de impresión.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Desplazamiento máximo (mm) del borde del gráfico al perturbar. */

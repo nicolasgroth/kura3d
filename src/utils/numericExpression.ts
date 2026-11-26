@@ -5,7 +5,7 @@
  * (`2cm`, `1in`) convertidas a la unidad activa. Descenso recursivo propio: no usa `eval` ni `Function`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { UnitSystem } from '../types/kura';

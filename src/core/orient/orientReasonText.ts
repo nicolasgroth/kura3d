@@ -5,7 +5,7 @@
  * Los porcentajes se muestran en valor absoluto: el signo ya lo dice la frase («más baja», «menos soporte»).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { OrientReason } from '../../engine/orient';

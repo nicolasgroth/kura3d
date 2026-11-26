@@ -4,7 +4,7 @@
  * envolvente convexa y alineación (el panel pone el contenedor y el encabezado).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isNegative } from '../../core/scene/objectRole';

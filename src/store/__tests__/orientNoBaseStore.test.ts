@@ -5,7 +5,7 @@
  * real (solo aristas o puntos en la cama) avisa que no tiene base en vez de decir «apoyada».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

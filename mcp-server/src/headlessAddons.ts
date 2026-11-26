@@ -7,7 +7,7 @@
  * interfaz no tiene grupos: el agregado queda ligado a su pieza por `metadata.addon.hostId` (y la sigue igual).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { magnetBlockReason } from '../../src/core/addons/addonBlock';

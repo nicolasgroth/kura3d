@@ -5,7 +5,7 @@
  * claves de los estados de un par. Lo usan el informe del bus/MCP (inglés) y el panel de resultados.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t, type TranslationKey } from '../../i18n';

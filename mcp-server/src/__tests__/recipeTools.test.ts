@@ -5,7 +5,7 @@
  * objetos nuevos en la escena) y una ejecución fallida que no deja nada. Anotación de solo lectura correcta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';

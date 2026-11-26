@@ -6,7 +6,7 @@
  * el sólido que perforan y se avisa cuando la distribución no cabe en la cama.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { AlignMode, PrinterProfile, SceneObject, Vec3 } from '../types/kura';

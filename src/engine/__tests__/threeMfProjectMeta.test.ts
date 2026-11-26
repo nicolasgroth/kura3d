@@ -4,7 +4,7 @@
  * `Description` y `Designer`, escapados; vacíos o ausentes no cambian ni un byte; el archivo se sigue leyendo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strFromU8, unzipSync } from 'fflate';

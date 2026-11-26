@@ -4,7 +4,7 @@
  * ruta del clic (punto y normal en ejes internos), el aviso sin pieza y el botón apagado con campos inválidos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { render, screen } from '@testing-library/react';

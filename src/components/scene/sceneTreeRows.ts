@@ -4,7 +4,7 @@
  * lo plegado y, con búsqueda, muestra solo lo encontrado con sus ancestros (desplegados).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { nodeObjectIds, type SceneTreeNode, type TreeKey } from '../../core/scene/groups';

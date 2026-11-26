@@ -7,7 +7,7 @@
  * `KURA_URL=http://127.0.0.1:5247/ npx playwright test import-fluida`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { modelXml, pack3mf, translate } from '../src/engine/__tests__/ioFixtures';

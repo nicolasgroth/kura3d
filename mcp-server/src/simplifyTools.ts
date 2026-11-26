@@ -5,7 +5,7 @@
  * (`src/core/bus/simplifySchema.ts`) y la misma operación del motor, y devuelve el mismo informe.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';

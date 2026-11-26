@@ -5,7 +5,7 @@
  * Una sola fuente para los avisos emergentes del store y las líneas del panel.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { MIN_WALL_MM } from '../core/addons/magnetPocket';

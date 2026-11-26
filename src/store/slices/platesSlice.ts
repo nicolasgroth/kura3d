@@ -5,7 +5,7 @@
  * como los grupos); fijar la placa activa es estado de vista y no lo es. Lógica pura en `core/scene/plates.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { projectBed } from '../../core/scene/activePlateBed';

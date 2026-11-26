@@ -4,7 +4,7 @@
  * Lo usa la acción «Ver notas» del aviso que aparece al abrir un proyecto con notas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export const PROJECT_NOTES_ID = 'kura-project-notes';

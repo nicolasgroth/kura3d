@@ -14,7 +14,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/versi%C3%B3n-0.5.0--beta-7c3aed?style=for-the-badge" alt="Versión 0.5.0 beta" />
-  <img src="https://img.shields.io/badge/licencia-MIT-0d9488?style=for-the-badge" alt="Licencia MIT" />
+  <img src="https://img.shields.io/badge/licencia-AGPL--3.0--or--later-0d9488?style=for-the-badge" alt="Licencia AGPL-3.0-or-later" />
   <img src="https://img.shields.io/badge/web_%2B_escritorio-Tauri_v2-0284c7?style=for-the-badge" alt="Web y escritorio" />
   <img src="https://img.shields.io/badge/motor-Manifold_WASM-f97316?style=for-the-badge" alt="Motor Manifold" />
   <img src="https://img.shields.io/badge/idiomas-ES_EN_DE_FR_HI_ZH-22c55e?style=for-the-badge" alt="6 idiomas" />
@@ -174,7 +174,7 @@ npm run mcp:test
 
 React 19, TypeScript y Vite · Three.js con react-three-fiber · Zustand · [Manifold](https://github.com/elalish/manifold) en WebAssembly como motor geométrico · Tauri v2 con Rust para el escritorio.
 
-Todas las dependencias tienen licencia permisiva (MIT, Apache-2.0, BSD, ISC).
+Todas las dependencias tienen licencias compatibles con AGPL-3.0-or-later (MIT, Apache-2.0, BSD, ISC, MPL-2.0, LGPL, GPL-3.0, AGPL-3.0).
 
 ## Cómo se construye
 
@@ -197,8 +197,15 @@ Kurra Studio se desarrolla con agentes de IA organizados en tres equipos indepen
 
 El proyecto es de código abierto y los aportes son bienvenidos: errores, traducciones, ideas y código. Lee [CONTRIBUTING.md](CONTRIBUTING.md) antes de empezar. Agregar un idioma no requiere programar; está explicado en [docs/EXTENSIONES.md](docs/EXTENSIONES.md).
 
+## Licencia
+
+Kurra Studio se distribuye bajo **GNU AGPL-3.0-or-later** (ver [LICENSE](LICENSE) y [NOTICE](NOTICE)).
+Puedes usar, estudiar, modificar y redistribuir el programa; si lo distribuyes o lo ofreces como servicio por red, debes entregar el código fuente de tus cambios bajo la misma licencia.
+
+Las versiones publicadas hasta el commit `5bc2699` inclusive se distribuyeron bajo licencia MIT.
+
 ---
 
 <p align="center">
-  © 2026 <strong>Nicolás Groth</strong> · <strong>ISGROTH — Innovación y Soluciones GROTH</strong> · <a href="LICENSE">Licencia MIT</a>
+  © 2026 <strong>Nicolás Groth</strong> · <strong>ISGROTH — Innovación y Soluciones GROTH</strong> · <a href="LICENSE">Licencia AGPL-3.0-or-later</a>
 </p>

@@ -5,7 +5,7 @@
  * sobre ellos. Convención: malla interna Y-arriba; el usuario ve Z como altura.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import type { Page } from '@playwright/test';
 import { enlazarStores } from './store-link';

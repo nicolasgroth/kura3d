@@ -5,7 +5,7 @@
  * (`svgContours.ts`) o llegan ya leídos y empaquetados desde otro hilo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CrossSection, Manifold } from 'manifold-3d';

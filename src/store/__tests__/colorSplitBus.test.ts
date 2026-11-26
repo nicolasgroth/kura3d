@@ -5,7 +5,7 @@
  * sin solapes, con el color en el nombre; la profundidad se valida; y el 3MF conserva los colores.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

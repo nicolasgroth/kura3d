@@ -4,7 +4,7 @@
  * casts; una medida ausente da null en vez de NaN) y tiene aristas para dibujar el contorno de alto contraste.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

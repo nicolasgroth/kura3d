@@ -3,7 +3,7 @@
  * @description Lleva la vista y el foco a un elemento de la interfaz por su id (acción "Ver detalles" de los avisos).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Desplaza hasta el elemento y le da el foco; devuelve false si no está en pantalla. */

@@ -6,7 +6,7 @@
  * la cara no vertical y la diferencia de altura con otros ojos de la misma cara se avisan sin bloquear.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { keyholeLevelOffsetMm, type KeyholeParams } from '../../core/addons/keyhole';

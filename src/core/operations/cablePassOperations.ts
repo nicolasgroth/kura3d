@@ -6,7 +6,7 @@
  * junto a su análisis (`cablePassAnalysis`). No toca la escena. Corre en el Worker del motor (tarea `cablePass`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as engine from '../../engine';

@@ -4,7 +4,7 @@
  * `isHole` → `role` en escena e historial, rechaza mezclas inválidas y una versión más nueva.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

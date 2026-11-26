@@ -4,7 +4,7 @@
  * `./segmentation/`) y de la simetría especular (`./mirror`). Re-exporta la API pública.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export { STRUCTURAL_COLOR_PALETTE } from './segmentation/constants';

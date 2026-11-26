@@ -7,7 +7,7 @@
  * 64 KiB (p. ej. una miniatura en base64 dentro de un atributo) se salta sin reservar su contenido.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { ModelImportError } from './importErrors';

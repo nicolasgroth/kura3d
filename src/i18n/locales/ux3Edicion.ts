@@ -4,7 +4,7 @@
  * operaciones, pintura, reparación) en los 6 idiomas. Cada clave lleva [es, en, de, fr, hi, zh].
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 type Row = readonly [es: string, en: string, de: string, fr: string, hi: string, zh: string];

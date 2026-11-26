@@ -5,7 +5,7 @@
  * ni historial. Vive en `utils` porque usa las cajas envolventes de `selectionBounds`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject, Vec3 } from '../types/kura';

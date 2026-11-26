@@ -4,7 +4,7 @@
  * `Title`, la descripción como `Description` y el autor como `Designer`. Los vacíos no viajan.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ThreeMfProjectMeta } from '../engine/io/threeMfExport';

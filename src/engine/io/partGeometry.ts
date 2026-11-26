@@ -5,7 +5,7 @@
  * centrado se calculan una vez por malla (caché por referencia) y se desplazan por pieza.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';

@@ -5,7 +5,7 @@
  * deshabilitado con motivo si hay un solo cuerpo, submenús que abren al pasar el cursor y Escape que devuelve el foco a quien abrió el menú.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { aPixel } from './ux-movil-helpers';

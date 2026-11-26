@@ -6,7 +6,7 @@
  * única excepción a la regla de colocación libre. Sin selección, nada cambia.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isSolid } from '../core/scene/objectRole';

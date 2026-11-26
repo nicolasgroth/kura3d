@@ -5,7 +5,7 @@
  * entre vecinas), marcas grabadas dentro de la unión y vista explosionada (el tiempo está en splitForBed.perf.test.ts).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold } from 'manifold-3d';

@@ -6,7 +6,7 @@
  * reforzado pero sin choques; y `fix.applied` solo es verdadero si el informe final queda armable.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ManifoldToplevel } from 'manifold-3d';

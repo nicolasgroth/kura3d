@@ -6,7 +6,7 @@
  * vuelve a 0 al salir del modo, y mover una pieza en Armado no altera su posición de placa (integración con el store real).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

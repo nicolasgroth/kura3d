@@ -3,7 +3,7 @@
  * @description Leyenda global de colores / filamentos distintos en la escena.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isSolid } from '../../core/scene/objectRole';

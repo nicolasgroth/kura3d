@@ -5,7 +5,7 @@
  * `aria-valuetext`, rango del deslizador sin limitar el campo). Modelo de filtro y de cuadrícula incluidos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen, within } from '@testing-library/react';

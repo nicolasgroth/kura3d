@@ -4,7 +4,7 @@
  * se creó la pieza seleccionada, o con la explicación de por qué no se puede (receta desaparecida o de otra versión).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { openAssistantEditPlan } from '../../store/assistantsPanel';

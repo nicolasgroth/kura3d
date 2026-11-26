@@ -6,7 +6,7 @@
  * el botón del tirador la alterna también con teclado (`aria-expanded`). Escape cierra la hoja.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useRef } from 'react';

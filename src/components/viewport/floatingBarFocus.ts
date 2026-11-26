@@ -5,7 +5,7 @@
  * recibe foco. Reintenta cuadro a cuadro durante un tiempo corto y devuelve la función que cancela.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Cuadros que se espera a que el visor muestre la barra antes de forzar el foco. */

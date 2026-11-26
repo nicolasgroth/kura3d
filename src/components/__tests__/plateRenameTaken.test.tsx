@@ -4,7 +4,7 @@
  * lo escrito (sin duplicar); el núcleo, por si llega de otra vía (MCP), ajusta el nombre con `uniquePlateName`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';

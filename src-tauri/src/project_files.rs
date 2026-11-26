@@ -1,6 +1,6 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
 // Organización: ISGROTH — Innovación y Soluciones GROTH
-// Licencia: MIT
+// Licencia: AGPL-3.0-or-later
 // Descripción: Comandos nativos de Tauri para abrir y guardar proyectos .kura con
 // autorización de rutas por sesión, escritura atómica y límite de tamaño.
 

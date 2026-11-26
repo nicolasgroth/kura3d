@@ -4,7 +4,7 @@
  * sobre sólidos y envolvente convexa. Llaman al motor Manifold y devuelven un `SceneChange`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as engine from '../../engine';

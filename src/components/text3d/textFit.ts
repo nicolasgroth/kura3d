@@ -4,7 +4,7 @@
  * y comprobación contra la cama: ancho resultante, si cabe y el alto de letra sugerido para que quepa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect, useState } from 'react';

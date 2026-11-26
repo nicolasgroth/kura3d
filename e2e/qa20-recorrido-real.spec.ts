@@ -7,7 +7,7 @@
  * Ejecuta con `KURA_URL=… npx playwright test e2e/qa20-recorrido-real.spec.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import fs, { existsSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';

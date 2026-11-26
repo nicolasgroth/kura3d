@@ -5,7 +5,7 @@
  * fuera de rango), contador de caracteres con anuncio al llegar al límite y respuestas conservadas al cambiar de variante.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';

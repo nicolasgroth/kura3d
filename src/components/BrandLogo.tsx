@@ -4,7 +4,7 @@
  * activo (el texto del logo claro no se lee sobre fondo oscuro) y toma el texto alternativo de `BRAND`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

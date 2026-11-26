@@ -5,7 +5,7 @@
  * `busyOperation`, reporta el error y libera el bloqueo solo si lo tomó ella misma.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export interface ExclusiveRunnerDeps {

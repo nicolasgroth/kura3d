@@ -3,7 +3,7 @@
  * @description Estado de error (borde, mensaje breve) y área táctil de los botones ▲▼ del campo numérico de precisión.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 .kura-precision-input.is-invalid {

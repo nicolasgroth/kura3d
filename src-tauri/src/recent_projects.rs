@@ -1,6 +1,6 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
 // Organización: ISGROTH — Innovación y Soluciones GROTH
-// Licencia: MIT
+// Licencia: AGPL-3.0-or-later
 // Descripción: Registro persistente de rutas de proyectos .kura abiertos o guardados con el
 // diálogo nativo, para reabrirlos con un clic. Vive en el directorio de datos de la app, guarda
 // como máximo 12 rutas `.kura` y la webview nunca envía una ruta: solo el id de la entrada.

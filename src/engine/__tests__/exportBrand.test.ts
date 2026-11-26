@@ -4,7 +4,7 @@
  * ella los archivos salen con textos neutros; con ella, firmados con nombre, autor y organización.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strFromU8, unzipSync } from 'fflate';

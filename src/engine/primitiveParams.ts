@@ -5,7 +5,7 @@
  * infinitos o están fuera de rango, en vez de corregirlos en silencio o producir mallas vacías.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { PrimitiveParams } from '../types/kura';

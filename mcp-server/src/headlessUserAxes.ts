@@ -6,7 +6,7 @@
  * usa el bus); aquí solo se aplican a las formas de respuesta del servidor MCP.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { localizeEngineWarning, type EngineWarning } from '../../src/engine/engineErrors';

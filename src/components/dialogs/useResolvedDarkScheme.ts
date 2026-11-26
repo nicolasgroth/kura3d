@@ -3,7 +3,7 @@
  * @description Hook que resuelve si la interfaz se ve en esquema oscuro (para las tarjetas de tema).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect, useState } from 'react';

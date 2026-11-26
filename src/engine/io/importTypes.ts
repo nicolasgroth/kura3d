@@ -4,7 +4,7 @@
  * archivo (mm, Y-up de Kurra Studio), procedencia de la posición y diagnóstico de cierre.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../types/kura';

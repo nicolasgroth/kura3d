@@ -7,7 +7,7 @@
  * nombres, colores y posiciones relativas a cada cama.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strFromU8, unzipSync } from 'fflate';

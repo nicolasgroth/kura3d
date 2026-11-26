@@ -6,7 +6,7 @@
  * con anfitrión) acompañan; `.kura` y borrador con poses (v4) y regresión v3 sin ellas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

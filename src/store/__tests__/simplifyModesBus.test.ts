@@ -5,7 +5,7 @@
  * escena; parámetros inconsistentes se rechazan con `invalid-params`; el valor por defecto es 0,01 mm.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

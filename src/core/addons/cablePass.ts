@@ -7,7 +7,7 @@
  * que la resta abra limpio. El lado largo va horizontal en la cara (giro 0). Funciones puras.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CablePassParams, MeshData, Vec3 } from '../../types/kura';

@@ -6,7 +6,7 @@
  * pieza reabierta («Editar con el asistente») el formulario trae sus respuestas, o se explica por qué no se puede.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useCallback, useEffect, useRef } from 'react';

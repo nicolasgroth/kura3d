@@ -5,7 +5,7 @@
  * debe quedar bajo 3 ms (mediana). Informa también el costo de la versión anterior (recorrido completo) como referencia.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

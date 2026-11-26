@@ -7,7 +7,7 @@
  * restablece. Muestra el resumen y deja "Dividir" deshabilitado con el motivo si no se puede.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useId, useMemo, useState } from 'react';

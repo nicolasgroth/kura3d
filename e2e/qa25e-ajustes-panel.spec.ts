@@ -5,7 +5,7 @@
  * 1024, claro y oscuro) y Agregados (el selector «Cara» se ve como los demás campos). Evidencia en `.eval-tmp/qa25e/`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { itemAccion } from './acciones-helpers';

@@ -4,7 +4,7 @@
  * triángulo (con caché por lista de regiones) y buffers de relleno y contorno de una región.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { DetectedStructureRegion } from '../types/kura';

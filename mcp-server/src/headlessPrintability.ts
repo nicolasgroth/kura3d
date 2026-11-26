@@ -6,7 +6,7 @@
  * aproximada (el valor real depende del slicer) y no entran en el puntaje.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { toUserSize } from '../../src/core/scene/displayAxes';

@@ -5,7 +5,7 @@
  * 1 − r/(R+1); con R = 0 no se mueve nada fuera de la zona. Reproduce el caso «zona en la mitad x > 0, falloff 2».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

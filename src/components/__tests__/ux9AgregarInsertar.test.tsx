@@ -4,7 +4,7 @@
  * (`store/insertCatalog.ts`): una prueba falla si divergen (Rosca y Texto/SVG no pueden faltar en una).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';

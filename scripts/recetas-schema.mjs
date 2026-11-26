@@ -5,7 +5,7 @@
  * Uso: `npm run recetas:schema`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { mkdir, writeFile } from 'node:fs/promises';

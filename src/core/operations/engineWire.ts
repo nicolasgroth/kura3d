@@ -6,7 +6,7 @@
  * lo resuelve con su `ResultNaming` real).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { EngineError, isEngineError, type EngineErrorCode, type EngineMessageParams } from '../../engine/engineErrors';

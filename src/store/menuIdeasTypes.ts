@@ -4,7 +4,7 @@
  * reemplazar la geometría de un objeto por la de un archivo y pedir el panel Simplificar (aviso de malla pesada).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Archivo ya leído que reemplaza la geometría de un objeto. */

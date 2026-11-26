@@ -6,7 +6,7 @@
  * aviso. Se cierra con «Volver» o Escape. Los textos salen de `<prefijo>.*` y los `data-testid` de `<prefijo>-*`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

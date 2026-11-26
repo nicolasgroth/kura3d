@@ -5,7 +5,7 @@
  * lleva; un ejemplo guardado dañado se ignora; reimportar el 3MF de escena devuelve placas, nombres y colores.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strFromU8, unzipSync } from 'fflate';

@@ -3,7 +3,7 @@
  * @description Grafo de adyacencia de triángulos (soldado de vértices, pliegues y costuras cóncavas) y adyacencia/fusión entre regiones de la segmentación estructural.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';

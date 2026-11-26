@@ -3,7 +3,7 @@
  * @description Simetría especular (mirror) de una malla respecto a un eje cartesiano, con devanado invertido y re-normalización a cama.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../types/kura';

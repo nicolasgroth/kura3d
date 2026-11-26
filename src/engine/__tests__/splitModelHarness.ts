@@ -5,7 +5,7 @@
  * y peine de brazos finos; mide cuerpos, aristas sueltas, volumen, interferencia, uniones y marcas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';

@@ -5,7 +5,7 @@
  * (límite aceptado y documentado) y rutas de exportación con flujos alternativos de NTFS.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { mkdtemp, rm } from 'node:fs/promises';
