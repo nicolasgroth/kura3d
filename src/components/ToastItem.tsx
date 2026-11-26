@@ -16,6 +16,7 @@ import type { LanguageCode, } from '../types/kura';
 import type { ToastAction, ToastMessage } from '../store/storeTypes';
 import { useKuraStore } from '../store/useKuraStore';
 import { indexObjects, toastIsSticky } from '../store/toastActionState';
+import { ToastActionButton } from './ToastActionButton';
 
 export const TOAST_INFO_MS = 4000;
 export const TOAST_ACTION_MS = 9000;
@@ -74,24 +75,14 @@ export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
     >
       <span>{toast.text}</span>
       {toast.action && (
-        <button
-          type="button"
-          className="kura-btn kura-btn-sm kura-toast-action"
-          aria-label={toast.action.ariaLabel}
-          onClick={() => runToastAction(toast.id, toast.action!)}
-        >
-          {toast.action.label}
-        </button>
+        <ToastActionButton action={toast.action} className="kura-btn kura-btn-sm kura-toast-action" onRun={() => runToastAction(toast.id, toast.action!)} />
       )}
       {toast.secondaryAction && (
-        <button
-          type="button"
+        <ToastActionButton
+          action={toast.secondaryAction}
           className="kura-btn kura-btn-sm kura-btn-ghost kura-toast-action is-secondary"
-          aria-label={toast.secondaryAction.ariaLabel}
-          onClick={() => runToastAction(toast.id, toast.secondaryAction!)}
-        >
-          {toast.secondaryAction.label}
-        </button>
+          onRun={() => runToastAction(toast.id, toast.secondaryAction!)}
+        />
       )}
       <button
         type="button"

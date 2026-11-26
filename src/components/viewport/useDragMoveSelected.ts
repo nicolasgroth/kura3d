@@ -17,7 +17,7 @@ import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { DRAG_MOVE_THRESHOLD_PX, dragBoundsForBed, dragBoundsForBeds, dragMoveDelta, dragSnapMm } from '../../core/scene/dragMovePlane';
 import { chooseDragPlane, constrainToDominantAxis, dragMoveDeltaVertical, dragPlaneUserLabel, type DragPlane } from '../../core/scene/dragPlaneChoice';
-import { poseBounds } from '../../core/scene/plateArrange';
+import { floorDeltaY } from '../../core/scene/dragFloor';
 import { allBedSizes, placementBedSize } from '../../store/bedSize';
 import { viewModeOf, viewModeTraits } from '../../core/scene/viewMode';
 import { t } from '../../i18n';
@@ -65,17 +65,6 @@ export interface DragMoveApi {
 }
 
 const ZERO: Vec3 = [0, 0, 0];
-
-/** Desplazamiento mínimo en Y para que la pieza más baja no pase de la cama (0 si ya estaba en o bajo la cama). */
-function floorDeltaY(state: ReturnType<typeof useKuraStore.getState>, baseline: Baseline): number | undefined {
-  let lowest = Infinity;
-  for (const b of baseline) {
-    const o = state.objects.find((x) => x.id === b.id);
-    const bb = o?.mesh ? poseBounds(o.mesh, b.position, b.rotation, b.scale) : null;
-    if (bb) lowest = Math.min(lowest, bb.minY);
-  }
-  return Number.isFinite(lowest) ? -Math.max(lowest, 0) : undefined;
-}
 
 export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl | null>): DragMoveApi {
   const camera = useThree((s) => s.camera);
@@ -191,7 +180,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
         baseline,
         reference: firstMovable ? ([...firstMovable.position] as Vec3) : ZERO,
         lastDelta: ZERO,
-        minDeltaY: moveEnabled && !viewModeTraits(viewModeOf(state.layout, state.freeView)).freeDrag ? floorDeltaY(state, baseline) : undefined,
+        minDeltaY: moveEnabled && !viewModeTraits(viewModeOf(state.layout, state.freeView)).freeDrag ? floorDeltaY(state.objects, baseline) : undefined,
         active: false,
         moveEnabled,
         rect: null,

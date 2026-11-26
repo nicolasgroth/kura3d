@@ -163,14 +163,15 @@ test('con 2 placas, soltar sobre la otra reasigna la pieza', async ({ page }) =>
   expect(r.ref, 'la pieza pasó a la placa 2').toBe(r.p2);
 });
 
-// DEFECTO (QA 26-nov J): en vista Frente, arrastrar un cubo de 30 mm muy hacia abajo lo deja con el centro en y=0 (15 mm bajo la
-// cama); debería quedar con y >= 15. Se documenta con test.fail hasta que se corrija.
-test.fail('vista Frente: arrastrar hacia abajo no hunde la pieza bajo la cama', async ({ page }) => {
+// El origen de los primitivos está en su BASE (la malla va de y=0 a y=30): `position.y = 0` es la base sobre la cama, no un
+// cubo hundido. Antes de la corrección de QA 26-nov (J) esta prueba esperaba `y >= 15` leyendo la posición como centro.
+test('vista Frente: arrastrar hacia abajo se detiene con la base en la cama', async ({ page }) => {
   const [a] = await escena(page, [[0, 60, 0]]);
   await sel(page, [a]);
   await vista(page, FRENTE);
-  await arrastrar(page, [0, 60, 0], 0, 500);
+  await arrastrar(page, [0, 75, 0], 0, 500);
   const q = await pos(page, a);
   console.log('QA25J frente abajo', JSON.stringify(q));
-  expect(q[1]).toBeGreaterThanOrEqual(14.99);
+  expect(q[1]).toBeGreaterThanOrEqual(-0.01);
+  expect(q[1]).toBeLessThanOrEqual(0.01);
 });

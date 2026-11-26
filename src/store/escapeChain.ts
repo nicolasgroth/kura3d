@@ -59,8 +59,12 @@ export function resolveEscapeLevel(ctx: EscapeContext): EscapeLevel | null {
 export function readEscapeContext(): EscapeContext {
   const st = useKuraStore.getState();
   const has = typeof document !== 'undefined';
+  // Corte, molde, rosca… viven en `activeDialog` pero se muestran como panel de operación (no modal, `.kura-op-panel`):
+  // ese «diálogo» es el propio panel y su Esc es el de nivel `panel`, no un modal que lo bloquee.
+  const opPanelOpen = has && document.querySelector('.kura-op-panel') !== null;
+  const modalInDom = has && document.querySelector('dialog[open], [aria-modal="true"]') !== null;
   return {
-    dialog: st.activeDialog !== null || st.commandPaletteOpen || (has && document.querySelector('dialog[open], [aria-modal="true"]') !== null),
+    dialog: st.commandPaletteOpen || modalInDom || (st.activeDialog !== null && !opPanelOpen),
     operation: Boolean(st.busyProgress?.cancellable),
     menu: has && Array.from(document.querySelectorAll<HTMLElement>('[role="menu"]')).some((m) => m.getClientRects().length > 0),
     group: Boolean(st.groupContextId),

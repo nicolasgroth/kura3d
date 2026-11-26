@@ -119,6 +119,7 @@ export const ContextPanel: React.FC<{ ui: InspectorLocalState }> = ({ ui }) => {
   const objects = useKuraStore((s) => s.objects);
   const transformFocus = useKuraStore((s) => s.transformFocus);
   const projectPanelPin = useKuraStore((s) => s.projectPanelPin);
+  const cutPanelOpen = useKuraStore((s) => s.activeDialog === 'cut');
   const ctx = useMemo(
     () => panelContextOf({ activeAction, activeTool, selectedIds, objects, transformFocus, projectPanelPin }),
     [activeAction, activeTool, selectedIds, objects, transformFocus, projectPanelPin],
@@ -148,6 +149,9 @@ export const ContextPanel: React.FC<{ ui: InspectorLocalState }> = ({ ui }) => {
         </div>
       </>
     );
+  } else if (ctx.kind === 'tool' && ctx.tool === 'cut' && cutPanelOpen) {
+    // Con el panel de corte abierto (ocupa el lugar del inspector) este contexto no se monta: un solo «Volver» y un solo dueño del Esc.
+    body = null;
   } else if (ctx.kind === 'tool') {
     body = <ToolPanel tool={ctx.tool} objectId={ctx.objectId} ui={ui} />;
   } else if (ctx.kind === 'action' && panelContentOf(ctx.id)?.renderScene) {

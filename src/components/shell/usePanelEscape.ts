@@ -17,8 +17,9 @@ import { keyboardFocusInViewport } from '../viewport/cutPlaneDrag';
  * Además de con el foco dentro del panel:
  * - `body`: vale con el foco en el cuerpo de la página (p. ej. tras revertir un campo numérico, que suelta el foco).
  * - `viewport`: vale con el foco en el visor o el cuerpo.
+ * - `tool`: como `viewport` y además con el foco en el riel de herramientas (el botón recién pulsado) o en la tarjeta de Medir.
  */
-export type PanelEscapeOutside = 'body' | 'viewport';
+export type PanelEscapeOutside = 'body' | 'viewport' | 'tool';
 
 export interface PanelEscapeOptions {
   /** Nivel de la cadena que representa este panel. */
@@ -31,6 +32,10 @@ export interface PanelEscapeOptions {
 export function escapeTargetsPanel(root: HTMLElement | null, target: EventTarget | null, outside: PanelEscapeOutside): boolean {
   if (root && target instanceof Node && root.contains(target)) return true;
   if (outside === 'viewport') return keyboardFocusInViewport(target);
+  if (outside === 'tool') {
+    // Riel de herramientas y tarjeta de Medir (flotante en el visor, con sus propios campos).
+    return keyboardFocusInViewport(target) || (target instanceof Element && target.closest('.kura-tool-rail, .kura-measure-panel') !== null);
+  }
   return !document.activeElement || document.activeElement === document.body;
 }
 
