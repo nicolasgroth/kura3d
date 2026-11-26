@@ -53,10 +53,10 @@ describe('Command Bus: pattern_linear', () => {
     const src = await addBox(10, [0, 0, 0], { role: 'negative' });
     const plate = store().createPlate();
     expect(plate).toBeTruthy();
-    useKuraStore.setState({ objects: store().objects.map((o) => (o.id === src.id ? { ...o, color: '#12ab34', plateRef: plate!.id, materialPreset: 'petg_glossy' } : o)) });
+    useKuraStore.setState({ objects: store().objects.map((o) => (o.id === src.id ? { ...o, color: '#12ab34', plateRef: plate!.id, materialPreset: 'petg_clear' } : o)) });
     const res = await run('pattern_linear', { ids: [src.id], count: 3, distanceMm: 15 });
     const copies = (res.result as Result).createdIds!.map((id) => byId(id)!);
-    expect(copies.every((c) => c.role === 'negative' && c.plateRef === byId(src.id)!.plateRef && c.materialPreset === 'petg_glossy')).toBe(true);
+    expect(copies.every((c) => c.role === 'negative' && c.plateRef === byId(src.id)!.plateRef && c.materialPreset === 'petg_clear')).toBe(true);
     expect(new Set(copies.map((c) => c.color))).toEqual(new Set(['#12ab34']));
     useKuraStore.setState({ selectedIds: [copies[0].id] });
     store().nudgeSelectedObjects([0, 0, 5]);
@@ -130,7 +130,6 @@ describe('Command Bus: pattern_linear', () => {
 
   it('unir rechaza piezas bloqueadas (no se consumen) y también en dryRun', async () => {
     const src = await addBox(10);
-    store().updateObject?.(src.id, { locked: true });
     useKuraStore.setState({ objects: store().objects.map((o) => (o.id === src.id ? { ...o, locked: true } : o)) });
     const before = store().objects;
     for (const dryRun of [true, false]) {

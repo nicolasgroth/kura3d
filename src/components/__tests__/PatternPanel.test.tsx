@@ -32,7 +32,7 @@ function cube(id: string, name: string, size = 10): SceneObject {
 }
 
 function mockApply() {
-  const apply = vi.fn(async () => ({ createdIds: ['n1', 'n2'], groupId: 'g', groupName: 'x', cells: 3, overlapCells: 0 }));
+  const apply = vi.fn(async (_req: unknown) => ({ createdIds: ['n1', 'n2'], groupId: 'g', groupName: 'x', cells: 3, overlapCells: 0 }));
   useKuraStore.setState({ applyPattern: apply });
   return apply;
 }
