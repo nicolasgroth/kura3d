@@ -18,6 +18,7 @@ import type { SplitPlanSummary } from '../../core/scene/splitPlanSummary';
 import { useKuraStore } from '../../store/useKuraStore';
 import { formatNumber, tCount } from '../../utils/plural';
 import { toUserSize, userAxisLabel } from '../../core/scene/displayAxes';
+import { localizeEngineWarningForUser } from '../../core/scene/userEngineMessages';
 import { SplitJointFirmnessSummary, type SplitJointFirmnessSummaryProps } from './SplitJointFirmnessSummary';
 
 export const SplitPlanSummaryView: React.FC<{
@@ -58,6 +59,8 @@ export const SplitPlanSummaryView: React.FC<{
     if (!plan.connector && summary.jointCount > 0) warnings.push(t(language, 'split.warn.noConnectors'));
     if (summary.rotatedCount > 0) warnings.push(tCount(language, { one: 'splitUx.warn.rotated.one', other: 'splitUx.warn.rotated.other' }, summary.rotatedCount));
     if (summary.diagonalCount > 0) warnings.push(tCount(language, { one: 'splitUx.warn.diagonal.one', other: 'splitUx.warn.diagonal.other' }, summary.diagonalCount));
+    // Cortes a mano: avisos por pieza (no cabe, muy delgada) y planos inclinados que quedan para pegar
+    for (const w of plan.warnings ?? []) if (w.code.startsWith('SPLIT_MANUAL_')) warnings.push(localizeEngineWarningForUser(language, w));
   }
 
   return (

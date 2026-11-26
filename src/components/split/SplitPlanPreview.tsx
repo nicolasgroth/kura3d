@@ -3,7 +3,8 @@
  * @description Vista previa del plan de división en el visor, sin tocar la escena: planos de corte
  * como láminas translúcidas con borde (los que no admiten unión, con borde discontinuo y rótulo de
  * aviso), cajas de cada pieza prevista (su código lo rotula `SplitLabels`; las que irán acostadas, marcadas).
- * Cada plano se arrastra a lo largo de su eje y publica la posición al panel por `splitPlaneDrag`.
+ * Cada plano se arrastra a lo largo de su eje y publica la posición al panel por `splitPlaneDrag`. Los planos a mano
+ * inclinados se dibujan girados hasta su normal; con «Solo las piezas» (`splitShowCuts`) no se dibujan planos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later
@@ -104,8 +105,11 @@ const PlaneSheet: React.FC<{
   };
 
   const emphasis = active || hover || dragPos !== null;
+  // Plano a mano inclinado: la lámina recta del eje se gira hasta su normal (pasa por el centro del modelo)
+  const tilt = plane.normal ? new THREE.Quaternion().setFromUnitVectors(AXIS_DIR[plane.axis], new THREE.Vector3(...plane.normal)) : null;
   return (
-    <group position={position} rotation={rotation as unknown as [number, number, number]}>
+    <group position={position} quaternion={tilt ?? undefined}>
+    <group rotation={rotation as unknown as [number, number, number]}>
       <mesh
         renderOrder={20}
         onPointerDown={onPointerDown}
@@ -149,6 +153,7 @@ const PlaneSheet: React.FC<{
         </Html>
       )}
     </group>
+    </group>
   );
 };
 
@@ -172,6 +177,7 @@ const PieceBox: React.FC<{ piece: PlannedPiece; dimmed: boolean }> = ({ piece, d
 export const SplitPlanPreview: React.FC = () => {
   const preview = useKuraStore((s) => s.splitPlanPreview);
   const activePlane = useKuraStore((s) => s.splitActivePlane);
+  const showCuts = useKuraStore((s) => s.splitShowCuts);
   const plan = preview.plan;
   const bounds = useMemo(() => {
     if (!plan) return null;
@@ -183,7 +189,7 @@ export const SplitPlanPreview: React.FC = () => {
   const pieces = occupiedPieces(plan);
   return (
     <group>
-      {plan.planes.map((p) => (
+      {showCuts && plan.planes.map((p) => (
         <PlaneSheet
           key={planeKey(p.axis, p.index)}
           plane={p}

@@ -31,6 +31,9 @@ import { SplitPlanSummaryView } from './SplitPlanSummaryView';
 import { SplitSection } from './SplitSection';
 import { SplitLabelsToggle } from './SplitLabelsToggle';
 import { SplitMagnetOptions, splitMagnetConnector, useSplitMagnetChoice } from './SplitMagnetOptions';
+import { SplitManualCutsEditor } from './SplitManualCutsEditor';
+import { SplitCutsViewToggle } from './SplitCutsViewToggle';
+import { useSplitManualCuts } from './useSplitManualCuts';
 import '../../styles/splitForBed.css';
 import { userAxisLabel } from '../../core/scene/displayAxes';
 
@@ -90,6 +93,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
 
   // Ligado al objeto con el que se abrió: clics en el visor no cambian el objetivo ni borran el plan.
   const { target, targetId, markConsumed } = useBoundOperationTarget(open, onClose);
+  // Modo de cortes (automático / a mano) y lista de planos a mano
+  const manual = useSplitManualCuts(target ?? null, preview.objectId === targetId ? preview.plan : null);
   // Cama por defecto: la de la placa de la pieza (la propia si la tiene); sin placa, la del proyecto.
   const targetPlateRef = target?.plateRef;
   const defaultBed = useMemo<SplitBed>(() => {
@@ -136,8 +141,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const isConnector = kind !== 'none' && kind !== 'lap' && kind !== 'magnet';
   const allowedAxes = useMemo(() => AXES.filter((a) => axes[a]), [axes]);
   const planOptions = useMemo<BedSplitPlanOptions>(
-    () => ({ marginMm: margin, axes: allowedAxes, allowRotation, allowDiagonal, connector, planePositions: overrides, maxPieces }),
-    [margin, allowedAxes, allowRotation, allowDiagonal, connector, overrides, maxPieces],
+    () => ({ marginMm: margin, axes: allowedAxes, allowRotation, allowDiagonal, connector, planePositions: overrides, maxPieces, ...manual.planField }),
+    [margin, allowedAxes, allowRotation, allowDiagonal, connector, overrides, maxPieces, manual.planField],
   );
 
   const executeOptions = useMemo(
@@ -147,9 +152,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
 
   // Plan en vivo con debounce (el visor lo dibuja; si es barato, con las uniones reales del armado).
   useEffect(() => {
-    if (!open || !targetId || allowedAxes.length === 0) return;
+    if (!open || !targetId || (manual.mode === 'auto' && allowedAxes.length === 0) || manual.empty) return;
     requestSplitPlan(targetId, bed, planOptions, undefined, executeOptions);
-  }, [open, targetId, bed, planOptions, executeOptions, allowedAxes.length, requestSplitPlan]);
+  }, [open, targetId, bed, planOptions, executeOptions, allowedAxes.length, requestSplitPlan, manual.mode, manual.empty]);
 
   useEffect(() => {
     if (!open) clearSplitPlan();
@@ -159,7 +164,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const plan = preview.objectId === targetId ? preview.plan : null;
 
   const movePlane = (axis: SplitAxis, index: number, position: number) => {
-    if (!plan) return;
+    if (!plan || manual.movePlanePosition(axis, index, position)) return;
     const fromPlan = plan.planes.filter((p) => p.axis === axis).map((p) => p.position);
     if (index >= fromPlan.length) return;
     const lo = plan.bounds.min[AXES.indexOf(axis)];
@@ -211,7 +216,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   let reason: string | null = null;
   if (!target) reason = t(language, 'split.reason.noTarget');
   else if (target.locked) reason = t(language, 'split.reason.locked');
-  else if (allowedAxes.length === 0) reason = t(language, 'split.reason.noAxes');
+  else if (manual.mode === 'auto' && allowedAxes.length === 0) reason = t(language, 'split.reason.noAxes');
+  else if (manual.empty) reason = t(language, 'split.manual.empty');
   else if (preview.status === 'error' && preview.objectId === targetId) reason = preview.error ?? t(language, 'split.reason.planFailed');
   // Mientras recalcula, el plan anterior está desactualizado: sus motivos («cabe entero», «no cabe») no se muestran.
   else if (pending) reason = null;
@@ -348,6 +354,11 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         </label>
         <SplitLabelsToggle />
       </fieldset>
+      <SplitManualCutsEditor
+        language={language} uid={uid} mode={manual.mode} onModeChange={manual.setMode} cuts={manual.cuts} onCutsChange={manual.setCuts}
+        box={manual.box} plan={plan} activePlane={activePlane} onActivePlane={setActivePlane} onInvalidChange={invalid.track('f3')}
+      />
+      <SplitCutsViewToggle language={language} />
       </SplitSection>
 
       <SplitSection title={t(language, 'split.section.joints')} defaultOpen>
@@ -442,7 +453,9 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       </SplitSection>
 
       <SplitSection title={t(language, 'split.section.advanced')} hint={t(language, 'split.section.advancedHint')}>
-        {plan && plan.planes.length > 0 ? (
+        {manual.mode === 'manual' ? (
+          <small className="kura-cut-hint">{t(language, 'split.mode.manualTip')}</small>
+        ) : plan && plan.planes.length > 0 ? (
           <>
             <small className="kura-cut-hint">{t(language, 'split.planesHint')}</small>
             <ul className="kura-split-planes" aria-busy={pending}>

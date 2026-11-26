@@ -44,6 +44,7 @@ export const SplitLabels: React.FC = () => {
   const objects = useKuraStore((s) => s.objects);
   const explode = useKuraStore((s) => s.splitExplode);
   const preview = useKuraStore((s) => s.splitPlanPreview);
+  const showCuts = useKuraStore((s) => s.splitShowCuts);
   const selectedId = useKuraStore((s) => s.selectedIds[0] ?? null);
   const plateSource = useSplitPlateSource();
   const frames = useSplitFrames();
@@ -53,7 +54,8 @@ export const SplitLabels: React.FC = () => {
 
     // Rótulos de los planos de corte: en la misma capa que los de pieza, así no se solapan entre sí.
     const plan0 = preview.plan;
-    if (plan0 && preview.status !== 'idle') {
+    // «Solo las piezas»: sin planos ni sus rótulos
+    if (plan0 && preview.status !== 'idle' && showCuts) {
       const [x0, y0, z0] = plan0.bounds.min;
       const [x1, y1, z1] = plan0.bounds.max;
       const top = y1 + (y1 - y0) * 0.06;
@@ -62,7 +64,8 @@ export const SplitLabels: React.FC = () => {
         const noJoint = Boolean(plan0.connector) && !p.admitsConnectors;
         out.push({
           id: `plane:${p.axis}${p.index}`,
-          text: `${t(language, 'split.planeName', { axis: userAxisLabel(p.axis), n: p.index + 1 })}${noJoint ? ` · ${t(language, 'split.noJoint')}` : ''}`,
+          // Planos a mano: el número de la lista del panel («Plano 2»)
+          text: `${p.cutIndex !== undefined ? t(language, 'split.manual.plane', { n: p.cutIndex + 1 }) : t(language, 'split.planeName', { axis: userAxisLabel(p.axis), n: p.index + 1 })}${noJoint ? ` · ${t(language, 'split.noJoint')}` : ''}`,
           anchor,
           radiusMm: 0,
           kind: 'plane',
@@ -138,7 +141,7 @@ export const SplitLabels: React.FC = () => {
       }
     }
     return out;
-  }, [show, language, objects, explode, preview, selectedId, frames, plateSource]);
+  }, [show, showCuts, language, objects, explode, preview, selectedId, frames, plateSource]);
 
   return <SplitLabelLayer items={items} />;
 };
