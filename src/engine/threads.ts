@@ -122,7 +122,7 @@ export const BASIC_PROFILE_BREAKS: ProfileBreaks = [0, 0.25, 0.5625, 0.6875];
 export const BOLT_PROFILE_BREAKS: ProfileBreaks = [1 / 24, 5 / 24, 0.5625, 0.6875];
 
 /** Radio del perfil ISO 60° en la fase `phi` para los quiebres `b`. */
-function profileRadius(phi: number, rMinor: number, rMajor: number, b: ProfileBreaks): number {
+export function profileRadius(phi: number, rMinor: number, rMajor: number, b: ProfileBreaks): number {
   let p = ((phi % 1) + 1) % 1;
   if (p < b[0]) p += 1;
   if (p <= b[1]) return rMinor;
@@ -133,7 +133,8 @@ function profileRadius(phi: number, rMinor: number, rMajor: number, b: ProfileBr
 
 /**
  * Malla cerrada de un cilindro roscado (hélice derecha) entre `z0` y `z1` en eje Z.
- * La fase es absoluta: φ = θ/2π − z/P, así que dos piezas con el mismo origen calzan en fase.
+ * La fase es absoluta: φ = n·θ/2π − z/P (n = `starts`, entradas; avance por vuelta n·P), así que dos piezas
+ * con el mismo origen calzan en fase. Con n = 1 es la rosca de una entrada de siempre.
  */
 export function buildHelicalThreadMesh(
   rMinor: number,
@@ -142,7 +143,8 @@ export function buildHelicalThreadMesh(
   z0: number,
   z1: number,
   columns: number,
-  breaks: ProfileBreaks = BASIC_PROFILE_BREAKS
+  breaks: ProfileBreaks = BASIC_PROFILE_BREAKS,
+  starts = 1
 ): MeshData {
   const positions: number[] = [];
   const indices: number[] = [];
@@ -154,7 +156,7 @@ export function buildHelicalThreadMesh(
     const theta = (2 * Math.PI * i) / columns;
     const c = Math.cos(theta);
     const s = Math.sin(theta);
-    const u = i / columns;
+    const u = (starts * i) / columns;
     const zs: number[] = [z0];
     const rs: number[] = [profileRadius(u - z0 / pitch, rMinor, rMajor, breaks)];
     // Cruces de hélices de quiebre: z = P·(u − (m + b_q)), recorridos en z creciente
