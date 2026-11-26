@@ -34,6 +34,27 @@ export interface ScrewBossReport {
   collides: boolean;
   /** Cuánto se hunde el poste bajo la cara (mm). */
   seatMm: number;
+  /**
+   * Cuánto baja el poste bajo la base de la pieza (su punto más bajo, el que apoya en la cama), mm; 0 si no la pasa.
+   * Una torreta en la cara de apoyo sobresale por debajo y la pieza ya no apoya plana.
+   */
+  belowBaseMm: number;
+}
+
+/** Bajo esto (mm) el poste no se considera bajo la base (ruido numérico de una cara apenas inclinada). */
+export const BOSS_BELOW_BASE_MIN_MM = 0.05;
+
+/** Punto más bajo (Y de mundo) del poste: cilindro de radio `r` entre `from` y `to` (los extremos del eje). */
+function postLowestY(from: Vec3, to: Vec3, axisY: number, r: number): number {
+  const spread = r * Math.sqrt(Math.max(0, 1 - axisY * axisY));
+  return Math.min(from[1], to[1]) - spread;
+}
+
+/** Y más baja de la malla (la base de la pieza sobre la cama). */
+function lowestY(world: MeshData): number {
+  let min = Infinity;
+  for (let i = 1; i < world.positions.length; i += 3) min = Math.min(min, world.positions[i]);
+  return min;
 }
 
 export interface ScrewBossAnalysis {
@@ -93,6 +114,10 @@ export function analyzeScrewBoss(
   const plan = placeScrewBoss(params, point, normal, seat)!;
   const intoHostMm = Math.max(0, params.holeDepthMm - params.heightMm);
   const thickness = intoHostMm > 0 ? thicknessBelow(world, point, plan.frame.axis) : Infinity;
+  const axis = plan.frame.axis;
+  const tip = addScaled(point, axis, params.heightMm);
+  const foot = addScaled(point, axis, -seat);
+  const below = lowestY(world) - postLowestY(foot, tip, axis[1], params.outerDiameterMm / 2);
   return {
     plan,
     spansFace: surface.spansFace,
@@ -102,6 +127,7 @@ export function analyzeScrewBoss(
       exits: intoHostMm > 0 && intoHostMm >= thickness - BOSS_EXIT_FLOOR_MM,
       collides: collidesWith(plan, point, params, others),
       seatMm: seat,
+      belowBaseMm: below > BOSS_BELOW_BASE_MIN_MM ? below : 0,
     },
   };
 }

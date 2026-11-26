@@ -141,7 +141,10 @@ export function screwBossResultToUser(
     hostId,
     params,
     placement: placementToUser(at),
-    report: { wallMm: r(rep.wallMm), intoHostMm: r(rep.intoHostMm), exits: rep.exits, collides: rep.collides, seatMm: r(rep.seatMm) },
+    report: {
+      wallMm: r(rep.wallMm), intoHostMm: r(rep.intoHostMm), exits: rep.exits, collides: rep.collides, seatMm: r(rep.seatMm),
+      belowBaseMm: r(rep.belowBaseMm ?? 0),
+    },
     warnings: warningsOf(screwBossWarnings(rep, 'en'), 'SCREW_BOSS'),
     note: 'The post is a solid that merges with the part and the hole a negative: Apply subtractions in the app joins and cuts them.',
   };
