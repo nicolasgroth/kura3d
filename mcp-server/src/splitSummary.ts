@@ -30,7 +30,10 @@ interface PartLike {
 
 interface SplitResultLike {
   dryRun?: boolean;
-  plan?: { fitsWithoutCuts?: boolean; pieces?: unknown[]; planes?: unknown[]; counts?: unknown; occupancy?: { exact?: boolean; pieces?: number; joints?: number } };
+  plan?: {
+    fitsWithoutCuts?: boolean; pieces?: unknown[]; planes?: unknown[]; counts?: unknown; occupancy?: { exact?: boolean; pieces?: number; joints?: number };
+    strategy?: string; natural?: { naturalCuts?: number; straightCuts?: number; candidates?: Array<{ axis?: string; position?: number; kind?: string; used?: boolean }> };
+  };
   parts?: PartLike[];
   joints?: JointLike[];
   plateCount?: number;
@@ -77,6 +80,16 @@ export function summarizeSplitResult(raw: unknown): Record<string, unknown> {
       ? { planned: { pieces: r.plan.occupancy.pieces, joints: r.plan.occupancy.joints, exact: r.plan.occupancy.exact === true } }
       : {}),
     planes: r.plan?.planes?.length ?? 0,
+    ...(r.plan?.strategy === 'natural' && r.plan.natural
+      ? {
+          strategy: {
+            kind: 'natural',
+            naturalCuts: r.plan.natural.naturalCuts ?? 0,
+            straightCuts: r.plan.natural.straightCuts ?? 0,
+            narrowings: (r.plan.natural.candidates ?? []).map((c) => ({ axis: c.axis, positionMm: c.position, kind: c.kind, used: c.used === true })),
+          },
+        }
+      : {}),
     counts: r.plan?.counts,
     plates: r.plateCount ?? 0,
     joints: {

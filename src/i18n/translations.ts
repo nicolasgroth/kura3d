@@ -34,6 +34,7 @@ import { FLOWUX_EN, FLOWUX_ES } from './locales/flowUx';
 import { PREVIEW_EN, PREVIEW_ES } from './locales/preview';
 import { SPLITJOINTS_EN, SPLITJOINTS_ES } from './locales/splitJoints';
 import { SPLITPREFS_EN, SPLITPREFS_ES } from './locales/splitPrefs';
+import { SPLITNATURAL_EN, SPLITNATURAL_ES } from './locales/splitNatural';
 import { UNIONES_FIRMES_EN, UNIONES_FIRMES_ES } from './locales/unionesFirmes';
 import { FIRMEZA_UNIONES_EN, FIRMEZA_UNIONES_ES } from './locales/firmezaUniones';
 import { AJUSTAR_EN, AJUSTAR_ES } from './locales/ajustarImpresora';
@@ -115,6 +116,7 @@ export const TRANSLATIONS_ES = {
   ...PREVIEW_ES,
   ...SPLITJOINTS_ES,
   ...SPLITPREFS_ES,
+  ...SPLITNATURAL_ES,
   ...UNIONES_FIRMES_ES,
   ...FIRMEZA_UNIONES_ES,
   ...AJUSTAR_ES,
@@ -1476,6 +1478,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PREVIEW_EN,
   ...SPLITJOINTS_EN,
   ...SPLITPREFS_EN,
+  ...SPLITNATURAL_EN,
   ...UNIONES_FIRMES_EN,
   ...FIRMEZA_UNIONES_EN,
   ...AJUSTAR_EN,

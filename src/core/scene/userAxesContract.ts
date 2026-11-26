@@ -110,6 +110,9 @@ interface PlanLike {
   pieces: { cell: [number, number, number]; bounds: { min: Vec3; max: Vec3 }; sizeMm: Vec3; printRotation: Vec3 }[];
   /** Conteos reales del plan: celdas y medidas en ejes internos (`jointsPerPlane` sigue el orden de `planes`). */
   occupancy?: { cells: Array<[number, number, number]>; pieceSizesMm: Vec3[] };
+  /** «Por las partes de la figura»: estrechamientos con eje y posición internos. */
+  natural?: { candidates: Array<{ axis: AxisName; position: number }> };
+  roomMm?: Partial<Record<AxisName, number>>;
 }
 
 /**
@@ -146,6 +149,20 @@ export function splitPlanToUser<T extends PlanLike>(plan: T): T {
             pieceSizesMm: plan.occupancy.pieceSizesMm.map(toUserSize),
           },
         }
+      : {}),
+    ...(plan.natural
+      ? {
+          natural: {
+            ...plan.natural,
+            candidates: plan.natural.candidates.map((c) => {
+              const { axis, sign } = userAxisOfInternal(c.axis);
+              return { ...c, axis, position: c.position * sign + 0 };
+            }),
+          },
+        }
+      : {}),
+    ...(plan.roomMm
+      ? { roomMm: Object.fromEntries(Object.entries(plan.roomMm).map(([a, v]) => [userAxisOfInternal(a as AxisName).axis, v])) as Partial<Record<AxisName, number>> }
       : {}),
   };
 }

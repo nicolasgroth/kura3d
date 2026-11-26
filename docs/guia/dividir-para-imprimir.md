@@ -13,6 +13,26 @@ Cuando una pieza es más grande que la cama de tu impresora, **Dividir para impr
 
 ![Panel Dividir para imprimir con el plan sobre una pieza de 400 mm](img/dividir-para-imprimir-01-plan.png)
 
+## Por las partes de la figura
+
+En una figura o una estatua, la rejilla pareja corta donde toque: por la mitad del pecho o de una pierna. En **Cama y cortes → Cómo cortar** elige **Por las partes de la figura** y Kurra Studio busca los **estrechamientos** de la pieza (el cuello, la cintura, los tobillos, el punto donde las piernas entran a la cadera) y pone ahí los cortes, para que cada unión quede en una sección chica y se note menos.
+
+1. Abre *Dividir para imprimir* y, en **Cómo cortar**, elige **Por las partes de la figura**.
+2. Bajo el selector aparece el resumen, por ejemplo «Cortes en partes de la figura: 2 · cortes rectos adicionales: 1». Los planos propuestos se ven en el visor como siempre; puedes moverlos a mano.
+3. Revisa la firmeza y pulsa **Dividir**: los nombres de pieza, las uniones, el armado y *Preparar para imprimir* funcionan igual que con la rejilla.
+
+Lo que hace y lo que no:
+
+- Se usan **los mismos cortes que harían falta con la rejilla** (el mínimo para que todo quepa); solo cambia dónde caen. Si un estrechamiento no cae donde la cama lo permite, ese corte es **recto** y el resumen lo cuenta aparte.
+- Un estrechamiento se descarta si el corte partiría paredes a lo largo, dejaría islas diminutas (mechones de pelo, dedos) o más de seis trozos sueltos: ahí la unión sería frágil. Si ninguno sirve, el panel dice «No se encontraron estrechamientos útiles» y quedan los cortes de la rejilla.
+- Los planos siguen siendo **rectos, alineados a los ejes y atraviesan todo el modelo**: un corte en el cuello de una figura de pie también corta lo que esté a esa altura (una mano levantada). No corta en diagonal ni solo un brazo.
+- Busca estrechamientos en la forma, no reconoce partes del cuerpo: una pieza sin estrechamientos (una caja, una ocarina) queda igual que con la rejilla.
+- La malla debe ser un sólido cerrado, igual que para la rejilla; si no, primero *Reparar malla*.
+
+<!-- Capturas pendientes (generar desde la app web con el skill «capturas», nunca a mano):
+     img/dividir-para-imprimir-05-partes.png: panel con «Cómo cortar: Por las partes de la figura» elegido, su explicación y el resumen de cortes, sobre una figura con estrechamiento (la pesa de e2e/dividir-partes.spec.ts o una figura real) y el plano en el cuello en el visor.
+     img/dividir-para-imprimir-06-partes-rejilla.png (opcional): la misma pieza con «Rejilla pareja», para comparar dónde cae el corte. -->
+
 ## Qué tan firmes quedan las uniones
 
 Antes de pulsar **Dividir**, en el **Resumen** aparece **Firmeza de las uniones**, por ejemplo «3 uniones: 2 firmes, 1 débil». Cada unión se califica como **Firme**, **Regular**, **Débil** o **Para pegar**, siempre con texto e icono (no solo color).

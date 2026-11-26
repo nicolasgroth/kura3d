@@ -2,7 +2,7 @@
  * @file src/store/__tests__/splitForBedCommand.test.ts
  * @description Comando `split_for_bed` del Command Bus: `dryRun` devuelve el plan sin cambiar la
  * escena, la ejecución reemplaza el objeto por piezas con `metadata.split`, rangos inválidos dan
- * `invalid-params` y el exceso de piezas llega como error tipado.
+ * `invalid-params`, el exceso de piezas llega como error tipado y `strategy` elige rejilla o «natural».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later
@@ -58,6 +58,20 @@ describe('split_for_bed', () => {
     const parts = store().objects.filter((o) => o.metadata?.split?.groupId === box.id);
     expect(parts).toHaveLength(8);
     expect(parts.map((p) => p.metadata!.split!.code).sort()).toEqual(['A1a', 'A1b', 'A2a', 'A2b', 'B1a', 'B1b', 'B2a', 'B2b']);
+  }, 60_000);
+
+  it('strategy: rejilla por defecto, «natural» pasa al plan y devuelve su resumen; otro valor es error', async () => {
+    const box = await addBox(300);
+    const req = (extra: Record<string, unknown> = {}) =>
+      parseSplitForBed(store(), { id: box.id, bedWidthMm: 200, bedDepthMm: 200, bedHeightMm: 200, ...extra });
+    expect(req().plan.strategy).toBe('grid');
+    expect(req({ strategy: 'natural' }).plan.strategy).toBe('natural');
+    expect(() => req({ strategy: 'ia' })).toThrow();
+    const dry = await run({ id: box.id, dryRun: true, bedWidthMm: 200, bedDepthMm: 200, bedHeightMm: 200, strategy: 'natural' });
+    expect(dry.ok).toBe(true);
+    const plan = (dry.result as { plan: { strategy?: string; natural?: { naturalCuts: number; straightCuts: number } } }).plan;
+    expect(plan.strategy).toBe('natural');
+    expect(plan.natural).toMatchObject({ naturalCuts: 0, straightCuts: 3 });
   }, 60_000);
 
   it('valida rangos y tipa el exceso de piezas', async () => {

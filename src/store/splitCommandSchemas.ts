@@ -1,7 +1,7 @@
 /**
  * @file src/store/splitCommandSchemas.ts
  * @description Esquema del comando `split_for_bed` ("dividir para imprimir"): objetivo, cama (por
- * defecto la activa), margen, ejes, tope de piezas, conector, marcas de pareja y `dryRun` (solo plan);
+ * defecto la activa), margen, ejes, tope de piezas, estrategia (`grid` o `natural`), conector, marcas de pareja y `dryRun` (solo plan);
  * y de `validate_assembly` (revalidar el armado de un grupo dividido, ver `core/commands/validateAssemblySchema`).
  * Rangos de `OPERATION_RANGES.split` y `OPERATION_RANGES.cut` (fuente única con el servidor MCP).
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -137,6 +137,8 @@ export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): Sp
       allowRotation: readBoolean(p, 'allowRotation') ?? true,
       allowDiagonal: readBoolean(p, 'allowDiagonal') ?? false,
       shiftWindow: readRange(p, OR.split.shiftWindow, 'shiftWindow') ?? d.shiftWindow,
+      // «Por las partes de la figura» (`natural`) o rejilla (`grid`, por defecto)
+      strategy: readEnum(p, ['grid', 'natural'] as const, 'strategy') ?? 'grid',
       connector,
       ...manualCutsOf(p),
     },

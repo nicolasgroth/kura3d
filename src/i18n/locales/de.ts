@@ -29,6 +29,7 @@ import { FLOWUX_DE } from './flowUx';
 import { PREVIEW_DE } from './preview';
 import { SPLITJOINTS_DE } from './splitJoints';
 import { SPLITPREFS_DE } from './splitPrefs';
+import { SPLITNATURAL_DE } from './splitNatural';
 import { UNIONES_FIRMES_DE } from './unionesFirmes';
 import { FIRMEZA_UNIONES_DE } from './firmezaUniones';
 import { AJUSTAR_DE } from './ajustarImpresora';
@@ -108,6 +109,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...PREVIEW_DE,
   ...SPLITJOINTS_DE,
   ...SPLITPREFS_DE,
+  ...SPLITNATURAL_DE,
   ...UNIONES_FIRMES_DE,
   ...FIRMEZA_UNIONES_DE,
   ...AJUSTAR_DE,

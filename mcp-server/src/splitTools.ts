@@ -42,7 +42,7 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
       description:
         'Splits a large object into pieces that fit on the bed (by default the active profile bed), with connectors at each joint, ' +
         'grid-based name ("Object · A1": letter = X column, number = Z level (height), lowercase = Y row) and optional engraved mating marks. ' +
-        'Cut planes shift toward the simplest section. With dryRun=true it only returns the plan (planes and estimated pieces) ' +
+        'Cut planes shift toward the simplest section (strategy="grid") or go to the narrowings of the figure (strategy="natural"). With dryRun=true it only returns the plan (planes and estimated pieces) ' +
         'without changing the scene. Returns a short summary; detail=true adds the full plan. ' +
         'Error SPLIT_TOO_MANY_PIECES (with needed = pieces required) if more than maxPieces would be needed; ' +
         'maxPieces="auto" raises the limit to 400. A section thinner than minWallForConnectorMm becomes a flat cut to glue ' +
@@ -59,6 +59,10 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         maxPieces: z.union([rangeSchema(OR.split.maxPieces), z.literal('auto')]).default(d.maxPieces),
         allowRotation: z.boolean().default(true).describe('Allows rotating a part 90° so it fits.'),
         allowDiagonal: z.boolean().default(false).describe('Allows resting the part diagonally on the bed if it fits that way without cutting.'),
+        strategy: z.enum(['grid', 'natural']).default('grid')
+          .describe('grid = even grid of axis-aligned planes shifted to the simplest section. natural = "by the parts of the figure": planes go to the ' +
+            'natural narrowings (neck, waist, ankles, where legs meet the hips) found in the cross-section profile, completed with straight grid cuts ' +
+            'where those are not enough; planes stay axis-aligned and cross the whole model. The plan reports naturalCuts and straightCuts.'),
         connectorType: z.enum(['none', 'dowel', 'peg', 'dovetail', 'lap', 'loose-dowel', 'magnet']).default('dowel')
           .describe('dowel = fixed peg on one part; loose-dowel = blind holes in both parts plus separate printed dowels (no protrusions); ' +
             'magnet = facing magnet pockets (round, square or rectangular) on both faces of each cut so the model comes apart (glue each pair with opposite poles).'),
@@ -117,7 +121,7 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
             Object.entries({ widthMm: args.bedWidthMm, depthMm: args.bedDepthMm, heightMm: args.bedHeightMm }).filter(([, v]) => v !== undefined),
           ),
           plan: {
-            marginMm: args.marginMm, axes: args.axes, maxPieces: args.maxPieces, allowRotation: args.allowRotation, allowDiagonal: args.allowDiagonal, connector,
+            marginMm: args.marginMm, axes: args.axes, maxPieces: args.maxPieces, allowRotation: args.allowRotation, allowDiagonal: args.allowDiagonal, strategy: args.strategy, connector,
             ...(args.cuts ? { manualCuts: args.cuts.map((c) => userCutToInternal({ axis: c.axis, positionMm: c.positionMm, tiltDeg: c.tiltDeg ?? [0, 0] })) } : {}),
           },
           execute: {
