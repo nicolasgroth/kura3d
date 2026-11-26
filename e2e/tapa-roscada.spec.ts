@@ -1,6 +1,6 @@
 /**
  * @file e2e/tapa-roscada.spec.ts
- * @description Recorrido del recipiente con tapa roscada (ESCRITO SIN EJECUTAR: lo corre QA). Abre Insertar › Asistentes,
+ * @description Recorrido del recipiente con tapa roscada. Abre Insertar › Asistentes,
  * elige «Recipiente con tapa roscada», comprueba la miniatura, el aviso «Enrosca: holgura mínima…» de la vista previa,
  * un aviso de medida frágil (pared delgada), que holgura 0 cambia el resultado a un aviso, crea las dos piezas (un paso de
  * deshacer) y reabre con «Editar con el asistente». Después, en el diálogo de roscas, crea la pareja perno + tuerca.
@@ -57,14 +57,20 @@ for (const ancho of [1440, 1024]) {
       await juego.press('Tab');
       await expect(enrosca).toHaveAttribute('data-status', 'ok', { timeout: 60_000 });
 
-      // Alto que no alcanza para la rosca: error que bloquea crear.
+      // Alto que no alcanza para la rosca: error que bloquea crear. Con paso 4 y 2 vueltas la rosca pide justo 10 mm
+      // (el mínimo del campo), así que se sube a 3 vueltas (12 mm de rosca, alto mínimo 14 mm).
+      const vueltas = page.getByLabel('Vueltas', { exact: true });
+      await vueltas.fill('3');
+      await vueltas.press('Tab');
       const alto = page.getByLabel('Alto interior', { exact: true });
       await alto.fill('10');
       await alto.press('Tab');
-      await expect(page.getByText(/El alto interior no alcanza/)).toBeVisible();
+      await expect(page.getByText(/El alto interior no alcanza para 12 mm de rosca: súbelo a 14 mm/)).toBeVisible();
       await expect(page.getByRole('button', { name: 'Crear', exact: true })).toBeDisabled();
       await alto.fill('40');
       await alto.press('Tab');
+      await vueltas.fill('2');
+      await vueltas.press('Tab');
 
       // Crear: dos piezas, un paso de deshacer.
       await page.getByRole('button', { name: 'Crear', exact: true }).click();

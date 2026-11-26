@@ -42,8 +42,11 @@ export interface RecipesSliceState {
    * (conserva posición, nombre cambiado, color y grupo). Mismo contrato de retorno que `runRecipe`.
    */
   updateRecipeRun: (request: RecipeRunRequest, targetIds: readonly string[], precomputed?: RecipeRunSuccess) => Promise<RecipeRunResult | null>;
-  /** Tarea de solo calcular (vista previa): no toma el bloqueo, no toca la escena ni el historial; cancelable. */
-  startRecipePreview: (request: RecipeRunRequest) => EngineJob<RecipeRunResult>;
+  /**
+   * Tarea de solo calcular (vista previa): no toma el bloqueo, no toca la escena ni el historial; cancelable.
+   * `onProgress` recibe las fases del motor (`compute` cuando empieza a calcular, tras la cola y la carga del motor).
+   */
+  startRecipePreview: (request: RecipeRunRequest, onProgress?: (phase: string) => void) => EngineJob<RecipeRunResult>;
   /**
    * Coloca el resultado de una receta como lo haría crear (o, con `targetIds`, reemplazando ese juego): devuelve el
    * cambio listo para insertar sin tocar la escena. La vista previa y crear usan esta misma función.
@@ -148,7 +151,7 @@ export function createRecipesSlice(ctx: StoreContext): Partial<KuraStoreState> {
   return {
     runRecipe: (request, precomputed) => run('run_recipe', request, precomputed),
     updateRecipeRun: (request, targetIds, precomputed) => run('run_recipe', request, precomputed, targetIds),
-    startRecipePreview: (request) => startEngineJob('runRecipe', taskArgs(request)) as EngineJob<RecipeRunResult>,
+    startRecipePreview: (request, onProgress) => startEngineJob('runRecipe', taskArgs(request), onProgress) as EngineJob<RecipeRunResult>,
     placeRecipeResult: place,
   };
 }

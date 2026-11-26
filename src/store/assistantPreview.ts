@@ -2,16 +2,17 @@
  * @file src/store/assistantPreview.ts
  * @description Vista previa del asistente en el visor: mientras el formulario es válido, calcula la receta en el Worker
  * («solo calcular», sin tocar escena ni historial) y la dibuja como fantasma translúcido en el lugar donde caería, con
- * la capa de fantasmas de `operationPreview`. Espera 300 ms tras el último cambio, cancela el cálculo anterior, no
- * recalcula si las respuestas no cambiaron, espera si el motor está ocupado y, si un cálculo pasa de ~1,5 s, queda
- * pausado («demasiado pesada») hasta que el usuario lo actualice a mano. Crear reutiliza lo ya calculado.
+ * la capa de fantasmas de `operationPreview`. Espera 300 ms tras el último cambio, cancela en suave el cálculo anterior
+ * (sin terminar el Worker), no recalcula si las respuestas no cambiaron, espera si el motor está ocupado y, si el cálculo
+ * mismo pasa de ~1,5 s (contados desde que el motor empieza a calcular, no la cola ni su carga), queda pausado
+ * («demasiado pesada») hasta que el usuario lo actualice a mano. Crear reutiliza lo ya calculado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later
  */
 
 import { create } from 'zustand';
-import type { EngineJob } from '../core/operations/engineClient';
+import type { EngineCancelMode, EngineJob } from '../core/operations/engineClient';
 import type { RecipeRunResult, RecipeRunSuccess, RecipeScrewFitCheck } from '../core/recipes/run/types';
 import { recipeBed, type RecipeRunRequest } from './slices/recipesSlice';
 import type { PreviewGhost } from './slices/previewSlice';
@@ -105,7 +106,11 @@ function show(result: RecipeRunSuccess, input: AssistantPreviewInput): void {
   );
 }
 
-function cancelWork(): void {
+/**
+ * Detiene lo pendiente. Reemplazar o retirar la vista previa cancela en suave (el Worker termina ese cálculo y se
+ * descarta): terminarlo obligaría al siguiente a pagar un arranque en frío. Solo la pausa por pesada usa `hard`.
+ */
+function cancelWork(mode: EngineCancelMode = 'soft'): void {
   gen++;
   if (timer !== null) clearTimeout(timer);
   if (heavyTimer !== null) clearTimeout(heavyTimer);
@@ -116,7 +121,7 @@ function cancelWork(): void {
   const running = job;
   job = null;
   inflight = null;
-  running?.cancel();
+  running?.cancel(mode);
 }
 
 function waitUntilIdle(token: number): Promise<void> {
@@ -150,19 +155,23 @@ async function compute(input: AssistantPreviewInput, sig: string, token: number,
     return;
   }
   if (token !== gen) return;
-  const running = useKuraStore.getState().startRecipePreview(input.request);
-  job = running;
-  inflight = { sig, promise: running.promise };
-  if (limited) {
+  // El tope corre desde que el motor empieza a calcular esta tarea: la espera en cola (miniaturas, un cálculo
+  // descartado) y la carga del motor no la hacen «pesada».
+  const armHeavy = (phase: string) => {
+    if (!limited || phase !== 'compute' || token !== gen || heavyTimer !== null) return;
     heavyTimer = setTimeout(() => {
       if (token !== gen) return;
-      // Demasiado pesada: se detiene y espera a que el usuario la pida.
+      // Demasiado pesada: se detiene (liberando el Worker) y espera a que el usuario la pida.
       heavy = true;
-      cancelWork();
+      warm = false;
+      cancelWork('hard');
       dim();
       setStatus('heavy');
     }, ASSISTANT_PREVIEW_HEAVY_MS + (warm ? 0 : WARMUP_MS));
-  }
+  };
+  const running = useKuraStore.getState().startRecipePreview(input.request, armHeavy);
+  job = running;
+  inflight = { sig, promise: running.promise };
   try {
     const result = await running.promise;
     if (token !== gen) return;

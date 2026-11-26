@@ -43,13 +43,18 @@ function countingClient() {
   return { client, runs };
 }
 
-/** Cliente cuyas tareas nunca terminan: sirve para ver la cancelación y el tope de tiempo. */
-function hangingClient() {
-  const jobs: Array<{ cancel: ReturnType<typeof vi.fn> }> = [];
+/**
+ * Cliente cuyas tareas nunca terminan: sirve para ver la cancelación y el tope de tiempo. Como el Worker real, avisa la
+ * fase `compute` al empezar a calcular; con `startNow: false` la tarea queda en cola (o cargando el motor) hasta `start()`.
+ */
+function hangingClient({ startNow = true } = {}) {
+  const jobs: Array<{ cancel: ReturnType<typeof vi.fn>; start: () => void }> = [];
   const client: EngineClient = {
-    run: () => {
+    run: (_ctx, _name, _args, onProgress) => {
       const cancel = vi.fn();
-      jobs.push({ cancel });
+      const start = () => onProgress?.('compute');
+      jobs.push({ cancel, start });
+      if (startNow) start();
       const job: EngineJob<never> = { id: jobs.length, inWorker: true, promise: new Promise<never>(() => undefined), cancel };
       return job as never;
     },
@@ -157,7 +162,26 @@ describe('vista previa: cancelación y tope de tiempo', () => {
     await vi.waitFor(() => expect(jobs).toHaveLength(1));
     requestAssistantPreview(input({ w: 80 }));
     expect(jobs[0].cancel).toHaveBeenCalledTimes(1);
+    // Reemplazo de vista previa: cancelación suave, sin terminar el Worker (recrearlo cuesta un arranque en frío).
+    expect(jobs[0].cancel).toHaveBeenCalledWith('soft');
     await vi.waitFor(() => expect(jobs).toHaveLength(2));
+  });
+
+  it('el tope cuenta desde que la tarea empieza a calcular, no la espera en cola ni la carga del motor', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const { client, jobs } = hangingClient({ startNow: false });
+    setStoreEngineClient(client);
+    requestAssistantPreview(input({ w: 70 }));
+    await vi.advanceTimersByTimeAsync(ASSISTANT_PREVIEW_DEBOUNCE_MS + 10);
+    expect(jobs).toHaveLength(1);
+    // En cola detrás de las miniaturas (o arrancando el Worker): no es «demasiado pesada».
+    await vi.advanceTimersByTimeAsync(20_000);
+    expect(status()).toBe('computing');
+    jobs[0].start();
+    await vi.advanceTimersByTimeAsync(6000);
+    expect(status()).toBe('heavy');
+    // Pausarla sí libera el Worker.
+    expect(jobs[0].cancel).toHaveBeenCalledWith('hard');
   });
 
   it('si pasa de ~1,5 s se pausa («demasiado pesada») y «Actualizar» la calcula sin tope', async () => {
