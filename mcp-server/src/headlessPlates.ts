@@ -12,7 +12,7 @@
  */
 
 import {
-  assignmentsOf, nothingToMove, parseCreatePlate, parseDeletePlate, parseMoveToPlate, parseRenamePlate, parseSetActivePlate,
+  assertPrintLayout, assignmentsOf, nothingToMove, parseCreatePlate, parseDeletePlate, parseMoveToPlate, parseRenamePlate, parseSetActivePlate,
   parseSetLayout, parseSpreadOnePlatePerObject, plateListToUser, plateNotCreated, plateToUser, type PlateListState,
 } from '../../src/core/bus/plateCommandSchemas';
 import { CommandError } from '../../src/core/bus/commandErrors';
@@ -163,6 +163,7 @@ export class HeadlessPlates {
 
   moveTo(p: RawParams) {
     const { ids, plateId } = parseMoveToPlate(this.scene(), p);
+    assertPrintLayout(this.layout);
     const result = moveToPlateOrNew(this.scene(), ids, plateId, { ...this.actionContext(), makeId: this.makeId, nameFor });
     if (!result) throw nothingToMove();
     this.commit(result.scene, result.created ?? undefined);
@@ -187,6 +188,8 @@ export class HeadlessPlates {
 
   arrange(p: RawParams) {
     const request = parseArrangeOnPlates({ objects: this.host.objects(), selectedIds: [], plates: this.plates }, p);
+    // Sin interfaz no hay grupos de organización: «por grupo» no podría agrupar nada (ni en dryRun), así que se dice.
+    if (request.options.criterion === 'byGroup') throw new CommandError('precondition', 'bus.error.arrangeByGroupHeadless');
     const plan = arrangeOnPlatesTask({
       objects: this.printObjects(), plates: this.plates, groups: [], projectBed: projectBed(this.source()), options: request.options,
     });

@@ -25,6 +25,7 @@ import { RecentProjectsSettings } from '../settings/RecentProjectsSettings';
 import { SettingsTabs } from '../settings/SettingsTabs';
 import { SettingsAppearancePanel } from './SettingsAppearancePanel';
 import { BrandLogo } from '../BrandLogo';
+import { BRAND_ICON } from '../../brandAssets';
 
 /** Modal 8: Ajustes globales (Apariencia/Temas WCAG, IA, MCP y Acerca de). */
 export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
@@ -238,7 +239,7 @@ export const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = (
             </span>
             <div className="kura-brand-showcase">
               <div className="kura-brand-variant-card">
-                <img src="/branding/kurra-studio-icono.svg" alt="" className="kura-brand-icon-variant" width={44} height={44} />
+                <img src={BRAND_ICON} alt="" className="kura-brand-icon-variant" width={44} height={44} />
                 <span className="kura-brand-variant-name">{BRAND.name}</span>
               </div>
               <div className="kura-brand-variant-card is-themed">

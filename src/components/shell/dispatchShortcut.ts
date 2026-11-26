@@ -101,7 +101,7 @@ export function dispatchShortcut(action: ShortcutAction, e: KeyboardEvent, ui: S
       state.ungroupObjects();
       return false;
     case 'applyHolesOrUnion':
-      state.applyHolesOrUnion();
+      void state.applyHolesOrUnion();
       return false;
     case 'selectAll':
       state.selectAll();

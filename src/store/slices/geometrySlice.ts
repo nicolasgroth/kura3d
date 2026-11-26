@@ -86,7 +86,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       const { objects, selectedIds } = get();
       // Los objetos bloqueados ni se recortan ni se consumen.
       const scope = resolveHoleScope(objects, selectedIds);
-      if (scope.solids.length === 0 || scope.holes.length === 0 || rejectWhileLocked()) return;
+      if (scope.solids.length === 0 || scope.holes.length === 0 || rejectWhileLocked()) return false;
       // Solo se recortan los sólidos que algún negativo toca, y solo se consumen esos negativos: los
       // objetos ajenos no se reconstruyen ni quedan seleccionados (evita una segunda resta por error).
       const touching = touchingHoleScope(scope.solids, scope.holes);
@@ -95,9 +95,9 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
       const { holes } = touching;
       if (solids.length === 0) {
         get().addToast(tr('toast.booleanNoContact'), 'info');
-        return;
+        return false;
       }
-      return runExclusive('apply_holes', undefined, async () => {
+      return runExclusive('apply_holes', false, async () => {
         const { updated, change } = await runEngine('applyHoles', { solids, holes });
         assertCurrent([...solids, ...holes]);
         commitChange(change, { select: updated.map((s) => s.id) });
@@ -106,6 +106,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         const tidy = dissolveLoneAddonGroups(scene);
         if (tidy !== scene) set({ objects: tidy.objects, groups: tidy.groups });
         get().addToast(tr('toast.booleanDone.subtract'), 'success');
+        return true;
       });
     },
 

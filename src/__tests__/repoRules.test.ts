@@ -141,4 +141,10 @@ describe('reglas del repositorio', () => {
       .map(rel);
     expect(offenders).toEqual([]);
   });
+
+  it('las rutas de la marca salen de brandAssets (con BASE_URL), no escritas a mano', () => {
+    const files = walk(join(ROOT, 'src'), ['.ts', '.tsx']).filter((f) => !isTestFile(f) && !f.endsWith('brandAssets.ts'));
+    const offenders = files.filter((f) => /['"`]\/branding\//.test(stripComments(readFileSync(f, 'utf8')))).map(rel);
+    expect(offenders).toEqual([]);
+  });
 });

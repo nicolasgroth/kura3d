@@ -35,12 +35,17 @@ interface HeadlessLike {
     arrange(p: Params): any;
     setLayout(p: Params): any;
   };
+  alignObjects(ids: string[], mode: string): any;
 }
 const HEADLESS_PATH = ['..', '..', '..', 'mcp-server', 'src', 'headlessEngine'].join('/');
 const newHeadless = async (): Promise<HeadlessLike> => {
   const mod = (await import(/* @vite-ignore */ HEADLESS_PATH)) as { KuraHeadlessEngine: new () => HeadlessLike };
   return new mod.KuraHeadlessEngine();
 };
+
+async function busRaw(command: string, params: Params = {}): Promise<CommandBusResponse> {
+  return (await store().executeCommand({ id: 'p', command: command as KuraCommandRequest['command'], params }, 'mcp')) as CommandBusResponse;
+}
 
 async function bus(command: string, params: Params = {}): Promise<any> {
   const res = (await store().executeCommand({ id: 'p', command: command as KuraCommandRequest['command'], params }, 'mcp')) as CommandBusResponse;
@@ -167,5 +172,38 @@ describe('paridad app ↔ sin interfaz: placas', () => {
       const appBytes = Uint8Array.from(atob(app.bytesBase64), (c) => c.charCodeAt(0));
       expect(Array.from(head)).toEqual(Array.from(appBytes));
     }
+  }, 120_000);
+
+  it('en armado, las acciones de cama se rechazan igual en ambos: error precondition «vista Imprimir»', async () => {
+    const h = await newHeadless();
+    await seed(h);
+    await bus('create_plate', {});
+    h.plates.create({});
+    await bus('set_layout', { layout: 'assembly' });
+    h.plates.setLayout({ layout: 'assembly' });
+    const before = appScene();
+    const headBefore = headScene(h);
+
+    const move = await busRaw('move_to_plate', { ids: [appIds[0]], plateId: appPlateId(1) });
+    expect(move.ok).toBe(false);
+    expect(move.errorCode).toBe('precondition');
+    expect(move.error).toMatch(/Print view/);
+    let headErr: any = null;
+    try { h.plates.moveTo({ ids: [headIds[0]], plateId: headPlateId(h, 1) }); } catch (e) { headErr = e; }
+    expect(headErr?.code).toBe('precondition');
+    expect(headErr?.key).toBe('bus.error.printLayoutOnly');
+
+    const grid = await busRaw('align_objects', { mode: 'arrange_grid', ids: appIds });
+    expect(grid.ok).toBe(false);
+    expect(grid.errorCode).toBe('precondition');
+    expect(() => h.alignObjects(headIds, 'arrange_grid')).toThrow(expect.objectContaining({ code: 'precondition' }));
+
+    for (const extra of [{ dropToBed: true }, { centerOnBed: true }]) {
+      const r = await busRaw('transform_object', { id: appIds[0], ...extra });
+      expect(r.ok).toBe(false);
+      expect(r.errorCode).toBe('precondition');
+    }
+    expect(appScene()).toEqual(before);
+    expect(headScene(h)).toEqual(headBefore);
   }, 120_000);
 });

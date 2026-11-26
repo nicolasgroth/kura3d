@@ -132,14 +132,27 @@ const splitConnector = shape({
 const splitJointMagnets = shape({
   magnet: splitMagnet, count: (v) => nat(v) && v > 0 && v <= 64, pocketDiameterMm: positive, pocketDepthMm: positive, polarity: oneOf('opposite'),
 });
-const splitJointStrength = shape({
+// Cantidades (conectores, islas) enteras y acotadas como `connectorCenters`; las cubiertas no superan las islas.
+const MAX_JOINT_COUNT = 4096;
+const jointCount = (v: unknown): v is number => nat(v) && v <= MAX_JOINT_COUNT;
+const shrunkEntry = shape({ reason: oneOf('section-width', 'count', 'depth'), fromMm: finite, toMm: finite });
+// Con `reason: 'count'` los campos `fromMm`/`toMm` guardan cantidades (nombre heredado del formato guardado): enteras.
+const shrunkRecord = (v: unknown) => {
+  if (!shrunkEntry(v)) return false;
+  const k = v as { reason: string; fromMm: number; toMm: number };
+  return k.reason !== 'count' || (jointCount(k.fromMm) && jointCount(k.toMm));
+};
+const splitJointStrengthShape = shape({
   level: oneOf('firm', 'fair', 'weak', 'glue'),
   reasons: (v) => Array.isArray(v) && v.length <= 8 && v.every((r) => oneOf('no-connector', 'single-connector', 'low-area', 'shallow', 'islands-uncovered', 'below-useful', 'single-magnet')(r)),
   basis: optional(oneOf('connector', 'magnet')),
-  count: nonnegative, sizeMm: nonnegative, depthMm: nonnegative, areaRatio: nonnegative, islands: nonnegative, islandsCovered: nonnegative,
-  shrunk: (v) => Array.isArray(v) && v.length <= 8 && v.every(shape({ reason: oneOf('section-width', 'count', 'depth'), fromMm: finite, toMm: finite })),
-  discarded: (v) => Array.isArray(v) && v.length <= 256 && v.every(shape({ island: nonnegative, reason: oneOf('section-narrow'), measuredMm: finite })),
+  count: jointCount, sizeMm: nonnegative, depthMm: nonnegative, areaRatio: nonnegative, islands: jointCount, islandsCovered: jointCount,
+  shrunk: (v) => Array.isArray(v) && v.length <= 8 && v.every(shrunkRecord),
+  discarded: (v) => Array.isArray(v) && v.length <= 256 && v.every(shape({ island: jointCount, reason: oneOf('section-narrow'), measuredMm: finite })),
 });
+export const validSplitJointStrength = (v: unknown): boolean =>
+  splitJointStrengthShape(v) && (v as { islandsCovered: number }).islandsCovered <= (v as { islands: number }).islands;
+const splitJointStrength = validSplitJointStrength;
 const splitJointRecord = shape({
   label: label16, axis: oneOf('x', 'y', 'z'), position: finite, a: label16, b: label16,
   kind: oneOf('connector', 'glue', 'lap', 'socket'), connector: (v) => v === null || splitConnector(v),

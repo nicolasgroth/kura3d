@@ -105,6 +105,8 @@ export async function simplifyMeshDetailed(
     : null;
   // Tolerancia y desviación en mm de mundo: en la malla local se divide / multiplica por la mayor escala.
   const maxScale = Math.max(...obj.scale.map((s) => Math.abs(s))) || 1;
+  // Volumen en mm³ de mundo: el de la malla local por |sx·sy·sz| (el porcentaje de cambio no depende de esto).
+  const volumeScale = Math.abs(obj.scale[0] * obj.scale[1] * obj.scale[2]) || 1;
   let original: Manifold | null = null;
   let simplified: Manifold | null = null;
   try {
@@ -133,8 +135,8 @@ export async function simplifyMeshDetailed(
     }
     throwIfAborted(opts.signal);
     opts.onProgress?.('simplify:verify');
-    const volumeBeforeMm3 = original.volume();
-    const volumeAfterMm3 = simplified.volume();
+    const volumeBeforeMm3 = original.volume() * volumeScale;
+    const volumeAfterMm3 = simplified.volume() * volumeScale;
     const trianglesAfter = simplified.numTri();
     const noReduction = !(trianglesAfter < trianglesBefore);
     // La malla de la original y su BVH se calculan una sola vez y sirven a la verificación y a la búsqueda segura.
@@ -167,10 +169,12 @@ export async function simplifyMeshDetailed(
     const force = destructive.length > 0 && policy === 'force';
     let safe: SimplifySafeAlternative | null | undefined;
     if (destructive.length > 0 && !force) {
-      safe = findSafeAlternative({
+      // La búsqueda mide en la malla local (volumen local): se pasa a mundo al recibirla.
+      const found = findSafeAlternative({
         original, originalMesh: originalMesh(), originalBvh: originalBvh(), trianglesBefore, genusBefore,
-        volumeBefore: volumeBeforeMm3, maxScale, diagMm, minTolMm: R.toleranceMm.min, destructiveTolMm: toleranceMm,
+        volumeBefore: volumeBeforeMm3 / volumeScale, maxScale, diagMm, minTolMm: R.toleranceMm.min, destructiveTolMm: toleranceMm,
       }, opts);
+      safe = found ? { ...found, volumeAfterMm3: found.volumeAfterMm3 * volumeScale } : found;
     }
     const useSafe = destructive.length > 0 && policy === 'safe' && safe != null;
     const blocked = destructive.length > 0 && !force && !useSafe;
@@ -197,7 +201,9 @@ export async function simplifyMeshDetailed(
     };
     if (useSafe && safe) {
       // La segura se rehace con su tolerancia (Manifold es determinista: mismos triángulos que en la búsqueda).
+      // Se anula antes de rehacer: si `simplify` lanza, el `finally` no la libera dos veces.
       simplified.delete();
+      simplified = null;
       simplified = original.simplify(safe.toleranceMm / maxScale);
       report = withSafeApplied(report, safe);
     }

@@ -126,7 +126,8 @@ export function registerPlateTools(server: Pick<McpServer, 'registerTool'>, ctx:
         'parts are not touched; the parts of a split group stay together when they fit. With dryRun: true returns the plan ' +
         '(destination of each part: existing plate id, "implicit" or "new:N") without changing anything. Applying is one undo ' +
         'step and keeps the view mode (in assembly it moves the print poses). Returns placed, moved, unplaced (with reason), ' +
-        'skipped, platesUsed and platesCreated.',
+        'skipped, platesUsed and platesCreated. Write tool even with dryRun (blocked in read-only mode). byGroup needs the app ' +
+        'open: without the UI the scene has no groups and it answers a precondition error.',
       inputSchema: {
         ids: objectIds.optional().describe('Parts to arrange (default: all).'),
         criterion: z.enum(ARRANGE_CRITERIA as [string, ...string[]]).optional()

@@ -13,6 +13,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { t } from '../i18n';
 import { BRAND } from '../brand';
 import { useKuraStore } from '../store/useKuraStore';
+import { BRAND_ICON } from '../brandAssets';
 
 type SplashPhase = 'visible' | 'leaving' | 'done';
 
@@ -85,7 +86,7 @@ export const SplashScreen: React.FC = () => {
       <div className="kura-splash-card">
         <div className="kura-splash-emblem-wrap">
           <img
-            src="/branding/kurra-studio-icono.svg"
+            src={BRAND_ICON}
             alt={t(language, 'app.emblemAlt', { name: BRAND.name })}
             className="kura-splash-emblem"
             width={112}
