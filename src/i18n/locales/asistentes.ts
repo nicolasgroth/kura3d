@@ -335,6 +335,7 @@ const ASISTENTES_TABLE = {
   'asis.cat.regalos': ['Llaveros y etiquetas', 'Keychains and tags', 'Schlüsselanhänger und Schilder', 'Porte-clés et étiquettes', 'कीचेन और टैग', '钥匙扣与标牌'],
   'asis.cat.hogar': ['Hogar y electricidad', 'Home and electrical', 'Haus und Elektro', 'Maison et électricité', 'घर और बिजली', '家居与电气'],
   'asis.cat.otros': ['Otros', 'Other', 'Sonstiges', 'Autres', 'अन्य', '其他'],
+  'asis.slider.name': ['Deslizador de {label}', 'Slider for {label}', 'Schieberegler für {label}', 'Curseur pour {label}', '{label} का स्लाइडर', '{label}滑块'],
   'asis.slider.tip': [
     'Desliza para ajustar «{label}» (flechas: paso; Re Pág / Av Pág: salto grande)',
     'Slide to adjust “{label}” (arrows: step; Page Up / Page Down: big jump)',
