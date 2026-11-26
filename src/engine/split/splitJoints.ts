@@ -330,7 +330,7 @@ export async function buildJoint(wasm: ManifoldToplevel, j: JointInput, warnings
     const glued = islandInfo.filter((i) => i.kind === 'glue').length;
     // Unas islas con conector o solape y otras no: esas partes son solo para pegar
     if (kind !== 'glue' && glued > 0) {
-      const thinnest = Math.min(...islandInfo.filter((i) => i.kind === 'glue').map((i) => i.minWidthMm));
+      const thinnest = Math.min(...islandInfo.filter((i) => i.kind === 'glue').map((i) => i.usableWidthMm ?? i.minWidthMm));
       warnings.push(engineWarning('SPLIT_JOINT_PARTIAL_GLUE', { ...pair, glued, total: islandInfo.length, width: thinnest }));
     }
     // Marca de pareja

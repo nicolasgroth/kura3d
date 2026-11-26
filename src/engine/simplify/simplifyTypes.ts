@@ -64,11 +64,12 @@ export interface SimplifyRequestedResult {
  * - `holes_lost`: se cerró algún agujero pasante (el género bajó) y la desviación supera
  *   `SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM` (si no, eran túneles que no se imprimen: solo se avisa);
  * - `volume_changed`: |ΔV| supera `SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct`;
- * - `deviation_high`: la desviación supera el tope relativo al tamaño de la pieza.
+ * - `deviation_high`: la desviación supera `SIMPLIFY_DESTRUCTIVE_LIMITS.deviationRelMinSide` del lado menor de la caja;
+ * - `too_few_triangles`: quedan menos triángulos que `simplifyMinTriangles(género del resultado)`.
  */
-export type SimplifyDestructiveReason = 'holes_lost' | 'volume_changed' | 'deviation_high';
+export type SimplifyDestructiveReason = 'holes_lost' | 'volume_changed' | 'deviation_high' | 'too_few_triangles';
 
-export const SIMPLIFY_DESTRUCTIVE_REASONS: readonly SimplifyDestructiveReason[] = ['holes_lost', 'volume_changed', 'deviation_high'];
+export const SIMPLIFY_DESTRUCTIVE_REASONS: readonly SimplifyDestructiveReason[] = ['holes_lost', 'volume_changed', 'deviation_high', 'too_few_triangles'];
 
 /** Alternativa segura: el candidato con menos triángulos que no es destructivo (se aplica con «Por tolerancia»). */
 export interface SimplifySafeAlternative {
@@ -81,17 +82,6 @@ export interface SimplifySafeAlternative {
   maxDeviationMm: number;
 }
 
-/**
- * Tope de lo «destructivo» (criterio delegado por el autor, 25-nov-2026). Sobre esto el resultado no se aplica en
- * silencio: se ofrece la alternativa segura y, aparte, aplicarlo igual.
- * - `volumePct` 5 %: diez veces el umbral de aviso (0,5 %); los casos medidos que destruyen la pieza (placa de 3 mm
- *   que queda de 1 mm, −66,6 %; toro al 2 %, −99,4 %) están muy por encima, y una esfera de 64 lados a 2 mm de
- *   tolerancia (deformación visible pero reconocible) queda en el orden de 1–3 %.
- * - Desviación: el mayor de `deviationMinMm` (1 mm, unas 5 capas de 0,2 mm: deja de ser la misma pieza al
- *   ensamblar) y `deviationRelDiag` (1 % de la diagonal de la caja: en una pieza de 300 mm, 1 mm es ruido).
- * - `safeSearchIterations`: llamadas a `simplify` de la bisección que busca la alternativa segura (la razón entre
- *   la tolerancia mínima y la destructiva suele ser ≤ 10⁴: 8 pasos la acotan a ~±8 %).
- */
 /**
  * Perder agujeros pasantes (`holes_lost`) es destructivo solo si la desviación medida supera este valor (mm de
  * mundo). Por debajo los túneles que se cerraron eran más finos que lo que una impresora FDM resuelve (boquilla de
@@ -109,18 +99,71 @@ export const SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM = 0.2;
  */
 export const SIMPLIFY_SAFE_MIN_REDUCTION_REL = 0.1;
 
-export const SIMPLIFY_DESTRUCTIVE_LIMITS = {
+/**
+ * Simplificar tiene DOS niveles (decisión del orquestador, 26-nov-2026, QA 25-h): en «Por cantidad» y «Por
+ * tolerancia», pedir pocos triángulos a una malla gruesa cambia la forma de manera visible y eso es lo que el usuario
+ * pidió. Eso solo se AVISA (`SIMPLIFY_NOTICE_LIMITS`); lo que se BLOQUEA (o se cambia por la versión segura) es lo que
+ * estropea la pieza (`SIMPLIFY_DESTRUCTIVE_LIMITS`).
+ *
+ * Aviso (se aplica lo pedido y el informe lo advierte con `volume_changed` / `deviation_high`):
+ * - `volumePct` 5 %: una esfera de 64 lados a 2 mm de tolerancia (deformación visible pero reconocible) queda en
+ *   1–3 %; sobre 5 % el cambio ya se nota en la pieza impresa.
+ * - Desviación: el mayor de `deviationMinMm` (1 mm, unas 5 capas de 0,2 mm) y `deviationRelDiag` (1 % de la
+ *   diagonal de la caja: en una pieza de 300 mm, 1 mm es ruido).
+ */
+export const SIMPLIFY_NOTICE_LIMITS = {
   volumePct: 5,
   deviationMinMm: 1,
   deviationRelDiag: 0.01,
+} as const;
+
+/**
+ * Destructivo (no se aplica lo pedido: versión segura útil o bloqueo, según `onDestructive`). Medido el 26-nov-2026
+ * con el motor real (`simplifyDestructive.test.ts`), «desv./lado menor» = desviación sobre el menor lado de la caja:
+ *
+ * | pieza                        | pedido   | volumen | desviación | desv./lado menor | resultado          |
+ * |------------------------------|----------|---------|------------|------------------|--------------------|
+ * | esfera r25 (512)             | 50 %     | −5,4 %  | 1,70 mm    | 3,4 %            | se aplica con aviso |
+ * | esfera r25 (512)             | 25 %     | −15 %   | 2,94 mm    | 5,9 %            | se aplica con aviso |
+ * | cilindro r20 h40 (QA)        | 25 %     | −16 %   | 4,4 mm     | 11 %             | se aplica con aviso |
+ * | toro 14/4 (3456)             | 25 %     | −2,5 %  | 0,48 mm    | 6,1 %            | se aplica           |
+ * | placa 60×40×3, 3 agujeros    | 12–72 t. | +3,1 %  | 2,19 mm    | 73 %             | destructivo        |
+ * | toro 14/4 (3456)             | 2 %      | −53 %   | 3,80 mm    | 48 %             | destructivo        |
+ * | esfera r25 (512)             | 10 %     | −48 %   | 7,70 mm    | 15 %             | destructivo        |
+ *
+ * - `volumePct` 25 %: los casos que se aplican llegan a −16 %; los que destruyen la pieza (toro al 2 %, esfera al
+ *   10 %, placa a 12 triángulos sin conservar agujeros: −66 %) pasan de −45 %. 25 % deja margen a los dos lados.
+ * - `deviationRelMinSide` 25 %: la desviación respecto del lado menor de la caja (el espesor) es lo que separa la
+ *   placa de 3 mm que queda deformada (2,19 mm, 73 %) de la esfera o el cilindro reducidos (≤ 11 %). La diagonal no
+ *   sirve: la placa (3,1 %) y la esfera al 25 % (3,4 %) quedan iguales. Mover la superficie más de un cuarto del
+ *   espesor cambia ese espesor hasta la mitad (las dos caras se mueven).
+ * - `minTrianglesBase` 4 y `minTrianglesPerHole` 20 (con agujeros: `minTrianglesHoledBase` 12 + 20 por agujero): un
+ *   tetraedro es el sólido cerrado más simple; una caja con un agujero cuadrado pasante necesita 32 triángulos (8 de
+ *   paredes de fuera, 8 de dentro y dos coronas de 8), y cada agujero más agrega del orden de 20. Menos que eso ya no
+ *   es la pieza con sus agujeros (ver `simplifyMinTriangles`).
+ * - `safeSearchIterations`: llamadas a `simplify` de la bisección que busca la alternativa segura (la razón entre
+ *   la tolerancia mínima y la destructiva suele ser ≤ 10⁴: 8 pasos la acotan a ~±8 %).
+ */
+export const SIMPLIFY_DESTRUCTIVE_LIMITS = {
+  volumePct: 25,
+  deviationRelMinSide: 0.25,
+  minTrianglesBase: 4,
+  minTrianglesHoledBase: 12,
+  minTrianglesPerHole: 20,
   safeSearchIterations: 8,
 } as const;
+
+/** Mínimo geométrico de triángulos para un sólido de género `genus` (ver `SIMPLIFY_DESTRUCTIVE_LIMITS`). */
+export function simplifyMinTriangles(genus: number): number {
+  const D = SIMPLIFY_DESTRUCTIVE_LIMITS;
+  return genus > 0 ? D.minTrianglesHoledBase + D.minTrianglesPerHole * genus : D.minTrianglesBase;
+}
 
 /**
  * Avisos del informe (la interfaz los traduce con `simplify.warn.<código>`):
  * - `genus_changed`: se abrió o cerró un agujero (cambió la forma);
- * - `volume_changed`: el volumen cambió más que el umbral;
- * - `deviation_high`: la superficie se movió más que el umbral (muestreado);
+ * - `volume_changed`: el volumen cambió más que `SIMPLIFY_NOTICE_LIMITS.volumePct` (en «Sin pérdida», su límite);
+ * - `deviation_high`: la superficie se movió más que el tope de aviso de la pieza (muestreado);
  * - `target_not_reached`: «Por cantidad» no llegó al objetivo (se entrega lo logrado);
  * - `no_reduction`: no hubo triángulos que quitar (no se aplica).
  */
@@ -147,6 +190,16 @@ export interface SimplifyTargetInfo {
    * los perdía); queda dentro de `genusSlackRel` sobre el objetivo.
    */
   genusPreserved?: boolean;
+}
+
+/** Topes de aviso y de bloqueo calculados para una pieza (mm de mundo). */
+export interface SimplifyPartLimits {
+  noticeVolumePct: number;
+  noticeDeviationMm: number;
+  destructiveVolumePct: number;
+  destructiveDeviationMm: number;
+  minSideMm: number;
+  minTriangles: number;
 }
 
 /** Informe antes → después. Volúmenes en mm³ locales (la escala no cambia el %); desviación en mm de mundo. */
@@ -188,7 +241,13 @@ export interface SimplifyReport {
    * un resultado destructivo no se aplica (`applied: false`).
    */
   destructive?: SimplifyDestructiveReason[];
-  /** Tope de desviación destructiva para esta pieza (mm de mundo); viene junto con `destructive` no vacío. */
+  /**
+   * Topes de esta pieza (mm de mundo), la única fuente de los números que muestra el informe: `notice` es el de aviso
+   * (`deviation_high` en `warnings`), `destructive` el de bloqueo (`deviation_high` en `destructive`), `minSideMm` el
+   * lado menor de la caja del que sale, y `minTriangles` el mínimo geométrico. No viene en «Sin pérdida».
+   */
+  limits?: SimplifyPartLimits;
+  /** Tope de desviación destructiva para esta pieza (mm de mundo) = `limits.destructiveDeviationMm` (compatibilidad). */
   destructiveLimitMm?: number;
   /** Solo si `destructive` no está vacío: la mejor alternativa segura hallada, o null si no hay ninguna. */
   safe?: SimplifySafeAlternative | null;
@@ -218,11 +277,8 @@ export const LOSSLESS_LIMITS = {
 export type LosslessLimits = { maxVolumePct: number; maxDeviationMm: number };
 
 /**
- * Avisos de cualquier modo y topes de trabajo.
- * - `volumePct` 0,5 %: a 0,01 mm el peor modelo cambió 0,23 %; a 0,1 mm se llegó a −2,8 % con cilindros y texto
- *   achatados. Sobre 0,5 % el cambio ya no es del régimen «fiel».
- * - `deviationMm` 0,1 mm: el orden de una capa o de la precisión de una impresora FDM; a 0,1 mm de tolerancia
- *   las desviaciones medidas fueron 0,09–1,48 mm (deformación visible).
+ * Topes de trabajo de la verificación y de la búsqueda (los umbrales de aviso están en `SIMPLIFY_NOTICE_LIMITS`; los
+ * de 0,5 % y 0,1 mm que hubo aquí se quitaron el 26-nov-2026: daban un segundo juego de límites en el mismo informe).
  * - `maxDeviationSamples`: vértices y centroides por sentido (el total es hasta 4×); la medición usó 150 000 y
  *   aquí se baja para que medir no cueste más que simplificar en mallas de millones.
  * - Búsqueda por cantidad: hasta 16 llamadas a `simplify` o 30 s; se acepta quedar hasta 2 % bajo el objetivo.
@@ -231,8 +287,6 @@ export type LosslessLimits = { maxVolumePct: number; maxDeviationMm: number };
  *   buscan hasta `genusExtraIterations` tolerancias más en el borde donde cambia el género.
  */
 export const SIMPLIFY_WARN_LIMITS = {
-  volumePct: 0.5,
-  deviationMm: 0.1,
   maxDeviationSamples: 25_000,
   targetMaxIterations: 16,
   targetMaxMs: 30_000,

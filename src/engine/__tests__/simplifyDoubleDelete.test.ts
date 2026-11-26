@@ -43,8 +43,9 @@ vi.mock('../simplify/simplifyDeviation', () => ({
 }));
 vi.mock('../simplify/simplifyGenus', () => ({ bodyGenus: () => 0 }));
 vi.mock('../simplify/simplifySafety', () => ({
-  worldDiagonalMm: () => 100,
-  destructiveDeviationMm: () => 1,
+  worldPartSize: () => ({ diagMm: 100, minSideMm: 20 }),
+  partLimits: () => ({ noticeVolumePct: 5, noticeDeviationMm: 1, destructiveVolumePct: 25, destructiveDeviationMm: 5, minSideMm: 20, minTriangles: 4 }),
+  noticeReasons: () => [],
   destructiveReasons: () => ['deviation_high'],
   findSafeAlternative: () => ({ toleranceMm: 0.05, triangles: 80, volumeAfterMm3: 990, volumeChangePct: -1, genusAfter: 0, maxDeviationMm: 0.1 }),
 }));

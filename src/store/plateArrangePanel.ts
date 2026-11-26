@@ -11,7 +11,7 @@
  */
 
 import { create } from 'zustand';
-import { ARRANGE_DEFAULTS, type ArrangeCriterion, type ArrangeOptions, type ArrangeOrient, type ArrangeReport } from '../core/scene/plateArrangeTypes';
+import { ARRANGE_DEFAULTS, newPlatesUsed, type ArrangeCriterion, type ArrangeOptions, type ArrangeOrient, type ArrangeReport } from '../core/scene/plateArrangeTypes';
 import { projectBed } from '../core/scene/activePlateBed';
 import { assignable } from '../core/scene/plates';
 import { t } from '../i18n';
@@ -181,7 +181,11 @@ export async function applyPlateArrange(): Promise<boolean> {
   // En Armado o Libre las placas no se ven: se pasa a Imprimir (no agrega paso de deshacer).
   const switched = !wasPrint && after.setViewMode('print') === 'changed';
   const state = useKuraStore.getState();
-  const text = t(language, 'plates.arrangeDlg.toast.done', { count: report.placed.length, plates: report.platesUsed.length, created: report.platesCreated });
+  // «Nuevas» = nuevas que reciben piezas (≤ usadas); la implícita que pasa a «Placa 1» no es nueva para el usuario.
+  const created = newPlatesUsed(report);
+  const text = created > 0
+    ? t(language, 'plates.arrangeDlg.toast.done', { count: report.placed.length, plates: report.platesUsed.length, created })
+    : t(language, 'plates.arrangeDlg.toast.doneNoNew', { count: report.placed.length, plates: report.platesUsed.length });
   state.addToast(
     switched ? `${text} ${t(language, 'plates.arrangeDlg.toast.switched')}` : text, 'success',
     undoToastAction(t(language, 'toast.undo'), () => useKuraStore.getState().past, () => useKuraStore.getState().undo(), true),

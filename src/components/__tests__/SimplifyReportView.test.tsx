@@ -26,7 +26,35 @@ const BLOCKED: SimplifyReport = {
   safe: { toleranceMm: 0.25, triangles: 300, volumeAfterMm3: 990, volumeChangePct: -1, genusAfter: 1, maxDeviationMm: 0.2 },
 };
 
+const NOTICE: SimplifyReport = {
+  ...BASE, mode: 'target', objectId: 's1', applied: true, appliedVariant: 'requested', trianglesBefore: 512, trianglesAfter: 248,
+  volumeChangePct: -5.4, maxDeviationMm: 1.7, warnings: ['volume_changed', 'deviation_high'], destructive: [],
+  limits: { noticeVolumePct: 5, noticeDeviationMm: 1, destructiveVolumePct: 25, destructiveDeviationMm: 12.5, minSideMm: 50, minTriangles: 4 },
+};
+
 describe('SimplifyReportView', () => {
+  it('aviso (no destructivo): aplicado con el aviso en negrita y los límites de aviso, sin los de bloqueo', () => {
+    render(<SimplifyReportView report={NOTICE} language="es" />);
+    expect(screen.getByTestId('simplify-notice').textContent).toContain('Se aplicó lo pedido, con aviso');
+    const warn = screen.getByTestId('simplify-report-warnings').textContent ?? '';
+    expect(warn).toContain('El volumen cambió -5,4 % (se avisa desde 5 %).');
+    expect(warn).toContain('La superficie se movió hasta 1,7 mm (se avisa desde 1 mm).');
+    expect(warn).not.toMatch(/0,5 %|0,1 mm|tope/);
+    expect(screen.queryByTestId('simplify-blocked')).toBeNull();
+    expect(screen.queryByTestId('simplify-apply-anyway')).toBeNull();
+  });
+
+  it('motivo destructivo de desviación: el tope sale de un cuarto del lado menor de la pieza', () => {
+    const plate: SimplifyReport = {
+      ...NOTICE, applied: false, appliedVariant: 'none', genusBefore: 3, genusAfter: 3, volumeChangePct: 3.1, maxDeviationMm: 2.19,
+      warnings: ['deviation_high'], destructive: ['deviation_high'], destructiveLimitMm: 0.75, safe: null,
+      limits: { noticeVolumePct: 5, noticeDeviationMm: 1, destructiveVolumePct: 25, destructiveDeviationMm: 0.75, minSideMm: 3, minTriangles: 72 },
+    };
+    render(<SimplifyReportView report={plate} language="es" />);
+    expect(screen.getByTestId('simplify-blocked').textContent).toContain('la superficie se mueve 2,19 mm (tope 0,75 mm: un cuarto del lado menor de la pieza, 3 mm).');
+    expect(screen.queryByTestId('simplify-notice')).toBeNull();
+  });
+
   it('sin aplicar: solo triángulos y el aviso, sin volumen ni tolerancia', () => {
     render(<SimplifyReportView report={BASE} language="es" />);
     const text = screen.getByTestId('simplify-report').textContent ?? '';

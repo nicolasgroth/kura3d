@@ -44,7 +44,12 @@ describe('firmeza por unión antes de dividir', () => {
     openAll(container);
     const row = screen.getByTestId('split-firmness-1');
     expect(row.textContent).toContain('Para pegar');
-    expect(row.textContent).toMatch(/mide 2 mm de ancho/);
+    // Ancho útil = diámetro del mayor círculo que cabe (sección de 4 mm → 4 mm; antes decía 2, la mitad).
+    expect(row.textContent).toContain('tiene 4 mm de ancho útil (el círculo más grande que cabe en ella)');
+    // Cada unión con su propio nombre accesible (no se confunde con el botón general «en todas las uniones»).
+    const names = screen.getAllByRole('button', { name: /^Usar solape de borde: arregla la unión/ }).map((x) => x.getAttribute('aria-label'));
+    expect(names).toContain('Usar solape de borde: arregla la unión 1 y se aplica a todas');
+    expect(new Set(names).size).toBe(names.length);
     fireEvent.click(row.querySelector('button')!);
     expect(onUseLap).toHaveBeenCalledTimes(1);
   });

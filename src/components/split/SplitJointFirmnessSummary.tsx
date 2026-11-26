@@ -115,7 +115,15 @@ export const SplitJointFirmnessSummary: React.FC<SplitJointFirmnessSummaryProps>
                           </button>
                         )}
                         {canLap && (
-                          <button type="button" className="kura-btn kura-btn-sm" title={t(language, 'jointFirmness.action.lapTip')} onClick={onUseLap}>
+                          <button
+                            type="button"
+                            className="kura-btn kura-btn-sm"
+                            title={t(language, 'jointFirmness.action.lapTip')}
+                            // Nombre propio por unión (el botón general dice «en todas las uniones»); empieza con el texto visible.
+                            aria-label={t(language, 'jointFirmness.action.lapFor', { label: j.label })}
+                            data-testid={`split-firmness-lap-${j.label}`}
+                            onClick={onUseLap}
+                          >
                             {t(language, 'jointFirmness.action.lap')}
                           </button>
                         )}

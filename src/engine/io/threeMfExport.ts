@@ -77,6 +77,30 @@ function scenePlates(printed: readonly SceneObject[], groups: readonly SceneGrou
   return plates.size >= 2 ? [...plates.values()] : null;
 }
 
+/** Datos del proyecto que viajan como metadatos estándar del 3MF (`Title`, `Description`, `Designer`). */
+export interface ThreeMfProjectMeta {
+  /** Nombre del proyecto. */
+  title?: string | null;
+  description?: string | null;
+  /** Autor escrito por la persona. */
+  designer?: string | null;
+}
+
+/**
+ * Líneas `<metadata name="…">` del modelo para los datos del proyecto, escapadas. Un campo vacío (o solo espacios)
+ * no se escribe: sin datos, el archivo queda byte a byte igual que antes.
+ */
+export function projectMetadataXml(meta: ThreeMfProjectMeta | undefined): string {
+  if (!meta) return '';
+  const rows: Array<[string, string | null | undefined]> = [['Title', meta.title], ['Description', meta.description], ['Designer', meta.designer]];
+  let out = '';
+  for (const [name, value] of rows) {
+    const text = value?.trim();
+    if (text) out += `  <metadata name="${name}">${escapeXml(text)}</metadata>\n`;
+  }
+  return out;
+}
+
 /** Factores de conversión de milímetros hacia la unidad destino. */
 const UNIT_TO_3MF: Record<UnitSystem, { xmlName: string; scaleFromMm: number }> = {
   mm: { xmlName: 'millimeter', scaleFromMm: 1 },
@@ -145,7 +169,8 @@ export const num = (n: number) => {
  * `_deprecatedSlicerTarget` se acepta e ignora para no romper a quienes aún lo pasan (p. ej. el servidor MCP).
  * `brand` (la marca de la app, desde quien llama) firma los metadatos `Application`/`Organization`
  * y el nombre de la placa; sin ella se omiten. `plateLayout` (placas reales) reparte lo impreso en las placas del
- * laminador (Bambu Studio / OrcaSlicer) y manda sobre los grupos.
+ * laminador (Bambu Studio / OrcaSlicer) y manda sobre los grupos. `projectMeta` (nombre, descripción y autor del
+ * proyecto) va como metadatos estándar `Title` / `Description` / `Designer`; los vacíos se omiten.
  */
 export function exportSceneTo3MF(
   objects: SceneObject[],
@@ -154,6 +179,7 @@ export function exportSceneTo3MF(
   brand?: ExportBrand,
   sceneOptions?: ThreeMfSceneOptions,
   plateLayout?: ThreeMfPlateLayout,
+  projectMeta?: ThreeMfProjectMeta,
 ): Uint8Array {
   const solidObjects = exportableObjects(objects);
   // Escena completa: lo no impreso (oculto, negativos) se escribe después, sin ítem de build. Las
@@ -193,6 +219,7 @@ export function exportSceneTo3MF(
     `<model unit="${unitSpec.xmlName}" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n` +
     (signature ? `  <metadata name="Application">${escapeXml(signature)}</metadata>\n` : '') +
     (brand?.organization ? `  <metadata name="Organization">${escapeXml(brand.organization)}</metadata>\n` : '') +
+    projectMetadataXml(projectMeta) +
     `  <resources>\n    <basematerials id="1">\n`,
   );
   palette.forEach((hex, idx) => {

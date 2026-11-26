@@ -138,7 +138,12 @@ test('sección fina (~4 mm): «Para pegar» con motivo y «Usar solape de borde�
   const det = await abrirDetalle(page);
   const dt = (await det.innerText()).replace(/\s+/g, ' ');
   console.log('QA25H fina detalle:', dt.slice(0, 600));
-  const lap = page.getByRole('button', { name: 'Usar solape de borde' }).first();
+  // Nombres accesibles distintos: el general dice «en todas las uniones» y cada unión el suyo («… la unión N …»).
+  const lapNames = await page.getByRole('button', { name: /^Usar solape de borde/ }).evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? e.textContent?.trim()));
+  console.log('QA25H nombres solape:', lapNames);
+  expect(new Set(lapNames).size).toBe(lapNames.length);
+  expect(dt).toMatch(/tiene 4 mm de ancho útil/);
+  const lap = page.getByRole('button', { name: /^Usar solape de borde/ }).first();
   await expect(lap).toBeVisible();
   await lap.click();
   await esperarCalculo(page);

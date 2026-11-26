@@ -100,7 +100,7 @@ describe('panel Repartir en placas', () => {
     render(<PlateArrangePanel />);
     act(() => void openPlateArrangePanel());
     await waitFor(() => expect(panel().status).toBe('ready'));
-    expect(screen.getByTestId('arrange-summary').textContent).toBe('Se usarán 2 placas: 2 nuevas. 2 piezas colocadas.');
+    expect(screen.getByTestId('arrange-summary').textContent).toBe('Se usarán 2 placas (1 nueva). 2 piezas colocadas.');
     expect(screen.getByTestId('arrange-unplaced').textContent).toContain('Caja C: es más grande que la cama');
     expect(screen.getByTestId('arrange-skipped').textContent).toContain('Caja B: está en una placa bloqueada');
     expect(screen.getByTestId('arrange-split').textContent).toContain('queda partido en 2 placas');

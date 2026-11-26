@@ -1345,7 +1345,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'split.glueOptions': 'कनेक्टर पाने के लिए:',
   'split.glueLowerMin': 'न्यूनतम दीवार घटाएँ',
   'split.glueLowerMinTip': '«कनेक्टर हेतु न्यूनतम दीवार» फ़ील्ड पर ले जाता है: कम मान से पतले जोड़ों में भी कनेक्टर लगेगा',
-  'split.glueUseLap': 'किनारा ओवरलैप इस्तेमाल करें',
+  'split.glueUseLap': 'सभी जोड़ों में किनारा ओवरलैप इस्तेमाल करें',
   'split.glueUseLapTip': 'जोड़ को किनारा ओवरलैप में बदलता है, जो पतली दीवार पर काम करता है',
   'split.planePickLabel': 'तल {axis}{n} चुनें',
   'split.planePickTip': 'तल {axis}{n} चुनें: इसे व्यूपोर्ट में हाइलाइट करता है और फ़ोकस इस बटन या व्यूपोर्ट पर हो तो ↑/↓ (Shift: ×10) से खिसकाता है',

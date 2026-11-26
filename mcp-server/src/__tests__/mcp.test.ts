@@ -87,6 +87,8 @@ const EXPECTED_TOOLS = [
   'kura_arrange_on_plates',
   'kura_set_plate_bed',
   'kura_set_layout',
+  'kura_get_project_info',
+  'kura_set_project_info',
 ];
 
 /** Token de prueba con longitud suficiente para habilitar el puente (mínimo 16). */
@@ -135,8 +137,8 @@ describe('Kurra Studio MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(66);
-    expect(toolNames).toHaveLength(66);
+    expect(EXPECTED_TOOLS).toHaveLength(68);
+    expect(toolNames).toHaveLength(68);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }
