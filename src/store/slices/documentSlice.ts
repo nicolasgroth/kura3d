@@ -16,7 +16,8 @@ import { normalizeFileName, openProjectFile, PROJECT_NAME_MAX, saveProjectFile, 
 import { moveRecoveryDraft } from '../../project/projectRecoveryStorage';
 import { loadRecoveryDocument } from '../../project/recoveryDraftStore';
 import type { ProjectDocument } from '../../project/projectSchema';
-import { cleanInfoText, compactInfo, infoNow, type ProjectInfo } from '../../project/projectInfo';
+import { compactInfo, infoNow, type ProjectInfo } from '../../project/projectInfo';
+import { applyProjectInfoPatch } from '../../project/projectInfoPatch';
 import { revealProjectNotes } from '../../utils/projectNotesFocus';
 import { captureProject, hasProjectChanged, makeProjectDraftId } from '../projectDocument';
 import type { StoreContext } from '../storeContext';
@@ -128,16 +129,8 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
 
     setProjectInfo: (patch) => {
       if (get().projectBusy) return false;
-      const current = get().projectInfo;
-      const next: Omit<ProjectInfo, 'workSeconds'> = { ...current };
-      for (const field of ['description', 'notes', 'author'] as const) {
-        const value = patch[field];
-        if (typeof value !== 'string') continue;
-        const clean = cleanInfoText(value, field);
-        if (clean) next[field] = clean;
-        else delete next[field];
-      }
-      const changed = (['description', 'notes', 'author'] as const).some((f) => (next[f] ?? '') !== (current[f] ?? ''));
+      // Misma regla que el modo sin interfaz del servidor MCP (`applyProjectInfoPatch`).
+      const { next, changed } = applyProjectInfoPatch(get().projectInfo, patch);
       if (changed) set({ projectInfo: next });
       return changed;
     },

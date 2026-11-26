@@ -6,7 +6,8 @@
  * el informe de lo que se aplicó después. Si se aplicó la versión segura en lugar de lo pedido, lo dice y ofrece
  * «Aplicar de todos modos» (deshace la segura y aplica lo pedido: queda un solo paso). Con `onUndo` trae «Deshacer»
  * (mientras ese paso siga siendo el último). Con `preview` es el informe de la vista previa: mismo contenido, sin
- * botones que apliquen ni «Deshacer».
+ * botones que apliquen ni «Deshacer». Si lo pedido se aplicó con aviso de forma (volumen o desviación sobre el tope de
+ * aviso, sin ser destructivo), lo dice en negrita antes de la lista de avisos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -16,7 +17,7 @@ import React, { useState } from 'react';
 import type { SimplifyReport, SimplifyRequest } from '../../engine/simplify';
 import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
-import { simplifyWarningSentence } from '../../i18n/simplifyWarnings';
+import { simplifyHasShapeNotice, simplifyWarningSentence } from '../../i18n/simplifyWarnings';
 import { undoToastAction } from '../../store/toastActionState';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { LanguageCode } from '../../types/kura';
@@ -67,7 +68,12 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
     <div className="kura-simplify-report" role="status" aria-live="polite" data-testid="simplify-report">
       <strong className="kura-field-label">{t(language, preview ? 'simplify.preview.title' : 'simplify.report.title')}</strong>
       {!report.applied && !blocked && <p className="kura-cut-hint">{t(language, 'simplify.report.notApplied')}</p>}
-      {preview && report.applied && !safeApplied && <p className="kura-cut-hint">{t(language, 'simplify.preview.wouldApply')}</p>}
+      {preview && report.applied && !safeApplied && !simplifyHasShapeNotice(report) && <p className="kura-cut-hint">{t(language, 'simplify.preview.wouldApply')}</p>}
+      {simplifyHasShapeNotice(report) && (
+        <p className="kura-cut-hint" data-testid="simplify-notice">
+          <strong>{t(language, preview ? 'simplify.preview.wouldNotice' : 'simplify.report.notice')}</strong>
+        </p>
+      )}
       {(blocked || safeApplied) && (
         <SimplifyBlockedChoice report={report} language={language} busy={busy || !report.objectId} onApply={onApply} preview={preview} />
       )}

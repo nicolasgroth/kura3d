@@ -17,7 +17,7 @@ import { EngineError, requireOperationRange } from '../engineErrors';
 import { OPERATION_RANGES } from '../operationLimits';
 import { bvhOf, manifoldMesh, sampledDeviation } from './simplifyDeviation';
 import { bodyGenus } from './simplifyGenus';
-import { destructiveDeviationMm, destructiveReasons, findSafeAlternative, worldDiagonalMm } from './simplifySafety';
+import { destructiveReasons, findSafeAlternative, noticeReasons, partLimits, worldPartSize, type PartSize } from './simplifySafety';
 import { searchTargetTolerance, throwIfAborted } from './simplifyTarget';
 import {
   LOSSLESS_LIMITS,
@@ -49,9 +49,14 @@ export function resolveTargetTriangles(request: Extract<SimplifyRequest, { mode:
   throw new EngineError('INVALID_PARAMETER', { name: 'targetTriangles', value: 'undefined', min: R.targetTriangles.min, max: R.targetTriangles.max });
 }
 
-/** Avisos por umbral, comunes a los tres modos. */
-function thresholdWarnings(r: Pick<SimplifyReport, 'genusBefore' | 'genusAfter' | 'volumeChangePct' | 'maxDeviationMm'>,
-  limits: { maxVolumePct: number; maxDeviationMm: number }): SimplifyWarningCode[] {
+/** Medidas que deciden los avisos (desviación en mm de mundo). */
+type Measured = Pick<SimplifyReport, 'genusBefore' | 'genusAfter' | 'volumeChangePct' | 'maxDeviationMm'>;
+
+/**
+ * Avisos por umbral. «Sin pérdida» usa sus límites estrictos (`LOSSLESS_LIMITS`); «Por tolerancia» y «Por cantidad»
+ * los de aviso de la pieza (`SIMPLIFY_NOTICE_LIMITS`): pedir pocos triángulos cambia la forma y eso se advierte.
+ */
+function thresholdWarnings(r: Measured, limits: { maxVolumePct: number; maxDeviationMm: number }): SimplifyWarningCode[] {
   const out: SimplifyWarningCode[] = [];
   if (r.genusAfter !== r.genusBefore) out.push('genus_changed');
   if (Math.abs(r.volumeChangePct) > limits.maxVolumePct) out.push('volume_changed');
@@ -59,12 +64,18 @@ function thresholdWarnings(r: Pick<SimplifyReport, 'genusBefore' | 'genusAfter' 
   return out;
 }
 
+/** Avisos del nivel «aviso» (modos con pérdida) para una pieza de tamaño `size`. */
+function noticeWarnings(r: Measured, size: PartSize): SimplifyWarningCode[] {
+  const out: SimplifyWarningCode[] = r.genusAfter !== r.genusBefore ? ['genus_changed'] : [];
+  return [...out, ...noticeReasons(r, size.diagMm)];
+}
+
 /**
  * Informe de la versión segura aplicada en lugar de lo pedido: las medidas pasan a ser las de la segura y lo pedido
  * queda en `requested`. Los avisos se recalculan con la segura (sin `target_not_reached`: el informe ya dice que se
  * aplicó otra cantidad y por qué).
  */
-function withSafeApplied(r: SimplifyReport, safe: SimplifySafeAlternative): SimplifyReport {
+function withSafeApplied(r: SimplifyReport, safe: SimplifySafeAlternative, size: PartSize): SimplifyReport {
   const measured = {
     genusBefore: r.genusBefore,
     genusAfter: safe.genusAfter,
@@ -82,7 +93,7 @@ function withSafeApplied(r: SimplifyReport, safe: SimplifySafeAlternative): Simp
     trianglesAfter: safe.triangles,
     volumeAfterMm3: safe.volumeAfterMm3,
     ...measured,
-    warnings: thresholdWarnings(measured, { maxVolumePct: SIMPLIFY_WARN_LIMITS.volumePct, maxDeviationMm: SIMPLIFY_WARN_LIMITS.deviationMm }),
+    warnings: noticeWarnings(measured, size),
   };
 }
 
@@ -153,18 +164,20 @@ export async function simplifyMeshDetailed(
       volumeChangePct: volumeBeforeMm3 > 0 ? (100 * (volumeAfterMm3 - volumeBeforeMm3)) / volumeBeforeMm3 : 0,
       maxDeviationMm: deviation.maxMm * maxScale,
     };
-    const warnings = noReduction ? [] : thresholdWarnings(measured, { maxVolumePct: SIMPLIFY_WARN_LIMITS.volumePct, maxDeviationMm: SIMPLIFY_WARN_LIMITS.deviationMm });
+    const size = worldPartSize(original, obj.scale);
+    const lossless = request.mode === 'lossless';
+    const warnings = noReduction ? [] : lossless
+      ? thresholdWarnings(measured, opts.losslessLimits ?? LOSSLESS_LIMITS)
+      : noticeWarnings(measured, size);
     if (noReduction) warnings.push('no_reduction');
     if (target && !target.reached) warnings.push('target_not_reached');
-    const rejectedBy = request.mode === 'lossless' && !noReduction
-      ? thresholdWarnings(measured, opts.losslessLimits ?? LOSSLESS_LIMITS)
-      : [];
-    // «Sin pérdida» rechazado también se marca en los avisos (con los umbrales de aviso puede no figurar).
-    for (const code of rejectedBy) if (!warnings.includes(code)) warnings.push(code);
-    // Resultado destructivo (agujeros perdidos, volumen o desviación sobre el tope): según `onDestructive` se aplica
-    // la versión segura útil en su lugar (por defecto), no se aplica nada o se aplica igual.
-    const diagMm = worldDiagonalMm(original, obj.scale);
-    const destructive = noReduction || request.mode === 'lossless' ? [] : destructiveReasons(measured, diagMm);
+    // «Sin pérdida»: lo que pasó sus límites es a la vez aviso y motivo de rechazo (los mismos números).
+    const rejectedBy = lossless && !noReduction ? warnings.filter((c) => c !== 'target_not_reached') : [];
+    // Resultado destructivo (agujeros perdidos, volumen o desviación sobre el tope severo, o menos triángulos que el
+    // mínimo): según `onDestructive` se aplica la versión segura útil en su lugar (por defecto), no se aplica nada o se
+    // aplica igual. Lo que solo pasa los topes de aviso se aplica tal cual, con `warnings`.
+    const destructive = noReduction || lossless ? [] : destructiveReasons({ ...measured, triangles: trianglesAfter }, size);
+    const limits = lossless ? undefined : partLimits(size, measured.genusAfter);
     const policy = onDestructiveOf(request);
     const force = destructive.length > 0 && policy === 'force';
     let safe: SimplifySafeAlternative | null | undefined;
@@ -172,7 +185,7 @@ export async function simplifyMeshDetailed(
       // La búsqueda mide en la malla local (volumen local): se pasa a mundo al recibirla.
       const found = findSafeAlternative({
         original, originalMesh: originalMesh(), originalBvh: originalBvh(), trianglesBefore, genusBefore,
-        volumeBefore: volumeBeforeMm3 / volumeScale, maxScale, diagMm, minTolMm: R.toleranceMm.min, destructiveTolMm: toleranceMm,
+        volumeBefore: volumeBeforeMm3 / volumeScale, maxScale, size, minTolMm: R.toleranceMm.min, destructiveTolMm: toleranceMm,
       }, opts);
       safe = found ? { ...found, volumeAfterMm3: found.volumeAfterMm3 * volumeScale } : found;
     }
@@ -194,7 +207,8 @@ export async function simplifyMeshDetailed(
       rejectedBy,
       ...(target ? { target } : {}),
       destructive,
-      ...(destructive.length > 0 ? { destructiveLimitMm: destructiveDeviationMm(diagMm) } : {}),
+      ...(limits ? { limits } : {}),
+      ...(destructive.length > 0 && limits ? { destructiveLimitMm: limits.destructiveDeviationMm } : {}),
       ...(safe !== undefined ? { safe } : {}),
       ...(force ? { forced: true } : {}),
       ms: 0,
@@ -205,7 +219,7 @@ export async function simplifyMeshDetailed(
       simplified.delete();
       simplified = null;
       simplified = original.simplify(safe.toleranceMm / maxScale);
-      report = withSafeApplied(report, safe);
+      report = withSafeApplied(report, safe, size);
     }
     // Mismo sistema local que la original (sin recentrar ni apoyar en la cama): la pieza queda donde estaba en el
     // mundo con la misma posición, giro y escala.

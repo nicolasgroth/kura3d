@@ -188,6 +188,8 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_arrange_on_plates: 'arrange_on_plates',
   kura_set_plate_bed: 'set_plate_bed',
   kura_set_layout: 'set_layout',
+  kura_get_project_info: 'get_project_info',
+  kura_set_project_info: 'set_project_info',
 });
 
 /** Acceso de una herramienta MCP; herramientas no declaradas se tratan como escritura. */

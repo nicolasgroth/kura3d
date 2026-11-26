@@ -48,6 +48,7 @@ describe('simplify_mesh destructivo', () => {
     const torus = await store().createPrimitive('torus', { outerRadius: 14, tubeRadius: 4, segments: 48 });
     const id = torus!.id;
     const mesh = byId(id)!.mesh;
+    const byTris0 = byId(id)!.stats.triangles;
     const past = store().past.length;
     const dry = await run('simplify_mesh', { id, targetPercent: 2, dryRun: true });
     const d = dry.result as Result;
@@ -61,7 +62,10 @@ describe('simplify_mesh destructivo', () => {
     expect(r.applied).toBe(true);
     expect(r.appliedVariant).toBe('safe');
     expect(r.trianglesAfter).toBe(d.trianglesAfter);
-    expect(r.requested!.triangles).toBeLessThan(r.trianglesAfter);
+    // Lo pedido (destructivo: −53 % de volumen) queda guardado aparte; Manifold no es monótono y la segura puede
+    // incluso tener menos triángulos que lo pedido (278 contra 372 en este toro).
+    expect(r.requested!.triangles).not.toBe(r.trianglesAfter);
+    expect(r.trianglesAfter).toBeLessThan(byTris0 * 0.9);
     expect(byId(id)!.stats.triangles).toBe(r.safe!.triangles);
     expect(store().past.length).toBe(past + 1);
     store().undo();
@@ -72,13 +76,14 @@ describe('simplify_mesh destructivo', () => {
     const torus = await store().createPrimitive('torus', { outerRadius: 14, tubeRadius: 4, segments: 48 });
     const id = torus!.id;
     const mesh = byId(id)!.mesh;
+    const byTris0 = byId(id)!.stats.triangles;
     const past = store().past.length;
     const blocked = await run('simplify_mesh', { id, targetPercent: 2, onDestructive: 'block' });
     expect(blocked.ok).toBe(true);
     const r = blocked.result as Result;
     expect(r.applied).toBe(false);
     expect(r.destructive.length).toBeGreaterThan(0);
-    expect(r.safe?.triangles).toBeGreaterThan(r.trianglesAfter);
+    expect(r.safe?.triangles).toBeLessThan(byTris0 * 0.9);
     expect(byId(id)!.mesh).toBe(mesh);
     expect(store().past.length).toBe(past);
 

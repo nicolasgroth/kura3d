@@ -16,7 +16,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import { OperationPanel } from '../OperationPanel';
 import { EditProblem } from './EditProblem';
 import { RecipeForm } from './RecipeForm';
-import { RecipeList } from './RecipeList';
+import { RecipeGallery } from './RecipeGallery';
 import { findAssistantRecipe } from './recipeFormModel';
 
 export const AssistantsPanel: React.FC = () => {
@@ -51,7 +51,7 @@ export const AssistantsPanel: React.FC = () => {
           onCreated={closeAssistants}
         />
       ) : (
-        <RecipeList onOpen={showAssistantRecipe} />
+        <RecipeGallery onOpen={showAssistantRecipe} />
       )}
     </OperationPanel>
   );

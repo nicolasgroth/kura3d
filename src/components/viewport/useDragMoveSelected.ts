@@ -16,6 +16,8 @@ import { useThree, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { DRAG_MOVE_THRESHOLD_PX, dragBoundsForBed, dragBoundsForBeds, dragMoveDelta, dragSnapMm } from '../../core/scene/dragMovePlane';
+import { chooseDragPlane, constrainToDominantAxis, dragMoveDeltaVertical, dragPlaneUserLabel, type DragPlane } from '../../core/scene/dragPlaneChoice';
+import { poseBounds } from '../../core/scene/plateArrange';
 import { allBedSizes, placementBedSize } from '../../store/bedSize';
 import { viewModeOf, viewModeTraits } from '../../core/scene/viewMode';
 import { t } from '../../i18n';
@@ -38,6 +40,8 @@ interface Session {
   active: boolean;
   /** false: gesto de solo clic; al pasar el umbral se abandona sin tocar la cámara ni la selección. */
   moveEnabled: boolean;
+  /** Mínimo desplazamiento en Y (la pieza no baja de la cama en Imprimir); undefined = libre. */
+  minDeltaY?: number;
   rect: DOMRect | null;
   previousCursor: string;
   onClick: () => void;
@@ -47,6 +51,8 @@ interface PendingMove {
   x: number;
   y: number;
   ctrl: boolean;
+  shift: boolean;
+  alt: boolean;
 }
 
 export interface DragMoveOptions {
@@ -60,6 +66,17 @@ export interface DragMoveApi {
 
 const ZERO: Vec3 = [0, 0, 0];
 
+/** Desplazamiento mínimo en Y para que la pieza más baja no pase de la cama (0 si ya estaba en o bajo la cama). */
+function floorDeltaY(state: ReturnType<typeof useKuraStore.getState>, baseline: Baseline): number | undefined {
+  let lowest = Infinity;
+  for (const b of baseline) {
+    const o = state.objects.find((x) => x.id === b.id);
+    const bb = o?.mesh ? poseBounds(o.mesh, b.position, b.rotation, b.scale) : null;
+    if (bb) lowest = Math.min(lowest, bb.minY);
+  }
+  return Number.isFinite(lowest) ? -Math.max(lowest, 0) : undefined;
+}
+
 export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl | null>): DragMoveApi {
   const camera = useThree((s) => s.camera);
   const canvas = useThree((s) => s.gl.domElement);
@@ -70,6 +87,8 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
   const frame = useRef(0);
   // Tras cancelar con el botón aún pulsado, la cámara sigue apagada hasta soltar (si no, giraría sola).
   const releaseOrbitOnUp = useRef(false);
+  // Último plano usado: la histéresis evita que salte al orbitar cerca de 45° entre un arrastre y otro.
+  const lastPlane = useRef<DragPlane | null>(null);
 
   const finish = useCallback(
     (mode: 'commit' | 'cancel', fromRelease = true) => {
@@ -83,7 +102,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       const store = useKuraStore.getState();
       if (s.active) {
         // Soltar sin desplazamiento neto (vista rasante, o en el punto de partida) no deja un paso de deshacer.
-        const moved = s.lastDelta[0] !== 0 || s.lastDelta[2] !== 0;
+        const moved = s.lastDelta[0] !== 0 || s.lastDelta[1] !== 0 || s.lastDelta[2] !== 0;
         // Con varias placas, soltar sobre otra reasigna la pieza (mismo paso de deshacer que el arrastre).
         if (mode === 'commit' && moved && store.plates.length >= 2) store.reassignPlatesByPosition(s.baseline.map((b) => b.id));
         if (mode === 'commit' && moved) store.commitTransformSnapshot();
@@ -128,15 +147,22 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
     const raycaster = (raycasterRef.current ??= new THREE.Raycaster());
     raycaster.setFromCamera(ndc, camera);
     const { origin, direction } = raycaster.ray;
-    const delta = dragMoveDelta({
-      rayOrigin: [origin.x, origin.y, origin.z],
-      rayDir: [direction.x, direction.y, direction.z],
-      grab: s.grab,
-      reference: s.reference,
-      snapMm: dragSnapMm(store.snapGridMm, p.ctrl),
-      // Armado y Libre: sin camas a la vista, mover no se limita a su rectángulo.
-      bounds: viewModeTraits(viewModeOf(store.layout, store.freeView)).freeDrag ? null : store.plates.length >= 2 ? dragBoundsForBeds(allBedSizes(store)) : dragBoundsForBed(placementBedSize(store)),
-    });
+    const rayOrigin: Vec3 = [origin.x, origin.y, origin.z];
+    const rayDir: Vec3 = [direction.x, direction.y, direction.z];
+    const traits = viewModeTraits(viewModeOf(store.layout, store.freeView));
+    // Armado y Libre: sin camas a la vista, mover no se limita a su rectángulo.
+    const bounds = traits.freeDrag ? null : store.plates.length >= 2 ? dragBoundsForBeds(allBedSizes(store)) : dragBoundsForBed(placementBedSize(store));
+    const snapMm = dragSnapMm(store.snapGridMm, p.ctrl);
+    // Plano según la vista (Frente/Atrás/Derecha/Izquierda: vertical; Superior e isométrica: horizontal); Alt: vertical frente a la cámera.
+    const camDir = camera.getWorldDirection(new THREE.Vector3());
+    const plane = chooseDragPlane([camDir.x, camDir.y, camDir.z], { previous: lastPlane.current, alt: p.alt });
+    lastPlane.current = plane;
+    useGizmoDragStore.getState().setPlane(dragPlaneUserLabel(plane));
+    let delta: Vec3 | null =
+      plane === 'XZ'
+        ? dragMoveDelta({ rayOrigin, rayDir, grab: s.grab, reference: s.reference, snapMm, bounds })
+        : dragMoveDeltaVertical({ rayOrigin, rayDir, grab: s.grab, reference: s.reference, plane, snapMm, bounds, minDeltaY: s.minDeltaY });
+    if (delta && p.shift) delta = constrainToDominantAxis(delta);
     // Vista rasante o rayo que no alcanza el plano: se conserva la última posición válida.
     if (delta) s.lastDelta = delta;
     store.transformSelectionRigid({ translate: s.lastDelta }, { baseline: s.baseline });
@@ -165,6 +191,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
         baseline,
         reference: firstMovable ? ([...firstMovable.position] as Vec3) : ZERO,
         lastDelta: ZERO,
+        minDeltaY: moveEnabled && !viewModeTraits(viewModeOf(state.layout, state.freeView)).freeDrag ? floorDeltaY(state, baseline) : undefined,
         active: false,
         moveEnabled,
         rect: null,
@@ -209,7 +236,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       }
       s.lastX = ev.clientX;
       s.lastY = ev.clientY;
-      pending.current = { x: ev.clientX, y: ev.clientY, ctrl: ev.ctrlKey || ev.metaKey };
+      pending.current = { x: ev.clientX, y: ev.clientY, ctrl: ev.ctrlKey || ev.metaKey, shift: ev.shiftKey, alt: ev.altKey };
       if (!frame.current) frame.current = requestAnimationFrame(() => applyRef.current());
     };
     const onUp = (ev: PointerEvent) => {
@@ -238,7 +265,7 @@ export function useDragMoveSelected(orbitRef: React.RefObject<OrbitControlsImpl 
       const s = session.current;
       // Ctrl/Cmd cambia el ajuste a 1 mm: se recalcula en el acto, sin esperar a que el ratón se mueva.
       if ((ev.key === 'Control' || ev.key === 'Meta') && s?.active && ev.type !== 'keypress') {
-        pending.current = { x: s.lastX, y: s.lastY, ctrl: ev.type === 'keydown' };
+        pending.current = { x: s.lastX, y: s.lastY, ctrl: ev.type === 'keydown', shift: ev.shiftKey, alt: ev.altKey };
         if (!frame.current) frame.current = requestAnimationFrame(() => applyRef.current());
         return;
       }

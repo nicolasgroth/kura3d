@@ -16,6 +16,7 @@ import {
   SIMPLIFY_DESTRUCTIVE_LIMITS as SDL,
   SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM,
   SIMPLIFY_MODES,
+  SIMPLIFY_NOTICE_LIMITS as SNL,
   SIMPLIFY_ON_DESTRUCTIVE,
   SIMPLIFY_SAFE_MIN_REDUCTION_REL,
   SIMPLIFY_WARN_LIMITS as SWL,
@@ -38,13 +39,18 @@ export function registerSimplifyTools(server: Pick<McpServer, 'registerTool'>, c
         'cannot; if the closest result loses through holes, it prefers the best one that keeps them within ' +
         Math.round(SWL.genusSlackRel * 100) + ' % above the target (target.genusPreserved). Genus is summed per body. If ' +
         'the applied result changes the genus, warnings carries SIMPLIFY_GENUS_CHANGED (same channel as SIMPLIFY_VOLUME_CHANGED). Returns the report: applied, triangles before/after, volume change %, genus before/after, maxDeviationMm ' +
-        '(sampled, a lower bound), checks (genus_changed, volume_changed > ' + SWL.volumePct + ' %, deviation_high > ' +
-        SWL.deviationMm + ' mm, target_not_reached, no_reduction) and rejectedBy (lossless). applied=false leaves the object untouched. ' +
-        'DESTRUCTIVE results (tolerance and target): a result is destructive if it closes through holes while the ' +
+        '(sampled, a lower bound), limits (the part notice and destructive limits: noticeVolumePct, noticeDeviationMm, ' +
+        'destructiveVolumePct, destructiveDeviationMm, minSideMm, minTriangles) and rejectedBy (lossless). applied=false leaves the object untouched. ' +
+        'TWO LEVELS (tolerance and target). WARNINGS (applied as requested, listed in warnings): genus_changed, ' +
+        'volume_changed when |volume change| > ' + SNL.volumePct + ' %, deviation_high when the deviation exceeds the larger of ' +
+        SNL.deviationMinMm + ' mm and ' + SNL.deviationRelDiag * 100 + ' % of the bounding-box diagonal, target_not_reached, ' +
+        'no_reduction (lossless uses its own limits above). Asking few triangles of a coarse mesh is expected to warn, not to block. ' +
+        'DESTRUCTIVE (listed in destructive; not applied as requested): it closes through holes while the ' +
         'deviation exceeds ' + SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM + ' mm (holes_lost; thinner tunnels than a printer resolves ' +
-        'only warn with genus_changed), |volume change| > ' + SDL.volumePct + ' % (volume_changed) or the deviation exceeds the ' +
-        'larger of ' + SDL.deviationMinMm + ' mm and ' + SDL.deviationRelDiag * 100 + ' % of the bounding-box diagonal ' +
-        '(deviation_high). destructive lists the reasons and safe carries the best safe alternative (fewest triangles that ' +
+        'only warn with genus_changed), |volume change| > ' + SDL.volumePct + ' % (volume_changed), the deviation exceeds ' +
+        SDL.deviationRelMinSide * 100 + ' % of the smallest bounding-box side, i.e. the thickness (deviation_high), or fewer ' +
+        'triangles remain than ' + SDL.minTrianglesHoledBase + ' + ' + SDL.minTrianglesPerHole + ' per through hole (' +
+        SDL.minTrianglesBase + ' without holes) (too_few_triangles). destructive lists the reasons and safe carries the best safe alternative (fewest triangles that ' +
         'is not destructive and removes at least ' + SIMPLIFY_SAFE_MIN_REDUCTION_REL * 100 + ' % of the triangles: toleranceMm, ' +
         'triangles, volumeAfterMm3, volumeChangePct, genusAfter, maxDeviationMm; null if none). onDestructive decides: ' +
         '"safe" (default) applies the safe version instead (appliedVariant="safe": the report numbers are the safe ones and ' +

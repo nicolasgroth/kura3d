@@ -43,9 +43,9 @@ describe('Simplificar: túneles finos', () => {
   it('la regla: perder agujeros es destructivo solo si la desviación supera el umbral de túnel fino', () => {
     expect(SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM).toBe(0.2);
     const lost = { genusBefore: 58, genusAfter: 56, volumeChangePct: -0.07, maxDeviationMm: 0.1 };
-    expect(destructiveReasons(lost, 200)).toEqual([]);
-    expect(destructiveReasons({ ...lost, maxDeviationMm: 0.2 }, 200)).toEqual([]);
-    expect(destructiveReasons({ ...lost, maxDeviationMm: 0.21 }, 200)).toEqual(['holes_lost']);
+    expect(destructiveReasons(lost, { diagMm: 200, minSideMm: 50 })).toEqual([]);
+    expect(destructiveReasons({ ...lost, maxDeviationMm: 0.2 }, { diagMm: 200, minSideMm: 50 })).toEqual([]);
+    expect(destructiveReasons({ ...lost, maxDeviationMm: 0.21 }, { diagMm: 200, minSideMm: 50 })).toEqual(['holes_lost']);
   });
 
   it('una perforación de 0,1 mm en una lámina de 0,3 mm que se cierra se aplica y avisa', async () => {

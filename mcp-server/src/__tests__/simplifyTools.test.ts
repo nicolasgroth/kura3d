@@ -106,7 +106,9 @@ describe('MCP: kura_simplify_mesh con modos', () => {
     const res = await call('kura_simplify_mesh', { objectId: torus.id, targetPercent: 2 });
     expect(res).toMatchObject({ applied: true, appliedVariant: 'safe', trianglesAfter: dry.trianglesAfter });
     expect(res.dryRun).toBeUndefined();
-    expect(res.requested.triangles).toBeLessThan(res.trianglesAfter);
+    // Lo pedido queda aparte; Manifold no es monótono y la segura puede tener menos triángulos que lo pedido.
+    expect(res.requested.triangles).not.toBe(res.trianglesAfter);
+    expect(res.trianglesAfter).toBeLessThan(res.trianglesBefore);
     expect(res.trianglesAfter).toBe(res.safe.triangles);
     expect(headless.getObject(torus.id).stats.triangles).toBe(res.trianglesAfter);
   });

@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { ListTree, Scissors } from 'lucide-react';
 import { isSolid } from '../../core/scene/objectRole';
 import { t, type TranslationKey } from '../../i18n';
@@ -22,7 +22,8 @@ import { FilamentLegendCard } from '../inspector/FilamentLegendCard';
 import type { InspectorLocalState } from '../inspector/inspectorTypes';
 import { TransformSection } from '../inspector/TransformSection';
 import { PanelHeader } from '../shell/PanelHeader';
-import { focusPanelHeading } from './ActionPanel';
+import { usePanelEscape } from '../shell/usePanelEscape';
+import { usePanelFocusReturn } from '../shell/usePanelFocus';
 import { PaintControls } from '../paint/PaintControls';
 import '../../styles/toolPanel.css';
 
@@ -140,44 +141,19 @@ export const ToolPanel: React.FC<{ tool: PanelToolId; objectId: string | null; u
 
   // «Volver»: Mover / Rotar / Escalar quitan el foco de transformación (vuelve el resumen); las demás vuelven a
   // Seleccionar. El foco regresa al botón de la herramienta en el riel (o al título del panel si no está).
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const restoreFocus = usePanelFocusReturn(rootRef, { remember: false });
   const goBack = () => {
     if (focus) setTransformFocus(null);
     else setActiveTool('select');
-    requestAnimationFrame(() => {
-      const rail = document.querySelector<HTMLElement>(`[data-help="tool.${tool}"]`);
-      if (rail && rail.getClientRects().length > 0) rail.focus({ preventScroll: true });
-      else focusPanelHeading();
-    });
+    restoreFocus(() => document.querySelector<HTMLElement>(`[data-help="tool.${tool}"]`));
   };
-  const backRef = useRef(goBack);
-  backRef.current = goBack;
 
-  // Esc con el foco fuera de un control (visor, cuerpo de la página) también vuelve, salvo con diálogo, menú, grupo
-  // abierto o modo sin distracciones, que ya tienen su propio Esc. Medir cancela antes su punto en curso (captura).
-  useEffect(() => {
-    const onWindowKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
-      if (document.activeElement && document.activeElement !== document.body) return;
-      const st = useKuraStore.getState();
-      if (st.activeDialog !== null || st.groupContextId || st.uiDensity === 'zen' || st.commandPaletteOpen) return;
-      if (document.querySelector('dialog[open], [aria-modal="true"]')) return;
-      if (Array.from(document.querySelectorAll<HTMLElement>('[role="menu"]')).some((m) => m.getClientRects().length > 0)) return;
-      e.preventDefault();
-      backRef.current();
-    };
-    window.addEventListener('keydown', onWindowKey);
-    return () => window.removeEventListener('keydown', onWindowKey);
-  }, []);
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key !== 'Escape' || e.defaultPrevented) return;
-    e.preventDefault();
-    e.stopPropagation();
-    goBack();
-  };
+  // Esc: un solo dueño (cadena de prioridad en `store/escapeChain`). Medir cancela antes su punto en curso (captura).
+  usePanelEscape(rootRef, goBack, { level: 'tool', outside: 'body' });
 
   return (
-    <div className="kura-ctx-tool" data-tool-panel={tool} data-testid="panel-tool" onKeyDown={onKeyDown}>
+    <div ref={rootRef} className="kura-ctx-tool" data-tool-panel={tool} data-testid="panel-tool">
       <PanelHeader onBack={goBack} title={t(language, TITLE[tool])} titleClassName="kura-ctx-heading" focusableTitle />
       {tool === 'paint' ? (
         // Pintar: la misma frase que la barra del visor, con cualquier selección (ninguno, uno o varios).

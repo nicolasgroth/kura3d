@@ -244,7 +244,7 @@ describe('TRUST-02 · solo lectura como fuente única', () => {
     // dryRun no cambia la clasificación: las herramientas con vista previa son de escritura y se bloquean igual.
     for (const [name, args] of [
       ['kura_arrange_on_plates', { dryRun: true }], ['kura_fit_to_bed', { objectIds: ['x'], dryRun: true }],
-      ['kura_split_for_bed', { objectId: 'x', dryRun: true }], ['kura_simplify_mesh', { objectId: 'x', dryRun: true }],
+      ['kura_split_for_bed', { objectId: 'x', dryRun: true }], ['kura_simplify_mesh', { objectId: 'x', dryRun: true }], ['kura_set_project_info', { author: 'x' }],
     ] as const) {
       const blocked = await client.callTool({ name, arguments: args });
       expect(blocked.isError, name).toBe(true);

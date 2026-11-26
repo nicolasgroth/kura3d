@@ -1345,7 +1345,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'split.glueOptions': 'Für Verbinder:',
   'split.glueLowerMin': 'Wandminimum senken',
   'split.glueLowerMinTip': 'Springt zum Feld „Wandminimum für Verbinder“: mit kleinerem Wert erhalten auch dünne Fugen einen Verbinder',
-  'split.glueUseLap': 'Randüberlappung verwenden',
+  'split.glueUseLap': 'Randüberlappung in allen Verbindungen verwenden',
   'split.glueUseLapTip': 'Stellt die Fuge auf Randüberlappung um, die bei dünnen Wänden funktioniert',
   'split.planePickLabel': 'Ebene {axis}{n} wählen',
   'split.planePickTip': 'Ebene {axis}{n} wählen: hebt sie im Ansichtsfenster hervor und verschiebt sie mit ↑/↓ (Umschalt: ×10), wenn der Fokus auf dieser Schaltfläche oder im Ansichtsfenster liegt',

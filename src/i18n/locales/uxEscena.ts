@@ -68,6 +68,22 @@ const UXESCENA = {
     hi: 'खींचते समय बदलाव',
     zh: '拖动中的变化',
   },
+  'uxEscena.drag.plane': {
+    es: 'Plano {plane}',
+    en: 'Plane {plane}',
+    de: 'Ebene {plane}',
+    fr: 'Plan {plane}',
+    hi: 'तल {plane}',
+    zh: '平面 {plane}',
+  },
+  'uxEscena.drag.planeHelp': {
+    es: 'Arrastrar una pieza: se mueve en el plano de la vista (Frente/Atrás: vertical; Superior e isométrica: horizontal) · Alt: plano vertical frente a la cámara · Mayús: un solo eje',
+    en: 'Dragging a part moves it in the plane of the view (Front/Back: vertical; Top and isometric: horizontal) · Alt: vertical plane facing the camera · Shift: single axis',
+    de: 'Ein Teil ziehen: Es bewegt sich in der Ebene der Ansicht (Vorne/Hinten: senkrecht; Oben und isometrisch: waagerecht) · Alt: senkrechte Ebene zur Kamera · Umschalt: eine Achse',
+    fr: 'Glisser une pièce : elle se déplace dans le plan de la vue (Face/Arrière : vertical ; Dessus et isométrique : horizontal) · Alt : plan vertical face à la caméra · Maj : un seul axe',
+    hi: 'भाग खींचें: यह दृश्य के तल में चलता है (सामने/पीछे: ऊर्ध्वाधर; ऊपर और आइसोमेट्रिक: क्षैतिज) · Alt: कैमरे के सामने ऊर्ध्वाधर तल · Shift: एक अक्ष',
+    zh: '拖动零件：在视图所在平面内移动（正面/背面：垂直；顶部与等轴测：水平）· Alt：面向相机的垂直平面 · Shift：单轴',
+  },
   'uxEscena.drag.move': {
     es: 'ΔX {x} · ΔY {y} · ΔZ {z} {unit}',
     en: 'ΔX {x} · ΔY {y} · ΔZ {z} {unit}',

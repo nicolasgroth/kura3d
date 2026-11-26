@@ -98,6 +98,11 @@ export interface SplitJointIsland {
   areaMm2: number;
   /** Ancho típico de la isla (2·área/perímetro, mm): el espesor de pared en anillos y tiras. */
   minWidthMm: number;
+  /**
+   * Solo islas `glue`: ancho útil (mm), el diámetro del mayor círculo que cabe en la isla: lo que decide si entra un
+   * conector. En una tira coincide con `minWidthMm`; en una isla compacta `minWidthMm` da la mitad (cuadrado de 4 → 2).
+   */
+  usableWidthMm?: number;
 }
 
 /**

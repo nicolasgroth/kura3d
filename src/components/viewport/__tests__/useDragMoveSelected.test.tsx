@@ -26,9 +26,9 @@ import { useDragMoveSelected } from '../useDragMoveSelected';
 const obj = (id: string, locked = false) =>
   ({ id, name: id, position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1], locked, visible: true }) as unknown as SceneObject;
 
-function pointer(type: string, init: { id?: number; x?: number; y?: number; ctrl?: boolean } = {}) {
+function pointer(type: string, init: { id?: number; x?: number; y?: number; ctrl?: boolean; shiftKey?: boolean } = {}) {
   const ev = new Event(type, { bubbles: true, cancelable: true }) as Event & Record<string, unknown>;
-  Object.assign(ev, { pointerId: init.id ?? 1, clientX: init.x ?? 0, clientY: init.y ?? 0, ctrlKey: !!init.ctrl, metaKey: false });
+  Object.assign(ev, { pointerId: init.id ?? 1, clientX: init.x ?? 0, clientY: init.y ?? 0, ctrlKey: !!init.ctrl, metaKey: false, shiftKey: !!init.shiftKey, altKey: false });
   window.dispatchEvent(ev);
 }
 
@@ -314,16 +314,49 @@ describe('useDragMoveSelected', () => {
     expect(useGizmoDragStore.getState().start).toBeNull();
   });
 
-  it('con vista rasante desde el inicio nada se mueve y no queda paso de deshacer', () => {
+  it('vista frontal (casi rasante al suelo): se mueve en el plano vertical, sin profundidad', () => {
     camera.position.set(0, 5, 1000);
     camera.lookAt(0, 0, 0);
     camera.updateMatrixWorld(true);
     const { start } = setup();
     start();
-    pointer('pointermove', { x: 150, y: 100 });
-    pointer('pointerup', { x: 150, y: 100 });
+    pointer('pointermove', { x: 150, y: 50 });
+    flushFrames();
+    const [dx, , dz] = (spies.rigid.mock.calls.at(-1)?.[0] as { translate: [number, number, number] }).translate;
+    expect(dx).not.toBe(0);
+    expect(dz).toBe(0);
+    expect(useGizmoDragStore.getState().plane).toBe('XZ');
+    pointer('pointerup', { x: 150, y: 50 });
+    expect(spies.commit).toHaveBeenCalledTimes(1);
+    expect(useGizmoDragStore.getState().plane).toBeNull();
+  });
+
+  it('Mayús restringe al eje dominante del gesto', () => {
+    camera.position.set(0, 5, 1000);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld(true);
+    const { start } = setup();
+    start();
+    pointer('pointermove', { x: 160, y: 90, shiftKey: true });
+    flushFrames();
+    const [dx, dy, dz] = (spies.rigid.mock.calls.at(-1)?.[0] as { translate: [number, number, number] }).translate;
+    expect(dx).not.toBe(0);
+    expect(dy).toBe(0);
+    expect(dz).toBe(0);
+  });
+
+  it('Esc cancela el arrastre vertical sin dejar paso de deshacer', () => {
+    camera.position.set(0, 5, 1000);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld(true);
+    const { start } = setup();
+    start();
+    pointer('pointermove', { x: 150, y: 50 });
+    flushFrames();
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
     expect(spies.commit).not.toHaveBeenCalled();
     expect(spies.cancel).toHaveBeenCalledTimes(1);
+    expect(useGizmoDragStore.getState().plane).toBeNull();
   });
 
   it('con el motor ocupado no inicia el arrastre: la cámara sigue libre y el cursor no cambia', () => {

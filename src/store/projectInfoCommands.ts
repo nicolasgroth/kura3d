@@ -3,7 +3,7 @@
  * @description Comandos de datos del proyecto del Command Bus: `get_project_info` (lectura) y `set_project_info`
  * (descripción, notas y autor). Llama a la misma acción del store que la interfaz (`setProjectInfo`): marca el
  * proyecto como modificado, no es un paso de deshacer (igual que el nombre del proyecto) y no cambia fechas.
- * Nombres MCP sugeridos para quien los exponga: `kura_get_project_info` y `kura_set_project_info`.
+ * Herramientas MCP: `kura_get_project_info` y `kura_set_project_info` (`mcp-server/src/projectInfoTools.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

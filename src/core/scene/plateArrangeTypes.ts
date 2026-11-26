@@ -90,3 +90,11 @@ export interface ArrangePlan {
   placements: ArrangePlacement[];
   report: ArrangeReport;
 }
+
+/**
+ * Placas nuevas entre las que reciben piezas (lo que la interfaz llama «nuevas»). No cuenta la implícita que se vuelve
+ * explícita (`platesCreated` sí: es lo que se agrega a la escena), así que nunca supera a `platesUsed.length`.
+ */
+export function newPlatesUsed(report: Pick<ArrangeReport, 'platesUsed'>): number {
+  return report.platesUsed.filter((id) => id.startsWith(NEW_PLATE_PREFIX)).length;
+}

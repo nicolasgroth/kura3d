@@ -18,6 +18,9 @@ export interface GizmoDragStart extends TransformSample {
 
 interface GizmoDragState {
   start: GizmoDragStart | null;
+  /** Plano de un arrastre de pieza (rótulo «Plano XY»); null con el gizmo. */
+  plane: string | null;
+  setPlane: (plane: string | null) => void;
   /** Empieza a leer el arrastre del primer objeto seleccionado con el modo activo. */
   begin: () => void;
   end: () => void;
@@ -25,6 +28,8 @@ interface GizmoDragState {
 
 export const useGizmoDragStore = create<GizmoDragState>((set) => ({
   start: null,
+  plane: null,
+  setPlane: (plane) => set({ plane }),
   begin: () => {
     const s = useKuraStore.getState();
     const obj = s.objects.find((o) => o.id === s.selectedIds[0]);
@@ -39,5 +44,5 @@ export const useGizmoDragStore = create<GizmoDragState>((set) => ({
       },
     });
   },
-  end: () => set({ start: null }),
+  end: () => set({ start: null, plane: null }),
 }));
