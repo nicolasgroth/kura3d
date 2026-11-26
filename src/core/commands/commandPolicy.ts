@@ -96,6 +96,9 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   move_to_plate: 'write',
   spread_one_plate_per_object: 'write',
   set_layout: 'write',
+  // Datos del proyecto (descripción, notas, autor): leer no cambia nada; escribir no toca la escena ni el historial.
+  get_project_info: 'read',
+  set_project_info: 'write',
 });
 
 /** Indica si el nombre corresponde a un comando conocido del Command Bus. */

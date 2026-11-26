@@ -18,6 +18,7 @@ import type { MeshData, SceneGroup, SceneObject } from '../types/kura';
 import type { SceneLayout, ScenePlate } from '../types/plates';
 import { geometryBudget, MAX_HISTORY, MAX_MESHES, MAX_OBJECTS } from './codecLimits';
 import { withBoundedParams } from './primitiveParamsBounds';
+import { compactInfo, validStoredInfo, type ProjectInfo } from './projectInfo';
 import { reconcileSceneStructure } from './sceneStructure';
 import {
   check, color, id, limit, nat, ProjectCodecError, record, validSettings, validStoredGroups, validStoredLayout, validStoredObject, validStoredPlates,
@@ -44,6 +45,8 @@ export interface DraftManifest {
   current: DraftSnapshot;
   past: DraftSnapshot[];
   future: DraftSnapshot[];
+  /** Datos del proyecto (opcional: borradores anteriores no lo traen). */
+  info?: ProjectInfo;
 }
 
 /** Bloque pendiente de guardar: los bytes se copian recién al escribirlo. */
@@ -154,6 +157,7 @@ export async function splitDocument(doc: ProjectDocument, withHistory = true) {
     format: DRAFT_FORMAT,
     settings: { unitSystem, printerProfile, customBedDimensions, sectionPlane, snapGridMm },
     meshes, current, past, future,
+    ...(compactInfo(doc.info) ? { info: compactInfo(doc.info) } : {}),
   };
   return { manifest, blocks };
 }
@@ -281,6 +285,9 @@ export function assembleDocument(manifest: unknown, blocks: Map<string, Words>):
       ...(s.layout === 'assembly' ? { layout: 'assembly' as const } : {}),
     });
   }
+  // Datos del proyecto: un borrador con `info` inválido se rechaza igual que un archivo (nada se acepta a medias).
+  check(manifest.info === undefined || validStoredInfo(manifest.info), 'draft-info');
+  const info = compactInfo(manifest.info);
   const current = snapshot(manifest.current);
   const keep = history.length > 0;
   return {
@@ -288,5 +295,6 @@ export function assembleDocument(manifest: unknown, blocks: Map<string, Words>):
     ...current,
     past: keep ? manifest.past.map(snapshot) : [],
     future: keep ? manifest.future.map(snapshot) : [],
+    ...(info ? { info } : {}),
   };
 }

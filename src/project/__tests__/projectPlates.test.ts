@@ -15,7 +15,7 @@ import { MAX_PLATES } from '../../core/scene/plates';
 import { MAX_SPLIT_PLATES } from '../../core/scene/splitGroups';
 import { DEFAULT_PRINTER_PROFILES, type MeshData, type SceneObject } from '../../types/kura';
 import type { ScenePlate } from '../../types/plates';
-import { decodeProject, encodeProject, PLATES_FORMAT_VERSION, type ProjectDocument } from '../projectCodec';
+import { decodeProject, encodeProject, INFO_FORMAT_VERSION, PLATES_FORMAT_VERSION, type ProjectDocument } from '../projectCodec';
 import { ROLE_FORMAT_VERSION } from '../projectRoleMigration';
 import { assembleDocument, splitDocument } from '../recoveryDraftFormat';
 import { repackKura } from './legacyKura';
@@ -74,8 +74,8 @@ describe('versión del .kura según las placas', () => {
     expect(() => decodeProject(onlyRef)).toThrowError(expect.objectContaining({ code: 'invalid' }));
   });
 
-  it('una versión más nueva que la 4 dice "no soportada"', () => {
-    const future = repackKura(encodeProject(withPlates()), PLATES_FORMAT_VERSION + 1);
+  it('una versión más nueva que la 5 dice "no soportada"', () => {
+    const future = repackKura(encodeProject(withPlates()), INFO_FORMAT_VERSION + 1);
     expect(() => decodeProject(future)).toThrowError(expect.objectContaining({ code: 'unsupported' }));
   });
 });

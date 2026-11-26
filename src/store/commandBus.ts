@@ -35,6 +35,7 @@ import { ADDON_HANDLERS } from './addonCommands';
 import { SMOOTH_ORIENT_HANDLERS } from './smoothOrientCommands';
 import { PLATE_ARRANGE_HANDLERS } from './plateArrangeCommands';
 import { PLATE_HANDLERS } from './plateCommands';
+import { PROJECT_INFO_HANDLERS } from './projectInfoCommands';
 import { userWarning } from '../core/scene/userEngineMessages';
 import { localizeEngineWarning, type EngineWarning } from '../engine/engineErrors';
 import type { OperationErrorTracker } from './operationErrors';
@@ -84,7 +85,7 @@ function responseWarnings(warnings: readonly EngineWarning[]): KuraCommandRespon
 type Handler = (p: RawParams, deps: CommandBusDeps, command: string) => Promise<unknown> | unknown;
 
 /** Comandos de escritura que no modifican la escena (ajustes y exportaciones): no se bloquean. */
-const NON_SCENE_WRITES = new Set(['set_printer_profile', 'set_unit_system', 'export_stl', 'export_3mf']);
+const NON_SCENE_WRITES = new Set(['set_printer_profile', 'set_unit_system', 'export_stl', 'export_3mf', 'set_project_info']);
 
 const brief = (o: SceneObject) => ({ id: o.id, name: o.name });
 /**
@@ -112,6 +113,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...SMOOTH_ORIENT_HANDLERS,
   ...PLATE_ARRANGE_HANDLERS,
   ...PLATE_HANDLERS,
+  ...PROJECT_INFO_HANDLERS,
   get_scene_state: (_p, { get }) => {
     const s = get();
     return {

@@ -1,6 +1,6 @@
 /**
  * @file src/project/projectCodec.ts
- * @description Códec binario del formato de proyecto .kura (escribe v3, o v4 si el proyecto usa placas; lee v1 a v4):
+ * @description Códec binario del formato de proyecto .kura (escribe v3, v4 si el proyecto usa placas o v5 si lleva datos del proyecto; lee v1 a v5):
  * serializa y valida escena, historial y mallas con CRC-32 y límites de tamaño.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -18,6 +18,7 @@ import {
   check, color, id, limit, MAX_PROJECT_BYTES, nat, ProjectCodecError, record, shape, validSettings, validStoredGroups, validStoredLayout, validStoredObject, validStoredPlates,
   type ObjectMetadata, type ProjectDocument, type ProjectSceneSnapshot,
 } from './projectSchema';
+import { compactInfo, validStoredInfo, type ProjectInfo } from './projectInfo';
 import { migrateStoredRole, ROLE_FORMAT_VERSION } from './projectRoleMigration';
 import { withBoundedParams } from './primitiveParamsBounds';
 import { reconcileSceneStructure } from './sceneStructure';
@@ -44,9 +45,15 @@ const HEADER_SIZE = 16;
 // proyecto usa placas (en la escena o en su historial); si no, se sigue escribiendo la 3 para que una
 // versión anterior de la app lo abra. Un archivo anterior a v4 no puede traer campos de placas.
 // También v4: las dos poses (`restPose` en cada objeto y `layout` = 'assembly' en la instantánea).
+// v5: datos del proyecto (`info` en el manifiesto: descripción, notas, autor, fechas, tiempo de trabajo). Se escribe
+// SOLO si el proyecto tiene alguno (en la práctica, todo guardado lleva `modifiedAt`). El manifiesto de v1 a v4 es
+// estricto (seis claves exactas), así que una app anterior no puede ignorar el campo nuevo: lo rechaza como versión
+// no admitida en vez de abrirlo perdiendo datos. Esta versión sí lee v1 a v5; un archivo anterior a v5 no puede
+// traer `info`.
 const VERSION = ROLE_FORMAT_VERSION;
 export const PLATES_FORMAT_VERSION = 4;
-const READABLE_VERSIONS = new Set([1, 2, ROLE_FORMAT_VERSION, PLATES_FORMAT_VERSION]);
+export const INFO_FORMAT_VERSION = 5;
+const READABLE_VERSIONS = new Set([1, 2, ROLE_FORMAT_VERSION, PLATES_FORMAT_VERSION, INFO_FORMAT_VERSION]);
 const LITTLE_ENDIAN = new Uint8Array(new Uint32Array([1]).buffer)[0] === 1;
 const crcTable = Uint32Array.from({ length: 256 }, (_, i) => {
   for (let bit = 0; bit < 8; bit++) i = (i >>> 1) ^ ((i & 1) ? 0xedb88320 : 0);
@@ -225,8 +232,11 @@ export function encodeProject(doc: ProjectDocument): Uint8Array {
   });
   const past = Array.from(doc.past, snapshot);
   const future = Array.from(doc.future, snapshot);
+  const info = compactInfo(doc.info);
+  if (info) check(validStoredInfo(info), 'info');
   const manifest = {
     settings, current, past, future, meshes,
+    ...(info ? { info } : {}),
     blocks: blocks.map(b => ({ kind: b instanceof Float32Array ? 'f32' : 'u32', length: b.length })),
   };
   const json = JSON.stringify(manifest);
@@ -238,7 +248,7 @@ export function encodeProject(doc: ProjectDocument): Uint8Array {
   const header = new DataView(bytes.buffer);
   bytes.set(MAGIC);
   const withPlates = usesPlates(doc) || doc.past.some(usesPlates) || doc.future.some(usesPlates);
-  header.setUint32(4, withPlates ? PLATES_FORMAT_VERSION : VERSION, true);
+  header.setUint32(4, info ? INFO_FORMAT_VERSION : withPlates ? PLATES_FORMAT_VERSION : VERSION, true);
   header.setUint32(8, metadataBytes.length, true);
   bytes.set(metadataBytes, HEADER_SIZE);
   let offset = HEADER_SIZE + metadataBytes.length;
@@ -266,8 +276,12 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
   } catch {
     throw new ProjectCodecError('invalid');
   }
-  check(record(manifest) && Object.keys(manifest).length === 6);
+  // Seis claves de siempre; `info` (datos del proyecto) solo desde la versión 5.
+  check(record(manifest) && Object.keys(manifest).length === (manifest.info === undefined ? 6 : 7));
+  check(manifest.info === undefined || version >= INFO_FORMAT_VERSION, 'info');
   const { settings, current, past, future, meshes, blocks } = manifest;
+  check(manifest.info === undefined || validStoredInfo(manifest.info), 'info');
+  const info: ProjectInfo | undefined = compactInfo(manifest.info as ProjectInfo | undefined);
   check(validSettings(settings) && validSnapshot(current) && Array.isArray(past) && Array.isArray(future));
   check(Array.isArray(meshes) && Array.isArray(blocks));
   limit(past.length + future.length <= MAX_HISTORY && meshes.length <= MAX_MESHES && blocks.length <= meshes.length * 4);
@@ -340,7 +354,7 @@ export function decodeProject(bytes: Uint8Array): ProjectDocument {
     check(version >= PLATES_FORMAT_VERSION || s.layout === undefined, 'layout');
     return reconcileSceneStructure(mapSnapshot(s, restoreObject));
   }
-  const document = { ...settings, ...snapshot(current), past: past.map(snapshot), future: future.map(snapshot) };
+  const document = { ...settings, ...snapshot(current), past: past.map(snapshot), future: future.map(snapshot), ...(info ? { info } : {}) };
   check(usedMeshes.size === assets.length);
   return document;
 }

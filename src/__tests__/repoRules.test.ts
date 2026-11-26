@@ -99,11 +99,12 @@ describe('reglas del repositorio', () => {
       'kura3d-mcp-config', // configuración MCP sin token (se lee solo para migrar el token antiguo)
       'kura3d-mcp-repo-path', // ruta del repositorio para el fragmento de configuración MCP
       'kura3d-recent-projects', // nombre de archivo y fecha
+      'kura3d-recent-info', // descripción corta y fecha de modificación de recientes (nunca las notas)
       'kura3d-recent-remember', // preferencia «recordar recientes»
     ]);
     const SESSION_KEYS = new Set(['kura3d-ai-session-keys', 'kura3d-mcp-session-token']);
     // Archivos que pueden tocar localStorage directamente (el resto pasa por los almacenes de arriba).
-    const DIRECT_LOCAL = new Set(['src/ai/allowedHosts.ts', 'src/ai/apiKeyStore.ts', 'src/utils/recentProjects.ts']);
+    const DIRECT_LOCAL = new Set(['src/ai/allowedHosts.ts', 'src/ai/apiKeyStore.ts', 'src/utils/recentProjects.ts', 'src/utils/recentProjectInfo.ts']);
     const files = [
       ...walk(join(ROOT, 'src', 'ai'), ['.ts', '.tsx']),
       ...walk(join(ROOT, 'src', 'utils'), ['.ts', '.tsx']),

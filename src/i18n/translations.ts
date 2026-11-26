@@ -72,6 +72,7 @@ import { PANEL_EN, PANEL_ES } from './locales/panel';
 import { ENCAJE_UI_EN, ENCAJE_UI_ES } from './locales/encajeUi';
 import { ORIENT_UI_EN, ORIENT_UI_ES } from './locales/orientar';
 import { REDISENO3A_EN, REDISENO3A_ES } from './locales/rediseno3a';
+import { DATOS_PROYECTO_EN, DATOS_PROYECTO_ES } from './locales/datosProyecto';
 import { REDISENO3B_EN, REDISENO3B_ES } from './locales/rediseno3b';
 import { UX8_MENU_EN, UX8_MENU_ES } from './locales/ux8Menu';
 import { IMANES_UNION_EN, IMANES_UNION_ES } from './locales/imanesUnion';
@@ -141,6 +142,7 @@ export const TRANSLATIONS_ES = {
   ...PANEL_ES,
   ...ENCAJE_UI_ES,
   ...REDISENO3A_ES,
+  ...DATOS_PROYECTO_ES,
   ...REDISENO3B_ES,
   ...UX8_MENU_ES,
   ...TORRETA_ES,
@@ -1493,6 +1495,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PANEL_EN,
   ...ENCAJE_UI_EN,
   ...REDISENO3A_EN,
+  ...DATOS_PROYECTO_EN,
   ...REDISENO3B_EN,
   ...UX8_MENU_EN,
   ...TORRETA_EN,

@@ -67,6 +67,7 @@ import { PANEL_FR } from './panel';
 import { ENCAJE_UI_FR } from './encajeUi';
 import { ORIENT_UI_FR } from './orientar';
 import { REDISENO3A_FR } from './rediseno3a';
+import { DATOS_PROYECTO_FR } from './datosProyecto';
 import { REDISENO3B_FR } from './rediseno3b';
 import { UX8_MENU_FR } from './ux8Menu';
 import { IMANES_UNION_FR } from './imanesUnion';
@@ -134,6 +135,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...PANEL_FR,
   ...ENCAJE_UI_FR,
   ...REDISENO3A_FR,
+  ...DATOS_PROYECTO_FR,
   ...REDISENO3B_FR,
   ...UX8_MENU_FR,
   ...TORRETA_FR,

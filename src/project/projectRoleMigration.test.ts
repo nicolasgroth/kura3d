@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeMeshStats } from '../engine/primitives';
 import { DEFAULT_PRINTER_PROFILES, type MeshData, type ObjectRole, type SceneObject } from '../types/kura';
-import { decodeProject, encodeProject, PLATES_FORMAT_VERSION, type ProjectDocument } from './projectCodec';
+import { decodeProject, encodeProject, INFO_FORMAT_VERSION, type ProjectDocument } from './projectCodec';
 import { ROLE_FORMAT_VERSION } from './projectRoleMigration';
 import { repackKura, toLegacyKura } from './__tests__/legacyKura';
 
@@ -70,8 +70,8 @@ describe('.kura v3: rol del objeto', () => {
 
   it('un archivo de una versión más nueva dice "versión no soportada" (no lee mal la referencia)', () => {
     // Es lo que hace un lector v2 con un archivo v3: la versión no está entre las que sabe leer.
-    // La versión siguiente a la 3 (placas) ya se lee: la desconocida es la que viene después de la 4.
-    const future = repackKura(encodeProject(doc([obj('r', 'reference')])), PLATES_FORMAT_VERSION + 1);
+    // Las versiones 4 (placas) y 5 (datos del proyecto) ya se leen: la desconocida es la que viene después de la 5.
+    const future = repackKura(encodeProject(doc([obj('r', 'reference')])), INFO_FORMAT_VERSION + 1);
     expect(() => decodeProject(future)).toThrowError(expect.objectContaining({ code: 'unsupported' }));
   });
 });

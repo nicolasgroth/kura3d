@@ -10,6 +10,7 @@
 
 import { trimHistoryForFile } from '../project/historyBudget';
 import type { ProjectDocument } from '../project/projectSchema';
+import { compactInfo, sameInfoContent } from '../project/projectInfo';
 import { makeId } from '../core/scene/sceneObjects';
 import type { SceneGroup, SceneObject, Vec3 } from '../types/kura';
 import type { SceneLayout, ScenePlate } from '../types/plates';
@@ -63,6 +64,7 @@ export function captureProject(state: KuraStoreState): ProjectDocument {
   const trimmed = fileHistory(state.past, state.future);
   // Los deltas de pintura viajan al archivo como instantáneas completas.
   const history = materializeHistory(state.objects, state.selectedIds, trimmed.past, trimmed.future, state.groups, state.plates, state.layout);
+  const info = compactInfo({ ...state.projectInfo, workSeconds: state.projectWorkSeconds });
   return {
     objects: state.objects,
     selectedIds: liveSelection(state.objects, state.selectedIds),
@@ -76,6 +78,7 @@ export function captureProject(state: KuraStoreState): ProjectDocument {
     customBedDimensions: state.customBedDimensions,
     sectionPlane: state.sectionPlane,
     snapGridMm: state.snapGridMm,
+    ...(info ? { info } : {}),
   };
 }
 
@@ -87,7 +90,9 @@ export function hasProjectChanged(saved: ProjectDocument, state: KuraStoreState)
     saved.unitSystem !== state.unitSystem || saved.printerProfile !== state.printerProfile ||
     saved.customBedDimensions !== state.customBedDimensions || saved.sectionPlane !== state.sectionPlane ||
     saved.snapGridMm !== state.snapGridMm || !sameGroups(saved.groups, state.groups) ||
-    !sameList(saved.plates, state.plates) || (saved.layout ?? DEFAULT_LAYOUT) !== state.layout;
+    !sameList(saved.plates, state.plates) || (saved.layout ?? DEFAULT_LAYOUT) !== state.layout ||
+    // Datos del proyecto: cuentan lo que escribe la persona y la fecha de creación; ni el reloj de trabajo ni la fecha de guardado.
+    !sameInfoContent(saved.info, state.projectInfo);
 }
 
 /** Sin grupos (o placas) en ambos lados cuenta como igual (un proyecto sin ellos no los guarda). */
