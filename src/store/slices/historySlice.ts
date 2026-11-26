@@ -120,6 +120,7 @@ export function createHistorySlice(ctx: StoreContext): Partial<KuraStoreState> {
       if (!snap) return;
       runtime.transformSnapshotBeforeDrag = null;
       set((state) => limitHistory([...state.past, snap], []));
+      get().settleDraggedPieces(snap.objects);
     },
 
     cancelTransformSnapshot: () => {

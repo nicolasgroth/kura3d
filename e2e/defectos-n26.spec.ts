@@ -37,18 +37,12 @@ async function arrastrarEntrePlacas(page: Page, objetivo: P3) {
   await page.waitForTimeout(2500);
   const o2 = await page.evaluate(() => (window as any).__s.getState().plates[1].origin as number[]);
   await vista(page, [o2[0] / 2, 650, o2[1] / 2 + 1], [o2[0] / 2, 0, o2[1] / 2]);
-  for (let i = 0; i < 4; i++) { console.log('N26 cam', JSON.stringify(await page.evaluate(() => { const c = (window as any).__r3f.getState().camera.position; return [c.x, c.y, c.z]; }))); await page.waitForTimeout(300); }
   const desde = await aPixel(page, [0, 15, 0]);
   const hasta = await aPixel(page, objetivo);
   await page.mouse.move(desde.x, desde.y);
   await page.mouse.down();
   await page.mouse.move(desde.x + (hasta.x - desde.x) * 0.4, desde.y + (hasta.y - desde.y) * 0.4, { steps: 4 });
-  for (let i = 1; i <= 8; i++) {
-    await page.mouse.move(desde.x + (hasta.x - desde.x) * (0.4 + 0.075 * i), desde.y + (hasta.y - desde.y) * (0.4 + 0.075 * i));
-    console.log('N26 paso', i, JSON.stringify(await page.evaluate(() => { const s = (window as any).__s.getState(); const c = (window as any).__r3f.getState().camera.position; return [s.objects[0].position, s.objects[0].plateRef, [c.x, c.y, c.z], (window as any).__r3f.getState().controls?.enabled, s.layout, s.activePlateId]; })));
-  }
-  console.log('N26 hasta', JSON.stringify(hasta), 'desde', JSON.stringify(desde), JSON.stringify(await page.evaluate(() => (window as any).__s.getState().objects.map((o: any) => [o.position, o.plateRef]))));
-  await page.screenshot({ path: 'G:/proyectos/kura3d/.eval-tmp/n26-medio.png' });
+  await page.mouse.move(hasta.x, hasta.y, { steps: 8 });
   await page.mouse.up();
   await page.waitForTimeout(300);
 }
@@ -100,6 +94,24 @@ test('arrastrar a otra placa: avisa con «Deshacer» y la pieza queda dentro de 
 });
 const sinErr = (e: string[]) => e.filter((x) => !/favicon|WebGL|GPU/i.test(x));
 
+test('arrastrar a otra placa soltando en el borde: la pieza se acerca lo justo para caber en la cama', async ({ page }) => {
+  const a = await dosPlacas(page);
+  const antes = await estado(page, a);
+  // Centro a 10 mm del borde derecho de la placa 2 (cama de 256): la caja de 80 mm sobresaldría 30 mm.
+  await arrastrarEntrePlacas(page, [antes.o2[0] + 118, 15, antes.o2[1]]);
+  const r = await estado(page, a);
+  console.log('N26 borde', JSON.stringify(r));
+  expect(r.ref).toBe(r.p2);
+  expect(r.pos[0] + 40, 'la caja cabe en la cama (borde derecho)').toBeLessThanOrEqual(r.o2[0] + 128 + 0.01);
+  expect(r.pos[0] + 40, 'sin alejarse más de lo necesario').toBeGreaterThan(r.o2[0] + 128 - 1);
+  expect(r.toasts.filter((m) => /pasó a/i.test(m)).length).toBe(1);
+  expect(r.pasos - antes.pasos).toBe(1);
+  await page.keyboard.press('Control+z');
+  const u = await estado(page, a);
+  expect(u.ref).toBe(u.p1);
+  expect(u.pos[0]).toBeCloseTo(0, 1);
+});
+
 test('3MF real llaveros: arrastrar una pieza a la otra placa avisa y la deja dentro de la cama', async ({ page }) => {
   test.setTimeout(240_000);
   const errs = await abrir(page);
@@ -125,6 +137,9 @@ test('3MF real llaveros: arrastrar una pieza a la otra placa avisa y la deja den
   console.log('N26 llaveros', JSON.stringify(info));
   const centro: P3 = [info.pos[0] + (info.mn[0] + info.mx[0]) / 2, info.pos[1] + (info.mn[1] + info.mx[1]) / 2, info.pos[2] + (info.mn[2] + info.mx[2]) / 2];
   const dest: P3 = [info.o2[0], centro[1], info.o2[1]];
+  // Vista superior sobre las dos camas: el gizmo no ofrece su flecha vertical y el arrastre es horizontal.
+  await vista(page, [info.o2[0] / 2, 900, 1], [info.o2[0] / 2, 0, 0]);
+  await page.waitForTimeout(500);
   const desde = await aPixel(page, centro);
   const hasta = await aPixel(page, dest);
   await page.mouse.move(desde.x, desde.y);
@@ -141,7 +156,12 @@ test('3MF real llaveros: arrastrar una pieza a la otra placa avisa y la deja den
   console.log('N26 llaveros resultado', JSON.stringify(r));
   await page.screenshot({ path: 'G:/proyectos/kura3d/.eval-tmp/n26-llaveros.png' });
   expect(r.ref).toBe(r.p2);
-  expect(r.toasts.filter((m: string) => /pasó a/i.test(m)).length).toBe(1);
+  expect(r.toasts.filter((m: string) => /pasó a/i.test(m)).length, 'un solo aviso').toBe(1);
+  // La pieza (34,5 mm de lado) queda dentro de la cama de la placa 2 (256 mm) y sobre ella.
+  expect(r.pos[0] + info.mn[0]).toBeGreaterThanOrEqual(info.o2[0] - 128 - 0.01);
+  expect(r.pos[0] + info.mx[0]).toBeLessThanOrEqual(info.o2[0] + 128 + 0.01);
+  expect(r.pos[1], 'sin hundirse bajo la cama (el gizmo tiene holgura de décimas)').toBeGreaterThanOrEqual(-1);
+  await expect(page.getByRole('button', { name: /^Deshacer$/ }).first()).toBeVisible();
   expect(sinErr(errs)).toEqual([]);
 });
 

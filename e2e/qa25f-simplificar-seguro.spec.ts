@@ -49,7 +49,8 @@ test('placa con 3 agujeros por cantidad muy baja: aplica la versión segura con 
   await page.keyboard.press('Control+a');
   await page.keyboard.type('12');
   const p0 = await pasos(page);
-  await page.keyboard.press('Enter');
+  // Enter lanza la vista previa; aplicar exige el botón «Simplificar».
+  await page.getByTestId('simplify-run').click();
   await libre(page);
   // Regla del 26-nov: con una versión segura útil se APLICA esa en lugar de lo pedido (un paso, con aviso y
   // «Aplicar de todos modos»); solo si no hay segura queda el bloqueo («No se aplicó…») sin tocar la pieza.
@@ -76,7 +77,8 @@ test('placa con 3 agujeros por cantidad muy baja: aplica la versión segura con 
   await campo.click();
   await page.keyboard.press('Control+a');
   await page.keyboard.type('12');
-  await page.keyboard.press('Enter');
+  // Enter lanza la vista previa; aplicar exige el botón «Simplificar».
+  await page.getByTestId('simplify-run').click();
   await libre(page);
   await expect(page.getByTestId('simplify-apply-anyway')).toBeVisible({ timeout: 60_000 });
   await page.getByTestId('simplify-apply-anyway').click();

@@ -14,7 +14,8 @@ import { setPlateBed } from '../../core/scene/plateBedChange';
 import { convertGroupsToPlates } from '../../core/scene/plateConvert';
 import { tagLastPushedStep } from '../historyLabels';
 import { groupsToConvert, isPlateGroupName } from '../plateGroupNames';
-import { reassignByPosition } from '../../core/scene/plateMove';
+import { fitReassignedIntoBeds, reassignByPosition } from '../../core/scene/plateMove';
+import { announceReassignments, platesReached } from '../plateMoveNotice';
 import { spreadOnePlatePerObject } from '../../core/scene/plateSpread';
 import {
   assignToPlate, createPlate, deletePlate, findPlate, nextPlateName, renamePlate, resolveActivePlate, type PlateScene,
@@ -195,6 +196,19 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const objects = next?.objects ?? get().objects;
       const follow = followSelection(objects);
       if (next || follow.activePlateId) set({ ...(next ? { objects } : {}), ...follow });
+    },
+
+    // Al soltar cualquier gesto de mover (arrastre del cuerpo, flechas del gizmo, campos del panel) las piezas que cayeron
+    // en otra placa se acercan para caber en su cama y se avisa una sola vez. Va después de cerrar el paso de deshacer:
+    // el «Deshacer» del aviso revierte el gesto y el cambio de placa juntos.
+    settleDraggedPieces: (before) => {
+      const state = get();
+      if (state.plates.length < 2) return;
+      if (state.layout === 'print') {
+        const fitted = fitReassignedIntoBeds(before, state.objects, state.plates, projectBed(state));
+        if (fitted) set({ objects: fitted });
+      }
+      announceReassignments(platesReached(new Map(before.map((o) => [o.id, o.plateRef])), get().objects));
     },
 
     setActivePlate: (plateId) => {
