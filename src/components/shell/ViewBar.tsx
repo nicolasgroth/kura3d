@@ -15,6 +15,8 @@ import { t } from '../../i18n';
 import { type CameraPresetType, useKuraStore } from '../../store/useKuraStore';
 import { formatDimension } from '../../utils/units';
 import { BedToggleButton } from '../viewport/BedToggleButton';
+import { ViewModeSelector } from '../viewmode/ViewModeSelector';
+import { shouldOfferViewModes } from '../../core/scene/viewMode';
 import { pickTopbarLevel, recordTopbarWidth } from '../topbarFit';
 import { CONTROL_HELP, helpAttrs, type HelpId } from './controlHelp';
 import { ViewIcon } from './ViewIcon';
@@ -52,6 +54,9 @@ export const ViewBar: React.FC = () => {
   const requestCameraPreset = useKuraStore((s) => s.requestCameraPreset);
   const objects = useKuraStore((s) => s.objects);
   const printerProfile = useKuraStore((s) => s.printerProfile);
+  const layout = useKuraStore((s) => s.layout);
+  const plates = useKuraStore((s) => s.plates);
+  const offerModes = shouldOfferViewModes({ layout, plates, objects });
   const labelsHidden = uiDensity === 'compact';
 
   const maxSceneHeight = useMemo(() => {
@@ -86,7 +91,7 @@ export const ViewBar: React.FC = () => {
   }, [refit]);
   useLayoutEffect(() => {
     widthsRef.current = [];
-  }, [language, labelsHidden, sectionPlane.enabled]);
+  }, [language, labelsHidden, sectionPlane.enabled, offerModes]);
   useLayoutEffect(() => refit());
 
   const iconsOnly = labelsHidden || level >= 2;
@@ -131,6 +136,12 @@ export const ViewBar: React.FC = () => {
           <span className="kura-viewbar-label">{name('view.fit')}</span>
         </button>
       </div>
+      {offerModes && (
+        <>
+          <span className="kura-viewbar-sep" role="separator" aria-orientation="vertical" />
+          <ViewModeSelector />
+        </>
+      )}
       <span className="kura-viewbar-sep" role="separator" aria-orientation="vertical" />
       <div className="kura-viewbar-group" role="group" aria-label={t(language, 'rediseno.view.bar')}>
         <span className="kura-viewbar-bed" data-help="view.bed">

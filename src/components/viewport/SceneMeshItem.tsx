@@ -14,7 +14,7 @@ import * as THREE from 'three';
 import { X } from 'lucide-react';
 import { useKuraStore } from '../../store/useKuraStore';
 import { useGizmoDragStore } from '../../store/gizmoDragStore';
-import { useSplitExplodedPosition } from '../split/useSplitExplode';
+import { useExplodedDisplayPosition } from '../viewmode/useFigureExplode';
 import { useSplitJointDimmed } from '../split/SplitJointHighlight';
 import { MATERIAL_PRESETS, type SceneObject, type Vec3 } from '../../types/kura';
 import { updateGeometryFaceColors } from '../../engine/paintColorAttribute';
@@ -75,7 +75,7 @@ export const SceneMeshItem: React.FC<{
     const nothingSelected = useKuraStore((s) => s.selectedIds.length === 0);
     const paintTarget = isPrimarySelected || (nothingSelected && !obj.locked && !isReference(obj));
     const spawnedAt = useKuraStore((s) => s.spawnedAtById[obj.id]);
-    const displayPosition = useSplitExplodedPosition(obj);
+    const displayPosition = useExplodedDisplayPosition(obj);
     // Con una unión señalada en la lista, el resto de las piezas del grupo se atenúa.
     const jointDimmed = useSplitJointDimmed(obj);
     const selectObject = useKuraStore((s) => s.selectObject);
