@@ -69,7 +69,7 @@ export function registerAddonTools(server: Pick<McpServer, 'registerTool'>, ctx:
         'threaded insert. With type and nominalMm (M2–M5) the built-in table gives the hole; explicit sizes win. Default height = ' +
         'hole depth + 2 mm, default outer diameter = 2.5 × nominal (at least hole + 2 minimum walls). One undo step; it keeps its ' +
         'size and follows the part. Returns both objects, the report (post wall, hole depth into the part, exits the other side, ' +
-        'collides with another addon, belowBaseMm when the post sticks out below the part's base) and warnings (SCREW_BOSS_BELOW_BASE on the resting face, without blocking). Fails with addon-blocked (reason tooWide) when the post foot is wider than the face.',
+        'collides with another addon, belowBaseMm when the post sticks out below the base of the part) and warnings (SCREW_BOSS_BELOW_BASE on the resting face, without blocking). Fails with addon-blocked (reason tooWide) when the post foot is wider than the face.',
       inputSchema: {
         hostId: idSchema.describe('ID of the solid part that receives the boss.'),
         ...placementInputs,
