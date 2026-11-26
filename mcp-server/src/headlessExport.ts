@@ -2,7 +2,8 @@
  * @file mcp-server/src/headlessExport.ts
  * @description Exportación a disco del modo headless de Kurra Studio usando los codificadores del
  * motor compartido (`exportSceneToBinarySTL` y `exportSceneTo3MF` de `src/engine`). El 3MF lleva
- * la paleta `<basematerials>` y el color por triángulo igual que la app. El STL ASCII se obtiene
+ * la paleta `<basematerials>` y el color por triángulo igual que la app, y con la cama del proyecto cada pieza va en
+ * la celda de su placa del laminador. El STL ASCII se obtiene
  * transcribiendo el STL binario del motor, por lo que la geometría es idéntica en ambos formatos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -16,6 +17,7 @@ import { exportSceneTo3MF, exportSceneToBinarySTL, stlBrandHeader } from '../../
 import { BRAND } from '../../src/brand';
 import { isPrintable } from '../../src/core/scene/objectRole';
 import type { ThreeMfPlateLayout, ThreeMfProjectMeta } from '../../src/engine/io/threeMfExport';
+import type { SlicerBed } from '../../src/engine/io/slicerPlateGrid';
 import type { HeadlessSceneObject } from './headlessSupport.js';
 import type { UnitSystem } from './types.js';
 
@@ -32,6 +34,11 @@ export interface ExportFileResult {
   /** Con placas: placas con piezas en el archivo y piezas imprimibles sin placa excluidas (como la app). */
   plateCount?: number;
   skippedUnplaced?: number;
+  /**
+   * 3MF: placas con cama propia de otro tamaño. El laminador supone una sola cama (la del proyecto) para todas, así
+   * que van centradas en una celda de ese tamaño; revisa que sus piezas quepan.
+   */
+  otherBedPlates?: string[];
 }
 
 /**
@@ -101,9 +108,13 @@ export async function write3mfFile(
   plateLayout?: ThreeMfPlateLayout,
   /** Datos del proyecto: metadatos `Title` / `Description` / `Designer` (los vacíos se omiten). */
   projectMeta?: ThreeMfProjectMeta,
+  /** Cama del proyecto: cada placa va donde la espera el laminador (esquina de la cama como origen, rejilla de placas). */
+  slicerBed?: SlicerBed,
 ): Promise<ExportFileResult> {
+  // Sin interfaz no hay proyecto de ejemplo del laminador: sin `project_settings.config` (carga genérica).
+
   const solids = exportableObjects(targets);
-  const bytes = exportSceneTo3MF(solids, units, undefined, BRAND, undefined, plateLayout, projectMeta);
+  const bytes = exportSceneTo3MF(solids, units, undefined, BRAND, undefined, plateLayout, projectMeta, { bed: slicerBed });
 
   // Lee de vuelta el modelo escrito por el motor para informar exactamente lo exportado
   const modelXml = strFromU8(unzipSync(bytes, { filter: (f) => f.name === '3D/3dmodel.model' })['3D/3dmodel.model']);

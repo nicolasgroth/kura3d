@@ -7,7 +7,8 @@
  *
  * 3MF con placas reales frente a grupos: con dos o más placas reales, ellas definen las placas del laminador y
  * los grupos raíz ya no (los grupos siguen viajando en los metadatos de escena). Con una placa o ninguna, los
- * grupos raíz siguen siendo placas del laminador como siempre.
+ * grupos raíz siguen siendo placas del laminador como siempre. El 3MF lleva la cama del proyecto (`slicerBedOf`) para
+ * colocar cada placa donde la espera el laminador; `otherBedNotice` avisa de las placas con cama propia de otro tamaño.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -16,7 +17,10 @@
 import { zipSync } from 'fflate';
 import type { ExportTaskArgs, ExportTaskResult } from '../core/operations/engineTasks';
 import { isPrintable } from '../core/scene/objectRole';
-import { exportPlateOf, planPlateExport, shiftForExport, type PlateExportBucket } from '../core/scene/plateExport';
+import { exportPlateOf, planPlateExport, platesWithOtherBed, shiftForExport, type PlateExportBucket } from '../core/scene/plateExport';
+import type { Translate } from './modelImportNotices';
+import { loadSlicerProjectSample } from './slicerProjectPreference';
+import type { ThreeMfSlicerOptions } from '../engine/io/threeMfExport';
 import type { ThreeMfPlateLayout } from '../engine/io/threeMfExport';
 import type { SceneObject } from '../types/kura';
 import type { ScenePlate } from '../types/plates';
@@ -66,6 +70,8 @@ export interface SingleFilePlan {
   plateLayout?: ThreeMfPlateLayout;
   /** Placas con piezas en el archivo. */
   plateCount: number;
+  /** Ids de esas placas, en el orden del archivo (null = escena sin placas). */
+  plateIds: Array<string | null>;
   /** Piezas imprimibles excluidas por no tener placa. */
   excluded: number;
 }
@@ -74,10 +80,18 @@ const layoutOf = (buckets: readonly PlateExportBucket[], offsets: Record<string,
   const hasOffsets = Object.keys(offsets).length > 0;
   if (plates.length < 2 && !hasOffsets) return undefined;
   return {
-    plates: plates.length >= 2 ? buckets.map((b) => ({ name: b.name, objectIds: b.objects.map((o) => o.id) })) : [],
+    // Con piezas en dos o más placas van TODAS las placas de la escena, vacías incluidas, para que la numeración y la
+    // celda de cada una en la rejilla del laminador calcen con la app. Con una sola (p. ej. `plateId`), solo esa.
+    plates: plates.length < 2 ? [] : buckets.length >= 2
+      ? plates.map((p) => ({ name: p.name, objectIds: buckets.find((b) => b.plateId === p.id)?.objects.map((o) => o.id) ?? [] }))
+      : buckets.map((b) => ({ name: b.name, objectIds: b.objects.map((o) => o.id) })),
     ...(hasOffsets ? { offsets } : {}),
   };
 };
+
+/** Con una sola placa creada por la persona en el archivo, su nombre viaja como nombre de la placa del laminador. */
+const withSingleName = (layout: ThreeMfPlateLayout | undefined, buckets: readonly PlateExportBucket[]): ThreeMfPlateLayout | undefined =>
+  buckets.length === 1 && buckets[0].plateId !== null && buckets[0].name ? { ...(layout ?? { plates: [] }), singlePlateName: buckets[0].name } : layout;
 
 /**
  * Plan de un archivo único. `fullScene` (3MF de escena completa): todos los objetos no referencia, también
@@ -90,8 +104,9 @@ export function singleFilePlan(
   if (!fullScene) {
     return {
       targets: plan.buckets.flatMap((b) => b.objects),
-      plateLayout: layoutOf(plan.buckets, {}, plates),
+      plateLayout: withSingleName(layoutOf(plan.buckets, {}, plates), plan.buckets),
       plateCount: plan.buckets.length,
+      plateIds: plan.buckets.map((b) => b.plateId),
       excluded: plan.excluded,
     };
   }
@@ -108,8 +123,38 @@ export function singleFilePlan(
   }
   return {
     targets: shifted.objects,
-    plateLayout: layout,
+    plateLayout: withSingleName(layout, plan.buckets),
     plateCount: plan.buckets.length,
+    plateIds: plan.buckets.map((b) => b.plateId),
     excluded: plan.excluded,
   };
+}
+
+/**
+ * Aviso del 3MF con placas: el laminador supone una sola cama (la del proyecto) para todas, así que las placas con
+ * cama propia de otro tamaño van centradas en una celda de la cama del proyecto. null si no hay ninguna.
+ */
+export function otherBedNotice(
+  plan: Pick<SingleFilePlan, 'plateIds'> | null, plates: readonly ScenePlate[], bed: { widthMm: number; depthMm: number }, tr: Translate,
+): string | null {
+  const other = plan ? platesWithOtherBed(plates, plan.plateIds, bed) : [];
+  if (other.length === 0) return null;
+  const names = other.map((p) => `«${p.name}»`).join(', ');
+  return tr('export.plates.otherBed', { names, count: other.length, w: Math.round(bed.widthMm), d: Math.round(bed.depthMm) });
+}
+
+/** Cama del proyecto para la rejilla de placas del 3MF (la medida propia manda sobre la del perfil; 256 si falta). */
+export function slicerBedOf(source: {
+  printerProfile: { bedWidthMm?: number; bedDepthMm?: number };
+  customBedDimensions?: { width: number; depth?: number } | null;
+}): { widthMm: number; depthMm: number } {
+  const c = source.customBedDimensions;
+  const widthMm = c?.width ?? source.printerProfile.bedWidthMm ?? 256;
+  return { widthMm, depthMm: (c ? c.depth : source.printerProfile.bedDepthMm) ?? widthMm };
+}
+
+/** Opciones del 3MF para el laminador: cama del proyecto y el proyecto de ejemplo guardado (si hay). */
+export function slicerOptionsOf(source: Parameters<typeof slicerBedOf>[0]): ThreeMfSlicerOptions {
+  const project = loadSlicerProjectSample();
+  return { bed: slicerBedOf(source), ...(project ? { project } : {}) };
 }

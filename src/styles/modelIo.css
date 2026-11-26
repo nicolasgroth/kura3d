@@ -160,3 +160,14 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* Sección «Laminador» (proyecto de ejemplo del laminador) del diálogo de exportación 3MF. */
+.kura-export-slicer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kura-export-info.kura-export-error {
+  color: var(--accent-red);
+}

@@ -4,7 +4,8 @@
  * STL y los mismos vértices de 3MF respecto de la cama; dos placas en STL dan un ZIP con un archivo por placa; un
  * 3MF con todas las placas (placas reales, no los grupos) con cada pieza dentro de su cama, o un 3MF por placa en
  * ZIP; lo que no tiene placa se excluye con aviso; sin placas los archivos son idénticos a los de siempre; la ida y
- * vuelta del 3MF de escena devuelve cada pieza a su lugar de mundo.
+ * vuelta del 3MF de escena devuelve cada pieza a su lugar de mundo; en el 3MF con todas las placas cada ítem va en la
+ * celda de su placa del laminador y una placa con cama propia de otro tamaño avisa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -30,6 +31,7 @@ vi.mock('../../utils/platformBridge', async (importOriginal) => ({
 const lastSaved = () => vi.mocked(saveFileSet).mock.calls.at(-1)![0];
 const savedBytes = () => lastSaved()[0].data;
 const half = () => store().printerProfile.bedWidthMm / 2;
+const t2 = (key: Parameters<typeof t>[1], params: Record<string, string | number>) => t('es', key, params);
 
 /** Triángulos de un STL binario (sin la cabecera). */
 const stlTriangles = (bytes: Uint8Array) => Array.from(bytes.subarray(84));
@@ -142,7 +144,31 @@ describe('exportar con placas', () => {
     expect(savedBytes()).toEqual(exportSceneToBinarySTL(printable(), stlBrandHeader(BRAND)));
     expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
     const full = store().objects.filter((o) => !isReference(o));
-    expect(savedBytes()).toEqual(exportSceneTo3MF(full, 'mm', undefined, BRAND, { groups: [] }));
+    const bed = { widthMm: store().printerProfile.bedWidthMm, depthMm: store().printerProfile.bedDepthMm };
+    expect(savedBytes()).toEqual(exportSceneTo3MF(full, 'mm', undefined, BRAND, { groups: [] }, undefined, undefined, { bed }));
+  });
+
+  it('3MF con todas las placas: cada ítem en la celda de su placa del laminador y aviso por la cama propia', async () => {
+    await addBox(20, [10, 0, 0], { name: 'A' });
+    const p2 = store().createPlate({ name: 'Mini' })!;
+    await addBox(20, [p2.origin[0] - 20, 0, 30], { name: 'B' });
+    store().setPlateBed(p2.id, { profileId: 'bambu-a1-mini', name: 'A1 mini', widthMm: 180, depthMm: 180, heightMm: 180 });
+    const b = store().objects.find((o) => o.name === 'B')!;
+    const relB = [b.position[0] - store().plates[1].origin[0], b.position[2] - store().plates[1].origin[1]];
+    expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
+    const model = strFromU8(unzipSync(savedBytes())['3D/3dmodel.model']);
+    const t = [...model.matchAll(/<item objectid="\d+" transform="([^"]+)"/g)].map((m) => m[1].split(' ').map(Number));
+    const { bedWidthMm: w, bedDepthMm: d } = store().printerProfile;
+    expect(t).toHaveLength(2);
+    expect([t[0][9], t[0][10], t[0][11]]).toEqual([w / 2, d / 2, 0]);
+    expect(t[1][9]).toBeCloseTo(1.2 * w + w / 2, 4);
+    expect(t[1][10]).toBeCloseTo(d / 2, 4);
+    // La pieza de la placa con cama propia queda en la misma posición respecto del centro de su celda.
+    const objB = [...model.matchAll(/<object id="\d+"[\s\S]*?<\/object>/g)][1][0];
+    const vB = [...objB.matchAll(/<vertex x="([^"]+)"/g)].map((m) => [Number(m[1])]);
+    const cx = (Math.min(...vB.map((v) => v[0])) + Math.max(...vB.map((v) => v[0]))) / 2;
+    expect(cx).toBeCloseTo(relB[0], 4);
+    expect(store().toasts.some((x) => x.text === t2('export.plates.otherBed', { names: '«Mini»', count: 1, w: Math.round(w), d: Math.round(d) }))).toBe(true);
   });
 
   it('una sola placa en el origen tampoco cambia nada', async () => {
@@ -164,6 +190,43 @@ describe('exportar con placas', () => {
     const back = restored.objects.find((o) => o.name === 'B')!;
     expect(back.position[0]).toBeCloseTo(byId(b.id)!.position[0], 6);
     expect(back.position[2]).toBeCloseTo(byId(b.id)!.position[2], 6);
+  });
+
+  it('nombre de la placa del laminador: vacío sin placas creadas; el de la persona al exportar una placa suya', async () => {
+    await addBox(20, [0, 0, 0], { name: 'A' });
+    expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
+    expect(plateNames(savedBytes())).toEqual(['']);
+    const p2 = store().createPlate({ name: 'Cabezas' })!;
+    await addBox(20, [p2.origin[0], 0, p2.origin[1]], { name: 'B' });
+    expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x', plateId: p2.id })).toBe(true);
+    expect(plateNames(savedBytes())).toEqual(['Cabezas']);
+    expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
+    expect(plateNames(savedBytes())).toEqual(store().plates.map((p) => p.name));
+  });
+
+  it('placa vacía en medio: el 3MF lleva las 3 placas, la 3 en su celda, y la escena vuelve con las 3', async () => {
+    await addBox(20, [0, 0, 0], { name: 'A' });
+    store().createPlate();
+    const p3 = store().createPlate()!;
+    await addBox(20, [p3.origin[0], 0, p3.origin[1]], { name: 'C' });
+    expect(store().plates).toHaveLength(3);
+    expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
+    const bytes = savedBytes();
+    const z = unzipSync(bytes);
+    const plates = [...strFromU8(z['Metadata/model_settings.config']).matchAll(/<plate>([\s\S]*?)<\/plate>/g)].map((m) => m[1]);
+    expect(plates).toHaveLength(3);
+    expect(plates.map((p) => p.includes('model_instance'))).toEqual([true, false, true]);
+    const { bedWidthMm: w, bedDepthMm: d } = store().printerProfile;
+    const t = [...strFromU8(z['3D/3dmodel.model']).matchAll(/<item objectid="\d+" transform="([^"]+)"/g)].map((m) => m[1].split(' ').map(Number));
+    // 3 placas = 2 columnas: la placa 3 va en la segunda fila aunque la 2 esté vacía.
+    expect(t[1][9]).toBeCloseTo(w / 2, 4);
+    expect(t[1][10]).toBeCloseTo(-1.2 * d + d / 2, 4);
+    await resetStore();
+    useKuraStore.setState({ plates: [], activePlateId: null, groups: [], layout: 'print' });
+    const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+    expect(await store().importModelFiles([{ name: 'x.3mf', size: bytes.byteLength, read: async () => buf }])).toBe(true);
+    expect(store().plates).toHaveLength(3);
+    expect(store().objects.find((o) => o.name === 'C')!.plateRef).toBe(store().plates[2].id);
   });
 });
 

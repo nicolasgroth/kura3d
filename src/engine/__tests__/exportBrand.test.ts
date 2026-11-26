@@ -43,7 +43,9 @@ describe('marca en los exportadores', () => {
     const xml = textOf3mf(exportSceneTo3MF(scene, 'mm', undefined, BRAND));
     expect(xml).toContain(`<metadata name="Application">${BRAND.name} by ${BRAND.author}</metadata>`);
     expect(xml).toContain('ISGROTH');
-    expect(xml).toContain(`value="${BRAND.name}_Bed"`);
+    // La placa implícita va sin nombre: el laminador muestra el suyo (antes salía «Kurra Studio_Bed»).
+    expect(xml).toContain('<metadata key="plater_name" value=""/>');
+    expect(xml).not.toContain('_Bed');
     const { obj, mtl } = exportSceneToOBJ(scene, 'x', BRAND);
     expect(obj.split('\n')[0]).toBe(`# ${BRAND.name} by ${BRAND.author} — Wavefront OBJ Export (Units: mm, Y-up)`);
     expect(mtl.split('\n')[0]).toContain(BRAND.name);

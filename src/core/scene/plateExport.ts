@@ -9,6 +9,8 @@
  * - Con dos o más placas, un cubo por placa con piezas, en el orden de las placas. Lo que no tiene placa (o apunta
  *   a una que no existe) se excluye y se cuenta para avisar.
  * - Un agregado (imán, torreta) sin placa propia va con la placa de su pieza.
+ * - `platesWithOtherBed`: placas con cama propia de otro tamaño, que el 3MF del laminador (una sola cama) centra en una
+ *   celda de la cama del proyecto, para avisarlo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -66,6 +68,17 @@ export function shiftForExport(
     return moved;
   });
   return { objects: out, offsets };
+}
+
+/**
+ * Placas del archivo con cama propia de otro ancho o fondo que la del proyecto (en el orden de `plateIds`). El 3MF
+ * de los laminadores supone una sola cama: esas placas van centradas en una celda del tamaño de la del proyecto.
+ */
+export function platesWithOtherBed(
+  plates: readonly ScenePlate[], plateIds: ReadonlyArray<string | null>, bed: { widthMm: number; depthMm: number },
+): ScenePlate[] {
+  const differs = (p: ScenePlate) => !!p.bed && (Math.abs(p.bed.widthMm - bed.widthMm) > 1e-6 || Math.abs(p.bed.depthMm - bed.depthMm) > 1e-6);
+  return plateIds.map((id) => findPlate(plates, id)).filter((p): p is ScenePlate => !!p && differs(p));
 }
 
 /** Reparte `targets` (en pose de impresión) en un cubo por placa, cada pieza respecto de su cama. */

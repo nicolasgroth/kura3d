@@ -29,6 +29,7 @@ import { isPrintable } from '../../src/core/scene/objectRole';
 import { adoptNewPieces } from '../../src/core/scene/plateAdopt';
 import { moveToPlateOrNew, removePlateMoving, type PlateActionContext } from '../../src/core/scene/plateActions';
 import { reassignMovedPieces } from '../../src/core/scene/plateFollow';
+import { platesWithOtherBed } from '../../src/core/scene/plateExport';
 import { spreadOnePlatePerObject } from '../../src/core/scene/plateSpread';
 import { createPlate, findPlate, nextPlateName, renamePlate, resolveActivePlate, type PlateScene } from '../../src/core/scene/plates';
 import { t } from '../../src/i18n/index';
@@ -258,6 +259,16 @@ export class HeadlessPlates {
    * Piezas a exportar con placas o en armado (misma regla que el bus de la app): pose de impresión, solo imprimibles,
    * reducidas a `plateId` y cada una respecto de la cama de su placa. null = la escena tal cual (sin placas ni armado).
    */
+  /** Cama del proyecto (la que el 3MF de los laminadores supone para todas las placas). */
+  projectBed() {
+    return projectBed(this.source());
+  }
+
+  /** Nombres de las placas del plan con cama propia de otro tamaño que la del proyecto (van centradas en su celda). */
+  otherBedPlates(plan: SingleFilePlan | null): string[] {
+    return plan ? platesWithOtherBed(this.plates, plan.plateIds, this.projectBed()).map((p) => p.name) : [];
+  }
+
   exportPlan(targets: readonly HeadlessSceneObject[], format: 'stl' | '3mf', plateId?: string): SingleFilePlan | null {
     if (plateId && !findPlate(this.plates, plateId)) throw new CommandError('not-found', 'bus.error.plateNotFound', { id: plateId.slice(0, 64) });
     if (this.plates.length === 0 && this.layout === 'print') return null;

@@ -26,7 +26,7 @@ import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } 
 import { MAX_GROUP_NAME, objectAncestors, reconcileGroups } from '../core/scene/groups';
 import { groupImported } from './importGrouping';
 import { exportNotices, importErrorMessage } from './modelImportNotices';
-import { onlyPlate, singleFilePlan, zipPerPlate, type PlateExportMode } from './plateExportFlow';
+import { onlyPlate, otherBedNotice, singleFilePlan, slicerBedOf, slicerOptionsOf, zipPerPlate, type PlateExportMode } from './plateExportFlow';
 import { planPlateExport } from '../core/scene/plateExport';
 import { readModelBatch } from './modelImportBatch';
 import { isKuraScene, kuraWorldPosition, restoreKuraScene } from './kuraSceneRestore';
@@ -96,8 +96,8 @@ interface IoState {
   /** Placas de un laminador → placas reales (P7); ausente en pruebas que no lo usan. */
   convertGroupsToPlates?: (groupIds?: string[], options?: { dissolve?: boolean }) => unknown;
   unitSystem: Parameters<typeof engine.exportSceneTo3MF>[1];
-  printerProfile: { bedWidthMm?: number };
-  customBedDimensions?: { width: number } | null;
+  printerProfile: { bedWidthMm?: number; bedDepthMm?: number };
+  customBedDimensions?: { width: number; depth?: number } | null;
   projectName: string | null;
   /** Datos del proyecto (descripción y autor viajan en el 3MF); ausente en pruebas que no lo usan. */
   projectInfo?: Pick<import('../project/projectInfo').ProjectInfo, 'description' | 'author'>;
@@ -415,7 +415,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         unitSystem: state.unitSystem,
         ...(fullScene ? { sceneGroups: state.groups ?? [] } : {}),
         ...(single?.plateLayout && request.format === '3mf' ? { plateLayout: single.plateLayout } : {}),
-        ...(request.format === '3mf' ? { projectMeta: projectMetaOf(state) } : {}),
+        ...(request.format === '3mf' ? { projectMeta: projectMetaOf(state), slicer: slicerOptionsOf(state) } : {}),
       });
       const entries: SaveSetEntry[] = files.map((f) => ({
         name: `${base}${f.suffix}`,
@@ -428,6 +428,8 @@ export function createModelIoActions(deps: ModelIoDeps) {
         const triangles = layoutTargets.reduce((acc, o) => acc + Math.floor(o.mesh.indices.length / 3), 0);
         const sized = entries.filter((e) => !e.name.endsWith('.mtl')).map((e) => ({ name: e.name, bytes: e.data.byteLength }));
         for (const notice of exportNotices(sized, triangles, tr, get().language)) get().addToast(notice, 'info');
+        const bedNotice = request.format === '3mf' ? otherBedNotice(single, plates, slicerBedOf(state), tr) : null;
+        if (bedNotice) get().addToast(bedNotice, 'info');
       }
       return saved;
     } catch (error) {
