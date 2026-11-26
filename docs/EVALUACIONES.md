@@ -882,7 +882,39 @@ Cuarta tanda integrada en `main`: regla de dos niveles de Simplificar, galería 
 
 Comprobado a mano en la app: el comando de repartir deja 12 piezas apiladas sin ningún solape. El panel, abierto con una pieza seleccionada, reparte solo esa pieza (su alcance por defecto es «solo la selección» y el resumen lo dice: «1 pieza colocada»).
 
-**Sin hacer:** evaluación a ciegas de usabilidad y funcional de lo de la noche. La funcional se lanzó a la 01:41 y se cortó por el límite de uso sin dejar nota. Las notas vigentes de esos dos evaluadores son las del 25-nov (85 y 87) y no cubren lo nuevo.
+La evaluación funcional lanzada a la 01:41 se cortó por el límite de uso sin dejar nota; se repitió a las 07:25 junto con la de usabilidad (sección siguiente).
 
 Consumo (modelo · duración; los tokens de esta tanda no quedaron anotados): `fix/qa25h` (Opus · 01:41 a 03:53 con el corte de 85 min en medio), galería de Asistentes (Sonnet · unos 15 min), foco y Esc de paneles más arrastre por plano (Sonnet · unos 15 min), `fix/qa25j` (10 min; modelo no anotado), guías y capturas (Sonnet · 39 min).
+
+## 26-nov-2026 · Evaluación a ciegas de lo de la noche (07:25, sobre 3fc31a1)
+
+**Funcional: 86** (Opus · 14 min · 189 k). Sin bloqueos. Sin navegador: midió con el motor, el servidor MCP sin interfaz y modelos reales.
+
+| Funcionalidad | Nota | Qué falta |
+|---|---|---|
+| Datos del proyecto en `.kura` v5 | 92 | Probar un v4 real con placas; medir el contador de tiempo en la app |
+| Imanes cuadrados y rectangulares | 90 | Mensaje de error cuando falta el ancho del rectangular |
+| Repartir en placas | 88 | «Por grupo» de extremo a extremo; avisar qué placa queda fuera de la cama por la pieza que no cupo |
+| Cama por placa y placas de laminador | 86 | Recorrido real de convertir en placas midiendo origen y piezas |
+| Herramientas MCP de placas y datos | 85 | Probar con la app conectada; «por grupo» sin interfaz; mensaje de campo desconocido |
+| Firmeza de las uniones | 84 | El MCP no entrega el nivel por unión (solo avisa las débiles) |
+| Exportar por placa | 82 | Abrir el 3MF en Bambu Studio y Orca; ZIP de extremo a extremo |
+| Simplificar | 80 | Más tolerancia puede dejar más triángulos; −11,7 % de volumen solo avisa; la versión segura también cierra agujeros |
+
+**Usabilidad: 80, bajo el mínimo** (Opus · 14 min · 198 k). Sin bloqueos. En navegador a 1440 y 1024 px, tema claro y oscuro, con modelos reales.
+
+| Funcionalidad | Nota | Lo que más resta |
+|---|---|---|
+| Simplificar | 88 | El fantasma no se encuadra; el aviso de cambio de forma es solo texto |
+| Asistentes | 87 | Dos «Volver» a la vez; nombre accesible de las tarjetas demasiado largo |
+| Datos del proyecto | 86 | Difícil de descubrir (al fondo del panel, solo sin selección) |
+| Repartir en placas | 84 | El resumen queda bajo el pliegue, lejos del botón |
+| Paneles con «Volver» y Esc | 80 | Cortar necesita dos «Volver» (panel intermedio); la barra flotante sigue visible en Repartir y Asistentes |
+| Cama por placa | 78 | El rótulo de cama del visor no sigue a la placa activa; texto de 10 px; foco inicial en «Cerrar» |
+| Arrastre por plano | 78 | Con Mayús el rótulo no nombra el eje; la ayuda de atajos dice «plano horizontal» |
+| Vistas y tira de placas | 72 | «Convertir en placas» deja dos placas llamadas «Placa 1»; insignias que no se distinguen y se montan sobre el ojo |
+
+El evaluador vio que, tras deshacer un reparto, las piezas por placa no coincidían (1/70/26 antes, 0/71/26 después). El orquestador lo repitió en navegador con el mismo 3MF real de 95 piezas más un cubo: deshacer restauró placas, asignación y posiciones idénticas (0 diferencias). No se reproduce.
+
+Ronda de corrección de usabilidad en curso (`fix/usab-n26`); luego se reevalúa con un evaluador nuevo.
 

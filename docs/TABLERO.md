@@ -1,10 +1,10 @@
 # Tablero de Kurra Studio
 
-**Actualizado el 26 de noviembre de 2026, 07:20.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
+**Actualizado el 26 de noviembre de 2026, 07:55.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
 
 ## En corto: último día (noche del 25 al 26 de noviembre)
 
-**Notas de la última evaluación a ciegas** (mínimo 85): usabilidad **85** · código **85** (lo de esta noche; 87 lo anterior) · funcional **87**. Sin bloqueos. Las de usabilidad y funcional son del 25-nov y no cubren lo de esta noche: esa evaluación está en curso.
+**Notas de la evaluación a ciegas de lo de esta noche** (mínimo 85): usabilidad **80, bajo el mínimo: en corrección** · código **85** · funcional **86**. Sin bloqueos.
 
 **Pruebas en `main`:** 4336 del programa y 188 del servidor MCP, todas en verde. Capturas de las guías: 35 recorridos en verde.
 
@@ -40,6 +40,8 @@ Menores anotados, sin corregir:
 ## En corto: lo que viene
 
 Ahora:
+
+0. Subir usabilidad sobre 85: nombres únicos de placa, rótulo de cama según la placa activa, Cortar con un solo «Volver», resumen de Repartir junto al botón, eje en el rótulo de arrastre.
 
 1. Corregir los menores anotados arriba.
 2. Deslizadores también en las formas básicas del inspector.
