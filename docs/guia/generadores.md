@@ -35,6 +35,8 @@ Kurra Studio crea formas a partir de un texto, un dibujo vectorial, una imagen o
 
 ![Generador de roscas métricas ISO](img/generadores-04-rosca.png)
 
+Para que salgan las dos piezas que enroscan (perno + tuerca, o agujero roscado + perno) marca **Crear la pareja que enrosca**: se crean lado a lado con la holgura aplicada y un aviso dice la holgura mínima medida. Detalle en [Recipiente con tapa roscada](tapa-roscada.md#roscas-iso-que-enroscan-perno--tuerca).
+
 ## Molde
 
 1. Selecciona la pieza a copiar y pulsa **Mayús+M** (o *Generar Molde / Caja de Silicona* en `Ctrl+K`).
