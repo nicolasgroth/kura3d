@@ -13,13 +13,14 @@
 import type { Mat4 } from 'manifold-3d';
 import type { Vec3 } from '../../types/kura';
 import { EngineError } from '../engineErrors';
+import { OPERATION_RANGES } from '../operationLimits';
 import { AXIS_INDEX } from './splitSections';
 import type { SplitAxis, SplitBounds, SplitManualCut } from './splitTypes';
 
 /** Máximo de planos a mano por plan. */
 export const SPLIT_MANUAL_MAX_CUTS = 24;
 /** Inclinación máxima de cada ángulo (grados): más allá el eje base deja de ser el dominante. */
-export const SPLIT_MANUAL_MAX_TILT_DEG = 45;
+export const SPLIT_MANUAL_MAX_TILT_DEG = OPERATION_RANGES.split.manualTiltDeg.max;
 /** Bajo este ángulo (grados) el plano se trata como recto. */
 const TILT_EPS_DEG = 1e-3;
 

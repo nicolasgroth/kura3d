@@ -20,10 +20,10 @@ import { summarizeSplitResult } from './splitSummary.js';
 import { dispatchWithFallback, type KuraToolContext } from './tools.js';
 
 /** Cortes a mano (`cuts`), en ejes del usuario: mismas reglas que `readManualCuts` del bus. */
-const tiltSchema = z.number().finite().min(-SPLIT_MANUAL_MAX_TILT_DEG).max(SPLIT_MANUAL_MAX_TILT_DEG);
+const tiltSchema = rangeSchema(OR.split.manualTiltDeg);
 const manualCutsSchema = z.array(z.object({
   axis: z.enum(['x', 'y', 'z']),
-  positionMm: z.number().finite().min(-1_000_000).max(1_000_000),
+  positionMm: rangeSchema(OR.split.manualPositionMm),
   tiltDeg: z.tuple([tiltSchema, tiltSchema]).optional(),
 }).strict()).min(1).max(SPLIT_MANUAL_MAX_CUTS);
 

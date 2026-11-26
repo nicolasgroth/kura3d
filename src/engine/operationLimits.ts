@@ -158,6 +158,9 @@ export const OPERATION_RANGES = {
     lapHeightMm: closed(2, 30),
     minFragmentMm3: closed(0, 1_000_000),
     minWallForConnectorMm: closed(0, 50),
+    /** Cortes a mano: posición del plano (mm, mundo; el motor exige además que caiga dentro del modelo) y cada ángulo. */
+    manualPositionMm: closed(-1_000_000, 1_000_000),
+    manualTiltDeg: closed(-45, 45),
   },
   /** Comprobar encaje (`check_fit`). */
   fitCheck: {
