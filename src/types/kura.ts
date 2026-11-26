@@ -1143,7 +1143,8 @@ export interface KuraCommandRequest {
     | 'add_magnet_pocket'
     | 'add_screw_boss'
     | 'add_keyhole'
-    | 'add_cable_pass';
+    | 'add_cable_pass'
+    | 'arrange_on_plates';
   params: Record<string, unknown>;
 }
 

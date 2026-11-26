@@ -3,6 +3,7 @@
  * @description Entradas de la paleta de comandos para las acciones del catálogo (`actionsCatalog`) que la paleta
  * no rotula ya con su nombre canónico: así todo comando del menú «Acciones» y del menú contextual se encuentra en
  * la paleta con el mismo nombre. «Convertir en» y «Alinear y distribuir» se abren en una entrada por opción.
+ * «Repartir en placas» se ejecuta con sus opciones por defecto mientras no exista su diálogo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,7 +13,8 @@ import React from 'react';
 import { Zap } from 'lucide-react';
 import { t, type TranslationKey } from '../i18n';
 import { OBJECT_ROLES } from '../core/scene/objectRole';
-import { actionName, moveToPlateName } from '../store/actionLabels';
+import { actionName, arrangePlatesName, moveToPlateName } from '../store/actionLabels';
+import { useKuraStore } from '../store/useKuraStore';
 import { assignable } from '../core/scene/plates';
 import { ACTION_GROUPS, ACTION_SHORTCUTS, actionAvailability, type ActionId } from '../store/actionsCatalog';
 import { ROLE_LABEL_KEY } from '../store/roleLabels';
@@ -88,5 +90,14 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
     for (const p of plates) out.push({ ...base, id: `action-moveToPlate-${p.id}`, label: `${name}: ${p.name}`, run: () => runMoveToPlate(p.id) });
     out.push({ ...base, id: 'action-moveToPlate-new', label: `${name}: ${t(language, 'plates.move.new')}`, run: () => runMoveToPlate(null) });
   }
+  // «Repartir en placas» con las opciones por defecto (el diálogo con opciones llega en otro lote).
+  const arrangeable = state.objects.some((o) => o.visible && assignable(o) && !o.metadata?.addon);
+  const arrangeUnavailable = state.busyOperation ? 'rediseno.reason.busy' : arrangeable ? null : 'plates.arrange.toast.nothing';
+  out.push({
+    id: 'action-arrangeOnPlates', label: arrangePlatesName(language), category: t(language, 'rediseno.actions.group.position'),
+    keywords: 'arrangeOnPlates repartir distribuir placas empaquetar arrange pack plates nest', kind: 'local', icon,
+    ...(arrangeUnavailable ? { unavailable: t(language, arrangeUnavailable) } : {}),
+    run: () => void useKuraStore.getState().arrangeOnPlatesApply(),
+  });
   return out;
 }
