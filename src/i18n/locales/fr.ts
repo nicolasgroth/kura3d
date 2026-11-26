@@ -1345,7 +1345,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'split.glueOptions': 'Pour avoir des connecteurs :',
   'split.glueLowerMin': 'Baisser le minimum de paroi',
   'split.glueLowerMinTip': 'Va au champ « paroi minimale pour connecteur » : avec une valeur plus basse, les jonctions fines ont aussi un connecteur',
-  'split.glueUseLap': 'Utiliser le recouvrement de bord',
+  'split.glueUseLap': 'Utiliser le recouvrement de bord dans toutes les jonctions',
   'split.glueUseLapTip': 'Passe la jonction en recouvrement de bord, adapté aux parois fines',
   'split.planePickLabel': 'Choisir le plan {axis}{n}',
   'split.planePickTip': 'Choisir le plan {axis}{n} : le met en évidence dans la vue et le déplace avec ↑/↓ (Maj : ×10) lorsque le focus est sur ce bouton ou dans la vue',

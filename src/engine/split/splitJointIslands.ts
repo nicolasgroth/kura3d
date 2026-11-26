@@ -11,6 +11,8 @@
 
 import type { CrossSection } from 'manifold-3d';
 import type { Vec3 } from '../../types/kura';
+import { type Vec2 } from '../cutConnectorPolygonIndex';
+import { inscribedCircle } from '../jointSection';
 import { islandWidth } from './splitSections';
 import type { SplitAxis, SplitJointIsland } from './splitTypes';
 
@@ -34,6 +36,15 @@ export function sectionContains(cs: CrossSection, uv: [number, number]): boolean
   return inside;
 }
 
+/** Isla clasificada; el ancho útil se mide solo en las que quedan para pegar (es la medida que se informa). */
+function islandInfo(isl: CrossSection, kind: SplitJointIsland['kind']): SplitJointIsland {
+  const areaMm2 = isl.area();
+  const minWidthMm = islandWidth(isl, areaMm2);
+  if (kind !== 'glue') return { kind, areaMm2, minWidthMm };
+  const usableWidthMm = 2 * inscribedCircle(isl.toPolygons() as Vec2[][]).radius;
+  return { kind, areaMm2, minWidthMm, usableWidthMm: Math.round(usableWidthMm * 100) / 100 };
+}
+
 /**
  * Clasifica las islas de la cara. `lapAccepted[i]` = la isla i recibió solape (ver `buildLapSolids`).
  * No libera las islas.
@@ -41,10 +52,8 @@ export function sectionContains(cs: CrossSection, uv: [number, number]): boolean
 export function classifyIslands(islands: CrossSection[], axis: SplitAxis, centers: Vec3[], lapAccepted?: boolean[]): SplitJointIsland[] {
   const uvs = centers.map((c) => worldToSectionUV(axis, c));
   return islands.map((isl, i) => {
-    const areaMm2 = isl.area();
-    const minWidthMm = islandWidth(isl, areaMm2);
     const kind: SplitJointIsland['kind'] = uvs.some((uv) => sectionContains(isl, uv)) ? 'connector' : lapAccepted?.[i] ? 'lap' : 'glue';
-    return { kind, areaMm2, minWidthMm };
+    return islandInfo(isl, kind);
   });
 }
 
@@ -62,12 +71,10 @@ export function classifyContactIslands(
     if (parts.length === 0) return classifyIslands(faceIslands, axis, centers, lapAccepted);
     const uvs = centers.map((c) => worldToSectionUV(axis, c));
     return parts.map((isl) => {
-      const areaMm2 = isl.area();
-      const minWidthMm = islandWidth(isl, areaMm2);
       let kind: SplitJointIsland['kind'] = 'glue';
       if (uvs.some((uv) => sectionContains(isl, uv))) kind = 'connector';
       else if (lapAccepted && faceIslands.some((f, i) => lapAccepted[i] && overlaps(isl, f))) kind = 'lap';
-      return { kind, areaMm2, minWidthMm };
+      return islandInfo(isl, kind);
     });
   } finally {
     for (const p of parts) p.delete();

@@ -66,7 +66,7 @@ export function jointStrength(
   const discarded = islands
     .map((isl, island) => ({ isl, island }))
     .filter(({ isl }) => isl.kind === 'glue')
-    .map(({ isl, island }) => ({ island, reason: 'section-narrow' as const, measuredMm: isl.minWidthMm }));
+    .map(({ isl, island }) => ({ island, reason: 'section-narrow' as const, measuredMm: isl.usableWidthMm ?? isl.minWidthMm }));
   if (!used || used.type === 'lap' || centers.length === 0) {
     const level = used?.type === 'lap' ? 'fair' : 'glue';
     return { level, reasons: level === 'glue' ? ['no-connector'] : [], count: 0, sizeMm: 0, depthMm: 0, areaRatio: 0, islands: islands.length, islandsCovered: covered, shrunk: [], discarded };

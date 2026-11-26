@@ -1345,7 +1345,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'split.glueOptions': '若要连接件：',
   'split.glueLowerMin': '降低最小壁厚',
   'split.glueLowerMinTip': '跳到“连接件最小壁厚”字段：数值更小时，薄接缝也会带连接件',
-  'split.glueUseLap': '使用边缘搭接',
+  'split.glueUseLap': '所有接合处使用边缘搭接',
   'split.glueUseLapTip': '将接缝改为边缘搭接，适用于薄壁',
   'split.planePickLabel': '选择平面 {axis}{n}',
   'split.planePickTip': '选择平面 {axis}{n}：在视图中高亮，并在焦点位于此按钮或视图时用 ↑/↓ 移动（Shift：×10）',

@@ -230,7 +230,7 @@ export function magnetStrength(
   const discarded = islands
     .map((isl, island) => ({ isl, island }))
     .filter(({ isl }) => isl.kind === 'glue')
-    .map(({ isl, island }) => ({ island, reason: 'section-narrow' as const, measuredMm: isl.minWidthMm }));
+    .map(({ isl, island }) => ({ island, reason: 'section-narrow' as const, measuredMm: isl.usableWidthMm ?? isl.minWidthMm }));
   const base = { islands: islands.length, islandsCovered: covered, discarded, basis: 'magnet' as const };
   if (!used || centers.length === 0) {
     return { ...base, level: 'glue', reasons: ['no-connector'], count: 0, sizeMm: 0, depthMm: 0, areaRatio: 0, shrunk: [] };
