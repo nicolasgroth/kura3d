@@ -132,6 +132,8 @@ for (const tema of ['light', 'dark'] as const) {
     await abrirErr(page);
     // Tras recargar con una escena sin guardar aparece la recuperación: se descarta.
     await page.getByRole('button', { name: 'Descartar' }).click({ timeout: 6000 }).catch(() => undefined);
+    // Descartar pide confirmación en un diálogo: se confirma si aparece.
+    await page.getByRole('dialog').getByRole('button', { name: /^Descartar/ }).click({ timeout: 3000 }).catch(() => undefined);
     await r3f(page);
     await cmd(page, 'create_primitive', { type: 'box', width: 30, depth: 30, height: 30, name: 'Cubo' });
     await abrirPanelIman(page);

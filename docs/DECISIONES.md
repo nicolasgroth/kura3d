@@ -114,3 +114,9 @@ Histórico de decisiones ya tomadas por el autor. Las que siguen abiertas están
 | 2026-11-24 | Trabajo nocturno | El autor autoriza trabajar de noche con procesos en paralelo. Las dudas se dejan en `docs/CONSULTAS_PROYECTO.md`. |
 | 2026-11-24 | README como registro vivo | El README lista lo que ya funciona y está habilitado, separado de lo que falta y de las ideas, y se actualiza como parte del cierre de cada lote, a medida que las funcionalidades se van cerrando. |
 | 2026-11-25 | Repositorio de GitHub | Renombrado de `nicolasgroth/kura3d` a `nicolasgroth/kurra3d` por pedido expreso del autor. |
+| 2026-11-26 | Formato del proyecto antes de la 1.0 | Mientras no se publique la 1.0, el formato `.kura` puede cambiar las veces que haga falta. Todo guardado sale en versión 5. |
+| 2026-11-26 | Simplificar: cuándo avisar | Confirmadas las tres reglas: túneles con desviación menor a 0,2 mm se aplican con aviso; un cambio moderado de forma se aplica con aviso; un resultado que destruye la pieza no se aplica y se ofrece la versión segura o «Aplicar de todos modos». |
+| 2026-11-26 | Banner y logo oscuro | Aprobados por el autor. |
+| 2026-11-26 | Ramas locales antiguas | Revisadas y borradas: `respaldo/stash-io-01a` (su opción de conservar la posición al importar ya está en `main`) y la copia de trabajo del primer lote de recetas (sus 45 archivos están en `main` con versiones posteriores). |
+| 2026-11-26 | Comprimir el `.kura` | El autor lo deja a criterio. El archivo es binario (cabecera, índice en JSON y mallas empaquetadas), sin compresión. Una muestra real de 13 MB baja a 1,5 MB con deflate. Se hará como formato 6, midiendo antes en varios proyectos reales. |
+

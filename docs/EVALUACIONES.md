@@ -933,3 +933,7 @@ El evaluador vio que, tras deshacer un reparto, las piezas por placa no coincid�
 
 Patrón transversal: el foco cae al documento tras acciones que tardan o al cerrar paneles (Dividir, «Volver a Imprimir», vista previa de Simplificar, «Convertir en placas»). Segunda ronda de corrección en curso (`fix/usab-n26b`); si la tercera evaluación sigue bajo 85, se consulta al autor.
 
+**Segunda ronda de corrección de usabilidad** (`fix/usab-n26b`, Sonnet · 19 min · 267 k; en `main` como 32a104b). Ocho objetivos: foco al cerrar paneles y tras acciones que tardan, Esc de Medir, nombres de placa repetidos al renombrar, «Mover a placa» dentro de la cama, aviso de repartir, pista de Alt y Mayús al arrastrar, aviso de Simplificar, cama en la barra de estado. Verificación del orquestador: 4366 pruebas del programa y 188 del servidor MCP en verde; 141 recorridos de navegador de lo tocado (139 al primer intento; los 2 restantes eran del recorrido de imanes, que no confirmaba el diálogo «Descartar borrador», y pasan tras ajustarlo); recorrido nuevo `usab-n26b` (un Esc en Medir, también con el tooltip abierto; nombre repetido rechazado); 35 capturas regeneradas y 0 enlaces rotos. Tercera evaluación de usabilidad: en curso.
+
+Consumo de las evaluaciones y rondas de esta mañana: funcional (Opus · 14 min · 189 k), usabilidad 1 (Opus · 14 min · 198 k), corrección 1 (Sonnet · 15 min · 187 k), usabilidad 2 (Opus · 13 min · 200 k), corrección 2 (Sonnet · 19 min · 267 k).
+

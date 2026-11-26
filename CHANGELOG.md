@@ -10,6 +10,12 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **El foco ya no se pierde** al cerrar Dividir, al volver de Armado a Imprimir, tras «Convertir en placas» ni al terminar la vista previa de Simplificar.
+- **Medir:** sin puntos marcados, un solo Esc sale de la herramienta.
+- **Placas:** renombrar con un nombre ya usado se rechaza con aviso; «Mover a placa» deja la pieza dentro de la cama destino; el aviso de repartir dice cuántas placas son nuevas.
+- **Arrastrar:** Mayús apretado antes de arrastrar ya no deselecciona la pieza; la pista del visor dice lo que hace Alt de verdad.
+- **Simplificar:** el aviso de cambio de forma se ve como advertencia.
+- **Cama por placa:** la barra de estado muestra la cama de la placa activa.
 - **Placas con nombre único.** Convertir las placas de un 3MF de laminador ya no deja dos «Placa 1». La insignia de cada pieza (P1, P2…) sigue el orden de la tira.
 - **El rótulo «Cama» del visor muestra la cama de la placa activa** cuando esa placa tiene cama propia.
 - **Cortar en un solo nivel:** el panel se llama «Cortar» y un «Volver» o un Esc lo cierra.
