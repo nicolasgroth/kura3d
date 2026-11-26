@@ -1,0 +1,86 @@
+/**
+ * @file src/styles/splitManualCuts.css
+ * @description Estilos del modo de cortes y de la lista de planos a mano de "Dividir para imprimir" (filas que se
+ * envuelven para caber en el panel a 1024 px; el plano elegido con el mismo naranjo del visor).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license AGPL-3.0-or-later
+ */
+
+.kura-split-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.kura-split-manual-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.kura-split-cuts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kura-split-cuts li fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  padding: 4px 6px 6px;
+  border: 1px solid var(--border-subtle, rgba(127, 127, 127, 0.35));
+  border-radius: 6px;
+}
+
+.kura-split-cuts li legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kura-split-cuts li.is-active fieldset {
+  border-color: #f97316;
+  background: color-mix(in srgb, #f97316 10%, transparent);
+}
+
+.kura-split-cut-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.kura-split-cut-row > label,
+.kura-split-cut-tilt > label {
+  min-width: 0;
+}
+
+.kura-split-cut-slider {
+  flex: 1 1 90px;
+  min-width: 70px;
+}
+
+.kura-split-cut-slider:focus-visible,
+.kura-split-cuts select:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-split-cut-tilt {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

@@ -160,7 +160,10 @@ const splitJointRecord = shape({
   labelPlacement: optional((v) => v === null || oneOf('joint', 'outside', 'dots')(v)),
   magnets: optional(splitJointMagnets),
   strength: optional(splitJointStrength),
+  // Uniones en planos a mano inclinados: normal de la cara (campo opcional; los proyectos anteriores no lo traen)
+  normal: optional(vec3),
 });
+export const validSplitJointRecord = (v: unknown): boolean => splitJointRecord(v);
 // Avisos de la división guardados con el grupo (`SplitStoredNotes`): todo acotado en cantidad y largo.
 const short = (n: number) => (v: unknown) => typeof v === 'string' && v.length <= n;
 const shortList = (max: number, n: number) => (v: unknown) => Array.isArray(v) && v.length <= max && v.every(short(n));

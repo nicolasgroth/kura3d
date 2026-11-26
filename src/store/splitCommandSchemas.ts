@@ -23,6 +23,13 @@ import { internalAxisOfUser } from '../core/scene/displayAxes';
 import { readMagnetConnector } from './splitMagnetParams';
 import { activePlateBed, type PlateBedSource } from '../core/scene/activePlateBed';
 import { plateFrameFor } from '../core/scene/plateFrame';
+import { readManualCuts } from './splitManualCutsParam';
+
+/** `cuts` (cortes a mano) como campo opcional del plan: ausente si no viene. */
+function manualCutsOf(p: RawParams): { manualCuts?: ReturnType<typeof readManualCuts> } {
+  const cuts = readManualCuts(p);
+  return cuts ? { manualCuts: cuts } : {};
+}
 
 const AXES = ['x', 'y', 'z'] as const;
 
@@ -131,6 +138,7 @@ export function parseSplitForBed(scene: SceneView & BedSource, p: RawParams): Sp
       allowDiagonal: readBoolean(p, 'allowDiagonal') ?? false,
       shiftWindow: readRange(p, OR.split.shiftWindow, 'shiftWindow') ?? d.shiftWindow,
       connector,
+      ...manualCutsOf(p),
     },
     execute: {
       connector,

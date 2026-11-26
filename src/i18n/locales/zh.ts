@@ -48,6 +48,7 @@ import { FIX10_ZH } from './fix10';
 import { OPNOTES_ZH } from './operationNotes';
 import { IMPORTREAL_ZH } from './importReal';
 import { REPAIR_ZH } from './repair';
+import { SPLIT_MANUAL_ZH } from './splitManual';
 import { GEN_MOTOR_ZH } from './genMotor';
 import { UXESCENA_ZH } from './uxEscena';
 import { UXCIERRE_ZH } from './uxCierre';
@@ -126,6 +127,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...OPNOTES_ZH,
   ...IMPORTREAL_ZH,
   ...REPAIR_ZH,
+  ...SPLIT_MANUAL_ZH,
   ...GEN_MOTOR_ZH,
   ...UXESCENA_ZH,
   ...UXCIERRE_ZH,

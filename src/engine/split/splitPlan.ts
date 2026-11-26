@@ -16,9 +16,10 @@ import { EngineError, engineWarning } from '../engineErrors';
 import { initManifoldEngine, meshDataToManifold } from '../manifoldKernel';
 import { OPERATION_DEFAULTS, SPLIT_HARD_MAX_PIECES } from '../operationLimits';
 import { applyTransformToMesh } from '../primitives';
-import { gridOf } from './splitCells';
+import { cutGridKey, gridOf } from './splitCells';
 import { measureOccupancy } from './splitOccupancy';
-import { cutKey, rememberCut } from './splitCutCache';
+import { cutKey, rememberCut, type CutCells } from './splitCutCache';
+import { manualPlanFromManifold } from './splitManualPlan';
 import {
   AXIS_INDEX,
   connectorMargin,
@@ -74,7 +75,7 @@ export function connectorProtrusion(c: SplitConnectorOptions | null): number {
 }
 
 /** Tramo mínimo: el alojamiento con su pared debe caber en la pieza que lo recibe. */
-function minSpan(c: SplitConnectorOptions | null): number {
+export function minSpan(c: SplitConnectorOptions | null): number {
   return c ? 2 * (Math.max(0.8, c.depth + c.tolerance) + 0.8) + 2 : 2;
 }
 
@@ -249,8 +250,8 @@ function placePlanes(
   return planes;
 }
 
-/** Valida y completa opciones. */
-function resolveOptions(bed: SplitBed, o: BedSplitPlanOptions) {
+/** Valida y completa opciones (la comparte el plan a mano, `splitManualPlan.ts`). */
+export function resolveOptions(bed: SplitBed, o: BedSplitPlanOptions) {
   const sides: Array<[string, number]> = [['bedWidthMm', bed.widthMm], ['bedDepthMm', bed.depthMm], ['bedHeightMm', bed.heightMm]];
   for (const [name, v] of sides) {
     if (!(Number.isFinite(v) && v > 0)) throw new EngineError('INVALID_PARAMETER', { name, value: String(v), min: 0, max: 10_000 });
@@ -370,6 +371,11 @@ export async function planBedSplit(obj: SceneObject, bed: SplitBed, options: Bed
   const world = applyTransformToMesh(obj.mesh, obj.position, obj.rotation, obj.scale);
   const m = meshDataToManifold(wasm, world, undefined, obj.color);
   try {
+    if (options.manualCuts) {
+      // Cortes a mano: el plan es la lista pedida (sin rejilla automática)
+      const remember = (plan: BedSplitPlan, cells: CutCells) => rememberCut(cutKey(world, obj.color, cutGridKey(plan)), m.volume(), cells);
+      return { ...manualPlanFromManifold(wasm, m, bed, options, remember), elapsedMs: performance.now() - t0 };
+    }
     const plan = planFromManifold(m, bed, options);
     const occupancy = plan.fitsWithoutCuts || options.countOccupancy === false
       ? undefined

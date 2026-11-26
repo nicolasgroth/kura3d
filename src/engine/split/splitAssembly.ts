@@ -34,6 +34,8 @@ export interface PendingJoint {
   lap: SplitLapInfo | null;
   contactAreaMm2: number;
   clearance: number;
+  /** Solo planos inclinados: normal de la cara. */
+  normal?: Vec3;
   /** Islas de la cara con su tipo (pasan a `glue` si la unión se pega). */
   islands?: SplitJointIsland[];
   /** Sólidos de conector/solape agregados a `low.adds` y restados en `high.subs` (y en `low.subs`: agujeros del tarugo suelto). */
@@ -115,7 +117,7 @@ export function fixAssemblyBeforeConnectors(
   const parts = order.map((b) => ({ code: b.code, mesh: manifoldToMeshData(b.m), assembly: { position: [0, 0, 0] as Vec3, rotation: [0, 0, 0] as Vec3 } }));
   const input: AssemblyJointInput[] = joints.map((j) => ({
     label: j.label, axis: j.axis, position: j.position, kind: j.kind, connector: j.connector,
-    connectorCenters: j.connectorCenters, contactAreaMm2: j.contactAreaMm2,
+    connectorCenters: j.connectorCenters, contactAreaMm2: j.contactAreaMm2, ...(j.normal ? { normal: j.normal } : {}),
     a: { part: index.get(j.low)!, code: order[index.get(j.low)!].code },
     b: { part: index.get(j.high)!, code: order[index.get(j.high)!].code },
   }));

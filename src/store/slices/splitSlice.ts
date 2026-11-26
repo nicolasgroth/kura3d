@@ -52,6 +52,9 @@ export interface SplitSliceState {
   /** Plano activo para el teclado y el resaltado (`eje:índice`), o null. */
   splitActivePlane: string | null;
   setSplitActivePlane: (key: string | null) => void;
+  /** Vista previa de dividir: `true` dibuja los planos de corte; `false` solo las cajas de las piezas. */
+  splitShowCuts: boolean;
+  setSplitShowCuts: (show: boolean) => void;
   /** Vista explosionada (0 = armado, 1 = separado): solo visual. */
   splitExplode: { groupId: string; factor: number } | null;
   setSplitExplode: (groupId: string | null, factor?: number) => void;
@@ -71,6 +74,8 @@ export function createSplitSlice(ctx: StoreContext): Partial<KuraStoreState> {
     splitExplode: null,
     splitActivePlane: null,
     setSplitActivePlane: (key) => set({ splitActivePlane: key }),
+    splitShowCuts: true,
+    setSplitShowCuts: (show) => set({ splitShowCuts: show }),
 
     requestSplitPlan: (objectId, bed, options, delayMs = SPLIT_PLAN_DEBOUNCE_MS, assemblyPreview) => {
       const ticket = ++token;

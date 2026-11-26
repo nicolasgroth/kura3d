@@ -1014,6 +1014,8 @@ export interface SplitJointRecord {
    * Ausente en proyectos anteriores.
    */
   strength?: SplitJointRecordStrength;
+  /** Solo uniones en planos a mano inclinados: normal unitaria de la cara. Ausente en uniones rectas y proyectos anteriores. */
+  normal?: Vec3;
 }
 
 /** Firmeza guardada de una unión del corte (`SplitJointStrength` en `engine/split/splitTypes.ts`). */

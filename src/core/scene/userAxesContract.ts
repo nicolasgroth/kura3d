@@ -27,6 +27,7 @@ import {
   type AxisDirection,
   type AxisName,
 } from './displayAxes';
+import { internalCutToUser } from './splitManualCutAxes';
 
 /** Modo de alineación del usuario → modo interno (Y del usuario = fondo = −Z interno; Z = altura = Y interno). */
 const ALIGN_USER_TO_INTERNAL: Partial<Record<AlignMode, AlignMode>> = {
@@ -105,7 +106,7 @@ interface PlanLike {
   bounds: { min: Vec3; max: Vec3 };
   usableMm: Vec3;
   counts: { x: number; y: number; z: number };
-  planes: { axis: AxisName; position: number; uniformPosition: number }[];
+  planes: { axis: AxisName; position: number; uniformPosition: number; normal?: Vec3; tiltDeg?: [number, number] }[];
   pieces: { cell: [number, number, number]; bounds: { min: Vec3; max: Vec3 }; sizeMm: Vec3; printRotation: Vec3 }[];
   /** Conteos reales del plan: celdas y medidas en ejes internos (`jointsPerPlane` sigue el orden de `planes`). */
   occupancy?: { cells: Array<[number, number, number]>; pieceSizesMm: Vec3[] };
@@ -124,7 +125,11 @@ export function splitPlanToUser<T extends PlanLike>(plan: T): T {
     counts: { x: plan.counts.x, y: plan.counts.z, z: plan.counts.y },
     planes: plan.planes.map((p) => {
       const { axis, sign } = userAxisOfInternal(p.axis);
-      return { ...p, axis, position: p.position * sign + 0, uniformPosition: p.uniformPosition * sign + 0 };
+      // Plano a mano inclinado: normal y ángulos en ejes del usuario (el desplazamiento `normal · x` no cambia)
+      const tilt = p.normal && p.tiltDeg
+        ? { normal: toUserVector(p.normal), tiltDeg: internalCutToUser({ axis: p.axis, positionMm: p.position, tiltDeg: p.tiltDeg }).tiltDeg }
+        : {};
+      return { ...p, axis, position: p.position * sign + 0, uniformPosition: p.uniformPosition * sign + 0, ...tilt };
     }),
     pieces: plan.pieces.map((piece) => ({
       ...piece,
@@ -160,6 +165,8 @@ interface JointLike {
   labelEngraved?: boolean;
   /** Imanes de la unión (medida, cantidad, polaridad), si los lleva. */
   magnets?: unknown;
+  /** Solo uniones en planos inclinados: normal de la cara (ejes internos). */
+  normal?: Vec3;
 }
 
 const sideToUser = <S extends JointSide>(s: S): S => (s.face ? { ...s, face: userDirectionOfInternal(s.face) } : s);
@@ -170,6 +177,7 @@ export function splitJointToUser(j: JointLike) {
     label: j.label, axis: axisToUser(j.axis), a: sideToUser(j.a), b: sideToUser(j.b),
     connectors: j.connectorCenters.length, labelEngraved: j.labelEngraved,
     ...(j.magnets ? { magnets: j.magnets } : {}),
+    ...(j.normal ? { normal: toUserVector(j.normal) } : {}),
   };
 }
 

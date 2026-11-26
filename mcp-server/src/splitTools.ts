@@ -13,9 +13,19 @@ import { z } from 'zod';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../../src/engine/operationLimits';
 import { MAGNET_DEFAULTS as MD, MAGNET_RANGES as MR } from '../../src/core/addons/magnetPocket';
 import { magnetConnector } from '../../src/engine/split/splitMagnet';
+import { SPLIT_MANUAL_MAX_CUTS, SPLIT_MANUAL_MAX_TILT_DEG } from '../../src/engine/split/splitManualCuts';
+import { userCutToInternal } from '../../src/core/scene/splitManualCutAxes';
 import { idSchema, rangeSchema } from './schemas.js';
 import { summarizeSplitResult } from './splitSummary.js';
 import { dispatchWithFallback, type KuraToolContext } from './tools.js';
+
+/** Cortes a mano (`cuts`), en ejes del usuario: mismas reglas que `readManualCuts` del bus. */
+const tiltSchema = rangeSchema(OR.split.manualTiltDeg);
+const manualCutsSchema = z.array(z.object({
+  axis: z.enum(['x', 'y', 'z']),
+  positionMm: rangeSchema(OR.split.manualPositionMm),
+  tiltDeg: z.tuple([tiltSchema, tiltSchema]).optional(),
+}).strict()).min(1).max(SPLIT_MANUAL_MAX_CUTS);
 
 /** Ancho del imán rectangular de la unión: obligatorio con `magnetShape: 'rect'`. */
 function requiredRectWidth(widthMm: number | undefined): number {
@@ -74,6 +84,16 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
         labelPlacement: z.enum(['auto', 'joint', 'outside']).default('auto').describe('Mark on the joint face, outside next to the edge, or automatic.'),
         reinforceWeakJoints: z.boolean().default(d.reinforceWeakJoints).describe('true = enlarges or adds connectors when a joint would be weak for its size (changes the radius you asked for). Off by default: weak joints are only reported.'),
         minFragmentMm3: rangeSchema(OR.split.minFragmentMm3).default(d.minFragmentMm3).describe('Smaller loose bodies are merged into the neighboring part.'),
+        cuts: manualCutsSchema.optional().describe(
+          'Manual cuts: the plan is exactly these planes instead of the automatic grid (axes, maxPieces and plane shifting are ignored). ' +
+          'Each plane has a base axis (user axes: z = horizontal cut), positionMm along that axis where it crosses the center of the model box ' +
+          '(strictly inside the model), and optional tiltDeg = [a, b], the inclination in degrees toward the other two axes in alphabetical order ' +
+          `(x: [y, z], y: [x, z], z: [x, y]), each within ±${SPLIT_MANUAL_MAX_TILT_DEG}. Several planes per axis at any spacing. ` +
+          'Connectors on an inclined face go perpendicular to it. Two planes of the same axis that cross inside the model are rejected ' +
+          '(SPLIT_MANUAL_CUTS_CROSS). An inclined plane that crosses cuts of another direction leaves its joints to glue ' +
+          '(warning SPLIT_MANUAL_TILT_GLUE in the plan, SPLIT_MANUAL_TILT_GLUED after splitting) unless the connector is magnet. ' +
+          'The plan warns per part with SPLIT_MANUAL_PIECE_TOO_BIG and SPLIT_MANUAL_PIECE_THIN. Use dryRun=true to check first.',
+        ),
       },
     },
     async ({ detail, ...args }) => {
@@ -96,7 +116,10 @@ export function registerSplitTools(server: Pick<McpServer, 'registerTool'>, ctx:
           bed: Object.fromEntries(
             Object.entries({ widthMm: args.bedWidthMm, depthMm: args.bedDepthMm, heightMm: args.bedHeightMm }).filter(([, v]) => v !== undefined),
           ),
-          plan: { marginMm: args.marginMm, axes: args.axes, maxPieces: args.maxPieces, allowRotation: args.allowRotation, allowDiagonal: args.allowDiagonal, connector },
+          plan: {
+            marginMm: args.marginMm, axes: args.axes, maxPieces: args.maxPieces, allowRotation: args.allowRotation, allowDiagonal: args.allowDiagonal, connector,
+            ...(args.cuts ? { manualCuts: args.cuts.map((c) => userCutToInternal({ axis: c.axis, positionMm: c.positionMm, tiltDeg: c.tiltDeg ?? [0, 0] })) } : {}),
+          },
           execute: {
             connector, labels: args.labels, labelDepthMm: args.labelDepthMm, labelMinHeightMm: args.labelMinHeightMm,
             labelPlacement: args.labelPlacement, minFragmentMm3: args.minFragmentMm3, reinforceWeakJoints: args.reinforceWeakJoints,

@@ -40,6 +40,30 @@ Cada imán deja 1,2 mm de pared alrededor y hacia el exterior. Donde no cabe, no
 
 Con imanes, el resumen del resultado habla en términos de imanes: «N uniones: hasta M con imán, según el espacio de cada unión; el resto se pega», y sugiere «elige un imán más chico» para tener imanes en más uniones. Las piezas se rotulan con su letra y número (por ejemplo A1·2), y los avisos ya no tapan la tarjeta de armado.
 
+## Cortes a mano (cuando la rejilla automática no te sirve)
+
+En **Cama y cortes**, el grupo **Cortes** tiene dos modos: **Automático** (la rejilla calculada) y **A mano**, donde tú decides cada plano.
+
+1. Pulsa **Editar estos cortes a mano** para copiar los planos de la rejilla automática a una lista y ajustarlos sin empezar de cero (o elige **A mano**: si la lista está vacía, parte igual de la rejilla).
+2. Cada fila es un plano (*Plano 1*, *Plano 2*…): elige el **eje** (X, Y o Z; Z es un corte horizontal), mueve la **posición** con el deslizador o escríbela en mm (el rango es el del modelo) y, si quieres, **inclínalo** hacia los otros dos ejes con los dos ángulos (paso de 5°, hasta ±45°). Puedes poner varios planos en un mismo eje y a la distancia que quieras.
+3. **Agregar plano** suma uno en el centro del eje más largo; **Duplicar** copia el plano un poco más allá; **Quitar** lo elimina. **Ver** resalta ese plano en el visor; también puedes arrastrarlo ahí.
+4. En **Vista**, **Solo las piezas** oculta los planos para ver cómo quedan las piezas; **Mostrar cortes** los vuelve a dibujar (los inclinados también).
+5. Antes de dividir, el **Resumen** avisa por pieza: si una no cabe en la cama (por ejemplo «La pieza B1 no cabe en la cama…», y **Dividir** queda deshabilitado con el motivo) o si queda **muy delgada para su unión** (no cabe el alojamiento con su pared).
+6. **Volver al automático** descarta la lista y vuelve a la rejilla calculada.
+
+Los nombres de pieza (A1, B1…), las uniones, la firmeza, las marcas de pareja, el armado y **Preparar para imprimir** funcionan igual que con la rejilla automática. En un plano inclinado los conectores van **perpendiculares a la cara inclinada**.
+
+Qué combinaciones no se permiten o cambian:
+
+- **Dos planos del mismo eje que se cruzan dentro del modelo**: el plan se bloquea con el aviso «Los planos … se cruzan dentro del modelo». Sepáralos o cambia su inclinación.
+- **Un plano inclinado que se cruza con cortes de otra dirección** (por ejemplo, un plano X inclinado más un corte horizontal): una espiga en una cara inclinada solo entra moviendo la pieza a lo largo de esa cara, así que una pieza con caras de unión en dos direcciones no tendría por dónde entrar. Esas uniones inclinadas quedan **para pegar** y el resumen lo dice antes de dividir. Con **imanes** (no sobresalen) o con planos inclinados paralelos entre sí, las uniones se conservan.
+
+![Lista de cortes a mano con un plano inclinado y el plano resaltado en el visor](img/dividir-para-imprimir-05-cortes-a-mano.png)
+
+![La misma división con «Solo las piezas»: el visor sin planos](img/dividir-para-imprimir-06-solo-piezas.png)
+
+Los cortes a mano no se guardan en el proyecto (tampoco la rejilla automática): se recalculan al abrir el panel.
+
 ## Fragmentos diminutos
 
 Un corte a veces deja esquirlas que no se pueden imprimir ni pegar. Kurra Studio las **descarta** (las que miden menos de 1 mm³ o de 10 partes por millón del volumen, y no se pueden fusionar con otra pieza) y lo avisa: «Se descartaron N fragmentos diminutos del corte (V mm³ en total): no se pueden imprimir ni pegar y no se entregan como pieza.» Si ese aviso te sorprende, mueve el corte unas décimas de milímetro.
