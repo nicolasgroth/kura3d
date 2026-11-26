@@ -77,6 +77,15 @@ const EXPECTED_TOOLS = [
   'kura_add_screw_boss',
   'kura_add_keyhole',
   'kura_add_cable_pass',
+  'kura_list_plates',
+  'kura_create_plate',
+  'kura_rename_plate',
+  'kura_delete_plate',
+  'kura_set_active_plate',
+  'kura_move_to_plate',
+  'kura_spread_one_plate_per_object',
+  'kura_arrange_on_plates',
+  'kura_set_layout',
 ];
 
 /** Token de prueba con longitud suficiente para habilitar el puente (mínimo 16). */
@@ -125,8 +134,8 @@ describe('Kurra Studio MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(56);
-    expect(toolNames).toHaveLength(56);
+    expect(EXPECTED_TOOLS).toHaveLength(65);
+    expect(toolNames).toHaveLength(65);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }
