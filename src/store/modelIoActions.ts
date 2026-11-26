@@ -26,7 +26,7 @@ import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } 
 import { MAX_GROUP_NAME, objectAncestors, reconcileGroups } from '../core/scene/groups';
 import { groupImported } from './importGrouping';
 import { exportNotices, importErrorMessage } from './modelImportNotices';
-import { onlyPlate, otherBedNotice, singleFilePlan, slicerBedOf, zipPerPlate, type PlateExportMode } from './plateExportFlow';
+import { onlyPlate, otherBedNotice, singleFilePlan, slicerBedOf, slicerOptionsOf, zipPerPlate, type PlateExportMode } from './plateExportFlow';
 import { planPlateExport } from '../core/scene/plateExport';
 import { readModelBatch } from './modelImportBatch';
 import { isKuraScene, kuraWorldPosition, restoreKuraScene } from './kuraSceneRestore';
@@ -415,7 +415,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         unitSystem: state.unitSystem,
         ...(fullScene ? { sceneGroups: state.groups ?? [] } : {}),
         ...(single?.plateLayout && request.format === '3mf' ? { plateLayout: single.plateLayout } : {}),
-        ...(request.format === '3mf' ? { projectMeta: projectMetaOf(state), slicerBed: slicerBedOf(state) } : {}),
+        ...(request.format === '3mf' ? { projectMeta: projectMetaOf(state), slicer: slicerOptionsOf(state) } : {}),
       });
       const entries: SaveSetEntry[] = files.map((f) => ({
         name: `${base}${f.suffix}`,

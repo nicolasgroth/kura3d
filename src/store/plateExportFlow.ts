@@ -19,6 +19,8 @@ import type { ExportTaskArgs, ExportTaskResult } from '../core/operations/engine
 import { isPrintable } from '../core/scene/objectRole';
 import { exportPlateOf, planPlateExport, platesWithOtherBed, shiftForExport, type PlateExportBucket } from '../core/scene/plateExport';
 import type { Translate } from './modelImportNotices';
+import { loadSlicerProjectSample } from './slicerProjectPreference';
+import type { ThreeMfSlicerOptions } from '../engine/io/threeMfExport';
 import type { ThreeMfPlateLayout } from '../engine/io/threeMfExport';
 import type { SceneObject } from '../types/kura';
 import type { ScenePlate } from '../types/plates';
@@ -141,4 +143,10 @@ export function slicerBedOf(source: {
   const c = source.customBedDimensions;
   const widthMm = c?.width ?? source.printerProfile.bedWidthMm ?? 256;
   return { widthMm, depthMm: (c ? c.depth : source.printerProfile.bedDepthMm) ?? widthMm };
+}
+
+/** Opciones del 3MF para el laminador: cama del proyecto y el proyecto de ejemplo guardado (si hay). */
+export function slicerOptionsOf(source: Parameters<typeof slicerBedOf>[0]): ThreeMfSlicerOptions {
+  const project = loadSlicerProjectSample();
+  return { bed: slicerBedOf(source), ...(project ? { project } : {}) };
 }

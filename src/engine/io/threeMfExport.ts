@@ -19,6 +19,17 @@ import { buildKuraSceneMeta, KURA_SCENE_PATH, type KuraScenePlates } from './kur
 import { exportableObjects } from './stl';
 import { isReference } from '../../core/scene/objectRole';
 import { slicerPlateShift, validSlicerBed, type SlicerBed } from './slicerPlateGrid';
+import { SLICER_PROJECT_SETTINGS_PATH, slicerProjectSettingsJson, type SlicerProjectSample } from './slicerProjectSample';
+
+/**
+ * Opciones para los laminadores derivados de Bambu Studio / OrcaSlicer. `bed`: cama del proyecto (rejilla de placas).
+ * `project`: proyecto de ejemplo del laminador; con él se escribe `Metadata/project_settings.config` (9 claves) y el
+ * laminador respeta placas, nombres, filamentos y colores. Sin él ese archivo no se escribe.
+ */
+export interface ThreeMfSlicerOptions {
+  bed?: SlicerBed;
+  project?: SlicerProjectSample;
+}
 
 /** Opciones de la exportación de escena completa (ida y vuelta exacta con Kurra Studio). */
 export interface ThreeMfSceneOptions {
@@ -174,7 +185,7 @@ export const num = (n: number) => {
  * laminador (Bambu Studio / OrcaSlicer) y manda sobre los grupos. `projectMeta` (nombre, descripción y autor del
  * proyecto) va como metadatos estándar `Title` / `Description` / `Designer`; los vacíos se omiten.
  *
- * `slicerBed` (la cama del proyecto) coloca el archivo para Bambu Studio / OrcaSlicer y derivados: cada `<item>` lleva
+ * `slicer.bed` (la cama del proyecto) coloca el archivo para Bambu Studio / OrcaSlicer y derivados: cada `<item>` lleva
  * un `transform` que traslada la pieza, medida desde el centro de su cama, a la celda de su placa en la rejilla del
  * laminador (`slicerPlateGrid.ts`; los vértices no cambian), y el modelo declara `BambuStudio:3mfVersion`. Sin ella el
  * archivo queda como antes, sin transformaciones.
@@ -187,7 +198,7 @@ export function exportSceneTo3MF(
   sceneOptions?: ThreeMfSceneOptions,
   plateLayout?: ThreeMfPlateLayout,
   projectMeta?: ThreeMfProjectMeta,
-  slicerBed?: SlicerBed,
+  slicer?: ThreeMfSlicerOptions,
 ): Uint8Array {
   const solidObjects = exportableObjects(objects);
   // Escena completa: lo no impreso (oculto, negativos) se escribe después, sin ítem de build. Las
@@ -216,12 +227,13 @@ export function exportSceneTo3MF(
   };
   solidObjects.forEach(registerObject);
   if (palette.length === 0) registerColor('#38bdf8');
-  // Filamentos que ven los laminadores: solo los de lo impreso (los colores de huecos/ocultos van después).
+  // Filamentos que ven los laminadores: solo los de lo impreso (los colores de huecos/ocultos van después). No se escribe
+  // `filament_count` en model_settings.config: Elegoo Slicer / OrcaSlicer descartan el archivo entero al verlo.
   const filamentCount = palette.length;
   extraObjects.forEach(registerObject);
 
   const signature = brandSignature(brand);
-  const bed = validSlicerBed(slicerBed) ? slicerBed : undefined;
+  const bed = slicer && validSlicerBed(slicer.bed) ? slicer.bed : undefined;
   const model = new ByteChunks();
   model.write(
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
@@ -310,7 +322,6 @@ export function exportSceneTo3MF(
     : plateXml(1, brand?.name ? `${brand.name}_Bed` : 'Plate_1', solidObjects.map((_, i) => i));
   const settings =
     `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n` +
-    `  <metadata key="filament_count" value="${filamentCount}"/>\n` +
     `${configObjects.join('\n')}\n${platesXml}\n</config>\n`;
   const sceneMeta: Record<string, Uint8Array> = sceneOptions
     ? { [KURA_SCENE_PATH]: strToU8(JSON.stringify(buildKuraSceneMeta(written, written.map((_, i) => String(i + 2)), sceneOptions.groups, plateLayout?.offsets, plateLayout?.scenePlates))) }
@@ -337,6 +348,7 @@ export function exportSceneTo3MF(
       '_rels/.rels': strToU8(rels),
       '3D/3dmodel.model': model.toBytes(),
       'Metadata/model_settings.config': strToU8(settings),
+      ...(slicer?.project ? { [SLICER_PROJECT_SETTINGS_PATH]: strToU8(slicerProjectSettingsJson(slicer.project, palette.slice(0, filamentCount))) } : {}),
       ...sceneMeta,
     },
     { mtime: ZIP_FIXED_MTIME, level: ZIP_LEVEL },

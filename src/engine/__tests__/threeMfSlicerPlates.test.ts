@@ -75,7 +75,7 @@ describe('rejilla de placas del laminador', () => {
 describe('3MF con placas para el laminador', () => {
   it.each([2, 3, 5])('%i placas: cada ítem dentro de la celda de su placa, en la misma posición relativa a su cama', (n) => {
     const { objects, layout } = scene(n);
-    const { model } = files(exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, layout, undefined, BED));
+    const { model } = files(exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, layout, undefined, { bed: BED }));
     const boxes = itemBoxes(model);
     expect(boxes).toHaveLength(n);
     boxes.forEach((b, i) => {
@@ -94,7 +94,7 @@ describe('3MF con placas para el laminador', () => {
 
   it('metadatos del laminador sin suplantar la aplicación', () => {
     const { objects, layout } = scene(3);
-    const { model, settings } = files(exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, layout, undefined, BED));
+    const { model, settings } = files(exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, layout, undefined, { bed: BED }));
     expect(model).toMatch(/<model [^>]*xmlns:BambuStudio="http:\/\/schemas\.bambulab\.com\/package\/2021"/);
     expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
     const app = /<metadata name="Application">([^<]*)</.exec(model)![1];
@@ -109,7 +109,7 @@ describe('3MF con placas para el laminador', () => {
 
   it('una sola placa: coordenadas de la placa 1 (esquina de la cama como origen)', () => {
     const { objects } = scene(1);
-    const { model } = files(exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, undefined, undefined, BED));
+    const { model } = files(exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, undefined, undefined, { bed: BED }));
     const [b] = itemBoxes(model);
     expect((b[0] + b[3]) / 2).toBeCloseTo(BED.widthMm / 2 + objects[0].position[0], 4);
     expect((b[1] + b[4]) / 2).toBeCloseTo(BED.depthMm / 2 - objects[0].position[2], 4);
@@ -118,7 +118,7 @@ describe('3MF con placas para el laminador', () => {
 
   it('en otra unidad la traslación va en la unidad del archivo', () => {
     const { objects, layout } = scene(2);
-    const { model } = files(exportSceneTo3MF(objects, 'cm', undefined, BRAND, undefined, layout, undefined, BED));
+    const { model } = files(exportSceneTo3MF(objects, 'cm', undefined, BRAND, undefined, layout, undefined, { bed: BED }));
     const t = [...model.matchAll(/transform="([^"]+)"/g)].map((m) => m[1].split(' ').map(Number));
     expect(t[1][9]).toBeCloseTo((307.2 + 128) / 10, 5);
     expect(t[1][10]).toBeCloseTo(12.8, 5);
@@ -133,7 +133,7 @@ describe('3MF con placas para el laminador', () => {
 
   it('ida y vuelta: mismas placas, nombres, colores y posiciones relativas a su cama', () => {
     const { objects, layout } = scene(3);
-    const bytes = exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, layout, undefined, BED);
+    const bytes = exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, layout, undefined, { bed: BED });
     const model = parseModelFile('x.3mf', bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
     expect(model.hasPlacement).toBe(true);
     expect(model.plates?.map((p) => p.name)).toEqual(['Placa 1', 'Placa 2', 'Placa 3']);

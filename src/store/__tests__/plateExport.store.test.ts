@@ -145,7 +145,7 @@ describe('exportar con placas', () => {
     expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
     const full = store().objects.filter((o) => !isReference(o));
     const bed = { widthMm: store().printerProfile.bedWidthMm, depthMm: store().printerProfile.bedDepthMm };
-    expect(savedBytes()).toEqual(exportSceneTo3MF(full, 'mm', undefined, BRAND, { groups: [] }, undefined, undefined, bed));
+    expect(savedBytes()).toEqual(exportSceneTo3MF(full, 'mm', undefined, BRAND, { groups: [] }, undefined, undefined, { bed }));
   });
 
   it('3MF con todas las placas: cada ítem en la celda de su placa del laminador y aviso por la cama propia', async () => {

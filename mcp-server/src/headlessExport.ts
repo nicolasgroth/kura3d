@@ -111,8 +111,10 @@ export async function write3mfFile(
   /** Cama del proyecto: cada placa va donde la espera el laminador (esquina de la cama como origen, rejilla de placas). */
   slicerBed?: SlicerBed,
 ): Promise<ExportFileResult> {
+  // Sin interfaz no hay proyecto de ejemplo del laminador: sin `project_settings.config` (carga genérica).
+
   const solids = exportableObjects(targets);
-  const bytes = exportSceneTo3MF(solids, units, undefined, BRAND, undefined, plateLayout, projectMeta, slicerBed);
+  const bytes = exportSceneTo3MF(solids, units, undefined, BRAND, undefined, plateLayout, projectMeta, { bed: slicerBed });
 
   // Lee de vuelta el modelo escrito por el motor para informar exactamente lo exportado
   const modelXml = strFromU8(unzipSync(bytes, { filter: (f) => f.name === '3D/3dmodel.model' })['3D/3dmodel.model']);
