@@ -76,7 +76,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - **Ahuecado** con pared uniforme y orificio de drenaje.
 - **Moldes** de 1 pieza, 2 mitades, caja madre y núcleo/cavidad.
 - **Roscas ISO M3–M64** con paso y holgura automáticos según la norma.
-- **Asistentes**: crea una caja con tapa, un llavero o una placa de enchufe respondiendo unas preguntas, con reglas en vivo y un solo paso de deshacer (**Insertar › Asistentes**).
+- **Asistentes**, con galería de miniaturas y deslizadores (en revisión): crea una caja con tapa, un llavero o una placa de enchufe respondiendo unas preguntas, con reglas en vivo y un solo paso de deshacer (**Insertar › Asistentes**).
 - **Alojamiento de imán**: un clic sobre una cara deja el hueco para un imán redondo, cuadrado o rectangular, con holgura, opción oculta y aviso de pared mínima; tus medidas se guardan como preajustes (**Insertar › Alojamiento de imán**).
 - **Torreta para tornillo** (en revisión): un clic sobre una cara deja un poste con agujero para tornillo directo o inserto roscado (tabla de medidas M2 a M5 por verificar), con avisos de pared, agujero que atraviesa y choques; al aplicar las restas queda una sola pieza (**Insertar › Torreta para tornillo**).
 - **Colocar agregados sin ratón** (en revisión): imán, torreta, colgar en el muro y paso de cable traen un bloque con selector de cara y un botón que los deja en el centro de esa cara; en caras curvas siguen la superficie. La torreta suma tornillo directo M5 (por verificar).
@@ -105,7 +105,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - **Exportar por placa** (en revisión): con piezas en varias placas, un 3MF con todas las placas o un archivo por placa en un ZIP (STL siempre en ZIP). El 3MF con varias placas aún no está probado en un laminador real.
 - **Placas de laminador** (en revisión): al importar un 3MF de Bambu Studio u OrcaSlicer con placas, se pueden convertir en placas reales.
 - **Barra flotante** (en revisión) junto al objeto seleccionado, fuera de la pieza, con las acciones más usadas a un clic, una paleta de colores y **Alt+.** para llegar a ella con el teclado; se oculta mientras hay un panel de operación abierto.
-- **Arrastrar para mover**: el objeto seleccionado se arrastra sobre su plano horizontal.
+- **Arrastrar para mover**: el objeto seleccionado se arrastra sobre su plano horizontal; en las vistas de frente y de lado, en vertical (en revisión).
 - **Paneles con un solo patrón** (en revisión): «Volver» en todos los paneles y herramientas, y un solo Esc para cerrar.
 - 6 idiomas, 6 temas en claro y oscuro con contraste verificado, y modo compacto.
 - Uso por teclado: atajos, paleta de comandos (`Ctrl/⌘+K`), lista de escena y menús navegables.
@@ -114,7 +114,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 **Inteligencia artificial (opcional)**
 - Asistente local sin conexión que entiende órdenes simples en español e inglés.
 - Proveedores externos: Anthropic, OpenAI, Gemini, Ollama y **cualquier API compatible con OpenAI** (DeepSeek, Qwen, OpenRouter, LM Studio). En escritorio las claves se guardan en el llavero del sistema.
-- **Servidor MCP** con 66 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
+- **Servidor MCP** con 68 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
 
 ## Guías
 
@@ -128,8 +128,8 @@ Lo que falta, en el orden del [roadmap](docs/ROADMAP.md). El detalle está en el
 
 **Lo siguiente**
 1. Cerrar la revisión de lo marcado «(en revisión)» arriba.
-2. **Asistentes:** galería con miniaturas y deslizadores junto a las medidas.
-3. **Arrastrar eligiendo el plano:** en vista de frente, mover en vertical.
+2. Deslizadores también en las formas básicas del inspector.
+3. Capturas de las guías al día con los paneles nuevos.
 4. **3MF con varias placas** verificado en Bambu Studio y OrcaSlicer, y **multimaterial** en los cinco laminadores.
 5. Dividir: cortes por las partes naturales de la figura y cortes inclinados.
 

@@ -1,12 +1,12 @@
 # Tablero de Kurra Studio
 
-**Actualizado el 26 de noviembre de 2026, 03:30.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
+**Actualizado el 26 de noviembre de 2026, 04:20.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
 
 ## En corto: último día (noche del 25 al 26 de noviembre)
 
 **Notas de la última evaluación a ciegas** (mínimo 85): usabilidad **85** · código **85** (lo de esta noche; 87 lo anterior) · funcional **87**. Sin bloqueos.
 
-**Pruebas en `main`:** 4234 del programa y 185 del servidor MCP, todas en verde.
+**Pruebas en `main`:** 4289 del programa y 188 del servidor MCP, todas en verde.
 
 Lo que entró esta noche y está en `main`:
 
@@ -20,23 +20,25 @@ Lo que entró esta noche y está en `main`:
 - **Datos del proyecto:** descripción, notas, autor, fechas y tiempo de trabajo.
 - **Marca:** logo para fondo oscuro y banner con el nombre completo.
 - **Atajos:** H y L con varias piezas dejan un solo paso de deshacer.
-- **Servidor MCP:** 66 herramientas, incluidas las de placas, que funcionan también sin la app abierta.
+- **Asistentes:** galería con miniaturas, deslizadores junto a las medidas y holgura ajustable en la caja con tapa.
+- **Arrastrar eligiendo el plano:** en vista de frente la pieza se mueve en vertical; Alt y Mayús cambian el plano o lo restringen a un eje.
+- **Servidor MCP:** 68 herramientas, incluidas las de placas, que funcionan también sin la app abierta.
 
 Qué no está verificado todavía:
 
-- La tercera tanda (camas por placa, datos del proyecto, fantasma de Simplificar) no terminó su QA en navegador: se cortó por el límite de uso y se reanudó a las 03:10.
-- Simplificar: la esfera por defecto al 50 % queda bloqueada. Corrección en curso.
+- La verificación en navegador de la tercera y cuarta tanda quedó a medias por dos cortes de límite de uso: se aprobaron camas por placa y datos del proyecto; sigue en curso lo demás (Simplificar con la regla nueva, «Volver» en las herramientas, arrastre por plano, galería de Asistentes).
 - Las capturas de las guías no reflejan aún los paneles con «Volver» ni lo nuevo de esta noche.
+- No hubo evaluación a ciegas de usabilidad ni funcional de lo de esta noche (solo de código).
 
 ## En corto: lo que viene
 
 Ahora:
 
-1. Terminar la corrección de Simplificar y la QA en navegador de la tercera tanda.
-2. Galería de Asistentes con miniaturas y deslizadores junto a las medidas (en desarrollo).
-3. Elegir el plano al arrastrar una pieza (en desarrollo).
-4. Regenerar capturas y guías con todo lo de esta noche.
-5. Evaluación a ciegas de usabilidad y funcional de lo nuevo.
+1. Terminar la verificación en navegador de lo que entró esta noche y corregir lo que aparezca.
+2. Regenerar capturas y guías (los paneles cambiaron de aspecto).
+3. Evaluación a ciegas de usabilidad y funcional de lo nuevo.
+4. Deslizadores también en las formas básicas del inspector.
+5. Placas: herramientas que aún miran solo la cama del proyecto con una sola placa.
 
 Después:
 

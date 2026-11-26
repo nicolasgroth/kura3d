@@ -10,6 +10,11 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Asistentes con galería.** Tarjetas con miniatura generada desde la geometría real, búsqueda y filtro por categoría; deslizador junto a cada medida; holgura de la tapa ajustable en la caja con cierre a presión.
+- **Arrastrar eligiendo el plano.** En las vistas de frente y de lado la pieza se mueve en vertical; Alt fuerza el plano vertical y Mayús restringe a un eje. Un rótulo dice en qué plano se mueve.
+- **Esc con una sola regla.** Cada Esc hace una sola cosa, en este orden: cerrar un tooltip, cancelar un cálculo, salir de un grupo, cerrar el panel.
+- **Simplificar en dos niveles.** Un cambio moderado de forma se aplica con aviso; uno que destruye la pieza no se aplica y se ofrece una versión segura.
+- **3MF con datos del proyecto.** Al exportar se escriben el título, la descripción y el autor.
 - **Paneles con un solo patrón.** «Volver» a la izquierda del título en todos los paneles y herramientas; el pie conserva solo el botón de acción. Un solo Esc cierra, aunque haya un tooltip abierto. Títulos de panel cortos en los 6 idiomas.
 - **Placas: vistas Imprimir, Armado y Libre.** En Armado se ve la figura junta, se puede mover y editar, y eso no cambia el lugar de cada pieza en su placa. Deslizador para separar las piezas y verlas «explotadas».
 - **Placas: repartir.** Panel «Repartir en placas…» con vista previa de dónde quedará cada pieza: compacto, una placa por color, por grupo o por objeto; opción de apoyar cada pieza en su cara plana.
