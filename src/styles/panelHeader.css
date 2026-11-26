@@ -7,18 +7,18 @@
  * @license MIT
  */
 
-.kura-panel-head {
+.kura-panel-header:has(> .kura-panel-back) {
   justify-content: flex-start;
   gap: 8px;
   flex-shrink: 0;
 }
 
-.kura-panel-head .kura-panel-back {
+.kura-panel-header .kura-panel-back {
   width: auto;
   flex-shrink: 0;
 }
 
-.kura-panel-head .kura-panel-title {
+.kura-panel-header .kura-panel-title {
   margin: 0;
   font-size: inherit;
   font-weight: inherit;
@@ -33,7 +33,7 @@
   line-height: 1.25;
 }
 
-.kura-panel-head .kura-panel-title:focus-visible {
+.kura-panel-header .kura-panel-title:focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
