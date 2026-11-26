@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { OBJECT_ROLES } from '../../core/scene/objectRole';
 import { t, type TranslationKey } from '../../i18n';
+import { plateToolBlockReason } from '../../core/scene/viewMode';
 import { ACTION_GROUPS, ACTION_SHORTCUTS, actionAvailability, type ActionGroupId, type ActionId } from '../../store/actionsCatalog';
 import { ACTION_DESCRIPTION_KEY, ACTION_TIP_KEY, actionName } from '../../store/actionLabels';
 import { ROLE_LABEL_KEY } from '../../store/roleLabels';
@@ -106,7 +107,9 @@ export const ActionGroupMenus: React.FC<ActionGroupMenusProps> = ({ pick, curren
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const groups = useKuraStore((s) => s.groups);
   const busyOperation = useKuraStore((s) => s.busyOperation);
-  const state = { objects, selectedIds, groups, busyOperation };
+  const layout = useKuraStore((s) => s.layout);
+  const printOnlyReason = plateToolBlockReason(layout);
+  const state = { objects, selectedIds, groups, busyOperation, layout };
 
   const item = (id: ActionId) => {
     const availability = actionAvailability(state, id);
@@ -135,7 +138,12 @@ export const ActionGroupMenus: React.FC<ActionGroupMenusProps> = ({ pick, curren
           {ALIGN_MODES.map((mode) => (
             <MenuItem key={mode} label={t(language, `align.label.${mode}`)} tip={t(language, `align.tip.${mode}`)} onSelect={pick(() => runAlign(mode))} />
           ))}
-          <MenuItem label={t(language, 'inspector.pro.arrangeGrid')} onSelect={pick(() => runAlign('arrange_grid'))} />
+          <MenuItem
+            label={t(language, 'inspector.pro.arrangeGrid')}
+            disabled={Boolean(printOnlyReason)}
+            tip={printOnlyReason ? t(language, printOnlyReason) : undefined}
+            onSelect={pick(() => runAlign('arrange_grid'))}
+          />
         </SubMenu>
       );
     }

@@ -14,6 +14,7 @@ import React, { useState } from 'react';
 import { Bolt, Box, ChevronDown, Grid3x3, Minimize2, PaintBucket, Palette, Puzzle, ScanSearch, Scissors, ShieldCheck, Sparkles, Split, Type, Waves } from 'lucide-react';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { t, type TranslationKey } from '../../i18n';
+import { usePlateToolReason } from '../viewmode/usePlateToolReason';
 import { actionAvailability, type ActionId } from '../../store/actionsCatalog';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
@@ -67,6 +68,7 @@ export const ObjectOperations: React.FC<{ primary: SceneObject }> = ({ primary }
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const setActiveDialog = useKuraStore((s) => s.setActiveDialog);
   const openFitToBed = useKuraStore((s) => s.openFitToBed);
+  const plateReason = usePlateToolReason();
   const splitDisconnectedObject = useKuraStore((s) => s.splitDisconnectedObject);
   const splitObjectByColor = useKuraStore((s) => s.splitObjectByColor);
   const [variantsOf, setVariantsOf] = useState<ActionId | null>(null);
@@ -151,7 +153,7 @@ export const ObjectOperations: React.FC<{ primary: SceneObject }> = ({ primary }
               tip={t(language, 'split.openTip')}
               onClick={() => setActiveDialog('splitForBed')}
             />
-            <IconOp name={t(language, 'fit.open')} tip={t(language, 'fit.openTip')} icon={<Minimize2 size={ICON} aria-hidden="true" />} reason={blockedReason} onClick={() => void openFitToBed([primary.id])} />
+            <IconOp name={t(language, 'fit.open')} tip={t(language, 'fit.openTip')} icon={<Minimize2 size={ICON} aria-hidden="true" />} reason={blockedReason ?? plateReason} onClick={() => void openFitToBed([primary.id])} />
             {dialogOp('inspector.op.splitParts', <Split size={ICON} aria-hidden="true" />, () => void splitDisconnectedObject(primary.id), blockedReason)}
             <span className="kura-op-cell">
               {/* Un clic separa con la profundidad por defecto; ▾ muestra la profundidad para elegirla. */}

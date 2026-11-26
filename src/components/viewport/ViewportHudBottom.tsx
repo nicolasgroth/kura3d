@@ -18,6 +18,7 @@ import { toUserSize } from '../../core/scene/displayAxes';
 import { isLegacyPlateSetup } from '../../core/scene/plates';
 import { platesBedStatus, sceneBedStatus } from './plateBedStatus';
 import { BedHiddenChip } from './BedHiddenChip';
+import { ViewModeBedChip } from '../viewmode/ViewModeBedChip';
 import { AddFirstPlateButton } from '../plates/AddFirstPlateButton';
 import { FitOutOfBoundsButton } from '../fitToBed/FitOutOfBoundsButton';
 
@@ -29,6 +30,7 @@ export const ViewportHudBottom: React.FC = () => {
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const showBed = useKuraStore((s) => s.showBed);
+  const layout = useKuraStore((s) => s.layout);
   const selectedObj = objects.find((o) => o.id === selectedIds[0]) ?? null;
   const localizedPrinterName = getLocalizedPrinterName(language, printerProfile);
   const plates = useKuraStore((s) => s.plates);
@@ -72,7 +74,8 @@ export const ViewportHudBottom: React.FC = () => {
         <span className="kura-dims-badge">{activeDimensionsText}</span>
       </div>
 
-      {!showBed ? <BedHiddenChip /> : (
+      {/* Armado y Libre: sin cama ni «Fuera de volumen» (se evalúa en Imprimir). */}
+      {layout === 'assembly' ? <ViewModeBedChip /> : !showBed ? <BedHiddenChip /> : (
         <div className="kura-hud-card kura-hud-pill-nowrap kura-bed-card" data-oob={bedStatus === 'outOfBounds' || undefined}>
           <span className="kura-field-label">{t(language, 'viewport.bedLabel')}:</span>
           {/* El nombre se abrevia con elipsis (nunca a una letra) y, sin espacio, se oculta antes que las medidas. */}

@@ -34,6 +34,7 @@ function parseClearance(text: string): number | null {
 
 export const FitCheckPanel: React.FC = () => {
   const language = useKuraStore((s) => s.language);
+  const inPrintView = useKuraStore((s) => s.layout !== 'assembly');
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const fitCheck = useKuraStore((s) => s.fitCheck);
@@ -84,6 +85,8 @@ export const FitCheckPanel: React.FC = () => {
           : t(language, 'fitCheck.ui.reason.needTwo')}
         <span className="kura-fitcheck-hint">{t(language, 'fitCheck.ui.scope.hint')}</span>
       </p>
+      {/* El encaje se comprueba siempre con la pose de armado, aunque se abra desde la vista Imprimir. */}
+      {inPrintView && <p className="kura-fitcheck-hint" data-testid="fit-check-assembled-note">{t(language, 'viewMode.fitCheck.note')}</p>}
 
       <div className="kura-fitcheck-field">
         <label className="kura-field-label" htmlFor={clearanceId}>{t(language, 'fitCheck.ui.clearance')}</label>

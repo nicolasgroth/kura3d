@@ -9,5 +9,5 @@
  */
 
 export const SINGLE_KEY_SHORTCUTS: ReadonlySet<string> = new Set([
-  '1', '2', '3', '7', 'v', 'f', 'h', 'b', 'x', 'p', 'd', 'c', 'l', 'm',
+  '1', '2', '3', '7', 'v', 'f', 'h', 'b', 'a', 'x', 'p', 'd', 'c', 'l', 'm',
 ]);

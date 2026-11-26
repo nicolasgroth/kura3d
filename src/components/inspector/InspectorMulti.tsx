@@ -11,6 +11,7 @@ import { isNegative } from '../../core/scene/objectRole';
 import React from 'react';
 import { AlignCenter, Box, Combine, Grid } from 'lucide-react';
 import { t } from '../../i18n';
+import { usePlateToolReason } from '../viewmode/usePlateToolReason';
 import { useKuraStore } from '../../store/useKuraStore';
 import { type AlignMode } from '../../types/kura';
 import { FilamentLegendCard } from './FilamentLegendCard';
@@ -22,6 +23,7 @@ import { useBooleanPreview } from '../booleanPreview/useBooleanPreview';
 /** Panel del inspector con 2 o más objetos seleccionados. */
 export const InspectorMulti: React.FC = () => {
   const language = useKuraStore((s) => s.language);
+  const plateReason = usePlateToolReason();
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const busyOperation = useKuraStore((s) => s.busyOperation);
@@ -136,6 +138,8 @@ export const InspectorMulti: React.FC = () => {
           <button
             type="button"
             className="kura-btn kura-btn-sm kura-btn-primary"
+            disabled={Boolean(plateReason)}
+            title={plateReason}
             onClick={() => alignSelectedObjects('arrange_grid')}
           >
             <Grid size={13} />

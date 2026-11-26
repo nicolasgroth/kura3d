@@ -12,6 +12,7 @@ import React from 'react';
 import { Layers, Plus } from 'lucide-react';
 import { assignable } from '../../../core/scene/plates';
 import { t } from '../../../i18n';
+import { plateToolBlockReason } from '../../../core/scene/viewMode';
 import { moveToPlateName } from '../../../store/actionLabels';
 import { useKuraStore } from '../../../store/useKuraStore';
 import type { SceneObject } from '../../../types/kura';
@@ -25,19 +26,21 @@ export const MoveToPlateMenu: React.FC<{
 }> = ({ target, run }) => {
   const language = useKuraStore((s) => s.language);
   const plates = useKuraStore((s) => s.plates);
+  const layout = useKuraStore((s) => s.layout);
   const objects = useKuraStore((s) => s.objects);
   const selectedIds = useKuraStore((s) => s.selectedIds);
   const setSelection = useKuraStore((s) => s.setSelection);
   if (plates.length < 2) return null;
   const ids = selectedIds.includes(target.id) ? selectedIds : [target.id];
   const movable = objects.filter((o) => ids.includes(o.id) && assignable(o));
-  const available = movable.length > 0;
+  const printOnlyReason = plateToolBlockReason(layout);
+  const available = movable.length > 0 && !printOnlyReason;
   /** Mueve lo elegido en el menú (si el objeto no estaba seleccionado, pasa a ser la selección). */
   const move = (plateId: string | null) => run(() => {
     if (!selectedIds.includes(target.id)) setSelection([target.id]);
     runMoveToPlate(plateId);
   });
-  const tip = available ? t(language, 'plates.action.moveToPlate.tip') : t(language, 'plates.move.reason');
+  const tip = printOnlyReason ? t(language, printOnlyReason) : available ? t(language, 'plates.action.moveToPlate.tip') : t(language, 'plates.move.reason');
   return (
     <SubMenu icon={<Layers size={14} aria-hidden="true" />} label={moveToPlateName(language)} tip={tip} disabled={!available}>
       {plates.map((p) => {

@@ -14,6 +14,7 @@
 import { selectedGroup } from '../core/scene/groups';
 import { cachedMeshBodies } from '../core/scene/meshBodies';
 import { isNegative, isSolid } from '../core/scene/objectRole';
+import { plateToolBlockReason } from '../core/scene/viewMode';
 import { fitCheckTargets } from './fitCheckTargets';
 import type { TranslationKey } from '../i18n';
 import type { KuraStoreState } from './storeTypes';
@@ -45,7 +46,10 @@ export interface ActionAvailability {
   reason?: TranslationKey;
 }
 
-type StateSlice = Pick<KuraStoreState, 'objects' | 'selectedIds' | 'groups' | 'busyOperation'>;
+type StateSlice = Pick<KuraStoreState, 'objects' | 'selectedIds' | 'groups' | 'busyOperation'> & { layout?: KuraStoreState['layout'] };
+
+/** Acciones de cama: solo en la vista Imprimir (en Armado y Libre se deshabilitan con ese motivo). */
+const PLATE_TOOL_ACTIONS = new Set<ActionId>(['fitToBed', 'dropToBed', 'centerOnBed']);
 
 const ok: ActionAvailability = { enabled: true };
 const no = (reason: TranslationKey): ActionAvailability => ({ enabled: false, reason });
@@ -60,6 +64,8 @@ export function actionAvailability(state: StateSlice, id: ActionId): ActionAvail
   const primary = picked[0];
   const anyLocked = picked.some((o) => o.locked);
   if (busyOperation && ENGINE_ACTIONS.has(id)) return no('rediseno.reason.busy');
+  const printOnly = plateToolBlockReason(state.layout);
+  if (printOnly && PLATE_TOOL_ACTIONS.has(id)) return no(printOnly);
   if (id === 'mold') return objects.length > 0 ? ok : no('rediseno.reason.empty');
   if (id === 'applyHoles') {
     const visible = objects.filter((o) => o.visible);

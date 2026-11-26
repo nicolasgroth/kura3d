@@ -34,6 +34,7 @@ import { CameraController } from './CameraController';
 import { overhangFacesFor } from '../../store/printReportSelectors';
 import { PlateBeds } from './PlateBeds';
 import { resolveActivePlate } from '../../core/scene/plates';
+import { viewModeOf, viewModeTraits } from '../../core/scene/viewMode';
 import { PreviewLayers } from './PreviewLayers';
 import { SectionPlaneIndicator } from './SectionPlaneIndicator';
 import { MagnetPlacementLayer } from './MagnetPlacementLayer';
@@ -87,6 +88,11 @@ export const SceneContent: React.FC<{
   const colorScheme = useKuraStore((s) => s.colorScheme);
   // Vista sin cama: sin placa, rejilla, rótulo, volumen ni sombras de contacto; la órbita pasa bajo Z=0.
   const showBed = useKuraStore((s) => s.showBed);
+  // Armado y Libre: sin camas; Libre además sin plano de apoyo (sombra de contacto y órbita limitada a Z >= 0).
+  const bedsInMode = useKuraStore((s) => viewModeTraits(viewModeOf(s.layout, s.freeView)).bedsVisible);
+  const groundInMode = useKuraStore((s) => viewModeTraits(viewModeOf(s.layout, s.freeView)).groundVisible);
+  const bedsShown = showBed && bedsInMode;
+  const groundShown = showBed && groundInMode;
   // Con placas, la sombra de contacto sigue a la placa activa (sin placas, el origen de siempre).
   const shadowX = useKuraStore((s) => resolveActivePlate(s.plates, s.activePlateId)?.origin[0] ?? 0);
   const shadowZ = useKuraStore((s) => resolveActivePlate(s.plates, s.activePlateId)?.origin[1] ?? 0);
@@ -186,9 +192,9 @@ export const SceneContent: React.FC<{
       <directionalLight position={[-120, 80, -100]} intensity={0.52} color="#bae6fd" />
       <directionalLight position={[0, -80, 90]} intensity={0.25} color="#fed7aa" />
 
-      {showBed && <PlateBeds isOutOfBounds={isOutOfBounds} />}
+      {bedsShown && <PlateBeds isOutOfBounds={isOutOfBounds} />}
 
-      {showBed && (
+      {groundShown && (
         <ContactShadows
           key={shadowsKey}
           frames={1}
@@ -329,7 +335,7 @@ export const SceneContent: React.FC<{
         dampingFactor={0.08}
         minDistance={1}
         maxDistance={20000}
-        maxPolarAngle={showBed ? Math.PI * 0.92 : Math.PI}
+        maxPolarAngle={groundShown ? Math.PI * 0.92 : Math.PI}
       />
 
       {/* Cubo de orientación 3D interactivo estilo CAD */}

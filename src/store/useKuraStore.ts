@@ -23,6 +23,8 @@ import { createPaintSlice } from './slices/paintSlice';
 import { createPartsSlice } from './slices/partsSlice';
 import { clearPreviewOnSelectionChange, createPreviewSlice } from './slices/previewSlice';
 import { createSelectionSlice } from './slices/selectionSlice';
+import { createViewModeSlice } from './slices/viewModeSlice';
+import { createLayoutGuardSlice } from './slices/layoutGuardSlice';
 import { clearSmoothOnSelectionChange, createSmoothSlice } from './slices/smoothSlice';
 import { createSplitSlice } from './slices/splitSlice';
 import { createSplitJointsSlice } from './slices/splitJointsSlice';
@@ -106,11 +108,14 @@ export const useKuraStore = create<KuraStoreState>((rawSet, get) => {
     ...createLayoutSlice(ctx),
     ...createRepairSlice(ctx),
     ...createViewPrefsSlice(ctx),
+    ...createViewModeSlice(ctx),
     ...createSmoothSlice(ctx),
   } as Partial<KuraStoreState>;
+  const withQuickActions = { ...base, ...createQuickActionsSlice(ctx, base) } as Partial<KuraStoreState>;
   return {
-    ...base,
-    ...createQuickActionsSlice(ctx, base),
+    ...withQuickActions,
+    // Las acciones de cama se rechazan fuera de Imprimir en el punto de ejecución (teclado, menús, paleta y MCP).
+    ...createLayoutGuardSlice(ctx, withQuickActions),
     executeCommand: createCommandBus({
       get,
       setSelectedIds: (ids) => ctx.set({ selectedIds: ids }),
