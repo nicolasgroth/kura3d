@@ -27,6 +27,14 @@ const USAB_N26B_TABLE = {
     'एक और प्लेट का नाम पहले से «{name}» है। कोई दूसरा नाम लिखें।',
     '已有另一块打印板名为“{name}”。请输入不同的名称。',
   ],
+  'plates.toast.movedNoFit': [
+    '{count} {count?pieza movida|piezas movidas} a «{name}», pero no cabe en su cama: sobresale. Reduce su tamaño o cambia la cama de la placa.',
+    '{count} {count?part|parts} moved to “{name}”, but it does not fit its bed and overhangs. Scale it down or change the plate’s bed.',
+    '{count} {count?Teil|Teile} nach „{name}“ verschoben, passt aber nicht auf das Druckbett und ragt über. Verkleinere es oder ändere das Bett der Platte.',
+    '{count} {count?pièce déplacée|pièces déplacées} vers « {name} », mais elle ne tient pas sur son plateau et dépasse. Réduis sa taille ou change le plateau de la plaque.',
+    '{count} {count?हिस्सा|हिस्से} “{name}” में ले जाए गए, पर वह उसके बेड पर नहीं समाता और बाहर निकलता है। उसे छोटा करें या प्लेट का बेड बदलें।',
+    '已将 {count} 个零件移到“{name}”，但它放不进该板的打印床，会超出边缘。请缩小它，或更改该板的打印床。',
+  ],
 } as const satisfies Record<string, Row>;
 
 type UsabKey = keyof typeof USAB_N26B_TABLE;

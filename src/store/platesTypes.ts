@@ -56,6 +56,8 @@ export interface PlatesSliceState {
    * nueva para recibirlas. Un solo paso de deshacer. Devuelve cuántas piezas cambiaron de placa.
    */
   moveToPlate: (plateId: string | null, ids?: string[]) => number;
+  /** El último `moveToPlate` dejó las piezas dentro de la cama destino (false: el bloque es más grande que ella). Solo sesión. */
+  lastMoveToPlateFits: boolean;
   /**
    * «Una placa por objeto»: deja cada pieza sólida (las de `ids`, o la selección, o todas si no hay) en su propia placa,
    * centrada sobre su cama; crea las placas que falten y reutiliza las vacías. Un solo paso de deshacer. null si hay
