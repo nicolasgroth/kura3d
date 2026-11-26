@@ -1,6 +1,6 @@
 /**
  * @file src/components/OperationPanel.tsx
- * @description Contenedor común no modal de los paneles de operación (corte, molde, proyección,
+ * @description Contenedor común no modal (encabezado «Volver» + título; el pie lleva solo la acción del panel) de los paneles de operación (corte, molde, proyección,
  * rosca, imagen/litofanía). En escritorio ocupa el lugar del inspector (`#kura-op-slot` del área de
  * trabajo, ver operationPanel.css); en pantallas angostas se superpone (hoja inferior en móvil < 768 px), no tiene fondo ni bloquea el visor (se puede orbitar), lleva el foco al
  * abrir, lo devuelve al cerrar y Escape lo cierra con el foco dentro del panel.
@@ -11,9 +11,8 @@
 
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
-import { t } from '../i18n';
 import { useKuraStore } from '../store/useKuraStore';
+import { PanelHeader } from './shell/PanelHeader';
 import { keyboardFocusInViewport } from './viewport/cutPlaneDrag';
 import '../styles/operationPanel.css';
 
@@ -38,7 +37,6 @@ export const OperationPanel: React.FC<{
   /** Selector (dentro del cuerpo) del control que recibe el foco al abrir; sin él, el primer control enfocable. */
   initialFocus?: string;
 }> = ({ open, onClose, title, children, footer, className, initialFocus }) => {
-  const language = useKuraStore((s) => s.language);
   const panelRef = useRef<HTMLElement | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -103,21 +101,7 @@ export const OperationPanel: React.FC<{
       style={{ '--op-panel-top': `${insets.top}px`, '--op-panel-bottom': `${insets.bottom}px` } as React.CSSProperties}
       onKeyDown={onKeyDown}
     >
-      <div className="kura-dialog-header kura-op-panel-header">
-        <h2 id={titleId} className="kura-dialog-title">
-          {title}
-        </h2>
-        <button
-          type="button"
-          className="kura-mini-icon-btn"
-          onClick={onClose}
-          aria-label={t(language, 'common.close')}
-          title={t(language, 'opPanel.closeTip')}
-          aria-keyshortcuts="Escape"
-        >
-          <X size={16} />
-        </button>
-      </div>
+      <PanelHeader onBack={onClose} title={title} className="kura-op-panel-header" titleId={titleId} />
       <div className="kura-op-panel-body">{children}</div>
       {footer && <div className="kura-dialog-footer kura-op-panel-footer">{footer}</div>}
     </section>,

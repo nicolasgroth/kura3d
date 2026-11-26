@@ -99,7 +99,7 @@
   .kura-op-slot:has(> .kura-op-panel) {
     display: flex;
     flex: 0 0 auto;
-    width: 376px;
+    width: clamp(320px, 31vw, 376px);
     padding: 8px;
     box-sizing: border-box;
     min-height: 0;

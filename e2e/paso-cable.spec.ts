@@ -92,7 +92,7 @@ test('redondo y ranura, aplicar restas y deshacer', async ({ page }) => {
   await clic(page, [15, 30, 2]);
   await esperarLibre(page);
   expect(await pasos(page)).toHaveLength(2);
-  await page.getByTestId('cable-done').click();
+  await page.getByTestId('panel-back').click();
   await expect(page.locator('.kura-cable-panel')).toHaveCount(0);
 
   const plateVolume = (await st(page)).objects.find((o: any) => o.id === hostId).volume as number;

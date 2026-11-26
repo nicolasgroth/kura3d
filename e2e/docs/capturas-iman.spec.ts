@@ -60,7 +60,7 @@ test('alojamiento de imán', async ({ page }) => {
   await camara(page, [110, 30, 20]);
   await clicMundo(page, [15, 15, 0]);
   await libre(page);
-  await page.getByTestId('magnet-done').click();
+  await page.getByTestId('panel-back').click();
   await page.evaluate(async () => {
     const s = (window as any).__s.getState();
     s.setSelection([]);

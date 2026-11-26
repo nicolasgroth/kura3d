@@ -275,9 +275,6 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       className="kura-split-panel"
       footer={
         <>
-          <button type="button" className="kura-btn" onClick={onClose}>
-            {t(language, 'dialog.cancel')}
-          </button>
           <button
             type="button"
             className="kura-btn kura-btn-primary"

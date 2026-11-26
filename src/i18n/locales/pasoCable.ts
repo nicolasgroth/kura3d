@@ -51,7 +51,6 @@ const TABLE = {
     'रखने के लिए चिह्नित माप ठीक करें।',
     '请修正标记的尺寸后再放置。',
   ],
-  'cable.done': ['Listo', 'Done', 'Fertig', 'Terminé', 'हो गया', '完成'],
   'cable.fold.label': ['Paso de cable', 'Cable pass-through', 'Kabeldurchführung', 'Passe-câble', 'केबल मार्ग', '过线孔'],
   'cable.fold.empty': ['Haz clic sobre una pared para colocar.', 'Click a wall to place.', 'Klicke auf eine Wand zum Setzen.', 'Clique sur une paroi pour placer.', 'रखने के लिए दीवार पर क्लिक करें।', '点击一面壁来放置。'],
   ...presetRows('cable'),

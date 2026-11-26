@@ -24,11 +24,11 @@ const panel = (initialFocus?: string) => (
 );
 
 describe('OperationPanel: foco al abrir', () => {
-  it('va al primer control del cuerpo, no a la X de cerrar', () => {
+  it('va al primer control del cuerpo, no a «Volver»', () => {
     useKuraStore.setState({ language: 'es' } as never);
     render(panel());
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Primero' }));
-    expect(document.activeElement).not.toBe(screen.getByRole('button', { name: t('es', 'common.close') }));
+    expect(document.activeElement).not.toBe(screen.getByRole('button', { name: t('es', 'panel.action.back') }));
   });
 
   it('initialFocus con alternativas se busca dentro del cuerpo', () => {

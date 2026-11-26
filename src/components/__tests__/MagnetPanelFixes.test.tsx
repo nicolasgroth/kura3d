@@ -210,7 +210,7 @@ describe('preajustes entre pestañas y mensajes', () => {
 });
 
 describe('franja de la hoja plegada', () => {
-  it('muestra el último aviso y un Listo que cierra el panel', async () => {
+  it('muestra el último aviso y un Volver que cierra el panel', async () => {
     const user = userEvent.setup();
     render(<MagnetPanel />);
     act(() => void openMagnetPanel());

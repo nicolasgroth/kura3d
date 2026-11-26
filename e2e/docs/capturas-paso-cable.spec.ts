@@ -58,7 +58,7 @@ test('paso de cable', async ({ page }) => {
   await page.getByTestId('cable-shape-slot').click();
   await clicMundo(page, [15, 30, 2]);
   await libre(page);
-  await page.getByTestId('cable-done').click();
+  await page.getByTestId('panel-back').click();
   await page.evaluate(async () => {
     const s = (window as any).__s.getState();
     s.setSelection([]);

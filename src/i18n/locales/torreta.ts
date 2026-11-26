@@ -51,7 +51,6 @@ const TABLE = {
     'रखने के लिए चिह्नित माप ठीक करें।',
     '请先修正标记的尺寸才能放置。',
   ],
-  'turret.done': ['Listo', 'Done', 'Fertig', 'Terminé', 'हो गया', '完成'],
   'turret.type': ['Tipo', 'Type', 'Art', 'Type', 'प्रकार', '类型'],
   'turret.type.screw': ['Tornillo directo', 'Direct screw', 'Direktschraube', 'Vis directe', 'सीधा स्क्रू', '直接拧螺丝'],
   'turret.type.insert': ['Inserto roscado', 'Threaded insert', 'Gewindeeinsatz', 'Insert fileté', 'थ्रेडेड इंसर्ट', '螺纹嵌件'],

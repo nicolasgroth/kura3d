@@ -99,7 +99,7 @@ test('colocar en cara superior y lateral, deshacer, aplicar restas y deshacer', 
   // Deshacer quita solo la última.
   await page.keyboard.press('Control+z');
   expect(await torretas(page)).toHaveLength(2);
-  await page.getByTestId('turret-done').click();
+  await page.getByTestId('panel-back').click();
   await expect(page.locator('.kura-turret-panel')).toHaveCount(0);
 
   // Aplicar restas: el poste se une al cubo y el agujero lo corta; queda un solo objeto cerrado.

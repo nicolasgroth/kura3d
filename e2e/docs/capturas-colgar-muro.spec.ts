@@ -59,7 +59,7 @@ test('colgar en el muro', async ({ page }) => {
   await libre(page);
   await clicMundo(page, [18, 34, 5]);
   await libre(page);
-  await page.getByTestId('keyhole-done').click();
+  await page.getByTestId('panel-back').click();
   await page.evaluate(async () => {
     const s = (window as any).__s.getState();
     s.setSelection([]);

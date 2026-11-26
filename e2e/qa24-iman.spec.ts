@@ -542,7 +542,7 @@ test('07 interacción: orbitar y arrastrar no actúan, Escape y Listo cierran, d
   }
   expect((await getState(page)).objects.filter((o: any) => o.role === 'negative')).toHaveLength(3);
   // «Listo» cierra; el canvas vuelve a la normalidad (sin cursor crosshair, sin catchers).
-  await page.getByTestId('magnet-done').click();
+  await page.getByTestId('panel-back').click();
   await expect(page.locator('.kura-magnet-panel')).toHaveCount(0);
   const cursor = await page.locator('canvas').first().evaluate((c) => getComputedStyle(c).cursor);
   expect(cursor).not.toBe('crosshair');

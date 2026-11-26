@@ -327,7 +327,7 @@ describe('Asistentes: teclado', () => {
     expect(screen.getByRole('button', { name: t('es', 'asis.back') })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: t('es', 'asis.back') }));
     expect(screen.getByRole('list')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: t('es', 'common.close') }));
+    fireEvent.click(screen.getByRole('button', { name: t('es', 'panel.action.back') }));
     expect(useAssistantsPanel.getState().open).toBe(false);
   });
 });

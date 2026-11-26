@@ -3,7 +3,7 @@
  * @description Panel de operación «Alojamiento de imán» (no modal, en el lugar del inspector, como Texto 3D y
  * Asistentes). Mientras está abierto, un clic sobre una cara de una pieza coloca el hueco (ver
  * `MagnetPlacementLayer`); muestra cómo colocar, los preajustes, los campos del imán y la pared del último colocado.
- * Se cierra con «Listo», su X o Escape.
+ * Se cierra con «Volver» o Escape.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -42,11 +42,6 @@ export const MagnetPanel: React.FC = () => {
       title={t(language, 'magnet.title')}
       className="kura-magnet-panel"
       initialFocus='[data-testid="magnet-preset"]'
-      footer={(
-        <button type="button" className="kura-btn kura-btn-sm kura-btn-primary" data-testid="magnet-done" onClick={close}>
-          {t(language, 'magnet.done')}
-        </button>
-      )}
     >
       <p className="kura-magnet-hint" role="status" data-testid="magnet-hint">
         {t(language, blocked ? 'magnet.invalid' : 'magnet.hint')}

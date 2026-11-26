@@ -96,7 +96,7 @@ test('dos ojos a la misma altura, aviso de altura, aplicar restas y deshacer', a
   await expect(page.getByTestId('keyhole-warn-level')).toBeVisible();
   await page.keyboard.press('Control+z');
   expect(await ojos(page)).toHaveLength(2);
-  await page.getByTestId('keyhole-done').click();
+  await page.getByTestId('panel-back').click();
   await expect(page.locator('.kura-keyhole-panel')).toHaveCount(0);
 
   const plateVolume = (await st(page)).objects.find((o: any) => o.id === hostId).volume as number;
