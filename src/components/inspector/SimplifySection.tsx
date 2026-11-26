@@ -181,13 +181,20 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
     });
   };
 
-  // Enter en cualquier campo del modo ejecuta, como el botón. El campo confirma su valor primero (en el mismo evento);
-  // se espera un turno para ejecutar con el valor ya aplicado.
-  const runRef = useRef(run);
-  runRef.current = run;
+  // Lo aplicado desde la elección del informe («Aplicar de todos modos», versión segura) pasa a ser el último resultado.
+  const adopt = (report: SimplifyReport, step: ReturnType<typeof undoToastAction> | null) => {
+    setLast({ id: primary.id, report });
+    setUndoStep(step);
+    setAppliedDepth(step ? useKuraStore.getState().past.length : null);
+  };
+
+  // Enter en cualquier campo del modo lanza la VISTA PREVIA (como «Vista previa»; no modifica la pieza): aplicar exige el
+  // botón «Simplificar». El campo confirma su valor primero (en el mismo evento); se espera un turno para usar el valor ya aplicado.
+  const previewRef = useRef(runPreview);
+  previewRef.current = runPreview;
   const onEnter = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Enter' || e.defaultPrevented === false || !(e.target instanceof HTMLInputElement)) return;
-    window.setTimeout(() => runRef.current(), 0);
+    window.setTimeout(() => previewRef.current(), 0);
   };
 
   return (
@@ -318,7 +325,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
         ? <SimplifyReportView report={previewReady} language={language} preview ghost={ghostShown(previewSession, previewReady)} />
         : last && last.id === primary.id && undone
           ? <p className="kura-cut-hint" role="status" data-testid="simplify-undone">{t(language, 'simplify.report.undone')}</p>
-          : last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} onUndo={undoStep?.applicable?.() ? undoStep.run : undefined} />}
+          : last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} onUndo={undoStep?.applicable?.() ? undoStep.run : undefined} onApplied={adopt} onReplacing={() => setAppliedDepth(null)} />}
     </div>
   );
 };

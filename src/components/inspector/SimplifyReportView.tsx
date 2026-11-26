@@ -34,13 +34,20 @@ interface Props {
   preview?: boolean;
   /** Vista previa: qué muestra el fantasma del visor (null: no se dibuja). */
   ghost?: 'requested' | 'safe' | null;
+  /**
+   * Lo aplicado desde la elección (versión segura o «de todos modos»): lo recibe quien guarda el informe (el panel), para
+   * que el informe y su «Deshacer» sobrevivan a que este componente se desmonte mientras se deshace la segura.
+   */
+  onApplied?: (report: SimplifyReport, undo: UndoStep | null) => void;
+  /** Antes de deshacer la versión segura para reemplazarla: el panel no debe tomarlo por un «deshacer» del usuario. */
+  onReplacing?: () => void;
 }
 
 /** Clave del resumen de una o dos líneas que abre el informe. */
 const summaryKey = (preview: boolean, safe: boolean) =>
   preview ? (safe ? 'simplify.preview.summarySafe' : 'simplify.preview.summary') : (safe ? 'simplify.report.summarySafe' : 'simplify.report.summary');
 
-export const SimplifyReportView: React.FC<Props> = ({ report: given, language, onUndo, preview = false, ghost = null }) => {
+export const SimplifyReportView: React.FC<Props> = ({ report: given, language, onUndo, preview = false, ghost = null, onApplied, onReplacing }) => {
   const titleId = useId();
   const rootRef = useRef<HTMLDivElement | null>(null);
   // Un informe nuevo se desplaza hasta quedar a la vista dentro del panel (sin animar con «reducir movimiento»).
@@ -61,6 +68,7 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
     // Se aplicó la segura: «Aplicar de todos modos» la reemplaza (se deshace y se aplica lo pedido sobre la original).
     if (report.appliedVariant === 'safe') {
       if (!undo) return;
+      onReplacing?.();
       undo();
     }
     let next: SimplifyReport | null = null;
@@ -68,7 +76,8 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
       if (!next) return;
       const st = useKuraStore.getState();
       const step = ok ? undoToastAction(t(st.language, 'toast.undo'), () => useKuraStore.getState().past, () => useKuraStore.getState().undo()) : null;
-      setChosen({ base: given, report: next, undo: step });
+      if (onApplied) onApplied(next, step);
+      else setChosen({ base: given, report: next, undo: step });
     });
   };
   const n = (v: number, maxFrac: number) => formatLocaleNumber(language, v, { maxFrac, grouping: maxFrac === 0 });
@@ -76,6 +85,10 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
   const warnings = report.warnings;
   const blocked = !report.applied && (report.destructive?.length ?? 0) > 0;
   const safeApplied = report.applied && report.appliedVariant === 'safe';
+  // «Por tolerancia»: la pedida es la que escribió el usuario (con la segura aplicada, el informe trae la de la segura
+  // y la pedida viaja en `requested`); si el motor usó otra, se muestra aparte como «usada».
+  const askedToleranceMm = safeApplied && report.requested ? report.requested.toleranceMm : report.toleranceMm;
+  const usedDiffers = Math.abs(report.toleranceMm - askedToleranceMm) > 1e-9;
   // Reemplazar la segura exige poder deshacerla (si no, se forzaría sobre la malla ya simplificada).
   const onApply = preview || (safeApplied && !undo) ? undefined : apply;
   return (
@@ -108,7 +121,8 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
             <li>{t(language, 'simplify.report.volume', { pct })}</li>
             <li>{t(language, 'simplify.report.genus', { before: report.genusBefore, after: report.genusAfter })}</li>
             <li>{t(language, 'simplify.report.deviation', { mm: n(report.maxDeviationMm, 3) })}</li>
-            <li>{t(language, report.mode === 'tolerance' ? 'simplify.report.toleranceAsked' : 'simplify.report.tolerance', { mm: n(report.toleranceMm, 4) })}</li>
+            {report.mode === 'tolerance' && <li>{t(language, 'simplify.report.toleranceAsked', { mm: n(askedToleranceMm, 4) })}</li>}
+            {(report.mode !== 'tolerance' || usedDiffers) && <li>{t(language, 'simplify.report.tolerance', { mm: n(report.toleranceMm, 4) })}</li>}
           </>
         )}
       </ul>
