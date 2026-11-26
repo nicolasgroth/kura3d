@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { createPrimitiveMesh } from '../index';
 import { initManifoldEngine, meshDataToManifold } from '../manifoldKernel';
 import {
-  bvhOf, findSafeAlternative, isUsefulSafeReduction, manifoldMesh, SIMPLIFY_SAFE_MIN_REDUCTION_REL, worldDiagonalMm,
+  bvhOf, findSafeAlternative, isUsefulSafeReduction, manifoldMesh, SIMPLIFY_SAFE_MIN_REDUCTION_REL, worldPartSize,
 } from '../simplify';
 
 /** Placa 60 × 40 × 3 mm con 3 agujeros pasantes (género 3). */
@@ -26,7 +26,7 @@ async function withPlate<T>(run: (input: Parameters<typeof findSafeAlternative>[
     const originalMesh = manifoldMesh(original);
     return run({
       original, originalMesh, originalBvh: bvhOf(originalMesh), trianglesBefore: original.numTri(), genusBefore: original.genus(),
-      volumeBefore: original.volume(), maxScale: 1, diagMm: worldDiagonalMm(original, [1, 1, 1]), minTolMm, destructiveTolMm,
+      volumeBefore: original.volume(), maxScale: 1, size: worldPartSize(original, [1, 1, 1]), minTolMm, destructiveTolMm,
     });
   } finally {
     for (const m of [plate, ...holes, all, original]) m.delete();
@@ -58,7 +58,7 @@ describe('findSafeAlternative: solo ofrece una reducción apreciable', () => {
     expect(isUsefulSafeReduction(96, 100, 0.05)).toBe(false);
   });
 
-  it('esfera gruesa: la segura baja ~19 %; con un mínimo de 25 % no se ofrece ninguna', async () => {
+  it('esfera gruesa: hay segura; con un mínimo de reducción mayor que la suya no se ofrece ninguna', async () => {
     const wasm = await initManifoldEngine();
     const mesh = await createPrimitiveMesh('sphere', { radius: 10, segments: 16 });
     const original = meshDataToManifold(wasm, mesh);
@@ -66,12 +66,13 @@ describe('findSafeAlternative: solo ofrece una reducción apreciable', () => {
       const originalMesh = manifoldMesh(original);
       const input = {
         original, originalMesh, originalBvh: bvhOf(originalMesh), trianglesBefore: original.numTri(), genusBefore: 0,
-        volumeBefore: original.volume(), maxScale: 1, diagMm: worldDiagonalMm(original, [1, 1, 1]), minTolMm: 0.01, destructiveTolMm: 5,
+        volumeBefore: original.volume(), maxScale: 1, size: worldPartSize(original, [1, 1, 1]), minTolMm: 0.01, destructiveTolMm: 5,
       };
       const safe = findSafeAlternative(input);
       expect(safe).not.toBeNull();
       expect(safe!.triangles).toBeLessThan(input.trianglesBefore * 0.9);
-      expect(findSafeAlternative({ ...input, minReductionRel: 0.25 })).toBeNull();
+      const reduction = 1 - safe!.triangles / input.trianglesBefore;
+      expect(findSafeAlternative({ ...input, minReductionRel: reduction + 0.01 })).toBeNull();
     } finally {
       original.delete();
     }

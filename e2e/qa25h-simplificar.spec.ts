@@ -1,7 +1,8 @@
 /**
  * @file e2e/qa25h-simplificar.spec.ts
  * @description QA 25-h de Simplificar con versión segura, vista previa y túneles finos: esfera por defecto al 50 %
- * (segura aplicada + «Aplicar de todos modos» en un paso), vista previa sin tocar pieza ni historial (se descarta al
+ * (se aplica lo pedido con aviso, regla de dos niveles del 26-nov), placa a 12 triángulos (segura + «Aplicar de todos
+ * modos» en un paso), vista previa sin tocar pieza ni historial (se descarta al
  * cambiar un campo o la selección), pieza descentrada que no salta de lugar, botones visibles a 1280×720 y modelo real
  * (frierenmw, 478 mil triángulos) al 50 % con aviso de agujeros finos y cancelación de la vista previa.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -38,23 +39,9 @@ async function pedir50(page: Page) {
 }
 
 for (const tema of ['light', 'dark'] as const) {
-  test(`esfera por defecto al 50 % por cantidad: se aplica la versión segura con aviso (criterio del lote) (${tema})`, async ({ page }) => {
-    // Criterio del ticket: la esfera por defecto (r25, 512 triángulos) queda en ~476 con la versión segura. DEFECTO
-    // REAL: el motor no encuentra versión segura y solo bloquea («No hay una reducción segura»). Se documenta con test.fail.
-    test.fail(true, 'defecto: la esfera por defecto al 50 % no recibe versión segura (queda en 512, bloqueada)');
-    test.setTimeout(120_000);
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await abrir(page);
-    await page.emulateMedia({ colorScheme: tema });
-    const s = await cmd(page, 'create_primitive', { type: 'sphere', radius: 25, name: 'Esfera' });
-    await seleccionar(page, [s.id]);
-    const t0 = await tris(page, s.id);
-    await pedir50(page);
-    expect(await tris(page, s.id)).toBeLessThan(t0);
-    await expect(page.getByTestId('simplify-safe-applied-text')).toContainText('Se aplicó la versión segura');
-  });
-
-  test(`esfera por defecto al 50 %: bloquea sin tocar la pieza, «Aplicar de todos modos» visible sin desplazar y reemplaza en un paso (${tema})`, async ({ page }) => {
+  test(`esfera por defecto al 50 % por cantidad: se aplica lo pedido con aviso, sin bloqueo, en un paso (${tema})`, async ({ page }) => {
+    // Regla de dos niveles (26-nov): −5,4 % de volumen y 1,7 mm de desviación (3,4 % del lado menor) es AVISO: se aplica
+    // lo pedido (~248 triángulos), sin «versión segura» ni «Aplicar de todos modos».
     test.setTimeout(120_000);
     await page.setViewportSize({ width: 1280, height: 720 });
     const errs = await abrir(page);
@@ -64,21 +51,23 @@ for (const tema of ['light', 'dark'] as const) {
     const t0 = await tris(page, s.id);
     const p0 = await pasos(page);
     await pedir50(page);
-    await expect(page.getByTestId('simplify-blocked')).toBeVisible();
-    expect(await tris(page, s.id)).toBe(t0);
-    expect(await pasos(page)).toBe(p0);
-    await expect(page.getByTestId('simplify-apply-anyway')).toBeInViewport({ ratio: 1 });
-    await page.screenshot({ path: `${EV}/simp-esfera-bloqueada-${tema}.png` });
-    expect(await clavesCrudas(page, '.kura-simplify-section')).toEqual([]);
-    await page.getByTestId('simplify-apply-anyway').click();
-    await libre(page);
-    const t2 = await tris(page, s.id);
-    expect(t2).toBeLessThan(t0);
+    const t1 = await tris(page, s.id);
+    expect(Math.abs(t1 / t0 - 0.5)).toBeLessThan(0.15);
     expect(await pasos(page)).toBe(p0 + 1);
+    await expect(page.getByTestId('simplify-notice')).toBeVisible();
+    await expect(page.getByTestId('simplify-blocked')).toHaveCount(0);
+    await expect(page.getByTestId('simplify-safe-applied')).toHaveCount(0);
+    await expect(page.getByTestId('simplify-apply-anyway')).toHaveCount(0);
+    // Un solo juego de límites: los avisos dicen «se avisa desde», nunca los topes de bloqueo ni los de 0,5 % / 0,1 mm.
+    const avisos = await page.getByTestId('simplify-report-warnings').innerText();
+    expect(avisos).toContain('se avisa desde 5 %');
+    expect(avisos).not.toMatch(/0,5 %|0,1 mm|tope/);
+    await page.screenshot({ path: `${EV}/simp-esfera-aviso-${tema}.png` });
+    expect(await clavesCrudas(page, '.kura-simplify-section')).toEqual([]);
     await page.keyboard.press('Control+z');
     expect(await tris(page, s.id)).toBe(t0);
-    expect(await pasos(page)).toBe(p0);
-    expect(errs, errs.join('\n')).toEqual([]);
+    expect(errs, errs.join('
+')).toEqual([]);
   });
 
   test(`placa con 3 agujeros a 12 triángulos: segura aplicada con aviso, botones a la vista a 1280×720, «de todos modos» en un paso (${tema})`, async ({ page }) => {

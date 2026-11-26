@@ -1,7 +1,7 @@
 /**
  * @file src/engine/__tests__/simplifyDestructive.test.ts
  * @description Simplificar no aplica un resultado destructivo, con el motor real: placa de 3 mm con 3 agujeros y
- * toro al 2 % por cantidad, placa con agujero chico por tolerancia. Comprueba el motivo tipado, la alternativa
+ * toro al 2 % por cantidad, placa con agujero chico por tolerancia; y lo que solo avisa (esfera y cilindro reducidos). Comprueba el motivo tipado, la alternativa
  * segura (menos triángulos sin destruir, reproducible con «Por tolerancia») y `allowDestructive`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -12,7 +12,9 @@ import { describe, expect, it } from 'vitest';
 import { computeMeshStats, createPrimitiveMesh } from '../index';
 import { initManifoldEngine, manifoldToMeshData } from '../manifoldKernel';
 import { isMeshClosed } from '../repair/meshTopology';
-import { destructiveReasons, SIMPLIFY_DESTRUCTIVE_LIMITS, simplifyMeshDetailed } from '../simplify';
+import {
+  destructiveReasons, noticeReasons, SIMPLIFY_DESTRUCTIVE_LIMITS, SIMPLIFY_NOTICE_LIMITS, simplifyMeshDetailed, simplifyMinTriangles,
+} from '../simplify';
 import { makeObject } from './geometryTestUtils';
 import type { MeshData } from '../../types/kura';
 
@@ -32,15 +34,46 @@ async function plateThreeHoles(): Promise<MeshData> {
 }
 
 describe('Simplificar: regla de resultado destructivo', () => {
-  it('la regla: agujeros perdidos, volumen > 5 % o desviación > máx(1 mm, 1 % de la diagonal)', () => {
-    const ok = { genusBefore: 1, genusAfter: 1, volumeChangePct: -4.9, maxDeviationMm: 0.9 };
-    expect(destructiveReasons(ok, 50)).toEqual([]);
-    expect(destructiveReasons({ ...ok, genusAfter: 0 }, 50)).toEqual(['holes_lost']);
-    expect(destructiveReasons({ ...ok, volumeChangePct: 5.1 }, 50)).toEqual(['volume_changed']);
-    expect(destructiveReasons({ ...ok, maxDeviationMm: 1.1 }, 50)).toEqual(['deviation_high']);
-    // Pieza grande: el tope relativo manda (1 % de 300 mm = 3 mm).
-    expect(destructiveReasons({ ...ok, maxDeviationMm: 2.9 }, 300)).toEqual([]);
-    expect(SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct).toBe(5);
+  it('la regla de dos niveles: aviso sobre 5 % / máx(1 mm, 1 % diag.), destructivo sobre 25 % / ¼ del lado menor', () => {
+    const size = { diagMm: 86.6, minSideMm: 50 };
+    const ok = { genusBefore: 1, genusAfter: 1, volumeChangePct: -4.9, maxDeviationMm: 0.9, triangles: 500 };
+    expect(destructiveReasons(ok, size)).toEqual([]);
+    expect(noticeReasons(ok, size.diagMm)).toEqual([]);
+    // Aviso, no destructivo: la esfera por defecto al 50 % (−5,4 %, 1,7 mm).
+    const sphere50 = { ...ok, genusBefore: 0, genusAfter: 0, volumeChangePct: -5.4, maxDeviationMm: 1.7 };
+    expect(destructiveReasons(sphere50, size)).toEqual([]);
+    expect(noticeReasons(sphere50, size.diagMm)).toEqual(['volume_changed', 'deviation_high']);
+    expect(destructiveReasons({ ...ok, genusAfter: 0 }, size)).toEqual(['holes_lost']);
+    expect(destructiveReasons({ ...ok, volumeChangePct: 25.1 }, size)).toEqual(['volume_changed']);
+    expect(destructiveReasons({ ...ok, volumeChangePct: -24.9 }, size)).toEqual([]);
+    // Placa de 3 mm: 2,19 mm de desviación es el 73 % del espesor (tope ¼ = 0,75 mm).
+    const plate = { diagMm: 72.2, minSideMm: 3 };
+    expect(destructiveReasons({ ...ok, genusBefore: 3, genusAfter: 3, volumeChangePct: 3.1, maxDeviationMm: 2.19, triangles: 72 }, plate)).toEqual(['deviation_high']);
+    expect(destructiveReasons({ ...ok, maxDeviationMm: 0.74 }, plate)).toEqual([]);
+    // Mínimo geométrico: 12 + 20 por agujero (4 sin agujeros).
+    expect(simplifyMinTriangles(0)).toBe(4);
+    expect(simplifyMinTriangles(3)).toBe(72);
+    expect(destructiveReasons({ ...ok, genusBefore: 3, genusAfter: 3, triangles: 71 }, size)).toEqual(['too_few_triangles']);
+    expect(SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct).toBe(25);
+    expect(SIMPLIFY_NOTICE_LIMITS.volumePct).toBe(5);
+  });
+
+  it('casos medidos: esfera r25 al 50 % y 25 % y cilindro r20 h40 al 25 % se aplican con aviso', async () => {
+    const sphere = await createPrimitiveMesh('sphere', { radius: 25 });
+    const cyl = await createPrimitiveMesh('cylinder', { radius: 20, height: 40 });
+    for (const [mesh, pct] of [[sphere, 50], [sphere, 25], [cyl, 25]] as const) {
+      const res = await simplifyMeshDetailed(makeObject('s', mesh), { mode: 'target', targetPercent: pct });
+      const r = res.report;
+      expect(r.destructive).toEqual([]);
+      expect(r.applied).toBe(true);
+      expect(r.appliedVariant).toBe('requested');
+      expect(r.trianglesAfter).toBeLessThanOrEqual(Math.ceil(r.trianglesBefore * pct / 100 * 1.05));
+      expect(r.warnings).toContain('volume_changed');
+      expect(r.limits!.noticeVolumePct).toBe(5);
+      expect(r.limits!.destructiveDeviationMm).toBeCloseTo(0.25 * r.limits!.minSideMm, 6);
+      const m = res.mesh!;
+      expect(isMeshClosed(m.positions, m.indices)).toBe(true);
+    }
   });
 
   it('placa de 3 agujeros por cantidad muy agresiva: no aplica y ofrece la alternativa segura', async () => {
@@ -57,7 +90,7 @@ describe('Simplificar: regla de resultado destructivo', () => {
     expect(safe.triangles).toBeGreaterThan(r.trianglesAfter);
     expect(safe.genusAfter).toBe(3);
     expect(Math.abs(safe.volumeChangePct)).toBeLessThanOrEqual(SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct);
-    expect(safe.maxDeviationMm).toBeLessThanOrEqual(1);
+    expect(safe.maxDeviationMm).toBeLessThanOrEqual(0.75);
 
     // La alternativa segura se reproduce con «Por tolerancia» y sí se aplica, cerrada y con sus medidas.
     const applySafe = await simplifyMeshDetailed(obj, { mode: 'tolerance', toleranceMm: safe.toleranceMm });
@@ -88,7 +121,7 @@ describe('Simplificar: regla de resultado destructivo', () => {
     expect(r.safe).toBeTruthy();
     if (r.safe) {
       expect(r.safe.genusAfter).toBe(1);
-      expect(Math.abs(r.safe.volumeChangePct)).toBeLessThanOrEqual(5);
+      expect(Math.abs(r.safe.volumeChangePct)).toBeLessThanOrEqual(SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct);
     }
   });
 
