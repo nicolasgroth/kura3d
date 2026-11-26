@@ -283,7 +283,14 @@ export const PrecisionNumberInput: React.FC<PrecisionNumberInputProps> = ({
     setIsFocused(true);
     initialFocusValueRef.current = value;
     draftEditedRef.current = false;
-    if (!invalid) setDraft(formatDisplayValue(value, precision, language));
+    if (!invalid) {
+      const plain = formatDisplayValue(value, precision, language);
+      setDraft(plain);
+      // Con `grouping` el campo mostraba «500.007» y al enfocar pasa a «500007»: React reescribiría el valor DESPUÉS de
+      // la selección y la colapsaría al final (un `fill()` o el dictado concatenaban «500007256»). Se desformatea aquí,
+      // antes de seleccionar, y React ya no toca un valor que coincide.
+      if (e.currentTarget.value !== plain) e.currentTarget.value = plain;
+    }
     e.currentTarget.select();
   };
 
