@@ -114,7 +114,10 @@ test('arrastrar a otra placa soltando en el borde: la pieza se acerca lo justo p
 
 test('3MF real llaveros: arrastrar una pieza a la otra placa avisa y la deja dentro de la cama', async ({ page }) => {
   test.setTimeout(240_000);
-  const errs = await abrir(page);
+  const errs: string[] = [];
+  page.on('pageerror', (e) => errs.push(e.message));
+  page.on('console', (m) => m.type() === 'error' && errs.push(m.text()));
+  await abrir(page);
   const ruta = 'G:/proyectos/kura3d/.eval-tmp/modelos/llaveros.3mf';
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Importar 3D', exact: true }).first().click();
@@ -187,8 +190,7 @@ const trisDe = (page: Page, id: string) => page.evaluate((i) => (window as any).
 
 test('Simplificar por tolerancia: «Aplicar de todos modos» deja el informe del panel con lo forzado y su Deshacer; «Tolerancia pedida» es la escrita', async ({ page }) => {
   test.setTimeout(180_000);
-  const errs = await abrir(page);
-  void errs;
+  await abrir(page);
   const { id, sec } = await panelTolerancia(page, '5');
   const t0 = await trisDe(page, id);
   const p0 = await pasos(page);
