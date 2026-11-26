@@ -131,6 +131,17 @@ export function runAlign(mode: AlignMode): void {
   state.alignSelectedObjects(mode);
 }
 
+/** «Una placa por objeto»: reparte la selección (o todas las piezas) y avisa cuántas piezas y placas nuevas hubo. */
+export function runSpreadOnePlatePerObject(): void {
+  const state = useKuraStore.getState();
+  const result = state.spreadOnePlatePerObject();
+  if (!result) {
+    state.addToast(t(state.language, 'plates.spread.reason'), 'info');
+    return;
+  }
+  state.addToast(t(state.language, 'plates.toast.spread', { count: result.pieces, created: result.created }), 'success');
+}
+
 /** «Mover a placa»: lleva la selección a la placa `plateId` (`null` = placa nueva) y avisa cuántas piezas pasaron. */
 export function runMoveToPlate(plateId: string | null): void {
   const state = useKuraStore.getState();

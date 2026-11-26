@@ -106,6 +106,32 @@ const PLATES_VIEW_TABLE = {
     'कम से कम एक ठोस, अनलॉक हिस्सा चुनें',
     '请至少选择一个未锁定的实体零件',
   ],
+  // «Una placa por objeto» (tira de placas y paleta).
+  'plates.action.onePerObject': ['Una placa por objeto', 'One plate per object', 'Eine Platte pro Objekt', 'Un plateau par objet', 'प्रति ऑब्जेक्ट एक प्लेट', '每个对象一块打印板'],
+  'plates.action.onePerObject.tip': [
+    'Deja cada pieza sólida seleccionada (o todas) en su propia placa, centrada sobre su cama. Crea las placas que falten',
+    'Puts each selected solid part (or all of them) on its own plate, centered on its bed. Creates the missing plates',
+    'Legt jedes ausgewählte feste Teil (oder alle) auf eine eigene Platte, mittig auf dem Druckbett. Fehlende Platten werden angelegt',
+    'Place chaque pièce solide sélectionnée (ou toutes) sur son propre plateau, centrée sur son lit. Crée les plateaux manquants',
+    'चुने गए हर ठोस हिस्से (या सभी) को उसकी अपनी प्लेट पर, बेड के बीच में रखता है। जो प्लेटें कम हों उन्हें बनाता है',
+    '把所选的每个实体零件（或全部）放到各自的打印板中央，并创建缺少的打印板',
+  ],
+  'plates.spread.reason': [
+    'Elige al menos dos piezas sólidas sin bloquear (o no selecciones nada para usar todas)',
+    'Pick at least two solid, unlocked parts (or select nothing to use all of them)',
+    'Wähle mindestens zwei feste, nicht gesperrte Teile (oder nichts, um alle zu nehmen)',
+    'Choisissez au moins deux pièces solides non verrouillées (ou aucune pour prendre toutes)',
+    'कम से कम दो ठोस, अनलॉक हिस्से चुनें (या सभी के लिए कुछ न चुनें)',
+    '请至少选择两个未锁定的实体零件（不选则使用全部）',
+  ],
+  'plates.toast.spread': [
+    '{count} piezas repartidas, una por placa. Placas nuevas: {created}',
+    '{count} parts spread, one per plate. New plates: {created}',
+    '{count} Teile verteilt, eines pro Platte. Neue Platten: {created}',
+    '{count} pièces réparties, une par plateau. Nouveaux plateaux : {created}',
+    '{count} हिस्से बाँटे गए, प्रति प्लेट एक। नई प्लेटें: {created}',
+    '已把 {count} 个零件分到各自的打印板。新建打印板：{created}',
+  ],
   // Aviso de fuera de volumen por placa.
   'plates.oob.where': ['en {names}', 'on {names}', 'auf {names}', 'sur {names}', '{names} पर', '位于 {names}'],
   // Aviso «no cabe» de Dividir con varias placas: nombra la placa de la pieza.

@@ -10,6 +10,7 @@
 
 import { projectBed } from '../../core/scene/activePlateBed';
 import { movePiecesToPlate, reassignByPosition } from '../../core/scene/plateMove';
+import { spreadOnePlatePerObject } from '../../core/scene/plateSpread';
 import {
   assignToPlate, createPlate, deletePlate, findPlate, nextPlateName, renamePlate, resolveActivePlate, type PlateScene,
 } from '../../core/scene/plates';
@@ -130,6 +131,19 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       commit(result.scene, created ? { activePlateId: created } : followSelection(result.scene.objects));
       if (created) get().requestCameraPreset('plates');
       return result.moved.length;
+    },
+
+    spreadOnePlatePerObject: (ids) => {
+      if (rejectWhileLocked()) return null;
+      const state = get();
+      const chosen = ids && ids.length ? ids : state.selectedIds;
+      const result = spreadOnePlatePerObject(scene(), chosen, {
+        projectBed: projectBed(state), layout: state.layout, ctx: layoutContextOf(state), makeId: () => makeId('plate'), nameFor: plateName,
+      });
+      if (!result) return null;
+      commit(result.scene, { activePlateId: result.scene.objects.find((o) => o.id === result.pieces[0])?.plateRef ?? get().activePlateId });
+      get().requestCameraPreset('plates');
+      return { pieces: result.pieces.length, created: result.created };
     },
 
     reassignPlatesByPosition: (ids) => {

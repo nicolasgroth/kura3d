@@ -12,13 +12,14 @@ import React from 'react';
 import { Zap } from 'lucide-react';
 import { t, type TranslationKey } from '../i18n';
 import { OBJECT_ROLES } from '../core/scene/objectRole';
-import { actionName, moveToPlateName } from '../store/actionLabels';
+import { actionName, moveToPlateName, spreadPlatesName } from '../store/actionLabels';
 import { assignable } from '../core/scene/plates';
+import { spreadCandidates } from '../core/scene/plateSpread';
 import { ACTION_GROUPS, ACTION_SHORTCUTS, actionAvailability, type ActionId } from '../store/actionsCatalog';
 import { ROLE_LABEL_KEY } from '../store/roleLabels';
 import type { KuraStoreState } from '../store/storeTypes';
 import type { LanguageCode } from '../types/kura';
-import { runAction, runAlign, runConvert, runMoveToPlate } from './shell/actionRunners';
+import { runAction, runAlign, runConvert, runMoveToPlate, runSpreadOnePlatePerObject } from './shell/actionRunners';
 import { ALIGN_MODES } from './viewport/contextMenu/ObjectMenuPosition';
 
 export interface ActionPaletteItem {
@@ -88,5 +89,13 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
     for (const p of plates) out.push({ ...base, id: `action-moveToPlate-${p.id}`, label: `${name}: ${p.name}`, run: () => runMoveToPlate(p.id) });
     out.push({ ...base, id: 'action-moveToPlate-new', label: `${name}: ${t(language, 'plates.move.new')}`, run: () => runMoveToPlate(null) });
   }
+  // «Una placa por objeto»: con 2+ piezas sólidas sin bloquear entre las elegidas (o entre todas si no hay selección).
+  const picked = state.selectedIds.length ? state.objects.filter((o) => state.selectedIds.includes(o.id)) : state.objects;
+  const spreadable = spreadCandidates(picked, []).length >= 2;
+  out.push({
+    id: 'action-spreadPlates', label: spreadPlatesName(language), category: t(language, 'rediseno.actions.group.position'),
+    keywords: 'spreadPlates onePerObject placa plate repartir spread cada objeto each object', kind: 'local' as const, icon,
+    ...(spreadable ? {} : { unavailable: t(language, 'plates.spread.reason') }), run: () => runSpreadOnePlatePerObject(),
+  });
   return out;
 }
