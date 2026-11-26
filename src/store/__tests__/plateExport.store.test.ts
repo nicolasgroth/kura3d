@@ -192,6 +192,18 @@ describe('exportar con placas', () => {
     expect(back.position[2]).toBeCloseTo(byId(b.id)!.position[2], 6);
   });
 
+  it('nombre de la placa del laminador: vacío sin placas creadas; el de la persona al exportar una placa suya', async () => {
+    await addBox(20, [0, 0, 0], { name: 'A' });
+    expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
+    expect(plateNames(savedBytes())).toEqual(['']);
+    const p2 = store().createPlate({ name: 'Cabezas' })!;
+    await addBox(20, [p2.origin[0], 0, p2.origin[1]], { name: 'B' });
+    expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x', plateId: p2.id })).toBe(true);
+    expect(plateNames(savedBytes())).toEqual(['Cabezas']);
+    expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
+    expect(plateNames(savedBytes())).toEqual(store().plates.map((p) => p.name));
+  });
+
   it('placa vacía en medio: el 3MF lleva las 3 placas, la 3 en su celda, y la escena vuelve con las 3', async () => {
     await addBox(20, [0, 0, 0], { name: 'A' });
     store().createPlate();

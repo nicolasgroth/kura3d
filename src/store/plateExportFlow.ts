@@ -89,6 +89,10 @@ const layoutOf = (buckets: readonly PlateExportBucket[], offsets: Record<string,
   };
 };
 
+/** Con una sola placa creada por la persona en el archivo, su nombre viaja como nombre de la placa del laminador. */
+const withSingleName = (layout: ThreeMfPlateLayout | undefined, buckets: readonly PlateExportBucket[]): ThreeMfPlateLayout | undefined =>
+  buckets.length === 1 && buckets[0].plateId !== null && buckets[0].name ? { ...(layout ?? { plates: [] }), singlePlateName: buckets[0].name } : layout;
+
 /**
  * Plan de un archivo único. `fullScene` (3MF de escena completa): todos los objetos no referencia, también
  * ocultos y negativos, que se trasladan con su placa para que la escena se restaure en su lugar de mundo.
@@ -100,7 +104,7 @@ export function singleFilePlan(
   if (!fullScene) {
     return {
       targets: plan.buckets.flatMap((b) => b.objects),
-      plateLayout: layoutOf(plan.buckets, {}, plates),
+      plateLayout: withSingleName(layoutOf(plan.buckets, {}, plates), plan.buckets),
       plateCount: plan.buckets.length,
       plateIds: plan.buckets.map((b) => b.plateId),
       excluded: plan.excluded,
@@ -119,7 +123,7 @@ export function singleFilePlan(
   }
   return {
     targets: shifted.objects,
-    plateLayout: layout,
+    plateLayout: withSingleName(layout, plan.buckets),
     plateCount: plan.buckets.length,
     plateIds: plan.buckets.map((b) => b.plateId),
     excluded: plan.excluded,

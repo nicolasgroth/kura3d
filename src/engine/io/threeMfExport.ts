@@ -49,6 +49,8 @@ export interface ThreeMfPlateLayout {
   offsets?: Readonly<Record<string, readonly [number, number]>>;
   /** Placas reales de la escena completa (P7): viajan en los metadatos para volver como placas al abrir el 3MF. */
   scenePlates?: KuraScenePlates;
+  /** Nombre de la única placa del archivo cuando es una placa creada por la persona (p. ej. exportar una placa). */
+  singlePlateName?: string;
 }
 
 /**
@@ -184,8 +186,8 @@ export const num = (n: number) => {
  * Genera un paquete `.3mf` (`[Content_Types].xml`, `_rels/.rels`, `3D/3dmodel.model` y
  * `Metadata/model_settings.config`) con `<basematerials>` y colores por triángulo. Es un único 3MF estándar:
  * `_deprecatedSlicerTarget` se acepta e ignora para no romper a quienes aún lo pasan (p. ej. el servidor MCP).
- * `brand` (la marca de la app, desde quien llama) firma los metadatos `Application`/`Organization`
- * y el nombre de la placa; sin ella se omiten. `plateLayout` (placas reales) reparte lo impreso en las placas del
+ * `brand` (la marca de la app, desde quien llama) firma los metadatos `Application`/`Organization`; sin ella se
+ * omiten. La placa implícita (sin placas creadas) va sin nombre. `plateLayout` (placas reales) reparte lo impreso en las placas del
  * laminador (Bambu Studio / OrcaSlicer) y manda sobre los grupos. `projectMeta` (nombre, descripción y autor del
  * proyecto) va como metadatos estándar `Title` / `Description` / `Designer`; los vacíos se omiten.
  *
@@ -323,7 +325,8 @@ export function exportSceneTo3MF(
     members.map((i) => `${configInstances[i]}\n`).join('') + '  </plate>';
   const platesXml = plates
     ? plates.map((p, i) => plateXml(i + 1, p.name, [...p.members])).join('\n')
-    : plateXml(1, brand?.name ? `${brand.name}_Bed` : 'Plate_1', solidObjects.map((_, i) => i));
+    // Placa implícita (proyecto sin placas): nombre vacío, para que el laminador muestre el suyo por defecto.
+    : plateXml(1, plateLayout?.singlePlateName ?? '', solidObjects.map((_, i) => i));
   const settings =
     `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n` +
     `${configObjects.join('\n')}\n${platesXml}\n</config>\n`;
