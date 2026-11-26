@@ -7,7 +7,8 @@
  *
  * 3MF con placas reales frente a grupos: con dos o más placas reales, ellas definen las placas del laminador y
  * los grupos raíz ya no (los grupos siguen viajando en los metadatos de escena). Con una placa o ninguna, los
- * grupos raíz siguen siendo placas del laminador como siempre.
+ * grupos raíz siguen siendo placas del laminador como siempre. El 3MF lleva la cama del proyecto (`slicerBedOf`) para
+ * colocar cada placa donde la espera el laminador; `otherBedNotice` avisa de las placas con cama propia de otro tamaño.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

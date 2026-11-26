@@ -9,6 +9,8 @@
  * - Con dos o más placas, un cubo por placa con piezas, en el orden de las placas. Lo que no tiene placa (o apunta
  *   a una que no existe) se excluye y se cuenta para avisar.
  * - Un agregado (imán, torreta) sin placa propia va con la placa de su pieza.
+ * - `platesWithOtherBed`: placas con cama propia de otro tamaño, que el 3MF del laminador (una sola cama) centra en una
+ *   celda de la cama del proyecto, para avisarlo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

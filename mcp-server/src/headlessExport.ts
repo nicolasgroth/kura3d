@@ -2,7 +2,8 @@
  * @file mcp-server/src/headlessExport.ts
  * @description Exportación a disco del modo headless de Kurra Studio usando los codificadores del
  * motor compartido (`exportSceneToBinarySTL` y `exportSceneTo3MF` de `src/engine`). El 3MF lleva
- * la paleta `<basematerials>` y el color por triángulo igual que la app. El STL ASCII se obtiene
+ * la paleta `<basematerials>` y el color por triángulo igual que la app, y con la cama del proyecto cada pieza va en
+ * la celda de su placa del laminador. El STL ASCII se obtiene
  * transcribiendo el STL binario del motor, por lo que la geometría es idéntica en ambos formatos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH

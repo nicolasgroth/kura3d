@@ -4,7 +4,8 @@
  * STL y los mismos vértices de 3MF respecto de la cama; dos placas en STL dan un ZIP con un archivo por placa; un
  * 3MF con todas las placas (placas reales, no los grupos) con cada pieza dentro de su cama, o un 3MF por placa en
  * ZIP; lo que no tiene placa se excluye con aviso; sin placas los archivos son idénticos a los de siempre; la ida y
- * vuelta del 3MF de escena devuelve cada pieza a su lugar de mundo.
+ * vuelta del 3MF de escena devuelve cada pieza a su lugar de mundo; en el 3MF con todas las placas cada ítem va en la
+ * celda de su placa del laminador y una placa con cama propia de otro tamaño avisa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT

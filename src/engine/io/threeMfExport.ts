@@ -3,7 +3,8 @@
  * @description Escritor 3MF multicolor (ZIP + XML) compatible con Elegoo Slicer, OrcaSlicer,
  * Bambu Studio, Snapmaker Orca, FlashForge y PrusaSlicer. Cada objeto declara su color base
  * (`pid`/`pindex`) y los triángulos pintados su propio `p1`; el XML se genera por bloques
- * codificados directamente a bytes para no construir una cadena única gigante.
+ * codificados directamente a bytes para no construir una cadena única gigante. Con la cama del proyecto, cada ítem
+ * va en la celda de su placa de la rejilla de Bambu Studio / OrcaSlicer (`slicerPlateGrid.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
