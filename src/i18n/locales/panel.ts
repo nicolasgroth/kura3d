@@ -30,10 +30,10 @@ const PANEL = {
 
   // Contexto acción
   'panel.title.hollow': { es: 'Ahuecar', en: 'Hollow out', de: 'Aushöhlen', fr: 'Évider', hi: 'खोखला करें', zh: '抽壳' },
-  'panel.title.simplify': { es: 'Simplificar o refinar malla', en: 'Simplify or refine mesh', de: 'Netz vereinfachen oder verfeinern', fr: 'Simplifier ou affiner le maillage', hi: 'मेश सरल या परिष्कृत करें', zh: '简化或细化网格' },
-  'panel.title.refine': { es: 'Simplificar o refinar malla', en: 'Simplify or refine mesh', de: 'Netz vereinfachen oder verfeinern', fr: 'Simplifier ou affiner le maillage', hi: 'मेश सरल या परिष्कृत करें', zh: '简化或细化网格' },
+  'panel.title.simplify': { es: 'Simplificar o refinar', en: 'Simplify or refine mesh', de: 'Netz vereinfachen/verfeinern', fr: 'Simplifier ou affiner', hi: 'मेश सरल या परिष्कृत करें', zh: '简化或细化网格' },
+  'panel.title.refine': { es: 'Simplificar o refinar', en: 'Simplify or refine mesh', de: 'Netz vereinfachen/verfeinern', fr: 'Simplifier ou affiner', hi: 'मेश सरल या परिष्कृत करें', zh: '简化或细化网格' },
   'panel.title.texture': { es: 'Textura superficial', en: 'Surface texture', de: 'Oberflächentextur', fr: 'Texture de surface', hi: 'सतह बनावट', zh: '表面纹理' },
-  'panel.title.modules': { es: 'Módulos: sumar o restar formas', en: 'Modules: add or subtract shapes', de: 'Module: Formen addieren oder abziehen', fr: 'Modules : ajouter ou soustraire des formes', hi: 'मॉड्यूल: आकार जोड़ें या घटाएँ', zh: '模块:添加或减去形状' },
+  'panel.title.modules': { es: 'Módulos: sumar o restar', en: 'Modules: add or subtract', de: 'Module: addieren/abziehen', fr: 'Modules : ajouter/soustraire', hi: 'मॉड्यूल: जोड़ें या घटाएँ', zh: '模块:添加或减去形状' },
   'panel.title.validate': { es: 'Revisar si se puede imprimir', en: 'Check printability', de: 'Druckbarkeit prüfen', fr: 'Vérifier l’imprimabilité', hi: 'प्रिंट योग्यता जाँचें', zh: '检查可打印性' },
   'panel.title.detect': { es: 'Detectar estructuras', en: 'Detect structures', de: 'Strukturen erkennen', fr: 'Détecter les structures', hi: 'संरचनाएँ पहचानें', zh: '检测结构' },
   'panel.action.target': { es: 'Sobre {name}', en: 'On {name}', de: 'Auf {name}', fr: 'Sur {name}', hi: '{name} पर', zh: '对象:{name}' },
