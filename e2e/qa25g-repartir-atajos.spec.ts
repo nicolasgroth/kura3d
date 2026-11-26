@@ -53,7 +53,11 @@ test.describe('Repartir y una placa por objeto', () => {
     const antes = { n: await S(page, (s) => s.plates.length), pos: await S(page, (s) => s.objects.map((o: any) => [...o.position])), pasos: await pasos(page) };
     await expect(tira(page)).toBeVisible();
     await S(page, (s) => s.setSelection([]));
-    await page.getByTestId('plate-spread').click();
+    // Desde la segunda tanda del 26-nov, «una placa por objeto» es un criterio del panel «Repartir en placas…».
+    await page.getByTestId('plate-arrange').click();
+    await page.getByTestId('arrange-criterion-onePerObject').check();
+    await expect(page.getByTestId('arrange-summary')).toContainText('Cada pieza irá a su propia placa', { timeout: 20000 });
+    await page.getByTestId('arrange-apply').click();
     await expect.poll(() => S(page, (s) => s.busyOperation ?? null), { timeout: 30000 }).toBeNull();
     await page.waitForTimeout(800);
     console.log('QA25G spread tras clic: placas', await S(page, (s) => s.plates.length), 'refs', JSON.stringify(await S(page, (s) => s.objects.map((o: any) => o.plateRef ?? null))), 'toasts', JSON.stringify(await S(page, (s) => (s.toasts ?? []).map((t: any) => t.text ?? t.message))));
@@ -90,13 +94,17 @@ test.describe('Repartir y una placa por objeto', () => {
     const minimoTeorico = Math.ceil(areaTotal / (bed[0] * bed[1]));
     const pasos0 = await pasos(page);
     const pos0 = await S(page, (s) => s.objects.map((o: any) => [...o.position]));
+    // Sin selección el panel reparte todas las piezas (con selección, su alcance por defecto es «solo la selección»).
+    await S(page, (s) => s.setSelection([]));
     await page.keyboard.press('Control+k');
     await page.keyboard.type('Repartir en placas');
     const opc = page.getByRole('option', { name: /Repartir en placas/ }).first();
     await expect(opc).toBeVisible();
     await page.screenshot({ path: `${EVID}/repartir-paleta.png` });
     await page.keyboard.press('Enter');
-    // El comando corre con indicador de progreso (no hay diálogo de opciones): se espera a que termine.
+    // La paleta abre el panel con vista previa: se espera a que esté lista y se aplica.
+    await expect(page.getByTestId('arrange-preview')).toHaveAttribute('data-status', 'ready', { timeout: 30000 });
+    await page.getByTestId('arrange-apply').click();
     await expect.poll(() => S(page, (s) => s.busyOperation ?? null), { timeout: 60000 }).toBeNull();
     await expect.poll(async () => (await pasos(page)) - pasos0, { timeout: 30000 }).toBeGreaterThanOrEqual(1);
     await page.waitForTimeout(800);
@@ -105,7 +113,7 @@ test.describe('Repartir y una placa por objeto', () => {
     // Solo cuenta solape entre piezas de la misma placa.
     const refs = new Map(r.refs as Array<[string, string | null]>);
     const nombrePlaca = (name: string) => refs.get(r.cs.find((c) => c.name === name)!.id);
-    const solapesMismaPlaca = sol.filter((p) => { const [a, b] = p.split(/ ?[-–/|,] ?| con | y /).map((x) => x.trim()); return nombrePlaca(a) === nombrePlaca(b); });
+    const solapesMismaPlaca = sol.filter((p) => { const [a, b] = p.split(' × ').map((x) => x.trim()); return nombrePlaca(a) === nombrePlaca(b); });
     console.log('QA25G repartir 12: placas usadas', r.placasUsadas, 'minimo teorico', minimoTeorico, 'fuera', r.out, 'solapes', sol.length, 'pasos+', (await pasos(page)) - pasos0, 'bed', bed);
     expect(r.out, 'todas dentro de las camas').toEqual([]);
     expect(solapesMismaPlaca, 'sin solapes').toEqual([]);
@@ -134,31 +142,8 @@ test.describe('Repartir y una placa por objeto', () => {
     expect(toasts).toMatch(/no cab|no entr|fuera|sin colocar|no se pudo|demasiado/i);
     expect(errs.filter((e) => !/WebGL|GPU/i.test(e))).toEqual([]);
   });
-
-  test('en vista Armado, repartir no mueve la figura', async ({ page }) => {
-    const errs = await abrir(page);
-    await cubo(page, 'A', 30, 30, 30); await cubo(page, 'B', 30, 30, 30);
-    await S(page, (s) => s.createPlate());
-    await cubo(page, 'C', 30, 30, 30);
-    await page.getByRole('radiogroup', { name: 'Modo de vista' }).getByRole('radio', { name: 'Armado' }).click();
-    const antes = await S(page, (s) => s.objects.map((o: any) => [...o.position]));
-    const pasos0 = await pasos(page);
-    const spread = page.getByTestId('plate-spread');
-    const habil = await spread.isEnabled();
-    console.log('QA25G armado: plate-spread habilitado =', habil);
-    let res: any = null;
-    try { res = await page.evaluate(async () => (window as any).__s.getState().executeCommand({ id: 'qa-arm', command: 'arrange_on_plates', params: {} })); } catch (e) { res = String(e); }
-    console.log('QA25G armado arrange cmd', JSON.stringify(res).slice(0, 250));
-    await page.waitForTimeout(500);
-    const despues = await S(page, (s) => s.objects.map((o: any) => [...o.position]));
-    expect(despues, 'la figura armada no se mueve').toEqual(antes);
-    console.log('QA25G armado pasos+', (await pasos(page)) - pasos0);
-    if (habil) await spread.click();
-    await page.waitForTimeout(500);
-    expect(await S(page, (s) => s.objects.map((o: any) => [...o.position])), 'tampoco con el botón').toEqual(antes);
-    await page.getByTestId('viewmode-back').click();
-    expect(errs.filter((e) => !/WebGL|GPU/i.test(e))).toEqual([]);
-  });
+  // «En Armado, repartir no mueve la figura» quedó obsoleta: ahora repartir desde Armado pasa a Imprimir y lo avisa
+  // (cubierto en `placas-repartir.spec.ts`).
 });
 
 test.describe('Atajos', () => {

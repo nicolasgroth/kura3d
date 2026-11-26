@@ -1,12 +1,12 @@
 # Tablero de Kurra Studio
 
-**Actualizado el 26 de noviembre de 2026, 04:20.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
+**Actualizado el 26 de noviembre de 2026, 07:20.** Las dos primeras secciones son el resumen corto; el detalle de cada etapa sigue más abajo.
 
 ## En corto: último día (noche del 25 al 26 de noviembre)
 
-**Notas de la última evaluación a ciegas** (mínimo 85): usabilidad **85** · código **85** (lo de esta noche; 87 lo anterior) · funcional **87**. Sin bloqueos.
+**Notas de la última evaluación a ciegas** (mínimo 85): usabilidad **85** · código **85** (lo de esta noche; 87 lo anterior) · funcional **87**. Sin bloqueos. Las de usabilidad y funcional son del 25-nov y no cubren lo de esta noche: esa evaluación está en curso.
 
-**Pruebas en `main`:** 4289 del programa y 188 del servidor MCP, todas en verde.
+**Pruebas en `main`:** 4336 del programa y 188 del servidor MCP, todas en verde. Capturas de las guías: 35 recorridos en verde.
 
 Lo que entró esta noche y está en `main`:
 
@@ -24,21 +24,27 @@ Lo que entró esta noche y está en `main`:
 - **Arrastrar eligiendo el plano:** en vista de frente la pieza se mueve en vertical; Alt y Mayús cambian el plano o lo restringen a un eje.
 - **Servidor MCP:** 68 herramientas, incluidas las de placas, que funcionan también sin la app abierta.
 
+Verificado en navegador esta madrugada: Simplificar con la regla nueva y su fantasma, «Volver» y Esc en todas las herramientas, arrastre por plano, galería de Asistentes, camas por placa, 3MF real de laminador con 95 piezas, datos del proyecto. Las guías y sus capturas ya muestran todo esto.
+
 Qué no está verificado todavía:
 
-- La verificación en navegador de la tercera y cuarta tanda quedó a medias por dos cortes de límite de uso: se aprobaron camas por placa y datos del proyecto; sigue en curso lo demás (Simplificar con la regla nueva, «Volver» en las herramientas, arrastre por plano, galería de Asistentes).
-- Las capturas de las guías no reflejan aún los paneles con «Volver» ni lo nuevo de esta noche.
-- No hubo evaluación a ciegas de usabilidad ni funcional de lo de esta noche (solo de código).
+- El 3MF con varias placas abierto en un laminador real (consulta 1).
+- En navegador: dividir con imanes cuadrados o rectangulares, exportar por placa a ZIP con camas distintas, y Esc con un grupo abierto o un cálculo en curso (tienen pruebas de motor, no recorrido).
+
+Menores anotados, sin corregir:
+
+- «Ajustar a la impresora» y «Cama de Placa N» siguen como diálogos con × y Cancelar, no con «Volver».
+- En Armado, sin figura dividida, la pieza de la placa 2 queda lejos y Encuadrar no la incluye.
+- En la guía de armado, los alojamientos rectangulares se dibujan como círculos.
 
 ## En corto: lo que viene
 
 Ahora:
 
-1. Terminar la verificación en navegador de lo que entró esta noche y corregir lo que aparezca.
-2. Regenerar capturas y guías (los paneles cambiaron de aspecto).
-3. Evaluación a ciegas de usabilidad y funcional de lo nuevo.
-4. Deslizadores también en las formas básicas del inspector.
-5. Placas: herramientas que aún miran solo la cama del proyecto con una sola placa.
+1. Corregir los menores anotados arriba.
+2. Deslizadores también en las formas básicas del inspector.
+3. Placas: herramientas que aún miran solo la cama del proyecto con una sola placa.
+4. Conmutador «Ver lo pedido» en Simplificar.
 
 Después:
 

@@ -36,12 +36,12 @@ const TABLE = {
     '放置过线孔需要一个可见且未锁定的实体零件。',
   ],
   'cable.hint': [
-    'Haz clic sobre una pared: el agujero la atraviesa en ese punto (el largo se mide solo). Puedes colocar varios; Escape o «Listo» termina.',
-    'Click a wall: the hole goes through it at that point (the length is measured for you). You can place several; Escape or “Done” finishes.',
-    'Klicke auf eine Wand: Das Loch geht dort hindurch (die Länge wird gemessen). Du kannst mehrere setzen; Escape oder „Fertig“ beendet.',
-    'Clique sur une paroi : le trou la traverse à cet endroit (la longueur est mesurée). Tu peux en placer plusieurs ; Échap ou « Terminé » termine.',
-    'किसी दीवार पर क्लिक करें: छेद उस बिंदु पर आर-पार जाता है (लंबाई अपने आप नापी जाती है)। आप कई रख सकते हैं; Escape या “हो गया” से समाप्त करें।',
-    '点击一面壁：孔会在该处穿透（长度自动测量）。可以放置多个；按 Escape 或“完成”结束。',
+    'Haz clic sobre una pared: el agujero la atraviesa en ese punto (el largo se mide solo). Puedes colocar varios; Escape o «Volver» termina.',
+    'Click a wall: the hole goes through it at that point (the length is measured for you). You can place several; Escape or “Back” finishes.',
+    'Klicke auf eine Wand: Das Loch geht dort hindurch (die Länge wird gemessen). Du kannst mehrere setzen; Escape oder „Zurück“ beendet.',
+    'Clique sur une paroi : le trou la traverse à cet endroit (la longueur est mesurée). Tu peux en placer plusieurs ; Échap ou « Retour » termine.',
+    'किसी दीवार पर क्लिक करें: छेद उस बिंदु पर आर-पार जाता है (लंबाई अपने आप नापी जाती है)। आप कई रख सकते हैं; Escape या “वापस” से समाप्त करें।',
+    '点击一面壁：孔会在该处穿透（长度自动测量）。可以放置多个；按 Escape 或“返回”结束。',
   ],
   'cable.invalid': [
     'Corrige las medidas marcadas para poder colocar.',

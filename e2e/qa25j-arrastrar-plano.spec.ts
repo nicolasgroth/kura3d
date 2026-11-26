@@ -35,14 +35,23 @@ const pos = (page: Page, id: string) => page.evaluate((i) => (window as any).__s
 const pasos = (page: Page) => page.evaluate(() => (window as any).__s.getState().past.length as number);
 const sel = (page: Page, ids: string[]) => page.evaluate((i) => (window as any).__s.getState().setSelection(i), ids);
 async function vista(page: Page, cam: P3, mira: P3 = [0, 15, 0]) {
-  await page.evaluate(([c, m]) => {
-    const st = (window as any).__r3f.getState();
-    st.camera.position.set(c[0], c[1], c[2]);
-    st.camera.lookAt(m[0], m[1], m[2]);
-    st.camera.updateMatrixWorld();
-    st.controls?.update?.();
-  }, [cam, mira] as const);
-  await page.waitForTimeout(250);
+  // Una animación de encuadre en curso puede pisar la cámara: se fija y se comprueba que quedó donde se pidió.
+  for (let intento = 0; intento < 6; intento++) {
+    await page.evaluate(([c, m]) => {
+      const st = (window as any).__r3f.getState();
+      st.camera.position.set(c[0], c[1], c[2]);
+      st.camera.lookAt(m[0], m[1], m[2]);
+      st.camera.updateMatrixWorld();
+      st.controls?.update?.();
+    }, [cam, mira] as const);
+    await page.waitForTimeout(250);
+    const quieta = await page.evaluate((c) => {
+      const q = (window as any).__r3f.getState().camera.position;
+      return Math.hypot(q.x - c[0], q.y - c[1], q.z - c[2]) < 1;
+    }, cam);
+    if (quieta) return;
+  }
+  throw new Error('la cámara no quedó en la vista pedida');
 }
 const FRENTE: P3 = [0, 40, 500];
 const SUPERIOR: P3 = [0, 600, 1];

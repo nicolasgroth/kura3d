@@ -852,3 +852,37 @@ Tres tandas integradas en `main` (c7e5767): 4234 pruebas del frontend y 185 del 
 
 Consumo (modelo · duración · tokens): atajos (Sonnet · 34 min · 205 k), paneles «Volver» (Sonnet · 8 min · 129 k), marca y una placa por objeto (Sonnet · 13 min · 160 k), vista de armado (Sonnet · 22 min · 284 k), repartir automático (Opus · 24 min · 265 k), Simplificar con vista previa (Opus · 35 min · 275 k), imanes rectangulares (Opus · 50 min · 330 k), panel de repartir (Sonnet · 25 min · 236 k), uniones firmes (Sonnet · 30 min · 274 k), MCP de placas (Opus · 34 min · 301 k), fantasma de Simplificar (Sonnet · 24 min · 206 k), correcciones QA25-G (Sonnet · 22 min · 212 k), datos del proyecto (Sonnet · 30 min · 282 k), correcciones de código (Opus · 42 min · 258 k), cama por placa (Opus · 53 min · 397 k), guías y capturas (Sonnet · 12 min tras reanudar · 208 k).
 
+## 26-nov-2026 · Cierre de la noche: cuarta tanda, QA25-I, QA25-J y verificación final
+
+Cuarta tanda integrada en `main`: regla de dos niveles de Simplificar, galería de Asistentes con deslizadores, arrastre eligiendo el plano, foco y Esc de paneles en una sola implementación, y las correcciones de las dos QA. Guías y capturas regeneradas (35 recorridos de capturas en verde, 0 enlaces rotos).
+
+**QA25-I en navegador, tercera tanda** (Sonnet · 01:41 a 04:07 con un corte por límite de uso de 85 min en medio). Informe **parcial**, sin bloqueos duros.
+
+| Bloque | Veredicto | Hallazgos |
+|---|---|---|
+| Cama por placa | Aprobado | |
+| Datos del proyecto | Aprobado | |
+| Fantasma de Simplificar, «Volver» en herramientas, exportar 3MF con placas | Sin terminar | Pasaron a la QA25-J |
+
+**QA25-J en navegador, tercera y cuarta tanda** (Sonnet · 57 min). Sin bloqueos duros; tres fallos, todos corregidos en `fix/qa25j`.
+
+| Bloque | Veredicto | Hallazgos |
+|---|---|---|
+| Simplificar en dos niveles y fantasma | Aprobado | La esfera por defecto al 50 % se aplica con aviso; el destructivo ofrece versión segura |
+| «Volver» y Esc | Con fallos (corregidos) | Esc con el foco en el visor no cerraba el panel de herramienta; Cortar mostraba dos «Volver» |
+| Arrastre por plano | Aprobado | El «cubo hundido 15 mm» no era defecto: el origen de las formas básicas está en su base |
+| Galería de Asistentes | Aprobado | |
+| Placas (camas 256 y 180, 3MF real de laminador con 95 piezas, ida y vuelta del 3MF) | Aprobado con un menor (corregido) | Los botones de los avisos no tenían nombre accesible propio |
+| Datos del proyecto y recientes | Aprobado | |
+
+**Verificación final en navegador sobre `main`** (orquestador, 06:00 a 06:50). 27 recorridos de las correcciones: 23 pasaron al primer intento. Los 4 que fallaron eran del recorrido, no del producto, y quedaron corregidos:
+
+- Tres casos de `qa25g-repartir-atajos` buscaban el botón «una placa por objeto» de la primera tanda, que la segunda reemplazó por el panel «Repartir en placas…». Dos se adaptaron al panel; el tercero («en Armado, repartir no mueve la figura») describía un comportamiento que cambió por diseño y ya está cubierto en `placas-repartir`.
+- Un caso de arrastre en vista superior falló una vez de tres; lo más probable es que una animación de encuadre pisara la cámara que fija el recorrido (no confirmado). Ahora el recorrido comprueba que la cámara quedó donde se pidió.
+
+Comprobado a mano en la app: el comando de repartir deja 12 piezas apiladas sin ningún solape. El panel, abierto con una pieza seleccionada, reparte solo esa pieza (su alcance por defecto es «solo la selección» y el resumen lo dice: «1 pieza colocada»).
+
+**Sin hacer:** evaluación a ciegas de usabilidad y funcional de lo de la noche. La funcional se lanzó a la 01:41 y se cortó por el límite de uso sin dejar nota. Las notas vigentes de esos dos evaluadores son las del 25-nov (85 y 87) y no cubren lo nuevo.
+
+Consumo (modelo · duración; los tokens de esta tanda no quedaron anotados): `fix/qa25h` (Opus · 01:41 a 03:53 con el corte de 85 min en medio), galería de Asistentes (Sonnet · unos 15 min), foco y Esc de paneles más arrastre por plano (Sonnet · unos 15 min), `fix/qa25j` (10 min; modelo no anotado), guías y capturas (Sonnet · 39 min).
+

@@ -117,12 +117,12 @@ const IMAN_TABLE = {
     '此凹槽与另一个待处理的凹槽重叠:请移动它或删除其中一个。',
   ],
   'magnet.hint': [
-    'Haz clic sobre una cara de una pieza para colocar el hueco. Cada clic agrega otro; Esc o «Listo» termina.',
-    'Click a face of a part to place the pocket. Each click adds another; Esc or “Done” finishes.',
-    'Klicke auf eine Fläche eines Teils, um die Aussparung zu setzen. Jeder Klick fügt eine weitere hinzu; Esc oder „Fertig“ beendet.',
-    'Clique sur une face d’une pièce pour placer le creux. Chaque clic en ajoute un ; Échap ou « Terminé » arrête.',
-    'खाँचा रखने के लिए किसी भाग की सतह पर क्लिक करें। हर क्लिक एक और जोड़ता है; Esc या “हो गया” से समाप्त करें।',
-    '点击零件的某个面放置凹槽。每次点击再加一个;按 Esc 或“完成”结束。',
+    'Haz clic sobre una cara de una pieza para colocar el hueco. Cada clic agrega otro; Esc o «Volver» termina.',
+    'Click a face of a part to place the pocket. Each click adds another; Esc or “Back” finishes.',
+    'Klicke auf eine Fläche eines Teils, um die Aussparung zu setzen. Jeder Klick fügt eine weitere hinzu; Esc oder „Zurück“ beendet.',
+    'Clique sur une face d’une pièce pour placer le creux. Chaque clic en ajoute un ; Échap ou « Retour » arrête.',
+    'खाँचा रखने के लिए किसी भाग की सतह पर क्लिक करें। हर क्लिक एक और जोड़ता है; Esc या “वापस” से समाप्त करें।',
+    '点击零件的某个面放置凹槽。每次点击再加一个;按 Esc 或“返回”结束。',
   ],
   'magnet.invalid': [
     'Corrige los campos marcados para poder colocar.',

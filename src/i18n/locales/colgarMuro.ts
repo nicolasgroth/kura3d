@@ -37,12 +37,12 @@ const TABLE = {
     '放置钥匙孔需要一个可见且未锁定的实体零件。',
   ],
   'keyhole.hint': [
-    'Haz clic sobre la cara que mira al muro. La ranura sube hacia el «arriba» de la pieza en la cama; el ángulo la gira. Puedes colocar varios; Escape o «Listo» termina.',
-    'Click the face that will touch the wall. The slot points to the part’s “up” on the bed; the angle rotates it. You can place several; Escape or “Done” finishes.',
-    'Klicke auf die Fläche, die zur Wand zeigt. Der Schlitz zeigt nach „oben“ des Teils auf dem Druckbett; der Winkel dreht ihn. Du kannst mehrere setzen; Escape oder „Fertig“ beendet.',
-    'Clique sur la face qui touchera le mur. La fente monte vers le « haut » de la pièce sur le plateau ; l’angle la fait pivoter. Tu peux en placer plusieurs ; Échap ou « Terminé » termine.',
-    'दीवार की ओर वाले फलक पर क्लिक करें। स्लॉट बेड पर भाग के “ऊपर” की ओर जाता है; कोण उसे घुमाता है। आप कई रख सकते हैं; Escape या “हो गया” से समाप्त करें।',
-    '点击将贴墙的那个面。槽口朝向零件在打印床上的“上方”，角度可以旋转它。可以放置多个；按 Escape 或“完成”结束。',
+    'Haz clic sobre la cara que mira al muro. La ranura sube hacia el «arriba» de la pieza en la cama; el ángulo la gira. Puedes colocar varios; Escape o «Volver» termina.',
+    'Click the face that will touch the wall. The slot points to the part’s “up” on the bed; the angle rotates it. You can place several; Escape or “Back” finishes.',
+    'Klicke auf die Fläche, die zur Wand zeigt. Der Schlitz zeigt nach „oben“ des Teils auf dem Druckbett; der Winkel dreht ihn. Du kannst mehrere setzen; Escape oder „Zurück“ beendet.',
+    'Clique sur la face qui touchera le mur. La fente monte vers le « haut » de la pièce sur le plateau ; l’angle la fait pivoter. Tu peux en placer plusieurs ; Échap ou « Retour » termine.',
+    'दीवार की ओर वाले फलक पर क्लिक करें। स्लॉट बेड पर भाग के “ऊपर” की ओर जाता है; कोण उसे घुमाता है। आप कई रख सकते हैं; Escape या “वापस” से समाप्त करें।',
+    '点击将贴墙的那个面。槽口朝向零件在打印床上的“上方”，角度可以旋转它。可以放置多个；按 Escape 或“返回”结束。',
   ],
   'keyhole.invalid': [
     'Corrige las medidas marcadas para poder colocar.',

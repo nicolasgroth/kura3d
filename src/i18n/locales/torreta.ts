@@ -36,12 +36,12 @@ const TABLE = {
     '放置螺丝柱需要一个可见且未锁定的实体零件。',
   ],
   'turret.hint': [
-    'Haz clic sobre una cara para colocar la torreta perpendicular a ella. Puedes colocar varias; Escape o «Listo» termina.',
-    'Click a face to place the boss perpendicular to it. You can place several; Escape or “Done” finishes.',
-    'Klicke auf eine Fläche, um den Dom senkrecht dazu zu setzen. Du kannst mehrere setzen; Escape oder „Fertig“ beendet.',
-    'Clique sur une face pour placer le bossage perpendiculairement. Tu peux en placer plusieurs ; Échap ou « Terminé » termine.',
-    'फलक पर क्लिक करें, बॉस उसके लंबवत लगेगा। कई लगा सकते हैं; Escape या “हो गया” से समाप्त करें।',
-    '点击一个面，螺丝柱会垂直于该面放置。可以连续放置多个；按 Esc 或“完成”结束。',
+    'Haz clic sobre una cara para colocar la torreta perpendicular a ella. Puedes colocar varias; Escape o «Volver» termina.',
+    'Click a face to place the boss perpendicular to it. You can place several; Escape or “Back” finishes.',
+    'Klicke auf eine Fläche, um den Dom senkrecht dazu zu setzen. Du kannst mehrere setzen; Escape oder „Zurück“ beendet.',
+    'Clique sur une face pour placer le bossage perpendiculairement. Tu peux en placer plusieurs ; Échap ou « Retour » termine.',
+    'फलक पर क्लिक करें, बॉस उसके लंबवत लगेगा। कई लगा सकते हैं; Escape या “वापस” से समाप्त करें।',
+    '点击一个面，螺丝柱会垂直于该面放置。可以连续放置多个；按 Esc 或“返回”结束。',
   ],
   'turret.invalid': [
     'Corrige las medidas marcadas para poder colocar.',
