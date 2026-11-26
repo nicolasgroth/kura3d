@@ -1,0 +1,146 @@
+/**
+ * @file src/styles/plateArrangePanel.css
+ * @description Estilos del panel «Repartir en placas…»: grupos de opciones con ayuda bajo cada una, campos numéricos
+ * en dos columnas y el resumen de la vista previa (con texto y viñeta, no solo color). A 1024 px de ancho el panel
+ * conserva el ancho de los demás paneles de operación y su cuerpo se desplaza.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-arrange-panel .kura-op-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kura-arrange-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-arrange-group > legend {
+  padding: 0;
+  margin-bottom: 4px;
+}
+
+.kura-arrange-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: start;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+}
+
+.kura-arrange-option:has(input:checked) {
+  border-color: var(--accent, #38bdf8);
+  background: color-mix(in srgb, var(--accent, #38bdf8) 10%, transparent);
+}
+
+.kura-arrange-option:focus-within {
+  outline: 2px solid var(--accent, #38bdf8);
+  outline-offset: 1px;
+}
+
+.kura-arrange-option[data-disabled='true'] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.kura-arrange-option input {
+  margin: 3px 0 0;
+}
+
+.kura-arrange-option-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.kura-arrange-help {
+  grid-column: 2;
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.kura-arrange-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+
+.kura-arrange-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.kura-arrange-field .kura-arrange-help {
+  grid-column: auto;
+  margin: 0;
+}
+
+.kura-arrange-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.kura-arrange-preview h3,
+.kura-arrange-preview p,
+.kura-arrange-preview ul {
+  margin: 0;
+}
+
+.kura-arrange-headline {
+  font-weight: 600;
+}
+
+.kura-arrange-running {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kura-arrange-list {
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+
+.kura-arrange-warn {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.kura-arrange-note {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1100px) {
+  .kura-arrange-fields {
+    grid-template-columns: 1fr;
+  }
+}

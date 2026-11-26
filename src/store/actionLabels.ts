@@ -30,10 +30,10 @@ export const moveToPlateName = (language: LanguageCode): string => t(language, M
 export const SPREAD_PLATES_KEY: TranslationKey = 'plates.action.onePerObject';
 export const spreadPlatesName = (language: LanguageCode): string => t(language, SPREAD_PLATES_KEY);
 /**
- * «Repartir en placas» (lote P5): acción de escena, fuera de `ACTION_GROUPS`. Mientras no exista su diálogo, la paleta
- * la ejecuta con las opciones por defecto (compacto, mantener orientación, separación y margen de 5 mm).
+ * «Repartir en placas…»: acción de escena, fuera de `ACTION_GROUPS`. Abre el panel con sus opciones (menú Acciones,
+ * paleta, tira de placas y aviso «Fuera de volumen» usan este mismo nombre, con los puntos suspensivos del diálogo).
  */
-export const ARRANGE_PLATES_KEY: TranslationKey = 'plates.action.arrange';
+export const ARRANGE_PLATES_KEY: TranslationKey = 'plates.arrangeDlg.entry';
 export const arrangePlatesName = (language: LanguageCode): string => t(language, ARRANGE_PLATES_KEY);
 
 /** Descripción breve bajo la etiqueta (distingue Agrupar, Combinar y Unir), solo en las acciones que la tienen. */

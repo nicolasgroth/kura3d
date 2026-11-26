@@ -17,6 +17,7 @@ import { OBJECT_ROLES } from '../core/scene/objectRole';
 import { actionName, arrangePlatesName, moveToPlateName, spreadPlatesName } from '../store/actionLabels';
 import { useKuraStore } from '../store/useKuraStore';
 import { assignable } from '../core/scene/plates';
+import { openPlateArrangePanel } from '../store/plateArrangePanel';
 import { spreadCandidates } from '../core/scene/plateSpread';
 import { ACTION_GROUPS, ACTION_SHORTCUTS, actionAvailability, type ActionId } from '../store/actionsCatalog';
 import { ROLE_LABEL_KEY } from '../store/roleLabels';
@@ -101,14 +102,14 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
     keywords: 'spreadPlates onePerObject placa plate repartir spread cada objeto each object', kind: 'local' as const, icon,
     ...(spreadable ? {} : { unavailable: t(language, 'plates.spread.reason') }), run: () => runSpreadOnePlatePerObject(),
   });
-  // «Repartir en placas» con las opciones por defecto (el diálogo con opciones llega en otro lote).
+  // «Repartir en placas…» abre el panel con sus opciones y la vista previa.
   const arrangeable = state.objects.some((o) => o.visible && assignable(o) && !o.metadata?.addon);
   const arrangeUnavailable = state.busyOperation ? 'rediseno.reason.busy' : arrangeable ? null : 'plates.arrange.toast.nothing';
   out.push({
     id: 'action-arrangeOnPlates', label: arrangePlatesName(language), category: t(language, 'rediseno.actions.group.position'),
     keywords: 'arrangeOnPlates repartir distribuir placas empaquetar arrange pack plates nest', kind: 'local', icon,
     ...(arrangeUnavailable ? { unavailable: t(language, arrangeUnavailable) } : {}),
-    run: () => void useKuraStore.getState().arrangeOnPlatesApply(),
+    run: () => void openPlateArrangePanel(),
   });
   return out;
 }

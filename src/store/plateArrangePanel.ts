@@ -12,9 +12,11 @@
 
 import { create } from 'zustand';
 import { ARRANGE_DEFAULTS, type ArrangeCriterion, type ArrangeOptions, type ArrangeOrient, type ArrangeReport } from '../core/scene/plateArrangeTypes';
+import { projectBed } from '../core/scene/activePlateBed';
 import { assignable } from '../core/scene/plates';
 import { t } from '../i18n';
 import type { SceneObject } from '../types/kura';
+import { arrangeGhost, type ArrangeGhost } from './plateArrangeGhost';
 import { undoToastAction } from './toastActionState';
 import { useKuraStore } from './useKuraStore';
 import type { ArrangePreview } from './slices/plateArrangeSlice';
@@ -33,11 +35,13 @@ export interface PlateArrangePanelState {
   marginMm: number;
   status: ArrangePreviewStatus;
   preview: ArrangePreview | null;
+  /** Contornos para el visor; null si no hay vista previa o son demasiadas piezas para dibujarlos. */
+  ghost: ArrangeGhost | null;
 }
 
 const INITIAL: PlateArrangePanelState = {
   open: false, scope: 'all', criterion: ARRANGE_DEFAULTS.criterion, orient: ARRANGE_DEFAULTS.orient,
-  spacingMm: ARRANGE_DEFAULTS.spacingMm, marginMm: ARRANGE_DEFAULTS.marginMm, status: 'idle', preview: null,
+  spacingMm: ARRANGE_DEFAULTS.spacingMm, marginMm: ARRANGE_DEFAULTS.marginMm, status: 'idle', preview: null, ghost: null,
 };
 
 export const usePlateArrangePanel = create<PlateArrangePanelState>(() => ({ ...INITIAL }));
@@ -90,7 +94,7 @@ export function closePlateArrangePanel(): void {
 
 /** Cambia opciones; la vista previa anterior deja de valer hasta el próximo cálculo. */
 export function setPlateArrangeOptions(patch: Partial<Pick<PlateArrangePanelState, 'scope' | 'criterion' | 'orient' | 'spacingMm' | 'marginMm'>>): void {
-  usePlateArrangePanel.setState({ ...patch, preview: null, status: 'idle' });
+  usePlateArrangePanel.setState({ ...patch, preview: null, ghost: null, status: 'idle' });
 }
 
 /** Calcula la vista previa con las opciones vigentes. «Una placa por objeto» no tiene vista previa de reparto. */
@@ -101,27 +105,30 @@ export async function refreshPlateArrangePreview(): Promise<void> {
   const store = useKuraStore.getState();
   if (panel.criterion === 'onePerObject') {
     store.cancelArrangeOnPlates();
-    usePlateArrangePanel.setState({ status: 'idle', preview: null });
+    usePlateArrangePanel.setState({ status: 'idle', preview: null, ghost: null });
     return;
   }
   const ids = arrangeScopeIds(store.objects, store.selectedIds, panel.scope);
   if (ids.length === 0) {
     store.cancelArrangeOnPlates();
-    usePlateArrangePanel.setState({ status: 'idle', preview: null });
+    usePlateArrangePanel.setState({ status: 'idle', preview: null, ghost: null });
     return;
   }
-  usePlateArrangePanel.setState({ status: 'running', preview: null });
+  usePlateArrangePanel.setState({ status: 'running', preview: null, ghost: null });
   const result = await store.planArrangeOnPlates(plateArrangeOptionsOf(panel, ids));
   // Otro pedido (u otro cierre) tomó el relevo: este resultado ya no cuenta.
   if (mine !== requestSeq || !usePlateArrangePanel.getState().open) return;
-  usePlateArrangePanel.setState(result ? { status: 'ready', preview: result } : { status: 'failed', preview: null });
+  const now = useKuraStore.getState();
+  usePlateArrangePanel.setState(result
+    ? { status: 'ready', preview: result, ghost: arrangeGhost(result.plan, now.objects, projectBed(now)) }
+    : { status: 'failed', preview: null, ghost: null });
 }
 
 /** «Cancelar» del cálculo en curso: se queda sin vista previa hasta que se cambie una opción. */
 export function cancelPlateArrangePreview(): void {
   requestSeq += 1;
   useKuraStore.getState().cancelArrangeOnPlates();
-  usePlateArrangePanel.setState({ status: 'cancelled', preview: null });
+  usePlateArrangePanel.setState({ status: 'cancelled', preview: null, ghost: null });
 }
 
 const reasonText = (language: Parameters<typeof t>[0], reason: ArrangeReport['unplaced'][number]['reason']) =>
