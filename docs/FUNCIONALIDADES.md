@@ -23,10 +23,11 @@ Estados: **Activa** (disponible al usuario), **Parcial** (existe con límites co
 | F-PINT | Pintura 3D | Pintar caras para multicolor | Activa | `src/components/Viewport3D.tsx` |
 | F-ANAL | Análisis de imprimibilidad | Voladizos, cierre de malla; peso y filamento solo como estimación muy aproximada («≈», depende del slicer, no entra en el puntaje) | Activa | `src/engine/analysis.ts` |
 | F-SIMPL | Simplificar y refinar | Reducir o densificar malla | Activa | `src/engine/advancedGeometry.ts` |
+| F-PATRON | Patrón | Repetir la selección en fila, rejilla o alrededor de un eje, y espejo con plano (por la pieza, la cama o a una distancia) con o sin conservar el original; vista previa fantasma, grupo con nombre, un paso de deshacer, unir en una sola pieza, tope de 500 copias y aviso de solape; `pattern_linear`, `pattern_circular` y `mirror_object` en el bus y el MCP (con `dryRun`) | En revisión: sin evaluar; capturas y recorrido e2e por generar | `src/core/scene/patterns.ts`, `src/store/slices/patternSlice.ts`, `src/components/pattern/` |
 | F-ALIN | Alineación | Alinear y apoyar objetos | Activa | `src/engine/alignment.ts` |
 | F-UI | Estudio | Temas, densidades, 6 idiomas, paleta de comandos, atajos | Activa | `src/components/`, `src/i18n/` |
 | F-CHAT | Chat IA | Asistente local; Anthropic, OpenAI, Gemini, Ollama y cualquier API compatible con OpenAI | Activa; sin adjuntar imágenes | `src/ai/` |
-| F-MCP | Servidor MCP | 68 herramientas para agentes externos sobre el mismo motor de la app | Activa; token obligatorio | `mcp-server/` |
+| F-MCP | Servidor MCP | 70 herramientas para agentes externos sobre el mismo motor de la app | Activa; token obligatorio | `mcp-server/` |
 | F-DIVIDIR | Dividir para imprimir | Partir un modelo grande en piezas que caben en la cama, con uniones, nombre por pieza, marcas de pareja grabadas y planos ajustables; exportar un archivo por pieza | Activa | `src/engine/split/`, `src/components/split/` |
 | F-ARMADO | Vista explosionada y armado | Animación de armado, "Preparar para imprimir" por placas y "Volver a armar" | Activa | `src/components/split/`, `src/core/scene/splitGroups.ts` |
 | F-ENCAJE | Comprobar encaje | Bajo pedido (menú Acciones y clic derecho), sin cambiar la escena: choques (volumen) y holguras entre piezas y referencias, con las restas pendientes aplicadas en copia, recomendación por par, resaltado de la zona o la cota en el visor y aviso tras Ajustar a la impresora | Activa | `src/engine/fitCheck/`, `src/components/fitCheck/` |

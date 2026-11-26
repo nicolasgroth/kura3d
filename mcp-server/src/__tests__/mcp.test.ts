@@ -85,6 +85,8 @@ const EXPECTED_TOOLS = [
   'kura_move_to_plate',
   'kura_spread_one_plate_per_object',
   'kura_arrange_on_plates',
+  'kura_pattern_linear',
+  'kura_pattern_circular',
   'kura_set_plate_bed',
   'kura_set_layout',
   'kura_get_project_info',
@@ -137,8 +139,8 @@ describe('Kurra Studio MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(68);
-    expect(toolNames).toHaveLength(68);
+    expect(EXPECTED_TOOLS).toHaveLength(70);
+    expect(toolNames).toHaveLength(70);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }

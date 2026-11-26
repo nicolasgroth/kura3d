@@ -86,6 +86,9 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   add_cable_pass: 'write',
   // Repartir en placas: con dryRun solo planifica; aplicar crea placas y mueve piezas (un paso de deshacer).
   arrange_on_plates: 'write',
+  // Con dryRun solo calcula las posiciones, pero el comando es de escritura (aplicar crea las copias).
+  pattern_linear: 'write',
+  pattern_circular: 'write',
   // Placas (lote P8): listar no cambia nada; el resto cambia la escena (un paso de deshacer) o el estado de vista
   // (placa activa, modo imprimir/armado), que también es escritura.
   list_plates: 'read',
@@ -186,6 +189,8 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_move_to_plate: 'move_to_plate',
   kura_spread_one_plate_per_object: 'spread_one_plate_per_object',
   kura_arrange_on_plates: 'arrange_on_plates',
+  kura_pattern_linear: 'pattern_linear',
+  kura_pattern_circular: 'pattern_circular',
   kura_set_plate_bed: 'set_plate_bed',
   kura_set_layout: 'set_layout',
   kura_get_project_info: 'get_project_info',

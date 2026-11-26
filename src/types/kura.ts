@@ -1176,6 +1176,8 @@ export interface KuraCommandRequest {
     | 'add_keyhole'
     | 'add_cable_pass'
     | 'arrange_on_plates'
+    | 'pattern_linear'
+    | 'pattern_circular'
     | 'list_plates'
     | 'create_plate'
     | 'rename_plate'

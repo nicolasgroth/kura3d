@@ -23,6 +23,7 @@ import { PLATES_EXPORT_ZH } from './placasExportar';
 import { PLATES_BED_ZH } from './placasCama';
 import { PLATES_ARRANGE_ZH } from './placasRepartir';
 import { PLATES_ARRANGE_UI_ZH } from './placasRepartirUi';
+import { PATTERN_ZH } from './patrones';
 import { MEASURE_ZH } from './measure';
 import { FLOWUX_ZH } from './flowUx';
 import { PREVIEW_ZH } from './preview';
@@ -99,6 +100,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PLATES_BED_ZH,
   ...PLATES_ARRANGE_ZH,
   ...PLATES_ARRANGE_UI_ZH,
+  ...PATTERN_ZH,
   ...MEASURE_ZH,
   ...FLOWUX_ZH,
   ...PREVIEW_ZH,

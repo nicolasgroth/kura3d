@@ -19,3 +19,4 @@ export * from './paintOperations';
 export * from './organizeOperations';
 export * from './repairReport';
 export * from './smoothOperations';
+export * from './patternOperations';

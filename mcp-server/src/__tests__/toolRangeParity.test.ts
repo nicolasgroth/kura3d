@@ -23,6 +23,7 @@ import { KEYHOLE_RANGES } from '../../../src/core/addons/keyhole';
 import { CABLE_PASS_RANGES } from '../../../src/core/addons/cablePass';
 import { ORIENT_RANGES } from '../../../src/engine/orient';
 import { SMOOTH_RANGES } from '../../../src/engine/smooth';
+import { PATTERN_RANGES } from '../../../src/core/scene/patterns';
 import { createKuraMcpServer } from '../index.js';
 
 const open: Array<() => Promise<void>> = [];
@@ -52,6 +53,8 @@ for (const r of Object.values(MAGNET_RANGES)) addRange(r);
 // Suavizar, Orientar y Torreta: fuentes únicas del motor y de los agregados (las mismas que la interfaz)
 for (const r of [...Object.values(SMOOTH_RANGES), ...Object.values(ORIENT_RANGES), ...Object.values(SCREW_BOSS_RANGES),
   ...Object.values(KEYHOLE_RANGES), ...Object.values(CABLE_PASS_RANGES)]) addRange(r);
+// Patrón (fila, rejilla, circular y espejo): fuente única del núcleo de patrones
+for (const r of Object.values(PATTERN_RANGES)) addRange(r);
 for (const min of Object.values(MIN_SEGMENTS_BY_TYPE)) addRange({ min, max: PRIMITIVE_PARAM_RANGES.segments.max });
 
 interface JsonSchema {

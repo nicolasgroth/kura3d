@@ -49,6 +49,7 @@ import { AssistantsPanel } from './components/assistants/AssistantsPanel';
 import { MagnetPanel } from './components/magnet/MagnetPanel';
 import { ScrewBossPanel } from './components/screwBoss/ScrewBossPanel';
 import { PlateArrangePanel } from './components/plates/PlateArrangePanel';
+import { PatternPanel } from './components/pattern/PatternPanel';
 import { KeyholePanel } from './components/keyhole/KeyholePanel';
 import { CablePassPanel } from './components/cablePass/CablePassPanel';
 import { resolveShortcut } from './store/keyboardShortcuts';
@@ -245,6 +246,7 @@ export const App: React.FC = () => {
         <MagnetPanel />
         <ScrewBossPanel />
         <PlateArrangePanel />
+        <PatternPanel />
         <KeyholePanel />
         <CablePassPanel />
         <AiChatDrawer />

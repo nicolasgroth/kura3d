@@ -16,6 +16,7 @@ import { parseSimplifyRequest, simplifyReportToUser } from '../../src/core/bus/s
 import { assertPrintLayout } from '../../src/core/bus/plateCommandSchemas';
 import type { SimplifyRequest } from '../../src/engine/simplify';
 import * as ops from '../../src/core/operations/index';
+import { runHeadlessPattern, type HeadlessPatternCommand } from './headlessPattern.js';
 import type { OperationContext, SceneChange } from '../../src/core/operations/index';
 import { parametricStateOf } from '../../src/core/scene/parametric';
 import { HEADLESS_BUILD_POLICY } from '../../src/core/scene/sceneObjects';
@@ -667,6 +668,16 @@ export class KuraHeadlessEngine {
     const obj = this.requireEditable(objectId);
     this.apply(ops.mirrorObject(this.ctx, obj, ua.axisFromUser(axis)));
     return userSummary(obj);
+  }
+
+  /** «Patrón» (fila, rejilla, circular o espejo con plano): mismos esquemas y plan que el Command Bus de la app. */
+  pattern(command: HeadlessPatternCommand, params: Record<string, unknown>): Promise<unknown> {
+    return runHeadlessPattern(command, params, {
+      objects: () => Array.from(this.objects.values()),
+      ctx: this.ctx,
+      apply: (change) => this.apply(change),
+      bedState: () => this.plates.bedState(),
+    });
   }
 
   /** Exporta los objetos indicados (o la escena visible) a STL binario o ASCII. */

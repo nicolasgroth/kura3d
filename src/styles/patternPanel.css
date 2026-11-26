@@ -1,0 +1,163 @@
+/**
+ * @file src/styles/patternPanel.css
+ * @description Estilos del panel «Patrón»: selector de tipo y de ejes como segmentos con radios nativos (el seleccionado
+ * lleva borde, fondo y marca, no solo color), campos numéricos con su deslizador y ayuda, y las notas de la vista previa
+ * (icono + texto). A 1024 px el panel conserva el ancho de los demás paneles de operación y su cuerpo se desplaza.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license AGPL-3.0-or-later
+ */
+
+.kura-pattern-panel .kura-op-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kura-pattern-choice {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-pattern-choice > legend {
+  padding: 0;
+  margin-bottom: 4px;
+}
+
+.kura-pattern-segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.kura-pattern-segment {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  text-align: center;
+  font-size: 12px;
+}
+
+.kura-pattern-segment input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.kura-pattern-segment[data-checked='true'] {
+  border-color: var(--accent, #38bdf8);
+  background: color-mix(in srgb, var(--accent, #38bdf8) 14%, transparent);
+  font-weight: 600;
+}
+
+.kura-pattern-segment[data-checked='true']::before {
+  content: '✓';
+  margin-right: 4px;
+  font-size: 11px;
+}
+
+.kura-pattern-segment:focus-within {
+  outline: 2px solid var(--accent, #38bdf8);
+  outline-offset: 1px;
+}
+
+.kura-pattern-choice:disabled .kura-pattern-segment {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.kura-pattern-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.kura-pattern-help {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+.kura-pattern-subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 10px;
+  border-left: 2px solid var(--border-subtle);
+}
+
+.kura-pattern-check {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: start;
+  cursor: pointer;
+}
+
+.kura-pattern-check input {
+  margin: 3px 0 0;
+}
+
+.kura-pattern-check:focus-within {
+  outline: 2px solid var(--accent, #38bdf8);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.kura-pattern-check[data-disabled='true'] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.kura-pattern-check .kura-pattern-help {
+  grid-column: 2;
+}
+
+.kura-pattern-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-pattern-note {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.kura-pattern-note svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.kura-pattern-note.is-error {
+  color: var(--danger, #f87171);
+}
+
+.kura-pattern-note.is-warning {
+  color: var(--warning, #fbbf24);
+}
+
+.kura-pattern-summary {
+  margin: 0 0 6px;
+  font-size: 12px;
+  min-height: 1.4em;
+}
