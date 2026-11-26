@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="public/branding/kurra-studio-logo.svg" alt="Kurra Studio — logotipo: una K de piedra y geometría 3D" width="520" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/branding/kurra-studio-banner-oscuro.svg" />
+    <img src="public/branding/kurra-studio-banner.svg" alt="Kurra Studio: una K de piedra y geometría 3D, modelado 3D para imprimir" width="800" />
+  </picture>
 </p>
 
 <h1 align="center">Kurra Studio</h1>
