@@ -4,11 +4,11 @@
 
 ## En corto: hoy, 26 de noviembre
 
-**Notas a ciegas vigentes** (mínimo 85): funcional **86** · código **85** · usabilidad **81** en la última evaluación completa. En las dos funcionalidades más bajas, tras la pasada de diseño: placas **84** y Simplificar **80**.
+**Notas a ciegas vigentes** (mínimo 85): funcional **86** · código **85** · usabilidad **81** en la última evaluación completa. En las dos funcionalidades más bajas, última ronda: placas **84** y Simplificar **72**, con cuatro defectos concretos encontrados.
 
 **Pruebas en `main`:** 4465 del programa, 190 del servidor MCP y 54 de rendimiento, en verde. Capturas de las guías: 35 recorridos en verde.
 
-En desarrollo ahora mismo: nada nuevo. Lo único en curso es la verificación en navegador de la ronda corta de placas y Simplificar.
+En desarrollo ahora mismo: nada. La ronda corta de placas y Simplificar está en `main`; su reevaluación encontró cuatro defectos por corregir (abajo).
 
 Lo que entró hoy y está en `main`:
 
@@ -21,7 +21,7 @@ Lo que entró hoy y está en `main`:
 
 Qué falta verificar:
 
-- La ronda corta de placas y Simplificar está fusionada en local, con la suite en verde; faltan sus recorridos de navegador, capturas y la reevaluación a ciegas.
+- Defectos encontrados por la última evaluación, sin corregir: arrastrar una pieza a otra placa no da aviso y la deja fuera de la cama; tras «Aplicar de todos modos» el informe de Simplificar queda desactualizado y sin «Deshacer»; «Tolerancia pedida» muestra otro valor; Enter en el campo de Simplificar aplica sin vista previa.
 - Si la barra de avance del guardado se ve en un equipo con tarjeta gráfica (consulta abierta).
 - El 3MF con bandejas en Bambu Studio (el autor no lo tiene).
 - En navegador: dividir con imanes cuadrados o rectangulares y exportar por placa a ZIP con camas distintas.
@@ -30,7 +30,7 @@ Qué falta verificar:
 
 Para cerrar el día:
 
-1. Terminar la ronda corta de placas y Simplificar, y reevaluarlas a ciegas.
+1. Corregir los cuatro defectos de placas y Simplificar, con recorrido de navegador para cada uno.
 2. Actualizar Playwright (pedido de Dependabot).
 
 Siguientes funcionalidades, en este orden:
