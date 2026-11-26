@@ -38,7 +38,9 @@ export type RepeatRecord =
   | { kind: 'group' }
   | { kind: 'combine' }
   /** Solo nombra el paso del historial («Repartir en placas»); no se repite con F4. */
-  | { kind: 'arrangePlates' };
+  | { kind: 'arrangePlates' }
+  /** Solo nombra el paso del historial («Convertir N grupos en placas»); no se repite con F4. */
+  | { kind: 'convertGroupsToPlates'; count: number };
 
 export type RepeatOutcome = 'done' | 'none' | 'notApplicable';
 

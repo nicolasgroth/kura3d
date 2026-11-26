@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { X } from 'lucide-react';
 import { getLocalizedPrinterName } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import type { PrinterProfile } from '../../types/kura';
 import { BRAND_ACCENTS } from './viewportHelpers';
 
 export interface PrinterBedOverlayProps {
@@ -21,18 +22,20 @@ export interface PrinterBedOverlayProps {
   title?: string;
   /** Placa activa entre varias: marco más marcado. */
   active?: boolean;
+  /** Silueta de otra impresora (cama propia de una placa, P7): color de marca y zona de purga; ausente = la del perfil. */
+  silhouette?: Pick<PrinterProfile, 'brand' | 'purgeZoneMm'>;
 }
 
-export const PrinterBedOverlay: React.FC<PrinterBedOverlayProps> = ({ isOutOfBounds, bed, title, active = false }) => {
+export const PrinterBedOverlay: React.FC<PrinterBedOverlayProps> = ({ isOutOfBounds, bed, title, active = false, silhouette }) => {
   const language = useKuraStore((s) => s.language);
   const printerProfile = useKuraStore((s) => s.printerProfile);
   const width = bed?.widthMm ?? printerProfile.bedWidthMm;
   const depth = bed?.depthMm ?? printerProfile.bedDepthMm;
   const height = bed?.heightMm ?? printerProfile.maxHeightMm;
   const showVolume = printerProfile.showPrintVolume;
-  const purgeZoneMm = printerProfile.purgeZoneMm ?? 0;
+  const purgeZoneMm = (silhouette ?? printerProfile).purgeZoneMm ?? 0;
   const displayName = title ?? getLocalizedPrinterName(language, printerProfile);
-  const brandColor = BRAND_ACCENTS[printerProfile.brand] ?? '#38bdf8';
+  const brandColor = BRAND_ACCENTS[(silhouette ?? printerProfile).brand] ?? '#38bdf8';
   const cageColor = isOutOfBounds ? '#ef4444' : brandColor;
 
   const plateTexture = useMemo(() => {

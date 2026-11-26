@@ -24,6 +24,8 @@ export interface PlateChip {
   count: number;
   status: ChipStatus;
   active: boolean;
+  /** Nombre de la cama propia (otra impresora, P7); ausente = la del proyecto. */
+  bedName?: string;
 }
 
 /** Fichas de la tira, en el orden de las placas. `assembled` (división armada) cuenta como bien: no es un fallo. */
@@ -35,6 +37,6 @@ export function plateChips(
   return plates.map((p) => {
     const entry = byId.get(p.id);
     const status: ChipStatus = entry?.status === 'empty' ? 'empty' : entry?.status === 'outOfBounds' ? 'out' : 'ok';
-    return { id: p.id, name: p.name, count: entry?.count ?? 0, status, active: p.id === active };
+    return { id: p.id, name: p.name, count: entry?.count ?? 0, status, active: p.id === active, ...(p.bed ? { bedName: p.bed.name } : {}) };
   });
 }

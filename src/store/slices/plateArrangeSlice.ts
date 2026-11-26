@@ -129,7 +129,8 @@ export function createPlateArrangeSlice(ctx: StoreContext): Partial<KuraStoreSta
         if (!sameScene(scene, snapshot())) throw new StoreOperationError('stale-input', tr('store.error.staleInput'));
         last = null;
         if (plan.placements.length === 0) {
-          get().addToast(tr(plan.report.unplaced.length ? 'plates.arrange.toast.unplaced' : 'plates.arrange.toast.nothing', { count: plan.report.unplaced.length }), 'info');
+          // `quiet`: quien llama (el panel) da su propio aviso, también cuando nada se colocó.
+          if (!flags?.quiet) get().addToast(tr(plan.report.unplaced.length ? 'plates.arrange.toast.unplaced' : 'plates.arrange.toast.nothing', { count: plan.report.unplaced.length }), 'info');
           return plan.report;
         }
         const { scene: next, keyToId } = applyPlan(scene, plan);

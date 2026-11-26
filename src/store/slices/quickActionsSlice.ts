@@ -198,6 +198,7 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
         return 'done';
       }
       case 'arrangePlates':
+      case 'convertGroupsToPlates':
         return 'notApplicable';
     }
   };

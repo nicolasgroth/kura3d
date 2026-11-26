@@ -165,8 +165,12 @@ export function arrangeOnPlates(input: ArrangeInput): ArrangePlan {
   const followersByLead = new Map<string, SceneObject[]>();
   for (const o of objects) {
     const host = followerOf.get(o.id);
-    if (host) followersByLead.set(host, [...(followersByLead.get(host) ?? []), o]);
+    if (!host) continue;
+    const list = followersByLead.get(host);
+    if (list) list.push(o);
+    else followersByLead.set(host, [o]);
   }
+  const indexById = new Map(objects.map((o, i) => [o.id, i]));
   const units: Unit[] = [];
   const moving = new Set<string>();
   leads.forEach((lead) => {
@@ -187,7 +191,7 @@ export function arrangeOnPlates(input: ArrangeInput): ArrangePlan {
     }
     const bounds = members.slice(1).reduce((acc, m) => (occupiesBed(m.obj) && !isNegative(m.obj) ? union(acc, m.bounds) : acc), lb);
     const bucket = criterion === 'byColor' ? lead.color.trim().toLowerCase() : criterion === 'byGroup' ? rootGroup(lead.groupRef, groupsById) ?? '' : '';
-    units.push({ lead, index: objects.indexOf(lead), members, bounds, bucket });
+    units.push({ lead, index: indexById.get(lead.id)!, members, bounds, bucket });
     for (const m of members) moving.add(m.obj.id);
   });
 
@@ -247,7 +251,11 @@ export function arrangeOnPlates(input: ArrangeInput): ArrangePlan {
 
   // 5. Empaquetado por cubetas (una para compacto).
   const buckets = new Map<string, Unit[]>();
-  for (const u of units) buckets.set(u.bucket, [...(buckets.get(u.bucket) ?? []), u]);
+  for (const u of units) {
+    const list = buckets.get(u.bucket);
+    if (list) list.push(u);
+    else buckets.set(u.bucket, [u]);
+  }
   const placements: ArrangePlacement[] = [];
   const used: string[] = [];
   for (const [bucket, list] of buckets) {
@@ -259,7 +267,9 @@ export function arrangeOnPlates(input: ArrangeInput): ArrangePlan {
     const open: Bin[] = [];
     for (const u of sorted) {
       const w = u.bounds.maxX - u.bounds.minX + gap, d = u.bounds.maxZ - u.bounds.minZ + gap;
-      const candidates = [...supply, newPlateBin];
+      // Cada placa con SU cama (P7): las abiertas también cuentan, porque una cama propia más grande puede
+      // recibir una pieza que no cabe en la del proyecto.
+      const candidates = [...open, ...supply, newPlateBin];
       if (!candidates.some((b) => fitsSize(b, u))) {
         report.unplaced.push({ id: u.lead.id, reason: 'tooLarge' });
         continue;

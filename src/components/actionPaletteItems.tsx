@@ -18,6 +18,7 @@ import { actionName, arrangePlatesName, moveToPlateName, spreadPlatesName } from
 import { useKuraStore } from '../store/useKuraStore';
 import { assignable } from '../core/scene/plates';
 import { openPlateArrangePanel } from '../store/plateArrangePanel';
+import { groupsToConvert } from '../store/plateGroupNames';
 import { spreadCandidates } from '../core/scene/plateSpread';
 import { ACTION_GROUPS, ACTION_SHORTCUTS, actionAvailability, type ActionId } from '../store/actionsCatalog';
 import { ROLE_LABEL_KEY } from '../store/roleLabels';
@@ -110,6 +111,15 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
     keywords: 'arrangeOnPlates repartir distribuir placas empaquetar arrange pack plates nest', kind: 'local', icon,
     ...(arrangeUnavailable ? { unavailable: t(language, arrangeUnavailable) } : {}),
     run: () => void openPlateArrangePanel(),
+  });
+  // «Convertir grupos en placas» (P7): grupos raíz de la selección o, sin ella, los que se llaman como placas.
+  const convertible = groupsToConvert(state.objects, state.groups ?? [], state.selectedIds).length > 0;
+  const convertUnavailable = state.layout !== 'print' ? 'plates.convert.assembly' : convertible ? null : 'plates.convert.none';
+  out.push({
+    id: 'action-convertGroupsToPlates', label: t(language, 'plates.convert.action'), category: t(language, 'rediseno.actions.group.position'),
+    keywords: 'convertGroupsToPlates convertir grupos placas convert groups plates slicer laminador bambu orca', kind: 'local', icon,
+    ...(convertUnavailable ? { unavailable: t(language, convertUnavailable) } : {}),
+    run: () => void useKuraStore.getState().convertGroupsToPlates(),
   });
   return out;
 }

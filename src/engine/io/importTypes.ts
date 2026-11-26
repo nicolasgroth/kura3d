@@ -11,7 +11,7 @@ import type { MeshData } from '../../types/kura';
 import type { EngineWarning } from '../engineErrors';
 import type { ImportCluster } from './importClusters';
 import type { ModelImportLimits } from './importErrors';
-import type { KuraSceneGroupMeta, KuraSceneObjectMeta } from './kuraSceneMeta';
+import type { KuraSceneGroupMeta, KuraSceneObjectMeta, KuraScenePlateMeta } from './kuraSceneMeta';
 import type { UnitHint } from './unitHint';
 import type { ImportedMeshAnalysis } from './importAnalysis';
 
@@ -70,7 +70,7 @@ export interface ImportedModel {
    * Escena exportada por Kurra Studio (metadatos `Metadata/kura_scene.json`): se restaura tal cual, sin
    * reacomodo ni conjuntos. Cada pieza trae su estado en `part.kura`.
    */
-  kuraScene?: { groups: KuraSceneGroupMeta[] };
+  kuraScene?: { groups: KuraSceneGroupMeta[]; plates?: KuraScenePlateMeta[] };
   /** Unidades dudosas (STL/OBJ/PLY diminuto o enorme): escalas sugeridas; no se aplica ninguna sola. */
   unitHint?: UnitHint;
 }

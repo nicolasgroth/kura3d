@@ -171,8 +171,12 @@ export async function applyPlateArrange(): Promise<boolean> {
   const report = await store.arrangeOnPlatesApply(plateArrangeOptionsOf(panel, ids), { quiet: true });
   if (!report) return false;
   closePlateArrangePanel();
-  // Sin nada que mover, el store ya avisó el motivo.
-  if (report.moved === 0) return true;
+  // Sin nada que mover, el aviso del motivo es del panel (con `quiet` el store calla).
+  if (report.moved === 0) {
+    const n = report.unplaced.length;
+    store.addToast(t(language, n ? 'plates.arrange.toast.unplaced' : 'plates.arrange.toast.nothing', { count: n }), 'info');
+    return true;
+  }
   const after = useKuraStore.getState();
   // En Armado o Libre las placas no se ven: se pasa a Imprimir (no agrega paso de deshacer).
   const switched = !wasPrint && after.setViewMode('print') === 'changed';

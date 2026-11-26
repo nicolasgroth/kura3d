@@ -14,7 +14,7 @@ import type { SceneGroup, SceneObject, SlicerTarget, UnitSystem } from '../../ty
 import { applyTransformToMesh } from '../primitives';
 import { brandSignature, type ExportBrand } from './exportBrand';
 import { normalizeHexColor } from './meshBuffers';
-import { buildKuraSceneMeta, KURA_SCENE_PATH } from './kuraSceneMeta';
+import { buildKuraSceneMeta, KURA_SCENE_PATH, type KuraScenePlates } from './kuraSceneMeta';
 import { exportableObjects } from './stl';
 import { isReference } from '../../core/scene/objectRole';
 
@@ -34,6 +34,8 @@ export interface ThreeMfPlateLayout {
   plates: ReadonlyArray<{ name: string; objectIds: readonly string[] }>;
   /** Desplazamiento [X, Z] restado a cada objeto (por id); viaja en los metadatos de escena para restaurarla. */
   offsets?: Readonly<Record<string, readonly [number, number]>>;
+  /** Placas reales de la escena completa (P7): viajan en los metadatos para volver como placas al abrir el 3MF. */
+  scenePlates?: KuraScenePlates;
 }
 
 /** Placas del laminador desde las placas reales: una por placa con objetos impresos (null si quedan menos de dos). */
@@ -202,7 +204,9 @@ export function exportSceneTo3MF(
   const configObjects: string[] = [];
   const configInstances: string[] = [];
   // Con placas reales, ellas definen las placas del laminador; sin ellas, los grupos raíz de la escena completa.
-  const plates = plateLayout ? realPlates(solidObjects, plateLayout) : sceneOptions ? scenePlates(solidObjects, sceneOptions.groups) : null;
+  // Un `plateLayout` que solo trae `scenePlates` (una placa en el origen) no cambia las placas del laminador.
+  const realLayout = plateLayout && (plateLayout.plates.length > 0 || plateLayout.offsets) ? plateLayout : undefined;
+  const plates = realLayout ? realPlates(solidObjects, realLayout) : sceneOptions ? scenePlates(solidObjects, sceneOptions.groups) : null;
 
   written.forEach((obj, objIdx) => {
     const objId = objIdx + 2;
@@ -263,7 +267,7 @@ export function exportSceneTo3MF(
     `  <metadata key="filament_count" value="${filamentCount}"/>\n` +
     `${configObjects.join('\n')}\n${platesXml}\n</config>\n`;
   const sceneMeta: Record<string, Uint8Array> = sceneOptions
-    ? { [KURA_SCENE_PATH]: strToU8(JSON.stringify(buildKuraSceneMeta(written, written.map((_, i) => String(i + 2)), sceneOptions.groups, plateLayout?.offsets))) }
+    ? { [KURA_SCENE_PATH]: strToU8(JSON.stringify(buildKuraSceneMeta(written, written.map((_, i) => String(i + 2)), sceneOptions.groups, plateLayout?.offsets, plateLayout?.scenePlates))) }
     : {};
 
   const contentTypes =

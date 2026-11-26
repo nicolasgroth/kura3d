@@ -13,8 +13,11 @@
 
 import {
   assertPrintLayout, assignmentsOf, nothingToMove, parseCreatePlate, parseDeletePlate, parseMoveToPlate, parseRenamePlate, parseSetActivePlate,
-  parseSetLayout, parseSpreadOnePlatePerObject, plateListToUser, plateNotCreated, plateToUser, type PlateListState,
+  parseSetLayout, parseSetPlateBed, parseSpreadOnePlatePerObject, plateBedNoRoom, plateListToUser, plateNotCreated, plateToUser,
+  type PlateListState,
 } from '../../src/core/bus/plateCommandSchemas';
+import { samePlateBed, setPlateBed } from '../../src/core/scene/plateBedChange';
+import { DEFAULT_PRINTER_PROFILES } from '../../src/types/kura';
 import { CommandError } from '../../src/core/bus/commandErrors';
 import type { RawParams } from '../../src/core/bus/commandValidation';
 import { arrangeOnPlatesTask } from '../../src/core/operations/plateArrangeOperations';
@@ -207,6 +210,17 @@ export class HeadlessPlates {
       dryRun: false, ...arrangeReportToUser(report),
       assignments: this.host.objects().filter((o) => placed.has(o.id)).map((o) => ({ id: o.id, plate: o.plateRef ?? null })),
     };
+  }
+
+  /** `set_plate_bed`: perfiles de fábrica por id (sin interfaz no hay «Mis camas») o medidas; mismo esquema y regla que la app. */
+  setBed(p: RawParams) {
+    const { plate, bed } = parseSetPlateBed(this.scene(), p, (id) => DEFAULT_PRINTER_PROFILES.find((x) => x.id === id));
+    if (samePlateBed(plate.bed, bed ?? undefined)) return { plate: this.plateOut(plate.id), changed: false, relocated: [] };
+    const ac = this.actionContext();
+    const done = setPlateBed(this.scene(), plate.id, bed, { projectBed: ac.projectBed, layout: ac.layout, ctx: ac.ctx });
+    if (!done) throw plateBedNoRoom();
+    this.commit(done.scene);
+    return { plate: this.plateOut(plate.id), changed: true, relocated: done.relocated, keptLocked: done.keptLocked };
   }
 
   setLayout(p: RawParams) {

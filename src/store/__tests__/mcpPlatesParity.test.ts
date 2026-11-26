@@ -28,6 +28,7 @@ interface HeadlessLike {
     activePlateId: string | null;
     layout: SceneLayout;
     list(): any;
+    setBed(p: Params): any;
     create(p: Params): any;
     remove(p: Params): any;
     moveTo(p: Params): any;
@@ -132,6 +133,26 @@ describe('paridad app ↔ sin interfaz: placas', () => {
     const listA = await bus('list_plates');
     const listB = h.plates.list();
     expect(listB.plates.map((p: any) => stripIds(p, 'id', 'outOfBoundsIds'))).toEqual(listA.plates.map((p: any) => stripIds(p, 'id', 'outOfBoundsIds')));
+  }, 120_000);
+
+  it('cama por placa (P7): perfil, medidas que corren a la vecina y vuelta a la del proyecto: misma escena', async () => {
+    const h = await newHeadless();
+    await seed(h);
+    await bus('create_plate', {});
+    h.plates.create({});
+    const strip = (r: Record<string, unknown>) => ({ ...r, plate: stripIds(r.plate as Record<string, unknown>, 'id') });
+    const steps: Array<(i: number) => Record<string, unknown>> = [
+      (i) => ({ plateId: i, profileId: 'bambu-a1-mini' }),
+      (i) => ({ plateId: i - 1, widthMm: 500, depthMm: 500, heightMm: 300, name: 'Grande' }),
+      (i) => ({ plateId: i, project: true }),
+    ];
+    for (const step of steps) {
+      const app = step(1), head = step(1);
+      const a = await bus('set_plate_bed', { ...app, plateId: appPlateId(app.plateId as number) });
+      const b = h.plates.setBed({ ...head, plateId: headPlateId(h, head.plateId as number) });
+      expect({ ...strip(b), relocated: b.relocated.length }).toEqual({ ...strip(a), relocated: a.relocated.length });
+      expectSameScene(h);
+    }
   }, 120_000);
 
   it('repartir compacto y una placa por objeto: mismas posiciones y asignaciones', async () => {

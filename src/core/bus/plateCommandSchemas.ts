@@ -10,16 +10,17 @@
  * @license MIT
  */
 
-import type { SceneObject } from '../../types/kura';
-import type { SceneLayout, ScenePlate } from '../../types/plates';
+import type { PrinterProfile, SceneObject } from '../../types/kura';
+import type { PlateBed, SceneLayout, ScenePlate } from '../../types/plates';
 import { isPrintable } from '../scene/objectRole';
 import { poseBounds } from '../scene/plateArrange';
+import { plateBedFromProfile } from '../scene/plateBedChange';
 import { spreadCandidates } from '../scene/plateSpread';
 import { plateToolBlockReason } from '../scene/viewMode';
-import { findPlate, MAX_PLATE_NAME, MAX_PLATES, plateBed, resolveActivePlate, type ProjectBed } from '../scene/plates';
+import { findPlate, MAX_PLATE_BED_MM, MAX_PLATE_NAME, MAX_PLATES, plateBed, resolveActivePlate, type ProjectBed } from '../scene/plates';
 import { CommandError } from './commandErrors';
 import { findObject } from './commandTargets';
-import { readEnum, readId, readIds, readString, type RawParams } from './commandValidation';
+import { readBoolean, readEnum, readId, readIds, readNumber, readString, type RawParams } from './commandValidation';
 
 /** Lo que los comandos de placas leen de la escena (store de la app o escena sin interfaz). */
 export interface PlateCommandScene {
@@ -120,6 +121,40 @@ export function parseSpreadOnePlatePerObject(scene: PlateCommandScene, p: RawPar
   return ids;
 }
 
+/**
+ * `set_plate_bed`: `project: true` (la del proyecto), `profileId` (perfil de fábrica o, en la app, «Mis camas") o
+ * medidas sueltas `widthMm`, `depthMm`, `heightMm` (1–10 000 mm), `marginMm` opcional (0–50) y `name` opcional. Una sola
+ * forma por llamada. `findProfile` resuelve el perfil (la app ve también los del usuario; sin interfaz, los de fábrica).
+ */
+export function parseSetPlateBed(
+  scene: PlateCommandScene, p: RawParams, findProfile: (id: string) => PrinterProfile | undefined,
+): { plate: ScenePlate; bed: PlateBed | null } {
+  const plate = requirePlate(scene.plates, plateIdParam(p));
+  const project = readBoolean(p, 'project');
+  const profileId = readId(p, 'profileId');
+  const hasDims = ['widthMm', 'depthMm', 'heightMm'].some((k) => p[k] !== undefined && p[k] !== null);
+  const forms = (project ? 1 : 0) + (profileId ? 1 : 0) + (hasDims ? 1 : 0);
+  if (forms !== 1) throw new CommandError('invalid-params', 'bus.error.plateBedInvalid');
+  if (project) return { plate, bed: null };
+  if (profileId) {
+    const profile = findProfile(profileId);
+    if (!profile || !profile.showPrintVolume) throw new CommandError('not-found', 'bus.error.plateBedProfileNotFound', { id: profileId.slice(0, 64) });
+    return { plate, bed: plateBedFromProfile(profile) };
+  }
+  const side = { gt: 0, max: MAX_PLATE_BED_MM };
+  const widthMm = readNumber(p, side, 'widthMm');
+  const depthMm = readNumber(p, side, 'depthMm');
+  const heightMm = readNumber(p, side, 'heightMm');
+  const marginMm = readNumber(p, { min: 0, max: 50 }, 'marginMm');
+  if (widthMm === undefined || depthMm === undefined || heightMm === undefined) throw new CommandError('invalid-params', 'bus.error.plateBedInvalid');
+  const rawName = readString(p, MAX_PLATE_NAME, 'name')?.trim();
+  const name = rawName || `${widthMm} × ${depthMm} × ${heightMm} mm`;
+  return { plate, bed: { name, widthMm, depthMm, heightMm, ...(marginMm !== undefined ? { marginMm } : {}) } };
+}
+
+/** El cambio de cama no se pudo aplicar habiendo una cama válida y distinta: no hay espacio para recolocar. */
+export const plateBedNoRoom = () => new CommandError('precondition', 'bus.error.plateBedNoRoom');
+
 export function parseSetLayout(p: RawParams): SceneLayout {
   const layout = readEnum(p, LAYOUTS, 'layout', 'mode');
   if (!layout) throw invalid('layout', LAYOUTS.join(' | '));
@@ -178,7 +213,8 @@ export function plateToUser(plate: ScenePlate, state: PlateListState) {
     id: plate.id,
     name: plate.name,
     origin: [user0(plate.origin[0]), user0(-plate.origin[1])] as [number, number],
-    bed: { widthMm: bed.widthMm, depthMm: bed.depthMm, heightMm: bed.heightMm, ...(bed.marginMm !== undefined ? { marginMm: bed.marginMm } : {}), own: Boolean(plate.bed) },
+    bed: { widthMm: bed.widthMm, depthMm: bed.depthMm, heightMm: bed.heightMm, ...(bed.marginMm !== undefined ? { marginMm: bed.marginMm } : {}), own: Boolean(plate.bed),
+      ...(plate.bed ? { name: plate.bed.name, ...(plate.bed.profileId ? { profileId: plate.bed.profileId } : {}) } : {}) },
     locked: Boolean(plate.locked),
     objectCount: count,
     status,
