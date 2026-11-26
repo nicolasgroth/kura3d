@@ -157,3 +157,42 @@ describe('3MF con placas para el laminador', () => {
     });
   });
 });
+
+describe('placas vacías', () => {
+  it('se conservan como <plate> sin <model_instance> y la siguiente va en SU celda (columnas con el total)', () => {
+    const { objects } = scene(2);
+    const layout = { plates: [{ name: 'A', objectIds: [objects[0].id] }, { name: 'Vacía', objectIds: [] }, { name: 'C', objectIds: [objects[1].id] }] };
+    const { model, settings } = files(exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, layout, undefined, { bed: BED }));
+    const plates = [...settings.matchAll(/<plate>([\s\S]*?)<\/plate>/g)].map((m) => m[1]);
+    expect(plates).toHaveLength(3);
+    expect(plates.map((p) => /plater_id" value="(\d+)"/.exec(p)![1])).toEqual(['1', '2', '3']);
+    expect(plates[1]).not.toContain('model_instance');
+    expect(plates[1]).toContain('plater_name" value="Vacía"');
+    expect(plates[1]).toContain('key="locked" value="false"');
+    // 3 placas = 2 columnas: la tercera (índice 2) va en la segunda fila, columna 1.
+    const boxes = itemBoxes(model);
+    const [cx, cy] = slicerPlateCorner(2, 3, BED);
+    expect([cx, cy]).toEqual([0, expect.closeTo(-307.2, 6)]);
+    expect((boxes[1][0] + boxes[1][3]) / 2).toBeCloseTo(cx + BED.widthMm / 2 + objects[1].position[0], 4);
+    expect((boxes[1][1] + boxes[1][4]) / 2).toBeCloseTo(cy + BED.depthMm / 2 - objects[1].position[2], 4);
+  });
+
+  it('ida y vuelta genérica: el importador descarta la placa vacía y conserva las otras dos', () => {
+    const { objects } = scene(2);
+    const layout = { plates: [{ name: 'A', objectIds: [objects[0].id] }, { name: 'Vacía', objectIds: [] }, { name: 'C', objectIds: [objects[1].id] }] };
+    const bytes = exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, layout, undefined, { bed: BED });
+    const model = parseModelFile('x.3mf', bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
+    expect(model.plates?.map((p) => p.name)).toEqual(['A', 'C']);
+  });
+
+  it('todas vacías menos una no hacen un archivo multiplaca', () => {
+    const { objects } = scene(1);
+    const layout = { plates: [{ name: 'Vacía', objectIds: [] }, { name: 'B', objectIds: [objects[0].id] }] };
+    const { settings } = files(exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, layout, undefined, { bed: BED }));
+    // Dos placas en el layout (una vacía) se respetan: es lo que pide la app con todas sus placas.
+    expect([...settings.matchAll(/<plate>/g)]).toHaveLength(2);
+    const none = files(exportSceneTo3MF(objects, 'mm', undefined, BRAND, undefined, { plates: [{ name: 'V1', objectIds: [] }, { name: 'V2', objectIds: [] }] }, undefined, { bed: BED }));
+    // Sin piezas en ninguna placa nombrada: una sola placa con todo.
+    expect([...none.settings.matchAll(/<plate>/g)]).toHaveLength(1);
+  });
+});

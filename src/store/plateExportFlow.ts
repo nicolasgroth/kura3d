@@ -80,7 +80,11 @@ const layoutOf = (buckets: readonly PlateExportBucket[], offsets: Record<string,
   const hasOffsets = Object.keys(offsets).length > 0;
   if (plates.length < 2 && !hasOffsets) return undefined;
   return {
-    plates: plates.length >= 2 ? buckets.map((b) => ({ name: b.name, objectIds: b.objects.map((o) => o.id) })) : [],
+    // Con piezas en dos o más placas van TODAS las placas de la escena, vacías incluidas, para que la numeración y la
+    // celda de cada una en la rejilla del laminador calcen con la app. Con una sola (p. ej. `plateId`), solo esa.
+    plates: plates.length < 2 ? [] : buckets.length >= 2
+      ? plates.map((p) => ({ name: p.name, objectIds: buckets.find((b) => b.plateId === p.id)?.objects.map((o) => o.id) ?? [] }))
+      : buckets.map((b) => ({ name: b.name, objectIds: b.objects.map((o) => o.id) })),
     ...(hasOffsets ? { offsets } : {}),
   };
 };

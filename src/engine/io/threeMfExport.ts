@@ -51,7 +51,11 @@ export interface ThreeMfPlateLayout {
   scenePlates?: KuraScenePlates;
 }
 
-/** Placas del laminador desde las placas reales: una por placa con objetos impresos (null si quedan menos de dos). */
+/**
+ * Placas del laminador desde las placas reales, en su orden y con las vacías incluidas (el laminador guarda una placa
+ * vacía como `<plate>` sin `<model_instance>`): así la numeración y la celda de la rejilla calzan con la app. null si
+ * quedan menos de dos placas o ninguna con piezas.
+ */
 function realPlates(printed: readonly SceneObject[], layout: ThreeMfPlateLayout): Array<{ name: string; members: Set<number> }> | null {
   const index = new Map(printed.map((o, i) => [o.id, i]));
   const owned = new Set<number>();
@@ -64,11 +68,11 @@ function realPlates(printed: readonly SceneObject[], layout: ThreeMfPlateLayout)
       members.add(i);
       owned.add(i);
     }
-    if (members.size > 0) plates.push({ name: plate.name, members });
+    plates.push({ name: plate.name, members });
   }
   // Lo impreso que no nombra ninguna placa (no debería pasar) va con la primera: nunca queda fuera del archivo.
   if (plates.length > 0) for (let i = 0; i < printed.length; i++) if (!owned.has(i)) plates[0].members.add(i);
-  return plates.length >= 2 ? plates : null;
+  return plates.length >= 2 && owned.size > 0 ? plates : null;
 }
 
 /** Placas del laminador: una por grupo raíz si hay dos o más y cada objeto impreso cae en alguno. */
@@ -316,7 +320,7 @@ export function exportSceneTo3MF(
 
   const plateXml = (id: number, name: string, members: number[]) =>
     `  <plate>\n    <metadata key="plater_id" value="${id}"/>\n    <metadata key="plater_name" value="${escapeXml(name)}"/>\n    <metadata key="locked" value="false"/>\n` +
-    `${members.map((i) => configInstances[i]).join('\n')}\n  </plate>`;
+    members.map((i) => `${configInstances[i]}\n`).join('') + '  </plate>';
   const platesXml = plates
     ? plates.map((p, i) => plateXml(i + 1, p.name, [...p.members])).join('\n')
     : plateXml(1, brand?.name ? `${brand.name}_Bed` : 'Plate_1', solidObjects.map((_, i) => i));

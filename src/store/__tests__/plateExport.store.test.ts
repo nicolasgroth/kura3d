@@ -191,6 +191,31 @@ describe('exportar con placas', () => {
     expect(back.position[0]).toBeCloseTo(byId(b.id)!.position[0], 6);
     expect(back.position[2]).toBeCloseTo(byId(b.id)!.position[2], 6);
   });
+
+  it('placa vacía en medio: el 3MF lleva las 3 placas, la 3 en su celda, y la escena vuelve con las 3', async () => {
+    await addBox(20, [0, 0, 0], { name: 'A' });
+    store().createPlate();
+    const p3 = store().createPlate()!;
+    await addBox(20, [p3.origin[0], 0, p3.origin[1]], { name: 'C' });
+    expect(store().plates).toHaveLength(3);
+    expect(await store().exportModel({ format: '3mf', scope: 'scene', fileName: 'x' })).toBe(true);
+    const bytes = savedBytes();
+    const z = unzipSync(bytes);
+    const plates = [...strFromU8(z['Metadata/model_settings.config']).matchAll(/<plate>([\s\S]*?)<\/plate>/g)].map((m) => m[1]);
+    expect(plates).toHaveLength(3);
+    expect(plates.map((p) => p.includes('model_instance'))).toEqual([true, false, true]);
+    const { bedWidthMm: w, bedDepthMm: d } = store().printerProfile;
+    const t = [...strFromU8(z['3D/3dmodel.model']).matchAll(/<item objectid="\d+" transform="([^"]+)"/g)].map((m) => m[1].split(' ').map(Number));
+    // 3 placas = 2 columnas: la placa 3 va en la segunda fila aunque la 2 esté vacía.
+    expect(t[1][9]).toBeCloseTo(w / 2, 4);
+    expect(t[1][10]).toBeCloseTo(-1.2 * d + d / 2, 4);
+    await resetStore();
+    useKuraStore.setState({ plates: [], activePlateId: null, groups: [], layout: 'print' });
+    const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+    expect(await store().importModelFiles([{ name: 'x.3mf', size: bytes.byteLength, read: async () => buf }])).toBe(true);
+    expect(store().plates).toHaveLength(3);
+    expect(store().objects.find((o) => o.name === 'C')!.plateRef).toBe(store().plates[2].id);
+  });
 });
 
 describe('export_stl / export_3mf del bus con placas', () => {
