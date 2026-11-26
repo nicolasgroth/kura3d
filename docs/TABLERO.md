@@ -232,6 +232,10 @@ Sin compromiso todavía; se evalúan antes de planificarlas.
 
 | Idea |
 |---|
+| **Extensiones con colocación interactiva** (pedido el 26-nov): que una extensión no sea solo un formulario que crea una pieza, sino que pueda pedirle al usuario que arrastre y ubique algo sobre el modelo, y actuar según dónde lo dejó |
+| **Bisagras** como extensión (pedido el 26-nov): unir dos piezas con una bisagra imprimible, eligiendo dónde va y con qué holgura |
+| **Tapas** como extensión (pedido el 26-nov): generar la tapa de una pieza existente (a presión, deslizante o con bisagra) a partir de su boca |
+| **Botones e interruptores de tecla mecánica** (pedido el 26-nov): elegir el tamaño estándar del interruptor, arrastrarlo sobre una cara y que el programa haga el alojamiento con sus medidas |
 | Modelos con cientos o miles de colores (impresoras que mezclan): paleta, leyenda de filamentos y separar por colores preparados para muchos colores, con agrupación por parecido |
 | Dividir: numerar las caras de unión de cada pieza para saber cuál va con cuál al armar |
 | Cajas y carcasas: caja desde medidas o desde cualquier forma ahuecada; tapa por dentro, por fuera o sobre el borde; cierre con tornillos, insertos roscados, a presión, deslizante o imanes; esquinas rectas o redondeadas; ranuras de ventilación. Hoy existe la caja con tapa de Asistentes |
