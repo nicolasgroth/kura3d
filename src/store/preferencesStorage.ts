@@ -100,7 +100,7 @@ export function languageFromPreferences(preferred: readonly string[]): LanguageC
 export function loadInitialLanguage(preferred?: readonly string[]): LanguageCode {
   const stored = readStorage(STORAGE_LANGUAGE_KEY);
   if (LANGUAGES.includes(stored as LanguageCode)) return stored as LanguageCode;
-  const list = preferred ?? (import.meta.env.MODE === 'test' || typeof navigator === 'undefined' ? [] : (navigator.languages ?? [navigator.language]));
+  const list = preferred ?? (import.meta.env?.MODE === 'test' || typeof navigator === 'undefined' ? [] : (navigator.languages ?? [navigator.language]));
   return languageFromPreferences(list.filter(Boolean)) ?? 'es';
 }
 
