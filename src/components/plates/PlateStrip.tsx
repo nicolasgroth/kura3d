@@ -202,13 +202,14 @@ export const PlateStrip: React.FC = () => {
         >
           <Plus size={13} aria-hidden="true" />
         </button>
-        {/* «Una placa por objeto» pasó a ser una opción del panel: un solo botón evita dos entradas que confunden. */}
+        {/* «Una placa por objeto» pasó a ser una opción del panel: un solo botón evita dos entradas que confunden.
+            Sin aria-label: el nombre accesible es el texto visible «Repartir…» (WCAG 2.5.3). Con «Repartir en
+            placas…» como nombre no se encontraba por lo que se ve (QA 25-h). */}
         <button
           type="button"
           className="kura-plate-btn kura-plate-btn-text"
           onClick={() => openPlateArrangePanel()}
           disabled={busy}
-          aria-label={t(language, 'plates.arrangeDlg.entry')}
           title={t(language, 'plates.arrangeDlg.entryTip')}
           data-testid="plate-arrange"
         >

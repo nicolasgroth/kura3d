@@ -57,7 +57,13 @@ test('las cuatro entradas abren el panel; foco inicial, Esc y «Volver» devuelv
   await expect(panel(page)).toHaveCount(0);
   const foco = await page.evaluate(() => (document.activeElement as HTMLElement)?.outerHTML.slice(0, 120));
   console.log('QA25H foco tras Volver:', foco);
-  // 3) botón de la tira: sin verificar aquí (no apareció con spreadOnePlatePerObject; ver informe de QA).
+  // 3) botón de la tira: con dos placas, se encuentra por su texto visible «Repartir…» (su nombre accesible era
+  // «Repartir en placas…» y no coincidía con lo que se ve; corregido el 26-nov).
+  await S(page, (s) => s.createPlate());
+  await page.getByTestId('plate-strip').getByRole('button', { name: 'Repartir…' }).click();
+  await expect(panel(page)).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(panel(page)).toHaveCount(0);
   // 4) aviso «Fuera de volumen»
   await S(page, (s) => s.setObjectTransform(s.objects[0].id, { position: [1000, 0, 0] }, true));
   await page.getByTestId('oob-arrange').click();
