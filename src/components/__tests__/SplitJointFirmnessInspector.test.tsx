@@ -79,7 +79,7 @@ describe('firmeza de las uniones en el informe del inspector', () => {
     expect(screen.getByTestId('split-joint-strength-2').textContent).toContain('Un solo conector');
     expect(screen.getByTestId('split-joint-strength-3').textContent).toContain('solo el 0,1 % del contacto');
     const glue = screen.getByTestId('split-joint-strength-4').textContent ?? '';
-    expect(glue).toContain('mide 2 mm de ancho');
+    expect(glue).toContain('tiene 2 mm de ancho útil');
     // «No lleva conector» ya lo dice la nota de unión pegada
     expect(glue).not.toContain('No lleva conector');
   });
