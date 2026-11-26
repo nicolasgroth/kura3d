@@ -994,3 +994,4 @@ Lectura del orquestador: la pasada de diseño resolvió lo estructural de placas
 
 Dependencias de Rust para Windows (298 paquetes, leídas con `cargo metadata`): todas con licencia permisiva (MIT, Apache-2.0, BSD, ISC, Zlib, MPL-2.0, Unicode). Las exclusivas de Linux y macOS no se pudieron leer sin conexión.
 
+**Ronda corta de placas y Simplificar** (`fix/usab-n26d`, Sonnet · 21 min · 268 k; en `main` como 3e4e8ef). Ocho objetivos: fichas de 32 px y texto de 12 px, aviso único al mover piezas, nombres cortados por el medio, nombre de placa nueva, un solo mensaje por resultado en Simplificar, foco durante el cálculo, aviso de malla abierta con «Reparar malla», informe a la vista con resumen. Verificación del orquestador: 4465 pruebas en verde, 155 recorridos de navegador de placas y Simplificar en verde sin ajustes, 35 capturas regeneradas y 0 enlaces rotos; revisado a ojo a 1024 px con tres placas. Reevaluación a ciegas: en curso.

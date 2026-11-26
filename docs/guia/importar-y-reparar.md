@@ -59,9 +59,11 @@ Mientras trabaja puedes cancelar el cálculo con su botón. Al terminar aparece 
 
 ![Informe del resultado: 2.048 a 1.008 triángulos, con el aviso de revisión y el botón Deshacer](img/importar-y-reparar-07-simplificar-informe.png)
 
+Si la malla de la pieza está abierta, Simplificar no puede trabajar: el panel lo avisa y trae el botón **Reparar malla** ahí mismo.
+
 ### Vista previa: mira antes de aplicar
 
-Pulsa **Vista previa** (junto a **Simplificar**) y la pieza no se toca: en el visor aparece un **fantasma celeste** con la malla que quedaría, y en el panel un resumen de lo que pasaría («Vista previa (aún no se aplicó)»). Cuando termina el cálculo, el foco pasa al informe para que lo lean los lectores de pantalla y puedas decidir antes de aplicar. Con la casilla **Ocultar la vista previa** ocultas el fantasma para ver solo la pieza, y con **Mostrar las aristas de la simplificada** ves la red de triángulos. Si te gusta, pulsa **Simplificar**; si no, cambia el modo o la cantidad y vuelve a mirar.
+Pulsa **Vista previa** (junto a **Simplificar**) y la pieza no se toca: en el visor aparece un **fantasma celeste** con la malla que quedaría, y el panel se desplaza hasta el informe, que parte con un resumen de una línea (triángulos antes y después) y dice si el fantasma muestra lo que pediste o la versión segura. El informe detalla lo que pasaría («Vista previa (aún no se aplicó)»). Cuando termina el cálculo, el foco pasa al informe para que lo lean los lectores de pantalla y puedas decidir antes de aplicar. Con la casilla **Ocultar la vista previa** ocultas el fantasma para ver solo la pieza, y con **Mostrar las aristas de la simplificada** ves la red de triángulos. Si te gusta, pulsa **Simplificar**; si no, cambia el modo o la cantidad y vuelve a mirar.
 
 ![Vista previa de Simplificar: el fantasma celeste sobre la esfera y el resumen en el panel](img/importar-y-reparar-09-simplificar-vista-previa.png)
 
@@ -70,7 +72,7 @@ Pulsa **Vista previa** (junto a **Simplificar**) y la pieza no se toca: en el vi
 Kurra Studio mide cuánto cambia la pieza y decide en tres casos, en palabras simples:
 
 1. **Cambio chico:** se aplica y listo.
-2. **Cambio moderado:** se aplica **con aviso**. El informe dice qué se movió («El volumen cambió…», «La superficie se movió hasta…») y trae **Deshacer**; el mismo aviso sale en una notificación que no se cierra sola. Revísalo antes de imprimir. La desviación se mide por muestreo: es una cota inferior, no el máximo exacto.
+2. **Cambio moderado:** se aplica **con aviso**. El informe dice qué se movió («El volumen cambió…», «La superficie se movió hasta…») y trae **Deshacer**; además sale una notificación corta («Simplificado: 2.048 → 1.008 triángulos») con **Deshacer**. Revísalo antes de imprimir. La desviación se mide por muestreo: es una cota inferior, no el máximo exacto.
 3. **Cambio que estropearía la pieza** (pierde un agujero pasante, el volumen cambia más de 5 %, o la superficie se aleja más de 1 mm o del 1 % de la diagonal): lo pedido **no se aplica tal cual**. Kurra Studio aplica la **versión segura**, la que más triángulos quita sin pasar la regla, y el informe dice «Se aplicó la versión segura: N triángulos en vez de M, porque…». Si prefieres lo pedido, pulsa **Aplicar de todos modos**: reemplaza la versión segura por lo que pediste, en un solo paso de deshacer. Si ni siquiera hay una versión segura, la pieza queda intacta y el informe lo explica.
 
 ![Resultado en una placa con tres agujeros: se aplicó la versión segura, con el motivo y el botón «Aplicar de todos modos»](img/importar-y-reparar-08-simplificar-bloqueo.png)

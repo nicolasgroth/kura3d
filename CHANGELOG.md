@@ -10,6 +10,8 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Placas:** fichas de la tira más altas y con letra más grande; aviso con «Deshacer» al mover piezas entre placas (paleta, menú o arrastre); nombres largos de pieza cortados por el medio para que se distingan; una placa nueva ya no repite un número visible en la tira.
+- **Simplificar:** un solo mensaje por resultado; el foco se queda en el panel durante el cálculo; con la malla abierta, el aviso trae «Reparar malla»; el informe queda a la vista y parte con un resumen.
 - **Recetas:** las que trae la app pasan a AGPL-3.0-or-later; las de terceros pueden declarar además AGPL-3.0-or-later o GPL-3.0-or-later.
 - **Acuerdo de contribuyentes vigente** (`CLA.md`).
 - **Licencia: el proyecto pasa de MIT a AGPL-3.0-or-later.** Quien distribuya una versión modificada, o la ofrezca como servicio por la red, debe publicar su código bajo la misma licencia. Lo publicado hasta el commit 5bc2699 se distribuyó como MIT. «Acerca de» enlaza al código fuente. Los aportes de terceros requieren aceptar el acuerdo de contribuyentes (`CLA.md`, pendiente de revisión legal).
