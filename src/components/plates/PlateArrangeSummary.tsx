@@ -10,13 +10,19 @@
 
 import React from 'react';
 import { AlertTriangle, Info } from 'lucide-react';
-import type { ArrangeReport } from '../../core/scene/plateArrangeTypes';
+import { newPlatesUsed, type ArrangeReport } from '../../core/scene/plateArrangeTypes';
 import { t } from '../../i18n';
 import type { LanguageCode, SceneObject } from '../../types/kura';
 
 /** Frase principal (placas y piezas colocadas): va en la región `role=status`. */
 export function arrangeHeadline(language: LanguageCode, report: ArrangeReport): string {
-  return `${t(language, 'plates.arrangeDlg.preview.plates', { plates: report.platesUsed.length, created: report.platesCreated })} ${t(language, 'plates.arrangeDlg.preview.placed', { count: report.placed.length })}`;
+  // «Nuevas» son las nuevas que reciben piezas: nunca más que las usadas (la implícita que pasa a «Placa 1» no cuenta).
+  const plates = report.platesUsed.length;
+  const created = newPlatesUsed(report);
+  const head = created > 0
+    ? t(language, 'plates.arrangeDlg.preview.plates', { plates, created })
+    : t(language, 'plates.arrangeDlg.preview.platesNoNew', { plates });
+  return `${head} ${t(language, 'plates.arrangeDlg.preview.placed', { count: report.placed.length })}`;
 }
 
 export const PlateArrangeSummary: React.FC<{ language: LanguageCode; report: ArrangeReport; objects: readonly SceneObject[]; groupName: (id: string) => string }> = ({

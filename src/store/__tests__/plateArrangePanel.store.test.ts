@@ -10,6 +10,7 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
+import { arrangeHeadline } from '../../components/plates/PlateArrangeSummary';
 import { t } from '../../i18n';
 import { historyTimeline } from '../historyLabels';
 import {
@@ -50,6 +51,26 @@ describe('panel Repartir en placas: lógica', () => {
     expect(panel().preview!.report.platesCreated).toBe(3);
     expect(panel().ghost!.newBeds).toHaveLength(2);
     expect(panel().ghost!.rects).toHaveLength(3);
+  });
+
+  it('resumen coherente: 3 cubos, cama de 60, solo la selección (1 pieza) → 1 placa usada y 1 nueva, en singular', async () => {
+    useKuraStore.setState({ customBedDimensions: { width: 60, depth: 60, height: 100 } });
+    const cubes = [];
+    for (let i = 0; i < 3; i++) cubes.push(await addBox(20, [i * 22 - 22, 0, 0]));
+    store().setSelection([cubes[2].id]);
+    openPlateArrangePanel();
+    await refreshPlateArrangePreview();
+    const report = panel().preview!.report;
+    // Bus/MCP: la implícita que pasa a «Placa 1» también se agrega a la escena; la interfaz no la llama «nueva».
+    expect(report.platesUsed).toHaveLength(1);
+    expect(arrangeHeadline('es', report)).toBe('Se usará 1 placa (1 nueva). 1 pieza colocada.');
+    expect(arrangeHeadline('en', report)).toBe('1 plate will be used (1 new). 1 part placed.');
+    // Todo en la placa que ya hay: sin «0 nuevas».
+    store().setSelection([]);
+    useKuraStore.setState({ customBedDimensions: { width: 200, depth: 200, height: 100 } });
+    setPlateArrangeOptions({ scope: 'all' });
+    await refreshPlateArrangePreview();
+    expect(arrangeHeadline('es', panel().preview!.report)).toBe('Se usará 1 placa existente, sin crear placas nuevas. 3 piezas colocadas.');
   });
 
   it('cambiar una opción descarta la vista previa vieja', async () => {
