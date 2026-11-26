@@ -13,7 +13,7 @@ import { moveToPlateOrNew, removePlateMoving } from '../../core/scene/plateActio
 import { setPlateBed } from '../../core/scene/plateBedChange';
 import { convertGroupsToPlates } from '../../core/scene/plateConvert';
 import { tagLastPushedStep } from '../historyLabels';
-import { groupsToConvert } from '../plateGroupNames';
+import { groupsToConvert, isPlateGroupName } from '../plateGroupNames';
 import { reassignByPosition } from '../../core/scene/plateMove';
 import { spreadOnePlatePerObject } from '../../core/scene/plateSpread';
 import {
@@ -97,7 +97,7 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
 
     renamePlate: (plateId, name) => !rejectWhileLocked() && commit(renamePlate(scene(), plateId, name)),
 
-    convertGroupsToPlates: (groupIds) => {
+    convertGroupsToPlates: (groupIds, options) => {
       if (rejectWhileLocked()) return null;
       const state = get();
       if (state.layout !== 'print') {
@@ -108,13 +108,15 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const result = wanted.length
         ? convertGroupsToPlates({ objects: state.objects, plates: state.plates, groups: state.groups }, wanted, {
           projectBed: projectBed(state), makeId: () => makeId('plate'), nameFor: plateName,
+          // Los grupos de placa del laminador (los del aviso de importación o con nombre de placa) no sobreviven a la conversión.
+          dissolve: (g) => options?.dissolve === true || isPlateGroupName(g.name),
         })
         : null;
       if (!result) {
         get().addToast(tr('plates.convert.none'), 'info');
         return null;
       }
-      commit(result.scene, { activePlateId: result.created[0] });
+      commit(result.scene, { activePlateId: result.created[0], ...(result.dissolved.length ? { groups: result.groups } : {}) });
       tagLastPushedStep({ kind: 'convertGroupsToPlates', count: result.created.length }, get().past);
       get().requestCameraPreset('plates');
       get().addToast(tr('plates.convert.done', { count: result.created.length }), 'success');
