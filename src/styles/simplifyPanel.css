@@ -85,3 +85,34 @@
   gap: 6px;
   margin: 4px 0;
 }
+
+.kura-simplify-ghost,
+.kura-simplify-variant {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kura-simplify-variant .kura-btn {
+  align-self: flex-start;
+}
+
+.kura-simplify-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.kura-simplify-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+}
+
+.kura-simplify-progress-bar {
+  width: 100%;
+  height: 8px;
+  accent-color: var(--accent-cyan);
+}

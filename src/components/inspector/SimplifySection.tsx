@@ -21,6 +21,7 @@ import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import type { useInvalidFields } from '../useInvalidFields';
 import { simplifySignature } from '../../store/slices/simplifyPreviewSlice';
 import { SIMPLIFY_REQUEST_FRESH_MS, suggestHeavyTarget } from './simplifyPanelRequest';
+import { SimplifyGhostControls, SimplifyPreviewProgress } from './SimplifyPreviewExtras';
 import { SimplifyReportView } from './SimplifyReportView';
 import '../../styles/simplifyPanel.css';
 
@@ -220,16 +221,17 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
           {t(language, 'inspector.pro.simplifyBtn')}
         </button>
       </div>
-      {previewing && (
-        <p className="kura-cut-hint" role="status" data-testid="simplify-preview-computing">
-          {t(language, 'simplify.preview.computing')}{' '}
+      {previewing && previewSession && (
+        <div className="kura-cut-hint" role="status" data-testid="simplify-preview-computing">
+          <SimplifyPreviewProgress session={previewSession} language={language} />
           <button type="button" className="kura-btn kura-btn-sm" data-testid="simplify-preview-cancel" onClick={cancelSimplifyPreview}>
             {t(language, 'simplify.preview.cancel')}
           </button>
-        </p>
+        </div>
       )}
       {previewError && <p className="kura-cut-hint" role="alert" data-testid="simplify-preview-error">{previewError}</p>}
 
+      {previewReady && previewSession && <SimplifyGhostControls session={previewSession} language={language} />}
       {previewReady
         ? <SimplifyReportView report={previewReady} language={language} preview />
         : last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} onUndo={undoStep?.applicable?.() ? undoStep.run : undefined} />}

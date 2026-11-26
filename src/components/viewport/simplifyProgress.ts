@@ -20,11 +20,38 @@ export function simplifyPhaseLabel(language: LanguageCode, phase: string | null 
   if (!phase || !phase.startsWith('simplify:')) return null;
   const rest = phase.slice('simplify:'.length);
   if (rest === 'verify') return t(language, 'simplify.progress.verify');
+  if (rest.startsWith('safe:')) {
+    const step = parseSimplifyStep(phase);
+    return step ? simplifyStepLabel(language, step) : null;
+  }
   const m = /^(\d{1,4})\/(\d{1,4})$/.exec(rest);
   if (!m) return null;
   const total = Number(m[2]);
   if (total <= 1) return t(language, 'simplify.progress.reduce');
   return t(language, 'simplify.progress.attempt', { done: formatNumber(language, Number(m[1])), total: formatNumber(language, total) });
+}
+
+export interface SimplifyStep {
+  /** `attempt`: ajuste al objetivo (`simplify:3/12`); `safe`: búsqueda de la versión segura (`simplify:safe:2/8`). */
+  kind: 'attempt' | 'safe';
+  done: number;
+  total: number;
+}
+
+/** Paso i de n de una fase de simplificar, o null si no es de pasos (reducir, verificar u otra operación). */
+export function parseSimplifyStep(phase: string | null | undefined): SimplifyStep | null {
+  if (!phase) return null;
+  const m = /^simplify:(safe:)?(\d{1,4})\/(\d{1,4})$/.exec(phase);
+  if (!m) return null;
+  const total = Number(m[3]);
+  if (total <= 1) return null;
+  return { kind: m[1] ? 'safe' : 'attempt', done: Math.min(Number(m[2]), total), total };
+}
+
+/** Texto de un paso («intento 3 de 12», «paso 2 de 8» de la versión segura). */
+export function simplifyStepLabel(language: LanguageCode, step: SimplifyStep): string {
+  const params = { done: formatNumber(language, step.done), total: formatNumber(language, step.total) };
+  return t(language, step.kind === 'safe' ? 'simplify.progress.safe' : 'simplify.progress.attempt', params);
 }
 
 /** Aviso de espera larga para modelos pesados; null si no corresponde. */
