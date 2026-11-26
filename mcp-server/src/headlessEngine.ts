@@ -28,6 +28,7 @@ import { resolveAssemblyTargets, ValidateAssemblyTargetError } from '../../src/c
 import { runRecipe } from '../../src/core/recipes/run/executeRecipe';
 import type { RecipeRunResult, RunInput } from '../../src/core/recipes/run/types';
 import { createHeadlessNaming } from './headlessNaming.js';
+import { projectMetaOf } from '../../src/project/projectMeta3mf';
 import { write3mfFile, writeStlFile, type ExportFileResult } from './headlessExport.js';
 import { freePlacer, spreadPartsInFreeSpace, type HeadlessPlacement } from './headlessPlacement.js';
 import { headlessPrintabilityReport, type PrintabilityInput } from './headlessPrintability.js';
@@ -36,6 +37,7 @@ import { headlessFitToBed, type HeadlessFitInput } from './headlessFit.js';
 import { headlessAddCablePass, headlessAddKeyhole, headlessAddMagnetPocket, headlessAddScrewBoss, type HeadlessScene } from './headlessAddons.js';
 import { followAddonsAfter, snapshotForFollow } from './headlessFollow.js';
 import { HeadlessPlates } from './headlessPlates.js';
+import { HeadlessProjectInfo } from './headlessProjectInfo.js';
 import { headlessApplyOrientation, headlessOrientForPrint, headlessSmoothMesh } from './headlessSmoothOrient.js';
 import {
   assertUnlocked,
@@ -112,6 +114,8 @@ export class KuraHeadlessEngine {
     },
     profile: () => this.printerProfile,
   });
+  /** Datos del proyecto (descripción, notas, autor) en memoria: `kura_get/set_project_info` sin la app. */
+  readonly projectInfo = new HeadlessProjectInfo();
   /** Contexto de las operaciones compartidas: estadísticas de mundo, IDs `kura_N_*` y nombres fijos. */
   private readonly ctx: OperationContext = {
     policy: HEADLESS_BUILD_POLICY,
@@ -677,7 +681,7 @@ export class KuraHeadlessEngine {
   async export3mf(input: { outputPath: string; objectIds?: string[]; plateId?: string }): Promise<ExportFileResult> {
     const targets = this.resolveExportTargets(input.objectIds);
     const plan = this.plates.exportPlan(targets, '3mf', input.plateId);
-    const written = await write3mfFile(input.outputPath, plan?.targets ?? targets, this.units, plan?.plateLayout);
+    const written = await write3mfFile(input.outputPath, plan?.targets ?? targets, this.units, plan?.plateLayout, projectMetaOf(this.projectInfo.snapshot()));
     return plan ? { ...written, plateCount: plan.plateCount, skippedUnplaced: plan.excluded } : written;
   }
 

@@ -153,7 +153,7 @@ KURA_BRIDGE_RATE_LIMIT = "120"
 
 ## Catálogo de Herramientas MCP (`kura_*`)
 
-La tabla completa y al día (66 herramientas, generada desde el servidor con `npm run docs:mcp`) está en [docs/MCP.md](../docs/MCP.md). Lo que sigue es un resumen que puede no incluir las más nuevas (medir, reparar, grupos, placas: ver «Trabajar con placas» en docs/MCP.md).
+La tabla completa y al día (68 herramientas, generada desde el servidor con `npm run docs:mcp`) está en [docs/MCP.md](../docs/MCP.md). Lo que sigue es un resumen que puede no incluir las más nuevas (medir, reparar, grupos, placas, datos del proyecto (`kura_get_project_info` / `kura_set_project_info`): ver «Trabajar con placas» en docs/MCP.md).
 
 | Herramienta | Descripción |
 | :--- | :--- |
