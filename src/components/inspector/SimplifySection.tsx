@@ -3,7 +3,8 @@
  * @description Simplificar dentro del panel de malla: selector de modo («Sin pérdida», «Por tolerancia», «Por
  * cantidad»), los campos del modo, «Vista previa» (calcula el mismo informe en el Worker sin aplicar; se cancela en
  * suave al cambiar parámetros, pieza o malla, y «Simplificar» reutiliza el cálculo si nada cambió), el botón (un paso
- * de deshacer al aplicar) y el informe antes → después con sus avisos. La tolerancia vive en el estado del inspector para sobrevivir a cambios de selección.
+ * de deshacer al aplicar), el informe antes → después con sus avisos, la barra por pasos mientras calcula y los
+ * controles del fantasma en el visor (`SimplifyPreviewExtras`). La tolerancia vive en el estado del inspector para sobrevivir a cambios de selección.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
